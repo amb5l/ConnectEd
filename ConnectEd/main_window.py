@@ -1,6 +1,6 @@
 from PyQt6.QtWidgets import QMainWindow, QMenuBar, QMenu, QMessageBox
-from PyQt6.QtGui import QAction
-from PyQt6.QtCore import QSettings
+from PyQt6.QtGui import QAction, QKeySequence
+from PyQt6.QtCore import QSettings, Qt
 
 from constants import ORGNAME, APPNAME, APPTITLE
 from canvas import Canvas
@@ -29,26 +29,32 @@ class MainWindow(QMainWindow):
 
         # create a menu bar
         menu_bar = QMenuBar(self)
+
         # create File menu and add actions
         file_menu = QMenu("File", self)
         new_action = QAction("New", self)
+        new_action.setShortcut(QKeySequence("Ctrl+N"))
         open_action = QAction("Open", self)
+        open_action.setShortcut(QKeySequence("Ctrl+O"))
         save_action = QAction("Save", self)
+        save_action.setShortcut(QKeySequence("Ctrl+S"))
         save_as_action = QAction("Save As...", self)
+        save_as_action.setShortcut(QKeySequence("Ctrl+Shift+S"))
         file_menu.addAction(new_action)
         file_menu.addAction(open_action)
         file_menu.addAction(save_action)
         file_menu.addAction(save_as_action)
         # add File menu to the menu bar
         menu_bar.addMenu(file_menu)
+
         # create Help menu and add actions
         help_menu = QMenu("Help", self)
         about_action = QAction("About", self)
+        about_action.setShortcut(Qt.Key.Key_F1)
         about_action.triggered.connect(self.show_about_dialog)
         help_menu.addAction(about_action)
         # add Help menu to the menu bar
         menu_bar.addMenu(help_menu)
-
         # set the menu bar
         self.setMenuBar(menu_bar)
 
