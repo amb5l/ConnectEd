@@ -1,6 +1,6 @@
 from PyQt6.QtWidgets import QWidget
 from PyQt6.QtGui import QPainter, QPen, QColor
-from PyQt6.QtCore import Qt, QRect, QPoint
+from PyQt6.QtCore import Qt, QRect, QPoint, QPointF
 
 # canvas states:
 # adding_block
@@ -10,7 +10,8 @@ class Canvas(QWidget):
 
     def __init__(self):
         super().__init__()
-        self.scale = 1.0
+        self.zoom = 1.0
+        self.pan = QPointF(0.0, 0.0)
         self.blocks = []
         self.current_block = None
         self.dragging = False
@@ -27,10 +28,12 @@ class Canvas(QWidget):
 
     def paintEvent(self, event):
         painter = QPainter(self)
-        painter.scale(self.scale, self.scale)
+        painter.scale(self.zoom, self.zoom)
+        painter.translate(self.pan)
         # draw background
         painter.fillRect(self.rect(), self.palette().window())
-        # draw grid
+        # draw grid (within sheet extent)
+        # adjust grid according to zoom level
         pen = QPen(QColor(16, 16, 16), 1, Qt.PenStyle.SolidLine)
         painter.setPen(pen)
         grid_size = 20
@@ -43,6 +46,7 @@ class Canvas(QWidget):
         painter.setPen(pen)
         for block in self.blocks:
             painter.drawRect(block)
+            painter.drawText(block.topLeft(), "Blocky")
 
     def mousePressEvent(self, event):
         if event.button() == Qt.MouseButton.LeftButton:
@@ -77,10 +81,22 @@ class Canvas(QWidget):
             self.blocks.append(new_block)
             self.update()
         elif event.key() == Qt.Key.Key_I:
-            self.scale += 0.25
+            self.zoom += 0.25
             self.update()
         elif event.key() == Qt.Key.Key_O:
-            self.scale -= 0.25
+            self.zoom -= 0.25
+            self.update()
+        elif event.key() == Qt.Key.Key_Left:
+            self.pan.setX(self.pan.x() + 100.0)
+            self.update()
+        elif event.key() == Qt.Key.Key_Right:
+            self.pan.setX(self.pan.x() - 100.0)
+            self.update()
+        elif event.key() == Qt.Key.Key_Up:
+            self.pan.setY(self.pan.y() + 100.0)
+            self.update()
+        elif event.key() == Qt.Key.Key_Down:
+            self.pan.setY(self.pan.y() - 100.0)
             self.update()
 
 
