@@ -2,13 +2,12 @@ from PyQt6.QtWidgets import QMainWindow, QMenuBar, QMenu, QMessageBox
 from PyQt6.QtGui import QAction, QKeySequence
 from PyQt6.QtCore import QSettings, Qt
 
-from constants import ORGNAME, APPNAME, APPTITLE
+from app import ORGNAME, APPNAME, APPTITLE
 from canvas import Canvas
 
+
 class MainWindow(QMainWindow):
-
     def __init__(self):
-
         super().__init__()
         self.setWindowTitle(APPTITLE)
 
@@ -63,10 +62,10 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(self.canvas)
 
     def show_about_dialog(self):
+        """Method does blah"""
         QMessageBox.about(self, "About", "This is a PyQt6 application.")
 
     def closeEvent(self, event):
-
         # save window geometry
         self.settings.setValue("geometry", self.saveGeometry())
         super().closeEvent(event)
