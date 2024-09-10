@@ -22,15 +22,15 @@ SHEET_EXTENT_D  = (3220, 2020)
 SHEET_EXTENT_E  = (4220, 3220)
 
 class RectAnchorPoint(Enum):
-    CENTER       = 0
-    TOPLEFT      = 1
-    TOPCENTER    = 2
-    TOPRIGHT     = 3
-    RIGHTCENTER  = 4
-    BOTTOMRIGHT  = 5
-    BOTTOMCENTER = 6
-    BOTTOMLEFT   = 7
-    LEFTCENTER   = 8
+    CENTER        = 0
+    TOP_LEFT      = 1
+    TOP_CENTER    = 2
+    TOP_RIGHT     = 3
+    RIGHT_CENTER  = 4
+    BOTTOM_RIGHT  = 5
+    BOTTOM_CENTER = 6
+    BOTTOM_LEFT   = 7
+    LEFT_CENTER   = 8
 
 class PropertyVisibility(Enum):
     NONE  = 0
@@ -103,21 +103,21 @@ class PropertyText(InteractiveText):
         match self.localAnchor:
             case RectAnchorPoint.CENTER:
                 a = QPointF(-self.boundary.width()/2, -self.boundary.height()/2)
-            case RectAnchorPoint.TOPLEFT:
+            case RectAnchorPoint.TOP_LEFT:
                 a = QPointF(0, 0)
-            case RectAnchorPoint.TOPCENTER:
+            case RectAnchorPoint.TOP_CENTER:
                 a = QPointF(-self.boundary.width()/2, 0)
-            case RectAnchorPoint.TOPRIGHT:
+            case RectAnchorPoint.TOP_RIGHT:
                 a = QPointF(-self.boundary.width(), 0)
-            case RectAnchorPoint.RIGHTCENTER:
+            case RectAnchorPoint.RIGHT_CENTER:
                 a = QPointF(-self.boundary.width(), -self.boundary.height()/2)
-            case RectAnchorPoint.BOTTOMRIGHT:
+            case RectAnchorPoint.BOTTOM_RIGHT:
                 a = QPointF(-self.boundary.width(), -self.boundary.height())
-            case RectAnchorPoint.BOTTOMCENTER:
+            case RectAnchorPoint.BOTTOM_CENTER:
                 a = QPointF(-self.boundary.width()/2, -self.boundary.height())
-            case RectAnchorPoint.BOTTOMLEFT:
+            case RectAnchorPoint.BOTTOM_LEFT:
                 a = QPointF(0, -self.boundary.height())
-            case RectAnchorPoint.LEFTCENTER:
+            case RectAnchorPoint.LEFT_CENTER:
                 a = QPointF(0, -self.boundary.height()/2)
         painter.translate(a)
         painter.rotate(self.rotation)
@@ -133,21 +133,21 @@ class PropertyText(InteractiveText):
 
 def getAnchorPoint(rect, anchor):
     match anchor:
-        case RectAnchorPoint.TOPLEFT:
+        case RectAnchorPoint.TOP_LEFT:
             r = QPointF(rect.topLeft())
-        case RectAnchorPoint.TOPCENTER:
+        case RectAnchorPoint.TOP_CENTER:
             r = QPointF(rect.topLeft())     + QPointF(rect.width()/2, 0)
-        case RectAnchorPoint.TOPRIGHT:
+        case RectAnchorPoint.TOP_RIGHT:
             r = QPointF(rect.topRight())    + QPointF(1, 0)
-        case RectAnchorPoint.RIGHTCENTER:
+        case RectAnchorPoint.RIGHT_CENTER:
             r = QPointF(rect.topRight())    + QPointF(1, rect.height()/2)
-        case RectAnchorPoint.BOTTOMRIGHT:
+        case RectAnchorPoint.BOTTOM_RIGHT:
             r = QPointF(rect.bottomRight()) + QPointF(1, 1)
-        case RectAnchorPoint.BOTTOMCENTER:
+        case RectAnchorPoint.BOTTOM_CENTER:
             r = QPointF(rect.bottomLeft())  + QPointF(rect.width()/2, 1)
-        case RectAnchorPoint.BOTTOMLEFT:
+        case RectAnchorPoint.BOTTOM_LEFT:
             r = QPointF(rect.bottomLeft())  + QPointF(0, 1)
-        case RectAnchorPoint.LEFTCENTER:
+        case RectAnchorPoint.LEFT_CENTER:
             r = QPointF(rect.topLeft())     + QPointF(0, rect.height()/2)
         case _:
             r = QPointF(rect.center())
@@ -162,12 +162,12 @@ class Block:
         n = 0
         for name, value in properties.items():
             if n == 0:
-                blockAnchor = RectAnchorPoint.TOPLEFT
-                propAnchor  = RectAnchorPoint.BOTTOMLEFT
+                blockAnchor = RectAnchorPoint.TOP_LEFT
+                propAnchor  = RectAnchorPoint.BOTTOM_LEFT
                 propOffset  = QPointF(0,0)
             else:
-                blockAnchor = RectAnchorPoint.BOTTOMLEFT
-                propAnchor  = RectAnchorPoint.TOPLEFT
+                blockAnchor = RectAnchorPoint.BOTTOM_LEFT
+                propAnchor  = RectAnchorPoint.TOP_LEFT
                 propOffset  = QPointF(0,10*(n-1))
             self.properties[name] = PropertyText(
                 name,
