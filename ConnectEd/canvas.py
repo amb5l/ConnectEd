@@ -24,12 +24,14 @@ class Canvas(QWidget):
 
     def __init__(self):
         super().__init__()
-        self.zoom         = 1.0
-        self.pan          = QPointF(0.0, 0.0) # diagram coordinates
-        self.startPos     = QPoint() # for dragging etc
-        self.editMode     = EditMode.FREE
+        self.zoom        = 1.0
+        self.pan         = QPointF(0.0, 0.0) # diagram coordinates
+        self.startPos    = QPoint() # for dragging etc
+        self.editMode    = EditMode.FREE
+        self.physicalPos = None
 
         self.setAutoFillBackground(True)
+        self.setMouseTracking(True)
 
         # set background color to light grey
         p = self.palette()
@@ -111,6 +113,7 @@ class Canvas(QWidget):
                     pass
 
     def mouseMoveEvent(self, event):
+        self.physicalPos = event.pos()
         pos = self.canvas2diagram(event.pos()) # diagram position
         match self.editMode:
             case EditMode.SELECT:
@@ -148,10 +151,20 @@ class Canvas(QWidget):
                 self.setCursor(QCursor(Qt.CursorShape.CrossCursor)) # mouse pointer signifies add block mode
                 self.update()
             case [Qt.Key.Key_I, False, False, False]:
-                self.zoom = min(self.zoom * 1.25, prefs.dwg.zoom.max)
+                z1 = self.zoom
+                z2 = min(self.zoom * 1.25, prefs.dwg.zoom.max)
+                dz = (1/z1) - (1/z2)
+                self.pan.setX(self.pan.x() + (self.physicalPos.x() * dz))
+                self.pan.setY(self.pan.y() + (self.physicalPos.y() * dz))
+                self.zoom = z2
                 self.update()
             case [Qt.Key.Key_O, False, False, False]:
-                self.zoom = max(self.zoom / 1.25, prefs.dwg.zoom.min)
+                z1 = self.zoom
+                z2 = max(self.zoom / 1.25, prefs.dwg.zoom.min)
+                dz = (1/z1) - (1/z2)
+                self.pan.setX(self.pan.x() + (self.physicalPos.x() * dz))
+                self.pan.setY(self.pan.y() + (self.physicalPos.y() * dz))
+                self.zoom = z2
                 self.update()
             case [Qt.Key.Key_Left, False, False, False]:
                 self.pan.setX(self.pan.x() - prefs.dwg.panStep * self.width() / self.zoom)
