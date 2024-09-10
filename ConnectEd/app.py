@@ -19,8 +19,8 @@ class MaxMin:
 
 class Prefs:
     class Dwg:
-        zoom            = MaxMin(16.0, 0.1)
-        panStep         = 0.125
+        zoom    = MaxMin(16.0, 0.1)
+        panStep = 0.125
 
         class Color:
             def __init__(self, background, highlight, select):
@@ -124,15 +124,16 @@ prefs = Prefs(
                         select     = QColor(255,0,255)
                     ),
         border =    Prefs.Dwg.Border(
-                        enable = True,
+                        enable    = True,
                         lineWidth = 0,
                         lineColor = QColor(0,255,0)
                     ),
         grid  =     Prefs.Dwg.Grid(
-                        True,
-                        10, 10,
-                        0.0,
-                        QColor(100,100,100)
+                        enable    = True,
+                        x         = 10,
+                        y         = 10,
+                        lineWidth = 0.0,
+                        lineColor = QColor(100,100,100)
                     ),
         block =     Prefs.Dwg.Block(
                         lineWidth       = 0,
@@ -144,8 +145,14 @@ prefs = Prefs(
                     )
     ),
     edit = Prefs.Edit(
-        grid   = Prefs.Edit.Grid(True, 10, 10),
-        select = Prefs.Edit.Select(True)
+        grid   =    Prefs.Edit.Grid(
+                        enable = True,
+                        x      = 10,
+                        y      = 10
+                    ),
+        select =    Prefs.Edit.Select(
+                        enclose = False
+                    )
     ),
     kbd = Prefs.Kbd(
         zoomIn   = [Qt.Key.Key_I,      False, False, False],

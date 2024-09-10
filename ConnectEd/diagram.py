@@ -218,10 +218,6 @@ class Diagram:
         self.selectionPos  = QPointF()
         self.selectionRect = None
 
-    def selectionStart(self, pos):
-        self.startPos      = pos
-        self.selectionRect = QRectF(pos, pos + QPointF(1,1))
-
     def normalizeRect(self, p, s):
         if p.x() > s.x() and p.y() > s.y():                          # p is right and below s
             r = QRectF(s, p)
@@ -237,6 +233,13 @@ class Diagram:
         # TODO: why not just
         # return QRectF(p, s) if p != s else None
 
+    def selectionClear(self):
+        self.selectionSet = []
+
+    def selectionStart(self, pos):
+        self.startPos      = pos
+        self.selectionRect = QRectF(pos, pos + QPointF(1,1))
+
     def selectionResize(self, p):
         if (r := self.normalizeRect(p, self.startPos)) is None:
              r = QRectF(p, QSize(1, 1))
@@ -244,7 +247,19 @@ class Diagram:
 
     def selectionEnd(self):
         # select all objects inside the selection rectangle
+        for block in self.blocks:
+            if     prefs.edit.select.enclose and self.selectionRect.contains(block.rect) \
+            or not prefs.edit.select.enclose and self.selectionRect.intersects(block.rect):
+                self.selectionSet.append(block)
         self.selectionRect = None
+
+    def selectionAdd(self, object):
+        if not object in self.selectionSet:
+            self.selectionSet.append(object)
+
+    def selectionTranslate(self, delta):
+        for s in self.selectionSet:
+            s.translate(delta)
 
     def selectionDraw(self, painter):
         if self.selectionRect is None:
@@ -282,17 +297,6 @@ class Diagram:
             if QRectF(block.rect).contains(pos):
                 return block
         return None
-
-    def selectionClear(self):
-        self.selectionSet = []
-
-    def selectionAdd(self, object):
-        if not object in self.selectionSet:
-            self.selectionSet.append(object)
-
-    def selectionTranslate(self, delta):
-        for s in self.selectionSet:
-            s.translate(delta)
 
     def draw(self, painter, visibleRect):
         # draw border
