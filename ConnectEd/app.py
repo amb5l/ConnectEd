@@ -20,14 +20,22 @@ class Prefs:
     class Dwg:
         zoom            = MaxMin(16.0, 0.1)
         panStep         = 0.125
-        backgroundColor = QColor()
-        highlightColor  = QColor()
-        selectColor     = QColor()
+
+        class Color:
+            def __init__(self, background, highlight, select):
+                self.background = background
+                self.highlight  = highlight
+                self.select     = select
+
+        class Border:
+            def __init__(self, enable, lineWidth, lineColor):
+                self.enable    = enable
+                self.lineWidth = lineWidth
+                self.lineColor = lineColor
 
         class Grid:
-            def __init__(self, x, y, lineWidth, lineColor):
-                self.x         = x
-                self.y         = y
+            def __init__(self, x, y, enable, lineWidth, lineColor):
+                self.enable    = enable
                 self.lineWidth = lineWidth
                 self.lineColor = lineColor
 
@@ -55,35 +63,64 @@ class Prefs:
 
         def __init__(
             self,
-            backgroundColor,
-            highlightColor,
-            selectColor,
+            color,
+            border,
             grid,
             block
         ):
-            self.backgroundColor = backgroundColor
-            self.highlightColor  = highlightColor
-            self.selectColor     = selectColor
-            self.grid            = grid
-            self.block           = block
+            self.color  = color
+            self.border = border
+            self.grid   = grid
+            self.block  = block
 
-    def __init__(self, dwg):
-        self.dwg = dwg
+    def __init__(self, dwg, edit):
+        self.dwg  = dwg
+        self.edit = edit
+
+    class Edit:
+        class Grid:
+            def __init__(self, enable, x, y):
+                self.enable = enable
+                self.x      = x
+                self.y      = y
+
+        class Select:
+            def __init__(self, enclose):
+                self.enclose = enclose
+
+        def __init__(self, grid, select):
+            self.grid   = grid
+            self.select = select
 
 prefs = Prefs(
-    # drawing preferences
     dwg = Prefs.Dwg(
-        backgroundColor = QColor(24,24,24),
-        highlightColor  = QColor(255,255,255),
-        selectColor     = QColor(255,0,255),
-        grid            = Prefs.Dwg.Grid(10, 10, 0.0, QColor(100,100,100)),
-        block           = Prefs.Dwg.Block(
-                            lineWidth       = 0,
-                            lineColor       = QColor(0,0,224),
-                            fillColor       = QColor(0,0,32),
-                            propertyFont    = Font("Courier", 7),
-                            propertyColor   = QColor(224,224,224),
-                            propertyOutline = False
-                        )
+        color =     Prefs.Dwg.Color(
+                        background = QColor(24,24,24),
+                        highlight  = QColor(255,255,255),
+                        select     = QColor(255,0,255)
+                    ),
+        border =    Prefs.Dwg.Border(
+                        enable = True,
+                        lineWidth = 0,
+                        lineColor = QColor(0,255,0)
+                    ),
+        grid  =     Prefs.Dwg.Grid(
+                        True,
+                        10, 10,
+                        0.0,
+                        QColor(100,100,100)
+                    ),
+        block =     Prefs.Dwg.Block(
+                        lineWidth       = 0,
+                        lineColor       = QColor(0,0,224),
+                        fillColor       = QColor(0,0,32),
+                        propertyFont    = Font("Courier", 6),
+                        propertyColor   = QColor(224,224,224),
+                        propertyOutline = False
+                    )
+    ),
+    edit = Prefs.Edit(
+        grid   = Prefs.Edit.Grid(True, 10, 10),
+        select = Prefs.Edit.Select(True)
     )
 )

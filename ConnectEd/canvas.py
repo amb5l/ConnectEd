@@ -35,7 +35,7 @@ class Canvas(QWidget):
 
         # set background color to light grey
         p = self.palette()
-        p.setColor(self.backgroundRole(), prefs.dwg.backgroundColor)
+        p.setColor(self.backgroundRole(), prefs.dwg.color.background)
         self.setPalette(p)
 
         # Set focus policy to accept key input
@@ -68,22 +68,23 @@ class Canvas(QWidget):
         painter.fillRect(visibleRect, self.palette().window())
         # draw grid
         # TODO move this to diagram.py ?
-        gridRect = QRectF(
-            visibleRect.topLeft() - QPointF(prefs.dwg.grid.x, prefs.dwg.grid.y),
-            visibleRect.bottomRight() + QPointF(prefs.dwg.grid.x, prefs.dwg.grid.y)
-        )
-        x1 = int(gridRect.left() / prefs.dwg.grid.x) * prefs.dwg.grid.x
-        x2 = int(gridRect.right() / prefs.dwg.grid.x) * prefs.dwg.grid.x
-        y1 = int(gridRect.top() / prefs.dwg.grid.y) * prefs.dwg.grid.y
-        y2 = int(gridRect.bottom() / prefs.dwg.grid.y) * prefs.dwg.grid.y
-        pen = QPen(prefs.dwg.grid.lineColor, prefs.dwg.grid.lineWidth, Qt.PenStyle.SolidLine)
-        brush = QBrush(Qt.BrushStyle.NoBrush)
-        painter.setPen(pen)
-        painter.setBrush(brush)
-        for x in range(x1, x2, prefs.dwg.grid.x):
-            painter.drawLine(x, y1, x, y2)
-        for y in range(y1, y2, prefs.dwg.grid.y):
-            painter.drawLine(x1, y, x2, y)
+        if prefs.dwg.grid.enable:
+            gridRect = QRectF(
+                visibleRect.topLeft() - QPointF(prefs.edit.grid.x, prefs.edit.grid.y),
+                visibleRect.bottomRight() + QPointF(prefs.edit.grid.x, prefs.edit.grid.y)
+            )
+            x1 = int(gridRect.left() / prefs.edit.grid.x) * prefs.edit.grid.x
+            x2 = int(gridRect.right() / prefs.edit.grid.x) * prefs.edit.grid.x
+            y1 = int(gridRect.top() / prefs.edit.grid.y) * prefs.edit.grid.y
+            y2 = int(gridRect.bottom() / prefs.edit.grid.y) * prefs.edit.grid.y
+            pen = QPen(prefs.dwg.grid.lineColor, prefs.dwg.grid.lineWidth, Qt.PenStyle.SolidLine)
+            brush = QBrush(Qt.BrushStyle.NoBrush)
+            painter.setPen(pen)
+            painter.setBrush(brush)
+            for x in range(x1, x2, prefs.edit.grid.x):
+                painter.drawLine(x, y1, x, y2)
+            for y in range(y1, y2, prefs.edit.grid.y):
+                painter.drawLine(x1, y, x2, y)
         # draw (visible portion of) diagram
         diagram.draw(painter, visibleRect)
 
@@ -143,7 +144,10 @@ class Canvas(QWidget):
         shift, ctrl, alt = self.getKeyboardModifiers()
         match [event.key(), shift, ctrl, alt]:
             case [Qt.Key.Key_Escape, False, False, False]:
-                self.editMode = EditMode.FREE
+                if self.editMode != EditMode.FREE:
+                    self.editMode = EditMode.FREE
+                else:
+                    diagram.selectionClear()
                 self.setCursor(QCursor(Qt.CursorShape.ArrowCursor))
                 self.update()
             case [Qt.Key.Key_Insert, False, False, False]:

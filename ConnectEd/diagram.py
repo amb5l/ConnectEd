@@ -9,16 +9,16 @@ from app import prefs
 #-------------------------------------------------------------------------------
 
 # landscape sheet extents in inches x 100
-EXTENT_A4 = (1169, 827)
-EXTENT_A3 = (1654, 1169)
-EXTENT_A2 = (2338, 1654)
-EXTENT_A1 = (3307, 2338)
-EXTENT_A0 = (4677, 3307)
-EXTENT_A  = (970, 720)
-EXTENT_B  = (1520, 970)
-EXTENT_C  = (2020, 1520)
-EXTENT_D  = (3220, 2020)
-EXTENT_E  = (4220, 3220)
+EXTENTS_A4 = (1169, 827)
+EXTENTS_A3 = (1654, 1169)
+EXTENTS_A2 = (2338, 1654)
+EXTENTS_A1 = (3307, 2338)
+EXTENTS_A0 = (4677, 3307)
+EXTENTS_A  = (970, 720)
+EXTENTS_B  = (1520, 970)
+EXTENTS_C  = (2020, 1520)
+EXTENTS_D  = (3220, 2020)
+EXTENTS_E  = (4220, 3220)
 
 class RectAnchorPoint(Enum):
     CENTER        = 0
@@ -137,15 +137,15 @@ def getAnchorPoint(rect, anchor):
         case RectAnchorPoint.TOP_CENTER:
             r = QPointF(rect.topLeft())     + QPointF(rect.width()/2, 0)
         case RectAnchorPoint.TOP_RIGHT:
-            r = QPointF(rect.topRight())    + QPointF(1, 0)
+            r = QPointF(rect.topRight())
         case RectAnchorPoint.RIGHT_CENTER:
             r = QPointF(rect.topRight())    + QPointF(1, rect.height()/2)
         case RectAnchorPoint.BOTTOM_RIGHT:
-            r = QPointF(rect.bottomRight()) + QPointF(1, 1)
+            r = QPointF(rect.bottomRight())
         case RectAnchorPoint.BOTTOM_CENTER:
             r = QPointF(rect.bottomLeft())  + QPointF(rect.width()/2, 1)
         case RectAnchorPoint.BOTTOM_LEFT:
-            r = QPointF(rect.bottomLeft())  + QPointF(0, 1)
+            r = QPointF(rect.bottomLeft())
         case RectAnchorPoint.LEFT_CENTER:
             r = QPointF(rect.topLeft())     + QPointF(0, rect.height()/2)
         case _:
@@ -191,7 +191,9 @@ class Block:
         self.rect.moveTo(position)
 
     def draw(self,painter):
-        lineColor = prefs.dwg.highlightColor if self.highlight else prefs.dwg.block.lineColor
+        lineColor = prefs.dwg.color.select if self in diagram.selectionSet else \
+                    prefs.dwg.color.highlight if self.highlight else \
+                    prefs.dwg.block.lineColor
         pen = QPen(lineColor, prefs.dwg.block.lineWidth, Qt.PenStyle.SolidLine)
         if prefs.dwg.block.fillColor == None:
             brush = QBrush(Qt.BrushStyle.NoBrush)
@@ -209,7 +211,7 @@ class Diagram:
     startPos = QPointF()
     def __init__(self,title):
         self.title         = title
-        self.extents       = EXTENT_A4
+        self.extents       = EXTENTS_A4
         self.blocks        = []
         self.texts         = []
         self.selectionSet  = []
@@ -237,16 +239,17 @@ class Diagram:
 
     def selectionResize(self, p):
         if (r := self.normalizeRect(p, self.startPos)) is None:
-             r = QRectF(s, QSize(1, 1))
+             r = QRectF(p, QSize(1, 1))
         self.selectionRect = r
 
     def selectionEnd(self):
+        # select all objects inside the selection rectangle
         self.selectionRect = None
 
     def selectionDraw(self, painter):
         if self.selectionRect is None:
             return
-        pen = QPen(prefs.dwg.selectColor, 0.0, Qt.PenStyle.DashDotLine)
+        pen = QPen(prefs.dwg.color.select, 0.0, Qt.PenStyle.DashDotLine)
         brush = QBrush(Qt.BrushStyle.NoBrush)
         painter.setPen(pen)
         painter.setBrush(brush)
@@ -292,6 +295,13 @@ class Diagram:
             s.translate(delta)
 
     def draw(self, painter, visibleRect):
+        # draw border
+        if prefs.dwg.border.enable:
+            pen = QPen(prefs.dwg.border.lineColor, prefs.dwg.border.lineWidth, Qt.PenStyle.SolidLine)
+            brush = QBrush(Qt.BrushStyle.NoBrush)
+            painter.setPen(pen)
+            painter.setBrush(brush)
+            painter.drawRect(QRect(QPoint(0,0), QPoint(self.extents[0], self.extents[1])))
         # draw blocks
         pen = QPen(prefs.dwg.block.lineColor, prefs.dwg.block.lineWidth, Qt.PenStyle.SolidLine)
         if prefs.dwg.block.fillColor is None:
