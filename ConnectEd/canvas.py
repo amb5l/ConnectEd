@@ -1,5 +1,5 @@
 from PyQt6.QtCore import Qt, QPoint, QPointF, QRectF
-from PyQt6.QtGui import QPainter, QPen, QBrush, QCursor
+from PyQt6.QtGui import QPainter, QPen, QBrush, QCursor, QKeySequence
 from PyQt6.QtWidgets import QApplication, QWidget
 from enum import Enum
 
@@ -19,6 +19,12 @@ def snap(position):
         int(round(position.x()/10.0, 0) * 10),
         int(round(position.y()/10.0, 0) * 10)
     )
+
+def getModifiers(event):
+    shift = True if event.modifiers() & Qt.KeyboardModifier.ShiftModifier   else False
+    ctrl  = True if event.modifiers() & Qt.KeyboardModifier.ControlModifier else False
+    alt   = True if event.modifiers() & Qt.KeyboardModifier.AltModifier     else False
+    return shift, ctrl, alt
 
 class Canvas(QWidget):
 
@@ -48,13 +54,6 @@ class Canvas(QWidget):
             (point.y() / self.zoom) + self.pan.y()
         )
         return r
-
-    def getKeyboardModifiers(self):
-        keyMod = QApplication.queryKeyboardModifiers()
-        shift = True if keyMod & Qt.KeyboardModifier.ShiftModifier   else False
-        ctrl  = True if keyMod & Qt.KeyboardModifier.ControlModifier else False
-        alt   = True if keyMod & Qt.KeyboardModifier.AltModifier     else False
-        return shift, ctrl, alt
 
     def paintEvent(self, event):
         painter = QPainter(self)
@@ -89,7 +88,7 @@ class Canvas(QWidget):
         diagram.draw(painter, visibleRect)
 
     def mousePressEvent(self, event):
-        shift, ctrl, alt = self.getKeyboardModifiers()
+        shift, ctrl, alt = getModifiers(event)
         if event.button() == Qt.MouseButton.LeftButton and not shift and not ctrl and not alt:
             pos = self.canvas2diagram(event.pos()) # diagram position
             match self.editMode:
@@ -141,20 +140,21 @@ class Canvas(QWidget):
                         self.editMode = EditMode.ADD_BLOCK
 
     def keyPressEvent(self, event):
-        shift, ctrl, alt = self.getKeyboardModifiers()
-        match [event.key(), shift, ctrl, alt]:
-            case [Qt.Key.Key_Escape, False, False, False]:
+        key = event.key()
+        shift, ctrl, alt = getModifiers(event)
+        match [key, shift, ctrl, alt]:
+            case prefs.kbd.escape:
                 if self.editMode != EditMode.FREE:
                     self.editMode = EditMode.FREE
                 else:
                     diagram.selectionClear()
                 self.setCursor(QCursor(Qt.CursorShape.ArrowCursor))
                 self.update()
-            case [Qt.Key.Key_Insert, False, False, False]:
+            case prefs.kbd.addBlock:
                 self.editMode = EditMode.ADD_BLOCK
                 self.setCursor(QCursor(Qt.CursorShape.CrossCursor)) # mouse pointer signifies add block mode
                 self.update()
-            case [Qt.Key.Key_I, False, False, False]:
+            case prefs.kbd.zoomIn:
                 z1 = self.zoom
                 z2 = min(self.zoom * 1.25, prefs.dwg.zoom.max)
                 dz = (1/z1) - (1/z2)
@@ -162,7 +162,7 @@ class Canvas(QWidget):
                 self.pan.setY(self.pan.y() + (self.physicalPos.y() * dz))
                 self.zoom = z2
                 self.update()
-            case [Qt.Key.Key_O, False, False, False]:
+            case prefs.kbd.zoomOut:
                 z1 = self.zoom
                 z2 = max(self.zoom / 1.25, prefs.dwg.zoom.min)
                 dz = (1/z1) - (1/z2)
@@ -170,16 +170,23 @@ class Canvas(QWidget):
                 self.pan.setY(self.pan.y() + (self.physicalPos.y() * dz))
                 self.zoom = z2
                 self.update()
-            case [Qt.Key.Key_Left, False, False, False]:
+            case prefs.kbd.zoomFull:
+                self.zoom = min(
+                    self.width()  / diagram.extents.width(),
+                    self.height() / diagram.extents.height()
+                )
+                self.pan = QPointF(0.0, 0.0)
+                self.update()
+            case prefs.kbd.panLeft:
                 self.pan.setX(self.pan.x() - prefs.dwg.panStep * self.width() / self.zoom)
                 self.update()
-            case [Qt.Key.Key_Right, False, False, False]:
+            case prefs.kbd.panRight:
                 self.pan.setX(self.pan.x() + prefs.dwg.panStep * self.width() / self.zoom)
                 self.update()
-            case [Qt.Key.Key_Up, False, False, False]:
+            case prefs.kbd.panUp:
                 self.pan.setY(self.pan.y() - prefs.dwg.panStep * self.height() / self.zoom)
                 self.update()
-            case [Qt.Key.Key_Down, False, False, False]:
+            case prefs.kbd.panDown:
                 self.pan.setY(self.pan.y() + prefs.dwg.panStep * self.height() / self.zoom)
                 self.update()
 

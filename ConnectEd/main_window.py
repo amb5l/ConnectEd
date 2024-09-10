@@ -1,4 +1,4 @@
-from PyQt6.QtWidgets import QMainWindow, QMenuBar, QMenu, QMessageBox
+from PyQt6.QtWidgets import QMainWindow, QMenuBar, QMenu, QStatusBar, QMessageBox
 from PyQt6.QtGui import QAction, QKeySequence
 from PyQt6.QtCore import QSettings, Qt
 
@@ -56,6 +56,11 @@ class MainWindow(QMainWindow):
         menu_bar.addMenu(help_menu)
         # set the menu bar
         self.setMenuBar(menu_bar)
+
+        # create a status bar
+        self.status_bar = QStatusBar(self)
+        self.setStatusBar(self.status_bar)
+        self.status_bar.showMessage("Ready")
 
         # create canvas widget
         self.canvas = Canvas()

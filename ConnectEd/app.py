@@ -1,3 +1,4 @@
+from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QColor, QFont
 
 ORGNAME = "ConnectEd"
@@ -73,10 +74,6 @@ class Prefs:
             self.grid   = grid
             self.block  = block
 
-    def __init__(self, dwg, edit):
-        self.dwg  = dwg
-        self.edit = edit
-
     class Edit:
         class Grid:
             def __init__(self, enable, x, y):
@@ -91,6 +88,33 @@ class Prefs:
         def __init__(self, grid, select):
             self.grid   = grid
             self.select = select
+
+    class Kbd:
+        escape = [Qt.Key.Key_Escape, False, False, False]
+        def __init__(
+            self,
+            zoomIn,
+            zoomOut,
+            zoomFull,
+            panLeft,
+            panRight,
+            panUp,
+            panDown,
+            addBlock
+        ):
+            self.zoomIn   = zoomIn
+            self.zoomOut  = zoomOut
+            self.zoomFull = zoomFull
+            self.panLeft  = panLeft
+            self.panRight = panRight
+            self.panUp    = panUp
+            self.panDown  = panDown
+            self.addBlock = addBlock
+
+    def __init__(self, dwg, edit, kbd):
+        self.dwg  = dwg
+        self.edit = edit
+        self.kbd  = kbd
 
 prefs = Prefs(
     dwg = Prefs.Dwg(
@@ -122,5 +146,15 @@ prefs = Prefs(
     edit = Prefs.Edit(
         grid   = Prefs.Edit.Grid(True, 10, 10),
         select = Prefs.Edit.Select(True)
+    ),
+    kbd = Prefs.Kbd(
+        zoomIn   = [Qt.Key.Key_I,      False, False, False],
+        zoomOut  = [Qt.Key.Key_O,      False, False, False],
+        zoomFull = [Qt.Key.Key_F,      False, False, False],
+        panLeft  = [Qt.Key.Key_Left,   False, False, False],
+        panRight = [Qt.Key.Key_Right,  False, False, False],
+        panUp    = [Qt.Key.Key_Up,     False, False, False],
+        panDown  = [Qt.Key.Key_Down,   False, False, False],
+        addBlock = [Qt.Key.Key_Insert, False, False, False]
     )
 )

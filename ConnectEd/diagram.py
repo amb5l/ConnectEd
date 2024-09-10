@@ -211,7 +211,7 @@ class Diagram:
     startPos = QPointF()
     def __init__(self,title):
         self.title         = title
-        self.extents       = EXTENTS_A4
+        self.extents       = QSize(EXTENTS_A4[0], EXTENTS_A4[1])
         self.blocks        = []
         self.texts         = []
         self.selectionSet  = []
@@ -301,7 +301,7 @@ class Diagram:
             brush = QBrush(Qt.BrushStyle.NoBrush)
             painter.setPen(pen)
             painter.setBrush(brush)
-            painter.drawRect(QRect(QPoint(0,0), QPoint(self.extents[0], self.extents[1])))
+            painter.drawRect(QRect(QPoint(0,0), self.extents-QSize(1,1)))
         # draw blocks
         pen = QPen(prefs.dwg.block.lineColor, prefs.dwg.block.lineWidth, Qt.PenStyle.SolidLine)
         if prefs.dwg.block.fillColor is None:
