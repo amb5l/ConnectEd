@@ -1,10 +1,18 @@
 import sys
-from PyQt6.QtCore import Qt, QPoint, QPointF, QSize
-from PyQt6.QtGui import QPainter, QPen, QBrush
-from PyQt6.QtWidgets import QApplication,QWidget
+from PyQt6.QtCore import Qt, QPoint, QPointF, QRect, QRectF
+from PyQt6.QtGui import QPainter, QPen, QBrush, QCursor
+from PyQt6.QtWidgets import QApplication, QWidget
+from enum import Enum
 
 from app import prefs
-import diagram
+from diagram import diagram, Block
+
+class EditMode(Enum):
+    FREE         = 0
+    SELECT       = 1
+    DRAG         = 2
+    ADD_BLOCK    = 3
+    ADDING_BLOCK = 4
 
 # snaps from minor to major grid
 def snap(position):
@@ -19,19 +27,19 @@ class Canvas(QWidget):
         super().__init__()
         self.zoom         = 1.0
         self.pan          = QPointF(0.0, 0.0) # diagram coordinates
-        self.blocks       = []
-        self.currentBlock = None
-        self.dragging     = False
-        self.startPos     = QPoint()
+        self.startPos     = QPoint() # for dragging etc
+        self.editMode     = EditMode.FREE
+
         self.setAutoFillBackground(True)
 
         # set background color to light grey
         p = self.palette()
-        p.setColor(self.backgroundRole(), prefs.dwg.background)
+        p.setColor(self.backgroundRole(), prefs.dwg.backgroundColor)
         self.setPalette(p)
 
         # Set focus policy to accept key input
         self.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
+
 
     def canvas2diagram(self, point):
         # convert canvas point to diagram point
@@ -52,79 +60,96 @@ class Canvas(QWidget):
         painter = QPainter(self)
         painter.scale(self.zoom, self.zoom)
         painter.translate(self.pan)
+        visibleRect = QRectF(
+            self.canvas2diagram(QPoint(0,0)),
+            self.canvas2diagram(QPoint(self.width(), self.height()))
+        )
         # draw background
-        painter.fillRect(self.rect(), self.palette().window())
+        painter.fillRect(visibleRect, self.palette().window())
         # draw grid
+        # TODO move this to diagram.py ?
+        gridRect = QRectF()
+        gridRect.setLeft(visibleRect.left()-prefs.dwg.grid.x)
+        gridRect.setRight(visibleRect.right()+prefs.dwg.grid.x)
+        gridRect.setTop(visibleRect.top()-prefs.dwg.grid.y)
+        gridRect.setBottom(visibleRect.bottom()+prefs.dwg.grid.y)
+        x1 = int(gridRect.left() / prefs.dwg.grid.x) * prefs.dwg.grid.x
+        x2 = int(gridRect.right() / prefs.dwg.grid.x) * prefs.dwg.grid.x
+        y1 = int(gridRect.top() / prefs.dwg.grid.y) * prefs.dwg.grid.y
+        y2 = int(gridRect.bottom() / prefs.dwg.grid.y) * prefs.dwg.grid.y
         pen = QPen(prefs.dwg.grid.lineColor, prefs.dwg.grid.lineWidth, Qt.PenStyle.SolidLine)
         brush = QBrush(Qt.BrushStyle.NoBrush)
         painter.setPen(pen)
         painter.setBrush(brush)
-        for x in range(0, self.width(), prefs.dwg.grid.x):
-            painter.drawLine(x, 0, x, self.height())
-        for y in range(0, self.height(), prefs.dwg.grid.y):
-            painter.drawLine(0, y, self.width(), y)
-        # draw blocks
-        pen = QPen(prefs.dwg.block.lineColor, prefs.dwg.block.lineWidth, Qt.PenStyle.SolidLine)
-        if prefs.dwg.block.fillColor == None:
-            brush = QBrush(Qt.BrushStyle.NoBrush)
-        else:
-            brush = QBrush(prefs.dwg.block.fillColor)
-        painter.setPen(pen)
-        painter.setBrush(brush)
-        for block in self.blocks:
-            block.draw(painter)
+        for x in range(x1, x2, prefs.dwg.grid.x):
+            painter.drawLine(x, y1, x, y2)
+        for y in range(y1, y2, prefs.dwg.grid.y):
+            painter.drawLine(x1, y, x2, y)
+        # draw (visible portion of) diagram
+        diagram.draw(painter, visibleRect)
 
     def mousePressEvent(self, event):
         shift, ctrl, alt = self.getKeyboardModifiers()
         if event.button() == Qt.MouseButton.LeftButton and not shift and not ctrl and not alt:
-            d = self.canvas2diagram(event.pos()) # diagram position
-            p = snap(d) # snapped diagram position
-            self.selectionSet = [] # clear selection set
-            for block in self.blocks: # look through diagram objects to see if we clicked on one
-                if block.rect.contains(d.toPoint()):
-                    self.currentBlock = block
-                    self.dragging = True
-                    self.startPos = p - block.rect.topLeft()
+            pos = self.canvas2diagram(event.pos()) # diagram position
+            match self.editMode:
+                case EditMode.FREE:
+                    self.startPos = snap(pos)
+                    diagram.selectionClear() # clear selection set on unmodified click
+                    if object := diagram.click(pos) is not None:
+                        diagram.selectionAdd(object)
+                    diagram.selectionStart(pos)
+                    self.update()
+                    self.editMode = EditMode.SELECT
                     return
-            self.startPos = p
-            self.currentBlock = diagram.Block(
-                self.startPos,
-                QSize(10, 10),
-                {"reference": "ref?", "value": "val?"} # {"reference": "Referencey?", "value": "value?"}
-            )
-            self.blocks.append(self.currentBlock)
-            self.update()
+                case EditMode.ADD_BLOCK:
+                    diagram.newBlockStart(snap(pos))
+                    self.update()
+                    self.editMode = EditMode.ADDING_BLOCK
+                case EditMode.ADDING_BLOCK:
+                    diagram.newBlockFinish()
+                    self.update()
+                    self.editMode = EditMode.ADD_BLOCK
+                case _:
+                    pass
 
     def mouseMoveEvent(self, event):
-        if self.currentBlock:
-            d = self.canvas2diagram(event.pos()) # diagram position
-            p = snap(d)
-            if self.dragging:
-                self.currentBlock.setPosition(p - self.startPos)
-            else:
-                if p.x() > self.startPos.x() and p.y() > self.startPos.y():                                # current pos is right and below
-                    self.currentBlock.setSize(QSize(p.x() - self.startPos.x(), p.y() - self.startPos.y()))
-                elif p.x() > self.startPos.x() and p.y() <= self.startPos.y():                             # current pos is right and above
-                    self.currentBlock.setSize(QSize(p.x() - self.startPos.x(), self.startPos.y() - p.y()))
-                    self.currentBlock.setPosition(QPoint(self.startPos.x(), p.y()))
-                elif p.x() <= self.startPos.x() and p.y() <= self.startPos.y():                            # current pos is left and above
-                    self.currentBlock.setSize(QSize(self.startPos.x() - p.x(), self.startPos.y() - p.y()))
-                    self.currentBlock.setPosition(p)
-                elif p.x() <= self.startPos.x() and p.y() > self.startPos.y():                             # current pos is left and below
-                    self.currentBlock.setSize(QSize(self.startPos.x() - p.x(), p.y() - self.startPos.y()))
-                    self.currentBlock.setPosition(QPoint(p.x(), self.startPos.y()))
-                elif p == self.startPos:                                                                   # current pos is same as start pos
-                    self.currentBlock.setSize(QSize(10, 10))                                               # set minimum size
-            self.update()
+        pos = self.canvas2diagram(event.pos()) # diagram position
+        match self.editMode:
+            case EditMode.SELECT:
+                diagram.selectionResize(pos)
+                self.update()
+            case EditMode.ADDING_BLOCK:
+                diagram.newBlockResize(snap(pos))
+                self.update()
+            case _:
+                pass
 
     def mouseReleaseEvent(self, event):
+        pos = self.canvas2diagram(event.pos()) # diagram position
         if event.button() == Qt.MouseButton.LeftButton:
-            self.dragging = False
-            self.currentBlock = None
+            match self.editMode:
+                case EditMode.SELECT:
+                    diagram.selectionEnd()
+                    self.update()
+                    self.editMode = EditMode.FREE
+                case EditMode.ADDING_BLOCK:
+                    if snap(pos) != diagram.startPos:
+                        diagram.newBlockFinish()
+                        self.update()
+                        self.editMode = EditMode.ADD_BLOCK
 
     def keyPressEvent(self, event):
         shift, ctrl, alt = self.getKeyboardModifiers()
         match [event.key(), shift, ctrl, alt]:
+            case [Qt.Key.Key_Escape, False, False, False]:
+                self.editMode = EditMode.FREE
+                self.setCursor(QCursor(Qt.CursorShape.ArrowCursor))
+                self.update()
+            case [Qt.Key.Key_Insert, False, False, False]:
+                self.editMode = EditMode.ADD_BLOCK
+                self.setCursor(QCursor(Qt.CursorShape.CrossCursor)) # mouse pointer signifies add block mode
+                self.update()
             case [Qt.Key.Key_I, False, False, False]:
                 self.zoom = min(self.zoom * 1.25, prefs.dwg.zoom.max)
                 self.update()

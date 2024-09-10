@@ -1,8 +1,8 @@
 import sys
 import xml.etree.ElementTree as ET
-from PyQt6.QtCore import Qt, QRect, QPointF, pyqtSignal
+from PyQt6.QtCore import Qt, QRect, QRectF, QPoint, QPointF, QSize, pyqtSignal
 from PyQt6.QtWidgets import QLabel
-from PyQt6.QtGui import QPen, QBrush, QColor
+from PyQt6.QtGui import QPen, QBrush
 from enum import Enum
 
 from app import prefs
@@ -154,11 +154,13 @@ def getAnchorPoint(rect, anchor):
     return r
 
 #-------------------------------------------------------------------------------
+# diagram object: block
 
 class Block:
     def __init__(self, position, size, properties):
-        self.rect = QRect(position, size)
+        self.rect       = QRect(position, size)
         self.properties = {}
+        self.highlight  = True
         n = 0
         for name, value in properties.items():
             if n == 0:
@@ -187,7 +189,8 @@ class Block:
         self.rect.moveTo(position)
 
     def draw(self,painter):
-        pen = QPen(prefs.dwg.block.lineColor, prefs.dwg.block.lineWidth, Qt.PenStyle.SolidLine)
+        lineColor = prefs.dwg.highlightColor if self.highlight else prefs.dwg.block.lineColor
+        pen = QPen(lineColor, prefs.dwg.block.lineWidth, Qt.PenStyle.SolidLine)
         if prefs.dwg.block.fillColor == None:
             brush = QBrush(Qt.BrushStyle.NoBrush)
         else:
@@ -201,11 +204,110 @@ class Block:
 #-------------------------------------------------------------------------------
 
 class Diagram:
+    startPos = QPointF()
     def __init__(self,title):
-        self.title = title
-        self.extents      = EXTENT_A4
-        self.blocks = []
-        self.texts = []
+        self.title         = title
+        self.extents       = EXTENT_A4
+        self.blocks        = []
+        self.texts         = []
+        self.selectionSet  = []
+        self.selectionPos  = QPointF()
+        self.selectionRect = None
+
+    def selectionStart(self, pos):
+        self.startPos      = pos
+        self.selectionRect = QRectF(pos, pos + QPointF(1,1))
+
+    def selectionResize(self, pos):
+        p = pos
+        s = self.startPos
+        if p.x() > s.x() and p.y() > s.y():                          # current pos is right and below start pos
+            r = QRectF(s, p)
+        elif p.x() > s.x() and p.y() <= s.y():                       # current pos is right and above start pos
+            r = QRectF(QPointF(s.x(), p.y()), QPointF(p.x(), s.y()))
+        elif p.x() <= s.x() and p.y() <= s.y():                      # current pos is left and above start pos
+            r = QRectF(p, s)
+        elif p.x() <= s.x() and p.y() > s.y():                       # current pos is left and below start pos
+            r = QRectF(QPointF(p.x(), s.y()), QPointF(s.x(), p.y()))
+        else:
+            r = QRectF(s, QSize(1, 1))
+        self.selectionRect = r
+
+    def selectionEnd(self):
+        self.selectionRect = None
+
+    def selectionDraw(self, painter):
+        if self.selectionRect is None:
+            return
+        pen = QPen(prefs.dwg.selectColor, 0.0, Qt.PenStyle.DashDotLine)
+        brush = QBrush(Qt.BrushStyle.NoBrush)
+        painter.setPen(pen)
+        painter.setBrush(brush)
+        painter.drawRect(self.selectionRect)
+
+    def newBlockStart(self, pos):
+        self.startPos = pos
+        self.blocks.append(Block(
+            pos,
+            QSize(10, 10),
+            {"reference": "ref?", "value": "val?"}
+        ))
+
+    def newBlockResize(self, p):
+        n = self.blocks[-1] # last block in list = new block
+        s = self.startPos
+        if p.x() > s.x() and p.y() > s.y():                # current pos is right and below start pos
+            n.setSize(QSize(p.x() - s.x(), p.y() - s.y()))
+        elif p.x() > s.x() and p.y() <= s.y():             # current pos is right and above start pos
+            n.setSize(QSize(p.x() - s.x(), s.y() - p.y()))
+            n.setPosition(QPoint(s.x(), p.y()))
+        elif p.x() <= s.x() and p.y() <= s.y():            # current pos is left and above start pos
+            n.setSize(QSize(s.x() - p.x(), s.y() - p.y()))
+            n.setPosition(p)
+        elif p.x() <= s.x() and p.y() > s.y():             # current pos is left and below start pos
+            n.setSize(QSize(s.x() - p.x(), p.y() - s.y()))
+            n.setPosition(QPoint(p.x(), s.y()))
+        elif p == s:                                       # current pos is same as start pos
+            n.setSize(QSize(10, 10))                       # set minimum size
+
+    def newBlockFinish(self):
+        self.blocks[-1].highlight = False
+
+    def newBlockCancel(self):
+        self.blocks.pop()
+
+    # return diagram object that was clicked on, or None
+    def click(self, pos):
+        for block in self.blocks:
+            if QRectF(block.rect).contains(pos):
+                return block
+        return None
+
+    def selectionClear(self):
+        self.selectionSet = []
+
+    def selectionAdd(self, object):
+        if not object in self.selectionSet:
+            self.selectionSet.append(object)
+
+    def selectionTranslate(self, delta):
+        for s in self.selectionSet:
+            s.translate(delta)
+
+    def draw(self, painter, visibleRect):
+        # draw blocks
+        pen = QPen(prefs.dwg.block.lineColor, prefs.dwg.block.lineWidth, Qt.PenStyle.SolidLine)
+        if prefs.dwg.block.fillColor is None:
+            brush = QBrush(Qt.BrushStyle.NoBrush)
+        else:
+            brush = QBrush(prefs.dwg.block.fillColor)
+        painter.setPen(pen)
+        painter.setBrush(brush)
+        for block in self.blocks:
+            if visibleRect.contains(QRectF(block.rect)):
+                block.draw(painter)
+        # draw selection
+        self.selectionDraw(painter)
 
     def load(self, filename):
         # create an ElementTree object from the XML file
@@ -233,3 +335,6 @@ class Diagram:
         tree.write(filename, encoding="utf-8", xml_declaration=True)
 
 #-------------------------------------------------------------------------------
+
+untitledNumber = 1
+diagram = Diagram("Untitled" + str(untitledNumber))

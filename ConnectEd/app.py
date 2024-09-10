@@ -18,9 +18,11 @@ class MaxMin:
 
 class Prefs:
     class Dwg:
-        zoom    = MaxMin(16.0, 0.1)
-        panStep = 0.125
-        background = QColor()
+        zoom            = MaxMin(16.0, 0.1)
+        panStep         = 0.125
+        backgroundColor = QColor()
+        highlightColor  = QColor()
+        selectColor     = QColor()
 
         class Grid:
             def __init__(self, x, y, lineWidth, lineColor):
@@ -51,10 +53,19 @@ class Prefs:
                 self.propertyColor   = propertyColor
                 self.propertyOutline = propertyOutline
 
-        def __init__(self, background, grid, block):
-            self.background = background
-            self.grid       = grid
-            self.block      = block
+        def __init__(
+            self,
+            backgroundColor,
+            highlightColor,
+            selectColor,
+            grid,
+            block
+        ):
+            self.backgroundColor = backgroundColor
+            self.highlightColor  = highlightColor
+            self.selectColor     = selectColor
+            self.grid            = grid
+            self.block           = block
 
     def __init__(self, dwg):
         self.dwg = dwg
@@ -62,15 +73,17 @@ class Prefs:
 prefs = Prefs(
     # drawing preferences
     dwg = Prefs.Dwg(
-        background = QColor(24,24,24),
-        grid       = Prefs.Dwg.Grid(10, 10, 0.0, QColor(100,100,100)),
-        block      = Prefs.Dwg.Block(
-                        lineWidth       = 0,
-                        lineColor       = QColor(0,0,224),
-                        fillColor       = QColor(0,0,32),
-                        propertyFont    = Font("Courier", 7),
-                        propertyColor   = QColor(224,224,224),
-                        propertyOutline = False
-                    )
+        backgroundColor = QColor(24,24,24),
+        highlightColor  = QColor(255,255,255),
+        selectColor     = QColor(255,0,255),
+        grid            = Prefs.Dwg.Grid(10, 10, 0.0, QColor(100,100,100)),
+        block           = Prefs.Dwg.Block(
+                            lineWidth       = 0,
+                            lineColor       = QColor(0,0,224),
+                            fillColor       = QColor(0,0,32),
+                            propertyFont    = Font("Courier", 7),
+                            propertyColor   = QColor(224,224,224),
+                            propertyOutline = False
+                        )
     )
 )
