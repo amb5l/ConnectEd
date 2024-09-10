@@ -59,8 +59,8 @@ class PropertyText(InteractiveText):
     def draw(self, painter):
         if self.visibility == PropertyVisibility.NONE:
             return
-        painter.setFont(app.preferences.fonts.blockProperty)
-        pen = QPen(app.preferences.colors.blockProperty)
+        painter.setFont(app.prefs.fonts.blockProperty)
+        pen = QPen(app.prefs.colors.blockProperty)
         painter.setPen(pen)
         if not self.rotation:
             painter.save()
@@ -101,8 +101,8 @@ class Block:
         self.rect.moveTo(position)
 
     def draw(self,painter):
-        pen = QPen(app.preferences.colors.blockOutline, 1, Qt.PenStyle.SolidLine)
-        brush = QBrush(app.preferences.colors.blockFill)
+        pen = QPen(app.prefs.colors.blockOutline, 1, Qt.PenStyle.SolidLine)
+        brush = QBrush(app.prefs.colors.blockFill)
         painter.setPen(pen)
         painter.setBrush(brush)
         painter.drawRect(self.rect)

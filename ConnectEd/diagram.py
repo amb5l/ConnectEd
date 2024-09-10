@@ -5,7 +5,7 @@ from PyQt6.QtWidgets import QLabel
 from PyQt6.QtGui import QPen, QBrush, QColor
 from enum import Enum
 
-import app
+from app import prefs
 
 #-------------------------------------------------------------------------------
 
@@ -87,17 +87,18 @@ class PropertyText(InteractiveText):
         self.visibility   = visibility   # bool
         self.boundary     = None
 
-    def draw(self, painter, remoteAnchorPoint):
+    def draw(self, painter, remoteAnchorPoint, outline=False):
         if self.visibility == PropertyVisibility.NONE:
             return
-        painter.setFont(app.preferences.fonts.blockProperty)
-        painter.setPen(QPen(app.preferences.colors.blockProperty))
-        painter.setBrush(QBrush(Qt.BrushStyle.NoBrush))
+        pen = QPen(prefs.dwg.block.propertyColor, 0.0, Qt.PenStyle.SolidLine)
+        brush = QBrush(prefs.dwg.block.propertyColor)
+        painter.setPen(pen)
+        painter.setBrush(brush)
+        painter.setFont(prefs.dwg.block.propertyFont)
         painter.save()
         flags = Qt.TextFlag.TextSingleLine
         if self.boundary == None:
             self.boundary = painter.boundingRect(QRect(0,0,1,1), flags, self.text())
-            print(self.text() + " ... " + str(self.boundary)+ " ..." + str(len(self.text())))
         a = QPointF(0, 0) # adjust property position offset to account for property anchor point
         match self.localAnchor:
             case RectAnchorPoint.CENTER:
@@ -122,6 +123,10 @@ class PropertyText(InteractiveText):
         painter.rotate(self.rotation)
         painter.translate(remoteAnchorPoint + self.offset)
         painter.drawText(self.boundary, flags, self.text())
+        brush.setStyle(Qt.BrushStyle.NoBrush)
+        painter.setBrush(brush)
+        if outline:
+            painter.drawRect(self.boundary)
         painter.restore()
 
 #-------------------------------------------------------------------------------
@@ -182,13 +187,16 @@ class Block:
         self.rect.moveTo(position)
 
     def draw(self,painter):
-        pen = QPen(app.preferences.colors.blockOutline, 1, Qt.PenStyle.SolidLine)
-        brush = QBrush(app.preferences.colors.blockFill)
+        pen = QPen(prefs.dwg.block.lineColor, prefs.dwg.block.lineWidth, Qt.PenStyle.SolidLine)
+        if prefs.dwg.block.fillColor == None:
+            brush = QBrush(Qt.BrushStyle.NoBrush)
+        else:
+            brush = QBrush(prefs.dwg.block.fillColor)
         painter.setPen(pen)
         painter.setBrush(brush)
         painter.drawRect(self.rect)
         for _, v in self.properties.items():
-            v.draw(painter, getAnchorPoint(self.rect, v.remoteAnchor))
+            v.draw(painter, getAnchorPoint(self.rect, v.remoteAnchor), prefs.dwg.block.propertyOutline)
 
 #-------------------------------------------------------------------------------
 

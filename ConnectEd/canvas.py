@@ -1,9 +1,9 @@
 import sys
 from PyQt6.QtCore import Qt, QRect, QPoint, QPointF, QSize
-from PyQt6.QtGui import QPainter, QPen
+from PyQt6.QtGui import QPainter, QPen, QBrush
 from PyQt6.QtWidgets import QWidget
 
-import app
+from app import prefs
 import diagram
 
 
@@ -28,7 +28,7 @@ class Canvas(QWidget):
 
         # set background color to light grey
         p = self.palette()
-        p.setColor(self.backgroundRole(), app.preferences.colors.background)
+        p.setColor(self.backgroundRole(), prefs.dwg.background)
         self.setPalette(p)
 
         # Set focus policy to accept key input
@@ -40,17 +40,23 @@ class Canvas(QWidget):
         painter.translate(self.pan)
         # draw background
         painter.fillRect(self.rect(), self.palette().window())
-        # draw grid (within sheet extent)
-        # adjust grid according to zoom level
-        pen = QPen(app.preferences.colors.grid, 0.0, Qt.PenStyle.SolidLine)
+        # draw grid
+        pen = QPen(prefs.dwg.grid.lineColor, prefs.dwg.grid.lineWidth, Qt.PenStyle.SolidLine)
+        brush = QBrush(Qt.BrushStyle.NoBrush)
         painter.setPen(pen)
-        for x in range(0, self.width(), app.preferences.grid.x):
+        painter.setBrush(brush)
+        for x in range(0, self.width(), prefs.dwg.grid.x):
             painter.drawLine(x, 0, x, self.height())
-        for y in range(0, self.height(), app.preferences.grid.y):
+        for y in range(0, self.height(), prefs.dwg.grid.y):
             painter.drawLine(0, y, self.width(), y)
         # draw blocks
-        pen = QPen(app.preferences.colors.blockOutline)
+        pen = QPen(prefs.dwg.block.lineColor, prefs.dwg.block.lineWidth, Qt.PenStyle.SolidLine)
+        if prefs.dwg.block.fillColor == None:
+            brush = QBrush(Qt.BrushStyle.NoBrush)
+        else:
+            brush = QBrush(prefs.dwg.block.fillColor)
         painter.setPen(pen)
+        painter.setBrush(brush)
         for block in self.blocks:
             block.draw(painter)
 

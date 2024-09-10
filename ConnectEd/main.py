@@ -2,10 +2,13 @@
 import sys
 from PyQt6.QtWidgets import QApplication
 
+from app import prefs
 from main_window import MainWindow
 
 
 def main():
+    prefs.dwg.block.propertyOutline = True
+
     app = QApplication(sys.argv)
     window = MainWindow()
     window.show()
