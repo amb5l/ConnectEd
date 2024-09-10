@@ -19,7 +19,7 @@ class Canvas(QWidget):
     def __init__(self):
         super().__init__()
         self.zoom         = 1.0
-        self.pan          = QPointF(0.0, 0.0)
+        self.pan          = QPointF(0.0, 0.0) # diagram coordinates
         self.blocks       = []
         self.currentBlock = None
         self.dragging     = False
@@ -33,6 +33,14 @@ class Canvas(QWidget):
 
         # Set focus policy to accept key input
         self.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
+
+    def canvas2diagram(self, point):
+        # convert canvas point to diagram point
+        r = QPointF(
+            (point.x() / self.zoom) + self.pan.x(),
+            (point.y() / self.zoom) + self.pan.y()
+        )
+        return r
 
     def paintEvent(self, event):
         painter = QPainter(self)
@@ -62,9 +70,10 @@ class Canvas(QWidget):
 
     def mousePressEvent(self, event):
         if event.button() == Qt.MouseButton.LeftButton:
-            p = snap(event.pos())
+            d = self.canvas2diagram(event.pos()) # diagram position
+            p = snap(d)
             for block in self.blocks:
-                if block.rect.contains(event.pos()):
+                if block.rect.contains(d.toPoint()):
                     self.currentBlock = block
                     self.dragging = True
                     self.startPos = p - block.rect.topLeft()
@@ -80,7 +89,8 @@ class Canvas(QWidget):
 
     def mouseMoveEvent(self, event):
         if self.currentBlock:
-            p = snap(event.pos())
+            d = self.canvas2diagram(event.pos()) # diagram position
+            p = snap(d)
             if self.dragging:
                 self.currentBlock.setPosition(p - self.startPos)
             else:
@@ -105,29 +115,29 @@ class Canvas(QWidget):
             self.currentBlock = None
 
     def keyPressEvent(self, event):
-        if event.key() == Qt.Key.Key_Insert:
-            # Add a new block at the center of the canvas
-            center = self.rect().center()
-            new_block = QRect(center.x() - 50, center.y() - 50, 100, 100)
-            self.blocks.append(new_block)
-            self.update()
-        elif event.key() == Qt.Key.Key_I:
-            self.zoom += 0.25
+        if event.key() == Qt.Key.Key_I:
+            self.zoom = min(self.zoom * 1.25, prefs.dwg.zoom.max)
+            print("zoom = ", self.zoom)
             self.update()
         elif event.key() == Qt.Key.Key_O:
-            self.zoom -= 0.25
+            self.zoom = max(self.zoom / 1.25, prefs.dwg.zoom.min)
+            print("zoom = ", self.zoom)
             self.update()
         elif event.key() == Qt.Key.Key_Left:
-            self.pan.setX(self.pan.x() + 100.0)
+            self.pan.setX(self.pan.x() + prefs.dwg.panStep * self.width() / self.zoom)
+            print("pan = ", self.pan)
             self.update()
         elif event.key() == Qt.Key.Key_Right:
-            self.pan.setX(self.pan.x() - 100.0)
+            self.pan.setX(self.pan.x() - prefs.dwg.panStep * self.width() / self.zoom)
+            print("pan = ", self.pan)
             self.update()
         elif event.key() == Qt.Key.Key_Up:
-            self.pan.setY(self.pan.y() + 100.0)
+            self.pan.setY(self.pan.y() + prefs.dwg.panStep * self.height() / self.zoom)
+            print("pan = ", self.pan)
             self.update()
         elif event.key() == Qt.Key.Key_Down:
-            self.pan.setY(self.pan.y() - 100.0)
+            self.pan.setY(self.pan.y() - prefs.dwg.panStep * self.height() / self.zoom)
+            print("pan = ", self.pan)
             self.update()
 
 

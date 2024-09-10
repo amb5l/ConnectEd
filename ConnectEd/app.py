@@ -11,8 +11,15 @@ def Font(font, size, bold=False, italic=False, underline=False):
     r.setUnderline(underline)
     return r
 
+class MaxMin:
+    def __init__(self, max, min):
+        self.max = max
+        self.min = min
+
 class Prefs:
     class Dwg:
+        zoom    = MaxMin(16.0, 0.1)
+        panStep = 0.125
         background = QColor()
 
         class Grid:
