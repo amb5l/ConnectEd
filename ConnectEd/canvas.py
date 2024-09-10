@@ -1,11 +1,10 @@
 import sys
-from PyQt6.QtCore import Qt, QRect, QPoint, QPointF, QSize
+from PyQt6.QtCore import Qt, QPoint, QPointF, QSize
 from PyQt6.QtGui import QPainter, QPen, QBrush
-from PyQt6.QtWidgets import QWidget
+from PyQt6.QtWidgets import QApplication,QWidget
 
 from app import prefs
 import diagram
-
 
 # snaps from minor to major grid
 def snap(position):
@@ -42,6 +41,13 @@ class Canvas(QWidget):
         )
         return r
 
+    def getKeyboardModifiers(self):
+        keyMod = QApplication.queryKeyboardModifiers()
+        shift = True if keyMod & Qt.KeyboardModifier.ShiftModifier   else False
+        ctrl  = True if keyMod & Qt.KeyboardModifier.ControlModifier else False
+        alt   = True if keyMod & Qt.KeyboardModifier.AltModifier     else False
+        return shift, ctrl, alt
+
     def paintEvent(self, event):
         painter = QPainter(self)
         painter.scale(self.zoom, self.zoom)
@@ -69,10 +75,12 @@ class Canvas(QWidget):
             block.draw(painter)
 
     def mousePressEvent(self, event):
-        if event.button() == Qt.MouseButton.LeftButton:
+        shift, ctrl, alt = self.getKeyboardModifiers()
+        if event.button() == Qt.MouseButton.LeftButton and not shift and not ctrl and not alt:
             d = self.canvas2diagram(event.pos()) # diagram position
-            p = snap(d)
-            for block in self.blocks:
+            p = snap(d) # snapped diagram position
+            self.selectionSet = [] # clear selection set
+            for block in self.blocks: # look through diagram objects to see if we clicked on one
                 if block.rect.contains(d.toPoint()):
                     self.currentBlock = block
                     self.dragging = True
@@ -82,7 +90,7 @@ class Canvas(QWidget):
             self.currentBlock = diagram.Block(
                 self.startPos,
                 QSize(10, 10),
-                {"prop1": "val1", "prop2": "val2"} # {"reference": "Referencey?", "value": "value?"}
+                {"reference": "ref?", "value": "val?"} # {"reference": "Referencey?", "value": "value?"}
             )
             self.blocks.append(self.currentBlock)
             self.update()
@@ -115,30 +123,25 @@ class Canvas(QWidget):
             self.currentBlock = None
 
     def keyPressEvent(self, event):
-        if event.key() == Qt.Key.Key_I:
-            self.zoom = min(self.zoom * 1.25, prefs.dwg.zoom.max)
-            print("zoom = ", self.zoom)
-            self.update()
-        elif event.key() == Qt.Key.Key_O:
-            self.zoom = max(self.zoom / 1.25, prefs.dwg.zoom.min)
-            print("zoom = ", self.zoom)
-            self.update()
-        elif event.key() == Qt.Key.Key_Left:
-            self.pan.setX(self.pan.x() + prefs.dwg.panStep * self.width() / self.zoom)
-            print("pan = ", self.pan)
-            self.update()
-        elif event.key() == Qt.Key.Key_Right:
-            self.pan.setX(self.pan.x() - prefs.dwg.panStep * self.width() / self.zoom)
-            print("pan = ", self.pan)
-            self.update()
-        elif event.key() == Qt.Key.Key_Up:
-            self.pan.setY(self.pan.y() + prefs.dwg.panStep * self.height() / self.zoom)
-            print("pan = ", self.pan)
-            self.update()
-        elif event.key() == Qt.Key.Key_Down:
-            self.pan.setY(self.pan.y() - prefs.dwg.panStep * self.height() / self.zoom)
-            print("pan = ", self.pan)
-            self.update()
-
+        shift, ctrl, alt = self.getKeyboardModifiers()
+        match [event.key(), shift, ctrl, alt]:
+            case [Qt.Key.Key_I, False, False, False]:
+                self.zoom = min(self.zoom * 1.25, prefs.dwg.zoom.max)
+                self.update()
+            case [Qt.Key.Key_O, False, False, False]:
+                self.zoom = max(self.zoom / 1.25, prefs.dwg.zoom.min)
+                self.update()
+            case [Qt.Key.Key_Left, False, False, False]:
+                self.pan.setX(self.pan.x() + prefs.dwg.panStep * self.width() / self.zoom)
+                self.update()
+            case [Qt.Key.Key_Right, False, False, False]:
+                self.pan.setX(self.pan.x() - prefs.dwg.panStep * self.width() / self.zoom)
+                self.update()
+            case [Qt.Key.Key_Up, False, False, False]:
+                self.pan.setY(self.pan.y() + prefs.dwg.panStep * self.height() / self.zoom)
+                self.update()
+            case [Qt.Key.Key_Down, False, False, False]:
+                self.pan.setY(self.pan.y() - prefs.dwg.panStep * self.height() / self.zoom)
+                self.update()
 
     # TODO handle mousewheel event to zoom in/out the canvas
