@@ -1,4 +1,4 @@
-from PyQt6.QtGui import QColor, QColorConstants, QFont
+from PyQt6.QtGui import QColor, QFont
 
 ORGNAME = "ConnectEd"
 APPNAME = "PyConnectEd"
