@@ -1,6 +1,5 @@
-import sys
 import xml.etree.ElementTree as ET
-from PyQt6.QtCore import Qt, QRect, QRectF, QPoint, QPointF, QSize, pyqtSignal
+from PyQt6.QtCore import Qt, QRect, QRectF, QPoint, QPointF, QSize, QSizeF, pyqtSignal
 from PyQt6.QtWidgets import QLabel
 from PyQt6.QtGui import QPen, QBrush
 from enum import Enum
@@ -158,7 +157,7 @@ def getAnchorPoint(rect, anchor):
 
 class Block:
     def __init__(self, position, size, properties):
-        self.rect       = QRect(position, size)
+        self.rect       = QRectF(position, size)
         self.properties = {}
         self.highlight  = True
         n = 0
@@ -181,6 +180,9 @@ class Block:
                 PropertyVisibility.BOTH
             )
             n += 1
+
+    def set(self, rect):
+        self.rect = rect
 
     def setSize(self, size):
         self.rect.setSize(size)
@@ -218,19 +220,24 @@ class Diagram:
         self.startPos      = pos
         self.selectionRect = QRectF(pos, pos + QPointF(1,1))
 
-    def selectionResize(self, pos):
-        p = pos
-        s = self.startPos
-        if p.x() > s.x() and p.y() > s.y():                          # current pos is right and below start pos
+    def normalizeRect(self, p, s):
+        if p.x() > s.x() and p.y() > s.y():                          # p is right and below s
             r = QRectF(s, p)
-        elif p.x() > s.x() and p.y() <= s.y():                       # current pos is right and above start pos
+        elif p.x() > s.x() and p.y() <= s.y():                       # p is right and above s
             r = QRectF(QPointF(s.x(), p.y()), QPointF(p.x(), s.y()))
-        elif p.x() <= s.x() and p.y() <= s.y():                      # current pos is left and above start pos
+        elif p.x() <= s.x() and p.y() <= s.y():                      # p is left and above s
             r = QRectF(p, s)
-        elif p.x() <= s.x() and p.y() > s.y():                       # current pos is left and below start pos
+        elif p.x() <= s.x() and p.y() > s.y():                       # p is left and below s
             r = QRectF(QPointF(p.x(), s.y()), QPointF(s.x(), p.y()))
         else:
-            r = QRectF(s, QSize(1, 1))
+            r = None
+        return r
+        # TODO: why not just
+        # return QRectF(p, s) if p != s else None
+
+    def selectionResize(self, p):
+        if (r := self.normalizeRect(p, self.startPos)) is None:
+             r = QRectF(s, QSize(1, 1))
         self.selectionRect = r
 
     def selectionEnd(self):
@@ -249,26 +256,16 @@ class Diagram:
         self.startPos = pos
         self.blocks.append(Block(
             pos,
-            QSize(10, 10),
+            QSizeF(10, 10),
             {"reference": "ref?", "value": "val?"}
         ))
 
     def newBlockResize(self, p):
         n = self.blocks[-1] # last block in list = new block
         s = self.startPos
-        if p.x() > s.x() and p.y() > s.y():                # current pos is right and below start pos
-            n.setSize(QSize(p.x() - s.x(), p.y() - s.y()))
-        elif p.x() > s.x() and p.y() <= s.y():             # current pos is right and above start pos
-            n.setSize(QSize(p.x() - s.x(), s.y() - p.y()))
-            n.setPosition(QPoint(s.x(), p.y()))
-        elif p.x() <= s.x() and p.y() <= s.y():            # current pos is left and above start pos
-            n.setSize(QSize(s.x() - p.x(), s.y() - p.y()))
-            n.setPosition(p)
-        elif p.x() <= s.x() and p.y() > s.y():             # current pos is left and below start pos
-            n.setSize(QSize(s.x() - p.x(), p.y() - s.y()))
-            n.setPosition(QPoint(p.x(), s.y()))
-        elif p == s:                                       # current pos is same as start pos
-            n.setSize(QSize(10, 10))                       # set minimum size
+        if (r := self.normalizeRect(p, self.startPos)) is None:
+            r = QRectF(s, QSizeF(10,10))
+        n.set(r)
 
     def newBlockFinish(self):
         self.blocks[-1].highlight = False
@@ -304,7 +301,7 @@ class Diagram:
         painter.setPen(pen)
         painter.setBrush(brush)
         for block in self.blocks:
-            if visibleRect.contains(QRectF(block.rect)):
+            if visibleRect.intersects(block.rect):
                 block.draw(painter)
         # draw selection
         self.selectionDraw(painter)

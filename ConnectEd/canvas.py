@@ -1,11 +1,10 @@
-import sys
-from PyQt6.QtCore import Qt, QPoint, QPointF, QRect, QRectF
+from PyQt6.QtCore import Qt, QPoint, QPointF, QRectF
 from PyQt6.QtGui import QPainter, QPen, QBrush, QCursor
 from PyQt6.QtWidgets import QApplication, QWidget
 from enum import Enum
 
 from app import prefs
-from diagram import diagram, Block
+from diagram import diagram
 
 class EditMode(Enum):
     FREE         = 0
@@ -16,7 +15,7 @@ class EditMode(Enum):
 
 # snaps from minor to major grid
 def snap(position):
-    return QPoint(
+    return QPointF(
         int(round(position.x()/10.0, 0) * 10),
         int(round(position.y()/10.0, 0) * 10)
     )
@@ -40,7 +39,6 @@ class Canvas(QWidget):
         # Set focus policy to accept key input
         self.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
 
-
     def canvas2diagram(self, point):
         # convert canvas point to diagram point
         r = QPointF(
@@ -59,20 +57,19 @@ class Canvas(QWidget):
     def paintEvent(self, event):
         painter = QPainter(self)
         painter.scale(self.zoom, self.zoom)
-        painter.translate(self.pan)
+        painter.translate(-self.pan)
         visibleRect = QRectF(
-            self.canvas2diagram(QPoint(0,0)),
-            self.canvas2diagram(QPoint(self.width(), self.height()))
+            self.canvas2diagram(QPointF(0,0)),
+            self.canvas2diagram(QPointF(self.width()-1, self.height()-1))
         )
         # draw background
         painter.fillRect(visibleRect, self.palette().window())
         # draw grid
         # TODO move this to diagram.py ?
-        gridRect = QRectF()
-        gridRect.setLeft(visibleRect.left()-prefs.dwg.grid.x)
-        gridRect.setRight(visibleRect.right()+prefs.dwg.grid.x)
-        gridRect.setTop(visibleRect.top()-prefs.dwg.grid.y)
-        gridRect.setBottom(visibleRect.bottom()+prefs.dwg.grid.y)
+        gridRect = QRectF(
+            visibleRect.topLeft() - QPointF(prefs.dwg.grid.x, prefs.dwg.grid.y),
+            visibleRect.bottomRight() + QPointF(prefs.dwg.grid.x, prefs.dwg.grid.y)
+        )
         x1 = int(gridRect.left() / prefs.dwg.grid.x) * prefs.dwg.grid.x
         x2 = int(gridRect.right() / prefs.dwg.grid.x) * prefs.dwg.grid.x
         y1 = int(gridRect.top() / prefs.dwg.grid.y) * prefs.dwg.grid.y
@@ -96,7 +93,7 @@ class Canvas(QWidget):
                 case EditMode.FREE:
                     self.startPos = snap(pos)
                     diagram.selectionClear() # clear selection set on unmodified click
-                    if object := diagram.click(pos) is not None:
+                    if (object := diagram.click(pos)) is not None:
                         diagram.selectionAdd(object)
                     diagram.selectionStart(pos)
                     self.update()
@@ -157,16 +154,16 @@ class Canvas(QWidget):
                 self.zoom = max(self.zoom / 1.25, prefs.dwg.zoom.min)
                 self.update()
             case [Qt.Key.Key_Left, False, False, False]:
-                self.pan.setX(self.pan.x() + prefs.dwg.panStep * self.width() / self.zoom)
-                self.update()
-            case [Qt.Key.Key_Right, False, False, False]:
                 self.pan.setX(self.pan.x() - prefs.dwg.panStep * self.width() / self.zoom)
                 self.update()
+            case [Qt.Key.Key_Right, False, False, False]:
+                self.pan.setX(self.pan.x() + prefs.dwg.panStep * self.width() / self.zoom)
+                self.update()
             case [Qt.Key.Key_Up, False, False, False]:
-                self.pan.setY(self.pan.y() + prefs.dwg.panStep * self.height() / self.zoom)
+                self.pan.setY(self.pan.y() - prefs.dwg.panStep * self.height() / self.zoom)
                 self.update()
             case [Qt.Key.Key_Down, False, False, False]:
-                self.pan.setY(self.pan.y() - prefs.dwg.panStep * self.height() / self.zoom)
+                self.pan.setY(self.pan.y() + prefs.dwg.panStep * self.height() / self.zoom)
                 self.update()
 
     # TODO handle mousewheel event to zoom in/out the canvas
