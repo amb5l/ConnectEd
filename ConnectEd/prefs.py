@@ -1,9 +1,6 @@
 from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QColor, QFont
+from PyQt6.QtGui import QColor, QFont, QKeySequence
 
-ORG_NAME = "ConnectEd"
-APP_NAME = "PyConnectEd"
-APP_TITLE = "ConnectEd"
 
 def Font(font, size, bold=False, italic=False, underline=False):
     r = QFont(font, size)
@@ -19,8 +16,10 @@ class MaxMin:
 
 class Prefs:
     class Dwg:
-        zoom    = MaxMin(16.0, 0.1)
-        panStep = 0.125
+        # TODO move these to UI class
+        zoom      = MaxMin(16.0, 0.1)
+        panStep   = 0.125
+        wheelStep = 120
 
         class Color:
             def __init__(self, background, highlight, select):
@@ -89,32 +88,9 @@ class Prefs:
             self.grid   = grid
             self.select = select
 
-    class Kbd:
-        escape = [Qt.Key.Key_Escape, False, False, False]
-        def __init__(
-            self,
-            zoomIn,
-            zoomOut,
-            zoomFull,
-            panLeft,
-            panRight,
-            panUp,
-            panDown,
-            addBlock
-        ):
-            self.zoomIn   = zoomIn
-            self.zoomOut  = zoomOut
-            self.zoomFull = zoomFull
-            self.panLeft  = panLeft
-            self.panRight = panRight
-            self.panUp    = panUp
-            self.panDown  = panDown
-            self.addBlock = addBlock
-
-    def __init__(self, dwg, edit, kbd):
+    def __init__(self, dwg, edit):
         self.dwg  = dwg
         self.edit = edit
-        self.kbd  = kbd
 
 prefs = Prefs(
     dwg = Prefs.Dwg(
@@ -153,15 +129,5 @@ prefs = Prefs(
         select =    Prefs.Edit.Select(
                         enclose = False
                     )
-    ),
-    kbd = Prefs.Kbd(
-        zoomIn   = [Qt.Key.Key_I,      False, False, False],
-        zoomOut  = [Qt.Key.Key_O,      False, False, False],
-        zoomFull = [Qt.Key.Key_F,      False, False, False],
-        panLeft  = [Qt.Key.Key_Left,   False, False, False],
-        panRight = [Qt.Key.Key_Right,  False, False, False],
-        panUp    = [Qt.Key.Key_Up,     False, False, False],
-        panDown  = [Qt.Key.Key_Down,   False, False, False],
-        addBlock = [Qt.Key.Key_Insert, False, False, False]
     )
 )
