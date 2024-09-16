@@ -17,10 +17,13 @@ class MaxMin:
 class Prefs:
     class Dwg:
         # TODO move these to UI class
-        zoom           = MaxMin(16.0, 0.1)
-        zoomFullMargin = 2.0
-        panStep        = 0.125
-        wheelStep      = 120
+        zoom            = MaxMin(16.0, 0.1)
+        zoomFullMarginT = 0.0
+        zoomFullMarginB = 0.0
+        zoomFullMarginL = 0.0
+        zoomFullMarginR = 0.0
+        panStep         = 0.125
+        wheelStep       = 120
 
         class Color:
             def __init__(self, background, highlight, select):

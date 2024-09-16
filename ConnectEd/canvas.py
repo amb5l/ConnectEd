@@ -121,16 +121,11 @@ class Canvas(QWidget):
         self.update()
 
     def zoomFull(self):
-        print("Canvas zoomFull: self.width() =",self.width())
-        print("Canvas zoomFull: self.height() =",self.height())
-        print("Canvas zoomFull: self.diagram.extents.width() =",self.diagram.extents.width())
-        print("Canvas zoomFull: self.diagram.extents.height() =",self.diagram.extents.height())
-        print("Canvas zoomFull: prefs.dwg.zoomFullMargin =",prefs.dwg.zoomFullMargin)
         self.zoom = min(
-            self.width()  / ( self.diagram.extents.width()  + prefs.dwg.zoomFullMargin ),
-            self.height() / ( self.diagram.extents.height() + prefs.dwg.zoomFullMargin )
+            self.width()  / ( self.diagram.extents.width()  + prefs.dwg.zoomFullMarginL + prefs.dwg.zoomFullMarginR ),
+            self.height() / ( self.diagram.extents.height() + prefs.dwg.zoomFullMarginT + prefs.dwg.zoomFullMarginB )
         )
-        self.pan = QPointF(-prefs.dwg.zoomFullMargin, -prefs.dwg.zoomFullMargin)
+        self.pan = QPointF(-prefs.dwg.zoomFullMarginL, -prefs.dwg.zoomFullMarginT)
         self.update()
 
     def panLeft(self):
