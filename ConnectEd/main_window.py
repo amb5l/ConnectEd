@@ -10,27 +10,32 @@ from canvas import Canvas
 
 
 class MainWindow(QMainWindow):
-    def __init__(self):
+    def __init__(self, diagram):
         super().__init__()
         self.setWindowTitle(APP_TITLE)
 
-        # set default window size to 50% of screen size
+        #-------------------------------------------------------------------------------
+        # set up window
+
+        # default size: 50% of screen size
         screen = self.screen()
-        screen_size = screen.size()
-        width = screen_size.width() // 2
-        height = screen_size.height() // 2
+        screenSize = screen.size()
+        width = screenSize.width() // 2
+        height = screenSize.height() // 2
+
+        # default position: central
         self.resize(width, height)
-        # set default window position to centre of screen
-        window_rect = self.frameGeometry()
-        center_point = screen.availableGeometry().center()
-        window_rect.moveCenter(center_point)
-        self.move(window_rect.topLeft())
-        # (attempt to) restore window geometry
+        windowRect = self.frameGeometry()
+        center = screen.availableGeometry().center()
+        self.frameGeometry().moveCenter(center)
+        self.move(windowRect.topLeft())
+
+        # (attempt to) restore window geometry from settings
         self.settings = QSettings(ORG_NAME, APP_NAME)
         self.restoreGeometry(self.settings.value("geometry", b""))
 
         #-------------------------------------------------------------------------------
-        # menus
+        # create menus, actions and shortcuts from menus list
 
         def ActionFunction(menuItemActionName):
             return lambda checked=False, name=menuItemActionName: getattr(actions, name)(self)
@@ -51,22 +56,19 @@ class MainWindow(QMainWindow):
         self.setMenuBar(menuBar)
 
         #-------------------------------------------------------------------------------
-
         # create a status bar
-        self.status_bar = QStatusBar(self)
-        self.setStatusBar(self.status_bar)
-        self.status_bar.showMessage("Ready")
 
+        self.statusBar = QStatusBar(self)
+        self.setStatusBar(self.statusBar)
+        self.statusBar.showMessage("Ready")
+
+        #-------------------------------------------------------------------------------
         # create canvas widget
-        self.canvas = Canvas()
+
+        self.canvas = Canvas(diagram)
         self.setCentralWidget(self.canvas)
 
-    def bounce(self):
-        actions.helpAbout(self)
-
-    def show_about_dialog(self):
-        """Method does blah"""
-        QMessageBox.about(self, "About", "This is a PyQt6 application.")
+        #-------------------------------------------------------------------------------
 
     def closeEvent(self, event):
         # save window geometry

@@ -35,6 +35,7 @@ class Actions:
         QMessageBox.about(h, "TODO", "filePageSetup")
 
     def editCancel(self, h):
+        h.canvas.diagram.selectionClear()
         h.canvas.setEditMode(h.canvas.EditMode.FREE)
 
     def editUndo(self, h):
@@ -72,7 +73,6 @@ class Actions:
 
     def elementBlock(self, h):
         h.canvas.setEditMode(h.canvas.EditMode.ADD_BLOCK)
-        #QMessageBox.about(h, "TODO", "elementBlock")
 
     def elementPin(self, h):
         QMessageBox.about(h, "TODO", "elementPin")

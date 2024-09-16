@@ -4,24 +4,17 @@ from PyQt6.QtWidgets import QApplication, QWidget
 from enum import Enum
 
 from prefs import prefs
-from diagram import diagram
 
 class Canvas(QWidget):
-
-    class EditMode(Enum):
-        FREE         = 0
-        SELECT       = 1
-        DRAG         = 2
-        ADD_BLOCK    = 3
-        ADDING_BLOCK = 4
-
-    def __init__(self):
+    def __init__(self, diagram):
         super().__init__()
-        self.zoom        = 1.0
-        self.pan         = QPointF(0.0, 0.0) # diagram coordinates
-        self.startPos    = QPoint() # for dragging etc
-        self.editMode    = self.EditMode.FREE
-        self.physicalPos = None
+        self.diagram           = diagram
+        self.zoom              = 1.0
+        self.pan               = QPointF(0.0, 0.0)
+        self.initialResizeDone = False
+        self.startPos          = QPoint() # for dragging etc
+        self.editMode          = self.EditMode.FREE
+        self.physicalPos       = None
 
         self.setAutoFillBackground(True)
         self.setMouseTracking(True)
@@ -33,6 +26,28 @@ class Canvas(QWidget):
 
         # uncomment to enable keypress events
         #self.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
+
+    def resizeEvent(self, event):
+        if not self.initialResizeDone:
+            self.zoomFull()
+            self.initialResizeDone = True
+
+    class EditMode(Enum):
+        FREE         = 0
+        SELECT       = 1
+        DRAG         = 2
+        ADD_BLOCK    = 3
+        ADDING_BLOCK = 4
+
+    def EditModeText(self, mode):
+        match mode:
+            case self.EditMode.FREE:         t = "Ready"
+            case self.EditMode.SELECT:       t = "Release to complete selection box"
+            case self.EditMode.DRAG:         t = "Drag"
+            case self.EditMode.ADD_BLOCK:    t = "Click to create block"
+            case self.EditMode.ADDING_BLOCK: t = "Click to complete block"
+            case _:                          t = "UNKNOWN EDIT MODE"
+        self.parent().statusBar.showMessage(t)
 
     # snaps from minor to major grid
     def snap(self, position):
@@ -85,7 +100,7 @@ class Canvas(QWidget):
             for y in range(y1, y2, prefs.edit.grid.y):
                 painter.drawLine(x1, y, x2, y)
         # draw (visible portion of) diagram
-        diagram.draw(painter, visibleRect)
+        self.diagram.draw(painter, visibleRect)
 
     def zoomIn(self,n=1):
         z1 = self.zoom
@@ -106,11 +121,16 @@ class Canvas(QWidget):
         self.update()
 
     def zoomFull(self):
+        print("Canvas zoomFull: self.width() =",self.width())
+        print("Canvas zoomFull: self.height() =",self.height())
+        print("Canvas zoomFull: self.diagram.extents.width() =",self.diagram.extents.width())
+        print("Canvas zoomFull: self.diagram.extents.height() =",self.diagram.extents.height())
+        print("Canvas zoomFull: prefs.dwg.zoomFullMargin =",prefs.dwg.zoomFullMargin)
         self.zoom = min(
-            self.width()  / diagram.extents.width(),
-            self.height() / diagram.extents.height()
+            self.width()  / ( self.diagram.extents.width()  + prefs.dwg.zoomFullMargin ),
+            self.height() / ( self.diagram.extents.height() + prefs.dwg.zoomFullMargin )
         )
-        self.pan = QPointF(0.0, 0.0)
+        self.pan = QPointF(-prefs.dwg.zoomFullMargin, -prefs.dwg.zoomFullMargin)
         self.update()
 
     def panLeft(self):
@@ -131,6 +151,7 @@ class Canvas(QWidget):
 
     def setEditMode(self, mode):
         self.editMode = mode
+        self.EditModeText(mode)
         match mode:
             case self.EditMode.ADD_BLOCK:
                 self.setCursor(QCursor(Qt.CursorShape.CrossCursor))
@@ -144,21 +165,21 @@ class Canvas(QWidget):
             match self.editMode:
                 case self.EditMode.FREE:
                     self.startPos = self.snap(pos)
-                    diagram.selectionClear() # clear selection set on unmodified click
-                    if (object := diagram.click(pos)) is not None:
-                        diagram.selectionAdd(object)
-                    diagram.selectionStart(pos)
+                    self.diagram.selectionClear() # clear selection set on unmodified click
+                    if (object := self.diagram.click(pos)) is not None:
+                        self.diagram.selectionAdd(object)
+                    self.diagram.selectionStart(pos)
                     self.update()
-                    self.editMode = self.EditMode.SELECT
+                    self.setEditMode(self.EditMode.SELECT)
                     return
                 case self.EditMode.ADD_BLOCK:
-                    diagram.newBlockStart(self.snap(pos))
+                    self.diagram.newBlockStart(self.snap(pos))
                     self.update()
-                    self.editMode = self.EditMode.ADDING_BLOCK
+                    self.setEditMode(self.EditMode.ADDING_BLOCK)
                 case self.EditMode.ADDING_BLOCK:
-                    diagram.newBlockFinish()
+                    self.diagram.newBlockFinish()
                     self.update()
-                    self.editMode = self.EditMode.ADD_BLOCK
+                    self.setEditMode(self.EditMode.ADD_BLOCK)
                 case _:
                     pass
 
@@ -167,10 +188,10 @@ class Canvas(QWidget):
         pos = self.canvas2diagram(event.pos()) # diagram position
         match self.editMode:
             case self.EditMode.SELECT:
-                diagram.selectionResize(pos)
+                self.diagram.selectionResize(pos)
                 self.update()
             case self.EditMode.ADDING_BLOCK:
-                diagram.newBlockResize(self.snap(pos))
+                self.diagram.newBlockResize(self.snap(pos))
                 self.update()
             case _:
                 pass
@@ -180,18 +201,17 @@ class Canvas(QWidget):
         if event.button() == Qt.MouseButton.LeftButton:
             match self.editMode:
                 case self.EditMode.SELECT:
-                    diagram.selectionEnd()
+                    self.diagram.selectionEnd()
                     self.update()
-                    self.editMode = self.EditMode.FREE
+                    self.setEditMode(self.EditMode.FREE)
                 case self.EditMode.ADDING_BLOCK:
-                    if self.snap(pos) != diagram.startPos:
-                        diagram.newBlockFinish()
+                    if self.snap(pos) != self.diagram.startPos:
+                        self.diagram.newBlockFinish()
                         self.update()
-                        self.editMode = self.EditMode.ADD_BLOCK
+                        self.setEditMode(self.EditMode.ADD_BLOCK)
 
     def wheelEvent(self, event):
         delta = event.angleDelta().y()/prefs.dwg.wheelStep
-        print("wheelEvent: delta =", delta)
         if delta > 0:
             self.zoomIn(delta)
         elif delta < 0:
@@ -205,7 +225,7 @@ class Canvas(QWidget):
     #            if self.editMode != EditMode.FREE:
     #                self.editMode = EditMode.FREE
     #            else:
-    #                diagram.selectionClear()
+    #                self.diagram.selectionClear()
     #            self.setCursor(QCursor(Qt.CursorShape.ArrowCursor))
     #            self.update()
     #        case prefs.kbd.addBlock:

@@ -235,6 +235,7 @@ class Diagram:
 
     def selectionClear(self):
         self.selectionSet = []
+        self.selectionRect = None
 
     def selectionStart(self, pos):
         self.startPos      = pos
@@ -346,6 +347,3 @@ class Diagram:
         tree.write(filename, encoding="utf-8", xml_declaration=True)
 
 #-------------------------------------------------------------------------------
-
-untitledNumber = 1
-diagram = Diagram("Untitled" + str(untitledNumber))
