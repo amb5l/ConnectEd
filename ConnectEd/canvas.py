@@ -1,6 +1,6 @@
 from PyQt6.QtCore import Qt, QPoint, QPointF, QRectF
-from PyQt6.QtGui import QPainter, QPen, QBrush, QCursor, QKeySequence
-from PyQt6.QtWidgets import QApplication, QWidget
+from PyQt6.QtGui import QPainter, QPen, QBrush, QCursor, QColor
+from PyQt6.QtWidgets import QWidget
 from enum import Enum
 
 from prefs import prefs
@@ -14,14 +14,14 @@ class Canvas(QWidget):
         self.initialResizeDone = False
         self.startPos          = QPoint() # for dragging etc
         self.editMode          = self.EditMode.FREE
-        self.physicalPos       = None
+        self.physicalPos       = QPoint(0, 0) # TODO initialize from current mouse position
 
         self.setAutoFillBackground(True)
         self.setMouseTracking(True)
 
         # set background color to light grey
         p = self.palette()
-        p.setColor(self.backgroundRole(), prefs.dwg.color.background)
+        p.setColor(self.backgroundRole(), prefs.dwg.background)
         self.setPalette(p)
 
         # uncomment to enable keypress events
@@ -56,12 +56,6 @@ class Canvas(QWidget):
             int(round(position.y()/10.0, 0) * 10)
         )
 
-    def getModifiers(self, event):
-        shift = True if event.modifiers() & Qt.KeyboardModifier.ShiftModifier   else False
-        ctrl  = True if event.modifiers() & Qt.KeyboardModifier.ControlModifier else False
-        alt   = True if event.modifiers() & Qt.KeyboardModifier.AltModifier     else False
-        return shift, ctrl, alt
-
     def canvas2diagram(self, point):
         # convert canvas point to diagram point
         r = QPointF(
@@ -74,75 +68,107 @@ class Canvas(QWidget):
         painter = QPainter(self)
         painter.scale(self.zoom, self.zoom)
         painter.translate(-self.pan)
-        visibleRect = QRectF(
-            self.canvas2diagram(QPointF(0,0)),
-            self.canvas2diagram(QPointF(self.width()-1, self.height()-1))
-        )
+        painter.save()
         # draw background
-        painter.fillRect(visibleRect, self.palette().window())
+        painter.fillRect(self.visibleRect, self.palette().window())
         # draw grid
-        # TODO move this to diagram.py ?
-        if prefs.dwg.grid.enable:
-            gridRect = QRectF(
-                visibleRect.topLeft() - QPointF(prefs.edit.grid.x, prefs.edit.grid.y),
-                visibleRect.bottomRight() + QPointF(prefs.edit.grid.x, prefs.edit.grid.y)
-            )
-            x1 = int(gridRect.left() / prefs.edit.grid.x) * prefs.edit.grid.x
-            x2 = int(gridRect.right() / prefs.edit.grid.x) * prefs.edit.grid.x
-            y1 = int(gridRect.top() / prefs.edit.grid.y) * prefs.edit.grid.y
-            y2 = int(gridRect.bottom() / prefs.edit.grid.y) * prefs.edit.grid.y
-            pen = QPen(prefs.dwg.grid.lineColor, prefs.dwg.grid.lineWidth, Qt.PenStyle.SolidLine)
+        if prefs.edit.grid.enable:
+            x1 = int( self.gridRect.left()   / prefs.edit.grid.size.width()  )
+            y1 = int( self.gridRect.top()    / prefs.edit.grid.size.height() )
+            x2 = int( self.gridRect.right()  / prefs.edit.grid.size.width()  )
+            y2 = int( self.gridRect.bottom() / prefs.edit.grid.size.height() )
+            pen = QPen(prefs.dwg.grid.line.color, prefs.dwg.grid.line.width, Qt.PenStyle.SolidLine)
             brush = QBrush(Qt.BrushStyle.NoBrush)
             painter.setPen(pen)
             painter.setBrush(brush)
-            for x in range(x1, x2, prefs.edit.grid.x):
-                painter.drawLine(x, y1, x, y2)
-            for y in range(y1, y2, prefs.edit.grid.y):
-                painter.drawLine(x1, y, x2, y)
+            for x in range(x1, x2+1):
+                painter.drawLine(
+                    QPointF(x  * prefs.edit.grid.size.width(), y1 * prefs.edit.grid.size.height()),
+                    QPointF(x  * prefs.edit.grid.size.width(), y2 * prefs.edit.grid.size.height())
+                )
+            for y in range(y1, y2+1):
+                painter.drawLine(
+                    QPointF(x1 * prefs.edit.grid.size.width(), y  * prefs.edit.grid.size.height()),
+                    QPointF(x2 * prefs.edit.grid.size.width(), y  * prefs.edit.grid.size.height())
+                )
+        # draw border round visible canvas (debug)
+        pen = QPen(QColor(255,0,0), 0, Qt.PenStyle.SolidLine)
+        brush = QBrush(Qt.BrushStyle.NoBrush)
+        painter.setPen(pen)
+        painter.setBrush(brush)
+        painter.drawRect(QRectF(
+            self.canvas2diagram(QPointF(0, 0)),
+            self.canvas2diagram(QPointF(self.width()-1, self.height()-1))
+            #QPointF(
+            #    -prefs.view.zoomFullMargin.left(),
+            #    -prefs.view.zoomFullMargin.top()
+            #),
+            #QPointF(
+            #    self.width(),
+            #    self.height()
+            #)
+        ))
         # draw (visible portion of) diagram
-        self.diagram.draw(painter, visibleRect)
+        painter.restore()
+        self.diagram.draw(painter, self.visibleRect)
 
-    def zoomIn(self,n=1):
-        z1 = self.zoom
-        z2 = min(self.zoom * (1.25**n), prefs.dwg.zoom.max)
-        dz = (1/z1) - (1/z2)
-        self.pan.setX(self.pan.x() + (self.physicalPos.x() * dz))
-        self.pan.setY(self.pan.y() + (self.physicalPos.y() * dz))
-        self.zoom = z2
-        self.update()
-
-    def zoomOut(self, n=1):
-        z1 = self.zoom
-        z2 = max(self.zoom / (1.25**n), prefs.dwg.zoom.min)
-        dz = (1/z1) - (1/z2)
-        self.pan.setX(self.pan.x() + (self.physicalPos.x() * dz))
-        self.pan.setY(self.pan.y() + (self.physicalPos.y() * dz))
-        self.zoom = z2
-        self.update()
+    #-------------------------------------------------------------------------------
+    # zoom and pan
 
     def zoomFull(self):
         self.zoom = min(
-            self.width()  / ( self.diagram.extents.width()  + prefs.dwg.zoomFullMarginL + prefs.dwg.zoomFullMarginR ),
-            self.height() / ( self.diagram.extents.height() + prefs.dwg.zoomFullMarginT + prefs.dwg.zoomFullMarginB )
+            self.width()  / ( self.diagram.extents.width()  + prefs.view.zoomFullMargin.left() + prefs.view.zoomFullMargin.right()  ),
+            self.height() / ( self.diagram.extents.height() + prefs.view.zoomFullMargin.top()  + prefs.view.zoomFullMargin.bottom() )
         )
-        self.pan = QPointF(-prefs.dwg.zoomFullMarginL, -prefs.dwg.zoomFullMarginT)
-        self.update()
+        self.pan = QPointF(-prefs.view.zoomFullMargin.left(), -prefs.view.zoomFullMargin.top())
+        self.zoomPanFinish()
+
+    def zoomIn(self,n=1):
+        z1 = self.zoom
+        z2 = min(self.zoom * (1.25**n), prefs.view.zoomLimits.max)
+        dz = (1/z1) - (1/z2)
+        self.pan.setX(self.pan.x() + (self.physicalPos.x() * dz))
+        self.pan.setY(self.pan.y() + (self.physicalPos.y() * dz))
+        self.zoom = z2
+        self.zoomPanFinish()
+
+    def zoomOut(self, n=1):
+        z1 = self.zoom
+        z2 = max(self.zoom / (1.25**n), prefs.view.zoomLimits.min)
+        dz = (1/z1) - (1/z2)
+        self.pan.setX(self.pan.x() + (self.physicalPos.x() * dz))
+        self.pan.setY(self.pan.y() + (self.physicalPos.y() * dz))
+        self.zoom = z2
+        self.zoomPanFinish()
 
     def panLeft(self):
         self.pan.setX(self.pan.x() - prefs.dwg.panStep * self.width() / self.zoom)
-        self.update()
+        self.zoomPanFinish()
 
     def panRight(self):
         self.pan.setX(self.pan.x() + prefs.dwg.panStep * self.width() / self.zoom)
-        self.update()
+        self.zoomPanFinish()
 
     def panUp(self):
         self.pan.setY(self.pan.y() - prefs.dwg.panStep * self.height() / self.zoom)
-        self.update()
+        self.zoomPanFinish()
 
     def panDown(self):
         self.pan.setY(self.pan.y() + prefs.dwg.panStep * self.height() / self.zoom)
+        self.zoomPanFinish()
+
+    def zoomPanFinish(self):
+        self.visibleRect = QRectF(
+            self.canvas2diagram(QPointF(0, 0)),
+            self.canvas2diagram(QPointF(self.width()-1, self.height()-1))
+        )
+        self.gridRect = QRectF(
+            self.visibleRect.topLeft()     - QPointF(prefs.edit.grid.size.width(), prefs.edit.grid.size.height()),
+            self.visibleRect.bottomRight() + QPointF(prefs.edit.grid.size.width(), prefs.edit.grid.size.height())
+        )
         self.update()
+
+    #-------------------------------------------------------------------------------
 
     def setEditMode(self, mode):
         self.editMode = mode
@@ -152,6 +178,9 @@ class Canvas(QWidget):
                 self.setCursor(QCursor(Qt.CursorShape.CrossCursor))
             case _:
                 self.setCursor(QCursor(Qt.CursorShape.ArrowCursor))
+
+    #-------------------------------------------------------------------------------
+    # mouse related
 
     def mousePressEvent(self, event):
         shift, ctrl, alt = self.getModifiers(event)
@@ -206,11 +235,23 @@ class Canvas(QWidget):
                         self.setEditMode(self.EditMode.ADD_BLOCK)
 
     def wheelEvent(self, event):
-        delta = event.angleDelta().y()/prefs.dwg.wheelStep
+        delta = event.angleDelta().y()/prefs.view.wheelStep
+        print("wheelEvent", delta)
         if delta > 0:
             self.zoomIn(delta)
         elif delta < 0:
-            self.zoomOut(delta)
+            self.zoomOut(-delta)
+
+    #-------------------------------------------------------------------------------
+    # keyboard related
+
+    def getModifiers(self, event):
+        shift = True if event.modifiers() & Qt.KeyboardModifier.ShiftModifier   else False
+        ctrl  = True if event.modifiers() & Qt.KeyboardModifier.ControlModifier else False
+        alt   = True if event.modifiers() & Qt.KeyboardModifier.AltModifier     else False
+        return shift, ctrl, alt
+
+    #-------------------------------------------------------------------------------
 
     #def keyPressEvent(self, event):
     #    key = event.key()
@@ -227,6 +268,3 @@ class Canvas(QWidget):
     #            self.editMode = EditMode.ADD_BLOCK
     #            self.setCursor(QCursor(Qt.CursorShape.CrossCursor)) # mouse pointer signifies add block mode
     #            self.update()
-
-
-    # TODO handle mousewheel event to zoom in/out the canvas

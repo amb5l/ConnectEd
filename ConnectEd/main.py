@@ -3,14 +3,15 @@
 
 import sys
 from PyQt6.QtWidgets import QApplication
+from PyQt6.QtGui import QColor
 
-from app import prefs
+from prefs import prefs
 from main_window import MainWindow
-from diagram import Diagram
+from diagram.diagram import Diagram
 
 
 def main():
-    prefs.dwg.block.propertyOutline = True
+    prefs.dwg.block.property.line = prefs.Dwg.Line(QColor(255,255,255))
 
     untitledNumber = 1
     diagram = Diagram("Untitled" + str(untitledNumber))

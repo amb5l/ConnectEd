@@ -4,7 +4,7 @@ from PyQt6.QtCore import QSettings
 
 from app import ORG_NAME, APP_NAME, APP_TITLE
 from menus import menus
-from actions import actions
+from actions import Actions
 from shortcuts import shortcuts
 from canvas import Canvas
 
@@ -37,8 +37,10 @@ class MainWindow(QMainWindow):
         #-------------------------------------------------------------------------------
         # create menus, actions and shortcuts from menus list
 
+        actions = Actions(self)
+
         def ActionFunction(menuItemActionName):
-            return lambda checked=False, name=menuItemActionName: getattr(actions, name)(self)
+            return lambda checked=False, name=menuItemActionName: getattr(actions, name)()
 
         menuBar = QMenuBar(self)
         for menuName, menuItems in menus:

@@ -4,152 +4,154 @@ from app import APP_TITLE
 
 
 class Actions:
-    def fileNew(self, h):
-        QMessageBox.about(h, "TODO", "fileNew")
+    def __init__(self, parent):
+        self.parent = parent
 
-    def fileOpen(self, h):
-        QMessageBox.about(h, "TODO", "fileOpen")
+    def fileNew(self):
+        QMessageBox.about(self.parent, "TODO", "fileNew")
 
-    def fileSave(self, h):
-        QMessageBox.about(h, "TODO", "fileSave")
+    def fileOpen(self):
+        QMessageBox.about(self.parent, "TODO", "fileOpen")
 
-    def fileSaveAs(self, h):
-        QMessageBox.about(h, "TODO", "fileSaveAs")
+    def fileSave(self):
+        QMessageBox.about(self.parent, "TODO", "fileSave")
 
-    def fileClose(self, h):
-        QMessageBox.about(h, "TODO", "fileClose")
+    def fileSaveAs(self):
+        QMessageBox.about(self.parent, "TODO", "fileSaveAs")
 
-    def fileExport(self, h):
-        QMessageBox.about(h, "TODO", "fileExport")
+    def fileClose(self):
+        QMessageBox.about(self.parent, "TODO", "fileClose")
 
-    def fileImport(self, h):
-        QMessageBox.about(h, "TODO", "fileImport")
+    def fileExport(self):
+        QMessageBox.about(self.parent, "TODO", "fileExport")
 
-    def filePrint(self, h):
-        QMessageBox.about(h, "TODO", "filePrint")
+    def fileImport(self):
+        QMessageBox.about(self.parent, "TODO", "fileImport")
 
-    def filePrintPreview(self, h):
-        QMessageBox.about(h, "TODO", "filePrintPreview")
+    def filePrint(self):
+        QMessageBox.about(self.parent, "TODO", "filePrint")
 
-    def filePageSetup(self, h):
-        QMessageBox.about(h, "TODO", "filePageSetup")
+    def filePrintPreview(self):
+        QMessageBox.about(self.parent, "TODO", "filePrintPreview")
 
-    def editCancel(self, h):
-        h.canvas.diagram.selectionClear()
-        h.canvas.setEditMode(h.canvas.EditMode.FREE)
+    def filePageSetup(self):
+        QMessageBox.about(self.parent, "TODO", "filePageSetup")
 
-    def editUndo(self, h):
-        QMessageBox.about(h, "TODO", "editUndo")
+    def editCancel(self):
+        self.parent.canvas.diagram.selectionClear()
+        self.parent.canvas.setEditMode(self.parent.canvas.EditMode.FREE)
 
-    def editRedo(self, h):
-        QMessageBox.about(h, "TODO", "editRedo")
+    def editUndo(self):
+        QMessageBox.about(self.parent, "TODO", "editUndo")
 
-    def editCut(self, h):
-        QMessageBox.about(h, "TODO", "editCut")
+    def editRedo(self):
+        QMessageBox.about(self.parent, "TODO", "editRedo")
 
-    def editCopy(self, h):
-        QMessageBox.about(h, "TODO", "editCopy")
+    def editCut(self):
+        QMessageBox.about(self.parent, "TODO", "editCut")
 
-    def editPaste(self, h):
-        QMessageBox.about(h, "TODO", "editPaste")
+    def editCopy(self):
+        QMessageBox.about(self.parent, "TODO", "editCopy")
 
-    def editDelete(self, h):
-        QMessageBox.about(h, "TODO", "editDelete")
+    def editPaste(self):
+        QMessageBox.about(self.parent, "TODO", "editPaste")
 
-    def editSelectAll(self, h):
-        QMessageBox.about(h, "TODO", "editSelectAll")
+    def editDelete(self):
+        QMessageBox.about(self.parent, "TODO", "editDelete")
 
-    def editFind(self, h):
-        QMessageBox.about(h, "TODO", "editFind")
+    def editSelectAll(self):
+        QMessageBox.about(self.parent, "TODO", "editSelectAll")
 
-    def editReplace(self, h):
-        QMessageBox.about(h, "TODO", "editReplace")
+    def editFind(self):
+        QMessageBox.about(self.parent, "TODO", "editFind")
 
-    def editSelectAll(self, h):
-        QMessageBox.about(h, "TODO", "editSelectAll")
+    def editReplace(self):
+        QMessageBox.about(self.parent, "TODO", "editReplace")
 
-    def editSelectFilter(self, h):
-        QMessageBox.about(h, "TODO", "editSelectFilter")
+    def editSelectAll(self):
+        QMessageBox.about(self.parent, "TODO", "editSelectAll")
 
-    def elementBlock(self, h):
-        h.canvas.setEditMode(h.canvas.EditMode.ADD_BLOCK)
+    def editSelectFilter(self):
+        QMessageBox.about(self.parent, "TODO", "editSelectFilter")
 
-    def elementPin(self, h):
-        QMessageBox.about(h, "TODO", "elementPin")
+    def elementBlock(self):
+        self.parent.canvas.setEditMode(self.parent.canvas.EditMode.ADD_BLOCK)
 
-    def elementWire(self, h):
-        QMessageBox.about(h, "TODO", "elementWire")
+    def elementPin(self):
+        QMessageBox.about(self.parent, "TODO", "elementPin")
 
-    def elementTap(self, h):
-        QMessageBox.about(h, "TODO", "elementTap")
+    def elementWire(self):
+        QMessageBox.about(self.parent, "TODO", "elementWire")
 
-    def elementJunction(self, h):
-        QMessageBox.about(h, "TODO", "elementJunction")
+    def elementTap(self):
+        QMessageBox.about(self.parent, "TODO", "elementTap")
 
-    def elementPort(self, h):
-        QMessageBox.about(h, "TODO", "elementPort")
+    def elementJunction(self):
+        QMessageBox.about(self.parent, "TODO", "elementJunction")
 
-    def elementConnection(self, h):
-        QMessageBox.about(h, "TODO", "elementConnection")
+    def elementPort(self):
+        QMessageBox.about(self.parent, "TODO", "elementPort")
 
-    def elementProperty(self, h):
-        QMessageBox.about(h, "TODO", "elementProperty")
+    def elementConnection(self):
+        QMessageBox.about(self.parent, "TODO", "elementConnection")
 
-    def elementCode(self, h):
-        QMessageBox.about(h, "TODO", "elementCode")
+    def elementProperty(self):
+        QMessageBox.about(self.parent, "TODO", "elementProperty")
 
-    def graphicLine(self, h):
-        QMessageBox.about(h, "TODO", "graphicLine")
+    def elementCode(self):
+        QMessageBox.about(self.parent, "TODO", "elementCode")
 
-    def graphicRectangle(self, h):
-        QMessageBox.about(h, "TODO", "graphicRectangle")
+    def graphicLine(self):
+        QMessageBox.about(self.parent, "TODO", "graphicLine")
 
-    def graphicPolygon(self, h):
-        QMessageBox.about(h, "TODO", "graphicPolygon")
+    def graphicRectangle(self):
+        QMessageBox.about(self.parent, "TODO", "graphicRectangle")
 
-    def graphicArc(self, h):
-        QMessageBox.about(h, "TODO", "graphicArc")
+    def graphicPolygon(self):
+        QMessageBox.about(self.parent, "TODO", "graphicPolygon")
 
-    def graphicEllipse(self, h):
-        QMessageBox.about(h, "TODO", "graphicEllipse")
+    def graphicArc(self):
+        QMessageBox.about(self.parent, "TODO", "graphicArc")
 
-    def graphicImage(self, h):
-        QMessageBox.about(h, "TODO", "graphicImage")
+    def graphicEllipse(self):
+        QMessageBox.about(self.parent, "TODO", "graphicEllipse")
 
-    def graphicTextLine(self, h):
-        QMessageBox.about(h, "TODO", "graphicTextLine")
+    def graphicImage(self):
+        QMessageBox.about(self.parent, "TODO", "graphicImage")
 
-    def graphicTextBox(self, h):
-        QMessageBox.about(h, "TODO", "graphicTextBox")
+    def graphicTextLine(self):
+        QMessageBox.about(self.parent, "TODO", "graphicTextLine")
 
-    def viewZoomIn(self, h):
-        h.canvas.zoomIn()
+    def graphicTextBox(self):
+        QMessageBox.about(self.parent, "TODO", "graphicTextBox")
 
-    def viewZoomOut(self, h):
-        h.canvas.zoomOut()
+    def viewZoomIn(self):
+        self.parent.canvas.zoomIn()
 
-    def viewZoomWindow(self, h):
-        QMessageBox.about(h, "TODO", "viewZoomWindow")
+    def viewZoomOut(self):
+        self.parent.canvas.zoomOut()
 
-    def viewZoomFull(self, h):
-        h.canvas.zoomFull()
+    def viewZoomWindow(self):
+        QMessageBox.about(self.parent, "TODO", "viewZoomWindow")
 
-    def viewPanLeft(self, h):
-        h.canvas.panLeft()
+    def viewZoomFull(self):
+        self.parent.canvas.zoomFull()
 
-    def viewPanRight(self, h):
-        h.canvas.panRight()
+    def viewPanLeft(self):
+        self.parent.canvas.panLeft()
 
-    def viewPanUp(self, h):
-        h.canvas.panUp()
+    def viewPanRight(self):
+        self.parent.canvas.panRight()
 
-    def viewPanDown(self, h):
-        h.canvas.panDown()
+    def viewPanUp(self):
+        self.parent.canvas.panUp()
 
-    def optionsPreferences(self, h):
-        QMessageBox.about(h, "TODO", "optionsPreferences")
+    def viewPanDown(self):
+        self.parent.canvas.panDown()
 
-    def helpAbout(self, h):
-        QMessageBox.about(h, "About", APP_TITLE)
+    def optionsPreferences(self):
+        QMessageBox.about(self.parent, "TODO", "optionsPreferences")
 
-actions = Actions()
+    def helpAbout(self):
+        QMessageBox.about(self.parent, "About", APP_TITLE)
+
