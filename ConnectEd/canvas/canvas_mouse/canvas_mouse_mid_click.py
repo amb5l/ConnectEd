@@ -1,5 +1,7 @@
-class CanvasMouseLeftClickMixin:
-    def mouseLeftClick(self, p):
+class CanvasMouseClickMixin:
+    def mouseClick(self, p):
+        if self.mouseButton == self.MouseButton.LEFT:
+            pass
         match self.state:
             case self.State.SELECT:
                 if not self.mouseModifiers & self.Modifiers.CTRL:

@@ -4,15 +4,77 @@ from enum import Enum, auto
 from common import logger
 from prefs import prefs
 
-from canvas_mouse.canvas_mouse_click import CanvasMouseClickMixin
+from canvas_mouse.canvas_mouse_move                      import CanvasMouseMoveMixin
+from canvas_mouse.canvas_mouse_left_click                import CanvasMouseLeftClickMixin
+from canvas_mouse.canvas_mouse_left_click_alt            import CanvasMouseLeftClickAltMixin
+from canvas_mouse.canvas_mouse_left_click_ctrl           import CanvasMouseLeftClickCtrlMixin
+from canvas_mouse.canvas_mouse_left_click_ctrl_alt       import CanvasMouseLeftClickCtrlAltMixin
+from canvas_mouse.canvas_mouse_left_click_ctrl_shift     import CanvasMouseLeftClickCtrlShiftMixin
+from canvas_mouse.canvas_mouse_left_click_ctrl_shift_alt import CanvasMouseLeftClickCtrlShiftAltMixin
+from canvas_mouse.canvas_mouse_left_click_shift          import CanvasMouseLeftClickShiftMixin
+from canvas_mouse.canvas_mouse_left_click_shift_alt      import CanvasMouseLeftClickShiftAltMixin
+from canvas_mouse.canvas_mouse_left_drag                 import CanvasMouseLeftDragMixin
+from canvas_mouse.canvas_mouse_left_drag_alt             import CanvasMouseLeftDragAltMixin
+from canvas_mouse.canvas_mouse_left_drag_ctrl            import CanvasMouseLeftDragCtrlMixin
+from canvas_mouse.canvas_mouse_left_drag_ctrl_alt        import CanvasMouseLeftDragCtrlAltMixin
+from canvas_mouse.canvas_mouse_left_drag_ctrl_shift      import CanvasMouseLeftDragCtrlShiftMixin
+from canvas_mouse.canvas_mouse_left_drag_ctrl_shift_alt  import CanvasMouseLeftDragCtrlShiftAltMixin
+from canvas_mouse.canvas_mouse_left_drag_shift           import CanvasMouseLeftDragShiftMixin
+from canvas_mouse.canvas_mouse_left_drag_shift_alt       import CanvasMouseLeftDragShiftAltMixin
+from canvas_mouse.canvas_mouse_mid_click                 import CanvasMouseMidClickMixin
+from canvas_mouse.canvas_mouse_mid_click_alt             import CanvasMouseMidClickAltMixin
+from canvas_mouse.canvas_mouse_mid_click_ctrl            import CanvasMouseMidClickCtrlMixin
+from canvas_mouse.canvas_mouse_mid_click_ctrl_alt        import CanvasMouseMidClickCtrlAltMixin
+from canvas_mouse.canvas_mouse_mid_click_ctrl_shift      import CanvasMouseMidClickCtrlShiftMixin
+from canvas_mouse.canvas_mouse_mid_click_ctrl_shift_alt  import CanvasMouseMidClickCtrlShiftAltMixin
+from canvas_mouse.canvas_mouse_mid_click_shift           import CanvasMouseMidClickShiftMixin
+from canvas_mouse.canvas_mouse_mid_click_shift_alt       import CanvasMouseMidClickShiftAltMixin
+from canvas_mouse.canvas_mouse_mid_drag                  import CanvasMouseMidDragMixin
+from canvas_mouse.canvas_mouse_mid_drag_alt              import CanvasMouseMidDragAltMixin
+from canvas_mouse.canvas_mouse_mid_drag_ctrl             import CanvasMouseMidDragCtrlMixin
+from canvas_mouse.canvas_mouse_mid_drag_ctrl_alt         import CanvasMouseMidDragCtrlAltMixin
+from canvas_mouse.canvas_mouse_mid_drag_ctrl_shift       import CanvasMouseMidDragCtrlShiftMixin
+from canvas_mouse.canvas_mouse_mid_drag_ctrl_shift_alt   import CanvasMouseMidDragCtrlShiftAltMixin
+from canvas_mouse.canvas_mouse_mid_drag_shift            import CanvasMouseMidDragShiftMixin
+from canvas_mouse.canvas_mouse_mid_drag_shift_alt        import CanvasMouseMidDragShiftAltMixin
+from canvas_mouse.canvas_mouse_wheel                     import CanvasMouseWheelMixin
 
-# click or drag (e.g. select, select window, or move)
-
-
-# 2 point operation
 
 class CanvasMouseMixin(
-    CanvasMouseClickMixin
+    CanvasMouseMoveMixin,
+    CanvasMouseLeftClickMixin,
+    CanvasMouseLeftClickAltMixin,
+    CanvasMouseLeftClickCtrlMixin,
+    CanvasMouseLeftClickCtrlAltMixin,
+    CanvasMouseLeftClickCtrlShiftMixin,
+    CanvasMouseLeftClickCtrlShiftAltMixin,
+    CanvasMouseLeftClickShiftMixin,
+    CanvasMouseLeftClickShiftAltMixin,
+    CanvasMouseLeftDragMixin,
+    CanvasMouseLeftDragAltMixin,
+    CanvasMouseLeftDragCtrlMixin,
+    CanvasMouseLeftDragCtrlAltMixin,
+    CanvasMouseLeftDragCtrlShiftMixin,
+    CanvasMouseLeftDragCtrlShiftAltMixin,
+    CanvasMouseLeftDragShiftMixin,
+    CanvasMouseLeftDragShiftAltMixin,
+    CanvasMouseMidClickMixin,
+    CanvasMouseMidClickAltMixin,
+    CanvasMouseMidClickCtrlMixin,
+    CanvasMouseMidClickCtrlAltMixin,
+    CanvasMouseMidClickCtrlShiftMixin,
+    CanvasMouseMidClickCtrlShiftAltMixin,
+    CanvasMouseMidClickShiftMixin,
+    CanvasMouseMidClickShiftAltMixin,
+    CanvasMouseMidDragMixin,
+    CanvasMouseMidDragAltMixin,
+    CanvasMouseMidDragCtrlMixin,
+    CanvasMouseMidDragCtrlAltMixin,
+    CanvasMouseMidDragCtrlShiftMixin,
+    CanvasMouseMidDragCtrlShiftAltMixin,
+    CanvasMouseMidDragShiftMixin,
+    CanvasMouseMidDragShiftAltMixin,
+    CanvasMouseWheelMixin
 ):
     class MouseState(Enum):
         IDLE  = auto()
@@ -20,10 +82,10 @@ class CanvasMouseMixin(
         DRAG  = auto()
 
     class MouseButton(Enum):
-        NONE   = Qt.MouseButton.NoButton
-        LEFT   = Qt.MouseButton.LeftButton
-        MIDDLE = Qt.MouseButton.MiddleButton
-        OTHER  = Qt.MouseButton.RightButton
+        NONE  = Qt.MouseButton.NoButton
+        LEFT  = Qt.MouseButton.LeftButton
+        MID   = Qt.MouseButton.MiddleButton
+        OTHER = Qt.MouseButton.RightButton
 
     #-------------------------------------------------------------------------------
     # process mouse press/move/release into click/move/drag
@@ -94,77 +156,182 @@ class CanvasMouseMixin(
                     str(self.mouseState)
                 )
 
-    # movement with no button pressed
-    def mouseMove(self, p):
-        match self.state:
-            case self.State.SELECT:
-                pass
-            case self.State.SELECT_WIN:
-                self.selectionRect.setRect(self.saneRect(self.mousePressPos, p))
-            case self.State.PLACE_BLOCK_0:
-                pass
-            case self.State.PLACE_BLOCK_1:
-                self.diagram.newBlockResize(self.snap(p))
+    #-------------------------------------------------------------------------------
+    # dispatch to correct method based on mouse button and modifiers
+
+    def mouseClick(self, p):
+        if self.mouseButton == self.MouseButton.LEFT:
+            match self.mouseModifiers:
+                case self.Modifiers.CTRL | self.Modifiers.SHIFT | self.Modifiers.ALT:
+                    self.mouseLeftClickCtrlShiftAlt(p)
+                case self.Modifiers.CTRL | self.Modifiers.SHIFT:
+                    self.mouseLeftClickCtrlShift(p)
+                case self.Modifiers.CTRL | self.Modifiers.ALT:
+                    self.mouseLeftClickCtrlAlt(p)
+                case self.Modifiers.SHIFT | self.Modifiers.ALT:
+                    self.mouseLeftClickShiftAlt(p)
+                case self.Modifiers.CTRL:
+                    self.mouseLeftClickCtrl(p)
+                case self.Modifiers.SHIFT:
+                    self.mouseLeftClickShift(p)
+                case self.Modifiers.ALT:
+                    self.mouseLeftClickAlt(p)
+                case self.Modifiers.NONE:
+                    self.mouseLeftClick(p)
+        elif self.mouseButton == self.MouseButton.MID:
+            match self.mouseModifiers:
+                case self.Modifiers.CTRL | self.Modifiers.SHIFT | self.Modifiers.ALT:
+                    self.mouseMidClickCtrlShiftAlt(p)
+                case self.Modifiers.CTRL | self.Modifiers.SHIFT:
+                    self.mouseMidClickCtrlShift(p)
+                case self.Modifiers.CTRL | self.Modifiers.ALT:
+                    self.mouseMidClickCtrlAlt(p)
+                case self.Modifiers.SHIFT | self.Modifiers.ALT:
+                    self.mouseMidClickShiftAlt(p)
+                case self.Modifiers.CTRL:
+                    self.mouseMidClickCtrl(p)
+                case self.Modifiers.SHIFT:
+                    self.mouseMidClickShift(p)
+                case self.Modifiers.ALT:
+                    self.mouseMidClickAlt(p)
+                case self.Modifiers.NONE:
+                    self.mouseMidClick(p)
 
     def mouseDragStart(self, p):
-        if (self.state == self.State.SELECT) \
-        and (self.mouseModifiers & self.Modifiers.CTRL):
-            pass
-        else:
-            self.selectionClear()
-        match self.state:
-            case self.State.SELECT:
-                # click on background -> select area (new)
-                # ctrl-click on background -> select area (incremental)
-                # click on object(s) -> select and move it
-                # ctrl-click on object(s) -> duplication
-                items = self.diagram.select(p)
-                if items:
-                    self.selectionAdd(items)
-                    if self.mouseModifiers & self.Modifiers.CTRL:
-                        self.setState(self.State.DUPLICATE)
-                    elif self.mouseModifiers & self.Modifiers.ALT:
-                        self.setState(self.State.MOVE)
-                    else:
-                        self.setState(self.State.SLIDE)
-                else:
-                    self.setState(self.State.SELECT_AREA)
-            case self.State.PLACE_BLOCK_0:
-                self.setState(self.State.PLACE_BLOCK_1)
-
-
-                if self.mouseModifiers & self.Modifiers.CTRL:
-                    self.setState(self.State.DUPLICATE)
-        pass
+        if self.mouseButton == self.MouseButton.LEFT:
+            match self.mouseModifiers:
+                case self.Modifiers.CTRL | self.Modifiers.SHIFT | self.Modifiers.ALT:
+                    self.mouseLeftDragCtrlShiftAltStart(p)
+                case self.Modifiers.CTRL | self.Modifiers.SHIFT:
+                    self.mouseLeftDragCtrlShiftStart(p)
+                case self.Modifiers.CTRL | self.Modifiers.ALT:
+                    self.mouseLeftDragCtrlAltStart(p)
+                case self.Modifiers.SHIFT | self.Modifiers.ALT:
+                    self.mouseLeftDragShiftAltStart(p)
+                case self.Modifiers.CTRL:
+                    self.mouseLeftDragCtrlStart(p)
+                case self.Modifiers.SHIFT:
+                    self.mouseLeftDragShiftStart(p)
+                case self.Modifiers.ALT:
+                    self.mouseLeftDragAltStart(p)
+                case self.Modifiers.NONE:
+                    self.mouseLeftDragStart(p)
+        elif self.mouseButton == self.MouseButton.MID:
+            match self.mouseModifiers:
+                case self.Modifiers.CTRL | self.Modifiers.SHIFT | self.Modifiers.ALT:
+                    self.mouseMidDragCtrlShiftAltStart(p)
+                case self.Modifiers.CTRL | self.Modifiers.SHIFT:
+                    self.mouseMidDragCtrlShiftStart(p)
+                case self.Modifiers.CTRL | self.Modifiers.ALT:
+                    self.mouseMidDragCtrlAltStart(p)
+                case self.Modifiers.SHIFT | self.Modifiers.ALT:
+                    self.mouseMidDragShiftAltStart(p)
+                case self.Modifiers.CTRL:
+                    self.mouseMidDragCtrlStart(p)
+                case self.Modifiers.SHIFT:
+                    self.mouseMidDragShiftStart(p)
+                case self.Modifiers.ALT:
+                    self.mouseMidDragAltStart(p)
+                case self.Modifiers.NONE:
+                    self.mouseMidDragStart(p)
 
     def mouseDrag(self, p):
-        match self.state:
-            case self.State.SELECT_AREA:
-                self.selectionRect = self.saneRect(self.mousePressPos, p)
+        if self.mouseButton == self.MouseButton.LEFT:
+            match self.mouseModifiers:
+                case self.Modifiers.CTRL | self.Modifiers.SHIFT | self.Modifiers.ALT:
+                    self.mouseLeftDragCtrlShiftAlt(p)
+                case self.Modifiers.CTRL | self.Modifiers.SHIFT:
+                    self.mouseLeftDragCtrlShift(p)
+                case self.Modifiers.CTRL | self.Modifiers.ALT:
+                    self.mouseLeftDragCtrlAlt(p)
+                case self.Modifiers.SHIFT | self.Modifiers.ALT:
+                    self.mouseLeftDragShiftAlt(p)
+                case self.Modifiers.CTRL:
+                    self.mouseLeftDragCtrl(p)
+                case self.Modifiers.SHIFT:
+                    self.mouseLeftDragShift(p)
+                case self.Modifiers.ALT:
+                    self.mouseLeftDragAlt(p)
+                case self.Modifiers.NONE:
+                    self.mouseLeftDrag(p)
+        elif self.mouseButton == self.MouseButton.MID:
+            match self.mouseModifiers:
+                case self.Modifiers.CTRL | self.Modifiers.SHIFT | self.Modifiers.ALT:
+                    self.mouseMidDragCtrlShiftAlt(p)
+                case self.Modifiers.CTRL | self.Modifiers.SHIFT:
+                    self.mouseMidDragCtrlShift(p)
+                case self.Modifiers.CTRL | self.Modifiers.ALT:
+                    self.mouseMidDragCtrlAlt(p)
+                case self.Modifiers.SHIFT | self.Modifiers.ALT:
+                    self.mouseMidDragShiftAlt(p)
+                case self.Modifiers.CTRL:
+                    self.mouseMidDragCtrl(p)
+                case self.Modifiers.SHIFT:
+                    self.mouseMidDragShift(p)
+                case self.Modifiers.ALT:
+                    self.mouseMidDragAlt(p)
+                case self.Modifiers.NONE:
+                    self.mouseMidDrag(p)
 
     def mouseDragFinish(self, p2, p1):
-        match self.state:
-            case self.State.SELECT_AREA:
-                self.selectionAdd(self.diagram.select(QRectF(p1, p2)))
-                self.setState(self.State.SELECT)
-            case self.State.DUPLICATE:
-                # duplicate selected items at pos
-                # back to select mode
-                self.setState(self.State.SELECT)
-            case self.State.MOVE:
-                # move selected items to pos
-                # back to select mode
-                self.setState(self.State.SELECT)
+        if self.mouseButton == self.MouseButton.LEFT:
+            match self.mouseModifiers:
+                case self.Modifiers.CTRL | self.Modifiers.SHIFT | self.Modifiers.ALT:
+                    self.mouseLeftDragCtrlShiftAltFinish(p2, p1)
+                case self.Modifiers.CTRL | self.Modifiers.SHIFT:
+                    self.mouseLeftDragCtrlShiftFinish(p2, p1)
+                case self.Modifiers.CTRL | self.Modifiers.ALT:
+                    self.mouseLeftDragCtrlAltFinish(p2, p1)
+                case self.Modifiers.SHIFT | self.Modifiers.ALT:
+                    self.mouseLeftDragShiftAltFinish(p2, p1)
+                case self.Modifiers.CTRL:
+                    self.mouseLeftDragCtrlFinish(p2, p1)
+                case self.Modifiers.SHIFT:
+                    self.mouseLeftDragShiftFinish(p2, p1)
+                case self.Modifiers.ALT:
+                    self.mouseLeftDragAltFinish(p2, p1)
+                case self.Modifiers.NONE:
+                    self.mouseLeftDragFinish(p2, p1)
+        elif self.mouseButton == self.MouseButton.MID:
+            match self.mouseModifiers:
+                case self.Modifiers.CTRL | self.Modifiers.SHIFT | self.Modifiers.ALT:
+                    self.mouseMidDragCtrlShiftAltFinish(p2, p1)
+                case self.Modifiers.CTRL | self.Modifiers.SHIFT:
+                    self.mouseMidDragCtrlShiftFinish(p2, p1)
+                case self.Modifiers.CTRL | self.Modifiers.ALT:
+                    self.mouseMidDragCtrlAltFinish(p2, p1)
+                case self.Modifiers.SHIFT | self.Modifiers.ALT:
+                    self.mouseMidDragShiftAltFinish(p2, p1)
+                case self.Modifiers.CTRL:
+                    self.mouseMidDragCtrlFinish(p2, p1)
+                case self.Modifiers.SHIFT:
+                    self.mouseMidDragShiftFinish(p2, p1)
+                case self.Modifiers.ALT:
+                    self.mouseMidDragAltFinish(p2, p1)
+                case self.Modifiers.NONE:
+                    self.mouseMidDragFinish(p2, p1)
 
     #-------------------------------------------------------------------------------
     # mouse wheel
 
     def wheelEvent(self, event):
-        delta = event.angleDelta().y()/prefs().view.wheelStep
-        if delta > 0:
-            self.zoomIn(delta)
-        elif delta < 0:
-            self.zoomOut(-delta)
+        match self.mouseModifiers:
+            case self.Modifiers.CTRL | self.Modifiers.SHIFT | self.Modifiers.ALT:
+                self.wheelCtrlShiftAlt(event)
+            case self.Modifiers.CTRL | self.Modifiers.SHIFT:
+                self.wheelCtrlShift(event)
+            case self.Modifiers.CTRL | self.Modifiers.ALT:
+                self.WheelCtrlAlt(event)
+            case self.Modifiers.SHIFT | self.Modifiers.ALT:
+                self.wheelShiftAlt(event)
+            case self.Modifiers.CTRL:
+                self.wheelCtrl(event)
+            case self.Modifiers.SHIFT:
+                self.WheelShift(event)
+            case self.Modifiers.ALT:
+                self.wheelAlt(event)
+            case self.Modifiers.NONE:
+                self.wheel(event)
 
     #-------------------------------------------------------------------------------
 
