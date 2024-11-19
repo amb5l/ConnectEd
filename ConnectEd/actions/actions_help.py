@@ -1,7 +1,6 @@
-from PyQt6.QtWidgets import QMessageBox
-from inspect import stack
+from ._actions_private import _actions_todo
 
 
 class ActionsHelpMixin:
     def helpAbout(self):
-        QMessageBox.about(self.parent, "TODO", stack()[0][3])
+        _actions_todo()

@@ -1,20 +1,19 @@
-from PyQt6.QtWidgets import QMessageBox
-from inspect import stack
+from ._actions_private import _actions_todo
 
 
 class ActionsOptionsMixin:
     def optionsDiagram(self):
         # sheet size, border/margin, title block enable
-        QMessageBox.about(self.parent, "TODO", stack()[0][3])
+        _actions_todo()
 
     def optionsThemes(self):
-        QMessageBox.about(self.parent, "TODO", stack()[0][3])
+        _actions_todo()
 
     def optionsPreference(self):
-        QMessageBox.about(self.parent, "TODO", stack()[0][3])
+        _actions_todo()
 
     def optionsShortcuts(self):
-        QMessageBox.about(self.parent, "TODO", stack()[0][3])
+        _actions_todo()
 
     def optionsReset(self):
-        QMessageBox.about(self.parent, "TODO", stack()[0][3])
+        _actions_todo()

@@ -1,49 +1,48 @@
-from PyQt6.QtWidgets import QMessageBox
-from inspect import stack
+from ._actions_private import _actions_todo
 
 
 class ActionsPlaceMixin:
     def placeBlock(self):
-        QMessageBox.about(self.parent, "TODO", stack()[0][3])
+        _actions_todo()
 
     def placePin(self):
-        QMessageBox.about(self.parent, "TODO", stack()[0][3])
+        _actions_todo()
 
     def placeWire(self):
-        QMessageBox.about(self.parent, "TODO", stack()[0][3])
+        _actions_todo()
 
     def placeTap(self):
-        QMessageBox.about(self.parent, "TODO", stack()[0][3])
+        _actions_todo()
 
     def placeJunction(self):
-        QMessageBox.about(self.parent, "TODO", stack()[0][3])
+        _actions_todo()
 
     def placePort(self):
-        QMessageBox.about(self.parent, "TODO", stack()[0][3])
+        _actions_todo()
 
     def placeCode(self):
-        QMessageBox.about(self.parent, "TODO", stack()[0][3])
+        _actions_todo()
 
     def placeLine(self):
-        QMessageBox.about(self.parent, "TODO", stack()[0][3])
+        _actions_todo()
 
     def placeRectangle(self):
-        QMessageBox.about(self.parent, "TODO", stack()[0][3])
+        _actions_todo()
 
     def placePolygon(self):
-        QMessageBox.about(self.parent, "TODO", stack()[0][3])
+        _actions_todo()
 
     def placeArc(self):
-        QMessageBox.about(self.parent, "TODO", stack()[0][3])
+        _actions_todo()
 
     def placeEllipse(self):
-        QMessageBox.about(self.parent, "TODO", stack()[0][3])
+        _actions_todo()
 
     def placeTextline(self):
-        QMessageBox.about(self.parent, "TODO", stack()[0][3])
+        _actions_todo()
 
     def placeTextbox(self):
-        QMessageBox.about(self.parent, "TODO", stack()[0][3])
+        _actions_todo()
 
     def placeImage(self):
-        QMessageBox.about(self.parent, "TODO", stack()[0][3])
+        _actions_todo()

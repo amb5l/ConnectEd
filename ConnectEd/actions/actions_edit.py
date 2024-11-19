@@ -3,76 +3,75 @@ from ._actions_private import _actions_todo
 class ActionsEditMixin:
     def editCancel(self):
         _actions_todo()
-        QMessageBox.about(self.parent, "TODO", stack()[0][3])
 
     def editUndo(self):
-        QMessageBox.about(self.parent, "TODO", stack()[0][3])
+        _actions_todo()
 
     def editRedo(self):
-        QMessageBox.about(self.parent, "TODO", stack()[0][3])
+        _actions_todo()
 
     def editRepeat(self):
-        QMessageBox.about(self.parent, "TODO", stack()[0][3])
+        _actions_todo()
 
     def editSelectAll(self):
-        QMessageBox.about(self.parent, "TODO", stack()[0][3])
+        _actions_todo()
 
     def editSelectWindow(self):
-        QMessageBox.about(self.parent, "TODO", stack()[0][3])
+        _actions_todo()
 
     def editSelectFilter(self):
-        QMessageBox.about(self.parent, "TODO", stack()[0][3])
+        _actions_todo()
 
     def editCut(self):
-        QMessageBox.about(self.parent, "TODO", stack()[0][3])
+        _actions_todo()
 
     def editCopy(self):
-        QMessageBox.about(self.parent, "TODO", stack()[0][3])
+        _actions_todo()
 
     def editPaste(self):
-        QMessageBox.about(self.parent, "TODO", stack()[0][3])
+        _actions_todo()
 
     def editDelete(self):
-        QMessageBox.about(self.parent, "TODO", stack()[0][3])
+        _actions_todo()
 
     def editSlide(self):
-        QMessageBox.about(self.parent, "TODO", stack()[0][3])
+        _actions_todo()
 
     def editMove(self):
-        QMessageBox.about(self.parent, "TODO", stack()[0][3])
+        _actions_todo()
 
     def editMirrorHorizonta(self):
-        QMessageBox.about(self.parent, "TODO", stack()[0][3])
+        _actions_todo()
 
     def editMirrorVertical(self):
-        QMessageBox.about(self.parent, "TODO", stack()[0][3])
+        _actions_todo()
 
     def editRotate(self):
-        QMessageBox.about(self.parent, "TODO", stack()[0][3])
+        _actions_todo()
 
     def editAlign(self):
-        QMessageBox.about(self.parent, "TODO", stack()[0][3])
+        _actions_todo()
 
     def editLock(self):
-        QMessageBox.about(self.parent, "TODO", stack()[0][3])
+        _actions_todo()
 
     def editUnlock(self):
-        QMessageBox.about(self.parent, "TODO", stack()[0][3])
+        _actions_todo()
 
     def editFix(self):
-        QMessageBox.about(self.parent, "TODO", stack()[0][3])
+        _actions_todo()
 
     def editUnfix(self):
-        QMessageBox.about(self.parent, "TODO", stack()[0][3])
+        _actions_todo()
 
     def editProperties(self):
-        QMessageBox.about(self.parent, "TODO", stack()[0][3])
+        _actions_todo()
 
     def editFind(self):
-        QMessageBox.about(self.parent, "TODO", stack()[0][3])
+        _actions_todo()
 
     def editReplace(self):
-        QMessageBox.about(self.parent, "TODO", stack()[0][3])
+        _actions_todo()
 
     def editSnap(self):
-        QMessageBox.about(self.parent, "TODO", stack()[0][3])
+        _actions_todo()

@@ -1,37 +1,35 @@
-from PyQt6.QtWidgets import QMessageBox
-from inspect import stack
-
+from ._actions_private import _actions_todo
 
 class ActionsFileMixin:
     def fileNew(self):
-        QMessageBox.about(self.parent, "TODO", stack()[0][3])
+        _actions_todo()
 
     def fileOpen(self):
-        QMessageBox.about(self.parent, "TODO", stack()[0][3])
+        _actions_todo()
 
     def fileSave(self):
-        QMessageBox.about(self.parent, "TODO", stack()[0][3])
+        _actions_todo()
 
     def fileSaveAs(self):
-        QMessageBox.about(self.parent, "TODO", stack()[0][3])
+        _actions_todo()
 
     def fileClose(self):
-        QMessageBox.about(self.parent, "TODO", stack()[0][3])
+        _actions_todo()
 
     def fileExportVHDL(self):
-        QMessageBox.about(self.parent, "TODO", stack()[0][3])
+        _actions_todo()
 
     def fileExportVerilog(self):
-        QMessageBox.about(self.parent, "TODO", stack()[0][3])
+        _actions_todo()
 
     def fileExportPDF(self):
-        QMessageBox.about(self.parent, "TODO", stack()[0][3])
+        _actions_todo()
 
     def fileExportSVG(self):
-        QMessageBox.about(self.parent, "TODO", stack()[0][3])
+        _actions_todo()
 
     def fileImportVHDL(self):
-        QMessageBox.about(self.parent, "TODO", stack()[0][3])
+        _actions_todo()
 
     def fileImportVerilog(self):
-        QMessageBox.about(self.parent, "TODO", stack()[0][3])
+        _actions_todo()
