@@ -29,7 +29,7 @@ class Block(FunctionalItem):
             if property.select(p):
                 return True
         # check block outline and fill
-        w = prefs().draw.block.line.width / 2
+        w = prefs.draw.block.line.width / 2
         o = QPointF(w, w)
         r = QRectF(self.rect.topLeft()  - o, self.rect.topRight() + o)
         if r.contains(p):
@@ -83,14 +83,14 @@ class Block(FunctionalItem):
         if not self.selectBoundingRect(x):
             return
         # check pins
-        if prefs().select.filter.pins:
+        if prefs.select.filter.pins:
             for pin in self.pins:
                 if pin.select(x):
                     return [self]
         # check properties
-        if prefs().select.filter.properties:
+        if prefs.select.filter.properties:
         # check self, allowing for line thickness
-        w = prefs().draw.block.line.width / 2
+        w = prefs.draw.block.line.width / 2
         o = QPointF(w, w)
         r = QRectF(self.rect.topLeft()  - o, self.rect.bottomRight() + o)
         if type(x) is QPointF:
@@ -112,8 +112,8 @@ class Block(FunctionalItem):
     def draw(self, painter, alpha=255):
         pen, brush = self.penBrush(
             self.state,
-            prefs().draw.block,
-            prefs().theme.block,
+            prefs.draw.block,
+            prefs.theme.block,
             alpha
         )
         painter.setPen(pen)

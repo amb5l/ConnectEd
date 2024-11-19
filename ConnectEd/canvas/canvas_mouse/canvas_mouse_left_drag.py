@@ -1,4 +1,13 @@
-class CanvasMouseLeftDrag:
+class CanvasMouseLeftDragMixin:
+    '''
+    A drag that starts on an item selects that item and starts a slide/move.
+    A drag that starts in free space starts an area selection.
+
+    Modifiers
+    CTRL    makes selection incremental
+    SHIFT   has no effect
+    ALT     forces area selecthas not effect
+    '''
     def mouseLeftDragStart(self, p):
         if (self.state == self.State.SELECT) \
         and (self.mouseModifiers & self.Modifiers.CTRL):

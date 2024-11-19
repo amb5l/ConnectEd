@@ -1,18 +1,18 @@
 from PyQt6.QtWidgets import QMainWindow
 from PyQt6.QtCore import QSettings
 
-from common import logger, APP_TITLE, ORG_NAME, APP_NAME
+from common import logger, ORG_NAME, APP_NAME
 from actions.actions import Actions
 from menus.menus import MenuBar
-from status import StatusBar
 from canvas.canvas import Canvas
+from .status import StatusBar
 
 
 class MainWindow(QMainWindow):
     def __init__(self, diagram):
         logger.info('MainWindow: initialising')
         super().__init__()
-        self.setWindowTitle(APP_TITLE)
+        self.setWindowTitle(APP_NAME)
 
         # default size: 50% of screen size, centered
         screen = self.screen()
@@ -28,14 +28,14 @@ class MainWindow(QMainWindow):
         if settings.contains("startup/geometry"):
             self.restoreGeometry(settings.value("geometry", b""))
 
-        actions = Actions(self)
-        menuBar = MenuBar(self, actions)
-        self.setMenuBar(menuBar)
+        self.actions = Actions(self)
+        self.menuBar = MenuBar(self)
+        self.setMenuBar(self.menuBar)
 
         self.statusBar = StatusBar(self)
         self.setStatusBar(self.statusBar)
 
-        self.canvas = Canvas(diagram)
+        self.canvas = Canvas(self, diagram)
         self.setCentralWidget(self.canvas)
 
     def closeEvent(self, event):

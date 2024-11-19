@@ -20,10 +20,8 @@ class CanvasMouseWheelMixin:
     def wheelAlt(self, event):
         pass
 
-    def wheel(self, event):
-        delta = event.angleDelta().y()/prefs().view.wheelStep
+    def wheel(self, delta):
         if delta > 0:
             self.zoomIn(delta)
         elif delta < 0:
             self.zoomOut(-delta)
-

@@ -20,10 +20,10 @@ class CanvasStateMixin:
 
     def setMode(self, mode):
         # enable/disable actions accordingly
-        self.window().menuBar.menus["Edit"][Menu.EDIT_SELECT].setEnabled(mode == self.Mode.SELECT)
+        self.parent().menuBar.menus["Edit"][Menu.EDIT_SELECT].setEnabled(mode == self.Mode.SELECT)
 
     def setState(self, state):
-        self.editState = state
+        self.State = state
         self.status(state)
         match state:
             case self.State.IDLE:

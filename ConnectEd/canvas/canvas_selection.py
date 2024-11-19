@@ -1,7 +1,7 @@
 class CanvasSelectionMixin:
     def selectionClear(self):
         self.selection = []
-        self.window().statusBar.select.setText('No items selected')
+        self.parent().statusBar.select.setText('No items selected')
         # disable selection-dependent actions
         self._actionEnable('Edit', 'editCut'              , False)
         self._actionEnable('Edit', 'editCopy'             , False)
@@ -17,7 +17,7 @@ class CanvasSelectionMixin:
         self.selection.append(item)
         l = len(self.selection)
         s = 's' if l > 1 else ''
-        self.window().statusBar.select.setText(f'{l} item{s} selected')
+        self.parent().statusBar.select.setText(f'{l} item{s} selected')
         # enable selection-dependent actions
         self._actionEnable('Edit', 'editCut'              , True)
         self._actionEnable('Edit', 'editCopy'             , True)

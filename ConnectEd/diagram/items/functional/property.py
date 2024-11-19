@@ -52,7 +52,7 @@ class ItemPropertyMixin:
         def selectRect(self, r):
             if self.boundingRect is None:
                 return
-            elif prefs().edit.select.enclose and r.contains(self.boundingRect):
+            elif prefs.edit.select.enclose and r.contains(self.boundingRect):
                 self.selected = True
             elif r.intersects(self.boundingRect):
                 self.selected = True
@@ -70,23 +70,23 @@ class ItemPropertyMixin:
                 case self.Visibility.BOTH:
                     text = self.name + "=" + self.value
             painter.save()
-            color = prefs().draw.theme.block.property
+            color = prefs.draw.theme.block.property
             color.setAlpha(alpha)
             pen = QPen(color, 0.0, Qt.PenStyle.SolidLine) # TODO investigate effect of line width
             brush = QBrush(color)
             if self.highlighted:
-                pen.setColor(prefs().draw.theme.highlighted.line)
-                brush.setColor(prefs().draw.theme.highlighted.fill)
+                pen.setColor(prefs.draw.theme.highlighted.line)
+                brush.setColor(prefs.draw.theme.highlighted.fill)
             elif self.selected:
-                pen.setColor(prefs().draw.theme.selected.line)
-                brush.setColor(prefs().draw.theme.selected.fill)
+                pen.setColor(prefs.draw.theme.selected.line)
+                brush.setColor(prefs.draw.theme.selected.fill)
             painter.setPen(pen)
             painter.setBrush(brush)
             font = QFont(
-                prefs().draw.block.property.font.family,
-                prefs().draw.block.property.font.size,
-                prefs().draw.block.property.font.bold,
-                prefs().draw.block.property.font.italic
+                prefs.draw.block.property.font.family,
+                prefs.draw.block.property.font.size,
+                prefs.draw.block.property.font.bold,
+                prefs.draw.block.property.font.italic
             )
             painter.setFont(font)
             flags = Qt.TextFlag.TextSingleLine
@@ -98,7 +98,7 @@ class ItemPropertyMixin:
             painter.rotate(-self.rotation)
             painter.translate(position)
             painter.drawText(self.boundingRect, flags, text)
-            if prefs().draw.block.property.outline:
+            if prefs.draw.block.property.outline:
                 pen = QPen(color, 0, Qt.PenStyle.SolidLine)
                 brush = QBrush(Qt.BrushStyle.NoBrush)
                 painter.setPen(pen)

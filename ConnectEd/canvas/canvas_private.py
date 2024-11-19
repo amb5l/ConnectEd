@@ -11,8 +11,6 @@ class CanvasPrivateMixin:
             int(round(position.y()/10.0, 0) * 10)
         )
 
-
-
     def canvas2diagram(self, point):
         # convert canvas point to diagram point
         r = QPointF(
@@ -22,7 +20,7 @@ class CanvasPrivateMixin:
         return r
 
     def _actionEnable(self, menuName, actionName, state):
-        self.window().menuBar.menus[menuName].actions[actionName].setEnabled(state)
+        self.parent().menuBar.menusDict[menuName].itemsDict[actionName].setEnabled(state)
 
     def _unexpectedEditState(self):
-        self.logger.warning("Canvas.mouseReleaseEvent: unexpected editState: " + str(self.editState))
+        self.logger.warning("Canvas.mouseReleaseEvent: unexpected editState: " + str(self.State))

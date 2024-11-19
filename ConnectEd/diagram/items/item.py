@@ -16,8 +16,8 @@ class Item:
         SELECTED    = 1
         HIGHLIGHTED = 2
         MOVING      = 4
-        LOCKED      = 8
-        FIXED       = 16
+        FIXED       = 8   # not movable, properties may be changed
+        LOCKED      = 16  # not editable in any way
 
     # suitable for rectangular items
     # may need to change (and use subclasses) for other item shapes
@@ -76,7 +76,7 @@ class Item:
         if type(x) is QPointF:
             return self.boundingRect.contains(x)
         elif type(x) is QRectF:
-            if prefs().edit.select.enclose:
+            if prefs.edit.select.enclose:
                 return x.contains(self.boundingRect)
             else:
                 return x.intersects(self.boundingRect)

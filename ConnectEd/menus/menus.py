@@ -2,7 +2,7 @@ from PyQt6.QtWidgets import QMenuBar, QMenu
 from PyQt6.QtGui import QAction, QActionGroup
 
 from common import logger
-from shortcuts import actionShortcuts
+from .shortcuts import actionShortcuts
 
 
 class MenuDef:
@@ -11,8 +11,7 @@ class MenuDef:
         self.items = items
 
 class ActionGroupDef:
-    def __init__(self, name, items):
-        self.name  = name
+    def __init__(self, items):
         self.items = items
 
 class ActionDef:
@@ -88,23 +87,29 @@ MENUS = [
     ]),
                             #===========================================================
     MenuDef(                'View', [
-        ActionDef(              'Grid'               , 'viewGrid'             , True  ),
-        ActionDef(              'Transparent'        , 'viewTransparent'      , True  ),
-        ActionDef(              'Opaque'             , 'viewOpaque'           , True  ),
+        ActionDef(              'Previous'           , 'viewPrev'             , False ),
+        ActionDef(              'Next'               , 'viewNext'             , False ),
         SeparatorDef(),         #-------------------------------------------------------
         ActionDef(              'Zoom In'            , 'viewZoomIn'           , False ),
         ActionDef(              'Zoom Out'           , 'viewZoomOut'          , False ),
         ActionDef(              'Zoom Window'        , 'viewZoomWindow'       , False ),
         ActionDef(              'Zoom Full'          , 'viewZoomFull'         , False ),
+        ActionDef(              'Zoom Selected'      , 'viewZoomSelected'     , False ),
         SeparatorDef(),         #-------------------------------------------------------
         ActionDef(              'Pan Left'           , 'viewPanLeft'          , False ),
         ActionDef(              'Pan Right'          , 'viewPanRight'         , False ),
         ActionDef(              'Pan Up'             , 'viewPanUp'            , False ),
         ActionDef(              'Pan Down'           , 'viewPanDown'          , False )
+        SeparatorDef(),         #-------------------------------------------------------
+        ActionDef(              'Grid'               , 'viewGrid'             , True  ),
+        ActionDef(              'Transparent'        , 'viewTransparent'      , True  ),
+        ActionDef(              'Opaque'             , 'viewOpaque'           , True  ),
+        SeparatorDef(),         #-------------------------------------------------------
+        ActionDef(              'Normal'             , 'viewNormal'           , True  ),
+        ActionDef(              'Rotated'            , 'viewRotated'          , True  )
     ]),
                             #===========================================================
     MenuDef(                'Place', [
-        ActionGroupDef( 'Function', [
         ActionDef(              'Block'              , 'elementBlock'         , True  ),
         ActionDef(              'Pin'                , 'elementPin'           , True  ),
         ActionDef(              'Wire'               , 'elementWire'          , True  ),
@@ -112,9 +117,7 @@ MENUS = [
         ActionDef(              'Junction'           , 'elementJunction'      , True  ),
         ActionDef(              'Port'               , 'elementPort'          , True  ),
         ActionDef(              'Code'               , 'elementCode'          , True  ),
-        ]),
         SeparatorDef(),         #-------------------------------------------------------
-        ActionGroupDef( 'Decoration', [
         ActionDef(              'Line'               , 'decorationLine'       , True  ),
         ActionDef(              'Rectangle'          , 'decorationRectangle'  , True  ),
         ActionDef(              'Polygon'            , 'decorationPolygon'    , True  ),
@@ -123,13 +126,13 @@ MENUS = [
         ActionDef(              'Text Line'          , 'decorationTextLine'   , True  ),
         ActionDef(              'Text Box'           , 'decorationTextBox'    , True  ),
         ActionDef(              'Image...'           , 'decorationImage'      , True  )
-        ])
     ]),
                             #===========================================================
     MenuDef(                'Options', [
-        ActionDef(              'Themes'             , 'optionsThemes'        , False ),
-        ActionDef(              'Preferences'        , 'optionsPreferences'   , False ),
-        ActionDef(              'Shortcuts'          , 'optionsShortcuts'     , False ),
+        ActionDef(              'Diagram...'         , 'optionsDiagram'       , False ),
+        ActionDef(              'Themes...'          , 'optionsThemes'        , False ),
+        ActionDef(              'Preferences...'     , 'optionsPreferences'   , False ),
+        ActionDef(              'Shortcuts...'       , 'optionsShortcuts'     , False ),
         SeparatorDef(),         #-------------------------------------------------------
         ActionDef(              'Reset'              , 'optionsReset'         , False )
     ]),
@@ -141,56 +144,63 @@ MENUS = [
 ]
 
 class MenuBar(QMenuBar):
-    def __init__(self, parent):
-        super().__init__(parent)
-        self.menus = {}
+    def __init__(self, mainWindow):
+        super().__init__(mainWindow)
+        self.menusDict = {}
         for menuDef in MENUS:
-            menu = Menu(parent, '&' + menuDef.name, menuDef.items)
-            self.menus[menuDef.name] = menu
-            parent.addMenu(menu)
+            menu = Menu(mainWindow, '&' + menuDef.name, menuDef.items)
+            self.menusDict[menuDef.name] = menu
+            self.addMenu(menu)
 
 class Menu(QMenu):
-    def __init__(self, parent, name, itemDefs):
-        def ActionFunction(name): # looks up and returns action method by name
-            return lambda checked=False, x=name: getattr(parent.actions, x)()
-        super().__init__(name, parent)
-        self.items = {}
+    def __init__(self, mainWindow, name, itemDefs):
+        super().__init__(name, mainWindow)
+        self.itemsDict = {}
+        print('Menu:', name)
         for itemDef in itemDefs:
             if isinstance(itemDef, MenuDef):
-                item = Menu(parent, itemDef.name, itemDef.items)
+                print('  Menu:', itemDef.name)
+                item = Menu(mainWindow, itemDef.name, itemDef.items)
+                self.addMenu(item)
+                self.itemsDict[itemDef.name] = item
             elif isinstance(itemDef, ActionGroupDef):
-                item = ActionGroup(parent, itemDef.name, itemDef.items)
+                print('  ActionGroup:')
+                item = ActionGroup(mainWindow, self, itemDef.items)
             elif isinstance(itemDef, ActionDef):
-                item = Action(parent, itemDef.text, itemDef.name, itemDef.checkable)
+                print('  Action:', itemDef.text)
+                item = Action(mainWindow, itemDef.text, itemDef.name, itemDef.checkable)
+                self.addAction(item)
+                self.itemsDict[itemDef.name] = item
             elif isinstance(itemDef, SeparatorDef):
-                item = QAction(parent)
+                print('  Separator')
+                item = QAction(mainWindow)
                 item.setSeparator(True)
             else:
                 logger.error(f'Menu: bad itemDef type: {type(itemDef)}')
-                continue
-            self.items[itemDef.name] = item
-            self.addAction(item)
 
 class ActionGroup(QActionGroup):
-    def __init__(self, parent, name, itemDefs):
-        super().__init__(parent)
-        self.items = {}
+    def __init__(self, mainWindow, menu, itemDefs):
+        super().__init__(mainWindow)
+        self.itemsDict = {}
         for itemDef in itemDefs:
             if isinstance(itemDef, ActionDef):
-                item = Action(parent, itemDef.text, itemDef.name, itemDef.checkable)
+                item = Action(mainWindow, itemDef.text, itemDef.name, itemDef.checkable)
+                menu.itemsDict[itemDef.name] = item
             elif isinstance(itemDef, SeparatorDef):
-                item = QAction(parent)
+                item = QAction(mainWindow)
                 item.setSeparator(True)
             else:
                 logger.error(f'ActionGroup: bad itemDef type: {type(itemDef)}')
                 continue
-            self.items[itemDef.name] = item
-            self.addAction(item)
+            menu.addAction(item)
 
 class Action(QAction):
-    def __init__(self, parent, text, name, checkable):
+    def __init__(self, mainWindow, text, name, checkable):
         def ActionFunction(name): # looks up and returns action method by name
-            return lambda checked=False, x=name: getattr(parent.actions, x)()
-        super().__init__(text, parent)
+            return lambda checked=False, x=name: getattr(mainWindow.actions, x)()
+        super().__init__(text, mainWindow)
         self.setCheckable(checkable)
         self.triggered.connect(ActionFunction(name))
+        if name in actionShortcuts:
+            if actionShortcuts[name] is not None:
+                self.setShortcut(actionShortcuts[name])

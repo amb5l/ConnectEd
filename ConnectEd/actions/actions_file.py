@@ -2,7 +2,7 @@ from PyQt6.QtWidgets import QMessageBox
 from inspect import stack
 
 
-class ActionsViewMixin:
+class ActionsFileMixin:
     def fileNew(self):
         QMessageBox.about(self.parent, "TODO", stack()[0][3])
 

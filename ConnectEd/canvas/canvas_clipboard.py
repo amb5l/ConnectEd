@@ -4,7 +4,7 @@
 from PyQt6.QtCore import QSize, QRect, QBuffer, QIODevice
 from PyQt6.QtSvg import QSvgGenerator
 
-from common import APP_NAME
+from common import APP_NAME, MIME_TYPE
 
 buf = QBuffer()
 buf.open(QIODevice.OpenModeFlag.WriteOnly)
@@ -28,3 +28,6 @@ class CanvasClipboardMixin:
         pass
     def paste(self):
         pass
+
+    def clipboardHasData(self):
+        return self.clipboard.mimeData().hasFormat(MIME_TYPE)

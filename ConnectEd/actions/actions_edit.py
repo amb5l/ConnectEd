@@ -1,9 +1,8 @@
-from PyQt6.QtWidgets import QMessageBox
-from inspect import stack
-
+from ._actions_private import _actions_todo
 
 class ActionsEditMixin:
     def editCancel(self):
+        _actions_todo()
         QMessageBox.about(self.parent, "TODO", stack()[0][3])
 
     def editUndo(self):
