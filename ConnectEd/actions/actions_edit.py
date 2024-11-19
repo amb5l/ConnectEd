@@ -1,5 +1,6 @@
 from ._actions_private import _actions_todo
 
+
 class ActionsEditMixin:
     def editCancel(self):
         _actions_todo()

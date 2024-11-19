@@ -1,5 +1,6 @@
 from ._actions_private import _actions_todo
 
+
 class ActionsFileMixin:
     def fileNew(self):
         _actions_todo()
