@@ -1,129 +1,136 @@
+from inspect import stack
 from PyQt6.QtWidgets import QMessageBox
 
 from app import APP_TITLE
 
+def _actions_todo():
+    caller_frame = stack()[1]
+    caller_function_name = caller_frame.function
+    caller_parent = caller_frame.frame.f_locals['self'].parent
+    QMessageBox.about(caller_parent, "TODO", caller_function_name)
 
 class Actions:
     def __init__(self, parent):
         self.parent = parent
 
     def fileNew(self):
-        QMessageBox.about(self.parent, "TODO", "fileNew")
+        _actions_todo()
 
     def fileOpen(self):
-        QMessageBox.about(self.parent, "TODO", "fileOpen")
+        _actions_todo()
 
     def fileSave(self):
-        QMessageBox.about(self.parent, "TODO", "fileSave")
+        _actions_todo()
 
     def fileSaveAs(self):
-        QMessageBox.about(self.parent, "TODO", "fileSaveAs")
+        _actions_todo()
 
     def fileClose(self):
-        QMessageBox.about(self.parent, "TODO", "fileClose")
+        _actions_todo()
 
     def fileExport(self):
-        QMessageBox.about(self.parent, "TODO", "fileExport")
+        _actions_todo()
 
     def fileImport(self):
-        QMessageBox.about(self.parent, "TODO", "fileImport")
+        _actions_todo()
 
     def filePrint(self):
-        QMessageBox.about(self.parent, "TODO", "filePrint")
+        _actions_todo()
 
     def filePrintPreview(self):
-        QMessageBox.about(self.parent, "TODO", "filePrintPreview")
+        _actions_todo()
 
     def filePageSetup(self):
-        QMessageBox.about(self.parent, "TODO", "filePageSetup")
+        _actions_todo()
 
     def editCancel(self):
         self.parent.canvas.diagram.selectionClear()
         self.parent.canvas.setEditMode(self.parent.canvas.EditMode.FREE)
 
     def editUndo(self):
-        QMessageBox.about(self.parent, "TODO", "editUndo")
+        _actions_todo()
 
     def editRedo(self):
-        QMessageBox.about(self.parent, "TODO", "editRedo")
+        _actions_todo()
 
     def editCut(self):
-        QMessageBox.about(self.parent, "TODO", "editCut")
+        _actions_todo()
 
     def editCopy(self):
-        QMessageBox.about(self.parent, "TODO", "editCopy")
+        _actions_todo()
 
     def editPaste(self):
-        QMessageBox.about(self.parent, "TODO", "editPaste")
+        _actions_todo()
 
     def editDelete(self):
-        QMessageBox.about(self.parent, "TODO", "editDelete")
+        _actions_todo()
 
     def editSelectAll(self):
-        QMessageBox.about(self.parent, "TODO", "editSelectAll")
+        _actions_todo()
 
     def editFind(self):
-        QMessageBox.about(self.parent, "TODO", "editFind")
+        _actions_todo()
 
     def editReplace(self):
-        QMessageBox.about(self.parent, "TODO", "editReplace")
+        _actions_todo()
 
     def editSelectAll(self):
-        QMessageBox.about(self.parent, "TODO", "editSelectAll")
+        _actions_todo()
 
     def editSelectFilter(self):
-        QMessageBox.about(self.parent, "TODO", "editSelectFilter")
+        _actions_todo()
 
     def elementBlock(self):
         self.parent.canvas.setEditMode(self.parent.canvas.EditMode.ADD_BLOCK)
 
     def elementPin(self):
-        QMessageBox.about(self.parent, "TODO", "elementPin")
+        _actions_todo()
 
     def elementWire(self):
-        QMessageBox.about(self.parent, "TODO", "elementWire")
+        _actions_todo()
 
     def elementTap(self):
-        QMessageBox.about(self.parent, "TODO", "elementTap")
+        _actions_todo()
 
     def elementJunction(self):
-        QMessageBox.about(self.parent, "TODO", "elementJunction")
+        _actions_todo()
 
     def elementPort(self):
-        QMessageBox.about(self.parent, "TODO", "elementPort")
+        _actions_todo()
 
     def elementConnection(self):
-        QMessageBox.about(self.parent, "TODO", "elementConnection")
+        _actions_todo()
 
     def elementProperty(self):
-        QMessageBox.about(self.parent, "TODO", "elementProperty")
+        _actions_todo()
 
     def elementCode(self):
-        QMessageBox.about(self.parent, "TODO", "elementCode")
+        _actions_todo()
 
     def graphicLine(self):
-        QMessageBox.about(self.parent, "TODO", "graphicLine")
+        _actions_todo()
+        #_actions_todo()
 
     def graphicRectangle(self):
-        QMessageBox.about(self.parent, "TODO", "graphicRectangle")
+        _actions_todo()
 
     def graphicPolygon(self):
-        QMessageBox.about(self.parent, "TODO", "graphicPolygon")
+        _actions_todo()
 
     def graphicArc(self):
-        QMessageBox.about(self.parent, "TODO", "graphicArc")
+        _actions_todo()
 
     def graphicEllipse(self):
-        QMessageBox.about(self.parent, "TODO", "graphicEllipse")
+        _actions_todo()
 
     def graphicImage(self):
-        QMessageBox.about(self.parent, "TODO", "graphicImage")
+        _actions_todo()
 
     def graphicTextLine(self):
-        QMessageBox.about(self.parent, "TODO", "graphicTextLine")
+        _actions_todo()
 
     def graphicTextBox(self):
-        QMessageBox.about(self.parent, "TODO", "graphicTextBox")
+        _actions_todo()
 
     def viewZoomIn(self):
         self.parent.canvas.zoomIn()
@@ -132,7 +139,7 @@ class Actions:
         self.parent.canvas.zoomOut()
 
     def viewZoomWindow(self):
-        QMessageBox.about(self.parent, "TODO", "viewZoomWindow")
+        _actions_todo()
 
     def viewZoomFull(self):
         self.parent.canvas.zoomFull()
@@ -150,7 +157,7 @@ class Actions:
         self.parent.canvas.panDown()
 
     def optionsPreferences(self):
-        QMessageBox.about(self.parent, "TODO", "optionsPreferences")
+        _actions_todo()
 
     def helpAbout(self):
         QMessageBox.about(self.parent, "About", APP_TITLE)
