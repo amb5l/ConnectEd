@@ -1,25 +1,48 @@
-# Block Diagram Editor application based on PyQt6
-# TODO: handle command line arguments - including batch (non-GUI) operation
-
 import sys
 from PyQt6.QtWidgets import QApplication
-from PyQt6.QtGui import QColor
+from enum import Enum, auto
 
-from prefs import prefs
-from main_window import MainWindow
-from diagram.diagram import Diagram
+from common   import logger, untitled_number
+from args     import args
+from settings import settings, startup, prefs, themes, sheet_sizes
+from window   import MainWindow
+from diagram  import Diagram
 
 
 def main():
-    prefs.dwg.block.property.line = prefs.Dwg.Line(QColor(255,255,255))
+    class FileOperation(Enum):
+        NEW    = auto()
+        OPEN   = auto()
+        IMPORT = auto()
 
-    untitledNumber = 1
-    diagram = Diagram("Untitled" + str(untitledNumber))
+    logger.info('started')
 
-    app = QApplication(sys.argv)
-    window = MainWindow(diagram)
-    window.show()
-    sys.exit(app.exec())
+    if args.reset:
+        settings.reset()
+    settings.load()
+    if args.dump_settings:
+        print('startup:')
+        settings.dump(startup)
+        print('prefs:')
+        settings.dump(prefs)
+        print('themes:')
+        settings.dump(themes)
+        print('sheet_sizes:')
+        settings.dump(sheet_sizes)
+
+    diagram = Diagram()
+    if args.ifile:
+        diagram.load(args.ifile)
+    else:
+        diagram.new('Untitled' + str(untitled_number))
+
+    if args.mode == 'gui':
+        app = QApplication(sys.argv)
+        window = MainWindow(diagram)
+        window.show()
+        sys.exit(app.exec())
+
+    logger.info('finished')
 
 if __name__ == "__main__":
     main()
