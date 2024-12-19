@@ -1,3 +1,5 @@
+# menu bar for main main_window
+
 from dataclasses import dataclass, field
 from PyQt6.QtWidgets import QMenuBar, QMenu
 from PyQt6.QtGui import QAction, QActionGroup
@@ -29,11 +31,19 @@ class Separator(QAction):
 MENU_DEFS = [
              #===========================================================
     MenuDef( 'File', [
-        ItemDef( 'fileNew'    ),
-        ItemDef( 'fileOpen'   ),
-        ItemDef( 'fileSave'   ),
-        ItemDef( 'fileSaveAs' ),
-        ItemDef( 'fileClose'  )
+        ItemDef( 'fileNew'         ),
+        ItemDef( 'fileOpen'        ),
+        ItemDef( 'fileSave'        ),
+        ItemDef( 'fileSaveAs'      ),
+        ItemDef( 'fileClose'       )
+    ]),      #===========================================================
+    MenuDef( 'Edit', [
+        ItemDef( 'editUndo'        ),
+        ItemDef( 'editRedo'        ),
+        SeparatorDef(),
+        ItemDef( 'editCut'         ),
+        ItemDef( 'editCopy'        ),
+        ItemDef( 'editPaste'       ),
     ]),      #===========================================================
     MenuDef( 'View', [
         ItemDef( 'viewZoomAll'     ),
@@ -56,43 +66,43 @@ MENU_DEFS = [
 ]
 
 class MenuBar(QMenuBar):
-    def __init__(self, window):
+    def __init__(self, main_window):
         logger.info('entry')
-        super().__init__(window)
+        super().__init__(main_window)
         for menu_def in MENU_DEFS:
-            menu = Menu(window, '&' + menu_def.name, menu_def.items)
+            menu = Menu(main_window, '&' + menu_def.name, menu_def.items)
             self.addMenu(menu)
 
 class Menu(QMenu):
-    def __init__(self, window, name, item_defs):
+    def __init__(self, main_window, name, item_defs):
         logger.info(f'building menu: {name}')
-        super().__init__(name, window)
+        super().__init__(name, main_window)
         for item_def in item_defs:
             if isinstance(item_def, MenuDef):
                 logger.info(f'adding menu: {item_def.name}')
-                self.addMenu(Menu(window, item_def.name, item_def.items))
+                self.addMenu(Menu(main_window, item_def.name, item_def.items))
             elif isinstance(item_def, ItemGroupDef):
                 logger.info(f'adding action group: {item_def.name}')
-                self.addMenu(ActionGroup(window, item_def.items))
+                self.addMenu(ActionGroup(main_window, item_def.items))
             elif isinstance(item_def, ItemDef):
                 logger.info(f'adding action: {item_def.name}')
-                if hasattr(window.commands.actions, item_def.name):
-                    self.addAction(getattr(window.commands.actions, item_def.name))
+                if hasattr(main_window.commands.actions, item_def.name):
+                    self.addAction(getattr(main_window.commands.actions, item_def.name))
                 else:
                     logger.error(f'action not found: {item_def.name}')
             elif isinstance(item_def, SeparatorDef):
                 logger.info(f'adding separator')
-                self.addAction(Separator(window))
+                self.addAction(Separator(main_window))
             else:
                 logger.error(f'Menu: bad itemDef type: {type(item_def)}')
 
 class ActionGroup(QActionGroup):
-    def __init__(self, window, item_defs):
-        super().__init__(window)
+    def __init__(self, main_window, item_defs):
+        super().__init__(main_window)
         for item_def in item_defs:
             if isinstance(item_def, ItemDef):
-                if hasattr(window.commands, item_def.name):
-                    item = getattr(window.commands, item_def.name)
+                if hasattr(main_window.commands, item_def.name):
+                    item = getattr(main_window.commands, item_def.name)
                     item.setText(item_def.text)
                     self.addAction(item)
                 else:

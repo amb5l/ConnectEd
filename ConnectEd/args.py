@@ -14,4 +14,4 @@ parser.add_argument('-i', '--input', type=str, dest='ifile', help='input file', 
 parser.add_argument('-o', '--output', type=str, dest = 'ofile', help='output file', default='')
 parser.add_argument('--dump_settings', action='store_true', help='dump settings')
 parser.set_defaults(mode='gui')
-args = parser.parse_args()
+args, unknown_args = parser.parse_known_args()

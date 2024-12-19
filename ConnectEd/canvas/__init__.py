@@ -1,40 +1,29 @@
-from PyQt6.QtCore import QPointF
+from PyQt6.QtCore    import Qt, QPointF
 from PyQt6.QtWidgets import QWidget
 
-from common            import logger
-from .paint            import CanvasPaintMixin
-from .zoom_pan         import CanvasZoomPanMixin
-
-#from .canvas_state     import CanvasStateMixin
-#from .canvas_paint     import CanvasPaintMixin
-#from .canvas_keyboard  import CanvasKeyboardMixin
-#from .canvas_menu      import CanvasMenuMixin, CanvasMenu
-#from .canvas_zoom_pan  import CanvasZoomPanMixin
-#from .canvas_selection import CanvasSelectionMixin
-#from .canvas_private   import CanvasPrivateMixin
-#
-#from .canvas_mouse.canvas_mouse import CanvasMouseMixin
+from .private      import CanvasPrivateMixin
+from .events.paint import CanvasEventsPaintMixin
+from .api.view     import CanvasApiViewMixin
+#from main_window   import MainWindow
+from sub_window    import SubWindow
+from diagram       import Diagram
 
 
 class Canvas(
     QWidget,
-    CanvasPaintMixin,
-    CanvasSlotsViewMixin
-    #CanvasStateMixin,     # edit state management
-    #CanvasMouseMixin,     # mouse events
-    #CanvasKeyboardMixin,  # keyboard events
-    #CanvasMenuMixin,      # context menu
-    #CanvasSelectionMixin, # selection
-    #CanvasPrivateMixin    # private methods
+    CanvasPrivateMixin,
+    CanvasEventsPaintMixin,
+    CanvasApiViewMixin
 ):
-    def __init__(self, window, diagram):
-        logger.debug('entry')
-        super().__init__(window)
-        self.diagram              = diagram
-        self.zoom                 = 1.0
-        self.pan                  = QPointF(0.0, 0.0)
-        self.initialResizeDone    = False
+    def __init__(self, main_window : 'MainWindow', sub_window : SubWindow, diagram : Diagram):
+        super().__init__(sub_window)
+        self.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
+        self.main_window = main_window
+        self.sub_window  = sub_window
+        self.diagram     = diagram
+        self.zoom        = None
+        self.pan         = QPointF(0.0, 0.0)
         self.setMouseTracking(True)
-        self.window().statusbar.msg.setText('Ready')
+        self.main_window.statusbar.msg.setText('Ready')
         # uncomment to enable keypress events
         #self.setFocusPolicy(Qt.FocusPolicy.StrongFocus)

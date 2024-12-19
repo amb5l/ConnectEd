@@ -7,54 +7,52 @@ from PyQt6.QtGui import QColor
 from common import logger, ORG_NAME, APP_NAME
 from defaults import DEFAULT_PREFS, DEFAULT_THEMES, FACTORY_SHEET_SIZES
 
-startup = {}
-prefs = SimpleNamespace()
-themes = SimpleNamespace()
-theme = None
-sheet_sizes = {}
 
 class Settings:
     def __init__(self):
-        pass
+        self.startup = {}
+        self.prefs = SimpleNamespace()
+        self.themes = SimpleNamespace()
+        self.theme = SimpleNamespace()
+        self.sheet_sizes = {}
 
     def reset(self):
         logger.debug('clearing all settings')
-        settings = QSettings(ORG_NAME, APP_NAME)
-        settings.clear()
+        qsettings = QSettings(ORG_NAME, APP_NAME)
+        qsettings.clear()
 
     def load(self):
-        global startup, prefs, themes, theme, sheet_sizes
         qsettings = QSettings(ORG_NAME, APP_NAME)
         # startup
         logger.debug('loading settings: startup')
-        startup.clear()
+        self.startup.clear()
         qsettings.beginGroup('startup')
         for k in qsettings.childKeys():
-            startup[k] = self.convTextToQSetting(qsettings.value(k))
+            self.startup[k] = self.convTextToQSetting(qsettings.value(k))
         qsettings.endGroup()
         # preferences
         logger.debug('loading settings: preferences')
         qsettings.beginGroup('prefs')
-        self.loadNamespace(qsettings, prefs)
-        self.defaultMissingSettings(qsettings, prefs, DEFAULT_PREFS)
+        self.loadNamespace(qsettings, self.prefs)
+        self.defaultMissingSettings(qsettings, self.prefs, DEFAULT_PREFS)
         qsettings.endGroup()
         # themes
         logger.debug('loading settings: themes')
         qsettings.beginGroup('themes')
-        self.loadNamespace(qsettings, themes)
-        self.defaultMissingSettings(qsettings, themes, DEFAULT_THEMES)
+        self.loadNamespace(qsettings, self.themes)
+        self.defaultMissingSettings(qsettings, self.themes, DEFAULT_THEMES)
         qsettings.endGroup()
-        # theme
-        theme = getattr(themes, prefs.display.theme)
         # sheet sizes
         logger.debug('loading settings: sheet sizes')
-        sheet_sizes.clear()
-        sheet_sizes.update(FACTORY_SHEET_SIZES)
+        self.sheet_sizes.clear()
+        self.sheet_sizes.update(FACTORY_SHEET_SIZES)
         qsettings.beginGroup('sheet_sizes')
         for k in qsettings.childKeys():
-            if k not in sheet_sizes:
-                sheet_sizes[k] = self.convTextToQSetting(qsettings.value(k))
+            if k not in self.sheet_sizes:
+                self.sheet_sizes[k] = self.convTextToQSetting(qsettings.value(k))
         qsettings.endGroup()
+        # theme
+        self.theme = getattr(self.themes, self.prefs.display.theme)
 
     def loadNamespace(self, qsettings, ns):
         for k in qsettings.childKeys():
@@ -77,20 +75,19 @@ class Settings:
                 qsettings.setValue(k, self.convQSettingToText(v))
 
     def save(self):
-        global prefs, themes, sheet_sizes
         logger.debug('saving settings')
         qsettings = QSettings(ORG_NAME, APP_NAME)
         # preferences
         qsettings.beginGroup('prefs')
-        self.saveNamespace(qsettings, prefs)
+        self.saveNamespace(qsettings, self.prefs)
         qsettings.endGroup()
         # themes
         qsettings.beginGroup('themes')
-        self.saveNamespace(qsettings, themes)
+        self.saveNamespace(qsettings, self.themes)
         qsettings.endGroup()
         # sheet sizes
         qsettings.beginGroup('sheet_sizes')
-        for k, v in sheet_sizes.items():
+        for k, v in self.sheet_sizes.items():
             qsettings.setValue(k, self.convQSettingToText(v))
         qsettings.endGroup()
 
@@ -157,3 +154,8 @@ class Settings:
                     print(f'{indent}{k} = {self.convQSettingToText(v)}')
 
 settings = Settings()
+startup = settings.startup
+prefs = settings.prefs
+themes = settings.themes
+theme = settings.theme
+sheet_sizes = settings.sheet_sizes

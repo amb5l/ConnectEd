@@ -1,12 +1,20 @@
 from PyQt6.QtCore import Qt, QPointF, QRectF
-from PyQt6.QtGui import QPainter, QPen, QBrush
+from PyQt6.QtGui  import QPaintEvent, QResizeEvent, QPainter, QPen, QBrush
+from typing import TYPE_CHECKING
 
 from settings import prefs, theme
 
+if TYPE_CHECKING:
+    from canvas import Canvas
 
-class CanvasPaintMixin:
-    def paintEvent(self, event):
+class CanvasEventsPaintMixin:
+    def paintEvent(self : 'Canvas', event : QPaintEvent):
         painter = QPainter(self)
+        # draw void
+
+        # get extents of visible portion of canvas
+        self.visibleRect = self.rect()
+
         # draw background
         painter.fillRect(self.visibleRect, prefs.draw.theme.background)
         # draw diagram
@@ -60,20 +68,8 @@ class CanvasPaintMixin:
             painter.setBrush(brush)
             painter.drawRect(self.visibleRect)
 
-    def resizeEvent(self, event):
-        if not self.initialResizeDone:
-            self.zoomFull()
-            self.initialResizeDone = True
-        self._viewUpdate()
-
-    # update visibleRect and gridRect after zoom or pan or window resize
-    def _viewUpdate(self):
-        self.visibleRect = QRectF(
-            self.canvas2diagram(QPointF(0, 0)),
-            self.canvas2diagram(QPointF(self.width()-1, self.height()-1))
-        )
-        self.gridRect = QRectF(
-            self.visibleRect.topLeft()     - QPointF(prefs.edit.grid.x, prefs.edit.grid.y),
-            self.visibleRect.bottomRight() + QPointF(prefs.edit.grid.x, prefs.edit.grid.y)
-        )
-        self.update()
+    def resizeEvent(self : 'Canvas', event : QResizeEvent):
+        if self.zoom is None:
+            self.viewZoomAll()
+        else:
+            self._viewUpdate()

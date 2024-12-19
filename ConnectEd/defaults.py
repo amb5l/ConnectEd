@@ -49,9 +49,11 @@ DEFAULT_PREFS = {
     },
     'display': {
         'theme' : 'dark',
-        'border' : {
-            'width' : 1,
-            'style' : Qt.PenStyle.SolidLine
+        'margin' : {
+            'left'   : 0,
+            'top'    : 0,
+            'right'  : 0,
+            'bottom' : 0
         },
         'grid' : {
             'enable' : True,
@@ -66,18 +68,13 @@ DEFAULT_PREFS = {
             'max' : 16.0,
             'min' : 0.1
         },
-        'canvas' : {
-            'margin' : {
-                'left'   : 0,
-                'top'    : 0,
-                'right'  : 0,
-                'bottom' : 0
-            }
-        },
         'pan_step'   : 0.125,
         'wheel_step' : 120
     },
     'draw': {
+        'default' : {
+            'alpha' : 192
+        },
         'block' : {
             'line' : {
                 'width' : 1,

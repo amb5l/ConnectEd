@@ -1,4 +1,3 @@
-from inspect import stack
 from PyQt6.QtCore import QSizeF, QXmlStreamWriter, QXmlStreamReader
 
 

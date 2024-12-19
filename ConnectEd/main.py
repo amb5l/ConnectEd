@@ -2,21 +2,17 @@ import sys
 from PyQt6.QtWidgets import QApplication
 from enum import Enum, auto
 
-from common   import logger, untitled_number
-from args     import args
+from common   import logger
+from args     import args, unknown_args
 from settings import settings, startup, prefs, themes, sheet_sizes
-from window   import MainWindow
-from diagram  import Diagram
+
+from main_window import MainWindow
+from canvas      import Canvas
+from diagram     import Diagram
 
 
 def main():
-    class FileOperation(Enum):
-        NEW    = auto()
-        OPEN   = auto()
-        IMPORT = auto()
-
     logger.info('started')
-
     if args.reset:
         settings.reset()
     settings.load()
@@ -30,17 +26,23 @@ def main():
         print('sheet_sizes:')
         settings.dump(sheet_sizes)
 
-    diagram = Diagram()
-    if args.ifile:
-        diagram.load(args.ifile)
-    else:
-        diagram.new('Untitled' + str(untitled_number))
-
     if args.mode == 'gui':
-        app = QApplication(sys.argv)
-        window = MainWindow(diagram)
-        window.show()
+        app = QApplication(sys.argv[:1] + unknown_args)
+        main_window = MainWindow()
+        main_window.show()
+        # TODO handle multiple input files
+        if args.ifile:
+            main_window.fileOpen(args.ifile)
+        else:
+            main_window.fileNew()
         sys.exit(app.exec())
+    elif args.mode == 'cmd':
+        if args.ifile:
+            diagram = Diagram()
+            diagram.fileOpen(args.ifile)
+            print("TODO: implement command line processing")
+    else:
+        logger.error(f'unknown application UI mode: {args.mode}')
 
     logger.info('finished')
 
