@@ -26,23 +26,23 @@ class CmdDef():
 
 SK = QKeySequence.StandardKey
 CMD_DEFS = {
-    'fileNew'         : CmdDef( 'New'        , SK.New                , False , CmdFlags.NONE                                       ),
-    'fileOpen'        : CmdDef( 'Open'       , SK.Open               , False , CmdFlags.NONE                                       ),
-    'fileSave'        : CmdDef( 'Save'       , SK.Save               , False , CmdFlags.NONE                                       ),
-    'fileSaveAs'      : CmdDef( 'Save As'    , SK.SaveAs             , False , CmdFlags.NONE                                       ),
-    'fileClose'       : CmdDef( 'Close'      , SK.Close              , False , CmdFlags.NONE                                       ),
-    'viewZoomAll'     : CmdDef( 'Zoom All'   , 'Home'                , False , CmdFlags.DIAGRAM_EXISTS                             ),
-    'viewZoomSheet'   : CmdDef( 'Zoom Sheet' , 'Ctrl+Home'           , False , CmdFlags.DIAGRAM_EXISTS                             ),
-    'viewZoomExtents' : CmdDef( 'Zoom Full'  , 'Alt+Home'            , False , CmdFlags.DIAGRAM_EXISTS                             ),
-    'viewZoomIn'      : CmdDef( 'Zoom In'    , SK.ZoomIn             , False , CmdFlags.DIAGRAM_EXISTS | CmdFlags.ZOOM_LT_MAX      ),
-    'viewZoomOut'     : CmdDef( 'Zoom Out'   , SK.ZoomOut            , False , CmdFlags.DIAGRAM_EXISTS | CmdFlags.ZOOM_GT_MIN      ),
-    'viewPanLeft'     : CmdDef( 'Pan Left'   , SK.MoveToPreviousChar , False , CmdFlags.DIAGRAM_EXISTS                             ),
-    'viewPanRight'    : CmdDef( 'Pan Right'  , SK.MoveToNextChar     , False , CmdFlags.DIAGRAM_EXISTS                             ),
-    'viewPanUp'       : CmdDef( 'Pan Up'     , SK.MoveToPreviousLine , False , CmdFlags.DIAGRAM_EXISTS                             ),
-    'viewPanDown'     : CmdDef( 'Pan Down'   , SK.MoveToNextLine     , False , CmdFlags.DIAGRAM_EXISTS                             ),
-    'viewPrev'        : CmdDef( 'Previous'   , SK.Back               , False , CmdFlags.DIAGRAM_EXISTS | CmdFlags.VIEW_PREV_EXISTS ),
-    'viewNext'        : CmdDef( 'Next'       , SK.Forward            , False , CmdFlags.DIAGRAM_EXISTS | CmdFlags.VIEW_NEXT_EXISTS ),
-    'helpAbout'       : CmdDef( 'About'      , SK.HelpContents       , False , CmdFlags.NONE                                       )
+    'fileNew'           : CmdDef( 'New'        , SK.New                , False , CmdFlags.NONE                                       ),
+    'fileOpen'          : CmdDef( 'Open'       , SK.Open               , False , CmdFlags.NONE                                       ),
+    'fileSave'          : CmdDef( 'Save'       , SK.Save               , False , CmdFlags.NONE                                       ),
+    'fileSaveAs'        : CmdDef( 'Save As'    , SK.SaveAs             , False , CmdFlags.NONE                                       ),
+    'fileClose'         : CmdDef( 'Close'      , SK.Close              , False , CmdFlags.NONE                                       ),
+    'viewZoomAll'       : CmdDef( 'Zoom All'   , 'Home'                , False , CmdFlags.DIAGRAM_EXISTS                             ),
+    'viewZoomSheet'     : CmdDef( 'Zoom Sheet' , 'Ctrl+Home'           , False , CmdFlags.DIAGRAM_EXISTS                             ),
+    'viewZoomSelection' : CmdDef( 'Zoom Full'  , 'Alt+Home'            , False , CmdFlags.DIAGRAM_EXISTS                             ),
+    'viewZoomIn'        : CmdDef( 'Zoom In'    , SK.ZoomIn             , False , CmdFlags.DIAGRAM_EXISTS | CmdFlags.ZOOM_LT_MAX      ),
+    'viewZoomOut'       : CmdDef( 'Zoom Out'   , SK.ZoomOut            , False , CmdFlags.DIAGRAM_EXISTS | CmdFlags.ZOOM_GT_MIN      ),
+    'viewPanLeft'       : CmdDef( 'Pan Left'   , SK.MoveToPreviousChar , False , CmdFlags.DIAGRAM_EXISTS                             ),
+    'viewPanRight'      : CmdDef( 'Pan Right'  , SK.MoveToNextChar     , False , CmdFlags.DIAGRAM_EXISTS                             ),
+    'viewPanUp'         : CmdDef( 'Pan Up'     , SK.MoveToPreviousLine , False , CmdFlags.DIAGRAM_EXISTS                             ),
+    'viewPanDown'       : CmdDef( 'Pan Down'   , SK.MoveToNextLine     , False , CmdFlags.DIAGRAM_EXISTS                             ),
+    'viewPrev'          : CmdDef( 'Previous'   , SK.Back               , False , CmdFlags.DIAGRAM_EXISTS | CmdFlags.VIEW_PREV_EXISTS ),
+    'viewNext'          : CmdDef( 'Next'       , SK.Forward            , False , CmdFlags.DIAGRAM_EXISTS | CmdFlags.VIEW_NEXT_EXISTS ),
+    'helpAbout'         : CmdDef( 'About'      , SK.HelpContents       , False , CmdFlags.NONE                                       )
 }
 
 class Action(QAction):
