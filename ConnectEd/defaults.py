@@ -49,12 +49,6 @@ DEFAULT_PREFS = {
     },
     'display': {
         'theme' : 'dark',
-        'margin' : {
-            'left'   : 0,
-            'top'    : 0,
-            'right'  : 0,
-            'bottom' : 0
-        },
         'grid' : {
             'enable' : True,
             'dots'   : False,
@@ -69,7 +63,13 @@ DEFAULT_PREFS = {
             'min' : 0.1
         },
         'pan_step'   : 0.125,
-        'wheel_step' : 120
+        'wheel_step' : 120,
+        'overscan' : {
+            'left'   : 0,
+            'top'    : 0,
+            'right'  : 0,
+            'bottom' : 0
+        }
     },
     'draw': {
         'default' : {

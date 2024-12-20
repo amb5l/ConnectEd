@@ -15,13 +15,13 @@ class Canvas(
     CanvasEventsPaintMixin,
     CanvasApiViewMixin
 ):
-    def __init__(self, main_window : 'MainWindow', sub_window : SubWindow, diagram : Diagram):
+    def __init__(self : 'Canvas', main_window : 'MainWindow', sub_window : SubWindow, diagram : Diagram):
         super().__init__(sub_window)
         self.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
         self.main_window = main_window
         self.sub_window  = sub_window
         self.diagram     = diagram
-        self.zoom        = None
+        self.zoom        = 1.0
         self.pan         = QPointF(0.0, 0.0)
         self.setMouseTracking(True)
         self.main_window.statusbar.msg.setText('Ready')

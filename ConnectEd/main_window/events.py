@@ -1,10 +1,10 @@
 from log      import logger
-from settings import startup
+from settings import settings
 
 
 class MainWindowEventsMixin:
     def closeEvent(self, event):
         # save window geometry
-        startup['geometry'] = self.saveGeometry()
+        settings.startup['geometry'] = self.saveGeometry()
         super().closeEvent(event)
         logger.info('main_windowdow: closing')

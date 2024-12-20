@@ -9,9 +9,8 @@ from diagram    import Diagram
 
 class MainWindowApiFileMixin:
     def fileNew(self):
-        diagram = createInst(Diagram)
-        diagram.fileNew()
-        sub_window = createInst(SubWindow)
+        diagram = Diagram()
+        sub_window = SubWindow()
         canvas = Canvas(self, sub_window, diagram)
         sub_window.setWidget(canvas)
         canvas.setParent(sub_window)

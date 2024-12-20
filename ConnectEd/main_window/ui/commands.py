@@ -5,7 +5,7 @@ from PyQt6.QtGui import QAction, QKeySequence
 from PyQt6.QtWidgets import QMessageBox
 
 from log      import logger
-from settings import prefs
+from settings import settings
 from .slots   import Slots
 
 
@@ -100,9 +100,9 @@ class Commands:
                         flags |= CmdFlags.DIAGRAM_EXISTS
                     if diagram.selected:
                         flags |= CmdFlags.ITEMS_SELECTED
-                if canvas.zoom > prefs.display.zoom.min:
+                if canvas.zoom > settings.prefs.display.zoom.min:
                     flags |= CmdFlags.ZOOM_GT_MIN
-                if canvas.zoom < prefs.display.zoom.max:
+                if canvas.zoom < settings.prefs.display.zoom.max:
                     flags |= CmdFlags.ZOOM_LT_MAX
         for action in self.actions.__dict__.values():
             action.setEnabled(flags & action.getFlags() == action.getFlags())

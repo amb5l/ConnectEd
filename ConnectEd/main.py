@@ -4,7 +4,7 @@ from enum import Enum, auto
 
 from log      import logger
 from args     import args, unknown_args
-from settings import settings, startup, prefs, themes, sheet_sizes
+from settings import settings
 
 from main_window import MainWindow
 from canvas      import Canvas
@@ -18,13 +18,16 @@ def main():
     settings.load()
     if args.dump_settings:
         print('startup:')
-        settings.dump(startup)
+        settings.dump(settings.startup)
         print('prefs:')
-        settings.dump(prefs)
+        settings.dump(settings.prefs)
         print('themes:')
-        settings.dump(themes)
+        settings.dump(settings.themes)
         print('sheet_sizes:')
-        settings.dump(sheet_sizes)
+        settings.dump(settings.sheet_sizes)
+    print(1, settings.themes.dark)
+    print(2, settings.theme)
+    print(settings.theme.background)
 
     if args.mode == 'gui':
         app = QApplication(sys.argv[:1] + unknown_args)

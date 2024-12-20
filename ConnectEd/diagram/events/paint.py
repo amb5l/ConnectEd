@@ -1,7 +1,7 @@
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QPen, QBrush
 
-from settings import theme
+from settings import settings
 
 
 class DiagramEventsPaintMixin:

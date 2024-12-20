@@ -3,7 +3,7 @@
 from PyQt6.QtWidgets import QMainWindow, QMdiArea
 
 from log          import logger
-from settings     import APP_NAME, startup
+from settings     import APP_NAME, settings
 from canvas       import Canvas
 from .ui.status   import StatusBar
 from .ui.menus    import MenuBar
@@ -26,8 +26,8 @@ class MainWindow(
         self.diagrams = []
         self.sub_windows = []
         # geometry
-        if 'geometry' in startup:
-            self.restoreGeometry(startup['geometry'])
+        if 'geometry' in settings.startup:
+            self.restoreGeometry(settings.startup['geometry'])
         else:
             # default size: 50% of screen size, centered
             screen = self.screen()

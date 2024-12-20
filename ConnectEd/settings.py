@@ -53,6 +53,7 @@ class Settings:
                 self.sheet_sizes[k] = self.convTextToQSetting(qsettings.value(k))
         qsettings.endGroup()
         # theme
+        logger.debug('loading settings: theme')
         self.theme = getattr(self.themes, self.prefs.display.theme)
 
     def loadNamespace(self, qsettings, ns):
@@ -155,8 +156,3 @@ class Settings:
                     print(f'{indent}{k} = {self.convQSettingToText(v)}')
 
 settings = Settings()
-startup = settings.startup
-prefs = settings.prefs
-themes = settings.themes
-theme = settings.theme
-sheet_sizes = settings.sheet_sizes

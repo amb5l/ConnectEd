@@ -2,16 +2,18 @@ from dataclasses import dataclass, field
 from types import SimpleNamespace
 from PyQt6.QtCore import QSizeF
 
-from settings import prefs
+from settings import settings
 
 from .events.paint import DiagramEventsPaintMixin
-from .api.file import DiagramApiFileMixin
-from .api.edit import DiagramApiEditMixin
-from .misc import DiagramMiscMixin
+from .api          import DiagramApiMixin
+from .api.file     import DiagramApiFileMixin
+from .api.edit     import DiagramApiEditMixin
+from .misc         import DiagramMiscMixin
 
 
 class Diagram(
     DiagramEventsPaintMixin,
+    DiagramApiMixin,
     DiagramApiFileMixin,
     DiagramApiEditMixin,
     DiagramMiscMixin
@@ -27,15 +29,13 @@ class Diagram(
         wip      : list   = field(default_factory=list)
 
     def __init__(self, title=None):
-        if title is not None:
-            self.data.modified = True
-            self.data.title    = title
-            self.data.size     = prefs.file.new.size
-            self.data.margin   = prefs.file.new.margin
-            self.data.content  = []
-            self.data.wip      = []
-        else:
-            self.data = None
+        self.data = self.DiagramData()
+        self.data.modified = True
+        self.data.title    = title
+        self.data.size     = settings.prefs.file.new.size
+        self.data.margin   = settings.prefs.file.new.margin
+        self.data.content  = []
+        self.data.wip      = []
 
     def setWindow(self, window):
         self.window = window
@@ -44,8 +44,8 @@ class Diagram(
         self.data = self.DiagramData()
         self.data.modified = True
         self.data.title    = title
-        self.data.size     = prefs.file.new.size if size is None else size
-        self.data.margin   = prefs.file.new.margin if margin is None else margin
+        self.data.size     = settings.prefs.file.new.size if size is None else size
+        self.data.margin   = settings.prefs.file.new.margin if margin is None else margin
         self.data.content  = []
         self.data.wip      = []
 

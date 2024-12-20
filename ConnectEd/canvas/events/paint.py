@@ -2,13 +2,15 @@ from PyQt6.QtCore import Qt, QPointF, QRectF
 from PyQt6.QtGui  import QPaintEvent, QResizeEvent, QPainter, QPen, QBrush
 from typing import TYPE_CHECKING
 
-from settings import prefs, theme
+from settings import settings
 
 if TYPE_CHECKING:
     from canvas import Canvas
 
 class CanvasEventsPaintMixin:
     def paintEvent(self : 'Canvas', event : QPaintEvent):
+        prefs = settings.prefs
+        theme = settings.theme
         painter = QPainter(self)
         # draw void
 
@@ -16,7 +18,7 @@ class CanvasEventsPaintMixin:
         self.visibleRect = self.rect()
 
         # draw background
-        painter.fillRect(self.visibleRect, prefs.draw.theme.background)
+        painter.fillRect(self.visibleRect, theme.background)
         # draw diagram
         if self.diagram.data is None:
             pass
