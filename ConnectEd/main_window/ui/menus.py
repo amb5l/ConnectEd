@@ -31,34 +31,34 @@ class Separator(QAction):
 MENU_DEFS = [
              #===========================================================
     MenuDef( 'File', [
-        ItemDef( 'fileNew'         ),
-        ItemDef( 'fileOpen'        ),
-        ItemDef( 'fileSave'        ),
-        ItemDef( 'fileSaveAs'      ),
-        ItemDef( 'fileClose'       )
+        ItemDef( 'fileNew'           ),
+        ItemDef( 'fileOpen'          ),
+        ItemDef( 'fileSave'          ),
+        ItemDef( 'fileSaveAs'        ),
+        ItemDef( 'fileClose'         )
     ]),      #===========================================================
     MenuDef( 'Edit', [
-        ItemDef( 'editUndo'        ),
-        ItemDef( 'editRedo'        ),
+        ItemDef( 'editUndo'          ),
+        ItemDef( 'editRedo'          ),
         SeparatorDef(),
-        ItemDef( 'editCut'         ),
-        ItemDef( 'editCopy'        ),
-        ItemDef( 'editPaste'       ),
+        ItemDef( 'editCut'           ),
+        ItemDef( 'editCopy'          ),
+        ItemDef( 'editPaste'         ),
     ]),      #===========================================================
     MenuDef( 'View', [
-        ItemDef( 'viewZoomAll'     ),
-        ItemDef( 'viewZoomSheet'   ),
-        ItemDef( 'viewZoomExtents' ),
-        ItemDef( 'viewZoomIn'      ),
-        ItemDef( 'viewZoomOut'     ),
+        ItemDef( 'viewZoomAll'       ),
+        ItemDef( 'viewZoomSheet'     ),
+        ItemDef( 'viewZoomSelection' ),
+        ItemDef( 'viewZoomIn'        ),
+        ItemDef( 'viewZoomOut'       ),
         SeparatorDef(),
-        ItemDef( 'viewPanLeft'     ),
-        ItemDef( 'viewPanRight'    ),
-        ItemDef( 'viewPanUp'       ),
-        ItemDef( 'viewPanDown'     ),
+        ItemDef( 'viewPanLeft'       ),
+        ItemDef( 'viewPanRight'      ),
+        ItemDef( 'viewPanUp'         ),
+        ItemDef( 'viewPanDown'       ),
         SeparatorDef(),
-        ItemDef( 'viewPrev'        ),
-        ItemDef( 'viewNext'        )
+        ItemDef( 'viewPrev'          ),
+        ItemDef( 'viewNext'          )
     ]),      #===========================================================
     MenuDef( 'Help', [
         ItemDef( 'helpAbout'  )
