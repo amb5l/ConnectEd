@@ -55,9 +55,6 @@ DEFAULT_PREFS = {
             'bottom' : 0
         },
         'theme' : 'dark',
-        'edge'  : {
-            'enable' : True
-        },
         'grid' : {
             'enable' : True,
             'dots'   : False,
@@ -72,7 +69,12 @@ DEFAULT_PREFS = {
             'min' : 0.1
         },
         'pan_step'   : 0.125,
-        'wheel_step' : 120
+        'wheel_step' : 120,
+        'developer' : {
+            'canvas' : {
+                'geometry' : True
+            }
+        }
     },
     'draw': {
         'default' : {

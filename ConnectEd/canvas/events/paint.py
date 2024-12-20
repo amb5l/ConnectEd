@@ -62,8 +62,8 @@ class CanvasEventsPaintMixin:
                         QPointF(x1 * prefs.edit.grid.x, y  * prefs.edit.grid.y),
                         QPointF(x2 * prefs.edit.grid.x, y  * prefs.edit.grid.y)
                     )
-        # draw edge
-        if prefs.display.edge.enable:
+        # developer: canvas geometry
+        if prefs.display.developer.canvas.geometry:
             pen = QPen(theme.edge, 0, Qt.PenStyle.SolidLine)
             brush = QBrush(Qt.BrushStyle.NoBrush)
             painter.setPen(pen)

@@ -1,5 +1,4 @@
 from dataclasses import dataclass, field
-from types import SimpleNamespace
 from PyQt6.QtCore import QSizeF
 
 from settings import settings
