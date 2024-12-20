@@ -81,6 +81,7 @@ def slot_with_diagram(func):
     return wrapper
 
 from .file import SlotsFileMixin
+from .edit import SlotsEditMixin
 from .view import SlotsViewMixin
 from .help import SlotsHelpMixin
 
@@ -89,6 +90,7 @@ Contains all slot functions.
 '''
 class Slots(
     SlotsFileMixin,
+    SlotsEditMixin,
     SlotsViewMixin,
     SlotsHelpMixin
 ):
