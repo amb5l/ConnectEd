@@ -70,7 +70,7 @@ class Commands:
                 shortcut = QKeySequence(shortcut)
             action = Action(text, shortcut, checkable, flags)
             if hasattr(self.slots, name):
-                action.triggered.connect(getattr(self.slots, name))
+                action.triggered.connect(lambda checked, s=getattr(self.slots, name): s())
                 logger.info(f'slot connected for command: {name}')
             else:
                 action.triggered.connect(self.slotMissing)
