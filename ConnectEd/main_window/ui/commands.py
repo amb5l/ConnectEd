@@ -68,9 +68,7 @@ class Commands:
             flags = cmd_def.flags
             if isinstance(shortcut, str):
                 shortcut = QKeySequence(shortcut)
-            # create action
             action = Action(text, shortcut, checkable, flags)
-            # connect action to slot
             if hasattr(self.slots, name):
                 action.triggered.connect(getattr(self.slots, name))
                 logger.info(f'slot connected for command: {name}')
