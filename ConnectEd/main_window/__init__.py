@@ -45,7 +45,6 @@ class MainWindow(
         self.setCentralWidget(self.mdi_area)
         # Commands (actions and slots)
         self.commands = Commands(self)
-        self.commands.build()
         self.commands.update()
         # Menu bar
         self.menu_bar = MenuBar(self)

@@ -61,8 +61,6 @@ class Commands:
         self.parent = parent
         self.slots = Slots(self)
         self.actions = {}
-
-    def build(self):
         for name, cmd_def in CMD_DEFS.items():
             text = cmd_def.text
             shortcut = cmd_def.shortcut
