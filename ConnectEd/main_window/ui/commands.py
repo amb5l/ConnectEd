@@ -1,5 +1,6 @@
 from enum import Flag, auto
 from dataclasses import dataclass
+from types import SimpleNamespace
 from PyQt6.QtGui import QAction, QKeySequence
 from PyQt6.QtWidgets import QMessageBox
 
@@ -60,7 +61,7 @@ class Commands:
     def __init__(self, parent):
         self.parent = parent
         self.slots = Slots(self)
-        self.actions = {}
+        self.actions = SimpleNamespace()
         for name, cmd_def in CMD_DEFS.items():
             text = cmd_def.text
             shortcut = cmd_def.shortcut
@@ -75,7 +76,7 @@ class Commands:
             else:
                 action.triggered.connect(self.slotMissing)
                 logger.warning(f'slot missing for command: {name}')
-            self.actions[name] = action
+            setattr(self.actions, name, action)
 
     def slotMissing(self):
         action = self.sender()
@@ -98,5 +99,5 @@ class Commands:
                     flags |= CmdFlags.ZOOM_GT_MIN
                 if canvas.zoom < prefs.display.zoom.max:
                     flags |= CmdFlags.ZOOM_LT_MAX
-        for action in self.actions.values():
+        for action in self.actions.__dict__.values():
             action.setEnabled(flags & action.getFlags() == action.getFlags())
