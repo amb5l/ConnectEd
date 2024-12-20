@@ -4,7 +4,8 @@ from types import SimpleNamespace
 from PyQt6.QtCore import Qt, QSettings, QSizeF
 from PyQt6.QtGui import QColor
 
-from common import logger, ORG_NAME, APP_NAME
+from log      import logger
+from common   import ORG_NAME, APP_NAME
 from defaults import DEFAULT_PREFS, DEFAULT_THEMES, FACTORY_SHEET_SIZES
 
 

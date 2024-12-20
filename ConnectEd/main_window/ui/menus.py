@@ -4,7 +4,7 @@ from dataclasses import dataclass, field
 from PyQt6.QtWidgets import QMenuBar, QMenu
 from PyQt6.QtGui import QAction, QActionGroup
 
-from common import logger
+from log import logger
 
 
 @dataclass

@@ -2,9 +2,9 @@
 
 from PyQt6.QtWidgets import QMainWindow, QMdiArea
 
-from common      import logger
-from settings    import APP_NAME, startup
-from canvas      import Canvas
+from log          import logger
+from settings     import APP_NAME, startup
+from canvas       import Canvas
 from .ui.status   import StatusBar
 from .ui.menus    import MenuBar
 from .ui.slots    import Slots

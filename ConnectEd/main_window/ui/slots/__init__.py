@@ -7,12 +7,10 @@ from PyQt6.QtCore    import pyqtSlot
 from PyQt6.QtGui     import QKeySequence
 from PyQt6.QtWidgets import QMessageBox
 
-from misc        import getInst
-from common      import logger
-#from main_window import MainWindow
-#from sub_window  import SubWindow
-from canvas      import Canvas
-from diagram     import Diagram
+from misc    import getInst
+from log     import logger
+from canvas  import Canvas
+from diagram import Diagram
 
 SK = QKeySequence.StandardKey
 

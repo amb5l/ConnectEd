@@ -3,9 +3,9 @@ from dataclasses import dataclass
 from PyQt6.QtGui import QAction, QKeySequence
 from PyQt6.QtWidgets import QMessageBox
 
-from common import logger
+from log      import logger
 from settings import prefs
-from .slots import Slots
+from .slots   import Slots
 
 
 class CmdFlags(Flag):

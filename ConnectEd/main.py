@@ -2,7 +2,7 @@ import sys
 from PyQt6.QtWidgets import QApplication
 from enum import Enum, auto
 
-from common   import logger
+from log      import logger
 from args     import args, unknown_args
 from settings import settings, startup, prefs, themes, sheet_sizes
 

@@ -1,6 +1,6 @@
 from PyQt6.QtWidgets import QFileDialog, QMessageBox
 
-from common     import logger
+from log        import logger
 from misc       import createInst, getInst, normAbsPath
 from sub_window import SubWindow
 from canvas     import Canvas

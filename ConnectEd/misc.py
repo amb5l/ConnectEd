@@ -1,6 +1,6 @@
 import sys, os
 
-from common import logger
+from log    import logger
 
 
 def createInst(cls, *args, **kwargs):
