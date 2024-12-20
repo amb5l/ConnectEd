@@ -84,15 +84,19 @@ class Commands:
 
     def update(self):
         flags = CmdFlags.NONE
-        diagram = self.parent.diagram
-        canvas = self.parent.canvas
-        if diagram.data:
-            flags |= CmdFlags.DIAGRAM_EXISTS
-        if diagram.selected:
-            flags |= CmdFlags.ITEMS_SELECTED
-        if canvas.zoom > prefs.display.zoom.min:
-            flags |= CmdFlags.ZOOM_GT_MIN
-        if canvas.zoom < prefs.display.zoom.max:
-            flags |= CmdFlags.ZOOM_LT_MAX
-        for action in self.actions.__dict__.values():
+        sub_window = self.parent.mdi_area.activeSubWindow()
+        if sub_window:
+            canvas = sub_window.canvas
+            if canvas:
+                diagram = canvas.diagram
+                if diagram:
+                    if diagram.data:
+                        flags |= CmdFlags.DIAGRAM_EXISTS
+                    if diagram.selected:
+                        flags |= CmdFlags.ITEMS_SELECTED
+                if canvas.zoom > prefs.display.zoom.min:
+                    flags |= CmdFlags.ZOOM_GT_MIN
+                if canvas.zoom < prefs.display.zoom.max:
+                    flags |= CmdFlags.ZOOM_LT_MAX
+        for action in self.actions.values():
             action.setEnabled(flags & action.getFlags() == action.getFlags())
