@@ -79,17 +79,17 @@ class Menu(QMenu):
         super().__init__(name, main_window)
         for item_def in item_defs:
             if isinstance(item_def, MenuDef):
-                logger.info(f'adding menu: {item_def.name}')
-                self.addMenu(Menu(main_window, item_def.name, item_def.items))
+                logger.info(f'adding menu: {item_def.item}')
+                self.addMenu(Menu(main_window, item_def.item, item_def.items))
             elif isinstance(item_def, ItemGroupDef):
-                logger.info(f'adding action group: {item_def.name}')
+                logger.info(f'adding action group: {item_def.item}')
                 self.addMenu(ActionGroup(main_window, item_def.items))
             elif isinstance(item_def, ItemDef):
-                logger.info(f'adding action: {item_def.name}')
-                if hasattr(main_window.commands.actions, item_def.name):
-                    self.addAction(getattr(main_window.commands.actions, item_def.name))
+                logger.info(f'adding action: {item_def.item}')
+                if hasattr(main_window.commands.actions, item_def.item):
+                    self.addAction(getattr(main_window.commands.actions, item_def.item))
                 else:
-                    logger.error(f'action not found: {item_def.name}')
+                    logger.error(f'action not found: {item_def.item}')
             elif isinstance(item_def, SeparatorDef):
                 logger.info(f'adding separator')
                 self.addAction(Separator(main_window))
@@ -101,12 +101,12 @@ class ActionGroup(QActionGroup):
         super().__init__(main_window)
         for item_def in item_defs:
             if isinstance(item_def, ItemDef):
-                if hasattr(main_window.commands, item_def.name):
-                    item = getattr(main_window.commands, item_def.name)
+                if hasattr(main_window.commands, item_def.item):
+                    item = getattr(main_window.commands, item_def.item)
                     item.setText(item_def.text)
                     self.addAction(item)
                 else:
-                    logger.error(f'action not found: {item_def.name}')
+                    logger.error(f'action not found: {item_def.item}')
             elif isinstance(item_def, SeparatorDef):
                 item = QAction(self)
                 item.setSeparator(True)
