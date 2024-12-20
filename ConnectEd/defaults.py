@@ -37,7 +37,7 @@ FACTORY_SHEET_SIZES = {
 DEFAULT_PREFS = {
     'file': {
         'new' : {
-            'size'   : FACTORY_SHEET_SIZES['A4'],
+            'sheet'  : FACTORY_SHEET_SIZES['A4'],
             'margin' : 10
         },
         'open': {
@@ -48,7 +48,16 @@ DEFAULT_PREFS = {
         }
     },
     'display': {
+        'overscan' : {
+            'left'   : 0,
+            'top'    : 0,
+            'right'  : 0,
+            'bottom' : 0
+        },
         'theme' : 'dark',
+        'edge'  : {
+            'enable' : True
+        },
         'grid' : {
             'enable' : True,
             'dots'   : False,
@@ -63,13 +72,7 @@ DEFAULT_PREFS = {
             'min' : 0.1
         },
         'pan_step'   : 0.125,
-        'wheel_step' : 120,
-        'overscan' : {
-            'left'   : 0,
-            'top'    : 0,
-            'right'  : 0,
-            'bottom' : 0
-        }
+        'wheel_step' : 120
     },
     'draw': {
         'default' : {

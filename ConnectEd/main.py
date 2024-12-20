@@ -25,9 +25,6 @@ def main():
         settings.dump(settings.themes)
         print('sheet_sizes:')
         settings.dump(settings.sheet_sizes)
-    print(1, settings.themes.dark)
-    print(2, settings.theme)
-    print(settings.theme.background)
 
     if args.mode == 'gui':
         app = QApplication(sys.argv[:1] + unknown_args)
