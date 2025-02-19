@@ -1,5 +1,9 @@
+import logging
+
 from PyQt6.QtWidgets import QPlainTextEdit
 from PyQt6.QtGui     import QTextOption
+
+from ..core import logger
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -7,6 +11,8 @@ if TYPE_CHECKING:
 
 
 class TextFileViewer(QPlainTextEdit):
+    handler : logging.Handler | None
+
     def __init__(
         self     : 'TextFileViewer',
         parent   : 'MainWindow',
@@ -25,6 +31,11 @@ class TextFileViewer(QPlainTextEdit):
                 content = content[:-1]
             self.setPlainText(content)
         self.verticalScrollBar().setValue(self.verticalScrollBar().maximum())
-        # scroll down so the the end of the file is visible
-        #self.verticalScrollBar().setValue(self.verticalScrollBar().maximum())
+        self.handler = None
 
+    def __del__(self):
+        if hasattr(self, 'handler') and self.handler:
+            try:
+                logger.removeHandler(self.handler)
+            except:
+                pass

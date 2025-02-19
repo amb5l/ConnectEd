@@ -1,4 +1,4 @@
-import os, logging
+import os, logging, weakref
 
 from PyQt6.QtWidgets import QPlainTextEdit
 
@@ -17,11 +17,15 @@ class LogViewerHandler(logging.Handler):
 
     def __init__(self : 'LogViewerHandler', log_viewer : QPlainTextEdit) -> None:
         super().__init__()
-        self.log_viewer = log_viewer
+        self.log_viewer = weakref.proxy(log_viewer)
+        self.log_viewer.handler = self
 
     def emit(self : 'LogViewerHandler', record : logging.LogRecord) -> None:
-        msg = self.format(record)
-        self.log_viewer.appendPlainText(msg)
+        try:
+            msg = self.format(record)
+            self.log_viewer.appendPlainText(msg)
+        except (ReferenceError, RuntimeError): # widget is gone
+            logger.removeHandler(self)
 
 logger = logging.getLogger(APP_NAME)
 logger.setLevel(logging.DEBUG)
@@ -47,3 +51,6 @@ def add_log_viewer_handler(log_viewer : QPlainTextEdit) -> None:
     log_viewer_handler.setLevel(logging.DEBUG)  # Or whatever level you prefer
     log_viewer_handler.setFormatter(formatter)  # Use the same formatter as other handlers
     logger.addHandler(log_viewer_handler)
+    return log_viewer_handler # return the handler so it can be removed later
+
+# TODO review logging levels for console, file, viewer
