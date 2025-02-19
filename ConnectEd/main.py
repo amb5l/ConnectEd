@@ -2,13 +2,15 @@ import sys
 
 from PyQt6.QtWidgets import QApplication
 
-from .core                import logger
+from .core                import logger, args, unknown_args, settings
 from .widgets.main_window import MainWindow
 
 
 def main():
     logger.info("started")
-    app = QApplication([])
+    if args.reset:
+        settings.reset()
+    app = QApplication(sys.argv[:1] + unknown_args)
     main_window = MainWindow()
     main_window.show()
     r = app.exec()
