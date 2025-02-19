@@ -6,12 +6,12 @@ from ...core.logger import LogViewerHandler, add_log_viewer_handler
 
 
 class LogViewer(QDockWidget):
-    text_file_viewer : TextViewer
-    handler          : LogViewerHandler
+    text_viewer : TextViewer
+    handler     : LogViewerHandler
 
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setWindowTitle('Log')
-        self.text_file_viewer = TextViewer(self, LOG_FILENAME)
-        self.setWidget(self.text_file_viewer)
-        self.handler = add_log_viewer_handler(self.text_file_viewer)
+        self.text_viewer = TextViewer(self, LOG_FILENAME)
+        self.setWidget(self.text_viewer)
+        self.handler = add_log_viewer_handler(self.text_viewer)
