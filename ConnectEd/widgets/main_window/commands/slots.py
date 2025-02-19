@@ -1,5 +1,6 @@
 from PyQt6.QtWidgets import QDialog, QMessageBox
 
+from ....core import logger
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -15,4 +16,5 @@ class Slots:
         self._parent.close()
 
     def helpAbout(self):
+        logger.debug('helpAbout')
         QMessageBox.about(self._parent, 'About', 'ConnectEd')
