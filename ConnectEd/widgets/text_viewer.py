@@ -10,13 +10,13 @@ if TYPE_CHECKING:
     from .main_window import MainWindow
 
 
-class TextFileViewer(QPlainTextEdit):
+class TextViewer(QPlainTextEdit):
     handler : logging.Handler | None
 
     def __init__(
-        self     : 'TextFileViewer',
+        self     : 'TextViewer',
         parent   : 'MainWindow',
-        filename : str
+        filename : str | None = None
     ) -> None:
         super().__init__(parent)
         self.setReadOnly(True)
@@ -25,10 +25,11 @@ class TextFileViewer(QPlainTextEdit):
         font = self.font()
         font.setFamily('Courier')
         self.setFont(font)
-        with open(filename, 'r') as f:
-            content = f.read()
-            if content.endswith('\n'):
-                content = content[:-1]
+        if filename:
+            with open(filename, 'r') as f:
+                content = f.read()
+                if content.endswith('\n'):
+                    content = content[:-1]
             self.setPlainText(content)
         self.verticalScrollBar().setValue(self.verticalScrollBar().maximum())
         self.handler = None
