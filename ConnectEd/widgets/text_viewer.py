@@ -23,7 +23,8 @@ class TextViewer(QPlainTextEdit):
         self.setUndoRedoEnabled(False)
         self.setWordWrapMode(QTextOption.WrapMode.NoWrap)
         font = self.font()
-        font.setFamily('Courier')
+        font.setFamily('Intel One Mono')
+        font.setPointSize(10)
         self.setFont(font)
         if filename:
             with open(filename, 'r') as f:
