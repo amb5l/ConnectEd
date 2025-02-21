@@ -40,4 +40,4 @@ class MainWindow(QMainWindow):
         self.dummy_widget = DummyWidget()
         self.setCentralWidget(self.dummy_widget)
 
-        self.msg_viewer.text_viewer.appendPlainText("ConnectEd ready!")
+        self.msg_viewer.text_view.appendPlainText("ConnectEd ready!")

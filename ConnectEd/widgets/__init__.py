@@ -1,1 +1,1 @@
-from .text_viewer import TextViewer
+from .text_view import TextView

@@ -11,12 +11,12 @@ if TYPE_CHECKING:
     from .main_window import MainWindow
 
 
-class TextViewer(QPlainTextEdit):
+class TextView(QPlainTextEdit):
     find_bar : FindBar | None
     handler  : logging.Handler | None
 
     def __init__(
-        self     : 'TextViewer',
+        self     : 'TextView',
         parent   : 'MainWindow',
         filename : str | None = None
     ) -> None:
