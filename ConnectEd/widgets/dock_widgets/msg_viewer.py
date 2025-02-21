@@ -1,6 +1,5 @@
 from PyQt6.QtWidgets import QDockWidget, QWidget, QVBoxLayout
 
-from ...core        import LOG_FILENAME
 from ..text_viewer  import TextViewer
 from ..find_bar     import FindBar
 
@@ -15,6 +14,7 @@ class MsgViewer(QDockWidget):
         self.setWindowTitle('Messages')
         self.text_viewer = TextViewer(self)
         self.find_bar = FindBar(self, self.text_viewer)
+        self.text_viewer.setFindBar(self.find_bar)
         self.main_widget = QWidget()
         layout = QVBoxLayout(self.main_widget)
         layout.setContentsMargins(0, 0, 0, 0)
@@ -23,3 +23,4 @@ class MsgViewer(QDockWidget):
         layout.addWidget(self.text_viewer)
         self.main_widget.setLayout(layout)
         self.setWidget(self.main_widget)
+        self.find_bar.hide()

@@ -17,6 +17,7 @@ class LogViewer(QDockWidget):
         self.setWindowTitle('Log')
         self.text_viewer = TextViewer(self, LOG_FILENAME)
         self.find_bar = FindBar(self, self.text_viewer)
+        self.text_viewer.setFindBar(self.find_bar)
         self.main_widget = QWidget()
         layout = QVBoxLayout(self.main_widget)
         layout.setContentsMargins(0, 0, 0, 0)
@@ -26,3 +27,4 @@ class LogViewer(QDockWidget):
         self.main_widget.setLayout(layout)
         self.setWidget(self.main_widget)
         self.handler = add_log_viewer_handler(self.text_viewer)
+        self.find_bar.hide()
