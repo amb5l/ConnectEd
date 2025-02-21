@@ -4,6 +4,7 @@ from PyQt6.QtWidgets import QApplication
 
 from .core                import logger, args, unknown_args, settings
 from .widgets.main_window import MainWindow
+from .resources           import initResources
 
 
 def main():
@@ -11,6 +12,7 @@ def main():
     if args.reset:
         settings.reset()
     app = QApplication(sys.argv[:1] + unknown_args)
+    initResources()
     main_window = MainWindow()
     main_window.show()
     r = app.exec()
