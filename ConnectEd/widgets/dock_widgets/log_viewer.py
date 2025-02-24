@@ -1,30 +1,10 @@
-from PyQt6.QtWidgets import QDockWidget, QWidget, QVBoxLayout
-
-from ...core        import LOG_FILENAME
-from ..text_view    import TextView
-from ..find_bar     import FindBar
-from ...core.logger import LogViewerHandler, add_log_viewer_handler
+from ...core.logger import add_log_viewer_handler
+from .text_viewer   import TextViewer
 
 
-class LogViewer(QDockWidget):
-    main_widget : QWidget
-    text_view   : TextView
-    find_bar    : FindBar
-    handler     : LogViewerHandler
+class LogViewer(TextViewer):
+    WINDOW_TITLE = 'Log'
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setWindowTitle('Log')
-        self.text_view = TextView(self, LOG_FILENAME)
-        self.find_bar = FindBar(self, self.text_view)
-        self.text_view.setFindBar(self.find_bar)
-        self.main_widget = QWidget()
-        layout = QVBoxLayout(self.main_widget)
-        layout.setContentsMargins(0, 0, 0, 0)
-        layout.setSpacing(0)
-        layout.addWidget(self.find_bar)
-        layout.addWidget(self.text_view)
-        self.main_widget.setLayout(layout)
-        self.setWidget(self.main_widget)
         self.handler = add_log_viewer_handler(self.text_view)
-        self.find_bar.hide()
