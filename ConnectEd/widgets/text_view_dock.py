@@ -1,10 +1,10 @@
 from PyQt6.QtWidgets import QDockWidget, QWidget, QVBoxLayout
 
-from ..text_view import TextView
-from ..find_bar  import FindBar
+from .text_view import TextView
+from .find_bar  import FindBar
 
 
-class TextViewer(QDockWidget):
+class TextViewDockWidget(QDockWidget):
     WINDOW_TITLE = 'Text Viewer'
     main_widget  : QWidget
     text_view    : TextView

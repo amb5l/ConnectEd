@@ -1,8 +1,8 @@
-from ...core.logger import add_log_viewer_handler
-from .text_viewer   import TextViewer
+from ..core.logger   import add_log_viewer_handler
+from .text_view_dock import TextViewDockWidget
 
 
-class LogViewer(TextViewer):
+class LogViewDock(TextViewDockWidget):
     WINDOW_TITLE = 'Log'
 
     def __init__(self, parent=None):

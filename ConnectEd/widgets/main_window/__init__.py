@@ -1,11 +1,12 @@
 from PyQt6.QtCore    import Qt
-from PyQt6.QtWidgets import QMainWindow, QDockWidget
+from PyQt6.QtWidgets import QMainWindow
 
-from ...core        import APP_NAME, LOG_FILENAME
-from .commands      import Commands
-from .menu_bar      import MenuBar
-from .status_bar    import StatusBar
-from ..dock_widgets import MsgViewer, LogViewer
+from ...core         import APP_NAME
+from .commands       import Commands
+from .menu_bar       import MenuBar
+from .status_bar     import StatusBar
+from ..msg_view_dock import MsgViewDock
+from ..log_view_dock import LogViewDock
 
 from ...test.dummy_widget import DummyWidget
 
@@ -29,9 +30,9 @@ class MainWindow(QMainWindow):
         self.setStatusBar(self.status_bar)
 
         # dock widgets
-        self.msg_viewer = MsgViewer(self)
+        self.msg_viewer = MsgViewDock(self)
         self.addDockWidget(Qt.DockWidgetArea.BottomDockWidgetArea, self.msg_viewer)
-        self.log_viewer = LogViewer(self)
+        self.log_viewer = LogViewDock(self)
         self.addDockWidget(Qt.DockWidgetArea.BottomDockWidgetArea, self.log_viewer)
         self.tabifyDockWidget(self.msg_viewer, self.log_viewer)
         self.msg_viewer.raise_()
