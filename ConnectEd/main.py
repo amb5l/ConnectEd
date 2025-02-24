@@ -11,11 +11,13 @@ def main():
     logger.info("started")
     if args.reset:
         settings.reset()
+    settings.load()
     app = QApplication(sys.argv[:1] + unknown_args)
     initResources()
     main_window = MainWindow()
     main_window.show()
     r = app.exec()
+    settings.save()
     logger.info("finished")
     return r
 

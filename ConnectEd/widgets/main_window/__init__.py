@@ -1,7 +1,7 @@
-from PyQt6.QtCore    import Qt
+from PyQt6.QtCore    import Qt, QByteArray
 from PyQt6.QtWidgets import QMainWindow, QMdiArea, QMdiSubWindow
 
-from ...core         import APP_NAME
+from ...core         import APP_NAME, logger, settings
 from .commands       import Commands
 from .menu_bar       import MenuBar
 from .status_bar     import StatusBar
@@ -16,7 +16,17 @@ class MainWindow(QMainWindow):
 
         # title and position
         self.setWindowTitle(APP_NAME)
-        self.setGeometry(100, 100, 800, 600)
+        if hasattr(settings.startup, 'geometry'):
+            self.restoreGeometry(QByteArray(settings.startup.geometry))
+        else:
+            logger.debug('no geometry setting, using default')
+            screen = self.screen()
+            screenSize = screen.size()
+            self.resize(screenSize.width() // 2, screenSize.height() // 2)
+            frame_geometry = self.frameGeometry()
+            centerPoint = screen.availableGeometry().center()
+            frame_geometry.moveCenter(centerPoint)
+            self.move(frame_geometry.topLeft())
 
         # commands = actions and slots
         self.commands = Commands(self)
@@ -50,3 +60,7 @@ class MainWindow(QMainWindow):
 
         # ready message
         self.msg_viewer.text_view.appendPlainText("ConnectEd ready!")
+
+    def closeEvent(self, event):
+        settings.startup.geometry = self.saveGeometry().data()
+        super().closeEvent(event)
