@@ -1,12 +1,13 @@
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import \
     QWidget, QTextEdit, QPlainTextEdit, \
-    QHBoxLayout, QComboBox, QToolButton, QCheckBox
+    QHBoxLayout, QLabel, QComboBox, QToolButton, QCheckBox
 from PyQt6.QtGui import QIcon, QTextDocument
 
 
 class FindBar(QWidget):
     text_edit   : QPlainTextEdit
+    find_label  : QLabel
     find_combo  : QComboBox
     find_prev   : QToolButton
     find_next   : QToolButton
@@ -20,6 +21,9 @@ class FindBar(QWidget):
 
         layout = QHBoxLayout(self)
         layout.setContentsMargins(5, 2, 5, 2)
+
+        self.find_label = QLabel('Find:')
+        layout.addWidget(self.find_label)
 
         self.find_combo = QComboBox()
         self.find_combo.setEditable(True)
