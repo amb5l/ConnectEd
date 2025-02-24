@@ -1,6 +1,4 @@
-from dataclasses import dataclass
-
-from PyQt6.QtGui import QKeySequence, QAction
+from PyQt6.QtGui import QKeySequence
 
 from ....core.types import Action
 
@@ -8,7 +6,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ....widgets.main_window import MainWindow
 
-#@dataclass
+
 class Actions:
     _parent : 'MainWindow'
 
