@@ -6,10 +6,6 @@ from PyQt6.QtGui     import QTextOption, QAction, QKeySequence
 from ..core    import logger
 from .find_bar import FindBar
 
-from typing import TYPE_CHECKING
-if TYPE_CHECKING:
-    from .main_window import MainWindow
-
 
 class TextView(QPlainTextEdit):
     find_bar : FindBar | None
@@ -17,7 +13,7 @@ class TextView(QPlainTextEdit):
 
     def __init__(
         self     : 'TextView',
-        parent   : 'MainWindow',
+        parent   : QWidget,
         filename : str | None = None
     ) -> None:
         super().__init__(parent)

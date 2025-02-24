@@ -1,7 +1,7 @@
 from PyQt6.QtWidgets import QDockWidget, QWidget, QVBoxLayout
 
-from ..text_view  import TextView
-from ..find_bar     import FindBar
+from ..text_view import TextView
+from ..find_bar  import FindBar
 
 
 class MsgViewer(QDockWidget):
