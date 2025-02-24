@@ -15,6 +15,12 @@ class Slots:
     def fileExit(self):
         self._parent.close()
 
+    def windowMessages(self):
+        self._parent.msg_viewer.show()
+
+    def windowLog(self):
+        self._parent.log_viewer.show()
+
     def helpAbout(self):
         logger.debug('helpAbout')
         QMessageBox.about(self._parent, 'About', 'ConnectEd')

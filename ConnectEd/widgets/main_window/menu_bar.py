@@ -16,8 +16,13 @@ class MenuBar(QMenuBar):
         self.file_menu = QMenu('&File')
         self.file_menu.addAction(actions.fileExit)
 
+        self.window_menu = QMenu('&Window')
+        self.window_menu.addAction(actions.windowMessages)
+        self.window_menu.addAction(actions.windowLog)
+
         self.help_menu = QMenu('&Help')
         self.help_menu.addAction(actions.helpAbout)
 
         self.addMenu(self.file_menu)
+        self.addMenu(self.window_menu)
         self.addMenu(self.help_menu)
