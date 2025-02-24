@@ -1,5 +1,5 @@
 from PyQt6.QtCore    import Qt
-from PyQt6.QtWidgets import QMainWindow
+from PyQt6.QtWidgets import QMainWindow, QMdiArea, QMdiSubWindow
 
 from ...core         import APP_NAME
 from .commands       import Commands
@@ -37,8 +37,16 @@ class MainWindow(QMainWindow):
         self.tabifyDockWidget(self.msg_viewer, self.log_viewer)
         self.msg_viewer.raise_()
 
-        # central widget
-        self.dummy_widget = DummyWidget()
-        self.setCentralWidget(self.dummy_widget)
+        # dummy sub window
+        self.dummy_sub_window = QMdiSubWindow()
+        self.dummy_sub_window.setWidget(DummyWidget())
 
+        # MDI area
+        self.mdi_area = QMdiArea()
+        self.mdi_area.addSubWindow(self.dummy_sub_window)
+
+        # central widget
+        self.setCentralWidget(self.mdi_area)
+
+        # ready message
         self.msg_viewer.text_view.appendPlainText("ConnectEd ready!")
