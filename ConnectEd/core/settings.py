@@ -1,4 +1,6 @@
 from types import SimpleNamespace
+# Use Pydantic v1 compatibility mode
+from pydantic.v1 import BaseModel
 
 from PyQt6.QtCore import QSettings, QSize, QSizeF, Qt
 from PyQt6.QtGui  import QColor
@@ -6,95 +8,268 @@ from PyQt6.QtGui  import QColor
 from .logger import logger
 from .defs   import ORG_NAME, APP_NAME
 from .types  import FontSpec
+from .utils  import get_default_path
 
+class SettingsModel(BaseModel):
+    class Config:
+        arbitrary_types_allowed = True
 
-class Settings:
-    startup : SimpleNamespace
+class Theme(SettingsModel):
+    background : QColor
+    grid       : QColor
 
-    def __init__(self):
-        self.startup = SimpleNamespace()
+class Settings(SettingsModel):
+    ################################################################################
 
-    def reset(self):
+    class _Startup(SettingsModel):
+        geometry : bytes | None = None
+    startup : _Startup = _Startup()
+
+    class _Themes(SettingsModel):
+        class _Dark(Theme):
+            background : QColor = QColor(0, 0, 0)
+            grid : QColor = QColor(32, 32, 32)
+        dark : _Dark = _Dark()
+        class _Light(Theme):
+            background : QColor = QColor(128, 128, 128)
+            grid : QColor = QColor(32, 32, 32)
+        light : _Light = _Light()
+    themes : _Themes = _Themes()
+
+    class _Prefs(SettingsModel):
+        class _File(SettingsModel):
+            class _New(SettingsModel):
+                sheet  : str = 'A4'
+                margin : int = 10
+            new : _New = _New()
+            class _Open(SettingsModel):
+                dir : str = get_default_path()
+            open : _Open = _Open()
+            class _Save(SettingsModel):
+                dir : str = get_default_path()
+            save : _Save = _Save()
+        file : _File = _File()
+        class _View(SettingsModel):
+            theme : str = 'dark'
+            class _Grid(SettingsModel):
+                display : bool = True
+                snap    : bool = True
+                x       : int = 10
+                y       : int = 10
+            grid : _Grid = _Grid()
+        view : _View = _View()
+    prefs : _Prefs = _Prefs()
+
+    @property
+    def theme(self) -> Theme:
+        theme_name = self.prefs.view.theme
+        valid_themes = [name for name in dir(self.themes)
+                       if not name.startswith('_') and isinstance(getattr(self.themes, name), Theme)]
+        if theme_name in valid_themes:
+            return getattr(self.themes, theme_name)
+        self.prefs.view.theme = 'dark'
+        return self.themes.dark
+
+    ################################################################################
+
+    def __init__(self : 'Settings'):
+        super().__init__()
+
+    def reset(self : 'Settings'):
         logger.debug('clearing all settings')
         qsettings = QSettings(ORG_NAME, APP_NAME)
         qsettings.clear()
 
-    def load(self):
+    def load(self : 'Settings'):
+        """Load settings from QSettings storage into this Pydantic model."""
+        logger.debug('loading settings')
         qsettings = QSettings(ORG_NAME, APP_NAME)
-        logger.debug('loading settings: startup')
-        qsettings.beginGroup('startup')
-        self._loadNamespace(qsettings, self.startup)
-        qsettings.endGroup()
+        for attr_name in dir(self):
+            if attr_name.startswith('_') or callable(getattr(self, attr_name)):
+                continue
+            attr = getattr(self, attr_name)
+            if hasattr(attr, '__fields__'): # is a Pydantic model
+                logger.debug(f'Loading settings for {attr_name}')
+                qsettings.beginGroup(attr_name)
+                self._load_model(qsettings, attr)
+                qsettings.endGroup()
 
-    def save(self):
+    def save(self : 'Settings'):
+        """Save settings from this Pydantic model to QSettings storage."""
         logger.debug('saving settings')
         qsettings = QSettings(ORG_NAME, APP_NAME)
-        qsettings.beginGroup('startup')
-        self._saveNamespace(qsettings, self.startup)
-        qsettings.endGroup()
-
-    def _loadNamespace(self, qsettings, ns):
-        for k in qsettings.childKeys():
-            v = qsettings.value(k)
-            logger.debug(f'loading setting: {qsettings.group() + "/" + k} = {v}')
-            setattr(ns, k, self._TextToQSetting(v))
-        for g in qsettings.childGroups():
-            setattr(ns, g, SimpleNamespace())
-            qsettings.beginGroup(g)
-            self._loadNamespace(qsettings, getattr(ns, g))
-            qsettings.endGroup()
-
-    def _saveNamespace(self, qsettings, ns):
-        for k, v in vars(ns).items():
-            if isinstance(v, SimpleNamespace):
-                qsettings.beginGroup(k)
-                self._saveNamespace(qsettings, v)
+        for attr_name in dir(self):
+            if attr_name.startswith('_') or callable(getattr(self, attr_name)):
+                continue
+            attr = getattr(self, attr_name)
+            if hasattr(attr, '__fields__'): # is a Pydantic model
+                logger.debug(f'Saving settings for {attr_name}')
+                qsettings.beginGroup(attr_name)
+                self._save_model(qsettings, attr)
                 qsettings.endGroup()
-            elif isinstance(v, dict):
-                qsettings.beginGroup(k)
-                self._saveNamespace(qsettings, v)
-                qsettings.endGroup()
+
+    def _load_model(
+        self      : 'Settings',
+        qsettings : QSettings,
+        model     : SettingsModel
+    ):
+        """
+        Load settings from QSettings into a Pydantic model.
+
+        Args:
+            qsettings: The QSettings object positioned at the current group
+            model: The Pydantic model to load settings into
+        """
+        # Load direct values
+        for key in qsettings.childKeys():
+            value = qsettings.value(key)
+            if value is not None:
+                logger.debug(f'loading setting: {qsettings.group()}/{key} = {value}')
+                try:
+                    # Convert the string value to the appropriate type
+                    converted_value = self._text_to_value(value)
+                    # Set the attribute on the model
+                    setattr(model, key, converted_value)
+                except (ValueError, AttributeError) as e:
+                    logger.warning(f'Error loading setting {key}: {e}')
+
+        # Load nested groups (submodels)
+        for group in qsettings.childGroups():
+            # Check if this group corresponds to a field in the model
+            if hasattr(model, group):
+                submodel = getattr(model, group)
+                # Check if it's a model by checking if it has __fields__
+                if hasattr(submodel, '__fields__'):
+                    qsettings.beginGroup(group)
+                    self._load_model(qsettings, submodel)
+                    qsettings.endGroup()
+
+    def _save_model(
+        self      : 'Settings',
+        qsettings : QSettings,
+        model     : SettingsModel
+    ):
+        """
+        Save settings from a Pydantic model to QSettings.
+
+        Args:
+            qsettings: The QSettings object positioned at the current group
+            model: The Pydantic model to save settings from
+        """
+        # Get all fields from the model
+        model_dict = model.dict()
+
+        for key, value in model_dict.items():
+            if isinstance(value, dict):
+                # This is likely a nested model
+                if hasattr(model, key) and hasattr(getattr(model, key), '__fields__'):
+                    qsettings.beginGroup(key)
+                    self._save_model(qsettings, getattr(model, key))
+                    qsettings.endGroup()
             else:
-                logger.debug(f'saving setting: {k} = {v}')
-                qsettings.setValue(k, self._QSettingToText(v))
+                # This is a direct value
+                logger.debug(f'saving setting: {qsettings.group()}/{key} = {value}')
+                qsettings.setValue(key, self._value_to_text(value))
 
-    def _TextToQSetting(self, s):
-        typeName, valueStr = s.split(':', 1)
-        r = None
+    def _text_to_value(self, text_value):
+        """Convert a text value from QSettings to the appropriate Python type."""
+        if not isinstance(text_value, str):
+            return text_value
+        try:
+            typeName, valueStr = text_value.split(':', 1)
+        except ValueError:
+            # If there's no type prefix, return as is
+            return text_value
         match typeName:
-            case 'NoneType'      : r = None
-            case 'bytes'         : r = bytes.fromhex(valueStr)
-            case 'str'           : r = valueStr
-            case 'int'           : r = int(valueStr)
-            case 'float'         : r = float(valueStr)
-            case 'bool'          : r = valueStr == 'True'
-            case 'QSize'         : r = QSize(*map(int, valueStr[1:-1].split(',')))
-            case 'QSizeF'        : r = QSizeF(*map(float, valueStr[1:-1].split(',')))
-            case 'QColor'        : r = QColor.fromRgba(int(valueStr,0))
-            case 'PenStyle'      : r = Qt.PenStyle[valueStr]
-            case 'BrushStyle'    : r = Qt.BrushStyle[valueStr]#
-            case 'FontSpec'      : r = FontSpec.__initFromStr__(valueStr)
-            case 'AlignmentFlag' : r = Qt.AlignmentFlag(int(valueStr))
+            case 'NoneType'   : return None
+            case 'bytes'      : return bytes.fromhex(valueStr)
+            case 'str'        : return valueStr
+            case 'int'        : return int(valueStr)
+            case 'float'      : return float(valueStr)
+            case 'bool'       : return valueStr == 'True'
+            case 'QSize'      : return QSize(*map(int, valueStr[1:-1].split(',')))
+            case 'QSizeF'     : return QSizeF(*map(float, valueStr[1:-1].split(',')))
+            case 'QColor'     : return QColor.fromRgba(int(valueStr,0))
+            case 'PenStyle'   : return Qt.PenStyle[valueStr]
+            case 'BrushStyle' : return Qt.BrushStyle[valueStr]
             case _:
-                raise ValueError(f'fromQSettingValue: unsupported type = {typeName}')
-        return r
+                raise ValueError(f'Unsupported type: {typeName}')
 
-    def _QSettingToText(self, x):
-        typeName = type(x).__name__
+    def _value_to_text(self, value):
+        """Convert a Python value to a text representation for QSettings."""
+        typeName = type(value).__name__
         match typeName:
-            case 'NoneType'      : valueStr = 'None'
-            case 'bytes'         : valueStr = x.hex()
-            case 'str'           : valueStr = x
-            case 'int'           : valueStr = str(x)
-            case 'float'         : valueStr = str(x)
-            case 'bool'          : valueStr = str(x)
-            case 'QSize'         : valueStr = f'({x.width()},{x.height()})'
-            case 'QSizeF'        : valueStr = f'({x.width()},{x.height()})'
-            case 'QColor'        : valueStr = hex(x.rgba())
-            case 'PenStyle'      : valueStr = str(x).replace('PenStyle.', '')
-            case 'BrushStyle'    : valueStr = str(x).replace('BrushStyle.', '')
-            case 'FontSpec'      : valueStr = str(x)
-            case 'AlignmentFlag' : valueStr = str(x)
+            case 'NoneType'   : valueStr = 'None'
+            case 'bytes'      : valueStr = value.hex()
+            case 'str'        : valueStr = value
+            case 'int'        : valueStr = str(value)
+            case 'float'      : valueStr = str(value)
+            case 'bool'       : valueStr = str(value)
+            case 'QSize'      : valueStr = f'({value.width()},{value.height()})'
+            case 'QSizeF'     : valueStr = f'({value.width()},{value.height()})'
+            case 'QColor'     : valueStr = hex(value.rgba())
+            case 'PenStyle'   : valueStr = str(value).replace('PenStyle.', '')
+            case 'BrushStyle' : valueStr = str(value).replace('BrushStyle.', '')
             case _ :
-                raise ValueError(f'toQSettingValue: unsupported type = {typeName}')
+                raise ValueError(f'Unsupported type: {typeName}')
         return typeName + ':' + valueStr
+
+    def dump(self : 'Settings') -> str:
+        """
+        Dump all settings as a formatted string for debugging or display.
+
+        Returns:
+            A formatted string representation of all settings
+        """
+        lines = ["Settings:"]
+        self._dump_model(lines, self, indent=2)
+        return "\n".join(lines)
+
+    def _dump_model(self, lines: list, model: SettingsModel, indent: int = 0, prefix: str = ""):
+        """
+        Helper method to recursively dump a model and its nested models.
+
+        Args:
+            lines: List to append formatted lines to
+            model: The model to dump
+            indent: Current indentation level
+            prefix: Prefix for the current model (for nested models)
+        """
+        # Get all fields from the model
+        model_dict = model.dict()
+
+        for key, value in model_dict.items():
+            # Skip private attributes
+            if key.startswith('_'):
+                continue
+
+            # Format the current line
+            current_prefix = f"{prefix}." if prefix else ""
+            current_key = f"{current_prefix}{key}"
+
+            if isinstance(value, dict):
+                # This is likely a nested model
+                if hasattr(model, key) and hasattr(getattr(model, key), '__fields__'):
+                    # Add a header for the nested model
+                    lines.append(f"{' ' * indent}{current_key}:")
+                    # Recursively dump the nested model
+                    self._dump_model(
+                        lines,
+                        getattr(model, key),
+                        indent + 2,
+                        current_key
+                    )
+            else:
+                # This is a direct value - format it nicely
+                type_name = type(value).__name__
+                if isinstance(value, QColor):
+                    # Special formatting for QColor
+                    value_str = f"RGB({value.red()}, {value.green()}, {value.blue()})"
+                elif isinstance(value, (QSize, QSizeF)):
+                    # Special formatting for QSize/QSizeF
+                    value_str = f"({value.width()}, {value.height()})"
+                else:
+                    # Default formatting
+                    value_str = str(value)
+
+                lines.append(f"{' ' * indent}{current_key} = {value_str} ({type_name})")

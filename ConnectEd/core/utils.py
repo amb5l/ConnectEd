@@ -1,3 +1,6 @@
+import os
+import platform
+
 def check(b : bool, s : str) -> bool:
     if not b:
         print(s)
@@ -23,3 +26,22 @@ def connect_actions_to_slots(actions, slots):
         action = getattr(actions, action_name)
         slot = getattr(slots, action_name)
         action.triggered.connect(slot)
+
+def get_default_path() -> str:
+    if platform.system() == 'Windows':
+        if 'WORK' in os.environ:
+            r = os.environ['WORK']
+        elif 'USERPROFILE' in os.environ:
+            r = os.environ['USERPROFILE']
+        elif 'HOMEPATH' in os.environ:
+            r = os.environ['HOMEPATH']
+        elif 'HOMEDRIVE' in os.environ:
+            r = os.environ['HOMEDRIVE']
+        else:
+            r = 'C:/'
+    else:
+        if 'WORK' in os.environ:
+            r = os.environ['WORK']
+        else:
+            r = '~'
+    return r
