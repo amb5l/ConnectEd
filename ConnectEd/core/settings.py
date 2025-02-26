@@ -7,7 +7,6 @@ from PyQt6.QtGui  import QColor
 
 from .logger import logger
 from .defs   import ORG_NAME, APP_NAME
-from .types  import FontSpec
 from .utils  import get_default_path
 
 class SettingsModel(BaseModel):
@@ -21,44 +20,49 @@ class Theme(SettingsModel):
 class Settings(SettingsModel):
     ################################################################################
 
-    class _Startup(SettingsModel):
+    class Startup(SettingsModel):
         geometry : bytes | None = None
-    startup : _Startup = _Startup()
+    startup : Startup = Startup()
 
-    class _Themes(SettingsModel):
-        class _Dark(Theme):
+    class Themes(SettingsModel):
+        class Dark(Theme):
             background : QColor = QColor(0, 0, 0)
             grid : QColor = QColor(32, 32, 32)
-        dark : _Dark = _Dark()
-        class _Light(Theme):
+        dark : Dark = Dark()
+        class Light(Theme):
             background : QColor = QColor(128, 128, 128)
             grid : QColor = QColor(32, 32, 32)
-        light : _Light = _Light()
-    themes : _Themes = _Themes()
+        light : Light = Light()
+    themes : Themes = Themes()
 
-    class _Prefs(SettingsModel):
-        class _File(SettingsModel):
-            class _New(SettingsModel):
+    class Prefs(SettingsModel):
+        class File(SettingsModel):
+            class New(SettingsModel):
                 sheet  : str = 'A4'
                 margin : int = 10
-            new : _New = _New()
-            class _Open(SettingsModel):
+            new : New = New()
+            class Open(SettingsModel):
                 dir : str = get_default_path()
-            open : _Open = _Open()
-            class _Save(SettingsModel):
+            open : Open = Open()
+            class Save(SettingsModel):
                 dir : str = get_default_path()
-            save : _Save = _Save()
-        file : _File = _File()
-        class _View(SettingsModel):
+            save : Save = Save()
+        file : File = File()
+        class View(SettingsModel):
             theme : str = 'dark'
-            class _Grid(SettingsModel):
+            class Grid(SettingsModel):
                 display : bool = True
                 snap    : bool = True
                 x       : int = 10
                 y       : int = 10
-            grid : _Grid = _Grid()
-        view : _View = _View()
-    prefs : _Prefs = _Prefs()
+            grid : Grid = Grid()
+            overscan : int = 3 # TODO: change to 0
+        view : View = View()
+        class Debug(SettingsModel):
+            overscan : bool = True
+            canvas   : bool = True
+        debug : Debug = Debug()
+    prefs : Prefs = Prefs()
 
     @property
     def theme(self) -> Theme:
