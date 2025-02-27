@@ -1,32 +1,33 @@
 from PyQt6.QtCore    import Qt, QByteArray
-from PyQt6.QtWidgets import QMainWindow, QMdiArea, QMdiSubWindow
+from PyQt6.QtWidgets import QMainWindow, QMdiArea
 
-from ...core         import APP_NAME, logger, settings
+from ...core         import APP_NAME, settings
 from .commands       import Commands
 from .menu_bar       import MenuBar
 from .status_bar     import StatusBar
 from ..msg_view_dock import MsgViewDock
 from ..log_view_dock import LogViewDock
 
-from ...test.dummy_widget import DummyWidget
 
 class MainWindow(QMainWindow):
     def __init__(self : 'MainWindow') -> None:
         super().__init__()
 
-        # title and position
+        # default position
+        screen = self.screen()
+        screenSize = screen.size()
+        self.resize(screenSize.width() // 2, screenSize.height() // 2)
+        frame_geometry = self.frameGeometry()
+        centerPoint = screen.availableGeometry().center()
+        frame_geometry.moveCenter(centerPoint)
+        self.move(frame_geometry.topLeft())
+
+        # saved position
         self.setWindowTitle(APP_NAME)
-        if hasattr(settings.startup, 'geometry'):
-            self.restoreGeometry(QByteArray(settings.startup.geometry))
-        else:
-            logger.debug('no geometry setting, using default')
-            screen = self.screen()
-            screenSize = screen.size()
-            self.resize(screenSize.width() // 2, screenSize.height() // 2)
-            frame_geometry = self.frameGeometry()
-            centerPoint = screen.availableGeometry().center()
-            frame_geometry.moveCenter(centerPoint)
-            self.move(frame_geometry.topLeft())
+        if hasattr(settings, 'startup'):
+            if hasattr(settings.startup, 'geometry'):
+                if settings.startup.geometry:
+                    self.restoreGeometry(QByteArray(settings.startup.geometry))
 
         # commands = actions and slots
         self.commands = Commands(self)
@@ -47,13 +48,18 @@ class MainWindow(QMainWindow):
         self.tabifyDockWidget(self.msg_viewer, self.log_viewer)
         self.msg_viewer.raise_()
 
-        # dummy sub window
-        self.dummy_sub_window = QMdiSubWindow()
-        self.dummy_sub_window.setWidget(DummyWidget())
-
         # MDI area
         self.mdi_area = QMdiArea()
-        self.mdi_area.addSubWindow(self.dummy_sub_window)
+
+        # TODO remove this
+        # Import here to avoid circular dependency
+        from ..drawing import Drawing, DrawingSubWindow
+        test_sub_window = DrawingSubWindow(self.mdi_area)
+        test_drawing = Drawing(test_sub_window, self)
+        test_sub_window.setWidget(test_drawing)
+        test_sub_window.setWindowTitle("Test Drawing")
+        self.mdi_area.addSubWindow(test_sub_window)
+        test_sub_window.showMaximized()
 
         # central widget
         self.setCentralWidget(self.mdi_area)

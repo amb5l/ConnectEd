@@ -9,6 +9,9 @@ from .utils  import get_default_path
 
 
 FACTORY_SETTINGS = {
+    'startup': {
+        'geometry': None
+    },
     'prefs': {
         'file': {
             'new': {
@@ -24,28 +27,26 @@ FACTORY_SETTINGS = {
         },
         'display': {
             'theme': 'dark',
+            'overscan': {  # TODO set all to 0
+                'top'    : 2,
+                'bottom' : 2,
+                'left'   : 2,
+                'right'  : 2
+            },
             'background': Qt.BrushStyle.SolidPattern,
             'grid': {
                 'display' : True,
                 'snap'    : True,
                 'x'       : 10,
                 'y'       : 10,
-                'dots'    : False,
-                'line': {
-                    'width': 0,
-                    'style': Qt.PenStyle.SolidLine
-                }
-            },
-            'debug': {
-                'overscan' : True,
-                'canvas'   : True
+                'dots'    : False
             }
         }
     },
     'themes': {
         'dark': {
             'background': QColor(0, 0, 0, 255),
-            'grid': QColor(32, 32, 32, 128)
+            'grid': QColor(128, 128, 128, 128)
         },
         'light': {
             'background': QColor(128, 128, 128, 255),
