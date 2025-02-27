@@ -1,7 +1,5 @@
 from types import SimpleNamespace
-# Use Pydantic v1 compatibility mode
-from pydantic.v1 import BaseModel
-
+from typing import Any
 from PyQt6.QtCore import QSettings, QSize, QSizeF, Qt
 from PyQt6.QtGui  import QColor
 
@@ -9,83 +7,68 @@ from .logger import logger
 from .defs   import ORG_NAME, APP_NAME
 from .utils  import get_default_path
 
-class SettingsModel(BaseModel):
-    class Config:
-        arbitrary_types_allowed = True
 
-class Theme(SettingsModel):
-    background : QColor
-    grid       : QColor
+FACTORY_SETTINGS = {
+    'prefs': {
+        'file': {
+            'new': {
+                'sheet'  : 'A4',
+                'margin' : 10
+            },
+            'open': {
+                'dir': get_default_path()
+            },
+            'save': {
+                'dir': get_default_path()
+            }
+        },
+        'display': {
+            'theme': 'dark',
+            'background': Qt.BrushStyle.SolidPattern,
+            'grid': {
+                'display' : True,
+                'snap'    : True,
+                'x'       : 10,
+                'y'       : 10,
+                'dots'    : False,
+                'line': {
+                    'width': 0,
+                    'style': Qt.PenStyle.SolidLine
+                }
+            },
+            'debug': {
+                'overscan' : True,
+                'canvas'   : True
+            }
+        }
+    },
+    'themes': {
+        'dark': {
+            'background': QColor(0, 0, 0, 255),
+            'grid': QColor(32, 32, 32, 128)
+        },
+        'light': {
+            'background': QColor(128, 128, 128, 255),
+            'grid': QColor(32, 32, 32, 128)
+        }
+    }
+}
 
-class Settings(SettingsModel):
-    ################################################################################
-
-    class Startup(SettingsModel):
-        geometry : bytes | None = None
-    startup : Startup = Startup()
-
-    class Themes(SettingsModel):
-        class Dark(Theme):
-            background : QColor = QColor(0, 0, 0)
-            grid : QColor = QColor(32, 32, 32)
-        dark : Dark = Dark()
-        class Light(Theme):
-            background : QColor = QColor(128, 128, 128)
-            grid : QColor = QColor(32, 32, 32)
-        light : Light = Light()
-    themes : Themes = Themes()
-
-    class Prefs(SettingsModel):
-        class File(SettingsModel):
-            class New(SettingsModel):
-                sheet  : str = 'A4'
-                margin : int = 10
-            new : New = New()
-            class Open(SettingsModel):
-                dir : str = get_default_path()
-            open : Open = Open()
-            class Save(SettingsModel):
-                dir : str = get_default_path()
-            save : Save = Save()
-        file : File = File()
-        class View(SettingsModel):
-            theme : str = 'dark'
-            class Grid(SettingsModel):
-                display : bool = True
-                snap    : bool = True
-                x       : int = 10
-                y       : int = 10
-            grid : Grid = Grid()
-            overscan : int = 3 # TODO: change to 0
-        view : View = View()
-        class Debug(SettingsModel):
-            overscan : bool = True
-            canvas   : bool = True
-        debug : Debug = Debug()
-    prefs : Prefs = Prefs()
-
+class Settings(SimpleNamespace):
     @property
-    def theme(self) -> Theme:
-        theme_name = self.prefs.view.theme
-        valid_themes = [name for name in dir(self.themes)
-                       if not name.startswith('_') and isinstance(getattr(self.themes, name), Theme)]
-        if theme_name in valid_themes:
-            return getattr(self.themes, theme_name)
-        self.prefs.view.theme = 'dark'
-        return self.themes.dark
-
-    ################################################################################
+    def theme(self) -> SimpleNamespace:
+        return getattr(self.themes, self.prefs.display.theme)
 
     def __init__(self : 'Settings'):
-        super().__init__()
+        self._init(self, FACTORY_SETTINGS)
 
     def reset(self : 'Settings'):
-        logger.debug('clearing all settings')
+        logger.debug('clearing all saved settings')
         qsettings = QSettings(ORG_NAME, APP_NAME)
         qsettings.clear()
 
     def load(self : 'Settings'):
-        """Load settings from QSettings storage into this Pydantic model."""
+        """Load settings from QSettings storage into this SimpleNamespace."""
         logger.debug('loading settings')
         qsettings = QSettings(ORG_NAME, APP_NAME)
         for attr_name in dir(self):
@@ -95,11 +78,11 @@ class Settings(SettingsModel):
             if hasattr(attr, '__fields__'): # is a Pydantic model
                 logger.debug(f'Loading settings for {attr_name}')
                 qsettings.beginGroup(attr_name)
-                self._load_model(qsettings, attr)
+                self._load(attr, qsettings)
                 qsettings.endGroup()
 
     def save(self : 'Settings'):
-        """Save settings from this Pydantic model to QSettings storage."""
+        """Save settings from this SimpleNamespace to QSettings storage."""
         logger.debug('saving settings')
         qsettings = QSettings(ORG_NAME, APP_NAME)
         for attr_name in dir(self):
@@ -109,73 +92,62 @@ class Settings(SettingsModel):
             if hasattr(attr, '__fields__'): # is a Pydantic model
                 logger.debug(f'Saving settings for {attr_name}')
                 qsettings.beginGroup(attr_name)
-                self._save_model(qsettings, attr)
+                self._save(attr, qsettings)
                 qsettings.endGroup()
 
-    def _load_model(
-        self      : 'Settings',
-        qsettings : QSettings,
-        model     : SettingsModel
-    ):
-        """
-        Load settings from QSettings into a Pydantic model.
+    def dump(self : 'Settings') -> str:
+        lines = []
+        self._dump('settings', self, lines)
+        return "\n".join(lines)
 
-        Args:
-            qsettings: The QSettings object positioned at the current group
-            model: The Pydantic model to load settings into
-        """
-        # Load direct values
+    def _init(
+        self     : 'Settings',
+        ns       : SimpleNamespace,
+        settings : dict | Any
+    ) -> None:
+        for key, value in settings.items():
+            if isinstance(value, dict):
+                setattr(ns, key, SimpleNamespace())
+                self._init(getattr(ns, key), value)
+            else:
+                setattr(ns, key, value)
+
+    def _load(
+        self      : 'Settings',
+        ns        : SimpleNamespace,
+        qsettings : QSettings
+    ) -> None:
+        for group in qsettings.childGroups():
+            setattr(ns, group, SimpleNamespace())
+            qsettings.beginGroup(group)
+            self._load(getattr(ns, group.name), qsettings)
+            qsettings.endGroup()
         for key in qsettings.childKeys():
             value = qsettings.value(key)
             if value is not None:
                 logger.debug(f'loading setting: {qsettings.group()}/{key} = {value}')
                 try:
-                    # Convert the string value to the appropriate type
-                    converted_value = self._text_to_value(value)
-                    # Set the attribute on the model
-                    setattr(model, key, converted_value)
+                    setattr(ns, key, self._text_to_value(value))
                 except (ValueError, AttributeError) as e:
                     logger.warning(f'Error loading setting {key}: {e}')
 
-        # Load nested groups (submodels)
-        for group in qsettings.childGroups():
-            # Check if this group corresponds to a field in the model
-            if hasattr(model, group):
-                submodel = getattr(model, group)
-                # Check if it's a model by checking if it has __fields__
-                if hasattr(submodel, '__fields__'):
-                    qsettings.beginGroup(group)
-                    self._load_model(qsettings, submodel)
-                    qsettings.endGroup()
-
-    def _save_model(
+    def _save(
         self      : 'Settings',
-        qsettings : QSettings,
-        model     : SettingsModel
-    ):
-        """
-        Save settings from a Pydantic model to QSettings.
-
-        Args:
-            qsettings: The QSettings object positioned at the current group
-            model: The Pydantic model to save settings from
-        """
-        # Get all fields from the model
-        model_dict = model.dict()
-
-        for key, value in model_dict.items():
-            if isinstance(value, dict):
-                # This is likely a nested model
-                if hasattr(model, key) and hasattr(getattr(model, key), '__fields__'):
+        ns        : SimpleNamespace,
+        qsettings : QSettings
+    ) -> None:
+        for key, value in ns.__dict__.items():
+            if not key.startswith('_') and not callable(value):
+                if isinstance(value, SimpleNamespace):
                     qsettings.beginGroup(key)
-                    self._save_model(qsettings, getattr(model, key))
+                    logger.debug(f'saving settings group: {qsettings.group()}')
+                    self._save(qsettings, value)
                     qsettings.endGroup()
-            else:
-                # This is a direct value
-                logger.debug(f'saving setting: {qsettings.group()}/{key} = {value}')
-                qsettings.setValue(key, self._value_to_text(value))
+                else:
+                    logger.debug(f'saving setting: {qsettings.group()}/{key} = {value}')
+                    qsettings.setValue(key, self._value_to_text(value))
 
-    def _text_to_value(self, text_value):
+    def _text_to_value(self : 'Settings', text_value : str) -> Any:
         """Convert a text value from QSettings to the appropriate Python type."""
         if not isinstance(text_value, str):
             return text_value
@@ -199,7 +171,7 @@ class Settings(SettingsModel):
             case _:
                 raise ValueError(f'Unsupported type: {typeName}')
 
-    def _value_to_text(self, value):
+    def _value_to_text(self : 'Settings', value : Any) -> str:
         """Convert a Python value to a text representation for QSettings."""
         typeName = type(value).__name__
         match typeName:
@@ -218,62 +190,19 @@ class Settings(SettingsModel):
                 raise ValueError(f'Unsupported type: {typeName}')
         return typeName + ':' + valueStr
 
-    def dump(self : 'Settings') -> str:
-        """
-        Dump all settings as a formatted string for debugging or display.
-
-        Returns:
-            A formatted string representation of all settings
-        """
-        lines = ["Settings:"]
-        self._dump_model(lines, self, indent=2)
-        return "\n".join(lines)
-
-    def _dump_model(self, lines: list, model: SettingsModel, indent: int = 0, prefix: str = ""):
-        """
-        Helper method to recursively dump a model and its nested models.
-
-        Args:
-            lines: List to append formatted lines to
-            model: The model to dump
-            indent: Current indentation level
-            prefix: Prefix for the current model (for nested models)
-        """
-        # Get all fields from the model
-        model_dict = model.dict()
-
-        for key, value in model_dict.items():
-            # Skip private attributes
-            if key.startswith('_'):
-                continue
-
-            # Format the current line
-            current_prefix = f"{prefix}." if prefix else ""
-            current_key = f"{current_prefix}{key}"
-
-            if isinstance(value, dict):
-                # This is likely a nested model
-                if hasattr(model, key) and hasattr(getattr(model, key), '__fields__'):
-                    # Add a header for the nested model
-                    lines.append(f"{' ' * indent}{current_key}:")
-                    # Recursively dump the nested model
-                    self._dump_model(
-                        lines,
-                        getattr(model, key),
-                        indent + 2,
-                        current_key
-                    )
-            else:
-                # This is a direct value - format it nicely
-                type_name = type(value).__name__
-                if isinstance(value, QColor):
-                    # Special formatting for QColor
-                    value_str = f"RGB({value.red()}, {value.green()}, {value.blue()})"
-                elif isinstance(value, (QSize, QSizeF)):
-                    # Special formatting for QSize/QSizeF
-                    value_str = f"({value.width()}, {value.height()})"
+    def _dump(
+        self   : 'Settings',
+        name   : str,
+        x      : Any,
+        lines  : list[str],
+        indent : str = '  '
+    ) -> None:
+        if isinstance(x, SimpleNamespace):
+            for k, v in vars(x).items():
+                if isinstance(v, SimpleNamespace):
+                    lines.append(f'{indent}{name}/{k}:')
+                    self._dump(name + '/' + k, v, lines, indent + '  ')
                 else:
-                    # Default formatting
-                    value_str = str(value)
-
-                lines.append(f"{' ' * indent}{current_key} = {value_str} ({type_name})")
+                    lines.append(f'{indent}{name}/{k} = {self._value_to_text(v)}')
+        else:
+            lines.append(f'{indent}{name} = {self._value_to_text(x)}')
