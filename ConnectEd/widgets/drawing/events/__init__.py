@@ -1,3 +1,14 @@
+"""
+Event handling for Drawing widgets.
+
+This module provides mixins for handling various events in Drawing widgets,
+including paint events, resize events, and user interactions.
+"""
+
+__all__ = [
+    'DrawingEventsMixin'
+]
+
 from PyQt6.QtGui import QResizeEvent
 
 from .paint import DrawingEventsPaintMixin

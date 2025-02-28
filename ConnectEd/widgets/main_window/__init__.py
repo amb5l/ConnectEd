@@ -1,12 +1,29 @@
-from PyQt6.QtCore    import Qt, QByteArray
-from PyQt6.QtWidgets import QMainWindow, QMdiArea
+"""
+Main window implementation for the ConnectEd application.
 
-from ...core         import APP_NAME, settings
+This module provides the main application window, including menu bars,
+status bars, and the central MDI area for document management.
+"""
+
+__all__ = [
+    'MainWindow'
+]
+
+from PyQt6.QtCore    import Qt, QByteArray
+from PyQt6.QtWidgets import QMainWindow, QMdiArea, QMdiSubWindow
+
+from ...core         import APP_NAME, logger, settings
 from .commands       import Commands
 from .menu_bar       import MenuBar
 from .status_bar     import StatusBar
 from ..msg_view_dock import MsgViewDock
 from ..log_view_dock import LogViewDock
+
+from ...test.dummy_widget import DummyWidget
+
+from typing import TYPE_CHECKING
+if TYPE_CHECKING: # avoid circular import issues
+    from ..drawing import Drawing, DrawingSubWindow
 
 
 class MainWindow(QMainWindow):

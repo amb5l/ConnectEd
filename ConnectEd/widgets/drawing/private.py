@@ -14,7 +14,7 @@ class DrawingPrivateMixin:
     def _l2p(self: 'Drawing', point: QPointF) -> QPointF:
         return (point - self.pan) * self.zoom
 
-    def _viewUpdate(self: 'Diagram') -> None:
+    def _viewUpdate(self: 'Drawing') -> None:
         #if self.mouse.current:
         #    self.main_window.statusbar.xy.setText(
         #        str(int(self.mouse.current.dpos.x())) + ',' +
@@ -25,7 +25,7 @@ class DrawingPrivateMixin:
         self.main_window.statusbar.zoom.setText('{:.2f}%'.format(self.zoom * 100))
         self.update()
 
-    def _zoomUpdate(self: 'Diagram') -> None:
+    def _zoomUpdate(self: 'Drawing') -> None:
         #self.main_window.commands.actionEnable('viewZoomIn',  self.zoom < settings.prefs.view.zoom.max)
         #self.main_window.commands.actionEnable('viewZoomOut', self.zoom > settings.prefs.view.zoom.min)
         self._viewUpdate()

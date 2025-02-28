@@ -1,5 +1,16 @@
+"""
+Settings management for the ConnectEd application.
+
+This module provides classes for managing application settings,
+including loading, saving, and accessing configuration values.
+"""
+
+__all__ = [
+    'Settings'
+]
+
 from types import SimpleNamespace
-from typing import Any
+from typing import Any, Dict, List, Union, Optional, TypeVar, cast
 from PyQt6.QtCore import QSettings, QSize, QSizeF, Qt
 from PyQt6.QtGui  import QColor
 
@@ -60,15 +71,15 @@ class Settings(SimpleNamespace):
     def theme(self) -> SimpleNamespace:
         return getattr(self.themes, self.prefs.display.theme)
 
-    def __init__(self : 'Settings'):
+    def __init__(self : 'Settings') -> None:
         self._init(self, FACTORY_SETTINGS)
 
-    def reset(self : 'Settings'):
+    def reset(self : 'Settings') -> None:
         logger.debug('clearing all saved settings')
         qsettings = QSettings(ORG_NAME, APP_NAME)
         qsettings.clear()
 
-    def load(self : 'Settings'):
+    def load(self : 'Settings') -> None:
         """Load settings from QSettings storage into this SimpleNamespace."""
         logger.debug('loading settings')
         qsettings = QSettings(ORG_NAME, APP_NAME)
@@ -82,7 +93,7 @@ class Settings(SimpleNamespace):
                 self._load(attr, qsettings)
                 qsettings.endGroup()
 
-    def save(self : 'Settings'):
+    def save(self : 'Settings') -> None:
         """Save settings from this SimpleNamespace to QSettings storage."""
         logger.debug('saving settings')
         qsettings = QSettings(ORG_NAME, APP_NAME)
@@ -97,31 +108,35 @@ class Settings(SimpleNamespace):
                 qsettings.endGroup()
 
     def dump(self : 'Settings') -> str:
-        lines = []
+        """Return a formatted string representation of all settings."""
+        lines: List[str] = []
         self._dump('settings', self, lines)
         return "\n".join(lines)
 
     def _init(
         self     : 'Settings',
         ns       : SimpleNamespace,
-        settings : dict | Any
+        settings : Union[Dict[str, Any], Any]
     ) -> None:
-        for key, value in settings.items():
-            if isinstance(value, dict):
-                setattr(ns, key, SimpleNamespace())
-                self._init(getattr(ns, key), value)
-            else:
-                setattr(ns, key, value)
+        """Initialize a SimpleNamespace with values from a dictionary."""
+        if isinstance(settings, dict):
+            for key, value in settings.items():
+                if isinstance(value, dict):
+                    setattr(ns, key, SimpleNamespace())
+                    self._init(getattr(ns, key), value)
+                else:
+                    setattr(ns, key, value)
 
     def _load(
         self      : 'Settings',
         ns        : SimpleNamespace,
         qsettings : QSettings
     ) -> None:
+        """Recursively load settings from QSettings into a SimpleNamespace."""
         for group in qsettings.childGroups():
             setattr(ns, group, SimpleNamespace())
             qsettings.beginGroup(group)
-            self._load(getattr(ns, group.name), qsettings)
+            self._load(getattr(ns, group), qsettings)
             qsettings.endGroup()
         for key in qsettings.childKeys():
             value = qsettings.value(key)
@@ -137,12 +152,13 @@ class Settings(SimpleNamespace):
         ns        : SimpleNamespace,
         qsettings : QSettings
     ) -> None:
-        for key, value in ns.__dict__.items():
+        """Recursively save settings from a SimpleNamespace to QSettings."""
+        for key, value in vars(ns).items():
             if not key.startswith('_') and not callable(value):
                 if isinstance(value, SimpleNamespace):
                     qsettings.beginGroup(key)
                     logger.debug(f'saving settings group: {qsettings.group()}')
-                    self._save(qsettings, value)
+                    self._save(value, qsettings)
                     qsettings.endGroup()
                 else:
                     logger.debug(f'saving setting: {qsettings.group()}/{key} = {value}')
