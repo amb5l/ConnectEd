@@ -1,4 +1,4 @@
-from PyQt6.QtWidgets import QDialog, QMessageBox
+from PyQt6.QtWidgets import QMessageBox
 
 from ....core import logger
 
@@ -14,6 +14,16 @@ class Slots:
 
     def fileExit(self):
         self._parent.close()
+
+    def viewZoomIn(self):
+        current_widget = self._parent.mdi_area.currentSubWindow()
+        if current_widget:
+            current_widget.zoomIn()
+
+    def viewZoomOut(self):
+        current_widget = self._parent.mdi_area.currentSubWindow()
+        if current_widget:
+            current_widget.zoomOut()
 
     def windowMessages(self):
         self._parent.msg_viewer.show()

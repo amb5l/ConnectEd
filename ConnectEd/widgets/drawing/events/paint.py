@@ -1,10 +1,9 @@
 from PyQt6.QtCore import Qt, QRect, QRectF, QSize, QSizeF, QPoint, QPointF
 from PyQt6.QtGui  import QPaintEvent, QResizeEvent, QPainter, QPen, QBrush, QColor
 
-from ....core import settings, PainterContext
-from ....core.utils import _iround
+from ....core import settings, PainterContext, _iround
 
-from typing import TYPE_CHECKING, Optional, List, cast
+from typing import TYPE_CHECKING
 if TYPE_CHECKING: # avoid circular import issues
     from .. import Drawing
 
@@ -17,7 +16,6 @@ class DrawingEventsPaintMixin:
     - Elements
     - Grid
     - Selection rectangle
-    - Debug information
     """
 
     def paintEvent(self: 'Drawing', event: QPaintEvent) -> None:
@@ -35,8 +33,8 @@ class DrawingEventsPaintMixin:
         # Get physical and logical view rectangles
         p = QRectF(self.visibleRegion().boundingRect())  # physical view rect
         l = QRectF(                                      # logical view rect
-            self._p2l(p.topLeft()),
-            self._p2l(p.bottomRight())
+            self._p2lPoint(p.topLeft()),
+            self._p2lPoint(p.bottomRight())
         )
 
         # Fill background
@@ -61,12 +59,12 @@ class DrawingEventsPaintMixin:
         ctx.restore()
 
         # Draw selection rectangle if active
-        if self.sel_prect:
+        if self.sel_rect:
             ctx.save()
             ctx.painter.setCompositionMode(QPainter.CompositionMode.RasterOp_SourceXorDestination)
             ctx.setPen(QColor(255, 255, 255), width=1, style=Qt.PenStyle.DotLine)
             ctx.noBrush()
-            ctx.painter.drawRect(self.sel_crect)
+            ctx.painter.drawRect(self.sel_rect.physical)
             ctx.restore()
 
     def _paintGrid(

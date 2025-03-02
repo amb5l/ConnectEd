@@ -5,12 +5,17 @@ This module provides classes for managing application settings,
 including loading, saving, and accessing configuration values.
 """
 
+# TODO:
+# persistant settings for application
+# session settings for diagram and library
+
 __all__ = [
     'Settings'
 ]
 
-from types import SimpleNamespace
-from typing import Any, Dict, List, Union, Optional, TypeVar, cast
+from types  import SimpleNamespace
+from typing import Any, Dict, List, Union
+
 from PyQt6.QtCore import QSettings, QSize, QSizeF, Qt
 from PyQt6.QtGui  import QColor
 
@@ -51,6 +56,12 @@ FACTORY_SETTINGS = {
                 'x'       : 10,
                 'y'       : 10,
                 'dots'    : False
+            },
+            'zoom': {
+                'wheel' : 120,
+                'step'  : 0.25,
+                'max'   : 100.0,
+                'min'   : 0.1,
             }
         }
     },

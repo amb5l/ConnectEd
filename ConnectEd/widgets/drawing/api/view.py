@@ -25,25 +25,25 @@ class DrawingApiViewMixin:
     # TODO add common function to do heavy lifting for zoom in/out
 
     def viewZoomIn(self : 'Drawing', n=1):
-        self._zoomPanMouse(min(self.zoom * ((1+settings.prefs.view.zoom.step)**n), settings.prefs.view.zoom.max))
+        self._zoomPanMouse(min(self.zoom * ((1+settings.prefs.display.zoom.step)**n), settings.prefs.display.zoom.max))
 
     def viewZoomOut(self : 'Drawing', n=1):
-        self._zoomPanMouse(max(self.zoom * ((1+settings.prefs.view.zoom.step)**(-n)), settings.prefs.view.zoom.min))
+        self._zoomPanMouse(max(self.zoom * ((1+settings.prefs.display.zoom.step)**(-n)), settings.prefs.display.zoom.min))
 
     def viewPanLeft(self : 'Drawing'):
-        self.pan.setX(self.pan.x() - (settings.prefs.view.pan_step * self.width() / self.zoom))
+        self.pan.setX(self.pan.x() - (settings.prefs.display.pan_step * self.width() / self.zoom))
         self._viewUpdate()
 
     def viewPanRight(self : 'Drawing'):
-        self.pan.setX(self.pan.x() + (settings.prefs.view.pan_step * self.width() / self.zoom))
+        self.pan.setX(self.pan.x() + (settings.prefs.display.pan_step * self.width() / self.zoom))
         self._viewUpdate()
 
     def viewPanUp(self : 'Drawing'):
-        self.pan.setY(self.pan.y() - (settings.prefs.view.pan_step * self.height() / self.zoom))
+        self.pan.setY(self.pan.y() - (settings.prefs.display.pan_step * self.height() / self.zoom))
         self._viewUpdate()
 
     def viewPanDown(self : 'Drawing'):
-        self.pan.setY(self.pan.y() + (settings.prefs.view.pan_step * self.height() / self.zoom))
+        self.pan.setY(self.pan.y() + (settings.prefs.display.pan_step * self.height() / self.zoom))
         self._viewUpdate()
 
     def viewPrev(self : 'Drawing'):

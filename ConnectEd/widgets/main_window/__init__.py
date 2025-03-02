@@ -27,6 +27,16 @@ if TYPE_CHECKING: # avoid circular import issues
 
 
 class MainWindow(QMainWindow):
+    """Main window implementation for the ConnectEd application."""
+
+    commands   : Commands
+    menu_bar   : MenuBar
+    status_bar : StatusBar
+    msg_viewer : MsgViewDock
+    log_viewer : LogViewDock
+    mdi_area   : QMdiArea
+
+
     def __init__(self : 'MainWindow') -> None:
         super().__init__()
 

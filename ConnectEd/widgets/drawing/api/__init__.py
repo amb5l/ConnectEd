@@ -9,10 +9,12 @@ __all__ = [
     'DrawingApiMixin'
 ]
 
-from .view import DrawingApiViewMixin
+from .view  import DrawingApiViewMixin
+from .mouse import DrawingApiMouseMixin
 
 
 class DrawingApiMixin(
-    DrawingApiViewMixin
+    DrawingApiViewMixin,
+    DrawingApiMouseMixin
 ):
     pass

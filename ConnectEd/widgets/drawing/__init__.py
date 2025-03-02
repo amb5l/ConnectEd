@@ -12,18 +12,17 @@ __all__ = [
 
 from types  import NoneType
 from dataclasses import dataclass
-from typing import Optional, ClassVar, List, Type
+from typing import Optional, ClassVar
 
-from PyQt6.QtCore    import Qt, QPointF, QRect
+from PyQt6.QtCore    import Qt, QPointF, QSizeF
 from PyQt6.QtWidgets import QWidget, QMdiSubWindow, QMdiArea
 
-from ...core       import TypedList, settings
-# Remove the circular import
-# from ..main_window import MainWindow
-
-from .events  import DrawingEventsMixin
+from ...core  import TypedList, settings
 from .private import DrawingPrivateMixin
+from .events  import DrawingEventsMixin
 from .api     import DrawingApiMixin
+
+#from ...elements import Rectangle
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING: # avoid circular import issues
@@ -46,28 +45,32 @@ class Drawing(
     - Event handling (mouse, keyboard, paint)
     """
 
-    ELEMENT_TYPES: ClassVar[TypedList] = TypedList(NoneType)
-    main_window: 'MainWindow'  # Use string annotation to avoid circular import
-    name: str
-    elements: TypedList
-    wip: TypedList
-    symbols: Optional[TypedList['Symbol']]
-    sel_prect: Optional[QRect] = None
-    zoom: float
-    pan: QPointF
+    ELEMENT_TYPES    : ClassVar[TypedList] = TypedList(NoneType)
+    main_window      : 'MainWindow'
+    name             : str
+    elements         : TypedList
+    wip              : TypedList
+    symbols          : Optional[TypedList['Symbol']]
+    view_rect        : Optional['Drawing.Rect'] = None
+    sel_rect         : Optional['Drawing.Rect'] = None
+    zoom             : Optional[float] = None
+    pan              : QPointF
+    mouse            : 'Drawing.Mouse'
+    mouse_press_prev : 'Drawing.Pos'
+    state            : 'Drawing.State'
 
     @dataclass
     class Grid:
         """Grid configuration for the drawing."""
-        display: bool
-        snap: bool
-        x: int
-        y: int
+        display : bool
+        snap    : bool
+        x       : int
+        y       : int
 
     def __init__(
         self: 'Drawing',
         parent: QWidget,
-        main_window: 'MainWindow'  # Use string annotation to avoid circular import
+        main_window: 'MainWindow'
     ) -> None:
         """Initialize a Drawing widget.
 
@@ -87,18 +90,25 @@ class Drawing(
             x       = 10,
             y       = 10
         )
-        self.elements = TypedList(self.ELEMENT_TYPES)
-        self.wip = TypedList(self.ELEMENT_TYPES)
-        self.symbols = None
-        self.sel_prect = None
+        self.elements         = TypedList(self.ELEMENT_TYPES)
+        self.wip              = TypedList(self.ELEMENT_TYPES)
+        self.symbols          = None
+        self.view_rect        = self.Rect(self, self.visibleRegion().boundingRect())
+        self.sel_rect         = self.Rect(self)
+        self.grid.display     = settings.prefs.display.grid.display
+        self.grid.snap        = settings.prefs.display.grid.snap
+        self.grid.x           = settings.prefs.display.grid.x
+        self.grid.y           = settings.prefs.display.grid.y
+        self.mouse_press_prev = self.Pos()
+        self.mouse            = self.Mouse(self)
+        self.state            = self.State.Idle
+        self.setMouseTracking(True)
 
-        self.grid.display = settings.prefs.display.grid.display
-        self.grid.snap    = settings.prefs.display.grid.snap
-        self.grid.x       = settings.prefs.display.grid.x
-        self.grid.y       = settings.prefs.display.grid.y
+        # TODO remove this
+        #self.elements.append(Rectangle(QPointF(0, 0), QSizeF(100, 100)))
 
-        #self.mouseInit()
         self._viewUpdate()
+
         # uncomment to enable keypress events
         #self.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
 

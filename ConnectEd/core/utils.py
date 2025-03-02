@@ -7,7 +7,7 @@ def check(b : bool, s : str) -> bool:
     return b
 
 def connect_actions_to_slots(actions, slots):
-    action_names = [a for a in dir(actions) if not a.startswith('_')]
+    action_names = [a for a in dir(actions) if not a.startswith('_') and not callable(getattr(actions, a))]
     slot_names   = [s for s in dir(slots)   if not s.startswith('_')]
     error = False
     error &= check(len(action_names) > 0, 'No actions found')
