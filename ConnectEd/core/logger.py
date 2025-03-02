@@ -2,10 +2,10 @@ import os, logging, weakref
 
 from PyQt6.QtWidgets import QPlainTextEdit
 
-from .defs    import APP_NAME, LOG_FILENAME
+from .defs import APP_NAME, LOG_FILENAME
 
 class RelativePathFormatter(logging.Formatter):
-    def format(self, record):
+    def format(self : 'RelativePathFormatter', record : logging.LogRecord) -> str:
         try:
             record.relpath = os.path.relpath(record.pathname)
         except ValueError:

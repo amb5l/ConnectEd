@@ -1,12 +1,15 @@
 import os
 import platform
 
+from typing import Any
+
+
 def check(b : bool, s : str) -> bool:
     if not b:
         print(s)
     return b
 
-def connect_actions_to_slots(actions, slots):
+def connect_actions_to_slots(actions : Any, slots : Any) -> None:
     action_names = [a for a in dir(actions) if not a.startswith('_') and not callable(getattr(actions, a))]
     slot_names   = [s for s in dir(slots)   if not s.startswith('_')]
     error = False

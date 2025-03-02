@@ -1,6 +1,6 @@
 from PyQt6.QtWidgets import QMessageBox
 
-from ....core import logger
+from ....core    import logger
 from ....widgets import Drawing
 
 from typing import TYPE_CHECKING

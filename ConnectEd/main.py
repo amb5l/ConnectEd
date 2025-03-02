@@ -2,9 +2,9 @@ import sys
 
 from PyQt6.QtWidgets import QApplication
 
-from .core                import logger, args, unknown_args, settings
-from .widgets.main_window import MainWindow
-from .resources           import initResources
+from .core      import logger, args, unknown_args, settings
+from .widgets   import MainWindow
+from .resources import initResources
 
 
 def main():

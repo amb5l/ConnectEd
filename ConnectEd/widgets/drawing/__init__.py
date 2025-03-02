@@ -10,9 +10,9 @@ __all__ = [
     'DrawingSubWindow'
 ]
 
-from types  import NoneType
+from types       import NoneType
 from dataclasses import dataclass
-from typing import Optional, ClassVar
+from typing      import Optional, ClassVar
 
 from PyQt6.QtCore    import Qt, QPointF, QSizeF
 from PyQt6.QtWidgets import QWidget, QMdiSubWindow, QMdiArea
@@ -21,8 +21,6 @@ from ...core  import TypedList, settings
 from .private import DrawingPrivateMixin
 from .events  import DrawingEventsMixin
 from .api     import DrawingApiMixin
-
-#from ...elements import Rectangle
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING: # avoid circular import issues

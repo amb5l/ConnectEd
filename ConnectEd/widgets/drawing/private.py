@@ -1,7 +1,7 @@
-from enum import Enum, auto
+from enum        import Enum, auto
 from dataclasses import dataclass, field
-from typing import Optional
-from math  import sqrt, copysign
+from typing      import Optional
+from math        import sqrt, copysign
 
 from PyQt6.QtCore import Qt, QPoint, QPointF, QRect, QRectF, QSize, QSizeF
 from PyQt6.QtGui  import QMouseEvent
