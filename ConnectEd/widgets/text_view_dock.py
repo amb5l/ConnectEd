@@ -13,12 +13,13 @@ class TextViewDockWidget(QDockWidget):
     find_bar     : FindBar
 
     def __init__(
-        self   : 'TextViewDockWidget',
-        parent : Optional[QWidget] = None
+        self     : 'TextViewDockWidget',
+        parent   : Optional[QWidget] = None,
+        filename : Optional[str] = None
     ) -> None:
         super().__init__(parent)
         self.setWindowTitle(self.WINDOW_TITLE)
-        self.text_view = TextView(self)
+        self.text_view = TextView(self, filename)
         self.find_bar = FindBar(self, self.text_view)
         self.text_view.setFindBar(self.find_bar)
         self.main_widget = QWidget()

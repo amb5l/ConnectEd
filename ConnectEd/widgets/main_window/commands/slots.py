@@ -42,9 +42,11 @@ class Slots:
 
     def windowMessages(self : 'Slots') -> None:
         self._parent.msg_viewer.show()
+        self._parent.msg_viewer.raise_()
 
     def windowLog(self : 'Slots') -> None:
         self._parent.log_viewer.show()
+        self._parent.log_viewer.raise_()
 
     def helpAbout(self : 'Slots') -> None:
         logger.debug('helpAbout')
