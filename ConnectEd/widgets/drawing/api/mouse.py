@@ -11,7 +11,7 @@ if TYPE_CHECKING:
 class DrawingApiMouseMixin:
     """Mixin class that provides mouse API for Drawing widgets."""
 
-    def mouseEnter(self : 'Drawing'):
+    def mouseEnter(self : 'Drawing') -> None:
         self.mouse.setPos(self.mapFromGlobal(QCursor.pos()))
         self._viewUpdate()
 
@@ -20,7 +20,7 @@ class DrawingApiMouseMixin:
         self.main_window.status_bar.xy.setText('-,-')
         self._viewUpdate()
 
-    def mouseMove(self : 'Drawing', pos: QPoint):
+    def mouseMove(self : 'Drawing', pos: QPoint) -> None:
         self.mouse.setPos(pos)
         self.main_window.status_bar.xy.setText(
             str(int(self.mouse.current.logical.x())) + ',' +
@@ -62,7 +62,7 @@ class DrawingApiMouseMixin:
                 self.wip.setOffset(self._snap(self.mouse.current.logical))
                 self._viewUpdate()
 
-    def mouseLeftPress(self : 'Drawing', physical: QPoint, modifiers: Qt.KeyboardModifier):
+    def mouseLeftPress(self : 'Drawing', physical: QPoint, modifiers: Qt.KeyboardModifier) -> None:
         self.mouse.left.press.physical = physical
         self.mouse.left.press.logical = self._cp2dp(physical)
         self.mouse.left.release.physical = None
@@ -90,7 +90,7 @@ class DrawingApiMouseMixin:
                 self.state = self.State.Idle
                 self._viewUpdate()
 
-    def mouseLeftRelease(self : 'Drawing', physical: QPoint):
+    def mouseLeftRelease(self : 'Drawing', physical: QPoint) -> None:
         self.mouse.left.release.physical = physical
         self.mouse.left.release.logical = self._cp2dp(physical)
         self.mouse.left.state = self.MouseState.Idle
@@ -116,14 +116,14 @@ class DrawingApiMouseMixin:
                 self.state = self.State.Idle
                 self._viewUpdate()
 
-    def mouseMiddlePress(self : 'Drawing', physical: QPoint, modifiers: Qt.KeyboardModifier):
+    def mouseMiddlePress(self : 'Drawing', physical: QPoint, modifiers: Qt.KeyboardModifier) -> None:
         self.mouse.middle.press.physical = physical
         self.mouse.middle.press.logical = self._cp2dp(physical)
         self.mouse.middle.release.physical = None
         self.mouse.middle.release.logical = None
         self.mouse.middle.state = self.MouseState.Pressed
 
-    def mouseMiddleRelease(self : 'Drawing', physical: QPoint):
+    def mouseMiddleRelease(self : 'Drawing', physical: QPoint) -> None:
         self.mouse.middle.release.physical = physical
         self.mouse.middle.release.logical = self._cp2dp(physical)
         if self.state == self.State.ViewZoomWindow2:
@@ -135,7 +135,7 @@ class DrawingApiMouseMixin:
             self._pan(self.mouse.middle.release.logical)
         self.mouse.middle.state = self.MouseState.Idle
 
-    def mouseLeftDoubleClick(self : 'Drawing', modifiers: Qt.KeyboardModifier):
+    def mouseLeftDoubleClick(self : 'Drawing', modifiers: Qt.KeyboardModifier) -> None:
         match self.state:
             case self.State.PlaceBlock2:
                 assert isinstance(self.wip, DrawingItemBlock)
@@ -144,7 +144,7 @@ class DrawingApiMouseMixin:
                 self.state = self.State.Idle
                 self._viewUpdate()
 
-    def mouseWheel(self : 'Drawing', n: int, modifiers: Qt.KeyboardModifier):
+    def mouseWheel(self : 'Drawing', n: int, modifiers: Qt.KeyboardModifier) -> None:
         if modifiers == Qt.KeyboardModifier.NoModifier:
             if n >= 0:
                 self.viewZoomIn(n)

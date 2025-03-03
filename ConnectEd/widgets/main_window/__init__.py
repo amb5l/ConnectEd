@@ -10,7 +10,8 @@ __all__ = [
 ]
 
 from PyQt6.QtCore    import Qt, QByteArray
-from PyQt6.QtWidgets import QMainWindow, QMdiArea, QMdiSubWindow
+from PyQt6.QtWidgets import QMainWindow, QMdiArea
+from PyQt6.QtGui     import QCloseEvent
 
 from ...core         import APP_NAME, logger, settings
 from .commands       import Commands
@@ -94,6 +95,6 @@ class MainWindow(QMainWindow):
         # ready message
         self.msg_viewer.text_view.appendPlainText("ConnectEd ready!")
 
-    def closeEvent(self, event):
+    def closeEvent(self, event : QCloseEvent) -> None:
         settings.startup.geometry = self.saveGeometry().data()
         super().closeEvent(event)

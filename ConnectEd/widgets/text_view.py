@@ -1,8 +1,8 @@
 import logging
 from typing import Optional
 
-from PyQt6.QtWidgets import QWidget, QPlainTextEdit
-from PyQt6.QtGui     import QTextOption, QAction, QKeySequence
+from PyQt6.QtWidgets import QWidget, QPlainTextEdit,
+from PyQt6.QtGui     import QTextOption, QAction, QContextMenuEvent
 
 from ..core    import logger
 from .find_bar import FindBar
@@ -42,7 +42,7 @@ class TextView(QPlainTextEdit):
     def setFindBar(self, find_bar : FindBar) -> None:
         self.find_bar = find_bar
 
-    def contextMenuEvent(self, event):
+    def contextMenuEvent(self, event : QContextMenuEvent) -> None:
         menu = self.createStandardContextMenu()
         menu.addSeparator()
         menu.addAction(self.find_bar_action)
@@ -56,7 +56,7 @@ class TextView(QPlainTextEdit):
                 self.find_bar.find_combo.setFocus()
                 self.find_bar.find_combo.lineEdit().selectAll()
 
-    def __del__(self):
+    def __del__(self : 'TextView') -> None:
         if hasattr(self, 'handler') and self.handler:
             try:
                 logger.removeHandler(self.handler)

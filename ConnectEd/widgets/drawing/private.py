@@ -30,7 +30,7 @@ class DrawingRect:
     logical  : QRectF
     _parent  : 'Drawing'
 
-    def __init__(self, parent, rect : Optional[QRect | QRectF] = None):
+    def __init__(self, parent, rect : Optional[QRect | QRectF] = None) -> None:
         self._parent = parent
         if isinstance(rect, QRect):
             self.setPhysical(rect)
@@ -40,11 +40,11 @@ class DrawingRect:
             self.physical = QRect()
             self.logical  = QRectF()
 
-    def setPhysical(self, rect : QRect):
+    def setPhysical(self, rect : QRect) -> None:
         self.physical = rect
         self.logical = self._parent._p2lRect(rect)
 
-    def setLogical(self, rect : QRectF):
+    def setLogical(self, rect : QRectF) -> None:
         self.logical = rect
         self.physical = self._parent._l2pRect(rect)
 
@@ -81,13 +81,13 @@ class DrawingMouse:
     middle  : DrawingMouseButton
     _parent : 'Drawing'
 
-    def __init__(self : 'DrawingMouse', parent : 'Drawing'):
+    def __init__(self : 'DrawingMouse', parent : 'Drawing') -> None:
         self._parent = parent
         self.current = DrawingPos()
         self.left    = DrawingMouseButton()
         self.middle  = DrawingMouseButton()
 
-    def setPos(self : 'DrawingMouse', pos : QPoint | QPointF):
+    def setPos(self : 'DrawingMouse', pos : QPoint | QPointF) -> None:
         if isinstance(pos, QPoint):
             self.current.physical = pos
             self.current.logical = self._parent._p2lPoint(self.current.physical)

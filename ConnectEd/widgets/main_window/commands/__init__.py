@@ -10,7 +10,7 @@ class Commands:
     slots   : Slots
     actions : Actions
 
-    def __init__(self : 'Commands', main_window : 'MainWindow'):
+    def __init__(self : 'Commands', main_window : 'MainWindow') -> None:
         self.slots = Slots(main_window)
         self.actions = Actions(main_window)
         connect_actions_to_slots(self.actions, self.slots)

@@ -7,7 +7,7 @@ from .widgets   import MainWindow
 from .resources import initResources
 
 
-def main():
+def main() -> int:
     logger.info("started")
     if args.reset:
         settings.reset()

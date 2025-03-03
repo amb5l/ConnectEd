@@ -1,3 +1,5 @@
+from typing import Optional
+
 from PyQt6.QtWidgets import QDockWidget, QWidget, QVBoxLayout
 
 from .text_view import TextView
@@ -10,7 +12,10 @@ class TextViewDockWidget(QDockWidget):
     text_view    : TextView
     find_bar     : FindBar
 
-    def __init__(self, parent=None):
+    def __init__(
+        self   : 'TextViewDockWidget',
+        parent : Optional[QWidget] = None
+    ) -> None:
         super().__init__(parent)
         self.setWindowTitle(self.WINDOW_TITLE)
         self.text_view = TextView(self)

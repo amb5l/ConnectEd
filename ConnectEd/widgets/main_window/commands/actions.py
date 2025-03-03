@@ -10,7 +10,7 @@ if TYPE_CHECKING:
 class Actions:
     _parent : 'MainWindow'
 
-    def __init__(self : 'Actions', parent : 'MainWindow'):
+    def __init__(self : 'Actions', parent : 'MainWindow') -> None:
         self._parent = parent
         SK = QKeySequence.StandardKey
 
@@ -27,5 +27,5 @@ class Actions:
         self.windowLog      = Action( self._parent, 'Log'        , 'Show the log window'      , 'Ctrl+Shift+L' , False )
         self.helpAbout      = Action( self._parent, 'About'      , ''                         , 'Ctrl+Shift+T' , False )
 
-    def actionEnable(self, name : str, enable : bool):
+    def actionEnable(self, name : str, enable : bool) -> None:
         getattr(self, name).setEnabled(enable)

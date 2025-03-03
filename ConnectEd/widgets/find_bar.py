@@ -15,7 +15,7 @@ class FindBar(QWidget):
     whole_words : QCheckBox
     highlight   : QCheckBox
 
-    def __init__(self, parent, text_edit):
+    def __init__(self : 'FindBar', parent : QWidget, text_edit : QPlainTextEdit) -> None:
         super().__init__(parent)
         self.text_edit = text_edit
 
