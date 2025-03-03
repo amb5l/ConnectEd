@@ -1,7 +1,8 @@
 from PyQt6.QtCore import Qt, QRect, QRectF, QSize, QSizeF, QPoint, QPointF
 from PyQt6.QtGui  import QPaintEvent, QResizeEvent, QPainter, QPen, QBrush, QColor
 
-from ....core import settings, PainterContext, _iround
+from ....core     import settings, _iround
+from ....elements import PainterContext
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING: # avoid circular import issues
@@ -17,52 +18,52 @@ class DrawingEventsPaintMixin:
     - Grid
     - Selection rectangle
     """
+    PAINT_SEQUENCE = [
+        'Background',
+        'Save',
+        'GoLogical',
+        'Elements',
+        'WIP',
+        'Grid',
+        'Restore'
+    ]
 
     def paintEvent(self: 'Drawing', event: QPaintEvent) -> None:
         """Handle paint events for the Drawing widget.
 
         This method is called whenever the widget needs to be redrawn.
-        It paints the background, elements, grid, and selection rectangle.
+        It paints the background, elements, grid, etc.
 
         Args:
             event: The paint event
         """
         ctx = PainterContext(self)
         ctx.painter.setRenderHint(QPainter.RenderHint.Antialiasing, True)
+        for step in self.PAINT_SEQUENCE:
+            fn = getattr(self, f'_paint{step}')
+            fn(ctx)
 
-        # fill background
+    def _paintBackground(self: 'Drawing', ctx: PainterContext) -> None:
         ctx.setBrush(settings.theme.background, settings.prefs.display.background)
         ctx.painter.fillRect(self.view_rect.physical, ctx.brush)
 
-        # transition to logical coordinates
+    def _paintSave(self: 'Drawing', ctx: PainterContext) -> None:
         ctx.save()
+
+    def _paintGoLogical(self: 'Drawing', ctx: PainterContext) -> None:
         ctx.painter.scale(self.zoom, self.zoom)
         ctx.painter.translate(QPointF(0.5, 0.5) - self.pan)
 
-        # draw sheet (if applicable)
-        self.paintSheet(ctx)
-
-        # draw diagram contents
+    def _paintElements(self: 'Drawing', ctx: PainterContext) -> None:
         for element in self.elements:
             element.paint(ctx)
+
+    def _paintWIP(self: 'Drawing', ctx: PainterContext) -> None:
         for element in self.wip:
             element.paint(ctx)
 
-        # draw grid if enabled
-        if self.grid.display:
-            self._paintGrid(ctx)
-
-        # transition back to physical coordinates
+    def _paintRestore(self: 'Drawing', ctx: PainterContext) -> None:
         ctx.restore()
-
-        # draw selection rectangle if active
-        if self.sel_rect:
-            ctx.save()
-            ctx.painter.setCompositionMode(QPainter.CompositionMode.RasterOp_SourceXorDestination)
-            ctx.setPen(QColor(255, 255, 255), width=1, style=Qt.PenStyle.DotLine)
-            ctx.noBrush()
-            ctx.painter.drawRect(self.sel_rect.physical)
-            ctx.restore()
 
     def _paintGrid(self: 'Drawing', ctx: PainterContext) -> None:
         """Paint the grid on the drawing.

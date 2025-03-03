@@ -4,9 +4,10 @@ from typing import Optional
 from PyQt6.QtCore    import QRect, QPoint, QSize
 from PyQt6.QtWidgets import QWidget, QMdiArea, QMdiSubWindow
 
-from ..core   import settings, TypedList, PainterContext
-from .drawing import Drawing
-from .symbol  import Symbol
+from ..core     import settings, TypedList
+from ..elements import PainterContext
+from .drawing   import Drawing
+from .symbol    import Symbol
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -14,6 +15,17 @@ if TYPE_CHECKING:
 
 
 class Diagram(Drawing):
+    PAINT_SEQUENCE = [
+        'Background',
+        'Save',
+        'GoLogical',
+        'Sheet',
+        'Border',
+        'Elements',
+        'WIP',
+        'Grid',
+        'Restore'
+    ]
     ELEMENT_TYPES = [NoneType]
     sheet   : Optional[QSize] = None
     border  : Optional[int] = None
@@ -29,10 +41,18 @@ class Diagram(Drawing):
         self.border  = settings.defaults.border
         self.symbols = TypedList[Symbol]()
 
-    def paintSheet(self : 'Diagram', ctx : PainterContext) -> None:
+    def _paintSheet(self : 'Diagram', ctx : PainterContext) -> None:
         if self.sheet:
             ctx.setBrush(settings.theme.sheet)
             ctx.painter.fillRect(QRect(QPoint(0, 0), self.sheet), ctx.brush)
+            ctx.setPenOnly(
+                settings.theme.border,
+                settings.prefs.display.border.width,
+                settings.prefs.display.border.style
+            )
+
+    def _paintBorder(self : 'Diagram', ctx : PainterContext) -> None:
+        if self.border:
             ctx.setPenOnly(
                 settings.theme.border,
                 settings.prefs.display.border.width,

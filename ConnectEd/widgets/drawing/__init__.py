@@ -16,9 +16,8 @@ from typing      import Optional, ClassVar
 
 from PyQt6.QtCore    import Qt, QPointF
 from PyQt6.QtWidgets import QMdiArea, QMdiSubWindow, QWidget
-from PyQt6.QtGui     import QPainter
 
-from ...core  import TypedList, settings, PainterContext
+from ...core  import TypedList, settings
 from .private import DrawingPrivateMixin
 from .events  import DrawingEventsMixin
 from .api     import DrawingApiMixin
@@ -43,7 +42,6 @@ class Drawing(
     - Grid display and snapping
     - Event handling (mouse, keyboard, paint)
     """
-
     ELEMENT_TYPES    : ClassVar[TypedList] = TypedList(NoneType)
     main_window      : 'MainWindow'
     name             : str
