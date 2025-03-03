@@ -206,13 +206,17 @@ class PainterContext:
         pen_color   : QColor,
         pen_width   : float = 1,
         pen_style   : Qt.PenStyle = Qt.PenStyle.SolidLine,
-        brush_color : QColor | None = None,
+        brush_color : Optional[QColor] = None,
         brush_style : Qt.BrushStyle = Qt.BrushStyle.SolidPattern
     ) -> None:
         self.setPen(pen_color, pen_width, pen_style)
         if brush_color is None:
             brush_color = pen_color
         self.setBrush(brush_color, brush_style)
+
+    def noPen(self : 'PainterContext') -> None:
+        self.pen.setStyle(Qt.PenStyle.NoPen)
+        self.painter.setPen(self.pen)
 
     def noBrush(self : 'PainterContext') -> None:
         self.brush.setStyle(Qt.BrushStyle.NoBrush)
@@ -226,3 +230,11 @@ class PainterContext:
     ) -> None:
         self.setPen(color, width, style)
         self.noBrush()
+
+    def setBrushOnly(
+        self    : 'PainterContext',
+        color   : QColor,
+        style   : Qt.BrushStyle = Qt.BrushStyle.SolidPattern
+    ) -> None:
+        self.setBrush(color, style)
+        self.noPen()

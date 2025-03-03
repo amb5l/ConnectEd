@@ -14,10 +14,11 @@ from types       import NoneType
 from dataclasses import dataclass
 from typing      import Optional, ClassVar
 
-from PyQt6.QtCore    import Qt, QPointF, QSizeF
-from PyQt6.QtWidgets import QWidget, QMdiSubWindow, QMdiArea
+from PyQt6.QtCore    import Qt, QPointF
+from PyQt6.QtWidgets import QMdiArea, QMdiSubWindow, QWidget
+from PyQt6.QtGui     import QPainter
 
-from ...core  import TypedList, settings
+from ...core  import TypedList, settings, PainterContext
 from .private import DrawingPrivateMixin
 from .events  import DrawingEventsMixin
 from .api     import DrawingApiMixin
@@ -66,9 +67,9 @@ class Drawing(
         y       : int
 
     def __init__(
-        self: 'Drawing',
-        parent: QWidget,
-        main_window: 'MainWindow'
+        self        : 'Drawing',
+        parent      : QWidget,
+        main_window : 'MainWindow'
     ) -> None:
         """Initialize a Drawing widget.
 
@@ -101,11 +102,8 @@ class Drawing(
         self.mouse            = self.Mouse(self)
         self.state            = self.State.Idle
         self.setMouseTracking(True)
-
-        # TODO remove this
-        #self.elements.append(Rectangle(QPointF(0, 0), QSizeF(100, 100)))
-
         self._viewUpdate()
+
 
         # uncomment to enable keypress events
         #self.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
@@ -115,8 +113,8 @@ class DrawingSubWindow(QMdiSubWindow):
     """A subwindow container for Drawing widgets in the MDI area."""
 
     def __init__(
-        self: 'DrawingSubWindow',
-        parent: QMdiArea
+        self   : 'DrawingSubWindow',
+        parent : QMdiArea
     ) -> None:
         """Initialize a DrawingSubWindow.
 

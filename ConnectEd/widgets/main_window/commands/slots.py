@@ -1,7 +1,7 @@
 from PyQt6.QtWidgets import QMessageBox
 
 from ....core    import logger
-from ....widgets import Drawing
+from ....widgets import Drawing, Diagram
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -15,6 +15,18 @@ class Slots:
 
     def fileExit(self : 'Slots') -> None:
         self._parent.close()
+
+    def viewZoomAll(self : 'Slots') -> None:
+        current_sub_window = self._parent.mdi_area.currentSubWindow()
+        current_widget = current_sub_window.widget()
+        if isinstance(current_widget, Drawing):
+            current_widget.viewZoomAll()
+
+    def viewZoomSheet(self : 'Slots') -> None:
+        current_sub_window = self._parent.mdi_area.currentSubWindow()
+        current_widget = current_sub_window.widget()
+        if isinstance(current_widget, Diagram):
+            current_widget.viewZoomSheet()
 
     def viewZoomIn(self : 'Slots') -> None:
         current_sub_window = self._parent.mdi_area.currentSubWindow()

@@ -17,6 +17,8 @@ class MenuBar(QMenuBar):
         self.file_menu.addAction(actions.fileExit)
 
         self.view_menu = QMenu('&View')
+        self.view_menu.addAction(actions.viewZoomAll)
+        self.view_menu.addAction(actions.viewZoomSheet)
         self.view_menu.addAction(actions.viewZoomIn)
         self.view_menu.addAction(actions.viewZoomOut)
 

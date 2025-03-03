@@ -12,9 +12,17 @@ __all__ = [
 from .view  import DrawingApiViewMixin
 from .mouse import DrawingApiMouseMixin
 
+from typing import TYPE_CHECKING
+if TYPE_CHECKING: # avoid circular import issues
+    from .. import Drawing
+
 
 class DrawingApiMixin(
     DrawingApiViewMixin,
     DrawingApiMouseMixin
 ):
-    pass
+    def paintSheet(self : 'Drawing') -> None:
+        """
+        Placeholder to be overridden by Diagram.
+        """
+        pass

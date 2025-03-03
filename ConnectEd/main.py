@@ -12,7 +12,7 @@ def main():
     if args.reset:
         settings.reset()
     settings.load()
-    print(settings.dump())
+    #print(settings.dump())
     app = QApplication(sys.argv[:1] + unknown_args)
     initResources()
     main_window = MainWindow()

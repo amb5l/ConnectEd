@@ -80,11 +80,11 @@ class MainWindow(QMainWindow):
 
         # TODO remove this
         # Import here to avoid circular dependency
-        from ..drawing import Drawing, DrawingSubWindow
-        test_sub_window = DrawingSubWindow(self.mdi_area)
-        test_drawing = Drawing(test_sub_window, self)
-        test_sub_window.setWidget(test_drawing)
-        test_sub_window.setWindowTitle("Test Drawing")
+        from ..diagram import Diagram, DiagramSubWindow
+        test_sub_window = DiagramSubWindow(self.mdi_area)
+        test_widget = Diagram(test_sub_window, self)
+        test_sub_window.setWidget(test_widget)
+        test_sub_window.setWindowTitle("Test Diagram")
         self.mdi_area.addSubWindow(test_sub_window)
         test_sub_window.showMaximized()
 

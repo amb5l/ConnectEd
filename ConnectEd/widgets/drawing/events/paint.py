@@ -30,35 +30,32 @@ class DrawingEventsPaintMixin:
         ctx = PainterContext(self)
         ctx.painter.setRenderHint(QPainter.RenderHint.Antialiasing, True)
 
-        # Get physical and logical view rectangles
-        p = QRectF(self.visibleRegion().boundingRect())  # physical view rect
-        l = QRectF(                                      # logical view rect
-            self._p2lPoint(p.topLeft()),
-            self._p2lPoint(p.bottomRight())
-        )
-
-        # Fill background
+        # fill background
         ctx.setBrush(settings.theme.background, settings.prefs.display.background)
-        ctx.painter.fillRect(p, ctx.brush)
+        ctx.painter.fillRect(self.view_rect.physical, ctx.brush)
 
-        # Draw diagram contents
+        # transition to logical coordinates
         ctx.save()
         ctx.painter.scale(self.zoom, self.zoom)
         ctx.painter.translate(QPointF(0.5, 0.5) - self.pan)
 
-        # Draw elements
+        # draw sheet (if applicable)
+        self.paintSheet(ctx)
+
+        # draw diagram contents
         for element in self.elements:
             element.paint(ctx)
         for element in self.wip:
             element.paint(ctx)
 
-        # Draw grid if enabled
+        # draw grid if enabled
         if self.grid.display:
-            self._paintGrid(ctx, l)
+            self._paintGrid(ctx)
 
+        # transition back to physical coordinates
         ctx.restore()
 
-        # Draw selection rectangle if active
+        # draw selection rectangle if active
         if self.sel_rect:
             ctx.save()
             ctx.painter.setCompositionMode(QPainter.CompositionMode.RasterOp_SourceXorDestination)
@@ -67,11 +64,7 @@ class DrawingEventsPaintMixin:
             ctx.painter.drawRect(self.sel_rect.physical)
             ctx.restore()
 
-    def _paintGrid(
-        self: 'Drawing',
-        ctx: PainterContext,
-        lrect: QRectF
-    ) -> None:
+    def _paintGrid(self: 'Drawing', ctx: PainterContext) -> None:
         """Paint the grid on the drawing.
 
         Args:
@@ -79,12 +72,11 @@ class DrawingEventsPaintMixin:
             lrect: The logical rectangle to draw the grid in
         """
         if settings.prefs.display.grid.display:
-            ctx.save()
             ctx.painter.setRenderHint(QPainter.RenderHint.Antialiasing, False)
             g = settings.prefs.display.grid
             grect = QRectF(
-                lrect.topLeft() - QPointF(g.x, g.y),
-                lrect.bottomRight() + QPointF(g.x, g.y)
+                self.view_rect.logical.topLeft() - QPointF(g.x, g.y),
+                self.view_rect.logical.bottomRight() + QPointF(g.x, g.y)
             ).toRect()
             ctx.setPenOnly(settings.theme.grid)
             if g.dots:
@@ -102,8 +94,8 @@ class DrawingEventsPaintMixin:
                         QPointF(grect.left(), y + 0.5),
                         QPointF(grect.right(), y + 0.5)
                     )
-            ctx.restore()
 
     def _viewUpdate(self : 'Drawing'):
+        self.view_rect.setPhysical(self.visibleRegion().boundingRect())
+        self.main_window.status_bar.zoom.setText('{:.2f}%'.format(self.zoom * 100))
         self.update()
-

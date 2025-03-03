@@ -1,4 +1,5 @@
 import logging
+from typing import Optional
 
 from PyQt6.QtWidgets import QWidget, QPlainTextEdit
 from PyQt6.QtGui     import QTextOption, QAction, QKeySequence
@@ -8,13 +9,13 @@ from .find_bar import FindBar
 
 
 class TextView(QPlainTextEdit):
-    find_bar : FindBar | None
-    handler  : logging.Handler | None
+    find_bar : Optional[FindBar] = None
+    handler  : Optional[logging.Handler] = None
 
     def __init__(
         self     : 'TextView',
         parent   : QWidget,
-        filename : str | None = None
+        filename : Optional[str] = None
     ) -> None:
         super().__init__(parent)
         self.setReadOnly(True)

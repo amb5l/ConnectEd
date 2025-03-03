@@ -67,13 +67,29 @@ FACTORY_SETTINGS = {
     },
     'themes': {
         'dark': {
-            'background': QColor(0, 0, 0, 255),
-            'grid': QColor(128, 128, 128, 128)
+            'background' : QColor(0, 0, 0, 255),
+            'sheet'      : QColor(16, 16, 16, 255),
+            'grid'       : QColor(128, 128, 128, 128)
         },
         'light': {
-            'background': QColor(128, 128, 128, 255),
-            'grid': QColor(32, 32, 32, 128)
+            'background' : QColor(128, 128, 128, 255),
+            'grid'       : QColor(32, 32, 32, 128)
         }
+    },
+    'sheet_sizes': {
+        'A4' : QSize( 1169 ,  827 ),
+        'A3' : QSize( 1654 , 1169 ),
+        'A2' : QSize( 2338 , 1654 ),
+        'A1' : QSize( 3307 , 2338 ),
+        'A0' : QSize( 4677 , 3307 ),
+        'A'  : QSize(  970 ,  720 ),
+        'B'  : QSize( 1520 ,  970 ),
+        'C'  : QSize( 2020 , 1520 ),
+        'D'  : QSize( 3220 , 2020 ),
+        'E'  : QSize( 4220 , 3220 )
+    },
+    'defaults': { # TODO move these to session settings
+        'sheet': 'A4'
     }
 }
 

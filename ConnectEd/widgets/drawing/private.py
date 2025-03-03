@@ -18,8 +18,8 @@ class DrawingPos:
     A class that holds the logical and physical coordinates of a position in a
     drawing widget.
     """
-    physical : QPoint  | None = None
-    logical  : QPointF | None = None
+    physical : Optional[QPoint] = None
+    logical  : Optional[QPointF] = None
 
 class DrawingRect:
     """
@@ -32,19 +32,21 @@ class DrawingRect:
 
     def __init__(self, parent, rect : Optional[QRect | QRectF] = None):
         self._parent = parent
-        if rect is None:
+        if isinstance(rect, QRect):
+            self.setPhysical(rect)
+        elif isinstance(rect, QRectF):
+            self.setLogical(rect)
+        else:
             self.physical = QRect()
             self.logical  = QRectF()
-        else:
-            self.set(rect)
 
-    def set(self, rect : QRect | QRectF):
-        if isinstance(rect, QRect):
-            self.physical = rect
-            self.logical = self._parent._p2lRect(rect)
-        else:
-            self.logical = rect
-            self.physical = self._parent._l2pRect(rect)
+    def setPhysical(self, rect : QRect):
+        self.physical = rect
+        self.logical = self._parent._p2lRect(rect)
+
+    def setLogical(self, rect : QRectF):
+        self.logical = rect
+        self.physical = self._parent._l2pRect(rect)
 
 class DrawingMouseState(Enum):
     Idle     = auto()
@@ -115,22 +117,28 @@ class DrawingPrivateMixin:
         PlaceBlock2     = auto() # ready to place second point
 
     def _p2lPoint(self: 'Drawing', point: QPoint) -> QPointF:
+        assert isinstance(point, QPoint)
         return (QPointF(point) / self.zoom) + self.pan
 
-    def _l2pPoint(self: 'Drawing', point: QPointF) -> QPointF:
-        return (point - self.pan) * self.zoom
+    def _l2pPoint(self: 'Drawing', point: QPointF) -> QPoint:
+        assert isinstance(point, QPointF)
+        return QPoint((point - self.pan) * self.zoom)
 
     def _p2lSize(self: 'Drawing', size: QSize) -> QSizeF:
-        return QSizeF(size) * self.zoom
+        assert isinstance(size, QSize)
+        return QSizeF(size) / self.zoom
 
-    def _l2pSize(self: 'Drawing', size: QSizeF) -> QSizeF:
-        return size / self.zoom
+    def _l2pSize(self: 'Drawing', size: QSizeF) -> QSize:
+        assert isinstance(size, QSizeF)
+        return QSize(size * self.zoom)
 
-    def _p2lRect(self: 'Drawing', rect: QRectF) -> QRectF:
+    def _p2lRect(self: 'Drawing', rect: QRect) -> QRectF:
+        assert isinstance(rect, QRect)
         return QRectF(self._p2lPoint(rect.topLeft()), self._p2lSize(rect.size()))
 
-    def _l2pRect(self: 'Drawing', rect: QRectF) -> QRectF:
-        return QRectF(self._l2pPoint(rect.topLeft()), self._l2pSize(rect.size()))
+    def _l2pRect(self: 'Drawing', rect: QRectF) -> QRect:
+        assert isinstance(rect, QRectF)
+        return QRect(self._l2pPoint(rect.topLeft()), self._l2pSize(rect.size()))
 
     def _viewUpdate(self: 'Drawing') -> None:
         #if self.mouse.current:
@@ -148,7 +156,10 @@ class DrawingPrivateMixin:
         self.main_window.commands.actions.actionEnable('viewZoomOut', self.zoom > settings.prefs.display.zoom.min)
         self._viewUpdate()
 
-    def _zoomLRect(self: 'Drawing', lrect : QRectF) -> None:
+    def _zoomLRect(self: 'Drawing', lrect : QRectF | QRect) -> None:
+        # TODO change to QRectF only
+        if isinstance(lrect, QRect):
+            lrect = QRectF(lrect)
         os = settings.prefs.display.overscan
         zoom_x = ( self.width()  - ( os.left + os.right  )) / lrect.width()
         zoom_y = ( self.height() - ( os.top  + os.bottom )) / lrect.height()

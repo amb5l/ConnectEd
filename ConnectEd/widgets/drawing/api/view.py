@@ -1,4 +1,4 @@
-from PyQt6.QtCore import QRect
+from PyQt6.QtCore import QPoint, QRect, QSize
 
 from ....core import settings
 
@@ -11,18 +11,16 @@ class DrawingApiViewMixin:
     def viewRefresh(self : 'Drawing'):
         self._viewUpdate()
 
-    def viewZoomFull(self : 'Drawing'):
+    def viewZoomAll(self : 'Drawing'):
         # TODO get Drawing contents extents
-        self._zoomDRect(QRect(self.origin.getOffset(), self.sheet))
+        self._zoomLRect(QRect(QPoint(0, 0), self.sheet))
 
     def viewZoomSheet(self : 'Drawing'):
-        self._zoomDRect(QRect(self.origin.getOffset(), self.sheet))
+        self._zoomLRect(QRect(QPoint(0, 0), self.sheet))
 
     def viewZoomWindow(self : 'Drawing'):
         self.state = self.State.ViewZoomWindow1
         self._viewUpdate()
-
-    # TODO add common function to do heavy lifting for zoom in/out
 
     def viewZoomIn(self : 'Drawing', n=1):
         self._zoomPanMouse(min(self.zoom * ((1+settings.prefs.display.zoom.step)**n), settings.prefs.display.zoom.max))
