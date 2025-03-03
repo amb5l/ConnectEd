@@ -1,7 +1,7 @@
 import logging
 from typing import Optional
 
-from PyQt6.QtWidgets import QWidget, QPlainTextEdit,
+from PyQt6.QtWidgets import QWidget, QPlainTextEdit
 from PyQt6.QtGui     import QTextOption, QAction, QContextMenuEvent
 
 from ..core    import logger
