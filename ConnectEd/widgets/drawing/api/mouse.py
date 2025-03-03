@@ -64,7 +64,7 @@ class DrawingApiMouseMixin:
 
     def mouseLeftPress(self : 'Drawing', physical: QPoint, modifiers: Qt.KeyboardModifier) -> None:
         self.mouse.left.press.physical = physical
-        self.mouse.left.press.logical = self._cp2dp(physical)
+        self.mouse.left.press.logical = self._p2lPoint(physical)
         self.mouse.left.release.physical = None
         self.mouse.left.release.logical = None
         self.mouse.left.state = self.MouseState.Pressed
@@ -92,7 +92,7 @@ class DrawingApiMouseMixin:
 
     def mouseLeftRelease(self : 'Drawing', physical: QPoint) -> None:
         self.mouse.left.release.physical = physical
-        self.mouse.left.release.logical = self._cp2dp(physical)
+        self.mouse.left.release.logical = self._p2lPoint(physical)
         self.mouse.left.state = self.MouseState.Idle
         match self.state:
             case self.State.ViewZoomWindow1:
@@ -118,14 +118,14 @@ class DrawingApiMouseMixin:
 
     def mouseMiddlePress(self : 'Drawing', physical: QPoint, modifiers: Qt.KeyboardModifier) -> None:
         self.mouse.middle.press.physical = physical
-        self.mouse.middle.press.logical = self._cp2dp(physical)
+        self.mouse.middle.press.logical = self._p2lPoint(physical)
         self.mouse.middle.release.physical = None
         self.mouse.middle.release.logical = None
         self.mouse.middle.state = self.MouseState.Pressed
 
     def mouseMiddleRelease(self : 'Drawing', physical: QPoint) -> None:
         self.mouse.middle.release.physical = physical
-        self.mouse.middle.release.logical = self._cp2dp(physical)
+        self.mouse.middle.release.logical = self._p2lPoint(physical)
         if self.state == self.State.ViewZoomWindow2:
             self.sel_rect = self._normMinRect(self.mouse.middle.press.physical, self.mouse.middle.release.physical)
             self._zoomCRect(self.sel_rect)
