@@ -152,7 +152,6 @@ class PainterContext:
         self.pen.setColor(QColor(255, 255, 255, 255))
         self.pen.setWidth(1)
         self.pen.setStyle(Qt.PenStyle.SolidLine)
-        self.pen.setCosmetic(True)  # Make pen cosmetic by default for pixel-perfect drawing
 
         # Update brush properties directly
         self.brush.setColor(QColor(255, 255, 255, 255))
@@ -225,7 +224,7 @@ class PainterContext:
     def setPenOnly(
         self    : 'PainterContext',
         color   : QColor,
-        width   : float = 1,
+        width   : float = 0,
         style   : Qt.PenStyle = Qt.PenStyle.SolidLine
     ) -> None:
         self.setPen(color, width, style)

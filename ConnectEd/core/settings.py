@@ -50,6 +50,10 @@ FACTORY_SETTINGS = {
                 'right'  : 2
             },
             'background': Qt.BrushStyle.SolidPattern,
+            'border': {
+                'width' : 1,
+                'style' : Qt.PenStyle.SolidLine
+            },
             'grid': {
                 'display' : True,
                 'snap'    : True,
@@ -67,13 +71,16 @@ FACTORY_SETTINGS = {
     },
     'themes': {
         'dark': {
-            'background' : QColor(0, 0, 0, 255),
-            'sheet'      : QColor(16, 16, 16, 255),
-            'grid'       : QColor(128, 128, 128, 128)
+            'background' : QColor(  0,   0,   0, 255),
+            'sheet'      : QColor( 16,  16,  16, 255),
+            'border'     : QColor(128, 128, 128, 255),
+            'grid'       : QColor( 64,  64,  64, 128)
         },
         'light': {
-            'background' : QColor(128, 128, 128, 255),
-            'grid'       : QColor(32, 32, 32, 128)
+            'background' : QColor(128, 255, 128, 255),
+            'sheet'      : QColor(128, 128, 128, 255),
+            'border'     : QColor(  0,   0,   0, 255),
+            'grid'       : QColor( 64,  64,  64, 128)
         }
     },
     'sheet_sizes': {
@@ -89,7 +96,8 @@ FACTORY_SETTINGS = {
         'E'  : QSize( 4220 , 3220 )
     },
     'defaults': { # TODO move these to session settings
-        'sheet': 'A4'
+        'sheet'  : 'A4',
+        'border' : 10
     }
 }
 

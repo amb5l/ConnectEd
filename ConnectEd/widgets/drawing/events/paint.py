@@ -86,13 +86,13 @@ class DrawingEventsPaintMixin:
             else:
                 for x in range(_iround(grect.left(), g.x), 1 +_iround(grect.right(), g.x), g.x):
                     ctx.painter.drawLine(
-                        QPointF(x + 0.5, grect.top()),
-                        QPointF(x + 0.5, grect.bottom())
+                        QPointF(x, grect.top()),
+                        QPointF(x, grect.bottom())
                     )
                 for y in range(_iround(grect.top(), g.y), 1 + _iround(grect.bottom(), g.y), g.y):
                     ctx.painter.drawLine(
-                        QPointF(grect.left(), y + 0.5),
-                        QPointF(grect.right(), y + 0.5)
+                        QPointF(grect.left(), y),
+                        QPointF(grect.right(), y)
                     )
 
     def _viewUpdate(self : 'Drawing') -> None:
