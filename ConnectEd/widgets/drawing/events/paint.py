@@ -96,7 +96,4 @@ class DrawingEventsPaintMixin:
                         QPointF(grect.right(), y)
                     )
 
-    def _viewUpdate(self : 'Drawing') -> None:
-        self.view_rect.setPhysical(self.visibleRegion().boundingRect())
-        self.main_window.status_bar.zoom.setText('{:.2f}%'.format(self.zoom * 100))
-        self.update()
+

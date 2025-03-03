@@ -148,6 +148,7 @@ class DrawingPrivateMixin:
         #    )
         #else:
         #    self.main_window.status_bar.xy.setText('?,?')
+        self.view_rect.setPhysical(self.visibleRegion().boundingRect())
         self.main_window.status_bar.zoom.setText('{:.2f}%'.format(self.zoom * 100))
         self.update()
 
