@@ -23,10 +23,10 @@ class DrawingApiViewMixin:
         self._viewUpdate()
 
     def viewZoomIn(self : 'Drawing', n=1) -> None:
-        self._zoomPanMouse(min(self.zoom * ((1+settings.prefs.display.zoom.step)**n), settings.prefs.display.zoom.max))
+        self._zoomPanMouse(min(self.zoom * ((1+settings.prefs.display.zoom.step)**n), settings.prefs.display.zoom.limit.max))
 
     def viewZoomOut(self : 'Drawing', n=1) -> None:
-        self._zoomPanMouse(max(self.zoom * ((1+settings.prefs.display.zoom.step)**(-n)), settings.prefs.display.zoom.min))
+        self._zoomPanMouse(max(self.zoom * ((1+settings.prefs.display.zoom.step)**(-n)), settings.prefs.display.zoom.limit.min))
 
     def viewPanLeft(self : 'Drawing') -> None:
         self.pan.setX(self.pan.x() - (settings.prefs.display.pan_step * self.width() / self.zoom))

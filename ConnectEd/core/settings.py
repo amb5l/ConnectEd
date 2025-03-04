@@ -13,16 +13,19 @@ __all__ = [
     'Settings'
 ]
 
-from types  import SimpleNamespace
-from typing import Any, Dict, List, Union
+from types       import SimpleNamespace
+from typing      import Any, Dict, List, Union
+from collections import namedtuple
 
-from PyQt6.QtCore import QSettings, QSize, QSizeF, Qt
+from PyQt6.QtCore import QSettings, QPointF, QSize, QSizeF, Qt
 from PyQt6.QtGui  import QColor
 
 from .logger import logger
 from .defs   import ORG_NAME, APP_NAME
 from .utils  import get_default_path
 
+
+MinMax = namedtuple('MinMax', ['min', 'max'])
 
 FACTORY_SETTINGS = {
     'startup': {
@@ -55,18 +58,17 @@ FACTORY_SETTINGS = {
                 'style' : Qt.PenStyle.SolidLine
             },
             'grid': {
-                'display' : True,
+                'show'    : True,
                 'snap'    : True,
-                'x'       : 10,
-                'y'       : 10,
+                'pitch'   : QPointF(10.0, 10.0),
                 'dots'    : False,
-                'alpha'   : 128
+                'alpha'   : 128,
+                'pixels'  : MinMax(min=5, max=None)
             },
             'zoom': {
                 'wheel' : 120,
                 'step'  : 0.25,
-                'max'   : 100.0,
-                'min'   : 0.1,
+                'limit' : MinMax(0.1, 100.0)
             }
         }
     },

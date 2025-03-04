@@ -1,3 +1,5 @@
+from math import ceil
+
 from PyQt6.QtCore import Qt, QRect, QRectF, QSize, QSizeF, QPoint, QPointF
 from PyQt6.QtGui  import QPaintEvent, QResizeEvent, QPainter, QPen, QBrush, QColor
 
@@ -66,35 +68,43 @@ class DrawingEventsPaintMixin:
         ctx.restore()
 
     def _paintGrid(self: 'Drawing', ctx: PainterContext) -> None:
-        """Paint the grid on the drawing.
-
-        Args:
-            ctx: The painter context
-            lrect: The logical rectangle to draw the grid in
-        """
-        if settings.prefs.display.grid.display:
+        def align(x : float, px : float) -> float:
+            return px * int(x / px)
+        g = settings.prefs.display.grid
+        if g.show:
             ctx.painter.setRenderHint(QPainter.RenderHint.Antialiasing, False)
-            g = settings.prefs.display.grid
+            px = g.pitch.x()
+            if px * self.zoom < g.pixels.min:
+                px *= ceil(g.pixels.min / (g.pitch.x() * self.zoom))
+            py = g.pitch.y()
+            if py * self.zoom < g.pixels.min:
+                py *= ceil(g.pixels.min / (g.pitch.y() * self.zoom))
             grect = QRectF(
-                self.view_rect.logical.topLeft() - QPointF(g.x, g.y),
-                self.view_rect.logical.bottomRight() + QPointF(g.x, g.y)
+                self.view_rect.logical.topLeft() - QPointF(px, py),
+                self.view_rect.logical.bottomRight() + QPointF(px, py)
             ).toRect()
             ctx.setPenOnly(settings.theme.grid)
             ctx.setAlpha(settings.prefs.display.grid.alpha)
             if g.dots:
-                for x in range(_iround(grect.left(), g.x), 1 + _iround(grect.right(), g.x), g.x):
-                    for y in range(_iround(grect.top(), g.y), 1 + _iround(grect.bottom(), g.y), g.y):
+                x = align(grect.left(), px)
+                while x <= grect.right():
+                    y = align(grect.top(), py)
+                    while y <= grect.bottom():
                         ctx.painter.drawPoint(QPoint(x, y))
+                        y += py
+                    x += px
             else:
-                for x in range(_iround(grect.left(), g.x), 1 +_iround(grect.right(), g.x), g.x):
+                x = align(grect.left(), px)
+                while x <= grect.right():
                     ctx.painter.drawLine(
                         QPointF(x, grect.top()),
                         QPointF(x, grect.bottom())
                     )
-                for y in range(_iround(grect.top(), g.y), 1 + _iround(grect.bottom(), g.y), g.y):
+                    x += px
+                y = align(grect.top(), py)
+                while y <= grect.bottom():
                     ctx.painter.drawLine(
                         QPointF(grect.left(), y),
                         QPointF(grect.right(), y)
                     )
-
-
+                    y += py

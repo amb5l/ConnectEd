@@ -153,8 +153,8 @@ class DrawingPrivateMixin:
         self.update()
 
     def _zoomUpdate(self: 'Drawing') -> None:
-        self.main_window.commands.actions.actionEnable('viewZoomIn',  self.zoom < settings.prefs.display.zoom.max)
-        self.main_window.commands.actions.actionEnable('viewZoomOut', self.zoom > settings.prefs.display.zoom.min)
+        self.main_window.commands.actions.actionEnable('viewZoomIn',  self.zoom < settings.prefs.display.zoom.limit.max)
+        self.main_window.commands.actions.actionEnable('viewZoomOut', self.zoom > settings.prefs.display.zoom.limit.min)
         self._viewUpdate()
 
     def _zoomLRect(self: 'Drawing', lrect : QRectF | QRect) -> None:

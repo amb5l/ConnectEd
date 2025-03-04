@@ -14,7 +14,7 @@ from types       import NoneType
 from dataclasses import dataclass
 from typing      import Optional, ClassVar
 
-from PyQt6.QtCore    import Qt, QPointF
+from PyQt6.QtCore    import Qt, QPointF, QPoint
 from PyQt6.QtWidgets import QMdiArea, QMdiSubWindow, QWidget
 
 from ...core  import TypedList, settings
@@ -56,14 +56,6 @@ class Drawing(
     mouse_press_prev : 'Drawing.Pos'
     state            : 'Drawing.State'
 
-    @dataclass
-    class Grid:
-        """Grid configuration for the drawing."""
-        display : bool
-        snap    : bool
-        x       : int
-        y       : int
-
     def __init__(
         self        : 'Drawing',
         parent      : QWidget,
@@ -80,28 +72,16 @@ class Drawing(
         self.main_window = main_window
         self.zoom = 1.0
         self.pan = QPointF(0.0, 0.0)
-        # TODO get these from settings
-        self.grid = self.Grid(
-            display = True,
-            snap    = True,
-            x       = 10,
-            y       = 10
-        )
         self.elements         = TypedList(self.ELEMENT_TYPES)
         self.wip              = TypedList(self.ELEMENT_TYPES)
         self.symbols          = None
         self.view_rect        = self.Rect(self, self.visibleRegion().boundingRect())
         self.sel_rect         = self.Rect(self)
-        self.grid.display     = settings.prefs.display.grid.display
-        self.grid.snap        = settings.prefs.display.grid.snap
-        self.grid.x           = settings.prefs.display.grid.x
-        self.grid.y           = settings.prefs.display.grid.y
         self.mouse_press_prev = self.Pos()
         self.mouse            = self.Mouse(self)
         self.state            = self.State.Idle
         self.setMouseTracking(True)
         self._viewUpdate()
-
 
         # uncomment to enable keypress events
         #self.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
