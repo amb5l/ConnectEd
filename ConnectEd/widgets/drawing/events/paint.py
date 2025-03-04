@@ -80,6 +80,7 @@ class DrawingEventsPaintMixin:
                 self.view_rect.logical.bottomRight() + QPointF(g.x, g.y)
             ).toRect()
             ctx.setPenOnly(settings.theme.grid)
+            ctx.setAlpha(settings.prefs.display.grid.alpha)
             if g.dots:
                 for x in range(_iround(grect.left(), g.x), 1 + _iround(grect.right(), g.x), g.x):
                     for y in range(_iround(grect.top(), g.y), 1 + _iround(grect.bottom(), g.y), g.y):

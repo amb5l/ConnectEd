@@ -15,9 +15,9 @@ from PyQt6.QtWidgets import QWidget
 class PainterContext:
     """A context object that bundles painter with a reusable pen and brush."""
 
-    painter: QPainter
-    pen: QPen
-    brush: QBrush
+    painter : QPainter
+    pen     : QPen
+    brush   : QBrush
 
     def __init__(self, widget: QWidget) -> None:
         """Initialize a PainterContext with a widget to paint on.
@@ -27,6 +27,8 @@ class PainterContext:
         """
         self.painter = QPainter(widget)
         self.pen = QPen()
+        self.pen.setJoinStyle(Qt.PenJoinStyle.RoundJoin)
+        self.pen.setCapStyle(Qt.PenCapStyle.RoundCap)
         self.brush = QBrush()
 
         # Initialize with default values
@@ -102,6 +104,10 @@ class PainterContext:
         if brush_color is None:
             brush_color = pen_color
         self.setBrush(brush_color, brush_style)
+
+    def setAlpha(self : 'PainterContext', alpha : int) -> None:
+        self.pen.color().setAlpha(alpha)
+        self.brush.color().setAlpha(alpha)
 
     def noPen(self : 'PainterContext') -> None:
         self.pen.setStyle(Qt.PenStyle.NoPen)

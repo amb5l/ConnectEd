@@ -59,7 +59,8 @@ FACTORY_SETTINGS = {
                 'snap'    : True,
                 'x'       : 10,
                 'y'       : 10,
-                'dots'    : False
+                'dots'    : False,
+                'alpha'   : 128
             },
             'zoom': {
                 'wheel' : 120,
@@ -71,16 +72,16 @@ FACTORY_SETTINGS = {
     },
     'themes': {
         'dark': {
-            'background' : QColor(  0,   0,   0, 255),
-            'sheet'      : QColor( 16,  16,  16, 255),
-            'border'     : QColor(128, 128, 128, 255),
-            'grid'       : QColor( 64,  64,  64, 128)
+            'background' : QColor(   0,   0,   0 ),
+            'sheet'      : QColor(  16,  16,  16 ),
+            'border'     : QColor( 128, 128, 128 ),
+            'grid'       : QColor(  64,  64,  64 )
         },
         'light': {
-            'background' : QColor(128, 255, 128, 255),
-            'sheet'      : QColor(128, 128, 128, 255),
-            'border'     : QColor(  0,   0,   0, 255),
-            'grid'       : QColor( 64,  64,  64, 128)
+            'background' : QColor( 128, 255, 128 ),
+            'sheet'      : QColor( 128, 128, 128 ),
+            'border'     : QColor(   0,   0,   0 ),
+            'grid'       : QColor(  64,  64,  64 )
         }
     },
     'sheet_sizes': {
