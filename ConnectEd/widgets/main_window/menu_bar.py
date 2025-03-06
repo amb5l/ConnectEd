@@ -30,6 +30,9 @@ class MenuBar(QMenuBar):
         self.view_menu.addAction(actions.viewPanLeft)
         self.view_menu.addAction(actions.viewPanRight)
 
+        self.place_menu = QMenu('&Place')
+        self.place_menu.addAction(actions.placeRectangle)
+
         self.window_menu = QMenu('&Window')
         self.window_menu.addAction(actions.windowMessages)
         self.window_menu.addAction(actions.windowLog)
@@ -39,5 +42,6 @@ class MenuBar(QMenuBar):
 
         self.addMenu(self.file_menu)
         self.addMenu(self.view_menu)
+        self.addMenu(self.place_menu)
         self.addMenu(self.window_menu)
         self.addMenu(self.help_menu)

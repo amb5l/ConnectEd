@@ -9,8 +9,9 @@ __all__ = [
     'DrawingApiMixin'
 ]
 
-from .view  import DrawingApiViewMixin
-from .mouse import DrawingApiMouseMixin
+from .view    import DrawingApiViewMixin
+from .mouse   import DrawingApiMouseMixin
+from .place   import DrawingApiPlaceMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING: # avoid circular import issues
@@ -19,7 +20,8 @@ if TYPE_CHECKING: # avoid circular import issues
 
 class DrawingApiMixin(
     DrawingApiViewMixin,
-    DrawingApiMouseMixin
+    DrawingApiMouseMixin,
+    DrawingApiPlaceMixin
 ):
     def paintSheet(self : 'Drawing') -> None:
         """

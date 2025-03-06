@@ -1,6 +1,6 @@
 from PyQt6.QtCore import Qt, QRect, QPointF
 
-from ....core  import settings
+from ....elements import Rectangle
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -46,6 +46,17 @@ class DrawingApiMouseMixin:
                 self._zoomPRect(self.sel_rect.physical)
                 self.sel_rect = None
                 self.state = self.State.Idle
+            case self.State.PlaceRectangle1:
+                self.wip = [Rectangle(self.mouse.left.press.logical)]
+                self.state = self.State.PlaceRectangle2
+            case self.State.PlaceRectangle2:
+                self.wip[0].setRect(
+                    self.mouse.left.prev.logical,
+                    self.mouse.left.release.logical
+                )
+                self.elements.append(self.wip.pop(0))
+                self.update()
+                self.state = self.State.Idle
 
     def mouseLeftDragBegin(self : 'Drawing') -> None:
         match self.state:
@@ -59,6 +70,9 @@ class DrawingApiMouseMixin:
                 )
                 self.update()
                 self.state = self.State.ViewZoomWindow2
+            case self.State.PlaceRectangle1:
+                self.wip = [Rectangle(self.mouse.left.press.logical)]
+                self.state = self.State.PlaceRectangle2
 
     def mouseLeftDragContinue(self : 'Drawing') -> None:
         match self.state:
@@ -69,7 +83,13 @@ class DrawingApiMouseMixin:
                     self.mouse.left.press.physical,
                     self.mouse.current.physical
                 ))
-                self.udpate()
+                self.update()
+            case self.State.PlaceRectangle2:
+                self.wip[0].setRect(
+                    self.mouse.left.press.logical,
+                    self.mouse.current.logical
+                )
+                self.update()
 
     def mouseLeftDragEnd(self : 'Drawing') -> None:
         match self.state:
@@ -80,6 +100,14 @@ class DrawingApiMouseMixin:
                 ))
                 self._zoomPRect(self.sel_rect.physical)
                 self.sel_rect = None
+                self.state = self.State.Idle
+            case self.State.PlaceRectangle2:
+                self.wip[0].setRect(
+                    self.mouse.left.press.logical,
+                    self.mouse.left.release.logical
+                )
+                self.elements.append(self.wip.pop(0))
+                self.update()
                 self.state = self.State.Idle
 
     def mouseLeftDoubleClick(self : 'Drawing') -> None:
@@ -156,17 +184,12 @@ class DrawingApiMouseMixin:
                     self.mouse.current.physical
                 ))
                 self.update()
-           #case self.State.PlaceRectangle1:
-           #    self.wip.setOffset(self._snap(self.mouse.current.logical))
-           #    self._viewUpdate()
-           #case self.State.PlaceRectangle2:
-           #    norm_rect = self._normMinRect(
-           #        self.mouse.left.prev.logical,
-           #        self._snap(self.mouse.current.logical)
-           #    )
-           #    self.wip.setOffset(norm_rect.topLeft())
-           #    self.wip.setSize(norm_rect.size())
-           #    self._viewUpdate()
+            case self.State.PlaceRectangle2:
+                self.wip[0].setRect(
+                    self.mouse.left.press.logical,
+                    self.mouse.current.logical
+                )
+                self.update()
 
     def mouseWheel(self : 'Drawing', n: int, modifiers: Qt.KeyboardModifier) -> None:
         match modifiers:

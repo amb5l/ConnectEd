@@ -30,6 +30,7 @@ class Actions:
         self.viewPanDown    = Action( self._parent, 'Pan Down'    , 'Pan down'                 , 'Ctrl+Down'    , False )
         self.viewPanLeft    = Action( self._parent, 'Pan Left'    , 'Pan left'                 , 'Ctrl+Left'    , False )
         self.viewPanRight   = Action( self._parent, 'Pan Right'   , 'Pan right'                , 'Ctrl+Right'   , False )
+        self.placeRectangle = Action( self._parent, 'Rectangle'   , 'Place Rectangle'          , 'Ctrl+R'       , False )
         self.windowMessages = Action( self._parent, 'Messages'    , 'Show the messages window' , 'Ctrl+Shift+M' , False )
         self.windowLog      = Action( self._parent, 'Log'         , 'Show the log window'      , 'Ctrl+Shift+L' , False )
         self.helpAbout      = Action( self._parent, 'About'       , ''                         , 'Ctrl+Shift+T' , False )

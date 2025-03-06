@@ -186,6 +186,8 @@ class DrawingPrivateMixin:
         ViewPan2        = auto()
         ViewZoomWindow1 = auto()
         ViewZoomWindow2 = auto()
+        PlaceRectangle1 = auto()
+        PlaceRectangle2 = auto()
 
     def _p2lPoint(self: 'Drawing', point: QPoint) -> QPointF:
         assert isinstance(point, QPoint)

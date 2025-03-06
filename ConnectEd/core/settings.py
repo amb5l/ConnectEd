@@ -57,6 +57,23 @@ FACTORY_SETTINGS = {
                 'width' : 1,
                 'style' : Qt.PenStyle.SolidLine
             },
+            'elements': {
+                'wip': {
+                    'line': {
+                        'width': 1,
+                        'style': Qt.PenStyle.DashLine
+                    },
+                    'fill': Qt.BrushStyle.NoBrush
+                },
+                'rectangle': {
+                    'line': {
+                        'width': 1,
+                        'style': Qt.PenStyle.SolidLine
+                    },
+                    'fill': Qt.BrushStyle.SolidPattern
+                },
+                'alpha': 128
+            },
             'grid': {
                 'show'    : True,
                 'snap'    : True,
@@ -83,7 +100,17 @@ FACTORY_SETTINGS = {
             'background' : QColor(   0,   0,   0 ),
             'sheet'      : QColor(  16,  16,  16 ),
             'border'     : QColor( 128, 128, 128 ),
-            'grid'       : QColor(  64,  64,  64 )
+            'elements': {
+                'wip': {
+                    'line' : QColor( 255,   0,   0 ),
+                    'fill' : QColor( 255,   0,   0 )
+                },
+                'rectangle': {
+                    'line' : QColor( 255,   0,   0 ),
+                    'fill' : QColor( 255,   0,   0 )
+                }
+            },
+            'grid' : QColor(  64,  64,  64 )
         },
         'light': {
             'background' : QColor( 128, 255, 128 ),

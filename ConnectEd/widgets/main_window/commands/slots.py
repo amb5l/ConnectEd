@@ -88,6 +88,10 @@ class Slots:
     def viewPanRight(self : 'Slots', widget: Drawing) -> None:
         widget.viewPanRight()
 
+    @with_current_widget(Drawing)
+    def placeRectangle(self : 'Slots', widget: Drawing) -> None:
+        widget.placeRectangle()
+
     def windowMessages(self : 'Slots') -> None:
         self._parent.msg_viewer.show()
         self._parent.msg_viewer.raise_()

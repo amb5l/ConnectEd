@@ -1,11 +1,10 @@
-from types import NoneType
 from typing import Optional
 
 from PyQt6.QtCore    import QRect, QPoint, QSize
 from PyQt6.QtWidgets import QWidget, QMdiArea, QMdiSubWindow
 
 from ..core     import settings, TypedList
-from ..elements import PainterContext
+from ..elements import PainterContext, Rectangle
 from .drawing   import Drawing
 from .symbol    import Symbol
 
@@ -27,7 +26,7 @@ class Diagram(Drawing):
         'Restore',
         'SelectRect'
     ]
-    ELEMENT_TYPES = [NoneType]
+    ELEMENT_TYPES = (Rectangle)
     sheet   : Optional[QSize] = None
     border  : Optional[int] = None
     symbols : TypedList[Symbol]

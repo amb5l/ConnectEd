@@ -1,16 +1,33 @@
 __all__ = [
+    'LineSpec',
+    'FillSpec',
     'PainterContext',
-    'Background',
-    'Sheet',
-    'Border'
+    'Element',
+    'Rectangle',
 ]
 
-from typing import Optional
+from dataclasses import dataclass
+from typing      import Optional
+from types       import SimpleNamespace
 
 from PyQt6.QtCore    import Qt
 from PyQt6.QtGui     import QPainter, QPen, QBrush, QColor
 from PyQt6.QtWidgets import QWidget
 
+
+@dataclass
+class LineSpec:
+    color : Optional[QColor]      = None
+    width : Optional[float]       = None
+    style : Optional[Qt.PenStyle] = None
+
+@dataclass
+class FillSpec:
+    color : Optional[QColor]        = None
+    style : Optional[Qt.BrushStyle] = None
+
+class Element:
+    pass
 
 class PainterContext:
     """A context object that bundles painter with a reusable pen and brush."""
@@ -133,3 +150,27 @@ class PainterContext:
     ) -> None:
         self.setBrush(color, style)
         self.noPen()
+
+    def setFromAttrs(
+        self : 'PainterContext',
+        element : 'Element',
+        prefs   : SimpleNamespace,
+        theme   : SimpleNamespace
+    ) -> None:
+        if hasattr(element, 'line'):
+            self.setPen(
+                element.line.color if element.line.color else theme.line,
+                element.line.width if element.line.width else prefs.line.width,
+                element.line.style if element.line.style else prefs.line.style
+            )
+        else:
+            self.noPen()
+        if hasattr(element, 'fill'):
+            self.setBrush(
+                element.fill.color if element.fill.color else theme.fill,
+                element.fill.style if element.fill.style else prefs.fill
+            )
+        else:
+            self.noBrush()
+
+from .rectangle import Rectangle

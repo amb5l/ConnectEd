@@ -64,7 +64,7 @@ class DrawingEventsPaintMixin:
 
     def _paintWIP(self: 'Drawing', ctx: PainterContext) -> None:
         for element in self.wip:
-            element.paint(ctx)
+            element.paint(ctx, wip=True)
 
     def _paintRestore(self: 'Drawing', ctx: PainterContext) -> None:
         ctx.restore()
