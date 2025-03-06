@@ -244,8 +244,8 @@ class DrawingPrivateMixin:
     def _zoomPanMouse(self: 'Drawing', zoom : Optional[float] = None) -> None:
         if zoom is None:
             zoom = self.zoom
-        mdpf = QPointF(self.mouse.current.logical)
-        self.pan = mdpf - ((mdpf - self.pan) * self.zoom / zoom)
+        lpos = QPointF(self.mouse.current.logical)
+        self.pan = lpos - ((lpos - self.pan) * self.zoom / zoom)
         self.zoom = zoom
         self._zoomUpdate()
 
