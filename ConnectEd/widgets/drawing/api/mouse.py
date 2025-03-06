@@ -38,7 +38,10 @@ class DrawingApiMouseMixin:
             case self.State.ViewZoomWindow1:
                 self.sel_rect = self.PLRect(
                     self,
-                    QRect(self.mouse.left.press.physical, self.mouse.current.physical)
+                    QRect(
+                        self.mouse.left.press.physical,
+                        self.mouse.current.physical
+                    )
                 )
                 self._viewUpdate()
                 self.state = self.State.ViewZoomWindow2
@@ -77,17 +80,37 @@ class DrawingApiMouseMixin:
                 case Qt.KeyboardModifier.NoModifier:
                     self.state = self.State.ViewPan2
                 case Qt.KeyboardModifier.ControlModifier:
-                    self.state = self.State.ViewZoomWindow1
+                    self.sel_rect = self.PLRect(
+                        self,
+                        QRect(
+                            self.mouse.middle.press.physical,
+                            self.mouse.current.physical
+                        )
+                    )
+                    self._viewUpdate()
+                    self.state = self.State.ViewZoomWindow2
 
     def mouseMiddleDragContinue(self : 'Drawing') -> None:
-        pass
+        match self.state:
+            case self.State.ViewZoomWindow2:
+                self.sel_rect.setPhysical(self._normMinRect(
+                    self.mouse.middle.press.physical,
+                    self.mouse.current.physical
+                ))
+                self._viewUpdate()
 
     def mouseMiddleDragEnd(self : 'Drawing') -> None:
         match self.state:
             case self.State.ViewPan1:
                 self.state = self.State.ViewPan2
-            case self.State.ViewZoomWindow1:
-                self.state = self.State.ViewZoomWindow2
+            case self.State.ViewZoomWindow2:
+                self.sel_rect.setPhysical(self._normMinRect(
+                    self.mouse.middle.press.physical,
+                    self.mouse.middle.release.physical
+                ))
+                self._zoomPRect(self.sel_rect.physical)
+                self.sel_rect = None
+                self.state = self.State.Idle
 
     def mouseMiddleDoubleClick(self : 'Drawing') -> None:
         pass
@@ -113,8 +136,13 @@ class DrawingApiMouseMixin:
            #    self._viewUpdate()
 
     def mouseWheel(self : 'Drawing', n: int, modifiers: Qt.KeyboardModifier) -> None:
-        if modifiers == Qt.KeyboardModifier.NoModifier:
-            if n >= 0:
-                self.viewZoomIn(n)
-            else:
-                self.viewZoomOut(-n)
+        match modifiers:
+            case Qt.KeyboardModifier.NoModifier:      # pan up/down
+                pass
+            case Qt.KeyboardModifier.ShiftModifier:   # pan left/right
+                pass
+            case Qt.KeyboardModifier.ControlModifier: # zoom in/out
+                if n >= 0:
+                    self.viewZoomIn(n)
+                else:
+                    self.viewZoomOut(-n)
