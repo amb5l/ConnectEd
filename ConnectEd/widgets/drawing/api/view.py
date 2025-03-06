@@ -1,4 +1,4 @@
-from PyQt6.QtCore import QPoint, QRect, QSize
+from PyQt6.QtCore import QPointF, QRectF, QSizeF
 
 from ....core import settings
 
@@ -13,10 +13,10 @@ class DrawingApiViewMixin:
 
     def viewZoomAll(self : 'Drawing') -> None:
         # TODO get Drawing contents extents
-        self._zoomLRect(QRect(QPoint(0, 0), self.sheet))
+        self._zoomLRect(QRectF(QPointF(0, 0), QSizeF(self.sheet)))
 
     def viewZoomSheet(self : 'Drawing') -> None:
-        self._zoomLRect(QRect(QPoint(0, 0), self.sheet))
+        self._zoomLRect(QRectF(QPointF(0, 0), QSizeF(self.sheet)))
 
     def viewZoomWindow(self : 'Drawing') -> None:
         self.state = self.State.ViewZoomWindow1

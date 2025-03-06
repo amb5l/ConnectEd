@@ -227,15 +227,13 @@ class DrawingPrivateMixin:
             str(int(mouse_lpos.x())) + ',' + str(int(mouse_lpos.y()))
         )
 
-    def _zoomLRect(self: 'Drawing', lrect : QRectF | QRect) -> None:
-        # TODO change to QRectF only
-        if isinstance(lrect, QRect):
-            lrect = QRectF(lrect)
+    def _zoomLRect(self: 'Drawing', lrect : QRectF) -> None:
         os = settings.prefs.display.overscan
         zoom_x = ( self.width()  - ( os.left + os.right  )) / lrect.width()
         zoom_y = ( self.height() - ( os.top  + os.bottom )) / lrect.height()
         self.zoom = min(zoom_x, zoom_y)
-        self.pan = lrect.topLeft() - (QPointF(os.left, os.top) * self.zoom)
+        #self.pan = lrect.topLeft() - (QPointF(os.left, os.top) * self.zoom)
+        self.pan = lrect.center() - (QPointF(self.rect().center()) / self.zoom)
         self._zoomUpdate()
 
     def _zoomPRect(self: 'Drawing', prect : QRect) -> None:
