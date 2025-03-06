@@ -212,7 +212,6 @@ class DrawingPrivateMixin:
         return QRect(self._l2pPoint(rect.topLeft()), self._l2pSize(rect.size()))
 
     def _zoomUpdate(self: 'Drawing') -> None:
-        self.view_rect.setPhysical(self.visibleRegion().boundingRect())
         self.main_window.status_bar.zoom.setText('{:.2f}%'.format(self.zoom * 100))
         self.main_window.commands.actions.actionEnable('viewZoomIn',  self.zoom < settings.prefs.display.zoom.limit.max)
         self.main_window.commands.actions.actionEnable('viewZoomOut', self.zoom > settings.prefs.display.zoom.limit.min)

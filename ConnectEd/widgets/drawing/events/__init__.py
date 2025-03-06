@@ -23,7 +23,6 @@ class DrawingEventsMixin(
     DrawingEventsMouseMixin
 ):
     def resizeEvent(self : 'Drawing', event : QResizeEvent) -> None:
-        self.view_rect.setPhysical(self.visibleRegion().boundingRect())
         if self.zoom is None:
             self.viewZoomAll()
         else:
