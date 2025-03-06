@@ -53,6 +53,10 @@ class Slots:
         widget.viewZoomSheet()
 
     @with_current_widget(Drawing)
+    def viewZoomWindow(self : 'Slots', widget: Drawing) -> None:
+        widget.viewZoomWindow()
+
+    @with_current_widget(Drawing)
     def viewZoomIn(self : 'Slots', widget: Drawing) -> None:
         widget.viewZoomIn()
 

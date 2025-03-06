@@ -69,7 +69,8 @@ FACTORY_SETTINGS = {
                 'wheel' : 120,
                 'step'  : 0.25,
                 'limit' : MinMax(0.1, 100.0)
-            }
+            },
+            'drag' : 5
         }
     },
     'themes': {

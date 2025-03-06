@@ -48,12 +48,11 @@ class Drawing(
     elements         : TypedList
     wip              : TypedList
     symbols          : Optional[TypedList['Symbol']]
-    view_rect        : Optional['Drawing.Rect'] = None
-    sel_rect         : Optional['Drawing.Rect'] = None
-    zoom             : Optional[float] = None
+    view_rect        : Optional['Drawing.Rect']
+    sel_rect         : Optional['Drawing.Rect']
+    zoom             : Optional[float]
     pan              : QPointF
     mouse            : 'Drawing.Mouse'
-    mouse_press_prev : 'Drawing.Pos'
     state            : 'Drawing.State'
 
     def __init__(
@@ -75,9 +74,8 @@ class Drawing(
         self.elements         = TypedList(self.ELEMENT_TYPES)
         self.wip              = TypedList(self.ELEMENT_TYPES)
         self.symbols          = None
-        self.view_rect        = self.Rect(self, self.visibleRegion().boundingRect())
-        self.sel_rect         = self.Rect(self)
-        self.mouse_press_prev = self.Pos()
+        self.view_rect        = self.PLRect(self, self.visibleRegion().boundingRect())
+        self.sel_rect         = None
         self.mouse            = self.Mouse(self)
         self.state            = self.State.Idle
         self.setMouseTracking(True)

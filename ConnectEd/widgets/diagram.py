@@ -24,7 +24,8 @@ class Diagram(Drawing):
         'Elements',
         'WIP',
         'Grid',
-        'Restore'
+        'Restore',
+        'SelectRect'
     ]
     ELEMENT_TYPES = [NoneType]
     sheet   : Optional[QSize] = None

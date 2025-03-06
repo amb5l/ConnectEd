@@ -1,5 +1,4 @@
-from PyQt6.QtCore import Qt, QPoint
-from PyQt6.QtGui  import QCursor
+from PyQt6.QtCore import Qt, QRect
 
 from ....core  import settings
 
@@ -11,138 +10,107 @@ if TYPE_CHECKING:
 class DrawingApiMouseMixin:
     """Mixin class that provides mouse API for Drawing widgets."""
 
-    def mouseEnter(self : 'Drawing') -> None:
-        self.mouse.setPos(self.mapFromGlobal(QCursor.pos()))
-        self._viewUpdate()
-
-    def mouseLeave(self : 'Drawing') -> None:
-        self.mouse.setPos(QPoint(self.width() // 2, self.height() // 2))
-        self.main_window.status_bar.xy.setText('-,-')
-        self._viewUpdate()
-
-    def mouseMove(self : 'Drawing', pos: QPoint) -> None:
-        self.mouse.setPos(pos)
-        self.main_window.status_bar.xy.setText(
-            str(int(self.mouse.current.logical.x())) + ',' +
-            str(int(self.mouse.current.logical.y()))
-        )
-        # left button drag detection
-        if  self.mouse.left.state == self.MouseState.Pressed \
-        and self._scalarDistance(self.mouse.left.press.physical, pos) > settings.prefs.edit.drag:
-            self.mouse.left.state = self.MouseState.Dragging
-            # state transitions as we start dragging
-            match self.state:
-                case self.State.ViewZoomWindow1:
-                    self.state = self.State.ViewZoomWindow2
-                case self.State.PlaceBlock1:
-                    self.state = self.State.PlaceBlock2
-        # middle button drag detection
-        if  self.mouse.middle.state == self.MouseState.Pressed \
-        and self._scalarDistance(self.mouse.middle.press.physical, pos) > settings.prefs.edit.drag:
-            self.mouse.middle.state = self.MouseState.Dragging
-            self.mouse_press_prev.physical = self.mouse.middle.press.physical
-            self.sel_rect = self._normMinRect(self.mouse_press_prev.physical, self.mouse.current.physical, 1)
-            self.state = self.State.ViewZoomWindow2
-        # state dependent movement responses
-        match self.state:
-            case self.State.ViewZoomWindow1:
-                self._viewUpdate()
-            case self.State.ViewZoomWindow2:
-                self.sel_rect = self._normMinRect(self.mouse_press_prev.physical, self.mouse.current.physical, 1)
-                self._viewUpdate()
-            case self.State.PlaceBlock1:
-                self.wip.setOffset(self._snap(self.mouse.current.logical)) # TODO: snap
-                self._viewUpdate()
-            case self.State.PlaceBlock2:
-                norm_rect = self._normMinRect(self.mouse_press_prev.logical, self._snap(self.mouse.current.logical))
-                self.wip.setOffset(norm_rect.topLeft())
-                self.wip.setSize(norm_rect.size())
-                self._viewUpdate()
-            case self.State.PlaceText:
-                self.wip.setOffset(self._snap(self.mouse.current.logical))
-                self._viewUpdate()
-
-    def mouseLeftPress(self : 'Drawing', physical: QPoint, modifiers: Qt.KeyboardModifier) -> None:
-        self.mouse.left.press.physical = physical
-        self.mouse.left.press.logical = self._p2lPoint(physical)
-        self.mouse.left.release.physical = None
-        self.mouse.left.release.logical = None
-        self.mouse.left.state = self.MouseState.Pressed
+    def mouseLeftClick(self : 'Drawing') -> None:
         match self.state:
             case self.State.Idle:
-                self._selectPoint(self.mouse.current.logical)
+                # TODO selection
+                pass
+            case self.State.ViewPan1:
+                self.state = self.State.ViewPan2
             case self.State.ViewZoomWindow1:
-                self.mouse_press_prev.physical = None
-                self.mouse_press_prev.logical = self.mouse.left.press.logical
-                self.sel_rect = QRect(self.mouse.left.press.logical, QSize(1, 1))
+                self.sel_rect = self.PLRect(
+                    self,
+                    QRect(self.mouse.left.press.physical, self.mouse.current.physical)
+                )
                 self._viewUpdate()
-            case self.State.PlaceBlock1:
-                assert isinstance(self.wip, DrawingItemBlock)
-                self.mouse_press_prev.physical = None
-                self.mouse_press_prev.logical = self._snap(self.mouse.left.press.logical)
-                self.wip.setOffset(self._snap(self.mouse.left.press.logical))
-                self._viewUpdate()
-            case self.State.PlaceText:
-                assert isinstance(self.wip, DrawingItemText)
-                self.wip.setOffset(self._snap(self.mouse.current.logical))
-                self.contents.append(self.wip)
-                self.wip = None
-                self.state = self.State.Idle
-                self._viewUpdate()
-
-    def mouseLeftRelease(self : 'Drawing', physical: QPoint) -> None:
-        self.mouse.left.release.physical = physical
-        self.mouse.left.release.logical = self._p2lPoint(physical)
-        self.mouse.left.state = self.MouseState.Idle
-        match self.state:
-            case self.State.ViewZoomWindow1:
                 self.state = self.State.ViewZoomWindow2
-                self._viewUpdate()
             case self.State.ViewZoomWindow2:
-                self.sel_rect = self._normMinRect(self.mouse_press_prev.physical, self.mouse.left.release.physical)
-                self._zoomCRect(self.sel_rect)
+                self.sel_rect.setPhysical(self._normMinRect(
+                    self.mouse.left.prev.physical,
+                    self.mouse.left.release.physical
+                ))
+                self._zoomPRect(self.sel_rect.physical)
                 self.sel_rect = None
                 self.state = self.State.Idle
-            case self.State.PlaceBlock1:
-                self.state = self.State.PlaceBlock2
-                self._viewUpdate()
-            case self.State.PlaceBlock2:
-                assert isinstance(self.wip, DrawingItemBlock)
-                norm_rect = self._normMinRect(self.mouse_press_prev.logical, self._snap(self.mouse.current.logical))
-                self.wip.setOffset(norm_rect.topLeft())
-                self.wip.setSize(norm_rect.size())
-                self.contents.append(self.wip)
-                self.wip = None
-                self.state = self.State.Idle
-                self._viewUpdate()
 
-    def mouseMiddlePress(self : 'Drawing', physical: QPoint, modifiers: Qt.KeyboardModifier) -> None:
-        self.mouse.middle.press.physical = physical
-        self.mouse.middle.press.logical = self._p2lPoint(physical)
-        self.mouse.middle.release.physical = None
-        self.mouse.middle.release.logical = None
-        self.mouse.middle.state = self.MouseState.Pressed
-
-    def mouseMiddleRelease(self : 'Drawing', physical: QPoint) -> None:
-        self.mouse.middle.release.physical = physical
-        self.mouse.middle.release.logical = self._p2lPoint(physical)
-        if self.state == self.State.ViewZoomWindow2:
-            self.sel_rect = self._normMinRect(self.mouse.middle.press.physical, self.mouse.middle.release.physical)
-            self._zoomCRect(self.sel_rect)
-            self.sel_rect = None
-            self.state = self.State.Idle
-        else:
-            self._pan(self.mouse.middle.release.logical)
-        self.mouse.middle.state = self.MouseState.Idle
-
-    def mouseLeftDoubleClick(self : 'Drawing', modifiers: Qt.KeyboardModifier) -> None:
+    def mouseLeftDragBegin(self : 'Drawing') -> None:
         match self.state:
-            case self.State.PlaceBlock2:
-                assert isinstance(self.wip, DrawingItemBlock)
-                self.contents.append(self.wip)
-                self.wip = None
-                self.state = self.State.Idle
+            case self.State.ViewZoomWindow1:
+                self.sel_rect = self.PLRect(
+                    self,
+                    QRect(self.mouse.left.press.physical, self.mouse.current.physical)
+                )
                 self._viewUpdate()
+                self.state = self.State.ViewZoomWindow2
+
+    def mouseLeftDragContinue(self : 'Drawing') -> None:
+        match self.state:
+            case self.State.ViewPan2:
+                pass
+            case self.State.ViewZoomWindow2:
+                self.sel_rect.setPhysical(self._normMinRect(
+                    self.mouse.left.press.physical,
+                    self.mouse.current.physical
+                ))
+                self._viewUpdate()
+
+    def mouseLeftDragEnd(self : 'Drawing') -> None:
+        match self.state:
+            case self.State.ViewZoomWindow2:
+                self.sel_rect.setPhysical(self._normMinRect(
+                    self.mouse.left.press.physical,
+                    self.mouse.left.release.physical
+                ))
+                self._zoomPRect(self.sel_rect.physical)
+                self.sel_rect = None
+                self.state = self.State.Idle
+
+    def mouseLeftDoubleClick(self : 'Drawing') -> None:
+        pass
+
+    def mouseMiddleClick(self : 'Drawing') -> None:
+        pass
+
+    def mouseMiddleDragBegin(self : 'Drawing') -> None:
+        if self.state == self.State.Idle:
+            match self.mouse.middle.press.modifiers:
+                case Qt.KeyboardModifier.NoModifier:
+                    self.state = self.State.ViewPan2
+                case Qt.KeyboardModifier.ControlModifier:
+                    self.state = self.State.ViewZoomWindow1
+
+    def mouseMiddleDragContinue(self : 'Drawing') -> None:
+        pass
+
+    def mouseMiddleDragEnd(self : 'Drawing') -> None:
+        match self.state:
+            case self.State.ViewPan1:
+                self.state = self.State.ViewPan2
+            case self.State.ViewZoomWindow1:
+                self.state = self.State.ViewZoomWindow2
+
+    def mouseMiddleDoubleClick(self : 'Drawing') -> None:
+        pass
+
+    def mouseMove(self : 'Drawing') -> None:
+        match self.state:
+            case self.State.ViewZoomWindow2:
+                self.sel_rect.setPhysical(self._normMinRect(
+                    self.mouse.left.press.physical,
+                    self.mouse.current.physical
+                ))
+                self._viewUpdate()
+           #case self.State.PlaceRectangle1:
+           #    self.wip.setOffset(self._snap(self.mouse.current.logical))
+           #    self._viewUpdate()
+           #case self.State.PlaceRectangle2:
+           #    norm_rect = self._normMinRect(
+           #        self.mouse.left.prev.logical,
+           #        self._snap(self.mouse.current.logical)
+           #    )
+           #    self.wip.setOffset(norm_rect.topLeft())
+           #    self.wip.setSize(norm_rect.size())
+           #    self._viewUpdate()
 
     def mouseWheel(self : 'Drawing', n: int, modifiers: Qt.KeyboardModifier) -> None:
         if modifiers == Qt.KeyboardModifier.NoModifier:

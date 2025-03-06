@@ -27,7 +27,8 @@ class DrawingEventsPaintMixin:
         'Elements',
         'WIP',
         'Grid',
-        'Restore'
+        'Restore',
+        'SelectRect'
     ]
 
     def paintEvent(self: 'Drawing', event: QPaintEvent) -> None:
@@ -108,3 +109,12 @@ class DrawingEventsPaintMixin:
                         QPointF(grect.right(), y)
                     )
                     y += py
+
+    def _paintSelectRect(self: 'Drawing', ctx: PainterContext) -> None:
+        if self.sel_rect:
+            ctx.save()
+            ctx.painter.setCompositionMode(QPainter.CompositionMode.RasterOp_SourceXorDestination)
+            ctx.painter.setPen(QPen(QColor(255, 255, 255), 1, Qt.PenStyle.DotLine))
+            ctx.painter.setBrush(Qt.BrushStyle.NoBrush)
+            ctx.painter.drawRect(self.sel_rect.physical)
+            ctx.restore()
