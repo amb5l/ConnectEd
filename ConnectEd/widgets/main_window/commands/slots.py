@@ -72,6 +72,22 @@ class Slots:
     def viewPan(self : 'Slots', widget: Drawing) -> None:
         widget.viewPan()
 
+    @with_current_widget(Drawing)
+    def viewPanUp(self : 'Slots', widget: Drawing) -> None:
+        widget.viewPanUp()
+
+    @with_current_widget(Drawing)
+    def viewPanDown(self : 'Slots', widget: Drawing) -> None:
+        widget.viewPanDown()
+
+    @with_current_widget(Drawing)
+    def viewPanLeft(self : 'Slots', widget: Drawing) -> None:
+        widget.viewPanLeft()
+
+    @with_current_widget(Drawing)
+    def viewPanRight(self : 'Slots', widget: Drawing) -> None:
+        widget.viewPanRight()
+
     def windowMessages(self : 'Slots') -> None:
         self._parent.msg_viewer.show()
         self._parent.msg_viewer.raise_()

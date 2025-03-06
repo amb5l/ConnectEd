@@ -41,19 +41,19 @@ class DrawingApiViewMixin:
 
     def viewPanLeft(self : 'Drawing') -> None:
         self.pan.setX(
-            self.pan.x() - (settings.prefs.display.pan_step * self.width() / self.zoom))
+            self.pan.x() - (settings.prefs.display.pan.step * self.width() / self.zoom))
         self._panUpdate()
 
     def viewPanRight(self : 'Drawing') -> None:
-        self.pan.setX(self.pan.x() + (settings.prefs.display.pan_step * self.width() / self.zoom))
+        self.pan.setX(self.pan.x() + (settings.prefs.display.pan.step * self.width() / self.zoom))
         self._panUpdate()
 
     def viewPanUp(self : 'Drawing') -> None:
-        self.pan.setY(self.pan.y() - (settings.prefs.display.pan_step * self.height() / self.zoom))
+        self.pan.setY(self.pan.y() - (settings.prefs.display.pan.step * self.height() / self.zoom))
         self._panUpdate()
 
     def viewPanDown(self : 'Drawing') -> None:
-        self.pan.setY(self.pan.y() + (settings.prefs.display.pan_step * self.height() / self.zoom))
+        self.pan.setY(self.pan.y() + (settings.prefs.display.pan.step * self.height() / self.zoom))
         self._panUpdate()
 
     def viewPrev(self : 'Drawing') -> None:

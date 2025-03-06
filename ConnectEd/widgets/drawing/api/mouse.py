@@ -86,7 +86,7 @@ class DrawingApiMouseMixin:
         pass
 
     def mouseMiddleClick(self : 'Drawing') -> None:
-        pass
+        self._center(self.mouse.middle.press.logical)
 
     def mouseMiddleDragBegin(self : 'Drawing') -> None:
         if self.state == self.State.Idle:
@@ -171,11 +171,8 @@ class DrawingApiMouseMixin:
     def mouseWheel(self : 'Drawing', n: int, modifiers: Qt.KeyboardModifier) -> None:
         match modifiers:
             case Qt.KeyboardModifier.NoModifier:      # pan up/down
-                pass
+                self.viewPanUp() if n >= 0 else self.viewPanDown()
             case Qt.KeyboardModifier.ShiftModifier:   # pan left/right
-                pass
+                self.viewPanLeft() if n >= 0 else self.viewPanRight()
             case Qt.KeyboardModifier.ControlModifier: # zoom in/out
-                if n >= 0:
-                    self.viewZoomIn(n)
-                else:
-                    self.viewZoomOut(-n)
+                self.viewZoomIn(n) if n >= 0 else self.viewZoomOut(-n)

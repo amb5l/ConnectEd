@@ -66,11 +66,16 @@ FACTORY_SETTINGS = {
                 'pixels'  : MinMax(min=10, max=None)
             },
             'zoom': {
-                'wheel' : 120,
                 'step'  : 0.25,
                 'limit' : MinMax(0.1, 100.0)
             },
-            'drag' : 5
+            'pan': {
+                'step'  : 0.1
+            },
+        },
+        'mouse': {
+            'drag'  : 5,
+            'wheel' : 120
         }
     },
     'themes': {

@@ -32,7 +32,7 @@ class DrawingEventsMouseMixin:
         match self.mouse.left.state:
             case self.MouseButtonState.Pressed:
                 d = self._distance(self.mouse.left.press.physical, event.pos())
-                if d >= settings.prefs.display.drag:
+                if d >= settings.prefs.mouse.drag:
                     self.mouse.left.state = self.MouseButtonState.Dragging
                     self.mouseLeftDragBegin()
                     return
@@ -42,7 +42,7 @@ class DrawingEventsMouseMixin:
         match self.mouse.middle.state:
             case self.MouseButtonState.Pressed:
                 d = self._distance(self.mouse.middle.press.physical, event.pos())
-                if d >= settings.prefs.display.drag:
+                if d >= settings.prefs.mouse.drag:
                     self.mouse.middle.state = self.MouseButtonState.Dragging
                     self.mouseMiddleDragBegin()
                     return
@@ -52,6 +52,7 @@ class DrawingEventsMouseMixin:
         self.mouseMove()
 
     def mousePressEvent(self : 'Drawing', event : QMouseEvent) -> None:
+        print('mousePressEvent')
         modifiers = self._getModifiers(event)
         if event.buttons() & Qt.MouseButton.LeftButton:
             self.mouse.left.setPress(event.pos(), modifiers)
@@ -61,6 +62,7 @@ class DrawingEventsMouseMixin:
             self.mouse.middle.state = self.MouseButtonState.Pressed
 
     def mouseReleaseEvent(self : 'Drawing', event : QMouseEvent) -> None:
+        print('mouseReleaseEvent')
         if event.button() & Qt.MouseButton.LeftButton:
             self.mouse.left.setRelease(event.pos())
             match self.mouse.left.state:
@@ -85,11 +87,14 @@ class DrawingEventsMouseMixin:
                     logger.warning(f'Mouse middle button released when idle')
 
     def mouseDoubleClickEvent(self : 'Drawing', event : QMouseEvent) -> None:
+        print('mouseDoubleClickEvent')
         if event.button() & Qt.MouseButton.LeftButton:
             self.mouseLeftDoubleClick(event.pos(), self._getModifiers(event))
+        if event.button() & Qt.MouseButton.MiddleButton:
+            self.mouseMiddleDoubleClick()
 
     def wheelEvent(self : 'Drawing', event : QWheelEvent) -> None:
         self.mouseWheel(
-            event.angleDelta().y() / settings.prefs.display.zoom.wheel,
+            event.angleDelta().y() / settings.prefs.mouse.wheel,
             self._getModifiers(event)
         )

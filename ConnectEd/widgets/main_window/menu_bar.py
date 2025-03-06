@@ -25,6 +25,10 @@ class MenuBar(QMenuBar):
         self.view_menu.addSeparator()
         self.view_menu.addAction(actions.viewCenter)
         self.view_menu.addAction(actions.viewPan)
+        self.view_menu.addAction(actions.viewPanUp)
+        self.view_menu.addAction(actions.viewPanDown)
+        self.view_menu.addAction(actions.viewPanLeft)
+        self.view_menu.addAction(actions.viewPanRight)
 
         self.window_menu = QMenu('&Window')
         self.window_menu.addAction(actions.windowMessages)
