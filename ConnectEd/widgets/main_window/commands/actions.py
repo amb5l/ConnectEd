@@ -24,6 +24,8 @@ class Actions:
         self.viewZoomWindow = Action( self._parent, 'Zoom Window' , 'Zoom to window'           , 'Ctrl+Shift+W' , False )
         self.viewZoomIn     = Action( self._parent, 'Zoom In'     , 'Zoom in'                  , 'Ctrl++'       , False )
         self.viewZoomOut    = Action( self._parent, 'Zoom Out'    , 'Zoom out'                 , 'Ctrl+-'       , False )
+        self.viewCenter     = Action( self._parent, 'Center'      , 'Center view'              , ''             , False )
+        self.viewPan        = Action( self._parent, 'Pan'         , 'Pan view'                 , 'Ctrl+P'       , False )
         self.windowMessages = Action( self._parent, 'Messages'    , 'Show the messages window' , 'Ctrl+Shift+M' , False )
         self.windowLog      = Action( self._parent, 'Log'         , 'Show the log window'      , 'Ctrl+Shift+L' , False )
         self.helpAbout      = Action( self._parent, 'About'       , ''                         , 'Ctrl+Shift+T' , False )

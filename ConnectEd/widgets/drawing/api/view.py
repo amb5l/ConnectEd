@@ -9,7 +9,7 @@ if TYPE_CHECKING: # avoid circular import issues
 
 class DrawingApiViewMixin:
     def viewRefresh(self : 'Drawing') -> None:
-        self._viewUpdate()
+        self._zoomUpdate()
 
     def viewZoomAll(self : 'Drawing') -> None:
         # TODO get Drawing contents extents
@@ -33,22 +33,28 @@ class DrawingApiViewMixin:
             settings.prefs.display.zoom.limit.min
         ))
 
+    def viewCenter(self : 'Drawing') -> None:
+        self.state = self.State.ViewCenter
+
+    def viewPan(self : 'Drawing') -> None:
+        self.state = self.State.ViewPan1
+
     def viewPanLeft(self : 'Drawing') -> None:
         self.pan.setX(
             self.pan.x() - (settings.prefs.display.pan_step * self.width() / self.zoom))
-        self._viewUpdate()
+        self._panUpdate()
 
     def viewPanRight(self : 'Drawing') -> None:
         self.pan.setX(self.pan.x() + (settings.prefs.display.pan_step * self.width() / self.zoom))
-        self._viewUpdate()
+        self._panUpdate()
 
     def viewPanUp(self : 'Drawing') -> None:
         self.pan.setY(self.pan.y() - (settings.prefs.display.pan_step * self.height() / self.zoom))
-        self._viewUpdate()
+        self._panUpdate()
 
     def viewPanDown(self : 'Drawing') -> None:
         self.pan.setY(self.pan.y() + (settings.prefs.display.pan_step * self.height() / self.zoom))
-        self._viewUpdate()
+        self._panUpdate()
 
     def viewPrev(self : 'Drawing') -> None:
         pass
@@ -61,7 +67,7 @@ class DrawingApiViewMixin:
 
     def viewGridDisplay(self : 'Drawing') -> None:
         self.grid.display = not self.grid.display
-        self._viewUpdate()
+        self.udpate()
 
     def viewGridSettings(self : 'Drawing') -> None:
         # TODO dialog required

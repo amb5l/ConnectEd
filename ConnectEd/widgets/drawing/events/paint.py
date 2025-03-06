@@ -40,6 +40,7 @@ class DrawingEventsPaintMixin:
         Args:
             event: The paint event
         """
+        self.view_rect.setPhysical(self.visibleRegion().boundingRect())
         ctx = PainterContext(self)
         ctx.painter.setRenderHint(QPainter.RenderHint.Antialiasing, True)
         for step in self.PAINT_SEQUENCE:

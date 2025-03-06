@@ -64,6 +64,14 @@ class Slots:
     def viewZoomOut(self : 'Slots', widget: Drawing) -> None:
         widget.viewZoomOut()
 
+    @with_current_widget(Drawing)
+    def viewCenter(self : 'Slots', widget: Drawing) -> None:
+        widget.viewCenter()
+
+    @with_current_widget(Drawing)
+    def viewPan(self : 'Slots', widget: Drawing) -> None:
+        widget.viewPan()
+
     def windowMessages(self : 'Slots') -> None:
         self._parent.msg_viewer.show()
         self._parent.msg_viewer.raise_()

@@ -52,6 +52,7 @@ class Drawing(
     sel_rect         : Optional['Drawing.Rect']
     zoom             : Optional[float]
     pan              : QPointF
+    pan_prev         : Optional[QPointF]
     mouse            : 'Drawing.Mouse'
     state            : 'Drawing.State'
 
@@ -69,17 +70,18 @@ class Drawing(
         super().__init__(parent)
         self.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
         self.main_window = main_window
-        self.zoom = 1.0
-        self.pan = QPointF(0.0, 0.0)
-        self.elements         = TypedList(self.ELEMENT_TYPES)
-        self.wip              = TypedList(self.ELEMENT_TYPES)
-        self.symbols          = None
-        self.view_rect        = self.PLRect(self, self.visibleRegion().boundingRect())
-        self.sel_rect         = None
-        self.mouse            = self.Mouse(self)
-        self.state            = self.State.Idle
+        self.zoom        = 1.0
+        self.pan         = QPointF(0.0, 0.0)
+        self.pan_prev    = None
+        self.elements    = TypedList(self.ELEMENT_TYPES)
+        self.wip         = TypedList(self.ELEMENT_TYPES)
+        self.symbols     = None
+        self.view_rect   = self.PLRect(self)
+        self.sel_rect    = None
+        self.mouse       = self.Mouse(self)
+        self.state       = self.State.Idle
         self.setMouseTracking(True)
-        self._viewUpdate()
+        self._zoomUpdate()
 
         # uncomment to enable keypress events
         #self.setFocusPolicy(Qt.FocusPolicy.StrongFocus)

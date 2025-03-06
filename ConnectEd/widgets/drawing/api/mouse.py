@@ -1,4 +1,4 @@
-from PyQt6.QtCore import Qt, QRect
+from PyQt6.QtCore import Qt, QRect, QPointF
 
 from ....core  import settings
 
@@ -15,14 +15,28 @@ class DrawingApiMouseMixin:
             case self.State.Idle:
                 # TODO selection
                 pass
+            case self.State.ViewCenter:
+                self._center(self.mouse.left.release.logical)
+                self.state = self.State.Idle
             case self.State.ViewPan1:
+                self.pan_prev = self.pan
                 self.state = self.State.ViewPan2
+            case self.State.ViewPan2:
+                self.pan = self.pan_prev + QPointF((
+                    self.mouse.left.prev.physical -
+                    self.mouse.left.release.physical
+                ) / self.zoom)
+                self._panUpdate()
+                self.state = self.State.Idle
             case self.State.ViewZoomWindow1:
                 self.sel_rect = self.PLRect(
                     self,
-                    QRect(self.mouse.left.press.physical, self.mouse.current.physical)
+                    QRect(
+                        self.mouse.left.press.physical,
+                        self.mouse.current.physical
+                    )
                 )
-                self._viewUpdate()
+                self.update()
                 self.state = self.State.ViewZoomWindow2
             case self.State.ViewZoomWindow2:
                 self.sel_rect.setPhysical(self._normMinRect(
@@ -43,7 +57,7 @@ class DrawingApiMouseMixin:
                         self.mouse.current.physical
                     )
                 )
-                self._viewUpdate()
+                self.update()
                 self.state = self.State.ViewZoomWindow2
 
     def mouseLeftDragContinue(self : 'Drawing') -> None:
@@ -55,7 +69,7 @@ class DrawingApiMouseMixin:
                     self.mouse.left.press.physical,
                     self.mouse.current.physical
                 ))
-                self._viewUpdate()
+                self.udpate()
 
     def mouseLeftDragEnd(self : 'Drawing') -> None:
         match self.state:
@@ -78,8 +92,10 @@ class DrawingApiMouseMixin:
         if self.state == self.State.Idle:
             match self.mouse.middle.press.modifiers:
                 case Qt.KeyboardModifier.NoModifier:
+                    self.pan_prev = self.pan
                     self.state = self.State.ViewPan2
                 case Qt.KeyboardModifier.ControlModifier:
+                    # TODO sel_rect convenience functions(s) to simplify this
                     self.sel_rect = self.PLRect(
                         self,
                         QRect(
@@ -87,22 +103,33 @@ class DrawingApiMouseMixin:
                             self.mouse.current.physical
                         )
                     )
-                    self._viewUpdate()
+                    self.update()
                     self.state = self.State.ViewZoomWindow2
 
     def mouseMiddleDragContinue(self : 'Drawing') -> None:
         match self.state:
+            case self.State.ViewPan2:
+                self.pan = self.pan_prev + QPointF((
+                    self.mouse.middle.press.physical -
+                    self.mouse.current.physical
+                ) / self.zoom)
+                self._panUpdate()
             case self.State.ViewZoomWindow2:
                 self.sel_rect.setPhysical(self._normMinRect(
                     self.mouse.middle.press.physical,
                     self.mouse.current.physical
                 ))
-                self._viewUpdate()
+                self.update()
 
     def mouseMiddleDragEnd(self : 'Drawing') -> None:
         match self.state:
-            case self.State.ViewPan1:
-                self.state = self.State.ViewPan2
+            case self.State.ViewPan2:
+                self.pan = self.pan_prev + QPointF((
+                    self.mouse.middle.press.physical -
+                    self.mouse.middle.release.physical
+                ) / self.zoom)
+                self._panUpdate()
+                self.state = self.State.Idle
             case self.State.ViewZoomWindow2:
                 self.sel_rect.setPhysical(self._normMinRect(
                     self.mouse.middle.press.physical,
@@ -117,12 +144,18 @@ class DrawingApiMouseMixin:
 
     def mouseMove(self : 'Drawing') -> None:
         match self.state:
+            case self.State.ViewPan2:
+                self.pan = self.pan_prev + QPointF((
+                    self.mouse.left.press.physical -
+                    self.mouse.current.physical
+                ) / self.zoom)
+                self._panUpdate()
             case self.State.ViewZoomWindow2:
                 self.sel_rect.setPhysical(self._normMinRect(
                     self.mouse.left.press.physical,
                     self.mouse.current.physical
                 ))
-                self._viewUpdate()
+                self.update()
            #case self.State.PlaceRectangle1:
            #    self.wip.setOffset(self._snap(self.mouse.current.logical))
            #    self._viewUpdate()

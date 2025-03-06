@@ -3,7 +3,7 @@ from typing      import Optional
 from math        import sqrt, copysign
 
 from PyQt6.QtCore import Qt, QPoint, QPointF, QRect, QRectF, QSize, QSizeF
-from PyQt6.QtGui  import QMouseEvent
+from PyQt6.QtGui  import QMouseEvent, QCursor
 
 from ...core import settings, _iround
 
@@ -181,6 +181,7 @@ class DrawingPrivateMixin:
 
     class State(Enum):
         Idle            = auto()
+        ViewCenter      = auto()
         ViewPan1        = auto()
         ViewPan2        = auto()
         ViewZoomWindow1 = auto()
@@ -210,22 +211,22 @@ class DrawingPrivateMixin:
         assert isinstance(rect, QRectF)
         return QRect(self._l2pPoint(rect.topLeft()), self._l2pSize(rect.size()))
 
-    def _viewUpdate(self: 'Drawing') -> None:
-        #if self.mouse.current:
-        #    self.main_window.status_bar.xy.setText(
-        #        str(int(self.mouse.current.dpos.x())) + ',' +
-        #        str(int(self.mouse.current.dpos.y()))
-        #    )
-        #else:
-        #    self.main_window.status_bar.xy.setText('?,?')
+    def _zoomUpdate(self: 'Drawing') -> None:
         self.view_rect.setPhysical(self.visibleRegion().boundingRect())
         self.main_window.status_bar.zoom.setText('{:.2f}%'.format(self.zoom * 100))
-        self.update()
-
-    def _zoomUpdate(self: 'Drawing') -> None:
         self.main_window.commands.actions.actionEnable('viewZoomIn',  self.zoom < settings.prefs.display.zoom.limit.max)
         self.main_window.commands.actions.actionEnable('viewZoomOut', self.zoom > settings.prefs.display.zoom.limit.min)
-        self._viewUpdate()
+        self._panUpdate()
+
+    def _panUpdate(self: 'Drawing') -> None:
+        self.update()
+        self._panStatusBar()
+
+    def _panStatusBar(self: 'Drawing') -> None:
+        mouse_lpos = self._p2lPoint(self.mapFromGlobal(QCursor.pos()))
+        self.main_window.status_bar.xy.setText(
+            str(int(mouse_lpos.x())) + ',' + str(int(mouse_lpos.y()))
+        )
 
     def _zoomLRect(self: 'Drawing', lrect : QRectF | QRect) -> None:
         # TODO change to QRectF only
@@ -249,9 +250,9 @@ class DrawingPrivateMixin:
         self.zoom = zoom
         self._zoomUpdate()
 
-    def _pan(self: 'Drawing', lpoint : QPointF) -> None:
+    def _center(self: 'Drawing', lpoint : QPointF) -> None:
         self.pan = lpoint - (QPointF(self.rect().center()) / self.zoom)
-        self._viewUpdate()
+        self._panUpdate()
 
     def _snap(self: 'Drawing', pos: QPoint) -> QPoint:
         return QPoint(_iround(pos.x(), self.grid.x), _iround(pos.y(), self.grid.y)) \

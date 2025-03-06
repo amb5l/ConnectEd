@@ -17,12 +17,11 @@ class DrawingEventsMouseMixin:
 
     def enterEvent(self : 'Drawing', event : QEvent) -> None:#
         self.mouse.setPos(self.mapFromGlobal(QCursor.pos()))
-        self._viewUpdate()
+        self._panStatusBar()
 
     def leaveEvent(self : 'Drawing', event : QEvent) -> None:
         self.mouse.setPos(QPoint(self.width() // 2, self.height() // 2))
         self.main_window.status_bar.xy.setText('-,-')
-        self._viewUpdate()
 
     def mouseMoveEvent(self : 'Drawing', event : QMouseEvent) -> None:
         self.mouse.current.set(event.pos())

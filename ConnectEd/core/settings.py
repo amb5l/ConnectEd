@@ -63,7 +63,7 @@ FACTORY_SETTINGS = {
                 'pitch'   : QPointF(10.0, 10.0),
                 'dots'    : False,
                 'alpha'   : 128,
-                'pixels'  : MinMax(min=5, max=None)
+                'pixels'  : MinMax(min=10, max=None)
             },
             'zoom': {
                 'wheel' : 120,

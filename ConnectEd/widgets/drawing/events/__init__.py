@@ -27,4 +27,4 @@ class DrawingEventsMixin(
         if self.zoom is None:
             self.viewZoomAll()
         else:
-            self._viewUpdate()
+            self._panUpdate()
