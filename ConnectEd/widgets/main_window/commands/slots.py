@@ -89,6 +89,16 @@ class Slots:
         widget.viewPanRight()
 
     @with_current_widget(Drawing)
+    def viewGridDisplay(self : 'Slots', widget: Drawing) -> None:
+        checked = self._parent.commands.actions.viewGridDisplay.isChecked()
+        widget.viewGridDisplay(checked)
+
+    @with_current_widget(Drawing)
+    def viewGridSnap(self : 'Slots', widget: Drawing) -> None:
+        checked = self._parent.commands.actions.viewGridSnap.isChecked()
+        widget.viewGridSnap(checked)
+
+    @with_current_widget(Drawing)
     def placeRectangle(self : 'Slots', widget: Drawing) -> None:
         widget.placeRectangle()
 

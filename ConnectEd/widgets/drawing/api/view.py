@@ -62,12 +62,12 @@ class DrawingApiViewMixin:
     def viewNext(self : 'Drawing') -> None:
         pass
 
-    def viewGridSnap(self : 'Drawing') -> None:
-        self.grid.snap = not self.grid.snap
+    def viewGridDisplay(self : 'Drawing', checked : bool) -> None:
+        self.grid.display = checked
+        self.update()
 
-    def viewGridDisplay(self : 'Drawing') -> None:
-        self.grid.display = not self.grid.display
-        self.udpate()
+    def viewGridSnap(self : 'Drawing', checked : bool) -> None:
+        self.grid.snap = checked
 
     def viewGridSettings(self : 'Drawing') -> None:
         # TODO dialog required

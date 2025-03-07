@@ -47,12 +47,13 @@ class DrawingApiMouseMixin:
                 self.sel_rect = None
                 self.state = self.State.Idle
             case self.State.PlaceRectangle1:
-                self.wip = [Rectangle(self.mouse.left.press.logical)]
+                self.wip = [Rectangle(
+                    self._snap(self.mouse.left.press.logical)
+                )]
                 self.state = self.State.PlaceRectangle2
             case self.State.PlaceRectangle2:
-                self.wip[0].setRect(
-                    self.mouse.left.prev.logical,
-                    self.mouse.left.release.logical
+                self.wip[0].setPoint2(
+                    self._snap(self.mouse.left.release.logical)
                 )
                 self.elements.append(self.wip.pop(0))
                 self.update()
@@ -71,7 +72,9 @@ class DrawingApiMouseMixin:
                 self.update()
                 self.state = self.State.ViewZoomWindow2
             case self.State.PlaceRectangle1:
-                self.wip = [Rectangle(self.mouse.left.press.logical)]
+                self.wip = [Rectangle(
+                    self._snap(self.mouse.left.press.logical)
+                )]
                 self.state = self.State.PlaceRectangle2
 
     def mouseLeftDragContinue(self : 'Drawing') -> None:
@@ -85,9 +88,8 @@ class DrawingApiMouseMixin:
                 ))
                 self.update()
             case self.State.PlaceRectangle2:
-                self.wip[0].setRect(
-                    self.mouse.left.press.logical,
-                    self.mouse.current.logical
+                self.wip[0].setPoint2(
+                    self._snap(self.mouse.current.logical)
                 )
                 self.update()
 
@@ -102,9 +104,8 @@ class DrawingApiMouseMixin:
                 self.sel_rect = None
                 self.state = self.State.Idle
             case self.State.PlaceRectangle2:
-                self.wip[0].setRect(
-                    self.mouse.left.press.logical,
-                    self.mouse.left.release.logical
+                self.wip[0].setPoint2(
+                    self._snap(self.mouse.left.release.logical)
                 )
                 self.elements.append(self.wip.pop(0))
                 self.update()
@@ -185,9 +186,8 @@ class DrawingApiMouseMixin:
                 ))
                 self.update()
             case self.State.PlaceRectangle2:
-                self.wip[0].setRect(
-                    self.mouse.left.press.logical,
-                    self.mouse.current.logical
+                self.wip[0].setPoint2(
+                    self._snap(self.mouse.current.logical)
                 )
                 self.update()
 

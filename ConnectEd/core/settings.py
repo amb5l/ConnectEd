@@ -74,14 +74,6 @@ FACTORY_SETTINGS = {
                 },
                 'alpha': 128
             },
-            'grid': {
-                'show'    : True,
-                'snap'    : True,
-                'pitch'   : QPointF(10.0, 10.0),
-                'dots'    : False,
-                'alpha'   : 128,
-                'pixels'  : MinMax(min=10, max=None)
-            },
             'zoom': {
                 'step'  : 0.25,
                 'limit' : MinMax(0.1, 100.0)
@@ -133,7 +125,16 @@ FACTORY_SETTINGS = {
     },
     'defaults': { # TODO move these to session settings
         'sheet'  : 'A4',
-        'border' : 10
+        'border' : 10,
+        'grid': {
+            'display'    : True,
+            'snap'       : True,
+            'offset'     : QPointF(0.0, 0.0),
+            'pitch'      : QPointF(10.0, 10.0),
+            'dots'       : False,
+            'alpha'      : 128,
+            'min_pixels' : 10
+        }
     }
 }
 

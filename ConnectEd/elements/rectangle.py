@@ -1,3 +1,5 @@
+from typing import Optional
+
 from PyQt6.QtCore import QRectF, QPointF, QSizeF
 
 from ..core import settings
@@ -6,23 +8,37 @@ from . import Element, LineSpec, FillSpec, PainterContext
 
 
 class Rectangle(Element):
-    rect : QRectF
-    line : LineSpec
-    fill : FillSpec
+    point1 : QPointF
+    point2 : QPointF
+    rect   : QRectF
+    line   : LineSpec
+    fill   : FillSpec
 
     def __init__(
         self     : 'Rectangle',
-        position : QPointF,
-        size     : QSizeF = QSizeF(1, 1),
+        point1   : QPointF,
+        point2   : Optional[QPointF] = None,
         line     : LineSpec = LineSpec(),
         fill     : FillSpec = FillSpec()
     ) -> None:
-        self.rect = QRectF(position, size)
+        self.rect = QRectF()
+        if point2 is None:
+            point2 = point1
+        self.setPoints(point1, point2)
         self.line = line
         self.fill = fill
 
-    def setRect(self : 'Rectangle', p1 : QPointF, p2 : QPointF) -> None:
-        self.rect.setCoords(p1.x(), p1.y(), p2.x(), p2.y())
+    def setPoints(self : 'Rectangle', p1 : QPointF, p2 : QPointF) -> None:
+        self.point1 = p1
+        self.setPoint2(p2)
+
+    def setPoint2(self : 'Rectangle', p2 : QPointF) -> None:
+        if p2.x() == self.point1.x():
+            p2.setX(self.point1.x()+1)
+        if p2.y() == self.point1.y():
+            p2.setY(self.point1.y()+1)
+        self.point2 = p2
+        self.rect.setCoords(self.point1.x(), self.point1.y(), p2.x(), p2.y())
 
     def paint(self, ctx : PainterContext, wip : bool = False) -> None:
         if wip:

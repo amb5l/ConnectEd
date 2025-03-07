@@ -72,21 +72,21 @@ class DrawingEventsPaintMixin:
     def _paintGrid(self: 'Drawing', ctx: PainterContext) -> None:
         def align(x : float, px : float) -> float:
             return px * int(x / px)
-        g = settings.prefs.display.grid
-        if g.show:
+        g = self.grid
+        if g.display:
             ctx.painter.setRenderHint(QPainter.RenderHint.Antialiasing, False)
             px = g.pitch.x()
-            if px * self.zoom < g.pixels.min:
-                px *= ceil(g.pixels.min / (g.pitch.x() * self.zoom))
+            if px * self.zoom < g.min_pixels:
+                px *= ceil(g.min_pixels / (g.pitch.x() * self.zoom))
             py = g.pitch.y()
-            if py * self.zoom < g.pixels.min:
-                py *= ceil(g.pixels.min / (g.pitch.y() * self.zoom))
+            if py * self.zoom < g.min_pixels:
+                py *= ceil(g.min_pixels / (g.pitch.y() * self.zoom))
             grect = QRectF(
                 self.view_rect.logical.topLeft() - QPointF(px, py),
                 self.view_rect.logical.bottomRight() + QPointF(px, py)
             ).toRect()
             ctx.setPenOnly(settings.theme.grid)
-            ctx.setAlpha(settings.prefs.display.grid.alpha)
+            ctx.setAlpha(g.alpha)
             if g.dots:
                 x = align(grect.left(), px)
                 while x <= grect.right():

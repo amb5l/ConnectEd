@@ -42,19 +42,20 @@ class Drawing(
     - Grid display and snapping
     - Event handling (mouse, keyboard, paint)
     """
-    ELEMENT_TYPES    : ClassVar[TypedList] = TypedList(NoneType)
-    main_window      : 'MainWindow'
-    name             : str
-    elements         : TypedList
-    wip              : TypedList
-    symbols          : Optional[TypedList['Symbol']]
-    view_rect        : Optional['Drawing.Rect']
-    sel_rect         : Optional['Drawing.Rect']
-    zoom             : Optional[float]
-    pan              : QPointF
-    pan_prev         : Optional[QPointF]
-    mouse            : 'Drawing.Mouse'
-    state            : 'Drawing.State'
+    ELEMENT_TYPES : ClassVar[TypedList] = TypedList(NoneType)
+    main_window   : 'MainWindow'
+    name          : str
+    elements      : TypedList
+    wip           : TypedList
+    symbols       : Optional[TypedList['Symbol']]
+    view_rect     : Optional['Drawing.Rect']
+    sel_rect      : Optional['Drawing.Rect']
+    zoom          : Optional[float]
+    pan           : QPointF
+    pan_prev      : Optional[QPointF]
+    mouse         : 'Drawing.Mouse'
+    grid          : 'Drawing.Grid'
+    state         : 'Drawing.State'
 
     def __init__(
         self        : 'Drawing',
@@ -80,6 +81,16 @@ class Drawing(
         self.sel_rect    = None
         self.mouse       = self.Mouse(self)
         self.state       = self.State.Idle
+        self.grid = self.Grid(
+            display    = settings.defaults.grid.display,
+            snap       = settings.defaults.grid.snap,
+            offset     = settings.defaults.grid.offset,
+            pitch      = settings.defaults.grid.pitch,
+            dots       = settings.defaults.grid.dots,
+            alpha      = settings.defaults.grid.alpha,
+            min_pixels = settings.defaults.grid.min_pixels
+        )
+
         self.setMouseTracking(True)
         self._zoomUpdate()
 

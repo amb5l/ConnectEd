@@ -1,5 +1,6 @@
 from enum        import Enum, auto
 from typing      import Optional
+from dataclasses import dataclass
 from math        import sqrt, copysign
 
 from PyQt6.QtCore import Qt, QPoint, QPointF, QRect, QRectF, QSize, QSizeF
@@ -179,6 +180,16 @@ class DrawingPrivateMixin:
     MouseButton       = DrawingMouseButton
     Mouse             = DrawingMouse
 
+    @dataclass
+    class Grid:
+        display    : bool
+        snap       : bool
+        offset     : QPointF
+        pitch      : QPointF
+        dots       : bool
+        alpha      : int
+        min_pixels : int
+
     class State(Enum):
         Idle            = auto()
         ViewCenter      = auto()
@@ -254,8 +265,10 @@ class DrawingPrivateMixin:
         self._panUpdate()
 
     def _snap(self: 'Drawing', pos: QPoint) -> QPoint:
-        return QPoint(_iround(pos.x(), self.grid.x), _iround(pos.y(), self.grid.y)) \
-            if settings.prefs.display.grid.snap else pos
+        return QPointF(
+            _iround(pos.x(), self.grid.pitch.x()),
+            _iround(pos.y(), self.grid.pitch.y())
+        ) if self.grid.snap else pos
 
     def _distance(self: 'Drawing', cp1: QPoint, cp2: QPoint) -> int:
         return int(round(sqrt((cp1.x() - cp2.x())**2 + (cp1.y() - cp2.y())**2)))

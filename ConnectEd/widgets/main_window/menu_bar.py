@@ -29,6 +29,9 @@ class MenuBar(QMenuBar):
         self.view_menu.addAction(actions.viewPanDown)
         self.view_menu.addAction(actions.viewPanLeft)
         self.view_menu.addAction(actions.viewPanRight)
+        self.view_menu.addSeparator()
+        self.view_menu.addAction(actions.viewGridDisplay)
+        self.view_menu.addAction(actions.viewGridSnap)
 
         self.place_menu = QMenu('&Place')
         self.place_menu.addAction(actions.placeRectangle)
