@@ -15,21 +15,23 @@ class Rectangle(Element):
     fill   : FillSpec
 
     def __init__(
-        self     : 'Rectangle',
-        point1   : QPointF,
-        point2   : Optional[QPointF] = None,
-        line     : LineSpec = LineSpec(),
-        fill     : FillSpec = FillSpec()
+        self : 'Rectangle',
+        p1   : QPointF,
+        p2   : Optional[QPointF] = None,
+        line : LineSpec = LineSpec(),
+        fill : FillSpec = FillSpec()
     ) -> None:
         self.rect = QRectF()
-        if point2 is None:
-            point2 = point1
-        self.setPoints(point1, point2)
+        self.point1 = QPointF()
+        self.point2 = QPointF()
+        if p2 is None:
+            p2 = p1
+        self.setPoints(p1, p2)
         self.line = line
         self.fill = fill
 
     def setPoints(self : 'Rectangle', p1 : QPointF, p2 : QPointF) -> None:
-        self.point1 = p1
+        self.point1.setX(p1.x()); self.point1.setY(p1.y())
         self.setPoint2(p2)
 
     def setPoint2(self : 'Rectangle', p2 : QPointF) -> None:
@@ -37,7 +39,7 @@ class Rectangle(Element):
             p2.setX(self.point1.x()+1)
         if p2.y() == self.point1.y():
             p2.setY(self.point1.y()+1)
-        self.point2 = p2
+        self.point2.setX(p2.x()); self.point2.setY(p2.y())
         self.rect.setCoords(self.point1.x(), self.point1.y(), p2.x(), p2.y())
 
     def paint(self, ctx : PainterContext, wip : bool = False) -> None:
@@ -53,5 +55,5 @@ class Rectangle(Element):
                 settings.prefs.display.elements.rectangle,
                 settings.theme.elements.rectangle
             )
-            ctx.setAlpha(settings.prefs.display.elements.alpha)
+        ctx.setAlpha(settings.prefs.display.elements.alpha)
         ctx.painter.drawRect(self.rect)
