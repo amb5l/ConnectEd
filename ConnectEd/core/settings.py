@@ -90,7 +90,7 @@ FACTORY_SETTINGS = {
     'themes': {
         'dark': {
             'background' : QColor(   0,   0,   0 ),
-            'sheet'      : QColor(  16,  16,  16 ),
+            'sheet'      : QColor(  32,  32,  32 ),
             'border'     : QColor( 128, 128, 128 ),
             'elements': {
                 'wip': {
