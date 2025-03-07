@@ -25,8 +25,8 @@ class DrawingEventsPaintMixin:
         'Save',
         'GoLogical',
         'Elements',
-        'WIP',
         'Grid',
+        'WIP',
         'Restore',
         'SelectRect'
     ]

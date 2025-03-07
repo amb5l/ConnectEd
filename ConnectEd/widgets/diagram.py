@@ -21,8 +21,8 @@ class Diagram(Drawing):
         'Sheet',
         'Border',
         'Elements',
-        'WIP',
         'Grid',
+        'WIP',
         'Restore',
         'SelectRect'
     ]
