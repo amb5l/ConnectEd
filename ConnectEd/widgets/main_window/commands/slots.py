@@ -4,7 +4,7 @@ from ....core    import logger
 from ....widgets import Drawing, Diagram
 
 import functools
-from typing import Callable, Type, TypeVar, cast, Any
+from typing import Callable, Type, TypeVar, cast
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -90,13 +90,11 @@ class Slots:
 
     @with_current_widget(Drawing)
     def viewGridDisplay(self : 'Slots', widget: Drawing) -> None:
-        checked = self._parent.commands.actions.viewGridDisplay.isChecked()
-        widget.viewGridDisplay(checked)
+        widget.viewGridDisplay()
 
     @with_current_widget(Drawing)
     def viewGridSnap(self : 'Slots', widget: Drawing) -> None:
-        checked = self._parent.commands.actions.viewGridSnap.isChecked()
-        widget.viewGridSnap(checked)
+        widget.viewGridSnap()
 
     @with_current_widget(Drawing)
     def placeRectangle(self : 'Slots', widget: Drawing) -> None:

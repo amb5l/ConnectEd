@@ -14,10 +14,6 @@ class Actions:
         self._parent = parent
         SK = QKeySequence.StandardKey
 
-        # submenu actions
-        # TODO Zoom 100%/10% etc
-
-        # menu actions
         self.fileExit        = Action( self._parent, 'Exit'        , 'Exit the application'     , SK.Quit                      )
         self.viewZoomAll     = Action( self._parent, 'Zoom All'    , 'Zoom to fit all'          , 'Ctrl+Home'                  )
         self.viewZoomSheet   = Action( self._parent, 'Zoom Sheet'  , 'Zoom to fit sheet'        , 'Ctrl+Shift+S'               )

@@ -1,9 +1,9 @@
 from math import ceil
 
-from PyQt6.QtCore import Qt, QRect, QRectF, QSize, QSizeF, QPoint, QPointF
-from PyQt6.QtGui  import QPaintEvent, QResizeEvent, QPainter, QPen, QBrush, QColor
+from PyQt6.QtCore import Qt, QRectF, QPoint, QPointF
+from PyQt6.QtGui  import QPaintEvent, QPainter, QPen, QColor
 
-from ....core     import settings, _iround
+from ....core     import settings
 from ....elements import PainterContext
 
 from typing import TYPE_CHECKING

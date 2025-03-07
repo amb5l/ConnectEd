@@ -13,10 +13,6 @@ __all__ = [
 
 from typing import Type, List, Tuple, Generic, TypeVar, Optional, Iterator
 
-from PyQt6.QtCore    import Qt
-from PyQt6.QtWidgets import QWidget
-from PyQt6.QtGui     import QPainter, QPen, QBrush, QColor
-
 from typing import TYPE_CHECKING
 if TYPE_CHECKING: # avoid circular import issues
     from ..widgets import Symbol

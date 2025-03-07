@@ -11,10 +11,9 @@ __all__ = [
 ]
 
 from types       import NoneType
-from dataclasses import dataclass
 from typing      import Optional, ClassVar
 
-from PyQt6.QtCore    import Qt, QPointF, QPoint
+from PyQt6.QtCore    import Qt, QPointF
 from PyQt6.QtWidgets import QMdiArea, QMdiSubWindow, QWidget
 
 from ...core  import TypedList, settings

@@ -1,6 +1,6 @@
 from typing import Optional
 
-from PyQt6.QtCore import QRectF, QPointF, QSizeF
+from PyQt6.QtCore import QRectF, QPointF
 
 from ..core import settings
 
