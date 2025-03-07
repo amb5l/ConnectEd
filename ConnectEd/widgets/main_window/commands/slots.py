@@ -35,6 +35,31 @@ def with_current_widget(widget_type: Type[T]) -> Callable[[Callable[['Slots', T]
         return wrapper
     return decorator
 
+def with_current_widget_checkable(widget_type: Type[T], action_name: str) -> Callable[[Callable[['Slots', T, bool], None]], Callable[['Slots'], None]]:
+    """
+    Decorator for checkable actions that gets the current widget from the MDI area,
+    checks if it's of the specified type, and passes the checked state from the action.
+
+    Args:
+        widget_type: The type to check the current widget against
+        action_name: The name of the action to get the checked state from
+
+    Returns:
+        A decorator function
+    """
+    def decorator(func: Callable[['Slots', T, bool], None]) -> Callable[['Slots'], None]:
+        @functools.wraps(func)
+        def wrapper(self: 'Slots') -> None:
+            current_sub_window = self._parent.mdi_area.currentSubWindow()
+            if current_sub_window is None:
+                return
+            current_widget = current_sub_window.widget()
+            if isinstance(current_widget, widget_type):
+                checked = getattr(self._parent.commands.actions, action_name).isChecked()
+                func(self, cast(T, current_widget), checked)
+        return wrapper
+    return decorator
+
 class Slots:
     _parent : 'MainWindow'
 
@@ -88,13 +113,13 @@ class Slots:
     def viewPanRight(self : 'Slots', widget: Drawing) -> None:
         widget.viewPanRight()
 
-    @with_current_widget(Drawing)
-    def viewGridDisplay(self : 'Slots', widget: Drawing) -> None:
-        widget.viewGridDisplay()
+    @with_current_widget_checkable(Drawing, 'viewGridDisplay')
+    def viewGridDisplay(self : 'Slots', widget: Drawing, checked: bool) -> None:
+        widget.viewGridDisplay(checked)
 
-    @with_current_widget(Drawing)
-    def viewGridSnap(self : 'Slots', widget: Drawing) -> None:
-        widget.viewGridSnap()
+    @with_current_widget_checkable(Drawing, 'viewGridSnap')
+    def viewGridSnap(self : 'Slots', widget: Drawing, checked: bool) -> None:
+        widget.viewGridSnap(checked)
 
     @with_current_widget(Drawing)
     def placeRectangle(self : 'Slots', widget: Drawing) -> None:
