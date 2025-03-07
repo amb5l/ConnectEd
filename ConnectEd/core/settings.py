@@ -60,7 +60,7 @@ FACTORY_SETTINGS = {
             'elements': {
                 'wip': {
                     'line': {
-                        'width': 1,
+                        'width': 0,
                         'style': Qt.PenStyle.DashLine
                     },
                     'fill': Qt.BrushStyle.NoBrush
