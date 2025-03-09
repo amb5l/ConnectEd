@@ -18,6 +18,7 @@ class MenuBar(QMenuBar):
 
         self.edit_menu = QMenu('&Edit')
         self.edit_menu.addAction(actions.editCancel)
+        self.edit_menu.addAction(actions.editComplete)
 
         self.view_menu = QMenu('&View')
         self.view_menu.addAction(actions.viewZoomAll)

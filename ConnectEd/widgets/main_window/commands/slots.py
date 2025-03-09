@@ -74,6 +74,10 @@ class Slots:
         widget.editCancel()
 
     @with_current_widget(Drawing)
+    def editComplete(self : 'Slots', widget: Drawing) -> None:
+        widget.editComplete()
+
+    @with_current_widget(Drawing)
     def viewZoomAll(self : 'Slots', widget: Drawing) -> None:
         widget.viewZoomAll()
 
