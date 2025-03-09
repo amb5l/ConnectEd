@@ -1,11 +1,8 @@
-from typing import Optional
-
-from PyQt6.QtCore    import QRect, QPoint, QSize
-from PyQt6.QtWidgets import QWidget, QMdiArea, QMdiSubWindow
+from PyQt6.QtWidgets import QWidget, QMdiArea
 
 from ..core     import settings, TypedList
-from ..elements import PainterContext, Rectangle
-from .drawing   import Drawing
+from ..elements import Sheet, Border, Rectangle
+from .drawing   import Drawing, DrawingSubWindow
 from .symbol    import Symbol
 
 from typing import TYPE_CHECKING
@@ -14,56 +11,24 @@ if TYPE_CHECKING:
 
 
 class Diagram(Drawing):
-    PAINT_SEQUENCE = [
-        'Background',
-        'Save',
-        'GoLogical',
-        'Sheet',
-        'Border',
-        'Elements',
-        'Grid',
-        'WIP',
-        'Restore',
-        'SelectRect'
-    ]
-    ELEMENT_TYPES = (Rectangle)
-    sheet   : Optional[QSize] = None
-    border  : Optional[int] = None
+    ELEMENT_TYPES = (Sheet, Border, Rectangle)
+    border  : Border
     symbols : TypedList[Symbol]
 
     def __init__(
-        self        : 'Drawing',
+        self        : 'Diagram',
         parent      : QWidget,
         main_window : 'MainWindow'
     ) -> None:
         super().__init__(parent, main_window)
-        self.sheet   = getattr(settings.sheet_sizes, settings.defaults.sheet)
-        self.border  = settings.defaults.border
+        self.border  = Border(self.sheet, settings.defaults.margin)
         self.symbols = TypedList[Symbol]()
+        self.scene.addItem(self.border)
 
-    def _paintSheet(self : 'Diagram', ctx : PainterContext) -> None:
-        if self.sheet:
-            ctx.setBrush(settings.theme.sheet)
-            ctx.painter.fillRect(QRect(QPoint(0, 0), self.sheet), ctx.brush)
-            ctx.setPenOnly(
-                settings.theme.border,
-                settings.prefs.display.border.width,
-                settings.prefs.display.border.style
-            )
+    def viewZoomSheet(self : 'Diagram') -> None:
+        self._zoomRect(self.sheet.rect)
 
-    def _paintBorder(self : 'Diagram', ctx : PainterContext) -> None:
-        if self.border:
-            ctx.setPenOnly(
-                settings.theme.border,
-                settings.prefs.display.border.width,
-                settings.prefs.display.border.style
-            )
-            ctx.painter.drawRect(QRect(
-                QPoint(0, 0) + QPoint(self.border, self.border),
-                self.sheet - (2 * QSize(self.border, self.border))
-            ))
-
-class DiagramSubWindow(QMdiSubWindow):
+class DiagramSubWindow(DrawingSubWindow):
     """A subwindow container for Diagram drawing widgets in the MDI area."""
 
     def __init__(

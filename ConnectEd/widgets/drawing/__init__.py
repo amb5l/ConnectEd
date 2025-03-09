@@ -13,10 +13,14 @@ __all__ = [
 from types       import NoneType
 from typing      import Optional, ClassVar
 
-from PyQt6.QtCore    import Qt, QPointF
-from PyQt6.QtWidgets import QMdiArea, QMdiSubWindow, QWidget
+from PyQt6.QtCore    import Qt, QPointF, QRectF, QEvent, QTimer
+from PyQt6.QtWidgets import QMdiArea, QMdiSubWindow, QWidget, \
+                            QGraphicsView, QGraphicsScene, QGraphicsItem
+from PyQt6.QtGui     import QPainter
 
-from ...core  import TypedList, settings
+from ...core     import TypedList, settings, Z_DRAWING
+from ...elements import Sheet, Grid, SelectBox
+
 from .private import DrawingPrivateMixin
 from .events  import DrawingEventsMixin
 from .api     import DrawingApiMixin
@@ -28,7 +32,7 @@ if TYPE_CHECKING: # avoid circular import issues
 
 
 class Drawing(
-    QWidget,
+    QGraphicsView,
     DrawingEventsMixin,
     DrawingPrivateMixin,
     DrawingApiMixin
@@ -43,17 +47,16 @@ class Drawing(
     """
     ELEMENT_TYPES : ClassVar[TypedList] = TypedList(NoneType)
     main_window   : 'MainWindow'
+    scene         : QGraphicsScene
     name          : str
-    elements      : TypedList
-    wip           : TypedList
+    sheet         : Sheet
+    wip           : Optional[QGraphicsItem]
     symbols       : Optional[TypedList['Symbol']]
-    view_rect     : Optional['Drawing.Rect']
-    sel_rect      : Optional['Drawing.Rect']
-    zoom          : Optional[float]
-    pan           : QPointF
+    sel_box       : SelectBox
+    zoom          : float
     pan_prev      : Optional[QPointF]
     mouse         : 'Drawing.Mouse'
-    grid          : 'Drawing.Grid'
+    grid          : Grid
     state         : 'Drawing.State'
 
     def __init__(
@@ -69,44 +72,63 @@ class Drawing(
         """
         super().__init__(parent)
         self.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
+        self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
+        self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
+
         self.main_window = main_window
-        self.zoom        = 1.0
-        self.pan         = QPointF(0.0, 0.0)
-        self.pan_prev    = None
-        self.elements    = TypedList(self.ELEMENT_TYPES)
-        self.wip         = TypedList(self.ELEMENT_TYPES)
+        self.scene       = QGraphicsScene()
+        self.name        = 'Untitled'
+        self.sheet       = Sheet(settings.defaults.sheet)
+        self.wip         = None
         self.symbols     = None
-        self.view_rect   = self.PLRect(self)
-        self.sel_rect    = None
-        self.mouse       = self.Mouse(self)
+        self.sel_box     = SelectBox()
+        self.zoom        = 1.0
+        self.pan_prev    = None
+        self.mouse       = self.Mouse()
+        self.grid        = Grid(self.sheet)
         self.state       = self.State.Idle
-        self.grid = self.Grid(
-            display    = settings.defaults.grid.display,
-            snap       = settings.defaults.grid.snap,
-            offset     = settings.defaults.grid.offset,
-            pitch      = settings.defaults.grid.pitch,
-            dots       = settings.defaults.grid.dots,
-            alpha      = settings.defaults.grid.alpha,
-            min_pixels = settings.defaults.grid.min_pixels
-        )
 
+        self.setScene(self.scene)
+        self.setSceneRect(self.sheet.boundingRect())
+        self.scene.addItem(self.sheet)
+        self.scene.addItem(self.grid)
+        self.scene.addItem(self.sel_box)
         self.setMouseTracking(True)
-        self._zoomUpdate()
-
+        self.setRenderHint(QPainter.RenderHint.Antialiasing)
+        self.setZ(Z_DRAWING)
         # uncomment to enable keypress events
         #self.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
 
+    def drawBackground(self, painter : QPainter, rect : QRectF) -> None:
+        painter.setBrush(settings.theme.background)
+        painter.fillRect(rect, settings.theme.background)
+
+    def setZ(self, z : int) -> None:
+        """
+        Make scene items with the supplied Z-value selectable.
+        Make all other scene items non-selectable.
+        """
+        for item in self.scene.items():
+            item.setFlag(
+                QGraphicsItem.GraphicsItemFlag.ItemIsSelectable,
+                item.zValue() == z
+            )
 
 class DrawingSubWindow(QMdiSubWindow):
-    """A subwindow container for Drawing widgets in the MDI area."""
+    first_zoom_done : bool = False
 
     def __init__(
         self   : 'DrawingSubWindow',
         parent : QMdiArea
     ) -> None:
-        """Initialize a DrawingSubWindow.
-
-        Args:
-            parent: The parent MDI area
-        """
         super().__init__(parent)
+        self.first_zoom_done = False
+
+    def showEvent(
+        self   : 'DrawingSubWindow',
+        event  : QEvent
+    ) -> None:
+        super().showEvent(event)
+        if not self.first_zoom_done and isinstance(self.widget(), Drawing):
+            QTimer.singleShot(100, lambda: self.widget().viewZoomAll())
+            self.first_zoom_done = True

@@ -11,7 +11,6 @@ __all__ = [
 
 from PyQt6.QtGui import QResizeEvent
 
-from .paint import DrawingEventsPaintMixin
 from .mouse import DrawingEventsMouseMixin
 from typing import TYPE_CHECKING
 if TYPE_CHECKING: # avoid circular import issues
@@ -19,11 +18,8 @@ if TYPE_CHECKING: # avoid circular import issues
 
 
 class DrawingEventsMixin(
-    DrawingEventsPaintMixin,
     DrawingEventsMouseMixin
 ):
     def resizeEvent(self : 'Drawing', event : QResizeEvent) -> None:
         if self.zoom is None:
             self.viewZoomAll()
-        else:
-            self._panUpdate()

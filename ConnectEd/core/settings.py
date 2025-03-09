@@ -53,11 +53,12 @@ FACTORY_SETTINGS = {
                 'right'  : 2
             },
             'background': Qt.BrushStyle.SolidPattern,
-            'border': {
-                'width' : 1,
-                'style' : Qt.PenStyle.SolidLine
-            },
             'elements': {
+                'sheet': Qt.BrushStyle.SolidPattern,
+                'border': {
+                    'width' : 1,
+                    'style' : Qt.PenStyle.SolidLine
+                },
                 'wip': {
                     'line': {
                         'width': 0,
@@ -75,11 +76,12 @@ FACTORY_SETTINGS = {
                 'alpha': 128
             },
             'zoom': {
+                'padding' : 0.1,
                 'step'  : 0.25,
                 'limit' : MinMax(0.1, 100.0)
             },
             'pan': {
-                'step'  : 0.1
+                'step' : 0.1
             },
         },
         'mouse': {
@@ -94,12 +96,16 @@ FACTORY_SETTINGS = {
             'border'     : QColor( 128, 128, 128 ),
             'elements': {
                 'wip': {
-                    'line' : QColor( 255,   0,   0 ),
-                    'fill' : QColor( 255,   0,   0 )
+                    'line' : QColor(   0, 255,   0 ), # bright green
+                    'fill' : QColor(   0, 128,   0 )  # medium green
+                },
+                'selected': {
+                    'line' : QColor( 255,   0, 255 ), # bright magenta
+                    'fill' : QColor( 128,   0, 128 )  # medium magenta
                 },
                 'rectangle': {
-                    'line' : QColor( 255,   0,   0 ),
-                    'fill' : QColor( 255,   0,   0 )
+                    'line' : QColor( 192, 120,   0 ), # light orange
+                    'fill' : QColor(  96, 100,   0 )  # dark orange
                 }
             },
             'grid' : QColor(  64,  64,  64 )
@@ -112,24 +118,23 @@ FACTORY_SETTINGS = {
         }
     },
     'sheet_sizes': {
-        'A4' : QSize( 1169 ,  827 ),
-        'A3' : QSize( 1654 , 1169 ),
-        'A2' : QSize( 2338 , 1654 ),
-        'A1' : QSize( 3307 , 2338 ),
-        'A0' : QSize( 4677 , 3307 ),
-        'A'  : QSize(  970 ,  720 ),
-        'B'  : QSize( 1520 ,  970 ),
-        'C'  : QSize( 2020 , 1520 ),
-        'D'  : QSize( 3220 , 2020 ),
-        'E'  : QSize( 4220 , 3220 )
+        'A4' : QSizeF( 1169.0 ,  827.0 ),
+        'A3' : QSizeF( 1654.0 , 1169.0 ),
+        'A2' : QSizeF( 2338.0 , 1654.0 ),
+        'A1' : QSizeF( 3307.0 , 2338.0 ),
+        'A0' : QSizeF( 4677.0 , 3307.0 ),
+        'A'  : QSizeF(  970.0 ,  720.0 ),
+        'B'  : QSizeF( 1520.0 ,  970.0 ),
+        'C'  : QSizeF( 2020.0 , 1520.0 ),
+        'D'  : QSizeF( 3220.0 , 2020.0 ),
+        'E'  : QSizeF( 4220.0 , 3220.0 )
     },
     'defaults': { # TODO move these to session settings
         'sheet'  : 'A4',
-        'border' : 10,
+        'margin' : 10,
         'grid': {
             'display'    : True,
             'snap'       : True,
-            'offset'     : QPointF(0.0, 0.0),
             'pitch'      : QPointF(10.0, 10.0),
             'dots'       : False,
             'alpha'      : 128,

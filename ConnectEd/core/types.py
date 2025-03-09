@@ -8,10 +8,13 @@ used throughout the application, including painting contexts and typed collectio
 __all__ = [
     'TypedList',
     'Library',
-    'PainterContext'
+    'Rect2'
 ]
 
 from typing import Type, List, Tuple, Generic, TypeVar, Optional, Iterator
+from math import copysign
+
+from PyQt6.QtCore import QPointF, QRectF, QSizeF
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING: # avoid circular import issues
@@ -117,3 +120,34 @@ class Library:
     ) -> None:
         self.name    = name
         self.symbols = symbols
+
+class Rect2(QRectF):
+    p1   : QPointF
+    p2   : QPointF
+    min  : QSizeF
+
+    def __init__(
+        self : 'Rect2',
+        p1   : QPointF = QPointF(),
+        p2   : QPointF = QPointF(),
+        min  : QSizeF  = QSizeF(1, 1)
+    ) -> None:
+        super().__init__()
+        self.p1  = p1
+        self.p2  = p2
+        self.min = min
+        self.setPoints(p1, p2)
+
+    def setPoints(self : 'Rect2', p1: QPointF, p2: Optional[QPointF] = None) -> None:
+        self.p1 = p1
+        if p2 is None:
+            p2 = p1
+        self.setPoint2(p2)
+
+    def setPoint2(self : 'Rect2', p2: QPointF) -> None:
+        self.p2 = p2
+        self.setCoords(self.p1.x(), self.p1.y(), p2.x(), p2.y())
+        if abs(self.width()) < self.min.width():
+            self.setWidth(copysign(self.min.width(), self.width()))
+        if abs(self.height()) < self.min.height():
+            self.setHeight(copysign(self.min.height(), self.height()))

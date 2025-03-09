@@ -9,6 +9,7 @@ __all__ = [
     'DrawingApiMixin'
 ]
 
+from .edit    import DrawingApiEditMixin
 from .view    import DrawingApiViewMixin
 from .mouse   import DrawingApiMouseMixin
 from .place   import DrawingApiPlaceMixin
@@ -19,6 +20,7 @@ if TYPE_CHECKING: # avoid circular import issues
 
 
 class DrawingApiMixin(
+    DrawingApiEditMixin,
     DrawingApiViewMixin,
     DrawingApiMouseMixin,
     DrawingApiPlaceMixin

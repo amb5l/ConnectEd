@@ -70,6 +70,10 @@ class Slots:
         self._parent.close()
 
     @with_current_widget(Drawing)
+    def editCancel(self : 'Slots', widget: Drawing) -> None:
+        widget.editCancel()
+
+    @with_current_widget(Drawing)
     def viewZoomAll(self : 'Slots', widget: Drawing) -> None:
         widget.viewZoomAll()
 
@@ -88,14 +92,6 @@ class Slots:
     @with_current_widget(Drawing)
     def viewZoomOut(self : 'Slots', widget: Drawing) -> None:
         widget.viewZoomOut()
-
-    @with_current_widget(Drawing)
-    def viewCenter(self : 'Slots', widget: Drawing) -> None:
-        widget.viewCenter()
-
-    @with_current_widget(Drawing)
-    def viewPan(self : 'Slots', widget: Drawing) -> None:
-        widget.viewPan()
 
     @with_current_widget(Drawing)
     def viewPanUp(self : 'Slots', widget: Drawing) -> None:

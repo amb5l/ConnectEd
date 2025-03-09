@@ -1,110 +1,68 @@
 from enum        import Enum, auto
 from typing      import Optional
-from dataclasses import dataclass
-from math        import sqrt, copysign
+from math        import sqrt
 
-from PyQt6.QtCore import Qt, QPoint, QPointF, QRect, QRectF, QSize, QSizeF
-from PyQt6.QtGui  import QMouseEvent, QCursor
+from PyQt6.QtCore    import Qt, QPoint, QPointF, QRectF
+from PyQt6.QtWidgets import QGraphicsItem
+from PyQt6.QtGui     import QMouseEvent, QCursor
 
-from ...core import settings, _iround
+from ...core import settings, Rect2, _iround
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from . import Drawing
 
-class DrawingPos:
-    """
-    A class that holds the logical and physical coordinates of a position in a
-    drawing widget.
-    """
+class DrawingPLPos:
     physical : Optional[QPoint] = None
     logical  : Optional[QPointF] = None
-    _parent  : 'Drawing'
 
     def __init__(
-        self   : 'DrawingPos',
-        parent : 'Drawing',
-        pos    : QPoint | QPointF | None = None
+        self     : 'DrawingPLPos',
+        physical : Optional[QPoint] = None,
+        logical  : Optional[QPointF] = None
     ) -> None:
-        self._parent = parent
-        self.set(pos)
+        self.physical = physical
+        self.logical  = logical
 
-    def set(
-        self : 'DrawingPos',
-        pos  : QPoint | QPointF | None = None
+    def setPL(self, physical: QPoint, logical: QPointF) -> None:
+        self.physical = physical
+        self.logical  = logical
+
+class DrawingPLRect:
+    physical : Rect2
+    logical  : Rect2
+
+    def __init__(self : 'DrawingPLRect') -> None:
+        self.physical = Rect2()
+        self.logical  = Rect2()
+
+    def setPLAttr1(
+        self : 'DrawingPLRect',
+        attr : any
     ) -> None:
-        if isinstance(pos, QPoint):
-            self.physical = pos
-            self.logical  = self._parent._p2lPoint(pos)
-        elif isinstance(pos, QPointF):
-            self.logical  = pos
-            self.physical = self._parent._l2pPoint(pos)
-        elif pos is None:
-            self.physical = None
-            self.logical  = None
-        else:
-            raise ValueError(f"Invalid position type: {type(pos)}")
+        self.physical.setPoints(attr.physical, attr.physical + QPoint(1, 1))
+        self.logical.setPoints(attr.logical, attr.logical + QPointF(1, 1))
 
-    def clear(self : 'DrawingPos') -> None:
-        self.physical = None
-        self.logical  = None
-
-class DrawingRect:
-    """
-    A class that holds the logical and physical coordinates of a rectangle in a
-    drawing widget.
-    """
-    physical : QRect
-    logical  : QRectF
-    _parent  : 'Drawing'
-
-    def __init__(
-        self   : 'DrawingRect',
-        parent : 'Drawing',
-        rect   : Optional[QRect | QRectF] = None
+    def setPLAttr2(
+        self : 'DrawingPLRect',
+        attr : any
     ) -> None:
-        self._parent = parent
-        if isinstance(rect, QRect):
-            self.setPhysical(rect)
-        elif isinstance(rect, QRectF):
-            self.setLogical(rect)
-        else:
-            self.physical = QRect()
-            self.logical  = QRectF()
+        self.physical.setPoint2(attr.physical)
+        self.logical.setPoint2(attr.logical)
 
-    def setPhysical(self, rect : QRect) -> None:
-        self.physical = rect
-        self.logical = self._parent._p2lRect(rect)
-
-    def setLogical(self, rect : QRectF) -> None:
-        self.logical = rect
-        self.physical = self._parent._l2pRect(rect)
-
-class DrawingMousePress(DrawingPos):
-    modifiers : Qt.KeyboardModifier
+class DrawingMousePress(DrawingPLPos):
+    modifiers : Qt.KeyboardModifier = Qt.KeyboardModifier.NoModifier
 
     def __init__(
         self      : 'DrawingMousePress',
-        parent    : 'Drawing',
-        pos       : QPoint | QPointF | None = None,
+        physical  : Optional[QPoint] = None,
+        logical   : Optional[QPointF] = None,
         modifiers : Qt.KeyboardModifier = Qt.KeyboardModifier.NoModifier
     ) -> None:
-        super().__init__(parent, pos)
+        super().__init__(physical, logical)
         self.modifiers = modifiers
 
-    def set(
-        self      : 'DrawingMousePress',
-        pos       : QPoint | QPointF | None = None,
-        modifiers : Qt.KeyboardModifier = Qt.KeyboardModifier.NoModifier
-    ) -> None:
-        super().set(pos)
-        self.modifiers = modifiers
-
-    def clear(self : 'DrawingMousePress'):
-        super().clear()
-        self.modifiers = Qt.KeyboardModifier.NoModifier
-
-class DrawingMouseRelease(DrawingPos):
+class DrawingMouseRelease(DrawingPLPos):
     pass
 
 class DrawingMouseButtonState(Enum):
@@ -113,156 +71,137 @@ class DrawingMouseButtonState(Enum):
     Dragging = auto()
 
 class DrawingMouseButton:
-    prev    : DrawingPos               # previous click position
-    press   : DrawingMousePress        # latest press position + modifiers
-    release : DrawingMouseRelease      # latest release position + drag state
+    press   : DrawingMousePress
+    release : DrawingMouseRelease
+    double  : DrawingMousePress
     state   : DrawingMouseButtonState
 
-    def __init__(self : 'DrawingMouseButton', parent : 'Drawing') -> None:
-        self.prev    = DrawingPos(parent)
-        self.press   = DrawingMousePress(parent)
-        self.release = DrawingMouseRelease(parent)
+    def __init__(
+        self    : 'DrawingMouseButton',
+        press   : DrawingMousePress   = DrawingMousePress(),
+        release : DrawingMouseRelease = DrawingMouseRelease(),
+        double  : DrawingMousePress   = DrawingMousePress()
+    ) -> None:
+        self.press   = DrawingMousePress()
+        self.release = DrawingMouseRelease()
+        self.double  = DrawingMousePress()
         self.state   = DrawingMouseButtonState.Idle
 
-    def setPress(
-        self      : 'DrawingMouseButton',
-        pos       : QPoint | QPointF,
-        modifiers : Qt.KeyboardModifier = Qt.KeyboardModifier.NoModifier
-    ) -> None:
-        self.prev.physical = self.press.physical
-        self.prev.logical  = self.press.logical
-        self.press.set(pos, modifiers)
-
-    def setRelease(
-        self : 'DrawingMouseButton',
-        pos  : QPoint | QPointF
-    ) -> None:
-        self.release.set(pos)
-
-    def clear(self : 'DrawingMouseButton') -> None:
-        self.prev.clear()
-        self.press.clear()
-        self.release.clear()
-        self.state = DrawingMouseButtonState.Idle
-
 class DrawingMouse:
-    """A class that tracks the mouse position and button state."""
-
-    current : DrawingPos
+    current : DrawingPLPos
     left    : DrawingMouseButton
     middle  : DrawingMouseButton
-    _parent : 'Drawing'
 
-    def __init__(self : 'DrawingMouse', parent : 'Drawing') -> None:
-        self._parent = parent
-        self.current = DrawingPos(parent)
-        self.left    = DrawingMouseButton(parent)
-        self.middle  = DrawingMouseButton(parent)
-
-    def setPos(self : 'DrawingMouse', pos : QPoint | QPointF) -> None:
-        if isinstance(pos, QPoint):
-            self.current.physical = pos
-            self.current.logical = self._parent._p2lPoint(self.current.physical)
-        else:
-            self.current.logical = pos
-            self.current.physical = self._dp2cp(self.current.logical)
+    def __init__(
+        self    : 'DrawingMouse',
+        current : DrawingPLPos       = DrawingPLPos(),
+        left    : DrawingMouseButton = DrawingMouseButton(),
+        middle  : DrawingMouseButton = DrawingMouseButton()
+    ) -> None:
+        self.current = current
+        self.left    = left
+        self.middle  = middle
 
 class DrawingPrivateMixin:
     """
     A mixin class that provides private methods for the Drawing class.
     """
 
-    PLPos             = DrawingPos
-    PLRect            = DrawingRect
+    PLPos             = DrawingPLPos
+    PLRect            = DrawingPLRect
     MouseButtonState  = DrawingMouseButtonState
     MousePress        = DrawingMousePress
     MouseRelease      = DrawingMouseRelease
     MouseButton       = DrawingMouseButton
     Mouse             = DrawingMouse
 
-    @dataclass
-    class Grid:
-        display    : bool
-        snap       : bool
-        offset     : QPointF
-        pitch      : QPointF
-        dots       : bool
-        alpha      : int
-        min_pixels : int
-
     class State(Enum):
         Idle            = auto()
         ViewCenter      = auto()
-        ViewPan1        = auto()
         ViewPan2        = auto()
         ViewZoomWindow1 = auto()
         ViewZoomWindow2 = auto()
         PlaceRectangle1 = auto()
         PlaceRectangle2 = auto()
 
-    def _p2lPoint(self: 'Drawing', point: QPoint) -> QPointF:
-        assert isinstance(point, QPoint)
-        return (QPointF(point) / self.zoom) + self.pan
+    def _minExtents(self: 'Drawing') -> QRectF:
+        rect = QRectF(self.sheet.boundingRect())
+        rect.setTopLeft(-QPointF(
+            self.sheet.boundingRect().width(),
+            self.sheet.boundingRect().height()
+        ))
+        rect.setWidth(self.sheet.boundingRect().width() * 3)
+        rect.setHeight(self.sheet.boundingRect().height() * 3)
+        return rect
 
-    def _l2pPoint(self: 'Drawing', point: QPointF) -> QPoint:
-        assert isinstance(point, QPointF)
-        return QPoint((point - self.pan) * self.zoom)
+    def _boundingRect(self: 'Drawing') -> QRectF:
+        items_rect = QRectF()
+        for item in self.scene.items():
+            item_rect = item.mapToScene(item.boundingRect()).boundingRect()
+            items_rect = items_rect.united(item_rect)
+        return items_rect
 
-    def _p2lSize(self: 'Drawing', size: QSize) -> QSizeF:
-        assert isinstance(size, QSize)
-        return QSizeF(size) / self.zoom
-
-    def _l2pSize(self: 'Drawing', size: QSizeF) -> QSize:
-        assert isinstance(size, QSizeF)
-        return QSize(size * self.zoom)
-
-    def _p2lRect(self: 'Drawing', rect: QRect) -> QRectF:
-        assert isinstance(rect, QRect)
-        return QRectF(self._p2lPoint(rect.topLeft()), self._p2lSize(rect.size()))
-
-    def _l2pRect(self: 'Drawing', rect: QRectF) -> QRect:
-        assert isinstance(rect, QRectF)
-        return QRect(self._l2pPoint(rect.topLeft()), self._l2pSize(rect.size()))
-
-    def _zoomUpdate(self: 'Drawing') -> None:
-        self.main_window.status_bar.zoom.setText('{:.2f}%'.format(self.zoom * 100))
-        self.main_window.commands.actions.actionEnable('viewZoomIn',  self.zoom < settings.prefs.display.zoom.limit.max)
-        self.main_window.commands.actions.actionEnable('viewZoomOut', self.zoom > settings.prefs.display.zoom.limit.min)
-        self._panUpdate()
-
-    def _panUpdate(self: 'Drawing') -> None:
-        self.update()
-        self._panStatusBar()
-
-    def _panStatusBar(self: 'Drawing') -> None:
-        mouse_lpos = self._p2lPoint(self.mapFromGlobal(QCursor.pos()))
-        self.main_window.status_bar.xy.setText(
-            str(int(mouse_lpos.x())) + ',' + str(int(mouse_lpos.y()))
+    def _pan(self: 'Drawing', delta: QPointF) -> None:
+        lrect = self.mapToScene(self.viewport().rect()).boundingRect()  # Scene coords
+        pan = QPointF(lrect.width()  * delta.x(), lrect.height() * delta.y())
+        transform = self.transform()
+        pdelta = QPointF(transform.m11() * pan.x(), transform.m22() * pan.y())
+        self.horizontalScrollBar().setValue(
+            self.horizontalScrollBar().value() - int(pdelta.x())
+        )
+        self.verticalScrollBar().setValue(
+            self.verticalScrollBar().value() - int(pdelta.y())
+        )
+        self.mouse.current.setPL(
+            self.mapFromGlobal(QCursor.pos()),
+            self.mapToScene(self.mouse.current.physical)
         )
 
-    def _zoomLRect(self: 'Drawing', lrect : QRectF) -> None:
-        os = settings.prefs.display.overscan
-        zoom_x = ( self.width()  - ( os.left + os.right  )) / lrect.width()
-        zoom_y = ( self.height() - ( os.top  + os.bottom )) / lrect.height()
-        self.zoom = min(zoom_x, zoom_y)
-        #self.pan = lrect.topLeft() - (QPointF(os.left, os.top) * self.zoom)
-        self.pan = lrect.center() - (QPointF(self.rect().center()) / self.zoom)
-        self._zoomUpdate()
+    def _zoomAbs(self: 'Drawing', abs: float) -> None:
+        abs = max(abs, settings.prefs.display.zoom.limit.min)
+        abs = min(abs, settings.prefs.display.zoom.limit.max)
+        self.zoom = abs
+        self.resetTransform()
+        self.scale(self.zoom, self.zoom)
+        self.main_window.status_bar.zoom.setText(
+            '{:.2f}%'.format(self.zoom * 100)
+        )
+        self.main_window.commands.actions.actionEnable(
+            'viewZoomIn',  self.zoom < settings.prefs.display.zoom.limit.max
+        )
+        self.main_window.commands.actions.actionEnable(
+            'viewZoomOut', self.zoom > settings.prefs.display.zoom.limit.min
+        )
 
-    def _zoomPRect(self: 'Drawing', prect : QRect) -> None:
-        self._zoomLRect(self._p2lRect(prect))
+    def _zoomRel(self: 'Drawing', rel: float) -> None:
+        self._zoomAbs(self.zoom * rel)
 
-    def _zoomPanMouse(self: 'Drawing', zoom : Optional[float] = None) -> None:
-        if zoom is None:
-            zoom = self.zoom
-        lpos = QPointF(self.mouse.current.logical)
-        self.pan = lpos - ((lpos - self.pan) * self.zoom / zoom)
-        self.zoom = zoom
-        self._zoomUpdate()
+    def _zoomRelMouse(self: 'Drawing', rel: float) -> None:
+        ppos_old = self.mouse.current.physical
+        lpos_old = self.mouse.current.logical
+        self._zoomRel(rel)
+        ppos_new = self.mapFromScene(lpos_old)
+        delta = ppos_new - ppos_old
+        self.horizontalScrollBar().setValue(
+            self.horizontalScrollBar().value() + delta.x()
+        )
+        self.verticalScrollBar().setValue(
+            self.verticalScrollBar().value() + delta.y()
+        )
+        self.mouse.current.setPL(
+            self.mapFromGlobal(QCursor.pos()),
+            self.mapToScene(self.mouse.current.physical)
+        )
 
-    def _center(self: 'Drawing', lpoint : QPointF) -> None:
-        self.pan = lpoint - (QPointF(self.rect().center()) / self.zoom)
-        self._panUpdate()
+    def _zoomRect(self: 'Drawing', rect : QRectF) -> None:
+        zoom = QPointF(
+            self.viewport().width()  / rect.width(),
+            self.viewport().height() / rect.height()
+        )
+        factor = min(zoom.x(), zoom.y()) * \
+            (1 - settings.prefs.display.zoom.padding)
+        self._zoomAbs(factor)
+        self.centerOn(rect.center())
 
     def _snap(self: 'Drawing', pos: QPoint) -> QPoint:
         return QPointF(
@@ -273,20 +212,26 @@ class DrawingPrivateMixin:
     def _distance(self: 'Drawing', cp1: QPoint, cp2: QPoint) -> int:
         return int(round(sqrt((cp1.x() - cp2.x())**2 + (cp1.y() - cp2.y())**2)))
 
-    def _normMinRect(self: 'Drawing', dp1: QPoint, dp2: QPoint, min: int = 1) -> QRect:
-        dx = dp2.x() - dp1.x()
-        dp2.setX(dp1.x() + int(copysign(max(abs(dx), min), dx)))
-        dy = dp2.y() - dp1.y()
-        dp2.setY(dp1.y() + int(copysign(max(abs(dy), min), dy)))
-        r = QRect()
-        r.setLeft(dp1.x() if dp1.x() < dp2.x() else dp2.x())
-        r.setTop(dp1.y() if dp1.y() < dp2.y() else dp2.y())
-        r.setWidth(abs(dp2.x() - dp1.x()))
-        r.setHeight(abs(dp2.y() - dp1.y()))
-        return r
+    def _getModifiers(
+        self: 'Drawing',
+        event: QMouseEvent
+    ) -> Qt.KeyboardModifier:
+        qkm = Qt.KeyboardModifier
+        mask = qkm.ControlModifier | qkm.ShiftModifier | qkm.AltModifier
+        return event.modifiers() & mask
 
-    def _getModifiers(self: 'Drawing', event: QMouseEvent) -> Qt.KeyboardModifier:
-        r = event.modifiers() & Qt.KeyboardModifier.ShiftModifier  \
-          | event.modifiers() & Qt.KeyboardModifier.ControlModifier \
-          | event.modifiers() & Qt.KeyboardModifier.AltModifier
-        return r
+    def _addWIP(self: 'Drawing', item: QGraphicsItem) -> None:
+        item.setWIP(True)
+        self.wip = item
+        self.scene.addItem(item)
+        self.scene.update()
+
+    def _completeWIP(self: 'Drawing') -> None:
+        self.wip.setWIP(False)
+        self.wip = None
+        self.scene.update()
+
+    def _removeWIP(self: 'Drawing') -> None:
+        self.scene.removeItem(self.wip)
+        self.wip = None
+        self.scene.update()
