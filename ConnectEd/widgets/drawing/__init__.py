@@ -92,13 +92,14 @@ class Drawing(
         self.state       = self.State.Idle
 
         self.setScene(self.scene)
-        self.setSceneRect(self.sheet.boundingRect())
+        self.scene.setSceneRect(self._minExtents())
+        self.scene.setItemIndexMethod(QGraphicsScene.ItemIndexMethod.NoIndex)
         self.scene.addItem(self.sheet)
         self.scene.addItem(self.grid)
         self.scene.addItem(self.sel_box)
+
         self.setMouseTracking(True)
         self.setRenderHint(QPainter.RenderHint.Antialiasing)
-        self.setZ(Z_DRAWING)
         # uncomment to enable keypress events
         #self.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
 

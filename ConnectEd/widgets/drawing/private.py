@@ -172,8 +172,6 @@ class DrawingPrivateMixin:
         self.main_window.commands.actions.actionEnable(
             'viewZoomOut', self.zoom > settings.prefs.display.zoom.limit.min
         )
-
-        # Force scene update after zoom to ensure all items remain visible
         self.scene.update()
 
     def _zoomRel(self: 'Drawing', rel: float) -> None:
@@ -227,53 +225,15 @@ class DrawingPrivateMixin:
         return event.modifiers() & mask
 
     def _addWIP(self: 'Drawing', item: QGraphicsItem) -> None:
-        print(f"_addWIP: Adding item type {type(item)}")
-        if isinstance(item, list) and len(item) > 0:
-            # Handle case where a list of items is passed
-            self.wip = item[0]
-            self.wip.setWIP(True)
-        else:
-            # Normal case with a single item
-            self.wip = item
-            self.wip.setWIP(True)
-
-        # Ensure the item is added to the scene
-        if self.wip.scene() is None:
-            self.scene.addItem(self.wip)
-            print(f"_addWIP: Item added to scene")
-
-        # Force item to front
-        self.wip.setZValue(1000)
-        self.wip.setVisible(True)
-
-        # Update the scene
+        self.wip = item
+        self.wip.setWIP(True)
+        self.scene.addItem(self.wip)
         self.scene.update()
-        print(f"_addWIP: Scene updated")
 
     def _completeWIP(self: 'Drawing') -> None:
-        print(f"_completeWIP: Completing WIP item")
-        if self.wip is None:
-            print(f"_completeWIP: No WIP item")
-            return
-
-        # Finalize the item
         self.wip.setWIP(False)
-
-        # Add to elements list if not already there
-        if self.wip not in self.elements:
-            self.elements.append(self.wip)
-            print(f"_completeWIP: Item added to elements")
-
-        # Keep the item visible but at a lower Z
-        self.wip.setZValue(500)
-        self.wip.setVisible(True)
-
-        # Clear the WIP reference
         self.wip = None
-
-        # Update the scene
         self.scene.update()
-        print(f"_completeWIP: Scene updated")
 
     def _removeWIP(self: 'Drawing') -> None:
         self.scene.removeItem(self.wip)

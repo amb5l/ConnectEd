@@ -28,7 +28,6 @@ class DrawingApiMouseMixin:
                 self.sel_box.setVisible(False)
                 self.state = self.State.Idle
             case self.State.PlaceRectangle1:
-                print(f"Creating rectangle at {self.mouse.left.press.logical}")
                 rect = Rectangle(
                     self._snap(self.mouse.left.press.logical),
                     wip=True
@@ -49,7 +48,6 @@ class DrawingApiMouseMixin:
                 self.sel_box.setVisible(True)
                 self.state = self.State.ViewZoomWindow2
             case self.State.PlaceRectangle1:
-                print(f"Creating rectangle at {self.mouse.left.press.logical}")
                 rect = Rectangle(
                     self._snap(self.mouse.left.press.logical),
                     wip=True

@@ -65,16 +65,8 @@ class Element(QGraphicsItem):
         self.setZValue(Z_TOP if self.wip or self.selected else self.Z)
 
     def setWIP(self, wip : bool) -> None:
-        print(f"setWIP: {wip}")
         self.wip = wip
-        # Ensure WIP items are always on top
         self.setZValue(Z_TOP if self.wip else self.Z)
-        # Ensure WIP items are always visible
-        self.setVisible(True)
-        self.setOpacity(1.0)
-        # Force update
-        if self.scene():
-            self.scene().update()
 
     def setPenBrush(
         self    : 'Element',
