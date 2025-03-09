@@ -28,11 +28,9 @@ class DrawingApiMouseMixin:
                 self.sel_box.setVisible(False)
                 self.state = self.State.Idle
             case self.State.PlaceRectangle1:
-                rect = Rectangle(
-                    self._snap(self.mouse.left.press.logical),
-                    wip=True
-                )
-                self._addWIP(rect)
+                self._addWIP(Rectangle(
+                    self._snap(self.mouse.left.press.logical)
+                ))
                 self.state = self.State.PlaceRectangle2
             case self.State.PlaceRectangle2:
                 self.wip.setPoint2(
@@ -48,11 +46,9 @@ class DrawingApiMouseMixin:
                 self.sel_box.setVisible(True)
                 self.state = self.State.ViewZoomWindow2
             case self.State.PlaceRectangle1:
-                rect = Rectangle(
-                    self._snap(self.mouse.left.press.logical),
-                    wip=True
-                )
-                self._addWIP(rect)
+                self._addWIP(Rectangle(
+                    self._snap(self.mouse.left.press.logical)
+                ))
                 self.state = self.State.PlaceRectangle2
 
     def mouseLeftDragContinue(self : 'Drawing') -> None:
@@ -79,8 +75,7 @@ class DrawingApiMouseMixin:
                 self.wip.setPoint2(
                     self._snap(self.mouse.left.release.logical)
                 )
-                self.wip.setWIP(False)
-                self.wip = None
+                self._completeWIP()
                 self.state = self.State.Idle
                 self.scene.update()
 

@@ -1,12 +1,13 @@
 from typing import ClassVar, Optional
 
-from PyQt6.QtCore    import QRectF, QPointF, Qt
-from PyQt6.QtGui     import QPainter, QPen, QBrush, QPainterPath
-from PyQt6.QtWidgets import QGraphicsItem, QStyleOptionGraphicsItem, QWidget
+from PyQt6.QtCore    import QRectF, QPointF
+from PyQt6.QtGui     import QPainter
+from PyQt6.QtWidgets import QStyleOptionGraphicsItem, QWidget
 
 from ..core import Z_DRAWING, settings, Rect2
 
 from . import Element, LineSpec, FillSpec
+
 
 class Rectangle(Element):
     Z    : ClassVar[int] = Z_DRAWING
