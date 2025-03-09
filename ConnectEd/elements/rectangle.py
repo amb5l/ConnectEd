@@ -1,7 +1,7 @@
 from typing import ClassVar, Optional
 
-from PyQt6.QtCore    import QRectF, QPointF
-from PyQt6.QtGui     import QPainter, QPen, QBrush
+from PyQt6.QtCore    import QRectF, QPointF, Qt
+from PyQt6.QtGui     import QPainter, QPen, QBrush, QPainterPath
 from PyQt6.QtWidgets import QGraphicsItem, QStyleOptionGraphicsItem, QWidget
 
 from ..core import Z_DRAWING, settings, Rect2
@@ -28,13 +28,30 @@ class Rectangle(Element):
         self.line = line
         self.fill = fill
 
+        # Explicitly set flags to ensure visibility
+        self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemClipsToShape, False)
+        self.setCacheMode(QGraphicsItem.CacheMode.NoCache)
+
     def setPoint2(self : 'Rectangle', p2 : QPointF) -> None:
         self.rect.setPoint2(p2)
+        # Update scene if possible
+        if self.scene():
+            self.scene().update()
 
     def boundingRect(self) -> QRectF:
-        w = self.line.width if self.line is not None else \
-            settings.prefs.display.elements.rectangle.line.width
-        return self.rect.adjusted(-w/2, -w/2, w/2, w/2)
+        # Use a MUCH more generous margin to prevent culling during extreme zoom
+        # The minimum margin is 20 pixels or the rectangle's width/height if larger
+        baseRect = self.rect
+        margin = max(20.0, baseRect.width() / 2, baseRect.height() / 2)
+        return baseRect.adjusted(-margin, -margin, margin, margin)
+
+    def shape(self) -> QPainterPath:
+        path = QPainterPath()
+        # Use the same generous margin as boundingRect
+        baseRect = self.rect
+        margin = max(20.0, baseRect.width() / 2, baseRect.height() / 2)
+        path.addRect(baseRect.adjusted(-margin, -margin, margin, margin))
+        return path
 
     def paint(
         self    : 'Rectangle',
@@ -42,9 +59,18 @@ class Rectangle(Element):
         option  : QStyleOptionGraphicsItem,
         widget  : QWidget
     ) -> None:
+        # Save painter state
+        painter.save()
+
+        # Configure pen and brush using settings
         self.setPenBrush(
             painter,
             settings.prefs.display.elements.rectangle,
             settings.theme.elements.rectangle
         )
+
+        # Draw the rectangle
         painter.drawRect(self.rect)
+
+        # Restore painter state
+        painter.restore()

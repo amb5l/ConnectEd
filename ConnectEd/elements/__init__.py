@@ -16,7 +16,7 @@ from types       import SimpleNamespace
 
 from PyQt6.QtCore    import Qt
 from PyQt6.QtGui     import QPainter, QPen, QBrush, QColor
-from PyQt6.QtWidgets import QGraphicsItem
+from PyQt6.QtWidgets import QGraphicsItem, QGraphicsView
 
 from ..core import Z_DEFAULT, Z_TOP, settings
 
@@ -43,7 +43,7 @@ class Element(QGraphicsItem):
         self.setFlag( f.ItemIsMovable                        , True  )
         self.setFlag( f.ItemIsSelectable                     , True  )
         self.setFlag( f.ItemIsFocusable                      , True  )
-        self.setFlag( f.ItemClipsToShape                     , True  )
+        self.setFlag( f.ItemClipsToShape                     , False )
         self.setFlag( f.ItemClipsChildrenToShape             , False )
         self.setFlag( f.ItemIgnoresTransformations           , False )
         self.setFlag( f.ItemIgnoresParentOpacity             , False )
@@ -57,13 +57,24 @@ class Element(QGraphicsItem):
         self.setFlag( f.ItemIsPanel                          , False )
         self.setFlag( f.ItemSendsScenePositionChanges        , True  )
         self.setFlag( f.ItemContainsChildrenInShape          , True  )
+
+        self.setCacheMode(QGraphicsItem.CacheMode.NoCache)
+
         self.wip      = wip
         self.selected = selected
         self.setZValue(Z_TOP if self.wip or self.selected else self.Z)
 
     def setWIP(self, wip : bool) -> None:
+        print(f"setWIP: {wip}")
         self.wip = wip
+        # Ensure WIP items are always on top
         self.setZValue(Z_TOP if self.wip else self.Z)
+        # Ensure WIP items are always visible
+        self.setVisible(True)
+        self.setOpacity(1.0)
+        # Force update
+        if self.scene():
+            self.scene().update()
 
     def setPenBrush(
         self    : 'Element',
