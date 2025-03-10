@@ -6,7 +6,7 @@ from PyQt6.QtCore    import Qt, QPoint, QPointF, QRectF
 from PyQt6.QtWidgets import QGraphicsItem
 from PyQt6.QtGui     import QMouseEvent, QCursor
 
-from ...core import settings, Rect2, _iround
+from ...core import settings, _iround
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
