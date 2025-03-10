@@ -53,7 +53,7 @@ FACTORY_SETTINGS = {
                 'right'  : 2
             },
             'background': Qt.BrushStyle.SolidPattern,
-            'elements': {
+            'items': {
                 'sheet': Qt.BrushStyle.SolidPattern,
                 'border': {
                     'width' : 1,
@@ -94,7 +94,7 @@ FACTORY_SETTINGS = {
             'background' : QColor(   0,   0,   0 ),
             'sheet'      : QColor(  32,  32,  32 ),
             'border'     : QColor( 128, 128, 128 ),
-            'elements': {
+            'items': {
                 'wip': {
                     'line' : QColor(   0, 255,   0 ), # bright green
                     'fill' : QColor(   0, 128,   0 )  # medium green

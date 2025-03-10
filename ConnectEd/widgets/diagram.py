@@ -1,9 +1,9 @@
 from PyQt6.QtWidgets import QWidget, QMdiArea
 
-from ..core    import settings, TypedList
-from .elements import Sheet, Border, Rectangle
-from .drawing  import Drawing, DrawingSubWindow
-from .symbol   import Symbol
+from ..core   import settings, TypedList
+from .items   import Sheet, Border, Rectangle
+from .drawing import Drawing, DrawingSubWindow
+from .symbol  import Symbol
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -11,7 +11,6 @@ if TYPE_CHECKING:
 
 
 class Diagram(Drawing):
-    ELEMENT_TYPES = (Sheet, Border, Rectangle)
     border  : Border
     symbols : TypedList[Symbol]
 

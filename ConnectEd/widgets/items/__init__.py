@@ -2,7 +2,7 @@ __all__ = [
     'LineSpec',
     'FillSpec',
     'PainterContext',
-    'Element',
+    'Item',
     'Sheet',
     'Border',
     'Rectangle',
@@ -32,7 +32,7 @@ class FillSpec:
     color : Optional[QColor]        = None
     style : Optional[Qt.BrushStyle] = None
 
-class Element(QGraphicsItem):
+class Item(QGraphicsItem):
     Z        : ClassVar[int] = Z_DEFAULT
     wip      : bool
     selected : bool
@@ -69,17 +69,17 @@ class Element(QGraphicsItem):
         self.setZValue(Z_TOP if self.wip else self.Z)
 
     def setPenBrush(
-        self    : 'Element',
+        self    : 'Item',
         painter : QPainter,
         prefs   : SimpleNamespace,
         theme   : SimpleNamespace
     ) -> None:
         if self.wip:
-            prefs = settings.prefs.display.elements.wip
-            theme = settings.theme.elements.wip
+            prefs = settings.prefs.display.items.wip
+            theme = settings.theme.items.wip
         elif self.isSelected():
-            prefs = settings.prefs.display.elements.selected
-            theme = settings.theme.elements.selected
+            prefs = settings.prefs.display.items.selected
+            theme = settings.theme.items.selected
         w = self.line.width if self.line is not None else prefs.line.width
         painter.setPen(QPen(
             self.line.color if self.line is not None else theme.line,
@@ -92,17 +92,17 @@ class Element(QGraphicsItem):
         ))
 
     def setPenOnly(
-        self    : 'Element',
+        self    : 'Item',
         painter : QPainter,
         prefs   : SimpleNamespace,
         theme   : SimpleNamespace
     ) -> None:
         if self.wip:
-            prefs = settings.prefs.display.elements.wip
-            theme = settings.theme.elements.wip
+            prefs = settings.prefs.display.items.wip
+            theme = settings.theme.items.wip
         elif self.isSelected():
-            prefs = settings.prefs.display.elements.selected
-            theme = settings.theme.elements.selected
+            prefs = settings.prefs.display.items.selected
+            theme = settings.theme.items.selected
         painter.setPen(QPen(
             self.line.color if self.line is not None else theme.line,
             self.line.width if self.line is not None else prefs.line.width,
@@ -111,17 +111,17 @@ class Element(QGraphicsItem):
         painter.setBrush(QBrush(Qt.BrushStyle.NoBrush))
 
     def setBrushOnly(
-        self    : 'Element',
+        self    : 'Item',
         painter : QPainter,
         prefs   : SimpleNamespace,
         theme   : SimpleNamespace
     ) -> None:
         if self.wip:
-            prefs = settings.prefs.display.elements.wip
-            theme = settings.theme.elements.wip
+            prefs = settings.prefs.display.items.wip
+            theme = settings.theme.items.wip
         elif self.isSelected():
-            prefs = settings.prefs.display.elements.selected
-            theme = settings.theme.elements.selected
+            prefs = settings.prefs.display.items.selected
+            theme = settings.theme.items.selected
         painter.setPen(QPen(Qt.PenStyle.NoPen))
         painter.setBrush(QBrush(
             self.fill.color if self.fill.color else theme.fill,

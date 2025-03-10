@@ -6,10 +6,10 @@ from PyQt6.QtGui     import QPainter
 
 from ...core import Z_SHEET, settings
 
-from . import Element
+from . import Item
 
 
-class Sheet(Element):
+class Sheet(Item):
     Z         : ClassVar[int] = Z_SHEET
     size_name : str
     rect      : QRectF

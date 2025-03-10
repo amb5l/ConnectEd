@@ -1,4 +1,5 @@
 __all__ = [
+    'Item',
     'Sheet',
     'Grid',
     'SelectBox',
@@ -9,8 +10,8 @@ __all__ = [
     'MainWindow'
 ]
 
-from .elements import Sheet, Grid, SelectBox
-from .drawing import Drawing, DrawingSubWindow
-from .symbol import Symbol
-from .diagram import Diagram
+from .items       import Item, Sheet, Grid, SelectBox
+from .drawing     import Drawing, DrawingSubWindow
+from .symbol      import Symbol
+from .diagram     import Diagram
 from .main_window import MainWindow

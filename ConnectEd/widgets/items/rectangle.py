@@ -6,10 +6,10 @@ from PyQt6.QtWidgets import QStyleOptionGraphicsItem, QWidget
 
 from ...core import Z_DRAWING, settings, Rect2
 
-from . import Element, LineSpec, FillSpec
+from . import Item, LineSpec, FillSpec
 
 
-class Rectangle(Element):
+class Rectangle(Item):
     Z    : ClassVar[int] = Z_DRAWING
     rect : Rect2
     line : LineSpec
@@ -34,7 +34,7 @@ class Rectangle(Element):
 
     def boundingRect(self) -> QRectF:
         w = self.line.width if self.line is not None else \
-            settings.prefs.display.elements.rectangle.line.width
+            settings.prefs.display.items.rectangle.line.width
         margin = w / 2
         return self.rect.adjusted(-margin, -margin, margin, margin)
 
@@ -46,7 +46,7 @@ class Rectangle(Element):
     ) -> None:
         self.setPenBrush(
             painter,
-            settings.prefs.display.elements.rectangle,
-            settings.theme.elements.rectangle
+            settings.prefs.display.items.rectangle,
+            settings.theme.items.rectangle
         )
         painter.drawRect(self.rect)

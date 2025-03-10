@@ -5,10 +5,10 @@ from PyQt6.QtWidgets import QStyleOptionGraphicsItem, QWidget
 from PyQt6.QtGui     import QPainter, QPen
 
 from ...core import Z_TEMPLATE, settings
-from .       import Element, LineSpec
+from .       import Item, LineSpec
 from .sheet  import Sheet
 
-class Border(Element):
+class Border(Item):
     Z      : ClassVar[int] = Z_TEMPLATE
     sheet  : Sheet
     margin : float
@@ -30,7 +30,7 @@ class Border(Element):
     def boundingRect(self) -> QRectF:
         if self.margin:
             w = self.line.width if self.line is not None else \
-                settings.prefs.display.elements.border.width
+                settings.prefs.display.items.border.width
             rect  = self.sheet.rect.adjusted(
                 self.margin, self.margin, -self.margin, -self.margin
             )
@@ -50,7 +50,7 @@ class Border(Element):
             )
             painter.setPen(QPen(
                 settings.theme.border,
-                settings.prefs.display.elements.border.width,
-                settings.prefs.display.elements.border.style
+                settings.prefs.display.items.border.width,
+                settings.prefs.display.items.border.style
             ))
             painter.drawRect(rect)

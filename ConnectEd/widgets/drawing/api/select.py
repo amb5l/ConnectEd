@@ -2,6 +2,8 @@ from enum import Enum, auto
 
 from PyQt6.QtCore import QPointF, QRectF
 
+from ...items import Item
+
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from .. import Drawing
@@ -20,9 +22,9 @@ class DrawingApiSelectMixin:
         operation : SelectOperation = SelectOperation.Fresh
     ) -> None:
         candidates = []
-        for element in self.elements:
-            if element.
-        element.selected = True
+        for item in self.items:
+            if item.
+        item.selected = True
         self.update()
 
     def selectWindow(
@@ -34,6 +36,7 @@ class DrawingApiSelectMixin:
         pass
 
     def selectAll(self : 'Drawing') -> None:
+        pass
 
-    def selectNone(self, element : Element) -> None:
-        element.selected = False
+    def selectNone(self, item : Item) -> None:
+        item.selected = False

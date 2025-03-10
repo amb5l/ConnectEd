@@ -2,7 +2,7 @@
 API for Drawing widgets.
 
 This module provides the public API for interacting with Drawing widgets,
-including view manipulation, element management, and drawing operations.
+including view manipulation, item management, and drawing operations.
 """
 
 __all__ = [

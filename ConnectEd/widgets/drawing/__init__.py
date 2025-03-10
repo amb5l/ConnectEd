@@ -10,8 +10,7 @@ __all__ = [
     'DrawingSubWindow'
 ]
 
-from types       import NoneType
-from typing      import Optional, ClassVar
+from typing      import Optional
 
 from PyQt6.QtCore    import Qt, QPointF, QRectF, QEvent, QTimer
 from PyQt6.QtWidgets import QMdiArea, QMdiSubWindow, QWidget, \
@@ -40,12 +39,11 @@ class Drawing(
     """Main drawing widget for the ConnectEd application.
 
     This class provides the core drawing functionality, including:
-    - Element management (adding, removing, selecting)
+    - Item management (adding, removing, selecting)
     - View manipulation (zooming, panning)
     - Grid display and snapping
     - Event handling (mouse, keyboard, paint)
     """
-    ELEMENT_TYPES : ClassVar[TypedList] = TypedList(NoneType)
     main_window   : 'MainWindow'
     scene         : QGraphicsScene
     name          : str
