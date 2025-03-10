@@ -1,7 +1,6 @@
 __all__ = [
     'LineSpec',
     'FillSpec',
-    'PainterContext',
     'Item',
     'Sheet',
     'Border',

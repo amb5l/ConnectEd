@@ -2,7 +2,7 @@
 Common types and utility classes for the ConnectEd application.
 
 This module provides reusable type definitions and utility classes
-used throughout the application, including painting contexts and typed collections.
+used throughout the application.
 """
 
 __all__ = [

@@ -15,7 +15,6 @@ __all__ = [
     'settings',
     'TypedList',
     'Rect2',
-    'PainterContext',
     '_iround'
 ]
 
