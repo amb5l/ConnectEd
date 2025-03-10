@@ -28,28 +28,6 @@ class DrawingPLPos:
         self.physical = physical
         self.logical  = logical
 
-class DrawingPLRect:
-    physical : Rect2
-    logical  : Rect2
-
-    def __init__(self : 'DrawingPLRect') -> None:
-        self.physical = Rect2()
-        self.logical  = Rect2()
-
-    def setPLAttr1(
-        self : 'DrawingPLRect',
-        attr : any
-    ) -> None:
-        self.physical.setPoints(attr.physical, attr.physical + QPoint(1, 1))
-        self.logical.setPoints(attr.logical, attr.logical + QPointF(1, 1))
-
-    def setPLAttr2(
-        self : 'DrawingPLRect',
-        attr : any
-    ) -> None:
-        self.physical.setPoint2(attr.physical)
-        self.logical.setPoint2(attr.logical)
-
 class DrawingMousePress(DrawingPLPos):
     modifiers : Qt.KeyboardModifier = Qt.KeyboardModifier.NoModifier
 
@@ -108,7 +86,6 @@ class DrawingPrivateMixin:
     """
 
     PLPos             = DrawingPLPos
-    PLRect            = DrawingPLRect
     MouseButtonState  = DrawingMouseButtonState
     MousePress        = DrawingMousePress
     MouseRelease      = DrawingMouseRelease
