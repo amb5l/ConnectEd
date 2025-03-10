@@ -4,7 +4,7 @@ from PyQt6.QtCore    import QRectF, QPointF
 from PyQt6.QtGui     import QPainter
 from PyQt6.QtWidgets import QStyleOptionGraphicsItem, QWidget
 
-from ..core import Z_DRAWING, settings, Rect2
+from ...core import Z_DRAWING, settings, Rect2
 
 from . import Element, LineSpec, FillSpec
 

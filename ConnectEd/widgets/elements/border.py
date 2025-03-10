@@ -4,9 +4,9 @@ from PyQt6.QtCore    import QRectF
 from PyQt6.QtWidgets import QStyleOptionGraphicsItem, QWidget
 from PyQt6.QtGui     import QPainter, QPen
 
-from ..core import Z_TEMPLATE, settings
-from .      import Element, LineSpec
-from .sheet import Sheet
+from ...core import Z_TEMPLATE, settings
+from .       import Element, LineSpec
+from .sheet  import Sheet
 
 class Border(Element):
     Z      : ClassVar[int] = Z_TEMPLATE

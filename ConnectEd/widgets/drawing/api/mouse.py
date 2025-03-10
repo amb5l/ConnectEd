@@ -1,7 +1,7 @@
 from PyQt6.QtCore import Qt, QRect, QPointF
 
-from ....core     import settings
-from ....elements import Rectangle
+from ....core    import settings
+from ...elements import Rectangle
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:

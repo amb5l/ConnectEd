@@ -18,8 +18,8 @@ from PyQt6.QtWidgets import QMdiArea, QMdiSubWindow, QWidget, \
                             QGraphicsView, QGraphicsScene, QGraphicsItem
 from PyQt6.QtGui     import QPainter
 
-from ...core     import TypedList, settings, Z_DRAWING
-from ...elements import Sheet, Grid, SelectBox
+from ...core    import TypedList, settings, Z_DRAWING
+from ...widgets import Sheet, Grid, SelectBox
 
 from .private import DrawingPrivateMixin
 from .events  import DrawingEventsMixin

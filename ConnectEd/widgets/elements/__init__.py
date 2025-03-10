@@ -18,7 +18,7 @@ from PyQt6.QtCore    import Qt
 from PyQt6.QtGui     import QPainter, QPen, QBrush, QColor
 from PyQt6.QtWidgets import QGraphicsItem, QGraphicsView
 
-from ..core import Z_DEFAULT, Z_TOP, settings
+from ...core import Z_DEFAULT, Z_TOP, settings
 
 
 @dataclass

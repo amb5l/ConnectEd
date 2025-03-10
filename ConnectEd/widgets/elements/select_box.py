@@ -4,7 +4,7 @@ from PyQt6.QtCore    import Qt, QRectF
 from PyQt6.QtWidgets import QGraphicsItem, QStyleOptionGraphicsItem, QWidget
 from PyQt6.QtGui     import QPainter, QPen, QColor
 
-from ..core import Z_TOP, Rect2
+from ...core import Z_TOP, Rect2
 
 class SelectBox(QGraphicsItem):
     Z    : ClassVar[int] = Z_TOP

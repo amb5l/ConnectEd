@@ -5,7 +5,7 @@ from PyQt6.QtCore    import Qt, QPointF, QRectF
 from PyQt6.QtWidgets import QGraphicsItem, QStyleOptionGraphicsItem, QWidget
 from PyQt6.QtGui     import QPainter, QPen
 
-from ..core     import Z_GRID, settings
+from ...core    import Z_GRID, settings
 from ..elements import Sheet
 
 
