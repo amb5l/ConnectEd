@@ -21,7 +21,7 @@ from PyQt6.QtGui     import QPainter
 from ...core    import settings
 from ...widgets import Extents, Grid
 
-from .private import DrawingPrivateMixin
+from .private import DrawingPrivateMixin, Layer
 from .events  import DrawingEventsMixin
 from .api     import DrawingApiMixin
 
@@ -98,6 +98,8 @@ class Drawing(
         self.setRenderHint(QPainter.RenderHint.Antialiasing)
         # uncomment to enable keypress events
         #self.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
+
+        self._setLayer(Layer.Drawing)
 
     def drawBackground(self, painter : QPainter, rect : QRectF) -> None:
         painter.fillRect(rect, settings.theme.vacuum.fill)

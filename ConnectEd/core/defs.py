@@ -8,7 +8,9 @@ __all__ = [
     'Z_DRAWING',
     'Z_OVERLAY',
     'Z_GRID',
-    'Z_TOP'
+    'Z_TOP',
+    'LAYER_SHEET',
+    'LAYER_DRAWING'
 ]
 
 ORG_NAME = 'ConnectEd'
@@ -28,3 +30,5 @@ Z_GRID       = 500 # grid layer
 
 Z_TOP        = 600 # select box / WIP
 
+LAYER_SHEET   = [Z_PAPER, Z_TEMPLATE]
+LAYER_DRAWING = [Z_DRAWING]

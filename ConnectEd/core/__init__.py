@@ -21,7 +21,9 @@ __all__ = [
     'Z_DRAWING',
     'Z_OVERLAY',
     'Z_GRID',
-    'Z_TOP'
+    'Z_TOP',
+    'LAYER_SHEET',
+    'LAYER_DRAWING'
 ]
 
 from .defs     import *

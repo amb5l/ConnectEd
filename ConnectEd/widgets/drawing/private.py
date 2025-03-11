@@ -4,13 +4,17 @@ from math        import sqrt
 
 from PyQt6.QtCore    import Qt, QPoint, QPointF, QRectF
 from PyQt6.QtWidgets import QGraphicsItem
-from PyQt6.QtGui     import QMouseEvent, QCursor
+from PyQt6.QtGui     import QMouseEvent, QCursor, QPainterPath
 
-from ...core import settings, _iround
+from ...core import settings, _iround, LAYER_SHEET, LAYER_DRAWING
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from . import Drawing
+
+class Layer(Enum):
+    Sheet   = auto()
+    Drawing = auto()
 
 class DrawingPLPos:
     physical : Optional[QPoint] = None
@@ -93,13 +97,15 @@ class DrawingPrivateMixin:
     Mouse             = DrawingMouse
 
     class State(Enum):
-        Idle            = auto()
-        ViewCenter      = auto()
-        ViewPan2        = auto()
-        ViewZoomWindow1 = auto()
-        ViewZoomWindow2 = auto()
-        PlaceRectangle1 = auto()
-        PlaceRectangle2 = auto()
+        Idle             = auto()
+        ViewCenter       = auto()
+        ViewPan2         = auto()
+        ViewZoomWindow1  = auto()
+        ViewZoomWindow2  = auto()
+        SelectRectangle1 = auto()
+        SelectRectangle2 = auto()
+        PlaceRectangle1  = auto()
+        PlaceRectangle2  = auto()
 
     def _itemsRect(self: 'Drawing') -> QRectF:
         items_rect = QRectF()
@@ -198,12 +204,34 @@ class DrawingPrivateMixin:
         mask = qkm.ControlModifier | qkm.ShiftModifier | qkm.AltModifier
         return event.modifiers() & mask
 
+    def _setLayer(self: 'Drawing', layer: Layer) -> None:
+        match layer:
+            case Layer.Sheet:
+                # for all scene items with Z values in sheet, set selectable
+                for item in self.scene.items():
+                    item.setFlag(
+                        QGraphicsItem.GraphicsItemFlag.ItemIsSelectable,
+                        item.zValue() in LAYER_SHEET
+                    )
+            case Layer.Drawing:
+                for item in self.scene.items():
+                    item.setFlag(
+                        QGraphicsItem.GraphicsItemFlag.ItemIsSelectable,
+                        item.zValue() in LAYER_DRAWING
+                    )
+
+    def _selectRect(self: 'Drawing', rect: QRectF) -> None:
+        path = QPainterPath()
+        path.addRect(rect)
+        self.scene.setSelectionArea(path)
+
     def _addWIP(self: 'Drawing', item: QGraphicsItem) -> None:
         self.wip = item
         self.wip.setWIP(True)
         self.scene.addItem(self.wip)
 
     def _completeWIP(self: 'Drawing') -> None:
+        self.wip.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsSelectable, True)
         self.wip.setWIP(False)
         self.wip = None
 
