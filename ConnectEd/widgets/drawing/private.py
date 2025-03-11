@@ -2,9 +2,10 @@ from enum        import Enum, auto
 from typing      import Optional
 from math        import sqrt
 
-from PyQt6.QtCore    import Qt, QPoint, QPointF, QRect,QRectF, QSizeF
+from PyQt6.QtCore    import Qt, QPoint, QPointF, QRect, QRectF, QSizeF, QTimer
 from PyQt6.QtWidgets import QRubberBand, QGraphicsItem
-from PyQt6.QtGui     import QMouseEvent, QCursor, QPainterPath
+from PyQt6.QtGui     import QMouseEvent, QCursor, QPainterPath, \
+                            QPainter, QPen, QColor
 
 from ...core import settings, _iround, LAYER_SHEET, LAYER_DRAWING
 
@@ -84,15 +85,63 @@ class DrawingMouse:
         self.left    = left
         self.middle  = middle
 
+class MarquisRubberBand(QRubberBand):
+    """
+    A custom QRubberBand with a marching ants effect.
+    """
+
+    DASH_LEN = 4
+    INTERVAL = 100
+
+    offset : int
+    timer  : QTimer
+
+    def __init__(self, shape, parent=None):
+        super().__init__(shape, parent)
+        self.offset = 0
+        self.timer = QTimer(self)
+        self.timer.timeout.connect(self.animate)
+        if self.isVisible():
+            self.timer.start(self.INTERVAL)
+
+    def animate(self):
+        self.offset = (self.offset + 1) % (2 * self.DASH_LEN)
+        self.update()
+
+    def paintEvent(self, event):
+        painter = QPainter(self)
+        rect = self.rect().adjusted(0, 0, -1, -1)
+        pen = QPen(QColor(255, 255, 255))
+        pen.setWidth(0)
+        pen.setStyle(Qt.PenStyle.CustomDashLine)
+        pen.setDashPattern([self.DASH_LEN, self.DASH_LEN])
+        pen.setDashOffset(self.offset)
+        painter.setPen(pen)
+        painter.drawRect(rect)
+        pen.setColor(QColor(0, 0, 0))
+        pen.setDashOffset((self.offset + self.DASH_LEN) % (2 * self.DASH_LEN))
+        painter.setPen(pen)
+        painter.drawRect(rect)
+
+    def setVisible(self, visible: bool) -> None:
+        super().setVisible(visible)
+        if visible:
+            self.timer.start(100)
+        else:
+            self.timer.stop()
+
 class DrawingMarquis:
     parent      : 'Drawing'
-    rubber_band : QRubberBand
+    rubber_band : MarquisRubberBand
     point1      : QPoint
 
     def __init__(
         self   : 'DrawingMarquis', parent : 'Drawing') -> None:
-        self.parent      = parent
-        self.rubber_band = QRubberBand(QRubberBand.Shape.Rectangle, parent)
+        self.parent = parent
+        self.rubber_band = MarquisRubberBand(
+            QRubberBand.Shape.Rectangle,
+            parent
+        )
         self.point1      = QPoint()
 
     def begin(self : 'DrawingMarquis', pos : QPoint) -> None:
