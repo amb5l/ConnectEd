@@ -52,19 +52,24 @@ FACTORY_SETTINGS = {
                 'left'   : 2,
                 'right'  : 2
             },
-            'background': Qt.BrushStyle.SolidPattern,
             'items': {
-                'sheet': Qt.BrushStyle.SolidPattern,
+                'extents': {
+                    'line': {
+                        'width': 0,
+                        'style': Qt.PenStyle.SolidLine
+                    },
+                    'fill': Qt.BrushStyle.SolidPattern,
+                },
+                'paper': {
+                    'line': {
+                        'width': 0,
+                        'style': Qt.PenStyle.NoPen
+                    },
+                    'fill': Qt.BrushStyle.SolidPattern,
+                },
                 'border': {
                     'width' : 1,
                     'style' : Qt.PenStyle.SolidLine
-                },
-                'wip': {
-                    'line': {
-                        'width': 0,
-                        'style': Qt.PenStyle.DashLine
-                    },
-                    'fill': Qt.BrushStyle.NoBrush
                 },
                 'rectangle': {
                     'line': {
@@ -73,12 +78,19 @@ FACTORY_SETTINGS = {
                     },
                     'fill': Qt.BrushStyle.SolidPattern
                 },
+                'wip': {
+                    'line': {
+                        'width': 0,
+                        'style': Qt.PenStyle.DashLine
+                    },
+                    'fill': Qt.BrushStyle.NoBrush
+                },
                 'alpha': 128
             },
             'zoom': {
                 'padding' : 0.1,
                 'step'  : 0.25,
-                'limit' : MinMax(0.1, 100.0)
+                'limit' : MinMax(0.01, 100.0)
             },
             'pan': {
                 'step' : 0.1
@@ -91,30 +103,61 @@ FACTORY_SETTINGS = {
     },
     'themes': {
         'dark': {
-            'background' : QColor(   0,   0,   0 ),
-            'sheet'      : QColor(  32,  32,  32 ),
-            'border'     : QColor( 128, 128, 128 ),
-            'items': {
-                'wip': {
-                    'line' : QColor(   0, 255,   0 ), # bright green
-                    'fill' : QColor(   0, 128,   0 )  # medium green
-                },
-                'selected': {
-                    'line' : QColor( 255,   0, 255 ), # bright magenta
-                    'fill' : QColor( 128,   0, 128 )  # medium magenta
-                },
-                'rectangle': {
-                    'line' : QColor( 192, 120,   0 ), # light orange
-                    'fill' : QColor(  96, 100,   0 )  # dark orange
-                }
+            'vacuum': {
+                'fill' : QColor(  16,  16,  16 )
             },
-            'grid' : QColor(  64,  64,  64 )
+            'extents': {
+                'line' : QColor(   0,   0, 255 ),
+                'fill' : QColor(   0,   0,   0 )
+            },
+            'paper': {
+                'fill' : QColor(  32,  32,  32 )
+            },
+            'border': {
+                'line' : QColor( 128, 128, 128 )
+            },
+            'rectangle': {
+                'line' : QColor( 192, 120,   0 ), # light orange
+                'fill' : QColor(  96, 100,   0 )  # dark orange
+            },
+            'wip': {
+                'line' : QColor(   0, 255,   0 ), # bright green
+                'fill' : QColor(   0, 128,   0 )  # medium green
+            },
+            'selected': {
+                'line' : QColor( 255,   0, 255 ), # bright magenta
+                'fill' : QColor( 128,   0, 128 )  # medium magenta
+            },
+            'grid': {
+                'line' : QColor(  64,  64,  64 )
+            }
         },
         'light': {
-            'background' : QColor( 128, 255, 128 ),
-            'sheet'      : QColor( 128, 128, 128 ),
-            'border'     : QColor(   0,   0,   0 ),
-            'grid'       : QColor(  64,  64,  64 )
+            'extents': {
+                'line' : QColor(   0,   0, 255 ),
+                'fill' : QColor(  16,  16,  16 )
+            },
+            'paper': {
+                'fill' : QColor( 240, 240, 240 )
+            },
+            'border': {
+                'line' : QColor( 128, 128, 128 )
+            },
+            'rectangle': {
+                'line' : QColor( 192, 120,   0 ), # light orange
+                'fill' : QColor(  96, 100,   0 )  # dark orange
+            },
+            'wip': {
+                'line' : QColor(   0, 255,   0 ), # bright green
+                'fill' : QColor(   0, 128,   0 )  # medium green
+            },
+            'selected': {
+                'line' : QColor( 255,   0, 255 ), # bright magenta
+                'fill' : QColor( 128,   0, 128 )  # medium magenta
+            },
+            'grid': {
+                'line' : QColor(  64,  64,  64 )
+            }
         }
     },
     'sheet_sizes': {

@@ -17,8 +17,8 @@ from PyQt6.QtWidgets import QMdiArea, QMdiSubWindow, QWidget, \
                             QGraphicsView, QGraphicsScene, QGraphicsItem
 from PyQt6.QtGui     import QPainter
 
-from ...core    import TypedList, settings, Z_DRAWING
-from ...widgets import Sheet, Grid, SelectBox
+from ...core    import settings
+from ...widgets import Extents, Grid, SelectBox
 
 from .private import DrawingPrivateMixin
 from .events  import DrawingEventsMixin
@@ -26,7 +26,6 @@ from .api     import DrawingApiMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING: # avoid circular import issues
-    from ..symbol import Symbol
     from ..main_window import MainWindow
 
 
@@ -44,18 +43,18 @@ class Drawing(
     - Grid display and snapping
     - Event handling (mouse, keyboard, paint)
     """
-    main_window   : 'MainWindow'
-    scene         : QGraphicsScene
-    name          : str
-    sheet         : Sheet
-    wip           : Optional[QGraphicsItem]
-    symbols       : Optional[TypedList['Symbol']]
-    sel_box       : SelectBox
-    zoom          : float
-    pan_prev      : Optional[QPointF]
-    mouse         : 'Drawing.Mouse'
-    grid          : Grid
-    state         : 'Drawing.State'
+    main_window : 'MainWindow'
+    name        : str
+    scene       : QGraphicsScene
+    extents     : Extents
+    sel_box     : SelectBox
+    grid        : Grid
+    wip         : Optional[QGraphicsItem]
+    sel_box     : SelectBox
+    zoom        : float
+    pan_prev    : Optional[QPointF]
+    mouse       : 'Drawing.Mouse'
+    state       : 'Drawing.State'
 
     def __init__(
         self        : 'Drawing',
@@ -77,16 +76,15 @@ class Drawing(
         )
 
         self.main_window = main_window
-        self.scene       = QGraphicsScene()
         self.name        = 'Untitled'
-        self.sheet       = Sheet(settings.defaults.sheet)
+        self.scene       = QGraphicsScene()
+        self.extents     = Extents(settings.defaults.sheet)
+        self.grid        = Grid(self.extents)
         self.wip         = None
-        self.symbols     = None
         self.sel_box     = SelectBox()
         self.zoom        = 1.0
         self.pan_prev    = None
         self.mouse       = self.Mouse()
-        self.grid        = Grid(self.sheet)
         self.state       = self.State.Idle
 
         self.setScene(self.scene)
@@ -102,8 +100,7 @@ class Drawing(
         #self.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
 
     def drawBackground(self, painter : QPainter, rect : QRectF) -> None:
-        painter.setBrush(settings.theme.background)
-        painter.fillRect(rect, settings.theme.background)
+        painter.fillRect(rect, settings.theme.vacuum.fill)
 
     def setZ(self, z : int) -> None:
         """

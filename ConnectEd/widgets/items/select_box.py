@@ -1,18 +1,18 @@
-from typing import ClassVar
-
 from PyQt6.QtCore    import Qt, QRectF
 from PyQt6.QtWidgets import QGraphicsItem, QStyleOptionGraphicsItem, QWidget
 from PyQt6.QtGui     import QPainter, QPen, QColor
 
-from ...core import Z_TOP, Rect2
+from ...core import Z_TOP
 
-class SelectBox(QGraphicsItem):
-    Z    : ClassVar[int] = Z_TOP
-    z    : int
-    rect : Rect2
+from . import RectPenOnlyItem
 
-    def __init__(self : 'SelectBox', visible : bool = False) -> None:
+
+class SelectBox(RectPenOnlyItem):
+    Z = Z_TOP
+
+    def __init__(self : 'SelectBox') -> None:
         super().__init__()
+        self.setVisible(False)
         f = QGraphicsItem.GraphicsItemFlag
         self.setFlag( f.ItemIsMovable                        , False )
         self.setFlag( f.ItemIsSelectable                     , False )
@@ -31,13 +31,12 @@ class SelectBox(QGraphicsItem):
         self.setFlag( f.ItemIsPanel                          , False )
         self.setFlag( f.ItemSendsScenePositionChanges        , False )
         self.setFlag( f.ItemContainsChildrenInShape          , False )
-        self.setZValue(Z_TOP)
-        self.rect = Rect2()
-        self.setVisible(visible)
+        self.setZValue(self.Z)
 
     def boundingRect(self) -> QRectF:
         return self.rect
 
+    # TODO: Implement marching ants effect
     def paint(
         self    : 'SelectBox',
         painter : QPainter,
@@ -47,7 +46,6 @@ class SelectBox(QGraphicsItem):
         painter.setCompositionMode(
             QPainter.CompositionMode.RasterOp_SourceXorDestination
         )
-        painter.setPen(QPen(QColor(255, 255, 255), 0, Qt.PenStyle.DotLine))
+        painter.setPen(QPen(QColor(128, 128, 128), 0, Qt.PenStyle.DotLine))
         painter.setBrush(Qt.BrushStyle.NoBrush)
-        painter.setRenderHint(QPainter.RenderHint.Antialiasing, False)
         painter.drawRect(self.rect)

@@ -1,9 +1,11 @@
+__all__ = [
+    'Diagram'
+]
+
 from PyQt6.QtWidgets import QWidget, QMdiArea
 
 from ..core   import settings, TypedList
-from .items   import Sheet, Border, Rectangle
-from .drawing import Drawing, DrawingSubWindow
-from .symbol  import Symbol
+from .        import Paper, Border, Symbol, Drawing, DrawingSubWindow
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -11,6 +13,7 @@ if TYPE_CHECKING:
 
 
 class Diagram(Drawing):
+    paper   : Paper
     border  : Border
     symbols : TypedList[Symbol]
 
@@ -20,8 +23,10 @@ class Diagram(Drawing):
         main_window : 'MainWindow'
     ) -> None:
         super().__init__(parent, main_window)
-        self.border  = Border(self.sheet, settings.defaults.margin)
+        self.paper   = Paper(settings.defaults.paper)
+        self.border  = Border(self.paper, settings.defaults.margin)
         self.symbols = TypedList[Symbol]()
+        self.scene.addItem(self.paper)
         self.scene.addItem(self.border)
 
     def viewZoomSheet(self : 'Diagram') -> None:

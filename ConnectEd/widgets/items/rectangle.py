@@ -1,52 +1,23 @@
-from typing import ClassVar, Optional
+from typing import Optional
 
 from PyQt6.QtCore    import QRectF, QPointF
 from PyQt6.QtGui     import QPainter
 from PyQt6.QtWidgets import QStyleOptionGraphicsItem, QWidget
 
-from ...core import Z_DRAWING, settings, Rect2
+from ...core import Z_DRAWING, settings
 
-from . import Item, LineSpec, FillSpec
+from . import RectPenBrushItem, ItemWIPMixin, Anchor
 
 
-class Rectangle(Item):
-    Z    : ClassVar[int] = Z_DRAWING
-    rect : Rect2
-    line : LineSpec
-    fill : FillSpec
+class Rectangle(RectPenBrushItem, ItemWIPMixin):
+    Z = Z_DRAWING
 
     def __init__(
         self     : 'Rectangle',
         p1       : QPointF,
         p2       : Optional[QPointF] = None,
-        line     : Optional[LineSpec] = None,
-        fill     : Optional[FillSpec] = None,
-        selected : bool = False,
+        anchor   : Anchor = Anchor(),
         wip      : bool = False
     ) -> None:
-        super().__init__(selected, wip)
-        self.rect = Rect2(p1, p2)
-        self.line = line
-        self.fill = fill
-
-    def setPoint2(self : 'Rectangle', p2 : QPointF) -> None:
-        self.rect.setPoint2(p2)
-
-    def boundingRect(self) -> QRectF:
-        w = self.line.width if self.line is not None else \
-            settings.prefs.display.items.rectangle.line.width
-        margin = w / 2
-        return self.rect.adjusted(-margin, -margin, margin, margin)
-
-    def paint(
-        self    : 'Rectangle',
-        painter : QPainter,
-        option  : QStyleOptionGraphicsItem,
-        widget  : QWidget
-    ) -> None:
-        self.setPenBrush(
-            painter,
-            settings.prefs.display.items.rectangle,
-            settings.theme.items.rectangle
-        )
-        painter.drawRect(self.rect)
+        super().__init__(p1, p2, anchor)
+        ItemWIPMixin.__init__(self, wip)

@@ -1,56 +1,35 @@
-from typing import ClassVar, Optional
+from typing import Optional
 
-from PyQt6.QtCore    import QRectF
-from PyQt6.QtWidgets import QStyleOptionGraphicsItem, QWidget
-from PyQt6.QtGui     import QPainter, QPen
+from PyQt6.QtCore    import QPointF
 
 from ...core import Z_TEMPLATE, settings
-from .       import Item, LineSpec
-from .sheet  import Sheet
+from .       import RectPenOnlyItem, Paper
 
-class Border(Item):
-    Z      : ClassVar[int] = Z_TEMPLATE
-    sheet  : Sheet
+class Border(RectPenOnlyItem):
+    Z = Z_TEMPLATE
+
     margin : float
-    line   : LineSpec
 
     def __init__(
-        self   : 'Border',
-        sheet  : Sheet,
-        margin : Optional[float] = None,
-        line   : Optional[LineSpec] = None
+        self     : 'Border',
+        paper    : 'Paper',
+        margin   : Optional[float] = None
     ) -> None:
         super().__init__()
-        self.sheet  = sheet
+        self.paper = paper
         if margin is None:
             margin = settings.defaults.margin
+        self.setMargin(margin)
+
+    def setMargin(self, margin : float) -> None:
         self.margin = margin
-        self.line   = line
+        self.updateSize()
 
-    def boundingRect(self) -> QRectF:
-        if self.margin:
-            w = self.line.width if self.line is not None else \
-                settings.prefs.display.items.border.width
-            rect  = self.sheet.rect.adjusted(
-                self.margin, self.margin, -self.margin, -self.margin
+    def updateSize(self : 'Border') -> None:
+        self.setPoints(
+            QPointF(self.margin, self.margin),
+            QPointF(
+                self.paper.rect().width() - self.margin,
+                self.paper.rect().height() - self.margin
             )
-            return rect.adjusted(-w/2, -w/2, w/2, w/2)
-        else:
-            return self.sheet.rect
-
-    def paint(
-        self    : 'Border',
-        painter : QPainter,
-        option  : QStyleOptionGraphicsItem,
-        widget  : QWidget
-    ) -> None:
-        if self.margin: # zero margin means no border
-            rect  = self.sheet.rect.adjusted(
-                self.margin, self.margin, -self.margin, -self.margin
-            )
-            painter.setPen(QPen(
-                settings.theme.border,
-                settings.prefs.display.items.border.width,
-                settings.prefs.display.items.border.style
-            ))
-            painter.drawRect(rect)
+        )

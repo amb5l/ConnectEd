@@ -1,4 +1,3 @@
-from typing import ClassVar
 from math import ceil
 
 from PyQt6.QtCore    import Qt, QPointF, QRectF
@@ -6,28 +5,26 @@ from PyQt6.QtWidgets import QGraphicsItem, QStyleOptionGraphicsItem, QWidget
 from PyQt6.QtGui     import QPainter, QPen
 
 from ...core import Z_GRID, settings
-from ..items import Sheet
+from ..items import Extents
 
 
 class Grid(QGraphicsItem):
-    Z          : ClassVar[int] = Z_GRID
-    z          : int
-    sheet      : 'Sheet'
-    display    : bool
+    Z = Z_GRID
+
+    extents    : 'Extents'
     snap       : bool
-    offset     : QPointF
     pitch      : QPointF
     dots       : bool
     alpha      : int
     min_pixels : int
 
-    def __init__(self : 'Grid', sheet : 'Sheet') -> None:
+    def __init__(self : 'Grid', extents : Extents) -> None:
         super().__init__()
         f = QGraphicsItem.GraphicsItemFlag
-        self.setFlag( f.ItemIsMovable                        , True  )
-        self.setFlag( f.ItemIsSelectable                     , True  )
-        self.setFlag( f.ItemIsFocusable                      , True  )
-        self.setFlag( f.ItemClipsToShape                     , True  )
+        self.setFlag( f.ItemIsMovable                        , False )
+        self.setFlag( f.ItemIsSelectable                     , False )
+        self.setFlag( f.ItemIsFocusable                      , False )
+        self.setFlag( f.ItemClipsToShape                     , False )
         self.setFlag( f.ItemClipsChildrenToShape             , False )
         self.setFlag( f.ItemIgnoresTransformations           , False )
         self.setFlag( f.ItemIgnoresParentOpacity             , False )
@@ -35,16 +32,15 @@ class Grid(QGraphicsItem):
         self.setFlag( f.ItemStacksBehindParent               , False )
         self.setFlag( f.ItemUsesExtendedStyleOption          , False )
         self.setFlag( f.ItemHasNoContents                    , False )
-        self.setFlag( f.ItemSendsGeometryChanges             , True  )
-        self.setFlag( f.ItemAcceptsInputMethod               , True  )
+        self.setFlag( f.ItemSendsGeometryChanges             , False )
+        self.setFlag( f.ItemAcceptsInputMethod               , False )
         self.setFlag( f.ItemNegativeZStacksBehindParent      , False )
         self.setFlag( f.ItemIsPanel                          , False )
-        self.setFlag( f.ItemSendsScenePositionChanges        , True  )
-        self.setFlag( f.ItemContainsChildrenInShape          , True  )
-        self.z = self.Z
-        self.setZValue(self.z)
-        self.sheet      = sheet
-        self.display    = settings.defaults.grid.display
+        self.setFlag( f.ItemSendsScenePositionChanges        , False )
+        self.setFlag( f.ItemContainsChildrenInShape          , False )
+        self.setZValue(self.Z)
+        self.extents = extents
+        self.setVisibile(settings.defaults.grid.display)
         self.snap       = settings.defaults.grid.snap
         self.pitch      = settings.defaults.grid.pitch
         self.dots       = settings.defaults.grid.dots
@@ -66,7 +62,6 @@ class Grid(QGraphicsItem):
         viewport_rect = view.mapToScene(view.viewport().rect()).boundingRect()
         rect = self.mapFromScene(viewport_rect).boundingRect()
         if self.display:
-            painter.setRenderHint(QPainter.RenderHint.Antialiasing, False)
             pp = view.transform().map(QPointF(self.pitch.x(), self.pitch.y()))
             px = self.pitch.x()
             if pp.x() < self.min_pixels:
