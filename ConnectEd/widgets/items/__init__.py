@@ -262,7 +262,6 @@ class RectBaseItem(
         option  : QStyleOptionGraphicsItem,
         widget  : QWidget
     ) -> None:
-        #super().paint(painter, option, widget)
         painter.drawRect(self.rect())
 
 class RectPenOnlyItem(RectBaseItem, ItemPenMixin):

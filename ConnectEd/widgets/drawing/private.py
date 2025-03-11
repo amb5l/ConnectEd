@@ -14,8 +14,8 @@ if TYPE_CHECKING:
     from . import Drawing
 
 class Layer(Enum): # TODO resolve drawing vs diagram
-    Sheet   = auto()
-    Drawing = auto()
+    Sheet   = LAYER_SHEET
+    Drawing = LAYER_DRAWING
 
 class DrawingPLPos:
     physical : Optional[QPoint] = None
@@ -293,20 +293,12 @@ class DrawingPrivateMixin:
         return event.modifiers() & mask
 
     def _setLayer(self: 'Drawing', layer: Layer) -> None:
-        match layer:
-            case Layer.Sheet:
-                # for all scene items with Z values in sheet, set selectable
-                for item in self.scene.items():
-                    item.setFlag(
-                        QGraphicsItem.GraphicsItemFlag.ItemIsSelectable,
-                        item.zValue() in LAYER_SHEET
-                    )
-            case Layer.Drawing:
-                for item in self.scene.items():
-                    item.setFlag(
-                        QGraphicsItem.GraphicsItemFlag.ItemIsSelectable,
-                        item.zValue() in LAYER_DRAWING
-                    )
+        self.layer = layer
+        for item in self.scene.items():
+            item.setFlag(
+                QGraphicsItem.GraphicsItemFlag.ItemIsSelectable,
+                item.zValue() in layer.value
+            )
 
     def _selectRect(
         self   : 'Drawing',
@@ -337,8 +329,20 @@ class DrawingPrivateMixin:
         point  : QPointF,
         toggle : bool = False
     ) -> None:
-        # itemAt is not reliable for point selection
-        self._selectRect(QRectF(point - QPointF(0.5, 0.5), QSizeF(1,1)), toggle)
+        items = self.scene.items(
+            point,
+            Qt.ItemSelectionMode.IntersectsItemShape,
+            Qt.SortOrder.DescendingOrder,
+            self.viewportTransform()
+        )
+        # TODO - offer user a popup to select the item?
+        for item in items:
+            if item.zValue() in self.layer.value:
+                if toggle:
+                    item.setSelected(not item.isSelected())
+                else:
+                    item.setSelected(True)
+                return
 
     def _addWIP(self: 'Drawing', item: QGraphicsItem) -> None:
         self.wip = item
