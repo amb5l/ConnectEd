@@ -80,6 +80,13 @@ FACTORY_SETTINGS = {
                     },
                     'fill': Qt.BrushStyle.SolidPattern
                 },
+                'selected': {
+                    'line': {
+                        'width': 1,
+                        'style': Qt.PenStyle.DotLine
+                    },
+                    'fill': Qt.BrushStyle.DiagCrossPattern
+                },
                 'wip': {
                     'line': {
                         'width': 0,
@@ -128,7 +135,7 @@ FACTORY_SETTINGS = {
             },
             'selected': {
                 'line' : QColor( 255,   0, 255 ), # bright magenta
-                'fill' : QColor( 128,   0, 128 )  # medium magenta
+                'fill' : QColor( 255,   0, 255 )  # bright magenta
             },
             'grid': {
                 'line' : QColor(  64,  64,  64 )

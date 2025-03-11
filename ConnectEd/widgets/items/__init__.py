@@ -139,9 +139,14 @@ class ItemPenMixin:
         self.pen_spec = pen_spec
 
     def penFromSpec(self) -> None:
-        item_name = self.__class__.__name__.lower()
-        prefs = getattr(settings.prefs.display.items, item_name).line
-        theme = getattr(settings.theme, item_name).line
+        # TODO handle WIP
+        if self.isSelected():
+            prefs = settings.prefs.display.items.selected.line
+            theme = settings.theme.selected.line
+        else:
+            item_name = self.__class__.__name__.lower()
+            prefs = getattr(settings.prefs.display.items, item_name).line
+            theme = getattr(settings.theme, item_name).line
         pen = QPen()
         pen.setColor(
             theme if self.pen_spec.color is None else
@@ -172,9 +177,13 @@ class ItemBrushMixin:
         self.brush_spec = brush_spec
 
     def brushFromSpec(self) -> None:
-        item_name = self.__class__.__name__.lower()
-        prefs = getattr(settings.prefs.display.items, item_name).fill
-        theme = getattr(settings.theme, item_name).fill
+        if self.isSelected():
+            prefs = settings.prefs.display.items.selected.fill
+            theme = settings.theme.selected.fill
+        else:
+            item_name = self.__class__.__name__.lower()
+            prefs = getattr(settings.prefs.display.items, item_name).fill
+            theme = getattr(settings.theme, item_name).fill
         brush = QBrush()
         brush.setColor(
             theme if self.brush_spec.color is None else
@@ -246,6 +255,15 @@ class RectBaseItem(
         ItemRect2Mixin.setPoint2(self, p2)
         self.setRect(QRectF(self.p1, self.p2))
 
+    def paint(
+        self,
+        painter : QPainter,
+        option  : QStyleOptionGraphicsItem,
+        widget  : QWidget
+    ) -> None:
+        #super().paint(painter, option, widget)
+        painter.drawRect(self.rect())
+
 class RectPenOnlyItem(RectBaseItem, ItemPenMixin):
     """Base class for unfilled rectangle items."""
 
@@ -272,8 +290,8 @@ class RectPenOnlyItem(RectBaseItem, ItemPenMixin):
         option  : QStyleOptionGraphicsItem,
         widget  : QWidget
     ) -> None:
-        self.setPen(self.penFromSpec())
-        self.setBrush(QBrush(Qt.BrushStyle.NoBrush))
+        painter.setPen(self.penFromSpec())
+        painter.setBrush(QBrush(Qt.BrushStyle.NoBrush))
         super().paint(painter, option, widget)
 
 class RectBrushOnlyItem(RectBaseItem, ItemBrushMixin):
@@ -297,8 +315,8 @@ class RectBrushOnlyItem(RectBaseItem, ItemBrushMixin):
         option  : QStyleOptionGraphicsItem,
         widget  : QWidget
     ) -> None:
-        self.setPen(QPen(Qt.PenStyle.NoPen))
-        self.setBrush(self.brushFromSpec())
+        painter.setPen(QPen(Qt.PenStyle.NoPen))
+        painter.setBrush(self.brushFromSpec())
         super().paint(painter, option, widget)
 
 class RectPenBrushItem(RectPenOnlyItem, ItemBrushMixin):
@@ -319,8 +337,8 @@ class RectPenBrushItem(RectPenOnlyItem, ItemBrushMixin):
         option  : QStyleOptionGraphicsItem,
         widget  : QWidget
     ) -> None:
-        self.setPen(self.penFromSpec())
-        self.setBrush(self.brushFromSpec())
+        painter.setPen(self.penFromSpec())
+        painter.setBrush(self.brushFromSpec())
         RectBaseItem.paint(self, painter, option, widget)
 
 class TextItem(QGraphicsTextItem, ItemDefaultsMixin, ItemAnchorMixin, ItemTextMixin):
