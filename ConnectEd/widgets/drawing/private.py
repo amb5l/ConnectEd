@@ -2,8 +2,8 @@ from enum        import Enum, auto
 from typing      import Optional
 from math        import sqrt
 
-from PyQt6.QtCore    import Qt, QPoint, QPointF, QRectF, QSizeF
-from PyQt6.QtWidgets import QGraphicsItem
+from PyQt6.QtCore    import Qt, QPoint, QPointF, QRect,QRectF, QSizeF
+from PyQt6.QtWidgets import QRubberBand, QGraphicsItem
 from PyQt6.QtGui     import QMouseEvent, QCursor, QPainterPath
 
 from ...core import settings, _iround, LAYER_SHEET, LAYER_DRAWING
@@ -84,6 +84,49 @@ class DrawingMouse:
         self.left    = left
         self.middle  = middle
 
+class DrawingMarquis:
+    parent      : 'Drawing'
+    rubber_band : QRubberBand
+    point1      : QPoint
+
+    def __init__(
+        self   : 'DrawingMarquis', parent : 'Drawing') -> None:
+        self.parent      = parent
+        self.rubber_band = QRubberBand(QRubberBand.Shape.Rectangle, parent)
+        self.point1      = QPoint()
+
+    def begin(self : 'DrawingMarquis', pos : QPoint) -> None:
+        self.point1 = pos
+        self.rubber_band.setGeometry(pos.x(), pos.y(), 1, 1)
+        self.rubber_band.show()
+
+    def resize(self : 'DrawingMarquis', pos : QPoint) -> None:
+        self.rubber_band.setGeometry(
+            QRect(
+                self.point1.x(), self.point1.y(),
+                pos.x() - self.point1.x(),
+                pos.y() - self.point1.y()
+            ).normalized()
+        )
+
+    def end(self : 'DrawingMarquis', pos : QPoint) -> None:
+        self.rubber_band.setGeometry(
+            QRect(
+                self.point1.x(), self.point1.y(),
+                pos.x() - self.point1.x(),
+                pos.y() - self.point1.y()
+            ).normalized()
+        )
+        self.rubber_band.hide()
+        self.point1 = None
+
+    def rect(self : 'DrawingMarquis') -> QRectF:
+        prect = self.rubber_band.geometry().normalized() # physical coords
+        return QRectF(
+            self.parent.mapToScene(prect.topLeft()),
+            self.parent.mapToScene(prect.bottomRight())
+        )
+
 class DrawingPrivateMixin:
     """
     A mixin class that provides private methods for the Drawing class.
@@ -91,6 +134,7 @@ class DrawingPrivateMixin:
 
     MouseButtonState = DrawingMouseButtonState
     Mouse            = DrawingMouse
+    Marquis          = DrawingMarquis
 
     class State(Enum):
         Idle             = auto()

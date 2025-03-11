@@ -14,8 +14,7 @@ from typing import Optional
 
 from PyQt6.QtCore    import Qt, QPoint, QPointF, QRectF, QEvent, QTimer
 from PyQt6.QtWidgets import QWidget, QMdiArea, QMdiSubWindow, \
-                            QGraphicsView, QGraphicsScene, QGraphicsItem, \
-                            QRubberBand
+                            QGraphicsView, QGraphicsScene, QGraphicsItem
 from PyQt6.QtGui     import QPainter
 
 from ...core    import settings
@@ -50,7 +49,7 @@ class Drawing(
     extents     : Extents
     grid        : Grid
     wip         : Optional[QGraphicsItem]
-    rubber_band : QRubberBand
+    marquis     : 'Drawing.Marquis'
     zoom        : float
     pan_prev    : Optional[QPointF]
     mouse       : 'Drawing.Mouse'
@@ -82,7 +81,7 @@ class Drawing(
         self.extents     = Extents(settings.defaults.sheet)
         self.grid        = Grid(self.extents)
         self.wip         = None
-        self.rubber_band = QRubberBand(QRubberBand.Shape.Rectangle, self)
+        self.marquis     = self.Marquis(self)
         self.zoom        = 1.0
         self.pan_prev    = None
         self.mouse       = self.Mouse()
