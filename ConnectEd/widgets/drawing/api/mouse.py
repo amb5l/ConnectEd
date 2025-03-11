@@ -13,9 +13,13 @@ class DrawingApiMouseMixin:
     def mouseLeftClick(self : 'Drawing') -> None:
         match self.state:
             case self.State.Idle:
-                if self.mouse.left.press.modifiers == Qt.KeyboardModifier.NoModifier:
+                m = self.mouse.left.press.modifiers
+                if m == Qt.KeyboardModifier.NoModifier:
                     self.scene.clearSelection()
-                self._selectPoint(self.mouse.current.logical)
+                self._selectPoint(
+                    self.mouse.current.logical,
+                    m == Qt.KeyboardModifier.ControlModifier
+                )
             case self.State.ViewCenter:
                 self._center(self.mouse.left.release.logical)
                 self.state = self.State.Idle
@@ -41,6 +45,9 @@ class DrawingApiMouseMixin:
     def mouseLeftDragBegin(self : 'Drawing') -> None:
         match self.state:
             case self.State.Idle:
+                m = self.mouse.left.press.modifiers
+                if m == Qt.KeyboardModifier.NoModifier:
+                    self.scene.clearSelection()
                 self.marquis.begin(self.mouse.left.press.physical)
                 self.state = self.State.SelectRectangle2
             case self.State.ViewZoomWindow1:
@@ -68,8 +75,12 @@ class DrawingApiMouseMixin:
     def mouseLeftDragEnd(self : 'Drawing') -> None:
         match self.state:
             case self.State.SelectRectangle2:
+                m = self.mouse.left.press.modifiers
                 self.marquis.end(self.mouse.left.release.physical)
-                self._selectRect(self.marquis.rect())
+                self._selectRect(
+                    self.marquis.rect(),
+                    m == Qt.KeyboardModifier.ControlModifier
+                )
                 self.state = self.State.Idle
             case self.State.ViewZoomWindow2:
                 self.marquis.end(self.mouse.left.release.physical)

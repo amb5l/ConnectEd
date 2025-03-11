@@ -259,19 +259,37 @@ class DrawingPrivateMixin:
                         item.zValue() in LAYER_DRAWING
                     )
 
-    def _selectRect(self: 'Drawing', rect: QRectF) -> None:
+    def _selectRect(
+        self   : 'Drawing',
+        rect   : QRectF,
+        toggle : bool = False
+    ) -> None:
         path = QPainterPath()
         path.addRect(rect)
-        self.scene.setSelectionArea(
-            path,
-            Qt.ItemSelectionOperation.AddToSelection,
-            Qt.ItemSelectionMode.IntersectsItemShape,
-            self.transform()
-        )
+        if toggle:
+            items = self.scene.items(
+                path,
+                Qt.ItemSelectionMode.IntersectsItemShape,
+                Qt.SortOrder.AscendingOrder,
+                self.viewportTransform()
+            )
+            for item in items:
+                item.setSelected(not item.isSelected())
+        else:
+            self.scene.setSelectionArea(
+                path,
+                Qt.ItemSelectionOperation.AddToSelection,
+                Qt.ItemSelectionMode.IntersectsItemShape,
+                self.transform()
+            )
 
-    def _selectPoint(self: 'Drawing', point: QPointF) -> None:
+    def _selectPoint(
+        self   : 'Drawing',
+        point  : QPointF,
+        toggle : bool = False
+    ) -> None:
         # itemAt is not reliable for point selection
-        self._selectRect(QRectF(point - QPointF(0.5, 0.5), QSizeF(1,1)))
+        self._selectRect(QRectF(point - QPointF(0.5, 0.5), QSizeF(1,1)), toggle)
 
     def _addWIP(self: 'Drawing', item: QGraphicsItem) -> None:
         self.wip = item
