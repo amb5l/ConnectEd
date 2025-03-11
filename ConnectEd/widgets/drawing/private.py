@@ -2,7 +2,7 @@ from enum        import Enum, auto
 from typing      import Optional
 from math        import sqrt
 
-from PyQt6.QtCore    import Qt, QPoint, QPointF, QRectF
+from PyQt6.QtCore    import Qt, QPoint, QPointF, QRectF, QSizeF
 from PyQt6.QtWidgets import QGraphicsItem
 from PyQt6.QtGui     import QMouseEvent, QCursor, QPainterPath
 
@@ -102,7 +102,6 @@ class DrawingPrivateMixin:
         ViewPan2         = auto()
         ViewZoomWindow1  = auto()
         ViewZoomWindow2  = auto()
-        SelectRectangle1 = auto()
         SelectRectangle2 = auto()
         PlaceRectangle1  = auto()
         PlaceRectangle2  = auto()
@@ -223,7 +222,16 @@ class DrawingPrivateMixin:
     def _selectRect(self: 'Drawing', rect: QRectF) -> None:
         path = QPainterPath()
         path.addRect(rect)
-        self.scene.setSelectionArea(path)
+        self.scene.setSelectionArea(
+            path,
+            Qt.ItemSelectionOperation.AddToSelection,
+            Qt.ItemSelectionMode.IntersectsItemShape,
+            self.transform()
+        )
+
+    def _selectPoint(self: 'Drawing', point: QPointF) -> None:
+        # itemAt is not reliable for point selection
+        self._selectRect(QRectF(point - QPointF(0.5, 0.5), QSizeF(1,1)))
 
     def _addWIP(self: 'Drawing', item: QGraphicsItem) -> None:
         self.wip = item

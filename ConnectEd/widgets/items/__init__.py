@@ -253,6 +253,7 @@ class RectBaseItem(
 
     def setPoint2(self, p2 : QPointF) -> None:
         ItemRect2Mixin.setPoint2(self, p2)
+        self.prepareGeometryChange()
         self.setRect(QRectF(self.p1, self.p2))
 
     def paint(

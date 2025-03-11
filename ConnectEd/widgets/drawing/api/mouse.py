@@ -13,7 +13,9 @@ class DrawingApiMouseMixin:
     def mouseLeftClick(self : 'Drawing') -> None:
         match self.state:
             case self.State.Idle:
-                pass
+                if self.mouse.left.press.modifiers == Qt.KeyboardModifier.NoModifier:
+                    self.scene.clearSelection()
+                self._selectPoint(self.mouse.current.logical)
             case self.State.ViewCenter:
                 self._center(self.mouse.left.release.logical)
                 self.state = self.State.Idle
