@@ -21,7 +21,7 @@ from PyQt6.QtGui     import QPainter
 from ...core    import settings
 from ...widgets import Extents, Grid
 
-from .private import DrawingPrivateMixin, Layer
+from .private import Layer, DrawingPrivateMixin
 from .events  import DrawingEventsMixin
 from .api     import DrawingApiMixin
 

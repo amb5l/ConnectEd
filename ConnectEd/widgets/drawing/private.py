@@ -89,12 +89,8 @@ class DrawingPrivateMixin:
     A mixin class that provides private methods for the Drawing class.
     """
 
-    PLPos             = DrawingPLPos
-    MouseButtonState  = DrawingMouseButtonState
-    MousePress        = DrawingMousePress
-    MouseRelease      = DrawingMouseRelease
-    MouseButton       = DrawingMouseButton
-    Mouse             = DrawingMouse
+    MouseButtonState = DrawingMouseButtonState
+    Mouse            = DrawingMouse
 
     class State(Enum):
         Idle             = auto()
