@@ -128,11 +128,9 @@ class ItemPenMixin:
     """Pen support."""
 
     pen_spec : PenSpec
-    pen      : QPen
 
     def initPenSpec(self) -> None:
         self.pen_spec = PenSpec()
-        self.pen      = QPen()
 
     def setPenSpec(
         self,
@@ -163,11 +161,9 @@ class ItemBrushMixin:
     """Brush support."""
 
     brush_spec : BrushSpec
-    brush      : QBrush
 
     def initBrushSpec(self) -> None:
         self.brush_spec = BrushSpec()
-        self.brush      = QBrush()
 
     def setBrushSpec(
         self,
@@ -194,7 +190,6 @@ class ItemTextMixin:
     """Text/font support."""
 
     text_spec : TextSpec
-    font      : QFont
 
     def setTextSpec(
         self,
@@ -326,7 +321,7 @@ class RectPenBrushItem(RectPenOnlyItem, ItemBrushMixin):
     ) -> None:
         self.setPen(self.penFromSpec())
         self.setBrush(self.brushFromSpec())
-        super().paint(painter, option, widget)
+        RectBaseItem.paint(self, painter, option, widget)
 
 class TextItem(QGraphicsTextItem, ItemDefaultsMixin, ItemAnchorMixin, ItemTextMixin):
     """Base class for text items."""
