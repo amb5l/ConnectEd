@@ -1,16 +1,37 @@
-from PyQt6.QtCore import QPointF, QRectF
+from PyQt6.QtCore    import QPointF, QRectF, QSizeF
+from PyQt6.QtGui     import QPainter, QPen, QBrush, QColor
+from PyQt6.QtWidgets import QGraphicsItem, QGraphicsRectItem, \
+                            QWidget, QStyleOptionGraphicsItem
 
 from ...core import settings, Z_EXTENTS
 
-from . import RectPenOnlyItem
-
-class Extents(RectPenOnlyItem):
+class Extents(QGraphicsRectItem):
     """Extents of a drawing - the outer limit!"""
 
     Z = Z_EXTENTS
 
     def __init__(self : 'Extents', sheet : str) -> None:
         sheet_size = getattr(settings.sheet_sizes, sheet)
-        p1 = -QPointF(sheet_size.width(), sheet_size.height())
-        p2 = QPointF(sheet_size.width() * 2, sheet_size.height() * 2)
-        super().__init__(p1, p2)
+        super().__init__(QRectF(
+            -QPointF(sheet_size.width(), sheet_size.height()),
+            QSizeF(sheet_size.width() * 3, sheet_size.height() * 3)
+        ))
+        self.setFlags(QGraphicsItem.GraphicsItemFlag.ItemIsSelectable)
+        self.setZValue(self.Z)
+
+    def paint(
+        self    : 'Extents',
+        painter : QPainter,
+        option  : QStyleOptionGraphicsItem,
+        widget  : QWidget
+    ) -> None:
+        painter.setPen(QPen(
+            QColor(settings.theme.extents.line),
+            settings.prefs.display.items.extents.line.width,
+            settings.prefs.display.items.extents.line.style
+        ))
+        painter.setBrush(QBrush(
+            QColor(settings.theme.extents.fill),
+            settings.prefs.display.items.extents.fill
+        ))
+        super().paint(painter, option, widget)
