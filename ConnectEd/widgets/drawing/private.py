@@ -112,6 +112,13 @@ class DrawingPrivateMixin:
             items_rect = self.extents.rect()
         return items_rect
 
+    def _rubberBandRect(self: 'Drawing') -> QRectF:
+        prect = self.rubber_band.geometry().normalized() # physical coords
+        return QRectF(
+            self.mapToScene(prect.topLeft()),
+            self.mapToScene(prect.bottomRight())
+        )
+
     def _pan(self: 'Drawing', delta: QPointF) -> None:
         lrect = self.mapToScene(self.viewport().rect()).boundingRect()  # Scene coords
         pan = QPointF(lrect.width()  * delta.x(), lrect.height() * delta.y())

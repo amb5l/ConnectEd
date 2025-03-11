@@ -12,7 +12,7 @@ __all__ = [
 
 from typing import Optional
 
-from PyQt6.QtCore    import Qt, QPointF, QRectF, QEvent, QTimer
+from PyQt6.QtCore    import Qt, QPoint, QPointF, QRectF, QEvent, QTimer
 from PyQt6.QtWidgets import QWidget, QMdiArea, QMdiSubWindow, \
                             QGraphicsView, QGraphicsScene, QGraphicsItem, \
                             QRubberBand
@@ -54,7 +54,7 @@ class Drawing(
     zoom        : float
     pan_prev    : Optional[QPointF]
     mouse       : 'Drawing.Mouse'
-    point1      : Optional[QPointF]      # 1st point in a multi-point operation
+    point1      : Optional[QPointF | QPoint]      # 1st point in a multi-point operation
     state       : 'Drawing.State'
 
     def __init__(

@@ -1,6 +1,5 @@
-from PyQt6.QtCore import Qt, QRect, QPointF
+from PyQt6.QtCore import Qt
 
-from ....core import settings
 from ...items import Rectangle
 
 from typing import TYPE_CHECKING
@@ -34,7 +33,7 @@ class DrawingApiMouseMixin:
                 )
                 self.rubber_band.hide()
                 self.point1 = None
-                self._zoomRect(self.mapToScene(self.rubber_band.geometry()))
+                self._zoomRect(self._rubberBandRect())
                 self.state = self.State.Idle
             case self.State.PlaceRectangle1:
                 self._addWIP(Rectangle(
@@ -51,7 +50,7 @@ class DrawingApiMouseMixin:
     def mouseLeftDragBegin(self : 'Drawing') -> None:
         match self.state:
             case self.State.ViewZoomWindow1:
-                self.point1 = self.mouse.left.press.logical
+                self.point1 = self.mouse.left.press.physical
                 self.rubber_band.setGeometry(
                     self.point1.x(), self.point1.y(), 1, 1
                 )
@@ -91,7 +90,7 @@ class DrawingApiMouseMixin:
                 )
                 self.rubber_band.hide()
                 self.point1 = None
-                self._zoomRect(self.mapToScene(self.rubber_band.geometry()))
+                self._zoomRect(self._rubberBandRect())
                 self.state = self.State.Idle
             case self.State.PlaceRectangle2:
                 self.wip.setPoint2(
@@ -115,7 +114,7 @@ class DrawingApiMouseMixin:
                     self.setCursor(Qt.CursorShape.ClosedHandCursor)
                     self.state = self.State.ViewPan2
                 case Qt.KeyboardModifier.ControlModifier:
-                    self.point1 = self.mouse.middle.press.logical
+                    self.point1 = self.mouse.middle.press.physical
                     self.rubber_band.setGeometry(
                         self.point1.x(), self.point1.y(), 1, 1
                     )
@@ -155,7 +154,7 @@ class DrawingApiMouseMixin:
                 )
                 self.rubber_band.hide()
                 self.point1 = None
-                self._zoomRect(self.mapToScene(self.rubber_band.geometry()))
+                self._zoomRect(self._rubberBandRect())
                 self.state = self.State.Idle
 
     def mouseMiddleDoubleClick(self : 'Drawing') -> None:
