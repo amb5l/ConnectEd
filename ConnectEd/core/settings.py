@@ -58,7 +58,7 @@ FACTORY_SETTINGS = {
                         'width': 0,
                         'style': Qt.PenStyle.SolidLine
                     },
-                    'fill': Qt.BrushStyle.SolidPattern,
+                    'fill': Qt.BrushStyle.NoBrush,
                 },
                 'paper': {
                     'line': {
