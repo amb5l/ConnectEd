@@ -68,8 +68,10 @@ FACTORY_SETTINGS = {
                     'fill': Qt.BrushStyle.SolidPattern,
                 },
                 'border': {
-                    'width' : 1,
-                    'style' : Qt.PenStyle.SolidLine
+                    'line': {
+                        'width' : 1,
+                        'style' : Qt.PenStyle.SolidLine
+                    }
                 },
                 'rectangle': {
                     'line': {

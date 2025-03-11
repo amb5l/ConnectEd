@@ -16,8 +16,8 @@ class Rectangle(RectPenBrushItem, ItemWIPMixin):
         self     : 'Rectangle',
         p1       : QPointF,
         p2       : Optional[QPointF] = None,
-        anchor   : Anchor = Anchor(),
+        anchor   : Anchor = Anchor.TOP_LEFT,
         wip      : bool = False
     ) -> None:
         super().__init__(p1, p2, anchor)
-        ItemWIPMixin.__init__(self, wip)
+        self.setWIP(wip)

@@ -40,7 +40,7 @@ class Grid(QGraphicsItem):
         self.setFlag( f.ItemContainsChildrenInShape          , False )
         self.setZValue(self.Z)
         self.extents = extents
-        self.setVisibile(settings.defaults.grid.display)
+        self.setVisible(settings.defaults.grid.display)
         self.snap       = settings.defaults.grid.snap
         self.pitch      = settings.defaults.grid.pitch
         self.dots       = settings.defaults.grid.dots
@@ -48,7 +48,7 @@ class Grid(QGraphicsItem):
         self.min_pixels = settings.defaults.grid.min_pixels
 
     def boundingRect(self) -> QRectF:
-        return self.sheet.boundingRect()
+        return self.extents.rect()
 
     def paint(
         self    : 'Grid',
@@ -61,40 +61,39 @@ class Grid(QGraphicsItem):
         view = widget.parent()  # The QGraphicsView
         viewport_rect = view.mapToScene(view.viewport().rect()).boundingRect()
         rect = self.mapFromScene(viewport_rect).boundingRect()
-        if self.display:
-            pp = view.transform().map(QPointF(self.pitch.x(), self.pitch.y()))
-            px = self.pitch.x()
-            if pp.x() < self.min_pixels:
-                px *= ceil(self.min_pixels / pp.x())
-            py = self.pitch.y()
-            if pp.y() < self.min_pixels:
-                py *= ceil(self.min_pixels / pp.y())
-            grect = QRectF(
-                rect.topLeft()     - QPointF(px, py),
-                rect.bottomRight() + QPointF(px, py)
-            ).toRect()
-            painter.setPen(QPen(settings.theme.grid, 0, Qt.PenStyle.SolidLine))
-            painter.setBrush(Qt.BrushStyle.NoBrush)
-            if self.dots:
-                x = align(grect.left(), px)
-                while x <= grect.right():
-                    y = align(grect.top(), py)
-                    while y <= grect.bottom():
-                        painter.drawPoint(QPointF(x, y))
-                        y += py
-                    x += px
-            else:
-                x = align(grect.left(), px)
-                while x <= grect.right():
-                    painter.drawLine(
-                        QPointF(x, grect.top()),
-                        QPointF(x, grect.bottom())
-                    )
-                    x += px
+        pp = view.transform().map(QPointF(self.pitch.x(), self.pitch.y()))
+        px = self.pitch.x()
+        if pp.x() < self.min_pixels:
+            px *= ceil(self.min_pixels / pp.x())
+        py = self.pitch.y()
+        if pp.y() < self.min_pixels:
+            py *= ceil(self.min_pixels / pp.y())
+        grect = QRectF(
+            rect.topLeft()     - QPointF(px, py),
+            rect.bottomRight() + QPointF(px, py)
+        ).toRect()
+        painter.setPen(QPen(settings.theme.grid.line, 0, Qt.PenStyle.SolidLine))
+        painter.setBrush(Qt.BrushStyle.NoBrush)
+        if self.dots:
+            x = align(grect.left(), px)
+            while x <= grect.right():
                 y = align(grect.top(), py)
                 while y <= grect.bottom():
-                    painter.drawLine(
-                        QPointF(grect.left(), y),
-                        QPointF(grect.right(), y)
-                    )
+                    painter.drawPoint(QPointF(x, y))
                     y += py
+                x += px
+        else:
+            x = align(grect.left(), px)
+            while x <= grect.right():
+                painter.drawLine(
+                    QPointF(x, grect.top()),
+                    QPointF(x, grect.bottom())
+                )
+                x += px
+            y = align(grect.top(), py)
+            while y <= grect.bottom():
+                painter.drawLine(
+                    QPointF(grect.left(), y),
+                    QPointF(grect.right(), y)
+                )
+                y += py

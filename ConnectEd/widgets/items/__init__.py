@@ -3,12 +3,12 @@ __all__ = [
     'Paper',
     'Border',
     'Rectangle',
-    'Grid',
-    'SelectBox'
+    'Grid'
 ]
 
 from dataclasses import dataclass
 from enum        import Enum
+from collections import namedtuple
 from typing      import Optional
 from math        import copysign
 
@@ -41,25 +41,23 @@ class TextSpec:
     italic    : Optional[bool]   = None
     underline : Optional[bool]   = None
 
-class HAnchor(Enum):
-    LEFT   = 0.0
-    CENTER = 0.5
-    RIGHT  = 1.0
+AnchorHV = namedtuple('AnchorHV', ['h', 'v'])
 
-class VAnchor(Enum):
-    TOP    = 0.0
-    CENTER = 0.5
-    BOTTOM = 1.0
+class Anchor(Enum):
+    TOP_LEFT      = AnchorHV(0.0, 0.0)
+    TOP_CENTER    = AnchorHV(0.5, 0.0)
+    TOP_RIGHT     = AnchorHV(1.0, 0.0)
+    CENTER_LEFT   = AnchorHV(0.0, 0.5)
+    CENTER        = AnchorHV(0.5, 0.5)
+    CENTER_RIGHT  = AnchorHV(1.0, 0.5)
+    BOTTOM_LEFT   = AnchorHV(0.0, 1.0)
+    BOTTOM_CENTER = AnchorHV(0.5, 1.0)
+    BOTTOM_RIGHT  = AnchorHV(1.0, 1.0)
 
-@dataclass
-class Anchor:
-    h : HAnchor = HAnchor.LEFT
-    v : VAnchor = VAnchor.TOP
+class ItemDefaultsMixin:
+    """Basic setup mixin class for all items."""
 
-class ItemMixin:
-    """Base mixin class for all items."""
-
-    def __init__(self) -> None:
+    def defaultSetup(self) -> None:
         f = QGraphicsItem.GraphicsItemFlag
         self.setFlag( f.ItemIsMovable                        , True  )
         self.setFlag( f.ItemIsSelectable                     , False )
@@ -85,9 +83,6 @@ class ItemWIPMixin:
 
     wip : bool
 
-    def __init__(self, wip : bool = False) -> None:
-        self.setWIP(wip)
-
     def setWIP(self, wip : bool = True) -> None:
         self.wip = wip
 
@@ -96,14 +91,8 @@ class ItemAnchorMixin:
 
     anchor : Anchor
 
-    def __init__(self, anchor : Anchor = Anchor()) -> None:
+    def setAnchor(self, anchor : Anchor = Anchor.TOP_LEFT) -> None:
         self.anchor = anchor
-
-    def setAnchor(self, h : HAnchor = None, v : VAnchor = None) -> None:
-        if h is not None:
-            self.anchor.h = h
-        if v is not None:
-            self.anchor.v = v
 
     def getAnchorOffsetBoundingRect(self) -> QRectF:
         rect = super().boundingRect()
@@ -141,36 +130,34 @@ class ItemPenMixin:
     pen_spec : PenSpec
     pen      : QPen
 
-    def __init__(self) -> None:
+    def initPenSpec(self) -> None:
         self.pen_spec = PenSpec()
         self.pen      = QPen()
 
     def setPenSpec(
         self,
-        color : Optional[QColor]      = None,
-        width : Optional[float]       = None,
-        style : Optional[Qt.PenStyle] = None
+        pen_spec : PenSpec = PenSpec()
     ) -> None:
-        self.pen_spec.color = color
-        self.pen_spec.width = width
-        self.pen_spec.style = style
+        self.pen_spec = pen_spec
 
-    def updatePen(self) -> None:
+    def penFromSpec(self) -> None:
         item_name = self.__class__.__name__.lower()
         prefs = getattr(settings.prefs.display.items, item_name).line
         theme = getattr(settings.theme, item_name).line
-        self.pen.setColor(
-            theme.color if self.pen_spec.color is None else
+        pen = QPen()
+        pen.setColor(
+            theme if self.pen_spec.color is None else
                 self.pen_spec.color
         )
-        self.pen.setWidth(
+        pen.setWidth(
             prefs.width if self.pen_spec.width is None else
                 self.pen_spec.width
         )
-        self.pen.setStyle(
+        pen.setStyle(
             prefs.style if self.pen_spec.style is None else
                 self.pen_spec.style
         )
+        return pen
 
 class ItemBrushMixin:
     """Brush support."""
@@ -178,30 +165,30 @@ class ItemBrushMixin:
     brush_spec : BrushSpec
     brush      : QBrush
 
-    def __init__(self) -> None:
+    def initBrushSpec(self) -> None:
         self.brush_spec = BrushSpec()
         self.brush      = QBrush()
 
     def setBrushSpec(
         self,
-        color : Optional[QColor]        = None,
-        style : Optional[Qt.BrushStyle] = None
+        brush_spec : BrushSpec = BrushSpec()
     ) -> None:
-        self.brush_spec.color = color
-        self.brush_spec.style = style
+        self.brush_spec = brush_spec
 
-    def updateBrush(self) -> None:
+    def brushFromSpec(self) -> None:
         item_name = self.__class__.__name__.lower()
         prefs = getattr(settings.prefs.display.items, item_name).fill
         theme = getattr(settings.theme, item_name).fill
-        self.brush.setColor(
-            theme.color if self.brush_spec.color is None else
+        brush = QBrush()
+        brush.setColor(
+            theme if self.brush_spec.color is None else
                 self.brush_spec.color
         )
-        self.brush.setStyle(
-            prefs.style if self.brush_spec.style is None else
+        brush.setStyle(
+            prefs if self.brush_spec.style is None else
                 self.brush_spec.style
         )
+        return brush
 
 class ItemTextMixin:
     """Text/font support."""
@@ -209,25 +196,11 @@ class ItemTextMixin:
     text_spec : TextSpec
     font      : QFont
 
-    def __init__(self) -> None:
-        self.text_spec = TextSpec()
-        self.font      = QFont()
-
     def setTextSpec(
         self,
-        color : Optional[QColor] = None,
-        family : Optional[str] = None,
-        size : Optional[float] = None,
-        weight : Optional[int] = None,
-        italic : Optional[bool] = None,
-        underline : Optional[bool] = None
+        text_spec : TextSpec = TextSpec()
     ) -> None:
-        self.text_spec.color     = color
-        self.text_spec.family    = family
-        self.text_spec.size      = size
-        self.text_spec.weight    = weight
-        self.text_spec.italic    = italic
-        self.text_spec.underline = underline
+        self.text_spec = text_spec
 
     def updateFont(self) -> None:
         item_name = self.__class__.__name__.lower()
@@ -254,55 +227,9 @@ class ItemTextMixin:
                 self.text_spec.italic
         )
 
-class ItemPenOnlyMixin(ItemPenMixin):
-    def __init__(self) -> None:
-        super().__init__()
-
-    def paint(
-        self,
-        painter : QPainter,
-        option  : QStyleOptionGraphicsItem,
-        widget  : QWidget
-    ) -> None:
-        self.updatePen()
-        self.setPen(self.pen)
-        self.setBrush(Qt.BrushStyle.NoBrush)
-        super().paint(painter, option, widget)
-
-class ItemBrushOnlyMixin(ItemBrushMixin):
-    def __init__(self) -> None:
-        super().__init__()
-
-    def paint(
-        self,
-        painter : QPainter,
-        option  : QStyleOptionGraphicsItem,
-        widget  : QWidget
-    ) -> None:
-        self.updateBrush()
-        self.setPen(Qt.PenStyle.NoPen)
-        self.setBrush(self.brush)
-        super().paint(painter, option, widget)
-
-class ItemPenBrushMixin(ItemPenMixin, ItemBrushMixin):
-    def __init__(self) -> None:
-        super().__init__()
-
-    def paint(
-        self,
-        painter : QPainter,
-        option  : QStyleOptionGraphicsItem,
-        widget  : QWidget
-    ) -> None:
-        self.updatePen()
-        self.updateBrush()
-        self.setPen(self.pen)
-        self.setBrush(self.brush)
-        super().paint(painter, option, widget)
-
 class RectBaseItem(
     QGraphicsRectItem,
-    ItemMixin,
+    ItemDefaultsMixin,
     ItemAnchorMixin,
     ItemRect2Mixin
 ):
@@ -314,21 +241,17 @@ class RectBaseItem(
         p2     : Optional[QPointF] = None,
         anchor : Optional[Anchor] = None
     ) -> None:
-        ItemMixin.__init__(self)
-        ItemAnchorMixin.__init__(self, anchor)
-        ItemRect2Mixin.__init__(self, p1, p2)
-        super().__init__(
-            self.p1.x(),
-            self.p1.y(),
-            self.p2.x() - self.p1.x(),
-            self.p2.y() - self.p1.y()
-        )
+        super().__init__()
+        self.setZValue(self.Z)
+        self.setPoints(p1, p2)
+        self.setAnchor(anchor)
+        self.defaultSetup()
 
     def setPoint2(self, p2 : QPointF) -> None:
         ItemRect2Mixin.setPoint2(self, p2)
         self.setRect(QRectF(self.p1, self.p2))
 
-class RectPenOnlyItem(RectBaseItem, ItemPenOnlyMixin):
+class RectPenOnlyItem(RectBaseItem, ItemPenMixin):
     """Base class for unfilled rectangle items."""
 
     def __init__(
@@ -338,7 +261,7 @@ class RectPenOnlyItem(RectBaseItem, ItemPenOnlyMixin):
         anchor : Optional[Anchor] = None
     ) -> None:
         super().__init__(p1, p2, anchor)
-        ItemPenOnlyMixin.__init__(self)
+        self.initPenSpec()
 
     def boundingRect(self) -> QRectF:
         item_name = self.__class__.__name__.lower()
@@ -346,9 +269,19 @@ class RectPenOnlyItem(RectBaseItem, ItemPenOnlyMixin):
         w = default.width if self.pen_spec.width is None else \
             self.pen_spec.width
         margin = w / 2
-        return self.rect.adjusted(-margin, -margin, margin, margin)
+        return self.rect().adjusted(-margin, -margin, margin, margin)
 
-class RectBrushOnlyItem(RectBaseItem, ItemBrushOnlyMixin):
+    def paint(
+        self,
+        painter : QPainter,
+        option  : QStyleOptionGraphicsItem,
+        widget  : QWidget
+    ) -> None:
+        self.setPen(self.penFromSpec())
+        self.setBrush(QBrush(Qt.BrushStyle.NoBrush))
+        super().paint(painter, option, widget)
+
+class RectBrushOnlyItem(RectBaseItem, ItemBrushMixin):
     """Base class for filled rectangle items with no outline."""
 
     def __init__(
@@ -358,12 +291,22 @@ class RectBrushOnlyItem(RectBaseItem, ItemBrushOnlyMixin):
         anchor : Optional[Anchor] = None
     ) -> None:
         super().__init__(p1, p2, anchor)
-        ItemBrushMixin.__init__(self)
+        self.initBrushSpec()
 
     def boundingRect(self) -> QRectF:
-        return self.rect
+        return self.rect()
 
-class RectPenBrushItem(RectPenOnlyItem, ItemPenBrushMixin):
+    def paint(
+        self,
+        painter : QPainter,
+        option  : QStyleOptionGraphicsItem,
+        widget  : QWidget
+    ) -> None:
+        self.setPen(QPen(Qt.PenStyle.NoPen))
+        self.setBrush(self.brushFromSpec())
+        super().paint(painter, option, widget)
+
+class RectPenBrushItem(RectPenOnlyItem, ItemBrushMixin):
     """Base class for rectangle items with pen and brush."""
 
     def __init__(
@@ -373,9 +316,19 @@ class RectPenBrushItem(RectPenOnlyItem, ItemPenBrushMixin):
         anchor : Optional[Anchor] = None
     ) -> None:
         super().__init__(p1, p2, anchor)
-        ItemBrushMixin.__init__(self)
+        self.initBrushSpec()
 
-class TextItem(QGraphicsTextItem, ItemMixin, ItemAnchorMixin, ItemTextMixin):
+    def paint(
+        self,
+        painter : QPainter,
+        option  : QStyleOptionGraphicsItem,
+        widget  : QWidget
+    ) -> None:
+        self.setPen(self.penFromSpec())
+        self.setBrush(self.brushFromSpec())
+        super().paint(painter, option, widget)
+
+class TextItem(QGraphicsTextItem, ItemDefaultsMixin, ItemAnchorMixin, ItemTextMixin):
     """Base class for text items."""
 
     text_spec : TextSpec
@@ -386,10 +339,11 @@ class TextItem(QGraphicsTextItem, ItemMixin, ItemAnchorMixin, ItemTextMixin):
         text : str = '',
         wip  : bool = False
     ) -> None:
-        super().__init__(text)
-        ItemMixin.__init__(self)
-        ItemAnchorMixin.__init__(self)
-        ItemTextMixin.__init__(self)
+        super().__init__(self, text)
+        self.setZValue(self.Z)
+        self.defaultSetup()
+        self.setAnchor()
+        self.setTextSpec()
 
     def boundingRect(self) -> QRectF:
         return self.getAnchorOffsetBoundingRect()
@@ -415,4 +369,3 @@ from .paper      import Paper
 from .border     import Border
 from .rectangle  import Rectangle
 from .grid       import Grid
-from .select_box import SelectBox

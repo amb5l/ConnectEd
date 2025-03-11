@@ -2,6 +2,7 @@ __all__ = [
     'ORG_NAME',
     'APP_NAME',
     'LOG_FILENAME',
+    'Z_EXTENTS',
     'Z_PAPER',
     'Z_TEMPLATE',
     'Z_DRAWING',
@@ -13,6 +14,8 @@ __all__ = [
 ORG_NAME = 'ConnectEd'
 APP_NAME = 'ConnectEd'
 LOG_FILENAME = f'{APP_NAME}.log'
+
+Z_EXTENTS    = 0 # extents layer
 
 Z_PAPER      = 100 # } sheet layer
 Z_TEMPLATE   = 200 # }

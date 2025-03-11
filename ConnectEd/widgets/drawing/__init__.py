@@ -10,15 +10,16 @@ __all__ = [
     'DrawingSubWindow'
 ]
 
-from typing      import Optional
+from typing import Optional
 
 from PyQt6.QtCore    import Qt, QPointF, QRectF, QEvent, QTimer
-from PyQt6.QtWidgets import QMdiArea, QMdiSubWindow, QWidget, \
-                            QGraphicsView, QGraphicsScene, QGraphicsItem
+from PyQt6.QtWidgets import QWidget, QMdiArea, QMdiSubWindow, \
+                            QGraphicsView, QGraphicsScene, QGraphicsItem, \
+                            QRubberBand
 from PyQt6.QtGui     import QPainter
 
 from ...core    import settings
-from ...widgets import Extents, Grid, SelectBox
+from ...widgets import Extents, Grid
 
 from .private import DrawingPrivateMixin
 from .events  import DrawingEventsMixin
@@ -47,13 +48,13 @@ class Drawing(
     name        : str
     scene       : QGraphicsScene
     extents     : Extents
-    sel_box     : SelectBox
     grid        : Grid
     wip         : Optional[QGraphicsItem]
-    sel_box     : SelectBox
+    rubber_band : QRubberBand
     zoom        : float
     pan_prev    : Optional[QPointF]
     mouse       : 'Drawing.Mouse'
+    point1      : Optional[QPointF]      # 1st point in a multi-point operation
     state       : 'Drawing.State'
 
     def __init__(
@@ -81,18 +82,17 @@ class Drawing(
         self.extents     = Extents(settings.defaults.sheet)
         self.grid        = Grid(self.extents)
         self.wip         = None
-        self.sel_box     = SelectBox()
+        self.rubber_band = QRubberBand(QRubberBand.Shape.Rectangle, self)
         self.zoom        = 1.0
         self.pan_prev    = None
         self.mouse       = self.Mouse()
+        self.point1      = None
         self.state       = self.State.Idle
 
         self.setScene(self.scene)
-        self.scene.setSceneRect(self._minExtents())
         self.scene.setItemIndexMethod(QGraphicsScene.ItemIndexMethod.NoIndex)
-        self.scene.addItem(self.sheet)
+        self.scene.addItem(self.extents)
         self.scene.addItem(self.grid)
-        self.scene.addItem(self.sel_box)
 
         self.setMouseTracking(True)
         self.setRenderHint(QPainter.RenderHint.Antialiasing)

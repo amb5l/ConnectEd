@@ -8,20 +8,11 @@ if TYPE_CHECKING: # avoid circular import issues
 
 
 class DrawingApiViewMixin:
+    def viewZoomExtents(self : 'Drawing') -> None:
+        self._zoomRect(self.extents.rect())
+
     def viewZoomAll(self : 'Drawing') -> None:
-        """
-        Zoom to show all content in the scene, focusing precisely on the items.
-        The scene rectangle is still set to include minimum extents for proper scrolling limits.
-        """
-        # Get the bounding rectangle of all scene items
-        items_rect = self._boundingRect()
-
-        # Set scene rectangle to include minimum extents (for proper scrolling limits)
-        # but zoom specifically to just the items
-        self.setSceneRect(items_rect.united(self._minExtents()))
-
-        # Zoom to show exactly the items (not the extended scene rectangle)
-        self._zoomRect(items_rect)
+        self._zoomRect(self._itemsRect())
 
     def viewZoomWindow(self : 'Drawing') -> None:
         self.state = self.State.ViewZoomWindow1

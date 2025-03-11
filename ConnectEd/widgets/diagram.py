@@ -23,11 +23,13 @@ class Diagram(Drawing):
         main_window : 'MainWindow'
     ) -> None:
         super().__init__(parent, main_window)
-        self.paper   = Paper(settings.defaults.paper)
+        self.paper   = Paper(settings.defaults.sheet)
         self.border  = Border(self.paper, settings.defaults.margin)
         self.symbols = TypedList[Symbol]()
         self.scene.addItem(self.paper)
         self.scene.addItem(self.border)
+        print('Diagram.__init__', self.paper.rect())
+        print('Diagram.__init__', self.border.rect())
 
     def viewZoomSheet(self : 'Diagram') -> None:
         self._zoomRect(self.sheet.rect)

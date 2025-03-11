@@ -101,21 +101,15 @@ class DrawingPrivateMixin:
         PlaceRectangle1 = auto()
         PlaceRectangle2 = auto()
 
-    def _minExtents(self: 'Drawing') -> QRectF:
-        rect = QRectF(self.sheet.boundingRect())
-        rect.setTopLeft(-QPointF(
-            self.sheet.boundingRect().width(),
-            self.sheet.boundingRect().height()
-        ))
-        rect.setWidth(self.sheet.boundingRect().width() * 3)
-        rect.setHeight(self.sheet.boundingRect().height() * 3)
-        return rect
-
-    def _boundingRect(self: 'Drawing') -> QRectF:
+    def _itemsRect(self: 'Drawing') -> QRectF:
         items_rect = QRectF()
         for item in self.scene.items():
+            if item == self.extents or item == self.grid:
+                continue
             item_rect = item.mapToScene(item.boundingRect()).boundingRect()
             items_rect = items_rect.united(item_rect)
+        if items_rect.isEmpty():
+            items_rect = self.extents.rect()
         return items_rect
 
     def _pan(self: 'Drawing', delta: QPointF) -> None:

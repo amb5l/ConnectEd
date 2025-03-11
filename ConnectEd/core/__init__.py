@@ -15,7 +15,13 @@ __all__ = [
     'settings',
     'TypedList',
     'Rect2',
-    '_iround'
+    '_iround',
+    'Z_PAPER',
+    'Z_TEMPLATE',
+    'Z_DRAWING',
+    'Z_OVERLAY',
+    'Z_GRID',
+    'Z_TOP'
 ]
 
 from .defs     import *
