@@ -1,10 +1,8 @@
 from typing import Optional
 
-from PyQt6.QtCore    import QRectF, QPointF
-from PyQt6.QtGui     import QPainter
-from PyQt6.QtWidgets import QStyleOptionGraphicsItem, QWidget
+from PyQt6.QtCore    import QPointF
 
-from ...core import Z_DRAWING, settings
+from ...core import Z_DRAWING
 
 from . import RectPenBrushItem, ItemWIPMixin, Anchor
 
