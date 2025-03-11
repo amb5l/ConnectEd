@@ -1,4 +1,4 @@
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import Qt, QRect
 
 from ...items import Rectangle
 
@@ -23,13 +23,14 @@ class DrawingApiMouseMixin:
                     self.point1.x(), self.point1.y(), 1, 1
                 )
                 self.rubber_band.show()
-                self.scene.update()
                 self.state = self.State.ViewZoomWindow2
             case self.State.ViewZoomWindow2:
                 self.rubber_band.setGeometry(
-                    self.point1.x(), self.point1.y(),
-                    self.mouse.left.release.physical.x() - self.point1.x(),
-                    self.mouse.left.release.physical.y() - self.point1.y()
+                    QRect(
+                        self.point1.x(), self.point1.y(),
+                        self.mouse.left.release.physical.x() - self.point1.x(),
+                        self.mouse.left.release.physical.y() - self.point1.y()
+                    ).normalized()
                 )
                 self.rubber_band.hide()
                 self.point1 = None
@@ -55,7 +56,6 @@ class DrawingApiMouseMixin:
                     self.point1.x(), self.point1.y(), 1, 1
                 )
                 self.rubber_band.show()
-                self.scene.update()
                 self.state = self.State.ViewZoomWindow2
             case self.State.PlaceRectangle1:
                 self._addWIP(Rectangle(
@@ -69,24 +69,26 @@ class DrawingApiMouseMixin:
                 pass
             case self.State.ViewZoomWindow2:
                 self.rubber_band.setGeometry(
-                    self.point1.x(), self.point1.y(),
-                    self.mouse.current.physical.x() - self.point1.x(),
-                    self.mouse.current.physical.y() - self.point1.y()
+                    QRect(
+                        self.point1.x(), self.point1.y(),
+                        self.mouse.current.physical.x() - self.point1.x(),
+                        self.mouse.current.physical.y() - self.point1.y()
+                    ).normalized()
                 )
-                self.scene.update()
             case self.State.PlaceRectangle2:
                 self.wip.setPoint2(
                     self._snap(self.mouse.current.logical)
                 )
-                self.scene.update()
 
     def mouseLeftDragEnd(self : 'Drawing') -> None:
         match self.state:
             case self.State.ViewZoomWindow2:
                 self.rubber_band.setGeometry(
-                    self.point1.x(), self.point1.y(),
-                    self.mouse.left.release.physical.x() - self.point1.x(),
-                    self.mouse.left.release.physical.y() - self.point1.y()
+                    QRect(
+                        self.point1.x(), self.point1.y(),
+                        self.mouse.left.release.physical.x() - self.point1.x(),
+                        self.mouse.left.release.physical.y() - self.point1.y()
+                    ).normalized()
                 )
                 self.rubber_band.hide()
                 self.point1 = None
@@ -98,13 +100,12 @@ class DrawingApiMouseMixin:
                 )
                 self._completeWIP()
                 self.state = self.State.Idle
-                self.scene.update()
 
     def mouseLeftDoubleClick(self : 'Drawing') -> None:
         pass
 
     def mouseMiddleClick(self : 'Drawing') -> None:
-        self._center(self.mouse.middle.press.logical)
+        pass
 
     def mouseMiddleDragBegin(self : 'Drawing') -> None:
         if self.state == self.State.Idle:
@@ -119,7 +120,6 @@ class DrawingApiMouseMixin:
                         self.point1.x(), self.point1.y(), 1, 1
                     )
                     self.rubber_band.show()
-                    self.scene.update()
                     self.state = self.State.ViewZoomWindow2
 
     def mouseMiddleDragContinue(self : 'Drawing') -> None:
@@ -131,11 +131,12 @@ class DrawingApiMouseMixin:
                 self.pan_prev = self.mouse.current.physical
             case self.State.ViewZoomWindow2:
                 self.rubber_band.setGeometry(
-                    self.point1.x(), self.point1.y(),
-                    self.mouse.current.physical.x() - self.point1.x(),
-                    self.mouse.current.physical.y() - self.point1.y()
+                    QRect(
+                        self.point1.x(), self.point1.y(),
+                        self.mouse.current.physical.x() - self.point1.x(),
+                        self.mouse.current.physical.y() - self.point1.y()
+                    ).normalized()
                 )
-                self.scene.update()
 
     def mouseMiddleDragEnd(self : 'Drawing') -> None:
         match self.state:
@@ -148,9 +149,11 @@ class DrawingApiMouseMixin:
                 self.state = self.State.Idle
             case self.State.ViewZoomWindow2:
                 self.rubber_band.setGeometry(
-                    self.point1.x(), self.point1.y(),
-                    self.mouse.middle.release.physical.x() - self.point1.x(),
-                    self.mouse.middle.release.physical.y() - self.point1.y()
+                    QRect(
+                        self.point1.x(), self.point1.y(),
+                        self.mouse.middle.release.physical.x() - self.point1.x(),
+                        self.mouse.middle.release.physical.y() - self.point1.y()
+                    ).normalized()
                 )
                 self.rubber_band.hide()
                 self.point1 = None
@@ -164,16 +167,16 @@ class DrawingApiMouseMixin:
         match self.state:
             case self.State.ViewZoomWindow2:
                 self.rubber_band.setGeometry(
-                    self.point1.x(), self.point1.y(),
-                    self.mouse.current.physical.x() - self.point1.x(),
-                    self.mouse.current.physical.y() - self.point1.y()
+                    QRect(
+                        self.point1.x(), self.point1.y(),
+                        self.mouse.current.physical.x() - self.point1.x(),
+                        self.mouse.current.physical.y() - self.point1.y()
+                    ).normalized()
                 )
-                self.scene.update()
             case self.State.PlaceRectangle2:
                 self.wip.setPoint2(
                     self._snap(self.mouse.current.logical)
                 )
-                self.scene.update()
 
     def mouseWheel(self : 'Drawing', n: int, modifiers: Qt.KeyboardModifier) -> None:
         match modifiers:

@@ -45,8 +45,7 @@ class DrawingApiViewMixin:
         pass
 
     def viewGridDisplay(self : 'Drawing', checked : bool) -> None:
-        self.grid.display = checked
-        self.update()
+        self.grid.setVisible(checked)
 
     def viewGridSnap(self : 'Drawing', checked : bool) -> None:
         self.grid.snap = checked

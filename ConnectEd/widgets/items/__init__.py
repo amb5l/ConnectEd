@@ -76,7 +76,7 @@ class ItemDefaultsMixin:
         self.setFlag( f.ItemIsPanel                          , False )
         self.setFlag( f.ItemSendsScenePositionChanges        , True  )
         self.setFlag( f.ItemContainsChildrenInShape          , True  )
-        self.setCacheMode(QGraphicsItem.CacheMode.NoCache)
+        self.setCacheMode(QGraphicsItem.CacheMode.DeviceCoordinateCache)
 
 class ItemWIPMixin:
     """WIP flag support."""

@@ -35,12 +35,3 @@ class Border(RectPenOnlyItem):
                 self.paper.rect().height() - self.margin
             )
         )
-
-    def paint(
-        self,
-        painter : QPainter,
-        option  : QStyleOptionGraphicsItem,
-        widget  : QWidget
-    ) -> None:
-        print('Border.paint', self.rect())
-        super().paint(painter, option, widget)

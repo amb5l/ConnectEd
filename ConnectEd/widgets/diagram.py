@@ -28,8 +28,6 @@ class Diagram(Drawing):
         self.symbols = TypedList[Symbol]()
         self.scene.addItem(self.paper)
         self.scene.addItem(self.border)
-        print('Diagram.__init__', self.paper.rect())
-        print('Diagram.__init__', self.border.rect())
 
     def viewZoomSheet(self : 'Diagram') -> None:
         self._zoomRect(self.sheet.rect)

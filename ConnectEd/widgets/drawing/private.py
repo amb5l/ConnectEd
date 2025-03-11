@@ -150,7 +150,6 @@ class DrawingPrivateMixin:
         self.main_window.commands.actions.actionEnable(
             'viewZoomOut', self.zoom > settings.prefs.display.zoom.limit.min
         )
-        self.scene.update()
 
     def _zoomRel(self: 'Drawing', rel: float) -> None:
         self._zoomAbs(self.zoom * rel)
@@ -182,9 +181,6 @@ class DrawingPrivateMixin:
         self._zoomAbs(factor)
         self.centerOn(rect.center())
 
-        # Ensure rectangles remain visible after zooming
-        self.scene.update()
-
     def _snap(self: 'Drawing', pos: QPoint) -> QPoint:
         return QPointF(
             _iround(pos.x(), self.grid.pitch.x()),
@@ -206,14 +202,11 @@ class DrawingPrivateMixin:
         self.wip = item
         self.wip.setWIP(True)
         self.scene.addItem(self.wip)
-        self.scene.update()
 
     def _completeWIP(self: 'Drawing') -> None:
         self.wip.setWIP(False)
         self.wip = None
-        self.scene.update()
 
     def _removeWIP(self: 'Drawing') -> None:
         self.scene.removeItem(self.wip)
         self.wip = None
-        self.scene.update()
