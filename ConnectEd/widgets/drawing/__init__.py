@@ -50,6 +50,7 @@ class Drawing(
     grid        : Grid
     wip         : Optional[QGraphicsItem]
     marquis     : 'Drawing.Marquis'
+    layer       : Layer
     zoom        : float
     pan_prev    : Optional[QPointF]
     mouse       : 'Drawing.Mouse'
