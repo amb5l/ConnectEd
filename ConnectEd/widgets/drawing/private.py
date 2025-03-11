@@ -12,7 +12,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from . import Drawing
 
-class Layer(Enum):
+class Layer(Enum): # TODO resolve drawing vs diagram
     Sheet   = auto()
     Drawing = auto()
 
