@@ -72,7 +72,9 @@ class Grid(QGraphicsItem):
             rect.topLeft()     - QPointF(px, py),
             rect.bottomRight() + QPointF(px, py)
         ).toRect()
-        painter.setPen(QPen(settings.theme.grid.line, 0, Qt.PenStyle.SolidLine))
+        color = settings.theme.grid.line
+        color.setAlpha(self.alpha)
+        painter.setPen(QPen(color, 0, Qt.PenStyle.SolidLine))
         painter.setBrush(Qt.BrushStyle.NoBrush)
         if self.dots:
             x = align(grect.left(), px)

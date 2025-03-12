@@ -94,7 +94,7 @@ FACTORY_SETTINGS = {
                     },
                     'fill': Qt.BrushStyle.NoBrush
                 },
-                'alpha': 128
+                'alpha': 192
             },
             'zoom': {
                 'padding' : 0.1,

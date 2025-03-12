@@ -113,11 +113,11 @@ class ItemPenMixin:
             return QPen(Qt.PenStyle.NoPen)
         prefs, theme = self.getPrefsTheme()
         s = self.pen_spec
-        return QPen(
-            theme.line       if s.color is None else s.color,
-            prefs.line.width if s.width is None else s.width,
-            prefs.line.style if s.style is None else s.style
-        )
+        color = theme.line if s.color is None else s.color
+        color.setAlpha(settings.prefs.display.items.alpha)
+        width = prefs.line.width if s.width is None else s.width
+        style = prefs.line.style if s.style is None else s.style
+        return QPen(color, width, style)
 
     def penWidth(self) -> float:
         if not hasattr(self, 'pen_spec'):
@@ -142,10 +142,10 @@ class ItemBrushMixin:
             return QBrush(Qt.BrushStyle.NoBrush)
         prefs, theme = self.getPrefsTheme()
         s = self.brush_spec
-        return QBrush(
-            theme.fill if s.color is None else s.color,
-            prefs.fill if s.style is None else s.style
-        )
+        color = theme.fill if s.color is None else s.color
+        color.setAlpha(settings.prefs.display.items.alpha)
+        style = prefs.fill if s.style is None else s.style
+        return QBrush(color, style)
 
 class ItemTextMixin:
     """Text/font support."""
