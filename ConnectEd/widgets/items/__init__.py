@@ -13,7 +13,7 @@ from typing      import Optional
 from math        import copysign
 
 from PyQt6.QtCore    import Qt, QPointF, QRectF, QSizeF
-from PyQt6.QtGui     import QPainter, QPen, QBrush, QColor, QFont
+from PyQt6.QtGui     import QPainter, QPen, QBrush, QColor, QPainterPath
 from PyQt6.QtWidgets import \
     QGraphicsItem, QGraphicsRectItem, QGraphicsTextItem, \
     QStyleOptionGraphicsItem, QWidget
@@ -54,8 +54,10 @@ class Anchor(Enum):
     BOTTOM_CENTER = AnchorHV(0.5, 1.0)
     BOTTOM_RIGHT  = AnchorHV(1.0, 1.0)
 
-class ItemDefaultsMixin:
-    """Basic setup mixin class for all items."""
+class ItemBasicsMixin:
+    """Basics for all items."""
+
+    wip : bool
 
     def defaultSetup(self) -> None:
         f = QGraphicsItem.GraphicsItemFlag
@@ -78,51 +80,8 @@ class ItemDefaultsMixin:
         self.setFlag( f.ItemContainsChildrenInShape          , True  )
         self.setCacheMode(QGraphicsItem.CacheMode.DeviceCoordinateCache)
 
-class ItemWIPMixin:
-    """WIP flag support."""
-
-    wip : bool
-
     def setWIP(self, wip : bool = True) -> None:
         self.wip = wip
-
-class ItemAnchorMixin:
-    """Anchor support."""
-
-    anchor : Anchor
-
-    def setAnchor(self, anchor : Anchor = Anchor.TOP_LEFT) -> None:
-        self.anchor = anchor
-
-    def getAnchorOffsetBoundingRect(self) -> QRectF:
-        rect = super().boundingRect()
-        return QRectF(
-            -rect.width() * self.anchor.h,
-            -rect.height() * self.anchor.v,
-            rect.width(), rect.height()
-        )
-
-class ItemRect2Mixin:
-    """2 point rectangle support."""
-
-    MIN_SIZE = QSizeF(1.0, 1.0)
-
-    p1 : QPointF
-    p2 : QPointF
-
-    def setPoints(self, p1 : QPointF, p2 : Optional[QPointF] = None) -> None:
-        self.p1 = p1
-        if p2 is None:
-            p2 = p1 + QPointF(self.MIN_SIZE.width(), self.MIN_SIZE.height())
-        self.setPoint2(p2)
-
-    def setPoint2(self, p2 : QPointF) -> None:
-        m = self.MIN_SIZE
-        if abs(p2.x() - self.p1.x()) < m.width():
-            p2.setX(self.p1.x() + copysign(m.width(), p2.x() - self.p1.x()))
-        if abs(p2.y() - self.p1.y()) < m.height():
-            p2.setY(self.p1.y() + copysign(m.height(), p2.y() - self.p1.y()))
-        self.p2 = p2
 
 class ItemPenMixin:
     """Pen support."""
@@ -233,30 +192,67 @@ class ItemTextMixin:
 
 class RectBaseItem(
     QGraphicsRectItem,
-    ItemDefaultsMixin,
-    ItemAnchorMixin,
-    ItemRect2Mixin
+    ItemBasicsMixin
 ):
     """Base class for rectangle items."""
+
+    MIN_SIZE = QSizeF(1.0, 1.0)
+
+    p1     : QPointF
+    p2     : QPointF
+    anchor : Anchor
 
     def __init__(
         self,
         p1     : QPointF,
         p2     : Optional[QPointF] = None,
-        anchor : Optional[Anchor] = None
+        anchor : Anchor = Anchor.TOP_LEFT,
+        wip    : bool = False
     ) -> None:
         super().__init__()
+        self.defaultSetup()
         self.setZValue(self.Z)
         self.setPoints(p1, p2)
         self.setAnchor(anchor)
-        self.defaultSetup()
+        self.setWIP(wip)
+
+    def setPoints(self, p1 : QPointF, p2 : Optional[QPointF] = None) -> None:
+        self.p1 = p1
+        if p2 is None:
+            p2 = p1 + QPointF(self.MIN_SIZE.width(), self.MIN_SIZE.height())
+        self.setPoint2(p2)
 
     def setPoint2(self, p2 : QPointF) -> None:
-        ItemRect2Mixin.setPoint2(self, p2)
+        m = self.MIN_SIZE
+        if abs(p2.x() - self.p1.x()) < m.width():
+            p2.setX(self.p1.x() + copysign(m.width(), p2.x() - self.p1.x()))
+        if abs(p2.y() - self.p1.y()) < m.height():
+            p2.setY(self.p1.y() + copysign(m.height(), p2.y() - self.p1.y()))
+        self.p2 = p2
         self.prepareGeometryChange()
         rect = QRectF(self.p1, self.p2).normalized()
         self.setPos(rect.topLeft())
         self.setRect(0, 0, rect.width(), rect.height())
+
+    def setAnchor(self, anchor : Anchor = Anchor.TOP_LEFT) -> None:
+        self.anchor = anchor
+
+    def boundingRect(self) -> QRectF:
+        rect = super().boundingRect()
+        return QRectF(
+            -rect.width() * self.anchor.value.h,
+            -rect.height() * self.anchor.value.v,
+            rect.width(), rect.height()
+        )
+
+    def shape(self) -> QPainterPath:
+        path = super().shape()
+        rect = path.boundingRect()
+        path.translate(
+            -rect.width()  * self.anchor.value.h,
+            -rect.height() * self.anchor.value.v
+        )
+        return path
 
     def paint(
         self,
@@ -264,7 +260,12 @@ class RectBaseItem(
         option  : QStyleOptionGraphicsItem,
         widget  : QWidget
     ) -> None:
-        painter.drawRect(self.rect())
+        rect = self.rect()
+        painter.translate(
+            -rect.width() * self.anchor.value.h,
+            -rect.height() * self.anchor.value.v
+        )
+        painter.drawRect(rect)
 
 class RectPenOnlyItem(RectBaseItem, ItemPenMixin):
     """Base class for unfilled rectangle items."""
@@ -273,9 +274,10 @@ class RectPenOnlyItem(RectBaseItem, ItemPenMixin):
         self,
         p1     : QPointF,
         p2     : Optional[QPointF] = None,
-        anchor : Optional[Anchor] = None
+        anchor : Anchor = Anchor.TOP_LEFT,
+        wip    : bool = False
     ) -> None:
-        super().__init__(p1, p2, anchor)
+        super().__init__(p1, p2, anchor, wip)
         self.initPenSpec()
 
     def boundingRect(self) -> QRectF:
@@ -284,7 +286,7 @@ class RectPenOnlyItem(RectBaseItem, ItemPenMixin):
         w = default.width if self.pen_spec.width is None else \
             self.pen_spec.width
         margin = w / 2
-        return self.rect().adjusted(-margin, -margin, margin, margin)
+        return super().boundingRect().adjusted(-margin, -margin, margin, margin)
 
     def paint(
         self,
@@ -303,13 +305,11 @@ class RectBrushOnlyItem(RectBaseItem, ItemBrushMixin):
         self,
         p1     : QPointF,
         p2     : Optional[QPointF] = None,
-        anchor : Optional[Anchor] = None
+        anchor : Anchor = Anchor.TOP_LEFT,
+        wip    : bool = False
     ) -> None:
-        super().__init__(p1, p2, anchor)
+        super().__init__(p1, p2, anchor, wip)
         self.initBrushSpec()
-
-    def boundingRect(self) -> QRectF:
-        return self.rect()
 
     def paint(
         self,
@@ -328,9 +328,10 @@ class RectPenBrushItem(RectPenOnlyItem, ItemBrushMixin):
         self,
         p1     : QPointF,
         p2     : Optional[QPointF] = None,
-        anchor : Optional[Anchor] = None
+        anchor : Anchor = Anchor.TOP_LEFT,
+        wip    : bool = False
     ) -> None:
-        super().__init__(p1, p2, anchor)
+        super().__init__(p1, p2, anchor, wip)
         self.initBrushSpec()
 
     def paint(
@@ -343,25 +344,45 @@ class RectPenBrushItem(RectPenOnlyItem, ItemBrushMixin):
         painter.setBrush(self.brushFromSpec())
         RectBaseItem.paint(self, painter, option, widget)
 
-class TextItem(QGraphicsTextItem, ItemDefaultsMixin, ItemAnchorMixin, ItemTextMixin):
+class TextItem(
+    QGraphicsTextItem,
+    ItemBasicsMixin,
+    ItemTextMixin
+):
     """Base class for text items."""
 
-    text_spec : TextSpec
-    font      : QFont
+    anchor : Anchor
 
     def __init__(
         self,
-        text : str = '',
-        wip  : bool = False
+        text   : str = '',
+        anchor : Anchor = Anchor.TOP_LEFT,
+        wip    : bool = False
     ) -> None:
         super().__init__(self, text)
         self.setZValue(self.Z)
         self.defaultSetup()
-        self.setAnchor()
+        self.setAnchor(anchor)
+        self.setWIP(wip)
         self.setTextSpec()
 
+    def setAnchor(self, anchor : Anchor = Anchor.TOP_LEFT) -> None:
+        self.anchor = anchor
+
     def boundingRect(self) -> QRectF:
-        return self.getAnchorOffsetBoundingRect()
+        rect = super().boundingRect()
+        return QRectF(
+            -rect.width() * self.anchor.value.h,
+            -rect.height() * self.anchor.value.v,
+            rect.width(), rect.height()
+        )
+
+    def shape(self) -> QPainterPath:
+        path = self.shape()
+        return path.translate(
+            -path.width() * self.anchor.value.h,
+            -path.height() * self.anchor.value.v
+        )
 
     def paint(
         self,
@@ -371,7 +392,7 @@ class TextItem(QGraphicsTextItem, ItemDefaultsMixin, ItemAnchorMixin, ItemTextMi
     ) -> None:
         self.updateFont()
         self.setFont(self.font)
-        rect = self.getAnchorOffsetBoundingRect()
+        rect = self.anchoredBoundingRect()
         painter.translate(rect.topLeft())
         painter.drawText(
             rect,
