@@ -59,12 +59,7 @@ class DrawingMouseButton:
     double  : DrawingMousePress
     state   : DrawingMouseButtonState
 
-    def __init__(
-        self    : 'DrawingMouseButton',
-        press   : DrawingMousePress   = DrawingMousePress(),
-        release : DrawingMouseRelease = DrawingMouseRelease(),
-        double  : DrawingMousePress   = DrawingMousePress()
-    ) -> None:
+    def __init__(self : 'DrawingMouseButton') -> None:
         self.press   = DrawingMousePress()
         self.release = DrawingMouseRelease()
         self.double  = DrawingMousePress()
@@ -75,15 +70,10 @@ class DrawingMouse:
     left    : DrawingMouseButton
     middle  : DrawingMouseButton
 
-    def __init__(
-        self    : 'DrawingMouse',
-        current : DrawingPLPos       = DrawingPLPos(),
-        left    : DrawingMouseButton = DrawingMouseButton(),
-        middle  : DrawingMouseButton = DrawingMouseButton()
-    ) -> None:
-        self.current = current
-        self.left    = left
-        self.middle  = middle
+    def __init__(self : 'DrawingMouse') -> None:
+        self.current = DrawingPLPos()
+        self.left    = DrawingMouseButton()
+        self.middle  = DrawingMouseButton()
 
 class MarquisRubberBand(QRubberBand):
     """
