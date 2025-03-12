@@ -94,8 +94,10 @@ class DrawingApiMouseMixin:
                     self.scene.clearSelection()
                 items = self._itemsAt(self.mouse.left.press.logical)
                 if items:
+                    print('items', items)
                     self.prev_pos = self._snap(self.mouse.left.press.logical)
                     if any(isinstance(i, Grip) for i in items):
+                        print('grip')
                         # eliminate all other items from selection except
                         # grip parent
                         self.state = self.State.EditResize2

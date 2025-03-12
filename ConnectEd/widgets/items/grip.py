@@ -22,22 +22,16 @@ class Grip(QGraphicsItem):
     ) -> None:
         super().__init__(parent)
         f = QGraphicsItem.GraphicsItemFlag
+        self.setFlag( f.ItemIsSelectable           , True )
         self.setFlag( f.ItemIsMovable              , True )
         self.setFlag( f.ItemSendsGeometryChanges   , True )
-        self.setFlag( f.ItemIgnoresTransformations , True )
-        self.setZValue(self.parentItem().zValue() + self.Z_DELTA)
+        print(f'parent Z value = {parent.zValue()}')
         self.key_point = key_point
         self.prev_pos  = self.pos()
 
     def boundingRect(self) -> QRectF:
         size = settings.prefs.display.items.selected.grip.size
-        rect = QRectF(-size/2, -size/2, size, size)
-        offset = QPointF(
-            self.parentItem().anchor.value.h * self.parentItem().rect().width(),
-            self.parentItem().anchor.value.v * self.parentItem().rect().height()
-        )
-        rect.translate(-offset)
-        return rect
+        return QRectF(-size/2, -size/2, size, size)
 
     def shape(self) -> QPainterPath:
         path = QPainterPath()
@@ -55,6 +49,7 @@ class Grip(QGraphicsItem):
         painter.setPen(QPen(theme.line, 0, Qt.PenStyle.SolidLine))
         painter.setBrush(QBrush(theme.fill, Qt.BrushStyle.SolidPattern))
         painter.drawRect(self.boundingRect())
+        print(f"Grip {self.key_point} paint: {self.boundingRect()}, pos: {self.pos()}")
 
     def itemChange(self, change, value):
         if change == QGraphicsItem.GraphicsItemChange.ItemPositionChange:

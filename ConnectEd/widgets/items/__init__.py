@@ -219,6 +219,7 @@ class RectItem(
             self.setBrushSpec()
         self.updateGripsPosition()
         self.updateGripsVisibility()
+        self.updateGripsZValue()
 
     def setPosSize(self, pos : QPointF, size : QSizeF) -> None:
         self.setPos(pos)
@@ -247,7 +248,12 @@ class RectItem(
         for grip in self.grips.values():
             grip.setVisible(self.isSelected())
 
+    def updateGripsZValue(self) -> None:
+        for grip in self.grips.values():
+            grip.setZValue(self.zValue() + Grip.Z_DELTA)
+
     def gripResize(self, kp : KeyPoint, delta : QPointF) -> None:
+        print(self.__class__.__name__, 'gripResize', kp, delta)
         pass
 
     def rect(self) -> QRectF:

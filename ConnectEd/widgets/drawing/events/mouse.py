@@ -20,7 +20,7 @@ class DrawingEventsMouseMixin:
         l = self.mapToScene(p)
         self.mouse.current.setPL(p, l)
         self.main_window.status_bar.xy.setText(
-            str(int(l.x())) + ',' + str(int(l.y()))
+            str(int(round(l.x()))) + ',' + str(int(round(l.y())))
         )
 
     def leaveEvent(self : 'Drawing', _ : QEvent) -> None:
@@ -34,7 +34,7 @@ class DrawingEventsMouseMixin:
         p = event.pos(); l = self.mapToScene(p)
         self.mouse.current.setPL(p, l)
         self.main_window.status_bar.xy.setText(
-            str(int(l.x())) + ',' + str(int(l.y()))
+            str(int(round(l.x()))) + ',' + str(int(round(l.y())))
         )
         match self.mouse.left.state:
             case self.MouseButtonState.Pressed:
@@ -60,6 +60,14 @@ class DrawingEventsMouseMixin:
 
     def mousePressEvent(self : 'Drawing', event : QMouseEvent) -> None:
         p = event.pos(); l = self.mapToScene(p)
+        items = self.scene.items(
+            l,
+            Qt.ItemSelectionMode.IntersectsItemShape,
+            Qt.SortOrder.DescendingOrder,
+            self.viewportTransform()
+        )
+        for item in items:
+            print(f'{type(item).__name__}, {item.zValue()}')
         if event.buttons() & Qt.MouseButton.LeftButton:
             self.mouse.left.press.setPL(p, l)
             self.mouse.left.press.modifiers = self._getModifiers(event)
