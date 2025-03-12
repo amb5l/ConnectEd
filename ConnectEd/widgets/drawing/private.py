@@ -371,10 +371,11 @@ class DrawingPrivateMixin:
             menu.exec(self.mapToGlobal(self.mapFromScene(point)))
             return
         if items: # single or top item case
+            item = items[0]
             if toggle:
-                items[0].setSelected(not item.isSelected())
+                item.setSelected(not item.isSelected())
             else:
-                items[0].setSelected(True)
+                item.setSelected(True)
 
     def _select_item(self, item, toggle, prev=None):
         if prev is None:
