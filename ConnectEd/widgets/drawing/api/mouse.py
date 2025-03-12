@@ -19,7 +19,8 @@ class DrawingApiMouseMixin:
                     self.scene.clearSelection()
                 self._selectPoint(
                     self.mouse.current.logical,
-                    m == qkm.ControlModifier
+                    m & qkm.ControlModifier,
+                    m & qkm.AltModifier
                 )
             case self.State.ViewPan1:
                 self.prev_pos = self.mouse.left.release.physical
