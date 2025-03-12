@@ -3,9 +3,9 @@ from typing import Optional
 from math   import sqrt
 
 from PyQt6.QtCore    import Qt, QPoint, QPointF, QRect, QRectF, QTimer
-from PyQt6.QtWidgets import QRubberBand, QGraphicsItem
+from PyQt6.QtWidgets import QRubberBand, QGraphicsItem, QMenu
 from PyQt6.QtGui     import QMouseEvent, QCursor, QPainterPath, \
-                            QPainter, QPen, QColor
+                            QPainter, QPen, QColor, QAction, QIcon
 
 from ...core import settings, LAYER_SHEET, LAYER_DRAWING
 
@@ -292,6 +292,7 @@ class DrawingPrivateMixin:
                 QGraphicsItem.GraphicsItemFlag.ItemIsSelectable,
                 item.zValue() in layer.value
             )
+            item.setSelected(False)
 
     def _selectRect(
         self   : 'Drawing',
@@ -322,20 +323,56 @@ class DrawingPrivateMixin:
         point  : QPointF,
         toggle : bool = False
     ) -> None:
-        items = self.scene.items(
+        all_items = self.scene.items(
             point,
             Qt.ItemSelectionMode.IntersectsItemShape,
             Qt.SortOrder.DescendingOrder,
             self.viewportTransform()
         )
-        # TODO - offer user a popup to select the item?
-        for item in items:
-            if item.zValue() in self.layer.value:
-                if toggle:
-                    item.setSelected(not item.isSelected())
-                else:
-                    item.setSelected(True)
-                return
+        items = [i for i in all_items if i.zValue() in self.layer.value]
+        if len(items) > 1: # multiple items case
+            init_sel = {item: item.isSelected() for item in items}
+            menu = QMenu(self)
+            menu.setStyleSheet("""
+                QMenu::item {
+                    padding: 2px 10px 2px 4px;  /* Reduce left padding */
+                }
+                QMenu::icon {
+                    width: 0px;  /* Ensure no space for icons */
+                }
+            """)
+            for item in items:
+                text = f'{item.__class__.__name__}'
+                action = QAction(text, self)
+                action.setIcon(QIcon())
+                action.setData(item)
+                action.triggered.connect(
+                    lambda checked, i=item, t=toggle, p=init_sel[item]:
+                    self._select_item(i, t, p)
+                )
+                menu.addAction(action)
+            def _on_hover(action):
+                for item in items:
+                    item.setSelected(init_sel[item])
+                item = action.data() if action else None
+                if item:
+                    self._select_item(item, toggle, init_sel[item])
+            menu.hovered.connect(_on_hover)
+            menu.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
+            menu.setFocus()
+            menu.exec(self.mapToGlobal(self.mapFromScene(point)))
+        elif items: # single item case
+            item = items[0]
+            if toggle:
+                item.setSelected(not item.isSelected())
+            else:
+                item.setSelected(True)
+
+    def _select_item(self, item, toggle, prev=None):
+        if prev is None:
+            item.setSelected(not item.isSelected() if toggle else True)
+        else:
+            item.setSelected(not prev if toggle else True)
 
     def _addWIP(self: 'Drawing', item: QGraphicsItem) -> None:
         self.wip    = item
