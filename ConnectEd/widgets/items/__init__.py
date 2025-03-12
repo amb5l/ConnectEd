@@ -21,6 +21,7 @@ from PyQt6.QtWidgets import \
 
 from ...core import settings
 
+from .grip import Grip
 
 @dataclass
 class PenSpec:
@@ -194,6 +195,7 @@ class RectItem(
     MIN_SIZE = QSizeF(1.0, 1.0)
 
     anchor : Anchor
+    grips  : dict[Anchor, Grip]
 
     def __init__(
         self,
@@ -202,9 +204,14 @@ class RectItem(
         anchor  : Anchor = Anchor.TOP_LEFT,
         wip     : bool = False,
         outline : bool = True,
-        fill    : bool = True,
+        fill    : bool = True
     ) -> None:
         super().__init__()
+        self.grips = {}
+        for grip_pos in Anchor:
+            if grip_pos != Anchor.CENTER:
+                self.grips[grip_pos] = Grip(self)
+        self.anchor = anchor
         self.setPosSize(pos, size)
         self.setPen(QPen(Qt.PenStyle.NoPen))
         self.setBrush(QBrush(Qt.BrushStyle.NoBrush))
@@ -216,6 +223,19 @@ class RectItem(
             self.setPenSpec()
         if fill:
             self.setBrushSpec()
+        self.updateGripsPosition()
+        self.updateGripsVisibility()
+
+    def updateGripsPosition(self) -> None:
+        for grip_pos, grip in self.grips.items():
+            self.grips[grip_pos].setPos(
+                grip_pos.value.h * self.rect().width(),
+                grip_pos.value.v * self.rect().height()
+            )
+
+    def updateGripsVisibility(self) -> None:
+        for grip in self.grips.values():
+            grip.setVisible(self.isSelected())
 
     def setPosSize(self, pos : QPointF, size : QSizeF) -> None:
         self.setPos(pos)
@@ -224,6 +244,7 @@ class RectItem(
         if size.height() < self.MIN_SIZE.height():
             size.setHeight(self.MIN_SIZE.height())
         self.setRect(0, 0, size.width(), size.height())
+        self.updateGripsPosition()
 
     def setPoints(self, p1 : QPointF, p2 : QPointF) -> None:
         rect = QRectF(p1, p2).normalized()
@@ -232,9 +253,17 @@ class RectItem(
     def setAnchor(self, anchor : Anchor = Anchor.TOP_LEFT) -> None:
         self.anchor = anchor
 
+    def rect(self) -> QRectF:
+        rect = super().rect()
+        rect.translate(
+            -self.anchor.value.h * rect.width(),
+            -self.anchor.value.v * rect.height()
+        )
+        return rect
+
     def boundingRect(self) -> QRectF:
         w = self.penWidth()
-        return super().boundingRect().adjusted(-w/2, -w/2, w/2, w/2)
+        return self.rect().adjusted(-w/2, -w/2, w/2, w/2)
 
     def shape(self) -> QPainterPath:
         path = QPainterPath()
@@ -255,6 +284,11 @@ class RectItem(
             self.rect().width(),
             self.rect().height()
         ))
+
+    def itemChange(self, change, value):
+        if change == QGraphicsItem.GraphicsItemChange.ItemSelectedHasChanged:
+            self.updateGripsVisibility()
+        return super().itemChange(change, value)
 
 class TextItem(
     QGraphicsTextItem,

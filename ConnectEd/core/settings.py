@@ -85,7 +85,10 @@ FACTORY_SETTINGS = {
                         'width': 1,
                         'style': Qt.PenStyle.DotLine
                     },
-                    'fill': Qt.BrushStyle.DiagCrossPattern
+                    'fill': Qt.BrushStyle.DiagCrossPattern,
+                    'grip': {
+                        'size': 8
+                    }
                 },
                 'wip': {
                     'line': {
@@ -137,6 +140,15 @@ FACTORY_SETTINGS = {
                 'line' : QColor( 255,   0, 255 ), # bright magenta
                 'fill' : QColor( 255,   0, 255 )  # bright magenta
             },
+            'grip': {
+                'line' : QColor( 255,   0, 255 ), # bright magenta
+                'fill' : QColor( 255,   0,   0 )  # bright red
+
+            },
+            'anchor': {
+                'line' : QColor( 255,   0, 255 ), # bright magenta
+                'fill' : QColor( 255, 255, 128 )  # bright yellow
+            },
             'grid': {
                 'line' : QColor(  64,  64,  64 )
             }
@@ -163,6 +175,10 @@ FACTORY_SETTINGS = {
             'selected': {
                 'line' : QColor( 255,   0, 255 ), # bright magenta
                 'fill' : QColor( 128,   0, 128 )  # medium magenta
+            },
+            'grip': {
+                'line' : QColor( 255,   0, 255 ), # bright magenta
+                'fill' : QColor( 255, 255, 128 )  # bright yellow
             },
             'grid': {
                 'line' : QColor(  64,  64,  64 )
