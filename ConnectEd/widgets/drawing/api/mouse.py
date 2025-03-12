@@ -11,33 +11,74 @@ class DrawingApiMouseMixin:
     """Mixin class that provides mouse API for Drawing widgets."""
 
     def mouseLeftClick(self : 'Drawing') -> None:
+        m = self.mouse.left.press.modifiers
+        qkm = Qt.KeyboardModifier
         match self.state:
             case self.State.Idle:
-                m = self.mouse.left.press.modifiers
-                if m == Qt.KeyboardModifier.NoModifier:
+                if m == qkm.NoModifier:
                     self.scene.clearSelection()
                 self._selectPoint(
                     self.mouse.current.logical,
-                    m == Qt.KeyboardModifier.ControlModifier
+                    m == qkm.ControlModifier
                 )
-            case self.State.ViewCenter:
-                self._center(self.mouse.left.release.logical)
+            case self.State.ViewPan1:
+                self.prev_pos = self.mouse.left.release.physical
+                self.setCursor(Qt.CursorShape.ClosedHandCursor)
+                self.state = self.State.ViewPan2
+            case self.State.ViewPan2:
+                delta = self.mouse.left.release.physical - self.prev_pos
+                self.horizontalScrollBar().setValue(self.horizontalScrollBar().value() - delta.x())
+                self.verticalScrollBar().setValue(self.verticalScrollBar().value() - delta.y())
+                self.prev_pos = None
+                self.setCursor(Qt.CursorShape.ArrowCursor)
                 self.state = self.State.Idle
             case self.State.ViewZoomWindow1:
-                self.marquis.begin(self.mouse.left.press.physical)
+                self.marquis.begin(self.mouse.left.release.physical)
                 self.state = self.State.ViewZoomWindow2
             case self.State.ViewZoomWindow2:
                 self.marquis.end(self.mouse.left.release.physical)
                 self._zoomRect(self.marquis.rect())
                 self.state = self.State.Idle
+            case self.State.EditSlide1:
+                self._selectPoint(
+                    self.mouse.current.logical,
+                    m == qkm.ControlModifier
+                )
+                self.prev_pos = self._snap(self.mouse.left.release.logical)
+                self.state = self.State.EditSlide2
+            case self.State.EditSlide2:
+                # TODO: DRY, stretch connections
+                pos = self._snap(self.mouse.left.release.logical)
+                for item in self.scene.selectedItems():
+                    item.moveBy(
+                        pos.x() - self.prev_pos.x(),
+                        pos.y() - self.prev_pos.y()
+                    )
+                self.state = self.State.Idle
+            case self.State.EditMove1:
+                self._selectPoint(
+                    self.mouse.current.logical,
+                    m == qkm.ControlModifier
+                )
+                self.prev_pos = self._snap(self.mouse.left.release.logical)
+                self.state = self.State.EditMove2
+            case self.State.EditMove2:
+                # TODO: DRY
+                pos = self._snap(self.mouse.left.release.logical)
+                for item in self.scene.selectedItems():
+                    item.moveBy(
+                        pos.x() - self.prev_pos.x(),
+                        pos.y() - self.prev_pos.y()
+                    )
+                self.state = self.State.Idle
             case self.State.PlaceRectangle1:
                 self._addWIP(Rectangle(
-                    self._snap(self.mouse.left.press.logical)
+                    self._snap(self.mouse.left.release.logical)
                 ))
                 self.state = self.State.PlaceRectangle2
             case self.State.PlaceRectangle2:
                 self.wip.setPoints(
-                    self.wip_p1,
+                    self.prev_pos,
                     self._snap(self.mouse.left.release.logical)
                 )
                 self._completeWIP()
@@ -47,10 +88,26 @@ class DrawingApiMouseMixin:
         match self.state:
             case self.State.Idle:
                 m = self.mouse.left.press.modifiers
-                if m == Qt.KeyboardModifier.NoModifier:
+                qkm = Qt.KeyboardModifier
+                if not (m & (qkm.ControlModifier | qkm.ShiftModifier)):
                     self.scene.clearSelection()
-                self.marquis.begin(self.mouse.left.press.physical)
-                self.state = self.State.SelectRectangle2
+                items = self._itemsAt(self.mouse.left.press.logical)
+                if items:
+                    self.prev_pos = self._snap(self.mouse.left.press.logical)
+                    if not any(i.isSelected() for i in items):
+                        self._selectPoint(
+                            self.mouse.left.press.logical,
+                            m & qkm.ControlModifier
+                        )
+                    if m & qkm.AltModifier:
+                        self.state = self.State.EditMove2
+                    else:
+                        self.state = self.State.EditSlide2
+                else:
+                    if not (m & (qkm.ControlModifier | qkm.ShiftModifier)):
+                        self.scene.clearSelection()
+                    self.marquis.begin(self.mouse.left.press.physical)
+                    self.state = self.State.SelectRectangle2
             case self.State.ViewZoomWindow1:
                 self.marquis.begin(self.mouse.left.press.physical)
                 self.state = self.State.ViewZoomWindow2
@@ -65,36 +122,72 @@ class DrawingApiMouseMixin:
             case self.State.SelectRectangle2:
                 self.marquis.resize(self.mouse.current.physical)
             case self.State.ViewPan2:
-                pass
+                delta = self.mouse.current.physical - self.prev_pos
+                self.horizontalScrollBar().setValue(self.horizontalScrollBar().value() - delta.x())
+                self.verticalScrollBar().setValue(self.verticalScrollBar().value() - delta.y())
+                self.prev_pos = self.mouse.current.physical
             case self.State.ViewZoomWindow2:
                 self.marquis.resize(self.mouse.current.physical)
+            case self.State.EditSlide2:
+                # TODO: stretch connections
+                pos = self._snap(self.mouse.current.logical)
+                for item in self.scene.selectedItems():
+                    item.moveBy(
+                        pos.x() - self.prev_pos.x(),
+                        pos.y() - self.prev_pos.y()
+                    )
+                self.prev_pos = pos
+            case self.State.EditMove2:
+                # TODO: DRY
+                pos = self._snap(self.mouse.current.logical)
+                for item in self.scene.selectedItems():
+                    item.moveBy(
+                        pos.x() - self.prev_pos.x(),
+                        pos.y() - self.prev_pos.y()
+                    )
+                self.prev_pos = pos
             case self.State.PlaceRectangle2:
                 self.wip.setPoints(
-                    self.wip_p1,
+                    self.prev_pos,
                     self._snap(self.mouse.current.logical)
                 )
 
     def mouseLeftDragEnd(self : 'Drawing') -> None:
+        m = self.mouse.left.press.modifiers
+        qkm = Qt.KeyboardModifier
         match self.state:
             case self.State.SelectRectangle2:
-                m = self.mouse.left.press.modifiers
                 self.marquis.end(self.mouse.left.release.physical)
                 self._selectRect(
                     self.marquis.rect(),
-                    m == Qt.KeyboardModifier.ControlModifier
+                    m == qkm.ControlModifier
                 )
-                self.state = self.State.Idle
             case self.State.ViewZoomWindow2:
                 self.marquis.end(self.mouse.left.release.physical)
                 self._zoomRect(self.marquis.rect())
-                self.state = self.State.Idle
+            case self.State.EditSlide2:
+                # TODO: DRY, stretch connections
+                pos = self._snap(self.mouse.left.release.logical)
+                for item in self.scene.selectedItems():
+                    item.moveBy(
+                        pos.x() - self.prev_pos.x(),
+                        pos.y() - self.prev_pos.y()
+                    )
+            case self.State.EditMove2:
+                # TODO: DRY
+                pos = self._snap(self.mouse.left.release.logical)
+                for item in self.scene.selectedItems():
+                    item.moveBy(
+                        pos.x() - self.prev_pos.x(),
+                        pos.y() - self.prev_pos.y()
+                    )
             case self.State.PlaceRectangle2:
                 self.wip.setPoints(
-                    self.wip_p1,
+                    self.prev_pos,
                     self._snap(self.mouse.left.release.logical)
                 )
                 self._completeWIP()
-                self.state = self.State.Idle
+        self.state = self.State.Idle
 
     def mouseLeftDoubleClick(self : 'Drawing') -> None:
         pass
@@ -106,7 +199,7 @@ class DrawingApiMouseMixin:
         if self.state == self.State.Idle:
             match self.mouse.middle.press.modifiers:
                 case Qt.KeyboardModifier.NoModifier:
-                    self.pan_prev = self.mouse.current.physical
+                    self.prev_pos = self.mouse.current.physical
                     self.setCursor(Qt.CursorShape.ClosedHandCursor)
                     self.state = self.State.ViewPan2
                 case Qt.KeyboardModifier.ControlModifier:
@@ -116,37 +209,59 @@ class DrawingApiMouseMixin:
     def mouseMiddleDragContinue(self : 'Drawing') -> None:
         match self.state:
             case self.State.ViewPan2:
-                delta = self.mouse.current.physical - self.pan_prev
+                delta = self.mouse.current.physical - self.prev_pos
                 self.horizontalScrollBar().setValue(self.horizontalScrollBar().value() - delta.x())
                 self.verticalScrollBar().setValue(self.verticalScrollBar().value() - delta.y())
-                self.pan_prev = self.mouse.current.physical
+                self.prev_pos = self.mouse.current.physical
             case self.State.ViewZoomWindow2:
                 self.marquis.resize(self.mouse.current.physical)
 
     def mouseMiddleDragEnd(self : 'Drawing') -> None:
         match self.state:
             case self.State.ViewPan2:
-                delta = self.mouse.current.physical - self.pan_prev
+                delta = self.mouse.current.physical - self.prev_pos
                 self.horizontalScrollBar().setValue(self.horizontalScrollBar().value() - delta.x())
                 self.verticalScrollBar().setValue(self.verticalScrollBar().value() - delta.y())
-                self.pan_prev = None
+                self.prev_pos = None
                 self.setCursor(Qt.CursorShape.ArrowCursor)
-                self.state = self.State.Idle
             case self.State.ViewZoomWindow2:
                 self.marquis.end(self.mouse.middle.release.physical)
                 self._zoomRect(self.marquis.rect())
-                self.state = self.State.Idle
+        self.state = self.State.Idle
 
     def mouseMiddleDoubleClick(self : 'Drawing') -> None:
         pass
 
     def mouseMove(self : 'Drawing') -> None:
         match self.state:
+            case self.State.ViewPan2:
+                delta = self.mouse.current.physical - self.prev_pos
+                self.horizontalScrollBar().setValue(self.horizontalScrollBar().value() - delta.x())
+                self.verticalScrollBar().setValue(self.verticalScrollBar().value() - delta.y())
+                self.prev_pos = self.mouse.current.physical
             case self.State.ViewZoomWindow2:
                 self.marquis.resize(self.mouse.current.physical)
+            case self.State.EditSlide2:
+                # TODO: DRY, stretch connections
+                pos = self._snap(self.mouse.current.logical)
+                for item in self.scene.selectedItems():
+                    item.moveBy(
+                        pos.x() - self.prev_pos.x(),
+                        pos.y() - self.prev_pos.y()
+                    )
+                self.prev_pos = pos
+            case self.State.EditMove2:
+                # TODO: DRY
+                pos = self._snap(self.mouse.current.logical)
+                for item in self.scene.selectedItems():
+                    item.moveBy(
+                        pos.x() - self.prev_pos.x(),
+                        pos.y() - self.prev_pos.y()
+                    )
+                self.prev_pos = pos
             case self.State.PlaceRectangle2:
                 self.wip.setPoints(
-                    self.wip_p1,
+                    self.prev_pos,
                     self._snap(self.mouse.current.logical)
                 )
 

@@ -19,6 +19,9 @@ class MenuBar(QMenuBar):
         self.edit_menu = QMenu('&Edit')
         self.edit_menu.addAction(actions.editCancel)
         self.edit_menu.addAction(actions.editComplete)
+        self.edit_menu.addSeparator()
+        self.edit_menu.addAction(actions.editSlide)
+        self.edit_menu.addAction(actions.editMove)
 
         self.view_menu = QMenu('&View')
         self.view_menu.addAction(actions.viewZoomAll)
@@ -27,6 +30,7 @@ class MenuBar(QMenuBar):
         self.view_menu.addAction(actions.viewZoomIn)
         self.view_menu.addAction(actions.viewZoomOut)
         self.view_menu.addSeparator()
+        self.view_menu.addAction(actions.viewPan)
         self.view_menu.addAction(actions.viewPanUp)
         self.view_menu.addAction(actions.viewPanDown)
         self.view_menu.addAction(actions.viewPanLeft)

@@ -78,6 +78,14 @@ class Slots:
         widget.editComplete()
 
     @with_current_widget(Drawing)
+    def editSlide(self : 'Slots', widget: Drawing) -> None:
+        widget.editSlide()
+
+    @with_current_widget(Drawing)
+    def editMove(self : 'Slots', widget: Drawing) -> None:
+        widget.editMove()
+
+    @with_current_widget(Drawing)
     def viewZoomAll(self : 'Slots', widget: Drawing) -> None:
         widget.viewZoomAll()
 
@@ -96,6 +104,10 @@ class Slots:
     @with_current_widget(Drawing)
     def viewZoomOut(self : 'Slots', widget: Drawing) -> None:
         widget.viewZoomOut()
+
+    @with_current_widget(Drawing)
+    def viewPan(self : 'Slots', widget: Drawing) -> None:
+        widget.viewPan()
 
     @with_current_widget(Drawing)
     def viewPanUp(self : 'Slots', widget: Drawing) -> None:

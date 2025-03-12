@@ -13,8 +13,20 @@ class DrawingApiEditMixin:
         match self.state:
             case self.State.PlaceRectangle2:
                 self.wip.setPoints(
-                    self.wip_p1,
+                    self.prev_pos,
                     self._snap(self.mouse.current.logical)
                 )
                 self._completeWIP()
                 self.state = self.State.Idle
+
+    def editSlide(self : 'Drawing') -> None:
+        if self.scene.selectedItems():
+            self.state = self.State.EditSlide2
+        else:
+            self.state = self.State.EditSlide1
+
+    def editMove(self : 'Drawing') -> None:
+        if self.scene.selectedItems():
+            self.state = self.State.EditMove2
+        else:
+            self.state = self.State.EditMove1

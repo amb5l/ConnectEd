@@ -177,15 +177,19 @@ class DrawingPrivateMixin:
 
     class State(Enum):
         Idle             = auto()
-        ViewCenter       = auto()
+        ViewPan1         = auto()
         ViewPan2         = auto()
         ViewZoomWindow1  = auto()
         ViewZoomWindow2  = auto()
         SelectRectangle2 = auto()
+        EditSlide1       = auto()
+        EditSlide2       = auto()
+        EditMove1        = auto()
+        EditMove2        = auto()
         PlaceRectangle1  = auto()
         PlaceRectangle2  = auto()
 
-    def _itemsRect(self: 'Drawing') -> QRectF:
+    def _allItemsRect(self: 'Drawing') -> QRectF:
         items_rect = QRectF()
         for item in self.scene.items():
             if item == self.extents or item == self.grid:
@@ -294,6 +298,15 @@ class DrawingPrivateMixin:
             )
             item.setSelected(False)
 
+    def _itemsAt(self: 'Drawing', point: QPointF) -> list[QGraphicsItem]:
+        items = self.scene.items(
+            point,
+            Qt.ItemSelectionMode.IntersectsItemShape,
+            Qt.SortOrder.DescendingOrder,
+            self.viewportTransform()
+        )
+        return [i for i in items if i.zValue() in self.layer.value]
+
     def _selectRect(
         self   : 'Drawing',
         rect   : QRectF,
@@ -321,16 +334,11 @@ class DrawingPrivateMixin:
     def _selectPoint(
         self   : 'Drawing',
         point  : QPointF,
-        toggle : bool = False
+        toggle : bool = False,
+        choice : bool = False
     ) -> None:
-        all_items = self.scene.items(
-            point,
-            Qt.ItemSelectionMode.IntersectsItemShape,
-            Qt.SortOrder.DescendingOrder,
-            self.viewportTransform()
-        )
-        items = [i for i in all_items if i.zValue() in self.layer.value]
-        if len(items) > 1: # multiple items case
+        items = self._itemsAt(point)
+        if len(items) > 1 and choice: # multiple choice case
             init_sel = {item: item.isSelected() for item in items}
             menu = QMenu(self)
             menu.setStyleSheet("""
@@ -361,12 +369,12 @@ class DrawingPrivateMixin:
             menu.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
             menu.setFocus()
             menu.exec(self.mapToGlobal(self.mapFromScene(point)))
-        elif items: # single item case
-            item = items[0]
+            return
+        if items: # single or top item case
             if toggle:
-                item.setSelected(not item.isSelected())
+                items[0].setSelected(not item.isSelected())
             else:
-                item.setSelected(True)
+                items[0].setSelected(True)
 
     def _select_item(self, item, toggle, prev=None):
         if prev is None:
@@ -375,8 +383,8 @@ class DrawingPrivateMixin:
             item.setSelected(not prev if toggle else True)
 
     def _addWIP(self: 'Drawing', item: QGraphicsItem) -> None:
-        self.wip    = item
-        self.wip_p1 = item.pos()
+        self.wip      = item
+        self.prev_pos = item.pos()
         self.wip.setWIP(True)
         self.scene.addItem(self.wip)
 
@@ -384,10 +392,10 @@ class DrawingPrivateMixin:
         self.wip.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsSelectable, True)
         self.wip.setWIP(False)
         self.wip.update()
-        self.wip    = None
-        self.wip_p1 = None
+        self.wip      = None
+        self.prev_pos = None
 
     def _removeWIP(self: 'Drawing') -> None:
         self.scene.removeItem(self.wip)
-        self.wip    = None
-        self.wip_p1 = None
+        self.wip      = None
+        self.prev_pos = None

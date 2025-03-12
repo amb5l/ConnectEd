@@ -12,7 +12,7 @@ class DrawingApiViewMixin:
         self._zoomRect(self.extents.rect())
 
     def viewZoomAll(self : 'Drawing') -> None:
-        self._zoomRect(self._itemsRect())
+        self._zoomRect(self._allItemsRect())
 
     def viewZoomWindow(self : 'Drawing') -> None:
         self.state = self.State.ViewZoomWindow1
@@ -23,8 +23,8 @@ class DrawingApiViewMixin:
     def viewZoomOut(self : 'Drawing', n=1) -> None:
         self._zoomRelMouse((1 - settings.prefs.display.zoom.step)**n)
 
-    def viewCenter(self : 'Drawing') -> None:
-        self.state = self.State.ViewCenter
+    def viewPan(self : 'Drawing', n=1) -> None:
+        self.state = self.State.ViewPan1
 
     def viewPanLeft(self : 'Drawing', n=1) -> None:
         self._pan(QPointF(settings.prefs.display.pan.step * n, 0))
