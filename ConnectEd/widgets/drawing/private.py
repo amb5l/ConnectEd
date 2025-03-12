@@ -356,12 +356,11 @@ class DrawingPrivateMixin:
     def _completeWIP(self: 'Drawing') -> None:
         self.wip.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsSelectable, True)
         self.wip.setWIP(False)
+        self.wip.update()
         self.wip    = None
         self.wip_p1 = None
-        self.scene.update()
 
     def _removeWIP(self: 'Drawing') -> None:
         self.scene.removeItem(self.wip)
         self.wip    = None
         self.wip_p1 = None
-        self.scene.update()
