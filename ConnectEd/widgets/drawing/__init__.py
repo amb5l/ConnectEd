@@ -49,12 +49,12 @@ class Drawing(
     extents     : Extents
     grid        : Grid
     wip         : Optional[QGraphicsItem]
+    wip_p1      : Optional[QPointF]       # 1st point created
     marquis     : 'Drawing.Marquis'
     layer       : Layer
     zoom        : float
     pan_prev    : Optional[QPointF]
     mouse       : 'Drawing.Mouse'
-    point1      : Optional[QPointF | QPoint]      # 1st point in a multi-point operation
     state       : 'Drawing.State'
 
     def __init__(

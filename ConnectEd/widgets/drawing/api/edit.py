@@ -12,7 +12,8 @@ class DrawingApiEditMixin:
     def editComplete(self : 'Drawing') -> None:
         match self.state:
             case self.State.PlaceRectangle2:
-                self.wip.setPoint2(
+                self.wip.setPoints(
+                    self.wip_p1,
                     self._snap(self.mouse.current.logical)
                 )
                 self._completeWIP()

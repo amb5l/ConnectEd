@@ -10,6 +10,7 @@ from dataclasses import dataclass
 from enum        import Enum
 from collections import namedtuple
 from typing      import Optional
+from types       import SimpleNamespace
 from math        import copysign
 
 from PyQt6.QtCore    import Qt, QPointF, QRectF, QSizeF
@@ -83,13 +84,23 @@ class ItemBasicsMixin:
     def setWIP(self, wip : bool = True) -> None:
         self.wip = wip
 
+    def getPrefsTheme(self) -> SimpleNamespace:
+        item_name = self.__class__.__name__.lower()
+        if self.isSelected():
+            prefs = settings.prefs.display.items.selected
+            theme = settings.theme.selected
+        elif self.wip:
+            prefs = settings.prefs.display.items.wip
+            theme = settings.theme.wip
+        else:
+            prefs = getattr(settings.prefs.display.items, item_name)
+            theme = getattr(settings.theme, item_name)
+        return prefs, theme
+
 class ItemPenMixin:
     """Pen support."""
 
     pen_spec : PenSpec
-
-    def initPenSpec(self) -> None:
-        self.pen_spec = PenSpec()
 
     def setPenSpec(
         self,
@@ -98,36 +109,27 @@ class ItemPenMixin:
         self.pen_spec = pen_spec
 
     def penFromSpec(self) -> None:
-        # TODO handle WIP
-        if self.isSelected():
-            prefs = settings.prefs.display.items.selected.line
-            theme = settings.theme.selected.line
-        else:
-            item_name = self.__class__.__name__.lower()
-            prefs = getattr(settings.prefs.display.items, item_name).line
-            theme = getattr(settings.theme, item_name).line
-        pen = QPen()
-        pen.setColor(
-            theme if self.pen_spec.color is None else
-                self.pen_spec.color
+        if not hasattr(self, 'pen_spec'):
+            return QPen(Qt.PenStyle.NoPen)
+        prefs, theme = self.getPrefsTheme()
+        s = self.pen_spec
+        return QPen(
+            theme.line       if s.color is None else s.color,
+            prefs.line.width if s.width is None else s.width,
+            prefs.line.style if s.style is None else s.style
         )
-        pen.setWidth(
-            prefs.width if self.pen_spec.width is None else
-                self.pen_spec.width
-        )
-        pen.setStyle(
-            prefs.style if self.pen_spec.style is None else
-                self.pen_spec.style
-        )
-        return pen
+
+    def penWidth(self) -> float:
+        if not hasattr(self, 'pen_spec'):
+            return 0
+        prefs, _ = self.getPrefsTheme()
+        s = self.pen_spec
+        return prefs.line.width if s.width is None else s.width
 
 class ItemBrushMixin:
     """Brush support."""
 
     brush_spec : BrushSpec
-
-    def initBrushSpec(self) -> None:
-        self.brush_spec = BrushSpec()
 
     def setBrushSpec(
         self,
@@ -136,23 +138,14 @@ class ItemBrushMixin:
         self.brush_spec = brush_spec
 
     def brushFromSpec(self) -> None:
-        if self.isSelected():
-            prefs = settings.prefs.display.items.selected.fill
-            theme = settings.theme.selected.fill
-        else:
-            item_name = self.__class__.__name__.lower()
-            prefs = getattr(settings.prefs.display.items, item_name).fill
-            theme = getattr(settings.theme, item_name).fill
-        brush = QBrush()
-        brush.setColor(
-            theme if self.brush_spec.color is None else
-                self.brush_spec.color
+        if not hasattr(self, 'brush_spec'):
+            return QBrush(Qt.BrushStyle.NoBrush)
+        prefs, theme = self.getPrefsTheme()
+        s = self.brush_spec
+        return QBrush(
+            theme.fill if s.color is None else s.color,
+            prefs.fill if s.style is None else s.style
         )
-        brush.setStyle(
-            prefs if self.brush_spec.style is None else
-                self.brush_spec.style
-        )
-        return brush
 
 class ItemTextMixin:
     """Text/font support."""
@@ -190,68 +183,62 @@ class ItemTextMixin:
                 self.text_spec.italic
         )
 
-class RectBaseItem(
+class RectItem(
     QGraphicsRectItem,
-    ItemBasicsMixin
+    ItemBasicsMixin,
+    ItemPenMixin,
+    ItemBrushMixin
 ):
     """Base class for rectangle items."""
 
     MIN_SIZE = QSizeF(1.0, 1.0)
 
-    p1     : QPointF
-    p2     : QPointF
     anchor : Anchor
 
     def __init__(
         self,
-        p1     : QPointF,
-        p2     : Optional[QPointF] = None,
-        anchor : Anchor = Anchor.TOP_LEFT,
-        wip    : bool = False
+        pos     : QPointF,
+        size    : QSizeF = QSizeF(0, 0),
+        anchor  : Anchor = Anchor.TOP_LEFT,
+        wip     : bool = False,
+        outline : bool = True,
+        fill    : bool = True,
     ) -> None:
         super().__init__()
+        self.setPosSize(pos, size)
+        self.setPen(QPen(Qt.PenStyle.NoPen))
+        self.setBrush(QBrush(Qt.BrushStyle.NoBrush))
         self.defaultSetup()
         self.setZValue(self.Z)
-        self.setPoints(p1, p2)
         self.setAnchor(anchor)
         self.setWIP(wip)
+        if outline:
+            self.setPenSpec()
+        if fill:
+            self.setBrushSpec()
 
-    def setPoints(self, p1 : QPointF, p2 : Optional[QPointF] = None) -> None:
-        self.p1 = p1
-        if p2 is None:
-            p2 = p1 + QPointF(self.MIN_SIZE.width(), self.MIN_SIZE.height())
-        self.setPoint2(p2)
+    def setPosSize(self, pos : QPointF, size : QSizeF) -> None:
+        self.setPos(pos)
+        if size.width() < self.MIN_SIZE.width():
+            size.setWidth(self.MIN_SIZE.width())
+        if size.height() < self.MIN_SIZE.height():
+            size.setHeight(self.MIN_SIZE.height())
+        self.setRect(0, 0, size.width(), size.height())
 
-    def setPoint2(self, p2 : QPointF) -> None:
-        m = self.MIN_SIZE
-        if abs(p2.x() - self.p1.x()) < m.width():
-            p2.setX(self.p1.x() + copysign(m.width(), p2.x() - self.p1.x()))
-        if abs(p2.y() - self.p1.y()) < m.height():
-            p2.setY(self.p1.y() + copysign(m.height(), p2.y() - self.p1.y()))
-        self.p2 = p2
-        self.prepareGeometryChange()
-        rect = QRectF(self.p1, self.p2).normalized()
-        self.setPos(rect.topLeft())
-        self.setRect(0, 0, rect.width(), rect.height())
+    def setPoints(self, p1 : QPointF, p2 : QPointF) -> None:
+        rect = QRectF(p1, p2).normalized()
+        self.setPosSize(rect.topLeft(), rect.size())
 
     def setAnchor(self, anchor : Anchor = Anchor.TOP_LEFT) -> None:
         self.anchor = anchor
 
     def boundingRect(self) -> QRectF:
-        rect = super().boundingRect()
-        return QRectF(
-            -rect.width() * self.anchor.value.h,
-            -rect.height() * self.anchor.value.v,
-            rect.width(), rect.height()
-        )
+        w = self.penWidth()
+        return super().boundingRect().adjusted(-w/2, -w/2, w/2, w/2)
 
     def shape(self) -> QPainterPath:
-        path = super().shape()
-        rect = path.boundingRect()
-        path.translate(
-            -rect.width()  * self.anchor.value.h,
-            -rect.height() * self.anchor.value.v
-        )
+        path = QPainterPath()
+        path.addRect(self.boundingRect())
         return path
 
     def paint(
@@ -260,89 +247,14 @@ class RectBaseItem(
         option  : QStyleOptionGraphicsItem,
         widget  : QWidget
     ) -> None:
-        rect = self.rect()
-        painter.translate(
-            -rect.width() * self.anchor.value.h,
-            -rect.height() * self.anchor.value.v
-        )
-        painter.drawRect(rect)
-
-class RectPenOnlyItem(RectBaseItem, ItemPenMixin):
-    """Base class for unfilled rectangle items."""
-
-    def __init__(
-        self,
-        p1     : QPointF,
-        p2     : Optional[QPointF] = None,
-        anchor : Anchor = Anchor.TOP_LEFT,
-        wip    : bool = False
-    ) -> None:
-        super().__init__(p1, p2, anchor, wip)
-        self.initPenSpec()
-
-    def boundingRect(self) -> QRectF:
-        item_name = self.__class__.__name__.lower()
-        default = getattr(settings.prefs.display.items, item_name).line
-        w = default.width if self.pen_spec.width is None else \
-            self.pen_spec.width
-        margin = w / 2
-        return super().boundingRect().adjusted(-margin, -margin, margin, margin)
-
-    def paint(
-        self,
-        painter : QPainter,
-        option  : QStyleOptionGraphicsItem,
-        widget  : QWidget
-    ) -> None:
-        painter.setPen(self.penFromSpec())
-        painter.setBrush(QBrush(Qt.BrushStyle.NoBrush))
-        super().paint(painter, option, widget)
-
-class RectBrushOnlyItem(RectBaseItem, ItemBrushMixin):
-    """Base class for filled rectangle items with no outline."""
-
-    def __init__(
-        self,
-        p1     : QPointF,
-        p2     : Optional[QPointF] = None,
-        anchor : Anchor = Anchor.TOP_LEFT,
-        wip    : bool = False
-    ) -> None:
-        super().__init__(p1, p2, anchor, wip)
-        self.initBrushSpec()
-
-    def paint(
-        self,
-        painter : QPainter,
-        option  : QStyleOptionGraphicsItem,
-        widget  : QWidget
-    ) -> None:
-        painter.setPen(QPen(Qt.PenStyle.NoPen))
-        painter.setBrush(self.brushFromSpec())
-        super().paint(painter, option, widget)
-
-class RectPenBrushItem(RectPenOnlyItem, ItemBrushMixin):
-    """Base class for rectangle items with pen and brush."""
-
-    def __init__(
-        self,
-        p1     : QPointF,
-        p2     : Optional[QPointF] = None,
-        anchor : Anchor = Anchor.TOP_LEFT,
-        wip    : bool = False
-    ) -> None:
-        super().__init__(p1, p2, anchor, wip)
-        self.initBrushSpec()
-
-    def paint(
-        self,
-        painter : QPainter,
-        option  : QStyleOptionGraphicsItem,
-        widget  : QWidget
-    ) -> None:
         painter.setPen(self.penFromSpec())
         painter.setBrush(self.brushFromSpec())
-        RectBaseItem.paint(self, painter, option, widget)
+        painter.drawRect(QRectF(
+            -self.rect().width() * self.anchor.value.h,
+            -self.rect().height() * self.anchor.value.v,
+            self.rect().width(),
+            self.rect().height()
+        ))
 
 class TextItem(
     QGraphicsTextItem,

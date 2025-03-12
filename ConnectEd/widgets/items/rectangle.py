@@ -1,21 +1,18 @@
-from typing import Optional
-
-from PyQt6.QtCore    import QPointF
+from PyQt6.QtCore import QPointF, QSizeF
 
 from ...core import Z_DRAWING
 
-from . import RectPenBrushItem, Anchor
+from . import RectItem, Anchor
 
 
-class Rectangle(RectPenBrushItem):
+class Rectangle(RectItem):
     Z = Z_DRAWING
 
     def __init__(
         self   : 'Rectangle',
-        p1     : QPointF,
-        p2     : Optional[QPointF] = None,
+        pos    : QPointF,
+        size   : QSizeF = QSizeF(0, 0),
         anchor : Anchor = Anchor.TOP_LEFT,
         wip    : bool = False
     ) -> None:
-        super().__init__(p1, p2, anchor)
-        self.setWIP(wip)
+        super().__init__(pos, size, anchor, wip)

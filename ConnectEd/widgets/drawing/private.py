@@ -1,13 +1,13 @@
-from enum        import Enum, auto
-from typing      import Optional
-from math        import sqrt
+from enum   import Enum, auto
+from typing import Optional
+from math   import sqrt
 
-from PyQt6.QtCore    import Qt, QPoint, QPointF, QRect, QRectF, QSizeF, QTimer
+from PyQt6.QtCore    import Qt, QPoint, QPointF, QRect, QRectF, QTimer
 from PyQt6.QtWidgets import QRubberBand, QGraphicsItem
 from PyQt6.QtGui     import QMouseEvent, QCursor, QPainterPath, \
                             QPainter, QPen, QColor
 
-from ...core import settings, _iround, LAYER_SHEET, LAYER_DRAWING
+from ...core import settings, LAYER_SHEET, LAYER_DRAWING
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -275,10 +275,13 @@ class DrawingPrivateMixin:
         self._zoomAbs(factor)
         self.centerOn(rect.center())
 
-    def _snap(self: 'Drawing', pos: QPoint) -> QPoint:
+    def _round_to_nearest(self: 'Drawing', x : float, n : float) -> float:
+        return round(x / n) * n
+
+    def _snap(self: 'Drawing', pos: QPointF) -> QPoint:
         return QPointF(
-            _iround(pos.x(), self.grid.pitch.x()),
-            _iround(pos.y(), self.grid.pitch.y())
+            self._round_to_nearest(pos.x(), self.grid.pitch.x()),
+            self._round_to_nearest(pos.y(), self.grid.pitch.y())
         ) if self.grid.snap else pos
 
     def _distance(self: 'Drawing', cp1: QPoint, cp2: QPoint) -> int:
@@ -345,15 +348,20 @@ class DrawingPrivateMixin:
                 return
 
     def _addWIP(self: 'Drawing', item: QGraphicsItem) -> None:
-        self.wip = item
+        self.wip    = item
+        self.wip_p1 = item.pos()
         self.wip.setWIP(True)
         self.scene.addItem(self.wip)
 
     def _completeWIP(self: 'Drawing') -> None:
         self.wip.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsSelectable, True)
         self.wip.setWIP(False)
-        self.wip = None
+        self.wip    = None
+        self.wip_p1 = None
+        self.scene.update()
 
     def _removeWIP(self: 'Drawing') -> None:
         self.scene.removeItem(self.wip)
-        self.wip = None
+        self.wip    = None
+        self.wip_p1 = None
+        self.scene.update()

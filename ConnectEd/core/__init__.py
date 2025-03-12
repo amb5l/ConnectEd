@@ -14,8 +14,6 @@ __all__ = [
     'unknown_args',
     'settings',
     'TypedList',
-    'Rect2',
-    '_iround',
     'Z_PAPER',
     'Z_TEMPLATE',
     'Z_DRAWING',
@@ -30,7 +28,6 @@ from .defs     import *
 from .logger   import logger
 from .args     import args, unknown_args
 from .settings import Settings
-from .types    import TypedList, Rect2
-from .utils    import _iround
+from .types    import TypedList
 
 settings = Settings()

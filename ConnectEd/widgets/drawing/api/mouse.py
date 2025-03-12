@@ -36,7 +36,8 @@ class DrawingApiMouseMixin:
                 ))
                 self.state = self.State.PlaceRectangle2
             case self.State.PlaceRectangle2:
-                self.wip.setPoint2(
+                self.wip.setPoints(
+                    self.wip_p1,
                     self._snap(self.mouse.left.release.logical)
                 )
                 self._completeWIP()
@@ -68,7 +69,8 @@ class DrawingApiMouseMixin:
             case self.State.ViewZoomWindow2:
                 self.marquis.resize(self.mouse.current.physical)
             case self.State.PlaceRectangle2:
-                self.wip.setPoint2(
+                self.wip.setPoints(
+                    self.wip_p1,
                     self._snap(self.mouse.current.logical)
                 )
 
@@ -87,7 +89,8 @@ class DrawingApiMouseMixin:
                 self._zoomRect(self.marquis.rect())
                 self.state = self.State.Idle
             case self.State.PlaceRectangle2:
-                self.wip.setPoint2(
+                self.wip.setPoints(
+                    self.wip_p1,
                     self._snap(self.mouse.left.release.logical)
                 )
                 self._completeWIP()
@@ -142,7 +145,8 @@ class DrawingApiMouseMixin:
             case self.State.ViewZoomWindow2:
                 self.marquis.resize(self.mouse.current.physical)
             case self.State.PlaceRectangle2:
-                self.wip.setPoint2(
+                self.wip.setPoints(
+                    self.wip_p1,
                     self._snap(self.mouse.current.logical)
                 )
 

@@ -49,5 +49,3 @@ def get_default_path() -> str:
             r = '~'
     return r
 
-def _iround(i, j : int) -> int:
-    return int((i // j) * j)

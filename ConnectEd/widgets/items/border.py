@@ -1,13 +1,11 @@
 from typing import Optional
 
-from PyQt6.QtCore    import QPointF
-from PyQt6.QtGui     import QPainter
-from PyQt6.QtWidgets import QStyleOptionGraphicsItem, QWidget
+from PyQt6.QtCore import QPointF, QSizeF
 
 from ...core import Z_TEMPLATE, settings
-from .       import RectPenOnlyItem, Paper
+from .       import RectItem, Paper
 
-class Border(RectPenOnlyItem):
+class Border(RectItem):
     Z = Z_TEMPLATE
 
     margin : float
@@ -17,7 +15,7 @@ class Border(RectPenOnlyItem):
         paper    : 'Paper',
         margin   : Optional[float] = None
     ) -> None:
-        super().__init__(QPointF(0, 0))
+        super().__init__(QPointF(0, 0), fill=False)
         self.paper = paper
         if margin is None:
             margin = settings.defaults.margin
@@ -28,10 +26,10 @@ class Border(RectPenOnlyItem):
         self.updateSize()
 
     def updateSize(self : 'Border') -> None:
-        self.setPoints(
+        self.setPosSize(
             QPointF(self.margin, self.margin),
-            QPointF(
-                self.paper.rect().width() - self.margin,
-                self.paper.rect().height() - self.margin
+            QSizeF(
+                self.paper.rect().width()  - (2 * self.margin),
+                self.paper.rect().height() - (2 * self.margin)
             )
         )
