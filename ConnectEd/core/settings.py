@@ -17,7 +17,7 @@ from types       import SimpleNamespace
 from typing      import Any, Dict, List, Union
 from collections import namedtuple
 
-from PyQt6.QtCore import QSettings, QPointF, QSize, QSizeF, Qt
+from PyQt6.QtCore import QSettings, QPointF, QSizeF, Qt
 from PyQt6.QtGui  import QColor
 
 from .logger import logger
@@ -212,29 +212,23 @@ class Settings(SimpleNamespace):
         """Load settings from QSettings storage into this SimpleNamespace."""
         logger.debug('loading settings')
         qsettings = QSettings(ORG_NAME, APP_NAME)
-        for attr_name in dir(self):
-            if attr_name.startswith('_') or callable(getattr(self, attr_name)):
-                continue
+        for attr_name in FACTORY_SETTINGS.keys():
             attr = getattr(self, attr_name)
-            if hasattr(attr, '__fields__'): # is a Pydantic model
-                logger.debug(f'Loading settings for {attr_name}')
-                qsettings.beginGroup(attr_name)
-                self._load(attr, qsettings)
-                qsettings.endGroup()
+            logger.debug(f'Loading settings for {attr_name}')
+            qsettings.beginGroup(attr_name)
+            self._load(attr, qsettings)
+            qsettings.endGroup()
 
     def save(self : 'Settings') -> None:
         """Save settings from this SimpleNamespace to QSettings storage."""
         logger.debug('saving settings')
         qsettings = QSettings(ORG_NAME, APP_NAME)
-        for attr_name in dir(self):
-            if attr_name.startswith('_') or callable(getattr(self, attr_name)):
-                continue
+        for attr_name in FACTORY_SETTINGS.keys():
             attr = getattr(self, attr_name)
-            if hasattr(attr, '__fields__'): # is a Pydantic model
-                logger.debug(f'Saving settings for {attr_name}')
-                qsettings.beginGroup(attr_name)
-                self._save(attr, qsettings)
-                qsettings.endGroup()
+            logger.debug(f'Saving settings for {attr_name}')
+            qsettings.beginGroup(attr_name)
+            self._save(attr, qsettings)
+            qsettings.endGroup()
 
     def dump(self : 'Settings') -> str:
         """Return a formatted string representation of all settings."""
@@ -309,7 +303,8 @@ class Settings(SimpleNamespace):
             case 'int'        : return int(valueStr)
             case 'float'      : return float(valueStr)
             case 'bool'       : return valueStr == 'True'
-            case 'QSize'      : return QSize(*map(int, valueStr[1:-1].split(',')))
+            case 'MinMax'     : return MinMax(*map(float, valueStr[1:-1].split(',')))
+            case 'QPointF'    : return QPointF(*map(float, valueStr[1:-1].split(',')))
             case 'QSizeF'     : return QSizeF(*map(float, valueStr[1:-1].split(',')))
             case 'QColor'     : return QColor.fromRgba(int(valueStr,0))
             case 'PenStyle'   : return Qt.PenStyle[valueStr]
@@ -327,6 +322,8 @@ class Settings(SimpleNamespace):
             case 'int'        : valueStr = str(value)
             case 'float'      : valueStr = str(value)
             case 'bool'       : valueStr = str(value)
+            case 'MinMax'     : valueStr = f'({value.min},{value.max})'
+            case 'QPointF'    : valueStr = f'({value.x()},{value.y()})'
             case 'QSize'      : valueStr = f'({value.width()},{value.height()})'
             case 'QSizeF'     : valueStr = f'({value.width()},{value.height()})'
             case 'QColor'     : valueStr = hex(value.rgba())
