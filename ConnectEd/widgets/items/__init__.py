@@ -3,6 +3,7 @@ __all__ = [
     'Paper',
     'Border',
     'Rectangle',
+    'Grip',
     'Grid'
 ]
 
@@ -43,23 +44,21 @@ class TextSpec:
     italic    : Optional[bool]   = None
     underline : Optional[bool]   = None
 
-AnchorHV = namedtuple('AnchorHV', ['h', 'v'])
+KeyPointHV = namedtuple('KeyPointHV', ['h', 'v'])
 
-class Anchor(Enum):
-    TOP_LEFT      = AnchorHV(0.0, 0.0)
-    TOP_CENTER    = AnchorHV(0.5, 0.0)
-    TOP_RIGHT     = AnchorHV(1.0, 0.0)
-    CENTER_LEFT   = AnchorHV(0.0, 0.5)
-    CENTER        = AnchorHV(0.5, 0.5)
-    CENTER_RIGHT  = AnchorHV(1.0, 0.5)
-    BOTTOM_LEFT   = AnchorHV(0.0, 1.0)
-    BOTTOM_CENTER = AnchorHV(0.5, 1.0)
-    BOTTOM_RIGHT  = AnchorHV(1.0, 1.0)
+class KeyPoint(Enum):
+    TOP_LEFT      = KeyPointHV(0.0, 0.0)
+    TOP_CENTER    = KeyPointHV(0.5, 0.0)
+    TOP_RIGHT     = KeyPointHV(1.0, 0.0)
+    CENTER_LEFT   = KeyPointHV(0.0, 0.5)
+    CENTER        = KeyPointHV(0.5, 0.5)
+    CENTER_RIGHT  = KeyPointHV(1.0, 0.5)
+    BOTTOM_LEFT   = KeyPointHV(0.0, 1.0)
+    BOTTOM_CENTER = KeyPointHV(0.5, 1.0)
+    BOTTOM_RIGHT  = KeyPointHV(1.0, 1.0)
 
 class ItemBasicsMixin:
     """Basics for all items."""
-
-    wip : bool
 
     def defaultSetup(self) -> None:
         f = QGraphicsItem.GraphicsItemFlag
@@ -82,15 +81,15 @@ class ItemBasicsMixin:
         self.setFlag( f.ItemContainsChildrenInShape          , True  )
         self.setCacheMode(QGraphicsItem.CacheMode.DeviceCoordinateCache)
 
-    def setWIP(self, wip : bool = True) -> None:
-        self.wip = wip
+    def getWIP(self) -> bool:
+        return self == self.scene().views()[0].wip
 
     def getPrefsTheme(self) -> SimpleNamespace:
         item_name = self.__class__.__name__.lower()
         if self.isSelected():
             prefs = settings.prefs.display.items.selected
             theme = settings.theme.selected
-        elif self.wip:
+        elif self.getWIP():
             prefs = settings.prefs.display.items.wip
             theme = settings.theme.wip
         else:
@@ -109,7 +108,7 @@ class ItemPenMixin:
     ) -> None:
         self.pen_spec = pen_spec
 
-    def penFromSpec(self) -> None:
+    def penFromSpec(self) -> QPen:
         if not hasattr(self, 'pen_spec'):
             return QPen(Qt.PenStyle.NoPen)
         prefs, theme = self.getPrefsTheme()
@@ -138,7 +137,7 @@ class ItemBrushMixin:
     ) -> None:
         self.brush_spec = brush_spec
 
-    def brushFromSpec(self) -> None:
+    def brushFromSpec(self) -> QBrush:
         if not hasattr(self, 'brush_spec'):
             return QBrush(Qt.BrushStyle.NoBrush)
         prefs, theme = self.getPrefsTheme()
@@ -194,23 +193,19 @@ class RectItem(
 
     MIN_SIZE = QSizeF(1.0, 1.0)
 
-    anchor : Anchor
-    grips  : dict[Anchor, Grip]
+    anchor : KeyPoint
+    grips  : dict[KeyPoint, Grip]
 
     def __init__(
         self,
         pos     : QPointF,
         size    : QSizeF = QSizeF(0, 0),
-        anchor  : Anchor = Anchor.TOP_LEFT,
-        wip     : bool = False,
+        anchor  : KeyPoint = KeyPoint.TOP_LEFT,
         outline : bool = True,
         fill    : bool = True
     ) -> None:
         super().__init__()
-        self.grips = {}
-        for grip_pos in Anchor:
-            if grip_pos != Anchor.CENTER:
-                self.grips[grip_pos] = Grip(self)
+        self.grips = {p: Grip(self, p) for p in KeyPoint if p != KeyPoint.CENTER}
         self.anchor = anchor
         self.setPosSize(pos, size)
         self.setPen(QPen(Qt.PenStyle.NoPen))
@@ -218,24 +213,12 @@ class RectItem(
         self.defaultSetup()
         self.setZValue(self.Z)
         self.setAnchor(anchor)
-        self.setWIP(wip)
         if outline:
             self.setPenSpec()
         if fill:
             self.setBrushSpec()
         self.updateGripsPosition()
         self.updateGripsVisibility()
-
-    def updateGripsPosition(self) -> None:
-        for grip_pos, grip in self.grips.items():
-            self.grips[grip_pos].setPos(
-                grip_pos.value.h * self.rect().width(),
-                grip_pos.value.v * self.rect().height()
-            )
-
-    def updateGripsVisibility(self) -> None:
-        for grip in self.grips.values():
-            grip.setVisible(self.isSelected())
 
     def setPosSize(self, pos : QPointF, size : QSizeF) -> None:
         self.setPos(pos)
@@ -250,8 +233,22 @@ class RectItem(
         rect = QRectF(p1, p2).normalized()
         self.setPosSize(rect.topLeft(), rect.size())
 
-    def setAnchor(self, anchor : Anchor = Anchor.TOP_LEFT) -> None:
+    def setAnchor(self, anchor : KeyPoint = KeyPoint.TOP_LEFT) -> None:
         self.anchor = anchor
+
+    def updateGripsPosition(self) -> None:
+        for kp in self.grips.keys():
+            self.grips[kp].setPos(
+                kp.value.h * self.rect().width(),
+                kp.value.v * self.rect().height()
+            )
+
+    def updateGripsVisibility(self) -> None:
+        for grip in self.grips.values():
+            grip.setVisible(self.isSelected())
+
+    def gripResize(self, kp : KeyPoint, delta : QPointF) -> None:
+        pass
 
     def rect(self) -> QRectF:
         rect = super().rect()
@@ -276,8 +273,10 @@ class RectItem(
         option  : QStyleOptionGraphicsItem,
         widget  : QWidget
     ) -> None:
-        painter.setPen(self.penFromSpec())
-        painter.setBrush(self.brushFromSpec())
+        pen = self.penFromSpec()
+        painter.setPen(pen)
+        brush = self.brushFromSpec()
+        painter.setBrush(brush)
         painter.drawRect(QRectF(
             -self.rect().width() * self.anchor.value.h,
             -self.rect().height() * self.anchor.value.v,
@@ -297,22 +296,20 @@ class TextItem(
 ):
     """Base class for text items."""
 
-    anchor : Anchor
+    anchor : KeyPoint
 
     def __init__(
         self,
         text   : str = '',
-        anchor : Anchor = Anchor.TOP_LEFT,
-        wip    : bool = False
+        anchor : KeyPoint = KeyPoint.TOP_LEFT
     ) -> None:
         super().__init__(self, text)
         self.setZValue(self.Z)
         self.defaultSetup()
         self.setAnchor(anchor)
-        self.setWIP(wip)
         self.setTextSpec()
 
-    def setAnchor(self, anchor : Anchor = Anchor.TOP_LEFT) -> None:
+    def setAnchor(self, anchor : KeyPoint = KeyPoint.TOP_LEFT) -> None:
         self.anchor = anchor
 
     def boundingRect(self) -> QRectF:

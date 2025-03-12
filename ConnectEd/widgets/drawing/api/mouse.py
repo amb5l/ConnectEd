@@ -1,6 +1,6 @@
 from PyQt6.QtCore import Qt
 
-from ...items import Rectangle
+from ...items import Rectangle, Grip
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -95,7 +95,11 @@ class DrawingApiMouseMixin:
                 items = self._itemsAt(self.mouse.left.press.logical)
                 if items:
                     self.prev_pos = self._snap(self.mouse.left.press.logical)
-                    if not any(i.isSelected() for i in items):
+                    if any(isinstance(i, Grip) for i in items):
+                        # eliminate all other items from selection except
+                        # grip parent
+                        self.state = self.State.EditResize2
+                    elif not any(i.isSelected() for i in items):
                         self._selectPoint(
                             self.mouse.left.press.logical,
                             m & qkm.ControlModifier
@@ -108,7 +112,7 @@ class DrawingApiMouseMixin:
                     if not (m & (qkm.ControlModifier | qkm.ShiftModifier)):
                         self.scene.clearSelection()
                     self.marquis.begin(self.mouse.left.press.physical)
-                    self.state = self.State.SelectRectangle2
+                    self.state = self.State.SelectArea2
             case self.State.ViewZoomWindow1:
                 self.marquis.begin(self.mouse.left.press.physical)
                 self.state = self.State.ViewZoomWindow2
@@ -120,7 +124,7 @@ class DrawingApiMouseMixin:
 
     def mouseLeftDragContinue(self : 'Drawing') -> None:
         match self.state:
-            case self.State.SelectRectangle2:
+            case self.State.SelectArea2:
                 self.marquis.resize(self.mouse.current.physical)
             case self.State.ViewPan2:
                 delta = self.mouse.current.physical - self.prev_pos
@@ -157,7 +161,7 @@ class DrawingApiMouseMixin:
         m = self.mouse.left.press.modifiers
         qkm = Qt.KeyboardModifier
         match self.state:
-            case self.State.SelectRectangle2:
+            case self.State.SelectArea2:
                 self.marquis.end(self.mouse.left.release.physical)
                 self._selectRect(
                     self.marquis.rect(),

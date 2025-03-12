@@ -176,18 +176,20 @@ class DrawingPrivateMixin:
     Marquis          = DrawingMarquis
 
     class State(Enum):
-        Idle             = auto()
-        ViewPan1         = auto()
-        ViewPan2         = auto()
-        ViewZoomWindow1  = auto()
-        ViewZoomWindow2  = auto()
-        SelectRectangle2 = auto()
-        EditSlide1       = auto()
-        EditSlide2       = auto()
-        EditMove1        = auto()
-        EditMove2        = auto()
-        PlaceRectangle1  = auto()
-        PlaceRectangle2  = auto()
+        Idle            = auto()
+        ViewPan1        = auto()
+        ViewPan2        = auto()
+        ViewZoomWindow1 = auto()
+        ViewZoomWindow2 = auto()
+        SelectArea2     = auto()
+        EditSlide1      = auto()
+        EditSlide2      = auto()
+        EditMove1       = auto()
+        EditMove2       = auto()
+        EditResize1     = auto()
+        EditResize2     = auto()
+        PlaceRectangle1 = auto()
+        PlaceRectangle2 = auto()
 
     def _allItemsRect(self: 'Drawing') -> QRectF:
         items_rect = QRectF()
@@ -386,12 +388,10 @@ class DrawingPrivateMixin:
     def _addWIP(self: 'Drawing', item: QGraphicsItem) -> None:
         self.wip      = item
         self.prev_pos = item.pos()
-        self.wip.setWIP(True)
         self.scene.addItem(self.wip)
 
     def _completeWIP(self: 'Drawing') -> None:
         self.wip.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsSelectable, True)
-        self.wip.setWIP(False)
         self.wip.update()
         self.wip      = None
         self.prev_pos = None

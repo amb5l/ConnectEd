@@ -2,7 +2,7 @@ from PyQt6.QtCore import QPointF, QSizeF
 
 from ...core import Z_DRAWING
 
-from . import RectItem, Anchor
+from . import RectItem, KeyPoint
 
 
 class Rectangle(RectItem):
@@ -12,7 +12,6 @@ class Rectangle(RectItem):
         self   : 'Rectangle',
         pos    : QPointF,
         size   : QSizeF = QSizeF(0, 0),
-        anchor : Anchor = Anchor.TOP_LEFT,
-        wip    : bool = False
+        anchor : KeyPoint = KeyPoint.TOP_LEFT
     ) -> None:
-        super().__init__(pos, size, anchor, wip)
+        super().__init__(pos, size, anchor)
