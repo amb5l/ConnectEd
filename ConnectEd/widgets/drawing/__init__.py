@@ -18,7 +18,7 @@ from PyQt6.QtWidgets import QWidget, QMdiArea, QMdiSubWindow, \
 from PyQt6.QtGui     import QPainter
 
 from ...core    import settings
-from ...widgets import Extents, Grid
+from ...widgets import Extents, Grid, Grip
 
 from .private import Layer, DrawingPrivateMixin
 from .events  import DrawingEventsMixin
@@ -53,6 +53,7 @@ class Drawing(
     layer       : Layer
     zoom        : float
     prev_pos    : Optional[QPointF | QPoint]
+    grip        : Optional[Grip]
     mouse       : 'Drawing.Mouse'
     state       : 'Drawing.State'
 
@@ -84,6 +85,7 @@ class Drawing(
         self.marquis     = self.Marquis(self)
         self.zoom        = 1.0
         self.pan_prev    = None
+        self.grip        = None
         self.mouse       = self.Mouse()
         self.point1      = None
         self.state       = self.State.Idle

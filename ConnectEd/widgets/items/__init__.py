@@ -82,7 +82,8 @@ class ItemBasicsMixin:
         self.setCacheMode(QGraphicsItem.CacheMode.DeviceCoordinateCache)
 
     def getWIP(self) -> bool:
-        return self == self.scene().views()[0].wip
+        return False if self.scene() is None else \
+            self == self.scene().views()[0].wip
 
     def getPrefsTheme(self) -> SimpleNamespace:
         item_name = self.__class__.__name__.lower()
@@ -230,9 +231,16 @@ class RectItem(
         self.setRect(0, 0, size.width(), size.height())
         self.updateGripsPosition()
 
-    def setPoints(self, p1 : QPointF, p2 : QPointF) -> None:
+    def setPoints(self, p1_or_x1, p2_or_y1=None, x2=None, y2=None) -> None:
+        if p2_or_y1 is not None and x2 is not None and y2 is not None:
+            p1, p2 = QPointF(p1_or_x1, p2_or_y1), QPointF(x2, y2)
+        else:
+            p1, p2 = p1_or_x1, p2_or_y1
         rect = QRectF(p1, p2).normalized()
         self.setPosSize(rect.topLeft(), rect.size())
+
+    def getPoints(self) -> tuple[QPointF, QPointF]:
+        return self.pos(), self.pos() + self.rect().bottomRight()
 
     def setAnchor(self, anchor : KeyPoint = KeyPoint.TOP_LEFT) -> None:
         self.anchor = anchor
@@ -255,7 +263,28 @@ class RectItem(
             grip.setZValue(self.zValue() + Grip.Z_DELTA)
 
     def gripResize(self, kp : KeyPoint, delta : QPointF) -> None:
-        pass
+        print(self.__class__.__name__, 'gripResize', kp, delta)
+        p1, p2 = self.getPoints()
+        d = delta
+        match kp:
+            case KeyPoint.TOP_LEFT:
+                self.setPoints(p1 + d, p2)
+            case KeyPoint.TOP_CENTER:
+                self.setPoints(p1.x(), p1.y() + d.y(), p2.x(), p2.y())
+            case KeyPoint.TOP_RIGHT:
+                self.setPoints(p1.x(), p1.y() + d.y(), p2.x() + d.x(), p2.y())
+            case KeyPoint.CENTER_LEFT:
+                self.setPoints(p1.x() + d.x(), p1.y(), p2.x(), p2.y())
+            case KeyPoint.CENTER_RIGHT:
+                self.setPoints(p1.x(), p1.y(), p2.x() + d.x(), p2.y())
+            case KeyPoint.BOTTOM_LEFT:
+                self.setPoints(p1.x() + d.x(), p1.y(), p2.x(), p2.y() + d.y())
+            case KeyPoint.BOTTOM_CENTER:
+                self.setPoints(p1.x(), p1.y() + d.y(), p2.x(), p2.y())
+            case KeyPoint.BOTTOM_RIGHT:
+                self.setPoints(p1, p2 + d)
+            case _:
+                raise ValueError(f'Invalid key point: {kp}')
 
     def rect(self) -> QRectF:
         rect = super().rect()
@@ -266,7 +295,9 @@ class RectItem(
         return rect
 
     def boundingRect(self) -> QRectF:
-        w = self.penWidth()
+        w = max(
+            self.penWidth(), settings.prefs.display.items.selected.grip.size
+        )
         return self.rect().adjusted(-w/2, -w/2, w/2, w/2)
 
     def shape(self) -> QPainterPath:

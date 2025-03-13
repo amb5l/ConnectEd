@@ -27,6 +27,9 @@ class Grip(QGraphicsItem):
         self.key_point = key_point
         self.prev_pos  = self.pos()
 
+    def parentPos(self) -> QPointF:
+        return self.parentItem().pos() + self.pos()
+
     def boundingRect(self) -> QRectF:
         size = settings.prefs.display.items.selected.grip.size
         return QRectF(-size/2, -size/2, size, size)
@@ -48,12 +51,3 @@ class Grip(QGraphicsItem):
         painter.setBrush(QBrush(theme.fill, Qt.BrushStyle.SolidPattern))
         painter.drawRect(self.boundingRect())
 
-    def itemChange(self, change, value):
-        if change == QGraphicsItem.GraphicsItemChange.ItemPositionChange:
-            delta = value - self.prev_pos
-            self.parentItem().gripResize(self.key_point, delta)
-            self.prev_pos = value
-            return value
-        elif change == QGraphicsItem.GraphicsItemChange.ItemPositionHasChanged:
-            self.prev_pos = self.pos()
-        return super().itemChange(change, value)

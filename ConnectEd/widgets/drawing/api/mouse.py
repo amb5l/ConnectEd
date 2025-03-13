@@ -15,7 +15,16 @@ class DrawingApiMouseMixin:
         m = self.mouse.left.press.modifiers
         match self.state:
             case self.State.Idle:
-                if m == qkm.NoModifier:
+                m = self.mouse.left.press.modifiers
+                items = self._itemsAt(self.mouse.left.press.logical)
+                for item in items:
+                    if isinstance(item, Grip):
+                        self.grip = item
+                        print('grip')
+                        break
+                else:
+                    self.grip = None
+                if m == qkm.NoModifier and not self.grip:
                     self.scene.clearSelection()
                 self._selectPoint(
                     self.mouse.current.logical,
@@ -90,8 +99,16 @@ class DrawingApiMouseMixin:
             case self.State.Idle:
                 m = self.mouse.left.press.modifiers
                 items = self._itemsAt(self.mouse.left.press.logical)
-                if any(isinstance(i, Grip) for i in items): # we've hit a grip
+                for item in items:
+                    if isinstance(item, Grip):
+                        self.grip = item
+                        break
+                else:
+                    self.grip = None
+                if self.grip: # we've hit a grip
                     print('grip resize')
+                    self.prev_pos = self.grip.parentPos()
+                    self.state = self.State.EditResize2
                 else:
                     if not (m & (qkm.ControlModifier | qkm.ShiftModifier)):
                         self.scene.clearSelection()
@@ -146,6 +163,13 @@ class DrawingApiMouseMixin:
                         pos.y() - self.prev_pos.y()
                     )
                 self.prev_pos = pos
+            case self.State.EditResize2:
+                print('resizing')
+                self.grip.parentItem().gripResize(
+                    self.grip.key_point,
+                    self._snap(self.mouse.current.logical) - self.prev_pos
+                )
+                self.prev_pos = self._snap(self.mouse.current.logical)
             case self.State.PlaceRectangle2:
                 self.wip.setPoints(
                     self.prev_pos,
