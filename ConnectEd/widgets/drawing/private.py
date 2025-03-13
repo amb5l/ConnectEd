@@ -332,6 +332,9 @@ class DrawingPrivateMixin:
                 Qt.ItemSelectionMode.IntersectsItemShape,
                 self.transform()
             )
+        for item in self.scene.selectedItems():
+            if hasattr(item, 'updateGripsVisibility'):
+                item.updateGripsVisibility()
 
     def _selectPoint(
         self   : 'Drawing',
@@ -371,13 +374,15 @@ class DrawingPrivateMixin:
             menu.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
             menu.setFocus()
             menu.exec(self.mapToGlobal(self.mapFromScene(point)))
-            return
-        if items: # single or top item case
+        elif items: # single or top item case
             item = items[0]
             if toggle:
                 item.setSelected(not item.isSelected())
             else:
                 item.setSelected(True)
+        for item in self.scene.selectedItems():
+            if hasattr(item, 'updateGripsVisibility'):
+                item.updateGripsVisibility()
 
     def _select_item(self, item, toggle, prev=None):
         if prev is None:

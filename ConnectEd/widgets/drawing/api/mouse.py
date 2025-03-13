@@ -6,13 +6,13 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from .. import Drawing
 
+qkm = Qt.KeyboardModifier
 
 class DrawingApiMouseMixin:
     """Mixin class that provides mouse API for Drawing widgets."""
 
     def mouseLeftClick(self : 'Drawing') -> None:
         m = self.mouse.left.press.modifiers
-        qkm = Qt.KeyboardModifier
         match self.state:
             case self.State.Idle:
                 if m == qkm.NoModifier:
@@ -89,32 +89,25 @@ class DrawingApiMouseMixin:
         match self.state:
             case self.State.Idle:
                 m = self.mouse.left.press.modifiers
-                qkm = Qt.KeyboardModifier
-                if not (m & (qkm.ControlModifier | qkm.ShiftModifier)):
-                    self.scene.clearSelection()
                 items = self._itemsAt(self.mouse.left.press.logical)
-                if items:
-                    print('items', items)
-                    self.prev_pos = self._snap(self.mouse.left.press.logical)
-                    if any(isinstance(i, Grip) for i in items):
-                        print('grip')
-                        # eliminate all other items from selection except
-                        # grip parent
-                        self.state = self.State.EditResize2
-                    elif not any(i.isSelected() for i in items):
-                        self._selectPoint(
-                            self.mouse.left.press.logical,
-                            m & qkm.ControlModifier
-                        )
-                    if m & qkm.AltModifier:
-                        self.state = self.State.EditMove2
-                    else:
-                        self.state = self.State.EditSlide2
+                if any(isinstance(i, Grip) for i in items): # we've hit a grip
+                    print('grip resize')
                 else:
                     if not (m & (qkm.ControlModifier | qkm.ShiftModifier)):
                         self.scene.clearSelection()
-                    self.marquis.begin(self.mouse.left.press.physical)
-                    self.state = self.State.SelectArea2
+                    self._selectPoint(
+                        self.mouse.left.press.logical,
+                        m & qkm.ControlModifier
+                    )
+                    if len(self.scene.selectedItems()): # slide/move
+                        self.prev_pos = self.mouse.left.press.logical
+                        if m & qkm.AltModifier:
+                            self.state = self.State.EditMove2
+                        else:
+                            self.state = self.State.EditSlide2
+                    else: # start marquis selection
+                        self.marquis.begin(self.mouse.left.press.physical)
+                        self.state = self.State.SelectArea2
             case self.State.ViewZoomWindow1:
                 self.marquis.begin(self.mouse.left.press.physical)
                 self.state = self.State.ViewZoomWindow2
@@ -161,7 +154,6 @@ class DrawingApiMouseMixin:
 
     def mouseLeftDragEnd(self : 'Drawing') -> None:
         m = self.mouse.left.press.modifiers
-        qkm = Qt.KeyboardModifier
         match self.state:
             case self.State.SelectArea2:
                 self.marquis.end(self.mouse.left.release.physical)

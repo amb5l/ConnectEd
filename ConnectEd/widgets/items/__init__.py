@@ -246,14 +246,15 @@ class RectItem(
 
     def updateGripsVisibility(self) -> None:
         for grip in self.grips.values():
-            grip.setVisible(self.isSelected())
+            grip.setVisible(
+                self.isSelected() and len(self.scene().selectedItems()) == 1
+            )
 
     def updateGripsZValue(self) -> None:
         for grip in self.grips.values():
             grip.setZValue(self.zValue() + Grip.Z_DELTA)
 
     def gripResize(self, kp : KeyPoint, delta : QPointF) -> None:
-        print(self.__class__.__name__, 'gripResize', kp, delta)
         pass
 
     def rect(self) -> QRectF:

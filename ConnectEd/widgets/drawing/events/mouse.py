@@ -66,8 +66,6 @@ class DrawingEventsMouseMixin:
             Qt.SortOrder.DescendingOrder,
             self.viewportTransform()
         )
-        for item in items:
-            print(f'{type(item).__name__}, {item.zValue()}')
         if event.buttons() & Qt.MouseButton.LeftButton:
             self.mouse.left.press.setPL(p, l)
             self.mouse.left.press.modifiers = self._getModifiers(event)

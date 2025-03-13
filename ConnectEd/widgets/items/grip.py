@@ -22,10 +22,8 @@ class Grip(QGraphicsItem):
     ) -> None:
         super().__init__(parent)
         f = QGraphicsItem.GraphicsItemFlag
-        self.setFlag( f.ItemIsSelectable           , True )
         self.setFlag( f.ItemIsMovable              , True )
         self.setFlag( f.ItemSendsGeometryChanges   , True )
-        print(f'parent Z value = {parent.zValue()}')
         self.key_point = key_point
         self.prev_pos  = self.pos()
 
@@ -49,7 +47,6 @@ class Grip(QGraphicsItem):
         painter.setPen(QPen(theme.line, 0, Qt.PenStyle.SolidLine))
         painter.setBrush(QBrush(theme.fill, Qt.BrushStyle.SolidPattern))
         painter.drawRect(self.boundingRect())
-        print(f"Grip {self.key_point} paint: {self.boundingRect()}, pos: {self.pos()}")
 
     def itemChange(self, change, value):
         if change == QGraphicsItem.GraphicsItemChange.ItemPositionChange:
