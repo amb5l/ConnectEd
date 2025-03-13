@@ -173,7 +173,7 @@ class DrawingPrivateMixin:
 
     MouseButtonState = DrawingMouseButtonState
     Mouse            = DrawingMouse
-    Marquis          = DrawingMarquis
+    Marquee          = DrawingMarquis
 
     class State(Enum):
         Idle            = auto()

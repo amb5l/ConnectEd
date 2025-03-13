@@ -43,11 +43,11 @@ class DrawingApiMouseMixin:
                 self.setCursor(Qt.CursorShape.ArrowCursor)
                 self.state = self.State.Idle
             case self.State.ViewZoomWindow1:
-                self.marquis.begin(self.mouse.left.release.physical)
+                self.marquee.begin(self.mouse.left.release.physical)
                 self.state = self.State.ViewZoomWindow2
             case self.State.ViewZoomWindow2:
-                self.marquis.end(self.mouse.left.release.physical)
-                self._zoomRect(self.marquis.rect())
+                self.marquee.end(self.mouse.left.release.physical)
+                self._zoomRect(self.marquee.rect())
                 self.state = self.State.Idle
             case self.State.EditSlide1:
                 self._selectPoint(
@@ -122,11 +122,11 @@ class DrawingApiMouseMixin:
                             self.state = self.State.EditMove2
                         else:
                             self.state = self.State.EditSlide2
-                    else: # start marquis selection
-                        self.marquis.begin(self.mouse.left.press.physical)
+                    else: # start marquee selection
+                        self.marquee.begin(self.mouse.left.press.physical)
                         self.state = self.State.SelectArea2
             case self.State.ViewZoomWindow1:
-                self.marquis.begin(self.mouse.left.press.physical)
+                self.marquee.begin(self.mouse.left.press.physical)
                 self.state = self.State.ViewZoomWindow2
             case self.State.PlaceRectangle1:
                 self._addWIP(Rectangle(
@@ -137,14 +137,14 @@ class DrawingApiMouseMixin:
     def mouseLeftDragContinue(self : 'Drawing') -> None:
         match self.state:
             case self.State.SelectArea2:
-                self.marquis.resize(self.mouse.current.physical)
+                self.marquee.resize(self.mouse.current.physical)
             case self.State.ViewPan2:
                 delta = self.mouse.current.physical - self.prev_pos
                 self.horizontalScrollBar().setValue(self.horizontalScrollBar().value() - delta.x())
                 self.verticalScrollBar().setValue(self.verticalScrollBar().value() - delta.y())
                 self.prev_pos = self.mouse.current.physical
             case self.State.ViewZoomWindow2:
-                self.marquis.resize(self.mouse.current.physical)
+                self.marquee.resize(self.mouse.current.physical)
             case self.State.EditSlide2:
                 # TODO: stretch connections
                 pos = self._snap(self.mouse.current.logical)
@@ -180,14 +180,14 @@ class DrawingApiMouseMixin:
         m = self.mouse.left.press.modifiers
         match self.state:
             case self.State.SelectArea2:
-                self.marquis.end(self.mouse.left.release.physical)
+                self.marquee.end(self.mouse.left.release.physical)
                 self._selectRect(
-                    self.marquis.rect(),
+                    self.marquee.rect(),
                     m == qkm.ControlModifier
                 )
             case self.State.ViewZoomWindow2:
-                self.marquis.end(self.mouse.left.release.physical)
-                self._zoomRect(self.marquis.rect())
+                self.marquee.end(self.mouse.left.release.physical)
+                self._zoomRect(self.marquee.rect())
             case self.State.EditSlide2:
                 # TODO: DRY, stretch connections
                 pos = self._snap(self.mouse.left.release.logical)
@@ -226,7 +226,7 @@ class DrawingApiMouseMixin:
                     self.setCursor(Qt.CursorShape.ClosedHandCursor)
                     self.state = self.State.ViewPan2
                 case Qt.KeyboardModifier.ControlModifier:
-                    self.marquis.begin(self.mouse.middle.press.physical)
+                    self.marquee.begin(self.mouse.middle.press.physical)
                     self.state = self.State.ViewZoomWindow2
 
     def mouseMiddleDragContinue(self : 'Drawing') -> None:
@@ -237,7 +237,7 @@ class DrawingApiMouseMixin:
                 self.verticalScrollBar().setValue(self.verticalScrollBar().value() - delta.y())
                 self.prev_pos = self.mouse.current.physical
             case self.State.ViewZoomWindow2:
-                self.marquis.resize(self.mouse.current.physical)
+                self.marquee.resize(self.mouse.current.physical)
 
     def mouseMiddleDragEnd(self : 'Drawing') -> None:
         match self.state:
@@ -248,8 +248,8 @@ class DrawingApiMouseMixin:
                 self.prev_pos = None
                 self.setCursor(Qt.CursorShape.ArrowCursor)
             case self.State.ViewZoomWindow2:
-                self.marquis.end(self.mouse.middle.release.physical)
-                self._zoomRect(self.marquis.rect())
+                self.marquee.end(self.mouse.middle.release.physical)
+                self._zoomRect(self.marquee.rect())
         self.state = self.State.Idle
 
     def mouseMiddleDoubleClick(self : 'Drawing') -> None:
@@ -263,7 +263,7 @@ class DrawingApiMouseMixin:
                 self.verticalScrollBar().setValue(self.verticalScrollBar().value() - delta.y())
                 self.prev_pos = self.mouse.current.physical
             case self.State.ViewZoomWindow2:
-                self.marquis.resize(self.mouse.current.physical)
+                self.marquee.resize(self.mouse.current.physical)
             case self.State.EditSlide2:
                 # TODO: DRY, stretch connections
                 pos = self._snap(self.mouse.current.logical)

@@ -49,7 +49,7 @@ class Drawing(
     extents     : Extents
     grid        : Grid
     wip         : Optional[QGraphicsItem]
-    marquis     : 'Drawing.Marquis'
+    marquee     : 'Drawing.Marquee'
     layer       : Layer
     zoom        : float
     prev_pos    : Optional[QPointF | QPoint]
@@ -82,7 +82,7 @@ class Drawing(
         self.extents     = Extents(settings.defaults.sheet)
         self.grid        = Grid(self.extents)
         self.wip         = None
-        self.marquis     = self.Marquis(self)
+        self.marquee     = self.Marquee(self)
         self.zoom        = 1.0
         self.pan_prev    = None
         self.grip        = None
