@@ -9,20 +9,19 @@ __all__ = [
 
 from dataclasses import dataclass
 from enum        import Enum
-from collections import namedtuple
 from typing      import Optional
+from collections import namedtuple
 from types       import SimpleNamespace
-from math        import copysign
 
 from PyQt6.QtCore    import Qt, QPointF, QRectF, QSizeF
-from PyQt6.QtGui     import QPainter, QPen, QBrush, QColor, QPainterPath
+from PyQt6.QtGui     import QPainter, QPen, QBrush, QColor, QFont, QPainterPath
 from PyQt6.QtWidgets import \
     QGraphicsItem, QGraphicsRectItem, QGraphicsTextItem, \
     QStyleOptionGraphicsItem, QWidget
 
 from ...core import settings
 
-from .grip import Grip
+from .grip      import Grip
 
 @dataclass
 class PenSpec:
@@ -57,13 +56,12 @@ class KeyPoint(Enum):
     BOTTOM_CENTER = KeyPointHV(0.5, 1.0)
     BOTTOM_RIGHT  = KeyPointHV(1.0, 1.0)
 
-class ItemBasicsMixin:
-    """Basics for all items."""
-
-    def defaultSetup(self) -> None:
+class ItemMixin:
+    def initItem(self) -> None:
+        super().__init__()
         f = QGraphicsItem.GraphicsItemFlag
-        self.setFlag( f.ItemIsMovable                        , True  )
         self.setFlag( f.ItemIsSelectable                     , False )
+        self.setFlag( f.ItemIsMovable                        , True  )
         self.setFlag( f.ItemIsFocusable                      , True  )
         self.setFlag( f.ItemClipsToShape                     , False )
         self.setFlag( f.ItemClipsChildrenToShape             , False )
@@ -98,11 +96,6 @@ class ItemBasicsMixin:
             theme = getattr(settings.theme, item_name)
         return prefs, theme
 
-class ItemPenMixin:
-    """Pen support."""
-
-    pen_spec : PenSpec
-
     def setPenSpec(
         self,
         pen_spec : PenSpec = PenSpec()
@@ -127,11 +120,6 @@ class ItemPenMixin:
         s = self.pen_spec
         return prefs.line.width if s.width is None else s.width
 
-class ItemBrushMixin:
-    """Brush support."""
-
-    brush_spec : BrushSpec
-
     def setBrushSpec(
         self,
         brush_spec : BrushSpec = BrushSpec()
@@ -148,18 +136,13 @@ class ItemBrushMixin:
         style = prefs.fill if s.style is None else s.style
         return QBrush(color, style)
 
-class ItemTextMixin:
-    """Text/font support."""
-
-    text_spec : TextSpec
-
     def setTextSpec(
         self,
         text_spec : TextSpec = TextSpec()
     ) -> None:
         self.text_spec = text_spec
 
-    def updateFont(self) -> None:
+    def fontFromSpec(self) -> QFont:
         item_name = self.__class__.__name__.lower()
         prefs = getattr(settings.prefs.display.items, item_name).font
         theme = getattr(settings.theme, item_name).font
@@ -184,12 +167,10 @@ class ItemTextMixin:
                 self.text_spec.italic
         )
 
-class RectItem(
-    QGraphicsRectItem,
-    ItemBasicsMixin,
-    ItemPenMixin,
-    ItemBrushMixin
-):
+    def setAnchor(self, anchor : KeyPoint = KeyPoint.TOP_LEFT) -> None:
+        self.anchor = anchor
+
+class RectItem(QGraphicsRectItem, ItemMixin):
     """Base class for rectangle items."""
 
     MIN_SIZE = QSizeF(1.0, 1.0)
@@ -206,12 +187,12 @@ class RectItem(
         fill    : bool = True
     ) -> None:
         super().__init__()
+        self.initItem()
         self.grips = {p: Grip(self, p) for p in KeyPoint if p != KeyPoint.CENTER}
         self.anchor = anchor
         self.setPosSize(pos, size)
         self.setPen(QPen(Qt.PenStyle.NoPen))
         self.setBrush(QBrush(Qt.BrushStyle.NoBrush))
-        self.defaultSetup()
         self.setZValue(self.Z)
         self.setAnchor(anchor)
         if outline:
@@ -241,9 +222,6 @@ class RectItem(
 
     def getPoints(self) -> tuple[QPointF, QPointF]:
         return self.pos(), self.pos() + self.rect().bottomRight()
-
-    def setAnchor(self, anchor : KeyPoint = KeyPoint.TOP_LEFT) -> None:
-        self.anchor = anchor
 
     def updateGripsPosition(self) -> None:
         for kp in self.grips.keys():
@@ -327,11 +305,7 @@ class RectItem(
             self.updateGripsVisibility()
         return super().itemChange(change, value)
 
-class TextItem(
-    QGraphicsTextItem,
-    ItemBasicsMixin,
-    ItemTextMixin
-):
+class TextItem(QGraphicsTextItem, ItemMixin):
     """Base class for text items."""
 
     anchor : KeyPoint
@@ -341,14 +315,11 @@ class TextItem(
         text   : str = '',
         anchor : KeyPoint = KeyPoint.TOP_LEFT
     ) -> None:
-        super().__init__(self, text)
+        super().__init__(text)
+        self.initItem()
         self.setZValue(self.Z)
-        self.defaultSetup()
         self.setAnchor(anchor)
         self.setTextSpec()
-
-    def setAnchor(self, anchor : KeyPoint = KeyPoint.TOP_LEFT) -> None:
-        self.anchor = anchor
 
     def boundingRect(self) -> QRectF:
         rect = super().boundingRect()
@@ -359,11 +330,9 @@ class TextItem(
         )
 
     def shape(self) -> QPainterPath:
-        path = self.shape()
-        return path.translate(
-            -path.width() * self.anchor.value.h,
-            -path.height() * self.anchor.value.v
-        )
+        path = QPainterPath()
+        path.addRect(self.boundingRect())
+        return path
 
     def paint(
         self,
@@ -371,7 +340,7 @@ class TextItem(
         option  : QStyleOptionGraphicsItem,
         widget  : QWidget
     ) -> None:
-        self.updateFont()
+        self.fontFromSpec()
         self.setFont(self.font)
         rect = self.anchoredBoundingRect()
         painter.translate(rect.topLeft())
