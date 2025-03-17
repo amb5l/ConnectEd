@@ -1,14 +1,14 @@
 from PyQt6.QtWidgets import QMessageBox
 
-from ....core    import logger
-from ....widgets import Drawing, Diagram
+from ...core    import logger
+from ...widgets import Drawing, Diagram
 
 import functools
 from typing import Callable, Type, TypeVar, cast
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from ....widgets.main_window import MainWindow
+    from ...widgets.main_window import MainWindow
 
 T = TypeVar('T')
 
@@ -55,7 +55,7 @@ def with_current_widget_checkable(widget_type: Type[T], action_name: str) -> Cal
                 return
             current_widget = current_sub_window.widget()
             if isinstance(current_widget, widget_type):
-                checked = getattr(self._parent.commands.actions, action_name).isChecked()
+                checked = getattr(self._parent.actions, action_name).isChecked()
                 func(self, cast(T, current_widget), checked)
         return wrapper
     return decorator

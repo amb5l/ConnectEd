@@ -11,7 +11,7 @@ class MenuBar(QMenuBar):
         parent  : 'MainWindow'
     ) -> None:
         super().__init__(parent)
-        actions = parent.commands.actions
+        actions = parent.actions
 
         self.file_menu = QMenu('&File')
         self.file_menu.addAction(actions.fileExit)

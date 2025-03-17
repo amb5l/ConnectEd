@@ -13,8 +13,9 @@ from PyQt6.QtCore    import Qt, QByteArray
 from PyQt6.QtWidgets import QMainWindow, QMdiArea
 from PyQt6.QtGui     import QCloseEvent
 
-from ...core         import APP_NAME, settings
-from .commands       import Commands
+from ...core         import APP_NAME, settings, connect_actions_to_slots
+from .actions        import Actions
+from .slots          import Slots
 from .menu_bar       import MenuBar
 from .status_bar     import StatusBar
 from ..msg_view_dock import MsgViewDock
@@ -24,7 +25,8 @@ from ..log_view_dock import LogViewDock
 class MainWindow(QMainWindow):
     """Main window implementation for the ConnectEd application."""
 
-    commands   : Commands
+    actions    : Actions
+    slots      : Slots
     menu_bar   : MenuBar
     status_bar : StatusBar
     msg_viewer : MsgViewDock
@@ -51,8 +53,10 @@ class MainWindow(QMainWindow):
                 if settings.startup.geometry:
                     self.restoreGeometry(QByteArray(settings.startup.geometry))
 
-        # commands = actions and slots
-        self.commands = Commands(self)
+        # actions and slots
+        self.slots = Slots(self)
+        self.actions = Actions(self)
+        connect_actions_to_slots(self.actions, self.slots)
 
         # menu bar
         self.menu_bar = MenuBar(self)

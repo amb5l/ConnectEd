@@ -234,10 +234,10 @@ class DrawingPrivateMixin:
         self.main_window.status_bar.zoom.setText(
             '{:.2f}%'.format(self.zoom * 100)
         )
-        self.main_window.commands.actions.actionEnable(
+        self.main_window.actions.actionEnable(
             'viewZoomIn',  self.zoom < settings.prefs.display.zoom.limit.max
         )
-        self.main_window.commands.actions.actionEnable(
+        self.main_window.actions.actionEnable(
             'viewZoomOut', self.zoom > settings.prefs.display.zoom.limit.min
         )
 

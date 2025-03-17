@@ -1,11 +1,11 @@
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QKeySequence
 
-from ...private import Action
+from ..private import Action
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from ...main_window import MainWindow
+    from ..main_window import MainWindow
 
 
 class Actions:

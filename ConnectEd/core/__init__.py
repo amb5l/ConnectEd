@@ -14,6 +14,7 @@ __all__ = [
     'unknown_args',
     'settings',
     'TypedList',
+    'connect_actions_to_slots',
     'Z_PAPER',
     'Z_TEMPLATE',
     'Z_DRAWING',
@@ -29,5 +30,6 @@ from .logger   import logger
 from .args     import args, unknown_args
 from .settings import Settings
 from .types    import TypedList
+from .utils    import connect_actions_to_slots
 
 settings = Settings()
