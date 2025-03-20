@@ -9,9 +9,7 @@ including loading, saving, and accessing configuration values.
 # persistant settings for application
 # session settings for diagram and library
 
-__all__ = [
-    'Settings'
-]
+__all__ = ['Settings']
 
 from types       import SimpleNamespace
 from typing      import Any, Dict, List, Union
@@ -20,7 +18,7 @@ from collections import namedtuple
 from PyQt6.QtCore import QSettings, QPointF, QSizeF, Qt
 from PyQt6.QtGui  import QColor
 
-from .logger import logger
+from .log import logger
 from .defs   import ORG_NAME, APP_NAME
 from .utils  import get_default_path
 

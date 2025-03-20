@@ -2,7 +2,7 @@ from typing import Optional
 
 from PyQt6.QtWidgets import QWidget
 
-from ..core.logger   import add_log_viewer_handler, LOG_FILENAME
+from ..core.log      import addLogViewerHandler, LOG_FILENAME
 from .text_view_dock import TextViewDockWidget
 
 
@@ -15,4 +15,4 @@ class LogViewDock(TextViewDockWidget):
         filename : str = LOG_FILENAME
     ) -> None:
         super().__init__(parent, filename)
-        self.handler = add_log_viewer_handler(self.text_view)
+        self.handler = addLogViewerHandler(self.text_view)

@@ -1,5 +1,6 @@
-import argparse
+__all__ = ['known_args', 'unknown_args']
 
+import argparse
 
 parser = argparse.ArgumentParser(
     prog='ConnectEd',
@@ -8,4 +9,4 @@ parser = argparse.ArgumentParser(
     )
 modeGroup = parser.add_mutually_exclusive_group()
 parser.add_argument('-r', '--reset', action='store_true', help='clear stored preferences')
-args, unknown_args = parser.parse_known_args()
+known_args, unknown_args = parser.parse_known_args()

@@ -2,14 +2,14 @@ import sys
 
 from PyQt6.QtWidgets import QApplication
 
-from .core      import logger, args, unknown_args, settings
+from .core      import logger, known_args, unknown_args, settings
 from .widgets   import MainWindow
 from .resources import initResources
 
 
 def main() -> int:
     logger.info("started")
-    if args.reset:
+    if known_args.reset:
         settings.reset()
     settings.load()
     #print(settings.dump())

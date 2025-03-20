@@ -1,3 +1,9 @@
+__all__ = [
+    'check',
+    'connect_actions_to_slots',
+    'get_default_path'
+]
+
 import os
 import platform
 

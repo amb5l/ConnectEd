@@ -1,8 +1,11 @@
+__all__ = ['logger']
+
 import os, logging, weakref
 
 from PyQt6.QtWidgets import QPlainTextEdit
 
 from .defs import APP_NAME, LOG_FILENAME
+
 
 class RelativePathFormatter(logging.Formatter):
     def format(self : 'RelativePathFormatter', record : logging.LogRecord) -> str:
@@ -46,7 +49,7 @@ console_handler.setFormatter(formatter)
 logger.addHandler(file_handler)
 logger.addHandler(console_handler)
 
-def add_log_viewer_handler(log_viewer : QPlainTextEdit) -> None:
+def addLogViewerHandler(log_viewer : QPlainTextEdit) -> None:
     log_viewer_handler = LogViewerHandler(log_viewer)
     log_viewer_handler.setLevel(logging.DEBUG)  # Or whatever level you prefer
     log_viewer_handler.setFormatter(formatter)  # Use the same formatter as other handlers
