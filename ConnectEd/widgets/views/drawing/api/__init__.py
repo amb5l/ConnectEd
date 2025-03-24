@@ -1,13 +1,4 @@
-"""
-API for Drawing widgets.
-
-This module provides the public API for interacting with Drawing widgets,
-including view manipulation, item management, and drawing operations.
-"""
-
-__all__ = [
-    'DrawingApiMixin'
-]
+__all__ = ['DrawingApiMixin']
 
 from .edit    import DrawingApiEditMixin
 from .view    import DrawingApiViewMixin
@@ -16,16 +7,16 @@ from .place   import DrawingApiPlaceMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING: # avoid circular import issues
-    from .. import Drawing
+    from .. import DrawingView
 
 
-class DrawingApiMixin(
+class DrawingViewApiMixin(
     DrawingApiEditMixin,
     DrawingApiViewMixin,
     DrawingApiMouseMixin,
     DrawingApiPlaceMixin
 ):
-    def paintSheet(self : 'Drawing') -> None:
+    def paintSheet(self : 'DrawingView') -> None:
         """
         Placeholder to be overridden by Diagram.
         """

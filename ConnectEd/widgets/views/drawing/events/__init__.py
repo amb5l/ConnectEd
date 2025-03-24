@@ -6,7 +6,7 @@ including paint events, resize events, and user interactions.
 """
 
 __all__ = [
-    'DrawingEventsMixin'
+    'DrawingViewEventsMixin'
 ]
 
 from PyQt6.QtGui import QResizeEvent
@@ -14,12 +14,12 @@ from PyQt6.QtGui import QResizeEvent
 from .mouse import DrawingEventsMouseMixin
 from typing import TYPE_CHECKING
 if TYPE_CHECKING: # avoid circular import issues
-    from .. import Drawing
+    from .. import DrawingView
 
 
-class DrawingEventsMixin(
+class DrawingViewEventsMixin(
     DrawingEventsMouseMixin
 ):
-    def resizeEvent(self : 'Drawing', event : QResizeEvent) -> None:
+    def resizeEvent(self : 'DrawingView', event : QResizeEvent) -> None:
         if self.zoom is None:
             self.viewZoomAll()

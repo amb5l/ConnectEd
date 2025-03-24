@@ -1,4 +1,5 @@
 __all__ = [
+    'count',
     'check',
     'connect_actions_to_slots',
     'get_default_path'
@@ -9,6 +10,19 @@ import platform
 
 from typing import Any
 
+
+class Counter:
+    count : int
+
+    def __init__(self):
+        self.count = 1
+
+    def __str__(self):
+        r = str(self.count)
+        self.count += 1
+        return r
+
+count = Counter()
 
 def check(b : bool, s : str) -> bool:
     if not b:
@@ -32,6 +46,7 @@ def connect_actions_to_slots(actions : Any, slots : Any) -> None:
     if error:
         raise Exception('Action-slot mismatch')
     for action_name in action_names:
+        print(f'connecting {action_name}')
         action = getattr(actions, action_name)
         slot = getattr(slots, action_name)
         action.triggered.connect(slot)

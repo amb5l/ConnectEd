@@ -1,10 +1,8 @@
-__all__ = [
-    'Symbol'
-]
+__all__ = ['Symbol']
 
 from types import NoneType
 
-from .drawing import Drawing
+from .scenes import Drawing
 
 
 class Symbol(Drawing):

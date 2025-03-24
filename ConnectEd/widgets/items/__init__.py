@@ -81,7 +81,7 @@ class ItemMixin:
 
     def getWIP(self) -> bool:
         return False if self.scene() is None else \
-            self == self.scene().views()[0].wip
+            self == self.scene().wip
 
     def getPrefsTheme(self) -> SimpleNamespace:
         item_name = self.__class__.__name__.lower()

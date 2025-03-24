@@ -20,11 +20,11 @@ from .menu_bar       import MenuBar
 from .status_bar     import StatusBar
 from ..msg_view_dock import MsgViewDock
 from ..log_view_dock import LogViewDock
+from ..scenes        import Diagram
+from ..views         import DiagramView, DiagramSubWindow
 
 
 class MainWindow(QMainWindow):
-    """Main window implementation for the ConnectEd application."""
-
     actions    : Actions
     slots      : Slots
     menu_bar   : MenuBar
@@ -32,7 +32,6 @@ class MainWindow(QMainWindow):
     msg_viewer : MsgViewDock
     log_viewer : LogViewDock
     mdi_area   : QMdiArea
-
 
     def __init__(self : 'MainWindow') -> None:
         super().__init__()
@@ -78,11 +77,10 @@ class MainWindow(QMainWindow):
         self.mdi_area = QMdiArea()
 
         # TODO remove this
-        # Import here to avoid circular dependency
-        from ..diagram import Diagram, DiagramSubWindow
+        test_scene = Diagram()
+        test_view = DiagramView(test_scene)
         test_sub_window = DiagramSubWindow(self.mdi_area)
-        test_widget = Diagram(test_sub_window, self)
-        test_sub_window.setWidget(test_widget)
+        test_sub_window.setWidget(test_view)
         test_sub_window.setWindowTitle("Test Diagram")
         self.mdi_area.addSubWindow(test_sub_window)
         test_sub_window.showMaximized()

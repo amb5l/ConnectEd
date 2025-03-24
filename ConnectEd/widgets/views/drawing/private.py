@@ -1,3 +1,15 @@
+
+__all__ = [
+    'Layer',
+    'DrawingPLPos',
+    'DrawingMousePress',
+    'DrawingMouseRelease',
+    'DrawingMouseButtonState',
+    'DrawingMouseButton',
+    'DrawingMouse',
+    'DrawingViewPrivateMixin'
+]
+
 from enum   import Enum, auto
 from typing import Optional
 from math   import sqrt
@@ -7,11 +19,13 @@ from PyQt6.QtWidgets import QRubberBand, QGraphicsItem, QMenu
 from PyQt6.QtGui     import QMouseEvent, QCursor, QPainterPath, \
                             QPainter, QPen, QColor, QAction, QIcon
 
-from ...core import settings, LAYER_SHEET, LAYER_DRAWING
+from ....core import settings, LAYER_SHEET, LAYER_DRAWING
+
+from .... import hub
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from . import Drawing
+    from . import DrawingView
 
 class Layer(Enum): # TODO resolve drawing vs diagram
     Sheet   = LAYER_SHEET
@@ -75,126 +89,59 @@ class DrawingMouse:
         self.left    = DrawingMouseButton()
         self.middle  = DrawingMouseButton()
 
-class MarquisRubberBand(QRubberBand):
+class DrawingViewState(Enum):
+    Idle            = auto()
+    ViewPan1        = auto()
+    ViewPan2        = auto()
+    ViewZoomWindow1 = auto()
+    ViewZoomWindow2 = auto()
+    SelectArea2     = auto()
+    EditSlide1      = auto()
+    EditSlide2      = auto()
+    EditMove1       = auto()
+    EditMove2       = auto()
+    EditResize1     = auto()
+    EditResize2     = auto()
+    PlaceRectangle1 = auto()
+    PlaceRectangle2 = auto()
+
+DrawingViewStateTip = {
+    DrawingViewState.Idle            : 'Idle',
+    DrawingViewState.ViewPan1        : 'ViewPan1',
+    DrawingViewState.ViewPan2        : 'ViewPan2',
+    DrawingViewState.ViewZoomWindow1 : 'ViewZoomWindow1',
+    DrawingViewState.ViewZoomWindow2 : 'ViewZoomWindow2',
+    DrawingViewState.SelectArea2     : 'SelectArea2',
+    DrawingViewState.EditSlide1      : 'EditSlide1',
+    DrawingViewState.EditSlide2      : 'EditSlide2',
+    DrawingViewState.EditMove1       : 'EditMove1',
+    DrawingViewState.EditMove2       : 'EditMove2',
+    DrawingViewState.EditResize1     : 'EditResize1',
+    DrawingViewState.EditResize2     : 'EditResize2',
+    DrawingViewState.PlaceRectangle1 : 'PlaceRectangle1',
+    DrawingViewState.PlaceRectangle2 : 'PlaceRectangle2'
+}
+
+class DrawingViewPrivateMixin:
     """
-    A custom QRubberBand with a marching ants effect.
-    """
-
-    DASH_LEN = 4
-    INTERVAL = 100
-
-    offset : int
-    timer  : QTimer
-
-    def __init__(self, shape, parent=None):
-        super().__init__(shape, parent)
-        self.offset = 0
-        self.timer = QTimer(self)
-        self.timer.timeout.connect(self.animate)
-        if self.isVisible():
-            self.timer.start(self.INTERVAL)
-
-    def animate(self):
-        self.offset = (self.offset + 1) % (2 * self.DASH_LEN)
-        self.update()
-
-    def paintEvent(self, event):
-        painter = QPainter(self)
-        rect = self.rect().adjusted(0, 0, -1, -1)
-        pen = QPen(QColor(255, 255, 255))
-        pen.setWidth(0)
-        pen.setStyle(Qt.PenStyle.CustomDashLine)
-        pen.setDashPattern([self.DASH_LEN, self.DASH_LEN])
-        pen.setDashOffset(self.offset)
-        painter.setPen(pen)
-        painter.drawRect(rect)
-        pen.setColor(QColor(0, 0, 0))
-        pen.setDashOffset((self.offset + self.DASH_LEN) % (2 * self.DASH_LEN))
-        painter.setPen(pen)
-        painter.drawRect(rect)
-
-    def setVisible(self, visible: bool) -> None:
-        super().setVisible(visible)
-        if visible:
-            self.timer.start(100)
-        else:
-            self.timer.stop()
-
-class DrawingMarquis:
-    parent      : 'Drawing'
-    rubber_band : MarquisRubberBand
-    point1      : QPoint
-
-    def __init__(
-        self   : 'DrawingMarquis', parent : 'Drawing') -> None:
-        self.parent = parent
-        self.rubber_band = MarquisRubberBand(
-            QRubberBand.Shape.Rectangle,
-            parent
-        )
-        self.point1      = QPoint()
-
-    def begin(self : 'DrawingMarquis', pos : QPoint) -> None:
-        self.point1 = pos
-        self.rubber_band.setGeometry(pos.x(), pos.y(), 1, 1)
-        self.rubber_band.show()
-
-    def resize(self : 'DrawingMarquis', pos : QPoint) -> None:
-        self.rubber_band.setGeometry(
-            QRect(
-                self.point1.x(), self.point1.y(),
-                pos.x() - self.point1.x(),
-                pos.y() - self.point1.y()
-            ).normalized()
-        )
-
-    def end(self : 'DrawingMarquis', pos : QPoint) -> None:
-        self.rubber_band.setGeometry(
-            QRect(
-                self.point1.x(), self.point1.y(),
-                pos.x() - self.point1.x(),
-                pos.y() - self.point1.y()
-            ).normalized()
-        )
-        self.rubber_band.hide()
-        self.point1 = None
-
-    def rect(self : 'DrawingMarquis') -> QRectF:
-        prect = self.rubber_band.geometry().normalized() # physical coords
-        return QRectF(
-            self.parent.mapToScene(prect.topLeft()),
-            self.parent.mapToScene(prect.bottomRight())
-        )
-
-class DrawingPrivateMixin:
-    """
-    A mixin class that provides private methods for the Drawing class.
+    A mixin class that provides private methods for the DrawingView class.
     """
 
     MouseButtonState = DrawingMouseButtonState
     Mouse            = DrawingMouse
-    Marquee          = DrawingMarquis
+    State            = DrawingViewState
+    StateTip         = DrawingViewStateTip
 
-    class State(Enum):
-        Idle            = auto()
-        ViewPan1        = auto()
-        ViewPan2        = auto()
-        ViewZoomWindow1 = auto()
-        ViewZoomWindow2 = auto()
-        SelectArea2     = auto()
-        EditSlide1      = auto()
-        EditSlide2      = auto()
-        EditMove1       = auto()
-        EditMove2       = auto()
-        EditResize1     = auto()
-        EditResize2     = auto()
-        PlaceRectangle1 = auto()
-        PlaceRectangle2 = auto()
+    def _goState(self: 'DrawingView', state : 'DrawingView.State') -> None:
+        print(f' -> {state}')
+        self.state = state
+        if hub.main_window is not None:
+            hub.main_window.status_bar.tip.setText(self.StateTip[state])
 
-    def _allItemsRect(self: 'Drawing') -> QRectF:
+    def _allItemsRect(self: 'DrawingView') -> QRectF:
         items_rect = QRectF()
-        for item in self.scene.items():
-            if item == self.extents or item == self.grid:
+        for item in self.scene().items():
+            if item == self.scene().extents or item == self.scene().grid:
                 continue
             item_rect = item.mapToScene(item.boundingRect()).boundingRect()
             items_rect = items_rect.united(item_rect)
@@ -202,14 +149,14 @@ class DrawingPrivateMixin:
             items_rect = self.extents.rect()
         return items_rect
 
-    def _rubberBandRect(self: 'Drawing') -> QRectF:
+    def _rubberBandRect(self: 'DrawingView') -> QRectF:
         prect = self.rubber_band.geometry().normalized() # physical coords
         return QRectF(
             self.mapToScene(prect.topLeft()),
             self.mapToScene(prect.bottomRight())
         )
 
-    def _pan(self: 'Drawing', delta: QPointF) -> None:
+    def _pan(self: 'DrawingView', delta: QPointF) -> None:
         lrect = self.mapToScene(self.viewport().rect()).boundingRect()  # Scene coords
         pan = QPointF(lrect.width()  * delta.x(), lrect.height() * delta.y())
         transform = self.transform()
@@ -225,26 +172,26 @@ class DrawingPrivateMixin:
             self.mapToScene(self.mouse.current.physical)
         )
 
-    def _zoomAbs(self: 'Drawing', abs: float) -> None:
+    def _zoomAbs(self: 'DrawingView', abs: float) -> None:
         abs = max(abs, settings.prefs.display.zoom.limit.min)
         abs = min(abs, settings.prefs.display.zoom.limit.max)
         self.zoom = abs
         self.resetTransform()
         self.scale(self.zoom, self.zoom)
-        self.main_window.status_bar.zoom.setText(
+        hub.main_window.status_bar.zoom.setText(
             '{:.2f}%'.format(self.zoom * 100)
         )
-        self.main_window.actions.actionEnable(
+        hub.main_window.actions.actionEnable(
             'viewZoomIn',  self.zoom < settings.prefs.display.zoom.limit.max
         )
-        self.main_window.actions.actionEnable(
+        hub.main_window.actions.actionEnable(
             'viewZoomOut', self.zoom > settings.prefs.display.zoom.limit.min
         )
 
-    def _zoomRel(self: 'Drawing', rel: float) -> None:
+    def _zoomRel(self: 'DrawingView', rel: float) -> None:
         self._zoomAbs(self.zoom * rel)
 
-    def _zoomRelMouse(self: 'Drawing', rel: float) -> None:
+    def _zoomRelMouse(self: 'DrawingView', rel: float) -> None:
         ppos_old = self.mouse.current.physical
         lpos_old = self.mouse.current.logical
         self._zoomRel(rel)
@@ -261,7 +208,7 @@ class DrawingPrivateMixin:
             self.mapToScene(self.mouse.current.physical)
         )
 
-    def _zoomRect(self: 'Drawing', rect : QRectF) -> None:
+    def _zoomRect(self: 'DrawingView', rect : QRectF) -> None:
         zoom = QPointF(
             self.viewport().width()  / rect.width(),
             self.viewport().height() / rect.height()
@@ -271,37 +218,37 @@ class DrawingPrivateMixin:
         self._zoomAbs(factor)
         self.centerOn(rect.center())
 
-    def _round_to_nearest(self: 'Drawing', x : float, n : float) -> float:
+    def _round_to_nearest(self: 'DrawingView', x : float, n : float) -> float:
         return round(x / n) * n
 
-    def _snap(self: 'Drawing', pos: QPointF) -> QPoint:
+    def _snap(self: 'DrawingView', pos: QPointF) -> QPoint:
         return QPointF(
-            self._round_to_nearest(pos.x(), self.grid.pitch.x()),
-            self._round_to_nearest(pos.y(), self.grid.pitch.y())
-        ) if self.grid.snap else pos
+            self._round_to_nearest(pos.x(), self.scene().grid.pitch.x()),
+            self._round_to_nearest(pos.y(), self.scene().grid.pitch.y())
+        ) if self.scene().grid.snap else pos
 
-    def _distance(self: 'Drawing', cp1: QPoint, cp2: QPoint) -> int:
+    def _distance(self: 'DrawingView', cp1: QPoint, cp2: QPoint) -> int:
         return int(round(sqrt((cp1.x() - cp2.x())**2 + (cp1.y() - cp2.y())**2)))
 
     def _getModifiers(
-        self: 'Drawing',
+        self: 'DrawingView',
         event: QMouseEvent
     ) -> Qt.KeyboardModifier:
         qkm = Qt.KeyboardModifier
         mask = qkm.ControlModifier | qkm.ShiftModifier | qkm.AltModifier
         return event.modifiers() & mask
 
-    def _setLayer(self: 'Drawing', layer: Layer) -> None:
+    def _setLayer(self: 'DrawingView', layer: Layer) -> None:
         self.layer = layer
-        for item in self.scene.items():
+        for item in self.scene().items():
             item.setFlag(
                 QGraphicsItem.GraphicsItemFlag.ItemIsSelectable,
                 item.zValue() in layer.value
             )
             item.setSelected(False)
 
-    def _itemsAt(self: 'Drawing', point: QPointF) -> list[QGraphicsItem]:
-        items = self.scene.items(
+    def _itemsAt(self: 'DrawingView', point: QPointF) -> list[QGraphicsItem]:
+        items = self.scene().items(
             point,
             Qt.ItemSelectionMode.IntersectsItemShape,
             Qt.SortOrder.DescendingOrder,
@@ -310,14 +257,14 @@ class DrawingPrivateMixin:
         return [i for i in items if i.zValue() in self.layer.value]
 
     def _selectRect(
-        self   : 'Drawing',
+        self   : 'DrawingView',
         rect   : QRectF,
         toggle : bool = False
     ) -> None:
         path = QPainterPath()
         path.addRect(rect)
         if toggle:
-            items = self.scene.items(
+            items = self.scene().items(
                 path,
                 Qt.ItemSelectionMode.IntersectsItemShape,
                 Qt.SortOrder.AscendingOrder,
@@ -326,18 +273,18 @@ class DrawingPrivateMixin:
             for item in items:
                 item.setSelected(not item.isSelected())
         else:
-            self.scene.setSelectionArea(
+            self.scene().setSelectionArea(
                 path,
                 Qt.ItemSelectionOperation.AddToSelection,
                 Qt.ItemSelectionMode.IntersectsItemShape,
                 self.transform()
             )
-        for item in self.scene.selectedItems():
+        for item in self.scene().selectedItems():
             if hasattr(item, 'updateGripsVisibility'):
                 item.updateGripsVisibility()
 
     def _selectPoint(
-        self   : 'Drawing',
+        self   : 'DrawingView',
         point  : QPointF,
         toggle : bool = False,
         choice : bool = False
@@ -380,7 +327,7 @@ class DrawingPrivateMixin:
                 item.setSelected(not item.isSelected())
             else:
                 item.setSelected(True)
-        for item in self.scene.selectedItems():
+        for item in self.scene().selectedItems():
             if hasattr(item, 'updateGripsVisibility'):
                 item.updateGripsVisibility()
 
@@ -390,18 +337,20 @@ class DrawingPrivateMixin:
         else:
             item.setSelected(not prev if toggle else True)
 
-    def _addWIP(self: 'Drawing', item: QGraphicsItem) -> None:
+    def _addWIP(self: 'DrawingView', item: QGraphicsItem) -> None:
         self.wip      = item
         self.prev_pos = item.pos()
-        self.scene.addItem(self.wip)
+        self.scene().addItem(self.wip)
 
-    def _completeWIP(self: 'Drawing') -> None:
+    def _completeWIP(self: 'DrawingView') -> None:
         self.wip.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsSelectable, True)
         self.wip.update()
         self.wip      = None
         self.prev_pos = None
 
-    def _removeWIP(self: 'Drawing') -> None:
-        self.scene.removeItem(self.wip)
+    def _removeWIP(self: 'DrawingView') -> None:
+        self.scene().removeItem(self.wip)
         self.wip      = None
         self.prev_pos = None
+
+
