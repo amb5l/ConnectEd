@@ -1,7 +1,8 @@
 __all__ = ['Diagram']
 
-from .drawing import Drawing
+from . import Drawing
 
+from ..items import Paper, Border
 
 class Diagram(Drawing):
-    pass
+    SYSTEM_ALLOWED_ITEMS = Drawing.SYSTEM_ALLOWED_ITEMS + [Paper, Border]
