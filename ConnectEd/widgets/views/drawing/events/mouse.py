@@ -1,7 +1,7 @@
 from PyQt6.QtCore import Qt, QEvent, QPoint
 from PyQt6.QtGui  import QEnterEvent, QMouseEvent, QWheelEvent, QCursor
 
-from .....core import logger, settings
+from .....core import logger
 
 from ..... import hub
 
@@ -41,7 +41,7 @@ class DrawingEventsMouseMixin:
         match self.mouse.left.state:
             case self.MouseButtonState.Pressed:
                 d = self._distance(self.mouse.left.press.physical, event.pos())
-                if d >= settings.prefs.mouse.drag:
+                if d >= hub.settings.prefs.mouse.drag:
                     self.mouse.left.state = self.MouseButtonState.Dragging
                     self.mouseLeftDragBegin()
                     return
@@ -51,7 +51,7 @@ class DrawingEventsMouseMixin:
         match self.mouse.middle.state:
             case self.MouseButtonState.Pressed:
                 d = self._distance(self.mouse.middle.press.physical, event.pos())
-                if d >= settings.prefs.mouse.drag:
+                if d >= hub.settings.prefs.mouse.drag:
                     self.mouse.middle.state = self.MouseButtonState.Dragging
                     self.mouseMiddleDragBegin()
                     return

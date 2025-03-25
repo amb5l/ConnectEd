@@ -4,8 +4,10 @@ from typing import Optional
 
 from PyQt6.QtCore import QPointF, QSizeF
 
-from ...core import Z_TEMPLATE, settings
+from ...core import Z_TEMPLATE
 from .       import RectItem, Paper
+
+from ... import hub
 
 class Border(RectItem):
     Z = Z_TEMPLATE
@@ -20,7 +22,7 @@ class Border(RectItem):
         super().__init__(QPointF(0, 0), fill=False)
         self.paper = paper
         if margin is None:
-            margin = settings.defaults.margin
+            margin = hub.settings.defaults.margin
         self.setMargin(margin)
 
     def setMargin(self, margin : float) -> None:

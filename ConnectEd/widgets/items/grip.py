@@ -2,7 +2,7 @@ from PyQt6.QtCore    import Qt, QPointF, QRectF
 from PyQt6.QtWidgets import QGraphicsItem, QStyleOptionGraphicsItem, QWidget
 from PyQt6.QtGui     import QPainter, QPen, QBrush, QPolygonF, QPainterPath
 
-from ...core import settings
+from ... import hub
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -31,7 +31,7 @@ class Grip(QGraphicsItem):
         return self.parentItem().pos() + self.pos()
 
     def boundingRect(self) -> QRectF:
-        size = settings.prefs.display.items.selected.grip.size
+        size = hub.settings.prefs.display.items.selected.grip.size
         return QRectF(-size/2, -size/2, size, size)
 
     def shape(self) -> QPainterPath:
@@ -46,7 +46,7 @@ class Grip(QGraphicsItem):
         widget  : QWidget
     ) -> None:
         is_anchor = self == self.parentItem().grips[self.parentItem().anchor]
-        theme = settings.theme.anchor if is_anchor else settings.theme.grip
+        theme = hub.settings.theme.anchor if is_anchor else settings.theme.grip
         painter.setPen(QPen(theme.line, 0, Qt.PenStyle.SolidLine))
         painter.setBrush(QBrush(theme.fill, Qt.BrushStyle.SolidPattern))
         painter.drawRect(self.boundingRect())

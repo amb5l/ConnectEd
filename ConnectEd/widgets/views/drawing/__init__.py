@@ -6,14 +6,14 @@ from PyQt6.QtCore    import Qt, QPoint, QPointF, QRectF, QEvent, QTimer
 from PyQt6.QtWidgets import QMdiArea, QMdiSubWindow, QGraphicsView
 from PyQt6.QtGui     import QPainter
 
-from ....core    import settings
-
 from ....widgets.scenes.drawing import DrawingScene
 from ....widgets.marquee        import Marquee
 
 from .private import DrawingViewPrivateMixin, Layer
 from .events  import DrawingViewEventsMixin
 from .api     import DrawingViewApiMixin
+
+from .... import hub
 
 
 class DrawingSubWindow(QMdiSubWindow):
@@ -67,4 +67,4 @@ class DrawingView(
         self._setLayer(Layer.Drawing)
 
     def drawBackground(self, painter : QPainter, rect : QRectF) -> None:
-        painter.fillRect(rect, settings.theme.vacuum.fill)
+        painter.fillRect(rect, hub.settings.theme.vacuum.fill)

@@ -2,6 +2,10 @@ from typing import Optional
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from .widgets.main_window import MainWindow
+    from .core    import Counter, Settings, DatabaseManager
+    from .widgets import MainWindow
 
-main_window: Optional['MainWindow'] = None
+count            : Optional['Counter']         = None
+settings         : Optional['Settings']        = None
+database_manager : Optional['DatabaseManager'] = None
+main_window      : Optional['MainWindow']      = None

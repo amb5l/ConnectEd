@@ -5,7 +5,10 @@ from PyQt6.QtGui     import QPainter, QPen, QBrush, QColor
 from PyQt6.QtWidgets import QGraphicsItem, QGraphicsRectItem, \
                             QWidget, QStyleOptionGraphicsItem
 
-from ...core import settings, Z_EXTENTS
+from ...core import Z_EXTENTS
+
+from ... import hub
+
 
 class Extents(QGraphicsRectItem):
     """Extents of a drawing - the outer limit!"""
@@ -13,7 +16,7 @@ class Extents(QGraphicsRectItem):
     Z = Z_EXTENTS
 
     def __init__(self : 'Extents', sheet : str) -> None:
-        sheet_size = getattr(settings.sheet_sizes, sheet)
+        sheet_size = getattr(hub.settings.sheet_sizes, sheet)
         super().__init__(QRectF(
             -QPointF(sheet_size.width(), sheet_size.height()),
             QSizeF(sheet_size.width() * 3, sheet_size.height() * 3)
@@ -28,12 +31,12 @@ class Extents(QGraphicsRectItem):
         widget  : QWidget
     ) -> None:
         painter.setPen(QPen(
-            QColor(settings.theme.extents.line),
-            settings.prefs.display.items.extents.line.width,
-            settings.prefs.display.items.extents.line.style
+            QColor(hub.settings.theme.extents.line),
+            hub.settings.prefs.display.items.extents.line.width,
+            hub.settings.prefs.display.items.extents.line.style
         ))
         painter.setBrush(QBrush(
-            QColor(settings.theme.extents.fill),
-            settings.prefs.display.items.extents.fill
+            QColor(hub.settings.theme.extents.fill),
+            hub.settings.prefs.display.items.extents.fill
         ))
         super().paint(painter, option, widget)

@@ -1,5 +1,5 @@
 __all__ = [
-    'count',
+    'Counter',
     'check',
     'connect_actions_to_slots',
     'get_default_path'
@@ -21,8 +21,6 @@ class Counter:
         r = str(self.count)
         self.count += 1
         return r
-
-count = Counter()
 
 def check(b : bool, s : str) -> bool:
     if not b:

@@ -1,21 +1,28 @@
-__all__ = ['Database', 'Library', 'Design', 'database_manager']
+__all__ = ['Database', 'Library', 'Design', 'DatabaseManager']
 
 from typing import Optional, Type, List
 
-from . import TypedList
-from ..widgets.scenes import SymbolScene, DiagramScene
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from ..widgets.scenes import SymbolScene, DiagramScene
 
 
 class Database:
     path    : Optional[str] = None
-    symbols : TypedList[SymbolScene]
+    symbols : list['SymbolScene']
 
     def __init__(
         self : 'Design',
         path : Optional[str] = None
     ) -> None:
         self.path    = path
-        self.symbols = TypedList(SymbolScene)
+        self.symbols = []
+
+    def new_symbol(self) -> 'SymbolScene':
+        from ..widgets.scenes import SymbolScene
+        symbol = SymbolScene()
+        self.symbols.append(symbol)
+        return symbol
 
     def save(self) -> None:
         if self.path is None:
@@ -27,22 +34,28 @@ class Library(Database):
     pass
 
 class Design(Database):
-    diagrams : TypedList[DiagramScene]
+    diagrams : list['DiagramScene']
 
     def __init__(
         self : 'Design',
         path : Optional[str] = None
     ) -> None:
         super().__init__(path)
-        self.diagrams = TypedList(DiagramScene)
+        self.diagrams = []
+
+    def new_diagram(self) -> 'DiagramScene':
+        from ..widgets.scenes import DiagramScene
+        diagram = DiagramScene()
+        self.diagrams.append(diagram)
+        return diagram
 
 class DatabaseManager:
     ALLOWED_TYPES: List[Type[Database]] = [Library, Design]
 
-    databases : TypedList[Database]
+    databases : list[Database]
 
     def __init__(self) -> None:
-        self.databases = TypedList(Database)
+        self.databases = []
 
     def new(
         self    : 'DatabaseManager',
@@ -59,5 +72,3 @@ class DatabaseManager:
         path : str
     ) -> Database:
         print('TODO: open database')
-
-database_manager = DatabaseManager()

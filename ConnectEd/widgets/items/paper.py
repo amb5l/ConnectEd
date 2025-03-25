@@ -2,7 +2,9 @@ __all__ = ['Paper']
 
 from PyQt6.QtCore    import QPointF, QSizeF
 
-from ...core import Z_PAPER, settings
+from ...core import Z_PAPER
+
+from ... import hub
 
 from . import RectItem
 
@@ -19,5 +21,5 @@ class Paper(RectItem):
 
     def setSize(self : 'Paper', size_name : str) -> None:
         self.size_name = size_name
-        size = getattr(settings.sheet_sizes, size_name)
+        size = getattr(hub.settings.sheet_sizes, size_name)
         self.setPosSize(QPointF(0, 0), QSizeF(size.width(), size.height()))

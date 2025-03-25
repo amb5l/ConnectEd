@@ -1,6 +1,6 @@
 from PyQt6.QtCore import QPointF, QRectF, QSizeF
 
-from .....core import settings
+from ..... import hub
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING: # avoid circular import issues
@@ -18,22 +18,22 @@ class DrawingApiViewMixin:
         self._goState(self.State.ViewZoomWindow1)
 
     def viewZoomIn(self : 'DrawingView', n=1) -> None:
-        self._zoomRelMouse((1 + settings.prefs.display.zoom.step)**n)
+        self._zoomRelMouse((1 + hub.settings.prefs.display.zoom.step)**n)
 
     def viewZoomOut(self : 'DrawingView', n=1) -> None:
-        self._zoomRelMouse((1 - settings.prefs.display.zoom.step)**n)
+        self._zoomRelMouse((1 - hub.settings.prefs.display.zoom.step)**n)
 
     def viewPan(self : 'DrawingView', n=1) -> None:
         self._goState(self.State.ViewPan1)
 
     def viewPanLeft(self : 'DrawingView', n=1) -> None:
-        self._pan(QPointF(settings.prefs.display.pan.step * n, 0))
+        self._pan(QPointF(hub.settings.prefs.display.pan.step * n, 0))
 
     def viewPanRight(self : 'DrawingView', n=1) -> None:
-        self._pan(QPointF(-settings.prefs.display.pan.step * n, 0))
+        self._pan(QPointF(-hub.settings.prefs.display.pan.step * n, 0))
 
     def viewPanUp(self : 'DrawingView', n=1) -> None:
-        self._pan(QPointF(0, settings.prefs.display.pan.step * n))
+        self._pan(QPointF(0, hub.settings.prefs.display.pan.step * n))
 
     def viewPanDown(self : 'DrawingView', n=1) -> None:
         self._pan(QPointF(0, -settings.prefs.display.pan.step * n))

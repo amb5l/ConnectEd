@@ -4,8 +4,9 @@ from typing import Optional
 
 from PyQt6.QtWidgets import QGraphicsScene, QGraphicsItem
 
-from ...core import settings, count
 from ..items import Extents, Grid, Grip
+
+from ... import hub
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -28,9 +29,9 @@ class DrawingScene(QGraphicsScene):
     def __init__(self : 'DrawingScene', name : str | None = None) -> None:
         super().__init__()
         if name is None:
-            name = 'Untitled' + str(count)
+            name = 'Untitled' + str(hub.count)
         self.name    = name
-        self.extents = Extents(settings.defaults.sheet)
+        self.extents = Extents(hub.settings.defaults.sheet)
         self.grid    = Grid(self.extents)
         self.wip     = []
         self.setItemIndexMethod(QGraphicsScene.ItemIndexMethod.NoIndex)

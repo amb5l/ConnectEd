@@ -10,9 +10,10 @@ from PyQt6.QtWidgets import \
     QGraphicsItem, QGraphicsRectItem, QGraphicsTextItem, \
     QStyleOptionGraphicsItem, QWidget
 
-from ...core import settings
-
 from .grip      import Grip
+
+from ... import hub
+
 
 @dataclass
 class PenSpec:
@@ -77,14 +78,14 @@ class ItemMixin:
     def getPrefsTheme(self) -> SimpleNamespace:
         item_name = self.__class__.__name__.lower()
         if self.isSelected():
-            prefs = settings.prefs.display.items.selected
-            theme = settings.theme.selected
+            prefs = hub.settings.prefs.display.items.selected
+            theme = hub.settings.theme.selected
         elif self.getWIP():
-            prefs = settings.prefs.display.items.wip
-            theme = settings.theme.wip
+            prefs = hub.settings.prefs.display.items.wip
+            theme = hub.settings.theme.wip
         else:
-            prefs = getattr(settings.prefs.display.items, item_name)
-            theme = getattr(settings.theme, item_name)
+            prefs = getattr(hub.settings.prefs.display.items, item_name)
+            theme = getattr(hub.settings.theme, item_name)
         return prefs, theme
 
     def setPenSpec(
@@ -99,7 +100,7 @@ class ItemMixin:
         prefs, theme = self.getPrefsTheme()
         s = self.pen_spec
         color = theme.line if s.color is None else s.color
-        color.setAlpha(settings.prefs.display.items.alpha)
+        color.setAlpha(hub.settings.prefs.display.items.alpha)
         width = prefs.line.width if s.width is None else s.width
         style = prefs.line.style if s.style is None else s.style
         return QPen(color, width, style)
@@ -123,7 +124,7 @@ class ItemMixin:
         prefs, theme = self.getPrefsTheme()
         s = self.brush_spec
         color = theme.fill if s.color is None else s.color
-        color.setAlpha(settings.prefs.display.items.alpha)
+        color.setAlpha(hub.settings.prefs.display.items.alpha)
         style = prefs.fill if s.style is None else s.style
         return QBrush(color, style)
 
@@ -135,8 +136,8 @@ class ItemMixin:
 
     def fontFromSpec(self) -> QFont:
         item_name = self.__class__.__name__.lower()
-        prefs = getattr(settings.prefs.display.items, item_name).font
-        theme = getattr(settings.theme, item_name).font
+        prefs = getattr(hub.settings.prefs.display.items, item_name).font
+        theme = getattr(hub.settings.theme, item_name).font
         self.setDefaultTextColor(
             theme.color if self.text_spec.color is None else
                 self.text_spec.color
@@ -264,7 +265,7 @@ class RectItem(QGraphicsRectItem, ItemMixin):
 
     def boundingRect(self) -> QRectF:
         w = max(
-            self.penWidth(), settings.prefs.display.items.selected.grip.size
+            self.penWidth(), hub.settings.prefs.display.items.selected.grip.size
         )
         return self.rect().adjusted(-w/2, -w/2, w/2, w/2)
 

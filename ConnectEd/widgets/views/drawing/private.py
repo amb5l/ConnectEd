@@ -19,13 +19,14 @@ from PyQt6.QtWidgets import QRubberBand, QGraphicsItem, QMenu
 from PyQt6.QtGui     import QMouseEvent, QCursor, QPainterPath, \
                             QPainter, QPen, QColor, QAction, QIcon
 
-from ....core import settings, LAYER_SHEET, LAYER_DRAWING
+from ....core import LAYER_SHEET, LAYER_DRAWING
 
 from .... import hub
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from . import DrawingView
+
 
 class Layer(Enum): # TODO resolve drawing vs diagram
     Sheet   = LAYER_SHEET
@@ -172,8 +173,8 @@ class DrawingViewPrivateMixin:
         )
 
     def _zoomAbs(self: 'DrawingView', abs: float) -> None:
-        abs = max(abs, settings.prefs.display.zoom.limit.min)
-        abs = min(abs, settings.prefs.display.zoom.limit.max)
+        abs = max(abs, hub.settings.prefs.display.zoom.limit.min)
+        abs = min(abs, hub.settings.prefs.display.zoom.limit.max)
         self.zoom = abs
         self.resetTransform()
         self.scale(self.zoom, self.zoom)
@@ -181,10 +182,10 @@ class DrawingViewPrivateMixin:
             '{:.2f}%'.format(self.zoom * 100)
         )
         hub.main_window.actions.actionEnable(
-            'viewZoomIn',  self.zoom < settings.prefs.display.zoom.limit.max
+            'viewZoomIn',  self.zoom < hub.settings.prefs.display.zoom.limit.max
         )
         hub.main_window.actions.actionEnable(
-            'viewZoomOut', self.zoom > settings.prefs.display.zoom.limit.min
+            'viewZoomOut', self.zoom > hub.settings.prefs.display.zoom.limit.min
         )
 
     def _zoomRel(self: 'DrawingView', rel: float) -> None:
@@ -213,7 +214,7 @@ class DrawingViewPrivateMixin:
             self.viewport().height() / rect.height()
         )
         factor = min(zoom.x(), zoom.y()) * \
-            (1 - settings.prefs.display.zoom.padding)
+            (1 - hub.settings.prefs.display.zoom.padding)
         self._zoomAbs(factor)
         self.centerOn(rect.center())
 

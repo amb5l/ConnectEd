@@ -13,7 +13,7 @@ from PyQt6.QtCore    import Qt, QByteArray
 from PyQt6.QtWidgets import QMainWindow, QMdiArea
 from PyQt6.QtGui     import QCloseEvent
 
-from ...core         import APP_NAME, settings, connect_actions_to_slots
+from ...core         import APP_NAME, connect_actions_to_slots, Design
 from .actions        import Actions
 from .slots          import Slots
 from .menu_bar       import MenuBar
@@ -22,6 +22,8 @@ from ..msg_view_dock import MsgViewDock
 from ..log_view_dock import LogViewDock
 from ..scenes        import DiagramScene
 from ..views         import DiagramView, DiagramSubWindow
+
+from ... import hub
 
 
 class MainWindow(QMainWindow):
@@ -47,10 +49,10 @@ class MainWindow(QMainWindow):
 
         # saved position
         self.setWindowTitle(APP_NAME)
-        if hasattr(settings, 'startup'):
-            if hasattr(settings.startup, 'geometry'):
-                if settings.startup.geometry:
-                    self.restoreGeometry(QByteArray(settings.startup.geometry))
+        if hasattr(hub.settings, 'startup'):
+            if hasattr(hub.settings.startup, 'geometry'):
+                if hub.settings.startup.geometry:
+                    self.restoreGeometry(QByteArray(hub.settings.startup.geometry))
 
         # actions and slots
         self.slots = Slots(self)
@@ -77,8 +79,9 @@ class MainWindow(QMainWindow):
         self.mdi_area = QMdiArea()
 
         # TODO remove this
-        test_scene = DiagramScene()
-        test_view = DiagramView(test_scene)
+        test_db = hub.database_manager.new(Design)
+        test_diagram = test_db.new_diagram()
+        test_view = DiagramView(test_diagram)
         test_sub_window = DiagramSubWindow(self.mdi_area)
         test_sub_window.setWidget(test_view)
         test_sub_window.setWindowTitle("Test Diagram")
@@ -92,5 +95,5 @@ class MainWindow(QMainWindow):
         self.msg_viewer.text_view.appendPlainText("ConnectEd ready!")
 
     def closeEvent(self, event : QCloseEvent) -> None:
-        settings.startup.geometry = self.saveGeometry().data()
+        hub.settings.startup.geometry = self.saveGeometry().data()
         super().closeEvent(event)

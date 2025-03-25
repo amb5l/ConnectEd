@@ -6,8 +6,10 @@ from PyQt6.QtCore    import Qt, QPointF, QRectF
 from PyQt6.QtWidgets import QGraphicsItem, QStyleOptionGraphicsItem, QWidget
 from PyQt6.QtGui     import QPainter, QPen
 
-from ...core import Z_GRID, settings
+from ...core import Z_GRID
 from ..items import Extents
+
+from ... import hub
 
 
 class Grid(QGraphicsItem):
@@ -42,12 +44,12 @@ class Grid(QGraphicsItem):
         self.setFlag( f.ItemContainsChildrenInShape          , False )
         self.setZValue(self.Z)
         self.extents = extents
-        self.setVisible(settings.defaults.grid.display)
-        self.snap       = settings.defaults.grid.snap
-        self.pitch      = settings.defaults.grid.pitch
-        self.dots       = settings.defaults.grid.dots
-        self.alpha      = settings.defaults.grid.alpha
-        self.min_pixels = settings.defaults.grid.min_pixels
+        self.setVisible(hub.settings.defaults.grid.display)
+        self.snap       = hub.settings.defaults.grid.snap
+        self.pitch      = hub.settings.defaults.grid.pitch
+        self.dots       = hub.settings.defaults.grid.dots
+        self.alpha      = hub.settings.defaults.grid.alpha
+        self.min_pixels = hub.settings.defaults.grid.min_pixels
 
     def boundingRect(self) -> QRectF:
         return self.extents.rect()
@@ -74,7 +76,7 @@ class Grid(QGraphicsItem):
             rect.topLeft()     - QPointF(px, py),
             rect.bottomRight() + QPointF(px, py)
         ).toRect()
-        color = settings.theme.grid.line
+        color = hub.settings.theme.grid.line
         color.setAlpha(self.alpha)
         painter.setPen(QPen(color, 0, Qt.PenStyle.SolidLine))
         painter.setBrush(Qt.BrushStyle.NoBrush)

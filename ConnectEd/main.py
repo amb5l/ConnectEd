@@ -2,7 +2,8 @@ import sys
 
 from PyQt6.QtWidgets import QApplication
 
-from .core      import logger, known_args, unknown_args, settings
+from .core      import logger, known_args, unknown_args, \
+                       Counter, Settings, DatabaseManager
 from .widgets   import MainWindow
 from .resources import initResources
 
@@ -11,16 +12,19 @@ from . import hub
 
 def main() -> int:
     logger.info("started")
+    hub.count = Counter()
+    hub.settings = Settings()
     if known_args.reset:
-        settings.reset()
-    settings.load()
+        hub.settings.reset()
+    hub.settings.load()
     #print(settings.dump())
     app = QApplication(sys.argv[:1] + unknown_args)
     initResources()
+    hub.database_manager = DatabaseManager()
     hub.main_window = MainWindow()
     hub.main_window.show()
     r = app.exec()
-    settings.save()
+    hub.settings.save()
     logger.info("finished")
     return r
 

@@ -9,7 +9,7 @@ including loading, saving, and accessing configuration values.
 # persistant settings for application
 # session settings for diagram and library
 
-__all__ = ['settings']
+__all__ = ['Settings']
 
 from types       import SimpleNamespace
 from typing      import Any, Dict, List, Union
