@@ -7,14 +7,6 @@ including settings, logging, argument parsing, and common types.
 
 from typing import Type, List, Tuple, Generic, TypeVar, Optional, Iterator
 
-from .defs     import *
-from .log      import *
-from .args     import *
-from .settings import *
-from .utils    import *
-
-
-settings = Settings()
 
 T = TypeVar('T')
 class TypedList(Generic[T]):
@@ -104,8 +96,18 @@ class TypedList(Generic[T]):
         """
         return iter(self.items)
 
-__all__ = ['settings', 'TypedList']
+__all__ = []
+
+from .defs     import *
 __all__ += defs.__all__
+from .log      import *
 __all__ += log.__all__
+from .args     import *
 __all__ += args.__all__
+from .utils    import *
 __all__ += utils.__all__
+
+from .settings import *
+settings = Settings()
+
+__all__ += ['settings', 'TypedList']
