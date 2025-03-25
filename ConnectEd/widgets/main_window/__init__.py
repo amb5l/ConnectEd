@@ -20,7 +20,6 @@ from .menu_bar       import MenuBar
 from .status_bar     import StatusBar
 from ..msg_view_dock import MsgViewDock
 from ..log_view_dock import LogViewDock
-from ..scenes        import DiagramScene
 from ..views         import DiagramView, DiagramSubWindow
 
 from ... import hub
