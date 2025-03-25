@@ -193,6 +193,7 @@ class DrawingApiMouseMixin:
                         pos.x() - self.prev_pos.x(),
                         pos.y() - self.prev_pos.y()
                     )
+                self._goState(self.State.Idle)
             case self.State.EditMove2:
                 # TODO: DRY
                 pos = self._snap(self.mouse.left.release.logical)

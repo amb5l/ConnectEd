@@ -1,2 +1,2 @@
-- sticky EditSlide2
+- consolidate mouse event handling
 
