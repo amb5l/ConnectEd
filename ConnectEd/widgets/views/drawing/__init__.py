@@ -8,7 +8,7 @@ from PyQt6.QtGui     import QPainter
 
 from ....core    import settings
 
-from ....widgets.scenes.drawing import Drawing
+from ....widgets.scenes.drawing import DrawingScene
 from ....widgets.marquee        import Marquee
 
 from .private import DrawingViewPrivateMixin, Layer
@@ -42,7 +42,7 @@ class DrawingView(
     mouse    : 'DrawingView.Mouse'
     state    : 'DrawingView.State'
 
-    def __init__(self : 'DrawingView', scene : Drawing) -> None:
+    def __init__(self : 'DrawingView', scene : DrawingScene) -> None:
         super().__init__(scene)
         self.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)

@@ -20,7 +20,7 @@ from .menu_bar       import MenuBar
 from .status_bar     import StatusBar
 from ..msg_view_dock import MsgViewDock
 from ..log_view_dock import LogViewDock
-from ..scenes        import Diagram
+from ..scenes        import DiagramScene
 from ..views         import DiagramView, DiagramSubWindow
 
 
@@ -77,7 +77,7 @@ class MainWindow(QMainWindow):
         self.mdi_area = QMdiArea()
 
         # TODO remove this
-        test_scene = Diagram()
+        test_scene = DiagramScene()
         test_view = DiagramView(test_scene)
         test_sub_window = DiagramSubWindow(self.mdi_area)
         test_sub_window.setWidget(test_view)

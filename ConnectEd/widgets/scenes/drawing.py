@@ -1,4 +1,4 @@
-__all__ = ['Drawing']
+__all__ = ['DrawingScene']
 
 from typing import Optional
 
@@ -8,7 +8,7 @@ from ...core    import settings, count
 from ..items import Extents, Grid, Grip
 
 
-class Drawing(QGraphicsScene):
+class DrawingScene(QGraphicsScene):
     # class variables
     SYSTEM_FORBIDDEN_ITEMS : Optional[list[QGraphicsItem]] = [Grip]
     SYSTEM_ALLOWED_ITEMS   : Optional[list[QGraphicsItem]] = [Extents, Grid]
@@ -21,7 +21,7 @@ class Drawing(QGraphicsScene):
     grid        : Grid
     wip         : list[QGraphicsItem]
 
-    def __init__(self : 'Drawing', name : str | None = None) -> None:
+    def __init__(self : 'DrawingScene', name : str | None = None) -> None:
         super().__init__()
         if name is None:
             name = 'Untitled' + str(count)

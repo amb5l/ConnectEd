@@ -1,8 +1,8 @@
-__all__ = ['Diagram']
+__all__ = ['DiagramScene']
 
-from . import Drawing
+from . import DrawingScene
 
 from ..items import Paper, Border
 
-class Diagram(Drawing):
-    SYSTEM_ALLOWED_ITEMS = Drawing.SYSTEM_ALLOWED_ITEMS + [Paper, Border]
+class DiagramScene(DrawingScene):
+    SYSTEM_ALLOWED_ITEMS = DrawingScene.SYSTEM_ALLOWED_ITEMS + [Paper, Border]
