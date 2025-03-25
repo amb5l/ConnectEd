@@ -9,7 +9,7 @@ including loading, saving, and accessing configuration values.
 # persistant settings for application
 # session settings for diagram and library
 
-__all__ = ['Settings']
+__all__ = ['settings']
 
 from types       import SimpleNamespace
 from typing      import Any, Dict, List, Union
@@ -363,3 +363,5 @@ class Settings(SimpleNamespace):
                     lines.append(f'{indent}{name}/{k} = {self._value_to_text(v)}')
         else:
             lines.append(f'{indent}{name} = {self._value_to_text(x)}')
+
+settings = Settings()

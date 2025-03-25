@@ -1,2 +1,4 @@
+- DB manager; design and library classes
+- explorer widget
 - consolidate mouse event handling
-
+- autosave

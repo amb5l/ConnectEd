@@ -4,9 +4,12 @@ from typing import Optional
 
 from PyQt6.QtWidgets import QGraphicsScene, QGraphicsItem
 
-from ...core    import settings, count
+from ...core import settings, count
 from ..items import Extents, Grid, Grip
 
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from ...core import Database
 
 class DrawingScene(QGraphicsScene):
     # class variables
@@ -16,10 +19,11 @@ class DrawingScene(QGraphicsScene):
     ALLOWED_ITEMS          : Optional[list[QGraphicsItem]] = None # any
 
     # instance variables
-    name        : str
-    extents     : Extents
-    grid        : Grid
-    wip         : list[QGraphicsItem]
+    db      : 'Database'
+    name    : str
+    extents : Extents
+    grid    : Grid
+    wip     : list[QGraphicsItem]
 
     def __init__(self : 'DrawingScene', name : str | None = None) -> None:
         super().__init__()

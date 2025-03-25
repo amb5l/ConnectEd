@@ -96,8 +96,7 @@ class TypedList(Generic[T]):
         """
         return iter(self.items)
 
-__all__ = []
-
+__all__ = ['TypedList']
 from .defs     import *
 __all__ += defs.__all__
 from .log      import *
@@ -106,8 +105,7 @@ from .args     import *
 __all__ += args.__all__
 from .utils    import *
 __all__ += utils.__all__
-
-from .settings import *
-settings = Settings()
-
-__all__ += ['settings', 'TypedList']
+from .nv import *
+__all__ += nv.__all__
+from .db import *
+__all__ += db.__all__
