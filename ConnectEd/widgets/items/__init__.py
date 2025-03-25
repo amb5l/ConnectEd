@@ -1,12 +1,3 @@
-__all__ = [
-    'Extents',
-    'Paper',
-    'Border',
-    'Rectangle',
-    'Grip',
-    'Grid'
-]
-
 from dataclasses import dataclass
 from enum        import Enum
 from typing      import Optional
@@ -349,8 +340,23 @@ class TextItem(QGraphicsTextItem, ItemMixin):
             self.toPlainText()
         )
 
-from .extents    import Extents
-from .paper      import Paper
-from .border     import Border
-from .rectangle  import Rectangle
-from .grid       import Grid
+__all__ = []
+
+# system items
+from .extents import Extents
+__all__ += extents.__all__
+from .grid import Grid
+__all__ += grid.__all__
+from .paper import Paper
+__all__ += paper.__all__
+from .border import Border
+__all__ += border.__all__
+
+# user items
+from .rectangle import Rectangle
+__all__ += rectangle.__all__
+from .symbol_instance import SymbolInstance
+__all__ += symbol_instance.__all__
+from .block import Block
+__all__ += block.__all__
+

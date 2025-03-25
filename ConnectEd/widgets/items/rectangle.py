@@ -1,3 +1,5 @@
+__all__ = ['Rectangle']
+
 from PyQt6.QtCore import QPointF, QSizeF
 
 from ...core import Z_DRAWING

@@ -1,3 +1,5 @@
+__all__ = ['Grid']
+
 from math import ceil
 
 from PyQt6.QtCore    import Qt, QPointF, QRectF

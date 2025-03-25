@@ -133,7 +133,6 @@ class DrawingViewPrivateMixin:
     StateTip         = DrawingViewStateTip
 
     def _goState(self: 'DrawingView', state : 'DrawingView.State') -> None:
-        print(f' -> {state}')
         self.state = state
         if hub.main_window is not None:
             hub.main_window.status_bar.tip.setText(self.StateTip[state])

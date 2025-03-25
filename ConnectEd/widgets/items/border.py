@@ -1,3 +1,5 @@
+__all__ = ['Border']
+
 from typing import Optional
 
 from PyQt6.QtCore import QPointF, QSizeF
