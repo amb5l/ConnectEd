@@ -46,7 +46,6 @@ def connect_actions_to_slots(actions : Any, slots : Any) -> None:
     if error:
         raise Exception('Action-slot mismatch')
     for action_name in action_names:
-        print(f'connecting {action_name}')
         action = getattr(actions, action_name)
         slot = getattr(slots, action_name)
         action.triggered.connect(slot)

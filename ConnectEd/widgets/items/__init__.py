@@ -241,7 +241,6 @@ class RectItem(QGraphicsRectItem, ItemMixin):
             grip.setZValue(self.zValue() + Grip.Z_DELTA)
 
     def gripResize(self, kp : KeyPoint, delta : QPointF) -> None:
-        print(self.__class__.__name__, 'gripResize', kp, delta)
         p1, p2 = self.getPoints()
         d = delta
         match kp:

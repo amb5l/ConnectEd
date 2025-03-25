@@ -20,7 +20,6 @@ class DrawingApiMouseMixin:
                 for item in items:
                     if isinstance(item, Grip):
                         self.grip = item
-                        print('grip')
                         break
                 else:
                     self.grip = None
@@ -106,7 +105,6 @@ class DrawingApiMouseMixin:
                 else:
                     self.grip = None
                 if self.grip: # we've hit a grip
-                    print('grip resize')
                     self.prev_pos = self.grip.parentPos()
                     self._goState(self.State.EditResize2)
                 else:
@@ -164,7 +162,6 @@ class DrawingApiMouseMixin:
                     )
                 self.prev_pos = pos
             case self.State.EditResize2:
-                print('resizing')
                 self.grip.parentItem().gripResize(
                     self.grip.key_point,
                     self._snap(self.mouse.current.logical) - self.prev_pos

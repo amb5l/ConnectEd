@@ -34,7 +34,7 @@ def with_current_widget(widget_type: Type[T]) -> Callable[[Callable[['Slots', T]
                 # Cast to T since we know it's a subclass
                 func(self, cast(T, current_widget))
             else:
-                print(f'{current_widget} is not a {widget_type} or subclass')
+                raise ValueError(f'{current_widget} is not a {widget_type} or subclass')
         return wrapper
     return decorator
 
@@ -61,6 +61,8 @@ def with_current_widget_checkable(widget_type: Type[T], action_name: str) -> Cal
                 checked = getattr(self._parent.actions, action_name).isChecked()
                 # Cast to T since we know it's a subclass
                 func(self, cast(T, current_widget), checked)
+            else:
+                raise ValueError(f'{current_widget} is not a {widget_type} or subclass')
         return wrapper
     return decorator
 
@@ -142,12 +144,10 @@ class Slots:
         widget.placeRectangle()
 
     def windowMessages(self : 'Slots') -> None:
-        print('windowMessages')
         self._parent.msg_viewer.show()
         self._parent.msg_viewer.raise_()
 
     def windowLog(self : 'Slots') -> None:
-        print('windowLog')
         self._parent.log_viewer.show()
         self._parent.log_viewer.raise_()
 
