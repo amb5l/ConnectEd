@@ -4,7 +4,7 @@ __all__ = [
     'Action'
 ]
 
-from typing import Optional
+from typing import Optional, Any
 
 from PyQt6.QtCore import QObject
 from PyQt6.QtGui  import QAction, QKeySequence
@@ -16,9 +16,10 @@ class Action(QAction):
         parent    : QObject,
         text      : str,
         tooltip   : str,
-        shortcut  : Optional[QKeySequence | str],
+        shortcut  : Optional[QKeySequence | str] = None,
         checkable : bool = False,
-        checked   : bool = False
+        checked   : bool = False,
+        data      : Optional[Any] = None
     ) -> None:
         super().__init__(parent)
         self.setText(text)
@@ -28,3 +29,6 @@ class Action(QAction):
         self.setCheckable(checkable)
         if checkable:
             self.setChecked(checked)
+        if data is not None:
+            self.setData(data)
+
