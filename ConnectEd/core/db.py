@@ -2,25 +2,30 @@ __all__ = ['Database', 'Library', 'Design', 'DatabaseManager']
 
 from typing import Optional, Type, List
 
+from .. import hub
+
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ..widgets.scenes import SymbolScene, DiagramScene
 
 
 class Database:
-    path    : Optional[str] = None
+    path    : Optional[str]
+    name    : str
     symbols : list['SymbolScene']
 
     def __init__(
         self : 'Design',
-        path : Optional[str] = None
+        path : Optional[str] = None,
+        name : Optional[str] = None
     ) -> None:
         self.path    = path
+        self.name    = name if name is not None else 'Untitled' + str(hub.count)
         self.symbols = []
 
     def new_symbol(self) -> 'SymbolScene':
         from ..widgets.scenes import SymbolScene
-        symbol = SymbolScene()
+        symbol = SymbolScene(db=self)
         self.symbols.append(symbol)
         return symbol
 
@@ -38,14 +43,15 @@ class Design(Database):
 
     def __init__(
         self : 'Design',
-        path : Optional[str] = None
+        path : Optional[str] = None,
+        name : Optional[str] = None
     ) -> None:
-        super().__init__(path)
+        super().__init__(path, name)
         self.diagrams = []
 
-    def new_diagram(self) -> 'DiagramScene':
+    def new_diagram(self : 'Design') -> 'DiagramScene':
         from ..widgets.scenes import DiagramScene
-        diagram = DiagramScene()
+        diagram = DiagramScene(db=self)
         self.diagrams.append(diagram)
         return diagram
 
