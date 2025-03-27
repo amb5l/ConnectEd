@@ -8,5 +8,6 @@ class DbExplorerDock(TreeViewDock):
     WINDOW_TITLE = 'Database Explorer'
 
     def __init__(self, parent : QWidget) -> None:
-        db_explorer = DbExplorer(parent)
-        super().__init__(parent, db_explorer)
+        super().__init__(parent, None)
+        self.db_explorer = DbExplorer(self)
+        self.setWidget(self.db_explorer)

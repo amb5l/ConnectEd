@@ -26,7 +26,7 @@ def main() -> int:
 
     # TODO remove this
     test_db = hub.database_manager.new(Design)
-    test_diagram = test_db.new_diagram()
+    test_diagram = test_db.diagrams[0]
     test_view = DiagramView(test_diagram)
     test_sub_window = DiagramSubWindow(hub.main_window.mdi_area)
     test_sub_window.setWidget(test_view)
