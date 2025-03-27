@@ -1,3 +1,5 @@
+from typing import Optional
+
 from PyQt6.QtWidgets import QDockWidget, QWidget
 
 from .tree_view import TreeView
@@ -9,8 +11,9 @@ class TreeViewDock(QDockWidget):
     def __init__(
         self   : 'TreeViewDock',
         parent : QWidget,
-        widget : TreeView
+        widget : Optional[TreeView] = None
     ) -> None:
         super().__init__(parent)
         self.setWindowTitle(self.WINDOW_TITLE)
-        self.setWidget(widget)
+        if widget is not None:
+            self.setWidget(widget)
