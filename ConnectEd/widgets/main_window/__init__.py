@@ -20,6 +20,7 @@ from .status_bar     import StatusBar
 from ..messages_view_dock   import MessagesViewDock
 from ..transcript_view_dock import TranscriptViewDock
 from ..log_view_dock        import LogViewDock
+from ..db_explorer_dock     import DbExplorerDock
 
 from ..views         import DiagramView, DiagramSubWindow
 
@@ -68,7 +69,7 @@ class MainWindow(QMainWindow):
         self.status_bar = StatusBar(self)
         self.setStatusBar(self.status_bar)
 
-        # dock widgets
+        # text viewer dock widgets
         self.messages_viewer = MessagesViewDock(self)
         self.addDockWidget(
             Qt.DockWidgetArea.BottomDockWidgetArea,
@@ -87,6 +88,10 @@ class MainWindow(QMainWindow):
         self.tabifyDockWidget(self.messages_viewer, self.transcript_viewer)
         self.tabifyDockWidget(self.messages_viewer, self.log_viewer)
         self.messages_viewer.raise_()
+
+        # DB explorer dock widget
+        self.db_explorer = DbExplorerDock(self)
+        self.addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, self.db_explorer)
 
         # MDI area
         self.mdi_area = QMdiArea()

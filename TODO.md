@@ -1,10 +1,8 @@
 - DB manager: update Window menu (in progress)
+- DB explorer: modified indicator, full path tooltip
 - QUndoCommand
 - consolidate mouse event handling
 - autosave
 - Window menu: check active window
 - new widgets:
-  - transcript
-  - DB explorer (diagrams, symbols)
-    - flat and hierarchy tabs?
-  - Libraries Explorer (2 levels: library name, symbols)
+  - Add Symbol Explorer

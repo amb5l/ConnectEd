@@ -1,5 +1,8 @@
 __all__ = ['Database', 'Library', 'Design', 'DatabaseManager']
 
+from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QStandardItemModel, QStandardItem
+
 from typing import Optional, Type, List
 
 from .. import hub
@@ -48,6 +51,7 @@ class Design(Database):
     ) -> None:
         super().__init__(path, name)
         self.diagrams = []
+        self.new_diagram()
 
     def new_diagram(self : 'Design') -> 'DiagramScene':
         from ..widgets.scenes import DiagramScene
@@ -56,21 +60,36 @@ class Design(Database):
         return diagram
 
 class DatabaseManager:
-    ALLOWED_TYPES: List[Type[Database]] = [Library, Design]
+    ALLOWED_TYPES: List[Type[Database]] = [Design, Library]
 
-    databases : list[Database]
+    model     : QStandardItemModel
+    designs   : QStandardItem
+    libraries : QStandardItem
 
     def __init__(self) -> None:
-        self.databases = []
+        self.model = QStandardItemModel()
+        self.model.setHorizontalHeaderLabels(['Database Hierarchy'])
+        self.designs = QStandardItem('Designs')
+        self.designs.setEditable(False)
+        font = self.designs.font()
+        font.setBold(True)
+        self.designs.setFont(font)
+        self.model.appendRow(self.designs)
+        self.libraries = QStandardItem('Libraries')
+        self.libraries.setEditable(False)
+        font = self.libraries.font()
+        font.setBold(True)
+        self.libraries.setFont(font)
+        self.model.appendRow(self.libraries)
 
     def new(
         self    : 'DatabaseManager',
         db_type : Type[Database]
     ) -> Database:
         if db_type not in self.ALLOWED_TYPES:
-            raise ValueError(f"Database type {db_type.__name__} is not allowed")
+            raise ValueError(f'Database type {db_type.__name__} is not allowed')
         db = db_type()
-        self.databases.append(db)
+        self._add_to_model(db)
         return db
 
     def open(
@@ -78,3 +97,46 @@ class DatabaseManager:
         path : str
     ) -> Database:
         print('TODO: open database')
+
+    def get_model(self) -> QStandardItemModel:
+        """Return the model for use in a QTreeView."""
+        return self.model
+
+    def _add_to_model(self, db: Database) -> None:
+        if isinstance(db, Design):
+            db_item = QStandardItem(db.name)
+            db_item.setEditable(False)
+            db_item.setData(db, Qt.ItemDataRole.UserRole)
+            self.designs.appendRow(db_item)
+            diagrams_item = QStandardItem('Diagrams')
+            diagrams_item.setEditable(False)
+            font = diagrams_item.font()
+            font.setItalic(True)
+            diagrams_item.setFont(font)
+            db_item.appendRow(diagrams_item)
+            symbols_item = QStandardItem('Symbol Cache')
+            symbols_item.setEditable(False)
+            font = symbols_item.font()
+            font.setItalic(True)
+            symbols_item.setFont(font)
+            db_item.appendRow(symbols_item)
+            for diagram in db.diagrams:
+                diag_item = QStandardItem(diagram.name)
+                diag_item.setEditable(False) # TODO allow this to be edited
+                diag_item.setData(diagram, Qt.ItemDataRole.UserRole)
+                diagrams_item.appendRow(diag_item)
+            for symbol in db.symbols:
+                symbol_item = QStandardItem(symbol.name)
+                symbol_item.setEditable(False)
+                symbol_item.setData(symbol, Qt.ItemDataRole.UserRole)
+                symbols_item.appendRow(symbol_item)
+        elif isinstance(db, Library):
+            db_item = QStandardItem(db.name)
+            db_item.setEditable(False)
+            db_item.setData(db, Qt.ItemDataRole.UserRole)
+            self.libraries.appendRow(db_item)
+            for symbol in db.symbols:
+                symbol_item = QStandardItem(symbol.name)
+                symbol_item.setEditable(False)
+                symbol_item.setData(symbol, Qt.ItemDataRole.UserRole)
+                db_item.appendRow(symbol_item)
