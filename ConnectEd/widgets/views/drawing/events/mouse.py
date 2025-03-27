@@ -115,6 +115,6 @@ class DrawingEventsMouseMixin:
         p = event.position().toPoint(); l = self.mapToScene(p)
         self.mouse.current.setPL(p, l)
         self.mouseWheel(
-            event.angleDelta().y() / settings.prefs.mouse.wheel,
+            event.angleDelta().y() / hub.settings.prefs.mouse.wheel,
             self._getModifiers(event)
         )

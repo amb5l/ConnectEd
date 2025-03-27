@@ -45,8 +45,8 @@ class Grip(QGraphicsItem):
         option  : QStyleOptionGraphicsItem,
         widget  : QWidget
     ) -> None:
-        is_anchor = self == self.parentItem().grips[self.parentItem().anchor]
-        theme = hub.settings.theme.anchor if is_anchor else settings.theme.grip
+        a = self == self.parentItem().grips[self.parentItem().anchor]
+        theme = hub.settings.theme.anchor if a else hub.settings.theme.grip
         painter.setPen(QPen(theme.line, 0, Qt.PenStyle.SolidLine))
         painter.setBrush(QBrush(theme.fill, Qt.BrushStyle.SolidPattern))
         painter.drawRect(self.boundingRect())

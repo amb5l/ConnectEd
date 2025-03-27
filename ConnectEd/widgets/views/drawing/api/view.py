@@ -36,7 +36,7 @@ class DrawingApiViewMixin:
         self._pan(QPointF(0, hub.settings.prefs.display.pan.step * n))
 
     def viewPanDown(self : 'DrawingView', n=1) -> None:
-        self._pan(QPointF(0, -settings.prefs.display.pan.step * n))
+        self._pan(QPointF(0, -hub.settings.prefs.display.pan.step * n))
 
     def viewPrev(self : 'DrawingView') -> None:
         pass
