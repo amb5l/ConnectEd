@@ -32,7 +32,8 @@ class DrawingScene(QGraphicsScene):
         db   : Optional['Database'] = None
     ) -> None:
         super().__init__()
-        self.name    = name if name is not None else 'Untitled' + str(hub.count)
+        u = 'Untitled' + self.__class__.__name__.replace('Scene', '')
+        self.name    = name if name is not None else hub.name_counter.get(u)
         self.db      = db
         self.extents = Extents(hub.settings.defaults.sheet)
         self.grid    = Grid(self.extents)

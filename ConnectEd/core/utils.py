@@ -1,5 +1,5 @@
 __all__ = [
-    'Counter',
+    'NameCounter',
     'check',
     'connect_actions_to_slots',
     'get_default_path'
@@ -11,16 +11,17 @@ import platform
 from typing import Any
 
 
-class Counter:
-    count : int
+class NameCounter:
+    counts : dict[str, int]
 
     def __init__(self):
-        self.count = 1
+        self.counts = {}
 
-    def __str__(self):
-        r = str(self.count)
-        self.count += 1
-        return r
+    def get(self, name : str) -> str:
+        if name not in self.counts:
+            self.counts[name] = 0
+        self.counts[name] += 1
+        return f'{name}{self.counts[name]}'
 
 def check(b : bool, s : str) -> bool:
     if not b:

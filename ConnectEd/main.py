@@ -3,7 +3,7 @@ import sys
 from PyQt6.QtWidgets import QApplication
 
 from .core      import logger, known_args, unknown_args, \
-                       Counter, Settings, DatabaseManager, Design
+                       NameCounter, Settings, DatabaseManager, Design
 from .widgets   import MainWindow, DiagramView, DiagramSubWindow
 from .resources import initResources
 
@@ -12,7 +12,7 @@ from . import hub
 
 def main() -> int:
     logger.info("started")
-    hub.count = Counter()
+    hub.name_counter = NameCounter()
     hub.settings = Settings()
     if known_args.reset:
         hub.settings.reset()

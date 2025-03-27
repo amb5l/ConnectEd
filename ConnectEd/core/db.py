@@ -23,7 +23,8 @@ class Database:
         name : Optional[str] = None
     ) -> None:
         self.path    = path
-        self.name    = name if name is not None else 'Untitled' + str(hub.count)
+        u = 'Untitled' + self.__class__.__name__
+        self.name    = name if name is not None else hub.name_counter.get(u)
         self.symbols = []
 
     def new_symbol(self) -> 'SymbolScene':
