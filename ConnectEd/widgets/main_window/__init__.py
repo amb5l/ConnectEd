@@ -11,7 +11,7 @@ from PyQt6.QtCore    import Qt, QByteArray
 from PyQt6.QtWidgets import QMainWindow, QMdiArea
 from PyQt6.QtGui     import QCloseEvent
 
-from ...core         import APP_NAME, connect_actions_to_slots, Design
+from ...core         import APP_NAME, connect_actions_to_slots
 from .actions        import Actions
 from .slots          import Slots
 from .menu_bar       import MenuBar
@@ -21,8 +21,6 @@ from ..messages_view_dock   import MessagesViewDock
 from ..transcript_view_dock import TranscriptViewDock
 from ..log_view_dock        import LogViewDock
 from ..db_explorer_dock     import DbExplorerDock
-
-from ..views         import DiagramView, DiagramSubWindow
 
 from ... import hub
 
@@ -95,16 +93,6 @@ class MainWindow(QMainWindow):
 
         # MDI area
         self.mdi_area = QMdiArea()
-
-        # TODO remove this
-        test_db = hub.database_manager.new(Design)
-        test_diagram = test_db.new_diagram()
-        test_view = DiagramView(test_diagram)
-        test_sub_window = DiagramSubWindow(self.mdi_area)
-        test_sub_window.setWidget(test_view)
-        test_sub_window.setWindowTitle("Test Diagram")
-        self.mdi_area.addSubWindow(test_sub_window)
-        test_sub_window.showMaximized()
 
         # central widget
         self.setCentralWidget(self.mdi_area)

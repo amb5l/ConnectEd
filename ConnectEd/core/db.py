@@ -140,3 +140,9 @@ class DatabaseManager:
                 symbol_item.setEditable(False)
                 symbol_item.setData(symbol, Qt.ItemDataRole.UserRole)
                 db_item.appendRow(symbol_item)
+        tree_view = hub.main_window.db_explorer.widget()
+        design_index = self.model.indexFromItem(db_item)
+        tree_view.expand(design_index)
+        if isinstance(db, Design):
+            tree_view.expand(self.model.indexFromItem(diagrams_item))
+            tree_view.expand(self.model.indexFromItem(symbols_item))
