@@ -5,7 +5,7 @@ from ..private import Action
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from .          import MainWindow
-    from ...core    import DatabaseManager, Database
+    from ...core    import DbModel, Database
 
 class MenuBar(QMenuBar):
     parent : 'MainWindow'
@@ -67,7 +67,7 @@ class MenuBar(QMenuBar):
         self.addMenu(self.window_menu)
         self.addMenu(self.help_menu)
 
-    def updateWindowMenu(self, dbm : 'DatabaseManager') -> None:
+    def updateWindowMenu(self, dbm : 'DbModel') -> None:
         actions = self.parent.actions
         self.window_menu.clear()
         self.window_menu.addAction(actions.windowMessages)

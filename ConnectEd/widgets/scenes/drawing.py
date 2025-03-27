@@ -21,19 +21,15 @@ class DrawingScene(QGraphicsScene):
 
     # instance variables
     db      : Optional['Database']
-    name    : str
     extents : Extents
     grid    : Grid
     wip     : list[QGraphicsItem]
 
     def __init__(
         self : 'DrawingScene',
-        name : Optional[str] = None,
         db   : Optional['Database'] = None
     ) -> None:
         super().__init__()
-        u = 'Untitled' + self.__class__.__name__.replace('Scene', '')
-        self.name    = name if name is not None else hub.name_counter.get(u)
         self.db      = db
         self.extents = Extents(hub.settings.defaults.sheet)
         self.grid    = Grid(self.extents)

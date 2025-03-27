@@ -1,6 +1,8 @@
 __all__ = [
     'ORG_NAME',
     'APP_NAME',
+    'DSN_EXT',
+    'LIB_EXT',
     'LOG_FILENAME',
     'Z_EXTENTS',
     'Z_PAPER',
@@ -15,6 +17,9 @@ __all__ = [
 
 ORG_NAME = 'ConnectEd'
 APP_NAME = 'ConnectEd'
+DSN_EXT = '.cedsn'
+LIB_EXT = '.celib'
+
 LOG_FILENAME = f'{APP_NAME}.log'
 
 Z_EXTENTS       = 0 # extents layer

@@ -14,7 +14,7 @@ class TreeView(QTreeView):
         self.header().setVisible(False)
         self.set_font_size(10) # TODO get from settings
         self.expandAll()
-        self.increase_font_shortcut = QShortcut(QKeySequence("Ctrl++"), self)
+        self.increase_font_shortcut = QShortcut(QKeySequence("Ctrl+="), self)
         self.increase_font_shortcut.activated.connect(self.increase_font_size)
         self.decrease_font_shortcut = QShortcut(QKeySequence("Ctrl+-"), self)
         self.decrease_font_shortcut.activated.connect(self.decrease_font_size)

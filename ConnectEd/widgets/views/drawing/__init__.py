@@ -6,8 +6,8 @@ from PyQt6.QtCore    import Qt, QPoint, QPointF, QRectF, QEvent, QTimer
 from PyQt6.QtWidgets import QMdiArea, QMdiSubWindow, QGraphicsView
 from PyQt6.QtGui     import QPainter
 
-from ....widgets.scenes.drawing import DrawingScene
-from ....widgets.marquee        import Marquee
+from ....widgets.scenes  import DrawingScene
+from ....widgets.marquee import Marquee
 
 from .private import DrawingViewPrivateMixin, Layer
 from .events  import DrawingViewEventsMixin

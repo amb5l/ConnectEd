@@ -1,149 +1,116 @@
-__all__ = ['Database', 'Library', 'Design', 'DatabaseManager']
+__all__ = ['DiagramItem', 'SymbolItem', 'DesignItem', 'LibraryItem', 'DbModel']
+
+from typing  import Optional
+from pathlib import Path
 
 from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QStandardItemModel, QStandardItem
+from PyQt6.QtGui  import QStandardItemModel, QStandardItem
 
-from typing import Optional, Type, List
+from ..core import LIB_EXT, DSN_EXT
 
 from .. import hub
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from ..widgets.scenes import SymbolScene, DiagramScene
+    from ..widgets import DrawingScene, SymbolScene, DiagramScene
 
 
-class Database:
-    path    : Optional[str]
-    name    : str
-    symbols : list['SymbolScene']
+class DrawingItem(QStandardItem):
+    SCENE_TYPE : str
 
-    def __init__(
-        self : 'Design',
-        path : Optional[str] = None,
-        name : Optional[str] = None
-    ) -> None:
-        self.path    = path
-        u = 'Untitled' + self.__class__.__name__
-        self.name    = name if name is not None else hub.name_counter.get(u)
-        self.symbols = []
+    scene : 'DrawingScene'
 
-    def new_symbol(self) -> 'SymbolScene':
-        from ..widgets.scenes import SymbolScene
-        symbol = SymbolScene(db=self)
-        self.symbols.append(symbol)
-        return symbol
-
-    def save(self) -> None:
-        if self.path is None:
-            print('TODO: get save path from dialog, then save')
+    def __init__(self : 'DrawingItem', name : Optional[str] = None) -> None:
+        if name is None:
+            u = 'Untitled' + self.__class__.__name__.replace('Item', '')
+            name = hub.name_counter.get(u)
+        super().__init__(name)
+        # Import the scene type here to avoid circular import
+        from ..widgets import DrawingScene, SymbolScene, DiagramScene
+        # Get the appropriate scene class based on SCENE_TYPE string
+        if self.SCENE_TYPE == 'DrawingScene':
+            scene_class = DrawingScene
+        elif self.SCENE_TYPE == 'SymbolScene':
+            scene_class = SymbolScene
+        elif self.SCENE_TYPE == 'DiagramScene':
+            scene_class = DiagramScene
         else:
-            print('TODO: save database to existing path')
+            raise ValueError(f"Unknown scene type: {self.SCENE_TYPE}")
+        self.scene = scene_class()
+        self.setData(self.scene, Qt.ItemDataRole.UserRole)
 
-class Library(Database):
-    pass
+class SymbolItem(DrawingItem):
+    SCENE_TYPE = 'SymbolScene'
 
-class Design(Database):
-    diagrams : list['DiagramScene']
+class DiagramItem(DrawingItem):
+    SCENE_TYPE = 'DiagramScene'
 
-    def __init__(
-        self : 'Design',
-        path : Optional[str] = None,
-        name : Optional[str] = None
-    ) -> None:
-        super().__init__(path, name)
-        self.diagrams = []
-        self.new_diagram()
+class DbItem(QStandardItem):
+    path    : str
+    symbols : QStandardItem
 
-    def new_diagram(self : 'Design') -> 'DiagramScene':
-        from ..widgets.scenes import DiagramScene
-        diagram = DiagramScene(db=self)
-        self.diagrams.append(diagram)
-        return diagram
+    def __init__(self : 'DbItem', path : Optional[str] = None) -> None:
+        if path is None:
+            u = 'Untitled' + self.__class__.__name__.replace('Item', '')
+            path = hub.name_counter.get(u) + self.FILE_EXT
+        self.path = path
+        name = Path(path).stem
+        super().__init__(name)
+        self.symbols = self
 
-class DatabaseManager:
-    ALLOWED_TYPES: List[Type[Database]] = [Design, Library]
+    def setPath(self : 'DbItem', path: str) -> None:
+        self.path = path
+        name = Path(path).stem
+        self.setText(name)
 
-    model     : QStandardItemModel
+    def save(self : 'DbItem') -> None:
+        print('TODO: save database')
+
+class LibraryItem(DbItem):
+    FILE_EXT = LIB_EXT
+
+class DesignItem(DbItem):
+    FILE_EXT = DSN_EXT
+
+    diagrams : QStandardItem
+
+    def __init__(self : 'DesignItem', path : Optional[str] = None) -> None:
+        super().__init__(path)
+        self.diagrams = QStandardItem('Diagrams')
+        self.diagrams.setEditable(False)
+        font = self.diagrams.font() # TODO use settings
+        font.setItalic(True)
+        self.diagrams.setFont(font)
+        self.appendRow(self.diagrams)
+        self.symbols = QStandardItem('Symbol Cache')
+        self.symbols.setEditable(False)
+        font = self.symbols.font() # TODO use settings
+        font.setItalic(True)
+        self.symbols.setFont(font)
+        self.appendRow(self.symbols)
+
+class DbModel(QStandardItemModel):
     designs   : QStandardItem
     libraries : QStandardItem
 
     def __init__(self) -> None:
-        self.model = QStandardItemModel()
-        self.model.setHorizontalHeaderLabels(['Database Hierarchy'])
+        super().__init__()
+        self.setHorizontalHeaderLabels(['Database Hierarchy'])
         self.designs = QStandardItem('Designs')
         self.designs.setEditable(False)
         font = self.designs.font()
         font.setBold(True)
         self.designs.setFont(font)
-        self.model.appendRow(self.designs)
+        self.appendRow(self.designs)
         self.libraries = QStandardItem('Libraries')
         self.libraries.setEditable(False)
         font = self.libraries.font()
         font.setBold(True)
         self.libraries.setFont(font)
-        self.model.appendRow(self.libraries)
+        self.appendRow(self.libraries)
 
-    def new(
-        self    : 'DatabaseManager',
-        db_type : Type[Database]
-    ) -> Database:
-        if db_type not in self.ALLOWED_TYPES:
-            raise ValueError(f'Database type {db_type.__name__} is not allowed')
-        db = db_type()
-        self._add_to_model(db)
-        return db
+    def new_design(self : 'DbModel') -> None:
+        self.designs.appendRow(DesignItem())
 
-    def open(
-        self : 'DatabaseManager',
-        path : str
-    ) -> Database:
-        print('TODO: open database')
-
-    def get_model(self) -> QStandardItemModel:
-        """Return the model for use in a QTreeView."""
-        return self.model
-
-    def _add_to_model(self, db: Database) -> None:
-        if isinstance(db, Design):
-            db_item = QStandardItem(db.name)
-            db_item.setEditable(False)
-            db_item.setData(db, Qt.ItemDataRole.UserRole)
-            self.designs.appendRow(db_item)
-            diagrams_item = QStandardItem('Diagrams')
-            diagrams_item.setEditable(False)
-            font = diagrams_item.font()
-            font.setItalic(True)
-            diagrams_item.setFont(font)
-            db_item.appendRow(diagrams_item)
-            symbols_item = QStandardItem('Symbol Cache')
-            symbols_item.setEditable(False)
-            font = symbols_item.font()
-            font.setItalic(True)
-            symbols_item.setFont(font)
-            db_item.appendRow(symbols_item)
-            for diagram in db.diagrams:
-                diag_item = QStandardItem(diagram.name)
-                diag_item.setEditable(False) # TODO allow this to be edited
-                diag_item.setData(diagram, Qt.ItemDataRole.UserRole)
-                diagrams_item.appendRow(diag_item)
-            for symbol in db.symbols:
-                symbol_item = QStandardItem(symbol.name)
-                symbol_item.setEditable(False)
-                symbol_item.setData(symbol, Qt.ItemDataRole.UserRole)
-                symbols_item.appendRow(symbol_item)
-        elif isinstance(db, Library):
-            db_item = QStandardItem(db.name)
-            db_item.setEditable(False)
-            db_item.setData(db, Qt.ItemDataRole.UserRole)
-            self.libraries.appendRow(db_item)
-            for symbol in db.symbols:
-                symbol_item = QStandardItem(symbol.name)
-                symbol_item.setEditable(False)
-                symbol_item.setData(symbol, Qt.ItemDataRole.UserRole)
-                db_item.appendRow(symbol_item)
-        tree_view = hub.main_window.db_explorer.widget()
-        design_index = self.model.indexFromItem(db_item)
-        tree_view.expand(design_index)
-        if isinstance(db, Design):
-            tree_view.expand(self.model.indexFromItem(diagrams_item))
-            tree_view.expand(self.model.indexFromItem(symbols_item))
+    def new_library(self : 'DbModel') -> None:
+        self.libraries.appendRow(LibraryItem())

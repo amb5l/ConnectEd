@@ -1,4 +1,5 @@
-- DB manager: update Window menu (in progress)
+- DB manager: update Window menu (in progress);
+-  convert to Model
 - DB explorer: modified indicator, full path tooltip
 - QUndoCommand
 - consolidate mouse event handling
@@ -6,3 +7,5 @@
 - Window menu: check active window
 - new widgets:
   - Add Symbol Explorer
+- Return as well as Enter to complete name edit in explorer
+- what to do with name edit? why allow it?
