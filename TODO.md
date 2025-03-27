@@ -1,4 +1,10 @@
-- DB manager; design and library classes
-- explorer widget
+- DB manager: update Window menu (in progress)
+- QUndoCommand
 - consolidate mouse event handling
 - autosave
+- Window menu: check active window
+- new widgets:
+  - transcript
+  - DB explorer (diagrams, symbols)
+    - flat and hierarchy tabs?
+  - Libraries Explorer (2 levels: library name, symbols)
