@@ -5,9 +5,7 @@ This module provides the main application window, including menu bars,
 status bars, and the central MDI area for document management.
 """
 
-__all__ = [
-    'MainWindow'
-]
+__all__ = ['MainWindow']
 
 from PyQt6.QtCore    import Qt, QByteArray
 from PyQt6.QtWidgets import QMainWindow, QMdiArea
@@ -19,6 +17,7 @@ from .slots          import Slots
 from .menu_bar       import MenuBar
 from .status_bar     import StatusBar
 from ..msg_view_dock import MsgViewDock
+from ..tr_view_dock  import TrViewDock
 from ..log_view_dock import LogViewDock
 from ..views         import DiagramView, DiagramSubWindow
 
@@ -69,8 +68,11 @@ class MainWindow(QMainWindow):
         # dock widgets
         self.msg_viewer = MsgViewDock(self)
         self.addDockWidget(Qt.DockWidgetArea.BottomDockWidgetArea, self.msg_viewer)
+        self.tr_viewer = TrViewDock(self)
+        self.addDockWidget(Qt.DockWidgetArea.BottomDockWidgetArea, self.tr_viewer)
         self.log_viewer = LogViewDock(self)
         self.addDockWidget(Qt.DockWidgetArea.BottomDockWidgetArea, self.log_viewer)
+        self.tabifyDockWidget(self.msg_viewer, self.tr_viewer)
         self.tabifyDockWidget(self.msg_viewer, self.log_viewer)
         self.msg_viewer.raise_()
 

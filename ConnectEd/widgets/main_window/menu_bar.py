@@ -49,6 +49,7 @@ class MenuBar(QMenuBar):
 
         self.window_menu = QMenu('&Window')
         self.window_menu.addAction(actions.windowMessages)
+        self.window_menu.addAction(actions.windowTranscript)
         self.window_menu.addAction(actions.windowLog)
 
         self.help_menu = QMenu('&Help')

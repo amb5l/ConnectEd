@@ -147,6 +147,10 @@ class Slots:
         self._parent.msg_viewer.show()
         self._parent.msg_viewer.raise_()
 
+    def windowTranscript(self : 'Slots') -> None:
+        self._parent.tr_viewer.show()
+        self._parent.tr_viewer.raise_()
+
     def windowLog(self : 'Slots') -> None:
         self._parent.log_viewer.show()
         self._parent.log_viewer.raise_()
