@@ -1,5 +1,6 @@
-from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QKeySequence
+from PyQt6.QtCore    import Qt
+from PyQt6.QtWidgets import QMenu
+from PyQt6.QtGui     import QKeySequence
 
 from ..private import Action
 
@@ -15,6 +16,8 @@ class Actions:
         self._parent = parent
         SK = QKeySequence.StandardKey
 
+        self.fileNewDesign    = Action( self._parent, 'Design'       , 'Create a new design'         , 'Ctrl+N'                        )
+        self.fileNewLibrary   = Action( self._parent, 'Library'      , 'Create a new library'        , None                            )
         self.fileExit         = Action( self._parent, 'Exit'         , 'Exit the application'        , SK.Quit                         )
         self.editCancel       = Action( self._parent, 'Cancel'       , 'Cancel the current action'   , SK.Cancel                       )
         self.editComplete     = Action( self._parent, 'Complete'     , 'Complete the current action' , QKeySequence(Qt.Key.Key_Return) )

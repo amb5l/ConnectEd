@@ -1,10 +1,12 @@
-from PyQt6.QtWidgets import QMessageBox
-
-from ...core    import logger
-from ...widgets import DrawingView, DiagramView
-
 import functools
 from typing import Callable, Type, TypeVar, cast
+
+from PyQt6.QtWidgets import QMessageBox
+
+from ...core    import logger, Design, Library
+from ...widgets import DrawingView, DiagramView
+
+from ... import hub
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -71,6 +73,12 @@ class Slots:
 
     def __init__(self : 'Slots', parent : 'MainWindow') -> None:
         self._parent = parent
+
+    def fileNewDesign(self : 'Slots') -> None:
+        hub.database_manager.new(Design)
+
+    def fileNewLibrary(self : 'Slots') -> None:
+        hub.database_manager.new(Library)
 
     def fileExit(self : 'Slots') -> None:
         self._parent.close()

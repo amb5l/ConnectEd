@@ -19,6 +19,10 @@ class MenuBar(QMenuBar):
         actions = self.parent.actions
 
         self.file_menu = QMenu('&File')
+        self.file_new_menu = QMenu('&New')
+        self.file_new_menu.addAction(actions.fileNewDesign)
+        self.file_new_menu.addAction(actions.fileNewLibrary)
+        self.file_menu.addMenu(self.file_new_menu)
         self.file_menu.addAction(actions.fileExit)
 
         self.edit_menu = QMenu('&Edit')
