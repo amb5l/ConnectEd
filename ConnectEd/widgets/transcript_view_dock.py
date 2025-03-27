@@ -1,4 +1,4 @@
 from .text_view_dock import TextViewDockWidget
 
-class TrViewDock(TextViewDockWidget):
+class TranscriptViewDock(TextViewDockWidget):
     WINDOW_TITLE = 'Transcript'

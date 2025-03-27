@@ -1,4 +1,4 @@
 from .text_view_dock import TextViewDockWidget
 
-class MsgViewDock(TextViewDockWidget):
+class MessagesViewDock(TextViewDockWidget):
     WINDOW_TITLE = 'Messages'

@@ -144,12 +144,12 @@ class Slots:
         widget.placeRectangle()
 
     def windowMessages(self : 'Slots') -> None:
-        self._parent.msg_viewer.show()
-        self._parent.msg_viewer.raise_()
+        self._parent.messages_viewer.show()
+        self._parent.messages_viewer.raise_()
 
     def windowTranscript(self : 'Slots') -> None:
-        self._parent.tr_viewer.show()
-        self._parent.tr_viewer.raise_()
+        self._parent.transcript_viewer.show()
+        self._parent.transcript_viewer.raise_()
 
     def windowLog(self : 'Slots') -> None:
         self._parent.log_viewer.show()

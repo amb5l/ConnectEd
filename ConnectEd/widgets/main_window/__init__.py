@@ -16,22 +16,25 @@ from .actions        import Actions
 from .slots          import Slots
 from .menu_bar       import MenuBar
 from .status_bar     import StatusBar
-from ..msg_view_dock import MsgViewDock
-from ..tr_view_dock  import TrViewDock
-from ..log_view_dock import LogViewDock
+
+from ..messages_view_dock   import MessagesViewDock
+from ..transcript_view_dock import TranscriptViewDock
+from ..log_view_dock        import LogViewDock
+
 from ..views         import DiagramView, DiagramSubWindow
 
 from ... import hub
 
 
 class MainWindow(QMainWindow):
-    actions    : Actions
-    slots      : Slots
-    menu_bar   : MenuBar
-    status_bar : StatusBar
-    msg_viewer : MsgViewDock
-    log_viewer : LogViewDock
-    mdi_area   : QMdiArea
+    actions           : Actions
+    slots             : Slots
+    menu_bar          : MenuBar
+    status_bar        : StatusBar
+    messages_viewer   : MessagesViewDock
+    transcript_viewer : TranscriptViewDock
+    log_viewer        : LogViewDock
+    mdi_area          : QMdiArea
 
     def __init__(self : 'MainWindow') -> None:
         super().__init__()
@@ -66,15 +69,24 @@ class MainWindow(QMainWindow):
         self.setStatusBar(self.status_bar)
 
         # dock widgets
-        self.msg_viewer = MsgViewDock(self)
-        self.addDockWidget(Qt.DockWidgetArea.BottomDockWidgetArea, self.msg_viewer)
-        self.tr_viewer = TrViewDock(self)
-        self.addDockWidget(Qt.DockWidgetArea.BottomDockWidgetArea, self.tr_viewer)
+        self.messages_viewer = MessagesViewDock(self)
+        self.addDockWidget(
+            Qt.DockWidgetArea.BottomDockWidgetArea,
+            self.messages_viewer
+        )
+        self.transcript_viewer = TranscriptViewDock(self)
+        self.addDockWidget(
+            Qt.DockWidgetArea.BottomDockWidgetArea,
+            self.transcript_viewer
+        )
         self.log_viewer = LogViewDock(self)
-        self.addDockWidget(Qt.DockWidgetArea.BottomDockWidgetArea, self.log_viewer)
-        self.tabifyDockWidget(self.msg_viewer, self.tr_viewer)
-        self.tabifyDockWidget(self.msg_viewer, self.log_viewer)
-        self.msg_viewer.raise_()
+        self.addDockWidget(
+            Qt.DockWidgetArea.BottomDockWidgetArea,
+            self.log_viewer
+        )
+        self.tabifyDockWidget(self.messages_viewer, self.transcript_viewer)
+        self.tabifyDockWidget(self.messages_viewer, self.log_viewer)
+        self.messages_viewer.raise_()
 
         # MDI area
         self.mdi_area = QMdiArea()
@@ -93,7 +105,7 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(self.mdi_area)
 
         # ready message
-        self.msg_viewer.text_view.appendPlainText("ConnectEd ready!")
+        self.messages_viewer.text_view.appendPlainText("ConnectEd ready!")
 
     def closeEvent(self, event : QCloseEvent) -> None:
         hub.settings.startup.geometry = self.saveGeometry().data()
