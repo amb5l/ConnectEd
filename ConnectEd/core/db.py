@@ -110,7 +110,15 @@ class DbModel(QStandardItemModel):
         self.appendRow(self.libraries)
 
     def new_design(self : 'DbModel') -> None:
-        self.designs.appendRow(DesignItem())
+        design_item = DesignItem()
+        diagram_item = DiagramItem()
+        design_item.diagrams.appendRow(diagram_item)
+        self.designs.appendRow(design_item)
+        if hub.main_window and hub.main_window.db_explorer:
+            db_explorer = hub.main_window.db_explorer.db_explorer
+            db_explorer.expand(self.indexFromItem(design_item))
+            db_explorer.expand(self.indexFromItem(design_item.diagrams))
+            db_explorer.edit_diagram(diagram_item.text(), diagram_item.scene)
 
     def new_library(self : 'DbModel') -> None:
         self.libraries.appendRow(LibraryItem())

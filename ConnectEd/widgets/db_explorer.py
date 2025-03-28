@@ -67,8 +67,8 @@ class DbExplorer(TreeView):
             menu.exec(self.viewport().mapToGlobal(pos))
 
     def new_design(self : 'DbExplorer'):
-        """Create a new Design via DatabaseManager."""
-        hub.db_model.designs.appendRow(DesignItem())
+        """Create a new Design. Add a new Diagram to it."""
+        hub.db_model.new_design()
 
     def save_design(self : 'DbExplorer', design: 'DesignItem'):
         """Save the specified Design."""
@@ -92,7 +92,6 @@ class DbExplorer(TreeView):
         diagram_view = DiagramView(diagram_scene)
         subwindow.setWidget(diagram_view)
         subwindow.setWindowTitle(diagram_name)
-        subwindow.show()
         hub.main_window.mdi_area.addSubWindow(subwindow)
         subwindow.showMaximized()
 
