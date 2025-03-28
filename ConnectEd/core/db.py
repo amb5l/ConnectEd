@@ -1,4 +1,4 @@
-__all__ = ['DiagramItem', 'SymbolItem', 'DesignItem', 'LibraryItem', 'DbModel']
+__all__ = ['DbItem', 'DiagramItem', 'SymbolItem', 'DesignItem', 'LibraryItem', 'DbModel']
 
 from typing  import Optional
 from pathlib import Path
@@ -119,6 +119,19 @@ class DbModel(QStandardItemModel):
             db_explorer.expand(self.indexFromItem(design_item))
             db_explorer.expand(self.indexFromItem(design_item.diagrams))
             db_explorer.edit_diagram(diagram_item)
+
+    def close(self, db_item: 'DbItem') -> None:
+        """Close a database and remove it from the model."""
+        if isinstance(db_item, DesignItem):
+            for i in range(self.designs.rowCount()):
+                if db_item == self.designs.child(i):
+                    self.designs.removeRow(i)
+        elif isinstance(db_item, LibraryItem):
+            for i in range(self.libraries.rowCount()):
+                if db_item == self.libraries.child(i):
+                    self.libraries.removeRow(i)
+        else:
+            raise ValueError(f"Unknown database item type: {type(db_item)}")
 
     def new_library(self : 'DbModel') -> None:
         self.libraries.appendRow(LibraryItem())
