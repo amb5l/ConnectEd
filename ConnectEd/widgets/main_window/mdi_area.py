@@ -1,13 +1,18 @@
 import re
 
 from PyQt6.QtCore    import Qt
-from PyQt6.QtWidgets import QMdiArea, QWidget
+from PyQt6.QtWidgets import QMdiArea, QWidget, QMdiSubWindow
 
-from ..views  import DrawingSubWindow, DrawingView
-from ..scenes import DrawingScene
+from ..private import Action
+from ..views   import DrawingSubWindow, DrawingView
+from ..scenes  import DrawingScene
 
+from ... import hub
 
 class MdiArea(QMdiArea):
+    subwindow_actions : dict[any, list[Action]]
+    subwindow_scenes  : dict[any, list[QMdiSubWindow]]
+
     def addSubWindow(
         self   : 'MdiArea',
         widget : QWidget,
@@ -20,26 +25,51 @@ class MdiArea(QMdiArea):
             return
         if not isinstance(widget.widget().scene(), DrawingScene):
             return
-        widget_type = type(widget.widget())
-        scene = widget.widget().scene()
-        scene_type = type(scene)
-        sibling_subwindows = []
-        for subwindow in self.subWindowList():
-            if not isinstance(subwindow.widget(), widget_type):
+        self._update()
+        hub.main_window.menu_bar.updateWindowMenu()
+
+    def _update(self : 'MdiArea') -> None:
+        m = hub.main_window
+        # update scenes vs subwindows dict
+        self.subwindow_scenes = {}
+        for w in self.subWindowList():
+            key = '_'
+            if isinstance(w, DrawingSubWindow) \
+            and isinstance(w.widget(), DrawingView) \
+            and isinstance(w.widget().scene(), DrawingScene):
+                key = id(w.widget().scene())
+            if key in self.subwindow_scenes:
+                self.subwindow_scenes[key].append(w)
+            else:
+                self.subwindow_scenes[key] = [w]
+        # add numbers to titles of sibling subwindows (showing same scene)
+        for key, subwindows in self.subwindow_scenes.items():
+            if key == '_':
                 continue
-            if not isinstance(subwindow.widget().scene(), scene_type):
-                continue
-            if subwindow.widget().scene() != scene:
-                continue
-            sibling_subwindows.append(subwindow)
-        if len(sibling_subwindows) == 1:
-            # remove subwindow numbering suffix
-            title = sibling_subwindows[0].windowTitle()
-            title = re.sub(r'\(\d+\)$', '', title).strip()
-            sibling_subwindows[0].setWindowTitle(title)
-        elif len(sibling_subwindows) > 1:
-            for i, subwindow in enumerate(sibling_subwindows):
-                title = subwindow.windowTitle()
-                title = re.sub(r'\(\d+\)$', '', title).strip()
-                title = f'{title} ({i + 1})'
-                subwindow.setWindowTitle(title)
+            for i, w in enumerate(subwindows):
+                title = re.sub(r'\(\d+\)$', '', w.windowTitle()).strip()
+                if len(subwindows) > 1:
+                    title = f'{title} ({i + 1})'
+                w.setWindowTitle(title)
+        # update db vs actions dict
+        self.subwindow_actions = {}
+        for w in self.subWindowList():
+            key = '_'
+            if isinstance(w, DrawingSubWindow) \
+            and isinstance(w.widget(), DrawingView) \
+            and isinstance(w.widget().scene(), DrawingScene):
+                key = id(hub.db_model.get_db_from_scene(w.widget().scene()))
+            action = Action(m, w.windowTitle(), None, None, False, False, w)
+            action.triggered.connect(
+                lambda checked=False, sw=w: self._activateSubWindow(sw)
+            )
+            if key in self.subwindow_actions:
+                self.subwindow_actions[key].append(action)
+            else:
+                self.subwindow_actions[key] = [action]
+
+    def _activateSubWindow(self : 'MdiArea', subwindow : QMdiSubWindow) -> None:
+        super().setActiveSubWindow(subwindow)
+        subwindow.show()
+        subwindow.raise_()
+        subwindow.setFocus()

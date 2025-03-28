@@ -2,21 +2,20 @@ from PyQt6.QtWidgets import QMenuBar, QMenu, QMdiSubWindow
 
 from ..private import Action
 
+from ... import hub
+
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from .          import MainWindow
     from ...core    import DbModel, Database
 
 class MenuBar(QMenuBar):
-    parent : 'MainWindow'
-
     def __init__(
         self    : 'MenuBar',
         parent  : 'MainWindow'
     ) -> None:
         super().__init__(parent)
-        self.parent = parent
-        actions = self.parent.actions
+        actions = parent.actions
 
         self.file_menu = QMenu('&File')
         self.file_new_menu = QMenu('&New')
@@ -67,39 +66,26 @@ class MenuBar(QMenuBar):
         self.addMenu(self.window_menu)
         self.addMenu(self.help_menu)
 
-    def updateWindowMenu(self, dbm : 'DbModel') -> None:
-        actions = self.parent.actions
+    def updateWindowMenu(self) -> None:
+        actions = hub.main_window.actions
         self.window_menu.clear()
+        self.window_menu.addAction(actions.windowDbExplorer)
         self.window_menu.addAction(actions.windowMessages)
+        self.window_menu.addAction(actions.windowTranscript)
         self.window_menu.addAction(actions.windowLog)
-        if dbm.databases:
-            db_subwindows : dict['Database', list[QMdiSubWindow]] = {}
-            for subwindow in self.parent.mdi_area.subWindowList():
-                if subwindow.widget() is not None:
-                    scene = subwindow.widget().scene()
-                    if scene is not None:
-                        if scene.db is not None:
-                            db_subwindows[scene.db].append(subwindow)
-            for db in dbm.databases:
-                self.window_menu.addSeparator()
-                # create a new action for the database navigator
-                action = Action(self.parent, db.name, db.path, None, True, False, db_nav)
-                action.triggered.connect(self.activateSubWindow)
+        subwindow_actions = hub.main_window.mdi_area.subwindow_actions
+        if subwindow_actions == {}:
+            return
+        for key, actions in subwindow_actions.items():
+            if key == '_':
+                continue
+            self.window_menu.addSeparator()
+            for action in actions:
                 self.window_menu.addAction(action)
-                # create action(s) for open subwindows
-                for subwindow in db_subwindows[db]:
-                    action = Action(self.parent, subwindow.windowTitle(), None, None, True)
 
-                # subwindow - view - scene - database
-
-        # update checked status of menu items
-
-    def activateSubWindow(self) -> None:
+    def activateSubWindow(self, subwindow : QMdiSubWindow) -> None:
         sender = self.sender()  # Get the QAction that triggered this slot
-        if isinstance(sender, QAction):
-            subwindow = sender.data()  # Retrieve the subwindow stored in the action
-            if subwindow:
-                self.mdi_area.setActiveSubWindow(subwindow)
-                subwindow.show()  # Ensure it’s visible
-                subwindow.raise_()  # Bring it to the front
-                subwindow.setFocus()  # Give it focus
+        hub.main_window.mdi_area.setActiveSubWindow(subwindow)
+        subwindow.show()
+        subwindow.raise_()
+        subwindow.setFocus()

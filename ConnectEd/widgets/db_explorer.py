@@ -12,10 +12,6 @@ from .views     import DiagramView, DiagramSubWindow
 
 from .. import hub
 
-from typing import TYPE_CHECKING
-if TYPE_CHECKING:
-    from ..core import DesignItem, DiagramItem
-
 
 class DbExplorer(TreeView):
     actions   : SimpleNamespace
@@ -86,6 +82,7 @@ class DbExplorer(TreeView):
         subwindow.setWindowTitle(f'{design_item.text()}: {diagram_name}')
         hub.main_window.mdi_area.addSubWindow(subwindow)
         subwindow.showMaximized()
+        hub.main_window.menu_bar.updateWindowMenu()
 
     def new_library(self : 'DbExplorer'):
         hub.db_model.libraries.appendRow(LibraryItem())

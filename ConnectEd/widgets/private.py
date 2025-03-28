@@ -15,7 +15,7 @@ class Action(QAction):
         self      : 'Action',
         parent    : QObject,
         text      : str,
-        tooltip   : str,
+        tooltip   : Optional[str] = None,
         shortcut  : Optional[QKeySequence | str] = None,
         checkable : bool = False,
         checked   : bool = False,
@@ -23,7 +23,8 @@ class Action(QAction):
     ) -> None:
         super().__init__(parent)
         self.setText(text)
-        self.setToolTip(tooltip)
+        if tooltip is not None:
+            self.setToolTip(tooltip)
         if shortcut is not None:
             self.setShortcut(shortcut)
         self.setCheckable(checkable)
@@ -31,4 +32,3 @@ class Action(QAction):
             self.setChecked(checked)
         if data is not None:
             self.setData(data)
-

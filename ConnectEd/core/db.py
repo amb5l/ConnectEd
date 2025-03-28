@@ -1,4 +1,8 @@
-__all__ = ['DbItem', 'DiagramItem', 'SymbolItem', 'DesignItem', 'LibraryItem', 'DbModel']
+__all__ = [
+    'DrawingItem', 'SymbolItem', 'DiagramItem',
+    'DbItem', 'DesignItem', 'LibraryItem',
+    'DbModel'
+]
 
 from typing  import Optional
 from pathlib import Path
@@ -120,6 +124,9 @@ class DbModel(QStandardItemModel):
             db_explorer.expand(self.indexFromItem(design_item.diagrams))
             db_explorer.edit_diagram(diagram_item)
 
+    def new_library(self : 'DbModel') -> None:
+        self.libraries.appendRow(LibraryItem())
+
     def close(self, db_item: 'DbItem') -> None:
         """Close a database and remove it from the model."""
         if isinstance(db_item, DesignItem):
@@ -133,5 +140,17 @@ class DbModel(QStandardItemModel):
         else:
             raise ValueError(f"Unknown database item type: {type(db_item)}")
 
-    def new_library(self : 'DbModel') -> None:
-        self.libraries.appendRow(LibraryItem())
+    def get_db_from_scene(self : 'DbModel', scene : 'DrawingScene') -> 'DbItem':
+        for i in range(self.designs.rowCount()):
+            db_item = self.designs.child(i)
+            for j in range(db_item.diagrams.rowCount()):
+                drawing_item : DrawingItem = db_item.diagrams.child(j)
+                if scene == drawing_item.scene:
+                    return db_item
+        for i in range(self.libraries.rowCount()):
+            db_item = self.libraries.child(i)
+            for j in range(db_item.rowCount()):
+                drawing_item : DrawingItem = db_item.child(j)
+                if scene == drawing_item.scene:
+                    return db_item
+        return None

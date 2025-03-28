@@ -4,7 +4,7 @@ from typing import Optional
 
 from PyQt6.QtCore    import Qt, QPoint, QPointF, QRectF, QEvent, QTimer
 from PyQt6.QtWidgets import QMdiArea, QMdiSubWindow, QGraphicsView
-from PyQt6.QtGui     import QPainter
+from PyQt6.QtGui     import QPainter, QCloseEvent
 
 from ....widgets.scenes  import DrawingScene
 from ....widgets.marquee import Marquee
@@ -28,6 +28,9 @@ class DrawingSubWindow(QMdiSubWindow):
         if not self.first_zoom_done and isinstance(self.widget(), DrawingView):
             QTimer.singleShot(100, lambda: self.widget().viewZoomAll())
             self.first_zoom_done = True
+
+    def closeEvent(self : 'DrawingSubWindow', event : QCloseEvent) -> None:
+        hub.main_window.menu_bar.updateWindowMenu()
 
 class DrawingView(
     QGraphicsView,

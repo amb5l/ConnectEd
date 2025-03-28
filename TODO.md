@@ -9,3 +9,5 @@
 - Return as well as Enter to complete name edit in explorer
 - what to do with name edit? why allow it?
 - filter log view by level
+- look at windowFilePath
+- mouse wheel text size change in explorer
