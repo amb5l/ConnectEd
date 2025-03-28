@@ -8,7 +8,7 @@ status bars, and the central MDI area for document management.
 __all__ = ['MainWindow']
 
 from PyQt6.QtCore    import Qt, QByteArray
-from PyQt6.QtWidgets import QMainWindow, QMdiArea
+from PyQt6.QtWidgets import QMainWindow
 from PyQt6.QtGui     import QCloseEvent
 
 from ...core         import APP_NAME, connect_actions_to_slots
@@ -16,6 +16,7 @@ from .actions        import Actions
 from .slots          import Slots
 from .menu_bar       import MenuBar
 from .status_bar     import StatusBar
+from .mdi_area       import MdiArea
 
 from ..messages_view_dock   import MessagesViewDock
 from ..transcript_view_dock import TranscriptViewDock
@@ -33,7 +34,7 @@ class MainWindow(QMainWindow):
     messages_viewer   : MessagesViewDock
     transcript_viewer : TranscriptViewDock
     log_viewer        : LogViewDock
-    mdi_area          : QMdiArea
+    mdi_area          : MdiArea
 
     def __init__(self : 'MainWindow') -> None:
         super().__init__()
@@ -92,7 +93,7 @@ class MainWindow(QMainWindow):
         self.addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, self.db_explorer)
 
         # MDI area
-        self.mdi_area = QMdiArea()
+        self.mdi_area = MdiArea()
 
         # central widget
         self.setCentralWidget(self.mdi_area)
