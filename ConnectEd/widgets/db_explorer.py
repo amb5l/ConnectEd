@@ -77,12 +77,13 @@ class DbExplorer(TreeView):
         item.appendRow(DiagramItem())
 
     def edit_diagram(self : 'DbExplorer', item: QStandardItem) -> None:
+        design_item = item.parent().parent()
         diagram_name = item.text()
         diagram_scene : DiagramScene = item.data(Qt.ItemDataRole.UserRole)
         subwindow = DiagramSubWindow()
         diagram_view = DiagramView(diagram_scene)
         subwindow.setWidget(diagram_view)
-        subwindow.setWindowTitle(diagram_name)
+        subwindow.setWindowTitle(f'{design_item.text()}: {diagram_name}')
         hub.main_window.mdi_area.addSubWindow(subwindow)
         subwindow.showMaximized()
 
