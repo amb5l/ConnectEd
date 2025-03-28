@@ -2,7 +2,7 @@ from types import SimpleNamespace
 
 from PyQt6.QtCore    import Qt
 from PyQt6.QtWidgets import QWidget, QMenu
-from PyQt6.QtGui     import QAction, QStandardItem, QWheelEvent
+from PyQt6.QtGui     import QAction, QStandardItem, QWheelEvent, QMouseEvent
 
 from ..core import DbItem, LibraryItem, DiagramItem
 
@@ -49,8 +49,21 @@ class DbExplorer(TreeView):
             elif delta < 0:
                 self.decrease_font_size()
             event.accept()
-        else:
-            super().wheelEvent(event)
+            return
+        super().wheelEvent(event)
+
+    def mouseDoubleClickEvent(self, event: QMouseEvent) -> None:
+        """Handle double-click to edit a diagram."""
+        if event.button() == Qt.MouseButton.LeftButton:
+            index = self.indexAt(event.pos())
+            if index.isValid():
+                item = self.model().itemFromIndex(index)
+                parent_item = item.parent()
+                if parent_item and parent_item.text() == 'Diagrams':
+                    self.edit_diagram(item)
+                    event.accept()
+                    return
+        super().mouseDoubleClickEvent(event)
 
     def show_context_menu(self, pos):
         menu = QMenu(self)
