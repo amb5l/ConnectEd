@@ -16,7 +16,7 @@ from .. import hub
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from ..widgets import DrawingScene, DiagramScene
+    from ..widgets import DrawingScene
 
 
 class DrawingItem(QStandardItem):
@@ -128,6 +128,7 @@ class DbModel(QStandardItemModel):
         self.libraries.appendRow(LibraryItem())
 
     def edit_diagram(self : 'DbModel', item : DiagramItem) -> None:
+        from ..widgets import DiagramScene, DiagramView, DiagramSubWindow
         design_item : DesignItem = item.parent().parent()
         diagram_name = item.text()
         diagram_scene : DiagramScene = item.data(Qt.ItemDataRole.UserRole)
@@ -138,7 +139,6 @@ class DbModel(QStandardItemModel):
         hub.main_window.mdi_area.addSubWindow(subwindow)
         subwindow.showMaximized()
         hub.main_window.menu_bar.updateWindowMenu()
-
 
     def close(self, db_item: 'DbItem') -> None:
         """Close a database and remove it from the model."""

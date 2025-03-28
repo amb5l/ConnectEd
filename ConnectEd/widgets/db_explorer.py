@@ -86,16 +86,7 @@ class DbExplorer(TreeView):
         item.appendRow(DiagramItem())
 
     def edit_diagram(self : 'DbExplorer', item: QStandardItem) -> None:
-        design_item = item.parent().parent()
-        diagram_name = item.text()
-        diagram_scene : DiagramScene = item.data(Qt.ItemDataRole.UserRole)
-        subwindow = DiagramSubWindow()
-        diagram_view = DiagramView(diagram_scene)
-        subwindow.setWidget(diagram_view)
-        subwindow.setWindowTitle(f'{design_item.text()}: {diagram_name}')
-        hub.main_window.mdi_area.addSubWindow(subwindow)
-        subwindow.showMaximized()
-        hub.main_window.menu_bar.updateWindowMenu()
+        hub.db_model.edit_diagram(item)
 
     def new_library(self : 'DbExplorer'):
         hub.db_model.libraries.appendRow(LibraryItem())
