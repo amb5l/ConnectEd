@@ -56,13 +56,22 @@ class DbExplorer(TreeView):
         super().wheelEvent(event)
 
     def mouseDoubleClickEvent(self, event: QMouseEvent) -> None:
-        """Handle double-click to edit a diagram."""
+        """Handle double-click."""
         if event.button() == Qt.MouseButton.LeftButton:
             index = self.indexAt(event.pos())
             if index.isValid():
                 item = self.model().itemFromIndex(index)
                 parent_item = item.parent()
-                if parent_item and parent_item.text() == 'Diagrams':
+                if (item.text() == 'Designs') \
+                or (item.text() == 'Libraries') \
+                or (parent_item and parent_item.text() == 'Designs') \
+                or (parent_item and parent_item.text() == 'Libraries') \
+                or (item.text() == 'Diagrams') \
+                or (item.text() == 'Symbol Cache'):
+                    self.setExpanded(index, not self.isExpanded(index))
+                    event.accept()
+                    return
+                elif parent_item and parent_item.text() == 'Diagrams':
                     self.edit_diagram(item)
                     event.accept()
                     return

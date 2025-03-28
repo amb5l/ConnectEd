@@ -1,4 +1,3 @@
-- DB manager: update Window menu (in progress);
 - DB explorer: modified indicator, full path tooltip
 - QUndoCommand
 - consolidate mouse event handling
@@ -10,4 +9,3 @@
 - what to do with name edit? why allow it?
 - filter log view by level
 - look at windowFilePath
-- mouse wheel text size change in explorer
