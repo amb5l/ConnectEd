@@ -2,7 +2,7 @@ from types import SimpleNamespace
 
 from PyQt6.QtCore    import Qt
 from PyQt6.QtWidgets import QWidget, QMenu
-from PyQt6.QtGui     import QAction, QStandardItem
+from PyQt6.QtGui     import QAction, QStandardItem, QWheelEvent
 
 from ..core import DbItem, LibraryItem, DiagramItem
 
@@ -38,6 +38,19 @@ class DbExplorer(TreeView):
         self.actions.save_db.triggered.connect(lambda: self.save_db(self.ctx_item))
         self.actions.close_db = QAction('Close', self)
         self.actions.close_db.triggered.connect(lambda: self.close_db(self.ctx_item))
+
+    def wheelEvent(self, event: QWheelEvent) -> None:
+        """Handle mouse wheel events to adjust font size when Ctrl is pressed."""
+        modifiers = event.modifiers()
+        if modifiers & Qt.KeyboardModifier.ControlModifier:
+            delta = event.angleDelta().y()
+            if delta > 0:
+                self.increase_font_size()
+            elif delta < 0:
+                self.decrease_font_size()
+            event.accept()
+        else:
+            super().wheelEvent(event)
 
     def show_context_menu(self, pos):
         menu = QMenu(self)
