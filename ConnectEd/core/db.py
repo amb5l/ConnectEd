@@ -128,6 +128,34 @@ class DbModel(QStandardItemModel):
         self.libraries.appendRow(LibraryItem())
 
     def edit_diagram(self : 'DbModel', item : DiagramItem) -> None:
+        """Edit the diagram, focusing the first existing subwindow if available."""
+        from ..widgets import DiagramScene, DiagramView, DiagramSubWindow
+        for subwindow in hub.main_window.mdi_area.subWindowList():
+            if not isinstance(subwindow, DiagramSubWindow):
+                continue
+            if not isinstance(subwindow.widget(), DiagramView):
+                continue
+            if not isinstance(subwindow.widget().scene(), DiagramScene):
+                continue
+            if item.scene != subwindow.widget().scene():
+                continue
+            hub.main_window.mdi_area.setActiveSubWindow(subwindow)
+            subwindow.show()
+            subwindow.raise_()
+            subwindow.setFocus()
+            return
+        diagram_name = item.text()
+        diagram_scene : DiagramScene = item.data(Qt.ItemDataRole.UserRole)
+        diagram_view = DiagramView(diagram_scene)
+        design_item = item.parent().parent()
+        subwindow = DiagramSubWindow()
+        subwindow.setWidget(diagram_view)
+        subwindow.setWindowTitle(f'{design_item.text()}: {diagram_name}')
+        hub.main_window.mdi_area.addSubWindow(subwindow)
+        subwindow.showMaximized()
+        hub.main_window.menu_bar.updateWindowMenu()
+
+    def new_window(self : 'DbModel', item : DiagramItem) -> None:
         from ..widgets import DiagramScene, DiagramView, DiagramSubWindow
         design_item : DesignItem = item.parent().parent()
         diagram_name = item.text()

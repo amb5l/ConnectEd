@@ -14,30 +14,33 @@ from .. import hub
 
 
 class DbExplorer(TreeView):
-    actions   : SimpleNamespace
-    ctx_item : QStandardItem
+    actions : SimpleNamespace
+    item    : QStandardItem
 
     def __init__(self, parent : QWidget) -> None:
         super().__init__(parent, hub.db_model)
         self.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
         self.customContextMenuRequested.connect(self.show_context_menu)
         self.actions = SimpleNamespace()
-        self.actions.increase_text_size = QAction('Increase Text Size', self)
-        self.actions.increase_text_size.triggered.connect(self.increase_font_size)
-        self.actions.decrease_text_size = QAction('Decrease Text Size', self)
-        self.actions.decrease_text_size.triggered.connect(self.decrease_font_size)
-        self.actions.new_design = QAction('New', self)
-        self.actions.new_design.triggered.connect(self.new_design)
-        self.actions.new_diagram = QAction('New', self)
-        self.actions.new_diagram.triggered.connect(lambda: self.new_diagram(self.ctx_item))
-        self.actions.edit_diagram = QAction('Edit', self)
-        self.actions.edit_diagram.triggered.connect(lambda: self.edit_diagram(self.ctx_item))
-        self.actions.new_library = QAction('New', self)
-        self.actions.new_library.triggered.connect(self.new_library)
-        self.actions.save_db = QAction('Save', self)
-        self.actions.save_db.triggered.connect(lambda: self.save_db(self.ctx_item))
-        self.actions.close_db = QAction('Close', self)
-        self.actions.close_db.triggered.connect(lambda: self.close_db(self.ctx_item))
+        a = self.actions
+        a.increase_text_size = QAction('Increase Text Size', self)
+        a.increase_text_size.triggered.connect(self.increase_font_size)
+        a.decrease_text_size = QAction('Decrease Text Size', self)
+        a.decrease_text_size.triggered.connect(self.decrease_font_size)
+        a.new_design = QAction('New', self)
+        a.new_design.triggered.connect(self.new_design)
+        a.new_diagram = QAction('New', self)
+        a.new_diagram.triggered.connect(lambda: self.new_diagram(self.item))
+        a.edit_diagram = QAction('Edit', self)
+        a.edit_diagram.triggered.connect(lambda: self.edit_diagram(self.item))
+        a.new_window = QAction('New Window', self)
+        a.new_window.triggered.connect(lambda: self.new_window(self.item))
+        a.new_library = QAction('New', self)
+        a.new_library.triggered.connect(self.new_library)
+        a.save_db = QAction('Save', self)
+        a.save_db.triggered.connect(lambda: self.save_db(self.item))
+        a.close_db = QAction('Close', self)
+        a.close_db.triggered.connect(lambda: self.close_db(self.item))
 
     def wheelEvent(self, event: QWheelEvent) -> None:
         """Handle mouse wheel events to adjust font size when Ctrl is pressed."""
@@ -65,11 +68,11 @@ class DbExplorer(TreeView):
                     return
         super().mouseDoubleClickEvent(event)
 
-    def show_context_menu(self, pos):
+    def show_context_menu(self, pos) -> None:
         menu = QMenu(self)
         index = self.indexAt(pos)
         if index.isValid():
-            self.ctx_item = self.model().itemFromIndex(index)
+            self.item = self.model().itemFromIndex(index)
             item = self.model().itemFromIndex(index)
             parent_item = item.parent()
             if item.text() == 'Designs':
@@ -87,26 +90,29 @@ class DbExplorer(TreeView):
                 menu.addAction(self.actions.edit_diagram)
             elif parent_item and parent_item.text() == 'Diagrams':
                 menu.addAction(self.actions.edit_diagram)
+                menu.addAction(self.actions.new_window)
             menu.addSeparator()
         menu.addAction(self.actions.increase_text_size)
         menu.addAction(self.actions.decrease_text_size)
         menu.exec(self.viewport().mapToGlobal(pos))
 
-    def new_design(self : 'DbExplorer'):
+    def new_design(self : 'DbExplorer') -> None:
         hub.db_model.new_design()
 
-    def new_diagram(self : 'DbExplorer', item: QStandardItem):
+    def new_diagram(self : 'DbExplorer', item : DiagramItem) -> None:
         item.appendRow(DiagramItem())
 
-    def edit_diagram(self : 'DbExplorer', item: QStandardItem) -> None:
+    def edit_diagram(self : 'DbExplorer', item : DiagramItem) -> None:
         hub.db_model.edit_diagram(item)
 
-    def new_library(self : 'DbExplorer'):
-        hub.db_model.libraries.appendRow(LibraryItem())
+    def new_library(self : 'DbExplorer') -> None:
+        hub.db_model.new_library()
 
-    def save_db(self : 'DbExplorer', item: 'DbItem'):
+    def new_window(self : 'DbExplorer', item : DiagramItem) -> None:
+        hub.db_model.new_window(item)
+
+    def save_db(self : 'DbExplorer', item : QStandardItem) -> None:
         hub.db_model.save(item)
 
-    def close_db(self : 'DbExplorer', item: 'DbItem'):
+    def close_db(self : 'DbExplorer', item : QStandardItem) -> None:
         hub.db_model.close(item)
-
