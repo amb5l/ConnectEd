@@ -118,7 +118,7 @@ class DbModel(QStandardItemModel):
             db_explorer = hub.main_window.db_explorer.db_explorer
             db_explorer.expand(self.indexFromItem(design_item))
             db_explorer.expand(self.indexFromItem(design_item.diagrams))
-            db_explorer.edit_diagram(diagram_item.text(), diagram_item.scene)
+            db_explorer.edit_diagram(diagram_item)
 
     def new_library(self : 'DbModel') -> None:
         self.libraries.appendRow(LibraryItem())
