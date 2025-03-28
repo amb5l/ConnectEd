@@ -6,6 +6,7 @@ from ..core import DesignItem, LibraryItem, DiagramItem
 
 from .tree_view import TreeView
 from .scenes    import DiagramScene
+from .views     import DiagramView, DiagramSubWindow
 
 from .. import hub
 
@@ -59,7 +60,9 @@ class DbExplorer(TreeView):
             diagram = item.data(Qt.ItemDataRole.UserRole)
             menu = QMenu(self)
             edit_action = QAction('Edit', self)
-            edit_action.triggered.connect(lambda: self.edit_diagram(diagram))
+            edit_action.triggered.connect(
+                lambda: self.edit_diagram(item.text(), diagram)
+            )
             menu.addAction(edit_action)
             menu.exec(self.viewport().mapToGlobal(pos))
 
@@ -79,9 +82,19 @@ class DbExplorer(TreeView):
         """Create a new Diagram in the specified Design."""
         item.appendRow(DiagramItem())
 
-    def edit_diagram(self : 'DbExplorer', diagram: DiagramScene):
+    def edit_diagram(
+        self          : 'DbExplorer',
+        diagram_name  : str,
+        diagram_scene : DiagramScene
+    ) -> None:
         """Edit the specified Diagram."""
-        pass
+        subwindow = DiagramSubWindow()
+        diagram_view = DiagramView(diagram_scene)
+        subwindow.setWidget(diagram_view)
+        subwindow.setWindowTitle(diagram_name)
+        subwindow.show()
+        hub.main_window.mdi_area.addSubWindow(subwindow)
+        subwindow.showMaximized()
 
     def new_library(self : 'DbExplorer'):
         """Create a new Library."""

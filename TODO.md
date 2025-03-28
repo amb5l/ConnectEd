@@ -1,5 +1,4 @@
 - DB manager: update Window menu (in progress);
--  convert to Model
 - DB explorer: modified indicator, full path tooltip
 - QUndoCommand
 - consolidate mouse event handling
@@ -9,3 +8,4 @@
   - Add Symbol Explorer
 - Return as well as Enter to complete name edit in explorer
 - what to do with name edit? why allow it?
+- filter log view by level

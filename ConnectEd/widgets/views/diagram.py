@@ -1,5 +1,7 @@
 __all__ = ['DiagramView', 'DiagramSubWindow']
 
+from typing import Optional
+
 from PyQt6.QtWidgets import QMdiArea
 
 from .drawing import DrawingScene, DrawingView, DrawingSubWindow
@@ -24,6 +26,8 @@ class DiagramView(DrawingView):
 class DiagramSubWindow(DrawingSubWindow):
     def __init__(
         self   : 'DiagramSubWindow',
-        parent : QMdiArea
+        parent : Optional[QMdiArea] = None
     ) -> None:
+        if parent is None:
+            parent = hub.main_window.mdi_area
         super().__init__(parent)
