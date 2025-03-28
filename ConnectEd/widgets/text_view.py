@@ -1,8 +1,9 @@
 import logging
 from typing import Optional
 
+from PyQt6.QtCore    import Qt
 from PyQt6.QtWidgets import QWidget, QPlainTextEdit
-from PyQt6.QtGui     import QTextOption, QAction, QContextMenuEvent
+from PyQt6.QtGui     import QTextOption, QAction, QContextMenuEvent, QWheelEvent
 
 from ..core    import logger
 from .find_bar import FindBar
@@ -41,6 +42,22 @@ class TextView(QPlainTextEdit):
 
     def setFindBar(self, find_bar : FindBar) -> None:
         self.find_bar = find_bar
+
+    def wheelEvent(self, event: QWheelEvent) -> None:
+        """Handle mouse wheel events to adjust font size when Ctrl is pressed."""
+        modifiers = event.modifiers()
+        if modifiers & Qt.KeyboardModifier.ControlModifier:
+            font = self.font()
+            current_size = font.pointSize()
+            delta = event.angleDelta().y()
+            if delta > 0:
+                font.setPointSize(min(current_size + 1, 24)) # TODO: max from settings
+            elif delta < 0:
+                font.setPointSize(max(current_size - 1, 6))  # TODO: min from settings
+            self.setFont(font)
+            event.accept()  # Prevent default scrolling when adjusting font
+        else:
+            super().wheelEvent(event)  # Default scrolling behavior
 
     def contextMenuEvent(self, event : QContextMenuEvent) -> None:
         menu = self.createStandardContextMenu()

@@ -28,9 +28,9 @@ class TreeView(QTreeView):
 
     def increase_font_size(self) -> None:
         """Increase the font size."""
-        self.set_font_size(self.current_font_size + 1)
+        self.set_font_size(min(self.current_font_size + 1, 20)) # TODO: max from settings
 
     def decrease_font_size(self) -> None:
         """Decrease the font size."""
-        self.set_font_size(max(self.current_font_size - 1, 1))
+        self.set_font_size(max(self.current_font_size - 1, 6)) # TODO: min from settings
 
