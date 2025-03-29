@@ -16,7 +16,7 @@ from .. import hub
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from ..widgets import DrawingScene
+    from ..widgets import DrawingScene, SymbolScene, DiagramScene
 
 
 class DrawingItem(QStandardItem):
@@ -46,8 +46,12 @@ class DrawingItem(QStandardItem):
 class SymbolItem(DrawingItem):
     SCENE_TYPE = 'SymbolScene'
 
+    scene : 'SymbolScene'
+
 class DiagramItem(DrawingItem):
     SCENE_TYPE = 'DiagramScene'
+
+    scene : 'DiagramScene'
 
 class DbItem(QStandardItem):
     path    : str
