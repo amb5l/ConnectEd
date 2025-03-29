@@ -182,9 +182,11 @@ class DrawingApiMouseMixin:
                     self.marquee.rect(),
                     m == qkm.ControlModifier
                 )
+                self._goState(self.State.Idle)
             case self.State.ViewZoomWindow2:
                 self.marquee.end(self.mouse.left.release.physical)
                 self._zoomRect(self.marquee.rect())
+                self._goState(self.State.Idle)
             case self.State.EditSlide2:
                 # TODO: DRY, stretch connections
                 pos = self._snap(self.mouse.left.release.logical)
@@ -202,6 +204,7 @@ class DrawingApiMouseMixin:
                         pos.x() - self.prev_pos.x(),
                         pos.y() - self.prev_pos.y()
                     )
+                self._goState(self.State.Idle)
             case self.State.PlaceRectangle2:
                 self.wip.setPoints(
                     self.prev_pos,
