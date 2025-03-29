@@ -24,14 +24,11 @@ class DrawingItem(QStandardItem):
 
     scene : 'DrawingScene'
 
-    def __init__(self : 'DrawingItem', name : Optional[str] = None) -> None:
-        if name is None:
-            u = 'Untitled' + self.__class__.__name__.replace('Item', '')
-            name = hub.name_counter.get(u)
-        super().__init__(name)
-        # Import the scene type here to avoid circular import
+    def __init__(
+        self  : 'DrawingItem',
+        scene : Optional['DrawingScene'] = None
+    ) -> None:
         from ..widgets import SymbolScene, DiagramScene
-        # Get the appropriate scene class based on SCENE_TYPE string
         if self.SCENE_TYPE == 'DrawingScene':
             scene_class = DrawingScene
         elif self.SCENE_TYPE == 'SymbolScene':
@@ -41,6 +38,7 @@ class DrawingItem(QStandardItem):
         else:
             raise ValueError(f"Unknown scene type: {self.SCENE_TYPE}")
         self.scene = scene_class()
+        super().__init__(self.scene.name)
         self.setData(self.scene, Qt.ItemDataRole.UserRole)
 
 class SymbolItem(DrawingItem):
