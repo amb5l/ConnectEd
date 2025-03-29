@@ -75,10 +75,10 @@ class Slots:
         self._parent = parent
 
     def fileNewDesign(self : 'Slots') -> None:
-        hub.db_model.new_design()
+        hub.db_model.new_item(hub.db_model.designs)
 
     def fileNewLibrary(self : 'Slots') -> None:
-        hub.db_model.new_library()
+        hub.db_model.new_item(hub.db_model.libraries)
 
     def fileExit(self : 'Slots') -> None:
         self._parent.close()

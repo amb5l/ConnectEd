@@ -4,8 +4,9 @@ from typing import Optional
 
 from PyQt6.QtWidgets import QMdiArea
 
-from .drawing import DrawingScene, DrawingView, DrawingSubWindow
+from ..scenes import DiagramScene
 from ..items  import Paper, Border
+from .drawing import DrawingView, DrawingSubWindow
 
 from ... import hub
 
@@ -13,7 +14,7 @@ class DiagramView(DrawingView):
     paper   : Paper
     border  : Border
 
-    def __init__(self : 'DrawingView', scene : DrawingScene) -> None:
+    def __init__(self : 'DiagramView', scene : DiagramScene) -> None:
         super().__init__(scene)
         self.paper   = Paper(hub.settings.defaults.sheet)
         self.border  = Border(self.paper, hub.settings.defaults.margin)
@@ -25,7 +26,7 @@ class DiagramView(DrawingView):
 
 class DiagramSubWindow(DrawingSubWindow):
     def __init__(
-        self   : 'DiagramSubWindow',
+        self   : 'DrawingSubWindow',
         parent : Optional[QMdiArea] = None
     ) -> None:
         if parent is None:

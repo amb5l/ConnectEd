@@ -146,7 +146,7 @@ class DrawingViewPrivateMixin:
             item_rect = item.mapToScene(item.boundingRect()).boundingRect()
             items_rect = items_rect.united(item_rect)
         if items_rect.isEmpty():
-            items_rect = self.extents.rect()
+            items_rect = self.scene().extents.rect()
         return items_rect
 
     def _rubberBandRect(self: 'DrawingView') -> QRectF:
