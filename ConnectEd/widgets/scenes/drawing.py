@@ -2,6 +2,7 @@ __all__ = ['DrawingScene']
 
 from typing import Optional
 
+from PyQt6.QtCore    import QXmlStreamWriter
 from PyQt6.QtWidgets import QGraphicsScene, QGraphicsItem
 
 from ..items import Extents, Grid, Grip
@@ -50,3 +51,10 @@ class DrawingScene(QGraphicsScene):
                 if item not in self.SYSTEM_ALLOWED_ITEMS:
                     raise ValueError(f'Item {item} is not allowed')
         super().addItem(item)
+
+    def toXml(self : 'DrawingScene', xw : QXmlStreamWriter) -> None:
+        xw.writeStartElement(self.__class__.__name__)
+        # iterate over all items
+        for item in self.items():
+            item.toXml(xw)
+        xw.writeEndElement()

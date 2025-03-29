@@ -7,7 +7,7 @@ __all__ = [
 from typing  import Optional
 from pathlib import Path
 
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import Qt, QXmlStreamWriter
 from PyQt6.QtGui  import QStandardItemModel, QStandardItem
 
 from ..core import LIB_EXT, DSN_EXT
@@ -72,6 +72,17 @@ class DbItem(QStandardItem):
 class LibraryItem(DbItem):
     FILE_EXT = LIB_EXT
 
+    def save(self : 'DbItem') -> None:
+        xw = QXmlStreamWriter(self.path)
+        xw.setAutoFormatting(True)
+        xw.setAutoFormattingIndent(2)
+        xw.writeStartDocument()
+        for i in range(self.rowCount()):
+            symbol_item : SymbolItem = self.child(i)
+            symbol_scene = symbol_item.scene
+            symbol_scene.toXml(xw)
+        xw.writeEndDocument()
+
 class DesignItem(DbItem):
     FILE_EXT = DSN_EXT
 
@@ -92,6 +103,25 @@ class DesignItem(DbItem):
         font.setItalic(True)
         self.symbols.setFont(font)
         self.appendRow(self.symbols)
+
+    def save(self : 'DesignItem') -> None:
+        xw = QXmlStreamWriter(self.path)
+        xw.setAutoFormatting(True)
+        xw.setAutoFormattingIndent(2)
+        xw.writeStartDocument()
+        xw.writeStartElement('diagrams')
+        for i in range(self.diagrams.rowCount()):
+            diagram_item : DiagramItem = self.diagrams.child(i)
+            diagram_scene = diagram_item.scene
+            diagram_scene.toXml(xw)
+        xw.writeEndElement()
+        xw.writeStartElement('symbols')
+        for i in range(self.symbols.rowCount()):
+            symbol_item : SymbolItem = self.symbols.child(i)
+            symbol_scene = symbol_item.scene
+            symbol_scene.toXml(xw)
+        xw.writeEndElement()
+        xw.writeEndDocument()
 
 class DbModel(QStandardItemModel):
     designs   : QStandardItem
