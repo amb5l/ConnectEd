@@ -73,6 +73,9 @@ class MenuBar(QMenuBar):
         self.window_menu.addAction(actions.windowMessages)
         self.window_menu.addAction(actions.windowTranscript)
         self.window_menu.addAction(actions.windowLog)
+        self.window_menu.addSeparator()
+        self.window_menu.addAction(actions.windowNext)
+        self.window_menu.addAction(actions.windowPrevious)
         subwindow_actions = hub.main_window.mdi_area.subwindow_actions
         if subwindow_actions == {}:
             return

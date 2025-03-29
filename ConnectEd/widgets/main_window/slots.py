@@ -151,6 +151,12 @@ class Slots:
     def placeRectangle(self : 'Slots', widget: DrawingView) -> None:
         widget.placeRectangle()
 
+    def windowNext(self : 'Slots') -> None:
+        self._parent.mdi_area.nextSubWindow()
+
+    def windowPrevious(self : 'Slots') -> None:
+        self._parent.mdi_area.previousSubWindow()
+
     def windowDbExplorer(self : 'Slots') -> None:
         self._parent.db_explorer.show()
         self._parent.db_explorer.raise_()

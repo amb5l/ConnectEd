@@ -28,6 +28,12 @@ class MdiArea(QMdiArea):
         self._update()
         hub.main_window.menu_bar.updateWindowMenu()
 
+    def nextSubWindow(self : 'MdiArea') -> None:
+        self._activateSubWindowIndexOffset(1)
+
+    def previousSubWindow(self : 'MdiArea') -> None:
+        self._activateSubWindowIndexOffset(-1)
+
     def _update(self : 'MdiArea') -> None:
         m = hub.main_window
         # update scenes vs subwindows dict
@@ -67,6 +73,19 @@ class MdiArea(QMdiArea):
                 self.subwindow_actions[key].append(action)
             else:
                 self.subwindow_actions[key] = [action]
+
+    def _activateSubWindowIndexOffset(self : 'MdiArea', offset : int) -> None:
+        windows = self.subWindowList()
+        if not windows:
+            return
+        current_window = self.activeSubWindow()
+        if not current_window:
+            self.setActiveSubWindow(windows[0])
+            return
+        current_index = windows.index(current_window)
+        next_index = (current_index + offset) % len(windows)
+        next_window = windows[next_index]
+        self._activateSubWindow(next_window)
 
     def _activateSubWindow(self : 'MdiArea', subwindow : QMdiSubWindow) -> None:
         super().setActiveSubWindow(subwindow)

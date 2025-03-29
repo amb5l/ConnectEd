@@ -36,6 +36,8 @@ class Actions:
         self.viewGridDisplay  = Action( self._parent, 'Grid Display' , 'Toggle grid display'         , 'Ctrl+G'       , True , True    )
         self.viewGridSnap     = Action( self._parent, 'Grid Snap'    , 'Toggle grid snap'            , 'Ctrl+Shift+G' , True , True    )
         self.placeRectangle   = Action( self._parent, 'Rectangle'    , 'Place Rectangle'             , 'Ctrl+R'                        )
+        self.windowNext       = Action( self._parent, 'Next'         , 'Next'                        , 'Ctrl+F6'                       )
+        self.windowPrevious   = Action( self._parent, 'Previous'     , 'Previous'                    , 'Ctrl+Shift+F6'                 )
         self.windowDbExplorer = Action( self._parent, 'Explorer'     , 'Show the explorer window'    , None                            )
         self.windowMessages   = Action( self._parent, 'Messages'     , 'Show the messages window'    , None                            )
         self.windowTranscript = Action( self._parent, 'Transcript'   , 'Show the transcript window'  , None                            )
