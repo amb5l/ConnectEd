@@ -19,7 +19,12 @@ from .... import hub
 class DrawingSubWindow(QMdiSubWindow):
     first_zoom_done : bool = False
 
-    def __init__(self : 'DrawingSubWindow', parent : QMdiArea) -> None:
+    def __init__(
+        self   : 'DrawingSubWindow',
+        parent : Optional[QMdiArea] = None
+    ) -> None:
+        if parent is None:
+            parent = hub.main_window.mdi_area
         super().__init__(parent)
         self.first_zoom_done = False
 
