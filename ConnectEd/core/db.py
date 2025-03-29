@@ -51,7 +51,6 @@ class DiagramItem(DrawingItem):
 
 class DbItem(QStandardItem):
     path    : str
-    symbols : QStandardItem
 
     def __init__(self : 'DbItem', path : Optional[str] = None) -> None:
         if path is None:
@@ -60,15 +59,11 @@ class DbItem(QStandardItem):
         self.path = path
         name = Path(path).stem
         super().__init__(name)
-        self.symbols = self
 
     def setPath(self : 'DbItem', path: str) -> None:
         self.path = path
         name = Path(path).stem
         self.setText(name)
-
-    def save(self : 'DbItem') -> None:
-        print('TODO: save database')
 
 class LibraryItem(DbItem):
     FILE_EXT = LIB_EXT
@@ -77,6 +72,7 @@ class DesignItem(DbItem):
     FILE_EXT = DSN_EXT
 
     diagrams : QStandardItem
+    symbols  : QStandardItem
 
     def __init__(self : 'DesignItem', path : Optional[str] = None) -> None:
         super().__init__(path)
