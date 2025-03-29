@@ -178,13 +178,13 @@ class DbModel(QStandardItemModel):
         hub.main_window.menu_bar.updateWindowMenu()
 
     def new_window(self : 'DbModel', item : DrawingItem) -> None:
-        from ..widgets import DiagramScene, DiagramView, DrawingSubWindow, \
+        from ..widgets import DiagramScene, DiagramView, DiagramSubWindow, \
                               SymbolScene, SymbolView, SymbolSubWindow
         if isinstance(item, DiagramItem):
             db_item : DesignItem = item.parent().parent()
             drawing_name = item.text()
             drawing_scene : DiagramScene = item.data(Qt.ItemDataRole.UserRole)
-            subwindow = DrawingSubWindow()
+            subwindow = DiagramSubWindow()
             drawing_view = DiagramView(drawing_scene)
             subwindow.setWidget(drawing_view)
         elif isinstance(item, SymbolItem):
