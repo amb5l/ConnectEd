@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 
 T = TypeVar('T')
 
-def with_current_widget(widget_type: Type[T]) -> Callable[[Callable[['Slots', T], None]], Callable[['Slots'], None]]:
+def withCurrentWidget(widget_type: Type[T]) -> Callable[[Callable[['Slots', T], None]], Callable[['Slots'], None]]:
     """
     Decorator that gets the current widget from the MDI area and checks if it's of the specified type
     or a subclass of it before calling the decorated method.
@@ -40,7 +40,7 @@ def with_current_widget(widget_type: Type[T]) -> Callable[[Callable[['Slots', T]
         return wrapper
     return decorator
 
-def with_current_widget_checkable(widget_type: Type[T], action_name: str) -> Callable[[Callable[['Slots', T, bool], None]], Callable[['Slots'], None]]:
+def withCurrentWidgetCheckable(widget_type: Type[T], action_name: str) -> Callable[[Callable[['Slots', T, bool], None]], Callable[['Slots'], None]]:
     """
     Decorator for checkable actions that gets the current widget from the MDI area,
     checks if it's of the specified type or a subclass, and passes the checked state from the action.
@@ -75,79 +75,79 @@ class Slots:
         self._parent = parent
 
     def fileNewDesign(self : 'Slots') -> None:
-        hub.db_model.new_item(hub.db_model.designs)
+        hub.db_model.newItem(hub.db_model.designs)
 
     def fileNewLibrary(self : 'Slots') -> None:
-        hub.db_model.new_item(hub.db_model.libraries)
+        hub.db_model.newItem(hub.db_model.libraries)
 
     def fileExit(self : 'Slots') -> None:
         self._parent.close()
 
-    @with_current_widget(DrawingView)
+    @withCurrentWidget(DrawingView)
     def editCancel(self : 'Slots', widget: DrawingView) -> None:
         widget.editCancel()
 
-    @with_current_widget(DrawingView)
+    @withCurrentWidget(DrawingView)
     def editComplete(self : 'Slots', widget: DrawingView) -> None:
         widget.editComplete()
 
-    @with_current_widget(DrawingView)
+    @withCurrentWidget(DrawingView)
     def editSlide(self : 'Slots', widget: DrawingView) -> None:
         widget.editSlide()
 
-    @with_current_widget(DrawingView)
+    @withCurrentWidget(DrawingView)
     def editMove(self : 'Slots', widget: DrawingView) -> None:
         widget.editMove()
 
-    @with_current_widget(DrawingView)
+    @withCurrentWidget(DrawingView)
     def viewZoomAll(self : 'Slots', widget: DrawingView) -> None:
         widget.viewZoomAll()
 
-    @with_current_widget(DiagramView)
+    @withCurrentWidget(DiagramView)
     def viewZoomSheet(self : 'Slots', widget: DiagramView) -> None:
         widget.viewZoomSheet()
 
-    @with_current_widget(DrawingView)
+    @withCurrentWidget(DrawingView)
     def viewZoomWindow(self : 'Slots', widget: DrawingView) -> None:
         widget.viewZoomWindow()
 
-    @with_current_widget(DrawingView)
+    @withCurrentWidget(DrawingView)
     def viewZoomIn(self : 'Slots', widget: DrawingView) -> None:
         widget.viewZoomIn()
 
-    @with_current_widget(DrawingView)
+    @withCurrentWidget(DrawingView)
     def viewZoomOut(self : 'Slots', widget: DrawingView) -> None:
         widget.viewZoomOut()
 
-    @with_current_widget(DrawingView)
+    @withCurrentWidget(DrawingView)
     def viewPan(self : 'Slots', widget: DrawingView) -> None:
         widget.viewPan()
 
-    @with_current_widget(DrawingView)
+    @withCurrentWidget(DrawingView)
     def viewPanUp(self : 'Slots', widget: DrawingView) -> None:
         widget.viewPanUp()
 
-    @with_current_widget(DrawingView)
+    @withCurrentWidget(DrawingView)
     def viewPanDown(self : 'Slots', widget: DrawingView) -> None:
         widget.viewPanDown()
 
-    @with_current_widget(DrawingView)
+    @withCurrentWidget(DrawingView)
     def viewPanLeft(self : 'Slots', widget: DrawingView) -> None:
         widget.viewPanLeft()
 
-    @with_current_widget(DrawingView)
+    @withCurrentWidget(DrawingView)
     def viewPanRight(self : 'Slots', widget: DrawingView) -> None:
         widget.viewPanRight()
 
-    @with_current_widget_checkable(DrawingView, 'viewGridDisplay')
+    @withCurrentWidgetCheckable(DrawingView, 'viewGridDisplay')
     def viewGridDisplay(self : 'Slots', widget: DrawingView, checked: bool) -> None:
         widget.viewGridDisplay(checked)
 
-    @with_current_widget_checkable(DrawingView, 'viewGridSnap')
+    @withCurrentWidgetCheckable(DrawingView, 'viewGridSnap')
     def viewGridSnap(self : 'Slots', widget: DrawingView, checked: bool) -> None:
         widget.viewGridSnap(checked)
 
-    @with_current_widget(DrawingView)
+    @withCurrentWidget(DrawingView)
     def placeRectangle(self : 'Slots', widget: DrawingView) -> None:
         widget.placeRectangle()
 

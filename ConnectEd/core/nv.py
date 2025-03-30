@@ -280,7 +280,7 @@ class Settings(SimpleNamespace):
             if value is not None:
                 logger.debug(f'loading setting: {qsettings.group()}/{key} = {value}')
                 try:
-                    setattr(ns, key, self._text_to_value(value))
+                    setattr(ns, key, self._text2value(value))
                 except (ValueError, AttributeError) as e:
                     logger.warning(f'Error loading setting {key}: {e}')
 
@@ -299,9 +299,9 @@ class Settings(SimpleNamespace):
                     qsettings.endGroup()
                 else:
                     logger.debug(f'saving setting: {qsettings.group()}/{key} = {value}')
-                    qsettings.setValue(key, self._value_to_text(value))
+                    qsettings.setValue(key, self._value2text(value))
 
-    def _text_to_value(self : 'Settings', text_value : str) -> Any:
+    def _text2value(self : 'Settings', text_value : str) -> Any:
         """Convert a text value from QSettings to the appropriate Python type."""
         if not isinstance(text_value, str):
             return text_value
@@ -326,7 +326,7 @@ class Settings(SimpleNamespace):
             case _:
                 raise ValueError(f'Unsupported type: {typeName}')
 
-    def _value_to_text(self : 'Settings', value : Any) -> str:
+    def _value2text(self : 'Settings', value : Any) -> str:
         """Convert a Python value to a text representation for QSettings."""
         typeName = type(value).__name__
         match typeName:
@@ -360,8 +360,8 @@ class Settings(SimpleNamespace):
                     lines.append(f'{indent}{name}/{k}:')
                     self._dump(name + '/' + k, v, lines, indent + '  ')
                 else:
-                    lines.append(f'{indent}{name}/{k} = {self._value_to_text(v)}')
+                    lines.append(f'{indent}{name}/{k} = {self._value2text(v)}')
         else:
-            lines.append(f'{indent}{name} = {self._value_to_text(x)}')
+            lines.append(f'{indent}{name} = {self._value2text(x)}')
 
 settings = Settings()

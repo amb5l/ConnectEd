@@ -33,11 +33,11 @@ class TextView(QPlainTextEdit):
                     content = content[:-1]
             self.setPlainText(content)
         self.verticalScrollBar().setValue(self.verticalScrollBar().maximum())
-        self.find_bar_action = QAction('Find Bar', self)
-        self.find_bar_action.setCheckable(True)
-        self.find_bar_action.setChecked(False)
-        self.find_bar_action.triggered.connect(self.slotFindBar)
-        self.addAction(self.find_bar_action)
+        self.showFindBar = QAction('Find Bar', self)
+        self.showFindBar.setCheckable(True)
+        self.showFindBar.setChecked(False)
+        self.showFindBar.triggered.connect(self.showFindBar)
+        self.addAction(self.showFindBar)
         self.handler = None
 
     def setFindBar(self, find_bar : FindBar) -> None:
@@ -62,10 +62,10 @@ class TextView(QPlainTextEdit):
     def contextMenuEvent(self, event : QContextMenuEvent) -> None:
         menu = self.createStandardContextMenu()
         menu.addSeparator()
-        menu.addAction(self.find_bar_action)
+        menu.addAction(self.showFindBar)
         menu.exec(event.globalPos())
 
-    def slotFindBar(self, checked : bool) -> None:
+    def showFindBar(self, checked : bool) -> None:
         if self.find_bar:
             logger.debug(f"slot_find: {checked}")
             self.find_bar.setVisible(checked)

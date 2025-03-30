@@ -218,13 +218,13 @@ class DrawingViewPrivateMixin:
         self._zoomAbs(factor)
         self.centerOn(rect.center())
 
-    def _round_to_nearest(self: 'DrawingView', x : float, n : float) -> float:
+    def _round2nearest(self: 'DrawingView', x : float, n : float) -> float:
         return round(x / n) * n
 
     def _snap(self: 'DrawingView', pos: QPointF) -> QPoint:
         return QPointF(
-            self._round_to_nearest(pos.x(), self.scene().grid.pitch.x()),
-            self._round_to_nearest(pos.y(), self.scene().grid.pitch.y())
+            self._round2nearest(pos.x(), self.scene().grid.pitch.x()),
+            self._round2nearest(pos.y(), self.scene().grid.pitch.y())
         ) if self.scene().grid.snap else pos
 
     def _distance(self: 'DrawingView', cp1: QPoint, cp2: QPoint) -> int:
@@ -308,16 +308,16 @@ class DrawingViewPrivateMixin:
                 action.setData(item)
                 action.triggered.connect(
                     lambda checked, i=item, t=toggle, p=init_sel[item]:
-                    self._select_item(i, t, p)
+                    self._selectItem(i, t, p)
                 )
                 menu.addAction(action)
-            def _on_hover(action):
+            def _onHover(action):
                 for item in items:
                     item.setSelected(init_sel[item])
                 item = action.data() if action else None
                 if item:
-                    self._select_item(item, toggle, init_sel[item])
-            menu.hovered.connect(_on_hover)
+                    self._selectItem(item, toggle, init_sel[item])
+            menu.hovered.connect(_onHover)
             menu.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
             menu.setFocus()
             menu.exec(self.mapToGlobal(self.mapFromScene(point)))
@@ -331,7 +331,7 @@ class DrawingViewPrivateMixin:
             if hasattr(item, 'updateGripsVisibility'):
                 item.updateGripsVisibility()
 
-    def _select_item(self, item, toggle, prev=None):
+    def _selectItem(self, item, toggle, prev=None):
         if prev is None:
             item.setSelected(not item.isSelected() if toggle else True)
         else:

@@ -57,12 +57,12 @@ class FindBar(QWidget):
         self.setLayout(layout)
 
         # connect signals
-        self.find_combo.lineEdit().returnPressed.connect(lambda: self.slot_find(forward=True))
-        self.find_next.clicked.connect(lambda: self.slot_find(forward=True))
-        self.find_prev.clicked.connect(lambda: self.slot_find(forward=False))
-        self.highlight.toggled.connect(self.slot_highlight)
+        self.find_combo.lineEdit().returnPressed.connect(lambda: self.slotFind(forward=True))
+        self.find_next.clicked.connect(lambda: self.slotFind(forward=True))
+        self.find_prev.clicked.connect(lambda: self.slotFind(forward=False))
+        self.highlight.toggled.connect(self.slotHighlight)
 
-    def slot_find(self, forward: bool = True) -> bool:
+    def slotFind(self, forward: bool = True) -> bool:
         """Find the next/previous occurrence of the search text."""
         text = self.find_combo.currentText()
         if not text:
@@ -95,7 +95,7 @@ class FindBar(QWidget):
 
         return found
 
-    def slot_highlight(self, enabled: bool) -> None:
+    def slotHighlight(self, enabled: bool) -> None:
         """Update all matching text highlights."""
         if not enabled:
             # Clear all highlights

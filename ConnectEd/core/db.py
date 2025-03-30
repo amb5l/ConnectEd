@@ -167,7 +167,7 @@ class DbModel(QStandardItemModel):
         self.libraries.setFont(font)
         self.appendRow(self.libraries)
 
-    def new_item(self : 'DbModel', item : QStandardItem) -> None:
+    def newItem(self : 'DbModel', item : QStandardItem) -> None:
         if item.text() == 'Designs':
             design_item = DesignItem()
             diagram_item = DiagramItem()
@@ -177,7 +177,7 @@ class DbModel(QStandardItemModel):
                 db_explorer = hub.main_window.db_explorer.db_explorer
                 db_explorer.expand(self.indexFromItem(design_item))
                 db_explorer.expand(self.indexFromItem(design_item.diagrams))
-                db_explorer.edit_item(diagram_item)
+                db_explorer.editDrawing(diagram_item)
         elif item.text() == 'Libraries':
             library_item = LibraryItem()
             item.appendRow(library_item)
@@ -194,8 +194,8 @@ class DbModel(QStandardItemModel):
         else:
             raise ValueError(f"Bad item: {item} {item.text()} {type(item)}")
 
-    def edit_item(self : 'DbModel', item : DrawingItem) -> None:
-        """Edit the diagram, focusing the first existing subwindow if available."""
+    def editDrawing(self : 'DbModel', item : DrawingItem) -> None:
+        """Edit the drawing, focusing the first existing subwindow if available."""
         from ..widgets import DrawingScene, DrawingView, DrawingSubWindow, \
                               SymbolScene, SymbolView, SymbolSubWindow, \
                               DiagramScene, DiagramView, DiagramSubWindow
@@ -231,7 +231,7 @@ class DbModel(QStandardItemModel):
         subwindow.showMaximized()
         hub.main_window.menu_bar.updateWindowMenu()
 
-    def new_window(self : 'DbModel', item : DrawingItem) -> None:
+    def newWindow(self : 'DbModel', item : DrawingItem) -> None:
         from ..widgets import DiagramScene, DiagramView, DiagramSubWindow, \
                               SymbolScene, SymbolView, SymbolSubWindow
         if isinstance(item, DiagramItem):
@@ -253,7 +253,10 @@ class DbModel(QStandardItemModel):
         subwindow.showMaximized()
         hub.main_window.menu_bar.updateWindowMenu()
 
-    def close_db(self : 'DbModel', db_item: 'DbItem') -> None:
+    def saveDb(self : 'DbModel', db_item: 'DbItem') -> None:
+        db_item.save()
+
+    def closeDb(self : 'DbModel', db_item: 'DbItem') -> None:
         """Close a database and remove it from the model."""
         # TODO offer to save if modified
         if isinstance(db_item, DesignItem):
@@ -267,7 +270,7 @@ class DbModel(QStandardItemModel):
         else:
             raise ValueError(f"Unknown database item type: {type(db_item)}")
 
-    def get_db_from_scene(self : 'DbModel', scene : 'DrawingScene') -> 'DbItem':
+    def getDbFromScene(self : 'DbModel', scene : 'DrawingScene') -> 'DbItem':
         for i in range(self.designs.rowCount()):
             db_item = self.designs.child(i)
             for j in range(db_item.diagrams.rowCount()):
