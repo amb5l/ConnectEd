@@ -1,7 +1,7 @@
 __all__ = [
     'NameCounter',
     'check',
-    'get_default_path'
+    'getDefaultPath'
 ]
 
 import os
@@ -25,7 +25,7 @@ def check(b : bool, s : str) -> bool:
         print(s)
     return b
 
-def get_default_path() -> str:
+def getDefaultPath() -> str:
     if platform.system() == 'Windows':
         if 'WORK' in os.environ:
             r = os.environ['WORK']

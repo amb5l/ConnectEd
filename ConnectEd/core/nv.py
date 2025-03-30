@@ -20,7 +20,7 @@ from PyQt6.QtGui  import QColor
 
 from .log import logger
 from .defs   import ORG_NAME, APP_NAME
-from .utils  import get_default_path
+from .utils  import getDefaultPath
 
 
 MinMax = namedtuple('MinMax', ['min', 'max'])
@@ -36,10 +36,10 @@ FACTORY_SETTINGS = {
                 'margin' : 10
             },
             'open': {
-                'dir': get_default_path()
+                'dir': getDefaultPath()
             },
             'save': {
-                'dir': get_default_path()
+                'dir': getDefaultPath()
             }
         },
         'display': {
