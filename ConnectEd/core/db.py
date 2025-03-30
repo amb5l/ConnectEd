@@ -10,7 +10,8 @@ from pathlib import Path
 from PyQt6.QtCore import Qt, QXmlStreamWriter
 from PyQt6.QtGui  import QStandardItemModel, QStandardItem
 
-from ..core import LIB_EXT, DSN_EXT
+from ..core import LIB_EXT, DSN_EXT, copy as master_copy, \
+                   saveBegin, saveEnd, xmlBegin, xmlEnd
 
 from .. import hub
 
@@ -37,9 +38,14 @@ class DrawingItem(QStandardItem):
             scene_class = DiagramScene
         else:
             raise ValueError(f"Unknown scene type: {self.SCENE_TYPE}")
-        self.scene = scene_class()
+        self.scene = scene if scene else scene_class()
         super().__init__(self.scene.name)
         self.setData(self.scene, Qt.ItemDataRole.UserRole)
+
+    copy = master_copy
+
+    def toXml(self : 'DrawingItem', xw : QXmlStreamWriter) -> None:
+        self.scene.toXml(xw)
 
 class SymbolItem(DrawingItem):
     SCENE_TYPE = 'SymbolScene'
@@ -67,19 +73,26 @@ class DbItem(QStandardItem):
         name = Path(path).stem
         self.setText(name)
 
+    def save(self : 'DesignItem') -> None:
+        xw = saveBegin(self.path)
+        self.toXml(xw)
+        saveEnd(xw)
+
+    copy = master_copy
+
 class LibraryItem(DbItem):
     FILE_EXT = LIB_EXT
 
-    def save(self : 'DbItem') -> None:
-        xw = QXmlStreamWriter(self.path)
-        xw.setAutoFormatting(True)
-        xw.setAutoFormattingIndent(2)
-        xw.writeStartDocument()
+    def toXml(self : 'LibraryItem', xw : QXmlStreamWriter) -> None:
+        xmlBegin(xw)
+        xw.writeStartElement('Library')
+        xw.writeAttribute('path', self.text())
         for i in range(self.rowCount()):
             symbol_item : SymbolItem = self.child(i)
             symbol_scene = symbol_item.scene
             symbol_scene.toXml(xw)
-        xw.writeEndDocument()
+        xw.writeEndElement()
+        xmlEnd(xw)
 
 class DesignItem(DbItem):
     FILE_EXT = DSN_EXT
@@ -102,24 +115,23 @@ class DesignItem(DbItem):
         self.symbols.setFont(font)
         self.appendRow(self.symbols)
 
-    def save(self : 'DesignItem') -> None:
-        xw = QXmlStreamWriter(self.path)
-        xw.setAutoFormatting(True)
-        xw.setAutoFormattingIndent(2)
-        xw.writeStartDocument()
-        xw.writeStartElement('diagrams')
+    def toXml(self : 'DesignItem', xw : QXmlStreamWriter) -> None:
+        xmlBegin(xw)
+        xw.writeStartElement('Design')
+        xw.writeAttribute('path', self.text())
+        xw.writeStartElement('Diagrams')
         for i in range(self.diagrams.rowCount()):
             diagram_item : DiagramItem = self.diagrams.child(i)
             diagram_scene = diagram_item.scene
             diagram_scene.toXml(xw)
         xw.writeEndElement()
-        xw.writeStartElement('symbols')
+        xw.writeStartElement('Symbol Cache')
         for i in range(self.symbols.rowCount()):
             symbol_item : SymbolItem = self.symbols.child(i)
             symbol_scene = symbol_item.scene
             symbol_scene.toXml(xw)
         xw.writeEndElement()
-        xw.writeEndDocument()
+        xmlEnd(xw)
 
 class DbModel(QStandardItemModel):
     designs   : QStandardItem

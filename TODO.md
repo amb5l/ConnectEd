@@ -10,6 +10,5 @@
 - filter log view by level
 - look at windowFilePath
 - move some context menu logic into TreeView
-- figure out shortcut text size zoom key issue
 - tidy up MDI subwindow top right button icons
-- Ctrl-F6 to select next window
+- rectangle move/slide can end up off grid

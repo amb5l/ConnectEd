@@ -56,8 +56,8 @@ class DrawingScene(QGraphicsScene):
         super().addItem(item)
 
     def toXml(self : 'DrawingScene', xw : QXmlStreamWriter) -> None:
-        xw.writeStartElement(self.__class__.__name__)
-        # iterate over all items
+        xw.writeStartElement(self.__class__.__name__.replace('Scene', ''))
+        xw.writeAttribute('name', self.name)
         for item in self.items():
             item.toXml(xw)
         xw.writeEndElement()
