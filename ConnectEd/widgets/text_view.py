@@ -1,4 +1,5 @@
 import logging
+from types import SimpleNamespace
 from typing import Optional
 
 from PyQt6.QtCore    import Qt
@@ -10,6 +11,7 @@ from .find_bar import FindBar
 
 
 class TextView(QPlainTextEdit):
+    actions  : SimpleNamespace
     find_bar : Optional[FindBar] = None
     handler  : Optional[logging.Handler] = None
 
@@ -33,11 +35,12 @@ class TextView(QPlainTextEdit):
                     content = content[:-1]
             self.setPlainText(content)
         self.verticalScrollBar().setValue(self.verticalScrollBar().maximum())
-        self.showFindBar = QAction('Find Bar', self)
-        self.showFindBar.setCheckable(True)
-        self.showFindBar.setChecked(False)
-        self.showFindBar.triggered.connect(self.showFindBar)
-        self.addAction(self.showFindBar)
+        self.actions = SimpleNamespace()
+        self.actions.showFindBar = QAction('Find Bar', self)
+        self.actions.showFindBar.setCheckable(True)
+        self.actions.showFindBar.setChecked(False)
+        self.actions.showFindBar.triggered.connect(self.showFindBar)
+        self.addAction(self.actions.showFindBar)
         self.handler = None
 
     def setFindBar(self, find_bar : FindBar) -> None:
@@ -62,12 +65,11 @@ class TextView(QPlainTextEdit):
     def contextMenuEvent(self, event : QContextMenuEvent) -> None:
         menu = self.createStandardContextMenu()
         menu.addSeparator()
-        menu.addAction(self.showFindBar)
+        menu.addAction(self.actions.showFindBar)
         menu.exec(event.globalPos())
 
     def showFindBar(self, checked : bool) -> None:
         if self.find_bar:
-            logger.debug(f"slot_find: {checked}")
             self.find_bar.setVisible(checked)
             if checked:
                 self.find_bar.find_combo.setFocus()
