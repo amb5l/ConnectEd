@@ -11,7 +11,7 @@ from PyQt6.QtCore    import Qt, QByteArray
 from PyQt6.QtWidgets import QMainWindow
 from PyQt6.QtGui     import QCloseEvent
 
-from ...core         import APP_NAME, connect_actions_to_slots
+from ...core         import APP_NAME, check
 from .actions        import Actions
 from .slots          import Slots
 from .menu_bar       import MenuBar
@@ -58,7 +58,7 @@ class MainWindow(QMainWindow):
         # actions and slots
         self.slots = Slots(self)
         self.actions = Actions(self)
-        connect_actions_to_slots(self.actions, self.slots)
+        self.connectActionsToSlots(self.actions, self.slots)
 
         # menu bar
         self.menu_bar = MenuBar(self)
@@ -101,6 +101,31 @@ class MainWindow(QMainWindow):
         # ready message
         self.messages_viewer.text_view.appendPlainText("ConnectEd ready!")
 
-    def closeEvent(self, event : QCloseEvent) -> None:
+    def closeEvent(self : 'MainWindow', event : QCloseEvent) -> None:
         hub.settings.startup.geometry = self.saveGeometry().data()
         super().closeEvent(event)
+
+    def connectActionsToSlots(
+        self    : 'MainWindow',
+        actions : Actions,
+        slots   : Slots
+    ) -> None:
+        action_names = [a for a in dir(actions) if not a.startswith('_') and not callable(getattr(actions, a))]
+        slot_names   = [s for s in dir(slots)   if not s.startswith('_')]
+        error = False
+        error &= check(len(action_names) > 0, 'No actions found')
+        error &= check(len(slot_names)   > 0, 'No slots found')
+        error &= check(len(action_names) == len(slot_names), \
+            f'Number of actions ({len(action_names)}) and slots ({len(slot_names)}) do not match')
+        for action_name in action_names:
+            error &= check(action_name in slot_names, \
+                f'No matching slot found for action "{action_name}"')
+        for slot_name in slot_names:
+            error &= check(slot_name in action_names, \
+                f'No matching action found for slot "{slot_name}"')
+        if error:
+            raise Exception('Action-slot mismatch')
+        for action_name in action_names:
+            action = getattr(actions, action_name)
+            slot = getattr(slots, action_name)
+            action.triggered.connect(slot)
