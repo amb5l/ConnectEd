@@ -7,11 +7,12 @@ __all__ = [
 from typing  import Optional
 from pathlib import Path
 
-from PyQt6.QtCore import Qt, QXmlStreamWriter
-from PyQt6.QtGui  import QStandardItemModel, QStandardItem
+from PyQt6.QtCore    import Qt, QXmlStreamWriter
+from PyQt6.QtWidgets import QDialog
+from PyQt6.QtGui     import QStandardItemModel, QStandardItem
 
-from ..core import LIB_EXT, DSN_EXT, copy as master_copy, \
-                   saveBegin, saveEnd, xmlBegin, xmlEnd
+from ..core    import LIB_EXT, DSN_EXT, copy as master_copy, xmlBegin, xmlEnd
+from ..widgets import FileSaveAsDialog
 
 from .. import hub
 
@@ -74,9 +75,22 @@ class DbItem(QStandardItem):
         self.setText(name)
 
     def save(self : 'DesignItem') -> None:
-        xw = saveBegin(self.path)
+        if Path(self.path).parent() == '.':
+            #
+            self.path = hub.settings.prefs.file.save.dir + '/' + self.path
+        xw = QXmlStreamWriter(self.path)
+        xmlBegin(xw)
         self.toXml(xw)
-        saveEnd(xw)
+        xmlEnd(xw)
+
+    def saveAs(self : 'DesignItem') -> None:
+        dialog = FileSaveAsDialog(
+            hub.main_window,
+            self.__class__.__name__.replace('Item', '')
+        )
+        if dialog.exec() == QDialog.Accepted:
+            # TODO complete
+            pass
 
     copy = master_copy
 

@@ -4,8 +4,6 @@ __all__ = [
     'getDefaultPath',
     'value2str',
     'copy',
-    'saveBegin',
-    'saveEnd',
     'xmlBegin',
     'xmlEnd'
 ]
@@ -92,11 +90,3 @@ def copy(instance : Any) -> None:
     xmlEnd(xw)
     clipboard = QApplication.clipboard()
     clipboard.setText(buffer.data().decode('utf-8'))
-
-def saveBegin(path : str) -> QXmlStreamWriter:
-    xw = QXmlStreamWriter(path)
-    xmlBegin(xw)
-    return xw
-
-def saveEnd(xw : QXmlStreamWriter) -> None:
-    xmlEnd(xw)
