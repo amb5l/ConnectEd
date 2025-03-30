@@ -32,7 +32,7 @@ class DrawingScene(QGraphicsScene):
     ) -> None:
         super().__init__()
         if name is None:
-            u = 'Untitled' + self.__class__.__name__.replace('Item', '')
+            u = 'Untitled' + self.__class__.__name__.replace('Scene', '')
             name = hub.name_counter.get(u)
         self.name    = name
         self.extents = Extents(hub.settings.defaults.sheet)
