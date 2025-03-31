@@ -164,13 +164,7 @@ class ItemMixin:
     def setAnchor(self, anchor : KeyPoint = KeyPoint.TOP_LEFT) -> None:
         self.anchor = anchor
 
-    def toXml(self, xw : QXmlStreamWriter) -> None:
-        xw.writeStartElement(self.__class__.__name__)
-        for prop_name, prop_getter, prop_setter, prop_type in self.SER_PROPS:
-            if hasattr(self, prop_name):
-                prop_value = prop_getter(self)
-                xw.writeAttribute(prop_name, value2str(prop_value))
-        xw.writeEndElement()
+    # TODO: base toXml method (SER_PROPS?)
 
 class RectItem(QGraphicsRectItem, ItemMixin):
     """Base class for rectangle items."""

@@ -2,9 +2,9 @@ __all__ = ['Border']
 
 from typing import Optional
 
-from PyQt6.QtCore import QPointF, QSizeF
+from PyQt6.QtCore    import QPointF, QSizeF, QXmlStreamWriter
 
-from ...core import Z_TEMPLATE
+from ...core import Z_TEMPLATE, value2str
 from .       import RectItem, Paper
 
 from ... import hub
@@ -37,3 +37,8 @@ class Border(RectItem):
                 self.paper.rect().height() - (2 * self.margin)
             )
         )
+
+    def toXml(self : 'Border', xw : QXmlStreamWriter) -> None:
+        xw.writeStartElement('Border')
+        xw.writeAttribute('margin', value2str(self.margin))
+        xw.writeEndElement()

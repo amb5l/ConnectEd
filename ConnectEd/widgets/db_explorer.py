@@ -35,8 +35,10 @@ class DbExplorer(TreeView):
         a.newWindow.triggered.connect(lambda: self.newWindow(self.item))
         a.saveDb = QAction('Save', self)
         a.saveDb.triggered.connect(lambda: self.saveDb(self.item))
+        a.saveAsDb = QAction('Save As', self)
+        a.saveAsDb.triggered.connect(lambda: self.saveAsDb(self.item))
         a.closeDb = QAction('Close', self)
-        a.closeDb.triggered.connect(lambda: self.close(self.item))
+        a.closeDb.triggered.connect(lambda: self.closeDb(self.item))
 
     def wheelEvent(self, event: QWheelEvent) -> None:
         """Handle mouse wheel events to adjust font size when Ctrl is pressed."""
@@ -91,11 +93,13 @@ class DbExplorer(TreeView):
             elif parent_item and parent_item.text() == 'Designs':
                 # item is a design
                 menu.addAction(self.actions.saveDb)
+                menu.addAction(self.actions.saveAsDb)
                 menu.addAction(self.actions.closeDb)
             elif parent_item and parent_item.text() == 'Libraries':
                 # item is a library
                 menu.addAction(self.actions.newItem)
                 menu.addAction(self.actions.saveDb)
+                menu.addAction(self.actions.saveAsDb)
                 menu.addAction(self.actions.closeDb)
             elif item.text() == 'Diagrams':
                 # item is a Design's Diagrams collection
@@ -124,6 +128,9 @@ class DbExplorer(TreeView):
 
     def saveDb(self : 'DbExplorer', item : QStandardItem) -> None:
         hub.db_model.saveDb(item)
+
+    def saveAsDb(self : 'DbExplorer', item : QStandardItem) -> None:
+        hub.db_model.saveAsDb(item)
 
     def closeDb(self : 'DbExplorer', item : QStandardItem) -> None:
         hub.db_model.closeDb(item)

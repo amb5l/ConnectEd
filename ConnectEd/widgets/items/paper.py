@@ -1,8 +1,8 @@
 __all__ = ['Paper']
 
-from PyQt6.QtCore    import QPointF, QSizeF
+from PyQt6.QtCore    import QPointF, QSizeF, QXmlStreamWriter
 
-from ...core import Z_PAPER
+from ...core import Z_PAPER, value2str
 
 from ... import hub
 
@@ -23,3 +23,8 @@ class Paper(RectItem):
         self.size_name = size_name
         size = getattr(hub.settings.sheet_sizes, size_name)
         self.setPosSize(QPointF(0, 0), QSizeF(size.width(), size.height()))
+
+    def toXml(self : 'Paper', xw : QXmlStreamWriter) -> None:
+        xw.writeStartElement('Paper')
+        xw.writeAttribute('rect', value2str(self.rect()))
+        xw.writeEndElement()

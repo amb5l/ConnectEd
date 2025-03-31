@@ -1,6 +1,6 @@
-from PyQt6.QtCore    import Qt, QPointF, QRectF
+from PyQt6.QtCore    import Qt, QPointF, QRectF, QXmlStreamWriter
 from PyQt6.QtWidgets import QGraphicsItem, QStyleOptionGraphicsItem, QWidget
-from PyQt6.QtGui     import QPainter, QPen, QBrush, QPolygonF, QPainterPath
+from PyQt6.QtGui     import QPainter, QPen, QBrush, QPainterPath
 
 from ... import hub
 
@@ -51,3 +51,5 @@ class Grip(QGraphicsItem):
         painter.setBrush(QBrush(theme.fill, Qt.BrushStyle.SolidPattern))
         painter.drawRect(self.boundingRect())
 
+    def toXml(self : 'Grip', xw : QXmlStreamWriter) -> None:
+        pass

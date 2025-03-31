@@ -1,11 +1,11 @@
 __all__ = ['Extents']
 
-from PyQt6.QtCore    import QPointF, QRectF, QSizeF
+from PyQt6.QtCore    import QPointF, QRectF, QSizeF, QXmlStreamWriter
 from PyQt6.QtGui     import QPainter, QPen, QBrush, QColor
 from PyQt6.QtWidgets import QGraphicsItem, QGraphicsRectItem, \
                             QWidget, QStyleOptionGraphicsItem
 
-from ...core import Z_EXTENTS
+from ...core import Z_EXTENTS, value2str
 
 from ... import hub
 
@@ -40,3 +40,9 @@ class Extents(QGraphicsRectItem):
             hub.settings.prefs.display.items.extents.fill
         ))
         super().paint(painter, option, widget)
+
+    def toXml(self : 'Extents', xw : QXmlStreamWriter) -> None:
+        xw.writeStartElement('Extents')
+        xw.writeAttribute('rect', value2str(self.rect()))
+        xw.writeEndElement()
+

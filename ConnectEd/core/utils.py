@@ -5,7 +5,9 @@ __all__ = [
     'value2str',
     'copy',
     'xmlBegin',
-    'xmlEnd'
+    'xmlEnd',
+    'saveBegin',
+    'saveEnd'
 ]
 
 import os
@@ -13,7 +15,7 @@ import platform
 
 from typing import Any
 
-from PyQt6.QtCore    import QByteArray, QXmlStreamWriter
+from PyQt6.QtCore    import QByteArray, QXmlStreamWriter, QFile, QIODevice
 from PyQt6.QtWidgets import QApplication
 
 
@@ -53,23 +55,24 @@ def getDefaultPath() -> str:
             r = '~'
     return r
 
-def value2str(value : Any) -> str:
+def value2str(v : Any) -> str:
     """Convert a Python value to a text representation for QSettings."""
-    typeName = type(value).__name__
+    typeName = type(v).__name__
     match typeName:
         case 'NoneType'   : valueStr = 'None'
-        case 'bytes'      : valueStr = value.hex()
-        case 'str'        : valueStr = value
-        case 'int'        : valueStr = str(value)
-        case 'float'      : valueStr = str(value)
-        case 'bool'       : valueStr = str(value)
-        case 'MinMax'     : valueStr = f'({value.min},{value.max})'
-        case 'QPointF'    : valueStr = f'({value.x()},{value.y()})'
-        case 'QSize'      : valueStr = f'({value.width()},{value.height()})'
-        case 'QSizeF'     : valueStr = f'({value.width()},{value.height()})'
-        case 'QColor'     : valueStr = hex(value.rgba())
-        case 'PenStyle'   : valueStr = str(value).replace('PenStyle.', '')
-        case 'BrushStyle' : valueStr = str(value).replace('BrushStyle.', '')
+        case 'bytes'      : valueStr = v.hex()
+        case 'str'        : valueStr = v
+        case 'int'        : valueStr = str(v)
+        case 'float'      : valueStr = str(v)
+        case 'bool'       : valueStr = str(v)
+        case 'MinMax'     : valueStr = f'({v.min},{v.max})'
+        case 'QPointF'    : valueStr = f'({v.x()},{v.y()})'
+        case 'QRectF'     : valueStr = f'({v.x()},{v.y()},{v.width()},{v.height()})'
+        case 'QSize'      : valueStr = f'({v.width()},{v.height()})'
+        case 'QSizeF'     : valueStr = f'({v.width()},{v.height()})'
+        case 'QColor'     : valueStr = hex(v.rgba())
+        case 'PenStyle'   : valueStr = str(v).replace('PenStyle.', '')
+        case 'BrushStyle' : valueStr = str(v).replace('BrushStyle.', '')
         case _ :
             raise ValueError(f'Unsupported type: {typeName}')
     return typeName + ':' + valueStr
@@ -81,6 +84,19 @@ def xmlBegin(xw : QXmlStreamWriter) -> None:
 
 def xmlEnd(xw : QXmlStreamWriter) -> None:
     xw.writeEndDocument()
+
+def saveBegin(path : str) -> tuple[QXmlStreamWriter, QFile]:
+    file = QFile(path)
+    if file.open(QIODevice.OpenModeFlag.WriteOnly | QIODevice.OpenModeFlag.Text):
+        xw = QXmlStreamWriter(file)
+        xmlBegin(xw)
+        xw.writeStartElement('ConnectEd') # TODO: version
+        return xw, file
+
+def saveEnd(xw : QXmlStreamWriter, file : QFile) -> None:
+    xw.writeEndElement() # ConnectEd
+    xmlEnd(xw)
+    file.close()
 
 def copy(instance : Any) -> None:
     buffer = QByteArray()

@@ -2,7 +2,7 @@ __all__ = ['Grid']
 
 from math import ceil
 
-from PyQt6.QtCore    import Qt, QPointF, QRectF
+from PyQt6.QtCore    import Qt, QPointF, QRectF, QXmlStreamWriter
 from PyQt6.QtWidgets import QGraphicsItem, QStyleOptionGraphicsItem, QWidget
 from PyQt6.QtGui     import QPainter, QPen
 
@@ -103,3 +103,6 @@ class Grid(QGraphicsItem):
                     QPointF(grect.right(), y)
                 )
                 y += py
+
+    def toXml(self : 'Grid', xw : QXmlStreamWriter) -> None:
+        pass

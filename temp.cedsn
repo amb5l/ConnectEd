@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ConnectEd>
+  <Design path="temp">
+    <Diagrams>
+      <Diagram name="UntitledDiagram1">
+        <Extents rect="QRectF:(-1169.0,-827.0,3507.0,2481.0)"/>
+        <Paper rect="QRectF:(0.0,0.0,1169.0,827.0)"/>
+        <Border margin="int:10"/>
+      </Diagram>
+    </Diagrams>
+    <Symbol Cache/>
+  </Design>
+</ConnectEd>

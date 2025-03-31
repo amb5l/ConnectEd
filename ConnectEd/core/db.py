@@ -7,11 +7,12 @@ __all__ = [
 from typing  import Optional
 from pathlib import Path
 
-from PyQt6.QtCore    import Qt, QXmlStreamWriter
+from PyQt6.QtCore    import Qt, QXmlStreamWriter, QFile, QIODevice
 from PyQt6.QtWidgets import QDialog
 from PyQt6.QtGui     import QStandardItemModel, QStandardItem
 
-from ..core    import LIB_EXT, DSN_EXT, copy as master_copy, xmlBegin, xmlEnd
+from ..core    import LIB_EXT, DSN_EXT, copy as master_copy, \
+                      xmlBegin, xmlEnd, saveBegin, saveEnd
 from ..widgets import FileSaveAsDialog
 
 from .. import hub
@@ -75,22 +76,26 @@ class DbItem(QStandardItem):
         self.setText(name)
 
     def save(self : 'DesignItem') -> None:
-        if Path(self.path).parent() == '.':
-            #
-            self.path = hub.settings.prefs.file.save.dir + '/' + self.path
-        xw = QXmlStreamWriter(self.path)
-        xmlBegin(xw)
-        self.toXml(xw)
-        xmlEnd(xw)
+        if Path(self.path).parent == Path('.'):
+            self.saveAs()
+        else:
+            xw, file = saveBegin(self.path)
+            self.toXml(xw)
+            saveEnd(xw, file)
 
     def saveAs(self : 'DesignItem') -> None:
         dialog = FileSaveAsDialog(
             hub.main_window,
             self.__class__.__name__.replace('Item', '')
         )
-        if dialog.exec() == QDialog.Accepted:
-            # TODO complete
-            pass
+        result = dialog.exec()
+        if result == QDialog.DialogCode.Accepted:
+            selected_files = dialog.selectedFiles()
+            if selected_files:
+                new_path = selected_files[0]
+                print(f'Saving as: {new_path}')
+                self.setPath(new_path)
+                self.save()
 
     copy = master_copy
 
@@ -98,7 +103,6 @@ class LibraryItem(DbItem):
     FILE_EXT = LIB_EXT
 
     def toXml(self : 'LibraryItem', xw : QXmlStreamWriter) -> None:
-        xmlBegin(xw)
         xw.writeStartElement('Library')
         xw.writeAttribute('path', self.text())
         for i in range(self.rowCount()):
@@ -106,7 +110,6 @@ class LibraryItem(DbItem):
             symbol_scene = symbol_item.scene
             symbol_scene.toXml(xw)
         xw.writeEndElement()
-        xmlEnd(xw)
 
 class DesignItem(DbItem):
     FILE_EXT = DSN_EXT
@@ -130,7 +133,6 @@ class DesignItem(DbItem):
         self.appendRow(self.symbols)
 
     def toXml(self : 'DesignItem', xw : QXmlStreamWriter) -> None:
-        xmlBegin(xw)
         xw.writeStartElement('Design')
         xw.writeAttribute('path', self.text())
         xw.writeStartElement('Diagrams')
@@ -145,7 +147,6 @@ class DesignItem(DbItem):
             symbol_scene = symbol_item.scene
             symbol_scene.toXml(xw)
         xw.writeEndElement()
-        xmlEnd(xw)
 
 class DbModel(QStandardItemModel):
     designs   : QStandardItem
@@ -255,6 +256,9 @@ class DbModel(QStandardItemModel):
 
     def saveDb(self : 'DbModel', db_item: 'DbItem') -> None:
         db_item.save()
+
+    def saveAsDb(self : 'DbModel', db_item: 'DbItem') -> None:
+        db_item.saveAs()
 
     def closeDb(self : 'DbModel', db_item: 'DbItem') -> None:
         """Close a database and remove it from the model."""

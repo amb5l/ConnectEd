@@ -22,7 +22,7 @@ class FileSaveAsDialog(QFileDialog):
                 raise ValueError(f'Unknown type name: {type_name}')
         name_filter += '; All ConnectEd Files (*.ce*); All Files (*)'
         super().__init__(main_window)
-        self.setWindowTitle('Save As')
+        self.setWindowTitle(f'Save {type_name} As')
         self.setFileMode(QFileDialog.FileMode.AnyFile)
         self.setNameFilter(name_filter)
         self.setDefaultSuffix(default_suffix)
