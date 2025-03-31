@@ -64,7 +64,7 @@ class MdiArea(QMdiArea):
             if isinstance(w, DrawingSubWindow) \
             and isinstance(w.widget(), DrawingView) \
             and isinstance(w.widget().scene(), DrawingScene):
-                key = id(hub.db_model.getDbFromScene(w.widget().scene()))
+                key = id(hub.db_model.getDbItemFromScene(w.widget().scene()))
             action = Action(m, w.windowTitle(), None, None, False, False, w)
             action.triggered.connect(
                 lambda checked=False, sw=w: self._activateSubWindow(sw)

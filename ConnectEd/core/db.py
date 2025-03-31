@@ -7,12 +7,12 @@ __all__ = [
 from typing  import Optional
 from pathlib import Path
 
-from PyQt6.QtCore    import Qt, QXmlStreamWriter, QFile, QIODevice
+from PyQt6.QtCore    import Qt, QXmlStreamWriter
 from PyQt6.QtWidgets import QDialog
 from PyQt6.QtGui     import QStandardItemModel, QStandardItem
 
 from ..core    import LIB_EXT, DSN_EXT, copy as master_copy, \
-                      xmlBegin, xmlEnd, saveBegin, saveEnd
+                      saveBegin, saveEnd
 from ..widgets import FileSaveAsDialog
 
 from .. import hub
@@ -260,6 +260,20 @@ class DbModel(QStandardItemModel):
     def saveAsDb(self : 'DbModel', db_item: 'DbItem') -> None:
         db_item.saveAs()
 
+    def saveScene(self : 'DbModel', scene : 'DrawingScene') -> None:
+        db_item = self.getDbItemFromScene(scene)
+        if db_item:
+            db_item.save()
+        else:
+            raise ValueError(f"Unknown scene: {type(scene)}")
+
+    def saveAsScene(self : 'DbModel', scene : 'DrawingScene') -> None:
+        db_item = self.getDbItemFromScene(scene)
+        if db_item:
+            db_item.saveAs()
+        else:
+            raise ValueError(f"Unknown scene: {type(scene)}")
+
     def closeDb(self : 'DbModel', db_item: 'DbItem') -> None:
         """Close a database and remove it from the model."""
         # TODO offer to save if modified
@@ -274,7 +288,7 @@ class DbModel(QStandardItemModel):
         else:
             raise ValueError(f"Unknown database item type: {type(db_item)}")
 
-    def getDbFromScene(self : 'DbModel', scene : 'DrawingScene') -> 'DbItem':
+    def getDbItemFromScene(self : 'DbModel', scene : 'DrawingScene') -> 'DbItem':
         for i in range(self.designs.rowCount()):
             db_item = self.designs.child(i)
             for j in range(db_item.diagrams.rowCount()):

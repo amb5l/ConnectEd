@@ -18,6 +18,8 @@ class Actions:
 
         self.fileNewDesign    = Action( self._parent, 'Design'       , 'Create a new design'         , 'Ctrl+N'                        )
         self.fileNewLibrary   = Action( self._parent, 'Library'      , 'Create a new library'        , None                            )
+        self.fileSave         = Action( self._parent, 'Save'         , 'Save database'               , 'Ctrl+S'                        )
+        self.fileSaveAs       = Action( self._parent, 'Save As'      , 'Save database as'            , None                            )
         self.fileExit         = Action( self._parent, 'Exit'         , 'Exit the application'        , SK.Quit                         )
         self.editCancel       = Action( self._parent, 'Cancel'       , 'Cancel the current action'   , SK.Cancel                       )
         self.editComplete     = Action( self._parent, 'Complete'     , 'Complete the current action' , QKeySequence(Qt.Key.Key_Return) )
