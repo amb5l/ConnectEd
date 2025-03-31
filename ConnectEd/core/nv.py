@@ -13,17 +13,14 @@ __all__ = ['Settings']
 
 from types       import SimpleNamespace
 from typing      import Any, Dict, List, Union
-from collections import namedtuple
 
 from PyQt6.QtCore import QSettings, QPointF, QSizeF, Qt
 from PyQt6.QtGui  import QColor
 
-from .log import logger
-from .defs   import ORG_NAME, APP_NAME
-from .utils  import getDefaultPath
+from .log   import logger
+from .defs  import ORG_NAME, APP_NAME
+from .utils import getDefaultPath, value2str, str2value, MinMax
 
-
-MinMax = namedtuple('MinMax', ['min', 'max'])
 
 FACTORY_SETTINGS = {
     'startup': {
@@ -280,7 +277,7 @@ class Settings(SimpleNamespace):
             if value is not None:
                 logger.debug(f'loading setting: {qsettings.group()}/{key} = {value}')
                 try:
-                    setattr(ns, key, self._text2value(value))
+                    setattr(ns, key, str2value(value))
                 except (ValueError, AttributeError) as e:
                     logger.warning(f'Error loading setting {key}: {e}')
 
@@ -299,53 +296,7 @@ class Settings(SimpleNamespace):
                     qsettings.endGroup()
                 else:
                     logger.debug(f'saving setting: {qsettings.group()}/{key} = {value}')
-                    qsettings.setValue(key, self._value2text(value))
-
-    def _text2value(self : 'Settings', text_value : str) -> Any:
-        """Convert a text value from QSettings to the appropriate Python type."""
-        if not isinstance(text_value, str):
-            return text_value
-        try:
-            typeName, valueStr = text_value.split(':', 1)
-        except ValueError:
-            # If there's no type prefix, return as is
-            return text_value
-        match typeName:
-            case 'NoneType'   : return None
-            case 'bytes'      : return bytes.fromhex(valueStr)
-            case 'str'        : return valueStr
-            case 'int'        : return int(valueStr)
-            case 'float'      : return float(valueStr)
-            case 'bool'       : return valueStr == 'True'
-            case 'MinMax'     : return MinMax(*map(float, valueStr[1:-1].split(',')))
-            case 'QPointF'    : return QPointF(*map(float, valueStr[1:-1].split(',')))
-            case 'QSizeF'     : return QSizeF(*map(float, valueStr[1:-1].split(',')))
-            case 'QColor'     : return QColor.fromRgba(int(valueStr,0))
-            case 'PenStyle'   : return Qt.PenStyle[valueStr]
-            case 'BrushStyle' : return Qt.BrushStyle[valueStr]
-            case _:
-                raise ValueError(f'Unsupported type: {typeName}')
-
-    def _value2text(self : 'Settings', value : Any) -> str:
-        """Convert a Python value to a text representation for QSettings."""
-        typeName = type(value).__name__
-        match typeName:
-            case 'NoneType'   : valueStr = 'None'
-            case 'bytes'      : valueStr = value.hex()
-            case 'str'        : valueStr = value
-            case 'int'        : valueStr = str(value)
-            case 'float'      : valueStr = str(value)
-            case 'bool'       : valueStr = str(value)
-            case 'MinMax'     : valueStr = f'({value.min},{value.max})'
-            case 'QPointF'    : valueStr = f'({value.x()},{value.y()})'
-            case 'QSize'      : valueStr = f'({value.width()},{value.height()})'
-            case 'QSizeF'     : valueStr = f'({value.width()},{value.height()})'
-            case 'QColor'     : valueStr = hex(value.rgba())
-            case 'PenStyle'   : valueStr = str(value).replace('PenStyle.', '')
-            case 'BrushStyle' : valueStr = str(value).replace('BrushStyle.', '')
-            case _ :
-                raise ValueError(f'Unsupported type: {typeName}')
-        return typeName + ':' + valueStr
+                    qsettings.setValue(key, value2str(value))
 
     def _dump(
         self   : 'Settings',
@@ -360,8 +311,8 @@ class Settings(SimpleNamespace):
                     lines.append(f'{indent}{name}/{k}:')
                     self._dump(name + '/' + k, v, lines, indent + '  ')
                 else:
-                    lines.append(f'{indent}{name}/{k} = {self._value2text(v)}')
+                    lines.append(f'{indent}{name}/{k} = {value2str(v)}')
         else:
-            lines.append(f'{indent}{name} = {self._value2text(x)}')
+            lines.append(f'{indent}{name} = {value2str(x)}')
 
 settings = Settings()

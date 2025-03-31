@@ -14,3 +14,4 @@
 - rectangle move/slide can end up off grid
 - apply default path to new databases
 - review global imports
+- resize graphical artifacts
