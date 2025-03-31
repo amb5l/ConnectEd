@@ -15,7 +15,7 @@ class Paper(RectElement):
     size_name : str
 
     def __init__(self : 'Paper', size : str):
-        super().__init__(QPointF(0, 0), outline=False)
+        super().__init__(QPointF(0, 0), pen_spec=False)
         self.setZValue(Z_PAPER)
         self.setSize(size)
 

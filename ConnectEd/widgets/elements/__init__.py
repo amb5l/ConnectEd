@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from enum        import Enum
-from typing      import Optional
+from typing      import Optional, Union
 from collections import namedtuple
 from types       import SimpleNamespace
 
@@ -50,32 +50,31 @@ class KeyPoint(Enum):
     BOTTOM_CENTER = KeyPointHV(0.5, 1.0)
     BOTTOM_RIGHT  = KeyPointHV(1.0, 1.0)
 
-class ElementMixin:
-    def initElement(self) -> None:
-        super().__init__()
+class Element:
+    """Base class for all elements."""
+    def __init__(
+        self,
+        pen_spec   : Union[ bool, PenSpec   ] = False,
+        brush_spec : Union[ bool, BrushSpec ] = False,
+        text_spec  : Union[ bool, TextSpec  ] = False
+    ) -> None:
+        if pen_spec:
+            self.pen_spec = PenSpec(None, None, None) \
+                if pen_spec is True else pen_spec
+        if brush_spec:
+            self.brush_spec = BrushSpec(None, None) \
+                if brush_spec is True else brush_spec
+        if text_spec:
+            self.text_spec = TextSpec(None, None, None, None, None, None) \
+                if text_spec is True else text_spec
         f = QGraphicsItem.GraphicsItemFlag
-        self.setFlag( f.ItemIsSelectable                     , False )
-        self.setFlag( f.ItemIsMovable                        , True  )
-        self.setFlag( f.ItemIsFocusable                      , True  )
-        self.setFlag( f.ItemClipsToShape                     , False )
-        self.setFlag( f.ItemClipsChildrenToShape             , False )
-        self.setFlag( f.ItemIgnoresTransformations           , False )
-        self.setFlag( f.ItemIgnoresParentOpacity             , False )
-        self.setFlag( f.ItemDoesntPropagateOpacityToChildren , False )
-        self.setFlag( f.ItemStacksBehindParent               , False )
-        self.setFlag( f.ItemUsesExtendedStyleOption          , False )
-        self.setFlag( f.ItemHasNoContents                    , False )
         self.setFlag( f.ItemSendsGeometryChanges             , True  )
-        self.setFlag( f.ItemAcceptsInputMethod               , True  )
-        self.setFlag( f.ItemNegativeZStacksBehindParent      , False )
-        self.setFlag( f.ItemIsPanel                          , False )
         self.setFlag( f.ItemSendsScenePositionChanges        , True  )
-        self.setFlag( f.ItemContainsChildrenInShape          , True  )
         self.setCacheMode(QGraphicsItem.CacheMode.DeviceCoordinateCache)
 
     def getWIP(self) -> bool:
         return False if self.scene() is None else \
-            self == self.scene().wip
+            self in self.scene().wip
 
     def getPrefsTheme(self) -> SimpleNamespace:
         element_name = self.__class__.__name__.lower()
@@ -136,7 +135,9 @@ class ElementMixin:
     ) -> None:
         self.text_spec = text_spec
 
-    def fontFromSpec(self) -> QFont:
+    def fontFromSpec(self) -> QFont | None: # TODO: return default font?
+        if not hasattr(self, 'text_spec'):
+            return None
         item_name = self.__class__.__name__.lower()
         prefs = getattr(hub.settings.prefs.display.elements, item_name).font
         theme = getattr(hub.settings.theme, item_name).font
@@ -161,12 +162,7 @@ class ElementMixin:
                 self.text_spec.italic
         )
 
-    def setAnchor(self, anchor : KeyPoint = KeyPoint.TOP_LEFT) -> None:
-        self.anchor = anchor
-
-    # TODO: base toXml method (SER_PROPS?)
-
-class RectElement(QGraphicsRectItem, ElementMixin):
+class RectElement(QGraphicsRectItem, Element):
     """Base class for rectangle items."""
 
     MIN_SIZE = QSizeF(1.0, 1.0)
@@ -176,14 +172,15 @@ class RectElement(QGraphicsRectItem, ElementMixin):
 
     def __init__(
         self,
-        pos     : QPointF,
-        size    : QSizeF = QSizeF(0, 0),
-        anchor  : KeyPoint = KeyPoint.TOP_LEFT,
-        outline : bool = True,
-        fill    : bool = True
+        pos        : QPointF,
+        size       : QSizeF = QSizeF(0, 0),
+        anchor     : KeyPoint = KeyPoint.TOP_LEFT,
+        pen_spec   : Union[ bool, PenSpec   ] = True,
+        brush_spec : Union[ bool, BrushSpec ] = True,
+        text_spec  : Union[ bool, TextSpec  ] = False
     ) -> None:
-        super().__init__()
-        self.initElement()
+        QGraphicsRectItem.__init__(self)
+        Element.__init__(self, pen_spec, brush_spec, text_spec)
         self.grips = {p: Grip(self, p) for p in KeyPoint if p != KeyPoint.CENTER}
         self.anchor = anchor
         self.setPosSize(pos, size)
@@ -191,13 +188,12 @@ class RectElement(QGraphicsRectItem, ElementMixin):
         self.setBrush(QBrush(Qt.BrushStyle.NoBrush))
         self.setZValue(self.Z)
         self.setAnchor(anchor)
-        if outline:
-            self.setPenSpec()
-        if fill:
-            self.setBrushSpec()
         self.updateGripsPosition()
         self.updateGripsVisibility()
         self.updateGripsZValue()
+
+    def setAnchor(self, anchor : KeyPoint = KeyPoint.TOP_LEFT) -> None:
+        self.anchor = anchor
 
     def setPosSize(self, pos : QPointF, size : QSizeF) -> None:
         self.setPos(pos)
@@ -300,21 +296,27 @@ class RectElement(QGraphicsRectItem, ElementMixin):
             self.updateGripsVisibility()
         return super().itemChange(change, value)
 
-class TextItem(QGraphicsTextItem, ElementMixin):
+class TextItem(QGraphicsTextItem, Element):
     """Base class for text items."""
 
     anchor : KeyPoint
 
     def __init__(
         self,
-        text   : str = '',
-        anchor : KeyPoint = KeyPoint.TOP_LEFT
+        text       : str = '',
+        anchor     : KeyPoint = KeyPoint.TOP_LEFT,
+        pen_spec   : Union[ bool, PenSpec   ] = False,
+        brush_spec : Union[ bool, BrushSpec ] = False,
+        text_spec  : Union[ bool, TextSpec  ] = True
     ) -> None:
-        super().__init__(text)
-        self.initElement()
+        TextItem.__init__(self, text)
+        Element.__init__(self, pen_spec, brush_spec, text_spec)
         self.setZValue(self.Z)
         self.setAnchor(anchor)
         self.setTextSpec()
+
+    def setAnchor(self, anchor : KeyPoint = KeyPoint.TOP_LEFT) -> None:
+        self.anchor = anchor
 
     def boundingRect(self) -> QRectF:
         rect = super().boundingRect()

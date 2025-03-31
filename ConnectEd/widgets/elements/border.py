@@ -19,7 +19,7 @@ class Border(RectElement):
         paper    : 'Paper',
         margin   : Optional[float] = None
     ) -> None:
-        super().__init__(QPointF(0, 0), fill=False)
+        super().__init__(QPointF(0, 0), brush_spec=False)
         self.paper = paper
         if margin is None:
             margin = hub.settings.defaults.margin
