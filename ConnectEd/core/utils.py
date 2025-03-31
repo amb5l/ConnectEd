@@ -4,8 +4,8 @@ __all__ = [
     'getDefaultPath',
     'value2str',
     'copy',
-    'xmlBegin',
-    'xmlEnd',
+    'toXmlBegin',
+    'toXmlEnd',
     'saveBegin',
     'saveEnd'
 ]
@@ -77,32 +77,32 @@ def value2str(v : Any) -> str:
             raise ValueError(f'Unsupported type: {typeName}')
     return typeName + ':' + valueStr
 
-def xmlBegin(xw : QXmlStreamWriter) -> None:
+def toXmlBegin(xw : QXmlStreamWriter) -> None:
     xw.setAutoFormatting(True)
     xw.setAutoFormattingIndent(2)
     xw.writeStartDocument()
 
-def xmlEnd(xw : QXmlStreamWriter) -> None:
+def toXmlEnd(xw : QXmlStreamWriter) -> None:
     xw.writeEndDocument()
 
 def saveBegin(path : str) -> tuple[QXmlStreamWriter, QFile]:
     file = QFile(path)
     if file.open(QIODevice.OpenModeFlag.WriteOnly | QIODevice.OpenModeFlag.Text):
         xw = QXmlStreamWriter(file)
-        xmlBegin(xw)
+        toXmlBegin(xw)
         xw.writeStartElement('ConnectEd') # TODO: version
         return xw, file
 
 def saveEnd(xw : QXmlStreamWriter, file : QFile) -> None:
     xw.writeEndElement() # ConnectEd
-    xmlEnd(xw)
+    toXmlEnd(xw)
     file.close()
 
 def copy(instance : Any) -> None:
     buffer = QByteArray()
     xw = QXmlStreamWriter(buffer)
-    xmlBegin(xw)
+    toXmlBegin(xw)
     instance.toXml(xw)
-    xmlEnd(xw)
+    toXmlEnd(xw)
     clipboard = QApplication.clipboard()
     clipboard.setText(buffer.data().decode('utf-8'))

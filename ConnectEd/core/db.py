@@ -93,7 +93,6 @@ class DbItem(QStandardItem):
             selected_files = dialog.selectedFiles()
             if selected_files:
                 new_path = selected_files[0]
-                print(f'Saving as: {new_path}')
                 self.setPath(new_path)
                 self.save()
 
