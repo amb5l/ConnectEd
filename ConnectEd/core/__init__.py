@@ -9,5 +9,7 @@ from .utils    import *
 __all__ += utils.__all__
 from .nv import *
 __all__ += nv.__all__
+from .xml import *
+__all__ += xml.__all__
 from .db import *
 __all__ += db.__all__

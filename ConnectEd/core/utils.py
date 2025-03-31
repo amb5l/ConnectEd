@@ -3,11 +3,7 @@ __all__ = [
     'check',
     'getDefaultPath',
     'value2str',
-    'copy',
-    'toXmlBegin',
-    'toXmlEnd',
-    'saveBegin',
-    'saveEnd'
+    'str2value'
 ]
 
 import os
@@ -109,33 +105,3 @@ def str2value(s : str) -> Any:
         case 'KeyPoint'   : return KeyPoint[valueStr]
         case _:
             raise ValueError(f'Unsupported type: {typeName}')
-
-def toXmlBegin(xw : QXmlStreamWriter) -> None:
-    xw.setAutoFormatting(True)
-    xw.setAutoFormattingIndent(2)
-    xw.writeStartDocument()
-
-def toXmlEnd(xw : QXmlStreamWriter) -> None:
-    xw.writeEndDocument()
-
-def saveBegin(path : str) -> tuple[QXmlStreamWriter, QFile]:
-    file = QFile(path)
-    if file.open(QIODevice.OpenModeFlag.WriteOnly | QIODevice.OpenModeFlag.Text):
-        xw = QXmlStreamWriter(file)
-        toXmlBegin(xw)
-        xw.writeStartElement('ConnectEd') # TODO: version
-        return xw, file
-
-def saveEnd(xw : QXmlStreamWriter, file : QFile) -> None:
-    xw.writeEndElement() # ConnectEd
-    toXmlEnd(xw)
-    file.close()
-
-def copy(instance : Any) -> None:
-    buffer = QByteArray()
-    xw = QXmlStreamWriter(buffer)
-    toXmlBegin(xw)
-    instance.toXml(xw)
-    toXmlEnd(xw)
-    clipboard = QApplication.clipboard()
-    clipboard.setText(buffer.data().decode('utf-8'))
