@@ -5,13 +5,14 @@ from typing import Optional
 from PyQt6.QtCore    import QXmlStreamWriter
 from PyQt6.QtWidgets import QGraphicsScene, QGraphicsItem
 
-from ..items import Extents, Grid, Grip
+from ..elements import Extents, Grid, Grip
 
 from ... import hub
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ...core import Database
+
 
 class DrawingScene(QGraphicsScene):
     # class variables

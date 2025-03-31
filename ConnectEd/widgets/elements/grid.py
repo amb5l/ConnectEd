@@ -6,8 +6,8 @@ from PyQt6.QtCore    import Qt, QPointF, QRectF, QXmlStreamWriter
 from PyQt6.QtWidgets import QGraphicsItem, QStyleOptionGraphicsItem, QWidget
 from PyQt6.QtGui     import QPainter, QPen
 
-from ...core import Z_GRID
-from ..items import Extents
+from ...core    import Z_GRID
+from ..elements import Extents
 
 from ... import hub
 

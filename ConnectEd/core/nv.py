@@ -50,7 +50,7 @@ FACTORY_SETTINGS = {
                 'left'   : 2,
                 'right'  : 2
             },
-            'items': {
+            'elements': {
                 'extents': {
                     'line': {
                         'width': 0,

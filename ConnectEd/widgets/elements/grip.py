@@ -31,7 +31,7 @@ class Grip(QGraphicsItem):
         return self.parentItem().pos() + self.pos()
 
     def boundingRect(self) -> QRectF:
-        size = hub.settings.prefs.display.items.selected.grip.size
+        size = hub.settings.prefs.display.elements.selected.grip.size
         return QRectF(-size/2, -size/2, size, size)
 
     def shape(self) -> QPainterPath:

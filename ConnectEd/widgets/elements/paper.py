@@ -6,10 +6,10 @@ from ...core import Z_PAPER, value2str
 
 from ... import hub
 
-from . import RectItem
+from . import RectElement
 
 
-class Paper(RectItem):
+class Paper(RectElement):
     Z = Z_PAPER
 
     size_name : str

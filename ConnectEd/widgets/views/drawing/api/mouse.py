@@ -1,6 +1,6 @@
 from PyQt6.QtCore import Qt
 
-from ....items import Rectangle, Grip
+from ....elements import Rectangle, Grip
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:

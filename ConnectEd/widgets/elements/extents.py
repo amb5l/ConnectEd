@@ -32,12 +32,12 @@ class Extents(QGraphicsRectItem):
     ) -> None:
         painter.setPen(QPen(
             QColor(hub.settings.theme.extents.line),
-            hub.settings.prefs.display.items.extents.line.width,
-            hub.settings.prefs.display.items.extents.line.style
+            hub.settings.prefs.display.elements.extents.line.width,
+            hub.settings.prefs.display.elements.extents.line.style
         ))
         painter.setBrush(QBrush(
             QColor(hub.settings.theme.extents.fill),
-            hub.settings.prefs.display.items.extents.fill
+            hub.settings.prefs.display.elements.extents.fill
         ))
         super().paint(painter, option, widget)
 

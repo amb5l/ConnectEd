@@ -5,11 +5,11 @@ from typing import Optional
 from PyQt6.QtCore    import QPointF, QSizeF, QXmlStreamWriter
 
 from ...core import Z_TEMPLATE, value2str
-from .       import RectItem, Paper
+from .       import RectElement, Paper
 
 from ... import hub
 
-class Border(RectItem):
+class Border(RectElement):
     Z = Z_TEMPLATE
 
     margin : float

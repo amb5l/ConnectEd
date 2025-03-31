@@ -50,8 +50,8 @@ class KeyPoint(Enum):
     BOTTOM_CENTER = KeyPointHV(0.5, 1.0)
     BOTTOM_RIGHT  = KeyPointHV(1.0, 1.0)
 
-class ItemMixin:
-    def initItem(self) -> None:
+class ElementMixin:
+    def initElement(self) -> None:
         super().__init__()
         f = QGraphicsItem.GraphicsItemFlag
         self.setFlag( f.ItemIsSelectable                     , False )
@@ -78,16 +78,16 @@ class ItemMixin:
             self == self.scene().wip
 
     def getPrefsTheme(self) -> SimpleNamespace:
-        item_name = self.__class__.__name__.lower()
+        element_name = self.__class__.__name__.lower()
         if self.isSelected():
-            prefs = hub.settings.prefs.display.items.selected
+            prefs = hub.settings.prefs.display.elements.selected
             theme = hub.settings.theme.selected
         elif self.getWIP():
-            prefs = hub.settings.prefs.display.items.wip
+            prefs = hub.settings.prefs.display.elements.wip
             theme = hub.settings.theme.wip
         else:
-            prefs = getattr(hub.settings.prefs.display.items, item_name)
-            theme = getattr(hub.settings.theme, item_name)
+            prefs = getattr(hub.settings.prefs.display.elements, element_name)
+            theme = getattr(hub.settings.theme, element_name)
         return prefs, theme
 
     def setPenSpec(
@@ -102,7 +102,7 @@ class ItemMixin:
         prefs, theme = self.getPrefsTheme()
         s = self.pen_spec
         color = theme.line if s.color is None else s.color
-        color.setAlpha(hub.settings.prefs.display.items.alpha)
+        color.setAlpha(hub.settings.prefs.display.elements.alpha)
         width = prefs.line.width if s.width is None else s.width
         style = prefs.line.style if s.style is None else s.style
         return QPen(color, width, style)
@@ -126,7 +126,7 @@ class ItemMixin:
         prefs, theme = self.getPrefsTheme()
         s = self.brush_spec
         color = theme.fill if s.color is None else s.color
-        color.setAlpha(hub.settings.prefs.display.items.alpha)
+        color.setAlpha(hub.settings.prefs.display.elements.alpha)
         style = prefs.fill if s.style is None else s.style
         return QBrush(color, style)
 
@@ -138,7 +138,7 @@ class ItemMixin:
 
     def fontFromSpec(self) -> QFont:
         item_name = self.__class__.__name__.lower()
-        prefs = getattr(hub.settings.prefs.display.items, item_name).font
+        prefs = getattr(hub.settings.prefs.display.elements, item_name).font
         theme = getattr(hub.settings.theme, item_name).font
         self.setDefaultTextColor(
             theme.color if self.text_spec.color is None else
@@ -166,7 +166,7 @@ class ItemMixin:
 
     # TODO: base toXml method (SER_PROPS?)
 
-class RectItem(QGraphicsRectItem, ItemMixin):
+class RectElement(QGraphicsRectItem, ElementMixin):
     """Base class for rectangle items."""
 
     MIN_SIZE = QSizeF(1.0, 1.0)
@@ -183,7 +183,7 @@ class RectItem(QGraphicsRectItem, ItemMixin):
         fill    : bool = True
     ) -> None:
         super().__init__()
-        self.initItem()
+        self.initElement()
         self.grips = {p: Grip(self, p) for p in KeyPoint if p != KeyPoint.CENTER}
         self.anchor = anchor
         self.setPosSize(pos, size)
@@ -269,7 +269,7 @@ class RectItem(QGraphicsRectItem, ItemMixin):
 
     def boundingRect(self) -> QRectF:
         w = max(
-            self.penWidth(), hub.settings.prefs.display.items.selected.grip.size
+            self.penWidth(), hub.settings.prefs.display.elements.selected.grip.size
         )
         return self.rect().adjusted(-w/2, -w/2, w/2, w/2)
 
@@ -300,7 +300,7 @@ class RectItem(QGraphicsRectItem, ItemMixin):
             self.updateGripsVisibility()
         return super().itemChange(change, value)
 
-class TextItem(QGraphicsTextItem, ItemMixin):
+class TextItem(QGraphicsTextItem, ElementMixin):
     """Base class for text items."""
 
     anchor : KeyPoint
@@ -311,7 +311,7 @@ class TextItem(QGraphicsTextItem, ItemMixin):
         anchor : KeyPoint = KeyPoint.TOP_LEFT
     ) -> None:
         super().__init__(text)
-        self.initItem()
+        self.initElement()
         self.setZValue(self.Z)
         self.setAnchor(anchor)
         self.setTextSpec()
@@ -347,7 +347,7 @@ class TextItem(QGraphicsTextItem, ItemMixin):
 
 __all__ = []
 
-# system items
+# system elements
 from .extents import Extents
 __all__ += extents.__all__
 from .grid import Grid
@@ -357,7 +357,7 @@ __all__ += paper.__all__
 from .border import Border
 __all__ += border.__all__
 
-# user items
+# user elements
 from .rectangle import Rectangle
 __all__ += rectangle.__all__
 from .symbol_instance import SymbolInstance

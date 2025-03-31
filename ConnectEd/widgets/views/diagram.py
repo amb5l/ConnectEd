@@ -4,9 +4,9 @@ from typing import Optional
 
 from PyQt6.QtWidgets import QMdiArea
 
-from ..scenes import DiagramScene
-from ..items  import Paper, Border
-from .drawing import DrawingView, DrawingSubWindow
+from ..scenes   import DiagramScene
+from ..elements import Paper, Border
+from .drawing   import DrawingView, DrawingSubWindow
 
 from ... import hub
 

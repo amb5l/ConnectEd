@@ -4,10 +4,10 @@ from PyQt6.QtCore import QPointF, QSizeF
 
 from ...core import Z_DRAWING
 
-from . import RectItem, KeyPoint
+from . import RectElement, KeyPoint
 
 
-class Rectangle(RectItem):
+class Rectangle(RectElement):
     Z = Z_DRAWING
 
     def __init__(
