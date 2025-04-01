@@ -1,6 +1,6 @@
 __all__ = ['Rectangle']
 
-from PyQt6.QtCore import QPointF, QSizeF, QXmlStreamWriter
+from PyQt6.QtCore import QPointF, QSizeF
 
 from ...core import Z_DRAWING, value2str
 
@@ -17,10 +17,3 @@ class Rectangle(RectElement):
         anchor : KeyPoint = KeyPoint.TOP_LEFT
     ) -> None:
         super().__init__(pos, size, anchor)
-
-    def toXml(self : 'Rectangle', xw : QXmlStreamWriter) -> None:
-        xw.writeStartElement('Rectangle')
-        xw.writeAttribute('pos', value2str(self.pos()))
-        xw.writeAttribute('size', value2str(self.rect().size()))
-        xw.writeAttribute('anchor', value2str(self.anchor))
-        xw.writeEndElement()

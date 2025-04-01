@@ -4,13 +4,13 @@ from typing      import Optional, Union
 from collections import namedtuple
 from types       import SimpleNamespace
 
-from PyQt6.QtCore    import Qt, QPointF, QRectF, QSizeF, QXmlStreamWriter
+from PyQt6.QtCore    import Qt, QPointF, QRectF, QSizeF, \
+                            QXmlStreamWriter, QXmlStreamReader
 from PyQt6.QtGui     import QPainter, QPen, QBrush, QColor, QFont, QPainterPath
-from PyQt6.QtWidgets import \
-    QGraphicsItem, QGraphicsRectItem, QGraphicsTextItem, \
-    QStyleOptionGraphicsItem, QWidget
+from PyQt6.QtWidgets import QStyleOptionGraphicsItem, QWidget, \
+                            QGraphicsItem, QGraphicsRectItem, QGraphicsTextItem
 
-from ...core import value2str
+from ...core import value2str, str2value
 
 from .grip import Grip
 
@@ -95,6 +95,9 @@ class Element:
     ) -> None:
         self.pen_spec = pen_spec
 
+    def getPenSpec(self) -> PenSpec:
+        return self.pen_spec
+
     def penFromSpec(self) -> QPen:
         if not hasattr(self, 'pen_spec'):
             return QPen(Qt.PenStyle.NoPen)
@@ -119,6 +122,9 @@ class Element:
     ) -> None:
         self.brush_spec = brush_spec
 
+    def getBrushSpec(self) -> BrushSpec:
+        return self.brush_spec
+
     def brushFromSpec(self) -> QBrush:
         if not hasattr(self, 'brush_spec'):
             return QBrush(Qt.BrushStyle.NoBrush)
@@ -134,6 +140,9 @@ class Element:
         text_spec : TextSpec = TextSpec()
     ) -> None:
         self.text_spec = text_spec
+
+    def getTextSpec(self) -> TextSpec:
+        return self.text_spec
 
     def fontFromSpec(self) -> QFont | None: # TODO: return default font?
         if not hasattr(self, 'text_spec'):
@@ -162,8 +171,34 @@ class Element:
                 self.text_spec.italic
         )
 
+    def toXml(self, xw : QXmlStreamWriter) -> None:
+        xw.writeStartElement(self.__class__.__name__)
+        for attr, setter_getter in self.XML_ATTRIBUTES.items():
+            _, getter = setter_getter  # Unpack just 2 items
+            if hasattr(self, attr):
+                xw.writeAttribute(attr, value2str(getter(self)))
+        xw.writeEndElement()
+
+    @classmethod
+    def fromXml(cls, xr: QXmlStreamReader) -> 'RectElement':
+        instance = cls()
+        for attr, setter_getter in cls.XML_ATTRIBUTES.items():
+            setter, _ = setter_getter  # Unpack just 2 items
+            if xr.attributes().hasAttribute(attr):
+                setter(instance, str2value(xr.attributes().value(attr)))
+        xr.readNext()
+        return instance
+
 class RectElement(QGraphicsRectItem, Element):
     """Base class for rectangle items."""
+    XML_ATTRIBUTES = {
+        'pos'        : ( lambda self, value: self.setPos       (value) , lambda self: self.getPos       () ),
+        'size'       : ( lambda self, value: self.setSize      (value) , lambda self: self.getSize      () ),
+        'anchor'     : ( lambda self, value: self.setAnchor    (value) , lambda self: self.getAnchor    () ),
+        'pen_spec'   : ( lambda self, value: self.setPenSpec   (value) , lambda self: self.getPenSpec   () ),
+        'brush_spec' : ( lambda self, value: self.setBrushSpec (value) , lambda self: self.getBrushSpec () ),
+        'text_spec'  : ( lambda self, value: self.setTextSpec  (value) , lambda self: self.getTextSpec  () )
+    }
 
     MIN_SIZE = QSizeF(1.0, 1.0)
 
@@ -172,7 +207,7 @@ class RectElement(QGraphicsRectItem, Element):
 
     def __init__(
         self,
-        pos        : QPointF,
+        pos        : QPointF = QPointF(0, 0),
         size       : QSizeF = QSizeF(0, 0),
         anchor     : KeyPoint = KeyPoint.TOP_LEFT,
         pen_spec   : Union[ bool, PenSpec   ] = True,
@@ -192,8 +227,20 @@ class RectElement(QGraphicsRectItem, Element):
         self.updateGripsVisibility()
         self.updateGripsZValue()
 
+    def getPos(self) -> QPointF:
+        return self.pos()
+
+    def setSize(self, size : QSizeF) -> None:
+        self.setRect(0, 0, size.width(), size.height())
+
+    def getSize(self) -> QSizeF:
+        return self.rect().size()
+
     def setAnchor(self, anchor : KeyPoint = KeyPoint.TOP_LEFT) -> None:
         self.anchor = anchor
+
+    def getAnchor(self) -> KeyPoint:
+        return self.anchor
 
     def setPosSize(self, pos : QPointF, size : QSizeF) -> None:
         self.setPos(pos)
@@ -264,8 +311,11 @@ class RectElement(QGraphicsRectItem, Element):
         return rect
 
     def boundingRect(self) -> QRectF:
+        print('self.penWidth()', self.penWidth(), type(self.penWidth()))
+        print('hub.settings.prefs.display.elements.selected.grip.size', hub.settings.prefs.display.elements.selected.grip.size, type(hub.settings.prefs.display.elements.selected.grip.size))
         w = max(
-            self.penWidth(), hub.settings.prefs.display.elements.selected.grip.size
+            self.penWidth(),
+            hub.settings.prefs.display.elements.selected.grip.size
         )
         return self.rect().adjusted(-w/2, -w/2, w/2, w/2)
 
@@ -298,19 +348,30 @@ class RectElement(QGraphicsRectItem, Element):
 
 class TextItem(QGraphicsTextItem, Element):
     """Base class for text items."""
+    XML_ATTRIBUTES = {
+    #   attribute        setter                                          getter
+        'text'       : ( lambda self, value: self.setText      (value) , lambda self: self.getText      () ),
+        'pos'        : ( lambda self, value: self.setPos       (value) , lambda self: self.getPos       () ),
+        'anchor'     : ( lambda self, value: self.setAnchor    (value) , lambda self: self.getAnchor    () ),
+        'pen_spec'   : ( lambda self, value: self.setPenSpec   (value) , lambda self: self.getPenSpec   () ),
+        'brush_spec' : ( lambda self, value: self.setBrushSpec (value) , lambda self: self.getBrushSpec () ),
+        'text_spec'  : ( lambda self, value: self.setTextSpec  (value) , lambda self: self.getTextSpec  () )
+    }
 
     anchor : KeyPoint
 
     def __init__(
         self,
         text       : str = '',
+        pos        : QPointF = QPointF(0, 0),
         anchor     : KeyPoint = KeyPoint.TOP_LEFT,
         pen_spec   : Union[ bool, PenSpec   ] = False,
         brush_spec : Union[ bool, BrushSpec ] = False,
         text_spec  : Union[ bool, TextSpec  ] = True
     ) -> None:
-        TextItem.__init__(self, text)
+        QGraphicsTextItem.__init__(self, text)
         Element.__init__(self, pen_spec, brush_spec, text_spec)
+        self.setPos(pos)
         self.setZValue(self.Z)
         self.setAnchor(anchor)
         self.setTextSpec()
@@ -367,3 +428,7 @@ __all__ += symbol_instance.__all__
 from .block import Block
 __all__ += block.__all__
 
+element_class_dict = {}
+for class_name in __all__:
+    element_class_dict[class_name] = globals()[class_name]
+__all__ += ['element_class_dict']

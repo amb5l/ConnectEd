@@ -39,6 +39,10 @@ class DbExplorer(TreeView):
         a.saveAsDb.triggered.connect(lambda: self.saveAsDb(self.item))
         a.closeDb = QAction('Close', self)
         a.closeDb.triggered.connect(lambda: self.closeDb(self.item))
+        a.copy = QAction('Copy', self)
+        a.copy.triggered.connect(lambda: self.copy(self.item))
+        a.paste = QAction('Paste', self)
+        a.paste.triggered.connect(lambda: self.paste(self.item))
 
     def wheelEvent(self, event: QWheelEvent) -> None:
         """Handle mouse wheel events to adjust font size when Ctrl is pressed."""
@@ -81,37 +85,33 @@ class DbExplorer(TreeView):
         if index.isValid():
             self.item = self.model().itemFromIndex(index)
             item = self.model().itemFromIndex(index)
-            parent_item = item.parent()
-            grandparent_item = None if parent_item is None else \
-                parent_item.parent()
-            if item.text() == 'Designs':
-                # item is Designs collection
-                menu.addAction(self.actions.newItem)
-            elif item.text() == 'Libraries':
-                # item is Libraries collection
-                menu.addAction(self.actions.newItem)
-            elif parent_item and parent_item.text() == 'Designs':
-                # item is a design
-                menu.addAction(self.actions.saveDb)
-                menu.addAction(self.actions.saveAsDb)
-                menu.addAction(self.actions.closeDb)
-            elif parent_item and parent_item.text() == 'Libraries':
-                # item is a library
-                menu.addAction(self.actions.newItem)
-                menu.addAction(self.actions.saveDb)
-                menu.addAction(self.actions.saveAsDb)
-                menu.addAction(self.actions.closeDb)
-            elif item.text() == 'Diagrams':
-                # item is a Design's Diagrams collection
-                menu.addAction(self.actions.newItem)
-            elif parent_item.text() == 'Diagrams':
-                # item is a Diagram
-                menu.addAction(self.actions.editDrawing)
-                menu.addAction(self.actions.newWindow)
-            elif grandparent_item.text() == 'Libraries':
-                # item is a symbol
-                menu.addAction(self.actions.editDrawing)
-                menu.addAction(self.actions.newWindow)
+            match hub.db_model.getItemTypeStr(item):
+                case 'Designs':
+                    menu.addAction(self.actions.newItem)
+                case 'Libraries':
+                    menu.addAction(self.actions.newItem)
+                case 'Design':
+                    menu.addAction(self.actions.saveDb)
+                    menu.addAction(self.actions.saveAsDb)
+                    menu.addAction(self.actions.closeDb)
+                case 'Library':
+                    menu.addAction(self.actions.newItem)
+                    menu.addAction(self.actions.saveDb)
+                    menu.addAction(self.actions.saveAsDb)
+                    menu.addAction(self.actions.closeDb)
+                case 'Diagrams':
+                    menu.addAction(self.actions.newItem)
+                case 'Symbol Cache':
+                    menu.addAction(self.actions.newItem)
+                case 'Diagram':
+                    menu.addAction(self.actions.editDrawing)
+                    menu.addAction(self.actions.newWindow)
+                case 'Symbol':
+                    menu.addAction(self.actions.editDrawing)
+                    menu.addAction(self.actions.newWindow)
+            menu.addSeparator()
+            menu.addAction(self.actions.copy)
+            menu.addAction(self.actions.paste)
             menu.addSeparator()
         menu.addAction(self.actions.increaseTextSize)
         menu.addAction(self.actions.decreaseTextSize)
@@ -134,3 +134,9 @@ class DbExplorer(TreeView):
 
     def closeDb(self : 'DbExplorer', item : QStandardItem) -> None:
         hub.db_model.closeDb(item)
+
+    def copy(self : 'DbExplorer', item : QStandardItem) -> None:
+        hub.db_model.copy(item)
+
+    def paste(self : 'DbExplorer', item : QStandardItem) -> None:
+        hub.db_model.paste(item)

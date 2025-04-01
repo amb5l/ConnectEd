@@ -2,43 +2,54 @@ __all__ = ['Border']
 
 from typing import Optional
 
-from PyQt6.QtCore    import QPointF, QSizeF, QXmlStreamWriter
+from PyQt6.QtCore import QPointF, QSizeF
 
-from ...core import Z_TEMPLATE, value2str
-from .       import RectElement, Paper
+from ...core import Z_TEMPLATE
+from .       import Paper
 
 from ... import hub
 
-class Border(RectElement):
+class Border(Paper):
+    XML_ATTRIBUTES = Paper.XML_ATTRIBUTES | {
+        'margin'     : ( lambda self, value: self.setMargin(value)    , lambda self: self.getMargin()    )
+    }
     Z = Z_TEMPLATE
 
-    margin : float
+    margin     : float
 
     def __init__(
-        self     : 'Border',
-        paper    : 'Paper',
-        margin   : Optional[float] = None
+        self       : 'Border',
+        paper_size : Optional[str] = None,
+        margin     : Optional[float] = None
     ) -> None:
-        super().__init__(QPointF(0, 0), brush_spec=False)
-        self.paper = paper
+        super().__init__(pen_spec=True, brush_spec=False)
+        if paper_size is None:
+            paper_size = hub.settings.defaults.paper_size
         if margin is None:
             margin = hub.settings.defaults.margin
-        self.setMargin(margin)
+        self.update(paper_size, margin)
 
-    def setMargin(self, margin : float) -> None:
+    def setMargin(self : 'Border', margin : float) -> None:
         self.margin = margin
-        self.updateSize()
+        self.update()
 
-    def updateSize(self : 'Border') -> None:
+    def getMargin(self : 'Border') -> float:
+        return self.margin
+
+    def update(
+        self       : 'Border',
+        paper_size : Optional[str] = None,
+        margin     : Optional[float] = None
+    ) -> None:
+        if paper_size:
+            self.paper_size = paper_size
+        if margin:
+            self.margin = margin
+        size = getattr(hub.settings.paper_sizes, self.paper_size)
         self.setPosSize(
             QPointF(self.margin, self.margin),
             QSizeF(
-                self.paper.rect().width()  - (2 * self.margin),
-                self.paper.rect().height() - (2 * self.margin)
+                size.width()  - (2 * self.margin),
+                size.height() - (2 * self.margin)
             )
         )
-
-    def toXml(self : 'Border', xw : QXmlStreamWriter) -> None:
-        xw.writeStartElement('Border')
-        xw.writeAttribute('margin', value2str(self.margin))
-        xw.writeEndElement()

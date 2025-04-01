@@ -4,16 +4,19 @@ __all__ = [
     'DbModel'
 ]
 
-from typing  import Optional
-from pathlib import Path
+from typing  import Optional, Union
 
-from PyQt6.QtCore    import Qt, QXmlStreamWriter
+from PyQt6.QtCore    import Qt, QXmlStreamWriter, QXmlStreamReader
 from PyQt6.QtWidgets import QDialog
 from PyQt6.QtGui     import QStandardItemModel, QStandardItem
 
-from ..core    import LIB_EXT, DSN_EXT, copy as master_copy, \
+from ..core    import LIB_EXT, DSN_EXT, \
+                      copy as master_copy, \
+                      paste as master_paste, \
                       saveBegin, saveEnd
 from ..widgets import FileSaveAsDialog
+
+from ..widgets.elements import element_class_dict
 
 from .. import hub
 
@@ -23,67 +26,75 @@ if TYPE_CHECKING:
 
 
 class DrawingItem(QStandardItem):
-    SCENE_TYPE : str
+    from ..widgets import DrawingScene, SymbolScene, DiagramScene
+    SCENE_CLASS : Union[DrawingScene, SymbolScene, DiagramScene] = DrawingScene
 
-    scene : 'DrawingScene'
+    scene : DrawingScene
 
-    def __init__(
-        self  : 'DrawingItem',
-        scene : Optional['DrawingScene'] = None
-    ) -> None:
-        from ..widgets import SymbolScene, DiagramScene
-        if self.SCENE_TYPE == 'DrawingScene':
-            scene_class = DrawingScene
-        elif self.SCENE_TYPE == 'SymbolScene':
-            scene_class = SymbolScene
-        elif self.SCENE_TYPE == 'DiagramScene':
-            scene_class = DiagramScene
-        else:
-            raise ValueError(f"Unknown scene type: {self.SCENE_TYPE}")
-        self.scene = scene if scene else scene_class()
+    def __init__(self, scene : Optional[DrawingScene] = None) -> None:
+        self.scene = scene if scene else self.SCENE_CLASS()
         super().__init__(self.scene.name)
         self.setData(self.scene, Qt.ItemDataRole.UserRole)
 
     copy = master_copy
 
-    def toXml(self : 'DrawingItem', xw : QXmlStreamWriter) -> None:
+    def toXml(self, xw : QXmlStreamWriter) -> None:
         self.scene.toXml(xw)
 
+    @classmethod
+    def fromXml(cls, xr : QXmlStreamReader) -> 'DesignItem':
+        cls_name = cls.__name__.replace('Item', '')
+        if xr.name() != cls_name:
+            raise ValueError(f'Expected {cls_name} element, got {xr.name()}')
+        name = xr.attributes().value('name')
+        drawing_item : DrawingItem = cls(name)
+        while not (xr.isEndElement() and xr.name() == cls_name):
+            xr.readNext()
+            name = xr.name()
+            if name in element_class_dict:
+                cls = element_class_dict[name]
+                element = cls.fromXml(xr)
+                drawing_item.scene.addItem(element)
+                xr.readNext()
+            else:
+                raise ValueError(f"Unexpected element: {name}")
+        return drawing_item
+
 class SymbolItem(DrawingItem):
-    SCENE_TYPE = 'SymbolScene'
+    from ..widgets import SymbolScene
+    SCENE_CLASS = SymbolScene
 
-    scene : 'SymbolScene'
+    scene : SymbolScene
 
-class DiagramItem(DrawingItem):
-    SCENE_TYPE = 'DiagramScene'
+class   DiagramItem(DrawingItem):
+    from ..widgets import DiagramScene
+    SCENE_CLASS = DiagramScene
 
-    scene : 'DiagramScene'
+    scene : DiagramScene
 
 class DbItem(QStandardItem):
-    path    : str
+    name : str
+    path : Optional[str]
 
-    def __init__(self : 'DbItem', path : Optional[str] = None) -> None:
-        if path is None:
-            u = 'Untitled' + self.__class__.__name__.replace('Item', '')
-            path = hub.name_counter.get(u) + self.FILE_EXT
-        self.path = path
-        name = Path(path).stem
-        super().__init__(name)
+    def __init__(self) -> None:
+        u = 'Untitled' + self.__class__.__name__.replace('Item', '')
+        self.name = hub.name_counter.get(u)
+        self.path = None
+        super().__init__(self.name)
 
-    def setPath(self : 'DbItem', path: str) -> None:
-        self.path = path
-        name = Path(path).stem
+    def setName(self, name: str) -> None:
+        self.name = name
         self.setText(name)
 
-    def save(self : 'DesignItem') -> None:
-        if Path(self.path).parent == Path('.'):
+    def save(self) -> None:
+        if self.path is None:
             self.saveAs()
         else:
             xw, file = saveBegin(self.path)
             self.toXml(xw)
             saveEnd(xw, file)
 
-    def saveAs(self : 'DesignItem') -> None:
+    def saveAs(self) -> None:
         dialog = FileSaveAsDialog(
             hub.main_window,
             self.__class__.__name__.replace('Item', '')
@@ -93,7 +104,7 @@ class DbItem(QStandardItem):
             selected_files = dialog.selectedFiles()
             if selected_files:
                 new_path = selected_files[0]
-                self.setPath(new_path)
+                self.setName(new_path)
                 self.save()
 
     copy = master_copy
@@ -116,8 +127,8 @@ class DesignItem(DbItem):
     diagrams : QStandardItem
     symbols  : QStandardItem
 
-    def __init__(self : 'DesignItem', path : Optional[str] = None) -> None:
-        super().__init__(path)
+    def __init__(self : 'DesignItem') -> None:
+        super().__init__()
         self.diagrams = QStandardItem('Diagrams')
         self.diagrams.setEditable(False)
         font = self.diagrams.font() # TODO use settings
@@ -147,6 +158,28 @@ class DesignItem(DbItem):
             symbol_scene.toXml(xw)
         xw.writeEndElement()
 
+    @classmethod
+    def fromXml(cls : 'DesignItem', xr : QXmlStreamReader) -> 'DesignItem':
+        if xr.name() != 'Design':
+            raise ValueError(f"Expected Design element, got {xr.name()}")
+        name = xr.attributes().value('name')
+        design_item : DesignItem = cls(name)
+        while not (xr.isEndElement() and xr.name() == 'Design'):
+            match xr.name():
+                case 'Diagrams':
+                    xr.readNext()
+                    while not (xr.isEndElement() and xr.name() == 'Diagrams'):
+                        diagram_item = DiagramItem.fromXml(xr)
+                        design_item.diagrams.appendRow(diagram_item)
+                case 'Symbol Cache':
+                    xr.readNext()
+                    while not (xr.isEndElement() and xr.name() == 'Symbol Cache'):
+                        symbol_item = SymbolItem.fromXml(xr)
+                        design_item.symbols.appendRow(symbol_item)
+                case _:
+                    raise ValueError(f"Unexpected element: {xr.name()}")
+        return design_item
+
 class DbModel(QStandardItemModel):
     designs   : QStandardItem
     libraries : QStandardItem
@@ -168,33 +201,36 @@ class DbModel(QStandardItemModel):
         self.appendRow(self.libraries)
 
     def newItem(self : 'DbModel', item : QStandardItem) -> None:
-        if item.text() == 'Designs':
-            design_item = DesignItem()
-            diagram_item = DiagramItem()
-            design_item.diagrams.appendRow(diagram_item)
-            item.appendRow(design_item)
-            if hub.main_window and hub.main_window.db_explorer:
-                db_explorer = hub.main_window.db_explorer.db_explorer
-                db_explorer.expand(self.indexFromItem(design_item))
-                db_explorer.expand(self.indexFromItem(design_item.diagrams))
-                db_explorer.editDrawing(diagram_item)
-        elif item.text() == 'Libraries':
-            library_item = LibraryItem()
-            item.appendRow(library_item)
-            if hub.main_window and hub.main_window.db_explorer:
-                db_explorer = hub.main_window.db_explorer.db_explorer
-                db_explorer.expand(self.indexFromItem(library_item))
-        elif item.text() == 'Diagrams':
-            item.appendRow(DiagramItem())
-            if hub.main_window and hub.main_window.db_explorer:
-                db_explorer = hub.main_window.db_explorer.db_explorer
-                db_explorer.expand(self.indexFromItem(item))
-        elif item.parent().text() == 'Libraries':
-            item.appendRow(SymbolItem())
-        else:
-            raise ValueError(f"Bad item: {item} {item.text()} {type(item)}")
+        match self.getItemTypeStr(item):
+            case 'Designs':
+                design_item = DesignItem()
+                diagram_item = DiagramItem()
+                design_item.diagrams.appendRow(diagram_item)
+                item.appendRow(design_item)
+                if hub.main_window and hub.main_window.db_explorer:
+                    db_explorer = hub.main_window.db_explorer.db_explorer
+                    db_explorer.expand(self.indexFromItem(design_item))
+                    db_explorer.expand(self.indexFromItem(design_item.diagrams))
+                    db_explorer.editDrawing(diagram_item)
+            case 'Libraries':
+                library_item = LibraryItem()
+                item.appendRow(library_item)
+                if hub.main_window and hub.main_window.db_explorer:
+                    db_explorer = hub.main_window.db_explorer.db_explorer
+                    db_explorer.expand(self.indexFromItem(library_item))
+            case 'Diagrams':
+                item.appendRow(DiagramItem())
+                if hub.main_window and hub.main_window.db_explorer:
+                    db_explorer = hub.main_window.db_explorer.db_explorer
+                    db_explorer.expand(self.indexFromItem(item))
+            case 'Symbol Cache':
+                item.appendRow(SymbolItem())
+            case _:
+                raise ValueError(f'Bad item: {item} {item.text()} {type(item)}')
 
     def editDrawing(self : 'DbModel', item : DrawingItem) -> None:
+        if not isinstance(item, DiagramItem):
+            raise ValueError(f'Expected DiagramItem:{item.text()} ({type(item)})')
         """Edit the drawing, focusing the first existing subwindow if available."""
         from ..widgets import DrawingScene, DrawingView, DrawingSubWindow, \
                               SymbolScene, SymbolView, SymbolSubWindow, \
@@ -224,7 +260,7 @@ class DbModel(QStandardItemModel):
             db_item = item.parent()
             subwindow = SymbolSubWindow(hub.main_window.mdi_area)
         else:
-            raise ValueError(f"Unknown drawing scene: {type(drawing_scene)}")
+            raise ValueError(f'Unknown drawing scene: {type(drawing_scene)}')
         subwindow.setWidget(drawing_view)
         subwindow.setWindowTitle(f'{db_item.text()}: {drawing_name}')
         hub.main_window.mdi_area.addSubWindow(subwindow)
@@ -264,14 +300,14 @@ class DbModel(QStandardItemModel):
         if db_item:
             db_item.save()
         else:
-            raise ValueError(f"Unknown scene: {type(scene)}")
+            raise ValueError(f'Unknown scene: {type(scene)}')
 
     def saveAsScene(self : 'DbModel', scene : 'DrawingScene') -> None:
         db_item = self.getDbItemFromScene(scene)
         if db_item:
             db_item.saveAs()
         else:
-            raise ValueError(f"Unknown scene: {type(scene)}")
+            raise ValueError(f'Unknown scene: {type(scene)}')
 
     def closeDb(self : 'DbModel', db_item: 'DbItem') -> None:
         """Close a database and remove it from the model."""
@@ -285,7 +321,44 @@ class DbModel(QStandardItemModel):
                 if db_item == self.libraries.child(i):
                     self.libraries.removeRow(i)
         else:
-            raise ValueError(f"Unknown database item type: {type(db_item)}")
+            raise ValueError(f'Unknown database item type: {type(db_item)}')
+
+    def copy(self : 'DbModel', item : QStandardItem) -> None:
+        master_copy(item)
+
+    def paste(self : 'DbModel', item : QStandardItem) -> None:
+        paste_items = master_paste()
+        print('paste_items', paste_items)
+        if paste_items:
+            match self.getItemTypeStr(item):
+                case 'Designs':
+                    valid_item_type_names = ['DesignItem']
+                case 'Libraries':
+                    valid_item_type_names = ['LibraryItem']
+                case 'Diagrams':
+                    valid_item_type_names = ['DiagramItem']
+                case 'Symbol Cache':
+                    valid_item_type_names = ['SymbolItem']
+                case 'Libraries':
+                    valid_item_type_names = ['SymbolItem']
+                case _:
+                    raise ValueError(
+                        f'Cannot paste into item: {item.text()} ({type(item)})')
+            invalid_item_type_names = []
+            invalid_item_count = 0
+            for paste_item in paste_items:
+                paste_item_type_name = type(paste_item).__name__
+                if paste_item_type_name not in valid_item_type_names:
+                    invalid_item_type_names.append(paste_item_type_name)
+                    invalid_item_count += 1
+                else:
+                    item.appendRow(paste_item)
+                    # handle duplicate names
+            if invalid_item_count:
+                # TODO message box
+                n = invalid_item_count
+                s = ', '.join(invalid_item_type_names)
+                raise ValueError(f'{n} invalid items for paste operation: {s}')
 
     def getDbItemFromScene(self : 'DbModel', scene : 'DrawingScene') -> 'DbItem':
         for i in range(self.designs.rowCount()):
@@ -301,3 +374,43 @@ class DbModel(QStandardItemModel):
                 if scene == drawing_item.scene:
                     return db_item
         return None
+
+    def getItemTypeStr(self : 'DbModel', i : QStandardItem) -> str | None:
+        if i.text() == 'Designs':
+            if type(i).__name__ == 'QStandardItem':
+                return 'Designs'
+            raise ValueError(f'Expected QStandardItem: {i.text()} ({type(i)})')
+        elif i.text() == 'Libraries':
+            if type(i).__name__ == 'QStandardItem':
+                return 'Libraries'
+            raise ValueError(f'Expected QStandardItem: {i.text()} ({type(i)})')
+        elif i.parent().text() == 'Designs':
+            if type(i).__name__ == 'DesignItem':
+                return 'Design'
+            s = f'Expected DesignItem: {i.text()} ({type(i)})'
+            raise ValueError(s)
+        elif i.parent().text() == 'Libraries':
+            if isinstance(i, LibraryItem):
+                return 'Library'
+            s = f'Expected LibraryItem: {i.text()} ({type(i)})'
+            raise ValueError(s)
+        elif i.text() == 'Diagrams':
+            if type(i).__name__ == 'QStandardItem':
+                return 'Diagrams'
+            raise ValueError(f'Expected QStandardItem: {i.text()} ({type(i)})')
+        elif i.text() == 'Symbol Cache':
+            if type(i).__name__ == 'QStandardItem':
+                return 'Symbol Cache'
+            raise ValueError(f'Expected QStandardItem: {i.text()} ({type(i)})')
+        elif i.parent().text() == 'Diagrams':
+            if isinstance(i, DiagramItem):
+                return 'Diagram'
+            s = f'Expected DiagramItem: {i.text()} ({type(i)})'
+            raise ValueError(s)
+        elif i.parent().text() == 'Symbol Cache' \
+          or i.parent().text() == 'Libraries':
+            if isinstance(i, SymbolItem):
+                return 'Symbol'
+            s = f'Expected SymbolItem: {i.text()} type: ({type(i)})'
+            raise ValueError(s)
+        raise ValueError(f'Unsupported item: {i.text()}  type: {type(i)}')

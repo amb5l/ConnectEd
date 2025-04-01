@@ -1,11 +1,12 @@
 __all__ = ['Extents']
 
-from PyQt6.QtCore    import QPointF, QRectF, QSizeF, QXmlStreamWriter
+from PyQt6.QtCore    import QPointF, QRectF, QSizeF, \
+                            QXmlStreamWriter, QXmlStreamReader
 from PyQt6.QtGui     import QPainter, QPen, QBrush, QColor
 from PyQt6.QtWidgets import QGraphicsItem, QGraphicsRectItem, \
                             QWidget, QStyleOptionGraphicsItem
 
-from ...core import Z_EXTENTS, value2str
+from ...core import Z_EXTENTS, value2str, str2value
 
 from ... import hub
 
@@ -15,12 +16,18 @@ class Extents(QGraphicsRectItem):
 
     Z = Z_EXTENTS
 
-    def __init__(self : 'Extents', sheet : str) -> None:
-        sheet_size = getattr(hub.settings.sheet_sizes, sheet)
-        super().__init__(QRectF(
-            -QPointF(sheet_size.width(), sheet_size.height()),
-            QSizeF(sheet_size.width() * 3, sheet_size.height() * 3)
-        ))
+    def __init__(self : 'Extents', sheet_or_rect : str | QRectF) -> None:
+        if isinstance(sheet_or_rect, str):
+            paper_size = getattr(hub.settings.paper_sizes, sheet_or_rect)
+            size = QSizeF(paper_size.width(), paper_size.height())
+            super().__init__(QRectF(
+                -QPointF(size.width(), size.height()),
+                QSizeF(size.width() * 3, size.height() * 3)
+            ))
+        elif isinstance(sheet_or_rect, QRectF):
+            super().__init__(sheet_or_rect)
+        else:
+            raise ValueError(f'Bad size_or_rect: {sheet_or_rect}')
         self.setFlags(QGraphicsItem.GraphicsItemFlag.ItemIsSelectable)
         self.setZValue(self.Z)
 
@@ -41,8 +48,14 @@ class Extents(QGraphicsRectItem):
         ))
         super().paint(painter, option, widget)
 
-    def toXml(self : 'Extents', xw : QXmlStreamWriter) -> None:
+    def toXml(self, xw : QXmlStreamWriter) -> None:
         xw.writeStartElement('Extents')
         xw.writeAttribute('rect', value2str(self.rect()))
         xw.writeEndElement()
 
+    @classmethod
+    def fromXml(cls, xr: QXmlStreamReader) -> 'Extents':
+        rect = str2value(xr.attributes().value('rect'))
+        instance = cls(rect)
+        xr.readNext()
+        return instance

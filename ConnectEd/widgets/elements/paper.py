@@ -1,8 +1,11 @@
 __all__ = ['Paper']
 
-from PyQt6.QtCore    import QPointF, QSizeF, QXmlStreamWriter
+from typing import Optional
 
-from ...core import Z_PAPER, value2str
+from PyQt6.QtCore import QPointF, QRectF, QSizeF, \
+                         QXmlStreamWriter, QXmlStreamReader
+
+from ...core import Z_PAPER, value2str, str2value
 
 from ... import hub
 
@@ -10,21 +13,30 @@ from . import RectElement
 
 
 class Paper(RectElement):
+    XML_ATTRIBUTES = RectElement.XML_ATTRIBUTES | {
+        'paper_size' : ( lambda self, value: self.setSheetSize(value) , lambda self: self.getSheetSize() )
+    }
+
     Z = Z_PAPER
 
-    size_name : str
+    paper_size : str
 
-    def __init__(self : 'Paper', size : str):
-        super().__init__(QPointF(0, 0), pen_spec=False)
+    def __init__(
+        self       : 'Paper',
+        paper_size : Optional[str] = None,
+        pen_spec   : bool = False,
+        brush_spec : bool = True
+    ) -> None:
+        super().__init__(pen_spec=pen_spec, brush_spec=brush_spec)
+        if paper_size is None:
+            paper_size = hub.settings.defaults.paper_size
+        self.setSheetSize(paper_size)
         self.setZValue(Z_PAPER)
-        self.setSize(size)
 
-    def setSize(self : 'Paper', size_name : str) -> None:
-        self.size_name = size_name
-        size = getattr(hub.settings.sheet_sizes, size_name)
-        self.setPosSize(QPointF(0, 0), QSizeF(size.width(), size.height()))
+    def setSheetSize(self : 'Paper', paper_size : str) -> None:
+        self.paper_size = paper_size
+        size = getattr(hub.settings.paper_sizes, paper_size)
+        self.setSize(QSizeF(size.width(), size.height()))
 
-    def toXml(self : 'Paper', xw : QXmlStreamWriter) -> None:
-        xw.writeStartElement('Paper')
-        xw.writeAttribute('rect', value2str(self.rect()))
-        xw.writeEndElement()
+    def getSheetSize(self : 'Paper') -> str:
+        return self.paper_size

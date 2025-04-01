@@ -16,9 +16,9 @@ class DiagramView(DrawingView):
 
     def __init__(self : 'DiagramView', scene : DiagramScene) -> None:
         super().__init__(scene)
-        self.paper   = Paper(hub.settings.defaults.sheet)
-        self.border  = Border(self.paper, hub.settings.defaults.margin)
+        self.paper  = Paper()
         self.scene().addItem(self.paper)
+        self.border = Border()
         self.scene().addItem(self.border)
 
     def viewZoomSheet(self : 'DiagramView') -> None:

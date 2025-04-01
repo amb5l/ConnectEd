@@ -36,7 +36,7 @@ class DrawingScene(QGraphicsScene):
             u = 'Untitled' + self.__class__.__name__.replace('Scene', '')
             name = hub.name_counter.get(u)
         self.name    = name
-        self.extents = Extents(hub.settings.defaults.sheet)
+        self.extents = Extents(hub.settings.defaults.paper_size)
         self.grid    = Grid(self.extents)
         self.wip     = []
         self.setItemIndexMethod(QGraphicsScene.ItemIndexMethod.NoIndex)

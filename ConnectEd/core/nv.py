@@ -180,7 +180,7 @@ FACTORY_SETTINGS = {
             }
         }
     },
-    'sheet_sizes': {
+    'paper_sizes': {
         'A4' : QSizeF( 1169.0 ,  827.0 ),
         'A3' : QSizeF( 1654.0 , 1169.0 ),
         'A2' : QSizeF( 2338.0 , 1654.0 ),
@@ -193,8 +193,8 @@ FACTORY_SETTINGS = {
         'E'  : QSizeF( 4220.0 , 3220.0 )
     },
     'defaults': { # TODO move these to session settings
-        'sheet'  : 'A4',
-        'margin' : 10,
+        'paper_size' : 'A4',
+        'margin'     : 10,
         'grid': {
             'display'    : True,
             'snap'       : True,
