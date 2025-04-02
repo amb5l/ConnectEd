@@ -2,6 +2,8 @@ from PyQt6.QtCore    import QAbstractItemModel
 from PyQt6.QtWidgets import QTreeView, QWidget
 from PyQt6.QtGui     import QFont, QShortcut, QKeySequence
 
+from .. import hub
+
 
 class TreeView(QTreeView):
     currentFontSize : int
@@ -15,11 +17,30 @@ class TreeView(QTreeView):
         self.setModel(model)
         self.header().setVisible(False)
         self.setFontSize(10) # TODO get from settings
+        self.customizeAppearance()
         self.expandAll()
+
         self.increaseFontShortcut = QShortcut(QKeySequence("Ctrl+="), self)
         self.increaseFontShortcut.activated.connect(self.increaseFontSize)
         self.decreaseFontShortcut = QShortcut(QKeySequence("Ctrl+-"), self)
         self.decreaseFontShortcut.activated.connect(self.decreaseFontSize)
+
+    def customizeAppearance(self) -> None:
+        if hub.settings.prefs.display.theme == 'dark':
+            self.setStyleSheet("""
+                QTreeView::branch {
+                    image: none;
+                }
+                QTreeView::branch:has-children:closed {
+                    image: url(ConnectEd/resources/icons/expand_bright.svg);
+                }
+                QTreeView::branch:has-children:open {
+                    image: url(ConnectEd/resources/icons/collapse_bright.svg);
+                }
+                QTreeView::branch:hover {
+                    background-color: rgba(255, 255, 255, 50);
+                }
+            """)
 
     def setFontSize(self, size: int) -> None:
         """Set the font size for all items in the tree."""
