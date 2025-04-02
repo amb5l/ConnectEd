@@ -47,17 +47,20 @@ class DrawingItem(QStandardItem):
         if xr.name() != cls_name:
             raise ValueError(f'Expected {cls_name} element, got {xr.name()}')
         name = xr.attributes().value('name')
-        drawing_item : DrawingItem = cls(name)
+        drawing_item : DrawingItem = cls()
+        drawing_item.scene.name = name
+        xr.readNext()
         while not (xr.isEndElement() and xr.name() == cls_name):
+            if xr.tokenType() == QXmlStreamReader.TokenType.StartElement:
+                name = xr.name()
+                if name in element_class_dict:
+                    cls = element_class_dict[name]
+                    element = cls.fromXml(xr)
+                    drawing_item.scene.addItem(element)
+                    xr.readNext()
+                else:
+                    raise ValueError(f"Unexpected element: {name}")
             xr.readNext()
-            name = xr.name()
-            if name in element_class_dict:
-                cls = element_class_dict[name]
-                element = cls.fromXml(xr)
-                drawing_item.scene.addItem(element)
-                xr.readNext()
-            else:
-                raise ValueError(f"Unexpected element: {name}")
         return drawing_item
 
 class SymbolItem(DrawingItem):

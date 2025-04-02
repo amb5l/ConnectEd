@@ -57,31 +57,34 @@ def fromXml(xr : QXmlStreamReader) -> list[XmlItemTypes]:
     if xr.name() != 'ConnectEd':
         raise ValueError(f"Expected 'ConnectEd' root element, got '{xr.name()}'")
     xr.readNext()
+    print('fromXml: xr.name() =', xr.name())
     result = []
     while not (xr.isEndElement() and xr.name() == 'ConnectEd'):
-        match xr.name():
-            case 'Design':
-                design_item = DesignItem.fromXml(xr)
-                result.append(design_item)
-            case 'Library':
-                library_item = LibraryItem.fromXml(xr)
-                result.append(library_item)
-            case 'Diagram':
-                diagram_item = DiagramItem.fromXml(xr)
-                result.append(diagram_item)
-            case 'Symbol':
-                symbol_item = SymbolItem.fromXml(xr)
-                result.append(symbol_item)
-            case _: # assume it's an Element
-                if xr.name() in element_class_dict:
-                    element_class = element_class_dict[xr.name()]
-                    element = element_class.fromXml(xr)
-                    result.append(element)
-                else:
-                    raise ValueError(f"Unexpected element: {xr.name()}")
+        if xr.tokenType() == QXmlStreamReader.TokenType.StartElement:
+            match xr.name():
+                case 'Design':
+                    design_item = DesignItem.fromXml(xr)
+                    result.append(design_item)
+                case 'Library':
+                    library_item = LibraryItem.fromXml(xr)
+                    result.append(library_item)
+                case 'Diagram':
+                    diagram_item = DiagramItem.fromXml(xr)
+                    result.append(diagram_item)
+                case 'Symbol':
+                    symbol_item = SymbolItem.fromXml(xr)
+                    result.append(symbol_item)
+                case _: # assume it's an Element
+                    if xr.name() in element_class_dict:
+                        element_class = element_class_dict[xr.name()]
+                        element = element_class.fromXml(xr)
+                        result.append(element)
+                    else:
+                        raise ValueError(f"Unexpected element: {xr.name()}")
         if xr.isEndElement() and xr.name() == 'ConnectEd':
             break
         xr.readNext()
+        print('fromXml: xr.name() =', xr.name())
     return result
 
 def saveBegin(path : str) -> tuple[QXmlStreamWriter, QFile]:
