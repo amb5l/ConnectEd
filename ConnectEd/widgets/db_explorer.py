@@ -83,32 +83,53 @@ class DbExplorer(TreeView):
         menu = QMenu(self)
         index = self.indexAt(pos)
         if index.isValid():
+            new_action = self.actions.newItem
+            new_window_action = self.actions.newWindow
+            edit_action = self.actions.editDrawing
+            save_action = self.actions.saveDb
+            save_as_action = self.actions.saveAsDb
+            close_action = self.actions.closeDb
             self.item = self.model().itemFromIndex(index)
             item = self.model().itemFromIndex(index)
             match hub.db_model.getItemTypeStr(item):
                 case 'Designs':
-                    menu.addAction(self.actions.newItem)
+                    new_action.setText('New Design')
+                    menu.addAction(new_action)
                 case 'Libraries':
-                    menu.addAction(self.actions.newItem)
+                    new_action.setText('New Library')
+                    menu.addAction(new_action)
                 case 'Design':
-                    menu.addAction(self.actions.saveDb)
-                    menu.addAction(self.actions.saveAsDb)
-                    menu.addAction(self.actions.closeDb)
+                    save_action.setText('Save Design')
+                    save_as_action.setText('Save Design As')
+                    close_action.setText('Close Design')
+                    menu.addAction(save_action)
+                    menu.addAction(save_as_action)
+                    menu.addAction(close_action)
                 case 'Library':
-                    menu.addAction(self.actions.newItem)
-                    menu.addAction(self.actions.saveDb)
-                    menu.addAction(self.actions.saveAsDb)
-                    menu.addAction(self.actions.closeDb)
+                    new_action.setText('New Symbol')
+                    save_action.setText('Save Library')
+                    save_as_action.setText('Save Library As')
+                    close_action.setText('Close Library')
+                    menu.addAction(new_action)
+                    menu.addAction(save_action)
+                    menu.addAction(save_as_action)
+                    menu.addAction(close_action)
                 case 'Diagrams':
-                    menu.addAction(self.actions.newItem)
+                    new_action.setText('New Diagram')
+                    menu.addAction(new_action)
                 case 'Symbol Cache':
+                    new_action.setText('New Symbol')
                     menu.addAction(self.actions.newItem)
                 case 'Diagram':
-                    menu.addAction(self.actions.editDrawing)
-                    menu.addAction(self.actions.newWindow)
+                    edit_action.setText('Edit Diagram')
+                    new_window_action.setText('New Diagram Window')
+                    menu.addAction(edit_action)
+                    menu.addAction(new_window_action)
                 case 'Symbol':
-                    menu.addAction(self.actions.editDrawing)
-                    menu.addAction(self.actions.newWindow)
+                    edit_action.setText('Edit Symbol')
+                    new_window_action.setText('New Symbol Window')
+                    menu.addAction(edit_action)
+                    menu.addAction(new_window_action)
             menu.addSeparator()
             menu.addAction(self.actions.copy)
             menu.addAction(self.actions.paste)
