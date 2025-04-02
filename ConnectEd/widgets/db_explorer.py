@@ -84,34 +84,54 @@ class DbExplorer(TreeView):
             parent_item = item.parent()
             grandparent_item = None if parent_item is None else \
                 parent_item.parent()
+            new_action = self.actions.newItem
+            new_window_action = self.actions.newWindow
+            edit_action = self.actions.editDrawing
+            save_action = self.actions.saveDb
+            save_as_action = self.actions.saveAsDb
+            close_action = self.actions.closeDb
             if item.text() == 'Designs':
                 # item is Designs collection
-                menu.addAction(self.actions.newItem)
+                new_action.setText('New Design')
+                menu.addAction(new_action)
             elif item.text() == 'Libraries':
                 # item is Libraries collection
-                menu.addAction(self.actions.newItem)
+                new_action.setText('New Library')
+                menu.addAction(new_action)
             elif parent_item and parent_item.text() == 'Designs':
                 # item is a design
-                menu.addAction(self.actions.saveDb)
-                menu.addAction(self.actions.saveAsDb)
-                menu.addAction(self.actions.closeDb)
+                save_action.setText('Save Design')
+                save_as_action.setText('Save Design As')
+                close_action.setText('Close Design')
+                menu.addAction(save_action)
+                menu.addAction(save_as_action)
+                menu.addAction(close_action)
             elif parent_item and parent_item.text() == 'Libraries':
                 # item is a library
-                menu.addAction(self.actions.newItem)
-                menu.addAction(self.actions.saveDb)
-                menu.addAction(self.actions.saveAsDb)
-                menu.addAction(self.actions.closeDb)
+                new_action.setText('New Symbol')
+                save_action.setText('Save Library')
+                save_as_action.setText('Save Library As')
+                close_action.setText('Close Library')
+                menu.addAction(new_action)
+                menu.addAction(save_action)
+                menu.addAction(save_as_action)
+                menu.addAction(close_action)
             elif item.text() == 'Diagrams':
                 # item is a Design's Diagrams collection
-                menu.addAction(self.actions.newItem)
+                new_action.setText('New Diagram')
+                menu.addAction(new_action)
             elif parent_item.text() == 'Diagrams':
                 # item is a Diagram
-                menu.addAction(self.actions.editDrawing)
-                menu.addAction(self.actions.newWindow)
+                edit_action.setText('Edit Diagram')
+                new_window_action.setText('New Diagram Window')
+                menu.addAction(edit_action)
+                menu.addAction(new_window_action)
             elif grandparent_item.text() == 'Libraries':
                 # item is a symbol
-                menu.addAction(self.actions.editDrawing)
-                menu.addAction(self.actions.newWindow)
+                edit_action.setText('Edit Symbol')
+                new_window_action.setText('New Symbol Window')
+                menu.addAction(edit_action)
+                menu.addAction(new_window_action)
             menu.addSeparator()
         menu.addAction(self.actions.increaseTextSize)
         menu.addAction(self.actions.decreaseTextSize)
