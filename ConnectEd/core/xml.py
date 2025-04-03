@@ -30,23 +30,6 @@ def toXmlBegin(xw : QXmlStreamWriter) -> None:
 def toXmlEnd(xw : QXmlStreamWriter) -> None:
     xw.writeEndDocument()
 
-def drawingFromXml(
-    xr    : QXmlStreamReader,
-    scene : Union['DiagramScene', 'SymbolScene']
-) -> None:
-    from ..widgets.elements import element_class_dict
-    while not (xr.isEndElement() and xr.name() in ['Diagram', 'Symbol']):
-        xr.readNext()
-        if xr.isStartElement():
-            name = xr.name()
-            if name in element_class_dict:
-                cls = element_class_dict[name]
-                instance = cls.fromXml(xr)
-                scene.addItem(instance)
-                xr.readNext()
-            else:
-                raise ValueError(f"Unexpected element: {name}")
-
 def fromXml(xr : QXmlStreamReader) -> list[XmlItemTypes]:
     from .db import DesignItem, LibraryItem, DiagramItem, SymbolItem
     from ..widgets.elements import element_class_dict
