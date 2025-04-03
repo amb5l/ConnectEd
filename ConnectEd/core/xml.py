@@ -1,4 +1,4 @@
-__all__ = ['toXmlBegin', 'toXmlEnd', 'saveBegin', 'saveEnd', 'copy', 'paste']
+__all__ = ['saveBegin', 'saveEnd', 'open', 'copy', 'paste']
 
 from typing import Any, Union, TypeAlias
 
@@ -83,15 +83,6 @@ def saveEnd(xw : QXmlStreamWriter, file : QFile) -> None:
     toXmlEnd(xw)
     file.close()
 
-def copy(instance : Any) -> None:
-    buffer = QByteArray()
-    xw = QXmlStreamWriter(buffer)
-    toXmlBegin(xw)
-    instance.toXml(xw)
-    toXmlEnd(xw)
-    clipboard = QApplication.clipboard()
-    clipboard.setText(buffer.data().decode('utf-8'))
-
 def open(path : str) -> list[XmlItemTypes]:
     # TODO: handle file open error
     file = QFile(path)
@@ -102,6 +93,15 @@ def open(path : str) -> list[XmlItemTypes]:
     else:
         r = []
     return r
+
+def copy(instance : Any) -> None:
+    buffer = QByteArray()
+    xw = QXmlStreamWriter(buffer)
+    toXmlBegin(xw)
+    instance.toXml(xw)
+    toXmlEnd(xw)
+    clipboard = QApplication.clipboard()
+    clipboard.setText(buffer.data().decode('utf-8'))
 
 def paste() -> list[XmlItemTypes]:
     clipboard = QApplication.clipboard()
