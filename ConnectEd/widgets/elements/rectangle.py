@@ -12,7 +12,7 @@ class Rectangle(RectElement):
 
     def __init__(
         self   : 'Rectangle',
-        pos    : QPointF,
+        pos    : QPointF = QPointF(0, 0),
         size   : QSizeF = QSizeF(0, 0),
         anchor : KeyPoint = KeyPoint.TOP_LEFT
     ) -> None:

@@ -27,7 +27,7 @@ if TYPE_CHECKING:
 
 class DrawingItem(QStandardItem):
     from ..widgets import DrawingScene, SymbolScene, DiagramScene
-    SCENE_CLASS : Union[DrawingScene, SymbolScene, DiagramScene] = DrawingScene
+    SCENE_CLASS = DrawingScene
 
     scene : DrawingScene
 
@@ -48,6 +48,7 @@ class DrawingItem(QStandardItem):
             raise ValueError(f'Expected {cls_name} element, got {xr.name()}')
         name = xr.attributes().value('name')
         drawing_item : DrawingItem = cls()
+        drawing_item.setText(name)
         drawing_item.scene.name = name
         xr.readNext()
         while not (xr.isEndElement() and xr.name() == cls_name):
@@ -57,7 +58,6 @@ class DrawingItem(QStandardItem):
                     cls = element_class_dict[name]
                     element = cls.fromXml(xr)
                     drawing_item.scene.addItem(element)
-                    xr.readNext()
                 else:
                     raise ValueError(f"Unexpected element: {name}")
             xr.readNext()
@@ -69,7 +69,7 @@ class SymbolItem(DrawingItem):
 
     scene : SymbolScene
 
-class   DiagramItem(DrawingItem):
+class DiagramItem(DrawingItem):
     from ..widgets import DiagramScene
     SCENE_CLASS = DiagramScene
 
@@ -331,7 +331,6 @@ class DbModel(QStandardItemModel):
 
     def paste(self : 'DbModel', item : QStandardItem) -> None:
         paste_items = master_paste()
-        print('paste_items', paste_items)
         if paste_items:
             match self.getItemTypeStr(item):
                 case 'Designs':
@@ -356,7 +355,7 @@ class DbModel(QStandardItemModel):
                     invalid_item_count += 1
                 else:
                     item.appendRow(paste_item)
-                    # handle duplicate names
+                    # TODO: handle duplicate names
             if invalid_item_count:
                 # TODO message box
                 n = invalid_item_count
