@@ -19,6 +19,7 @@ def main() -> int:
     hub.settings.load()
     #print(settings.dump())
     app = QApplication(sys.argv[:1] + unknown_args)
+    app.setStyle('Fusion')
     initResources()
     hub.db_model = DbModel()
     hub.main_window = MainWindow()
