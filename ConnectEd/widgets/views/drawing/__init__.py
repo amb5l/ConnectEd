@@ -1,10 +1,11 @@
 __all__ = ['DrawingView', 'DrawingSubWindow']
 
 from typing import Optional
+from math   import ceil
 
 from PyQt6.QtCore    import Qt, QPoint, QPointF, QRectF, QEvent, QTimer
 from PyQt6.QtWidgets import QMdiArea, QMdiSubWindow, QGraphicsView
-from PyQt6.QtGui     import QPainter, QCloseEvent
+from PyQt6.QtGui     import QPainter, QPen, QCloseEvent
 
 from ....widgets.scenes  import DrawingScene
 from ....widgets.marquee import Marquee
@@ -46,6 +47,7 @@ class DrawingView(
     marquee  : Marquee
     layer    : Layer
     zoom     : float
+    grid     : 'DrawingView.Grid'
     prev_pos : Optional[QPointF | QPoint]
     mouse    : 'DrawingView.Mouse'
     state    : 'DrawingView.State'
@@ -62,6 +64,7 @@ class DrawingView(
         self.marquee  = Marquee(self)
         self.layer    = Layer.Drawing
         self.zoom     = 1.0
+        self.grid     = self.Grid()
         self.prev_pos = None
         self.mouse    = self.Mouse()
 
@@ -74,5 +77,48 @@ class DrawingView(
 
         self._setLayer(Layer.Drawing)
 
-    def drawBackground(self, painter : QPainter, rect : QRectF) -> None:
-        painter.fillRect(rect, hub.settings.theme.vacuum.fill)
+    def drawForeground(self, painter : QPainter, rect : QRectF) -> None:
+        # draw grid
+        def align(x : float, px : float) -> float:
+            return px * int(x / px)
+        viewport_rect = self.mapToScene(self.viewport().rect()).boundingRect()
+        #rect = self.mapFromScene(viewport_rect).boundingRect()
+        lrect = rect
+        pp = self.transform().map(QPointF(self.grid.pitch.x(), self.grid.pitch.y()))
+        px = self.grid.pitch.x()
+        if pp.x() < self.grid.min_pixels:
+            px *= ceil(self.grid.min_pixels / pp.x())
+        py = self.grid.pitch.y()
+        if pp.y() < self.grid.min_pixels:
+            py *= ceil(self.grid.min_pixels / pp.y())
+        grect = QRectF(
+            QPointF(lrect.topLeft())     - QPointF(px, py),
+            QPointF(lrect.bottomRight()) + QPointF(px, py)
+        ).toRect()
+        color = hub.settings.theme.grid.line
+        color.setAlpha(self.grid.alpha)
+        painter.setPen(QPen(color, 0, Qt.PenStyle.SolidLine))
+        painter.setBrush(Qt.BrushStyle.NoBrush)
+        if self.grid.dots:
+            x = align(grect.left(), px)
+            while x <= grect.right():
+                y = align(grect.top(), py)
+                while y <= grect.bottom():
+                    painter.drawPoint(QPointF(x, y))
+                    y += py
+                x += px
+        else:
+            x = align(grect.left(), px)
+            while x <= grect.right():
+                painter.drawLine(
+                    QPointF(x, grect.top()),
+                    QPointF(x, grect.bottom())
+                )
+                x += px
+            y = align(grect.top(), py)
+            while y <= grect.bottom():
+                painter.drawLine(
+                    QPointF(grect.left(), y),
+                    QPointF(grect.right(), y)
+                )
+                y += py

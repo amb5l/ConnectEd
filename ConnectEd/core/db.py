@@ -13,10 +13,11 @@ from PyQt6.QtGui     import QStandardItemModel, QStandardItem
 from ..core    import LIB_EXT, DSN_EXT, \
                       copy as master_copy, \
                       paste as master_paste, \
-                      saveBegin, saveEnd
+                      saveBegin, saveEnd, \
+                      str2value
 from ..widgets import FileSaveAsDialog
-
-from ..widgets.elements import element_class_dict
+from ..widgets.scenes.drawing import DrawingScene
+from ..widgets import SymbolScene, DiagramScene
 
 from .. import hub
 
@@ -26,7 +27,6 @@ if TYPE_CHECKING:
 
 
 class DrawingItem(QStandardItem):
-    from ..widgets import DrawingScene, SymbolScene, DiagramScene
     SCENE_CLASS = DrawingScene
 
     scene : DrawingScene
@@ -46,31 +46,16 @@ class DrawingItem(QStandardItem):
         cls_name = cls.__name__.replace('Item', '')
         if xr.name() != cls_name:
             raise ValueError(f'Expected {cls_name} element, got {xr.name()}')
-        name = xr.attributes().value('name')
-        drawing_item : DrawingItem = cls()
-        drawing_item.setText(name)
-        drawing_item.scene.name = name
-        xr.readNext()
-        while not (xr.isEndElement() and xr.name() == cls_name):
-            if xr.tokenType() == QXmlStreamReader.TokenType.StartElement:
-                name = xr.name()
-                if name in element_class_dict:
-                    cls = element_class_dict[name]
-                    element = cls.fromXml(xr)
-                    drawing_item.scene.addItem(element)
-                else:
-                    raise ValueError(f"Unexpected element: {name}")
-            xr.readNext()
-        return drawing_item
+        scene = DrawingScene.fromXml(xr)
+        drawing_item : DrawingItem = cls(scene)
+        drawing_item.setText(scene.name)
 
 class SymbolItem(DrawingItem):
-    from ..widgets import SymbolScene
     SCENE_CLASS = SymbolScene
 
     scene : SymbolScene
 
 class DiagramItem(DrawingItem):
-    from ..widgets import DiagramScene
     SCENE_CLASS = DiagramScene
 
     scene : DiagramScene

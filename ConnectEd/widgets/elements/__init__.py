@@ -171,35 +171,37 @@ class Element:
                 self.text_spec.italic
         )
 
+class ElementXmlMixin:
     def toXml(self, xw : QXmlStreamWriter) -> None:
         xw.writeStartElement(self.__class__.__name__)
-        for attr, setter_getter in self.XML_ATTRIBUTES.items():
-            _, getter = setter_getter  # Unpack just 2 items
+        for attr in self.XML_ATTRIBUTES:
             if hasattr(self, attr):
-                xw.writeAttribute(attr, value2str(getter(self)))
+                xw.writeAttribute(attr, value2str(getattr(self, attr)))
+        for prop, setter_getter in self.XML_PROPERTIES.items():
+            _, getter = setter_getter  # Unpack just 2 items
+            xw.writeAttribute(prop, value2str(getter(self)))
         xw.writeEndElement()
 
     @classmethod
     def fromXml(cls, xr: QXmlStreamReader) -> 'RectElement':
         instance = cls()
-        for attr, setter_getter in cls.XML_ATTRIBUTES.items():
+        for prop in instance.XML_ATTRIBUTES:
+            if hasattr(instance, prop):
+                setattr(instance, prop, str2value(xr.attributes().value(prop)))
+        for prop, setter_getter in cls.XML_PROPERTIES.items():
             setter, _ = setter_getter  # Unpack just 2 items
-            if xr.attributes().hasAttribute(attr):
-                setter(instance, str2value(xr.attributes().value(attr)))
+            if xr.attributes().hasAttribute(prop):
+                setter(instance, str2value(xr.attributes().value(prop)))
         xr.readNext()
         return instance
 
-class RectElement(QGraphicsRectItem, Element):
+class RectElement(QGraphicsRectItem, Element, ElementXmlMixin):
     """Base class for rectangle items."""
-    XML_ATTRIBUTES = {
-        'pos'        : ( lambda self, value: self.setPos       (value) , lambda self: self.getPos       () ),
-        'size'       : ( lambda self, value: self.setSize      (value) , lambda self: self.getSize      () ),
-        'anchor'     : ( lambda self, value: self.setAnchor    (value) , lambda self: self.getAnchor    () ),
-        'pen_spec'   : ( lambda self, value: self.setPenSpec   (value) , lambda self: self.getPenSpec   () ),
-        'brush_spec' : ( lambda self, value: self.setBrushSpec (value) , lambda self: self.getBrushSpec () ),
-        'text_spec'  : ( lambda self, value: self.setTextSpec  (value) , lambda self: self.getTextSpec  () )
+    XML_ATTRIBUTES = ['anchor', 'pen_spec', 'brush_spec', 'text_spec']
+    XML_PROPERTIES = {
+        'pos'  : ( lambda self, value: self.setPos(value)  , lambda self: self.pos()         ),
+        'size' : ( lambda self, value: self.setSize(value) , lambda self: self.rect().size() )
     }
-
     MIN_SIZE = QSizeF(1.0, 1.0)
 
     anchor : KeyPoint
@@ -226,9 +228,6 @@ class RectElement(QGraphicsRectItem, Element):
         self.updateGripsPosition()
         self.updateGripsVisibility()
         self.updateGripsZValue()
-
-    def getPos(self) -> QPointF:
-        return self.pos()
 
     def setSize(self, size : QSizeF) -> None:
         self.setRect(0, 0, size.width(), size.height())
@@ -311,8 +310,6 @@ class RectElement(QGraphicsRectItem, Element):
         return rect
 
     def boundingRect(self) -> QRectF:
-        print('self.penWidth()', self.penWidth(), type(self.penWidth()))
-        print('hub.settings.prefs.display.elements.selected.grip.size', hub.settings.prefs.display.elements.selected.grip.size, type(hub.settings.prefs.display.elements.selected.grip.size))
         w = max(
             self.penWidth(),
             hub.settings.prefs.display.elements.selected.grip.size
@@ -346,7 +343,7 @@ class RectElement(QGraphicsRectItem, Element):
             self.updateGripsVisibility()
         return super().itemChange(change, value)
 
-class TextItem(QGraphicsTextItem, Element):
+class TextItem(QGraphicsTextItem, Element, ElementXmlMixin):
     """Base class for text items."""
     XML_ATTRIBUTES = {
     #   attribute        setter                                          getter
@@ -410,17 +407,6 @@ class TextItem(QGraphicsTextItem, Element):
 
 __all__ = []
 
-# system elements
-from .extents import Extents
-__all__ += extents.__all__
-from .grid import Grid
-__all__ += grid.__all__
-from .paper import Paper
-__all__ += paper.__all__
-from .border import Border
-__all__ += border.__all__
-
-# user elements
 from .rectangle import Rectangle
 __all__ += rectangle.__all__
 from .symbol_instance import SymbolInstance

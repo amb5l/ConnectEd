@@ -1,34 +1,12 @@
 __all__ = ['DiagramView', 'DiagramSubWindow']
 
-from typing import Optional
-
-from PyQt6.QtWidgets import QMdiArea
-
-from ..scenes   import DiagramScene
-from ..elements import Paper, Border
 from .drawing   import DrawingView, DrawingSubWindow
 
-from ... import hub
 
 class DiagramView(DrawingView):
-    paper   : Paper
-    border  : Border
-
-    def __init__(self : 'DiagramView', scene : DiagramScene) -> None:
-        super().__init__(scene)
-        self.paper  = Paper()
-        self.scene().addItem(self.paper)
-        self.border = Border()
-        self.scene().addItem(self.border)
-
     def viewZoomSheet(self : 'DiagramView') -> None:
-        self._zoomRect(self.sheet.rect)
+        rect = self.scene().paper_rect()
+        self._zoomRect(rect)
 
 class DiagramSubWindow(DrawingSubWindow):
-    def __init__(
-        self   : 'DrawingSubWindow',
-        parent : Optional[QMdiArea] = None
-    ) -> None:
-        if parent is None:
-            parent = hub.main_window.mdi_area
-        super().__init__(parent)
+    pass

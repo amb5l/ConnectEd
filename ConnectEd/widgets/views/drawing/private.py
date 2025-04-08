@@ -32,6 +32,20 @@ class Layer(Enum): # TODO resolve drawing vs diagram
     Sheet   = LAYER_SHEET
     Drawing = LAYER_DRAWING
 
+class DrawingGrid:
+    pitch      : QPointF
+    snap       : bool
+    dots       : bool
+    alpha      : int
+    min_pixels : int
+
+    def __init__(self : 'DrawingGrid') -> None:
+        self.pitch      = hub.settings.defaults.grid.pitch
+        self.snap       = hub.settings.defaults.grid.snap
+        self.dots       = hub.settings.defaults.grid.dots
+        self.alpha      = hub.settings.defaults.grid.alpha
+        self.min_pixels = hub.settings.defaults.grid.min_pixels
+
 class DrawingPLPos:
     physical : Optional[QPoint] = None
     logical  : Optional[QPointF] = None
@@ -128,6 +142,7 @@ class DrawingViewPrivateMixin:
     A mixin class that provides private methods for the DrawingView class.
     """
 
+    Grid             = DrawingGrid
     MouseButtonState = DrawingMouseButtonState
     Mouse            = DrawingMouse
     State            = DrawingViewState
@@ -138,15 +153,12 @@ class DrawingViewPrivateMixin:
         if hub.main_window is not None:
             hub.main_window.status_bar.tip.setText(self.StateTip[state])
 
-    def _allItemsRect(self: 'DrawingView') -> QRectF:
-        items_rect = QRectF()
+    def _allItemsRect(self: 'DrawingView') -> Optional[QRectF]:
+        items_rect = None
         for item in self.scene().items():
-            if item == self.scene().extents or item == self.scene().grid:
-                continue
             item_rect = item.mapToScene(item.boundingRect()).boundingRect()
-            items_rect = items_rect.united(item_rect)
-        if items_rect.isEmpty():
-            items_rect = self.scene().extents.rect()
+            items_rect = item_rect if items_rect is None else \
+                items_rect.united(item_rect)
         return items_rect
 
     def _rubberBandRect(self: 'DrawingView') -> QRectF:
@@ -209,12 +221,10 @@ class DrawingViewPrivateMixin:
         )
 
     def _zoomRect(self: 'DrawingView', rect : QRectF) -> None:
-        zoom = QPointF(
+        factor = min(
             self.viewport().width()  / rect.width(),
             self.viewport().height() / rect.height()
-        )
-        factor = min(zoom.x(), zoom.y()) * \
-            (1 - hub.settings.prefs.display.zoom.padding)
+            ) * (1 - hub.settings.prefs.display.zoom.padding)
         self._zoomAbs(factor)
         self.centerOn(rect.center())
 
@@ -223,9 +233,9 @@ class DrawingViewPrivateMixin:
 
     def _snap(self: 'DrawingView', pos: QPointF) -> QPoint:
         return QPointF(
-            self._round2nearest(pos.x(), self.scene().grid.pitch.x()),
-            self._round2nearest(pos.y(), self.scene().grid.pitch.y())
-        ) if self.scene().grid.snap else pos
+            self._round2nearest(pos.x(), self.grid.pitch.x()),
+            self._round2nearest(pos.y(), self.grid.pitch.y())
+        ) if self.grid.snap else pos
 
     def _distance(self: 'DrawingView', cp1: QPoint, cp2: QPoint) -> int:
         return int(round(sqrt((cp1.x() - cp2.x())**2 + (cp1.y() - cp2.y())**2)))

@@ -1,8 +1,66 @@
 __all__ = ['DiagramScene']
 
+from typing import Optional, Union
+
+from PyQt6.QtCore import Qt, QPointF, QRectF, QSizeF
+from PyQt6.QtGui  import QPainter, QPen, QBrush
+
 from . import DrawingScene
 
-from ..elements import Paper, Border
+from ... import hub
+
 
 class DiagramScene(DrawingScene):
-    SYSTEM_ALLOWED_ITEMS = DrawingScene.SYSTEM_ALLOWED_ITEMS + [Paper, Border]
+    XML_ATTRIBUTES = DrawingScene.XML_ATTRIBUTES + \
+        ['paper_size', 'margin', 'border']
+
+    paper_size : Union[str, QSizeF]
+    margin     : float # distance from paper edge to border line
+    border     : float # line width
+
+    def __init__(
+        self,
+        name       : Optional[str] = None,
+        paper_size : Optional[Union[str, QSizeF]] = None,
+        margin     : Optional[float] = None,
+        border     : Optional[float] = None
+    ) -> None:
+        super().__init__(name)
+        if paper_size is None:
+            paper_size = hub.settings.defaults.paper_size
+        if margin is None:
+            margin = hub.settings.defaults.margin
+        if border is None:
+            border = hub.settings.defaults.border
+        self.paper_size = paper_size
+        self.margin = margin
+        self.border = border
+        paper_rect = self.paper_rect()
+        self.setSceneRect(QRectF(
+            QPointF(-paper_rect.width(), -paper_rect.height()),
+            QSizeF(paper_rect.width() * 3, paper_rect.height() * 3)
+        ))
+
+    def paper_rect(self) -> QRectF:
+        size = self.paper_size
+        if isinstance(size, str):
+            size = getattr(hub.settings.paper_sizes, size)
+        return QRectF(QPointF(0, 0), size)
+
+    def drawBackground(self, painter : QPainter, rect : QRectF) -> None:
+        painter.fillRect(rect, hub.settings.theme.background.fill)
+        painter.fillRect(
+            self.paper_rect(),
+            hub.settings.theme.paper.fill
+        )
+        print('hub.settings.theme.border.line', hub.settings.theme.border.line, type(hub.settings.theme.border.line))
+        print('self.border', self.border, type(self.border))
+        painter.setPen(QPen(
+            hub.settings.theme.border.line,
+            self.border,
+            Qt.PenStyle.SolidLine
+        ))
+        painter.setBrush(QBrush(Qt.BrushStyle.NoBrush))
+        painter.drawRect(self.paper_rect().adjusted(
+            self.margin, self.margin, -self.margin, -self.margin
+        ))
