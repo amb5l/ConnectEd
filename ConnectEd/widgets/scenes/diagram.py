@@ -11,8 +11,11 @@ from ... import hub
 
 
 class DiagramScene(DrawingScene):
-    XML_ATTRIBUTES = DrawingScene.XML_ATTRIBUTES + \
-        ['paper_size', 'margin', 'border']
+    XML_ATTRIBUTES = DrawingScene.XML_ATTRIBUTES | {
+        'paper_size' : 'str',
+        'margin'     : 'float',
+        'border'     : 'float'
+    }
 
     paper_size : Union[str, QSizeF]
     margin     : float # distance from paper edge to border line

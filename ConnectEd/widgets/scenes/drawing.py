@@ -6,7 +6,7 @@ from PyQt6.QtCore    import QPointF, QRectF, QSizeF, \
                             QXmlStreamWriter, QXmlStreamReader
 from PyQt6.QtWidgets import QGraphicsScene, QGraphicsItem
 
-from ...core.utils import value2str, str2value
+from ...core.utils import val2str, str2val
 
 # TODO move Grip to drawForeground?
 from ..elements import Grip, element_class_dict
@@ -20,7 +20,7 @@ if TYPE_CHECKING:
 
 class DrawingScene(QGraphicsScene):
     # class variables
-    XML_ATTRIBUTES         = ['name']
+    XML_ATTRIBUTES         = {'name' : 'str'}
     SYSTEM_FORBIDDEN_ITEMS = [Grip]
     SYSTEM_ALLOWED_ITEMS   = None
     FORBIDDEN_ITEMS        = None # none
@@ -61,9 +61,9 @@ class DrawingScene(QGraphicsScene):
 
     def toXml(self : 'DrawingScene', xw : QXmlStreamWriter) -> None:
         xw.writeStartElement(self.__class__.__name__.replace('Scene', ''))
-        for attr in self.XML_ATTRIBUTES:
-            value = getattr(self, attr)
-            xw.writeAttribute(attr, value2str(value))
+        for attr_name, _ in self.XML_ATTRIBUTES.items():
+            attr_value = getattr(self, attr_name)
+            xw.writeAttribute(attr_name, val2str(attr_value))
         for item in self.items():
             item.toXml(xw)
         xw.writeEndElement()
@@ -76,21 +76,25 @@ class DrawingScene(QGraphicsScene):
         drawing_scene : DrawingScene = cls()
         attributes = xr.attributes()
         for attribute in attributes:
-            name = attribute.name()
-            value = attribute.value()
-            if name in drawing_scene.XML_ATTRIBUTES:
-                setattr(drawing_scene, name, str2value(value))
+            attr_name = attribute.name()
+            attr_value_str = attribute.value()
+            if attr_name in drawing_scene.XML_ATTRIBUTES:
+                attr_type_name = drawing_scene.XML_ATTRIBUTES[attr_name]
+                setattr(
+                    drawing_scene, attr_name,
+                    str2val(attr_value_str, attr_type_name)
+                )
             else:
-                raise ValueError(f'Unexpected attribute: {name} value: {value}')
+                raise ValueError(f'Unexpected attribute: {attr_name} value: {attr_value_str}')
         xr.readNext()
         while not (xr.isEndElement() and xr.name() == cls_name):
             if xr.tokenType() == QXmlStreamReader.TokenType.StartElement:
-                name = xr.name()
-                if name in element_class_dict:
-                    cls = element_class_dict[name]
+                attr_name = xr.name()
+                if attr_name in element_class_dict:
+                    cls = element_class_dict[attr_name]
                     element = cls.fromXml(xr)
                     drawing_scene.addItem(element)
                 else:
-                    raise ValueError(f"Unexpected element: {name}")
+                    raise ValueError(f"Unexpected element: {attr_name}")
             xr.readNext()
         return drawing_scene
