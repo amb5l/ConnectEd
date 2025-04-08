@@ -39,6 +39,10 @@ class DbExplorer(TreeView):
         a.saveAsDb.triggered.connect(lambda: self.saveAsDb(self.item))
         a.closeDb = QAction('Close', self)
         a.closeDb.triggered.connect(lambda: self.closeDb(self.item))
+        a.copy = QAction('Copy', self)
+        a.copy.triggered.connect(lambda: self.copy(self.item))
+        a.paste = QAction('Paste', self)
+        a.paste.triggered.connect(lambda: self.paste(self.item))
 
     def wheelEvent(self, event: QWheelEvent) -> None:
         """Handle mouse wheel events to adjust font size when Ctrl is pressed."""
@@ -79,59 +83,56 @@ class DbExplorer(TreeView):
         menu = QMenu(self)
         index = self.indexAt(pos)
         if index.isValid():
-            self.item = self.model().itemFromIndex(index)
-            item = self.model().itemFromIndex(index)
-            parent_item = item.parent()
-            grandparent_item = None if parent_item is None else \
-                parent_item.parent()
             new_action = self.actions.newItem
             new_window_action = self.actions.newWindow
             edit_action = self.actions.editDrawing
             save_action = self.actions.saveDb
             save_as_action = self.actions.saveAsDb
             close_action = self.actions.closeDb
-            if item.text() == 'Designs':
-                # item is Designs collection
-                new_action.setText('New Design')
-                menu.addAction(new_action)
-            elif item.text() == 'Libraries':
-                # item is Libraries collection
-                new_action.setText('New Library')
-                menu.addAction(new_action)
-            elif parent_item and parent_item.text() == 'Designs':
-                # item is a design
-                save_action.setText('Save Design')
-                save_as_action.setText('Save Design As')
-                close_action.setText('Close Design')
-                menu.addAction(save_action)
-                menu.addAction(save_as_action)
-                menu.addAction(close_action)
-            elif parent_item and parent_item.text() == 'Libraries':
-                # item is a library
-                new_action.setText('New Symbol')
-                save_action.setText('Save Library')
-                save_as_action.setText('Save Library As')
-                close_action.setText('Close Library')
-                menu.addAction(new_action)
-                menu.addAction(save_action)
-                menu.addAction(save_as_action)
-                menu.addAction(close_action)
-            elif item.text() == 'Diagrams':
-                # item is a Design's Diagrams collection
-                new_action.setText('New Diagram')
-                menu.addAction(new_action)
-            elif parent_item.text() == 'Diagrams':
-                # item is a Diagram
-                edit_action.setText('Edit Diagram')
-                new_window_action.setText('New Diagram Window')
-                menu.addAction(edit_action)
-                menu.addAction(new_window_action)
-            elif grandparent_item.text() == 'Libraries':
-                # item is a symbol
-                edit_action.setText('Edit Symbol')
-                new_window_action.setText('New Symbol Window')
-                menu.addAction(edit_action)
-                menu.addAction(new_window_action)
+            self.item = self.model().itemFromIndex(index)
+            item = self.model().itemFromIndex(index)
+            match hub.db_model.getItemTypeStr(item):
+                case 'Designs':
+                    new_action.setText('New Design')
+                    menu.addAction(new_action)
+                case 'Libraries':
+                    new_action.setText('New Library')
+                    menu.addAction(new_action)
+                case 'Design':
+                    save_action.setText('Save Design')
+                    save_as_action.setText('Save Design As')
+                    close_action.setText('Close Design')
+                    menu.addAction(save_action)
+                    menu.addAction(save_as_action)
+                    menu.addAction(close_action)
+                case 'Library':
+                    new_action.setText('New Symbol')
+                    save_action.setText('Save Library')
+                    save_as_action.setText('Save Library As')
+                    close_action.setText('Close Library')
+                    menu.addAction(new_action)
+                    menu.addAction(save_action)
+                    menu.addAction(save_as_action)
+                    menu.addAction(close_action)
+                case 'Diagrams':
+                    new_action.setText('New Diagram')
+                    menu.addAction(new_action)
+                case 'Symbol Cache':
+                    new_action.setText('New Symbol')
+                    menu.addAction(self.actions.newItem)
+                case 'Diagram':
+                    edit_action.setText('Edit Diagram')
+                    new_window_action.setText('New Diagram Window')
+                    menu.addAction(edit_action)
+                    menu.addAction(new_window_action)
+                case 'Symbol':
+                    edit_action.setText('Edit Symbol')
+                    new_window_action.setText('New Symbol Window')
+                    menu.addAction(edit_action)
+                    menu.addAction(new_window_action)
+            menu.addSeparator()
+            menu.addAction(self.actions.copy)
+            menu.addAction(self.actions.paste)
             menu.addSeparator()
         menu.addAction(self.actions.increaseTextSize)
         menu.addAction(self.actions.decreaseTextSize)
@@ -154,3 +155,9 @@ class DbExplorer(TreeView):
 
     def closeDb(self : 'DbExplorer', item : QStandardItem) -> None:
         hub.db_model.closeDb(item)
+
+    def copy(self : 'DbExplorer', item : QStandardItem) -> None:
+        hub.db_model.copy(item)
+
+    def paste(self : 'DbExplorer', item : QStandardItem) -> None:
+        hub.db_model.paste(item)

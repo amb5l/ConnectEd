@@ -16,8 +16,4 @@ class DrawingViewApiMixin(
     DrawingApiMouseMixin,
     DrawingApiPlaceMixin
 ):
-    def paintSheet(self : 'DrawingView') -> None:
-        """
-        Placeholder to be overridden by Diagram.
-        """
         pass

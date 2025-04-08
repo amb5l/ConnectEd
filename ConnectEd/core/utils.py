@@ -12,9 +12,7 @@ import platform
 from collections import namedtuple
 from typing      import Any
 
-from PyQt6.QtCore    import Qt, QPointF, QSizeF, QByteArray, \
-                            QXmlStreamWriter, QFile, QIODevice
-from PyQt6.QtWidgets import QApplication
+from PyQt6.QtCore    import Qt, QPointF, QRectF, QSizeF
 from PyQt6.QtGui     import QColor
 
 
@@ -62,18 +60,20 @@ def value2str(v : Any) -> str:
     match typeName:
         case 'NoneType'   : valueStr = 'None'
         case 'bytes'      : valueStr = v.hex()
-        case 'str'        : valueStr = v
+        case 'str'        : valueStr = v # TODO escape special characters
         case 'int'        : valueStr = str(v)
         case 'float'      : valueStr = str(v)
         case 'bool'       : valueStr = str(v)
         case 'MinMax'     : valueStr = f'({v.min},{v.max})'
         case 'QPointF'    : valueStr = f'({v.x()},{v.y()})'
         case 'QRectF'     : valueStr = f'({v.x()},{v.y()},{v.width()},{v.height()})'
-        case 'QSize'      : valueStr = f'({v.width()},{v.height()})'
         case 'QSizeF'     : valueStr = f'({v.width()},{v.height()})'
         case 'QColor'     : valueStr = hex(v.rgba())
         case 'PenStyle'   : valueStr = str(v).replace('PenStyle.', '')
         case 'BrushStyle' : valueStr = str(v).replace('BrushStyle.', '')
+        case 'PenSpec'    : valueStr = f'({v.color},{v.width},{v.style})'
+        case 'BrushSpec'  : valueStr = f'({v.color},{v.style})'
+        case 'TextSpec'   : valueStr = f'({v.color},{v.family},{v.size},{v.weight},{v.italic},{v.underline})'
         case 'KeyPoint'   : valueStr = str(v).replace('KeyPoint.', '')
         case _ :
             raise ValueError(f'Unsupported type: {typeName}')
@@ -82,8 +82,10 @@ def value2str(v : Any) -> str:
 
 def str2value(s : str) -> Any:
     """Inverse of value2str."""
-    from ..widgets.elements import KeyPoint
-    if not isinstance(s, str):
+    from ..widgets.elements import KeyPoint, PenSpec, BrushSpec, TextSpec
+    def strValuesToFloats(s : str) -> list[float]:
+        return [float(p) for p in s.strip('()').split(',')]
+    if not isinstance(s, str): # TODO review this
         return s
     try:
         typeName, valueStr = s.split(':', 1)
@@ -92,16 +94,40 @@ def str2value(s : str) -> Any:
     match typeName:
         case 'NoneType'   : return None
         case 'bytes'      : return bytes.fromhex(valueStr)
-        case 'str'        : return valueStr
+        case 'str'        : return valueStr # TODO unescape special characters
         case 'int'        : return int(valueStr)
         case 'float'      : return float(valueStr)
         case 'bool'       : return valueStr == 'True'
-        case 'MinMax'     : return MinMax(*map(float, valueStr[1:-1].split(',')))
-        case 'QPointF'    : return QPointF(*map(float, valueStr[1:-1].split(',')))
-        case 'QSizeF'     : return QSizeF(*map(float, valueStr[1:-1].split(',')))
+        case 'MinMax'     : return MinMax(*strValuesToFloats(valueStr))
+        case 'QPointF'    : return QPointF(*strValuesToFloats(valueStr))
+        case 'QRectF'     : return QRectF(*strValuesToFloats(valueStr))
+        case 'QSizeF'     : return QSizeF(*strValuesToFloats(valueStr))
         case 'QColor'     : return QColor.fromRgba(int(valueStr,0))
         case 'PenStyle'   : return Qt.PenStyle[valueStr]
         case 'BrushStyle' : return Qt.BrushStyle[valueStr]
+        case 'PenSpec'    :
+            params = valueStr.strip('()').split(',')
+            # Handle the case when some params are None
+            color = None if params[0] == 'None' else QColor.fromRgba(int(params[0], 0))
+            width = None if params[1] == 'None' else float(params[1])
+            style = None if params[2] == 'None' else Qt.PenStyle[params[2]]
+            return PenSpec(color, width, style)
+        case 'BrushSpec'  :
+            params = valueStr.strip('()').split(',')
+            # Handle the case when some params are None
+            color = None if params[0] == 'None' else QColor.fromRgba(int(params[0], 0))
+            style = None if params[1] == 'None' else Qt.BrushStyle[params[1]]
+            return BrushSpec(color, style)
+        case 'TextSpec'   :
+            params = valueStr.strip('()').split(',')
+            # Handle the case when some params are None
+            color     = None if params[0] == 'None' else QColor.fromRgba(int(params[0], 0))
+            family    = None if params[1] == 'None' else params[1]
+            size      = None if params[2] == 'None' else float(params[2])
+            weight    = None if params[3] == 'None' else int(params[3])
+            italic    = None if params[4] == 'None' else params[4] == 'True'
+            underline = None if params[5] == 'None' else params[5] == 'True'
+            return TextSpec(color, family, size, weight, italic, underline)
         case 'KeyPoint'   : return KeyPoint[valueStr]
         case _:
             raise ValueError(f'Unsupported type: {typeName}')

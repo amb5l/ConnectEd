@@ -15,3 +15,4 @@
 - apply default path to new databases
 - review global imports
 - resize graphical artifacts
+- modified state tracking and GUI indication

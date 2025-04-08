@@ -41,33 +41,7 @@ FACTORY_SETTINGS = {
         },
         'display': {
             'theme': 'dark',
-            'overscan': {  # TODO set all to 0
-                'top'    : 2,
-                'bottom' : 2,
-                'left'   : 2,
-                'right'  : 2
-            },
             'elements': {
-                'extents': {
-                    'line': {
-                        'width': 0,
-                        'style': Qt.PenStyle.SolidLine
-                    },
-                    'fill': Qt.BrushStyle.NoBrush,
-                },
-                'paper': {
-                    'line': {
-                        'width': 0,
-                        'style': Qt.PenStyle.NoPen
-                    },
-                    'fill': Qt.BrushStyle.SolidPattern,
-                },
-                'border': {
-                    'line': {
-                        'width' : 1,
-                        'style' : Qt.PenStyle.SolidLine
-                    }
-                },
                 'rectangle': {
                     'line': {
                         'width': 1,
@@ -110,11 +84,7 @@ FACTORY_SETTINGS = {
     },
     'themes': {
         'dark': {
-            'vacuum': {
-                'fill' : QColor(  16,  16,  16 )
-            },
-            'extents': {
-                'line' : QColor(   0,   0, 255 ),
+            'background': {
                 'fill' : QColor(   0,   0,   0 )
             },
             'paper': {
@@ -149,8 +119,7 @@ FACTORY_SETTINGS = {
             }
         },
         'light': {
-            'extents': {
-                'line' : QColor(   0,   0, 255 ),
+            'background': {
                 'fill' : QColor(  16,  16,  16 )
             },
             'paper': {
@@ -180,7 +149,7 @@ FACTORY_SETTINGS = {
             }
         }
     },
-    'sheet_sizes': {
+    'paper_sizes': {
         'A4' : QSizeF( 1169.0 ,  827.0 ),
         'A3' : QSizeF( 1654.0 , 1169.0 ),
         'A2' : QSizeF( 2338.0 , 1654.0 ),
@@ -193,8 +162,10 @@ FACTORY_SETTINGS = {
         'E'  : QSizeF( 4220.0 , 3220.0 )
     },
     'defaults': { # TODO move these to session settings
-        'sheet'  : 'A4',
-        'margin' : 10,
+        'extents'    : QSizeF(100, 100),
+        'paper_size' : 'A4',
+        'margin'     : 10,
+        'border'     : 1,
         'grid': {
             'display'    : True,
             'snap'       : True,

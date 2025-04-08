@@ -8,11 +8,15 @@ if TYPE_CHECKING: # avoid circular import issues
 
 
 class DrawingApiViewMixin:
-    def viewZoomExtents(self : 'DrawingView') -> None:
-        self._zoomRect(self.extents.rect())
-
     def viewZoomAll(self : 'DrawingView') -> None:
-        self._zoomRect(self._allItemsRect())
+        rect = self._allItemsRect()
+        if rect is None:
+            if hasattr(self.scene(), 'paper_size'):
+                self._zoomRect(self.scene().paper_rect())
+            else:
+                self._zoomAbs(1)
+        else:
+            self._zoomRect(self._allItemsRect())
 
     def viewZoomWindow(self : 'DrawingView') -> None:
         self._goState(self.State.ViewZoomWindow1)
