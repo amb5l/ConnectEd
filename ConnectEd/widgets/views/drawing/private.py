@@ -14,10 +14,10 @@ from enum   import Enum, auto
 from typing import Optional
 from math   import sqrt
 
-from PyQt6.QtCore    import Qt, QPoint, QPointF, QRect, QRectF, QTimer
-from PyQt6.QtWidgets import QRubberBand, QGraphicsItem, QMenu
+from PyQt6.QtCore    import Qt, QPoint, QPointF, QRectF
+from PyQt6.QtWidgets import QGraphicsItem, QMenu
 from PyQt6.QtGui     import QMouseEvent, QCursor, QPainterPath, \
-                            QPainter, QPen, QColor, QAction, QIcon
+                            QAction, QIcon
 
 from ....core import LAYER_SHEET, LAYER_DRAWING
 

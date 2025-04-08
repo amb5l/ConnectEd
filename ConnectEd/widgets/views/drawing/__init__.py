@@ -3,7 +3,7 @@ __all__ = ['DrawingView', 'DrawingSubWindow']
 from typing import Optional
 from math   import ceil
 
-from PyQt6.QtCore    import Qt, QPoint, QPointF, QRectF, QEvent, QTimer
+from PyQt6.QtCore    import Qt, QPoint, QPointF, QRectF, QEvent
 from PyQt6.QtWidgets import QMdiArea, QMdiSubWindow, QGraphicsView
 from PyQt6.QtGui     import QPainter, QPen, QCloseEvent
 
