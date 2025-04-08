@@ -140,7 +140,7 @@ class DesignItem(DbItem):
             diagram_scene = diagram_item.scene
             diagram_scene.toXml(xw)
         xw.writeEndElement()
-        xw.writeStartElement('Symbol Cache')
+        xw.writeStartElement('SymbolCache')
         for i in range(self.symbols.rowCount()):
             symbol_item : SymbolItem = self.symbols.child(i)
             symbol_scene = symbol_item.scene
