@@ -18,8 +18,6 @@ from .... import hub
 
 
 class DrawingSubWindow(QMdiSubWindow):
-    first_zoom_done : bool = False
-
     def __init__(
         self   : 'DrawingSubWindow',
         parent : Optional[QMdiArea] = None
@@ -27,13 +25,7 @@ class DrawingSubWindow(QMdiSubWindow):
         if parent is None:
             parent = hub.main_window.mdi_area
         super().__init__(parent)
-        self.first_zoom_done = False
-
-    def showEvent(self : 'DrawingSubWindow', event : QEvent) -> None:
-        super().showEvent(event)
-        if not self.first_zoom_done and isinstance(self.widget(), DrawingView):
-            QTimer.singleShot(100, lambda: self.widget().viewZoomAll())
-            self.first_zoom_done = True
+        self.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
 
     def closeEvent(self : 'DrawingSubWindow', event : QCloseEvent) -> None:
         hub.main_window.menu_bar.updateWindowMenu()
@@ -44,6 +36,7 @@ class DrawingView(
     DrawingViewEventsMixin,
     DrawingViewApiMixin
 ):
+    _shown   : bool = False
     marquee  : Marquee
     layer    : Layer
     zoom     : float
@@ -61,6 +54,7 @@ class DrawingView(
             QGraphicsView.ViewportUpdateMode.FullViewportUpdate
         )
 
+        self._shown   = False
         self.marquee  = Marquee(self)
         self.layer    = Layer.Drawing
         self.zoom     = 1.0
@@ -76,6 +70,12 @@ class DrawingView(
         #self.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
 
         self._setLayer(Layer.Drawing)
+
+    def showEvent(self : 'DrawingView', event : QEvent) -> None:
+        super().showEvent(event)
+        if not self._shown:
+            self.viewZoomSheet()
+        self._shown = True
 
     def drawForeground(self, painter : QPainter, rect : QRectF) -> None:
         # draw grid

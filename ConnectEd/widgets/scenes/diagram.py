@@ -53,8 +53,6 @@ class DiagramScene(DrawingScene):
             self.paper_rect(),
             hub.settings.theme.paper.fill
         )
-        print('hub.settings.theme.border.line', hub.settings.theme.border.line, type(hub.settings.theme.border.line))
-        print('self.border', self.border, type(self.border))
         painter.setPen(QPen(
             hub.settings.theme.border.line,
             self.border,

@@ -80,8 +80,6 @@ class DrawingScene(QGraphicsScene):
             value = attribute.value()
             if name in drawing_scene.XML_ATTRIBUTES:
                 setattr(drawing_scene, name, str2value(value))
-                if name == 'name':
-                    drawing_scene.setText(value)
             else:
                 raise ValueError(f'Unexpected attribute: {name} value: {value}')
         xr.readNext()

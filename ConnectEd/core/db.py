@@ -4,7 +4,7 @@ __all__ = [
     'DbModel'
 ]
 
-from typing  import Optional, Union
+from typing  import Optional
 
 from PyQt6.QtCore    import Qt, QXmlStreamWriter, QXmlStreamReader
 from PyQt6.QtWidgets import QDialog
@@ -13,11 +13,9 @@ from PyQt6.QtGui     import QStandardItemModel, QStandardItem
 from ..core    import LIB_EXT, DSN_EXT, \
                       copy as master_copy, \
                       paste as master_paste, \
-                      saveBegin, saveEnd, \
-                      str2value
-from ..widgets import FileSaveAsDialog
-from ..widgets.scenes.drawing import DrawingScene
-from ..widgets import SymbolScene, DiagramScene
+                      saveBegin, saveEnd
+from ..widgets import DrawingScene, DiagramScene, SymbolScene, \
+                      FileSaveAsDialog
 
 from .. import hub
 
@@ -46,9 +44,10 @@ class DrawingItem(QStandardItem):
         cls_name = cls.__name__.replace('Item', '')
         if xr.name() != cls_name:
             raise ValueError(f'Expected {cls_name} element, got {xr.name()}')
-        scene = DrawingScene.fromXml(xr)
+        scene = cls.SCENE_CLASS.fromXml(xr)
         drawing_item : DrawingItem = cls(scene)
         drawing_item.setText(scene.name)
+        return drawing_item
 
 class SymbolItem(DrawingItem):
     SCENE_CLASS = SymbolScene
@@ -217,8 +216,6 @@ class DbModel(QStandardItemModel):
                 raise ValueError(f'Bad item: {item} {item.text()} {type(item)}')
 
     def editDrawing(self : 'DbModel', item : DrawingItem) -> None:
-        if not isinstance(item, DiagramItem):
-            raise ValueError(f'Expected DiagramItem:{item.text()} ({type(item)})')
         """Edit the drawing, focusing the first existing subwindow if available."""
         from ..widgets import DrawingScene, DrawingView, DrawingSubWindow, \
                               SymbolScene, SymbolView, SymbolSubWindow, \

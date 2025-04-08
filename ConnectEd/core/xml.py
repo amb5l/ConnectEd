@@ -40,7 +40,6 @@ def fromXml(xr : QXmlStreamReader) -> list[XmlItemTypes]:
     if xr.name() != 'ConnectEd':
         raise ValueError(f"Expected 'ConnectEd' root element, got '{xr.name()}'")
     xr.readNext()
-    print('fromXml: xr.name() =', xr.name())
     result = []
     while not (xr.isEndElement() and xr.name() == 'ConnectEd'):
         if xr.tokenType() == QXmlStreamReader.TokenType.StartElement:
@@ -67,7 +66,6 @@ def fromXml(xr : QXmlStreamReader) -> list[XmlItemTypes]:
         if xr.isEndElement() and xr.name() == 'ConnectEd':
             break
         xr.readNext()
-        print('fromXml: xr.name() =', xr.name())
     return result
 
 def saveBegin(path : str) -> tuple[QXmlStreamWriter, QFile]:
@@ -106,12 +104,10 @@ def copy(instance : Any) -> None:
 def paste() -> list[XmlItemTypes]:
     clipboard = QApplication.clipboard()
     buffer = clipboard.text()
-    print('Clipboard content:', buffer)
     if buffer:
         xr = QXmlStreamReader(buffer)
         try:
             items = fromXml(xr)
-            print(f'Successfully parsed {len(items)} items of types: {[type(item).__name__ for item in items]}')
             return items
         except ValueError as e:
             print(f'paste error: {e}')
@@ -121,5 +117,4 @@ def paste() -> list[XmlItemTypes]:
             print(f'Unexpected error during paste: {str(e)}')
             import traceback
             traceback.print_exc()
-    print(f'paste_items []')
     return []
