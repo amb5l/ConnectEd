@@ -37,6 +37,7 @@ class DrawingView(
     DrawingViewApiMixin
 ):
     _shown   : bool = False
+    _zoomed  : bool = False
     marquee  : Marquee
     layer    : Layer
     zoom     : float
@@ -55,6 +56,7 @@ class DrawingView(
         )
 
         self._shown   = False
+        self._zoomed  = False
         self.marquee  = Marquee(self)
         self.layer    = Layer.Drawing
         self.zoom     = 1.0
@@ -73,9 +75,14 @@ class DrawingView(
 
     def showEvent(self : 'DrawingView', event : QEvent) -> None:
         super().showEvent(event)
-        if not self._shown:
-            self.viewZoomAll()
         self._shown = True
+        self.viewZoomAll()
+
+    def resizeEvent(self : 'DrawingView', event : QEvent) -> None:
+        super().resizeEvent(event)
+        if self._shown and not self._zoomed:
+            self._zoomed = True
+            self.viewZoomAll()
 
     def drawForeground(self, painter : QPainter, rect : QRectF) -> None:
         # draw grid
