@@ -3,7 +3,9 @@ __all__ = [
     'check',
     'getDefaultPath',
     'value2str',
-    'str2value'
+    'str2value',
+    'val2str',
+    'str2val'
 ]
 
 import os
@@ -142,16 +144,16 @@ def val2str(v : Any) -> str:
         case 'int'        : s = str(v)
         case 'float'      : s = str(v)
         case 'bool'       : s = str(v)
-        case 'MinMax'     : s = f'({v.min},{v.max})'
-        case 'QPointF'    : s = f'({v.x()},{v.y()})'
-        case 'QRectF'     : s = f'({v.x()},{v.y()},{v.width()},{v.height()})'
-        case 'QSizeF'     : s = f'({v.width()},{v.height()})'
+        case 'MinMax'     : s = f'{v.min},{v.max}'
+        case 'QPointF'    : s = f'{v.x()},{v.y()}'
+        case 'QRectF'     : s = f'{v.x()},{v.y()},{v.width()},{v.height()}'
+        case 'QSizeF'     : s = f'{v.width()},{v.height()}'
         case 'QColor'     : s = hex(v.rgba())
         case 'PenStyle'   : s = str(v).replace('PenStyle.', '')
         case 'BrushStyle' : s = str(v).replace('BrushStyle.', '')
-        case 'PenSpec'    : s = f'({v.color},{v.width},{v.style})'
-        case 'BrushSpec'  : s = f'({v.color},{v.style})'
-        case 'TextSpec'   : s = f'({v.color},{v.family},{v.size},{v.weight},{v.italic},{v.underline})'
+        case 'PenSpec'    : s = f'{v.color},{v.width},{v.style}'
+        case 'BrushSpec'  : s = f'{v.color},{v.style}'
+        case 'TextSpec'   : s = f'{v.color},{v.family},{v.size},{v.weight},{v.italic},{v.underline}'
         case 'KeyPoint'   : s = str(v).replace('KeyPoint.', '')
         case _ :
             raise ValueError(f'Unsupported type: {t}')
@@ -177,20 +179,20 @@ def str2val(s : str, t : str) -> Any:
         case 'PenStyle'   : return Qt.PenStyle[s]
         case 'BrushStyle' : return Qt.BrushStyle[s]
         case 'PenSpec'    :
-            params = s.strip('()').split(',')
+            params = s.split(',')
             # Handle the case when some params are None
             color = None if params[0] == 'None' else QColor.fromRgba(int(params[0], 0))
             width = None if params[1] == 'None' else float(params[1])
             style = None if params[2] == 'None' else Qt.PenStyle[params[2]]
             return PenSpec(color, width, style)
         case 'BrushSpec'  :
-            params = s.strip('()').split(',')
+            params = s.split(',')
             # Handle the case when some params are None
             color = None if params[0] == 'None' else QColor.fromRgba(int(params[0], 0))
             style = None if params[1] == 'None' else Qt.BrushStyle[params[1]]
             return BrushSpec(color, style)
         case 'TextSpec'   :
-            params = s.strip('()').split(',')
+            params = s.split(',')
             # Handle the case when some params are None
             color     = None if params[0] == 'None' else QColor.fromRgba(int(params[0], 0))
             family    = None if params[1] == 'None' else params[1]

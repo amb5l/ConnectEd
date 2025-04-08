@@ -10,7 +10,7 @@ from PyQt6.QtGui     import QPainter, QPen, QBrush, QColor, QFont, QPainterPath
 from PyQt6.QtWidgets import QStyleOptionGraphicsItem, QWidget, \
                             QGraphicsItem, QGraphicsRectItem, QGraphicsTextItem
 
-from ...core import value2str, str2value
+from ...core import val2str, str2val
 
 from .grip import Grip
 
@@ -174,33 +174,43 @@ class Element:
 class ElementXmlMixin:
     def toXml(self, xw : QXmlStreamWriter) -> None:
         xw.writeStartElement(self.__class__.__name__)
-        for attr in self.XML_ATTRIBUTES:
-            if hasattr(self, attr):
-                xw.writeAttribute(attr, value2str(getattr(self, attr)))
-        for prop, setter_getter in self.XML_PROPERTIES.items():
-            _, getter = setter_getter  # Unpack just 2 items
-            xw.writeAttribute(prop, value2str(getter(self)))
+        for attr_name, attr_type in self.XML_ATTRIBUTES.items():
+            if hasattr(self, attr_name):
+                xw.writeAttribute(attr_name, val2str(getattr(self, attr_name)))
+        for prop_name, type_setter_getter in self.XML_PROPERTIES.items():
+            _, _, getter = type_setter_getter
+            xw.writeAttribute(prop_name, val2str(getter(self)))
         xw.writeEndElement()
 
     @classmethod
     def fromXml(cls, xr: QXmlStreamReader) -> 'RectElement':
         instance = cls()
-        for prop in instance.XML_ATTRIBUTES:
-            if hasattr(instance, prop):
-                setattr(instance, prop, str2value(xr.attributes().value(prop)))
-        for prop, setter_getter in cls.XML_PROPERTIES.items():
-            setter, _ = setter_getter  # Unpack just 2 items
-            if xr.attributes().hasAttribute(prop):
-                setter(instance, str2value(xr.attributes().value(prop)))
+        for prop_name, attr_type_name in instance.XML_ATTRIBUTES.items():
+            if hasattr(instance, prop_name):
+                setattr(
+                    instance, prop_name,
+                    str2val(xr.attributes().value(prop_name), attr_type_name)
+                )
+        for prop_name, type_setter_getter in cls.XML_PROPERTIES.items():
+            prop_type_name, setter, _ = type_setter_getter  # Unpack just 2 items
+            if xr.attributes().hasAttribute(prop_name):
+                setter(instance, str2val(xr.attributes().value(prop_name), prop_type_name))
+            else:
+                raise ValueError(f'Unexpected attribute: {prop_name}')
         xr.readNext()
         return instance
 
 class RectElement(QGraphicsRectItem, Element, ElementXmlMixin):
     """Base class for rectangle items."""
-    XML_ATTRIBUTES = ['anchor', 'pen_spec', 'brush_spec', 'text_spec']
+    XML_ATTRIBUTES = {
+        'anchor'     : 'KeyPoint',
+        'pen_spec'   : 'PenSpec',
+        'brush_spec' : 'BrushSpec',
+        'text_spec'  : 'TextSpec'
+    }
     XML_PROPERTIES = {
-        'pos'  : ( lambda self, value: self.setPos(value)  , lambda self: self.pos()         ),
-        'size' : ( lambda self, value: self.setSize(value) , lambda self: self.rect().size() )
+        'pos'  : ( 'QPointF' , lambda self, value: self.setPos(value)  , lambda self: self.pos()         ),
+        'size' : ( 'QSizeF'  ,  lambda self, value: self.setSize(value) , lambda self: self.rect().size() )
     }
     MIN_SIZE = QSizeF(1.0, 1.0)
 
@@ -346,13 +356,12 @@ class RectElement(QGraphicsRectItem, Element, ElementXmlMixin):
 class TextItem(QGraphicsTextItem, Element, ElementXmlMixin):
     """Base class for text items."""
     XML_ATTRIBUTES = {
-    #   attribute        setter                                          getter
-        'text'       : ( lambda self, value: self.setText      (value) , lambda self: self.getText      () ),
-        'pos'        : ( lambda self, value: self.setPos       (value) , lambda self: self.getPos       () ),
-        'anchor'     : ( lambda self, value: self.setAnchor    (value) , lambda self: self.getAnchor    () ),
-        'pen_spec'   : ( lambda self, value: self.setPenSpec   (value) , lambda self: self.getPenSpec   () ),
-        'brush_spec' : ( lambda self, value: self.setBrushSpec (value) , lambda self: self.getBrushSpec () ),
-        'text_spec'  : ( lambda self, value: self.setTextSpec  (value) , lambda self: self.getTextSpec  () )
+        'text'       : ( 'str'       , lambda self, value: self.setText      (value) , lambda self: self.getText      () ),
+        'pos'        : ( 'QPointF'   , lambda self, value: self.setPos       (value) , lambda self: self.getPos       () ),
+        'anchor'     : ( 'KeyPoint'  , lambda self, value: self.setAnchor    (value) , lambda self: self.getAnchor    () ),
+        'pen_spec'   : ( 'PenSpec'   , lambda self, value: self.setPenSpec   (value) , lambda self: self.getPenSpec   () ),
+        'brush_spec' : ( 'BrushSpec' , lambda self, value: self.setBrushSpec (value) , lambda self: self.getBrushSpec () ),
+        'text_spec'  : ( 'TextSpec'  , lambda self, value: self.setTextSpec  (value) , lambda self: self.getTextSpec  () )
     }
 
     anchor : KeyPoint
