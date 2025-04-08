@@ -75,13 +75,13 @@ class DbItem(QStandardItem):
 
     def save(self) -> None:
         if self.path is None:
-            self.saveAs()
+            self.path = self.saveAs()
         else:
             xw, file = saveBegin(self.path)
             self.toXml(xw)
             saveEnd(xw, file)
 
-    def saveAs(self) -> None:
+    def saveAs(self) -> str:
         dialog = FileSaveAsDialog(
             hub.main_window,
             self.__class__.__name__.replace('Item', '')
@@ -89,10 +89,12 @@ class DbItem(QStandardItem):
         result = dialog.exec()
         if result == QDialog.DialogCode.Accepted:
             selected_files = dialog.selectedFiles()
-            if selected_files:
-                new_path = selected_files[0]
-                self.setName(new_path)
+            path = selected_files[0]
+            if path:
+                self.path = path
                 self.save()
+                self.setName(path)
+                return path
 
     copy = master_copy
 
