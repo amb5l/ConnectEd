@@ -74,7 +74,7 @@ class DrawingView(
     def showEvent(self : 'DrawingView', event : QEvent) -> None:
         super().showEvent(event)
         if not self._shown:
-            self.viewZoomSheet()
+            self.viewZoomAll()
         self._shown = True
 
     def drawForeground(self, painter : QPainter, rect : QRectF) -> None:

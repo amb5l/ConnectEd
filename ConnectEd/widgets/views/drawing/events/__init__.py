@@ -20,6 +20,4 @@ if TYPE_CHECKING: # avoid circular import issues
 class DrawingViewEventsMixin(
     DrawingEventsMouseMixin
 ):
-    def resizeEvent(self : 'DrawingView', event : QResizeEvent) -> None:
-        if self.zoom is None:
-            self.viewZoomAll()
+    pass
