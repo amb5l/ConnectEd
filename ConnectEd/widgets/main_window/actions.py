@@ -18,6 +18,7 @@ class Actions:
 
         self.fileNewDesign    = Action( self._parent, 'Design'       , 'Create a new design'         , 'Ctrl+N'                        )
         self.fileNewLibrary   = Action( self._parent, 'Library'      , 'Create a new library'        , None                            )
+        self.fileOpen         = Action( self._parent, 'Open'         , 'Open database'               , 'Ctrl+O'                        )
         self.fileSave         = Action( self._parent, 'Save'         , 'Save database'               , 'Ctrl+S'                        )
         self.fileSaveAs       = Action( self._parent, 'Save As'      , 'Save database as'            , None                            )
         self.fileExit         = Action( self._parent, 'Exit'         , 'Exit the application'        , SK.Quit                         )

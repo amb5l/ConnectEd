@@ -80,6 +80,9 @@ class Slots:
     def fileNewLibrary(self : 'Slots') -> None:
         hub.db_model.newItem(hub.db_model.libraries)
 
+    def fileOpen(self : 'Slots') -> None:
+        hub.db_model.openItem(hub.db_model.designs)
+
     @withCurrentWidget(DrawingView)
     def fileSave(self : 'Slots', widget: DrawingView) -> None:
         hub.db_model.saveScene(widget.scene())

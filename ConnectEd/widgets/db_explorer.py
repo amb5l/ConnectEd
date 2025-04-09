@@ -29,6 +29,8 @@ class DbExplorer(TreeView):
         a.decreaseTextSize.triggered.connect(self.decreaseFontSize)
         a.newItem = QAction('New', self)
         a.newItem.triggered.connect(lambda: self.newItem(self.item))
+        a.openItem = QAction('Open', self)
+        a.openItem.triggered.connect(lambda: self.openItem(self.item))
         a.editDrawing = QAction('Edit', self)
         a.editDrawing.triggered.connect(lambda: self.editDrawing(self.item))
         a.newWindow = QAction('New Window', self)
@@ -84,6 +86,7 @@ class DbExplorer(TreeView):
         index = self.indexAt(pos)
         if index.isValid():
             new_action = self.actions.newItem
+            open_action = self.actions.openItem
             new_window_action = self.actions.newWindow
             edit_action = self.actions.editDrawing
             save_action = self.actions.saveDb
@@ -94,10 +97,14 @@ class DbExplorer(TreeView):
             match hub.db_model.getItemTypeStr(item):
                 case 'Designs':
                     new_action.setText('New Design')
+                    open_action.setText('Open Design')
                     menu.addAction(new_action)
+                    menu.addAction(open_action)
                 case 'Libraries':
                     new_action.setText('New Library')
+                    open_action.setText('Open Library')
                     menu.addAction(new_action)
+                    menu.addAction(open_action)
                 case 'Design':
                     save_action.setText('Save Design')
                     save_as_action.setText('Save Design As')
@@ -138,11 +145,14 @@ class DbExplorer(TreeView):
         menu.addAction(self.actions.decreaseTextSize)
         menu.exec(self.viewport().mapToGlobal(pos))
 
-    def newWindow(self : 'DbExplorer', item : 'DrawingItem') -> None:
-        hub.db_model.newWindow(item)
-
     def newItem(self : 'DbExplorer', item : QStandardItem) -> None:
         hub.db_model.newItem(item)
+
+    def openItem(self : 'DbExplorer', item : QStandardItem) -> None:
+        hub.db_model.openItem(item)
+
+    def newWindow(self : 'DbExplorer', item : 'DrawingItem') -> None:
+        hub.db_model.newWindow(item)
 
     def editDrawing(self : 'DbExplorer', item : 'DrawingItem') -> None:
         hub.db_model.editDrawing(item)

@@ -10,12 +10,13 @@ from PyQt6.QtCore    import Qt, QXmlStreamWriter, QXmlStreamReader
 from PyQt6.QtWidgets import QDialog
 from PyQt6.QtGui     import QStandardItemModel, QStandardItem
 
-from ..core    import LIB_EXT, DSN_EXT, \
+from ..core    import LIB_EXT, DSN_EXT, GEN_EXT, \
                       copy as master_copy, \
                       paste as master_paste, \
-                      saveBegin, saveEnd
+                      fromXmlBegin, open, saveBegin, saveEnd, \
+                      val2str, str2val
 from ..widgets import DrawingScene, DiagramScene, SymbolScene, \
-                      FileSaveAsDialog
+                      FileOpenDialog, FileSaveAsDialog
 
 from .. import hub
 
@@ -60,6 +61,8 @@ class DiagramItem(DrawingItem):
     scene : DiagramScene
 
 class DbItem(QStandardItem):
+    XML_ATTRIBUTES = {'name' : 'str'}
+
     name : str
     path : Optional[str]
 
@@ -72,6 +75,46 @@ class DbItem(QStandardItem):
     def setName(self, name: str) -> None:
         self.name = name
         self.setText(name)
+
+    @classmethod
+    def fromXmlBegin(cls, xr : QXmlStreamReader) -> 'DbItem':
+        fromXmlBegin(xr, cls.__name__.replace('Item', ''))
+        db_item = cls()
+        attributes = xr.attributes()
+        for attribute in attributes:
+            attr_name = attribute.name()
+            attr_value_str = attribute.value()
+            if attr_name in DesignItem.XML_ATTRIBUTES:
+                attr_type_name = DesignItem.XML_ATTRIBUTES[attr_name]
+                setattr(
+                    db_item, attr_name,
+                    str2val(attr_value_str, attr_type_name)
+                )
+            else:
+                raise ValueError(f'Unexpected attribute: {attr_name} value: {attr_value_str}')
+        xr.readNext()
+        return db_item
+
+    def fromXmlEnd(self, xr : QXmlStreamReader) -> None:
+        while not (xr.isEndElement() and xr.name() == self.__class__.__name__.replace('Item', '')):
+            print(f"{self.__class__.__name__}.fromXmlEnd: {xr.name()}")
+            xr.readNext()
+
+    @classmethod
+    def fromXmlFile(cls, file : str) -> 'DbItem':
+        with open(file, 'r') as f:
+            data = f.read()
+            xr = QXmlStreamReader(data)
+            return cls.fromXml(xr)
+
+    def toXmlBegin(self, xw : QXmlStreamWriter) -> None:
+        xw.writeStartElement(self.__class__.__name__.replace('Item', ''))
+        for attr_name, _ in self.XML_ATTRIBUTES.items():
+            attr_value = getattr(self, attr_name)
+            xw.writeAttribute(attr_name, val2str(attr_value))
+
+    def toXmlEnd(self, xw : QXmlStreamWriter) -> None:
+        xw.writeEndElement()
 
     def save(self) -> None:
         if self.path is None:
@@ -102,13 +145,20 @@ class LibraryItem(DbItem):
     FILE_EXT = LIB_EXT
 
     def toXml(self : 'LibraryItem', xw : QXmlStreamWriter) -> None:
-        xw.writeStartElement('Library')
-        xw.writeAttribute('path', self.text())
+        self.toXmlBegin(xw)
         for i in range(self.rowCount()):
             symbol_item : SymbolItem = self.child(i)
             symbol_scene = symbol_item.scene
             symbol_scene.toXml(xw)
-        xw.writeEndElement()
+        self.toXmlEnd(xw)
+
+    @classmethod
+    def fromXml(cls, xr : QXmlStreamReader) -> 'LibraryItem':
+        db_item = cls.fromXmlBegin(xr)
+        while not (xr.isEndElement() and xr.name() == cls.__name__.replace('Item', '')):
+            print(f"{cls.__name__}.fromXml: {xr.name()}")
+            xr.readNext()
+        return db_item
 
 class DesignItem(DbItem):
     FILE_EXT = DSN_EXT
@@ -131,9 +181,39 @@ class DesignItem(DbItem):
         self.symbols.setFont(font)
         self.appendRow(self.symbols)
 
+    @classmethod
+    def fromXml(cls, xr : QXmlStreamReader) -> 'DesignItem':
+        db_item = cls.fromXmlBegin(xr)
+        while not (xr.isEndElement() and xr.name() == cls.__name__.replace('Item', '')):
+            if xr.tokenType() == QXmlStreamReader.TokenType.StartElement:
+                if xr.name() == 'Diagrams':
+                    xr.readNext()  # Move past <Diagrams>
+                    while not (xr.isEndElement() and xr.name() == 'Diagrams'):
+                        if xr.tokenType() == QXmlStreamReader.TokenType.StartElement:
+                            if xr.name() == 'Diagram':
+                                diagram_item = DiagramItem.fromXml(xr)
+                                db_item.diagrams.appendRow(diagram_item)
+                            else:
+                                raise ValueError(f"Unexpected element in Diagrams: {xr.name()}")
+                        xr.readNext()
+                elif xr.name() == 'SymbolCache':
+                    xr.readNext()  # Move past <SymbolCache>
+                    while not (xr.isEndElement() and xr.name() == 'SymbolCache'):
+                        if xr.tokenType() == QXmlStreamReader.TokenType.StartElement:
+                            if xr.name() == 'Symbol':
+                                symbol_item = SymbolItem.fromXml(xr)
+                                db_item.symbols.appendRow(symbol_item)
+                            else:
+                                raise ValueError(f"Unexpected element in SymbolCache: {xr.name()}")
+                        xr.readNext()
+                else:
+                    raise ValueError(f"Unexpected element in Design: {xr.name()}")
+            xr.readNext()
+        db_item.fromXmlEnd(xr)
+        return db_item
+
     def toXml(self : 'DesignItem', xw : QXmlStreamWriter) -> None:
-        xw.writeStartElement('Design')
-        xw.writeAttribute('path', self.text())
+        self.toXmlBegin(xw)
         xw.writeStartElement('Diagrams')
         for i in range(self.diagrams.rowCount()):
             diagram_item : DiagramItem = self.diagrams.child(i)
@@ -145,29 +225,7 @@ class DesignItem(DbItem):
             symbol_item : SymbolItem = self.symbols.child(i)
             symbol_scene = symbol_item.scene
             symbol_scene.toXml(xw)
-        xw.writeEndElement()
-
-    @classmethod
-    def fromXml(cls : 'DesignItem', xr : QXmlStreamReader) -> 'DesignItem':
-        if xr.name() != 'Design':
-            raise ValueError(f"Expected Design element, got {xr.name()}")
-        name = xr.attributes().value('name')
-        design_item : DesignItem = cls(name)
-        while not (xr.isEndElement() and xr.name() == 'Design'):
-            match xr.name():
-                case 'Diagrams':
-                    xr.readNext()
-                    while not (xr.isEndElement() and xr.name() == 'Diagrams'):
-                        diagram_item = DiagramItem.fromXml(xr)
-                        design_item.diagrams.appendRow(diagram_item)
-                case 'Symbol Cache':
-                    xr.readNext()
-                    while not (xr.isEndElement() and xr.name() == 'Symbol Cache'):
-                        symbol_item = SymbolItem.fromXml(xr)
-                        design_item.symbols.appendRow(symbol_item)
-                case _:
-                    raise ValueError(f"Unexpected element: {xr.name()}")
-        return design_item
+        self.toXmlEnd(xw)
 
 class DbModel(QStandardItemModel):
     designs   : QStandardItem
@@ -216,6 +274,32 @@ class DbModel(QStandardItemModel):
                 item.appendRow(SymbolItem())
             case _:
                 raise ValueError(f'Bad item: {item} {item.text()} {type(item)}')
+
+    def openItem(self : 'DbModel', item : QStandardItem) -> None:
+        match item.text():
+            case 'Designs':
+                type_name = 'Design'
+            case 'Libraries':
+                type_name = 'Library'
+            case _:
+                raise ValueError(f'Unknown item: {item.text()}')
+        self.open(type_name)
+
+    def open(self : 'DbModel', type_name : Optional[str] = None) -> None:
+        dialog = FileOpenDialog(hub.main_window, type_name)
+        result = dialog.exec()
+        if result == QDialog.DialogCode.Accepted:
+            files = dialog.selectedFiles()
+            for file in files:
+                opened_items = open(file)
+                for opened_item in opened_items:
+                    match type(opened_item).__name__:
+                        case 'DesignItem':
+                            self.designs.appendRow(opened_item)
+                        case 'LibraryItem':
+                            self.libraries.appendRow(opened_item)
+                        case _:
+                            raise ValueError(f'Unsupported item type: {opened_item.text()} ({type(opened_item).__name__})')
 
     def editDrawing(self : 'DbModel', item : DrawingItem) -> None:
         """Edit the drawing, focusing the first existing subwindow if available."""
@@ -276,6 +360,7 @@ class DbModel(QStandardItemModel):
         subwindow.showMaximized()
         hub.main_window.menu_bar.updateWindowMenu()
 
+    # TODO merge saveScene into this, rename to saveItem
     def saveDb(self : 'DbModel', db_item: 'DbItem') -> None:
         db_item.save()
 

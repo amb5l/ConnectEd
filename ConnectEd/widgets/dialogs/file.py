@@ -1,9 +1,32 @@
-__all__ = ['FileSaveAsDialog']
+__all__ = ['FileOpenDialog', 'FileSaveAsDialog']
+
+from typing import Optional
 
 from PyQt6.QtWidgets import QFileDialog
 
-from ...core import LIB_EXT, DSN_EXT
+from ...core import GEN_EXT, LIB_EXT, DSN_EXT
 from .. import MainWindow
+
+
+class FileOpenDialog(QFileDialog):
+    def __init__(
+        self        : 'FileOpenDialog',
+        main_window : MainWindow,
+        type_name   : Optional[str] = None
+    ) -> None:
+        super().__init__(main_window)
+        self.setWindowTitle(f'Open')
+        self.setFileMode(QFileDialog.FileMode.ExistingFiles)
+        match type_name:
+            case None:
+                self.setNameFilter(f'Connected Files ({GEN_EXT})')
+            case 'Design':
+                self.setNameFilter(f'Connected Designs ({DSN_EXT})')
+            case 'Library':
+                self.setNameFilter(f'Connected Libraries ({LIB_EXT})')
+            case _:
+                raise ValueError(f'Unknown type name: {type_name}')
+        self.setAcceptMode(QFileDialog.AcceptMode.AcceptOpen)
 
 class FileSaveAsDialog(QFileDialog):
     def __init__(

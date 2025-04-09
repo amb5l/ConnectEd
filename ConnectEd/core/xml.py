@@ -1,4 +1,4 @@
-__all__ = ['saveBegin', 'saveEnd', 'open', 'copy', 'paste']
+__all__ = ['fromXmlBegin', 'saveBegin', 'saveEnd', 'open', 'copy', 'paste']
 
 from typing import Any, Union, TypeAlias
 
@@ -30,15 +30,18 @@ def toXmlBegin(xw : QXmlStreamWriter) -> None:
 def toXmlEnd(xw : QXmlStreamWriter) -> None:
     xw.writeEndDocument()
 
-def fromXml(xr : QXmlStreamReader) -> list[XmlItemTypes]:
-    from .db import DesignItem, LibraryItem, DiagramItem, SymbolItem
-    from ..widgets.elements import element_class_dict
+def fromXmlBegin(xr : QXmlStreamReader, token_name : str) -> None:
     while not xr.atEnd() and xr.tokenType() != QXmlStreamReader.TokenType.StartElement:
         xr.readNext()
     if xr.atEnd():
         raise ValueError("Empty or invalid XML")
-    if xr.name() != 'ConnectEd':
-        raise ValueError(f"Expected 'ConnectEd' root element, got '{xr.name()}'")
+    if xr.name() != token_name:
+        raise ValueError(f"Expected '{token_name}' element, got '{xr.name()}'")
+
+def fromXml(xr : QXmlStreamReader) -> list[XmlItemTypes]:
+    from .db import DesignItem, LibraryItem, DiagramItem, SymbolItem
+    from ..widgets.elements import element_class_dict
+    fromXmlBegin(xr, 'ConnectEd')
     xr.readNext()
     result = []
     while not (xr.isEndElement() and xr.name() == 'ConnectEd'):

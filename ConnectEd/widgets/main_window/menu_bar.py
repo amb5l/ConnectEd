@@ -22,6 +22,7 @@ class MenuBar(QMenuBar):
         self.file_new_menu.addAction(actions.fileNewDesign)
         self.file_new_menu.addAction(actions.fileNewLibrary)
         self.file_menu.addMenu(self.file_new_menu)
+        self.file_menu.addAction(actions.fileOpen)
         self.file_menu.addAction(actions.fileSave)
         self.file_menu.addAction(actions.fileSaveAs)
         self.file_menu.addAction(actions.fileExit)

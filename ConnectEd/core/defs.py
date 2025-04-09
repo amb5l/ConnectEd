@@ -1,6 +1,7 @@
 __all__ = [
     'ORG_NAME',
     'APP_NAME',
+    'GEN_EXT',
     'DSN_EXT',
     'LIB_EXT',
     'LOG_FILENAME',
@@ -13,6 +14,7 @@ __all__ = [
 
 ORG_NAME = 'ConnectEd'
 APP_NAME = 'ConnectEd'
+GEN_EXT = '.ce*'
 DSN_EXT = '.cedsn'
 LIB_EXT = '.celib'
 
