@@ -81,7 +81,7 @@ class Slots:
         hub.db_model.newItem(hub.db_model.libraries)
 
     def fileOpen(self : 'Slots') -> None:
-        hub.db_model.openItem(hub.db_model.designs)
+        hub.db_model.open()
 
     @withCurrentWidget(DrawingView)
     def fileSave(self : 'Slots', widget: DrawingView) -> None:
