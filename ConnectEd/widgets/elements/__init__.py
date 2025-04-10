@@ -177,8 +177,7 @@ class ElementXmlMixin:
         for attr_name, attr_type in self.XML_ATTRIBUTES.items():
             if hasattr(self, attr_name):
                 xw.writeAttribute(attr_name, val2str(getattr(self, attr_name)))
-        for prop_name, type_setter_getter in self.XML_PROPERTIES.items():
-            _, _, getter = type_setter_getter
+        for prop_name, (_, _, getter) in self.XML_PROPERTIES.items():
             xw.writeAttribute(prop_name, val2str(getter(self)))
         xw.writeEndElement()
 

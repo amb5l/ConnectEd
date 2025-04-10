@@ -2,7 +2,7 @@ from types import SimpleNamespace
 
 from PyQt6.QtCore    import Qt
 from PyQt6.QtWidgets import QWidget, QMenu
-from PyQt6.QtGui     import QAction, QStandardItem, QWheelEvent, QMouseEvent
+from PyQt6.QtGui     import QAction, QStandardItem, QWheelEvent, QMouseEvent, QKeyEvent
 
 from .tree_view import TreeView
 
@@ -21,6 +21,10 @@ class Explorer(TreeView):
         super().__init__(parent, hub.db_model)
         self.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
         self.customContextMenuRequested.connect(self.showContextMenu)
+        self.setEditTriggers(
+            self.EditTrigger.SelectedClicked |
+            self.EditTrigger.EditKeyPressed
+        )
         self.actions = SimpleNamespace()
         a = self.actions
         a.increaseTextSize = QAction('Increase Text Size', self)
@@ -45,6 +49,8 @@ class Explorer(TreeView):
         a.copy.triggered.connect(lambda: self.copy(self.item))
         a.paste = QAction('Paste', self)
         a.paste.triggered.connect(lambda: self.paste(self.item))
+        a.rename = QAction('Rename', self)
+        a.rename.triggered.connect(self.renameSelectedItem)
 
     def wheelEvent(self, event: QWheelEvent) -> None:
         """Handle mouse wheel events to adjust font size when Ctrl is pressed."""
@@ -81,6 +87,36 @@ class Explorer(TreeView):
                     return
         super().mouseDoubleClickEvent(event)
 
+    def keyPressEvent(self, event: QKeyEvent) -> None:
+        """Handle key press events, particularly for item editing."""
+        if event.key() == Qt.Key.Key_F2:
+            self.renameSelectedItem()
+            event.accept()
+            return
+        elif event.key() == Qt.Key.Key_Return or event.key() == Qt.Key.Key_Enter:
+            if self.state() == self.State.EditingState:
+                self.commitData(self.editor())
+                self.closeEditor(self.editor(), self.EditHint.SubmitModelCache)
+                event.accept()
+                return
+            elif self.currentIndex().isValid():
+                item = self.model().itemFromIndex(self.currentIndex())
+                parent_item = item.parent()
+                if parent_item and parent_item.text() == 'Diagrams':
+                    self.editItem(item)
+                    event.accept()
+                    return
+        super().keyPressEvent(event)
+
+    def renameSelectedItem(self) -> None:
+        """Start editing the selected item's text."""
+        if self.currentIndex().isValid():
+            item = self.model().itemFromIndex(self.currentIndex())
+            parent_item = item.parent()
+            if ((parent_item and parent_item.text() == 'Diagrams') or
+                (parent_item and parent_item.text() == 'Symbol Cache')):
+                self.edit(self.currentIndex())
+
     def showContextMenu(self, pos) -> None:
         menu = QMenu(self)
         index = self.indexAt(pos)
@@ -92,6 +128,7 @@ class Explorer(TreeView):
             save_action       = self.actions.saveItem
             save_as_action    = self.actions.saveAsItem
             close_action      = self.actions.closeItem
+            rename_action     = self.actions.rename
             self.item = self.model().itemFromIndex(index)
             item = self.model().itemFromIndex(index)
             match hub.db_model.getItemTypeStr(item):
@@ -109,18 +146,24 @@ class Explorer(TreeView):
                     save_action.setText('Save Design')
                     save_as_action.setText('Save Design As')
                     close_action.setText('Close Design')
+                    rename_action.setText('Rename Design')
                     menu.addAction(save_action)
                     menu.addAction(save_as_action)
                     menu.addAction(close_action)
+                    menu.addSeparator()
+                    menu.addAction(rename_action)
                 case 'Library':
                     new_action.setText('New Symbol')
                     save_action.setText('Save Library')
                     save_as_action.setText('Save Library As')
                     close_action.setText('Close Library')
+                    rename_action.setText('Rename Library')
                     menu.addAction(new_action)
                     menu.addAction(save_action)
                     menu.addAction(save_as_action)
                     menu.addAction(close_action)
+                    menu.addSeparator()
+                    menu.addAction(rename_action)
                 case 'Diagrams':
                     new_action.setText('New Diagram')
                     menu.addAction(new_action)
@@ -130,13 +173,18 @@ class Explorer(TreeView):
                 case 'Diagram':
                     edit_action.setText('Edit Diagram')
                     new_window_action.setText('New Diagram Window')
+                    rename_action.setText('Rename Diagram')
                     menu.addAction(edit_action)
                     menu.addAction(new_window_action)
+                    menu.addSeparator()
+                    menu.addAction(rename_action)
                 case 'Symbol':
                     edit_action.setText('Edit Symbol')
                     new_window_action.setText('New Symbol Window')
+                    rename_action.setText('Rename Symbol')
                     menu.addAction(edit_action)
                     menu.addAction(new_window_action)
+                    menu.addAction(rename_action)
             menu.addSeparator()
             menu.addAction(self.actions.copy)
             menu.addAction(self.actions.paste)

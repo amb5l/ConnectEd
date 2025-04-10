@@ -35,6 +35,7 @@ class DrawingItem(QStandardItem):
         self.scene = scene if scene else self.SCENE_CLASS()
         super().__init__(self.scene.name)
         self.setData(self.scene, Qt.ItemDataRole.UserRole)
+        self.setFlags(self.flags() | Qt.ItemFlag.ItemIsEditable)
 
     copy = master_copy
 
@@ -62,7 +63,8 @@ class DiagramItem(DrawingItem):
     scene : DiagramScene
 
 class DbItem(QStandardItem):
-    XML_ATTRIBUTES = {'name' : 'str'}
+    XML_ATTRIBUTES = {}
+    XML_PROPERTIES = { 'name' : ('str', QStandardItem.setText, QStandardItem.text) }
 
     name : str
     path : Optional[str]
@@ -72,7 +74,7 @@ class DbItem(QStandardItem):
         self.name = hub.name_counter.get(u)
         self.path = None
         super().__init__(self.name)
-
+        self.setFlags(self.flags() | Qt.ItemFlag.ItemIsEditable)
     def setName(self, name: str) -> None:
         self.name = name
         self.setText(name)
@@ -91,6 +93,9 @@ class DbItem(QStandardItem):
                     db_item, attr_name,
                     str2val(attr_value_str, attr_type_name)
                 )
+            elif attr_name in DesignItem.XML_PROPERTIES:
+                type_name, setter, _ = DesignItem.XML_PROPERTIES[attr_name]
+                setter(db_item, str2val(attr_value_str, type_name))
             else:
                 logger.warning(f'Unexpected attribute: {attr_name} value: {attr_value_str}')
         xr.readNext()
@@ -109,9 +114,12 @@ class DbItem(QStandardItem):
 
     def toXmlBegin(self, xw : QXmlStreamWriter) -> None:
         xw.writeStartElement(self.__class__.__name__.replace('Item', ''))
-        for attr_name, _ in self.XML_ATTRIBUTES.items():
-            attr_value = getattr(self, attr_name)
-            xw.writeAttribute(attr_name, val2str(attr_value))
+        for name, _ in self.XML_ATTRIBUTES.items():
+            value = getattr(self, name)
+            xw.writeAttribute(name, val2str(value))
+        for name, (_, _, getter) in self.XML_PROPERTIES.items():
+            value = getter(self)
+            xw.writeAttribute(name, val2str(value))
 
     def toXmlEnd(self, xw : QXmlStreamWriter) -> None:
         xw.writeEndElement()
@@ -245,6 +253,7 @@ class DbModel(QStandardItemModel):
         font.setBold(True)
         self.libraries.setFont(font)
         self.appendRow(self.libraries)
+        self.itemChanged.connect(self.changeItem)
 
     def newItem(self : 'DbModel', item : QStandardItem) -> None:
         explorer = hub.main_window.explorer.explorer \
@@ -410,6 +419,15 @@ class DbModel(QStandardItemModel):
                     self.libraries.removeRow(i)
         else:
             logger.warning(f'Unknown database item type: {type(item)}')
+
+    def changeItem(self : 'DbModel', item : QStandardItem) -> None:
+        """Handle changes to items in the model, such as renaming."""
+        if item.parent() and item.parent().text() in ('Diagrams', 'Symbol Cache'):
+            scene = item.data(Qt.ItemDataRole.UserRole)
+            if scene:
+                scene.name = item.text()
+        print(f"Renamed item to: {item.text()}")
+        # TODO: update window titles and window menu
 
     def copy(self : 'DbModel', item : QStandardItem) -> None:
         master_copy(item)
