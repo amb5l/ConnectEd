@@ -258,7 +258,7 @@ class DbModel(QStandardItemModel):
                 if explorer:
                     explorer.expand(self.indexFromItem(design_item))
                     explorer.expand(self.indexFromItem(design_item.diagrams))
-                    explorer.editDrawing(diagram_item)
+                    explorer.editItem(diagram_item)
             case 'Libraries':
                 library_item = LibraryItem()
                 item.appendRow(library_item)
@@ -300,77 +300,88 @@ class DbModel(QStandardItemModel):
                                 explorer.expand(self.indexFromItem(opened_item))
                                 explorer.expand(self.indexFromItem(opened_item.diagrams))
                                 if opened_item.diagrams.rowCount() > 0:
-                                    explorer.editDrawing(opened_item.diagrams.child(0))
+                                    explorer.editItem(opened_item.diagrams.child(0))
                         case 'LibraryItem':
                             self.libraries.appendRow(opened_item)
                         case _:
                             raise ValueError(f'Unsupported item type: {opened_item.text()} ({type(opened_item).__name__})')
 
-    def editDrawing(self : 'DbModel', item : DrawingItem) -> None:
+    def editItem(self : 'DbModel', item : QStandardItem) -> None:
         """Edit the drawing, focusing the first existing subwindow if available."""
-        from ..widgets import DrawingScene, DrawingView, DrawingSubWindow, \
-                              SymbolScene, SymbolView, SymbolSubWindow, \
-                              DiagramScene, DiagramView, DiagramSubWindow
-        for subwindow in hub.main_window.mdi_area.subWindowList():
-            if not isinstance(subwindow, DrawingSubWindow):
-                continue
-            if not isinstance(subwindow.widget(), DrawingView):
-                continue
-            if not isinstance(subwindow.widget().scene(), DrawingScene):
-                continue
-            if item.scene != subwindow.widget().scene():
-                continue
-            hub.main_window.mdi_area.setActiveSubWindow(subwindow)
-            subwindow.show()
-            subwindow.raise_()
-            subwindow.setFocus()
-            return
-        drawing_name = item.text()
-        drawing_scene : DrawingScene = item.data(Qt.ItemDataRole.UserRole)
-        if isinstance(drawing_scene, DiagramScene):
-            drawing_view = DiagramView(drawing_scene)
-            db_item = item.parent().parent()
-            subwindow = DiagramSubWindow(hub.main_window.mdi_area)
-        elif isinstance(drawing_scene, SymbolScene):
-            drawing_view = SymbolView(drawing_scene)
-            db_item = item.parent()
-            subwindow = SymbolSubWindow(hub.main_window.mdi_area)
+        if isinstance(item, DrawingItem):
+            from ..widgets import DrawingScene, DrawingView, DrawingSubWindow, \
+                                  SymbolScene, SymbolView, SymbolSubWindow, \
+                                  DiagramScene, DiagramView, DiagramSubWindow
+            for subwindow in hub.main_window.mdi_area.subWindowList():
+                if not isinstance(subwindow, DrawingSubWindow):
+                    continue
+                if not isinstance(subwindow.widget(), DrawingView):
+                    continue
+                if not isinstance(subwindow.widget().scene(), DrawingScene):
+                    continue
+                if item.scene != subwindow.widget().scene():
+                    continue
+                hub.main_window.mdi_area.setActiveSubWindow(subwindow)
+                subwindow.show()
+                subwindow.raise_()
+                subwindow.setFocus()
+                return
+            drawing_name = item.text()
+            drawing_scene : DrawingScene = item.data(Qt.ItemDataRole.UserRole)
+            if isinstance(drawing_scene, DiagramScene):
+                drawing_view = DiagramView(drawing_scene)
+                db_item = item.parent().parent()
+                subwindow = DiagramSubWindow(hub.main_window.mdi_area)
+            elif isinstance(drawing_scene, SymbolScene):
+                drawing_view = SymbolView(drawing_scene)
+                db_item = item.parent()
+                subwindow = SymbolSubWindow(hub.main_window.mdi_area)
+            else:
+                raise ValueError(f'Unknown drawing scene: {type(drawing_scene)}')
+            subwindow.setWidget(drawing_view)
+            subwindow.setWindowTitle(f'{db_item.text()}: {drawing_name}')
+            hub.main_window.mdi_area.addSubWindow(subwindow)
+            subwindow.showMaximized()
+            hub.main_window.menu_bar.updateWindowMenu()
         else:
-            raise ValueError(f'Unknown drawing scene: {type(drawing_scene)}')
-        subwindow.setWidget(drawing_view)
-        subwindow.setWindowTitle(f'{db_item.text()}: {drawing_name}')
-        hub.main_window.mdi_area.addSubWindow(subwindow)
-        subwindow.showMaximized()
-        hub.main_window.menu_bar.updateWindowMenu()
+            logger.warning(f'Unsupported item: {item.text()} ({type(item)})')
 
-    def newWindow(self : 'DbModel', item : DrawingItem) -> None:
-        from ..widgets import DiagramScene, DiagramView, DiagramSubWindow, \
-                              SymbolScene, SymbolView, SymbolSubWindow
-        if isinstance(item, DiagramItem):
-            db_item : DesignItem = item.parent().parent()
-            drawing_name = item.text()
-            drawing_scene : DiagramScene = item.data(Qt.ItemDataRole.UserRole)
-            subwindow = DiagramSubWindow()
-            drawing_view = DiagramView(drawing_scene)
-            subwindow.setWidget(drawing_view)
-        elif isinstance(item, SymbolItem):
-            db_item : LibraryItem = item.parent()
-            drawing_name = item.text()
-            drawing_scene : SymbolScene = item.data(Qt.ItemDataRole.UserRole)
-            subwindow = SymbolSubWindow()
-            drawing_view = SymbolView(drawing_scene)
-            subwindow.setWidget(drawing_view)
-        subwindow.setWindowTitle(f'{db_item.text()}: {drawing_name}')
-        hub.main_window.mdi_area.addSubWindow(subwindow)
-        subwindow.showMaximized()
-        hub.main_window.menu_bar.updateWindowMenu()
+    def newItemWindow(self : 'DbModel', item : QStandardItem) -> None:
+        if isinstance(item, DrawingItem):
+            from ..widgets import DiagramScene, DiagramView, DiagramSubWindow, \
+                                  SymbolScene, SymbolView, SymbolSubWindow
+            if isinstance(item, DiagramItem):
+                db_item : DesignItem = item.parent().parent()
+                drawing_name = item.text()
+                drawing_scene : DiagramScene = item.data(Qt.ItemDataRole.UserRole)
+                subwindow = DiagramSubWindow()
+                drawing_view = DiagramView(drawing_scene)
+                subwindow.setWidget(drawing_view)
+            elif isinstance(item, SymbolItem):
+                db_item : LibraryItem = item.parent()
+                drawing_name = item.text()
+                drawing_scene : SymbolScene = item.data(Qt.ItemDataRole.UserRole)
+                subwindow = SymbolSubWindow()
+                drawing_view = SymbolView(drawing_scene)
+                subwindow.setWidget(drawing_view)
+            subwindow.setWindowTitle(f'{db_item.text()}: {drawing_name}')
+            hub.main_window.mdi_area.addSubWindow(subwindow)
+            subwindow.showMaximized()
+            hub.main_window.menu_bar.updateWindowMenu()
+        else:
+            logger.warning(f'Unsupported item: {item.text()} ({type(item)})')
 
-    # TODO merge saveScene into this, rename to saveItem
-    def saveDb(self : 'DbModel', db_item: 'DbItem') -> None:
-        db_item.save()
+    def saveItem(self : 'DbModel', item: QStandardItem) -> None:
+        if isinstance(item, DbItem):
+            item.save()
+        else:
+            logger.warning(f'Unsupported item: {item.text()} ({type(item)})')
 
-    def saveAsDb(self : 'DbModel', db_item: 'DbItem') -> None:
-        db_item.saveAs()
+    def saveAsItem(self : 'DbModel', item: QStandardItem) -> None:
+        if isinstance(item, DbItem):
+            item.saveAs()
+        else:
+            logger.warning(f'Unsupported item: {item.text()} ({type(item)})')
 
     def saveScene(self : 'DbModel', scene : 'DrawingScene') -> None:
         db_item = self.getDbItemFromScene(scene)
@@ -386,19 +397,19 @@ class DbModel(QStandardItemModel):
         else:
             raise ValueError(f'Unknown scene: {type(scene)}')
 
-    def closeDb(self : 'DbModel', db_item: 'DbItem') -> None:
+    def closeItem(self : 'DbModel', item: QStandardItem) -> None:
         """Close a database and remove it from the model."""
         # TODO offer to save if modified
-        if isinstance(db_item, DesignItem):
+        if isinstance(item, DesignItem):
             for i in range(self.designs.rowCount()):
-                if db_item == self.designs.child(i):
+                if item == self.designs.child(i):
                     self.designs.removeRow(i)
-        elif isinstance(db_item, LibraryItem):
+        elif isinstance(item, LibraryItem):
             for i in range(self.libraries.rowCount()):
-                if db_item == self.libraries.child(i):
+                if item == self.libraries.child(i):
                     self.libraries.removeRow(i)
         else:
-            raise ValueError(f'Unknown database item type: {type(db_item)}')
+            logger.warning(f'Unknown database item type: {type(item)}')
 
     def copy(self : 'DbModel', item : QStandardItem) -> None:
         master_copy(item)

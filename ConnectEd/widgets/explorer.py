@@ -31,16 +31,16 @@ class Explorer(TreeView):
         a.newItem.triggered.connect(lambda: self.newItem(self.item))
         a.openItem = QAction('Open', self)
         a.openItem.triggered.connect(lambda: self.openItem(self.item))
-        a.editDrawing = QAction('Edit', self)
-        a.editDrawing.triggered.connect(lambda: self.editDrawing(self.item))
-        a.newWindow = QAction('New Window', self)
-        a.newWindow.triggered.connect(lambda: self.newWindow(self.item))
-        a.saveDb = QAction('Save', self)
-        a.saveDb.triggered.connect(lambda: self.saveDb(self.item))
-        a.saveAsDb = QAction('Save As', self)
-        a.saveAsDb.triggered.connect(lambda: self.saveAsDb(self.item))
-        a.closeDb = QAction('Close', self)
-        a.closeDb.triggered.connect(lambda: self.closeDb(self.item))
+        a.editItem = QAction('Edit', self)
+        a.editItem.triggered.connect(lambda: self.editItem(self.item))
+        a.newItemWindow = QAction('New Window', self)
+        a.newItemWindow.triggered.connect(lambda: self.newItemWindow(self.item))
+        a.saveItem = QAction('Save', self)
+        a.saveItem.triggered.connect(lambda: self.saveItem(self.item))
+        a.saveAsItem = QAction('Save As', self)
+        a.saveAsItem.triggered.connect(lambda: self.saveAsItem(self.item))
+        a.closeItem = QAction('Close', self)
+        a.closeItem.triggered.connect(lambda: self.closeItem(self.item))
         a.copy = QAction('Copy', self)
         a.copy.triggered.connect(lambda: self.copy(self.item))
         a.paste = QAction('Paste', self)
@@ -76,7 +76,7 @@ class Explorer(TreeView):
                     event.accept()
                     return
                 elif parent_item and parent_item.text() == 'Diagrams':
-                    self.editDrawing(item)
+                    self.editItem(item)
                     event.accept()
                     return
         super().mouseDoubleClickEvent(event)
@@ -85,13 +85,13 @@ class Explorer(TreeView):
         menu = QMenu(self)
         index = self.indexAt(pos)
         if index.isValid():
-            new_action = self.actions.newItem
-            open_action = self.actions.openItem
-            new_window_action = self.actions.newWindow
-            edit_action = self.actions.editDrawing
-            save_action = self.actions.saveDb
-            save_as_action = self.actions.saveAsDb
-            close_action = self.actions.closeDb
+            new_action        = self.actions.newItem
+            open_action       = self.actions.openItem
+            new_window_action = self.actions.newItemWindow
+            edit_action       = self.actions.editItem
+            save_action       = self.actions.saveItem
+            save_as_action    = self.actions.saveAsItem
+            close_action      = self.actions.closeItem
             self.item = self.model().itemFromIndex(index)
             item = self.model().itemFromIndex(index)
             match hub.db_model.getItemTypeStr(item):
@@ -151,20 +151,20 @@ class Explorer(TreeView):
     def openItem(self : 'Explorer', item : QStandardItem) -> None:
         hub.db_model.openItem(item)
 
-    def newWindow(self : 'Explorer', item : 'DrawingItem') -> None:
-        hub.db_model.newWindow(item)
+    def newItemWindow(self : 'Explorer', item : 'DrawingItem') -> None:
+        hub.db_model.newItemWindow(item)
 
-    def editDrawing(self : 'Explorer', item : 'DrawingItem') -> None:
-        hub.db_model.editDrawing(item)
+    def editItem(self : 'Explorer', item : 'DrawingItem') -> None:
+        hub.db_model.editItem(item)
 
-    def saveDb(self : 'Explorer', item : QStandardItem) -> None:
-        hub.db_model.saveDb(item)
+    def saveItem(self : 'Explorer', item : QStandardItem) -> None:
+        hub.db_model.saveItem(item)
 
-    def saveAsDb(self : 'Explorer', item : QStandardItem) -> None:
-        hub.db_model.saveAsDb(item)
+    def saveAsItem(self : 'Explorer', item : QStandardItem) -> None:
+        hub.db_model.saveAsItem(item)
 
-    def closeDb(self : 'Explorer', item : QStandardItem) -> None:
-        hub.db_model.closeDb(item)
+    def closeItem(self : 'Explorer', item : QStandardItem) -> None:
+        hub.db_model.closeItem(item)
 
     def copy(self : 'Explorer', item : QStandardItem) -> None:
         hub.db_model.copy(item)
