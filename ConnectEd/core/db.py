@@ -247,27 +247,26 @@ class DbModel(QStandardItemModel):
         self.appendRow(self.libraries)
 
     def newItem(self : 'DbModel', item : QStandardItem) -> None:
+        db_explorer = hub.main_window.db_explorer.db_explorer \
+            if hub.main_window and hub.main_window.db_explorer else None
         match self.getItemTypeStr(item):
             case 'Designs':
                 design_item = DesignItem()
                 diagram_item = DiagramItem()
                 design_item.diagrams.appendRow(diagram_item)
                 item.appendRow(design_item)
-                if hub.main_window and hub.main_window.db_explorer:
-                    db_explorer = hub.main_window.db_explorer.db_explorer
+                if db_explorer:
                     db_explorer.expand(self.indexFromItem(design_item))
                     db_explorer.expand(self.indexFromItem(design_item.diagrams))
                     db_explorer.editDrawing(diagram_item)
             case 'Libraries':
                 library_item = LibraryItem()
                 item.appendRow(library_item)
-                if hub.main_window and hub.main_window.db_explorer:
-                    db_explorer = hub.main_window.db_explorer.db_explorer
+                if db_explorer:
                     db_explorer.expand(self.indexFromItem(library_item))
             case 'Diagrams':
                 item.appendRow(DiagramItem())
-                if hub.main_window and hub.main_window.db_explorer:
-                    db_explorer = hub.main_window.db_explorer.db_explorer
+                if db_explorer:
                     db_explorer.expand(self.indexFromItem(item))
             case 'Symbol Cache':
                 item.appendRow(SymbolItem())
