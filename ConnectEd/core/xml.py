@@ -6,11 +6,12 @@ from PyQt6.QtCore    import QByteArray, QXmlStreamWriter, QXmlStreamReader, \
                             QFile, QIODevice
 from PyQt6.QtWidgets import QApplication
 
+from . import logger
+
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from .db import DesignItem, LibraryItem, DiagramItem, SymbolItem
     from ..widgets.elements import Element
-    from ..widgets.scenes   import DiagramScene, SymbolScene
 
 
 XmlItemTypes: TypeAlias = Union[
@@ -65,7 +66,7 @@ def fromXml(xr : QXmlStreamReader) -> list[XmlItemTypes]:
                         element = element_class.fromXml(xr)
                         result.append(element)
                     else:
-                        raise ValueError(f"Unexpected element: {xr.name()}")
+                        logger.warning(f"Unexpected element: {attr_name}")
         if xr.isEndElement() and xr.name() == 'ConnectEd':
             break
         xr.readNext()

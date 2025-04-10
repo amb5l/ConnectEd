@@ -6,7 +6,7 @@ from PyQt6.QtCore    import QPointF, QRectF, QSizeF, \
                             QXmlStreamWriter, QXmlStreamReader
 from PyQt6.QtWidgets import QGraphicsScene, QGraphicsItem
 
-from ...core.utils import val2str, str2val
+from ...core import logger, val2str, str2val
 
 # TODO move Grip to drawForeground?
 from ..elements import Grip, element_class_dict
@@ -95,6 +95,6 @@ class DrawingScene(QGraphicsScene):
                     element = cls.fromXml(xr)
                     drawing_scene.addItem(element)
                 else:
-                    raise ValueError(f"Unexpected element: {attr_name}")
+                    logger.warning(f"Unexpected element: {attr_name}")
             xr.readNext()
         return drawing_scene

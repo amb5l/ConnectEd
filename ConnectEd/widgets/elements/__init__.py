@@ -10,7 +10,7 @@ from PyQt6.QtGui     import QPainter, QPen, QBrush, QColor, QFont, QPainterPath
 from PyQt6.QtWidgets import QStyleOptionGraphicsItem, QWidget, \
                             QGraphicsItem, QGraphicsRectItem, QGraphicsTextItem
 
-from ...core import val2str, str2val
+from ...core import logger, val2str, str2val
 
 from .grip import Grip
 
@@ -185,18 +185,20 @@ class ElementXmlMixin:
     @classmethod
     def fromXml(cls, xr: QXmlStreamReader) -> 'RectElement':
         instance = cls()
-        for prop_name, attr_type_name in instance.XML_ATTRIBUTES.items():
-            if hasattr(instance, prop_name):
+        attributes = xr.attributes()
+        for attribute in attributes:
+            if attribute.name() in cls.XML_ATTRIBUTES:
+                type_name = cls.XML_ATTRIBUTES[attribute.name()]
                 setattr(
-                    instance, prop_name,
-                    str2val(xr.attributes().value(prop_name), attr_type_name)
+                    instance, attribute.name(),
+                    str2val(attribute.value(), type_name)
                 )
-        for prop_name, type_setter_getter in cls.XML_PROPERTIES.items():
-            prop_type_name, setter, _ = type_setter_getter  # Unpack just 2 items
-            if xr.attributes().hasAttribute(prop_name):
-                setter(instance, str2val(xr.attributes().value(prop_name), prop_type_name))
+            elif attribute.name() in cls.XML_PROPERTIES:
+                type_name, setter, _ = cls.XML_PROPERTIES[attribute.name()]
+                setter(instance, str2val(attribute.value(), type_name))
+
             else:
-                raise ValueError(f'Unexpected attribute: {prop_name}')
+                logger.warning(f"Unexpected attribute: {attribute.name()}")
         xr.readNext()
         return instance
 

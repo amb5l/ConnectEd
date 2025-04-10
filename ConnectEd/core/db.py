@@ -10,7 +10,8 @@ from PyQt6.QtCore    import Qt, QXmlStreamWriter, QXmlStreamReader
 from PyQt6.QtWidgets import QDialog
 from PyQt6.QtGui     import QStandardItemModel, QStandardItem
 
-from ..core    import LIB_EXT, DSN_EXT, GEN_EXT, \
+from ..core    import logger, \
+                      LIB_EXT, DSN_EXT, \
                       copy as master_copy, \
                       paste as master_paste, \
                       fromXmlBegin, open, saveBegin, saveEnd, \
@@ -91,7 +92,7 @@ class DbItem(QStandardItem):
                     str2val(attr_value_str, attr_type_name)
                 )
             else:
-                raise ValueError(f'Unexpected attribute: {attr_name} value: {attr_value_str}')
+                logger.warning(f'Unexpected attribute: {attr_name} value: {attr_value_str}')
         xr.readNext()
         return db_item
 
