@@ -97,7 +97,6 @@ class DbItem(QStandardItem):
 
     def fromXmlEnd(self, xr : QXmlStreamReader) -> None:
         while not (xr.isEndElement() and xr.name() == self.__class__.__name__.replace('Item', '')):
-            print(f"{self.__class__.__name__}.fromXmlEnd: {xr.name()}")
             xr.readNext()
 
     @classmethod
@@ -156,7 +155,6 @@ class LibraryItem(DbItem):
     def fromXml(cls, xr : QXmlStreamReader) -> 'LibraryItem':
         db_item = cls.fromXmlBegin(xr)
         while not (xr.isEndElement() and xr.name() == cls.__name__.replace('Item', '')):
-            print(f"{cls.__name__}.fromXml: {xr.name()}")
             xr.readNext()
         return db_item
 
