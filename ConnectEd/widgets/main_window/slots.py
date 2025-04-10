@@ -162,9 +162,9 @@ class Slots:
     def placeRectangle(self : 'Slots', widget: DrawingView) -> None:
         widget.placeRectangle()
 
-    def windowDbExplorer(self : 'Slots') -> None:
-        self._parent.db_explorer.show()
-        self._parent.db_explorer.raise_()
+    def windowExplorer(self : 'Slots') -> None:
+        self._parent.explorer.show()
+        self._parent.explorer.raise_()
 
     def windowMessages(self : 'Slots') -> None:
         self._parent.messages_viewer.show()

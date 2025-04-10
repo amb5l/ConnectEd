@@ -247,27 +247,27 @@ class DbModel(QStandardItemModel):
         self.appendRow(self.libraries)
 
     def newItem(self : 'DbModel', item : QStandardItem) -> None:
-        db_explorer = hub.main_window.db_explorer.db_explorer \
-            if hub.main_window and hub.main_window.db_explorer else None
+        explorer = hub.main_window.explorer.explorer \
+            if hub.main_window and hub.main_window.explorer else None
         match self.getItemTypeStr(item):
             case 'Designs':
                 design_item = DesignItem()
                 diagram_item = DiagramItem()
                 design_item.diagrams.appendRow(diagram_item)
                 item.appendRow(design_item)
-                if db_explorer:
-                    db_explorer.expand(self.indexFromItem(design_item))
-                    db_explorer.expand(self.indexFromItem(design_item.diagrams))
-                    db_explorer.editDrawing(diagram_item)
+                if explorer:
+                    explorer.expand(self.indexFromItem(design_item))
+                    explorer.expand(self.indexFromItem(design_item.diagrams))
+                    explorer.editDrawing(diagram_item)
             case 'Libraries':
                 library_item = LibraryItem()
                 item.appendRow(library_item)
-                if db_explorer:
-                    db_explorer.expand(self.indexFromItem(library_item))
+                if explorer:
+                    explorer.expand(self.indexFromItem(library_item))
             case 'Diagrams':
                 item.appendRow(DiagramItem())
-                if db_explorer:
-                    db_explorer.expand(self.indexFromItem(item))
+                if explorer:
+                    explorer.expand(self.indexFromItem(item))
             case 'Symbol Cache':
                 item.appendRow(SymbolItem())
             case _:
@@ -284,8 +284,8 @@ class DbModel(QStandardItemModel):
         self.open(type_name)
 
     def open(self : 'DbModel', type_name : Optional[str] = None) -> None:
-        db_explorer = hub.main_window.db_explorer.db_explorer \
-            if hub.main_window and hub.main_window.db_explorer else None
+        explorer = hub.main_window.explorer.explorer \
+            if hub.main_window and hub.main_window.explorer else None
         dialog = FileOpenDialog(hub.main_window, type_name)
         result = dialog.exec()
         if result == QDialog.DialogCode.Accepted:
@@ -296,11 +296,11 @@ class DbModel(QStandardItemModel):
                     match type(opened_item).__name__:
                         case 'DesignItem':
                             self.designs.appendRow(opened_item)
-                            if db_explorer:
-                                db_explorer.expand(self.indexFromItem(opened_item))
-                                db_explorer.expand(self.indexFromItem(opened_item.diagrams))
+                            if explorer:
+                                explorer.expand(self.indexFromItem(opened_item))
+                                explorer.expand(self.indexFromItem(opened_item.diagrams))
                                 if opened_item.diagrams.rowCount() > 0:
-                                    db_explorer.editDrawing(opened_item.diagrams.child(0))
+                                    explorer.editDrawing(opened_item.diagrams.child(0))
                         case 'LibraryItem':
                             self.libraries.appendRow(opened_item)
                         case _:

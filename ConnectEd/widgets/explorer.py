@@ -13,7 +13,7 @@ if TYPE_CHECKING:
     from ..core import DrawingItem
 
 
-class DbExplorer(TreeView):
+class Explorer(TreeView):
     actions : SimpleNamespace
     item    : QStandardItem
 
@@ -145,29 +145,29 @@ class DbExplorer(TreeView):
         menu.addAction(self.actions.decreaseTextSize)
         menu.exec(self.viewport().mapToGlobal(pos))
 
-    def newItem(self : 'DbExplorer', item : QStandardItem) -> None:
+    def newItem(self : 'Explorer', item : QStandardItem) -> None:
         hub.db_model.newItem(item)
 
-    def openItem(self : 'DbExplorer', item : QStandardItem) -> None:
+    def openItem(self : 'Explorer', item : QStandardItem) -> None:
         hub.db_model.openItem(item)
 
-    def newWindow(self : 'DbExplorer', item : 'DrawingItem') -> None:
+    def newWindow(self : 'Explorer', item : 'DrawingItem') -> None:
         hub.db_model.newWindow(item)
 
-    def editDrawing(self : 'DbExplorer', item : 'DrawingItem') -> None:
+    def editDrawing(self : 'Explorer', item : 'DrawingItem') -> None:
         hub.db_model.editDrawing(item)
 
-    def saveDb(self : 'DbExplorer', item : QStandardItem) -> None:
+    def saveDb(self : 'Explorer', item : QStandardItem) -> None:
         hub.db_model.saveDb(item)
 
-    def saveAsDb(self : 'DbExplorer', item : QStandardItem) -> None:
+    def saveAsDb(self : 'Explorer', item : QStandardItem) -> None:
         hub.db_model.saveAsDb(item)
 
-    def closeDb(self : 'DbExplorer', item : QStandardItem) -> None:
+    def closeDb(self : 'Explorer', item : QStandardItem) -> None:
         hub.db_model.closeDb(item)
 
-    def copy(self : 'DbExplorer', item : QStandardItem) -> None:
+    def copy(self : 'Explorer', item : QStandardItem) -> None:
         hub.db_model.copy(item)
 
-    def paste(self : 'DbExplorer', item : QStandardItem) -> None:
+    def paste(self : 'Explorer', item : QStandardItem) -> None:
         hub.db_model.paste(item)

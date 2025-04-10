@@ -21,7 +21,7 @@ from .mdi_area       import MdiArea
 from ..messages_view_dock   import MessagesViewDock
 from ..transcript_view_dock import TranscriptViewDock
 from ..log_view_dock        import LogViewDock
-from ..db_explorer_dock     import DbExplorerDock
+from ..explorer_dock        import ExplorerDock
 
 from ... import hub
 
@@ -89,8 +89,8 @@ class MainWindow(QMainWindow):
         self.messages_viewer.raise_()
 
         # DB explorer dock widget
-        self.db_explorer = DbExplorerDock(self)
-        self.addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, self.db_explorer)
+        self.explorer = ExplorerDock(self)
+        self.addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, self.explorer)
 
         # MDI area
         self.mdi_area = MdiArea()

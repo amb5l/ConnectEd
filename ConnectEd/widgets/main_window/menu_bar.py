@@ -54,7 +54,7 @@ class MenuBar(QMenuBar):
         self.place_menu.addAction(actions.placeRectangle)
 
         self.window_menu = QMenu('&Window')
-        self.window_menu.addAction(actions.windowDbExplorer)
+        self.window_menu.addAction(actions.windowExplorer)
         self.window_menu.addAction(actions.windowMessages)
         self.window_menu.addAction(actions.windowTranscript)
         self.window_menu.addAction(actions.windowLog)
@@ -72,7 +72,7 @@ class MenuBar(QMenuBar):
     def updateWindowMenu(self) -> None:
         actions = hub.main_window.actions
         self.window_menu.clear()
-        self.window_menu.addAction(actions.windowDbExplorer)
+        self.window_menu.addAction(actions.windowExplorer)
         self.window_menu.addAction(actions.windowMessages)
         self.window_menu.addAction(actions.windowTranscript)
         self.window_menu.addAction(actions.windowLog)
