@@ -284,6 +284,8 @@ class DbModel(QStandardItemModel):
         self.open(type_name)
 
     def open(self : 'DbModel', type_name : Optional[str] = None) -> None:
+        db_explorer = hub.main_window.db_explorer.db_explorer \
+            if hub.main_window and hub.main_window.db_explorer else None
         dialog = FileOpenDialog(hub.main_window, type_name)
         result = dialog.exec()
         if result == QDialog.DialogCode.Accepted:
@@ -294,6 +296,11 @@ class DbModel(QStandardItemModel):
                     match type(opened_item).__name__:
                         case 'DesignItem':
                             self.designs.appendRow(opened_item)
+                            if db_explorer:
+                                db_explorer.expand(self.indexFromItem(opened_item))
+                                db_explorer.expand(self.indexFromItem(opened_item.diagrams))
+                                if opened_item.diagrams.rowCount() > 0:
+                                    db_explorer.editDrawing(opened_item.diagrams.child(0))
                         case 'LibraryItem':
                             self.libraries.appendRow(opened_item)
                         case _:
