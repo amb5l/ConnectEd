@@ -256,7 +256,7 @@ class DbModel(QStandardItemModel):
     def newItem(self : 'DbModel', item : QStandardItem) -> None:
         explorer = hub.main_window.explorer.explorer \
             if hub.main_window and hub.main_window.explorer else None
-        match self.getItemTypeStr(item):
+        match self.getItemTypeName(item):
             case 'Designs':
                 design_item = DesignItem()
                 diagram_item = DiagramItem()
@@ -432,7 +432,7 @@ class DbModel(QStandardItemModel):
     def paste(self : 'DbModel', item : QStandardItem) -> None:
         paste_items = master_paste()
         if paste_items:
-            match self.getItemTypeStr(item):
+            match self.getItemTypeName(item):
                 case 'Designs':
                     valid_item_type_names = ['DesignItem']
                 case 'Libraries':
@@ -477,7 +477,7 @@ class DbModel(QStandardItemModel):
                     return db_item
         return None
 
-    def getItemTypeStr(self : 'DbModel', i : QStandardItem) -> str | None:
+    def getItemTypeName(self : 'DbModel', i : QStandardItem) -> str | None:
         if i.text() == 'Designs':
             if type(i).__name__ == 'QStandardItem':
                 return 'Designs'

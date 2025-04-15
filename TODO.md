@@ -1,4 +1,3 @@
-- move actions and slots into menu_bar
 - improve paste destination tolerance in explorer
 - explorer: modified indicator, full path tooltip
 - QUndoCommand

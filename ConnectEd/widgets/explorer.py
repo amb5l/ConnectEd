@@ -111,7 +111,7 @@ class Explorer(TreeView):
             rename_action     = self.actions.rename
             self.item = self.model().itemFromIndex(index)
             item = self.model().itemFromIndex(index)
-            match hub.db_model.getItemTypeStr(item):
+            match hub.db_model.getItemTypeName(item):
                 case 'Designs':
                     new_action.setText('New Design')
                     open_action.setText('Open Design')
