@@ -1,6 +1,6 @@
 - move actions and slots into menu_bar
-- renaming drawings doesn't work
-- DB explorer: modified indicator, full path tooltip
+- improve paste destination tolerance in explorer
+- explorer: modified indicator, full path tooltip
 - QUndoCommand
 - consolidate mouse event handling
 - autosave

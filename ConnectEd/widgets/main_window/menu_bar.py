@@ -1,13 +1,10 @@
 from PyQt6.QtWidgets import QMenuBar, QMenu, QMdiSubWindow
 
-from ..private import Action
-
 from ... import hub
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from .          import MainWindow
-    from ...core    import DbModel, Database
+    from . import MainWindow
 
 class MenuBar(QMenuBar):
     def __init__(
