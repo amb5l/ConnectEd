@@ -259,10 +259,10 @@ class Settings(SimpleNamespace):
             value = qsettings.value(key)
             if value is not None:
                 path = f'/{qsettings.group()}/{key}'
-                logger.debug(f'loading setting: {path} = {value}')
                 stype = self._getSettingTypeName(path, FACTORY_SETTINGS)
                 if stype is not None:
-                    setattr(ns, key, str2val(value, type(stype).__name__))
+                    logger.debug(f'loading setting: {path} = {value} ({stype})')
+                    setattr(ns, key, str2val(value, stype))
                 else:
                     logger.warning(f'Unknown setting: {path}')
 
