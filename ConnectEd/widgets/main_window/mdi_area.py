@@ -25,8 +25,7 @@ class MdiArea(QMdiArea):
             return
         if not isinstance(widget.widget().scene(), DrawingScene):
             return
-        self._update()
-        hub.main_window.menu_bar.updateWindowMenu()
+        self.update()
 
     def nextSubWindow(self : 'MdiArea') -> None:
         self._activateSubWindowIndexOffset(1)
@@ -34,30 +33,33 @@ class MdiArea(QMdiArea):
     def previousSubWindow(self : 'MdiArea') -> None:
         self._activateSubWindowIndexOffset(-1)
 
-    def _update(self : 'MdiArea') -> None:
-        m = hub.main_window
-        # update scenes vs subwindows dict
+    def update(self : 'MdiArea') -> None:
+        self._updateSubWindowTitles()
+        self._updateSubWindowActions()
+        hub.main_window.menu_bar.updateWindowMenu()
+
+    def _updateSubWindowTitles(self : 'MdiArea') -> None:
         self.subwindow_scenes = {}
         for w in self.subWindowList():
             key = '_'
             if isinstance(w, DrawingSubWindow) \
             and isinstance(w.widget(), DrawingView) \
             and isinstance(w.widget().scene(), DrawingScene):
-                key = id(w.widget().scene())
-            if key in self.subwindow_scenes:
-                self.subwindow_scenes[key].append(w)
-            else:
-                self.subwindow_scenes[key] = [w]
-        # add numbers to titles of sibling subwindows (showing same scene)
-        for key, subwindows in self.subwindow_scenes.items():
-            if key == '_':
-                continue
-            for i, w in enumerate(subwindows):
-                title = re.sub(r'\(\d+\)$', '', w.windowTitle()).strip()
-                if len(subwindows) > 1:
-                    title = f'{title} ({i + 1})'
-                w.setWindowTitle(title)
-        # update db vs actions dict
+                scene = w.widget().scene()
+                scene_name = scene.name
+                db_name = hub.db_model.getDbItemFromScene(scene).text()
+                w.setWindowTitle(f'{db_name}:{scene_name}')
+                key = id(scene)
+                if key in self.subwindow_scenes:
+                    l = self.subwindow_scenes[key]
+                    if len(l) == 1:
+                        l[0].setWindowTitle(f'{l[0].windowTitle()}:0')
+                    w.setWindowTitle(f'{db_name}:{scene_name}:{len(l)}')
+                else:
+                    self.subwindow_scenes[key] = [w]
+
+    def _updateSubWindowActions(self : 'MdiArea') -> None:
+        m = hub.main_window
         self.subwindow_actions = {}
         for w in self.subWindowList():
             key = '_'

@@ -427,7 +427,7 @@ class DbModel(QStandardItemModel):
             if scene:
                 scene.name = item.text()
         print(f"Renamed item to: {item.text()}")
-        # TODO: update window titles and window menu
+        hub.main_window.mdi_area.update()
 
     def copy(self : 'DbModel', item : QStandardItem) -> None:
         master_copy(item)

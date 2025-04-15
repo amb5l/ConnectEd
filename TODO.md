@@ -1,5 +1,3 @@
-- settings: simplify XML, check for unknown qsettings
-- save -> rename doesn't update subwindow list
 - renaming drawings doesn't work
 - DB explorer: modified indicator, full path tooltip
 - QUndoCommand
