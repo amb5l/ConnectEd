@@ -12,10 +12,8 @@ from PyQt6.QtGui     import QStandardItemModel, QStandardItem
 
 from ..core    import logger, \
                       LIB_EXT, DSN_EXT, \
-                      copy as master_copy, \
-                      paste as master_paste, \
-                      fromXmlBegin, open, saveBegin, saveEnd, \
-                      val2str, str2val
+                      copy as master_copy, paste as master_paste, \
+                      fromXmlBegin, open, saveBegin, saveEnd, val2str, str2val
 from ..widgets import DrawingScene, DiagramScene, SymbolScene, \
                       FileOpenDialog, FileSaveAsDialog
 
@@ -426,7 +424,6 @@ class DbModel(QStandardItemModel):
             scene = item.data(Qt.ItemDataRole.UserRole)
             if scene:
                 scene.name = item.text()
-        print(f"Renamed item to: {item.text()}")
         hub.main_window.mdi_area.update()
 
     def copy(self : 'DbModel', item : QStandardItem) -> None:

@@ -2,7 +2,7 @@ from types import SimpleNamespace
 
 from PyQt6.QtCore    import Qt
 from PyQt6.QtWidgets import QWidget, QMenu
-from PyQt6.QtGui     import QAction, QStandardItem, QWheelEvent, QMouseEvent, QKeyEvent
+from PyQt6.QtGui     import QAction, QStandardItem, QWheelEvent, QMouseEvent
 
 from .tree_view import TreeView
 
@@ -23,7 +23,8 @@ class Explorer(TreeView):
         self.customContextMenuRequested.connect(self.showContextMenu)
         self.setEditTriggers(
             self.EditTrigger.SelectedClicked |
-            self.EditTrigger.EditKeyPressed
+            self.EditTrigger.EditKeyPressed  |
+            self.EditTrigger.DoubleClicked
         )
         self.actions = SimpleNamespace()
         a = self.actions
@@ -87,34 +88,13 @@ class Explorer(TreeView):
                     return
         super().mouseDoubleClickEvent(event)
 
-    def keyPressEvent(self, event: QKeyEvent) -> None:
-        """Handle key press events, particularly for item editing."""
-        if event.key() == Qt.Key.Key_F2:
-            self.renameSelectedItem()
-            event.accept()
-            return
-        elif event.key() == Qt.Key.Key_Return or event.key() == Qt.Key.Key_Enter:
-            if self.state() == self.State.EditingState:
-                self.commitData(self.editor())
-                self.closeEditor(self.editor(), self.EditHint.SubmitModelCache)
-                event.accept()
-                return
-            elif self.currentIndex().isValid():
-                item = self.model().itemFromIndex(self.currentIndex())
-                parent_item = item.parent()
-                if parent_item and parent_item.text() == 'Diagrams':
-                    self.editItem(item)
-                    event.accept()
-                    return
-        super().keyPressEvent(event)
-
     def renameSelectedItem(self) -> None:
         """Start editing the selected item's text."""
+        from ..core import DbItem, DrawingItem
         if self.currentIndex().isValid():
             item = self.model().itemFromIndex(self.currentIndex())
-            parent_item = item.parent()
-            if ((parent_item and parent_item.text() == 'Diagrams') or
-                (parent_item and parent_item.text() == 'Symbol Cache')):
+            if isinstance(item, DbItem) \
+            or isinstance(item, DrawingItem):
                 self.edit(self.currentIndex())
 
     def showContextMenu(self, pos) -> None:

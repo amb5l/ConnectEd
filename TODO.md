@@ -1,3 +1,4 @@
+- move actions and slots into menu_bar
 - renaming drawings doesn't work
 - DB explorer: modified indicator, full path tooltip
 - QUndoCommand
