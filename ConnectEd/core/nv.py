@@ -14,17 +14,17 @@ __all__ = ['Settings']
 from types       import SimpleNamespace
 from typing      import Any, Dict, List, Union
 
-from PyQt6.QtCore import QSettings, QPointF, QSizeF, Qt
+from PyQt6.QtCore import QSettings, QByteArray, QPointF, QSizeF, Qt
 from PyQt6.QtGui  import QColor
 
 from .log   import logger
 from .defs  import ORG_NAME, APP_NAME
-from .utils import getDefaultPath, value2str, str2value, MinMax
+from .utils import getDefaultPath, val2str, str2val, MinMax
 
 
 FACTORY_SETTINGS = {
     'startup': {
-        'geometry': None
+        'geometry': ''
     },
     'prefs': {
         'file': {
@@ -218,6 +218,18 @@ class Settings(SimpleNamespace):
         self._dump('settings', self, lines)
         return "\n".join(lines)
 
+    def _getSettingTypeName(
+            self : 'Settings',
+            path : str,
+            d    : dict
+        ) -> str:
+        l = path.lstrip('/').split('/')
+        if len(l) == 1 and l[0] in d and not isinstance(d[l[0]], dict):
+            return type(d[l[0]]).__name__
+        elif len(l) > 1 and isinstance(d[l[0]], dict):
+            return self._getSettingTypeName('/'+'/'.join(l[1:]), d[l[0]])
+        return None
+
     def _init(
         self     : 'Settings',
         ns       : SimpleNamespace,
@@ -246,11 +258,13 @@ class Settings(SimpleNamespace):
         for key in qsettings.childKeys():
             value = qsettings.value(key)
             if value is not None:
-                logger.debug(f'loading setting: {qsettings.group()}/{key} = {value}')
-                try:
-                    setattr(ns, key, str2value(value))
-                except (ValueError, AttributeError) as e:
-                    logger.warning(f'Error loading setting {key}: {e}')
+                path = f'/{qsettings.group()}/{key}'
+                logger.debug(f'loading setting: {path} = {value}')
+                stype = self._getSettingTypeName(path, FACTORY_SETTINGS)
+                if stype is not None:
+                    setattr(ns, key, str2val(value, type(stype).__name__))
+                else:
+                    logger.warning(f'Unknown setting: {path}')
 
     def _save(
         self      : 'Settings',
@@ -262,12 +276,14 @@ class Settings(SimpleNamespace):
             if not key.startswith('_') and not callable(value):
                 if isinstance(value, SimpleNamespace):
                     qsettings.beginGroup(key)
-                    logger.debug(f'saving settings group: {qsettings.group()}')
+                    path = f'/{qsettings.group()}'
+                    logger.debug(f'saving settings group: {path}')
                     self._save(value, qsettings)
                     qsettings.endGroup()
                 else:
-                    logger.debug(f'saving setting: {qsettings.group()}/{key} = {value}')
-                    qsettings.setValue(key, value2str(value))
+                    path = f'/{qsettings.group()}/{key}'
+                    logger.debug(f'saving setting: {path} = {value}')
+                    qsettings.setValue(key, val2str(value))
 
     def _dump(
         self   : 'Settings',
@@ -282,8 +298,8 @@ class Settings(SimpleNamespace):
                     lines.append(f'{indent}{name}/{k}:')
                     self._dump(name + '/' + k, v, lines, indent + '  ')
                 else:
-                    lines.append(f'{indent}{name}/{k} = {value2str(v)}')
+                    lines.append(f'{indent}{name}/{k} = {val2str(v)}')
         else:
-            lines.append(f'{indent}{name} = {value2str(x)}')
+            lines.append(f'{indent}{name} = {val2str(x)}')
 
 settings = Settings()
