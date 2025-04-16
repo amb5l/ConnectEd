@@ -123,7 +123,7 @@ class Explorer(TreeView):
             rename_action     = self.actions.rename
             self.item = self.model().itemFromIndex(index)
             item = self.model().itemFromIndex(index)
-            match hub.db_model.getItemTypeName(item):
+            match hub.db_model.getItemDescription(item):
                 case 'Designs':
                     new_action.setText('New Design')
                     open_action.setText('Open Design')
@@ -170,7 +170,7 @@ class Explorer(TreeView):
                     menu.addAction(new_window_action)
                     menu.addSeparator()
                     menu.addAction(rename_action)
-                case 'Symbol':
+                case 'Design Symbol' | 'Library Symbol':
                     edit_action.setText('Edit Symbol')
                     new_window_action.setText('New Symbol Window')
                     rename_action.setText('Rename Symbol')

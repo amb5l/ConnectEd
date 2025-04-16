@@ -256,7 +256,7 @@ class DbModel(QStandardItemModel):
     def newItem(self : 'DbModel', item : QStandardItem) -> None:
         explorer = hub.main_window.explorer.explorer \
             if hub.main_window and hub.main_window.explorer else None
-        match self.getItemTypeName(item):
+        match self.getItemDescription(item):
             case 'Designs':
                 design_item = DesignItem()
                 diagram_item = DiagramItem()
@@ -432,7 +432,7 @@ class DbModel(QStandardItemModel):
     def paste(self : 'DbModel', item : QStandardItem) -> None:
         paste_items = master_paste()
         if paste_items:
-            match self.getItemTypeName(item):
+            match self.getItemDescription(item):
                 case 'Designs':
                     valid_item_type_names = ['DesignItem']
                 case 'Libraries':
@@ -477,7 +477,7 @@ class DbModel(QStandardItemModel):
                     return db_item
         return None
 
-    def getItemTypeName(self : 'DbModel', i : QStandardItem) -> str | None:
+    def getItemDescription(self : 'DbModel', i : QStandardItem) -> str | None:
         if i.text() == 'Designs':
             if type(i).__name__ == 'QStandardItem':
                 return 'Designs'
@@ -509,10 +509,14 @@ class DbModel(QStandardItemModel):
                 return 'Diagram'
             s = f'Expected DiagramItem: {i.text()} ({type(i)})'
             raise ValueError(s)
-        elif i.parent().text() == 'Symbol Cache' \
-          or i.parent().text() == 'Libraries':
+        elif i.parent().text() == 'Symbol Cache':
             if isinstance(i, SymbolItem):
-                return 'Symbol'
+                return 'Design Symbol'
+            s = f'Expected SymbolItem (Symbol Cache): {i.text()} type: ({type(i)})'
+            raise ValueError(s)
+        elif i.parent().text() == 'Libraries':
+            if isinstance(i, SymbolItem):
+                return 'Library Symbol'
             s = f'Expected SymbolItem: {i.text()} type: ({type(i)})'
             raise ValueError(s)
         raise ValueError(f'Unsupported item: {i.text()}  type: {type(i)}')
