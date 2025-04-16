@@ -31,6 +31,7 @@ class MainWindow(QMainWindow):
     slots             : Slots
     menu_bar          : MenuBar
     status_bar        : StatusBar
+    explorer          : ExplorerDock
     messages_viewer   : MessagesViewDock
     transcript_viewer : TranscriptViewDock
     log_viewer        : LogViewDock
@@ -89,7 +90,7 @@ class MainWindow(QMainWindow):
         self.tabifyDockWidget(self.messages_viewer, self.log_viewer)
         self.messages_viewer.raise_()
 
-        # DB explorer dock widget
+        # explorer dock widget
         self.explorer = ExplorerDock(self)
         self.addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, self.explorer)
 
