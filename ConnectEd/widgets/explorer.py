@@ -53,18 +53,15 @@ class Explorer(TreeView):
         a.rename = QAction('Rename', self)
         a.rename.triggered.connect(self.renameSelectedItem)
 
-    def wheelEvent(self, event: QWheelEvent) -> None:
-        """Handle mouse wheel events to adjust font size when Ctrl is pressed."""
-        modifiers = event.modifiers()
-        if modifiers & Qt.KeyboardModifier.ControlModifier:
-            delta = event.angleDelta().y()
-            if delta > 0:
-                self.increaseFontSize()
-            elif delta < 0:
-                self.decreaseFontSize()
+    def mousePressEvent(self, event: QMouseEvent) -> None:
+        """Handle mouse press to deselect items when clicking in empty space."""
+        index = self.indexAt(event.pos())
+        if not index.isValid() and event.button() == Qt.MouseButton.LeftButton:
+            self.clearSelection()
+            self.setCurrentIndex(self.model().index(-1, -1))  # invalid index
             event.accept()
             return
-        super().wheelEvent(event)
+        super().mousePressEvent(event)
 
     def mouseDoubleClickEvent(self, event: QMouseEvent) -> None:
         """Handle double-click."""
@@ -88,6 +85,19 @@ class Explorer(TreeView):
                     return
         super().mouseDoubleClickEvent(event)
 
+    def wheelEvent(self, event: QWheelEvent) -> None:
+        """Handle mouse wheel events to adjust font size when Ctrl is pressed."""
+        modifiers = event.modifiers()
+        if modifiers & Qt.KeyboardModifier.ControlModifier:
+            delta = event.angleDelta().y()
+            if delta > 0:
+                self.increaseFontSize()
+            elif delta < 0:
+                self.decreaseFontSize()
+            event.accept()
+            return
+        super().wheelEvent(event)
+
     def renameSelectedItem(self) -> None:
         """Start editing the selected item's text."""
         from ..core import DbItem, DrawingItem
@@ -100,6 +110,8 @@ class Explorer(TreeView):
     def showContextMenu(self, pos) -> None:
         menu = QMenu(self)
         index = self.indexAt(pos)
+        if not index.isValid(): # if clicking in empty space
+            index = self.currentIndex()
         if index.isValid():
             new_action        = self.actions.newItem
             open_action       = self.actions.openItem

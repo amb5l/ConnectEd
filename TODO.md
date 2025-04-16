@@ -1,4 +1,6 @@
 - improve paste destination tolerance in explorer
+  - allow paste of designs, libraries when clicking in free space
+  - allow paste of diagrams into designs
 - explorer: modified indicator, full path tooltip
 - QUndoCommand
 - consolidate mouse event handling
