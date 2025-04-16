@@ -1,7 +1,7 @@
 __all__ = [
     'DrawingItem', 'SymbolItem', 'DiagramItem',
     'DbItem', 'DesignItem', 'LibraryItem',
-    'DbModel'
+    'Model'
 ]
 
 from typing  import Optional
@@ -10,10 +10,11 @@ from PyQt6.QtCore    import Qt, QXmlStreamWriter, QXmlStreamReader
 from PyQt6.QtWidgets import QDialog
 from PyQt6.QtGui     import QStandardItemModel, QStandardItem
 
-from ..core    import logger, \
-                      LIB_EXT, DSN_EXT, \
-                      copy as master_copy, paste as master_paste, \
-                      fromXmlBegin, open, saveBegin, saveEnd, val2str, str2val
+from . import logger, \
+              LIB_EXT, DSN_EXT, \
+              copy as master_copy, paste as master_paste, \
+              fromXmlBegin, open, saveBegin, saveEnd, val2str, str2val
+
 from ..widgets import DrawingScene, DiagramScene, SymbolScene, \
                       FileOpenDialog, FileSaveAsDialog
 
@@ -232,7 +233,7 @@ class DesignItem(DbItem):
             symbol_scene.toXml(xw)
         self.toXmlEnd(xw)
 
-class DbModel(QStandardItemModel):
+class Model(QStandardItemModel):
     designs   : QStandardItem
     libraries : QStandardItem
 
@@ -253,7 +254,7 @@ class DbModel(QStandardItemModel):
         self.appendRow(self.libraries)
         self.itemChanged.connect(self.changeItem)
 
-    def newItem(self : 'DbModel', item : QStandardItem) -> None:
+    def newItem(self : 'Model', item : QStandardItem) -> None:
         explorer = hub.main_window.explorer.explorer \
             if hub.main_window and hub.main_window.explorer else None
         match self.getItemDescription(item):
@@ -280,7 +281,7 @@ class DbModel(QStandardItemModel):
             case _:
                 raise ValueError(f'Bad item: {item} {item.text()} {type(item)}')
 
-    def openItem(self : 'DbModel', item : QStandardItem) -> None:
+    def openItem(self : 'Model', item : QStandardItem) -> None:
         match item.text():
             case 'Designs':
                 type_name = 'Design'
@@ -290,7 +291,7 @@ class DbModel(QStandardItemModel):
                 raise ValueError(f'Unknown item: {item.text()}')
         self.open(type_name)
 
-    def open(self : 'DbModel', type_name : Optional[str] = None) -> None:
+    def open(self : 'Model', type_name : Optional[str] = None) -> None:
         explorer = hub.main_window.explorer.explorer \
             if hub.main_window and hub.main_window.explorer else None
         dialog = FileOpenDialog(hub.main_window, type_name)
@@ -313,7 +314,7 @@ class DbModel(QStandardItemModel):
                         case _:
                             raise ValueError(f'Unsupported item type: {opened_item.text()} ({type(opened_item).__name__})')
 
-    def editItem(self : 'DbModel', item : QStandardItem) -> None:
+    def editItem(self : 'Model', item : QStandardItem) -> None:
         """Edit the drawing, focusing the first existing subwindow if available."""
         if isinstance(item, DrawingItem):
             from ..widgets import DrawingScene, DrawingView, DrawingSubWindow, \
@@ -353,7 +354,7 @@ class DbModel(QStandardItemModel):
         else:
             logger.warning(f'Unsupported item: {item.text()} ({type(item)})')
 
-    def newItemWindow(self : 'DbModel', item : QStandardItem) -> None:
+    def newItemWindow(self : 'Model', item : QStandardItem) -> None:
         if isinstance(item, DrawingItem):
             from ..widgets import DiagramScene, DiagramView, DiagramSubWindow, \
                                   SymbolScene, SymbolView, SymbolSubWindow
@@ -378,33 +379,33 @@ class DbModel(QStandardItemModel):
         else:
             logger.warning(f'Unsupported item: {item.text()} ({type(item)})')
 
-    def saveItem(self : 'DbModel', item: QStandardItem) -> None:
+    def saveItem(self : 'Model', item: QStandardItem) -> None:
         if isinstance(item, DbItem):
             item.save()
         else:
             logger.warning(f'Unsupported item: {item.text()} ({type(item)})')
 
-    def saveAsItem(self : 'DbModel', item: QStandardItem) -> None:
+    def saveAsItem(self : 'Model', item: QStandardItem) -> None:
         if isinstance(item, DbItem):
             item.saveAs()
         else:
             logger.warning(f'Unsupported item: {item.text()} ({type(item)})')
 
-    def saveScene(self : 'DbModel', scene : 'DrawingScene') -> None:
+    def saveScene(self : 'Model', scene : 'DrawingScene') -> None:
         db_item = self.getDbItemFromScene(scene)
         if db_item:
             db_item.save()
         else:
             raise ValueError(f'Unknown scene: {type(scene)}')
 
-    def saveAsScene(self : 'DbModel', scene : 'DrawingScene') -> None:
+    def saveAsScene(self : 'Model', scene : 'DrawingScene') -> None:
         db_item = self.getDbItemFromScene(scene)
         if db_item:
             db_item.saveAs()
         else:
             raise ValueError(f'Unknown scene: {type(scene)}')
 
-    def closeItem(self : 'DbModel', item: QStandardItem) -> None:
+    def closeItem(self : 'Model', item: QStandardItem) -> None:
         """Close a database and remove it from the model."""
         # TODO offer to save if modified
         if isinstance(item, DesignItem):
@@ -418,7 +419,7 @@ class DbModel(QStandardItemModel):
         else:
             logger.warning(f'Unknown database item type: {type(item)}')
 
-    def changeItem(self : 'DbModel', item : QStandardItem) -> None:
+    def changeItem(self : 'Model', item : QStandardItem) -> None:
         """Handle changes to items in the model, such as renaming."""
         if item.parent() and item.parent().text() in ('Diagrams', 'Symbol Cache'):
             scene = item.data(Qt.ItemDataRole.UserRole)
@@ -426,10 +427,10 @@ class DbModel(QStandardItemModel):
                 scene.name = item.text()
         hub.main_window.mdi_area.update()
 
-    def copy(self : 'DbModel', item : QStandardItem) -> None:
+    def copy(self : 'Model', item : QStandardItem) -> None:
         master_copy(item)
 
-    def paste(self : 'DbModel', item : QStandardItem) -> None:
+    def paste(self : 'Model', item : QStandardItem) -> None:
         paste_items = master_paste()
         if paste_items:
             match self.getItemDescription(item):
@@ -462,7 +463,7 @@ class DbModel(QStandardItemModel):
                 s = ', '.join(invalid_item_type_names)
                 raise ValueError(f'{n} invalid items for paste operation: {s}')
 
-    def getDbItemFromScene(self : 'DbModel', scene : 'DrawingScene') -> 'DbItem':
+    def getDbItemFromScene(self : 'Model', scene : 'DrawingScene') -> 'DbItem':
         for i in range(self.designs.rowCount()):
             db_item = self.designs.child(i)
             for j in range(db_item.diagrams.rowCount()):
@@ -477,7 +478,7 @@ class DbModel(QStandardItemModel):
                     return db_item
         return None
 
-    def getItemDescription(self : 'DbModel', i : QStandardItem) -> str | None:
+    def getItemDescription(self : 'Model', i : QStandardItem) -> str | None:
         if i.text() == 'Designs':
             if type(i).__name__ == 'QStandardItem':
                 return 'Designs'

@@ -11,5 +11,5 @@ from .nv import *
 __all__ += nv.__all__
 from .xml import *
 __all__ += xml.__all__
-from .db import *
-__all__ += db.__all__
+from .model import *
+__all__ += model.__all__

@@ -75,21 +75,21 @@ class Slots:
         self._parent = parent
 
     def fileNewDesign(self : 'Slots') -> None:
-        hub.db_model.newItem(hub.db_model.designs)
+        hub.model.newItem(hub.model.designs)
 
     def fileNewLibrary(self : 'Slots') -> None:
-        hub.db_model.newItem(hub.db_model.libraries)
+        hub.model.newItem(hub.model.libraries)
 
     def fileOpen(self : 'Slots') -> None:
-        hub.db_model.open()
+        hub.model.open()
 
     @withCurrentWidget(DrawingView)
     def fileSave(self : 'Slots', widget: DrawingView) -> None:
-        hub.db_model.saveScene(widget.scene())
+        hub.model.saveScene(widget.scene())
 
     @withCurrentWidget(DrawingView)
     def fileSaveAs(self : 'Slots', widget: DrawingView) -> None:
-        hub.db_model.saveAsScene(widget.scene())
+        hub.model.saveAsScene(widget.scene())
 
     def fileExit(self : 'Slots') -> None:
         self._parent.close()

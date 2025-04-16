@@ -18,7 +18,7 @@ class Explorer(TreeView):
     item    : QStandardItem
 
     def __init__(self, parent : QWidget) -> None:
-        super().__init__(parent, hub.db_model)
+        super().__init__(parent, hub.model)
         self.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
         self.customContextMenuRequested.connect(self.showContextMenu)
         self.setEditTriggers(
@@ -123,7 +123,7 @@ class Explorer(TreeView):
             rename_action     = self.actions.rename
             self.item = self.model().itemFromIndex(index)
             item = self.model().itemFromIndex(index)
-            match hub.db_model.getItemDescription(item):
+            match hub.model.getItemDescription(item):
                 case 'Designs':
                     new_action.setText('New Design')
                     open_action.setText('Open Design')
@@ -186,28 +186,28 @@ class Explorer(TreeView):
         menu.exec(self.viewport().mapToGlobal(pos))
 
     def newItem(self : 'Explorer', item : QStandardItem) -> None:
-        hub.db_model.newItem(item)
+        hub.model.newItem(item)
 
     def openItem(self : 'Explorer', item : QStandardItem) -> None:
-        hub.db_model.openItem(item)
+        hub.model.openItem(item)
 
     def newItemWindow(self : 'Explorer', item : 'DrawingItem') -> None:
-        hub.db_model.newItemWindow(item)
+        hub.model.newItemWindow(item)
 
     def editItem(self : 'Explorer', item : 'DrawingItem') -> None:
-        hub.db_model.editItem(item)
+        hub.model.editItem(item)
 
     def saveItem(self : 'Explorer', item : QStandardItem) -> None:
-        hub.db_model.saveItem(item)
+        hub.model.saveItem(item)
 
     def saveAsItem(self : 'Explorer', item : QStandardItem) -> None:
-        hub.db_model.saveAsItem(item)
+        hub.model.saveAsItem(item)
 
     def closeItem(self : 'Explorer', item : QStandardItem) -> None:
-        hub.db_model.closeItem(item)
+        hub.model.closeItem(item)
 
     def copy(self : 'Explorer', item : QStandardItem) -> None:
-        hub.db_model.copy(item)
+        hub.model.copy(item)
 
     def paste(self : 'Explorer', item : QStandardItem) -> None:
-        hub.db_model.paste(item)
+        hub.model.paste(item)

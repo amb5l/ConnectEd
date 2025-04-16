@@ -3,7 +3,7 @@ import sys
 from PyQt6.QtWidgets import QApplication
 
 from .core      import logger, known_args, unknown_args, \
-                       NameCounter, Settings, DbModel
+                       NameCounter, Settings, Model
 from .widgets   import MainWindow
 from .resources import initResources
 
@@ -21,7 +21,7 @@ def main() -> int:
     app = QApplication(sys.argv[:1] + unknown_args)
     app.setStyle('Fusion')
     initResources()
-    hub.db_model = DbModel()
+    hub.model = Model()
     hub.main_window = MainWindow()
     hub.main_window.show()
     r = app.exec()

@@ -10,7 +10,7 @@ from . import logger
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from .db import DesignItem, LibraryItem, DiagramItem, SymbolItem
+    from .model import DesignItem, LibraryItem, DiagramItem, SymbolItem
     from ..widgets.elements import Element
 
 
@@ -40,7 +40,7 @@ def fromXmlBegin(xr : QXmlStreamReader, token_name : str) -> None:
         raise ValueError(f"Expected '{token_name}' element, got '{xr.name()}'")
 
 def fromXml(xr : QXmlStreamReader) -> list[XmlItemTypes]:
-    from .db import DesignItem, LibraryItem, DiagramItem, SymbolItem
+    from .model import DesignItem, LibraryItem, DiagramItem, SymbolItem
     from ..widgets.elements import element_class_dict
     fromXmlBegin(xr, 'ConnectEd')
     xr.readNext()
