@@ -357,45 +357,25 @@ class Model(QStandardItemModel):
         return None
 
     def getItemDescription(self : 'Model', i : QStandardItem) -> str | None:
-        if i.text() == 'Designs':
-            if type(i).__name__ == 'QStandardItem':
-                return 'Designs'
-            raise ValueError(f'Expected QStandardItem: {i.text()} ({type(i)})')
-        elif i.text() == 'Libraries':
-            if type(i).__name__ == 'QStandardItem':
-                return 'Libraries'
-            raise ValueError(f'Expected QStandardItem: {i.text()} ({type(i)})')
-        elif i.parent().text() == 'Designs':
-            if type(i).__name__ == 'DesignItem':
-                return 'Design'
-            s = f'Expected DesignItem: {i.text()} ({type(i)})'
-            raise ValueError(s)
-        elif i.parent().text() == 'Libraries':
-            if isinstance(i, LibraryItem):
-                return 'Library'
-            s = f'Expected LibraryItem: {i.text()} ({type(i)})'
-            raise ValueError(s)
-        elif i.text() == 'Diagrams':
-            if type(i).__name__ == 'QStandardItem':
-                return 'Diagrams'
-            raise ValueError(f'Expected QStandardItem: {i.text()} ({type(i)})')
-        elif i.text() == 'Symbol Cache':
-            if type(i).__name__ == 'QStandardItem':
-                return 'Symbol Cache'
-            raise ValueError(f'Expected QStandardItem: {i.text()} ({type(i)})')
-        elif i.parent().text() == 'Diagrams':
-            if isinstance(i, DiagramItem):
-                return 'Diagram'
-            s = f'Expected DiagramItem: {i.text()} ({type(i)})'
-            raise ValueError(s)
-        elif i.parent().text() == 'Symbol Cache':
-            if isinstance(i, SymbolItem):
+        if isinstance(i, DesignItem):
+            return 'Design'
+        elif isinstance(i, LibraryItem):
+            return 'Library'
+        elif isinstance(i, DiagramItem):
+            return 'Diagram'
+        elif isinstance(i, SymbolItem):
+            if isinstance(i.parent(), QStandardItem) \
+            and i.parent().text() == 'Symbol Cache':
                 return 'Design Symbol'
-            s = f'Expected SymbolItem (Symbol Cache): {i.text()} type: ({type(i)})'
-            raise ValueError(s)
-        elif i.parent().text() == 'Libraries':
-            if isinstance(i, SymbolItem):
+            elif isinstance(i.parent(), LibraryItem):
                 return 'Library Symbol'
-            s = f'Expected SymbolItem: {i.text()} type: ({type(i)})'
-            raise ValueError(s)
+        elif isinstance(i, QStandardItem):
+            if i.text() == 'Designs':
+                return 'Designs'
+            elif i.text() == 'Libraries':
+                return 'Libraries'
+            elif i.text() == 'Diagrams':
+                return 'Diagrams'
+            elif i.text() == 'Symbol Cache':
+                return 'Symbol Cache'
         raise ValueError(f'Unsupported item: {i.text()}  type: {type(i)}')
