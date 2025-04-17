@@ -1,3 +1,8 @@
+- explorer: multi item copy/paste
+  - new design/library option in free space
+  - expand on paste (e.g. to symbol cache)
+- symbol editor scroll bars / extents
+- get rid of raise errors, use logger
 - improve paste destination tolerance in explorer
   - allow paste of designs, libraries when clicking in free space
   - allow paste of diagrams into designs
@@ -8,8 +13,6 @@
 - Window menu: check active window
 - new widgets:
   - Add Symbol Explorer
-- Return as well as Enter to complete name edit in explorer
-- what to do with name edit? why allow it?
 - filter log view by level
 - look at windowFilePath
 - move some context menu logic into TreeView

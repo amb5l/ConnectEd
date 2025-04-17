@@ -266,6 +266,8 @@ class Model(QStandardItemModel):
         parent : QStandardItem
     ) -> SymbolItem | None:
         item = None
+        if self.getItemDescription(parent) == 'Design':
+            parent = parent.symbols
         if self.getItemDescription(parent) == 'Symbol Cache' \
         or self.getItemDescription(parent) == 'Library':
             item = SymbolItem()

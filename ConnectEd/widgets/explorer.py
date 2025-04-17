@@ -1,4 +1,5 @@
-from types import SimpleNamespace
+from types  import SimpleNamespace
+from typing import Optional
 
 from PyQt6.QtCore    import Qt, QPoint, QItemSelectionModel
 from PyQt6.QtWidgets import QWidget, QMenu
@@ -18,6 +19,7 @@ if TYPE_CHECKING:
 
 class Explorer(TreeView):
     actions   : SimpleNamespace
+    menus     : SimpleNamespace
     item      : QStandardItem
     _focus_in : bool
 
@@ -27,6 +29,7 @@ class Explorer(TreeView):
         self.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
         self.customContextMenuRequested.connect(self.showContextMenu)
         self.setEditTriggers(self.EditTrigger.EditKeyPressed)
+        self._focus_in = False
         self.actions = SimpleNamespace()
         a = self.actions
         a.increaseTextSize = QAction('Increase Text Size', self)
@@ -35,12 +38,22 @@ class Explorer(TreeView):
         a.decreaseTextSize.triggered.connect(self.decreaseFontSize)
         a.newDesign = QAction('New Design', self)
         a.newDesign.triggered.connect(self.newDesign)
+        a.newMenuDesign = QAction('Design', self)
+        a.newMenuDesign.triggered.connect(self.newDesign)
         a.newLibrary = QAction('New Library', self)
         a.newLibrary.triggered.connect(self.newLibrary)
+        a.newMenuLibrary = QAction('Library', self)
+        a.newMenuLibrary.triggered.connect(self.newLibrary)
         a.newDiagram = QAction('New Diagram', self)
         a.newDiagram.triggered.connect(lambda: self.newDiagram(self.item))
+        a.newMenuDiagram = QAction('Diagram', self)
+        a.newMenuDiagram.triggered.connect(lambda: self.newDiagram(self.item))
         a.newSymbol = QAction('New Symbol', self)
         a.newSymbol.triggered.connect(lambda: self.newSymbol(self.item))
+        a.newMenuSymbol = QAction('Symbol', self)
+        a.newMenuSymbol.triggered.connect(lambda: self.newSymbol(self.item))
+        a.open = QAction('Open...', self)
+        a.open.triggered.connect(lambda: self.openDb())
         a.openDesign = QAction('Open Design...', self)
         a.openDesign.triggered.connect(lambda: self.openDb('Design'))
         a.openLibrary = QAction('Open Library...', self)
@@ -77,7 +90,14 @@ class Explorer(TreeView):
         a.copy.triggered.connect(lambda: self.copy(self.item))
         a.paste = QAction('Paste', self)
         a.paste.triggered.connect(lambda: self.paste(self.item))
-        self._focus_in = False
+        self.menus = SimpleNamespace()
+        m = self.menus
+        m.new_db = QMenu('New', self)
+        m.new_db.addAction(a.newMenuDesign)
+        m.new_db.addAction(a.newMenuLibrary)
+        m.new_dwg = QMenu('New', self)
+        m.new_dwg.addAction(a.newMenuDiagram)
+        m.new_dwg.addAction(a.newMenuSymbol)
 
     def onItemChanged(self : 'Explorer', item : QStandardItem) -> None:
         """Handle changes to items in the model, such as renaming."""
@@ -181,7 +201,7 @@ class Explorer(TreeView):
         self.expand(hub.model.indexFromItem(item))
         self.editDrawing(symbol_item)
 
-    def openDb(self : 'Explorer', type_name : str) -> None:
+    def openDb(self : 'Explorer', type_name : Optional[str] = None) -> None:
         from .dialogs import FileOpenDialog
         dialog = FileOpenDialog(type_name)
         result = dialog.exec()
@@ -293,6 +313,7 @@ class Explorer(TreeView):
     def showContextMenu(self : 'Explorer', pos : QPoint) -> None:
         menu = QMenu(self)
         a = self.actions
+        m = self.menus
         index = self.indexAt(pos)
         if not index.isValid(): # if clicking in empty space
             index = self.currentIndex()
@@ -307,6 +328,7 @@ class Explorer(TreeView):
                     menu.addAction(a.newLibrary)
                     menu.addAction(a.openLibrary)
                 case 'Design':
+                    menu.addMenu(m.new_dwg)
                     menu.addAction(a.saveDesign)
                     menu.addAction(a.saveDesignAs)
                     menu.addAction(a.closeDesign)
@@ -325,17 +347,22 @@ class Explorer(TreeView):
                 case 'Symbol Cache':
                     menu.addAction(a.newSymbol)
                 case 'Diagram':
-                    menu.addAction(a.editDiagram)
                     menu.addAction(a.newDiagramWindow)
+                    menu.addAction(a.editDiagram)
                     menu.addSeparator()
                     menu.addAction(a.renameDiagram)
                 case 'Design Symbol' | 'Library Symbol':
-                    menu.addAction(a.editSymbol)
                     menu.addAction(a.newSymbolWindow)
+                    menu.addAction(a.editSymbol)
+                    menu.addSeparator()
                     menu.addAction(a.renameSymbol)
             menu.addSeparator()
             menu.addAction(self.actions.copy)
             menu.addAction(self.actions.paste)
+            menu.addSeparator()
+        else:
+            menu.addMenu(m.new_db)
+            menu.addAction(a.open)
             menu.addSeparator()
         menu.addAction(self.actions.increaseTextSize)
         menu.addAction(self.actions.decreaseTextSize)
