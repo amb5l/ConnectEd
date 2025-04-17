@@ -1,3 +1,6 @@
+- move model GUI functionality to explorer
+- rename model & explorer methods
+- merge tree view and its dock, same for other dock widgets
 - improve paste destination tolerance in explorer
   - allow paste of designs, libraries when clicking in free space
   - allow paste of diagrams into designs

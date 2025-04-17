@@ -6,17 +6,15 @@ __all__ = [
 
 from typing  import Optional
 
-from PyQt6.QtCore    import Qt, QXmlStreamWriter, QXmlStreamReader
-from PyQt6.QtWidgets import QDialog
-from PyQt6.QtGui     import QStandardItemModel, QStandardItem
+from PyQt6.QtCore import Qt, QXmlStreamWriter, QXmlStreamReader
+from PyQt6.QtGui  import QStandardItemModel, QStandardItem
 
 from . import logger, \
               LIB_EXT, DSN_EXT, \
               copy as master_copy, paste as master_paste, \
               fromXmlBegin, open, saveBegin, saveEnd, val2str, str2val
 
-from ..widgets import DrawingScene, DiagramScene, SymbolScene, \
-                      FileOpenDialog, FileSaveAsDialog
+from ..widgets import DrawingScene, DiagramScene, SymbolScene
 
 from .. import hub
 
@@ -63,20 +61,17 @@ class DiagramItem(DrawingItem):
 
 class DbItem(QStandardItem):
     XML_ATTRIBUTES = {}
-    XML_PROPERTIES = { 'name' : ('str', QStandardItem.setText, QStandardItem.text) }
+    XML_PROPERTIES = {
+        'name' : ('str', QStandardItem.setText, QStandardItem.text)
+    }
 
-    name : str
     path : Optional[str]
 
     def __init__(self) -> None:
         u = 'Untitled' + self.__class__.__name__.replace('Item', '')
-        self.name = hub.name_counter.get(u)
-        self.path = None
-        super().__init__(self.name)
+        super().__init__(hub.name_counter.get(u))
         self.setFlags(self.flags() | Qt.ItemFlag.ItemIsEditable)
-    def setName(self, name: str) -> None:
-        self.name = name
-        self.setText(name)
+        self.path = None
 
     @classmethod
     def fromXmlBegin(cls, xr : QXmlStreamReader) -> 'DbItem':
@@ -104,13 +99,6 @@ class DbItem(QStandardItem):
         while not (xr.isEndElement() and xr.name() == self.__class__.__name__.replace('Item', '')):
             xr.readNext()
 
-    @classmethod
-    def fromXmlFile(cls, file : str) -> 'DbItem':
-        with open(file, 'r') as f:
-            data = f.read()
-            xr = QXmlStreamReader(data)
-            return cls.fromXml(xr)
-
     def toXmlBegin(self, xw : QXmlStreamWriter) -> None:
         xw.writeStartElement(self.__class__.__name__.replace('Item', ''))
         for name, _ in self.XML_ATTRIBUTES.items():
@@ -123,28 +111,22 @@ class DbItem(QStandardItem):
     def toXmlEnd(self, xw : QXmlStreamWriter) -> None:
         xw.writeEndElement()
 
-    def save(self) -> None:
+    @classmethod
+    def load(cls, file : str) -> 'DbItem':
+        with open(file, 'r') as f:
+            data = f.read()
+            xr = QXmlStreamReader(data)
+            return cls.fromXml(xr)
+
+    def save(self, path : Optional[str] = None) -> None:
+        if path is not None:
+            self.path = path
         if self.path is None:
             self.path = self.saveAs()
         else:
             xw, file = saveBegin(self.path)
             self.toXml(xw)
             saveEnd(xw, file)
-
-    def saveAs(self) -> str:
-        dialog = FileSaveAsDialog(
-            hub.main_window,
-            self.__class__.__name__.replace('Item', '')
-        )
-        result = dialog.exec()
-        if result == QDialog.DialogCode.Accepted:
-            selected_files = dialog.selectedFiles()
-            path = selected_files[0]
-            if path:
-                self.path = path
-                self.save()
-                self.setName(path)
-                return path
 
     copy = master_copy
 
@@ -252,162 +234,62 @@ class Model(QStandardItemModel):
         font.setBold(True)
         self.libraries.setFont(font)
         self.appendRow(self.libraries)
-        self.itemChanged.connect(self.changeItem)
 
-    def newItem(self : 'Model', item : QStandardItem) -> None:
-        explorer = hub.main_window.explorer.explorer \
-            if hub.main_window and hub.main_window.explorer else None
-        match self.getItemDescription(item):
-            case 'Designs':
-                design_item = DesignItem()
-                diagram_item = DiagramItem()
-                design_item.diagrams.appendRow(diagram_item)
-                item.appendRow(design_item)
-                if explorer:
-                    explorer.expand(self.indexFromItem(design_item))
-                    explorer.expand(self.indexFromItem(design_item.diagrams))
-                    explorer.editItem(diagram_item)
-            case 'Libraries':
-                library_item = LibraryItem()
-                item.appendRow(library_item)
-                if explorer:
-                    explorer.expand(self.indexFromItem(library_item))
-            case 'Diagrams':
-                item.appendRow(DiagramItem())
-                if explorer:
-                    explorer.expand(self.indexFromItem(item))
-            case 'Symbol Cache':
-                item.appendRow(SymbolItem())
-            case _:
-                raise ValueError(f'Bad item: {item} {item.text()} {type(item)}')
+    def newDesign(self : 'Model') -> DesignItem:
+        item = DesignItem()
+        self.designs.appendRow(item)
+        return item
 
-    def openItem(self : 'Model', item : QStandardItem) -> None:
-        match item.text():
-            case 'Designs':
-                type_name = 'Design'
-            case 'Libraries':
-                type_name = 'Library'
-            case _:
-                raise ValueError(f'Unknown item: {item.text()}')
-        self.open(type_name)
+    def newLibrary(self : 'Model') -> LibraryItem:
+        item = LibraryItem()
+        self.libraries.appendRow(item)
+        return item
 
-    def open(self : 'Model', type_name : Optional[str] = None) -> None:
-        explorer = hub.main_window.explorer.explorer \
-            if hub.main_window and hub.main_window.explorer else None
-        dialog = FileOpenDialog(hub.main_window, type_name)
-        result = dialog.exec()
-        if result == QDialog.DialogCode.Accepted:
-            files = dialog.selectedFiles()
-            for file in files:
-                opened_items = open(file)
-                for opened_item in opened_items:
-                    match type(opened_item).__name__:
-                        case 'DesignItem':
-                            self.designs.appendRow(opened_item)
-                            if explorer:
-                                explorer.expand(self.indexFromItem(opened_item))
-                                explorer.expand(self.indexFromItem(opened_item.diagrams))
-                                if opened_item.diagrams.rowCount() > 0:
-                                    explorer.editItem(opened_item.diagrams.child(0))
-                        case 'LibraryItem':
-                            self.libraries.appendRow(opened_item)
-                        case _:
-                            raise ValueError(f'Unsupported item type: {opened_item.text()} ({type(opened_item).__name__})')
-
-    def editItem(self : 'Model', item : QStandardItem) -> None:
-        """Edit the drawing, focusing the first existing subwindow if available."""
-        if isinstance(item, DrawingItem):
-            from ..widgets import DrawingScene, DrawingView, DrawingSubWindow, \
-                                  SymbolScene, SymbolView, SymbolSubWindow, \
-                                  DiagramScene, DiagramView, DiagramSubWindow
-            for subwindow in hub.main_window.mdi_area.subWindowList():
-                if not isinstance(subwindow, DrawingSubWindow):
-                    continue
-                if not isinstance(subwindow.widget(), DrawingView):
-                    continue
-                if not isinstance(subwindow.widget().scene(), DrawingScene):
-                    continue
-                if item.scene != subwindow.widget().scene():
-                    continue
-                hub.main_window.mdi_area.setActiveSubWindow(subwindow)
-                subwindow.show()
-                subwindow.raise_()
-                subwindow.setFocus()
-                return
-            drawing_name = item.text()
-            drawing_scene : DrawingScene = item.data(Qt.ItemDataRole.UserRole)
-            if isinstance(drawing_scene, DiagramScene):
-                drawing_view = DiagramView(drawing_scene)
-                db_item = item.parent().parent()
-                subwindow = DiagramSubWindow(hub.main_window.mdi_area)
-            elif isinstance(drawing_scene, SymbolScene):
-                drawing_view = SymbolView(drawing_scene)
-                db_item = item.parent()
-                subwindow = SymbolSubWindow(hub.main_window.mdi_area)
-            else:
-                raise ValueError(f'Unknown drawing scene: {type(drawing_scene)}')
-            subwindow.setWidget(drawing_view)
-            subwindow.setWindowTitle(f'{db_item.text()}: {drawing_name}')
-            hub.main_window.mdi_area.addSubWindow(subwindow)
-            subwindow.showMaximized()
-            hub.main_window.menu_bar.updateWindowMenu()
+    def newDiagram(
+        self   : 'Model',
+        parent : QStandardItem
+    ) -> DiagramItem | None:
+        item = None
+        if self.getItemDescription(parent) == 'Design':
+            parent = parent.diagrams
+        if self.getItemDescription(parent) == 'Diagrams':
+            item = DiagramItem()
+            parent.appendRow(item)
         else:
-            logger.warning(f'Unsupported item: {item.text()} ({type(item)})')
+            logger.warning(
+                f'Unexpected parent item: {parent.text()} ({type(parent)})'
+            )
+        return item
 
-    def newItemWindow(self : 'Model', item : QStandardItem) -> None:
-        if isinstance(item, DrawingItem):
-            from ..widgets import DiagramScene, DiagramView, DiagramSubWindow, \
-                                  SymbolScene, SymbolView, SymbolSubWindow
-            if isinstance(item, DiagramItem):
-                db_item : DesignItem = item.parent().parent()
-                drawing_name = item.text()
-                drawing_scene : DiagramScene = item.data(Qt.ItemDataRole.UserRole)
-                subwindow = DiagramSubWindow()
-                drawing_view = DiagramView(drawing_scene)
-                subwindow.setWidget(drawing_view)
-            elif isinstance(item, SymbolItem):
-                db_item : LibraryItem = item.parent()
-                drawing_name = item.text()
-                drawing_scene : SymbolScene = item.data(Qt.ItemDataRole.UserRole)
-                subwindow = SymbolSubWindow()
-                drawing_view = SymbolView(drawing_scene)
-                subwindow.setWidget(drawing_view)
-            subwindow.setWindowTitle(f'{db_item.text()}: {drawing_name}')
-            hub.main_window.mdi_area.addSubWindow(subwindow)
-            subwindow.showMaximized()
-            hub.main_window.menu_bar.updateWindowMenu()
+    def newSymbol(
+        self   : 'Model',
+        parent : QStandardItem
+    ) -> SymbolItem | None:
+        item = None
+        if self.getItemDescription(parent) == 'Symbol Cache' \
+        or self.getItemDescription(parent) == 'Library':
+            item = SymbolItem()
+            parent.appendRow(item)
         else:
-            logger.warning(f'Unsupported item: {item.text()} ({type(item)})')
+            logger.warning(
+                f'Unexpected parent item: {parent.text()} ({type(parent)})'
+            )
+        return item
 
-    def saveItem(self : 'Model', item: QStandardItem) -> None:
-        if isinstance(item, DbItem):
-            item.save()
+    def load(self : 'Model', path : str) -> DbItem:
+        db_item = None
+        if path.endswith(DSN_EXT):
+            db_item = DesignItem.load(path)
+            self.designs.appendRow(db_item)
+        elif path.endswith(LIB_EXT):
+            db_item = LibraryItem.load(path)
+            self.libraries.appendRow(db_item)
         else:
-            logger.warning(f'Unsupported item: {item.text()} ({type(item)})')
+            logger.warning(f'Unsupported file extension: {path}')
+        return db_item
 
-    def saveAsItem(self : 'Model', item: QStandardItem) -> None:
-        if isinstance(item, DbItem):
-            item.saveAs()
-        else:
-            logger.warning(f'Unsupported item: {item.text()} ({type(item)})')
-
-    def saveScene(self : 'Model', scene : 'DrawingScene') -> None:
-        db_item = self.getDbItemFromScene(scene)
-        if db_item:
-            db_item.save()
-        else:
-            raise ValueError(f'Unknown scene: {type(scene)}')
-
-    def saveAsScene(self : 'Model', scene : 'DrawingScene') -> None:
-        db_item = self.getDbItemFromScene(scene)
-        if db_item:
-            db_item.saveAs()
-        else:
-            raise ValueError(f'Unknown scene: {type(scene)}')
-
-    def closeItem(self : 'Model', item: QStandardItem) -> None:
+    def close(self : 'Model', item: QStandardItem) -> None:
         """Close a database and remove it from the model."""
-        # TODO offer to save if modified
         if isinstance(item, DesignItem):
             for i in range(self.designs.rowCount()):
                 if item == self.designs.child(i):
@@ -417,15 +299,7 @@ class Model(QStandardItemModel):
                 if item == self.libraries.child(i):
                     self.libraries.removeRow(i)
         else:
-            logger.warning(f'Unknown database item type: {type(item)}')
-
-    def changeItem(self : 'Model', item : QStandardItem) -> None:
-        """Handle changes to items in the model, such as renaming."""
-        if item.parent() and item.parent().text() in ('Diagrams', 'Symbol Cache'):
-            scene = item.data(Qt.ItemDataRole.UserRole)
-            if scene:
-                scene.name = item.text()
-        hub.main_window.mdi_area.update()
+            logger.warning(f'Unsupported item: {item.text()} ({type(item)})')
 
     def copy(self : 'Model', item : QStandardItem) -> None:
         master_copy(item)
