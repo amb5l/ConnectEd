@@ -3,7 +3,7 @@ from types import SimpleNamespace
 from typing import Optional
 
 from PyQt6.QtCore    import Qt
-from PyQt6.QtWidgets import QWidget, QPlainTextEdit
+from PyQt6.QtWidgets import QWidget, QPlainTextEdit, QDockWidget, QVBoxLayout
 from PyQt6.QtGui     import QTextOption, QAction, QContextMenuEvent, QWheelEvent
 
 from ..core    import logger
@@ -81,3 +81,29 @@ class TextView(QPlainTextEdit):
                 logger.removeHandler(self.handler)
             except:
                 pass
+
+class TextViewDockWidget(QDockWidget):
+    WINDOW_TITLE = 'Text Viewer'
+    main_widget  : QWidget
+    text_view    : TextView
+    find_bar     : FindBar
+
+    def __init__(
+        self     : 'TextViewDockWidget',
+        parent   : Optional[QWidget] = None,
+        filename : Optional[str] = None
+    ) -> None:
+        super().__init__(parent)
+        self.setWindowTitle(self.WINDOW_TITLE)
+        self.text_view = TextView(self, filename)
+        self.find_bar = FindBar(self, self.text_view)
+        self.text_view.setFindBar(self.find_bar)
+        self.main_widget = QWidget()
+        layout = QVBoxLayout(self.main_widget)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(0)
+        layout.addWidget(self.find_bar)
+        layout.addWidget(self.text_view)
+        self.main_widget.setLayout(layout)
+        self.setWidget(self.main_widget)
+        self.find_bar.hide()

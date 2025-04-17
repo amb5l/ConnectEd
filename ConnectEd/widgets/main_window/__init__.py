@@ -11,17 +11,17 @@ from PyQt6.QtCore    import Qt, QByteArray
 from PyQt6.QtWidgets import QMainWindow
 from PyQt6.QtGui     import QCloseEvent
 
-from ...core         import APP_NAME, check
-from .actions        import Actions
-from .slots          import Slots
-from .menu_bar       import MenuBar
-from .status_bar     import StatusBar
-from .mdi_area       import MdiArea
+from ...core     import APP_NAME, check
+from .actions    import Actions
+from .slots      import Slots
+from .menu_bar   import MenuBar
+from .status_bar import StatusBar
+from .mdi_area   import MdiArea
 
-from ..messages_view_dock   import MessagesViewDock
-from ..transcript_view_dock import TranscriptViewDock
-from ..log_view_dock        import LogViewDock
-from ..explorer_dock        import ExplorerDock
+from ..messages_view   import MessagesViewDock
+from ..transcript_view import TranscriptViewDock
+from ..log_view        import LogViewDock
+from ..explorer        import ExplorerDock
 
 from ... import hub
 

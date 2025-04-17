@@ -7,7 +7,7 @@ from PyQt6.QtGui     import QAction, QStandardItem, \
 
 from ..core import logger
 
-from .tree_view import TreeView
+from .tree_view import TreeView, TreeViewDock
 
 from .. import hub
 
@@ -340,3 +340,13 @@ class Explorer(TreeView):
         menu.addAction(self.actions.increaseTextSize)
         menu.addAction(self.actions.decreaseTextSize)
         menu.exec(self.viewport().mapToGlobal(pos))
+
+class ExplorerDock(TreeViewDock):
+    WINDOW_TITLE = 'Explorer'
+
+    explorer : Explorer
+
+    def __init__(self, parent : QWidget) -> None:
+        super().__init__(parent, None)
+        self.explorer = Explorer(self)
+        self.setWidget(self.explorer)

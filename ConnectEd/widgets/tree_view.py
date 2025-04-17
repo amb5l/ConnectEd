@@ -1,5 +1,7 @@
+from typing import Optional
+
 from PyQt6.QtCore    import QAbstractItemModel
-from PyQt6.QtWidgets import QTreeView, QWidget
+from PyQt6.QtWidgets import QTreeView, QWidget, QDockWidget
 from PyQt6.QtGui     import QFont, QShortcut, QKeySequence
 
 from .. import hub
@@ -57,3 +59,15 @@ class TreeView(QTreeView):
         """Decrease the font size."""
         self.setFontSize(max(self.current_font_size - 1, 6)) # TODO: min from settings
 
+class TreeViewDock(QDockWidget):
+    WINDOW_TITLE = 'Tree Viewer'
+
+    def __init__(
+        self   : 'TreeViewDock',
+        parent : QWidget,
+        widget : Optional[TreeView] = None
+    ) -> None:
+        super().__init__(parent)
+        self.setWindowTitle(self.WINDOW_TITLE)
+        if widget is not None:
+            self.setWidget(widget)
