@@ -56,11 +56,12 @@ class Explorer(TreeView):
     def mousePressEvent(self, event: QMouseEvent) -> None:
         """Handle mouse press to deselect items when clicking in empty space."""
         index = self.indexAt(event.pos())
-        if not index.isValid() and event.button() == Qt.MouseButton.LeftButton:
+        if not index.isValid() and event.button() in \
+            [Qt.MouseButton.LeftButton, Qt.MouseButton.RightButton]:
             self.clearSelection()
             self.setCurrentIndex(self.model().index(-1, -1))  # invalid index
+            if event.button() == Qt.MouseButton.LeftButton:
             event.accept()
-            return
         super().mousePressEvent(event)
 
     def mouseDoubleClickEvent(self, event: QMouseEvent) -> None:
