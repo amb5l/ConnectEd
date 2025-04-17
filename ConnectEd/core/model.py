@@ -344,6 +344,10 @@ class Model(QStandardItemModel):
                 drawing_item : DrawingItem = db_item.diagrams.child(j)
                 if scene == drawing_item.scene:
                     return db_item
+            for j in range(db_item.symbols.rowCount()):
+                drawing_item : DrawingItem = db_item.symbols.child(j)
+                if scene == drawing_item.scene:
+                    return db_item
         for i in range(self.libraries.rowCount()):
             db_item = self.libraries.child(i)
             for j in range(db_item.rowCount()):
