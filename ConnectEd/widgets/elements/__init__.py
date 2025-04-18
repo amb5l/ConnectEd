@@ -5,13 +5,16 @@ from collections import namedtuple
 from types       import SimpleNamespace
 
 from PyQt6.QtCore    import Qt, QXmlStreamWriter, QXmlStreamReader
-from PyQt6.QtGui     import QPen, QBrush, QColor, QFont
+from PyQt6.QtGui     import QPen, QBrush, QColor, QFont, QUndoCommand
 from PyQt6.QtWidgets import QGraphicsItem
 
 from ...core import logger, val2str, str2val
 
 from ... import hub
 
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from .. import DrawingScene
 
 @dataclass
 class PenSpec:
@@ -48,6 +51,7 @@ class KeyPoint(Enum):
 
 class Element:
     """Base class for all elements."""
+
     def __init__(
         self,
         pen_spec   : Union[ bool, PenSpec   ] = False,
@@ -196,12 +200,77 @@ class Element:
         xr.readNext()
         return instance
 
+class cmdElement(QUndoCommand):
+    scene      : 'DrawingScene'
+    element    : Element
+    wip        : bool
+    pen_spec   : Union[ bool, PenSpec   ]
+    brush_spec : Union[ bool, BrushSpec ]
+    text_spec  : Union[ bool, TextSpec  ]
+
+    def __init__(
+        self       : 'cmdElement',
+        text       : str = 'Create Element',
+        scene      : Optional['DrawingScene'] = None,
+        element    : Optional[Element] = None,
+        pen_spec   : Union[ bool, PenSpec   ] = True,
+        brush_spec : Union[ bool, BrushSpec ] = True,
+        text_spec  : Union[ bool, TextSpec  ] = False,
+        wip        : bool = False
+    ):
+        super().__init__(text)
+        self.scene = scene
+        if element is None:
+            element_class_name = self.__class__.__name__.replace('cmd', '')
+            element = globals()[element_class_name]()
+        self.element = element
+        self.element.setFlag(
+            QGraphicsItem.GraphicsItemFlag.ItemIsSelectable, not wip
+        )
+        self.pen_spec   = pen_spec
+        self.brush_spec = brush_spec
+        self.text_spec  = text_spec
+        self.wip        = wip
+        print('cmdElement: ', self.element.pos(), self.element.rect().size())
+
+    def id(self) -> int:
+            """Return a unique ID for merging commands."""
+            return hash(self.__class__.__name__) % 0x7FFFFFFF
+
+    def mergeWith(self, other: QUndoCommand) -> bool:
+        """Merge this command with another identical command."""
+        if not isinstance(other, self.__class__) or other.scene != self.scene:
+            print("MERGE WITH FAILED", other)
+            return False
+        self.pen_spec   = other.pen_spec
+        self.brush_spec = other.brush_spec
+        self.text_spec  = other.text_spec
+        self.wip        = other.wip
+        print("MERGE WITH SUCCESS", self.element)
+        return True
+
+    def redo(self):
+        """Add or update the element in the scene."""
+        if self.element.scene() != self.scene:
+            self.scene.addItem(self.element)
+            print("ADDING TO SCENE", self.element)
+            if self.element.scene() != self.scene:
+                print("ADDING TO SCENE FAILED", self.element)
+        self.scene.wip = [self.element] if self.wip else []
+        self.element.setFlag(
+            QGraphicsItem.GraphicsItemFlag.ItemIsSelectable, not self.wip
+        )
+
+    def undo(self):
+        """Remove the element from the scene."""
+        self.scene.removeItem(self.element)
+        self.scene.wip = []
 
 __all__ = []
 
 from .grip import Grip
 __all__ += ['Grip']
-from .rectangle import Rectangle
+from .rectangle import Rectangle, cmdRectangle
 __all__ += rectangle.__all__
 from .symbol_instance import SymbolInstance
 __all__ += symbol_instance.__all__

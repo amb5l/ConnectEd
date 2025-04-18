@@ -20,6 +20,8 @@ class Actions:
         self.fileSave         = Action( self._parent, 'Save'         , 'Save database'               , 'Ctrl+S'                     )
         self.fileSaveAs       = Action( self._parent, 'Save As'      , 'Save database as'            , None                         )
         self.fileExit         = Action( self._parent, 'Exit'         , 'Exit the application'        , SK.Quit                      )
+        self.editUndo         = Action( self._parent, 'Undo'         , 'Undo'                        , SK.Undo                      )
+        self.editRedo         = Action( self._parent, 'Redo'         , 'Redo'                        , SK.Redo                      )
         self.editCancel       = Action( self._parent, 'Cancel'       , 'Cancel the current action'   , SK.Cancel                    )
         self.editComplete     = Action( self._parent, 'Complete'     , 'Complete the current action' , SK.InsertParagraphSeparator  )
         self.editSlide        = Action( self._parent, 'Slide'        , 'Slide'                       , None                         )

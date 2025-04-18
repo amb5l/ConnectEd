@@ -5,6 +5,7 @@ from typing import Optional
 from PyQt6.QtCore    import QPointF, QRectF, QSizeF, \
                             QXmlStreamWriter, QXmlStreamReader
 from PyQt6.QtWidgets import QGraphicsScene, QGraphicsItem
+from PyQt6.QtGui     import QUndoStack
 
 from ...core import logger, val2str, str2val
 
@@ -12,10 +13,6 @@ from ...core import logger, val2str, str2val
 from ..elements import Grip, element_class_dict
 
 from ... import hub
-
-from typing import TYPE_CHECKING
-if TYPE_CHECKING:
-    from ...core import Database
 
 
 class DrawingScene(QGraphicsScene):
@@ -27,8 +24,9 @@ class DrawingScene(QGraphicsScene):
     ALLOWED_ITEMS          = None # any
 
     # instance variables
-    name    : str
-    wip     : list[QGraphicsItem]
+    name       : str
+    wip        : list[QGraphicsItem]
+    undo_stack : QUndoStack
 
     def __init__(
         self    : 'DrawingScene',
@@ -45,6 +43,7 @@ class DrawingScene(QGraphicsScene):
         self.wip  = []
         self.setSceneRect(QRectF(QPointF(0, 0), extents))
         self.setItemIndexMethod(QGraphicsScene.ItemIndexMethod.NoIndex)
+        self.undo_stack = QUndoStack(self)
 
     def addItem(self, item : QGraphicsItem) -> None:
         if item in self.SYSTEM_FORBIDDEN_ITEMS:

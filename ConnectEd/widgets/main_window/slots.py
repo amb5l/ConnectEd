@@ -97,6 +97,14 @@ class Slots:
         self._parent.close()
 
     @withCurrentWidget(DrawingView)
+    def editUndo(self : 'Slots', widget: DrawingView) -> None:
+        widget.editUndo()
+
+    @withCurrentWidget(DrawingView)
+    def editRedo(self : 'Slots', widget: DrawingView) -> None:
+        widget.editRedo()
+
+    @withCurrentWidget(DrawingView)
     def editCancel(self : 'Slots', widget: DrawingView) -> None:
         widget.editCancel()
 

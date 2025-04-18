@@ -4,6 +4,12 @@ if TYPE_CHECKING:
 
 
 class DrawingApiEditMixin:
+    def editUndo(self : 'DrawingView') -> None:
+        self.scene().undo_stack.undo()
+
+    def editRedo(self : 'DrawingView') -> None:
+        self.scene().undo_stack.redo()
+
     def editCancel(self : 'DrawingView') -> None:
         if self.wip:
             self._removeWIP()

@@ -1,6 +1,6 @@
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import Qt, QSizeF
 
-from ....elements import Rectangle, Grip
+from ....elements import Grip, cmdRectangle
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -81,17 +81,13 @@ class DrawingApiMouseMixin:
                     )
                 self._goState(self.State.Idle)
             case self.State.PlaceRectangle1:
-                self._addWIP(Rectangle(
-                    self._snap(self.mouse.left.release.logical)
-                ))
-                self._goState(self.State.PlaceRectangle2)
-            case self.State.PlaceRectangle2:
-                self.wip.setPoints(
-                    self.prev_pos,
+                self.placeRectangleBegin(
                     self._snap(self.mouse.left.release.logical)
                 )
-                self._completeWIP()
-                self._goState(self.State.Idle)
+            case self.State.PlaceRectangle2:
+                self.placeRectangleComplete(
+                    self._snap(self.mouse.left.release.logical)
+                )
 
     def mouseLeftDragBegin(self : 'DrawingView') -> None:
         match self.state:
@@ -127,10 +123,9 @@ class DrawingApiMouseMixin:
                 self.marquee.begin(self.mouse.left.press.physical)
                 self._goState(self.State.ViewZoomWindow2)
             case self.State.PlaceRectangle1:
-                self._addWIP(Rectangle(
+                self.placeRectangleBegin(
                     self._snap(self.mouse.left.press.logical)
-                ))
-                self._goState(self.State.PlaceRectangle2)
+                )
 
     def mouseLeftDragContinue(self : 'DrawingView') -> None:
         match self.state:
@@ -168,8 +163,7 @@ class DrawingApiMouseMixin:
                 )
                 self.prev_pos = self._snap(self.mouse.current.logical)
             case self.State.PlaceRectangle2:
-                self.wip.setPoints(
-                    self.prev_pos,
+                self.placeRectangleContinue(
                     self._snap(self.mouse.current.logical)
                 )
 
@@ -206,12 +200,9 @@ class DrawingApiMouseMixin:
                     )
                 self._goState(self.State.Idle)
             case self.State.PlaceRectangle2:
-                self.wip.setPoints(
-                    self.prev_pos,
+                self.placeRectangleComplete(
                     self._snap(self.mouse.left.release.logical)
                 )
-                self._completeWIP()
-                self._goState(self.State.Idle)
 
     def mouseLeftDoubleClick(self : 'DrawingView') -> None:
         pass
@@ -284,8 +275,7 @@ class DrawingApiMouseMixin:
                     )
                 self.prev_pos = pos
             case self.State.PlaceRectangle2:
-                self.wip.setPoints(
-                    self.prev_pos,
+                self.placeRectangleContinue(
                     self._snap(self.mouse.current.logical)
                 )
 

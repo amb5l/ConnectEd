@@ -25,6 +25,9 @@ class MenuBar(QMenuBar):
         self.file_menu.addAction(actions.fileExit)
 
         self.edit_menu = QMenu('&Edit')
+        self.edit_menu.addAction(actions.editUndo)
+        self.edit_menu.addAction(actions.editRedo)
+        self.edit_menu.addSeparator()
         self.edit_menu.addAction(actions.editCancel)
         self.edit_menu.addAction(actions.editComplete)
         self.edit_menu.addSeparator()
