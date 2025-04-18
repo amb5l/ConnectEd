@@ -6,10 +6,10 @@ from PyQt6.QtCore import Qt, QPointF, QRectF
 from PyQt6.QtWidgets import QGraphicsTextItem, QStyleOptionGraphicsItem, QWidget
 from PyQt6.QtGui import QPainter, QPainterPath
 
-from . import Element, ElementXmlMixin, KeyPoint, PenSpec, BrushSpec, TextSpec
+from . import Element, KeyPoint, PenSpec, BrushSpec, TextSpec
 
 
-class BaseText(QGraphicsTextItem, Element, ElementXmlMixin):
+class BaseText(QGraphicsTextItem, Element):
     """Base class for text items."""
     XML_ATTRIBUTES = {
         'text'       : ( 'str'       , lambda self, value: self.setText      (value) , lambda self: self.getText      () ),

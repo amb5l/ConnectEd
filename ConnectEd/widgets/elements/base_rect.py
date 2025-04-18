@@ -6,15 +6,12 @@ from PyQt6.QtCore import Qt, QPointF, QRectF, QSizeF
 from PyQt6.QtWidgets import QGraphicsRectItem, QStyleOptionGraphicsItem, QWidget
 from PyQt6.QtGui import QPainter, QPainterPath, QPen, QBrush
 
-from . import \
-    Element, ElementXmlMixin, \
-    KeyPoint, PenSpec, BrushSpec, TextSpec, \
-    Grip
+from . import Element, KeyPoint, PenSpec, BrushSpec, TextSpec, Grip
 
 from ... import hub
 
 
-class BaseRectangle(QGraphicsRectItem, Element, ElementXmlMixin):
+class BaseRectangle(QGraphicsRectItem, Element):
     """Base class for rectangle items."""
     XML_ATTRIBUTES = {
         'anchor'     : 'KeyPoint',

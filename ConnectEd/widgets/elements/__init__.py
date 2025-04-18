@@ -167,7 +167,6 @@ class Element:
                 self.text_spec.italic
         )
 
-class ElementXmlMixin:
     def toXml(self, xw : QXmlStreamWriter) -> None:
         xw.writeStartElement(self.__class__.__name__)
         for attr_name, attr_type in self.XML_ATTRIBUTES.items():
@@ -178,7 +177,7 @@ class ElementXmlMixin:
         xw.writeEndElement()
 
     @classmethod
-    def fromXml(cls, xr: QXmlStreamReader) -> 'BaseRectangle':
+    def fromXml(cls, xr: QXmlStreamReader) -> 'Element':
         instance = cls()
         attributes = xr.attributes()
         for attribute in attributes:
