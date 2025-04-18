@@ -88,10 +88,7 @@ class DrawingView(
         # draw grid
         def align(x : float, px : float) -> float:
             return px * int(x / px)
-        viewport_rect = self.mapToScene(self.viewport().rect()).boundingRect()
-        #rect = self.mapFromScene(viewport_rect).boundingRect()
-        lrect = rect
-        pp = self.transform().map(QPointF(self.grid.pitch.x(), self.grid.pitch.y()))
+        pp = self.transform().map(self.grid.pitch)
         px = self.grid.pitch.x()
         if pp.x() < self.grid.min_pixels:
             px *= ceil(self.grid.min_pixels / pp.x())
@@ -99,8 +96,8 @@ class DrawingView(
         if pp.y() < self.grid.min_pixels:
             py *= ceil(self.grid.min_pixels / pp.y())
         grect = QRectF(
-            QPointF(lrect.topLeft())     - QPointF(px, py),
-            QPointF(lrect.bottomRight()) + QPointF(px, py)
+            QPointF(rect.topLeft())     - QPointF(px, py),
+            QPointF(rect.bottomRight()) + QPointF(px, py)
         ).toRect()
         color = hub.settings.theme.grid.line
         color.setAlpha(self.grid.alpha)
