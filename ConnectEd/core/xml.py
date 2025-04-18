@@ -1,6 +1,6 @@
 __all__ = ['fromXmlBegin', 'saveBegin', 'saveEnd', 'open', 'copy', 'paste']
 
-from typing import Any, Union, TypeAlias
+from typing import TypeAlias, Union, Any
 
 from PyQt6.QtCore    import QByteArray, QXmlStreamWriter, QXmlStreamReader, \
                             QFile, QIODevice

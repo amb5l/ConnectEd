@@ -1,6 +1,6 @@
 __all__ = ['BaseRectangle']
 
-from typing import Self, Union, Optional, Any
+from typing import Self, Optional, Any
 
 from PyQt6.QtCore import Qt, QPointF, QRectF, QSizeF
 from PyQt6.QtWidgets import QGraphicsRectItem, QStyleOptionGraphicsItem, QWidget
@@ -36,8 +36,8 @@ class BaseRectangle(QGraphicsRectItem, Element):
         pos        : QPointF = QPointF(0, 0),
         size_or_p2 : QSizeF | QPointF = QSizeF(0, 0),
         anchor     : KeyPoint = KeyPoint.TOP_LEFT,
-        pen_spec   : Union[ bool, PenSpec   ] = True,
-        brush_spec : Union[ bool, BrushSpec ] = True
+        pen_spec   : bool | PenSpec   = True,
+        brush_spec : bool | BrushSpec = True
     ) -> None:
         QGraphicsRectItem.__init__(self)
         Element.__init__(self, pen_spec, brush_spec, False)
@@ -78,10 +78,10 @@ class BaseRectangle(QGraphicsRectItem, Element):
 
     def setPoints(
         self     : Self,
-        p1_or_x1 : Union[QPointF, float],
-        p2_or_y1 : Optional[Union[QPointF, float]] = None,
-        x2       : Optional[float] = None,
-        y2       : Optional[float] = None
+        p1_or_x1 : QPointF | float,
+        p2_or_y1 : QPointF | float | None = None,
+        x2       : float | None = None,
+        y2       : float | None = None
     ) -> None:
         if p2_or_y1 is not None and x2 is not None and y2 is not None:
             p1, p2 = QPointF(p1_or_x1, p2_or_y1), QPointF(x2, y2)
@@ -202,8 +202,8 @@ class cmdBaseRectangle(cmdElement):
         pos        : QPointF = QPointF(0, 0),
         size_or_p2 : QSizeF | QPointF = QSizeF(0, 0),
         anchor     : KeyPoint = KeyPoint.TOP_LEFT,
-        pen_spec   : Union[ bool, PenSpec   ] = True,
-        brush_spec : Union[ bool, BrushSpec ] = True,
+        pen_spec   : bool | PenSpec   = True,
+        brush_spec : bool | BrushSpec = True,
         wip        : bool = False
     ):
         super().__init__(text, scene, element, pen_spec, brush_spec, wip)

@@ -12,7 +12,7 @@ including loading, saving, and accessing configuration values.
 __all__ = ['Settings']
 
 from types       import SimpleNamespace
-from typing      import Self, Any, Dict, List, Union
+from typing      import Self, Any, Dict, List
 
 from PyQt6.QtCore import QSettings, QByteArray, QPointF, QSizeF, Qt
 from PyQt6.QtGui  import QColor
@@ -233,7 +233,7 @@ class Settings(SimpleNamespace):
     def _init(
         self     : Self,
         ns       : SimpleNamespace,
-        settings : Union[Dict[str, Any], Any]
+        settings : Dict[str, Any] | Any
     ) -> None:
         """Initialize a SimpleNamespace with values from a dictionary."""
         if isinstance(settings, dict):

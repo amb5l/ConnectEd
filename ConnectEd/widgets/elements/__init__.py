@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from enum        import Enum
-from typing      import Self, Optional, Union
+from typing      import Self, Optional
 from collections import namedtuple
 from types       import SimpleNamespace
 
@@ -54,9 +54,9 @@ class Element:
 
     def __init__(
         self       : Self,
-        pen_spec   : Union[ bool, PenSpec   ] = False,
-        brush_spec : Union[ bool, BrushSpec ] = False,
-        text_spec  : Union[ bool, TextSpec  ] = False
+        pen_spec   : bool | PenSpec   = False,
+        brush_spec : bool | BrushSpec = False,
+        text_spec  : bool | TextSpec  = False
     ) -> None:
         if pen_spec:
             self.pen_spec = PenSpec(None, None, None) \
@@ -204,18 +204,18 @@ class cmdElement(QUndoCommand):
     scene      : 'DrawingScene'
     element    : Element
     wip        : bool
-    pen_spec   : Union[ bool, PenSpec   ]
-    brush_spec : Union[ bool, BrushSpec ]
-    text_spec  : Union[ bool, TextSpec  ]
+    pen_spec   : bool | PenSpec
+    brush_spec : bool | BrushSpec
+    text_spec  : bool | TextSpec
 
     def __init__(
         self       : Self,
         text       : str = 'Create Element',
         scene      : Optional['DrawingScene'] = None,
         element    : Optional[Element] = None,
-        pen_spec   : Union[ bool, PenSpec   ] = True,
-        brush_spec : Union[ bool, BrushSpec ] = True,
-        text_spec  : Union[ bool, TextSpec  ] = False,
+        pen_spec   : bool | PenSpec   = True,
+        brush_spec : bool | BrushSpec = True,
+        text_spec  : bool | TextSpec  = False,
         wip        : bool = False
     ):
         super().__init__(text)

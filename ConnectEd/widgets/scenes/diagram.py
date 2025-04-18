@@ -1,6 +1,6 @@
 __all__ = ['DiagramScene']
 
-from typing import Self, Optional, Union
+from typing import Self, Optional
 
 from PyQt6.QtCore import Qt, QPointF, QRectF, QSizeF
 from PyQt6.QtGui  import QPainter, QPen, QBrush
@@ -17,14 +17,14 @@ class DiagramScene(DrawingScene):
         'border'     : 'float'
     }
 
-    paper_size : Union[str, QSizeF]
+    paper_size : str | QSizeF
     margin     : float # distance from paper edge to border line
     border     : float # line width
 
     def __init__(
         self,
         name       : Optional[str] = None,
-        paper_size : Optional[Union[str, QSizeF]] = None,
+        paper_size : Optional[str | QSizeF] = None,
         margin     : Optional[float] = None,
         border     : Optional[float] = None
     ) -> None:

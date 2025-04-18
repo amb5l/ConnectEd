@@ -1,6 +1,6 @@
 __all__ = ['BaseText']
 
-from typing import Self, Union
+from typing import Self
 
 from PyQt6.QtCore import Qt, QPointF, QRectF
 from PyQt6.QtWidgets import QGraphicsTextItem, QStyleOptionGraphicsItem, QWidget
@@ -27,9 +27,9 @@ class BaseText(QGraphicsTextItem, Element):
         text       : str = '',
         pos        : QPointF = QPointF(0, 0),
         anchor     : KeyPoint = KeyPoint.TOP_LEFT,
-        pen_spec   : Union[ bool, PenSpec   ] = False,
-        brush_spec : Union[ bool, BrushSpec ] = False,
-        text_spec  : Union[ bool, TextSpec  ] = True
+        pen_spec   : bool | PenSpec   = False,
+        brush_spec : bool | BrushSpec = False,
+        text_spec  : bool | TextSpec  = True
     ) -> None:
         QGraphicsTextItem.__init__(self, text)
         Element.__init__(self, pen_spec, brush_spec, text_spec)
