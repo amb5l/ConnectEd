@@ -4,7 +4,7 @@ __all__ = [
     'Model'
 ]
 
-from typing  import Optional
+from typing import Self, Optional
 
 from PyQt6.QtCore import Qt, QXmlStreamWriter, QXmlStreamReader
 from PyQt6.QtGui  import QStandardItemModel, QStandardItem
@@ -28,7 +28,7 @@ class DrawingItem(QStandardItem):
 
     scene : DrawingScene
 
-    def __init__(self, scene : Optional[DrawingScene] = None) -> None:
+    def __init__(self : Self, scene : Optional[DrawingScene] = None) -> None:
         self.scene = scene if scene else self.SCENE_CLASS()
         super().__init__(self.scene.name)
         self.setData(self.scene, Qt.ItemDataRole.UserRole)
@@ -36,11 +36,11 @@ class DrawingItem(QStandardItem):
 
     copy = master_copy
 
-    def toXml(self, xw : QXmlStreamWriter) -> None:
+    def toXml(self : Self, xw : QXmlStreamWriter) -> None:
         self.scene.toXml(xw)
 
     @classmethod
-    def fromXml(cls, xr : QXmlStreamReader) -> 'DesignItem':
+    def fromXml(cls : Self, xr : QXmlStreamReader) -> Self:
         cls_name = cls.__name__.replace('Item', '')
         if xr.name() != cls_name:
             raise ValueError(f'Expected {cls_name} element, got {xr.name()}')
@@ -67,14 +67,14 @@ class DbItem(QStandardItem):
 
     path : Optional[str]
 
-    def __init__(self) -> None:
+    def __init__(self : Self) -> None:
         u = 'Untitled' + self.__class__.__name__.replace('Item', '')
         super().__init__(hub.name_counter.get(u))
         self.setFlags(self.flags() | Qt.ItemFlag.ItemIsEditable)
         self.path = None
 
     @classmethod
-    def fromXmlBegin(cls, xr : QXmlStreamReader) -> 'DbItem':
+    def fromXmlBegin(cls : Self, xr : QXmlStreamReader) -> Self:
         fromXmlBegin(xr, cls.__name__.replace('Item', ''))
         db_item = cls()
         attributes = xr.attributes()
@@ -95,11 +95,11 @@ class DbItem(QStandardItem):
         xr.readNext()
         return db_item
 
-    def fromXmlEnd(self, xr : QXmlStreamReader) -> None:
+    def fromXmlEnd(self : Self, xr : QXmlStreamReader) -> None:
         while not (xr.isEndElement() and xr.name() == self.__class__.__name__.replace('Item', '')):
             xr.readNext()
 
-    def toXmlBegin(self, xw : QXmlStreamWriter) -> None:
+    def toXmlBegin(self : Self, xw : QXmlStreamWriter) -> None:
         xw.writeStartElement(self.__class__.__name__.replace('Item', ''))
         for name, _ in self.XML_ATTRIBUTES.items():
             value = getattr(self, name)
@@ -108,17 +108,17 @@ class DbItem(QStandardItem):
             value = getter(self)
             xw.writeAttribute(name, val2str(value))
 
-    def toXmlEnd(self, xw : QXmlStreamWriter) -> None:
+    def toXmlEnd(self : Self, xw : QXmlStreamWriter) -> None:
         xw.writeEndElement()
 
     @classmethod
-    def load(cls, file : str) -> 'DbItem':
+    def load(cls : Self, file : str) -> Self:
         with open(file, 'r') as f:
             data = f.read()
             xr = QXmlStreamReader(data)
             return cls.fromXml(xr)
 
-    def save(self, path : Optional[str] = None) -> None:
+    def save(self : Self, path : Optional[str] = None) -> None:
         if path is not None:
             self.path = path
         if self.path is None:
@@ -133,7 +133,7 @@ class DbItem(QStandardItem):
 class LibraryItem(DbItem):
     FILE_EXT = LIB_EXT
 
-    def toXml(self : 'LibraryItem', xw : QXmlStreamWriter) -> None:
+    def toXml(self : Self, xw : QXmlStreamWriter) -> None:
         self.toXmlBegin(xw)
         for i in range(self.rowCount()):
             symbol_item : SymbolItem = self.child(i)
@@ -142,7 +142,7 @@ class LibraryItem(DbItem):
         self.toXmlEnd(xw)
 
     @classmethod
-    def fromXml(cls, xr : QXmlStreamReader) -> 'LibraryItem':
+    def fromXml(cls : Self, xr : QXmlStreamReader) -> Self:
         db_item = cls.fromXmlBegin(xr)
         while not (xr.isEndElement() and xr.name() == cls.__name__.replace('Item', '')):
             xr.readNext()
@@ -154,7 +154,7 @@ class DesignItem(DbItem):
     diagrams : QStandardItem
     symbols  : QStandardItem
 
-    def __init__(self : 'DesignItem') -> None:
+    def __init__(self : Self) -> None:
         super().__init__()
         self.diagrams = QStandardItem('Diagrams')
         self.diagrams.setEditable(False)
@@ -170,7 +170,7 @@ class DesignItem(DbItem):
         self.appendRow(self.symbols)
 
     @classmethod
-    def fromXml(cls, xr : QXmlStreamReader) -> 'DesignItem':
+    def fromXml(cls : Self, xr : QXmlStreamReader) -> Self:
         db_item = cls.fromXmlBegin(xr)
         while not (xr.isEndElement() and xr.name() == cls.__name__.replace('Item', '')):
             if xr.tokenType() == QXmlStreamReader.TokenType.StartElement:
@@ -200,7 +200,7 @@ class DesignItem(DbItem):
         db_item.fromXmlEnd(xr)
         return db_item
 
-    def toXml(self : 'DesignItem', xw : QXmlStreamWriter) -> None:
+    def toXml(self : Self, xw : QXmlStreamWriter) -> None:
         self.toXmlBegin(xw)
         xw.writeStartElement('Diagrams')
         for i in range(self.diagrams.rowCount()):
@@ -219,7 +219,7 @@ class Model(QStandardItemModel):
     designs   : QStandardItem
     libraries : QStandardItem
 
-    def __init__(self) -> None:
+    def __init__(self : Self) -> None:
         super().__init__()
         self.setHorizontalHeaderLabels(['Database Hierarchy'])
         self.designs = QStandardItem('Designs')
@@ -235,18 +235,18 @@ class Model(QStandardItemModel):
         self.libraries.setFont(font)
         self.appendRow(self.libraries)
 
-    def newDesign(self : 'Model') -> DesignItem:
+    def newDesign(self : Self) -> DesignItem:
         item = DesignItem()
         self.designs.appendRow(item)
         return item
 
-    def newLibrary(self : 'Model') -> LibraryItem:
+    def newLibrary(self : Self) -> LibraryItem:
         item = LibraryItem()
         self.libraries.appendRow(item)
         return item
 
     def newDiagram(
-        self   : 'Model',
+        self   : Self,
         parent : QStandardItem
     ) -> DiagramItem | None:
         item = None
@@ -278,7 +278,7 @@ class Model(QStandardItemModel):
             )
         return item
 
-    def load(self : 'Model', path : str) -> DbItem:
+    def load(self : Self, path : str) -> DbItem:
         db_item = None
         if path.endswith(DSN_EXT):
             db_item = DesignItem.load(path)
@@ -290,7 +290,7 @@ class Model(QStandardItemModel):
             logger.warning(f'Unsupported file extension: {path}')
         return db_item
 
-    def close(self : 'Model', item: QStandardItem) -> None:
+    def close(self : Self, item: QStandardItem) -> None:
         """Close a database and remove it from the model."""
         if isinstance(item, DesignItem):
             for i in range(self.designs.rowCount()):
@@ -303,10 +303,10 @@ class Model(QStandardItemModel):
         else:
             logger.warning(f'Unsupported item: {item.text()} ({type(item)})')
 
-    def copy(self : 'Model', item : QStandardItem) -> None:
+    def copy(self : Self, item : QStandardItem) -> None:
         master_copy(item)
 
-    def paste(self : 'Model', item : QStandardItem) -> None:
+    def paste(self : Self, item : QStandardItem) -> None:
         paste_items = master_paste()
         if paste_items:
             match self.getItemDescription(item):
@@ -339,7 +339,7 @@ class Model(QStandardItemModel):
                 s = ', '.join(invalid_item_type_names)
                 raise ValueError(f'{n} invalid items for paste operation: {s}')
 
-    def getDbItemFromScene(self : 'Model', scene : 'DrawingScene') -> 'DbItem':
+    def getDbItemFromScene(self : Self, scene : 'DrawingScene') -> DbItem:
         for i in range(self.designs.rowCount()):
             db_item = self.designs.child(i)
             for j in range(db_item.diagrams.rowCount()):
@@ -358,7 +358,7 @@ class Model(QStandardItemModel):
                     return db_item
         return None
 
-    def getItemDescription(self : 'Model', i : QStandardItem) -> str | None:
+    def getItemDescription(self : Self, i : QStandardItem) -> str | None:
         if isinstance(i, DesignItem):
             return 'Design'
         elif isinstance(i, LibraryItem):

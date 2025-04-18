@@ -1,21 +1,21 @@
-from typing import TYPE_CHECKING
+from typing import Self, TYPE_CHECKING
 if TYPE_CHECKING:
     from .. import DrawingView
 
 
 class DrawingApiEditMixin:
-    def editUndo(self : 'DrawingView') -> None:
+    def editUndo(self : Self) -> None:
         self.scene().undo_stack.undo()
 
-    def editRedo(self : 'DrawingView') -> None:
+    def editRedo(self : Self) -> None:
         self.scene().undo_stack.redo()
 
-    def editCancel(self : 'DrawingView') -> None:
+    def editCancel(self : Self) -> None:
         if self.wip:
             self._removeWIP()
         self._goState(self.State.Idle)
 
-    def editComplete(self : 'DrawingView') -> None:
+    def editComplete(self : Self) -> None:
         match self.state:
             case self.State.PlaceRectangle2:
                 self.wip.setPoints(
@@ -25,13 +25,13 @@ class DrawingApiEditMixin:
                 self._completeWIP()
                 self._goState(self.State.Idle)
 
-    def editSlide(self : 'DrawingView') -> None:
+    def editSlide(self : Self) -> None:
         if self.scene().selectedItems():
             self._goState(self.State.EditSlide2)
         else:
             self._goState(self.State.EditSlide1)
 
-    def editMove(self : 'DrawingView') -> None:
+    def editMove(self : Self) -> None:
         if self.scene().selectedItems():
             self._goState(self.State.EditMove2)
         else:

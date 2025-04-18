@@ -1,6 +1,6 @@
 __all__ = ['BaseRectangle']
 
-from typing import Self, Union, Optional
+from typing import Self, Union, Optional, Any
 
 from PyQt6.QtCore import Qt, QPointF, QRectF, QSizeF
 from PyQt6.QtWidgets import QGraphicsRectItem, QStyleOptionGraphicsItem, QWidget
@@ -23,8 +23,8 @@ class BaseRectangle(QGraphicsRectItem, Element):
         'text_spec'  : 'TextSpec'
     }
     XML_PROPERTIES = {
-        'pos'  : ( 'QPointF' , lambda self, value: self.setPos(value)  , lambda self: self.pos()          ),
-        'size' : ( 'QSizeF'  ,  lambda self, value: self.setSize(value) , lambda self: self.rect().size() )
+        'pos'  : ( 'QPointF' , lambda self, value: self.setPos(value)  , lambda self: self.pos()         ),
+        'size' : ( 'QSizeF'  , lambda self, value: self.setSize(value) , lambda self: self.rect().size() )
     }
     MIN_SIZE = QSizeF(1.0, 1.0)
 
@@ -32,7 +32,7 @@ class BaseRectangle(QGraphicsRectItem, Element):
     grips  : dict[KeyPoint, Grip]
 
     def __init__(
-        self,
+        self       : Self,
         pos        : QPointF = QPointF(0, 0),
         size_or_p2 : QSizeF | QPointF = QSizeF(0, 0),
         anchor     : KeyPoint = KeyPoint.TOP_LEFT,
@@ -55,19 +55,19 @@ class BaseRectangle(QGraphicsRectItem, Element):
         self.updateGripsVisibility()
         self.updateGripsZValue()
 
-    def setSize(self, size : QSizeF) -> None:
+    def setSize(self : Self, size : QSizeF) -> None:
         self.setRect(0, 0, size.width(), size.height())
 
-    def getSize(self) -> QSizeF:
+    def getSize(self : Self) -> QSizeF:
         return self.rect().size()
 
-    def setAnchor(self, anchor : KeyPoint = KeyPoint.TOP_LEFT) -> None:
+    def setAnchor(self : Self, anchor : KeyPoint = KeyPoint.TOP_LEFT) -> None:
         self.anchor = anchor
 
-    def getAnchor(self) -> KeyPoint:
+    def getAnchor(self : Self) -> KeyPoint:
         return self.anchor
 
-    def setPosSize(self, pos : QPointF, size : QSizeF) -> None:
+    def setPosSize(self : Self, pos : QPointF, size : QSizeF) -> None:
         self.setPos(pos)
         if size.width() < self.MIN_SIZE.width():
             size.setWidth(self.MIN_SIZE.width())
@@ -76,7 +76,13 @@ class BaseRectangle(QGraphicsRectItem, Element):
         self.setRect(0, 0, size.width(), size.height())
         self.updateGripsPosition()
 
-    def setPoints(self, p1_or_x1, p2_or_y1=None, x2=None, y2=None) -> None:
+    def setPoints(
+        self     : Self,
+        p1_or_x1 : Union[QPointF, float],
+        p2_or_y1 : Optional[Union[QPointF, float]] = None,
+        x2       : Optional[float] = None,
+        y2       : Optional[float] = None
+    ) -> None:
         if p2_or_y1 is not None and x2 is not None and y2 is not None:
             p1, p2 = QPointF(p1_or_x1, p2_or_y1), QPointF(x2, y2)
         else:
@@ -85,7 +91,7 @@ class BaseRectangle(QGraphicsRectItem, Element):
         self.setPosSize(rect.topLeft(), rect.size())
 
     def setPosSizeOrP2(
-        self,
+        self       : Self,
         pos        : QPointF,
         size_or_p2 : QSizeF | QPointF
     ) -> None:
@@ -94,27 +100,27 @@ class BaseRectangle(QGraphicsRectItem, Element):
         else:
             self.setPoints(pos, size_or_p2)
 
-    def getPoints(self) -> tuple[QPointF, QPointF]:
+    def getPoints(self : Self) -> tuple[QPointF, QPointF]:
         return self.pos(), self.pos() + self.rect().bottomRight()
 
-    def updateGripsPosition(self) -> None:
+    def updateGripsPosition(self : Self) -> None:
         for kp in self.grips.keys():
             self.grips[kp].setPos(
                 kp.value.h * self.rect().width(),
                 kp.value.v * self.rect().height()
             )
 
-    def updateGripsVisibility(self) -> None:
+    def updateGripsVisibility(self : Self) -> None:
         for grip in self.grips.values():
             grip.setVisible(
                 self.isSelected() and len(self.scene().selectedItems()) == 1
             )
 
-    def updateGripsZValue(self) -> None:
+    def updateGripsZValue(self : Self) -> None:
         for grip in self.grips.values():
             grip.setZValue(self.zValue() + Grip.Z_DELTA)
 
-    def gripResize(self, kp : KeyPoint, delta : QPointF) -> None:
+    def gripResize(self : Self, kp : KeyPoint, delta : QPointF) -> None:
         p1, p2 = self.getPoints()
         d = delta
         match kp:
@@ -137,7 +143,7 @@ class BaseRectangle(QGraphicsRectItem, Element):
             case _:
                 raise ValueError(f'Invalid key point: {kp}')
 
-    def rect(self) -> QRectF:
+    def rect(self : Self) -> QRectF:
         rect = super().rect()
         rect.translate(
             -self.anchor.value.h * rect.width(),
@@ -145,20 +151,20 @@ class BaseRectangle(QGraphicsRectItem, Element):
         )
         return rect
 
-    def boundingRect(self) -> QRectF:
+    def boundingRect(self : Self) -> QRectF:
         w = max(
             self.penWidth(),
             hub.settings.prefs.display.elements.selected.grip.size
         )
         return self.rect().adjusted(-w/2, -w/2, w/2, w/2)
 
-    def shape(self) -> QPainterPath:
+    def shape(self : Self) -> QPainterPath:
         path = QPainterPath()
         path.addRect(self.boundingRect())
         return path
 
     def paint(
-        self,
+        self    : Self,
         painter : QPainter,
         option  : QStyleOptionGraphicsItem,
         widget  : QWidget
@@ -174,7 +180,11 @@ class BaseRectangle(QGraphicsRectItem, Element):
             self.rect().height()
         ))
 
-    def itemChange(self, change, value):
+    def itemChange(
+        self   : Self,
+        change : QGraphicsRectItem.GraphicsItemChange,
+        value  : Any
+    ) -> None:
         if change == self.GraphicsItemChange.ItemSelectedHasChanged:
             self.updateGripsVisibility()
         return super().itemChange(change, value)

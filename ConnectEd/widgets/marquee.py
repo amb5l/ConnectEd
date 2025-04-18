@@ -1,5 +1,7 @@
 __all__ = ['Marquee']
 
+from typing import Self
+
 from PyQt6.QtCore    import Qt, QPoint, QRect, QRectF, QTimer
 from PyQt6.QtWidgets import QRubberBand, QGraphicsView
 from PyQt6.QtGui     import QPainter, QPen, QColor, QPaintEvent
@@ -28,11 +30,11 @@ class MarqueeRubberBand(QRubberBand):
         if self.isVisible():
             self.timer.start(self.INTERVAL)
 
-    def animate(self : 'MarqueeRubberBand') -> None:
+    def animate(self : Self) -> None:
         self.offset = (self.offset + 1) % (2 * self.DASH_LEN)
         self.update()
 
-    def paintEvent(self : 'MarqueeRubberBand', event : QPaintEvent) -> None:
+    def paintEvent(self : Self, event : QPaintEvent) -> None:
         painter = QPainter(self)
         rect = self.rect().adjusted(0, 0, -1, -1)
         pen = QPen(QColor(255, 255, 255))
@@ -47,7 +49,7 @@ class MarqueeRubberBand(QRubberBand):
         painter.setPen(pen)
         painter.drawRect(rect)
 
-    def setVisible(self : 'MarqueeRubberBand', visible : bool) -> None:
+    def setVisible(self : Self, visible : bool) -> None:
         super().setVisible(visible)
         if visible:
             self.timer.start(100)
@@ -59,7 +61,7 @@ class Marquee:
     rubber_band : MarqueeRubberBand
     point1      : QPoint
 
-    def __init__(self : 'Marquee', parent : QGraphicsView) -> None:
+    def __init__(self : Self, parent : QGraphicsView) -> None:
         self.parent = parent
         self.rubber_band = MarqueeRubberBand(
             QRubberBand.Shape.Rectangle,
@@ -67,12 +69,12 @@ class Marquee:
         )
         self.point1 = QPoint()
 
-    def begin(self : 'Marquee', pos : QPoint) -> None:
+    def begin(self : Self, pos : QPoint) -> None:
         self.point1 = pos
         self.rubber_band.setGeometry(pos.x(), pos.y(), 1, 1)
         self.rubber_band.show()
 
-    def resize(self : 'Marquee', pos : QPoint) -> None:
+    def resize(self : Self, pos : QPoint) -> None:
         self.rubber_band.setGeometry(
             QRect(
                 self.point1.x(), self.point1.y(),
@@ -81,7 +83,7 @@ class Marquee:
             ).normalized()
         )
 
-    def end(self : 'Marquee', pos : QPoint) -> None:
+    def end(self : Self, pos : QPoint) -> None:
         self.rubber_band.setGeometry(
             QRect(
                 self.point1.x(), self.point1.y(),
@@ -92,7 +94,7 @@ class Marquee:
         self.rubber_band.hide()
         self.point1 = None
 
-    def rect(self : 'Marquee') -> QRectF:
+    def rect(self : Self) -> QRectF:
         prect = self.rubber_band.geometry().normalized() # physical coords
         return QRectF(
             self.parent.mapToScene(prect.topLeft()),

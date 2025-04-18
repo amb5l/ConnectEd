@@ -1,6 +1,6 @@
 __all__ = ['DiagramScene']
 
-from typing import Optional, Union
+from typing import Self, Optional, Union
 
 from PyQt6.QtCore import Qt, QPointF, QRectF, QSizeF
 from PyQt6.QtGui  import QPainter, QPen, QBrush
@@ -44,13 +44,13 @@ class DiagramScene(DrawingScene):
             QSizeF(paper_rect.width() * 3, paper_rect.height() * 3)
         ))
 
-    def paper_rect(self) -> QRectF:
+    def paper_rect(self : Self) -> QRectF:
         size = self.paper_size
         if isinstance(size, str):
             size = getattr(hub.settings.paper_sizes, size)
         return QRectF(QPointF(0, 0), size)
 
-    def drawBackground(self, painter : QPainter, rect : QRectF) -> None:
+    def drawBackground(self : Self, painter : QPainter, rect : QRectF) -> None:
         painter.fillRect(rect, hub.settings.theme.background.fill)
         painter.fillRect(
             self.paper_rect(),

@@ -1,5 +1,5 @@
 from types  import SimpleNamespace
-from typing import Optional
+from typing import Self, Optional
 
 from PyQt6.QtCore    import Qt, QPoint, QItemSelectionModel
 from PyQt6.QtWidgets import QWidget, QMenu
@@ -23,7 +23,7 @@ class Explorer(TreeView):
     item      : QStandardItem
     _focus_in : bool
 
-    def __init__(self : 'Explorer', parent : QWidget) -> None:
+    def __init__(self : Self, parent : QWidget) -> None:
         super().__init__(parent, hub.model)
         hub.model.itemChanged.connect(self.onItemChanged)
         self.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
@@ -99,7 +99,7 @@ class Explorer(TreeView):
         m.new_dwg.addAction(a.newMenuDiagram)
         m.new_dwg.addAction(a.newMenuSymbol)
 
-    def onItemChanged(self : 'Explorer', item : QStandardItem) -> None:
+    def onItemChanged(self : Self, item : QStandardItem) -> None:
         """Handle changes to items in the model, such as renaming."""
         if item.parent() and item.parent().text() in ('Diagrams', 'Symbol Cache'):
             scene = item.data(Qt.ItemDataRole.UserRole)
@@ -107,11 +107,11 @@ class Explorer(TreeView):
                 scene.name = item.text()
         hub.main_window.mdi_area.update()
 
-    def focusInEvent(self : 'Explorer', event: QFocusEvent) -> None:
+    def focusInEvent(self : Self, event: QFocusEvent) -> None:
         self._focus_in = True
         super().focusInEvent(event)
 
-    def keyPressEvent(self : 'Explorer', event: QKeyEvent) -> None:
+    def keyPressEvent(self : Self, event: QKeyEvent) -> None:
         if event.key() in [Qt.Key.Key_Return, Qt.Key.Key_Enter]:
             if len(self.selectedIndexes()) == 1:
                 index = self.selectedIndexes()[0]
@@ -119,7 +119,7 @@ class Explorer(TreeView):
                     self.expandOrEdit(hub.model.itemFromIndex(index))
                     event.accept()
 
-    def mousePressEvent(self : 'Explorer', event: QMouseEvent) -> None:
+    def mousePressEvent(self : Self, event: QMouseEvent) -> None:
         """Handle mouse press to deselect items when clicking in empty space."""
         index = self.indexAt(event.pos())
         if not index.isValid() and event.button() in \
@@ -134,7 +134,7 @@ class Explorer(TreeView):
                     return
         super().mousePressEvent(event)
 
-    def mouseDoubleClickEvent(self : 'Explorer', event: QMouseEvent) -> None:
+    def mouseDoubleClickEvent(self : Self, event: QMouseEvent) -> None:
         """Handle double-click."""
         if event.button() == Qt.MouseButton.LeftButton:
             index = self.indexAt(event.pos())
@@ -144,7 +144,7 @@ class Explorer(TreeView):
                 return
         super().mouseDoubleClickEvent(event)
 
-    def wheelEvent(self : 'Explorer', event: QWheelEvent) -> None:
+    def wheelEvent(self : Self, event: QWheelEvent) -> None:
         """Handle mouse wheel events to adjust font size when Ctrl is pressed."""
         modifiers = event.modifiers()
         if modifiers & Qt.KeyboardModifier.ControlModifier:
@@ -157,7 +157,7 @@ class Explorer(TreeView):
             return
         super().wheelEvent(event)
 
-    def selectItem(self : 'Explorer', item : QStandardItem) -> None:
+    def selectItem(self : Self, item : QStandardItem) -> None:
         index = hub.model.indexFromItem(item)
         self.selectionModel().clearSelection()
         self.selectionModel().select(
@@ -167,7 +167,7 @@ class Explorer(TreeView):
         )
         self.setCurrentIndex(index)
 
-    def expandOrEdit(self : 'Explorer', item : QStandardItem) -> None:
+    def expandOrEdit(self : Self, item : QStandardItem) -> None:
         self.selectItem(item)
         match hub.model.getItemDescription(item):
             case 'Designs'  | 'Libraries'    | \
@@ -178,28 +178,28 @@ class Explorer(TreeView):
             case 'Diagram' | 'Design Symbol' | 'Library Symbol':
                 self.editDrawing(item)
 
-    def newDesign(self : 'Explorer') -> None:
+    def newDesign(self : Self) -> None:
         design_item = hub.model.newDesign()
         diagram_item = hub.model.newDiagram(design_item)
         self.expand(hub.model.indexFromItem(design_item))
         self.expand(hub.model.indexFromItem(design_item.diagrams))
         self.editDrawing(diagram_item)
 
-    def newLibrary(self : 'Explorer') -> None:
+    def newLibrary(self : Self) -> None:
         library_item = hub.model.newLibrary()
         self.expand(hub.model.indexFromItem(library_item))
 
-    def newDiagram(self : 'Explorer', item : QStandardItem) -> None:
+    def newDiagram(self : Self, item : QStandardItem) -> None:
         diagram_item = hub.model.newDiagram(item)
         self.expand(hub.model.indexFromItem(item))
         self.editDrawing(diagram_item)
 
-    def newSymbol(self : 'Explorer', item : QStandardItem) -> None:
+    def newSymbol(self : Self, item : QStandardItem) -> None:
         symbol_item = hub.model.newSymbol(item)
         self.expand(hub.model.indexFromItem(item))
         self.editDrawing(symbol_item)
 
-    def openDb(self : 'Explorer', type_name : Optional[str] = None) -> None:
+    def openDb(self : Self, type_name : Optional[str] = None) -> None:
         from .dialogs import FileOpenDialog
         dialog = FileOpenDialog(type_name)
         result = dialog.exec()
@@ -208,7 +208,7 @@ class Explorer(TreeView):
             for file in files:
                 hub.model.load(file)
 
-    def editDrawing(self : 'Explorer', item : QStandardItem) -> None:
+    def editDrawing(self : Self, item : QStandardItem) -> None:
         from ..core    import DrawingItem
         from ..widgets import DrawingScene, DrawingView, DrawingSubWindow, \
                               SymbolScene, SymbolView, SymbolSubWindow, \
@@ -250,7 +250,7 @@ class Explorer(TreeView):
         else:
             logger.warning(f'Unsupported item: {item.text()} ({type(item)})')
 
-    def newDrawingWindow(self : 'Explorer', item : 'DrawingItem') -> None:
+    def newDrawingWindow(self : Self, item : 'DrawingItem') -> None:
         from ..core import DesignItem, LibraryItem, DiagramItem, SymbolItem
         from ..widgets import DiagramScene, DiagramView, DiagramSubWindow, \
                               SymbolScene, SymbolView, SymbolSubWindow
@@ -274,10 +274,10 @@ class Explorer(TreeView):
         subwindow.showMaximized()
         hub.main_window.menu_bar.updateWindowMenu()
 
-    def saveDb(self : 'Explorer', item : 'DbItem') -> None:
+    def saveDb(self : Self, item : 'DbItem') -> None:
         item.save()
 
-    def saveDbAs(self : 'Explorer', item : 'DbItem') -> None:
+    def saveDbAs(self : Self, item : 'DbItem') -> None:
         from .dialogs import FileSaveAsDialog
         dialog = FileSaveAsDialog(item.__class__.__name__.replace('Item', ''))
         result = dialog.exec()
@@ -289,11 +289,11 @@ class Explorer(TreeView):
             path = selected_files[0]
             item.save(path)
 
-    def closeDb(self : 'Explorer', item : 'DbItem') -> None:
+    def closeDb(self : Self, item : 'DbItem') -> None:
         # TODO offer to save if modified
         hub.model.close(item)
 
-    def rename(self : 'Explorer') -> None:
+    def rename(self : Self) -> None:
         """Start editing the selected item's text."""
         from ..core import DbItem, DrawingItem
         if self.currentIndex().isValid():
@@ -302,13 +302,13 @@ class Explorer(TreeView):
             or isinstance(item, DrawingItem):
                 self.edit(self.currentIndex())
 
-    def copy(self : 'Explorer', item : QStandardItem) -> None:
+    def copy(self : Self, item : QStandardItem) -> None:
         hub.model.copy(item)
 
-    def paste(self : 'Explorer', item : QStandardItem) -> None:
+    def paste(self : Self, item : QStandardItem) -> None:
         hub.model.paste(item)
 
-    def showContextMenu(self : 'Explorer', pos : QPoint) -> None:
+    def showContextMenu(self : Self, pos : QPoint) -> None:
         menu = QMenu(self)
         a = self.actions
         m = self.menus
@@ -371,7 +371,7 @@ class ExplorerDock(TreeViewDock):
 
     explorer : Explorer
 
-    def __init__(self, parent : QWidget) -> None:
+    def __init__(self : Self, parent : QWidget) -> None:
         super().__init__(parent, None)
         self.explorer = Explorer(self)
         self.setWidget(self.explorer)

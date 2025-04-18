@@ -1,3 +1,5 @@
+from typing import Self
+
 from PyQt6.QtCore import Qt, QEvent, QPoint
 from PyQt6.QtGui  import QEnterEvent, QMouseEvent, QWheelEvent, QCursor
 
@@ -17,7 +19,7 @@ class DrawingEventsMouseMixin:
     This class forwards mouse events to the Drawing widget's mouse API.
     """
 
-    def enterEvent(self : 'DrawingView', event : QEnterEvent ) -> None:
+    def enterEvent(self : Self, event : QEnterEvent) -> None:
         p = self.mapFromGlobal(QCursor.pos())
         l = self.mapToScene(p)
         self.mouse.current.setPL(p, l)
@@ -25,14 +27,14 @@ class DrawingEventsMouseMixin:
             str(int(round(l.x()))) + ',' + str(int(round(l.y())))
         )
 
-    def leaveEvent(self : 'DrawingView', _ : QEvent) -> None:
+    def leaveEvent(self : Self, _ : QEvent) -> None:
         rect = self.viewport().rect()
         p = QPoint(rect.width() // 2, rect.height() // 2)
         l = self.mapToScene(p)
         self.mouse.current.setPL(p, l)
         hub.main_window.status_bar.xy.setText('-,-')
 
-    def mouseMoveEvent(self : 'DrawingView', event : QMouseEvent) -> None:
+    def mouseMoveEvent(self : Self, event : QMouseEvent) -> None:
         p = event.pos(); l = self.mapToScene(p)
         self.mouse.current.setPL(p, l)
         hub.main_window.status_bar.xy.setText(
@@ -60,7 +62,7 @@ class DrawingEventsMouseMixin:
                 return
         self.mouseMove()
 
-    def mousePressEvent(self : 'DrawingView', event : QMouseEvent) -> None:
+    def mousePressEvent(self : Self, event : QMouseEvent) -> None:
         p = event.pos(); l = self.mapToScene(p)
         items = self.scene().items(
             l,
@@ -77,7 +79,7 @@ class DrawingEventsMouseMixin:
             self.mouse.middle.press.modifiers = self._getModifiers(event)
             self.mouse.middle.state = self.MouseButtonState.Pressed
 
-    def mouseReleaseEvent(self : 'DrawingView', event : QMouseEvent) -> None:
+    def mouseReleaseEvent(self : Self, event : QMouseEvent) -> None:
         p = event.pos(); l = self.mapToScene(p)
         if event.button() & Qt.MouseButton.LeftButton:
             self.mouse.left.release.setPL(p, l)
@@ -102,7 +104,7 @@ class DrawingEventsMouseMixin:
                 case _:
                     logger.warning(f'Mouse middle button released when idle')
 
-    def mouseDoubleClickEvent(self : 'DrawingView', event : QMouseEvent) -> None:
+    def mouseDoubleClickEvent(self : Self, event : QMouseEvent) -> None:
         p = event.pos(); l = self.mapToScene(p)
         self.mouse.left.double.setPL(p, l)
         self.mouse.left.double.modifiers = self._getModifiers(event)
@@ -111,7 +113,7 @@ class DrawingEventsMouseMixin:
         if event.button() & Qt.MouseButton.MiddleButton:
             self.mouseMiddleDoubleClick()
 
-    def wheelEvent(self : 'DrawingView', event : QWheelEvent) -> None:
+    def wheelEvent(self : Self, event : QWheelEvent) -> None:
         p = event.position().toPoint(); l = self.mapToScene(p)
         self.mouse.current.setPL(p, l)
         self.mouseWheel(

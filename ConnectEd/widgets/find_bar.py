@@ -1,3 +1,5 @@
+from typing import Self
+
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import \
     QWidget, QTextEdit, QPlainTextEdit, \
@@ -15,7 +17,7 @@ class FindBar(QWidget):
     whole_words : QCheckBox
     highlight   : QCheckBox
 
-    def __init__(self : 'FindBar', parent : QWidget, text_edit : QPlainTextEdit) -> None:
+    def __init__(self : Self, parent : QWidget, text_edit : QPlainTextEdit) -> None:
         super().__init__(parent)
         self.text_edit = text_edit
 
@@ -62,7 +64,7 @@ class FindBar(QWidget):
         self.find_prev.clicked.connect(lambda: self.slotFind(forward=False))
         self.highlight.toggled.connect(self.slotHighlight)
 
-    def slotFind(self, forward: bool = True) -> bool:
+    def slotFind(self : Self, forward : bool = True) -> bool:
         """Find the next/previous occurrence of the search text."""
         text = self.find_combo.currentText()
         if not text:
@@ -95,7 +97,7 @@ class FindBar(QWidget):
 
         return found
 
-    def slotHighlight(self, enabled: bool) -> None:
+    def slotHighlight(self : Self, enabled : bool) -> None:
         """Update all matching text highlights."""
         if not enabled:
             # Clear all highlights

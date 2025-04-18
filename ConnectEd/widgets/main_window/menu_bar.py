@@ -1,3 +1,5 @@
+from typing import Self
+
 from PyQt6.QtWidgets import QMenuBar, QMenu, QMdiSubWindow
 
 from ... import hub
@@ -8,7 +10,7 @@ if TYPE_CHECKING:
 
 class MenuBar(QMenuBar):
     def __init__(
-        self    : 'MenuBar',
+        self    : Self,
         parent  : 'MainWindow'
     ) -> None:
         super().__init__(parent)
@@ -69,7 +71,7 @@ class MenuBar(QMenuBar):
         self.addMenu(self.window_menu)
         self.addMenu(self.help_menu)
 
-    def updateWindowMenu(self) -> None:
+    def updateWindowMenu(self : Self) -> None:
         actions = hub.main_window.actions
         self.window_menu.clear()
         self.window_menu.addAction(actions.windowExplorer)
@@ -89,7 +91,7 @@ class MenuBar(QMenuBar):
             for action in actions:
                 self.window_menu.addAction(action)
 
-    def activateSubWindow(self, subwindow : QMdiSubWindow) -> None:
+    def activateSubWindow(self : Self, subwindow : QMdiSubWindow) -> None:
         sender = self.sender()  # Get the QAction that triggered this slot
         hub.main_window.mdi_area.setActiveSubWindow(subwindow)
         subwindow.show()

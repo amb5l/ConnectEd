@@ -1,5 +1,7 @@
 from PyQt6.QtWidgets import QStatusBar, QLabel
 
+from typing import Self
+
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from . import MainWindow
@@ -11,7 +13,7 @@ class StatusBar(QStatusBar):
     select : QLabel
     msg    : QLabel
 
-    def __init__(self : 'StatusBar', parent : 'MainWindow') -> None:
+    def __init__(self : Self, parent : 'MainWindow') -> None:
         super().__init__(parent)
         self.msg    = QLabel('Initializing...')
         self.tip    = QLabel('')

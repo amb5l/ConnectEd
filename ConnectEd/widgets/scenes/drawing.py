@@ -1,6 +1,6 @@
 __all__ = ['DrawingScene']
 
-from typing import Optional
+from typing import Self, Optional
 
 from PyQt6.QtCore    import QPointF, QRectF, QSizeF, \
                             QXmlStreamWriter, QXmlStreamReader
@@ -29,7 +29,7 @@ class DrawingScene(QGraphicsScene):
     undo_stack : QUndoStack
 
     def __init__(
-        self    : 'DrawingScene',
+        self    : Self,
         name    : Optional[str] = None,
         extents : Optional[QSizeF] = None
     ) -> None:
@@ -45,7 +45,7 @@ class DrawingScene(QGraphicsScene):
         self.setItemIndexMethod(QGraphicsScene.ItemIndexMethod.NoIndex)
         self.undo_stack = QUndoStack(self)
 
-    def addItem(self, item : QGraphicsItem) -> None:
+    def addItem(self : Self, item : QGraphicsItem) -> None:
         if item in self.SYSTEM_FORBIDDEN_ITEMS:
             raise ValueError(f'Item {item} is forbidden')
         if self.FORBIDDEN_ITEMS is not None:
@@ -58,7 +58,7 @@ class DrawingScene(QGraphicsScene):
                     raise ValueError(f'Item {item} is not allowed')
         super().addItem(item)
 
-    def toXml(self : 'DrawingScene', xw : QXmlStreamWriter) -> None:
+    def toXml(self : Self, xw : QXmlStreamWriter) -> None:
         xw.writeStartElement(self.__class__.__name__.replace('Scene', ''))
         for attr_name, _ in self.XML_ATTRIBUTES.items():
             attr_value = getattr(self, attr_name)
@@ -68,7 +68,7 @@ class DrawingScene(QGraphicsScene):
         xw.writeEndElement()
 
     @classmethod
-    def fromXml(cls, xr : QXmlStreamReader) -> 'DrawingScene':
+    def fromXml(cls : Self, xr : QXmlStreamReader) -> Self:
         cls_name = cls.__name__.replace('Scene', '')
         if xr.name() != cls_name:
             raise ValueError(f'Expected {cls_name} element, got {xr.name()}')

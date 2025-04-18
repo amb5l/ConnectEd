@@ -2,13 +2,15 @@ __all__ = ['logger']
 
 import os, logging, weakref
 
+from typing import Self
+
 from PyQt6.QtWidgets import QPlainTextEdit
 
 from .defs import APP_NAME, LOG_FILENAME
 
 
 class RelativePathFormatter(logging.Formatter):
-    def format(self : 'RelativePathFormatter', record : logging.LogRecord) -> str:
+    def format(self : Self, record : logging.LogRecord) -> str:
         try:
             record.relpath = os.path.relpath(record.pathname)
         except ValueError:
@@ -18,12 +20,12 @@ class RelativePathFormatter(logging.Formatter):
 class LogViewerHandler(logging.Handler):
     log_viewer : QPlainTextEdit
 
-    def __init__(self : 'LogViewerHandler', log_viewer : QPlainTextEdit) -> None:
+    def __init__(self : Self, log_viewer : QPlainTextEdit) -> None:
         super().__init__()
         self.log_viewer = weakref.proxy(log_viewer)
         self.log_viewer.handler = self
 
-    def emit(self : 'LogViewerHandler', record : logging.LogRecord) -> None:
+    def emit(self : Self, record : logging.LogRecord) -> None:
         try:
             msg = self.format(record)
             self.log_viewer.appendPlainText(msg)

@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from enum        import Enum
-from typing      import Optional, Union
+from typing      import Self, Optional, Union
 from collections import namedtuple
 from types       import SimpleNamespace
 
@@ -53,7 +53,7 @@ class Element:
     """Base class for all elements."""
 
     def __init__(
-        self,
+        self       : Self,
         pen_spec   : Union[ bool, PenSpec   ] = False,
         brush_spec : Union[ bool, BrushSpec ] = False,
         text_spec  : Union[ bool, TextSpec  ] = False
@@ -72,11 +72,11 @@ class Element:
         self.setFlag( f.ItemSendsScenePositionChanges        , True  )
         self.setCacheMode(QGraphicsItem.CacheMode.DeviceCoordinateCache)
 
-    def getWIP(self) -> bool:
+    def getWIP(self : Self) -> bool:
         return False if self.scene() is None else \
             self in self.scene().wip
 
-    def getPrefsTheme(self) -> SimpleNamespace:
+    def getPrefsTheme(self : Self) -> SimpleNamespace:
         element_name = self.__class__.__name__.lower()
         if self.isSelected():
             prefs = hub.settings.prefs.display.elements.selected
@@ -90,15 +90,15 @@ class Element:
         return prefs, theme
 
     def setPenSpec(
-        self,
+        self     : Self,
         pen_spec : PenSpec = PenSpec()
     ) -> None:
         self.pen_spec = pen_spec
 
-    def getPenSpec(self) -> PenSpec:
+    def getPenSpec(self : Self) -> PenSpec:
         return self.pen_spec
 
-    def penFromSpec(self) -> QPen:
+    def penFromSpec(self : Self) -> QPen:
         if not hasattr(self, 'pen_spec'):
             return QPen(Qt.PenStyle.NoPen)
         prefs, theme = self.getPrefsTheme()
@@ -109,7 +109,7 @@ class Element:
         style = prefs.line.style if s.style is None else s.style
         return QPen(color, width, style)
 
-    def penWidth(self) -> float:
+    def penWidth(self : Self) -> float:
         if not hasattr(self, 'pen_spec'):
             return 0
         prefs, _ = self.getPrefsTheme()
@@ -117,15 +117,15 @@ class Element:
         return prefs.line.width if s.width is None else s.width
 
     def setBrushSpec(
-        self,
+        self       : Self,
         brush_spec : BrushSpec = BrushSpec()
     ) -> None:
         self.brush_spec = brush_spec
 
-    def getBrushSpec(self) -> BrushSpec:
+    def getBrushSpec(self : Self) -> BrushSpec:
         return self.brush_spec
 
-    def brushFromSpec(self) -> QBrush:
+    def brushFromSpec(self : Self) -> QBrush:
         if not hasattr(self, 'brush_spec'):
             return QBrush(Qt.BrushStyle.NoBrush)
         prefs, theme = self.getPrefsTheme()
@@ -136,15 +136,15 @@ class Element:
         return QBrush(color, style)
 
     def setTextSpec(
-        self,
+        self      : Self,
         text_spec : TextSpec = TextSpec()
     ) -> None:
         self.text_spec = text_spec
 
-    def getTextSpec(self) -> TextSpec:
+    def getTextSpec(self : Self) -> TextSpec:
         return self.text_spec
 
-    def fontFromSpec(self) -> QFont | None: # TODO: return default font?
+    def fontFromSpec(self : Self) -> QFont | None: # TODO: return default font?
         if not hasattr(self, 'text_spec'):
             return None
         item_name = self.__class__.__name__.lower()
@@ -171,7 +171,7 @@ class Element:
                 self.text_spec.italic
         )
 
-    def toXml(self, xw : QXmlStreamWriter) -> None:
+    def toXml(self : Self, xw : QXmlStreamWriter) -> None:
         xw.writeStartElement(self.__class__.__name__)
         for attr_name, attr_type in self.XML_ATTRIBUTES.items():
             if hasattr(self, attr_name):
@@ -181,7 +181,7 @@ class Element:
         xw.writeEndElement()
 
     @classmethod
-    def fromXml(cls, xr: QXmlStreamReader) -> 'Element':
+    def fromXml(cls : Self, xr: QXmlStreamReader) -> Self:
         instance = cls()
         attributes = xr.attributes()
         for attribute in attributes:
@@ -209,7 +209,7 @@ class cmdElement(QUndoCommand):
     text_spec  : Union[ bool, TextSpec  ]
 
     def __init__(
-        self       : 'cmdElement',
+        self       : Self,
         text       : str = 'Create Element',
         scene      : Optional['DrawingScene'] = None,
         element    : Optional[Element] = None,
@@ -232,13 +232,13 @@ class cmdElement(QUndoCommand):
         self.text_spec  = text_spec
         self.wip        = wip
 
-    def id(self) -> int:
+    def id(self : Self) -> int:
             """Return a unique ID for merging commands."""
             element_id = id(self.element) & 0x7FFFFFFF
             class_id = hash(self.__class__.__name__) & 0x7FFFFFFF
             return ((element_id + class_id) & 0x7FFFFFFF)
 
-    def mergeWith(self, other: QUndoCommand) -> bool:
+    def mergeWith(self : Self, other : QUndoCommand) -> bool:
         """Merge this command with another identical command."""
         if not isinstance(other, self.__class__) \
         or other.scene != self.scene \
@@ -250,7 +250,7 @@ class cmdElement(QUndoCommand):
         self.wip        = other.wip
         return True
 
-    def redo(self):
+    def redo(self : Self) -> None:
         """Add or update the element in the scene."""
         if self.element.scene() != self.scene:
             self.scene.addItem(self.element)
@@ -259,7 +259,7 @@ class cmdElement(QUndoCommand):
             QGraphicsItem.GraphicsItemFlag.ItemIsSelectable, not self.wip
         )
 
-    def undo(self):
+    def undo(self : Self) -> None:
         """Remove the element from the scene."""
         self.scene.removeItem(self.element)
         self.scene.wip = []

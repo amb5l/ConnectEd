@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Self, Optional
 
 from PyQt6.QtCore   import QPointF, QSizeF
 from PyQt6.QtWidgets import QGraphicsItem
@@ -14,11 +14,11 @@ class DrawingApiPlaceMixin:
     place_wip : Optional[QGraphicsItem] = None
     place_pos : Optional[QPointF]
 
-    def placeRectangle(self : 'DrawingView') -> None:
+    def placeRectangle(self : Self) -> None:
         self._goState(self.State.PlaceRectangle1)
 
     def placeRectangleCmd(
-        self       : 'DrawingView',
+        self       : Self,
         size_or_p2 : QSizeF | QPointF,
         wip        : bool
     ) -> None:
@@ -31,16 +31,16 @@ class DrawingApiPlaceMixin:
             wip        = wip
         ))
 
-    def placeRectangleBegin(self : 'DrawingView', pos: QPointF) -> None:
+    def placeRectangleBegin(self : Self, pos: QPointF) -> None:
         self.place_wip = Rectangle()
         self.place_pos = pos
         self.placeRectangleCmd(QSizeF(1,1), True)
         self._goState(self.State.PlaceRectangle2)
 
-    def placeRectangleContinue(self : 'DrawingView', pos: QPointF) -> None:
+    def placeRectangleContinue(self : Self, pos: QPointF) -> None:
         self.placeRectangleCmd(pos, True)
 
-    def placeRectangleComplete(self : 'DrawingView', pos: QPointF) -> None:
+    def placeRectangleComplete(self : Self, pos: QPointF) -> None:
         self.placeRectangleCmd(pos, False)
         self.place_wip = None
         self.place_pos = None

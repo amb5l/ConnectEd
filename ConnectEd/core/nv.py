@@ -12,7 +12,7 @@ including loading, saving, and accessing configuration values.
 __all__ = ['Settings']
 
 from types       import SimpleNamespace
-from typing      import Any, Dict, List, Union
+from typing      import Self, Any, Dict, List, Union
 
 from PyQt6.QtCore import QSettings, QByteArray, QPointF, QSizeF, Qt
 from PyQt6.QtGui  import QColor
@@ -179,18 +179,18 @@ FACTORY_SETTINGS = {
 
 class Settings(SimpleNamespace):
     @property
-    def theme(self) -> SimpleNamespace:
+    def theme(self : Self) -> SimpleNamespace:
         return getattr(self.themes, self.prefs.display.theme)
 
-    def __init__(self : 'Settings') -> None:
+    def __init__(self : Self) -> None:
         self._init(self, FACTORY_SETTINGS)
 
-    def reset(self : 'Settings') -> None:
+    def reset(self : Self) -> None:
         logger.debug('clearing all saved settings')
         qsettings = QSettings(ORG_NAME, APP_NAME)
         qsettings.clear()
 
-    def load(self : 'Settings') -> None:
+    def load(self : Self) -> None:
         """Load settings from QSettings storage into this SimpleNamespace."""
         logger.debug('loading settings')
         qsettings = QSettings(ORG_NAME, APP_NAME)
@@ -201,7 +201,7 @@ class Settings(SimpleNamespace):
             self._load(attr, qsettings)
             qsettings.endGroup()
 
-    def save(self : 'Settings') -> None:
+    def save(self : Self) -> None:
         """Save settings from this SimpleNamespace to QSettings storage."""
         logger.debug('saving settings')
         qsettings = QSettings(ORG_NAME, APP_NAME)
@@ -212,17 +212,17 @@ class Settings(SimpleNamespace):
             self._save(attr, qsettings)
             qsettings.endGroup()
 
-    def dump(self : 'Settings') -> str:
+    def dump(self : Self) -> str:
         """Return a formatted string representation of all settings."""
         lines: List[str] = []
         self._dump('settings', self, lines)
         return "\n".join(lines)
 
     def _getSettingTypeName(
-            self : 'Settings',
-            path : str,
-            d    : dict
-        ) -> str:
+        self : Self,
+        path : str,
+        d    : dict
+    ) -> str:
         l = path.lstrip('/').split('/')
         if len(l) == 1 and l[0] in d and not isinstance(d[l[0]], dict):
             return type(d[l[0]]).__name__
@@ -231,7 +231,7 @@ class Settings(SimpleNamespace):
         return None
 
     def _init(
-        self     : 'Settings',
+        self     : Self,
         ns       : SimpleNamespace,
         settings : Union[Dict[str, Any], Any]
     ) -> None:
@@ -245,7 +245,7 @@ class Settings(SimpleNamespace):
                     setattr(ns, key, value)
 
     def _load(
-        self      : 'Settings',
+        self      : Self,
         ns        : SimpleNamespace,
         qsettings : QSettings
     ) -> None:
@@ -267,7 +267,7 @@ class Settings(SimpleNamespace):
                     logger.warning(f'Unknown setting: {path}')
 
     def _save(
-        self      : 'Settings',
+        self      : Self,
         ns        : SimpleNamespace,
         qsettings : QSettings
     ) -> None:
@@ -286,7 +286,7 @@ class Settings(SimpleNamespace):
                     qsettings.setValue(key, val2str(value))
 
     def _dump(
-        self   : 'Settings',
+        self   : Self,
         name   : str,
         x      : Any,
         lines  : list[str],

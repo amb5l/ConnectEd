@@ -1,5 +1,7 @@
 import re
 
+from typing import Self
+
 from PyQt6.QtCore    import Qt
 from PyQt6.QtWidgets import QMdiArea, QWidget, QMdiSubWindow
 
@@ -14,7 +16,7 @@ class MdiArea(QMdiArea):
     subwindow_scenes  : dict[any, list[QMdiSubWindow]]
 
     def addSubWindow(
-        self   : 'MdiArea',
+        self   : Self,
         widget : QWidget,
         flags  : Qt.WindowType = Qt.WindowType.SubWindow
     ) -> None:
@@ -27,18 +29,18 @@ class MdiArea(QMdiArea):
             return
         self.update()
 
-    def nextSubWindow(self : 'MdiArea') -> None:
+    def nextSubWindow(self : Self) -> None:
         self._activateSubWindowIndexOffset(1)
 
-    def previousSubWindow(self : 'MdiArea') -> None:
+    def previousSubWindow(self : Self) -> None:
         self._activateSubWindowIndexOffset(-1)
 
-    def update(self : 'MdiArea') -> None:
+    def update(self : Self) -> None:
         self._updateSubWindowTitles()
         self._updateSubWindowActions()
         hub.main_window.menu_bar.updateWindowMenu()
 
-    def _updateSubWindowTitles(self : 'MdiArea') -> None:
+    def _updateSubWindowTitles(self : Self) -> None:
         self.subwindow_scenes = {}
         for w in self.subWindowList():
             key = '_'
@@ -58,7 +60,7 @@ class MdiArea(QMdiArea):
                 else:
                     self.subwindow_scenes[key] = [w]
 
-    def _updateSubWindowActions(self : 'MdiArea') -> None:
+    def _updateSubWindowActions(self : Self) -> None:
         m = hub.main_window
         self.subwindow_actions = {}
         for w in self.subWindowList():
@@ -76,7 +78,7 @@ class MdiArea(QMdiArea):
             else:
                 self.subwindow_actions[key] = [action]
 
-    def _activateSubWindowIndexOffset(self : 'MdiArea', offset : int) -> None:
+    def _activateSubWindowIndexOffset(self : Self, offset : int) -> None:
         windows = self.subWindowList()
         if not windows:
             return
@@ -89,7 +91,7 @@ class MdiArea(QMdiArea):
         next_window = windows[next_index]
         self._activateSubWindow(next_window)
 
-    def _activateSubWindow(self : 'MdiArea', subwindow : QMdiSubWindow) -> None:
+    def _activateSubWindow(self : Self, subwindow : QMdiSubWindow) -> None:
         super().setActiveSubWindow(subwindow)
         subwindow.show()
         subwindow.raise_()

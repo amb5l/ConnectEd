@@ -1,3 +1,5 @@
+from typing import Self
+
 from PyQt6.QtCore import Qt, QSizeF
 
 from ....elements import Grip, cmdRectangle
@@ -11,7 +13,7 @@ qkm = Qt.KeyboardModifier
 class DrawingApiMouseMixin:
     """Mixin class that provides mouse API for Drawing widgets."""
 
-    def mouseLeftClick(self : 'DrawingView') -> None:
+    def mouseLeftClick(self : Self) -> None:
         m = self.mouse.left.press.modifiers
         match self.state:
             case self.State.Idle:
@@ -89,7 +91,7 @@ class DrawingApiMouseMixin:
                     self._snap(self.mouse.left.release.logical)
                 )
 
-    def mouseLeftDragBegin(self : 'DrawingView') -> None:
+    def mouseLeftDragBegin(self : Self) -> None:
         match self.state:
             case self.State.Idle:
                 m = self.mouse.left.press.modifiers
@@ -127,7 +129,7 @@ class DrawingApiMouseMixin:
                     self._snap(self.mouse.left.press.logical)
                 )
 
-    def mouseLeftDragContinue(self : 'DrawingView') -> None:
+    def mouseLeftDragContinue(self : Self) -> None:
         match self.state:
             case self.State.SelectArea2:
                 self.marquee.resize(self.mouse.current.physical)
@@ -167,7 +169,7 @@ class DrawingApiMouseMixin:
                     self._snap(self.mouse.current.logical)
                 )
 
-    def mouseLeftDragEnd(self : 'DrawingView') -> None:
+    def mouseLeftDragEnd(self : Self) -> None:
         m = self.mouse.left.press.modifiers
         match self.state:
             case self.State.SelectArea2:
@@ -204,13 +206,13 @@ class DrawingApiMouseMixin:
                     self._snap(self.mouse.left.release.logical)
                 )
 
-    def mouseLeftDoubleClick(self : 'DrawingView') -> None:
+    def mouseLeftDoubleClick(self : Self) -> None:
         pass
 
-    def mouseMiddleClick(self : 'DrawingView') -> None:
+    def mouseMiddleClick(self : Self) -> None:
         pass
 
-    def mouseMiddleDragBegin(self : 'DrawingView') -> None:
+    def mouseMiddleDragBegin(self : Self) -> None:
         if self.state == self.State.Idle:
             match self.mouse.middle.press.modifiers:
                 case Qt.KeyboardModifier.NoModifier:
@@ -221,7 +223,7 @@ class DrawingApiMouseMixin:
                     self.marquee.begin(self.mouse.middle.press.physical)
                     self._goState(self.State.ViewZoomWindow2)
 
-    def mouseMiddleDragContinue(self : 'DrawingView') -> None:
+    def mouseMiddleDragContinue(self : Self) -> None:
         match self.state:
             case self.State.ViewPan2:
                 delta = self.mouse.current.physical - self.prev_pos
@@ -231,7 +233,7 @@ class DrawingApiMouseMixin:
             case self.State.ViewZoomWindow2:
                 self.marquee.resize(self.mouse.current.physical)
 
-    def mouseMiddleDragEnd(self : 'DrawingView') -> None:
+    def mouseMiddleDragEnd(self : Self) -> None:
         match self.state:
             case self.State.ViewPan2:
                 delta = self.mouse.current.physical - self.prev_pos
@@ -244,10 +246,10 @@ class DrawingApiMouseMixin:
                 self._zoomRect(self.marquee.rect())
                 self._goState(self.State.Idle)
 
-    def mouseMiddleDoubleClick(self : 'DrawingView') -> None:
+    def mouseMiddleDoubleClick(self : Self) -> None:
         pass
 
-    def mouseMove(self : 'DrawingView') -> None:
+    def mouseMove(self : Self) -> None:
         match self.state:
             case self.State.ViewPan2:
                 delta = self.mouse.current.physical - self.prev_pos
@@ -279,7 +281,7 @@ class DrawingApiMouseMixin:
                     self._snap(self.mouse.current.logical)
                 )
 
-    def mouseWheel(self : 'DrawingView', n: int, modifiers: Qt.KeyboardModifier) -> None:
+    def mouseWheel(self : Self, n: int, modifiers: Qt.KeyboardModifier) -> None:
         match modifiers:
             case Qt.KeyboardModifier.NoModifier:      # pan up/down
                 self.viewPanUp(n) if n >= 0 else self.viewPanDown(-n)

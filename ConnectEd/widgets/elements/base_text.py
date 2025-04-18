@@ -1,6 +1,6 @@
 __all__ = ['BaseText']
 
-from typing import Union
+from typing import Self, Union
 
 from PyQt6.QtCore import Qt, QPointF, QRectF
 from PyQt6.QtWidgets import QGraphicsTextItem, QStyleOptionGraphicsItem, QWidget
@@ -23,7 +23,7 @@ class BaseText(QGraphicsTextItem, Element):
     anchor : KeyPoint
 
     def __init__(
-        self,
+        self       : Self,
         text       : str = '',
         pos        : QPointF = QPointF(0, 0),
         anchor     : KeyPoint = KeyPoint.TOP_LEFT,
@@ -38,10 +38,10 @@ class BaseText(QGraphicsTextItem, Element):
         self.setAnchor(anchor)
         self.setTextSpec()
 
-    def setAnchor(self, anchor : KeyPoint = KeyPoint.TOP_LEFT) -> None:
+    def setAnchor(self : Self, anchor : KeyPoint = KeyPoint.TOP_LEFT) -> None:
         self.anchor = anchor
 
-    def boundingRect(self) -> QRectF:
+    def boundingRect(self : Self) -> QRectF:
         rect = super().boundingRect()
         return QRectF(
             -rect.width() * self.anchor.value.h,
@@ -49,13 +49,13 @@ class BaseText(QGraphicsTextItem, Element):
             rect.width(), rect.height()
         )
 
-    def shape(self) -> QPainterPath:
+    def shape(self : Self) -> QPainterPath:
         path = QPainterPath()
         path.addRect(self.boundingRect())
         return path
 
     def paint(
-        self,
+        self    : Self,
         painter : QPainter,
         option  : QStyleOptionGraphicsItem,
         widget  : QWidget

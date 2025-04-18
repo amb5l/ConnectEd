@@ -1,6 +1,7 @@
 import logging
-from types import SimpleNamespace
-from typing import Optional
+
+from types  import SimpleNamespace
+from typing import Self, Optional
 
 from PyQt6.QtCore    import Qt
 from PyQt6.QtWidgets import QWidget, QPlainTextEdit, QDockWidget, QVBoxLayout
@@ -16,7 +17,7 @@ class TextView(QPlainTextEdit):
     handler  : Optional[logging.Handler] = None
 
     def __init__(
-        self     : 'TextView',
+        self     : Self,
         parent   : QWidget,
         filename : Optional[str] = None
     ) -> None:
@@ -43,10 +44,10 @@ class TextView(QPlainTextEdit):
         self.addAction(self.actions.showFindBar)
         self.handler = None
 
-    def setFindBar(self, find_bar : FindBar) -> None:
+    def setFindBar(self : Self, find_bar : FindBar) -> None:
         self.find_bar = find_bar
 
-    def wheelEvent(self, event: QWheelEvent) -> None:
+    def wheelEvent(self : Self, event : QWheelEvent) -> None:
         """Handle mouse wheel events to adjust font size when Ctrl is pressed."""
         modifiers = event.modifiers()
         if modifiers & Qt.KeyboardModifier.ControlModifier:
@@ -62,20 +63,20 @@ class TextView(QPlainTextEdit):
         else:
             super().wheelEvent(event)  # Default scrolling behavior
 
-    def contextMenuEvent(self, event : QContextMenuEvent) -> None:
+    def contextMenuEvent(self : Self, event : QContextMenuEvent) -> None:
         menu = self.createStandardContextMenu()
         menu.addSeparator()
         menu.addAction(self.actions.showFindBar)
         menu.exec(event.globalPos())
 
-    def showFindBar(self, checked : bool) -> None:
+    def showFindBar(self : Self, checked : bool) -> None:
         if self.find_bar:
             self.find_bar.setVisible(checked)
             if checked:
                 self.find_bar.find_combo.setFocus()
                 self.find_bar.find_combo.lineEdit().selectAll()
 
-    def __del__(self : 'TextView') -> None:
+    def __del__(self : Self) -> None:
         if hasattr(self, 'handler') and self.handler:
             try:
                 logger.removeHandler(self.handler)
@@ -89,7 +90,7 @@ class TextViewDockWidget(QDockWidget):
     find_bar     : FindBar
 
     def __init__(
-        self     : 'TextViewDockWidget',
+        self     : Self,
         parent   : Optional[QWidget] = None,
         filename : Optional[str] = None
     ) -> None:

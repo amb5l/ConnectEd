@@ -11,7 +11,7 @@ __all__ = [
 ]
 
 from enum   import Enum, auto
-from typing import Optional
+from typing import Self, Optional
 from math   import sqrt
 
 from PyQt6.QtCore    import Qt, QPoint, QPointF, QRectF
@@ -39,7 +39,7 @@ class DrawingGrid:
     alpha      : int
     min_pixels : int
 
-    def __init__(self : 'DrawingGrid') -> None:
+    def __init__(self : Self) -> None:
         self.pitch      = hub.settings.defaults.grid.pitch
         self.snap       = hub.settings.defaults.grid.snap
         self.dots       = hub.settings.defaults.grid.dots
@@ -51,14 +51,14 @@ class DrawingPLPos:
     logical  : Optional[QPointF] = None
 
     def __init__(
-        self     : 'DrawingPLPos',
+        self     : Self,
         physical : Optional[QPoint] = None,
         logical  : Optional[QPointF] = None
     ) -> None:
         self.physical = physical
         self.logical  = logical
 
-    def setPL(self, physical: QPoint, logical: QPointF) -> None:
+    def setPL(self : Self, physical: QPoint, logical: QPointF) -> None:
         self.physical = physical
         self.logical  = logical
 
@@ -66,7 +66,7 @@ class DrawingMousePress(DrawingPLPos):
     modifiers : Qt.KeyboardModifier = Qt.KeyboardModifier.NoModifier
 
     def __init__(
-        self      : 'DrawingMousePress',
+        self      : Self,
         physical  : Optional[QPoint] = None,
         logical   : Optional[QPointF] = None,
         modifiers : Qt.KeyboardModifier = Qt.KeyboardModifier.NoModifier
@@ -88,7 +88,7 @@ class DrawingMouseButton:
     double  : DrawingMousePress
     state   : DrawingMouseButtonState
 
-    def __init__(self : 'DrawingMouseButton') -> None:
+    def __init__(self : Self) -> None:
         self.press   = DrawingMousePress()
         self.release = DrawingMouseRelease()
         self.double  = DrawingMousePress()
@@ -99,7 +99,7 @@ class DrawingMouse:
     left    : DrawingMouseButton
     middle  : DrawingMouseButton
 
-    def __init__(self : 'DrawingMouse') -> None:
+    def __init__(self : Self) -> None:
         self.current = DrawingPLPos()
         self.left    = DrawingMouseButton()
         self.middle  = DrawingMouseButton()
@@ -148,12 +148,12 @@ class DrawingViewPrivateMixin:
     State            = DrawingViewState
     StateTip         = DrawingViewStateTip
 
-    def _goState(self: 'DrawingView', state : 'DrawingView.State') -> None:
+    def _goState(self : Self, state : 'DrawingView.State') -> None:
         self.state = state
         if hub.main_window is not None:
             hub.main_window.status_bar.tip.setText(self.StateTip[state])
 
-    def _allItemsRect(self: 'DrawingView') -> Optional[QRectF]:
+    def _allItemsRect(self : Self) -> Optional[QRectF]:
         items_rect = None
         if hasattr(self.scene(), 'paper_rect'):
             items_rect = self.scene().paper_rect()
@@ -163,14 +163,14 @@ class DrawingViewPrivateMixin:
                 items_rect.united(item_rect)
         return items_rect
 
-    def _rubberBandRect(self: 'DrawingView') -> QRectF:
+    def _rubberBandRect(self : Self) -> QRectF:
         prect = self.rubber_band.geometry().normalized() # physical coords
         return QRectF(
             self.mapToScene(prect.topLeft()),
             self.mapToScene(prect.bottomRight())
         )
 
-    def _pan(self: 'DrawingView', delta: QPointF) -> None:
+    def _pan(self : Self, delta: QPointF) -> None:
         lrect = self.mapToScene(self.viewport().rect()).boundingRect()  # Scene coords
         pan = QPointF(lrect.width()  * delta.x(), lrect.height() * delta.y())
         transform = self.transform()
@@ -186,7 +186,7 @@ class DrawingViewPrivateMixin:
             self.mapToScene(self.mouse.current.physical)
         )
 
-    def _zoomAbs(self: 'DrawingView', abs: float) -> None:
+    def _zoomAbs(self : Self, abs: float) -> None:
         abs = max(abs, hub.settings.prefs.display.zoom.limit.min)
         abs = min(abs, hub.settings.prefs.display.zoom.limit.max)
         self.zoom = abs
@@ -202,10 +202,10 @@ class DrawingViewPrivateMixin:
             'viewZoomOut', self.zoom > hub.settings.prefs.display.zoom.limit.min
         )
 
-    def _zoomRel(self: 'DrawingView', rel: float) -> None:
+    def _zoomRel(self : Self, rel: float) -> None:
         self._zoomAbs(self.zoom * rel)
 
-    def _zoomRelMouse(self: 'DrawingView', rel: float) -> None:
+    def _zoomRelMouse(self : Self, rel: float) -> None:
         ppos_old = self.mouse.current.physical
         lpos_old = self.mouse.current.logical
         self._zoomRel(rel)
@@ -222,7 +222,7 @@ class DrawingViewPrivateMixin:
             self.mapToScene(self.mouse.current.physical)
         )
 
-    def _zoomRect(self: 'DrawingView', rect : QRectF) -> None:
+    def _zoomRect(self : Self, rect : QRectF) -> None:
         factor = min(
             self.viewport().width()  / rect.width(),
             self.viewport().height() / rect.height()
@@ -230,27 +230,27 @@ class DrawingViewPrivateMixin:
         self._zoomAbs(factor)
         self.centerOn(rect.center())
 
-    def _round2nearest(self: 'DrawingView', x : float, n : float) -> float:
+    def _round2nearest(self : Self, x : float, n : float) -> float:
         return round(x / n) * n
 
-    def _snap(self: 'DrawingView', pos: QPointF) -> QPoint:
+    def _snap(self : Self, pos: QPointF) -> QPoint:
         return QPointF(
             self._round2nearest(pos.x(), self.grid.pitch.x()),
             self._round2nearest(pos.y(), self.grid.pitch.y())
         ) if self.grid.snap else pos
 
-    def _distance(self: 'DrawingView', cp1: QPoint, cp2: QPoint) -> int:
+    def _distance(self : Self, cp1: QPoint, cp2: QPoint) -> int:
         return int(round(sqrt((cp1.x() - cp2.x())**2 + (cp1.y() - cp2.y())**2)))
 
     def _getModifiers(
-        self: 'DrawingView',
-        event: QMouseEvent
+        self  : Self,
+        event : QMouseEvent
     ) -> Qt.KeyboardModifier:
         qkm = Qt.KeyboardModifier
         mask = qkm.ControlModifier | qkm.ShiftModifier | qkm.AltModifier
         return event.modifiers() & mask
 
-    def _setLayer(self: 'DrawingView', layer: Layer) -> None:
+    def _setLayer(self : Self, layer: Layer) -> None:
         self.layer = layer
         for item in self.scene().items():
             item.setFlag(
@@ -259,7 +259,7 @@ class DrawingViewPrivateMixin:
             )
             item.setSelected(False)
 
-    def _itemsAt(self: 'DrawingView', point: QPointF) -> list[QGraphicsItem]:
+    def _itemsAt(self : Self, point: QPointF) -> list[QGraphicsItem]:
         items = self.scene().items(
             point,
             Qt.ItemSelectionMode.IntersectsItemShape,
@@ -269,7 +269,7 @@ class DrawingViewPrivateMixin:
         return [i for i in items if i.zValue() in self.layer.value]
 
     def _selectRect(
-        self   : 'DrawingView',
+        self   : Self,
         rect   : QRectF,
         toggle : bool = False
     ) -> None:
@@ -296,7 +296,7 @@ class DrawingViewPrivateMixin:
                 item.updateGripsVisibility()
 
     def _selectPoint(
-        self   : 'DrawingView',
+        self   : Self,
         point  : QPointF,
         toggle : bool = False,
         choice : bool = False
@@ -343,24 +343,24 @@ class DrawingViewPrivateMixin:
             if hasattr(item, 'updateGripsVisibility'):
                 item.updateGripsVisibility()
 
-    def _selectItem(self, item, toggle, prev=None):
+    def _selectItem(self : Self, item, toggle, prev=None):
         if prev is None:
             item.setSelected(not item.isSelected() if toggle else True)
         else:
             item.setSelected(not prev if toggle else True)
 
-    def _addWIP(self: 'DrawingView', item: QGraphicsItem) -> None:
+    def _addWIP(self : Self, item: QGraphicsItem) -> None:
         self.wip      = item
         self.prev_pos = item.pos()
         self.scene().addItem(self.wip)
 
-    def _completeWIP(self: 'DrawingView') -> None:
+    def _completeWIP(self : Self) -> None:
         self.wip.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsSelectable, True)
         self.wip.update()
         self.wip      = None
         self.prev_pos = None
 
-    def _removeWIP(self: 'DrawingView') -> None:
+    def _removeWIP(self : Self) -> None:
         self.scene().removeItem(self.wip)
         self.wip      = None
         self.prev_pos = None

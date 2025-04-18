@@ -4,7 +4,7 @@ __all__ = [
     'Action'
 ]
 
-from typing import Optional, Any
+from typing import Self, Optional, Any
 
 from PyQt6.QtCore import QObject
 from PyQt6.QtGui  import QAction, QKeySequence
@@ -12,7 +12,7 @@ from PyQt6.QtGui  import QAction, QKeySequence
 
 class Action(QAction):
     def __init__(
-        self      : 'Action',
+        self      : Self,
         parent    : QObject,
         text      : str,
         tooltip   : Optional[str] = None,

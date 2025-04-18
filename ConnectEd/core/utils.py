@@ -10,7 +10,7 @@ import os
 import platform
 
 from collections import namedtuple
-from typing      import Any
+from typing      import Self, Any
 
 from PyQt6.QtCore    import Qt, QPointF, QRectF, QSizeF
 from PyQt6.QtGui     import QColor
@@ -21,10 +21,10 @@ MinMax = namedtuple('MinMax', ['min', 'max'])
 class NameCounter:
     counts : dict[str, int]
 
-    def __init__(self):
+    def __init__(self : Self) -> None:
         self.counts = {}
 
-    def get(self, name : str) -> str:
+    def get(self : Self, name : str) -> str:
         if name not in self.counts:
             self.counts[name] = 0
         self.counts[name] += 1

@@ -1,6 +1,6 @@
 __all__ = ['DrawingView', 'DrawingSubWindow']
 
-from typing import Optional
+from typing import Self, Optional
 from math   import ceil
 
 from PyQt6.QtCore    import Qt, QPoint, QPointF, QRectF, QEvent
@@ -20,7 +20,7 @@ from .... import hub
 
 class DrawingSubWindow(QMdiSubWindow):
     def __init__(
-        self   : 'DrawingSubWindow',
+        self   : Self,
         parent : Optional[QMdiArea] = None
     ) -> None:
         if parent is None:
@@ -28,7 +28,7 @@ class DrawingSubWindow(QMdiSubWindow):
         super().__init__(parent)
         self.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
 
-    def closeEvent(self : 'DrawingSubWindow', event : QCloseEvent) -> None:
+    def closeEvent(self : Self, event : QCloseEvent) -> None:
         hub.main_window.menu_bar.updateWindowMenu()
 
 class DrawingView(
@@ -47,7 +47,7 @@ class DrawingView(
     mouse    : 'DrawingView.Mouse'
     state    : 'DrawingView.State'
 
-    def __init__(self : 'DrawingView', scene : DrawingScene) -> None:
+    def __init__(self : Self, scene : DrawingScene) -> None:
         super().__init__(scene)
         self.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
@@ -74,18 +74,18 @@ class DrawingView(
 
         self._setLayer(Layer.Drawing)
 
-    def showEvent(self : 'DrawingView', event : QEvent) -> None:
+    def showEvent(self : Self, event : QEvent) -> None:
         super().showEvent(event)
         self._shown = True
         self.viewZoomAll()
 
-    def resizeEvent(self : 'DrawingView', event : QEvent) -> None:
+    def resizeEvent(self : Self, event : QEvent) -> None:
         super().resizeEvent(event)
         if self._shown and not self._zoomed:
             self._zoomed = True
             self.viewZoomAll()
 
-    def drawForeground(self, painter : QPainter, rect : QRectF) -> None:
+    def drawForeground(self : Self, painter : QPainter, rect : QRectF) -> None:
         # draw grid
         def align(x : float, px : float) -> float:
             return px * int(x / px)

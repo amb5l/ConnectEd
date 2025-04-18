@@ -1,6 +1,6 @@
 __all__ = ['SymbolView', 'SymbolSubWindow']
 
-from typing import Optional
+from typing import Self, Optional
 
 from PyQt6.QtWidgets import QMdiArea
 
@@ -13,7 +13,7 @@ class SymbolView(DrawingView):
 
 class SymbolSubWindow(DrawingSubWindow):
     def __init__(
-        self   : 'SymbolSubWindow',
+        self   : Self,
         parent : Optional[QMdiArea] = None
     ) -> None:
         if parent is None:

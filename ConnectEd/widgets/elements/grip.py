@@ -1,3 +1,5 @@
+from typing import Self
+
 from PyQt6.QtCore    import Qt, QPointF, QRectF, QXmlStreamWriter
 from PyQt6.QtWidgets import QGraphicsItem, QStyleOptionGraphicsItem, QWidget
 from PyQt6.QtGui     import QPainter, QPen, QBrush, QPainterPath
@@ -16,8 +18,8 @@ class Grip(QGraphicsItem):
     prev_pos  : QPointF
 
     def __init__(
-        self      : 'Grip',
-        parent    : 'QGraphicsItem',
+        self      : Self,
+        parent    : QGraphicsItem,
         key_point : 'KeyPoint'
     ) -> None:
         super().__init__(parent)
@@ -27,20 +29,20 @@ class Grip(QGraphicsItem):
         self.key_point = key_point
         self.prev_pos  = self.pos()
 
-    def parentPos(self) -> QPointF:
+    def parentPos(self : Self) -> QPointF:
         return self.parentItem().pos() + self.pos()
 
-    def boundingRect(self) -> QRectF:
+    def boundingRect(self : Self) -> QRectF:
         size = hub.settings.prefs.display.elements.selected.grip.size
         return QRectF(-size/2, -size/2, size, size)
 
-    def shape(self) -> QPainterPath:
+    def shape(self : Self) -> QPainterPath:
         path = QPainterPath()
         path.addRect(self.boundingRect())
         return path
 
     def paint(
-        self    : 'Grip',
+        self    : Self,
         painter : QPainter,
         option  : QStyleOptionGraphicsItem,
         widget  : QWidget
@@ -51,5 +53,5 @@ class Grip(QGraphicsItem):
         painter.setBrush(QBrush(theme.fill, Qt.BrushStyle.SolidPattern))
         painter.drawRect(self.boundingRect())
 
-    def toXml(self : 'Grip', xw : QXmlStreamWriter) -> None:
+    def toXml(self : Self, xw : QXmlStreamWriter) -> None:
         pass

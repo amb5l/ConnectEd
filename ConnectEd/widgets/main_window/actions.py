@@ -1,3 +1,5 @@
+from typing import Self
+
 from PyQt6.QtGui import QKeySequence
 
 from ..private import Action
@@ -10,7 +12,7 @@ if TYPE_CHECKING:
 class Actions:
     _parent : 'MainWindow'
 
-    def __init__(self : 'Actions', parent : 'MainWindow') -> None:
+    def __init__(self : Self, parent : 'MainWindow') -> None:
         self._parent = parent
         SK = QKeySequence.StandardKey
 
@@ -47,5 +49,5 @@ class Actions:
         self.windowPrevious   = Action( self._parent, 'Previous'     , 'Previous'                    , 'Ctrl+Shift+F6'              )
         self.helpAbout        = Action( self._parent, 'About'        , ''                            , 'Ctrl+Shift+T'               )
 
-    def actionEnable(self, name : str, enable : bool) -> None:
+    def actionEnable(self : Self, name : str, enable : bool) -> None:
         getattr(self, name).setEnabled(enable)

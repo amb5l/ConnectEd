@@ -7,6 +7,8 @@ status bars, and the central MDI area for document management.
 
 __all__ = ['MainWindow']
 
+from typing import Self
+
 from PyQt6.QtCore    import Qt, QByteArray
 from PyQt6.QtWidgets import QMainWindow
 from PyQt6.QtGui     import QCloseEvent
@@ -37,7 +39,7 @@ class MainWindow(QMainWindow):
     log_viewer        : LogViewDock
     mdi_area          : MdiArea
 
-    def __init__(self : 'MainWindow') -> None:
+    def __init__(self : Self) -> None:
         super().__init__()
 
         # default position
@@ -103,12 +105,12 @@ class MainWindow(QMainWindow):
         # ready message
         self.messages_viewer.text_view.appendPlainText("ConnectEd ready!")
 
-    def closeEvent(self : 'MainWindow', event : QCloseEvent) -> None:
+    def closeEvent(self : Self, event : QCloseEvent) -> None:
         hub.settings.startup.geometry = self.saveGeometry().data()
         super().closeEvent(event)
 
     def connectActionsToSlots(
-        self    : 'MainWindow',
+        self    : Self,
         actions : Actions,
         slots   : Slots
     ) -> None:

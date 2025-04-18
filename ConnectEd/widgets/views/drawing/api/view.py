@@ -1,3 +1,5 @@
+from typing import Self
+
 from PyQt6.QtCore import QPointF, QRectF, QSizeF
 
 from ..... import hub
@@ -8,50 +10,49 @@ if TYPE_CHECKING: # avoid circular import issues
 
 
 class DrawingApiViewMixin:
-    def viewZoomAll(self : 'DrawingView') -> None:
+    def viewZoomAll(self : Self) -> None:
         rect = self._allItemsRect()
         if rect is None:
             self._zoomAbs(1)
         else:
             self._zoomRect(rect)
 
-    def viewZoomWindow(self : 'DrawingView') -> None:
+    def viewZoomWindow(self : Self) -> None:
         self._goState(self.State.ViewZoomWindow1)
 
-    def viewZoomIn(self : 'DrawingView', n=1) -> None:
+    def viewZoomIn(self : Self, n : int = 1) -> None:
         self._zoomRelMouse((1 + hub.settings.prefs.display.zoom.step)**n)
 
-    def viewZoomOut(self : 'DrawingView', n=1) -> None:
+    def viewZoomOut(self : Self, n : int = 1) -> None:
         self._zoomRelMouse((1 - hub.settings.prefs.display.zoom.step)**n)
 
-    def viewPan(self : 'DrawingView', n=1) -> None:
+    def viewPan(self : Self, n : int = 1) -> None:
         self._goState(self.State.ViewPan1)
 
-    def viewPanLeft(self : 'DrawingView', n=1) -> None:
+    def viewPanLeft(self : Self, n : int = 1) -> None:
         self._pan(QPointF(hub.settings.prefs.display.pan.step * n, 0))
 
-    def viewPanRight(self : 'DrawingView', n=1) -> None:
+    def viewPanRight(self : Self, n : int = 1) -> None:
         self._pan(QPointF(-hub.settings.prefs.display.pan.step * n, 0))
 
-    def viewPanUp(self : 'DrawingView', n=1) -> None:
+    def viewPanUp(self : Self, n : int = 1) -> None:
         self._pan(QPointF(0, hub.settings.prefs.display.pan.step * n))
 
-    def viewPanDown(self : 'DrawingView', n=1) -> None:
+    def viewPanDown(self : Self, n : int = 1) -> None:
         self._pan(QPointF(0, -hub.settings.prefs.display.pan.step * n))
 
-    def viewPrev(self : 'DrawingView') -> None:
+    def viewPrev(self : Self) -> None:
         pass
 
-    def viewNext(self : 'DrawingView') -> None:
+    def viewNext(self : Self) -> None:
         pass
 
-    def viewGridDisplay(self : 'DrawingView', checked : bool) -> None:
+    def viewGridDisplay(self : Self, checked : bool) -> None:
         self.grid.setVisible(checked)
 
-    def viewGridSnap(self : 'DrawingView', checked : bool) -> None:
+    def viewGridSnap(self : Self, checked : bool) -> None:
         self.grid.snap = checked
 
-    def viewGridSettings(self : 'DrawingView') -> None:
+    def viewGridSettings(self : Self) -> None:
         # TODO dialog required
         pass
-
