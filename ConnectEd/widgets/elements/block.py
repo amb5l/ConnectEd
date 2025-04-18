@@ -1,7 +1,7 @@
 __all__ = ['Block']
 
-from . import RectElement
+from .base_rect import BaseRectangle
 
 
-class Block(RectElement):
+class Block(BaseRectangle):
     pass
