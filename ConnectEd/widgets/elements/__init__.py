@@ -231,31 +231,29 @@ class cmdElement(QUndoCommand):
         self.brush_spec = brush_spec
         self.text_spec  = text_spec
         self.wip        = wip
-        print('cmdElement: ', self.element.pos(), self.element.rect().size())
 
     def id(self) -> int:
             """Return a unique ID for merging commands."""
-            return hash(self.__class__.__name__) % 0x7FFFFFFF
+            element_id = id(self.element) & 0x7FFFFFFF
+            class_id = hash(self.__class__.__name__) & 0x7FFFFFFF
+            return ((element_id + class_id) & 0x7FFFFFFF)
 
     def mergeWith(self, other: QUndoCommand) -> bool:
         """Merge this command with another identical command."""
-        if not isinstance(other, self.__class__) or other.scene != self.scene:
-            print("MERGE WITH FAILED", other)
+        if not isinstance(other, self.__class__) \
+        or other.scene != self.scene \
+        or other.element != self.element:
             return False
         self.pen_spec   = other.pen_spec
         self.brush_spec = other.brush_spec
         self.text_spec  = other.text_spec
         self.wip        = other.wip
-        print("MERGE WITH SUCCESS", self.element)
         return True
 
     def redo(self):
         """Add or update the element in the scene."""
         if self.element.scene() != self.scene:
             self.scene.addItem(self.element)
-            print("ADDING TO SCENE", self.element)
-            if self.element.scene() != self.scene:
-                print("ADDING TO SCENE FAILED", self.element)
         self.scene.wip = [self.element] if self.wip else []
         self.element.setFlag(
             QGraphicsItem.GraphicsItemFlag.ItemIsSelectable, not self.wip

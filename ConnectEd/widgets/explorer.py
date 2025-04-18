@@ -118,8 +118,6 @@ class Explorer(TreeView):
                 if index.isValid():
                     self.expandOrEdit(hub.model.itemFromIndex(index))
                     event.accept()
-                    # print current state of selection model
-                    print(self.selectionModel().selectedIndexes())
 
     def mousePressEvent(self : 'Explorer', event: QMouseEvent) -> None:
         """Handle mouse press to deselect items when clicking in empty space."""
