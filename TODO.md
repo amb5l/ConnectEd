@@ -1,6 +1,5 @@
-- use "Self"
-- check Union vs |
 - sort out WIP
+- undo/redo action enable/disable
 - explorer: multi item copy/paste
   - new design/library option in free space
   - expand on paste (e.g. to symbol cache)

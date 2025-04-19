@@ -90,10 +90,3 @@ class MenuBar(QMenuBar):
             self.window_menu.addSeparator()
             for action in actions:
                 self.window_menu.addAction(action)
-
-    def activateSubWindow(self : Self, subwindow : QMdiSubWindow) -> None:
-        sender = self.sender()  # Get the QAction that triggered this slot
-        hub.main_window.mdi_area.setActiveSubWindow(subwindow)
-        subwindow.show()
-        subwindow.raise_()
-        subwindow.setFocus()
