@@ -114,6 +114,22 @@ class Slots:
         widget.editComplete()
 
     @withCurrentWidget(DrawingView)
+    def editCut(self : Self, widget: DrawingView) -> None:
+        widget.editCut()
+
+    @withCurrentWidget(DrawingView)
+    def editCopy(self : Self, widget: DrawingView) -> None:
+        widget.editCopy()
+
+    @withCurrentWidget(DrawingView)
+    def editPaste(self : Self, widget: DrawingView) -> None:
+        widget.editPaste()
+
+    @withCurrentWidget(DrawingView)
+    def editDelete(self : Self, widget: DrawingView) -> None:
+        widget.editDelete()
+
+    @withCurrentWidget(DrawingView)
     def editSlide(self : Self, widget: DrawingView) -> None:
         widget.editSlide()
 

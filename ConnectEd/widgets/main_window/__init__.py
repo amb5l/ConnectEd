@@ -9,8 +9,8 @@ __all__ = ['MainWindow']
 
 from typing import Self
 
-from PyQt6.QtCore    import Qt, QByteArray
-from PyQt6.QtWidgets import QMainWindow
+from PyQt6.QtCore    import Qt
+from PyQt6.QtWidgets import QApplication, QMainWindow
 from PyQt6.QtGui     import QCloseEvent
 
 from ...core     import APP_NAME, check
@@ -72,36 +72,30 @@ class MainWindow(QMainWindow):
         self.status_bar = StatusBar(self)
         self.setStatusBar(self.status_bar)
 
-        # text viewer dock widgets
+        # dock widgets
+        qd = Qt.DockWidgetArea
         self.messages_viewer = MessagesViewDock(self)
-        self.addDockWidget(
-            Qt.DockWidgetArea.BottomDockWidgetArea,
-            self.messages_viewer
-        )
+        self.addDockWidget(qd.BottomDockWidgetArea, self.messages_viewer)
         self.transcript_viewer = TranscriptViewDock(self)
-        self.addDockWidget(
-            Qt.DockWidgetArea.BottomDockWidgetArea,
-            self.transcript_viewer
-        )
+        self.addDockWidget(qd.BottomDockWidgetArea, self.transcript_viewer)
         self.log_viewer = LogViewDock(self)
-        self.addDockWidget(
-            Qt.DockWidgetArea.BottomDockWidgetArea,
-            self.log_viewer
-        )
+        self.addDockWidget(qd.BottomDockWidgetArea, self.log_viewer)
         self.tabifyDockWidget(self.messages_viewer, self.transcript_viewer)
         self.tabifyDockWidget(self.messages_viewer, self.log_viewer)
         self.messages_viewer.raise_()
-
-        # explorer dock widget
         self.explorer = ExplorerDock(self)
-        self.addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, self.explorer)
+        self.addDockWidget(qd.LeftDockWidgetArea, self.explorer)
 
         # MDI area
         self.mdi_area = MdiArea()
-        self.mdi_area.subWindowActivated.connect(self.menu_bar.onSubWindowActivated)
 
         # central widget
         self.setCentralWidget(self.mdi_area)
+
+        # signal-slotconnections
+        self.mdi_area.subWindowActivated.connect(self.actions.onSubWindowActivated)
+        clipboard = QApplication.clipboard()
+        clipboard.dataChanged.connect(self.actions.onClipboardDataChanged)
 
         # ready message
         self.messages_viewer.text_view.appendPlainText("ConnectEd ready!")

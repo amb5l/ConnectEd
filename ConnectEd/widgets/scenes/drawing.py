@@ -2,7 +2,7 @@ __all__ = ['DrawingScene']
 
 from typing import Self, Optional
 
-from PyQt6.QtCore    import QPointF, QRectF, QSizeF, \
+from PyQt6.QtCore    import pyqtSignal, QPointF, QRectF, QSizeF, \
                             QXmlStreamWriter, QXmlStreamReader
 from PyQt6.QtWidgets import QGraphicsScene, QGraphicsItem
 from PyQt6.QtGui     import QUndoStack
@@ -26,7 +26,10 @@ class DrawingScene(QGraphicsScene):
     # instance variables
     name       : str
     wip        : list[QGraphicsItem]
-    undo_stack : QUndoStack
+    undo_stack : Optional[QUndoStack]
+
+    # custom signals
+    selectionChangedItems = pyqtSignal('QList<QGraphicsItem*>')
 
     def __init__(
         self    : Self,
@@ -43,14 +46,10 @@ class DrawingScene(QGraphicsScene):
         self.wip  = []
         self.setSceneRect(QRectF(QPointF(0, 0), extents))
         self.setItemIndexMethod(QGraphicsScene.ItemIndexMethod.NoIndex)
+        self.undo_stack = None
         if hub.main_window: # GUI is running
             self.undo_stack = QUndoStack(self)
-            self.undo_stack.canUndoChanged.connect(
-                hub.main_window.menu_bar.onCanUndoChanged
-            )
-            self.undo_stack.canRedoChanged.connect(
-                hub.main_window.menu_bar.onCanRedoChanged
-            )
+            self.selectionChanged.connect(self.onSelectionChanged)
 
     def addItem(self : Self, item : QGraphicsItem) -> None:
         if item in self.SYSTEM_FORBIDDEN_ITEMS:
@@ -104,3 +103,6 @@ class DrawingScene(QGraphicsScene):
                     logger.warning(f"Unexpected element: {attr_name}")
             xr.readNext()
         return drawing_scene
+
+    def onSelectionChanged(self : Self) -> None:
+        self.selectionChangedItems.emit(self.selectedItems())

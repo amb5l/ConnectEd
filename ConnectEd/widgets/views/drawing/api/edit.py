@@ -25,6 +25,18 @@ class DrawingApiEditMixin:
                 self._completeWIP()
                 self._goState(self.State.Idle)
 
+    def editCut(self : Self) -> None:
+        print('TODO: editCut')
+
+    def editCopy(self : Self) -> None:
+        print('TODO: editCopy')
+
+    def editPaste(self : Self) -> None:
+        print('TODO: editPaste')
+
+    def editDelete(self : Self) -> None:
+        print('TODO: editDelete')
+
     def editSlide(self : Self) -> None:
         if self.scene().selectedItems():
             self._goState(self.State.EditSlide2)

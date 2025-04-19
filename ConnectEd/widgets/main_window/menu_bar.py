@@ -1,6 +1,6 @@
 from typing import Self
 
-from PyQt6.QtWidgets import QMenuBar, QMenu, QMdiSubWindow
+from PyQt6.QtWidgets import QMenuBar, QMenu
 
 from ... import hub
 
@@ -33,8 +33,19 @@ class MenuBar(QMenuBar):
         self.edit_menu.addAction(actions.editCancel)
         self.edit_menu.addAction(actions.editComplete)
         self.edit_menu.addSeparator()
+        self.edit_menu.addAction(actions.editCut)
+        self.edit_menu.addAction(actions.editCopy)
+        self.edit_menu.addAction(actions.editPaste)
+        self.edit_menu.addAction(actions.editDelete)
+        self.edit_menu.addSeparator()
         self.edit_menu.addAction(actions.editSlide)
         self.edit_menu.addAction(actions.editMove)
+
+        # TODO: editFind
+        # TODO: editFindNext
+        # TODO: editFindPrevious
+        # TODO: editFindReplace
+
 
         self.view_menu = QMenu('&View')
         self.view_menu.addAction(actions.viewZoomAll)
@@ -90,20 +101,3 @@ class MenuBar(QMenuBar):
             self.window_menu.addSeparator()
             for action in actions:
                 self.window_menu.addAction(action)
-
-    def onSubWindowActivated(self : Self, subwindow : QMdiSubWindow) -> None:
-        print('onSubWindowActivated')
-        # update window menu checkmarks
-        # update undo/redo action enable/disable
-        if subwindow:
-            undo_stack = subwindow.widget().scene().undo_stack
-            hub.main_window.actions.editUndo.setEnabled(undo_stack.canUndo())
-            hub.main_window.actions.editRedo.setEnabled(undo_stack.canRedo())
-
-    def onCanUndoChanged(self : Self, canUndo : bool) -> None:
-        print('onCanUndoChanged')
-        hub.main_window.actions.editUndo.setEnabled(canUndo)
-
-    def onCanRedoChanged(self : Self, canRedo : bool) -> None:
-        print('onCanRedoChanged')
-        hub.main_window.actions.editRedo.setEnabled(canRedo)

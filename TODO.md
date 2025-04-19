@@ -1,3 +1,4 @@
+- update window menu checkmarks in onSubWindowActivated
 - rename signal recipients to onXXX
 - sort out WIP
 - undo/redo action enable/disable

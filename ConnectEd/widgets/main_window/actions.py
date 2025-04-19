@@ -1,8 +1,11 @@
-from typing import Self
+from typing import Self, Optional
 
-from PyQt6.QtGui import QKeySequence
+from PyQt6.QtWidgets import QApplication, QMdiSubWindow, QGraphicsItem
+from PyQt6.QtGui     import QKeySequence
 
-from ..private import Action
+from ...core    import MIME_TYPE
+from ...widgets import DrawingSubWindow, DrawingScene
+from ..private  import Action
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -11,9 +14,11 @@ if TYPE_CHECKING:
 
 class Actions:
     _parent : 'MainWindow'
+    _scene  : Optional[DrawingScene]
 
     def __init__(self : Self, parent : 'MainWindow') -> None:
         self._parent = parent
+        self._scene  = None
         SK = QKeySequence.StandardKey
 
         self.fileNewDesign    = Action( self._parent, 'Design'       , 'Create a new design'         , 'Ctrl+N'                     )
@@ -26,6 +31,10 @@ class Actions:
         self.editRedo         = Action( self._parent, 'Redo'         , 'Redo'                        , SK.Redo                      )
         self.editCancel       = Action( self._parent, 'Cancel'       , 'Cancel the current action'   , SK.Cancel                    )
         self.editComplete     = Action( self._parent, 'Complete'     , 'Complete the current action' , SK.InsertParagraphSeparator  )
+        self.editCut          = Action( self._parent, 'Cut'          , 'Cut'                         , SK.Cut                       )
+        self.editCopy         = Action( self._parent, 'Copy'         , 'Copy'                        , SK.Copy                      )
+        self.editPaste        = Action( self._parent, 'Paste'        , 'Paste'                       , SK.Paste                     )
+        self.editDelete       = Action( self._parent, 'Delete'       , 'Delete'                      , SK.Delete                    )
         self.editSlide        = Action( self._parent, 'Slide'        , 'Slide'                       , None                         )
         self.editMove         = Action( self._parent, 'Move'         , 'Move'                        , None                         )
         self.viewZoomAll      = Action( self._parent, 'Zoom All'     , 'Zoom to fit all'             , 'Ctrl+Home'                  )
@@ -51,3 +60,47 @@ class Actions:
 
     def actionEnable(self : Self, name : str, enable : bool) -> None:
         getattr(self, name).setEnabled(enable)
+
+    def onSubWindowActivated(self : Self, subwindow : QMdiSubWindow) -> None:
+        # TODO:update window menu checkmarks
+        # disconnect previous signals
+        s = self._scene
+        if s:
+            try:
+                s.selectionChanged.disconnect(self.onSelectionChanged)
+                s.undo_stack.canUndoChanged.disconnect(self.onCanUndoChanged)
+                s.undo_stack.canRedoChanged.disconnect(self.onCanRedoChanged)
+            except TypeError:
+                pass
+        if subwindow and isinstance(subwindow, DrawingSubWindow):
+            self._scene = subwindow.widget().scene()
+            # update everything
+            self.onSelectionChanged(self._scene.selectedItems())
+            self.onCanUndoChanged(self._scene.undo_stack.canUndo())
+            self.onCanRedoChanged(self._scene.undo_stack.canRedo())
+            # connect signals
+            self._scene.selectionChangedItems.connect(self.onSelectionChanged)
+            self._scene.undo_stack.canUndoChanged.connect(self.onCanUndoChanged)
+            self._scene.undo_stack.canRedoChanged.connect(self.onCanRedoChanged)
+        else:
+            self.onSelectionChanged([])
+            self.editUndo.setEnabled(False)
+            self.editRedo.setEnabled(False)
+
+    def onSelectionChanged(self : Self, items : list[QGraphicsItem]) -> None:
+        self.editCut    .setEnabled( len(items) > 0 )
+        self.editCopy   .setEnabled( len(items) > 0 )
+        self.editDelete .setEnabled( len(items) > 0 )
+
+    def onClipboardDataChanged(self : Self) -> None:
+        clipboard = QApplication.clipboard()
+        mime_data = clipboard.mimeData()
+        self.editPaste.setEnabled(
+            mime_data is not None and mime_data.hasFormat(MIME_TYPE)
+        )
+
+    def onCanUndoChanged(self : Self, canUndo : bool) -> None:
+        self.editUndo.setEnabled(canUndo)
+
+    def onCanRedoChanged(self : Self, canRedo : bool) -> None:
+        self.editRedo.setEnabled(canRedo)
