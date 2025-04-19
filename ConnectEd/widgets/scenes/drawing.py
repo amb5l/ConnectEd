@@ -43,7 +43,14 @@ class DrawingScene(QGraphicsScene):
         self.wip  = []
         self.setSceneRect(QRectF(QPointF(0, 0), extents))
         self.setItemIndexMethod(QGraphicsScene.ItemIndexMethod.NoIndex)
-        self.undo_stack = QUndoStack(self)
+        if hub.main_window: # GUI is running
+            self.undo_stack = QUndoStack(self)
+            self.undo_stack.canUndoChanged.connect(
+                hub.main_window.menu_bar.onCanUndoChanged
+            )
+            self.undo_stack.canRedoChanged.connect(
+                hub.main_window.menu_bar.onCanRedoChanged
+            )
 
     def addItem(self : Self, item : QGraphicsItem) -> None:
         if item in self.SYSTEM_FORBIDDEN_ITEMS:

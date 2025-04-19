@@ -98,6 +98,7 @@ class MainWindow(QMainWindow):
 
         # MDI area
         self.mdi_area = MdiArea()
+        self.mdi_area.subWindowActivated.connect(self.menu_bar.onSubWindowActivated)
 
         # central widget
         self.setCentralWidget(self.mdi_area)

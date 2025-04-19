@@ -90,3 +90,20 @@ class MenuBar(QMenuBar):
             self.window_menu.addSeparator()
             for action in actions:
                 self.window_menu.addAction(action)
+
+    def onSubWindowActivated(self : Self, subwindow : QMdiSubWindow) -> None:
+        print('onSubWindowActivated')
+        # update window menu checkmarks
+        # update undo/redo action enable/disable
+        if subwindow:
+            undo_stack = subwindow.widget().scene().undo_stack
+            hub.main_window.actions.editUndo.setEnabled(undo_stack.canUndo())
+            hub.main_window.actions.editRedo.setEnabled(undo_stack.canRedo())
+
+    def onCanUndoChanged(self : Self, canUndo : bool) -> None:
+        print('onCanUndoChanged')
+        hub.main_window.actions.editUndo.setEnabled(canUndo)
+
+    def onCanRedoChanged(self : Self, canRedo : bool) -> None:
+        print('onCanRedoChanged')
+        hub.main_window.actions.editRedo.setEnabled(canRedo)
