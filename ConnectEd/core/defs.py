@@ -1,6 +1,7 @@
 __all__ = [
     'ORG_NAME',
     'APP_NAME',
+    'MIME_TYPE',
     'GEN_EXT',
     'DSN_EXT',
     'LIB_EXT',
@@ -14,6 +15,7 @@ __all__ = [
 
 ORG_NAME = 'ConnectEd'
 APP_NAME = 'ConnectEd'
+MIME_TYPE = f'application/x-{APP_NAME.lower()}-xml'
 GEN_EXT = '.ce*'
 DSN_EXT = '.cedsn'
 LIB_EXT = '.celib'

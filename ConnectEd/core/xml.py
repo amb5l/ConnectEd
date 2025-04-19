@@ -3,10 +3,10 @@ __all__ = ['fromXmlBegin', 'saveBegin', 'saveEnd', 'open', 'copy', 'paste']
 from typing import TypeAlias, Union, Any
 
 from PyQt6.QtCore    import QByteArray, QXmlStreamWriter, QXmlStreamReader, \
-                            QFile, QIODevice
+                            QFile, QIODevice, QMimeData
 from PyQt6.QtWidgets import QApplication
 
-from . import logger
+from . import logger, MIME_TYPE
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -102,23 +102,29 @@ def copy(instance : Any) -> None:
     toXmlBegin(xw)
     instance.toXml(xw)
     toXmlEnd(xw)
+    mime_data = QMimeData()
+    mime_data.setData(MIME_TYPE, buffer)
     clipboard = QApplication.clipboard()
-    clipboard.setText(buffer.data().decode('utf-8'))
+    clipboard.setMimeData(mime_data)
 
 def paste() -> list[XmlItemTypes]:
     clipboard = QApplication.clipboard()
-    buffer = clipboard.text()
-    if buffer:
-        xr = QXmlStreamReader(buffer)
-        try:
-            items = fromXml(xr)
-            return items
-        except ValueError as e:
-            print(f'paste error: {e}')
-            if xr.hasError():
-                print(f'XML parser error: {xr.errorString()} at line {xr.lineNumber()}, column {xr.columnNumber()}')
-        except Exception as e:
-            print(f'Unexpected error during paste: {str(e)}')
-            import traceback
-            traceback.print_exc()
+    mime_data = clipboard.mimeData()
+    if mime_data and mime_data.hasFormat(MIME_TYPE):
+        buffer = mime_data.data(MIME_TYPE)
+        if buffer:
+            xr = QXmlStreamReader(buffer)
+            try:
+                items = fromXml(xr)
+                return items
+            except ValueError as e:
+                print(f'paste error: {e}')
+                if xr.hasError():
+                    print(f'XML parser error: {xr.errorString()} at line {xr.lineNumber()}, column {xr.columnNumber()}')
+            except Exception as e:
+                print(f'Unexpected error during paste: {str(e)}')
+                import traceback
+                traceback.print_exc()
+    else:
+        logger.warning('No valid ConnectEd data in clipboard')
     return []
