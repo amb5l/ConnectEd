@@ -92,8 +92,9 @@ class MainWindow(QMainWindow):
         # central widget
         self.setCentralWidget(self.mdi_area)
 
-        # signal-slotconnections
+        # signal-slot connections
         self.mdi_area.subWindowActivated.connect(self.actions.onSubWindowActivated)
+        self.mdi_area.subWindowActivated.connect(self.menu_bar.updateWindowMenu)
         clipboard = QApplication.clipboard()
         clipboard.dataChanged.connect(self.actions.onClipboardDataChanged)
 

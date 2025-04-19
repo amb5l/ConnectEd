@@ -40,12 +40,10 @@ class MenuBar(QMenuBar):
         self.edit_menu.addSeparator()
         self.edit_menu.addAction(actions.editSlide)
         self.edit_menu.addAction(actions.editMove)
-
         # TODO: editFind
         # TODO: editFindNext
         # TODO: editFindPrevious
         # TODO: editFindReplace
-
 
         self.view_menu = QMenu('&View')
         self.view_menu.addAction(actions.viewZoomAll)
@@ -89,15 +87,16 @@ class MenuBar(QMenuBar):
         self.window_menu.addAction(actions.windowMessages)
         self.window_menu.addAction(actions.windowTranscript)
         self.window_menu.addAction(actions.windowLog)
-        self.window_menu.addSeparator()
-        self.window_menu.addAction(actions.windowNext)
-        self.window_menu.addAction(actions.windowPrevious)
-        subwindow_actions = hub.main_window.mdi_area.subwindow_actions
-        if subwindow_actions == {}:
-            return
-        for key, actions in subwindow_actions.items():
-            if key == '_':
-                continue
+        if len(hub.main_window.mdi_area.subWindowList()) > 1:
             self.window_menu.addSeparator()
-            for action in actions:
-                self.window_menu.addAction(action)
+            self.window_menu.addAction(actions.windowNext)
+            self.window_menu.addAction(actions.windowPrevious)
+            subwindow_actions = hub.main_window.mdi_area.subwindow_actions
+            if subwindow_actions == {}:
+                return
+            for key, actions in subwindow_actions.items():
+                if key == '_':
+                    continue
+                self.window_menu.addSeparator()
+                for action in actions:
+                    self.window_menu.addAction(action)

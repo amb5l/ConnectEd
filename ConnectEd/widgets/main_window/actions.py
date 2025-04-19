@@ -62,7 +62,6 @@ class Actions:
         getattr(self, name).setEnabled(enable)
 
     def onSubWindowActivated(self : Self, subwindow : QMdiSubWindow) -> None:
-        # TODO:update window menu checkmarks
         # disconnect previous signals
         s = self._scene
         if s:
