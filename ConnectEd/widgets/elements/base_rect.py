@@ -7,7 +7,7 @@ from PyQt6.QtWidgets import QGraphicsRectItem, QStyleOptionGraphicsItem, QWidget
 from PyQt6.QtGui import QPainter, QPainterPath, QPen, QBrush, QUndoCommand
 
 from .  import Element, KeyPoint, PenSpec, BrushSpec, Grip, \
-               cmdPlaceElement, cmdResizeElement
+               cmdPlaceElement, cmdMoveGrip
 
 from ... import hub
 
@@ -229,6 +229,3 @@ class cmdPlaceBaseRectangle(cmdPlaceElement):
         super().redo()
         self.element.setAnchor(self.anchor)
         self.element.setPosSizeOrP2(self.pos, self.size_or_p2)
-
-class cmdResizeBaseRectangle(cmdResizeElement):
-    element : BaseRectangle

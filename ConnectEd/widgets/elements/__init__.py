@@ -51,7 +51,7 @@ class KeyPoint(Enum):
     BOTTOM_CENTER = KeyPointHV(0.5, 1.0)
     BOTTOM_RIGHT  = KeyPointHV(1.0, 1.0)
 
-class Element:
+class Element(QGraphicsItem):
     """Base class for all elements."""
 
     def __init__(
@@ -292,39 +292,35 @@ class cmdPlaceElement(cmdElement):
         self.scene.removeItem(self.element)
         self.scene.wip = []
 
-class cmdResizeElement(cmdElement):
-    grip    : Grip
+class cmdMoveGrip(cmdElement):
     delta   : QPointF
 
     def __init__(
         self       : Self,
         scene      : 'DrawingScene',
         element    : Element,
-        grip       : Grip,
         delta      : QPointF
     ):
         super().__init__(scene, element)
-        self.grip = grip
         self.delta = delta
 
     def mergeWith(self : Self, other : QUndoCommand) -> bool:
         if not super().mergeWith(other):
             return False
-        self.grip  = other.grip
         self.delta = other.delta
         return True
 
     def redo(self : Self):
-        self.element.moveKeyPoint(self.grip.key_point, self.delta)
+        self.element.parentItem().moveKeyPoint(self.element.key_point, self.delta)
 
     def undo(self : Self):
-        self.element.moveKeyPoint(self.grip.key_point, -self.delta)
+        self.element.parentItem().moveKeyPoint(self.element.key_point, -self.delta)
 
 __all__ = []
 
 from .grip import Grip
 __all__ += ['Grip']
-from .rectangle import Rectangle, cmdPlaceRectangle, cmdResizeRectangle
+from .rectangle import Rectangle, cmdPlaceRectangle
 __all__ += rectangle.__all__
 from .symbol_instance import SymbolInstance
 __all__ += symbol_instance.__all__
