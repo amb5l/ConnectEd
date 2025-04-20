@@ -348,21 +348,3 @@ class DrawingViewPrivateMixin:
             item.setSelected(not item.isSelected() if toggle else True)
         else:
             item.setSelected(not prev if toggle else True)
-
-    def _addWIP(self : Self, item: QGraphicsItem) -> None:
-        self.wip      = item
-        self.prev_pos = item.pos()
-        self.scene().addItem(self.wip)
-
-    def _completeWIP(self : Self) -> None:
-        self.wip.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsSelectable, True)
-        self.wip.update()
-        self.wip      = None
-        self.prev_pos = None
-
-    def _removeWIP(self : Self) -> None:
-        self.scene().removeItem(self.wip)
-        self.wip      = None
-        self.prev_pos = None
-
-

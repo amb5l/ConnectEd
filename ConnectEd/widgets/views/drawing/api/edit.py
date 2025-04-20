@@ -1,6 +1,4 @@
-from typing import Self, TYPE_CHECKING
-if TYPE_CHECKING:
-    from .. import DrawingView
+from typing import Self
 
 
 class DrawingApiEditMixin:
@@ -11,19 +9,15 @@ class DrawingApiEditMixin:
         self.scene().undo_stack.redo()
 
     def editCancel(self : Self) -> None:
-        if self.wip:
-            self._removeWIP()
+        # TODO: pop command
         self._goState(self.State.Idle)
 
     def editComplete(self : Self) -> None:
         match self.state:
             case self.State.PlaceRectangle2:
-                self.wip.setPoints(
-                    self.prev_pos,
+                self.placeRectangleComplete(
                     self._snap(self.mouse.current.logical)
                 )
-                self._completeWIP()
-                self._goState(self.State.Idle)
 
     def editCut(self : Self) -> None:
         print('TODO: editCut')
