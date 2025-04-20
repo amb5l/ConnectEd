@@ -1,6 +1,7 @@
 __all__ = [
     'NameCounter',
     'check',
+    'camel_to_proper',
     'getDefaultPath',
     'val2str',
     'str2val'
@@ -34,6 +35,14 @@ def check(b : bool, s : str) -> bool:
     if not b:
         print(s)
     return b
+
+def camel_to_proper(s : str) -> str:
+    r = []
+    for i, char in enumerate(s):
+        if i > 0 and char.isupper():
+            r.append(' ')
+        r.append(char)
+    return ''.join(r).capitalize()
 
 def getDefaultPath() -> str:
     if platform.system() == 'Windows':

@@ -8,7 +8,7 @@ from PyQt6.QtCore    import Qt, QXmlStreamWriter, QXmlStreamReader
 from PyQt6.QtGui     import QPen, QBrush, QColor, QFont, QUndoCommand
 from PyQt6.QtWidgets import QGraphicsItem
 
-from ...core import logger, val2str, str2val
+from ...core import logger, val2str, str2val, camel_to_proper
 
 from ... import hub
 
@@ -200,9 +200,47 @@ class Element:
         xr.readNext()
         return instance
 
-class cmdPlaceElement(QUndoCommand):
-    scene      : 'DrawingScene'
-    element    : Element
+class cmdElement(QUndoCommand):
+    scene   : 'DrawingScene'
+    element : Element
+
+    def __init__(
+        self       : Self,
+        scene      : 'DrawingScene',
+        element    : Optional[Element] = None,
+        wip        : bool = False
+    ):
+        cls_name = self.__class__.__name__
+        text = camel_to_proper(cls_name.replace('cmd', ''))
+        super().__init__(text)
+        self.scene = scene
+        if element is None:
+            element_class_name = cls_name.replace('cmdPlace', '')
+            element = globals()[element_class_name]()
+        self.element = element
+        self.element.setFlag(
+            QGraphicsItem.GraphicsItemFlag.ItemIsSelectable, not wip
+        )
+
+    def mergeWith(self : Self, other : QUndoCommand) -> bool:
+        """Merge this command with another identical command."""
+        if not isinstance(other, self.__class__) \
+        or other.scene != self.scene \
+        or other.element != self.element:
+            return False
+        return True
+
+    def redo(self : Self) -> None:
+        raise NotImplementedError(
+            f'{self.__class__.__name__} must implement redo'
+        )
+
+    def undo(self : Self) -> None:
+        raise NotImplementedError(
+            f'{self.__class__.__name__} must implement undo'
+        )
+
+class cmdPlaceElement(cmdElement):
     wip        : bool
     pen_spec   : bool | PenSpec
     brush_spec : bool | BrushSpec
@@ -210,23 +248,14 @@ class cmdPlaceElement(QUndoCommand):
 
     def __init__(
         self       : Self,
-        text       : str = 'Create Element',
-        scene      : Optional['DrawingScene'] = None,
+        scene      : 'DrawingScene',
         element    : Optional[Element] = None,
         pen_spec   : bool | PenSpec   = True,
         brush_spec : bool | BrushSpec = True,
-        text_spec  : bool | TextSpec  = False,
+        text_spec  : bool | TextSpec  = True,
         wip        : bool = False
     ):
-        super().__init__(text)
-        self.scene = scene
-        if element is None:
-            element_class_name = self.__class__.__name__.replace('cmd', '')
-            element = globals()[element_class_name]()
-        self.element = element
-        self.element.setFlag(
-            QGraphicsItem.GraphicsItemFlag.ItemIsSelectable, not wip
-        )
+        super().__init__(scene, element)
         self.pen_spec   = pen_spec
         self.brush_spec = brush_spec
         self.text_spec  = text_spec
@@ -239,10 +268,7 @@ class cmdPlaceElement(QUndoCommand):
             return ((element_id + class_id) & 0x7FFFFFFF)
 
     def mergeWith(self : Self, other : QUndoCommand) -> bool:
-        """Merge this command with another identical command."""
-        if not isinstance(other, self.__class__) \
-        or other.scene != self.scene \
-        or other.element != self.element:
+        if not super().mergeWith(other):
             return False
         self.pen_spec   = other.pen_spec
         self.brush_spec = other.brush_spec

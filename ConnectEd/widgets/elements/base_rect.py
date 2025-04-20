@@ -196,7 +196,6 @@ class cmdPlaceBaseRectangle(cmdPlaceElement):
 
     def __init__(
         self       : Self,
-        text       : str = 'Create BaseRectangle',
         scene      : Optional['DrawingScene'] = None,
         element    : Optional[BaseRectangle] = None,
         pos        : QPointF = QPointF(0, 0),
@@ -206,7 +205,7 @@ class cmdPlaceBaseRectangle(cmdPlaceElement):
         brush_spec : bool | BrushSpec = True,
         wip        : bool = False
     ):
-        super().__init__(text, scene, element, pen_spec, brush_spec, wip)
+        super().__init__(scene, element, pen_spec, brush_spec, wip)
         self.pos        = pos
         self.size_or_p2 = size_or_p2
         self.anchor     = anchor
