@@ -2,7 +2,7 @@ __all__ = ['DiagramView', 'DiagramSubWindow']
 
 from typing import Self
 
-from .drawing   import DrawingView, DrawingSubWindow
+from .drawing import DrawingView, DrawingSubWindow
 
 
 class DiagramView(DrawingView):
