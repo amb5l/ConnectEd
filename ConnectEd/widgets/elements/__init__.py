@@ -200,7 +200,7 @@ class Element:
         xr.readNext()
         return instance
 
-class cmdElement(QUndoCommand):
+class cmdPlaceElement(QUndoCommand):
     scene      : 'DrawingScene'
     element    : Element
     wip        : bool
@@ -268,7 +268,7 @@ __all__ = []
 
 from .grip import Grip
 __all__ += ['Grip']
-from .rectangle import Rectangle, cmdRectangle
+from .rectangle import Rectangle, cmdPlaceRectangle
 __all__ += rectangle.__all__
 from .symbol_instance import SymbolInstance
 __all__ += symbol_instance.__all__

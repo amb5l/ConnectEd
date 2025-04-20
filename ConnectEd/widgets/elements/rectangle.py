@@ -1,12 +1,12 @@
-__all__ = ['Rectangle', 'cmdRectangle']
+__all__ = ['Rectangle', 'cmdPlaceRectangle']
 
 from ...core    import Z_DRAWING
 
-from .base_rect import BaseRectangle, cmdBaseRectangle
+from .base_rect import BaseRectangle, cmdPlaceBaseRectangle
 
 
 class Rectangle(BaseRectangle):
     Z = Z_DRAWING
 
-class cmdRectangle(cmdBaseRectangle):
+class cmdPlaceRectangle(cmdPlaceBaseRectangle):
     pass

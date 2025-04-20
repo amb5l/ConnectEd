@@ -3,11 +3,7 @@ from typing import Self, Optional
 from PyQt6.QtCore   import QPointF, QSizeF
 from PyQt6.QtWidgets import QGraphicsItem
 
-from ....elements import Rectangle, cmdRectangle
-
-from typing import TYPE_CHECKING
-if TYPE_CHECKING:
-    from .. import DrawingView
+from ....elements import Rectangle, cmdPlaceRectangle
 
 
 class DrawingApiPlaceMixin:
@@ -23,7 +19,7 @@ class DrawingApiPlaceMixin:
         wip        : bool
     ) -> None:
         # TODO get default anchor and pen/brush/text spec from settings
-        self.scene().undo_stack.push(cmdRectangle(
+        self.scene().undo_stack.push(cmdPlaceRectangle(
             scene      = self.scene(),
             element    = self.place_wip,
             pos        = self.place_pos,

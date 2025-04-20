@@ -6,7 +6,7 @@ from PyQt6.QtCore import Qt, QPointF, QRectF, QSizeF
 from PyQt6.QtWidgets import QGraphicsRectItem, QStyleOptionGraphicsItem, QWidget
 from PyQt6.QtGui import QPainter, QPainterPath, QPen, QBrush, QUndoCommand
 
-from .  import Element, KeyPoint, PenSpec, BrushSpec, TextSpec, Grip, cmdElement
+from .  import Element, KeyPoint, PenSpec, BrushSpec, Grip, cmdPlaceElement
 
 from ... import hub
 
@@ -189,7 +189,7 @@ class BaseRectangle(QGraphicsRectItem, Element):
             self.updateGripsVisibility()
         return super().itemChange(change, value)
 
-class cmdBaseRectangle(cmdElement):
+class cmdPlaceBaseRectangle(cmdPlaceElement):
     pos        : QPointF
     size_or_p2 : QSizeF | QPointF
     anchor     : KeyPoint

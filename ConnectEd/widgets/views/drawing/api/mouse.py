@@ -1,12 +1,8 @@
 from typing import Self
 
-from PyQt6.QtCore import Qt, QSizeF
+from PyQt6.QtCore import Qt
 
-from ....elements import Grip, cmdRectangle
-
-from typing import TYPE_CHECKING
-if TYPE_CHECKING:
-    from .. import DrawingView
+from ....elements import Grip
 
 qkm = Qt.KeyboardModifier
 
