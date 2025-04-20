@@ -4,11 +4,13 @@ from typing      import Self, Optional
 from collections import namedtuple
 from types       import SimpleNamespace
 
-from PyQt6.QtCore    import Qt, QXmlStreamWriter, QXmlStreamReader
+from PyQt6.QtCore    import Qt, QXmlStreamWriter, QXmlStreamReader, QPointF
 from PyQt6.QtGui     import QPen, QBrush, QColor, QFont, QUndoCommand
 from PyQt6.QtWidgets import QGraphicsItem
 
 from ...core import logger, val2str, str2val, camel_to_proper
+
+from .grip import Grip
 
 from ... import hub
 
@@ -290,11 +292,39 @@ class cmdPlaceElement(cmdElement):
         self.scene.removeItem(self.element)
         self.scene.wip = []
 
+class cmdResizeElement(cmdElement):
+    grip    : Grip
+    delta   : QPointF
+
+    def __init__(
+        self       : Self,
+        scene      : 'DrawingScene',
+        element    : Element,
+        grip       : Grip,
+        delta      : QPointF
+    ):
+        super().__init__(scene, element)
+        self.grip = grip
+        self.delta = delta
+
+    def mergeWith(self : Self, other : QUndoCommand) -> bool:
+        if not super().mergeWith(other):
+            return False
+        self.grip  = other.grip
+        self.delta = other.delta
+        return True
+
+    def redo(self : Self):
+        self.element.moveKeyPoint(self.grip.key_point, self.delta)
+
+    def undo(self : Self):
+        self.element.moveKeyPoint(self.grip.key_point, -self.delta)
+
 __all__ = []
 
 from .grip import Grip
 __all__ += ['Grip']
-from .rectangle import Rectangle, cmdPlaceRectangle
+from .rectangle import Rectangle, cmdPlaceRectangle, cmdResizeRectangle
 __all__ += rectangle.__all__
 from .symbol_instance import SymbolInstance
 __all__ += symbol_instance.__all__

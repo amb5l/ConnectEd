@@ -6,7 +6,8 @@ from PyQt6.QtCore import Qt, QPointF, QRectF, QSizeF
 from PyQt6.QtWidgets import QGraphicsRectItem, QStyleOptionGraphicsItem, QWidget
 from PyQt6.QtGui import QPainter, QPainterPath, QPen, QBrush, QUndoCommand
 
-from .  import Element, KeyPoint, PenSpec, BrushSpec, Grip, cmdPlaceElement
+from .  import Element, KeyPoint, PenSpec, BrushSpec, Grip, \
+               cmdPlaceElement, cmdResizeElement
 
 from ... import hub
 
@@ -41,7 +42,8 @@ class BaseRectangle(QGraphicsRectItem, Element):
     ) -> None:
         QGraphicsRectItem.__init__(self)
         Element.__init__(self, pen_spec, brush_spec, False)
-        self.grips = {p: Grip(self, p) for p in KeyPoint if p != KeyPoint.CENTER}
+        self.grips = \
+            {p: Grip(self, p) for p in KeyPoint if p != KeyPoint.CENTER}
         self.anchor = anchor
         if isinstance(size_or_p2, QSizeF):
             self.setPosSize(pos, size_or_p2)
@@ -120,7 +122,7 @@ class BaseRectangle(QGraphicsRectItem, Element):
         for grip in self.grips.values():
             grip.setZValue(self.zValue() + Grip.Z_DELTA)
 
-    def gripResize(self : Self, kp : KeyPoint, delta : QPointF) -> None:
+    def moveKeyPoint(self : Self, kp : KeyPoint, delta : QPointF) -> None:
         p1, p2 = self.getPoints()
         d = delta
         match kp:
@@ -190,6 +192,7 @@ class BaseRectangle(QGraphicsRectItem, Element):
         return super().itemChange(change, value)
 
 class cmdPlaceBaseRectangle(cmdPlaceElement):
+    element    : BaseRectangle
     pos        : QPointF
     size_or_p2 : QSizeF | QPointF
     anchor     : KeyPoint
@@ -226,3 +229,6 @@ class cmdPlaceBaseRectangle(cmdPlaceElement):
         super().redo()
         self.element.setAnchor(self.anchor)
         self.element.setPosSizeOrP2(self.pos, self.size_or_p2)
+
+class cmdResizeBaseRectangle(cmdResizeElement):
+    element : BaseRectangle

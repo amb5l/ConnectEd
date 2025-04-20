@@ -155,7 +155,7 @@ class DrawingApiMouseMixin:
                     )
                 self.prev_pos = pos
             case self.State.EditResize2:
-                self.grip.parentItem().gripResize(
+                self.grip.parentItem().moveKeyPoint(
                     self.grip.key_point,
                     self._snap(self.mouse.current.logical) - self.prev_pos
                 )
