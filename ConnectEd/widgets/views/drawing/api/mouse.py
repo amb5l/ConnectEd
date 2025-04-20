@@ -99,7 +99,7 @@ class DrawingApiMouseMixin:
                 else:
                     self.grip = None
                 if self.grip: # we've hit a grip
-                    self.prev_pos = self.grip.parentPos()
+                    self.prev_pos = self.grip.scenePos()
                     self._goState(self.State.EditResize2)
                 else:
                     if not (m & (qkm.ControlModifier | qkm.ShiftModifier)):

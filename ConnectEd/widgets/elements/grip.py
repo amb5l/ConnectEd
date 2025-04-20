@@ -12,10 +12,9 @@ if TYPE_CHECKING:
 
 
 class Grip(QGraphicsItem):
-    Z_DELTA = 1
+    Z_DELTA = 1 # TODO: use it or lose it
 
     key_point : 'KeyPoint'
-    prev_pos  : QPointF
 
     def __init__(
         self      : Self,
@@ -27,10 +26,6 @@ class Grip(QGraphicsItem):
         self.setFlag( f.ItemIsMovable              , True )
         self.setFlag( f.ItemSendsGeometryChanges   , True )
         self.key_point = key_point
-        self.prev_pos  = self.pos()
-
-    def parentPos(self : Self) -> QPointF:
-        return self.parentItem().pos() + self.pos()
 
     def boundingRect(self : Self) -> QRectF:
         size = hub.settings.prefs.display.elements.selected.grip.size
