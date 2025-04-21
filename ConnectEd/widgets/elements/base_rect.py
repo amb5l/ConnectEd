@@ -6,8 +6,7 @@ from PyQt6.QtCore import Qt, QPointF, QRectF, QSizeF
 from PyQt6.QtWidgets import QGraphicsRectItem, QStyleOptionGraphicsItem, QWidget
 from PyQt6.QtGui import QPainter, QPainterPath, QPen, QBrush, QUndoCommand
 
-from .  import Element, KeyPoint, PenSpec, BrushSpec, Grip, \
-               cmdPlaceElement, cmdMoveGrip
+from . import Element, KeyPoint, PenSpec, BrushSpec, Grip, cmdPlaceElement
 
 from ... import hub
 

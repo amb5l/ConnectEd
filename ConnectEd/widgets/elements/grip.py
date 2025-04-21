@@ -23,8 +23,8 @@ class Grip(QGraphicsItem):
     ) -> None:
         super().__init__(parent)
         f = QGraphicsItem.GraphicsItemFlag
-        self.setFlag( f.ItemIsMovable              , True )
-        self.setFlag( f.ItemSendsGeometryChanges   , True )
+        self.setFlag( f.ItemIsMovable            , True )
+        self.setFlag( f.ItemSendsGeometryChanges , True )
         self.key_point = key_point
 
     def boundingRect(self : Self) -> QRectF:
