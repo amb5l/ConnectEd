@@ -352,6 +352,9 @@ class cmdMove(cmdElements):
         for element in self.elements:
             element.moveBy(-self.delta.x(), -self.delta.y())
 
+class cmdSlide(cmdMove):
+    pass
+
 class cmdResize(cmdElement):
     delta   : QPointF
 
