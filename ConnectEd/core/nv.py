@@ -23,133 +23,147 @@ from .utils import getDefaultPath, val2str, str2val, MinMax
 
 
 FACTORY_SETTINGS = {
-    "startup": {
-        "geometry": ""
+    "startup" : {
+        "geometry" : ""
     },
-    "prefs": {
-        "file": {
-            "new": {
+    "prefs" : {
+        "file" : {
+            "new" : {
                 "sheet"  : "A4",
                 "margin" : 10
             },
-            "open": {
-                "dir": getDefaultPath()
+            "open" : {
+                "dir" : getDefaultPath()
             },
-            "save": {
-                "dir": getDefaultPath()
+            "save" : {
+                "dir" : getDefaultPath()
             }
         },
-        "display": {
-            "theme": "dark",
-            "elements": {
-                "rectangle": {
-                    "line": {
-                        "width": 1,
-                        "style": Qt.PenStyle.SolidLine
+        "display" : {
+            "theme" : "dark",
+            "elements" : {
+                "rectangle" : {
+                    "line" : {
+                        "width" : 1,
+                        "style" : Qt.PenStyle.SolidLine
                     },
-                    "fill": Qt.BrushStyle.SolidPattern
+                    "fill" : Qt.BrushStyle.SolidPattern
                 },
-                "selected": {
-                    "line": {
-                        "width": 1,
-                        "style": Qt.PenStyle.DotLine
-                    },
-                    "fill": Qt.BrushStyle.DiagCrossPattern,
-                    "grip": {
-                        "size": 4
+                "text" : {
+                    "font" : {
+                        "family"    : "Arial",
+                        "size"      : 12,
+                        "weight"    : 400,
+                        "italic"    : False,
+                        "underline" : False
                     }
                 },
-                "wip": {
-                    "line": {
-                        "width": 0,
-                        "style": Qt.PenStyle.DashLine
+                "selected" : {
+                    "line" : {
+                        "width" : 1,
+                        "style" : Qt.PenStyle.DotLine
                     },
-                    "fill": Qt.BrushStyle.NoBrush
+                    "fill" : Qt.BrushStyle.DiagCrossPattern,
+                    "grip" : {
+                        "size" : 4
+                    }
                 },
-                "alpha": 192
+                "wip" : {
+                    "line" : {
+                        "width" : 0,
+                        "style" : Qt.PenStyle.DashLine
+                    },
+                    "fill" : Qt.BrushStyle.NoBrush
+                },
+                "alpha" : 192
             },
-            "zoom": {
+            "zoom" : {
                 "padding" : 0.1,
-                "step"  : 0.25,
-                "limit" : MinMax(0.01, 100.0)
+                "step"    : 0.25,
+                "limit"   : MinMax(0.01, 100.0)
             },
-            "pan": {
+            "pan" : {
                 "step" : 0.1
             },
         },
-        "mouse": {
+        "mouse" : {
             "drag"  : 5,
             "wheel" : 120
         }
     },
-    "themes": {
-        "dark": {
-            "background": {
+    "themes" : {
+        "dark" : {
+            "background" : {
                 "fill" : QColor(   0,   0,   0 )
             },
-            "paper": {
+            "paper" : {
                 "fill" : QColor(  32,  32,  32 )
             },
-            "border": {
+            "border" : {
                 "line" : QColor( 128, 128, 128 )
             },
-            "rectangle": {
+            "rectangle" : {
                 "line" : QColor( 192, 120,   0 ), # light orange
                 "fill" : QColor(  96, 100,   0 )  # dark orange
             },
-            "wip": {
+            "text" : {
+                "text" : QColor( 255, 255, 255 )
+            },
+            "wip" : {
                 "line" : QColor(   0, 255,   0 ), # bright green
-                "fill" : QColor(   0, 128,   0 )  # medium green
+                "fill" : QColor(   0, 128,   0 ), # medium green
+                "text" : QColor(   0, 255,   0 )  # bright green
             },
-            "selected": {
+            "selected" : {
                 "line" : QColor( 255,   0, 255 ), # bright magenta
-                "fill" : QColor( 255,   0, 255 )  # bright magenta
+                "fill" : QColor( 255,   0, 255 ), # bright magenta
+                "text" : QColor( 255,   0, 255 )  # bright magenta
             },
-            "grip": {
+            "grip" : {
                 "line" : QColor( 255,   0, 255 ), # bright magenta
                 "fill" : QColor( 255,   0,   0 )  # bright red
 
             },
-            "anchor": {
+            "anchor" : {
                 "line" : QColor( 255,   0, 255 ), # bright magenta
                 "fill" : QColor( 255, 255, 128 )  # bright yellow
             },
-            "grid": {
+            "grid" : {
                 "line" : QColor(  64,  64,  64 )
             }
         },
-        "light": {
-            "background": {
+        "light" : {
+            "background" : {
                 "fill" : QColor(  16,  16,  16 )
             },
-            "paper": {
+            "paper" : {
                 "fill" : QColor( 240, 240, 240 )
             },
-            "border": {
+            "border" : {
                 "line" : QColor( 128, 128, 128 )
             },
-            "rectangle": {
+            "rectangle" : {
                 "line" : QColor( 192, 120,   0 ), # light orange
                 "fill" : QColor(  96, 100,   0 )  # dark orange
             },
-            "wip": {
+            "wip" : {
                 "line" : QColor(   0, 255,   0 ), # bright green
                 "fill" : QColor(   0, 128,   0 )  # medium green
             },
-            "selected": {
+            "selected" : {
                 "line" : QColor( 255,   0, 255 ), # bright magenta
                 "fill" : QColor( 128,   0, 128 )  # medium magenta
             },
-            "grip": {
+            "grip" : {
                 "line" : QColor( 255,   0, 255 ), # bright magenta
                 "fill" : QColor( 255, 255, 128 )  # bright yellow
             },
-            "grid": {
+            "grid" : {
                 "line" : QColor(  64,  64,  64 )
             }
         }
     },
-    "paper_sizes": {
+    "paper_sizes" : {
         "A4" : QSizeF( 1169.0 ,  827.0 ),
         "A3" : QSizeF( 1654.0 , 1169.0 ),
         "A2" : QSizeF( 2338.0 , 1654.0 ),
@@ -161,12 +175,12 @@ FACTORY_SETTINGS = {
         "D"  : QSizeF( 3220.0 , 2020.0 ),
         "E"  : QSizeF( 4220.0 , 3220.0 )
     },
-    "defaults": { # TODO move these to session settings
+    "defaults" : { # TODO move these to session settings
         "extents"    : QSizeF(100, 100),
         "paper_size" : "A4",
         "margin"     : 10,
         "border"     : 1,
-        "grid": {
+        "grid" : {
             "display"    : True,
             "snap"       : True,
             "pitch"      : QPointF(10.0, 10.0),
