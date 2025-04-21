@@ -15,3 +15,5 @@ def initFonts() -> None:
                 font_id = QFontDatabase.addApplicationFont(font_path)
                 if font_id < 0:
                     logger.error(f"Error loading font: {font_path}")
+                else:
+                    logger.info(f"Loaded font: {font_path}")

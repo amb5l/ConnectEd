@@ -51,7 +51,7 @@ FACTORY_SETTINGS = {
                 },
                 "text" : {
                     "font" : {
-                        "family"    : "Arial",
+                        "family"    : "Liberation Sans",
                         "size"      : 12,
                         "weight"    : 400,
                         "italic"    : False,
