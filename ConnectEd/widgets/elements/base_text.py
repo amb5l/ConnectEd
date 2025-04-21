@@ -1,12 +1,16 @@
 __all__ = ["BaseText"]
 
-from typing import Self
+from typing import Self, Optional
 
-from PyQt6.QtCore import Qt, QPointF, QRectF
+from PyQt6.QtCore    import Qt, QPointF, QRectF, QSizeF
 from PyQt6.QtWidgets import QGraphicsTextItem, QStyleOptionGraphicsItem, QWidget
-from PyQt6.QtGui import QPainter, QPainterPath
+from PyQt6.QtGui     import QPainter, QPainterPath, QUndoCommand
 
-from . import Element, KeyPoint, PenSpec, BrushSpec, TextSpec
+from . import Element, KeyPoint, PenSpec, BrushSpec, TextSpec, cmdPlaceElement
+
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from .. import DrawingScene
 
 
 class BaseText(QGraphicsTextItem, Element):
@@ -24,7 +28,7 @@ class BaseText(QGraphicsTextItem, Element):
 
     def __init__(
         self       : Self,
-        text       : str = "",
+        text       : str = "<BaseText:unspecified text>",
         pos        : QPointF = QPointF(0, 0),
         anchor     : KeyPoint = KeyPoint.TOP_LEFT,
         pen_spec   : bool | PenSpec   = False,
@@ -60,12 +64,50 @@ class BaseText(QGraphicsTextItem, Element):
         option  : QStyleOptionGraphicsItem,
         widget  : QWidget
     ) -> None:
-        self.fontFromSpec()
-        self.setFont(self.font)
-        rect = self.anchoredBoundingRect()
+        pen = self.penFromTextSpec()
+        painter.setPen(pen)
+        self.setFont(self.fontFromSpec())
+        rect = self.boundingRect()
         painter.translate(rect.topLeft())
         painter.drawText(
             rect,
             Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop,
             self.toPlainText()
         )
+
+class cmdPlaceBaseText(cmdPlaceElement):
+    element    : BaseText
+    text       : str
+    pos        : QPointF
+    anchor     : KeyPoint
+
+    def __init__(
+        self       : Self,
+        scene      : Optional["DrawingScene"] = None,
+        element    : Optional[BaseText] = None,
+        text       : str = "<unspecified text>",
+        pos        : QPointF = QPointF(0, 0),
+        anchor     : KeyPoint = KeyPoint.TOP_LEFT,
+        wip        : bool = False
+    ):
+        super().__init__(scene, element, False, False, True, wip)
+        self.text   = text
+        self.pos    = pos
+        self.anchor = anchor
+        self.element.setAnchor(self.anchor)
+        self.element.setPos(self.pos)
+
+    def mergeWith(self : Self, other: QUndoCommand) -> bool:
+        if not super().mergeWith(other):
+            return False
+        self.pos        = other.pos
+        self.anchor     = other.anchor
+        self.element.setAnchor(self.anchor)
+        self.element.setPos(self.pos)
+        return True
+
+    def redo(self : Self):
+        super().redo()
+        self.element.setAnchor(self.anchor)
+        self.element.setPos(self.pos)
+        print("cmdPlaceBaseText.redo")

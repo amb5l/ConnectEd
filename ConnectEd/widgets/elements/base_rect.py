@@ -170,7 +170,7 @@ class BaseRectangle(QGraphicsRectItem, Element):
         option  : QStyleOptionGraphicsItem,
         widget  : QWidget
     ) -> None:
-        pen = self.penFromSpec()
+        pen = self.penFromLineSpec()
         painter.setPen(pen)
         brush = self.brushFromSpec()
         painter.setBrush(brush)

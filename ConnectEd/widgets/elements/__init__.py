@@ -78,6 +78,26 @@ class Element(QGraphicsItem):
         return False if self.scene() is None else \
             self in self.scene().wip
 
+    def getPrefs(self : Self) -> SimpleNamespace:
+        element_name = self.__class__.__name__.lower()
+        if self.isSelected():
+            prefs = hub.settings.prefs.display.elements.selected
+        elif self.getWIP():
+            prefs = hub.settings.prefs.display.elements.wip
+        else:
+            prefs = getattr(hub.settings.prefs.display.elements, element_name)
+        return prefs
+
+    def getTheme(self : Self) -> SimpleNamespace:
+        element_name = self.__class__.__name__.lower()
+        if self.isSelected():
+            theme = hub.settings.theme.selected
+        elif self.getWIP():
+            theme = hub.settings.theme.wip
+        else:
+            theme = getattr(hub.settings.theme, element_name)
+        return theme
+
     def getPrefsTheme(self : Self) -> SimpleNamespace:
         element_name = self.__class__.__name__.lower()
         if self.isSelected():
@@ -100,7 +120,7 @@ class Element(QGraphicsItem):
     def getPenSpec(self : Self) -> PenSpec:
         return self.pen_spec
 
-    def penFromSpec(self : Self) -> QPen:
+    def penFromLineSpec(self : Self) -> QPen:
         if not hasattr(self, "pen_spec"):
             return QPen(Qt.PenStyle.NoPen)
         prefs, theme = self.getPrefsTheme()
@@ -111,10 +131,19 @@ class Element(QGraphicsItem):
         style = prefs.line.style if s.style is None else s.style
         return QPen(color, width, style)
 
+    def penFromTextSpec(self : Self) -> QPen:
+        if not hasattr(self, "text_spec"):
+            return QPen(Qt.PenStyle.NoPen)
+        theme = self.getTheme()
+        s = self.text_spec
+        color = theme.text if s.color is None else s.color
+        color.setAlpha(hub.settings.prefs.display.elements.alpha)
+        return QPen(color, 0, Qt.PenStyle.SolidLine)
+
     def penWidth(self : Self) -> float:
         if not hasattr(self, "pen_spec"):
             return 0
-        prefs, _ = self.getPrefsTheme()
+        prefs = self.getPrefs()
         s = self.pen_spec
         return prefs.line.width if s.width is None else s.width
 
@@ -151,27 +180,28 @@ class Element(QGraphicsItem):
             return None
         item_name = self.__class__.__name__.lower()
         prefs = getattr(hub.settings.prefs.display.elements, item_name).font
-        theme = getattr(hub.settings.theme, item_name).font
-        self.setDefaultTextColor(
-            theme.color if self.text_spec.color is None else
-                self.text_spec.color
-        )
-        self.font.setFamily(
+        font = QFont()
+        font.setFamily(
             prefs.family if self.text_spec.family is None else
                 self.text_spec.family
         )
-        self.font.setPointSizeF(
+        font.setPointSizeF(
             prefs.size if self.text_spec.size is None else
                 self.text_spec.size
         )
-        self.font.setWeight(
+        font.setWeight(
             prefs.weight if self.text_spec.weight is None else
                 self.text_spec.weight
         )
-        self.font.setItalic(
+        font.setItalic(
             prefs.italic if self.text_spec.italic is None else
                 self.text_spec.italic
         )
+        font.setUnderline(
+            prefs.underline if self.text_spec.underline is None else
+                self.text_spec.underline
+        )
+        return font
 
     def toXml(self : Self, xw : QXmlStreamWriter) -> None:
         xw.writeStartElement(self.__class__.__name__)
@@ -212,13 +242,9 @@ class cmdElement(QUndoCommand):
         element : Optional[Element] = None,
         wip     : bool = False
     ):
-        cls_name = self.__class__.__name__
-        text = camel_to_proper(cls_name.replace("cmd", ""))
+        text = camel_to_proper(self.__class__.__name__.replace("cmd", ""))
         super().__init__(text)
         self.scene = scene
-        if element is None:
-            element_class_name = cls_name.replace("cmdPlace", "")
-            element = globals()[element_class_name]()
         self.element = element
         self.element.setFlag(
             QGraphicsItem.GraphicsItemFlag.ItemIsSelectable, not wip
@@ -256,8 +282,7 @@ class cmdElements(cmdElement):
         scene    : "DrawingScene",
         elements : list[Element]
     ):
-        cls_name = self.__class__.__name__
-        text = camel_to_proper(cls_name.replace("cmd", ""))
+        text = camel_to_proper(self.__class__.__name__.replace("cmd", ""))
         QUndoCommand.__init__(self, text)
         self.scene = scene
         self.elements = elements
@@ -291,6 +316,9 @@ class cmdPlaceElement(cmdElement):
         text_spec  : bool | TextSpec  = True,
         wip        : bool = False
     ):
+        if element is None:
+            element_class_name = self.__class__.__name__.replace("cmdPlace", "")
+            element = globals()[element_class_name]()
         super().__init__(scene, element)
         self.pen_spec   = pen_spec
         self.brush_spec = brush_spec
@@ -387,6 +415,8 @@ from .grip import Grip
 __all__ += ["Grip"]
 from .rectangle import Rectangle, cmdPlaceRectangle
 __all__ += rectangle.__all__
+from .text import Text, cmdPlaceText
+__all__ += text.__all__
 from .symbol_instance import SymbolInstance
 __all__ += symbol_instance.__all__
 from .block import Block

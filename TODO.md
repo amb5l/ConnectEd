@@ -1,3 +1,4 @@
+- consolidate mouse event handling
 - Liberation fonts
 - undo/redo move
 - remove unused methods
@@ -11,8 +12,6 @@
   - allow paste of designs, libraries when clicking in free space
   - allow paste of diagrams into designs
 - explorer: modified indicator, full path tooltip
-- QUndoCommand
-- consolidate mouse event handling
 - autosave
 - Window menu: check active window
 - new widgets:

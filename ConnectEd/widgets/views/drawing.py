@@ -17,7 +17,8 @@ from ..scenes  import DrawingScene
 from ..marquee import Marquee
 
 from ..elements import Element, Grip, cmdSlide, cmdMove, cmdResize, \
-                       Rectangle, cmdPlaceRectangle
+                       Rectangle, cmdPlaceRectangle, \
+                       Text, cmdPlaceText
 
 from ... import hub
 
@@ -115,6 +116,8 @@ class DrawingViewState(Enum):
     EditResize2     = auto()
     PlaceRectangle1 = auto()
     PlaceRectangle2 = auto()
+    PlaceText1      = auto()
+    PlaceText2      = auto()
 
 DrawingViewStateTip = {
     DrawingViewState.Idle            : "Idle",
@@ -130,7 +133,9 @@ DrawingViewStateTip = {
     DrawingViewState.EditResize1     : "EditResize1",
     DrawingViewState.EditResize2     : "EditResize2",
     DrawingViewState.PlaceRectangle1 : "PlaceRectangle1",
-    DrawingViewState.PlaceRectangle2 : "PlaceRectangle2"
+    DrawingViewState.PlaceRectangle2 : "PlaceRectangle2",
+    DrawingViewState.PlaceText1      : "PlaceText1",
+    DrawingViewState.PlaceText2      : "PlaceText2"
 }
 
 class DrawingViewWip:
@@ -439,6 +444,14 @@ class DrawingView(QGraphicsView):
                 self.placeRectangleComplete(
                     self._snap(self.mouse.left.release.logical)
                 )
+            case self.State.PlaceText1:
+                self.placeTextBegin(
+                    self._snap(self.mouse.left.release.logical)
+                )
+            case self.State.PlaceText2:
+                self.placeTextComplete(
+                    self._snap(self.mouse.left.release.logical)
+                )
 
     def mouseLeftDragBegin(self : Self) -> None:
         match self.state:
@@ -661,7 +674,6 @@ class DrawingView(QGraphicsView):
     def editSlide(self : Self) -> None:
         if self.scene().selectedItems():
             pos = self._snap(self._selectedItemsRect().center())
-            print(f"pos: {pos}")
             self.slideBegin(self.scene().selectedItems(), pos)
         else:
             self._goState(self.State.EditSlide1)
@@ -669,7 +681,6 @@ class DrawingView(QGraphicsView):
     def editMove(self : Self) -> None:
         if self.scene().selectedItems():
             pos = self._snap(self._selectedItemsRect().center())
-            print(f"pos: {pos}")
             self.moveBegin(self.scene().selectedItems(), pos)
         else:
             self._goState(self.State.EditMove1)
@@ -739,14 +750,14 @@ class DrawingView(QGraphicsView):
         # TODO get default anchor and pen/brush/text spec from settings
         self.scene().undo_stack.push(cmdPlaceRectangle(
             scene      = self.scene(),
-            element    = self.wip.elements,
+            element    = self.wip.elements[0],
             pos        = self.wip.pos0,
             size_or_p2 = size_or_p2,
             wip        = wip
         ))
 
     def placeRectangleBegin(self : Self, pos: QPointF) -> None:
-        self.wip.elements = Rectangle()
+        self.wip.elements = [Rectangle()]
         self.wip.pos0 = pos
         self.placeRectangleCmd(QSizeF(1,1), True)
         self._goState(self.State.PlaceRectangle2)
@@ -756,6 +767,29 @@ class DrawingView(QGraphicsView):
 
     def placeRectangleComplete(self : Self, pos: QPointF) -> None:
         self.placeRectangleCmd(pos, False)
+        self.wip.clear()
+        self._goState(self.State.Idle)
+
+    def placeText(self : Self) -> None:
+        self._goState(self.State.PlaceText1)
+
+    def placeTextCmd(self : Self, wip : bool) -> None:
+        self.scene().undo_stack.push(cmdPlaceText(
+            scene   = self.scene(),
+            element = self.wip.elements[0],
+            pos     = self.wip.pos0,
+            text    = "<enter text here>", # TODO move this to settings?
+            wip     = wip
+        ))
+
+    def placeTextBegin(self : Self, pos : QPointF) -> None:
+        self.wip.elements = [Text()]
+        self.wip.pos0 = pos
+        self.placeTextCmd(True)
+        self._goState(self.State.PlaceText2)
+
+    def placeTextComplete(self : Self, pos : QPointF) -> None:
+        self.placeTextCmd(False)
         self.wip.clear()
         self._goState(self.State.Idle)
 
