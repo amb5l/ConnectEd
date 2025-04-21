@@ -207,10 +207,10 @@ class cmdElement(QUndoCommand):
     element : Element
 
     def __init__(
-        self       : Self,
-        scene      : 'DrawingScene',
-        element    : Optional[Element] = None,
-        wip        : bool = False
+        self    : Self,
+        scene   : 'DrawingScene',
+        element : Optional[Element] = None,
+        wip     : bool = False
     ):
         cls_name = self.__class__.__name__
         text = camel_to_proper(cls_name.replace('cmd', ''))
