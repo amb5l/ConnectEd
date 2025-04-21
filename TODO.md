@@ -1,4 +1,5 @@
-- track down "
+- Liberation fonts
+- undo/redo move
 - remove unused methods
 - sort out WIP
 - explorer: multi item copy/paste

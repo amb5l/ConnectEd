@@ -225,10 +225,10 @@ class cmdElement(QUndoCommand):
         )
 
     def id(self : Self) -> int:
-            """Return a unique ID for merging commands."""
-            element_id = id(self.element) & 0x7FFFFFFF
-            class_id = hash(self.__class__.__name__) & 0x7FFFFFFF
-            return ((element_id + class_id) & 0x7FFFFFFF)
+        """Return a unique ID for merging commands."""
+        element_id = id(self.element) & 0x7FFFFFFF
+        class_id = hash(self.__class__.__name__) & 0x7FFFFFFF
+        return ((element_id + class_id) & 0x7FFFFFFF)
 
     def mergeWith(self : Self, other : QUndoCommand) -> bool:
         """Merge this command with another identical command."""
@@ -247,6 +247,34 @@ class cmdElement(QUndoCommand):
         raise NotImplementedError(
             f"{self.__class__.__name__} must implement undo"
         )
+
+class cmdElements(cmdElement):
+    elements : list[Element]
+
+    def __init__(
+        self     : Self,
+        scene    : "DrawingScene",
+        elements : list[Element]
+    ):
+        cls_name = self.__class__.__name__
+        text = camel_to_proper(cls_name.replace("cmd", ""))
+        QUndoCommand.__init__(self, text)
+        self.scene = scene
+        self.elements = elements
+
+    def id(self : Self) -> int:
+        """Return a unique ID for merging commands."""
+        element_ids = [id(element) & 0x7FFFFFFF for element in self.elements]
+        class_id = hash(self.__class__.__name__) & 0x7FFFFFFF
+        return ((sum(element_ids) + class_id) & 0x7FFFFFFF)
+
+    def mergeWith(self : Self, other : QUndoCommand) -> bool:
+        """Merge this command with another identical command."""
+        if not isinstance(other, self.__class__) \
+        or other.scene != self.scene \
+        or other.elements != self.elements:
+            return False
+        return True
 
 class cmdPlaceElement(cmdElement):
     wip        : bool
@@ -298,14 +326,40 @@ class cmdPlaceElement(cmdElement):
         self.scene.removeItem(self.element)
         self.scene.wip = []
 
-class cmdMoveGrip(cmdElement):
+class cmdMove(cmdElements):
     delta   : QPointF
 
     def __init__(
-        self       : Self,
-        scene      : "DrawingScene",
-        element    : Element,        # grip
-        delta      : QPointF
+        self     : Self,
+        scene    : "DrawingScene",
+        elements : list[Element],
+        delta    : QPointF
+    ):
+        super().__init__(scene, elements)
+        self.delta = delta
+
+    def mergeWith(self : Self, other : QUndoCommand) -> bool:
+        if not super().mergeWith(other):
+            return False
+        self.delta += other.delta
+        return True
+
+    def redo(self : Self):
+        for element in self.elements:
+            element.moveBy(self.delta.x(), self.delta.y())
+
+    def undo(self : Self):
+        for element in self.elements:
+            element.moveBy(-self.delta.x(), -self.delta.y())
+
+class cmdResize(cmdElement):
+    delta   : QPointF
+
+    def __init__(
+        self    : Self,
+        scene   : "DrawingScene",
+        element : Element,
+        delta   : QPointF
     ):
         super().__init__(scene, element)
         self.delta = delta
@@ -317,10 +371,12 @@ class cmdMoveGrip(cmdElement):
         return True
 
     def redo(self : Self):
-        self.element.parentItem().moveKeyPoint(self.element.key_point, self.delta)
+        parent : Element = self.element.parentItem()
+        parent.moveKeyPoint(self.element.key_point, self.delta)
 
     def undo(self : Self):
-        self.element.parentItem().moveKeyPoint(self.element.key_point, -self.delta)
+        parent : Element = self.element.parentItem()
+        parent.moveKeyPoint(self.element.key_point, -self.delta)
 
 __all__ = []
 
