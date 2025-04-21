@@ -27,15 +27,17 @@ class DrawingViewLayer(Enum):
     Drawing = LAYER_DRAWING
 
 class DrawingViewGrid:
-    pitch      : QPointF
+    display    : bool
     snap       : bool
+    pitch      : QPointF
     dots       : bool
     alpha      : int
     min_pixels : int
 
     def __init__(self : Self) -> None:
-        self.pitch      = hub.settings.defaults.grid.pitch
+        self.display    = hub.settings.defaults.grid.display
         self.snap       = hub.settings.defaults.grid.snap
+        self.pitch      = hub.settings.defaults.grid.pitch
         self.dots       = hub.settings.defaults.grid.dots
         self.alpha      = hub.settings.defaults.grid.alpha
         self.min_pixels = hub.settings.defaults.grid.min_pixels
@@ -215,44 +217,45 @@ class DrawingView(QGraphicsView):
         # draw grid
         def align(x : float, px : float) -> float:
             return px * int(x / px)
-        pp = self.transform().map(self.grid.pitch)
-        px = self.grid.pitch.x()
-        if pp.x() < self.grid.min_pixels:
-            px *= ceil(self.grid.min_pixels / pp.x())
-        py = self.grid.pitch.y()
-        if pp.y() < self.grid.min_pixels:
-            py *= ceil(self.grid.min_pixels / pp.y())
-        grect = QRectF(
-            QPointF(rect.topLeft())     - QPointF(px, py),
-            QPointF(rect.bottomRight()) + QPointF(px, py)
-        ).toRect()
-        color = hub.settings.theme.grid.line
-        color.setAlpha(self.grid.alpha)
-        painter.setPen(QPen(color, 0, Qt.PenStyle.SolidLine))
-        painter.setBrush(Qt.BrushStyle.NoBrush)
-        if self.grid.dots:
-            x = align(grect.left(), px)
-            while x <= grect.right():
+        if self.grid.display:
+            pp = self.transform().map(self.grid.pitch)
+            px = self.grid.pitch.x()
+            if pp.x() < self.grid.min_pixels:
+                px *= ceil(self.grid.min_pixels / pp.x())
+            py = self.grid.pitch.y()
+            if pp.y() < self.grid.min_pixels:
+                py *= ceil(self.grid.min_pixels / pp.y())
+            grect = QRectF(
+                QPointF(rect.topLeft())     - QPointF(px, py),
+                QPointF(rect.bottomRight()) + QPointF(px, py)
+            ).toRect()
+            color = hub.settings.theme.grid.line
+            color.setAlpha(self.grid.alpha)
+            painter.setPen(QPen(color, 0, Qt.PenStyle.SolidLine))
+            painter.setBrush(Qt.BrushStyle.NoBrush)
+            if self.grid.dots:
+                x = align(grect.left(), px)
+                while x <= grect.right():
+                    y = align(grect.top(), py)
+                    while y <= grect.bottom():
+                        painter.drawPoint(QPointF(x, y))
+                        y += py
+                    x += px
+            else:
+                x = align(grect.left(), px)
+                while x <= grect.right():
+                    painter.drawLine(
+                        QPointF(x, grect.top()),
+                        QPointF(x, grect.bottom())
+                    )
+                    x += px
                 y = align(grect.top(), py)
                 while y <= grect.bottom():
-                    painter.drawPoint(QPointF(x, y))
+                    painter.drawLine(
+                        QPointF(grect.left(), y),
+                        QPointF(grect.right(), y)
+                    )
                     y += py
-                x += px
-        else:
-            x = align(grect.left(), px)
-            while x <= grect.right():
-                painter.drawLine(
-                    QPointF(x, grect.top()),
-                    QPointF(x, grect.bottom())
-                )
-                x += px
-            y = align(grect.top(), py)
-            while y <= grect.bottom():
-                painter.drawLine(
-                    QPointF(grect.left(), y),
-                    QPointF(grect.right(), y)
-                )
-                y += py
 
     ############################################################################
     # mouse events
@@ -712,7 +715,8 @@ class DrawingView(QGraphicsView):
         pass
 
     def viewGridDisplay(self : Self, checked : bool) -> None:
-        self.grid.setVisible(checked)
+        self.grid.display = checked
+        self.viewport().update()
 
     def viewGridSnap(self : Self, checked : bool) -> None:
         self.grid.snap = checked
