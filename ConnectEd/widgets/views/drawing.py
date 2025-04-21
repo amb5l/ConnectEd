@@ -16,10 +16,7 @@ from ...core import logger, LAYER_SHEET, LAYER_DRAWING
 from ..scenes  import DrawingScene
 from ..marquee import Marquee
 
-from ..elements import \
-    Grip, \
-    Rectangle, cmdPlaceRectangle, \
-    cmdMoveGrip
+from ..elements import Grip, Rectangle, cmdPlaceRectangle, cmdMoveGrip
 
 from ... import hub
 
@@ -134,6 +131,7 @@ DrawingViewStateTip = {
 }
 
 class DrawingViewWip:
+    macro   : bool
     element : Optional[QGraphicsItem]
     pos0    : Optional[QPointF | QPoint]
 
@@ -141,6 +139,7 @@ class DrawingViewWip:
         self.clear()
 
     def clear(self : Self) -> None:
+        self.macro   = False
         self.element = None
         self.pos0    = None
 
@@ -393,7 +392,7 @@ class DrawingView(QGraphicsView):
                 self.verticalScrollBar().setValue(
                     self.verticalScrollBar().value() - delta.y()
                 )
-                self.wip.pos0 = None
+                self.wip.clear()
                 self.setCursor(Qt.CursorShape.ArrowCursor)
                 self._goState(self.State.Idle)
             case self.State.ViewZoomWindow1:
@@ -595,7 +594,7 @@ class DrawingView(QGraphicsView):
                 delta = self.mouse.current.physical - self.wip.pos0
                 self.horizontalScrollBar().setValue(self.horizontalScrollBar().value() - delta.x())
                 self.verticalScrollBar().setValue(self.verticalScrollBar().value() - delta.y())
-                self.wip.pos0 = None
+                self.wip.clear()
                 self.setCursor(Qt.CursorShape.ArrowCursor)
             case self.State.ViewZoomWindow2:
                 self.marquee.end(self.mouse.middle.release.physical)
@@ -656,7 +655,11 @@ class DrawingView(QGraphicsView):
         self.scene().undo_stack.redo()
 
     def editCancel(self : Self) -> None:
-        # TODO: pop command
+        scene : DrawingScene = self.scene()
+        if self.wip.macro:
+            scene.undo_stack.endMacro()
+        scene.undo_stack.undo()
+        self.wip.clear()
         self._goState(self.State.Idle)
 
     def editComplete(self : Self) -> None:
@@ -771,23 +774,27 @@ class DrawingView(QGraphicsView):
 
     def placeRectangleComplete(self : Self, pos: QPointF) -> None:
         self.placeRectangleCmd(pos, False)
-        self.wip.element = None
-        self.wip.pos0 = None
+        self.wip.clear()
         self._goState(self.State.Idle)
 
     ############################################################################
     # resize methods
 
     def resizeCmd(self  : Self, delta : QPointF) -> None:
-        self.scene().undo_stack.push(cmdMoveGrip(
+        scene : DrawingScene = self.scene()
+        scene.undo_stack.push(cmdMoveGrip(
             scene   = self.scene(),
             element = self.wip.element,
             delta   = delta
         ))
 
     def resizeBegin(self : Self, grip: Grip, pos: QPointF) -> None:
+        self.wip.macro = True
         self.wip.element = grip
         self.wip.pos0 = pos
+        scene : DrawingScene = self.scene()
+        scene.undo_stack.beginMacro('Resize')
+
         self.resizeCmd(pos - grip.scenePos())
         self._goState(self.State.EditResize2)
 
@@ -797,8 +804,9 @@ class DrawingView(QGraphicsView):
 
     def resizeComplete(self : Self, pos: QPointF) -> None:
         self.resizeCmd(pos - self.wip.pos0)
-        self.wip.element = None
-        self.wip.pos0    = None
+        self.wip.clear()
+        scene : DrawingScene = self.scene()
+        scene.undo_stack.endMacro()
         self._goState(self.State.Idle)
 
     ############################################################################
