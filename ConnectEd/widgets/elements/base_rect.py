@@ -139,7 +139,7 @@ class BaseRectangle(QGraphicsRectItem, Element):
             case KeyPoint.BOTTOM_LEFT:
                 self.setPoints(p1.x() + d.x(), p1.y(), p2.x(), p2.y() + d.y())
             case KeyPoint.BOTTOM_CENTER:
-                self.setPoints(p1.x(), p1.y() + d.y(), p2.x(), p2.y())
+                self.setPoints(p1.x(), p1.y(), p2.x(), p2.y() + d.y())
             case KeyPoint.BOTTOM_RIGHT:
                 self.setPoints(p1, p2 + d)
             case _:

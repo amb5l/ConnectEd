@@ -387,8 +387,12 @@ class DrawingView(QGraphicsView):
                 self._goState(self.State.ViewPan2)
             case self.State.ViewPan2:
                 delta = self.mouse.left.release.physical - self.wip.pos0
-                self.horizontalScrollBar().setValue(self.horizontalScrollBar().value() - delta.x())
-                self.verticalScrollBar().setValue(self.verticalScrollBar().value() - delta.y())
+                self.horizontalScrollBar().setValue(
+                    self.horizontalScrollBar().value() - delta.x()
+                )
+                self.verticalScrollBar().setValue(
+                    self.verticalScrollBar().value() - delta.y()
+                )
                 self.wip.pos0 = None
                 self.setCursor(Qt.CursorShape.ArrowCursor)
                 self._goState(self.State.Idle)
@@ -452,7 +456,9 @@ class DrawingView(QGraphicsView):
                 else:
                     self.grip = None
                 if self.grip: # we've hit a grip
-                    self.resizeBegin(self.grip, self.grip.scenePos())
+                    self.resizeBegin(
+                        self.grip, self._snap(self.mouse.left.press.logical)
+                    )
                 else:
                     if not (m & (qkm.ControlModifier | qkm.ShiftModifier)):
                         self.scene().clearSelection()
@@ -483,8 +489,12 @@ class DrawingView(QGraphicsView):
                 self.marquee.resize(self.mouse.current.physical)
             case self.State.ViewPan2:
                 delta = self.mouse.current.physical - self.wip.pos0
-                self.horizontalScrollBar().setValue(self.horizontalScrollBar().value() - delta.x())
-                self.verticalScrollBar().setValue(self.verticalScrollBar().value() - delta.y())
+                self.horizontalScrollBar().setValue(
+                    self.horizontalScrollBar().value() - delta.x()
+                )
+                self.verticalScrollBar().setValue(
+                    self.verticalScrollBar().value() - delta.y()
+                )
                 self.wip.pos0 = self.mouse.current.physical
             case self.State.ViewZoomWindow2:
                 self.marquee.resize(self.mouse.current.physical)
@@ -507,7 +517,7 @@ class DrawingView(QGraphicsView):
                     )
                 self.wip.pos0 = pos
             case self.State.EditResize2:
-                self.resizeContinue(self.mouse.current.logical)
+                self.resizeContinue(self._snap(self.mouse.current.logical))
             case self.State.PlaceRectangle2:
                 self.placeRectangleContinue(
                     self._snap(self.mouse.current.logical)
@@ -546,7 +556,7 @@ class DrawingView(QGraphicsView):
                     )
                 self._goState(self.State.Idle)
             case self.State.EditResize2:
-                self.resizeComplete(self.mouse.left.release.logical)
+                self.resizeComplete(self._snap(self.mouse.left.release.logical))
             case self.State.PlaceRectangle2:
                 self.placeRectangleComplete(
                     self._snap(self.mouse.left.release.logical)
@@ -777,12 +787,13 @@ class DrawingView(QGraphicsView):
 
     def resizeBegin(self : Self, grip: Grip, pos: QPointF) -> None:
         self.wip.element = grip
-        self.wip.pos0 = grip.scenePos()
-        self.resizeCmd(pos - self.wip.pos0)
+        self.wip.pos0 = pos
+        self.resizeCmd(pos - grip.scenePos())
         self._goState(self.State.EditResize2)
 
     def resizeContinue(self : Self, pos: QPointF) -> None:
         self.resizeCmd(pos - self.wip.pos0)
+        self.wip.pos0 = pos
 
     def resizeComplete(self : Self, pos: QPointF) -> None:
         self.resizeCmd(pos - self.wip.pos0)

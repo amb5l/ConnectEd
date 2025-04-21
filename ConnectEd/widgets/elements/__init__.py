@@ -224,6 +224,12 @@ class cmdElement(QUndoCommand):
             QGraphicsItem.GraphicsItemFlag.ItemIsSelectable, not wip
         )
 
+    def id(self : Self) -> int:
+            """Return a unique ID for merging commands."""
+            element_id = id(self.element) & 0x7FFFFFFF
+            class_id = hash(self.__class__.__name__) & 0x7FFFFFFF
+            return ((element_id + class_id) & 0x7FFFFFFF)
+
     def mergeWith(self : Self, other : QUndoCommand) -> bool:
         """Merge this command with another identical command."""
         if not isinstance(other, self.__class__) \
@@ -298,7 +304,7 @@ class cmdMoveGrip(cmdElement):
     def __init__(
         self       : Self,
         scene      : 'DrawingScene',
-        element    : Element,
+        element    : Element,        # grip
         delta      : QPointF
     ):
         super().__init__(scene, element)
@@ -307,7 +313,7 @@ class cmdMoveGrip(cmdElement):
     def mergeWith(self : Self, other : QUndoCommand) -> bool:
         if not super().mergeWith(other):
             return False
-        self.delta = other.delta
+        self.delta += other.delta
         return True
 
     def redo(self : Self):
