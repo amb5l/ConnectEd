@@ -67,7 +67,6 @@ class BaseText(QGraphicsTextItem, Element):
 
     def setTextSpec(self: Self, text_spec: TextSpec = TextSpec()) -> None:
         super().setTextSpec(text_spec)
-        self.setPe
         font = self.fontFromSpec()
         if font:
             self.setFont(font)
