@@ -4,7 +4,8 @@ from typing import Self, Optional
 
 from PyQt6.QtCore    import Qt, QPointF, QRectF, QSizeF
 from PyQt6.QtWidgets import QGraphicsTextItem, QStyleOptionGraphicsItem, QWidget
-from PyQt6.QtGui     import QPainter, QPainterPath, QUndoCommand
+from PyQt6.QtGui     import QPainter, QPainterPath, QUndoCommand, \
+                            QKeyEvent, QFocusEvent
 
 from . import Element, KeyPoint, PenSpec, BrushSpec, TextSpec, cmdPlaceElement
 
@@ -27,23 +28,50 @@ class BaseText(QGraphicsTextItem, Element):
     anchor : KeyPoint
 
     def __init__(
-        self       : Self,
-        text       : str = "<BaseText:unspecified text>",
-        pos        : QPointF = QPointF(0, 0),
-        anchor     : KeyPoint = KeyPoint.TOP_LEFT,
-        pen_spec   : bool | PenSpec   = False,
-        brush_spec : bool | BrushSpec = False,
-        text_spec  : bool | TextSpec  = True
+        self   : Self,
+        text   : str = "<BaseText:unspecified text>",
+        pos    : QPointF = QPointF(0, 0),
+        anchor : KeyPoint = KeyPoint.TOP_LEFT
     ) -> None:
         QGraphicsTextItem.__init__(self, text)
-        Element.__init__(self, pen_spec, brush_spec, text_spec)
+        Element.__init__(self, False, False, True)
         self.setPos(pos)
         self.setZValue(self.Z)
         self.setAnchor(anchor)
         self.setTextSpec()
+        self.setEditable(False)
+        self.setFlag(self.GraphicsItemFlag.ItemIsSelectable , True)
+        self.setFlag(self.GraphicsItemFlag.ItemIsFocusable  , True)
+
+    def keyPressEvent(self, event: QKeyEvent):
+        if event.key() in (Qt.Key.Key_Return, Qt.Key.Key_Enter):
+            self.clearFocus()  # Trigger focusOutEvent to finish editing
+            event.accept()
+        else:
+            super().keyPressEvent(event)
+
+    def focusOutEvent(self, event: QFocusEvent):
+        super().focusOutEvent(event)
+        scene : Optional["DrawingScene"] = self.scene()
+        if scene:
+            scene.onTextEditingComplete(self)
+
+    def setEditable(self, editable: bool):
+        self.setTextInteractionFlags(
+            Qt.TextInteractionFlag.TextEditable if editable else
+            Qt.TextInteractionFlag.NoTextInteraction
+        )
 
     def setAnchor(self : Self, anchor : KeyPoint = KeyPoint.TOP_LEFT) -> None:
         self.anchor = anchor
+
+    def setTextSpec(self: Self, text_spec: TextSpec = TextSpec()) -> None:
+        super().setTextSpec(text_spec)
+        self.setPe
+        font = self.fontFromSpec()
+        if font:
+            self.setFont(font)
+            self.setDefaultTextColor(self.colorFromTextSpec())
 
     def boundingRect(self : Self) -> QRectF:
         rect = super().boundingRect()
@@ -58,23 +86,6 @@ class BaseText(QGraphicsTextItem, Element):
         path.addRect(self.boundingRect())
         return path
 
-    def paint(
-        self    : Self,
-        painter : QPainter,
-        option  : QStyleOptionGraphicsItem,
-        widget  : QWidget
-    ) -> None:
-        pen = self.penFromTextSpec()
-        painter.setPen(pen)
-        self.setFont(self.fontFromSpec())
-        rect = self.boundingRect()
-        painter.translate(rect.topLeft())
-        painter.drawText(
-            rect,
-            Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop,
-            self.toPlainText()
-        )
-
 class cmdPlaceBaseText(cmdPlaceElement):
     element    : BaseText
     text       : str
@@ -82,13 +93,13 @@ class cmdPlaceBaseText(cmdPlaceElement):
     anchor     : KeyPoint
 
     def __init__(
-        self       : Self,
-        scene      : Optional["DrawingScene"] = None,
-        element    : Optional[BaseText] = None,
-        text       : str = "<unspecified text>",
-        pos        : QPointF = QPointF(0, 0),
-        anchor     : KeyPoint = KeyPoint.TOP_LEFT,
-        wip        : bool = False
+        self    : Self,
+        scene   : Optional["DrawingScene"] = None,
+        element : Optional[BaseText] = None,
+        text    : str = "",
+        pos     : QPointF = QPointF(0, 0),
+        anchor  : KeyPoint = KeyPoint.TOP_LEFT,
+        wip     : bool = False
     ):
         super().__init__(scene, element, False, False, True, wip)
         self.text   = text
@@ -100,14 +111,15 @@ class cmdPlaceBaseText(cmdPlaceElement):
     def mergeWith(self : Self, other: QUndoCommand) -> bool:
         if not super().mergeWith(other):
             return False
+        self.text       = other.text
         self.pos        = other.pos
         self.anchor     = other.anchor
+        self.element.setPlainText(self.text)
         self.element.setAnchor(self.anchor)
         self.element.setPos(self.pos)
         return True
 
     def redo(self : Self):
         super().redo()
-        self.element.setAnchor(self.anchor)
-        self.element.setPos(self.pos)
-        print("cmdPlaceBaseText.redo")
+        self.element.setPlainText(self.text)
+        self.element.setEditable(self.wip)

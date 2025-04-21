@@ -140,6 +140,15 @@ class Element(QGraphicsItem):
         color.setAlpha(hub.settings.prefs.display.elements.alpha)
         return QPen(color, 0, Qt.PenStyle.SolidLine)
 
+    def colorFromTextSpec(self : Self) -> QColor:
+        if not hasattr(self, "text_spec"):
+            return QColor(Qt.GlobalColor.black)
+        theme = self.getTheme()
+        s = self.text_spec
+        color = theme.text if s.color is None else s.color
+        color.setAlpha(hub.settings.prefs.display.elements.alpha)
+        return color
+
     def penWidth(self : Self) -> float:
         if not hasattr(self, "pen_spec"):
             return 0

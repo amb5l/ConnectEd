@@ -179,6 +179,7 @@ class DrawingView(QGraphicsView):
 
     def __init__(self : Self, scene : DrawingScene) -> None:
         super().__init__(scene)
+        scene.textEditingComplete.connect(self.placeTextFinalize)
         self.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
         self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
@@ -756,40 +757,54 @@ class DrawingView(QGraphicsView):
             wip        = wip
         ))
 
-    def placeRectangleBegin(self : Self, pos: QPointF) -> None:
+    def placeRectangleBegin(self : Self, p1: QPointF) -> None:
         self.wip.elements = [Rectangle()]
-        self.wip.pos0 = pos
+        self.wip.pos0 = p1
         self.placeRectangleCmd(QSizeF(1,1), True)
         self._goState(self.State.PlaceRectangle2)
 
-    def placeRectangleContinue(self : Self, pos: QPointF) -> None:
-        self.placeRectangleCmd(pos, True)
+    def placeRectangleContinue(self : Self, p2: QPointF) -> None:
+        self.placeRectangleCmd(p2, True)
 
-    def placeRectangleComplete(self : Self, pos: QPointF) -> None:
-        self.placeRectangleCmd(pos, False)
+    def placeRectangleComplete(self : Self, p2: QPointF) -> None:
+        self.placeRectangleCmd(p2, False)
         self.wip.clear()
         self._goState(self.State.Idle)
 
     def placeText(self : Self) -> None:
         self._goState(self.State.PlaceText1)
 
-    def placeTextCmd(self : Self, wip : bool) -> None:
+    def placeTextCmd(self : Self, text : str, wip : bool) -> None:
         self.scene().undo_stack.push(cmdPlaceText(
             scene   = self.scene(),
             element = self.wip.elements[0],
             pos     = self.wip.pos0,
-            text    = "<enter text here>", # TODO move this to settings?
+            text    = text,
             wip     = wip
         ))
 
     def placeTextBegin(self : Self, pos : QPointF) -> None:
-        self.wip.elements = [Text()]
+        new_text = Text()
+        self.wip.elements = [new_text]
         self.wip.pos0 = pos
-        self.placeTextCmd(True)
+        self.placeTextCmd("", True)
+        new_text.setEditable(True)
+        new_text.setFocus()
         self._goState(self.State.PlaceText2)
 
     def placeTextComplete(self : Self, pos : QPointF) -> None:
-        self.placeTextCmd(False)
+        self.wip.elements[0].clearFocus()
+
+    def placeTextFinalize(self, text_item: Text):
+        if text_item == self.wip.elements[0]:
+            text = text_item.toPlainText().strip()
+            if text:
+                self.wip.elements[0].setEditable(False)
+                self.placeTextCmd(text, False)
+            else:
+                self.scene().undo_stack.undo()
+        else:
+            logger.warning("placeTextFinalize: text_item != wip.elements[0]")
         self.wip.clear()
         self._goState(self.State.Idle)
 

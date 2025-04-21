@@ -1,3 +1,5 @@
+- text: selection outline position, selection color, anchor/grip
+- Mouse left button released when idle
 - consolidate mouse event handling
 - Liberation fonts
 - undo/redo move
