@@ -7,7 +7,7 @@ from .text_view import TextViewDockWidget
 
 
 class LogViewDock(TextViewDockWidget):
-    WINDOW_TITLE = 'Log'
+    WINDOW_TITLE = "Log"
 
     def __init__(
         self     : Self,

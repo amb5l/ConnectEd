@@ -1,4 +1,4 @@
-__all__ = ['logger']
+__all__ = ["logger"]
 
 import os, logging, weakref
 
@@ -36,8 +36,8 @@ logger = logging.getLogger(APP_NAME)
 logger.setLevel(logging.DEBUG)
 
 formatter = RelativePathFormatter(
-    '%(asctime)s: %(relpath)50s: %(funcName)24s(): %(message)s',
-    datefmt='%Y-%m-%d %H:%M:%S'
+    "%(asctime)s: %(relpath)50s: %(funcName)24s(): %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S"
 )
 
 file_handler = logging.FileHandler(LOG_FILENAME)

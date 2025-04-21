@@ -1,4 +1,4 @@
-__all__ = ['Marquee']
+__all__ = ["Marquee"]
 
 from typing import Self
 
@@ -19,7 +19,7 @@ class MarqueeRubberBand(QRubberBand):
     timer  : QTimer
 
     def __init__(
-        self   : 'MarqueeRubberBand',
+        self   : "MarqueeRubberBand",
         shape  : QRubberBand.Shape,
         parent : QGraphicsView
     ) -> None:

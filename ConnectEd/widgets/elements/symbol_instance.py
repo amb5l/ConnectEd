@@ -1,4 +1,4 @@
-__all__ = ['SymbolInstance']
+__all__ = ["SymbolInstance"]
 
 from PyQt6.QtWidgets import QGraphicsItem
 

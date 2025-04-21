@@ -1,4 +1,4 @@
-__all__ = ['Block']
+__all__ = ["Block"]
 
 from .base_rect import BaseRectangle
 

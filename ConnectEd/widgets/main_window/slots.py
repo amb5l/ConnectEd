@@ -13,11 +13,11 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ...widgets import MainWindow
 
-T = TypeVar('T')
+T = TypeVar("T")
 
-def withCurrentWidget(widget_type: Type[T]) -> Callable[[Callable[['Slots', T], None]], Callable[['Slots'], None]]:
+def withCurrentWidget(widget_type: Type[T]) -> Callable[[Callable[["Slots", T], None]], Callable[["Slots"], None]]:
     """
-    Decorator that gets the current widget from the MDI area and checks if it's of the specified type
+    Decorator that gets the current widget from the MDI area and checks if it"s of the specified type
     or a subclass of it before calling the decorated method.
 
     Args:
@@ -26,25 +26,25 @@ def withCurrentWidget(widget_type: Type[T]) -> Callable[[Callable[['Slots', T], 
     Returns:
         A decorator function
     """
-    def decorator(func: Callable[['Slots', T], None]) -> Callable[['Slots'], None]:
+    def decorator(func: Callable[["Slots", T], None]) -> Callable[["Slots"], None]:
         @functools.wraps(func)
-        def wrapper(self : 'Slots') -> None:
+        def wrapper(self : "Slots") -> None:
             current_sub_window = self._parent.mdi_area.currentSubWindow()
             if current_sub_window is None:
                 return
             current_widget = current_sub_window.widget()
             if isinstance(current_widget, widget_type):
-                # Cast to T since we know it's a subclass
+                # Cast to T since we know it"s a subclass
                 func(self, cast(T, current_widget))
             else:
-                raise ValueError(f'{current_widget} is not a {widget_type} or subclass')
+                raise ValueError(f"{current_widget} is not a {widget_type} or subclass")
         return wrapper
     return decorator
 
-def withCurrentWidgetCheckable(widget_type: Type[T], action_name: str) -> Callable[[Callable[['Slots', T, bool], None]], Callable[['Slots'], None]]:
+def withCurrentWidgetCheckable(widget_type: Type[T], action_name: str) -> Callable[[Callable[["Slots", T, bool], None]], Callable[["Slots"], None]]:
     """
     Decorator for checkable actions that gets the current widget from the MDI area,
-    checks if it's of the specified type or a subclass, and passes the checked state from the action.
+    checks if it"s of the specified type or a subclass, and passes the checked state from the action.
 
     Args:
         widget_type: The type to check the current widget against
@@ -53,26 +53,26 @@ def withCurrentWidgetCheckable(widget_type: Type[T], action_name: str) -> Callab
     Returns:
         A decorator function
     """
-    def decorator(func: Callable[['Slots', T, bool], None]) -> Callable[['Slots'], None]:
+    def decorator(func: Callable[["Slots", T, bool], None]) -> Callable[["Slots"], None]:
         @functools.wraps(func)
-        def wrapper(self : 'Slots') -> None:
+        def wrapper(self : "Slots") -> None:
             current_sub_window = self._parent.mdi_area.currentSubWindow()
             if current_sub_window is None:
                 return
             current_widget = current_sub_window.widget()
             if isinstance(current_widget, widget_type):
                 checked = getattr(self._parent.actions, action_name).isChecked()
-                # Cast to T since we know it's a subclass
+                # Cast to T since we know it"s a subclass
                 func(self, cast(T, current_widget), checked)
             else:
-                raise ValueError(f'{current_widget} is not a {widget_type} or subclass')
+                raise ValueError(f"{current_widget} is not a {widget_type} or subclass")
         return wrapper
     return decorator
 
 class Slots:
-    _parent : 'MainWindow'
+    _parent : "MainWindow"
 
-    def __init__(self : Self, parent : 'MainWindow') -> None:
+    def __init__(self : Self, parent : "MainWindow") -> None:
         self._parent = parent
 
     def fileNewDesign(self : Self) -> None:
@@ -177,11 +177,11 @@ class Slots:
     def viewPanRight(self : Self, widget: DrawingView) -> None:
         widget.viewPanRight()
 
-    @withCurrentWidgetCheckable(DrawingView, 'viewGridDisplay')
+    @withCurrentWidgetCheckable(DrawingView, "viewGridDisplay")
     def viewGridDisplay(self : Self, widget: DrawingView, checked: bool) -> None:
         widget.viewGridDisplay(checked)
 
-    @withCurrentWidgetCheckable(DrawingView, 'viewGridSnap')
+    @withCurrentWidgetCheckable(DrawingView, "viewGridSnap")
     def viewGridSnap(self : Self, widget: DrawingView, checked: bool) -> None:
         widget.viewGridSnap(checked)
 
@@ -212,5 +212,5 @@ class Slots:
         self._parent.mdi_area.previousSubWindow()
 
     def helpAbout(self : Self) -> None:
-        logger.debug('helpAbout')
-        QMessageBox.about(self._parent, 'About', 'ConnectEd')
+        logger.debug("helpAbout")
+        QMessageBox.about(self._parent, "About", "ConnectEd")

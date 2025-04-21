@@ -1,4 +1,4 @@
-__all__ = ['DrawingScene']
+__all__ = ["DrawingScene"]
 
 from typing import Self, Optional
 
@@ -17,7 +17,7 @@ from ... import hub
 
 class DrawingScene(QGraphicsScene):
     # class variables
-    XML_ATTRIBUTES         = {'name' : 'str'}
+    XML_ATTRIBUTES         = {"name" : "str"}
     SYSTEM_FORBIDDEN_ITEMS = [Grip]
     SYSTEM_ALLOWED_ITEMS   = None
     FORBIDDEN_ITEMS        = None # none
@@ -29,7 +29,7 @@ class DrawingScene(QGraphicsScene):
     undo_stack : Optional[QUndoStack]
 
     # custom signals
-    selectionChangedItems = pyqtSignal('QList<QGraphicsItem*>')
+    selectionChangedItems = pyqtSignal("QList<QGraphicsItem*>")
 
     def __init__(
         self    : Self,
@@ -38,7 +38,7 @@ class DrawingScene(QGraphicsScene):
     ) -> None:
         super().__init__()
         if name is None:
-            u = 'Untitled' + self.__class__.__name__.replace('Scene', '')
+            u = "Untitled" + self.__class__.__name__.replace("Scene", "")
             name = hub.name_counter.get(u)
         if extents is None:
             extents = hub.settings.defaults.extents
@@ -53,19 +53,19 @@ class DrawingScene(QGraphicsScene):
 
     def addItem(self : Self, item : QGraphicsItem) -> None:
         if item in self.SYSTEM_FORBIDDEN_ITEMS:
-            raise ValueError(f'Item {item} is forbidden')
+            raise ValueError(f"Item {item} is forbidden")
         if self.FORBIDDEN_ITEMS is not None:
             if item in self.FORBIDDEN_ITEMS:
                 if item not in self.SYSTEM_ALLOWED_ITEMS:
-                    raise ValueError(f'Item {item} is forbidden')
+                    raise ValueError(f"Item {item} is forbidden")
         if self.ALLOWED_ITEMS is not None:
             if item not in self.ALLOWED_ITEMS:
                 if item not in self.SYSTEM_ALLOWED_ITEMS:
-                    raise ValueError(f'Item {item} is not allowed')
+                    raise ValueError(f"Item {item} is not allowed")
         super().addItem(item)
 
     def toXml(self : Self, xw : QXmlStreamWriter) -> None:
-        xw.writeStartElement(self.__class__.__name__.replace('Scene', ''))
+        xw.writeStartElement(self.__class__.__name__.replace("Scene", ""))
         for attr_name, _ in self.XML_ATTRIBUTES.items():
             attr_value = getattr(self, attr_name)
             xw.writeAttribute(attr_name, val2str(attr_value))
@@ -75,9 +75,9 @@ class DrawingScene(QGraphicsScene):
 
     @classmethod
     def fromXml(cls : Self, xr : QXmlStreamReader) -> Self:
-        cls_name = cls.__name__.replace('Scene', '')
+        cls_name = cls.__name__.replace("Scene", "")
         if xr.name() != cls_name:
-            raise ValueError(f'Expected {cls_name} element, got {xr.name()}')
+            raise ValueError(f"Expected {cls_name} element, got {xr.name()}")
         drawing_scene : DrawingScene = cls()
         attributes = xr.attributes()
         for attribute in attributes:
@@ -90,7 +90,7 @@ class DrawingScene(QGraphicsScene):
                     str2val(attr_value_str, attr_type_name)
                 )
             else:
-                raise ValueError(f'Unexpected attribute: {attr_name} value: {attr_value_str}')
+                raise ValueError(f"Unexpected attribute: {attr_name} value: {attr_value_str}")
         xr.readNext()
         while not (xr.isEndElement() and xr.name() == cls_name):
             if xr.tokenType() == QXmlStreamReader.TokenType.StartElement:

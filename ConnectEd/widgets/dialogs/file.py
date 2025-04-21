@@ -1,4 +1,4 @@
-__all__ = ['FileOpenDialog', 'FileSaveAsDialog']
+__all__ = ["FileOpenDialog", "FileSaveAsDialog"]
 
 from typing import Optional
 
@@ -11,39 +11,39 @@ from ... import hub
 
 class FileOpenDialog(QFileDialog):
     def __init__(
-        self      : 'FileOpenDialog',
+        self      : "FileOpenDialog",
         type_name : Optional[str] = None
     ) -> None:
         super().__init__(hub.main_window)
-        self.setWindowTitle(f'Open')
+        self.setWindowTitle(f"Open")
         self.setFileMode(QFileDialog.FileMode.ExistingFiles)
         match type_name:
             case None:
-                self.setNameFilter(f'Connected Files (*{GEN_EXT});;All Files (*.*)`')
-            case 'Design':
-                self.setNameFilter(f'Connected Designs (*{DSN_EXT});;Connected Libraries (*{LIB_EXT});;Connected Files (*{GEN_EXT});;All Files (*.*)')
-            case 'Library':
-                self.setNameFilter(f'Connected Libraries (*{LIB_EXT});;Connected Designs (*{DSN_EXT});;Connected Files (*{GEN_EXT});;All Files (*.*)')
+                self.setNameFilter(f"Connected Files (*{GEN_EXT});;All Files (*.*)`")
+            case "Design":
+                self.setNameFilter(f"Connected Designs (*{DSN_EXT});;Connected Libraries (*{LIB_EXT});;Connected Files (*{GEN_EXT});;All Files (*.*)")
+            case "Library":
+                self.setNameFilter(f"Connected Libraries (*{LIB_EXT});;Connected Designs (*{DSN_EXT});;Connected Files (*{GEN_EXT});;All Files (*.*)")
             case _:
-                raise ValueError(f'Unknown type name: {type_name}')
+                raise ValueError(f"Unknown type name: {type_name}")
         self.setAcceptMode(QFileDialog.AcceptMode.AcceptOpen)
 
 class FileSaveAsDialog(QFileDialog):
     def __init__(
-        self      : 'FileSaveAsDialog',
+        self      : "FileSaveAsDialog",
         type_name : str
     ) -> None:
         match type_name:
-            case 'Library':
-                name_filter    = f'Connected Libraries ({LIB_EXT})'
+            case "Library":
+                name_filter    = f"Connected Libraries ({LIB_EXT})"
                 default_suffix = LIB_EXT
-            case 'Design':
-                name_filter    = f'Connected Designs ({DSN_EXT})'
+            case "Design":
+                name_filter    = f"Connected Designs ({DSN_EXT})"
                 default_suffix = DSN_EXT
             case _:
-                raise ValueError(f'Unknown type name: {type_name}')
+                raise ValueError(f"Unknown type name: {type_name}")
         super().__init__(hub.main_window)
-        self.setWindowTitle(f'Save {type_name} As')
+        self.setWindowTitle(f"Save {type_name} As")
         self.setFileMode(QFileDialog.FileMode.AnyFile)
         self.setNameFilter(name_filter)
         self.setDefaultSuffix(default_suffix)

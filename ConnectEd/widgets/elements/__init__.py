@@ -38,7 +38,7 @@ class TextSpec:
     italic    : Optional[bool]   = None
     underline : Optional[bool]   = None
 
-KeyPointHV = namedtuple('KeyPointHV', ['h', 'v'])
+KeyPointHV = namedtuple("KeyPointHV", ["h", "v"])
 
 class KeyPoint(Enum):
     TOP_LEFT      = KeyPointHV(0.0, 0.0)
@@ -101,7 +101,7 @@ class Element(QGraphicsItem):
         return self.pen_spec
 
     def penFromSpec(self : Self) -> QPen:
-        if not hasattr(self, 'pen_spec'):
+        if not hasattr(self, "pen_spec"):
             return QPen(Qt.PenStyle.NoPen)
         prefs, theme = self.getPrefsTheme()
         s = self.pen_spec
@@ -112,7 +112,7 @@ class Element(QGraphicsItem):
         return QPen(color, width, style)
 
     def penWidth(self : Self) -> float:
-        if not hasattr(self, 'pen_spec'):
+        if not hasattr(self, "pen_spec"):
             return 0
         prefs, _ = self.getPrefsTheme()
         s = self.pen_spec
@@ -128,7 +128,7 @@ class Element(QGraphicsItem):
         return self.brush_spec
 
     def brushFromSpec(self : Self) -> QBrush:
-        if not hasattr(self, 'brush_spec'):
+        if not hasattr(self, "brush_spec"):
             return QBrush(Qt.BrushStyle.NoBrush)
         prefs, theme = self.getPrefsTheme()
         s = self.brush_spec
@@ -147,7 +147,7 @@ class Element(QGraphicsItem):
         return self.text_spec
 
     def fontFromSpec(self : Self) -> QFont | None: # TODO: return default font?
-        if not hasattr(self, 'text_spec'):
+        if not hasattr(self, "text_spec"):
             return None
         item_name = self.__class__.__name__.lower()
         prefs = getattr(hub.settings.prefs.display.elements, item_name).font
@@ -203,21 +203,21 @@ class Element(QGraphicsItem):
         return instance
 
 class cmdElement(QUndoCommand):
-    scene   : 'DrawingScene'
+    scene   : "DrawingScene"
     element : Element
 
     def __init__(
         self    : Self,
-        scene   : 'DrawingScene',
+        scene   : "DrawingScene",
         element : Optional[Element] = None,
         wip     : bool = False
     ):
         cls_name = self.__class__.__name__
-        text = camel_to_proper(cls_name.replace('cmd', ''))
+        text = camel_to_proper(cls_name.replace("cmd", ""))
         super().__init__(text)
         self.scene = scene
         if element is None:
-            element_class_name = cls_name.replace('cmdPlace', '')
+            element_class_name = cls_name.replace("cmdPlace", "")
             element = globals()[element_class_name]()
         self.element = element
         self.element.setFlag(
@@ -240,12 +240,12 @@ class cmdElement(QUndoCommand):
 
     def redo(self : Self) -> None:
         raise NotImplementedError(
-            f'{self.__class__.__name__} must implement redo'
+            f"{self.__class__.__name__} must implement redo"
         )
 
     def undo(self : Self) -> None:
         raise NotImplementedError(
-            f'{self.__class__.__name__} must implement undo'
+            f"{self.__class__.__name__} must implement undo"
         )
 
 class cmdPlaceElement(cmdElement):
@@ -256,7 +256,7 @@ class cmdPlaceElement(cmdElement):
 
     def __init__(
         self       : Self,
-        scene      : 'DrawingScene',
+        scene      : "DrawingScene",
         element    : Optional[Element] = None,
         pen_spec   : bool | PenSpec   = True,
         brush_spec : bool | BrushSpec = True,
@@ -303,7 +303,7 @@ class cmdMoveGrip(cmdElement):
 
     def __init__(
         self       : Self,
-        scene      : 'DrawingScene',
+        scene      : "DrawingScene",
         element    : Element,        # grip
         delta      : QPointF
     ):
@@ -325,7 +325,7 @@ class cmdMoveGrip(cmdElement):
 __all__ = []
 
 from .grip import Grip
-__all__ += ['Grip']
+__all__ += ["Grip"]
 from .rectangle import Rectangle, cmdPlaceRectangle
 __all__ += rectangle.__all__
 from .symbol_instance import SymbolInstance
@@ -336,4 +336,4 @@ __all__ += block.__all__
 element_class_dict = {}
 for class_name in __all__:
     element_class_dict[class_name] = globals()[class_name]
-__all__ += ['element_class_dict']
+__all__ += ["element_class_dict"]

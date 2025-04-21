@@ -1,4 +1,4 @@
-__all__ = ['SymbolView', 'SymbolSubWindow']
+__all__ = ["SymbolView", "SymbolSubWindow"]
 
 from typing import Self, Optional
 

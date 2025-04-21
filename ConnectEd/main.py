@@ -19,7 +19,7 @@ def main() -> int:
     hub.settings.load()
     #print(hub.settings.dump())
     app = QApplication(sys.argv[:1] + unknown_args)
-    app.setStyle('Fusion')
+    app.setStyle("Fusion")
     initResources()
     hub.model = Model()
     hub.main_window = MainWindow()
@@ -29,7 +29,7 @@ def main() -> int:
     logger.info("finished")
     return r
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     r = main()
     logger.info(f"exited with code {r}")
     sys.exit(r)

@@ -1,4 +1,4 @@
-__all__ = ['BaseText']
+__all__ = ["BaseText"]
 
 from typing import Self
 
@@ -12,19 +12,19 @@ from . import Element, KeyPoint, PenSpec, BrushSpec, TextSpec
 class BaseText(QGraphicsTextItem, Element):
     """Base class for text items."""
     XML_ATTRIBUTES = {
-        'text'       : ( 'str'       , lambda self, value: self.setText      (value) , lambda self: self.getText      () ),
-        'pos'        : ( 'QPointF'   , lambda self, value: self.setPos       (value) , lambda self: self.getPos       () ),
-        'anchor'     : ( 'KeyPoint'  , lambda self, value: self.setAnchor    (value) , lambda self: self.getAnchor    () ),
-        'pen_spec'   : ( 'PenSpec'   , lambda self, value: self.setPenSpec   (value) , lambda self: self.getPenSpec   () ),
-        'brush_spec' : ( 'BrushSpec' , lambda self, value: self.setBrushSpec (value) , lambda self: self.getBrushSpec () ),
-        'text_spec'  : ( 'TextSpec'  , lambda self, value: self.setTextSpec  (value) , lambda self: self.getTextSpec  () )
+        "text"       : ( "str"       , lambda self, value: self.setText      (value) , lambda self: self.getText      () ),
+        "pos"        : ( "QPointF"   , lambda self, value: self.setPos       (value) , lambda self: self.getPos       () ),
+        "anchor"     : ( "KeyPoint"  , lambda self, value: self.setAnchor    (value) , lambda self: self.getAnchor    () ),
+        "pen_spec"   : ( "PenSpec"   , lambda self, value: self.setPenSpec   (value) , lambda self: self.getPenSpec   () ),
+        "brush_spec" : ( "BrushSpec" , lambda self, value: self.setBrushSpec (value) , lambda self: self.getBrushSpec () ),
+        "text_spec"  : ( "TextSpec"  , lambda self, value: self.setTextSpec  (value) , lambda self: self.getTextSpec  () )
     }
 
     anchor : KeyPoint
 
     def __init__(
         self       : Self,
-        text       : str = '',
+        text       : str = "",
         pos        : QPointF = QPointF(0, 0),
         anchor     : KeyPoint = KeyPoint.TOP_LEFT,
         pen_spec   : bool | PenSpec   = False,

@@ -14,12 +14,12 @@ if TYPE_CHECKING:
 class Grip(QGraphicsItem):
     Z_DELTA = 1 # TODO: use it or lose it
 
-    key_point : 'KeyPoint'
+    key_point : "KeyPoint"
 
     def __init__(
         self      : Self,
         parent    : QGraphicsItem,
-        key_point : 'KeyPoint'
+        key_point : "KeyPoint"
     ) -> None:
         super().__init__(parent)
         f = QGraphicsItem.GraphicsItemFlag

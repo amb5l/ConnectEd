@@ -1,4 +1,4 @@
-__all__ = ['DrawingView', 'DrawingSubWindow']
+__all__ = ["DrawingView", "DrawingSubWindow"]
 
 from typing import Self, Optional
 from enum   import Enum, auto
@@ -114,20 +114,20 @@ class DrawingViewState(Enum):
     PlaceRectangle2 = auto()
 
 DrawingViewStateTip = {
-    DrawingViewState.Idle            : 'Idle',
-    DrawingViewState.ViewPan1        : 'ViewPan1',
-    DrawingViewState.ViewPan2        : 'ViewPan2',
-    DrawingViewState.ViewZoomWindow1 : 'ViewZoomWindow1',
-    DrawingViewState.ViewZoomWindow2 : 'ViewZoomWindow2',
-    DrawingViewState.SelectArea2     : 'SelectArea2',
-    DrawingViewState.EditSlide1      : 'EditSlide1',
-    DrawingViewState.EditSlide2      : 'EditSlide2',
-    DrawingViewState.EditMove1       : 'EditMove1',
-    DrawingViewState.EditMove2       : 'EditMove2',
-    DrawingViewState.EditResize1     : 'EditResize1',
-    DrawingViewState.EditResize2     : 'EditResize2',
-    DrawingViewState.PlaceRectangle1 : 'PlaceRectangle1',
-    DrawingViewState.PlaceRectangle2 : 'PlaceRectangle2'
+    DrawingViewState.Idle            : "Idle",
+    DrawingViewState.ViewPan1        : "ViewPan1",
+    DrawingViewState.ViewPan2        : "ViewPan2",
+    DrawingViewState.ViewZoomWindow1 : "ViewZoomWindow1",
+    DrawingViewState.ViewZoomWindow2 : "ViewZoomWindow2",
+    DrawingViewState.SelectArea2     : "SelectArea2",
+    DrawingViewState.EditSlide1      : "EditSlide1",
+    DrawingViewState.EditSlide2      : "EditSlide2",
+    DrawingViewState.EditMove1       : "EditMove1",
+    DrawingViewState.EditMove2       : "EditMove2",
+    DrawingViewState.EditResize1     : "EditResize1",
+    DrawingViewState.EditResize2     : "EditResize2",
+    DrawingViewState.PlaceRectangle1 : "PlaceRectangle1",
+    DrawingViewState.PlaceRectangle2 : "PlaceRectangle2"
 }
 
 class DrawingViewWip:
@@ -164,10 +164,10 @@ class DrawingView(QGraphicsView):
     marquee  : Marquee
     layer    : DrawingViewLayer
     zoom     : float
-    grid     : 'DrawingView.Grid'
-    mouse    : 'DrawingView.Mouse'
-    state    : 'DrawingView.State'
-    wip      : 'DrawingView.Wip'
+    grid     : "DrawingView.Grid"
+    mouse    : "DrawingView.Mouse"
+    state    : "DrawingView.State"
+    wip      : "DrawingView.Wip"
 
     def __init__(self : Self, scene : DrawingScene) -> None:
         super().__init__(scene)
@@ -261,7 +261,7 @@ class DrawingView(QGraphicsView):
         l = self.mapToScene(p)
         self.mouse.current.setPL(p, l)
         hub.main_window.status_bar.xy.setText(
-            str(int(round(l.x()))) + ',' + str(int(round(l.y())))
+            str(int(round(l.x()))) + "," + str(int(round(l.y())))
         )
 
     def leaveEvent(self : Self, _ : QEvent) -> None:
@@ -269,13 +269,13 @@ class DrawingView(QGraphicsView):
         p = QPoint(rect.width() // 2, rect.height() // 2)
         l = self.mapToScene(p)
         self.mouse.current.setPL(p, l)
-        hub.main_window.status_bar.xy.setText('-,-')
+        hub.main_window.status_bar.xy.setText("-,-")
 
     def mouseMoveEvent(self : Self, event : QMouseEvent) -> None:
         p = event.pos(); l = self.mapToScene(p)
         self.mouse.current.setPL(p, l)
         hub.main_window.status_bar.xy.setText(
-            str(int(round(l.x()))) + ',' + str(int(round(l.y())))
+            str(int(round(l.x()))) + "," + str(int(round(l.y())))
         )
         match self.mouse.left.state:
             case self.MouseButtonState.Pressed:
@@ -328,7 +328,7 @@ class DrawingView(QGraphicsView):
                     self.mouseLeftDragEnd()
                     self.mouse.left.state = self.MouseButtonState.Idle
                 case _:
-                    logger.warning(f'Mouse left button released when idle')
+                    logger.warning(f"Mouse left button released when idle")
         if event.button() & Qt.MouseButton.MiddleButton:
             self.mouse.middle.release.setPL(p, l)
             match self.mouse.middle.state:
@@ -339,7 +339,7 @@ class DrawingView(QGraphicsView):
                     self.mouseMiddleDragEnd()
                     self.mouse.middle.state = self.MouseButtonState.Idle
                 case _:
-                    logger.warning(f'Mouse middle button released when idle')
+                    logger.warning(f"Mouse middle button released when idle")
 
     def mouseDoubleClickEvent(self : Self, event : QMouseEvent) -> None:
         p = event.pos(); l = self.mapToScene(p)
@@ -454,7 +454,7 @@ class DrawingView(QGraphicsView):
                         break
                 else:
                     self.grip = None
-                if self.grip: # we've hit a grip
+                if self.grip: # we"ve hit a grip
                     self.resizeBegin(
                         self.grip, self._snap(self.mouse.left.press.logical)
                     )
@@ -670,16 +670,16 @@ class DrawingView(QGraphicsView):
                 )
 
     def editCut(self : Self) -> None:
-        print('TODO: editCut')
+        print("TODO: editCut")
 
     def editCopy(self : Self) -> None:
-        print('TODO: editCopy')
+        print("TODO: editCopy")
 
     def editPaste(self : Self) -> None:
-        print('TODO: editPaste')
+        print("TODO: editPaste")
 
     def editDelete(self : Self) -> None:
-        print('TODO: editDelete')
+        print("TODO: editDelete")
 
     def editSlide(self : Self) -> None:
         if self.scene().selectedItems():
@@ -793,7 +793,7 @@ class DrawingView(QGraphicsView):
         self.wip.element = grip
         self.wip.pos0 = pos
         scene : DrawingScene = self.scene()
-        scene.undo_stack.beginMacro('Resize')
+        scene.undo_stack.beginMacro("Resize")
 
         self.resizeCmd(pos - grip.scenePos())
         self._goState(self.State.EditResize2)
@@ -812,14 +812,14 @@ class DrawingView(QGraphicsView):
     ############################################################################
     # private methods
 
-    def _goState(self : Self, state : 'DrawingView.State') -> None:
+    def _goState(self : Self, state : "DrawingView.State") -> None:
         self.state = state
         if hub.main_window is not None:
             hub.main_window.status_bar.tip.setText(self.StateTip[state])
 
     def _allItemsRect(self : Self) -> Optional[QRectF]:
         items_rect = None
-        if hasattr(self.scene(), 'paper_rect'):
+        if hasattr(self.scene(), "paper_rect"):
             items_rect = self.scene().paper_rect()
         for item in self.scene().items():
             item_rect = item.mapToScene(item.boundingRect()).boundingRect()
@@ -850,13 +850,13 @@ class DrawingView(QGraphicsView):
         self.resetTransform()
         self.scale(self.zoom, self.zoom)
         hub.main_window.status_bar.zoom.setText(
-            '{:.2f}%'.format(self.zoom * 100)
+            "{:.2f}%".format(self.zoom * 100)
         )
         hub.main_window.actions.actionEnable(
-            'viewZoomIn',  self.zoom < hub.settings.prefs.display.zoom.limit.max
+            "viewZoomIn",  self.zoom < hub.settings.prefs.display.zoom.limit.max
         )
         hub.main_window.actions.actionEnable(
-            'viewZoomOut', self.zoom > hub.settings.prefs.display.zoom.limit.min
+            "viewZoomOut", self.zoom > hub.settings.prefs.display.zoom.limit.min
         )
 
     def _zoomRel(self : Self, rel: float) -> None:
@@ -907,7 +907,7 @@ class DrawingView(QGraphicsView):
         mask = qkm.ControlModifier | qkm.ShiftModifier | qkm.AltModifier
         return event.modifiers() & mask
 
-    def _setLayer(self : Self, layer: 'DrawingView.Layer') -> None:
+    def _setLayer(self : Self, layer: "DrawingView.Layer") -> None:
         self.layer = layer
         for item in self.scene().items():
             item.setFlag(
@@ -949,7 +949,7 @@ class DrawingView(QGraphicsView):
                 self.transform()
             )
         for item in self.scene().selectedItems():
-            if hasattr(item, 'updateGripsVisibility'):
+            if hasattr(item, "updateGripsVisibility"):
                 item.updateGripsVisibility()
 
     def _selectPoint(
@@ -971,7 +971,7 @@ class DrawingView(QGraphicsView):
                 }
             """)
             for item in items:
-                text = f'{item.__class__.__name__}'
+                text = f"{item.__class__.__name__}"
                 action = QAction(text, self)
                 action.setIcon(QIcon())
                 action.setData(item)
@@ -997,7 +997,7 @@ class DrawingView(QGraphicsView):
             else:
                 item.setSelected(True)
         for item in self.scene().selectedItems():
-            if hasattr(item, 'updateGripsVisibility'):
+            if hasattr(item, "updateGripsVisibility"):
                 item.updateGripsVisibility()
 
     def _selectItem(self : Self, item, toggle, prev=None):

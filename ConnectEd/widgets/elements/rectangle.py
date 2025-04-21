@@ -1,4 +1,4 @@
-__all__ = ['Rectangle', 'cmdPlaceRectangle']
+__all__ = ["Rectangle", "cmdPlaceRectangle"]
 
 from ...core    import Z_DRAWING
 

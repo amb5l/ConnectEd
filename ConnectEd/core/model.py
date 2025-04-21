@@ -1,7 +1,7 @@
 __all__ = [
-    'DrawingItem', 'SymbolItem', 'DiagramItem',
-    'DbItem', 'DesignItem', 'LibraryItem',
-    'Model'
+    "DrawingItem", "SymbolItem", "DiagramItem",
+    "DbItem", "DesignItem", "LibraryItem",
+    "Model"
 ]
 
 from typing import Self, Optional
@@ -41,9 +41,9 @@ class DrawingItem(QStandardItem):
 
     @classmethod
     def fromXml(cls : Self, xr : QXmlStreamReader) -> Self:
-        cls_name = cls.__name__.replace('Item', '')
+        cls_name = cls.__name__.replace("Item", "")
         if xr.name() != cls_name:
-            raise ValueError(f'Expected {cls_name} element, got {xr.name()}')
+            raise ValueError(f"Expected {cls_name} element, got {xr.name()}")
         scene = cls.SCENE_CLASS.fromXml(xr)
         drawing_item : DrawingItem = cls(scene)
         drawing_item.setText(scene.name)
@@ -62,20 +62,20 @@ class DiagramItem(DrawingItem):
 class DbItem(QStandardItem):
     XML_ATTRIBUTES = {}
     XML_PROPERTIES = {
-        'name' : ('str', QStandardItem.setText, QStandardItem.text)
+        "name" : ("str", QStandardItem.setText, QStandardItem.text)
     }
 
     path : Optional[str]
 
     def __init__(self : Self) -> None:
-        u = 'Untitled' + self.__class__.__name__.replace('Item', '')
+        u = "Untitled" + self.__class__.__name__.replace("Item", "")
         super().__init__(hub.name_counter.get(u))
         self.setFlags(self.flags() | Qt.ItemFlag.ItemIsEditable)
         self.path = None
 
     @classmethod
     def fromXmlBegin(cls : Self, xr : QXmlStreamReader) -> Self:
-        fromXmlBegin(xr, cls.__name__.replace('Item', ''))
+        fromXmlBegin(xr, cls.__name__.replace("Item", ""))
         db_item = cls()
         attributes = xr.attributes()
         for attribute in attributes:
@@ -91,16 +91,16 @@ class DbItem(QStandardItem):
                 type_name, setter, _ = DesignItem.XML_PROPERTIES[attr_name]
                 setter(db_item, str2val(attr_value_str, type_name))
             else:
-                logger.warning(f'Unexpected attribute: {attr_name} value: {attr_value_str}')
+                logger.warning(f"Unexpected attribute: {attr_name} value: {attr_value_str}")
         xr.readNext()
         return db_item
 
     def fromXmlEnd(self : Self, xr : QXmlStreamReader) -> None:
-        while not (xr.isEndElement() and xr.name() == self.__class__.__name__.replace('Item', '')):
+        while not (xr.isEndElement() and xr.name() == self.__class__.__name__.replace("Item", "")):
             xr.readNext()
 
     def toXmlBegin(self : Self, xw : QXmlStreamWriter) -> None:
-        xw.writeStartElement(self.__class__.__name__.replace('Item', ''))
+        xw.writeStartElement(self.__class__.__name__.replace("Item", ""))
         for name, _ in self.XML_ATTRIBUTES.items():
             value = getattr(self, name)
             xw.writeAttribute(name, val2str(value))
@@ -113,7 +113,7 @@ class DbItem(QStandardItem):
 
     @classmethod
     def load(cls : Self, file : str) -> Self:
-        with open(file, 'r') as f:
+        with open(file, "r") as f:
             data = f.read()
             xr = QXmlStreamReader(data)
             return cls.fromXml(xr)
@@ -144,7 +144,7 @@ class LibraryItem(DbItem):
     @classmethod
     def fromXml(cls : Self, xr : QXmlStreamReader) -> Self:
         db_item = cls.fromXmlBegin(xr)
-        while not (xr.isEndElement() and xr.name() == cls.__name__.replace('Item', '')):
+        while not (xr.isEndElement() and xr.name() == cls.__name__.replace("Item", "")):
             xr.readNext()
         return db_item
 
@@ -156,13 +156,13 @@ class DesignItem(DbItem):
 
     def __init__(self : Self) -> None:
         super().__init__()
-        self.diagrams = QStandardItem('Diagrams')
+        self.diagrams = QStandardItem("Diagrams")
         self.diagrams.setEditable(False)
         font = self.diagrams.font() # TODO use settings
         font.setItalic(True)
         self.diagrams.setFont(font)
         self.appendRow(self.diagrams)
-        self.symbols = QStandardItem('Symbol Cache')
+        self.symbols = QStandardItem("Symbol Cache")
         self.symbols.setEditable(False)
         font = self.symbols.font() # TODO use settings
         font.setItalic(True)
@@ -172,23 +172,23 @@ class DesignItem(DbItem):
     @classmethod
     def fromXml(cls : Self, xr : QXmlStreamReader) -> Self:
         db_item = cls.fromXmlBegin(xr)
-        while not (xr.isEndElement() and xr.name() == cls.__name__.replace('Item', '')):
+        while not (xr.isEndElement() and xr.name() == cls.__name__.replace("Item", "")):
             if xr.tokenType() == QXmlStreamReader.TokenType.StartElement:
-                if xr.name() == 'Diagrams':
+                if xr.name() == "Diagrams":
                     xr.readNext()  # Move past <Diagrams>
-                    while not (xr.isEndElement() and xr.name() == 'Diagrams'):
+                    while not (xr.isEndElement() and xr.name() == "Diagrams"):
                         if xr.tokenType() == QXmlStreamReader.TokenType.StartElement:
-                            if xr.name() == 'Diagram':
+                            if xr.name() == "Diagram":
                                 diagram_item = DiagramItem.fromXml(xr)
                                 db_item.diagrams.appendRow(diagram_item)
                             else:
                                 raise ValueError(f"Unexpected element in Diagrams: {xr.name()}")
                         xr.readNext()
-                elif xr.name() == 'SymbolCache':
+                elif xr.name() == "SymbolCache":
                     xr.readNext()  # Move past <SymbolCache>
-                    while not (xr.isEndElement() and xr.name() == 'SymbolCache'):
+                    while not (xr.isEndElement() and xr.name() == "SymbolCache"):
                         if xr.tokenType() == QXmlStreamReader.TokenType.StartElement:
-                            if xr.name() == 'Symbol':
+                            if xr.name() == "Symbol":
                                 symbol_item = SymbolItem.fromXml(xr)
                                 db_item.symbols.appendRow(symbol_item)
                             else:
@@ -202,13 +202,13 @@ class DesignItem(DbItem):
 
     def toXml(self : Self, xw : QXmlStreamWriter) -> None:
         self.toXmlBegin(xw)
-        xw.writeStartElement('Diagrams')
+        xw.writeStartElement("Diagrams")
         for i in range(self.diagrams.rowCount()):
             diagram_item : DiagramItem = self.diagrams.child(i)
             diagram_scene = diagram_item.scene
             diagram_scene.toXml(xw)
         xw.writeEndElement()
-        xw.writeStartElement('SymbolCache')
+        xw.writeStartElement("SymbolCache")
         for i in range(self.symbols.rowCount()):
             symbol_item : SymbolItem = self.symbols.child(i)
             symbol_scene = symbol_item.scene
@@ -221,14 +221,14 @@ class Model(QStandardItemModel):
 
     def __init__(self : Self) -> None:
         super().__init__()
-        self.setHorizontalHeaderLabels(['Database Hierarchy'])
-        self.designs = QStandardItem('Designs')
+        self.setHorizontalHeaderLabels(["Database Hierarchy"])
+        self.designs = QStandardItem("Designs")
         self.designs.setEditable(False)
         font = self.designs.font()
         font.setBold(True)
         self.designs.setFont(font)
         self.appendRow(self.designs)
-        self.libraries = QStandardItem('Libraries')
+        self.libraries = QStandardItem("Libraries")
         self.libraries.setEditable(False)
         font = self.libraries.font()
         font.setBold(True)
@@ -250,31 +250,31 @@ class Model(QStandardItemModel):
         parent : QStandardItem
     ) -> DiagramItem | None:
         item = None
-        if self.getItemDescription(parent) == 'Design':
+        if self.getItemDescription(parent) == "Design":
             parent = parent.diagrams
-        if self.getItemDescription(parent) == 'Diagrams':
+        if self.getItemDescription(parent) == "Diagrams":
             item = DiagramItem()
             parent.appendRow(item)
         else:
             logger.warning(
-                f'Unexpected parent item: {parent.text()} ({type(parent)})'
+                f"Unexpected parent item: {parent.text()} ({type(parent)})"
             )
         return item
 
     def newSymbol(
-        self   : 'Model',
+        self   : "Model",
         parent : QStandardItem
     ) -> SymbolItem | None:
         item = None
-        if self.getItemDescription(parent) == 'Design':
+        if self.getItemDescription(parent) == "Design":
             parent = parent.symbols
-        if self.getItemDescription(parent) == 'Symbol Cache' \
-        or self.getItemDescription(parent) == 'Library':
+        if self.getItemDescription(parent) == "Symbol Cache" \
+        or self.getItemDescription(parent) == "Library":
             item = SymbolItem()
             parent.appendRow(item)
         else:
             logger.warning(
-                f'Unexpected parent item: {parent.text()} ({type(parent)})'
+                f"Unexpected parent item: {parent.text()} ({type(parent)})"
             )
         return item
 
@@ -287,7 +287,7 @@ class Model(QStandardItemModel):
             db_item = LibraryItem.load(path)
             self.libraries.appendRow(db_item)
         else:
-            logger.warning(f'Unsupported file extension: {path}')
+            logger.warning(f"Unsupported file extension: {path}")
         return db_item
 
     def close(self : Self, item: QStandardItem) -> None:
@@ -301,7 +301,7 @@ class Model(QStandardItemModel):
                 if item == self.libraries.child(i):
                     self.libraries.removeRow(i)
         else:
-            logger.warning(f'Unsupported item: {item.text()} ({type(item)})')
+            logger.warning(f"Unsupported item: {item.text()} ({type(item)})")
 
     def copy(self : Self, item : QStandardItem) -> None:
         master_copy(item)
@@ -310,19 +310,19 @@ class Model(QStandardItemModel):
         paste_items = master_paste()
         if paste_items:
             match self.getItemDescription(item):
-                case 'Designs':
-                    valid_item_type_names = ['DesignItem']
-                case 'Libraries':
-                    valid_item_type_names = ['LibraryItem']
-                case 'Diagrams':
-                    valid_item_type_names = ['DiagramItem']
-                case 'Symbol Cache':
-                    valid_item_type_names = ['SymbolItem']
-                case 'Libraries':
-                    valid_item_type_names = ['SymbolItem']
+                case "Designs":
+                    valid_item_type_names = ["DesignItem"]
+                case "Libraries":
+                    valid_item_type_names = ["LibraryItem"]
+                case "Diagrams":
+                    valid_item_type_names = ["DiagramItem"]
+                case "Symbol Cache":
+                    valid_item_type_names = ["SymbolItem"]
+                case "Libraries":
+                    valid_item_type_names = ["SymbolItem"]
                 case _:
                     raise ValueError(
-                        f'Cannot paste into item: {item.text()} ({type(item)})')
+                        f"Cannot paste into item: {item.text()} ({type(item)})")
             invalid_item_type_names = []
             invalid_item_count = 0
             for paste_item in paste_items:
@@ -336,10 +336,10 @@ class Model(QStandardItemModel):
             if invalid_item_count:
                 # TODO message box
                 n = invalid_item_count
-                s = ', '.join(invalid_item_type_names)
-                raise ValueError(f'{n} invalid items for paste operation: {s}')
+                s = ", ".join(invalid_item_type_names)
+                raise ValueError(f"{n} invalid items for paste operation: {s}")
 
-    def getDbItemFromScene(self : Self, scene : 'DrawingScene') -> DbItem:
+    def getDbItemFromScene(self : Self, scene : "DrawingScene") -> DbItem:
         for i in range(self.designs.rowCount()):
             db_item = self.designs.child(i)
             for j in range(db_item.diagrams.rowCount()):
@@ -360,24 +360,24 @@ class Model(QStandardItemModel):
 
     def getItemDescription(self : Self, i : QStandardItem) -> str | None:
         if isinstance(i, DesignItem):
-            return 'Design'
+            return "Design"
         elif isinstance(i, LibraryItem):
-            return 'Library'
+            return "Library"
         elif isinstance(i, DiagramItem):
-            return 'Diagram'
+            return "Diagram"
         elif isinstance(i, SymbolItem):
             if isinstance(i.parent(), QStandardItem) \
-            and i.parent().text() == 'Symbol Cache':
-                return 'Design Symbol'
+            and i.parent().text() == "Symbol Cache":
+                return "Design Symbol"
             elif isinstance(i.parent(), LibraryItem):
-                return 'Library Symbol'
+                return "Library Symbol"
         elif isinstance(i, QStandardItem):
-            if i.text() == 'Designs':
-                return 'Designs'
-            elif i.text() == 'Libraries':
-                return 'Libraries'
-            elif i.text() == 'Diagrams':
-                return 'Diagrams'
-            elif i.text() == 'Symbol Cache':
-                return 'Symbol Cache'
-        raise ValueError(f'Unsupported item: {i.text()}  type: {type(i)}')
+            if i.text() == "Designs":
+                return "Designs"
+            elif i.text() == "Libraries":
+                return "Libraries"
+            elif i.text() == "Diagrams":
+                return "Diagrams"
+            elif i.text() == "Symbol Cache":
+                return "Symbol Cache"
+        raise ValueError(f"Unsupported item: {i.text()}  type: {type(i)}")

@@ -1,4 +1,4 @@
-__all__ = ['DiagramView', 'DiagramSubWindow']
+__all__ = ["DiagramView", "DiagramSubWindow"]
 
 from typing import Self
 

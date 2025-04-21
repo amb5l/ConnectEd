@@ -32,76 +32,76 @@ class Explorer(TreeView):
         self._focus_in = False
         self.actions = SimpleNamespace()
         a = self.actions
-        a.increaseTextSize = QAction('Increase Text Size', self)
+        a.increaseTextSize = QAction("Increase Text Size", self)
         a.increaseTextSize.triggered.connect(self.increaseFontSize)
-        a.decreaseTextSize = QAction('Decrease Text Size', self)
+        a.decreaseTextSize = QAction("Decrease Text Size", self)
         a.decreaseTextSize.triggered.connect(self.decreaseFontSize)
-        a.newDesign = QAction('New Design', self)
+        a.newDesign = QAction("New Design", self)
         a.newDesign.triggered.connect(self.newDesign)
-        a.newMenuDesign = QAction('Design', self)
+        a.newMenuDesign = QAction("Design", self)
         a.newMenuDesign.triggered.connect(self.newDesign)
-        a.newLibrary = QAction('New Library', self)
+        a.newLibrary = QAction("New Library", self)
         a.newLibrary.triggered.connect(self.newLibrary)
-        a.newMenuLibrary = QAction('Library', self)
+        a.newMenuLibrary = QAction("Library", self)
         a.newMenuLibrary.triggered.connect(self.newLibrary)
-        a.newDiagram = QAction('New Diagram', self)
+        a.newDiagram = QAction("New Diagram", self)
         a.newDiagram.triggered.connect(lambda: self.newDiagram(self.item))
-        a.newMenuDiagram = QAction('Diagram', self)
+        a.newMenuDiagram = QAction("Diagram", self)
         a.newMenuDiagram.triggered.connect(lambda: self.newDiagram(self.item))
-        a.newSymbol = QAction('New Symbol', self)
+        a.newSymbol = QAction("New Symbol", self)
         a.newSymbol.triggered.connect(lambda: self.newSymbol(self.item))
-        a.newMenuSymbol = QAction('Symbol', self)
+        a.newMenuSymbol = QAction("Symbol", self)
         a.newMenuSymbol.triggered.connect(lambda: self.newSymbol(self.item))
-        a.open = QAction('Open...', self)
+        a.open = QAction("Open...", self)
         a.open.triggered.connect(lambda: self.openDb())
-        a.openDesign = QAction('Open Design...', self)
-        a.openDesign.triggered.connect(lambda: self.openDb('Design'))
-        a.openLibrary = QAction('Open Library...', self)
-        a.openLibrary.triggered.connect(lambda: self.openDb('Library'))
-        a.editDiagram = QAction('Edit Diagram', self)
+        a.openDesign = QAction("Open Design...", self)
+        a.openDesign.triggered.connect(lambda: self.openDb("Design"))
+        a.openLibrary = QAction("Open Library...", self)
+        a.openLibrary.triggered.connect(lambda: self.openDb("Library"))
+        a.editDiagram = QAction("Edit Diagram", self)
         a.editDiagram.triggered.connect(lambda: self.editDrawing(self.item))
-        a.editSymbol = QAction('Edit Symbol', self)
+        a.editSymbol = QAction("Edit Symbol", self)
         a.editSymbol.triggered.connect(lambda: self.editDrawing(self.item))
-        a.newDiagramWindow = QAction('New Diagram Window', self)
+        a.newDiagramWindow = QAction("New Diagram Window", self)
         a.newDiagramWindow.triggered.connect(lambda: self.newDrawingWindow(self.item))
-        a.newSymbolWindow = QAction('New Symbol Window', self)
+        a.newSymbolWindow = QAction("New Symbol Window", self)
         a.newSymbolWindow.triggered.connect(lambda: self.newDrawingWindow(self.item))
-        a.saveDesign = QAction('Save Design', self)
+        a.saveDesign = QAction("Save Design", self)
         a.saveDesign.triggered.connect(lambda: self.saveDb(self.item))
-        a.saveLibrary = QAction('Save Library', self)
+        a.saveLibrary = QAction("Save Library", self)
         a.saveLibrary.triggered.connect(lambda: self.saveDb(self.item))
-        a.saveDesignAs = QAction('Save Design As...', self)
+        a.saveDesignAs = QAction("Save Design As...", self)
         a.saveDesignAs.triggered.connect(lambda: self.saveDbAs(self.item))
-        a.saveLibraryAs = QAction('Save Library As...', self)
+        a.saveLibraryAs = QAction("Save Library As...", self)
         a.saveLibraryAs.triggered.connect(lambda: self.saveDbAs(self.item))
-        a.closeDesign = QAction('Close Design', self)
+        a.closeDesign = QAction("Close Design", self)
         a.closeDesign.triggered.connect(lambda: self.closeDb(self.item))
-        a.closeLibrary = QAction('Close Library', self)
+        a.closeLibrary = QAction("Close Library", self)
         a.closeLibrary.triggered.connect(lambda: self.closeDb(self.item))
-        a.renameDesign = QAction('Rename Design', self)
+        a.renameDesign = QAction("Rename Design", self)
         a.renameDesign.triggered.connect(self.rename)
-        a.renameLibrary = QAction('Rename Library', self)
+        a.renameLibrary = QAction("Rename Library", self)
         a.renameLibrary.triggered.connect(self.rename)
-        a.renameDiagram = QAction('Rename Diagram', self)
+        a.renameDiagram = QAction("Rename Diagram", self)
         a.renameDiagram.triggered.connect(self.rename)
-        a.renameSymbol = QAction('Rename Symbol', self)
+        a.renameSymbol = QAction("Rename Symbol", self)
         a.renameSymbol.triggered.connect(self.rename)
-        a.copy = QAction('Copy', self)
+        a.copy = QAction("Copy", self)
         a.copy.triggered.connect(lambda: self.copy(self.item))
-        a.paste = QAction('Paste', self)
+        a.paste = QAction("Paste", self)
         a.paste.triggered.connect(lambda: self.paste(self.item))
         self.menus = SimpleNamespace()
         m = self.menus
-        m.new_db = QMenu('New', self)
+        m.new_db = QMenu("New", self)
         m.new_db.addAction(a.newMenuDesign)
         m.new_db.addAction(a.newMenuLibrary)
-        m.new_dwg = QMenu('New', self)
+        m.new_dwg = QMenu("New", self)
         m.new_dwg.addAction(a.newMenuDiagram)
         m.new_dwg.addAction(a.newMenuSymbol)
 
     def onItemChanged(self : Self, item : QStandardItem) -> None:
         """Handle changes to items in the model, such as renaming."""
-        if item.parent() and item.parent().text() in ('Diagrams', 'Symbol Cache'):
+        if item.parent() and item.parent().text() in ("Diagrams", "Symbol Cache"):
             scene = item.data(Qt.ItemDataRole.UserRole)
             if scene:
                 scene.name = item.text()
@@ -170,12 +170,12 @@ class Explorer(TreeView):
     def expandOrEdit(self : Self, item : QStandardItem) -> None:
         self.selectItem(item)
         match hub.model.getItemDescription(item):
-            case 'Designs'  | 'Libraries'    | \
-                 'Design'   | 'Library'      | \
-                 'Diagrams' | 'Symbol Cache':
+            case "Designs"  | "Libraries"    | \
+                 "Design"   | "Library"      | \
+                 "Diagrams" | "Symbol Cache":
                 index = self.currentIndex()
                 self.setExpanded(index, not self.isExpanded(index))
-            case 'Diagram' | 'Design Symbol' | 'Library Symbol':
+            case "Diagram" | "Design Symbol" | "Library Symbol":
                 self.editDrawing(item)
 
     def newDesign(self : Self) -> None:
@@ -241,16 +241,16 @@ class Explorer(TreeView):
                 db_item = item.parent()
                 subwindow = SymbolSubWindow(hub.main_window.mdi_area)
             else:
-                raise ValueError(f'Unknown drawing scene: {type(drawing_scene)}')
+                raise ValueError(f"Unknown drawing scene: {type(drawing_scene)}")
             subwindow.setWidget(drawing_view)
-            subwindow.setWindowTitle(f'{db_item.text()}: {drawing_name}')
+            subwindow.setWindowTitle(f"{db_item.text()}: {drawing_name}")
             hub.main_window.mdi_area.addSubWindow(subwindow)
             subwindow.showMaximized()
             hub.main_window.menu_bar.updateWindowMenu()
         else:
-            logger.warning(f'Unsupported item: {item.text()} ({type(item)})')
+            logger.warning(f"Unsupported item: {item.text()} ({type(item)})")
 
-    def newDrawingWindow(self : Self, item : 'DrawingItem') -> None:
+    def newDrawingWindow(self : Self, item : "DrawingItem") -> None:
         from ..core import DesignItem, LibraryItem, DiagramItem, SymbolItem
         from ..widgets import DiagramScene, DiagramView, DiagramSubWindow, \
                               SymbolScene, SymbolView, SymbolSubWindow
@@ -265,36 +265,36 @@ class Explorer(TreeView):
             dwg_view = SymbolView(dwg_scene)
             subwindow = SymbolSubWindow()
         else:
-            logger.warning(f'Unsupported item: {item.text()} ({type(item)})')
+            logger.warning(f"Unsupported item: {item.text()} ({type(item)})")
             return
         dwg_name = item.text()
         subwindow.setWidget(dwg_view)
-        subwindow.setWindowTitle(f'{db_item.text()}:{dwg_name}')
+        subwindow.setWindowTitle(f"{db_item.text()}:{dwg_name}")
         hub.main_window.mdi_area.addSubWindow(subwindow)
         subwindow.showMaximized()
         hub.main_window.menu_bar.updateWindowMenu()
 
-    def saveDb(self : Self, item : 'DbItem') -> None:
+    def saveDb(self : Self, item : "DbItem") -> None:
         item.save()
 
-    def saveDbAs(self : Self, item : 'DbItem') -> None:
+    def saveDbAs(self : Self, item : "DbItem") -> None:
         from .dialogs import FileSaveAsDialog
-        dialog = FileSaveAsDialog(item.__class__.__name__.replace('Item', ''))
+        dialog = FileSaveAsDialog(item.__class__.__name__.replace("Item", ""))
         result = dialog.exec()
         if result == dialog.DialogCode.Accepted:
             selected_files = dialog.selectedFiles()
             if len(selected_files) > 1:
                 unexpected_files = [f for f in selected_files[1:]]
-                logger.warning(f'Unexpected files: {unexpected_files}')
+                logger.warning(f"Unexpected files: {unexpected_files}")
             path = selected_files[0]
             item.save(path)
 
-    def closeDb(self : Self, item : 'DbItem') -> None:
+    def closeDb(self : Self, item : "DbItem") -> None:
         # TODO offer to save if modified
         hub.model.close(item)
 
     def rename(self : Self) -> None:
-        """Start editing the selected item's text."""
+        """Start editing the selected item"s text."""
         from ..core import DbItem, DrawingItem
         if self.currentIndex().isValid():
             item = self.model().itemFromIndex(self.currentIndex())
@@ -319,20 +319,20 @@ class Explorer(TreeView):
             self.item = self.model().itemFromIndex(index)
             item = self.model().itemFromIndex(index)
             match hub.model.getItemDescription(item):
-                case 'Designs':
+                case "Designs":
                     menu.addAction(a.newDesign)
                     menu.addAction(a.openDesign)
-                case 'Libraries':
+                case "Libraries":
                     menu.addAction(a.newLibrary)
                     menu.addAction(a.openLibrary)
-                case 'Design':
+                case "Design":
                     menu.addMenu(m.new_dwg)
                     menu.addAction(a.saveDesign)
                     menu.addAction(a.saveDesignAs)
                     menu.addAction(a.closeDesign)
                     menu.addSeparator()
                     menu.addAction(a.renameDesign)
-                case 'Library':
+                case "Library":
                     menu.addAction(a.saveLibrary)
                     menu.addAction(a.saveLibraryAs)
                     menu.addAction(a.closeLibrary)
@@ -340,16 +340,16 @@ class Explorer(TreeView):
                     menu.addAction(a.newSymbol)
                     menu.addSeparator()
                     menu.addAction(a.renameLibrary)
-                case 'Diagrams':
+                case "Diagrams":
                     menu.addAction(a.newDiagram)
-                case 'Symbol Cache':
+                case "Symbol Cache":
                     menu.addAction(a.newSymbol)
-                case 'Diagram':
+                case "Diagram":
                     menu.addAction(a.newDiagramWindow)
                     menu.addAction(a.editDiagram)
                     menu.addSeparator()
                     menu.addAction(a.renameDiagram)
-                case 'Design Symbol' | 'Library Symbol':
+                case "Design Symbol" | "Library Symbol":
                     menu.addAction(a.newSymbolWindow)
                     menu.addAction(a.editSymbol)
                     menu.addSeparator()
@@ -367,7 +367,7 @@ class Explorer(TreeView):
         menu.exec(self.viewport().mapToGlobal(pos))
 
 class ExplorerDock(TreeViewDock):
-    WINDOW_TITLE = 'Explorer'
+    WINDOW_TITLE = "Explorer"
 
     explorer : Explorer
 

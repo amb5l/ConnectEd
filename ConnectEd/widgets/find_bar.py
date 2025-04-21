@@ -24,7 +24,7 @@ class FindBar(QWidget):
         layout = QHBoxLayout(self)
         layout.setContentsMargins(5, 2, 5, 2)
 
-        self.find_label = QLabel('Find:')
+        self.find_label = QLabel("Find:")
         layout.addWidget(self.find_label)
 
         self.find_combo = QComboBox()
@@ -34,24 +34,24 @@ class FindBar(QWidget):
         layout.addWidget(self.find_combo)
 
         self.find_prev = QToolButton()
-        self.find_prev.setIcon(QIcon(QIcon.fromTheme('go-previous')))
-        self.find_prev.setToolTip('Find Previous')
+        self.find_prev.setIcon(QIcon(QIcon.fromTheme("go-previous")))
+        self.find_prev.setToolTip("Find Previous")
         self.find_next = QToolButton()
-        self.find_next.setIcon(QIcon(QIcon.fromTheme('go-next')))
-        self.find_next.setToolTip('Find Next')
+        self.find_next.setIcon(QIcon(QIcon.fromTheme("go-next")))
+        self.find_next.setToolTip("Find Next")
         layout.addWidget(self.find_prev)
         layout.addWidget(self.find_next)
 
         self.match_case = QCheckBox()
-        self.match_case.setText('&Match Case')
+        self.match_case.setText("&Match Case")
         layout.addWidget(self.match_case)
 
         self.whole_words = QCheckBox()
-        self.whole_words.setText('&Whole Words')
+        self.whole_words.setText("&Whole Words")
         layout.addWidget(self.whole_words)
 
         self.highlight = QCheckBox()
-        self.highlight.setText('Highlight')
+        self.highlight.setText("Highlight")
         layout.addWidget(self.highlight)
 
         layout.addStretch()

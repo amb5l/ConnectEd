@@ -1,4 +1,4 @@
-__all__ = ['DiagramScene']
+__all__ = ["DiagramScene"]
 
 from typing import Self, Optional
 
@@ -12,9 +12,9 @@ from ... import hub
 
 class DiagramScene(DrawingScene):
     XML_ATTRIBUTES = DrawingScene.XML_ATTRIBUTES | {
-        'paper_size' : 'str',
-        'margin'     : 'float',
-        'border'     : 'float'
+        "paper_size" : "str",
+        "margin"     : "float",
+        "border"     : "float"
     }
 
     paper_size : str | QSizeF

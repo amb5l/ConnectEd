@@ -1,4 +1,4 @@
-__all__ = ['BaseRectangle']
+__all__ = ["BaseRectangle"]
 
 from typing import Self, Optional, Any
 
@@ -18,14 +18,14 @@ if TYPE_CHECKING:
 class BaseRectangle(QGraphicsRectItem, Element):
     """Base class for rectangle items."""
     XML_ATTRIBUTES = {
-        'anchor'     : 'KeyPoint',
-        'pen_spec'   : 'PenSpec',
-        'brush_spec' : 'BrushSpec',
-        'text_spec'  : 'TextSpec'
+        "anchor"     : "KeyPoint",
+        "pen_spec"   : "PenSpec",
+        "brush_spec" : "BrushSpec",
+        "text_spec"  : "TextSpec"
     }
     XML_PROPERTIES = {
-        'pos'  : ( 'QPointF' , lambda self, value: self.setPos(value)  , lambda self: self.pos()         ),
-        'size' : ( 'QSizeF'  , lambda self, value: self.setSize(value) , lambda self: self.rect().size() )
+        "pos"  : ( "QPointF" , lambda self, value: self.setPos(value)  , lambda self: self.pos()         ),
+        "size" : ( "QSizeF"  , lambda self, value: self.setSize(value) , lambda self: self.rect().size() )
     }
     MIN_SIZE = QSizeF(1.0, 1.0)
 
@@ -143,7 +143,7 @@ class BaseRectangle(QGraphicsRectItem, Element):
             case KeyPoint.BOTTOM_RIGHT:
                 self.setPoints(p1, p2 + d)
             case _:
-                raise ValueError(f'Invalid key point: {kp}')
+                raise ValueError(f"Invalid key point: {kp}")
 
     def rect(self : Self) -> QRectF:
         rect = super().rect()
@@ -199,7 +199,7 @@ class cmdPlaceBaseRectangle(cmdPlaceElement):
 
     def __init__(
         self       : Self,
-        scene      : Optional['DrawingScene'] = None,
+        scene      : Optional["DrawingScene"] = None,
         element    : Optional[BaseRectangle] = None,
         pos        : QPointF = QPointF(0, 0),
         size_or_p2 : QSizeF | QPointF = QSizeF(0, 0),

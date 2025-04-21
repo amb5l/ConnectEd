@@ -28,7 +28,7 @@ class TreeView(QTreeView):
         self.decreaseFontShortcut.activated.connect(self.decreaseFontSize)
 
     def customizeAppearance(self : Self) -> None:
-        if hub.settings.prefs.display.theme == 'dark':
+        if hub.settings.prefs.display.theme == "dark":
             self.setStyleSheet("""
                 QTreeView::branch {
                     image: none;
@@ -60,7 +60,7 @@ class TreeView(QTreeView):
         self.setFontSize(max(self.current_font_size - 1, 6)) # TODO: min from settings
 
 class TreeViewDock(QDockWidget):
-    WINDOW_TITLE = 'Tree Viewer'
+    WINDOW_TITLE = "Tree Viewer"
 
     def __init__(
         self   : Self,

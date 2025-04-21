@@ -26,18 +26,18 @@ class TextView(QPlainTextEdit):
         self.setUndoRedoEnabled(False)
         self.setWordWrapMode(QTextOption.WrapMode.NoWrap)
         font = self.font()
-        font.setFamily('Intel One Mono')
+        font.setFamily("Intel One Mono")
         font.setPointSize(10)
         self.setFont(font)
         if filename:
-            with open(filename, 'r') as f:
+            with open(filename, "r") as f:
                 content = f.read()
-                if content.endswith('\n'):
+                if content.endswith("\n"):
                     content = content[:-1]
             self.setPlainText(content)
         self.verticalScrollBar().setValue(self.verticalScrollBar().maximum())
         self.actions = SimpleNamespace()
-        self.actions.showFindBar = QAction('Find Bar', self)
+        self.actions.showFindBar = QAction("Find Bar", self)
         self.actions.showFindBar.setCheckable(True)
         self.actions.showFindBar.setChecked(False)
         self.actions.showFindBar.triggered.connect(self.showFindBar)
@@ -77,14 +77,14 @@ class TextView(QPlainTextEdit):
                 self.find_bar.find_combo.lineEdit().selectAll()
 
     def __del__(self : Self) -> None:
-        if hasattr(self, 'handler') and self.handler:
+        if hasattr(self, "handler") and self.handler:
             try:
                 logger.removeHandler(self.handler)
             except:
                 pass
 
 class TextViewDockWidget(QDockWidget):
-    WINDOW_TITLE = 'Text Viewer'
+    WINDOW_TITLE = "Text Viewer"
     main_widget  : QWidget
     text_view    : TextView
     find_bar     : FindBar

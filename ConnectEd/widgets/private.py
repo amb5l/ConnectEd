@@ -1,7 +1,7 @@
 """Private classes for the widgets."""
 
 __all__ = [
-    'Action'
+    "Action"
 ]
 
 from typing import Self, Optional, Any

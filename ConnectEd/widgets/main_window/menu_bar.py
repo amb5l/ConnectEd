@@ -11,13 +11,13 @@ if TYPE_CHECKING:
 class MenuBar(QMenuBar):
     def __init__(
         self    : Self,
-        parent  : 'MainWindow'
+        parent  : "MainWindow"
     ) -> None:
         super().__init__(parent)
         actions = parent.actions
 
-        self.file_menu = QMenu('&File')
-        self.file_new_menu = QMenu('&New')
+        self.file_menu = QMenu("&File")
+        self.file_new_menu = QMenu("&New")
         self.file_new_menu.addAction(actions.fileNewDesign)
         self.file_new_menu.addAction(actions.fileNewLibrary)
         self.file_menu.addMenu(self.file_new_menu)
@@ -26,7 +26,7 @@ class MenuBar(QMenuBar):
         self.file_menu.addAction(actions.fileSaveAs)
         self.file_menu.addAction(actions.fileExit)
 
-        self.edit_menu = QMenu('&Edit')
+        self.edit_menu = QMenu("&Edit")
         self.edit_menu.addAction(actions.editUndo)
         self.edit_menu.addAction(actions.editRedo)
         self.edit_menu.addSeparator()
@@ -45,7 +45,7 @@ class MenuBar(QMenuBar):
         # TODO: editFindPrevious
         # TODO: editFindReplace
 
-        self.view_menu = QMenu('&View')
+        self.view_menu = QMenu("&View")
         self.view_menu.addAction(actions.viewZoomAll)
         self.view_menu.addAction(actions.viewZoomSheet)
         self.view_menu.addAction(actions.viewZoomWindow)
@@ -61,16 +61,16 @@ class MenuBar(QMenuBar):
         self.view_menu.addAction(actions.viewGridDisplay)
         self.view_menu.addAction(actions.viewGridSnap)
 
-        self.place_menu = QMenu('&Place')
+        self.place_menu = QMenu("&Place")
         self.place_menu.addAction(actions.placeRectangle)
 
-        self.window_menu = QMenu('&Window')
+        self.window_menu = QMenu("&Window")
         self.window_menu.addAction(actions.windowExplorer)
         self.window_menu.addAction(actions.windowMessages)
         self.window_menu.addAction(actions.windowTranscript)
         self.window_menu.addAction(actions.windowLog)
 
-        self.help_menu = QMenu('&Help')
+        self.help_menu = QMenu("&Help")
         self.help_menu.addAction(actions.helpAbout)
 
         self.addMenu(self.file_menu)
@@ -95,7 +95,7 @@ class MenuBar(QMenuBar):
             if subwindow_actions == {}:
                 return
             for key, actions in subwindow_actions.items():
-                if key == '_':
+                if key == "_":
                     continue
                 self.window_menu.addSeparator()
                 for action in actions:

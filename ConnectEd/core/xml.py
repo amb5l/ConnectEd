@@ -1,4 +1,4 @@
-__all__ = ['fromXmlBegin', 'saveBegin', 'saveEnd', 'open', 'copy', 'paste']
+__all__ = ["fromXmlBegin", "saveBegin", "saveEnd", "open", "copy", "paste"]
 
 from typing import TypeAlias, Union, Any
 
@@ -15,18 +15,18 @@ if TYPE_CHECKING:
 
 
 XmlItemTypes: TypeAlias = Union[
-    'DesignItem',
-    'LibraryItem',
-    'DiagramItem',
-    'SymbolItem',
-    'Element'
+    "DesignItem",
+    "LibraryItem",
+    "DiagramItem",
+    "SymbolItem",
+    "Element"
 ]
 
 def toXmlBegin(xw : QXmlStreamWriter) -> None:
     xw.setAutoFormatting(True)
     xw.setAutoFormattingIndent(2)
     xw.writeStartDocument()
-    xw.writeStartElement('ConnectEd') # TODO: version
+    xw.writeStartElement("ConnectEd") # TODO: version
 
 def toXmlEnd(xw : QXmlStreamWriter) -> None:
     xw.writeEndDocument()
@@ -42,32 +42,32 @@ def fromXmlBegin(xr : QXmlStreamReader, token_name : str) -> None:
 def fromXml(xr : QXmlStreamReader) -> list[XmlItemTypes]:
     from .model import DesignItem, LibraryItem, DiagramItem, SymbolItem
     from ..widgets.elements import element_class_dict
-    fromXmlBegin(xr, 'ConnectEd')
+    fromXmlBegin(xr, "ConnectEd")
     xr.readNext()
     result = []
-    while not (xr.isEndElement() and xr.name() == 'ConnectEd'):
+    while not (xr.isEndElement() and xr.name() == "ConnectEd"):
         if xr.tokenType() == QXmlStreamReader.TokenType.StartElement:
             match xr.name():
-                case 'Design':
+                case "Design":
                     design_item = DesignItem.fromXml(xr)
                     result.append(design_item)
-                case 'Library':
+                case "Library":
                     library_item = LibraryItem.fromXml(xr)
                     result.append(library_item)
-                case 'Diagram':
+                case "Diagram":
                     diagram_item = DiagramItem.fromXml(xr)
                     result.append(diagram_item)
-                case 'Symbol':
+                case "Symbol":
                     symbol_item = SymbolItem.fromXml(xr)
                     result.append(symbol_item)
-                case _: # assume it's an Element
+                case _: # assume it"s an Element
                     if xr.name() in element_class_dict:
                         element_class = element_class_dict[xr.name()]
                         element = element_class.fromXml(xr)
                         result.append(element)
                     else:
-                        logger.warning(f"Unexpected element: {attr_name}")
-        if xr.isEndElement() and xr.name() == 'ConnectEd':
+                        logger.warning(f"Unexpected element: {xr.name()}")
+        if xr.isEndElement() and xr.name() == "ConnectEd":
             break
         xr.readNext()
     return result
@@ -118,13 +118,13 @@ def paste() -> list[XmlItemTypes]:
                 items = fromXml(xr)
                 return items
             except ValueError as e:
-                print(f'paste error: {e}')
+                print(f"paste error: {e}")
                 if xr.hasError():
-                    print(f'XML parser error: {xr.errorString()} at line {xr.lineNumber()}, column {xr.columnNumber()}')
+                    print(f"XML parser error: {xr.errorString()} at line {xr.lineNumber()}, column {xr.columnNumber()}")
             except Exception as e:
-                print(f'Unexpected error during paste: {str(e)}')
+                print(f"Unexpected error during paste: {str(e)}")
                 import traceback
                 traceback.print_exc()
     else:
-        logger.warning('No valid ConnectEd data in clipboard')
+        logger.warning("No valid ConnectEd data in clipboard")
     return []

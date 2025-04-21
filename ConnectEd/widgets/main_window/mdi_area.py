@@ -43,20 +43,20 @@ class MdiArea(QMdiArea):
     def _updateSubWindowTitles(self : Self) -> None:
         self.subwindow_scenes = {}
         for w in self.subWindowList():
-            key = '_'
+            key = "_"
             if isinstance(w, DrawingSubWindow) \
             and isinstance(w.widget(), DrawingView) \
             and isinstance(w.widget().scene(), DrawingScene):
                 scene = w.widget().scene()
                 scene_name = scene.name
                 db_name = hub.model.getDbItemFromScene(scene).text()
-                w.setWindowTitle(f'{db_name}:{scene_name}')
+                w.setWindowTitle(f"{db_name}:{scene_name}")
                 key = id(scene)
                 if key in self.subwindow_scenes:
                     l = self.subwindow_scenes[key]
                     if len(l) == 1:
-                        l[0].setWindowTitle(f'{l[0].windowTitle()}:0')
-                    w.setWindowTitle(f'{db_name}:{scene_name}:{len(l)}')
+                        l[0].setWindowTitle(f"{l[0].windowTitle()}:0")
+                    w.setWindowTitle(f"{db_name}:{scene_name}:{len(l)}")
                 else:
                     self.subwindow_scenes[key] = [w]
 
@@ -64,7 +64,7 @@ class MdiArea(QMdiArea):
         m = hub.main_window
         self.subwindow_actions = {}
         for w in self.subWindowList():
-            key = '_'
+            key = "_"
             if isinstance(w, DrawingSubWindow) \
             and isinstance(w.widget(), DrawingView) \
             and isinstance(w.widget().scene(), DrawingScene):
