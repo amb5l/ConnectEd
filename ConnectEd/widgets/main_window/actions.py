@@ -58,10 +58,15 @@ class Actions:
         self.windowPrevious   = Action( self._parent, "Previous"     , "Previous"                    , "Ctrl+Shift+F6"              )
         self.helpAbout        = Action( self._parent, "About"        , ""                            , "Ctrl+Shift+T"               )
 
+        self.onSubWindowActivated(None)
+
     def actionEnable(self : Self, name : str, enable : bool) -> None:
         getattr(self, name).setEnabled(enable)
 
-    def onSubWindowActivated(self : Self, subwindow : QMdiSubWindow) -> None:
+    def onSubWindowActivated(
+        self      : Self,
+        subwindow : Optional[QMdiSubWindow]
+    ) -> None:
         # disconnect previous signals
         s = self._scene
         if s:
@@ -71,20 +76,36 @@ class Actions:
                 s.undo_stack.canRedoChanged.disconnect(self.onCanRedoChanged)
             except TypeError:
                 pass
-        if subwindow and isinstance(subwindow, DrawingSubWindow):
-            self._scene = subwindow.widget().scene()
-            # update everything
-            self.onSelectionChanged(self._scene.selectedItems())
-            self.onCanUndoChanged(self._scene.undo_stack.canUndo())
-            self.onCanRedoChanged(self._scene.undo_stack.canRedo())
+        en = subwindow is not None and isinstance(subwindow, DrawingSubWindow)
+        self._scene = subwindow.widget().scene() if en else None
+        self.onCanUndoChanged(en and self._scene.undo_stack.canUndo())
+        self.onCanRedoChanged(en and self._scene.undo_stack.canRedo())
+        self.onSelectionChanged(self._scene.selectedItems() if en else [])
+        self.onClipboardDataChanged()
+        self.fileSave        .setEnabled(en)
+        self.fileSaveAs      .setEnabled(en)
+        self.editCancel      .setEnabled(en)
+        self.editComplete    .setEnabled(en)
+        self.editSlide       .setEnabled(en)
+        self.editMove        .setEnabled(en)
+        self.viewZoomAll     .setEnabled(en)
+        self.viewZoomSheet   .setEnabled(en)
+        self.viewZoomWindow  .setEnabled(en)
+        self.viewZoomIn      .setEnabled(en)
+        self.viewZoomOut     .setEnabled(en)
+        self.viewPan         .setEnabled(en)
+        self.viewPanUp       .setEnabled(en)
+        self.viewPanDown     .setEnabled(en)
+        self.viewPanLeft     .setEnabled(en)
+        self.viewPanRight    .setEnabled(en)
+        self.viewGridDisplay .setEnabled(en)
+        self.viewGridSnap    .setEnabled(en)
+        self.placeRectangle  .setEnabled(en)
+        if en:
             # connect signals
             self._scene.selectionChangedItems.connect(self.onSelectionChanged)
             self._scene.undo_stack.canUndoChanged.connect(self.onCanUndoChanged)
             self._scene.undo_stack.canRedoChanged.connect(self.onCanRedoChanged)
-        else:
-            self.onSelectionChanged([])
-            self.editUndo.setEnabled(False)
-            self.editRedo.setEnabled(False)
 
     def onSelectionChanged(self : Self, items : list[QGraphicsItem]) -> None:
         self.editCut    .setEnabled( len(items) > 0 )
@@ -92,14 +113,18 @@ class Actions:
         self.editDelete .setEnabled( len(items) > 0 )
 
     def onClipboardDataChanged(self : Self) -> None:
-        clipboard = QApplication.clipboard()
-        mime_data = clipboard.mimeData()
-        self.editPaste.setEnabled(
-            mime_data is not None and mime_data.hasFormat(MIME_TYPE)
-        )
+        if not self._scene:
+            en = False
+        else:
+            clipboard = QApplication.clipboard()
+            mime_data = clipboard.mimeData()
+            en = mime_data is not None and mime_data.hasFormat(MIME_TYPE)
+        self.editPaste.setEnabled(en)
 
     def onCanUndoChanged(self : Self, canUndo : bool) -> None:
         self.editUndo.setEnabled(canUndo)
 
     def onCanRedoChanged(self : Self, canRedo : bool) -> None:
         self.editRedo.setEnabled(canRedo)
+
+# TODO control status of edit cancel/complete
