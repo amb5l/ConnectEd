@@ -52,28 +52,28 @@ class BaseText(QGraphicsTextItemCustomized, Element):
         self.updateGripsVisibility()
         self.updateGripsZValue()
 
-    def keyPressEvent(self, event: QKeyEvent):
+    def keyPressEvent(self, event: QKeyEvent) -> None:
         if event.key() in (Qt.Key.Key_Return, Qt.Key.Key_Enter):
             self.clearFocus()
             event.accept()
         else:
             super().keyPressEvent(event)
 
-    def focusOutEvent(self, event: QFocusEvent):
+    def focusOutEvent(self, event: QFocusEvent) -> None:
         super().focusOutEvent(event)
         scene : Optional["DrawingScene"] = self.scene()
         if scene:
             scene.onTextEditingComplete(self)
 
-    def setPos(self, pos: QPointF):
+    def setPos(self, pos: QPointF) -> None:
         super().setPos(pos)
         self.updateGripsPosition()
 
-    def setPlainText(self, text: str):
+    def setPlainText(self, text: str) -> None:
         super().setPlainText(text)
         self.updateGripsPosition()
 
-    def setEditable(self, editable: bool):
+    def setEditable(self, editable: bool) -> None:
         self.setTextInteractionFlags(
             Qt.TextInteractionFlag.TextEditable if editable else
             Qt.TextInteractionFlag.NoTextInteraction
@@ -173,7 +173,7 @@ class cmdPlaceBaseText(cmdPlaceElement):
         pos     : QPointF = QPointF(0, 0),
         anchor  : KeyPoint = KeyPoint.TOP_LEFT,
         wip     : bool = False
-    ):
+    ) -> None:
         super().__init__(scene, element, False, False, True, wip)
         self.text   = text
         self.pos    = pos
@@ -192,7 +192,7 @@ class cmdPlaceBaseText(cmdPlaceElement):
         self.element.setPos(self.pos)
         return True
 
-    def redo(self : Self):
+    def redo(self : Self) -> None:
         super().redo()
         self.element.setPlainText(self.text)
         self.element.setEditable(self.wip)

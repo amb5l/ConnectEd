@@ -408,11 +408,11 @@ class cmdMove(cmdElements):
         self.delta += other.delta
         return True
 
-    def redo(self : Self):
+    def redo(self : Self) -> None:
         for element in self.elements:
             element.moveBy(self.delta.x(), self.delta.y())
 
-    def undo(self : Self):
+    def undo(self : Self) -> None:
         for element in self.elements:
             element.moveBy(-self.delta.x(), -self.delta.y())
 
@@ -437,11 +437,11 @@ class cmdResize(cmdElement):
         self.delta += other.delta
         return True
 
-    def redo(self : Self):
+    def redo(self : Self) -> None:
         parent : Element = self.element.parentItem()
         parent.moveKeyPoint(self.element.key_point, self.delta)
 
-    def undo(self : Self):
+    def undo(self : Self) -> None:
         parent : Element = self.element.parentItem()
         parent.moveKeyPoint(self.element.key_point, -self.delta)
 
