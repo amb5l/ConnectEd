@@ -399,11 +399,8 @@ class DrawingView(QGraphicsView):
                 items = self._itemsAt(self.mouse.left.press.logical)
                 for item in items:
                     if isinstance(item, Grip):
-                        self.grip = item
-                        break
-                else:
-                    self.grip = None
-                if m == qkm.NoModifier and not self.grip:
+                        return
+                if m == qkm.NoModifier:
                     self.scene().clearSelection()
                 self._selectPoint(
                     self.mouse.current.logical,
@@ -481,36 +478,31 @@ class DrawingView(QGraphicsView):
                 items = self._itemsAt(self.mouse.left.press.logical)
                 for item in items:
                     if isinstance(item, Grip):
-                        self.grip = item
-                        break
-                else:
-                    self.grip = None
-                if self.grip: # we"ve hit a grip
-                    self.resizeBegin(
-                        self.grip, self._snap(self.mouse.left.press.logical)
-                    )
-                else:
-                    if not (m & (qkm.ControlModifier | qkm.ShiftModifier)):
-                        self.scene().clearSelection()
-                    self._selectPoint(
-                        self.mouse.left.press.logical,
-                        m & qkm.ControlModifier
-                    )
-                    items = self.scene().selectedItems()
-                    if len(items): # slide/move
-                        if m & qkm.AltModifier:
-                            self.moveBegin(
-                                items,
-                                self._snap(self.mouse.left.press.logical)
-                            )
-                        else:
-                            self.slideBegin(
-                                items,
-                                self._snap(self.mouse.left.press.logical)
-                            )
-                    else: # start marquee selection
-                        self.marquee.begin(self.mouse.left.press.physical)
-                        self._goState(self.State.SelectArea2)
+                        self.resizeBegin(
+                            item, self._snap(self.mouse.left.press.logical)
+                        )
+                        return
+                if not (m & (qkm.ControlModifier | qkm.ShiftModifier)):
+                    self.scene().clearSelection()
+                self._selectPoint(
+                    self.mouse.left.press.logical,
+                    m & qkm.ControlModifier
+                )
+                items = self.scene().selectedItems()
+                if len(items): # slide/move
+                    if m & qkm.AltModifier:
+                        self.moveBegin(
+                            items,
+                            self._snap(self.mouse.left.press.logical)
+                        )
+                    else:
+                        self.slideBegin(
+                            items,
+                            self._snap(self.mouse.left.press.logical)
+                        )
+                else: # start marquee selection
+                    self.marquee.begin(self.mouse.left.press.physical)
+                    self._goState(self.State.SelectArea2)
             case self.State.ViewZoomWindow1:
                 self.marquee.begin(self.mouse.left.press.physical)
                 self._goState(self.State.ViewZoomWindow2)
