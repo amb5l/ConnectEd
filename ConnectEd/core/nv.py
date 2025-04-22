@@ -52,7 +52,7 @@ FACTORY_SETTINGS = {
                 "text" : {
                     "font" : {
                         "family"    : "Liberation Sans",
-                        "size"      : 12,
+                        "size"      : 7,
                         "weight"    : 400,
                         "italic"    : False,
                         "underline" : False
@@ -60,7 +60,7 @@ FACTORY_SETTINGS = {
                 },
                 "selected" : {
                     "line" : {
-                        "width" : 1,
+                        "width" : 0,
                         "style" : Qt.PenStyle.DotLine
                     },
                     "fill" : Qt.BrushStyle.DiagCrossPattern,
