@@ -11,8 +11,6 @@ from PyQt6.QtWidgets import QGraphicsItem, QGraphicsTextItem
 
 from ...core import logger, val2str, str2val, camel_to_proper
 
-from .grip import Grip
-
 from ... import hub
 
 from typing import TYPE_CHECKING
@@ -449,8 +447,8 @@ class cmdResize(cmdElement):
 
 __all__ = []
 
-from .grip import Grip
-__all__ += ["Grip"]
+from .grip import Grip, ResizeGrip, AnchorGrip
+__all__ += grip.__all__
 from .rectangle import Rectangle, cmdPlaceRectangle
 __all__ += rectangle.__all__
 from .text import Text, cmdPlaceText

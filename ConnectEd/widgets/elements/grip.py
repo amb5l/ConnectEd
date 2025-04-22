@@ -1,6 +1,8 @@
+__all__ = ["Grip", "ResizeGrip", "AnchorGrip"]
+
 from typing import Self, Optional
 
-from PyQt6.QtCore    import Qt, QRectF, QXmlStreamWriter
+from PyQt6.QtCore    import Qt, QRectF, QXmlStreamWriter, QPointF
 from PyQt6.QtWidgets import QGraphicsItem, QStyleOptionGraphicsItem, \
                             QWidget, QGraphicsView
 from PyQt6.QtGui     import QPainter, QPen, QBrush, QPainterPath
@@ -23,10 +25,10 @@ class Grip(QGraphicsItem):
         key_point : "KeyPoint"
     ) -> None:
         super().__init__(parent)
+        self.key_point = key_point
         f = QGraphicsItem.GraphicsItemFlag
         self.setFlag( f.ItemIsMovable            , True )
         self.setFlag( f.ItemSendsGeometryChanges , True )
-        self.key_point = key_point
 
     def getViewScale(
         self : Self,
@@ -64,17 +66,28 @@ class Grip(QGraphicsItem):
                 view = views[0]
         return view
 
+    def getPenBrush(self : Self) -> tuple[QPen, QBrush]:
+        theme = hub.settings.theme.grip
+        return QPen(theme.line, 0, Qt.PenStyle.SolidLine), \
+               QBrush(theme.fill, Qt.BrushStyle.SolidPattern)
+
     def paint(
         self    : Self,
         painter : QPainter,
         option  : QStyleOptionGraphicsItem,
         widget  : QWidget
     ) -> None:
-        a = self == self.parentItem().grips[self.parentItem().anchor]
-        theme = hub.settings.theme.anchor if a else hub.settings.theme.grip
-        painter.setPen(QPen(theme.line, 0, Qt.PenStyle.SolidLine))
-        painter.setBrush(QBrush(theme.fill, Qt.BrushStyle.SolidPattern))
+        pen, brush = self.getPenBrush()
+        painter.setPen(pen)
+        painter.setBrush(brush)
         painter.drawRect(self.boundingRect(self.getView(widget)))
 
     def toXml(self : Self, xw : QXmlStreamWriter) -> None:
         pass # do not include grips in XML
+
+class ResizeGrip(Grip):
+    def drag(self : Self, delta : QPointF) -> None:
+        self.parentItem().moveKeyPoint(self.key_point, delta)
+
+class AnchorGrip(Grip):
+    pass

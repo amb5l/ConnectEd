@@ -1,13 +1,13 @@
 __all__ = ["BaseText"]
 
-from typing import Self, Optional
+from typing import Self, Optional, Any
 
 from PyQt6.QtCore    import Qt, QPointF, QRectF
 from PyQt6.QtWidgets import QWidget, QStyleOptionGraphicsItem, QStyle
 from PyQt6.QtGui     import QPainter, QPainterPath, QUndoCommand, QPen, \
-                            QKeyEvent, QFocusEvent, QColor, QTextCursor
+                            QKeyEvent, QFocusEvent, QColor
 
-from . import QGraphicsTextItemCustomized, Element, Grip, \
+from . import QGraphicsTextItemCustomized, Element, AnchorGrip, \
               KeyPoint, TextSpec, cmdPlaceElement
 
 from ... import hub
@@ -28,7 +28,7 @@ class BaseText(QGraphicsTextItemCustomized, Element):
         "text_spec"  : ( "TextSpec"  , lambda self, value: self.setTextSpec  (value) , lambda self: self.getTextSpec  () )
     }
 
-    grips  : list[Grip]
+    grips  : dict[KeyPoint, AnchorGrip]
     anchor : KeyPoint
 
     def __init__(
@@ -40,7 +40,7 @@ class BaseText(QGraphicsTextItemCustomized, Element):
         QGraphicsTextItemCustomized.__init__(self, text)
         QGraphicsTextItemCustomized.document(self).setDocumentMargin(0)
         Element.__init__(self, False, False, True)
-        self.grips = {p: Grip(self, p) for p in KeyPoint}
+        self.grips = {p: AnchorGrip(self, p) for p in KeyPoint}
         self.setPos(pos)
         self.setZValue(self.Z)
         self.setAnchor(anchor)
@@ -104,7 +104,7 @@ class BaseText(QGraphicsTextItemCustomized, Element):
 
     def updateGripsZValue(self : Self) -> None:
         for grip in self.grips.values():
-            grip.setZValue(self.zValue() + Grip.Z_DELTA)
+            grip.setZValue(self.zValue() + grip.Z_DELTA)
 
     def boundingRect(self : Self) -> QRectF:
         rect = super().boundingRect()
@@ -149,6 +149,15 @@ class BaseText(QGraphicsTextItemCustomized, Element):
             painter.drawRect(self.boundingRect())
         if c:
             self.setDefaultTextColor(c)
+
+    def itemChange(
+        self   : Self,
+        change : QGraphicsTextItemCustomized.GraphicsItemChange,
+        value  : Any
+    ) -> None:
+        if change == self.GraphicsItemChange.ItemSelectedHasChanged:
+            self.updateGripsVisibility()
+        return QGraphicsTextItemCustomized.itemChange(self, change, value)
 
 class cmdPlaceBaseText(cmdPlaceElement):
     element    : BaseText

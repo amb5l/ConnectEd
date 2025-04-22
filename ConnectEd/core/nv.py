@@ -124,10 +124,6 @@ FACTORY_SETTINGS = {
                 "fill" : QColor( 255,   0,   0 )  # bright red
 
             },
-            "anchor" : {
-                "line" : QColor( 255,   0, 255 ), # bright magenta
-                "fill" : QColor( 255, 255, 128 )  # bright yellow
-            },
             "grid" : {
                 "line" : QColor(  64,  64,  64 )
             }
