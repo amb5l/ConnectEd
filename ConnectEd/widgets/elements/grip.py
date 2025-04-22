@@ -13,7 +13,7 @@ if TYPE_CHECKING:
 
 
 class Grip(QGraphicsItem):
-    Z_DELTA = 1 # TODO: use it or lose it
+    Z_DELTA = 1
 
     key_point : "KeyPoint"
 
@@ -38,7 +38,7 @@ class Grip(QGraphicsItem):
         return scale if scale != 0 else 1.0
 
     def boundingRect(self, view: Optional[QGraphicsView] = None) -> QRectF:
-        size_p = hub.settings.prefs.display.elements.selected.grip.size  # e.g., 4 pixels
+        size_p = hub.settings.prefs.display.elements.selected.grip.size
         scale = self.getViewScale(view)
         size_l = size_p / scale
         return QRectF(-size_l / 2, -size_l / 2, size_l, size_l)
