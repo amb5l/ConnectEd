@@ -42,14 +42,16 @@ class Grip(QGraphicsItem):
         scale = view.transform().m11()
         return scale if scale != 0 else 1.0
 
+    def getSize(self : Self, view : QGraphicsView) -> float:
+        scale = self.getViewScale(view)
+        return hub.settings.prefs.display.elements.selected.grip.size / scale
+
     def boundingRect(
         self : Self,
         view: Optional[QGraphicsView] = None
     ) -> QRectF:
-        size_p = hub.settings.prefs.display.elements.selected.grip.size
-        scale = self.getViewScale(view)
-        size_l = size_p / scale
-        return QRectF(-size_l / 2, -size_l / 2, size_l, size_l)
+        size = self.getSize(view)
+        return QRectF(-size / 2, -size / 2, size, size)
 
     def shape(self : Self) -> QPainterPath:
         path = QPainterPath()
@@ -90,4 +92,23 @@ class ResizeGrip(Grip):
         self.parentItem().moveKeyPoint(self.key_point, delta)
 
 class AnchorGrip(Grip):
-    pass
+    def paint(
+        self    : Self,
+        painter : QPainter,
+        option  : QStyleOptionGraphicsItem,
+        widget  : QWidget
+    ) -> None:
+        pen, brush = self.getPenBrush()
+        painter.setPen(pen)
+        painter.setBrush(brush)
+        size = self.getSize(self.getView(widget))
+        if self.key_point == self.parentItem().anchor:
+            painter.drawRect(QRectF(-size/2, -size/2, size, size))
+        else:
+            path = QPainterPath()
+            path.moveTo(0, -size/2)
+            path.lineTo(size/2, 0)
+            path.lineTo(0, size/2)
+            path.lineTo(-size/2, 0)
+            path.closeSubpath()
+            painter.drawPath(path)
