@@ -28,7 +28,10 @@ class Grip(QGraphicsItem):
         self.setFlag( f.ItemSendsGeometryChanges , True )
         self.key_point = key_point
 
-    def getViewScale(self, view: Optional[QGraphicsView] = None) -> float:
+    def getViewScale(
+        self : Self,
+        view: Optional[QGraphicsView] = None
+    ) -> float:
         views = self.scene().views() if self.scene() else []
         if not view:
             if not views:
@@ -37,7 +40,10 @@ class Grip(QGraphicsItem):
         scale = view.transform().m11()
         return scale if scale != 0 else 1.0
 
-    def boundingRect(self, view: Optional[QGraphicsView] = None) -> QRectF:
+    def boundingRect(
+        self : Self,
+        view: Optional[QGraphicsView] = None
+    ) -> QRectF:
         size_p = hub.settings.prefs.display.elements.selected.grip.size
         scale = self.getViewScale(view)
         size_l = size_p / scale
@@ -48,12 +54,7 @@ class Grip(QGraphicsItem):
         path.addRect(self.boundingRect())
         return path
 
-    def paint(
-        self    : Self,
-        painter : QPainter,
-        option  : QStyleOptionGraphicsItem,
-        widget  : QWidget
-    ) -> None:
+    def getView(self : Self, widget : QWidget) -> Optional[QGraphicsView]:
         view = None
         if widget and isinstance(widget.parent(), QGraphicsView):
             view = widget.parent()
@@ -61,11 +62,19 @@ class Grip(QGraphicsItem):
             views = self.scene().views() if self.scene() else []
             if views:
                 view = views[0]
+        return view
+
+    def paint(
+        self    : Self,
+        painter : QPainter,
+        option  : QStyleOptionGraphicsItem,
+        widget  : QWidget
+    ) -> None:
         a = self == self.parentItem().grips[self.parentItem().anchor]
         theme = hub.settings.theme.anchor if a else hub.settings.theme.grip
         painter.setPen(QPen(theme.line, 0, Qt.PenStyle.SolidLine))
         painter.setBrush(QBrush(theme.fill, Qt.BrushStyle.SolidPattern))
-        painter.drawRect(self.boundingRect(view))
+        painter.drawRect(self.boundingRect(self.getView(widget)))
 
     def toXml(self : Self, xw : QXmlStreamWriter) -> None:
-        pass
+        pass # do not include grips in XML
