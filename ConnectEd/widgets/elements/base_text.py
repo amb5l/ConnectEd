@@ -2,19 +2,22 @@ __all__ = ["BaseText"]
 
 from typing import Self, Optional
 
-from PyQt6.QtCore    import Qt, QPointF, QRectF, QSizeF
-from PyQt6.QtWidgets import QGraphicsTextItem, QStyleOptionGraphicsItem, QWidget
-from PyQt6.QtGui     import QPainter, QPainterPath, QUndoCommand, \
-                            QKeyEvent, QFocusEvent
+from PyQt6.QtCore    import Qt, QPointF, QRectF
+from PyQt6.QtWidgets import QWidget, QStyleOptionGraphicsItem, QStyle
+from PyQt6.QtGui     import QPainter, QPainterPath, QUndoCommand, QPen, \
+                            QKeyEvent, QFocusEvent, QColor, QTextCursor
 
-from . import Element, KeyPoint, PenSpec, BrushSpec, TextSpec, cmdPlaceElement
+from . import QGraphicsTextItemCustomized, Element, \
+              KeyPoint, TextSpec, cmdPlaceElement
+
+from ... import hub
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from .. import DrawingScene
 
 
-class BaseText(QGraphicsTextItem, Element):
+class BaseText(QGraphicsTextItemCustomized, Element):
     """Base class for text items."""
     XML_ATTRIBUTES = {
         "text"       : ( "str"       , lambda self, value: self.setText      (value) , lambda self: self.getText      () ),
@@ -33,7 +36,8 @@ class BaseText(QGraphicsTextItem, Element):
         pos    : QPointF = QPointF(0, 0),
         anchor : KeyPoint = KeyPoint.TOP_LEFT
     ) -> None:
-        QGraphicsTextItem.__init__(self, text)
+        QGraphicsTextItemCustomized.__init__(self, text)
+        QGraphicsTextItemCustomized.document(self).setDocumentMargin(0)
         Element.__init__(self, False, False, True)
         self.setPos(pos)
         self.setZValue(self.Z)
@@ -45,7 +49,7 @@ class BaseText(QGraphicsTextItem, Element):
 
     def keyPressEvent(self, event: QKeyEvent):
         if event.key() in (Qt.Key.Key_Return, Qt.Key.Key_Enter):
-            self.clearFocus()  # Trigger focusOutEvent to finish editing
+            self.clearFocus()
             event.accept()
         else:
             super().keyPressEvent(event)
@@ -74,16 +78,47 @@ class BaseText(QGraphicsTextItem, Element):
 
     def boundingRect(self : Self) -> QRectF:
         rect = super().boundingRect()
-        return QRectF(
+        adjusted =QRectF(
             -rect.width() * self.anchor.value.h,
             -rect.height() * self.anchor.value.v,
             rect.width(), rect.height()
         )
+        if self.hasFocus():
+            # compensate for focus rect inset
+            adjusted.adjust(-0.5, -0.5, 0.5, 0.5)
+        return adjusted
 
     def shape(self : Self) -> QPainterPath:
         path = QPainterPath()
         path.addRect(self.boundingRect())
         return path
+
+    def paint(
+        self    : Self,
+        painter : QPainter,
+        option  : QStyleOptionGraphicsItem,
+        widget  : QWidget
+    ) -> None:
+        # override selected appearance
+        c = None
+        option.state &= ~QStyle.StateFlag.State_Selected
+        if option.state & QStyle.StateFlag.State_HasFocus:
+            rect = self.boundingRect() #.adjusted(0.5, 0.5, -0.5, -0.5)
+            painter.fillRect(rect, QColor(255, 255, 255, 192))
+            c = self.defaultTextColor()
+            self.setDefaultTextColor(QColor(255, 0, 255))
+        if self.isSelected():
+            # override text color
+            theme = hub.settings.theme.selected.text
+            c = self.defaultTextColor()
+            self.setDefaultTextColor(theme)
+        super().paint(painter, option, widget)
+        if self.isSelected():
+            prefs = hub.settings.prefs.display.elements.selected.line
+            painter.setPen(QPen(theme, prefs.width, prefs.style))
+            painter.drawRect(self.boundingRect())
+        if c:
+            self.setDefaultTextColor(c)
 
 class cmdPlaceBaseText(cmdPlaceElement):
     element    : BaseText

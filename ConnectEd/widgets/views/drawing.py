@@ -6,9 +6,11 @@ from math   import ceil, sqrt
 
 from PyQt6.QtCore    import Qt, QPoint, QPointF, QRectF, QSizeF, QEvent
 from PyQt6.QtWidgets import QMdiArea, QMdiSubWindow, \
-                            QGraphicsView, QGraphicsItem, QMenu
+                            QMenu, QGraphicsView, \
+                            QGraphicsItem, QGraphicsTextItem
 from PyQt6.QtGui     import QPainter, QPainterPath, QPen, QIcon, \
-                            QCloseEvent, QEnterEvent, QMouseEvent, QWheelEvent, \
+                            QCloseEvent, QEnterEvent, \
+                            QKeyEvent, QMouseEvent, QWheelEvent, \
                             QAction, QCursor
 
 from ...core import logger, LAYER_SHEET, LAYER_DRAWING
@@ -262,6 +264,24 @@ class DrawingView(QGraphicsView):
                         QPointF(grect.right(), y)
                     )
                     y += py
+
+    ############################################################################
+    # key events
+
+    def keyPressEvent(self : Self, event : QKeyEvent) -> None:
+        """Override default arrow key handling to prevent panning"""
+        if event.key() in (
+            Qt.Key.Key_Left, Qt.Key.Key_Right, Qt.Key.Key_Up, Qt.Key.Key_Down
+        ):
+            focus_item = self.scene().focusItem()
+            if (isinstance(focus_item, QGraphicsTextItem) and
+                focus_item.textInteractionFlags() & Qt.TextInteractionFlag.TextEditable):
+                super().keyPressEvent(event)
+                event.accept()
+            else:
+                event.ignore()
+            return
+        super().keyPressEvent(event)
 
     ############################################################################
     # mouse events
