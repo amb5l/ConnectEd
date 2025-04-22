@@ -1,7 +1,8 @@
-from typing import Self
+from typing import Self, Optional
 
-from PyQt6.QtCore    import Qt, QPointF, QRectF, QXmlStreamWriter
-from PyQt6.QtWidgets import QGraphicsItem, QStyleOptionGraphicsItem, QWidget
+from PyQt6.QtCore    import Qt, QRectF, QXmlStreamWriter
+from PyQt6.QtWidgets import QGraphicsItem, QStyleOptionGraphicsItem, \
+                            QWidget, QGraphicsView
 from PyQt6.QtGui     import QPainter, QPen, QBrush, QPainterPath
 
 from ... import hub
@@ -27,9 +28,20 @@ class Grip(QGraphicsItem):
         self.setFlag( f.ItemSendsGeometryChanges , True )
         self.key_point = key_point
 
-    def boundingRect(self : Self) -> QRectF:
-        size = hub.settings.prefs.display.elements.selected.grip.size
-        return QRectF(-size/2, -size/2, size, size)
+    def getViewScale(self, view: Optional[QGraphicsView] = None) -> float:
+        views = self.scene().views() if self.scene() else []
+        if not view:
+            if not views:
+                return 1.0
+            view = views[0]
+        scale = view.transform().m11()
+        return scale if scale != 0 else 1.0
+
+    def boundingRect(self, view: Optional[QGraphicsView] = None) -> QRectF:
+        size_p = hub.settings.prefs.display.elements.selected.grip.size  # e.g., 4 pixels
+        scale = self.getViewScale(view)
+        size_l = size_p / scale
+        return QRectF(-size_l / 2, -size_l / 2, size_l, size_l)
 
     def shape(self : Self) -> QPainterPath:
         path = QPainterPath()
@@ -42,11 +54,18 @@ class Grip(QGraphicsItem):
         option  : QStyleOptionGraphicsItem,
         widget  : QWidget
     ) -> None:
+        view = None
+        if widget and isinstance(widget.parent(), QGraphicsView):
+            view = widget.parent()
+        else:
+            views = self.scene().views() if self.scene() else []
+            if views:
+                view = views[0]
         a = self == self.parentItem().grips[self.parentItem().anchor]
         theme = hub.settings.theme.anchor if a else hub.settings.theme.grip
         painter.setPen(QPen(theme.line, 0, Qt.PenStyle.SolidLine))
         painter.setBrush(QBrush(theme.fill, Qt.BrushStyle.SolidPattern))
-        painter.drawRect(self.boundingRect())
+        painter.drawRect(self.boundingRect(view))
 
     def toXml(self : Self, xw : QXmlStreamWriter) -> None:
         pass

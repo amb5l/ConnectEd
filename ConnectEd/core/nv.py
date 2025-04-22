@@ -65,7 +65,7 @@ FACTORY_SETTINGS = {
                     },
                     "fill" : Qt.BrushStyle.DiagCrossPattern,
                     "grip" : {
-                        "size" : 4
+                        "size" : 8
                     }
                 },
                 "wip" : {
