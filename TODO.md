@@ -1,8 +1,7 @@
 - text: selection outline position, selection color, anchor/grip
 - Mouse left button released when idle
 - consolidate mouse event handling
-- Liberation fonts
-- undo/redo move
+- Liberation fonts: serif spacing
 - remove unused methods
 - sort out WIP
 - explorer: multi item copy/paste
