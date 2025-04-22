@@ -7,7 +7,7 @@ from PyQt6.QtWidgets import QWidget, QStyleOptionGraphicsItem, QStyle
 from PyQt6.QtGui     import QPainter, QPainterPath, QUndoCommand, QPen, \
                             QKeyEvent, QFocusEvent, QColor, QTextCursor
 
-from . import QGraphicsTextItemCustomized, Element, \
+from . import QGraphicsTextItemCustomized, Element, Grip, \
               KeyPoint, TextSpec, cmdPlaceElement
 
 from ... import hub
@@ -28,6 +28,7 @@ class BaseText(QGraphicsTextItemCustomized, Element):
         "text_spec"  : ( "TextSpec"  , lambda self, value: self.setTextSpec  (value) , lambda self: self.getTextSpec  () )
     }
 
+    grips  : list[Grip]
     anchor : KeyPoint
 
     def __init__(
@@ -39,6 +40,7 @@ class BaseText(QGraphicsTextItemCustomized, Element):
         QGraphicsTextItemCustomized.__init__(self, text)
         QGraphicsTextItemCustomized.document(self).setDocumentMargin(0)
         Element.__init__(self, False, False, True)
+        self.grips = {p: Grip(self, p) for p in KeyPoint}
         self.setPos(pos)
         self.setZValue(self.Z)
         self.setAnchor(anchor)
@@ -46,6 +48,9 @@ class BaseText(QGraphicsTextItemCustomized, Element):
         self.setEditable(False)
         self.setFlag(self.GraphicsItemFlag.ItemIsSelectable , True)
         self.setFlag(self.GraphicsItemFlag.ItemIsFocusable  , True)
+        self.updateGripsPosition()
+        self.updateGripsVisibility()
+        self.updateGripsZValue()
 
     def keyPressEvent(self, event: QKeyEvent):
         if event.key() in (Qt.Key.Key_Return, Qt.Key.Key_Enter):
@@ -59,6 +64,14 @@ class BaseText(QGraphicsTextItemCustomized, Element):
         scene : Optional["DrawingScene"] = self.scene()
         if scene:
             scene.onTextEditingComplete(self)
+
+    def setPos(self, pos: QPointF):
+        super().setPos(pos)
+        self.updateGripsPosition()
+
+    def setPlainText(self, text: str):
+        super().setPlainText(text)
+        self.updateGripsPosition()
 
     def setEditable(self, editable: bool):
         self.setTextInteractionFlags(
@@ -75,6 +88,23 @@ class BaseText(QGraphicsTextItemCustomized, Element):
         if font:
             self.setFont(font)
             self.setDefaultTextColor(self.colorFromTextSpec())
+
+    def updateGripsPosition(self : Self) -> None:
+        for kp in self.grips.keys():
+            self.grips[kp].setPos(
+                kp.value.h * super().boundingRect().width(),
+                kp.value.v * super().boundingRect().height()
+            )
+
+    def updateGripsVisibility(self : Self) -> None:
+        for grip in self.grips.values():
+            grip.setVisible(
+                self.isSelected() and len(self.scene().selectedItems()) == 1
+            )
+
+    def updateGripsZValue(self : Self) -> None:
+        for grip in self.grips.values():
+            grip.setZValue(self.zValue() + Grip.Z_DELTA)
 
     def boundingRect(self : Self) -> QRectF:
         rect = super().boundingRect()
