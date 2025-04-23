@@ -1,11 +1,14 @@
 __all__ = ["BaseText"]
 
 from typing import Self, Optional, Any
+from types  import SimpleNamespace
 
 from PyQt6.QtCore    import Qt, QPointF, QRectF
-from PyQt6.QtWidgets import QWidget, QStyleOptionGraphicsItem, QStyle
+from PyQt6.QtWidgets import QWidget, QStyleOptionGraphicsItem, QStyle, \
+                            QMenu, QGraphicsSceneContextMenuEvent
+
 from PyQt6.QtGui     import QPainter, QPainterPath, QUndoCommand, QPen, \
-                            QKeyEvent, QFocusEvent, QColor
+                            QKeyEvent, QFocusEvent, QColor, QAction
 
 from . import QGraphicsTextItemCustomized, Element, AnchorGrip, \
               KeyPoint, TextSpec, cmdPlaceElement
@@ -28,8 +31,10 @@ class BaseText(QGraphicsTextItemCustomized, Element):
         "text_spec"  : ( "TextSpec"  , lambda self, value: self.setTextSpec  (value) , lambda self: self.getTextSpec  () )
     }
 
-    grips  : dict[KeyPoint, AnchorGrip]
-    anchor : KeyPoint
+    grips   : dict[KeyPoint, AnchorGrip]
+    anchor  : KeyPoint
+    menu    : QMenu
+    actions : SimpleNamespace
 
     def __init__(
         self   : Self,
@@ -51,6 +56,16 @@ class BaseText(QGraphicsTextItemCustomized, Element):
         self.updateGripsPosition()
         self.updateGripsVisibility()
         self.updateGripsZValue()
+        self.menu = QMenu()
+        self.actions = SimpleNamespace()
+        self.actions.edit = QAction("Edit")
+        self.actions.edit.triggered.connect(self.edit)
+        self.menu.addAction(self.actions.edit)
+        # edit properties
+        # move
+        # delete
+        # assign anchor
+        # link
 
     def keyPressEvent(self, event: QKeyEvent) -> None:
         if event.key() in (Qt.Key.Key_Return, Qt.Key.Key_Enter):
@@ -64,6 +79,12 @@ class BaseText(QGraphicsTextItemCustomized, Element):
         scene : Optional["DrawingScene"] = self.scene()
         if scene:
             scene.onTextEditingComplete(self)
+
+    def contextMenuEvent(self : Self, event : QGraphicsSceneContextMenuEvent) -> None:
+        self.menu.exec(event.screenPos())
+
+    def edit(self : Self) -> None:
+        print("edit")
 
     def setPos(self, pos: QPointF) -> None:
         super().setPos(pos - self.getAnchorOffset())
