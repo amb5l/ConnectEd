@@ -688,6 +688,7 @@ class DrawingView(QGraphicsView):
             scene.undo_stack.endMacro()
         scene.undo_stack.undo()
         self.wip.clear()
+        self.scene().clearSelection()
         self._goState(self.State.Idle)
 
     def editComplete(self : Self) -> None:
