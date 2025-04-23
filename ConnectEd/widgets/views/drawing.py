@@ -113,9 +113,9 @@ class DrawingViewState(Enum):
     EditSlide2      = auto()
     EditMove1       = auto()
     EditMove2       = auto()
-    EditResize0     = auto()
     EditResize1     = auto()
     EditResize2     = auto()
+    EditResize3     = auto()
     PlaceRectangle1 = auto()
     PlaceRectangle2 = auto()
     PlaceText1      = auto()
@@ -450,22 +450,22 @@ class DrawingView(QGraphicsView):
                     self.state == self.State.EditSlide2
                 )
                 self._goState(self.State.Idle)
-            case self.State.EditResize0:
+            case self.State.EditResize1:
                 self._selectPoint(
                     self.mouse.current.logical,
                     m == qkm.ControlModifier
                 )
                 if len(self.scene().selectedItems()) == 1:
-                    self._goState(self.State.EditResize1)
-            case self.State.EditResize1:
+                    self._goState(self.State.EditResize2)
+            case self.State.EditResize2:
                 items = self._itemsAt(self.mouse.left.press.logical)
                 for item in items:
                     if isinstance(item, Grip) and hasattr(item, "moveBy"):
                         self.moveBegin(
                             [item], self._snap(self.mouse.left.press.logical)
                         )
-                        self._goState(self.State.EditResize2)
-            case self.State.EditResize2:
+                        self._goState(self.State.EditResize3)
+            case self.State.EditResize3:
                 self.moveComplete(
                     self._snap(self.mouse.left.release.logical)
                 )
@@ -499,7 +499,7 @@ class DrawingView(QGraphicsView):
                         self.moveBegin(
                             [item], self._snap(self.mouse.left.press.logical)
                         )
-                        self._goState(self.state.EditResize2)
+                        self._goState(self.state.EditResize3)
                         return
                 if not (m & (qkm.ControlModifier | qkm.ShiftModifier)):
                     self.scene().clearSelection()
@@ -552,7 +552,7 @@ class DrawingView(QGraphicsView):
                 self.moveContinue(
                     self._snap(self.mouse.current.logical)
                 )
-            case self.State.EditResize2:
+            case self.State.EditResize3:
                 self.moveContinue(self._snap(self.mouse.current.logical))
             case self.State.PlaceRectangle2:
                 self.placeRectangleContinue(
@@ -573,7 +573,7 @@ class DrawingView(QGraphicsView):
                 self.marquee.end(self.mouse.left.release.physical)
                 self._zoomRect(self.marquee.rect())
                 self._goState(self.State.Idle)
-            case self.State.EditMove2 | self.State.EditSlide2 | self.State.EditResize2:
+            case self.State.EditMove2 | self.State.EditSlide2 | self.State.EditResize3:
                 self.moveComplete(
                     self._snap(self.mouse.left.release.logical),
                     self.state == self.State.EditSlide2
@@ -636,7 +636,7 @@ class DrawingView(QGraphicsView):
                 self.wip.pos0 = self.mouse.current.physical
             case self.State.ViewZoomWindow2:
                 self.marquee.resize(self.mouse.current.physical)
-            case self.State.EditMove2 | self.State.EditSlide2 | self.State.EditResize2:
+            case self.State.EditMove2 | self.State.EditSlide2 | self.State.EditResize3:
                 self.moveContinue(
                     self._snap(self.mouse.current.logical),
                     self.state == self.State.EditSlide2
@@ -709,10 +709,10 @@ class DrawingView(QGraphicsView):
 
     def editResize(self : Self) -> None:
         if len(self.scene().selectedItems()) == 1:
-            self._goState(self.State.EditResize1)
+            self._goState(self.State.EditResize2)
         else:
             self.scene().clearSelection()
-            self._goState(self.State.EditResize0)
+            self._goState(self.State.EditResize1)
 
     ############################################################################
     # view methods
