@@ -40,6 +40,7 @@ class MenuBar(QMenuBar):
         self.edit_menu.addSeparator()
         self.edit_menu.addAction(actions.editSlide)
         self.edit_menu.addAction(actions.editMove)
+        self.edit_menu.addAction(actions.editResize)
         # TODO: editFind
         # TODO: editFindNext
         # TODO: editFindPrevious

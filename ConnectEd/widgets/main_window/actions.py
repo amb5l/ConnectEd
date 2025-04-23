@@ -37,6 +37,7 @@ class Actions:
         self.editDelete       = Action( self._parent, "Delete"       , "Delete"                      , SK.Delete                    )
         self.editSlide        = Action( self._parent, "Slide"        , "Slide"                       , None                         )
         self.editMove         = Action( self._parent, "Move"         , "Move"                        , None                         )
+        self.editResize       = Action( self._parent, "Resize"       , "Resize"                      , None                         )
         self.viewZoomAll      = Action( self._parent, "Zoom All"     , "Zoom to fit all"             , "Ctrl+Home"                  )
         self.viewZoomSheet    = Action( self._parent, "Zoom Sheet"   , "Zoom to fit sheet"           , "Ctrl+Shift+S"               )
         self.viewZoomWindow   = Action( self._parent, "Zoom Window"  , "Zoom to window"              , "Ctrl+Shift+W"               )

@@ -1,3 +1,5 @@
+- moveKeyPoint -> dx, dy
+- move to grip vs keypoint dict in parent
 - text anchor editing
 - grip shapes, context menu
 - multi select context menu

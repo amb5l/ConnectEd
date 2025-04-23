@@ -88,8 +88,8 @@ class Grip(QGraphicsItem):
         pass # do not include grips in XML
 
 class ResizeGrip(Grip):
-    def drag(self : Self, delta : QPointF) -> None:
-        self.parentItem().moveKeyPoint(self.key_point, delta)
+    def moveBy(self : Self, dx : float, dy : float) -> None:
+        self.parentItem().moveKeyPoint(self.key_point, QPointF(dx, dy))
 
 class AnchorGrip(Grip):
     def paint(

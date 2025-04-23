@@ -419,32 +419,6 @@ class cmdMove(cmdElements):
 class cmdSlide(cmdMove):
     pass
 
-class cmdResize(cmdElement):
-    delta   : QPointF
-
-    def __init__(
-        self    : Self,
-        scene   : "DrawingScene",
-        element : Element,
-        delta   : QPointF
-    ):
-        super().__init__(scene, element)
-        self.delta = delta
-
-    def mergeWith(self : Self, other : QUndoCommand) -> bool:
-        if not super().mergeWith(other):
-            return False
-        self.delta += other.delta
-        return True
-
-    def redo(self : Self) -> None:
-        parent : Element = self.element.parentItem()
-        parent.moveKeyPoint(self.element.key_point, self.delta)
-
-    def undo(self : Self) -> None:
-        parent : Element = self.element.parentItem()
-        parent.moveKeyPoint(self.element.key_point, -self.delta)
-
 __all__ = []
 
 from .grip import Grip, ResizeGrip, AnchorGrip
