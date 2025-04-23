@@ -573,6 +573,17 @@ class DrawingView(QGraphicsView):
                 self.marquee.end(self.mouse.left.release.physical)
                 self._zoomRect(self.marquee.rect())
                 self._goState(self.State.Idle)
+            case self.State.ViewPan2:
+                delta = self.mouse.left.release.physical - self.wip.pos0
+                self.horizontalScrollBar().setValue(
+                    self.horizontalScrollBar().value() - delta.x()
+                )
+                self.verticalScrollBar().setValue(
+                    self.verticalScrollBar().value() - delta.y()
+                )
+                self.wip.clear()
+                self.setCursor(Qt.CursorShape.ArrowCursor)
+                self._goState(self.State.Idle)
             case self.State.EditMove2 | self.State.EditSlide2 | self.State.EditResize3:
                 self.moveComplete(
                     self._snap(self.mouse.left.release.logical),
@@ -605,8 +616,12 @@ class DrawingView(QGraphicsView):
         match self.state:
             case self.State.ViewPan2:
                 delta = self.mouse.current.physical - self.wip.pos0
-                self.horizontalScrollBar().setValue(self.horizontalScrollBar().value() - delta.x())
-                self.verticalScrollBar().setValue(self.verticalScrollBar().value() - delta.y())
+                self.horizontalScrollBar().setValue(
+                    self.horizontalScrollBar().value() - delta.x()
+                )
+                self.verticalScrollBar().setValue(
+                    self.verticalScrollBar().value() - delta.y()
+                )
                 self.wip.pos0 = self.mouse.current.physical
             case self.State.ViewZoomWindow2:
                 self.marquee.resize(self.mouse.current.physical)
@@ -614,11 +629,16 @@ class DrawingView(QGraphicsView):
     def mouseMiddleDragEnd(self : Self) -> None:
         match self.state:
             case self.State.ViewPan2:
-                delta = self.mouse.current.physical - self.wip.pos0
-                self.horizontalScrollBar().setValue(self.horizontalScrollBar().value() - delta.x())
-                self.verticalScrollBar().setValue(self.verticalScrollBar().value() - delta.y())
+                delta = self.mouse.middle.release.physical - self.wip.pos0
+                self.horizontalScrollBar().setValue(
+                    self.horizontalScrollBar().value() - delta.x()
+                )
+                self.verticalScrollBar().setValue(
+                    self.verticalScrollBar().value() - delta.y()
+                )
                 self.wip.clear()
                 self.setCursor(Qt.CursorShape.ArrowCursor)
+                self._goState(self.State.Idle)
             case self.State.ViewZoomWindow2:
                 self.marquee.end(self.mouse.middle.release.physical)
                 self._zoomRect(self.marquee.rect())
