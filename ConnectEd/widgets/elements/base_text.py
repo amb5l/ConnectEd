@@ -43,7 +43,6 @@ class BaseText(QGraphicsTextItemCustomized, Element):
         self.grips = {p: AnchorGrip(self, p) for p in KeyPoint}
         self.anchor = anchor
         self.setPos(pos)
-        self.setZValue(self.Z)
         self.setAnchor(anchor)
         self.setTextSpec()
         self.setEditable(False)

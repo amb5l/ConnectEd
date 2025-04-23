@@ -59,6 +59,7 @@ class Element(QGraphicsItem):
         brush_spec : bool | BrushSpec = False,
         text_spec  : bool | TextSpec  = False
     ) -> None:
+        self.setZValue(self.Z)
         if pen_spec:
             self.pen_spec = PenSpec(None, None, None) \
                 if pen_spec is True else pen_spec
