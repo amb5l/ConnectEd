@@ -1067,6 +1067,7 @@ class DrawingView(QGraphicsView):
                 Qt.ItemSelectionMode.IntersectsItemShape,
                 self.transform()
             )
+        # ensure grips are not visible if multiple items are selected
         for item in self.scene().selectedItems():
             if hasattr(item, "updateGripsVisibility"):
                 item.updateGripsVisibility()
