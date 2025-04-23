@@ -1,4 +1,3 @@
-- text grips can be moved!
 - merge XML attributes and properties
 - Add ElementWithGrips, ElementWithAnchor
 - review QPointF vs x,y

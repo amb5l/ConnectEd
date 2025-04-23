@@ -18,7 +18,7 @@ from ...core import logger, LAYER_SHEET, LAYER_DRAWING
 from ..scenes  import DrawingScene
 from ..marquee import Marquee
 
-from ..elements import Element, Grip, Text, Rectangle, \
+from ..elements import Element, Grip, ResizeGrip, Text, Rectangle, \
                        cmdMove, cmdPlaceRectangle, cmdPlaceText
 
 from ... import hub
@@ -493,7 +493,7 @@ class DrawingView(QGraphicsView):
                 m = self.mouse.left.press.modifiers
                 items = self._itemsAt(self.mouse.left.press.logical)
                 for item in items:
-                    if isinstance(item, Grip) and hasattr(item, "moveBy"):
+                    if isinstance(item, ResizeGrip):
                         self.moveBegin(
                             [item], self._snap(self.mouse.left.press.logical)
                         )
