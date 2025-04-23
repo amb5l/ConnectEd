@@ -1,7 +1,9 @@
-- rename editResize states
-- combine Move and Slide
+- text grips can be moved!
+- merge XML attributes and properties
+- Add ElementWithGrips, ElementWithAnchor
+- review QPointF vs x,y
 - moveKeyPoint -> dx, dy
-- move to grip vs keypoint dict in parent
+- move keypoint into parent
 - text anchor editing
 - grip shapes, context menu
 - multi select context menu

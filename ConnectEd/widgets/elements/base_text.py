@@ -41,6 +41,7 @@ class BaseText(QGraphicsTextItemCustomized, Element):
         QGraphicsTextItemCustomized.document(self).setDocumentMargin(0)
         Element.__init__(self, False, False, True)
         self.grips = {p: AnchorGrip(self, p) for p in KeyPoint}
+        self.anchor = anchor
         self.setPos(pos)
         self.setZValue(self.Z)
         self.setAnchor(anchor)
@@ -66,8 +67,7 @@ class BaseText(QGraphicsTextItemCustomized, Element):
             scene.onTextEditingComplete(self)
 
     def setPos(self, pos: QPointF) -> None:
-        super().setPos(pos)
-        self.updateGripsPosition()
+        super().setPos(pos - self.getAnchorOffset())
 
     def setPlainText(self, text: str) -> None:
         super().setPlainText(text)
@@ -79,9 +79,6 @@ class BaseText(QGraphicsTextItemCustomized, Element):
             Qt.TextInteractionFlag.NoTextInteraction
         )
 
-    def setAnchor(self : Self, anchor : KeyPoint = KeyPoint.TOP_LEFT) -> None:
-        self.anchor = anchor
-
     def setTextSpec(self: Self, text_spec: TextSpec = TextSpec()) -> None:
         super().setTextSpec(text_spec)
         font = self.fontFromSpec()
@@ -89,12 +86,23 @@ class BaseText(QGraphicsTextItemCustomized, Element):
             self.setFont(font)
             self.setDefaultTextColor(self.colorFromTextSpec())
 
+    def setAnchor(
+        self   : Self,
+        anchor : KeyPoint = KeyPoint.TOP_LEFT
+    ) -> None:
+        self.anchor = anchor
+
+    def getKeyPointPos(self : Self, kp : KeyPoint) -> QPointF:
+        rect = super().boundingRect()
+        return QPointF(kp.value.h * rect.width(), kp.value.v * rect.height())
+
+    def getAnchorOffset(self : Self) -> QPointF:
+        return self.getKeyPointPos(self.anchor)
+
     def updateGripsPosition(self : Self) -> None:
         for kp in self.grips.keys():
-            self.grips[kp].setPos(
-                kp.value.h * super().boundingRect().width(),
-                kp.value.v * super().boundingRect().height()
-            )
+            p = self.getKeyPointPos(kp)
+            self.grips[kp].setPos(p.x(), p.y())
 
     def updateGripsVisibility(self : Self) -> None:
         for grip in self.grips.values():
@@ -108,15 +116,9 @@ class BaseText(QGraphicsTextItemCustomized, Element):
 
     def boundingRect(self : Self) -> QRectF:
         rect = super().boundingRect()
-        adjusted =QRectF(
-            -rect.width() * self.anchor.value.h,
-            -rect.height() * self.anchor.value.v,
-            rect.width(), rect.height()
-        )
         if self.hasFocus():
-            # compensate for focus rect inset
-            adjusted.adjust(-0.5, -0.5, 0.5, 0.5)
-        return adjusted
+            rect.adjust(-0.5, -0.5, 0.5, 0.5) # compensate for focus rect inset
+        return rect
 
     def shape(self : Self) -> QPainterPath:
         path = QPainterPath()

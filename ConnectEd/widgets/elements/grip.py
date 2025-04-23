@@ -1,11 +1,13 @@
 __all__ = ["Grip", "ResizeGrip", "AnchorGrip"]
 
 from typing import Self, Optional
+from types  import SimpleNamespace
 
 from PyQt6.QtCore    import Qt, QRectF, QXmlStreamWriter, QPointF
 from PyQt6.QtWidgets import QGraphicsItem, QStyleOptionGraphicsItem, \
-                            QWidget, QGraphicsView
-from PyQt6.QtGui     import QPainter, QPen, QBrush, QPainterPath
+                            QWidget, QGraphicsView, \
+                            QMenu, QGraphicsSceneContextMenuEvent
+from PyQt6.QtGui     import QPainter, QPen, QBrush, QPainterPath, QAction
 
 from ... import hub
 
@@ -92,6 +94,29 @@ class ResizeGrip(Grip):
         self.parentItem().moveKeyPoint(self.key_point, QPointF(dx, dy))
 
 class AnchorGrip(Grip):
+    menu    : QMenu
+    actions : SimpleNamespace
+
+    def __init__(
+        self      : Self,
+        parent    : QGraphicsItem,
+        key_point : "KeyPoint"
+    ) -> None:
+        super().__init__(parent, key_point)
+        self.menu = QMenu()
+        self.actions = SimpleNamespace()
+        self.actions.setAnchor = QAction("Set Anchor", self.menu)
+        self.actions.setAnchor.triggered.connect(self.setAnchor)
+        self.menu.addAction(self.actions.setAnchor)
+
+    def contextMenuEvent(self, event: QGraphicsSceneContextMenuEvent) -> None:
+        self.menu.exec(event.screenPos())
+        event.widget().update()
+        event.accept()
+
+    def setAnchor(self : Self) -> None:
+        self.parentItem().setAnchor(self.key_point)
+
     def paint(
         self    : Self,
         painter : QPainter,

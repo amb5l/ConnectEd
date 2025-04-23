@@ -491,8 +491,6 @@ class DrawingView(QGraphicsView):
         match self.state:
             case self.State.Idle:
                 m = self.mouse.left.press.modifiers
-                if not(m & qkm.AltModifier):
-                    print("not Alt")
                 items = self._itemsAt(self.mouse.left.press.logical)
                 for item in items:
                     if isinstance(item, Grip) and hasattr(item, "moveBy"):
