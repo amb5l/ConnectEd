@@ -18,10 +18,8 @@ from ...core import logger, LAYER_SHEET, LAYER_DRAWING
 from ..scenes  import DrawingScene
 from ..marquee import Marquee
 
-from ..elements import Element, Grip, \
-                       cmdSlide, cmdMove, \
-                       Rectangle, cmdPlaceRectangle, \
-                       Text, cmdPlaceText
+from ..elements import Element, Grip, Text, Rectangle, \
+                       cmdMove, cmdPlaceRectangle, cmdPlaceText
 
 from ... import hub
 
@@ -432,31 +430,24 @@ class DrawingView(QGraphicsView):
                 self.marquee.end(self.mouse.left.release.physical)
                 self._zoomRect(self.marquee.rect())
                 self._goState(self.State.Idle)
-            case self.State.EditSlide1:
+            case self.State.EditMove1 | self.State.EditSlide1:
                 self._selectPoint(
                     self.mouse.current.logical,
-                    m == qkm.ControlModifier
-                )
-                self.slideBegin(
-                    self._snap(self.mouse.left.release.logical)
-                )
-            case self.State.EditSlide2:
-                self.slideComplete(
-                    self._snap(self.mouse.left.release.logical)
-                )
-            case self.State.EditMove1:
-                self._selectPoint(
-                    self.mouse.current.logical,
-                    m == qkm.ControlModifier
+                    m == qkm.ControlModifier,
+                    self.state == self.State.EditSlide1
                 )
                 self.moveBegin(
                     self.scene().selectedItems(),
                     self._snap(self.mouse.left.release.logical)
                 )
-                self._goState(self.State.EditMove2)
-            case self.State.EditMove2:
+                self._goState(
+                    self.state.EditSlide2 if self.state == self.state.EditSlide1
+                    else self.state.EditMove2
+                )
+            case self.State.EditMove2 | self.State.EditSlide2:
                 self.moveComplete(
-                    self._snap(self.mouse.left.release.logical)
+                    self._snap(self.mouse.left.release.logical),
+                    self.state == self.State.EditSlide2
                 )
                 self._goState(self.State.Idle)
             case self.State.EditResize0:
@@ -499,15 +490,17 @@ class DrawingView(QGraphicsView):
     def mouseLeftDragBegin(self : Self) -> None:
         match self.state:
             case self.State.Idle:
+                m = self.mouse.left.press.modifiers
+                if not(m & qkm.AltModifier):
+                    print("not Alt")
                 items = self._itemsAt(self.mouse.left.press.logical)
                 for item in items:
                     if isinstance(item, Grip) and hasattr(item, "moveBy"):
                         self.moveBegin(
                             [item], self._snap(self.mouse.left.press.logical)
                         )
-                        self._goState(self.State.EditMove2)
+                        self._goState(self.state.EditResize2)
                         return
-                m = self.mouse.left.press.modifiers
                 if not (m & (qkm.ControlModifier | qkm.ShiftModifier)):
                     self.scene().clearSelection()
                 self._selectPoint(
@@ -516,17 +509,15 @@ class DrawingView(QGraphicsView):
                 )
                 items = self.scene().selectedItems()
                 if len(items): # slide/move
-                    if m & qkm.AltModifier:
-                        self.moveBegin(
-                            items,
-                            self._snap(self.mouse.left.press.logical)
-                        )
-                        self._goState(self.State.EditMove2)
-                    else:
-                        self.slideBegin(
-                            items,
-                            self._snap(self.mouse.left.press.logical)
-                        )
+                    self.moveBegin(
+                        items,
+                        self._snap(self.mouse.left.press.logical),
+                        not(m & qkm.AltModifier)
+                    )
+                    self._goState(
+                        self.state.EditSlide2 if not(m & qkm.AltModifier)
+                        else self.state.EditMove2
+                    )
                 else: # start marquee selection
                     self.marquee.begin(self.mouse.left.press.physical)
                     self._goState(self.State.SelectArea2)
@@ -554,8 +545,8 @@ class DrawingView(QGraphicsView):
             case self.State.ViewZoomWindow2:
                 self.marquee.resize(self.mouse.current.physical)
             case self.State.EditSlide2:
-                self.slideContinue(
-                    self._snap(self.mouse.current.logical)
+                self.moveContinue(
+                    self._snap(self.mouse.current.logical), True
                 )
             case self.State.EditMove2:
                 self.moveContinue(
@@ -582,17 +573,11 @@ class DrawingView(QGraphicsView):
                 self.marquee.end(self.mouse.left.release.physical)
                 self._zoomRect(self.marquee.rect())
                 self._goState(self.State.Idle)
-            case self.State.EditSlide2:
-                self.slideComplete(
-                    self._snap(self.mouse.left.release.logical)
-                )
-            case self.State.EditMove2:
+            case self.State.EditMove2 | self.State.EditSlide2 | self.State.EditResize2:
                 self.moveComplete(
-                    self._snap(self.mouse.left.release.logical)
+                    self._snap(self.mouse.left.release.logical),
+                    self.state == self.State.EditSlide2
                 )
-                self._goState(self.State.Idle)
-            case self.State.EditResize2:
-                self.moveComplete(self._snap(self.mouse.left.release.logical))
                 self._goState(self.State.Idle)
             case self.State.PlaceRectangle2:
                 self.placeRectangleComplete(
@@ -651,13 +636,10 @@ class DrawingView(QGraphicsView):
                 self.wip.pos0 = self.mouse.current.physical
             case self.State.ViewZoomWindow2:
                 self.marquee.resize(self.mouse.current.physical)
-            case self.State.EditSlide2:
-                self.slideContinue(
-                    self._snap(self.mouse.current.logical)
-                )
-            case self.State.EditMove2 | self.State.EditResize2:
+            case self.State.EditMove2 | self.State.EditSlide2 | self.State.EditResize2:
                 self.moveContinue(
-                    self._snap(self.mouse.current.logical)
+                    self._snap(self.mouse.current.logical),
+                    self.state == self.State.EditSlide2
                 )
             case self.State.PlaceRectangle2:
                 self.placeRectangleContinue(
@@ -713,7 +695,7 @@ class DrawingView(QGraphicsView):
     def editSlide(self : Self) -> None:
         if self.scene().selectedItems():
             pos = self._snap(self._selectedItemsRect().center())
-            self.slideBegin(self.scene().selectedItems(), pos)
+            self.moveBegin(self.scene().selectedItems(), pos, True)
         else:
             self._goState(self.State.EditSlide1)
 
@@ -855,55 +837,22 @@ class DrawingView(QGraphicsView):
         self._goState(self.State.Idle)
 
     ############################################################################
-    # slide methods
-    # TODO: stretch connections
-
-    def slideCmd(self  : Self, delta : QPointF) -> None:
-        scene : DrawingScene = self.scene()
-        scene.undo_stack.push(cmdSlide(
-            scene    = self.scene(),
-            elements = self.wip.elements,
-            delta    = delta
-        ))
-
-    def slideBegin(
-        self     : Self,
-        elements : list[Element],
-        pos      : QPointF
-    ) -> None:
-        self.wip.macro = True
-        self.wip.elements = elements
-        self.wip.pos0 = pos
-        scene : DrawingScene = self.scene()
-        scene.undo_stack.beginMacro("Move")
-        self._goState(self.State.EditMove2)
-
-    def slideContinue(self : Self, pos : QPointF) -> None:
-        self.slideCmd(pos - self.wip.pos0)
-        self.wip.pos0 = pos
-
-    def slideComplete(self : Self, pos : QPointF) -> None:
-        self.slideCmd(pos - self.wip.pos0)
-        self.wip.clear()
-        scene : DrawingScene = self.scene()
-        scene.undo_stack.endMacro()
-        self._goState(self.State.Idle)
-
-    ############################################################################
     # move methods
 
-    def moveCmd(self  : Self, delta : QPointF) -> None:
+    def moveCmd(self  : Self, delta : QPointF, slide : bool = False) -> None:
         scene : DrawingScene = self.scene()
         scene.undo_stack.push(cmdMove(
             scene    = self.scene(),
             elements = self.wip.elements,
-            delta    = delta
+            delta    = delta,
+            slide    = slide
         ))
 
     def moveBegin(
         self     : Self,
         elements : list[Element],
-        pos      : QPointF
+        pos      : QPointF,
+        slide    : bool = False
     ) -> None:
         self.wip.macro = True
         self.wip.elements = elements
@@ -911,12 +860,12 @@ class DrawingView(QGraphicsView):
         scene : DrawingScene = self.scene()
         scene.undo_stack.beginMacro("Move")
 
-    def moveContinue(self : Self, pos : QPointF) -> None:
-        self.moveCmd(pos - self.wip.pos0)
+    def moveContinue(self : Self, pos : QPointF, slide : bool = False) -> None:
+        self.moveCmd(pos - self.wip.pos0, slide)
         self.wip.pos0 = pos
 
-    def moveComplete(self : Self, pos : QPointF) -> None:
-        self.moveCmd(pos - self.wip.pos0)
+    def moveComplete(self : Self, pos : QPointF, slide : bool = False) -> None:
+        self.moveCmd(pos - self.wip.pos0, slide)
         self.wip.clear()
         scene : DrawingScene = self.scene()
         scene.undo_stack.endMacro()

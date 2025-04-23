@@ -391,16 +391,19 @@ class cmdPlaceElement(cmdElement):
         self.scene.wip = []
 
 class cmdMove(cmdElements):
-    delta   : QPointF
+    delta : QPointF
+    slide : bool
 
     def __init__(
         self     : Self,
         scene    : "DrawingScene",
         elements : list[Element],
-        delta    : QPointF
+        delta    : QPointF,
+        slide    : bool = False
     ):
         super().__init__(scene, elements)
         self.delta = delta
+        self.slide = slide
 
     def mergeWith(self : Self, other : QUndoCommand) -> bool:
         if not super().mergeWith(other):
@@ -411,10 +414,12 @@ class cmdMove(cmdElements):
     def redo(self : Self) -> None:
         for element in self.elements:
             element.moveBy(self.delta.x(), self.delta.y())
+            # TODO: add slide logic
 
     def undo(self : Self) -> None:
         for element in self.elements:
             element.moveBy(-self.delta.x(), -self.delta.y())
+            # TODO: add slide logic
 
 class cmdSlide(cmdMove):
     pass

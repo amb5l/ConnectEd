@@ -1,3 +1,5 @@
+- rename editResize states
+- combine Move and Slide
 - moveKeyPoint -> dx, dy
 - move to grip vs keypoint dict in parent
 - text anchor editing
