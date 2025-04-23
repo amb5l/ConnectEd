@@ -123,22 +123,22 @@ class DrawingViewState(Enum):
 
 DrawingViewStateTip = {
     DrawingViewState.Idle            : "Idle",
-    DrawingViewState.ViewPan1        : "ViewPan1",
-    DrawingViewState.ViewPan2        : "ViewPan2",
-    DrawingViewState.ViewZoomWindow1 : "ViewZoomWindow1",
-    DrawingViewState.ViewZoomWindow2 : "ViewZoomWindow2",
-    DrawingViewState.SelectArea2     : "SelectArea2",
-    DrawingViewState.EditSlide1      : "EditSlide1",
-    DrawingViewState.EditSlide2      : "EditSlide2",
-    DrawingViewState.EditMove1       : "EditMove1",
-    DrawingViewState.EditMove2       : "EditMove2",
-    DrawingViewState.EditResize0     : "Resize: select a single resizeable item",
-    DrawingViewState.EditResize1     : "Resize: select a grip to begin resizing",
-    DrawingViewState.EditResize2     : "Resize: place the selected grip as required to complete resizing",
-    DrawingViewState.PlaceRectangle1 : "PlaceRectangle1",
-    DrawingViewState.PlaceRectangle2 : "PlaceRectangle2",
-    DrawingViewState.PlaceText1      : "PlaceText1",
-    DrawingViewState.PlaceText2      : "PlaceText2"
+    DrawingViewState.ViewPan1        : "Pan: pick the first point",
+    DrawingViewState.ViewPan2        : "Pan: pick the second point",
+    DrawingViewState.ViewZoomWindow1 : "Zoom Window: pick the first point",
+    DrawingViewState.ViewZoomWindow2 : "Zoom Window: pick the second point",
+    DrawingViewState.SelectArea2     : "Select: complete the marquee selection",
+    DrawingViewState.EditSlide1      : "Slide: select one or more items",
+    DrawingViewState.EditSlide2      : "Slide: place the selected item(s) as required",
+    DrawingViewState.EditMove1       : "Move: select one or more items",
+    DrawingViewState.EditMove2       : "Move: place the selected item(s) as required",
+    DrawingViewState.EditResize1     : "Resize: select a single resizeable item",
+    DrawingViewState.EditResize2     : "Resize: select a grip to begin resizing",
+    DrawingViewState.EditResize3     : "Resize: place the selected grip as required",
+    DrawingViewState.PlaceRectangle1 : "Place Rectangle: pick the first point",
+    DrawingViewState.PlaceRectangle2 : "Place Rectangle: pick the second point",
+    DrawingViewState.PlaceText1      : "Place Text: pick a position",
+    DrawingViewState.PlaceText2      : "Place Text: enter the text"
 }
 
 class DrawingViewWip:
