@@ -51,6 +51,12 @@ class KeyPoint(Enum):
 
 class Element(QGraphicsItem):
     """Base class for all elements."""
+    XML_DIRECT_ATTRS = {
+        "pen_spec"   : "PenSpec",
+        "brush_spec" : "BrushSpec",
+        "text_spec"  : "TextSpec"
+    }
+    XML_INDIRECT_ATTRS = {}
 
     def __init__(
         self       : Self,
@@ -213,10 +219,10 @@ class Element(QGraphicsItem):
 
     def toXml(self : Self, xw : QXmlStreamWriter) -> None:
         xw.writeStartElement(self.__class__.__name__)
-        for attr_name, _ in self.XML_ATTRIBUTES.items():
+        for attr_name, _ in self.XML_DIRECT_ATTRS.items():
             if hasattr(self, attr_name):
                 xw.writeAttribute(attr_name, val2str(getattr(self, attr_name)))
-        for prop_name, (_, _, getter) in self.XML_PROPERTIES.items():
+        for prop_name, (_, _, getter) in self.XML_INDIRECT_ATTRS.items():
             xw.writeAttribute(prop_name, val2str(getter(self)))
         xw.writeEndElement()
 
@@ -225,14 +231,14 @@ class Element(QGraphicsItem):
         instance = cls()
         attributes = xr.attributes()
         for attribute in attributes:
-            if attribute.name() in cls.XML_ATTRIBUTES:
-                type_name = cls.XML_ATTRIBUTES[attribute.name()]
+            if attribute.name() in cls.XML_DIRECT_ATTRS:
+                type_name = cls.XML_DIRECT_ATTRS[attribute.name()]
                 setattr(
                     instance, attribute.name(),
                     str2val(attribute.value(), type_name)
                 )
-            elif attribute.name() in cls.XML_PROPERTIES:
-                type_name, setter, _ = cls.XML_PROPERTIES[attribute.name()]
+            elif attribute.name() in cls.XML_INDIRECT_ATTRS:
+                type_name, setter, _ = cls.XML_INDIRECT_ATTRS[attribute.name()]
                 setter(instance, str2val(attribute.value(), type_name))
 
             else:
@@ -240,7 +246,64 @@ class Element(QGraphicsItem):
         xr.readNext()
         return instance
 
+class ElementWithGrips(Element):
+    """Base class for all elements with grips."""
+    XML_DIRECT_ATTRS = Element.XML_INDIRECT_ATTRS
+
+    grips : dict[KeyPoint, "Grip"]
+
+    def __init__(
+        self       : Self,
+        pen_spec   : bool | PenSpec   = False,
+        brush_spec : bool | BrushSpec = False,
+        text_spec  : bool | TextSpec  = False
+    ) -> None:
+        super().__init__(pen_spec, brush_spec, text_spec)
+        self.grips = {kp: self.GRIP_TYPE(self, kp) for kp in self.GRIP_POINTS}
+        for grip in self.grips.values():
+            grip.setZValue(self.zValue() + grip.Z_DELTA)
+
+    def getKeyPointPos(self : Self, kp : KeyPoint) -> QPointF:
+        rect = self.gripsRect()
+        return QPointF(kp.value.h * rect.width(), kp.value.v * rect.height())
+
+    def updateGripsPosition(self : Self) -> None:
+        for kp in self.grips.keys():
+            p = self.getKeyPointPos(kp)
+            self.grips[kp].setPos(p.x(), p.y())
+
+class ElementWithAnchor(ElementWithGrips):
+    """Base class for all elements with an anchor."""
+    XML_DIRECT_ATTRS = ElementWithGrips.XML_DIRECT_ATTRS | {
+        "anchor" : "KeyPoint"
+    }
+
+    anchor  : KeyPoint
+
+    def __init__(
+        self       : Self,
+        anchor     : KeyPoint = KeyPoint.TOP_LEFT,
+        pen_spec   : bool | PenSpec   = False,
+        brush_spec : bool | BrushSpec = False,
+        text_spec  : bool | TextSpec  = False
+    ) -> None:
+        super().__init__(pen_spec, brush_spec, text_spec)
+        self.anchor = anchor
+
+    def setAnchor(
+        self   : Self,
+        anchor : KeyPoint = KeyPoint.TOP_LEFT
+    ) -> None:
+        self.anchor = anchor
+
+    def getAnchorOffset(self : Self) -> QPointF:
+        return self.getKeyPointPos(self.anchor)
+
+    def setPos(self, pos: QPointF) -> None:
+        super().setPos(pos - self.getAnchorOffset())
+
 class cmdElement(QUndoCommand):
+    """Base class for all commands that work with an element."""
     scene   : "DrawingScene"
     element : Element
 
@@ -283,6 +346,7 @@ class cmdElement(QUndoCommand):
         )
 
 class cmdElements(cmdElement):
+    """Base class for all commands that work with multiple elements."""
     elements : list[Element]
 
     def __init__(
@@ -310,6 +374,7 @@ class cmdElements(cmdElement):
         return True
 
 class cmdPlaceElement(cmdElement):
+    """Base class for all commands that place an element."""
     wip        : bool
     pen_spec   : bool | PenSpec
     brush_spec : bool | BrushSpec

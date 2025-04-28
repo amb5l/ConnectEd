@@ -60,8 +60,8 @@ class DiagramItem(DrawingItem):
     scene : DiagramScene
 
 class DbItem(QStandardItem):
-    XML_ATTRIBUTES = {}
-    XML_PROPERTIES = {
+    XML_DIRECT_ATTRS = {}
+    XML_INDIRECT_ATTRS = {
         "name" : ("str", QStandardItem.setText, QStandardItem.text)
     }
 
@@ -81,14 +81,14 @@ class DbItem(QStandardItem):
         for attribute in attributes:
             attr_name = attribute.name()
             attr_value_str = attribute.value()
-            if attr_name in DesignItem.XML_ATTRIBUTES:
-                attr_type_name = DesignItem.XML_ATTRIBUTES[attr_name]
+            if attr_name in DesignItem.XML_DIRECT_ATTRS:
+                attr_type_name = DesignItem.XML_DIRECT_ATTRS[attr_name]
                 setattr(
                     db_item, attr_name,
                     str2val(attr_value_str, attr_type_name)
                 )
-            elif attr_name in DesignItem.XML_PROPERTIES:
-                type_name, setter, _ = DesignItem.XML_PROPERTIES[attr_name]
+            elif attr_name in DesignItem.XML_INDIRECT_ATTRS:
+                type_name, setter, _ = DesignItem.XML_INDIRECT_ATTRS[attr_name]
                 setter(db_item, str2val(attr_value_str, type_name))
             else:
                 logger.warning(f"Unexpected attribute: {attr_name} value: {attr_value_str}")
@@ -101,10 +101,10 @@ class DbItem(QStandardItem):
 
     def toXmlBegin(self : Self, xw : QXmlStreamWriter) -> None:
         xw.writeStartElement(self.__class__.__name__.replace("Item", ""))
-        for name, _ in self.XML_ATTRIBUTES.items():
+        for name, _ in self.XML_DIRECT_ATTRS.items():
             value = getattr(self, name)
             xw.writeAttribute(name, val2str(value))
-        for name, (_, _, getter) in self.XML_PROPERTIES.items():
+        for name, (_, _, getter) in self.XML_INDIRECT_ATTRS.items():
             value = getter(self)
             xw.writeAttribute(name, val2str(value))
 

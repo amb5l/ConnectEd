@@ -11,7 +11,7 @@ from ... import hub
 
 
 class DiagramScene(DrawingScene):
-    XML_ATTRIBUTES = DrawingScene.XML_ATTRIBUTES | {
+    XML_DIRECT_ATTRS = DrawingScene.XML_DIRECT_ATTRS | {
         "paper_size" : "str",
         "margin"     : "float",
         "border"     : "float"

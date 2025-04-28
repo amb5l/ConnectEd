@@ -6,7 +6,8 @@ from PyQt6.QtCore import Qt, QPointF, QRectF, QSizeF
 from PyQt6.QtWidgets import QGraphicsRectItem, QStyleOptionGraphicsItem, QWidget
 from PyQt6.QtGui import QPainter, QPainterPath, QPen, QBrush, QUndoCommand
 
-from . import Element, KeyPoint, PenSpec, BrushSpec, ResizeGrip, cmdPlaceElement
+from . import ElementWithAnchor, KeyPoint, PenSpec, BrushSpec, ResizeGrip, \
+              cmdPlaceElement
 
 from ... import hub
 
@@ -14,18 +15,22 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from .. import DrawingScene
 
-class BaseRectangle(QGraphicsRectItem, Element):
-    """Base class for rectangle items."""
-    XML_ATTRIBUTES = {
-        "anchor"     : "KeyPoint",
-        "pen_spec"   : "PenSpec",
-        "brush_spec" : "BrushSpec",
-        "text_spec"  : "TextSpec"
+class BaseRectangle(QGraphicsRectItem, ElementWithAnchor):
+    """Base class for rectangle elements."""
+    XML_INDIRECT_ATTRS = ElementWithAnchor.XML_INDIRECT_ATTRS | {
+        "pos"  : (
+            "QPointF",
+            lambda self, value: self.setPos(value),
+            lambda self: self.pos()
+        ),
+        "size" : (
+            "QSizeF",
+            lambda self, value: self.setSize(value),
+            lambda self: self.rect().size()
+        )
     }
-    XML_PROPERTIES = {
-        "pos"  : ( "QPointF" , lambda self, value: self.setPos(value)  , lambda self: self.pos()         ),
-        "size" : ( "QSizeF"  , lambda self, value: self.setSize(value) , lambda self: self.rect().size() )
-    }
+    GRIP_TYPE = ResizeGrip
+    GRIP_POINTS = [kp for kp in KeyPoint if kp != KeyPoint.CENTER]
     MIN_SIZE = QSizeF(1.0, 1.0)
 
     anchor : KeyPoint
@@ -40,33 +45,16 @@ class BaseRectangle(QGraphicsRectItem, Element):
         brush_spec : bool | BrushSpec = True
     ) -> None:
         QGraphicsRectItem.__init__(self)
-        Element.__init__(self, pen_spec, brush_spec, False)
-        self.grips = \
-            {p: ResizeGrip(self, p) for p in KeyPoint if p != KeyPoint.CENTER}
-        self.anchor = anchor
+        ElementWithAnchor.__init__(self, anchor, pen_spec, brush_spec)
         if isinstance(size_or_p2, QSizeF):
             self.setPosSize(pos, size_or_p2)
         else:
             self.setPoints(pos, size_or_p2)
-        self.setPen(QPen(Qt.PenStyle.NoPen))
-        self.setBrush(QBrush(Qt.BrushStyle.NoBrush))
-        self.setZValue(self.Z)
-        self.setAnchor(anchor)
         self.updateGripsPosition()
         self.updateGripsVisibility()
-        self.updateGripsZValue()
 
     def setSize(self : Self, size : QSizeF) -> None:
         self.setRect(0, 0, size.width(), size.height())
-
-    def getSize(self : Self) -> QSizeF:
-        return self.rect().size()
-
-    def setAnchor(self : Self, anchor : KeyPoint = KeyPoint.TOP_LEFT) -> None:
-        self.anchor = anchor
-
-    def getAnchor(self : Self) -> KeyPoint:
-        return self.anchor
 
     def setPosSize(self : Self, pos : QPointF, size : QSizeF) -> None:
         self.setPos(pos)
@@ -117,10 +105,6 @@ class BaseRectangle(QGraphicsRectItem, Element):
                 self.isSelected() and len(self.scene().selectedItems()) == 1
             )
 
-    def updateGripsZValue(self : Self) -> None:
-        for grip in self.grips.values():
-            grip.setZValue(self.zValue() + grip.Z_DELTA)
-
     def moveKeyPoint(self : Self, kp : KeyPoint, delta : QPointF) -> None:
         p1, p2 = self.getPoints()
         d = delta
@@ -151,6 +135,8 @@ class BaseRectangle(QGraphicsRectItem, Element):
             -self.anchor.value.v * rect.height()
         )
         return rect
+
+    gripsRect = rect
 
     def boundingRect(self : Self) -> QRectF:
         w = max(

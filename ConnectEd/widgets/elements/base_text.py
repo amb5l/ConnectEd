@@ -22,7 +22,7 @@ if TYPE_CHECKING:
 
 class BaseText(QGraphicsTextItem, Element):
     """Base class for text items."""
-    XML_ATTRIBUTES = {
+    XML_INDIRECT_ATTRS = {
         "text"       : ( "str"       , lambda self, value: self.setText      (value) , lambda self: self.getText      () ),
         "pos"        : ( "QPointF"   , lambda self, value: self.setPos       (value) , lambda self: self.getPos       () ),
         "anchor"     : ( "KeyPoint"  , lambda self, value: self.setAnchor    (value) , lambda self: self.getAnchor    () ),

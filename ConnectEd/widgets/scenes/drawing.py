@@ -17,7 +17,7 @@ from ... import hub
 
 class DrawingScene(QGraphicsScene):
     # class variables
-    XML_ATTRIBUTES         = {"name" : "str"}
+    XML_DIRECT_ATTRS       = {"name" : "str"}
     SYSTEM_FORBIDDEN_ITEMS = [Grip]
     SYSTEM_ALLOWED_ITEMS   = None
     FORBIDDEN_ITEMS        = None # none
@@ -67,7 +67,7 @@ class DrawingScene(QGraphicsScene):
 
     def toXml(self : Self, xw : QXmlStreamWriter) -> None:
         xw.writeStartElement(self.__class__.__name__.replace("Scene", ""))
-        for attr_name, _ in self.XML_ATTRIBUTES.items():
+        for attr_name, _ in self.XML_DIRECT_ATTRS.items():
             attr_value = getattr(self, attr_name)
             xw.writeAttribute(attr_name, val2str(attr_value))
         for item in self.items():
@@ -84,8 +84,8 @@ class DrawingScene(QGraphicsScene):
         for attribute in attributes:
             attr_name = attribute.name()
             attr_value_str = attribute.value()
-            if attr_name in drawing_scene.XML_ATTRIBUTES:
-                attr_type_name = drawing_scene.XML_ATTRIBUTES[attr_name]
+            if attr_name in drawing_scene.XML_DIRECT_ATTRS:
+                attr_type_name = drawing_scene.XML_DIRECT_ATTRS[attr_name]
                 setattr(
                     drawing_scene, attr_name,
                     str2val(attr_value_str, attr_type_name)
