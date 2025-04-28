@@ -27,11 +27,6 @@ class BaseText(QGraphicsTextItem, Element):
             "str",
             lambda self, value: self.setPlainText(value),
             lambda self: self.toPlainText()
-        ),
-        "pos" : (
-            "QPointF",
-            lambda self, value: self.setPos(value),
-            lambda self: self.pos()
         )
     }
 

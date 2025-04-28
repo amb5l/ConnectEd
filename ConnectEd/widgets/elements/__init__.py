@@ -56,7 +56,13 @@ class Element(QGraphicsItem):
         "brush_spec" : "BrushSpec",
         "text_spec"  : "TextSpec"
     }
-    XML_INDIRECT_ATTRS = {}
+    XML_INDIRECT_ATTRS = {
+        "pos" : (
+            "QPointF",
+            lambda self, value: self.setPos(value),
+            lambda self: self.pos()
+        )
+    }
 
     def __init__(
         self       : Self,

@@ -18,11 +18,6 @@ if TYPE_CHECKING:
 class BaseRectangle(QGraphicsRectItem, ElementWithAnchor):
     """Base class for rectangle elements."""
     XML_INDIRECT_ATTRS = ElementWithAnchor.XML_INDIRECT_ATTRS | {
-        "pos" : (
-            "QPointF",
-            lambda self, value: self.setPos(value),
-            lambda self: self.pos()
-        ),
         "size" : (
             "QSizeF",
             lambda self, value: self.setSize(value),
