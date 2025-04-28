@@ -23,12 +23,16 @@ if TYPE_CHECKING:
 class BaseText(QGraphicsTextItem, Element):
     """Base class for text items."""
     XML_INDIRECT_ATTRS = {
-        "text"       : ( "str"       , lambda self, value: self.setText      (value) , lambda self: self.getText      () ),
-        "pos"        : ( "QPointF"   , lambda self, value: self.setPos       (value) , lambda self: self.getPos       () ),
-        "anchor"     : ( "KeyPoint"  , lambda self, value: self.setAnchor    (value) , lambda self: self.getAnchor    () ),
-        "pen_spec"   : ( "PenSpec"   , lambda self, value: self.setPenSpec   (value) , lambda self: self.getPenSpec   () ),
-        "brush_spec" : ( "BrushSpec" , lambda self, value: self.setBrushSpec (value) , lambda self: self.getBrushSpec () ),
-        "text_spec"  : ( "TextSpec"  , lambda self, value: self.setTextSpec  (value) , lambda self: self.getTextSpec  () )
+        "text" : (
+            "str",
+            lambda self, value: self.setPlainText(value),
+            lambda self: self.toPlainText()
+        ),
+        "pos" : (
+            "QPointF",
+            lambda self, value: self.setPos(value),
+            lambda self: self.pos()
+        )
     }
 
     grips   : dict[KeyPoint, AnchorGrip]

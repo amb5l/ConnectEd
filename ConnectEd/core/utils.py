@@ -119,6 +119,7 @@ def str2val(s : str, t : str) -> Any:
             return BrushSpec(color, style)
         case "TextSpec"   :
             params = s.split(",")
+            color     = None if params[0] == "None" else QColor.fromRgba(int(params[0], 0))
             family    = None if params[1] == "None" else params[1]
             size      = None if params[2] == "None" else float(params[2])
             weight    = None if params[3] == "None" else int(params[3])
