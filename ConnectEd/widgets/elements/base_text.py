@@ -4,14 +4,14 @@ from typing import Self, Optional, Any
 from types  import SimpleNamespace
 
 from PyQt6.QtCore    import Qt, QPointF, QRectF
-from PyQt6.QtWidgets import QWidget, QStyleOptionGraphicsItem, QStyle, \
+from PyQt6.QtWidgets import QGraphicsTextItem, QWidget, \
+                            QStyleOptionGraphicsItem, QStyle, \
                             QMenu, QGraphicsSceneContextMenuEvent
-
 from PyQt6.QtGui     import QPainter, QPainterPath, QUndoCommand, QPen, \
-                            QKeyEvent, QFocusEvent, QColor, QAction
+                            QKeyEvent, QFocusEvent, QColor, QAction, \
+                            QTextCursor
 
-from . import QGraphicsTextItemCustomized, Element, AnchorGrip, \
-              KeyPoint, TextSpec, cmdPlaceElement
+from . import Element, AnchorGrip, KeyPoint, TextSpec, cmdPlaceElement
 
 from ... import hub
 
@@ -20,7 +20,7 @@ if TYPE_CHECKING:
     from .. import DrawingScene
 
 
-class BaseText(QGraphicsTextItemCustomized, Element):
+class BaseText(QGraphicsTextItem, Element):
     """Base class for text items."""
     XML_ATTRIBUTES = {
         "text"       : ( "str"       , lambda self, value: self.setText      (value) , lambda self: self.getText      () ),
@@ -42,8 +42,8 @@ class BaseText(QGraphicsTextItemCustomized, Element):
         pos    : QPointF = QPointF(0, 0),
         anchor : KeyPoint = KeyPoint.TOP_LEFT
     ) -> None:
-        QGraphicsTextItemCustomized.__init__(self, text)
-        QGraphicsTextItemCustomized.document(self).setDocumentMargin(0)
+        QGraphicsTextItem.__init__(self, text)
+        QGraphicsTextItem.document(self).setDocumentMargin(0)
         Element.__init__(self, False, False, True)
         self.grips = {p: AnchorGrip(self, p) for p in KeyPoint}
         self.anchor = anchor
@@ -70,6 +70,28 @@ class BaseText(QGraphicsTextItemCustomized, Element):
     def keyPressEvent(self, event: QKeyEvent) -> None:
         if event.key() in (Qt.Key.Key_Return, Qt.Key.Key_Enter):
             self.clearFocus()
+            event.accept()
+        elif event.key() in (
+            Qt.Key.Key_Left, Qt.Key.Key_Right, Qt.Key.Key_Up, Qt.Key.Key_Down,
+            Qt.Key.Key_Home, Qt.Key.Key_End
+        ):
+            cursor = self.textCursor()
+            shift = event.modifiers() & Qt.KeyboardModifier.ShiftModifier
+            move_mode = QTextCursor.MoveMode.KeepAnchor if shift else \
+                QTextCursor.MoveMode.MoveAnchor
+            if event.key() == Qt.Key.Key_Left:
+                cursor.movePosition(cursor.MoveOperation.Left, move_mode)
+            elif event.key() == Qt.Key.Key_Right:
+                cursor.movePosition(cursor.MoveOperation.Right, move_mode)
+            elif event.key() == Qt.Key.Key_Up:
+                cursor.movePosition(cursor.MoveOperation.Up, move_mode)
+            elif event.key() == Qt.Key.Key_Down:
+                cursor.movePosition(cursor.MoveOperation.Down, move_mode)
+            elif event.key() == Qt.Key.Key_Home:
+                cursor.movePosition(cursor.MoveOperation.StartOfLine, move_mode)
+            elif event.key() == Qt.Key.Key_End:
+                cursor.movePosition(cursor.MoveOperation.EndOfLine, move_mode)
+            self.setTextCursor(cursor)
             event.accept()
         else:
             super().keyPressEvent(event)
@@ -174,12 +196,12 @@ class BaseText(QGraphicsTextItemCustomized, Element):
 
     def itemChange(
         self   : Self,
-        change : QGraphicsTextItemCustomized.GraphicsItemChange,
+        change : QGraphicsTextItem.GraphicsItemChange,
         value  : Any
     ) -> None:
         if change == self.GraphicsItemChange.ItemSelectedHasChanged:
             self.updateGripsVisibility()
-        return QGraphicsTextItemCustomized.itemChange(self, change, value)
+        return QGraphicsTextItem.itemChange(self, change, value)
 
 class cmdPlaceBaseText(cmdPlaceElement):
     element    : BaseText

@@ -5,9 +5,8 @@ from collections import namedtuple
 from types       import SimpleNamespace
 
 from PyQt6.QtCore    import Qt, QXmlStreamWriter, QXmlStreamReader, QPointF
-from PyQt6.QtGui     import QPen, QBrush, QColor, QFont, \
-                            QUndoCommand, QTextCursor
-from PyQt6.QtWidgets import QGraphicsItem, QGraphicsTextItem
+from PyQt6.QtGui     import QPen, QBrush, QColor, QFont, QUndoCommand
+from PyQt6.QtWidgets import QGraphicsItem
 
 from ...core import logger, val2str, str2val, camel_to_proper
 
@@ -214,7 +213,7 @@ class Element(QGraphicsItem):
 
     def toXml(self : Self, xw : QXmlStreamWriter) -> None:
         xw.writeStartElement(self.__class__.__name__)
-        for attr_name, attr_type in self.XML_ATTRIBUTES.items():
+        for attr_name, _ in self.XML_ATTRIBUTES.items():
             if hasattr(self, attr_name):
                 xw.writeAttribute(attr_name, val2str(getattr(self, attr_name)))
         for prop_name, (_, _, getter) in self.XML_PROPERTIES.items():
@@ -240,34 +239,6 @@ class Element(QGraphicsItem):
                 logger.warning(f"Unexpected attribute: {attribute.name()}")
         xr.readNext()
         return instance
-
-class QGraphicsTextItemCustomized(QGraphicsTextItem):
-    """Adds text cursor navigation to QGraphicsTextItem."""
-    def keyPressEvent(self, event):
-        if event.key() in (
-            Qt.Key.Key_Left, Qt.Key.Key_Right, Qt.Key.Key_Up, Qt.Key.Key_Down,
-            Qt.Key.Key_Home, Qt.Key.Key_End
-        ):
-            cursor = self.textCursor()
-            shift = event.modifiers() & Qt.KeyboardModifier.ShiftModifier
-            move_mode = QTextCursor.MoveMode.KeepAnchor if shift else \
-                QTextCursor.MoveMode.MoveAnchor
-            if event.key() == Qt.Key.Key_Left:
-                cursor.movePosition(cursor.MoveOperation.Left, move_mode)
-            elif event.key() == Qt.Key.Key_Right:
-                cursor.movePosition(cursor.MoveOperation.Right, move_mode)
-            elif event.key() == Qt.Key.Key_Up:
-                cursor.movePosition(cursor.MoveOperation.Up, move_mode)
-            elif event.key() == Qt.Key.Key_Down:
-                cursor.movePosition(cursor.MoveOperation.Down, move_mode)
-            elif event.key() == Qt.Key.Key_Home:
-                cursor.movePosition(cursor.MoveOperation.StartOfLine, move_mode)
-            elif event.key() == Qt.Key.Key_End:
-                cursor.movePosition(cursor.MoveOperation.EndOfLine, move_mode)
-            self.setTextCursor(cursor)
-            event.accept()
-        else:
-            super().keyPressEvent(event)
 
 class cmdElement(QUndoCommand):
     scene   : "DrawingScene"
