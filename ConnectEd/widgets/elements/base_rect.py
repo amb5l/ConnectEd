@@ -2,9 +2,9 @@ __all__ = ["BaseRectangle"]
 
 from typing import Self, Optional, Any
 
-from PyQt6.QtCore import Qt, QPointF, QRectF, QSizeF
+from PyQt6.QtCore    import QPointF, QRectF, QSizeF
 from PyQt6.QtWidgets import QGraphicsRectItem, QStyleOptionGraphicsItem, QWidget
-from PyQt6.QtGui import QPainter, QPainterPath, QPen, QBrush, QUndoCommand
+from PyQt6.QtGui     import QPainter, QPainterPath, QUndoCommand
 
 from . import ElementWithAnchor, KeyPoint, PenSpec, BrushSpec, ResizeGrip, \
               cmdPlaceElement
@@ -18,7 +18,7 @@ if TYPE_CHECKING:
 class BaseRectangle(QGraphicsRectItem, ElementWithAnchor):
     """Base class for rectangle elements."""
     XML_INDIRECT_ATTRS = ElementWithAnchor.XML_INDIRECT_ATTRS | {
-        "pos"  : (
+        "pos" : (
             "QPointF",
             lambda self, value: self.setPos(value),
             lambda self: self.pos()

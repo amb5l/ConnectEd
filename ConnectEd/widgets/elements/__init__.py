@@ -248,7 +248,6 @@ class Element(QGraphicsItem):
 
 class ElementWithGrips(Element):
     """Base class for all elements with grips."""
-    XML_DIRECT_ATTRS = Element.XML_INDIRECT_ATTRS
 
     grips : dict[KeyPoint, "Grip"]
 
