@@ -58,22 +58,14 @@ FACTORY_SETTINGS = {
                         "underline" : False
                     }
                 },
+                "key_point" : {
+                    "size" : 10
+                },
                 "selected" : {
                     "line" : {
                         "width" : 0,
                         "style" : Qt.PenStyle.DotLine
-                    },
-                    "fill" : Qt.BrushStyle.DiagCrossPattern,
-                    "grip" : {
-                        "size" : 10
                     }
-                },
-                "wip" : {
-                    "line" : {
-                        "width" : 0,
-                        "style" : Qt.PenStyle.DashLine
-                    },
-                    "fill" : Qt.BrushStyle.NoBrush
                 },
                 "alpha" : 192
             },

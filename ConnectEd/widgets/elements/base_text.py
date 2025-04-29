@@ -48,7 +48,6 @@ class BaseText(QGraphicsTextItem, Element):
         self.anchor = anchor
         self.setPos(pos)
         self.setAnchor(anchor)
-        self.setTextSpec()
         self.setEditable(False)
         self.setFlag(self.GraphicsItemFlag.ItemIsSelectable , True)
         self.setFlag(self.GraphicsItemFlag.ItemIsFocusable  , True)
@@ -120,7 +119,7 @@ class BaseText(QGraphicsTextItem, Element):
             Qt.TextInteractionFlag.NoTextInteraction
         )
 
-    def setTextSpec(self: Self, text_spec: TextSpec = TextSpec()) -> None:
+    def setTextSpec(self: Self, text_spec: bool | TextSpec) -> None:
         super().setTextSpec(text_spec)
         font = self.fontFromSpec()
         if font:
@@ -180,7 +179,11 @@ class BaseText(QGraphicsTextItem, Element):
             painter.fillRect(rect, QColor(255, 255, 255, 192))
             c = self.defaultTextColor()
             self.setDefaultTextColor(QColor(255, 0, 255))
-        if self.isSelected():
+        if self.isWIP():
+            theme = hub.settings.theme.wip.text
+            c = self.defaultTextColor()
+            self.setDefaultTextColor(theme)
+        elif self.isSelected():
             # override text color
             theme = hub.settings.theme.selected.text
             c = self.defaultTextColor()

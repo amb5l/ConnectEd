@@ -46,7 +46,7 @@ class Grip(QGraphicsItem):
 
     def getSize(self : Self, view : QGraphicsView) -> float:
         scale = self.getViewScale(view)
-        return hub.settings.prefs.display.elements.selected.grip.size / scale
+        return hub.settings.prefs.display.elements.key_point.size / scale
 
     def boundingRect(
         self : Self,

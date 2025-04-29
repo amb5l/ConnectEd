@@ -25,7 +25,6 @@ class DrawingScene(QGraphicsScene):
 
     # instance variables
     name       : str
-    wip        : list[QGraphicsItem]
     undo_stack : Optional[QUndoStack]
 
     # custom signals
@@ -44,7 +43,6 @@ class DrawingScene(QGraphicsScene):
         if extents is None:
             extents = hub.settings.defaults.extents
         self.name = name
-        self.wip  = []
         self.setSceneRect(QRectF(QPointF(0, 0), extents))
         self.setItemIndexMethod(QGraphicsScene.ItemIndexMethod.NoIndex)
         self.undo_stack = None

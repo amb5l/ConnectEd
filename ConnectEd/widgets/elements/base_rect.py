@@ -136,7 +136,7 @@ class BaseRectangle(QGraphicsRectItem, ElementWithAnchor):
     def boundingRect(self : Self) -> QRectF:
         w = max(
             self.penWidth(),
-            hub.settings.prefs.display.elements.selected.grip.size
+            hub.settings.prefs.display.elements.key_point.size
         )
         return self.rect().adjusted(-w/2, -w/2, w/2, w/2)
 
@@ -188,7 +188,7 @@ class cmdPlaceBaseRectangle(cmdPlaceElement):
         brush_spec : bool | BrushSpec = True,
         wip        : bool = False
     ):
-        super().__init__(scene, element, pen_spec, brush_spec, wip)
+        super().__init__(scene, element, pen_spec, brush_spec, False, wip)
         self.pos        = pos
         self.size_or_p2 = size_or_p2
         self.anchor     = anchor

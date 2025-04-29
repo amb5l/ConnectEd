@@ -64,6 +64,8 @@ class Element(QGraphicsItem):
         )
     }
 
+    wip : bool
+
     def __init__(
         self       : Self,
         pen_spec   : bool | PenSpec   = False,
@@ -71,62 +73,54 @@ class Element(QGraphicsItem):
         text_spec  : bool | TextSpec  = False
     ) -> None:
         self.setZValue(self.Z)
-        if pen_spec:
-            self.pen_spec = PenSpec(None, None, None) \
-                if pen_spec is True else pen_spec
-        if brush_spec:
-            self.brush_spec = BrushSpec(None, None) \
-                if brush_spec is True else brush_spec
-        if text_spec:
-            self.text_spec = TextSpec(None, None, None, None, None, None) \
-                if text_spec is True else text_spec
+        self.setWIP(False)
+        self.setPenSpec(pen_spec)
+        self.setBrushSpec(brush_spec)
+        self.setTextSpec(text_spec)
         f = QGraphicsItem.GraphicsItemFlag
         self.setFlag( f.ItemSendsGeometryChanges      , True  )
         self.setFlag( f.ItemSendsScenePositionChanges , True  )
         self.setCacheMode(QGraphicsItem.CacheMode.DeviceCoordinateCache)
 
-    def getWIP(self : Self) -> bool:
-        return False if self.scene() is None else \
-            self in self.scene().wip
+    def setWIP(self : Self, wip : bool) -> None:
+        self.wip = wip
+        self.update()
+
+    def isWIP(self : Self) -> bool:
+        return self.wip
 
     def getPrefs(self : Self) -> SimpleNamespace:
         element_name = self.__class__.__name__.lower()
-        if self.isSelected():
-            prefs = hub.settings.prefs.display.elements.selected
-        elif self.getWIP():
-            prefs = hub.settings.prefs.display.elements.wip
-        else:
-            prefs = getattr(hub.settings.prefs.display.elements, element_name)
-        return prefs
+        return getattr(hub.settings.prefs.display.elements, element_name)
 
     def getTheme(self : Self) -> SimpleNamespace:
         element_name = self.__class__.__name__.lower()
         if self.isSelected():
             theme = hub.settings.theme.selected
-        elif self.getWIP():
+        elif self.isWIP():
             theme = hub.settings.theme.wip
         else:
             theme = getattr(hub.settings.theme, element_name)
         return theme
 
-    def getPrefsTheme(self : Self) -> SimpleNamespace:
+    def getPrefsTheme(self : Self) -> tuple[SimpleNamespace, SimpleNamespace]:
         element_name = self.__class__.__name__.lower()
+        prefs = getattr(hub.settings.prefs.display.elements, element_name)
         if self.isSelected():
-            prefs = hub.settings.prefs.display.elements.selected
             theme = hub.settings.theme.selected
-        elif self.getWIP():
-            prefs = hub.settings.prefs.display.elements.wip
+        elif self.isWIP():
             theme = hub.settings.theme.wip
         else:
-            prefs = getattr(hub.settings.prefs.display.elements, element_name)
             theme = getattr(hub.settings.theme, element_name)
         return prefs, theme
 
     def setPenSpec(
         self     : Self,
-        pen_spec : PenSpec = PenSpec()
+        pen_spec : bool | PenSpec
     ) -> None:
-        self.pen_spec = pen_spec
+        if pen_spec:
+            self.pen_spec = PenSpec(None, None, None) \
+                if pen_spec is True else pen_spec
 
     def getPenSpec(self : Self) -> PenSpec:
         return self.pen_spec
@@ -169,9 +163,11 @@ class Element(QGraphicsItem):
 
     def setBrushSpec(
         self       : Self,
-        brush_spec : BrushSpec = BrushSpec()
+        brush_spec : bool | BrushSpec
     ) -> None:
-        self.brush_spec = brush_spec
+        if brush_spec:
+            self.brush_spec = BrushSpec(None, None) \
+                if brush_spec is True else brush_spec
 
     def getBrushSpec(self : Self) -> BrushSpec:
         return self.brush_spec
@@ -188,9 +184,11 @@ class Element(QGraphicsItem):
 
     def setTextSpec(
         self      : Self,
-        text_spec : TextSpec = TextSpec()
+        text_spec : bool | TextSpec
     ) -> None:
-        self.text_spec = text_spec
+        if text_spec:
+            self.text_spec = TextSpec(None, None, None, None, None, None) \
+                if text_spec is True else text_spec
 
     def getTextSpec(self : Self) -> TextSpec:
         return self.text_spec
@@ -315,16 +313,12 @@ class cmdElement(QUndoCommand):
     def __init__(
         self    : Self,
         scene   : "DrawingScene",
-        element : Optional[Element] = None,
-        wip     : bool = False
+        element : Element
     ):
         text = camel_to_proper(self.__class__.__name__.replace("cmd", ""))
         super().__init__(text)
         self.scene = scene
         self.element = element
-        self.element.setFlag(
-            QGraphicsItem.GraphicsItemFlag.ItemIsSelectable, not wip
-        )
 
     def id(self : Self) -> int:
         """Return a unique ID for merging commands."""
@@ -420,17 +414,19 @@ class cmdPlaceElement(cmdElement):
 
     def redo(self : Self) -> None:
         """Add or update the element in the scene."""
-        if self.element.scene() != self.scene:
-            self.scene.addItem(self.element)
-        self.scene.wip = [self.element] if self.wip else []
+        self.element.setWIP(self.wip)
+        self.element.setPenSpec(self.pen_spec)
+        self.element.setBrushSpec(self.brush_spec)
+        self.element.setTextSpec(self.text_spec)
         self.element.setFlag(
             QGraphicsItem.GraphicsItemFlag.ItemIsSelectable, not self.wip
         )
+        if self.element.scene() != self.scene:
+            self.scene.addItem(self.element)
 
     def undo(self : Self) -> None:
         """Remove the element from the scene."""
         self.scene.removeItem(self.element)
-        self.scene.wip = []
 
 class cmdMove(cmdElements):
     delta : QPointF
