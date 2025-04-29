@@ -11,7 +11,7 @@ from PyQt6.QtGui     import QPainter, QPainterPath, QUndoCommand, QPen, \
                             QKeyEvent, QFocusEvent, QColor, QAction, \
                             QTextCursor
 
-from . import Element, AnchorGrip, KeyPoint, TextSpec, cmdPlaceElement
+from . import Element, AnchorGrip, KPLoc, TextSpec, cmdPlaceElement
 
 from ... import hub
 
@@ -30,8 +30,8 @@ class BaseText(QGraphicsTextItem, Element):
         )
     }
 
-    grips   : dict[KeyPoint, AnchorGrip]
-    anchor  : KeyPoint
+    grips   : dict[KPLoc, AnchorGrip]
+    anchor  : KPLoc
     menu    : QMenu
     actions : SimpleNamespace
 
@@ -39,12 +39,12 @@ class BaseText(QGraphicsTextItem, Element):
         self   : Self,
         text   : str = "<BaseText:unspecified text>",
         pos    : QPointF = QPointF(0, 0),
-        anchor : KeyPoint = KeyPoint.TOP_LEFT
+        anchor : KPLoc = KPLoc.TOP_LEFT
     ) -> None:
         QGraphicsTextItem.__init__(self, text)
         QGraphicsTextItem.document(self).setDocumentMargin(0)
         Element.__init__(self, False, False, True)
-        self.grips = {p: AnchorGrip(self, p) for p in KeyPoint}
+        self.grips = {p: AnchorGrip(self, p) for p in KPLoc}
         self.anchor = anchor
         self.setPos(pos)
         self.setAnchor(anchor)
@@ -128,11 +128,11 @@ class BaseText(QGraphicsTextItem, Element):
 
     def setAnchor(
         self   : Self,
-        anchor : KeyPoint = KeyPoint.TOP_LEFT
+        anchor : KPLoc = KPLoc.TOP_LEFT
     ) -> None:
         self.anchor = anchor
 
-    def getKeyPointPos(self : Self, kp : KeyPoint) -> QPointF:
+    def getKeyPointPos(self : Self, kp : KPLoc) -> QPointF:
         rect = super().boundingRect()
         return QPointF(kp.h * rect.width(), kp.v * rect.height())
 
@@ -209,7 +209,7 @@ class cmdPlaceBaseText(cmdPlaceElement):
     element    : BaseText
     text       : str
     pos        : QPointF
-    anchor     : KeyPoint
+    anchor     : KPLoc
 
     def __init__(
         self    : Self,
@@ -217,7 +217,7 @@ class cmdPlaceBaseText(cmdPlaceElement):
         element : Optional[BaseText] = None,
         text    : str = "",
         pos     : QPointF = QPointF(0, 0),
-        anchor  : KeyPoint = KeyPoint.TOP_LEFT,
+        anchor  : KPLoc = KPLoc.TOP_LEFT,
         wip     : bool = False
     ) -> None:
         super().__init__(scene, element, False, False, True, wip)

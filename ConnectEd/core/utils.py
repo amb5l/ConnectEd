@@ -83,14 +83,14 @@ def val2str(v : Any) -> str:
         case "PenSpec"    : s = f"{v.color},{v.width},{v.style}"
         case "BrushSpec"  : s = f"{v.color},{v.style}"
         case "TextSpec"   : s = f"{v.color},{v.family},{v.size},{v.weight},{v.italic},{v.underline}"
-        case "KeyPoint"   : s = str(v).replace("KeyPoint.", "")
+        case "KPLoc"      : s = str(v).replace("KPLoc.", "")
         case _ :
             raise ValueError(f"Unsupported type: {t}")
     return s
 
 def str2val(s : str, t : str) -> Any:
     """Convert a text representation of a Python value to a Python value."""
-    from ..widgets.elements import KeyPoint, PenSpec, BrushSpec, TextSpec
+    from ..widgets.elements import KPLoc, PenSpec, BrushSpec, TextSpec
     def strValuesToFloats(s : str) -> list[float]:
         return [float(p) for p in s.strip("()").split(",")]
     match t:
@@ -126,6 +126,6 @@ def str2val(s : str, t : str) -> Any:
             italic    = None if params[4] == "None" else params[4] == "True"
             underline = None if params[5] == "None" else params[5] == "True"
             return TextSpec(color, family, size, weight, italic, underline)
-        case "KeyPoint"   : return KeyPoint[s]
+        case "KPLoc"      : return getattr(KPLoc, s)
         case _:
             raise ValueError(f"Unsupported type: {t}")

@@ -13,18 +13,18 @@ from ... import hub
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from . import KeyPoint
+    from . import KPLoc
 
 
 class Grip(QGraphicsItem):
     Z_DELTA = 1
 
-    key_point : "KeyPoint"
+    key_point : "KPLoc"
 
     def __init__(
         self      : Self,
         parent    : QGraphicsItem,
-        key_point : "KeyPoint"
+        key_point : "KPLoc"
     ) -> None:
         super().__init__(parent)
         self.key_point = key_point
@@ -100,7 +100,7 @@ class AnchorGrip(Grip):
     def __init__(
         self      : Self,
         parent    : QGraphicsItem,
-        key_point : "KeyPoint"
+        key_point : "KPLoc"
     ) -> None:
         super().__init__(parent, key_point)
         self.menu = QMenu()

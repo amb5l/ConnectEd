@@ -37,7 +37,7 @@ class TextSpec:
     italic    : Optional[bool]   = None
     underline : Optional[bool]   = None
 
-class KeyPoint(Enum):
+class KPLoc(Enum):
     TOP_LEFT      = (0.0, 0.0)
     TOP_CENTER    = (0.5, 0.0)
     TOP_RIGHT     = (1.0, 0.0)
@@ -239,7 +239,7 @@ class Element(QGraphicsItem):
 class ElementWithGrips(Element):
     """Base class for all elements with grips."""
 
-    grips : dict[KeyPoint, "Grip"]
+    grips : dict[KPLoc, "Grip"]
 
     def __init__(
         self       : Self,
@@ -252,7 +252,7 @@ class ElementWithGrips(Element):
         for grip in self.grips.values():
             grip.setZValue(self.zValue() + grip.Z_DELTA)
 
-    def getKeyPointPos(self : Self, kp : KeyPoint) -> QPointF:
+    def getKeyPointPos(self : Self, kp : KPLoc) -> QPointF:
         rect = self.gripsRect()
         return QPointF(kp.h * rect.width(), kp.v * rect.height())
 
@@ -264,14 +264,14 @@ class ElementWithGrips(Element):
 class ElementWithAnchor(ElementWithGrips):
     """Base class for all elements with an anchor."""
     XML_ATTRS = ElementWithGrips.XML_ATTRS | {
-        "anchor" : "KeyPoint"
+        "anchor" : "KPLoc"
     }
 
-    anchor  : KeyPoint
+    anchor : KPLoc
 
     def __init__(
         self       : Self,
-        anchor     : KeyPoint = KeyPoint.TOP_LEFT,
+        anchor     : KPLoc = KPLoc.TOP_LEFT,
         pen_spec   : bool | PenSpec   = False,
         brush_spec : bool | BrushSpec = False,
         text_spec  : bool | TextSpec  = False
@@ -281,7 +281,7 @@ class ElementWithAnchor(ElementWithGrips):
 
     def setAnchor(
         self   : Self,
-        anchor : KeyPoint = KeyPoint.TOP_LEFT
+        anchor : KPLoc = KPLoc.TOP_LEFT
     ) -> None:
         self.anchor = anchor
 

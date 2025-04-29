@@ -6,7 +6,7 @@ from PyQt6.QtCore    import QPointF, QRectF, QSizeF
 from PyQt6.QtWidgets import QGraphicsRectItem, QStyleOptionGraphicsItem, QWidget
 from PyQt6.QtGui     import QPainter, QPainterPath, QUndoCommand
 
-from . import ElementWithAnchor, KeyPoint, PenSpec, BrushSpec, ResizeGrip, \
+from . import ElementWithAnchor, KPLoc, PenSpec, BrushSpec, ResizeGrip, \
               cmdPlaceElement
 
 from ... import hub
@@ -26,17 +26,17 @@ class BaseRectangle(QGraphicsRectItem, ElementWithAnchor):
         )
     }
     GRIP_TYPE = ResizeGrip
-    GRIP_POINTS = [kp for kp in KeyPoint if kp != KeyPoint.CENTER]
+    GRIP_POINTS = [kp for kp in KPLoc if kp != KPLoc.CENTER]
     MIN_SIZE = QSizeF(1.0, 1.0)
 
-    anchor : KeyPoint
-    grips  : dict[KeyPoint, ResizeGrip]
+    anchor : KPLoc
+    grips  : dict[KPLoc, ResizeGrip]
 
     def __init__(
         self       : Self,
         pos        : QPointF = QPointF(0, 0),
         size_or_p2 : QSizeF | QPointF = QSizeF(0, 0),
-        anchor     : KeyPoint = KeyPoint.TOP_LEFT,
+        anchor     : KPLoc = KPLoc.TOP_LEFT,
         pen_spec   : bool | PenSpec   = True,
         brush_spec : bool | BrushSpec = True
     ) -> None:
@@ -101,25 +101,25 @@ class BaseRectangle(QGraphicsRectItem, ElementWithAnchor):
                 self.isSelected() and len(self.scene().selectedItems()) == 1
             )
 
-    def moveKeyPoint(self : Self, kp : KeyPoint, delta : QPointF) -> None:
+    def moveKeyPoint(self : Self, kp : KPLoc, delta : QPointF) -> None:
         p1, p2 = self.getPoints()
         d = delta
         match kp:
-            case KeyPoint.TOP_LEFT:
+            case KPLoc.TOP_LEFT:
                 self.setPoints(p1 + d, p2)
-            case KeyPoint.TOP_CENTER:
+            case KPLoc.TOP_CENTER:
                 self.setPoints(p1.x(), p1.y() + d.y(), p2.x(), p2.y())
-            case KeyPoint.TOP_RIGHT:
+            case KPLoc.TOP_RIGHT:
                 self.setPoints(p1.x(), p1.y() + d.y(), p2.x() + d.x(), p2.y())
-            case KeyPoint.CENTER_LEFT:
+            case KPLoc.CENTER_LEFT:
                 self.setPoints(p1.x() + d.x(), p1.y(), p2.x(), p2.y())
-            case KeyPoint.CENTER_RIGHT:
+            case KPLoc.CENTER_RIGHT:
                 self.setPoints(p1.x(), p1.y(), p2.x() + d.x(), p2.y())
-            case KeyPoint.BOTTOM_LEFT:
+            case KPLoc.BOTTOM_LEFT:
                 self.setPoints(p1.x() + d.x(), p1.y(), p2.x(), p2.y() + d.y())
-            case KeyPoint.BOTTOM_CENTER:
+            case KPLoc.BOTTOM_CENTER:
                 self.setPoints(p1.x(), p1.y(), p2.x(), p2.y() + d.y())
-            case KeyPoint.BOTTOM_RIGHT:
+            case KPLoc.BOTTOM_RIGHT:
                 self.setPoints(p1, p2 + d)
             case _:
                 raise ValueError(f"Invalid key point: {kp}")
@@ -176,7 +176,7 @@ class cmdPlaceBaseRectangle(cmdPlaceElement):
     element    : BaseRectangle
     pos        : QPointF
     size_or_p2 : QSizeF | QPointF
-    anchor     : KeyPoint
+    anchor     : KPLoc
 
     def __init__(
         self       : Self,
@@ -184,7 +184,7 @@ class cmdPlaceBaseRectangle(cmdPlaceElement):
         element    : Optional[BaseRectangle] = None,
         pos        : QPointF = QPointF(0, 0),
         size_or_p2 : QSizeF | QPointF = QSizeF(0, 0),
-        anchor     : KeyPoint = KeyPoint.TOP_LEFT,
+        anchor     : KPLoc = KPLoc.TOP_LEFT,
         pen_spec   : bool | PenSpec   = True,
         brush_spec : bool | BrushSpec = True,
         wip        : bool = False
