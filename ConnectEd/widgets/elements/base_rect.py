@@ -91,8 +91,8 @@ class BaseRectangle(QGraphicsRectItem, ElementWithAnchor):
     def updateGripsPosition(self : Self) -> None:
         for kp in self.grips.keys():
             self.grips[kp].setPos(
-                kp.value.h * self.rect().width(),
-                kp.value.v * self.rect().height()
+                kp.h * self.rect().width(),
+                kp.v * self.rect().height()
             )
 
     def updateGripsVisibility(self : Self) -> None:
@@ -127,8 +127,8 @@ class BaseRectangle(QGraphicsRectItem, ElementWithAnchor):
     def rect(self : Self) -> QRectF:
         rect = super().rect()
         rect.translate(
-            -self.anchor.value.h * rect.width(),
-            -self.anchor.value.v * rect.height()
+            -self.anchor.h * rect.width(),
+            -self.anchor.v * rect.height()
         )
         return rect
 
@@ -157,8 +157,8 @@ class BaseRectangle(QGraphicsRectItem, ElementWithAnchor):
         brush = self.brushFromSpec()
         painter.setBrush(brush)
         painter.drawRect(QRectF(
-            -self.rect().width() * self.anchor.value.h,
-            -self.rect().height() * self.anchor.value.v,
+            -self.rect().width() * self.anchor.h,
+            -self.rect().height() * self.anchor.v,
             self.rect().width(),
             self.rect().height()
         ))

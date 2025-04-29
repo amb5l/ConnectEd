@@ -134,7 +134,7 @@ class BaseText(QGraphicsTextItem, Element):
 
     def getKeyPointPos(self : Self, kp : KeyPoint) -> QPointF:
         rect = super().boundingRect()
-        return QPointF(kp.value.h * rect.width(), kp.value.v * rect.height())
+        return QPointF(kp.h * rect.width(), kp.v * rect.height())
 
     def getAnchorOffset(self : Self) -> QPointF:
         return self.getKeyPointPos(self.anchor)

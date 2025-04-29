@@ -37,18 +37,24 @@ class TextSpec:
     italic    : Optional[bool]   = None
     underline : Optional[bool]   = None
 
-KeyPointHV = namedtuple("KeyPointHV", ["h", "v"])
-
 class KeyPoint(Enum):
-    TOP_LEFT      = KeyPointHV(0.0, 0.0)
-    TOP_CENTER    = KeyPointHV(0.5, 0.0)
-    TOP_RIGHT     = KeyPointHV(1.0, 0.0)
-    CENTER_LEFT   = KeyPointHV(0.0, 0.5)
-    CENTER        = KeyPointHV(0.5, 0.5)
-    CENTER_RIGHT  = KeyPointHV(1.0, 0.5)
-    BOTTOM_LEFT   = KeyPointHV(0.0, 1.0)
-    BOTTOM_CENTER = KeyPointHV(0.5, 1.0)
-    BOTTOM_RIGHT  = KeyPointHV(1.0, 1.0)
+    TOP_LEFT      = (0.0, 0.0)
+    TOP_CENTER    = (0.5, 0.0)
+    TOP_RIGHT     = (1.0, 0.0)
+    CENTER_LEFT   = (0.0, 0.5)
+    CENTER        = (0.5, 0.5)
+    CENTER_RIGHT  = (1.0, 0.5)
+    BOTTOM_LEFT   = (0.0, 1.0)
+    BOTTOM_CENTER = (0.5, 1.0)
+    BOTTOM_RIGHT  = (1.0, 1.0)
+
+    @property
+    def h(self) -> float:
+        return self.value[0]
+
+    @property
+    def v(self) -> float:
+        return self.value[1]
 
 class Element(QGraphicsItem):
     """Base class for all elements."""
@@ -248,7 +254,7 @@ class ElementWithGrips(Element):
 
     def getKeyPointPos(self : Self, kp : KeyPoint) -> QPointF:
         rect = self.gripsRect()
-        return QPointF(kp.value.h * rect.width(), kp.value.v * rect.height())
+        return QPointF(kp.h * rect.width(), kp.v * rect.height())
 
     def updateGripsPosition(self : Self) -> None:
         for kp in self.grips.keys():
