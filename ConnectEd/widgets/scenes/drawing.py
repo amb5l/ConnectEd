@@ -7,7 +7,7 @@ from PyQt6.QtCore    import pyqtSignal, QPointF, QRectF, QSizeF, \
 from PyQt6.QtWidgets import QGraphicsScene, QGraphicsItem
 from PyQt6.QtGui     import QUndoStack
 
-from ...core import logger, val2str, str2val
+from ...core import logger, toXmlAttrs, fromXmlAttrs
 
 # TODO move Grip to drawForeground?
 from ..elements import Text, Grip, element_class_dict
@@ -17,8 +17,8 @@ from ... import hub
 
 class DrawingScene(QGraphicsScene):
     # class variables
-    XML_DIRECT_ATTRS       = {"name" : "str"}
-    SYSTEM_FORBIDDEN_ITEMS = [Grip]
+    XML_ATTRS              = {"name" : "str"}
+    SYSTEM_FORBIDDEN_ITEMS = [Grip] # TODO: review this
     SYSTEM_ALLOWED_ITEMS   = None
     FORBIDDEN_ITEMS        = None # none
     ALLOWED_ITEMS          = None # any
@@ -65,9 +65,7 @@ class DrawingScene(QGraphicsScene):
 
     def toXml(self : Self, xw : QXmlStreamWriter) -> None:
         xw.writeStartElement(self.__class__.__name__.replace("Scene", ""))
-        for attr_name, _ in self.XML_DIRECT_ATTRS.items():
-            attr_value = getattr(self, attr_name)
-            xw.writeAttribute(attr_name, val2str(attr_value))
+        toXmlAttrs(self, xw)
         for item in self.items():
             item.toXml(xw)
         xw.writeEndElement()
@@ -78,19 +76,7 @@ class DrawingScene(QGraphicsScene):
         if xr.name() != cls_name:
             raise ValueError(f"Expected {cls_name} element, got {xr.name()}")
         drawing_scene : DrawingScene = cls()
-        attributes = xr.attributes()
-        for attribute in attributes:
-            attr_name = attribute.name()
-            attr_value_str = attribute.value()
-            if attr_name in drawing_scene.XML_DIRECT_ATTRS:
-                attr_type_name = drawing_scene.XML_DIRECT_ATTRS[attr_name]
-                setattr(
-                    drawing_scene, attr_name,
-                    str2val(attr_value_str, attr_type_name)
-                )
-            else:
-                raise ValueError(f"Unexpected attribute: {attr_name} value: {attr_value_str}")
-        xr.readNext()
+        fromXmlAttrs(drawing_scene, xr)
         while not (xr.isEndElement() and xr.name() == cls_name):
             if xr.tokenType() == QXmlStreamReader.TokenType.StartElement:
                 attr_name = xr.name()

@@ -22,7 +22,7 @@ if TYPE_CHECKING:
 
 class BaseText(QGraphicsTextItem, Element):
     """Base class for text items."""
-    XML_INDIRECT_ATTRS = {
+    XML_ATTRS = Element.XML_ATTRS | {
         "text" : (
             "str",
             lambda self, value: self.setPlainText(value),

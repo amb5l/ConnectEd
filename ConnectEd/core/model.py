@@ -12,8 +12,9 @@ from PyQt6.QtGui  import QStandardItemModel, QStandardItem
 from . import logger, \
               LIB_EXT, DSN_EXT, \
               copy as master_copy, paste as master_paste, \
-              fromXmlBegin, open, saveBegin, saveEnd, val2str, str2val
+              fromXmlBegin, open, saveBegin, saveEnd
 
+from ..core    import toXmlAttrs, fromXmlAttrs
 from ..widgets import DrawingScene, DiagramScene, SymbolScene
 
 from .. import hub
@@ -60,8 +61,7 @@ class DiagramItem(DrawingItem):
     scene : DiagramScene
 
 class DbItem(QStandardItem):
-    XML_DIRECT_ATTRS = {}
-    XML_INDIRECT_ATTRS = {
+    XML_ATTRS = {
         "name" : ("str", QStandardItem.setText, QStandardItem.text)
     }
 
@@ -77,22 +77,7 @@ class DbItem(QStandardItem):
     def fromXmlBegin(cls : Self, xr : QXmlStreamReader) -> Self:
         fromXmlBegin(xr, cls.__name__.replace("Item", ""))
         db_item = cls()
-        attributes = xr.attributes()
-        for attribute in attributes:
-            attr_name = attribute.name()
-            attr_value_str = attribute.value()
-            if attr_name in DesignItem.XML_DIRECT_ATTRS:
-                attr_type_name = DesignItem.XML_DIRECT_ATTRS[attr_name]
-                setattr(
-                    db_item, attr_name,
-                    str2val(attr_value_str, attr_type_name)
-                )
-            elif attr_name in DesignItem.XML_INDIRECT_ATTRS:
-                type_name, setter, _ = DesignItem.XML_INDIRECT_ATTRS[attr_name]
-                setter(db_item, str2val(attr_value_str, type_name))
-            else:
-                logger.warning(f"Unexpected attribute: {attr_name} value: {attr_value_str}")
-        xr.readNext()
+        fromXmlAttrs(db_item, xr)
         return db_item
 
     def fromXmlEnd(self : Self, xr : QXmlStreamReader) -> None:
@@ -101,12 +86,7 @@ class DbItem(QStandardItem):
 
     def toXmlBegin(self : Self, xw : QXmlStreamWriter) -> None:
         xw.writeStartElement(self.__class__.__name__.replace("Item", ""))
-        for name, _ in self.XML_DIRECT_ATTRS.items():
-            value = getattr(self, name)
-            xw.writeAttribute(name, val2str(value))
-        for name, (_, _, getter) in self.XML_INDIRECT_ATTRS.items():
-            value = getter(self)
-            xw.writeAttribute(name, val2str(value))
+        toXmlAttrs(self, xw)
 
     def toXmlEnd(self : Self, xw : QXmlStreamWriter) -> None:
         xw.writeEndElement()

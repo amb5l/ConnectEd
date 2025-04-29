@@ -1,4 +1,13 @@
-__all__ = ["fromXmlBegin", "saveBegin", "saveEnd", "open", "copy", "paste"]
+__all__ = [
+    "fromXmlBegin",
+    "saveBegin",
+    "saveEnd",
+    "open",
+    "copy",
+    "paste",
+    "toXmlAttrs",
+    "fromXmlAttrs"
+]
 
 from typing import TypeAlias, Union, Any
 
@@ -6,7 +15,7 @@ from PyQt6.QtCore    import QByteArray, QXmlStreamWriter, QXmlStreamReader, \
                             QFile, QIODevice, QMimeData
 from PyQt6.QtWidgets import QApplication
 
-from . import logger, MIME_TYPE
+from . import logger, MIME_TYPE, val2str, str2val
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -28,6 +37,20 @@ def toXmlBegin(xw : QXmlStreamWriter) -> None:
     xw.writeStartDocument()
     xw.writeStartElement("ConnectEd") # TODO: version
 
+def toXmlAttrs(instance : Any, xw : QXmlStreamWriter) -> None:
+    attrs = instance.XML_ATTRS
+    for attr_name, attr_info in attrs.items():
+        if isinstance(attr_info, str):
+            if hasattr(instance, attr_name):
+                value = getattr(instance, attr_name)
+                xw.writeAttribute(attr_name, val2str(value))
+        elif isinstance(attr_info, tuple):
+            _, _, getter = attr_info
+            value = getter(instance)
+            xw.writeAttribute(attr_name, val2str(value))
+        else:
+            logger.warning(f"Unexpected XML attribute info: {attr_info}")
+
 def toXmlEnd(xw : QXmlStreamWriter) -> None:
     xw.writeEndDocument()
 
@@ -38,6 +61,27 @@ def fromXmlBegin(xr : QXmlStreamReader, token_name : str) -> None:
         raise ValueError("Empty or invalid XML")
     if xr.name() != token_name:
         raise ValueError(f"Expected '{token_name}' element, got '{xr.name()}'")
+
+def fromXmlAttrs(instance : Any, xr : QXmlStreamReader) -> None:
+    attributes = xr.attributes()
+    for attribute in attributes:
+        attr_name = attribute.name()
+        attr_value_str = attribute.value()
+        if attr_name in instance.XML_ATTRS:
+            attr_info = instance.XML_ATTRS[attr_name]
+            if isinstance(attr_info, str):
+                setattr(
+                    instance, attr_name,
+                    str2val(attr_value_str, attr_info)
+                )
+            elif isinstance(attr_info, tuple):
+                type_name, setter, _ = attr_info
+                setter(instance, str2val(attr_value_str, type_name))
+            else:
+                logger.warning(f"Unexpected XML attribute info: {attr_info}")
+        else:
+            logger.warning(f"Unexpected attribute: {attr_name} value: {attr_value_str}")
+    xr.readNext()
 
 def fromXml(xr : QXmlStreamReader) -> list[XmlItemTypes]:
     from .model import DesignItem, LibraryItem, DiagramItem, SymbolItem

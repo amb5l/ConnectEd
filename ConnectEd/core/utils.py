@@ -13,8 +13,8 @@ import platform
 from collections import namedtuple
 from typing      import Self, Any
 
-from PyQt6.QtCore    import Qt, QPointF, QRectF, QSizeF
-from PyQt6.QtGui     import QColor
+from PyQt6.QtCore import Qt, QPointF, QRectF, QSizeF
+from PyQt6.QtGui  import QColor
 
 
 MinMax = namedtuple("MinMax", ["min", "max"])

@@ -15,9 +15,10 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from .. import DrawingScene
 
+
 class BaseRectangle(QGraphicsRectItem, ElementWithAnchor):
     """Base class for rectangle elements."""
-    XML_INDIRECT_ATTRS = ElementWithAnchor.XML_INDIRECT_ATTRS | {
+    XML_ATTRS = ElementWithAnchor.XML_ATTRS | {
         "size" : (
             "QSizeF",
             lambda self, value: self.setSize(value),

@@ -8,13 +8,14 @@ from PyQt6.QtCore    import Qt, QXmlStreamWriter, QXmlStreamReader, QPointF
 from PyQt6.QtGui     import QPen, QBrush, QColor, QFont, QUndoCommand
 from PyQt6.QtWidgets import QGraphicsItem
 
-from ...core import logger, val2str, str2val, camel_to_proper
+from ...core import camel_to_proper, toXmlAttrs, fromXmlAttrs
 
 from ... import hub
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from .. import DrawingScene
+
 
 @dataclass
 class PenSpec:
@@ -51,12 +52,10 @@ class KeyPoint(Enum):
 
 class Element(QGraphicsItem):
     """Base class for all elements."""
-    XML_DIRECT_ATTRS = {
+    XML_ATTRS = {
         "pen_spec"   : "PenSpec",
         "brush_spec" : "BrushSpec",
-        "text_spec"  : "TextSpec"
-    }
-    XML_INDIRECT_ATTRS = {
+        "text_spec"  : "TextSpec",
         "pos" : (
             "QPointF",
             lambda self, value: self.setPos(value),
@@ -223,31 +222,12 @@ class Element(QGraphicsItem):
 
     def toXml(self : Self, xw : QXmlStreamWriter) -> None:
         xw.writeStartElement(self.__class__.__name__)
-        for attr_name, _ in self.XML_DIRECT_ATTRS.items():
-            if hasattr(self, attr_name):
-                xw.writeAttribute(attr_name, val2str(getattr(self, attr_name)))
-        for prop_name, (_, _, getter) in self.XML_INDIRECT_ATTRS.items():
-            xw.writeAttribute(prop_name, val2str(getter(self)))
-        xw.writeEndElement()
+        toXmlAttrs(self, xw)
 
     @classmethod
     def fromXml(cls : Self, xr: QXmlStreamReader) -> Self:
         instance = cls()
-        attributes = xr.attributes()
-        for attribute in attributes:
-            if attribute.name() in cls.XML_DIRECT_ATTRS:
-                type_name = cls.XML_DIRECT_ATTRS[attribute.name()]
-                setattr(
-                    instance, attribute.name(),
-                    str2val(attribute.value(), type_name)
-                )
-            elif attribute.name() in cls.XML_INDIRECT_ATTRS:
-                type_name, setter, _ = cls.XML_INDIRECT_ATTRS[attribute.name()]
-                setter(instance, str2val(attribute.value(), type_name))
-
-            else:
-                logger.warning(f"Unexpected attribute: {attribute.name()}")
-        xr.readNext()
+        fromXmlAttrs(instance, xr)
         return instance
 
 class ElementWithGrips(Element):
@@ -277,7 +257,7 @@ class ElementWithGrips(Element):
 
 class ElementWithAnchor(ElementWithGrips):
     """Base class for all elements with an anchor."""
-    XML_DIRECT_ATTRS = ElementWithGrips.XML_DIRECT_ATTRS | {
+    XML_ATTRS = ElementWithGrips.XML_ATTRS | {
         "anchor" : "KeyPoint"
     }
 
