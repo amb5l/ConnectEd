@@ -128,4 +128,4 @@ def str2val(s : str, t : str) -> Any:
             return TextSpec(color, family, size, weight, italic, underline)
         case "KeyPoint"   : return KeyPoint[s]
         case _:
-            raise ValueError(f"Unsupported type: {s}")
+            raise ValueError(f"Unsupported type: {t}")
