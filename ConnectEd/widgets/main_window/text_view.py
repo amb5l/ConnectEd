@@ -7,7 +7,7 @@ from PyQt6.QtCore    import Qt
 from PyQt6.QtWidgets import QWidget, QPlainTextEdit, QDockWidget, QVBoxLayout
 from PyQt6.QtGui     import QTextOption, QAction, QContextMenuEvent, QWheelEvent
 
-from ..core    import logger
+from ...core   import logger
 from .find_bar import FindBar
 
 

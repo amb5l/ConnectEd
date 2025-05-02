@@ -20,10 +20,10 @@ from .menu_bar   import MenuBar
 from .status_bar import StatusBar
 from .mdi_area   import MdiArea
 
-from ..messages_view   import MessagesViewDock
-from ..transcript_view import TranscriptViewDock
-from ..log_view        import LogViewDock
-from ..explorer        import ExplorerDock
+from .messages_view   import MessagesViewDock
+from .transcript_view import TranscriptViewDock
+from .log_view        import LogViewDock
+from .explorer        import ExplorerDock
 
 from ... import hub
 

@@ -4,7 +4,7 @@ from PyQt6.QtCore    import QAbstractItemModel
 from PyQt6.QtWidgets import QTreeView, QWidget, QDockWidget
 from PyQt6.QtGui     import QFont, QShortcut, QKeySequence
 
-from .. import hub
+from ... import hub
 
 
 class TreeView(QTreeView):
