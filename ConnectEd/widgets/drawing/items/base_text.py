@@ -13,7 +13,7 @@ from PyQt6.QtGui     import QPainter, QPainterPath, QUndoCommand, QPen, \
 
 from . import Element, AnchorGrip, KPLoc, TextSpec, cmdPlaceElement
 
-from ... import hub
+from .... import hub
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:

@@ -13,15 +13,15 @@ from PyQt6.QtGui     import QPainter, QPainterPath, QPen, QIcon, \
                             QKeyEvent, QMouseEvent, QWheelEvent, \
                             QAction, QCursor
 
-from ...core import logger, LAYER_SHEET, LAYER_DRAWING
+from ....core import logger, LAYER_SHEET, LAYER_DRAWING
 
-from ..scenes  import DrawingScene
-from ..marquee import Marquee
+from ..scenes   import DrawingScene
+from ...marquee import Marquee
 
-from ..elements import Element, Grip, ResizeGrip, Text, Rectangle, \
-                       cmdMove, cmdPlaceRectangle, cmdPlaceText
+from ..items import Element, Grip, ResizeGrip, Text, Rectangle, \
+                    cmdMove, cmdPlaceRectangle, cmdPlaceText
 
-from ... import hub
+from .... import hub
 
 
 class DrawingViewLayer(Enum):

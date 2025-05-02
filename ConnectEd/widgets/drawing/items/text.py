@@ -1,6 +1,6 @@
 __all__ = ["Text", "cmdPlaceText"]
 
-from ...core    import Z_DRAWING
+from ....core    import Z_DRAWING
 
 from .base_text import BaseText, cmdPlaceBaseText
 

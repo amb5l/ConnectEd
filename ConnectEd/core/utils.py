@@ -90,7 +90,7 @@ def val2str(v : Any) -> str:
 
 def str2val(s : str, t : str) -> Any:
     """Convert a text representation of a Python value to a Python value."""
-    from ..widgets.elements import KPLoc, PenSpec, BrushSpec, TextSpec
+    from ..widgets import KPLoc, PenSpec, BrushSpec, TextSpec
     def strValuesToFloats(s : str) -> list[float]:
         return [float(p) for p in s.strip("()").split(",")]
     match t:

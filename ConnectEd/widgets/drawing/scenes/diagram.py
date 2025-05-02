@@ -7,7 +7,7 @@ from PyQt6.QtGui  import QPainter, QPen, QBrush
 
 from . import DrawingScene
 
-from ... import hub
+from .... import hub
 
 
 class DiagramScene(DrawingScene):

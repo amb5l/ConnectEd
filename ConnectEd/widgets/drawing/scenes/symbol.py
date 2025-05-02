@@ -2,7 +2,7 @@ __all__ = ["SymbolScene"]
 
 from . import DrawingScene
 
-from ..elements import SymbolInstance, Block
+from ..items import SymbolInstance, Block
 
 
 class SymbolScene(DrawingScene):

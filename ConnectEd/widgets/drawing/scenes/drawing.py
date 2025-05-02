@@ -7,12 +7,12 @@ from PyQt6.QtCore    import pyqtSignal, QPointF, QRectF, QSizeF, \
 from PyQt6.QtWidgets import QGraphicsScene, QGraphicsItem
 from PyQt6.QtGui     import QUndoStack
 
-from ...core import logger, toXmlAttrs, fromXmlAttrs
+from ....core import logger, toXmlAttrs, fromXmlAttrs
 
 # TODO move Grip to drawForeground?
-from ..elements import Text, Grip, element_class_dict
+from ..items import Text, Grip, element_class_dict
 
-from ... import hub
+from .... import hub
 
 
 class DrawingScene(QGraphicsScene):

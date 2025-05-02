@@ -19,8 +19,8 @@ from . import logger, MIME_TYPE, val2str, str2val
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from .model import DesignItem, LibraryItem, DiagramItem, SymbolItem
-    from ..widgets.elements import Element
+    from .model    import DesignItem, LibraryItem, DiagramItem, SymbolItem
+    from ..widgets import Element
 
 
 XmlItemTypes: TypeAlias = Union[
@@ -84,8 +84,8 @@ def fromXmlAttrs(instance : Any, xr : QXmlStreamReader) -> None:
     xr.readNext()
 
 def fromXml(xr : QXmlStreamReader) -> list[XmlItemTypes]:
-    from .model import DesignItem, LibraryItem, DiagramItem, SymbolItem
-    from ..widgets.elements import element_class_dict
+    from .model    import DesignItem, LibraryItem, DiagramItem, SymbolItem
+    from ..widgets import element_class_dict
     fromXmlBegin(xr, "ConnectEd")
     xr.readNext()
     result = []

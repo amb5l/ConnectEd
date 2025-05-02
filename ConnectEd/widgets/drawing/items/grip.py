@@ -9,7 +9,7 @@ from PyQt6.QtWidgets import QGraphicsItem, QStyleOptionGraphicsItem, \
                             QMenu, QGraphicsSceneContextMenuEvent
 from PyQt6.QtGui     import QPainter, QPen, QBrush, QPainterPath, QAction
 
-from ... import hub
+from .... import hub
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:

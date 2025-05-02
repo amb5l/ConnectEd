@@ -8,9 +8,9 @@ from PyQt6.QtCore    import Qt, QXmlStreamWriter, QXmlStreamReader, QPointF
 from PyQt6.QtGui     import QPen, QBrush, QColor, QFont, QUndoCommand
 from PyQt6.QtWidgets import QGraphicsItem
 
-from ...core import camel_to_proper, toXmlAttrs, fromXmlAttrs
+from ....core import camel_to_proper, toXmlAttrs, fromXmlAttrs
 
-from ... import hub
+from .... import hub
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -448,8 +448,15 @@ class cmdMove(cmdElements):
 class cmdSlide(cmdMove):
     pass
 
-__all__ = []
-
+__all__ = [
+    "PenSpec",
+    "BrushSpec",
+    "TextSpec",
+    "KPLoc",
+    "Element",
+    "ElementWithGrips",
+    "ElementWithAnchor",
+]
 from .grip import Grip, ResizeGrip, AnchorGrip
 __all__ += grip.__all__
 from .rectangle import Rectangle, cmdPlaceRectangle

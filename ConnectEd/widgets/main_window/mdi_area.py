@@ -6,10 +6,10 @@ from PyQt6.QtCore    import Qt
 from PyQt6.QtWidgets import QMdiArea, QWidget, QMdiSubWindow
 
 from ..private import Action
-from ..views   import DrawingSubWindow, DrawingView
-from ..scenes  import DrawingScene
+from .. import DrawingSubWindow, DrawingView, DrawingScene
 
 from ... import hub
+
 
 class MdiArea(QMdiArea):
     subwindow_actions : dict[any, list[Action]]
