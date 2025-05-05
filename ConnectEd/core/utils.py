@@ -17,8 +17,6 @@ from PyQt6.QtCore import Qt, QPointF, QRectF, QSizeF
 from PyQt6.QtGui  import QColor
 
 
-MinMax = namedtuple("MinMax", ["min", "max"])
-
 class NameCounter:
     counts : dict[str, int]
 
@@ -73,7 +71,6 @@ def val2str(v : Any) -> str:
         case "int"        : s = str(v)
         case "float"      : s = str(v)
         case "bool"       : s = str(v)
-        case "MinMax"     : s = f"{v.min},{v.max}"
         case "QPointF"    : s = f"{v.x()},{v.y()}"
         case "QRectF"     : s = f"{v.x()},{v.y()},{v.width()},{v.height()}"
         case "QSizeF"     : s = f"{v.width()},{v.height()}"
@@ -99,7 +96,6 @@ def str2val(s : str, t : str) -> Any:
         case "int"        : return int(s)
         case "float"      : return float(s)
         case "bool"       : return s == "True"
-        case "MinMax"     : return MinMax(*strValuesToFloats(s))
         case "QPointF"    : return QPointF(*strValuesToFloats(s))
         case "QRectF"     : return QRectF(*strValuesToFloats(s))
         case "QSizeF"     : return QSizeF(*strValuesToFloats(s))

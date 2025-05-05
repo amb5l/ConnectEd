@@ -53,11 +53,9 @@ class MainWindow(QMainWindow):
 
         # saved position
         self.setWindowTitle(APP_NAME)
-        if hasattr(hub.settings, "startup"):
-            if hasattr(hub.settings.startup, "geometry"):
-                g = hub.settings.startup.geometry
-                if g:
-                    self.restoreGeometry(bytes.fromhex(g))
+        g = hub.settings.get("startup/geometry")
+        if g:
+            self.restoreGeometry(bytes.fromhex(g))
 
         # actions and slots
         self.slots = Slots(self)

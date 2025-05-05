@@ -37,12 +37,13 @@ class DrawingViewGrid:
     min_pixels : int
 
     def __init__(self : Self) -> None:
-        self.display    = hub.settings.defaults.grid.display
-        self.snap       = hub.settings.defaults.grid.snap
-        self.pitch      = hub.settings.defaults.grid.pitch
-        self.dots       = hub.settings.defaults.grid.dots
-        self.alpha      = hub.settings.defaults.grid.alpha
-        self.min_pixels = hub.settings.defaults.grid.min_pixels
+        s = hub.settings.get("defaults/grid")
+        self.display    = s.display
+        self.snap       = s.snap
+        self.pitch      = s.pitch
+        self.dots       = s.dots
+        self.alpha      = s.alpha
+        self.min_pixels = s.min_pixels
 
 class DrawingViewPLPos:
     physical : Optional[QPoint] = None
@@ -238,7 +239,7 @@ class DrawingView(QGraphicsView):
                 QPointF(rect.topLeft())     - QPointF(px, py),
                 QPointF(rect.bottomRight()) + QPointF(px, py)
             ).toRect()
-            color = hub.settings.theme.grid.line
+            color = hub.settings.getTheme("grid/line")
             color.setAlpha(self.grid.alpha)
             painter.setPen(QPen(color, 0, Qt.PenStyle.SolidLine))
             painter.setBrush(Qt.BrushStyle.NoBrush)
@@ -311,7 +312,7 @@ class DrawingView(QGraphicsView):
         match self.mouse.left.state:
             case self.MouseButtonState.Pressed:
                 d = self._distance(self.mouse.left.press.physical, event.pos())
-                if d >= hub.settings.prefs.mouse.drag:
+                if d >= hub.settings.get("prefs/mouse/drag"):
                     self.mouse.left.state = self.MouseButtonState.Dragging
                     self.mouseLeftDragBegin()
                     return
@@ -321,7 +322,7 @@ class DrawingView(QGraphicsView):
         match self.mouse.middle.state:
             case self.MouseButtonState.Pressed:
                 d = self._distance(self.mouse.middle.press.physical, event.pos())
-                if d >= hub.settings.prefs.mouse.drag:
+                if d >= hub.settings.get("prefs/mouse/drag"):
                     self.mouse.middle.state = self.MouseButtonState.Dragging
                     self.mouseMiddleDragBegin()
                     return
@@ -385,7 +386,7 @@ class DrawingView(QGraphicsView):
         p = event.position().toPoint(); l = self.mapToScene(p)
         self.mouse.current.setPL(p, l)
         self.mouseWheel(
-            event.angleDelta().y() / hub.settings.prefs.mouse.wheel,
+            event.angleDelta().y() / hub.settings.get("prefs/mouse/wheel"),
             self._getModifiers(event)
         )
 
@@ -746,25 +747,25 @@ class DrawingView(QGraphicsView):
         self._goState(self.State.ViewZoomWindow1)
 
     def viewZoomIn(self : Self, n : int = 1) -> None:
-        self._zoomRelMouse((1 + hub.settings.prefs.display.zoom.step)**n)
+        self._zoomRelMouse((1 + hub.settings.get("prefs/display/zoom/step"))**n)
 
     def viewZoomOut(self : Self, n : int = 1) -> None:
-        self._zoomRelMouse((1 - hub.settings.prefs.display.zoom.step)**n)
+        self._zoomRelMouse((1 - hub.settings.get("prefs/display/zoom/step"))**n)
 
     def viewPan(self : Self, n : int = 1) -> None:
         self._goState(self.State.ViewPan1)
 
     def viewPanLeft(self : Self, n : int = 1) -> None:
-        self._pan(QPointF(hub.settings.prefs.display.pan.step * n, 0))
+        self._pan(QPointF(hub.settings.get("prefs/display/pan/step") * n, 0))
 
     def viewPanRight(self : Self, n : int = 1) -> None:
-        self._pan(QPointF(-hub.settings.prefs.display.pan.step * n, 0))
+        self._pan(QPointF(-hub.settings.get("prefs/display/pan/step") * n, 0))
 
     def viewPanUp(self : Self, n : int = 1) -> None:
-        self._pan(QPointF(0, hub.settings.prefs.display.pan.step * n))
+        self._pan(QPointF(0, hub.settings.get("prefs/display/pan/step") * n))
 
     def viewPanDown(self : Self, n : int = 1) -> None:
-        self._pan(QPointF(0, -hub.settings.prefs.display.pan.step * n))
+        self._pan(QPointF(0, -hub.settings.get("prefs/display/pan/step") * n))
 
     def viewPrev(self : Self) -> None:
         pass
@@ -931,8 +932,8 @@ class DrawingView(QGraphicsView):
         )
 
     def _zoomAbs(self : Self, abs: float) -> None:
-        abs = max(abs, hub.settings.prefs.display.zoom.limit.min)
-        abs = min(abs, hub.settings.prefs.display.zoom.limit.max)
+        abs = max(abs, hub.settings.get("prefs/display/zoom/min"))
+        abs = min(abs, hub.settings.get("prefs/display/zoom/max"))
         self.zoom = abs
         self.resetTransform()
         self.scale(self.zoom, self.zoom)
@@ -940,10 +941,12 @@ class DrawingView(QGraphicsView):
             "{:.2f}%".format(self.zoom * 100)
         )
         hub.main_window.actions.actionEnable(
-            "viewZoomIn",  self.zoom < hub.settings.prefs.display.zoom.limit.max
+            "viewZoomIn",
+            self.zoom < hub.settings.get("prefs/display/zoom/max")
         )
         hub.main_window.actions.actionEnable(
-            "viewZoomOut", self.zoom > hub.settings.prefs.display.zoom.limit.min
+            "viewZoomOut",
+            self.zoom > hub.settings.get("prefs/display/zoom/min")
         )
 
     def _zoomRel(self : Self, rel: float) -> None:
@@ -970,7 +973,7 @@ class DrawingView(QGraphicsView):
         factor = min(
             self.viewport().width()  / rect.width(),
             self.viewport().height() / rect.height()
-            ) * (1 - hub.settings.prefs.display.zoom.padding)
+            ) * (1 - hub.settings.get("prefs/display/zoom/padding"))
         self._zoomAbs(factor)
         self.centerOn(rect.center())
 

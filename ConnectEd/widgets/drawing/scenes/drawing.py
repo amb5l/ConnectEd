@@ -41,7 +41,7 @@ class DrawingScene(QGraphicsScene):
             u = "Untitled" + self.__class__.__name__.replace("Scene", "")
             name = hub.name_counter.get(u)
         if extents is None:
-            extents = hub.settings.defaults.extents
+            extents = hub.settings.get("defaults/extents")
         self.name = name
         self.setSceneRect(QRectF(QPointF(0, 0), extents))
         self.setItemIndexMethod(QGraphicsScene.ItemIndexMethod.NoIndex)

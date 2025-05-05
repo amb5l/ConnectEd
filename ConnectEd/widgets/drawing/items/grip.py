@@ -46,7 +46,7 @@ class Grip(QGraphicsItem):
 
     def getSize(self : Self, view : QGraphicsView) -> float:
         scale = self.getViewScale(view)
-        return hub.settings.prefs.display.elements.key_point.size / scale
+        return hub.settings.get("prefs/display/elements/key_point/size") / scale
 
     def boundingRect(
         self : Self,
@@ -71,7 +71,7 @@ class Grip(QGraphicsItem):
         return view
 
     def getPenBrush(self : Self) -> tuple[QPen, QBrush]:
-        theme = hub.settings.theme.grip
+        theme = hub.settings.getTheme("grip")
         return QPen(theme.line, 0, Qt.PenStyle.SolidLine), \
                QBrush(theme.fill, Qt.BrushStyle.SolidPattern)
 

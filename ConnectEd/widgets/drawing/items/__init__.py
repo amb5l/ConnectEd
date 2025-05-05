@@ -96,27 +96,27 @@ class Element(QGraphicsItem):
 
     def getPrefs(self : Self) -> SimpleNamespace:
         element_name = self.__class__.__name__.lower()
-        return getattr(hub.settings.prefs.display.elements, element_name)
+        return hub.settings.get(f"prefs/display/elements/{element_name}")
 
     def getTheme(self : Self) -> SimpleNamespace:
         element_name = self.__class__.__name__.lower()
         if self.isSelected():
-            theme = hub.settings.theme.selected
+            theme = hub.settings.getTheme("selected")
         elif self.isWIP():
-            theme = hub.settings.theme.wip
+            theme = hub.settings.getTheme("wip")
         else:
-            theme = getattr(hub.settings.theme, element_name)
+            theme = hub.settings.getTheme(element_name)
         return theme
 
     def getPrefsTheme(self : Self) -> tuple[SimpleNamespace, SimpleNamespace]:
         element_name = self.__class__.__name__.lower()
-        prefs = getattr(hub.settings.prefs.display.elements, element_name)
+        prefs = hub.settings.get(f"prefs/display/elements/{element_name}")
         if self.isSelected():
-            theme = hub.settings.theme.selected
+            theme = hub.settings.getTheme("selected")
         elif self.isWIP():
-            theme = hub.settings.theme.wip
+            theme = hub.settings.getTheme("wip")
         else:
-            theme = getattr(hub.settings.theme, element_name)
+            theme = hub.settings.getTheme(element_name)
         return prefs, theme
 
     def setPenSpec(
@@ -136,7 +136,7 @@ class Element(QGraphicsItem):
         prefs, theme = self.getPrefsTheme()
         s = self.pen_spec
         color = theme.line if s.color is None else s.color
-        color.setAlpha(hub.settings.prefs.display.elements.alpha)
+        color.setAlpha(hub.settings.get("prefs/display/elements/alpha"))
         width = prefs.line.width if s.width is None else s.width
         style = prefs.line.style if s.style is None else s.style
         return QPen(color, width, style)
@@ -147,7 +147,7 @@ class Element(QGraphicsItem):
         theme = self.getTheme()
         s = self.text_spec
         color = theme.text if s.color is None else s.color
-        color.setAlpha(hub.settings.prefs.display.elements.alpha)
+        color.setAlpha(hub.settings.get("prefs/display/elements/alpha"))
         return QPen(color, 0, Qt.PenStyle.SolidLine)
 
     def colorFromTextSpec(self : Self) -> QColor:
@@ -156,7 +156,7 @@ class Element(QGraphicsItem):
         theme = self.getTheme()
         s = self.text_spec
         color = theme.text if s.color is None else s.color
-        color.setAlpha(hub.settings.prefs.display.elements.alpha)
+        color.setAlpha(hub.settings.get("prefs/display/elements/alpha"))
         return color
 
     def penWidth(self : Self) -> float:
@@ -183,7 +183,7 @@ class Element(QGraphicsItem):
         prefs, theme = self.getPrefsTheme()
         s = self.brush_spec
         color = theme.fill if s.color is None else s.color
-        color.setAlpha(hub.settings.prefs.display.elements.alpha)
+        color.setAlpha(hub.settings.get("prefs/display/elements/alpha"))
         style = prefs.fill if s.style is None else s.style
         return QBrush(color, style)
 
@@ -202,7 +202,7 @@ class Element(QGraphicsItem):
         if not hasattr(self, "text_spec"):
             return None
         item_name = self.__class__.__name__.lower()
-        prefs = getattr(hub.settings.prefs.display.elements, item_name).font
+        prefs = hub.settings.get(f"prefs/display/elements/{item_name}/font")
         font = QFont()
         font.setFamily(
             prefs.family if self.text_spec.family is None else

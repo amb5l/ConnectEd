@@ -137,7 +137,7 @@ class BaseRectangle(QGraphicsRectItem, ElementWithAnchor):
     def boundingRect(self : Self) -> QRectF:
         w = max(
             self.penWidth(),
-            hub.settings.prefs.display.elements.key_point.size
+            hub.settings.get("prefs/display/elements/key_point/size")
         )
         return self.rect().adjusted(-w/2, -w/2, w/2, w/2)
 

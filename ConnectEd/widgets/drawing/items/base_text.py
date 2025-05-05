@@ -180,17 +180,17 @@ class BaseText(QGraphicsTextItem, Element):
             c = self.defaultTextColor()
             self.setDefaultTextColor(QColor(255, 0, 255))
         if self.isWIP():
-            theme = hub.settings.theme.wip.text
+            theme = hub.settings.getTheme("wip/text")
             c = self.defaultTextColor()
             self.setDefaultTextColor(theme)
         elif self.isSelected():
             # override text color
-            theme = hub.settings.theme.selected.text
+            theme = hub.settings.getTheme("selected/text")
             c = self.defaultTextColor()
             self.setDefaultTextColor(theme)
         super().paint(painter, option, widget)
         if self.isSelected():
-            prefs = hub.settings.prefs.display.elements.selected.line
+            prefs = hub.settings.get("prefs/display/elements/selected/line")
             painter.setPen(QPen(theme, prefs.width, prefs.style))
             painter.drawRect(self.boundingRect())
         if c:

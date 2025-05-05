@@ -30,11 +30,11 @@ class DiagramScene(DrawingScene):
     ) -> None:
         super().__init__(name)
         if paper_size is None:
-            paper_size = hub.settings.defaults.paper_size
+            paper_size = hub.settings.get("defaults/paper_size")
         if margin is None:
-            margin = hub.settings.defaults.margin
+            margin = hub.settings.get("defaults/margin")
         if border is None:
-            border = hub.settings.defaults.border
+            border = hub.settings.get("defaults/border")
         self.paper_size = paper_size
         self.margin = margin
         self.border = border
@@ -47,17 +47,17 @@ class DiagramScene(DrawingScene):
     def paper_rect(self : Self) -> QRectF:
         size = self.paper_size
         if isinstance(size, str):
-            size = getattr(hub.settings.paper_sizes, size)
+            size = hub.settings.get(f"paper_sizes/{size}")
         return QRectF(QPointF(0, 0), size)
 
     def drawBackground(self : Self, painter : QPainter, rect : QRectF) -> None:
-        painter.fillRect(rect, hub.settings.theme.background.fill)
+        painter.fillRect(rect, hub.settings.getTheme("background/fill"))
         painter.fillRect(
             self.paper_rect(),
-            hub.settings.theme.paper.fill
+            hub.settings.getTheme("paper/fill")
         )
         painter.setPen(QPen(
-            hub.settings.theme.border.line,
+            hub.settings.getTheme("border/line"),
             self.border,
             Qt.PenStyle.SolidLine
         ))
