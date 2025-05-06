@@ -90,6 +90,8 @@ def str2val(s : str, t : str) -> Any:
     from ..widgets import KPLoc, PenSpec, BrushSpec, TextSpec
     def strValuesToFloats(s : str) -> list[float]:
         return [float(p) for p in s.strip("()").split(",")]
+    if s == "None":
+        return None
     match t:
         case "NoneType"   : return None
         case "str"        : return s # TODO unescape special characters

@@ -1,14 +1,13 @@
 from dataclasses import dataclass
 from enum        import Enum
 from typing      import Self, Optional
-from collections import namedtuple
 from types       import SimpleNamespace
 
 from PyQt6.QtCore    import Qt, QXmlStreamWriter, QXmlStreamReader, QPointF
 from PyQt6.QtGui     import QPen, QBrush, QColor, QFont, QUndoCommand
 from PyQt6.QtWidgets import QGraphicsItem
 
-from ....core import camel_to_proper, toXmlAttrs, fromXmlAttrs
+from ....core import val2str, str2val, camel_to_proper, toXmlAttrs, fromXmlAttrs
 
 from .... import hub
 
@@ -36,6 +35,326 @@ class TextSpec:
     bold      : Optional[bool]   = None
     italic    : Optional[bool]   = None
     underline : Optional[bool]   = None
+
+class ElementLine:
+    _element : "Element"
+    _color   : Optional[QColor]      # } specified
+    _width   : Optional[float]       # }
+    _style   : Optional[Qt.PenStyle] # }
+    pen      : QPen
+
+    def __init__(
+        self    : Self,
+        element : "Element",
+        color   : Optional[QColor]      = None,
+        width   : Optional[float]       = None,
+        style   : Optional[Qt.PenStyle] = None
+    ) -> None:
+        self._element = element
+        self._color  = color
+        self._width  = width
+        self._style  = style
+        self.pen     = QPen()
+        self.update()
+        hub.settings.change.connect(self.update)
+
+    def getColor(self : Self) -> QColor:
+        return self._color
+
+    def setColor(self  : Self, color : QColor) -> None:
+        self._color = color
+        self.update()
+
+    def getWidth(self : Self) -> float:
+        return self._width
+
+    def setWidth(self  : Self, width : float) -> None:
+        self._width = width
+        self.update()
+
+    def getStyle(self : Self) -> Qt.PenStyle:
+        return self._style
+
+    def setStyle(self  : Self, style : Qt.PenStyle) -> None:
+        self._style = style
+        self.update()
+
+    def update(self : Self) -> None:
+        element_name = self._element.__class__.__name__.lower()
+        prefs = hub.settings.get(f"prefs/display/elements/{element_name}")
+        theme = hub.settings.getTheme(f"{element_name}")
+        self.pen.setWidthF(
+            self._width if self._width is not None else prefs.line.width
+        )
+        self.pen.setStyle(
+            self._style if self._style is not None else prefs.line.style
+        )
+        self.pen.setColor(
+            self._color if self._color is not None else theme.line
+        )
+
+    def toXml(self : Self, xw : QXmlStreamWriter) -> None:
+        xw.writeStartElement("line")
+        xw.writeAttribute("color", val2str(self._color))
+        xw.writeAttribute("width", val2str(self._width))
+        xw.writeAttribute("style", val2str(self._style))
+        xw.writeEndElement()
+
+    @classmethod
+    def fromXml(cls : Self, xr : QXmlStreamReader) -> Self:
+        attributes = xr.attributes()
+        xr.readNext()
+        element_line : ElementLine = cls()
+        for attr in attributes:
+            match attr.name():
+                case "color":
+                    element_line.setColor(str2val(attr.value(), QColor))
+                case "width":
+                    element_line.setWidth(str2val(attr.value(), float))
+                case "style":
+                    element_line.setStyle(str2val(attr.value(), Qt.PenStyle))
+        return element_line
+
+class ElementFill:
+    _element : "Element"
+    _color   : QColor
+    _style   : Qt.BrushStyle
+    brush    : QBrush
+
+    def __init__(
+        self    : Self,
+        element : "Element",
+        color   : Optional[QColor]        = None,
+        style   : Optional[Qt.BrushStyle] = None
+    ) -> None:
+        self._element = element
+        self._color = color
+        self._style = style
+        self.brush = QBrush()
+        self.update()
+        hub.settings.change.connect(self.update)
+
+    def getColor(self : Self) -> QColor:
+        return self._color
+
+    def setColor(self  : Self, color : QColor) -> None:
+        self._color = color
+        self.update()
+
+    def getStyle(self : Self) -> Qt.BrushStyle:
+        return self._style
+
+    def setStyle(self  : Self, style : Qt.BrushStyle) -> None:
+        self._style = style
+        self.update()
+
+    def update(self : Self) -> None:
+        element_name = self._element.__class__.__name__.lower()
+        prefs = hub.settings.get(f"prefs/display/elements/{element_name}")
+        theme = hub.settings.getTheme(f"{element_name}")
+        self.brush.setColor(
+            self._color if self._color is not None else theme.fill
+        )
+        self.brush.setStyle(
+            self._style if self._style is not None else prefs.fill
+        )
+
+    def toXml(self : Self, xw : QXmlStreamWriter) -> None:
+        xw.writeStartElement("fill")
+        xw.writeAttribute("color", val2str(self._color))
+        xw.writeAttribute("style", val2str(self._style))
+        xw.writeEndElement()
+
+    @classmethod
+    def fromXml(cls : Self, xr : QXmlStreamReader) -> Self:
+        attributes = xr.attributes()
+        xr.readNext()
+        element_fill : ElementFill = cls()
+        for attr in attributes:
+            match attr.name():
+                case "color":
+                    element_fill.setColor(str2val(attr.value(), QColor))
+                case "style":
+                    element_fill.setStyle(str2val(attr.value(), Qt.BrushStyle))
+        return element_fill
+
+class ElementText:
+    _element   : "Element"
+    _color     : QColor
+    _family    : str
+    _size      : float
+    _bold      : bool
+    _italic    : bool
+    _underline : bool
+    pen        : QPen
+    font       : QFont
+
+    def __init__(
+        self      : Self,
+        element   : "Element",
+        color     : Optional[QColor] = None,
+        family    : Optional[str]    = None,
+        size      : Optional[float]  = None,
+        bold      : Optional[bool]   = None,
+        italic    : Optional[bool]   = None,
+        underline : Optional[bool]   = None
+    ) -> None:
+        self._element   = element
+        self._color     = color
+        self._family    = family
+        self._size      = size
+        self._bold      = bold
+        self._italic    = italic
+        self._underline = underline
+        self.pen        = QPen()
+        self.font       = QFont()
+        hub.settings.change.connect(self.update)
+
+    def getColor(self : Self) -> QColor:
+        return self._color
+
+    def setColor(self  : Self, color : QColor) -> None:
+        self._color = color
+        self.update()
+
+    def getFamily(self : Self) -> str:
+        return self._family
+
+    def setFamily(self  : Self, family : str) -> None:
+        self._family = family
+        self.update()
+
+    def getSize(self : Self) -> float:
+        return self._size
+
+    def setSize(self  : Self, size : float) -> None:
+        self._size = size
+        self.update()
+
+    def getBold(self : Self) -> bool:
+        return self._bold
+
+    def setBold(self  : Self, bold : bool) -> None:
+        self._bold = bold
+        self.update()
+
+    def getItalic(self : Self) -> bool:
+        return self._italic
+
+    def setItalic(self  : Self, italic : bool) -> None:
+        self._italic = italic
+        self.update()
+
+    def getUnderline(self : Self) -> bool:
+        return self._underline
+
+    def setUnderline(self  : Self, underline : bool) -> None:
+        self._underline = underline
+        self.update()
+
+    def update(self : Self) -> None:
+        element_name = self._element.__class__.__name__.lower()
+        prefs = hub.settings.get(f"prefs/display/elements/{element_name}")
+        theme = hub.settings.getTheme(f"{element_name}")
+        self.pen.setColor(
+            self._color if self._color is not None else theme.text
+        )
+        self.font.setFamily(
+            self._family if self._family is not None else prefs.font.family
+        )
+        self.font.setPointSizeF(
+            self._size if self._size is not None else prefs.font.size
+        )
+        self.font.setBold(
+            self._bold if self._bold is not None else prefs.font.bold
+        )
+        self.font.setItalic(
+            self._italic if self._italic is not None else prefs.font.italic
+        )
+        self.font.setUnderline(
+            self._underline if self._underline is not None else prefs.font.underline
+        )
+
+    def toXml(self : Self, xw : QXmlStreamWriter) -> None:
+        vs = val2str
+        xw.writeStartElement("text")
+        xw.writeAttribute("color",     vs(self.pen.color()       , QColor ))
+        xw.writeAttribute("family",    vs(self.font.family()     , str    ))
+        xw.writeAttribute("size",      vs(self.font.pointSizeF() , float  ))
+        xw.writeAttribute("bold",      vs(self.font.bold()       , bool   ))
+        xw.writeAttribute("italic",    vs(self.font.italic()     , bool   ))
+        xw.writeAttribute("underline", vs(self.font.underline()  , bool   ))
+        xw.writeEndElement()
+
+    @classmethod
+    def fromXml(cls : Self, xr : QXmlStreamReader) -> Self:
+        attributes = xr.attributes()
+        xr.readNext()
+        element_text : ElementText = cls()
+        for attr in attributes:
+            match attr.name():
+                case "color":
+                    element_text.setColor(str2val(attr.value(), QColor))
+                case "family":
+                    element_text.setFamily(str2val(attr.value(), str))
+                case "size":
+                    element_text.setSize(str2val(attr.value(), float))
+                case "bold":
+                    element_text.setBold(str2val(attr.value(), bool))
+                case "italic":
+                    element_text.setItalic(str2val(attr.value(), bool))
+                case "underline":
+                    element_text.setUnderline(str2val(attr.value(), bool))
+        return element_text
+
+class ElementSettings:
+    line : ElementLine
+    fill : ElementFill
+    text : ElementText
+
+    def __init__(
+        self     : Self,
+        element  : "Element",
+        has_line : bool = False,
+        has_fill : bool = False,
+        has_text : bool = False
+    ) -> None:
+        self.line = ElementLine(element) if has_line else None
+        self.fill = ElementFill(element) if has_fill else None
+        self.text = ElementText(element) if has_text else None
+
+    def toXml(self : Self, xw : QXmlStreamWriter) -> None:
+        xw.writeStartElement("settings")
+        if self.line:
+            self.line.toXml(xw)
+        if self.fill:
+            self.fill.toXml(xw)
+        if self.text:
+            self.text.toXml(xw)
+        xw.writeEndElement()
+
+    @classmethod
+    def fromXml(cls : Self, xr : QXmlStreamReader) -> Self:
+        # XML will look like this:
+        # <settings>
+        #     <line color="red" width="1" style="solid"/>
+        #     <fill color="blue" style="solid"/>
+        #     <text color="green" family="Arial" size="12" bold="true" italic="true" underline="true"/>
+        # </settings>
+        element_settings : ElementSettings = cls()
+        while not xr.atEnd():
+            if xr.isEndElement() and xr.name() == "settings":
+                break
+            if xr.isStartElement():
+                match xr.name():
+                    case "line":
+                        element_settings.line = ElementLine.fromXml(xr)
+                    case "fill":
+                        element_settings.fill = ElementFill.fromXml(xr)
+                    case "text":
+                        element_settings.text = ElementText.fromXml(xr)
+        xr.readNext()
+        return element_settings
 
 class KPLoc(Enum):
     TOP_LEFT      = (0.0, 0.0)
@@ -69,7 +388,8 @@ class Element(QGraphicsItem):
         )
     }
 
-    wip : bool
+    settings : ElementSettings
+    wip      : bool
 
     def __init__(
         self       : Self,
@@ -77,6 +397,8 @@ class Element(QGraphicsItem):
         brush_spec : bool | BrushSpec = False,
         text_spec  : bool | TextSpec  = False
     ) -> None:
+        # TODO change to has_line, has_fill, has_text
+        self.settings = ElementSettings(self, pen_spec, brush_spec, text_spec)
         self.setZValue(self.Z)
         self.setWIP(False)
         self.setPenSpec(pen_spec)
