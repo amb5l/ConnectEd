@@ -77,9 +77,6 @@ def val2str(v : Any) -> str:
         case "QColor"     : s = hex(v.rgba())
         case "PenStyle"   : s = str(v).replace("PenStyle.", "")
         case "BrushStyle" : s = str(v).replace("BrushStyle.", "")
-        case "PenSpec"    : s = f"{v.color},{v.width},{v.style}"
-        case "BrushSpec"  : s = f"{v.color},{v.style}"
-        case "TextSpec"   : s = f"{v.color},{v.family},{v.size},{v.bold},{v.italic},{v.underline}"
         case "KPLoc"      : s = str(v).replace("KPLoc.", "")
         case _ :
             raise ValueError(f"Unsupported type: {t}")
@@ -87,7 +84,7 @@ def val2str(v : Any) -> str:
 
 def str2val(s : str, t : str) -> Any:
     """Convert a text representation of a Python value to a Python value."""
-    from ..widgets import KPLoc, PenSpec, BrushSpec, TextSpec
+    from ..widgets import KPLoc
     def strValuesToFloats(s : str) -> list[float]:
         return [float(p) for p in s.strip("()").split(",")]
     if s == "None":
@@ -104,26 +101,6 @@ def str2val(s : str, t : str) -> Any:
         case "QColor"     : return QColor.fromRgba(int(s,0))
         case "PenStyle"   : return Qt.PenStyle[s]
         case "BrushStyle" : return Qt.BrushStyle[s]
-        case "PenSpec"    :
-            params = s.split(",")
-            color = None if params[0] == "None" else QColor.fromRgba(int(params[0], 0))
-            width = None if params[1] == "None" else float(params[1])
-            style = None if params[2] == "None" else Qt.PenStyle[params[2]]
-            return PenSpec(color, width, style)
-        case "BrushSpec"  :
-            params = s.split(",")
-            color = None if params[0] == "None" else QColor.fromRgba(int(params[0], 0))
-            style = None if params[1] == "None" else Qt.BrushStyle[params[1]]
-            return BrushSpec(color, style)
-        case "TextSpec"   :
-            params = s.split(",")
-            color     = None if params[0] == "None" else QColor.fromRgba(int(params[0], 0))
-            family    = None if params[1] == "None" else params[1]
-            size      = None if params[2] == "None" else float(params[2])
-            bold      = None if params[3] == "None" else params[3] == "True"
-            italic    = None if params[4] == "None" else params[4] == "True"
-            underline = None if params[5] == "None" else params[5] == "True"
-            return TextSpec(color, family, size, bold, italic, underline)
         case "KPLoc"      : return getattr(KPLoc, s)
         case _:
             raise ValueError(f"Unsupported type: {t}")

@@ -11,7 +11,7 @@ from PyQt6.QtGui     import QPainter, QPainterPath, QUndoCommand, QPen, \
                             QKeyEvent, QFocusEvent, QColor, QAction, \
                             QTextCursor
 
-from . import Element, AnchorGrip, KPLoc, TextSpec, cmdPlaceElement
+from . import Element, AnchorGrip, KPLoc, cmdPlaceElement
 
 from .... import hub
 
@@ -44,7 +44,7 @@ class BaseText(QGraphicsTextItem, Element):
     ) -> None:
         QGraphicsTextItem.__init__(self, text)
         QGraphicsTextItem.document(self).setDocumentMargin(0)
-        Element.__init__(self, text_spec=True, wip=wip)
+        Element.__init__(self, has_text=True, wip=wip)
         self.grips = {p: AnchorGrip(self, p) for p in KPLoc}
         self.anchor = anchor
         self.setPos(pos)
@@ -119,13 +119,6 @@ class BaseText(QGraphicsTextItem, Element):
             Qt.TextInteractionFlag.TextEditable if editable else
             Qt.TextInteractionFlag.NoTextInteraction
         )
-
-    def setTextSpec(self: Self, text_spec: bool | TextSpec) -> None:
-        super().setTextSpec(text_spec)
-        font = self.fontFromSpec()
-        if font:
-            self.setFont(font)
-            self.setDefaultTextColor(self.colorFromTextSpec())
 
     def setAnchor(
         self   : Self,
@@ -221,7 +214,7 @@ class cmdPlaceBaseText(cmdPlaceElement):
         anchor  : KPLoc = KPLoc.TOP_LEFT,
         wip     : bool = False
     ) -> None:
-        super().__init__(scene, element, False, False, True, wip)
+        super().__init__(scene, element, wip)
         self.text   = text
         self.pos    = pos
         self.anchor = anchor

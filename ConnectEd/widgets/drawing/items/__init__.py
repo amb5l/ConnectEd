@@ -16,26 +16,6 @@ if TYPE_CHECKING:
     from .. import DrawingScene
 
 
-@dataclass
-class PenSpec:
-    color : Optional[QColor]      = None
-    width : Optional[float]       = None
-    style : Optional[Qt.PenStyle] = None
-
-@dataclass
-class BrushSpec:
-    color : Optional[QColor]        = None
-    style : Optional[Qt.BrushStyle] = None
-
-@dataclass
-class TextSpec:
-    color     : Optional[QColor] = None
-    family    : Optional[str]    = None
-    size      : Optional[float]  = None # TODO: 0 = resize with parent boundary?
-    bold      : Optional[bool]   = None
-    italic    : Optional[bool]   = None
-    underline : Optional[bool]   = None
-
 class ElementLine:
     _element : "Element"
     _color   : Optional[QColor]      # } specified
@@ -287,12 +267,12 @@ class ElementText:
     def toXml(self : Self, xw : QXmlStreamWriter) -> None:
         vs = val2str
         xw.writeStartElement("text")
-        xw.writeAttribute("color",     vs(self.pen.color()       , QColor ))
-        xw.writeAttribute("family",    vs(self.font.family()     , str    ))
-        xw.writeAttribute("size",      vs(self.font.pointSizeF() , float  ))
-        xw.writeAttribute("bold",      vs(self.font.bold()       , bool   ))
-        xw.writeAttribute("italic",    vs(self.font.italic()     , bool   ))
-        xw.writeAttribute("underline", vs(self.font.underline()  , bool   ))
+        xw.writeAttribute( "color",     vs(self.pen.color()       , QColor ))
+        xw.writeAttribute( "family",    vs(self.font.family()     , str    ))
+        xw.writeAttribute( "size",      vs(self.font.pointSizeF() , float  ))
+        xw.writeAttribute( "bold",      vs(self.font.bold()       , bool   ))
+        xw.writeAttribute( "italic",    vs(self.font.italic()     , bool   ))
+        xw.writeAttribute( "underline", vs(self.font.underline()  , bool   ))
         xw.writeEndElement()
 
     @classmethod
@@ -356,12 +336,6 @@ class ElementSettings:
 
     @classmethod
     def fromXml(cls : Self, xr : QXmlStreamReader) -> Self:
-        # XML will look like this:
-        # <settings>
-        #     <line color="red" width="1" style="solid"/>
-        #     <fill color="blue" style="solid"/>
-        #     <text color="green" family="Arial" size="12" bold="true" italic="true" underline="true"/>
-        # </settings>
         element_settings : ElementSettings = cls()
         while not xr.atEnd():
             if xr.isEndElement() and xr.name() == "settings":
@@ -399,9 +373,6 @@ class KPLoc(Enum):
 class Element(QGraphicsItem):
     """Base class for all elements."""
     XML_ATTRS = {
-        "pen_spec"   : "PenSpec",
-        "brush_spec" : "BrushSpec",
-        "text_spec"  : "TextSpec",
         "pos" : (
             "QPointF",
             lambda self, value: self.setPos(value),
@@ -413,20 +384,16 @@ class Element(QGraphicsItem):
     wip      : bool
 
     def __init__(
-        self       : Self,
-        pen_spec   : bool | PenSpec   = False,
-        brush_spec : bool | BrushSpec = False,
-        text_spec  : bool | TextSpec  = False,
-        wip        : bool = False
+        self     : Self,
+        has_line : bool = False,
+        has_fill : bool = False,
+        has_text : bool = False,
+        wip      : bool = False
     ) -> None:
         # TODO change to has_line, has_fill, has_text
         self.wip = wip
-        self.settings = ElementSettings(self, pen_spec, brush_spec, text_spec)
+        self.settings = ElementSettings(self, has_line, has_fill, has_text)
         self.setZValue(self.Z)
-        # Don't override the wip value that was just set
-        self.setPenSpec(pen_spec)
-        self.setBrushSpec(brush_spec)
-        self.setTextSpec(text_spec)
         f = QGraphicsItem.GraphicsItemFlag
         self.setFlag( f.ItemSendsGeometryChanges      , True  )
         self.setFlag( f.ItemSendsScenePositionChanges , True  )
@@ -475,120 +442,16 @@ class Element(QGraphicsItem):
             theme = hub.settings.getTheme(element_name)
         return prefs, theme
 
-    def setPenSpec(
-        self     : Self,
-        pen_spec : bool | PenSpec
-    ) -> None:
-        if pen_spec:
-            self.pen_spec = PenSpec(None, None, None) \
-                if pen_spec is True else pen_spec
-
-    def getPenSpec(self : Self) -> PenSpec:
-        return self.pen_spec
-
-    def penFromLineSpec(self : Self) -> QPen:
-        if not hasattr(self, "pen_spec"):
-            return QPen(Qt.PenStyle.NoPen)
-        prefs, theme = self.getPrefsTheme()
-        s = self.pen_spec
-        color = theme.line if s.color is None else s.color
-        color.setAlpha(hub.settings.get("prefs/display/elements/alpha"))
-        width = prefs.line.width if s.width is None else s.width
-        style = prefs.line.style if s.style is None else s.style
-        return QPen(color, width, style)
-
-    def penFromTextSpec(self : Self) -> QPen:
-        if not hasattr(self, "text_spec"):
-            return QPen(Qt.PenStyle.NoPen)
-        theme = self.getTheme()
-        s = self.text_spec
-        color = theme.text if s.color is None else s.color
-        color.setAlpha(hub.settings.get("prefs/display/elements/alpha"))
-        return QPen(color, 0, Qt.PenStyle.SolidLine)
-
-    def colorFromTextSpec(self : Self) -> QColor:
-        if not hasattr(self, "text_spec"):
-            return QColor(Qt.GlobalColor.black)
-        theme = self.getTheme()
-        s = self.text_spec
-        color = theme.text if s.color is None else s.color
-        color.setAlpha(hub.settings.get("prefs/display/elements/alpha"))
-        return color
-
-    def penWidth(self : Self) -> float:
-        if not hasattr(self, "pen_spec"):
-            return 0
-        prefs = self.getPrefs()
-        s = self.pen_spec
-        return prefs.line.width if s.width is None else s.width
-
-    def setBrushSpec(
-        self       : Self,
-        brush_spec : bool | BrushSpec
-    ) -> None:
-        if brush_spec:
-            self.brush_spec = BrushSpec(None, None) \
-                if brush_spec is True else brush_spec
-
-    def getBrushSpec(self : Self) -> BrushSpec:
-        return self.brush_spec
-
-    def brushFromSpec(self : Self) -> QBrush:
-        if not hasattr(self, "brush_spec"):
-            return QBrush(Qt.BrushStyle.NoBrush)
-        prefs, theme = self.getPrefsTheme()
-        s = self.brush_spec
-        color = theme.fill if s.color is None else s.color
-        color.setAlpha(hub.settings.get("prefs/display/elements/alpha"))
-        style = prefs.fill if s.style is None else s.style
-        return QBrush(color, style)
-
-    def setTextSpec(
-        self      : Self,
-        text_spec : bool | TextSpec
-    ) -> None:
-        if text_spec:
-            self.text_spec = TextSpec(None, None, None, None, None, None) \
-                if text_spec is True else text_spec
-
-    def getTextSpec(self : Self) -> TextSpec:
-        return self.text_spec
-
-    def fontFromSpec(self : Self) -> QFont | None: # TODO: return default font?
-        if not hasattr(self, "text_spec"):
-            return None
-        item_name = self.__class__.__name__.lower()
-        prefs = hub.settings.get(f"prefs/display/elements/{item_name}/font")
-        font = QFont()
-        font.setFamily(
-            prefs.family if self.text_spec.family is None else
-                self.text_spec.family
-        )
-        font.setPointSizeF(
-            prefs.size if self.text_spec.size is None else
-                self.text_spec.size
-        )
-        font.setBold(
-            prefs.bold if self.text_spec.bold is None else
-                self.text_spec.bold
-        )
-        font.setItalic(
-            prefs.italic if self.text_spec.italic is None else
-                self.text_spec.italic
-        )
-        font.setUnderline(
-            prefs.underline if self.text_spec.underline is None else
-                self.text_spec.underline
-        )
-        return font
-
     def toXml(self : Self, xw : QXmlStreamWriter) -> None:
         xw.writeStartElement(self.__class__.__name__)
+        self.settings.toXml(xw)
         toXmlAttrs(self, xw)
+        xw.writeEndElement()
 
     @classmethod
     def fromXml(cls : Self, xr: QXmlStreamReader) -> Self:
         instance = cls()
+        instance.settings = ElementSettings.fromXml(xr)
         fromXmlAttrs(instance, xr)
         return instance
 
@@ -598,13 +461,13 @@ class ElementWithGrips(Element):
     grips : dict[KPLoc, "Grip"]
 
     def __init__(
-        self       : Self,
-        pen_spec   : bool | PenSpec   = False,
-        brush_spec : bool | BrushSpec = False,
-        text_spec  : bool | TextSpec  = False,
-        wip        : bool = False
+        self     : Self,
+        has_line : bool = False,
+        has_fill : bool = False,
+        has_text : bool = False,
+        wip      : bool = False
     ) -> None:
-        super().__init__(pen_spec, brush_spec, text_spec, wip)
+        super().__init__(has_line, has_fill, has_text, wip)
         self.grips = {kp: self.GRIP_TYPE(self, kp) for kp in self.GRIP_POINTS}
         for grip in self.grips.values():
             grip.setZValue(self.zValue() + grip.Z_DELTA)
@@ -629,12 +492,12 @@ class ElementWithAnchor(ElementWithGrips):
     def __init__(
         self       : Self,
         anchor     : KPLoc = KPLoc.TOP_LEFT,
-        pen_spec   : bool | PenSpec   = False,
-        brush_spec : bool | BrushSpec = False,
-        text_spec  : bool | TextSpec  = False,
+        has_line   : bool = False,
+        has_fill   : bool = False,
+        has_text   : bool = False,
         wip        : bool = False
     ) -> None:
-        super().__init__(pen_spec, brush_spec, text_spec, wip)
+        super().__init__(has_line, has_fill, has_text, wip)
         self.anchor = anchor
 
     def setAnchor(
@@ -718,28 +581,19 @@ class cmdElements(cmdElement):
 
 class cmdPlaceElement(cmdElement):
     """Base class for all commands that place an element."""
-    wip        : bool
-    pen_spec   : bool | PenSpec
-    brush_spec : bool | BrushSpec
-    text_spec  : bool | TextSpec
+    wip      : bool
+    has_line : bool
+    has_fill : bool
+    has_text : bool
 
     def __init__(
         self       : Self,
         scene      : "DrawingScene",
-        element    : Optional[Element] = None,
-        pen_spec   : bool | PenSpec   = True,
-        brush_spec : bool | BrushSpec = True,
-        text_spec  : bool | TextSpec  = True,
+        element    : Element,
         wip        : bool = False
     ):
-        if element is None:
-            element_class_name = self.__class__.__name__.replace("cmdPlace", "")
-            element = globals()[element_class_name]()
         super().__init__(scene, element)
-        self.pen_spec   = pen_spec
-        self.brush_spec = brush_spec
-        self.text_spec  = text_spec
-        self.wip        = wip
+        self.wip = wip
 
     def id(self : Self) -> int:
             """Return a unique ID for merging commands."""
@@ -750,18 +604,12 @@ class cmdPlaceElement(cmdElement):
     def mergeWith(self : Self, other : QUndoCommand) -> bool:
         if not super().mergeWith(other):
             return False
-        self.pen_spec   = other.pen_spec
-        self.brush_spec = other.brush_spec
-        self.text_spec  = other.text_spec
-        self.wip        = other.wip
+        self.wip = other.wip
         return True
 
     def redo(self : Self) -> None:
         """Add or update the element in the scene."""
         self.element.setWIP(self.wip)
-        self.element.setPenSpec(self.pen_spec)
-        self.element.setBrushSpec(self.brush_spec)
-        self.element.setTextSpec(self.text_spec)
         self.element.setFlag(
             QGraphicsItem.GraphicsItemFlag.ItemIsSelectable, not self.wip
         )
@@ -807,9 +655,6 @@ class cmdSlide(cmdMove):
     pass
 
 __all__ = [
-    "PenSpec",
-    "BrushSpec",
-    "TextSpec",
     "KPLoc",
     "Element",
     "ElementWithGrips",

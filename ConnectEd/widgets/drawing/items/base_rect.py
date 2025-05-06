@@ -6,8 +6,7 @@ from PyQt6.QtCore    import QPointF, QRectF, QSizeF
 from PyQt6.QtWidgets import QGraphicsRectItem, QStyleOptionGraphicsItem, QWidget
 from PyQt6.QtGui     import QPainter, QPainterPath, QUndoCommand
 
-from . import ElementWithGrips, KPLoc, PenSpec, BrushSpec, ResizeGrip, \
-              cmdPlaceElement
+from . import ElementWithGrips, KPLoc, ResizeGrip, cmdPlaceElement
 
 from .... import hub
 
@@ -36,7 +35,7 @@ class BaseRectangle(QGraphicsRectItem, ElementWithGrips):
         wip        : bool = False
     ) -> None:
         QGraphicsRectItem.__init__(self)
-        ElementWithGrips.__init__(self, pen_spec=True, brush_spec=True, wip=wip)
+        ElementWithGrips.__init__(self, has_line=True, has_fill=True, wip=wip)
         if isinstance(size_or_p2, QSizeF):
             self.setPosSize(pos, size_or_p2)
         else:
@@ -126,7 +125,7 @@ class BaseRectangle(QGraphicsRectItem, ElementWithGrips):
     gripsRect = QGraphicsRectItem.rect
 
     def boundingRect(self : Self) -> QRectF:
-        w = self.penWidth()
+        w = self.settings.line.pen.widthF()
         return self.rect().adjusted(-w/2, -w/2, w/2, w/2)
 
     def shape(self : Self) -> QPainterPath:
@@ -167,12 +166,9 @@ class cmdPlaceBaseRectangle(cmdPlaceElement):
         wip        : bool = False
     ):
         super().__init__(
-            scene      = scene,
-            element    = element,
-            pen_spec   = True,
-            brush_spec = True,
-            text_spec  = False,
-            wip        = wip
+            scene   = scene,
+            element = element,
+            wip     = wip
         )
         self.pos        = pos
         self.size_or_p2 = size_or_p2
