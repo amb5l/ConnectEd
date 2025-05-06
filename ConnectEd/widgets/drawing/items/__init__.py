@@ -237,6 +237,7 @@ class ElementText:
         self.update()
 
     def update(self : Self) -> None:
+        print("update", self._element.isWIP(), self._element.isSelected())
         element_name = self._element.__class__.__name__.lower()
         if self._element.isWIP():
             self.pen.setColor(hub.settings.getTheme("wip/line"))

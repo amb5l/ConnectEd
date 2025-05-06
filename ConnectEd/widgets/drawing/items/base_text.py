@@ -66,6 +66,10 @@ class BaseText(QGraphicsTextItem, Element):
         # assign anchor
         # link
 
+    def update(self):
+        QGraphicsTextItem.update(self)
+        self.settings.update()
+
     def keyPressEvent(self, event: QKeyEvent) -> None:
         if event.key() in (Qt.Key.Key_Return, Qt.Key.Key_Enter):
             self.clearFocus()
@@ -173,31 +177,16 @@ class BaseText(QGraphicsTextItem, Element):
             painter.fillRect(rect, QColor(255, 255, 255, 192))
             c = self.defaultTextColor()
             self.setDefaultTextColor(QColor(255, 0, 255))
-        if self.isWIP():
-            theme = hub.settings.getTheme("wip/text")
-            c = self.defaultTextColor()
-            self.setDefaultTextColor(theme)
-        elif self.isSelected():
-            # override text color
-            theme = hub.settings.getTheme("selected/text")
-            c = self.defaultTextColor()
-            self.setDefaultTextColor(theme)
+        painter.setPen(self.settings.text.pen)
+        painter.setFont(self.settings.text.font)
+        document = self.document()
+        document.drawContents(painter, self.boundingRect())
         super().paint(painter, option, widget)
         if self.isSelected():
             prefs = hub.settings.get("prefs/display/elements/selected/line")
-            painter.setPen(QPen(theme, prefs.width, prefs.style))
+            painter.pen().setWidthF(prefs.width)
+            painter.pen().setStyle(prefs.style)
             painter.drawRect(self.boundingRect())
-        if c:
-            self.setDefaultTextColor(c)
-
-    def itemChange(
-        self   : Self,
-        change : QGraphicsTextItem.GraphicsItemChange,
-        value  : Any
-    ) -> None:
-        if change == self.GraphicsItemChange.ItemSelectedHasChanged:
-            self.updateGripsVisibility()
-        return QGraphicsTextItem.itemChange(self, change, value)
 
 class cmdPlaceBaseText(cmdPlaceElement):
     element    : BaseText
