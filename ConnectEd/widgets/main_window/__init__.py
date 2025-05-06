@@ -100,7 +100,7 @@ class MainWindow(QMainWindow):
         self.messages_viewer.text_view.appendPlainText("ConnectEd ready!")
 
     def closeEvent(self : Self, event : QCloseEvent) -> None:
-        hub.settings.startup.geometry = self.saveGeometry().data()
+        hub.settings.set("startup/geometry", self.saveGeometry().data())
         super().closeEvent(event)
 
     def connectActionsToSlots(

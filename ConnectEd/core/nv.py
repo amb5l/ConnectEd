@@ -24,7 +24,7 @@ from .utils import getDefaultPath, val2str, str2val
 
 FACTORY_SETTINGS = {
     "startup" : {
-        "geometry" : ""
+        "geometry" : b''
     },
     "prefs" : {
         "file" : {
