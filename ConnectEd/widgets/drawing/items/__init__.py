@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from enum        import Enum
-from typing      import Self, Optional
+from typing      import Self, Optional, Any
 from types       import SimpleNamespace
 
 from PyQt6.QtCore    import Qt, QXmlStreamWriter, QXmlStreamReader, QPointF
@@ -56,7 +56,6 @@ class ElementLine:
         self._style  = style
         self.pen     = QPen()
         self.update()
-        hub.settings.change.connect(self.update)
 
     def getColor(self : Self) -> QColor:
         return self._color
@@ -132,7 +131,6 @@ class ElementFill:
         self._style = style
         self.brush = QBrush()
         self.update()
-        hub.settings.change.connect(self.update)
 
     def getColor(self : Self) -> QColor:
         return self._color
@@ -151,10 +149,14 @@ class ElementFill:
     def update(self : Self) -> None:
         element_name = self._element.__class__.__name__.lower()
         prefs = hub.settings.get(f"prefs/display/elements/{element_name}")
-        theme = hub.settings.getTheme(f"{element_name}")
-        self.brush.setColor(
-            self._color if self._color is not None else theme.fill
-        )
+        if self._element.isSelected():
+            theme = hub.settings.getTheme("selected")
+            self.brush.setColor(theme.fill)
+        else:
+            theme = hub.settings.getTheme(f"{element_name}")
+            self.brush.setColor(
+                self._color if self._color is not None else theme.fill
+            )
         self.brush.setStyle(
             self._style if self._style is not None else prefs.fill
         )
@@ -208,7 +210,7 @@ class ElementText:
         self._underline = underline
         self.pen        = QPen()
         self.font       = QFont()
-        hub.settings.change.connect(self.update)
+        self.update()
 
     def getColor(self : Self) -> QColor:
         return self._color
@@ -254,25 +256,28 @@ class ElementText:
 
     def update(self : Self) -> None:
         element_name = self._element.__class__.__name__.lower()
-        prefs = hub.settings.get(f"prefs/display/elements/{element_name}")
-        theme = hub.settings.getTheme(f"{element_name}")
-        self.pen.setColor(
-            self._color if self._color is not None else theme.text
-        )
+        p = hub.settings.get(f"prefs/display/elements/{element_name}/font")
+        if self._element.isSelected():
+            self.pen.setColor(hub.settings.getTheme("selected"))
+        else:
+            self.pen.setColor(
+                self._color if self._color is not None else \
+                    hub.settings.getTheme(f"{element_name}/text")
+            )
         self.font.setFamily(
-            self._family if self._family is not None else prefs.font.family
+            self._family if self._family is not None else p.family
         )
         self.font.setPointSizeF(
-            self._size if self._size is not None else prefs.font.size
+            self._size if self._size is not None else p.size
         )
         self.font.setBold(
-            self._bold if self._bold is not None else prefs.font.bold
+            self._bold if self._bold is not None else p.bold
         )
         self.font.setItalic(
-            self._italic if self._italic is not None else prefs.font.italic
+            self._italic if self._italic is not None else p.italic
         )
         self.font.setUnderline(
-            self._underline if self._underline is not None else prefs.font.underline
+            self._underline if self._underline is not None else p.underline
         )
 
     def toXml(self : Self, xw : QXmlStreamWriter) -> None:
@@ -308,9 +313,10 @@ class ElementText:
         return element_text
 
 class ElementSettings:
-    line : ElementLine
-    fill : ElementFill
-    text : ElementText
+    _element : "Element"
+    line     : ElementLine
+    fill     : ElementFill
+    text     : ElementText
 
     def __init__(
         self     : Self,
@@ -319,9 +325,19 @@ class ElementSettings:
         has_fill : bool = False,
         has_text : bool = False
     ) -> None:
+        self._element = element
         self.line = ElementLine(element) if has_line else None
         self.fill = ElementFill(element) if has_fill else None
         self.text = ElementText(element) if has_text else None
+        hub.settings.change.connect(self.update)
+
+    def update(self : Self) -> None:
+        if self.line:
+            self.line.update()
+        if self.fill:
+            self.fill.update()
+        if self.text:
+            self.text.update()
 
     def toXml(self : Self, xw : QXmlStreamWriter) -> None:
         xw.writeStartElement("settings")
@@ -408,6 +424,15 @@ class Element(QGraphicsItem):
         self.setFlag( f.ItemSendsGeometryChanges      , True  )
         self.setFlag( f.ItemSendsScenePositionChanges , True  )
         self.setCacheMode(QGraphicsItem.CacheMode.DeviceCoordinateCache)
+
+    def itemChange(
+        self   : Self,
+        change : QGraphicsItem.GraphicsItemChange,
+        value  : Any
+    ) -> None:
+        if change == self.GraphicsItemChange.ItemSelectedHasChanged:
+            self.settings.update()
+        return QGraphicsItem.itemChange(self,change, value)
 
     def setWIP(self : Self, wip : bool) -> None:
         self.wip = wip

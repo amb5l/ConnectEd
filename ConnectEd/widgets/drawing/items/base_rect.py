@@ -6,7 +6,7 @@ from PyQt6.QtCore    import QPointF, QRectF, QSizeF
 from PyQt6.QtWidgets import QGraphicsRectItem, QStyleOptionGraphicsItem, QWidget
 from PyQt6.QtGui     import QPainter, QPainterPath, QUndoCommand
 
-from . import ElementWithAnchor, KPLoc, PenSpec, BrushSpec, ResizeGrip, \
+from . import ElementWithGrips, KPLoc, PenSpec, BrushSpec, ResizeGrip, \
               cmdPlaceElement
 
 from .... import hub
@@ -16,9 +16,9 @@ if TYPE_CHECKING:
     from .. import DrawingScene
 
 
-class BaseRectangle(QGraphicsRectItem, ElementWithAnchor):
+class BaseRectangle(QGraphicsRectItem, ElementWithGrips):
     """Base class for rectangle elements."""
-    XML_ATTRS = ElementWithAnchor.XML_ATTRS | {
+    XML_ATTRS = ElementWithGrips.XML_ATTRS | {
         "size" : (
             "QSizeF",
             lambda self, value: self.setSize(value),
@@ -29,19 +29,13 @@ class BaseRectangle(QGraphicsRectItem, ElementWithAnchor):
     GRIP_POINTS = [kp for kp in KPLoc if kp != KPLoc.CENTER]
     MIN_SIZE = QSizeF(1.0, 1.0)
 
-    anchor : KPLoc
-    grips  : dict[KPLoc, ResizeGrip]
-
     def __init__(
         self       : Self,
         pos        : QPointF = QPointF(0, 0),
-        size_or_p2 : QSizeF | QPointF = QSizeF(0, 0),
-        anchor     : KPLoc = KPLoc.TOP_LEFT,
-        pen_spec   : bool | PenSpec   = True,
-        brush_spec : bool | BrushSpec = True
+        size_or_p2 : QSizeF | QPointF = QSizeF(0, 0)
     ) -> None:
         QGraphicsRectItem.__init__(self)
-        ElementWithAnchor.__init__(self, anchor, pen_spec, brush_spec)
+        ElementWithGrips.__init__(self, pen_spec = True, brush_spec = True)
         if isinstance(size_or_p2, QSizeF):
             self.setPosSize(pos, size_or_p2)
         else:
@@ -124,21 +118,10 @@ class BaseRectangle(QGraphicsRectItem, ElementWithAnchor):
             case _:
                 raise ValueError(f"Invalid key point: {kp}")
 
-    def rect(self : Self) -> QRectF:
-        rect = super().rect()
-        rect.translate(
-            -self.anchor.h * rect.width(),
-            -self.anchor.v * rect.height()
-        )
-        return rect
-
-    gripsRect = rect
+    gripsRect = QGraphicsRectItem.rect
 
     def boundingRect(self : Self) -> QRectF:
-        w = max(
-            self.penWidth(),
-            hub.settings.get("prefs/display/elements/key_point/size")
-        )
+        w = self.penWidth()
         return self.rect().adjusted(-w/2, -w/2, w/2, w/2)
 
     def shape(self : Self) -> QPainterPath:
@@ -152,16 +135,9 @@ class BaseRectangle(QGraphicsRectItem, ElementWithAnchor):
         option  : QStyleOptionGraphicsItem,
         widget  : QWidget
     ) -> None:
-        pen = self.penFromLineSpec()
-        painter.setPen(pen)
-        brush = self.brushFromSpec()
-        painter.setBrush(brush)
-        painter.drawRect(QRectF(
-            -self.rect().width() * self.anchor.h,
-            -self.rect().height() * self.anchor.v,
-            self.rect().width(),
-            self.rect().height()
-        ))
+        painter.setPen(self.settings.line.pen)
+        painter.setBrush(self.settings.fill.brush)
+        painter.drawRect(self.rect())
 
     def itemChange(
         self   : Self,
@@ -170,13 +146,12 @@ class BaseRectangle(QGraphicsRectItem, ElementWithAnchor):
     ) -> None:
         if change == self.GraphicsItemChange.ItemSelectedHasChanged:
             self.updateGripsVisibility()
-        return QGraphicsRectItem.itemChange(self,change, value)
+        return ElementWithGrips.itemChange(self,change, value)
 
 class cmdPlaceBaseRectangle(cmdPlaceElement):
     element    : BaseRectangle
     pos        : QPointF
     size_or_p2 : QSizeF | QPointF
-    anchor     : KPLoc
 
     def __init__(
         self       : Self,
@@ -184,16 +159,18 @@ class cmdPlaceBaseRectangle(cmdPlaceElement):
         element    : Optional[BaseRectangle] = None,
         pos        : QPointF = QPointF(0, 0),
         size_or_p2 : QSizeF | QPointF = QSizeF(0, 0),
-        anchor     : KPLoc = KPLoc.TOP_LEFT,
-        pen_spec   : bool | PenSpec   = True,
-        brush_spec : bool | BrushSpec = True,
         wip        : bool = False
     ):
-        super().__init__(scene, element, pen_spec, brush_spec, False, wip)
+        super().__init__(
+            scene      = scene,
+            element    = element,
+            pen_spec   = True,
+            brush_spec = True,
+            text_spec  = False,
+            wip        = wip
+        )
         self.pos        = pos
         self.size_or_p2 = size_or_p2
-        self.anchor     = anchor
-        self.element.setAnchor(self.anchor)
         self.element.setPosSizeOrP2(self.pos, self.size_or_p2)
 
     def mergeWith(self : Self, other: QUndoCommand) -> bool:
@@ -201,12 +178,9 @@ class cmdPlaceBaseRectangle(cmdPlaceElement):
             return False
         self.pos        = other.pos
         self.size_or_p2 = other.size_or_p2
-        self.anchor     = other.anchor
-        self.element.setAnchor(self.anchor)
         self.element.setPosSizeOrP2(self.pos, self.size_or_p2)
         return True
 
     def redo(self : Self):
         super().redo()
-        self.element.setAnchor(self.anchor)
         self.element.setPosSizeOrP2(self.pos, self.size_or_p2)

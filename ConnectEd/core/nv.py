@@ -261,7 +261,6 @@ class Settings(QObject):
         current = d
         for part in path_parts:
             if not isinstance(current, dict) or part not in current:
-                print("current", current, "part", part, "path_parts", path_parts)
                 raise KeyError(f"Invalid settings path: {'/'.join(path_parts)}")
             current = current[part]
         return current

@@ -1,3 +1,4 @@
+- cache settings in elements - new pen/brush/font management
 - merge XML attributes and properties
 - Add ElementWithGrips, ElementWithAnchor
 - review QPointF vs x,y
