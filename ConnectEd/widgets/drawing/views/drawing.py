@@ -805,7 +805,7 @@ class DrawingView(QGraphicsView):
         ))
 
     def placeRectangleBegin(self : Self, p1: QPointF) -> None:
-        self.wip.elements = [Rectangle()]
+        self.wip.elements = [Rectangle(wip=True)]
         self.wip.pos0 = p1
         self.placeRectangleCmd(QSizeF(1,1), True)
         self._goState(self.State.PlaceRectangle2)

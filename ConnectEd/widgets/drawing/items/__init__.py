@@ -80,17 +80,18 @@ class ElementLine:
 
     def update(self : Self) -> None:
         element_name = self._element.__class__.__name__.lower()
-        prefs = hub.settings.get(f"prefs/display/elements/{element_name}")
-        theme = hub.settings.getTheme(f"{element_name}")
-        self.pen.setWidthF(
-            self._width if self._width is not None else prefs.line.width
-        )
-        self.pen.setStyle(
-            self._style if self._style is not None else prefs.line.style
-        )
-        self.pen.setColor(
-            self._color if self._color is not None else theme.line
-        )
+        if self._element.isWIP():
+            self.pen.setColor(hub.settings.getTheme("wip/line"))
+        elif self._element.isSelected():
+            self.pen.setColor(hub.settings.getTheme("selected/line"))
+        else:
+            self.pen.setColor(
+                self._color if self._color is not None else \
+                    hub.settings.getTheme(f"{element_name}/line")
+            )
+        p = hub.settings.get(f"prefs/display/elements/{element_name}/line")
+        self.pen.setWidthF(self._width if self._width is not None else p.width)
+        self.pen.setStyle(self._style if self._style is not None else p.style)
 
     def toXml(self : Self, xw : QXmlStreamWriter) -> None:
         xw.writeStartElement("line")
@@ -149,13 +150,14 @@ class ElementFill:
     def update(self : Self) -> None:
         element_name = self._element.__class__.__name__.lower()
         prefs = hub.settings.get(f"prefs/display/elements/{element_name}")
-        if self._element.isSelected():
-            theme = hub.settings.getTheme("selected")
-            self.brush.setColor(theme.fill)
+        if self._element.isWIP():
+            self.brush.setColor(hub.settings.getTheme("wip/fill"))
+        elif self._element.isSelected():
+            self.brush.setColor(hub.settings.getTheme("selected/fill"))
         else:
-            theme = hub.settings.getTheme(f"{element_name}")
             self.brush.setColor(
-                self._color if self._color is not None else theme.fill
+                self._color if self._color is not None else \
+                    hub.settings.getTheme(f"{element_name}/fill")
             )
         self.brush.setStyle(
             self._style if self._style is not None else prefs.fill
@@ -256,14 +258,16 @@ class ElementText:
 
     def update(self : Self) -> None:
         element_name = self._element.__class__.__name__.lower()
-        p = hub.settings.get(f"prefs/display/elements/{element_name}/font")
-        if self._element.isSelected():
-            self.pen.setColor(hub.settings.getTheme("selected"))
+        if self._element.isWIP():
+            self.pen.setColor(hub.settings.getTheme("wip/line"))
+        elif self._element.isSelected():
+            self.pen.setColor(hub.settings.getTheme("selected/line"))
         else:
             self.pen.setColor(
                 self._color if self._color is not None else \
                     hub.settings.getTheme(f"{element_name}/text")
             )
+        p = hub.settings.get(f"prefs/display/elements/{element_name}/font")
         self.font.setFamily(
             self._family if self._family is not None else p.family
         )
@@ -329,6 +333,7 @@ class ElementSettings:
         self.line = ElementLine(element) if has_line else None
         self.fill = ElementFill(element) if has_fill else None
         self.text = ElementText(element) if has_text else None
+        self.update()
         hub.settings.change.connect(self.update)
 
     def update(self : Self) -> None:
@@ -411,12 +416,14 @@ class Element(QGraphicsItem):
         self       : Self,
         pen_spec   : bool | PenSpec   = False,
         brush_spec : bool | BrushSpec = False,
-        text_spec  : bool | TextSpec  = False
+        text_spec  : bool | TextSpec  = False,
+        wip        : bool = False
     ) -> None:
         # TODO change to has_line, has_fill, has_text
+        self.wip = wip
         self.settings = ElementSettings(self, pen_spec, brush_spec, text_spec)
         self.setZValue(self.Z)
-        self.setWIP(False)
+        # Don't override the wip value that was just set
         self.setPenSpec(pen_spec)
         self.setBrushSpec(brush_spec)
         self.setTextSpec(text_spec)
@@ -435,8 +442,10 @@ class Element(QGraphicsItem):
         return QGraphicsItem.itemChange(self,change, value)
 
     def setWIP(self : Self, wip : bool) -> None:
-        self.wip = wip
-        self.update()
+        if self.wip != wip:
+            self.wip = wip
+            self.settings.update()
+            self.update()
 
     def isWIP(self : Self) -> bool:
         return self.wip
@@ -592,9 +601,10 @@ class ElementWithGrips(Element):
         self       : Self,
         pen_spec   : bool | PenSpec   = False,
         brush_spec : bool | BrushSpec = False,
-        text_spec  : bool | TextSpec  = False
+        text_spec  : bool | TextSpec  = False,
+        wip        : bool = False
     ) -> None:
-        super().__init__(pen_spec, brush_spec, text_spec)
+        super().__init__(pen_spec, brush_spec, text_spec, wip)
         self.grips = {kp: self.GRIP_TYPE(self, kp) for kp in self.GRIP_POINTS}
         for grip in self.grips.values():
             grip.setZValue(self.zValue() + grip.Z_DELTA)
@@ -621,9 +631,10 @@ class ElementWithAnchor(ElementWithGrips):
         anchor     : KPLoc = KPLoc.TOP_LEFT,
         pen_spec   : bool | PenSpec   = False,
         brush_spec : bool | BrushSpec = False,
-        text_spec  : bool | TextSpec  = False
+        text_spec  : bool | TextSpec  = False,
+        wip        : bool = False
     ) -> None:
-        super().__init__(pen_spec, brush_spec, text_spec)
+        super().__init__(pen_spec, brush_spec, text_spec, wip)
         self.anchor = anchor
 
     def setAnchor(

@@ -39,11 +39,12 @@ class BaseText(QGraphicsTextItem, Element):
         self   : Self,
         text   : str = "<BaseText:unspecified text>",
         pos    : QPointF = QPointF(0, 0),
-        anchor : KPLoc = KPLoc.TOP_LEFT
+        anchor : KPLoc = KPLoc.TOP_LEFT,
+        wip    : bool = False
     ) -> None:
         QGraphicsTextItem.__init__(self, text)
         QGraphicsTextItem.document(self).setDocumentMargin(0)
-        Element.__init__(self, False, False, True)
+        Element.__init__(self, text_spec=True, wip=wip)
         self.grips = {p: AnchorGrip(self, p) for p in KPLoc}
         self.anchor = anchor
         self.setPos(pos)

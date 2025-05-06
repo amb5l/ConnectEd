@@ -32,16 +32,21 @@ class BaseRectangle(QGraphicsRectItem, ElementWithGrips):
     def __init__(
         self       : Self,
         pos        : QPointF = QPointF(0, 0),
-        size_or_p2 : QSizeF | QPointF = QSizeF(0, 0)
+        size_or_p2 : QSizeF | QPointF = QSizeF(0, 0),
+        wip        : bool = False
     ) -> None:
         QGraphicsRectItem.__init__(self)
-        ElementWithGrips.__init__(self, pen_spec = True, brush_spec = True)
+        ElementWithGrips.__init__(self, pen_spec=True, brush_spec=True, wip=wip)
         if isinstance(size_or_p2, QSizeF):
             self.setPosSize(pos, size_or_p2)
         else:
             self.setPoints(pos, size_or_p2)
         self.updateGripsPosition()
         self.updateGripsVisibility()
+
+    def update(self):
+        QGraphicsRectItem.update(self)
+        self.settings.update()
 
     def setSize(self : Self, size : QSizeF) -> None:
         self.setRect(0, 0, size.width(), size.height())
@@ -171,16 +176,15 @@ class cmdPlaceBaseRectangle(cmdPlaceElement):
         )
         self.pos        = pos
         self.size_or_p2 = size_or_p2
-        self.element.setPosSizeOrP2(self.pos, self.size_or_p2)
 
     def mergeWith(self : Self, other: QUndoCommand) -> bool:
         if not super().mergeWith(other):
             return False
         self.pos        = other.pos
         self.size_or_p2 = other.size_or_p2
-        self.element.setPosSizeOrP2(self.pos, self.size_or_p2)
         return True
 
     def redo(self : Self):
         super().redo()
         self.element.setPosSizeOrP2(self.pos, self.size_or_p2)
+        self.element.update()
