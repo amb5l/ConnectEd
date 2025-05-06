@@ -53,7 +53,7 @@ FACTORY_SETTINGS = {
                     "font" : {
                         "family"    : "Liberation Sans",
                         "size"      : 7,
-                        "weight"    : 400,
+                        "bold"      : False,
                         "italic"    : False,
                         "underline" : False
                     }

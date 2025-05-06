@@ -79,7 +79,7 @@ def val2str(v : Any) -> str:
         case "BrushStyle" : s = str(v).replace("BrushStyle.", "")
         case "PenSpec"    : s = f"{v.color},{v.width},{v.style}"
         case "BrushSpec"  : s = f"{v.color},{v.style}"
-        case "TextSpec"   : s = f"{v.color},{v.family},{v.size},{v.weight},{v.italic},{v.underline}"
+        case "TextSpec"   : s = f"{v.color},{v.family},{v.size},{v.bold},{v.italic},{v.underline}"
         case "KPLoc"      : s = str(v).replace("KPLoc.", "")
         case _ :
             raise ValueError(f"Unsupported type: {t}")
@@ -118,10 +118,10 @@ def str2val(s : str, t : str) -> Any:
             color     = None if params[0] == "None" else QColor.fromRgba(int(params[0], 0))
             family    = None if params[1] == "None" else params[1]
             size      = None if params[2] == "None" else float(params[2])
-            weight    = None if params[3] == "None" else int(params[3])
+            bold      = None if params[3] == "None" else params[3] == "True"
             italic    = None if params[4] == "None" else params[4] == "True"
             underline = None if params[5] == "None" else params[5] == "True"
-            return TextSpec(color, family, size, weight, italic, underline)
+            return TextSpec(color, family, size, bold, italic, underline)
         case "KPLoc"      : return getattr(KPLoc, s)
         case _:
             raise ValueError(f"Unsupported type: {t}")

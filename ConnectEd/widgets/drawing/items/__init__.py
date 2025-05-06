@@ -33,7 +33,7 @@ class TextSpec:
     color     : Optional[QColor] = None
     family    : Optional[str]    = None
     size      : Optional[float]  = None # TODO: 0 = resize with parent boundary?
-    weight    : Optional[int]    = None
+    bold      : Optional[bool]   = None
     italic    : Optional[bool]   = None
     underline : Optional[bool]   = None
 
@@ -212,9 +212,9 @@ class Element(QGraphicsItem):
             prefs.size if self.text_spec.size is None else
                 self.text_spec.size
         )
-        font.setWeight(
-            prefs.weight if self.text_spec.weight is None else
-                self.text_spec.weight
+        font.setBold(
+            prefs.bold if self.text_spec.bold is None else
+                self.text_spec.bold
         )
         font.setItalic(
             prefs.italic if self.text_spec.italic is None else
