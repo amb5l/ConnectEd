@@ -58,9 +58,9 @@ class LinePen:
         self.onSettingsChange()
 
     def onSettingsChange(self : Self) -> None:
-        element_name = self._element.__class__.__name__.lower()
+        element_name = self._element.__class__.__name__
         display = hub.settings.get(f"defaults/elements/{element_name}/line")
-        color_normal = hub.settings.getTheme(f"{element_name}/line")
+        color_normal = hub.settings.getTheme(f"elements/{element_name}/line")
         color_selected = hub.settings.getTheme("selected/line")
         width = display.width if self._width is None else self._width
         style = display.style if self._style is None else self._style
@@ -133,8 +133,8 @@ class FillBrush:
         self.onSettingsChange()
 
     def onSettingsChange(self : Self) -> None:
-        element_name = self._element.__class__.__name__.lower()
-        color_normal = hub.settings.getTheme(f"{element_name}/fill")
+        element_name = self._element.__class__.__name__
+        color_normal = hub.settings.getTheme(f"elements/{element_name}/fill")
         color_selected = hub.settings.getTheme("selected/fill")
         style = hub.settings.get(f"defaults/elements/{element_name}/fill") \
             if self._style is None else self._style
@@ -244,8 +244,8 @@ class TextColorFont:
         self.onSettingsChange()
 
     def onSettingsChange(self : Self) -> None:
-        element_name = self._element.__class__.__name__.lower()
-        self.normal.setRgb(hub.settings.getTheme(f"{element_name}/text").rgb())
+        element_name = self._element.__class__.__name__
+        self.normal.setRgb(hub.settings.getTheme(f"elements/{element_name}/text").rgb())
         self.selected.setRgb(hub.settings.getTheme("selected/text").rgb())
         self.font.setFamily(
             hub.settings.get(f"defaults/elements/{element_name}/text/family")
@@ -658,8 +658,8 @@ from .grip import Grip, ResizeGrip, AnchorGrip
 __all__ += grip.__all__
 from .rectangle import Rectangle, cmdPlaceRectangle
 __all__ += rectangle.__all__
-from .text import Text, cmdPlaceText
-__all__ += text.__all__
+from .text_block import TextBlock, cmdPlaceTextBlock
+__all__ += text_block.__all__
 from .symbol_instance import SymbolInstance
 __all__ += symbol_instance.__all__
 from .block import Block

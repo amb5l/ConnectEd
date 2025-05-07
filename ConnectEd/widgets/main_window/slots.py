@@ -194,8 +194,8 @@ class Slots:
         widget.placeRectangle()
 
     @withCurrentWidget(DrawingView)
-    def placeText(self : Self, widget: DrawingView) -> None:
-        widget.placeText()
+    def placeTextBlock(self : Self, widget: DrawingView) -> None:
+        widget.placeTextBlock()
 
     def windowExplorer(self : Self) -> None:
         self._parent.explorer.show()

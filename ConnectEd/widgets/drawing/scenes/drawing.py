@@ -10,7 +10,7 @@ from PyQt6.QtGui     import QUndoStack
 from ....core import logger, toXmlAttrs, fromXmlAttrs
 
 # TODO move Grip to drawForeground?
-from ..items import Text, Grip, element_class_dict
+from ..items import TextBlock, Grip, element_class_dict
 
 from .... import hub
 
@@ -29,7 +29,7 @@ class DrawingScene(QGraphicsScene):
 
     # custom signals
     selectionChangedItems = pyqtSignal("QList<QGraphicsItem*>")
-    textEditingComplete   = pyqtSignal(Text)
+    textEditingComplete   = pyqtSignal(TextBlock)
 
     def __init__(
         self    : Self,
@@ -92,5 +92,5 @@ class DrawingScene(QGraphicsScene):
     def onSelectionChanged(self : Self) -> None:
         self.selectionChangedItems.emit(self.selectedItems())
 
-    def onTextEditingComplete(self, text_item: Text):
+    def onTextEditingComplete(self, text_item: TextBlock):
         self.textEditingComplete.emit(text_item)

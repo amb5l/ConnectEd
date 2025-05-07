@@ -1,4 +1,4 @@
-__all__ = ["BaseText"]
+__all__ = ["BaseTextBlock"]
 
 from typing import Self, Optional, Any
 from types  import SimpleNamespace
@@ -20,7 +20,7 @@ if TYPE_CHECKING:
     from .. import DrawingScene
 
 
-class BaseText(QGraphicsTextItem, Element):
+class BaseTextBlock(QGraphicsTextItem, Element):
     """Base class for text items."""
     XML_ATTRS = Element.XML_ATTRS | {
         "text" : (
@@ -180,8 +180,8 @@ class BaseText(QGraphicsTextItem, Element):
             painter.setPen(self.appearance.outline.pen)
             painter.drawRect(self.boundingRect())
 
-class cmdPlaceBaseText(cmdPlaceElement):
-    element    : BaseText
+class cmdPlaceBaseTextBlock(cmdPlaceElement):
+    element    : BaseTextBlock
     text       : str
     pos        : QPointF
     anchor     : KPLoc
@@ -189,7 +189,7 @@ class cmdPlaceBaseText(cmdPlaceElement):
     def __init__(
         self    : Self,
         scene   : Optional["DrawingScene"] = None,
-        element : Optional[BaseText] = None,
+        element : Optional[BaseTextBlock] = None,
         text    : str = "",
         pos     : QPointF = QPointF(0, 0),
         anchor  : KPLoc = KPLoc.TOP_LEFT

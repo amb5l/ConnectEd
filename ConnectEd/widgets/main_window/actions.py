@@ -51,7 +51,7 @@ class Actions:
         self.viewGridDisplay  = Action( self._parent, "Grid Display" , "Toggle grid display"         , "Ctrl+G"       , True , True )
         self.viewGridSnap     = Action( self._parent, "Grid Snap"    , "Toggle grid snap"            , "Ctrl+Shift+G" , True , True )
         self.placeRectangle   = Action( self._parent, "Rectangle"    , "Place Rectangle"             , "Ctrl+R"                     )
-        self.placeText        = Action( self._parent, "Text"         , "Place Text"                  , "Ctrl+T"                     )
+        self.placeTextBlock   = Action( self._parent, "Text Block"   , "Place Text Block"            , "Ctrl+T"                     )
         self.windowExplorer   = Action( self._parent, "Explorer"     , "Show the explorer window"    , None                         )
         self.windowMessages   = Action( self._parent, "Messages"     , "Show the messages window"    , None                         )
         self.windowTranscript = Action( self._parent, "Transcript"   , "Show the transcript window"  , None                         )
@@ -103,7 +103,7 @@ class Actions:
         self.viewGridDisplay .setEnabled(en)
         self.viewGridSnap    .setEnabled(en)
         self.placeRectangle  .setEnabled(en)
-        self.placeText       .setEnabled(en)
+        self.placeTextBlock       .setEnabled(en)
         if en:
             # connect signals
             self._scene.selectionChangedItems.connect(self.onSelectionChanged)

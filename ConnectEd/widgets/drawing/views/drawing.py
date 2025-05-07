@@ -18,8 +18,8 @@ from ....core import logger, LAYER_SHEET, LAYER_DRAWING
 from ..scenes   import DrawingScene
 from ...marquee import Marquee
 
-from ..items import Element, Grip, ResizeGrip, Text, Rectangle, \
-                    cmdMove, cmdPlaceRectangle, cmdPlaceText
+from ..items import Element, Grip, ResizeGrip, TextBlock, Rectangle, \
+                    cmdMove, cmdPlaceRectangle, cmdPlaceTextBlock
 
 from .... import hub
 
@@ -119,8 +119,8 @@ class DrawingViewState(Enum):
     EditResize3     = auto()
     PlaceRectangle1 = auto()
     PlaceRectangle2 = auto()
-    PlaceText1      = auto()
-    PlaceText2      = auto()
+    PlaceTextBlock1 = auto()
+    PlaceTextBlock2 = auto()
 
 DrawingViewStateTip = {
     DrawingViewState.Idle            : "Idle",
@@ -138,8 +138,8 @@ DrawingViewStateTip = {
     DrawingViewState.EditResize3     : "Resize: place the selected grip as required",
     DrawingViewState.PlaceRectangle1 : "Place Rectangle: pick the first point",
     DrawingViewState.PlaceRectangle2 : "Place Rectangle: pick the second point",
-    DrawingViewState.PlaceText1      : "Place Text: pick a position",
-    DrawingViewState.PlaceText2      : "Place Text: enter the text"
+    DrawingViewState.PlaceTextBlock1 : "Place Text Block: pick a position",
+    DrawingViewState.PlaceTextBlock2 : "Place Text Block: enter the text"
 }
 
 class DrawingViewWip:
@@ -183,7 +183,7 @@ class DrawingView(QGraphicsView):
 
     def __init__(self : Self, scene : DrawingScene) -> None:
         super().__init__(scene)
-        scene.textEditingComplete.connect(self.placeTextFinalize)
+        scene.textEditingComplete.connect(self.placeTextBlockFinalize)
         self.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
         self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
@@ -479,12 +479,12 @@ class DrawingView(QGraphicsView):
                 self.placeRectangleComplete(
                     self._snap(self.mouse.left.release.logical)
                 )
-            case self.State.PlaceText1:
-                self.placeTextBegin(
+            case self.State.PlaceTextBlock1:
+                self.placeTextBlockBegin(
                     self._snap(self.mouse.left.release.logical)
                 )
-            case self.State.PlaceText2:
-                self.placeTextComplete(
+            case self.State.PlaceTextBlock2:
+                self.placeTextBlockComplete(
                     self._snap(self.mouse.left.release.logical)
                 )
 
@@ -817,40 +817,40 @@ class DrawingView(QGraphicsView):
         self.wip.clear()
         self._goState(self.State.Idle)
 
-    def placeText(self : Self) -> None:
-        self._goState(self.State.PlaceText1)
+    def placeTextBlock(self : Self) -> None:
+        self._goState(self.State.PlaceTextBlock1)
 
-    def placeTextCmd(self : Self, text : str) -> None:
-        self.scene().undo_stack.push(cmdPlaceText(
+    def placeTextBlockCmd(self : Self, text : str) -> None:
+        self.scene().undo_stack.push(cmdPlaceTextBlock(
             scene   = self.scene(),
             element = self.wip.elements[0],
             pos     = self.wip.pos0,
             text    = text
         ))
 
-    def placeTextBegin(self : Self, pos : QPointF) -> None:
+    def placeTextBlockBegin(self : Self, pos : QPointF) -> None:
         self.scene().clearSelection()
-        new_text = Text()
+        new_text = TextBlock()
         self.wip.elements = [new_text]
         self.wip.pos0 = pos
-        self.placeTextCmd("")
+        self.placeTextBlockCmd("")
         new_text.setEditable(True)
         new_text.setFocus()
-        self._goState(self.State.PlaceText2)
+        self._goState(self.State.PlaceTextBlock2)
 
-    def placeTextComplete(self : Self, pos : QPointF) -> None:
+    def placeTextBlockComplete(self : Self, pos : QPointF) -> None:
         self.wip.elements[0].clearFocus()
 
-    def placeTextFinalize(self, text_item: Text):
+    def placeTextBlockFinalize(self, text_item: TextBlock):
         if text_item == self.wip.elements[0]:
             text = text_item.toPlainText().strip()
             if text:
                 self.wip.elements[0].setEditable(False)
-                self.placeTextCmd(text)
+                self.placeTextBlockCmd(text)
             else:
                 self.scene().undo_stack.undo()
         else:
-            logger.warning("placeTextFinalize: text_item != wip.elements[0]")
+            logger.warning("placeTextBlockFinalize: text_item != wip.elements[0]")
         self.wip.clear()
         self._goState(self.State.Idle)
 

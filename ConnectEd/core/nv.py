@@ -59,14 +59,14 @@ FACTORY_SETTINGS = {
             "min_pixels" : 10
         },
         "elements" : {
-            "rectangle" : {
+            "Rectangle" : {
                 "line" : {
                     "width" : 1,
                     "style" : Qt.PenStyle.SolidLine
                 },
                 "fill" : Qt.BrushStyle.SolidPattern
             },
-            "text" : {
+            "TextBlock" : {
                 "text" : {
                     "family"    : "Liberation Sans",
                     "size"      : 7,
@@ -106,12 +106,14 @@ FACTORY_SETTINGS = {
             "border" : {
                 "line" : QColor( 128, 128, 128 )
             },
-            "rectangle" : {
-                "line" : QColor( 192, 120,   0 ), # light orange
-                "fill" : QColor(  96, 100,   0 )  # dark orange
-            },
-            "text" : {
-                "text" : QColor( 255, 255, 255 )
+            "elements" : {
+                "Rectangle" : {
+                    "line" : QColor( 192, 120,   0 ), # light orange
+                    "fill" : QColor(  96, 100,   0 )  # dark orange
+                },
+                "TextBlock" : {
+                    "text" : QColor( 255, 255, 255 )
+                }
             },
             "selected" : {
                 "line" : QColor( 255,   0, 255 ), # bright magenta
