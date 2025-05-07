@@ -60,9 +60,7 @@ class ElementLine:
 
     def update(self : Self) -> None:
         element_name = self._element.__class__.__name__.lower()
-        if self._element.isWIP():
-            self.pen.setColor(hub.settings.getTheme("wip/line"))
-        elif self._element.isSelected():
+        if self._element.isSelected():
             self.pen.setColor(hub.settings.getTheme("selected/line"))
         else:
             self.pen.setColor(
@@ -130,9 +128,7 @@ class ElementFill:
     def update(self : Self) -> None:
         element_name = self._element.__class__.__name__.lower()
         prefs = hub.settings.get(f"prefs/display/elements/{element_name}")
-        if self._element.isWIP():
-            self.brush.setColor(hub.settings.getTheme("wip/fill"))
-        elif self._element.isSelected():
+        if self._element.isSelected():
             self.brush.setColor(hub.settings.getTheme("selected/fill"))
         else:
             self.brush.setColor(
@@ -237,11 +233,8 @@ class ElementText:
         self.update()
 
     def update(self : Self) -> None:
-        print("update", self._element.isWIP(), self._element.isSelected())
         element_name = self._element.__class__.__name__.lower()
-        if self._element.isWIP():
-            self.pen.setColor(hub.settings.getTheme("wip/line"))
-        elif self._element.isSelected():
+        if self._element.isSelected():
             self.pen.setColor(hub.settings.getTheme("selected/line"))
         else:
             self.pen.setColor(
@@ -382,23 +375,22 @@ class Element(QGraphicsItem):
     }
 
     settings : ElementSettings
-    wip      : bool
 
     def __init__(
         self     : Self,
         has_line : bool = False,
         has_fill : bool = False,
-        has_text : bool = False,
-        wip      : bool = False
+        has_text : bool = False
     ) -> None:
         # TODO change to has_line, has_fill, has_text
-        self.wip = wip
         self.settings = ElementSettings(self, has_line, has_fill, has_text)
         self.setZValue(self.Z)
         f = QGraphicsItem.GraphicsItemFlag
+        self.setFlag( f.ItemIsSelectable              , True )
         self.setFlag( f.ItemSendsGeometryChanges      , True  )
         self.setFlag( f.ItemSendsScenePositionChanges , True  )
         self.setCacheMode(QGraphicsItem.CacheMode.DeviceCoordinateCache)
+        self.setSelected(True)
 
     def itemChange(
         self   : Self,
@@ -409,15 +401,6 @@ class Element(QGraphicsItem):
             self.settings.update()
         return QGraphicsItem.itemChange(self,change, value)
 
-    def setWIP(self : Self, wip : bool) -> None:
-        if self.wip != wip:
-            self.wip = wip
-            self.settings.update()
-            self.update()
-
-    def isWIP(self : Self) -> bool:
-        return self.wip
-
     def getPrefs(self : Self) -> SimpleNamespace:
         element_name = self.__class__.__name__.lower()
         return hub.settings.get(f"prefs/display/elements/{element_name}")
@@ -426,8 +409,6 @@ class Element(QGraphicsItem):
         element_name = self.__class__.__name__.lower()
         if self.isSelected():
             theme = hub.settings.getTheme("selected")
-        elif self.isWIP():
-            theme = hub.settings.getTheme("wip")
         else:
             theme = hub.settings.getTheme(element_name)
         return theme
@@ -437,8 +418,6 @@ class Element(QGraphicsItem):
         prefs = hub.settings.get(f"prefs/display/elements/{element_name}")
         if self.isSelected():
             theme = hub.settings.getTheme("selected")
-        elif self.isWIP():
-            theme = hub.settings.getTheme("wip")
         else:
             theme = hub.settings.getTheme(element_name)
         return prefs, theme
@@ -466,9 +445,8 @@ class ElementWithGrips(Element):
         has_line : bool = False,
         has_fill : bool = False,
         has_text : bool = False,
-        wip      : bool = False
     ) -> None:
-        super().__init__(has_line, has_fill, has_text, wip)
+        super().__init__(has_line, has_fill, has_text)
         self.grips = {kp: self.GRIP_TYPE(self, kp) for kp in self.GRIP_POINTS}
         for grip in self.grips.values():
             grip.setZValue(self.zValue() + grip.Z_DELTA)
@@ -495,10 +473,9 @@ class ElementWithAnchor(ElementWithGrips):
         anchor     : KPLoc = KPLoc.TOP_LEFT,
         has_line   : bool = False,
         has_fill   : bool = False,
-        has_text   : bool = False,
-        wip        : bool = False
+        has_text   : bool = False
     ) -> None:
-        super().__init__(has_line, has_fill, has_text, wip)
+        super().__init__(has_line, has_fill, has_text)
         self.anchor = anchor
 
     def setAnchor(
@@ -582,7 +559,6 @@ class cmdElements(cmdElement):
 
 class cmdPlaceElement(cmdElement):
     """Base class for all commands that place an element."""
-    wip      : bool
     has_line : bool
     has_fill : bool
     has_text : bool
@@ -590,11 +566,9 @@ class cmdPlaceElement(cmdElement):
     def __init__(
         self       : Self,
         scene      : "DrawingScene",
-        element    : Element,
-        wip        : bool = False
+        element    : Element
     ):
         super().__init__(scene, element)
-        self.wip = wip
 
     def id(self : Self) -> int:
             """Return a unique ID for merging commands."""
@@ -605,15 +579,10 @@ class cmdPlaceElement(cmdElement):
     def mergeWith(self : Self, other : QUndoCommand) -> bool:
         if not super().mergeWith(other):
             return False
-        self.wip = other.wip
         return True
 
     def redo(self : Self) -> None:
         """Add or update the element in the scene."""
-        self.element.setWIP(self.wip)
-        self.element.setFlag(
-            QGraphicsItem.GraphicsItemFlag.ItemIsSelectable, not self.wip
-        )
         if self.element.scene() != self.scene:
             self.scene.addItem(self.element)
 

@@ -31,11 +31,10 @@ class BaseRectangle(QGraphicsRectItem, ElementWithGrips):
     def __init__(
         self       : Self,
         pos        : QPointF = QPointF(0, 0),
-        size_or_p2 : QSizeF | QPointF = QSizeF(0, 0),
-        wip        : bool = False
+        size_or_p2 : QSizeF | QPointF = QSizeF(0, 0)
     ) -> None:
         QGraphicsRectItem.__init__(self)
-        ElementWithGrips.__init__(self, has_line=True, has_fill=True, wip=wip)
+        ElementWithGrips.__init__(self, has_line=True, has_fill=True)
         if isinstance(size_or_p2, QSizeF):
             self.setPosSize(pos, size_or_p2)
         else:
@@ -94,10 +93,11 @@ class BaseRectangle(QGraphicsRectItem, ElementWithGrips):
             )
 
     def updateGripsVisibility(self : Self) -> None:
-        for grip in self.grips.values():
-            grip.setVisible(
-                self.isSelected() and len(self.scene().selectedItems()) == 1
-            )
+        if self.scene():
+            for grip in self.grips.values():
+                grip.setVisible(
+                    self.isSelected() and len(self.scene().selectedItems()) == 1
+                )
 
     def moveKeyPoint(self : Self, kp : KPLoc, delta : QPointF) -> None:
         p1, p2 = self.getPoints()
@@ -149,7 +149,8 @@ class BaseRectangle(QGraphicsRectItem, ElementWithGrips):
         value  : Any
     ) -> None:
         if change == self.GraphicsItemChange.ItemSelectedHasChanged:
-            self.updateGripsVisibility()
+            if hasattr(self, "grips"):
+                self.updateGripsVisibility()
         return ElementWithGrips.itemChange(self,change, value)
 
 class cmdPlaceBaseRectangle(cmdPlaceElement):
@@ -162,15 +163,10 @@ class cmdPlaceBaseRectangle(cmdPlaceElement):
         scene      : Optional["DrawingScene"] = None,
         element    : Optional[BaseRectangle] = None,
         pos        : QPointF = QPointF(0, 0),
-        size_or_p2 : QSizeF | QPointF = QSizeF(0, 0),
-        wip        : bool = False
+        size_or_p2 : QSizeF | QPointF = QSizeF(0, 0)
     ):
-        super().__init__(
-            scene   = scene,
-            element = element,
-            wip     = wip
-        )
-        self.pos        = pos
+        super().__init__(scene, element)
+        self.pos = pos
         self.size_or_p2 = size_or_p2
 
     def mergeWith(self : Self, other: QUndoCommand) -> bool:

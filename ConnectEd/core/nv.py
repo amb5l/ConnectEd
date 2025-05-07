@@ -102,11 +102,6 @@ FACTORY_SETTINGS = {
             "text" : {
                 "text" : QColor( 255, 255, 255 )
             },
-            "wip" : {
-                "line" : QColor(   0, 255,   0 ), # bright green
-                "fill" : QColor(   0, 128,   0 ), # medium green
-                "text" : QColor(   0, 255,   0 )  # bright green
-            },
             "selected" : {
                 "line" : QColor( 255,   0, 255 ), # bright magenta
                 "fill" : QColor( 255,   0, 255 ), # bright magenta
@@ -134,10 +129,6 @@ FACTORY_SETTINGS = {
             "rectangle" : {
                 "line" : QColor( 192, 120,   0 ), # light orange
                 "fill" : QColor(  96, 100,   0 )  # dark orange
-            },
-            "wip" : {
-                "line" : QColor(   0, 255,   0 ), # bright green
-                "fill" : QColor(   0, 128,   0 )  # medium green
             },
             "selected" : {
                 "line" : QColor( 255,   0, 255 ), # bright magenta

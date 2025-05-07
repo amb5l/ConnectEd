@@ -39,12 +39,11 @@ class BaseText(QGraphicsTextItem, Element):
         self   : Self,
         text   : str = "<BaseText:unspecified text>",
         pos    : QPointF = QPointF(0, 0),
-        anchor : KPLoc = KPLoc.TOP_LEFT,
-        wip    : bool = False
+        anchor : KPLoc = KPLoc.TOP_LEFT
     ) -> None:
         QGraphicsTextItem.__init__(self, text)
         QGraphicsTextItem.document(self).setDocumentMargin(0)
-        Element.__init__(self, has_text=True, wip=wip)
+        Element.__init__(self, has_text=True)
         self.grips = {p: AnchorGrip(self, p) for p in KPLoc}
         self.anchor = anchor
         self.setPos(pos)
@@ -143,10 +142,11 @@ class BaseText(QGraphicsTextItem, Element):
             self.grips[kp].setPos(p.x(), p.y())
 
     def updateGripsVisibility(self : Self) -> None:
-        for grip in self.grips.values():
-            grip.setVisible(
-                self.isSelected() and len(self.scene().selectedItems()) == 1
-            )
+        if self.scene():
+            for grip in self.grips.values():
+                grip.setVisible(
+                    self.isSelected() and len(self.scene().selectedItems()) == 1
+                )
 
     def updateGripsZValue(self : Self) -> None:
         for grip in self.grips.values():
@@ -200,10 +200,9 @@ class cmdPlaceBaseText(cmdPlaceElement):
         element : Optional[BaseText] = None,
         text    : str = "",
         pos     : QPointF = QPointF(0, 0),
-        anchor  : KPLoc = KPLoc.TOP_LEFT,
-        wip     : bool = False
+        anchor  : KPLoc = KPLoc.TOP_LEFT
     ) -> None:
-        super().__init__(scene, element, wip)
+        super().__init__(scene, element)
         self.text   = text
         self.pos    = pos
         self.anchor = anchor
@@ -224,4 +223,4 @@ class cmdPlaceBaseText(cmdPlaceElement):
     def redo(self : Self) -> None:
         super().redo()
         self.element.setPlainText(self.text)
-        self.element.setEditable(self.wip)
+        self.element.setEditable(True)

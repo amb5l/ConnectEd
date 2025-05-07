@@ -792,49 +792,48 @@ class DrawingView(QGraphicsView):
 
     def placeRectangleCmd(
         self       : Self,
-        size_or_p2 : QSizeF | QPointF,
-        wip        : bool
+        size_or_p2 : QSizeF | QPointF
     ) -> None:
         # TODO get default anchor and pen/brush/text spec from settings
         self.scene().undo_stack.push(cmdPlaceRectangle(
             scene      = self.scene(),
             element    = self.wip.elements[0],
             pos        = self.wip.pos0,
-            size_or_p2 = size_or_p2,
-            wip        = wip
+            size_or_p2 = size_or_p2
         ))
 
     def placeRectangleBegin(self : Self, p1: QPointF) -> None:
-        self.wip.elements = [Rectangle(wip=True)]
+        self.scene().clearSelection()
+        self.wip.elements = [Rectangle()]
         self.wip.pos0 = p1
-        self.placeRectangleCmd(QSizeF(1,1), True)
+        self.placeRectangleCmd(QSizeF(1,1))
         self._goState(self.State.PlaceRectangle2)
 
     def placeRectangleContinue(self : Self, p2: QPointF) -> None:
-        self.placeRectangleCmd(p2, True)
+        self.placeRectangleCmd(p2)
 
     def placeRectangleComplete(self : Self, p2: QPointF) -> None:
-        self.placeRectangleCmd(p2, False)
+        self.placeRectangleCmd(p2)
         self.wip.clear()
         self._goState(self.State.Idle)
 
     def placeText(self : Self) -> None:
         self._goState(self.State.PlaceText1)
 
-    def placeTextCmd(self : Self, text : str, wip : bool) -> None:
+    def placeTextCmd(self : Self, text : str) -> None:
         self.scene().undo_stack.push(cmdPlaceText(
             scene   = self.scene(),
             element = self.wip.elements[0],
             pos     = self.wip.pos0,
-            text    = text,
-            wip     = wip
+            text    = text
         ))
 
     def placeTextBegin(self : Self, pos : QPointF) -> None:
+        self.scene().clearSelection()
         new_text = Text()
         self.wip.elements = [new_text]
         self.wip.pos0 = pos
-        self.placeTextCmd("", True)
+        self.placeTextCmd("")
         new_text.setEditable(True)
         new_text.setFocus()
         self._goState(self.State.PlaceText2)
@@ -847,7 +846,7 @@ class DrawingView(QGraphicsView):
             text = text_item.toPlainText().strip()
             if text:
                 self.wip.elements[0].setEditable(False)
-                self.placeTextCmd(text, False)
+                self.placeTextCmd(text)
             else:
                 self.scene().undo_stack.undo()
         else:
