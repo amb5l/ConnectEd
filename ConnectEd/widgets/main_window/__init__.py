@@ -55,7 +55,7 @@ class MainWindow(QMainWindow):
         self.setWindowTitle(APP_NAME)
         g = hub.settings.get("startup/geometry")
         if g:
-            self.restoreGeometry(bytes.fromhex(g))
+            self.restoreGeometry(g)
 
         # actions and slots
         self.slots = Slots(self)

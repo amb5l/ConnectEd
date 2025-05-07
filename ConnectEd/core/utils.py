@@ -91,6 +91,7 @@ def str2val(s : str, t : str) -> Any:
         return None
     match t:
         case "NoneType"   : return None
+        case "bytes"      : return bytes.fromhex(s)
         case "str"        : return s # TODO unescape special characters
         case "int"        : return int(s)
         case "float"      : return float(s)
