@@ -18,7 +18,7 @@ from ....core import logger, LAYER_SHEET, LAYER_DRAWING
 from ..scenes   import DrawingScene
 from ...marquee import Marquee
 
-from ..items import Element, Grip, ResizeGrip, TextBlock, Rectangle, \
+from ..items import Element, KeyPoint, TextBlock, Rectangle, \
                     cmdMove, cmdPlaceRectangle, cmdPlaceTextBlock
 
 from .... import hub
@@ -400,7 +400,7 @@ class DrawingView(QGraphicsView):
                 m = self.mouse.left.press.modifiers
                 items = self._itemsAt(self.mouse.left.press.logical)
                 for item in items:
-                    if isinstance(item, Grip):
+                    if isinstance(item, KeyPoint):
                         return
                 if m == qkm.NoModifier:
                     self.scene().clearSelection()
@@ -461,7 +461,7 @@ class DrawingView(QGraphicsView):
             case self.State.EditResize2:
                 items = self._itemsAt(self.mouse.left.press.logical)
                 for item in items:
-                    if isinstance(item, Grip) and hasattr(item, "moveBy"):
+                    if isinstance(item, KeyPoint) and item.isMoveable():
                         self.moveBegin(
                             [item], self._snap(self.mouse.left.press.logical)
                         )
@@ -494,7 +494,7 @@ class DrawingView(QGraphicsView):
                 m = self.mouse.left.press.modifiers
                 items = self._itemsAt(self.mouse.left.press.logical)
                 for item in items:
-                    if isinstance(item, ResizeGrip):
+                    if isinstance(item, KeyPoint):
                         self.moveBegin(
                             [item], self._snap(self.mouse.left.press.logical)
                         )
@@ -1037,10 +1037,6 @@ class DrawingView(QGraphicsView):
                 Qt.ItemSelectionMode.IntersectsItemShape,
                 self.transform()
             )
-        # ensure grips are not visible if multiple items are selected
-        for item in self.scene().selectedItems():
-            if hasattr(item, "updateGripsVisibility"):
-                item.updateGripsVisibility()
 
     def _selectPoint(
         self   : Self,
@@ -1086,9 +1082,6 @@ class DrawingView(QGraphicsView):
                 item.setSelected(not item.isSelected())
             else:
                 item.setSelected(True)
-        for item in self.scene().selectedItems():
-            if hasattr(item, "updateGripsVisibility"):
-                item.updateGripsVisibility()
 
     def _selectItem(self : Self, item, toggle, prev=None):
         if prev is None:

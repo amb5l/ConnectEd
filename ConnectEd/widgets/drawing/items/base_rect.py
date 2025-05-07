@@ -1,32 +1,33 @@
 __all__ = ["BaseRectangle"]
 
-from typing import Self, Optional, Any
+from typing      import Self, Optional, Any, overload
 
 from PyQt6.QtCore    import QPointF, QRectF, QSizeF
 from PyQt6.QtWidgets import QGraphicsRectItem, QStyleOptionGraphicsItem, QWidget
 from PyQt6.QtGui     import QPainter, QPainterPath, QUndoCommand
 
-from . import ElementWithGrips, KPLoc, ResizeGrip, cmdPlaceElement
-
-from .... import hub
+from . import Element, KPLoc, KPDef, KPManager, cmdPlaceElement
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from .. import DrawingScene
 
 
-class BaseRectangle(QGraphicsRectItem, ElementWithGrips):
+class BaseRectangle(QGraphicsRectItem, Element):
     """Base class for rectangle elements."""
-    XML_ATTRS = ElementWithGrips.XML_ATTRS | {
+    XML_ATTRS = Element.XML_ATTRS | {
         "size" : (
             "QSizeF",
             lambda self, value: self.setSize(value),
             lambda self: self.rect().size()
         )
     }
-    GRIP_TYPE = ResizeGrip
-    GRIP_POINTS = [kp for kp in KPLoc if kp != KPLoc.CENTER]
     MIN_SIZE = QSizeF(1.0, 1.0)
+
+    _kpm           : KPManager
+    _rect          : QRectF
+    _bounding_rect : QRectF
+    _shape         : QPainterPath
 
     def __init__(
         self       : Self,
@@ -34,25 +35,62 @@ class BaseRectangle(QGraphicsRectItem, ElementWithGrips):
         size_or_p2 : QSizeF | QPointF = QSizeF(0, 0)
     ) -> None:
         QGraphicsRectItem.__init__(self)
-        ElementWithGrips.__init__(self, has_line=True, has_fill=True)
+        Element.__init__(self, has_line=True, has_fill=True)
+        self._kpm = KPManager(self, [KPDef(k, True, False) for k in KPLoc])
+        self._shape = QPainterPath()
         if isinstance(size_or_p2, QSizeF):
             self.setPosSize(pos, size_or_p2)
         else:
             self.setPoints(pos, size_or_p2)
-        self.updateGripsPosition()
-        self.updateGripsVisibility()
+        self._kpm.updatePositions()
+
+    @overload
+    def setRect(self : Self, rect : QRectF) -> None:
+        ...
+
+    @overload
+    def setRect(
+        self : Self,
+        ax   : float,
+        ay   : float,
+        w    : float,
+        h    : float
+    ) -> None:
+        ...
+
+    @overload
+    def setRect(
+        self : Self,
+        ax   : int,
+        ay   : int,
+        w    : int,
+        h    : int
+    ) -> None:
+        ...
+
+    def setRect(
+        self       : Self,
+        rect_or_ax : QRectF | float | int,
+        ay         : Optional[float | int] = None,
+        w          : Optional[float | int] = None,
+        h          : Optional[float | int] = None
+    ) -> None:
+        super().setRect(rect_or_ax, ay, w, h)
+        self._rect = self.rect()
+        w = self.appearance.line.pen.widthF()
+        self._bounding_rect = self._rect.adjusted(-w/2, -w/2, w/2, w/2)
+        self._shape.clear()
+        self._shape.addRect(self._bounding_rect)
+        self._kpm.updatePositions()
 
     def setSize(self : Self, size : QSizeF) -> None:
         self.setRect(0, 0, size.width(), size.height())
 
     def setPosSize(self : Self, pos : QPointF, size : QSizeF) -> None:
         self.setPos(pos)
-        if size.width() < self.MIN_SIZE.width():
-            size.setWidth(self.MIN_SIZE.width())
-        if size.height() < self.MIN_SIZE.height():
-            size.setHeight(self.MIN_SIZE.height())
+        size.setWidth(max(size.width(), self.MIN_SIZE.width()))
+        size.setHeight(max(size.height(), self.MIN_SIZE.height()))
         self.setRect(0, 0, size.width(), size.height())
-        self.updateGripsPosition()
 
     def setPoints(
         self     : Self,
@@ -81,20 +119,6 @@ class BaseRectangle(QGraphicsRectItem, ElementWithGrips):
     def getPoints(self : Self) -> tuple[QPointF, QPointF]:
         return self.pos(), self.pos() + self.rect().bottomRight()
 
-    def updateGripsPosition(self : Self) -> None:
-        for kp in self.grips.keys():
-            self.grips[kp].setPos(
-                kp.h * self.rect().width(),
-                kp.v * self.rect().height()
-            )
-
-    def updateGripsVisibility(self : Self) -> None:
-        if self.scene():
-            for grip in self.grips.values():
-                grip.setVisible(
-                    self.isSelected() and len(self.scene().selectedItems()) == 1
-                )
-
     def moveKeyPoint(self : Self, kp : KPLoc, delta : QPointF) -> None:
         p1, p2 = self.getPoints()
         d = delta
@@ -118,16 +142,14 @@ class BaseRectangle(QGraphicsRectItem, ElementWithGrips):
             case _:
                 raise ValueError(f"Invalid key point: {kp}")
 
-    gripsRect = QGraphicsRectItem.rect
+    def KPRect(self : Self) -> QRectF:
+        return self._rect
 
     def boundingRect(self : Self) -> QRectF:
-        w = self.appearance.line.pen.widthF()
-        return self.rect().adjusted(-w/2, -w/2, w/2, w/2)
+        return self._bounding_rect
 
     def shape(self : Self) -> QPainterPath:
-        path = QPainterPath()
-        path.addRect(self.boundingRect())
-        return path
+        return self._shape
 
     def paint(
         self    : Self,
@@ -137,17 +159,10 @@ class BaseRectangle(QGraphicsRectItem, ElementWithGrips):
     ) -> None:
         painter.setPen(self.appearance.line.pen)
         painter.setBrush(self.appearance.fill.brush)
-        painter.drawRect(self.rect())
+        painter.drawRect(self._rect)
 
-    def itemChange(
-        self   : Self,
-        change : QGraphicsRectItem.GraphicsItemChange,
-        value  : Any
-    ) -> None:
-        if change == self.GraphicsItemChange.ItemSelectedHasChanged:
-            if hasattr(self, "grips"):
-                self.updateGripsVisibility()
-        return ElementWithGrips.itemChange(self,change, value)
+    def setKPVisible(self : Self, visible : bool) -> None:
+        self._kpm.setVisible(visible)
 
 class cmdPlaceBaseRectangle(cmdPlaceElement):
     element    : BaseRectangle

@@ -9,8 +9,7 @@ from PyQt6.QtGui     import QUndoStack
 
 from ....core import logger, toXmlAttrs, fromXmlAttrs
 
-# TODO move Grip to drawForeground?
-from ..items import TextBlock, Grip, element_class_dict
+from ..items import TextBlock, KeyPoint, element_class_dict
 
 from .... import hub
 
@@ -18,7 +17,7 @@ from .... import hub
 class DrawingScene(QGraphicsScene):
     # class variables
     XML_ATTRS              = {"name" : "str"}
-    SYSTEM_FORBIDDEN_ITEMS = [Grip] # TODO: review this
+    SYSTEM_FORBIDDEN_ITEMS = [KeyPoint] # TODO: review this
     SYSTEM_ALLOWED_ITEMS   = None
     FORBIDDEN_ITEMS        = None # none
     ALLOWED_ITEMS          = None # any
@@ -26,6 +25,7 @@ class DrawingScene(QGraphicsScene):
     # instance variables
     name       : str
     undo_stack : Optional[QUndoStack]
+    kp_items   : list[QGraphicsItem]
 
     # custom signals
     selectionChangedItems = pyqtSignal("QList<QGraphicsItem*>")
@@ -46,6 +46,7 @@ class DrawingScene(QGraphicsScene):
         self.setSceneRect(QRectF(QPointF(0, 0), extents))
         self.setItemIndexMethod(QGraphicsScene.ItemIndexMethod.NoIndex)
         self.undo_stack = None
+        self.kp_items = []
         if hub.main_window: # GUI is running
             self.undo_stack = QUndoStack(self)
             self.selectionChanged.connect(self.onSelectionChanged)
@@ -90,7 +91,15 @@ class DrawingScene(QGraphicsScene):
         return drawing_scene
 
     def onSelectionChanged(self : Self) -> None:
-        self.selectionChangedItems.emit(self.selectedItems())
+        if self.kp_items:
+            for kp_item in self.kp_items:
+                kp_item.setKPVisible(False)
+            self.kp_items.clear()
+        items = self.selectedItems()
+        if len(items) == 1:
+            items[0].setKPVisible(True)
+            self.kp_items.append(items[0])
+        self.selectionChangedItems.emit(items)
 
     def onTextEditingComplete(self, text_item: TextBlock):
         self.textEditingComplete.emit(text_item)

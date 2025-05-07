@@ -441,10 +441,10 @@ class Element(QGraphicsItem):
         self   : Self,
         change : QGraphicsItem.GraphicsItemChange,
         value  : Any
-    ) -> None:
+    ) -> Any:
         if change == self.GraphicsItemChange.ItemSelectedHasChanged:
             self.appearance.onSelectionChange()
-        return QGraphicsItem.itemChange(self,change, value)
+        return super().itemChange(change, value)
 
     def toXml(self : Self, xw : QXmlStreamWriter) -> None:
         xw.writeStartElement(self.__class__.__name__)
@@ -458,61 +458,6 @@ class Element(QGraphicsItem):
         instance.settings = Appearance.fromXml(xr)
         fromXmlAttrs(instance, xr)
         return instance
-
-class ElementWithGrips(Element):
-    """Base class for all elements with grips."""
-
-    grips : dict[KPLoc, "Grip"]
-
-    def __init__(
-        self     : Self,
-        has_line : bool = False,
-        has_fill : bool = False,
-        has_text : bool = False,
-    ) -> None:
-        super().__init__(has_line, has_fill, has_text)
-        self.grips = {kp: self.GRIP_TYPE(self, kp) for kp in self.GRIP_POINTS}
-        for grip in self.grips.values():
-            grip.setZValue(self.zValue() + grip.Z_DELTA)
-
-    def getKeyPointPos(self : Self, kp : KPLoc) -> QPointF:
-        rect = self.gripsRect()
-        return QPointF(kp.h * rect.width(), kp.v * rect.height())
-
-    def updateGripsPosition(self : Self) -> None:
-        for kp in self.grips.keys():
-            p = self.getKeyPointPos(kp)
-            self.grips[kp].setPos(p.x(), p.y())
-
-class ElementWithAnchor(ElementWithGrips):
-    """Base class for all elements with an anchor."""
-    XML_ATTRS = ElementWithGrips.XML_ATTRS | {
-        "anchor" : "KPLoc"
-    }
-
-    anchor : KPLoc
-
-    def __init__(
-        self       : Self,
-        anchor     : KPLoc = KPLoc.TOP_LEFT,
-        has_line   : bool = False,
-        has_fill   : bool = False,
-        has_text   : bool = False
-    ) -> None:
-        super().__init__(has_line, has_fill, has_text)
-        self.anchor = anchor
-
-    def setAnchor(
-        self   : Self,
-        anchor : KPLoc = KPLoc.TOP_LEFT
-    ) -> None:
-        self.anchor = anchor
-
-    def getAnchorOffset(self : Self) -> QPointF:
-        return self.getKeyPointPos(self.anchor)
-
-    def setPos(self, pos: QPointF) -> None:
-        super().setPos(pos - self.getAnchorOffset())
 
 class cmdElement(QUndoCommand):
     """Base class for all commands that work with an element."""
@@ -650,12 +595,10 @@ class cmdSlide(cmdMove):
 
 __all__ = [
     "KPLoc",
-    "Element",
-    "ElementWithGrips",
-    "ElementWithAnchor",
+    "Element"
 ]
-from .grip import Grip, ResizeGrip, AnchorGrip
-__all__ += grip.__all__
+from .key_point import KPLoc, KeyPoint, KPDef, KPManager
+__all__ += key_point.__all__
 from .rectangle import Rectangle, cmdPlaceRectangle
 __all__ += rectangle.__all__
 from .text_block import TextBlock, cmdPlaceTextBlock

@@ -116,14 +116,13 @@ FACTORY_SETTINGS = {
                 }
             },
             "selected" : {
+                "line" : QColor( 192,   0, 192 ), # bright magenta
+                "fill" : QColor( 128,   0, 128 ), # bright magenta
+                "text" : QColor( 224,   0, 224 )  # bright magenta
+            },
+            "key_point" : {
                 "line" : QColor( 255,   0, 255 ), # bright magenta
                 "fill" : QColor( 255,   0, 255 ), # bright magenta
-                "text" : QColor( 255,   0, 255 )  # bright magenta
-            },
-            "grip" : {
-                "line" : QColor( 255,   0, 255 ), # bright magenta
-                "fill" : QColor( 255,   0,   0 )  # bright red
-
             },
             "grid" : {
                 "line" : QColor(  64,  64,  64 )
@@ -147,9 +146,9 @@ FACTORY_SETTINGS = {
                 "line" : QColor( 255,   0, 255 ), # bright magenta
                 "fill" : QColor( 128,   0, 128 )  # medium magenta
             },
-            "grip" : {
+            "key_point" : {
                 "line" : QColor( 255,   0, 255 ), # bright magenta
-                "fill" : QColor( 255, 255, 128 )  # bright yellow
+                "fill" : QColor( 255,   0, 255 ), # bright magenta
             },
             "grid" : {
                 "line" : QColor(  64,  64,  64 )
