@@ -747,25 +747,25 @@ class DrawingView(QGraphicsView):
         self._goState(self.State.ViewZoomWindow1)
 
     def viewZoomIn(self : Self, n : int = 1) -> None:
-        self._zoomRelMouse((1 + hub.settings.get("prefs/display/zoom/step"))**n)
+        self._zoomRelMouse((1 + hub.settings.get("display/zoom/step"))**n)
 
     def viewZoomOut(self : Self, n : int = 1) -> None:
-        self._zoomRelMouse((1 - hub.settings.get("prefs/display/zoom/step"))**n)
+        self._zoomRelMouse((1 - hub.settings.get("display/zoom/step"))**n)
 
     def viewPan(self : Self, n : int = 1) -> None:
         self._goState(self.State.ViewPan1)
 
     def viewPanLeft(self : Self, n : int = 1) -> None:
-        self._pan(QPointF(hub.settings.get("prefs/display/pan/step") * n, 0))
+        self._pan(QPointF(hub.settings.get("display/pan/step") * n, 0))
 
     def viewPanRight(self : Self, n : int = 1) -> None:
-        self._pan(QPointF(-hub.settings.get("prefs/display/pan/step") * n, 0))
+        self._pan(QPointF(-hub.settings.get("display/pan/step") * n, 0))
 
     def viewPanUp(self : Self, n : int = 1) -> None:
-        self._pan(QPointF(0, hub.settings.get("prefs/display/pan/step") * n))
+        self._pan(QPointF(0, hub.settings.get("display/pan/step") * n))
 
     def viewPanDown(self : Self, n : int = 1) -> None:
-        self._pan(QPointF(0, -hub.settings.get("prefs/display/pan/step") * n))
+        self._pan(QPointF(0, -hub.settings.get("display/pan/step") * n))
 
     def viewPrev(self : Self) -> None:
         pass
@@ -931,8 +931,8 @@ class DrawingView(QGraphicsView):
         )
 
     def _zoomAbs(self : Self, abs: float) -> None:
-        abs = max(abs, hub.settings.get("prefs/display/zoom/min"))
-        abs = min(abs, hub.settings.get("prefs/display/zoom/max"))
+        abs = max(abs, hub.settings.get("display/zoom/min"))
+        abs = min(abs, hub.settings.get("display/zoom/max"))
         self.zoom = abs
         self.resetTransform()
         self.scale(self.zoom, self.zoom)
@@ -941,11 +941,11 @@ class DrawingView(QGraphicsView):
         )
         hub.main_window.actions.actionEnable(
             "viewZoomIn",
-            self.zoom < hub.settings.get("prefs/display/zoom/max")
+            self.zoom < hub.settings.get("display/zoom/max")
         )
         hub.main_window.actions.actionEnable(
             "viewZoomOut",
-            self.zoom > hub.settings.get("prefs/display/zoom/min")
+            self.zoom > hub.settings.get("display/zoom/min")
         )
 
     def _zoomRel(self : Self, rel: float) -> None:
@@ -972,7 +972,7 @@ class DrawingView(QGraphicsView):
         factor = min(
             self.viewport().width()  / rect.width(),
             self.viewport().height() / rect.height()
-            ) * (1 - hub.settings.get("prefs/display/zoom/padding"))
+            ) * (1 - hub.settings.get("display/zoom/padding"))
         self._zoomAbs(factor)
         self.centerOn(rect.center())
 

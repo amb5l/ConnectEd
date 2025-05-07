@@ -65,10 +65,6 @@ class BaseText(QGraphicsTextItem, Element):
         # assign anchor
         # link
 
-    def update(self):
-        QGraphicsTextItem.update(self)
-        self.settings.update()
-
     def keyPressEvent(self, event: QKeyEvent) -> None:
         if event.key() in (Qt.Key.Key_Return, Qt.Key.Key_Enter):
             self.clearFocus()
@@ -177,15 +173,11 @@ class BaseText(QGraphicsTextItem, Element):
             painter.fillRect(rect, QColor(255, 255, 255, 192))
             c = self.defaultTextColor()
             self.setDefaultTextColor(QColor(255, 0, 255))
-        painter.setPen(self.settings.text.pen)
-        painter.setFont(self.settings.text.font)
-        document = self.document()
-        document.drawContents(painter, self.boundingRect())
+        if c:
+            self.setDefaultTextColor(c)
         super().paint(painter, option, widget)
         if self.isSelected():
-            prefs = hub.settings.get("prefs/display/elements/selected/line")
-            painter.pen().setWidthF(prefs.width)
-            painter.pen().setStyle(prefs.style)
+            painter.setPen(self.appearance.outline.pen)
             painter.drawRect(self.boundingRect())
 
 class cmdPlaceBaseText(cmdPlaceElement):

@@ -26,6 +26,57 @@ FACTORY_SETTINGS = {
     "startup" : {
         "geometry" : b''
     },
+    "display" : {
+        "theme" : "dark",
+        "outline" : {
+            "width" : 0,
+            "style" : Qt.PenStyle.DotLine
+        },
+        "key_point" : {
+            "radius" : 5
+        },
+        "zoom" : {
+            "padding" : 0.1,
+            "step"    : 0.25,
+            "min"     : 0.01,
+            "max"     : 100.0
+        },
+        "pan" : {
+            "step" : 0.1
+        }
+    },
+    "defaults" : {
+        "extents"    : QSizeF(100, 100),
+        "paper_size" : "A4",
+        "margin"     : 10,
+        "border"     : 1,
+        "grid" : {
+            "display"    : True,
+            "snap"       : True,
+            "pitch"      : QPointF(10.0, 10.0),
+            "dots"       : False,
+            "alpha"      : 128,
+            "min_pixels" : 10
+        },
+        "elements" : {
+            "rectangle" : {
+                "line" : {
+                    "width" : 1,
+                    "style" : Qt.PenStyle.SolidLine
+                },
+                "fill" : Qt.BrushStyle.SolidPattern
+            },
+            "text" : {
+                "text" : {
+                    "family"    : "Liberation Sans",
+                    "size"      : 7,
+                    "bold"      : False,
+                    "italic"    : False,
+                    "underline" : False
+                }
+            }
+        }
+    },
     "prefs" : {
         "file" : {
             "new" : {
@@ -38,46 +89,6 @@ FACTORY_SETTINGS = {
             "save" : {
                 "dir" : getDefaultPath()
             }
-        },
-        "display" : {
-            "theme" : "dark",
-            "elements" : {
-                "rectangle" : {
-                    "line" : {
-                        "width" : 1,
-                        "style" : Qt.PenStyle.SolidLine
-                    },
-                    "fill" : Qt.BrushStyle.SolidPattern
-                },
-                "text" : {
-                    "font" : {
-                        "family"    : "Liberation Sans",
-                        "size"      : 7,
-                        "bold"      : False,
-                        "italic"    : False,
-                        "underline" : False
-                    }
-                },
-                "key_point" : {
-                    "size" : 10
-                },
-                "selected" : {
-                    "line" : {
-                        "width" : 0,
-                        "style" : Qt.PenStyle.DotLine
-                    }
-                },
-                "alpha" : 192
-            },
-            "zoom" : {
-                "padding" : 0.1,
-                "step"    : 0.25,
-                "min"     : 0.01,
-                "max"     : 100.0
-            },
-            "pan" : {
-                "step" : 0.1
-            },
         },
         "mouse" : {
             "drag"  : 5,
@@ -154,20 +165,6 @@ FACTORY_SETTINGS = {
         "C"  : QSizeF( 2020.0 , 1520.0 ),
         "D"  : QSizeF( 3220.0 , 2020.0 ),
         "E"  : QSizeF( 4220.0 , 3220.0 )
-    },
-    "defaults" : { # TODO move these to session settings
-        "extents"    : QSizeF(100, 100),
-        "paper_size" : "A4",
-        "margin"     : 10,
-        "border"     : 1,
-        "grid" : {
-            "display"    : True,
-            "snap"       : True,
-            "pitch"      : QPointF(10.0, 10.0),
-            "dots"       : False,
-            "alpha"      : 128,
-            "min_pixels" : 10
-        }
     }
 }
 
@@ -185,7 +182,7 @@ class Settings(QObject):
         return self._toNamespace(value) if isinstance(value, dict) else value
 
     def getTheme(self : Self, path : str) -> Any:
-        theme_name = self.get("prefs/display/theme")
+        theme_name = self.get("display/theme")
         if theme_name not in self._settings["themes"]:
             logger.warning(f"Unknown theme: {theme_name}")
             theme_name = "dark"

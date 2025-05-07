@@ -42,10 +42,6 @@ class BaseRectangle(QGraphicsRectItem, ElementWithGrips):
         self.updateGripsPosition()
         self.updateGripsVisibility()
 
-    def update(self):
-        QGraphicsRectItem.update(self)
-        self.settings.update()
-
     def setSize(self : Self, size : QSizeF) -> None:
         self.setRect(0, 0, size.width(), size.height())
 
@@ -125,7 +121,7 @@ class BaseRectangle(QGraphicsRectItem, ElementWithGrips):
     gripsRect = QGraphicsRectItem.rect
 
     def boundingRect(self : Self) -> QRectF:
-        w = self.settings.line.pen.widthF()
+        w = self.appearance.line.pen.widthF()
         return self.rect().adjusted(-w/2, -w/2, w/2, w/2)
 
     def shape(self : Self) -> QPainterPath:
@@ -139,8 +135,8 @@ class BaseRectangle(QGraphicsRectItem, ElementWithGrips):
         option  : QStyleOptionGraphicsItem,
         widget  : QWidget
     ) -> None:
-        painter.setPen(self.settings.line.pen)
-        painter.setBrush(self.settings.fill.brush)
+        painter.setPen(self.appearance.line.pen)
+        painter.setBrush(self.appearance.fill.brush)
         painter.drawRect(self.rect())
 
     def itemChange(

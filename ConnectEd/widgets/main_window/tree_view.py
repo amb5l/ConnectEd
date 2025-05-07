@@ -28,7 +28,7 @@ class TreeView(QTreeView):
         self.decreaseFontShortcut.activated.connect(self.decreaseFontSize)
 
     def customizeAppearance(self : Self) -> None:
-        if hub.settings.get("prefs/display/theme") == "dark":
+        if hub.settings.get("display/theme") == "dark":
             self.setStyleSheet("""
                 QTreeView::branch {
                     image: none;
