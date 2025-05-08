@@ -83,6 +83,28 @@ class BaseRectangle(QGraphicsRectItem, Element):
         self._shape.addRect(self._bounding_rect)
         self._kpm.updatePositions()
 
+    def boundingRect(self : Self) -> QRectF:
+        return self._bounding_rect
+
+    def shape(self : Self) -> QPainterPath:
+        return self._shape
+
+    def paint(
+        self    : Self,
+        painter : QPainter,
+        option  : QStyleOptionGraphicsItem,
+        widget  : QWidget
+    ) -> None:
+        painter.setPen(self.appearance.line.pen)
+        painter.setBrush(self.appearance.fill.brush)
+        painter.drawRect(self._rect)
+
+    def KPRect(self : Self) -> QRectF:
+        return self._rect
+
+    def setKPVisible(self : Self, visible : bool) -> None:
+        self._kpm.setVisible(visible)
+
     def setSize(self : Self, size : QSizeF) -> None:
         self.setRect(0, 0, size.width(), size.height())
 
@@ -131,6 +153,8 @@ class BaseRectangle(QGraphicsRectItem, Element):
                 self.setPoints(p1.x(), p1.y() + d.y(), p2.x() + d.x(), p2.y())
             case KPLoc.CENTER_LEFT:
                 self.setPoints(p1.x() + d.x(), p1.y(), p2.x(), p2.y())
+            case KPLoc.CENTER:
+                self.setPos(self.pos() + d)
             case KPLoc.CENTER_RIGHT:
                 self.setPoints(p1.x(), p1.y(), p2.x() + d.x(), p2.y())
             case KPLoc.BOTTOM_LEFT:
@@ -141,28 +165,6 @@ class BaseRectangle(QGraphicsRectItem, Element):
                 self.setPoints(p1, p2 + d)
             case _:
                 raise ValueError(f"Invalid key point: {kp}")
-
-    def KPRect(self : Self) -> QRectF:
-        return self._rect
-
-    def boundingRect(self : Self) -> QRectF:
-        return self._bounding_rect
-
-    def shape(self : Self) -> QPainterPath:
-        return self._shape
-
-    def paint(
-        self    : Self,
-        painter : QPainter,
-        option  : QStyleOptionGraphicsItem,
-        widget  : QWidget
-    ) -> None:
-        painter.setPen(self.appearance.line.pen)
-        painter.setBrush(self.appearance.fill.brush)
-        painter.drawRect(self._rect)
-
-    def setKPVisible(self : Self, visible : bool) -> None:
-        self._kpm.setVisible(visible)
 
 class cmdPlaceBaseRectangle(cmdPlaceElement):
     element    : BaseRectangle

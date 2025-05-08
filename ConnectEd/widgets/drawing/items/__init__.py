@@ -390,17 +390,6 @@ class Appearance:
         xr.readNext()
         return element_settings
 
-class KPLoc(Enum):
-    TOP_LEFT      = (0.0, 0.0)
-    TOP_CENTER    = (0.5, 0.0)
-    TOP_RIGHT     = (1.0, 0.0)
-    CENTER_LEFT   = (0.0, 0.5)
-    CENTER        = (0.5, 0.5)
-    CENTER_RIGHT  = (1.0, 0.5)
-    BOTTOM_LEFT   = (0.0, 1.0)
-    BOTTOM_CENTER = (0.5, 1.0)
-    BOTTOM_RIGHT  = (1.0, 1.0)
-
     @property
     def h(self) -> float:
         return self.value[0]
@@ -593,10 +582,7 @@ class cmdMove(cmdElements):
 class cmdSlide(cmdMove):
     pass
 
-__all__ = [
-    "KPLoc",
-    "Element"
-]
+__all__ = ["Element"]
 from .key_point import KPLoc, KeyPoint, KPDef, KPManager
 __all__ += key_point.__all__
 from .rectangle import Rectangle, cmdPlaceRectangle
