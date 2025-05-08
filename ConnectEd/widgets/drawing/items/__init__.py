@@ -201,6 +201,23 @@ class TextColorFont:
         self.font       = QFont()
         self.onSettingsChange()
 
+    def set(
+        self      : Self,
+        color     : Optional[QColor] = None,
+        family    : Optional[str]    = None,
+        size      : Optional[float]  = None,
+        bold      : Optional[bool]   = None,
+        italic    : Optional[bool]   = None,
+        underline : Optional[bool]   = None
+    ) -> None:
+        if color:     self._color     = color
+        if family:    self._family    = family
+        if size:      self._size      = size
+        if bold:      self._bold      = bold
+        if italic:    self._italic    = italic
+        if underline: self._underline = underline
+        self.onSettingsChange()
+
     def getColor(self : Self) -> QColor:
         return self._color
 

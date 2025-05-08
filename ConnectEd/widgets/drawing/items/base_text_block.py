@@ -111,12 +111,15 @@ class BaseTextBlock(QGraphicsTextItem, Element):
     def pos(self : Self) -> QPointF:
         return super().pos() + self._kpm.anchor_offset
 
-    def setPlainText(self, text: str) -> None:
-        super().setPlainText(text)
+    def refresh(self : Self) -> None:
         self._rect = super().boundingRect()
         self._shape.clear()
         self._shape.addRect(self._rect)
         self._kpm.updatePositions()
+
+    def setPlainText(self, text: str) -> None:
+        super().setPlainText(text)
+        self.refresh()
 
     def setEditable(self, editable: bool) -> None:
         self.setTextInteractionFlags(
@@ -178,14 +181,16 @@ class BaseTextBlock(QGraphicsTextItem, Element):
             underline = ( s.getUnderline() , d.underline )
         )
         if dialog.exec():
-            self.appearance.text.setFamily    ( dialog.chosen_family    )
-            self.appearance.text.setSize      ( dialog.chosen_size      )
-            self.appearance.text.setBold      ( dialog.chosen_bold      )
-            self.appearance.text.setItalic    ( dialog.chosen_italic    )
-            self.appearance.text.setUnderline ( dialog.chosen_underline )
-            scene = self.scene()
-            if scene:
-                scene.update()
+            self.appearance.text.set(
+                family    = dialog.chosen_family,
+                size      = dialog.chosen_size,
+                bold      = dialog.chosen_bold,
+                italic    = dialog.chosen_italic,
+                underline = dialog.chosen_underline
+            )
+            self._kpm.updatePositions()
+            self.refresh()
+            self.update()
 
 class cmdPlaceBaseTextBlock(cmdPlaceElement):
     element    : BaseTextBlock
