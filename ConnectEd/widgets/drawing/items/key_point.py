@@ -3,13 +3,13 @@ __all__ = ["KPLoc", "KeyPoint", "KPDef", "KPManager"]
 from typing      import Self, Optional
 from enum        import Enum
 from collections import namedtuple
-from types       import MethodType
 
 from PyQt6.QtCore    import Qt, QRectF, QPointF
 from PyQt6.QtWidgets import QGraphicsItem, QStyleOptionGraphicsItem, \
-                            QWidget, QGraphicsView, \
-                            QMenu, QGraphicsSceneContextMenuEvent
+                            QWidget, QGraphicsView, QMenu
 from PyQt6.QtGui     import QPainter, QPen, QBrush, QPainterPath, QAction
+
+from ....core import SharedContextMenuUtils
 
 from .... import hub
 
@@ -34,8 +34,15 @@ class KPLoc(Enum):
         return self.value[1]
 
 class KeyPoint(QGraphicsItem):
+    # class variables
     Z_DELTA = 1
+    _MENU = None
+    _MENU_ITEM_NAMES = [
+        "Assign Anchor"
+    ]
+    getMenu = SharedContextMenuUtils.getMenu
 
+    # instance variables
     _manager : "KPManager"
     _loc     : KPLoc # parent's key point location
     _grip    : bool
@@ -71,18 +78,9 @@ class KeyPoint(QGraphicsItem):
         self._brush.setStyle(Qt.BrushStyle.SolidPattern)
         self.onSettingsChange()
         hub.settings.change.connect(self.onSettingsChange)
-        self._menu = QMenu()
-        action = QAction("Test", self._menu)
-        self._menu.addAction(action)
-        action.triggered.connect(self.ctxMenuTest)
+        self._menu = self.getMenu()
 
-    def contextMenuEvent(self, event: QGraphicsSceneContextMenuEvent) -> None:
-        self._menu.exec(event.screenPos())
-        event.widget().update()
-        event.accept()
-
-    def ctxMenuTest(self : Self) -> None:
-        print("ctxMenuTest")
+    contextMenuEvent = SharedContextMenuUtils.contextMenuEvent
 
     def boundingRect(
         self : Self,
@@ -127,6 +125,10 @@ class KeyPoint(QGraphicsItem):
     def isMoveable(self : Self) -> bool:
         return self._grip
 
+    def ctxMenuAssignAnchor(self : Self, checked : bool) -> None:
+        print("ctxMenuAssignAnchor", self._loc)
+        self._manager.setAnchor(self._loc)
+
 KPDef = namedtuple("KPDef", ["loc", "grip", "cleat"])
 
 class KPManager:
@@ -161,6 +163,7 @@ class KPManager:
         self.anchor = self.key_points[anchor]
         self.anchor_loc = anchor
         self.anchor_offset = self.getKeyPointPos(anchor)
+        self.element.update()
 
     def getKeyPointPos(self, kp : KPLoc) -> QPointF:
         rect = self.element.boundingRect()

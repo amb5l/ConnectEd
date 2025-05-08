@@ -4,7 +4,8 @@ __all__ = [
     "camel_to_proper",
     "getDefaultPath",
     "val2str",
-    "str2val"
+    "str2val",
+    "SharedContextMenuUtils"
 ]
 
 import os
@@ -13,9 +14,9 @@ import platform
 from collections import namedtuple
 from typing      import Self, Any
 
-from PyQt6.QtCore import Qt, QPointF, QRectF, QSizeF
-from PyQt6.QtGui  import QColor
-
+from PyQt6.QtCore    import Qt, QPointF, QRectF, QSizeF
+from PyQt6.QtWidgets import QGraphicsItem, QGraphicsSceneContextMenuEvent, QMenu
+from PyQt6.QtGui     import QColor, QAction
 
 class NameCounter:
     counts : dict[str, int]
@@ -105,3 +106,34 @@ def str2val(s : str, t : str) -> Any:
         case "KPLoc"      : return getattr(KPLoc, s)
         case _:
             raise ValueError(f"Unsupported type: {t}")
+
+class SharedContextMenuUtils:
+    _MENU = None
+
+    @staticmethod
+    def getMenu(cls) -> QMenu:
+        if cls._MENU is None:
+            cls._MENU = QMenu()
+            for item_name in cls._MENU_ITEM_NAMES:
+                action = QAction(item_name, cls._MENU)
+                action.triggered.connect(lambda: None)  # placeholder
+                cls._MENU.addAction(action)
+        return cls._MENU
+
+    def contextMenuEvent(
+        instance : QGraphicsItem,
+        event    : QGraphicsSceneContextMenuEvent
+    ) -> None:
+        instance._instance = instance
+        for action in instance._menu.actions():
+            handler_name = \
+                f"ctxMenu{action.text().replace(' ', '').replace('.', '')}"
+            method = getattr(instance, handler_name, None)
+            if method:
+                try:
+                    action.triggered.disconnect()
+                except TypeError:
+                    pass
+                action.triggered.connect(lambda: method(instance._instance))
+        instance._menu.exec(event.screenPos())
+        instance._instance = None
