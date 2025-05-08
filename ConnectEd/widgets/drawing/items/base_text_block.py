@@ -38,7 +38,7 @@ class BaseTextBlock(QGraphicsTextItem, Element):
         if cls._MENU is None:
             cls._MENU = QMenu()
             item_names = [
-                "Font"
+                "Font..."
             ]
             for item_name in item_names:
                 action = QAction(item_name, cls._MENU)
@@ -116,9 +116,8 @@ class BaseTextBlock(QGraphicsTextItem, Element):
         ) -> None:
             self._instance = self
             for action in self._menu.actions():
-                action_name = action.text()
                 handler_name = \
-                    f"ctxMenu{camel_to_proper(action_name).replace(' ', '')}"
+                    f"ctxMenu{action.text().replace(' ', '').replace('.', '')}"
                 handler = getattr(self, handler_name, None)
                 if handler:
                     try:
