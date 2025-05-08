@@ -11,6 +11,7 @@ from PyQt6.QtGui     import QPainter, QPainterPath, QUndoCommand, QPen, \
                             QKeyEvent, QFocusEvent, QColor, QAction, \
                             QTextCursor
 
+from ....core   import camel_to_proper
 from ...dialogs import TextFontDialog
 
 from . import Element, KPManager, KPLoc, KPDef, cmdPlaceElement
@@ -21,7 +22,7 @@ if TYPE_CHECKING:
 
 
 class BaseTextBlock(QGraphicsTextItem, Element):
-    """Base class for text items."""
+    # class variables
     XML_ATTRS = Element.XML_ATTRS | {
         "text" : (
             "str",
@@ -29,7 +30,23 @@ class BaseTextBlock(QGraphicsTextItem, Element):
             lambda self: self.toPlainText()
         )
     }
+    _MENU = None
 
+    @classmethod
+    def getMenu(cls) -> QMenu:
+        """Lazily initialize and return the shared context menu."""
+        if cls._MENU is None:
+            cls._MENU = QMenu()
+            item_names = [
+                "Font"
+            ]
+            for item_name in item_names:
+                action = QAction(item_name, cls._MENU)
+                action.triggered.connect(lambda: None)  # placeholder
+                cls._MENU.addAction(action)
+        return cls._MENU
+
+    # instance variables
     _kpm     : KPManager
     _rect    : QRectF
     _shape   : QPainterPath
@@ -55,16 +72,7 @@ class BaseTextBlock(QGraphicsTextItem, Element):
         self.setEditable(False)
         self.setFlag(self.GraphicsItemFlag.ItemIsSelectable , True)
         self.setFlag(self.GraphicsItemFlag.ItemIsFocusable  , True)
-        self._menu = QMenu()
-        self._actions = SimpleNamespace()
-        self._actions.font = QAction("Font")
-        self._actions.font.triggered.connect(self.ctxMenuFont)
-        self._menu.addAction(self._actions.font)
-        # edit properties
-        # move
-        # delete
-        # assign anchor
-        # link
+        self._menu = self.getMenu()
 
     def keyPressEvent(self, event: QKeyEvent) -> None:
         if event.key() in (Qt.Key.Key_Return, Qt.Key.Key_Enter):
@@ -102,8 +110,24 @@ class BaseTextBlock(QGraphicsTextItem, Element):
         if scene:
             scene.onTextEditingComplete(self)
 
-    def contextMenuEvent(self : Self, event : QGraphicsSceneContextMenuEvent) -> None:
-        self._menu.exec(event.screenPos())
+    def contextMenuEvent(
+            self  : Self,
+            event : QGraphicsSceneContextMenuEvent
+        ) -> None:
+            self._instance = self
+            for action in self._menu.actions():
+                action_name = action.text()
+                handler_name = \
+                    f"ctxMenu{camel_to_proper(action_name).replace(' ', '')}"
+                handler = getattr(self, handler_name, None)
+                if handler:
+                    try:
+                        action.triggered.disconnect()
+                    except TypeError:
+                        pass
+                    action.triggered.connect(lambda: handler(self._instance))
+            self._menu.exec(event.screenPos())
+            self._instance = None
 
     def setPos(self : Self, pos : QPointF) -> None:
         super().setPos(pos - self._kpm.anchor_offset)
@@ -170,7 +194,7 @@ class BaseTextBlock(QGraphicsTextItem, Element):
     def setKPVisible(self : Self, visible : bool) -> None:
         self._kpm.setVisible(visible)
 
-    def ctxMenuFont(self : Self) -> None:
+    def ctxMenuFont(self : Self, checked: bool = False) -> None:
         s = self.appearance.text
         d = self.appearance.text.getDefaults()
         dialog = TextFontDialog(
