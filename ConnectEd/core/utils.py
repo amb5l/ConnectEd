@@ -115,9 +115,12 @@ class SharedContextMenuUtils:
         if cls._MENU is None:
             cls._MENU = QMenu()
             for item_name in cls._MENU_ITEM_NAMES:
-                action = QAction(item_name, cls._MENU)
-                action.triggered.connect(lambda: None)  # placeholder
-                cls._MENU.addAction(action)
+                if item_name.startswith("-"):
+                    cls._MENU.addSeparator()
+                else:
+                    action = QAction(item_name, cls._MENU)
+                    action.triggered.connect(lambda: None)  # placeholder
+                    cls._MENU.addAction(action)
         return cls._MENU
 
     def contextMenuEvent(

@@ -126,7 +126,6 @@ class KeyPoint(QGraphicsItem):
         return self._grip
 
     def ctxMenuAssignAnchor(self : Self, checked : bool) -> None:
-        print("ctxMenuAssignAnchor", self._loc)
         self._manager.setAnchor(self._loc)
 
 KPDef = namedtuple("KPDef", ["loc", "grip", "cleat"])

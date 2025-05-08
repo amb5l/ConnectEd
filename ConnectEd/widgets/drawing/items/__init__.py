@@ -262,11 +262,16 @@ class TextColorFont:
 
     def getDefaults(self : Self) -> SimpleNamespace:
         element_name = self._element.__class__.__name__
-        return hub.settings.get(f"defaults/elements/{element_name}/text")
+        r = hub.settings.get(f"defaults/elements/{element_name}/text")
+        r.color = hub.settings.getTheme(f"elements/{element_name}/text")
+        return r
 
     def onSettingsChange(self : Self) -> None:
         element_name = self._element.__class__.__name__
-        self.normal.setRgb(hub.settings.getTheme(f"elements/{element_name}/text").rgb())
+        if self._color is None:
+            self.normal.setRgb(hub.settings.getTheme(f"elements/{element_name}/text").rgb())
+        else:
+            self.normal.setRgb(self._color.rgb())
         self.selected.setRgb(hub.settings.getTheme("selected/text").rgb())
         default = self.getDefaults()
         self.font.setFamily(

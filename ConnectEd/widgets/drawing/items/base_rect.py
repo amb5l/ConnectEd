@@ -1,10 +1,15 @@
 __all__ = ["BaseRectangle"]
 
-from typing      import Self, Optional, Any, overload
+from typing      import Self, Optional, overload
 
 from PyQt6.QtCore    import QPointF, QRectF, QSizeF
-from PyQt6.QtWidgets import QGraphicsRectItem, QStyleOptionGraphicsItem, QWidget
+from PyQt6.QtWidgets import QGraphicsRectItem, QStyleOptionGraphicsItem, \
+                            QWidget, QMenu
 from PyQt6.QtGui     import QPainter, QPainterPath, QUndoCommand
+
+from ....core   import SharedContextMenuUtils
+
+from ...dialogs import ColorDialog
 
 from . import Element, KPLoc, KPDef, KPManager, cmdPlaceElement
 
@@ -23,11 +28,17 @@ class BaseRectangle(QGraphicsRectItem, Element):
         )
     }
     MIN_SIZE = QSizeF(1.0, 1.0)
+    _MENU = None
+    _MENU_ITEM_NAMES = [
+        "Color..."
+    ]
+    getMenu = SharedContextMenuUtils.getMenu
 
     _kpm           : KPManager
     _rect          : QRectF
     _bounding_rect : QRectF
     _shape         : QPainterPath
+    _menu          : QMenu
 
     def __init__(
         self       : Self,
@@ -43,6 +54,9 @@ class BaseRectangle(QGraphicsRectItem, Element):
         else:
             self.setPoints(pos, size_or_p2)
         self._kpm.updatePositions()
+        self._menu = self.getMenu()
+
+    contextMenuEvent = SharedContextMenuUtils.contextMenuEvent
 
     @overload
     def setRect(self : Self, rect : QRectF) -> None:
@@ -165,6 +179,12 @@ class BaseRectangle(QGraphicsRectItem, Element):
                 self.setPoints(p1, p2 + d)
             case _:
                 raise ValueError(f"Invalid key point: {kp}")
+
+    def ctxMenuFillColor(self : Self, checked: bool) -> None:
+        dialog = ColorDialog()
+        if dialog.exec():
+            self.appearance.fill.setColor(dialog.getColor())
+            self.update()
 
 class cmdPlaceBaseRectangle(cmdPlaceElement):
     element    : BaseRectangle

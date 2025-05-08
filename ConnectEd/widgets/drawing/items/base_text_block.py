@@ -12,7 +12,7 @@ from PyQt6.QtGui     import QPainter, QPainterPath, QUndoCommand, QPen, \
                             QTextCursor
 
 from ....core   import SharedContextMenuUtils
-from ...dialogs import TextFontDialog
+from ...dialogs import TextFontDialog, ColorDialog
 
 from . import Element, KPManager, KPLoc, KPDef, cmdPlaceElement
 
@@ -32,17 +32,16 @@ class BaseTextBlock(QGraphicsTextItem, Element):
     }
     _MENU = None
     _MENU_ITEM_NAMES = [
-        "Font..."
+        "Font...",
+        "Color..."
     ]
     getMenu = SharedContextMenuUtils.getMenu
-
 
     # instance variables
     _kpm     : KPManager
     _rect    : QRectF
     _shape   : QPainterPath
     _menu    : QMenu
-    _actions : SimpleNamespace
 
     def __init__(
         self   : Self,
@@ -187,6 +186,18 @@ class BaseTextBlock(QGraphicsTextItem, Element):
                 underline = dialog.chosen_underline
             )
             self._kpm.updatePositions()
+            self.refresh()
+            self.update()
+
+    def ctxMenuColor(self : Self, checked: bool) -> None:
+        dialog = ColorDialog(
+            color = (
+                self.appearance.text.getColor(),
+                self.appearance.text.getDefaults().color
+            )
+        )
+        if dialog.exec():
+            self.appearance.text.setColor(dialog.getColor())
             self.refresh()
             self.update()
 
