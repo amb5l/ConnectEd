@@ -44,6 +44,7 @@ class KeyPoint(QGraphicsItem):
     _brush   : QBrush
     _rect    : QRectF
     _rhombus : QPainterPath
+    _menu    : QMenu
 
     def __init__(
         self    : Self,
@@ -70,13 +71,13 @@ class KeyPoint(QGraphicsItem):
         self._brush.setStyle(Qt.BrushStyle.SolidPattern)
         self.onSettingsChange()
         hub.settings.change.connect(self.onSettingsChange)
-        self.menu = QMenu()
-        action = QAction("Test", self.menu)
-        self.menu.addAction(action)
+        self._menu = QMenu()
+        action = QAction("Test", self._menu)
+        self._menu.addAction(action)
         action.triggered.connect(self.ctxMenuTest)
 
     def contextMenuEvent(self, event: QGraphicsSceneContextMenuEvent) -> None:
-        self.menu.exec(event.screenPos())
+        self._menu.exec(event.screenPos())
         event.widget().update()
         event.accept()
 
