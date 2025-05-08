@@ -205,4 +205,6 @@ class cmdPlaceBaseTextBlock(cmdPlaceElement):
     def redo(self : Self) -> None:
         super().redo()
         self.element.setPlainText(self.text)
+        self.element.setPos(self.pos)
+        self.element.setAnchor(self.anchor)
         self.element.setEditable(True)
