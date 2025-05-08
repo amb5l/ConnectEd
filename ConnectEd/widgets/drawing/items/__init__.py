@@ -243,29 +243,29 @@ class TextColorFont:
         self._underline = underline
         self.onSettingsChange()
 
+    def getDefaults(self : Self) -> SimpleNamespace:
+        element_name = self._element.__class__.__name__
+        return hub.settings.get(f"defaults/elements/{element_name}/text")
+
     def onSettingsChange(self : Self) -> None:
         element_name = self._element.__class__.__name__
         self.normal.setRgb(hub.settings.getTheme(f"elements/{element_name}/text").rgb())
         self.selected.setRgb(hub.settings.getTheme("selected/text").rgb())
+        default = self.getDefaults()
         self.font.setFamily(
-            hub.settings.get(f"defaults/elements/{element_name}/text/family")
-            if self._family is None else self._family
+            default.family if self._family is None else self._family
         )
         self.font.setPointSizeF(
-            hub.settings.get(f"defaults/elements/{element_name}/text/size")
-            if self._size is None else self._size
+            default.size if self._size is None else self._size
         )
         self.font.setBold(
-            hub.settings.get(f"defaults/elements/{element_name}/text/bold")
-            if self._bold is None else self._bold
+            default.bold if self._bold is None else self._bold
         )
         self.font.setItalic(
-            hub.settings.get(f"defaults/elements/{element_name}/text/italic")
-            if self._italic is None else self._italic
+            default.italic if self._italic is None else self._italic
         )
         self.font.setUnderline(
-            hub.settings.get(f"defaults/elements/{element_name}/text/underline")
-            if self._underline is None else self._underline
+            default.underline if self._underline is None else self._underline
         )
         if hasattr(self._element, "setDefaultFont"):
             self._element.setDefaultFont(self.font)

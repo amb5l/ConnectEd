@@ -11,9 +11,9 @@ from PyQt6.QtGui     import QPainter, QPainterPath, QUndoCommand, QPen, \
                             QKeyEvent, QFocusEvent, QColor, QAction, \
                             QTextCursor
 
-from . import Element, KPManager, KPLoc, KPDef, cmdPlaceElement
+from ...dialogs import TextFontDialog
 
-from .... import hub
+from . import Element, KPManager, KPLoc, KPDef, cmdPlaceElement
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -57,9 +57,9 @@ class BaseTextBlock(QGraphicsTextItem, Element):
         self.setFlag(self.GraphicsItemFlag.ItemIsFocusable  , True)
         self._menu = QMenu()
         self._actions = SimpleNamespace()
-        self._actions.edit = QAction("Edit")
-        self._actions.edit.triggered.connect(self.ctxMenuEdit)
-        self._menu.addAction(self._actions.edit)
+        self._actions.font = QAction("Font")
+        self._actions.font.triggered.connect(self.ctxMenuFont)
+        self._menu.addAction(self._actions.font)
         # edit properties
         # move
         # delete
@@ -104,9 +104,6 @@ class BaseTextBlock(QGraphicsTextItem, Element):
 
     def contextMenuEvent(self : Self, event : QGraphicsSceneContextMenuEvent) -> None:
         self._menu.exec(event.screenPos())
-
-    def ctxMenuEdit(self : Self) -> None:
-        print("edit")
 
     def setPos(self : Self, pos : QPointF) -> None:
         super().setPos(pos - self._kpm.anchor_offset)
@@ -169,6 +166,26 @@ class BaseTextBlock(QGraphicsTextItem, Element):
 
     def setKPVisible(self : Self, visible : bool) -> None:
         self._kpm.setVisible(visible)
+
+    def ctxMenuFont(self : Self) -> None:
+        s = self.appearance.text
+        d = self.appearance.text.getDefaults()
+        dialog = TextFontDialog(
+            family    = ( s.getFamily()    , d.family    ),
+            size      = ( s.getSize()      , d.size      ),
+            bold      = ( s.getBold()      , d.bold      ),
+            italic    = ( s.getItalic()    , d.italic    ),
+            underline = ( s.getUnderline() , d.underline )
+        )
+        if dialog.exec():
+            self.appearance.text.setFamily    ( dialog.chosen_family    )
+            self.appearance.text.setSize      ( dialog.chosen_size      )
+            self.appearance.text.setBold      ( dialog.chosen_bold      )
+            self.appearance.text.setItalic    ( dialog.chosen_italic    )
+            self.appearance.text.setUnderline ( dialog.chosen_underline )
+            scene = self.scene()
+            if scene:
+                scene.update()
 
 class cmdPlaceBaseTextBlock(cmdPlaceElement):
     element    : BaseTextBlock
