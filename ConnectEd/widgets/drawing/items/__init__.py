@@ -57,13 +57,18 @@ class LinePen:
         self._style = style
         self.onSettingsChange()
 
-    def onSettingsChange(self : Self) -> None:
+    def getDefaults(self : Self) -> SimpleNamespace:
         element_name = self._element.__class__.__name__
-        display = hub.settings.get(f"defaults/elements/{element_name}/line")
-        color_normal = hub.settings.getTheme(f"elements/{element_name}/line")
+        r = hub.settings.get(f"defaults/elements/{element_name}/line")
+        r.color = hub.settings.getTheme(f"elements/{element_name}/line")
+        return r
+
+    def onSettingsChange(self : Self) -> None:
+        default = self.getDefaults()
+        color_normal = default.color if self._color is None else self._color
         color_selected = hub.settings.getTheme("selected/line")
-        width = display.width if self._width is None else self._width
-        style = display.style if self._style is None else self._style
+        width = default.width if self._width is None else self._width
+        style = default.style if self._style is None else self._style
         self.normal.setColor(color_normal)
         self.normal.setWidthF(width)
         self.normal.setStyle(style)
@@ -132,12 +137,18 @@ class FillBrush:
         self._style = style
         self.onSettingsChange()
 
-    def onSettingsChange(self : Self) -> None:
+    def getDefaults(self : Self) -> SimpleNamespace:
+        r = SimpleNamespace()
         element_name = self._element.__class__.__name__
-        color_normal = hub.settings.getTheme(f"elements/{element_name}/fill")
+        r.style = hub.settings.get(f"defaults/elements/{element_name}/fill")
+        r.color = hub.settings.getTheme(f"elements/{element_name}/fill")
+        return r
+
+    def onSettingsChange(self : Self) -> None:
+        default = self.getDefaults()
+        color_normal = default.color if self._color is None else self._color
         color_selected = hub.settings.getTheme("selected/fill")
-        style = hub.settings.get(f"defaults/elements/{element_name}/fill") \
-            if self._style is None else self._style
+        style = default.style if self._style is None else self._style
         self.normal.setColor(color_normal)
         self.normal.setStyle(style)
         self.selected.setColor(color_selected)
@@ -168,12 +179,12 @@ class FillBrush:
 
 class TextColorFont:
     _element   : "Element"
-    _color     : QColor
-    _family    : str
-    _size      : float
-    _bold      : bool
-    _italic    : bool
-    _underline : bool
+    _color     : Optional[QColor]
+    _family    : Optional[str]
+    _size      : Optional[float]
+    _bold      : Optional[bool]
+    _italic    : Optional[bool]
+    _underline : Optional[bool]
     normal     : QColor
     selected   : QColor
     color      : QColor
@@ -218,45 +229,45 @@ class TextColorFont:
         if underline: self._underline = underline
         self.onSettingsChange()
 
-    def getColor(self : Self) -> QColor:
+    def getColor(self : Self) -> Optional[QColor]:
         return self._color
 
-    def setColor(self  : Self, color : QColor) -> None:
+    def setColor(self  : Self, color : Optional[QColor]) -> None:
         self._color = color
         self.onSettingsChange()
 
-    def getFamily(self : Self) -> str:
+    def getFamily(self : Self) -> Optional[str]:
         return self._family
 
-    def setFamily(self  : Self, family : str) -> None:
+    def setFamily(self  : Self, family : Optional[str]) -> None:
         self._family = family
         self.onSettingsChange()
 
-    def getSize(self : Self) -> float:
+    def getSize(self : Self) -> Optional[float]:
         return self._size
 
-    def setSize(self  : Self, size : float) -> None:
+    def setSize(self  : Self, size : Optional[float]) -> None:
         self._size = size
         self.onSettingsChange()
 
-    def getBold(self : Self) -> bool:
+    def getBold(self : Self) -> Optional[bool]:
         return self._bold
 
-    def setBold(self  : Self, bold : bool) -> None:
+    def setBold(self  : Self, bold : Optional[bool]) -> None:
         self._bold = bold
         self.onSettingsChange()
 
-    def getItalic(self : Self) -> bool:
+    def getItalic(self : Self) -> Optional[bool]:
         return self._italic
 
-    def setItalic(self  : Self, italic : bool) -> None:
+    def setItalic(self  : Self, italic : Optional[bool]) -> None:
         self._italic = italic
         self.onSettingsChange()
 
-    def getUnderline(self : Self) -> bool:
+    def getUnderline(self : Self) -> Optional[bool]:
         return self._underline
 
-    def setUnderline(self  : Self, underline : bool) -> None:
+    def setUnderline(self  : Self, underline : Optional[bool]) -> None:
         self._underline = underline
         self.onSettingsChange()
 
@@ -268,12 +279,11 @@ class TextColorFont:
 
     def onSettingsChange(self : Self) -> None:
         element_name = self._element.__class__.__name__
-        if self._color is None:
-            self.normal.setRgb(hub.settings.getTheme(f"elements/{element_name}/text").rgb())
-        else:
-            self.normal.setRgb(self._color.rgb())
         self.selected.setRgb(hub.settings.getTheme("selected/text").rgb())
         default = self.getDefaults()
+        self.normal.setRgb(
+            default.color.rgb() if self._color is None else self._color.rgb()
+        )
         self.font.setFamily(
             default.family if self._family is None else self._family
         )

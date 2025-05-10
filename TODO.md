@@ -1,3 +1,10 @@
+- Appearance dialog with up to 3 areas: line, fill, text
+- implememnt property text
+- switch from design to diagram
+- add settings to explorer (light, dark) ???
+- save display preferences with diagram
+- appearance: force system default, apply system or diagram default
+
 - rich text v simple text
 - cache settings in elements - new pen/brush/font management
 - merge XML attributes and properties

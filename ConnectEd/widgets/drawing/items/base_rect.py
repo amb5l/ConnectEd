@@ -9,7 +9,7 @@ from PyQt6.QtGui     import QPainter, QPainterPath, QUndoCommand
 
 from ....core   import SharedContextMenuUtils
 
-from ...dialogs import ColorDialog
+from ...dialogs import FillDialog
 
 from . import Element, KPLoc, KPDef, KPManager, cmdPlaceElement
 
@@ -30,7 +30,7 @@ class BaseRectangle(QGraphicsRectItem, Element):
     MIN_SIZE = QSizeF(1.0, 1.0)
     _MENU = None
     _MENU_ITEM_NAMES = [
-        "Color..."
+        "Fill..."
     ]
     getMenu = SharedContextMenuUtils.getMenu
 
@@ -180,10 +180,16 @@ class BaseRectangle(QGraphicsRectItem, Element):
             case _:
                 raise ValueError(f"Invalid key point: {kp}")
 
-    def ctxMenuFillColor(self : Self, checked: bool) -> None:
-        dialog = ColorDialog()
+    def ctxMenuFill(self : Self, checked: bool) -> None:
+        dialog = FillDialog(
+            current_color = self.appearance.fill.getColor(),
+            default_color = self.appearance.fill.getDefaults().color,
+            current_style = self.appearance.fill.getStyle(),
+            default_style = self.appearance.fill.getDefaults().style
+        )
         if dialog.exec():
             self.appearance.fill.setColor(dialog.getColor())
+            self.appearance.fill.setStyle(dialog.getStyle())
             self.update()
 
 class cmdPlaceBaseRectangle(cmdPlaceElement):

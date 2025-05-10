@@ -9,8 +9,6 @@ from PyQt6.QtWidgets import QColorDialog, QWidget, \
 from PyQt6.QtGui     import QColor, QPainter, QFont, QFontMetrics
 
 class OverlayWidget(QWidget):
-    GRID_SPACING = 2
-
     def __init__(self : Self, parent : Optional[QWidget] = None) -> None:
         super().__init__(parent)
         self.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents)
@@ -29,13 +27,11 @@ class OverlayWidget(QWidget):
         self.updateFontSize()
 
     def paintEvent(self, event):
-        """Draw a dark gray rectangle with 50% alpha."""
         painter = QPainter(self)
         painter.fillRect(self.rect(), QColor(64, 64, 64, 224))
         painter.end()
 
     def resizeEvent(self, event):
-        """Update the label's font size when the widget is resized."""
         super().resizeEvent(event)
         self.updateFontSize()
 
