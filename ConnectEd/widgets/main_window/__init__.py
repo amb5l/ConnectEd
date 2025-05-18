@@ -100,6 +100,22 @@ class MainWindow(QMainWindow):
         self.messages_viewer.text_view.appendPlainText("ConnectEd ready!")
 
     def closeEvent(self : Self, event : QCloseEvent) -> None:
+        try:
+            self.mdi_area.subWindowActivated.disconnect(
+                self.actions.onSubWindowActivated
+            )
+        except TypeError:
+            pass
+        try:
+            clipboard = QApplication.clipboard()
+            if clipboard:
+                clipboard.dataChanged.disconnect(
+                    self.actions.onClipboardDataChanged
+                )
+        except TypeError:
+            pass
+        if hasattr(self, 'actions') and self.actions:
+            self.actions.onSubWindowActivated(None)
         hub.settings.set("startup/geometry", self.saveGeometry().data())
         super().closeEvent(event)
 
