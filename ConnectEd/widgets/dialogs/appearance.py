@@ -82,12 +82,10 @@ class ColorComboBox(QComboBox):
         default : QColor,
         parent  : Optional[QWidget] = None
     ) -> None:
-        print("ColorComboBox", current, default)
         super().__init__(parent)
         self.color   = current
         self.default = default
         for i, c in enumerate(self.COLORS):
-            print("ColorComboBox", i, c.name)
             icon = self.getIcon(
                 default if i == 0 else
                 default if i == 1 and current is None else
