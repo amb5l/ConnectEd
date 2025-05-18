@@ -1,3 +1,5 @@
+- convert drawing scene to module, move commands into scene
+
 - Appearance dialog with up to 3 areas: line, fill, text
 - implememnt property text
 - switch from design to diagram
