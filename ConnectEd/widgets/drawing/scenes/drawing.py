@@ -1,4 +1,4 @@
-__all__ = ["DrawingScene"]
+__all__ = ["Drawing"]
 
 from typing import Self, Optional
 
@@ -9,12 +9,21 @@ from PyQt6.QtGui     import QUndoStack
 
 from ....core import logger, toXmlAttrs, fromXmlAttrs
 
-from ..items import TextBlock, KeyPoint, element_class_dict
+from ..items import element_class_dict
+
+from ..items.key_point  import KeyPoint
+from ..items.text_block import TextBlock
+
+from .api import *
 
 from .... import hub
 
 
-class DrawingScene(QGraphicsScene):
+class Drawing(
+    QGraphicsScene,
+    DrawingApiFileMixin,
+    DrawingApiPlaceMixin
+):
     # class variables
     XML_ATTRS              = {"name" : "str"}
     SYSTEM_FORBIDDEN_ITEMS = [KeyPoint] # TODO: review this
@@ -76,7 +85,7 @@ class DrawingScene(QGraphicsScene):
         cls_name = cls.__name__.replace("Scene", "")
         if xr.name() != cls_name:
             raise ValueError(f"Expected {cls_name} element, got {xr.name()}")
-        drawing_scene : DrawingScene = cls()
+        drawing_scene : Drawing = cls()
         fromXmlAttrs(drawing_scene, xr)
         while not (xr.isEndElement() and xr.name() == cls_name):
             if xr.tokenType() == QXmlStreamReader.TokenType.StartElement:

@@ -1,9 +1,9 @@
-__all__ = ["SymbolScene"]
+__all__ = ["Symbol"]
 
-from . import DrawingScene
+from . import Drawing
 
 from ..items import SymbolInstance, Block
 
 
-class SymbolScene(DrawingScene):
+class Symbol(Drawing):
     FORBIDDEN_ITEMS = [SymbolInstance, Block]

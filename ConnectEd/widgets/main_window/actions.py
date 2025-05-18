@@ -4,7 +4,7 @@ from PyQt6.QtWidgets import QApplication, QMdiSubWindow, QGraphicsItem
 from PyQt6.QtGui     import QKeySequence
 
 from ...core    import MIME_TYPE
-from ...widgets import DrawingSubWindow, DrawingScene
+from ...widgets import DrawingSubWindow, Drawing
 from ..private  import Action
 
 from typing import TYPE_CHECKING
@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 
 class Actions:
     _parent : "MainWindow"
-    _scene  : Optional[DrawingScene]
+    _scene  : Optional[Drawing]
 
     def __init__(self : Self, parent : "MainWindow") -> None:
         self._parent = parent

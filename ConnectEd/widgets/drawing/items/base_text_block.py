@@ -1,14 +1,12 @@
 __all__ = ["BaseTextBlock"]
 
-from typing import Self, Optional, Any
-from types  import SimpleNamespace
+from typing import Self, Optional, overload
 
 from PyQt6.QtCore    import Qt, QPointF, QRectF
-from PyQt6.QtWidgets import QGraphicsTextItem, QWidget, \
-                            QStyleOptionGraphicsItem, QStyle, \
-                            QMenu, QGraphicsSceneContextMenuEvent
-from PyQt6.QtGui     import QPainter, QPainterPath, QUndoCommand, QPen, \
-                            QKeyEvent, QFocusEvent, QColor, QAction, \
+from PyQt6.QtWidgets import QGraphicsTextItem, QWidget, QMenu, \
+                            QStyleOptionGraphicsItem, QStyle
+from PyQt6.QtGui     import QPainter, QPainterPath, QUndoCommand, \
+                            QKeyEvent, QFocusEvent, QColor, \
                             QTextCursor
 
 from ....core   import SharedContextMenuUtils
@@ -18,7 +16,7 @@ from . import Element, KPManager, KPLoc, KPDef, cmdPlaceElement
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from .. import DrawingScene
+    from .. import Drawing
 
 
 class BaseTextBlock(QGraphicsTextItem, Element):
@@ -43,11 +41,32 @@ class BaseTextBlock(QGraphicsTextItem, Element):
     _shape   : QPainterPath
     _menu    : QMenu
 
+
+    @overload
     def __init__(
         self   : Self,
         text   : str = "",
         pos    : QPointF = QPointF(0, 0),
         anchor : KPLoc = KPLoc.TOP_LEFT
+    ) -> None:
+        ...
+
+    @overload
+    def __init__(
+        self   : Self,
+        text   : str = "",
+        x      : float = 0,
+        y      : float = 0,
+        anchor : KPLoc = KPLoc.TOP_LEFT
+    ) -> None:
+        ...
+
+    def __init__(
+        self   : Self,
+        text   : str = "",
+        a1     : QPointF | float = QPointF(0, 0),
+        a2     : Optional[float | KPLoc] = KPLoc.TOP_LEFT,
+        a3     : Optional[KPLoc] = KPLoc.TOP_LEFT
     ) -> None:
         self._rect = QRectF()
         self._shape = QPainterPath()
@@ -58,7 +77,10 @@ class BaseTextBlock(QGraphicsTextItem, Element):
             [KPDef(k, False, False) for k in KPLoc],
             KPLoc.TOP_LEFT
         )
+        pos = a1 if isinstance(a1, QPointF) else QPointF(a1, a2)
+        anchor = a2 if isinstance(a1, QPointF) else a3
         self.setPos(pos)
+        self.setAnchor(anchor)
         self.setEditable(False)
         self.setFlag(self.GraphicsItemFlag.ItemIsSelectable , True)
         self.setFlag(self.GraphicsItemFlag.ItemIsFocusable  , True)
@@ -96,7 +118,7 @@ class BaseTextBlock(QGraphicsTextItem, Element):
 
     def focusOutEvent(self, event: QFocusEvent) -> None:
         super().focusOutEvent(event)
-        scene : Optional["DrawingScene"] = self.scene()
+        scene : Optional["Drawing"] = self.scene()
         if scene:
             scene.onTextEditingComplete(self)
 
@@ -208,7 +230,7 @@ class cmdPlaceBaseTextBlock(cmdPlaceElement):
 
     def __init__(
         self    : Self,
-        scene   : Optional["DrawingScene"] = None,
+        scene   : Optional["Drawing"] = None,
         element : Optional[BaseTextBlock] = None,
         text    : str = "",
         pos     : QPointF = QPointF(0, 0),

@@ -13,7 +13,7 @@ from .... import hub
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from .. import DrawingScene
+    from .. import Drawing
 
 
 class LinePen:
@@ -313,14 +313,13 @@ class TextColorFont:
             self._element.setColor(self.color)
 
     def toXml(self : Self, xw : QXmlStreamWriter) -> None:
-        vs = val2str
         xw.writeStartElement("text")
-        xw.writeAttribute( "color",     vs(self.pen.color()       , QColor ))
-        xw.writeAttribute( "family",    vs(self.font.family()     , str    ))
-        xw.writeAttribute( "size",      vs(self.font.pointSizeF() , float  ))
-        xw.writeAttribute( "bold",      vs(self.font.bold()       , bool   ))
-        xw.writeAttribute( "italic",    vs(self.font.italic()     , bool   ))
-        xw.writeAttribute( "underline", vs(self.font.underline()  , bool   ))
+        xw.writeAttribute( "color",     val2str( self.color             ))
+        xw.writeAttribute( "family",    val2str( self.font.family()     ))
+        xw.writeAttribute( "size",      val2str( self.font.pointSizeF() ))
+        xw.writeAttribute( "bold",      val2str( self.font.bold()       ))
+        xw.writeAttribute( "italic",    val2str( self.font.italic()     ))
+        xw.writeAttribute( "underline", val2str( self.font.underline()  ))
         xw.writeEndElement()
 
     @classmethod
@@ -482,12 +481,12 @@ class Element(QGraphicsItem):
 
 class cmdElement(QUndoCommand):
     """Base class for all commands that work with an element."""
-    scene   : "DrawingScene"
+    scene   : "Drawing"
     element : Element
 
     def __init__(
         self    : Self,
-        scene   : "DrawingScene",
+        scene   : "Drawing",
         element : Element
     ):
         text = camel_to_proper(self.__class__.__name__.replace("cmd", ""))
@@ -525,7 +524,7 @@ class cmdElements(cmdElement):
 
     def __init__(
         self     : Self,
-        scene    : "DrawingScene",
+        scene    : "Drawing",
         elements : list[Element]
     ):
         text = camel_to_proper(self.__class__.__name__.replace("cmd", ""))
@@ -555,7 +554,7 @@ class cmdPlaceElement(cmdElement):
 
     def __init__(
         self       : Self,
-        scene      : "DrawingScene",
+        scene      : "Drawing",
         element    : Element
     ):
         super().__init__(scene, element)
@@ -586,7 +585,7 @@ class cmdMove(cmdElements):
 
     def __init__(
         self     : Self,
-        scene    : "DrawingScene",
+        scene    : "Drawing",
         elements : list[Element],
         delta    : QPointF,
         slide    : bool = False

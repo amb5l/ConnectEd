@@ -1,0 +1,28 @@
+import sys
+
+from PyQt6.QtWidgets import QApplication
+
+from ..core      import NameCounter, Settings, Model, known_args, unknown_args
+from ..resources import initResources
+from ..widgets   import MainWindow
+
+from .. import hub
+
+
+def initCli():
+    hub.name_counter = NameCounter()
+    hub.settings = Settings()
+    if known_args.reset:
+        hub.settings.reset()
+    hub.settings.load()
+    hub.app = QApplication(sys.argv[:1] + unknown_args)
+    hub.model = Model()
+
+def initGui():
+    initCli()
+    hub.app.setStyle("Fusion")
+    initResources()
+    hub.main_window = MainWindow()
+    hub.main_window.show()
+
+from ..widgets import Diagram

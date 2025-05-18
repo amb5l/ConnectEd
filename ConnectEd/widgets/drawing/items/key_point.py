@@ -4,10 +4,11 @@ from typing      import Self, Optional
 from enum        import Enum
 from collections import namedtuple
 
-from PyQt6.QtCore    import Qt, QRectF, QPointF
+from PyQt6.QtCore    import Qt, QRectF, QPointF, \
+                            QXmlStreamWriter, QXmlStreamReader
 from PyQt6.QtWidgets import QGraphicsItem, QStyleOptionGraphicsItem, \
                             QWidget, QGraphicsView, QMenu
-from PyQt6.QtGui     import QPainter, QPen, QBrush, QPainterPath, QAction
+from PyQt6.QtGui     import QPainter, QPen, QBrush, QPainterPath
 
 from ....core import SharedContextMenuUtils
 
@@ -124,6 +125,13 @@ class KeyPoint(QGraphicsItem):
 
     def isMoveable(self : Self) -> bool:
         return self._grip
+
+    def toXml(self : Self, xw : QXmlStreamWriter) -> None:
+        pass
+
+    @classmethod
+    def fromXml(cls : Self, xr : QXmlStreamReader) -> Self:
+        pass
 
     def ctxMenuAssignAnchor(self : Self, checked : bool) -> None:
         self._manager.setAnchor(self._loc)

@@ -15,7 +15,7 @@ from . import Element, KPLoc, KPDef, KPManager, cmdPlaceElement
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from .. import DrawingScene
+    from .. import Drawing
 
 
 class BaseRectangle(QGraphicsRectItem, Element):
@@ -41,55 +41,42 @@ class BaseRectangle(QGraphicsRectItem, Element):
     _menu          : QMenu
 
     def __init__(
-        self       : Self,
-        pos        : QPointF = QPointF(0, 0),
-        size_or_p2 : QSizeF | QPointF = QSizeF(0, 0)
+        self              : Self,
+        rect_or_pos_or_ax : QRectF | QPointF | float = QRectF(),
+        size_or_p2_or_ay  : Optional[QSizeF | QPointF | float] = None,
+        w                 : Optional[float] = None,
+        h                 : Optional[float] = None
     ) -> None:
         QGraphicsRectItem.__init__(self)
         Element.__init__(self, has_line=True, has_fill=True)
         self._kpm = KPManager(self, [KPDef(k, True, False) for k in KPLoc])
         self._shape = QPainterPath()
-        if isinstance(size_or_p2, QSizeF):
-            self.setPosSize(pos, size_or_p2)
-        else:
-            self.setPoints(pos, size_or_p2)
-        self._kpm.updatePositions()
+        if isinstance(rect_or_pos_or_ax, QRectF):
+            self.setRect(rect_or_pos_or_ax)
+        elif isinstance(rect_or_pos_or_ax, float):
+            self.setRect(rect_or_pos_or_ax, size_or_p2_or_ay, w, h)
+        elif isinstance(rect_or_pos_or_ax, QPointF):
+            if isinstance(size_or_p2_or_ay, QSizeF):
+                self.setPosSize(rect_or_pos_or_ax, size_or_p2_or_ay)
+            else:
+                self.setPoints(rect_or_pos_or_ax, size_or_p2_or_ay)
+        # TODO error case
         self._menu = self.getMenu()
 
     contextMenuEvent = SharedContextMenuUtils.contextMenuEvent
 
-    @overload
-    def setRect(self : Self, rect : QRectF) -> None:
-        ...
-
-    @overload
-    def setRect(
-        self : Self,
-        ax   : float,
-        ay   : float,
-        w    : float,
-        h    : float
-    ) -> None:
-        ...
-
-    @overload
-    def setRect(
-        self : Self,
-        ax   : int,
-        ay   : int,
-        w    : int,
-        h    : int
-    ) -> None:
-        ...
-
     def setRect(
         self       : Self,
-        rect_or_ax : QRectF | float | int,
-        ay         : Optional[float | int] = None,
-        w          : Optional[float | int] = None,
-        h          : Optional[float | int] = None
+        rect_or_ax : Optional[QRectF | float | int] = None,
+        ay         : Optional[float | int]          = None,
+        w          : Optional[float | int]          = None,
+        h          : Optional[float | int]          = None
     ) -> None:
-        super().setRect(rect_or_ax, ay, w, h)
+        # TODO handle minimum size
+        if isinstance(rect_or_ax, QRectF):
+            super().setRect(rect_or_ax)
+        else:
+            super().setRect(rect_or_ax, ay, w, h)
         self._rect = self.rect()
         w = self.appearance.line.pen.widthF()
         self._bounding_rect = self._rect.adjusted(-w/2, -w/2, w/2, w/2)
@@ -192,6 +179,15 @@ class BaseRectangle(QGraphicsRectItem, Element):
             self.appearance.fill.setStyle(dialog.getStyle())
             self.update()
 
+def placeBaseRectangle(
+    scene             : "Drawing",
+    rect_or_pos_or_ax : QRectF | QPointF | float,
+    size_or_ay        : Optional[QSizeF | float] = None,
+    w                 : Optional[float]          = None,
+    h                 : Optional[float]          = None
+) -> None:
+    scene.addItem(BaseRectangle(rect_or_pos_or_ax, size_or_ay, w, h))
+
 class cmdPlaceBaseRectangle(cmdPlaceElement):
     element    : BaseRectangle
     pos        : QPointF
@@ -199,7 +195,7 @@ class cmdPlaceBaseRectangle(cmdPlaceElement):
 
     def __init__(
         self       : Self,
-        scene      : Optional["DrawingScene"] = None,
+        scene      : Optional["Drawing"] = None,
         element    : Optional[BaseRectangle] = None,
         pos        : QPointF = QPointF(0, 0),
         size_or_p2 : QSizeF | QPointF = QSizeF(0, 0)

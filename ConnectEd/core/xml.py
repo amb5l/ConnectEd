@@ -2,9 +2,11 @@ __all__ = [
     "fromXmlBegin",
     "saveBegin",
     "saveEnd",
-    "open",
+    "load",
     "copy",
     "paste",
+    "toXmlBegin",
+    "toXmlEnd",
     "toXmlAttrs",
     "fromXmlAttrs"
 ]
@@ -55,7 +57,8 @@ def toXmlEnd(xw : QXmlStreamWriter) -> None:
     xw.writeEndDocument()
 
 def fromXmlBegin(xr : QXmlStreamReader, token_name : str) -> None:
-    while not xr.atEnd() and xr.tokenType() != QXmlStreamReader.TokenType.StartElement:
+    while not xr.atEnd() and \
+        xr.tokenType() != QXmlStreamReader.TokenType.StartElement:
         xr.readNext()
     if xr.atEnd():
         raise ValueError("Empty or invalid XML")
@@ -129,7 +132,7 @@ def saveEnd(xw : QXmlStreamWriter, file : QFile) -> None:
     toXmlEnd(xw)
     file.close()
 
-def open(path : str) -> list[XmlItemTypes]:
+def load(path : str) -> list[XmlItemTypes]:
     # TODO: handle file open error
     file = QFile(path)
     if file.open(QIODevice.OpenModeFlag.ReadOnly | QIODevice.OpenModeFlag.Text):

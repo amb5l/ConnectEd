@@ -1,17 +1,17 @@
-__all__ = ["DiagramScene"]
+__all__ = ["Diagram"]
 
 from typing import Self, Optional
 
 from PyQt6.QtCore import Qt, QPointF, QRectF, QSizeF
 from PyQt6.QtGui  import QPainter, QPen, QBrush
 
-from . import DrawingScene
+from . import Drawing
 
 from .... import hub
 
 
-class DiagramScene(DrawingScene):
-    XML_ATTRS = DrawingScene.XML_ATTRS | {
+class Diagram(Drawing):
+    XML_ATTRS = Drawing.XML_ATTRS | {
         "paper_size" : "str",
         "margin"     : "float",
         "border"     : "float"

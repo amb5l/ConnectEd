@@ -12,25 +12,32 @@ from PyQt6.QtGui  import QStandardItemModel, QStandardItem
 from . import logger, \
               LIB_EXT, DSN_EXT, \
               copy as master_copy, paste as master_paste, \
-              fromXmlBegin, open, saveBegin, saveEnd
+              fromXmlBegin, load, saveBegin, saveEnd
 
 from ..core    import toXmlAttrs, fromXmlAttrs
-from ..widgets import DrawingScene, DiagramScene, SymbolScene
 
 from .. import hub
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from ..widgets import DrawingScene, SymbolScene, DiagramScene
+    from ..widgets import Drawing, Symbol, Diagram
 
 
 class DrawingItem(QStandardItem):
-    SCENE_CLASS = DrawingScene
+    _scene_class = None
 
-    scene : DrawingScene
+    @classmethod
+    def sceneClass(cls):
+        if cls._scene_class is None:
+            from ..widgets.drawing.scenes import Drawing # deferred import
+            cls._scene_class = Drawing
+        return cls._scene_class
 
-    def __init__(self : Self, scene : Optional[DrawingScene] = None) -> None:
-        self.scene = scene if scene else self.SCENE_CLASS()
+    scene : "Drawing"
+
+    def __init__(self : Self, scene : Optional["Drawing"] = None) -> None:
+        scene_class = self.__class__.sceneClass()
+        self.scene = scene if scene else scene_class()
         super().__init__(self.scene.name)
         self.setData(self.scene, Qt.ItemDataRole.UserRole)
         self.setFlags(self.flags() | Qt.ItemFlag.ItemIsEditable)
@@ -45,20 +52,30 @@ class DrawingItem(QStandardItem):
         cls_name = cls.__name__.replace("Item", "")
         if xr.name() != cls_name:
             raise ValueError(f"Expected {cls_name} element, got {xr.name()}")
-        scene = cls.SCENE_CLASS.fromXml(xr)
-        drawing_item : DrawingItem = cls(scene)
-        drawing_item.setText(scene.name)
-        return drawing_item
+        scene_class = cls.sceneClass()
+        scene = scene_class.fromXml(xr)
+        instance : "DrawingItem" = cls(scene)
+        return instance
 
 class SymbolItem(DrawingItem):
-    SCENE_CLASS = SymbolScene
+    @classmethod
+    def sceneClass(cls):
+        if cls._scene_class is None:
+            from ..widgets.drawing.scenes import Symbol
+            cls._scene_class = Symbol
+        return cls._scene_class
 
-    scene : SymbolScene
+    scene : "Symbol"
 
 class DiagramItem(DrawingItem):
-    SCENE_CLASS = DiagramScene
+    @classmethod
+    def sceneClass(cls):
+        if cls._scene_class is None:
+            from ..widgets.drawing.scenes import Diagram
+            cls._scene_class = Diagram
+        return cls._scene_class
 
-    scene : DiagramScene
+    scene : "Diagram"
 
 class DbItem(QStandardItem):
     XML_ATTRS = {
@@ -93,7 +110,7 @@ class DbItem(QStandardItem):
 
     @classmethod
     def load(cls : Self, file : str) -> Self:
-        with open(file, "r") as f:
+        with load(file, "r") as f:
             data = f.read()
             xr = QXmlStreamReader(data)
             return cls.fromXml(xr)
@@ -319,7 +336,7 @@ class Model(QStandardItemModel):
                 s = ", ".join(invalid_item_type_names)
                 raise ValueError(f"{n} invalid items for paste operation: {s}")
 
-    def getDbItemFromScene(self : Self, scene : "DrawingScene") -> DbItem:
+    def getDbItemFromScene(self : Self, scene : "Drawing") -> DbItem:
         for i in range(self.designs.rowCount()):
             db_item = self.designs.child(i)
             for j in range(db_item.diagrams.rowCount()):

@@ -210,9 +210,9 @@ class Explorer(TreeView):
 
     def editDrawing(self : Self, item : QStandardItem) -> None:
         from ...core    import DrawingItem
-        from ...widgets import DrawingScene, DrawingView, DrawingSubWindow, \
-                               SymbolScene, SymbolView, SymbolSubWindow, \
-                               DiagramScene, DiagramView, DiagramSubWindow
+        from ...widgets import Drawing, DrawingView, DrawingSubWindow, \
+                               Symbol, SymbolView, SymbolSubWindow, \
+                               Diagram, DiagramView, DiagramSubWindow
         if isinstance(item, DrawingItem):
             # focus existing subwindow if one exists
             for subwindow in hub.main_window.mdi_area.subWindowList():
@@ -220,7 +220,7 @@ class Explorer(TreeView):
                     continue
                 if not isinstance(subwindow.widget(), DrawingView):
                     continue
-                if not isinstance(subwindow.widget().scene(), DrawingScene):
+                if not isinstance(subwindow.widget().scene(), Drawing):
                     continue
                 if item.scene != subwindow.widget().scene():
                     continue
@@ -231,12 +231,12 @@ class Explorer(TreeView):
                 return
             # create new subwindow
             drawing_name = item.text()
-            drawing_scene : DrawingScene = item.data(Qt.ItemDataRole.UserRole)
-            if isinstance(drawing_scene, DiagramScene):
+            drawing_scene : Drawing = item.data(Qt.ItemDataRole.UserRole)
+            if isinstance(drawing_scene, Diagram):
                 drawing_view = DiagramView(drawing_scene)
                 db_item = item.parent().parent()
                 subwindow = DiagramSubWindow(hub.main_window.mdi_area)
-            elif isinstance(drawing_scene, SymbolScene):
+            elif isinstance(drawing_scene, Symbol):
                 drawing_view = SymbolView(drawing_scene)
                 db_item = item.parent()
                 subwindow = SymbolSubWindow(hub.main_window.mdi_area)

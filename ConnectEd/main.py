@@ -1,30 +1,15 @@
 import sys
 
-from PyQt6.QtWidgets import QApplication
-
-from .core      import logger, known_args, unknown_args, \
-                       NameCounter, Settings, Model
-from .widgets   import MainWindow
-from .resources import initResources
+from .api  import initGui
+from .core import logger
 
 from . import hub
 
 
 def main() -> int:
     logger.info("started")
-    hub.name_counter = NameCounter()
-    hub.settings = Settings()
-    if known_args.reset:
-        hub.settings.reset()
-    hub.settings.load()
-    #print(hub.settings.dump())
-    app = QApplication(sys.argv[:1] + unknown_args)
-    app.setStyle("Fusion")
-    initResources()
-    hub.model = Model()
-    hub.main_window = MainWindow()
-    hub.main_window.show()
-    r = app.exec()
+    initGui()
+    r = hub.app.exec()
     hub.settings.save()
     logger.info("finished")
     return r
