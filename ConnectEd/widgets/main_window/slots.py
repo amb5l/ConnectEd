@@ -4,7 +4,7 @@ from typing import Self, Callable, Type, TypeVar, cast
 
 from PyQt6.QtWidgets import QMessageBox
 
-from ...core    import logger
+from ...core    import logger, APP_NAME
 from ...widgets import DrawingView, DiagramView
 
 from ... import hub
@@ -221,4 +221,4 @@ class Slots:
 
     def helpAbout(self : Self) -> None:
         logger.debug("helpAbout")
-        QMessageBox.about(self._parent, "About", "ConnectEd")
+        QMessageBox.about(self._parent, "About", APP_NAME)

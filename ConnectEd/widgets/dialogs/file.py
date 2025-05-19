@@ -34,10 +34,10 @@ class FileSaveAsDialog(QFileDialog):
         type_name : str
     ) -> None:
         match type_name:
-            case "Library":
+            case "LibraryDb":
                 name_filter    = f"Connected Libraries ({LIB_EXT})"
                 default_suffix = LIB_EXT
-            case "Design":
+            case "DesignDb":
                 name_filter    = f"Connected Designs ({DSN_EXT})"
                 default_suffix = DSN_EXT
             case _:

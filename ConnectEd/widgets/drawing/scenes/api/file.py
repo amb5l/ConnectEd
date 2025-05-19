@@ -1,8 +1,8 @@
 __all__ = ["DrawingApiFileMixin"]
 
-from PyQt6.QtCore import QFile, QIODevice, QXmlStreamWriter, QXmlStreamReader
+from typing import Optional
 
-from .....core import toXmlBegin, toXmlEnd
+from .....core import logger, save, loadItems
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -10,26 +10,13 @@ if TYPE_CHECKING:
 
 
 class DrawingApiFileMixin:
-    def save(self : "Drawing", path: str) -> None:
-        # TODO error handling
-        file = QFile(path)
-        if file.open(
-            QIODevice.OpenModeFlag.WriteOnly | QIODevice.OpenModeFlag.Text
-        ):
-            xw = QXmlStreamWriter(file)
-            toXmlBegin(xw)
-            self.toXml(xw)
-            toXmlEnd(xw)
-            file.close()
+    save = save
 
     @classmethod
-    def load(cls, path: str) -> "Drawing":
-        # TODO error handling
-        file = QFile(path)
-        if file.open(
-            QIODevice.OpenModeFlag.ReadOnly | QIODevice.OpenModeFlag.Text
-        ):
-            xr = QXmlStreamReader(file)
-            instance = cls.fromXml(xr)
-            file.close()
-            return instance
+    def load(cls, path: str) -> Optional["Drawing"]:
+        items = loadItems(path)
+        for item in items:
+            if isinstance(item, cls):
+                return item
+        logger.warning(f"{cls.__name__} not found in {path}")
+        return None

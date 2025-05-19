@@ -200,7 +200,7 @@ class Explorer(TreeView):
         self.editDrawing(symbol_item)
 
     def openDb(self : Self, type_name : Optional[str] = None) -> None:
-        from .dialogs import FileOpenDialog
+        from ..dialogs import FileOpenDialog
         dialog = FileOpenDialog(type_name)
         result = dialog.exec()
         if result == dialog.DialogCode.Accepted:
@@ -251,17 +251,17 @@ class Explorer(TreeView):
             logger.warning(f"Unsupported item: {item.text()} ({type(item)})")
 
     def newDrawingWindow(self : Self, item : "DrawingItem") -> None:
-        from ..core import DesignItem, LibraryItem, DiagramItem, SymbolItem
-        from ..widgets import DiagramScene, DiagramView, DiagramSubWindow, \
-                              SymbolScene, SymbolView, SymbolSubWindow
+        from ...core import DesignItem, LibraryItem, DiagramItem, SymbolItem
+        from ...widgets import Diagram, DiagramView, DiagramSubWindow, \
+                              Symbol, SymbolView, SymbolSubWindow
         if isinstance(item, DiagramItem):
             db_item : DesignItem = item.parent().parent()
-            dwg_scene : DiagramScene = item.data(Qt.ItemDataRole.UserRole)
+            dwg_scene : Diagram = item.data(Qt.ItemDataRole.UserRole)
             dwg_view = DiagramView(dwg_scene)
             subwindow = DiagramSubWindow()
         elif isinstance(item, SymbolItem):
             db_item : LibraryItem = item.parent()
-            dwg_scene : SymbolScene = item.data(Qt.ItemDataRole.UserRole)
+            dwg_scene : Symbol = item.data(Qt.ItemDataRole.UserRole)
             dwg_view = SymbolView(dwg_scene)
             subwindow = SymbolSubWindow()
         else:
@@ -278,7 +278,7 @@ class Explorer(TreeView):
         item.save()
 
     def saveDbAs(self : Self, item : "DbItem") -> None:
-        from .dialogs import FileSaveAsDialog
+        from ..dialogs import FileSaveAsDialog
         dialog = FileSaveAsDialog(item.__class__.__name__.replace("Item", ""))
         result = dialog.exec()
         if result == dialog.DialogCode.Accepted:
@@ -295,7 +295,7 @@ class Explorer(TreeView):
 
     def rename(self : Self) -> None:
         """Start editing the selected item"s text."""
-        from ..core import DbItem, DrawingItem
+        from ...core import DbItem, DrawingItem
         if self.currentIndex().isValid():
             item = self.model().itemFromIndex(self.currentIndex())
             if isinstance(item, DbItem) \

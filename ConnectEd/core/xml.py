@@ -2,7 +2,8 @@ __all__ = [
     "fromXmlBegin",
     "saveBegin",
     "saveEnd",
-    "load",
+    "save",
+    "loadItems",
     "copy",
     "paste",
     "toXmlBegin",
@@ -17,17 +18,19 @@ from PyQt6.QtCore    import QByteArray, QXmlStreamWriter, QXmlStreamReader, \
                             QFile, QIODevice, QMimeData
 from PyQt6.QtWidgets import QApplication
 
-from . import logger, MIME_TYPE, val2str, str2val
+from . import logger, APP_NAME, MIME_TYPE, val2str, str2val
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from .model    import DesignItem, LibraryItem, DiagramItem, SymbolItem
+    from .model    import DesignDbItem, DiagramDbItem, LibraryDbItem, \
+                          DiagramItem, SymbolItem
     from ..widgets import Element
 
 
 XmlItemTypes: TypeAlias = Union[
-    "DesignItem",
-    "LibraryItem",
+    "DesignDbItem",
+    "DiagramDbItem",
+    "LibraryDbItem",
     "DiagramItem",
     "SymbolItem",
     "Element"
@@ -37,7 +40,7 @@ def toXmlBegin(xw : QXmlStreamWriter) -> None:
     xw.setAutoFormatting(True)
     xw.setAutoFormattingIndent(2)
     xw.writeStartDocument()
-    xw.writeStartElement("ConnectEd") # TODO: version
+    xw.writeStartElement(APP_NAME) # TODO: version
 
 def toXmlAttrs(instance : Any, xw : QXmlStreamWriter) -> None:
     attrs = instance.XML_ATTRS
@@ -86,35 +89,35 @@ def fromXmlAttrs(instance : Any, xr : QXmlStreamReader) -> None:
             logger.warning(f"Unexpected attribute: {attr_name} value: {attr_value_str}")
     xr.readNext()
 
-def fromXml(xr : QXmlStreamReader) -> list[XmlItemTypes]:
-    from .model    import DesignItem, LibraryItem, DiagramItem, SymbolItem
+def fromXmlItems(xr : QXmlStreamReader) -> list[XmlItemTypes]:
+    from .model    import DesignDbItem, LibraryDbItem, DiagramItem, SymbolItem
     from ..widgets import element_class_dict
-    fromXmlBegin(xr, "ConnectEd")
+    fromXmlBegin(xr, APP_NAME)
     xr.readNext()
     result = []
-    while not (xr.isEndElement() and xr.name() == "ConnectEd"):
+    while not (xr.isEndElement() and xr.name() == APP_NAME):
         if xr.tokenType() == QXmlStreamReader.TokenType.StartElement:
             match xr.name():
-                case "Design":
-                    design_item = DesignItem.fromXml(xr)
-                    result.append(design_item)
-                case "Library":
-                    library_item = LibraryItem.fromXml(xr)
-                    result.append(library_item)
+                case "DesignDb":
+                    item = DesignDbItem.fromXml(xr)
+                case "DiagramDb":
+                    item = DiagramDbItem.fromXml(xr)
+                case "LibraryDb":
+                    item = LibraryDbItem.fromXml(xr)
                 case "Diagram":
-                    diagram_item = DiagramItem.fromXml(xr)
-                    result.append(diagram_item)
+                    item = DiagramItem.fromXml(xr)
                 case "Symbol":
-                    symbol_item = SymbolItem.fromXml(xr)
-                    result.append(symbol_item)
+                    item = SymbolItem.fromXml(xr)
                 case _: # assume it"s an Element
                     if xr.name() in element_class_dict:
-                        element_class = element_class_dict[xr.name()]
-                        element = element_class.fromXml(xr)
-                        result.append(element)
+                        item_class = element_class_dict[xr.name()]
+                        item = item_class.fromXml(xr)
                     else:
+                        item = None
                         logger.warning(f"Unexpected element: {xr.name()}")
-        if xr.isEndElement() and xr.name() == "ConnectEd":
+            if item:
+                result.append(item)
+        if xr.isEndElement() and xr.name() == APP_NAME:
             break
         xr.readNext()
     return result
@@ -132,12 +135,17 @@ def saveEnd(xw : QXmlStreamWriter, file : QFile) -> None:
     toXmlEnd(xw)
     file.close()
 
-def load(path : str) -> list[XmlItemTypes]:
+def save(instance : Any, path : str) -> None:
+    xw, file = saveBegin(path)
+    instance.toXml(xw)
+    saveEnd(xw, file)
+
+def loadItems(path : str) -> list[XmlItemTypes]:
     # TODO: handle file open error
     file = QFile(path)
     if file.open(QIODevice.OpenModeFlag.ReadOnly | QIODevice.OpenModeFlag.Text):
         xr = QXmlStreamReader(file)
-        r = fromXml(xr)
+        r = fromXmlItems(xr)
         file.close()
     else:
         r = []
@@ -162,7 +170,7 @@ def paste() -> list[XmlItemTypes]:
         if buffer:
             xr = QXmlStreamReader(buffer)
             try:
-                items = fromXml(xr)
+                items = fromXmlItems(xr)
                 return items
             except ValueError as e:
                 print(f"paste error: {e}")

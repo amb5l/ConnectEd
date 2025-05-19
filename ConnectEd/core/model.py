@@ -1,6 +1,6 @@
 __all__ = [
     "DrawingItem", "SymbolItem", "DiagramItem",
-    "DbItem", "DesignItem", "LibraryItem",
+    "DbItem", "DesignDbItem", "LibraryDbItem",
     "Model"
 ]
 
@@ -10,9 +10,9 @@ from PyQt6.QtCore import Qt, QXmlStreamWriter, QXmlStreamReader
 from PyQt6.QtGui  import QStandardItemModel, QStandardItem
 
 from . import logger, \
-              LIB_EXT, DSN_EXT, \
+              LIB_EXT, DGM_EXT, DSN_EXT, \
               copy as master_copy, paste as master_paste, \
-              fromXmlBegin, load, saveBegin, saveEnd
+              fromXmlBegin, loadItems, saveBegin, saveEnd
 
 from ..core    import toXmlAttrs, fromXmlAttrs
 
@@ -22,6 +22,43 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ..widgets import Drawing, Symbol, Diagram
 
+
+class Container(QStandardItem):
+    NAME   = "<unspecified>"
+    BOLD   = False
+    ITALIC = False
+
+    def __init__(self : Self) -> None:
+        super().__init__(self.NAME)
+        font = self.font()
+        font.setBold(self.BOLD)
+        font.setItalic(self.ITALIC)
+        self.setFont(font)
+
+class DiagramsContainer(Container):
+    NAME = "Diagrams"
+    BOLD   = False
+    ITALIC = True
+
+class SymbolCacheContainer(Container):
+    NAME = "Symbol Cache"
+    BOLD   = False
+    ITALIC = True
+
+class DesignDbContainer(Container):
+    NAME = "Designs"
+    BOLD   = True
+    ITALIC = False
+
+class DiagramDbContainer(Container):
+    NAME = "Diagrams"
+    BOLD   = True
+    ITALIC = False
+
+class LibraryDbContainer(Container):
+    NAME = "Libraries"
+    BOLD   = True
+    ITALIC = False
 
 class DrawingItem(QStandardItem):
     _scene_class = None
@@ -61,7 +98,7 @@ class SymbolItem(DrawingItem):
     @classmethod
     def sceneClass(cls):
         if cls._scene_class is None:
-            from ..widgets.drawing.scenes import Symbol
+            from ..widgets.drawing.scenes import Symbol # deferred import
             cls._scene_class = Symbol
         return cls._scene_class
 
@@ -71,7 +108,7 @@ class DiagramItem(DrawingItem):
     @classmethod
     def sceneClass(cls):
         if cls._scene_class is None:
-            from ..widgets.drawing.scenes import Diagram
+            from ..widgets.drawing.scenes import Diagram # deferred import
             cls._scene_class = Diagram
         return cls._scene_class
 
@@ -110,10 +147,12 @@ class DbItem(QStandardItem):
 
     @classmethod
     def load(cls : Self, file : str) -> Self:
-        with load(file, "r") as f:
-            data = f.read()
-            xr = QXmlStreamReader(data)
-            return cls.fromXml(xr)
+        items = loadItems(file)
+        for item in items:
+            if isinstance(item, cls):
+                return item
+        logger.warning(f"{cls.__name__} not found in {file}")
+        return None
 
     def save(self : Self, path : Optional[str] = None) -> None:
         if path is not None:
@@ -127,7 +166,7 @@ class DbItem(QStandardItem):
 
     copy = master_copy
 
-class LibraryItem(DbItem):
+class LibraryDbItem(DbItem):
     FILE_EXT = LIB_EXT
 
     def toXml(self : Self, xw : QXmlStreamWriter) -> None:
@@ -145,25 +184,30 @@ class LibraryItem(DbItem):
             xr.readNext()
         return db_item
 
-class DesignItem(DbItem):
-    FILE_EXT = DSN_EXT
+class DiagramDbItem(DbItem):
+    FILE_EXT = DGM_EXT
 
-    diagrams : QStandardItem
-    symbols  : QStandardItem
+    diagram  : DiagramItem
+    symbols  : SymbolCacheContainer
 
     def __init__(self : Self) -> None:
         super().__init__()
-        self.diagrams = QStandardItem("Diagrams")
-        self.diagrams.setEditable(False)
-        font = self.diagrams.font() # TODO use settings
-        font.setItalic(True)
-        self.diagrams.setFont(font)
+        self.diagram = DiagramItem()
+        self.appendRow(self.diagram)
+        self.symbols = SymbolCacheContainer()
+        self.appendRow(self.symbols)
+
+class DesignDbItem(DbItem):
+    FILE_EXT = DSN_EXT
+
+    diagrams : DiagramsContainer
+    symbols  : SymbolCacheContainer
+
+    def __init__(self : Self) -> None:
+        super().__init__()
+        self.diagrams = DiagramsContainer()
         self.appendRow(self.diagrams)
-        self.symbols = QStandardItem("Symbol Cache")
-        self.symbols.setEditable(False)
-        font = self.symbols.font() # TODO use settings
-        font.setItalic(True)
-        self.symbols.setFont(font)
+        self.symbols = SymbolCacheContainer()
         self.appendRow(self.symbols)
 
     @classmethod
@@ -213,32 +257,28 @@ class DesignItem(DbItem):
         self.toXmlEnd(xw)
 
 class Model(QStandardItemModel):
-    designs   : QStandardItem
-    libraries : QStandardItem
-
     def __init__(self : Self) -> None:
         super().__init__()
         self.setHorizontalHeaderLabels(["Database Hierarchy"])
-        self.designs = QStandardItem("Designs")
-        self.designs.setEditable(False)
-        font = self.designs.font()
-        font.setBold(True)
-        self.designs.setFont(font)
+        self.designs = DesignDbContainer()
         self.appendRow(self.designs)
-        self.libraries = QStandardItem("Libraries")
-        self.libraries.setEditable(False)
-        font = self.libraries.font()
-        font.setBold(True)
-        self.libraries.setFont(font)
+        self.diagrams = DiagramDbContainer()
+        self.appendRow(self.diagrams)
+        self.libraries = LibraryDbContainer()
         self.appendRow(self.libraries)
 
-    def newDesign(self : Self) -> DesignItem:
-        item = DesignItem()
+    def newDesign(self : Self) -> DesignDbItem:
+        item = DesignDbItem()
         self.designs.appendRow(item)
         return item
 
-    def newLibrary(self : Self) -> LibraryItem:
-        item = LibraryItem()
+    def newDiagram(self : Self) -> DiagramDbItem:
+        item = DiagramDbItem()
+        self.diagrams.appendRow(item)
+        return item
+
+    def newLibrary(self : Self) -> LibraryDbItem:
+        item = LibraryDbItem()
         self.libraries.appendRow(item)
         return item
 
@@ -247,9 +287,9 @@ class Model(QStandardItemModel):
         parent : QStandardItem
     ) -> DiagramItem | None:
         item = None
-        if self.getItemDescription(parent) == "Design":
+        if isinstance(parent, DesignDbItem):
             parent = parent.diagrams
-        if self.getItemDescription(parent) == "Diagrams":
+        if isinstance(parent, DiagramsContainer):
             item = DiagramItem()
             parent.appendRow(item)
         else:
@@ -263,10 +303,9 @@ class Model(QStandardItemModel):
         parent : QStandardItem
     ) -> SymbolItem | None:
         item = None
-        if self.getItemDescription(parent) == "Design":
+        if isinstance(parent, DesignDbItem):
             parent = parent.symbols
-        if self.getItemDescription(parent) == "Symbol Cache" \
-        or self.getItemDescription(parent) == "Library":
+        if isinstance(parent, (SymbolCacheContainer, LibraryDbItem)):
             item = SymbolItem()
             parent.appendRow(item)
         else:
@@ -278,10 +317,10 @@ class Model(QStandardItemModel):
     def load(self : Self, path : str) -> DbItem:
         db_item = None
         if path.endswith(DSN_EXT):
-            db_item = DesignItem.load(path)
+            db_item = DesignDbItem.load(path)
             self.designs.appendRow(db_item)
         elif path.endswith(LIB_EXT):
-            db_item = LibraryItem.load(path)
+            db_item = LibraryDbItem.load(path)
             self.libraries.appendRow(db_item)
         else:
             logger.warning(f"Unsupported file extension: {path}")
@@ -289,11 +328,11 @@ class Model(QStandardItemModel):
 
     def close(self : Self, item: QStandardItem) -> None:
         """Close a database and remove it from the model."""
-        if isinstance(item, DesignItem):
+        if isinstance(item, DesignDbItem):
             for i in range(self.designs.rowCount()):
                 if item == self.designs.child(i):
                     self.designs.removeRow(i)
-        elif isinstance(item, LibraryItem):
+        elif isinstance(item, LibraryDbItem):
             for i in range(self.libraries.rowCount()):
                 if item == self.libraries.child(i):
                     self.libraries.removeRow(i)
@@ -356,9 +395,9 @@ class Model(QStandardItemModel):
         return None
 
     def getItemDescription(self : Self, i : QStandardItem) -> str | None:
-        if isinstance(i, DesignItem):
+        if isinstance(i, DesignDbItem):
             return "Design"
-        elif isinstance(i, LibraryItem):
+        elif isinstance(i, LibraryDbItem):
             return "Library"
         elif isinstance(i, DiagramItem):
             return "Diagram"
@@ -366,7 +405,7 @@ class Model(QStandardItemModel):
             if isinstance(i.parent(), QStandardItem) \
             and i.parent().text() == "Symbol Cache":
                 return "Design Symbol"
-            elif isinstance(i.parent(), LibraryItem):
+            elif isinstance(i.parent(), LibraryDbItem):
                 return "Library Symbol"
         elif isinstance(i, QStandardItem):
             if i.text() == "Designs":

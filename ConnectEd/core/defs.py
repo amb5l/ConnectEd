@@ -4,6 +4,7 @@ __all__ = [
     "MIME_TYPE",
     "GEN_EXT",
     "DSN_EXT",
+    "DGM_EXT",
     "LIB_EXT",
     "LOG_FILENAME",
     "Z_TEMPLATE",
@@ -17,6 +18,7 @@ ORG_NAME = "ConnectEd"
 APP_NAME = "ConnectEd"
 MIME_TYPE = f"application/x-{APP_NAME.lower()}-xml"
 GEN_EXT = ".ce*"
+DGM_EXT = ".cedgm"
 DSN_EXT = ".cedsn"
 LIB_EXT = ".celib"
 
