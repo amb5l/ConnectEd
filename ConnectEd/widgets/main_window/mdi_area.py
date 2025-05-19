@@ -6,7 +6,7 @@ from PyQt6.QtCore    import Qt
 from PyQt6.QtWidgets import QMdiArea, QWidget, QMdiSubWindow
 
 from ..private import Action
-from .. import DrawingSubWindow, DrawingView, Drawing
+from .. import DrawingSubWindow, DrawingView, DrawingScene
 
 from ... import hub
 
@@ -25,7 +25,7 @@ class MdiArea(QMdiArea):
             return
         if not isinstance(widget.widget(), DrawingView):
             return
-        if not isinstance(widget.widget().scene(), Drawing):
+        if not isinstance(widget.widget().scene(), DrawingScene):
             return
         self.update()
 
@@ -46,9 +46,9 @@ class MdiArea(QMdiArea):
             key = "_"
             if isinstance(w, DrawingSubWindow) \
             and isinstance(w.widget(), DrawingView) \
-            and isinstance(w.widget().scene(), Drawing):
+            and isinstance(w.widget().scene(), DrawingScene):
                 scene = w.widget().scene()
-                scene_name = scene.name
+                scene_name = scene.getName()
                 db_name = hub.model.getDbItemFromScene(scene).text()
                 w.setWindowTitle(f"{db_name}:{scene_name}")
                 key = id(scene)
@@ -67,7 +67,7 @@ class MdiArea(QMdiArea):
             key = "_"
             if isinstance(w, DrawingSubWindow) \
             and isinstance(w.widget(), DrawingView) \
-            and isinstance(w.widget().scene(), Drawing):
+            and isinstance(w.widget().scene(), DrawingScene):
                 key = id(hub.model.getDbItemFromScene(w.widget().scene()))
             action = Action(m, w.windowTitle(), None, None, False, False, w)
             action.triggered.connect(

@@ -22,17 +22,15 @@ from . import logger, APP_NAME, MIME_TYPE, val2str, str2val
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from .model    import DesignDbItem, DiagramDbItem, LibraryDbItem, \
-                          DiagramItem, SymbolItem
+    from .model    import DesignDb, LibraryDb, Diagram, Symbol
     from ..widgets import Element
 
 
 XmlItemTypes: TypeAlias = Union[
-    "DesignDbItem",
-    "DiagramDbItem",
-    "LibraryDbItem",
-    "DiagramItem",
-    "SymbolItem",
+    "DesignDb",
+    "LibraryDb",
+    "Diagram",
+    "Symbol",
     "Element"
 ]
 
@@ -90,7 +88,7 @@ def fromXmlAttrs(instance : Any, xr : QXmlStreamReader) -> None:
     xr.readNext()
 
 def fromXmlItems(xr : QXmlStreamReader) -> list[XmlItemTypes]:
-    from .model    import DesignDbItem, LibraryDbItem, DiagramItem, SymbolItem
+    from .model    import DesignDb, LibraryDb, Diagram, Symbol
     from ..widgets import element_class_dict
     fromXmlBegin(xr, APP_NAME)
     xr.readNext()
@@ -99,15 +97,13 @@ def fromXmlItems(xr : QXmlStreamReader) -> list[XmlItemTypes]:
         if xr.tokenType() == QXmlStreamReader.TokenType.StartElement:
             match xr.name():
                 case "DesignDb":
-                    item = DesignDbItem.fromXml(xr)
-                case "DiagramDb":
-                    item = DiagramDbItem.fromXml(xr)
+                    item = DesignDb.fromXml(xr)
                 case "LibraryDb":
-                    item = LibraryDbItem.fromXml(xr)
+                    item = LibraryDb.fromXml(xr)
                 case "Diagram":
-                    item = DiagramItem.fromXml(xr)
+                    item = Diagram.fromXml(xr)
                 case "Symbol":
-                    item = SymbolItem.fromXml(xr)
+                    item = Symbol.fromXml(xr)
                 case _: # assume it"s an Element
                     if xr.name() in element_class_dict:
                         item_class = element_class_dict[xr.name()]

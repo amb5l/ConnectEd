@@ -1,8 +1,15 @@
 from ConnectEd import api as ce
 
 ce.initCli()
-diagram = ce.Diagram("MyDiagram", "A4")
-diagram.placeRectangle(100, 100, 100, 100)
-diagram.placeTextBlock("Hello, World!", 300, 300)
-diagram.save("test1.xml")
-print("diagram =", diagram)
+design_db = ce.DesignDb()
+print("design database path =", design_db.path())
+diagrams = design_db.getDiagrams()
+if len(diagrams) != 1:
+    raise Exception("expected 1 diagram, got", len(diagrams))
+diagram = diagrams[0]
+print("diagram name =", diagram.name())
+scene = diagram.getScene()
+print("  scene size =", scene.getSize())
+scene.placeRectangle(100, 100, 100, 100)
+scene.placeTextBlock("Hello, World!", 300, 300)
+design_db.save("test1.xml")

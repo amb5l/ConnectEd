@@ -15,7 +15,7 @@ from . import Element, KPLoc, KPDef, KPManager, cmdPlaceElement
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from .. import Drawing
+    from .. import DrawingScene
 
 
 class BaseRectangle(QGraphicsRectItem, Element):
@@ -180,7 +180,7 @@ class BaseRectangle(QGraphicsRectItem, Element):
             self.update()
 
 def placeBaseRectangle(
-    scene             : "Drawing",
+    scene             : "DrawingScene",
     rect_or_pos_or_ax : QRectF | QPointF | float,
     size_or_ay        : Optional[QSizeF | float] = None,
     w                 : Optional[float]          = None,
@@ -195,7 +195,7 @@ class cmdPlaceBaseRectangle(cmdPlaceElement):
 
     def __init__(
         self       : Self,
-        scene      : Optional["Drawing"] = None,
+        scene      : Optional["DrawingScene"] = None,
         element    : Optional[BaseRectangle] = None,
         pos        : QPointF = QPointF(0, 0),
         size_or_p2 : QSizeF | QPointF = QSizeF(0, 0)

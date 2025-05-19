@@ -20,9 +20,9 @@ class FileOpenDialog(QFileDialog):
         match type_name:
             case None:
                 self.setNameFilter(f"Connected Files (*{GEN_EXT});;All Files (*.*)`")
-            case "Design":
+            case "DesignDb":
                 self.setNameFilter(f"Connected Designs (*{DSN_EXT});;Connected Libraries (*{LIB_EXT});;Connected Files (*{GEN_EXT});;All Files (*.*)")
-            case "Library":
+            case "LibraryDb":
                 self.setNameFilter(f"Connected Libraries (*{LIB_EXT});;Connected Designs (*{DSN_EXT});;Connected Files (*{GEN_EXT});;All Files (*.*)")
             case _:
                 raise ValueError(f"Unknown type name: {type_name}")

@@ -6,14 +6,14 @@ from .....core import logger, save, loadItems
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from .. import Drawing
+    from .. import DrawingScene
 
 
 class DrawingApiFileMixin:
     save = save
 
     @classmethod
-    def load(cls, path: str) -> Optional["Drawing"]:
+    def load(cls, path: str) -> Optional["DrawingScene"]:
         items = loadItems(path)
         for item in items:
             if isinstance(item, cls):

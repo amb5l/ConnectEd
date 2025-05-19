@@ -16,7 +16,7 @@ from . import Element, KPManager, KPLoc, KPDef, cmdPlaceElement
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from .. import Drawing
+    from .. import DrawingScene
 
 
 class BaseTextBlock(QGraphicsTextItem, Element):
@@ -118,7 +118,7 @@ class BaseTextBlock(QGraphicsTextItem, Element):
 
     def focusOutEvent(self, event: QFocusEvent) -> None:
         super().focusOutEvent(event)
-        scene : Optional["Drawing"] = self.scene()
+        scene : Optional["DrawingScene"] = self.scene()
         if scene:
             scene.onTextEditingComplete(self)
 
@@ -230,7 +230,7 @@ class cmdPlaceBaseTextBlock(cmdPlaceElement):
 
     def __init__(
         self    : Self,
-        scene   : Optional["Drawing"] = None,
+        scene   : Optional["DrawingScene"] = None,
         element : Optional[BaseTextBlock] = None,
         text    : str = "",
         pos     : QPointF = QPointF(0, 0),

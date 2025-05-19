@@ -13,7 +13,7 @@ from .... import hub
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from .. import Drawing
+    from .. import DrawingScene
 
 
 class LinePen:
@@ -481,12 +481,12 @@ class Element(QGraphicsItem):
 
 class cmdElement(QUndoCommand):
     """Base class for all commands that work with an element."""
-    scene   : "Drawing"
+    scene   : "DrawingScene"
     element : Element
 
     def __init__(
         self    : Self,
-        scene   : "Drawing",
+        scene   : "DrawingScene",
         element : Element
     ):
         text = camel_to_proper(self.__class__.__name__.replace("cmd", ""))
@@ -524,7 +524,7 @@ class cmdElements(cmdElement):
 
     def __init__(
         self     : Self,
-        scene    : "Drawing",
+        scene    : "DrawingScene",
         elements : list[Element]
     ):
         text = camel_to_proper(self.__class__.__name__.replace("cmd", ""))
@@ -554,7 +554,7 @@ class cmdPlaceElement(cmdElement):
 
     def __init__(
         self       : Self,
-        scene      : "Drawing",
+        scene      : "DrawingScene",
         element    : Element
     ):
         super().__init__(scene, element)
@@ -585,7 +585,7 @@ class cmdMove(cmdElements):
 
     def __init__(
         self     : Self,
-        scene    : "Drawing",
+        scene    : "DrawingScene",
         elements : list[Element],
         delta    : QPointF,
         slide    : bool = False

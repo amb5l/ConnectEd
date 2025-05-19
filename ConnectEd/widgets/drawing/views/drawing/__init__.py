@@ -15,7 +15,7 @@ from PyQt6.QtGui     import QPainter, QPainterPath, QPen, QIcon, \
 
 from .....core import logger, LAYER_SHEET, LAYER_DRAWING
 
-from ...scenes   import Drawing
+from ...scenes   import DrawingScene
 from ....marquee import Marquee
 
 from ...items import Element, TextBlock, Rectangle, \
@@ -186,7 +186,7 @@ class DrawingView(
     state    : "DrawingView.State"
     wip      : "DrawingView.Wip"
 
-    def __init__(self : Self, scene : Drawing) -> None:
+    def __init__(self : Self, scene : DrawingScene) -> None:
         super().__init__(scene)
         scene.textEditingComplete.connect(self.placeTextBlockFinalize)
         self.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
@@ -300,7 +300,7 @@ class DrawingView(
         self.scene().undo_stack.redo()
 
     def editCancel(self : Self) -> None:
-        scene : Drawing = self.scene()
+        scene : DrawingScene = self.scene()
         if self.wip.macro:
             scene.undo_stack.endMacro()
         scene.undo_stack.undo()
@@ -474,7 +474,7 @@ class DrawingView(
     # move methods
 
     def moveCmd(self  : Self, delta : QPointF, slide : bool = False) -> None:
-        scene : Drawing = self.scene()
+        scene : DrawingScene = self.scene()
         scene.undo_stack.push(cmdMove(
             scene    = self.scene(),
             elements = self.wip.elements,
@@ -491,7 +491,7 @@ class DrawingView(
         self.wip.macro = True
         self.wip.elements = elements
         self.wip.pos0 = pos
-        scene : Drawing = self.scene()
+        scene : DrawingScene = self.scene()
         scene.undo_stack.beginMacro("Move")
 
     def moveContinue(self : Self, pos : QPointF, slide : bool = False) -> None:
@@ -501,7 +501,7 @@ class DrawingView(
     def moveComplete(self : Self, pos : QPointF, slide : bool = False) -> None:
         self.moveCmd(pos - self.wip.pos0, slide)
         self.wip.clear()
-        scene : Drawing = self.scene()
+        scene : DrawingScene = self.scene()
         scene.undo_stack.endMacro()
 
 class DrawingSubWindow(QMdiSubWindow):

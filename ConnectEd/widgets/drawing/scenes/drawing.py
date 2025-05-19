@@ -1,4 +1,4 @@
-__all__ = ["Drawing"]
+__all__ = ["DrawingScene"]
 
 from typing import Self, Optional
 
@@ -18,8 +18,11 @@ from .api import *
 
 from .... import hub
 
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from ....core import Drawing
 
-class Drawing(
+class DrawingScene(
     QGraphicsScene,
     DrawingApiFileMixin,
     DrawingApiPlaceMixin
@@ -32,7 +35,7 @@ class Drawing(
     ALLOWED_ITEMS          = None # any
 
     # instance variables
-    name       : str
+    parent     : "Drawing"
     undo_stack : Optional[QUndoStack]
     kp_items   : list[QGraphicsItem]
 
@@ -42,16 +45,13 @@ class Drawing(
 
     def __init__(
         self    : Self,
-        name    : Optional[str] = None,
+        parent  : "Drawing",
         extents : Optional[QSizeF] = None
     ) -> None:
         super().__init__()
-        if name is None:
-            u = "Untitled" + self.__class__.__name__.replace("Scene", "")
-            name = hub.name_counter.get(u)
+        self.parent = parent
         if extents is None:
             extents = hub.settings.get("defaults/extents")
-        self.name = name
         self.setSceneRect(QRectF(QPointF(0, 0), extents))
         self.setItemIndexMethod(QGraphicsScene.ItemIndexMethod.NoIndex)
         self.undo_stack = None
@@ -74,7 +74,7 @@ class Drawing(
         super().addItem(item)
 
     def toXml(self : Self, xw : QXmlStreamWriter) -> None:
-        xw.writeStartElement(self.__class__.__name__.replace("Scene", ""))
+        xw.writeStartElement(self.__class__.__name__)
         toXmlAttrs(self, xw)
         for item in self.items():
             item.toXml(xw)
@@ -82,10 +82,10 @@ class Drawing(
 
     @classmethod
     def fromXml(cls : Self, xr : QXmlStreamReader) -> Self:
-        cls_name = cls.__name__.replace("Scene", "")
+        cls_name = cls.__name__
         if xr.name() != cls_name:
             raise ValueError(f"Expected {cls_name} element, got {xr.name()}")
-        drawing_scene : Drawing = cls()
+        drawing_scene : DrawingScene = cls()
         fromXmlAttrs(drawing_scene, xr)
         while not (xr.isEndElement() and xr.name() == cls_name):
             if xr.tokenType() == QXmlStreamReader.TokenType.StartElement:
@@ -112,3 +112,6 @@ class Drawing(
 
     def onTextEditingComplete(self, text_item: TextBlock):
         self.textEditingComplete.emit(text_item)
+
+    def getName(self : Self) -> str:
+        return self.parent.text()

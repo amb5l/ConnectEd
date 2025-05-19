@@ -14,7 +14,7 @@ from ... import hub
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from ...core import DrawingItem, DbItem
+    from ...core import Drawing, Db
 
 
 class Explorer(TreeView):
@@ -209,18 +209,18 @@ class Explorer(TreeView):
                 hub.model.load(file)
 
     def editDrawing(self : Self, item : QStandardItem) -> None:
-        from ...core    import DrawingItem
-        from ...widgets import Drawing, DrawingView, DrawingSubWindow, \
-                               Symbol, SymbolView, SymbolSubWindow, \
-                               Diagram, DiagramView, DiagramSubWindow
-        if isinstance(item, DrawingItem):
+        from ...core    import Drawing
+        from ...widgets import DrawingScene, DrawingView, DrawingSubWindow, \
+                               SymbolScene, SymbolView, SymbolSubWindow, \
+                               DiagramScene, DiagramView, DiagramSubWindow
+        if isinstance(item, Drawing):
             # focus existing subwindow if one exists
             for subwindow in hub.main_window.mdi_area.subWindowList():
                 if not isinstance(subwindow, DrawingSubWindow):
                     continue
                 if not isinstance(subwindow.widget(), DrawingView):
                     continue
-                if not isinstance(subwindow.widget().scene(), Drawing):
+                if not isinstance(subwindow.widget().scene(), DrawingScene):
                     continue
                 if item.scene != subwindow.widget().scene():
                     continue
@@ -231,12 +231,12 @@ class Explorer(TreeView):
                 return
             # create new subwindow
             drawing_name = item.text()
-            drawing_scene : Drawing = item.data(Qt.ItemDataRole.UserRole)
-            if isinstance(drawing_scene, Diagram):
+            drawing_scene : DrawingScene = item.data(Qt.ItemDataRole.UserRole)
+            if isinstance(drawing_scene, DiagramScene):
                 drawing_view = DiagramView(drawing_scene)
                 db_item = item.parent().parent()
                 subwindow = DiagramSubWindow(hub.main_window.mdi_area)
-            elif isinstance(drawing_scene, Symbol):
+            elif isinstance(drawing_scene, SymbolScene):
                 drawing_view = SymbolView(drawing_scene)
                 db_item = item.parent()
                 subwindow = SymbolSubWindow(hub.main_window.mdi_area)
@@ -250,18 +250,18 @@ class Explorer(TreeView):
         else:
             logger.warning(f"Unsupported item: {item.text()} ({type(item)})")
 
-    def newDrawingWindow(self : Self, item : "DrawingItem") -> None:
-        from ...core import DesignItem, LibraryItem, DiagramItem, SymbolItem
-        from ...widgets import Diagram, DiagramView, DiagramSubWindow, \
-                              Symbol, SymbolView, SymbolSubWindow
-        if isinstance(item, DiagramItem):
+    def newDrawingWindow(self : Self, item : "Drawing") -> None:
+        from ...core import DesignItem, LibraryItem, Diagram, Symbol
+        from ...widgets import DiagramScene, DiagramView, DiagramSubWindow, \
+                              SymbolScene, SymbolView, SymbolSubWindow
+        if isinstance(item, Diagram):
             db_item : DesignItem = item.parent().parent()
-            dwg_scene : Diagram = item.data(Qt.ItemDataRole.UserRole)
+            dwg_scene : DiagramScene = item.data(Qt.ItemDataRole.UserRole)
             dwg_view = DiagramView(dwg_scene)
             subwindow = DiagramSubWindow()
-        elif isinstance(item, SymbolItem):
+        elif isinstance(item, Symbol):
             db_item : LibraryItem = item.parent()
-            dwg_scene : Symbol = item.data(Qt.ItemDataRole.UserRole)
+            dwg_scene : SymbolScene = item.data(Qt.ItemDataRole.UserRole)
             dwg_view = SymbolView(dwg_scene)
             subwindow = SymbolSubWindow()
         else:
@@ -274,10 +274,10 @@ class Explorer(TreeView):
         subwindow.showMaximized()
         hub.main_window.menu_bar.updateWindowMenu()
 
-    def saveDb(self : Self, item : "DbItem") -> None:
+    def saveDb(self : Self, item : "Db") -> None:
         item.save()
 
-    def saveDbAs(self : Self, item : "DbItem") -> None:
+    def saveDbAs(self : Self, item : "Db") -> None:
         from ..dialogs import FileSaveAsDialog
         dialog = FileSaveAsDialog(item.__class__.__name__.replace("Item", ""))
         result = dialog.exec()
@@ -289,17 +289,17 @@ class Explorer(TreeView):
             path = selected_files[0]
             item.save(path)
 
-    def closeDb(self : Self, item : "DbItem") -> None:
+    def closeDb(self : Self, item : "Db") -> None:
         # TODO offer to save if modified
         hub.model.close(item)
 
     def rename(self : Self) -> None:
         """Start editing the selected item"s text."""
-        from ...core import DbItem, DrawingItem
+        from ...core import Db, Drawing
         if self.currentIndex().isValid():
             item = self.model().itemFromIndex(self.currentIndex())
-            if isinstance(item, DbItem) \
-            or isinstance(item, DrawingItem):
+            if isinstance(item, Db) \
+            or isinstance(item, Drawing):
                 self.edit(self.currentIndex())
 
     def copy(self : Self, item : QStandardItem) -> None:

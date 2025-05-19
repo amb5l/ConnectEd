@@ -25,4 +25,4 @@ def initGui():
     hub.main_window = MainWindow()
     hub.main_window.show()
 
-from ..widgets import Diagram
+from ..core import DesignDb

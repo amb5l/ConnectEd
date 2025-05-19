@@ -1,17 +1,21 @@
-__all__ = ["Diagram"]
+__all__ = ["DiagramScene"]
 
 from typing import Self, Optional
 
 from PyQt6.QtCore import Qt, QPointF, QRectF, QSizeF
 from PyQt6.QtGui  import QPainter, QPen, QBrush
 
-from . import Drawing
+from . import DrawingScene
 
 from .... import hub
 
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from ....core import Diagram
 
-class Diagram(Drawing):
-    XML_ATTRS = Drawing.XML_ATTRS | {
+
+class DiagramScene(DrawingScene):
+    XML_ATTRS = DrawingScene.XML_ATTRS | {
         "paper_size" : "str",
         "margin"     : "float",
         "border"     : "float"
@@ -23,12 +27,12 @@ class Diagram(Drawing):
 
     def __init__(
         self,
-        name       : Optional[str] = None,
+        parent     : "Diagram",
         paper_size : Optional[str | QSizeF] = None,
         margin     : Optional[float] = None,
         border     : Optional[float] = None
     ) -> None:
-        super().__init__(name)
+        super().__init__(parent)
         if paper_size is None:
             paper_size = hub.settings.get("defaults/paper_size")
         if margin is None:

@@ -8,18 +8,18 @@ from ... import Rectangle, TextBlock
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from .. import Drawing
+    from .. import DrawingScene
 
 
 class DrawingApiPlaceMixin:
 
     @overload
-    def placeRectangle(self : "Drawing", rect : QRectF) -> None:
+    def placeRectangle(self : "DrawingScene", rect : QRectF) -> None:
         ...
 
     @overload
     def placeRectangle(
-        self : "Drawing",
+        self : "DrawingScene",
         pos  : QPointF,
         size : QSizeF
     ) -> None:
@@ -27,7 +27,7 @@ class DrawingApiPlaceMixin:
 
     @overload
     def placeRectangle(
-        self : "Drawing",
+        self : "DrawingScene",
         x    : float,
         y    : float,
         w    : float,
@@ -36,7 +36,7 @@ class DrawingApiPlaceMixin:
         ...
 
     def placeRectangle(
-        self              : "Drawing",
+        self              : "DrawingScene",
         rect_or_pos_or_ax : QRectF | QPointF | float = QRectF(),
         size_or_ay        : Optional[QSizeF | float] = None,
         w                 : Optional[float]          = None,
@@ -52,7 +52,7 @@ class DrawingApiPlaceMixin:
 
     @overload
     def placeTextBlock(
-        self : "Drawing",
+        self : "DrawingScene",
         text : str,
         pos  : QPointF
     ) -> None:
@@ -60,7 +60,7 @@ class DrawingApiPlaceMixin:
 
     @overload
     def placeTextBlock(
-        self : "Drawing",
+        self : "DrawingScene",
         text : str,
         x    : float,
         y    : float
@@ -68,7 +68,7 @@ class DrawingApiPlaceMixin:
         ...
 
     def placeTextBlock(
-        self      : "Drawing",
+        self      : "DrawingScene",
         text      : str,
         pos_or_x  : QPointF | float = QPointF(),
         y         : Optional[float] = None
