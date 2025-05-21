@@ -93,6 +93,9 @@ class Drawing(QStandardItem):
         instance : "Drawing" = cls(scene)
         return instance
 
+    def getName(self : Self) -> str:
+        return self.text()
+
     def getScene(self : Self) -> "DrawingScene":
         return self.scene
 
@@ -174,6 +177,9 @@ class Db(QStandardItem):
 
     copy = master_copy
 
+    def getPath(self : Self) -> str:
+        return self.path
+
 class LibraryDb(Db):
     FILE_EXT = LIB_EXT
 
@@ -204,6 +210,7 @@ class DesignDb(Db):
         self.appendRow(self.diagrams)
         self.symbols = SymbolCacheContainer()
         self.appendRow(self.symbols)
+        self.diagrams.appendRow(Diagram())
 
     @classmethod
     def fromXml(cls : Self, xr : QXmlStreamReader) -> Self:
@@ -250,6 +257,12 @@ class DesignDb(Db):
             symbol_scene = symbol_item.scene
             symbol_scene.toXml(xw)
         self.toXmlEnd(xw)
+
+    def getDiagrams(self : Self) -> list[Diagram]:
+        return [self.diagrams.child(i) for i in range(self.diagrams.rowCount())]
+
+    def getSymbols(self : Self) -> list[Symbol]:
+        return [self.symbols.child(i) for i in range(self.symbols.rowCount())]
 
 class Model(QStandardItemModel):
     designs   : DesignDbContainer

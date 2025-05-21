@@ -210,9 +210,7 @@ class DrawingViewMouseMixin:
                     self._snap(self.mouse.left.release.logical)
                 )
             case self.State.PlaceTextBlock2:
-                self.placeTextBlockComplete(
-                    self._snap(self.mouse.left.release.logical)
-                )
+                self.placeTextBlockComplete()
 
     def mouseLeftDragBegin(self : "DrawingView") -> None:
         match self.state:

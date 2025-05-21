@@ -1,5 +1,3 @@
-from dataclasses import dataclass
-from enum        import Enum
 from typing      import Self, Optional, Any
 from types       import SimpleNamespace
 
@@ -548,35 +546,19 @@ class cmdElements(cmdElement):
 
 class cmdPlaceElement(cmdElement):
     """Base class for all commands that place an element."""
-    has_line : bool
-    has_fill : bool
-    has_text : bool
 
     def __init__(
-        self       : Self,
-        scene      : "DrawingScene",
-        element    : Element
+        self    : Self,
+        scene   : "DrawingScene",
+        element : Element
     ):
-        super().__init__(scene, element)
-
-    def id(self : Self) -> int:
-            """Return a unique ID for merging commands."""
-            element_id = id(self.element) & 0x7FFFFFFF
-            class_id = hash(self.__class__.__name__) & 0x7FFFFFFF
-            return ((element_id + class_id) & 0x7FFFFFFF)
-
-    def mergeWith(self : Self, other : QUndoCommand) -> bool:
-        if not super().mergeWith(other):
-            return False
-        return True
+        super().__init__(scene, element) # record scene and element instances
 
     def redo(self : Self) -> None:
-        """Add or update the element in the scene."""
         if self.element.scene() != self.scene:
             self.scene.addItem(self.element)
 
     def undo(self : Self) -> None:
-        """Remove the element from the scene."""
         self.scene.removeItem(self.element)
 
 class cmdMove(cmdElements):
@@ -613,7 +595,14 @@ class cmdMove(cmdElements):
 class cmdSlide(cmdMove):
     pass
 
-__all__ = ["Element"]
+__all__ = [
+    "Element",
+    "cmdElement",
+    "cmdElements",
+    "cmdPlaceElement",
+    "cmdMove",
+    "cmdSlide"
+]
 from .key_point import KPLoc, KeyPoint, KPDef, KPManager
 __all__ += key_point.__all__
 from .rectangle import Rectangle, cmdPlaceRectangle

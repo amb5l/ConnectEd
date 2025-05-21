@@ -1,80 +1,53 @@
-__all__ = ["DrawingApiPlaceMixin"]
+__all__ = ["DrawingSceneApiPlaceMixin"]
 
-from typing import overload, Optional
+from typing import Any, Optional, Type, TypeVar
 
-from PyQt6.QtCore import QRectF, QPointF, QSizeF
+from PyQt6.QtCore    import QPointF, QRectF, QSizeF
+from PyQt6.QtWidgets import QGraphicsItem
 
-from ... import Rectangle, TextBlock
+from .....core import logger
+
+from ... import Rectangle, cmdPlaceRectangle, TextBlock, cmdPlaceTextBlock, \
+                KPLoc
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from .. import DrawingScene
 
 
-class DrawingApiPlaceMixin:
+T = TypeVar("T", bound=QGraphicsItem)
 
-    @overload
-    def placeRectangle(self : "DrawingScene", rect : QRectF) -> None:
-        ...
+class DrawingSceneApiPlaceMixin:
 
-    @overload
-    def placeRectangle(
-        self : "DrawingScene",
-        pos  : QPointF,
-        size : QSizeF
-    ) -> None:
-        ...
-
-    @overload
-    def placeRectangle(
-        self : "DrawingScene",
-        x    : float,
-        y    : float,
-        w    : float,
-        h    : float
-    ) -> None:
-        ...
-
-    def placeRectangle(
-        self              : "DrawingScene",
-        rect_or_pos_or_ax : QRectF | QPointF | float = QRectF(),
-        size_or_ay        : Optional[QSizeF | float] = None,
-        w                 : Optional[float]          = None,
-        h                 : Optional[float]          = None
-    ) -> None:
-        if isinstance(rect_or_pos_or_ax, QRectF):
-            item = Rectangle(rect_or_pos_or_ax)
-        elif isinstance(rect_or_pos_or_ax, QPointF):
-            item = Rectangle(rect_or_pos_or_ax, size_or_ay)
+    def placeElement(
+        self  : "DrawingScene",
+        etype : Type[T],
+        *args : Any,
+        inst  : Optional[T] = None
+    ) -> T:
+        CMD_DICT = {
+            "Rectangle" : cmdPlaceRectangle,
+            "TextBlock" : cmdPlaceTextBlock
+        }
+        element = etype.createOrUpdate(*args, inst=inst)
+        if etype.__name__ in CMD_DICT:
+            cmd = CMD_DICT[etype.__name__]
+            self.undo_stack.push(cmd(self, element))
         else:
-            item = Rectangle(rect_or_pos_or_ax, size_or_ay, w, h)
-        self.addItem(item)
+            logger.error(f"No place command found for {etype.__name__}")
+            return None
+        return element
 
-    @overload
-    def placeTextBlock(
-        self : "DrawingScene",
-        text : str,
-        pos  : QPointF
-    ) -> None:
-        ...
-
-    @overload
-    def placeTextBlock(
-        self : "DrawingScene",
-        text : str,
-        x    : float,
-        y    : float
-    ) -> None:
-        ...
+    def placeRectangle(
+        self  : "DrawingScene",
+        *args : QRectF | QPointF | QSizeF | float | int,
+        inst  : Optional[Rectangle] = None
+    ) -> Rectangle:
+        return self.placeElement(Rectangle, *args, inst=inst)
 
     def placeTextBlock(
-        self      : "DrawingScene",
-        text      : str,
-        pos_or_x  : QPointF | float = QPointF(),
-        y         : Optional[float] = None
-    ) -> None:
-        if isinstance(pos_or_x, QPointF):
-            item = TextBlock(text, pos_or_x)
-        else:
-            item = TextBlock(text, pos_or_x, y)
-        self.addItem(item)
+        self  : "DrawingScene",
+        *args : str | QPointF | KPLoc,
+        inst  : Optional[TextBlock] = None
+    ) -> TextBlock:
+        return self.placeElement(TextBlock, *args, inst=inst)

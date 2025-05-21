@@ -1,4 +1,4 @@
-__all__ = ["DrawingApiFileMixin"]
+__all__ = ["DrawingSceneApiFileMixin"]
 
 from typing import Optional
 
@@ -9,7 +9,7 @@ if TYPE_CHECKING:
     from .. import DrawingScene
 
 
-class DrawingApiFileMixin:
+class DrawingSceneApiFileMixin:
     save = save
 
     @classmethod

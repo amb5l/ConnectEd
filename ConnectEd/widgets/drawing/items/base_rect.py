@@ -1,13 +1,14 @@
 __all__ = ["BaseRectangle"]
 
-from typing      import Self, Optional, overload
+from typing import Self, Optional, overload
+from types  import NoneType
 
 from PyQt6.QtCore    import QPointF, QRectF, QSizeF
 from PyQt6.QtWidgets import QGraphicsRectItem, QStyleOptionGraphicsItem, \
                             QWidget, QMenu
-from PyQt6.QtGui     import QPainter, QPainterPath, QUndoCommand
+from PyQt6.QtGui     import QPainter, QPainterPath
 
-from ....core   import SharedContextMenuUtils
+from ....core   import logger, ElementUtils
 
 from ...dialogs import FillDialog
 
@@ -32,7 +33,8 @@ class BaseRectangle(QGraphicsRectItem, Element):
     _MENU_ITEM_NAMES = [
         "Fill..."
     ]
-    getMenu = SharedContextMenuUtils.getMenu
+    getMenu = ElementUtils.getMenu
+    getCmd  = ElementUtils.getCmd
 
     _kpm           : KPManager
     _rect          : QRectF
@@ -40,30 +42,65 @@ class BaseRectangle(QGraphicsRectItem, Element):
     _shape         : QPainterPath
     _menu          : QMenu
 
+
+    @overload
     def __init__(
-        self              : Self,
-        rect_or_pos_or_ax : QRectF | QPointF | float = QRectF(),
-        size_or_p2_or_ay  : Optional[QSizeF | QPointF | float] = None,
-        w                 : Optional[float] = None,
-        h                 : Optional[float] = None
+        self : Self,
+        rect : QRectF
+    ) -> None:
+        ...
+
+    @overload
+    def __init__(
+        self : Self,
+        pos  : QPointF,
+        size : QSizeF
+    ) -> None:
+        ...
+
+    @overload
+    def __init__(
+        self : Self,
+        p1   : QPointF,
+        p2   : QPointF
+    ) -> None:
+        ...
+
+    @overload
+    def __init__(
+        self : Self,
+        a1   : float | int,
+        a2   : float | int,
+        a3   : float | int,
+        a4   : float | int
+    ) -> None:
+        ...
+
+    def __init__(
+        self : Self,
+        a1   : QRectF | QPointF | float = QRectF(),
+        a2   : Optional[QSizeF | QPointF | float] = None,
+        a3   : Optional[float | int]              = None,
+        a4   : Optional[float | int]              = None
     ) -> None:
         QGraphicsRectItem.__init__(self)
         Element.__init__(self, has_line=True, has_fill=True)
         self._kpm = KPManager(self, [KPDef(k, True, False) for k in KPLoc])
         self._shape = QPainterPath()
-        if isinstance(rect_or_pos_or_ax, QRectF):
-            self.setRect(rect_or_pos_or_ax)
-        elif isinstance(rect_or_pos_or_ax, float):
-            self.setRect(rect_or_pos_or_ax, size_or_p2_or_ay, w, h)
-        elif isinstance(rect_or_pos_or_ax, QPointF):
-            if isinstance(size_or_p2_or_ay, QSizeF):
-                self.setPosSize(rect_or_pos_or_ax, size_or_p2_or_ay)
-            else:
-                self.setPoints(rect_or_pos_or_ax, size_or_p2_or_ay)
-        # TODO error case
+        if isinstance(a1, QRectF):
+            self.setRect(a1)
+        elif isinstance(a1, QPointF) and isinstance(a2, QSizeF):
+            self.setRect(a1, a2)
+        elif isinstance(a1, QPointF) and isinstance(a2, QPointF):
+            self.setPoints(a1, a2)
+        elif isinstance(a1, (float, int)) and isinstance(a2, (float, int)) \
+              and isinstance(a3, (float, int)) and isinstance(a4, (float, int)):
+            self.setRect(a1, a2, a3, a4)
+        else:
+            logger.error(f"Invalid arguments: expected (x, y, w, h), (pos, size), or (rect); got {a1}, {a2}, {a3}, {a4}")
         self._menu = self.getMenu()
 
-    contextMenuEvent = SharedContextMenuUtils.contextMenuEvent
+    contextMenuEvent = ElementUtils.contextMenuEvent
 
     def setRect(
         self       : Self,
@@ -115,17 +152,42 @@ class BaseRectangle(QGraphicsRectItem, Element):
         size.setHeight(max(size.height(), self.MIN_SIZE.height()))
         self.setRect(0, 0, size.width(), size.height())
 
+    @overload
     def setPoints(
         self     : Self,
-        p1_or_x1 : QPointF | float,
-        p2_or_y1 : QPointF | float | None = None,
-        x2       : float | None = None,
-        y2       : float | None = None
+        p1       : QPointF,
+        p2       : QPointF
     ) -> None:
-        if p2_or_y1 is not None and x2 is not None and y2 is not None:
+        ...
+
+    @overload
+    def setPoints(
+        self     : Self,
+        x1       : float | int,
+        y1       : float | int,
+        x2       : float | int,
+        y2       : float | int
+    ) -> None:
+        ...
+
+    def setPoints(
+        self     : Self,
+        p1_or_x1 : QPointF | float | int,
+        p2_or_y1 : QPointF | float | int,
+        x2       : Optional[float | int] = None,
+        y2       : Optional[float | int] = None
+    ) -> None:
+        if isinstance(p1_or_x1, QPointF) and isinstance(p2_or_y1, QPointF) \
+             and x2 is None and y2 is None:
+            p1, p2 = p1_or_x1, p2_or_y1
+        elif isinstance(p1_or_x1, float | int) \
+             and isinstance(p2_or_y1, float | int) \
+             and isinstance(x2, float | int) \
+             and isinstance(y2, float | int):
             p1, p2 = QPointF(p1_or_x1, p2_or_y1), QPointF(x2, y2)
         else:
-            p1, p2 = p1_or_x1, p2_or_y1
+            logger.error(f"Invalid arguments: expected (p1, p2) or (x1, y1, x2, y2); got {p1_or_x1}, {p2_or_y1}, {x2}, {y2}")
+            return
         rect = QRectF(p1, p2).normalized()
         self.setPosSize(rect.topLeft(), rect.size())
 
@@ -179,39 +241,80 @@ class BaseRectangle(QGraphicsRectItem, Element):
             self.appearance.fill.setStyle(dialog.getStyle())
             self.update()
 
-def placeBaseRectangle(
-    scene             : "DrawingScene",
-    rect_or_pos_or_ax : QRectF | QPointF | float,
-    size_or_ay        : Optional[QSizeF | float] = None,
-    w                 : Optional[float]          = None,
-    h                 : Optional[float]          = None
-) -> None:
-    scene.addItem(BaseRectangle(rect_or_pos_or_ax, size_or_ay, w, h))
+    @overload
+    @classmethod
+    def createOrUpdate(
+        cls   : Self,
+        rect  : QRectF,
+        *,
+        inst  : Optional[Self] = None
+    ) -> "BaseRectangle":
+        ...
+
+    @overload
+    @classmethod
+    def createOrUpdate(
+        cls  : Self,
+        pos  : QPointF,
+        size : QSizeF,
+        *,
+        inst : Optional[Self] = None
+    ) -> "BaseRectangle":
+        ...
+
+    @overload
+    @classmethod
+    def createOrUpdate(
+        cls  : Self,
+        p1   : QPointF,
+        p2   : QPointF,
+        *,
+        inst : Optional[Self] = None
+    ) -> "BaseRectangle":
+        ...
+
+    @overload
+    @classmethod
+    def createOrUpdate(
+        cls  : Self,
+        ax   : float | int,
+        ay   : float | int,
+        w    : float | int,
+        h    : float | int,
+        *,
+        inst : Optional[Self] = None
+    ) -> "BaseRectangle":
+        ...
+
+    @classmethod
+    def createOrUpdate(
+        cls  : Self,
+        a1   : QRectF | QPointF | float | int,
+        a2   : Optional[QSizeF | QPointF | float | int] = None,
+        a3   : Optional[float | int] = None,
+        a4   : Optional[float | int] = None,
+        *,
+        inst : Optional[Self] = None
+    ) -> "BaseRectangle":
+        inst = cls() if inst is None else inst
+        if isinstance(a1, QRectF) and a2 is None and a3 is None and a4 is None:
+            inst.setRect(a1)
+        elif isinstance(a1, QPointF) and isinstance(a2, QSizeF) \
+             and a3 is None and a4 is None:
+            inst.setPosSize(a1, a2)
+        elif isinstance(a1, QPointF) and isinstance(a2, QPointF) \
+             and a3 is None and a4 is None:
+            inst.setPoints(a1, a2)
+        elif isinstance(a1, QPointF) and a2 is None \
+             and a3 is None and a4 is None:
+            inst.setPosSize(a1, cls.MIN_SIZE)
+        elif isinstance(a1, float | int) and isinstance(a2, float | int) \
+             and isinstance(a3, float | int) and isinstance(a4, float | int):
+            inst.setRect(a1, a2, a3, a4)
+        else:
+            logger.error(f"Invalid arguments: expected (rect), (pos, size), (p1, p2), or (x, y, w, h); got {a1}, {a2}, {a3}, {a4}")
+            inst = None
+        return inst
 
 class cmdPlaceBaseRectangle(cmdPlaceElement):
-    element    : BaseRectangle
-    pos        : QPointF
-    size_or_p2 : QSizeF | QPointF
-
-    def __init__(
-        self       : Self,
-        scene      : Optional["DrawingScene"] = None,
-        element    : Optional[BaseRectangle] = None,
-        pos        : QPointF = QPointF(0, 0),
-        size_or_p2 : QSizeF | QPointF = QSizeF(0, 0)
-    ):
-        super().__init__(scene, element)
-        self.pos = pos
-        self.size_or_p2 = size_or_p2
-
-    def mergeWith(self : Self, other: QUndoCommand) -> bool:
-        if not super().mergeWith(other):
-            return False
-        self.pos        = other.pos
-        self.size_or_p2 = other.size_or_p2
-        return True
-
-    def redo(self : Self):
-        super().redo()
-        self.element.setPosSizeOrP2(self.pos, self.size_or_p2)
-        self.element.update()
+    element : BaseRectangle

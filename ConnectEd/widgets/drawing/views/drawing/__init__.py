@@ -2,24 +2,19 @@ __all__ = ["DrawingView", "DrawingSubWindow"]
 
 from typing import Self, Optional
 from enum   import Enum, auto
-from math   import ceil, sqrt
+from math   import ceil
 
-from PyQt6.QtCore    import Qt, QPoint, QPointF, QRectF, QSizeF, QEvent
+from PyQt6.QtCore    import Qt, QPoint, QPointF, QRectF, QEvent
 from PyQt6.QtWidgets import QMdiArea, QMdiSubWindow, \
-                            QMenu, QGraphicsView, \
-                            QGraphicsItem, QGraphicsTextItem
-from PyQt6.QtGui     import QPainter, QPainterPath, QPen, QIcon, \
-                            QCloseEvent, QEnterEvent, \
-                            QKeyEvent, QMouseEvent, QWheelEvent, \
-                            QAction, QCursor
+                            QGraphicsView, QGraphicsItem, QGraphicsTextItem
+from PyQt6.QtGui     import QPainter, QPen, QCloseEvent, QKeyEvent
 
 from .....core import logger, LAYER_SHEET, LAYER_DRAWING
 
 from ...scenes   import DrawingScene
 from ....marquee import Marquee
 
-from ...items import Element, TextBlock, Rectangle, \
-                    cmdMove, cmdPlaceRectangle, cmdPlaceTextBlock
+from ...items import Element, TextBlock, cmdMove, cmdPlaceTextBlock
 
 from .mouse   import DrawingViewMouseMixin
 from .private import DrawingViewPrivateMixin
@@ -406,64 +401,51 @@ class DrawingView(
     def placeRectangle(self : Self) -> None:
         self._goState(self.State.PlaceRectangle1)
 
-    def placeRectangleCmd(
-        self       : Self,
-        size_or_p2 : QSizeF | QPointF
-    ) -> None:
-        # TODO get default anchor and pen/brush/text spec from settings
-        self.scene().undo_stack.push(cmdPlaceRectangle(
-            scene      = self.scene(),
-            element    = self.wip.elements[0],
-            pos        = self.wip.pos0,
-            size_or_p2 = size_or_p2
-        ))
-
     def placeRectangleBegin(self : Self, p1: QPointF) -> None:
-        self.scene().clearSelection()
-        self.wip.elements = [Rectangle()]
+        scene : DrawingScene = self.scene()
+        scene.clearSelection()
+        self.wip.clear()
+        element = scene.placeRectangle(p1)
+        self.wip.elements = [element]
         self.wip.pos0 = p1
-        self.placeRectangleCmd(QSizeF(1,1))
         self._goState(self.State.PlaceRectangle2)
 
     def placeRectangleContinue(self : Self, p2: QPointF) -> None:
-        self.placeRectangleCmd(p2)
+        scene : DrawingScene = self.scene()
+        scene.placeRectangle(self.wip.pos0, p2, inst=self.wip.elements[0])
 
     def placeRectangleComplete(self : Self, p2: QPointF) -> None:
-        self.placeRectangleCmd(p2)
+        scene : DrawingScene = self.scene()
+        scene.placeRectangle(self.wip.pos0, p2, inst=self.wip.elements[0])
         self.wip.clear()
         self._goState(self.State.Idle)
 
     def placeTextBlock(self : Self) -> None:
         self._goState(self.State.PlaceTextBlock1)
 
-    def placeTextBlockCmd(self : Self, text : str) -> None:
-        self.scene().undo_stack.push(cmdPlaceTextBlock(
-            scene   = self.scene(),
-            element = self.wip.elements[0],
-            pos     = self.wip.pos0,
-            text    = text
-        ))
-
     def placeTextBlockBegin(self : Self, pos : QPointF) -> None:
-        self.scene().clearSelection()
-        new_text = TextBlock()
-        self.wip.elements = [new_text]
+        scene : DrawingScene = self.scene()
+        scene.clearSelection()
+        self.wip.clear()
+        element = scene.placeTextBlock("", pos)
+        element.setEditable(True)
+        element.setFocus()
+        self.wip.elements = [element]
         self.wip.pos0 = pos
-        self.placeTextBlockCmd("")
-        new_text.setEditable(True)
-        new_text.setFocus()
         self._goState(self.State.PlaceTextBlock2)
 
-    def placeTextBlockComplete(self : Self, pos : QPointF) -> None:
+    def placeTextBlockComplete(self : Self) -> None:
         self.wip.elements[0].clearFocus()
 
     def placeTextBlockFinalize(self, text_item: TextBlock):
+        scene : DrawingScene = self.scene()
         if text_item == self.wip.elements[0]:
-            text = text_item.toPlainText().strip()
+            text = text_item.toPlainText()
             if text:
                 self.wip.elements[0].setEditable(False)
-                self.placeTextBlockCmd(text)
-            else:
+                self.wip.elements[0].update()
+                scene.placeTextBlock(text, self.wip.pos0, inst=self.wip.elements[0])
+            else: # cancel empty text
                 self.scene().undo_stack.undo()
         else:
             logger.warning("placeTextBlockFinalize: text_item != wip.elements[0]")

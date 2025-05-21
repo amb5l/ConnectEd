@@ -2,12 +2,12 @@ from ConnectEd import api as ce
 
 ce.initCli()
 design_db = ce.DesignDb()
-print("design database path =", design_db.path())
+print("design database path =", design_db.getPath())
 diagrams = design_db.getDiagrams()
 if len(diagrams) != 1:
     raise Exception("expected 1 diagram, got", len(diagrams))
 diagram = diagrams[0]
-print("diagram name =", diagram.name())
+print("diagram name =", diagram.getName())
 scene = diagram.getScene()
 print("  scene size =", scene.getSize())
 scene.placeRectangle(100, 100, 100, 100)

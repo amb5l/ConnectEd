@@ -1,11 +1,14 @@
+- fold ElementUtils into Element
+- state manager
+- mouse manager
+
+- fix diagram paper_size
+
 - save explorer text zoom in settings
 - asterisk for unsaved diagrams and libraries
 - different color for top level containers
 - explorer container <empty> status
-- state manager
-- mouse manager
 - extend scripting test
-- transition to Diagrams from Designs
 - convert drawing scene to module, move commands into scene
 
 - Appearance dialog with up to 3 areas: line, fill, text

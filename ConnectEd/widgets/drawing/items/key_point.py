@@ -10,7 +10,7 @@ from PyQt6.QtWidgets import QGraphicsItem, QStyleOptionGraphicsItem, \
                             QWidget, QGraphicsView, QMenu
 from PyQt6.QtGui     import QPainter, QPen, QBrush, QPainterPath
 
-from ....core import SharedContextMenuUtils
+from ....core import ElementUtils
 
 from .... import hub
 
@@ -41,7 +41,7 @@ class KeyPoint(QGraphicsItem):
     _MENU_ITEM_NAMES = [
         "Assign Anchor"
     ]
-    getMenu = SharedContextMenuUtils.getMenu
+    getMenu = ElementUtils.getMenu
 
     # instance variables
     _manager : "KPManager"
@@ -81,7 +81,7 @@ class KeyPoint(QGraphicsItem):
         hub.settings.change.connect(self.onSettingsChange)
         self._menu = self.getMenu()
 
-    contextMenuEvent = SharedContextMenuUtils.contextMenuEvent
+    contextMenuEvent = ElementUtils.contextMenuEvent
 
     def boundingRect(
         self : Self,

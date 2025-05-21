@@ -69,3 +69,6 @@ class DiagramScene(DrawingScene):
         painter.drawRect(self.paper_rect().adjusted(
             self.margin, self.margin, -self.margin, -self.margin
         ))
+
+    def getSize(self : Self) -> QSizeF:
+        return self.sceneRect().size()

@@ -24,8 +24,7 @@ if TYPE_CHECKING:
 
 class DrawingScene(
     QGraphicsScene,
-    DrawingApiFileMixin,
-    DrawingApiPlaceMixin
+    DrawingSceneApiMixin
 ):
     # class variables
     XML_ATTRS              = {"name" : "str"}
@@ -56,8 +55,8 @@ class DrawingScene(
         self.setItemIndexMethod(QGraphicsScene.ItemIndexMethod.NoIndex)
         self.undo_stack = None
         self.kp_items = []
+        self.undo_stack = QUndoStack(self)
         if hub.main_window: # GUI is running
-            self.undo_stack = QUndoStack(self)
             self.selectionChanged.connect(self.onSelectionChanged)
 
     def addItem(self : Self, item : QGraphicsItem) -> None:

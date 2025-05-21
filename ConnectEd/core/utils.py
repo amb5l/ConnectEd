@@ -5,18 +5,20 @@ __all__ = [
     "getDefaultPath",
     "val2str",
     "str2val",
-    "SharedContextMenuUtils"
+    "ElementUtils"
 ]
 
-import os
-import platform
+import os, sys, platform
 
-from collections import namedtuple
-from typing      import Self, Any
+from typing      import Self, Any, Tuple, Union, Type
 
 from PyQt6.QtCore    import Qt, QPointF, QRectF, QSizeF
 from PyQt6.QtWidgets import QGraphicsItem, QGraphicsSceneContextMenuEvent, QMenu
 from PyQt6.QtGui     import QColor, QAction
+
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from ..widgets import cmdElement
 
 class NameCounter:
     counts : dict[str, int]
@@ -107,8 +109,9 @@ def str2val(s : str, t : str) -> Any:
         case _:
             raise ValueError(f"Unsupported type: {t}")
 
-class SharedContextMenuUtils:
+class ElementUtils:
     _MENU = None
+    _CMD  = None
 
     @staticmethod
     def getMenu(cls) -> QMenu:
@@ -140,3 +143,11 @@ class SharedContextMenuUtils:
                 action.triggered.connect(lambda: method(instance._instance))
         instance._menu.exec(event.screenPos())
         instance._instance = None
+
+    @staticmethod
+    def getCmd(cls) -> "cmdElement":
+        if cls._CMD is None:
+            command_name = f"cmdPlace{cls.__name__}"
+            module = sys.modules[cls.__module__]
+            cls._CMD = getattr(module, command_name, None)
+        return cls._CMD

@@ -9,7 +9,7 @@ from PyQt6.QtGui     import QPainter, QPainterPath, QUndoCommand, \
                             QKeyEvent, QFocusEvent, QColor, \
                             QTextCursor
 
-from ....core   import SharedContextMenuUtils
+from ....core   import ElementUtils
 from ...dialogs import TextFontDialog, CustomColorDialog
 
 from . import Element, KPManager, KPLoc, KPDef, cmdPlaceElement
@@ -33,7 +33,7 @@ class BaseTextBlock(QGraphicsTextItem, Element):
         "Font...",
         "Color..."
     ]
-    getMenu = SharedContextMenuUtils.getMenu
+    getMenu = ElementUtils.getMenu
 
     # instance variables
     _kpm     : KPManager
@@ -122,7 +122,7 @@ class BaseTextBlock(QGraphicsTextItem, Element):
         if scene:
             scene.onTextEditingComplete(self)
 
-    contextMenuEvent = SharedContextMenuUtils.contextMenuEvent
+    contextMenuEvent = ElementUtils.contextMenuEvent
 
     def setPos(self : Self, pos : QPointF) -> None:
         super().setPos(pos - self._kpm.anchor_offset)
@@ -222,41 +222,23 @@ class BaseTextBlock(QGraphicsTextItem, Element):
             self.refresh()
             self.update()
 
+    @classmethod
+    def createOrUpdate(
+        cls    : Self,
+        text   : Optional[str]     = None,
+        pos    : Optional[QPointF] = None,
+        anchor : Optional[KPLoc]   = None,
+        *,
+        inst   : Optional[Self] = None
+    ) -> "BaseTextBlock":
+        inst = cls() if inst is None else inst
+        if text is not None:
+            inst.setPlainText(text)
+        if pos is not None:
+            inst.setPos(pos)
+        if anchor is not None:
+            inst.setAnchor(anchor)
+        return inst
+
 class cmdPlaceBaseTextBlock(cmdPlaceElement):
-    element    : BaseTextBlock
-    text       : str
-    pos        : QPointF
-    anchor     : KPLoc
-
-    def __init__(
-        self    : Self,
-        scene   : Optional["DrawingScene"] = None,
-        element : Optional[BaseTextBlock] = None,
-        text    : str = "",
-        pos     : QPointF = QPointF(0, 0),
-        anchor  : KPLoc = KPLoc.TOP_LEFT
-    ) -> None:
-        super().__init__(scene, element)
-        self.text   = text
-        self.pos    = pos
-        self.anchor = anchor
-        self.element.setAnchor(self.anchor)
-        self.element.setPos(self.pos)
-
-    def mergeWith(self : Self, other: QUndoCommand) -> bool:
-        if not super().mergeWith(other):
-            return False
-        self.text       = other.text
-        self.pos        = other.pos
-        self.anchor     = other.anchor
-        self.element.setPlainText(self.text)
-        self.element.setAnchor(self.anchor)
-        self.element.setPos(self.pos)
-        return True
-
-    def redo(self : Self) -> None:
-        super().redo()
-        self.element.setPlainText(self.text)
-        self.element.setPos(self.pos)
-        self.element.setAnchor(self.anchor)
-        self.element.setEditable(True)
+    element : BaseTextBlock
