@@ -12,14 +12,15 @@ from ....core   import logger, ElementUtils
 
 from ...dialogs import FillDialog
 
-from . import Element, KPLoc, KPDef, KPManager, cmdPlaceElement
+from . import CustomGraphicsRectItem, \
+              Element, KPLoc, KPDef, KPManager, cmdPlaceElement
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from .. import DrawingScene
 
 
-class BaseRectangle(QGraphicsRectItem, Element):
+class BaseRectangle(CustomGraphicsRectItem, Element):
     """Base class for rectangle elements."""
     XML_ATTRS = Element.XML_ATTRS | {
         "size" : (
@@ -83,8 +84,8 @@ class BaseRectangle(QGraphicsRectItem, Element):
         a3   : Optional[float | int]              = None,
         a4   : Optional[float | int]              = None
     ) -> None:
-        QGraphicsRectItem.__init__(self)
-        Element.__init__(self, has_line=True, has_fill=True)
+        super().__init__()
+        self.__init2__(text=None)
         self._kpm = KPManager(self, [KPDef(k, True, False) for k in KPLoc])
         self._shape = QPainterPath()
         if isinstance(a1, QRectF):
@@ -115,7 +116,7 @@ class BaseRectangle(QGraphicsRectItem, Element):
         else:
             super().setRect(rect_or_ax, ay, w, h)
         self._rect = self.rect()
-        w = self.appearance.line.pen.widthF()
+        w = self.line.pen.widthF()
         self._bounding_rect = self._rect.adjusted(-w/2, -w/2, w/2, w/2)
         self._shape.clear()
         self._shape.addRect(self._bounding_rect)
@@ -133,8 +134,8 @@ class BaseRectangle(QGraphicsRectItem, Element):
         option  : QStyleOptionGraphicsItem,
         widget  : QWidget
     ) -> None:
-        painter.setPen(self.appearance.line.pen)
-        painter.setBrush(self.appearance.fill.brush)
+        painter.setPen(self.line.pen)
+        painter.setBrush(self.fill.brush)
         painter.drawRect(self._rect)
 
     def KPRect(self : Self) -> QRectF:
@@ -231,14 +232,14 @@ class BaseRectangle(QGraphicsRectItem, Element):
 
     def ctxMenuFill(self : Self, checked: bool) -> None:
         dialog = FillDialog(
-            current_color = self.appearance.fill.getColor(),
-            default_color = self.appearance.fill.getDefaults().color,
-            current_style = self.appearance.fill.getStyle(),
-            default_style = self.appearance.fill.getDefaults().style
+            current_color = self.fill.getColor(),
+            default_color = self.fill.getDefaults().color,
+            current_style = self.fill.getStyle(),
+            default_style = self.fill.getDefaults().style
         )
         if dialog.exec():
-            self.appearance.fill.setColor(dialog.getColor())
-            self.appearance.fill.setStyle(dialog.getStyle())
+            self.fill.setColor(dialog.getColor())
+            self.fill.setStyle(dialog.getStyle())
             self.update()
 
     @overload

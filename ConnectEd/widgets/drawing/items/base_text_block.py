@@ -5,21 +5,23 @@ from typing import Self, Optional, overload
 from PyQt6.QtCore    import Qt, QPointF, QRectF
 from PyQt6.QtWidgets import QGraphicsTextItem, QWidget, QMenu, \
                             QStyleOptionGraphicsItem, QStyle
-from PyQt6.QtGui     import QPainter, QPainterPath, QUndoCommand, \
+from PyQt6.QtGui     import QPainter, QPainterPath, \
                             QKeyEvent, QFocusEvent, QColor, \
                             QTextCursor
 
 from ....core   import ElementUtils
+
 from ...dialogs import TextFontDialog, CustomColorDialog
 
-from . import Element, KPManager, KPLoc, KPDef, cmdPlaceElement
+from . import CustomGraphicsTextItem, \
+              Element, KPManager, KPLoc, KPDef, cmdPlaceElement
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from .. import DrawingScene
 
 
-class BaseTextBlock(QGraphicsTextItem, Element):
+class BaseTextBlock(CustomGraphicsTextItem, Element):
     # class variables
     XML_ATTRS = Element.XML_ATTRS | {
         "text" : (
@@ -70,8 +72,8 @@ class BaseTextBlock(QGraphicsTextItem, Element):
     ) -> None:
         self._rect = QRectF()
         self._shape = QPainterPath()
-        QGraphicsTextItem.__init__(self, text)
-        Element.__init__(self, has_text=True)
+        super().__init__(text)
+        self.__init2__(line=None, fill=None)
         self._kpm = KPManager(
             self,
             [KPDef(k, False, False) for k in KPLoc],
@@ -180,7 +182,7 @@ class BaseTextBlock(QGraphicsTextItem, Element):
             self.setDefaultTextColor(c)
         super().paint(painter, option, widget)
         if self.isSelected():
-            painter.setPen(self.appearance.outline.pen)
+            painter.setPen(self.outline.pen)
             painter.drawRect(self.boundingRect())
 
     def setAnchor(self : Self, anchor : KPLoc = KPLoc.TOP_LEFT) -> None:
@@ -190,8 +192,8 @@ class BaseTextBlock(QGraphicsTextItem, Element):
         self._kpm.setVisible(visible)
 
     def ctxMenuFont(self : Self, checked: bool) -> None:
-        s = self.appearance.text
-        d = self.appearance.text.getDefaults()
+        s = self.text
+        d = self.text.getDefaults()
         dialog = TextFontDialog(
             family    = ( s.getFamily()    , d.family    ),
             size      = ( s.getSize()      , d.size      ),
@@ -200,7 +202,7 @@ class BaseTextBlock(QGraphicsTextItem, Element):
             underline = ( s.getUnderline() , d.underline )
         )
         if dialog.exec():
-            self.appearance.text.set(
+            self.text.set(
                 family    = dialog.chosen_family,
                 size      = dialog.chosen_size,
                 bold      = dialog.chosen_bold,
@@ -212,13 +214,13 @@ class BaseTextBlock(QGraphicsTextItem, Element):
             self.update()
 
     def ctxMenuColor(self : Self, checked: bool) -> None:
-        specified = self.appearance.text.getColor()
-        default   = self.appearance.text.getDefaults().color
+        specified = self.text.getColor()
+        default   = self.text.getDefaults().color
         dialog = CustomColorDialog(
             default if specified is None else specified
         )
         if dialog.exec():
-            self.appearance.text.setColor(dialog.getColor())
+            self.text.setColor(dialog.getColor())
             self.refresh()
             self.update()
 
