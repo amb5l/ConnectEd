@@ -10,8 +10,6 @@ from PyQt6.QtGui     import QPainter, QPainterPath
 
 from ....core   import logger, ElementUtils
 
-from ...dialogs import FillDialog
-
 from . import CustomGraphicsRectItem, \
               Element, KPLoc, KPDef, KPManager, cmdPlaceElement
 
@@ -32,7 +30,7 @@ class BaseRectangle(CustomGraphicsRectItem, Element):
     MIN_SIZE = QSizeF(1.0, 1.0)
     _MENU = None
     _MENU_ITEM_NAMES = [
-        "Fill..."
+        "Appearance..."
     ]
     getMenu = ElementUtils.getMenu
     getCmd  = ElementUtils.getCmd
@@ -230,17 +228,9 @@ class BaseRectangle(CustomGraphicsRectItem, Element):
             case _:
                 raise ValueError(f"Invalid key point: {kp}")
 
-    def ctxMenuFill(self : Self, checked: bool) -> None:
-        dialog = FillDialog(
-            current_color = self.fill.getColor(),
-            default_color = self.fill.getDefaults().color,
-            current_style = self.fill.getStyle(),
-            default_style = self.fill.getDefaults().style
-        )
-        if dialog.exec():
-            self.fill.setColor(dialog.getColor())
-            self.fill.setStyle(dialog.getStyle())
-            self.update()
+    def ctxMenuAppearance(self : Self, checked: bool) -> None:
+        print("TODO: ctxMenuAppearance")
+
 
     @overload
     @classmethod

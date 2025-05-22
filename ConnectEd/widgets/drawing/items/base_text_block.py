@@ -11,7 +11,7 @@ from PyQt6.QtGui     import QPainter, QPainterPath, \
 
 from ....core   import ElementUtils
 
-from ...dialogs import TextFontDialog, CustomColorDialog
+from ...dialogs import TextFontDialog
 
 from . import CustomGraphicsTextItem, \
               Element, KPManager, KPLoc, KPDef, cmdPlaceElement
@@ -32,8 +32,7 @@ class BaseTextBlock(CustomGraphicsTextItem, Element):
     }
     _MENU = None
     _MENU_ITEM_NAMES = [
-        "Font...",
-        "Color..."
+        "Appearance..."
     ]
     getMenu = ElementUtils.getMenu
 
@@ -191,38 +190,8 @@ class BaseTextBlock(CustomGraphicsTextItem, Element):
     def setKPVisible(self : Self, visible : bool) -> None:
         self._kpm.setVisible(visible)
 
-    def ctxMenuFont(self : Self, checked: bool) -> None:
-        s = self.text
-        d = self.text.getDefaults()
-        dialog = TextFontDialog(
-            family    = ( s.getFamily()    , d.family    ),
-            size      = ( s.getSize()      , d.size      ),
-            bold      = ( s.getBold()      , d.bold      ),
-            italic    = ( s.getItalic()    , d.italic    ),
-            underline = ( s.getUnderline() , d.underline )
-        )
-        if dialog.exec():
-            self.text.set(
-                family    = dialog.chosen_family,
-                size      = dialog.chosen_size,
-                bold      = dialog.chosen_bold,
-                italic    = dialog.chosen_italic,
-                underline = dialog.chosen_underline
-            )
-            self._kpm.updatePositions()
-            self.refresh()
-            self.update()
-
-    def ctxMenuColor(self : Self, checked: bool) -> None:
-        specified = self.text.getColor()
-        default   = self.text.getDefaults().color
-        dialog = CustomColorDialog(
-            default if specified is None else specified
-        )
-        if dialog.exec():
-            self.text.setColor(dialog.getColor())
-            self.refresh()
-            self.update()
+    def ctxMenuAppearance(self : Self, checked: bool) -> None:
+        print("TODO: ctxMenuAppearance")
 
     @classmethod
     def createOrUpdate(

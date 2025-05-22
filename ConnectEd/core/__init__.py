@@ -13,3 +13,5 @@ from .xml import *
 __all__ += xml.__all__
 from .model import *
 __all__ += model.__all__
+from .icon import *
+__all__ += icon.__all__
