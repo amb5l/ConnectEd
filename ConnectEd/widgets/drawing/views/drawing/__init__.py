@@ -160,8 +160,8 @@ class DrawingViewWip:
         self.pos0     = None
 
 class DrawingView(
-    QGraphicsView,
     DrawingViewMouseMixin,
+    QGraphicsView,
     DrawingViewPrivateMixin
 ):
 

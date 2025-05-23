@@ -415,17 +415,7 @@ class CustomGraphicsItemMixin:
     """Mixin for custom graphics items, providing hashability and itemChange."""
     _MENU = None # class context menu
 
-    _id       : str            # instance id
-    _menu     : QMenu          # instance context menu
     _instance : Optional[Self]
-
-    def __hash__(self: Self) -> int:
-        return hash(self._id)
-
-    def __eq__(self: Self, other: Self) -> bool:
-        if not isinstance(other, CustomGraphicsItemMixin):
-            return NotImplemented
-        return self._id == other._id
 
     def itemChange(
         self: QGraphicsItem,
@@ -477,19 +467,13 @@ class CustomGraphicsItemMixin:
         self._instance = None
 
 class CustomGraphicsItem(CustomGraphicsItemMixin, QGraphicsItem):
-    def __init__(self: Self) -> None:
-        super().__init__()
-        self._id = str(uuid.uuid4())
+    pass
 
 class CustomGraphicsRectItem(CustomGraphicsItemMixin, QGraphicsRectItem):
-    def __init__(self: Self) -> None:
-        super().__init__()
-        self._id = str(uuid.uuid4())
+    pass
 
 class CustomGraphicsTextItem(CustomGraphicsItemMixin, QGraphicsTextItem):
-    def __init__(self: Self, text: str = "") -> None:
-        super().__init__(text)
-        self._id = str(uuid.uuid4())
+    pass
 
 class Element:
     _MENU = None
@@ -518,6 +502,7 @@ class Element:
         )
     }
 
+    _uuid   : str
     _menu   : QMenu
     line    : Optional[LinePen]
     fill    : Optional[FillBrush]
@@ -530,6 +515,7 @@ class Element:
         fill : Optional[FillPref] = FillPref(), # all defaults
         text : Optional[TextPref] = TextPref()  # all defaults
     ) -> None:
+        self._uuid   = str(uuid.uuid4())
         self.line    = LinePen(self, line)       if line is not None else None
         self.fill    = FillBrush(self, fill)     if fill is not None else None
         self.text    = TextColorFont(self, text) if text is not None else None
@@ -545,12 +531,12 @@ class Element:
         self._menu = CustomGraphicsItemMixin.getMenu(self.__class__)
 
     def __hash__(self):
-        return hash(self._id)
+        return hash(self._uuid)
 
     def __eq__(self, other):
         if not isinstance(other, Element):
             return NotImplemented
-        return self._id == other._id
+        return self._uuid == other._uuid
 
     def onSettingsChange(self : Self) -> None:
         if self.line: self.line.onSettingsChange()
