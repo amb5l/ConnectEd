@@ -1,3 +1,7 @@
+- appearance context menu
+- interactive appearance editing
+- Ensure AppearanceDialog is parented to main_window for proper modal behavior:
+- add id to XML_ATTRS
 - fold ElementUtils into Element
 - state manager
 - mouse manager

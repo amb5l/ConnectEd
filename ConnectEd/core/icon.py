@@ -47,7 +47,6 @@ def getSvgIcon(path : str, size : QSize) -> QIcon:
     x = ( size.width()  - scaled_size.width()  ) / 2
     y = ( size.height() - scaled_size.height() ) / 2
     painter.translate(x, y)
-    painter = QPainter(pixmap)
     renderer.render(
         painter,
         QRectF(x, y, scaled_size.width(), scaled_size.height())

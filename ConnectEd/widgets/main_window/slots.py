@@ -142,6 +142,10 @@ class Slots:
         widget.editResize()
 
     @withCurrentWidget(DrawingView)
+    def editAppearance(self : Self, widget: DrawingView) -> None:
+        widget.editAppearance()
+
+    @withCurrentWidget(DrawingView)
     def viewZoomAll(self : Self, widget: DrawingView) -> None:
         widget.viewZoomAll()
 

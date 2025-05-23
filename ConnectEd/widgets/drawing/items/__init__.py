@@ -18,96 +18,96 @@ if TYPE_CHECKING:
     from .. import DrawingScene
 
 class Default:
-    def __str__(self): return "default"
+    def __str__(self): return "<default>"
     def __repr__(self): return "<default>"
 
 DEFAULT = Default()
 
 class NoChange:
-    def __str__(self): return "No Change"
+    def __str__(self): return "<no change>"
     def __repr__(self): return "<no change>"
 
 NO_CHANGE = NoChange()
 
 @dataclass
 class LineSpec:
-    color : Optional[QColor]      = None
-    width : Optional[float]       = None
-    style : Optional[Qt.PenStyle] = None
+    color : QColor
+    width : float
+    style : Qt.PenStyle
 
 @dataclass
-class LineSpecDelta:
-    color : Optional[ NoChange | QColor      ] = None
-    width : Optional[ NoChange | float       ] = None
-    style : Optional[ NoChange | Qt.PenStyle ] = None
+class LineSpecChange:
+    color : NoChange | QColor
+    width : NoChange | float
+    style : NoChange | Qt.PenStyle
 
 @dataclass
 class LinePref:
-    color : Optional[ Default | QColor      ] = DEFAULT
-    width : Optional[ Default | float       ] = DEFAULT
-    style : Optional[ Default | Qt.PenStyle ] = DEFAULT
+    color : Default | QColor      = DEFAULT
+    width : Default | float       = DEFAULT
+    style : Default | Qt.PenStyle = DEFAULT
 
 @dataclass
-class LineChoice:
-    color : Optional[ NoChange | Default | QColor      ] = None
-    width : Optional[ NoChange | Default | float       ] = None
-    style : Optional[ NoChange | Default | Qt.PenStyle ] = None
+class LinePrefChange:
+    color : Optional[NoChange | Default | QColor     ] = None
+    width : Optional[NoChange | Default | float      ] = None
+    style : Optional[NoChange | Default | Qt.PenStyle] = None
 
 @dataclass
 class FillSpec:
-    color : Optional[QColor]
+    color : QColor
     style : Qt.BrushStyle
 
 @dataclass
-class FillSpecDelta:
-    color : Optional[ NoChange | QColor        ] = None
-    style : Optional[ NoChange | Qt.BrushStyle ] = None
+class FillSpecChange:
+    color : NoChange | QColor
+    style : NoChange | Qt.BrushStyle
 
 @dataclass
 class FillPref:
-    color : Optional[ Default | QColor        ] = DEFAULT
-    style : Optional[ Default | Qt.BrushStyle ] = DEFAULT
+    color : Default | QColor        = DEFAULT
+    style : Default | Qt.BrushStyle = DEFAULT
 
 @dataclass
-class FillChoice:
-    color : Optional[ NoChange | Default | QColor        ] = None
-    style : Optional[ NoChange | Default | Qt.BrushStyle ] = None
+class FillPrefChange:
+    color : Optional[NoChange | Default | QColor]        = None
+    style : Optional[NoChange | Default | Qt.BrushStyle] = None
 
 @dataclass
 class TextSpec:
-    color     : Optional[QColor] = None
-    family    : Optional[str]    = None
-    size      : Optional[float]  = None
-    bold      : Optional[bool]   = None
-    italic    : Optional[bool]   = None
-    underline : Optional[bool]   = None
+    color     : QColor
+    family    : str
+    size      : float
+    bold      : bool
+    italic    : bool
+    underline : bool
 
 @dataclass
-class TextSpecDelta:
-    color     : Optional[ NoChange | QColor   ] = None
-    family    : Optional[ NoChange | str      ] = None
-    size      : Optional[ NoChange | float    ] = None
-    bold      : Optional[ NoChange | bool     ] = None
-    italic    : Optional[ NoChange | bool     ] = None
-    underline : Optional[ NoChange | bool     ] = None
+class TextSpecChange:
+    color     : NoChange | QColor
+    family    : NoChange | str
+    size      : NoChange | float
+    bold      : NoChange | bool
+    italic    : NoChange | bool
+    underline : NoChange | bool
 
 @dataclass
 class TextPref:
-    color     : Optional[ Default | QColor   ] = DEFAULT
-    family    : Optional[ Default | str      ] = DEFAULT
-    size      : Optional[ Default | float    ] = DEFAULT
-    bold      : Optional[ Default | bool     ] = DEFAULT
-    italic    : Optional[ Default | bool     ] = DEFAULT
-    underline : Optional[ Default | bool     ] = DEFAULT
+    color     : Default | QColor = DEFAULT
+    family    : Default | str    = DEFAULT
+    size      : Default | float  = DEFAULT
+    bold      : Default | bool   = DEFAULT
+    italic    : Default | bool   = DEFAULT
+    underline : Default | bool   = DEFAULT
 
 @dataclass
-class TextChoice:
-    color     : Optional[ NoChange | Default | QColor ] = None
-    family    : Optional[ NoChange | Default | str    ] = None
-    size      : Optional[ NoChange | Default | float  ] = None
-    bold      : Optional[ NoChange | Default | bool   ] = None
-    italic    : Optional[ NoChange | Default | bool   ] = None
-    underline : Optional[ NoChange | Default | bool   ] = None
+class TextPrefChange:
+    color     : Optional[NoChange | Default | QColor] = None
+    family    : Optional[NoChange | Default | str]    = None
+    size      : Optional[NoChange | Default | float]  = None
+    bold      : Optional[NoChange | Default | bool]   = None
+    italic    : Optional[NoChange | Default | bool]   = None
+    underline : Optional[NoChange | Default | bool]   = None
 
 @dataclass
 class AppearanceSpec:
@@ -116,10 +116,10 @@ class AppearanceSpec:
     text : Optional[TextSpec] = None
 
 @dataclass
-class AppearanceSpecDelta:
-    line : Optional[LineSpecDelta] = None
-    fill : Optional[FillSpecDelta] = None
-    text : Optional[TextSpecDelta] = None
+class AppearanceSpecChange:
+    line : Optional[LineSpecChange] = None
+    fill : Optional[FillSpecChange] = None
+    text : Optional[TextSpecChange] = None
 
 @dataclass
 class AppearancePref:
@@ -128,10 +128,10 @@ class AppearancePref:
     text : Optional[TextPref] = None
 
 @dataclass
-class AppearanceChoice:
-    line : Optional[LineChoice] = None
-    fill : Optional[FillChoice] = None
-    text : Optional[TextChoice] = None
+class AppearancePrefChange:
+    line : Optional[LinePrefChange] = None
+    fill : Optional[FillPrefChange] = None
+    text : Optional[TextPrefChange] = None
 
 class LinePen:
     element  : "Element"
@@ -155,13 +155,13 @@ class LinePen:
         self.selected = QPen()
         self.onSettingsChange()
 
-    def getPref(self : Self) -> LinePref:
+    def get(self : Self) -> LinePref:
         return LinePref(self.color, self.width, self.style)
 
-    def setPref(self : Self, pref : LinePref) -> None:
-        self.color = pref.color
-        self.width = pref.width
-        self.style = pref.style
+    def set(self : Self, c : LinePref | LinePrefChange) -> None:
+        if c.color is not NO_CHANGE: self.color = c.color
+        if c.width is not NO_CHANGE: self.width = c.width
+        if c.style is not NO_CHANGE: self.style = c.style
         self.onSettingsChange()
 
     def getDefaults(self : Self) -> SimpleNamespace:
@@ -229,26 +229,12 @@ class FillBrush:
         self.selected = QBrush()
         self.onSettingsChange()
 
-    def getPref(self : Self) -> FillPref:
+    def get(self : Self) -> FillPref:
         return FillPref(self.color, self.style)
 
-    def setPref(self : Self, pref : FillPref) -> None:
-        self.color = pref.color
-        self.style = pref.style
-        self.onSettingsChange()
-
-    def getColor(self : Self) -> QColor:
-        return self.color
-
-    def setColor(self  : Self, color : QColor) -> None:
-        self.color = color
-        self.onSettingsChange()
-
-    def getStyle(self : Self) -> Qt.BrushStyle:
-        return self.style
-
-    def setStyle(self  : Self, style : Qt.BrushStyle) -> None:
-        self.style = style
+    def set(self : Self, c : FillPref | FillPrefChange) -> None:
+        if c.color is not NO_CHANGE: self.color = c.color
+        if c.style is not NO_CHANGE: self.style = c.style
         self.onSettingsChange()
 
     def getDefaults(self : Self) -> SimpleNamespace:
@@ -322,7 +308,7 @@ class TextColorFont:
         self.font      = QFont()
         self.onSettingsChange()
 
-    def getPref(self : Self) -> TextPref:
+    def get(self : Self) -> TextPref:
         return TextPref(
             self.color,
             self.family,
@@ -332,13 +318,13 @@ class TextColorFont:
             self.underline
         )
 
-    def setPref(self : Self, pref : TextPref) -> None:
-        self.color     = pref.color
-        self.family    = pref.family
-        self.size      = pref.size
-        self.bold      = pref.bold
-        self.italic    = pref.italic
-        self.underline = pref.underline
+    def set(self : Self, c : TextPref | TextPrefChange) -> None:
+        if c.color     is not NO_CHANGE: self.color     = c.color
+        if c.family    is not NO_CHANGE: self.family    = c.family
+        if c.size      is not NO_CHANGE: self.size      = c.size
+        if c.bold      is not NO_CHANGE: self.bold      = c.bold
+        if c.italic    is not NO_CHANGE: self.italic    = c.italic
+        if c.underline is not NO_CHANGE: self.underline = c.underline
         self.onSettingsChange()
 
     def getDefaults(self : Self) -> SimpleNamespace:
@@ -530,6 +516,20 @@ class Element:
         if self.fill: self.fill.onSelectionChange()
         if self.text: self.text.onSelectionChange()
 
+    def getAppearancePref(self : Self) -> AppearancePref:
+        return AppearancePref(
+            line = None if self.line is None else self.line.get(),
+            fill = None if self.fill is None else self.fill.get(),
+            text = None if self.text is None else self.text.get()
+        )
+
+    def getDefaults(self : Self) -> SimpleNamespace:
+        r = SimpleNamespace()
+        if self.line: r.line = self.line.getDefaults()
+        if self.fill: r.fill = self.fill.getDefaults()
+        if self.text: r.text = self.text.getDefaults()
+        return r
+
     def toXml(self : Self, xw : QXmlStreamWriter) -> None:
         xw.writeStartElement(self.__class__.__name__)
         toXmlAttrs(self, xw)
@@ -609,6 +609,16 @@ class cmdElements(QUndoCommand):
             return False
         return True
 
+    def redo(self : Self) -> None:
+        raise NotImplementedError(
+            f"{self.__class__.__name__} must implement redo"
+        )
+
+    def undo(self : Self) -> None:
+        raise NotImplementedError(
+            f"{self.__class__.__name__} must implement undo"
+        )
+
 class cmdPlaceElement(cmdElement):
     """Base class for all commands that place an element."""
 
@@ -666,21 +676,21 @@ __all__ = [
     "NoChange",
     "NO_CHANGE",
     "LineSpec",
-    "LineSpecDelta",
+    "LineSpecChange",
     "LinePref",
-    "LineChoice",
+    "LinePrefChange",
     "FillSpec",
-    "FillSpecDelta",
+    "FillSpecChange",
     "FillPref",
-    "FillChoice",
+    "FillPrefChange",
     "TextSpec",
-    "TextSpecDelta",
+    "TextSpecChange",
     "TextPref",
-    "TextChoice",
+    "TextPrefChange",
     "AppearanceSpec",
-    "AppearanceSpecDelta",
+    "AppearanceSpecChange",
     "AppearancePref",
-    "AppearanceChoice",
+    "AppearancePrefChange",
     "CustomGraphicsItem",
     "CustomGraphicsRectItem",
     "CustomGraphicsTextItem",

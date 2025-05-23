@@ -11,6 +11,8 @@ from PyQt6.QtGui     import QPainter, QPen, QCloseEvent, QKeyEvent
 
 from .....core import logger, LAYER_SHEET, LAYER_DRAWING
 
+from ....dialogs import AppearanceDialog
+
 from ...scenes   import DrawingScene
 from ....marquee import Marquee
 
@@ -115,6 +117,8 @@ class DrawingViewState(Enum):
     EditResize1     = auto()
     EditResize2     = auto()
     EditResize3     = auto()
+    EditAppearance1 = auto()
+    EditAppearance2 = auto()
     PlaceRectangle1 = auto()
     PlaceRectangle2 = auto()
     PlaceTextBlock1 = auto()
@@ -134,6 +138,8 @@ DrawingViewStateTip = {
     DrawingViewState.EditResize1     : "Resize: select a single resizeable item",
     DrawingViewState.EditResize2     : "Resize: select a grip to begin resizing",
     DrawingViewState.EditResize3     : "Resize: place the selected grip as required",
+    DrawingViewState.EditAppearance1 : "Appearance: select one or more items",
+    DrawingViewState.EditAppearance2 : "Appearance: specify changes",
     DrawingViewState.PlaceRectangle1 : "Place Rectangle: pick the first point",
     DrawingViewState.PlaceRectangle2 : "Place Rectangle: pick the second point",
     DrawingViewState.PlaceTextBlock1 : "Place Text Block: pick a position",
@@ -343,6 +349,20 @@ class DrawingView(
         else:
             self.scene().clearSelection()
             self._goState(self.State.EditResize1)
+
+    def editAppearance(self : Self) -> None:
+        scene : DrawingScene = self.scene()
+        if scene.selectedItems():
+            self._goState(self.State.EditAppearance2)
+            dialog = AppearanceDialog(scene.selectedItems())
+            if dialog.exec():
+                scene.editAppearance(
+                    scene.selectedItems(),
+                    dialog.getChoice()
+                )
+            self._goState(self.State.Idle)
+        else:
+            self._goState(self.State.EditAppearance1)
 
     ############################################################################
     # view methods

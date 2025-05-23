@@ -197,6 +197,12 @@ class DrawingViewMouseMixin:
                     self._snap(self.mouse.left.release.logical)
                 )
                 self._goState(self.State.Idle)
+            case self.State.EditAppearance1:
+                self._selectPoint(
+                    self.mouse.current.logical,
+                    m == qkm.ControlModifier
+                )
+                self.editAppearance()
             case self.State.PlaceRectangle1:
                 self.placeRectangleBegin(
                     self._snap(self.mouse.left.release.logical)
@@ -244,6 +250,9 @@ class DrawingViewMouseMixin:
                 else: # start marquee selection
                     self.marquee.begin(self.mouse.left.press.physical)
                     self._goState(self.State.SelectArea2)
+            case self.State.EditAppearance1:
+                self.marquee.begin(self.mouse.left.press.physical)
+                self._goState(self.State.SelectArea2)
             case self.State.ViewZoomWindow1:
                 self.marquee.begin(self.mouse.left.press.physical)
                 self._goState(self.State.ViewZoomWindow2)
@@ -313,6 +322,13 @@ class DrawingViewMouseMixin:
                     self.state == self.State.EditSlide2
                 )
                 self._goState(self.State.Idle)
+            case self.State.EditAppearance1:
+                self.marquee.end(self.mouse.left.release.physical)
+                self._selectRect(
+                    self.marquee.rect(),
+                    m == qkm.ControlModifier
+                )
+                self.editAppearance()
             case self.State.PlaceRectangle2:
                 self.placeRectangleComplete(
                     self._snap(self.mouse.left.release.logical)

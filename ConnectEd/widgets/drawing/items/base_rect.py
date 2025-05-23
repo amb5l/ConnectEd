@@ -229,8 +229,9 @@ class BaseRectangle(CustomGraphicsRectItem, Element):
                 raise ValueError(f"Invalid key point: {kp}")
 
     def ctxMenuAppearance(self : Self, checked: bool) -> None:
-        print("TODO: ctxMenuAppearance")
-
+        self.scene().clearSelection()
+        self.setSelected(True)
+        # TODO: finish
 
     @overload
     @classmethod
