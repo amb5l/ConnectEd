@@ -350,11 +350,18 @@ class DrawingView(
             self.scene().clearSelection()
             self._goState(self.State.EditResize1)
 
-    def editAppearance(self : Self) -> None:
+    def editAppearance(
+        self : Self,
+        elements : Element | list[Element] = []
+    ) -> None:
         scene : DrawingScene = self.scene()
         if scene.selectedItems():
+            elements = scene.selectedItems()
+        elif not isinstance(elements, list):
+            elements = [elements]
+        if elements:
             self._goState(self.State.EditAppearance2)
-            dialog = AppearanceDialog(scene.selectedItems())
+            dialog = AppearanceDialog(elements)
             if dialog.exec():
                 scene.editAppearance(
                     scene.selectedItems(),

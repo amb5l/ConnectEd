@@ -10,9 +10,13 @@ from PyQt6.QtWidgets import QGraphicsItem, QStyleOptionGraphicsItem, \
                             QWidget, QGraphicsView, QMenu
 from PyQt6.QtGui     import QPainter, QPen, QBrush, QPainterPath
 
-from ....core import ElementUtils
+from . import CustomGraphicsItemMixin
 
 from .... import hub
+
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from ... import DrawingView
 
 
 class KPLoc(Enum):
@@ -41,7 +45,7 @@ class KeyPoint(QGraphicsItem):
     _MENU_ITEM_NAMES = [
         "Assign Anchor"
     ]
-    getMenu = ElementUtils.getMenu
+    getMenu = CustomGraphicsItemMixin.getMenu
 
     # instance variables
     _manager : "KPManager"
@@ -79,9 +83,7 @@ class KeyPoint(QGraphicsItem):
         self._brush.setStyle(Qt.BrushStyle.SolidPattern)
         self.onSettingsChange()
         hub.settings.change.connect(self.onSettingsChange)
-        self._menu = self.getMenu()
-
-    contextMenuEvent = ElementUtils.contextMenuEvent
+        self._menu = CustomGraphicsItemMixin.getMenu(self.__class__)
 
     def boundingRect(
         self : Self,
@@ -133,7 +135,11 @@ class KeyPoint(QGraphicsItem):
     def fromXml(cls : Self, xr : QXmlStreamReader) -> Self:
         pass
 
-    def ctxMenuAssignAnchor(self : Self, checked : bool) -> None:
+    def ctxMenuAssignAnchor(
+        self    : Self,
+        checked : bool,
+        view    : "DrawingView"
+    ) -> None:
         self._manager.setAnchor(self._loc)
 
 KPDef = namedtuple("KPDef", ["loc", "grip", "cleat"])

@@ -43,28 +43,11 @@ class CustomColorDialog(QColorDialog):
         color  : QColor,
         parent : Optional[QWidget] = hub.main_window
     ) -> None:
-        print("CustomColorDialog.__init__: color =", color, "parent =", parent)
         super().__init__(parent)
         self.setWindowTitle("Color")
-        #self.setOption(QColorDialog.ColorDialogOption.NoButtons, True)
         self.setOption(QColorDialog.ColorDialogOption.DontUseNativeDialog, True)
-        self.setWindowTitle("Select Color")
         if isinstance(color, QColor):
             self.setCurrentColor(color)
-        #self.dialog_layout = self.layout()
-        #self.xtra_row = QHBoxLayout()
-        #self.xtra_row.addStretch()
-        #self.ok_button = QPushButton("OK", self)
-        #self.ok_button.clicked.connect(self.accept)
-        #self.xtra_row.addWidget(self.ok_button)
-        #self.cancel_button = QPushButton("Cancel", self)
-        #self.cancel_button.clicked.connect(self.reject)
-        #self.xtra_row.addWidget(self.cancel_button)
-        #self.dialog_layout.addLayout(self.xtra_row)
-
-    def exec(self : Self) -> int:
-        print("CustomColorDialog.exec")
-        return super().exec()
 
     def getChoice(self : Self) -> QColor:
         return self.currentColor()
@@ -102,7 +85,6 @@ class ColorComboBox(QComboBox):
         default   : Optional[NoChange | QColor],
         parent    : Optional[QWidget] = None
     ) -> None:
-        print("ColorComboBox.__init__: current =", current, "no_change =", no_change, "default =", default)
         super().__init__(parent)
         self.setIconSize(CUSTOM_ICON_SIZE)
         default_icon = self.getIcon(default) if isinstance(default, QColor) \
@@ -131,7 +113,6 @@ class ColorComboBox(QComboBox):
         self.activated.connect(self.onActivated)
 
     def onActivated(self : Self, index : int) -> None:
-        print("ColorComboBox.onActivated: index =", index)
         keys = list(self.COLORS.keys())
         if keys[index] == "<no change>":
             self.choice = NO_CHANGE
@@ -141,7 +122,6 @@ class ColorComboBox(QComboBox):
             dialog = CustomColorDialog(
                 self.choice if isinstance(self.choice, QColor) else None
             )
-            print("ColorComboBox.onActivated: executing custom color dialog")
             if dialog.exec():
                 self.choice = dialog.getChoice()
                 self.setItemIcon(index, self.getIcon(self.choice))
@@ -208,7 +188,6 @@ class LineWidthComboBox(QComboBox):
         default   : Optional[NoChange | float | int],
         parent    : Optional[QWidget] = None
     ):
-        print("LineWidthComboBox.__init__: current =", current, "no_change =", no_change, "default =", default)
         super().__init__(parent)
         self.setIconSize(CUSTOM_ICON_SIZE)
         default_icon = self.getIcon(default) if isinstance(default, float | int) \
@@ -244,11 +223,9 @@ class LineWidthComboBox(QComboBox):
     def onActivated(self : Self, index : int) -> None:
         keys = list(self.WIDTHS.keys())
         if keys[index].startswith("<custom"):
-            print("Custom line width dialog")
             dialog = CustomLineWidthDialog()
             if dialog.exec():
                 w = dialog.getChoice()
-                print("Custom line width dialog choice =", w)
                 self.setItemText(
                     index,
                     f"<custom = {w}>" if w is not None else "<custom>"
@@ -306,7 +283,6 @@ class LineStyleComboBox(QComboBox):
         default   : Optional[NoChange | Qt.PenStyle],
         parent    : Optional[QWidget] = None
     ) -> None:
-        print("LineStyleComboBox.__init__: current =", current, "no_change =", no_change, "default =", default)
         super().__init__(parent)
         self.setIconSize(CUSTOM_ICON_SIZE)
         default_icon = self.getIcon(default) if isinstance(default, Qt.PenStyle) \
@@ -486,14 +462,14 @@ class FontSizeComboBox(QComboBox):
         self.sizes = []
         self.sizes.append(f"<no change{no_change_str}>")
         self.sizes.append(f"<default{default_str}>")
-        self.sizes.extend(self.SIZES)
+        self.sizes.extend([str(size) for size in self.SIZES])
         self.addItems(self.sizes)
         if current is NO_CHANGE:
             self.setCurrentIndex(0)
         elif current is DEFAULT:
             self.setCurrentIndex(1)
         elif isinstance(current, float | int) and current in self.SIZES:
-            self.setCurrentIndex(self.sizes.index(current))
+            self.setCurrentIndex(self.sizes.index(str(current)))
 
     def getChoice(self) -> Optional[NoChange | Default | float]:
         text = self.currentText()
@@ -633,13 +609,16 @@ class AppearanceDialog(QDialog):
             return
         self.dialog_layout = QVBoxLayout()
         if categories > 1:
-            self.setWindowTitle("Appearance")
+            title = "Appearance"
         else:
-            self.setWindowTitle(
+            title = (
                 "Line Appearance" if self.choice.line is not None else
                 "Fill Appearance" if self.choice.fill is not None else
                 "Text Appearance"
             )
+        if len(elements) > 1:
+            title += f" ({len(elements)} elements)"
+        self.setWindowTitle(title)
         self.dialog_layout = QVBoxLayout()
         if self.choice.line is not None:
             if categories > 1:

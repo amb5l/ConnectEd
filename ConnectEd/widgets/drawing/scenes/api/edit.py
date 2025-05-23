@@ -30,7 +30,6 @@ class cmdEditAppearance(cmdElements):
             self._initial[e] = a
 
     def redo(self) -> None:
-        print("cmdEditAppearance.redo")
         c = self._changes
         for e in self.elements:
             if e.line is not None: e.line.set(c.line)
@@ -39,7 +38,6 @@ class cmdEditAppearance(cmdElements):
             e.update()
 
     def undo(self) -> None:
-        print("cmdEditAppearance.undo")
         for e in self.elements:
             c = self._initial[e]
             if c.line is not None: e.line.set(c.line)

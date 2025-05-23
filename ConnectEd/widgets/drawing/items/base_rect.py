@@ -1,21 +1,19 @@
 __all__ = ["BaseRectangle"]
 
 from typing import Self, Optional, overload
-from types  import NoneType
 
 from PyQt6.QtCore    import QPointF, QRectF, QSizeF
-from PyQt6.QtWidgets import QGraphicsRectItem, QStyleOptionGraphicsItem, \
-                            QWidget, QMenu
+from PyQt6.QtWidgets import QWidget, QMenu, QStyleOptionGraphicsItem
 from PyQt6.QtGui     import QPainter, QPainterPath
 
-from ....core   import logger, ElementUtils
+from ....core   import logger
 
-from . import CustomGraphicsRectItem, \
-              Element, KPLoc, KPDef, KPManager, cmdPlaceElement
+from . import CustomGraphicsRectItem, Element, cmdPlaceElement, \
+              KPLoc, KPDef, KPManager
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from .. import DrawingScene
+    from .. import DrawingView
 
 
 class BaseRectangle(CustomGraphicsRectItem, Element):
@@ -28,19 +26,14 @@ class BaseRectangle(CustomGraphicsRectItem, Element):
         )
     }
     MIN_SIZE = QSizeF(1.0, 1.0)
-    _MENU = None
     _MENU_ITEM_NAMES = [
         "Appearance..."
     ]
-    getMenu = ElementUtils.getMenu
-    getCmd  = ElementUtils.getCmd
 
     _kpm           : KPManager
     _rect          : QRectF
     _bounding_rect : QRectF
     _shape         : QPainterPath
-    _menu          : QMenu
-
 
     @overload
     def __init__(
@@ -97,9 +90,6 @@ class BaseRectangle(CustomGraphicsRectItem, Element):
             self.setRect(a1, a2, a3, a4)
         else:
             logger.error(f"Invalid arguments: expected (x, y, w, h), (pos, size), or (rect); got {a1}, {a2}, {a3}, {a4}")
-        self._menu = self.getMenu()
-
-    contextMenuEvent = ElementUtils.contextMenuEvent
 
     def setRect(
         self       : Self,
@@ -228,10 +218,12 @@ class BaseRectangle(CustomGraphicsRectItem, Element):
             case _:
                 raise ValueError(f"Invalid key point: {kp}")
 
-    def ctxMenuAppearance(self : Self, checked: bool) -> None:
-        self.scene().clearSelection()
-        self.setSelected(True)
-        # TODO: finish
+    def ctxMenuAppearance(
+        self    : Self,
+        checked : bool,
+        view    : "DrawingView"
+    ) -> None:
+        view.editAppearance(self)
 
     @overload
     @classmethod

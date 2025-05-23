@@ -5,9 +5,9 @@ from types       import SimpleNamespace
 from dataclasses import dataclass
 
 from PyQt6.QtCore    import Qt, QXmlStreamWriter, QXmlStreamReader, QPointF
-from PyQt6.QtGui     import QPen, QBrush, QColor, QFont, QUndoCommand, \
-                            QFontDatabase
-from PyQt6.QtWidgets import QGraphicsItem, QGraphicsRectItem, QGraphicsTextItem
+from PyQt6.QtGui     import QPen, QBrush, QColor, QFont, QAction, QUndoCommand
+from PyQt6.QtWidgets import QGraphicsItem, QGraphicsRectItem, QGraphicsTextItem, \
+                            QApplication, QGraphicsSceneContextMenuEvent, QMenu
 
 from ....core import val2str, str2val, camel_to_proper, toXmlAttrs, fromXmlAttrs
 
@@ -413,7 +413,11 @@ class OutlinePen:
 
 class CustomGraphicsItemMixin:
     """Mixin for custom graphics items, providing hashability and itemChange."""
-    _id: str
+    _MENU = None # class context menu
+
+    _id       : str            # instance id
+    _menu     : QMenu          # instance context menu
+    _instance : Optional[Self]
 
     def __hash__(self: Self) -> int:
         return hash(self._id)
@@ -433,6 +437,45 @@ class CustomGraphicsItemMixin:
                 self.onSelectionChange()
         return super().itemChange(change, value)
 
+    @staticmethod
+    def getMenu(cls) -> QMenu:
+        if cls._MENU is None:
+            cls._MENU = QMenu()
+            for item_name in cls._MENU_ITEM_NAMES:
+                if item_name.startswith("-"):
+                    cls._MENU.addSeparator()
+                else:
+                    action = QAction(item_name, cls._MENU)
+                    action.triggered.connect(lambda: None)  # placeholder
+                    cls._MENU.addAction(action)
+        return cls._MENU
+
+    def contextMenuEvent(
+        self  : Self,
+        event : QGraphicsSceneContextMenuEvent
+    ) -> None:
+        from .. import DrawingView
+        widget = QApplication.widgetAt(event.screenPos())
+        while widget is not None and widget.parent() is not None:
+            if isinstance(widget, DrawingView):
+                break
+            widget = widget.parent()
+        self._instance = self
+        for action in self._menu.actions():
+            slot_name = \
+                f"ctxMenu{action.text().replace(' ', '').replace('.', '')}"
+            slot = getattr(self, slot_name, None)
+            if slot:
+                try:
+                    action.triggered.disconnect()
+                except TypeError:
+                    pass
+                action.triggered.connect(
+                    lambda checked=False, w=widget: slot(self._instance, w)
+                )
+        self._menu.exec(event.screenPos())
+        self._instance = None
+
 class CustomGraphicsItem(CustomGraphicsItemMixin, QGraphicsItem):
     def __init__(self: Self) -> None:
         super().__init__()
@@ -449,6 +492,8 @@ class CustomGraphicsTextItem(CustomGraphicsItemMixin, QGraphicsTextItem):
         self._id = str(uuid.uuid4())
 
 class Element:
+    _MENU = None
+
     """Mixin class for all elements."""
     XML_ATTRS = {
         "pos" : (
@@ -473,6 +518,7 @@ class Element:
         )
     }
 
+    _menu   : QMenu
     line    : Optional[LinePen]
     fill    : Optional[FillBrush]
     text    : Optional[TextColorFont]
@@ -496,6 +542,7 @@ class Element:
         self.setCacheMode(QGraphicsItem.CacheMode.DeviceCoordinateCache)
         self.setSelected(True)
         hub.settings.change.connect(self.onSettingsChange)
+        self._menu = CustomGraphicsItemMixin.getMenu(self.__class__)
 
     def __hash__(self):
         return hash(self._id)

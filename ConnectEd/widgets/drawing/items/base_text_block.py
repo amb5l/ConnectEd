@@ -3,22 +3,16 @@ __all__ = ["BaseTextBlock"]
 from typing import Self, Optional, overload
 
 from PyQt6.QtCore    import Qt, QPointF, QRectF
-from PyQt6.QtWidgets import QGraphicsTextItem, QWidget, QMenu, \
-                            QStyleOptionGraphicsItem, QStyle
-from PyQt6.QtGui     import QPainter, QPainterPath, \
-                            QKeyEvent, QFocusEvent, QColor, \
-                            QTextCursor
-
-from ....core   import ElementUtils
-
-from ...dialogs import TextFontDialog
+from PyQt6.QtWidgets import QWidget, QStyleOptionGraphicsItem, QStyle
+from PyQt6.QtGui     import QColor, QPainter, QPainterPath, \
+                            QKeyEvent, QFocusEvent, QTextCursor
 
 from . import CustomGraphicsTextItem, \
               Element, KPManager, KPLoc, KPDef, cmdPlaceElement
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from .. import DrawingScene
+    from .. import DrawingScene, DrawingView
 
 
 class BaseTextBlock(CustomGraphicsTextItem, Element):
@@ -30,18 +24,14 @@ class BaseTextBlock(CustomGraphicsTextItem, Element):
             lambda self: self.toPlainText()
         )
     }
-    _MENU = None
     _MENU_ITEM_NAMES = [
         "Appearance..."
     ]
-    getMenu = ElementUtils.getMenu
 
     # instance variables
     _kpm     : KPManager
     _rect    : QRectF
     _shape   : QPainterPath
-    _menu    : QMenu
-
 
     @overload
     def __init__(
@@ -85,7 +75,6 @@ class BaseTextBlock(CustomGraphicsTextItem, Element):
         self.setEditable(False)
         self.setFlag(self.GraphicsItemFlag.ItemIsSelectable , True)
         self.setFlag(self.GraphicsItemFlag.ItemIsFocusable  , True)
-        self._menu = self.getMenu()
 
     def keyPressEvent(self, event: QKeyEvent) -> None:
         if event.key() in (Qt.Key.Key_Return, Qt.Key.Key_Enter):
@@ -122,8 +111,6 @@ class BaseTextBlock(CustomGraphicsTextItem, Element):
         scene : Optional["DrawingScene"] = self.scene()
         if scene:
             scene.onTextEditingComplete(self)
-
-    contextMenuEvent = ElementUtils.contextMenuEvent
 
     def setPos(self : Self, pos : QPointF) -> None:
         super().setPos(pos - self._kpm.anchor_offset)
@@ -190,8 +177,12 @@ class BaseTextBlock(CustomGraphicsTextItem, Element):
     def setKPVisible(self : Self, visible : bool) -> None:
         self._kpm.setVisible(visible)
 
-    def ctxMenuAppearance(self : Self, checked: bool) -> None:
-        print("TODO: ctxMenuAppearance")
+    def ctxMenuAppearance(
+        self    : Self,
+        checked : bool,
+        view    : "DrawingView"
+    ) -> None:
+        view.editAppearance(self)
 
     @classmethod
     def createOrUpdate(

@@ -4,8 +4,7 @@ __all__ = [
     "camel_to_proper",
     "getDefaultPath",
     "val2str",
-    "str2val",
-    "ElementUtils"
+    "str2val"
 ]
 
 import os, sys, platform
@@ -108,46 +107,3 @@ def str2val(s : str, t : str) -> Any:
         case "KPLoc"      : return getattr(KPLoc, s)
         case _:
             raise ValueError(f"Unsupported type: {t}")
-
-class ElementUtils:
-    _MENU = None
-    _CMD  = None
-
-    @staticmethod
-    def getMenu(cls) -> QMenu:
-        if cls._MENU is None:
-            cls._MENU = QMenu()
-            for item_name in cls._MENU_ITEM_NAMES:
-                if item_name.startswith("-"):
-                    cls._MENU.addSeparator()
-                else:
-                    action = QAction(item_name, cls._MENU)
-                    action.triggered.connect(lambda: None)  # placeholder
-                    cls._MENU.addAction(action)
-        return cls._MENU
-
-    def contextMenuEvent(
-        instance : QGraphicsItem,
-        event    : QGraphicsSceneContextMenuEvent
-    ) -> None:
-        instance._instance = instance
-        for action in instance._menu.actions():
-            handler_name = \
-                f"ctxMenu{action.text().replace(' ', '').replace('.', '')}"
-            method = getattr(instance, handler_name, None)
-            if method:
-                try:
-                    action.triggered.disconnect()
-                except TypeError:
-                    pass
-                action.triggered.connect(lambda: method(instance._instance))
-        instance._menu.exec(event.screenPos())
-        instance._instance = None
-
-    @staticmethod
-    def getCmd(cls) -> "cmdElement":
-        if cls._CMD is None:
-            command_name = f"cmdPlace{cls.__name__}"
-            module = sys.modules[cls.__module__]
-            cls._CMD = getattr(module, command_name, None)
-        return cls._CMD
