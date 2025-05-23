@@ -20,7 +20,7 @@ class BaseRectangle(CustomGraphicsRectItem, Element):
     """Base class for rectangle elements."""
     XML_ATTRS = Element.XML_ATTRS | {
         "size" : (
-            "QSizeF",
+            "QSizeF", True,
             lambda self, value: self.setSize(value),
             lambda self: self.rect().size()
         )

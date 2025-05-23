@@ -79,6 +79,9 @@ def val2str(v : Any) -> str:
         case "QColor"     : s = hex(v.rgba())
         case "PenStyle"   : s = str(v).replace("PenStyle.", "")
         case "BrushStyle" : s = str(v).replace("BrushStyle.", "")
+        case "LinePref"   : s = v.toStr()
+        case "FillPref"   : s = v.toStr()
+        case "TextPref"   : s = v.toStr()
         case "KPLoc"      : s = str(v).replace("KPLoc.", "")
         case _ :
             raise ValueError(f"Unsupported type: {t}")
@@ -86,7 +89,7 @@ def val2str(v : Any) -> str:
 
 def str2val(s : str, t : str) -> Any:
     """Convert a text representation of a Python value to a Python value."""
-    from ..widgets import KPLoc
+    from ..widgets import KPLoc, TextPref, LinePref, FillPref
     def strValuesToFloats(s : str) -> list[float]:
         return [float(p) for p in s.strip("()").split(",")]
     if s == "None":
@@ -104,6 +107,9 @@ def str2val(s : str, t : str) -> Any:
         case "QColor"     : return QColor.fromRgba(int(s,0))
         case "PenStyle"   : return Qt.PenStyle[s]
         case "BrushStyle" : return Qt.BrushStyle[s]
+        case "TextPref"   : return TextPref.fromStr(s)
+        case "LinePref"   : return LinePref.fromStr(s)
+        case "FillPref"   : return FillPref.fromStr(s)
         case "KPLoc"      : return getattr(KPLoc, s)
         case _:
             raise ValueError(f"Unsupported type: {t}")

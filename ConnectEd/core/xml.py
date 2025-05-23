@@ -48,9 +48,10 @@ def toXmlAttrs(instance : Any, xw : QXmlStreamWriter) -> None:
                 value = getattr(instance, attr_name)
                 xw.writeAttribute(attr_name, val2str(value))
         elif isinstance(attr_info, tuple):
-            _, _, getter = attr_info
-            value = getter(instance)
-            xw.writeAttribute(attr_name, val2str(value))
+            _, always, _, getter = attr_info
+            if always or hasattr(instance, attr_name):
+                value = getter(instance)
+                xw.writeAttribute(attr_name, val2str(value))
         else:
             logger.warning(f"Unexpected XML attribute info: {attr_info}")
 
@@ -79,7 +80,7 @@ def fromXmlAttrs(instance : Any, xr : QXmlStreamReader) -> None:
                     str2val(attr_value_str, attr_info)
                 )
             elif isinstance(attr_info, tuple):
-                type_name, setter, _ = attr_info
+                type_name, _, setter, _ = attr_info
                 setter(instance, str2val(attr_value_str, type_name))
             else:
                 logger.warning(f"Unexpected XML attribute info: {attr_info}")

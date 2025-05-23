@@ -34,7 +34,7 @@ class DrawingScene(
     ALLOWED_ITEMS          = None # any
 
     # instance variables
-    parent     : "Drawing"
+    parent     : Optional["Drawing"]
     undo_stack : Optional[QUndoStack]
     kp_items   : list[QGraphicsItem]
 
@@ -44,7 +44,7 @@ class DrawingScene(
 
     def __init__(
         self    : Self,
-        parent  : "Drawing",
+        parent  : Optional["Drawing"] = None,
         extents : Optional[QSizeF] = None
     ) -> None:
         super().__init__()
@@ -58,6 +58,9 @@ class DrawingScene(
         self.undo_stack = QUndoStack(self)
         if hub.main_window: # GUI is running
             self.selectionChanged.connect(self.onSelectionChanged)
+
+    def setParent(self : Self, parent : "Drawing") -> None:
+        self.parent = parent
 
     def addItem(self : Self, item : QGraphicsItem) -> None:
         if item in self.SYSTEM_FORBIDDEN_ITEMS:
@@ -80,11 +83,11 @@ class DrawingScene(
         xw.writeEndElement()
 
     @classmethod
-    def fromXml(cls : Self, xr : QXmlStreamReader) -> Self:
+    def fromXml(cls : Self, xr : QXmlStreamReader, parent : Optional["Drawing"] = None) -> Self:
         cls_name = cls.__name__
         if xr.name() != cls_name:
             raise ValueError(f"Expected {cls_name} element, got {xr.name()}")
-        drawing_scene : DrawingScene = cls()
+        drawing_scene : DrawingScene = cls(parent)
         fromXmlAttrs(drawing_scene, xr)
         while not (xr.isEndElement() and xr.name() == cls_name):
             if xr.tokenType() == QXmlStreamReader.TokenType.StartElement:

@@ -19,7 +19,7 @@ class BaseTextBlock(CustomGraphicsTextItem, Element):
     # class variables
     XML_ATTRS = Element.XML_ATTRS | {
         "text" : (
-            "str",
+            "str", True,
             lambda self, value: self.setPlainText(value),
             lambda self: self.toPlainText()
         )

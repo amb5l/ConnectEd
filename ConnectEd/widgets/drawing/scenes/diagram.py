@@ -27,7 +27,7 @@ class DiagramScene(DrawingScene):
 
     def __init__(
         self,
-        parent     : "Diagram",
+        parent     : Optional["Diagram"] = None,
         paper_size : Optional[str | QSizeF] = None,
         margin     : Optional[float] = None,
         border     : Optional[float] = None

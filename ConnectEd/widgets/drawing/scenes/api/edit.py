@@ -24,25 +24,25 @@ class cmdEditAppearance(cmdElements):
         self._initial = {}
         for e in elements:
             a = AppearancePref()
-            a.line = None if e.line is None else e.line.get()
-            a.fill = None if e.fill is None else e.fill.get()
-            a.text = None if e.text is None else e.text.get()
+            a.line = None if e.line is None else e.line.getPref()
+            a.fill = None if e.fill is None else e.fill.getPref()
+            a.text = None if e.text is None else e.text.getPref()
             self._initial[e] = a
 
     def redo(self) -> None:
         c = self._changes
         for e in self.elements:
-            if e.line is not None: e.line.set(c.line)
-            if e.fill is not None: e.fill.set(c.fill)
-            if e.text is not None: e.text.set(c.text)
+            if e.line is not None: e.line.setPref(c.line)
+            if e.fill is not None: e.fill.setPref(c.fill)
+            if e.text is not None: e.text.setPref(c.text)
             e.update()
 
     def undo(self) -> None:
         for e in self.elements:
             c = self._initial[e]
-            if c.line is not None: e.line.set(c.line)
-            if c.fill is not None: e.fill.set(c.fill)
-            if c.text is not None: e.text.set(c.text)
+            if c.line is not None: e.line.setPref(c.line)
+            if c.fill is not None: e.fill.setPref(c.fill)
+            if c.text is not None: e.text.setPref(c.text)
             e.update()
 
 class DrawingSceneApiEditMixin:

@@ -180,7 +180,7 @@ class Explorer(TreeView):
 
     def newDesign(self : Self) -> None:
         design_item = hub.model.newDesign()
-        diagram_item = hub.model.newDiagram(design_item)
+        diagram_item = design_item.diagrams.child(0)
         self.expand(hub.model.indexFromItem(design_item))
         self.expand(hub.model.indexFromItem(design_item.diagrams))
         self.editDrawing(diagram_item)

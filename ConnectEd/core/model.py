@@ -71,7 +71,11 @@ class Drawing(QStandardItem):
             name = hub.name_counter.get(f"Untitled{self.__class__.__name__}")
         super().__init__(name)
         scene_class = self.__class__.sceneClass()
-        self.scene = scene if scene else scene_class(self)
+        if scene:
+            scene.setParent(self)
+        else:
+            scene = scene_class(self)
+        self.scene = scene
         self.setData(self.scene, Qt.ItemDataRole.UserRole)
         self.setFlags(self.flags() | Qt.ItemFlag.ItemIsEditable)
 
@@ -85,13 +89,23 @@ class Drawing(QStandardItem):
 
     @classmethod
     def fromXml(cls : Self, xr : QXmlStreamReader) -> Self:
-        cls_name = cls.__name__.replace("Item", "")
+        cls_name = cls.__name__
         if xr.name() != cls_name:
             raise ValueError(f"Expected {cls_name} element, got {xr.name()}")
-        scene_class = cls.sceneClass()
-        scene = scene_class.fromXml(xr)
-        instance : "Drawing" = cls(scene)
-        return instance
+        attributes = xr.attributes()
+        for attr in attributes:
+            if attr.name() == "name":
+                name = attr.value()
+        xr.readNext()
+        while not (xr.isEndElement() and xr.name() == cls_name):
+            if xr.tokenType() == QXmlStreamReader.TokenType.StartElement:
+                scene_class = cls.sceneClass()
+                scene = scene_class.fromXml(xr)
+                instance : "Drawing" = cls(name, scene)
+                scene.setParent(instance)
+                return instance
+            xr.readNext()
+        raise ValueError(f"No scene element found in {cls_name}")
 
     def getName(self : Self) -> str:
         return self.text()
@@ -121,7 +135,7 @@ class Diagram(Drawing):
 
 class Db(QStandardItem):
     XML_ATTRS = {
-        "name" : ("str", QStandardItem.setText, QStandardItem.text)
+        "name" : ("str", True, QStandardItem.setText, QStandardItem.text)
     }
 
     path : Optional[str]
@@ -351,32 +365,33 @@ class Model(QStandardItemModel):
         if paste_items:
             match self.getItemDescription(item):
                 case "Designs":
-                    valid_item_type_names = ["DesignItem"]
+                    valid_item_types = [DesignDb]
                 case "Libraries":
-                    valid_item_type_names = ["LibraryItem"]
+                    valid_item_types = [LibraryDb]
                 case "Diagrams":
-                    valid_item_type_names = ["DiagramItem"]
+                    valid_item_types = [Diagram]
                 case "Symbol Cache":
-                    valid_item_type_names = ["SymbolItem"]
-                case "Libraries":
-                    valid_item_type_names = ["SymbolItem"]
+                    valid_item_types = [Symbol]
                 case _:
                     raise ValueError(
                         f"Cannot paste into item: {item.text()} ({type(item)})")
-            invalid_item_type_names = []
+            invalid_item_types = []
             invalid_item_count = 0
             for paste_item in paste_items:
-                paste_item_type_name = type(paste_item).__name__
-                if paste_item_type_name not in valid_item_type_names:
-                    invalid_item_type_names.append(paste_item_type_name)
+                if not any(isinstance(paste_item, t) for t in valid_item_types):
+                    invalid_item_types.append(type(paste_item).__name__)
                     invalid_item_count += 1
                 else:
+                    base_name = paste_item.text()
+                    existing_names = \
+                        [item.child(i).text() for i in range(item.rowCount())]
+                    if base_name in existing_names:
+                        paste_item.setText(hub.name_counter.get(base_name))
                     item.appendRow(paste_item)
-                    # TODO: handle duplicate names
             if invalid_item_count:
                 # TODO message box
                 n = invalid_item_count
-                s = ", ".join(invalid_item_type_names)
+                s = ", ".join(invalid_item_types)
                 raise ValueError(f"{n} invalid items for paste operation: {s}")
 
     def getDbItemFromScene(self : Self, scene : "DrawingScene") -> Db:

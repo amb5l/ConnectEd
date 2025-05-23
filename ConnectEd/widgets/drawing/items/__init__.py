@@ -18,13 +18,13 @@ if TYPE_CHECKING:
     from .. import DrawingScene
 
 class Default:
-    def __str__(self): return "<default>"
+    def __str__(self): return "default"
     def __repr__(self): return "<default>"
 
 DEFAULT = Default()
 
 class NoChange:
-    def __str__(self): return "<no change>"
+    def __str__(self): return "no change"
     def __repr__(self): return "<no change>"
 
 NO_CHANGE = NoChange()
@@ -47,6 +47,23 @@ class LinePref:
     width : Default | float       = DEFAULT
     style : Default | Qt.PenStyle = DEFAULT
 
+    def toStr(self):
+        s_c = "default" if self.color is DEFAULT else \
+            hex(self.color.rgba())
+        s_w = "default" if self.width is DEFAULT else \
+            str(self.width)
+        s_s = "default" if self.style is DEFAULT else \
+            str(self.style).replace("PenStyle.", "")
+        return f"{s_c},{s_w},{s_s}"
+
+    @classmethod
+    def fromStr(cls, s : str) -> Self:
+        s_c, s_w, s_s = s.split(",")
+        color = DEFAULT if s_c == "default" else QColor(int(s_c, 16))
+        width = DEFAULT if s_w == "default" else float(s_w)
+        style = DEFAULT if s_s == "default" else Qt.PenStyle[s_s]
+        return cls(color, width, style)
+
 @dataclass
 class LinePrefChange:
     color : Optional[NoChange | Default | QColor     ] = None
@@ -67,6 +84,20 @@ class FillSpecChange:
 class FillPref:
     color : Default | QColor        = DEFAULT
     style : Default | Qt.BrushStyle = DEFAULT
+
+    def toStr(self):
+        s_c = "default" if self.color is DEFAULT else \
+            hex(self.color.rgba())
+        s_s = "default" if self.style is DEFAULT else \
+            str(self.style).replace("BrushStyle.", "")
+        return f"{s_c},{s_s}"
+
+    @classmethod
+    def fromStr(cls, s : str) -> Self:
+        s_c, s_s = s.split(",")
+        color = DEFAULT if s_c == "default" else QColor(int(s_c, 16))
+        style = DEFAULT if s_s == "default" else Qt.BrushStyle[s_s]
+        return cls(color, style)
 
 @dataclass
 class FillPrefChange:
@@ -99,6 +130,32 @@ class TextPref:
     bold      : Default | bool   = DEFAULT
     italic    : Default | bool   = DEFAULT
     underline : Default | bool   = DEFAULT
+
+    def toStr(self):
+        s_c = "default" if self.color is DEFAULT else \
+            hex(self.color.rgba())
+        s_f = "default" if self.family is DEFAULT else \
+            self.family
+        s_s = "default" if self.size is DEFAULT else \
+            str(self.size)
+        s_b = "default" if self.bold is DEFAULT else \
+            str(self.bold)
+        s_i = "default" if self.italic is DEFAULT else \
+            str(self.italic)
+        s_u = "default" if self.underline is DEFAULT else \
+            str(self.underline)
+        return f"{s_c},{s_f},{s_s},{s_b},{s_i},{s_u}"
+
+    @classmethod
+    def fromStr(cls, s : str) -> Self:
+        s_c, s_f, s_s, s_b, s_i, s_u = s.split(",")
+        color     = DEFAULT if s_c == "default" else QColor(int(s_c, 16))
+        family    = DEFAULT if s_f == "default" else s_f
+        size      = DEFAULT if s_s == "default" else float(s_s)
+        bold      = DEFAULT if s_b == "default" else bool(s_b)
+        italic    = DEFAULT if s_i == "default" else bool(s_i)
+        underline = DEFAULT if s_u == "default" else bool(s_u)
+        return cls(color, family, size, bold, italic, underline)
 
 @dataclass
 class TextPrefChange:
@@ -155,10 +212,10 @@ class LinePen:
         self.selected = QPen()
         self.onSettingsChange()
 
-    def get(self : Self) -> LinePref:
+    def getPref(self : Self) -> LinePref:
         return LinePref(self.color, self.width, self.style)
 
-    def set(self : Self, c : LinePref | LinePrefChange) -> None:
+    def setPref(self : Self, c : LinePref | LinePrefChange) -> None:
         if c.color is not NO_CHANGE: self.color = c.color
         if c.width is not NO_CHANGE: self.width = c.width
         if c.style is not NO_CHANGE: self.style = c.style
@@ -229,10 +286,10 @@ class FillBrush:
         self.selected = QBrush()
         self.onSettingsChange()
 
-    def get(self : Self) -> FillPref:
+    def getPref(self : Self) -> FillPref:
         return FillPref(self.color, self.style)
 
-    def set(self : Self, c : FillPref | FillPrefChange) -> None:
+    def setPref(self : Self, c : FillPref | FillPrefChange) -> None:
         if c.color is not NO_CHANGE: self.color = c.color
         if c.style is not NO_CHANGE: self.style = c.style
         self.onSettingsChange()
@@ -308,7 +365,7 @@ class TextColorFont:
         self.font      = QFont()
         self.onSettingsChange()
 
-    def get(self : Self) -> TextPref:
+    def getPref(self : Self) -> TextPref:
         return TextPref(
             self.color,
             self.family,
@@ -318,7 +375,7 @@ class TextColorFont:
             self.underline
         )
 
-    def set(self : Self, c : TextPref | TextPrefChange) -> None:
+    def setPref(self : Self, c : TextPref | TextPrefChange) -> None:
         if c.color     is not NO_CHANGE: self.color     = c.color
         if c.family    is not NO_CHANGE: self.family    = c.family
         if c.size      is not NO_CHANGE: self.size      = c.size
@@ -480,34 +537,35 @@ class Element:
 
     """Mixin class for all elements."""
     XML_ATTRS = {
+        "uuid" : "str",
         "pos" : (
-            "QPointF",
+            "QPointF", True,
             lambda self, value: self.setPos(value),
             lambda self: self.pos()
         ),
         "line" : (
-            "LinePref",
+            "LinePref", False,
             lambda self, value: self.line.setPref(value),
             lambda self: self.line.getPref()
         ),
         "fill" : (
-            "FillPref",
+            "FillPref", False,
             lambda self, value: self.fill.setPref(value),
             lambda self: self.fill.getPref()
         ),
         "text" : (
-            "TextPref",
+            "TextPref", False,
             lambda self, value: self.text.setPref(value),
             lambda self: self.text.getPref()
         )
     }
 
-    _uuid   : str
-    _menu   : QMenu
+    uuid    : str
     line    : Optional[LinePen]
     fill    : Optional[FillBrush]
     text    : Optional[TextColorFont]
     outline : OutlinePen
+    _menu   : QMenu
 
     def __init2__(
         self : Self,
@@ -515,10 +573,13 @@ class Element:
         fill : Optional[FillPref] = FillPref(), # all defaults
         text : Optional[TextPref] = TextPref()  # all defaults
     ) -> None:
-        self._uuid   = str(uuid.uuid4())
-        self.line    = LinePen(self, line)       if line is not None else None
-        self.fill    = FillBrush(self, fill)     if fill is not None else None
-        self.text    = TextColorFont(self, text) if text is not None else None
+        self.uuid   = str(uuid.uuid4())
+        if line is not None:
+            self.line = LinePen(self, line)
+        if fill is not None:
+            self.fill = FillBrush(self, fill)
+        if text is not None:
+            self.text = TextColorFont(self, text)
         self.outline = OutlinePen()
         self.setZValue(self.Z)
         f = QGraphicsItem.GraphicsItemFlag
@@ -531,30 +592,29 @@ class Element:
         self._menu = CustomGraphicsItemMixin.getMenu(self.__class__)
 
     def __hash__(self):
-        return hash(self._uuid)
+        return hash(self.uuid)
 
     def __eq__(self, other):
         if not isinstance(other, Element):
             return NotImplemented
-        return self._uuid == other._uuid
+        return self.uuid == other.uuid
 
     def onSettingsChange(self : Self) -> None:
-        if self.line: self.line.onSettingsChange()
-        if self.fill: self.fill.onSettingsChange()
-        if self.text: self.text.onSettingsChange()
+        if hasattr(self, "line") and self.line: self.line.onSettingsChange()
+        if hasattr(self, "fill") and self.fill: self.fill.onSettingsChange()
+        if hasattr(self, "text") and self.text: self.text.onSettingsChange()
         self.outline.onSettingsChange()
 
     def onSelectionChange(self : Self) -> None:
-        if self.line: self.line.onSelectionChange()
-        if self.fill: self.fill.onSelectionChange()
-        if self.text: self.text.onSelectionChange()
+        if hasattr(self, "line"): self.line.onSelectionChange()
+        if hasattr(self, "fill"): self.fill.onSelectionChange()
+        if hasattr(self, "text"): self.text.onSelectionChange()
 
-    def getAppearancePref(self : Self) -> AppearancePref:
-        return AppearancePref(
-            line = None if self.line is None else self.line.get(),
-            fill = None if self.fill is None else self.fill.get(),
-            text = None if self.text is None else self.text.get()
-        )
+    def getUuid(self : Self) -> str:
+        return self.uuid
+
+    def setUuid(self : Self, uuid : str) -> None:
+        self.uuid = uuid
 
     def getDefaults(self : Self) -> SimpleNamespace:
         r = SimpleNamespace()
