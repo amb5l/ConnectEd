@@ -9,7 +9,7 @@ from PyQt6.QtGui     import QUndoStack
 
 from ....core import logger, toXmlAttrs, fromXmlAttrs
 
-from ..items import element_class_dict
+from ..items import Element, element_class_dict
 
 from ..items.key_point  import KeyPoint
 from ..items.text_block import TextBlock
@@ -61,6 +61,15 @@ class DrawingScene(
 
     def setParent(self : Self, parent : "Drawing") -> None:
         self.parent = parent
+
+    def clearSelection(self : Self) -> None:
+        print("clearSelection")
+        super().clearSelection()
+        for item in self.items():
+            if isinstance(item, Element):
+                item.setKPVisible(False)
+                item.setSelected(False)
+        self.kp_items.clear()
 
     def addItem(self : Self, item : QGraphicsItem) -> None:
         if item in self.SYSTEM_FORBIDDEN_ITEMS:

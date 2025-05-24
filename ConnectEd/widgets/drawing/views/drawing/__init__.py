@@ -338,11 +338,13 @@ class DrawingView(
             logger.warning("No valid elements to paste")
             self._goState(self.State.Idle)
             return
+        for item in scene.items():
+            if isinstance(item, Element):
+                item.setKPVisible(False)
         self.wip.elements = elements
         self.wip.pos0 = elements[0].pos() if copy_pos is None and elements else copy_pos or QPointF(0, 0)
         pos = self._snap(self.mouse.current.logical)
         offset = pos - self.wip.pos0
-        logger.debug(f"editPaste: Initializing paste with {len(elements)} elements, offset={offset}, pos0={self.wip.pos0}")
         for element in elements:
             if element.scene() != scene:
                 scene.addItem(element)
@@ -350,7 +352,6 @@ class DrawingView(
             element.setSelected(True)
         self.wip.macro = True
         scene.undo_stack.beginMacro("Paste Elements")
-        logger.debug("editPaste: Started macro for paste operation")
         self._goState(self.State.EditPaste)
 
     def editPasteContinue(self : Self) -> None:
@@ -361,7 +362,6 @@ class DrawingView(
             return
         pos = self._snap(self.mouse.current.logical)
         offset = pos - self.wip.pos0
-        logger.debug(f"editPasteContinue: Updating position with offset={offset}")
         for element in self.wip.elements:
             if element.scene() == scene:
                 element.setPos(self.wip.pos0 + offset)
@@ -375,10 +375,8 @@ class DrawingView(
             return
         pos = self._snap(self.mouse.current.logical)
         offset = pos - self.wip.pos0
-        logger.debug(f"editPasteComplete: Finalizing paste with offset={offset}")
         scene.editPaste(pos, self.wip.elements)
         if self.wip.macro:
-            logger.debug("editPasteComplete: Ending macro")
             scene.undo_stack.endMacro()
         self.wip.clear()
         self._goState(self.State.Idle)
