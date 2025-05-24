@@ -135,28 +135,6 @@ class DrawingViewMouseMixin:
                     m & qkm.ControlModifier,
                     m & qkm.AltModifier
                 )
-            case self.State.ViewPan1:
-                self.wip.pos0 = self.mouse.left.release.physical
-                self.setCursor(Qt.CursorShape.ClosedHandCursor)
-                self._goState(self.State.ViewPan2)
-            case self.State.ViewPan2:
-                delta = self.mouse.left.release.physical - self.wip.pos0
-                self.horizontalScrollBar().setValue(
-                    self.horizontalScrollBar().value() - delta.x()
-                )
-                self.verticalScrollBar().setValue(
-                    self.verticalScrollBar().value() - delta.y()
-                )
-                self.wip.clear()
-                self.setCursor(Qt.CursorShape.ArrowCursor)
-                self._goState(self.State.Idle)
-            case self.State.ViewZoomWindow1:
-                self.marquee.begin(self.mouse.left.release.physical)
-                self._goState(self.State.ViewZoomWindow2)
-            case self.State.ViewZoomWindow2:
-                self.marquee.end(self.mouse.left.release.physical)
-                self._zoomRect(self.marquee.rect())
-                self._goState(self.State.Idle)
             case self.State.EditMove1 | self.State.EditSlide1:
                 self._selectPoint(
                     self.mouse.current.logical,
@@ -203,6 +181,28 @@ class DrawingViewMouseMixin:
                     m == qkm.ControlModifier
                 )
                 self.editAppearance()
+            case self.State.ViewPan1:
+                self.wip.pos0 = self.mouse.left.release.physical
+                self.setCursor(Qt.CursorShape.ClosedHandCursor)
+                self._goState(self.State.ViewPan2)
+            case self.State.ViewPan2:
+                delta = self.mouse.left.release.physical - self.wip.pos0
+                self.horizontalScrollBar().setValue(
+                    self.horizontalScrollBar().value() - delta.x()
+                )
+                self.verticalScrollBar().setValue(
+                    self.verticalScrollBar().value() - delta.y()
+                )
+                self.wip.clear()
+                self.setCursor(Qt.CursorShape.ArrowCursor)
+                self._goState(self.State.Idle)
+            case self.State.ViewZoomWindow1:
+                self.marquee.begin(self.mouse.left.release.physical)
+                self._goState(self.State.ViewZoomWindow2)
+            case self.State.ViewZoomWindow2:
+                self.marquee.end(self.mouse.left.release.physical)
+                self._zoomRect(self.marquee.rect())
+                self._goState(self.State.Idle)
             case self.State.PlaceRectangle1:
                 self.placeRectangleBegin(
                     self._snap(self.mouse.left.release.logical)
@@ -268,6 +268,16 @@ class DrawingViewMouseMixin:
         match self.state:
             case self.State.SelectArea2:
                 self.marquee.resize(self.mouse.current.physical)
+            case self.State.EditSlide2:
+                self.moveContinue(
+                    self._snap(self.mouse.current.logical), True
+                )
+            case self.State.EditMove2:
+                self.moveContinue(
+                    self._snap(self.mouse.current.logical)
+                )
+            case self.State.EditResize3:
+                self.moveContinue(self._snap(self.mouse.current.logical))
             case self.State.ViewPan2:
                 delta = self.mouse.current.physical - self.wip.pos0
                 self.horizontalScrollBar().setValue(
@@ -279,16 +289,6 @@ class DrawingViewMouseMixin:
                 self.wip.pos0 = self.mouse.current.physical
             case self.State.ViewZoomWindow2:
                 self.marquee.resize(self.mouse.current.physical)
-            case self.State.EditSlide2:
-                self.moveContinue(
-                    self._snap(self.mouse.current.logical), True
-                )
-            case self.State.EditMove2:
-                self.moveContinue(
-                    self._snap(self.mouse.current.logical)
-                )
-            case self.State.EditResize3:
-                self.moveContinue(self._snap(self.mouse.current.logical))
             case self.State.PlaceRectangle2:
                 self.placeRectangleContinue(
                     self._snap(self.mouse.current.logical)
@@ -304,6 +304,19 @@ class DrawingViewMouseMixin:
                     m == qkm.ControlModifier
                 )
                 self._goState(self.State.Idle)
+            case self.State.EditMove2 | self.State.EditSlide2 | self.State.EditResize3:
+                self.moveComplete(
+                    self._snap(self.mouse.left.release.logical),
+                    self.state == self.State.EditSlide2
+                )
+                self._goState(self.State.Idle)
+            case self.State.EditAppearance1:
+                self.marquee.end(self.mouse.left.release.physical)
+                self._selectRect(
+                    self.marquee.rect(),
+                    m == qkm.ControlModifier
+                )
+                self.editAppearance()
             case self.State.ViewZoomWindow2:
                 self.marquee.end(self.mouse.left.release.physical)
                 self._zoomRect(self.marquee.rect())
@@ -319,19 +332,6 @@ class DrawingViewMouseMixin:
                 self.wip.clear()
                 self.setCursor(Qt.CursorShape.ArrowCursor)
                 self._goState(self.State.Idle)
-            case self.State.EditMove2 | self.State.EditSlide2 | self.State.EditResize3:
-                self.moveComplete(
-                    self._snap(self.mouse.left.release.logical),
-                    self.state == self.State.EditSlide2
-                )
-                self._goState(self.State.Idle)
-            case self.State.EditAppearance1:
-                self.marquee.end(self.mouse.left.release.physical)
-                self._selectRect(
-                    self.marquee.rect(),
-                    m == qkm.ControlModifier
-                )
-                self.editAppearance()
             case self.State.PlaceRectangle2:
                 self.placeRectangleComplete(
                     self._snap(self.mouse.left.release.logical)
