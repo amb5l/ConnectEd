@@ -345,10 +345,12 @@ class DrawingView(
         self.wip.pos0 = elements[0].pos() if copy_pos is None and elements else copy_pos or QPointF(0, 0)
         pos = self._snap(self.mouse.current.logical)
         offset = pos - self.wip.pos0
-        for element in elements:
+        for i, element in enumerate(elements):
             if element.scene() != scene:
                 scene.addItem(element)
-            element.setPos(self.wip.pos0 + offset)
+            original_pos = element.pos()
+            new_pos = element.pos() + offset
+            element.setPos(new_pos)
             element.setSelected(True)
         self.wip.macro = True
         scene.undo_stack.beginMacro("Paste Elements")
@@ -360,12 +362,12 @@ class DrawingView(
             logger.warning("editPasteContinue: No elements in wip, aborting")
             self._goState(self.State.Idle)
             return
-        pos = self._snap(self.mouse.current.logical)
-        offset = pos - self.wip.pos0
+        new_pos = self._snap(self.mouse.current.logical)
+        mouse_delta = new_pos - self.wip.pos0
         for element in self.wip.elements:
             if element.scene() == scene:
-                element.setPos(self.wip.pos0 + offset)
-        self.wip.pos0 = pos
+                element.setPos(element.pos() + mouse_delta)
+        self.wip.pos0 = new_pos
 
     def editPasteComplete(self : Self) -> None:
         scene : DrawingScene = self.scene()
@@ -375,7 +377,11 @@ class DrawingView(
             return
         pos = self._snap(self.mouse.current.logical)
         offset = pos - self.wip.pos0
-        scene.editPaste(pos, self.wip.elements)
+        for element in self.wip.elements:
+            if element.scene() == scene:
+                scene.removeItem(element)
+                element.setPos(element.pos() - offset)
+        scene.editPaste(pos, (self.wip.elements, self.wip.pos0))
         if self.wip.macro:
             scene.undo_stack.endMacro()
         self.wip.clear()

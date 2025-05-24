@@ -94,26 +94,25 @@ class DrawingSceneApiEditMixin:
             logger.warning("No elements selected to copy")
 
     def editPaste(
-        self     : "DrawingScene",
-        pos      : QPointF = QPointF(0, 0),
-        elements : Optional[Element | list[Element]] = None
+        self      : "DrawingScene",
+        pos       : QPointF = QPointF(0, 0),
+        items_pos : Optional[tuple[Element | list[Element, QPointF]]] = None
     ) -> bool:
-        if elements is None:
-            items, copy_pos = paste()
+        if items_pos is None:
+            items, pos0 = paste()
             if not items:
                 logger.warning("No valid data to paste")
                 return False
             elements = [item for item in items if isinstance(item, Element)]
         else:
-            copy_pos = None
-        if not isinstance(elements, list):
-            elements = [elements]
+            items, pos0 = items_pos
+            if not isinstance(items, list):
+                items = [items]
+        elements = [item for item in items if isinstance(item, Element)]
         if not elements:
             logger.warning("No valid elements to paste")
             return False
-        copy_pos = elements[0].pos() if copy_pos is None and elements else \
-            copy_pos or QPointF(0, 0)
-        offset = pos - copy_pos
+        offset = pos - pos0
         cmd = cmdEditPaste(self, elements, offset)
         self.undo_stack.push(cmd)
         for element in elements:

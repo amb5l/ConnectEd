@@ -63,7 +63,6 @@ class DrawingScene(
         self.parent = parent
 
     def clearSelection(self : Self) -> None:
-        print("clearSelection")
         super().clearSelection()
         for item in self.items():
             if isinstance(item, Element):
