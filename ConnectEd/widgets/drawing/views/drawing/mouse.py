@@ -135,6 +135,8 @@ class DrawingViewMouseMixin:
                     m & qkm.ControlModifier,
                     m & qkm.AltModifier
                 )
+            case self.State.EditPaste:
+                self.editPasteComplete()
             case self.State.EditMove1 | self.State.EditSlide1:
                 self._selectPoint(
                     self.mouse.current.logical,
@@ -391,6 +393,13 @@ class DrawingViewMouseMixin:
 
     def mouseMove(self : "DrawingView") -> None:
         match self.state:
+            case self.State.EditPaste:
+                self.editPasteContinue()
+            case self.State.EditMove2 | self.State.EditSlide2 | self.State.EditResize3:
+                self.moveContinue(
+                    self._snap(self.mouse.current.logical),
+                    self.state == self.State.EditSlide2
+                )
             case self.State.ViewPan2:
                 delta = self.mouse.current.physical - self.wip.pos0
                 self.horizontalScrollBar().setValue(self.horizontalScrollBar().value() - delta.x())
@@ -398,11 +407,6 @@ class DrawingViewMouseMixin:
                 self.wip.pos0 = self.mouse.current.physical
             case self.State.ViewZoomWindow2:
                 self.marquee.resize(self.mouse.current.physical)
-            case self.State.EditMove2 | self.State.EditSlide2 | self.State.EditResize3:
-                self.moveContinue(
-                    self._snap(self.mouse.current.logical),
-                    self.state == self.State.EditSlide2
-                )
             case self.State.PlaceRectangle2:
                 self.placeRectangleContinue(
                     self._snap(self.mouse.current.logical)

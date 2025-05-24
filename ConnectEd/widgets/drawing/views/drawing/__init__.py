@@ -9,14 +9,13 @@ from PyQt6.QtWidgets import QMdiArea, QMdiSubWindow, \
                             QGraphicsView, QGraphicsItem, QGraphicsTextItem
 from PyQt6.QtGui     import QPainter, QPen, QCloseEvent, QKeyEvent
 
-from .....core import logger, LAYER_SHEET, LAYER_DRAWING
+from .....core import logger, paste, LAYER_SHEET, LAYER_DRAWING
 
 from ....dialogs import AppearanceDialog
-
-from ...scenes   import DrawingScene
 from ....marquee import Marquee
 
-from ...items import Element, TextBlock, cmdMove, cmdPlaceTextBlock
+from ...scenes import DrawingScene
+from ...items  import Element, TextBlock, cmdMove
 
 from .mouse   import DrawingViewMouseMixin
 from .private import DrawingViewPrivateMixin
@@ -110,6 +109,7 @@ class DrawingViewState(Enum):
     ViewZoomWindow1 = auto()
     ViewZoomWindow2 = auto()
     SelectArea2     = auto()
+    EditPaste       = auto()
     EditSlide1      = auto()
     EditSlide2      = auto()
     EditMove1       = auto()
@@ -131,6 +131,7 @@ DrawingViewStateTip = {
     DrawingViewState.ViewZoomWindow1 : "Zoom Window: pick the first point",
     DrawingViewState.ViewZoomWindow2 : "Zoom Window: pick the second point",
     DrawingViewState.SelectArea2     : "Select: complete the marquee selection",
+    DrawingViewState.EditPaste       : "Paste: select the paste position",
     DrawingViewState.EditSlide1      : "Slide: select one or more items",
     DrawingViewState.EditSlide2      : "Slide: place the selected item(s) as required",
     DrawingViewState.EditMove1       : "Move: select one or more items",
@@ -326,7 +327,61 @@ class DrawingView(
 
     def editPaste(self : Self) -> None:
         scene : DrawingScene = self.scene()
-        scene.editPaste(self._snap(self.mouse.current.logical))
+        self.wip.clear()
+        items, copy_pos = paste()
+        if not items:
+            logger.warning("No valid data to paste")
+            self._goState(self.State.Idle)
+            return
+        elements = [item for item in items if isinstance(item, Element)]
+        if not elements:
+            logger.warning("No valid elements to paste")
+            self._goState(self.State.Idle)
+            return
+        self.wip.elements = elements
+        self.wip.pos0 = elements[0].pos() if copy_pos is None and elements else copy_pos or QPointF(0, 0)
+        pos = self._snap(self.mouse.current.logical)
+        offset = pos - self.wip.pos0
+        logger.debug(f"editPaste: Initializing paste with {len(elements)} elements, offset={offset}, pos0={self.wip.pos0}")
+        for element in elements:
+            if element.scene() != scene:
+                scene.addItem(element)
+            element.setPos(self.wip.pos0 + offset)
+            element.setSelected(True)
+        self.wip.macro = True
+        scene.undo_stack.beginMacro("Paste Elements")
+        logger.debug("editPaste: Started macro for paste operation")
+        self._goState(self.State.EditPaste)
+
+    def editPasteContinue(self : Self) -> None:
+        scene : DrawingScene = self.scene()
+        if not self.wip.elements:
+            logger.warning("editPasteContinue: No elements in wip, aborting")
+            self._goState(self.State.Idle)
+            return
+        pos = self._snap(self.mouse.current.logical)
+        offset = pos - self.wip.pos0
+        logger.debug(f"editPasteContinue: Updating position with offset={offset}")
+        for element in self.wip.elements:
+            if element.scene() == scene:
+                element.setPos(self.wip.pos0 + offset)
+        self.wip.pos0 = pos
+
+    def editPasteComplete(self : Self) -> None:
+        scene : DrawingScene = self.scene()
+        if not self.wip.elements:
+            logger.warning("editPasteComplete: No elements in wip, aborting")
+            self._goState(self.State.Idle)
+            return
+        pos = self._snap(self.mouse.current.logical)
+        offset = pos - self.wip.pos0
+        logger.debug(f"editPasteComplete: Finalizing paste with offset={offset}")
+        scene.editPaste(pos, self.wip.elements)
+        if self.wip.macro:
+            logger.debug("editPasteComplete: Ending macro")
+            scene.undo_stack.endMacro()
+        self.wip.clear()
+        self._goState(self.State.Idle)
 
     def editDelete(self : Self) -> None:
         print("TODO: DrawingView.editDelete")

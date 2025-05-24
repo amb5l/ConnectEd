@@ -1,8 +1,9 @@
 __all__ = ["DrawingSceneApiEditMixin"]
 
-from typing import Self
+from typing import Self, Optional
 
 from PyQt6.QtCore import QPointF
+from PyQt6.QtGui  import QUndoCommand
 
 from .....core import logger,copy, paste
 
@@ -13,6 +14,33 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from .. import DrawingScene
 
+
+class cmdEditPaste(cmdElements):
+    """Command for pasting multiple elements with interactive positioning."""
+    offset : QPointF
+
+    def __init__(
+        self     : Self,
+        scene    : "DrawingScene",
+        elements : list[Element],
+        offset   : QPointF
+    ):
+        super().__init__(scene, elements)
+        self.offset = offset
+
+    def redo(self : Self) -> None:
+        for element in self.elements:
+            if element.scene() != self.scene:
+                self.scene.addItem(element)
+            element.setPos(element.pos() + self.offset)
+
+    def undo(self : Self) -> None:
+        for element in self.elements:
+            if element.scene() == self.scene:
+                self.scene.removeItem(element)
+
+    def mergeWith(self : Self, other : QUndoCommand) -> bool:
+        return super().mergeWith(other) and self.offset == other.offset
 
 class cmdEditAppearance(cmdElements):
     _initial : dict[Element, AppearancePref]
@@ -50,6 +78,9 @@ class cmdEditAppearance(cmdElements):
             if hasattr(e, "text") and c.text is not None: e.text.setPref(c.text)
             e.update()
 
+    def mergeWith(self : Self, other : QUndoCommand) -> bool:
+        return False
+
 class DrawingSceneApiEditMixin:
     def editCopy(
         self : "DrawingScene",
@@ -63,25 +94,32 @@ class DrawingSceneApiEditMixin:
             logger.warning("No elements selected to copy")
 
     def editPaste(
-        self : "DrawingScene",
-        pos  : QPointF = QPointF(0, 0)
-    ) -> None:
-        items, copy_pos = paste()
-        if not items:
-            return
-        elements = [item for item in items if isinstance(item, Element)]
+        self     : "DrawingScene",
+        pos      : QPointF = QPointF(0, 0),
+        elements : Optional[Element | list[Element]] = None
+    ) -> bool:
+        if elements is None:
+            items, copy_pos = paste()
+            if not items:
+                logger.warning("No valid data to paste")
+                return False
+            elements = [item for item in items if isinstance(item, Element)]
+        else:
+            copy_pos = None
+        if not isinstance(elements, list):
+            elements = [elements]
         if not elements:
             logger.warning("No valid elements to paste")
-            return
+            return False
         copy_pos = elements[0].pos() if copy_pos is None and elements else \
             copy_pos or QPointF(0, 0)
-        if elements:
-            self.undo_stack.beginMacro("Paste Elements")
-            for item in elements:
-                # Offset each item to paste relative to the provided position
-                item.setPos(item.pos() + (pos - copy_pos))
-                self.undo_stack.push(cmdPlaceElement(self, item))
-            self.undo_stack.endMacro()
+        offset = pos - copy_pos
+        cmd = cmdEditPaste(self, elements, offset)
+        self.undo_stack.push(cmd)
+        for element in elements:
+            element.resetUuid() # new identity for pasted elements
+            element.setSelected(True)
+        return True
 
     def editAppearance(
         self     : "DrawingScene",

@@ -186,11 +186,7 @@ def paste() -> tuple[list[XmlItemTypes], Optional[QPointF]]:
         if buffer:
             xr = QXmlStreamReader(buffer)
             try:
-                items, copy_pos = fromXmlItems(xr)
-                for item in items:
-                    if isinstance(item, Element):
-                        item.resetUuid() # new identity for pasted elements
-                return items, copy_pos
+                return fromXmlItems(xr)
             except ValueError as e:
                 print(f"paste error: {e}")
                 if xr.hasError():
