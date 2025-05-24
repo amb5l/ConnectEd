@@ -532,7 +532,6 @@ class AppearanceDialog(QDialog):
         for element in elements:
             for attr in ["line", "fill", "text"]:
                 if not hasattr(element, attr):
-                    logger.error(f"{attr} missing for element {element}")
                     continue
                 ea = getattr(element, attr) # element.attr
                 if ea is None:

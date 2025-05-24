@@ -615,9 +615,9 @@ class Element:
 
     def getDefaults(self : Self) -> SimpleNamespace:
         r = SimpleNamespace()
-        if self.line: r.line = self.line.getDefaults()
-        if self.fill: r.fill = self.fill.getDefaults()
-        if self.text: r.text = self.text.getDefaults()
+        if hasattr(self, "line"): r.line = self.line.getDefaults()
+        if hasattr(self, "fill"): r.fill = self.fill.getDefaults()
+        if hasattr(self, "text"): r.text = self.text.getDefaults()
         return r
 
     def toXml(self : Self, xw : QXmlStreamWriter) -> None:
