@@ -235,6 +235,7 @@ class DrawingViewMouseMixin:
                 if not itemsAt \
                     and not (m & (qkm.ControlModifier | qkm.ShiftModifier)):
                     self.scene().clearSelection()
+                    items = []
                 self._selectPoint(
                     self.mouse.left.press.logical,
                     m & qkm.ControlModifier
