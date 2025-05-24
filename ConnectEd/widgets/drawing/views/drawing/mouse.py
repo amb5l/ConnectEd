@@ -222,22 +222,24 @@ class DrawingViewMouseMixin:
         match self.state:
             case self.State.Idle:
                 m = self.mouse.left.press.modifiers
-                items = self._itemsAt(self.mouse.left.press.logical)
-                for item in items:
-                    if isinstance(item, KeyPoint) and item.isMoveable():
-                        self.moveBegin(
-                            [item], self._snap(self.mouse.left.press.logical)
-                        )
-                        self._goState(self.state.EditResize3)
-                        return
-                if not (m & (qkm.ControlModifier | qkm.ShiftModifier)):
+                items = self.scene().selectedItems()
+                itemsAt = self._itemsAt(self.mouse.left.press.logical)
+                if len(items) == 1:
+                    for item in itemsAt:
+                        if isinstance(item, KeyPoint) and item.isMoveable():
+                            self.moveBegin(
+                                [item], self._snap(self.mouse.left.press.logical)
+                            )
+                            self._goState(self.state.EditResize3)
+                            return
+                if not itemsAt \
+                    and not (m & (qkm.ControlModifier | qkm.ShiftModifier)):
                     self.scene().clearSelection()
                 self._selectPoint(
                     self.mouse.left.press.logical,
                     m & qkm.ControlModifier
                 )
-                items = self.scene().selectedItems()
-                if len(items): # slide/move
+                if items: # slide/move
                     self.moveBegin(
                         items,
                         self._snap(self.mouse.left.press.logical),
