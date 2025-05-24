@@ -573,7 +573,7 @@ class Element:
         fill : Optional[FillPref] = FillPref(), # all defaults
         text : Optional[TextPref] = TextPref()  # all defaults
     ) -> None:
-        self.uuid   = str(uuid.uuid4())
+        self.resetUuid()
         if line is not None:
             self.line = LinePen(self, line)
         if fill is not None:
@@ -610,11 +610,8 @@ class Element:
         if hasattr(self, "fill"): self.fill.onSelectionChange()
         if hasattr(self, "text"): self.text.onSelectionChange()
 
-    def getUuid(self : Self) -> str:
-        return self.uuid
-
-    def setUuid(self : Self, uuid : str) -> None:
-        self.uuid = uuid
+    def resetUuid(self : Self) -> None:
+        self.uuid = str(uuid.uuid4())
 
     def getDefaults(self : Self) -> SimpleNamespace:
         r = SimpleNamespace()

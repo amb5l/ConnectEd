@@ -9,8 +9,7 @@ from PyQt6.QtGui  import QStandardItemModel, QStandardItem
 
 from . import logger, \
               LIB_EXT, DSN_EXT, \
-              copy as master_copy, paste as master_paste, \
-              fromXmlBegin, loadItems, saveBegin, saveEnd
+              copy, paste, fromXmlBegin, loadItems, saveBegin, saveEnd
 
 from ..core    import toXmlAttrs, fromXmlAttrs
 from ..widgets import FileSaveAsDialog
@@ -79,7 +78,7 @@ class Drawing(QStandardItem):
         self.setData(self.scene, Qt.ItemDataRole.UserRole)
         self.setFlags(self.flags() | Qt.ItemFlag.ItemIsEditable)
 
-    copy = master_copy
+    copy = copy
 
     def toXml(self : Self, xw : QXmlStreamWriter) -> None:
         xw.writeStartElement(self.__class__.__name__)
@@ -189,7 +188,7 @@ class Db(QStandardItem):
             path, _ = dialog.getSaveFileName()
         return path
 
-    copy = master_copy
+    copy = copy
 
     def getPath(self : Self) -> str:
         return self.path
@@ -358,11 +357,11 @@ class Model(QStandardItemModel):
             logger.warning(f"Unsupported item: {item.text()} ({type(item)})")
 
     def copy(self : Self, item : QStandardItem) -> None:
-        master_copy(item)
+        copy(item)
 
     def paste(self : Self, item : QStandardItem) -> None:
-        paste_items = master_paste()
-        if paste_items:
+        items = paste()
+        if items:
             match self.getItemDescription(item):
                 case "Designs":
                     valid_item_types = [DesignDb]
@@ -377,17 +376,17 @@ class Model(QStandardItemModel):
                         f"Cannot paste into item: {item.text()} ({type(item)})")
             invalid_item_types = []
             invalid_item_count = 0
-            for paste_item in paste_items:
-                if not any(isinstance(paste_item, t) for t in valid_item_types):
-                    invalid_item_types.append(type(paste_item).__name__)
+            for item in items:
+                if not any(isinstance(item, t) for t in valid_item_types):
+                    invalid_item_types.append(type(item).__name__)
                     invalid_item_count += 1
                 else:
-                    base_name = paste_item.text()
+                    base_name = item.text()
                     existing_names = \
                         [item.child(i).text() for i in range(item.rowCount())]
                     if base_name in existing_names:
-                        paste_item.setText(hub.name_counter.get(base_name))
-                    item.appendRow(paste_item)
+                        item.setText(hub.name_counter.get(base_name))
+                    item.appendRow(item)
             if invalid_item_count:
                 # TODO message box
                 n = invalid_item_count

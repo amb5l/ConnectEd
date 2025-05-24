@@ -9,13 +9,14 @@ __all__ = [
     "toXmlBegin",
     "toXmlEnd",
     "toXmlAttrs",
-    "fromXmlAttrs"
+    "fromXmlAttrs",
+    "fromXmlItems"
 ]
 
-from typing import TypeAlias, Union, Any
+from typing import TypeAlias, Union, Any, Optional
 
 from PyQt6.QtCore    import QByteArray, QXmlStreamWriter, QXmlStreamReader, \
-                            QFile, QIODevice, QMimeData
+                            QFile, QIODevice, QMimeData, QPointF
 from PyQt6.QtWidgets import QApplication
 
 from . import logger, APP_NAME, MIME_TYPE, val2str, str2val
@@ -88,36 +89,46 @@ def fromXmlAttrs(instance : Any, xr : QXmlStreamReader) -> None:
             logger.warning(f"Unexpected attribute: {attr_name} value: {attr_value_str}")
     xr.readNext()
 
-def fromXmlItems(xr : QXmlStreamReader) -> list[XmlItemTypes]:
+def fromXmlItems(
+    xr : QXmlStreamReader
+) -> tuple[list[XmlItemTypes], Optional[QPointF]]:
     from .model    import DesignDb, LibraryDb, Diagram, Symbol
     from ..widgets import element_class_dict
+    copy_pos = None
+    items = []
     fromXmlBegin(xr, APP_NAME)
     xr.readNext()
-    result = []
     while not (xr.isEndElement() and xr.name() == APP_NAME):
         if xr.tokenType() == QXmlStreamReader.TokenType.StartElement:
-            match xr.name():
-                case "DesignDb":
-                    item = DesignDb.fromXml(xr)
-                case "LibraryDb":
-                    item = LibraryDb.fromXml(xr)
-                case "Diagram":
-                    item = Diagram.fromXml(xr)
-                case "Symbol":
-                    item = Symbol.fromXml(xr)
-                case _: # assume it"s an Element
-                    if xr.name() in element_class_dict:
-                        item_class = element_class_dict[xr.name()]
-                        item = item_class.fromXml(xr)
-                    else:
-                        item = None
-                        logger.warning(f"Unexpected element: {xr.name()}")
-            if item:
-                result.append(item)
-        if xr.isEndElement() and xr.name() == APP_NAME:
-            break
+            if xr.name() == "Metadata":
+                attributes = xr.attributes()
+                for attr in attributes:
+                    if attr.name() == "pos":
+                        copy_pos = str2val(attr.value(), "QPointF")
+                xr.readNext()
+                while not (xr.isEndElement() and xr.name() == "Metadata"):
+                    xr.readNext()
+            else:
+                match xr.name():
+                    case "DesignDb":
+                        item = DesignDb.fromXml(xr)
+                    case "LibraryDb":
+                        item = LibraryDb.fromXml(xr)
+                    case "Diagram":
+                        item = Diagram.fromXml(xr)
+                    case "Symbol":
+                        item = Symbol.fromXml(xr)
+                    case _:  # Assume it's an Element
+                        if xr.name() in element_class_dict:
+                            item_class = element_class_dict[xr.name()]
+                            item = item_class.fromXml(xr)
+                        else:
+                            item = None
+                            logger.warning(f"Unexpected element: {xr.name()}")
+                if item:
+                    items.append(item)
         xr.readNext()
-    return result
+    return items, copy_pos
 
 def saveBegin(path : str) -> tuple[QXmlStreamWriter, QFile]:
     # TODO: handle file open error
@@ -148,18 +159,26 @@ def loadItems(path : str) -> list[XmlItemTypes]:
         r = []
     return r
 
-def copy(instance : Any) -> None:
+def copy(instances : Any | list[Any], pos : QPointF = QPointF(0, 0)) -> None:
+    if not isinstance(instances, list):
+        instances = [instances]
     buffer = QByteArray()
     xw = QXmlStreamWriter(buffer)
     toXmlBegin(xw)
-    instance.toXml(xw)
+    xw.writeStartElement("Metadata")
+    if pos is not None:
+        xw.writeAttribute("pos", val2str(pos))
+    xw.writeEndElement()
+    for instance in instances:
+        instance.toXml(xw)
     toXmlEnd(xw)
     mime_data = QMimeData()
     mime_data.setData(MIME_TYPE, buffer)
     clipboard = QApplication.clipboard()
     clipboard.setMimeData(mime_data)
 
-def paste() -> list[XmlItemTypes]:
+def paste() -> tuple[list[XmlItemTypes], Optional[QPointF]]:
+    from ..widgets.drawing.items import Element
     clipboard = QApplication.clipboard()
     mime_data = clipboard.mimeData()
     if mime_data and mime_data.hasFormat(MIME_TYPE):
@@ -167,8 +186,11 @@ def paste() -> list[XmlItemTypes]:
         if buffer:
             xr = QXmlStreamReader(buffer)
             try:
-                items = fromXmlItems(xr)
-                return items
+                items, copy_pos = fromXmlItems(xr)
+                for item in items:
+                    if isinstance(item, Element):
+                        item.resetUuid() # new identity for pasted elements
+                return items, copy_pos
             except ValueError as e:
                 print(f"paste error: {e}")
                 if xr.hasError():
@@ -177,6 +199,5 @@ def paste() -> list[XmlItemTypes]:
                 print(f"Unexpected error during paste: {str(e)}")
                 import traceback
                 traceback.print_exc()
-    else:
-        logger.warning("No valid ConnectEd data in clipboard")
-    return []
+    logger.warning("No valid ConnectEd data in clipboard")
+    return [], None

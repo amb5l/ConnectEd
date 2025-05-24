@@ -2,7 +2,12 @@ __all__ = ["DrawingSceneApiEditMixin"]
 
 from typing import Self
 
-from ...items import Element, cmdElements, AppearancePref, AppearancePrefChange
+from PyQt6.QtCore import QPointF
+
+from .....core import logger,copy, paste
+
+from ...items import Element, cmdElements, cmdPlaceElement, \
+                     AppearancePref, AppearancePrefChange
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -46,6 +51,38 @@ class cmdEditAppearance(cmdElements):
             e.update()
 
 class DrawingSceneApiEditMixin:
+    def editCopy(
+        self : "DrawingScene",
+        pos  : QPointF = QPointF(0, 0)
+    ) -> None:
+        elements = \
+            [item for item in self.selectedItems() if isinstance(item, Element)]
+        if elements:
+            copy(elements, pos)
+        else:
+            logger.warning("No elements selected to copy")
+
+    def editPaste(
+        self : "DrawingScene",
+        pos  : QPointF = QPointF(0, 0)
+    ) -> None:
+        items, copy_pos = paste()
+        if not items:
+            return
+        elements = [item for item in items if isinstance(item, Element)]
+        if not elements:
+            logger.warning("No valid elements to paste")
+            return
+        copy_pos = elements[0].pos() if copy_pos is None and elements else \
+            copy_pos or QPointF(0, 0)
+        if elements:
+            self.undo_stack.beginMacro("Paste Elements")
+            for item in elements:
+                # Offset each item to paste relative to the provided position
+                item.setPos(item.pos() + (pos - copy_pos))
+                self.undo_stack.push(cmdPlaceElement(self, item))
+            self.undo_stack.endMacro()
+
     def editAppearance(
         self     : "DrawingScene",
         elements : list[Element],

@@ -310,6 +310,7 @@ class DrawingView(
         self._goState(self.State.Idle)
 
     def editComplete(self : Self) -> None:
+        # TODO seriously consider this
         match self.state:
             case self.State.PlaceRectangle2:
                 self.placeRectangleComplete(
@@ -320,13 +321,15 @@ class DrawingView(
         print("TODO: editCut")
 
     def editCopy(self : Self) -> None:
-        print("TODO: editCopy")
+        scene : DrawingScene = self.scene()
+        scene.editCopy(self._snap(self.mouse.current.logical))
 
     def editPaste(self : Self) -> None:
-        print("TODO: editPaste")
+        scene : DrawingScene = self.scene()
+        scene.editPaste(self._snap(self.mouse.current.logical))
 
     def editDelete(self : Self) -> None:
-        print("TODO: editDelete")
+        print("TODO: DrawingView.editDelete")
 
     def editSlide(self : Self) -> None:
         if self.scene().selectedItems():
