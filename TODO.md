@@ -1,7 +1,7 @@
+- keypoints visible on multiple elements after paste
+- deselect original on copy
+- move multiple elements with drag
 - implememnt property text
-- add id to XML_ATTRS
-- state manager
-- mouse manager
 
 - fix diagram paper_size
 

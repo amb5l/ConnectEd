@@ -17,7 +17,8 @@ if TYPE_CHECKING:
 
 class cmdEditPaste(cmdElements):
     """Command for pasting multiple elements with interactive positioning."""
-    offset : QPointF
+    offset    : QPointF
+    selection : list[Element] # selected elements before pasting
 
     def __init__(
         self     : Self,
@@ -27,17 +28,23 @@ class cmdEditPaste(cmdElements):
     ):
         super().__init__(scene, elements)
         self.offset = offset
+        self.selection = [item for item in scene.selectedItems() if isinstance(item, Element)]
 
     def redo(self : Self) -> None:
+        self.scene.clearSelection()
         for element in self.elements:
             if element.scene() != self.scene:
                 self.scene.addItem(element)
             element.setPos(element.pos() + self.offset)
+            element.setSelected(True)
 
     def undo(self : Self) -> None:
         for element in self.elements:
             if element.scene() == self.scene:
                 self.scene.removeItem(element)
+        self.scene.clearSelection()
+        for element in self.selection:
+            element.setSelected(True)
 
     def mergeWith(self : Self, other : QUndoCommand) -> bool:
         return super().mergeWith(other) and self.offset == other.offset
