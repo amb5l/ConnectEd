@@ -37,7 +37,8 @@ class DrawingViewEditMixin:
                 )
 
     def editCut(self : "DrawingView") -> None:
-        print("TODO: editCut")
+        scene : DrawingScene = self.scene()
+        scene.editCut(self._snap(self.mouse.current.logical))
 
     def editCopy(self : "DrawingView") -> None:
         scene : DrawingScene = self.scene()
@@ -64,14 +65,13 @@ class DrawingViewEditMixin:
             if isinstance(item, Element):
                 item.setKPVisible(False)
         self.wip.elements = elements
-        self.wip.pos0 = elements[0].pos() if copy_pos is None and elements else copy_pos or QPointF(0, 0)
-        pos = self._snap(self.mouse.current.logical)
-        offset = pos - self.wip.pos0
+        # Use current mouse position as reference point for paste positioning
+        self.wip.pos0 = self._snap(self.mouse.current.logical)
+        # Don't apply any initial offset - the elements will be positioned during the first mouse movement
         scene.blockSignals(True)
         for element in elements:
             if element.scene() != scene:
                 scene.addItem(element)
-            element.setPos(element.pos() + offset)
             element.setSelected(True)
             element.setKPVisible(False)  # Explicitly hide keypoints
         scene.blockSignals(False)

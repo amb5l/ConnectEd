@@ -106,7 +106,7 @@ class Actions:
         self.viewGridDisplay .setEnabled(en)
         self.viewGridSnap    .setEnabled(en)
         self.placeRectangle  .setEnabled(en)
-        self.placeTextBlock       .setEnabled(en)
+        self.placeTextBlock  .setEnabled(en)
         if en:
             # connect signals
             self._scene.selectionChangedItems.connect(self.onSelectionChanged)
@@ -114,9 +114,11 @@ class Actions:
             self._scene.undo_stack.canRedoChanged.connect(self.onCanRedoChanged)
 
     def onSelectionChanged(self : Self, items : list[QGraphicsItem]) -> None:
-        self.editCut    .setEnabled( len(items) > 0 )
-        self.editCopy   .setEnabled( len(items) > 0 )
-        self.editDelete .setEnabled( len(items) > 0 )
+        n = len(items)
+        self.editCut       .setEnabled( n > 0 )
+        self.editCopy      .setEnabled( n > 0 )
+        self.editDelete    .setEnabled( n > 0 )
+        self.editDuplicate .setEnabled( n > 0 )
 
     def onClipboardDataChanged(self : Self) -> None:
         if not self._scene:

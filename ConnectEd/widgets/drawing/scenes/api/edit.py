@@ -224,6 +224,18 @@ class cmdEditAppearance(cmdElements):
         return False
 
 class DrawingSceneApiEditMixin:
+    def editCut(
+        self : "DrawingScene",
+        pos  : QPointF = QPointF(0, 0)
+    ) -> None:
+        elements = \
+            [item for item in self.selectedItems() if isinstance(item, Element)]
+        if elements:
+            copy(elements, pos)
+            self.undo_stack.push(cmdEditDelete(self, elements))
+        else:
+            logger.warning("No elements selected to cut")
+
     def editCopy(
         self : "DrawingScene",
         pos  : QPointF = QPointF(0, 0)
