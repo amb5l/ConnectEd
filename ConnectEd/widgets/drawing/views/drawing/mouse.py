@@ -156,7 +156,7 @@ class DrawingViewMouseMixin:
                     m == qkm.ControlModifier,
                     self.state == self.State.EditSlide1
                 )
-                self.moveBegin(
+                self.editMoveBegin(
                     self.scene().selectedItems(),
                     self._snap(self.mouse.left.release.logical)
                 )
@@ -165,7 +165,7 @@ class DrawingViewMouseMixin:
                     else self.state.EditMove2
                 )
             case self.State.EditMove2 | self.State.EditSlide2:
-                self.moveComplete(
+                self.editMoveComplete(
                     self._snap(self.mouse.left.release.logical),
                     self.state == self.State.EditSlide2
                 )
@@ -181,12 +181,12 @@ class DrawingViewMouseMixin:
                 items = self._itemsAt(self.mouse.left.press.logical)
                 for item in items:
                     if isinstance(item, KeyPoint) and item.isMoveable():
-                        self.moveBegin(
+                        self.editMoveBegin(
                             [item], self._snap(self.mouse.left.press.logical)
                         )
                         self._goState(self.State.EditResize3)
             case self.State.EditResize3:
-                self.moveComplete(
+                self.editMoveComplete(
                     self._snap(self.mouse.left.release.logical)
                 )
                 self._goState(self.State.Idle)
@@ -242,7 +242,7 @@ class DrawingViewMouseMixin:
                 if len(items) == 1:
                     for item in items_at:
                         if isinstance(item, KeyPoint) and item.isMoveable():
-                            self.moveBegin(
+                            self.editMoveBegin(
                                 [item], self._snap(self.mouse.left.press.logical)
                             )
                             self._goState(self.state.EditResize3)
@@ -274,7 +274,7 @@ class DrawingViewMouseMixin:
                     m & qkm.ControlModifier
                 )
                 if items: # slide/move
-                    self.moveBegin(
+                    self.editMoveBegin(
                         items,
                         self._snap(self.mouse.left.press.logical),
                         not(m & qkm.AltModifier)
@@ -305,17 +305,17 @@ class DrawingViewMouseMixin:
             case self.State.SelectArea2:
                 self.marquee.resize(self.mouse.current.physical)
             case self.State.EditSlide2:
-                self.moveContinue(
+                self.editMoveContinue(
                     self._snap(self.mouse.current.logical), True
                 )
             case self.State.EditDuplicate2:
                 self.editDuplicateContinue()
             case self.State.EditMove2:
-                self.moveContinue(
+                self.editMoveContinue(
                     self._snap(self.mouse.current.logical)
                 )
             case self.State.EditResize3:
-                self.moveContinue(self._snap(self.mouse.current.logical))
+                self.editMoveContinue(self._snap(self.mouse.current.logical))
             case self.State.ViewPan2:
                 delta = self.mouse.current.physical - self.wip.pos0
                 self.horizontalScrollBar().setValue(
@@ -343,7 +343,7 @@ class DrawingViewMouseMixin:
                 )
                 self._goState(self.State.Idle)
             case self.State.EditMove2 | self.State.EditSlide2 | self.State.EditResize3:
-                self.moveComplete(
+                self.editMoveComplete(
                     self._snap(self.mouse.left.release.logical),
                     self.state == self.State.EditSlide2
                 )
@@ -436,7 +436,7 @@ class DrawingViewMouseMixin:
             case self.State.EditDuplicate2:
                 self.editDuplicateContinue()
             case self.State.EditMove2 | self.State.EditSlide2 | self.State.EditResize3:
-                self.moveContinue(
+                self.editMoveContinue(
                     self._snap(self.mouse.current.logical),
                     self.state == self.State.EditSlide2
                 )

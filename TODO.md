@@ -1,6 +1,5 @@
-- strange offsets during paste
-- editDelete
-- editDuplicate
+- partition DrawingView
+- cmd constructor tidying
 - move multiple elements with drag
 - implememnt property text
 

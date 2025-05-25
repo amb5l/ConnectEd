@@ -9,16 +9,17 @@ from PyQt6.QtWidgets import QMdiArea, QMdiSubWindow, \
                             QGraphicsView, QGraphicsItem, QGraphicsTextItem
 from PyQt6.QtGui     import QPainter, QPen, QCloseEvent, QKeyEvent
 
-from .....core import logger, paste, LAYER_SHEET, LAYER_DRAWING
+from .....core import LAYER_SHEET, LAYER_DRAWING
 
-from ....dialogs import AppearanceDialog
 from ....marquee import Marquee
 
 from ...scenes import DrawingScene
-from ...items  import Element, TextBlock, cmdMove
 
 from .mouse   import DrawingViewMouseMixin
 from .private import DrawingViewPrivateMixin
+from .edit    import DrawingViewEditMixin
+from .view    import DrawingViewViewMixin
+from .place   import DrawingViewPlaceMixin
 
 from ..... import hub
 
@@ -169,6 +170,9 @@ class DrawingViewWip:
 class DrawingView(
     DrawingViewMouseMixin,
     QGraphicsView,
+    DrawingViewEditMixin,
+    DrawingViewViewMixin,
+    DrawingViewPlaceMixin,
     DrawingViewPrivateMixin
 ):
 
@@ -221,9 +225,6 @@ class DrawingView(
         #self.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
 
         self._setLayer(DrawingViewLayer.Drawing)
-
-    ############################################################################
-    # display events
 
     def showEvent(self : Self, event : QEvent) -> None:
         super().showEvent(event)
@@ -280,9 +281,6 @@ class DrawingView(
                     )
                     y += py
 
-    ############################################################################
-    # key events
-
     def keyPressEvent(self : Self, event : QKeyEvent) -> None:
         """Override default arrow key handling to prevent panning"""
         if event.key() in (
@@ -297,393 +295,6 @@ class DrawingView(
                 event.ignore()
             return
         super().keyPressEvent(event)
-
-    ############################################################################
-    # edit methods
-
-    def editUndo(self : Self) -> None:
-        self.scene().undo_stack.undo()
-
-    def editRedo(self : Self) -> None:
-        self.scene().undo_stack.redo()
-
-    def editCancel(self : Self) -> None:
-        scene : DrawingScene = self.scene()
-        if self.wip.macro:
-            scene.undo_stack.endMacro()
-        scene.undo_stack.undo()
-        self.wip.clear()
-        self.scene().clearSelection()
-        self._goState(self.State.Idle)
-
-    def editComplete(self : Self) -> None:
-        # TODO seriously consider this
-        match self.state:
-            case self.State.PlaceRectangle2:
-                self.placeRectangleComplete(
-                    self._snap(self.mouse.current.logical)
-                )
-
-    def editCut(self : Self) -> None:
-        print("TODO: editCut")
-
-    def editCopy(self : Self) -> None:
-        scene : DrawingScene = self.scene()
-        scene.editCopy(self._snap(self.mouse.current.logical))
-
-    def editPaste(self : Self) -> None:
-        scene : DrawingScene = self.scene()
-        self.wip.clear()
-        items, copy_pos = paste()
-        if not items:
-            logger.warning("No valid data to paste")
-            self._goState(self.State.Idle)
-            return
-        elements = [item for item in items if isinstance(item, Element)]
-        if not elements:
-            logger.warning("No valid elements to paste")
-            self._goState(self.State.Idle)
-            return
-        # Capture the current selection before clearing
-        selection = [item for item in scene.selectedItems() if isinstance(item, Element)]
-        # Clear selection and hide keypoints
-        scene.clearSelection()
-        for item in scene.items():
-            if isinstance(item, Element):
-                item.setKPVisible(False)
-        self.wip.elements = elements
-        self.wip.pos0 = elements[0].pos() if copy_pos is None and elements else copy_pos or QPointF(0, 0)
-        pos = self._snap(self.mouse.current.logical)
-        offset = pos - self.wip.pos0
-        scene.blockSignals(True)
-        for element in elements:
-            if element.scene() != scene:
-                scene.addItem(element)
-            element.setPos(element.pos() + offset)
-            element.setSelected(True)
-            element.setKPVisible(False)  # Explicitly hide keypoints
-        scene.blockSignals(False)
-        scene.selectionChanged.emit()
-        self.wip.macro = True
-        self.wip.selection = selection  # Store for use in editPasteComplete
-        scene.undo_stack.beginMacro("Paste Elements")
-        self._goState(self.State.EditPaste)
-
-    def editPasteContinue(self : Self) -> None:
-        scene : DrawingScene = self.scene()
-        if not self.wip.elements:
-            logger.warning("editPasteContinue: No elements in wip, aborting")
-            self._goState(self.State.Idle)
-            return
-        new_pos = self._snap(self.mouse.current.logical)
-        mouse_delta = new_pos - self.wip.pos0
-        # Block signals to avoid multiple selection updates
-        scene.blockSignals(True)
-        for element in self.wip.elements:
-            if element.scene() == scene:
-                element.setPos(element.pos() + mouse_delta)
-                element.setSelected(True)  # Ensure elements remain selected
-                element.setKPVisible(False)  # Explicitly hide keypoints
-        scene.blockSignals(False)
-        # Manually trigger selection changed to update key points
-        scene.selectionChanged.emit()
-        self.wip.pos0 = new_pos
-
-    def editPasteComplete(self : Self) -> None:
-        scene : DrawingScene = self.scene()
-        if not self.wip.elements:
-            logger.warning("editPasteComplete: No elements in wip, aborting")
-            self._goState(self.State.Idle)
-            return
-        pos = self._snap(self.mouse.current.logical)
-        offset = pos - self.wip.pos0
-        for element in self.wip.elements:
-            if element.scene() == scene:
-                scene.removeItem(element)
-                element.setPos(element.pos() - offset)
-        # Pass the original selection to editPaste
-        scene.editPaste(pos, (self.wip.elements, self.wip.pos0, self.wip.selection))
-        if self.wip.macro:
-            scene.undo_stack.endMacro()
-        self.wip.clear()
-        self._goState(self.State.Idle)
-
-    def editDelete(self : Self) -> None:
-        scene : DrawingScene = self.scene()
-        scene.editDelete()
-
-    def editDuplicate(self : Self, pos: QPointF = None) -> None:
-        scene : DrawingScene = self.scene()
-        elements = [item for item in scene.selectedItems() if isinstance(item, Element)]
-        if not elements:
-            # Enter selection mode if nothing is selected
-            self._goState(self.State.EditDuplicate1)
-            return
-        # Start duplication with selected elements
-        self.wip.clear()
-        # Store original selection before clearing
-        selection = [item for item in scene.selectedItems() if isinstance(item, Element)]
-        # Clone the elements
-        cloned_elements = []
-        for element in elements:
-            try:
-                clone = element.clone()
-                cloned_elements.append(clone)
-            except Exception as e:
-                logger.warning(f"Failed to clone element {element}: {e}")
-        if not cloned_elements:
-            logger.warning("editDuplicate: Failed to clone elements")
-            return
-        # Clear selection and hide keypoints
-        scene.clearSelection()
-        for item in scene.items():
-            if isinstance(item, Element):
-                item.setKPVisible(False)
-        self.wip.elements = cloned_elements
-        # Use provided position or current mouse position
-        self.wip.pos0 = pos if pos is not None else self._snap(self.mouse.current.logical)
-        # Don't apply any initial offset - keep cloned elements at their original positions
-        scene.blockSignals(True)
-        for element in cloned_elements:
-            if element.scene() != scene:
-                scene.addItem(element)
-            element.setSelected(True)
-            element.setKPVisible(False)  # Explicitly hide keypoints
-        scene.blockSignals(False)
-        scene.selectionChanged.emit()
-        self.wip.macro = True
-        self.wip.selection = selection  # Store for use in editDuplicateComplete
-        scene.undo_stack.beginMacro("Duplicate Elements")
-        self._goState(self.State.EditDuplicate2)
-
-    def editDuplicateContinue(self : Self) -> None:
-        scene : DrawingScene = self.scene()
-        if not self.wip.elements:
-            logger.warning("editDuplicateContinue: No elements in wip, aborting")
-            self._goState(self.State.Idle)
-            return
-        new_pos = self._snap(self.mouse.current.logical)
-        mouse_delta = new_pos - self.wip.pos0
-        # Block signals to avoid multiple selection updates
-        scene.blockSignals(True)
-        for element in self.wip.elements:
-            if element.scene() == scene:
-                element.setPos(element.pos() + mouse_delta)
-                element.setSelected(True)  # Ensure elements remain selected
-                element.setKPVisible(False)  # Explicitly hide keypoints
-        scene.blockSignals(False)
-        # Manually trigger selection changed to update key points
-        scene.selectionChanged.emit()
-        self.wip.pos0 = new_pos
-
-    def editDuplicateComplete(self : Self) -> None:
-        scene : DrawingScene = self.scene()
-        if not self.wip.elements:
-            logger.warning("editDuplicateComplete: No elements in wip, aborting")
-            self._goState(self.State.Idle)
-            return
-        pos = self._snap(self.mouse.current.logical)
-        offset = pos - self.wip.pos0
-        # Remove temporary elements from scene before final placement
-        for element in self.wip.elements:
-            if element.scene() == scene:
-                scene.removeItem(element)
-                element.setPos(element.pos() - offset)
-        # Use the original selection to determine what was duplicated
-        original_elements = self.wip.selection if self.wip.selection else []
-        # Pass the cloned elements to editDuplicate for final placement
-        scene.editDuplicate(pos, (self.wip.elements, self.wip.pos0, original_elements))
-        if self.wip.macro:
-            scene.undo_stack.endMacro()
-        self.wip.clear()
-        self._goState(self.State.Idle)
-
-    def editSlide(self : Self) -> None:
-        if self.scene().selectedItems():
-            pos = self._snap(self._selectedItemsRect().center())
-            self.moveBegin(self.scene().selectedItems(), pos, True)
-        else:
-            self._goState(self.State.EditSlide1)
-
-    def editMove(self : Self) -> None:
-        if self.scene().selectedItems():
-            pos = self._snap(self._selectedItemsRect().center())
-            self.moveBegin(self.scene().selectedItems(), pos)
-            self._goState(self.State.EditMove2)
-        else:
-            self._goState(self.State.EditMove1)
-
-    def editResize(self : Self) -> None:
-        if len(self.scene().selectedItems()) == 1:
-            self._goState(self.State.EditResize2)
-        else:
-            self.scene().clearSelection()
-            self._goState(self.State.EditResize1)
-
-    def editAppearance(
-        self : Self,
-        elements : Element | list[Element] = []
-    ) -> None:
-        scene : DrawingScene = self.scene()
-        if scene.selectedItems():
-            elements = scene.selectedItems()
-        elif not isinstance(elements, list):
-            elements = [elements]
-        if elements:
-            self._goState(self.State.EditAppearance2)
-            dialog = AppearanceDialog(elements)
-            if dialog.exec():
-                scene.editAppearance(
-                    scene.selectedItems(),
-                    dialog.getChoice()
-                )
-            self._goState(self.State.Idle)
-        else:
-            self._goState(self.State.EditAppearance1)
-
-    ############################################################################
-    # view methods
-
-    def viewZoomAll(self : Self) -> None:
-        rect = self._allItemsRect()
-        if rect is None:
-            self._zoomAbs(1)
-        else:
-            self._zoomRect(rect)
-
-    def viewZoomWindow(self : Self) -> None:
-        self._goState(self.State.ViewZoomWindow1)
-
-    def viewZoomIn(self : Self, n : int = 1) -> None:
-        self._zoomRelMouse((1 + hub.settings.get("display/zoom/step"))**n)
-
-    def viewZoomOut(self : Self, n : int = 1) -> None:
-        self._zoomRelMouse((1 - hub.settings.get("display/zoom/step"))**n)
-
-    def viewPan(self : Self, n : int = 1) -> None:
-        self._goState(self.State.ViewPan1)
-
-    def viewPanLeft(self : Self, n : int = 1) -> None:
-        self._pan(QPointF(hub.settings.get("display/pan/step") * n, 0))
-
-    def viewPanRight(self : Self, n : int = 1) -> None:
-        self._pan(QPointF(-hub.settings.get("display/pan/step") * n, 0))
-
-    def viewPanUp(self : Self, n : int = 1) -> None:
-        self._pan(QPointF(0, hub.settings.get("display/pan/step") * n))
-
-    def viewPanDown(self : Self, n : int = 1) -> None:
-        self._pan(QPointF(0, -hub.settings.get("display/pan/step") * n))
-
-    def viewPrev(self : Self) -> None:
-        pass
-
-    def viewNext(self : Self) -> None:
-        pass
-
-    def viewGridDisplay(self : Self, checked : bool) -> None:
-        self.grid.display = checked
-        self.viewport().update()
-
-    def viewGridSnap(self : Self, checked : bool) -> None:
-        self.grid.snap = checked
-
-    def viewGridSettings(self : Self) -> None:
-        # TODO dialog required
-        pass
-
-    ############################################################################
-    # place methods
-
-    def placeRectangle(self : Self) -> None:
-        self._goState(self.State.PlaceRectangle1)
-
-    def placeRectangleBegin(self : Self, p1: QPointF) -> None:
-        scene : DrawingScene = self.scene()
-        scene.clearSelection()
-        self.wip.clear()
-        element = scene.placeRectangle(p1)
-        self.wip.elements = [element]
-        self.wip.pos0 = p1
-        self.wip.elements[0].setSelected(True) # explicitly select the rectangle
-        self.wip.elements[0].setKPVisible(True) # ensure keypoints are visible
-        self._goState(self.State.PlaceRectangle2)
-
-    def placeRectangleContinue(self : Self, p2: QPointF) -> None:
-        scene : DrawingScene = self.scene()
-        scene.placeRectangle(self.wip.pos0, p2, inst=self.wip.elements[0])
-
-    def placeRectangleComplete(self : Self, p2: QPointF) -> None:
-        scene : DrawingScene = self.scene()
-        scene.placeRectangle(self.wip.pos0, p2, inst=self.wip.elements[0])
-        self.wip.clear()
-        self._goState(self.State.Idle)
-
-    def placeTextBlock(self : Self) -> None:
-        self._goState(self.State.PlaceTextBlock1)
-
-    def placeTextBlockBegin(self : Self, pos : QPointF) -> None:
-        scene : DrawingScene = self.scene()
-        scene.clearSelection()
-        self.wip.clear()
-        element = scene.placeTextBlock("", pos)
-        element.setEditable(True)
-        element.setFocus()
-        self.wip.elements = [element]
-        self.wip.pos0 = pos
-        self._goState(self.State.PlaceTextBlock2)
-
-    def placeTextBlockComplete(self : Self) -> None:
-        self.wip.elements[0].clearFocus()
-
-    def placeTextBlockFinalize(self, text_item: TextBlock):
-        scene : DrawingScene = self.scene()
-        if text_item == self.wip.elements[0]:
-            text = text_item.toPlainText()
-            if text:
-                self.wip.elements[0].setEditable(False)
-                self.wip.elements[0].update()
-                scene.placeTextBlock(text, self.wip.pos0, inst=self.wip.elements[0])
-            else: # cancel empty text
-                self.scene().undo_stack.undo()
-        else:
-            logger.warning("placeTextBlockFinalize: text_item != wip.elements[0]")
-        self.wip.clear()
-        self._goState(self.State.Idle)
-
-    ############################################################################
-    # move methods
-
-    def moveCmd(self  : Self, delta : QPointF, slide : bool = False) -> None:
-        scene : DrawingScene = self.scene()
-        scene.undo_stack.push(cmdMove(
-            scene    = self.scene(),
-            elements = self.wip.elements,
-            delta    = delta,
-            slide    = slide
-        ))
-
-    def moveBegin(
-        self     : Self,
-        elements : list[Element],
-        pos      : QPointF,
-        slide    : bool = False
-    ) -> None:
-        self.wip.macro = True
-        self.wip.elements = elements
-        self.wip.pos0 = pos
-        scene : DrawingScene = self.scene()
-        scene.undo_stack.beginMacro("Move")
-
-    def moveContinue(self : Self, pos : QPointF, slide : bool = False) -> None:
-        self.moveCmd(pos - self.wip.pos0, slide)
-        self.wip.pos0 = pos
-
-    def moveComplete(self : Self, pos : QPointF, slide : bool = False) -> None:
-        self.moveCmd(pos - self.wip.pos0, slide)
-        self.wip.clear()
-        scene : DrawingScene = self.scene()
-        scene.undo_stack.endMacro()
 
 class DrawingSubWindow(QMdiSubWindow):
     def __init__(

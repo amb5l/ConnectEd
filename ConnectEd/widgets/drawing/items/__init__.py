@@ -743,40 +743,6 @@ class cmdPlaceElement(cmdElement):
     def undo(self : Self) -> None:
         self.scene.removeItem(self.element)
 
-class cmdMove(cmdElements):
-    delta : QPointF
-    slide : bool
-
-    def __init__(
-        self     : Self,
-        scene    : "DrawingScene",
-        elements : list[Element],
-        delta    : QPointF,
-        slide    : bool = False
-    ):
-        super().__init__(scene, elements)
-        self.delta = delta
-        self.slide = slide
-
-    def mergeWith(self : Self, other : QUndoCommand) -> bool:
-        if not super().mergeWith(other):
-            return False
-        self.delta += other.delta
-        return True
-
-    def redo(self : Self) -> None:
-        for element in self.elements:
-            element.moveBy(self.delta.x(), self.delta.y())
-            # TODO: add slide logic
-
-    def undo(self : Self) -> None:
-        for element in self.elements:
-            element.moveBy(-self.delta.x(), -self.delta.y())
-            # TODO: add slide logic
-
-class cmdSlide(cmdMove):
-    pass
-
 def clone(elements : list[Element]) -> list[Element]:
     r = []
     for element in elements:
@@ -814,8 +780,6 @@ __all__ = [
     "cmdElement",
     "cmdElements",
     "cmdPlaceElement",
-    "cmdMove",
-    "cmdSlide",
     "clone"
 ]
 from .key_point import KPLoc, KeyPoint, KPDef, KPManager

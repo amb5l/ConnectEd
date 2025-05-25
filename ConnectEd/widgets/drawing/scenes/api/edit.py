@@ -153,6 +153,37 @@ class cmdEditDuplicate(cmdElements):
     def mergeWith(self, other: QUndoCommand) -> bool:
         return super().mergeWith(other) and self.offset == other.offset
 
+class cmdEditMove(cmdElements):
+    offset : QPointF
+    slide : bool
+
+    def __init__(
+        self     : Self,
+        scene    : "DrawingScene",
+        elements : list[Element],
+        offset   : QPointF,
+        slide    : bool = False
+    ):
+        super().__init__(scene, elements)
+        self.offset = offset
+        self.slide = slide
+
+    def mergeWith(self : Self, other : QUndoCommand) -> bool:
+        if not super().mergeWith(other):
+            return False
+        self.offset += other.offset
+        return True
+
+    def redo(self : Self) -> None:
+        for element in self.elements:
+            element.moveBy(self.offset.x(), self.offset.y())
+            # TODO: add slide logic
+
+    def undo(self : Self) -> None:
+        for element in self.elements:
+            element.moveBy(-self.offset.x(), -self.offset.y())
+            # TODO: add slide logic
+
 class cmdEditAppearance(cmdElements):
     _initial : dict[Element, AppearancePref]
     _changes : AppearancePrefChange
@@ -272,6 +303,14 @@ class DrawingSceneApiEditMixin:
         offset = pos - pos0
         self.undo_stack.push(cmdEditDuplicate(self, clones, offset, selection))
         return True
+
+    def editMove(
+        self     : "DrawingScene",
+        elements : list[Element],
+        offset   : QPointF,
+        slide    : bool = False
+    ) -> None:
+        self.undo_stack.push(cmdEditMove(self, elements, offset, slide))
 
     def editAppearance(
         self     : "DrawingScene",
