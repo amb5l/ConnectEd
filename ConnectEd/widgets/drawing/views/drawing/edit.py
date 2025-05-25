@@ -65,13 +65,19 @@ class DrawingViewEditMixin:
             if isinstance(item, Element):
                 item.setKPVisible(False)
         self.wip.elements = elements
-        # Use current mouse position as reference point for paste positioning
-        self.wip.pos0 = self._snap(self.mouse.current.logical)
-        # Don't apply any initial offset - the elements will be positioned during the first mouse movement
+        # Calculate offset from copy position to current mouse position
+        current_pos = self._snap(self.mouse.current.logical)
+        copy_pos = copy_pos if copy_pos is not None else \
+            (elements[0].pos() if elements else QPointF(0, 0))
+        offset = current_pos - copy_pos
+        # Set current position as reference for future mouse movement
+        self.wip.pos0 = current_pos
         scene.blockSignals(True)
         for element in elements:
             if element.scene() != scene:
                 scene.addItem(element)
+            # Apply initial offset to position elements at mouse location
+            element.setPos(element.pos() + offset)
             element.setSelected(True)
             element.setKPVisible(False)  # Explicitly hide keypoints
         scene.blockSignals(False)
