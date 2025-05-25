@@ -5,6 +5,8 @@ from PyQt6.QtCore    import Qt, QPointF, QRectF, QPoint
 from PyQt6.QtWidgets import QMenu, QGraphicsItem
 from PyQt6.QtGui     import QMouseEvent, QPainterPath, QIcon, QAction, QCursor
 
+from .defs import DrawingViewState, DrawingViewStateTip
+
 from ..... import hub
 
 from typing import TYPE_CHECKING
@@ -13,10 +15,10 @@ if TYPE_CHECKING:
 
 
 class DrawingViewPrivateMixin:
-    def _goState(self : "DrawingView", state : "DrawingView.State") -> None:
+    def _goState(self : "DrawingView", state : DrawingViewState) -> None:
         self.state = state
         if hub.main_window is not None:
-            hub.main_window.status_bar.tip.setText(self.StateTip[state])
+            hub.main_window.status_bar.tip.setText(DrawingViewStateTip[state])
 
     def _allItemsRect(self : "DrawingView") -> Optional[QRectF]:
         items_rect = None

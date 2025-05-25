@@ -2,6 +2,8 @@ from typing import Self
 
 from PyQt6.QtCore import QPointF
 
+from .defs import DrawingViewState as State
+
 
 class DrawingViewViewMixin:
 
@@ -13,7 +15,7 @@ class DrawingViewViewMixin:
             self._zoomRect(rect)
 
     def viewZoomWindow(self : Self) -> None:
-        self._goState(self.State.ViewZoomWindow1)
+        self._goState(State.ViewZoomWindow1)
 
     def viewZoomIn(self : Self, n : int = 1) -> None:
         from .....core import hub
@@ -24,7 +26,7 @@ class DrawingViewViewMixin:
         self._zoomRelMouse((1 - hub.settings.get("display/zoom/step"))**n)
 
     def viewPan(self : Self, n : int = 1) -> None:
-        self._goState(self.State.ViewPan1)
+        self._goState(State.ViewPan1)
 
     def viewPanLeft(self : Self, n : int = 1) -> None:
         from .....core import hub

@@ -7,6 +7,8 @@ from ....dialogs import AppearanceDialog
 from ...scenes import DrawingScene
 from ...items  import Element
 
+from .defs import DrawingViewState as State
+
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ... import DrawingView
@@ -26,12 +28,12 @@ class DrawingViewEditMixin:
         scene.undo_stack.undo()
         self.wip.clear()
         self.scene().clearSelection()
-        self._goState(self.State.Idle)
+        self._goState(State.Idle)
 
     def editComplete(self : "DrawingView") -> None:
         # TODO seriously consider this
         match self.state:
-            case self.State.PlaceRectangle2:
+            case State.PlaceRectangle2:
                 self.placeRectangleComplete(
                     self._snap(self.mouse.current.logical)
                 )
@@ -50,12 +52,12 @@ class DrawingViewEditMixin:
         items, copy_pos = paste()
         if not items:
             logger.warning("No valid data to paste")
-            self._goState(self.State.Idle)
+            self._goState(State.Idle)
             return
         elements = [item for item in items if isinstance(item, Element)]
         if not elements:
             logger.warning("No valid elements to paste")
-            self._goState(self.State.Idle)
+            self._goState(State.Idle)
             return
         # Capture the current selection before clearing
         selection = [item for item in scene.selectedItems() if isinstance(item, Element)]
@@ -85,13 +87,13 @@ class DrawingViewEditMixin:
         self.wip.macro = True
         self.wip.selection = selection  # Store for use in editPasteComplete
         scene.undo_stack.beginMacro("Paste Elements")
-        self._goState(self.State.EditPaste)
+        self._goState(State.EditPaste)
 
     def editPasteContinue(self : "DrawingView") -> None:
         scene : DrawingScene = self.scene()
         if not self.wip.elements:
             logger.warning("editPasteContinue: No elements in wip, aborting")
-            self._goState(self.State.Idle)
+            self._goState(State.Idle)
             return
         new_pos = self._snap(self.mouse.current.logical)
         mouse_delta = new_pos - self.wip.pos0
@@ -111,7 +113,7 @@ class DrawingViewEditMixin:
         scene : DrawingScene = self.scene()
         if not self.wip.elements:
             logger.warning("editPasteComplete: No elements in wip, aborting")
-            self._goState(self.State.Idle)
+            self._goState(State.Idle)
             return
         pos = self._snap(self.mouse.current.logical)
         offset = pos - self.wip.pos0
@@ -124,7 +126,7 @@ class DrawingViewEditMixin:
         if self.wip.macro:
             scene.undo_stack.endMacro()
         self.wip.clear()
-        self._goState(self.State.Idle)
+        self._goState(State.Idle)
 
     def editDelete(self : "DrawingView") -> None:
         scene : DrawingScene = self.scene()
@@ -135,7 +137,7 @@ class DrawingViewEditMixin:
         elements = [item for item in scene.selectedItems() if isinstance(item, Element)]
         if not elements:
             # Enter selection mode if nothing is selected
-            self._goState(self.State.EditDuplicate1)
+            self._goState(State.EditDuplicate1)
             return
         # Start duplication with selected elements
         self.wip.clear()
@@ -172,13 +174,13 @@ class DrawingViewEditMixin:
         self.wip.macro = True
         self.wip.selection = selection  # Store for use in editDuplicateComplete
         scene.undo_stack.beginMacro("Duplicate Elements")
-        self._goState(self.State.EditDuplicate2)
+        self._goState(State.EditDuplicate2)
 
     def editDuplicateContinue(self : "DrawingView") -> None:
         scene : DrawingScene = self.scene()
         if not self.wip.elements:
             logger.warning("editDuplicateContinue: No elements in wip, aborting")
-            self._goState(self.State.Idle)
+            self._goState(State.Idle)
             return
         new_pos = self._snap(self.mouse.current.logical)
         mouse_delta = new_pos - self.wip.pos0
@@ -198,7 +200,7 @@ class DrawingViewEditMixin:
         scene : DrawingScene = self.scene()
         if not self.wip.elements:
             logger.warning("editDuplicateComplete: No elements in wip, aborting")
-            self._goState(self.State.Idle)
+            self._goState(State.Idle)
             return
         pos = self._snap(self.mouse.current.logical)
         offset = pos - self.wip.pos0
@@ -214,23 +216,23 @@ class DrawingViewEditMixin:
         if self.wip.macro:
             scene.undo_stack.endMacro()
         self.wip.clear()
-        self._goState(self.State.Idle)
+        self._goState(State.Idle)
 
     def editSlide(self : "DrawingView") -> None:
         if self.scene().selectedItems():
             pos = self._snap(self._selectedItemsRect().center())
             self.editMoveBegin(self.scene().selectedItems(), pos, True)
         else:
-            self._goState(self.State.EditSlide1)
+            self._goState(State.EditSlide1)
 
     def editMove(self : "DrawingView") -> None:
         scene : DrawingScene = self.scene()
         if scene.selectedItems():
             pos = self._snap(self._selectedItemsRect().center())
             self.editMoveBegin(scene.selectedItems(), pos)
-            self._goState(self.State.EditMove2)
+            self._goState(State.EditMove2)
         else:
-            self._goState(self.State.EditMove1)
+            self._goState(State.EditMove1)
 
     def editMoveBegin(
         self     : "DrawingView",
@@ -261,10 +263,10 @@ class DrawingViewEditMixin:
 
     def editResize(self : "DrawingView") -> None:
         if len(self.scene().selectedItems()) == 1:
-            self._goState(self.State.EditResize2)
+            self._goState(State.EditResize2)
         else:
             self.scene().clearSelection()
-            self._goState(self.State.EditResize1)
+            self._goState(State.EditResize1)
 
     def editAppearance(
         self : "DrawingView",
@@ -276,13 +278,13 @@ class DrawingViewEditMixin:
         elif not isinstance(elements, list):
             elements = [elements]
         if elements:
-            self._goState(self.State.EditAppearance2)
+            self._goState(State.EditAppearance2)
             dialog = AppearanceDialog(elements)
             if dialog.exec():
                 scene.editAppearance(
                     scene.selectedItems(),
                     dialog.getChoice()
                 )
-            self._goState(self.State.Idle)
+            self._goState(State.Idle)
         else:
-            self._goState(self.State.EditAppearance1)
+            self._goState(State.EditAppearance1)

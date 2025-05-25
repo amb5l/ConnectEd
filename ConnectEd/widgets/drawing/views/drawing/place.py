@@ -7,10 +7,12 @@ from .....core import logger
 from ...scenes import DrawingScene
 from ...items  import TextBlock
 
+from .defs import DrawingViewState as State
+
 
 class DrawingViewPlaceMixin:
     def placeRectangle(self : Self) -> None:
-        self._goState(self.State.PlaceRectangle1)
+        self._goState(State.PlaceRectangle1)
 
     def placeRectangleBegin(self : Self, p1: QPointF) -> None:
         scene : DrawingScene = self.scene()
@@ -21,7 +23,7 @@ class DrawingViewPlaceMixin:
         self.wip.pos0 = p1
         self.wip.elements[0].setSelected(True) # explicitly select the rectangle
         self.wip.elements[0].setKPVisible(True) # ensure keypoints are visible
-        self._goState(self.State.PlaceRectangle2)
+        self._goState(State.PlaceRectangle2)
 
     def placeRectangleContinue(self : Self, p2: QPointF) -> None:
         scene : DrawingScene = self.scene()
@@ -31,10 +33,10 @@ class DrawingViewPlaceMixin:
         scene : DrawingScene = self.scene()
         scene.placeRectangle(self.wip.pos0, p2, inst=self.wip.elements[0])
         self.wip.clear()
-        self._goState(self.State.Idle)
+        self._goState(State.Idle)
 
     def placeTextBlock(self : Self) -> None:
-        self._goState(self.State.PlaceTextBlock1)
+        self._goState(State.PlaceTextBlock1)
 
     def placeTextBlockBegin(self : Self, pos : QPointF) -> None:
         scene : DrawingScene = self.scene()
@@ -45,7 +47,7 @@ class DrawingViewPlaceMixin:
         element.setFocus()
         self.wip.elements = [element]
         self.wip.pos0 = pos
-        self._goState(self.State.PlaceTextBlock2)
+        self._goState(State.PlaceTextBlock2)
 
     def placeTextBlockComplete(self : Self) -> None:
         self.wip.elements[0].clearFocus()
@@ -63,4 +65,4 @@ class DrawingViewPlaceMixin:
         else:
             logger.warning("placeTextBlockFinalize: text_item != wip.elements[0]")
         self.wip.clear()
-        self._goState(self.State.Idle)
+        self._goState(State.Idle)

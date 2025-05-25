@@ -5,6 +5,9 @@ from .....core import logger
 
 from ... import Element, KeyPoint
 
+from .defs import DrawingViewMouseButtonState as MouseButtonState, \
+                  DrawingViewState as State
+
 from ..... import hub
 
 from typing import TYPE_CHECKING
@@ -36,66 +39,60 @@ class DrawingViewMouseMixin:
             str(int(round(l.x()))) + "," + str(int(round(l.y())))
         )
         match self.mouse.left.state:
-            case self.MouseButtonState.Pressed:
+            case MouseButtonState.Pressed:
                 d = self._distance(self.mouse.left.press.physical, event.pos())
                 if d >= hub.settings.get("prefs/mouse/drag"):
-                    self.mouse.left.state = self.MouseButtonState.Dragging
+                    self.mouse.left.state = MouseButtonState.Dragging
                     self.mouseLeftDragBegin()
                     return
-            case self.MouseButtonState.Dragging:
+            case MouseButtonState.Dragging:
                 self.mouseLeftDragContinue()
                 return
         match self.mouse.middle.state:
-            case self.MouseButtonState.Pressed:
+            case MouseButtonState.Pressed:
                 d = self._distance(self.mouse.middle.press.physical, event.pos())
                 if d >= hub.settings.get("prefs/mouse/drag"):
-                    self.mouse.middle.state = self.MouseButtonState.Dragging
+                    self.mouse.middle.state = MouseButtonState.Dragging
                     self.mouseMiddleDragBegin()
                     return
-            case self.MouseButtonState.Dragging:
+            case MouseButtonState.Dragging:
                 self.mouseMiddleDragContinue()
                 return
         self.mouseMove()
 
     def mousePressEvent(self : "DrawingView", event : QMouseEvent) -> None:
         p = event.pos(); l = self.mapToScene(p)
-        items = self.scene().items(
-            l,
-            Qt.ItemSelectionMode.IntersectsItemShape,
-            Qt.SortOrder.DescendingOrder,
-            self.viewportTransform()
-        )
         if event.buttons() & Qt.MouseButton.LeftButton:
             self.mouse.left.press.setPL(p, l)
             self.mouse.left.press.modifiers = self._getModifiers(event)
-            self.mouse.left.state = self.MouseButtonState.Pressed
+            self.mouse.left.state = MouseButtonState.Pressed
         if event.buttons() & Qt.MouseButton.MiddleButton:
             self.mouse.middle.press.setPL(p, l)
             self.mouse.middle.press.modifiers = self._getModifiers(event)
-            self.mouse.middle.state = self.MouseButtonState.Pressed
+            self.mouse.middle.state = MouseButtonState.Pressed
 
     def mouseReleaseEvent(self : "DrawingView", event : QMouseEvent) -> None:
         p = event.pos(); l = self.mapToScene(p)
         if event.button() & Qt.MouseButton.LeftButton:
             self.mouse.left.release.setPL(p, l)
             match self.mouse.left.state:
-                case self.MouseButtonState.Pressed:
+                case MouseButtonState.Pressed:
                     self.mouseLeftClick()
-                    self.mouse.left.state = self.MouseButtonState.Idle
-                case self.MouseButtonState.Dragging:
+                    self.mouse.left.state = MouseButtonState.Idle
+                case MouseButtonState.Dragging:
                     self.mouseLeftDragEnd()
-                    self.mouse.left.state = self.MouseButtonState.Idle
+                    self.mouse.left.state = MouseButtonState.Idle
                 case _:
                     logger.warning(f"Mouse left button released when idle")
         if event.button() & Qt.MouseButton.MiddleButton:
             self.mouse.middle.release.setPL(p, l)
             match self.mouse.middle.state:
-                case self.MouseButtonState.Pressed:
+                case MouseButtonState.Pressed:
                     self.mouseMiddleClick()
-                    self.mouse.middle.state = self.MouseButtonState.Idle
-                case self.MouseButtonState.Dragging:
+                    self.mouse.middle.state = MouseButtonState.Idle
+                case MouseButtonState.Dragging:
                     self.mouseMiddleDragEnd()
-                    self.mouse.middle.state = self.MouseButtonState.Idle
+                    self.mouse.middle.state = MouseButtonState.Idle
                 case _:
                     logger.warning(f"Mouse middle button released when idle")
 
@@ -122,7 +119,7 @@ class DrawingViewMouseMixin:
     def mouseLeftClick(self : "DrawingView") -> None:
         m = self.mouse.left.press.modifiers
         match self.state:
-            case self.State.Idle:
+            case State.Idle:
                 m = self.mouse.left.press.modifiers
                 items = self._itemsAt(self.mouse.left.press.logical)
                 for item in items:
@@ -135,9 +132,9 @@ class DrawingViewMouseMixin:
                     m & qkm.ControlModifier,
                     m & qkm.AltModifier
                 )
-            case self.State.EditPaste:
+            case State.EditPaste:
                 self.editPasteComplete()
-            case self.State.EditDuplicate1:
+            case State.EditDuplicate1:
                 self._selectPoint(
                     self.mouse.current.logical,
                     m == qkm.ControlModifier
@@ -148,59 +145,59 @@ class DrawingViewMouseMixin:
                         [item for item in items if isinstance(item, Element)]
                     if elements:
                         self.editDuplicate()
-            case self.State.EditDuplicate2:
+            case State.EditDuplicate2:
                 self.editDuplicateComplete()
-            case self.State.EditMove1 | self.State.EditSlide1:
+            case State.EditMove1 | State.EditSlide1:
                 self._selectPoint(
                     self.mouse.current.logical,
                     m == qkm.ControlModifier,
-                    self.state == self.State.EditSlide1
+                    self.state == State.EditSlide1
                 )
                 self.editMoveBegin(
                     self.scene().selectedItems(),
                     self._snap(self.mouse.left.release.logical)
                 )
                 self._goState(
-                    self.state.EditSlide2 if self.state == self.state.EditSlide1
-                    else self.state.EditMove2
+                    State.EditSlide2 if self.state == State.EditSlide1
+                    else State.EditMove2
                 )
-            case self.State.EditMove2 | self.State.EditSlide2:
+            case State.EditMove2 | State.EditSlide2:
                 self.editMoveComplete(
                     self._snap(self.mouse.left.release.logical),
-                    self.state == self.State.EditSlide2
+                    self.state == State.EditSlide2
                 )
-                self._goState(self.State.Idle)
-            case self.State.EditResize1:
+                self._goState(State.Idle)
+            case State.EditResize1:
                 self._selectPoint(
                     self.mouse.current.logical,
                     m == qkm.ControlModifier
                 )
                 if len(self.scene().selectedItems()) == 1:
-                    self._goState(self.State.EditResize2)
-            case self.State.EditResize2:
+                    self._goState(State.EditResize2)
+            case State.EditResize2:
                 items = self._itemsAt(self.mouse.left.press.logical)
                 for item in items:
                     if isinstance(item, KeyPoint) and item.isMoveable():
                         self.editMoveBegin(
                             [item], self._snap(self.mouse.left.press.logical)
                         )
-                        self._goState(self.State.EditResize3)
-            case self.State.EditResize3:
+                        self._goState(State.EditResize3)
+            case State.EditResize3:
                 self.editMoveComplete(
                     self._snap(self.mouse.left.release.logical)
                 )
-                self._goState(self.State.Idle)
-            case self.State.EditAppearance1:
+                self._goState(State.Idle)
+            case State.EditAppearance1:
                 self._selectPoint(
                     self.mouse.current.logical,
                     m == qkm.ControlModifier
                 )
                 self.editAppearance()
-            case self.State.ViewPan1:
+            case State.ViewPan1:
                 self.wip.pos0 = self.mouse.left.release.physical
                 self.setCursor(Qt.CursorShape.ClosedHandCursor)
-                self._goState(self.State.ViewPan2)
-            case self.State.ViewPan2:
+                self._goState(State.ViewPan2)
+            case State.ViewPan2:
                 delta = self.mouse.left.release.physical - self.wip.pos0
                 self.horizontalScrollBar().setValue(
                     self.horizontalScrollBar().value() - delta.x()
@@ -210,32 +207,32 @@ class DrawingViewMouseMixin:
                 )
                 self.wip.clear()
                 self.setCursor(Qt.CursorShape.ArrowCursor)
-                self._goState(self.State.Idle)
-            case self.State.ViewZoomWindow1:
+                self._goState(State.Idle)
+            case State.ViewZoomWindow1:
                 self.marquee.begin(self.mouse.left.release.physical)
-                self._goState(self.State.ViewZoomWindow2)
-            case self.State.ViewZoomWindow2:
+                self._goState(State.ViewZoomWindow2)
+            case State.ViewZoomWindow2:
                 self.marquee.end(self.mouse.left.release.physical)
                 self._zoomRect(self.marquee.rect())
-                self._goState(self.State.Idle)
-            case self.State.PlaceRectangle1:
+                self._goState(State.Idle)
+            case State.PlaceRectangle1:
                 self.placeRectangleBegin(
                     self._snap(self.mouse.left.release.logical)
                 )
-            case self.State.PlaceRectangle2:
+            case State.PlaceRectangle2:
                 self.placeRectangleComplete(
                     self._snap(self.mouse.left.release.logical)
                 )
-            case self.State.PlaceTextBlock1:
+            case State.PlaceTextBlock1:
                 self.placeTextBlockBegin(
                     self._snap(self.mouse.left.release.logical)
                 )
-            case self.State.PlaceTextBlock2:
+            case State.PlaceTextBlock2:
                 self.placeTextBlockComplete()
 
     def mouseLeftDragBegin(self : "DrawingView") -> None:
         match self.state:
-            case self.State.Idle:
+            case State.Idle:
                 m = self.mouse.left.press.modifiers
                 items = self.scene().selectedItems()
                 items_at = self._itemsAt(self.mouse.left.press.logical)
@@ -245,7 +242,7 @@ class DrawingViewMouseMixin:
                             self.editMoveBegin(
                                 [item], self._snap(self.mouse.left.press.logical)
                             )
-                            self._goState(self.state.EditResize3)
+                            self._goState(State.EditResize3)
                             return
                 # Check for CTRL+drag duplication when starting on an element
                 if (m & qkm.ControlModifier) and items_at:
@@ -280,43 +277,43 @@ class DrawingViewMouseMixin:
                         not(m & qkm.AltModifier)
                     )
                     self._goState(
-                        self.state.EditSlide2 if not(m & qkm.AltModifier)
-                        else self.state.EditMove2
+                        State.EditSlide2 if not(m & qkm.AltModifier)
+                        else State.EditMove2
                     )
                 else: # start marquee selection
                     self.marquee.begin(self.mouse.left.press.physical)
-                    self._goState(self.State.SelectArea2)
-            case self.State.EditAppearance1:
+                    self._goState(State.SelectArea2)
+            case State.EditAppearance1:
                 self.marquee.begin(self.mouse.left.press.physical)
-                self._goState(self.State.SelectArea2)
-            case self.State.EditDuplicate1:
+                self._goState(State.SelectArea2)
+            case State.EditDuplicate1:
                 self.marquee.begin(self.mouse.left.press.physical)
-                self._goState(self.State.SelectArea2)
-            case self.State.ViewZoomWindow1:
+                self._goState(State.SelectArea2)
+            case State.ViewZoomWindow1:
                 self.marquee.begin(self.mouse.left.press.physical)
-                self._goState(self.State.ViewZoomWindow2)
-            case self.State.PlaceRectangle1:
+                self._goState(State.ViewZoomWindow2)
+            case State.PlaceRectangle1:
                 self.placeRectangleBegin(
                     self._snap(self.mouse.left.press.logical)
                 )
 
     def mouseLeftDragContinue(self : "DrawingView") -> None:
         match self.state:
-            case self.State.SelectArea2:
+            case State.SelectArea2:
                 self.marquee.resize(self.mouse.current.physical)
-            case self.State.EditSlide2:
+            case State.EditSlide2:
                 self.editMoveContinue(
                     self._snap(self.mouse.current.logical), True
                 )
-            case self.State.EditDuplicate2:
+            case State.EditDuplicate2:
                 self.editDuplicateContinue()
-            case self.State.EditMove2:
+            case State.EditMove2:
                 self.editMoveContinue(
                     self._snap(self.mouse.current.logical)
                 )
-            case self.State.EditResize3:
+            case State.EditResize3:
                 self.editMoveContinue(self._snap(self.mouse.current.logical))
-            case self.State.ViewPan2:
+            case State.ViewPan2:
                 delta = self.mouse.current.physical - self.wip.pos0
                 self.horizontalScrollBar().setValue(
                     self.horizontalScrollBar().value() - delta.x()
@@ -325,9 +322,9 @@ class DrawingViewMouseMixin:
                     self.verticalScrollBar().value() - delta.y()
                 )
                 self.wip.pos0 = self.mouse.current.physical
-            case self.State.ViewZoomWindow2:
+            case State.ViewZoomWindow2:
                 self.marquee.resize(self.mouse.current.physical)
-            case self.State.PlaceRectangle2:
+            case State.PlaceRectangle2:
                 self.placeRectangleContinue(
                     self._snap(self.mouse.current.logical)
                 )
@@ -335,33 +332,33 @@ class DrawingViewMouseMixin:
     def mouseLeftDragEnd(self : "DrawingView") -> None:
         m = self.mouse.left.press.modifiers
         match self.state:
-            case self.State.SelectArea2:
+            case State.SelectArea2:
                 self.marquee.end(self.mouse.left.release.physical)
                 self._selectRect(
                     self.marquee.rect(),
                     m == qkm.ControlModifier
                 )
-                self._goState(self.State.Idle)
-            case self.State.EditMove2 | self.State.EditSlide2 | self.State.EditResize3:
+                self._goState(State.Idle)
+            case State.EditMove2 | State.EditSlide2 | State.EditResize3:
                 self.editMoveComplete(
                     self._snap(self.mouse.left.release.logical),
-                    self.state == self.State.EditSlide2
+                    self.state == State.EditSlide2
                 )
-                self._goState(self.State.Idle)
-            case self.State.EditDuplicate2:
+                self._goState(State.Idle)
+            case State.EditDuplicate2:
                 self.editDuplicateComplete()
-            case self.State.EditAppearance1:
+            case State.EditAppearance1:
                 self.marquee.end(self.mouse.left.release.physical)
                 self._selectRect(
                     self.marquee.rect(),
                     m == qkm.ControlModifier
                 )
                 self.editAppearance()
-            case self.State.ViewZoomWindow2:
+            case State.ViewZoomWindow2:
                 self.marquee.end(self.mouse.left.release.physical)
                 self._zoomRect(self.marquee.rect())
-                self._goState(self.State.Idle)
-            case self.State.ViewPan2:
+                self._goState(State.Idle)
+            case State.ViewPan2:
                 delta = self.mouse.left.release.physical - self.wip.pos0
                 self.horizontalScrollBar().setValue(
                     self.horizontalScrollBar().value() - delta.x()
@@ -371,8 +368,8 @@ class DrawingViewMouseMixin:
                 )
                 self.wip.clear()
                 self.setCursor(Qt.CursorShape.ArrowCursor)
-                self._goState(self.State.Idle)
-            case self.State.PlaceRectangle2:
+                self._goState(State.Idle)
+            case State.PlaceRectangle2:
                 self.placeRectangleComplete(
                     self._snap(self.mouse.left.release.logical)
                 )
@@ -384,19 +381,19 @@ class DrawingViewMouseMixin:
         pass
 
     def mouseMiddleDragBegin(self : "DrawingView") -> None:
-        if self.state == self.State.Idle:
+        if self.state == State.Idle:
             match self.mouse.middle.press.modifiers:
                 case Qt.KeyboardModifier.NoModifier:
                     self.wip.pos0 = self.mouse.current.physical
                     self.setCursor(Qt.CursorShape.ClosedHandCursor)
-                    self._goState(self.State.ViewPan2)
+                    self._goState(State.ViewPan2)
                 case Qt.KeyboardModifier.ControlModifier:
                     self.marquee.begin(self.mouse.middle.press.physical)
-                    self._goState(self.State.ViewZoomWindow2)
+                    self._goState(State.ViewZoomWindow2)
 
     def mouseMiddleDragContinue(self : "DrawingView") -> None:
         match self.state:
-            case self.State.ViewPan2:
+            case State.ViewPan2:
                 delta = self.mouse.current.physical - self.wip.pos0
                 self.horizontalScrollBar().setValue(
                     self.horizontalScrollBar().value() - delta.x()
@@ -405,12 +402,12 @@ class DrawingViewMouseMixin:
                     self.verticalScrollBar().value() - delta.y()
                 )
                 self.wip.pos0 = self.mouse.current.physical
-            case self.State.ViewZoomWindow2:
+            case State.ViewZoomWindow2:
                 self.marquee.resize(self.mouse.current.physical)
 
     def mouseMiddleDragEnd(self : "DrawingView") -> None:
         match self.state:
-            case self.State.ViewPan2:
+            case State.ViewPan2:
                 delta = self.mouse.middle.release.physical - self.wip.pos0
                 self.horizontalScrollBar().setValue(
                     self.horizontalScrollBar().value() - delta.x()
@@ -420,34 +417,34 @@ class DrawingViewMouseMixin:
                 )
                 self.wip.clear()
                 self.setCursor(Qt.CursorShape.ArrowCursor)
-                self._goState(self.State.Idle)
-            case self.State.ViewZoomWindow2:
+                self._goState(State.Idle)
+            case State.ViewZoomWindow2:
                 self.marquee.end(self.mouse.middle.release.physical)
                 self._zoomRect(self.marquee.rect())
-                self._goState(self.State.Idle)
+                self._goState(State.Idle)
 
     def mouseMiddleDoubleClick(self : "DrawingView") -> None:
         pass
 
     def mouseMove(self : "DrawingView") -> None:
         match self.state:
-            case self.State.EditPaste:
+            case State.EditPaste:
                 self.editPasteContinue()
-            case self.State.EditDuplicate2:
+            case State.EditDuplicate2:
                 self.editDuplicateContinue()
-            case self.State.EditMove2 | self.State.EditSlide2 | self.State.EditResize3:
+            case State.EditMove2 | State.EditSlide2 | State.EditResize3:
                 self.editMoveContinue(
                     self._snap(self.mouse.current.logical),
-                    self.state == self.State.EditSlide2
+                    self.state == State.EditSlide2
                 )
-            case self.State.ViewPan2:
+            case State.ViewPan2:
                 delta = self.mouse.current.physical - self.wip.pos0
                 self.horizontalScrollBar().setValue(self.horizontalScrollBar().value() - delta.x())
                 self.verticalScrollBar().setValue(self.verticalScrollBar().value() - delta.y())
                 self.wip.pos0 = self.mouse.current.physical
-            case self.State.ViewZoomWindow2:
+            case State.ViewZoomWindow2:
                 self.marquee.resize(self.mouse.current.physical)
-            case self.State.PlaceRectangle2:
+            case State.PlaceRectangle2:
                 self.placeRectangleContinue(
                     self._snap(self.mouse.current.logical)
                 )
