@@ -59,6 +59,54 @@ class cmdEditPaste(cmdElements):
     def mergeWith(self, other: QUndoCommand) -> bool:
         return super().mergeWith(other) and self.offset == other.offset
 
+class cmdEditDelete(cmdElements):
+    """Command for deleting multiple elements with selection state restoration."""
+    elements  : list[Element]  # Elements to be deleted
+    selection : list[Element]  # Elements that were selected before deletion
+
+    def __init__(
+        self,
+        scene: "DrawingScene",
+        elements: list[Element]
+    ):
+        super().__init__(scene, elements)
+        # Store current selection state before deletion
+        self.selection = [item for item in scene.selectedItems() if isinstance(item, Element)]
+
+    def redo(self) -> None:
+        """Delete the elements from the scene."""
+        self.scene.blockSignals(True)
+        self.scene.clearSelection()
+        for element in self.elements:
+            if element.scene() == self.scene:
+                self.scene.removeItem(element)
+        self.scene.blockSignals(False)
+        self.scene.selectionChanged.emit()
+
+    def undo(self) -> None:
+        """Restore the deleted elements and their selection state."""
+        self.scene.blockSignals(True)
+        for element in self.elements:
+            if element.scene() != self.scene:
+                self.scene.addItem(element)
+        # Restore original selection state
+        self.scene.clearSelection()
+        for element in self.selection:
+            if element.scene() == self.scene:
+                element.setSelected(True)
+                # Show key points if only one element was selected
+                if len(self.selection) == 1:
+                    element.setKPVisible(True)
+                else:
+                    element.setKPVisible(False)
+                element.update()
+        self.scene.blockSignals(False)
+        self.scene.selectionChanged.emit()
+
+    def mergeWith(self, other: QUndoCommand) -> bool:
+        """Delete commands cannot be merged."""
+        return False
+
 class cmdEditAppearance(cmdElements):
     _initial : dict[Element, AppearancePref]
     _changes : AppearancePrefChange
@@ -132,11 +180,21 @@ class DrawingSceneApiEditMixin:
             return False
         self.clearSelection()
         offset = pos - pos0
-        cmd = cmdEditPaste(self, elements, offset, selection)
-        self.undo_stack.push(cmd)
+        self.undo_stack.push(cmdEditPaste(self, elements, offset, selection))
         for element in elements:
             element.resetUuid()  # new identity for pasted elements
         return True
+
+    def editDelete(
+        self : "DrawingScene"
+    ) -> None:
+        """Delete selected elements from the scene."""
+        elements = \
+            [item for item in self.selectedItems() if isinstance(item, Element)]
+        if elements:
+            self.undo_stack.push(cmdEditDelete(self, elements))
+        else:
+            logger.warning("No elements selected to delete")
 
     def editAppearance(
         self     : "DrawingScene",

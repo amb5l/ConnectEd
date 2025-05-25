@@ -405,7 +405,8 @@ class DrawingView(
         self._goState(self.State.Idle)
 
     def editDelete(self : Self) -> None:
-        print("TODO: DrawingView.editDelete")
+        scene : DrawingScene = self.scene()
+        scene.editDelete()
 
     def editSlide(self : Self) -> None:
         if self.scene().selectedItems():
