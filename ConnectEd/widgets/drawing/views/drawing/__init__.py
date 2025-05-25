@@ -338,6 +338,8 @@ class DrawingView(
             logger.warning("No valid elements to paste")
             self._goState(self.State.Idle)
             return
+        # Clear key points for existing items
+        scene.clearSelection()
         for item in scene.items():
             if isinstance(item, Element):
                 item.setKPVisible(False)
@@ -345,13 +347,17 @@ class DrawingView(
         self.wip.pos0 = elements[0].pos() if copy_pos is None and elements else copy_pos or QPointF(0, 0)
         pos = self._snap(self.mouse.current.logical)
         offset = pos - self.wip.pos0
-        for i, element in enumerate(elements):
+        # Block signals to batch initial setup
+        scene.blockSignals(True)
+        for element in elements:
             if element.scene() != scene:
                 scene.addItem(element)
-            original_pos = element.pos()
-            new_pos = element.pos() + offset
-            element.setPos(new_pos)
+            element.setPos(element.pos() + offset)
             element.setSelected(True)
+            element.setKPVisible(False)  # Explicitly hide keypoints
+        scene.blockSignals(False)
+        # Manually trigger selection changed to update key points
+        scene.selectionChanged.emit()
         self.wip.macro = True
         scene.undo_stack.beginMacro("Paste Elements")
         self._goState(self.State.EditPaste)
@@ -364,9 +370,16 @@ class DrawingView(
             return
         new_pos = self._snap(self.mouse.current.logical)
         mouse_delta = new_pos - self.wip.pos0
+        # Block signals to avoid multiple selection updates
+        scene.blockSignals(True)
         for element in self.wip.elements:
             if element.scene() == scene:
                 element.setPos(element.pos() + mouse_delta)
+                element.setSelected(True)  # Ensure elements remain selected
+                element.setKPVisible(False)  # Explicitly hide keypoints
+        scene.blockSignals(False)
+        # Manually trigger selection changed to update key points
+        scene.selectionChanged.emit()
         self.wip.pos0 = new_pos
 
     def editPasteComplete(self : Self) -> None:
@@ -497,6 +510,8 @@ class DrawingView(
         element = scene.placeRectangle(p1)
         self.wip.elements = [element]
         self.wip.pos0 = p1
+        self.wip.elements[0].setSelected(True) # explicitly select the rectangle
+        self.wip.elements[0].setKPVisible(True) # ensure keypoints are visible
         self._goState(self.State.PlaceRectangle2)
 
     def placeRectangleContinue(self : Self, p2: QPointF) -> None:

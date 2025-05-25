@@ -18,7 +18,7 @@ if TYPE_CHECKING:
 class cmdEditPaste(cmdElements):
     """Command for pasting multiple elements with interactive positioning."""
     offset    : QPointF
-    selection : list[Element] # selected elements before pasting
+    selection : list[Element]  # selected elements before pasting
 
     def __init__(
         self     : Self,
@@ -31,20 +31,32 @@ class cmdEditPaste(cmdElements):
         self.selection = [item for item in scene.selectedItems() if isinstance(item, Element)]
 
     def redo(self : Self) -> None:
+        # Block selection signals to batch changes
+        self.scene.blockSignals(True)
         self.scene.clearSelection()
         for element in self.elements:
             if element.scene() != self.scene:
                 self.scene.addItem(element)
             element.setPos(element.pos() + self.offset)
             element.setSelected(True)
+            element.setKPVisible(False)  # Explicitly hide keypoints
+        self.scene.blockSignals(False)
+        # Trigger selection changed to update key points
+        self.scene.selectionChanged.emit()
 
     def undo(self : Self) -> None:
+        # Block signals to avoid unnecessary updates
+        self.scene.blockSignals(True)
         for element in self.elements:
             if element.scene() == self.scene:
                 self.scene.removeItem(element)
         self.scene.clearSelection()
         for element in self.selection:
-            element.setSelected(True)
+            if element.scene() == self.scene:  # Ensure element still exists
+                element.setSelected(True)
+        self.scene.blockSignals(False)
+        # Trigger selection changed to update key points
+        self.scene.selectionChanged.emit()
 
     def mergeWith(self : Self, other : QUndoCommand) -> bool:
         return super().mergeWith(other) and self.offset == other.offset
@@ -119,12 +131,12 @@ class DrawingSceneApiEditMixin:
         if not elements:
             logger.warning("No valid elements to paste")
             return False
+        self.clearSelection()
         offset = pos - pos0
         cmd = cmdEditPaste(self, elements, offset)
         self.undo_stack.push(cmd)
         for element in elements:
-            element.resetUuid() # new identity for pasted elements
-            element.setSelected(True)
+            element.resetUuid()  # new identity for pasted elements
         return True
 
     def editAppearance(

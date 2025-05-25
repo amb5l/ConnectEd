@@ -110,10 +110,13 @@ class DrawingScene(
         return drawing_scene
 
     def onSelectionChanged(self : Self) -> None:
+        # Hide key points for previously selected items
         if self.kp_items:
             for kp_item in self.kp_items:
-                kp_item.setKPVisible(False)
+                if kp_item.scene() == self:  # Ensure item still exists
+                    kp_item.setKPVisible(False)
             self.kp_items.clear()
+        # Show key points only if exactly one item is selected
         items = self.selectedItems()
         if len(items) == 1:
             items[0].setKPVisible(True)

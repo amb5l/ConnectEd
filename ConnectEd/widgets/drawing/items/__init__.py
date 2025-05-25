@@ -587,7 +587,6 @@ class Element:
         self.setFlag( f.ItemSendsGeometryChanges      , True  )
         self.setFlag( f.ItemSendsScenePositionChanges , True  )
         self.setCacheMode(QGraphicsItem.CacheMode.DeviceCoordinateCache)
-        self.setSelected(True)
         hub.settings.change.connect(self.onSettingsChange)
         self._menu = CustomGraphicsItemMixin.getMenu(self.__class__)
 
@@ -629,6 +628,7 @@ class Element:
     def fromXml(cls : Self, xr: QXmlStreamReader) -> Self:
         instance = cls()
         fromXmlAttrs(instance, xr)
+        instance.setKPVisible(False)  # Ensure keypoints are hidden
         return instance
 
 class cmdElement(QUndoCommand):
