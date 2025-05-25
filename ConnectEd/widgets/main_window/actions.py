@@ -91,8 +91,10 @@ class Actions:
         self.editCancel      .setEnabled(en)
         self.editComplete    .setEnabled(en)
         self.editDuplicate   .setEnabled(en)
-        self.editSlide       .setEnabled(en)
         self.editMove        .setEnabled(en)
+        self.editSlide       .setEnabled(en)
+        self.editResize      .setEnabled(en)
+        self.editAppearance  .setEnabled(en)
         self.viewZoomAll     .setEnabled(en)
         self.viewZoomSheet   .setEnabled(en)
         self.viewZoomWindow  .setEnabled(en)
@@ -118,7 +120,6 @@ class Actions:
         self.editCut       .setEnabled( n > 0 )
         self.editCopy      .setEnabled( n > 0 )
         self.editDelete    .setEnabled( n > 0 )
-        self.editDuplicate .setEnabled( n > 0 )
 
     def onClipboardDataChanged(self : Self) -> None:
         if not self._scene:
