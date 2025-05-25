@@ -148,17 +148,19 @@ DrawingViewStateTip = {
 }
 
 class DrawingViewWip:
-    macro    : bool
-    elements : Optional[list[QGraphicsItem]]
-    pos0     : Optional[QPointF | QPoint]
+    macro     : bool
+    elements  : Optional[list[QGraphicsItem]]
+    pos0      : Optional[QPointF | QPoint]
+    selection : Optional[list[QGraphicsItem]]
 
     def __init__(self : Self) -> None:
         self.clear()
 
     def clear(self : Self) -> None:
-        self.macro    = False
-        self.elements = None
-        self.pos0     = None
+        self.macro     = False
+        self.elements  = None
+        self.pos0      = None
+        self.selection = None
 
 class DrawingView(
     DrawingViewMouseMixin,
@@ -338,7 +340,9 @@ class DrawingView(
             logger.warning("No valid elements to paste")
             self._goState(self.State.Idle)
             return
-        # Clear key points for existing items
+        # Capture the current selection before clearing
+        selection = [item for item in scene.selectedItems() if isinstance(item, Element)]
+        # Clear selection and hide keypoints
         scene.clearSelection()
         for item in scene.items():
             if isinstance(item, Element):
@@ -347,7 +351,6 @@ class DrawingView(
         self.wip.pos0 = elements[0].pos() if copy_pos is None and elements else copy_pos or QPointF(0, 0)
         pos = self._snap(self.mouse.current.logical)
         offset = pos - self.wip.pos0
-        # Block signals to batch initial setup
         scene.blockSignals(True)
         for element in elements:
             if element.scene() != scene:
@@ -356,9 +359,9 @@ class DrawingView(
             element.setSelected(True)
             element.setKPVisible(False)  # Explicitly hide keypoints
         scene.blockSignals(False)
-        # Manually trigger selection changed to update key points
         scene.selectionChanged.emit()
         self.wip.macro = True
+        self.wip.selection = selection  # Store for use in editPasteComplete
         scene.undo_stack.beginMacro("Paste Elements")
         self._goState(self.State.EditPaste)
 
@@ -394,7 +397,8 @@ class DrawingView(
             if element.scene() == scene:
                 scene.removeItem(element)
                 element.setPos(element.pos() - offset)
-        scene.editPaste(pos, (self.wip.elements, self.wip.pos0))
+        # Pass the original selection to editPaste
+        scene.editPaste(pos, (self.wip.elements, self.wip.pos0, self.wip.selection))
         if self.wip.macro:
             scene.undo_stack.endMacro()
         self.wip.clear()

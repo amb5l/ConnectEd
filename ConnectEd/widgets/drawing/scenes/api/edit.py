@@ -16,22 +16,21 @@ if TYPE_CHECKING:
 
 
 class cmdEditPaste(cmdElements):
-    """Command for pasting multiple elements with interactive positioning."""
-    offset    : QPointF
-    selection : list[Element]  # selected elements before pasting
+    offset: QPointF
+    selection: list[Element]  # selected elements before pasting
 
     def __init__(
-        self     : Self,
-        scene    : "DrawingScene",
-        elements : list[Element],
-        offset   : QPointF
+        self,
+        scene: "DrawingScene",
+        elements: list[Element],
+        offset: QPointF,
+        selection: list[Element] = None
     ):
         super().__init__(scene, elements)
         self.offset = offset
-        self.selection = [item for item in scene.selectedItems() if isinstance(item, Element)]
+        self.selection = selection or []
 
-    def redo(self : Self) -> None:
-        # Block selection signals to batch changes
+    def redo(self) -> None:
         self.scene.blockSignals(True)
         self.scene.clearSelection()
         for element in self.elements:
@@ -41,24 +40,23 @@ class cmdEditPaste(cmdElements):
             element.setSelected(True)
             element.setKPVisible(False)  # Explicitly hide keypoints
         self.scene.blockSignals(False)
-        # Trigger selection changed to update key points
         self.scene.selectionChanged.emit()
 
-    def undo(self : Self) -> None:
-        # Block signals to avoid unnecessary updates
+    def undo(self) -> None:
         self.scene.blockSignals(True)
         for element in self.elements:
             if element.scene() == self.scene:
                 self.scene.removeItem(element)
-        self.scene.clearSelection()
         for element in self.selection:
-            if element.scene() == self.scene:  # Ensure element still exists
+            if element.scene() == self.scene:
                 element.setSelected(True)
+                if len(self.selection) == 1:
+                    element.setKPVisible(True)
+                element.update()  # Force repaint
         self.scene.blockSignals(False)
-        # Trigger selection changed to update key points
         self.scene.selectionChanged.emit()
 
-    def mergeWith(self : Self, other : QUndoCommand) -> bool:
+    def mergeWith(self, other: QUndoCommand) -> bool:
         return super().mergeWith(other) and self.offset == other.offset
 
 class cmdEditAppearance(cmdElements):
@@ -113,27 +111,28 @@ class DrawingSceneApiEditMixin:
             logger.warning("No elements selected to copy")
 
     def editPaste(
-        self      : "DrawingScene",
-        pos       : QPointF = QPointF(0, 0),
-        items_pos : Optional[tuple[Element | list[Element, QPointF]]] = None
+        self,
+        pos: QPointF = QPointF(0, 0),
+        ips: Optional[tuple[Element | list[Element], QPointF, list[Element]]] = None
     ) -> bool:
-        if items_pos is None:
+        if ips is None:
             items, pos0 = paste()
+            selection = []
             if not items:
                 logger.warning("No valid data to paste")
                 return False
             elements = [item for item in items if isinstance(item, Element)]
         else:
-            items, pos0 = items_pos
+            items, pos0, selection = ips
             if not isinstance(items, list):
                 items = [items]
-        elements = [item for item in items if isinstance(item, Element)]
+            elements = [item for item in items if isinstance(item, Element)]
         if not elements:
             logger.warning("No valid elements to paste")
             return False
         self.clearSelection()
         offset = pos - pos0
-        cmd = cmdEditPaste(self, elements, offset)
+        cmd = cmdEditPaste(self, elements, offset, selection)
         self.undo_stack.push(cmd)
         for element in elements:
             element.resetUuid()  # new identity for pasted elements
