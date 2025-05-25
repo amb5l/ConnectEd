@@ -38,6 +38,8 @@ class MenuBar(QMenuBar):
         self.edit_menu.addAction(actions.editPaste)
         self.edit_menu.addAction(actions.editDelete)
         self.edit_menu.addSeparator()
+        self.edit_menu.addAction(actions.editDuplicate)
+        self.edit_menu.addSeparator()
         self.edit_menu.addAction(actions.editSlide)
         self.edit_menu.addAction(actions.editMove)
         self.edit_menu.addAction(actions.editResize)

@@ -7,7 +7,7 @@ from PyQt6.QtGui  import QUndoCommand
 
 from .....core import logger,copy, paste
 
-from ...items import Element, cmdElements, cmdPlaceElement, \
+from ...items import Element, cmdElements, clone, \
                      AppearancePref, AppearancePrefChange
 
 from typing import TYPE_CHECKING
@@ -20,11 +20,11 @@ class cmdEditPaste(cmdElements):
     selection: list[Element]  # selected elements before pasting
 
     def __init__(
-        self,
-        scene: "DrawingScene",
-        elements: list[Element],
-        offset: QPointF,
-        selection: list[Element] = None
+        self      : Self,
+        scene     : "DrawingScene",
+        elements  : list[Element],
+        offset    : QPointF,
+        selection : list[Element] = None
     ):
         super().__init__(scene, elements)
         self.offset = offset
@@ -65,9 +65,9 @@ class cmdEditDelete(cmdElements):
     selection : list[Element]  # Elements that were selected before deletion
 
     def __init__(
-        self,
-        scene: "DrawingScene",
-        elements: list[Element]
+        self     : Self,
+        scene    : "DrawingScene",
+        elements : list[Element]
     ):
         super().__init__(scene, elements)
         # Store current selection state before deletion
@@ -106,6 +106,52 @@ class cmdEditDelete(cmdElements):
     def mergeWith(self, other: QUndoCommand) -> bool:
         """Delete commands cannot be merged."""
         return False
+
+class cmdEditDuplicate(cmdElements):
+    offset: QPointF
+    selection: list[Element]  # selected elements before duplication
+    originals: list[Element]  # original elements that were duplicated
+
+    def __init__(
+        self      : Self,
+        scene     : "DrawingScene",
+        elements  : list[Element],
+        offset    : QPointF,
+        selection : list[Element] = None
+    ):
+        super().__init__(scene, elements)
+        self.offset = offset
+        self.selection = selection or []
+        self.originals = []
+
+    def redo(self) -> None:
+        self.scene.blockSignals(True)
+        self.scene.clearSelection()
+        for element in self.elements:
+            if element.scene() != self.scene:
+                self.scene.addItem(element)
+            element.setPos(element.pos() + self.offset)
+            element.setSelected(True)
+            element.setKPVisible(False)  # Explicitly hide keypoints
+        self.scene.blockSignals(False)
+        self.scene.selectionChanged.emit()
+
+    def undo(self) -> None:
+        self.scene.blockSignals(True)
+        for element in self.elements:
+            if element.scene() == self.scene:
+                self.scene.removeItem(element)
+        for element in self.selection:
+            if element.scene() == self.scene:
+                element.setSelected(True)
+                if len(self.selection) == 1:
+                    element.setKPVisible(True)
+                element.update()  # Force repaint
+        self.scene.blockSignals(False)
+        self.scene.selectionChanged.emit()
+
+    def mergeWith(self, other: QUndoCommand) -> bool:
+        return super().mergeWith(other) and self.offset == other.offset
 
 class cmdEditAppearance(cmdElements):
     _initial : dict[Element, AppearancePref]
@@ -159,9 +205,9 @@ class DrawingSceneApiEditMixin:
             logger.warning("No elements selected to copy")
 
     def editPaste(
-        self,
-        pos: QPointF = QPointF(0, 0),
-        ips: Optional[tuple[Element | list[Element], QPointF, list[Element]]] = None
+        self : "DrawingScene",
+        pos  : QPointF = QPointF(0, 0),
+        ips  : Optional[tuple[Element | list[Element], QPointF, list[Element]]] = None
     ) -> bool:
         if ips is None:
             items, pos0 = paste()
@@ -195,6 +241,37 @@ class DrawingSceneApiEditMixin:
             self.undo_stack.push(cmdEditDelete(self, elements))
         else:
             logger.warning("No elements selected to delete")
+
+    def editDuplicate(
+        self : "DrawingScene",
+        pos  : QPointF = QPointF(0, 0),
+        ips  : Optional[tuple[Element | list[Element], QPointF, list[Element]]] = None
+    ) -> bool:
+        """Duplicate selected elements."""
+        if ips is None:
+            elements = [item for item in self.selectedItems() if isinstance(item, Element)]
+            if not elements:
+                logger.warning("No elements selected to duplicate")
+                return False
+            clones = clone(elements)
+            pos0 = elements[0].pos() if elements else QPointF(0, 0)
+            selection = []
+        else:
+            originals, pos0, selection = ips
+            if not isinstance(originals, list):
+                originals = [originals]
+            elements = [item for item in originals if isinstance(item, Element)]
+            if not elements:
+                logger.warning("No valid elements to duplicate")
+                return False
+            clones = clone(elements)
+        if not clones:
+            logger.warning("No valid elements to duplicate")
+            return False
+        self.clearSelection()
+        offset = pos - pos0
+        self.undo_stack.push(cmdEditDuplicate(self, clones, offset, selection))
+        return True
 
     def editAppearance(
         self     : "DrawingScene",

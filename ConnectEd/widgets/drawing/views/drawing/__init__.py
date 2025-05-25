@@ -110,6 +110,8 @@ class DrawingViewState(Enum):
     ViewZoomWindow2 = auto()
     SelectArea2     = auto()
     EditPaste       = auto()
+    EditDuplicate1  = auto()
+    EditDuplicate2  = auto()
     EditSlide1      = auto()
     EditSlide2      = auto()
     EditMove1       = auto()
@@ -132,6 +134,8 @@ DrawingViewStateTip = {
     DrawingViewState.ViewZoomWindow2 : "Zoom Window: pick the second point",
     DrawingViewState.SelectArea2     : "Select: complete the marquee selection",
     DrawingViewState.EditPaste       : "Paste: select the paste position",
+    DrawingViewState.EditDuplicate1  : "Duplicate: select one or more items",
+    DrawingViewState.EditDuplicate2  : "Duplicate: place the duplicated item(s) as required",
     DrawingViewState.EditSlide1      : "Slide: select one or more items",
     DrawingViewState.EditSlide2      : "Slide: place the selected item(s) as required",
     DrawingViewState.EditMove1       : "Move: select one or more items",
@@ -407,6 +411,92 @@ class DrawingView(
     def editDelete(self : Self) -> None:
         scene : DrawingScene = self.scene()
         scene.editDelete()
+
+    def editDuplicate(self : Self, pos: QPointF = None) -> None:
+        scene : DrawingScene = self.scene()
+        elements = [item for item in scene.selectedItems() if isinstance(item, Element)]
+        if not elements:
+            # Enter selection mode if nothing is selected
+            self._goState(self.State.EditDuplicate1)
+            return
+        # Start duplication with selected elements
+        self.wip.clear()
+        # Store original selection before clearing
+        selection = [item for item in scene.selectedItems() if isinstance(item, Element)]
+        # Clone the elements
+        cloned_elements = []
+        for element in elements:
+            try:
+                clone = element.clone()
+                cloned_elements.append(clone)
+            except Exception as e:
+                logger.warning(f"Failed to clone element {element}: {e}")
+        if not cloned_elements:
+            logger.warning("editDuplicate: Failed to clone elements")
+            return
+        # Clear selection and hide keypoints
+        scene.clearSelection()
+        for item in scene.items():
+            if isinstance(item, Element):
+                item.setKPVisible(False)
+        self.wip.elements = cloned_elements
+        # Use provided position or current mouse position
+        self.wip.pos0 = pos if pos is not None else self._snap(self.mouse.current.logical)
+        # Don't apply any initial offset - keep cloned elements at their original positions
+        scene.blockSignals(True)
+        for element in cloned_elements:
+            if element.scene() != scene:
+                scene.addItem(element)
+            element.setSelected(True)
+            element.setKPVisible(False)  # Explicitly hide keypoints
+        scene.blockSignals(False)
+        scene.selectionChanged.emit()
+        self.wip.macro = True
+        self.wip.selection = selection  # Store for use in editDuplicateComplete
+        scene.undo_stack.beginMacro("Duplicate Elements")
+        self._goState(self.State.EditDuplicate2)
+
+    def editDuplicateContinue(self : Self) -> None:
+        scene : DrawingScene = self.scene()
+        if not self.wip.elements:
+            logger.warning("editDuplicateContinue: No elements in wip, aborting")
+            self._goState(self.State.Idle)
+            return
+        new_pos = self._snap(self.mouse.current.logical)
+        mouse_delta = new_pos - self.wip.pos0
+        # Block signals to avoid multiple selection updates
+        scene.blockSignals(True)
+        for element in self.wip.elements:
+            if element.scene() == scene:
+                element.setPos(element.pos() + mouse_delta)
+                element.setSelected(True)  # Ensure elements remain selected
+                element.setKPVisible(False)  # Explicitly hide keypoints
+        scene.blockSignals(False)
+        # Manually trigger selection changed to update key points
+        scene.selectionChanged.emit()
+        self.wip.pos0 = new_pos
+
+    def editDuplicateComplete(self : Self) -> None:
+        scene : DrawingScene = self.scene()
+        if not self.wip.elements:
+            logger.warning("editDuplicateComplete: No elements in wip, aborting")
+            self._goState(self.State.Idle)
+            return
+        pos = self._snap(self.mouse.current.logical)
+        offset = pos - self.wip.pos0
+        # Remove temporary elements from scene before final placement
+        for element in self.wip.elements:
+            if element.scene() == scene:
+                scene.removeItem(element)
+                element.setPos(element.pos() - offset)
+        # Use the original selection to determine what was duplicated
+        original_elements = self.wip.selection if self.wip.selection else []
+        # Pass the cloned elements to editDuplicate for final placement
+        scene.editDuplicate(pos, (self.wip.elements, self.wip.pos0, original_elements))
+        if self.wip.macro:
+            scene.undo_stack.endMacro()
+        self.wip.clear()
+        self._goState(self.State.Idle)
 
     def editSlide(self : Self) -> None:
         if self.scene().selectedItems():

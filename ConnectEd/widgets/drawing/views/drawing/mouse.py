@@ -3,7 +3,7 @@ from PyQt6.QtGui  import QEnterEvent, QMouseEvent, QWheelEvent, QCursor
 
 from .....core import logger
 
-from ... import KeyPoint
+from ... import Element, KeyPoint
 
 from ..... import hub
 
@@ -137,6 +137,19 @@ class DrawingViewMouseMixin:
                 )
             case self.State.EditPaste:
                 self.editPasteComplete()
+            case self.State.EditDuplicate1:
+                self._selectPoint(
+                    self.mouse.current.logical,
+                    m == qkm.ControlModifier
+                )
+                items = self.scene().selectedItems()
+                if items:
+                    elements = \
+                        [item for item in items if isinstance(item, Element)]
+                    if elements:
+                        self.editDuplicate()
+            case self.State.EditDuplicate2:
+                self.editDuplicateComplete()
             case self.State.EditMove1 | self.State.EditSlide1:
                 self._selectPoint(
                     self.mouse.current.logical,
@@ -225,16 +238,34 @@ class DrawingViewMouseMixin:
             case self.State.Idle:
                 m = self.mouse.left.press.modifiers
                 items = self.scene().selectedItems()
-                itemsAt = self._itemsAt(self.mouse.left.press.logical)
+                items_at = self._itemsAt(self.mouse.left.press.logical)
                 if len(items) == 1:
-                    for item in itemsAt:
+                    for item in items_at:
                         if isinstance(item, KeyPoint) and item.isMoveable():
                             self.moveBegin(
                                 [item], self._snap(self.mouse.left.press.logical)
                             )
                             self._goState(self.state.EditResize3)
                             return
-                if not itemsAt \
+                # Check for CTRL+drag duplication when starting on an element
+                if (m & qkm.ControlModifier) and items_at:
+                    # Add element under cursor to selection if not already selected
+                    elements_at = \
+                        [item for item in items_at if isinstance(item, Element)]
+                    if elements_at:
+                        element = elements_at[0]  # Get first element under cursor
+                        if not element.isSelected():
+                            element.setSelected(True)
+                        # Get all currently selected elements for duplication
+                        items = self.scene().selectedItems()
+                        elements = \
+                            [item for item in items if isinstance(item, Element)]
+                        if elements:
+                            # Pass the press position for CTRL+drag duplication
+                            pos = self._snap(self.mouse.left.press.logical)
+                            self.editDuplicate(pos)
+                            return
+                if not items_at \
                     and not (m & (qkm.ControlModifier | qkm.ShiftModifier)):
                     self.scene().clearSelection()
                     items = []
@@ -258,6 +289,9 @@ class DrawingViewMouseMixin:
             case self.State.EditAppearance1:
                 self.marquee.begin(self.mouse.left.press.physical)
                 self._goState(self.State.SelectArea2)
+            case self.State.EditDuplicate1:
+                self.marquee.begin(self.mouse.left.press.physical)
+                self._goState(self.State.SelectArea2)
             case self.State.ViewZoomWindow1:
                 self.marquee.begin(self.mouse.left.press.physical)
                 self._goState(self.State.ViewZoomWindow2)
@@ -274,6 +308,8 @@ class DrawingViewMouseMixin:
                 self.moveContinue(
                     self._snap(self.mouse.current.logical), True
                 )
+            case self.State.EditDuplicate2:
+                self.editDuplicateContinue()
             case self.State.EditMove2:
                 self.moveContinue(
                     self._snap(self.mouse.current.logical)
@@ -312,6 +348,8 @@ class DrawingViewMouseMixin:
                     self.state == self.State.EditSlide2
                 )
                 self._goState(self.State.Idle)
+            case self.State.EditDuplicate2:
+                self.editDuplicateComplete()
             case self.State.EditAppearance1:
                 self.marquee.end(self.mouse.left.release.physical)
                 self._selectRect(
@@ -395,6 +433,8 @@ class DrawingViewMouseMixin:
         match self.state:
             case self.State.EditPaste:
                 self.editPasteContinue()
+            case self.State.EditDuplicate2:
+                self.editDuplicateContinue()
             case self.State.EditMove2 | self.State.EditSlide2 | self.State.EditResize3:
                 self.moveContinue(
                     self._snap(self.mouse.current.logical),

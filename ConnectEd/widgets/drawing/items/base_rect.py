@@ -300,5 +300,12 @@ class BaseRectangle(CustomGraphicsRectItem, Element):
             inst = None
         return inst
 
+    def clone(self : Self) -> Self:
+        """Create a clone of this rectangle with a new UUID."""
+        clone = super().clone()
+        # Copy rectangle-specific properties
+        clone.setRect(self.rect())
+        return clone
+
 class cmdPlaceBaseRectangle(cmdPlaceElement):
     element : BaseRectangle

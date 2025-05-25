@@ -1,5 +1,6 @@
-- keypoints visible on multiple elements after paste
-- deselect original on copy
+- strange offsets during paste
+- editDelete
+- editDuplicate
 - move multiple elements with drag
 - implememnt property text
 

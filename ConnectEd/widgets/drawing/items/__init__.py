@@ -9,7 +9,8 @@ from PyQt6.QtGui     import QPen, QBrush, QColor, QFont, QAction, QUndoCommand
 from PyQt6.QtWidgets import QGraphicsItem, QGraphicsRectItem, QGraphicsTextItem, \
                             QApplication, QGraphicsSceneContextMenuEvent, QMenu
 
-from ....core import val2str, str2val, camel_to_proper, toXmlAttrs, fromXmlAttrs
+from ....core import logger, \
+                     val2str, str2val, camel_to_proper, toXmlAttrs, fromXmlAttrs
 
 from .... import hub
 
@@ -631,6 +632,22 @@ class Element:
         instance.setKPVisible(False)  # Ensure keypoints are hidden
         return instance
 
+    def clone(self : Self) -> Self:
+        """Create a clone of this element with a new UUID."""
+        # Create a new instance of the same class
+        clone = self.__class__()
+        # Copy position
+        clone.setPos(self.pos())
+        # Copy appearance preferences if they exist
+        if hasattr(self, "line"):
+            setattr(clone, "line", LinePen(clone, self.line.getPref()))
+        if hasattr(self, "fill"):
+            setattr(clone, "fill", FillBrush(clone, self.fill.getPref()))
+        if hasattr(self, "text"):
+            setattr(clone, "text", TextColorFont(clone, self.text.getPref()))
+        # New UUID is automatically assigned in __init2__() via resetUuid()
+        return clone
+
 class cmdElement(QUndoCommand):
     """Base class for all commands that work with an element."""
     scene   : "DrawingScene"
@@ -760,6 +777,15 @@ class cmdMove(cmdElements):
 class cmdSlide(cmdMove):
     pass
 
+def clone(elements : list[Element]) -> list[Element]:
+    r = []
+    for element in elements:
+        try:
+            r.append(element.clone())
+        except Exception as e:
+            logger.warning(f"Failed to clone element {element}: {e}")
+    return r
+
 __all__ = [
     "Default",
     "DEFAULT",
@@ -789,7 +815,8 @@ __all__ = [
     "cmdElements",
     "cmdPlaceElement",
     "cmdMove",
-    "cmdSlide"
+    "cmdSlide",
+    "clone"
 ]
 from .key_point import KPLoc, KeyPoint, KPDef, KPManager
 __all__ += key_point.__all__

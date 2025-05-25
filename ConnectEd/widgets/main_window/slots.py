@@ -130,6 +130,10 @@ class Slots:
         widget.editDelete()
 
     @withCurrentWidget(DrawingView)
+    def editDuplicate(self : Self, widget: DrawingView) -> None:
+        widget.editDuplicate()
+
+    @withCurrentWidget(DrawingView)
     def editSlide(self : Self, widget: DrawingView) -> None:
         widget.editSlide()
 
