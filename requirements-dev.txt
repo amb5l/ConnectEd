@@ -1,0 +1,22 @@
+# Development dependencies for ConnectEd
+# Install with: pip install -r requirements-dev.txt
+
+# Include base requirements
+-r requirements.txt
+
+# Testing (essential)
+pytest>=6.0
+pytest-cov>=4.0.0
+
+# Code quality (essential for PyPI)
+flake8>=3.8
+mypy>=0.910
+
+# Building & publishing (essential for PyPI)
+build>=0.8.0
+twine>=4.0.0
+
+# Optional: Code formatting & organization
+# Uncomment if you want consistent code style:
+# black>=22.0.0
+# isort>=5.0.0
