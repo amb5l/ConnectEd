@@ -220,9 +220,11 @@ class VhdlVisitor(ParseTreeVisitor):
             prev_end_line = current_end_line
             is_last = (i == len(port_declarations) - 1)
             if is_last and current_group:
-                group_name = f"Group{len(port_groups) + 1}"
+                group_name = f"Group {len(port_groups) + 1}"
                 port_group = VhdlPortGroup(name=group_name, ports=current_group)
                 port_groups.append(port_group)
+        if len(port_groups) == 1:
+            port_groups[0].name = ""
         return port_groups
 
     def visitInterfaceSignalDeclaration(
@@ -239,7 +241,22 @@ class VhdlVisitor(ParseTreeVisitor):
         mode = mctx.name.text.lower()
         type_indication = simple_mode.rule_InterfaceTypeIndication()
         datatype = self.extractSubtypeIndication(type_indication.rule_SubtypeIndication())
-        return VhdlPort(identifiers[0], mode, datatype)
+
+        # Extract default value if present
+        default = ""
+        # Check if SimpleModeIndication has a default expression
+        # The grammar is: rule_Mode? rule_InterfaceTypeIndication KW_BUS? ( TOK_VAR_ASSIGN rule_ConditionalExpression )?
+        # We need to check for the conditional expression after the type indication
+        children = simple_mode.children
+        for i, child in enumerate(children):
+            if hasattr(child, 'symbol') and child.symbol and child.symbol.type == vhp.TOK_VAR_ASSIGN:
+                # Found := token, next child should be the expression
+                if i + 1 < len(children):
+                    expr_ctx = children[i + 1]
+                    default = self.extractExpression(expr_ctx)
+                break
+
+        return VhdlPort(identifiers[0], mode, datatype, default)
 
     def extractIdentifierList(
         self : Self,

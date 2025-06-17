@@ -38,9 +38,15 @@ package package1 is
       GENERIC2 : natural := 16
     );
     port (
+
       port1 : in    std_logic;
       port2 : out   std_logic;
-      port3 : inout std_logic_vector(GENERIC1-1 downto 0)
+      port3 : inout std_logic_vector(GENERIC1-1 downto 0);
+
+      port4: in    std_logic;
+      port5 : out   std_logic;
+      port6 : inout std_logic_vector(GENERIC1-1 downto 0)
+
     );
   end component component2;
 

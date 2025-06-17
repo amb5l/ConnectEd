@@ -143,6 +143,9 @@ class VhdlPortGroup(
         self.notes = notes
         self.ports = ports
 
+    def addPort(self, port: VhdlPort) -> None:
+        self._ports.append(port)
+
     @property
     def ports(self) -> list[VhdlPort]:
         return self._ports
@@ -156,8 +159,8 @@ class VhdlEntity(
     QStandardItem,
     VhdlItemWithNameMixin
 ):
-    _generics : list[VhdlGeneric]
-    _ports    : dict[str, VhdlPortGroup]
+    _generics    : list[VhdlGeneric]
+    _port_groups : list[VhdlPortGroup]
 
     def __init__(
         self     : Self,
@@ -170,6 +173,9 @@ class VhdlEntity(
         self.generics = generics
         self.ports = ports
 
+    def addGeneric(self, generic: VhdlGeneric) -> None:
+        self._generics.append(generic)
+
     @property
     def generics(self) -> list[VhdlGeneric]:
         return self._generics
@@ -180,33 +186,40 @@ class VhdlEntity(
 
     @property
     def ports(self) -> list[VhdlPort]:
-        return [port for group in self.portGroups for port in group.ports]
+        return [port for group in self.port_groups for port in group.ports]
 
     @ports.setter
     def ports(self, items: list[VhdlPort | VhdlPortGroup]) -> None:
-        self._ports = {}
+        self._port_groups = []
         ungrouped_ports = []
         for item in items:
             if isinstance(item, VhdlPort):
                 ungrouped_ports.append(item)
             elif isinstance(item, VhdlPortGroup):
-                self._ports[item.name] = item
+                self._port_groups.append(item)
         if ungrouped_ports:
-            self._ports[""] = VhdlPortGroup("", ungrouped_ports)
+            self._port_groups.insert(0, VhdlPortGroup("", ungrouped_ports))
+
+    def addPortGroup(self, port_group: VhdlPortGroup) -> None:
+        self._port_groups.append(port_group)
 
     @property
-    def portGroupNames(self) -> list[str]:
-        return list(self._ports.keys())
+    def port_group_names(self) -> list[str]:
+        return [port_group.name for port_group in self._port_groups]
 
     @property
-    def portGroups(self) -> list[VhdlPortGroup]:
-        return list(self._ports.values())
+    def port_groups(self) -> list[VhdlPortGroup]:
+        return self._port_groups
 
-    def portGroup(self, name: str) -> VhdlPortGroup:
-        return self._ports[name]
+    def portGroup(self, name: str) -> VhdlPortGroup | None:
+        for port_group in self._port_groups:
+            if port_group.name == name:
+                return port_group
+        return None
 
     def portGroupPorts(self, name: str) -> list[VhdlPort]:
-        return self.portGroup(name).ports
+        port_group = self.portGroup(name)
+        return port_group.ports if port_group is not None else []
 
 @export
 class VhdlComponent(VhdlEntity):
