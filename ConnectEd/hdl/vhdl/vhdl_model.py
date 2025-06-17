@@ -1,4 +1,4 @@
-from typing import Self, TextIO
+from typing import Self, TextIO, Optional
 
 from PyQt6.QtGui import QStandardItem, QStandardItemModel
 
@@ -67,6 +67,9 @@ class VhdlItemWithNotesMixin:
 
 class VhdlItemWithComponentsMixin:
     _components : list['VhdlComponent']
+
+    def addComponent(self, component: 'VhdlComponent') -> None:
+        self._components.append(component)
 
     @property
     def components(self) -> list['VhdlComponent']:
@@ -215,26 +218,40 @@ class VhdlArchitecture(
     VhdlItemWithNameMixin,
     VhdlItemWithComponentsMixin
 ):
-    _entity        : VhdlEntity
+    _entity_name : Optional[str]
+    _entity      : Optional[VhdlEntity]
 
     def __init__(
         self       : Self,
         name       : str,
-        entity     : VhdlEntity,
+        entity     : Optional[str | VhdlEntity] = None,
         components : list[VhdlComponent] = []
     ) -> None:
         super().__init__(name)
         self.name = name
         self.components = components
-        self.entity = entity
+        if isinstance(entity, str):
+            self.entity_name = entity
+        else:
+            self.entity = entity
 
     @property
-    def entity(self) -> VhdlEntity:
-        return self._entity
+    def entity_name(self) -> str:
+        return self._entity_name
+
+    @entity_name.setter
+    def entity_name(self, name: str) -> None:
+        self._entity_name = name
+        self._entity = None
+
+    @property
+    def entity(self) -> VhdlEntity | None:
+        return self._entity if isinstance(self._entity, VhdlEntity) else None
 
     @entity.setter
-    def entity(self, value: VhdlEntity) -> None:
-        self._entity = value
+    def entity(self, entity: VhdlEntity) -> None:
+        self._entity = entity
+        self._entity_name = entity.name
 
 @export
 class VhdlPackage(
@@ -292,6 +309,12 @@ class VhdlDocument(
     def addEntity(self : Self, entity: VhdlEntity) -> None:
         self._entities.appendRow(entity)
 
+    def getEntity(self : Self, name: str) -> VhdlEntity | None:
+        for entity in self.entities:
+            if entity.name == name:
+                return entity
+        return None
+
     @property
     def entities(self : Self) -> list[VhdlEntity]:
         return [self._entities.child(i) for i in range(self._entities.rowCount())]
@@ -328,6 +351,11 @@ class VhdlDocument(
         for item in items:
             self._packages.appendRow(item)
 
+    def analyze(self : Self) -> None:
+        for architecture in self.architectures:
+            if architecture.entity is None:
+                architecture.entity = self.getEntity(architecture.entity_name)
+
     @classmethod
     def fromStream(cls, stream: TextIO) -> 'VhdlDocument':
         from . import VHDLSyntaxError
@@ -347,7 +375,9 @@ class VhdlDocument(
         except Exception as e:
             raise VHDLSyntaxError(f"Failed to parse VHDL code: {str(e)}")
         visitor = VhdlVisitor()
-        return visitor.visit(tree)
+        document = visitor.visit(tree)
+        document.analyze()
+        return document
 
     @classmethod
     def FromFile(cls, filename: str) -> 'VhdlDocument':

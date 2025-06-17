@@ -18,7 +18,7 @@ class VhdlVisitor(ParseTreeVisitor):
         self._model = VhdlDocument()
 
     def visit(self : Self, tree : ParserRuleContext):
-        """Override visit to handle missing methods gracefully."""
+        """Override to safely visit a tree and catch any errors during visiting."""
         try:
             if isinstance(tree, vhp.Rule_DesignFileContext):
                 result = self.visitDesignFile(tree)
@@ -28,24 +28,21 @@ class VhdlVisitor(ParseTreeVisitor):
                 result = self.visitLibraryUnit(tree)
             elif isinstance(tree, vhp.Rule_EntityDeclarationContext):
                 result = self.visitEntityDeclaration(tree)
-            elif isinstance(tree, vhp.Rule_GenericClauseContext):
-                result = self.visitGenericClause(tree)
-            elif isinstance(tree, vhp.Rule_PortClauseContext):
-                result = self.visitPortClause(tree)
+            elif isinstance(tree, vhp.Rule_ArchitectureContext):
+                result = self.visitArchitecture(tree)
             elif isinstance(tree, vhp.Rule_PackageDeclarationContext):
                 result = self.visitPackageDeclaration(tree)
             elif isinstance(tree, vhp.Rule_PackageDeclarativeItemContext):
                 result = self.visitRule_PackageDeclarativeItem(tree)
+            elif isinstance(tree, vhp.Rule_BlockDeclarativeItemContext):
+                result = self.visitRule_BlockDeclarativeItem(tree)
             elif isinstance(tree, vhp.Rule_ComponentDeclarationContext):
                 result = self.visitComponentDeclaration(tree)
             else:
                 result = None
             return result
-        except AttributeError as e:
-            print(f"Warning: Missing visitor method for {tree.__class__.__name__}: {e}")
-            return None
         except Exception as e:
-            print(f"Error visiting {tree.__class__.__name__}: {e}")
+            print(f"Warning: Missing visitor method for {type(tree)}: {e}")
             import traceback
             traceback.print_exc()
             return None
@@ -81,15 +78,13 @@ class VhdlVisitor(ParseTreeVisitor):
         self : Self,
         ctx  : vhp.Rule_LibraryUnitContext
     ) -> Optional['VhdlEntity | VhdlArchitecture | VhdlPackage']:
-        """Visit library unit and extract entity or package declaration if present."""
+        """Visit library unit and extract entity, architecture, or package declaration if present."""
         if ctx.rule_EntityDeclaration():
             return self.visit(ctx.rule_EntityDeclaration())
+        elif ctx.rule_Architecture():
+            return self.visitArchitecture(ctx.rule_Architecture())
         elif ctx.rule_PackageDeclaration():
             return self.visitPackageDeclaration(ctx.rule_PackageDeclaration())
-        elif ctx.rule_PackageBody():
-            return self.visitRule_PackageBody(ctx.rule_PackageBody())
-        elif ctx.rule_PackageInstantiationDeclaration():
-            return self.visitRule_PackageInstantiationDeclaration(ctx.rule_PackageInstantiationDeclaration())
         return None
 
     def visitEntityDeclaration(
@@ -105,6 +100,22 @@ class VhdlVisitor(ParseTreeVisitor):
         port_groups = self.visitPortClause(ctx.rule_PortClause()) \
             if ctx.rule_PortClause() else []
         return VhdlEntity(name, generics, port_groups)
+
+    def visitArchitecture(
+        self : Self,
+        ctx  : vhp.Rule_ArchitectureContext
+    ) -> 'VhdlArchitecture':
+        """Visit architecture declaration and extract architecture information."""
+        from .vhdl_model import VhdlArchitecture, VhdlComponent
+
+        name = ctx.name.text
+        entity_name = ctx.entityName.text
+        architecture = VhdlArchitecture(name, entity_name)
+        for item in ctx.declarativeItems:
+            item_node = self.visit(item)
+            if isinstance(item_node, VhdlComponent):
+                architecture.addComponent(item_node)
+        return architecture
 
     def visitComponentDeclaration(
         self : Self,
@@ -132,7 +143,7 @@ class VhdlVisitor(ParseTreeVisitor):
         for item in ctx.declarativeItems:
             item_node = self.visit(item)
             if isinstance(item_node, VhdlComponent):
-                package.components.appendRow(item_node)
+                package.addComponent(item_node)
         return package
 
     def visitRule_PackageDeclarativeItem(
@@ -142,6 +153,15 @@ class VhdlVisitor(ParseTreeVisitor):
         """Visit items declared in a package, including component declarations."""
         if ctx.componentDeclaration:
             return self.visitComponentDeclaration(ctx.componentDeclaration)
+        return None
+
+    def visitRule_BlockDeclarativeItem(
+        self : Self,
+        ctx  : vhp.Rule_BlockDeclarativeItemContext
+    ) -> Optional['VhdlComponent']:
+        """Visit items declared in an architecture block, including component declarations."""
+        if ctx.rule_ComponentDeclaration():
+            return self.visitComponentDeclaration(ctx.rule_ComponentDeclaration())
         return None
 
     def visitGenericClause(
