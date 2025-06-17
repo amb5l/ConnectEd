@@ -1,0 +1,41 @@
+import pytest
+from pathlib import Path
+from ConnectEd.hdl.vhdl import VhdlDocument
+
+
+class TestVhdlDesignUnits:
+    """Test VHDL design unit parsing and detection."""
+
+    def test_design_units(self):
+        test_file = Path(__file__).parent.parent / 'fixtures' / 'hdl' / 'design_units.vhd'
+        test_doc = VhdlDocument.FromFile(test_file)
+        assert test_doc is not None, "Document should be parsed successfully"
+        assert len(test_doc.entities) == 1, "Should detect one entity"
+        assert len(test_doc.entities[0].generics) == 2, "Should detect two generics"
+        assert test_doc.entities[0].generics[0].name == "GENERIC1", "Should detect generic1"
+        assert test_doc.entities[0].generics[1].name == "GENERIC2", "Should detect generic2"
+        assert len(test_doc.entities[0].ports) == 3, "Should detect three ports"
+        assert test_doc.entities[0].ports[0].name == "port1", "Should detect port1"
+        assert test_doc.entities[0].ports[1].name == "port2", "Should detect port2"
+        assert test_doc.entities[0].ports[2].name == "port3", "Should detect port3"
+        assert test_doc.entities[0].ports[0].mode == "in", "Should detect in mode for port1"
+        assert test_doc.entities[0].ports[1].mode == "out", "Should detect out mode for port2"
+        assert test_doc.entities[0].ports[2].mode == "inout", "Should detect inout mode for port3"
+        assert test_doc.entities[0].ports[0].datatype == "std_logic", "Should detect std_logic datatype for port1"
+        assert test_doc.entities[0].ports[1].datatype == "std_logic", "Should detect std_logic datatype for port2"
+        assert test_doc.entities[0].ports[2].datatype == "std_logic_vector(GENERIC1-1 downto 0)", "Should detect full datatype with whitespace for port3"
+        assert len(test_doc.entities[0].portGroups) == 1, "Should detect one port group"
+        assert test_doc.entities[0].portGroups[0].name == "Group1", "Should detect 'Group1' as port group name"
+        assert len(test_doc.entities[0].portGroups[0].ports) == 3, "Should detect three ports in port group"
+        assert test_doc.entities[0].portGroups[0].ports[0].name == "port1", "Should detect port1"
+        assert test_doc.entities[0].portGroups[0].ports[1].name == "port2", "Should detect port2"
+        assert test_doc.entities[0].portGroups[0].ports[2].name == "port3", "Should detect port3"
+        assert test_doc.entities[0].portGroups[0].ports[0].mode == "in", "Should detect in mode for port1"
+        assert test_doc.entities[0].portGroups[0].ports[1].mode == "out", "Should detect out mode for port2"
+        assert test_doc.entities[0].portGroups[0].ports[2].mode == "inout", "Should detect inout mode for port3"
+        assert test_doc.entities[0].portGroups[0].ports[0].datatype == "std_logic", "Should detect std_logic datatype for port1"
+        assert test_doc.entities[0].portGroups[0].ports[1].datatype == "std_logic", "Should detect std_logic datatype for port2"
+        assert test_doc.entities[0].portGroups[0].ports[2].datatype == "std_logic_vector(GENERIC1-1 downto 0)", "Should detect full datatype with whitespace for port3"
+        assert len(test_doc.architectures) == 1, "Should detect one architecture"
+        assert len(test_doc.packages) == 1, "Should detect one package"
+
