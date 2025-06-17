@@ -244,17 +244,8 @@ class VhdlVisitor(ParseTreeVisitor):
 
         # Extract default value if present
         default = ""
-        # Check if SimpleModeIndication has a default expression
-        # The grammar is: rule_Mode? rule_InterfaceTypeIndication KW_BUS? ( TOK_VAR_ASSIGN rule_ConditionalExpression )?
-        # We need to check for the conditional expression after the type indication
-        children = simple_mode.children
-        for i, child in enumerate(children):
-            if hasattr(child, 'symbol') and child.symbol and child.symbol.type == vhp.TOK_VAR_ASSIGN:
-                # Found := token, next child should be the expression
-                if i + 1 < len(children):
-                    expr_ctx = children[i + 1]
-                    default = self.extractExpression(expr_ctx)
-                break
+        if simple_mode.defaultValue:
+            default = self.extractExpression(simple_mode.defaultValue)
 
         return VhdlPort(identifiers[0], mode, datatype, default)
 

@@ -22922,6 +22922,7 @@ class vhdl_parser ( Parser ):
         def __init__(self, parser, parent:ParserRuleContext=None, invokingState:int=-1):
             super().__init__(parent, invokingState)
             self.parser = parser
+            self.defaultValue = None # Rule_ConditionalExpressionContext
 
         def rule_InterfaceTypeIndication(self):
             return self.getTypedRuleContext(vhdl_parser.Rule_InterfaceTypeIndicationContext,0)
@@ -22993,7 +22994,7 @@ class vhdl_parser ( Parser ):
                 self.state = 2808
                 self.match(vhdl_parser.TOK_VAR_ASSIGN)
                 self.state = 2809
-                self.rule_ConditionalExpression()
+                localctx.defaultValue = self.rule_ConditionalExpression()
 
 
         except RecognitionException as re:

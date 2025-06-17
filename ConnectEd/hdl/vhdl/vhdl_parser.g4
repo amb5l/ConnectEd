@@ -1907,7 +1907,7 @@ rule_SimpleForceAssignment
 
 rule_SimpleModeIndication
 	: rule_Mode? rule_InterfaceTypeIndication KW_BUS?
-		( TOK_VAR_ASSIGN rule_ConditionalExpression )?
+		( TOK_VAR_ASSIGN defaultValue=rule_ConditionalExpression )?
 	;
 
 // rule_SimpleName
