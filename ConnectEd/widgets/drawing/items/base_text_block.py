@@ -33,31 +33,11 @@ class BaseTextBlock(CustomGraphicsTextItem, ElementMixin):
     _rect    : QRectF
     _shape   : QPainterPath
 
-    @overload
     def __init__(
         self   : Self,
         text   : str = "",
         pos    : QPointF = QPointF(0, 0),
         anchor : KPLoc = KPLoc.TOP_LEFT
-    ) -> None:
-        ...
-
-    @overload
-    def __init__(
-        self   : Self,
-        text   : str = "",
-        x      : float = 0,
-        y      : float = 0,
-        anchor : KPLoc = KPLoc.TOP_LEFT
-    ) -> None:
-        ...
-
-    def __init__(
-        self   : Self,
-        text   : str = "",
-        a1     : QPointF | float = QPointF(0, 0),
-        a2     : Optional[float | KPLoc] = KPLoc.TOP_LEFT,
-        a3     : Optional[KPLoc] = KPLoc.TOP_LEFT
     ) -> None:
         self._rect = QRectF()
         self._shape = QPainterPath()
@@ -68,8 +48,6 @@ class BaseTextBlock(CustomGraphicsTextItem, ElementMixin):
             [KPDef(k, False, False) for k in KPLoc],
             KPLoc.TOP_LEFT
         )
-        pos = a1 if isinstance(a1, QPointF) else QPointF(a1, a2)
-        anchor = a2 if isinstance(a1, QPointF) else a3
         self.setPos(pos)
         self.setAnchor(anchor)
         self.setEditable(False)
