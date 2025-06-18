@@ -14,7 +14,7 @@ from ...core import logger
 from ...core.icon import getDefaultIconSize, getFgBgColors, \
                          SvgIconSingleton, CharIconSingleton
 
-from ..drawing.items import Element, AppearanceSpec, AppearanceSpecChange, \
+from ..drawing.items import ElementMixin, AppearanceSpec, AppearanceSpecChange, \
                             AppearancePref, AppearancePrefChange, \
                             LinePrefChange, FillPrefChange, TextPrefChange, \
                             Default, DEFAULT, NoChange, NO_CHANGE
@@ -522,7 +522,7 @@ class AppearanceDialog(QDialog):
 
     def __init__(
         self     : Self,
-        elements : list[Element],
+        elements : list[ElementMixin],
         parent   : Optional[QWidget] = hub.main_window
     ) -> None:
         super().__init__(parent)

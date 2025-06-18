@@ -5,7 +5,7 @@ from .....core import logger, paste
 from ....dialogs import AppearanceDialog
 
 from ...scenes import DrawingScene
-from ...items  import Element
+from ...items  import ElementMixin
 
 from .defs import DrawingViewState as State
 
@@ -54,17 +54,17 @@ class DrawingViewEditMixin:
             logger.warning("No valid data to paste")
             self._goState(State.Idle)
             return
-        elements = [item for item in items if isinstance(item, Element)]
+        elements = [item for item in items if isinstance(item, ElementMixin)]
         if not elements:
             logger.warning("No valid elements to paste")
             self._goState(State.Idle)
             return
         # Capture the current selection before clearing
-        selection = [item for item in scene.selectedItems() if isinstance(item, Element)]
+        selection = [item for item in scene.selectedItems() if isinstance(item, ElementMixin)]
         # Clear selection and hide keypoints
         scene.clearSelection()
         for item in scene.items():
-            if isinstance(item, Element):
+            if isinstance(item, ElementMixin):
                 item.setKPVisible(False)
         self.wip.elements = elements
         # Calculate offset from copy position to current mouse position
@@ -134,7 +134,7 @@ class DrawingViewEditMixin:
 
     def editDuplicate(self : "DrawingView", pos: QPointF = None) -> None:
         scene : DrawingScene = self.scene()
-        elements = [item for item in scene.selectedItems() if isinstance(item, Element)]
+        elements = [item for item in scene.selectedItems() if isinstance(item, ElementMixin)]
         if not elements:
             # Enter selection mode if nothing is selected
             self._goState(State.EditDuplicate1)
@@ -142,7 +142,7 @@ class DrawingViewEditMixin:
         # Start duplication with selected elements
         self.wip.clear()
         # Store original selection before clearing
-        selection = [item for item in scene.selectedItems() if isinstance(item, Element)]
+        selection = [item for item in scene.selectedItems() if isinstance(item, ElementMixin)]
         # Clone the elements
         cloned_elements = []
         for element in elements:
@@ -157,7 +157,7 @@ class DrawingViewEditMixin:
         # Clear selection and hide keypoints
         scene.clearSelection()
         for item in scene.items():
-            if isinstance(item, Element):
+            if isinstance(item, ElementMixin):
                 item.setKPVisible(False)
         self.wip.elements = cloned_elements
         # Use provided position or current mouse position
@@ -236,7 +236,7 @@ class DrawingViewEditMixin:
 
     def editMoveBegin(
         self     : "DrawingView",
-        elements : list[Element],
+        elements : list[ElementMixin],
         pos      : QPointF,
         slide    : bool = False
     ) -> None:
@@ -270,7 +270,7 @@ class DrawingViewEditMixin:
 
     def editAppearance(
         self : "DrawingView",
-        elements : Element | list[Element] = []
+        elements : ElementMixin | list[ElementMixin] = []
     ) -> None:
         scene : DrawingScene = self.scene()
         if scene.selectedItems():

@@ -7,7 +7,7 @@ from PyQt6.QtGui  import QUndoCommand
 
 from .....core import logger,copy, paste
 
-from ...items import Element, cmdElements, clone, \
+from ...items import ElementMixin, cmdElements, clone, \
                      AppearancePref, AppearancePrefChange
 
 from typing import TYPE_CHECKING
@@ -17,14 +17,14 @@ if TYPE_CHECKING:
 
 class cmdEditPaste(cmdElements):
     offset: QPointF
-    selection: list[Element]  # selected elements before pasting
+    selection: list[ElementMixin]  # selected elements before pasting
 
     def __init__(
         self      : Self,
         scene     : "DrawingScene",
-        elements  : list[Element],
+        elements  : list[ElementMixin],
         offset    : QPointF,
-        selection : list[Element] = None
+        selection : list[ElementMixin] = None
     ):
         super().__init__(scene, elements)
         self.offset = offset
@@ -61,17 +61,17 @@ class cmdEditPaste(cmdElements):
 
 class cmdEditDelete(cmdElements):
     """Command for deleting multiple elements with selection state restoration."""
-    elements  : list[Element]  # Elements to be deleted
-    selection : list[Element]  # Elements that were selected before deletion
+    elements  : list[ElementMixin]  # Elements to be deleted
+    selection : list[ElementMixin]  # Elements that were selected before deletion
 
     def __init__(
         self     : Self,
         scene    : "DrawingScene",
-        elements : list[Element]
+        elements : list[ElementMixin]
     ):
         super().__init__(scene, elements)
         # Store current selection state before deletion
-        self.selection = [item for item in scene.selectedItems() if isinstance(item, Element)]
+        self.selection = [item for item in scene.selectedItems() if isinstance(item, ElementMixin)]
 
     def redo(self) -> None:
         """Delete the elements from the scene."""
@@ -109,15 +109,15 @@ class cmdEditDelete(cmdElements):
 
 class cmdEditDuplicate(cmdElements):
     offset: QPointF
-    selection: list[Element]  # selected elements before duplication
-    originals: list[Element]  # original elements that were duplicated
+    selection: list[ElementMixin]  # selected elements before duplication
+    originals: list[ElementMixin]  # original elements that were duplicated
 
     def __init__(
         self      : Self,
         scene     : "DrawingScene",
-        elements  : list[Element],
+        elements  : list[ElementMixin],
         offset    : QPointF,
-        selection : list[Element] = None
+        selection : list[ElementMixin] = None
     ):
         super().__init__(scene, elements)
         self.offset = offset
@@ -160,7 +160,7 @@ class cmdEditMove(cmdElements):
     def __init__(
         self     : Self,
         scene    : "DrawingScene",
-        elements : list[Element],
+        elements : list[ElementMixin],
         offset   : QPointF,
         slide    : bool = False
     ):
@@ -185,13 +185,13 @@ class cmdEditMove(cmdElements):
             # TODO: add slide logic
 
 class cmdEditAppearance(cmdElements):
-    _initial : dict[Element, AppearancePref]
+    _initial : dict[ElementMixin, AppearancePref]
     _changes : AppearancePrefChange
 
     def __init__(
         self     : Self,
         scene    : "DrawingScene",
-        elements : list[Element],
+        elements : list[ElementMixin],
         changes  : AppearancePrefChange
     ):
         super().__init__(scene, elements)
@@ -229,7 +229,7 @@ class DrawingSceneApiEditMixin:
         pos  : QPointF = QPointF(0, 0)
     ) -> None:
         elements = \
-            [item for item in self.selectedItems() if isinstance(item, Element)]
+            [item for item in self.selectedItems() if isinstance(item, ElementMixin)]
         if elements:
             copy(elements, pos)
             self.undo_stack.push(cmdEditDelete(self, elements))
@@ -241,7 +241,7 @@ class DrawingSceneApiEditMixin:
         pos  : QPointF = QPointF(0, 0)
     ) -> None:
         elements = \
-            [item for item in self.selectedItems() if isinstance(item, Element)]
+            [item for item in self.selectedItems() if isinstance(item, ElementMixin)]
         if elements:
             copy(elements, pos)
         else:
@@ -250,7 +250,7 @@ class DrawingSceneApiEditMixin:
     def editPaste(
         self : "DrawingScene",
         pos  : QPointF = QPointF(0, 0),
-        ips  : Optional[tuple[Element | list[Element], QPointF, list[Element]]] = None
+        ips  : Optional[tuple[ElementMixin | list[ElementMixin], QPointF, list[ElementMixin]]] = None
     ) -> bool:
         if ips is None:
             items, pos0 = paste()
@@ -258,12 +258,12 @@ class DrawingSceneApiEditMixin:
             if not items:
                 logger.warning("No valid data to paste")
                 return False
-            elements = [item for item in items if isinstance(item, Element)]
+            elements = [item for item in items if isinstance(item, ElementMixin)]
         else:
             items, pos0, selection = ips
             if not isinstance(items, list):
                 items = [items]
-            elements = [item for item in items if isinstance(item, Element)]
+            elements = [item for item in items if isinstance(item, ElementMixin)]
         if not elements:
             logger.warning("No valid elements to paste")
             return False
@@ -279,7 +279,7 @@ class DrawingSceneApiEditMixin:
     ) -> None:
         """Delete selected elements from the scene."""
         elements = \
-            [item for item in self.selectedItems() if isinstance(item, Element)]
+            [item for item in self.selectedItems() if isinstance(item, ElementMixin)]
         if elements:
             self.undo_stack.push(cmdEditDelete(self, elements))
         else:
@@ -288,11 +288,11 @@ class DrawingSceneApiEditMixin:
     def editDuplicate(
         self : "DrawingScene",
         pos  : QPointF = QPointF(0, 0),
-        ips  : Optional[tuple[Element | list[Element], QPointF, list[Element]]] = None
+        ips  : Optional[tuple[ElementMixin | list[ElementMixin], QPointF, list[ElementMixin]]] = None
     ) -> bool:
         """Duplicate selected elements."""
         if ips is None:
-            elements = [item for item in self.selectedItems() if isinstance(item, Element)]
+            elements = [item for item in self.selectedItems() if isinstance(item, ElementMixin)]
             if not elements:
                 logger.warning("No elements selected to duplicate")
                 return False
@@ -303,7 +303,7 @@ class DrawingSceneApiEditMixin:
             originals, pos0, selection = ips
             if not isinstance(originals, list):
                 originals = [originals]
-            elements = [item for item in originals if isinstance(item, Element)]
+            elements = [item for item in originals if isinstance(item, ElementMixin)]
             if not elements:
                 logger.warning("No valid elements to duplicate")
                 return False
@@ -318,7 +318,7 @@ class DrawingSceneApiEditMixin:
 
     def editMove(
         self     : "DrawingScene",
-        elements : list[Element],
+        elements : list[ElementMixin],
         offset   : QPointF,
         slide    : bool = False
     ) -> None:
@@ -326,7 +326,7 @@ class DrawingSceneApiEditMixin:
 
     def editAppearance(
         self     : "DrawingScene",
-        elements : list[Element],
+        elements : list[ElementMixin],
         changes  : AppearancePrefChange
     ) -> None:
         self.undo_stack.push(cmdEditAppearance(self, elements, changes))

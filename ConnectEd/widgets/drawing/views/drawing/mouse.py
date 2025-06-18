@@ -3,7 +3,7 @@ from PyQt6.QtGui  import QEnterEvent, QMouseEvent, QWheelEvent, QCursor
 
 from .....core import logger
 
-from ... import Element, KeyPoint
+from ... import ElementMixin, KeyPoint
 
 from .defs import DrawingViewMouseButtonState as MouseButtonState, \
                   DrawingViewState as State
@@ -142,7 +142,7 @@ class DrawingViewMouseMixin:
                 items = self.scene().selectedItems()
                 if items:
                     elements = \
-                        [item for item in items if isinstance(item, Element)]
+                        [item for item in items if isinstance(item, ElementMixin)]
                     if elements:
                         self.editDuplicate()
             case State.EditDuplicate2:
@@ -248,7 +248,7 @@ class DrawingViewMouseMixin:
                 if (m & qkm.ControlModifier) and items_at:
                     # Add element under cursor to selection if not already selected
                     elements_at = \
-                        [item for item in items_at if isinstance(item, Element)]
+                        [item for item in items_at if isinstance(item, ElementMixin)]
                     if elements_at:
                         element = elements_at[0]  # Get first element under cursor
                         if not element.isSelected():
@@ -256,7 +256,7 @@ class DrawingViewMouseMixin:
                         # Get all currently selected elements for duplication
                         items = self.scene().selectedItems()
                         elements = \
-                            [item for item in items if isinstance(item, Element)]
+                            [item for item in items if isinstance(item, ElementMixin)]
                         if elements:
                             # Pass the press position for CTRL+drag duplication
                             pos = self._snap(self.mouse.left.press.logical)

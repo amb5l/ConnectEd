@@ -9,7 +9,7 @@ from PyQt6.QtGui     import QUndoStack
 
 from ....core import logger, toXmlAttrs, fromXmlAttrs
 
-from ..items import Element, element_class_dict
+from ..items import ElementMixin, element_class_dict
 
 from ..items.key_point  import KeyPoint
 from ..items.text_block import TextBlock
@@ -65,7 +65,7 @@ class DrawingScene(
     def clearSelection(self : Self) -> None:
         super().clearSelection()
         for item in self.items():
-            if isinstance(item, Element):
+            if isinstance(item, ElementMixin):
                 item.setKPVisible(False)
                 item.setSelected(False)
         self.kp_items.clear()

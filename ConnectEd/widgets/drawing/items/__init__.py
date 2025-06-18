@@ -192,7 +192,7 @@ class AppearancePrefChange:
     text : Optional[TextPrefChange] = None
 
 class LinePen:
-    element  : "Element"
+    element  : "ElementMixin"
     color    : Default | QColor
     width    : Default | float
     style    : Default | Qt.PenStyle
@@ -202,7 +202,7 @@ class LinePen:
 
     def __init__(
         self    : Self,
-        element : "Element",
+        element : "ElementMixin",
         pref    : LinePref = LinePref(DEFAULT, DEFAULT, DEFAULT)
     ) -> None:
         self.element  = element
@@ -268,7 +268,7 @@ class LinePen:
         return inst
 
 class FillBrush:
-    element  : "Element"
+    element  : "ElementMixin"
     color    : Default | QColor
     style    : Default | Qt.BrushStyle
     normal   : QBrush
@@ -277,7 +277,7 @@ class FillBrush:
 
     def __init__(
         self    : Self,
-        element : "Element",
+        element : "ElementMixin",
         pref    : FillPref = FillPref(DEFAULT, DEFAULT)
     ) -> None:
         self.element  = element
@@ -336,7 +336,7 @@ class FillBrush:
         return inst
 
 class TextColorFont:
-    element   : "Element"
+    element   : "ElementMixin"
     color     : Default | QColor
     family    : Default | str
     size      : Default | float
@@ -350,7 +350,7 @@ class TextColorFont:
 
     def __init__(
         self    : Self,
-        element : "Element",
+        element : "ElementMixin",
         pref    : TextPref = \
                   TextPref(DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT)
     ) -> None:
@@ -533,7 +533,7 @@ class CustomGraphicsRectItem(CustomGraphicsItemMixin, QGraphicsRectItem):
 class CustomGraphicsTextItem(CustomGraphicsItemMixin, QGraphicsTextItem):
     pass
 
-class Element:
+class ElementMixin:
     _MENU = None
 
     """Mixin class for all elements."""
@@ -568,7 +568,7 @@ class Element:
     outline : OutlinePen
     _menu   : QMenu
 
-    def __init2__(
+    def initElement(
         self : Self,
         line : Optional[LinePref] = LinePref(), # all defaults
         fill : Optional[FillPref] = FillPref(), # all defaults
@@ -595,7 +595,7 @@ class Element:
         return hash(self.uuid)
 
     def __eq__(self, other):
-        if not isinstance(other, Element):
+        if not isinstance(other, ElementMixin):
             return NotImplemented
         return self.uuid == other.uuid
 
@@ -651,12 +651,12 @@ class Element:
 class cmdElement(QUndoCommand):
     """Base class for all commands that work with an element."""
     scene   : "DrawingScene"
-    element : Element
+    element : ElementMixin
 
     def __init__(
         self    : Self,
         scene   : "DrawingScene",
-        element : Element
+        element : ElementMixin
     ):
         text = camel_to_proper(self.__class__.__name__.replace("cmd", ""))
         super().__init__(text)
@@ -690,12 +690,12 @@ class cmdElement(QUndoCommand):
 class cmdElements(QUndoCommand):
     """Base class for all commands that work with multiple elements."""
     scene    : "DrawingScene"
-    elements : list[Element]
+    elements : list[ElementMixin]
 
     def __init__(
         self     : Self,
         scene    : "DrawingScene",
-        elements : list[Element]
+        elements : list[ElementMixin]
     ):
         text = camel_to_proper(self.__class__.__name__.replace("cmd", ""))
         QUndoCommand.__init__(self, text)
@@ -732,7 +732,7 @@ class cmdPlaceElement(cmdElement):
     def __init__(
         self    : Self,
         scene   : "DrawingScene",
-        element : Element
+        element : ElementMixin
     ):
         super().__init__(scene, element) # record scene and element instances
 
@@ -743,7 +743,7 @@ class cmdPlaceElement(cmdElement):
     def undo(self : Self) -> None:
         self.scene.removeItem(self.element)
 
-def clone(elements : list[Element]) -> list[Element]:
+def clone(elements : list[ElementMixin]) -> list[ElementMixin]:
     r = []
     for element in elements:
         try:
@@ -776,7 +776,7 @@ __all__ = [
     "CustomGraphicsItem",
     "CustomGraphicsRectItem",
     "CustomGraphicsTextItem",
-    "Element",
+    "ElementMixin",
     "cmdElement",
     "cmdElements",
     "cmdPlaceElement",

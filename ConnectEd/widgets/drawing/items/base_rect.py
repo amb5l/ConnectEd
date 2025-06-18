@@ -8,7 +8,7 @@ from PyQt6.QtGui     import QPainter, QPainterPath
 
 from ....core   import logger
 
-from . import CustomGraphicsRectItem, Element, cmdPlaceElement, \
+from . import CustomGraphicsRectItem, ElementMixin, cmdPlaceElement, \
               KPLoc, KPDef, KPManager
 
 from typing import TYPE_CHECKING
@@ -16,9 +16,9 @@ if TYPE_CHECKING:
     from .. import DrawingView
 
 
-class BaseRectangle(CustomGraphicsRectItem, Element):
+class BaseRectangle(CustomGraphicsRectItem, ElementMixin):
     """Base class for rectangle elements."""
-    XML_ATTRS = Element.XML_ATTRS | {
+    XML_ATTRS = ElementMixin.XML_ATTRS | {
         "size" : (
             "QSizeF", True,
             lambda self, value: self.setSize(value),
@@ -76,7 +76,7 @@ class BaseRectangle(CustomGraphicsRectItem, Element):
         a4   : Optional[float | int]              = None
     ) -> None:
         super().__init__()
-        self.__init2__(text=None)
+        self.initElement(text=None)
         self._kpm = KPManager(self, [KPDef(k, True, False) for k in KPLoc])
         self._shape = QPainterPath()
         if isinstance(a1, QRectF):

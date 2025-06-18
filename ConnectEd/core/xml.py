@@ -24,7 +24,7 @@ from . import logger, APP_NAME, MIME_TYPE, val2str, str2val
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from .model    import DesignDb, LibraryDb, Diagram, Symbol
-    from ..widgets import Element
+    from ..widgets import ElementMixin
 
 
 XmlItemTypes: TypeAlias = Union[
@@ -32,7 +32,7 @@ XmlItemTypes: TypeAlias = Union[
     "LibraryDb",
     "Diagram",
     "Symbol",
-    "Element"
+    "ElementMixin"
 ]
 
 def toXmlBegin(xw : QXmlStreamWriter) -> None:
@@ -178,7 +178,7 @@ def copy(instances : Any | list[Any], pos : QPointF = QPointF(0, 0)) -> None:
     clipboard.setMimeData(mime_data)
 
 def paste() -> tuple[list[XmlItemTypes], Optional[QPointF]]:
-    from ..widgets.drawing.items import Element
+    from ..widgets.drawing.items import ElementMixin
     clipboard = QApplication.clipboard()
     mime_data = clipboard.mimeData()
     if mime_data and mime_data.hasFormat(MIME_TYPE):

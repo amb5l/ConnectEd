@@ -8,16 +8,16 @@ from PyQt6.QtGui     import QColor, QPainter, QPainterPath, \
                             QKeyEvent, QFocusEvent, QTextCursor
 
 from . import CustomGraphicsTextItem, \
-              Element, KPManager, KPLoc, KPDef, cmdPlaceElement
+              ElementMixin, KPManager, KPLoc, KPDef, cmdPlaceElement
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from .. import DrawingScene, DrawingView
 
 
-class BaseTextBlock(CustomGraphicsTextItem, Element):
+class BaseTextBlock(CustomGraphicsTextItem, ElementMixin):
     # class variables
-    XML_ATTRS = Element.XML_ATTRS | {
+    XML_ATTRS = ElementMixin.XML_ATTRS | {
         "text" : (
             "str", True,
             lambda self, value: self.setPlainText(value),
@@ -62,7 +62,7 @@ class BaseTextBlock(CustomGraphicsTextItem, Element):
         self._rect = QRectF()
         self._shape = QPainterPath()
         super().__init__(text)
-        self.__init2__(line=None, fill=None)
+        self.initElement(line=None, fill=None)
         self._kpm = KPManager(
             self,
             [KPDef(k, False, False) for k in KPLoc],
