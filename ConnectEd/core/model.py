@@ -360,8 +360,8 @@ class Model(QStandardItemModel):
         copy(item)
 
     def paste(self : Self, item : QStandardItem) -> None:
-        items = paste()
-        if items:
+        paste_items, _ = paste()
+        if paste_items:
             match self.getItemDescription(item):
                 case "Designs":
                     valid_item_types = [DesignDb]
@@ -373,20 +373,20 @@ class Model(QStandardItemModel):
                     valid_item_types = [Symbol]
                 case _:
                     raise ValueError(
-                        f"Cannot paste into item: {item.text()} ({type(item)})")
+                        f"Cannot paste into item: {paste_item.text()} ({type(paste_item)})")
             invalid_item_types = []
             invalid_item_count = 0
-            for item in items:
-                if not any(isinstance(item, t) for t in valid_item_types):
-                    invalid_item_types.append(type(item).__name__)
+            for paste_item in paste_items:
+                if not any(isinstance(paste_item, t) for t in valid_item_types):
+                    invalid_item_types.append(type(paste_item).__name__)
                     invalid_item_count += 1
                 else:
-                    base_name = item.text()
+                    base_name = paste_item.text()
                     existing_names = \
-                        [item.child(i).text() for i in range(item.rowCount())]
+                        [paste_item.child(i).text() for i in range(paste_item.rowCount())]
                     if base_name in existing_names:
-                        item.setText(hub.name_counter.get(base_name))
-                    item.appendRow(item)
+                        paste_item.setText(hub.name_counter.get(base_name))
+                    item.appendRow(paste_item)
             if invalid_item_count:
                 # TODO message box
                 n = invalid_item_count

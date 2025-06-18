@@ -178,7 +178,6 @@ def copy(instances : Any | list[Any], pos : QPointF = QPointF(0, 0)) -> None:
     clipboard.setMimeData(mime_data)
 
 def paste() -> tuple[list[XmlItemTypes], Optional[QPointF]]:
-    from ..widgets.drawing.items import ElementMixin
     clipboard = QApplication.clipboard()
     mime_data = clipboard.mimeData()
     if mime_data and mime_data.hasFormat(MIME_TYPE):
