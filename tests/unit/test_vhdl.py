@@ -1,4 +1,4 @@
-from typing  import TextIO
+from typing  import Self, TextIO
 from pathlib import Path
 from io      import StringIO
 
@@ -9,87 +9,9 @@ from ConnectEd.hdl.vhdl import VhdlDocument, VhdlEntity, \
 
 from tests.utils import MinMax
 
-def generateTestEntity(
-    stream      : TextIO,
-    name        : str,
-    generics    : MinMax = MinMax(0, 5),
-    port_groups : MinMax = MinMax(0, 5),
-    ports       : MinMax = MinMax(1, 5)
-) -> VhdlEntity:
-    stream.write(f'entity {name} is\n')
-    entity = VhdlEntity(name)
-    n_generics = random.randint(generics.min, generics.max)
-    if n_generics > 0:
-        stream.write(f'  generic (\n')
-        for n_generic in range(n_generics):
-            generic_name = f'GENERIC{n_generic}'
-            stream.write(f'    {generic_name} : ')
-            datatype_choice = random.choice([1, 2, 3])
-            match datatype_choice:
-                case  1: datatype = f'bit'
-                case  2: datatype = f'std_logic_vector(3 downto 0)'
-                case  3: datatype = 'integer'
-            match datatype_choice:
-                case  1: default = "'1'"
-                case  2: default = '"0101"'
-                case  3: default = '99'
-            stream.write(f'{datatype} := {default};\n')
-            entity.addGeneric(VhdlGeneric(generic_name, datatype, default))
-        stream.write(f'  );\n')
-    n_port_groups = random.randint(port_groups.min, port_groups.max)
-    if n_port_groups > 0:
-        stream.write(f'  port (\n')
-        for n_port_group in range(n_port_groups):
-            port_group_name = f'Group {n_port_group + 1}' \
-                if n_port_groups > 1 else ''
-            port_group = VhdlPortGroup(port_group_name, [])
-            n_before = random.randint(0, 2)
-            n_comment = random.randint(0, 2)
-            n_after = random.randint(0, 2)
-            stream.write('\n' * n_before)
-            if n_comment > 0:
-                stream.write(f'    -- {port_group_name}\n')
-            if n_comment > 1:
-                stream.write(f'    --\n' * (n_comment - 1))
-            stream.write(f'\n' * n_after)
-            if n_port_group > 0 and n_before + n_comment + n_after == 0:
-                stream.write('\n') # ensure >=1 empty line between groups
-            n_ports = random.randint(ports.min, ports.max)
-            for n_port in range(n_ports):
-                port_name = f'port{n_port + 1}'
-                stream.write(f'    {port_name} : ')
-                mode = random.choice(['in', 'out', 'inout'])
-                stream.write(f'{mode} ')
-                datatype_choice = random.choice([1, 2, 3])
-                match datatype_choice:
-                    case  1: datatype = f'bit'
-                    case  2: datatype = f'std_logic_vector(3 downto 0)'
-                    case  3: datatype = 'integer'
-                if random.choice([True, False]):
-                    match datatype_choice:
-                        case  1: default = "'1'"
-                        case  2: default = '"0101"'
-                        case  3: default = '99'
-                else:
-                    default = ''
-                stream.write(f'{datatype}{' := ' if default else ''}{default};\n')
-                port_group.addPort(VhdlPort(port_name, mode, datatype, default))
-            if n_port_group == n_port_groups - 1:
-                stream.write(f'\n' * random.randint(0, 2))
-            entity.addPortGroup(port_group)
-        stream.write(f'  );\n')
-    stream.write(f'end')
-    if random.choice([True, False]):
-        stream.write(f' entity')
-    if random.choice([True, False]):
-        stream.write(f' {entity.name}')
-    stream.write(f';\n')
-    return entity
 
-class TestVhdlDesignUnits:
-    """Test VHDL design unit parsing and detection."""
-
-    def test_design_units(self):
+class TestFixtures:
+    def test_design_units(self : Self):
         test_file = Path(__file__).parent.parent / 'fixtures' / 'hdl' / 'design_units.vhd'
         test_doc = VhdlDocument.FromFile(test_file)
         assert test_doc is not None, 'Document should be parsed successfully'
@@ -183,11 +105,13 @@ class TestVhdlDesignUnits:
         assert test_doc.packages[0].components[0].port_groups[1].ports[1].datatype == 'std_logic', 'Should detect std_logic datatype for port5'
         assert test_doc.packages[0].components[0].port_groups[1].ports[2].datatype == 'std_logic_vector(GENERIC1-1 downto 0)', 'Should detect full datatype with whitespace for port6'
 
+
+class TestRandom:
     def test_random_entities(self):
         for n in range(1, 100):
             stream = StringIO()
 
-            expected_entity = generateTestEntity(stream, f'entity{n}')
+            expected_entity = self.generateRandomEntity(stream, f'entity{n}')
             assert expected_entity is not None, 'expected_entity should be generated successfully'
             assert expected_entity.name == f'entity{n}', 'expected_entity name should be correct'
 
@@ -209,3 +133,81 @@ class TestVhdlDesignUnits:
                     assert parsed_doc.entities[0].port_groups[g].ports[i].mode     == expected_entity.port_groups[g].ports[i].mode,     'parsed vs expected: port mode should be correct'
                     assert parsed_doc.entities[0].port_groups[g].ports[i].datatype == expected_entity.port_groups[g].ports[i].datatype, 'parsed vs expected: port datatype should be correct'
                     assert parsed_doc.entities[0].port_groups[g].ports[i].default  == expected_entity.port_groups[g].ports[i].default,  'parsed vs expected: port default should be correct'
+
+    def generateRandomEntity(
+        self        : Self,
+        stream      : TextIO,
+        name        : str,
+        generics    : MinMax = MinMax(0, 5),
+        port_groups : MinMax = MinMax(0, 5),
+        ports       : MinMax = MinMax(1, 5)
+    ) -> VhdlEntity:
+        stream.write(f'entity {name} is\n')
+        entity = VhdlEntity(name)
+        n_generics = random.randint(generics.min, generics.max)
+        if n_generics > 0:
+            stream.write(f'  generic (\n')
+            for n_generic in range(n_generics):
+                generic_name = f'GENERIC{n_generic}'
+                stream.write(f'    {generic_name} : ')
+                datatype_choice = random.choice([1, 2, 3])
+                match datatype_choice:
+                    case  1: datatype = f'bit'
+                    case  2: datatype = f'std_logic_vector(3 downto 0)'
+                    case  3: datatype = 'integer'
+                match datatype_choice:
+                    case  1: default = "'1'"
+                    case  2: default = '"0101"'
+                    case  3: default = '99'
+                stream.write(f'{datatype} := {default};\n')
+                entity.addGeneric(VhdlGeneric(generic_name, datatype, default))
+            stream.write(f'  );\n')
+        n_port_groups = random.randint(port_groups.min, port_groups.max)
+        if n_port_groups > 0:
+            stream.write(f'  port (\n')
+            for n_port_group in range(n_port_groups):
+                port_group_name = f'Group {n_port_group + 1}' \
+                    if n_port_groups > 1 else ''
+                port_group = VhdlPortGroup(port_group_name, [])
+                n_before = random.randint(0, 2)
+                n_comment = random.randint(0, 2)
+                n_after = random.randint(0, 2)
+                stream.write('\n' * n_before)
+                if n_comment > 0:
+                    stream.write(f'    -- {port_group_name}\n')
+                if n_comment > 1:
+                    stream.write(f'    --\n' * (n_comment - 1))
+                stream.write(f'\n' * n_after)
+                if n_port_group > 0 and n_before + n_comment + n_after == 0:
+                    stream.write('\n') # ensure >=1 empty line between groups
+                n_ports = random.randint(ports.min, ports.max)
+                for n_port in range(n_ports):
+                    port_name = f'port{n_port + 1}'
+                    stream.write(f'    {port_name} : ')
+                    mode = random.choice(['in', 'out', 'inout'])
+                    stream.write(f'{mode} ')
+                    datatype_choice = random.choice([1, 2, 3])
+                    match datatype_choice:
+                        case  1: datatype = f'bit'
+                        case  2: datatype = f'std_logic_vector(3 downto 0)'
+                        case  3: datatype = 'integer'
+                    if random.choice([True, False]):
+                        match datatype_choice:
+                            case  1: default = "'1'"
+                            case  2: default = '"0101"'
+                            case  3: default = '99'
+                    else:
+                        default = ''
+                    stream.write(f'{datatype}{' := ' if default else ''}{default};\n')
+                    port_group.addPort(VhdlPort(port_name, mode, datatype, default))
+                if n_port_group == n_port_groups - 1:
+                    stream.write(f'\n' * random.randint(0, 2))
+                entity.addPortGroup(port_group)
+            stream.write(f'  );\n')
+        stream.write(f'end')
+        if random.choice([True, False]):
+            stream.write(f' entity')
+        if random.choice([True, False]):
+            stream.write(f' {entity.name}')
+        stream.write(f';\n')
+        return entity
