@@ -1,52 +1,116 @@
+from enum   import Enum
 from typing import Optional, Iterable, Self
 
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui  import QStandardItem, QStandardItemModel
 
-class HdlParameter(QStandardItem):
+from pyTooling.Decorators import export
 
-    _datatype : str
-    _default  : str
-    _notes    : str
+from .vhdl import VhdlDocument
 
-    def __init__(self, name: str, datatype: str, expression, notes: str = "") -> None:
-        super().__init__()
-        self.setText(name)
-        self._datatype = datatype
-        self._default = expression
-        self._notes = notes
+
+@export
+class HdlDirection(Enum):
+    INPUT  = "INPUT"
+    OUTPUT = "OUTPUT"
+    BIDIR  = "BIDIR"
+
+
+@export
+class HdlItemWithNameMixin:
+    """Mixin for items with a name."""
 
     @property
     def name(self) -> str:
         return self.text()
 
     @name.setter
-    def name(self, value: str) -> None:
-        self.setText(value)
+    def name(self, name: HdlDirection) -> None:
+        self.setText(name)
+
+
+@export
+class HdlItemWithDirectionMixin:
+    """Mixin for items with a direction."""
+
+    _direction : HdlDirection
+
+    @property
+    def direction(self) -> str:
+        return self._direction
+
+    @direction.setter
+    def direction(self, direction: HdlDirection) -> None:
+        self._direction = direction
+
+
+@export
+class HdlItemWithDatatypeMixin:
+    """Mixin for items with a datatype."""
+
+    _datatype : str
 
     @property
     def datatype(self) -> str:
         return self._datatype
 
     @datatype.setter
-    def datatype(self, value: str) -> None:
-        self._datatype = value
+    def datatype(self, datatype: str) -> None:
+        self._datatype = datatype
+
+
+@export
+class HdlItemWithDefaultMixin:
+    """Mixin for items with a default value."""
+
+    _default : str
 
     @property
     def default(self) -> str:
         return self._default
 
     @default.setter
-    def default(self, value: str) -> None:
-        self._default = value
+    def default(self, default: str) -> None:
+        self._default = default
+
+
+@export
+class HdlItemWithNotesMixin:
+    """Mixin for items with notes."""
+
+    _notes : str
 
     @property
     def notes(self) -> str:
         return self._notes
 
     @notes.setter
-    def notes(self, value: str) -> None:
-        self._notes = value
+    def notes(self, notes: str) -> None:
+        self._notes = notes
+
+
+@export
+class HdlParameter(
+    QStandardItem,
+    HdlItemWithNameMixin,
+    HdlItemWithDatatypeMixin,
+    HdlItemWithDefaultMixin,
+    HdlItemWithNotesMixin
+):
+    """Represents a block parameter."""
+
+    def __init__(
+        self       : Self,
+        name       : str,
+        datatype   : str,
+        expression : str,
+        notes      : str = ""
+    ) -> None:
+        super().__init__()
+        self.name = name
+        self.datatype = datatype
+        self.default = expression
+        self.notes = notes
 
     def data(self, role: int) -> Optional[str]:
         index = self.index()
@@ -73,51 +137,29 @@ class HdlParameter(QStandardItem):
                 case _: return False
         return super().setData(value, role)
 
-class HdlPortOrPin(QStandardItem):
+
+@export
+class HdlPortOrPin(
+    QStandardItem,
+    HdlItemWithNameMixin,
+    HdlItemWithDirectionMixin,
+    HdlItemWithDatatypeMixin,
+    HdlItemWithNotesMixin
+):
     """Base class for ports and pins."""
 
-    _mode     : str
-    _datatype : str
-    _notes    : str
-
-    def __init__(self, name: str, direction: str, type_: str, notes: str = "") -> None:
+    def __init__(
+        self      : Self,
+        name      : str,
+        direction : HdlDirection,
+        datatype  : str,
+        notes     : str = ""
+    ) -> None:
         super().__init__()
-        self.setText(name)  # Store name in built-in text attribute
-        self._mode = direction
-        self._datatype = type_
-        self._notes = notes
-
-    @property
-    def name(self) -> str:
-        return self.text()  # Retrieve name from built-in text attribute
-
-    @name.setter
-    def name(self, value: str) -> None:
-        self.setText(value)  # Store name in built-in text attribute
-
-    @property
-    def mode(self) -> str:
-        return self._mode
-
-    @mode.setter
-    def mode(self, value: str) -> None:
-        self._mode = value
-
-    @property
-    def datatype(self) -> str:
-        return self._datatype
-
-    @datatype.setter
-    def datatype(self, value: str) -> None:
-        self._datatype = value
-
-    @property
-    def notes(self) -> str:
-        return self._notes
-
-    @notes.setter
-    def notes(self, value: str) -> None:
-        self._notes = value
+        self.name = name
+        self.direction = direction
+        self.datatype = datatype
+        self.notes = notes
 
     def data(self, role: int) -> Optional[str]:
         index = self.index()
@@ -143,26 +185,56 @@ class HdlPortOrPin(QStandardItem):
                 case _: return False
         return super().setData(value, role)
 
+@export
 class HdlPort(HdlPortOrPin):
     """Represents a diagram (top entity/module) port."""
+
     pass
 
+
+@export
+class HdlPortGroup(QStandardItem, HdlItemWithNameMixin, HdlItemWithNotesMixin):
+    """Represents a diagram port group."""
+
+    def __init__(
+        self  : Self,
+        name  : str,
+        ports : Iterable[HdlPort] = [],
+        notes : str = ""
+    ) -> None:
+        super().__init__()
+        self.name = name
+        self.appendRows(ports)
+        self.notes = notes
+
+@export
 class HdlPin(HdlPortOrPin):
     """Represents a block pin."""
+
     pass
 
-class HdlPinGroup(QStandardItem):
+
+@export
+class HdlPinGroup(QStandardItem, HdlItemWithNameMixin, HdlItemWithNotesMixin):
     """Represents a block pin group."""
 
-    def __init__(self, name: str, ports: Iterable[HdlPin] = []):
+    def __init__(
+        self  : Self,
+        name  : str,
+        pins  : Iterable[HdlPin] = [],
+        notes : str = ""
+    ) -> None:
         super().__init__()
-        self.setText(name)
-        self.appendRows(ports)
+        self.name = name
+        self.appendRows(pins)
+        self.notes = notes
 
     @property
     def pins(self) -> list[HdlPin]:
         return [self.child(row) for row in range(self.rowCount())]
 
+
+@export
 class HdlContainer(QStandardItem):
     """Base class for containers."""
 
@@ -176,38 +248,49 @@ class HdlContainer(QStandardItem):
             raise ValueError("HdlContainer._NAME is not set")
         self.appendRows(items)
 
+
+@export
 class HdlParameterContainer(HdlContainer):
     """A container for parameters."""
     _NAME = "Parameters"
 
+
+@export
 class HdlPinContainer(HdlContainer):
     """A container for pins."""
+
     _NAME = "Pins"
 
+
+@export
 class HdlPinGroupContainer(HdlContainer):
     """A container for pin groups."""
+
     _NAME = "Pin Groups"
 
-class HdlBlock(QStandardItem):
+
+@export
+class HdlBlock(QStandardItem, HdlItemWithNameMixin, HdlItemWithNotesMixin):
     """An HdlBlock represents a diagram block or symbol."""
 
-    _notes      : str
     _parameters : HdlParameterContainer
     _pins       : HdlPinContainer
     _pin_groups : HdlPinGroupContainer
 
     def __init__(
-        self,
+        self       : Self,
         name       : str,
         parameters : Iterable[HdlParameter] = [],
         pins       : Iterable[HdlPin] = [],
-        pin_groups : Iterable[HdlPinGroup] = []
-    ):
+        pin_groups : Iterable[HdlPinGroup] = [],
+        notes      : str = ""
+    ) -> None:
         super().__init__()
-        self.setText(name)
+        self.name = name
         self._parameters = HdlParameterContainer(parameters)
         self._pins = HdlPinContainer(pins)
         self._pin_groups = HdlPinGroupContainer(pin_groups)
+        self.notes = notes
 
     @property
     def parameters(self) -> list[HdlParameter]:
@@ -257,30 +340,35 @@ class HdlBlock(QStandardItem):
                 return pins
         return []
 
-class HdlGate(QStandardItem):
+
+@export
+class HdlGate(QStandardItem, HdlItemWithNameMixin, HdlItemWithNotesMixin):
     """An HdlGate represents a simple combinatorial function."""
 
-    _notes      : str
     _pins       : HdlPinContainer
 
     def __init__(
-        self,
+        self       : Self,
         name       : str,
-        parameters : Iterable[HdlParameter] = [],
-        pins       : Iterable[HdlPin] = [],
-        pin_groups : Iterable[HdlPinGroup] = []
+        notes      : str = "",
+        pins       : Iterable[HdlPin] = []
     ):
         super().__init__()
-        self.setText(name)
-        self._parameters = HdlParameterContainer(parameters)
-        self._pins = HdlPinContainer(pins)
-        self._pin_groups = HdlPinGroupContainer(pin_groups)
+        self.name = name
+        self.notes = notes
+        for pin in pins:
+            self.appendRow(pin)
 
-class HdlNet(QStandardItem):
+
+@export
+class HdlNet(
+    QStandardItem,
+    HdlItemWithNameMixin,
+    HdlItemWithDatatypeMixin,
+    HdlItemWithNotesMixin
+):
     """Represents a net."""
 
-    _datatype : str
-    _notes    : str
     _output   : HdlPortOrPin
     _inputs   : list[HdlPortOrPin]
 
@@ -299,13 +387,123 @@ class HdlNet(QStandardItem):
         self._output = output
         self._inputs = inputs
 
-class HdlNetGroup(QStandardItem):
+
+@export
+class HdlNetGroup(QStandardItem, HdlItemWithNameMixin, HdlItemWithNotesMixin):
     """Represents a net group."""
-    pass
 
-class HdlModel(QStandardItemModel):
-    """Represents a model of an diagram, or (importable) set of blocks."""
+    def __init__(
+        self  : Self,
+        name  : str,
+        notes : str = "",
+        nets  : Iterable[HdlNet] = []
+    ) -> None:
+        super().__init__()
+        self.name = name
+        self.notes = notes
+        for net in nets:
+            self.appendRow(net)
 
-    def __init__(self, blocks: Iterable[HdlBlock] = []):
+
+@export
+class HdlPortGroupContainer(HdlContainer):
+    """A container for port groups."""
+
+    _NAME = "Port Groups"
+
+
+@export
+class HdlNetGroupContainer(HdlContainer):
+    """A container for net groups."""
+
+    _NAME = "Net Groups"
+
+
+@export
+class HdlBlockContainer(HdlContainer):
+    """A container for blocks."""
+
+    _NAME = "Blocks"
+
+
+@export
+class HdlCollection(QStandardItemModel):
+    """
+    Represents a collection of HDL objects - part or all of a diagram,
+    or an (importable) set of blocks.
+    """
+
+    _blocks      : HdlBlockContainer
+    _port_groups : HdlPortGroupContainer
+    _net_groups  : HdlNetGroupContainer
+
+    def __init__(
+        self        : Self,
+        blocks      : Iterable[HdlBlock] = [],
+        port_groups : Iterable[HdlPortGroup] = [],
+        net_groups  : Iterable[HdlNetGroup] = []
+    ) -> None:
         super().__init__()
         self.appendRows(blocks)
+
+    def addBlock(self, block: HdlBlock) -> None:
+        self._blocks.appendRow(block)
+
+    @property
+    def blocks(self) -> list[HdlBlock]:
+        return [self._blocks.child(row) for row in range(self._blocks.rowCount())]
+
+    @blocks.setter
+    def blocks(self, value: list[HdlBlock]) -> None:
+        self._blocks.clear()
+        self._blocks.appendRows(value)
+
+    def addPortGroup(self, port_group: HdlPortGroup) -> None:
+        self._port_groups.appendRow(port_group)
+
+    @property
+    def port_groups(self) -> list[HdlPortGroup]:
+        return [self._port_groups.child(row) for row in range(self._port_groups.rowCount())]
+
+    @port_groups.setter
+    def port_groups(self, value: list[HdlPortGroup]) -> None:
+        self._port_groups.clear()
+        self._port_groups.appendRows(value)
+
+    def addNetGroup(self, net_group: HdlNetGroup) -> None:
+        self._net_groups.appendRow(net_group)
+
+    @property
+    def net_groups(self) -> list[HdlNetGroup]:
+        return [self._net_groups.child(row) for row in range(self._net_groups.rowCount())]
+
+    @net_groups.setter
+    def net_groups(self, value: list[HdlNetGroup]) -> None:
+        self._net_groups.clear()
+        self._net_groups.appendRows(value)
+
+#    @classmethod
+#    def fromVhdlDocument(cls, vhdl_document: VhdlDocument) -> Self:
+#        for vhdl_entity in vhdl_document.entities:
+#            hdl_block = HdlBlock(vhdl_entity.name)
+#            for vhdl_port_group in vhdl_entity.port_groups:
+#                if vhdl_port_group.name: # named group of ports
+#                    hdl_port_group = HdlPortGroup(
+#                        name=vhdl_port_group.name,
+#                        notes=vhdl_port_group.notes
+#                    )
+#                    for vhdl_port in vhdl_port_group.ports:
+#                        match vhdl_port.mode:
+#                            case "in"    : direction = HdlDirection.INPUT
+#                            case "out"   : direction = HdlDirection.OUTPUT
+#                            case "inout" : direction = HdlDirection.BIDIR
+#                            case _       : direction = HdlDirection.BIDIR
+#                        match vh
+#                        hdl_port = HdlPort(
+#                            name=vhdl_port.name,
+#                            direction=direction,
+#                            datatype=vhdl_port.datatype,
+#                            notes=vhdl_port.notes
+#                        )
+#                        hdl_port_group.appendRow(hdl_port)
+#                else: # ungrouped ports
