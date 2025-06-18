@@ -18,30 +18,30 @@ class DrawingViewViewMixin:
         self._goState(State.ViewZoomWindow1)
 
     def viewZoomIn(self : Self, n : int = 1) -> None:
-        from .....core import hub
+        from ..... import hub
         self._zoomRelMouse((1 + hub.settings.get("display/zoom/step"))**n)
 
     def viewZoomOut(self : Self, n : int = 1) -> None:
-        from .....core import hub
+        from ..... import hub
         self._zoomRelMouse((1 - hub.settings.get("display/zoom/step"))**n)
 
     def viewPan(self : Self, n : int = 1) -> None:
         self._goState(State.ViewPan1)
 
     def viewPanLeft(self : Self, n : int = 1) -> None:
-        from .....core import hub
+        from ..... import hub
         self._pan(QPointF(hub.settings.get("display/pan/step") * n, 0))
 
     def viewPanRight(self : Self, n : int = 1) -> None:
-        from .....core import hub
+        from ..... import hub
         self._pan(QPointF(-hub.settings.get("display/pan/step") * n, 0))
 
     def viewPanUp(self : Self, n : int = 1) -> None:
-        from .....core import hub
+        from ..... import hub
         self._pan(QPointF(0, hub.settings.get("display/pan/step") * n))
 
     def viewPanDown(self : Self, n : int = 1) -> None:
-        from .....core import hub
+        from ..... import hub
         self._pan(QPointF(0, -hub.settings.get("display/pan/step") * n))
 
     def viewPrev(self : Self) -> None:
