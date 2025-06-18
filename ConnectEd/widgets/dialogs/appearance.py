@@ -516,10 +516,6 @@ class OnOffComboBox(QComboBox):
         return [NO_CHANGE, DEFAULT, False, True][self.currentIndex()]
 
 class AppearanceDialog(QDialog):
-    _default_values   : AppearanceSpec
-    _no_change_values : AppearancePref
-    _choice           : AppearancePrefChange
-
     def __init__(
         self     : Self,
         elements : list[ElementMixin],
@@ -528,7 +524,7 @@ class AppearanceDialog(QDialog):
         super().__init__(parent)
         self.choice = AppearancePrefChange()
         no_change_values = AppearancePrefChange()
-        default_values = AppearanceSpecChange()
+        default_values = AppearanceSpec()
         for element in elements:
             for attr in ["line", "fill", "text"]:
                 if not hasattr(element, attr):
