@@ -7,6 +7,8 @@ import random
 from ConnectEd.hdl.vhdl import VhdlDocument, VhdlEntity, \
                                VhdlGeneric, VhdlPortGroup, VhdlPort
 
+from ConnectEd.hdl.vhdl.vhdl_visitor import VhdlVisitor
+
 from tests.utils import MinMax
 
 
@@ -211,3 +213,39 @@ class TestRandom:
             stream.write(f' {entity.name}')
         stream.write(f';\n')
         return entity
+
+
+class TestMisc:
+    def test_extract_constraint(self):
+        good_test_cases = [
+            ("WIDTH-1 downto 0", ("width-1", "downto", "0")),
+            ("WIDTH-1downto0", ("width-1", "downto", "0")),
+            ("(WIDTH-1)downto(0)", ("(width-1)", "downto", "(0)")),
+            ("(WIDTH-1) downto (START+1)", ("(width-1)", "downto", "(start+1)")),
+            ("42 downto 5", ("42", "downto", "5")),
+            ("2*WIDTH-1   downto   0", ("2*width-1", "downto", "0")),
+            ("7 to 0", ("7", "to", "0")),
+            ("7to0", ("7", "to", "0")),
+            ("(BASE+1) to (END-1)", ("(base+1)", "to", "(end-1)")),
+            ("BASE_ADDR to OFFSET", ("base_addr", "to", "offset")),
+            ("downto_val downto 0", ("downto_val", "downto", "0"))
+        ]
+        bad_test_cases = [
+            ("WIDTH-1 0", (None, None, None)),  # No downto or to
+            ("WIDTH-1downto", (None, None, None))  # Missing right bound
+        ]
+        for test_case in good_test_cases:
+            s, (e_left, e_direction, e_right) = test_case
+            extracted = VhdlVisitor.extractConstraint(s)
+            assert extracted is not None, 'extracted should be not None'
+            left, direction, right = extracted
+            assert left is not None, 'left should be extracted'
+            assert direction is not None, 'direction should be extracted'
+            assert right is not None, 'right should be extracted'
+            assert left == e_left, 'left should be correct'
+            assert direction == e_direction, 'direction should be correct'
+            assert right == e_right, 'right should be correct'
+        for test_case in bad_test_cases:
+            s, (_, _, _) = test_case
+            extracted = VhdlVisitor.extractConstraint(s)
+            assert extracted is None, 'extracted should be None'

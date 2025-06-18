@@ -2,6 +2,8 @@ from typing import Optional, Self, TYPE_CHECKING
 
 from antlr4 import ParseTreeVisitor, ParserRuleContext
 
+import re
+
 from .vhdl_parser import vhdl_parser as vhp
 
 if TYPE_CHECKING:
@@ -275,3 +277,25 @@ class VhdlVisitor(ParseTreeVisitor):
     ) -> str:
         """Extract expression as string."""
         return ctx.getText()
+
+    @staticmethod
+    def extractConstraint(s : str) -> tuple[str, str, str] | None:
+        # Normalize case to lowercase
+        s = s.lower()
+        # Regex: "downto" or "to"
+        # preceded by space, digit, or )
+        # followed by space, digit, or (
+        pattern = r'(?<=[\s\d\)])(downto|to)(?=[\s\d\(])'
+        matches = re.findall(pattern, s)
+        if len(matches) != 1:
+            return None
+        parts = re.split(pattern, s)
+        if len(parts) != 3 or not parts[0].strip() or not parts[2].strip():
+            return None
+        left = parts[0].strip()
+        direction = parts[1]
+        right = parts[2].strip()
+        if left and direction and right:
+            print(f"left: {left}, direction: {direction}, right: {right}")
+            return left, direction, right
+        return None
