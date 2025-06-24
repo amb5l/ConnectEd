@@ -61,14 +61,22 @@ class DrawingViewMouseMixin:
         self.mouseMove()
 
     def mousePressEvent(self : "DrawingView", event : QMouseEvent) -> None:
-        p = event.pos(); l = self.mapToScene(p)
+        p = event.pos(); l = self.mapToScene(p); m = self._getModifiers(event)
+        if event.buttons() & Qt.MouseButton.RightButton or m == qkm.NoModifier:
+            items = self._itemsAt(l)
+            if items:
+                if not items[0].isSelected():
+                    self.scene().clearSelection()
+                    items[0].setSelected(True)
+            else:
+                self.scene().clearSelection()
         if event.buttons() & Qt.MouseButton.LeftButton:
             self.mouse.left.press.setPL(p, l)
-            self.mouse.left.press.modifiers = self._getModifiers(event)
+            self.mouse.left.press.modifiers = m
             self.mouse.left.state = MouseButtonState.Pressed
         if event.buttons() & Qt.MouseButton.MiddleButton:
             self.mouse.middle.press.setPL(p, l)
-            self.mouse.middle.press.modifiers = self._getModifiers(event)
+            self.mouse.middle.press.modifiers = m
             self.mouse.middle.state = MouseButtonState.Pressed
 
     def mouseReleaseEvent(self : "DrawingView", event : QMouseEvent) -> None:

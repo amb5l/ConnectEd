@@ -67,7 +67,6 @@ class DrawingScene(
         for item in self.items():
             if isinstance(item, ElementMixin):
                 item.setKPVisible(False)
-                item.setSelected(False)
         self.kp_items.clear()
 
     def addItem(self : Self, item : QGraphicsItem) -> None:

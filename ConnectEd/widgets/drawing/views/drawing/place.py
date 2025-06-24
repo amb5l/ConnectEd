@@ -60,6 +60,8 @@ class DrawingViewPlaceMixin:
                 self.wip.elements[0].setEditable(False)
                 self.wip.elements[0].update()
                 scene.placeTextBlock(text, self.wip.pos0, inst=self.wip.elements[0])
+                scene.clearSelection()
+                self.wip.elements[0].setSelected(True)
             else: # cancel empty text
                 self.scene().undo_stack.undo()
         else:
