@@ -37,12 +37,6 @@ class LineSpec:
     style : Qt.PenStyle
 
 @dataclass
-class LineSpecChange:
-    color : NoChange | QColor
-    width : NoChange | float
-    style : NoChange | Qt.PenStyle
-
-@dataclass
 class LinePref:
     color : Default | QColor      = DEFAULT
     width : Default | float       = DEFAULT
@@ -66,6 +60,12 @@ class LinePref:
         return cls(color, width, style)
 
 @dataclass
+class LinePrefDefault:
+    color : Optional[ Default | QColor      ] = None
+    width : Optional[ Default | float       ] = None
+    style : Optional[ Default | Qt.PenStyle ] = None
+
+@dataclass
 class LinePrefChange:
     color : Optional[ NoChange | Default | QColor      ] = None
     width : Optional[ NoChange | Default | float       ] = None
@@ -75,11 +75,6 @@ class LinePrefChange:
 class FillSpec:
     color : QColor
     style : Qt.BrushStyle
-
-@dataclass
-class FillSpecChange:
-    color : NoChange | QColor
-    style : NoChange | Qt.BrushStyle
 
 @dataclass
 class FillPref:
@@ -101,6 +96,11 @@ class FillPref:
         return cls(color, style)
 
 @dataclass
+class FillPrefDefault:
+    color : Optional[ Default | QColor        ] = None
+    style : Optional[ Default | Qt.BrushStyle ] = None
+
+@dataclass
 class FillPrefChange:
     color : Optional[ NoChange | Default | QColor        ] = None
     style : Optional[ NoChange | Default | Qt.BrushStyle ] = None
@@ -113,15 +113,6 @@ class TextSpec:
     bold      : bool
     italic    : bool
     underline : bool
-
-@dataclass
-class TextSpecChange:
-    color     : NoChange | QColor
-    family    : NoChange | str
-    size      : NoChange | float
-    bold      : NoChange | bool
-    italic    : NoChange | bool
-    underline : NoChange | bool
 
 @dataclass
 class TextPref:
@@ -159,6 +150,15 @@ class TextPref:
         return cls(color, family, size, bold, italic, underline)
 
 @dataclass
+class TextPrefDefault:
+    color     : Optional[ Default | QColor ] = None
+    family    : Optional[ Default | str    ] = None
+    size      : Optional[ Default | float  ] = None
+    bold      : Optional[ Default | bool   ] = None
+    italic    : Optional[ Default | bool   ] = None
+    underline : Optional[ Default | bool   ] = None
+
+@dataclass
 class TextPrefChange:
     color     : Optional[ NoChange | Default | QColor ] = None
     family    : Optional[ NoChange | Default | str    ] = None
@@ -172,12 +172,6 @@ class AppearanceSpec:
     line : Optional[LineSpec] = None
     fill : Optional[FillSpec] = None
     text : Optional[TextSpec] = None
-
-@dataclass
-class AppearanceSpecChange:
-    line : Optional[LineSpecChange] = None
-    fill : Optional[FillSpecChange] = None
-    text : Optional[TextSpecChange] = None
 
 @dataclass
 class AppearancePref:
@@ -753,19 +747,15 @@ __all__ = [
     "NoChange",
     "NO_CHANGE",
     "LineSpec",
-    "LineSpecChange",
     "LinePref",
     "LinePrefChange",
     "FillSpec",
-    "FillSpecChange",
     "FillPref",
     "FillPrefChange",
     "TextSpec",
-    "TextSpecChange",
     "TextPref",
     "TextPrefChange",
     "AppearanceSpec",
-    "AppearanceSpecChange",
     "AppearancePref",
     "AppearancePrefChange",
     "CustomGraphicsItem",

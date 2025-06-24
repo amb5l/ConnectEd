@@ -1,9 +1,5 @@
-key points and selected state display not synced for text
-context menu appears for selected item not right clicked item?
-
-
 Add text preview to Appearance.
-Partition text layout into method that can be used from TextDialog
+Add text line element
 
 
 - view prev/next

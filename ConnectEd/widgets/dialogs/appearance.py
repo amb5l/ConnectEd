@@ -1,4 +1,4 @@
-__all__ = ["AppearanceDialog"]
+__all__ = ["AppearanceDialog", "TextAppearanceLayout"]
 
 from typing import Self, Optional
 
@@ -14,9 +14,11 @@ from ...core import logger
 from ...core.icon import getDefaultIconSize, getFgBgColors, \
                          SvgIconSingleton, CharIconSingleton
 
-from ..drawing.items import ElementMixin, AppearanceSpec, AppearanceSpecChange, \
-                            AppearancePref, AppearancePrefChange, \
-                            LinePrefChange, FillPrefChange, TextPrefChange, \
+from ..drawing.items import ElementMixin, \
+                            AppearanceSpec, AppearancePrefChange, \
+                            LinePref, LinePrefDefault, LinePrefChange, \
+                            FillPref, FillPrefDefault, FillPrefChange, \
+                            TextPref, TextPrefDefault, TextPrefChange, \
                             Default, DEFAULT, NoChange, NO_CHANGE
 
 from ... import hub
@@ -80,7 +82,7 @@ class ColorComboBox(QComboBox):
 
     def __init__(
         self      : Self,
-        current   : Optional[NoChange | Default | QColor],
+        initial   : Optional[NoChange | Default | QColor],
         no_change : Optional[NoChange | Default | QColor],
         default   : Optional[NoChange | QColor],
         parent    : Optional[QWidget] = None
@@ -88,29 +90,34 @@ class ColorComboBox(QComboBox):
         super().__init__(parent)
         self.setIconSize(CUSTOM_ICON_SIZE)
         default_icon = \
-            self.getIcon(default) if isinstance(default, QColor) \
-            else DefaultIcon().get()
+            self.getIcon(default) if isinstance(default, QColor) else \
+            DefaultIcon().get()
         no_change_icon = \
-            self.getIcon(no_change) if isinstance(no_change, QColor) \
-            else default_icon if no_change is DEFAULT \
-            else NoChangeIcon().get()
+            self.getIcon(no_change) if isinstance(no_change, QColor) else \
+            default_icon if no_change is DEFAULT else \
+            NoChangeIcon().get()
         for i, (k, v) in enumerate(self.COLORS.items()):
+            text = k
             match k:
-                case "<no change>": icon = no_change_icon
-                case "<default>":   icon = default_icon
-                case "<custom>":    icon = QueryIcon().get()
-                case _:             icon = self.getIcon(v)
-            self.addItem(icon, k)
-            if current is not None and current == v:
+                case "<no change>":
+                    icon = no_change_icon
+                case "<default>":
+                    icon = default_icon
+                case "<custom>":
+                    icon = QueryIcon().get()
+                case _:
+                    icon = self.getIcon(v)
+            self.addItem(icon, text)
+            if initial is not None and initial == v:
                 self.setCurrentIndex(i)
-            elif current is NO_CHANGE and k == "<no change>":
+            elif initial is NO_CHANGE and k == "<no change>":
                 self.setCurrentIndex(i)
-            elif current is DEFAULT and k == "<default>":
+            elif initial is DEFAULT and k == "<default>":
                 self.setCurrentIndex(i)
-        if isinstance(current, QColor) and self.currentIndex() == -1:
+        if isinstance(initial, QColor) and self.currentIndex() == -1:
             self.setCurrentIndex(2) # custom
-            self.setItemIcon(2, self.getIcon(current))
-        self.choice = current
+            self.setItemIcon(2, self.getIcon(initial))
+        self.choice = initial
         self.activated.connect(self.onActivated)
 
     def onActivated(self : Self, index : int) -> None:
@@ -142,9 +149,9 @@ class ColorComboBox(QComboBox):
 
 class CustomLineWidthDialog(QDialog):
     def __init__(
-        self      : Self,
-        width     : Optional[float | int] = None,
-        parent    : Optional[QWidget] = hub.main_window
+        self    : Self,
+        initial : Optional[float | int] = None,
+        parent  : Optional[QWidget] = hub.main_window
     ) -> None:
         super().__init__(parent)
         self.setWindowTitle("Line Width")
@@ -152,7 +159,7 @@ class CustomLineWidthDialog(QDialog):
         self.width_layout = QHBoxLayout()
         self.width_label = QLabel("Width:")
         self.width_layout.addWidget(self.width_label)
-        self.width_input = QLineEdit(str(width) if width is not None else "")
+        self.width_input = QLineEdit("" if initial is None else str(initial))
         self.width_layout.addWidget(self.width_input)
         self.dialog_layout.addLayout(self.width_layout)
         self.ok_cancel_layout = QHBoxLayout()
@@ -184,39 +191,44 @@ class LineWidthComboBox(QComboBox):
 
     def __init__(
         self      : Self,
-        current   : Optional[NoChange | Default | float | int],
+        initial   : Optional[NoChange | Default | float | int],
         no_change : Optional[NoChange | Default | float | int],
-        default   : Optional[NoChange | float | int],
+        default   : Optional[Default | float | int],
         parent    : Optional[QWidget] = None
     ):
         super().__init__(parent)
         self.setIconSize(CUSTOM_ICON_SIZE)
-        default_icon = self.getIcon(default) if isinstance(default, float | int) \
-            else DefaultIcon().get()
+        if isinstance(default, float | int):
+            default_icon = self.getIcon(default)
+            default_str = f" = {default}"
+        else:
+            default_icon = DefaultIcon().get()
+            default_str = ""
+        if isinstance(no_change, float | int):
+            no_change_icon = self.getIcon(no_change)
+            no_change_str = f" = {no_change}"
+        elif no_change is DEFAULT:
+            no_change_icon = default_icon
+            no_change_str = f" = default{default_str}"
+        else:
+            no_change_icon = NoChangeIcon().get()
+            no_change_str = ""
         for i, (k, v) in enumerate(self.WIDTHS.items()):
-            text = k
-            if k == "<no change>":
-                if no_change is DEFAULT:
-                    if isinstance(default, float | int):
-                        text = f"<no change = default = {default}>"
-                    else:
-                        text = "<no change = default>"
+            match k:
+                case "<no change>":
+                    icon = no_change_icon
+                    text = f"<no change{no_change_str}>"
+                case "<default>":
                     icon = default_icon
-                elif isinstance(no_change, float | int):
-                    text = f"<no change = {no_change}>"
-                    icon = self.getIcon(no_change)
-                else:
-                    icon = NoChangeIcon().get()
-            elif k == "<default>":
-                if isinstance(default, float | int):
-                    text = f"<default = {default}>"
-                icon = default_icon
-            elif k == "<custom>":
-                icon = QueryIcon().get()
-            else:
-                icon = self.getIcon(v)
+                    text = f"<default{default_str}>"
+                case "<custom>":
+                    icon = QueryIcon().get()
+                    text = k
+                case _:
+                    icon = self.getIcon(v)
+                    text = f"{v}"
             self.addItem(icon, text)
-            if current is not None and current == v:
+            if initial is not None and initial == v:
                 self.setCurrentIndex(i)
         self.setInsertPolicy(QComboBox.InsertPolicy.NoInsert)
         self.activated.connect(self.onActivated)
@@ -279,34 +291,41 @@ class LineStyleComboBox(QComboBox):
 
     def __init__(
         self      : Self,
-        current   : Optional[NoChange | Default | Qt.PenStyle],
+        initial   : Optional[NoChange | Default | Qt.PenStyle],
         no_change : Optional[NoChange | Default | Qt.PenStyle],
         default   : Optional[NoChange | Qt.PenStyle],
         parent    : Optional[QWidget] = None
     ) -> None:
         super().__init__(parent)
         self.setIconSize(CUSTOM_ICON_SIZE)
-        default_icon = self.getIcon(default) if isinstance(default, Qt.PenStyle) \
-            else DefaultIcon().get()
+        if isinstance(default, Qt.PenStyle):
+            default_icon = self.getIcon(default)
+            default_str = f" = {self.STYLES_REVERSE[default]}"
+        else:
+            default_icon = DefaultIcon().get()
+            default_str = ""
+        if isinstance(no_change, Qt.PenStyle):
+            no_change_icon = self.getIcon(no_change)
+            no_change_str = f" = {self.STYLES_REVERSE[no_change]}"
+        elif no_change is DEFAULT:
+            no_change_icon = default_icon
+            no_change_str = f" = default{default_str}"
+        else:
+            no_change_icon = NoChangeIcon().get()
+            no_change_str = ""
         for i, (k, v) in enumerate(self.STYLES.items()):
-            text = k
-            if k == "<no change>":
-                if no_change is DEFAULT:
-                    text = "<no change = default>"
+            match k:
+                case "<no change>":
+                    icon = no_change_icon
+                    text = f"<no change{no_change_str}>"
+                case "<default>":
                     icon = default_icon
-                elif isinstance(no_change, Qt.PenStyle):
-                    text = f"<no change = {self.STYLES_REVERSE[no_change]}>"
-                    icon = self.getIcon(no_change)
-                else:
-                    icon = NoChangeIcon().get()
-            elif k == "<default>":
-                if isinstance(default, Qt.PenStyle):
-                    text = f"<default = {self.STYLES_REVERSE[default]}>"
-                icon = default_icon
-            else:
-                icon = self.getIcon(v)
+                    text = f"<default{default_str}>"
+                case _:
+                    icon = self.getIcon(v)
+                    text = f"{self.STYLES_REVERSE[v]}"
             self.addItem(icon, text)
-            if current is not None and current == v:
+            if initial is not None and initial == v:
                 self.setCurrentIndex(i)
 
     def getIcon(self : Self, style : Qt.PenStyle) -> QIcon:
@@ -356,34 +375,41 @@ class FillStyleComboBox(QComboBox):
 
     def __init__(
         self      : Self,
-        current   : Optional[NoChange | Default | Qt.BrushStyle],
+        initial   : Optional[NoChange | Default | Qt.BrushStyle],
         no_change : Optional[NoChange | Default | Qt.BrushStyle],
         default   : Optional[NoChange | Qt.BrushStyle],
         parent    : Optional[QWidget] = None
     ) -> None:
         super().__init__(parent)
         self.setIconSize(CUSTOM_ICON_SIZE)
-        default_icon = self.getIcon(default) if isinstance(default, Qt.BrushStyle) \
-            else DefaultIcon().get()
+        if isinstance(default, Qt.BrushStyle):
+            default_icon = self.getIcon(default)
+            default_str = f" = {self.STYLES_REVERSE[default]}"
+        else:
+            default_icon = DefaultIcon().get()
+            default_str = ""
+        if isinstance(no_change, Qt.BrushStyle):
+            no_change_icon = self.getIcon(no_change)
+            no_change_str = f" = {self.STYLES_REVERSE[no_change]}"
+        elif no_change is DEFAULT:
+            no_change_icon = default_icon
+            no_change_str = f" = default{default_str}"
+        else:
+            no_change_icon = NoChangeIcon().get()
+            no_change_str = ""
         for i, (k, v) in enumerate(self.STYLES.items()):
-            text = k
-            if k == "<no change>":
-                if no_change is DEFAULT:
-                    text = "<no change = default>"
+            match k:
+                case "<no change>":
+                    icon = no_change_icon
+                    text = f"<no change{no_change_str}>"
+                case "<default>":
                     icon = default_icon
-                elif isinstance(no_change, Qt.BrushStyle):
-                    text = f"<no change = {self.STYLES_REVERSE[no_change]}>"
-                    icon = self.getIcon(no_change)
-                else:
-                    icon = NoChangeIcon().get()
-            elif k == "<default>":
-                if isinstance(default, Qt.BrushStyle):
-                    text = f"<default = {self.STYLES_REVERSE[default]}>"
-                icon = default_icon
-            else:
-                icon = self.getIcon(v)
+                    text = f"<default{default_str}>"
+                case _:
+                    icon = self.getIcon(v)
+                    text = f"{self.STYLES_REVERSE[v]}"
             self.addItem(icon, text)
-            if current is not None and current == v:
+            if initial is not None and initial == v:
                 self.setCurrentIndex(i)
 
     def getIcon(self : Self, style : Qt.BrushStyle) -> QIcon:
@@ -410,28 +436,28 @@ class FillStyleComboBox(QComboBox):
 class FontFamilyComboBox(QComboBox):
     def __init__(
         self      : Self,
-        current   : Optional[NoChange | Default | str],
+        initial   : Optional[NoChange | Default | str],
         no_change : Optional[NoChange | Default | str],
         default   : Optional[NoChange | str],
         parent    : Optional[QWidget] = None
     ) -> None:
         super().__init__(parent)
-        no_change_str = f" = {no_change}" if isinstance(no_change, str) else \
-                        f" = default" if no_change is DEFAULT else \
-                        ""
-        default_str = f" = {default}" if isinstance(default, str) else \
-                      ""
+        default_str = f" = {default}" if isinstance(default, str) else ""
+        no_change_str = \
+            f" = {no_change}" if isinstance(no_change, str) else \
+            f" = default{default_str}" if no_change is DEFAULT else \
+            ""
         self.families = []
         self.families.append(f"<no change{no_change_str}>")
         self.families.append(f"<default{default_str}>")
         self.families.extend(sorted(QFontDatabase.families()))
         self.addItems(self.families)
-        if current is NO_CHANGE:
+        if initial is NO_CHANGE:
             self.setCurrentIndex(0)
-        elif current is DEFAULT:
+        elif initial is DEFAULT:
             self.setCurrentIndex(1)
-        elif isinstance(current, str):
-            self.setCurrentIndex(self.families.index(current))
+        elif isinstance(initial, str):
+            self.setCurrentIndex(self.families.index(initial))
 
     def getChoice(self) -> Optional[NoChange | Default | str]:
         text = self.currentText()
@@ -449,28 +475,29 @@ class FontSizeComboBox(QComboBox):
 
     def __init__(
         self      : Self,
-        current   : Optional[NoChange | Default | float | int],
+        initial   : Optional[NoChange | Default | float | int],
         no_change : Optional[NoChange | Default | float | int],
         default   : Optional[NoChange | float | int],
         parent    : Optional[QWidget] = None
     ) -> None:
         super().__init__(parent)
-        no_change_str = f" = {no_change}" if isinstance(no_change, float | int) else \
-                        f" = default" if no_change is DEFAULT else \
-                        ""
-        default_str = f" = {default}" if isinstance(default, float | int) else \
-                      ""
+        default_str = \
+            f" = {default}" if isinstance(default, float | int) else ""
+        no_change_str = \
+            f" = {no_change}" if isinstance(no_change, float | int) else \
+            f" = default{default_str}" if no_change is DEFAULT else \
+            ""
         self.sizes = []
         self.sizes.append(f"<no change{no_change_str}>")
         self.sizes.append(f"<default{default_str}>")
         self.sizes.extend([str(size) for size in self.SIZES])
         self.addItems(self.sizes)
-        if current is NO_CHANGE:
+        if initial is NO_CHANGE:
             self.setCurrentIndex(0)
-        elif current is DEFAULT:
+        elif initial is DEFAULT:
             self.setCurrentIndex(1)
-        elif isinstance(current, float | int) and current in self.SIZES:
-            self.setCurrentIndex(self.sizes.index(str(current)))
+        elif isinstance(initial, float | int) and initial in self.SIZES:
+            self.setCurrentIndex(self.sizes.index(str(initial)))
 
     def getChoice(self) -> Optional[NoChange | Default | float]:
         text = self.currentText()
@@ -487,7 +514,7 @@ class FontSizeComboBox(QComboBox):
 class OnOffComboBox(QComboBox):
     def __init__(
         self      : Self,
-        current   : Optional[NoChange | Default | bool],
+        initial   : Optional[NoChange | Default | bool],
         no_change : Optional[NoChange | Default | bool],
         default   : Optional[NoChange | bool],
         parent    : Optional[QWidget] = None
@@ -507,9 +534,9 @@ class OnOffComboBox(QComboBox):
         self.addItem("Off")
         self.addItem("On")
         self.setCurrentIndex(
-            3 if current is True    else
-            2 if current is False   else
-            1 if current is DEFAULT else
+            3 if initial is True    else
+            2 if initial is False   else
+            1 if initial is DEFAULT else
             0
         )
 
@@ -518,23 +545,232 @@ class OnOffComboBox(QComboBox):
             return None
         return [NO_CHANGE, DEFAULT, False, True][self.currentIndex()]
 
+class LineAppearanceLayout(QGridLayout):
+    color_label : QLabel
+    color_combo : ColorComboBox
+    width_label : QLabel
+    width_combo : LineWidthComboBox
+    style_label : QLabel
+    style_combo : LineStyleComboBox
+
+    def __init__(
+        self      : Self,
+        initial   : LinePrefChange,
+        no_change : LinePrefChange,
+        default   : LinePref,
+        parent    : Optional[QWidget] = None
+    ) -> None:
+        super().__init__(parent)
+        self.choice    = initial
+        self.no_change = no_change
+        self.default   = default
+        row = 0
+        if initial.color is not None:
+            self.color_label = QLabel("Color:")
+            self.addWidget(self.color_label, row, 0)
+            self.color_combo = ColorComboBox(
+                initial.color,
+                no_change.color,
+                default.color
+            )
+            self.addWidget(self.color_combo, row, 1)
+            row += 1
+        if initial.width is not None:
+            self.width_label = QLabel("Width:")
+            self.addWidget(self.width_label, row, 0)
+            self.width_combo = LineWidthComboBox(
+                initial.width,
+                no_change.width,
+                default.width
+            )
+            self.addWidget(self.width_combo, row, 1)
+            row += 1
+        if initial.style is not None:
+            self.style_label = QLabel("Style:")
+            self.addWidget(self.style_label, row, 0)
+            self.style_combo = LineStyleComboBox(
+                initial.style,
+                no_change.style,
+                default.style
+            )
+            self.addWidget(self.style_combo, row, 1)
+
+    def getChoice(self : Self) -> LinePrefChange:
+        r = LinePrefChange()
+        if hasattr(self, "color_combo"):
+            r.color = self.color_combo.getChoice()
+        if hasattr(self, "width_combo"):
+            r.width = self.width_combo.getChoice()
+        if hasattr(self, "style_combo"):
+            r.style = self.style_combo.getChoice()
+        return r
+
+class FillAppearanceLayout(QGridLayout):
+    color_label : QLabel
+    color_combo : ColorComboBox
+    style_label : QLabel
+    style_combo : FillStyleComboBox
+
+    def __init__(self : Self,
+        initial   : FillPrefChange,
+        no_change : FillPrefChange,
+        default   : FillPref,
+        parent    : Optional[QWidget] = None
+    ) -> None:
+        super().__init__(parent)
+        row = 0
+        if initial.color is not None:
+            self.color_label = QLabel("Color:")
+            self.addWidget(self.color_label, row, 0)
+            self.color_combo = ColorComboBox(
+                initial.color,
+                no_change.color,
+                default.color
+            )
+            self.addWidget(self.color_combo, row, 1)
+            row += 1
+        if initial.style is not None:
+            self.style_label = QLabel("Style:")
+            self.addWidget(self.style_label, row, 0)
+            self.style_combo = FillStyleComboBox(
+                initial.style,
+                no_change.style,
+                default.style
+            )
+            self.addWidget(self.style_combo, row, 1)
+
+    def getChoice(self : Self) -> FillPrefChange:
+        r = FillPrefChange()
+        if hasattr(self, "color_combo"):
+            r.color = self.color_combo.getChoice()
+        if hasattr(self, "style_combo"):
+            r.style = self.style_combo.getChoice()
+        return r
+
+class TextAppearanceLayout(QGridLayout):
+    color_label     : QLabel
+    color_combo     : ColorComboBox
+    family_label    : QLabel
+    family_combo    : FontFamilyComboBox
+    size_label      : QLabel
+    size_combo      : FontSizeComboBox
+    bold_label      : QLabel
+    bold_combo      : OnOffComboBox
+    italic_label    : QLabel
+    italic_combo    : OnOffComboBox
+    underline_label : QLabel
+    underline_combo : OnOffComboBox
+
+    def __init__(self : Self,
+        initial   : TextPrefChange,
+        no_change : TextPrefChange,
+        default   : TextPref,
+        parent    : Optional[QWidget] = None
+    ) -> None:
+        super().__init__(parent)
+        row = 0
+        if initial.color is not None:
+            self.color_label = QLabel("Color:")
+            self.addWidget(self.color_label, row, 0)
+            self.color_combo = ColorComboBox(
+                initial.color,
+                no_change.color,
+                default.color
+            )
+            self.addWidget(self.color_combo, row, 1)
+            row += 1
+        if initial.family is not None:
+            self.family_label = QLabel("Family:")
+            self.addWidget(self.family_label, row, 0)
+            self.family_combo = FontFamilyComboBox(
+                initial.family,
+                no_change.family,
+                default.family
+            )
+            self.addWidget(self.family_combo, row, 1)
+            row += 1
+        if initial.size is not None:
+            self.size_label = QLabel("Size:")
+            self.addWidget(self.size_label, row, 0)
+            self.size_combo = FontSizeComboBox(
+                initial.size,
+                no_change.size,
+                default.size
+            )
+            self.addWidget(self.size_combo, row, 1)
+            row += 1
+        if initial.bold is not None:
+            self.bold_label = QLabel("Bold:")
+            self.addWidget(self.bold_label, row, 0)
+            self.bold_combo = OnOffComboBox(
+                initial.bold,
+                no_change.bold,
+                default.bold
+            )
+            self.addWidget(self.bold_combo, row, 1)
+            row += 1
+        if initial.italic is not None:
+            self.italic_label = QLabel("Italic:")
+            self.addWidget(self.italic_label, row, 0)
+            self.italic_combo = OnOffComboBox(
+                initial.italic,
+                no_change.italic,
+                default.italic
+            )
+            self.addWidget(self.italic_combo, row, 1)
+            row += 1
+        if initial.underline is not None:
+            self.underline_label = QLabel("Underline:")
+            self.addWidget(self.underline_label, row, 0)
+            self.underline_combo = OnOffComboBox(
+                initial.underline,
+                no_change.underline,
+                default.underline
+            )
+            self.addWidget(self.underline_combo, row, 1)
+            row += 1
+
+    def getChoice(self : Self) -> TextPrefChange:
+        r = TextPrefChange()
+        if hasattr(self, "color_combo"):
+            r.color = self.color_combo.getChoice()
+        if hasattr(self, "family_combo"):
+            r.family = self.family_combo.getChoice()
+        if hasattr(self, "size_combo"):
+            r.size = self.size_combo.getChoice()
+        if hasattr(self, "bold_combo"):
+            r.bold = self.bold_combo.getChoice()
+        if hasattr(self, "italic_combo"):
+            r.italic = self.italic_combo.getChoice()
+        if hasattr(self, "underline_combo"):
+            r.underline = self.underline_combo.getChoice()
+        return r
+
 class AppearanceDialog(QDialog):
+    dialog_layout  : QVBoxLayout
+    line_group_box : Optional[QGroupBox]
+    line_layout    : Optional[LineAppearanceLayout]
+    fill_group_box : Optional[QGroupBox]
+    fill_layout    : Optional[FillAppearanceLayout]
+    text_group_box : Optional[QGroupBox]
+    text_layout    : Optional[TextAppearanceLayout]
+
     def __init__(
         self     : Self,
         elements : list[ElementMixin],
         parent   : Optional[QWidget] = hub.main_window
     ) -> None:
         super().__init__(parent)
-        self.choice = AppearancePrefChange()
-        no_change_values = AppearancePrefChange()
-        default_values = AppearanceSpec()
+        initial   = AppearancePrefChange()
+        no_change = AppearancePrefChange()
+        default   = AppearanceSpec()
         for element in elements:
             for cat_name in ["line", "fill", "text"]:
                 if not hasattr(element, cat_name):
                     continue
                 cat = getattr(element, cat_name)
                 if cat is None:
-                    continue
+                    logger.error(f"{cat_name} is None for element {element}")
                 pref = cat.getPref()
                 for subcat_name in \
                  ["color", "width", "style"] if cat_name == "line" else \
@@ -544,220 +780,127 @@ class AppearanceDialog(QDialog):
                     if subcat is None:
                         logger.error(f"{cat_name}/{subcat_name} is None for element {element}")
                         continue
-                    # populate no_change_values
-                    n_cat = getattr(no_change_values, cat_name)
+                    # populate no_change values
+                    n_cat = getattr(no_change, cat_name)
                     if n_cat is None:
                         n_cat = LinePrefChange() if cat_name == "line" else \
                                 FillPrefChange() if cat_name == "fill" else \
                                 TextPrefChange() if cat_name == "text" else \
                                 None
-                        setattr(no_change_values, cat_name, n_cat)
+                        setattr(no_change, cat_name, n_cat)
                     n_subcat = getattr(n_cat, subcat_name)
                     if n_subcat is None:
                         n_subcat = subcat
                     elif n_subcat != subcat:
                         n_subcat = NO_CHANGE
                     setattr(n_cat, subcat_name, n_subcat)
-                    # populate choice
-                    c_cat = getattr(self.choice, cat_name)
-                    if c_cat is None:
-                        c_cat = LinePrefChange() if cat_name == "line" else \
+                    # populate initial values
+                    i_cat = getattr(initial, cat_name)
+                    if i_cat is None:
+                        i_cat = LinePrefChange() if cat_name == "line" else \
                                 FillPrefChange() if cat_name == "fill" else \
                                 TextPrefChange() if cat_name == "text" else \
                                 None
-                        setattr(self.choice, cat_name, c_cat)
-                    c_subcat = getattr(c_cat, subcat_name)
-                    if c_subcat is None:
-                        c_subcat = subcat
-                    elif c_subcat != subcat:
-                        c_subcat = NO_CHANGE
-                    setattr(c_cat, subcat_name, c_subcat)
-                    # populate default_values
+                        setattr(initial, cat_name, i_cat)
+                    i_subcat = getattr(i_cat, subcat_name)
+                    if i_subcat is None:
+                        i_subcat = subcat
+                    elif i_subcat != subcat:
+                        i_subcat = NO_CHANGE
+                    setattr(i_cat, subcat_name, i_subcat)
+                    # populate default values
                     d = element.getDefaults()
                     if not hasattr(d, cat_name):
                         logger.error(f"No {cat_name} defaults for element {element}")
                         continue
                     d_cat = getattr(d, cat_name)
+                    if d_cat is None:
+                        logger.error(f"{cat_name} is None in defaults for element {element}")
+                        continue
                     if not hasattr(d_cat, subcat_name):
                         logger.error(f"No {cat_name}/{subcat_name} attribute in defaults for element {element}")
                         continue
                     d_subcat = getattr(d_cat, subcat_name)
                     if d_subcat is None:
-                        logger.error(f"No {subcat_name} attribute in defaults for element {element}")
+                        logger.error(f"{cat_name}/{subcat_name} is None in defaults for element {element}")
                         continue
-                    v_cat = getattr(default_values, cat_name)
+                    v_cat = getattr(default, cat_name)
                     if v_cat is None:
-                        v_cat = LinePrefChange() if cat_name == "line" else \
-                                FillPrefChange() if cat_name == "fill" else \
-                                TextPrefChange() if cat_name == "text" else \
+                        v_cat = LinePrefDefault() if cat_name == "line" else \
+                                FillPrefDefault() if cat_name == "fill" else \
+                                TextPrefDefault() if cat_name == "text" else \
                                 None
-                        setattr(default_values, cat_name, v_cat)
+                        setattr(default, cat_name, v_cat)
                     v_subcat = getattr(v_cat, subcat_name)
                     if v_subcat is None:
                         v_subcat = d_subcat
                     elif d_subcat != v_subcat:
-                        v_subcat = NO_CHANGE
+                        v_subcat = DEFAULT
                     setattr(v_cat, subcat_name, v_subcat)
         categories = \
-            (0 if self.choice.line is None else 1) + \
-            (0 if self.choice.fill is None else 1) + \
-            (0 if self.choice.text is None else 1)
+            (0 if initial.line is None else 1) + \
+            (0 if initial.fill is None else 1) + \
+            (0 if initial.text is None else 1)
         if categories == 0:
             logger.warning("No appearance data found in element(s)")
             return
-        self.dialog_layout = QVBoxLayout()
         if categories > 1:
             title = "Appearance"
         else:
             title = (
-                "Line Appearance" if self.choice.line is not None else
-                "Fill Appearance" if self.choice.fill is not None else
+                "Line Appearance" if initial.line is not None else
+                "Fill Appearance" if initial.fill is not None else
                 "Text Appearance"
             )
         if len(elements) > 1:
             title += f" ({len(elements)} elements)"
         self.setWindowTitle(title)
         self.dialog_layout = QVBoxLayout()
-        if self.choice.line is not None:
-            if categories > 1:
-                self.line_group_box = QGroupBox("Line")
-            self.line_layout = QGridLayout()
-            row = 0
-            if self.choice.line.color is not None:
-                self.line_color_label = QLabel("Color:")
-                self.line_layout.addWidget(self.line_color_label, row, 0)
-                self.line_color_combo = ColorComboBox(
-                    self.choice.line.color,
-                    no_change_values.line.color,
-                    default_values.line.color
-                )
-                self.line_layout.addWidget(self.line_color_combo, row, 1)
-                row += 1
-            if self.choice.line.width is not None:
-                self.line_width_label = QLabel("Width:")
-                self.line_layout.addWidget(self.line_width_label, row, 0)
-                self.line_width_combo = LineWidthComboBox(
-                    self.choice.line.width,
-                    no_change_values.line.width,
-                    default_values.line.width
-                )
-                self.line_layout.addWidget(self.line_width_combo, row, 1)
-                row += 1
-            if self.choice.line.style is not None:
-                self.line_style_label = QLabel("Style:")
-                self.line_layout.addWidget(self.line_style_label, row, 0)
-                self.line_style_combo = LineStyleComboBox(
-                    self.choice.line.style,
-                    no_change_values.line.style,
-                    default_values.line.style
-                )
-                self.line_layout.addWidget(self.line_style_combo, row, 1)
-                row += 1
+        if initial.line is not None:
+            self.line_group_box = QGroupBox("Line") if categories > 1 else None
+            self.line_layout = LineAppearanceLayout(
+                initial.line,
+                no_change.line,
+                default.line
+            )
             if categories > 1:
                 self.line_group_box.setLayout(self.line_layout)
                 self.dialog_layout.addWidget(self.line_group_box)
             else:
                 self.dialog_layout.addLayout(self.line_layout)
-        if self.choice.fill is not None:
-            if categories > 1:
-                self.fill_group_box = QGroupBox("Fill")
-            self.fill_layout = QGridLayout()
-            row = 0
-            if self.choice.fill.color is not None:
-                self.fill_color_label = QLabel("Color:")
-                self.fill_layout.addWidget(self.fill_color_label, row, 0)
-                self.fill_color_combo = ColorComboBox(
-                    self.choice.fill.color,
-                    no_change_values.fill.color,
-                    default_values.fill.color
-                )
-                self.fill_layout.addWidget(self.fill_color_combo, row, 1)
-                row += 1
-            if self.choice.fill.style is not None:
-                self.fill_style_label = QLabel("Style:")
-                self.fill_layout.addWidget(self.fill_style_label, row, 0)
-                self.fill_style_combo = FillStyleComboBox(
-                    self.choice.fill.style,
-                    no_change_values.fill.style,
-                    default_values.fill.style
-                )
-                self.fill_layout.addWidget(self.fill_style_combo, row, 1)
-                row += 1
+        else:
+            self.line_group_box = None
+            self.line_layout    = None
+        if initial.fill is not None:
+            self.fill_group_box = QGroupBox("Fill") if categories > 1 else None
+            self.fill_layout = FillAppearanceLayout(
+                initial.fill,
+                no_change.fill,
+                default.fill
+            )
             if categories > 1:
                 self.fill_group_box.setLayout(self.fill_layout)
                 self.dialog_layout.addWidget(self.fill_group_box)
             else:
                 self.dialog_layout.addLayout(self.fill_layout)
-        if self.choice.text is not None:
-            if categories > 1:
-                self.text_group_box = QGroupBox("Text")
-            self.text_layout = QGridLayout()
-            row = 0
-            if self.choice.text.color is not None:
-                self.text_color_label = QLabel("Color:")
-                self.text_layout.addWidget(self.text_color_label, row, 0)
-                self.text_color_combo = ColorComboBox(
-                    self.choice.text.color,
-                    no_change_values.text.color,
-                    default_values.text.color
-                )
-                self.text_layout.addWidget(self.text_color_combo, row, 1)
-                row += 1
-            if self.choice.text.family is not None:
-                self.text_family_label = QLabel("Family:")
-                self.text_layout.addWidget(self.text_family_label, row, 0)
-                self.text_family_combo = FontFamilyComboBox(
-                    self.choice.text.family,
-                    no_change_values.text.family,
-                    default_values.text.family
-                )
-                self.text_layout.addWidget(self.text_family_combo, row, 1)
-                row += 1
-            if self.choice.text.size is not None:
-                self.text_size_label = QLabel("Size:")
-                self.text_layout.addWidget(self.text_size_label, row, 0)
-                self.text_size_combo = FontSizeComboBox(
-                    self.choice.text.size,
-                    no_change_values.text.size,
-                    default_values.text.size
-                )
-                self.text_layout.addWidget(self.text_size_combo, row, 1)
-                row += 1
-            if self.choice.text.bold is not None:
-                self.text_bold_label = QLabel("Bold:")
-                self.text_layout.addWidget(self.text_bold_label, row, 0)
-                self.text_bold_widget = OnOffComboBox(
-                    self.choice.text.bold,
-                    no_change_values.text.bold,
-                    default_values.text.bold
-                )
-                self.text_layout.addWidget(self.text_bold_widget, row, 1)
-                row += 1
-            if self.choice.text.italic is not None:
-                self.text_italic_label = QLabel("Italic:")
-                self.text_layout.addWidget(self.text_italic_label, row, 0)
-                self.text_italic_widget = OnOffComboBox(
-                    self.choice.text.italic,
-                    no_change_values.text.italic,
-                    default_values.text.italic
-                )
-                self.text_layout.addWidget(self.text_italic_widget, row, 1)
-                row += 1
-            if self.choice.text.underline is not None:
-                self.text_underline_label = QLabel("Underline:")
-                self.text_layout.addWidget(self.text_underline_label, row, 0)
-                self.text_underline_widget = OnOffComboBox(
-                    self.choice.text.underline,
-                    no_change_values.text.underline,
-                    default_values.text.underline
-                )
-                self.text_layout.addWidget(self.text_underline_widget, row, 1)
-                row += 1
+        else:
+            self.fill_group_box = None
+            self.fill_layout    = None
+        if initial.text is not None:
+            self.text_group_box = QGroupBox("Text") if categories > 1 else None
+            self.text_layout = TextAppearanceLayout(
+                initial.text,
+                no_change.text,
+                default.text
+            )
             if categories > 1:
                 self.text_group_box.setLayout(self.text_layout)
                 self.dialog_layout.addWidget(self.text_group_box)
             else:
                 self.dialog_layout.addLayout(self.text_layout)
+        else:
+            self.text_group_box = None
+            self.text_layout    = None
         self.setLayout(self.dialog_layout)
         self.ok_cancel_layout = QHBoxLayout()
         self.ok_cancel_layout.addStretch()
@@ -769,34 +912,55 @@ class AppearanceDialog(QDialog):
         self.ok_cancel_layout.addWidget(self.cancel_button)
         self.dialog_layout.addLayout(self.ok_cancel_layout)
 
+    def _adjustComboBoxWidths(self : Self) -> None:
+        """Find all combo boxes in the dialog and set them to the width of the widest one."""
+        combo_boxes = []
+
+        # Collect all combo boxes from all layouts
+        if self.line_layout is not None:
+            for attr_name in ['color_combo', 'width_combo', 'style_combo']:
+                if hasattr(self.line_layout, attr_name):
+                    combo_boxes.append(getattr(self.line_layout, attr_name))
+
+        if self.fill_layout is not None:
+            for attr_name in ['color_combo', 'style_combo']:
+                if hasattr(self.fill_layout, attr_name):
+                    combo_boxes.append(getattr(self.fill_layout, attr_name))
+
+        if self.text_layout is not None:
+            for attr_name in ['color_combo', 'family_combo', 'size_combo',
+                            'bold_combo', 'italic_combo', 'underline_combo']:
+                if hasattr(self.text_layout, attr_name):
+                    combo_boxes.append(getattr(self.text_layout, attr_name))
+
+        if not combo_boxes:
+            return
+
+        # Find the maximum width
+        max_width = 0
+        for combo in combo_boxes:
+            # Get the minimum size hint and actual size
+            size_hint = combo.sizeHint()
+            current_width = max(size_hint.width(), combo.width())
+            max_width = max(max_width, current_width)
+
+        # Set all combo boxes to the maximum width
+        for combo in combo_boxes:
+            combo.setMinimumWidth(max_width)
+
+    def showEvent(self, event):
+        """Override showEvent to adjust combo box widths after layout is complete."""
+        super().showEvent(event)
+        # Use QTimer.singleShot to defer the width adjustment until after the event loop
+        from PyQt6.QtCore import QTimer
+        QTimer.singleShot(0, self._adjustComboBoxWidths)
+
     def getChoice(self : Self) -> AppearancePrefChange:
         r = AppearancePrefChange()
-        if self.choice.line is not None:
-            r.line = LinePrefChange()
-            if self.choice.line.color is not None:
-                r.line.color = self.line_color_combo.getChoice()
-            if self.choice.line.width is not None:
-                r.line.width = self.line_width_combo.getChoice()
-            if self.choice.line.style is not None:
-                r.line.style = self.line_style_combo.getChoice()
-        if self.choice.fill is not None:
-            r.fill = FillPrefChange()
-            if self.choice.fill.color is not None:
-                r.fill.color = self.fill_color_combo.getChoice()
-            if self.choice.fill.style is not None:
-                r.fill.style = self.fill_style_combo.getChoice()
-        if self.choice.text is not None:
-            r.text = TextPrefChange()
-            if self.choice.text.color is not None:
-                r.text.color = self.text_color_combo.getChoice()
-            if self.choice.text.family is not None:
-                r.text.family = self.text_family_combo.getChoice()
-            if self.choice.text.size is not None:
-                r.text.size = self.text_size_combo.getChoice()
-            if self.choice.text.bold is not None:
-                r.text.bold = self.text_bold_widget.getChoice()
-            if self.choice.text.italic is not None:
-                r.text.italic = self.text_italic_widget.getChoice()
-            if self.choice.text.underline is not None:
-                r.text.underline = self.text_underline_widget.getChoice()
+        if self.line_layout is not None:
+            r.line = self.line_layout.getChoice()
+        if self.fill_layout is not None:
+            r.fill = self.fill_layout.getChoice()
+        if self.text_layout is not None:
+            r.text = self.text_layout.getChoice()
         return r
