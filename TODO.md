@@ -1,6 +1,37 @@
-- partition DrawingView
-- cmd constructor tidying
-- move multiple elements with drag
+key points and selected state display not synced for text
+context menu appears for selected item not right clicked item?
+
+
+Add text preview to Appearance.
+Partition text layout into method that can be used from TextDialog
+
+
+- view prev/next
+
+Define a View State Class:
+Create a DrawingViewState class to store zoom, h_scroll, and v_scroll.
+Add this to DrawingView’s private classes in .\ConnectEd\widgets\drawing\views\drawing\__init__.py.
+
+Add a Navigation Stack to DrawingView:
+Add a view_history list and view_history_index to DrawingView.
+
+Initialize them in DrawingView.__init__.
+Implement methods to push a new state, navigate backward, and navigate forward.
+
+Capture View State Changes:
+Modify zoom and pan methods (_zoomAbs, _pan, etc.) to push new states after changes.
+Avoid pushing states during transient operations (e.g., dragging in EditPaste or PlaceRectangle2).
+
+Implement viewPrevious and viewNext:
+Update viewPrevious and viewNext in DrawingViewViewMixin to navigate the stack and apply the corresponding state.
+Update action enablement (viewPrevious, viewNext) based on the stack index.
+
+Integrate with Actions:
+Ensure the Actions class updates viewPrevious and viewNext enablement dynamically.
+Connect the stack’s state changes to action enablement in DrawingView.
+
+
+
 - implememnt property text
 
 - fix diagram paper_size

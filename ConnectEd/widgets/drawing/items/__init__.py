@@ -67,9 +67,9 @@ class LinePref:
 
 @dataclass
 class LinePrefChange:
-    color : Optional[NoChange | Default | QColor     ] = None
-    width : Optional[NoChange | Default | float      ] = None
-    style : Optional[NoChange | Default | Qt.PenStyle] = None
+    color : Optional[ NoChange | Default | QColor      ] = None
+    width : Optional[ NoChange | Default | float       ] = None
+    style : Optional[ NoChange | Default | Qt.PenStyle ] = None
 
 @dataclass
 class FillSpec:
@@ -102,8 +102,8 @@ class FillPref:
 
 @dataclass
 class FillPrefChange:
-    color : Optional[NoChange | Default | QColor]        = None
-    style : Optional[NoChange | Default | Qt.BrushStyle] = None
+    color : Optional[ NoChange | Default | QColor        ] = None
+    style : Optional[ NoChange | Default | Qt.BrushStyle ] = None
 
 @dataclass
 class TextSpec:
@@ -160,12 +160,12 @@ class TextPref:
 
 @dataclass
 class TextPrefChange:
-    color     : Optional[NoChange | Default | QColor] = None
-    family    : Optional[NoChange | Default | str]    = None
-    size      : Optional[NoChange | Default | float]  = None
-    bold      : Optional[NoChange | Default | bool]   = None
-    italic    : Optional[NoChange | Default | bool]   = None
-    underline : Optional[NoChange | Default | bool]   = None
+    color     : Optional[ NoChange | Default | QColor ] = None
+    family    : Optional[ NoChange | Default | str    ] = None
+    size      : Optional[ NoChange | Default | float  ] = None
+    bold      : Optional[ NoChange | Default | bool   ] = None
+    italic    : Optional[ NoChange | Default | bool   ] = None
+    underline : Optional[ NoChange | Default | bool   ] = None
 
 @dataclass
 class AppearanceSpec:
@@ -345,7 +345,7 @@ class TextColorFont:
     underline : Default | bool
     normal    : QColor
     selected  : QColor
-    color     : QColor
+    current   : QColor
     font      : QFont
 
     def __init__(
@@ -419,11 +419,11 @@ class TextColorFont:
         self.onSelectionChange()
 
     def onSelectionChange(self : Self) -> None:
-        self.color = self.selected if self.element.isSelected() else self.normal
+        self.current = self.selected if self.element.isSelected() else self.normal
         if hasattr(self.element, "setDefaultTextColor"):
-            self.element.setDefaultTextColor(self.color)
+            self.element.setDefaultTextColor(self.current)
         elif hasattr(self.element, "setColor"):
-            self.element.setColor(self.color)
+            self.element.setColor(self.current)
 
     def toXml(self : Self, xw : QXmlStreamWriter) -> None:
         xw.writeStartElement("text")
@@ -441,19 +441,14 @@ class TextColorFont:
         xr.readNext()
         element_text : TextColorFont = cls()
         for attr in attributes:
+            v = attr.value()
             match attr.name():
-                case "color":
-                    element_text.setColor(str2val(attr.value(), QColor))
-                case "family":
-                    element_text.setFamily(str2val(attr.value(), str))
-                case "size":
-                    element_text.setSize(str2val(attr.value(), float))
-                case "bold":
-                    element_text.setBold(str2val(attr.value(), bool))
-                case "italic":
-                    element_text.setItalic(str2val(attr.value(), bool))
-                case "underline":
-                    element_text.setUnderline(str2val(attr.value(), bool))
+                case "color"     : element_text.setColor(str2val(v, QColor))
+                case "family"    : element_text.setFamily(str2val(v, str))
+                case "size"      : element_text.setSize(str2val(v, float))
+                case "bold"      : element_text.setBold(str2val(v, bool))
+                case "italic"    : element_text.setItalic(str2val(v, bool))
+                case "underline" : element_text.setUnderline(str2val(v, bool))
         return element_text
 
 class OutlinePen:
@@ -570,9 +565,9 @@ class ElementMixin:
 
     def initElement(
         self : Self,
-        line : Optional[LinePref] = LinePref(), # all defaults
-        fill : Optional[FillPref] = FillPref(), # all defaults
-        text : Optional[TextPref] = TextPref()  # all defaults
+        line : Optional[LinePref] = None,
+        fill : Optional[FillPref] = None,
+        text : Optional[TextPref] = None
     ) -> None:
         self.resetUuid()
         if line is not None:
@@ -600,9 +595,9 @@ class ElementMixin:
         return self.uuid == other.uuid
 
     def onSettingsChange(self : Self) -> None:
-        if hasattr(self, "line") and self.line: self.line.onSettingsChange()
-        if hasattr(self, "fill") and self.fill: self.fill.onSettingsChange()
-        if hasattr(self, "text") and self.text: self.text.onSettingsChange()
+        if hasattr(self, "line"): self.line.onSettingsChange()
+        if hasattr(self, "fill"): self.fill.onSettingsChange()
+        if hasattr(self, "text"): self.text.onSettingsChange()
         self.outline.onSettingsChange()
 
     def onSelectionChange(self : Self) -> None:

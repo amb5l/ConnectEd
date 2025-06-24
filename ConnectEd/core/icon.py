@@ -31,17 +31,23 @@ def getFgBgColors() -> tuple[QColor, QColor]:
     else:
         return Qt.GlobalColor.black, Qt.GlobalColor.white
 
-def getSvgIcon(path : str, size : QSize) -> QIcon:
+def getSvgIcon(path : str, size : QSize, margin : int = 1) -> QIcon:
+    fgColor, bgColor = getFgBgColors()
     pixmap = QPixmap(size)
+    pixmap.fill(bgColor)
     painter = QPainter(pixmap)
-    renderer = QSvgRenderer(path)
+    painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+    with open(path, 'r') as f:
+        svg_content = f.read()
+    svg_content = svg_content.replace('currentColor', QColor(fgColor).name())
+    renderer = QSvgRenderer(svg_content.encode('utf-8'))
     if not renderer.isValid():
         logger.error("Invalid SVG file")
         return QIcon()
     svg_size = renderer.defaultSize()
     scale_factor = min(
-        size.width()  / svg_size.width(),
-        size.height() / svg_size.height()
+        (size.width()  - (2 * margin)) / svg_size.width(),
+        (size.height() - (2 * margin)) / svg_size.height()
     )
     scaled_size = svg_size * scale_factor
     x = ( size.width()  - scaled_size.width()  ) / 2
@@ -49,7 +55,7 @@ def getSvgIcon(path : str, size : QSize) -> QIcon:
     painter.translate(x, y)
     renderer.render(
         painter,
-        QRectF(x, y, scaled_size.width(), scaled_size.height())
+        QRectF(0, 0, scaled_size.width(), scaled_size.height())
     )
     painter.end()
     # TODO: invert colors for dark theme?

@@ -282,7 +282,7 @@ class DrawingViewEditMixin:
             dialog = AppearanceDialog(elements)
             if dialog.exec():
                 scene.editAppearance(
-                    scene.selectedItems(),
+                    elements,
                     dialog.getChoice()
                 )
             self._goState(State.Idle)

@@ -87,24 +87,25 @@ class ColorComboBox(QComboBox):
     ) -> None:
         super().__init__(parent)
         self.setIconSize(CUSTOM_ICON_SIZE)
-        default_icon = self.getIcon(default) if isinstance(default, QColor) \
+        default_icon = \
+            self.getIcon(default) if isinstance(default, QColor) \
             else DefaultIcon().get()
+        no_change_icon = \
+            self.getIcon(no_change) if isinstance(no_change, QColor) \
+            else default_icon if no_change is DEFAULT \
+            else NoChangeIcon().get()
         for i, (k, v) in enumerate(self.COLORS.items()):
-            if k == "<no change>":
-                if no_change is DEFAULT:
-                    icon = default_icon
-                elif isinstance(no_change, QColor):
-                    icon = self.getIcon(no_change)
-                else:
-                    icon = NoChangeIcon().get()
-            elif k == "<default>":
-                icon = default_icon
-            elif k == "<custom>":
-                icon = QueryIcon().get()
-            else:
-                icon = self.getIcon(v)
+            match k:
+                case "<no change>": icon = no_change_icon
+                case "<default>":   icon = default_icon
+                case "<custom>":    icon = QueryIcon().get()
+                case _:             icon = self.getIcon(v)
             self.addItem(icon, k)
             if current is not None and current == v:
+                self.setCurrentIndex(i)
+            elif current is NO_CHANGE and k == "<no change>":
+                self.setCurrentIndex(i)
+            elif current is DEFAULT and k == "<default>":
                 self.setCurrentIndex(i)
         if isinstance(current, QColor) and self.currentIndex() == -1:
             self.setCurrentIndex(2) # custom
@@ -492,15 +493,17 @@ class OnOffComboBox(QComboBox):
         parent    : Optional[QWidget] = None
     ) -> None:
         super().__init__(parent)
-        no_change_str = " (On)"      if no_change is True else \
-                        " (Off)"     if no_change is False else \
-                        " (default)" if no_change is DEFAULT else \
-                        ""
-        default_str = " (On)"  if default is True else \
-                      " (Off)" if default is False else \
-                      ""
-        self.addItem(f"no change{no_change_str}")
-        self.addItem(f"default{default_str}")
+        default_str = \
+            " = On"  if default is True else \
+            " = Off" if default is False else \
+            ""
+        no_change_str = \
+            " = On"                    if no_change is True else \
+            " = Off"                   if no_change is False else \
+            f" = default{default_str}" if no_change is DEFAULT else \
+            ""
+        self.addItem(f"<no change{no_change_str}>")
+        self.addItem(f"<default{default_str}>")
         self.addItem("Off")
         self.addItem("On")
         self.setCurrentIndex(
@@ -526,75 +529,75 @@ class AppearanceDialog(QDialog):
         no_change_values = AppearancePrefChange()
         default_values = AppearanceSpec()
         for element in elements:
-            for attr in ["line", "fill", "text"]:
-                if not hasattr(element, attr):
+            for cat_name in ["line", "fill", "text"]:
+                if not hasattr(element, cat_name):
                     continue
-                ea = getattr(element, attr) # element.attr
-                if ea is None:
+                cat = getattr(element, cat_name)
+                if cat is None:
                     continue
-                for subattr in \
-                 ["color", "width", "style"] if attr == "line" else \
-                 ["color", "style"] if attr == "fill" else \
+                pref = cat.getPref()
+                for subcat_name in \
+                 ["color", "width", "style"] if cat_name == "line" else \
+                 ["color", "style"] if cat_name == "fill" else \
                  ["color", "family", "size", "bold", "italic", "underline"]:
-                    ea = getattr(element, attr) # element.attr
-                    if not hasattr(ea, subattr):
-                        logger.error(f"{attr}.{subattr} missing for element {element}")
+                    subcat = getattr(pref, subcat_name)
+                    if subcat is None:
+                        logger.error(f"{cat_name}/{subcat_name} is None for element {element}")
                         continue
-                    es = getattr(ea, subattr) # element.attr.subattr
-                    if es is None:
-                        logger.error(f"{attr}.{subattr} is None for element {element}")
-                        continue
-                    na = getattr(no_change_values, attr) # no_change_values.attr
-                    if na is None:
-                        na = LinePrefChange() if attr == "line" else \
-                             FillPrefChange() if attr == "fill" else \
-                             TextPrefChange() if attr == "text" else \
-                             None
-                        setattr(no_change_values, attr, na)
-                    ns = getattr(na, subattr) # no_change_values.attr.subattr
-                    if ns is None:
-                        ns = es
-                    elif es != ns:
-                        ns = NO_CHANGE
-                    setattr(na, subattr, ns)
-                    ca = getattr(self.choice, attr) # choice.attr
-                    if ca is None:
-                        ca = LinePrefChange() if attr == "line" else \
-                             FillPrefChange() if attr == "fill" else \
-                             TextPrefChange() if attr == "text" else \
-                             None
-                        setattr(self.choice, attr, ca)
-                    cs = getattr(ca, subattr) # choice.attr.subattr
-                    if cs is None:
-                        cs = es
-                    elif es != cs:
-                        cs = NO_CHANGE
-                    setattr(ca, subattr, cs)
+                    # populate no_change_values
+                    n_cat = getattr(no_change_values, cat_name)
+                    if n_cat is None:
+                        n_cat = LinePrefChange() if cat_name == "line" else \
+                                FillPrefChange() if cat_name == "fill" else \
+                                TextPrefChange() if cat_name == "text" else \
+                                None
+                        setattr(no_change_values, cat_name, n_cat)
+                    n_subcat = getattr(n_cat, subcat_name)
+                    if n_subcat is None:
+                        n_subcat = subcat
+                    elif n_subcat != subcat:
+                        n_subcat = NO_CHANGE
+                    setattr(n_cat, subcat_name, n_subcat)
+                    # populate choice
+                    c_cat = getattr(self.choice, cat_name)
+                    if c_cat is None:
+                        c_cat = LinePrefChange() if cat_name == "line" else \
+                                FillPrefChange() if cat_name == "fill" else \
+                                TextPrefChange() if cat_name == "text" else \
+                                None
+                        setattr(self.choice, cat_name, c_cat)
+                    c_subcat = getattr(c_cat, subcat_name)
+                    if c_subcat is None:
+                        c_subcat = subcat
+                    elif c_subcat != subcat:
+                        c_subcat = NO_CHANGE
+                    setattr(c_cat, subcat_name, c_subcat)
+                    # populate default_values
                     d = element.getDefaults()
-                    if not hasattr(d, attr):
-                        logger.error(f"No {attr} defaults for element {element}")
+                    if not hasattr(d, cat_name):
+                        logger.error(f"No {cat_name} defaults for element {element}")
                         continue
-                    da = getattr(d, attr) # defaults.attr
-                    if not hasattr(da, subattr):
-                        logger.error(f"No {attr}.{subattr} attribute in defaults for element {element}")
+                    d_cat = getattr(d, cat_name)
+                    if not hasattr(d_cat, subcat_name):
+                        logger.error(f"No {cat_name}/{subcat_name} attribute in defaults for element {element}")
                         continue
-                    ds = getattr(da, subattr) # defaults.attr.subattr
-                    if ds is None:
-                        logger.error(f"No {subattr} attribute in defaults for element {element}")
+                    d_subcat = getattr(d_cat, subcat_name)
+                    if d_subcat is None:
+                        logger.error(f"No {subcat_name} attribute in defaults for element {element}")
                         continue
-                    va = getattr(default_values, attr) # default_values.attr
-                    if va is None:
-                        va = LinePrefChange() if attr == "line" else \
-                             FillPrefChange() if attr == "fill" else \
-                             TextPrefChange() if attr == "text" else \
-                             None
-                        setattr(default_values, attr, va)
-                    vs = getattr(va, subattr) # default_values.attr.subattr
-                    if vs is None:
-                        vs = ds
-                    elif ds != vs:
-                        vs = NO_CHANGE
-                    setattr(va, subattr, vs)
+                    v_cat = getattr(default_values, cat_name)
+                    if v_cat is None:
+                        v_cat = LinePrefChange() if cat_name == "line" else \
+                                FillPrefChange() if cat_name == "fill" else \
+                                TextPrefChange() if cat_name == "text" else \
+                                None
+                        setattr(default_values, cat_name, v_cat)
+                    v_subcat = getattr(v_cat, subcat_name)
+                    if v_subcat is None:
+                        v_subcat = d_subcat
+                    elif d_subcat != v_subcat:
+                        v_subcat = NO_CHANGE
+                    setattr(v_cat, subcat_name, v_subcat)
         categories = \
             (0 if self.choice.line is None else 1) + \
             (0 if self.choice.fill is None else 1) + \

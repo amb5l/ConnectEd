@@ -1,14 +1,15 @@
 __all__ = ["BaseTextBlock"]
 
-from typing import Self, Optional, overload
+from typing import Self, Optional
 
 from PyQt6.QtCore    import Qt, QPointF, QRectF
 from PyQt6.QtWidgets import QWidget, QStyleOptionGraphicsItem, QStyle
 from PyQt6.QtGui     import QColor, QPainter, QPainterPath, \
                             QKeyEvent, QFocusEvent, QTextCursor
 
-from . import CustomGraphicsTextItem, \
-              ElementMixin, KPManager, KPLoc, KPDef, cmdPlaceElement
+from . import CustomGraphicsTextItem, ElementMixin, cmdPlaceElement, \
+              KPManager, KPLoc, KPDef, \
+              TextPref
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -42,7 +43,7 @@ class BaseTextBlock(CustomGraphicsTextItem, ElementMixin):
         self._rect = QRectF()
         self._shape = QPainterPath()
         super().__init__(text)
-        self.initElement(line=None, fill=None)
+        self.initElement(line=None, fill=None, text=TextPref())
         self._kpm = KPManager(
             self,
             [KPDef(k, False, False) for k in KPLoc],
@@ -96,15 +97,17 @@ class BaseTextBlock(CustomGraphicsTextItem, ElementMixin):
     def pos(self : Self) -> QPointF:
         return super().pos() + self._kpm.anchor_offset
 
-    def refresh(self : Self) -> None:
+    def update(self : Self) -> None:
+        super().update()
         self._rect = super().boundingRect()
         self._shape.clear()
         self._shape.addRect(self._rect)
-        self._kpm.updatePositions()
+        if hasattr(self, "_kpm"):
+            self._kpm.updatePositions()
 
     def setPlainText(self, text: str) -> None:
         super().setPlainText(text)
-        self.refresh()
+        self.update()
 
     def setEditable(self, editable: bool) -> None:
         self.setTextInteractionFlags(
