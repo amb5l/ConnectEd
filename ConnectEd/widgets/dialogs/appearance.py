@@ -7,7 +7,7 @@ from PyQt6.QtWidgets import QWidget, QDialog, QColorDialog, \
                             QLabel, QComboBox, QPushButton, QLineEdit, QGroupBox, \
                             QVBoxLayout, QHBoxLayout, QGridLayout
 from PyQt6.QtGui     import QPainter, QColor, QPen, QBrush, \
-                            QPixmap, QIcon, QFontDatabase
+                            QPixmap, QIcon, QFontDatabase, QFont
 
 from ...core import logger
 
@@ -459,7 +459,7 @@ class FontFamilyComboBox(QComboBox):
         elif isinstance(initial, str):
             self.setCurrentIndex(self.families.index(initial))
 
-    def getChoice(self) -> Optional[NoChange | Default | str]:
+    def getChoice(self) -> NoChange | Default | str:
         text = self.currentText()
         if text.startswith("<no change"):
             return NO_CHANGE
@@ -647,7 +647,10 @@ class FillAppearanceLayout(QGridLayout):
             r.style = self.style_combo.getChoice()
         return r
 
-class TextAppearanceLayout(QGridLayout):
+class TextAppearanceLayout(QVBoxLayout):
+    no_change       : TextPrefChange
+    default         : TextPref
+    options_layout  : QGridLayout
     color_label     : QLabel
     color_combo     : ColorComboBox
     family_label    : QLabel
@@ -660,6 +663,7 @@ class TextAppearanceLayout(QGridLayout):
     italic_combo    : OnOffComboBox
     underline_label : QLabel
     underline_combo : OnOffComboBox
+    preview         : QLabel
 
     def __init__(self : Self,
         initial   : TextPrefChange,
@@ -668,67 +672,111 @@ class TextAppearanceLayout(QGridLayout):
         parent    : Optional[QWidget] = None
     ) -> None:
         super().__init__(parent)
+        self.no_change = no_change
+        self.default   = default
+        self.options_layout = QGridLayout()
         row = 0
         if initial.color is not None:
             self.color_label = QLabel("Color:")
-            self.addWidget(self.color_label, row, 0)
+            self.options_layout.addWidget(self.color_label, row, 0)
             self.color_combo = ColorComboBox(
                 initial.color,
                 no_change.color,
                 default.color
             )
-            self.addWidget(self.color_combo, row, 1)
+            self.options_layout.addWidget(self.color_combo, row, 1)
             row += 1
         if initial.family is not None:
             self.family_label = QLabel("Family:")
-            self.addWidget(self.family_label, row, 0)
+            self.options_layout.addWidget(self.family_label, row, 0)
             self.family_combo = FontFamilyComboBox(
                 initial.family,
                 no_change.family,
                 default.family
             )
-            self.addWidget(self.family_combo, row, 1)
+            self.options_layout.addWidget(self.family_combo, row, 1)
             row += 1
         if initial.size is not None:
             self.size_label = QLabel("Size:")
-            self.addWidget(self.size_label, row, 0)
+            self.options_layout.addWidget(self.size_label, row, 0)
             self.size_combo = FontSizeComboBox(
                 initial.size,
                 no_change.size,
                 default.size
             )
-            self.addWidget(self.size_combo, row, 1)
+            self.options_layout.addWidget(self.size_combo, row, 1)
             row += 1
         if initial.bold is not None:
             self.bold_label = QLabel("Bold:")
-            self.addWidget(self.bold_label, row, 0)
+            self.options_layout.addWidget(self.bold_label, row, 0)
             self.bold_combo = OnOffComboBox(
                 initial.bold,
                 no_change.bold,
                 default.bold
             )
-            self.addWidget(self.bold_combo, row, 1)
+            self.options_layout.addWidget(self.bold_combo, row, 1)
             row += 1
         if initial.italic is not None:
             self.italic_label = QLabel("Italic:")
-            self.addWidget(self.italic_label, row, 0)
+            self.options_layout.addWidget(self.italic_label, row, 0)
             self.italic_combo = OnOffComboBox(
                 initial.italic,
                 no_change.italic,
                 default.italic
             )
-            self.addWidget(self.italic_combo, row, 1)
+            self.options_layout.addWidget(self.italic_combo, row, 1)
             row += 1
         if initial.underline is not None:
             self.underline_label = QLabel("Underline:")
-            self.addWidget(self.underline_label, row, 0)
+            self.options_layout.addWidget(self.underline_label, row, 0)
             self.underline_combo = OnOffComboBox(
                 initial.underline,
                 no_change.underline,
                 default.underline
             )
-            self.addWidget(self.underline_combo, row, 1)
-            row += 1
+            self.options_layout.addWidget(self.underline_combo, row, 1)
+        self.addLayout(self.options_layout)
+        self.preview = QLabel("Sample Text")
+        self.preview.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.preview.setMinimumHeight(40)
+        self.updatePreview()
+        self.addWidget(self.preview)
+        self.family_combo.activated.connect(self.updatePreview)
+        self.bold_combo.activated.connect(self.updatePreview)
+        self.italic_combo.activated.connect(self.updatePreview)
+        self.underline_combo.activated.connect(self.updatePreview)
+
+    def updatePreview(self : Self):
+        family    = self.family_combo.getChoice()
+        family    = self.default.family   if family is DEFAULT else \
+                    self.no_change.family if family is NO_CHANGE else \
+                    family
+        bold      = self.bold_combo.getChoice()
+        bold      = self.default.bold   if bold is DEFAULT else \
+                    self.no_change.bold if bold is NO_CHANGE else \
+                    bold
+        italic    = self.italic_combo.getChoice()
+        italic    = self.default.italic if italic is DEFAULT else \
+                    self.no_change.italic if italic is NO_CHANGE else \
+                    italic
+        underline = self.underline_combo.getChoice()
+        underline = self.default.underline if underline is DEFAULT else \
+                    self.no_change.underline if underline is NO_CHANGE else \
+                    underline
+        if family    is DEFAULT or family    is NO_CHANGE \
+        or bold      is DEFAULT or bold      is NO_CHANGE \
+        or italic    is DEFAULT or italic    is NO_CHANGE \
+        or underline is DEFAULT or underline is NO_CHANGE:
+            self.preview.setText("") # options are ambiguous
+        else:
+            font = QFont()
+            font.setFamily(family)
+            font.setPointSizeF(24.0) # TODO scale with dialog, or use settings?
+            font.setBold(bold)
+            font.setItalic(italic)
+            font.setUnderline(underline)
+            self.preview.setFont(font)
+            self.preview.setText("Sample Text")
 
     def getChoice(self : Self) -> TextPrefChange:
         r = TextPrefChange()

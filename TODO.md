@@ -1,6 +1,6 @@
-Add text preview to Appearance.
-Add text line element
+Copying and pasting a text block loses formatting
 
+Add text line element
 
 - view prev/next
 
