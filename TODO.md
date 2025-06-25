@@ -1,3 +1,8 @@
+TextRect:
+QGraphicsScene::removeItem: item 0x183fe6843d0's scene (0x0) is different from this scene (0x183fe682390)
+
+Check self type for mixins
+
 Add text line element
 
 - view prev/next

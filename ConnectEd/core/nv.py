@@ -74,6 +74,15 @@ FACTORY_SETTINGS = {
                     "italic"    : False,
                     "underline" : False
                 }
+            },
+            "TextLine" : {
+                "text" : {
+                    "family"    : "Liberation Sans",
+                    "size"      : 7,
+                    "bold"      : False,
+                    "italic"    : False,
+                    "underline" : False
+                }
             }
         }
     },
@@ -112,6 +121,9 @@ FACTORY_SETTINGS = {
                     "fill" : QColor(  96, 100,   0 )  # dark orange
                 },
                 "TextBlock" : {
+                    "text" : QColor( 255, 255, 255 )
+                },
+                "TextLine" : {
                     "text" : QColor( 255, 255, 255 )
                 }
             },

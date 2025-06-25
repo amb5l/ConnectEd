@@ -205,6 +205,10 @@ class Slots:
     def placeTextBlock(self : Self, widget: DrawingView) -> None:
         widget.placeTextBlock()
 
+    @withCurrentWidget(DrawingView)
+    def placeTextLine(self : Self, widget: DrawingView) -> None:
+        widget.placeTextLine()
+
     def windowExplorer(self : Self) -> None:
         self._parent.explorer.show()
         self._parent.explorer.raise_()

@@ -237,6 +237,10 @@ class DrawingViewMouseMixin:
                 )
             case State.PlaceTextBlock2:
                 self.placeTextBlockComplete()
+            case State.PlaceTextLine:
+                self.placeTextLineComplete(
+                    self._snap(self.mouse.left.release.logical)
+                )
 
     def mouseLeftDragBegin(self : "DrawingView") -> None:
         match self.state:
@@ -454,6 +458,10 @@ class DrawingViewMouseMixin:
                 self.marquee.resize(self.mouse.current.physical)
             case State.PlaceRectangle2:
                 self.placeRectangleContinue(
+                    self._snap(self.mouse.current.logical)
+                )
+            case State.PlaceTextLine:
+                self.placeTextLineContinue(
                     self._snap(self.mouse.current.logical)
                 )
 

@@ -125,6 +125,7 @@ class DrawingViewState(Enum):
     PlaceRectangle2 = auto()
     PlaceTextBlock1 = auto()
     PlaceTextBlock2 = auto()
+    PlaceTextLine   = auto()
 
 DrawingViewStateTip = {
     DrawingViewState.Idle            : "Idle",
@@ -148,7 +149,8 @@ DrawingViewStateTip = {
     DrawingViewState.PlaceRectangle1 : "Place Rectangle: pick the first point",
     DrawingViewState.PlaceRectangle2 : "Place Rectangle: pick the second point",
     DrawingViewState.PlaceTextBlock1 : "Place Text Block: pick a position",
-    DrawingViewState.PlaceTextBlock2 : "Place Text Block: enter the text"
+    DrawingViewState.PlaceTextBlock2 : "Place Text Block: enter the text",
+    DrawingViewState.PlaceTextLine   : "Place Text Line: pick a position"
 }
 
 class DrawingViewWip:

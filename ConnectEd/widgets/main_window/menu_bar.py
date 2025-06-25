@@ -69,6 +69,7 @@ class MenuBar(QMenuBar):
         self.place_menu = QMenu("&Place")
         self.place_menu.addAction(actions.placeRectangle)
         self.place_menu.addAction(actions.placeTextBlock)
+        self.place_menu.addAction(actions.placeTextLine)
 
         self.window_menu = QMenu("&Window")
         self.window_menu.addAction(actions.windowExplorer)

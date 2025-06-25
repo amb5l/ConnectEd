@@ -7,7 +7,9 @@ from PyQt6.QtWidgets import QGraphicsItem
 
 from .....core import logger
 
-from ... import Rectangle, cmdPlaceRectangle, TextBlock, cmdPlaceTextBlock, \
+from ... import Rectangle, cmdPlaceRectangle, \
+                TextBlock, cmdPlaceTextBlock, \
+                TextLine, cmdPlaceTextLine, \
                 KPLoc
 
 from typing import TYPE_CHECKING
@@ -27,7 +29,8 @@ class DrawingSceneApiPlaceMixin:
     ) -> T:
         CMD_DICT = {
             "Rectangle" : cmdPlaceRectangle,
-            "TextBlock" : cmdPlaceTextBlock
+            "TextBlock" : cmdPlaceTextBlock,
+            "TextLine"  : cmdPlaceTextLine
         }
         element = etype.createOrUpdate(*args, inst=inst)
         if etype.__name__ in CMD_DICT:
@@ -51,3 +54,10 @@ class DrawingSceneApiPlaceMixin:
         inst  : Optional[TextBlock] = None
     ) -> TextBlock:
         return self.placeElement(TextBlock, *args, inst=inst)
+
+    def placeTextLine(
+        self  : "DrawingScene",
+        *args : str | QPointF | KPLoc,
+        inst  : Optional[TextLine] = None
+    ) -> TextLine:
+        return self.placeElement(TextLine, *args, inst=inst)

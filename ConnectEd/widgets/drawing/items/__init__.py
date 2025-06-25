@@ -6,7 +6,8 @@ from dataclasses import dataclass
 
 from PyQt6.QtCore    import Qt, QXmlStreamWriter, QXmlStreamReader, QPointF
 from PyQt6.QtGui     import QPen, QBrush, QColor, QFont, QAction, QUndoCommand
-from PyQt6.QtWidgets import QGraphicsItem, QGraphicsRectItem, QGraphicsTextItem, \
+from PyQt6.QtWidgets import QGraphicsItem, QGraphicsRectItem, \
+                            QGraphicsTextItem, QGraphicsSimpleTextItem, \
                             QApplication, QGraphicsSceneContextMenuEvent, QMenu
 
 from ....core import logger, \
@@ -528,6 +529,9 @@ class CustomGraphicsRectItem(CustomGraphicsItemMixin, QGraphicsRectItem):
 class CustomGraphicsTextItem(CustomGraphicsItemMixin, QGraphicsTextItem):
     pass
 
+class CustomGraphicsSimpleTextItem(CustomGraphicsItemMixin, QGraphicsSimpleTextItem):
+    pass
+
 class ElementMixin:
     """Mixin class for all elements."""
 
@@ -786,6 +790,8 @@ from .rectangle import Rectangle, cmdPlaceRectangle
 __all__ += rectangle.__all__
 from .text_block import TextBlock, cmdPlaceTextBlock
 __all__ += text_block.__all__
+from .text_line import TextLine, cmdPlaceTextLine
+__all__ += text_line.__all__
 from .symbol_instance import SymbolInstance
 __all__ += symbol_instance.__all__
 from .block import Block
