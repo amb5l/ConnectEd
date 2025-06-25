@@ -1,5 +1,3 @@
-Copying and pasting a text block loses formatting
-
 Add text line element
 
 - view prev/next

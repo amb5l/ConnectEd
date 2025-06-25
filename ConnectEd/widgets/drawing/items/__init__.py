@@ -528,22 +528,26 @@ class ElementMixin:
     _XML_ATTRS = {
         "uuid" : "str",
         "pos" : (
-            "QPointF", True,
+            "QPointF",
+            lambda self: True,
             lambda self, value: self.setPos(value),
             lambda self: self.pos()
         ),
-        "line" : (
-            "LinePref", False,
+        "line_pref" : (
+            "LinePref",
+            lambda self: hasattr(self, "line"),
             lambda self, value: self.line.setPref(value),
             lambda self: self.line.getPref()
         ),
-        "fill" : (
-            "FillPref", False,
+        "fill_pref" : (
+            "FillPref",
+            lambda self: hasattr(self, "fill"),
             lambda self, value: self.fill.setPref(value),
             lambda self: self.fill.getPref()
         ),
-        "text" : (
-            "TextPref", False,
+        "text_pref" : (
+            "TextPref",
+            lambda self: hasattr(self, "text"),
             lambda self, value: self.text.setPref(value),
             lambda self: self.text.getPref()
         )

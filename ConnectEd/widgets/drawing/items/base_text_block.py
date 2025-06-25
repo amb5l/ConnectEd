@@ -20,7 +20,8 @@ class BaseTextBlock(CustomGraphicsTextItem, ElementMixin):
     # class variables
     _XML_ATTRS = ElementMixin._XML_ATTRS | {
         "text" : (
-            "str", True,
+            "str",
+            lambda self: True,
             lambda self, value: self.setPlainText(value),
             lambda self: self.toPlainText()
         )

@@ -21,7 +21,8 @@ class BaseRectangle(CustomGraphicsRectItem, ElementMixin):
     """Base class for rectangle elements."""
     _XML_ATTRS = ElementMixin._XML_ATTRS | {
         "size" : (
-            "QSizeF", True,
+            "QSizeF",
+            lambda self: True,
             lambda self, value: self.setSize(value),
             lambda self: self.rect().size()
         )

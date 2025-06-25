@@ -134,7 +134,11 @@ class Diagram(Drawing):
 
 class Db(QStandardItem):
     _XML_ATTRS = {
-        "name" : ("str", True, QStandardItem.setText, QStandardItem.text)
+        "name" : (
+            "str",
+            lambda self: True,
+            lambda self, value: self.setText(value),
+            lambda self: self.text())
     }
 
     path : Optional[str]

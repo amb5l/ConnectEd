@@ -49,8 +49,8 @@ def toXmlAttrs(instance : Any, xw : QXmlStreamWriter) -> None:
                 value = getattr(instance, attr_name)
                 xw.writeAttribute(attr_name, val2str(value))
         elif isinstance(attr_info, tuple):
-            _, always, _, getter = attr_info
-            if always or hasattr(instance, attr_name):
+            _, exists, _, getter = attr_info
+            if exists(instance):
                 value = getter(instance)
                 xw.writeAttribute(attr_name, val2str(value))
         else:
