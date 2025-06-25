@@ -6,6 +6,8 @@ from PyQt6.QtCore    import Qt
 from PyQt6.QtWidgets import QDialog, QWidget, QVBoxLayout, QHBoxLayout, \
                             QLabel, QLineEdit, QPushButton
 
+from ... import hub
+
 from ..drawing.items import ElementMixin, TextPref, TextPrefChange
 
 from .appearance import TextAppearanceLayout
@@ -22,11 +24,10 @@ class TextDialog(QDialog):
     cancel_button     : QPushButton
 
     def __init__(
-        self      : Self,
-        element   : ElementMixin,
-        parent    : Optional[QWidget] = None
+        self    : Self,
+        element : ElementMixin
     ):
-        super().__init__(parent)
+        super().__init__(hub.main_window)
         self.setWindowTitle("Text")
         self.setModal(True)
         self.dialog_layout = QVBoxLayout(self)

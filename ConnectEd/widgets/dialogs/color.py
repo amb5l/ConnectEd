@@ -8,6 +8,8 @@ from PyQt6.QtWidgets import QColorDialog, QWidget, \
                             QLabel, QCheckBox, QPushButton
 from PyQt6.QtGui     import QColor, QPainter, QFont, QFontMetrics
 
+from ... import hub
+
 class OverlayWidget(QWidget):
     def __init__(self : Self, parent : Optional[QWidget] = None) -> None:
         super().__init__(parent)
@@ -49,11 +51,10 @@ class OverlayWidget(QWidget):
 class ColorDialog(QColorDialog):
     def __init__(
         self   : Self,
-        color  : tuple[Optional[QColor], QColor],
-        parent : Optional[QWidget] = None
+        color  : tuple[Optional[QColor], QColor]
     ) -> None:
         specified_color, default_color = color
-        super().__init__(parent)
+        super().__init__(hub.main_window)
         self.setWindowTitle("Color")
         self.setOption(QColorDialog.ColorDialogOption.NoButtons, True)
         self.setOption(QColorDialog.ColorDialogOption.DontUseNativeDialog, True)

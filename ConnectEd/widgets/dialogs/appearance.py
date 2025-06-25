@@ -840,10 +840,9 @@ class AppearanceDialog(QDialog):
 
     def __init__(
         self     : Self,
-        elements : list[ElementMixin],
-        parent   : Optional[QWidget] = hub.main_window
+        elements : list[ElementMixin]
     ) -> None:
-        super().__init__(parent)
+        super().__init__(hub.main_window)
         initial   = AppearancePrefChange()
         no_change = AppearancePrefChange()
         default   = AppearanceSpec()
