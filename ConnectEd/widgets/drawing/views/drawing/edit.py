@@ -5,7 +5,7 @@ from .....core import logger, paste
 from ....dialogs import AppearanceDialog
 
 from ...scenes import DrawingScene
-from ...items  import ElementMixin
+from ...items  import ElementMixin, KeyPoint
 
 from .defs import DrawingViewState as State
 
@@ -241,6 +241,8 @@ class DrawingViewEditMixin:
         slide    : bool = False
     ) -> None:
         self.wip.elements = elements
+        if isinstance(elements[0], KeyPoint):
+            pos = elements[0].scenePos()
         self.wip.pos0 = pos
 
     def editMoveContinue(

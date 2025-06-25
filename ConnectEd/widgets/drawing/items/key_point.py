@@ -104,7 +104,7 @@ class KeyPoint(QGraphicsItem):
     ) -> None:
         painter.setPen(self._pen)
         painter.setBrush(self._brush)
-        if self._grip == True or self._manager.anchor == self:
+        if self._manager.anchor is None or self._manager.anchor == self:
             painter.drawRect(self._rect)
         else:
             painter.drawPath(self._rhombus)

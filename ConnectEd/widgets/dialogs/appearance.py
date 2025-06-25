@@ -709,9 +709,6 @@ class TextAppearanceLayout(QVBoxLayout):
         self.options_layout = QGridLayout()
         row = 0
         if initial.color is not None:
-            print(f"initial.color: {initial.color}")
-            print(f"default.color: {default.color}")
-            print(f"no_change.color: {no_change.color if no_change is not None else None}")
             self.color_label = QLabel("Color:")
             self.options_layout.addWidget(self.color_label, row, 0)
             self.color_combo = ColorComboBox(
@@ -742,9 +739,6 @@ class TextAppearanceLayout(QVBoxLayout):
             self.options_layout.addWidget(self.size_combo, row, 1)
             row += 1
         if initial.bold is not None:
-            print(f"initial.bold: {initial.bold}")
-            print(f"default.bold: {default.bold}")
-            print(f"no_change.bold: {no_change.bold if no_change is not None else None}")
             self.bold_label = QLabel("Bold:")
             self.options_layout.addWidget(self.bold_label, row, 0)
             self.bold_combo = OnOffComboBox(
@@ -790,7 +784,6 @@ class TextAppearanceLayout(QVBoxLayout):
                     self.no_change.family if family is NO_CHANGE else \
                     family
         bold      = self.bold_combo.getChoice()
-        print(f"updatePreview: bold = {bold}")
         bold      = self.default.bold   if bold is DEFAULT else \
                     self.no_change.bold if bold is NO_CHANGE else \
                     bold

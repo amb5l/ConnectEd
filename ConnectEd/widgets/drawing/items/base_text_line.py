@@ -40,7 +40,7 @@ class BaseTextLine(CustomGraphicsSimpleTextItem, ElementMixin):
         self.initElement(line=None, fill=None, text=TextPref())
         self._kpm = KPManager(
             self,
-            [KPDef(k, False, False) for k in KPLoc],
+            [KPDef(k, True, False) for k in KPLoc],
             KPLoc.TOP_LEFT
         )
         self.setPos(pos)
@@ -84,6 +84,10 @@ class BaseTextLine(CustomGraphicsSimpleTextItem, ElementMixin):
 
     def setKPVisible(self : Self, visible : bool) -> None:
         self._kpm.setVisible(visible)
+
+    def moveKeyPoint(self : Self, kp : KPLoc, delta : QPointF) -> None:
+        """Move the entire TextLine when any keypoint is dragged."""
+        self.setPos(self.pos() + delta)
 
     def ctxMenuAppearance(
         self    : Self,

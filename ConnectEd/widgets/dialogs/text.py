@@ -38,10 +38,6 @@ class TextDialog(QDialog):
         self.text_layout.addWidget(self.text_edit)
         self.dialog_layout.addLayout(self.text_layout)
 
-        print(f"element: {element}")
-        print(f"element.text(): {element.text()}")
-        print(f"element.appearance: {element.appearance}")
-        print(f"element.appearance.text: {element.appearance.text}")
         initial = element.appearance.text.getPref()
         defaults = element.getDefaults()
         default = TextPref(

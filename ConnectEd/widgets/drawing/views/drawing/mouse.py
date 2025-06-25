@@ -65,9 +65,10 @@ class DrawingViewMouseMixin:
         if event.buttons() & Qt.MouseButton.RightButton or m == qkm.NoModifier:
             items = self._itemsAt(l)
             if items:
-                if not items[0].isSelected():
-                    self.scene().clearSelection()
-                    items[0].setSelected(True)
+                if not isinstance(items[0], KeyPoint):
+                    if not items[0].isSelected():
+                        self.scene().clearSelection()
+                        items[0].setSelected(True)
             else:
                 self.scene().clearSelection()
         if event.buttons() & Qt.MouseButton.LeftButton:
