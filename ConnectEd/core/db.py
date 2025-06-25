@@ -7,14 +7,14 @@ from typing import Self, Optional
 from PyQt6.QtCore import Qt, QXmlStreamWriter, QXmlStreamReader
 from PyQt6.QtGui  import QStandardItemModel, QStandardItem
 
-from . import logger, \
-              LIB_EXT, DSN_EXT, \
-              copy, paste, fromXmlBegin, loadItems, saveBegin, saveEnd
+from .. import hub
 
-from ..core    import toXmlAttrs, fromXmlAttrs
 from ..widgets import FileSaveAsDialog
 
-from .. import hub
+from . import logger, \
+              LIB_EXT, DSN_EXT, \
+              copy, paste, fromXmlBegin, loadItems, saveBegin, saveEnd, \
+              toXmlAttrs, fromXmlAttrs
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:

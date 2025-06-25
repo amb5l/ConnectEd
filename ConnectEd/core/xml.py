@@ -23,7 +23,7 @@ from . import logger, APP_NAME, MIME_TYPE, val2str, str2val
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from .model    import DesignDb, LibraryDb, Diagram, Symbol
+    from .db import DesignDb, LibraryDb, Diagram, Symbol
     from ..widgets import ElementMixin
 
 
@@ -92,7 +92,7 @@ def fromXmlAttrs(instance : Any, xr : QXmlStreamReader) -> None:
 def fromXmlItems(
     xr : QXmlStreamReader
 ) -> tuple[list[XmlItemTypes], Optional[QPointF]]:
-    from .model    import DesignDb, LibraryDb, Diagram, Symbol
+    from .db import DesignDb, LibraryDb, Diagram, Symbol
     from ..widgets import element_class_dict
     copy_pos = None
     items = []
