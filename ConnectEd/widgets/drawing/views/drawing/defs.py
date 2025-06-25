@@ -121,6 +121,8 @@ class DrawingViewState(Enum):
     EditResize3     = auto()
     EditAppearance1 = auto()
     EditAppearance2 = auto()
+    PlaceBlock1     = auto()
+    PlaceBlock2     = auto()
     PlaceRectangle1 = auto()
     PlaceRectangle2 = auto()
     PlaceTextBlock1 = auto()
@@ -146,6 +148,8 @@ DrawingViewStateTip = {
     DrawingViewState.EditResize3     : "Resize: place the selected grip as required",
     DrawingViewState.EditAppearance1 : "Appearance: select one or more items",
     DrawingViewState.EditAppearance2 : "Appearance: specify changes",
+    DrawingViewState.PlaceBlock1     : "Place Block: pick the first point",
+    DrawingViewState.PlaceBlock2     : "Place Block: pick the second point",
     DrawingViewState.PlaceRectangle1 : "Place Rectangle: pick the first point",
     DrawingViewState.PlaceRectangle2 : "Place Rectangle: pick the second point",
     DrawingViewState.PlaceTextBlock1 : "Place Text Block: pick a position",

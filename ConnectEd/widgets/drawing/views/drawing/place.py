@@ -16,6 +16,28 @@ if TYPE_CHECKING:
 
 
 class DrawingViewPlaceMixin:
+    def placeBlock(self : "DrawingView") -> None:
+        self._goState(State.PlaceBlock1)
+
+    def placeBlockBegin(self : "DrawingView", pos : QPointF) -> None:
+        scene : DrawingScene = self.scene()
+        scene.clearSelection()
+        self.wip.clear()
+        element = scene.placeBlock(pos)
+        self.wip.elements = [element]
+        self.wip.pos0 = pos
+        self._goState(State.PlaceBlock2)
+
+    def placeBlockContinue(self : "DrawingView", pos : QPointF) -> None:
+        scene : DrawingScene = self.scene()
+        scene.placeBlock(self.wip.pos0, pos, inst=self.wip.elements[0])
+
+    def placeBlockComplete(self : "DrawingView", pos : QPointF) -> None:
+        scene : DrawingScene = self.scene()
+        scene.placeBlock(self.wip.pos0, pos, inst=self.wip.elements[0])
+        self.wip.clear()
+        self._goState(State.Idle)
+
     def placeRectangle(self : "DrawingView") -> None:
         self._goState(State.PlaceRectangle1)
 

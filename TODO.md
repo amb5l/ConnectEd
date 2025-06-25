@@ -3,8 +3,6 @@ QGraphicsScene::removeItem: item 0x183fe6843d0's scene (0x0) is different from t
 
 Check self type for mixins
 
-Add text line element
-
 - view prev/next
 
 Define a View State Class:

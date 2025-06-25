@@ -59,6 +59,13 @@ FACTORY_SETTINGS = {
             "min_pixels" : 10
         },
         "elements" : {
+            "Block" : {
+                "line" : {
+                    "width" : 1,
+                    "style" : Qt.PenStyle.SolidLine
+                },
+                "fill" : Qt.BrushStyle.SolidPattern
+            },
             "Rectangle" : {
                 "line" : {
                     "width" : 1,
@@ -116,6 +123,10 @@ FACTORY_SETTINGS = {
                 "line" : QColor( 128, 128, 128 )
             },
             "elements" : {
+                "Block" : {
+                    "line" : QColor( 0x81, 0xD1, 0xCD ),
+                    "fill" : QColor( 0x30, 0x30, 0x30 )
+                },
                 "Rectangle" : {
                     "line" : QColor( 192, 120,   0 ), # light orange
                     "fill" : QColor(  96, 100,   0 )  # dark orange

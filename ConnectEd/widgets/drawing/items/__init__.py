@@ -786,6 +786,8 @@ __all__ = [
 ]
 from .key_point import KPLoc, KeyPoint, KPDef, KPManager
 __all__ += key_point.__all__
+from .block import Block, cmdPlaceBlock
+__all__ += block.__all__
 from .rectangle import Rectangle, cmdPlaceRectangle
 __all__ += rectangle.__all__
 from .text_block import TextBlock, cmdPlaceTextBlock

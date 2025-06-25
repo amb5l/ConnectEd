@@ -7,7 +7,8 @@ from PyQt6.QtWidgets import QGraphicsItem
 
 from .....core import logger
 
-from ... import Rectangle, cmdPlaceRectangle, \
+from ... import Block, cmdPlaceBlock, \
+                Rectangle, cmdPlaceRectangle, \
                 TextBlock, cmdPlaceTextBlock, \
                 TextLine, cmdPlaceTextLine, \
                 KPLoc
@@ -28,6 +29,7 @@ class DrawingSceneApiPlaceMixin:
         inst  : Optional[T] = None
     ) -> T:
         CMD_DICT = {
+            "Block"     : cmdPlaceBlock,
             "Rectangle" : cmdPlaceRectangle,
             "TextBlock" : cmdPlaceTextBlock,
             "TextLine"  : cmdPlaceTextLine
@@ -40,6 +42,13 @@ class DrawingSceneApiPlaceMixin:
             logger.error(f"No place command found for {etype.__name__}")
             return None
         return element
+
+    def placeBlock(
+        self  : "DrawingScene",
+        *args : QPointF,
+        inst  : Optional[Block] = None
+    ) -> Block:
+        return self.placeElement(Block, *args, inst=inst)
 
     def placeRectangle(
         self  : "DrawingScene",

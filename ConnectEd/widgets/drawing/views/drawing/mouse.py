@@ -224,6 +224,14 @@ class DrawingViewMouseMixin:
                 self.marquee.end(self.mouse.left.release.physical)
                 self._zoomRect(self.marquee.rect())
                 self._goState(State.Idle)
+            case State.PlaceBlock1:
+                self.placeBlockBegin(
+                    self._snap(self.mouse.left.release.logical)
+                )
+            case State.PlaceBlock2:
+                self.placeBlockComplete(
+                    self._snap(self.mouse.left.release.logical)
+                )
             case State.PlaceRectangle1:
                 self.placeRectangleBegin(
                     self._snap(self.mouse.left.release.logical)
@@ -305,6 +313,10 @@ class DrawingViewMouseMixin:
             case State.ViewZoomWindow1:
                 self.marquee.begin(self.mouse.left.press.physical)
                 self._goState(State.ViewZoomWindow2)
+            case State.PlaceBlock1:
+                self.placeBlockBegin(
+                    self._snap(self.mouse.left.press.logical)
+                )
             case State.PlaceRectangle1:
                 self.placeRectangleBegin(
                     self._snap(self.mouse.left.press.logical)
@@ -337,6 +349,10 @@ class DrawingViewMouseMixin:
                 self.wip.pos0 = self.mouse.current.physical
             case State.ViewZoomWindow2:
                 self.marquee.resize(self.mouse.current.physical)
+            case State.PlaceBlock2:
+                self.placeBlockContinue(
+                    self._snap(self.mouse.current.logical)
+                )
             case State.PlaceRectangle2:
                 self.placeRectangleContinue(
                     self._snap(self.mouse.current.logical)
@@ -382,6 +398,10 @@ class DrawingViewMouseMixin:
                 self.wip.clear()
                 self.setCursor(Qt.CursorShape.ArrowCursor)
                 self._goState(State.Idle)
+            case State.PlaceBlock2:
+                self.placeBlockComplete(
+                    self._snap(self.mouse.left.release.logical)
+                )
             case State.PlaceRectangle2:
                 self.placeRectangleComplete(
                     self._snap(self.mouse.left.release.logical)
@@ -457,6 +477,10 @@ class DrawingViewMouseMixin:
                 self.wip.pos0 = self.mouse.current.physical
             case State.ViewZoomWindow2:
                 self.marquee.resize(self.mouse.current.physical)
+            case State.PlaceBlock2:
+                self.placeBlockContinue(
+                    self._snap(self.mouse.current.logical)
+                )
             case State.PlaceRectangle2:
                 self.placeRectangleContinue(
                     self._snap(self.mouse.current.logical)

@@ -1,7 +1,12 @@
-__all__ = ["Block"]
+__all__ = ["Block", "cmdPlaceBlock"]
 
-from .base_rect import BaseRectangle
+from ....core import Z_DRAWING
+
+from .base_rect import BaseRectangle, cmdPlaceBaseRectangle
 
 
 class Block(BaseRectangle):
+    Z = Z_DRAWING
+
+class cmdPlaceBlock(cmdPlaceBaseRectangle):
     pass

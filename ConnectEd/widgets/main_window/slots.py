@@ -198,6 +198,10 @@ class Slots:
         widget.viewGridSnap(checked)
 
     @withCurrentWidget(DrawingView)
+    def placeBlock(self : Self, widget: DrawingView) -> None:
+        widget.placeBlock()
+
+    @withCurrentWidget(DrawingView)
     def placeRectangle(self : Self, widget: DrawingView) -> None:
         widget.placeRectangle()
 
