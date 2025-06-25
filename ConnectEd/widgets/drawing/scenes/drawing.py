@@ -28,10 +28,6 @@ class DrawingScene(
 ):
     # class variables
     XML_ATTRS              = {"name" : "str"}
-    SYSTEM_FORBIDDEN_ITEMS = [KeyPoint] # TODO: review this
-    SYSTEM_ALLOWED_ITEMS   = None
-    FORBIDDEN_ITEMS        = None # none
-    ALLOWED_ITEMS          = None # any
 
     # instance variables
     parent     : Optional["Drawing"]
@@ -68,19 +64,6 @@ class DrawingScene(
             if isinstance(item, ElementMixin):
                 item.setKPVisible(False)
         self.kp_items.clear()
-
-    def addItem(self : Self, item : QGraphicsItem) -> None:
-        if item in self.SYSTEM_FORBIDDEN_ITEMS:
-            raise ValueError(f"Item {item} is forbidden")
-        if self.FORBIDDEN_ITEMS is not None:
-            if item in self.FORBIDDEN_ITEMS:
-                if item not in self.SYSTEM_ALLOWED_ITEMS:
-                    raise ValueError(f"Item {item} is forbidden")
-        if self.ALLOWED_ITEMS is not None:
-            if item not in self.ALLOWED_ITEMS:
-                if item not in self.SYSTEM_ALLOWED_ITEMS:
-                    raise ValueError(f"Item {item} is not allowed")
-        super().addItem(item)
 
     def toXml(self : Self, xw : QXmlStreamWriter) -> None:
         xw.writeStartElement(self.__class__.__name__)
