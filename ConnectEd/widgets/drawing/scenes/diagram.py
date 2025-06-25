@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 
 
 class DiagramScene(DrawingScene):
-    XML_ATTRS = DrawingScene.XML_ATTRS | {
+    _XML_ATTRS = DrawingScene._XML_ATTRS | {
         "paper_size" : "str",
         "margin"     : "float",
         "border"     : "float"

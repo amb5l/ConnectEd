@@ -19,7 +19,7 @@ if TYPE_CHECKING:
 
 class BaseRectangle(CustomGraphicsRectItem, ElementMixin):
     """Base class for rectangle elements."""
-    XML_ATTRS = ElementMixin.XML_ATTRS | {
+    _XML_ATTRS = ElementMixin._XML_ATTRS | {
         "size" : (
             "QSizeF", True,
             lambda self, value: self.setSize(value),

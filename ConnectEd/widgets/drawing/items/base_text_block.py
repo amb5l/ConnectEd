@@ -18,7 +18,7 @@ if TYPE_CHECKING:
 
 class BaseTextBlock(CustomGraphicsTextItem, ElementMixin):
     # class variables
-    XML_ATTRS = ElementMixin.XML_ATTRS | {
+    _XML_ATTRS = ElementMixin._XML_ATTRS | {
         "text" : (
             "str", True,
             lambda self, value: self.setPlainText(value),

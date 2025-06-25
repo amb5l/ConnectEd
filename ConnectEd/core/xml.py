@@ -42,7 +42,7 @@ def toXmlBegin(xw : QXmlStreamWriter) -> None:
     xw.writeStartElement(APP_NAME) # TODO: version
 
 def toXmlAttrs(instance : Any, xw : QXmlStreamWriter) -> None:
-    attrs = instance.XML_ATTRS
+    attrs = instance._XML_ATTRS
     for attr_name, attr_info in attrs.items():
         if isinstance(attr_info, str):
             if hasattr(instance, attr_name):
@@ -73,8 +73,8 @@ def fromXmlAttrs(instance : Any, xr : QXmlStreamReader) -> None:
     for attribute in attributes:
         attr_name = attribute.name()
         attr_value_str = attribute.value()
-        if attr_name in instance.XML_ATTRS:
-            attr_info = instance.XML_ATTRS[attr_name]
+        if attr_name in instance._XML_ATTRS:
+            attr_info = instance._XML_ATTRS[attr_name]
             if isinstance(attr_info, str):
                 setattr(
                     instance, attr_name,

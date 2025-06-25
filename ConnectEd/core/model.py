@@ -133,7 +133,7 @@ class Diagram(Drawing):
     scene : "DiagramScene"
 
 class Db(QStandardItem):
-    XML_ATTRS = {
+    _XML_ATTRS = {
         "name" : ("str", True, QStandardItem.setText, QStandardItem.text)
     }
 

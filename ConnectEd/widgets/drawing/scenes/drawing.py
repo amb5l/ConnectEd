@@ -27,7 +27,7 @@ class DrawingScene(
     DrawingSceneApiMixin
 ):
     # class variables
-    XML_ATTRS              = {"name" : "str"}
+    _XML_ATTRS = {"name" : "str"}
 
     # instance variables
     parent     : Optional["Drawing"]

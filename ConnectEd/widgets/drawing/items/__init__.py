@@ -525,7 +525,7 @@ class CustomGraphicsTextItem(CustomGraphicsItemMixin, QGraphicsTextItem):
 class ElementMixin:
     """Mixin class for all elements."""
 
-    XML_ATTRS = {
+    _XML_ATTRS = {
         "uuid" : "str",
         "pos" : (
             "QPointF", True,
