@@ -12,6 +12,8 @@ from ..drawing.items import ElementMixin, TextPref, TextPrefChange
 
 from .appearance import TextAppearanceLayout
 
+from . import okCancelLayout
+
 
 class TextDialog(QDialog):
     dialog_layout     : QVBoxLayout
@@ -52,16 +54,7 @@ class TextDialog(QDialog):
         self.appearance_layout = TextAppearanceLayout(initial, default)
         self.dialog_layout.addLayout(self.appearance_layout)
 
-        self.ok_cancel_layout = QHBoxLayout()
-        self.ok_cancel_layout.addStretch()
-        self.ok_button = QPushButton("OK")
-        self.ok_button.clicked.connect(self.accept)
-        self.cancel_button = QPushButton("Cancel")
-        self.cancel_button.clicked.connect(self.reject)
-        self.ok_cancel_layout.addWidget(self.ok_button)
-        self.ok_cancel_layout.addWidget(self.cancel_button)
-        self.dialog_layout.addLayout(self.ok_cancel_layout)
-
+        okCancelLayout(self)
         self.setLayout(self.dialog_layout)
 
     def getChoice(self : Self) -> tuple[str, TextPrefChange]:

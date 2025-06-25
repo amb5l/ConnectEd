@@ -21,6 +21,8 @@ from ..drawing.items import ElementMixin, \
                             TextSpec, TextPref, TextPrefDefault, TextPrefChange, \
                             Default, DEFAULT, NoChange, NO_CHANGE
 
+from . import okCancelLayout
+
 from ... import hub
 
 
@@ -165,15 +167,7 @@ class CustomLineWidthDialog(QDialog):
         self.width_input = QLineEdit("" if initial is None else str(initial))
         self.width_layout.addWidget(self.width_input)
         self.dialog_layout.addLayout(self.width_layout)
-        self.ok_cancel_layout = QHBoxLayout()
-        self.ok_cancel_layout.addStretch()
-        self.ok_button = QPushButton("OK")
-        self.ok_button.clicked.connect(self.accept)
-        self.ok_cancel_layout.addWidget(self.ok_button)
-        self.cancel_button = QPushButton("Cancel")
-        self.cancel_button.clicked.connect(self.reject)
-        self.ok_cancel_layout.addWidget(self.cancel_button)
-        self.dialog_layout.addLayout(self.ok_cancel_layout)
+        okCancelLayout(self)
         self.setLayout(self.dialog_layout)
 
     def getChoice(self) -> Optional[float]:
@@ -981,15 +975,7 @@ class AppearanceDialog(QDialog):
         else:
             self.text_group_box = None
             self.text_layout    = None
-        self.ok_cancel_layout = QHBoxLayout()
-        self.ok_cancel_layout.addStretch()
-        self.ok_button = QPushButton("OK")
-        self.ok_button.clicked.connect(self.accept)
-        self.cancel_button = QPushButton("Cancel")
-        self.cancel_button.clicked.connect(self.reject)
-        self.ok_cancel_layout.addWidget(self.ok_button)
-        self.ok_cancel_layout.addWidget(self.cancel_button)
-        self.dialog_layout.addLayout(self.ok_cancel_layout)
+        okCancelLayout(self)
         self.setLayout(self.dialog_layout)
 
     def _adjustComboBoxWidths(self : Self) -> None:
