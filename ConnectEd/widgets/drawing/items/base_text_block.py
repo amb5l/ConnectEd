@@ -150,7 +150,7 @@ class BaseTextBlock(CustomGraphicsTextItem, ElementMixin):
             self.setDefaultTextColor(c)
         super().paint(painter, option, widget)
         if self.isSelected():
-            painter.setPen(self.outline.pen)
+            painter.setPen(self.appearance.outline.pen)
             painter.drawRect(self.boundingRect())
 
     def setAnchor(self : Self, anchor : KPLoc = KPLoc.TOP_LEFT) -> None:

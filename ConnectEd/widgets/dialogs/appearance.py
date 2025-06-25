@@ -814,11 +814,9 @@ class AppearanceDialog(QDialog):
         default   = AppearanceSpec()
         for element in elements:
             for cat_name in ["line", "fill", "text"]:
-                if not hasattr(element, cat_name):
-                    continue
-                cat = getattr(element, cat_name)
+                cat = getattr(element.appearance, cat_name)
                 if cat is None:
-                    logger.error(f"{cat_name} is None for element {element}")
+                    continue
                 pref = cat.getPref()
                 for subcat_name in \
                  ["color", "width", "style"] if cat_name == "line" else \

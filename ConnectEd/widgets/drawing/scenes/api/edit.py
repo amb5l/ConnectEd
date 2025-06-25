@@ -198,26 +198,29 @@ class cmdEditAppearance(cmdElements):
         self._changes = changes
         self._initial = {}
         for e in elements:
-            a = AppearancePref()
-            a.line = e.line.getPref() if hasattr(e, "line") else None
-            a.fill = e.fill.getPref() if hasattr(e, "fill") else None
-            a.text = e.text.getPref() if hasattr(e, "text") else None
-            self._initial[e] = a
+            a = e.appearance
+            p = AppearancePref()
+            p.line = a.line.getPref() if a.line is not None else None
+            p.fill = a.fill.getPref() if a.fill is not None else None
+            p.text = a.text.getPref() if a.text is not None else None
+            self._initial[e] = p
 
     def redo(self) -> None:
         c = self._changes
         for e in self.elements:
-            if hasattr(e, "line") and e.line is not None: e.line.setPref(c.line)
-            if hasattr(e, "fill") and e.fill is not None: e.fill.setPref(c.fill)
-            if hasattr(e, "text") and e.text is not None: e.text.setPref(c.text)
+            a = e.appearance
+            if a.line is not None: a.line.setPref(c.line)
+            if a.fill is not None: a.fill.setPref(c.fill)
+            if a.text is not None: a.text.setPref(c.text)
             e.update()
 
     def undo(self) -> None:
         for e in self.elements:
+            a = e.appearance
             c = self._initial[e]
-            if hasattr(e, "line") and c.line is not None: e.line.setPref(c.line)
-            if hasattr(e, "fill") and c.fill is not None: e.fill.setPref(c.fill)
-            if hasattr(e, "text") and c.text is not None: e.text.setPref(c.text)
+            if a.line is not None: a.line.setPref(c.line)
+            if a.fill is not None: a.fill.setPref(c.fill)
+            if a.text is not None: a.text.setPref(c.text)
             e.update()
 
     def mergeWith(self : Self, other : QUndoCommand) -> bool:

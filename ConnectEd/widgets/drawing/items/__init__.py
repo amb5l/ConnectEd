@@ -457,6 +457,12 @@ class OutlinePen:
         self.pen.setWidthF(hub.settings.get("display/outline/width"))
         self.pen.setStyle(hub.settings.get("display/outline/style"))
 
+class Appearance:
+    line    : Optional[LinePen]       = None
+    fill    : Optional[FillBrush]     = None
+    text    : Optional[TextColorFont] = None
+    outline : Optional[OutlinePen]    = None
+
 
 class CustomGraphicsItemMixin:
     """Mixin for custom graphics items, providing hashability and itemChange."""
@@ -535,31 +541,28 @@ class ElementMixin:
         ),
         "line_pref" : (
             "LinePref",
-            lambda self: hasattr(self, "line"),
-            lambda self, value: self.line.setPref(value),
-            lambda self: self.line.getPref()
+            lambda self: self.appearance.line is not None,
+            lambda self, value: self.appearance.line.setPref(value),
+            lambda self: self.appearance.line.getPref()
         ),
         "fill_pref" : (
             "FillPref",
-            lambda self: hasattr(self, "fill"),
-            lambda self, value: self.fill.setPref(value),
-            lambda self: self.fill.getPref()
+            lambda self: self.appearance.fill is not None,
+            lambda self, value: self.appearance.fill.setPref(value),
+            lambda self: self.appearance.fill.getPref()
         ),
         "text_pref" : (
             "TextPref",
-            lambda self: hasattr(self, "text"),
-            lambda self, value: self.text.setPref(value),
-            lambda self: self.text.getPref()
+            lambda self: self.appearance.text is not None,
+            lambda self, value: self.appearance.text.setPref(value),
+            lambda self: self.appearance.text.getPref()
         )
     }
     _MENU = None
 
-    uuid    : str
-    line    : Optional[LinePen]
-    fill    : Optional[FillBrush]
-    text    : Optional[TextColorFont]
-    outline : OutlinePen
-    _menu   : QMenu
+    uuid       : str
+    appearance : Appearance
+    _menu      : QMenu
 
     def initElement(
         self : Self,
@@ -568,13 +571,14 @@ class ElementMixin:
         text : Optional[TextPref] = None
     ) -> None:
         self.resetUuid()
+        self.appearance = Appearance()
         if line is not None:
-            self.line = LinePen(self, line)
+            self.appearance.line = LinePen(self, line)
         if fill is not None:
-            self.fill = FillBrush(self, fill)
+            self.appearance.fill = FillBrush(self, fill)
         if text is not None:
-            self.text = TextColorFont(self, text)
-        self.outline = OutlinePen()
+            self.appearance.text = TextColorFont(self, text)
+        self.appearance.outline = OutlinePen()
         self.setZValue(self.Z)
         f = QGraphicsItem.GraphicsItemFlag
         self.setFlag( f.ItemIsSelectable              , True )
@@ -593,24 +597,24 @@ class ElementMixin:
         return self.uuid == other.uuid
 
     def onSettingsChange(self : Self) -> None:
-        if hasattr(self, "line"): self.line.onSettingsChange()
-        if hasattr(self, "fill"): self.fill.onSettingsChange()
-        if hasattr(self, "text"): self.text.onSettingsChange()
-        self.outline.onSettingsChange()
+        if self.appearance.line is not None: self.appearance.line.onSettingsChange()
+        if self.appearance.fill is not None: self.appearance.fill.onSettingsChange()
+        if self.appearance.text is not None: self.appearance.text.onSettingsChange()
+        self.appearance.outline.onSettingsChange()
 
     def onSelectionChange(self : Self) -> None:
-        if hasattr(self, "line"): self.line.onSelectionChange()
-        if hasattr(self, "fill"): self.fill.onSelectionChange()
-        if hasattr(self, "text"): self.text.onSelectionChange()
+        if self.appearance.line is not None: self.appearance.line.onSelectionChange()
+        if self.appearance.fill is not None: self.appearance.fill.onSelectionChange()
+        if self.appearance.text is not None: self.appearance.text.onSelectionChange()
 
     def resetUuid(self : Self) -> None:
         self.uuid = str(uuid.uuid4())
 
     def getDefaults(self : Self) -> SimpleNamespace:
         r = SimpleNamespace()
-        if hasattr(self, "line"): r.line = self.line.getDefaults()
-        if hasattr(self, "fill"): r.fill = self.fill.getDefaults()
-        if hasattr(self, "text"): r.text = self.text.getDefaults()
+        if self.appearance.line is not None: r.line = self.appearance.line.getDefaults()
+        if self.appearance.fill is not None: r.fill = self.appearance.fill.getDefaults()
+        if self.appearance.text is not None: r.text = self.appearance.text.getDefaults()
         return r
 
     def toXml(self : Self, xw : QXmlStreamWriter) -> None:
@@ -627,18 +631,23 @@ class ElementMixin:
 
     def clone(self : Self) -> Self:
         """Create a clone of this element with a new UUID."""
-        # Create a new instance of the same class
         clone = self.__class__()
-        # Copy position
         clone.setPos(self.pos())
-        # Copy appearance preferences if they exist
-        if hasattr(self, "line"):
-            setattr(clone, "line", LinePen(clone, self.line.getPref()))
-        if hasattr(self, "fill"):
-            setattr(clone, "fill", FillBrush(clone, self.fill.getPref()))
-        if hasattr(self, "text"):
-            setattr(clone, "text", TextColorFont(clone, self.text.getPref()))
-        # New UUID is automatically assigned in __init2__() via resetUuid()
+        if self.appearance.line is not None:
+            setattr(
+                clone.appearance, "line",
+                LinePen(clone, self.appearance.line.getPref())
+            )
+        if self.appearance.fill is not None:
+            setattr(
+                clone.appearance, "fill",
+                FillBrush(clone, self.appearance.fill.getPref()))
+        if self.appearance.text is not None:
+            setattr(
+                clone.appearance, "text",
+                TextColorFont(clone, self.appearance.text.getPref())
+            )
+        # New UUID is automatically assigned in initElement() via resetUuid()
         return clone
 
 class cmdElement(QUndoCommand):

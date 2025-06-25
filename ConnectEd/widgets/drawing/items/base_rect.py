@@ -106,7 +106,7 @@ class BaseRectangle(CustomGraphicsRectItem, ElementMixin):
         else:
             super().setRect(rect_or_ax, ay, w, h)
         self._rect = self.rect()
-        w = self.line.pen.widthF()
+        w = self.appearance.line.pen.widthF()
         self._bounding_rect = self._rect.adjusted(-w/2, -w/2, w/2, w/2)
         self._shape.clear()
         self._shape.addRect(self._bounding_rect)
@@ -124,8 +124,8 @@ class BaseRectangle(CustomGraphicsRectItem, ElementMixin):
         option  : QStyleOptionGraphicsItem,
         widget  : QWidget
     ) -> None:
-        painter.setPen(self.line.pen)
-        painter.setBrush(self.fill.brush)
+        painter.setPen(self.appearance.line.pen)
+        painter.setBrush(self.appearance.fill.brush)
         painter.drawRect(self._rect)
 
     def KPRect(self : Self) -> QRectF:
