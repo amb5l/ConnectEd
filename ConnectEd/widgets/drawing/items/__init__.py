@@ -144,9 +144,9 @@ class TextPref:
         color     = DEFAULT if s_c == "default" else QColor(int(s_c, 16))
         family    = DEFAULT if s_f == "default" else s_f
         size      = DEFAULT if s_s == "default" else float(s_s)
-        bold      = DEFAULT if s_b == "default" else bool(s_b)
-        italic    = DEFAULT if s_i == "default" else bool(s_i)
-        underline = DEFAULT if s_u == "default" else bool(s_u)
+        bold      = DEFAULT if s_b == "default" else s_b.lower() == "true"
+        italic    = DEFAULT if s_i == "default" else s_i.lower() == "true"
+        underline = DEFAULT if s_u == "default" else s_u.lower() == "true"
         return cls(color, family, size, bold, italic, underline)
 
 @dataclass
@@ -523,9 +523,8 @@ class CustomGraphicsTextItem(CustomGraphicsItemMixin, QGraphicsTextItem):
     pass
 
 class ElementMixin:
-    _MENU = None
-
     """Mixin class for all elements."""
+
     XML_ATTRS = {
         "uuid" : "str",
         "pos" : (
@@ -549,6 +548,7 @@ class ElementMixin:
             lambda self: self.text.getPref()
         )
     }
+    _MENU = None
 
     uuid    : str
     line    : Optional[LinePen]
