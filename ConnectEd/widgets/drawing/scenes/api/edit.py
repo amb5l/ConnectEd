@@ -1,4 +1,13 @@
-__all__ = ["DrawingSceneApiEditMixin"]
+__all__ = [
+    "cmdEditPaste",
+    "cmdEditDelete",
+    "cmdEditDuplicate",
+    "cmdEditMove",
+    "cmdEditAppearance",
+    "cmdEditProperties",
+    "cmdEditPropertyValues",
+    "DrawingSceneApiEditMixin"
+]
 
 from typing import Self, Optional
 
@@ -7,7 +16,9 @@ from PyQt6.QtGui  import QUndoCommand
 
 from .....core import logger,copy, paste
 
-from ...items import ElementMixin, cmdElements, clone, \
+from ....dialogs.properties import PropertyChange
+
+from ...items import ElementMixin, cmdElement, cmdElements, clone, \
                      AppearancePref, AppearancePrefChange
 
 from typing import TYPE_CHECKING
@@ -226,6 +237,71 @@ class cmdEditAppearance(cmdElements):
     def mergeWith(self : Self, other : QUndoCommand) -> bool:
         return False
 
+class cmdEditProperties(cmdElement):
+    _before  : dict[str, str]
+    _after   : dict[str, str]
+
+    def __init__(
+        self    : Self,
+        scene   : "DrawingScene",
+        element : ElementMixin,
+        after   : dict[str, str]
+    ):
+        super().__init__(scene, element)
+        self._before = element.properties.copy()
+        self._after  = after
+
+    def redo(self: Self) -> None:
+        self.element.properties.clear()
+        self.element.properties.update(self._after)
+        self.element.update()
+
+    def undo(self: Self) -> None:
+        self.element.properties.clear()
+        self.element.properties.update(self._before)
+        self.element.update()
+
+    def mergeWith(self: Self, other: QUndoCommand) -> bool:
+        return False
+
+class cmdEditPropertyValues(cmdElements):
+    _initial: dict[ElementMixin, dict[str, str]]
+    _changes: dict[str, tuple[str, PropertyChange]]
+
+    def __init__(
+        self     : Self,
+        scene    : "DrawingScene",
+        elements : list[ElementMixin],
+        changes  : dict[str, tuple[str, PropertyChange]]
+    ):
+        super().__init__(scene, elements)
+        self._changes = changes
+        self._initial = {e: e.properties.copy() for e in elements}
+
+    def redo(self) -> None:
+        for name, (value, edit) in self._changes.items():
+            if edit == PropertyChange.NO_CHANGE:
+                continue
+            for element in self.elements:
+                if edit == PropertyChange.DELETE and name in element.properties:
+                    del element.properties[name]
+                elif edit == PropertyChange.EXISTING and name in element.properties:
+                    element.properties[name] = value
+                elif edit == PropertyChange.ALL:
+                    element.properties[name] = value
+                element.update()
+
+    def undo(self) -> None:
+        for element in self.elements:
+            element.properties = self._initial[element].copy()
+            element.update()
+
+    def mergeWith(self, other: QUndoCommand) -> bool:
+        if not isinstance(other, cmdEditPropertyValues) or other.scene != self.scene:
+            return False
+        self._changes = other._changes
+        return True
+
 class DrawingSceneApiEditMixin:
     def editCut(
         self : "DrawingScene",
@@ -333,3 +409,17 @@ class DrawingSceneApiEditMixin:
         changes  : AppearancePrefChange
     ) -> None:
         self.undo_stack.push(cmdEditAppearance(self, elements, changes))
+
+    def editProperties(
+        self    : "DrawingScene",
+        element : ElementMixin,
+        after   : dict[str, str]
+    ) -> None:
+        self.undo_stack.push(cmdEditProperties(self, element, after))
+
+    def editPropertyValues(
+        self     : "DrawingScene",
+        elements : list[ElementMixin],
+        changes  : dict[str, tuple[str, PropertyChange]]
+    ) -> None:
+        self.undo_stack.push(cmdEditPropertyValues(self, elements, changes))

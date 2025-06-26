@@ -1,3 +1,7 @@
+TreeView argument order
+before/after vs initial/changes in commands
+rename private attributes e.g. cmdElement(s)
+
 TextRect:
 QGraphicsScene::removeItem: item 0x183fe6843d0's scene (0x0) is different from this scene (0x183fe682390)
 

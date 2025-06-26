@@ -13,7 +13,7 @@ class TreeView(QTreeView):
     def __init__(
         self   : Self,
         parent : QWidget,
-        model  : QAbstractItemModel
+        model  : QAbstractItemModel # TODO swap argument position with parent
     ) -> None:
         super().__init__(parent)
         self.setModel(model)

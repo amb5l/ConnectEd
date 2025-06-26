@@ -1,10 +1,10 @@
 import uuid
 
-from typing      import Self, Optional, Any
-from types       import SimpleNamespace
+from typing      import Self, Optional, Any, Dict
+from types       import SimpleNamespace, NoneType
 from dataclasses import dataclass
 
-from PyQt6.QtCore    import Qt, QXmlStreamWriter, QXmlStreamReader, QPointF
+from PyQt6.QtCore    import Qt, QXmlStreamWriter, QXmlStreamReader
 from PyQt6.QtGui     import QPen, QBrush, QColor, QFont, QAction, QUndoCommand
 from PyQt6.QtWidgets import QGraphicsItem, QGraphicsRectItem, \
                             QGraphicsTextItem, QGraphicsSimpleTextItem, \
@@ -515,7 +515,7 @@ class CustomGraphicsItemMixin:
                 except TypeError:
                     pass
                 action.triggered.connect(
-                    lambda checked=False, w=widget: slot(self._instance, w)
+                    lambda checked=False, w=widget, s=slot: s(checked, w)
                 )
         self._menu.exec(event.screenPos())
         self._instance = None
@@ -562,6 +562,7 @@ class ElementMixin:
             lambda self: self.appearance.text.getPref()
         )
     }
+    _PROPERTIES = None
     _MENU = None
 
     uuid       : str
@@ -591,6 +592,8 @@ class ElementMixin:
         self.setCacheMode(QGraphicsItem.CacheMode.DeviceCoordinateCache)
         hub.settings.change.connect(self.onSettingsChange)
         self._menu = CustomGraphicsItemMixin.getMenu(self.__class__)
+        if self._PROPERTIES is not None:
+            self.properties = self._PROPERTIES.copy()
 
     def __hash__(self):
         return hash(self.uuid)
