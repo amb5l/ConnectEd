@@ -57,6 +57,13 @@ class TextDialog(QDialog):
         okCancelLayout(self)
         self.setLayout(self.dialog_layout)
 
+    def showEvent(self, event):
+        """Override showEvent to select all text when dialog appears."""
+        super().showEvent(event)
+        if self.text_edit.text() == "<text>":
+            self.text_edit.selectAll()
+            self.text_edit.setFocus()
+
     def getChoice(self : Self) -> tuple[str, TextPrefChange]:
         text = self.text_edit.text()
         appearance = self.appearance_layout.getChoice()
