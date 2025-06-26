@@ -24,6 +24,7 @@ class DrawingViewPlaceMixin:
         scene.clearSelection()
         self.wip.clear()
         element = scene.placeBlock(pos)
+        element.setSelected(True)
         self.wip.elements = [element]
         self.wip.pos0 = pos
         self._goState(State.PlaceBlock2)
@@ -46,10 +47,9 @@ class DrawingViewPlaceMixin:
         scene.clearSelection()
         self.wip.clear()
         element = scene.placeRectangle(p1)
+        element.setSelected(True)
         self.wip.elements = [element]
         self.wip.pos0 = p1
-        self.wip.elements[0].setSelected(True) # explicitly select the rectangle
-        self.wip.elements[0].setKPVisible(True) # ensure keypoints are visible
         self._goState(State.PlaceRectangle2)
 
     def placeRectangleContinue(self : "DrawingView", p2: QPointF) -> None:
@@ -100,7 +100,6 @@ class DrawingViewPlaceMixin:
         pos = self.mapToScene(self.mapFromGlobal(QCursor.pos()))
         element = scene.placeTextLine("<text>", pos)
         element.setSelected(True)
-        element.setKPVisible(True)
         self.wip.clear()
         self.wip.elements = [element]
         dialog = TextDialog(element)

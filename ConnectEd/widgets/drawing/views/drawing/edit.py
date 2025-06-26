@@ -81,7 +81,6 @@ class DrawingViewEditMixin:
             # Apply initial offset to position elements at mouse location
             element.setPos(element.pos() + offset)
             element.setSelected(True)
-            element.setKPVisible(False)  # Explicitly hide keypoints
         scene.blockSignals(False)
         scene.selectionChanged.emit()
         self.wip.macro = True
@@ -168,7 +167,6 @@ class DrawingViewEditMixin:
             if element.scene() != scene:
                 scene.addItem(element)
             element.setSelected(True)
-            element.setKPVisible(False)  # Explicitly hide keypoints
         scene.blockSignals(False)
         scene.selectionChanged.emit()
         self.wip.macro = True
