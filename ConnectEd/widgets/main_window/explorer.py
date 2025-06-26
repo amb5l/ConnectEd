@@ -24,7 +24,7 @@ class Explorer(TreeView):
     _focus_in : bool
 
     def __init__(self : Self, parent : QWidget) -> None:
-        super().__init__(parent, hub.model)
+        super().__init__(hub.model, parent)
         hub.model.itemChanged.connect(self.onItemChanged)
         self.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
         self.customContextMenuRequested.connect(self.showContextMenu)
@@ -372,6 +372,6 @@ class ExplorerDock(TreeViewDock):
     explorer : Explorer
 
     def __init__(self : Self, parent : QWidget) -> None:
-        super().__init__(parent, None)
+        super().__init__(None, parent)
         self.explorer = Explorer(self)
         self.setWidget(self.explorer)

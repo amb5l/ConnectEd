@@ -12,8 +12,8 @@ class TreeView(QTreeView):
 
     def __init__(
         self   : Self,
-        parent : QWidget,
-        model  : QAbstractItemModel # TODO swap argument position with parent
+        model  : QAbstractItemModel,
+        parent : QWidget
     ) -> None:
         super().__init__(parent)
         self.setModel(model)
@@ -64,8 +64,8 @@ class TreeViewDock(QDockWidget):
 
     def __init__(
         self   : Self,
-        parent : QWidget,
-        widget : Optional[TreeView] = None
+        widget : Optional[TreeView],
+        parent : QWidget
     ) -> None:
         super().__init__(parent)
         self.setWindowTitle(self.WINDOW_TITLE)
