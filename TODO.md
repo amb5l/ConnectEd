@@ -1,10 +1,7 @@
-Block key points visible when created - but not selected?
-rename private attributes e.g. cmdElement(s)
+- improve context menu handling for single vs multiple elements;
+  consider adding title
 
-TextRect:
-QGraphicsScene::removeItem: item 0x183fe6843d0's scene (0x0) is different from this scene (0x183fe682390)
-
-Check self type for mixins
+- implememnt property text
 
 - view prev/next
 
@@ -32,7 +29,7 @@ Connect the stack’s state changes to action enablement in DrawingView.
 
 
 
-- implememnt property text
+
 
 - fix diagram paper_size
 

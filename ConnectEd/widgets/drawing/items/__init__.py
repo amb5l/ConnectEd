@@ -485,6 +485,13 @@ class CustomGraphicsItemMixin:
     def getMenu(cls) -> QMenu:
         if cls._MENU is None:
             cls._MENU = QMenu()
+            title = QAction(camel_to_proper(cls.__name__), cls._MENU)
+            title.setEnabled(False)
+            font = QFont()
+            font.setBold(True)
+            title.setFont(font)
+            cls._MENU.addAction(title)
+            cls._MENU.addSeparator()
             for item_name in cls._MENU_ITEM_NAMES:
                 if item_name.startswith("-"):
                     cls._MENU.addSeparator()

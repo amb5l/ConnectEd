@@ -39,10 +39,13 @@ def check(b : bool, s : str) -> bool:
 def camel_to_proper(s : str) -> str:
     r = []
     for i, char in enumerate(s):
-        if i > 0 and char.isupper():
-            r.append(" ")
-        r.append(char)
-    return "".join(r).capitalize()
+        if i == 0:
+            r.append(char.upper())
+        else:
+            if char.isupper():
+                r.append(" ")
+            r.append(char)
+    return "".join(r)
 
 def getDefaultPath() -> str:
     if platform.system() == "Windows":
