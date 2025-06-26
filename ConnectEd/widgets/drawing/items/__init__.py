@@ -659,8 +659,8 @@ class ElementMixin:
 
 class cmdElement(QUndoCommand):
     """Base class for all commands that work with an element."""
-    scene   : "DrawingScene"
-    element : ElementMixin
+    _scene   : "DrawingScene"
+    _element : ElementMixin
 
     def __init__(
         self    : Self,
@@ -669,20 +669,20 @@ class cmdElement(QUndoCommand):
     ):
         text = camel_to_proper(self.__class__.__name__.replace("cmd", ""))
         super().__init__(text)
-        self.scene = scene
-        self.element = element
+        self._scene = scene
+        self._element = element
 
     def id(self : Self) -> int:
         """Return a unique ID for merging commands."""
-        element_id = id(self.element) & 0x7FFFFFFF
+        element_id = id(self._element) & 0x7FFFFFFF
         class_id = hash(self.__class__.__name__) & 0x7FFFFFFF
         return ((element_id + class_id) & 0x7FFFFFFF)
 
     def mergeWith(self : Self, other : QUndoCommand) -> bool:
         """Merge this command with another identical command."""
         if not isinstance(other, self.__class__) \
-        or other.scene != self.scene \
-        or other.element != self.element:
+        or other._scene != self._scene \
+        or other._element != self._element:
             return False
         return True
 
@@ -698,8 +698,8 @@ class cmdElement(QUndoCommand):
 
 class cmdElements(QUndoCommand):
     """Base class for all commands that work with multiple elements."""
-    scene    : "DrawingScene"
-    elements : list[ElementMixin]
+    _scene    : "DrawingScene"
+    _elements : list[ElementMixin]
 
     def __init__(
         self     : Self,
@@ -708,20 +708,20 @@ class cmdElements(QUndoCommand):
     ):
         text = camel_to_proper(self.__class__.__name__.replace("cmd", ""))
         QUndoCommand.__init__(self, text)
-        self.scene = scene
-        self.elements = elements
+        self._scene = scene
+        self._elements = elements
 
     def id(self : Self) -> int:
         """Return a unique ID for merging commands."""
-        element_ids = [id(element) & 0x7FFFFFFF for element in self.elements]
+        element_ids = [id(element) & 0x7FFFFFFF for element in self._elements]
         class_id = hash(self.__class__.__name__) & 0x7FFFFFFF
         return ((sum(element_ids) + class_id) & 0x7FFFFFFF)
 
     def mergeWith(self : Self, other : QUndoCommand) -> bool:
         """Merge this command with another identical command."""
         if not isinstance(other, self.__class__) \
-        or other.scene != self.scene \
-        or other.elements != self.elements:
+        or other._scene != self._scene \
+        or other._elements != self._elements:
             return False
         return True
 
@@ -746,11 +746,11 @@ class cmdPlaceElement(cmdElement):
         super().__init__(scene, element) # record scene and element instances
 
     def redo(self : Self) -> None:
-        if self.element.scene() != self.scene:
-            self.scene.addItem(self.element)
+        if self._element.scene() != self._scene:
+            self._scene.addItem(self._element)
 
     def undo(self : Self) -> None:
-        self.scene.removeItem(self.element)
+        self._scene.removeItem(self._element)
 
 def clone(elements : list[ElementMixin]) -> list[ElementMixin]:
     r = []
