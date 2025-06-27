@@ -49,6 +49,7 @@ class KeyPoint(QGraphicsItem):
 
     # instance variables
     _manager : "KPManager"
+    _hidden  : bool
     _loc     : KPLoc # parent's key point location
     _grip    : bool
     _cleat   : bool
@@ -71,6 +72,7 @@ class KeyPoint(QGraphicsItem):
         self.setFlag( f.ItemIsMovable              , True )
         self.setFlag( f.ItemIgnoresTransformations , True )
         self._manager = manager
+        self._hidden  = True
         self._loc     = loc
         self._grip    = grip
         self._cleat   = cleat
@@ -85,13 +87,19 @@ class KeyPoint(QGraphicsItem):
         hub.settings.change.connect(self.onSettingsChange)
         self._menu = CustomGraphicsItemMixin.getMenu(self.__class__)
 
+    def setHidden(self, hidden: bool) -> None:
+        self._hidden = hidden
+        self.update()
+
     def boundingRect(
         self : Self,
         view : Optional[QGraphicsView] = None
     ) -> QRectF:
-        return self._rect
+        return QRectF() if self._hidden else self._rect
 
     def shape(self : Self) -> QPainterPath:
+        if self._hidden:
+            return QPainterPath()
         path = QPainterPath()
         path.addRect(self.boundingRect())
         return path
@@ -102,6 +110,8 @@ class KeyPoint(QGraphicsItem):
         option  : QStyleOptionGraphicsItem,
         widget  : QWidget
     ) -> None:
+        if self._hidden:
+            return
         painter.setPen(self._pen)
         painter.setBrush(self._brush)
         if self._manager.anchor is None or self._manager.anchor == self:
@@ -192,4 +202,4 @@ class KPManager:
 
     def setVisible(self : Self, visible : bool) -> None:
         for kp in self.key_points.values():
-            kp.setVisible(visible)
+            kp.setHidden(not visible)

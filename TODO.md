@@ -1,7 +1,15 @@
-- improve context menu handling for single vs multiple elements;
-  consider adding title
+- change Key Points to always visible so they can have property children
+- control appearance and bounding rect
 
+- refactor properties - move to single object with name and value
 - implememnt property text
+- review use of update()
+
+- use pyTooling @export
+- class variable type hints
+
+- improve context menu handling for single vs multiple elements;
+  consider adding title; handle properties and appearance automatically?
 
 - view prev/next
 
