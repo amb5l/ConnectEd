@@ -1,5 +1,6 @@
-- change Key Points to always visible so they can have property children
-- control appearance and bounding rect
+- export to SVG, use diffsvg to compare with known good for regression testing
+- review setPos/pos - use _local_pos to simplify pos()
+- review itemChange to connect to KeyPointManager change signal
 
 - refactor properties - move to single object with name and value
 - implememnt property text

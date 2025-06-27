@@ -26,9 +26,7 @@ class BaseTextLine(CustomGraphicsSimpleTextItem, ElementMixin):
     _MENU_ITEM_NAMES = [
         "Appearance..."
     ]
-
-    # instance variables
-    _kpm : KPManager
+    _KEY_POINTS = [KPDef(k, True, False) for k in KPLoc]
 
     def __init__(
         self   : Self,
@@ -38,11 +36,6 @@ class BaseTextLine(CustomGraphicsSimpleTextItem, ElementMixin):
     ) -> None:
         super().__init__(text)
         self.initElement(line=None, fill=None, text=TextPref())
-        self._kpm = KPManager(
-            self,
-            [KPDef(k, True, False) for k in KPLoc],
-            KPLoc.TOP_LEFT
-        )
         self.setPos(pos)
         self.setAnchor(anchor)
         self.setFlag(self.GraphicsItemFlag.ItemIsSelectable , True)

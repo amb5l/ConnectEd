@@ -1,7 +1,7 @@
 import uuid
 
-from typing      import Self, Optional, Any, Dict
-from types       import SimpleNamespace, NoneType
+from typing      import Self, Optional, Any
+from types       import SimpleNamespace
 from dataclasses import dataclass
 
 from PyQt6.QtCore    import Qt, QXmlStreamWriter, QXmlStreamReader
@@ -17,7 +17,10 @@ from .... import hub
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from .. import DrawingScene
+    from ..         import DrawingScene
+    from .property  import Property
+    from .key_point import KPLoc, KPManager
+
 
 class Default:
     def __str__(self): return "default"
@@ -464,7 +467,6 @@ class Appearance:
     text    : Optional[TextColorFont] = None
     outline : Optional[OutlinePen]    = None
 
-
 class CustomGraphicsItemMixin:
     """Mixin for custom graphics items, providing hashability and itemChange."""
     _MENU = None # class context menu
@@ -479,6 +481,9 @@ class CustomGraphicsItemMixin:
         if change == QGraphicsItem.GraphicsItemChange.ItemSelectedHasChanged:
             if hasattr(self, 'onSelectionChange'):
                 self.onSelectionChange()
+        elif change == QGraphicsItem.GraphicsItemChange.ItemSceneHasChanged:
+            if hasattr(self, 'onSceneChange'):
+                self.onSceneChange(value)
         return super().itemChange(change, value)
 
     @staticmethod
@@ -569,12 +574,15 @@ class ElementMixin:
             lambda self: self.appearance.text.getPref()
         )
     }
-    _PROPERTIES = None
-    _MENU = None
+    _MENU       : Optional[QMenu] = None
+    _KEY_POINTS : Optional[list["KPLoc"]] = None
+    _PROPERTIES : Optional[dict[str, str]] = None
 
-    uuid       : str
-    appearance : Appearance
-    _menu      : QMenu
+    uuid        : str
+    appearance  : Appearance
+    _menu       : QMenu
+    _kpm        : Optional["KPManager"]
+    _properties : Optional[list["Property"]]
 
     def initElement(
         self : Self,
@@ -599,8 +607,21 @@ class ElementMixin:
         self.setCacheMode(QGraphicsItem.CacheMode.DeviceCoordinateCache)
         hub.settings.change.connect(self.onSettingsChange)
         self._menu = CustomGraphicsItemMixin.getMenu(self.__class__)
+        if self._KEY_POINTS is not None:
+            self._kpm = KPManager(self, self._KEY_POINTS)
+        else:
+            self._kpm = None
+
         if self._PROPERTIES is not None:
-            self.properties = self._PROPERTIES.copy()
+            from .property import Property
+            self._properties = []
+            for name, (value, format, anchor, pos, cleat) in self._PROPERTIES.items():
+                p = Property(name, value, format, pos, anchor, cleat)
+                p.setParentItem(self)  # This will trigger itemChange and connect signals
+                self._properties.append(p)
+                # Don't add to scene yet - defer until element is added to scene
+        else:
+            self._properties = None
 
     def __hash__(self):
         return hash(self.uuid)
@@ -623,6 +644,14 @@ class ElementMixin:
 
     def resetUuid(self : Self) -> None:
         self.uuid = str(uuid.uuid4())
+
+    def onSceneChange(self, scene):
+        """Handle element being added to or removed from a scene."""
+        if scene is not None and self._properties is not None:
+            # Element was added to a scene, add properties too
+            for p in self._properties:
+                if p.scene() != scene:
+                    scene.addItem(p)
 
     def getDefaults(self : Self) -> SimpleNamespace:
         r = SimpleNamespace()

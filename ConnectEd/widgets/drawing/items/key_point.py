@@ -4,7 +4,7 @@ from typing      import Self, Optional
 from enum        import Enum
 from collections import namedtuple
 
-from PyQt6.QtCore    import Qt, QRectF, QPointF, \
+from PyQt6.QtCore    import Qt, QRectF, QPointF, QObject, pyqtSignal, \
                             QXmlStreamWriter, QXmlStreamReader
 from PyQt6.QtWidgets import QGraphicsItem, QStyleOptionGraphicsItem, \
                             QWidget, QGraphicsView, QMenu
@@ -49,7 +49,6 @@ class KeyPoint(QGraphicsItem):
 
     # instance variables
     _manager : "KPManager"
-    _hidden  : bool
     _loc     : KPLoc # parent's key point location
     _grip    : bool
     _cleat   : bool
@@ -57,6 +56,7 @@ class KeyPoint(QGraphicsItem):
     _brush   : QBrush
     _rect    : QRectF
     _rhombus : QPainterPath
+    _shape   : QPainterPath
     _menu    : QMenu
 
     def __init__(
@@ -72,7 +72,6 @@ class KeyPoint(QGraphicsItem):
         self.setFlag( f.ItemIsMovable              , True )
         self.setFlag( f.ItemIgnoresTransformations , True )
         self._manager = manager
-        self._hidden  = True
         self._loc     = loc
         self._grip    = grip
         self._cleat   = cleat
@@ -80,6 +79,7 @@ class KeyPoint(QGraphicsItem):
         self._brush   = QBrush()
         self._rect    = QRectF()
         self._rhombus = QPainterPath()
+        self._shape   = QPainterPath()
         self._pen.setWidth(0)
         self._pen.setStyle(Qt.PenStyle.SolidLine)
         self._brush.setStyle(Qt.BrushStyle.SolidPattern)
@@ -87,22 +87,14 @@ class KeyPoint(QGraphicsItem):
         hub.settings.change.connect(self.onSettingsChange)
         self._menu = CustomGraphicsItemMixin.getMenu(self.__class__)
 
-    def setHidden(self, hidden: bool) -> None:
-        self._hidden = hidden
-        self.update()
-
     def boundingRect(
         self : Self,
         view : Optional[QGraphicsView] = None
     ) -> QRectF:
-        return QRectF() if self._hidden else self._rect
+        return self._rect
 
     def shape(self : Self) -> QPainterPath:
-        if self._hidden:
-            return QPainterPath()
-        path = QPainterPath()
-        path.addRect(self.boundingRect())
-        return path
+        return self._shape
 
     def paint(
         self    : Self,
@@ -110,8 +102,6 @@ class KeyPoint(QGraphicsItem):
         option  : QStyleOptionGraphicsItem,
         widget  : QWidget
     ) -> None:
-        if self._hidden:
-            return
         painter.setPen(self._pen)
         painter.setBrush(self._brush)
         if self._manager.anchor is None or self._manager.anchor == self:
@@ -134,6 +124,8 @@ class KeyPoint(QGraphicsItem):
         self._rhombus.lineTo(  0 ,  r )
         self._rhombus.lineTo( -r ,  0 )
         self._rhombus.closeSubpath()
+        self._shape.clear()
+        self._shape.addRect(self._rect)
 
     def isMoveable(self : Self) -> bool:
         return self._grip
@@ -154,12 +146,14 @@ class KeyPoint(QGraphicsItem):
 
 KPDef = namedtuple("KPDef", ["loc", "grip", "cleat"])
 
-class KPManager:
+class KPManager(QObject):
     element       : QGraphicsItem         # parent element
     key_points    : dict[KPLoc, KeyPoint]
     anchor        : Optional[KeyPoint]
     anchor_loc    : Optional[KPLoc]
     anchor_offset : QPointF
+
+    change = pyqtSignal()
 
     def __init__(
         self    : Self,
@@ -167,6 +161,7 @@ class KPManager:
         kp_defs : list[KPDef],
         anchor  : Optional[KPLoc] = None
     ) -> None:
+        super().__init__()
         self.element = parent
         self.key_points = {
             x.loc: KeyPoint(self, x.loc, x.grip, x.cleat) for x in kp_defs
@@ -193,13 +188,16 @@ class KPManager:
         return QPointF(kp.h * rect.width(), kp.v * rect.height())
 
     def updatePositions(self : Self) -> None:
-        self.rect = self.element.KPRect()
+        rect = self.element.KPRect()
         for kp_loc in self.key_points.keys():
-            self.key_points[kp_loc].setPos(
-                kp_loc.h * self.rect.width(),
-                kp_loc.v * self.rect.height()
-            )
+            new_pos = QPointF(kp_loc.h * rect.width(), kp_loc.v * rect.height())
+            if kp_loc != self.key_points[kp_loc]:
+                self.key_points[kp_loc].setPos(new_pos)
+        # Also update anchor_offset when size changes
+        if self.anchor_loc is not None:
+            self.anchor_offset = self.getKeyPointPos(self.anchor_loc)
+        self.change.emit()
 
     def setVisible(self : Self, visible : bool) -> None:
         for kp in self.key_points.values():
-            kp.setHidden(not visible)
+            kp.setVisible(visible)

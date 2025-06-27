@@ -66,6 +66,15 @@ FACTORY_SETTINGS = {
                 },
                 "fill" : Qt.BrushStyle.SolidPattern
             },
+            "Property" : {
+                "text" : {
+                    "family"    : "Liberation Sans",
+                    "size"      : 7,
+                    "bold"      : False,
+                    "italic"    : False,
+                    "underline" : False
+                }
+            },
             "Rectangle" : {
                 "line" : {
                     "width" : 1,
@@ -126,6 +135,9 @@ FACTORY_SETTINGS = {
                 "Block" : {
                     "line" : QColor( 0x81, 0xD1, 0xCD ),
                     "fill" : QColor( 0x30, 0x30, 0x30 )
+                },
+                "Property" : {
+                    "text" : QColor( 128, 255, 128 )
                 },
                 "Rectangle" : {
                     "line" : QColor( 192, 120,   0 ), # light orange

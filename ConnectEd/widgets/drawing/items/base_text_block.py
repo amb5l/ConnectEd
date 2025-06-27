@@ -29,9 +29,9 @@ class BaseTextBlock(CustomGraphicsTextItem, ElementMixin):
     _MENU_ITEM_NAMES = [
         "Appearance..."
     ]
+    _KEY_POINTS = [KPDef(k, False, False) for k in KPLoc]
 
     # instance variables
-    _kpm   : KPManager
     _rect  : QRectF
     _shape : QPainterPath
 
@@ -45,11 +45,6 @@ class BaseTextBlock(CustomGraphicsTextItem, ElementMixin):
         self._shape = QPainterPath()
         super().__init__(text)
         self.initElement(line=None, fill=None, text=TextPref())
-        self._kpm = KPManager(
-            self,
-            [KPDef(k, False, False) for k in KPLoc],
-            KPLoc.TOP_LEFT
-        )
         self.setPos(pos)
         self.setAnchor(anchor)
         self.setEditable(False)

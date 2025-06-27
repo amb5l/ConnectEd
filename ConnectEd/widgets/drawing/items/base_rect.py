@@ -31,8 +31,8 @@ class BaseRectangle(CustomGraphicsRectItem, ElementMixin):
     _MENU_ITEM_NAMES = [
         "Appearance..."
     ]
+    _KEY_POINTS = [KPDef(k, True, False) for k in KPLoc]
 
-    _kpm           : KPManager
     _rect          : QRectF
     _bounding_rect : QRectF
     _shape         : QPainterPath
@@ -79,7 +79,6 @@ class BaseRectangle(CustomGraphicsRectItem, ElementMixin):
     ) -> None:
         super().__init__()
         self.initElement(line=LinePref(), fill=FillPref(), text=None)
-        self._kpm = KPManager(self, [KPDef(k, True, False) for k in KPLoc])
         self._shape = QPainterPath()
         if isinstance(a1, QRectF):
             self.setRect(a1)
@@ -111,6 +110,9 @@ class BaseRectangle(CustomGraphicsRectItem, ElementMixin):
         self._shape.clear()
         self._shape.addRect(self._bounding_rect)
         self._kpm.updatePositions()
+        if self._properties is not None:
+            for p in self._properties:
+                p.refresh()
 
     def boundingRect(self : Self) -> QRectF:
         return self._bounding_rect
