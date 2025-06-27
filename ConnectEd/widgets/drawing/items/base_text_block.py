@@ -31,9 +31,9 @@ class BaseTextBlock(CustomGraphicsTextItem, ElementMixin):
     ]
 
     # instance variables
-    _kpm     : KPManager
-    _rect    : QRectF
-    _shape   : QPainterPath
+    _kpm   : KPManager
+    _rect  : QRectF
+    _shape : QPainterPath
 
     def __init__(
         self   : Self,

@@ -28,7 +28,7 @@ class BaseTextLine(CustomGraphicsSimpleTextItem, ElementMixin):
     ]
 
     # instance variables
-    _kpm     : KPManager
+    _kpm : KPManager
 
     def __init__(
         self   : Self,
