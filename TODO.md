@@ -1,9 +1,12 @@
-- export to SVG, use diffsvg to compare with known good for regression testing
-- review setPos/pos - use _local_pos to simplify pos()
-- review itemChange to connect to KeyPointManager change signal
+- Properties dialog
+  - display changes in bold (store original cell text in user role data)
+  - TableView copy/paste/clear/revert context menu
+- serialise properties
 
-- refactor properties - move to single object with name and value
-- implememnt property text
+- better KPLoc
+- export to SVG, use diffsvg to compare with known good for regression testing
+- review setPos/pos - use _local_pos to simplify/speed up pos()
+- review itemChange to connect to KeyPointManager change signal
 - review use of update()
 
 - use pyTooling @export
