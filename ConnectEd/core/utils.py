@@ -85,14 +85,14 @@ def val2str(v : Any) -> str:
         case "LinePref"   : s = v.toStr()
         case "FillPref"   : s = v.toStr()
         case "TextPref"   : s = v.toStr()
-        case "KPLoc"      : s = str(v).replace("KPLoc.", "")
+        case "KPLoc"      : s = v.name
         case _ :
             raise ValueError(f"Unsupported type: {t}")
     return s
 
 def str2val(s : str, t : str) -> Any:
     """Convert a text representation of a Python value to a Python value."""
-    from ..widgets import KPLoc, TextPref, LinePref, FillPref
+    from ..widgets import KP, TextPref, LinePref, FillPref
     def strValuesToFloats(s : str) -> list[float]:
         return [float(p) for p in s.strip("()").split(",")]
     if s == "None":
@@ -113,6 +113,6 @@ def str2val(s : str, t : str) -> Any:
         case "TextPref"   : return TextPref.fromStr(s)
         case "LinePref"   : return LinePref.fromStr(s)
         case "FillPref"   : return FillPref.fromStr(s)
-        case "KPLoc"      : return getattr(KPLoc, s)
+        case "KPLoc"      : return getattr(KP, s)
         case _:
             raise ValueError(f"Unsupported type: {t}")

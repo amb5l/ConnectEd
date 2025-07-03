@@ -9,7 +9,7 @@ from PyQt6.QtGui     import QPainter, QPainterPath
 from ....core   import logger
 
 from . import CustomGraphicsRectItem, ElementMixin, cmdPlaceElement, \
-              KPLoc, KPDef, \
+              KPLoc, KP, KPDef, \
               LinePref, FillPref
 
 from typing import TYPE_CHECKING
@@ -31,7 +31,7 @@ class BaseRectangle(CustomGraphicsRectItem, ElementMixin):
     _MENU_ITEM_NAMES = [
         "Appearance..."
     ]
-    _KEY_POINTS = [KPDef(k, True, False) for k in KPLoc]
+    _KEY_POINTS = [KPDef(k, True, False) for k in KP.__iter__()]
 
     _rect          : QRectF
     _bounding_rect : QRectF
@@ -201,23 +201,23 @@ class BaseRectangle(CustomGraphicsRectItem, ElementMixin):
         p1, p2 = self.getPoints()
         d = delta
         match kp:
-            case KPLoc.TOP_LEFT:
+            case KP.TOP_LEFT:
                 self.setPoints(p1 + d, p2)
-            case KPLoc.TOP_CENTER:
+            case KP.TOP_CENTER:
                 self.setPoints(p1.x(), p1.y() + d.y(), p2.x(), p2.y())
-            case KPLoc.TOP_RIGHT:
+            case KP.TOP_RIGHT:
                 self.setPoints(p1.x(), p1.y() + d.y(), p2.x() + d.x(), p2.y())
-            case KPLoc.CENTER_LEFT:
+            case KP.CENTER_LEFT:
                 self.setPoints(p1.x() + d.x(), p1.y(), p2.x(), p2.y())
-            case KPLoc.CENTER:
+            case KP.CENTER:
                 self.setPos(self.pos() + d)
-            case KPLoc.CENTER_RIGHT:
+            case KP.CENTER_RIGHT:
                 self.setPoints(p1.x(), p1.y(), p2.x() + d.x(), p2.y())
-            case KPLoc.BOTTOM_LEFT:
+            case KP.BOTTOM_LEFT:
                 self.setPoints(p1.x() + d.x(), p1.y(), p2.x(), p2.y() + d.y())
-            case KPLoc.BOTTOM_CENTER:
+            case KP.BOTTOM_CENTER:
                 self.setPoints(p1.x(), p1.y(), p2.x(), p2.y() + d.y())
-            case KPLoc.BOTTOM_RIGHT:
+            case KP.BOTTOM_RIGHT:
                 self.setPoints(p1, p2 + d)
             case _:
                 raise ValueError(f"Invalid key point: {kp}")

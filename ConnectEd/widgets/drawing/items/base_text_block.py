@@ -8,7 +8,7 @@ from PyQt6.QtGui     import QColor, QPainter, QPainterPath, \
                             QKeyEvent, QFocusEvent, QTextCursor
 
 from . import CustomGraphicsTextItem, ElementMixin, cmdPlaceElement, \
-              KPLoc, KPDef, \
+              KPLoc, KP, KPDef, \
               TextPref
 
 from typing import TYPE_CHECKING
@@ -29,7 +29,7 @@ class BaseTextBlock(CustomGraphicsTextItem, ElementMixin):
     _MENU_ITEM_NAMES = [
         "Appearance..."
     ]
-    _KEY_POINTS = [KPDef(k, False, False) for k in KPLoc]
+    _KEY_POINTS = [KPDef(k, False, False) for k in KP.__iter__()]
 
     # instance variables
     _rect  : QRectF
@@ -39,7 +39,7 @@ class BaseTextBlock(CustomGraphicsTextItem, ElementMixin):
         self   : Self,
         text   : str = "",
         pos    : QPointF = QPointF(0, 0),
-        anchor : KPLoc = KPLoc.TOP_LEFT
+        anchor : KPLoc = KP.TOP_LEFT
     ) -> None:
         self._rect = QRectF()
         self._shape = QPainterPath()
@@ -148,7 +148,7 @@ class BaseTextBlock(CustomGraphicsTextItem, ElementMixin):
             painter.setPen(self.appearance.outline.pen)
             painter.drawRect(self.boundingRect())
 
-    def setAnchor(self : Self, anchor : KPLoc = KPLoc.TOP_LEFT) -> None:
+    def setAnchor(self : Self, anchor : KPLoc = KP.TOP_LEFT) -> None:
         self._kpm.setAnchor(anchor)
 
     def setKPVisible(self : Self, visible : bool) -> None:

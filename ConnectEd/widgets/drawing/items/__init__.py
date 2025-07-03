@@ -19,7 +19,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ..         import DrawingScene
     from .property  import Property
-    from .key_point import KPLoc, KPManager
+    from .key_point import KPLoc
 
 
 class Default:
@@ -823,7 +823,7 @@ __all__ = [
     "cmdPlaceElement",
     "clone"
 ]
-from .key_point import KPLoc, KeyPoint, KPDef, KPManager
+from .key_point import KPLoc, KP, KeyPoint, KPDef, KPManager
 __all__ += key_point.__all__
 from .block import Block, cmdPlaceBlock
 __all__ += block.__all__

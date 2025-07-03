@@ -1,4 +1,4 @@
-__all__ = ["KPLoc", "KeyPoint", "KPDef", "KPManager"]
+__all__ = ["KPLoc", "KP", "KeyPoint", "KPDef", "KPManager"]
 
 from typing      import Self, Optional
 from enum        import Enum
@@ -19,24 +19,30 @@ if TYPE_CHECKING:
     from ... import DrawingView
 
 
-class KPLoc(Enum):
-    TOP_LEFT      = (0.0, 0.0)
-    TOP_CENTER    = (0.5, 0.0)
-    TOP_RIGHT     = (1.0, 0.0)
-    CENTER_LEFT   = (0.0, 0.5)
-    CENTER        = (0.5, 0.5)
-    CENTER_RIGHT  = (1.0, 0.5)
-    BOTTOM_LEFT   = (0.0, 1.0)
-    BOTTOM_CENTER = (0.5, 1.0)
-    BOTTOM_RIGHT  = (1.0, 1.0)
+@dataclass(frozen=True)
+class KPLoc:
+    name : str
+    h    : float
+    v    : float
 
-    @property
-    def h(self) -> float:
-        return self.value[0]
+class KP:
+    TOP_LEFT      = KPLoc( "Top Left"      , 0.0 , 0.0 )
+    TOP_CENTER    = KPLoc( "Top Center"    , 0.5 , 0.0 )
+    TOP_RIGHT     = KPLoc( "Top Right"     , 1.0 , 0.0 )
+    CENTER_LEFT   = KPLoc( "Center Left"   , 0.0 , 0.5 )
+    CENTER        = KPLoc( "Center"        , 0.5 , 0.5 )
+    CENTER_RIGHT  = KPLoc( "Center Right"  , 1.0 , 0.5 )
+    BOTTOM_LEFT   = KPLoc( "Bottom Left"   , 0.0 , 1.0 )
+    BOTTOM_CENTER = KPLoc( "Bottom Center" , 0.5 , 1.0 )
+    BOTTOM_RIGHT  = KPLoc( "Bottom Right"  , 1.0 , 1.0 )
 
-    @property
-    def v(self) -> float:
-        return self.value[1]
+    @classmethod
+    def __iter__(cls):
+        return iter([
+            cls.TOP_LEFT    , cls.TOP_CENTER    , cls.TOP_RIGHT     ,
+            cls.CENTER_LEFT , cls.CENTER        , cls.CENTER_RIGHT  ,
+            cls.BOTTOM_LEFT , cls.BOTTOM_CENTER , cls.BOTTOM_RIGHT
+        ])
 
 class KeyPoint(QGraphicsItem):
     # class variables

@@ -5,7 +5,7 @@ from PyQt6.QtWidgets import QWidget, QStyleOptionGraphicsItem, QStyle
 from PyQt6.QtGui     import QPainter, QPen, QBrush
 
 from . import CustomGraphicsSimpleTextItem, ElementMixin, TextPref, \
-              KPLoc, KPDef, \
+              KPLoc, KP, KPDef, \
               cmdPlaceElement
 
 from typing import TYPE_CHECKING
@@ -26,13 +26,13 @@ class BaseTextLine(CustomGraphicsSimpleTextItem, ElementMixin):
     _MENU_ITEM_NAMES = [
         "Appearance..."
     ]
-    _KEY_POINTS = [KPDef(k, True, False) for k in KPLoc]
+    _KEY_POINTS = [KPDef(k, True, False) for k in KP.__iter__()]
 
     def __init__(
         self   : Self,
         text   : str = "",
         pos    : QPointF = QPointF(0, 0),
-        anchor : KPLoc = KPLoc.TOP_LEFT
+        anchor : KPLoc = KP.TOP_LEFT
     ) -> None:
         super().__init__(text)
         self.initElement(line=None, fill=None, text=TextPref())
@@ -72,7 +72,7 @@ class BaseTextLine(CustomGraphicsSimpleTextItem, ElementMixin):
             painter.setPen(self.appearance.outline.pen)
             painter.drawRect(self.boundingRect())
 
-    def setAnchor(self : Self, anchor : KPLoc = KPLoc.TOP_LEFT) -> None:
+    def setAnchor(self : Self, anchor : KPLoc = KP.TOP_LEFT) -> None:
         self._kpm.setAnchor(anchor)
 
     def setKPVisible(self : Self, visible : bool) -> None:

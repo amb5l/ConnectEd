@@ -6,7 +6,7 @@ from PyQt6.QtCore import QPointF
 
 from ....core import Z_DRAWING
 
-from . import KPLoc as kp
+from . import KP
 
 from .base_rect import BaseRectangle, cmdPlaceBaseRectangle
 from .property  import PropertyDisplay as pd
@@ -20,9 +20,9 @@ class Block(BaseRectangle):
     Z = Z_DRAWING
     _PROPERTIES = {
     #   name            value  display     anchor           pos                cleat
-        "Reference" : ( ""   , pd.VALUE  , kp.BOTTOM_LEFT , QPointF( 0,  0 ) , kp.TOP_LEFT    ),
-        "Name"      : ( ""   , pd.VALUE  , kp.TOP_LEFT    , QPointF( 0,  0 ) , kp.BOTTOM_LEFT ),
-        "Path"      : ( ""   , pd.HIDDEN , kp.TOP_LEFT    , QPointF( 0, 10 ) , kp.BOTTOM_LEFT )
+        "Reference" : ( ""   , pd.VALUE  , KP.BOTTOM_LEFT , QPointF( 0,  0 ) , KP.TOP_LEFT    ),
+        "Name"      : ( ""   , pd.VALUE  , KP.TOP_LEFT    , QPointF( 0,  0 ) , KP.BOTTOM_LEFT ),
+        "Path"      : ( ""   , pd.HIDDEN , KP.TOP_LEFT    , QPointF( 0, 10 ) , KP.BOTTOM_LEFT )
     }
     _MENU_ITEM_NAMES = [
         "Properties..."

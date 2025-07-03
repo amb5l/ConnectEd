@@ -7,7 +7,7 @@ from PyQt6.QtGui     import QPainter
 
 from ....core import Z_DRAWING
 
-from . import ElementMixin, KPManager, KPLoc, cmdPlaceElement
+from . import ElementMixin, KPManager, KPLoc, KP, cmdPlaceElement
 
 from .base_text_line import BaseTextLine
 
@@ -75,8 +75,8 @@ class Property(BaseTextLine):
         value   : str,
         display : PropertyDisplay = PropertyDisplay.VALUE,
         pos     : QPointF = QPointF(0, 0),
-        anchor  : KPLoc = KPLoc.TOP_LEFT,
-        cleat   : KPLoc = KPLoc.BOTTOM_LEFT
+        anchor  : KPLoc = KP.TOP_LEFT,
+        cleat   : KPLoc = KP.BOTTOM_LEFT
     ) -> None:
         super().__init__(text="", pos=pos, anchor=anchor)
         self._name = name
