@@ -66,7 +66,7 @@ FACTORY_SETTINGS = {
                 },
                 "fill" : Qt.BrushStyle.SolidPattern
             },
-            "Property" : {
+            "PropertyText" : {
                 "text" : {
                     "family"    : "Liberation Sans",
                     "size"      : 7,
@@ -136,7 +136,7 @@ FACTORY_SETTINGS = {
                     "line" : QColor( 0x81, 0xD1, 0xCD ),
                     "fill" : QColor( 0x30, 0x30, 0x30 )
                 },
-                "Property" : {
+                "PropertyText" : {
                     "text" : QColor( 128, 255, 128 )
                 },
                 "Rectangle" : {

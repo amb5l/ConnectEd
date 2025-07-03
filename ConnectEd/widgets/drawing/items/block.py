@@ -8,8 +8,8 @@ from ....core import Z_DRAWING
 
 from . import KP
 
-from .base_rect import BaseRectangle, cmdPlaceBaseRectangle
-from .property  import PropertyDisplay as pd
+from .base_rect     import BaseRectangle, cmdPlaceBaseRectangle
+from .property_text import PropertyDisplay as pd
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:

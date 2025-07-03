@@ -17,9 +17,9 @@ from .... import hub
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from ..         import DrawingScene
-    from .property  import Property
-    from .key_point import KPLoc
+    from ..             import DrawingScene
+    from .property_text import PropertyText
+    from .key_point     import KPLoc
 
 
 class Default:
@@ -580,7 +580,7 @@ class ElementMixin:
 
     uuid       : str
     appearance : Appearance
-    properties : Optional[list["Property"]]
+    properties : Optional[list["PropertyText"]]
     _menu      : QMenu
     _kpm       : Optional["KPManager"]
 
@@ -613,10 +613,10 @@ class ElementMixin:
             self._kpm = None
 
         if self._PROPERTIES is not None:
-            from .property import Property
+            from .property_text import PropertyText
             self.properties = []
             for name, (value, display, anchor, pos, cleat) in self._PROPERTIES.items():
-                p = Property(name, value, display, pos, anchor, cleat)
+                p = PropertyText(name, value, display, pos, anchor, cleat)
                 p.setParentItem(self)  # This will trigger itemChange and connect signals
                 self.properties.append(p)
                 # Don't add to scene yet - defer until element is added to scene
@@ -839,8 +839,6 @@ from .text_line import TextLine, cmdPlaceTextLine
 __all__ += text_line.__all__
 from .symbol_instance import SymbolInstance
 __all__ += symbol_instance.__all__
-from .block import Block
-__all__ += block.__all__
 
 element_class_dict = {}
 for class_name in __all__:

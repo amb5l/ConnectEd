@@ -20,9 +20,9 @@ class PropertyDisplay(Enum):
 class Tether(QGraphicsItem):
     """Tether line between a property's anchorand its parent cleat."""
 
-    _property: "Property"
+    _property: "PropertyText"
 
-    def __init__(self, property: "Property"):
+    def __init__(self, property: "PropertyText"):
         super().__init__(property)  # Parent it to the Property
         self._property = property
         self.setZValue(-1)  # Draw behind the property text
@@ -52,7 +52,7 @@ class Tether(QGraphicsItem):
         painter.setPen(self._property.appearance.outline.pen)
         painter.drawLine(anchor_pos, cleat_pos_local)
 
-class Property(BaseTextLine):
+class PropertyText(BaseTextLine):
     # class variables
     Z = Z_DRAWING
     _XML_ATTRS = ElementMixin._XML_ATTRS | {
@@ -82,9 +82,8 @@ class Property(BaseTextLine):
         self._name = name
         self._value = value
         self._display = display
+        self._cleat = cleat
         self._tether = None
-        # Don't call initElement again - parent already did it
-        self.setCleat(cleat)
         self.setFlag(self.GraphicsItemFlag.ItemIsSelectable , True)
         self.refresh()
 
@@ -194,6 +193,3 @@ class Property(BaseTextLine):
             self._kpm.updatePositions()
             # Recalculate position now that text has changed
             self.setPos(self._local_pos)
-
-class cmdPlaceProperty(cmdPlaceElement):
-    element : Property
