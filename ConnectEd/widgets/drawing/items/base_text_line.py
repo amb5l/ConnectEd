@@ -106,10 +106,8 @@ class BaseTextLine(CustomGraphicsSimpleTextItem, ElementMixin):
         return inst
 
     def clone(self : Self) -> Self:
-        """Create a clone of this text block with a new UUID."""
         clone = super().clone()
-        # Copy text-specific properties
-        clone.setPlainText(self.toPlainText())
+        clone.setText(self.text())
         clone.setAnchor(self._kpm.anchor_loc)
         return clone
 

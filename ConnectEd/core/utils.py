@@ -80,7 +80,7 @@ def val2str(v : Any) -> str:
         case "LinePref"   : s = v.toStr()
         case "FillPref"   : s = v.toStr()
         case "TextPref"   : s = v.toStr()
-        case "KP"         : s = v.value.name
+        case "KP"         : s = v.value.name()
         case _ :
             raise ValueError(f"Unsupported type: {t}")
     return s
@@ -93,22 +93,22 @@ def str2val(s : str, t : str) -> Any:
     if s == "None":
         return None
     match t:
-        case "NoneType"   : return None
-        case "bytes"      : return bytes.fromhex(s)
-        case "str"        : return s # TODO unescape special characters
-        case "int"        : return int(s)
-        case "float"      : return float(s)
-        case "bool"       : return s == "True"
-        case "QPointF"    : return QPointF(*strValuesToFloats(s))
-        case "QRectF"     : return QRectF(*strValuesToFloats(s))
-        case "QSizeF"     : return QSizeF(*strValuesToFloats(s))
-        case "QColor"     : return QColor.fromRgba(int(s,0))
-        case "PenStyle"   : return Qt.PenStyle[s]
-        case "BrushStyle" : return Qt.BrushStyle[s]
-        case "TextPref"   : return TextPref.fromStr(s)
-        case "LinePref"   : return LinePref.fromStr(s)
-        case "FillPref"   : return FillPref.fromStr(s)
-        case "KP"         : return KP(s)
+        case "NoneType"        : return None
+        case "bytes"           : return bytes.fromhex(s)
+        case "str"             : return s # TODO unescape special characters
+        case "int"             : return int(s)
+        case "float"           : return float(s)
+        case "bool"            : return s == "True"
+        case "QPointF"         : return QPointF(*strValuesToFloats(s))
+        case "QRectF"          : return QRectF(*strValuesToFloats(s))
+        case "QSizeF"          : return QSizeF(*strValuesToFloats(s))
+        case "QColor"          : return QColor.fromRgba(int(s,0))
+        case "PenStyle"        : return Qt.PenStyle[s]
+        case "BrushStyle"      : return Qt.BrushStyle[s]
+        case "TextPref"        : return TextPref.fromStr(s)
+        case "LinePref"        : return LinePref.fromStr(s)
+        case "FillPref"        : return FillPref.fromStr(s)
+        case "KP"              : return KP(s)
         case "PropertyDisplay" : return PropertyDisplay[s]
         case _:
             raise ValueError(f"Unsupported type: {t}")

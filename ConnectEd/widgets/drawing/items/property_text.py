@@ -107,39 +107,31 @@ class PropertyText(BaseTextLine):
         """Update position based on current cleat position."""
         self.setPos(self._local_pos)
 
-    @property
     def name(self : Self) -> str:
         return self._name
 
-    @name.setter
-    def name(self : Self, value : str) -> None:
+    def setName(self : Self, value : str) -> None:
         self._name = value
         self.refresh()
 
-    @property
     def value(self : Self) -> str:
         return self._value
 
-    @value.setter
-    def value(self : Self, value : str) -> None:
+    def setValue(self : Self, value : str) -> None:
         self._value = value
         self.refresh()
 
-    @property
     def display(self : Self) -> PropertyDisplay:
         return self._display
 
-    @display.setter
-    def display(self : Self, value : PropertyDisplay) -> None:
+    def setDisplay(self : Self, value : PropertyDisplay) -> None:
         self._display = value
         self.refresh()
 
-    @property
     def cleat(self : Self) -> KP:
         return self._cleat
 
-    @cleat.setter
-    def cleat(self : Self, cleat : KP) -> None:
+    def setCleat(self : Self, cleat : KP) -> None:
         self._cleat = cleat
         self.update()
 
@@ -195,3 +187,15 @@ class PropertyText(BaseTextLine):
             self._kpm.updatePositions()
             # Recalculate position now that text has changed
             self.setPos(self._local_pos)
+
+    def clone(self : Self) -> Self:
+        """Create a clone of this property text with a new UUID."""
+        clone : PropertyText = ElementMixin.clone(self)
+        clone.setPos(self.pos())
+        clone.setAnchor(self.anchor())
+        clone.setName(self.name())
+        clone.setValue(self.value())
+        clone.setDisplay(self.display())
+        clone.setCleat(self.cleat())
+        return clone
+
