@@ -110,8 +110,8 @@ class BaseRectangle(CustomGraphicsRectItem, ElementMixin):
         self._shape.clear()
         self._shape.addRect(self._bounding_rect)
         self._kpm.updatePositions()
-        if self._properties is not None:
-            for p in self._properties:
+        if self.properties is not None:
+            for p in self.properties:
                 p.refresh()
 
     def boundingRect(self : Self) -> QRectF:

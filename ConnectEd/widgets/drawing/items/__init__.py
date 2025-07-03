@@ -578,11 +578,11 @@ class ElementMixin:
     _KEY_POINTS : Optional[list["KPLoc"]] = None
     _PROPERTIES : Optional[dict[str, str]] = None
 
-    uuid        : str
-    appearance  : Appearance
-    _menu       : QMenu
-    _kpm        : Optional["KPManager"]
-    _properties : Optional[list["Property"]]
+    uuid       : str
+    appearance : Appearance
+    properties : Optional[list["Property"]]
+    _menu      : QMenu
+    _kpm       : Optional["KPManager"]
 
     def initElement(
         self : Self,
@@ -614,14 +614,14 @@ class ElementMixin:
 
         if self._PROPERTIES is not None:
             from .property import Property
-            self._properties = []
+            self.properties = []
             for name, (value, format, anchor, pos, cleat) in self._PROPERTIES.items():
                 p = Property(name, value, format, pos, anchor, cleat)
                 p.setParentItem(self)  # This will trigger itemChange and connect signals
-                self._properties.append(p)
+                self.properties.append(p)
                 # Don't add to scene yet - defer until element is added to scene
         else:
-            self._properties = None
+            self.properties = None
 
     def __hash__(self):
         return hash(self.uuid)
@@ -647,9 +647,9 @@ class ElementMixin:
 
     def onSceneChange(self, scene):
         """Handle element being added to or removed from a scene."""
-        if scene is not None and self._properties is not None:
+        if scene is not None and self.properties is not None:
             # Element was added to a scene, add properties too
-            for p in self._properties:
+            for p in self.properties:
                 if p.scene() != scene:
                     scene.addItem(p)
 
