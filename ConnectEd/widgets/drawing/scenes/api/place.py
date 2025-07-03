@@ -11,7 +11,7 @@ from ... import Block, cmdPlaceBlock, \
                 Rectangle, cmdPlaceRectangle, \
                 TextBlock, cmdPlaceTextBlock, \
                 TextLine, cmdPlaceTextLine, \
-                KPLoc
+                KP
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -59,14 +59,14 @@ class DrawingSceneApiPlaceMixin:
 
     def placeTextBlock(
         self  : "DrawingScene",
-        *args : str | QPointF | KPLoc,
+        *args : str | QPointF | KP,
         inst  : Optional[TextBlock] = None
     ) -> TextBlock:
         return self.placeElement(TextBlock, *args, inst=inst)
 
     def placeTextLine(
         self  : "DrawingScene",
-        *args : str | QPointF | KPLoc,
+        *args : str | QPointF | KP,
         inst  : Optional[TextLine] = None
     ) -> TextLine:
         return self.placeElement(TextLine, *args, inst=inst)

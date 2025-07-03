@@ -7,17 +7,12 @@ __all__ = [
     "str2val"
 ]
 
-import os, sys, platform
+import os, platform
 
-from typing      import Self, Any, Tuple, Union, Type
+from typing import Self, Any
 
-from PyQt6.QtCore    import Qt, QPointF, QRectF, QSizeF
-from PyQt6.QtWidgets import QGraphicsItem, QGraphicsSceneContextMenuEvent, QMenu
-from PyQt6.QtGui     import QColor, QAction
-
-from typing import TYPE_CHECKING
-if TYPE_CHECKING:
-    from ..widgets import cmdElement
+from PyQt6.QtCore import Qt, QPointF, QRectF, QSizeF
+from PyQt6.QtGui  import QColor
 
 class NameCounter:
     counts : dict[str, int]
@@ -85,14 +80,14 @@ def val2str(v : Any) -> str:
         case "LinePref"   : s = v.toStr()
         case "FillPref"   : s = v.toStr()
         case "TextPref"   : s = v.toStr()
-        case "KPLoc"      : s = v.name
+        case "KP"         : s = v.value.name
         case _ :
             raise ValueError(f"Unsupported type: {t}")
     return s
 
 def str2val(s : str, t : str) -> Any:
     """Convert a text representation of a Python value to a Python value."""
-    from ..widgets import KP, TextPref, LinePref, FillPref
+    from ..widgets import KP, TextPref, LinePref, FillPref, PropertyDisplay
     def strValuesToFloats(s : str) -> list[float]:
         return [float(p) for p in s.strip("()").split(",")]
     if s == "None":
@@ -113,6 +108,7 @@ def str2val(s : str, t : str) -> Any:
         case "TextPref"   : return TextPref.fromStr(s)
         case "LinePref"   : return LinePref.fromStr(s)
         case "FillPref"   : return FillPref.fromStr(s)
-        case "KPLoc"      : return getattr(KP, s)
+        case "KP"         : return KP(s)
+        case "PropertyDisplay" : return PropertyDisplay[s]
         case _:
             raise ValueError(f"Unsupported type: {t}")

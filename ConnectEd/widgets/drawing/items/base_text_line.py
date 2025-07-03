@@ -5,7 +5,7 @@ from PyQt6.QtWidgets import QWidget, QStyleOptionGraphicsItem, QStyle
 from PyQt6.QtGui     import QPainter, QPen, QBrush
 
 from . import CustomGraphicsSimpleTextItem, ElementMixin, TextPref, \
-              KPLoc, KP, KPDef, \
+              KP, KPDef, \
               cmdPlaceElement
 
 from typing import TYPE_CHECKING
@@ -32,7 +32,7 @@ class BaseTextLine(CustomGraphicsSimpleTextItem, ElementMixin):
         self   : Self,
         text   : str = "",
         pos    : QPointF = QPointF(0, 0),
-        anchor : KPLoc = KP.TOP_LEFT
+        anchor : KP = KP.TOP_LEFT
     ) -> None:
         super().__init__(text)
         self.initElement(line=None, fill=None, text=TextPref())
@@ -72,13 +72,13 @@ class BaseTextLine(CustomGraphicsSimpleTextItem, ElementMixin):
             painter.setPen(self.appearance.outline.pen)
             painter.drawRect(self.boundingRect())
 
-    def setAnchor(self : Self, anchor : KPLoc = KP.TOP_LEFT) -> None:
+    def setAnchor(self : Self, anchor : KP = KP.TOP_LEFT) -> None:
         self._kpm.setAnchor(anchor)
 
     def setKPVisible(self : Self, visible : bool) -> None:
         self._kpm.setVisible(visible)
 
-    def moveKeyPoint(self : Self, kp : KPLoc, delta : QPointF) -> None:
+    def moveKeyPoint(self : Self, kp : KP, delta : QPointF) -> None:
         """Move the entire TextLine when any keypoint is dragged."""
         self.setPos(self.pos() + delta)
 
@@ -102,7 +102,7 @@ class BaseTextLine(CustomGraphicsSimpleTextItem, ElementMixin):
                     inst.setText(text)
                 case QPointF() as pos:
                     inst.setPos(pos)
-                case KPLoc() as anchor:
+                case KP() as anchor:
                     inst.setAnchor(anchor)
                 case _:
                     raise TypeError(f"Unsupported argument type: {type(arg)}")

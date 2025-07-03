@@ -9,7 +9,7 @@ from PyQt6.QtGui     import QPainter, QPainterPath
 from ....core   import logger
 
 from . import CustomGraphicsRectItem, ElementMixin, cmdPlaceElement, \
-              KPLoc, KP, KPDef, \
+              KP, KPDef, \
               LinePref, FillPref
 
 from typing import TYPE_CHECKING
@@ -197,7 +197,7 @@ class BaseRectangle(CustomGraphicsRectItem, ElementMixin):
     def getPoints(self : Self) -> tuple[QPointF, QPointF]:
         return self.pos(), self.pos() + self.rect().bottomRight()
 
-    def moveKeyPoint(self : Self, kp : KPLoc, delta : QPointF) -> None:
+    def moveKeyPoint(self : Self, kp : KP, delta : QPointF) -> None:
         p1, p2 = self.getPoints()
         d = delta
         match kp:

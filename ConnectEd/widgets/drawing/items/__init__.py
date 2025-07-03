@@ -19,7 +19,6 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ..             import DrawingScene
     from .property_text import PropertyText
-    from .key_point     import KPLoc
 
 
 class Default:
@@ -575,7 +574,7 @@ class ElementMixin:
         )
     }
     _MENU       : Optional[QMenu] = None
-    _KEY_POINTS : Optional[list["KPLoc"]] = None
+    _KEY_POINTS : Optional[list["KP"]] = None
     _PROPERTIES : Optional[dict[str, str]] = None
 
     uuid       : str
@@ -661,7 +660,7 @@ class ElementMixin:
         return r
 
     @property
-    def anchor(self : Self) -> "KPLoc":
+    def anchor(self : Self) -> "KP":
         return self._kpm.anchor_loc
 
     def toXml(self : Self, xw : QXmlStreamWriter) -> None:
@@ -827,8 +826,10 @@ __all__ = [
     "cmdPlaceElement",
     "clone"
 ]
-from .key_point import KPLoc, KP, KeyPoint, KPDef, KPManager
+from .key_point import KP, KeyPoint, KPDef, KPManager
 __all__ += key_point.__all__
+from .property_text import PropertyDisplay, PropertyText
+__all__ += property_text.__all__
 from .block import Block, cmdPlaceBlock
 __all__ += block.__all__
 from .rectangle import Rectangle, cmdPlaceRectangle

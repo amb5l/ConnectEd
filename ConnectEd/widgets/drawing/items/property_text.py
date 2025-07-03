@@ -1,3 +1,5 @@
+__all__ = ["PropertyDisplay", "PropertyText"]
+
 from typing import Self, Optional
 from enum   import Enum
 
@@ -7,7 +9,7 @@ from PyQt6.QtGui     import QPainter
 
 from ....core import Z_DRAWING
 
-from . import ElementMixin, KPManager, KPLoc, KP, cmdPlaceElement
+from . import ElementMixin, KPManager, KP, cmdPlaceElement
 
 from .base_text_line import BaseTextLine
 
@@ -65,7 +67,7 @@ class PropertyText(BaseTextLine):
     _name      : str
     _value     : str
     _display   : PropertyDisplay
-    _cleat     : KPLoc
+    _cleat     : KP
     _local_pos : QPointF
     _tether    : Optional[Tether]
 
@@ -75,8 +77,8 @@ class PropertyText(BaseTextLine):
         value   : str,
         display : PropertyDisplay = PropertyDisplay.VALUE,
         pos     : QPointF = QPointF(0, 0),
-        anchor  : KPLoc = KP.TOP_LEFT,
-        cleat   : KPLoc = KP.BOTTOM_LEFT
+        anchor  : KP = KP.TOP_LEFT,
+        cleat   : KP = KP.BOTTOM_LEFT
     ) -> None:
         super().__init__(text="", pos=pos, anchor=anchor)
         self._name = name
@@ -133,11 +135,11 @@ class PropertyText(BaseTextLine):
         self.refresh()
 
     @property
-    def cleat(self : Self) -> KPLoc:
+    def cleat(self : Self) -> KP:
         return self._cleat
 
     @cleat.setter
-    def cleat(self : Self, cleat : KPLoc) -> None:
+    def cleat(self : Self, cleat : KP) -> None:
         self._cleat = cleat
         self.update()
 

@@ -1,4 +1,4 @@
-__all__ = ["KPLoc", "KP", "KeyPoint", "KPDef", "KPManager"]
+__all__ = ["KP", "KeyPoint", "KPDef", "KPManager"]
 
 from typing      import Self, Optional
 from enum        import Enum
@@ -25,7 +25,7 @@ class KPLoc:
     h    : float
     v    : float
 
-class KP:
+class KP(Enum):
     TOP_LEFT      = KPLoc( "Top Left"      , 0.0 , 0.0 )
     TOP_CENTER    = KPLoc( "Top Center"    , 0.5 , 0.0 )
     TOP_RIGHT     = KPLoc( "Top Right"     , 1.0 , 0.0 )
@@ -35,14 +35,6 @@ class KP:
     BOTTOM_LEFT   = KPLoc( "Bottom Left"   , 0.0 , 1.0 )
     BOTTOM_CENTER = KPLoc( "Bottom Center" , 0.5 , 1.0 )
     BOTTOM_RIGHT  = KPLoc( "Bottom Right"  , 1.0 , 1.0 )
-
-    @classmethod
-    def __iter__(cls):
-        return iter([
-            cls.TOP_LEFT    , cls.TOP_CENTER    , cls.TOP_RIGHT     ,
-            cls.CENTER_LEFT , cls.CENTER        , cls.CENTER_RIGHT  ,
-            cls.BOTTOM_LEFT , cls.BOTTOM_CENTER , cls.BOTTOM_RIGHT
-        ])
 
 class KeyPoint(QGraphicsItem):
     # class variables
@@ -55,7 +47,7 @@ class KeyPoint(QGraphicsItem):
 
     # instance variables
     _manager : "KPManager"
-    _loc     : KPLoc # parent's key point location
+    _loc     : KP # parent's key point location
     _grip    : bool
     _cleat   : bool
     _pen     : QPen
@@ -68,7 +60,7 @@ class KeyPoint(QGraphicsItem):
     def __init__(
         self    : Self,
         manager : "KPManager",
-        loc     : KPLoc,
+        loc     : KP,
         grip    : bool = False,
         cleat   : bool = False
     ) -> None:
@@ -152,15 +144,15 @@ class KeyPoint(QGraphicsItem):
 
 @dataclass
 class KPDef:
-    loc   : KPLoc
+    loc   : KP
     grip  : bool
     cleat : bool
 
 class KPManager(QObject):
     element       : QGraphicsItem         # parent element
-    key_points    : dict[KPLoc, KeyPoint]
+    key_points    : dict[KP, KeyPoint]
     anchor        : Optional[KeyPoint]
-    anchor_loc    : Optional[KPLoc]
+    anchor_loc    : Optional[KP]
     anchor_offset : QPointF
 
     change = pyqtSignal()
@@ -169,7 +161,7 @@ class KPManager(QObject):
         self    : Self,
         parent  : QGraphicsItem,
         kp_defs : list[KPDef],
-        anchor  : Optional[KPLoc] = None
+        anchor  : Optional[KP] = None
     ) -> None:
         super().__init__()
         self.element = parent
@@ -187,20 +179,23 @@ class KPManager(QObject):
                     self.setAnchor(kp_def.loc)
                     break
 
-    def setAnchor(self, anchor : KPLoc) -> None:
+    def setAnchor(self, anchor : KP) -> None:
         self.anchor = self.key_points[anchor]
         self.anchor_loc = anchor
         self.anchor_offset = self.getKeyPointPos(anchor)
         self.element.update()
 
-    def getKeyPointPos(self, kp : KPLoc) -> QPointF:
+    def getKeyPointPos(self, kp : KP) -> QPointF:
         rect = self.element.boundingRect()
-        return QPointF(kp.h * rect.width(), kp.v * rect.height())
+        return QPointF(kp.value.h * rect.width(), kp.value.v * rect.height())
 
     def updatePositions(self : Self) -> None:
         rect = self.element.KPRect()
         for kp_loc in self.key_points.keys():
-            new_pos = QPointF(kp_loc.h * rect.width(), kp_loc.v * rect.height())
+            new_pos = QPointF(
+                kp_loc.value.h * rect.width(),
+                kp_loc.value.v * rect.height()
+            )
             if kp_loc != self.key_points[kp_loc]:
                 self.key_points[kp_loc].setPos(new_pos)
         # Also update anchor_offset when size changes
