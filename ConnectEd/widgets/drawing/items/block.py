@@ -9,7 +9,7 @@ from ....core import Z_DRAWING
 from . import KPLoc as kp
 
 from .base_rect import BaseRectangle, cmdPlaceBaseRectangle
-from .property  import PropertyFormat as pf
+from .property  import PropertyDisplay as pd
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -19,10 +19,10 @@ if TYPE_CHECKING:
 class Block(BaseRectangle):
     Z = Z_DRAWING
     _PROPERTIES = {
-    #   name            value  format      anchor           pos                cleat
-        "Reference" : ( ""   , pf.VALUE  , kp.BOTTOM_LEFT , QPointF( 0,  0 ) , kp.TOP_LEFT    ),
-        "Name"      : ( ""   , pf.VALUE  , kp.TOP_LEFT    , QPointF( 0,  0 ) , kp.BOTTOM_LEFT ),
-        "Path"      : ( ""   , pf.HIDDEN , kp.TOP_LEFT    , QPointF( 0, 10 ) , kp.BOTTOM_LEFT )
+    #   name            value  display     anchor           pos                cleat
+        "Reference" : ( ""   , pd.VALUE  , kp.BOTTOM_LEFT , QPointF( 0,  0 ) , kp.TOP_LEFT    ),
+        "Name"      : ( ""   , pd.VALUE  , kp.TOP_LEFT    , QPointF( 0,  0 ) , kp.BOTTOM_LEFT ),
+        "Path"      : ( ""   , pd.HIDDEN , kp.TOP_LEFT    , QPointF( 0, 10 ) , kp.BOTTOM_LEFT )
     }
     _MENU_ITEM_NAMES = [
         "Properties..."

@@ -18,7 +18,7 @@ if TYPE_CHECKING:
     from .. import DrawingView
 
 
-class PropertyFormat(Enum):
+class PropertyDisplay(Enum):
     HIDDEN     = "HIDDEN"
     VALUE      = "Value"
     NAME_VALUE = "Name: Value"
@@ -62,32 +62,32 @@ class Property(BaseTextLine):
     # class variables
     Z = Z_DRAWING
     _XML_ATTRS = ElementMixin._XML_ATTRS | {
-        "name"   : "str",
-        "value"  : "str",
-        "format" : "PropertyFormat" #  TODO: generic enum support in XML i/o?
+        "name"    : "str",
+        "value"   : "str",
+        "display" : "PropertyDisplay" #  TODO: generic enum support in XML i/o?
     }
 
     # instance variables
     _name      : str
     _value     : str
-    _format    : PropertyFormat
+    _display   : PropertyDisplay
     _cleat     : KPLoc
     _local_pos : QPointF
     _tether    : Optional[Tether]
 
     def __init__(
-        self   : Self,
-        name   : str,
-        value  : str,
-        format : PropertyFormat = PropertyFormat.VALUE,
-        pos    : QPointF = QPointF(0, 0),
-        anchor : KPLoc = KPLoc.TOP_LEFT,
-        cleat  : KPLoc = KPLoc.BOTTOM_LEFT
+        self    : Self,
+        name    : str,
+        value   : str,
+        display : PropertyDisplay = PropertyDisplay.VALUE,
+        pos     : QPointF = QPointF(0, 0),
+        anchor  : KPLoc = KPLoc.TOP_LEFT,
+        cleat   : KPLoc = KPLoc.BOTTOM_LEFT
     ) -> None:
         super().__init__(text="", pos=pos, anchor=anchor)
         self._name = name
         self._value = value
-        self._format = format
+        self._display = display
         self._tether = None
         # Don't call initElement again - parent already did it
         self.setCleat(cleat)
@@ -131,12 +131,12 @@ class Property(BaseTextLine):
         self.refresh()
 
     @property
-    def format(self : Self) -> PropertyFormat:
-        return self._format
+    def display(self : Self) -> PropertyDisplay:
+        return self._display
 
-    @format.setter
-    def format(self : Self, value : PropertyFormat) -> None:
-        self._format = value
+    @display.setter
+    def display(self : Self, value : PropertyDisplay) -> None:
+        self._display = value
         self.refresh()
 
     def setCleat(self : Self, cleat : KPLoc) -> None:
@@ -181,17 +181,17 @@ class Property(BaseTextLine):
 
     def refresh(self : Self) -> None:
         text_to_set = ""
-        match self._format:
-            case PropertyFormat.HIDDEN:
+        match self._display:
+            case PropertyDisplay.HIDDEN:
                 text_to_set = "<hidden>"
-            case PropertyFormat.VALUE:
+            case PropertyDisplay.VALUE:
                 text_to_set = f"<{self._name}>" if self._value == "" else self._value
-            case PropertyFormat.NAME_VALUE:
+            case PropertyDisplay.NAME_VALUE:
                 text_to_set = f"{self._name}: {self._value}"
         super().setText(text_to_set)
-        self.setVisible(self._format != PropertyFormat.HIDDEN)
+        self.setVisible(self._display != PropertyDisplay.HIDDEN)
         super().update()
-        if hasattr(self, "_kpm") and self._format != PropertyFormat.HIDDEN:
+        if hasattr(self, "_kpm") and self._display != PropertyDisplay.HIDDEN:
             self._kpm.updatePositions()
             # Recalculate position now that text has changed
             self.setPos(self._local_pos)

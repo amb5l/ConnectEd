@@ -615,8 +615,8 @@ class ElementMixin:
         if self._PROPERTIES is not None:
             from .property import Property
             self.properties = []
-            for name, (value, format, anchor, pos, cleat) in self._PROPERTIES.items():
-                p = Property(name, value, format, pos, anchor, cleat)
+            for name, (value, display, anchor, pos, cleat) in self._PROPERTIES.items():
+                p = Property(name, value, display, pos, anchor, cleat)
                 p.setParentItem(self)  # This will trigger itemChange and connect signals
                 self.properties.append(p)
                 # Don't add to scene yet - defer until element is added to scene
