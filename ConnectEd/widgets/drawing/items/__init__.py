@@ -659,9 +659,17 @@ class ElementMixin:
         if self.appearance.text is not None: r.text = self.appearance.text.getDefaults()
         return r
 
-    @property
     def anchor(self : Self) -> "KP":
-        return self._kpm.anchor_loc
+        if hasattr(self, "_kpm"):
+            return self._kpm.anchor_loc
+        else:
+            raise NotImplementedError("anchor() is not implemented")
+
+    def setAnchor(self : Self, anchor : "KP") -> None:
+        if hasattr(self, "_kpm"):
+            self._kpm.setAnchor(anchor)
+        else:
+            raise NotImplementedError("setAnchor() is not implemented")
 
     def toXml(self : Self, xw : QXmlStreamWriter) -> None:
         xw.writeStartElement(self.__class__.__name__)

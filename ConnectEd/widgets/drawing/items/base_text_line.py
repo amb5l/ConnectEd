@@ -72,9 +72,6 @@ class BaseTextLine(CustomGraphicsSimpleTextItem, ElementMixin):
             painter.setPen(self.appearance.outline.pen)
             painter.drawRect(self.boundingRect())
 
-    def setAnchor(self : Self, anchor : KP = KP.TOP_LEFT) -> None:
-        self._kpm.setAnchor(anchor)
-
     def setKPVisible(self : Self, visible : bool) -> None:
         self._kpm.setVisible(visible)
 
