@@ -2,7 +2,7 @@ __all__ = ["KPLoc", "KeyPoint", "KPDef", "KPManager"]
 
 from typing      import Self, Optional
 from enum        import Enum
-from collections import namedtuple
+from dataclasses import dataclass
 
 from PyQt6.QtCore    import Qt, QRectF, QPointF, QObject, pyqtSignal, \
                             QXmlStreamWriter, QXmlStreamReader
@@ -144,7 +144,11 @@ class KeyPoint(QGraphicsItem):
     ) -> None:
         self._manager.setAnchor(self._loc)
 
-KPDef = namedtuple("KPDef", ["loc", "grip", "cleat"])
+@dataclass
+class KPDef:
+    loc   : KPLoc
+    grip  : bool
+    cleat : bool
 
 class KPManager(QObject):
     element       : QGraphicsItem         # parent element
