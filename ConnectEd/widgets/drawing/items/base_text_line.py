@@ -5,7 +5,7 @@ from PyQt6.QtWidgets import QWidget, QStyleOptionGraphicsItem, QStyle
 from PyQt6.QtGui     import QPainter, QPen, QBrush
 
 from . import CustomGraphicsSimpleTextItem, ElementMixin, TextPref, \
-              KPManager, KPLoc, KPDef, \
+              KPLoc, KPDef, \
               cmdPlaceElement
 
 from typing import TYPE_CHECKING

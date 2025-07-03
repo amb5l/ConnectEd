@@ -9,7 +9,7 @@ from PyQt6.QtGui     import QPainter, QPainterPath
 from ....core   import logger
 
 from . import CustomGraphicsRectItem, ElementMixin, cmdPlaceElement, \
-              KPLoc, KPDef, KPManager, \
+              KPLoc, KPDef, \
               LinePref, FillPref
 
 from typing import TYPE_CHECKING

@@ -1,21 +1,15 @@
 from typing import Self, Optional
 from enum   import Enum
 
-from PyQt6.QtCore    import Qt, QPointF, QRectF
-from PyQt6.QtWidgets import QWidget, QStyleOptionGraphicsItem, QStyle, QGraphicsItem
-from PyQt6.QtGui     import QPainter, QPainterPath,QPen, QBrush
+from PyQt6.QtCore    import QPointF, QRectF
+from PyQt6.QtWidgets import QWidget, QStyleOptionGraphicsItem, QGraphicsItem
+from PyQt6.QtGui     import QPainter
 
 from ....core import Z_DRAWING
 
-from . import ElementMixin, TextPref, \
-              KPManager, KPLoc, KPDef, \
-              cmdPlaceElement
+from . import ElementMixin, KPManager, KPLoc, cmdPlaceElement
 
 from .base_text_line import BaseTextLine
-
-from typing import TYPE_CHECKING
-if TYPE_CHECKING:
-    from .. import DrawingView
 
 
 class PropertyDisplay(Enum):

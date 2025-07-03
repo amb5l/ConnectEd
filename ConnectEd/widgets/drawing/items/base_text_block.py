@@ -8,7 +8,7 @@ from PyQt6.QtGui     import QColor, QPainter, QPainterPath, \
                             QKeyEvent, QFocusEvent, QTextCursor
 
 from . import CustomGraphicsTextItem, ElementMixin, cmdPlaceElement, \
-              KPManager, KPLoc, KPDef, \
+              KPLoc, KPDef, \
               TextPref
 
 from typing import TYPE_CHECKING
