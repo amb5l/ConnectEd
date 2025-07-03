@@ -642,9 +642,6 @@ class ElementMixin:
         if self.appearance.fill is not None: self.appearance.fill.onSelectionChange()
         if self.appearance.text is not None: self.appearance.text.onSelectionChange()
 
-    def resetUuid(self : Self) -> None:
-        self.uuid = str(uuid.uuid4())
-
     def onSceneChange(self, scene):
         """Handle element being added to or removed from a scene."""
         if scene is not None and self.properties is not None:
@@ -653,12 +650,19 @@ class ElementMixin:
                 if p.scene() != scene:
                     scene.addItem(p)
 
+    def resetUuid(self : Self) -> None:
+        self.uuid = str(uuid.uuid4())
+
     def getDefaults(self : Self) -> SimpleNamespace:
         r = SimpleNamespace()
         if self.appearance.line is not None: r.line = self.appearance.line.getDefaults()
         if self.appearance.fill is not None: r.fill = self.appearance.fill.getDefaults()
         if self.appearance.text is not None: r.text = self.appearance.text.getDefaults()
         return r
+
+    @property
+    def anchor(self : Self) -> "KPLoc":
+        return self._kpm.anchor_loc
 
     def toXml(self : Self, xw : QXmlStreamWriter) -> None:
         xw.writeStartElement(self.__class__.__name__)

@@ -133,7 +133,12 @@ class Property(BaseTextLine):
         self._display = value
         self.refresh()
 
-    def setCleat(self : Self, cleat : KPLoc) -> None:
+    @property
+    def cleat(self : Self) -> KPLoc:
+        return self._cleat
+
+    @cleat.setter
+    def cleat(self : Self, cleat : KPLoc) -> None:
         self._cleat = cleat
         self.update()
 
