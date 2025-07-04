@@ -1,7 +1,6 @@
 __all__ = ["PropertiesDialog"]
 
 from typing import Self, Optional, Any
-from enum import Enum
 
 from PyQt6.QtCore    import Qt, QModelIndex
 from PyQt6.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, \
@@ -51,7 +50,6 @@ class PropertiesItem(QStandardItem):
         self.setData(type_name, Qt.ItemDataRole.UserRole + self.IDX_TYPE_NAME)
         if inst is not None:
             self.setData(inst, Qt.ItemDataRole.UserRole + self.IDX_INST)
-        logger.debug(f"Created PropertiesItem: text={text}, type_name={type_name}, inst={inst}")
 
     def textToValue(self: Self, text: str, type_name: str) -> PropertiesType:
         try:
@@ -105,14 +103,12 @@ class PropertiesItemDelegate(QStyledItemDelegate):
         super().__init__()
 
     def createEditor(self, parent, option, index):
-        logger.debug(f"Creating editor for index {index.row()}, {index.column()}")
         if not self.ENTRIES:
             logger.error(f"ENTRIES is None or empty for delegate {self.__class__.__name__}")
             return None
         editor = QComboBox(parent)
         editor.addItems(self.ENTRIES)
         editor.setToolTip(self.TOOLTIP)
-        logger.debug(f"Editor created with items: {self.ENTRIES}")
         return editor
 
     def setEditorData(self, editor, index):
@@ -120,7 +116,6 @@ class PropertiesItemDelegate(QStyledItemDelegate):
             logger.error("Editor is None in setEditorData")
             return
         value = index.model().data(index, Qt.ItemDataRole.EditRole)
-        logger.debug(f"Setting editor data: value={value}, type={type(value)}")
         value_str = str(value) if value is not None else ""
         if value_str in self.ENTRIES:
             editor.setCurrentText(value_str)
@@ -133,7 +128,6 @@ class PropertiesItemDelegate(QStyledItemDelegate):
             logger.error("Editor is None in setModelData")
             return
         text = editor.currentText()
-        logger.debug(f"Setting model data for index {index.row()}, {index.column()}: {text}")
         model.setData(index, text, Qt.ItemDataRole.EditRole)
 
     def updateEditorGeometry(self, editor, option, index):
@@ -173,26 +167,20 @@ class PropertiesAnchorItemDelegate(PropertiesItemDelegate):
         KP.BOTTOM_RIGHT.value.name
     ]
 
-    def __init__(self):
-        super().__init__()
-        # Validate ENTRIES
-        for entry in self.ENTRIES:
-            enum_key = entry.upper().replace(" ", "_")
-            if enum_key not in KP.__members__:
-                logger.error(f"Invalid ENTRIES value: {entry}")
-        logger.debug(f"PropertiesAnchorItemDelegate initialized with ENTRIES: {self.ENTRIES}")
-
 class PropertiesCleatItemDelegate(PropertiesAnchorItemDelegate):
     TOOLTIP = "Controls position of property cleat point"
 
 class PropertiesDialog(QDialog):
-    model: QStandardItemModel
-    dialog_layout: QVBoxLayout
-    table_view: TableView
-    ok_cancel_layout: QHBoxLayout
-    new_button: QPushButton
-    ok_button: QPushButton
-    cancel_button: QPushButton
+    model            : QStandardItemModel
+    dialog_layout    : QVBoxLayout
+    table_view       : TableView
+    ok_cancel_layout : QHBoxLayout
+    new_button       : QPushButton
+    ok_button        : QPushButton
+    cancel_button    : QPushButton
+    display_delegate : PropertiesDisplayItemDelegate
+    anchor_delegate  : PropertiesAnchorItemDelegate
+    cleat_delegate   : PropertiesCleatItemDelegate
 
     def __init__(self: Self, element: ElementMixin) -> None:
         super().__init__(hub.main_window)
@@ -206,23 +194,34 @@ class PropertiesDialog(QDialog):
             row = []
             for label, (_, getter) in PropertyText.TABLE_ATTRS.items():
                 value = getter(p)
-                logger.debug(f"Property {label}: value={value}, type={type(value)}")
                 item = PropertiesItem(value, p)
                 row.append(item)
             self.model.appendRow(row)
         self.table_view = TableView(self.model)
+        self.display_delegate = PropertiesDisplayItemDelegate()
+        self.anchor_delegate = PropertiesAnchorItemDelegate()
+        self.cleat_delegate = PropertiesCleatItemDelegate()
+        self.display_delegate.destroyed.connect(
+            lambda: self.onDelegateDestroyed("Display")
+        )
+        self.anchor_delegate.destroyed.connect(
+            lambda: self.onDelegateDestroyed("Anchor")
+        )
+        self.cleat_delegate.destroyed.connect(
+            lambda: self.onDelegateDestroyed("Cleat")
+        )
         self.table_view.setItemDelegateForColumn(
             list(PropertyText.TABLE_ATTRS.keys()).index("Display"),
-            PropertiesDisplayItemDelegate()
+            self.display_delegate
         )
-        #self.table_view.setItemDelegateForColumn(
-        #    list(PropertyText.TABLE_ATTRS.keys()).index("Anchor"),
-        #    PropertiesAnchorItemDelegate()
-        #)
-        # self.table_view.setItemDelegateForColumn(
-        #     list(PropertyText.TABLE_ATTRS.keys()).index("Cleat"),
-        #     PropertiesCleatItemDelegate()
-        # )
+        self.table_view.setItemDelegateForColumn(
+            list(PropertyText.TABLE_ATTRS.keys()).index("Anchor"),
+            self.anchor_delegate
+        )
+        self.table_view.setItemDelegateForColumn(
+            list(PropertyText.TABLE_ATTRS.keys()).index("Cleat"),
+            self.cleat_delegate
+        )
         self.table_view.resizeColumnsToContents()
         self.dialog_layout.addWidget(self.table_view)
         okCancelNewLayout(self)
@@ -232,15 +231,10 @@ class PropertiesDialog(QDialog):
         min_height = self.table_view.verticalHeader().length() + 50
         self.setMinimumSize(min_width, min_height)
         self.model.dataChanged.connect(self.onDataChanged)
-        logger.debug("PropertiesDialog initialization complete")
 
-    def show(self):
-        logger.debug("Showing PropertiesDialog")
-        return super().show()
-
-    def exec(self):
-        logger.debug("Executing PropertiesDialog")
-        return super().exec()
+    def onDelegateDestroyed(self, delegate_name: str) -> None:
+        """Workaround to fix delegate lifecycle issue (silent crash)."""
+        pass
 
     def onDataChanged(
         self: Self,
@@ -248,7 +242,6 @@ class PropertiesDialog(QDialog):
         bottom_right: QModelIndex,
         roles: list[int]
     ) -> None:
-        logger.debug(f"Data changed: rows {top_left.row()}-{bottom_right.row()}, cols {top_left.column()}-{bottom_right.column()}")
         if hub.settings.get("display/theme") == "dark":
             bg_highlight = Qt.GlobalColor.darkYellow
         else:
@@ -262,7 +255,6 @@ class PropertiesDialog(QDialog):
                     item.setBackground(QBrush(Qt.GlobalColor.transparent))
 
     def new(self: Self) -> None:
-        logger.debug("Adding new property")
         row = self.model.rowCount()
         self.model.appendRow([
             PropertiesItem(""),
@@ -276,7 +268,6 @@ class PropertiesDialog(QDialog):
         self.table_view.setCurrentIndex(self.model.index(row, 0))
 
     def getChanges(self: Self) -> dict[PropertyText, tuple[str, PropertiesType, PropertiesType]]:
-        logger.debug("Getting changes from PropertiesDialog")
         r = {}
         for row_num in range(self.model.rowCount()):
             item_name: PropertiesItem = self.model.item(row_num, 0)
