@@ -610,7 +610,6 @@ class ElementMixin:
             self._kpm = KPManager(self, self._KEY_POINTS)
         else:
             self._kpm = None
-
         if self._PROPERTIES is not None:
             from .property_text import PropertyText
             self.properties = []
@@ -619,8 +618,6 @@ class ElementMixin:
                 p.setParentItem(self)  # This will trigger itemChange and connect signals
                 self.properties.append(p)
                 # Don't add to scene yet - defer until element is added to scene
-        else:
-            self.properties = None
 
     def __hash__(self):
         return hash(self.uuid)
@@ -643,7 +640,7 @@ class ElementMixin:
 
     def onSceneChange(self, scene):
         """Handle element being added to or removed from a scene."""
-        if scene is not None and self.properties is not None:
+        if scene is not None and hasattr(self, "properties"):
             # Element was added to a scene, add properties too
             for p in self.properties:
                 if p.scene() != scene:
@@ -701,6 +698,21 @@ class ElementMixin:
                 clone.appearance, "text",
                 TextColorFont(clone, self.appearance.text.getPref())
             )
+        # delete default properties from clone
+        if hasattr(clone, "properties"):
+            for p in clone.properties:
+                if p.scene() is not None:
+                    p.scene().removeItem(p)
+                p.setParentItem(None)
+                del p
+            delattr(clone, "properties")
+        # copy properties
+        if hasattr(self, "properties"):
+            clone.properties = [
+                p.clone() for p in self.properties
+            ]
+            for p in clone.properties:
+                p.setParentItem(clone)
         # New UUID is automatically assigned in initElement() via resetUuid()
         return clone
 

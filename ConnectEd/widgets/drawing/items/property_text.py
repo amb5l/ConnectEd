@@ -9,7 +9,7 @@ from PyQt6.QtGui     import QPainter
 
 from ....core import Z_DRAWING
 
-from . import ElementMixin, KPManager, KP, cmdPlaceElement
+from . import ElementMixin, KPManager, KP, TextColorFont
 
 from .base_text_line import BaseTextLine
 
@@ -103,8 +103,8 @@ class PropertyText(BaseTextLine):
 
     def __init__(
         self    : Self,
-        name    : str,
-        value   : str,
+        name    : str = "",
+        value   : str = "",
         display : PropertyDisplay = PropertyDisplay.VALUE,
         pos     : QPointF = QPointF(0, 0),
         anchor  : KP = KP.TOP_LEFT,
@@ -226,11 +226,16 @@ class PropertyText(BaseTextLine):
 
     def clone(self : Self) -> Self:
         """Create a clone of this property text with a new UUID."""
-        clone : PropertyText = ElementMixin.clone(self)
-        clone.setAnchor(self.anchor())
-        clone.setName(self.name())
-        clone.setValue(self.value())
-        clone.setDisplay(self.display())
-        clone.setCleat(self.cleat())
+        clone = PropertyText(
+            name    = self.name(),
+            value   = self.value(),
+            display = self.display(),
+            pos     = self.pos(),
+            anchor  = self.anchor(),
+            cleat   = self.cleat()
+         )
+        clone.appearance.text = TextColorFont(
+            clone, self.appearance.text.getPref()
+        )
         return clone
 

@@ -133,7 +133,11 @@ class DrawingViewEditMixin:
 
     def editDuplicate(self : "DrawingView", pos: QPointF = None) -> None:
         scene : DrawingScene = self.scene()
-        elements = [item for item in scene.selectedItems() if isinstance(item, ElementMixin)]
+        elements = [
+            item for item in scene.selectedItems() \
+                if isinstance(item, ElementMixin) \
+                and item.parentItem() is None # don't clone child elements e.g. PropertyText
+        ]
         if not elements:
             # Enter selection mode if nothing is selected
             self._goState(State.EditDuplicate1)
@@ -143,16 +147,7 @@ class DrawingViewEditMixin:
         # Store original selection before clearing
         selection = [item for item in scene.selectedItems() if isinstance(item, ElementMixin)]
         # Clone the elements
-        cloned_elements = []
-        for element in elements:
-            try:
-                clone = element.clone()
-                cloned_elements.append(clone)
-            except Exception as e:
-                logger.warning(f"Failed to clone element {element}: {e}")
-        if not cloned_elements:
-            logger.warning("editDuplicate: Failed to clone elements")
-            return
+        cloned_elements = [element.clone() for element in elements]
         # Clear selection and hide keypoints
         scene.clearSelection()
         for item in scene.items():
