@@ -671,12 +671,38 @@ class ElementMixin:
     def toXml(self : Self, xw : QXmlStreamWriter) -> None:
         xw.writeStartElement(self.__class__.__name__)
         toXmlAttrs(self, xw)
+        if hasattr(self, "properties"):
+            for p in self.properties:
+                p.toXml(xw)
         xw.writeEndElement()
 
     @classmethod
     def fromXml(cls : Self, xr: QXmlStreamReader) -> Self:
         instance = cls()
         fromXmlAttrs(instance, xr)
+        # delete default properties
+        if hasattr(instance, "properties"):
+            for p in instance.properties:
+                if p.scene() is not None:
+                    p.scene().removeItem(p)
+                p.setParentItem(None)
+                del p
+            delattr(instance, "properties")
+        # check if we're already at the end element (self-closing)
+        if xr.isEndElement() and xr.name() == cls.__name__:
+            instance.setKPVisible(False)
+            return instance
+        # read child PropertyText elements
+        while not (xr.isEndElement() and xr.name() == cls.__name__):
+            if xr.isStartElement() and xr.name() == "PropertyText":
+                from .property_text import PropertyText
+                p = PropertyText.fromXml(xr)
+                p.setParentItem(instance)
+                if not hasattr(instance, "properties"):
+                    instance.properties = [p]
+                else:
+                    instance.properties.append(p)
+            xr.readNext()
         instance.setKPVisible(False)  # Ensure keypoints are hidden
         return instance
 
@@ -846,7 +872,7 @@ __all__ = [
     "cmdPlaceElement",
     "clone"
 ]
-from .key_point import KP, KeyPoint, KPDef, KPManager
+from .key_point import KP, KPReverse, KeyPoint, KPDef, KPManager
 __all__ += key_point.__all__
 from .property_text import PropertyDisplay, PropertyText
 __all__ += property_text.__all__

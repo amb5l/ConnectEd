@@ -88,9 +88,36 @@ class PropertyText(BaseTextLine):
         )
     }
     _XML_ATTRS = ElementMixin._XML_ATTRS | {
-        "name"    : "str",
-        "value"   : "str",
-        "display" : "PropertyDisplay" #  TODO: generic enum support in XML i/o?
+        "anchor" : (
+            "KP",
+            lambda self: True,
+            lambda self, value: self.setAnchor(value),
+            lambda self: self.anchor()
+        ),
+        "name"    : (
+            "str",
+            lambda self: True,
+            lambda self, value: self.setName(value),
+            lambda self: self.name()
+        ),
+        "value"   : (
+            "str",
+            lambda self: True,
+            lambda self, value: self.setValue(value),
+            lambda self: self.value()
+        ),
+        "display" : (
+            "PropertyDisplay",
+            lambda self: True,
+            lambda self, value: self.setDisplay(value),
+            lambda self: self.display()
+        ),
+        "cleat" : (
+            "KP",
+            lambda self: True,
+            lambda self, value: self.setCleat(value),
+            lambda self: self.cleat()
+        ),
     }
 
     # instance variables
@@ -122,7 +149,7 @@ class PropertyText(BaseTextLine):
     def setPos(self : Self, pos : QPointF) -> None:
         self._local_pos = pos
         parent : Optional[ElementMixin] = self.parentItem()
-        if parent is not None:
+        if parent is not None and hasattr(parent, '_kpm') and parent._kpm is not None:
             parent_kpm : KPManager = parent._kpm
             cleat_pos = parent_kpm.key_points[self._cleat].pos()
         else:
@@ -169,6 +196,7 @@ class PropertyText(BaseTextLine):
 
     def setCleat(self : Self, cleat : KP) -> None:
         self._cleat = cleat
+        self.setPos(self._local_pos)
         self.update()
 
     def connectToParentSignals(self : Self) -> None:
@@ -188,6 +216,8 @@ class PropertyText(BaseTextLine):
         if change == QGraphicsItem.GraphicsItemChange.ItemParentHasChanged:
             # Property has been parented, connect to parent's KPManager signals
             self.connectToParentSignals()
+            # Recalculate position now that we have a parent
+            self.setPos(self._local_pos)
         elif change == QGraphicsItem.GraphicsItemChange.ItemSelectedHasChanged:
             # Selection changed - show/hide tether line
             self._createTetherLine()

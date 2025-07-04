@@ -110,7 +110,7 @@ class BaseRectangle(CustomGraphicsRectItem, ElementMixin):
         self._shape.clear()
         self._shape.addRect(self._bounding_rect)
         self._kpm.updatePositions()
-        if self.properties is not None:
+        if hasattr(self, "properties"):
             for p in self.properties:
                 p.refresh()
 

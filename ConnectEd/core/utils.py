@@ -65,29 +65,31 @@ def val2str(v : Any) -> str:
     """Convert a Python value to a text representation."""
     t = type(v).__name__
     match t:
-        case "NoneType"   : s = "None"
-        case "bytes"      : s = v.hex()
-        case "str"        : s = v # TODO escape special characters
-        case "int"        : s = str(v)
-        case "float"      : s = str(v)
-        case "bool"       : s = str(v)
-        case "QPointF"    : s = f"{v.x()},{v.y()}"
-        case "QRectF"     : s = f"{v.x()},{v.y()},{v.width()},{v.height()}"
-        case "QSizeF"     : s = f"{v.width()},{v.height()}"
-        case "QColor"     : s = hex(v.rgba())
-        case "PenStyle"   : s = str(v).replace("PenStyle.", "")
-        case "BrushStyle" : s = str(v).replace("BrushStyle.", "")
-        case "LinePref"   : s = v.toStr()
-        case "FillPref"   : s = v.toStr()
-        case "TextPref"   : s = v.toStr()
-        case "KP"         : s = v.value.name()
+        case "NoneType"        : s = "None"
+        case "bytes"           : s = v.hex()
+        case "str"             : s = v # TODO escape special characters
+        case "int"             : s = str(v)
+        case "float"           : s = str(v)
+        case "bool"            : s = str(v)
+        case "QPointF"         : s = f"{v.x()},{v.y()}"
+        case "QRectF"          : s = f"{v.x()},{v.y()},{v.width()},{v.height()}"
+        case "QSizeF"          : s = f"{v.width()},{v.height()}"
+        case "QColor"          : s = hex(v.rgba())
+        case "PenStyle"        : s = str(v).replace("PenStyle.", "")
+        case "BrushStyle"      : s = str(v).replace("BrushStyle.", "")
+        case "LinePref"        : s = v.toStr()
+        case "FillPref"        : s = v.toStr()
+        case "TextPref"        : s = v.toStr()
+        case "PropertyDisplay" : s = v.value
+        case "KP"              : s = v.value.name
         case _ :
             raise ValueError(f"Unsupported type: {t}")
     return s
 
 def str2val(s : str, t : str) -> Any:
     """Convert a text representation of a Python value to a Python value."""
-    from ..widgets import KP, TextPref, LinePref, FillPref, PropertyDisplay
+    from ..widgets import TextPref, LinePref, FillPref, \
+                          PropertyDisplay, KPReverse
     def strValuesToFloats(s : str) -> list[float]:
         return [float(p) for p in s.strip("()").split(",")]
     if s == "None":
@@ -108,7 +110,7 @@ def str2val(s : str, t : str) -> Any:
         case "TextPref"        : return TextPref.fromStr(s)
         case "LinePref"        : return LinePref.fromStr(s)
         case "FillPref"        : return FillPref.fromStr(s)
-        case "KP"              : return KP(s)
-        case "PropertyDisplay" : return PropertyDisplay[s]
+        case "PropertyDisplay" : return PropertyDisplay(s)
+        case "KP"              : return KPReverse[s]
         case _:
             raise ValueError(f"Unsupported type: {t}")

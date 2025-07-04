@@ -1,4 +1,4 @@
-__all__ = ["KP", "KeyPoint", "KPDef", "KPManager"]
+__all__ = ["KP", "KPReverse", "KeyPoint", "KPDef", "KPManager"]
 
 from typing      import Self, Optional
 from enum        import Enum
@@ -35,6 +35,18 @@ class KP(Enum):
     BOTTOM_LEFT   = KPLoc( "Bottom Left"   , 0.0 , 1.0 )
     BOTTOM_CENTER = KPLoc( "Bottom Center" , 0.5 , 1.0 )
     BOTTOM_RIGHT  = KPLoc( "Bottom Right"  , 1.0 , 1.0 )
+
+KPReverse = {
+    "Top Left"      : KP.TOP_LEFT,
+    "Top Center"    : KP.TOP_CENTER,
+    "Top Right"     : KP.TOP_RIGHT,
+    "Center Left"   : KP.CENTER_LEFT,
+    "Center"        : KP.CENTER,
+    "Center Right"  : KP.CENTER_RIGHT,
+    "Bottom Left"   : KP.BOTTOM_LEFT,
+    "Bottom Center" : KP.BOTTOM_CENTER,
+    "Bottom Right"  : KP.BOTTOM_RIGHT
+}
 
 class KeyPoint(QGraphicsItem):
     # class variables

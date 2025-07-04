@@ -16,6 +16,12 @@ if TYPE_CHECKING:
 class BaseTextLine(CustomGraphicsSimpleTextItem, ElementMixin):
     # class variables
     _XML_ATTRS = ElementMixin._XML_ATTRS | {
+        "anchor" : (
+            "KP",
+            lambda self: True,
+            lambda self, value: self.setAnchor(value),
+            lambda self: self.anchor()
+        ),
         "text" : (
             "str",
             lambda self: True,
