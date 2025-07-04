@@ -57,6 +57,36 @@ class Tether(QGraphicsItem):
 class PropertyText(BaseTextLine):
     # class variables
     Z = Z_DRAWING
+    TABLE_ATTRS = {
+        "Name" : (
+            lambda self, value: self.setName(value),
+            lambda self: self.name()
+        ),
+        "Value" : (
+            lambda self, value: self.setValue(value),
+            lambda self: self.value()
+        ),
+        "Display" : (
+            lambda self, value: self.setDisplay(value),
+            lambda self: self.display()
+        ),
+        "Anchor" : (
+            lambda self, value: self.setAnchor(value),
+            lambda self: self.anchor()
+        ),
+        "Offset X" : (
+            lambda self, value: self.setPosX(value),
+            lambda self: self.pos().x()
+        ),
+        "Offset Y" : (
+            lambda self, value: self.setPosY(value),
+            lambda self: self.pos().y()
+        ),
+        "Cleat" : (
+            lambda self, value: self.setCleat(value),
+            lambda self: self.cleat()
+        )
+    }
     _XML_ATTRS = ElementMixin._XML_ATTRS | {
         "name"    : "str",
         "value"   : "str",
@@ -99,6 +129,12 @@ class PropertyText(BaseTextLine):
             cleat_pos = QPointF(0, 0)
         desired_anchor_pos = pos + cleat_pos
         super().setPos(desired_anchor_pos)
+
+    def setPosX(self : Self, value : float) -> None:
+        self.setPos(QPointF(value, self._local_pos.y()))
+
+    def setPosY(self : Self, value : float) -> None:
+        self.setPos(QPointF(self._local_pos.x(), value))
 
     def pos(self : Self) -> QPointF:
         return self._local_pos
@@ -191,7 +227,6 @@ class PropertyText(BaseTextLine):
     def clone(self : Self) -> Self:
         """Create a clone of this property text with a new UUID."""
         clone : PropertyText = ElementMixin.clone(self)
-        clone.setPos(self.pos())
         clone.setAnchor(self.anchor())
         clone.setName(self.name())
         clone.setValue(self.value())

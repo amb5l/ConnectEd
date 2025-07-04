@@ -138,7 +138,8 @@ class Db(QStandardItem):
             "str",
             lambda self: True,
             lambda self, value: self.setText(value),
-            lambda self: self.text())
+            lambda self: self.text()
+        )
     }
 
     path : Optional[str]

@@ -1,265 +1,292 @@
-__all__ = ["PropertiesDialog", "PropertyValuesDialog", "PropertyNamesDialog"]
+__all__ = ["PropertiesDialog"]
 
-from typing import Self
-from enum   import Enum
+from typing import Self, Optional, Any
+from enum import Enum
 
 from PyQt6.QtCore    import Qt, QModelIndex
 from PyQt6.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, \
                             QComboBox, QPushButton, QStyledItemDelegate
-from PyQt6.QtGui     import QStandardItemModel, QStandardItem, QBrush, QColor
+from PyQt6.QtGui     import QStandardItemModel, QStandardItem, QBrush
 
 from .table_view import TableView
 
 from ... import hub
 from ...core import logger
 
-from ..drawing.items import ElementMixin, NO_CHANGE
+from ..drawing.items import ElementMixin, KP
+from ..drawing.items.property_text import PropertyText, PropertyDisplay
 
-from . import okCancelLayout
+from . import okCancelNewLayout
 
 
-class PropertyChange(Enum):
-    NONE     = "NONE"
-    EXISTING = "EXISTING"
-    ALL      = "ALL"
-    DELETE   = "DELETE"
+type PropertiesType = str | float | PropertyDisplay | KP
 
-    @classmethod
-    def fromStr(cls, edit : str) -> Self:
-        """Convert string to PropertyEdit."""
-        if edit in (
-            cls.EXISTING.value,
-            cls.ALL.value,
-            cls.DELETE.value
-        ):
-            return cls(edit)
+class PropertiesItem(QStandardItem):
+    IDX_INITIAL_TEXT = 0
+    IDX_TYPE_NAME = 1
+    IDX_INST = 2
+
+    def __init__(
+        self: Self,
+        value: PropertiesType,
+        inst: Optional[Any] = None
+    ) -> None:
+        if isinstance(value, str):
+            text = value
+            type_name = "str"
+        elif isinstance(value, (int, float)):
+            text = str(value)
+            type_name = "float"
+        elif isinstance(value, PropertyDisplay):
+            text = value.value
+            type_name = "PropertyDisplay"
+        elif isinstance(value, KP):
+            text = value.value.name
+            type_name = "KP"
         else:
-            return cls.NONE
-
-class PropertyCell(QStandardItem):
-    def __init__(self : Self, value : str | PropertyChange) -> None:
-        text = value.value if isinstance(value, PropertyChange) else value
+            raise ValueError(f"Invalid value type: {type(value)}")
         super().__init__(text)
+        self.setData(text, Qt.ItemDataRole.EditRole)
+        self.setData(text, Qt.ItemDataRole.UserRole + self.IDX_INITIAL_TEXT)
+        self.setData(type_name, Qt.ItemDataRole.UserRole + self.IDX_TYPE_NAME)
+        if inst is not None:
+            self.setData(inst, Qt.ItemDataRole.UserRole + self.IDX_INST)
+        logger.debug(f"Created PropertiesItem: text={text}, type_name={type_name}, inst={inst}")
+
+    def textToValue(self: Self, text: str, type_name: str) -> PropertiesType:
+        try:
+            if type_name == "str":
+                return text
+            elif type_name == "float":
+                return float(text)
+            elif type_name == "PropertyDisplay":
+                return PropertyDisplay(text)
+            elif type_name == "KP":
+                enum_key = text.upper().replace(" ", "_")
+                if enum_key not in KP.__members__:
+                    logger.error(f"Invalid KP enum value: {enum_key}")
+                    return self.getInitialValue()
+                return KP[enum_key]
+            else:
+                raise ValueError(f"Invalid type name: {type_name}")
+        except Exception as e:
+            logger.error(f"Error converting text '{text}' to {type_name}: {e}")
+            return self.getInitialValue()
+
+    def getValue(self: Self) -> PropertiesType:
+        try:
+            text = self.text()
+            type_name = self.getTypeName()
+            return self.textToValue(text, type_name)
+        except Exception as e:
+            logger.error(f"Error getting value: {e}")
+            return self.text()
+
+    def getInitialValue(self: Self) -> PropertiesType:
+        return self.textToValue(self.getInitialText(), self.getTypeName())
+
+    def getInitialText(self: Self) -> str:
+        return self.data(Qt.ItemDataRole.UserRole + self.IDX_INITIAL_TEXT)
+
+    def getTypeName(self: Self) -> str:
+        return self.data(Qt.ItemDataRole.UserRole + self.IDX_TYPE_NAME)
+
+    def getInst(self: Self) -> Optional[Any]:
+        return self.data(Qt.ItemDataRole.UserRole + self.IDX_INST)
+
+    def changed(self: Self) -> bool:
+        return self.text() != self.getInitialText()
+
+class PropertiesItemDelegate(QStyledItemDelegate):
+    TOOLTIP = None
+    ENTRIES = None
+
+    def __init__(self):
+        super().__init__()
+
+    def createEditor(self, parent, option, index):
+        logger.debug(f"Creating editor for index {index.row()}, {index.column()}")
+        if not self.ENTRIES:
+            logger.error(f"ENTRIES is None or empty for delegate {self.__class__.__name__}")
+            return None
+        editor = QComboBox(parent)
+        editor.addItems(self.ENTRIES)
+        editor.setToolTip(self.TOOLTIP)
+        logger.debug(f"Editor created with items: {self.ENTRIES}")
+        return editor
+
+    def setEditorData(self, editor, index):
+        if editor is None:
+            logger.error("Editor is None in setEditorData")
+            return
+        value = index.model().data(index, Qt.ItemDataRole.EditRole)
+        logger.debug(f"Setting editor data: value={value}, type={type(value)}")
+        value_str = str(value) if value is not None else ""
+        if value_str in self.ENTRIES:
+            editor.setCurrentText(value_str)
+        else:
+            logger.warning(f"Value '{value_str}' not in ENTRIES, defaulting to {self.ENTRIES[0]}")
+            editor.setCurrentText(self.ENTRIES[0])
+
+    def setModelData(self, editor, model, index):
+        if editor is None:
+            logger.error("Editor is None in setModelData")
+            return
+        text = editor.currentText()
+        logger.debug(f"Setting model data for index {index.row()}, {index.column()}: {text}")
+        model.setData(index, text, Qt.ItemDataRole.EditRole)
+
+    def updateEditorGeometry(self, editor, option, index):
+        if editor is not None:
+            editor.setGeometry(option.rect)
+
+    def sizeHint(self, option, index):
+        from PyQt6.QtCore import QSize
+        if hasattr(self, 'ENTRIES') and self.ENTRIES:
+            from PyQt6.QtGui import QFontMetrics
+            font_metrics = QFontMetrics(option.font)
+            longest_entry = max(self.ENTRIES, key=len)
+            width = font_metrics.horizontalAdvance(longest_entry) + 40
+            height = font_metrics.height() + 10
+            return QSize(width, height)
+        return QSize(100, 25)
+
+class PropertiesDisplayItemDelegate(PropertiesItemDelegate):
+    TOOLTIP = "Controls appearance of property"
+    ENTRIES = [
+        PropertyDisplay.HIDDEN.value,
+        PropertyDisplay.VALUE.value,
+        PropertyDisplay.NAME_VALUE.value
+    ]
+
+class PropertiesAnchorItemDelegate(PropertiesItemDelegate):
+    TOOLTIP = "Controls position of property anchor point"
+    ENTRIES = [
+        KP.TOP_LEFT.value.name,
+        KP.TOP_CENTER.value.name,
+        KP.TOP_RIGHT.value.name,
+        KP.CENTER_LEFT.value.name,
+        KP.CENTER.value.name,
+        KP.CENTER_RIGHT.value.name,
+        KP.BOTTOM_LEFT.value.name,
+        KP.BOTTOM_CENTER.value.name,
+        KP.BOTTOM_RIGHT.value.name
+    ]
+
+    def __init__(self):
+        super().__init__()
+        # Validate ENTRIES
+        for entry in self.ENTRIES:
+            enum_key = entry.upper().replace(" ", "_")
+            if enum_key not in KP.__members__:
+                logger.error(f"Invalid ENTRIES value: {entry}")
+        logger.debug(f"PropertiesAnchorItemDelegate initialized with ENTRIES: {self.ENTRIES}")
+
+class PropertiesCleatItemDelegate(PropertiesAnchorItemDelegate):
+    TOOLTIP = "Controls position of property cleat point"
 
 class PropertiesDialog(QDialog):
-    model            : QStandardItemModel
-    dialog_layout    : QVBoxLayout
-    table_view       : TableView
-    ok_cancel_layout : QHBoxLayout
-    ok_button        : QPushButton
-    cancel_button    : QPushButton
+    model: QStandardItemModel
+    dialog_layout: QVBoxLayout
+    table_view: TableView
+    ok_cancel_layout: QHBoxLayout
+    new_button: QPushButton
+    ok_button: QPushButton
+    cancel_button: QPushButton
 
-    def __init__(self : Self, element : ElementMixin) -> None:
+    def __init__(self: Self, element: ElementMixin) -> None:
         super().__init__(hub.main_window)
         self.setWindowTitle("Properties")
         self.setModal(True)
         self.dialog_layout = QVBoxLayout(self)
-
-        # Build model
         self.model = QStandardItemModel()
-        self.model.setHorizontalHeaderLabels(["Name", "Value"])
-        if hub.settings.get("display/theme") == "dark":
-            fg_fade = 0xC0C0C0; bg_fade = 0x404040
-        else:
-            fg_fade = 0x404040; bg_fade = 0xC0C0C0
-        for name, value in element.properties.items():
-            name_cell  = PropertyCell(name)
-            value_cell = PropertyCell(value)
-            row = [name_cell, value_cell]
+        headers = [label for label in PropertyText.TABLE_ATTRS.keys()]
+        self.model.setHorizontalHeaderLabels(headers)
+        for p in element.properties:
+            row = []
+            for label, (_, getter) in PropertyText.TABLE_ATTRS.items():
+                value = getter(p)
+                logger.debug(f"Property {label}: value={value}, type={type(value)}")
+                item = PropertiesItem(value, p)
+                row.append(item)
             self.model.appendRow(row)
-
-        # Set up table view
         self.table_view = TableView(self.model)
-        self.table_view.setItemDelegateForColumn(3, PropertyValueEditDelegate())
-        self.table_view.resizeColumnsToContents()
-        self.dialog_layout.addWidget(self.table_view)
-
-        # finish up
-        okCancelLayout(self)
-        self.setLayout(self.dialog_layout)
-        self.adjustSize()
-        min_width = self.table_view.horizontalHeader().length() + 50
-        min_height = self.table_view.verticalHeader().length() + 50
-        self.setMinimumSize(min_width, min_height)
-
-    def getChoices(self : Self) -> dict[str, str]:
-        """Return a dictionary of property name to value."""
-        choices = {}
-        for row in range(self.model.rowCount()):
-            name = self.model.item(row, 0).text()
-            if not name:
-                logger.warning("Empty property name")
-                continue
-            if name in choices:
-                logger.warning(f"Duplicate property name: {name}")
-                continue
-            value = self.model.item(row, 1).text()
-            choices[name] = value
-        return choices
-
-class PropertyEditDelegate(QStyledItemDelegate):
-    TOOLTIP = None
-
-    def createEditor(self, parent, option, index):
-        editor = QComboBox(parent)
-        editor.addItems([e.value for e in PropertyChange])
-        editor.setToolTip(self.TOOLTIP)
-        return editor
-
-    def setEditorData(self, editor, index):
-        value = index.model().data(index, Qt.ItemDataRole.EditRole)
-        editor.setCurrentText(value)
-
-    def setModelData(self, editor, model, index):
-        model.setData(index, editor.currentText(), Qt.ItemDataRole.EditRole)
-
-    def updateEditorGeometry(self, editor, option, index):
-        editor.setGeometry(option.rect)
-
-class PropertyValueEditDelegate(PropertyEditDelegate):
-    TOOLTIP = \
-        "NONE: Leave property value unchanged\n" \
-        "UPDATE EXISTING: Update value in elements where property exists\n" \
-        "UPDATE ALL: Set value in all elements, creating property if needed\n" \
-        "DELETE: Remove property from elements where it exists" \
-
-class PropertyNameEditDelegate(PropertyEditDelegate):
-    TOOLTIP = \
-        "NO CHANGE: Leave property name unchanged\n" \
-        "DELETE: Remove property from elements where it exists\n" \
-        "UPDATE EXISTING: Update name in elements where property exists\n" \
-        "UPDATE ALL: Set name in all elements, creating empty property if needed"
-
-class PropertyValuesDialog(QDialog):
-    model            : QStandardItemModel
-    dialog_layout    : QVBoxLayout
-    table_view       : TableView
-    ok_cancel_layout : QHBoxLayout
-    ok_button        : QPushButton
-    cancel_button    : QPushButton
-
-    def __init__(
-        self     : Self,
-        elements : list["ElementMixin"]
-    ) -> None:
-        super().__init__(hub.main_window)
-        title = "Property Values"
-        if len(elements) > 1:
-            title += f" ({len(elements)} elements)"
-        self.setWindowTitle(title)
-        self.setModal(True)
-        self.dialog_layout = QVBoxLayout(self)
-
-        # Build dictionaries across all elements
-        values = {}  # property value, <various>, or None
-        nonex = {}   # non-existence count
-        for element in elements:
-            for name, value in element.properties.items():
-                if name not in values:
-                    values[name] = value
-                elif values[name] is not NO_CHANGE and values[name] != value:
-                    values[name] = NO_CHANGE
-            for name in values.keys():
-                if name not in nonex:
-                    nonex[name] = 0
-                if name not in element.properties.keys():
-                    nonex[name] += 1
-
-        # Build model
-        self.model = QStandardItemModel()
-        self.model.setHorizontalHeaderLabels(
-            ["Name", "Value (Old)", "Value (New)", "Change"]
+        self.table_view.setItemDelegateForColumn(
+            list(PropertyText.TABLE_ATTRS.keys()).index("Display"),
+            PropertiesDisplayItemDelegate()
         )
-        if hub.settings.get("display/theme") == "dark":
-            fg_fade = 0xC0C0C0; bg_fade = 0x404040
-        else:
-            fg_fade = 0x404040; bg_fade = 0xC0C0C0
-        for name, value in values.items():
-            # name is read only
-            name_cell  = PropertyCell(name)
-            name_cell.setEditable(False)
-            name_cell.setForeground(QColor(fg_fade))
-            font = name_cell.font()
-            font.setItalic(True)
-            name_cell.setFont(font)
-            # value (old) is read only
-            value = "<various>" if value is NO_CHANGE else value
-            value_old_cell = PropertyCell(value)
-            value_old_cell.setEditable(False)
-            value_old_cell.setForeground(QColor(fg_fade))
-            font = value_old_cell.font()
-            font.setItalic(True)
-            value_old_cell.setFont(font)
-            # value (new) is editable
-            value_new_cell = PropertyCell("")
-            # edit is editable via delegate
-            edit_cell  = PropertyCell(PropertyChange.NONE)
-            # shade name and value (old) if not all elements have the property
-            if nonex[name] > 0:
-                brush = QBrush(bg_fade, Qt.BrushStyle.FDiagPattern)
-                name_cell.setBackground(brush)
-                value_old_cell.setBackground(brush)
-            row = [name_cell, value_old_cell, value_new_cell, edit_cell]
-            self.model.appendRow(row)
-        self.model.dataChanged.connect(self._onDataChanged)
-
-        # Set up table view
-        self.table_view = TableView(self.model)
-        self.table_view.setItemDelegateForColumn(3, PropertyValueEditDelegate())
+        #self.table_view.setItemDelegateForColumn(
+        #    list(PropertyText.TABLE_ATTRS.keys()).index("Anchor"),
+        #    PropertiesAnchorItemDelegate()
+        #)
+        # self.table_view.setItemDelegateForColumn(
+        #     list(PropertyText.TABLE_ATTRS.keys()).index("Cleat"),
+        #     PropertiesCleatItemDelegate()
+        # )
         self.table_view.resizeColumnsToContents()
         self.dialog_layout.addWidget(self.table_view)
-
-        # finish up
-        okCancelLayout(self)
+        okCancelNewLayout(self)
         self.setLayout(self.dialog_layout)
         self.adjustSize()
         min_width = self.table_view.horizontalHeader().length() + 50
         min_height = self.table_view.verticalHeader().length() + 50
         self.setMinimumSize(min_width, min_height)
+        self.model.dataChanged.connect(self.onDataChanged)
+        logger.debug("PropertiesDialog initialization complete")
 
-    def _onDataChanged(
-        self         : Self,
-        top_left     : QModelIndex,
-        bottom_right : QModelIndex,
-        roles        : list[int]
+    def show(self):
+        logger.debug("Showing PropertiesDialog")
+        return super().show()
+
+    def exec(self):
+        logger.debug("Executing PropertiesDialog")
+        return super().exec()
+
+    def onDataChanged(
+        self: Self,
+        top_left: QModelIndex,
+        bottom_right: QModelIndex,
+        roles: list[int]
     ) -> None:
-        """Auto-update the Change column."""
-        left_col   = top_left.column()
-        right_col  = bottom_right.column()
-        top_row    = top_left.row()
-        bottom_row = bottom_right.row()
-        if not (left_col <= 2 <= right_col):
-            return
-        if left_col <= 3 <= right_col:
-            return
-        for row in range(top_row, bottom_row + 1):
-            value_item = self.model.item(row, 2)
-            change_item = self.model.item(row, 3)
-            if value_item and change_item:
-                value_text = value_item.text()
-                change_text = change_item.text()
-                if value_text and change_text == PropertyChange.NONE.value:
-                    change_item.setText(PropertyChange.EXISTING.value)
+        logger.debug(f"Data changed: rows {top_left.row()}-{bottom_right.row()}, cols {top_left.column()}-{bottom_right.column()}")
+        if hub.settings.get("display/theme") == "dark":
+            bg_highlight = Qt.GlobalColor.darkYellow
+        else:
+            bg_highlight = Qt.GlobalColor.yellow
+        for row in range(top_left.row(), bottom_right.row() + 1):
+            for col in range(top_left.column(), bottom_right.column() + 1):
+                item = self.model.item(row, col)
+                if item and item.getInitialText() != item.text():
+                    item.setBackground(QBrush(bg_highlight))
+                else:
+                    item.setBackground(QBrush(Qt.GlobalColor.transparent))
 
-    def getChoices(self : Self) -> dict[str, tuple[str, PropertyChange]]:
-        """Return a dictionary of property name to (value, edit) tuples."""
-        choices = {}
-        for row in range(self.model.rowCount()):
-            name = self.model.item(row, 0).text()
-            if not name:
-                logger.warning("Empty property name")
-                continue
-            if name in choices:
-                logger.warning(f"Duplicate property name: {name}")
-                continue
-            value = self.model.item(row, 2).text()
-            edit_text = self.model.item(row, 3).text()
-            if edit_text not in [e.value for e in PropertyChange]:
-                logger.warning(f"Invalid edit text: {edit_text}")
-                continue
-            edit = PropertyChange.fromStr(edit_text)
-            choices[name] = (value, edit)
-        return choices
+    def new(self: Self) -> None:
+        logger.debug("Adding new property")
+        row = self.model.rowCount()
+        self.model.appendRow([
+            PropertiesItem(""),
+            PropertiesItem(""),
+            PropertiesItem(PropertyDisplay.VALUE),
+            PropertiesItem(KP.TOP_LEFT),
+            PropertiesItem(0),
+            PropertiesItem(0),
+            PropertiesItem(KP.BOTTOM_RIGHT)
+        ])
+        self.table_view.setCurrentIndex(self.model.index(row, 0))
 
-class PropertyNamesDialog(QDialog):
-    pass
+    def getChanges(self: Self) -> dict[PropertyText, tuple[str, PropertiesType, PropertiesType]]:
+        logger.debug("Getting changes from PropertiesDialog")
+        r = {}
+        for row_num in range(self.model.rowCount()):
+            item_name: PropertiesItem = self.model.item(row_num, 0)
+            key: PropertyText = item_name.getInst()
+            r[key] = []
+            for col in range(self.model.columnCount()):
+                item: PropertiesItem = self.model.item(row_num, col)
+                if item.changed():
+                    label = self.model.horizontalHeaderItem(col).text()
+                    before = item.getInitialValue()
+                    after = item.getValue()
+                    r[key].append((label, before, after))
+        return r

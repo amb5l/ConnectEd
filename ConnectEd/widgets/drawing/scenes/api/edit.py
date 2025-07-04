@@ -5,7 +5,6 @@ __all__ = [
     "cmdEditMove",
     "cmdEditAppearance",
     "cmdEditProperties",
-    "cmdEditPropertyValues",
     "DrawingSceneApiEditMixin"
 ]
 
@@ -16,10 +15,13 @@ from PyQt6.QtGui  import QUndoCommand
 
 from .....core import logger,copy, paste
 
-from ....dialogs.properties import PropertyChange
+from ....dialogs.properties import PropertiesType
 
 from ...items import ElementMixin, cmdElement, cmdElements, clone, \
                      AppearancePref, AppearancePrefChange
+
+from ...items.property_text import PropertyText
+
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -237,69 +239,31 @@ class cmdEditAppearance(cmdElements):
         return False
 
 class cmdEditProperties(cmdElement):
-    _before : dict[str, str]
-    _after  : dict[str, str]
+    _changes : dict[PropertyText, tuple[str, PropertiesType, PropertiesType]]
 
     def __init__(
         self    : Self,
         scene   : "DrawingScene",
         element : ElementMixin,
-        after   : dict[str, str]
+        changes : dict[PropertyText, tuple[str, PropertiesType, PropertiesType]]
     ):
         super().__init__(scene, element)
-        self._before = element.properties.copy()
-        self._after  = after
+        self._changes = changes.copy()
 
     def redo(self: Self) -> None:
-        self._element.properties.clear()
-        self._element.properties.update(self._after)
-        self._element.update()
+        for p in self._changes.keys():
+            for label, _, after in self._changes[p]:
+                setter, _ = PropertyText.TABLE_ATTRS[label]
+                setter(p, after)
 
     def undo(self: Self) -> None:
-        self._element.properties.clear()
-        self._element.properties.update(self._before)
-        self._element.update()
+        for p in self._changes.keys():
+            for label, before, _ in self._changes[p]:
+                setter, _ = PropertyText.TABLE_ATTRS[label]
+                setter(p, before)
 
     def mergeWith(self: Self, other: QUndoCommand) -> bool:
         return False
-
-class cmdEditPropertyValues(cmdElements):
-    _before : dict[ElementMixin, dict[str, str]]
-    _after  : dict[str, tuple[str, PropertyChange]]
-
-    def __init__(
-        self     : Self,
-        scene    : "DrawingScene",
-        elements : list[ElementMixin],
-        changes  : dict[str, tuple[str, PropertyChange]]
-    ):
-        super().__init__(scene, elements)
-        self._after = changes
-        self._before = {e: e.properties.copy() for e in elements}
-
-    def redo(self) -> None:
-        for name, (value, edit) in self._after.items():
-            if edit == PropertyChange.NO_CHANGE:
-                continue
-            for element in self._elements:
-                if edit == PropertyChange.DELETE and name in element.properties:
-                    del element.properties[name]
-                elif edit == PropertyChange.EXISTING and name in element.properties:
-                    element.properties[name] = value
-                elif edit == PropertyChange.ALL:
-                    element.properties[name] = value
-                element.update()
-
-    def undo(self) -> None:
-        for element in self._elements:
-            element.properties = self._before[element].copy()
-            element.update()
-
-    def mergeWith(self, other: QUndoCommand) -> bool:
-        if not isinstance(other, cmdEditPropertyValues) or other._scene != self._scene:
-            return False
-        self._after = other._after
-        return True
 
 class DrawingSceneApiEditMixin:
     def editCut(
@@ -412,13 +376,6 @@ class DrawingSceneApiEditMixin:
     def editProperties(
         self    : "DrawingScene",
         element : ElementMixin,
-        after   : dict[str, str]
+        changes : dict[PropertyText, tuple[str, PropertiesType, PropertiesType]]
     ) -> None:
-        self.undo_stack.push(cmdEditProperties(self, element, after))
-
-    def editPropertyValues(
-        self     : "DrawingScene",
-        elements : list[ElementMixin],
-        changes  : dict[str, tuple[str, PropertyChange]]
-    ) -> None:
-        self.undo_stack.push(cmdEditPropertyValues(self, elements, changes))
+        self.undo_stack.push(cmdEditProperties(self, element, changes))

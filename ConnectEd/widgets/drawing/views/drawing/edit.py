@@ -2,7 +2,7 @@ from PyQt6.QtCore import QPointF
 
 from .....core import logger, paste
 
-from ....dialogs import AppearanceDialog, PropertiesDialog, PropertyValuesDialog
+from ....dialogs import AppearanceDialog, PropertiesDialog
 
 from ...scenes import DrawingScene
 from ...items  import ElementMixin, KeyPoint
@@ -293,17 +293,5 @@ class DrawingViewEditMixin:
         scene : DrawingScene = self.scene()
         dialog = PropertiesDialog(element)
         if dialog.exec():
-            scene.editProperties(element, dialog.getChoices())
+            scene.editProperties(element, dialog.getChanges())
         self._goState(State.Idle)
-
-    def editPropertyValues(self : "DrawingView", elements: list[ElementMixin] = []) -> None:
-        scene : DrawingScene = self.scene()
-        if not elements:
-            elements = [item for item in scene.selectedItems() if isinstance(item, ElementMixin)]
-        if elements:
-            dialog = PropertyValuesDialog(elements)
-            if dialog.exec():
-                scene.editPropertyValues(elements, dialog.getChoices())
-            self._goState(State.Idle)
-        else:
-            logger.warning("No elements selected for properties editing")
