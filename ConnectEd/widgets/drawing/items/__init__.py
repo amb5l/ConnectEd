@@ -10,7 +10,7 @@ from PyQt6.QtWidgets import QGraphicsItem, QGraphicsRectItem, \
                             QGraphicsTextItem, QGraphicsSimpleTextItem, \
                             QApplication, QGraphicsSceneContextMenuEvent, QMenu
 
-from ....core import logger, \
+from ....core import Z_DRAWING, logger, \
                      val2str, str2val, camel_to_proper, toXmlAttrs, fromXmlAttrs
 
 from .... import hub
@@ -545,7 +545,7 @@ class CustomGraphicsSimpleTextItem(CustomGraphicsItemMixin, QGraphicsSimpleTextI
 
 class ElementMixin:
     """Mixin class for all elements."""
-
+    Z = Z_DRAWING
     _XML_ATTRS = {
         "uuid" : "str",
         "pos" : (

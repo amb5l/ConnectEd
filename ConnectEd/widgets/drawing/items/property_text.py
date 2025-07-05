@@ -7,8 +7,6 @@ from PyQt6.QtCore    import QPointF, QRectF
 from PyQt6.QtWidgets import QWidget, QStyleOptionGraphicsItem, QGraphicsItem
 from PyQt6.QtGui     import QPainter
 
-from ....core import Z_DRAWING
-
 from . import ElementMixin, KPManager, KP, TextColorFont
 
 from .base_text_line import BaseTextLine
@@ -56,7 +54,6 @@ class Tether(QGraphicsItem):
 
 class PropertyText(BaseTextLine):
     # class variables
-    Z = Z_DRAWING
     TABLE_ATTRS = {
         "Name" : (
             lambda self, value: self.setName(value),
