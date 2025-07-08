@@ -1,3 +1,8 @@
+- rename things to Item in db.py
+- setter and getter names (esp getter)
+- use of 'instance' as argument/variable name
+- family -> font
+
 - Properties dialog
   - display changes in bold (store original cell text in user role data)
   - TableView copy/paste/clear/revert context menu

@@ -5,8 +5,7 @@ from PyQt6.QtWidgets import QWidget, QStyleOptionGraphicsItem, QStyle
 from PyQt6.QtGui     import QPainter, QPen, QBrush
 
 from . import CustomGraphicsSimpleTextItem, ElementMixin, TextPref, \
-              KP, KPDef, \
-              cmdPlaceElement
+              AttrSpec, KP, KPDef, cmdPlaceElement
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -15,20 +14,22 @@ if TYPE_CHECKING:
 
 class BaseTextLine(CustomGraphicsSimpleTextItem, ElementMixin):
     # class variables
-    _XML_ATTRS = ElementMixin._XML_ATTRS | {
-        "anchor" : (
-            "KP",
-            lambda self: True,
-            lambda self, value: self.setAnchor(value),
-            lambda self: self.anchor()
+    _ATTR_SPECS = ElementMixin._ATTR_SPECS_1 + [
+        AttrSpec(
+            name      = "Anchor",
+            type_name = "KP",
+            exists    = lambda self: True,
+            getter    = lambda self: self.anchor(),
+            setter    = lambda self, value: self.setAnchor(value)
         ),
-        "text" : (
-            "str",
-            lambda self: True,
-            lambda self, value: self.setText(value),
-            lambda self: self.text()
+        AttrSpec(
+            name      = "Text",
+            type_name = "str",
+            exists    = lambda self: True,
+            getter    = lambda self: self.text(),
+            setter    = lambda self, value: self.setText(value)
         )
-    }
+    ] + ElementMixin._ATTR_SPECS_2
     _MENU_ITEM_NAMES = [
         "Appearance..."
     ]

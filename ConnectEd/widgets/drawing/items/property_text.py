@@ -7,7 +7,7 @@ from PyQt6.QtCore    import QPointF, QRectF
 from PyQt6.QtWidgets import QWidget, QStyleOptionGraphicsItem, QGraphicsItem
 from PyQt6.QtGui     import QPainter
 
-from . import ElementMixin, KPManager, KP, TextColorFont
+from . import ElementMixin, AttrSpec, KPManager, KP, TextColorFont
 
 from .base_text_line import BaseTextLine
 
@@ -15,7 +15,7 @@ from .base_text_line import BaseTextLine
 class PropertyDisplay(Enum):
     HIDDEN     = "HIDDEN"
     VALUE      = "Value"
-    NAME_VALUE = "Name: Value"
+    NAME_VALUE = "Name:Value"
 
 class Tether(QGraphicsItem):
     """Tether line between a property's anchorand its parent cleat."""
@@ -54,68 +54,43 @@ class Tether(QGraphicsItem):
 
 class PropertyText(BaseTextLine):
     # class variables
-    TABLE_ATTRS = {
-        "Name" : (
-            lambda self, value: self.setName(value),
-            lambda self: self.name()
+    _ATTR_SPECS = ElementMixin._ATTR_SPECS_1 + [
+        AttrSpec(
+            name      = "Cleat",
+            type_name = "KP",
+            exists    = lambda self: True,
+            getter    = lambda self: self.cleat(),
+            setter    = lambda self, value: self.setCleat(value)
         ),
-        "Value" : (
-            lambda self, value: self.setValue(value),
-            lambda self: self.value()
+        AttrSpec(
+            name      = "Anchor",
+            type_name = "KP",
+            exists    = lambda self: True,
+            getter    = lambda self: self.anchor(),
+            setter    = lambda self, value: self.setAnchor(value)
         ),
-        "Display" : (
-            lambda self, value: self.setDisplay(value),
-            lambda self: self.display()
+        AttrSpec(
+            name      = "Name",
+            type_name = "str",
+            exists    = lambda self: True,
+            getter    = lambda self: self.name(),
+            setter    = lambda self, value: self.setName(value)
         ),
-        "Anchor" : (
-            lambda self, value: self.setAnchor(value),
-            lambda self: self.anchor()
+        AttrSpec(
+            name      = "Value",
+            type_name = "str",
+            exists    = lambda self: True,
+            getter    = lambda self: self.value(),
+            setter    = lambda self, value: self.setValue(value)
         ),
-        "Offset X" : (
-            lambda self, value: self.setPosX(value),
-            lambda self: self.pos().x()
-        ),
-        "Offset Y" : (
-            lambda self, value: self.setPosY(value),
-            lambda self: self.pos().y()
-        ),
-        "Cleat" : (
-            lambda self, value: self.setCleat(value),
-            lambda self: self.cleat()
+        AttrSpec(
+            name      = "Display",
+            type_name = "PropertyDisplay",
+            exists    = lambda self: True,
+            getter    = lambda self: self.display(),
+            setter    = lambda self, value: self.setDisplay(value)
         )
-    }
-    _XML_ATTRS = ElementMixin._XML_ATTRS | {
-        "anchor" : (
-            "KP",
-            lambda self: True,
-            lambda self, value: self.setAnchor(value),
-            lambda self: self.anchor()
-        ),
-        "name"    : (
-            "str",
-            lambda self: True,
-            lambda self, value: self.setName(value),
-            lambda self: self.name()
-        ),
-        "value"   : (
-            "str",
-            lambda self: True,
-            lambda self, value: self.setValue(value),
-            lambda self: self.value()
-        ),
-        "display" : (
-            "PropertyDisplay",
-            lambda self: True,
-            lambda self, value: self.setDisplay(value),
-            lambda self: self.display()
-        ),
-        "cleat" : (
-            "KP",
-            lambda self: True,
-            lambda self, value: self.setCleat(value),
-            lambda self: self.cleat()
-        ),
-    }
+    ] + ElementMixin._ATTR_SPECS_2
 
     # instance variables
     _name      : str

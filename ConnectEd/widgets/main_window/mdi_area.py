@@ -48,7 +48,7 @@ class MdiArea(QMdiArea):
             and isinstance(w.widget(), DrawingView) \
             and isinstance(w.widget().scene(), DrawingScene):
                 scene : DrawingScene = w.widget().scene()
-                scene_name = scene.parent.text()
+                scene_name = scene.item.text()
                 db_name = hub.model.getDbItemFromScene(scene).text()
                 w.setWindowTitle(f"{db_name}:{scene_name}")
                 key = id(scene)

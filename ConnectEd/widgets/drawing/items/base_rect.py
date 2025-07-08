@@ -9,8 +9,7 @@ from PyQt6.QtGui     import QPainter, QPainterPath
 from ....core   import logger
 
 from . import CustomGraphicsRectItem, ElementMixin, cmdPlaceElement, \
-              KP, KPDef, \
-              LinePref, FillPref
+              AttrSpec, KP, KPDef, LinePref, FillPref
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -19,14 +18,22 @@ if TYPE_CHECKING:
 
 class BaseRectangle(CustomGraphicsRectItem, ElementMixin):
     """Base class for rectangle elements."""
-    _XML_ATTRS = ElementMixin._XML_ATTRS | {
-        "size" : (
-            "QSizeF",
-            lambda self: True,
-            lambda self, value: self.setSize(value),
-            lambda self: self.rect().size()
+    _ATTR_SPECS = ElementMixin._ATTR_SPECS_1 + [
+        AttrSpec(
+            name      = "Width",
+            type_name = "float",
+            exists    = lambda self: True,
+            getter    = lambda self: self.rect().width(),
+            setter    = lambda self, value: self.setWidth(value)
+        ),
+        AttrSpec(
+            name      = "Height",
+            type_name = "float",
+            exists    = lambda self: True,
+            getter    = lambda self: self.rect().height(),
+            setter    = lambda self, value: self.setHeight(value)
         )
-    }
+    ] + ElementMixin._ATTR_SPECS_2
     MIN_SIZE = QSizeF(1.0, 1.0)
     _MENU_ITEM_NAMES = [
         "Appearance..."
@@ -138,6 +145,16 @@ class BaseRectangle(CustomGraphicsRectItem, ElementMixin):
 
     def setSize(self : Self, size : QSizeF) -> None:
         self.setRect(0, 0, size.width(), size.height())
+
+    def setWidth(self : Self, width : float) -> None:
+        rect = self.rect()
+        rect.setWidth(width)
+        self.setRect(rect)
+
+    def setHeight(self : Self, height : float) -> None:
+        rect = self.rect()
+        rect.setHeight(height)
+        self.setRect(rect)
 
     def setPosSize(self : Self, pos : QPointF, size : QSizeF) -> None:
         self.setPos(pos)

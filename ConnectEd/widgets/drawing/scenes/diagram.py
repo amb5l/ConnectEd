@@ -7,19 +7,40 @@ from PyQt6.QtGui  import QPainter, QPen, QBrush
 
 from . import DrawingScene
 
+from ..items import AttrSpec
+
 from .... import hub
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from ....core import Diagram
+    from ....core import DiagramItem
 
 
 class DiagramScene(DrawingScene):
-    _XML_ATTRS = DrawingScene._XML_ATTRS | {
-        "paper_size" : "str",
-        "margin"     : "float",
-        "border"     : "float"
-    }
+    _ATTR_SPECS = DrawingScene._ATTR_SPECS + [
+        AttrSpec(
+            name      = "Paper Size",
+            type_name = "str",
+            exists    = lambda self: True,
+            getter    = lambda self: self.paper_size,
+            setter    = lambda self, value: self.setPaperSize(value)
+        ),
+        AttrSpec(
+            name      = "Margin",
+            type_name = "float",
+            exists    = lambda self: True,
+            getter    = lambda self: self.margin,
+            setter    = lambda self, value: self.setMargin(value)
+        ),
+        AttrSpec(
+            name      = "Border",
+            type_name = "float",
+            exists    = lambda self: True,
+            getter    = lambda self: self.border,
+            setter    = lambda self, value: self.setBorder(value)
+        ),
+    ]
+    _ATTR_SPECS_BY_TAG = {spec.tag: spec for spec in _ATTR_SPECS}
 
     paper_size : str | QSizeF
     margin     : float # distance from paper edge to border line
@@ -27,7 +48,7 @@ class DiagramScene(DrawingScene):
 
     def __init__(
         self,
-        parent     : Optional["Diagram"] = None,
+        parent     : Optional["DiagramItem"] = None,
         paper_size : Optional[str | QSizeF] = None,
         margin     : Optional[float] = None,
         border     : Optional[float] = None
@@ -72,3 +93,30 @@ class DiagramScene(DrawingScene):
 
     def getSize(self : Self) -> QSizeF:
         return self.sceneRect().size()
+
+    def getPaperSize(self : Self) -> str | QSizeF:
+        return self.paper_size
+
+    def setPaperSize(self : Self, paper_size : str | QSizeF) -> None:
+        self.paper_size = paper_size
+        # Update scene rect when paper size changes
+        paper_rect = self.paper_rect()
+        self.setSceneRect(QRectF(
+            QPointF(-paper_rect.width(), -paper_rect.height()),
+            QSizeF(paper_rect.width() * 3, paper_rect.height() * 3)
+        ))
+        self.update()
+
+    def getMargin(self : Self) -> float:
+        return self.margin
+
+    def setMargin(self : Self, margin : float) -> None:
+        self.margin = margin
+        self.update()
+
+    def getBorder(self : Self) -> float:
+        return self.border
+
+    def setBorder(self : Self, border : float) -> None:
+        self.border = border
+        self.update()

@@ -18,19 +18,21 @@ from .api import *
 
 from .... import hub
 
+from .. import AttrSpec
+
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from ....core import Drawing
+    from ....core import DrawingItem
 
 class DrawingScene(
     QGraphicsScene,
     DrawingSceneApiMixin
 ):
     # class variables
-    _XML_ATTRS = {"name" : "str"}
+    _ATTR_SPECS = []
 
     # instance variables
-    parent     : Optional["Drawing"]
+    item       : Optional["DrawingItem"]
     undo_stack : Optional[QUndoStack]
     kp_items   : list[QGraphicsItem]
 
@@ -40,11 +42,12 @@ class DrawingScene(
 
     def __init__(
         self    : Self,
-        parent  : Optional["Drawing"] = None,
+        item    : "DrawingItem",
         extents : Optional[QSizeF] = None
     ) -> None:
+        self._ATTR_SPECS_BY_TAG = {spec.tag: spec for spec in self._ATTR_SPECS}
         super().__init__()
-        self.parent = parent
+        self.item = item
         if extents is None:
             extents = hub.settings.get("defaults/extents")
         self.setSceneRect(QRectF(QPointF(0, 0), extents))
@@ -55,8 +58,8 @@ class DrawingScene(
         if hub.main_window: # GUI is running
             self.selectionChanged.connect(self.onSelectionChanged)
 
-    def setParent(self : Self, parent : "Drawing") -> None:
-        self.parent = parent
+    def setParent(self : Self, parent : "DrawingItem") -> None:
+        self.item = parent
 
     def clearSelection(self : Self) -> None:
         super().clearSelection()
@@ -73,7 +76,7 @@ class DrawingScene(
         xw.writeEndElement()
 
     @classmethod
-    def fromXml(cls : Self, xr : QXmlStreamReader, parent : Optional["Drawing"] = None) -> Self:
+    def fromXml(cls : Self, xr : QXmlStreamReader, parent : Optional["DrawingItem"] = None) -> Self:
         cls_name = cls.__name__
         if xr.name() != cls_name:
             raise ValueError(f"Expected {cls_name} element, got {xr.name()}")
@@ -109,4 +112,4 @@ class DrawingScene(
         self.textEditingComplete.emit(text_item)
 
     def getName(self : Self) -> str:
-        return self.parent.text()
+        return self.item.text()

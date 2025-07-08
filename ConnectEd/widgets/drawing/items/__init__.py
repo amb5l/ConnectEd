@@ -1,6 +1,6 @@
 import uuid
 
-from typing      import Self, Optional, Any
+from typing      import Self, Optional, Callable, Any
 from types       import SimpleNamespace
 from dataclasses import dataclass
 
@@ -210,6 +210,27 @@ class LinePen:
         self.selected = QPen()
         self.onSettingsChange()
 
+    def getColor(self : Self) -> QColor:
+        return self.color
+
+    def setColor(self : Self, color : QColor) -> None:
+        self.color = color
+        self.onSettingsChange()
+
+    def getWidth(self : Self) -> float:
+        return self.width
+
+    def setWidth(self : Self, width : float) -> None:
+        self.width = width
+        self.onSettingsChange()
+
+    def getStyle(self : Self) -> Qt.PenStyle:
+        return self.style
+
+    def setStyle(self : Self, style : Qt.PenStyle) -> None:
+        self.style = style
+        self.onSettingsChange()
+
     def getPref(self : Self) -> LinePref:
         return LinePref(self.color, self.width, self.style)
 
@@ -282,6 +303,20 @@ class FillBrush:
         self.style    = pref.style
         self.normal   = QBrush()
         self.selected = QBrush()
+        self.onSettingsChange()
+
+    def getColor(self : Self) -> QColor:
+        return self.color
+
+    def setColor(self : Self, color : QColor) -> None:
+        self.color = color
+        self.onSettingsChange()
+
+    def getStyle(self : Self) -> Qt.BrushStyle:
+        return self.style
+
+    def setStyle(self : Self, style : Qt.BrushStyle) -> None:
+        self.style = style
         self.onSettingsChange()
 
     def getPref(self : Self) -> FillPref:
@@ -361,6 +396,48 @@ class TextColorFont:
         self.normal    = QColor()
         self.selected  = QColor()
         self.font      = QFont()
+        self.onSettingsChange()
+
+    def getColor(self : Self) -> QColor:
+        return self.color
+
+    def setColor(self : Self, color : QColor) -> None:
+        self.color = color
+        self.onSettingsChange()
+
+    def getFamily(self : Self) -> str:
+        return self.family
+
+    def setFamily(self : Self, family : str) -> None:
+        self.family = family
+        self.onSettingsChange()
+
+    def getSize(self : Self) -> float:
+        return self.size
+
+    def setSize(self : Self, size : float) -> None:
+        self.size = size
+        self.onSettingsChange()
+
+    def getBold(self : Self) -> bool:
+        return self.bold
+
+    def setBold(self : Self, bold : bool) -> None:
+        self.bold = bold
+        self.onSettingsChange()
+
+    def getItalic(self : Self) -> bool:
+        return self.italic
+
+    def setItalic(self : Self, italic : bool) -> None:
+        self.italic = italic
+        self.onSettingsChange()
+
+    def getUnderline(self : Self) -> bool:
+        return self.underline
+
+    def setUnderline(self : Self, underline : bool) -> None:
+        self.underline = underline
         self.onSettingsChange()
 
     def getPref(self : Self) -> TextPref:
@@ -460,6 +537,7 @@ class OutlinePen:
         self.pen.setWidthF(hub.settings.get("display/outline/width"))
         self.pen.setStyle(hub.settings.get("display/outline/style"))
 
+@dataclass
 class Appearance:
     line    : Optional[LinePen]       = None
     fill    : Optional[FillBrush]     = None
@@ -543,36 +621,117 @@ class CustomGraphicsTextItem(CustomGraphicsItemMixin, QGraphicsTextItem):
 class CustomGraphicsSimpleTextItem(CustomGraphicsItemMixin, QGraphicsSimpleTextItem):
     pass
 
+@dataclass
+class AttrSpec:
+    name      : str
+    type_name : str
+    exists    : Callable[[Any], bool]
+    getter    : Callable[[Any], Any]
+    setter    : Callable[[Any, Any], None]
+
+    @property
+    def tag(self) -> str:
+        return self.name.lower().replace(" ", "_")
+
 class ElementMixin:
     """Mixin class for all elements."""
     Z = Z_DRAWING
-    _XML_ATTRS = {
-        "uuid" : "str",
-        "pos" : (
-            "QPointF",
-            lambda self: True,
-            lambda self, value: self.setPos(value),
-            lambda self: self.pos()
+    _ATTR_SPECS_1 = [
+        AttrSpec(
+            name      = "Position X",
+            type_name = "float",
+            exists    = lambda self: True,
+            getter    = lambda self: self.pos().x(),
+            setter    = lambda self, value: self.setPosX(value)
         ),
-        "line_pref" : (
-            "LinePref",
-            lambda self: self.appearance.line is not None,
-            lambda self, value: self.appearance.line.setPref(value),
-            lambda self: self.appearance.line.getPref()
-        ),
-        "fill_pref" : (
-            "FillPref",
-            lambda self: self.appearance.fill is not None,
-            lambda self, value: self.appearance.fill.setPref(value),
-            lambda self: self.appearance.fill.getPref()
-        ),
-        "text_pref" : (
-            "TextPref",
-            lambda self: self.appearance.text is not None,
-            lambda self, value: self.appearance.text.setPref(value),
-            lambda self: self.appearance.text.getPref()
+        AttrSpec(
+            name      = "Position Y",
+            type_name = "float",
+            exists    = lambda self: True,
+            getter    = lambda self: self.pos().y(),
+            setter    = lambda self, value: self.setPosY(value)
         )
-    }
+    ]
+    _ATTR_SPECS_2 = [
+        AttrSpec(
+            name      = "Line Color",
+            type_name = "QColor",
+            exists    = lambda self: self.appearance.line is not None,
+            getter    = lambda self: self.appearance.line.getColor(),
+            setter    = lambda self, value: self.appearance.line.setColor(value)
+        ),
+        AttrSpec(
+            name      = "Line Width",
+            type_name = "float",
+            exists    = lambda self: self.appearance.line is not None,
+            getter    = lambda self: self.appearance.line.getWidth(),
+            setter    = lambda self, value: self.appearance.line.setWidth(value)
+        ),
+        AttrSpec(
+            name      = "Line Style",
+            type_name = "Qt.PenStyle",
+            exists    = lambda self: self.appearance.line is not None,
+            getter    = lambda self: self.appearance.line.getStyle(),
+            setter    = lambda self, value: self.appearance.line.setStyle(value)
+        ),
+        AttrSpec(
+            name      = "Fill Color",
+            type_name = "QColor",
+            exists    = lambda self: self.appearance.fill is not None,
+            getter    = lambda self: self.appearance.fill.getColor(),
+            setter    = lambda self, value: self.appearance.fill.setColor(value)
+        ),
+        AttrSpec(
+            name      = "Fill Style",
+            type_name = "Qt.BrushStyle",
+            exists    = lambda self: self.appearance.fill is not None,
+            getter    = lambda self: self.appearance.fill.getStyle(),
+            setter    = lambda self, value: self.appearance.fill.setStyle(value)
+        ),
+        AttrSpec(
+            name      = "Text Color",
+            type_name = "QColor",
+            exists    = lambda self: self.appearance.text is not None,
+            getter    = lambda self: self.appearance.text.getColor(),
+            setter    = lambda self, value: self.appearance.text.setColor(value)
+        ),
+        AttrSpec(
+            name      = "Text Font",
+            type_name = "str",
+            exists    = lambda self: self.appearance.text is not None,
+            getter    = lambda self: self.appearance.text.getFamily(),
+            setter    = lambda self, value: self.appearance.text.setFamily(value)
+        ),
+        AttrSpec(
+            name      = "Text Size",
+            type_name = "float",
+            exists    = lambda self: self.appearance.text is not None,
+            getter    = lambda self: self.appearance.text.getSize(),
+            setter    = lambda self, value: self.appearance.text.setSize(value)
+        ),
+        AttrSpec(
+            name      = "Text Bold",
+            type_name = "bool",
+            exists    = lambda self: self.appearance.text is not None,
+            getter    = lambda self: self.appearance.text.getBold(),
+            setter    = lambda self, value: self.appearance.text.setBold(value)
+        ),
+        AttrSpec(
+            name      = "Text Italic",
+            type_name = "bool",
+            exists    = lambda self: self.appearance.text is not None,
+            getter    = lambda self: self.appearance.text.getItalic(),
+            setter    = lambda self, value: self.appearance.text.setItalic(value)
+        ),
+        AttrSpec(
+            name      = "Text Underline",
+            type_name = "bool",
+            exists    = lambda self: self.appearance.text is not None,
+            getter    = lambda self: self.appearance.text.getUnderline(),
+            setter    = lambda self, value: self.appearance.text.setUnderline(value)
+        )
+    ]
+
     _MENU       : Optional[QMenu] = None
     _KEY_POINTS : Optional[list["KP"]] = None
     _PROPERTIES : Optional[dict[str, str]] = None
@@ -589,6 +748,7 @@ class ElementMixin:
         fill : Optional[FillPref] = None,
         text : Optional[TextPref] = None
     ) -> None:
+        self._ATTR_SPECS_BY_TAG = {spec.tag: spec for spec in self._ATTR_SPECS}
         self.resetUuid()
         self.appearance = Appearance()
         if line is not None:
@@ -601,8 +761,8 @@ class ElementMixin:
         self.setZValue(self.Z)
         f = QGraphicsItem.GraphicsItemFlag
         self.setFlag( f.ItemIsSelectable              , True )
-        self.setFlag( f.ItemSendsGeometryChanges      , True  )
-        self.setFlag( f.ItemSendsScenePositionChanges , True  )
+        self.setFlag( f.ItemSendsGeometryChanges      , True )
+        self.setFlag( f.ItemSendsScenePositionChanges , True )
         self.setCacheMode(QGraphicsItem.CacheMode.DeviceCoordinateCache)
         hub.settings.change.connect(self.onSettingsChange)
         self._menu = CustomGraphicsItemMixin.getMenu(self.__class__)
@@ -645,6 +805,16 @@ class ElementMixin:
             for p in self.properties:
                 if p.scene() != scene:
                     scene.addItem(p)
+
+    def setPosX(self : Self, value : float) -> None:
+        pos = self.pos()
+        pos.setX(value)
+        self.setPos(pos)
+
+    def setPosY(self : Self, value : float) -> None:
+        pos = self.pos()
+        pos.setY(value)
+        self.setPos(pos)
 
     def resetUuid(self : Self) -> None:
         self.uuid = str(uuid.uuid4())
@@ -866,6 +1036,7 @@ __all__ = [
     "CustomGraphicsItem",
     "CustomGraphicsRectItem",
     "CustomGraphicsTextItem",
+    "AttrSpec",
     "ElementMixin",
     "cmdElement",
     "cmdElements",

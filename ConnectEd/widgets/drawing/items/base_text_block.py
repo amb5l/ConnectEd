@@ -8,8 +8,7 @@ from PyQt6.QtGui     import QColor, QPainter, QPainterPath, \
                             QKeyEvent, QFocusEvent, QTextCursor
 
 from . import CustomGraphicsTextItem, ElementMixin, cmdPlaceElement, \
-              KP, KPDef, \
-              TextPref
+              AttrSpec, KP, KPDef, TextPref
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -18,14 +17,22 @@ if TYPE_CHECKING:
 
 class BaseTextBlock(CustomGraphicsTextItem, ElementMixin):
     # class variables
-    _XML_ATTRS = ElementMixin._XML_ATTRS | {
-        "text" : (
-            "str",
-            lambda self: True,
-            lambda self, value: self.setPlainText(value),
-            lambda self: self.toPlainText()
+    _ATTR_SPECS = ElementMixin._ATTR_SPECS_1 + [
+        AttrSpec(
+            name      = "Anchor",
+            type_name = "KP",
+            exists    = lambda self: True,
+            getter    = lambda self: self.anchor(),
+            setter    = lambda self, value: self.setAnchor(value)
+        ),
+        AttrSpec(
+            name      = "Text",
+            type_name = "str",
+            exists    = lambda self: True,
+            getter    = lambda self: self.toPlainText(),
+            setter    = lambda self, value: self.setPlainText(value)
         )
-    }
+    ] + ElementMixin._ATTR_SPECS_2
     _MENU_ITEM_NAMES = [
         "Appearance..."
     ]

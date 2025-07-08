@@ -66,6 +66,7 @@ def val2str(v : Any) -> str:
     t = type(v).__name__
     match t:
         case "NoneType"        : s = "None"
+        case "Default"         : s = "default"
         case "bytes"           : s = v.hex()
         case "str"             : s = v # TODO escape special characters
         case "int"             : s = str(v)
@@ -88,14 +89,15 @@ def val2str(v : Any) -> str:
 
 def str2val(s : str, t : str) -> Any:
     """Convert a text representation of a Python value to a Python value."""
-    from ..widgets import TextPref, LinePref, FillPref, \
+    from ..widgets import DEFAULT, TextPref, LinePref, FillPref, \
                           PropertyDisplay, KPReverse
     def strValuesToFloats(s : str) -> list[float]:
         return [float(p) for p in s.strip("()").split(",")]
     if s == "None":
         return None
+    elif s == "default":
+        return DEFAULT
     match t:
-        case "NoneType"        : return None
         case "bytes"           : return bytes.fromhex(s)
         case "str"             : return s # TODO unescape special characters
         case "int"             : return int(s)

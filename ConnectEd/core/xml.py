@@ -23,15 +23,15 @@ from . import logger, APP_NAME, MIME_TYPE, val2str, str2val
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from .db import DesignDb, LibraryDb, Diagram, Symbol
+    from .db import DesignDbItem, LibraryDbItem, DiagramItem, SymbolItem
     from ..widgets import ElementMixin
 
 
 XmlItemTypes: TypeAlias = Union[
-    "DesignDb",
-    "LibraryDb",
-    "Diagram",
-    "Symbol",
+    "DesignDbItem",
+    "LibraryDbItem",
+    "DiagramItem",
+    "SymbolItem",
     "ElementMixin"
 ]
 
@@ -42,19 +42,9 @@ def toXmlBegin(xw : QXmlStreamWriter) -> None:
     xw.writeStartElement(APP_NAME) # TODO: version
 
 def toXmlAttrs(instance : Any, xw : QXmlStreamWriter) -> None:
-    attrs = instance._XML_ATTRS
-    for attr_name, attr_info in attrs.items():
-        if isinstance(attr_info, str):
-            if hasattr(instance, attr_name):
-                value = getattr(instance, attr_name)
-                xw.writeAttribute(attr_name, val2str(value))
-        elif isinstance(attr_info, tuple):
-            _, exists, _, getter = attr_info
-            if exists(instance):
-                value = getter(instance)
-                xw.writeAttribute(attr_name, val2str(value))
-        else:
-            logger.warning(f"Unexpected XML attribute info: {attr_info}")
+    for tag, spec in instance._ATTR_SPECS_BY_TAG.items():
+        if spec.exists(instance):
+            xw.writeAttribute(tag, val2str(spec.getter(instance)))
 
 def toXmlEnd(xw : QXmlStreamWriter) -> None:
     xw.writeEndDocument()
@@ -71,28 +61,19 @@ def fromXmlBegin(xr : QXmlStreamReader, token_name : str) -> None:
 def fromXmlAttrs(instance : Any, xr : QXmlStreamReader) -> None:
     attributes = xr.attributes()
     for attribute in attributes:
-        attr_name = attribute.name()
-        attr_value_str = attribute.value()
-        if attr_name in instance._XML_ATTRS:
-            attr_info = instance._XML_ATTRS[attr_name]
-            if isinstance(attr_info, str):
-                setattr(
-                    instance, attr_name,
-                    str2val(attr_value_str, attr_info)
-                )
-            elif isinstance(attr_info, tuple):
-                type_name, _, setter, _ = attr_info
-                setter(instance, str2val(attr_value_str, type_name))
-            else:
-                logger.warning(f"Unexpected XML attribute info: {attr_info}")
+        tag = attribute.name()
+        value_str = attribute.value()
+        if tag in instance._ATTR_SPECS_BY_TAG:
+            spec = instance._ATTR_SPECS_BY_TAG[tag]
+            spec.setter(instance, str2val(value_str, spec.type_name))
         else:
-            logger.warning(f"Unexpected attribute: {attr_name} value: {attr_value_str}")
+            logger.warning(f"Unexpected attribute: {tag} value: {value_str}")
     xr.readNext()
 
 def fromXmlItems(
     xr : QXmlStreamReader
 ) -> tuple[list[XmlItemTypes], Optional[QPointF]]:
-    from .db import DesignDb, LibraryDb, Diagram, Symbol
+    from .db import DesignDbItem, LibraryDbItem, DiagramItem, SymbolItem
     from ..widgets import element_class_dict
     copy_pos = None
     items = []
@@ -110,14 +91,14 @@ def fromXmlItems(
                     xr.readNext()
             else:
                 match xr.name():
-                    case "DesignDb":
-                        item = DesignDb.fromXml(xr)
-                    case "LibraryDb":
-                        item = LibraryDb.fromXml(xr)
-                    case "Diagram":
-                        item = Diagram.fromXml(xr)
-                    case "Symbol":
-                        item = Symbol.fromXml(xr)
+                    case "DesignDbItem":
+                        item = DesignDbItem.fromXml(xr)
+                    case "LibraryDbItem":
+                        item = LibraryDbItem.fromXml(xr)
+                    case "DiagramItem":
+                        item = DiagramItem.fromXml(xr)
+                    case "SymbolItem":
+                        item = SymbolItem.fromXml(xr)
                     case _:  # Assume it's an Element
                         if xr.name() in element_class_dict:
                             item_class = element_class_dict[xr.name()]

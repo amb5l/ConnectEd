@@ -24,5 +24,3 @@ def initGui():
     initResources()
     hub.main_window = MainWindow()
     hub.main_window.show()
-
-from ..core import DesignDb
