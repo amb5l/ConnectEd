@@ -251,16 +251,16 @@ class Explorer(TreeView):
             logger.warning(f"Unsupported item: {item.text()} ({type(item)})")
 
     def newDrawingWindow(self : Self, item : "DrawingItem") -> None:
-        from ...core import DesignItem, LibraryItem, DiagramItem, SymbolItem
+        from ...core import DesignDbItem, LibraryDbItem, DiagramItem, SymbolItem
         from ...widgets import DiagramScene, DiagramView, DiagramSubWindow, \
                               SymbolScene, SymbolView, SymbolSubWindow
         if isinstance(item, DiagramItem):
-            db_item : DesignItem = item.parent().parent()
+            db_item : DesignDbItem = item.parent().parent()
             dwg_scene : DiagramScene = item.data(Qt.ItemDataRole.UserRole)
             dwg_view = DiagramView(dwg_scene)
             subwindow = DiagramSubWindow()
         elif isinstance(item, SymbolItem):
-            db_item : LibraryItem = item.parent()
+            db_item : LibraryDbItem = item.parent()
             dwg_scene : SymbolScene = item.data(Qt.ItemDataRole.UserRole)
             dwg_view = SymbolView(dwg_scene)
             subwindow = SymbolSubWindow()

@@ -1,5 +1,7 @@
 __all__ = [
-    "DrawingItem", "SymbolItem", "DiagramItem", "DbItem", "DesignDbItem", "LibraryDbItem", "Model"
+    "DrawingItem", "SymbolItem", "DiagramItem",
+    "DbItem", "DesignDbItem", "LibraryDbItem",
+    "Model"
 ]
 
 from typing import Self, Optional
