@@ -8,6 +8,8 @@ from PyQt6.QtGui     import QAction, QStandardItem, \
 
 from ...core import logger
 
+from ..drawing import KeyPoint
+
 from .tree_view import TreeView, TreeViewDock
 
 from ... import hub
@@ -292,7 +294,8 @@ class Explorer(TreeView):
                 subwindow.setFocus()
                 return
         db_item = item.parent().parent()
-        subwindow = PropertiesSubWindow(scene, scene.items())
+        elements = [e for e in scene.items() if not isinstance(e, KeyPoint)]
+        subwindow = PropertiesSubWindow(scene, elements)
         subwindow.setWindowTitle(f"{db_item.text()}:{item.text()}: Properties")
         hub.main_window.mdi_area.addSubWindow(subwindow)
         subwindow.showMaximized()
