@@ -57,7 +57,7 @@ class Tether(QGraphicsItem):
 
 class PropertyText(BaseTextLine):
     # class variables
-    _ATTR_SPECS = ElementMixin._ATTR_SPECS_1 + [
+    _ATTR_SPECS = ElementMixin._ATTR_SPECS + [
         AttrSpec(
             name      = "Cleat",
             type_name = "KP",
@@ -86,7 +86,7 @@ class PropertyText(BaseTextLine):
             getter    = lambda self: self.display(),
             setter    = lambda self, value: self.setDisplay(value)
         )
-    ] + ElementMixin._ATTR_SPECS_2
+    ] + ElementMixin._ATTR_SPECS_TEXT
     _MENU_ITEM_NAMES = ["Edit"]
 
     # instance variables

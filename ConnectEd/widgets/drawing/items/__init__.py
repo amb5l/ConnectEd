@@ -694,10 +694,10 @@ class PropertiesMixin:
         return False if name not in self._ATTR_SPECS_BY_NAME else \
             self._ATTR_SPECS_BY_NAME[name].exists(self)
 
-    def getAttribute(self : Self, name: str) -> str:
+    def getAttribute(self : Self, name: str) -> str| None:
         if name not in self._ATTR_SPECS_BY_NAME:
             logger.warning(f"Attribute not found: {name}")
-            return ""
+            return None
         return self._ATTR_SPECS_BY_NAME[name].getter(self)
 
     def setAttribute(self : Self, name: str, value: Any) -> None:
@@ -712,11 +712,11 @@ class PropertiesMixin:
     def hasProperty(self : Self, name: str) -> bool:
         return False if self.properties is None else name in self.properties
 
-    def getProperty(self: Self, name: str) -> str:
+    def getProperty(self: Self, name: str) -> str| None:
         """Get a property value, returning empty string if not found."""
         if name not in self.properties:
             logger.warning(f"Property not found: {name}")
-            return ""
+            return None
         return self.properties[name]
 
     def setProperty(self: Self, name: str, value: str) -> None:
@@ -734,6 +734,19 @@ class PropertiesMixin:
         del self.properties[name]
         self._psm.propertyDeleted.emit(name)
 
+    def getPropAttr(self : Self, name: str) -> str| None:
+        if name in self.properties:
+            return self.properties[name]
+        elif name in self._ATTR_SPECS_BY_NAME:
+            attr_spec = self._ATTR_SPECS_BY_NAME[name]
+            if attr_spec.exists(self):
+                return attr_spec.getter(self)
+            else:
+                return None
+        else:
+            logger.warning(f"Property or attribute not found: {name}")
+            return None
+
     def connectToPropertySignals(self : Self, item : "PropertyText") -> None:
         """Connect a PropertyText object to this element's property signals."""
         self._psm.propertyChanged.connect(item.onPropertyChanged)
@@ -750,7 +763,7 @@ class PropertiesMixin:
 class ElementMixin(PropertiesMixin):
     """Mixin class for all elements."""
     Z = Z_DRAWING
-    _ATTR_SPECS_1 = [
+    _ATTR_SPECS = [
         AttrSpec(
             name      = "Position X",
             type_name = "float",
@@ -766,7 +779,7 @@ class ElementMixin(PropertiesMixin):
             setter    = lambda self, value: self.setPosY(value)
         )
     ]
-    _ATTR_SPECS_2 = [
+    _ATTR_SPECS_LINE = [
         AttrSpec(
             name      = "Line Color",
             type_name = "QColor",
@@ -787,7 +800,9 @@ class ElementMixin(PropertiesMixin):
             exists    = lambda self: self.appearance.line is not None,
             getter    = lambda self: self.appearance.line.getStyle(),
             setter    = lambda self, value: self.appearance.line.setStyle(value)
-        ),
+        )
+    ]
+    _ATTR_SPECS_FILL = [
         AttrSpec(
             name      = "Fill Color",
             type_name = "QColor",
@@ -801,7 +816,9 @@ class ElementMixin(PropertiesMixin):
             exists    = lambda self: self.appearance.fill is not None,
             getter    = lambda self: self.appearance.fill.getStyle(),
             setter    = lambda self, value: self.appearance.fill.setStyle(value)
-        ),
+        )
+    ]
+    _ATTR_SPECS_TEXT = [
         AttrSpec(
             name      = "Text Color",
             type_name = "QColor",

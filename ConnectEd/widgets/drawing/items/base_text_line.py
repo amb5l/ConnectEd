@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 
 class BaseTextLine(CustomGraphicsSimpleTextItem, ElementMixin):
     # class variables
-    _ATTR_SPECS = ElementMixin._ATTR_SPECS_1 + [
+    _ATTR_SPECS = ElementMixin._ATTR_SPECS + [
         AttrSpec(
             name      = "Anchor",
             type_name = "KP",
@@ -29,7 +29,7 @@ class BaseTextLine(CustomGraphicsSimpleTextItem, ElementMixin):
             getter    = lambda self: self.text(),
             setter    = lambda self, value: self.setText(value)
         )
-    ] + ElementMixin._ATTR_SPECS_2
+    ] + ElementMixin._ATTR_SPECS_TEXT
     _KEY_POINTS = [KPDef(k, True, False) for k in KP.__iter__()]
 
     def __init__(

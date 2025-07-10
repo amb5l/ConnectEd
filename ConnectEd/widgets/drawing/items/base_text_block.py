@@ -17,7 +17,7 @@ if TYPE_CHECKING:
 
 class BaseTextBlock(CustomGraphicsTextItem, ElementMixin):
     # class variables
-    _ATTR_SPECS = ElementMixin._ATTR_SPECS_1 + [
+    _ATTR_SPECS = ElementMixin._ATTR_SPECS + [
         AttrSpec(
             name      = "Anchor",
             type_name = "KP",
@@ -32,7 +32,7 @@ class BaseTextBlock(CustomGraphicsTextItem, ElementMixin):
             getter    = lambda self: self.toPlainText(),
             setter    = lambda self, value: self.setPlainText(value)
         )
-    ] + ElementMixin._ATTR_SPECS_2
+    ] + ElementMixin._ATTR_SPECS_TEXT
     _MENU_ITEM_NAMES = [
         "Appearance..."
     ]

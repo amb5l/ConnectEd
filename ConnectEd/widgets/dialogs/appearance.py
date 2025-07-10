@@ -99,6 +99,7 @@ class ColorComboBox(QComboBox):
             default_icon if no_change is DEFAULT else \
             NoChangeIcon().get()
         custom = True
+        custom_idx = None
         for k, v in self.COLORS.items():
             i = self.count()
             text = k
@@ -124,7 +125,7 @@ class ColorComboBox(QComboBox):
             elif isinstance(initial, Default) and k == "<default>":
                 self.setCurrentIndex(i)
                 custom = False
-        if isinstance(initial, QColor) and custom:
+        if isinstance(initial, QColor) and custom and custom_idx is not None:
             self.setCurrentIndex(custom_idx)
             self.setItemIcon(custom_idx, self.getIcon(initial))
         self.choice = initial

@@ -23,8 +23,9 @@ if TYPE_CHECKING:
 
 class PropertiesCell(QStandardItem):
     """Custom item for spreadsheet cells, storing string values."""
-    def __init__(self : Self, value: str) -> None:
-        super().__init__(value)
+    def __init__(self : Self, value: any) -> None:
+        text_value = "" if value is None else str(value)
+        super().__init__(text_value)
         self.setFlags(
             Qt.ItemFlag.ItemIsEditable |
             Qt.ItemFlag.ItemIsSelectable |
@@ -67,7 +68,7 @@ class PropertiesTable(QTableView):
         self._headings.update({h : True for h in attributes})
         # rows
         rows = [
-            e.getProperty(h) for h in self._headings.keys() for e in elements
+            [e.getPropAttr(h) for h in self._headings.keys()] for e in elements
         ]
         # model
         self._model = QStandardItemModel(
