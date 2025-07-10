@@ -9,10 +9,10 @@ from PyQt6.QtGui     import QUndoStack
 
 from ....core import logger, toXmlAttrs, fromXmlAttrs
 
-from ..items import ElementMixin, element_class_dict
+from ..items import PropertiesMixin, ElementMixin, element_class_dict
 
-from ..items.key_point  import KeyPoint
-from ..items.text_block import TextBlock
+from ..items.text_block    import TextBlock
+from ..items.property_text import PropertyText
 
 from .api import *
 
@@ -26,15 +26,24 @@ if TYPE_CHECKING:
 
 class DrawingScene(
     QGraphicsScene,
-    DrawingSceneApiMixin
+    DrawingSceneApiMixin,
+    PropertiesMixin
 ):
     # class variables
-    _ATTR_SPECS = []
+    _ATTR_SPECS = [
+        AttrSpec(
+            name      = "Name",
+            type_name = "str",
+            exists    = lambda self: True,
+            getter    = lambda self: self.getName(),
+            setter    = lambda self, value: self.setName(value)
+        )
+    ]
 
     # instance variables
     item       : Optional["DrawingItem"]
     undo_stack : Optional[QUndoStack]
-    kp_items   : list[QGraphicsItem]
+    kp_items   : list[QGraphicsItem] # TODO private name
 
     # custom signals
     selectionChangedItems = pyqtSignal("QList<QGraphicsItem*>")
@@ -45,7 +54,6 @@ class DrawingScene(
         item    : "DrawingItem",
         extents : Optional[QSizeF] = None
     ) -> None:
-        self._ATTR_SPECS_BY_TAG = {spec.tag: spec for spec in self._ATTR_SPECS}
         super().__init__()
         self.item = item
         if extents is None:
@@ -57,6 +65,7 @@ class DrawingScene(
         self.undo_stack = QUndoStack(self)
         if hub.main_window: # GUI is running
             self.selectionChanged.connect(self.onSelectionChanged)
+        self.initProperties()
 
     def setParent(self : Self, parent : "DrawingItem") -> None:
         self.item = parent

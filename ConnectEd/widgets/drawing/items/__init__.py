@@ -1,10 +1,11 @@
 import uuid
 
-from typing      import Self, Optional, Callable, Any
+from typing      import TypeVar, Generic, Type, Optional, \
+                        Self, Optional, Callable, Any
 from types       import SimpleNamespace
 from dataclasses import dataclass
 
-from PyQt6.QtCore    import Qt, QXmlStreamWriter, QXmlStreamReader
+from PyQt6.QtCore    import Qt, QXmlStreamWriter, QXmlStreamReader, QObject, pyqtSignal
 from PyQt6.QtGui     import QPen, QBrush, QColor, QFont, QAction, QUndoCommand
 from PyQt6.QtWidgets import QGraphicsItem, QGraphicsRectItem, \
                             QGraphicsTextItem, QGraphicsSimpleTextItem, \
@@ -17,7 +18,7 @@ from .... import hub
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from ..             import DrawingScene
+    from ..             import DrawingView, DrawingScene
     from .property_text import PropertyText
 
 
@@ -32,6 +33,22 @@ class NoChange:
     def __repr__(self): return "<no change>"
 
 NO_CHANGE = NoChange()
+
+
+T = TypeVar('T')
+
+class BeforeAfter(Generic[T]):
+    before : Optional[T]
+    after  : Optional[T]
+
+    def __init__(self, typ: Type[T], before: Optional[T] = None, after: Optional[T] = None):
+        self.typ = typ
+        if before is not None and not isinstance(before, typ):
+            raise ValueError(f"before must be of type {typ.__name__} or None, got {type(before).__name__}")
+        if after is not None and not isinstance(after, typ):
+            raise ValueError(f"after must be of type {typ.__name__} or None, got {type(after).__name__}")
+        self.before = before
+        self.after = after
 
 @dataclass
 class LineSpec:
@@ -633,7 +650,104 @@ class AttrSpec:
     def tag(self) -> str:
         return self.name.lower().replace(" ", "_")
 
-class ElementMixin:
+class PropertySignalManager(QObject):
+    propertyChanged = pyqtSignal(str, str)
+    propertyDeleted = pyqtSignal(str)
+
+class PropertiesMixin:
+    _ATTR_SPECS         : list[AttrSpec]         = []
+    _ATTR_SPECS_BY_NAME : dict[str, AttrSpec]    = {}
+    _ATTR_SPECS_BY_TAG  : dict[str, AttrSpec]    = {}
+    _PROPERTIES         : dict[str, str | tuple] = {}
+
+    properties : dict[str, str]
+    _psm       : PropertySignalManager
+
+    def initProperties(self : Self, bare : bool = False) -> None:
+        self._ATTR_SPECS_BY_NAME = {spec.name: spec for spec in self._ATTR_SPECS}
+        self._ATTR_SPECS_BY_TAG = {spec.tag: spec for spec in self._ATTR_SPECS}
+        self.properties = {}
+        self._psm = PropertySignalManager()
+        if not bare and self._PROPERTIES is not None:
+            for name, value in self._PROPERTIES.items():
+                if name in self._ATTR_SPECS_BY_NAME:
+                    logger.error(f"Custom/inherent property clash: {name}")
+                    return
+                if name in self.properties:
+                    logger.error(f"Duplicate property: {name}")
+                    return
+                if isinstance(value, tuple):
+                    value, display, anchor, pos, cleat = value
+                    self.properties[name] = value
+                    p = PropertyText(name, display, pos, anchor, cleat)
+                    p.setParentItem(self)
+                elif isinstance(value, str):
+                    self.properties[name] = value
+                else:
+                    logger.error(f"Invalid property value: {value}")
+                    return
+
+    def getAttributes(self : Self) -> list[str]:
+        return self._ATTR_SPECS_BY_NAME.keys()
+
+    def hasAttribute(self : Self, name: str) -> bool:
+        return False if name not in self._ATTR_SPECS_BY_NAME else \
+            self._ATTR_SPECS_BY_NAME[name].exists(self)
+
+    def getAttribute(self : Self, name: str) -> str:
+        if name not in self._ATTR_SPECS_BY_NAME:
+            logger.warning(f"Attribute not found: {name}")
+            return ""
+        return self._ATTR_SPECS_BY_NAME[name].getter(self)
+
+    def setAttribute(self : Self, name: str, value: Any) -> None:
+        if name not in self._ATTR_SPECS_BY_NAME:
+            logger.warning(f"Attribute not found: {name}")
+            return
+        self._ATTR_SPECS_BY_NAME[name].setter(self, value)
+
+    def getProperties(self : Self) -> list[str]:
+        return sorted(self.properties.keys())
+
+    def hasProperty(self : Self, name: str) -> bool:
+        return False if self.properties is None else name in self.properties
+
+    def getProperty(self: Self, name: str) -> str:
+        """Get a property value, returning empty string if not found."""
+        if name not in self.properties:
+            logger.warning(f"Property not found: {name}")
+            return ""
+        return self.properties[name]
+
+    def setProperty(self: Self, name: str, value: str) -> None:
+        """Set a property value and emit signal to notify PropertyText objects."""
+        old_value = self.properties[name]
+        self.properties[name] = value
+        if old_value != value:
+            self._psm.propertyChanged.emit(name, value)
+
+    def deleteProperty(self: Self, name: str) -> None:
+        """Delete a property and emit signal to notify PropertyText objects."""
+        if name not in self.properties:
+            logger.warning(f"Property not found: {name}")
+            return
+        del self.properties[name]
+        self._psm.propertyDeleted.emit(name)
+
+    def connectToPropertySignals(self : Self, item : "PropertyText") -> None:
+        """Connect a PropertyText object to this element's property signals."""
+        self._psm.propertyChanged.connect(item.onPropertyChanged)
+        self._psm.propertyDeleted.connect(item.onPropertyDeleted)
+
+    def disconnectFromPropertySignals(self: Self, item: "PropertyText") -> None:
+        """Disconnect a PropertyText object from this element's property signals."""
+        try:
+            self._psm.propertyChanged.disconnect(item.onPropertyChanged)
+            self._psm.propertyDeleted.disconnect(item.onPropertyDeleted)
+        except TypeError:
+            pass # signal was not connected
+
+class ElementMixin(PropertiesMixin):
     """Mixin class for all elements."""
     Z = Z_DRAWING
     _ATTR_SPECS_1 = [
@@ -731,24 +845,22 @@ class ElementMixin:
             setter    = lambda self, value: self.appearance.text.setUnderline(value)
         )
     ]
-
-    _MENU       : Optional[QMenu] = None
-    _KEY_POINTS : Optional[list["KP"]] = None
-    _PROPERTIES : Optional[dict[str, str]] = None
+    _MENU_ITEM_NAMES = ["Appearance...", "Properties..."]
+    _KEY_POINTS     : Optional[list["KP"]] = None
 
     uuid       : str
     appearance : Appearance
-    properties : Optional[list["PropertyText"]]
     _menu      : QMenu
     _kpm       : Optional["KPManager"]
+    _psm       : PropertySignalManager
 
     def initElement(
         self : Self,
         line : Optional[LinePref] = None,
         fill : Optional[FillPref] = None,
-        text : Optional[TextPref] = None
+        text : Optional[TextPref] = None,
+        bare : bool = False
     ) -> None:
-        self._ATTR_SPECS_BY_TAG = {spec.tag: spec for spec in self._ATTR_SPECS}
         self.resetUuid()
         self.appearance = Appearance()
         if line is not None:
@@ -770,14 +882,7 @@ class ElementMixin:
             self._kpm = KPManager(self, self._KEY_POINTS)
         else:
             self._kpm = None
-        if self._PROPERTIES is not None:
-            from .property_text import PropertyText
-            self.properties = []
-            for name, (value, display, anchor, pos, cleat) in self._PROPERTIES.items():
-                p = PropertyText(name, value, display, pos, anchor, cleat)
-                p.setParentItem(self)  # This will trigger itemChange and connect signals
-                self.properties.append(p)
-                # Don't add to scene yet - defer until element is added to scene
+        self.initProperties(bare)
 
     def __hash__(self):
         return hash(self.uuid)
@@ -800,11 +905,10 @@ class ElementMixin:
 
     def onSceneChange(self, scene):
         """Handle element being added to or removed from a scene."""
-        if scene is not None and hasattr(self, "properties"):
-            # Element was added to a scene, add properties too
-            for p in self.properties:
-                if p.scene() != scene:
-                    scene.addItem(p)
+        if scene is not None:
+            for item in self.childItems():
+                if isinstance(item, PropertyText) and item.scene() != scene:
+                    scene.addItem(item)
 
     def setPosX(self : Self, value : float) -> None:
         pos = self.pos()
@@ -838,47 +942,52 @@ class ElementMixin:
         else:
             raise NotImplementedError("setAnchor() is not implemented")
 
+    def ctxMenuAppearance(
+        self    : Self,
+        checked : bool,
+        view    : "DrawingView"
+    ) -> None:
+        view.editAppearance(self)
+
+    def ctxMenuProperties(
+        self    : Self,
+        checked : bool,
+        view    : "DrawingView"
+    ) -> None:
+        view.editProperties(self)
+
     def toXml(self : Self, xw : QXmlStreamWriter) -> None:
         xw.writeStartElement(self.__class__.__name__)
         toXmlAttrs(self, xw)
-        if hasattr(self, "properties"):
-            for p in self.properties:
-                p.toXml(xw)
+        for item in self.childItems():
+            if isinstance(item, PropertyText):
+                item.toXml(xw)
         xw.writeEndElement()
 
     @classmethod
     def fromXml(cls : Self, xr: QXmlStreamReader) -> Self:
-        instance = cls()
+        instance = cls(bare=True)
         fromXmlAttrs(instance, xr)
-        # delete default properties
-        if hasattr(instance, "properties"):
-            for p in instance.properties:
-                if p.scene() is not None:
-                    p.scene().removeItem(p)
-                p.setParentItem(None)
-                del p
-            delattr(instance, "properties")
         # check if we're already at the end element (self-closing)
         if xr.isEndElement() and xr.name() == cls.__name__:
             instance.setKPVisible(False)
             return instance
         # read child PropertyText elements
         while not (xr.isEndElement() and xr.name() == cls.__name__):
-            if xr.isStartElement() and xr.name() == "PropertyText":
-                from .property_text import PropertyText
-                p = PropertyText.fromXml(xr)
-                p.setParentItem(instance)
-                if not hasattr(instance, "properties"):
-                    instance.properties = [p]
+            if xr.isStartElement():
+                if xr.name() == "PropertyText":
+                    from .property_text import PropertyText
+                    p : PropertyText = PropertyText.fromXml(xr)
+                    p.setParentItem(instance)
                 else:
-                    instance.properties.append(p)
+                    logger.warning(f"Unexpected child element: {xr.name()}")
             xr.readNext()
         instance.setKPVisible(False)  # Ensure keypoints are hidden
         return instance
 
     def clone(self : Self) -> Self:
         """Create a clone of this element with a new UUID."""
-        clone = self.__class__()
+        clone = self.__class__(bare=True)
         clone.setPos(self.pos())
         if self.appearance.line is not None:
             setattr(
@@ -894,21 +1003,11 @@ class ElementMixin:
                 clone.appearance, "text",
                 TextColorFont(clone, self.appearance.text.getPref())
             )
-        # delete default properties from clone
-        if hasattr(clone, "properties"):
-            for p in clone.properties:
-                if p.scene() is not None:
-                    p.scene().removeItem(p)
-                p.setParentItem(None)
-                del p
-            delattr(clone, "properties")
-        # copy properties
-        if hasattr(self, "properties"):
-            clone.properties = [
-                p.clone() for p in self.properties
-            ]
-            for p in clone.properties:
-                p.setParentItem(clone)
+        # clone properties and property texts
+        clone.properties = self.properties.copy()
+        for item in self.childItems():
+            if isinstance(item, PropertyText):
+                item.clone().setParentItem(clone)
         # New UUID is automatically assigned in initElement() via resetUuid()
         return clone
 
@@ -1021,6 +1120,7 @@ __all__ = [
     "DEFAULT",
     "NoChange",
     "NO_CHANGE",
+    "BeforeAfter",
     "LineSpec",
     "LinePref",
     "LinePrefChange",
@@ -1037,6 +1137,7 @@ __all__ = [
     "CustomGraphicsRectItem",
     "CustomGraphicsTextItem",
     "AttrSpec",
+    "PropertySignalManager",
     "ElementMixin",
     "cmdElement",
     "cmdElements",

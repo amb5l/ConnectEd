@@ -17,8 +17,10 @@ from .....core import logger,copy, paste
 
 from ....dialogs.properties import PropertiesType
 
-from ...items import ElementMixin, cmdElement, cmdElements, clone, \
-                     AppearancePref, AppearancePrefChange
+from ...items import BeforeAfter, ElementMixin, cmdElement, cmdElements, \
+                     AppearancePref, AppearancePrefChange, \
+                     TextPref, TextPrefChange, \
+                     clone
 
 from ...items.property_text import PropertyText
 
@@ -196,6 +198,45 @@ class cmdEditMove(cmdElements):
             element.moveBy(-self._offset.x(), -self._offset.y())
             # TODO: add slide logic
 
+class cmdEditPropertyText(cmdElement):
+    _element           : PropertyText
+    _name_change       : Optional[BeforeAfter[str]]
+    _value_change      : Optional[BeforeAfter[str]]
+    _appearance_before : TextPref
+    _appearance_after  : TextPrefChange
+
+    def __init__(
+        self              : Self,
+        scene             : "DrawingScene",
+        element           : PropertyText,
+        name_change       : Optional[BeforeAfter[str]],
+        value_change      : Optional[BeforeAfter[str]],
+        appearance_change : TextPrefChange
+    ):
+        super().__init__(scene, element)
+        self._element           = element
+        self._name_change       = name_change
+        self._value_change      = value_change
+        self._appearance_before = element.appearance.text.getPref()
+        self._appearance_after  = appearance_change
+
+    def redo(self : Self) -> None:
+        if self._name_change is not None:
+            self._element.setName(self._name_change.after)
+        if self._value_change is not None:
+            self._element.setValue(self._value_change.after)
+        self._element.appearance.text.setPref(self._appearance_after)
+
+    def undo(self : Self) -> None:
+        if self._name_change is not None:
+            self._element.setName(self._name_change.before)
+        if self._value_change is not None:
+            self._element.setValue(self._value_change.before)
+        self._element.appearance.text.setPref(self._appearance_before)
+
+    def mergeWith(self : Self, other : QUndoCommand) -> bool:
+        return False
+
 class cmdEditAppearance(cmdElements):
     _before : dict[ElementMixin, AppearancePref]
     _after  : AppearancePrefChange
@@ -366,12 +407,16 @@ class DrawingSceneApiEditMixin:
     ) -> None:
         self.undo_stack.push(cmdEditMove(self, elements, offset, slide))
 
-    def editAppearance(
-        self     : "DrawingScene",
-        elements : list[ElementMixin],
-        changes  : AppearancePrefChange
+    def editPropertyText(
+        self              : "DrawingScene",
+        element           : PropertyText,
+        name_change       : Optional[BeforeAfter[str]],
+        value_change      : Optional[BeforeAfter[str]],
+        appearance_change : TextPrefChange
     ) -> None:
-        self.undo_stack.push(cmdEditAppearance(self, elements, changes))
+        self.undo_stack.push(cmdEditPropertyText(
+            self, element, name_change, value_change, appearance_change
+        ))
 
     def editProperties(
         self    : "DrawingScene",
@@ -379,3 +424,10 @@ class DrawingSceneApiEditMixin:
         changes : dict[PropertyText, tuple[str, PropertiesType, PropertiesType]]
     ) -> None:
         self.undo_stack.push(cmdEditProperties(self, element, changes))
+
+    def editAppearance(
+        self     : "DrawingScene",
+        elements : list[ElementMixin],
+        changes  : AppearancePrefChange
+    ) -> None:
+        self.undo_stack.push(cmdEditAppearance(self, elements, changes))

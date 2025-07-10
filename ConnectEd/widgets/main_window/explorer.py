@@ -283,16 +283,16 @@ class Explorer(TreeView):
         if not isinstance(item, DrawingItem):
             logger.warning(f"Unsupported item: {item.text()} ({type(item)})")
             return
-        dwg_scene : DiagramScene = item.data(Qt.ItemDataRole.UserRole)
+        scene : DiagramScene = item.data(Qt.ItemDataRole.UserRole)
         for subwindow in hub.main_window.mdi_area.subWindowList():
-            if isinstance(subwindow, PropertiesSubWindow) and subwindow.scene() == dwg_scene:
+            if isinstance(subwindow, PropertiesSubWindow) and subwindow.scene() == scene:
                 hub.main_window.mdi_area.setActiveSubWindow(subwindow)
                 subwindow.show()
                 subwindow.raise_()
                 subwindow.setFocus()
                 return
         db_item = item.parent().parent()
-        subwindow = PropertiesSubWindow(dwg_scene)
+        subwindow = PropertiesSubWindow(scene, scene.items())
         subwindow.setWindowTitle(f"{db_item.text()}:{item.text()}: Properties")
         hub.main_window.mdi_area.addSubWindow(subwindow)
         subwindow.showMaximized()

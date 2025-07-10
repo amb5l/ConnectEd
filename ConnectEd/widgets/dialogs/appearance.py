@@ -98,7 +98,9 @@ class ColorComboBox(QComboBox):
             self.getIcon(no_change) if isinstance(no_change, QColor) else \
             default_icon if no_change is DEFAULT else \
             NoChangeIcon().get()
-        for i, (k, v) in enumerate(self.COLORS.items()):
+        custom = True
+        for k, v in self.COLORS.items():
+            i = self.count()
             text = k
             match k:
                 case "<no change>":
@@ -108,30 +110,33 @@ class ColorComboBox(QComboBox):
                 case "<default>":
                     icon = default_icon
                 case "<custom>":
-                    icon = QueryIcon().get()
                     custom_idx = i
+                    icon = QueryIcon().get()
                 case _:
                     icon = self.getIcon(v)
             self.addItem(icon, text)
             if initial == v:
                 self.setCurrentIndex(i)
+                custom = False
             elif initial is NO_CHANGE and k == "<no change>":
                 self.setCurrentIndex(i)
-            elif initial is DEFAULT and k == "<default>":
+                custom = False
+            elif isinstance(initial, Default) and k == "<default>":
                 self.setCurrentIndex(i)
-        if isinstance(initial, QColor) and self.currentIndex() == -1:
+                custom = False
+        if isinstance(initial, QColor) and custom:
             self.setCurrentIndex(custom_idx)
             self.setItemIcon(custom_idx, self.getIcon(initial))
         self.choice = initial
         self.activated.connect(self.onActivated)
 
     def onActivated(self : Self, index : int) -> None:
-        keys = list(self.COLORS.keys())
-        if keys[index] == "<no change>":
+        selected_text = self.currentText()
+        if selected_text == "<no change>":
             self.choice = NO_CHANGE
-        elif keys[index] == "<default>":
+        elif selected_text == "<default>":
             self.choice = DEFAULT
-        elif keys[index] == "<custom>":
+        elif selected_text == "<custom>":
             dialog = CustomColorDialog(
                 self.choice if isinstance(self.choice, QColor) else None
             )
@@ -139,7 +144,7 @@ class ColorComboBox(QComboBox):
                 self.choice = dialog.getChoice()
                 self.setItemIcon(index, self.getIcon(self.choice))
         else:
-            self.choice = self.COLORS[keys[index]]
+            self.choice = self.COLORS[selected_text]
 
     def getIcon(self : Self, color : QColor) -> QIcon:
         size = self.iconSize()

@@ -1,9 +1,8 @@
 __all__ = ["TextDialog"]
 
-from typing import Self, Optional
+from typing import Self
 
-from PyQt6.QtCore    import Qt
-from PyQt6.QtWidgets import QDialog, QWidget, QVBoxLayout, QHBoxLayout, \
+from PyQt6.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, \
                             QLabel, QLineEdit, QPushButton
 
 from ... import hub

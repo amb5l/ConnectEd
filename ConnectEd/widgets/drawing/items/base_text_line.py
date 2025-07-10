@@ -30,19 +30,17 @@ class BaseTextLine(CustomGraphicsSimpleTextItem, ElementMixin):
             setter    = lambda self, value: self.setText(value)
         )
     ] + ElementMixin._ATTR_SPECS_2
-    _MENU_ITEM_NAMES = [
-        "Appearance..."
-    ]
     _KEY_POINTS = [KPDef(k, True, False) for k in KP.__iter__()]
 
     def __init__(
         self   : Self,
         text   : str = "",
         pos    : QPointF = QPointF(0, 0),
-        anchor : KP = KP.TOP_LEFT
+        anchor : KP = KP.TOP_LEFT,
+        bare   : bool = False
     ) -> None:
         super().__init__(text)
-        self.initElement(line=None, fill=None, text=TextPref())
+        self.initElement(line=None, fill=None, text=TextPref(), bare=bare)
         self.setPos(pos)
         self.setAnchor(anchor)
         self.setFlag(self.GraphicsItemFlag.ItemIsSelectable , True)
@@ -85,13 +83,6 @@ class BaseTextLine(CustomGraphicsSimpleTextItem, ElementMixin):
     def moveKeyPoint(self : Self, kp : KP, delta : QPointF) -> None:
         """Move the entire TextLine when any keypoint is dragged."""
         self.setPos(self.pos() + delta)
-
-    def ctxMenuAppearance(
-        self    : Self,
-        checked : bool,
-        view    : "DrawingView"
-    ) -> None:
-        view.editAppearance(self)
 
     @classmethod
     def createOrUpdate(

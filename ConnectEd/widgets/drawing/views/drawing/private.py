@@ -22,8 +22,8 @@ class DrawingViewPrivateMixin:
 
     def _allItemsRect(self : "DrawingView") -> Optional[QRectF]:
         items_rect = None
-        if hasattr(self.scene(), "paper_rect"):
-            items_rect = self.scene().paper_rect()
+        if hasattr(self.scene(), "paperRect"):
+            items_rect = self.scene().paperRect()
         for item in self.scene().items():
             item_rect = item.mapToScene(item.boundingRect()).boundingRect()
             items_rect = item_rect if items_rect is None else \

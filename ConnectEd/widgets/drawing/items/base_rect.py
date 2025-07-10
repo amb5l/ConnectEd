@@ -11,9 +11,7 @@ from ....core   import logger
 from . import CustomGraphicsRectItem, ElementMixin, cmdPlaceElement, \
               AttrSpec, KP, KPDef, LinePref, FillPref
 
-from typing import TYPE_CHECKING
-if TYPE_CHECKING:
-    from .. import DrawingView
+from .property_text import PropertyText
 
 
 class BaseRectangle(CustomGraphicsRectItem, ElementMixin):
@@ -35,9 +33,6 @@ class BaseRectangle(CustomGraphicsRectItem, ElementMixin):
         )
     ] + ElementMixin._ATTR_SPECS_2
     MIN_SIZE = QSizeF(1.0, 1.0)
-    _MENU_ITEM_NAMES = [
-        "Appearance..."
-    ]
     _KEY_POINTS = [KPDef(k, True, False) for k in KP.__iter__()]
 
     _rect          : QRectF
@@ -82,10 +77,11 @@ class BaseRectangle(CustomGraphicsRectItem, ElementMixin):
         a1   : QRectF | QPointF | float = QRectF(),
         a2   : Optional[QSizeF | QPointF | float] = None,
         a3   : Optional[float | int]              = None,
-        a4   : Optional[float | int]              = None
+        a4   : Optional[float | int]              = None,
+        bare : bool = False
     ) -> None:
         super().__init__()
-        self.initElement(line=LinePref(), fill=FillPref(), text=None)
+        self.initElement(line=LinePref(), fill=FillPref(), text=None, bare=bare)
         self._shape = QPainterPath()
         if isinstance(a1, QRectF):
             self.setRect(a1)
@@ -117,9 +113,9 @@ class BaseRectangle(CustomGraphicsRectItem, ElementMixin):
         self._shape.clear()
         self._shape.addRect(self._bounding_rect)
         self._kpm.updatePositions()
-        if hasattr(self, "properties"):
-            for p in self.properties:
-                p.refresh()
+        for item in self.childItems():
+            if isinstance(item, PropertyText):
+                item.refresh()
 
     def boundingRect(self : Self) -> QRectF:
         return self._bounding_rect
@@ -238,13 +234,6 @@ class BaseRectangle(CustomGraphicsRectItem, ElementMixin):
                 self.setPoints(p1, p2 + d)
             case _:
                 raise ValueError(f"Invalid key point: {kp}")
-
-    def ctxMenuAppearance(
-        self    : Self,
-        checked : bool,
-        view    : "DrawingView"
-    ) -> None:
-        view.editAppearance(self)
 
     @overload
     @classmethod

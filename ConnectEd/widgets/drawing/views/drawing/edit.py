@@ -2,10 +2,10 @@ from PyQt6.QtCore import QPointF
 
 from .....core import logger, paste
 
-from ....dialogs import AppearanceDialog, PropertiesDialog
+from ....dialogs import AppearanceDialog, PropertiesDialog, PropertyTextDialog
 
 from ...scenes import DrawingScene
-from ...items  import ElementMixin, KeyPoint
+from ...items  import BeforeAfter, ElementMixin, KeyPoint, PropertyText
 
 from .defs import DrawingViewState as State
 
@@ -262,6 +262,24 @@ class DrawingViewEditMixin:
         else:
             self.scene().clearSelection()
             self._goState(State.EditResize1)
+
+    def editPropertyText(self : "DrawingView", element: PropertyText) -> None:
+        scene : DrawingScene = self.scene()
+        dialog = PropertyTextDialog(element)
+        if dialog.exec():
+            name_before = element.name()
+            name_after = dialog.getName()
+            name_change = None if name_before == name_after else \
+                BeforeAfter(str, name_before, name_after)
+            value_before = element.value()
+            value_after = dialog.getValue()
+            value_change = None if value_before == value_after else \
+                BeforeAfter(str, value_before, value_after)
+            appearance_change = dialog.getAppearanceChange()
+            scene.editPropertyText(
+                element, name_change, value_change, appearance_change
+            )
+        self._goState(State.Idle)
 
     def editAppearance(
         self : "DrawingView",

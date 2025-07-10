@@ -46,12 +46,13 @@ class BaseTextBlock(CustomGraphicsTextItem, ElementMixin):
         self   : Self,
         text   : str = "",
         pos    : QPointF = QPointF(0, 0),
-        anchor : KP = KP.TOP_LEFT
+        anchor : KP = KP.TOP_LEFT,
+        bare   : bool = False
     ) -> None:
         self._rect = QRectF()
         self._shape = QPainterPath()
         super().__init__(text)
-        self.initElement(line=None, fill=None, text=TextPref())
+        self.initElement(line=None, fill=None, text=TextPref(), bare=bare)
         self.setPos(pos)
         self.setAnchor(anchor)
         self.setEditable(False)
@@ -157,13 +158,6 @@ class BaseTextBlock(CustomGraphicsTextItem, ElementMixin):
 
     def setKPVisible(self : Self, visible : bool) -> None:
         self._kpm.setVisible(visible)
-
-    def ctxMenuAppearance(
-        self    : Self,
-        checked : bool,
-        view    : "DrawingView"
-    ) -> None:
-        view.editAppearance(self)
 
     @classmethod
     def createOrUpdate(

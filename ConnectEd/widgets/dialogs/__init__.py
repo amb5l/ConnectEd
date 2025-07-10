@@ -27,12 +27,14 @@ def okCancelNewLayout(self) -> None:
 
 __all__ = ["okCancelLayout"]
 
-from .file       import *
-from .text       import *
-from .appearance import *
-from .properties import *
+from .file          import *
+from .text          import *
+from .appearance    import *
+from .properties    import *
+from .property_text import *
 
 __all__ += file.__all__
 __all__ += text.__all__
 __all__ += appearance.__all__
 __all__ += properties.__all__
+__all__ += property_text.__all__

@@ -148,7 +148,6 @@ class PropertiesItemDelegate(QStyledItemDelegate):
 class PropertiesDisplayItemDelegate(PropertiesItemDelegate):
     TOOLTIP = "Controls appearance of property"
     ENTRIES = [
-        PropertyDisplay.HIDDEN.value,
         PropertyDisplay.VALUE.value,
         PropertyDisplay.NAME_VALUE.value
     ]

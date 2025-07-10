@@ -11,9 +11,12 @@ from . import ElementMixin, AttrSpec, KPManager, KP, TextColorFont
 
 from .base_text_line import BaseTextLine
 
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from .. import DrawingView
+
 
 class PropertyDisplay(Enum):
-    HIDDEN     = "HIDDEN"
     VALUE      = "Value"
     NAME_VALUE = "Name:Value"
 
@@ -77,13 +80,6 @@ class PropertyText(BaseTextLine):
             setter    = lambda self, value: self.setName(value)
         ),
         AttrSpec(
-            name      = "Value",
-            type_name = "str",
-            exists    = lambda self: True,
-            getter    = lambda self: self.value(),
-            setter    = lambda self, value: self.setValue(value)
-        ),
-        AttrSpec(
             name      = "Display",
             type_name = "PropertyDisplay",
             exists    = lambda self: True,
@@ -91,35 +87,48 @@ class PropertyText(BaseTextLine):
             setter    = lambda self, value: self.setDisplay(value)
         )
     ] + ElementMixin._ATTR_SPECS_2
+    _MENU_ITEM_NAMES = ["Edit"]
 
     # instance variables
-    _name      : str
-    _value     : str
-    _display   : PropertyDisplay
-    _cleat     : KP
-    _local_pos : QPointF
-    _tether    : Optional[Tether]
+    _name    : str
+    _display : PropertyDisplay
+    _cleat   : KP
+    _pos     : QPointF
+    _tether  : Optional[Tether]
+    _cache   : str              # value cache
 
     def __init__(
         self    : Self,
         name    : str = "",
-        value   : str = "",
         display : PropertyDisplay = PropertyDisplay.VALUE,
         pos     : QPointF = QPointF(0, 0),
         anchor  : KP = KP.TOP_LEFT,
-        cleat   : KP = KP.BOTTOM_LEFT
+        cleat   : KP = KP.BOTTOM_LEFT,
+        bare    : bool = False
     ) -> None:
         super().__init__(text="", pos=pos, anchor=anchor)
         self._name = name
-        self._value = value
         self._display = display
         self._cleat = cleat
         self._tether = None
+        self._cache = ""
         self.setFlag(self.GraphicsItemFlag.ItemIsSelectable , True)
         self.refresh()
 
+    def onPropertyChanged(self : Self, name : str, value : str) -> None:
+        """Handle property value change signal from parent."""
+        if name == self._name:
+            self._cache = value
+            self.refresh()
+
+    def onPropertyDeleted(self : Self, name : str) -> None:
+        """Handle property deletion signal from parent."""
+        if name == self._name:
+            self._cache = ""
+            self.refresh()
+
     def setPos(self : Self, pos : QPointF) -> None:
-        self._local_pos = pos
+        self._pos = pos
         parent : Optional[ElementMixin] = self.parentItem()
         if parent is not None and hasattr(parent, '_kpm') and parent._kpm is not None:
             parent_kpm : KPManager = parent._kpm
@@ -130,30 +139,30 @@ class PropertyText(BaseTextLine):
         super().setPos(desired_anchor_pos)
 
     def setPosX(self : Self, value : float) -> None:
-        self.setPos(QPointF(value, self._local_pos.y()))
+        self.setPos(QPointF(value, self._pos.y()))
 
     def setPosY(self : Self, value : float) -> None:
-        self.setPos(QPointF(self._local_pos.x(), value))
+        self.setPos(QPointF(self._pos.x(), value))
 
     def pos(self : Self) -> QPointF:
-        return self._local_pos
+        return self._pos
 
     def updatePos(self : Self) -> None:
         """Update position based on current cleat position."""
-        self.setPos(self._local_pos)
+        self.setPos(self._pos)
 
     def name(self : Self) -> str:
         return self._name
 
     def setName(self : Self, value : str) -> None:
+        old_name = self._name
         self._name = value
-        self.refresh()
-
-    def value(self : Self) -> str:
-        return self._value
-
-    def setValue(self : Self, value : str) -> None:
-        self._value = value
+        parent = self.parentItem()
+        if parent is not None and hasattr(parent, 'disconnectFromPropertySignals'):
+            if old_name:
+                parent.disconnectFromPropertySignals(self)
+        self._updateCache()
+        self._connectToPropertySignals()
         self.refresh()
 
     def display(self : Self) -> PropertyDisplay:
@@ -168,10 +177,50 @@ class PropertyText(BaseTextLine):
 
     def setCleat(self : Self, cleat : KP) -> None:
         self._cleat = cleat
-        self.setPos(self._local_pos)
+        self.setPos(self._pos)
         self.update()
 
-    def connectToParentSignals(self : Self) -> None:
+    def value(self : Self) -> str:
+        parent = self.parentItem()
+        if parent is None:
+            parent = self.scene()
+        if parent is None:
+            return ""
+        elif hasattr(parent, 'getProperty') and self._name:
+            return parent.getProperty(self._name)
+        else:
+            return ""
+
+    def setValue(self : Self, value : str) -> None:
+        parent = self.parentItem()
+        if parent is None:
+            parent = self.scene()
+        if parent is None:
+            return
+        elif hasattr(parent, 'setProperty') and self._name:
+            parent.setProperty(self._name, value)
+        else:
+            return
+
+    def _updateCache(self : Self) -> None:
+        """Update the cached property value from parent."""
+        self._cache = self.value()
+
+    def _connectToPropertySignals(self : Self) -> None:
+        """Connect to parent element's property signals."""
+        parent = self.parentItem()
+        if parent is None: # no parent means we get properties from the scene
+            self.scene().connectToPropertySignals(self)
+        elif hasattr(parent, 'connectToPropertySignals') and self._name:
+            parent.connectToPropertySignals(self)
+
+    def _disconnectFromPropertySignals(self : Self) -> None:
+        """Disconnect from parent element's property signals."""
+        parent = self.parentItem()
+        if parent is not None and hasattr(parent, 'disconnectFromPropertySignals'):
+            parent.disconnectFromPropertySignals(self)
+
+    def _connectToKPMSignals(self : Self) -> None:
         """Connect to parent element's KPManager signals."""
         parent : Optional[ElementMixin] = self.parentItem()
         if parent is not None and hasattr(parent, '_kpm') and parent._kpm is not None:
@@ -186,10 +235,16 @@ class PropertyText(BaseTextLine):
         """Override to detect when parented and connect to parent signals."""
         result = super().itemChange(change, value)
         if change == QGraphicsItem.GraphicsItemChange.ItemParentHasChanged:
+            if value is None: # being removed from parent
+                self._disconnectFromPropertySignals()
+            else: # being parented
+                self._updateCache()
+                self._connectToPropertySignals()
+
             # Property has been parented, connect to parent's KPManager signals
-            self.connectToParentSignals()
+            self._connectToKPMSignals()
             # Recalculate position now that we have a parent
-            self.setPos(self._local_pos)
+            self.setPos(self._pos)
         elif change == QGraphicsItem.GraphicsItemChange.ItemSelectedHasChanged:
             # Selection changed - show/hide tether line
             self._createTetherLine()
@@ -211,26 +266,24 @@ class PropertyText(BaseTextLine):
 
     def refresh(self : Self) -> None:
         text_to_set = ""
+        # Use cached value instead of direct property access
+        value = self._cache
         match self._display:
-            case PropertyDisplay.HIDDEN:
-                text_to_set = "<hidden>"
             case PropertyDisplay.VALUE:
-                text_to_set = f"<{self._name}>" if self._value == "" else self._value
+                text_to_set = f"<{self._name}>" if value == "" else value
             case PropertyDisplay.NAME_VALUE:
-                text_to_set = f"{self._name}: {self._value}"
+                text_to_set = f"{self._name}: {value}"
         super().setText(text_to_set)
-        self.setVisible(self._display != PropertyDisplay.HIDDEN)
         super().update()
-        if hasattr(self, "_kpm") and self._display != PropertyDisplay.HIDDEN:
+        if hasattr(self, "_kpm"):
             self._kpm.updatePositions()
             # Recalculate position now that text has changed
-            self.setPos(self._local_pos)
+            self.setPos(self._pos)
 
     def clone(self : Self) -> Self:
         """Create a clone of this property text with a new UUID."""
         clone = PropertyText(
             name    = self.name(),
-            value   = self.value(),
             display = self.display(),
             pos     = self.pos(),
             anchor  = self.anchor(),
@@ -241,3 +294,9 @@ class PropertyText(BaseTextLine):
         )
         return clone
 
+    def ctxMenuEdit(
+        self    : Self,
+        checked : bool,
+        view    : "DrawingView"
+    ) -> None:
+        view.editPropertyText(self)
