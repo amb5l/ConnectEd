@@ -1,10 +1,10 @@
-__all__ = ["DrawingView", "DrawingSubWindow"]
+__all__ = ["getView", "DrawingView", "DrawingSubWindow"]
 
 from typing import Self, Optional
 from math   import ceil
 
-from PyQt6.QtCore    import Qt, QPointF, QRectF, QEvent
-from PyQt6.QtWidgets import QMdiArea, QMdiSubWindow, \
+from PyQt6.QtCore    import Qt, QPoint, QPointF, QRectF, QEvent
+from PyQt6.QtWidgets import QApplication, QMdiArea, QMdiSubWindow, \
                             QGraphicsView, QGraphicsTextItem
 from PyQt6.QtGui     import QPainter, QPen, QCloseEvent, QKeyEvent
 
@@ -21,6 +21,14 @@ from .defs    import *
 
 from ..... import hub
 
+
+def getView(pos : QPoint):
+    widget = QApplication.widgetAt(pos)
+    while widget is not None and widget.parent() is not None:
+        if isinstance(widget, DrawingView):
+            break
+        widget = widget.parent()
+    return widget
 
 class DrawingView(
     DrawingViewMouseMixin,

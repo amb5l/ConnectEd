@@ -3,8 +3,9 @@ __all__ = ["PropertyDisplay", "PropertyText"]
 from typing import Self, Optional
 from enum   import Enum
 
-from PyQt6.QtCore    import QPointF, QRectF
-from PyQt6.QtWidgets import QWidget, QStyleOptionGraphicsItem, QGraphicsItem
+from PyQt6.QtCore    import Qt, QPointF, QRectF
+from PyQt6.QtWidgets import QWidget, QStyleOptionGraphicsItem, QGraphicsItem, \
+                            QGraphicsSceneMouseEvent
 from PyQt6.QtGui     import QPainter
 
 from . import ElementMixin, AttrSpec, KPManager, KP, TextColorFont
@@ -114,6 +115,15 @@ class PropertyText(BaseTextLine):
         self._cache = ""
         self.setFlag(self.GraphicsItemFlag.ItemIsSelectable , True)
         self.refresh()
+
+    def mouseDoubleClickEvent(self : Self, event : QGraphicsSceneMouseEvent) -> None:
+        """Handle double-click events to open the edit dialog."""
+        if event.button() == Qt.MouseButton.LeftButton:
+            print("double click")
+            from .. import getView
+            view = getView(event.screenPos())
+            view.editPropertyText(self)
+        super().mouseDoubleClickEvent(event)
 
     def onPropertyChanged(self : Self, name : str, value : str) -> None:
         """Handle property value change signal from parent."""

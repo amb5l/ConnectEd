@@ -604,12 +604,8 @@ class CustomGraphicsItemMixin:
         self  : Self,
         event : QGraphicsSceneContextMenuEvent
     ) -> None:
-        from .. import DrawingView
-        widget = QApplication.widgetAt(event.screenPos())
-        while widget is not None and widget.parent() is not None:
-            if isinstance(widget, DrawingView):
-                break
-            widget = widget.parent()
+        from .. import getView
+        view = getView(event.screenPos())
         self._instance = self
         for action in self._menu.actions():
             slot_name = \
@@ -621,7 +617,7 @@ class CustomGraphicsItemMixin:
                 except TypeError:
                     pass
                 action.triggered.connect(
-                    lambda checked=False, w=widget, s=slot: s(checked, w)
+                    lambda checked=False, w=view, s=slot: s(checked, w)
                 )
         self._menu.exec(event.screenPos())
         self._instance = None

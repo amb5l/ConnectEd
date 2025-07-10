@@ -105,15 +105,6 @@ class DrawingViewMouseMixin:
                 case _:
                     logger.warning(f"Mouse middle button released when idle")
 
-    def mouseDoubleClickEvent(self : "DrawingView", event : QMouseEvent) -> None:
-        p = event.pos(); l = self.mapToScene(p)
-        self.mouse.left.double.setPL(p, l)
-        self.mouse.left.double.modifiers = self._getModifiers(event)
-        if event.button() & Qt.MouseButton.LeftButton:
-            self.mouseLeftDoubleClick()
-        if event.button() & Qt.MouseButton.MiddleButton:
-            self.mouseMiddleDoubleClick()
-
     def wheelEvent(self : "DrawingView", event : QWheelEvent) -> None:
         p = event.position().toPoint(); l = self.mapToScene(p)
         self.mouse.current.setPL(p, l)
@@ -407,9 +398,6 @@ class DrawingViewMouseMixin:
                     self._snap(self.mouse.left.release.logical)
                 )
 
-    def mouseLeftDoubleClick(self : "DrawingView") -> None:
-        pass
-
     def mouseMiddleClick(self : "DrawingView") -> None:
         pass
 
@@ -455,9 +443,6 @@ class DrawingViewMouseMixin:
                 self.marquee.end(self.mouse.middle.release.physical)
                 self._zoomRect(self.marquee.rect())
                 self._goState(State.Idle)
-
-    def mouseMiddleDoubleClick(self : "DrawingView") -> None:
-        pass
 
     def mouseMove(self : "DrawingView") -> None:
         match self.state:
