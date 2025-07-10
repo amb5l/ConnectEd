@@ -2,7 +2,7 @@ import re
 
 from typing import Self
 
-from PyQt6.QtCore    import Qt
+from PyQt6.QtCore    import Qt, QChildEvent, QEvent
 from PyQt6.QtWidgets import QMdiArea, QWidget, QMdiSubWindow
 
 from ..private import Action
@@ -40,25 +40,39 @@ class MdiArea(QMdiArea):
         self._updateSubWindowActions()
         hub.main_window.menu_bar.updateWindowMenu()
 
+    def childEvent(self : Self, event : QChildEvent) -> None:
+        """Handle child events, particularly when subwindows are removed."""
+        super().childEvent(event)
+        if (event.type() == QEvent.Type.ChildRemoved and
+            isinstance(event.child(), QMdiSubWindow)):
+            self.update()
+
     def _updateSubWindowTitles(self : Self) -> None:
         self.subwindow_scenes = {}
         for w in self.subWindowList():
-            key = "_"
+            # skip windows that are closing or closed
+            if w.isHidden() or not w.widget():
+                continue
             if isinstance(w, DrawingSubWindow) \
             and isinstance(w.widget(), DrawingView) \
             and isinstance(w.widget().scene(), DrawingScene):
                 scene : DrawingScene = w.widget().scene()
-                scene_name = scene.item.text()
-                db_name = hub.model.getDbItemFromScene(scene).text()
-                w.setWindowTitle(f"{db_name}:{scene_name}")
                 key = id(scene)
                 if key in self.subwindow_scenes:
-                    l = self.subwindow_scenes[key]
-                    if len(l) == 1:
-                        l[0].setWindowTitle(f"{l[0].windowTitle()}:0")
-                    w.setWindowTitle(f"{db_name}:{scene_name}:{len(l)}")
+                    self.subwindow_scenes[key].append(w)
                 else:
                     self.subwindow_scenes[key] = [w]
+        for key, windows in self.subwindow_scenes.items():
+            if not windows:
+                continue
+            scene = windows[0].widget().scene()
+            scene_name = scene.item.text()
+            db_name = hub.model.getDbItemFromScene(scene).text()
+            if len(windows) == 1:
+                windows[0].setWindowTitle(f"{db_name}:{scene_name}")
+            else:
+                for i, w in enumerate(windows):
+                    w.setWindowTitle(f"{db_name}:{scene_name}:{i}")
 
     def _updateSubWindowActions(self : Self) -> None:
         m = hub.main_window

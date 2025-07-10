@@ -158,5 +158,4 @@ class DrawingSubWindow(QMdiSubWindow):
                     scene.selectionChanged.disconnect()
                 except TypeError:
                     pass
-        hub.main_window.menu_bar.updateWindowMenu()
         super().closeEvent(event)
