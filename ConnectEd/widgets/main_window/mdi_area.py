@@ -1,5 +1,3 @@
-import re
-
 from typing import Self
 
 from PyQt6.QtCore    import Qt, QChildEvent, QEvent
@@ -7,6 +5,8 @@ from PyQt6.QtWidgets import QMdiArea, QWidget, QMdiSubWindow
 
 from ..private import Action
 from .. import DrawingSubWindow, DrawingView, DrawingScene
+
+from .properties import PropertiesSubWindow
 
 from ... import hub
 
@@ -21,13 +21,15 @@ class MdiArea(QMdiArea):
         flags  : Qt.WindowType = Qt.WindowType.SubWindow
     ) -> None:
         super().addSubWindow(widget, flags)
-        if not isinstance(widget, DrawingSubWindow):
-            return
-        if not isinstance(widget.widget(), DrawingView):
-            return
-        if not isinstance(widget.widget().scene(), DrawingScene):
-            return
-        self.update()
+        if isinstance(widget, DrawingSubWindow):
+            if not isinstance(widget.widget(), DrawingView):
+                return
+            if not isinstance(widget.widget().scene(), DrawingScene):
+                return
+            self.update()
+        elif isinstance(widget, PropertiesSubWindow):
+            if widget.scene() is not None:
+                self.update()
 
     def nextSubWindow(self : Self) -> None:
         self._activateSubWindowIndexOffset(1)
@@ -51,12 +53,18 @@ class MdiArea(QMdiArea):
         self.subwindow_scenes = {}
         for w in self.subWindowList():
             # skip windows that are closing or closed
-            if w.isHidden() or not w.widget():
+            if w.isHidden():
                 continue
+            if isinstance(w, DrawingSubWindow) and not w.widget():
+                continue
+            scene = None
             if isinstance(w, DrawingSubWindow) \
             and isinstance(w.widget(), DrawingView) \
             and isinstance(w.widget().scene(), DrawingScene):
-                scene : DrawingScene = w.widget().scene()
+                scene = w.widget().scene()
+            elif isinstance(w, PropertiesSubWindow) and w.scene() is not None:
+                scene = w.scene()
+            if scene is not None:
                 key = id(scene)
                 if key in self.subwindow_scenes:
                     self.subwindow_scenes[key].append(w)
@@ -65,14 +73,36 @@ class MdiArea(QMdiArea):
         for key, windows in self.subwindow_scenes.items():
             if not windows:
                 continue
-            scene = windows[0].widget().scene()
+            scene = None
+            for w in windows:
+                if isinstance(w, DrawingSubWindow) and isinstance(w.widget(), DrawingView):
+                    scene = w.widget().scene()
+                    break
+                elif isinstance(w, PropertiesSubWindow):
+                    scene = w.scene()
+                    break
+            if scene is None:
+                continue
             scene_name = scene.item.text()
             db_name = hub.model.getDbItemFromScene(scene).text()
-            if len(windows) == 1:
-                windows[0].setWindowTitle(f"{db_name}:{scene_name}")
+            properties_windows = [w for w in windows if isinstance(w, PropertiesSubWindow)]
+            drawing_windows = [w for w in windows if isinstance(w, DrawingSubWindow)]
+            sorted_windows = properties_windows + drawing_windows
+            if len(sorted_windows) == 1:
+                if isinstance(sorted_windows[0], PropertiesSubWindow):
+                    sorted_windows[0].setWindowTitle(f"{db_name}:{scene_name}: Properties")
+                else:
+                    sorted_windows[0].setWindowTitle(f"{db_name}:{scene_name}")
             else:
-                for i, w in enumerate(windows):
-                    w.setWindowTitle(f"{db_name}:{scene_name}:{i}")
+                properties_count = len(properties_windows)
+                drawing_count = len(drawing_windows)
+                for w in properties_windows:
+                    w.setWindowTitle(f"{db_name}:{scene_name}: Properties")
+                if drawing_count == 1:
+                    drawing_windows[0].setWindowTitle(f"{db_name}:{scene_name}")
+                else:
+                    for i, w in enumerate(drawing_windows):
+                        w.setWindowTitle(f"{db_name}:{scene_name}:{i}")
 
     def _updateSubWindowActions(self : Self) -> None:
         m = hub.main_window
@@ -83,6 +113,8 @@ class MdiArea(QMdiArea):
             and isinstance(w.widget(), DrawingView) \
             and isinstance(w.widget().scene(), DrawingScene):
                 key = id(hub.model.getDbItemFromScene(w.widget().scene()))
+            elif isinstance(w, PropertiesSubWindow) and w.scene() is not None:
+                key = id(hub.model.getDbItemFromScene(w.scene()))
             action = Action(m, w.windowTitle(), None, None, False, False, w)
             action.triggered.connect(
                 lambda checked=False, sw=w: self._activateSubWindow(sw)
@@ -91,6 +123,12 @@ class MdiArea(QMdiArea):
                 self.subwindow_actions[key].append(action)
             else:
                 self.subwindow_actions[key] = [action]
+        for key, actions in self.subwindow_actions.items():
+            if key == "_":
+                continue
+            properties_actions = [a for a in actions if isinstance(a.data(), PropertiesSubWindow)]
+            drawing_actions = [a for a in actions if isinstance(a.data(), DrawingSubWindow)]
+            self.subwindow_actions[key] = properties_actions + drawing_actions
 
     def _activateSubWindowIndexOffset(self : Self, offset : int) -> None:
         windows = self.subWindowList()
