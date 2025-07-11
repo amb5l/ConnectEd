@@ -1,6 +1,7 @@
 import sys
 
 from PyQt6.QtWidgets import QApplication
+from PyQt6.QtGui     import QIcon
 
 from ..core      import NameCounter, Settings, Model, known_args, unknown_args
 from ..resources import initResources
@@ -21,6 +22,16 @@ def initCli():
 def initGui():
     initCli()
     hub.app.setStyle("Fusion")
+    icon = QIcon(f"{hub.APP_ROOT}/resources/icons/ConnectEd.png")
+    hub.app.setWindowIcon(icon)
+    if sys.platform == "win32":
+        try:
+            import ctypes
+            ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(
+                "ConnectEd.Application"
+            )
+        except Exception:
+            pass
     initResources()
     hub.main_window = MainWindow()
     hub.main_window.show()

@@ -11,7 +11,7 @@ from typing import Self
 
 from PyQt6.QtCore    import Qt
 from PyQt6.QtWidgets import QApplication, QMainWindow
-from PyQt6.QtGui     import QCloseEvent
+from PyQt6.QtGui     import QIcon, QCloseEvent
 
 from ...core     import APP_NAME, check
 from .actions    import Actions
@@ -53,6 +53,9 @@ class MainWindow(QMainWindow):
 
         # saved position
         self.setWindowTitle(APP_NAME)
+        self.setWindowIcon(QIcon(f"{hub.APP_ROOT}/resources/icons/ConnectEd.png"))
+        self.setUnifiedTitleAndToolBarOnMac(False)
+        self.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonIconOnly)
         g = hub.settings.get("startup/geometry")
         if g:
             self.restoreGeometry(g)
