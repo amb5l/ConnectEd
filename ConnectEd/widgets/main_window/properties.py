@@ -1,11 +1,11 @@
 from typing import Self, Optional
 from types  import SimpleNamespace
 
-from PyQt6.QtCore    import Qt, QMimeData
-from PyQt6.QtWidgets import QMdiSubWindow, QTabWidget, QWidget, \
+from PyQt6.QtCore    import Qt
+from PyQt6.QtWidgets import QMdiSubWindow, QTabWidget, QWidget, QSizePolicy, \
                             QHBoxLayout, QVBoxLayout, \
                             QMenu, QPushButton, QLabel, \
-                            QTableView, QAbstractItemView
+                            QTableView, QAbstractItemView, QAbstractButton
 from PyQt6.QtGui     import QFont, QAction, QUndoStack, \
                             QWheelEvent, QContextMenuEvent, QCloseEvent, \
                             QStandardItemModel, QStandardItem
@@ -35,13 +35,14 @@ class PropertiesCell(QStandardItem):
 class PropertiesTable(QTableView):
     """Table for editing properties of scene elements of a single type."""
 
-    _undo_stack   : QUndoStack
-    _elements     : list[ElementMixin]
-    _headings     : dict[str, bool]
-    _model        : QStandardItemModel
-    #_proxy        : TransposeProxyModel
-    _actions      : SimpleNamespace
-    _font_size    : int
+    _undo_stack : QUndoStack
+    _elements   : list[ElementMixin]
+    _headings   : dict[str, bool]
+    _model      : QStandardItemModel
+    #_proxy      : TransposeProxyModel
+    _actions    : SimpleNamespace
+    _font_size  : int
+    _styled     : bool
 
     def __init__(
         self       : Self,
@@ -103,6 +104,20 @@ class PropertiesTable(QTableView):
         self._actions.transpose.setCheckable(True)
         self._actions.transpose.toggled.connect(self.toggleTranspose)
         self.addAction(self._actions.transpose)
+        self._styled = False
+
+    def showEvent(self, event):
+        super().showEvent(event)
+        self.style_corner_button()
+
+    def style_corner_button(self):
+        if self._styled:
+            return
+        self._styled = True
+        buttons = self.findChildren(QAbstractButton)
+        if buttons:
+            corner_button = buttons[0]
+            corner_button.setStyleSheet('background-color: palette(mid);')
 
     def toggleTranspose(self : Self, checked: Optional[bool] = None) -> None:
         """Toggle the transposed view of the table."""
