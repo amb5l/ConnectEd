@@ -7,6 +7,7 @@ from PyQt6.QtCore    import Qt, QPointF, QRectF
 from PyQt6.QtWidgets import QWidget, QStyleOptionGraphicsItem, QGraphicsItem, \
                             QGraphicsSceneMouseEvent
 from PyQt6.QtGui     import QPainter
+from PyQt6.QtGui     import QPainterPath
 
 from . import ElementMixin, AttrSpec, KPManager, KP, TextColorFont
 
@@ -127,8 +128,15 @@ class PropertyText(BaseTextLine):
     def mouseDoubleClickEvent(self : Self, event : QGraphicsSceneMouseEvent) -> None:
         """Handle double-click events to open the edit dialog."""
         if event.button() == Qt.MouseButton.LeftButton:
+            # Fix for Qt event routing bug
             from .. import getView
             view = getView(event.screenPos())
+            scene = self.scene()
+            if scene:
+                item_at_pos = scene.itemAt(event.scenePos(), view.transform())
+                if item_at_pos != self:
+                    item_at_pos.mouseDoubleClickEvent(event)
+                    return
             view.editPropertyText(self)
         super().mouseDoubleClickEvent(event)
 
