@@ -1,14 +1,14 @@
 from typing import Self, Optional
 from types  import SimpleNamespace
 
-from PyQt6.QtCore    import Qt
+from PyQt6.QtCore    import Qt, QSortFilterProxyModel, QModelIndex
 from PyQt6.QtWidgets import QMdiSubWindow, QTabWidget, QWidget, QSizePolicy, \
                             QHBoxLayout, QVBoxLayout, \
                             QMenu, QPushButton, QLabel, \
                             QTableView, QAbstractItemView, QAbstractButton
 from PyQt6.QtGui     import QFont, QAction, QUndoStack, \
                             QWheelEvent, QContextMenuEvent, QCloseEvent, \
-                            QStandardItemModel, QStandardItem
+                            QStandardItemModel, QStandardItem, QIcon
 
 from ...core import logger
 
@@ -32,6 +32,72 @@ class PropertiesCell(QStandardItem):
             Qt.ItemFlag.ItemIsEnabled
         )
 
+class PropertiesProxyModel(QSortFilterProxyModel):
+    """Proxy model that supports transposition and sorting."""
+
+    _transposed : bool
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self._transposed = False
+
+    def toggleTransposed(self, transposed: bool = None) -> None:
+        """Toggle or set the transposed state."""
+        if transposed is None:
+            self._transposed = not self._transposed
+        else:
+            self._transposed = transposed
+        self.beginResetModel()
+        self.endResetModel()
+
+    def rowCount(self, parent=QModelIndex()):
+        """Return row count, swapped if transposed."""
+        if not self.sourceModel():
+            return 0
+        source_rows = self.sourceModel().rowCount(parent)
+        source_cols = self.sourceModel().columnCount(parent)
+        return source_cols if self._transposed else source_rows
+
+    def columnCount(self, parent=QModelIndex()):
+        """Return column count, swapped if transposed."""
+        if not self.sourceModel():
+            return 0
+        source_rows = self.sourceModel().rowCount(parent)
+        source_cols = self.sourceModel().columnCount(parent)
+        return source_rows if self._transposed else source_cols
+
+    def data(self, index, role=Qt.ItemDataRole.DisplayRole):
+        """Get data from source model, mapping through transposition."""
+        if not index.isValid() or not self.sourceModel():
+            return None
+        if self._transposed:
+            source_index = self.sourceModel().index(index.column(), index.row())
+        else:
+            source_index = self.sourceModel().index(index.row(), index.column())
+        return self.sourceModel().data(source_index, role)
+
+    def headerData(self, section, orientation, role=Qt.ItemDataRole.DisplayRole):
+        """Get header data, swapping orientation if transposed."""
+        if not self.sourceModel():
+            return None
+        if self._transposed:
+            if orientation == Qt.Orientation.Horizontal:
+                return self.sourceModel().headerData(section, Qt.Orientation.Vertical, role)
+            else:
+                return self.sourceModel().headerData(section, Qt.Orientation.Horizontal, role)
+        else:
+            return self.sourceModel().headerData(section, orientation, role)
+
+    def setData(self, index, value, role=Qt.ItemDataRole.EditRole):
+        """Set data in source model, mapping through transposition."""
+        if not index.isValid() or not self.sourceModel():
+            return False
+        if self._transposed:
+            source_index = self.sourceModel().index(index.column(), index.row())
+        else:
+            source_index = self.sourceModel().index(index.row(), index.column())
+        return self.sourceModel().setData(source_index, value, role)
+
 class PropertiesTable(QTableView):
     """Table for editing properties of scene elements of a single type."""
 
@@ -39,7 +105,7 @@ class PropertiesTable(QTableView):
     _elements   : list[ElementMixin]
     _headings   : dict[str, bool]
     _model      : QStandardItemModel
-    #_proxy      : TransposeProxyModel
+    _proxy      : PropertiesProxyModel
     _actions    : SimpleNamespace
     _font_size  : int
     _styled     : bool
@@ -86,7 +152,10 @@ class PropertiesTable(QTableView):
                 item = PropertiesCell(value)
                 self._model.setItem(row_idx, col_idx, item)
             self._model.setVerticalHeaderItem(row_idx, QStandardItem(str(row_idx + 1)))
-        self.setModel(self._model)
+        # proxy model
+        self._proxy = PropertiesProxyModel(self)
+        self._proxy.setSourceModel(self._model)
+        self.setModel(self._proxy)
         # appearance and behavior
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
         self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
@@ -121,7 +190,16 @@ class PropertiesTable(QTableView):
 
     def toggleTranspose(self : Self, checked: Optional[bool] = None) -> None:
         """Toggle the transposed view of the table."""
-        #self._proxy.toggleTransposed(checked)
+        if checked is None:
+            # Called from button click - toggle current state
+            new_state = not self._proxy._transposed
+            self._proxy.toggleTransposed(new_state)
+            # Update action to match
+            self._actions.transpose.setChecked(new_state)
+        else:
+            # Called from QAction.toggled - use provided state
+            self._proxy.toggleTransposed(checked)
+        
         self.resizeColumnsToContents()
         self.viewport().update()
 
@@ -169,7 +247,9 @@ class PropertiesWidget(QWidget):
         super().__init__(parent)
         self._table = PropertiesTable(scene, elements, self)
         self._transpose_button = QPushButton("Transpose")
-        self._transpose_button.clicked.connect(self._table.toggleTranspose)
+        self._transpose_button.clicked.connect(
+            lambda: self._table.toggleTranspose()
+        )
         self._toolbar = QHBoxLayout()
         self._toolbar.addWidget(self._transpose_button)
         self._toolbar.addStretch()
