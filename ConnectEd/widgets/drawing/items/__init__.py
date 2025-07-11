@@ -1159,7 +1159,7 @@ __all__ = [
 ]
 from .key_point import KP, KPReverse, KeyPoint, KPDef, KPManager
 __all__ += key_point.__all__
-from .property_text import PropertyDisplay, PropertyText
+from .property_text import PropertyDisplay, PropertyText, Tether
 __all__ += property_text.__all__
 from .block import Block, cmdPlaceBlock
 __all__ += block.__all__

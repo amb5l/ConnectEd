@@ -1,4 +1,4 @@
-__all__ = ["PropertyDisplay", "PropertyText"]
+__all__ = ["PropertyDisplay", "PropertyText", "Tether"]
 
 from typing import Self, Optional
 from enum   import Enum
@@ -119,7 +119,6 @@ class PropertyText(BaseTextLine):
     def mouseDoubleClickEvent(self : Self, event : QGraphicsSceneMouseEvent) -> None:
         """Handle double-click events to open the edit dialog."""
         if event.button() == Qt.MouseButton.LeftButton:
-            print("double click")
             from .. import getView
             view = getView(event.screenPos())
             view.editPropertyText(self)
@@ -236,7 +235,7 @@ class PropertyText(BaseTextLine):
         if parent is not None and hasattr(parent, '_kpm') and parent._kpm is not None:
             parent._kpm.change.connect(self.updatePos)
 
-    def _createTetherLine(self) -> None:
+    def _createTether(self) -> None:
         """Create the tether line child item if it doesn't exist."""
         if self._tether is None:
             self._tether = Tether(self)
@@ -257,7 +256,7 @@ class PropertyText(BaseTextLine):
             self.setPos(self._pos)
         elif change == QGraphicsItem.GraphicsItemChange.ItemSelectedHasChanged:
             # Selection changed - show/hide tether line
-            self._createTetherLine()
+            self._createTether()
             if self._tether:
                 self._tether.setVisible(self.isSelected())
         return result

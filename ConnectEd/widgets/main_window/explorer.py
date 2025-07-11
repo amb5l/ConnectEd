@@ -8,7 +8,7 @@ from PyQt6.QtGui     import QAction, QStandardItem, \
 
 from ...core import logger
 
-from ..drawing import KeyPoint
+from ..drawing import KeyPoint, Tether
 
 from .tree_view import TreeView, TreeViewDock
 
@@ -294,7 +294,8 @@ class Explorer(TreeView):
                 subwindow.setFocus()
                 return
         db_item = item.parent().parent()
-        elements = [e for e in scene.items() if not isinstance(e, KeyPoint)]
+        elements = [e for e in scene.items() \
+                    if not isinstance(e, KeyPoint | Tether)]
         subwindow = PropertiesSubWindow(scene, elements)
         subwindow.setWindowTitle(f"{db_item.text()}:{item.text()}: Properties")
         hub.main_window.mdi_area.addSubWindow(subwindow)
