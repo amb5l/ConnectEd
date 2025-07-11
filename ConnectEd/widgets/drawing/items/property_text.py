@@ -56,6 +56,14 @@ class Tether(QGraphicsItem):
         painter.setPen(self._property.appearance.outline.pen)
         painter.drawLine(anchor_pos, cleat_pos_local)
 
+# Understanding positioning:
+# 1. PropertyText pos is offset from cleat pos to PropertyText anchor
+# 2. cleat pos is relative to parent top left
+# 3. PropertyText anchor offset is relative to PropertyText top left
+# So when a PropertyText pos is specified, the cleat pos is added,
+# and then anchor offset is subtracted.
+# This cleat-to-anchor pos is stored in _pos. Useful for cleat (keypoint) moves.
+
 class PropertyText(BaseTextLine):
     # class variables
     _ATTR_SPECS = ElementMixin._ATTR_SPECS + [
@@ -137,15 +145,17 @@ class PropertyText(BaseTextLine):
             self.refresh()
 
     def setPos(self : Self, pos : QPointF) -> None:
+        """Set offset from parent cleat to my anchor."""
         self._pos = pos
         parent : Optional[ElementMixin] = self.parentItem()
         if parent is not None and hasattr(parent, '_kpm') and parent._kpm is not None:
             parent_kpm : KPManager = parent._kpm
+            # cleat position is relative to parent top left
             cleat_pos = parent_kpm.key_points[self._cleat].pos()
         else:
             cleat_pos = QPointF(0, 0)
-        desired_anchor_pos = pos + cleat_pos
-        super().setPos(desired_anchor_pos)
+        anchor_pos = pos + cleat_pos
+        super().setPos(anchor_pos)
 
     def setPosX(self : Self, value : float) -> None:
         self.setPos(QPointF(value, self._pos.y()))
@@ -254,6 +264,13 @@ class PropertyText(BaseTextLine):
             self._connectToKPMSignals()
             # Recalculate position now that we have a parent
             self.setPos(self._pos)
+        elif change == QGraphicsItem.GraphicsItemChange.ItemPositionHasChanged:
+            parent = self.parentItem()
+            if parent is not None:
+                parent_kpm = parent._kpm
+                cleat_pos = parent_kpm.key_points[self._cleat].pos()
+                anchor_pos = value + self._kpm.anchor_offset
+                self._pos = anchor_pos - cleat_pos
         elif change == QGraphicsItem.GraphicsItemChange.ItemSelectedHasChanged:
             # Selection changed - show/hide tether line
             self._createTether()
