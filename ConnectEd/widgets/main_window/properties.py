@@ -86,11 +86,9 @@ class PropertiesTable(QTableView):
         raw_rows = [
             [e.getPropAttr(h) for h in self._inherent.keys()] for e in elements
         ]
-        
-        self._createModel(raw_rows)
         # set model
+        self._createModel(raw_rows)
         self.setModel(self._model)
-        
         # appearance and behavior
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
         self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
@@ -102,7 +100,6 @@ class PropertiesTable(QTableView):
         self.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectItems)
         self.setFontSize(10)  # TODO: Get from settings
         self.resizeColumnsToContents()
-        
         # actions
         self._actions = SimpleNamespace()
         self._actions.transpose = QAction("Transpose", self)
@@ -245,11 +242,9 @@ class PropertiesTable(QTableView):
 
     def _restoreOriginalOrder(self) -> None:
         """Restore the original order of the table by recreating it."""
-        # Get the original data from elements
         raw_rows = [
             [e.getPropAttr(h) for h in self._inherent.keys()] for e in self._elements
         ]
-        # Clear and rebuild the model
         self._model.clear()
         self._createModel(raw_rows)
         self._updateHeaderText()
@@ -257,39 +252,26 @@ class PropertiesTable(QTableView):
     def _createModel(self, raw_rows: list[list]) -> None:
         """Create the model with the given data."""
         if self._transposed:
-            # In transposed mode: rows become columns, columns become rows
-            # raw_rows is [elements][properties], we want [properties][elements]
             num_properties = len(self._headers)
             num_elements = len(self._elements)
-            
             self._model = QStandardItemModel(num_properties, num_elements, self)
-            
-            # Set headers
             for i, name in self._headers.items():
                 self._model.setVerticalHeaderItem(i, QStandardItem(name))
             for i in range(num_elements):
                 self._model.setHorizontalHeaderItem(i, QStandardItem(str(i + 1)))
-            
-            # Fill data (transposed)
             for property_idx in range(num_properties):
                 for element_idx in range(num_elements):
                     if element_idx < len(raw_rows) and property_idx < len(raw_rows[element_idx]):
                         value = raw_rows[element_idx][property_idx]  # transpose
                         self._model.setItem(property_idx, element_idx, PropertiesCell(value))
         else:
-            # Normal mode: raw_rows is [elements][properties]
             num_elements = len(raw_rows)
             num_properties = len(self._inherent)
-            
             self._model = QStandardItemModel(num_elements, num_properties, self)
-            
-            # Set headers
             for i, name in self._headers.items():
                 self._model.setHorizontalHeaderItem(i, QStandardItem(name))
             for i in range(num_elements):
                 self._model.setVerticalHeaderItem(i, QStandardItem(str(i + 1)))
-            
-            # Fill data (normal)
             for row_idx, row_data in enumerate(raw_rows):
                 for col_idx, value in enumerate(row_data):
                     self._model.setItem(row_idx, col_idx, PropertiesCell(value))
