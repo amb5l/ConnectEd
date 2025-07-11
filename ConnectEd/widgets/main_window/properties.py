@@ -199,12 +199,13 @@ class PropertiesSubWindow(QMdiSubWindow):
             scene    : "DrawingScene",
             elements : list[ElementMixin]
         ) -> None:
+        super().__init__()
         self._scene = scene
         element_scenes = set(element.scene() for element in elements)
-        if len(element_scenes) != 1 or scene != element_scenes.pop():
-            logger.error("Elements must belong to the specified scene")
-            return
-        super().__init__()
+        if elements:
+            if len(element_scenes) > 1 or scene != element_scenes.pop():
+                logger.error("Elements must belong to the specified scene")
+                elements = []
         self.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
         if len(elements) > 0:
             self._tab_widget = PropertiesTabWidget(scene, elements, self)
@@ -213,6 +214,8 @@ class PropertiesSubWindow(QMdiSubWindow):
         else:
             self._tab_widget = None
             label = QLabel("NO ELEMENTS", self)
+            label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
             self.setWidget(label)
             self.setWindowTitle("Properties")
 
