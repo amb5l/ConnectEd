@@ -1,14 +1,16 @@
 from typing import Self, Optional
 from types  import SimpleNamespace
 
-from PyQt6.QtCore    import Qt, QSortFilterProxyModel, QModelIndex
+from PyQt6.QtCore    import Qt, QModelIndex, QPoint, QRect
 from PyQt6.QtWidgets import QMdiSubWindow, QTabWidget, QWidget, QSizePolicy, \
                             QHBoxLayout, QVBoxLayout, \
                             QMenu, QPushButton, QLabel, \
-                            QTableView, QAbstractItemView, QAbstractButton
+                            QTableView, QAbstractItemView, QAbstractButton, \
+                            QHeaderView
 from PyQt6.QtGui     import QFont, QAction, QUndoStack, \
                             QWheelEvent, QContextMenuEvent, QCloseEvent, \
-                            QStandardItemModel, QStandardItem, QIcon
+                            QStandardItemModel, QStandardItem, \
+                            QPen, QBrush, QColor, QPolygon
 
 from ...core import logger
 
@@ -32,94 +34,34 @@ class PropertiesCell(QStandardItem):
             Qt.ItemFlag.ItemIsEnabled
         )
 
-class PropertiesProxyModel(QSortFilterProxyModel):
-    """Proxy model that supports transposition and sorting."""
-
-    _transposed : bool
-
-    def __init__(self, parent=None):
-        super().__init__(parent)
-        self._transposed = False
-
-    def toggleTransposed(self, transposed: bool = None) -> None:
-        """Toggle or set the transposed state."""
-        if transposed is None:
-            self._transposed = not self._transposed
-        else:
-            self._transposed = transposed
-        self.beginResetModel()
-        self.endResetModel()
-
-    def rowCount(self, parent=QModelIndex()):
-        """Return row count, swapped if transposed."""
-        if not self.sourceModel():
-            return 0
-        source_rows = self.sourceModel().rowCount(parent)
-        source_cols = self.sourceModel().columnCount(parent)
-        return source_cols if self._transposed else source_rows
-
-    def columnCount(self, parent=QModelIndex()):
-        """Return column count, swapped if transposed."""
-        if not self.sourceModel():
-            return 0
-        source_rows = self.sourceModel().rowCount(parent)
-        source_cols = self.sourceModel().columnCount(parent)
-        return source_rows if self._transposed else source_cols
-
-    def data(self, index, role=Qt.ItemDataRole.DisplayRole):
-        """Get data from source model, mapping through transposition."""
-        if not index.isValid() or not self.sourceModel():
-            return None
-        if self._transposed:
-            source_index = self.sourceModel().index(index.column(), index.row())
-        else:
-            source_index = self.sourceModel().index(index.row(), index.column())
-        return self.sourceModel().data(source_index, role)
-
-    def headerData(self, section, orientation, role=Qt.ItemDataRole.DisplayRole):
-        """Get header data, swapping orientation if transposed."""
-        if not self.sourceModel():
-            return None
-        if self._transposed:
-            if orientation == Qt.Orientation.Horizontal:
-                return self.sourceModel().headerData(section, Qt.Orientation.Vertical, role)
-            else:
-                return self.sourceModel().headerData(section, Qt.Orientation.Horizontal, role)
-        else:
-            return self.sourceModel().headerData(section, orientation, role)
-
-    def setData(self, index, value, role=Qt.ItemDataRole.EditRole):
-        """Set data in source model, mapping through transposition."""
-        if not index.isValid() or not self.sourceModel():
-            return False
-        if self._transposed:
-            source_index = self.sourceModel().index(index.column(), index.row())
-        else:
-            source_index = self.sourceModel().index(index.row(), index.column())
-        return self.sourceModel().setData(source_index, value, role)
-
 class PropertiesTable(QTableView):
     """Table for editing properties of scene elements of a single type."""
 
     _undo_stack : QUndoStack
     _elements   : list[ElementMixin]
-    _headings   : dict[str, bool]
+    _transposed : bool
+    _inherent   : dict[str, bool]  # field name : is inherent
+    _headers    : dict[int, str]  # column # : field name
     _model      : QStandardItemModel
-    _proxy      : PropertiesProxyModel
     _actions    : SimpleNamespace
     _font_size  : int
     _styled     : bool
+    _sorting    : dict[int, Qt.SortOrder]
 
     def __init__(
         self       : Self,
         scene      : "DrawingScene",
         elements   : list[ElementMixin],
-        parent     : Optional[QWidget] = None
+        transposed : bool,
+        parent     : "PropertiesWidget",
+        sorting    : Optional[dict[int, Qt.SortOrder]] = None
     ) -> None:
         super().__init__(parent)
         self._undo_stack = scene.undo_stack
         self._elements = elements
-        # headings
+        self._transposed = transposed
+        self._sorting = sorting if sorting is not None else {}
+        # fields and headers
         attributes = None
         properties = set()
         for e in elements:
@@ -131,31 +73,24 @@ class PropertiesTable(QTableView):
                     return
             for prop in e.getProperties():
                 properties.add(prop)
-        self._headings = {h : False for h in sorted(properties)}
-        self._headings.update({h : True for h in attributes})
-        # rows
-        rows = [
-            [e.getPropAttr(h) for h in self._headings.keys()] for e in elements
+        self._inherent = {h : False for h in sorted(properties)}
+        self._inherent.update({h : True for h in attributes})
+        self._fields = self._inherent.keys()
+        self._headers = {i : h for i, h in enumerate(self._inherent.keys())}
+        self.setSortingEnabled(False)  # Disable built-in sorting
+        header = self.horizontalHeader()
+        header.setSectionsClickable(True)
+        header.setSectionsMovable(False)
+        header.sectionClicked.connect(self._handleHeaderClick)
+        # rows - get the raw data
+        raw_rows = [
+            [e.getPropAttr(h) for h in self._inherent.keys()] for e in elements
         ]
-        # model
-        self._model = QStandardItemModel(
-            len(rows), len(self._headings), self
-        )
-        for col, heading in enumerate(self._headings.keys()):
-            item = QStandardItem(heading)
-            font = QFont()
-            font.setItalic(self._headings[heading])
-            item.setData(font, Qt.ItemDataRole.FontRole)
-            self._model.setHorizontalHeaderItem(col, item)
-        for row_idx, row_data in enumerate(rows):
-            for col_idx, value in enumerate(row_data):
-                item = PropertiesCell(value)
-                self._model.setItem(row_idx, col_idx, item)
-            self._model.setVerticalHeaderItem(row_idx, QStandardItem(str(row_idx + 1)))
-        # proxy model
-        self._proxy = PropertiesProxyModel(self)
-        self._proxy.setSourceModel(self._model)
-        self.setModel(self._proxy)
+        
+        self._createModel(raw_rows)
+        # set model
+        self.setModel(self._model)
+        
         # appearance and behavior
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
         self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
@@ -167,11 +102,12 @@ class PropertiesTable(QTableView):
         self.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectItems)
         self.setFontSize(10)  # TODO: Get from settings
         self.resizeColumnsToContents()
+        
         # actions
         self._actions = SimpleNamespace()
         self._actions.transpose = QAction("Transpose", self)
         self._actions.transpose.setCheckable(True)
-        self._actions.transpose.toggled.connect(self.toggleTranspose)
+        self._actions.transpose.setChecked(self._transposed)
         self.addAction(self._actions.transpose)
         self._styled = False
 
@@ -187,21 +123,6 @@ class PropertiesTable(QTableView):
         if buttons:
             corner_button = buttons[0]
             corner_button.setStyleSheet('background-color: palette(mid);')
-
-    def toggleTranspose(self : Self, checked: Optional[bool] = None) -> None:
-        """Toggle the transposed view of the table."""
-        if checked is None:
-            # Called from button click - toggle current state
-            new_state = not self._proxy._transposed
-            self._proxy.toggleTransposed(new_state)
-            # Update action to match
-            self._actions.transpose.setChecked(new_state)
-        else:
-            # Called from QAction.toggled - use provided state
-            self._proxy.toggleTransposed(checked)
-        
-        self.resizeColumnsToContents()
-        self.viewport().update()
 
     def contextMenuEvent(self : Self, event: QContextMenuEvent) -> None:
         """Show context menu with copy/paste/transpose actions."""
@@ -230,13 +151,160 @@ class PropertiesTable(QTableView):
         else:
             super().wheelEvent(event)
 
+    def _handleHeaderClick(self : Self, idx: int) -> None:
+        """Handle header clicks for triple-state sorting (asc/desc/unsorted)."""
+        match self._sorting.get(idx, None):
+            case None:
+                self._sorting[idx] = Qt.SortOrder.AscendingOrder
+            case Qt.SortOrder.AscendingOrder:
+                self._sorting[idx] = Qt.SortOrder.DescendingOrder
+            case Qt.SortOrder.DescendingOrder:
+                del self._sorting[idx]
+        self.multiSort()
+        self._updateHeaderText()
+
+    def _updateHeaderText(self) -> None:
+        """Update header text to include sort indicators."""
+        for i, name in self._headers.items():
+            text = name
+            if i in self._sorting:
+                order = self._sorting[i]
+                arrow = "▲" if order == Qt.SortOrder.AscendingOrder else "▼"
+                if len(self._sorting) > 1:
+                    priority = list(self._sorting.keys()).index(i) + 1
+                    text = f"{name}  {arrow}{priority}"
+                else:
+                    text = f"{name}  {arrow}"
+            if self._transposed:
+                header_item = self._model.verticalHeaderItem(i)
+                if header_item is None:
+                    header_item = QStandardItem(text)
+                    self._model.setVerticalHeaderItem(i, header_item)
+                else:
+                    header_item.setText(text)
+            else:
+                header_item = self._model.horizontalHeaderItem(i)
+                if header_item is None:
+                    header_item = QStandardItem(text)
+                    self._model.setHorizontalHeaderItem(i, header_item)
+                else:
+                    header_item.setText(text)
+
+    def multiSort(self) -> None:
+        """Apply multi-column sorting to the table."""
+        if not self._sorting:
+            self._restoreOriginalOrder()
+            return
+        rows = []
+        for row_idx in range(self._model.rowCount()):
+            row_data = []
+            for col_idx in range(self._model.columnCount()):
+                item = self._model.item(row_idx, col_idx)
+                value = item.text() if item else ""
+                row_data.append(value)
+            rows.append((row_idx, row_data))
+
+        def multi_column_compare(row1, row2):
+            """Compare two rows using multi-column sorting priority."""
+            _, data1 = row1
+            _, data2 = row2
+            for column in reversed(self._sorting.keys()):
+                if column >= len(data1) or column >= len(data2):
+                    continue
+                val1 = data1[column]
+                val2 = data2[column]
+                order = self._sorting[column]
+                # Handle empty values
+                if not val1 and not val2:
+                    continue
+                if not val1:
+                    return -1 if order == Qt.SortOrder.AscendingOrder else 1
+                if not val2:
+                    return 1 if order == Qt.SortOrder.AscendingOrder else -1
+                # Try numeric comparison first
+                try:
+                    num1 = float(val1)
+                    num2 = float(val2)
+                    if num1 != num2:
+                        result = -1 if num1 < num2 else 1
+                        return result if order == Qt.SortOrder.AscendingOrder else -result
+                except ValueError:
+                    # Fall back to string comparison
+                    if val1 != val2:
+                        result = -1 if val1 < val2 else 1
+                        return result if order == Qt.SortOrder.AscendingOrder else -result
+            return 0  # Equal on all columns
+        # Sort the rows
+        from functools import cmp_to_key
+        sorted_rows = sorted(rows, key=cmp_to_key(multi_column_compare))
+        # Rebuild the model with sorted data
+        sorted_data = [row_data for _, row_data in sorted_rows]
+        self._model.clear()
+        self._createModel(sorted_data)
+        self._updateHeaderText()
+
+    def _restoreOriginalOrder(self) -> None:
+        """Restore the original order of the table by recreating it."""
+        # Get the original data from elements
+        raw_rows = [
+            [e.getPropAttr(h) for h in self._inherent.keys()] for e in self._elements
+        ]
+        # Clear and rebuild the model
+        self._model.clear()
+        self._createModel(raw_rows)
+        self._updateHeaderText()
+
+    def _createModel(self, raw_rows: list[list]) -> None:
+        """Create the model with the given data."""
+        if self._transposed:
+            # In transposed mode: rows become columns, columns become rows
+            # raw_rows is [elements][properties], we want [properties][elements]
+            num_properties = len(self._headers)
+            num_elements = len(self._elements)
+            
+            self._model = QStandardItemModel(num_properties, num_elements, self)
+            
+            # Set headers
+            for i, name in self._headers.items():
+                self._model.setVerticalHeaderItem(i, QStandardItem(name))
+            for i in range(num_elements):
+                self._model.setHorizontalHeaderItem(i, QStandardItem(str(i + 1)))
+            
+            # Fill data (transposed)
+            for property_idx in range(num_properties):
+                for element_idx in range(num_elements):
+                    if element_idx < len(raw_rows) and property_idx < len(raw_rows[element_idx]):
+                        value = raw_rows[element_idx][property_idx]  # transpose
+                        self._model.setItem(property_idx, element_idx, PropertiesCell(value))
+        else:
+            # Normal mode: raw_rows is [elements][properties]
+            num_elements = len(raw_rows)
+            num_properties = len(self._inherent)
+            
+            self._model = QStandardItemModel(num_elements, num_properties, self)
+            
+            # Set headers
+            for i, name in self._headers.items():
+                self._model.setHorizontalHeaderItem(i, QStandardItem(name))
+            for i in range(num_elements):
+                self._model.setVerticalHeaderItem(i, QStandardItem(str(i + 1)))
+            
+            # Fill data (normal)
+            for row_idx, row_data in enumerate(raw_rows):
+                for col_idx, value in enumerate(row_data):
+                    self._model.setItem(row_idx, col_idx, PropertiesCell(value))
+
 class PropertiesWidget(QWidget):
-    """Widget containing a PropertiesTable with buttons for managing properties."""
+    """Widget containing PropertiesTable instances with buttons for managing properties."""
     _elements         : list[ElementMixin]
-    _table            : PropertiesTable
+    _table_normal     : PropertiesTable
+    _table_transposed : PropertiesTable
+    _current_table    : PropertiesTable
     _transpose_button : QPushButton
     _toolbar          : QHBoxLayout
     _layout           : QVBoxLayout
+    _transposed       : bool
+    _sorting          : dict[int, Qt.SortOrder]
 
     def __init__(
         self     : Self,
@@ -245,18 +313,50 @@ class PropertiesWidget(QWidget):
         parent   : Optional[QWidget] = None
     ) -> None:
         super().__init__(parent)
-        self._table = PropertiesTable(scene, elements, self)
-        self._transpose_button = QPushButton("Transpose")
-        self._transpose_button.clicked.connect(
-            lambda: self._table.toggleTranspose()
+        self._elements = elements
+        self._transposed = False
+        self._sorting = {}
+        self._table_normal = PropertiesTable(
+            scene, elements, False, self, self._sorting
         )
+        self._table_transposed = PropertiesTable(
+            scene, elements, True, self, self._sorting
+        )
+        self._current_table = self._table_normal
+        self._transpose_button = QPushButton("Transpose")
+        self._transpose_button.setCheckable(True)
+        self._transpose_button.clicked.connect(self._toggleTranspose)
         self._toolbar = QHBoxLayout()
         self._toolbar.addWidget(self._transpose_button)
         self._toolbar.addStretch()
         self._layout = QVBoxLayout(self)
         self._layout.addLayout(self._toolbar)
-        self._layout.addWidget(self._table)
+        self._layout.addWidget(self._table_normal)
+        self._layout.addWidget(self._table_transposed)
+        self._table_transposed.hide()
         self.setLayout(self._layout)
+
+    def _toggleTranspose(self) -> None:
+        """Toggle between normal and transposed table views."""
+        self._transposed = not self._transposed
+        if self._transposed:
+            self._table_normal.hide()
+            self._table_transposed.show()
+            self._current_table = self._table_transposed
+        else:
+            # Switch to normal view
+            self._table_transposed.hide()
+            self._table_normal.show()
+            self._current_table = self._table_normal
+        # Update button state
+        self._transpose_button.setChecked(self._transposed)
+        # Ensure the visible table is properly sized
+        self._current_table.resizeColumnsToContents()
+        self._current_table.resizeRowsToContents()
+
+    def getCurrentTable(self) -> PropertiesTable:
+        """Get the currently visible table."""
+        return self._current_table
 
 class PropertiesTabWidget(QTabWidget):
     def __init__(
