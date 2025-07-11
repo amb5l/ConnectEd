@@ -120,10 +120,18 @@ class Actions:
             self._scene.undo_stack.canRedoChanged.connect(self.onCanRedoChanged)
 
     def onSelectionChanged(self : Self, items : list[QGraphicsItem]) -> None:
-        n = len(items)
-        self.editCut       .setEnabled( n > 0 )
-        self.editCopy      .setEnabled( n > 0 )
-        self.editDelete    .setEnabled( n > 0 )
+        try:
+            n = len(items)
+            self.editCut        .setEnabled( n > 0 )
+            self.editCopy       .setEnabled( n > 0 )
+            self.editDelete     .setEnabled( n > 0 )
+            self.editDuplicate  .setEnabled( n > 0 )
+            self.editSlide      .setEnabled( n > 0 )
+            self.editMove       .setEnabled( n > 0 )
+            self.editResize     .setEnabled( n > 0 )
+            self.editAppearance .setEnabled( n > 0 )
+        except RuntimeError:
+            pass  # Objects deleted during shutdown
 
     def onClipboardDataChanged(self : Self) -> None:
         if not self._scene:
@@ -135,9 +143,15 @@ class Actions:
         self.editPaste.setEnabled(en)
 
     def onCanUndoChanged(self : Self, canUndo : bool) -> None:
-        self.editUndo.setEnabled(canUndo)
+        try:
+            self.editUndo.setEnabled(canUndo)
+        except RuntimeError:
+            pass  # Object deleted during shutdown
 
     def onCanRedoChanged(self : Self, canRedo : bool) -> None:
-        self.editRedo.setEnabled(canRedo)
+        try:
+            self.editRedo.setEnabled(canRedo)
+        except RuntimeError:
+            pass  # Object deleted during shutdown
 
 # TODO control status of edit cancel/complete
