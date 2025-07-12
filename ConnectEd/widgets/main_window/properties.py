@@ -1,7 +1,7 @@
 from typing import Self, Optional
 from types  import SimpleNamespace
 
-from PyQt6.QtCore    import Qt, QModelIndex, QPoint, QRect
+from PyQt6.QtCore    import Qt, QPoint
 from PyQt6.QtWidgets import QMdiSubWindow, QTabWidget, QWidget, QSizePolicy, \
                             QHBoxLayout, QVBoxLayout, \
                             QMenu, QPushButton, QLabel, \
@@ -9,8 +9,7 @@ from PyQt6.QtWidgets import QMdiSubWindow, QTabWidget, QWidget, QSizePolicy, \
                             QHeaderView
 from PyQt6.QtGui     import QFont, QAction, QUndoStack, \
                             QWheelEvent, QContextMenuEvent, QCloseEvent, \
-                            QStandardItemModel, QStandardItem, \
-                            QPen, QBrush, QColor, QPolygon
+                            QStandardItemModel, QStandardItem
 
 from ...core import logger
 
@@ -33,6 +32,47 @@ class PropertiesCell(QStandardItem):
             Qt.ItemFlag.ItemIsSelectable |
             Qt.ItemFlag.ItemIsEnabled
         )
+
+class PropertiesHeader(QHeaderView):
+    """Custom header view that provides context menu for sorting."""
+
+    _table : "PropertiesTable"
+
+    def __init__(self, orientation: Qt.Orientation, table: "PropertiesTable"):
+        super().__init__(orientation, table)
+        self._table = table
+        self.setSectionsClickable(True)
+        self.setSectionsMovable(False)
+
+    def contextMenuEvent(self, event: QContextMenuEvent) -> None:
+        o = Qt.Orientation
+        if (self.orientation() == o.Horizontal and not self._table._transposed) \
+        or (self.orientation() == o.Vertical and self._table._transposed):
+            pos = event.pos()
+            if self.orientation() == o.Horizontal:
+                section = self.logicalIndexAt(pos.x())
+            else:
+                section = self.logicalIndexAt(pos.y())
+            if section >= 0 and section < len(self._table._headers):
+                self._showContextMenu(section, event.globalPos())
+            else:
+                super().contextMenuEvent(event)
+        else:
+            super().contextMenuEvent(event)
+
+    def _showContextMenu(self, header_index: int, global_pos: QPoint):
+        # Create sort actions with the specific header index
+        menu = QMenu(self)
+        sort_asc = QAction("Sort Ascending", menu)
+        sort_asc.triggered.connect(lambda: self._table._sortAscending(header_index))
+        menu.addAction(sort_asc)
+        sort_desc = QAction("Sort Descending", menu)
+        sort_desc.triggered.connect(lambda: self._table._sortDescending(header_index))
+        menu.addAction(sort_desc)
+        unsorted = QAction("Unsorted", menu)
+        unsorted.triggered.connect(lambda: self._table._sortNone(header_index))
+        menu.addAction(unsorted)
+        menu.exec(global_pos)
 
 class PropertiesTable(QTableView):
     """Table for editing properties of scene elements of a single type."""
@@ -78,10 +118,9 @@ class PropertiesTable(QTableView):
         self._fields = self._inherent.keys()
         self._headers = {i : h for i, h in enumerate(self._inherent.keys())}
         self.setSortingEnabled(False)  # Disable built-in sorting
-        header = self.horizontalHeader()
-        header.setSectionsClickable(True)
-        header.setSectionsMovable(False)
-        header.sectionClicked.connect(self._handleHeaderClick)
+        # Set up custom headers
+        self.setHorizontalHeader(PropertiesHeader(Qt.Orientation.Horizontal, self))
+        self.setVerticalHeader(PropertiesHeader(Qt.Orientation.Vertical, self))
         # rows - get the raw data
         raw_rows = [
             [e.getPropAttr(h) for h in self._inherent.keys()] for e in elements
@@ -105,6 +144,7 @@ class PropertiesTable(QTableView):
         self._actions.transpose.setCheckable(True)
         self._actions.transpose.setChecked(self._transposed)
         self.addAction(self._actions.transpose)
+        # corner button styling
         self._styled = False
 
     def showEvent(self, event):
@@ -121,7 +161,7 @@ class PropertiesTable(QTableView):
             corner_button.setStyleSheet('background-color: palette(mid);')
 
     def contextMenuEvent(self : Self, event: QContextMenuEvent) -> None:
-        """Show context menu with copy/paste/transpose actions."""
+        """Show context menu for table cells."""
         menu = QMenu(self)
         menu.addAction(self._actions.transpose)
         menu.exec(event.globalPos())
@@ -147,17 +187,24 @@ class PropertiesTable(QTableView):
         else:
             super().wheelEvent(event)
 
-    def _handleHeaderClick(self : Self, idx: int) -> None:
-        """Handle header clicks for triple-state sorting (asc/desc/unsorted)."""
-        match self._sorting.get(idx, None):
-            case None:
-                self._sorting[idx] = Qt.SortOrder.AscendingOrder
-            case Qt.SortOrder.AscendingOrder:
-                self._sorting[idx] = Qt.SortOrder.DescendingOrder
-            case Qt.SortOrder.DescendingOrder:
-                del self._sorting[idx]
+    def _sortAscending(self, header_index: int) -> None:
+        """Sort the selected header in ascending order."""
+        self._sorting[header_index] = Qt.SortOrder.AscendingOrder
         self.multiSort()
         self._updateHeaderText()
+
+    def _sortDescending(self, header_index: int) -> None:
+        """Sort the selected header in descending order."""
+        self._sorting[header_index] = Qt.SortOrder.DescendingOrder
+        self.multiSort()
+        self._updateHeaderText()
+
+    def _sortNone(self, header_index: int) -> None:
+        """Remove sorting from the selected header."""
+        if header_index in self._sorting:
+            del self._sorting[header_index]
+            self.multiSort()
+            self._updateHeaderText()
 
     def _updateHeaderText(self) -> None:
         """Update header text to include sort indicators."""
