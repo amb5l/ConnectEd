@@ -88,7 +88,6 @@ class PropertiesTable(QTableView):
         ]
         # set model
         self._createModel(raw_rows)
-        self.setModel(self._model)
         # appearance and behavior
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
         self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
@@ -275,6 +274,7 @@ class PropertiesTable(QTableView):
             for row_idx, row_data in enumerate(raw_rows):
                 for col_idx, value in enumerate(row_data):
                     self._model.setItem(row_idx, col_idx, PropertiesCell(value))
+        self.setModel(self._model)
 
 class PropertiesWidget(QWidget):
     """Widget containing PropertiesTable instances with buttons for managing properties."""
