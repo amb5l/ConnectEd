@@ -212,7 +212,10 @@ class PropertiesTable(QTableView):
             text = name
             if i in self._sorting:
                 order = self._sorting[i]
-                arrow = "▲" if order == Qt.SortOrder.AscendingOrder else "▼"
+                if self._transposed:
+                    arrow = "◀" if order == Qt.SortOrder.AscendingOrder else "▶"
+                else:
+                    arrow = "▲" if order == Qt.SortOrder.AscendingOrder else "▼"
                 if len(self._sorting) > 1:
                     priority = list(self._sorting.keys()).index(i) + 1
                     text = f"{name}  {arrow}{priority}"
@@ -238,15 +241,10 @@ class PropertiesTable(QTableView):
         if not self._sorting:
             self._restoreOriginalOrder()
             return
-        rows = []
-        for row_idx in range(self._model.rowCount()):
-            row_data = []
-            for col_idx in range(self._model.columnCount()):
-                item = self._model.item(row_idx, col_idx)
-                value = item.text() if item else ""
-                row_data.append(value)
-            rows.append((row_idx, row_data))
-
+        raw_rows = [
+            [e.getPropAttr(h) for h in self._inherent.keys()] for e in self._elements
+        ]
+        rows = [(i, row_data) for i, row_data in enumerate(raw_rows)]
         def multi_column_compare(row1, row2):
             """Compare two rows using multi-column sorting priority."""
             _, data1 = row1
@@ -280,12 +278,15 @@ class PropertiesTable(QTableView):
         # Sort the rows
         from functools import cmp_to_key
         sorted_rows = sorted(rows, key=cmp_to_key(multi_column_compare))
-        # Rebuild the model with sorted data
+        # Extract sorted data (back to elements x properties format)
         sorted_data = [row_data for _, row_data in sorted_rows]
+        # Rebuild the model with sorted data
         self._model.clear()
         self._createModel(sorted_data)
         self._updateHeaderText()
+        self.update()
         self.resizeColumnsToContents()
+        self.resizeRowsToContents()
 
     def _restoreOriginalOrder(self) -> None:
         """Restore the original order of the table by recreating it."""
@@ -295,7 +296,9 @@ class PropertiesTable(QTableView):
         self._model.clear()
         self._createModel(raw_rows)
         self._updateHeaderText()
+        self.update()
         self.resizeColumnsToContents()
+        self.resizeRowsToContents()
 
     def _createModel(self, raw_rows: list[list]) -> None:
         """Create the model with the given data."""
@@ -385,9 +388,9 @@ class PropertiesWidget(QWidget):
             self._current_table = self._table_normal
         # Update button state
         self._transpose_button.setChecked(self._transposed)
-        # Ensure the visible table is properly sized
         self._current_table.resizeColumnsToContents()
         self._current_table.resizeRowsToContents()
+        self._current_table._updateHeaderText()
 
     def _clearSorting(self) -> None:
         """Clear all sorting from both tables."""
