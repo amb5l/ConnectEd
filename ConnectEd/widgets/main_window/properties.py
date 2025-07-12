@@ -332,6 +332,7 @@ class PropertiesWidget(QWidget):
     _table_transposed : PropertiesTable
     _current_table    : PropertiesTable
     _transpose_button : QPushButton
+    _unsort_button    : QPushButton
     _toolbar          : QHBoxLayout
     _layout           : QVBoxLayout
     _transposed       : bool
@@ -357,8 +358,11 @@ class PropertiesWidget(QWidget):
         self._transpose_button = QPushButton("Transpose")
         self._transpose_button.setCheckable(True)
         self._transpose_button.clicked.connect(self._toggleTranspose)
+        self._unsort_button = QPushButton("Clear Sorting")
+        self._unsort_button.clicked.connect(self._clearSorting)
         self._toolbar = QHBoxLayout()
         self._toolbar.addWidget(self._transpose_button)
+        self._toolbar.addWidget(self._unsort_button)
         self._toolbar.addStretch()
         self._layout = QVBoxLayout(self)
         self._layout.addLayout(self._toolbar)
@@ -384,6 +388,15 @@ class PropertiesWidget(QWidget):
         # Ensure the visible table is properly sized
         self._current_table.resizeColumnsToContents()
         self._current_table.resizeRowsToContents()
+
+    def _clearSorting(self) -> None:
+        """Clear all sorting from both tables."""
+        self._sorting.clear()
+        # Update both tables since they share the sorting dictionary
+        self._table_normal.multiSort()
+        self._table_normal._updateHeaderText()
+        self._table_transposed.multiSort()
+        self._table_transposed._updateHeaderText()
 
     def getCurrentTable(self) -> PropertiesTable:
         """Get the currently visible table."""
