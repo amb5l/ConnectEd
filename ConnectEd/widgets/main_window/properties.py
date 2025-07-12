@@ -285,6 +285,7 @@ class PropertiesTable(QTableView):
         self._model.clear()
         self._createModel(sorted_data)
         self._updateHeaderText()
+        self.resizeColumnsToContents()
 
     def _restoreOriginalOrder(self) -> None:
         """Restore the original order of the table by recreating it."""
@@ -294,6 +295,7 @@ class PropertiesTable(QTableView):
         self._model.clear()
         self._createModel(raw_rows)
         self._updateHeaderText()
+        self.resizeColumnsToContents()
 
     def _createModel(self, raw_rows: list[list]) -> None:
         """Create the model with the given data."""
