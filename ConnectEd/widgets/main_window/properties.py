@@ -1,7 +1,7 @@
 from typing import Self, Optional
 from types  import SimpleNamespace
 
-from PyQt6.QtCore    import Qt, QPoint
+from PyQt6.QtCore    import Qt, QPoint, QSize
 from PyQt6.QtWidgets import QMdiSubWindow, QTabWidget, QWidget, QSizePolicy, \
                             QHBoxLayout, QVBoxLayout, \
                             QMenu, QPushButton, QLabel, \
@@ -9,13 +9,13 @@ from PyQt6.QtWidgets import QMdiSubWindow, QTabWidget, QWidget, QSizePolicy, \
                             QHeaderView
 from PyQt6.QtGui     import QFont, QAction, QUndoStack, \
                             QWheelEvent, QContextMenuEvent, QCloseEvent, \
-                            QStandardItemModel, QStandardItem
+                            QStandardItemModel, QStandardItem, QFontMetrics
 
 from ...core import logger
 
-from .. import ElementMixin
+from ...core.icon import getCharIcon
 
-from ... import hub
+from .. import ElementMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -61,15 +61,27 @@ class PropertiesHeader(QHeaderView):
             super().contextMenuEvent(event)
 
     def _showContextMenu(self, header_index: int, global_pos: QPoint):
-        # Create sort actions with the specific header index
         menu = QMenu(self)
+        menu_font = menu.font()
+        font_metrics = QFontMetrics(menu_font)
+        text_height = font_metrics.height()
+        icon_size = QSize(text_height, text_height)
+        if self._table._transposed:
+            asc_arrow = "◀"
+            desc_arrow = "▶"
+        else:
+            asc_arrow = "▲"
+            desc_arrow = "▼"
         sort_asc = QAction("Sort Ascending", menu)
+        sort_asc.setIcon(getCharIcon("Arial", asc_arrow, icon_size))
         sort_asc.triggered.connect(lambda: self._table._sortAscending(header_index))
         menu.addAction(sort_asc)
         sort_desc = QAction("Sort Descending", menu)
+        sort_desc.setIcon(getCharIcon("Arial", desc_arrow, icon_size))
         sort_desc.triggered.connect(lambda: self._table._sortDescending(header_index))
         menu.addAction(sort_desc)
         unsorted = QAction("Unsorted", menu)
+        unsorted.setIcon(getCharIcon("Arial", "-", icon_size))
         unsorted.triggered.connect(lambda: self._table._sortNone(header_index))
         menu.addAction(unsorted)
         menu.exec(global_pos)

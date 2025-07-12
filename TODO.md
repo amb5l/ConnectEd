@@ -1,6 +1,7 @@
+- And can we add the arrows to the sort menu text or as an icon?
+- spreadsheet delegates
+- spreadsheet sorting
 - better window menu - submenu per design, with tile action?
-- delegates for (e.g.) keypoints in tables
-- applying table edits - live or deferred?
 
 - setter and getter names (esp getter)
 - use of 'instance' as argument/variable name
