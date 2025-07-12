@@ -45,8 +45,6 @@ def toXmlAttrs(instance : Any, xw : QXmlStreamWriter) -> None:
     for tag, spec in instance._ATTR_SPECS_BY_TAG.items():
         if spec.exists(instance):
             xw.writeAttribute(tag, val2str(spec.getter(instance)))
-    for property in instance.getProperties():
-        xw.writeAttribute(property, val2str(instance.getProperty(property)))
 
 def toXmlEnd(xw : QXmlStreamWriter) -> None:
     xw.writeEndDocument()
@@ -68,8 +66,6 @@ def fromXmlAttrs(instance : Any, xr : QXmlStreamReader) -> None:
         if tag in instance._ATTR_SPECS_BY_TAG:
             spec = instance._ATTR_SPECS_BY_TAG[tag]
             spec.setter(instance, str2val(value_str, spec.type_name))
-        elif instance.hasProperty(tag):
-            instance.setProperty(tag, value_str)
         else:
             logger.warning(f"Unexpected attribute: {tag} value: {value_str}")
     xr.readNext()

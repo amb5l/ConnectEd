@@ -116,7 +116,7 @@ class PropertyText(BaseTextLine):
         cleat   : KP = KP.BOTTOM_LEFT,
         bare    : bool = False
     ) -> None:
-        super().__init__(text="", pos=pos, anchor=anchor)
+        super().__init__(text="", pos=pos, anchor=anchor, bare=bare)
         self._name = name
         self._display = display
         self._cleat = cleat
@@ -182,14 +182,8 @@ class PropertyText(BaseTextLine):
         return self._name
 
     def setName(self : Self, value : str) -> None:
-        old_name = self._name
         self._name = value
-        parent = self.parentItem()
-        if parent is not None and hasattr(parent, 'disconnectFromPropertySignals'):
-            if old_name:
-                parent.disconnectFromPropertySignals(self)
         self._updateCache()
-        self._connectToPropertySignals()
         self.refresh()
 
     def display(self : Self) -> PropertyDisplay:
@@ -237,7 +231,9 @@ class PropertyText(BaseTextLine):
         """Connect to parent element's property signals."""
         parent = self.parentItem()
         if parent is None: # no parent means we get properties from the scene
-            self.scene().connectToPropertySignals(self)
+            scene = self.scene()
+            if scene is not None:
+                scene.connectToPropertySignals(self)
         elif hasattr(parent, 'connectToPropertySignals') and self._name:
             parent.connectToPropertySignals(self)
 
@@ -267,6 +263,7 @@ class PropertyText(BaseTextLine):
             else: # being parented
                 self._updateCache()
                 self._connectToPropertySignals()
+                self.refresh()  # Ensure display is updated after cache update
 
             # Property has been parented, connect to parent's KPManager signals
             self._connectToKPMSignals()

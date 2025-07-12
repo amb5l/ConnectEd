@@ -756,6 +756,29 @@ class PropertiesMixin:
         except TypeError:
             pass # signal was not connected
 
+    def toXml(self : Self, xw : QXmlStreamWriter) -> None:
+        for name, value in self.properties.items():
+            xw.writeStartElement("property")
+            xw.writeAttribute("name", name)
+            xw.writeAttribute("value", value)
+            xw.writeEndElement()
+
+    def fromXml(self : Self, xr : QXmlStreamReader) -> None:
+        while not xr.isStartElement() and not xr.isEndElement():
+            xr.readNext()
+        while xr.isStartElement() and xr.name() == "property":
+            name = xr.attributes().value("name")
+            if name is not None:
+                value = xr.attributes().value("value")
+                if value is not None:
+                    self.properties[name] = value
+                    self._psm.propertyChanged.emit(name, value)
+            xr.readNext()
+            if xr.isEndElement():
+                xr.readNext()
+            while not xr.isStartElement() and not xr.isEndElement():
+                xr.readNext()
+
 class ElementMixin(PropertiesMixin):
     """Mixin class for all elements."""
     Z = Z_DRAWING
@@ -972,6 +995,7 @@ class ElementMixin(PropertiesMixin):
     def toXml(self : Self, xw : QXmlStreamWriter) -> None:
         xw.writeStartElement(self.__class__.__name__)
         toXmlAttrs(self, xw)
+        PropertiesMixin.toXml(self, xw)
         for item in self.childItems():
             if isinstance(item, PropertyText):
                 item.toXml(xw)
@@ -985,6 +1009,8 @@ class ElementMixin(PropertiesMixin):
         if xr.isEndElement() and xr.name() == cls.__name__:
             instance.setKPVisible(False)
             return instance
+        # read properties
+        PropertiesMixin.fromXml(instance, xr)
         # read child PropertyText elements
         while not (xr.isEndElement() and xr.name() == cls.__name__):
             if xr.isStartElement():
