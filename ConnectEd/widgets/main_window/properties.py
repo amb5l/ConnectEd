@@ -17,6 +17,8 @@ from ...core.icon import getCharIcon
 
 from .. import ElementMixin, KP, PropertyDisplay
 
+from ... import hub
+
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from .. import DrawingScene
