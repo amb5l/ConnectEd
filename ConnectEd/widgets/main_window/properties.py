@@ -84,8 +84,8 @@ class PropertiesComboDelegate(QStyledItemDelegate):
             from PyQt6.QtGui import QFontMetrics
             font_metrics = QFontMetrics(option.font)
             longest_entry = max(self.ENTRIES, key=len)
-            width = font_metrics.horizontalAdvance(longest_entry) + 40
-            height = font_metrics.height() + 10
+            width = font_metrics.horizontalAdvance(longest_entry) + 30
+            height = font_metrics.height() + 4
             return QSize(width, height)
         return QSize(100, 25)
 
