@@ -1,13 +1,13 @@
 from typing import Self, Optional
 from types  import SimpleNamespace
 
-from PyQt6.QtCore    import Qt, QPoint, QSize
+from PyQt6.QtCore    import Qt, QModelIndex, QPoint, QSize
 from PyQt6.QtWidgets import QMdiSubWindow, QTabWidget, QWidget, QSizePolicy, \
                             QHBoxLayout, QVBoxLayout, \
                             QMenu, QPushButton, QLabel, \
                             QTableView, QAbstractItemView, QAbstractButton, \
                             QHeaderView, QStyledItemDelegate, QComboBox
-from PyQt6.QtGui     import QFont, QAction, QUndoStack, \
+from PyQt6.QtGui     import QBrush, QFont, QAction, QUndoStack, \
                             QWheelEvent, QContextMenuEvent, QCloseEvent, \
                             QStandardItemModel, QStandardItem, QFontMetrics
 
@@ -34,6 +34,11 @@ class PropertiesCell(QStandardItem):
             Qt.ItemFlag.ItemIsSelectable |
             Qt.ItemFlag.ItemIsEnabled
         )
+        # set user data
+        self.setData(value, Qt.ItemDataRole.UserRole) # initial value
+
+    def changed(self : Self) -> bool:
+        return self.data(Qt.ItemDataRole.UserRole) != self.text()
 
 class PropertiesComboDelegate(QStyledItemDelegate):
     """Base delegate for combo box editing."""
@@ -170,18 +175,20 @@ class PropertiesHeader(QHeaderView):
 class PropertiesTable(QTableView):
     """Table for editing properties of scene elements of a single type."""
 
-    _undo_stack : QUndoStack
-    _elements   : list[ElementMixin]
-    _transposed : bool
-    _inherent   : dict[str, bool]  # field name : is inherent
-    _headers    : dict[int, str]  # column # : field name
-    _htypenames : dict[int, str]  # column # : field type name
-    _model      : QStandardItemModel
-    _actions    : SimpleNamespace
-    _font_size  : int
-    _styled     : bool
-    _sorting    : dict[int, Qt.SortOrder]
-    _delegates  : dict[str, QStyledItemDelegate]
+    _undo_stack  : QUndoStack
+    _elements    : list[ElementMixin]
+    _transposed  : bool
+    _inherent    : dict[str, bool]  # field name : is inherent
+    _headers     : dict[int, str]  # column # : field name
+    _htypenames  : dict[int, str]  # column # : field type name
+    _model       : QStandardItemModel
+    _actions     : SimpleNamespace
+    _font_size   : int
+    _styled      : bool
+    _sorting     : dict[int, Qt.SortOrder]
+    _delegates   : dict[str, QStyledItemDelegate]
+    _transparent : QBrush
+    _highlight   : QBrush
 
     def __init__(
         self       : Self,
@@ -248,6 +255,11 @@ class PropertiesTable(QTableView):
         self.addAction(self._actions.transpose)
         # corner button styling
         self._styled = False
+        # highlighting
+        self._transparent = QBrush(Qt.GlobalColor.transparent)
+        self.updateHighlight()
+        hub.settings.change.connect(self.updateHighlight)
+        self._model.dataChanged.connect(self.onDataChanged)
 
     def showEvent(self, event):
         super().showEvent(event)
@@ -261,6 +273,26 @@ class PropertiesTable(QTableView):
         if buttons:
             corner_button = buttons[0]
             corner_button.setStyleSheet('background-color: palette(mid);')
+
+    def onDataChanged(
+        self         : Self,
+        top_left     : QModelIndex,
+        bottom_right : QModelIndex,
+        roles        : list[int]
+    ) -> None:
+        for row in range(top_left.row(), bottom_right.row() + 1):
+            for col in range(top_left.column(), bottom_right.column() + 1):
+                item = self._model.item(row, col)
+                if item.changed():
+                    item.setBackground(self._highlight)
+                else:
+                    item.setBackground(self._transparent)
+
+    def updateHighlight(self : Self) -> None:
+        if hub.settings.get("display/theme") == "dark":
+            self._highlight = QBrush(Qt.GlobalColor.darkYellow)
+        else:
+            self._highlight = QBrush(Qt.GlobalColor.yellow)
 
     def contextMenuEvent(self : Self, event: QContextMenuEvent) -> None:
         """Show context menu for table cells."""
@@ -521,6 +553,14 @@ class PropertiesWidget(QWidget):
         self._current_table.resizeColumnsToContents()
         self._current_table.resizeRowsToContents()
         self._current_table._updateHeaderText()
+        # Update highlighting for all cells in the newly visible table
+        model = self._current_table._model
+        if model.rowCount() > 0 and model.columnCount() > 0:
+            top_left = model.index(0, 0)
+            bottom_right = model.index(
+                model.rowCount() - 1, model.columnCount() - 1
+            )
+            self._current_table.onDataChanged(top_left, bottom_right, [])
 
     def _clearSorting(self) -> None:
         """Clear all sorting from both tables."""
