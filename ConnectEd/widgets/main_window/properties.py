@@ -6,7 +6,7 @@ from PyQt6.QtWidgets import QMdiSubWindow, QTabWidget, QWidget, QSizePolicy, \
                             QHBoxLayout, QVBoxLayout, \
                             QMenu, QPushButton, QLabel, \
                             QTableView, QAbstractItemView, QAbstractButton, \
-                            QHeaderView
+                            QHeaderView, QStyledItemDelegate, QComboBox
 from PyQt6.QtGui     import QFont, QAction, QUndoStack, \
                             QWheelEvent, QContextMenuEvent, QCloseEvent, \
                             QStandardItemModel, QStandardItem, QFontMetrics
@@ -15,7 +15,7 @@ from ...core import logger
 
 from ...core.icon import getCharIcon
 
-from .. import ElementMixin
+from .. import ElementMixin, KP
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -32,6 +32,77 @@ class PropertiesCell(QStandardItem):
             Qt.ItemFlag.ItemIsSelectable |
             Qt.ItemFlag.ItemIsEnabled
         )
+
+class PropertiesComboDelegate(QStyledItemDelegate):
+    """Base delegate for combo box editing."""
+    TOOLTIP = None
+    ENTRIES = None
+
+    def __init__(self):
+        super().__init__()
+
+    def createEditor(self, parent, option, index):
+        if not self.ENTRIES:
+            logger.error(f"ENTRIES is None or empty for delegate {self.__class__.__name__}")
+            return None
+        try:
+            editor = QComboBox(parent)
+            editor.addItems(self.ENTRIES)
+            if self.TOOLTIP:
+                editor.setToolTip(self.TOOLTIP)
+            return editor
+        except Exception as e:
+            logger.error(f"Error creating editor for delegate {self.__class__.__name__}: {e}")
+            return None
+
+    def setEditorData(self, editor, index):
+        if editor is None:
+            logger.error("Editor is None in setEditorData")
+            return
+        value = index.model().data(index, Qt.ItemDataRole.EditRole)
+        value_str = str(value) if value is not None else ""
+        if value_str in self.ENTRIES:
+            editor.setCurrentText(value_str)
+        else:
+            logger.warning(f"Value '{value_str}' not in ENTRIES, defaulting to {self.ENTRIES[0]}")
+            editor.setCurrentText(self.ENTRIES[0])
+
+    def setModelData(self, editor, model, index):
+        if editor is None:
+            logger.error("Editor is None in setModelData")
+            return
+        text = editor.currentText()
+        model.setData(index, text, Qt.ItemDataRole.EditRole)
+
+    def updateEditorGeometry(self, editor, option, index):
+        if editor is not None:
+            editor.setGeometry(option.rect)
+
+    def sizeHint(self, option, index):
+        from PyQt6.QtCore import QSize
+        if hasattr(self, 'ENTRIES') and self.ENTRIES:
+            from PyQt6.QtGui import QFontMetrics
+            font_metrics = QFontMetrics(option.font)
+            longest_entry = max(self.ENTRIES, key=len)
+            width = font_metrics.horizontalAdvance(longest_entry) + 40
+            height = font_metrics.height() + 10
+            return QSize(width, height)
+        return QSize(100, 25)
+
+class PropertiesKPDelegate(PropertiesComboDelegate):
+    """Delegate for anchor KP enum values."""
+    TOOLTIP = "Controls position of property anchor point"
+    ENTRIES = [
+        KP .TOP_LEFT      .value .name,
+        KP .TOP_CENTER    .value .name,
+        KP .TOP_RIGHT     .value .name,
+        KP .CENTER_LEFT   .value .name,
+        KP .CENTER        .value .name,
+        KP .CENTER_RIGHT  .value .name,
+        KP .BOTTOM_LEFT   .value .name,
+        KP .BOTTOM_CENTER .value .name,
+        KP .BOTTOM_RIGHT  .value .name
+    ]
 
 class PropertiesHeader(QHeaderView):
     """Custom header view that provides context menu for sorting."""
@@ -94,6 +165,7 @@ class PropertiesTable(QTableView):
     _transposed : bool
     _inherent   : dict[str, bool]  # field name : is inherent
     _headers    : dict[int, str]  # column # : field name
+    _htypenames : dict[int, str]  # column # : field type name
     _model      : QStandardItemModel
     _actions    : SimpleNamespace
     _font_size  : int
@@ -129,6 +201,12 @@ class PropertiesTable(QTableView):
         self._inherent.update({h : True for h in attributes})
         self._fields = self._inherent.keys()
         self._headers = {i : h for i, h in enumerate(self._inherent.keys())}
+        self._htypenames = {}
+        for i, field_name in self._headers.items():
+            if self._inherent[field_name]:
+                self._htypenames[i] = e.getAttributeTypeName(field_name)
+            else:
+                self._htypenames[i] = "str"
         self.setSortingEnabled(False)  # Disable built-in sorting
         # Set up custom headers
         self.setHorizontalHeader(PropertiesHeader(Qt.Orientation.Horizontal, self))
@@ -137,6 +215,8 @@ class PropertiesTable(QTableView):
         raw_rows = self._getRawRows()
         # set model
         self._createModel(raw_rows)
+        # set up delegates
+        self._setupDelegates()
         # appearance and behavior
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
         self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
@@ -339,6 +419,17 @@ class PropertiesTable(QTableView):
                 for col_idx, value in enumerate(row_data):
                     self._model.setItem(row_idx, col_idx, PropertiesCell(value))
         self.setModel(self._model)
+
+    def _setupDelegates(self) -> None:
+        delegate_kp = PropertiesKPDelegate()
+        f = self.setItemDelegateForRow if self._transposed \
+            else self.setItemDelegateForColumn
+        for i, type_name in self._htypenames.items():
+            match type_name:
+                case "KP":
+                    f(i, delegate_kp)
+                case _:
+                    pass
 
 class PropertiesWidget(QWidget):
     """Widget containing PropertiesTable instances with buttons for managing properties."""

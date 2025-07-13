@@ -690,6 +690,12 @@ class PropertiesMixin:
         return False if name not in self._ATTR_SPECS_BY_NAME else \
             self._ATTR_SPECS_BY_NAME[name].exists(self)
 
+    def getAttributeTypeName(self : Self, name: str) -> str | None:
+        if name not in self._ATTR_SPECS_BY_NAME:
+            logger.warning(f"Attribute not found: {name}")
+            return None
+        return self._ATTR_SPECS_BY_NAME[name].type_name
+
     def getAttribute(self : Self, name: str) -> str| None:
         if name not in self._ATTR_SPECS_BY_NAME:
             logger.warning(f"Attribute not found: {name}")
@@ -736,7 +742,7 @@ class PropertiesMixin:
         elif name in self._ATTR_SPECS_BY_NAME:
             attr_spec = self._ATTR_SPECS_BY_NAME[name]
             if attr_spec.exists(self):
-                return attr_spec.getter(self)
+                return val2str(attr_spec.getter(self))
             else:
                 return None
         else:
