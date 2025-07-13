@@ -128,7 +128,7 @@ class PropertyText(BaseTextLine):
     def mouseDoubleClickEvent(self : Self, event : QGraphicsSceneMouseEvent) -> None:
         """Handle double-click events to open the edit dialog."""
         if event.button() == Qt.MouseButton.LeftButton:
-            # Fix for Qt event routing bug
+            # workaround for Qt event routing bug
             from .. import getView
             view = getView(event.screenPos())
             scene = self.scene()
