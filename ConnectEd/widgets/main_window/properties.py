@@ -15,7 +15,7 @@ from ...core import logger
 
 from ...core.icon import getCharIcon
 
-from .. import ElementMixin, KP
+from .. import ElementMixin, KP, PropertyDisplay
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -104,6 +104,14 @@ class PropertiesKPDelegate(PropertiesComboDelegate):
         KP .BOTTOM_RIGHT  .value .name
     ]
 
+class PropertiesDisplayDelegate(PropertiesComboDelegate):
+    """Delegate for PropertyDisplay enum values."""
+    TOOLTIP = "Controls display of property texts"
+    ENTRIES = [
+        PropertyDisplay .VALUE      .value,
+        PropertyDisplay .NAME_VALUE .value
+    ]
+
 class PropertiesHeader(QHeaderView):
     """Custom header view that provides context menu for sorting."""
 
@@ -171,6 +179,7 @@ class PropertiesTable(QTableView):
     _font_size  : int
     _styled     : bool
     _sorting    : dict[int, Qt.SortOrder]
+    _delegates  : dict[str, QStyledItemDelegate]
 
     def __init__(
         self       : Self,
@@ -216,6 +225,7 @@ class PropertiesTable(QTableView):
         # set model
         self._createModel(raw_rows)
         # set up delegates
+        self._delegates = {}
         self._setupDelegates()
         # appearance and behavior
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
@@ -421,15 +431,30 @@ class PropertiesTable(QTableView):
         self.setModel(self._model)
 
     def _setupDelegates(self) -> None:
-        delegate_kp = PropertiesKPDelegate()
         f = self.setItemDelegateForRow if self._transposed \
             else self.setItemDelegateForColumn
         for i, type_name in self._htypenames.items():
             match type_name:
                 case "KP":
-                    f(i, delegate_kp)
+                    if type_name not in self._delegates:
+                        self._delegates[type_name] = PropertiesKPDelegate()
+                        self._delegates[type_name].destroyed.connect(
+                            lambda: self.onDelegateDestroyed()
+                        )
+                    f(i, self._delegates[type_name])
+                case "PropertyDisplay":
+                    if type_name not in self._delegates:
+                        self._delegates[type_name] = PropertiesDisplayDelegate()
+                        self._delegates[type_name].destroyed.connect(
+                            lambda: self.onDelegateDestroyed()
+                        )
+                    f(i, self._delegates[type_name])
                 case _:
                     pass
+
+    def onDelegateDestroyed(self : Self) -> None:
+        """Workaround to fix delegate lifecycle issue (silent crash)."""
+        pass
 
 class PropertiesWidget(QWidget):
     """Widget containing PropertiesTable instances with buttons for managing properties."""
