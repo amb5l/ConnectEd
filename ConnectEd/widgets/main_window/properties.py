@@ -134,9 +134,7 @@ class PropertiesTable(QTableView):
         self.setHorizontalHeader(PropertiesHeader(Qt.Orientation.Horizontal, self))
         self.setVerticalHeader(PropertiesHeader(Qt.Orientation.Vertical, self))
         # rows - get the raw data
-        raw_rows = [
-            [e.getPropAttr(h) for h in self._inherent.keys()] for e in elements
-        ]
+        raw_rows = self._getRawRows()
         # set model
         self._createModel(raw_rows)
         # appearance and behavior
@@ -199,6 +197,12 @@ class PropertiesTable(QTableView):
         else:
             super().wheelEvent(event)
 
+    def _getRawRows(self) -> list[list]:
+        return [
+            [e.getPropAttr(h) for h in self._headers.values()] \
+                for e in self._elements
+        ]
+
     def _sortAscending(self, header_index: int) -> None:
         """Sort the selected header in ascending order."""
         self._sorting[header_index] = Qt.SortOrder.AscendingOrder
@@ -253,9 +257,7 @@ class PropertiesTable(QTableView):
         if not self._sorting:
             self._restoreOriginalOrder()
             return
-        raw_rows = [
-            [e.getPropAttr(h) for h in self._inherent.keys()] for e in self._elements
-        ]
+        raw_rows = self._getRawRows()
         rows = [(i, row_data) for i, row_data in enumerate(raw_rows)]
         def multi_column_compare(row1, row2):
             """Compare two rows using multi-column sorting priority."""
@@ -302,9 +304,7 @@ class PropertiesTable(QTableView):
 
     def _restoreOriginalOrder(self) -> None:
         """Restore the original order of the table by recreating it."""
-        raw_rows = [
-            [e.getPropAttr(h) for h in self._inherent.keys()] for e in self._elements
-        ]
+        raw_rows = self._getRawRows()
         self._model.clear()
         self._createModel(raw_rows)
         self._updateHeaderText()
