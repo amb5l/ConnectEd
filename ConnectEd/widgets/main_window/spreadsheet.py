@@ -163,11 +163,11 @@ class SpreadsheetHeader(QHeaderView):
         text_height = font_metrics.height()
         icon_size = QSize(text_height, text_height)
         if self._table._transposed:
-            asc_arrow = "◀"
-            desc_arrow = "▶"
+            asc_arrow = "\u25c0"
+            desc_arrow = "\u25b6"
         else:
-            asc_arrow = "▲"
-            desc_arrow = "▼"
+            asc_arrow = "\u25b2"
+            desc_arrow = "\u25bc"
         sort_asc = QAction("Sort Ascending", menu)
         sort_asc.setIcon(getCharIcon("Arial", asc_arrow, icon_size))
         sort_asc.triggered.connect(
@@ -419,9 +419,9 @@ class SpreadsheetWidget(QWidget):
             if i in self._sorting:
                 order = self._sorting[i]
                 if self._transposed:
-                    arrow = "◀" if order == Qt.SortOrder.AscendingOrder else "▶"
+                    arrow = "\u25c0" if order == Qt.SortOrder.AscendingOrder else "\u25b6"
                 else:
-                    arrow = "▲" if order == Qt.SortOrder.AscendingOrder else "▼"
+                    arrow = "\u25b2" if order == Qt.SortOrder.AscendingOrder else "\u25bc"
                 if len(self._sorting) > 1:
                     priority = list(self._sorting.keys()).index(i) + 1
                     text = f"{name}  {arrow}{priority}"
