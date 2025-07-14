@@ -53,6 +53,7 @@ class Actions:
         self.viewGridDisplay  = Action( self._parent, "Grid Display"  , "Toggle grid display"                    , "Ctrl+G"       , True , True )
         self.viewGridSnap     = Action( self._parent, "Grid Snap"     , "Toggle grid snap"                       , "Ctrl+Shift+G" , True , True )
         self.placeBlock       = Action( self._parent, "Block"         , "Place Block"                            , "Ctrl+B"                     )
+        self.placeBlockPin    = Action( self._parent, "Block Pin"     , "Place Block Pin"                        , "Ctrl+P"                     )
         self.placeRectangle   = Action( self._parent, "Rectangle"     , "Place Rectangle"                        , "Ctrl+R"                     )
         self.placeTextBlock   = Action( self._parent, "Text Block"    , "Place Text Block"                       , "Ctrl+T"                     )
         self.placeText        = Action( self._parent, "Text"          , "Place Text"                             , "Ctrl+L"                     )

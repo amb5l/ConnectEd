@@ -223,6 +223,19 @@ class DrawingViewMouseMixin:
                 self.placeBlockComplete(
                     self._snap(self.mouse.left.release.logical)
                 )
+            case State.PlaceBlockPin1:
+                self._selectPoint(
+                    self.mouse.current.logical,
+                    m & qkm.ControlModifier,
+                    m & qkm.AltModifier
+                )
+                self.placeBlockPinBegin(
+                    self._snap(self.mouse.left.release.logical)
+                )
+            case State.PlaceBlockPin2:
+                self.placeBlockPinComplete(
+                    self._snap(self.mouse.left.release.logical)
+                )
             case State.PlaceRectangle1:
                 self.placeRectangleBegin(
                     self._snap(self.mouse.left.release.logical)
@@ -464,6 +477,10 @@ class DrawingViewMouseMixin:
                 self.marquee.resize(self.mouse.current.physical)
             case State.PlaceBlock2:
                 self.placeBlockContinue(
+                    self._snap(self.mouse.current.logical)
+                )
+            case State.PlaceBlockPin2:
+                self.placeBlockPinContinue(
                     self._snap(self.mouse.current.logical)
                 )
             case State.PlaceRectangle2:

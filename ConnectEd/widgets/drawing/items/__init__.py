@@ -4,6 +4,7 @@ from typing      import TypeVar, Generic, Type, Optional, \
                         Self, Optional, Callable, Any
 from types       import SimpleNamespace
 from dataclasses import dataclass
+from enum        import Enum
 
 from PyQt6.QtCore    import Qt, QXmlStreamWriter, QXmlStreamReader, QObject, pyqtSignal
 from PyQt6.QtGui     import QPen, QBrush, QColor, QFont, QAction, QUndoCommand
@@ -34,7 +35,6 @@ class NoChange:
 
 NO_CHANGE = NoChange()
 
-
 T = TypeVar('T')
 
 class BeforeAfter(Generic[T]):
@@ -49,6 +49,33 @@ class BeforeAfter(Generic[T]):
             raise ValueError(f"after must be of type {typ.__name__} or None, got {type(after).__name__}")
         self.before = before
         self.after = after
+
+class Edge(Enum):
+    LEFT   = "left"
+    RIGHT  = "right"
+    TOP    = "top"
+    BOTTOM = "bottom"
+
+# TODO: consider passive, 3-state etc for EE schematics
+class SignalDirection(Enum):
+    IN  = "in"
+    OUT = "out"
+    BI  = "bi"
+
+class RangeDirection(Enum):
+    UNSPECIFIED = ":"
+    DOWN        = "\u25bc"
+    UP          = "\u25b2"
+
+class VectorRange:
+    left  : str            # left value (may refer to parameter/generic)
+    dir   : RangeDirection # down or up
+    right : str            # right value (may refer to parameter/generic)
+
+    def __init__(self, left : str, dir : RangeDirection, right : str) -> None:
+        self.left  = left
+        self.dir   = dir
+        self.right = right
 
 @dataclass
 class LineSpec:
@@ -1167,6 +1194,9 @@ __all__ = [
     "NoChange",
     "NO_CHANGE",
     "BeforeAfter",
+    "SignalDirection",
+    "RangeDirection",
+    "VectorRange",
     "LineSpec",
     "LinePref",
     "LinePrefChange",

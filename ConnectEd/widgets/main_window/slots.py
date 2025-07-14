@@ -202,6 +202,10 @@ class Slots:
         widget.placeBlock()
 
     @withCurrentWidget(DrawingView)
+    def placeBlockPin(self : Self, widget: DrawingView) -> None:
+        widget.placeBlockPin()
+
+    @withCurrentWidget(DrawingView)
     def placeRectangle(self : Self, widget: DrawingView) -> None:
         widget.placeRectangle()
 

@@ -13,6 +13,9 @@ Properties System
 
 General
 =======
+- after transpose, header sorting arrow is stale
+- initial text size = 12?
+- separate state machines for diagram and symbol views, inheriting from drawing
 - middle mouse click (to pan) selects elements - should not affect selection
 - localisation (language translation)
 - better window menu - submenu per design, with tile action?

@@ -1,0 +1,185 @@
+from typing import Self, Optional
+from enum   import Enum
+
+from PyQt6.QtCore    import QPointF, QRectF, pyqtSignal
+from PyQt6.QtWidgets import QWidget, QGraphicsItem, QStyleOptionGraphicsItem, \
+                            QGraphicsSceneContextMenuEvent
+from PyQt6.QtGui     import QPainter, QPainterPath
+
+from .. import KP, SignalDirection, VectorRange, \
+               CustomGraphicsItem, ElementMixin
+
+from .base_text import BaseText
+
+from .... import hub
+
+class PinText(BaseText):
+    """Text for display of pin name/number."""
+    _attr  : str
+    _value : str
+
+    def __init__(
+        self   : Self,
+        attr   : str,      # parent attribute name e.g. "name" for pin name
+        pos    : QPointF,  # offset from pin position (unrotated)
+        anchor : KP,
+        parent : "Pin"
+    ) -> None:
+        super().__init__("", pos, anchor, parent)
+        self._attr = attr
+        self.onTextChanged(attr, getattr(parent, attr))
+        self.parent().textChanged.connect(self.onTextChanged)
+
+    def onTextChanged(self : Self, attr : str, value : str) -> None:
+        if attr == self._attr:
+            self._value = value
+            super().setText(value)
+
+class Pin(CustomGraphicsItem, ElementMixin):
+    _SIZE = 4
+    _PIN_TEXT_POS = QPointF(2.5, 0)
+
+    _name      : str
+    _direction : PinDirection
+    _range     : Optional[VectorRange]
+    _name_text : PinText
+    _rect      : QRectF
+    _shape     : QPainterPath
+    _path_open : QPainterPath
+    _path_nc   : QPainterPath
+
+    # signals
+    textChanged      = pyqtSignal(str, str)
+    directionChanged = pyqtSignal(PinDirection)
+
+    def __init__(
+        self      : Self,
+        name      : str,
+        direction : PinDirection,
+        range     : Optional[VectorRange] = None
+    ) -> None:
+        self._name      = name
+        self._direction = direction
+        self._range     = range
+        self._name_text = PinText(
+            "name", self._PIN_TEXT_POS, KP.CENTER_LEFT, self
+        )
+        self._rect = QRectF(
+            -self._SIZE/2, -self._SIZE/2, self._SIZE, self._SIZE
+        )
+        self._shape = QPainterPath()
+        self._shape.addRect(self._rect)
+        self._path_open = QPainterPath()
+        self._path_open.addRect(self._rect)
+        self._path_nc = QPainterPath()
+        self._path_nc.moveTo(-self._SIZE/2, +self._SIZE/2)
+        self._path_nc.lineTo(+self._SIZE/2, -self._SIZE/2)
+        self._path_nc.moveTo(+self._SIZE/2, +self._SIZE/2)
+        self._path_nc.lineTo(-self._SIZE/2, -self._SIZE/2)
+
+    @property
+    def name(self : Self) -> str:
+        return self._name
+
+    @name.setter
+    def name(self : Self, name : str) -> None:
+        self._name = name
+        self.textChanged.emit("name", name)
+
+    @property
+    def direction(self : Self) -> PinDirection:
+        return self._direction
+
+    def boundingRect(self : Self) -> QRectF:
+        # TODO unite indicator, name etc
+        pass
+
+    def shape(self : Self) -> QPainterPath:
+        pass
+
+    def paint(
+        self    : Self,
+        painter : QPainter,
+        option  : QStyleOptionGraphicsItem,
+        widget  : Optional[QWidget] = None
+    ) -> None:
+        # TODO paint connection point - empty square for unconnected, X for no connect
+        pass
+
+class BlockPinIndicator(QGraphicsItem):
+    """Pin direction indicator for block pins."""
+    _RECT     = QRectF(0, -5, 10, 5)
+    _PATH_IN  = [(8,0), (4,-4), (0,-4), (0,4), (4,4)]
+    _PATH_OUT = [(0,0), (4,-4), (8,-4), (8,4), (4,4)]
+    _PATH_BI  = [(0,0), (4,-4), (8,0), (4,4)]
+
+    _shape    : QPainterPath
+    _path_in  : QPainterPath
+    _path_out : QPainterPath
+    _path_bi  : QPainterPath
+    _path     : QPainterPath
+
+    def __init__(self : Self, parent : Pin) -> None:
+        super().__init__(parent)
+        self._shape = QPainterPath()
+        self._shape.addRect(self._RECT)
+        self._path_in = self._buildPath(self._PATH_IN)
+        self._path_out = self._buildPath(self._PATH_OUT)
+        self._path_bi = self._buildPath(self._PATH_BI)
+        self.updateDirection(parent.direction)
+        parent.directionChanged.connect(self.updateDirection)
+
+    def _buildPath(self : Self, points : list[tuple[int, int]]) -> QPainterPath:
+        p = QPainterPath()
+        p.moveTo(points[0])
+        for point in points[1:]:
+            p.lineTo(point)
+        p.closeSubpath()
+        return p
+
+    def updateDirection(self : Self, direction : PinDirection) -> None:
+        self._direction = direction
+        match direction:
+            case PinDirection.IN:
+                self._path = self._path_in
+            case PinDirection.OUT:
+                self._path = self._path_out
+            case PinDirection.BI:
+                self._path = self._path_bi
+
+    def boundingRect(self : Self) -> QRectF:
+        return self._RECT
+
+    def shape(self : Self) -> QPainterPath:
+        return self._shape
+
+    def paint(
+        self    : Self,
+        painter : QPainter,
+        option  : QStyleOptionGraphicsItem,
+        widget  : Optional[QWidget] = None
+    ) -> None:
+        parent : "Pin" = self.parentItem()
+        if parent is None:
+            return
+        painter.setPen(parent.appearance.line.pen)
+        painter.setBrush(parent.appearance.fill.brush)
+        painter.drawPath(self._path)
+
+class BlockPin(Pin):
+    _PIN_TEXT_POS = QPointF(10, 0)
+
+    _indicator : BlockPinIndicator
+
+    def __init__(
+        self      : Self,
+        name      : str,
+        direction : PinDirection,
+        range     : Optional[VectorRange] = None
+    ) -> None:
+        super().__init__(name, direction, range)
+        self._indicator = BlockPinIndicator(self)
+
+    def onSettingsChange(self : Self) -> None:
+        super().onSettingsChange()
+        self._indicator.update()

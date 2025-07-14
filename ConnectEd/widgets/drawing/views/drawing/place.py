@@ -3,10 +3,10 @@ from PyQt6.QtGui  import QCursor
 
 from .....core import logger
 
-from ....dialogs import TextDialog
+from ....dialogs import TextDialog, PlaceBlockPinDialog
 
 from ...scenes import DrawingScene
-from ...items  import TextBlock, Text
+from ...items  import ElementMixin, TextBlock, Block
 
 from .defs import DrawingViewState as State
 
@@ -38,6 +38,34 @@ class DrawingViewPlaceMixin:
         scene.placeBlock(self.wip.pos0, pos, inst=self.wip.elements[0])
         self.wip.clear()
         self._goState(State.Idle)
+
+    def placeBlockPin(self : "DrawingView") -> None:
+        if not self.placeBlockPinBegin():
+            self.scene().clearSelection()
+            self._goState(State.PlaceBlockPin1)
+
+    def placeBlockPinBegin(self : "DrawingView") -> bool:
+        selected_items = [item for item in self.scene().selectedItems() \
+                          if item.parentItem() is None]
+        if len(selected_items) == 1 and isinstance(selected_items[0], Block):
+            self.wip.item = selected_items[0]
+            self.placeBlockPinDialog()
+            return True
+        return False
+
+    def placeBlockPinDialog(self : "DrawingView") -> None:
+        dialog = PlaceBlockPinDialog()
+        if dialog.exec():
+            self._goState(State.PlaceBlockPin2)
+        else:
+            self.wip.clear()
+            self._goState(State.Idle)
+
+    def placeBlockPinContinue(self : "DrawingView", pos : QPointF) -> None:
+        pass
+
+    def placeBlockPinComplete(self : "DrawingView", pos : QPointF) -> None:
+        pass
 
     def placeRectangle(self : "DrawingView") -> None:
         self._goState(State.PlaceRectangle1)
