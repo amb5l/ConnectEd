@@ -10,7 +10,7 @@ from .....core import logger
 from ... import Block, cmdPlaceBlock, \
                 Rectangle, cmdPlaceRectangle, \
                 TextBlock, cmdPlaceTextBlock, \
-                TextLine, cmdPlaceTextLine, \
+                Text, cmdPlaceText, \
                 KP
 
 from typing import TYPE_CHECKING
@@ -32,7 +32,7 @@ class DrawingSceneApiPlaceMixin:
             "Block"     : cmdPlaceBlock,
             "Rectangle" : cmdPlaceRectangle,
             "TextBlock" : cmdPlaceTextBlock,
-            "TextLine"  : cmdPlaceTextLine
+            "Text"      : cmdPlaceText
         }
         element = etype.createOrUpdate(*args, inst=inst)
         if etype.__name__ in CMD_DICT:
@@ -64,9 +64,9 @@ class DrawingSceneApiPlaceMixin:
     ) -> TextBlock:
         return self.placeElement(TextBlock, *args, inst=inst)
 
-    def placeTextLine(
+    def placeText(
         self  : "DrawingScene",
         *args : str | QPointF | KP,
-        inst  : Optional[TextLine] = None
-    ) -> TextLine:
-        return self.placeElement(TextLine, *args, inst=inst)
+        inst  : Optional[Text] = None
+    ) -> Text:
+        return self.placeElement(Text, *args, inst=inst)

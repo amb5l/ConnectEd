@@ -237,8 +237,8 @@ class DrawingViewMouseMixin:
                 )
             case State.PlaceTextBlock2:
                 self.placeTextBlockComplete()
-            case State.PlaceTextLine:
-                self.placeTextLineComplete(
+            case State.PlaceText:
+                self.placeTextComplete(
                     self._snap(self.mouse.left.release.logical)
                 )
 
@@ -470,8 +470,8 @@ class DrawingViewMouseMixin:
                 self.placeRectangleContinue(
                     self._snap(self.mouse.current.logical)
                 )
-            case State.PlaceTextLine:
-                self.placeTextLineContinue(
+            case State.PlaceText:
+                self.placeTextContinue(
                     self._snap(self.mouse.current.logical)
                 )
 

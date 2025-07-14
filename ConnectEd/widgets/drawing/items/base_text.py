@@ -12,16 +12,18 @@ if TYPE_CHECKING:
     from .. import DrawingView
 
 
-class BaseTextLine(CustomGraphicsSimpleTextItem, ElementMixin):
+class BaseText(CustomGraphicsSimpleTextItem, ElementMixin):
     # class variables
-    _ATTR_SPECS = ElementMixin._ATTR_SPECS + [
+    _ATTR_SPECS_BASIC = [
         AttrSpec(
             name      = "Anchor",
             type_name = "KP",
             exists    = lambda self: True,
             getter    = lambda self: self.anchor(),
             setter    = lambda self, value: self.setAnchor(value)
-        ),
+        )
+    ] + ElementMixin._ATTR_SPECS_BASIC
+    _ATTR_SPECS_TEXT = [
         AttrSpec(
             name      = "Text",
             type_name = "str",
@@ -29,7 +31,7 @@ class BaseTextLine(CustomGraphicsSimpleTextItem, ElementMixin):
             getter    = lambda self: self.text(),
             setter    = lambda self, value: self.setText(value)
         )
-    ] + ElementMixin._ATTR_SPECS_APPEARANCE_TEXT
+    ]
     _KEY_POINTS = [KPDef(k, True, False) for k in KP.__iter__()]
 
     def __init__(
@@ -81,7 +83,7 @@ class BaseTextLine(CustomGraphicsSimpleTextItem, ElementMixin):
         self._kpm.setVisible(visible)
 
     def moveKeyPoint(self : Self, kp : KP, delta : QPointF) -> None:
-        """Move the entire TextLine when any keypoint is dragged."""
+        """Move the entire Text when any keypoint is dragged."""
         self.setPos(self.pos() + delta)
 
     @classmethod
@@ -89,7 +91,7 @@ class BaseTextLine(CustomGraphicsSimpleTextItem, ElementMixin):
         cls  : Self,
         *args,
         inst : Optional[Self] = None
-    ) -> "BaseTextLine":
+    ) -> "BaseText":
         inst = cls() if inst is None else inst
         for arg in args:
             match arg:
@@ -109,5 +111,5 @@ class BaseTextLine(CustomGraphicsSimpleTextItem, ElementMixin):
         clone.setAnchor(self._kpm.anchor_loc)
         return clone
 
-class cmdPlaceBaseTextLine(cmdPlaceElement):
-    element : BaseTextLine
+class cmdPlaceBaseText(cmdPlaceElement):
+    element : BaseText

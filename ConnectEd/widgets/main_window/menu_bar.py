@@ -71,7 +71,7 @@ class MenuBar(QMenuBar):
         self.place_menu.addSeparator()
         self.place_menu.addAction(actions.placeRectangle)
         self.place_menu.addAction(actions.placeTextBlock)
-        self.place_menu.addAction(actions.placeTextLine)
+        self.place_menu.addAction(actions.placeText)
 
         self.window_menu = QMenu("&Window")
         self.window_menu.addAction(actions.windowExplorer)

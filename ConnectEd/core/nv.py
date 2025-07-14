@@ -91,7 +91,7 @@ FACTORY_SETTINGS = {
                     "underline" : False
                 }
             },
-            "TextLine" : {
+            "Text" : {
                 "text" : {
                     "family"    : "Liberation Sans",
                     "size"      : 7,
@@ -146,7 +146,7 @@ FACTORY_SETTINGS = {
                 "TextBlock" : {
                     "text" : QColor( 255, 255, 255 )
                 },
-                "TextLine" : {
+                "Text" : {
                     "text" : QColor( 255, 255, 255 )
                 }
             },

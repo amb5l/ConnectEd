@@ -16,7 +16,7 @@ from .property_text import PropertyText
 
 class BaseRectangle(CustomGraphicsRectItem, ElementMixin):
     """Base class for rectangle elements."""
-    _ATTR_SPECS = ElementMixin._ATTR_SPECS + [
+    _ATTR_SPECS = ElementMixin._ATTR_SPECS_BASIC + [
         AttrSpec(
             name      = "Width",
             type_name = "float",

@@ -788,7 +788,7 @@ class PropertiesMixin:
 class ElementMixin(PropertiesMixin):
     """Mixin class for all elements."""
     Z = Z_DRAWING
-    _ATTR_SPECS = [
+    _ATTR_SPECS_BASIC = [
         AttrSpec(
             name      = "Position X",
             type_name = "float",
@@ -1191,16 +1191,18 @@ __all__ = [
 ]
 from .key_point import KP, KPReverse, KeyPoint, KPDef, KPManager
 __all__ += key_point.__all__
-from .property_text import PropertyDisplay, PropertyText, Tether
+from .tether_text import TetherText, Tether
+__all__ += tether_text.__all__
+from .property_text import PropertyDisplay, PropertyText
 __all__ += property_text.__all__
-from .block import Block, cmdPlaceBlock
-__all__ += block.__all__
-from .rectangle import Rectangle, cmdPlaceRectangle
-__all__ += rectangle.__all__
+from .text import Text, cmdPlaceText
+__all__ += text.__all__
 from .text_block import TextBlock, cmdPlaceTextBlock
 __all__ += text_block.__all__
-from .text_line import TextLine, cmdPlaceTextLine
-__all__ += text_line.__all__
+from .rectangle import Rectangle, cmdPlaceRectangle
+__all__ += rectangle.__all__
+from .block import Block, cmdPlaceBlock
+__all__ += block.__all__
 from .symbol_instance import SymbolInstance
 __all__ += symbol_instance.__all__
 

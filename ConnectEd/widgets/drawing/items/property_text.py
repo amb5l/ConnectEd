@@ -1,17 +1,14 @@
-__all__ = ["PropertyDisplay", "PropertyText", "Tether"]
+__all__ = ["PropertyDisplay", "PropertyText"]
 
 from typing import Self, Optional
 from enum   import Enum
 
-from PyQt6.QtCore    import Qt, QPointF, QRectF
-from PyQt6.QtWidgets import QWidget, QStyleOptionGraphicsItem, QGraphicsItem, \
-                            QGraphicsSceneMouseEvent
-from PyQt6.QtGui     import QPainter
-from PyQt6.QtGui     import QPainterPath
+from PyQt6.QtCore    import Qt, QPointF
+from PyQt6.QtWidgets import QGraphicsItem, QGraphicsSceneMouseEvent
 
 from . import ElementMixin, AttrSpec, KPManager, KP, TextColorFont
 
-from .base_text_line import BaseTextLine
+from .tether_text import TetherText
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -22,66 +19,9 @@ class PropertyDisplay(Enum):
     VALUE      = "Value"
     NAME_VALUE = "Name:Value"
 
-class Tether(QGraphicsItem):
-    """Tether line between a property's anchorand its parent cleat."""
-
-    _property: "PropertyText"
-
-    def __init__(self, property: "PropertyText"):
-        super().__init__(property)  # Parent it to the Property
-        self._property = property
-        self.setZValue(-1)  # Draw behind the property text
-        self.setVisible(False)  # Initially hidden
-
-    def boundingRect(self) -> QRectF:
-        if not self._property:
-            return QRectF()
-        parent = self._property.parentItem()
-        if not parent:
-            return QRectF()
-        anchor_pos = self._property._kpm.anchor_offset
-        cleat_pos_parent = parent._kpm.key_points[self._property._cleat].pos()
-        cleat_pos_local = self._property.mapFromParent(cleat_pos_parent)
-        rect = QRectF(anchor_pos, cleat_pos_local).normalized()
-        return rect.adjusted(-5, -5, 5, 5)
-
-    def paint(self, painter: QPainter, option: QStyleOptionGraphicsItem, widget: QWidget) -> None:
-        if not self._property:
-            return
-        parent = self._property.parentItem()
-        if not parent:
-            return
-        anchor_pos = self._property._kpm.anchor_offset
-        cleat_pos_parent = parent._kpm.key_points[self._property._cleat].pos()
-        cleat_pos_local = self._property.mapFromParent(cleat_pos_parent)
-        painter.setPen(self._property.appearance.outline.pen)
-        painter.drawLine(anchor_pos, cleat_pos_local)
-
-# Understanding positioning:
-# 1. PropertyText pos is offset from cleat pos to PropertyText anchor
-# 2. cleat pos is relative to parent top left
-# 3. PropertyText anchor offset is relative to PropertyText top left
-# So when a PropertyText pos is specified, the cleat pos is added,
-# and then anchor offset is subtracted.
-# This cleat-to-anchor pos is stored in _pos. Useful for cleat (keypoint) moves.
-
-class PropertyText(BaseTextLine):
+class PropertyText(TetherText):
     # class variables
-    _ATTR_SPECS = ElementMixin._ATTR_SPECS + [
-        AttrSpec(
-            name      = "Cleat",
-            type_name = "KP",
-            exists    = lambda self: True,
-            getter    = lambda self: self.cleat(),
-            setter    = lambda self, value: self.setCleat(value)
-        ),
-        AttrSpec(
-            name      = "Anchor",
-            type_name = "KP",
-            exists    = lambda self: True,
-            getter    = lambda self: self.anchor(),
-            setter    = lambda self, value: self.setAnchor(value)
-        ),
+    _ATTR_SPECS_TEXT = [
         AttrSpec(
             name      = "Name",
             type_name = "str",
@@ -96,16 +36,16 @@ class PropertyText(BaseTextLine):
             getter    = lambda self: self.display(),
             setter    = lambda self, value: self.setDisplay(value)
         )
-    ] + ElementMixin._ATTR_SPECS_APPEARANCE_TEXT
+    ]
+    _ATTR_SPECS = TetherText._ATTR_SPECS_BASIC \
+        + _ATTR_SPECS_TEXT \
+        + TetherText._ATTR_SPECS_APPEARANCE_TEXT
     _MENU_ITEM_NAMES = ["Edit"]
 
     # instance variables
     _name    : str
     _display : PropertyDisplay
-    _cleat   : KP
-    _pos     : QPointF
-    _tether  : Optional[Tether]
-    _cache   : str              # value cache
+    _cache   : str
 
     def __init__(
         self    : Self,
@@ -116,12 +56,10 @@ class PropertyText(BaseTextLine):
         cleat   : KP = KP.BOTTOM_LEFT,
         bare    : bool = False
     ) -> None:
-        super().__init__(text="", pos=pos, anchor=anchor, bare=bare)
-        self._name = name
+        super().__init__(pos, anchor, cleat, bare)
+        self._name    = name
         self._display = display
-        self._cleat = cleat
-        self._tether = None
-        self._cache = ""
+        self._cache   = ""
         self.setFlag(self.GraphicsItemFlag.ItemIsSelectable , True)
         self.refresh()
 
@@ -151,32 +89,6 @@ class PropertyText(BaseTextLine):
         if name == self._name:
             self._cache = ""
             self.refresh()
-
-    def setPos(self : Self, pos : QPointF) -> None:
-        """Set offset from parent cleat to my anchor."""
-        self._pos = pos
-        parent : Optional[ElementMixin] = self.parentItem()
-        if parent is not None and hasattr(parent, '_kpm') and parent._kpm is not None:
-            parent_kpm : KPManager = parent._kpm
-            # cleat position is relative to parent top left
-            cleat_pos = parent_kpm.key_points[self._cleat].pos()
-        else:
-            cleat_pos = QPointF(0, 0)
-        anchor_pos = pos + cleat_pos
-        super().setPos(anchor_pos)
-
-    def setPosX(self : Self, value : float) -> None:
-        self.setPos(QPointF(value, self._pos.y()))
-
-    def setPosY(self : Self, value : float) -> None:
-        self.setPos(QPointF(self._pos.x(), value))
-
-    def pos(self : Self) -> QPointF:
-        return self._pos
-
-    def updatePos(self : Self) -> None:
-        """Update position based on current cleat position."""
-        self.setPos(self._pos)
 
     def name(self : Self) -> str:
         return self._name
@@ -243,17 +155,6 @@ class PropertyText(BaseTextLine):
         if parent is not None and hasattr(parent, 'disconnectFromPropertySignals'):
             parent.disconnectFromPropertySignals(self)
 
-    def _connectToKPMSignals(self : Self) -> None:
-        """Connect to parent element's KPManager signals."""
-        parent : Optional[ElementMixin] = self.parentItem()
-        if parent is not None and hasattr(parent, '_kpm') and parent._kpm is not None:
-            parent._kpm.change.connect(self.updatePos)
-
-    def _createTether(self) -> None:
-        """Create the tether line child item if it doesn't exist."""
-        if self._tether is None:
-            self._tether = Tether(self)
-
     def itemChange(self, change: QGraphicsItem.GraphicsItemChange, value):
         """Override to detect when parented and connect to parent signals."""
         result = super().itemChange(change, value)
@@ -264,40 +165,13 @@ class PropertyText(BaseTextLine):
                 self._updateCache()
                 self._connectToPropertySignals()
                 self.refresh()  # Ensure display is updated after cache update
-
-            # Property has been parented, connect to parent's KPManager signals
-            self._connectToKPMSignals()
-            # Recalculate position now that we have a parent
-            self.setPos(self._pos)
-        elif change == QGraphicsItem.GraphicsItemChange.ItemPositionHasChanged:
-            parent = self.parentItem()
-            if parent is not None:
-                parent_kpm = parent._kpm
-                cleat_pos = parent_kpm.key_points[self._cleat].pos()
-                anchor_pos = value + self._kpm.anchor_offset
-                self._pos = anchor_pos - cleat_pos
-        elif change == QGraphicsItem.GraphicsItemChange.ItemSelectedHasChanged:
-            # Selection changed - show/hide tether line
-            self._createTether()
-            if self._tether:
-                self._tether.setVisible(self.isSelected())
         return result
 
-    def paint(
-        self    : Self,
-        painter : QPainter,
-        option  : QStyleOptionGraphicsItem,
-        widget  : QWidget
-    ) -> None:
-        # Call parent paint method to draw the text and selection outline
-        super().paint(painter, option, widget)
-
     def setText(self : Self, text : str) -> None:
-        raise NotImplementedError("Property.setText is not implemented")
+        raise NotImplementedError("setText is not implemented")
 
     def refresh(self : Self) -> None:
         text_to_set = ""
-        # Use cached value instead of direct property access
         value = self._cache
         match self._display:
             case PropertyDisplay.VALUE:
@@ -308,11 +182,10 @@ class PropertyText(BaseTextLine):
         super().update()
         if hasattr(self, "_kpm"):
             self._kpm.updatePositions()
-            # Recalculate position now that text has changed
             self.setPos(self._pos)
 
     def clone(self : Self) -> Self:
-        """Create a clone of this property text with a new UUID."""
+        """Create a clone of this PropertyText with a new UUID."""
         clone = PropertyText(
             name    = self.name(),
             display = self.display(),

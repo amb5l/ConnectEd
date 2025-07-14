@@ -6,7 +6,7 @@ from .....core import logger
 from ....dialogs import TextDialog
 
 from ...scenes import DrawingScene
-from ...items  import TextBlock, TextLine
+from ...items  import TextBlock, Text
 
 from .defs import DrawingViewState as State
 
@@ -94,11 +94,11 @@ class DrawingViewPlaceMixin:
         self.wip.clear()
         self._goState(State.Idle)
 
-    def placeTextLine(self : "DrawingView") -> None:
+    def placeText(self : "DrawingView") -> None:
         scene : DrawingScene = self.scene()
         scene.clearSelection()
         pos = self.mapToScene(self.mapFromGlobal(QCursor.pos()))
-        element = scene.placeTextLine("<text>", pos)
+        element = scene.placeText("<text>", pos)
         element.setSelected(True)
         self.wip.clear()
         self.wip.elements = [element]
@@ -110,15 +110,15 @@ class DrawingViewPlaceMixin:
             element.setPos(
                 self.mapToScene(self.mapFromGlobal(QCursor.pos()))
             )
-            self._goState(State.PlaceTextLine)
+            self._goState(State.PlaceText)
         else:
             self.wip.clear()
 
-    def placeTextLineContinue(self : "DrawingView", pos : QPointF) -> None:
+    def placeTextContinue(self : "DrawingView", pos : QPointF) -> None:
         self.wip.elements[0].setPos(pos)
 
-    def placeTextLineComplete(self : "DrawingView", pos : QPointF) -> None:
+    def placeTextComplete(self : "DrawingView", pos : QPointF) -> None:
         scene : DrawingScene = self.scene()
-        scene.placeTextLine(pos, inst=self.wip.elements[0])
+        scene.placeText(pos, inst=self.wip.elements[0])
         self.wip.clear()
         self._goState(State.Idle)

@@ -55,7 +55,7 @@ class Actions:
         self.placeBlock       = Action( self._parent, "Block"         , "Place Block"                            , "Ctrl+B"                     )
         self.placeRectangle   = Action( self._parent, "Rectangle"     , "Place Rectangle"                        , "Ctrl+R"                     )
         self.placeTextBlock   = Action( self._parent, "Text Block"    , "Place Text Block"                       , "Ctrl+T"                     )
-        self.placeTextLine    = Action( self._parent, "Text Line"     , "Place Text Line"                        , "Ctrl+L"                     )
+        self.placeText        = Action( self._parent, "Text"          , "Place Text"                             , "Ctrl+L"                     )
         self.windowExplorer   = Action( self._parent, "Explorer"      , "Show the explorer window"               , None                         )
         self.windowMessages   = Action( self._parent, "Messages"      , "Show the messages window"               , None                         )
         self.windowTranscript = Action( self._parent, "Transcript"    , "Show the transcript window"             , None                         )
@@ -112,7 +112,7 @@ class Actions:
         self.placeBlock      .setEnabled(en)
         self.placeRectangle  .setEnabled(en)
         self.placeTextBlock  .setEnabled(en)
-        self.placeTextLine   .setEnabled(en)
+        self.placeText   .setEnabled(en)
         if en:
             # connect signals
             self._scene.selectionChangedItems.connect(self.onSelectionChanged)
