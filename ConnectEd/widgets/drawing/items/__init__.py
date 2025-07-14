@@ -939,6 +939,7 @@ class ElementMixin(PropertiesMixin):
         if self.appearance.fill is not None: self.appearance.fill.onSettingsChange()
         if self.appearance.text is not None: self.appearance.text.onSettingsChange()
         self.appearance.outline.onSettingsChange()
+        self.update()
 
     def onSelectionChange(self : Self) -> None:
         if self.appearance.line is not None: self.appearance.line.onSelectionChange()
