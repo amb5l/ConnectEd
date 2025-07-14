@@ -24,7 +24,7 @@ if TYPE_CHECKING:
     from .. import DrawingScene
 
 
-class PropertiesCell(QStandardItem):
+class SpreadsheetCell(QStandardItem):
     """Custom item for spreadsheet cells, storing string values."""
     def __init__(self : Self, value: any) -> None:
         text_value = "" if value is None else str(value)
@@ -40,7 +40,7 @@ class PropertiesCell(QStandardItem):
     def changed(self : Self) -> bool:
         return self.data(Qt.ItemDataRole.UserRole) != self.text()
 
-class PropertiesComboDelegate(QStyledItemDelegate):
+class SpreadsheetComboDelegate(QStyledItemDelegate):
     """Base delegate for combo box editing."""
     TOOLTIP = None
     ENTRIES = None
@@ -96,9 +96,9 @@ class PropertiesComboDelegate(QStyledItemDelegate):
             return QSize(width, height)
         return QSize(100, 25)
 
-class PropertiesKPDelegate(PropertiesComboDelegate):
+class SpreadsheetKPDelegate(SpreadsheetComboDelegate):
     """Delegate for anchor KP enum values."""
-    TOOLTIP = "Controls position of property anchor point"
+    TOOLTIP = "Controls position of anchor point"
     ENTRIES = [
         KP .TOP_LEFT      .value .name,
         KP .TOP_CENTER    .value .name,
@@ -111,7 +111,7 @@ class PropertiesKPDelegate(PropertiesComboDelegate):
         KP .BOTTOM_RIGHT  .value .name
     ]
 
-class PropertiesDisplayDelegate(PropertiesComboDelegate):
+class SpreadsheetDisplayDelegate(SpreadsheetComboDelegate):
     """Delegate for PropertyDisplay enum values."""
     TOOLTIP = "Controls display of property texts"
     ENTRIES = [
@@ -119,16 +119,16 @@ class PropertiesDisplayDelegate(PropertiesComboDelegate):
         PropertyDisplay .NAME_VALUE .value
     ]
 
-class PropertiesHeader(QHeaderView):
-    """Custom header view that provides context menu for sorting."""
+class SpreadsheetHeader(QHeaderView):
+    """Custom header view that provides a context menu for sorting."""
 
-    _table      : "PropertiesTable"
+    _table      : "SpreadsheetTable"
     _len        : int
     _transposed : bool
 
     def __init__(
             self : Self,
-            table       : "PropertiesTable",
+            table       : "SpreadsheetTable",
             orientation : Qt.Orientation,
             len         : int,
             transposed  : bool
@@ -188,13 +188,13 @@ class PropertiesHeader(QHeaderView):
         menu.addAction(unsorted)
         menu.exec(global_pos)
 
-class HeaderSpec:
-    index : int
+class SpreadsheetTable(QTableView):
+    """
+    Table for editing properties and attributes of scene elements of a single
+    type.
+    """
 
-class PropertiesTable(QTableView):
-    """Table for editing properties of scene elements of a single type."""
-
-    _parent     : "PropertiesWidget"
+    _parent     : "SpreadsheetWidget"
     _undo_stack : QUndoStack
     _model      : QStandardItemModel | QTransposeProxyModel
     _transposed : bool
@@ -204,7 +204,7 @@ class PropertiesTable(QTableView):
         self       : Self,
         undo_stack : QUndoStack,
         model      : QStandardItemModel | QTransposeProxyModel,
-        parent     : "PropertiesWidget"
+        parent     : "SpreadsheetWidget"
     ) -> None:
         super().__init__(parent)
         self._parent = parent
@@ -213,13 +213,13 @@ class PropertiesTable(QTableView):
         self._undo_stack = undo_stack
         self._transposed = isinstance(model, QTransposeProxyModel)
         # custom headers
-        self.setHorizontalHeader(PropertiesHeader(
+        self.setHorizontalHeader(SpreadsheetHeader(
             self,
             Qt.Orientation.Horizontal,
             self._model.columnCount(),
             self._transposed
         ))
-        self.setVerticalHeader(PropertiesHeader(
+        self.setVerticalHeader(SpreadsheetHeader(
             self,
             Qt.Orientation.Vertical,
             self._model.rowCount(),
@@ -247,8 +247,8 @@ class PropertiesTable(QTableView):
         """Handle mouse wheel events to adjust font size when Ctrl is pressed."""
         modifiers = event.modifiers()
         if modifiers & Qt.KeyboardModifier.ControlModifier:
-            widget : PropertiesWidget = self._parent
-            tab_widget : PropertiesTabWidget = widget._parent
+            widget : SpreadsheetWidget = self._parent
+            tab_widget : SpreadsheetTabWidget = widget._parent
             delta = event.angleDelta().y()
             if delta > 0:
                 tab_widget.increaseFontSize()
@@ -274,18 +274,21 @@ class PropertiesTable(QTableView):
             corner_button = buttons[0]
             corner_button.setStyleSheet('background-color: palette(mid);')
 
-class PropertiesWidget(QWidget):
-    """Widget containing normal and transposed PropertiesTable instances."""
+class SpreadsheetWidget(QWidget):
+    """
+    Widget containing normal and transposed SpreadsheetTable instances and
+    a toolbar.
+    """
 
-    _parent           : "PropertiesTabWidget"
+    _parent           : "SpreadsheetTabWidget"
     _model            : QStandardItemModel
     _proxy            : QTransposeProxyModel
     _transposed       : bool
     _sorting          : dict[int, Qt.SortOrder]
     _sorted_model     : QStandardItemModel
     _sorted_proxy     : QTransposeProxyModel
-    _table_model      : PropertiesTable
-    _table_proxy      : PropertiesTable
+    _table_model      : SpreadsheetTable
+    _table_proxy      : SpreadsheetTable
     _actions          : SimpleNamespace
     _transpose_button : QPushButton
     _unsort_button    : QPushButton
@@ -309,8 +312,8 @@ class PropertiesWidget(QWidget):
         self._sorted_proxy = QTransposeProxyModel()
         self._sorted_proxy.setSourceModel(self._sorted_model)
         # tables
-        self._table_model = PropertiesTable(self._undo_stack, self._model, self)
-        self._table_proxy = PropertiesTable(self._undo_stack, self._proxy, self)
+        self._table_model = SpreadsheetTable(self._undo_stack, self._model, self)
+        self._table_proxy = SpreadsheetTable(self._undo_stack, self._proxy, self)
         # toolbar
         self._transpose_button = QPushButton("Transpose")
         self._transpose_button.setCheckable(True)
@@ -506,7 +509,7 @@ class PropertiesWidget(QWidget):
                 original_item = self._model.item(original_row, col)
                 if original_item:
                     # create new cell with original data and formatting
-                    new_item = PropertiesCell(original_item.data(Qt.ItemDataRole.UserRole))
+                    new_item = SpreadsheetCell(original_item.data(Qt.ItemDataRole.UserRole))
                     new_item.setText(original_item.text())
                     new_item.setBackground(original_item.background())
                     self._sorted_model.setItem(sorted_row, col, new_item)
@@ -517,13 +520,13 @@ class PropertiesWidget(QWidget):
         self._table_proxy.setModel(self._sorted_proxy)
         update()
 
-class PropertiesTabWidget(QTabWidget):
+class SpreadsheetTabWidget(QTabWidget):
     _tab_elements   : dict[str, list[ElementMixin]]
     _tab_headings   : dict[str, dict[str, bool]]
     _tab_htypenames : dict[str, dict[str, str]]
     _tab_models     : dict[str, QStandardItemModel]
     _tab_proxies    : dict[str, QTransposeProxyModel]
-    _tabs           : dict[str, PropertiesWidget]
+    _tabs           : dict[str, SpreadsheetWidget]
     _delegates      : dict[str, QStyledItemDelegate]
     _transparent    : QBrush
     _highlight      : QBrush
@@ -604,7 +607,7 @@ class PropertiesTabWidget(QTabWidget):
             for row_idx, row in enumerate(rows):
                 for col_idx, value in enumerate(row):
                     self._tab_models[tab_name].setItem(
-                        row_idx, col_idx, PropertiesCell(value)
+                        row_idx, col_idx, SpreadsheetCell(value)
                     )
         # highlight
         self._transparent = QBrush(Qt.GlobalColor.transparent)
@@ -613,7 +616,7 @@ class PropertiesTabWidget(QTabWidget):
         # create tabs
         self._tabs = {}
         for tab_name, tab_elements in self._tab_elements.items():
-            self._tabs[tab_name] = PropertiesWidget(
+            self._tabs[tab_name] = SpreadsheetWidget(
                 self._tab_models[tab_name],
                 self._tab_proxies[tab_name],
                 self
@@ -660,15 +663,15 @@ class PropertiesTabWidget(QTabWidget):
                 match type_name:
                     case "KP":
                         _setupDelegate(
-                            tab_name, idx, type_name, PropertiesKPDelegate
+                            tab_name, idx, type_name, SpreadsheetKPDelegate
                         )
                     case "PropertyDisplay":
                         _setupDelegate(
-                            tab_name, idx, type_name, PropertiesDisplayDelegate
+                            tab_name, idx, type_name, SpreadsheetDisplayDelegate
                         )
                     case "PropertyDisplay":
                         _setupDelegate(
-                            tab_name, idx, type_name, PropertiesDisplayDelegate
+                            tab_name, idx, type_name, SpreadsheetDisplayDelegate
                         )
                     case _:
                         pass
@@ -698,7 +701,7 @@ class PropertiesTabWidget(QTabWidget):
             tab._table_proxy.resizeColumnsToContents()
             tab._table_proxy.resizeRowsToContents()
 
-class PropertiesSubWindow(QMdiSubWindow):
+class SpreadsheetSubWindow(QMdiSubWindow):
     _scene      : "DrawingScene"
     _tab_widget : Optional[QTabWidget]
 
@@ -715,7 +718,7 @@ class PropertiesSubWindow(QMdiSubWindow):
             elements = []
         self.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
         if len(elements) > 0:
-            self._tab_widget = PropertiesTabWidget(elements, self)
+            self._tab_widget = SpreadsheetTabWidget(elements, self)
             self.setWidget(self._tab_widget)
             self.setWindowTitle("Properties")
         else:

@@ -68,8 +68,8 @@ class Explorer(TreeView):
         a.newDiagramWindow.triggered.connect(lambda: self.newDrawingWindow(self.item))
         a.newSymbolWindow = QAction("New Symbol Window", self)
         a.newSymbolWindow.triggered.connect(lambda: self.newDrawingWindow(self.item))
-        a.elementProperties = QAction("Element Properties", self)
-        a.elementProperties.triggered.connect(lambda: self.elementProperties(self.item))
+        a.spreadsheet = QAction("Spreadsheet", self)
+        a.spreadsheet.triggered.connect(lambda: self.spreadsheet(self.item))
         a.saveDesign = QAction("Save Design", self)
         a.saveDesign.triggered.connect(lambda: self.saveDb(self.item))
         a.saveLibrary = QAction("Save Library", self)
@@ -278,16 +278,16 @@ class Explorer(TreeView):
         subwindow.showMaximized()
         hub.main_window.menu_bar.updateWindowMenu()
 
-    def elementProperties(self : Self, item : "DrawingItem") -> None:
+    def spreadsheet(self : Self, item : "DrawingItem") -> None:
         from ...core import DrawingItem
         from ...widgets import DiagramScene
-        from .properties import PropertiesSubWindow
+        from .spreadsheet import SpreadsheetSubWindow
         if not isinstance(item, DrawingItem):
             logger.warning(f"Unsupported item: {item.text()} ({type(item)})")
             return
         scene : DiagramScene = item.data(Qt.ItemDataRole.UserRole)
         for subwindow in hub.main_window.mdi_area.subWindowList():
-            if isinstance(subwindow, PropertiesSubWindow) and subwindow.scene() == scene:
+            if isinstance(subwindow, SpreadsheetSubWindow) and subwindow.scene() == scene:
                 hub.main_window.mdi_area.setActiveSubWindow(subwindow)
                 subwindow.show()
                 subwindow.raise_()
@@ -296,7 +296,7 @@ class Explorer(TreeView):
         db_item = item.parent().parent()
         elements = [e for e in scene.items() \
                     if not isinstance(e, KeyPoint | Tether)]
-        subwindow = PropertiesSubWindow(scene, elements)
+        subwindow = SpreadsheetSubWindow(scene, elements)
         subwindow.setWindowTitle(f"{db_item.text()}:{item.text()}: Properties")
         hub.main_window.mdi_area.addSubWindow(subwindow)
         subwindow.showMaximized()
@@ -377,13 +377,13 @@ class Explorer(TreeView):
                     menu.addAction(a.editDiagram)
                     menu.addAction(a.renameDiagram)
                     menu.addSeparator()
-                    menu.addAction(a.elementProperties)
+                    menu.addAction(a.spreadsheet)
                 case "Design Symbol" | "Library Symbol":
                     menu.addAction(a.newSymbolWindow)
                     menu.addAction(a.editSymbol)
                     menu.addAction(a.renameSymbol)
                     menu.addSeparator()
-                    menu.addAction(a.elementProperties)
+                    menu.addAction(a.spreadsheet)
             menu.addSeparator()
             menu.addAction(self.actions.copy)
             menu.addAction(self.actions.paste)

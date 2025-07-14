@@ -6,7 +6,7 @@ from PyQt6.QtWidgets import QMdiArea, QWidget, QMdiSubWindow
 from ..private import Action
 from .. import DrawingSubWindow, DrawingView, DrawingScene
 
-from .properties import PropertiesSubWindow
+from .spreadsheet import SpreadsheetSubWindow
 
 from ... import hub
 
@@ -27,7 +27,7 @@ class MdiArea(QMdiArea):
             if not isinstance(widget.widget().scene(), DrawingScene):
                 return
             self.update()
-        elif isinstance(widget, PropertiesSubWindow):
+        elif isinstance(widget, SpreadsheetSubWindow):
             if widget.scene() is not None:
                 self.update()
 
@@ -62,7 +62,7 @@ class MdiArea(QMdiArea):
             and isinstance(w.widget(), DrawingView) \
             and isinstance(w.widget().scene(), DrawingScene):
                 scene = w.widget().scene()
-            elif isinstance(w, PropertiesSubWindow) and w.scene() is not None:
+            elif isinstance(w, SpreadsheetSubWindow) and w.scene() is not None:
                 scene = w.scene()
             if scene is not None:
                 key = id(scene)
@@ -78,18 +78,18 @@ class MdiArea(QMdiArea):
                 if isinstance(w, DrawingSubWindow) and isinstance(w.widget(), DrawingView):
                     scene = w.widget().scene()
                     break
-                elif isinstance(w, PropertiesSubWindow):
+                elif isinstance(w, SpreadsheetSubWindow):
                     scene = w.scene()
                     break
             if scene is None:
                 continue
             scene_name = scene.item.text()
             db_name = hub.model.getDbItemFromScene(scene).text()
-            properties_windows = [w for w in windows if isinstance(w, PropertiesSubWindow)]
+            properties_windows = [w for w in windows if isinstance(w, SpreadsheetSubWindow)]
             drawing_windows = [w for w in windows if isinstance(w, DrawingSubWindow)]
             sorted_windows = properties_windows + drawing_windows
             if len(sorted_windows) == 1:
-                if isinstance(sorted_windows[0], PropertiesSubWindow):
+                if isinstance(sorted_windows[0], SpreadsheetSubWindow):
                     sorted_windows[0].setWindowTitle(f"{db_name}:{scene_name}: Properties")
                 else:
                     sorted_windows[0].setWindowTitle(f"{db_name}:{scene_name}")
@@ -113,7 +113,7 @@ class MdiArea(QMdiArea):
             and isinstance(w.widget(), DrawingView) \
             and isinstance(w.widget().scene(), DrawingScene):
                 key = id(hub.model.getDbItemFromScene(w.widget().scene()))
-            elif isinstance(w, PropertiesSubWindow) and w.scene() is not None:
+            elif isinstance(w, SpreadsheetSubWindow) and w.scene() is not None:
                 key = id(hub.model.getDbItemFromScene(w.scene()))
             action = Action(m, w.windowTitle(), None, None, False, False, w)
             action.triggered.connect(
@@ -126,7 +126,7 @@ class MdiArea(QMdiArea):
         for key, actions in self.subwindow_actions.items():
             if key == "_":
                 continue
-            properties_actions = [a for a in actions if isinstance(a.data(), PropertiesSubWindow)]
+            properties_actions = [a for a in actions if isinstance(a.data(), SpreadsheetSubWindow)]
             drawing_actions = [a for a in actions if isinstance(a.data(), DrawingSubWindow)]
             self.subwindow_actions[key] = properties_actions + drawing_actions
 

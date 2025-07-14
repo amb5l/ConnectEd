@@ -1,19 +1,25 @@
-- And can we add the arrows to the sort menu text or as an icon?
-- spreadsheet delegates
-- spreadsheet sorting
-- better window menu - submenu per design, with tile action?
 
+Properties System
+=================
+- rename to Spreadsheet
+- apply button with underlying command
+- QUndoCommand based editing with local undo stack
+- revert/revert all/cut/copy/paste
+- context menu testing
+- signal from cmdElement(s) -> PropertiesTabWidget to update all models
+  in the event of drawing changes
+- missing spreadsheet delegates
+  - color
+
+General
+=======
+- localisation (language translation)
+- better window menu - submenu per design, with tile action?
 - setter and getter names (esp getter)
 - use of 'instance' as argument/variable name
 - family -> font
-
-- Properties dialog
-  - display changes in bold (store original cell text in user role data)
-  - TableView copy/paste/clear/revert context menu
-- serialise properties
-
-- better KPLoc
 - export to SVG, use diffsvg to compare with known good for regression testing
+
 - review setPos/pos - use _local_pos to simplify/speed up pos()
 - review itemChange to connect to KeyPointManager change signal
 - review use of update()
