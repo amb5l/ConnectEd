@@ -1,7 +1,7 @@
 from typing import Self, Optional
 from types  import SimpleNamespace
 
-from PyQt6.QtCore    import Qt, QModelIndex, QPoint, QSize
+from PyQt6.QtCore    import Qt, QModelIndex, QPoint, QSize, QTransposeProxyModel
 from PyQt6.QtWidgets import QMdiSubWindow, QTabWidget, QWidget, QSizePolicy, \
                             QHBoxLayout, QVBoxLayout, \
                             QMenu, QPushButton, QLabel, \
@@ -122,24 +122,34 @@ class PropertiesDisplayDelegate(PropertiesComboDelegate):
 class PropertiesHeader(QHeaderView):
     """Custom header view that provides context menu for sorting."""
 
-    _table : "PropertiesTable"
+    _table      : "PropertiesTable"
+    _len        : int
+    _transposed : bool
 
-    def __init__(self, orientation: Qt.Orientation, table: "PropertiesTable"):
+    def __init__(
+            self : Self,
+            table       : "PropertiesTable",
+            orientation : Qt.Orientation,
+            len         : int,
+            transposed  : bool
+        ) -> None:
         super().__init__(orientation, table)
         self._table = table
+        self._len = len
+        self._transposed = transposed
         self.setSectionsClickable(True)
         self.setSectionsMovable(False)
 
     def contextMenuEvent(self, event: QContextMenuEvent) -> None:
         o = Qt.Orientation
-        if (self.orientation() == o.Horizontal and not self._table._transposed) \
-        or (self.orientation() == o.Vertical and self._table._transposed):
+        if (self.orientation() == o.Horizontal and not self._transposed) \
+        or (self.orientation() == o.Vertical and self._transposed):
             pos = event.pos()
             if self.orientation() == o.Horizontal:
                 section = self.logicalIndexAt(pos.x())
             else:
                 section = self.logicalIndexAt(pos.y())
-            if section >= 0 and section < len(self._table._headers):
+            if section >= 0 and section < self._len:
                 self._showContextMenu(section, event.globalPos())
             else:
                 super().contextMenuEvent(event)
@@ -160,83 +170,63 @@ class PropertiesHeader(QHeaderView):
             desc_arrow = "▼"
         sort_asc = QAction("Sort Ascending", menu)
         sort_asc.setIcon(getCharIcon("Arial", asc_arrow, icon_size))
-        sort_asc.triggered.connect(lambda: self._table._sortAscending(header_index))
+        sort_asc.triggered.connect(
+            lambda: self._table._parent._sortAscending(header_index)
+        )
         menu.addAction(sort_asc)
         sort_desc = QAction("Sort Descending", menu)
         sort_desc.setIcon(getCharIcon("Arial", desc_arrow, icon_size))
-        sort_desc.triggered.connect(lambda: self._table._sortDescending(header_index))
+        sort_desc.triggered.connect(
+            lambda: self._table._parent._sortDescending(header_index)
+        )
         menu.addAction(sort_desc)
-        unsorted = QAction("Unsorted", menu)
+        unsorted = QAction("Reset Sorting", menu)
         unsorted.setIcon(getCharIcon("Arial", "-", icon_size))
-        unsorted.triggered.connect(lambda: self._table._sortNone(header_index))
+        unsorted.triggered.connect(
+            lambda: self._table._parent._sortNone(header_index)
+        )
         menu.addAction(unsorted)
         menu.exec(global_pos)
+
+class HeaderSpec:
+    index : int
 
 class PropertiesTable(QTableView):
     """Table for editing properties of scene elements of a single type."""
 
-    _undo_stack  : QUndoStack
-    _elements    : list[ElementMixin]
-    _transposed  : bool
-    _inherent    : dict[str, bool]  # field name : is inherent
-    _headers     : dict[int, str]  # column # : field name
-    _htypenames  : dict[int, str]  # column # : field type name
-    _model       : QStandardItemModel
-    _actions     : SimpleNamespace
-    _font_size   : int
-    _styled      : bool
-    _sorting     : dict[int, Qt.SortOrder]
-    _delegates   : dict[str, QStyledItemDelegate]
-    _transparent : QBrush
-    _highlight   : QBrush
+    _parent     : "PropertiesWidget"
+    _undo_stack : QUndoStack
+    _model      : QStandardItemModel | QTransposeProxyModel
+    _transposed : bool
+    _styled     : bool
 
     def __init__(
         self       : Self,
-        scene      : "DrawingScene",
-        elements   : list[ElementMixin],
-        transposed : bool,
-        parent     : "PropertiesWidget",
-        sorting    : Optional[dict[int, Qt.SortOrder]] = None
+        undo_stack : QUndoStack,
+        model      : QStandardItemModel | QTransposeProxyModel,
+        parent     : "PropertiesWidget"
     ) -> None:
         super().__init__(parent)
-        self._undo_stack = scene.undo_stack
-        self._elements = elements
-        self._transposed = transposed
-        self._sorting = sorting if sorting is not None else {}
-        # fields and headers
-        attributes = None
-        properties = set()
-        for e in elements:
-            if attributes is None:
-                attributes = e.getAttributes()
-            else:
-                if attributes != e.getAttributes():
-                    logger.error("Inconsistent inherent properties")
-                    return
-            for prop in e.getProperties():
-                properties.add(prop)
-        self._inherent = {h : False for h in sorted(properties)}
-        self._inherent.update({h : True for h in attributes})
-        self._fields = self._inherent.keys()
-        self._headers = {i : h for i, h in enumerate(self._inherent.keys())}
-        self._htypenames = {}
-        for i, field_name in self._headers.items():
-            if self._inherent[field_name]:
-                self._htypenames[i] = e.getAttributeTypeName(field_name)
-            else:
-                self._htypenames[i] = "str"
-        self.setSortingEnabled(False)  # Disable built-in sorting
-        # Set up custom headers
-        self.setHorizontalHeader(PropertiesHeader(Qt.Orientation.Horizontal, self))
-        self.setVerticalHeader(PropertiesHeader(Qt.Orientation.Vertical, self))
-        # rows - get the raw data
-        raw_rows = self._getRawRows()
-        # set model
-        self._createModel(raw_rows)
-        # set up delegates
-        self._delegates = {}
-        self._setupDelegates()
+        self._parent = parent
+        self.setModel(model)
+        self._model = model
+        self._undo_stack = undo_stack
+        self._transposed = isinstance(model, QTransposeProxyModel)
+        # custom headers
+        self.setHorizontalHeader(PropertiesHeader(
+            self,
+            Qt.Orientation.Horizontal,
+            self._model.columnCount(),
+            self._transposed
+        ))
+        self.setVerticalHeader(PropertiesHeader(
+            self,
+            Qt.Orientation.Vertical,
+            self._model.rowCount(),
+            self._transposed
+        ))
         # appearance and behavior
+        self.setSortingEnabled(False)  # disable built-in sorting
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
         self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
         self.setEditTriggers(
@@ -245,25 +235,35 @@ class PropertiesTable(QTableView):
         )
         self.setSelectionMode(QAbstractItemView.SelectionMode.ContiguousSelection)
         self.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectItems)
-        self.setFontSize(10)  # TODO: Get from settings
         self.resizeColumnsToContents()
-        # actions
-        self._actions = SimpleNamespace()
-        self._actions.transpose = QAction("Transpose", self)
-        self._actions.transpose.setCheckable(True)
-        self._actions.transpose.setChecked(self._transposed)
-        self.addAction(self._actions.transpose)
         # corner button styling
         self._styled = False
-        # highlighting
-        self._transparent = QBrush(Qt.GlobalColor.transparent)
-        self.updateHighlight()
-        hub.settings.change.connect(self.updateHighlight)
-        self._model.dataChanged.connect(self.onDataChanged)
 
     def showEvent(self, event):
         super().showEvent(event)
         self.style_corner_button()
+
+    def wheelEvent(self : Self, event: QWheelEvent) -> None:
+        """Handle mouse wheel events to adjust font size when Ctrl is pressed."""
+        modifiers = event.modifiers()
+        if modifiers & Qt.KeyboardModifier.ControlModifier:
+            widget : PropertiesWidget = self._parent
+            tab_widget : PropertiesTabWidget = widget._parent
+            delta = event.angleDelta().y()
+            if delta > 0:
+                tab_widget.increaseFontSize()
+            elif delta < 0:
+                tab_widget.decreaseFontSize()
+            event.accept()
+        else:
+            super().wheelEvent(event)
+
+    def contextMenuEvent(self : Self, event: QContextMenuEvent) -> None:
+        """Show context menu for table cells."""
+        menu = QMenu(self)
+        menu.addAction(self._parent._actions.unsort)
+        menu.addAction(self._parent._actions.transpose)
+        menu.exec(event.globalPos())
 
     def style_corner_button(self):
         if self._styled:
@@ -273,6 +273,74 @@ class PropertiesTable(QTableView):
         if buttons:
             corner_button = buttons[0]
             corner_button.setStyleSheet('background-color: palette(mid);')
+
+class PropertiesWidget(QWidget):
+    """Widget containing normal and transposed PropertiesTable instances."""
+
+    _parent           : "PropertiesTabWidget"
+    _model            : QStandardItemModel
+    _proxy            : QTransposeProxyModel
+    _transposed       : bool
+    _sorting          : dict[int, Qt.SortOrder]
+    _sorted_model     : QStandardItemModel
+    _sorted_proxy     : QTransposeProxyModel
+    _table_model      : PropertiesTable
+    _table_proxy      : PropertiesTable
+    _actions          : SimpleNamespace
+    _transpose_button : QPushButton
+    _unsort_button    : QPushButton
+    _toolbar          : QHBoxLayout
+    _layout           : QVBoxLayout
+
+    def __init__(
+        self     : Self,
+        model    : QStandardItemModel,
+        proxy    : QTransposeProxyModel,
+        parent   : Optional[QWidget] = None
+    ) -> None:
+        super().__init__(parent)
+        self._parent = parent
+        self._undo_stack = QUndoStack()
+        self._transposed = False
+        # models and proxies
+        self._model = model
+        self._proxy = proxy
+        self._sorted_model = QStandardItemModel()
+        self._sorted_proxy = QTransposeProxyModel()
+        self._sorted_proxy.setSourceModel(self._sorted_model)
+        # tables
+        self._table_model = PropertiesTable(self._undo_stack, self._model, self)
+        self._table_proxy = PropertiesTable(self._undo_stack, self._proxy, self)
+        # toolbar
+        self._transpose_button = QPushButton("Transpose")
+        self._transpose_button.setCheckable(True)
+        self._transpose_button.clicked.connect(self._toggleTranspose)
+        self._unsort_button = QPushButton("Reset Sorting")
+        self._unsort_button.clicked.connect(self._resetSorting)
+        self._toolbar = QHBoxLayout()
+        self._toolbar.addWidget(self._transpose_button)
+        self._toolbar.addWidget(self._unsort_button)
+        self._toolbar.addStretch()
+        # layout
+        self._layout = QVBoxLayout(self)
+        self._layout.addLayout(self._toolbar)
+        self._layout.addWidget(self._table_model)
+        self._layout.addWidget(self._table_proxy)
+        self._table_proxy.hide()
+        self.setLayout(self._layout)
+        # highlighting
+        self._model.dataChanged.connect(self.onDataChanged)
+        # actions for context menu
+        self._actions = SimpleNamespace()
+        self._actions.unsort = QAction("Reset Sorting", self)
+        self._actions.unsort.triggered.connect(self._resetSorting)
+        self._actions.transpose = QAction("Transpose", self)
+        self._actions.transpose.setCheckable(True)
+        self._actions.transpose.setChecked(self._transposed)
+        self._actions.transpose.triggered.connect(self._toggleTranspose)
+        # initial sorting
+        self._sorting = {}
+        self._multiSort()
 
     def onDataChanged(
         self         : Self,
@@ -284,72 +352,67 @@ class PropertiesTable(QTableView):
             for col in range(top_left.column(), bottom_right.column() + 1):
                 item = self._model.item(row, col)
                 if item.changed():
-                    item.setBackground(self._highlight)
+                    item.setBackground(self._parent._highlight)
                 else:
-                    item.setBackground(self._transparent)
+                    item.setBackground(self._parent._transparent)
 
-    def updateHighlight(self : Self) -> None:
-        if hub.settings.get("display/theme") == "dark":
-            self._highlight = QBrush(Qt.GlobalColor.darkYellow)
+    def _completeEditing(self : Self) -> None:
+        """Complete any active cell editing in both table views."""
+        for table in [self._table_model, self._table_proxy]:
+            current_index = table.currentIndex()
+            if current_index.isValid():
+                table.closePersistentEditor(current_index)
+                table.setCurrentIndex(table.model().createIndex(-1, -1))
+        self._table_model.clearFocus()
+        self._table_proxy.clearFocus()
+
+    def _toggleTranspose(self : Self, checked: Optional[bool] = None) -> None:
+        """Toggle between normal and transposed table views."""
+        self._completeEditing()
+        if checked is None:
+            self._transposed = not self._transposed
         else:
-            self._highlight = QBrush(Qt.GlobalColor.yellow)
-
-    def contextMenuEvent(self : Self, event: QContextMenuEvent) -> None:
-        """Show context menu for table cells."""
-        menu = QMenu(self)
-        menu.addAction(self._actions.transpose)
-        menu.exec(event.globalPos())
-
-    def setFontSize(self : Self, size: int) -> None:
-        """Set the font size for all items in the table."""
-        font = QFont()
-        font.setPointSize(size)
-        self.setFont(font)
-        self._font_size = size
-        self.resizeColumnsToContents()
-
-    def wheelEvent(self : Self, event: QWheelEvent) -> None:
-        """Handle mouse wheel events to adjust font size when Ctrl is pressed."""
-        modifiers = event.modifiers()
-        if modifiers & Qt.KeyboardModifier.ControlModifier:
-            delta = event.angleDelta().y()
-            if delta > 0:
-                self.setFontSize(min(self._font_size + 1, 20))
-            elif delta < 0:
-                self.setFontSize(max(self._font_size - 1, 6))
-            event.accept()
+            self._transposed = checked
+        if self._transposed:
+            self._table_model.hide()
+            self._table_proxy.show()
         else:
-            super().wheelEvent(event)
+            self._table_proxy.hide()
+            self._table_model.show()
 
-    def _getRawRows(self) -> list[list]:
-        return [
-            [e.getPropAttr(h) for h in self._headers.values()] \
-                for e in self._elements
-        ]
+    def _resetSorting(self) -> None:
+        """Reset all sorting."""
+        self._completeEditing()
+        self._sorting.clear()
+        self._multiSort()
+        self._updateHeaderText()
 
     def _sortAscending(self, header_index: int) -> None:
         """Sort the selected header in ascending order."""
+        self._completeEditing()
         self._sorting[header_index] = Qt.SortOrder.AscendingOrder
-        self.multiSort()
+        self._multiSort()
         self._updateHeaderText()
 
     def _sortDescending(self, header_index: int) -> None:
         """Sort the selected header in descending order."""
+        self._completeEditing()
         self._sorting[header_index] = Qt.SortOrder.DescendingOrder
-        self.multiSort()
+        self._multiSort()
         self._updateHeaderText()
 
     def _sortNone(self, header_index: int) -> None:
         """Remove sorting from the selected header."""
+        self._completeEditing()
         if header_index in self._sorting:
             del self._sorting[header_index]
-            self.multiSort()
+            self._multiSort()
             self._updateHeaderText()
 
     def _updateHeaderText(self) -> None:
         """Update header text to include sort indicators."""
-        for i, name in self._headers.items():
-            text = name
+        for i in range(self._model.columnCount()):
+            name = self._model.horizontalHeaderItem(i).text()
             if i in self._sorting:
                 order = self._sorting[i]
                 if self._transposed:
@@ -361,28 +424,18 @@ class PropertiesTable(QTableView):
                     text = f"{name}  {arrow}{priority}"
                 else:
                     text = f"{name}  {arrow}"
-            if self._transposed:
-                header_item = self._model.verticalHeaderItem(i)
-                if header_item is None:
-                    header_item = QStandardItem(text)
-                    self._model.setVerticalHeaderItem(i, header_item)
-                else:
-                    header_item.setText(text)
             else:
-                header_item = self._model.horizontalHeaderItem(i)
-                if header_item is None:
-                    header_item = QStandardItem(text)
-                    self._model.setHorizontalHeaderItem(i, header_item)
-                else:
-                    header_item.setText(text)
+                text = name
+            self._sorted_model.setHorizontalHeaderItem(i, QStandardItem(text))
 
-    def multiSort(self) -> None:
-        """Apply multi-column sorting to the table."""
-        if not self._sorting:
-            self._restoreOriginalOrder()
-            return
-        raw_rows = self._getRawRows()
-        rows = [(i, row_data) for i, row_data in enumerate(raw_rows)]
+    def _multiSort(self) -> None:
+        """Apply multi-column sorting."""
+        def update():
+            self._table_model.resizeColumnsToContents()
+            self._table_model.resizeRowsToContents()
+            self._table_proxy.resizeColumnsToContents()
+            self._table_proxy.resizeRowsToContents()
+
         def multi_column_compare(row1, row2):
             """Compare two rows using multi-column sorting priority."""
             _, data1 = row1
@@ -413,194 +466,237 @@ class PropertiesTable(QTableView):
                         result = -1 if val1 < val2 else 1
                         return result if order == Qt.SortOrder.AscendingOrder else -result
             return 0  # Equal on all columns
-        # Sort the rows
+
+        # build self._sorted_model from self._model and self._sorting
+        if not self._sorting:
+            # No sorting applied, switch back to original models
+            self._table_model.setModel(self._model)
+            self._table_proxy.setModel(self._proxy)
+            update()
+            return
+        # get rows from original model
+        raw_rows = []
+        for row in range(self._model.rowCount()):
+            row_data = []
+            for col in range(self._model.columnCount()):
+                item = self._model.item(row, col)
+                row_data.append(item.text() if item else "")
+            raw_rows.append(row_data)
+        # create indexed rows for sorting
+        rows = {i: row_data for i, row_data in enumerate(raw_rows)}
+        # sort the rows
         from functools import cmp_to_key
-        sorted_rows = sorted(rows, key=cmp_to_key(multi_column_compare))
-        # Extract sorted data (back to elements x properties format)
-        sorted_data = [row_data for _, row_data in sorted_rows]
-        # Rebuild the model with sorted data
-        self._model.clear()
-        self._createModel(sorted_data)
-        self._updateHeaderText()
-        self.update()
-        self.resizeColumnsToContents()
-        self.resizeRowsToContents()
-
-    def _restoreOriginalOrder(self) -> None:
-        """Restore the original order of the table by recreating it."""
-        raw_rows = self._getRawRows()
-        self._model.clear()
-        self._createModel(raw_rows)
-        self._updateHeaderText()
-        self.update()
-        self.resizeColumnsToContents()
-        self.resizeRowsToContents()
-
-    def _createModel(self, raw_rows: list[list]) -> None:
-        """Create the model with the given data."""
-        if self._transposed:
-            num_properties = len(self._headers)
-            num_elements = len(self._elements)
-            self._model = QStandardItemModel(num_properties, num_elements, self)
-            for i, name in self._headers.items():
-                self._model.setVerticalHeaderItem(i, QStandardItem(name))
-            for i in range(num_elements):
-                self._model.setHorizontalHeaderItem(i, QStandardItem(str(i + 1)))
-            for property_idx in range(num_properties):
-                for element_idx in range(num_elements):
-                    if element_idx < len(raw_rows) and property_idx < len(raw_rows[element_idx]):
-                        value = raw_rows[element_idx][property_idx]  # transpose
-                        self._model.setItem(property_idx, element_idx, PropertiesCell(value))
-        else:
-            num_elements = len(raw_rows)
-            num_properties = len(self._inherent)
-            self._model = QStandardItemModel(num_elements, num_properties, self)
-            for i, name in self._headers.items():
-                self._model.setHorizontalHeaderItem(i, QStandardItem(name))
-            for i in range(num_elements):
-                self._model.setVerticalHeaderItem(i, QStandardItem(str(i + 1)))
-            for row_idx, row_data in enumerate(raw_rows):
-                for col_idx, value in enumerate(row_data):
-                    self._model.setItem(row_idx, col_idx, PropertiesCell(value))
-        self.setModel(self._model)
-
-    def _setupDelegates(self) -> None:
-        f = self.setItemDelegateForRow if self._transposed \
-            else self.setItemDelegateForColumn
-        for i, type_name in self._htypenames.items():
-            match type_name:
-                case "KP":
-                    if type_name not in self._delegates:
-                        self._delegates[type_name] = PropertiesKPDelegate()
-                        self._delegates[type_name].destroyed.connect(
-                            lambda: self.onDelegateDestroyed()
-                        )
-                    f(i, self._delegates[type_name])
-                case "PropertyDisplay":
-                    if type_name not in self._delegates:
-                        self._delegates[type_name] = PropertiesDisplayDelegate()
-                        self._delegates[type_name].destroyed.connect(
-                            lambda: self.onDelegateDestroyed()
-                        )
-                    f(i, self._delegates[type_name])
-                case _:
-                    pass
-
-    def onDelegateDestroyed(self : Self) -> None:
-        """Workaround to fix delegate lifecycle issue (silent crash)."""
-        pass
-
-class PropertiesWidget(QWidget):
-    """Widget containing PropertiesTable instances with buttons for managing properties."""
-    _elements         : list[ElementMixin]
-    _table_normal     : PropertiesTable
-    _table_transposed : PropertiesTable
-    _current_table    : PropertiesTable
-    _transpose_button : QPushButton
-    _unsort_button    : QPushButton
-    _toolbar          : QHBoxLayout
-    _layout           : QVBoxLayout
-    _transposed       : bool
-    _sorting          : dict[int, Qt.SortOrder]
-
-    def __init__(
-        self     : Self,
-        scene    : "DrawingScene",
-        elements : list[ElementMixin],
-        parent   : Optional[QWidget] = None
-    ) -> None:
-        super().__init__(parent)
-        self._elements = elements
-        self._transposed = False
-        self._sorting = {}
-        self._table_normal = PropertiesTable(
-            scene, elements, False, self, self._sorting
-        )
-        self._table_transposed = PropertiesTable(
-            scene, elements, True, self, self._sorting
-        )
-        self._current_table = self._table_normal
-        self._transpose_button = QPushButton("Transpose")
-        self._transpose_button.setCheckable(True)
-        self._transpose_button.clicked.connect(self._toggleTranspose)
-        self._unsort_button = QPushButton("Clear Sorting")
-        self._unsort_button.clicked.connect(self._clearSorting)
-        self._toolbar = QHBoxLayout()
-        self._toolbar.addWidget(self._transpose_button)
-        self._toolbar.addWidget(self._unsort_button)
-        self._toolbar.addStretch()
-        self._layout = QVBoxLayout(self)
-        self._layout.addLayout(self._toolbar)
-        self._layout.addWidget(self._table_normal)
-        self._layout.addWidget(self._table_transposed)
-        self._table_transposed.hide()
-        self.setLayout(self._layout)
-
-    def _toggleTranspose(self) -> None:
-        """Toggle between normal and transposed table views."""
-        self._transposed = not self._transposed
-        if self._transposed:
-            self._table_normal.hide()
-            self._table_transposed.show()
-            self._current_table = self._table_transposed
-        else:
-            # Switch to normal view
-            self._table_transposed.hide()
-            self._table_normal.show()
-            self._current_table = self._table_normal
-        # Update button state
-        self._transpose_button.setChecked(self._transposed)
-        self._current_table.resizeColumnsToContents()
-        self._current_table.resizeRowsToContents()
-        self._current_table._updateHeaderText()
-        # Update highlighting for all cells in the newly visible table
-        model = self._current_table._model
-        if model.rowCount() > 0 and model.columnCount() > 0:
-            top_left = model.index(0, 0)
-            bottom_right = model.index(
-                model.rowCount() - 1, model.columnCount() - 1
-            )
-            self._current_table.onDataChanged(top_left, bottom_right, [])
-
-    def _clearSorting(self) -> None:
-        """Clear all sorting from both tables."""
-        self._sorting.clear()
-        # Update both tables since they share the sorting dictionary
-        self._table_normal.multiSort()
-        self._table_normal._updateHeaderText()
-        self._table_transposed.multiSort()
-        self._table_transposed._updateHeaderText()
-
-    def getCurrentTable(self) -> PropertiesTable:
-        """Get the currently visible table."""
-        return self._current_table
+        sorted_rows = sorted(rows.items(), key=cmp_to_key(multi_column_compare))
+        # create sorted model with same structure as original
+        self._sorted_model.clear()
+        self._sorted_model.setRowCount(self._model.rowCount())
+        self._sorted_model.setColumnCount(self._model.columnCount())
+        # copy headers from original model
+        for col in range(self._model.columnCount()):
+            header_item = self._model.horizontalHeaderItem(col)
+            if header_item:
+                self._sorted_model.setHorizontalHeaderItem(col, QStandardItem(header_item.text()))
+        for row in range(self._model.rowCount()):
+            header_item = self._model.verticalHeaderItem(row)
+            if header_item:
+                self._sorted_model.setVerticalHeaderItem(row, QStandardItem(header_item.text()))
+        # populate sorted model with sorted data
+        for sorted_row, (original_row, row_data) in enumerate(sorted_rows):
+            for col in range(self._model.columnCount()):
+                original_item = self._model.item(original_row, col)
+                if original_item:
+                    # create new cell with original data and formatting
+                    new_item = PropertiesCell(original_item.data(Qt.ItemDataRole.UserRole))
+                    new_item.setText(original_item.text())
+                    new_item.setBackground(original_item.background())
+                    self._sorted_model.setItem(sorted_row, col, new_item)
+        # update proxy
+        self._sorted_proxy.setSourceModel(self._sorted_model)
+        # update tables
+        self._table_model.setModel(self._sorted_model)
+        self._table_proxy.setModel(self._sorted_proxy)
+        update()
 
 class PropertiesTabWidget(QTabWidget):
+    _tab_elements   : dict[str, list[ElementMixin]]
+    _tab_headings   : dict[str, dict[str, bool]]
+    _tab_htypenames : dict[str, dict[str, str]]
+    _tab_models     : dict[str, QStandardItemModel]
+    _tab_proxies    : dict[str, QTransposeProxyModel]
+    _tabs           : dict[str, PropertiesWidget]
+    _delegates      : dict[str, QStyledItemDelegate]
+    _transparent    : QBrush
+    _highlight      : QBrush
+    _font_size      : int
+
     def __init__(
         self     : Self,
-        scene    : "DrawingScene",
         elements : list[ElementMixin],
         parent   : Optional[QWidget] = None
     ) -> None:
         super().__init__(parent)
         self.setTabsClosable(True)
         self.tabCloseRequested.connect(self.closeTab)
-        elements_by_type = {}
+        # group elements by type
+        self._tab_elements = {}
+        scene = None
         for element in elements:
-            element_type_name = type(element).__name__
-            if element_type_name not in elements_by_type:
-                elements_by_type[element_type_name] = []
-            elements_by_type[element_type_name].append(element)
-        for element_type_name, type_elements in elements_by_type.items():
-            tab = PropertiesWidget(scene, type_elements, self)
-            self.addTab(tab, element_type_name)
+            if scene is None:
+                scene = element.scene()
+            elif scene != element.scene():
+                logger.error("Elements must belong to the same scene")
+                elements = []
+                break
+            tab_name = type(element).__name__
+            if tab_name not in self._tab_elements:
+                self._tab_elements[tab_name] = []
+            self._tab_elements[tab_name].append(element)
+        # create models
+        self._tab_headings   = {}
+        self._tab_htypenames = {}
+        self._tab_models     = {}
+        self._tab_proxies    = {}
+        for tab_name, tab_elements in self._tab_elements.items():
+            self._tab_headings[tab_name] = {}
+            self._tab_htypenames[tab_name] = {}
+            tab_attributes = None
+            tab_properties = set()
+            for e in tab_elements:
+                if tab_attributes is None:
+                    tab_attributes = e.getAttributes()
+                    for a in tab_attributes:
+                        self._tab_htypenames[tab_name][a] = \
+                            e.getAttributeTypeName(a)
+                else:
+                    if tab_attributes != e.getAttributes():
+                        logger.error("Inconsistent inherent properties")
+                        self._tab_elements.pop(tab_name)
+                        self._tab_headings.pop(tab_name)
+                        self._tab_htypenames.pop(tab_name)
+                        break
+                for p in e.getProperties():
+                    tab_properties.add(p)
+                    self._tab_htypenames[tab_name][p] = "str"
+            self._tab_headings[tab_name] = \
+                {name : False for name in sorted(tab_properties)}
+            self._tab_headings[tab_name].update(
+                {name : True for name in tab_attributes}
+            )
+            num_elements = len(tab_elements)
+            num_headings = len(self._tab_headings[tab_name])
+            self._tab_models[tab_name] = QStandardItemModel(
+                num_elements, num_headings, self
+            )
+            self._tab_proxies[tab_name] = QTransposeProxyModel()
+            self._tab_proxies[tab_name].setSourceModel(self._tab_models[tab_name])
+            for i, name in enumerate(self._tab_headings[tab_name].keys()):
+                self._tab_models[tab_name].setHorizontalHeaderItem(
+                    i, QStandardItem(name)
+                )
+            for i in range(num_elements):
+                self._tab_models[tab_name].setVerticalHeaderItem(
+                    i, QStandardItem(str(i + 1))
+                )
+            rows = [
+                [e.getPropAttr(h) for h in self._tab_headings[tab_name].keys()] \
+                    for e in self._tab_elements[tab_name]
+            ]
+            for row_idx, row in enumerate(rows):
+                for col_idx, value in enumerate(row):
+                    self._tab_models[tab_name].setItem(
+                        row_idx, col_idx, PropertiesCell(value)
+                    )
+        # highlight
+        self._transparent = QBrush(Qt.GlobalColor.transparent)
+        self.updateHighlight()
+        hub.settings.change.connect(self.updateHighlight)
+        # create tabs
+        self._tabs = {}
+        for tab_name, tab_elements in self._tab_elements.items():
+            self._tabs[tab_name] = PropertiesWidget(
+                self._tab_models[tab_name],
+                self._tab_proxies[tab_name],
+                self
+            )
+            self.addTab(self._tabs[tab_name], tab_name)
         self.setCurrentWidget(self.widget(0))
+        # setup delegates
+        self._delegates = {}
+        self._setupDelegates()
+        # initialize font size
+        self.setFontSize(10)  # TODO: get from settings
 
     def closeTab(self, index: int) -> None:
         """Close the tab at the given index."""
         self.removeTab(index)
         if self.count() == 0:
             self.parent().close()
+
+    def updateHighlight(self : Self) -> None:
+        if hub.settings.get("display/theme") == "dark":
+            self._highlight = QBrush(Qt.GlobalColor.darkYellow)
+        else:
+            self._highlight = QBrush(Qt.GlobalColor.yellow)
+
+    def _setupDelegates(self) -> None:
+        def _setupDelegate(
+            tab_name  : str,
+            idx       : int,
+            type_name : str,
+            delegate  : QStyledItemDelegate
+        ) -> None:
+            if type_name not in self._delegates:
+                self._delegates[type_name] = delegate()
+                self._delegates[type_name].destroyed.connect(
+                    lambda: self.onDelegateDestroyed()
+                )
+            tab = self._tabs[tab_name]
+            tab._table_model.setItemDelegateForColumn(idx, self._delegates[type_name])
+            tab._table_proxy.setItemDelegateForRow(idx, self._delegates[type_name])
+
+        for tab_name, tab_htypenames in self._tab_htypenames.items():
+            for idx, name in enumerate(self._tab_headings[tab_name].keys()):
+                type_name = tab_htypenames[name]
+                match type_name:
+                    case "KP":
+                        _setupDelegate(
+                            tab_name, idx, type_name, PropertiesKPDelegate
+                        )
+                    case "PropertyDisplay":
+                        _setupDelegate(
+                            tab_name, idx, type_name, PropertiesDisplayDelegate
+                        )
+                    case "PropertyDisplay":
+                        _setupDelegate(
+                            tab_name, idx, type_name, PropertiesDisplayDelegate
+                        )
+                    case _:
+                        pass
+
+    def onDelegateDestroyed(self : Self) -> None:
+        """Workaround to fix delegate lifecycle issue (silent crash)."""
+        pass
+
+    def increaseFontSize(self : Self) -> None:
+        self._font_size = min(self._font_size + 1, 20)
+        self.setFontSize(self._font_size)
+
+    def decreaseFontSize(self : Self) -> None:
+        self._font_size = max(self._font_size - 1, 6)
+        self.setFontSize(self._font_size)
+
+    def setFontSize(self : Self, size: int) -> None:
+        """Set the font size for all tables."""
+        self._font_size = size
+        font = QFont()
+        font.setPointSize(size)
+        for tab in self._tabs.values():
+            tab._table_model.setFont(font)
+            tab._table_model.resizeColumnsToContents()
+            tab._table_model.resizeRowsToContents()
+            tab._table_proxy.setFont(font)
+            tab._table_proxy.resizeColumnsToContents()
+            tab._table_proxy.resizeRowsToContents()
 
 class PropertiesSubWindow(QMdiSubWindow):
     _scene      : "DrawingScene"
@@ -614,13 +710,12 @@ class PropertiesSubWindow(QMdiSubWindow):
         super().__init__()
         self._scene = scene
         element_scenes = set(element.scene() for element in elements)
-        if elements:
-            if len(element_scenes) > 1 or scene != element_scenes.pop():
-                logger.error("Elements must belong to the specified scene")
-                elements = []
+        if len(element_scenes) != 1:
+            logger.error("Elements must belong to the same scene")
+            elements = []
         self.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
         if len(elements) > 0:
-            self._tab_widget = PropertiesTabWidget(scene, elements, self)
+            self._tab_widget = PropertiesTabWidget(elements, self)
             self.setWidget(self._tab_widget)
             self.setWindowTitle("Properties")
         else:
@@ -637,4 +732,5 @@ class PropertiesSubWindow(QMdiSubWindow):
         super().closeEvent(event)
 
     def scene(self : Self) -> "DrawingScene":
+        """To play nicely with the MDI area."""
         return self._scene
