@@ -13,6 +13,7 @@ Properties System
 
 General
 =======
+- middle mouse click (to pan) selects elements - should not affect selection
 - localisation (language translation)
 - better window menu - submenu per design, with tile action?
 - setter and getter names (esp getter)

@@ -96,7 +96,7 @@ class PropertyText(BaseTextLine):
             getter    = lambda self: self.display(),
             setter    = lambda self, value: self.setDisplay(value)
         )
-    ] + ElementMixin._ATTR_SPECS_TEXT
+    ] + ElementMixin._ATTR_SPECS_APPEARANCE_TEXT
     _MENU_ITEM_NAMES = ["Edit"]
 
     # instance variables

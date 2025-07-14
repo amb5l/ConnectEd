@@ -32,7 +32,7 @@ class BaseTextBlock(CustomGraphicsTextItem, ElementMixin):
             getter    = lambda self: self.toPlainText(),
             setter    = lambda self, value: self.setPlainText(value)
         )
-    ] + ElementMixin._ATTR_SPECS_TEXT
+    ] + ElementMixin._ATTR_SPECS_APPEARANCE_TEXT
     _MENU_ITEM_NAMES = [
         "Appearance..."
     ]

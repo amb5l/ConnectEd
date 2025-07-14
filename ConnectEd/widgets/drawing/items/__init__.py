@@ -804,7 +804,7 @@ class ElementMixin(PropertiesMixin):
             setter    = lambda self, value: self.setPosY(value)
         )
     ]
-    _ATTR_SPECS_LINE = [
+    _ATTR_SPECS_APPEARANCE_LINE = [
         AttrSpec(
             name      = "Line Color",
             type_name = "QColor",
@@ -827,7 +827,7 @@ class ElementMixin(PropertiesMixin):
             setter    = lambda self, value: self.appearance.line.setStyle(value)
         )
     ]
-    _ATTR_SPECS_FILL = [
+    _ATTR_SPECS_APPEARANCE_FILL = [
         AttrSpec(
             name      = "Fill Color",
             type_name = "QColor",
@@ -843,7 +843,7 @@ class ElementMixin(PropertiesMixin):
             setter    = lambda self, value: self.appearance.fill.setStyle(value)
         )
     ]
-    _ATTR_SPECS_TEXT = [
+    _ATTR_SPECS_APPEARANCE_TEXT = [
         AttrSpec(
             name      = "Text Color",
             type_name = "QColor",

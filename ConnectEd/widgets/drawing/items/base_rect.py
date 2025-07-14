@@ -31,7 +31,9 @@ class BaseRectangle(CustomGraphicsRectItem, ElementMixin):
             getter    = lambda self: self.rect().height(),
             setter    = lambda self, value: self.setHeight(value)
         )
-    ] + ElementMixin._ATTR_SPECS_LINE + ElementMixin._ATTR_SPECS_FILL
+    ] \
+    + ElementMixin._ATTR_SPECS_APPEARANCE_LINE \
+    + ElementMixin._ATTR_SPECS_APPEARANCE_FILL
     MIN_SIZE = QSizeF(1.0, 1.0)
     _KEY_POINTS = [KPDef(k, True, False) for k in KP.__iter__()]
 
