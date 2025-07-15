@@ -3,7 +3,7 @@ __all__ = ["BlockPin", "cmdPlaceBlockPin"]
 from typing import Self, Optional
 
 from PyQt6.QtCore    import QPointF, QRectF
-from PyQt6.QtWidgets import QWidget, QGraphicsItem, QStyleOptionGraphicsItem
+from PyQt6.QtWidgets import QWidget, QStyleOptionGraphicsItem
 from PyQt6.QtGui     import QPainter, QPainterPath
 
 from .. import KP, Edge, EdgeLoc, SignalDirection, VectorRange, \
@@ -142,9 +142,9 @@ class Pin(CustomGraphicsItem, ElementMixin):
 class BlockPinName(PinText):
     pass
 
-class BlockPinIndicator(QGraphicsItem):
+class BlockPinDirection(CustomGraphicsItem, ElementMixin):
     """Pin direction indicator for block pins."""
-    _RECT     = QRectF(0, -5, 10, 5)
+    _RECT     = QRectF(0, -5, 10, 10)
     _PATH_IN  = [(8,0), (4,-4), (0,-4), (0,4), (4,4)]
     _PATH_OUT = [(0,0), (4,-4), (8,-4), (8,4), (4,4)]
     _PATH_BI  = [(0,0), (4,-4), (8,0), (4,4)]
@@ -156,7 +156,8 @@ class BlockPinIndicator(QGraphicsItem):
     _path     : QPainterPath
 
     def __init__(self : Self, parent : Pin) -> None:
-        super().__init__(parent)
+        CustomGraphicsItem.__init__(self, parent)
+        ElementMixin.initElement(self, line=LinePref(), fill=FillPref())
         self._shape = QPainterPath()
         self._shape.addRect(self._RECT)
         self._path_in = self._buildPath(self._PATH_IN)
@@ -164,11 +165,6 @@ class BlockPinIndicator(QGraphicsItem):
         self._path_bi = self._buildPath(self._PATH_BI)
         self.updateDirection(parent.direction)
         parent._esm.directionChanged.connect(self.updateDirection)
-        hub.settings.change.connect(self.onSettingsChange)
-
-    def onSettingsChange(self : Self) -> None:
-        super().onSettingsChange()
-        self.update()
 
     def _buildPath(self : Self, points : list[tuple[int, int]]) -> QPainterPath:
         p = QPainterPath()
@@ -201,8 +197,6 @@ class BlockPinIndicator(QGraphicsItem):
         widget  : Optional[QWidget] = None
     ) -> None:
         parent : "Pin" = self.parentItem()
-        if parent is None:
-            return
         painter.setPen(parent.appearance.line.pen)
         painter.setBrush(parent.appearance.fill.brush)
         painter.drawPath(self._path)
@@ -211,7 +205,7 @@ class BlockPin(Pin):
     _PIN_NAME_CLASS = BlockPinName
     _PIN_NAME_POS = QPointF(10, 0)
 
-    _indicator : BlockPinIndicator
+    _indicator : BlockPinDirection
 
     def __init__(
         self      : Self,
@@ -222,7 +216,7 @@ class BlockPin(Pin):
         loc       : EdgeLoc
     ) -> None:
         super().__init__(name, direction, range, block, loc)
-        self._indicator = BlockPinIndicator(self)
+        self._indicator = BlockPinDirection(self)
         block._esm.sizeChanged.connect(self.onBlockSizeChanged)
         hub.settings.change.connect(self.onSettingsChange)
 
