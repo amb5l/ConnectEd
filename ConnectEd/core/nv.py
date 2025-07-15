@@ -17,9 +17,10 @@ from typing import Self, Optional, Any, Dict, List
 from PyQt6.QtCore import Qt, QObject, pyqtSignal, QSettings, QPointF, QSizeF
 from PyQt6.QtGui  import QColor
 
-from .log   import logger
-from .defs  import ORG_NAME, APP_NAME
-from .utils import getDefaultPath, val2str, str2val
+from .log     import logger
+from .defs    import ORG_NAME, APP_NAME
+from .utils   import getDefaultPath, val2str, str2val
+from .palette import Palette
 
 
 FACTORY_SETTINGS = {
@@ -28,7 +29,7 @@ FACTORY_SETTINGS = {
     },
     "display" : {
         "theme" : "dark",
-        "alpha" : 128,
+        "alpha" : 240,
         "outline" : {
             "width" : 0,
             "style" : Qt.PenStyle.DotLine
@@ -69,10 +70,10 @@ FACTORY_SETTINGS = {
             },
             "BlockPin" : {
                 "line" : {
-                    "width" : 1,
+                    "width" : 0,
                     "style" : Qt.PenStyle.SolidLine
                 },
-                "fill" : Qt.BrushStyle.SolidPattern,
+                "fill" : Qt.BrushStyle.NoBrush,
             },
             "BlockPinName" : {
                 "text" : {
@@ -88,7 +89,7 @@ FACTORY_SETTINGS = {
                     "width" : 1,
                     "style" : Qt.PenStyle.SolidLine
                 },
-                "fill" : Qt.BrushStyle.SolidPattern
+                "fill" : Qt.BrushStyle.NoBrush
             },
             "PropertyText" : {
                 "text" : {
@@ -104,7 +105,7 @@ FACTORY_SETTINGS = {
                     "width" : 1,
                     "style" : Qt.PenStyle.SolidLine
                 },
-                "fill" : Qt.BrushStyle.SolidPattern
+                "fill" : Qt.BrushStyle.NoBrush
             },
             "TextBlock" : {
                 "text" : {
@@ -147,56 +148,55 @@ FACTORY_SETTINGS = {
     "themes" : {
         "dark" : {
             "background" : {
-                "fill" : QColor(   0,   0,   0 )
+                "fill" : Palette.Background
             },
             "paper" : {
-                "fill" : QColor(  32,  32,  32 )
+                "fill" : Palette.Sheet
             },
             "border" : {
-                "line" : QColor( 128, 128, 128 )
+                "line" : Palette.Border
             },
             "elements" : {
                 "Block" : {
-                    "line" : QColor( 0x81, 0xD1, 0xCD ),
-                    "fill" : QColor( 0x30, 0x30, 0x30 )
+                    "line" : Palette.BlockLine,
+                    "fill" : Palette.BlockFill
                 },
                 "BlockPin" : {
-                    "line" : QColor( 0x81, 0xD1, 0xCD ),
-                    "fill" : QColor( 0x30, 0x30, 0x30 ),
-                    "text" : QColor( 0x81, 0xD1, 0xCD )
+                    "line" : Palette.BlockPin,
+                    "fill" : Palette.BlockPin
                 },
                 "BlockPinName" : {
-                    "text" : QColor( 0x81, 0xD1, 0xCD )
+                    "text" : Palette.BlockPinName
                 },
                 "BlockPinDirection" : {
-                    "line" : QColor( 0x81, 0xD1, 0xCD ),
-                    "fill" : QColor( 0x30, 0x30, 0x30 )
+                    "line" : Palette.BlockPinDirection,
+                    "fill" : Palette.BlockPinDirection,
                 },
                 "PropertyText" : {
-                    "text" : QColor( 128, 255, 128 )
-                },
-                "Rectangle" : {
-                    "line" : QColor( 192, 120,   0 ), # light orange
-                    "fill" : QColor(  96, 100,   0 )  # dark orange
-                },
-                "TextBlock" : {
-                    "text" : QColor( 255, 255, 255 )
+                    "text" : Palette.PropertyText
                 },
                 "Text" : {
-                    "text" : QColor( 255, 255, 255 )
+                    "text" : Palette.Text
+                },
+                "TextBlock" : {
+                    "text" : Palette.TextBlock
+                },
+                "Rectangle" : {
+                    "line" : Palette.Rectangle,
+                    "fill" : Palette.Rectangle
                 }
             },
             "selected" : {
-                "line" : QColor( 192,   0, 192 ), # bright magenta
-                "fill" : QColor( 128,   0, 128 ), # bright magenta
-                "text" : QColor( 224,   0, 224 )  # bright magenta
+                "line" : Palette.SelectedLine,
+                "fill" : Palette.SelectedFill,
+                "text" : Palette.SelectedText
             },
             "key_point" : {
-                "line" : QColor( 255,   0, 255 ), # bright magenta
-                "fill" : QColor( 255,   0, 255 ), # bright magenta
+                "line" : Palette.SelectedLine,
+                "fill" : Palette.SelectedFill
             },
             "grid" : {
-                "line" : QColor(  64,  64,  64 )
+                "line" : Palette.Grid
             }
         },
         "light" : {
