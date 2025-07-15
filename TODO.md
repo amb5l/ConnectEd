@@ -1,3 +1,5 @@
+BlockPin - QGraphicsItemGroup???
+
 
 Properties System
 =================

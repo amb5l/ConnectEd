@@ -71,13 +71,13 @@ class Pin(CustomGraphicsItem, ElementMixin):
     ) -> None:
         CustomGraphicsItem.__init__(self, parent)
         ElementMixin.initElement(self, line=LinePref(), fill=FillPref())
-        self.setLoc(loc)
         self._name = "?"
-        self._direction = direction
-        self._range = range
         self._name_text = self._PIN_NAME_CLASS(
             "name", self._PIN_NAME_POS, KP.CENTER_LEFT, self
         )
+        self.setLoc(loc)
+        self._direction = direction
+        self._range = range
         self._shape = QPainterPath()
         self.name = name # recalculates self._rect
         s = self._SIZE / 2
@@ -95,11 +95,21 @@ class Pin(CustomGraphicsItem, ElementMixin):
 
     def setLoc(self : Self, loc : EdgeLoc) -> None:
         self._loc = loc
+        name_centre = QPointF(self._name_text.boundingRect().center())
+        self._name_text.setTransformOriginPoint(name_centre)
         match loc.edge:
-            case Edge.LEFT:   self.setRotation(0)
-            case Edge.RIGHT:  self.setRotation(180)
-            case Edge.TOP:    self.setRotation(90)
-            case Edge.BOTTOM: self.setRotation(270)
+            case Edge.LEFT:
+                self.setRotation(0)
+                self._name_text.setRotation(0)
+            case Edge.RIGHT:
+                self.setRotation(180)
+                self._name_text.setRotation(180)
+            case Edge.TOP:
+                self.setRotation(90)
+                self._name_text.setRotation(180)
+            case Edge.BOTTOM:
+                self.setRotation(270)
+                self._name_text.setRotation(0)
         parent : BaseRectWithPins = self.parentItem()
         super().setPos(parent.getEdgeLocPos(loc))
 
