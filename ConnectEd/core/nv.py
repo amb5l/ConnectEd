@@ -28,6 +28,7 @@ FACTORY_SETTINGS = {
     },
     "display" : {
         "theme" : "dark",
+        "alpha" : 128,
         "outline" : {
             "width" : 0,
             "style" : Qt.PenStyle.DotLine

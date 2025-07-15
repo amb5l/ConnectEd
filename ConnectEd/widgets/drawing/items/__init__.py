@@ -299,7 +299,9 @@ class LinePen:
     def onSettingsChange(self : Self) -> None:
         default = self.getDefaults()
         color_normal = default.color if self.color is DEFAULT else self.color
+        color_normal.setAlpha(hub.settings.get("display/alpha"))
         color_selected = hub.settings.getTheme("selected/line")
+        color_selected.setAlpha(hub.settings.get("display/alpha"))
         width = default.width if self.width is DEFAULT else self.width
         style = default.style if self.style is DEFAULT else self.style
         self.normal.setColor(color_normal)
@@ -387,7 +389,9 @@ class FillBrush:
     def onSettingsChange(self : Self) -> None:
         default = self.getDefaults()
         color_normal = default.color if self.color is DEFAULT else self.color
+        color_normal.setAlpha(hub.settings.get("display/alpha"))
         color_selected = hub.settings.getTheme("selected/fill")
+        color_selected.setAlpha(hub.settings.get("display/alpha"))
         style = default.style if self.style is DEFAULT else self.style
         self.normal.setColor(color_normal)
         self.normal.setStyle(style)
@@ -518,9 +522,11 @@ class TextColorFont:
     def onSettingsChange(self : Self) -> None:
         default = self.getDefaults()
         self.selected.setRgb(hub.settings.getTheme("selected/text").rgb())
+        self.selected.setAlpha(hub.settings.get("display/alpha"))
         self.normal.setRgb(
             default.color.rgb() if self.color is DEFAULT else self.color.rgb()
         )
+        self.normal.setAlpha(hub.settings.get("display/alpha"))
         self.font.setFamily(
             default.family if self.family is DEFAULT else self.family
         )
