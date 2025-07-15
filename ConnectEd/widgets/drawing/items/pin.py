@@ -80,13 +80,18 @@ class Pin(CustomGraphicsItem, ElementMixin):
         )
         self._shape = QPainterPath()
         self.name = name # recalculates self._rect
+        s = self._SIZE / 2
         self._path_open = QPainterPath()
-        self._path_open.addRect(self._rect)
+        self._path_open.addRect(QRectF(-s, -s, 2*s, 2*s))
         self._path_nc = QPainterPath()
-        self._path_nc.moveTo(-self._SIZE/2, +self._SIZE/2)
-        self._path_nc.lineTo(+self._SIZE/2, -self._SIZE/2)
-        self._path_nc.moveTo(+self._SIZE/2, +self._SIZE/2)
-        self._path_nc.lineTo(-self._SIZE/2, -self._SIZE/2)
+        self._path_nc.moveTo(-s, +s)
+        self._path_nc.lineTo(+s, -s)
+        self._path_nc.moveTo(+s, +s)
+        self._path_nc.lineTo(-s, -s)
+
+    def onSettingsChange(self : Self) -> None:
+        self.refresh()
+        super().onSettingsChange()
 
     def setLoc(self : Self, loc : EdgeLoc) -> None:
         self._loc = loc
@@ -114,12 +119,7 @@ class Pin(CustomGraphicsItem, ElementMixin):
     def name(self : Self, name : str) -> None:
         self._name = name
         self._esm.textChanged.emit("name", name)
-        self._rect = QRectF(
-            -self._SIZE/2, -self._SIZE/2, self._SIZE, self._SIZE
-        )
-        self._rect |= self._name_text.boundingRect()
-        self._shape.clear()
-        self._shape.addRect(self._rect)
+        self.refresh()
 
     @property
     def direction(self : Self) -> SignalDirection:
@@ -137,8 +137,16 @@ class Pin(CustomGraphicsItem, ElementMixin):
         option  : QStyleOptionGraphicsItem,
         widget  : Optional[QWidget] = None
     ) -> None:
-        # TODO paint connection point - empty square for unconnected, X for no connect
-        pass
+        painter.setPen(self.appearance.line.pen)
+        painter.setBrush(self.appearance.fill.brush)
+        painter.drawPath(self._path_open)
+
+    def refresh(self : Self) -> None:
+        s = (self._SIZE + self.appearance.line.pen.width()) / 2
+        self._rect = QRectF(-s, -s, 2*s, 2*s)
+        self._rect |= self._name_text.boundingRect()
+        self._shape.clear()
+        self._shape.addRect(self._rect)
 
 class BlockPinName(PinText):
     pass
@@ -198,8 +206,8 @@ class BlockPinDirection(CustomGraphicsItem, ElementMixin):
         widget  : Optional[QWidget] = None
     ) -> None:
         parent : "Pin" = self.parentItem()
-        painter.setPen(parent.appearance.line.pen)
-        painter.setBrush(parent.appearance.fill.brush)
+        painter.setPen(self.appearance.line.pen)
+        painter.setBrush(self.appearance.fill.brush)
         painter.drawPath(self._path)
 
 class BlockPin(Pin):
@@ -224,13 +232,6 @@ class BlockPin(Pin):
     def onBlockSizeChanged(self : Self) -> None:
         # unplace if edge becomes too short
         pass
-
-    def onSettingsChange(self : Self) -> None:
-        super().onSettingsChange()
-        self._indicator.update()
-        self.update()
-
-    # TODO add indicator to boundingRect and shape
 
 class cmdPlaceBlockPin(cmdPlaceElement):
     def __init__(
