@@ -12,7 +12,6 @@ from ....core import logger, toXmlAttrs, fromXmlAttrs
 from ..items import PropertiesMixin, ElementMixin, element_class_dict
 
 from ..items.text_block    import TextBlock
-from ..items.property_text import PropertyText
 
 from .api import *
 
@@ -23,7 +22,6 @@ from .. import AttrSpec
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ....core import DrawingItem
-
 
 class DrawingScene(
     QGraphicsScene,

@@ -16,6 +16,8 @@ from .property_text import PropertyText
 
 class BaseRectangle(CustomGraphicsRectItem, ElementMixin):
     """Base class for rectangle elements."""
+
+    # class variables
     _ATTR_SPECS_BASIC = ElementMixin._ATTR_SPECS_BASIC + [
         AttrSpec(
             name      = "Width",
@@ -39,6 +41,7 @@ class BaseRectangle(CustomGraphicsRectItem, ElementMixin):
     MIN_SIZE = QSizeF(1.0, 1.0)
     _KEY_POINTS = [KPDef(k, True, False) for k in KP.__iter__()]
 
+    # instance variables
     _rect          : QRectF
     _bounding_rect : QRectF
     _shape         : QPainterPath
@@ -117,54 +120,10 @@ class BaseRectangle(CustomGraphicsRectItem, ElementMixin):
         self._shape.clear()
         self._shape.addRect(self._bounding_rect)
         self._kpm.updatePositions()
-        for item in self.childItems():
+        for item in self.childItems(): # TODO change to use signal
             if isinstance(item, PropertyText):
                 item.refresh()
-
-    def getEdgeLoc(self : Self, pos : QPointF) -> EdgeLoc:
-        centre_pos = self._rect.center() # always +ve (offset from top left)
-        centre_lpos = self.pos() + centre_pos
-        # special case: centre
-        if pos == centre_lpos:
-            return EdgeLoc(Edge.LEFT, half_h)
-        size = self._rect.size()
-        w = size.width(); h = size.height()
-        half_w = w / 2; half_h = h / 2
-        offset = pos - centre_lpos
-        dx = offset.x(); dy = offset.y()
-        # special case: zero width or height => capped linear distance
-        if size.width() == 0 and size.height() != 0:
-            edge = Edge.LEFT if dx <= 0 else Edge.RIGHT
-            distance = min(max(half_h + dy, 0), h)
-            return EdgeLoc(edge, distance)
-        elif size.height() == 0 and size.width() != 0:
-            edge = Edge.TOP if dy <= 0 else Edge.BOTTOM
-            distance = min(max(half_w + dx, 0), w)
-            return EdgeLoc(edge, distance)
-        # special case: zero size
-        if size == QSizeF(0, 0):
-            if abs(dx) >= abs(dy):
-                edge = Edge.LEFT if dx <= 0 else Edge.RIGHT
-            else:
-                edge = Edge.TOP if dy <= 0 else Edge.BOTTOM
-            return EdgeLoc(edge, 0)
-        # get edge (quadrant)
-        if (h >= w):  # true for tall or square:
-            is_vertical = (abs(dx / dy) >= abs(w / h))
-        else:  # wide: flip for = case
-            is_vertical = (abs(dx / dy) > abs(w / h))
-        if is_vertical:
-            edge = Edge.LEFT if dx < 0 else Edge.RIGHT
-        else:
-            edge = Edge.TOP if dy < 0 else Edge.BOTTOM
-        # get distance
-        if edge in [Edge.LEFT, Edge.RIGHT]:
-            scaled_dy = dy * abs(half_w/ dx)
-            distance = half_h + scaled_dy
-        elif edge in [Edge.TOP, Edge.BOTTOM]:
-            scaled_dx = dx * abs(half_h / dy)
-            distance = half_w + scaled_dx
-        return EdgeLoc(edge, distance)
+        self._esm.sizeChanged.emit()
 
     def boundingRect(self : Self) -> QRectF:
         return self._bounding_rect
@@ -368,3 +327,66 @@ class BaseRectangle(CustomGraphicsRectItem, ElementMixin):
 
 class cmdPlaceBaseRectangle(cmdPlaceElement):
     pass
+
+class BaseRectWithPins(BaseRectangle):
+    def getEdgeLoc(self : Self, pos : QPointF) -> EdgeLoc:
+        centre_pos = self._rect.center() # always +ve (offset from top left)
+        centre_lpos = self.pos() + centre_pos
+        # special case: centre
+        if pos == centre_lpos:
+            return EdgeLoc(Edge.LEFT, half_h)
+        size = self._rect.size()
+        w = size.width(); h = size.height()
+        half_w = w / 2; half_h = h / 2
+        offset = pos - centre_lpos
+        dx = offset.x(); dy = offset.y()
+        # special case: zero width or height => capped linear distance
+        if size.width() == 0 and size.height() != 0:
+            edge = Edge.LEFT if dx <= 0 else Edge.RIGHT
+            distance = min(max(half_h + dy, 0), h)
+            return EdgeLoc(edge, distance)
+        elif size.height() == 0 and size.width() != 0:
+            edge = Edge.TOP if dy <= 0 else Edge.BOTTOM
+            distance = min(max(half_w + dx, 0), w)
+            return EdgeLoc(edge, distance)
+        # special case: zero size
+        if size == QSizeF(0, 0):
+            if abs(dx) >= abs(dy):
+                edge = Edge.LEFT if dx <= 0 else Edge.RIGHT
+            else:
+                edge = Edge.TOP if dy <= 0 else Edge.BOTTOM
+            return EdgeLoc(edge, 0)
+        # get edge (quadrant)
+        print("dx", dx, "dy", dy, "w", w, "h", h)
+        if (h >= w):  # true for tall or square:
+            is_vertical = (abs(dx / dy) >= abs(w / h))
+        else:  # wide: flip for = case
+            is_vertical = (abs(dx / dy) > abs(w / h))
+        if is_vertical:
+            edge = Edge.LEFT if dx < 0 else Edge.RIGHT
+        else:
+            edge = Edge.TOP if dy < 0 else Edge.BOTTOM
+        # get distance
+        if edge in [Edge.LEFT, Edge.RIGHT]:
+            scaled_dy = dy * abs(half_w/ dx)
+            distance = half_h + scaled_dy
+        elif edge in [Edge.TOP, Edge.BOTTOM]:
+            scaled_dx = dx * abs(half_h / dy)
+            distance = half_w + scaled_dx
+        return EdgeLoc(edge, distance)
+
+    def getEdgeLocPos(self : Self, loc : EdgeLoc) -> QPointF:
+        match loc.edge:
+            case Edge.LEFT:
+                return self.pos() + QPointF(0, loc.distance)
+            case Edge.RIGHT:
+                return self.pos() + QPointF(self.rect().width(), loc.distance)
+            case Edge.TOP:
+                return self.pos() + QPointF(loc.distance, 0)
+            case Edge.BOTTOM:
+                return self.pos() + QPointF(loc.distance, self.rect().height())
+            case _:
+                raise ValueError(f"Invalid edge: {loc.edge}")
+
+class cmdPlaceBaseRectWithPins(cmdPlaceBaseRectangle):
+    element : BaseRectWithPins

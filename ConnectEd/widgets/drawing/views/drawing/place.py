@@ -6,7 +6,9 @@ from .....core import logger
 from ....dialogs import TextDialog, PlaceBlockPinDialog
 
 from ...scenes import DrawingScene
-from ...items  import ElementMixin, TextBlock, Block
+from ...items  import TextBlock, Block
+
+from ...items.pin import BlockPin
 
 from .defs import DrawingViewState as State
 
@@ -49,6 +51,7 @@ class DrawingViewPlaceMixin:
                           if item.parentItem() is None]
         if len(selected_items) == 1 and isinstance(selected_items[0], Block):
             self.wip.element = selected_items[0]
+            self.wip.pos0 = self.mapToScene(self.mapFromGlobal(QCursor.pos()))
             self.placeBlockPinDialog()
             return True
         return False
@@ -56,17 +59,29 @@ class DrawingViewPlaceMixin:
     def placeBlockPinDialog(self : "DrawingView") -> None:
         dialog = PlaceBlockPinDialog()
         if dialog.exec():
-            pin = BlockPin(self.wip.element)
+            block : Block = self.wip.element
+            name = dialog.getName()
+            direction = dialog.getDirection()
+            range = dialog.getRange()
+            pin = BlockPin(
+                name, direction, range, block,
+                block.getEdgeLoc(self.wip.pos0)
+            )
+            self.wip.element = pin
             self._goState(State.PlaceBlockPin2)
         else:
             self.wip.clear()
             self._goState(State.Idle)
 
     def placeBlockPinContinue(self : "DrawingView", pos : QPointF) -> None:
-        pass
+        pin : BlockPin = self.wip.element
+        pin.setLocPos(pos)
 
     def placeBlockPinComplete(self : "DrawingView", pos : QPointF) -> None:
-        pass
+        pin : BlockPin = self.wip.element
+        pin.setLocPos(pos)
+        self.wip.clear()
+        self._goState(State.Idle)
 
     def placeRectangle(self : "DrawingView") -> None:
         self._goState(State.PlaceRectangle1)

@@ -8,11 +8,11 @@ from ....core import Z_DRAWING
 
 from . import KP
 
-from .base_rect     import BaseRectangle, cmdPlaceBaseRectangle
+from .base_rect     import BaseRectWithPins, cmdPlaceBaseRectWithPins
 from .property_text import PropertyDisplay as pd
 
 
-class Block(BaseRectangle):
+class Block(BaseRectWithPins):
     Z = Z_DRAWING
     _PROPERTIES = {
     # properties with PropertyText instances
@@ -24,5 +24,5 @@ class Block(BaseRectangle):
         "Path"      : ""
     }
 
-class cmdPlaceBlock(cmdPlaceBaseRectangle):
+class cmdPlaceBlock(cmdPlaceBaseRectWithPins):
     pass

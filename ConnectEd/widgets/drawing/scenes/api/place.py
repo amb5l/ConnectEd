@@ -13,6 +13,8 @@ from ... import Block, cmdPlaceBlock, \
                 Text, cmdPlaceText, \
                 KP
 
+from ...items.pin import BlockPin
+
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from .. import DrawingScene
@@ -49,6 +51,13 @@ class DrawingSceneApiPlaceMixin:
         inst  : Optional[Block] = None
     ) -> Block:
         return self.placeElement(Block, *args, inst=inst)
+
+    def placeBlockPin(
+        self  : "DrawingScene",
+        *args : QPointF,
+        inst  : Optional[BlockPin] = None
+    ) -> BlockPin:
+        return self.placeElement(BlockPin, *args, inst=inst)
 
     def placeRectangle(
         self  : "DrawingScene",

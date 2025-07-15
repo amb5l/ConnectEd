@@ -1,17 +1,25 @@
-from typing import Self, Optional
-from enum   import Enum
+__all__ = ["BlockPin", "cmdPlaceBlockPin"]
 
-from PyQt6.QtCore    import QPointF, QRectF, pyqtSignal
-from PyQt6.QtWidgets import QWidget, QGraphicsItem, QStyleOptionGraphicsItem, \
-                            QGraphicsSceneContextMenuEvent
+from typing import Self, Optional
+
+from PyQt6.QtCore    import QPointF, QRectF
+from PyQt6.QtWidgets import QWidget, QGraphicsItem, QStyleOptionGraphicsItem
 from PyQt6.QtGui     import QPainter, QPainterPath
 
-from .. import KP, SignalDirection, VectorRange, \
-               CustomGraphicsItem, ElementMixin
+from .. import KP, EdgeLoc, SignalDirection, VectorRange, \
+               CustomGraphicsItem, ElementMixin, cmdPlaceElement, Block
 
 from .base_text import BaseText
+from .base_rect import BaseRectWithPins
+
+from . import LinePref, FillPref, TextPref
 
 from .... import hub
+
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from . import DrawingScene
+
 
 class PinText(BaseText):
     """Text for display of pin name/number."""
@@ -28,7 +36,7 @@ class PinText(BaseText):
         super().__init__("", pos, anchor, parent)
         self._attr = attr
         self.onTextChanged(attr, getattr(parent, attr))
-        self.parent().textChanged.connect(self.onTextChanged)
+        parent._esm.textChanged.connect(self.onTextChanged)
 
     def onTextChanged(self : Self, attr : str, value : str) -> None:
         if attr == self._attr:
@@ -36,11 +44,15 @@ class PinText(BaseText):
             super().setText(value)
 
 class Pin(CustomGraphicsItem, ElementMixin):
-    _SIZE = 4
-    _PIN_TEXT_POS = QPointF(2.5, 0)
+    # class attributes
+    _SIZE           = 4
+    _PIN_NAME_CLASS = None  # subclass to override
+    _PIN_NAME_POS   = None    # subclass to override
 
+    # instance attributes
+    _loc       : EdgeLoc
     _name      : str
-    _direction : PinDirection
+    _direction : SignalDirection
     _range     : Optional[VectorRange]
     _name_text : PinText
     _rect      : QRectF
@@ -48,27 +60,25 @@ class Pin(CustomGraphicsItem, ElementMixin):
     _path_open : QPainterPath
     _path_nc   : QPainterPath
 
-    # signals
-    textChanged      = pyqtSignal(str, str)
-    directionChanged = pyqtSignal(PinDirection)
-
     def __init__(
         self      : Self,
         name      : str,
-        direction : PinDirection,
-        range     : Optional[VectorRange] = None
+        direction : SignalDirection,
+        range     : Optional[VectorRange],
+        parent    : BaseRectWithPins,
+        loc       : EdgeLoc
     ) -> None:
-        self._name      = name
+        CustomGraphicsItem.__init__(self, parent)
+        ElementMixin.initElement(self, line=LinePref(), fill=FillPref())
+        self.setLoc(loc)
+        self._name = "?"
         self._direction = direction
-        self._range     = range
-        self._name_text = PinText(
-            "name", self._PIN_TEXT_POS, KP.CENTER_LEFT, self
-        )
-        self._rect = QRectF(
-            -self._SIZE/2, -self._SIZE/2, self._SIZE, self._SIZE
+        self._range = range
+        self._name_text = self._PIN_NAME_CLASS(
+            "name", self._PIN_NAME_POS, KP.CENTER_LEFT, self
         )
         self._shape = QPainterPath()
-        self._shape.addRect(self._rect)
+        self.name = name # recalculates self._rect
         self._path_open = QPainterPath()
         self._path_open.addRect(self._rect)
         self._path_nc = QPainterPath()
@@ -77,6 +87,15 @@ class Pin(CustomGraphicsItem, ElementMixin):
         self._path_nc.moveTo(+self._SIZE/2, +self._SIZE/2)
         self._path_nc.lineTo(-self._SIZE/2, -self._SIZE/2)
 
+    def setLoc(self : Self, loc : EdgeLoc) -> None:
+        self._loc = loc
+        parent : BaseRectWithPins = self.parentItem()
+        super().setPos(parent.getEdgeLocPos(loc))
+
+    def setLocPos(self : Self, pos : QPointF) -> None:
+        parent : BaseRectWithPins = self.parentItem()
+        super().setPos(parent.getEdgeLocPos(parent.getEdgeLoc(pos)))
+
     @property
     def name(self : Self) -> str:
         return self._name
@@ -84,18 +103,23 @@ class Pin(CustomGraphicsItem, ElementMixin):
     @name.setter
     def name(self : Self, name : str) -> None:
         self._name = name
-        self.textChanged.emit("name", name)
+        self._esm.textChanged.emit("name", name)
+        self._rect = QRectF(
+            -self._SIZE/2, -self._SIZE/2, self._SIZE, self._SIZE
+        )
+        self._rect |= self._name_text.boundingRect()
+        self._shape.clear()
+        self._shape.addRect(self._rect)
 
     @property
-    def direction(self : Self) -> PinDirection:
+    def direction(self : Self) -> SignalDirection:
         return self._direction
 
     def boundingRect(self : Self) -> QRectF:
-        # TODO unite indicator, name etc
-        pass
+        return self._rect
 
     def shape(self : Self) -> QPainterPath:
-        pass
+        return self._shape
 
     def paint(
         self    : Self,
@@ -105,6 +129,9 @@ class Pin(CustomGraphicsItem, ElementMixin):
     ) -> None:
         # TODO paint connection point - empty square for unconnected, X for no connect
         pass
+
+class BlockPinName(PinText):
+    pass
 
 class BlockPinIndicator(QGraphicsItem):
     """Pin direction indicator for block pins."""
@@ -127,24 +154,29 @@ class BlockPinIndicator(QGraphicsItem):
         self._path_out = self._buildPath(self._PATH_OUT)
         self._path_bi = self._buildPath(self._PATH_BI)
         self.updateDirection(parent.direction)
-        parent.directionChanged.connect(self.updateDirection)
+        parent._esm.directionChanged.connect(self.updateDirection)
+        hub.settings.change.connect(self.onSettingsChange)
+
+    def onSettingsChange(self : Self) -> None:
+        super().onSettingsChange()
+        self.update()
 
     def _buildPath(self : Self, points : list[tuple[int, int]]) -> QPainterPath:
         p = QPainterPath()
-        p.moveTo(points[0])
+        p.moveTo(QPointF(*points[0]))
         for point in points[1:]:
-            p.lineTo(point)
+            p.lineTo(QPointF(*point))
         p.closeSubpath()
         return p
 
-    def updateDirection(self : Self, direction : PinDirection) -> None:
+    def updateDirection(self : Self, direction : SignalDirection) -> None:
         self._direction = direction
         match direction:
-            case PinDirection.IN:
+            case SignalDirection.IN:
                 self._path = self._path_in
-            case PinDirection.OUT:
+            case SignalDirection.OUT:
                 self._path = self._path_out
-            case PinDirection.BI:
+            case SignalDirection.BI:
                 self._path = self._path_bi
 
     def boundingRect(self : Self) -> QRectF:
@@ -167,19 +199,43 @@ class BlockPinIndicator(QGraphicsItem):
         painter.drawPath(self._path)
 
 class BlockPin(Pin):
-    _PIN_TEXT_POS = QPointF(10, 0)
+    _PIN_NAME_CLASS = BlockPinName
+    _PIN_NAME_POS = QPointF(10, 0)
 
     _indicator : BlockPinIndicator
 
     def __init__(
         self      : Self,
         name      : str,
-        direction : PinDirection,
-        range     : Optional[VectorRange] = None
+        direction : SignalDirection,
+        range     : Optional[VectorRange],
+        block     : Block,
+        loc       : EdgeLoc
     ) -> None:
-        super().__init__(name, direction, range)
+        super().__init__(name, direction, range, block, loc)
         self._indicator = BlockPinIndicator(self)
+        block._esm.sizeChanged.connect(self.onBlockSizeChanged)
+        hub.settings.change.connect(self.onSettingsChange)
+
+    def onBlockSizeChanged(self : Self) -> None:
+        # unplace if edge becomes too short
+        pass
 
     def onSettingsChange(self : Self) -> None:
         super().onSettingsChange()
         self._indicator.update()
+        self.update()
+
+    # TODO add indicator to boundingRect and shape
+
+class cmdPlaceBlockPin(cmdPlaceElement):
+    def __init__(
+        self    : Self,
+        scene   : "DrawingScene",
+        element : BlockPin,
+        parent  : Block
+    ):
+        super().__init__(scene, element)
+
+    def redo(self : Self) -> None:
+        super().redo()

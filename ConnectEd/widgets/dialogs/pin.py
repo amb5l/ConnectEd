@@ -6,7 +6,7 @@ from PyQt6.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, QGridLayout, \
                             QGroupBox, QLabel, QLineEdit, QComboBox, \
                             QCheckBox, QRadioButton, QPushButton
 
-from ..drawing.items import SignalDirection, RangeDirection
+from ..drawing.items import SignalDirection, RangeDirection, VectorRange
 
 from . import okCancelLayout
 
@@ -90,3 +90,22 @@ class PlaceBlockPinDialog(QDialog):
 
     def onScalarChanged(self, state: int) -> None:
         self.range_group.setEnabled(state == 0)
+
+    def getName(self : Self) -> str:
+        return self.name_edit.text()
+
+    def getDirection(self : Self) -> SignalDirection:
+        return SignalDirection(self.signal_dir_combo.currentText())
+
+    def getRange(self : Self) -> VectorRange | None:
+        if self.scalar_check.isChecked():
+            return None
+        range_dir = \
+            RangeDirection.UP if self.up_radio.isChecked() \
+            else RangeDirection.DOWN if self.down_radio.isChecked() \
+            else RangeDirection.UNSPECIFIED
+        return VectorRange(
+            int(self.left_edit.text()),
+            range_dir,
+            int(self.right_edit.text())
+        )

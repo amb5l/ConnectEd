@@ -167,7 +167,7 @@ class KPManager(QObject):
     anchor_loc    : Optional[KP]
     anchor_offset : QPointF
 
-    change = pyqtSignal()
+    change = pyqtSignal() # TODO rename to changed
 
     def __init__(
         self    : Self,

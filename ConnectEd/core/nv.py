@@ -66,6 +66,22 @@ FACTORY_SETTINGS = {
                 },
                 "fill" : Qt.BrushStyle.SolidPattern
             },
+            "BlockPin" : {
+                "line" : {
+                    "width" : 1,
+                    "style" : Qt.PenStyle.SolidLine
+                },
+                "fill" : Qt.BrushStyle.SolidPattern,
+            },
+            "BlockPinName" : {
+                "text" : {
+                    "family"    : "Liberation Sans",
+                    "size"      : 7,
+                    "bold"      : False,
+                    "italic"    : False,
+                    "underline" : False
+                }
+            },
             "PropertyText" : {
                 "text" : {
                     "family"    : "Liberation Sans",
@@ -135,6 +151,14 @@ FACTORY_SETTINGS = {
                 "Block" : {
                     "line" : QColor( 0x81, 0xD1, 0xCD ),
                     "fill" : QColor( 0x30, 0x30, 0x30 )
+                },
+                "BlockPin" : {
+                    "line" : QColor( 0x81, 0xD1, 0xCD ),
+                    "fill" : QColor( 0x30, 0x30, 0x30 ),
+                    "text" : QColor( 0x81, 0xD1, 0xCD )
+                },
+                "BlockPinName" : {
+                    "text" : QColor( 0x81, 0xD1, 0xCD )
                 },
                 "PropertyText" : {
                     "text" : QColor( 128, 255, 128 )

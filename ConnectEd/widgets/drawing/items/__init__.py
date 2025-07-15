@@ -6,11 +6,12 @@ from types       import SimpleNamespace
 from dataclasses import dataclass
 from enum        import Enum
 
-from PyQt6.QtCore    import Qt, QXmlStreamWriter, QXmlStreamReader, QObject, pyqtSignal
+from PyQt6.QtCore    import Qt, QXmlStreamWriter, QXmlStreamReader, QObject, \
+                            pyqtSignal
 from PyQt6.QtGui     import QPen, QBrush, QColor, QFont, QAction, QUndoCommand
 from PyQt6.QtWidgets import QGraphicsItem, QGraphicsRectItem, \
                             QGraphicsTextItem, QGraphicsSimpleTextItem, \
-                            QApplication, QGraphicsSceneContextMenuEvent, QMenu
+                            QGraphicsSceneContextMenuEvent, QMenu
 
 from ....core import Z_DRAWING, logger, \
                      val2str, str2val, camel_to_proper, toXmlAttrs, fromXmlAttrs
@@ -290,9 +291,9 @@ class LinePen:
         self.onSettingsChange()
 
     def getDefaults(self : Self) -> SimpleNamespace:
-        element_name = self.element.__class__.__name__
-        r = hub.settings.get(f"defaults/elements/{element_name}/line")
-        r.color = hub.settings.getTheme(f"elements/{element_name}/line")
+        settings_name = self.element._settings_name
+        r = hub.settings.get(f"defaults/elements/{settings_name}/line")
+        r.color = hub.settings.getTheme(f"elements/{settings_name}/line")
         return r
 
     def onSettingsChange(self : Self) -> None:
@@ -378,9 +379,9 @@ class FillBrush:
 
     def getDefaults(self : Self) -> SimpleNamespace:
         r = SimpleNamespace()
-        element_name = self.element.__class__.__name__
-        r.style = hub.settings.get(f"defaults/elements/{element_name}/fill")
-        r.color = hub.settings.getTheme(f"elements/{element_name}/fill")
+        settings_name = self.element._settings_name
+        r.style = hub.settings.get(f"defaults/elements/{settings_name}/fill")
+        r.color = hub.settings.getTheme(f"elements/{settings_name}/fill")
         return r
 
     def onSettingsChange(self : Self) -> None:
@@ -509,9 +510,9 @@ class TextColorFont:
         self.onSettingsChange()
 
     def getDefaults(self : Self) -> SimpleNamespace:
-        element_name = self.element.__class__.__name__
-        r = hub.settings.get(f"defaults/elements/{element_name}/text")
-        r.color = hub.settings.getTheme(f"elements/{element_name}/text")
+        settings_name = self.element._settings_name
+        r = hub.settings.get(f"defaults/elements/{settings_name}/text")
+        r.color = hub.settings.getTheme(f"elements/{settings_name}/text")
         return r
 
     def onSettingsChange(self : Self) -> None:
@@ -678,9 +679,12 @@ class AttrSpec:
     def tag(self) -> str:
         return self.name.lower().replace(" ", "_")
 
-class PropertySignalManager(QObject):
-    propertyChanged = pyqtSignal(str, str)
-    propertyDeleted = pyqtSignal(str)
+class ElementSignalManager(QObject):
+    sizeChanged      = pyqtSignal()
+    textChanged      = pyqtSignal(str, str)
+    directionChanged = pyqtSignal(SignalDirection)
+    propertyChanged  = pyqtSignal(str, str)
+    propertyDeleted  = pyqtSignal(str)
 
 class PropertiesMixin:
     _ATTR_SPECS         : list[AttrSpec]         = []
@@ -689,13 +693,11 @@ class PropertiesMixin:
     _PROPERTIES         : dict[str, str | tuple] = {}
 
     properties : dict[str, str]
-    _psm       : PropertySignalManager
 
     def initProperties(self : Self, bare : bool = False) -> None:
         self._ATTR_SPECS_BY_NAME = {spec.name: spec for spec in self._ATTR_SPECS}
         self._ATTR_SPECS_BY_TAG = {spec.tag: spec for spec in self._ATTR_SPECS}
         self.properties = {}
-        self._psm = PropertySignalManager()
         if not bare and self._PROPERTIES is not None:
             for name, value in self._PROPERTIES.items():
                 if name in self._ATTR_SPECS_BY_NAME:
@@ -758,7 +760,7 @@ class PropertiesMixin:
         old_value = self.properties[name]
         self.properties[name] = value
         if old_value != value:
-            self._psm.propertyChanged.emit(name, value)
+            self._esm.propertyChanged.emit(name, value)
 
     def deleteProperty(self: Self, name: str) -> None:
         """Delete a property and emit signal to notify PropertyText objects."""
@@ -766,7 +768,7 @@ class PropertiesMixin:
             logger.warning(f"Property not found: {name}")
             return
         del self.properties[name]
-        self._psm.propertyDeleted.emit(name)
+        self._esm.propertyDeleted.emit(name)
 
     def getPropAttr(self : Self, name: str) -> str| None:
         if name in self.properties:
@@ -783,14 +785,14 @@ class PropertiesMixin:
 
     def connectToPropertySignals(self : Self, item : "PropertyText") -> None:
         """Connect a PropertyText object to this element's property signals."""
-        self._psm.propertyChanged.connect(item.onPropertyChanged)
-        self._psm.propertyDeleted.connect(item.onPropertyDeleted)
+        self._esm.propertyChanged.connect(item.onPropertyChanged)
+        self._esm.propertyDeleted.connect(item.onPropertyDeleted)
 
     def disconnectFromPropertySignals(self: Self, item: "PropertyText") -> None:
         """Disconnect a PropertyText object from this element's property signals."""
         try:
-            self._psm.propertyChanged.disconnect(item.onPropertyChanged)
-            self._psm.propertyDeleted.disconnect(item.onPropertyDeleted)
+            self._esm.propertyChanged.disconnect(item.onPropertyChanged)
+            self._esm.propertyDeleted.disconnect(item.onPropertyDeleted)
         except TypeError:
             pass # signal was not connected
 
@@ -810,7 +812,7 @@ class PropertiesMixin:
                 value = xr.attributes().value("value")
                 if value is not None:
                     self.properties[name] = value
-                    self._psm.propertyChanged.emit(name, value)
+                    self._esm.propertyChanged.emit(name, value)
             xr.readNext()
             if xr.isEndElement():
                 xr.readNext()
@@ -821,16 +823,6 @@ class ElementMixin(PropertiesMixin):
     """Mixin class for all elements."""
     Z = Z_DRAWING
     _ATTR_SPECS_BASIC = [
-        AttrSpec(
-            name      = "Anchor",
-            type_name = "KP",
-            exists    = lambda self: \
-                            hasattr(self, "_kpm") and
-                            self._kpm is not None and
-                            self._kpm.anchor_loc is not None,
-            getter    = lambda self: self.anchor(),
-            setter    = lambda self, value: self.setAnchor(value)
-        ),
         AttrSpec(
             name      = "Position X",
             type_name = "float",
@@ -932,11 +924,12 @@ class ElementMixin(PropertiesMixin):
     _MENU_ITEM_NAMES = ["Appearance...", "Properties..."]
     _KEY_POINTS     : Optional[list["KP"]] = None
 
-    uuid       : str
-    appearance : Appearance
-    _menu      : QMenu
-    _kpm       : Optional["KPManager"]
-    _psm       : PropertySignalManager
+    _settings_name : str
+    uuid           : str
+    appearance     : Appearance
+    _menu          : QMenu
+    _kpm           : Optional["KPManager"]
+    _esm           : ElementSignalManager
 
     def initElement(
         self : Self,
@@ -945,6 +938,9 @@ class ElementMixin(PropertiesMixin):
         text : Optional[TextPref] = None,
         bare : bool = False
     ) -> None:
+        self._settings_name = \
+            self.__class__.__name__ if not hasattr(self, "_SETTINGS_NAME") \
+            else self._SETTINGS_NAME
         self.resetUuid()
         self.appearance = Appearance()
         if line is not None:
@@ -962,6 +958,7 @@ class ElementMixin(PropertiesMixin):
         self.setCacheMode(QGraphicsItem.CacheMode.DeviceCoordinateCache)
         hub.settings.change.connect(self.onSettingsChange)
         self._menu = CustomGraphicsItemMixin.getMenu(self.__class__)
+        self._esm = ElementSignalManager()
         if self._KEY_POINTS is not None:
             self._kpm = KPManager(self, self._KEY_POINTS)
         else:
@@ -1230,7 +1227,7 @@ __all__ = [
     "CustomGraphicsRectItem",
     "CustomGraphicsTextItem",
     "AttrSpec",
-    "PropertySignalManager",
+    "ElementSignalManager",
     "ElementMixin",
     "cmdElement",
     "cmdElements",
