@@ -72,7 +72,7 @@ class DrawingScene(
     def clearSelection(self : Self) -> None:
         super().clearSelection()
         for item in self.items():
-            if isinstance(item, ElementMixin):
+            if hasattr(item, "setKPVisible"):
                 item.setKPVisible(False)
         self.kp_items.clear()
 
@@ -112,8 +112,9 @@ class DrawingScene(
         # Show key points only if exactly one item is selected
         items = self.selectedItems()
         if len(items) == 1:
-            items[0].setKPVisible(True)
-            self.kp_items.append(items[0])
+            if hasattr(items[0], "setKPVisible"):
+                items[0].setKPVisible(True)
+                self.kp_items.append(items[0])
         self.selectionChangedItems.emit(items)
 
     def onTextEditingComplete(self, text_item: TextBlock):
