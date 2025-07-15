@@ -98,17 +98,13 @@ class BaseTextBlock(CustomGraphicsTextItem, ElementMixin):
     def pos(self : Self) -> QPointF:
         return super().pos() + self._kpm.anchor_offset
 
-    def update(self : Self) -> None:
-        super().update()
+    def setPlainText(self, text: str) -> None:
+        super().setPlainText(text)
         self._rect = super().boundingRect()
         self._shape.clear()
         self._shape.addRect(self._rect)
         if hasattr(self, "_kpm"):
             self._kpm.updatePositions()
-
-    def setPlainText(self, text: str) -> None:
-        super().setPlainText(text)
-        self.update()
 
     def setEditable(self, editable: bool) -> None:
         self.setTextInteractionFlags(

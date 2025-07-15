@@ -44,14 +44,11 @@ class BaseText(CustomGraphicsSimpleTextItem, ElementMixin):
     def pos(self : Self) -> QPointF:
         return super().pos() + self._kpm.anchor_offset
 
-    def update(self : Self) -> None:
-        super().update()
-        if hasattr(self, "_kpm"):
-            self._kpm.updatePositions()
-
     def setText(self, text: str) -> None:
+        current_pos = self.pos()
         super().setText(text)
-        self.update()
+        self._kpm.updatePositions()
+        self.setPos(current_pos)
 
     def KPRect(self : Self) -> QRectF:
         return self.boundingRect()

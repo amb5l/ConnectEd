@@ -118,7 +118,6 @@ class TetherText(BaseText):
     def setCleat(self : Self, cleat : KP) -> None:
         self._cleat = cleat
         self.setPos(self._pos)
-        self.update()
 
     def _connectToKPMSignals(self : Self) -> None:
         """Connect to parent element's KPManager signals."""

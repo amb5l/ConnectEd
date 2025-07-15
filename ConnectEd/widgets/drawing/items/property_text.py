@@ -112,7 +112,6 @@ class PropertyText(TetherText):
     def setCleat(self : Self, cleat : KP) -> None:
         self._cleat = cleat
         self.setPos(self._pos)
-        self.update()
 
     def value(self : Self) -> str:
         parent = self.parentItem()
@@ -180,7 +179,6 @@ class PropertyText(TetherText):
             case PropertyDisplay.NAME_VALUE:
                 text_to_set = f"{self._name}: {value}"
         super().setText(text_to_set)
-        super().update()
         if hasattr(self, "_kpm"):
             self._kpm.updatePositions()
             self.setPos(self._pos)
