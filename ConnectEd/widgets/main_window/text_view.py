@@ -10,6 +10,8 @@ from PyQt6.QtGui     import QTextOption, QAction, QContextMenuEvent, QWheelEvent
 from ...core   import logger
 from .find_bar import FindBar
 
+from ... import hub
+
 
 class TextView(QPlainTextEdit):
     actions  : SimpleNamespace
@@ -26,8 +28,8 @@ class TextView(QPlainTextEdit):
         self.setUndoRedoEnabled(False)
         self.setWordWrapMode(QTextOption.WrapMode.NoWrap)
         font = self.font()
-        font.setFamily("Intel One Mono")
-        font.setPointSize(10)
+        font.setFamily("Liberation Mono")  # TODO: get from settings
+        font.setPointSizeF(hub.settings.get("display/font_size"))
         self.setFont(font)
         if filename:
             with open(filename, "r") as f:
@@ -55,9 +57,9 @@ class TextView(QPlainTextEdit):
             current_size = font.pointSize()
             delta = event.angleDelta().y()
             if delta > 0:
-                font.setPointSize(min(current_size + 1, 24)) # TODO: max from settings
+                font.setPointSizeF(min(current_size + 1, 24)) # TODO: max from settings
             elif delta < 0:
-                font.setPointSize(max(current_size - 1, 6))  # TODO: min from settings
+                font.setPointSizeF(max(current_size - 1, 6))  # TODO: min from settings
             self.setFont(font)
             event.accept()  # Prevent default scrolling when adjusting font
         else:

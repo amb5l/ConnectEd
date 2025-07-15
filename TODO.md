@@ -1,9 +1,7 @@
 
 Properties System
 =================
-- copying and pasting Text is broken
-- copying and pasting TextBlock is flaky
-- rename to Spreadsheet
+- after transpose, header sorting arrow is stale
 - apply button with underlying command
 - QUndoCommand based editing with local undo stack
 - revert/revert all/cut/copy/paste
@@ -15,7 +13,6 @@ Properties System
 
 General
 =======
-- after transpose, header sorting arrow is stale
 - initial text size = 12?
 - separate state machines for diagram and symbol views, inheriting from drawing
 - middle mouse click (to pan) selects elements - should not affect selection

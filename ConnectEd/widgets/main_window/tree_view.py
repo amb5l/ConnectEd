@@ -18,7 +18,7 @@ class TreeView(QTreeView):
         super().__init__(parent)
         self.setModel(model)
         self.header().setVisible(False)
-        self.setFontSize(10) # TODO get from settings
+        self.setFontSize(hub.settings.get("display/font_size"))
         self.customizeAppearance()
         self.expandAll()
 
@@ -47,7 +47,7 @@ class TreeView(QTreeView):
     def setFontSize(self : Self, size : int) -> None:
         """Set the font size for all items in the tree."""
         font = QFont()
-        font.setPointSize(size)
+        font.setPointSizeF(size)
         self.setFont(font)
         self.current_font_size = size
 

@@ -627,7 +627,7 @@ class SpreadsheetTabWidget(QTabWidget):
         self._delegates = {}
         self._setupDelegates()
         # initialize font size
-        self.setFontSize(10)  # TODO: get from settings
+        self.setFontSize(hub.settings.get("display/font_size"))
 
     def closeTab(self, index: int) -> None:
         """Close the tab at the given index."""
@@ -692,7 +692,7 @@ class SpreadsheetTabWidget(QTabWidget):
         """Set the font size for all tables."""
         self._font_size = size
         font = QFont()
-        font.setPointSize(size)
+        font.setPointSizeF(size)
         for tab in self._tabs.values():
             tab._table_model.setFont(font)
             tab._table_model.resizeColumnsToContents()

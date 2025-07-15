@@ -29,6 +29,7 @@ FACTORY_SETTINGS = {
     },
     "display" : {
         "theme" : "dark",
+        "font_size" : 10,
         "alpha" : 240,
         "outline" : {
             "width" : 0,
