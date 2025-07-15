@@ -92,9 +92,13 @@ class Pin(CustomGraphicsItem, ElementMixin):
         parent : BaseRectWithPins = self.parentItem()
         super().setPos(parent.getEdgeLocPos(loc))
 
-    def setLocPos(self : Self, pos : QPointF) -> None:
+    def setLocPos(
+        self : Self,
+        pos  : QPointF,
+        snap : Optional[QPointF] = None
+    ) -> None:
         parent : BaseRectWithPins = self.parentItem()
-        super().setPos(parent.getEdgeLocPos(parent.getEdgeLoc(pos)))
+        self.setLoc(parent.getEdgeLoc(pos, snap))
 
     @property
     def name(self : Self) -> str:

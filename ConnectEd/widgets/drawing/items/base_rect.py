@@ -329,12 +329,25 @@ class cmdPlaceBaseRectangle(cmdPlaceElement):
     pass
 
 class BaseRectWithPins(BaseRectangle):
-    def getEdgeLoc(self : Self, pos : QPointF) -> EdgeLoc:
+    def getEdgeLoc(
+        self : Self,
+        pos  : QPointF,
+        snap : Optional[QPointF] = None
+    ) -> EdgeLoc:
+        def _snap(loc : EdgeLoc) -> EdgeLoc:
+            e = loc.edge
+            if snap is None:
+                d = loc.distance
+            elif loc.edge in [Edge.LEFT, Edge.RIGHT]:
+                d = round(loc.distance / snap.x()) * snap.x()
+            else:
+                d = round(loc.distance / snap.y()) * snap.y()
+            return EdgeLoc(e, d)
         centre_pos = self._rect.center() # always +ve (offset from top left)
         centre_lpos = self.pos() + centre_pos
         # special case: centre
         if pos == centre_lpos:
-            return EdgeLoc(Edge.LEFT, half_h)
+            return _snap(EdgeLoc(Edge.LEFT, half_h))
         size = self._rect.size()
         w = size.width(); h = size.height()
         half_w = w / 2; half_h = h / 2
@@ -344,11 +357,11 @@ class BaseRectWithPins(BaseRectangle):
         if size.width() == 0 and size.height() != 0:
             edge = Edge.LEFT if dx <= 0 else Edge.RIGHT
             distance = min(max(half_h + dy, 0), h)
-            return EdgeLoc(edge, distance)
+            return _snap(EdgeLoc(edge, distance))
         elif size.height() == 0 and size.width() != 0:
             edge = Edge.TOP if dy <= 0 else Edge.BOTTOM
             distance = min(max(half_w + dx, 0), w)
-            return EdgeLoc(edge, distance)
+            return _snap(EdgeLoc(edge, distance))
         # special case: zero size
         if size == QSizeF(0, 0):
             if abs(dx) >= abs(dy):
@@ -357,7 +370,6 @@ class BaseRectWithPins(BaseRectangle):
                 edge = Edge.TOP if dy <= 0 else Edge.BOTTOM
             return EdgeLoc(edge, 0)
         # get edge (quadrant)
-        print("dx", dx, "dy", dy, "w", w, "h", h)
         if dx == 0:
             is_vertical = False
         elif dy == 0:
@@ -377,7 +389,7 @@ class BaseRectWithPins(BaseRectangle):
         elif edge in [Edge.TOP, Edge.BOTTOM]:
             scaled_dx = dx * abs(half_h / dy)
             distance = half_w + scaled_dx
-        return EdgeLoc(edge, distance)
+        return _snap(EdgeLoc(edge, distance))
 
     def getEdgeLocPos(self : Self, loc : EdgeLoc) -> QPointF:
         match loc.edge:

@@ -65,7 +65,10 @@ class DrawingViewPlaceMixin:
             range = dialog.getRange()
             pin = BlockPin(
                 name, direction, range, block,
-                block.getEdgeLoc(self.wip.pos0)
+                block.getEdgeLoc(
+                    self.wip.pos0,
+                    self.grid.pitch if self.grid.snap else None
+                )
             )
             self.wip.element = pin
             self._goState(State.PlaceBlockPin2)
@@ -75,11 +78,11 @@ class DrawingViewPlaceMixin:
 
     def placeBlockPinContinue(self : "DrawingView", pos : QPointF) -> None:
         pin : BlockPin = self.wip.element
-        pin.setLocPos(pos)
+        pin.setLocPos(pos, self.grid.pitch if self.grid.snap else None)
 
     def placeBlockPinComplete(self : "DrawingView", pos : QPointF) -> None:
         pin : BlockPin = self.wip.element
-        pin.setLocPos(pos)
+        pin.setLocPos(pos, self.grid.pitch if self.grid.snap else None)
         self.wip.clear()
         self._goState(State.Idle)
 
