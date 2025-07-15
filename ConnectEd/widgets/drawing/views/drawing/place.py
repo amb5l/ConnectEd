@@ -64,11 +64,12 @@ class DrawingViewPlaceMixin:
             direction = dialog.getDirection()
             range = dialog.getRange()
             pin = BlockPin(
-                name, direction, range, block,
+                name, direction, range,
                 block.getEdgeLoc(
                     self.wip.pos0,
                     self.grid.pitch if self.grid.snap else None
-                )
+                ),
+                block
             )
             self.wip.element = pin
             self._goState(State.PlaceBlockPin2)

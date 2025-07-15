@@ -69,7 +69,7 @@ FACTORY_SETTINGS = {
                 },
                 "fill" : Qt.BrushStyle.SolidPattern
             },
-            "BlockPin" : {
+            "BlockPinEntry" : {
                 "line" : {
                     "width" : 0,
                     "style" : Qt.PenStyle.SolidLine
@@ -162,7 +162,7 @@ FACTORY_SETTINGS = {
                     "line" : Palette.BlockLine,
                     "fill" : Palette.BlockFill
                 },
-                "BlockPin" : {
+                "BlockPinEntry" : {
                     "line" : Palette.BlockPin,
                     "fill" : Palette.BlockPin
                 },
