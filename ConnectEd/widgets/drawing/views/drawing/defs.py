@@ -175,3 +175,14 @@ class DrawingViewWip:
         self.elements  = None
         self.pos0      = None
         self.selection = None
+
+    @property
+    def element(self : Self) -> Optional[QGraphicsItem]:
+        return \
+            None if self.elements is None else \
+            self.elements[0] if len(self.elements) == 1 else \
+            None
+
+    @element.setter
+    def element(self : Self, element : QGraphicsItem) -> None:
+        self.elements = [element]
