@@ -365,4 +365,4 @@ class BaseRectangle(CustomGraphicsRectItem, ElementMixin):
         return clone
 
 class cmdPlaceBaseRectangle(cmdPlaceElement):
-    element : BaseRectangle
+    pass

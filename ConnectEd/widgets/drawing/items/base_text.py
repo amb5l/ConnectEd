@@ -112,4 +112,4 @@ class BaseText(CustomGraphicsSimpleTextItem, ElementMixin):
         return clone
 
 class cmdPlaceBaseText(cmdPlaceElement):
-    element : BaseText
+    pass

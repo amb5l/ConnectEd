@@ -1,6 +1,8 @@
 
 Properties System
 =================
+- copying and pasting Text is broken
+- copying and pasting TextBlock is flaky
 - rename to Spreadsheet
 - apply button with underlying command
 - QUndoCommand based editing with local undo stack
