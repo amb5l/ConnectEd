@@ -378,13 +378,13 @@ class BaseRectWithPins(BaseRectangle):
     def getEdgeLocPos(self : Self, loc : EdgeLoc) -> QPointF:
         match loc.edge:
             case Edge.LEFT:
-                return self.pos() + QPointF(0, loc.distance)
+                return QPointF(0, loc.distance)
             case Edge.RIGHT:
-                return self.pos() + QPointF(self.rect().width(), loc.distance)
+                return QPointF(self.rect().width(), loc.distance)
             case Edge.TOP:
-                return self.pos() + QPointF(loc.distance, 0)
+                return QPointF(loc.distance, 0)
             case Edge.BOTTOM:
-                return self.pos() + QPointF(loc.distance, self.rect().height())
+                return QPointF(loc.distance, self.rect().height())
             case _:
                 raise ValueError(f"Invalid edge: {loc.edge}")
 
