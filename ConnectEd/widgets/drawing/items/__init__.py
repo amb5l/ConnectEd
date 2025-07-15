@@ -56,6 +56,11 @@ class Edge(Enum):
     TOP    = "top"
     BOTTOM = "bottom"
 
+@dataclass
+class EdgeLoc:
+    edge     : Edge
+    distance : float # from top or left end of edge
+
 # TODO: consider passive, 3-state etc for EE schematics
 class SignalDirection(Enum):
     IN  = "in"
@@ -1194,6 +1199,8 @@ __all__ = [
     "NoChange",
     "NO_CHANGE",
     "BeforeAfter",
+    "Edge",
+    "EdgeLoc",
     "SignalDirection",
     "RangeDirection",
     "VectorRange",
