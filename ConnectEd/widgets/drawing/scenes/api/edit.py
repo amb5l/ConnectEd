@@ -312,7 +312,9 @@ class DrawingSceneApiEditMixin:
         pos  : QPointF = QPointF(0, 0)
     ) -> None:
         elements = \
-            [item for item in self.selectedItems() if isinstance(item, ElementMixin)]
+            [item for item in self.selectedItems() \
+                if isinstance(item, ElementMixin) \
+                and item.parentItem() is None]
         if elements:
             copy(elements, pos)
             self.undo_stack.push(cmdEditDelete(self, elements))
@@ -324,7 +326,9 @@ class DrawingSceneApiEditMixin:
         pos  : QPointF = QPointF(0, 0)
     ) -> None:
         elements = \
-            [item for item in self.selectedItems() if isinstance(item, ElementMixin)]
+            [item for item in self.selectedItems() \
+                if isinstance(item, ElementMixin) \
+                and item.parentItem() is None]
         if elements:
             copy(elements, pos)
         else:

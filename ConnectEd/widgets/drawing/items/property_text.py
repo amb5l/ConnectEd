@@ -37,9 +37,10 @@ class PropertyText(TetherText):
             setter    = lambda self, value: self.setDisplay(value)
         )
     ]
-    _ATTR_SPECS = TetherText._ATTR_SPECS_BASIC \
-        + _ATTR_SPECS_TEXT \
-        + TetherText._ATTR_SPECS_APPEARANCE_TEXT
+    _ATTR_SPECS = \
+        TetherText._ATTR_SPECS_BASIC + \
+        _ATTR_SPECS_TEXT + \
+        TetherText._ATTR_SPECS_APPEARANCE_TEXT
     _MENU_ITEM_NAMES = ["Edit"]
 
     # instance variables

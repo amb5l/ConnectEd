@@ -17,14 +17,7 @@ if TYPE_CHECKING:
 
 class BaseTextBlock(CustomGraphicsTextItem, ElementMixin):
     # class variables
-    _ATTR_SPECS = ElementMixin._ATTR_SPECS + [
-        AttrSpec(
-            name      = "Anchor",
-            type_name = "KP",
-            exists    = lambda self: True,
-            getter    = lambda self: self.anchor(),
-            setter    = lambda self, value: self.setAnchor(value)
-        ),
+    _ATTR_SPECS_TEXT = [
         AttrSpec(
             name      = "Text",
             type_name = "str",
@@ -32,7 +25,11 @@ class BaseTextBlock(CustomGraphicsTextItem, ElementMixin):
             getter    = lambda self: self.toPlainText(),
             setter    = lambda self, value: self.setPlainText(value)
         )
-    ] + ElementMixin._ATTR_SPECS_APPEARANCE_TEXT
+    ]
+    _ATTR_SPECS = \
+        ElementMixin._ATTR_SPECS_BASIC + \
+        _ATTR_SPECS_TEXT + \
+        ElementMixin._ATTR_SPECS_APPEARANCE_TEXT
     _MENU_ITEM_NAMES = [
         "Appearance..."
     ]
@@ -178,12 +175,12 @@ class BaseTextBlock(CustomGraphicsTextItem, ElementMixin):
         return inst
 
     def clone(self : Self) -> Self:
-        """Create a clone of this text block with a new UUID."""
         clone = super().clone()
-        # Copy text-specific properties
         clone.setPlainText(self.toPlainText())
         clone.setAnchor(self._kpm.anchor_loc)
+        clone.setPos(self.pos())
         return clone
 
 class cmdPlaceBaseTextBlock(cmdPlaceElement):
     pass
+

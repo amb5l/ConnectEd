@@ -822,6 +822,16 @@ class ElementMixin(PropertiesMixin):
     Z = Z_DRAWING
     _ATTR_SPECS_BASIC = [
         AttrSpec(
+            name      = "Anchor",
+            type_name = "KP",
+            exists    = lambda self: \
+                            hasattr(self, "_kpm") and
+                            self._kpm is not None and
+                            self._kpm.anchor_loc is not None,
+            getter    = lambda self: self.anchor(),
+            setter    = lambda self, value: self.setAnchor(value)
+        ),
+        AttrSpec(
             name      = "Position X",
             type_name = "float",
             exists    = lambda self: True,

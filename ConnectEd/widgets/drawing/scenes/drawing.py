@@ -24,6 +24,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ....core import DrawingItem
 
+
 class DrawingScene(
     QGraphicsScene,
     DrawingSceneApiMixin,

@@ -7,22 +7,9 @@ from PyQt6.QtGui     import QPainter, QPen, QBrush
 from . import CustomGraphicsSimpleTextItem, ElementMixin, TextPref, \
               AttrSpec, KP, KPDef, cmdPlaceElement
 
-from typing import TYPE_CHECKING
-if TYPE_CHECKING:
-    from .. import DrawingView
-
 
 class BaseText(CustomGraphicsSimpleTextItem, ElementMixin):
     # class variables
-    _ATTR_SPECS_BASIC = [
-        AttrSpec(
-            name      = "Anchor",
-            type_name = "KP",
-            exists    = lambda self: True,
-            getter    = lambda self: self.anchor(),
-            setter    = lambda self, value: self.setAnchor(value)
-        )
-    ] + ElementMixin._ATTR_SPECS_BASIC
     _ATTR_SPECS_TEXT = [
         AttrSpec(
             name      = "Text",
@@ -32,6 +19,10 @@ class BaseText(CustomGraphicsSimpleTextItem, ElementMixin):
             setter    = lambda self, value: self.setText(value)
         )
     ]
+    _ATTR_SPECS = \
+        ElementMixin._ATTR_SPECS_BASIC + \
+        _ATTR_SPECS_TEXT + \
+        ElementMixin._ATTR_SPECS_APPEARANCE_TEXT
     _KEY_POINTS = [KPDef(k, True, False) for k in KP.__iter__()]
 
     def __init__(
@@ -109,6 +100,7 @@ class BaseText(CustomGraphicsSimpleTextItem, ElementMixin):
         clone = super().clone()
         clone.setText(self.text())
         clone.setAnchor(self._kpm.anchor_loc)
+        clone.setPos(self.pos())
         return clone
 
 class cmdPlaceBaseText(cmdPlaceElement):

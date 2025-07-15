@@ -64,9 +64,10 @@ class TetherText(BaseText):
             setter    = lambda self, value: self.setCleat(value)
         )
     ] + BaseText._ATTR_SPECS_BASIC
-    _ATTR_SPECS = _ATTR_SPECS_BASIC \
-        + BaseText._ATTR_SPECS_TEXT \
-        + BaseText._ATTR_SPECS_APPEARANCE_TEXT
+    _ATTR_SPECS = \
+        _ATTR_SPECS_BASIC + \
+        BaseText._ATTR_SPECS_TEXT + \
+        BaseText._ATTR_SPECS_APPEARANCE_TEXT
 
     # instance variables
     _cleat   : KP
