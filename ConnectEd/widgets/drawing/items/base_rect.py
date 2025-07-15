@@ -358,7 +358,11 @@ class BaseRectWithPins(BaseRectangle):
             return EdgeLoc(edge, 0)
         # get edge (quadrant)
         print("dx", dx, "dy", dy, "w", w, "h", h)
-        if (h >= w):  # true for tall or square:
+        if dx == 0:
+            is_vertical = False
+        elif dy == 0:
+            is_vertical = True
+        elif (h >= w):  # true for tall or square:
             is_vertical = (abs(dx / dy) >= abs(w / h))
         else:  # wide: flip for = case
             is_vertical = (abs(dx / dy) > abs(w / h))
