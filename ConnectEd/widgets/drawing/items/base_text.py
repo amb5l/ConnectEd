@@ -32,7 +32,7 @@ class BaseText(CustomGraphicsSimpleTextItem, ElementMixin):
         anchor : KP = KP.TOP_LEFT,
         bare   : bool = False
     ) -> None:
-        super().__init__(text)
+        CustomGraphicsSimpleTextItem.__init__(self, text)
         self.initElement(line=None, fill=None, text=TextPref(), bare=bare)
         self.setPos(pos)
         self.setAnchor(anchor)

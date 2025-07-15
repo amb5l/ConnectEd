@@ -33,7 +33,8 @@ class PinText(BaseText):
         anchor : KP,
         parent : "Pin"
     ) -> None:
-        super().__init__("", pos, anchor, parent)
+        super().__init__("", pos, anchor)
+        self.setParentItem(parent)
         self._attr = attr
         self.onTextChanged(attr, getattr(parent, attr))
         parent._esm.textChanged.connect(self.onTextChanged)
@@ -203,7 +204,7 @@ class BlockPinDirection(CustomGraphicsItem, ElementMixin):
 
 class BlockPin(Pin):
     _PIN_NAME_CLASS = BlockPinName
-    _PIN_NAME_POS = QPointF(10, 0)
+    _PIN_NAME_POS   = QPointF(10, 0)
 
     _indicator : BlockPinDirection
 
