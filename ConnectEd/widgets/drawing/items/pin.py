@@ -6,13 +6,13 @@ from PyQt6.QtCore    import QPointF, QRectF
 from PyQt6.QtWidgets import QWidget, QGraphicsItem, QStyleOptionGraphicsItem
 from PyQt6.QtGui     import QPainter, QPainterPath
 
-from .. import KP, EdgeLoc, SignalDirection, VectorRange, \
+from .. import KP, Edge, EdgeLoc, SignalDirection, VectorRange, \
                CustomGraphicsItem, ElementMixin, cmdPlaceElement, Block
 
 from .base_text import BaseText
 from .base_rect import BaseRectWithPins
 
-from . import LinePref, FillPref, TextPref
+from . import LinePref, FillPref
 
 from .... import hub
 
@@ -89,6 +89,11 @@ class Pin(CustomGraphicsItem, ElementMixin):
 
     def setLoc(self : Self, loc : EdgeLoc) -> None:
         self._loc = loc
+        match loc.edge:
+            case Edge.LEFT:   self.setRotation(0)
+            case Edge.RIGHT:  self.setRotation(180)
+            case Edge.TOP:    self.setRotation(90)
+            case Edge.BOTTOM: self.setRotation(270)
         parent : BaseRectWithPins = self.parentItem()
         super().setPos(parent.getEdgeLocPos(loc))
 
