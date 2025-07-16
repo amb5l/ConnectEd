@@ -62,7 +62,8 @@ class DrawingViewMouseMixin:
 
     def mousePressEvent(self : "DrawingView", event : QMouseEvent) -> None:
         p = event.pos(); l = self.mapToScene(p); m = self._getModifiers(event)
-        if event.buttons() & Qt.MouseButton.RightButton or m == qkm.NoModifier:
+        if (event.buttons() & Qt.MouseButton.RightButton) \
+        or (event.buttons() & Qt.MouseButton.LeftButton and m == qkm.NoModifier):
             items = self._itemsAt(l)
             if items:
                 if not isinstance(items[0], KeyPoint):
