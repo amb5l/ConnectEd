@@ -15,7 +15,6 @@ from types  import SimpleNamespace
 from typing import Self, Optional, Any, Dict, List
 
 from PyQt6.QtCore import Qt, QObject, pyqtSignal, QSettings, QPointF, QSizeF
-from PyQt6.QtGui  import QColor
 
 from .log     import logger
 from .defs    import ORG_NAME, APP_NAME
@@ -63,72 +62,6 @@ FACTORY_SETTINGS = {
             "dots"       : False,
             "alpha"      : 128,
             "min_pixels" : 10
-        },
-        "elements" : {
-            "Block" : {
-                "line" : {
-                    "width" : 1,
-                    "style" : Qt.PenStyle.SolidLine
-                },
-                "fill" : Qt.BrushStyle.SolidPattern
-            },
-            "BlockPinEntry" : {
-                "line" : {
-                    "width" : 0,
-                    "style" : Qt.PenStyle.SolidLine
-                },
-                "fill" : Qt.BrushStyle.NoBrush,
-            },
-            "BlockPinName" : {
-                "text" : {
-                    "family"    : "Liberation Sans",
-                    "size"      : 7,
-                    "bold"      : False,
-                    "italic"    : False,
-                    "underline" : False
-                }
-            },
-            "BlockPinDirection" : {
-                "line" : {
-                    "width" : 1,
-                    "style" : Qt.PenStyle.SolidLine
-                },
-                "fill" : Qt.BrushStyle.NoBrush
-            },
-            "PropertyText" : {
-                "text" : {
-                    "family"    : "Liberation Sans",
-                    "size"      : 7,
-                    "bold"      : False,
-                    "italic"    : False,
-                    "underline" : False
-                }
-            },
-            "Rectangle" : {
-                "line" : {
-                    "width" : 1,
-                    "style" : Qt.PenStyle.SolidLine
-                },
-                "fill" : Qt.BrushStyle.NoBrush
-            },
-            "TextBlock" : {
-                "text" : {
-                    "family"    : "Liberation Sans",
-                    "size"      : 7,
-                    "bold"      : False,
-                    "italic"    : False,
-                    "underline" : False
-                }
-            },
-            "Text" : {
-                "text" : {
-                    "family"    : "Liberation Sans",
-                    "size"      : 7,
-                    "bold"      : False,
-                    "italic"    : False,
-                    "underline" : False
-                }
-            }
         }
     },
     "prefs" : {
@@ -162,32 +95,88 @@ FACTORY_SETTINGS = {
             },
             "elements" : {
                 "Block" : {
-                    "line" : Palette.BlockLine,
-                    "fill" : Palette.BlockFill
+                    "line" : {
+                        "color" : Palette.BlockLine,
+                        "width" : 1,
+                        "style" : Qt.PenStyle.SolidLine
+                    },
+                    "fill" : {
+                        "color" : Palette.BlockFill,
+                        "style" : Qt.BrushStyle.SolidPattern
+                    }
                 },
                 "BlockPinEntry" : {
-                    "line" : Palette.BlockPin,
-                    "fill" : Palette.BlockPin
+                    "line" : {
+                        "color" : Palette.BlockPin,
+                        "width" : 0,
+                        "style" : Qt.PenStyle.SolidLine
+                    },
+                    "fill" : {
+                        "color" : Palette.BlockPin,
+                        "style" : Qt.BrushStyle.NoBrush
+                    }
                 },
                 "BlockPinName" : {
-                    "text" : Palette.BlockPinName
+                    "text" : {
+                        "color"     : Palette.BlockPinName,
+                        "family"    : "Liberation Sans",
+                        "size"      : 7,
+                        "bold"      : False,
+                        "italic"    : False,
+                        "underline" : False
+                    }
                 },
                 "BlockPinDirection" : {
-                    "line" : Palette.BlockPinDirection,
-                    "fill" : Palette.BlockPinDirection,
+                    "line" : {
+                        "color" : Palette.BlockPinDirection,
+                        "width" : 1,
+                        "style" : Qt.PenStyle.SolidLine
+                    },
+                    "fill" : {
+                        "color" : Palette.BlockPinDirection,
+                        "style" : Qt.BrushStyle.NoBrush
+                    }
                 },
                 "PropertyText" : {
-                    "text" : Palette.PropertyText
-                },
-                "Text" : {
-                    "text" : Palette.Text
-                },
-                "TextBlock" : {
-                    "text" : Palette.TextBlock
+                    "text" : {
+                        "color"     : Palette.PropertyText,
+                        "family"    : "Liberation Sans",
+                        "size"      : 7,
+                        "bold"      : False,
+                        "italic"    : False,
+                        "underline" : False
+                    }
                 },
                 "Rectangle" : {
-                    "line" : Palette.Rectangle,
-                    "fill" : Palette.Rectangle
+                    "line" : {
+                        "color" : Palette.Rectangle,
+                        "width" : 1,
+                        "style" : Qt.PenStyle.SolidLine
+                    },
+                    "fill" : {
+                        "color" : Palette.Rectangle,
+                        "style" : Qt.BrushStyle.NoBrush
+                    }
+                },
+                "TextBlock" : {
+                    "text" : {
+                        "color"     : Palette.TextBlock,
+                        "family"    : "Liberation Sans",
+                        "size"      : 7,
+                        "bold"      : False,
+                        "italic"    : False,
+                        "underline" : False
+                    }
+                },
+                "Text" : {
+                    "text" : {
+                        "color"     : Palette.Text,
+                        "family"    : "Liberation Sans",
+                        "size"      : 7,
+                        "bold"      : False,
+                        "italic"    : False,
+                        "underline" : False
+                    }
                 }
             },
             "selected" : {
@@ -201,32 +190,6 @@ FACTORY_SETTINGS = {
             },
             "grid" : {
                 "line" : Palette.Grid
-            }
-        },
-        "light" : {
-            "background" : {
-                "fill" : QColor(  16,  16,  16 )
-            },
-            "paper" : {
-                "fill" : QColor( 240, 240, 240 )
-            },
-            "border" : {
-                "line" : QColor( 128, 128, 128 )
-            },
-            "rectangle" : {
-                "line" : QColor( 192, 120,   0 ), # light orange
-                "fill" : QColor(  96, 100,   0 )  # dark orange
-            },
-            "selected" : {
-                "line" : QColor( 255,   0, 255 ), # bright magenta
-                "fill" : QColor( 128,   0, 128 )  # medium magenta
-            },
-            "key_point" : {
-                "line" : QColor( 255,   0, 255 ), # bright magenta
-                "fill" : QColor( 255,   0, 255 ), # bright magenta
-            },
-            "grid" : {
-                "line" : QColor(  64,  64,  64 )
             }
         }
     },

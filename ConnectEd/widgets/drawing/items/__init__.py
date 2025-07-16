@@ -296,9 +296,7 @@ class LinePen:
 
     def getDefaults(self : Self) -> SimpleNamespace:
         settings_name = self.element._settings_name
-        r = hub.settings.get(f"defaults/elements/{settings_name}/line")
-        r.color = hub.settings.getTheme(f"elements/{settings_name}/line")
-        return r
+        return hub.settings.getTheme(f"elements/{settings_name}/line")
 
     def onSettingsChange(self : Self) -> None:
         default = self.getDefaults()
@@ -384,11 +382,8 @@ class FillBrush:
         self.onSettingsChange()
 
     def getDefaults(self : Self) -> SimpleNamespace:
-        r = SimpleNamespace()
         settings_name = self.element._settings_name
-        r.style = hub.settings.get(f"defaults/elements/{settings_name}/fill")
-        r.color = hub.settings.getTheme(f"elements/{settings_name}/fill")
-        return r
+        return hub.settings.getTheme(f"elements/{settings_name}/fill")
 
     def onSettingsChange(self : Self) -> None:
         default = self.getDefaults()
@@ -519,9 +514,7 @@ class TextColorFont:
 
     def getDefaults(self : Self) -> SimpleNamespace:
         settings_name = self.element._settings_name
-        r = hub.settings.get(f"defaults/elements/{settings_name}/text")
-        r.color = hub.settings.getTheme(f"elements/{settings_name}/text")
-        return r
+        return hub.settings.getTheme(f"elements/{settings_name}/text")
 
     def onSettingsChange(self : Self) -> None:
         default = self.getDefaults()
