@@ -1,5 +1,5 @@
 BlockPin - QGraphicsItemGroup???
-
+prepareGeometryChange throughout?
 
 Properties System
 =================

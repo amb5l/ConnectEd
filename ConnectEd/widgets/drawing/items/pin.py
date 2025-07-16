@@ -2,10 +2,10 @@ __all__ = ["BlockPin", "cmdPlaceBlockPin"]
 
 from typing import Self, Optional
 
-from PyQt6.QtCore    import QPointF, QRectF
+from PyQt6.QtCore    import Qt, QPointF, QRectF
 from PyQt6.QtWidgets import QWidget, QStyleOptionGraphicsItem, \
                             QGraphicsItemGroup
-from PyQt6.QtGui     import QPainter, QPainterPath
+from PyQt6.QtGui     import QPainter, QPainterPath, QPen, QFontMetrics
 
 from .. import KP, Edge, EdgeLoc, SignalDirection, VectorRange, \
                CustomGraphicsItem, ElementMixin, \
@@ -73,7 +73,27 @@ class PinEntry(CustomGraphicsItem, ElementMixin):
         self._shape.addRect(self._rect)
 
 class PinName(BaseText):
-    pass
+    _tight_rect : QRectF
+
+    def __init__(self, text: str = "", pos: QPointF = QPointF(0, 0), anchor: KP = KP.TOP_LEFT, parent=None):
+        self._tight_rect = QRectF()
+        super().__init__(text, pos, anchor, bare=True)
+        self.refresh()
+
+    def setText(self, text: str) -> None:
+        super().setText(text)
+        self.refresh()
+
+    def tightBoundingRect(self) -> QRectF:
+        return self._tight_rect
+
+    def refresh(self) -> None:
+        if not self.text():
+            self._tight_rect = QRectF()
+            return
+        font = self.font()
+        metrics = QFontMetrics(font)
+        self._tight_rect = QRectF(metrics.tightBoundingRect(self.text()))
 
 class Pin(QGraphicsItemGroup):
     # class attributes
@@ -88,6 +108,8 @@ class Pin(QGraphicsItemGroup):
     _loc        : EdgeLoc
     _entry      : PinEntry
     _name_text  : PinName
+    _rect       : QRectF
+    _shape      : QPainterPath
 
     def __init__(
         self      : Self,
@@ -96,10 +118,13 @@ class Pin(QGraphicsItemGroup):
         range     : Optional[VectorRange],
         loc       : EdgeLoc,
         parent    : BaseRectWithPins,
-        refresh   : bool = True
+        finish    : bool = True
     ) -> None:
         super().__init__(parent)
+        self.setPos(-parent.pos())
         self.setFlag(self.GraphicsItemFlag.ItemIsSelectable, True)
+        self._rect = QRectF()
+        self._shape = QPainterPath()
         self._name = name
         self._direction = direction
         self._range = range
@@ -109,9 +134,9 @@ class Pin(QGraphicsItemGroup):
             name, QPointF(), KP.CENTER_LEFT, self
         )
         self.addToGroup(self._name_text)
-        self.setLoc(loc)
-        if refresh:
+        if finish:
             self.refresh()
+            self.setLoc(loc)
         parent._esm.sizeChanged.connect(self.onParentSizeChanged)
 
     def onSettingsChange(self : Self) -> None:
@@ -124,24 +149,23 @@ class Pin(QGraphicsItemGroup):
 
     def setLoc(self : Self, loc : EdgeLoc) -> None:
         self._loc = loc
-        name_centre = QPointF(self._name_text.boundingRect().center())
-        self._name_text.setTransformOriginPoint(name_centre)
         self.prepareGeometryChange()
         match loc.edge:
-            case Edge.LEFT:
-                self.setRotation(0)
-                self._name_text.setRotation(0)
-            case Edge.RIGHT:
-                self.setRotation(180)
-                self._name_text.setRotation(180)
-            case Edge.TOP:
-                self.setRotation(90)
-                self._name_text.setRotation(180)
-            case Edge.BOTTOM:
-                self.setRotation(270)
-                self._name_text.setRotation(0)
+            case Edge.LEFT:   self.setRotation(0)
+            case Edge.RIGHT:  self.setRotation(180)
+            case Edge.TOP:    self.setRotation(90)
+            case Edge.BOTTOM: self.setRotation(270)
+        if hasattr(self, "_name_text"):
+            name_centre = QPointF(self._name_text.boundingRect().center())
+            self._name_text.setTransformOriginPoint(name_centre)
+            match loc.edge:
+                case Edge.LEFT:   self._name_text.setRotation(0)
+                case Edge.RIGHT:  self._name_text.setRotation(180)
+                case Edge.TOP:    self._name_text.setRotation(180)
+                case Edge.BOTTOM: self._name_text.setRotation(0)
         parent : BaseRectWithPins = self.parentItem()
-        self.setPos(parent.getEdgeLocPos(loc))
+        edge_pos = parent.getEdgeLocPos(loc)
+        self.setPos(edge_pos)
 
     def setLocPos(
         self : Self,
@@ -151,12 +175,51 @@ class Pin(QGraphicsItemGroup):
         parent : BaseRectWithPins = self.parentItem()
         self.setLoc(parent.getEdgeLoc(pos, snap))
 
+    def boundingRect(self : Self) -> QRectF:
+        return self._rect
+
+    def shape(self : Self) -> QPainterPath:
+        return self._shape
+
+    def paint(
+        self    : Self,
+        painter : QPainter,
+        option  : QStyleOptionGraphicsItem,
+        widget  : Optional[QWidget] = None
+    ) -> None:
+        super().paint(painter, option, widget)
+        pen = QPen(Qt.GlobalColor.yellow, 0)
+        painter.setPen(pen)
+        painter.drawRect(self.boundingRect())
+
     def refresh(self : Self) -> None:
+        self.prepareGeometryChange()
+        self._name_text.setPos(self._namePos())
+        entry_rect = self._entryRect()
+        name_rect = self._nameRect()
+        other_rect = self._otherRect()
+        self._rect = entry_rect | name_rect | other_rect
+        self._shape.clear()
+        self._shape.addRect(self._rect)
+
+    def _entryRect(self : Self) -> QRectF:
+        rect = self._entry.boundingRect()
+        rect.translate(self._entry.pos())
+        return rect
+
+    def _nameRect(self : Self) -> QRectF:
+        rect = QRectF(self._name_text.tightBoundingRect())
+        rect.translate(self._name_text.pos())
+        return rect
+
+    def _otherRect(self : Self) -> QRectF:
+        return QRectF()
+
+    def _namePos(self : Self) -> QPointF:
         parent : BaseRectWithPins = self.parentItem()
         parent_edge_width = parent.appearance.line.pen.width()
         name_offset = parent_edge_width + self._NAME_GAP
-        self.prepareGeometryChange()
-        self._name_text.setPos(name_offset, 0)
+        return QPointF(name_offset, 0)
 
     @property
     def name(self : Self) -> str:
@@ -279,18 +342,22 @@ class BlockPin(Pin):
         loc       : EdgeLoc,
         block     : Block
     ) -> None:
-        super().__init__(name, direction, range, loc, block, refresh=False)
+        super().__init__(name, direction, range, loc, block, finish=False)
         self._indicator = BlockPinDirection(self)
         self.addToGroup(self._indicator)
+        self.setLoc(loc)
         self.refresh()
         block._esm.directionChanged.connect(self._indicator.updateDirection)
 
-    def refresh(self : Self) -> None:
-        # will indicator have handled settings change by now?
+    def _namePos(self : Self) -> QPointF:
         indicator_width = self._indicator._rect.width()
         name_offset = indicator_width + self._NAME_GAP
-        self.prepareGeometryChange()
-        self._name_text.setPos(QPointF(name_offset, 0))
+        return QPointF(name_offset, 0)
+
+    def _otherRect(self : Self) -> QRectF:
+        rect = self._indicator.boundingRect()
+        rect.translate(self._indicator.pos())
+        return rect
 
 class cmdPlaceBlockPin(cmdPlaceElement):
     pass
