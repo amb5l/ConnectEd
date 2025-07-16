@@ -126,6 +126,7 @@ class Pin(QGraphicsItemGroup):
         self._loc = loc
         name_centre = QPointF(self._name_text.boundingRect().center())
         self._name_text.setTransformOriginPoint(name_centre)
+        self.prepareGeometryChange()
         match loc.edge:
             case Edge.LEFT:
                 self.setRotation(0)
@@ -154,6 +155,7 @@ class Pin(QGraphicsItemGroup):
         parent : BaseRectWithPins = self.parentItem()
         parent_edge_width = parent.appearance.line.pen.width()
         name_offset = parent_edge_width + self._NAME_GAP
+        self.prepareGeometryChange()
         self._name_text.setPos(name_offset, 0)
 
     @property
@@ -163,6 +165,7 @@ class Pin(QGraphicsItemGroup):
     @name.setter
     def name(self : Self, name : str) -> None:
         self._name = name
+        self.prepareGeometryChange()
         self._name_text.setText(name)
 
     @property
@@ -282,11 +285,11 @@ class BlockPin(Pin):
         self.refresh()
         block._esm.directionChanged.connect(self._indicator.updateDirection)
 
-
     def refresh(self : Self) -> None:
         # will indicator have handled settings change by now?
         indicator_width = self._indicator._rect.width()
         name_offset = indicator_width + self._NAME_GAP
+        self.prepareGeometryChange()
         self._name_text.setPos(QPointF(name_offset, 0))
 
 class cmdPlaceBlockPin(cmdPlaceElement):
