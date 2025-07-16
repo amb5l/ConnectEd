@@ -257,7 +257,11 @@ class LinePen:
         self.width    = pref.width
         self.style    = pref.style
         self.normal   = QPen()
+        self.normal.setCapStyle(element._CAP_STYLE)
+        self.normal.setJoinStyle(element._JOIN_STYLE)
         self.selected = QPen()
+        self.selected.setCapStyle(element._CAP_STYLE)
+        self.selected.setJoinStyle(element._JOIN_STYLE)
         self.onSettingsChange()
 
     def getColor(self : Self) -> QColor:
@@ -828,6 +832,8 @@ class PropertiesMixin:
 class ElementMixin(PropertiesMixin):
     """Mixin class for all elements."""
     Z = Z_DRAWING
+    _CAP_STYLE = Qt.PenCapStyle.SquareCap
+    _JOIN_STYLE = Qt.PenJoinStyle.MiterJoin
     _ATTR_SPECS_BASIC = [
         AttrSpec(
             name      = "Anchor",
