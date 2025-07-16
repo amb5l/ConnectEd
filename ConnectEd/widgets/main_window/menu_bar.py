@@ -65,6 +65,11 @@ class MenuBar(QMenuBar):
         self.view_menu.addSeparator()
         self.view_menu.addAction(actions.viewGridDisplay)
         self.view_menu.addAction(actions.viewGridSnap)
+        self.view_menu.addSeparator()
+        self.view_theme_menu = QMenu("&Theme")
+        self.view_theme_menu.addAction(actions.viewThemeDark)
+        self.view_theme_menu.addAction(actions.viewThemeLightMono)
+        self.view_menu.addMenu(self.view_theme_menu)
 
         self.place_menu = QMenu("&Place")
         self.place_menu.addAction(actions.placeBlock)

@@ -316,6 +316,7 @@ class LinePen:
 
     def onSelectionChange(self : Self) -> None:
         self.pen = self.selected if self.element.isSelected() else self.normal
+        self.element.update()
 
     def toXml(self : Self, xw : QXmlStreamWriter) -> None:
         xw.writeStartElement("line")
@@ -400,6 +401,7 @@ class FillBrush:
 
     def onSelectionChange(self : Self) -> None:
         self.brush = self.selected if self.element.isSelected() else self.normal
+        self.element.update()
 
     def toXml(self : Self, xw : QXmlStreamWriter) -> None:
         xw.writeStartElement("fill")
@@ -551,6 +553,7 @@ class TextColorFont:
             self.element.setDefaultTextColor(self.current)
         elif hasattr(self.element, "setColor"):
             self.element.setColor(self.current)
+        self.element.update()
 
     def toXml(self : Self, xw : QXmlStreamWriter) -> None:
         xw.writeStartElement("text")

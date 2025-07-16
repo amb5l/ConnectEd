@@ -1,7 +1,7 @@
 from PyQt6.QtGui import QColor
 
 
-class Palette:
+class PaletteDark:
     Background        = QColor("#000000")
     Sheet             = QColor("#1A1A1A")
     Border            = QColor("#494949")
@@ -18,3 +18,21 @@ class Palette:
     SelectedLine      = QColor("#C000C0")
     SelectedFill      = QColor("#300030")
     SelectedText      = QColor("#800080")
+
+class PaletteLightMono:
+    Background        = QColor("#202020")
+    Sheet             = QColor("#FFFFFF")
+    Border            = QColor("#000000")
+    Grid              = QColor("#E0E0E0")
+    BlockLine         = QColor("#000000")
+    BlockFill         = QColor("#FFFFFF")
+    BlockPin          = QColor("#000000")
+    BlockPinName      = QColor("#000000")
+    BlockPinDirection = QColor("#000000")
+    PropertyText      = QColor("#000000")
+    Text              = QColor("#000000")
+    TextBlock         = QColor("#000000")
+    Rectangle         = QColor("#000000")
+    SelectedLine      = QColor("#C000C0")
+    SelectedFill      = QColor("#800080")
+    SelectedText      = QColor("#C000C0")

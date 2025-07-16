@@ -19,7 +19,7 @@ from PyQt6.QtCore import Qt, QObject, pyqtSignal, QSettings, QPointF, QSizeF
 from .log     import logger
 from .defs    import ORG_NAME, APP_NAME
 from .utils   import getDefaultPath, val2str, str2val
-from .palette import Palette
+from .palette import PaletteDark, PaletteLightMono
 
 
 FACTORY_SETTINGS = {
@@ -84,41 +84,35 @@ FACTORY_SETTINGS = {
     },
     "themes" : {
         "dark" : {
-            "background" : {
-                "fill" : Palette.Background
-            },
-            "paper" : {
-                "fill" : Palette.Sheet
-            },
-            "border" : {
-                "line" : Palette.Border
-            },
+            "background" : PaletteDark.Background,
+            "sheet"      : PaletteDark.Sheet,
+            "border"     : PaletteDark.Border,
             "elements" : {
                 "Block" : {
                     "line" : {
-                        "color" : Palette.BlockLine,
+                        "color" : PaletteDark.BlockLine,
                         "width" : 1,
                         "style" : Qt.PenStyle.SolidLine
                     },
                     "fill" : {
-                        "color" : Palette.BlockFill,
+                        "color" : PaletteDark.BlockFill,
                         "style" : Qt.BrushStyle.SolidPattern
                     }
                 },
                 "BlockPinEntry" : {
                     "line" : {
-                        "color" : Palette.BlockPin,
+                        "color" : PaletteDark.BlockPin,
                         "width" : 0,
                         "style" : Qt.PenStyle.SolidLine
                     },
                     "fill" : {
-                        "color" : Palette.BlockPin,
+                        "color" : PaletteDark.BlockPin,
                         "style" : Qt.BrushStyle.NoBrush
                     }
                 },
                 "BlockPinName" : {
                     "text" : {
-                        "color"     : Palette.BlockPinName,
+                        "color"     : PaletteDark.BlockPinName,
                         "family"    : "Liberation Sans",
                         "size"      : 7,
                         "bold"      : False,
@@ -128,18 +122,18 @@ FACTORY_SETTINGS = {
                 },
                 "BlockPinDirection" : {
                     "line" : {
-                        "color" : Palette.BlockPinDirection,
+                        "color" : PaletteDark.BlockPinDirection,
                         "width" : 1,
                         "style" : Qt.PenStyle.SolidLine
                     },
                     "fill" : {
-                        "color" : Palette.BlockPinDirection,
+                        "color" : PaletteDark.BlockPinDirection,
                         "style" : Qt.BrushStyle.NoBrush
                     }
                 },
                 "PropertyText" : {
                     "text" : {
-                        "color"     : Palette.PropertyText,
+                        "color"     : PaletteDark.PropertyText,
                         "family"    : "Liberation Sans",
                         "size"      : 7,
                         "bold"      : False,
@@ -149,18 +143,18 @@ FACTORY_SETTINGS = {
                 },
                 "Rectangle" : {
                     "line" : {
-                        "color" : Palette.Rectangle,
+                        "color" : PaletteDark.Rectangle,
                         "width" : 1,
                         "style" : Qt.PenStyle.SolidLine
                     },
                     "fill" : {
-                        "color" : Palette.Rectangle,
+                        "color" : PaletteDark.Rectangle,
                         "style" : Qt.BrushStyle.NoBrush
                     }
                 },
                 "TextBlock" : {
                     "text" : {
-                        "color"     : Palette.TextBlock,
+                        "color"     : PaletteDark.TextBlock,
                         "family"    : "Liberation Sans",
                         "size"      : 7,
                         "bold"      : False,
@@ -170,7 +164,7 @@ FACTORY_SETTINGS = {
                 },
                 "Text" : {
                     "text" : {
-                        "color"     : Palette.Text,
+                        "color"     : PaletteDark.Text,
                         "family"    : "Liberation Sans",
                         "size"      : 7,
                         "bold"      : False,
@@ -180,16 +174,119 @@ FACTORY_SETTINGS = {
                 }
             },
             "selected" : {
-                "line" : Palette.SelectedLine,
-                "fill" : Palette.SelectedFill,
-                "text" : Palette.SelectedText
+                "line" : PaletteDark.SelectedLine,
+                "fill" : PaletteDark.SelectedFill,
+                "text" : PaletteDark.SelectedText
             },
             "key_point" : {
-                "line" : Palette.SelectedLine,
-                "fill" : Palette.SelectedFill
+                "line" : PaletteDark.SelectedLine,
+                "fill" : PaletteDark.SelectedFill
             },
             "grid" : {
-                "line" : Palette.Grid
+                "line" : PaletteDark.Grid
+            }
+        },
+        "light_mono" : {
+            "background" : PaletteLightMono.Background,
+            "sheet"      : PaletteLightMono.Sheet,
+            "border"     : PaletteLightMono.Border,
+            "elements" : {
+                "Block" : {
+                    "line" : {
+                        "color" : PaletteLightMono.BlockLine,
+                        "width" : 1,
+                        "style" : Qt.PenStyle.SolidLine
+                    },
+                    "fill" : {
+                        "color" : PaletteLightMono.BlockFill,
+                        "style" : Qt.BrushStyle.SolidPattern
+                    }
+                },
+                "BlockPinEntry" : {
+                    "line" : {
+                        "color" : PaletteLightMono.BlockPin,
+                        "width" : 0,
+                        "style" : Qt.PenStyle.SolidLine
+                    },
+                    "fill" : {
+                        "color" : PaletteLightMono.BlockPin,
+                        "style" : Qt.BrushStyle.NoBrush
+                    }
+                },
+                "BlockPinName" : {
+                    "text" : {
+                        "color"     : PaletteLightMono.BlockPinName,
+                        "family"    : "Liberation Sans",
+                        "size"      : 7,
+                        "bold"      : False,
+                        "italic"    : False,
+                        "underline" : False
+                    }
+                },
+                "BlockPinDirection" : {
+                    "line" : {
+                        "color" : PaletteLightMono.BlockPinDirection,
+                        "width" : 1,
+                        "style" : Qt.PenStyle.SolidLine
+                    },
+                    "fill" : {
+                        "color" : PaletteLightMono.BlockPinDirection,
+                        "style" : Qt.BrushStyle.NoBrush
+                    }
+                },
+                "PropertyText" : {
+                    "text" : {
+                        "color"     : PaletteLightMono.PropertyText,
+                        "family"    : "Liberation Sans",
+                        "size"      : 7,
+                        "bold"      : False,
+                        "italic"    : False,
+                        "underline" : False
+                    }
+                },
+                "Rectangle" : {
+                    "line" : {
+                        "color" : PaletteLightMono.Rectangle,
+                        "width" : 1,
+                        "style" : Qt.PenStyle.SolidLine
+                    },
+                    "fill" : {
+                        "color" : PaletteLightMono.Rectangle,
+                        "style" : Qt.BrushStyle.NoBrush
+                    }
+                },
+                "TextBlock" : {
+                    "text" : {
+                        "color"     : PaletteLightMono.TextBlock,
+                        "family"    : "Liberation Sans",
+                        "size"      : 7,
+                        "bold"      : False,
+                        "italic"    : False,
+                        "underline" : False
+                    }
+                },
+                "Text" : {
+                    "text" : {
+                        "color"     : PaletteLightMono.Text,
+                        "family"    : "Liberation Sans",
+                        "size"      : 7,
+                        "bold"      : False,
+                        "italic"    : False,
+                        "underline" : False
+                    }
+                }
+            },
+            "selected" : {
+                "line" : PaletteLightMono.SelectedLine,
+                "fill" : PaletteLightMono.SelectedFill,
+                "text" : PaletteLightMono.SelectedText
+            },
+            "key_point" : {
+                "line" : PaletteLightMono.SelectedLine,
+                "fill" : PaletteLightMono.SelectedFill
+            },
+            "grid" : {
+                "line" : PaletteLightMono.Grid
             }
         }
     },

@@ -76,13 +76,13 @@ class DiagramScene(DrawingScene):
         return QRectF(QPointF(0, 0), size)
 
     def drawBackground(self : Self, painter : QPainter, rect : QRectF) -> None:
-        painter.fillRect(rect, hub.settings.getTheme("background/fill"))
+        painter.fillRect(rect, hub.settings.getTheme("background"))
         painter.fillRect(
             self.paperRect(),
-            hub.settings.getTheme("paper/fill")
+            hub.settings.getTheme("sheet")
         )
         painter.setPen(QPen(
-            hub.settings.getTheme("border/line"),
+            hub.settings.getTheme("border"),
             self.border,
             Qt.PenStyle.SolidLine
         ))

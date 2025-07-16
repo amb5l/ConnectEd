@@ -198,6 +198,16 @@ class Slots:
         widget.viewGridSnap(checked)
 
     @withCurrentWidget(DrawingView)
+    def viewThemeDark(self : Self, widget: DrawingView) -> None:
+        hub.settings.set("display/theme", "dark")
+        widget.scene().update()
+
+    @withCurrentWidget(DrawingView)
+    def viewThemeLightMono(self : Self, widget: DrawingView) -> None:
+        hub.settings.set("display/theme", "light_mono")
+        widget.scene().update()
+
+    @withCurrentWidget(DrawingView)
     def placeBlock(self : Self, widget: DrawingView) -> None:
         widget.placeBlock()
 

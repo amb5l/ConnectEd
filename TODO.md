@@ -9,6 +9,7 @@ use ElementMixin class attribute for cap and join style
 
 Selection Behaviour
 ===================
+- child elements e.g. property texts? sequential/incremental selection?
 - add tolerance to all
 - unfilled rectangles
 - clicking on a keypoint of a block that is inside a rectangle gets intercepted
