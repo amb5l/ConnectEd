@@ -3,11 +3,11 @@ from PyQt6.QtGui import QColor
 
 class Palette:
     Background        = QColor("#000000")
-    Sheet             = QColor("#0A0A0A")
-    Border            = QColor("#303030")
+    Sheet             = QColor("#1A1A1A")
+    Border            = QColor("#494949")
     Grid              = QColor("#404040")
     BlockLine         = QColor("#828282")
-    BlockFill         = QColor("#141414")
+    BlockFill         = QColor("#333333")
     BlockPin          = QColor("#A2A2A2")
     BlockPinName      = QColor("#EBC88D")
     BlockPinDirection = QColor("#AA9BF5")
