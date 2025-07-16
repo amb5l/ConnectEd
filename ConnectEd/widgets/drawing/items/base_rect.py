@@ -345,12 +345,12 @@ class BaseRectWithPins(BaseRectangle):
             return EdgeLoc(e, d)
         centre_pos = self._rect.center() # always +ve (offset from top left)
         centre_lpos = self.pos() + centre_pos
-        # special case: centre
-        if pos == centre_lpos:
-            return _snap(EdgeLoc(Edge.LEFT, half_h))
         size = self._rect.size()
         w = size.width(); h = size.height()
         half_w = w / 2; half_h = h / 2
+        # special case: centre
+        if pos == centre_lpos:
+            return _snap(EdgeLoc(Edge.LEFT, half_h))
         offset = pos - centre_lpos
         dx = offset.x(); dy = offset.y()
         # special case: zero width or height => capped linear distance
