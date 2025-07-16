@@ -2,11 +2,11 @@ __all__ = ["Splash"]
 
 import time
 
-from typing import Optional
+from typing import Optional, Self
 
-from PyQt6.QtCore    import Qt, QTimer
+from PyQt6.QtCore    import Qt, QRectF, QTimer
 from PyQt6.QtWidgets import QSplashScreen, QApplication
-from PyQt6.QtGui     import QPixmap, QFont, QPainter
+from PyQt6.QtGui     import QPixmap, QFont, QColor, QPainter
 
 from ..core import APP_NAME
 
@@ -22,12 +22,14 @@ class Splash(QSplashScreen):
 
     _start_time : Optional[float] = None
 
-    def __init__(self, parent=None):
+    def __init__(self : Self, light : bool, parent=None):
         screen = QApplication.primaryScreen()
         screen_geometry = screen.geometry()
         splash_width = int(screen_geometry.width() * self._SIZE)
         splash_height = int(screen_geometry.height() * self._SIZE)
-        pixmap = self._create_splash_pixmap(splash_width, splash_height, screen_geometry.width())
+        pixmap = self._create_splash_pixmap(
+            splash_width, splash_height, screen_geometry.width(), light
+        )
         super().__init__(pixmap)
         self.setWindowFlags(
             Qt.WindowType.WindowStaysOnTopHint |
@@ -35,12 +37,20 @@ class Splash(QSplashScreen):
         )
         self._start_time = None
 
-    def _create_splash_pixmap(self, splash_width, splash_height, screen_width):
+    def _create_splash_pixmap(
+        self          : Self,
+        splash_width  : int,
+        splash_height : int,
+        screen_width  : int,
+        light         : bool
+    ) -> QPixmap:
         screen = QApplication.primaryScreen()
         screen_geometry = screen.geometry()
         bitmap = QPixmap(f"{hub.APP_ROOT}/resources/icons/ConnectEd.png")
         pixmap = QPixmap(splash_width, splash_height)
-        pixmap.fill(Qt.GlobalColor.white)
+        bg_color = Qt.GlobalColor.white if light else QColor("#202020")
+        fg_color = Qt.GlobalColor.black if light else Qt.GlobalColor.lightGray
+        pixmap.fill(bg_color)
         painter = QPainter(pixmap)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
         gap = int(screen_width * self._GAP)
@@ -63,9 +73,12 @@ class Splash(QSplashScreen):
         start_x = (splash_width - total_content_width) // 2
         bitmap_y = (splash_height - scaled_bitmap.height()) // 2
         painter.drawPixmap(start_x, bitmap_y, scaled_bitmap)
+        painter.setPen(Qt.GlobalColor.black)
+        surround = QRectF(start_x, bitmap_y, bitmap_size + 1, bitmap_size + 1)
+        painter.drawRect(surround)
         text_x = start_x + scaled_bitmap.width() + gap
         text_y = (splash_height + text_height) // 2 - text_metrics.descent()
-        painter.setPen(Qt.GlobalColor.black)
+        painter.setPen(fg_color)
         painter.drawText(text_x, text_y, text)
         painter.end()
         return pixmap

@@ -1,5 +1,6 @@
 import sys
 
+from PyQt6.QtCore    import Qt
 from PyQt6.QtWidgets import QApplication
 from PyQt6.QtGui     import QIcon
 
@@ -22,7 +23,8 @@ def initCli():
 def initGui():
     hub.app = QApplication(sys.argv[:1] + unknown_args)
     hub.app.setStyle("Fusion")
-    hub.splash = Splash()
+    scheme = QApplication.instance().styleHints().colorScheme()
+    hub.splash = Splash(scheme == Qt.ColorScheme.Light)
     hub.splash.show()
     hub.app.processEvents()
     hub.name_counter = NameCounter()
@@ -44,3 +46,4 @@ def initGui():
     initResources()
     hub.main_window = MainWindow()
     hub.splash.finish(hub.main_window)
+
