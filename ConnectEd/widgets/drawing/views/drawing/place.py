@@ -58,6 +58,7 @@ class DrawingViewPlaceMixin:
 
     def placeBlockPinDialog(self : "DrawingView") -> None:
         dialog = PlaceBlockPinDialog()
+        self._goState(State.PlaceBlockPin2)
         if dialog.exec():
             block : Block = self.wip.element
             name = dialog.getName()
@@ -72,7 +73,7 @@ class DrawingViewPlaceMixin:
                 block
             )
             self.wip.element = pin
-            self._goState(State.PlaceBlockPin2)
+            self._goState(State.PlaceBlockPin3)
         else:
             self.wip.clear()
             self._goState(State.Idle)

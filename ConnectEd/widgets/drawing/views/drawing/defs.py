@@ -130,6 +130,7 @@ class DrawingViewState(Enum):
     PlaceText       = auto()
     PlaceBlockPin1  = auto()
     PlaceBlockPin2  = auto()
+    PlaceBlockPin3  = auto()
 
 DrawingViewStateTip = {
     DrawingViewState.Idle            : "Idle",
@@ -158,7 +159,8 @@ DrawingViewStateTip = {
     DrawingViewState.PlaceTextBlock2 : "Place Text Block: enter the text",
     DrawingViewState.PlaceText       : "Place Text: pick a position",
     DrawingViewState.PlaceBlockPin1  : "Place Block Pin: pick a block",
-    DrawingViewState.PlaceBlockPin2  : "Place Block Pin: pick a location"
+    DrawingViewState.PlaceBlockPin2  : "Place Block Pin: enter the pin details",
+    DrawingViewState.PlaceBlockPin3  : "Place Block Pin: pick a location"
 }
 
 class DrawingViewWip:

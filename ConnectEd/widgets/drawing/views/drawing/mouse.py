@@ -229,10 +229,8 @@ class DrawingViewMouseMixin:
                     m & qkm.ControlModifier,
                     m & qkm.AltModifier
                 )
-                self.placeBlockPinBegin(
-                    self._snap(self.mouse.left.release.logical)
-                )
-            case State.PlaceBlockPin2:
+                self.placeBlockPinBegin()
+            case State.PlaceBlockPin3:
                 self.placeBlockPinComplete(
                     self._snap(self.mouse.left.release.logical)
                 )
@@ -479,7 +477,7 @@ class DrawingViewMouseMixin:
                 self.placeBlockContinue(
                     self._snap(self.mouse.current.logical)
                 )
-            case State.PlaceBlockPin2:
+            case State.PlaceBlockPin3:
                 self.placeBlockPinContinue(
                     self._snap(self.mouse.current.logical)
                 )
