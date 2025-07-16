@@ -1241,6 +1241,7 @@ __all__ = [
     "AppearancePrefChange",
     "CustomGraphicsItem",
     "CustomGraphicsRectItem",
+    "CustomGraphicsSimpleTextItem",
     "CustomGraphicsTextItem",
     "AttrSpec",
     "ElementSignalManager",

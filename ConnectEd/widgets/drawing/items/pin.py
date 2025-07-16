@@ -4,12 +4,12 @@ from typing import Self, Optional
 
 from PyQt6.QtCore    import Qt, QPointF, QRectF
 from PyQt6.QtWidgets import QWidget, QStyleOptionGraphicsItem, \
-                            QGraphicsItemGroup
-from PyQt6.QtGui     import QPainter, QPainterPath, QPen, QFontMetrics
+                            QGraphicsItemGroup, QStyle
+from PyQt6.QtGui     import QPainter, QPainterPath, QPen, QBrush, QFontMetrics
 
-from .. import KP, Edge, EdgeLoc, SignalDirection, VectorRange, \
-               CustomGraphicsItem, ElementMixin, \
-               Block, cmdPlaceElement
+from .. import KP, Edge, EdgeLoc, SignalDirection, VectorRange, TextPref, \
+               CustomGraphicsItem, CustomGraphicsSimpleTextItem, \
+               ElementMixin, Block, cmdPlaceElement
 
 from .base_text import BaseText
 from .base_rect import BaseRectWithPins
@@ -72,28 +72,62 @@ class PinEntry(CustomGraphicsItem, ElementMixin):
         self._shape.clear()
         self._shape.addRect(self._rect)
 
-class PinName(BaseText):
-    _tight_rect : QRectF
+class PinName(CustomGraphicsSimpleTextItem, ElementMixin):
+    _pos           : QPointF
+    _tight_rect    : QRectF
+    _anchor_offset : QPointF
 
-    def __init__(self, text: str = "", pos: QPointF = QPointF(0, 0), anchor: KP = KP.TOP_LEFT, parent=None):
-        self._tight_rect = QRectF()
-        super().__init__(text, pos, anchor, bare=True)
+    def __init__(
+        self   : Self,
+        text   : str = "",
+        pos    : QPointF = QPointF(0, 0),
+        parent : Optional["Pin"] = None
+    ) -> None:
+        CustomGraphicsSimpleTextItem.__init__(self, text, parent)
+        self.initElement(line=None, fill=None, text=TextPref(), bare=True)
+        self.setFlag(self.GraphicsItemFlag.ItemIsSelectable , True)
+        self._pos = pos
         self.refresh()
 
-    def setText(self, text: str) -> None:
+    def setPos(self : Self, pos : QPointF) -> None:
+        self._pos = pos
+        super().setPos(pos - self._anchor_offset)
+
+    def pos(self : Self) -> QPointF:
+        return self._pos
+
+    def setText(self : Self, text : str) -> None:
         super().setText(text)
         self.refresh()
 
-    def tightBoundingRect(self) -> QRectF:
+    def tightBoundingRect(self : Self) -> QRectF:
         return self._tight_rect
 
-    def refresh(self) -> None:
+    def paint(
+        self    : Self,
+        painter : QPainter,
+        option  : QStyleOptionGraphicsItem,
+        widget  : QWidget
+    ) -> None:
+        self.setPen(QPen(Qt.PenStyle.NoPen))
+        self.setBrush(QBrush(self.appearance.text.current))
+        option.state &= ~QStyle.StateFlag.State_Selected
+        super().paint(painter, option, widget)
+        if self.isSelected():
+            painter.setPen(self.appearance.outline.pen)
+            painter.drawRect(self._tight_rect)
+
+    def refresh(self : Self) -> None:
         if not self.text():
             self._tight_rect = QRectF()
             return
         font = self.font()
         metrics = QFontMetrics(font)
-        self._tight_rect = QRectF(metrics.tightBoundingRect(self.text()))
+        baseline_tight_rect = metrics.tightBoundingRect(self.text())
+        baseline_y = metrics.ascent()
+        self._tight_rect = baseline_tight_rect.translated(0, baseline_y)
+        self._anchor_offset = QPointF(0, self.boundingRect().height() / 2)
+        self.setPos(self._pos)
 
 class Pin(QGraphicsItemGroup):
     # class attributes
@@ -130,9 +164,7 @@ class Pin(QGraphicsItemGroup):
         self._range = range
         self._entry = self._ENTRY_CLASS(self)
         self.addToGroup(self._entry)
-        self._name_text = self._NAME_CLASS(
-            name, QPointF(), KP.CENTER_LEFT, self
-        )
+        self._name_text = self._NAME_CLASS(name, QPointF(), self)
         self.addToGroup(self._name_text)
         if finish:
             self.refresh()
@@ -187,10 +219,11 @@ class Pin(QGraphicsItemGroup):
         option  : QStyleOptionGraphicsItem,
         widget  : Optional[QWidget] = None
     ) -> None:
+        option.state &= ~QStyle.StateFlag.State_Selected
         super().paint(painter, option, widget)
-        pen = QPen(Qt.GlobalColor.yellow, 0)
-        painter.setPen(pen)
-        painter.drawRect(self.boundingRect())
+        if self.isSelected():
+            painter.setPen(self._entry.appearance.outline.pen)
+            painter.drawRect(self._rect)
 
     def refresh(self : Self) -> None:
         self.prepareGeometryChange()
@@ -209,7 +242,8 @@ class Pin(QGraphicsItemGroup):
 
     def _nameRect(self : Self) -> QRectF:
         rect = QRectF(self._name_text.tightBoundingRect())
-        rect.translate(self._name_text.pos())
+        actual_pos = self._name_text.pos() - self._name_text._anchor_offset
+        rect.translate(actual_pos)
         return rect
 
     def _otherRect(self : Self) -> QRectF:
