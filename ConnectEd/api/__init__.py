@@ -5,7 +5,7 @@ from PyQt6.QtGui     import QIcon
 
 from ..core      import NameCounter, Settings, Model, known_args, unknown_args
 from ..resources import initResources
-from ..widgets   import MainWindow
+from ..widgets   import Splash, MainWindow
 
 from .. import hub
 
@@ -20,8 +20,17 @@ def initCli():
     hub.model = Model()
 
 def initGui():
-    initCli()
+    hub.app = QApplication(sys.argv[:1] + unknown_args)
     hub.app.setStyle("Fusion")
+    hub.splash = Splash()
+    hub.splash.show()
+    hub.app.processEvents()
+    hub.name_counter = NameCounter()
+    hub.settings = Settings()
+    if known_args.reset:
+        hub.settings.reset()
+    hub.settings.load()
+    hub.model = Model()
     icon = QIcon(f"{hub.APP_ROOT}/resources/icons/ConnectEd.png")
     hub.app.setWindowIcon(icon)
     if sys.platform == "win32":
@@ -34,4 +43,4 @@ def initGui():
             pass
     initResources()
     hub.main_window = MainWindow()
-    hub.main_window.show()
+    hub.splash.finish(hub.main_window)
