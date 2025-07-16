@@ -1,17 +1,16 @@
 __all__ = ["BlockPin", "cmdPlaceBlockPin"]
 
-from typing import Self, Optional
+from typing import Self, Optional, Any
 
 from PyQt6.QtCore    import Qt, QPointF, QRectF
 from PyQt6.QtWidgets import QWidget, QStyleOptionGraphicsItem, \
                             QGraphicsItemGroup, QStyle
 from PyQt6.QtGui     import QPainter, QPainterPath, QPen, QBrush, QFontMetrics
 
-from .. import KP, Edge, EdgeLoc, SignalDirection, VectorRange, TextPref, \
+from .. import Edge, EdgeLoc, SignalDirection, VectorRange, TextPref, \
                CustomGraphicsItem, CustomGraphicsSimpleTextItem, \
                ElementMixin, Block, cmdPlaceElement
 
-from .base_text import BaseText
 from .base_rect import BaseRectWithPins
 
 from . import LinePref, FillPref
@@ -86,7 +85,6 @@ class PinName(CustomGraphicsSimpleTextItem, ElementMixin):
     ) -> None:
         CustomGraphicsSimpleTextItem.__init__(self, text, parent)
         self.initElement(line=None, fill=None, text=TextPref(), bare=True)
-        self.setFlag(self.GraphicsItemFlag.ItemIsSelectable , True)
         self._pos = pos
         self.refresh()
 
@@ -110,13 +108,10 @@ class PinName(CustomGraphicsSimpleTextItem, ElementMixin):
         option  : QStyleOptionGraphicsItem,
         widget  : QWidget
     ) -> None:
+        option.state &= ~QStyle.StateFlag.State_Selected
         self.setPen(QPen(Qt.PenStyle.NoPen))
         self.setBrush(QBrush(self.appearance.text.current))
-        option.state &= ~QStyle.StateFlag.State_Selected
         super().paint(painter, option, widget)
-        if self.isSelected():
-            painter.setPen(self.appearance.outline.pen)
-            painter.drawRect(self._tight_rect)
 
     def refresh(self : Self) -> None:
         if not self.text():
@@ -133,6 +128,8 @@ class PinName(CustomGraphicsSimpleTextItem, ElementMixin):
 class Pin(QGraphicsItemGroup):
     # class attributes
     _ENTRY_CLASS = None  # subclass to override
+    _INNER_CLASS = None  # subclass to override
+    _OUTER_CLASS = None  # subclass to override
     _NAME_CLASS  = None  # subclass to override
     _NAME_GAP    = 2
 
@@ -142,6 +139,8 @@ class Pin(QGraphicsItemGroup):
     _range      : Optional[VectorRange]
     _loc        : EdgeLoc
     _entry      : PinEntry
+    _inner      : Optional[CustomGraphicsItem]
+    _outer      : Optional[CustomGraphicsItem]
     _name_text  : PinName
     _rect       : QRectF
     _shape      : QPainterPath
@@ -152,8 +151,7 @@ class Pin(QGraphicsItemGroup):
         direction : SignalDirection,
         range     : Optional[VectorRange],
         loc       : EdgeLoc,
-        parent    : BaseRectWithPins,
-        finish    : bool = True
+        parent    : BaseRectWithPins
     ) -> None:
         super().__init__(parent)
         self.setPos(-parent.pos())
@@ -165,17 +163,39 @@ class Pin(QGraphicsItemGroup):
         self._range = range
         self._entry = self._ENTRY_CLASS(self)
         self.addToGroup(self._entry)
+        if self._INNER_CLASS is not None:
+            self._inner = self._INNER_CLASS(self)
+            self.addToGroup(self._inner)
+        if self._OUTER_CLASS is not None:
+            self._outer = self._OUTER_CLASS(self)
+            self.addToGroup(self._outer)
         self._name_text = self._NAME_CLASS(name, QPointF(), self)
         self.addToGroup(self._name_text)
-        if finish:
-            self.refresh()
-            self.setLoc(loc)
+        self.refresh()
+        self.setLoc(loc)
         parent._esm.sizeChanged.connect(self.onParentSizeChanged)
+
+    def itemChange(
+        self   : Self,
+        change : QGraphicsItemGroup.GraphicsItemChange,
+        value  : Any
+    ) -> Any:
+        if change == self.GraphicsItemChange.ItemSelectedHasChanged:
+            self.onSelectionChange()
+        return super().itemChange(change, value)
 
     def onSettingsChange(self : Self) -> None:
         super().onSettingsChange()
         self.refresh()
         self.update()
+
+    def onSelectionChange(self : Self) -> None:
+        self._entry.onSelectionChange()
+        self._name_text.onSelectionChange()
+        if hasattr(self, "_inner"):
+            self._inner.onSelectionChange()
+        if hasattr(self, "_outer"):
+            self._outer.onSelectionChange()
 
     def onParentSizeChanged(self : Self) -> None:
         # TODO: unplace if edge becomes too short
@@ -229,11 +249,10 @@ class Pin(QGraphicsItemGroup):
 
     def refresh(self : Self) -> None:
         self.prepareGeometryChange()
+        self._entry.setPos(self._entryPos())
         self._name_text.setPos(self._namePos())
-        entry_rect = self._entryRect()
-        name_rect = self._nameRect()
-        other_rect = self._otherRect()
-        self._rect = entry_rect | name_rect | other_rect
+        self._rect = self._entryRect() | self._nameRect()
+        self._rect |= self._innerRect() | self._outerRect()
         self._shape.clear()
         self._shape.addRect(self._rect)
 
@@ -244,17 +263,33 @@ class Pin(QGraphicsItemGroup):
 
     def _nameRect(self : Self) -> QRectF:
         rect = QRectF(self._name_text.tightBoundingRect())
-        actual_pos = self._name_text.pos() - self._name_text._anchor_offset
-        rect.translate(actual_pos)
+        rect.translate(self._name_text.pos() - self._name_text._anchor_offset)
         return rect
+
+    def _innerRect(self : Self) -> QRectF:
+        if hasattr(self, "_inner"):
+            return self._inner.boundingRect()
+        return QRectF()
+
+    def _outerRect(self : Self) -> QRectF:
+        if hasattr(self, "_outer"):
+            return self._outer.boundingRect()
+        return QRectF()
 
     def _otherRect(self : Self) -> QRectF:
         return QRectF()
+
+    def _entryPos(self : Self) -> QPointF:
+        if hasattr(self, "_outer"):
+            return QPointF(self._outer._SIZE, 0)
+        return QPointF(0, 0)
 
     def _namePos(self : Self) -> QPointF:
         parent : BaseRectWithPins = self.parentItem()
         parent_edge_width = parent.appearance.line.pen.width()
         name_offset = parent_edge_width + self._NAME_GAP
+        if hasattr(self, "_inner"):
+            name_offset += self._inner._SIZE
         return QPointF(name_offset, 0)
 
     @property
@@ -289,8 +324,8 @@ class BlockPinEntry(PinEntry):
 class BlockPinName(PinName):
     pass
 
-class BlockPinDirection(CustomGraphicsItem, ElementMixin):
-    """Pin direction indicator for block pins."""
+class BlockPinInner(CustomGraphicsItem, ElementMixin):
+    """Inner pin shape (direction) for block pins."""
     _SIZE     = 8
     _S        = _SIZE
     _H        = _SIZE/2
@@ -354,7 +389,6 @@ class BlockPinDirection(CustomGraphicsItem, ElementMixin):
         option  : QStyleOptionGraphicsItem,
         widget  : Optional[QWidget] = None
     ) -> None:
-        parent : "Pin" = self.parentItem()
         painter.setPen(self.appearance.line.pen)
         painter.setBrush(self.appearance.fill.brush)
         painter.drawPath(self._path)
@@ -367,9 +401,10 @@ class BlockPinDirection(CustomGraphicsItem, ElementMixin):
 
 class BlockPin(Pin):
     _ENTRY_CLASS = BlockPinEntry
+    _INNER_CLASS = BlockPinInner
     _NAME_CLASS  = BlockPinName
 
-    _indicator : BlockPinDirection
+    _inner : BlockPinInner
 
     def __init__(
         self      : Self,
@@ -379,22 +414,8 @@ class BlockPin(Pin):
         loc       : EdgeLoc,
         block     : Block
     ) -> None:
-        super().__init__(name, direction, range, loc, block, finish=False)
-        self._indicator = BlockPinDirection(self)
-        self.addToGroup(self._indicator)
-        self.setLoc(loc)
-        self.refresh()
-        block._esm.directionChanged.connect(self._indicator.updateDirection)
-
-    def _namePos(self : Self) -> QPointF:
-        indicator_width = self._indicator._rect.width()
-        name_offset = indicator_width + self._NAME_GAP
-        return QPointF(name_offset, 0)
-
-    def _otherRect(self : Self) -> QRectF:
-        rect = self._indicator.boundingRect()
-        rect.translate(self._indicator.pos())
-        return rect
+        super().__init__(name, direction, range, loc, block)
+        block._esm.directionChanged.connect(self._inner.updateDirection)
 
 class cmdPlaceBlockPin(cmdPlaceElement):
     pass

@@ -1,23 +1,13 @@
 - try eliminating onSceneChange
 
-use ElementMixin class attribute for cap and join style
-   read it inside Appearance
-            painter.setCapStyle(Qt.PenCapStyle.SquareCap)
-            stroker.setJoinStyle(Qt.PenJoinStyle.MiterJoin)
-
-
-
 Selection Behaviour
 ===================
 - child elements e.g. property texts? sequential/incremental selection?
 - add tolerance to all
-- unfilled rectangles
-- clicking on a keypoint of a block that is inside a rectangle gets intercepted
-- selection affects color only
 
 Pins
 ===========
-- clipping of BlockPinIndicator
+- clipping of BlockPinIndicator - will be fixed by tolerance (see above)
 
 Properties System
 =================
@@ -45,7 +35,6 @@ General
 
 - review setPos/pos - use _local_pos to simplify/speed up pos()
 - review itemChange to connect to KeyPointManager change signal
-- review use of update()
 
 - use pyTooling @export
 - class variable type hints

@@ -120,14 +120,14 @@ FACTORY_SETTINGS = {
                         "underline" : False
                     }
                 },
-                "BlockPinDirection" : {
+                "BlockPinInner" : {
                     "line" : {
-                        "color" : PaletteDark.BlockPinDirection,
+                        "color" : PaletteDark.BlockPinInner,
                         "width" : 1,
                         "style" : Qt.PenStyle.SolidLine
                     },
                     "fill" : {
-                        "color" : PaletteDark.BlockPinDirection,
+                        "color" : PaletteDark.BlockPinInner,
                         "style" : Qt.BrushStyle.NoBrush
                     }
                 },
@@ -223,14 +223,14 @@ FACTORY_SETTINGS = {
                         "underline" : False
                     }
                 },
-                "BlockPinDirection" : {
+                "BlockPinInner" : {
                     "line" : {
-                        "color" : PaletteLightMono.BlockPinDirection,
+                        "color" : PaletteLightMono.BlockPinInner,
                         "width" : 1,
                         "style" : Qt.PenStyle.SolidLine
                     },
                     "fill" : {
-                        "color" : PaletteLightMono.BlockPinDirection,
+                        "color" : PaletteLightMono.BlockPinInner,
                         "style" : Qt.BrushStyle.NoBrush
                     }
                 },
