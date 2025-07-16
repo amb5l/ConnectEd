@@ -830,6 +830,13 @@ class ElementMixin(PropertiesMixin):
     Z = Z_DRAWING
     _ATTR_SPECS_BASIC = [
         AttrSpec(
+            name      = "Anchor",
+            type_name = "KP",
+            exists    = lambda self: self.hasAnchor(),
+            getter    = lambda self: self.anchor(),
+            setter    = lambda self, value: self.setAnchor(value)
+        ),
+        AttrSpec(
             name      = "Position X",
             type_name = "float",
             exists    = lambda self: True,
@@ -1017,6 +1024,9 @@ class ElementMixin(PropertiesMixin):
         if self.appearance.fill is not None: r.fill = self.appearance.fill.getDefaults()
         if self.appearance.text is not None: r.text = self.appearance.text.getDefaults()
         return r
+
+    def hasAnchor(self : Self) -> bool:
+        return hasattr(self, "_kpm") and self._kpm.anchor is not None
 
     def anchor(self : Self) -> "KP":
         if hasattr(self, "_kpm"):
