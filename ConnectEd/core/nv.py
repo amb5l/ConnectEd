@@ -31,9 +31,12 @@ FACTORY_SETTINGS = {
         "theme" : "dark",
         "font_size" : 10,
         "alpha" : 240,
-        "outline" : {
-            "width" : 0,
-            "style" : Qt.PenStyle.DotLine
+        "select" : {
+            "tolerance" : 2.0,
+            "outline" : {
+                "width" : 0,
+                "style" : Qt.PenStyle.DotLine
+            }
         },
         "key_point" : {
             "radius" : 5

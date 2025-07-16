@@ -1,5 +1,22 @@
-BlockPin - QGraphicsItemGroup???
-prepareGeometryChange throughout?
+- try eliminating onSceneChange
+
+use ElementMixin class attribute for cap and join style
+   read it inside Appearance
+            painter.setCapStyle(Qt.PenCapStyle.SquareCap)
+            stroker.setJoinStyle(Qt.PenJoinStyle.MiterJoin)
+
+
+
+Selection Behaviour
+===================
+- add tolerance to all
+- unfilled rectangles
+- clicking on a keypoint of a block that is inside a rectangle gets intercepted
+- selection affects color only
+
+Pins
+===========
+- clipping of BlockPinIndicator
 
 Properties System
 =================
@@ -15,7 +32,7 @@ Properties System
 
 General
 =======
-- initial text size = 12?
+- prepareGeometryChange throughout?
 - separate state machines for diagram and symbol views, inheriting from drawing
 - middle mouse click (to pan) selects elements - should not affect selection
 - localisation (language translation)

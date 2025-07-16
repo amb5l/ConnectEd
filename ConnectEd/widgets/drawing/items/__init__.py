@@ -590,8 +590,8 @@ class OutlinePen:
 
     def onSettingsChange(self : Self) -> None:
         self.pen.setColor(hub.settings.getTheme("selected/line"))
-        self.pen.setWidthF(hub.settings.get("display/outline/width"))
-        self.pen.setStyle(hub.settings.get("display/outline/style"))
+        self.pen.setWidthF(hub.settings.get("display/select/outline/width"))
+        self.pen.setStyle(hub.settings.get("display/select/outline/style"))
 
 @dataclass
 class Appearance:
@@ -991,7 +991,6 @@ class ElementMixin(PropertiesMixin):
         if self.appearance.fill is not None: self.appearance.fill.onSettingsChange()
         if self.appearance.text is not None: self.appearance.text.onSettingsChange()
         self.appearance.outline.onSettingsChange()
-        self.update()
 
     def onSelectionChange(self : Self) -> None:
         if self.appearance.line is not None: self.appearance.line.onSelectionChange()

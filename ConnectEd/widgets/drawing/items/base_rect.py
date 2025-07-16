@@ -2,9 +2,9 @@ __all__ = ["BaseRectangle"]
 
 from typing import Self, Optional, overload
 
-from PyQt6.QtCore    import QPointF, QRectF, QSizeF
+from PyQt6.QtCore    import Qt, QPointF, QRectF, QSizeF
 from PyQt6.QtWidgets import QWidget, QStyleOptionGraphicsItem
-from PyQt6.QtGui     import QPainter, QPainterPath
+from PyQt6.QtGui     import QPainter, QPainterPath, QPainterPathStroker
 
 from ....core   import logger
 
@@ -12,6 +12,8 @@ from . import CustomGraphicsRectItem, ElementMixin, cmdPlaceElement, \
               EdgeLoc, Edge, AttrSpec, KP, KPDef, LinePref, FillPref
 
 from .property_text import PropertyText
+
+from .... import hub
 
 
 class BaseRectangle(CustomGraphicsRectItem, ElementMixin):
@@ -89,7 +91,6 @@ class BaseRectangle(CustomGraphicsRectItem, ElementMixin):
     ) -> None:
         super().__init__()
         self.initElement(line=LinePref(), fill=FillPref(), text=None, bare=bare)
-        self._shape = QPainterPath()
         if isinstance(a1, QRectF):
             self.setRect(a1)
         elif isinstance(a1, QPointF) and isinstance(a2, QSizeF):
@@ -101,6 +102,11 @@ class BaseRectangle(CustomGraphicsRectItem, ElementMixin):
             self.setRect(a1, a2, a3, a4)
         else:
             logger.error(f"Invalid arguments: expected (x, y, w, h), (pos, size), or (rect); got {a1}, {a2}, {a3}, {a4}")
+
+    def onSettingsChange(self : Self) -> None:
+        super().onSettingsChange()
+        self.refresh()
+        self.update()
 
     def setRect(
         self       : Self,
@@ -115,10 +121,7 @@ class BaseRectangle(CustomGraphicsRectItem, ElementMixin):
         else:
             super().setRect(rect_or_ax, ay, w, h)
         self._rect = self.rect()
-        w = self.appearance.line.pen.widthF()
-        self._bounding_rect = self._rect.adjusted(-w/2, -w/2, w/2, w/2)
-        self._shape.clear()
-        self._shape.addRect(self._bounding_rect)
+        self.refresh()
         self._kpm.updatePositions()
         for item in self.childItems(): # TODO change to use signal
             if isinstance(item, PropertyText):
@@ -242,6 +245,23 @@ class BaseRectangle(CustomGraphicsRectItem, ElementMixin):
                 self.setPoints(p1, p2 + d)
             case _:
                 raise ValueError(f"Invalid key point: {kp}")
+
+    def refresh(self : Self) -> None:
+        pen_width = self.appearance.line.pen.widthF()
+        tolerance = hub.settings.get("display/select/tolerance")
+        stroke_width = pen_width + (2 * tolerance)
+        rect_path = QPainterPath()
+        rect_path.addRect(self._rect)
+        stroker = QPainterPathStroker()
+        stroker.setWidth(stroke_width)
+        stroker.setCapStyle(Qt.PenCapStyle.SquareCap)
+        stroker.setJoinStyle(Qt.PenJoinStyle.MiterJoin)
+        stroker_path = stroker.createStroke(rect_path)
+        self._bounding_rect = stroker_path.boundingRect()
+        if self.appearance.fill.brush.style() != Qt.BrushStyle.NoBrush:
+            self._shape = rect_path.united(stroker_path)
+        else:
+            self._shape = stroker_path
 
     @overload
     @classmethod

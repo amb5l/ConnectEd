@@ -49,6 +49,7 @@ class PinEntry(CustomGraphicsItem, ElementMixin):
     def onSettingsChange(self : Self) -> None:
         super().onSettingsChange()
         self.refresh()
+        self.update()
 
     def boundingRect(self : Self) -> QRectF:
         return self._rect
@@ -174,6 +175,7 @@ class Pin(QGraphicsItemGroup):
     def onSettingsChange(self : Self) -> None:
         super().onSettingsChange()
         self.refresh()
+        self.update()
 
     def onParentSizeChanged(self : Self) -> None:
         # TODO: unplace if edge becomes too short
@@ -319,7 +321,8 @@ class BlockPinDirection(CustomGraphicsItem, ElementMixin):
 
     def onSettingsChange(self : Self) -> None:
         super().onSettingsChange()
-        self._rect.setWidth(self.appearance.line.pen.width())
+        self.refresh()
+        self.update()
 
     def _buildPath(self : Self, points : list[tuple[int, int]]) -> QPainterPath:
         p = QPainterPath()
