@@ -205,7 +205,8 @@ class DrawingViewPrivateMixin:
             if toggle:
                 item.setSelected(not item.isSelected())
             else:
-                item.setSelected(True)
+                if not item.isSelected():
+                    item.setSelected(True)
 
     def _selectItem(self : "DrawingView", item, toggle, prev=None):
         if prev is None:

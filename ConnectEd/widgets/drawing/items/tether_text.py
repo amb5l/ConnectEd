@@ -2,8 +2,9 @@ __all__ = ["Tether","TetherText"]
 
 from typing import Self, Optional
 
-from PyQt6.QtCore    import QPointF, QRectF
-from PyQt6.QtWidgets import QWidget, QGraphicsItem, QStyleOptionGraphicsItem
+from PyQt6.QtCore    import Qt, QPointF, QRectF
+from PyQt6.QtWidgets import QWidget, QGraphicsItem, QStyleOptionGraphicsItem, \
+                            QGraphicsSceneMouseEvent
 from PyQt6.QtGui     import QPainter
 
 from . import ElementMixin, TextColorFont,\
@@ -17,11 +18,20 @@ class Tether(QGraphicsItem):
 
     _item: "TetherText"
 
-    def __init__(self, item: "TetherText"):
+    def __init__(self, item: "TetherText", visible : bool = False):
         super().__init__(item)  # Parent it to the Property
         self._item = item
         self.setZValue(-1)  # Draw behind the property text
-        self.setVisible(False)  # Initially hidden
+        self.setVisible(visible)
+
+    def mousePressEvent(self : Self, event : QGraphicsSceneMouseEvent) -> None:
+        self._item.mousePressEvent(event)
+
+    def mouseReleaseEvent(self : Self, event : QGraphicsSceneMouseEvent) -> None:
+        self._item.mouseReleaseEvent(event)
+
+    def mouseDoubleClickEvent(self : Self, event : QGraphicsSceneMouseEvent) -> None:
+        self._item.mouseDoubleClickEvent(event)
 
     def boundingRect(self) -> QRectF:
         parent : Optional[ElementMixin] = self._item.parentItem()
@@ -84,8 +94,27 @@ class TetherText(BaseText):
         super().__init__("", pos, anchor, bare)
         self._pos    = pos
         self._cleat  = cleat
-        self._tether = None
+        self._tether = Tether(self)
         self.setFlag(self.GraphicsItemFlag.ItemIsSelectable , True)
+
+    def onParentChange(self : Self, parent : Optional[QGraphicsItem]) -> None:
+        if parent is None:
+            self._disconnectFromKPMSignals()
+        else:
+            self._connectToKPMSignals()
+        self.setPos(self._pos)
+
+    def onPositionChange(self : Self, pos : QPointF) -> None:
+        parent = self.parentItem()
+        if parent is not None:
+            parent_kpm = parent._kpm
+            cleat_pos = parent_kpm.key_points[self._cleat].pos()
+            anchor_pos = pos + self._kpm.anchor_offset
+            self._pos = anchor_pos - cleat_pos
+
+    def onSelectionChange(self : Self, selected : bool) -> None:
+        super().onSelectionChange(selected)
+        self._tether.setVisible(selected)
 
     def setPos(self : Self, pos : QPointF) -> None:
         """Set offset from parent cleat to my anchor."""
@@ -130,33 +159,6 @@ class TetherText(BaseText):
         parent : Optional[ElementMixin] = self.parentItem()
         if parent is not None and hasattr(parent, '_kpm') and parent._kpm is not None:
             parent._kpm.change.disconnect(self.updatePos)
-
-    def _createTether(self) -> None:
-        """Create the tether line child item if it doesn't exist."""
-        if self._tether is None:
-            self._tether = Tether(self)
-
-    def itemChange(self, change: QGraphicsItem.GraphicsItemChange, value):
-        """Override to detect when parented and connect to parent signals."""
-        result = super().itemChange(change, value)
-        if change == QGraphicsItem.GraphicsItemChange.ItemParentHasChanged:
-            if value is None:
-                self._disconnectFromKPMSignals()
-            else:
-                self._connectToKPMSignals()
-            self.setPos(self._pos)
-        elif change == QGraphicsItem.GraphicsItemChange.ItemPositionHasChanged:
-            parent = self.parentItem()
-            if parent is not None:
-                parent_kpm = parent._kpm
-                cleat_pos = parent_kpm.key_points[self._cleat].pos()
-                anchor_pos = value + self._kpm.anchor_offset
-                self._pos = anchor_pos - cleat_pos
-        elif change == QGraphicsItem.GraphicsItemChange.ItemSelectedHasChanged:
-            self._createTether()
-            if self._tether:
-                self._tether.setVisible(self.isSelected())
-        return result
 
     def clone(self : Self) -> Self:
         """Create a clone of this TetherText with a new UUID."""

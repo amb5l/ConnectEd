@@ -127,7 +127,8 @@ class DrawingViewMouseMixin:
                     if isinstance(item, KeyPoint):
                         return
                 if m == qkm.NoModifier:
-                    self.scene().clearSelection()
+                    if not items or not items[0].isSelected():
+                        self.scene().clearSelection()
                 self._selectPoint(
                     self.mouse.current.logical,
                     m & qkm.ControlModifier,

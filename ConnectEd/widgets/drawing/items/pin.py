@@ -181,7 +181,7 @@ class Pin(QGraphicsItemGroup):
         value  : Any
     ) -> Any:
         if change == self.GraphicsItemChange.ItemSelectedHasChanged:
-            self.onSelectionChange()
+            self.onSelectionChange(value)
         return super().itemChange(change, value)
 
     def onSettingsChange(self : Self) -> None:
@@ -189,13 +189,13 @@ class Pin(QGraphicsItemGroup):
         self.refresh()
         self.update()
 
-    def onSelectionChange(self : Self) -> None:
-        self._entry.onSelectionChange()
-        self._name_text.onSelectionChange()
+    def onSelectionChange(self : Self, selected : bool) -> None:
+        self._entry.onSelectionChange(selected)
+        self._name_text.onSelectionChange(selected)
         if hasattr(self, "_inner"):
-            self._inner.onSelectionChange()
+            self._inner.onSelectionChange(selected)
         if hasattr(self, "_outer"):
-            self._outer.onSelectionChange()
+            self._outer.onSelectionChange(selected)
 
     def onParentSizeChanged(self : Self) -> None:
         # TODO: unplace if edge becomes too short

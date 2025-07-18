@@ -1,12 +1,12 @@
 __all__ = ["PropertyDisplay", "PropertyText"]
 
-from typing import Self, Optional
+from typing import Self
 from enum   import Enum
 
 from PyQt6.QtCore    import Qt, QPointF
 from PyQt6.QtWidgets import QGraphicsItem, QGraphicsSceneMouseEvent
 
-from . import ElementMixin, AttrSpec, KPManager, KP, TextColorFont
+from . import AttrSpec, KP, TextColorFont
 
 from .tether_text import TetherText
 
@@ -67,13 +67,13 @@ class PropertyText(TetherText):
     def mouseDoubleClickEvent(self : Self, event : QGraphicsSceneMouseEvent) -> None:
         """Handle double-click events to open the edit dialog."""
         if event.button() == Qt.MouseButton.LeftButton:
-            # workaround for Qt event routing bug
             from .. import getView
             view = getView(event.screenPos())
+            # workaround for Qt event routing bug
             scene = self.scene()
             if scene:
                 item_at_pos = scene.itemAt(event.scenePos(), view.transform())
-                if item_at_pos != self:
+                if item_at_pos is not None and item_at_pos != self:
                     item_at_pos.mouseDoubleClickEvent(event)
                     return
             view.editPropertyText(self)

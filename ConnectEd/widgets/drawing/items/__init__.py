@@ -312,10 +312,10 @@ class LinePen:
         self.selected.setColor(color_selected)
         self.selected.setWidthF(width)
         self.selected.setStyle(style)
-        self.onSelectionChange()
+        self.onSelectionChange(self.element.isSelected())
 
-    def onSelectionChange(self : Self) -> None:
-        self.pen = self.selected if self.element.isSelected() else self.normal
+    def onSelectionChange(self : Self, selected : bool) -> None:
+        self.pen = self.selected if selected else self.normal
         self.element.update()
 
     def toXml(self : Self, xw : QXmlStreamWriter) -> None:
@@ -397,10 +397,10 @@ class FillBrush:
         self.normal.setStyle(style)
         self.selected.setColor(color_selected)
         self.selected.setStyle(style)
-        self.onSelectionChange()
+        self.onSelectionChange(self.element.isSelected())
 
-    def onSelectionChange(self : Self) -> None:
-        self.brush = self.selected if self.element.isSelected() else self.normal
+    def onSelectionChange(self : Self, selected : bool) -> None:
+        self.brush = self.selected if selected else self.normal
         self.element.update()
 
     def toXml(self : Self, xw : QXmlStreamWriter) -> None:
@@ -545,10 +545,10 @@ class TextColorFont:
             self.element.setDefaultFont(self.font)
         elif hasattr(self.element, "setFont"):
             self.element.setFont(self.font)
-        self.onSelectionChange()
+        self.onSelectionChange(self.element.isSelected())
 
-    def onSelectionChange(self : Self) -> None:
-        self.current = self.selected if self.element.isSelected() else self.normal
+    def onSelectionChange(self : Self, selected : bool) -> None:
+        self.current = self.selected if selected else self.normal
         if hasattr(self.element, "setDefaultTextColor"):
             self.element.setDefaultTextColor(self.current)
         elif hasattr(self.element, "setColor"):
@@ -611,12 +611,19 @@ class CustomGraphicsItemMixin:
         change: QGraphicsItem.GraphicsItemChange,
         value: Any
     ) -> Any:
-        if change == QGraphicsItem.GraphicsItemChange.ItemSelectedHasChanged:
-            if hasattr(self, 'onSelectionChange'):
-                self.onSelectionChange()
-        elif change == QGraphicsItem.GraphicsItemChange.ItemSceneHasChanged:
-            if hasattr(self, 'onSceneChange'):
-                self.onSceneChange(value)
+        match change:
+            case QGraphicsItem.GraphicsItemChange.ItemParentHasChanged:
+                if hasattr(self, 'onParentChange'):
+                    self.onParentChange(value)
+            case QGraphicsItem.GraphicsItemChange.ItemSceneHasChanged:
+                if hasattr(self, 'onSceneChange'):
+                    self.onSceneChange(value)
+            case QGraphicsItem.GraphicsItemChange.ItemPositionHasChanged:
+                if hasattr(self, 'onPositionChange'):
+                    self.onPositionChange(value)
+            case QGraphicsItem.GraphicsItemChange.ItemSelectedHasChanged:
+                if hasattr(self, 'onSelectionChange'):
+                    self.onSelectionChange(value)
         return super().itemChange(change, value)
 
     @staticmethod
@@ -994,10 +1001,10 @@ class ElementMixin(PropertiesMixin):
         if self.appearance.text is not None: self.appearance.text.onSettingsChange()
         self.appearance.outline.onSettingsChange()
 
-    def onSelectionChange(self : Self) -> None:
-        if self.appearance.line is not None: self.appearance.line.onSelectionChange()
-        if self.appearance.fill is not None: self.appearance.fill.onSelectionChange()
-        if self.appearance.text is not None: self.appearance.text.onSelectionChange()
+    def onSelectionChange(self : Self, selected : bool) -> None:
+        if self.appearance.line is not None: self.appearance.line.onSelectionChange(selected)
+        if self.appearance.fill is not None: self.appearance.fill.onSelectionChange(selected)
+        if self.appearance.text is not None: self.appearance.text.onSelectionChange(selected)
 
     def setPosX(self : Self, value : float) -> None:
         pos = self.pos()
