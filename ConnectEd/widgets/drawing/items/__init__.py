@@ -999,13 +999,6 @@ class ElementMixin(PropertiesMixin):
         if self.appearance.fill is not None: self.appearance.fill.onSelectionChange()
         if self.appearance.text is not None: self.appearance.text.onSelectionChange()
 
-    def onSceneChange(self, scene):
-        """Handle element being added to or removed from a scene."""
-        if scene is not None:
-            for item in self.childItems():
-                if isinstance(item, PropertyText) and item.scene() != scene:
-                    scene.addItem(item)
-
     def setPosX(self : Self, value : float) -> None:
         pos = self.pos()
         pos.setX(value)

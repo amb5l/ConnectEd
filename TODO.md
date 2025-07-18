@@ -1,5 +1,3 @@
-- try eliminating onSceneChange
-
 Selection Behaviour
 ===================
 - child elements e.g. property texts? sequential/incremental selection?
@@ -25,7 +23,6 @@ General
 =======
 - prepareGeometryChange throughout?
 - separate state machines for diagram and symbol views, inheriting from drawing
-- middle mouse click (to pan) selects elements - should not affect selection
 - localisation (language translation)
 - better window menu - submenu per design, with tile action?
 - setter and getter names (esp getter)
