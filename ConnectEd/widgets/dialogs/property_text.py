@@ -33,7 +33,7 @@ class PropertyTextDialog(QDialog):
 
     def __init__(self : Self, element : PropertyText):
         super().__init__(hub.main_window)
-        self.setWindowTitle("Text")
+        self.setWindowTitle("Property Text")
         self.setModal(True)
         self.element = element
         self.parent = element.parentItem()
@@ -43,7 +43,7 @@ class PropertyTextDialog(QDialog):
             logger.warning("Parent item not found")
         self.dialog_layout = QVBoxLayout(self)
         self.name_value_layout = QGridLayout()
-        self.name_label = QLabel("Text:")
+        self.name_label = QLabel("Name:")
         self.name_value_layout.addWidget(self.name_label, 0, 0)
         self.name_edit = QComboBox()
         self.name_edit.addItems(self.parent.getProperties())
