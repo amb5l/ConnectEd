@@ -6,14 +6,14 @@ from PyQt6.QtCore import QPointF
 
 from ....core import Z_DRAWING
 
-from . import KP
+from . import KP, KPDef
 
 from .base_rect     import BaseRectWithPins, cmdPlaceBaseRectWithPins
 from .property_text import PropertyDisplay as pd
 
 
 class Block(BaseRectWithPins):
-    Z = Z_DRAWING
+    _KEY_POINTS = [KPDef(k, True, True) for k in KP.__iter__()]
     _PROPERTIES = {
     # properties with PropertyText instances
     #   name            value   display     anchor           pos                cleat

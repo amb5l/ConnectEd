@@ -24,6 +24,7 @@ class BaseText(CustomGraphicsSimpleTextItem, ElementMixin):
         _ATTR_SPECS_TEXT + \
         ElementMixin._ATTR_SPECS_APPEARANCE_TEXT
     _KEY_POINTS = [KPDef(k, True, False) for k in KP.__iter__()]
+    _ANCHORED = True
 
     def __init__(
         self   : Self,
@@ -34,8 +35,8 @@ class BaseText(CustomGraphicsSimpleTextItem, ElementMixin):
     ) -> None:
         CustomGraphicsSimpleTextItem.__init__(self, text)
         self.initElement(line=None, fill=None, text=TextPref(), bare=bare)
-        self.setPos(pos)
         self.setAnchor(anchor)
+        self.setPos(pos)
         self.setFlag(self.GraphicsItemFlag.ItemIsSelectable , True)
 
     def setPos(self : Self, pos : QPointF) -> None:

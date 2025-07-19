@@ -8,9 +8,11 @@ from PyQt6.QtCore    import Qt, QRectF, QPointF, QObject, pyqtSignal, \
                             QXmlStreamWriter, QXmlStreamReader
 from PyQt6.QtWidgets import QGraphicsItem, QStyleOptionGraphicsItem, \
                             QWidget, QGraphicsView, QMenu
-from PyQt6.QtGui     import QPainter, QPen, QBrush, QPainterPath
+from PyQt6.QtGui     import QPainter, QPen, QBrush, QPainterPath, QAction
 
-from . import CustomGraphicsItemMixin
+from ....core import logger
+
+from . import CustomGraphicsItem
 
 from .... import hub
 
@@ -48,42 +50,41 @@ KPReverse = {
     "Bottom Right"  : KP.BOTTOM_RIGHT
 }
 
-class KeyPoint(QGraphicsItem):
+class KeyPoint(CustomGraphicsItem):
     # class variables
     Z_DELTA = 1
     _MENU = None
     _MENU_ITEM_NAMES = [
         "Assign Anchor"
     ]
-    getMenu = CustomGraphicsItemMixin.getMenu
 
     # instance variables
     _manager : "KPManager"
-    _loc     : KP # parent's key point location
-    _grip    : bool
-    _cleat   : bool
+    _loc     : KP   # location of key point in parent
+    _resize  : bool # whether the key point is a resize grip
+    _cleat   : bool # whether the key point is a cleat
     _pen     : QPen
     _brush   : QBrush
     _rect    : QRectF
     _rhombus : QPainterPath
     _shape   : QPainterPath
+    _actions : dict[str, QAction]
     _menu    : QMenu
 
     def __init__(
         self    : Self,
         manager : "KPManager",
         loc     : KP,
-        grip    : bool = False,
+        resize  : bool = False,
         cleat   : bool = False
     ) -> None:
         super().__init__(manager.element)
         self.setZValue(self.parentItem().zValue() + self.Z_DELTA)
-        f = QGraphicsItem.GraphicsItemFlag
-        self.setFlag( f.ItemIsMovable              , True )
-        self.setFlag( f.ItemIgnoresTransformations , True )
+        self.setFlag( self.GraphicsItemFlag.ItemIsMovable              , True )
+        self.setFlag( self.GraphicsItemFlag.ItemIgnoresTransformations , True )
         self._manager = manager
         self._loc     = loc
-        self._grip    = grip
+        self._resize  = resize
         self._cleat   = cleat
         self._pen     = QPen()
         self._brush   = QBrush()
@@ -95,7 +96,23 @@ class KeyPoint(QGraphicsItem):
         self._brush.setStyle(Qt.BrushStyle.SolidPattern)
         self.onSettingsChange()
         hub.settings.change.connect(self.onSettingsChange)
-        self._menu = CustomGraphicsItemMixin.getMenu(self.__class__)
+        self._actions = []
+        self._menu = self.getMenu()
+
+    def getMenu(self : Self) -> QMenu | None:
+        menu = QMenu()
+        a_move = QAction("Move", menu)
+        a_move.triggered.connect(lambda: None)
+        menu.addAction(a_move)
+        if self._resize:
+            a_resize = QAction("Resize", menu)
+            a_resize.triggered.connect(lambda: None)
+            menu.addAction(a_resize)
+        if self._manager.element._ANCHORED:
+            a_anchor = QAction("Assign Anchor", menu)
+            a_anchor.triggered.connect(lambda: None)
+            menu.addAction(a_anchor)
+        return menu
 
     def boundingRect(
         self : Self,
@@ -138,7 +155,7 @@ class KeyPoint(QGraphicsItem):
         self._shape.addRect(self._rect)
 
     def isMoveable(self : Self) -> bool:
-        return self._grip
+        return self._resize
 
     def toXml(self : Self, xw : QXmlStreamWriter) -> None:
         pass
@@ -146,6 +163,20 @@ class KeyPoint(QGraphicsItem):
     @classmethod
     def fromXml(cls : Self, xr : QXmlStreamReader) -> Self:
         pass
+
+    def ctxMenuMove(
+        self    : Self,
+        checked : bool,
+        view    : "DrawingView"
+    ) -> None:
+        view.editMoveBegin([self], self.scenePos())
+
+    def ctxMenuResize(
+        self    : Self,
+        checked : bool,
+        view    : "DrawingView"
+    ) -> None:
+        view.editResizeBegin([self])
 
     def ctxMenuAssignAnchor(
         self    : Self,
@@ -156,9 +187,10 @@ class KeyPoint(QGraphicsItem):
 
 @dataclass
 class KPDef:
-    loc   : KP
-    grip  : bool
-    cleat : bool
+    """KeyPoint Definition"""
+    loc    : KP   # location
+    resize : bool # whether the key point can be used for resize
+    cleat  : bool # whether the key point can be a cleat
 
 class KPManager(QObject):
     element       : QGraphicsItem         # parent element
@@ -178,18 +210,20 @@ class KPManager(QObject):
         super().__init__()
         self.element = parent
         self.key_points = {
-            x.loc: KeyPoint(self, x.loc, x.grip, x.cleat) for x in kp_defs
+            x.loc: KeyPoint(self, x.loc, x.resize, x.cleat) for x in kp_defs
         }
         self.anchor = None
         self.anchor_loc = None
         self.anchor_offset = QPointF(0, 0)
-        if anchor:
-            self.setAnchor(anchor)
+        if parent._ANCHORED:
+            print("anchored")
+            if anchor:
+                self.setAnchor(anchor)
+            else:
+                self.setAnchor(kp_defs[0].loc)
         else:
-            for kp_def in kp_defs:
-                if not kp_def.grip:
-                    self.setAnchor(kp_def.loc)
-                    break
+            if anchor:
+                logger.error("anchor specified for non-anchorable element")
 
     def setAnchor(self, anchor : KP) -> None:
         self.anchor = self.key_points[anchor]

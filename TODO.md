@@ -1,3 +1,6 @@
+keypoint anchor assignment via context menu
+- remove cleat from KPDef - remove KPDef?
+
 Selection Behaviour
 ===================
 - child elements e.g. property texts? sequential/incremental selection?

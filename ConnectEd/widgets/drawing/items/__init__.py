@@ -650,9 +650,12 @@ class CustomGraphicsItemMixin:
         self  : Self,
         event : QGraphicsSceneContextMenuEvent
     ) -> None:
+        print("contextMenuEvent")
         from .. import getView
         view = getView(event.screenPos())
         self._instance = self
+        if not hasattr(self, "_menu"):
+            return
         for action in self._menu.actions():
             slot_name = \
                 f"ctxMenu{action.text().replace(' ', '').replace('.', '')}"
@@ -943,8 +946,9 @@ class ElementMixin(PropertiesMixin):
             setter    = lambda self, value: self.appearance.text.setUnderline(value)
         )
     ]
-    _MENU_ITEM_NAMES = ["Appearance...", "Properties..."]
-    _KEY_POINTS     : Optional[list["KP"]] = None
+    _MENU_ITEM_NAMES : list[str] = ["Appearance...", "Properties..."]
+    _KEY_POINTS      : Optional[list["KP"]] = None
+    _ANCHORED        : bool = False
 
     _settings_name : str
     uuid           : str
