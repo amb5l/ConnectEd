@@ -38,7 +38,7 @@ FACTORY_SETTINGS = {
             }
         },
         "key_point" : {
-            "radius" : 5
+            "radius" : 6
         },
         "zoom" : {
             "padding" : 0.1,

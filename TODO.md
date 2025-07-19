@@ -1,5 +1,12 @@
-keypoint anchor assignment via context menu
-- remove cleat from KPDef - remove KPDef?
+New DrawingView state machine
+
+ortho movement requires initial position to be recorded
+
+
+
+Key Points
+==========
+- central keypoint should not offer resize
 
 Selection Behaviour
 ===================

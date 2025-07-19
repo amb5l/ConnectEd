@@ -8,7 +8,8 @@ from PyQt6.QtCore    import Qt, QRectF, QPointF, QObject, pyqtSignal, \
                             QXmlStreamWriter, QXmlStreamReader
 from PyQt6.QtWidgets import QGraphicsItem, QStyleOptionGraphicsItem, \
                             QWidget, QGraphicsView, QMenu
-from PyQt6.QtGui     import QPainter, QPen, QBrush, QPainterPath, QAction
+from PyQt6.QtGui     import QPainter, QPen, QBrush, QPainterPath, QTransform, \
+                            QAction
 
 from ....core import logger
 
@@ -62,11 +63,11 @@ class KeyPoint(CustomGraphicsItem):
     _manager : "KPManager"
     _loc     : KP   # location of key point in parent
     _resize  : bool # whether the key point is a resize grip
-    _cleat   : bool # whether the key point is a cleat
+    _cleat   : bool # whether the key point can be a cleat
     _pen     : QPen
     _brush   : QBrush
     _rect    : QRectF
-    _rhombus : QPainterPath
+    _path : QPainterPath
     _shape   : QPainterPath
     _actions : dict[str, QAction]
     _menu    : QMenu
@@ -88,8 +89,8 @@ class KeyPoint(CustomGraphicsItem):
         self._cleat   = cleat
         self._pen     = QPen()
         self._brush   = QBrush()
+        self._path    = QPainterPath()
         self._rect    = QRectF()
-        self._rhombus = QPainterPath()
         self._shape   = QPainterPath()
         self._pen.setWidth(0)
         self._pen.setStyle(Qt.PenStyle.SolidLine)
@@ -131,10 +132,10 @@ class KeyPoint(CustomGraphicsItem):
     ) -> None:
         painter.setPen(self._pen)
         painter.setBrush(self._brush)
-        if self._manager.anchor is None or self._manager.anchor == self:
+        if self._manager.anchor is not None and self._manager.anchor == self:
             painter.drawRect(self._rect)
         else:
-            painter.drawPath(self._rhombus)
+            painter.drawPath(self._path)
 
     def moveBy(self : Self, dx : float, dy : float) -> None:
         self.parentItem().moveKeyPoint(self._loc, QPointF(dx, dy))
@@ -144,13 +145,43 @@ class KeyPoint(CustomGraphicsItem):
         self._pen.setColor(theme.line)
         self._brush.setColor(theme.fill)
         r = hub.settings.get("display/key_point/radius")
+        self._path.clear()
+        if self._loc.value.h != 0.5 and self._loc.value.v != 0.5 and self._resize:
+            # edge corner
+            self._path.moveTo(-r, -r)
+            self._path.lineTo(r, -r)
+            self._path.lineTo(r, 0)
+            self._path.lineTo(0, 0)
+            self._path.lineTo(0, r)
+            self._path.lineTo(-r, r)
+        elif self._loc.value.h != self._loc.value.v and self._resize:
+            # edge center
+            self._path.moveTo(-r, -r)
+            self._path.lineTo(r, -r)
+            self._path.lineTo(r, 0)
+            self._path.lineTo(r/2, 0)
+            self._path.lineTo(r/2, r)
+            self._path.lineTo(-r/2, r)
+            self._path.lineTo(-r/2, 0)
+            self._path.lineTo(-r, 0)
+        else:
+            # non-grip / center
+            self._path.moveTo(  0 , -r )
+            self._path.lineTo(  r ,  0 )
+            self._path.lineTo(  0 ,  r )
+            self._path.lineTo( -r ,  0 )
+        self._path.closeSubpath()
+        match self._loc:
+            case KP.TOP_LEFT     | KP.TOP_CENTER    : angle = 0
+            case KP.TOP_RIGHT    | KP.CENTER_RIGHT  : angle = 90
+            case KP.BOTTOM_RIGHT | KP.BOTTOM_CENTER : angle = 180
+            case KP.BOTTOM_LEFT  | KP.CENTER_LEFT   : angle = 270
+            case _                                  : angle = 0
+        transform = QTransform()
+        transform.translate(0, 0)
+        transform.rotate(angle)
+        self._path = transform.map(self._path)
         self._rect.setCoords(-r, -r, r, r)
-        self._rhombus.clear()
-        self._rhombus.moveTo(  0 , -r )
-        self._rhombus.lineTo(  r ,  0 )
-        self._rhombus.lineTo(  0 ,  r )
-        self._rhombus.lineTo( -r ,  0 )
-        self._rhombus.closeSubpath()
         self._shape.clear()
         self._shape.addRect(self._rect)
 
@@ -216,7 +247,6 @@ class KPManager(QObject):
         self.anchor_loc = None
         self.anchor_offset = QPointF(0, 0)
         if parent._ANCHORED:
-            print("anchored")
             if anchor:
                 self.setAnchor(anchor)
             else:

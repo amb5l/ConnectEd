@@ -23,7 +23,7 @@ class BaseText(CustomGraphicsSimpleTextItem, ElementMixin):
         ElementMixin._ATTR_SPECS_BASIC + \
         _ATTR_SPECS_TEXT + \
         ElementMixin._ATTR_SPECS_APPEARANCE_TEXT
-    _KEY_POINTS = [KPDef(k, True, False) for k in KP.__iter__()]
+    _KEY_POINTS = [KPDef(k, False, False) for k in KP.__iter__()]
     _ANCHORED = True
 
     def __init__(

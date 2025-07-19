@@ -650,7 +650,6 @@ class CustomGraphicsItemMixin:
         self  : Self,
         event : QGraphicsSceneContextMenuEvent
     ) -> None:
-        print("contextMenuEvent")
         from .. import getView
         view = getView(event.screenPos())
         self._instance = self
