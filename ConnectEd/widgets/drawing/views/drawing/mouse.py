@@ -258,17 +258,16 @@ class DrawingViewMouseMixin:
     def mouseLeftDragBegin(self : "DrawingView") -> None:
         match self.state:
             case State.Idle:
+                items_at = self._itemsAt(self.mouse.left.press.logical)
+                keypoints_at = [item for item in items_at if isinstance(item, KeyPoint)]
+                # keypoint dragging
+                if len(keypoints_at) == 1:
+                    keypoint = keypoints_at[0]
+                    self.editMoveBegin([keypoint], keypoint.scenePos())
+                    self._goState(State.EditResize3)
+                    return
                 m = self.mouse.left.press.modifiers
                 items = self.scene().selectedItems()
-                items_at = self._itemsAt(self.mouse.left.press.logical)
-                if len(items) == 1:
-                    for item in items_at:
-                        if isinstance(item, KeyPoint) and item.isMoveable():
-                            self.editMoveBegin(
-                                [item], self._snap(self.mouse.left.press.logical)
-                            )
-                            self._goState(State.EditResize3)
-                            return
                 # Check for CTRL+drag duplication when starting on an element
                 if (m & qkm.ControlModifier) and items_at:
                     # Add element under cursor to selection if not already selected
