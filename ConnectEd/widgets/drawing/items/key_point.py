@@ -61,14 +61,16 @@ class KeyPoint(CustomGraphicsItem):
 
     # instance variables
     _manager : "KPManager"
-    _loc     : KP   # location of key point in parent
-    _resize  : bool # whether the key point is a resize grip
-    _cleat   : bool # whether the key point can be a cleat
-    _pen     : QPen
-    _brush   : QBrush
-    _rect    : QRectF
-    _path : QPainterPath
-    _shape   : QPainterPath
+    _loc     : KP                 # location of key point in parent
+    _resize  : bool               # whether the key point is a resize grip
+    _cleat   : bool               # whether the key point can be a cleat
+    _rect    : QRectF             # bounding rect
+    _shape   : QPainterPath       # shape for hit detection
+    _pen     : QPen               # pen for drawing
+    _brush   : QBrush             # brush for drawing
+    _normal  : QPainterPath       # drawn shape when normal
+    _anchor  : QPainterPath       # drawn shape when anchor
+    _path    : QPainterPath       # drawn shape
     _actions : dict[str, QAction]
     _menu    : QMenu
 
@@ -95,11 +97,14 @@ class KeyPoint(CustomGraphicsItem):
         self._pen.setWidth(0)
         self._pen.setStyle(Qt.PenStyle.SolidLine)
         self._brush.setStyle(Qt.BrushStyle.SolidPattern)
+        self._normal = QPainterPath()
+        self._anchor = QPainterPath()
         self.onSettingsChange()
-        hub.settings.change.connect(self.onSettingsChange)
+        self.onAnchorChanged(self._manager.anchor)
         hub.settings.changed.connect(self.onSettingsChange)
         self._actions = []
         self._menu = self.getMenu()
+        self._manager.anchorChanged.connect(self.onAnchorChanged)
 
     def getMenu(self : Self) -> QMenu | None:
         menu = QMenu()
@@ -142,49 +147,39 @@ class KeyPoint(CustomGraphicsItem):
         self.parentItem().moveKeyPoint(self._loc, QPointF(dx, dy))
 
     def onSettingsChange(self : Self) -> None:
+        # get updated appearance settings
         theme = hub.settings.getTheme("key_point")
         self._pen.setColor(theme.line)
         self._brush.setColor(theme.fill)
         r = hub.settings.get("display/key_point/radius")
-        self._path.clear()
-        if self._loc.value.h != 0.5 and self._loc.value.v != 0.5 and self._resize:
-            # edge corner
-            self._path.moveTo(-r, -r)
-            self._path.lineTo(r, -r)
-            self._path.lineTo(r, 0)
-            self._path.lineTo(0, 0)
-            self._path.lineTo(0, r)
-            self._path.lineTo(-r, r)
-        elif self._loc.value.h != self._loc.value.v and self._resize:
-            # edge center
-            self._path.moveTo(-r, -r)
-            self._path.lineTo(r, -r)
-            self._path.lineTo(r, 0)
-            self._path.lineTo(r/2, 0)
-            self._path.lineTo(r/2, r)
-            self._path.lineTo(-r/2, r)
-            self._path.lineTo(-r/2, 0)
-            self._path.lineTo(-r, 0)
-        else:
-            # non-grip / center
-            self._path.moveTo(  0 , -r )
-            self._path.lineTo(  r ,  0 )
-            self._path.lineTo(  0 ,  r )
-            self._path.lineTo( -r ,  0 )
-        self._path.closeSubpath()
-        match self._loc:
-            case KP.TOP_LEFT     | KP.TOP_CENTER    : angle = 0
-            case KP.TOP_RIGHT    | KP.CENTER_RIGHT  : angle = 90
-            case KP.BOTTOM_RIGHT | KP.BOTTOM_CENTER : angle = 180
-            case KP.BOTTOM_LEFT  | KP.CENTER_LEFT   : angle = 270
-            case _                                  : angle = 0
-        transform = QTransform()
-        transform.translate(0, 0)
-        transform.rotate(angle)
-        self._path = transform.map(self._path)
+        # update for hit testing
         self._rect.setCoords(-r, -r, r, r)
         self._shape.clear()
         self._shape.addRect(self._rect)
+        # update appearance
+        self._normal.clear()
+        self._anchor.clear()
+        if self._resize: # resizable => square
+            self._normal.addRect(self._rect)
+            self._anchor.addPath(self._normal)
+            self._anchor.moveTo(-r, -r)
+            self._anchor.lineTo(r, r)
+            self._anchor.lineTo(r, -r)
+            self._anchor.lineTo(-r, r)
+        else: # not resizable => rhombus
+            self._normal.moveTo(-r, 0)
+            self._normal.lineTo(0, -r)
+            self._normal.lineTo(r, 0)
+            self._normal.lineTo(0, r)
+            self._normal.closeSubpath()
+            self._anchor.addPath(self._normal)
+            self._anchor.moveTo(-r, 0)
+            self._anchor.lineTo(r, 0)
+            self._anchor.lineTo(0, -r)
+            self._anchor.lineTo(0, r)
+
+    def onAnchorChanged(self : Self, anchor : KP) -> None:
+        self._path = self._anchor if anchor == self._loc else self._normal
 
     def isMoveable(self : Self) -> bool:
         return self._resize
@@ -231,7 +226,8 @@ class KPManager(QObject):
     anchor_loc    : Optional[KP]
     anchor_offset : QPointF
 
-    change = pyqtSignal() # TODO rename to changed
+    posChanged    = pyqtSignal()
+    anchorChanged = pyqtSignal(KP)
 
     def __init__(
         self    : Self,
@@ -241,10 +237,10 @@ class KPManager(QObject):
     ) -> None:
         super().__init__()
         self.element = parent
+        self.anchor = None
         self.key_points = {
             x.loc: KeyPoint(self, x.loc, x.resize, x.cleat) for x in kp_defs
         }
-        self.anchor = None
         self.anchor_loc = None
         self.anchor_offset = QPointF(0, 0)
         if parent._ANCHORED:
@@ -260,6 +256,7 @@ class KPManager(QObject):
         self.anchor = self.key_points[anchor]
         self.anchor_loc = anchor
         self.anchor_offset = self.getKeyPointPos(anchor)
+        self.anchorChanged.emit(anchor)
         self.element.update()
 
     def getKeyPointPos(self, kp : KP) -> QPointF:
@@ -278,7 +275,7 @@ class KPManager(QObject):
         # Also update anchor_offset when size changes
         if self.anchor_loc is not None:
             self.anchor_offset = self.getKeyPointPos(self.anchor_loc)
-        self.change.emit()
+        self.posChanged.emit()
 
     def setVisible(self : Self, visible : bool) -> None:
         for kp in self.key_points.values():

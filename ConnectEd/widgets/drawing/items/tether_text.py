@@ -152,13 +152,13 @@ class TetherText(BaseText):
         """Connect to parent element's KPManager signals."""
         parent : Optional[ElementMixin] = self.parentItem()
         if parent is not None and hasattr(parent, '_kpm') and parent._kpm is not None:
-            parent._kpm.change.connect(self.updatePos)
+            parent._kpm.posChanged.connect(self.updatePos)
 
     def _disconnectFromKPMSignals(self : Self) -> None:
         """Disconnect from parent element's KPManager signals."""
         parent : Optional[ElementMixin] = self.parentItem()
         if parent is not None and hasattr(parent, '_kpm') and parent._kpm is not None:
-            parent._kpm.change.disconnect(self.updatePos)
+            parent._kpm.posChanged.disconnect(self.updatePos)
 
     def clone(self : Self) -> Self:
         """Create a clone of this TetherText with a new UUID."""
