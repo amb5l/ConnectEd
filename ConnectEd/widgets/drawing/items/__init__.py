@@ -981,7 +981,7 @@ class ElementMixin(PropertiesMixin):
         self.setFlag( f.ItemSendsGeometryChanges      , True )
         self.setFlag( f.ItemSendsScenePositionChanges , True )
         self.setCacheMode(QGraphicsItem.CacheMode.DeviceCoordinateCache)
-        hub.settings.change.connect(self.onSettingsChange)
+        hub.settings.changed.connect(self.onSettingsChange)
         self._menu = CustomGraphicsItemMixin.getMenu(self.__class__)
         self._esm = ElementSignalManager()
         if self._KEY_POINTS is not None:

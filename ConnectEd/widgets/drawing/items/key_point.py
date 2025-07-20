@@ -97,6 +97,7 @@ class KeyPoint(CustomGraphicsItem):
         self._brush.setStyle(Qt.BrushStyle.SolidPattern)
         self.onSettingsChange()
         hub.settings.change.connect(self.onSettingsChange)
+        hub.settings.changed.connect(self.onSettingsChange)
         self._actions = []
         self._menu = self.getMenu()
 

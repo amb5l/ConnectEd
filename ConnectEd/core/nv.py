@@ -307,7 +307,7 @@ FACTORY_SETTINGS = {
 class Settings(QObject):
     _settings : dict[str, Any]
 
-    change = pyqtSignal()
+    changed = pyqtSignal()
 
     def __init__(self : Self) -> None:
         super().__init__()
@@ -334,7 +334,7 @@ class Settings(QObject):
             return
         self._set(self._settings, path, value)
         if emit:
-            self.change.emit()
+            self.changed.emit()
 
     def reset(self : Self) -> None:
         """Clear all saved settings from QSettings."""
@@ -342,7 +342,7 @@ class Settings(QObject):
         qsettings = QSettings(ORG_NAME, APP_NAME)
         qsettings.clear()
         self._settings = self._deepCopy(FACTORY_SETTINGS)
-        self.change.emit()
+        self.changed.emit()
 
     def load(self : Self) -> None:
         """Load settings from QSettings into the settings store."""
@@ -352,7 +352,7 @@ class Settings(QObject):
             qsettings.beginGroup(group)
             self._load(self._settings[group], qsettings, group)
             qsettings.endGroup()
-        self.change.emit()
+        self.changed.emit()
 
     def save(self : Self) -> None:
         """Save settings to QSettings storage."""

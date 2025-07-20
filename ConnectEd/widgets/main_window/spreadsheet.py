@@ -612,7 +612,7 @@ class SpreadsheetTabWidget(QTabWidget):
         # highlight
         self._transparent = QBrush(Qt.GlobalColor.transparent)
         self.updateHighlight()
-        hub.settings.change.connect(self.updateHighlight)
+        hub.settings.changed.connect(self.updateHighlight)
         # create tabs
         self._tabs = {}
         for tab_name, tab_elements in self._tab_elements.items():
