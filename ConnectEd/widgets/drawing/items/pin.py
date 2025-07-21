@@ -2,132 +2,25 @@ __all__ = ["BlockPin", "cmdPlaceBlockPin"]
 
 from typing import Self, Optional, Any
 
-from PyQt6.QtCore    import Qt, QPointF, QRectF
+from PyQt6.QtCore    import QPointF, QRectF
 from PyQt6.QtWidgets import QWidget, QStyleOptionGraphicsItem, \
                             QGraphicsItemGroup, QStyle
-from PyQt6.QtGui     import QPainter, QPainterPath, QPen, QBrush, QFontMetrics
+from PyQt6.QtGui     import QPainter, QPainterPath
 
-from .. import Edge, EdgeLoc, SignalDirection, VectorRange, TextPref, \
-               CustomGraphicsItem, CustomGraphicsSimpleTextItem, \
-               ElementMixin, Block, cmdPlaceElement
+from .. import Edge, EdgeLoc, SignalDirection, VectorRange, \
+               CustomGraphicsItem, ElementMixin, \
+               Block, cmdPlaceElement
 
-from .base_rect import BaseRectWithPins
+from .node       import Node
+from .annotation import Annotation
+from .base_rect  import BaseRectWithPins
 
 from . import LinePref, FillPref
 
 
-class PinEntry(CustomGraphicsItem, ElementMixin):
+class BasePin(QGraphicsItemGroup):
     # class attributes
-    _SIZE = 4
-
-    # instance attributes
-    _loc       : EdgeLoc
-    _rect      : QRectF
-    _shape     : QPainterPath
-    _path_open : QPainterPath
-    _path_nc   : QPainterPath
-
-    def __init__(
-        self   : Self,
-        parent : "Pin"
-    ) -> None:
-        CustomGraphicsItem.__init__(self, parent)
-        ElementMixin.initElement(self, line=LinePref(), fill=FillPref())
-        self._rect = QRectF()
-        self._shape = QPainterPath()
-        s = self._SIZE / 2
-        self._path_open = QPainterPath()
-        self._path_open.addRect(QRectF(-s, -s, 2*s, 2*s))
-        self._path_nc = QPainterPath()
-        self._path_nc.moveTo(-s, +s)
-        self._path_nc.lineTo(+s, -s)
-        self._path_nc.moveTo(+s, +s)
-        self._path_nc.lineTo(-s, -s)
-        self.refresh()
-
-    def onSettingsChange(self : Self) -> None:
-        super().onSettingsChange()
-        self.refresh()
-        self.update()
-
-    def boundingRect(self : Self) -> QRectF:
-        return self._rect
-
-    def shape(self : Self) -> QPainterPath:
-        return self._shape
-
-    def paint(
-        self    : Self,
-        painter : QPainter,
-        option  : QStyleOptionGraphicsItem,
-        widget  : Optional[QWidget] = None
-    ) -> None:
-        painter.setPen(self.appearance.line.pen)
-        painter.setBrush(self.appearance.fill.brush)
-        painter.drawPath(self._path_open)
-
-    def refresh(self : Self) -> None:
-        s = (self._SIZE + self.appearance.line.pen.width()) / 2
-        self._rect.setRect(-s, -s, 2*s, 2*s)
-        self._shape.clear()
-        self._shape.addRect(self._rect)
-
-class PinName(CustomGraphicsSimpleTextItem, ElementMixin):
-    _pos           : QPointF
-    _tight_rect    : QRectF
-    _anchor_offset : QPointF
-
-    def __init__(
-        self   : Self,
-        text   : str = "",
-        pos    : QPointF = QPointF(0, 0),
-        parent : Optional["Pin"] = None
-    ) -> None:
-        CustomGraphicsSimpleTextItem.__init__(self, text, parent)
-        self.initElement(line=None, fill=None, text=TextPref(), bare=True)
-        self._pos = pos
-        self.refresh()
-
-    def setPos(self : Self, pos : QPointF) -> None:
-        self._pos = pos
-        super().setPos(pos - self._anchor_offset)
-
-    def pos(self : Self) -> QPointF:
-        return self._pos
-
-    def setText(self : Self, text : str) -> None:
-        super().setText(text)
-        self.refresh()
-
-    def tightBoundingRect(self : Self) -> QRectF:
-        return self._tight_rect
-
-    def paint(
-        self    : Self,
-        painter : QPainter,
-        option  : QStyleOptionGraphicsItem,
-        widget  : QWidget
-    ) -> None:
-        option.state &= ~QStyle.StateFlag.State_Selected
-        self.setPen(QPen(Qt.PenStyle.NoPen))
-        self.setBrush(QBrush(self.appearance.text.current))
-        super().paint(painter, option, widget)
-
-    def refresh(self : Self) -> None:
-        if not self.text():
-            self._tight_rect = QRectF()
-            return
-        font = self.font()
-        metrics = QFontMetrics(font)
-        baseline_tight_rect = metrics.tightBoundingRect(self.text())
-        baseline_y = metrics.ascent()
-        self._tight_rect = baseline_tight_rect.translated(0, baseline_y)
-        self._anchor_offset = QPointF(0, self.boundingRect().height() / 2)
-        self.setPos(self._pos)
-
-class Pin(QGraphicsItemGroup):
-    # class attributes
-    _ENTRY_CLASS = None  # subclass to override
+    _NODE_CLASS  = None  # subclass to override
     _INNER_CLASS = None  # subclass to override
     _OUTER_CLASS = None  # subclass to override
     _NAME_CLASS  = None  # subclass to override
@@ -138,10 +31,10 @@ class Pin(QGraphicsItemGroup):
     _direction  : SignalDirection
     _range      : Optional[VectorRange]
     _loc        : EdgeLoc
-    _entry      : PinEntry
+    _node       : Node
     _inner      : Optional[CustomGraphicsItem]
     _outer      : Optional[CustomGraphicsItem]
-    _name_text  : PinName
+    _name_text  : Annotation
     _rect       : QRectF
     _shape      : QPainterPath
 
@@ -161,8 +54,8 @@ class Pin(QGraphicsItemGroup):
         self._name = name
         self._direction = direction
         self._range = range
-        self._entry = self._ENTRY_CLASS(self)
-        self.addToGroup(self._entry)
+        self._node = self._NODE_CLASS(self)
+        self.addToGroup(self._node)
         if self._INNER_CLASS is not None:
             self._inner = self._INNER_CLASS(self)
             self.addToGroup(self._inner)
@@ -190,7 +83,7 @@ class Pin(QGraphicsItemGroup):
         self.update()
 
     def onSelectionChange(self : Self, selected : bool) -> None:
-        self._entry.onSelectionChange(selected)
+        self._node.onSelectionChange(selected)
         self._name_text.onSelectionChange(selected)
         if hasattr(self, "_inner"):
             self._inner.onSelectionChange(selected)
@@ -244,12 +137,12 @@ class Pin(QGraphicsItemGroup):
         option.state &= ~QStyle.StateFlag.State_Selected
         super().paint(painter, option, widget)
         if self.isSelected():
-            painter.setPen(self._entry.appearance.outline.pen)
+            painter.setPen(self._node.appearance.outline.pen)
             painter.drawRect(self._rect)
 
     def refresh(self : Self) -> None:
         self.prepareGeometryChange()
-        self._entry.setPos(self._entryPos())
+        self._node.setPos(self._entryPos())
         self._name_text.setPos(self._namePos())
         self._rect = self._entryRect() | self._nameRect()
         self._rect |= self._innerRect() | self._outerRect()
@@ -257,8 +150,8 @@ class Pin(QGraphicsItemGroup):
         self._shape.addRect(self._rect)
 
     def _entryRect(self : Self) -> QRectF:
-        rect = self._entry.boundingRect()
-        rect.translate(self._entry.pos())
+        rect = self._node.boundingRect()
+        rect.translate(self._node.pos())
         return rect
 
     def _nameRect(self : Self) -> QRectF:
@@ -318,10 +211,10 @@ class Pin(QGraphicsItemGroup):
     def range(self : Self, range : Optional[VectorRange]) -> None:
         self._range = range
 
-class BlockPinEntry(PinEntry):
+class BlockPinNode(Node):
     pass
 
-class BlockPinName(PinName):
+class BlockPinName(Annotation):
     pass
 
 class BlockPinInner(CustomGraphicsItem, ElementMixin):
@@ -399,12 +292,10 @@ class BlockPinInner(CustomGraphicsItem, ElementMixin):
         self._shape.clear()
         self._shape.addRect(self._rect)
 
-class BlockPin(Pin):
-    _ENTRY_CLASS = BlockPinEntry
+class BlockPin(BasePin):
+    _NODE_CLASS  = BlockPinNode
     _INNER_CLASS = BlockPinInner
     _NAME_CLASS  = BlockPinName
-
-    _inner : BlockPinInner
 
     def __init__(
         self      : Self,

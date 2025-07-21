@@ -99,7 +99,7 @@ FACTORY_SETTINGS = {
                         "style" : Qt.BrushStyle.SolidPattern
                     }
                 },
-                "BlockPinEntry" : {
+                "BlockPinNode" : {
                     "line" : {
                         "color" : PaletteDark.BlockPin,
                         "width" : 0,
@@ -202,7 +202,7 @@ FACTORY_SETTINGS = {
                         "style" : Qt.BrushStyle.SolidPattern
                     }
                 },
-                "BlockPinEntry" : {
+                "BlockPinNode" : {
                     "line" : {
                         "color" : PaletteLightMono.BlockPin,
                         "width" : 0,
