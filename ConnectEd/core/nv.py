@@ -179,8 +179,8 @@ FACTORY_SETTINGS = {
                 "text" : PaletteDark.SelectedText
             },
             "key_point" : {
-                "line" : PaletteDark.SelectedLine,
-                "fill" : PaletteDark.SelectedFill
+                "line" : PaletteDark.KeyPointLine,
+                "fill" : PaletteDark.KeyPointFill
             },
             "grid" : {
                 "line" : PaletteDark.Grid
@@ -282,8 +282,8 @@ FACTORY_SETTINGS = {
                 "text" : PaletteLightMono.SelectedText
             },
             "key_point" : {
-                "line" : PaletteLightMono.SelectedLine,
-                "fill" : PaletteLightMono.SelectedFill
+                "line" : PaletteLightMono.KeyPointLine,
+                "fill" : PaletteLightMono.KeyPointFill
             },
             "grid" : {
                 "line" : PaletteLightMono.Grid

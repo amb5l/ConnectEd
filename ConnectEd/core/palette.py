@@ -18,6 +18,8 @@ class PaletteDark:
     SelectedLine  = QColor("#C000C0")
     SelectedFill  = QColor("#300030")
     SelectedText  = QColor("#800080")
+    KeyPointLine  = QColor("#FF00FF")
+    KeyPointFill  = QColor("#FF00FF")
 
 class PaletteLightMono:
     Background    = QColor("#202020")
@@ -36,3 +38,5 @@ class PaletteLightMono:
     SelectedLine  = QColor("#C000C0")
     SelectedFill  = QColor("#800080")
     SelectedText  = QColor("#C000C0")
+    KeyPointLine  = QColor("#FF00FF")
+    KeyPointFill  = QColor("#FF00FF")

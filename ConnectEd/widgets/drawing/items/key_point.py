@@ -138,10 +138,7 @@ class KeyPoint(CustomGraphicsItem):
     ) -> None:
         painter.setPen(self._pen)
         painter.setBrush(self._brush)
-        if self._manager.anchor is not None and self._manager.anchor == self:
-            painter.drawRect(self._rect)
-        else:
-            painter.drawPath(self._path)
+        painter.drawPath(self._path)
 
     def moveBy(self : Self, dx : float, dy : float) -> None:
         self.parentItem().moveKeyPoint(self._loc, QPointF(dx, dy))
@@ -150,33 +147,25 @@ class KeyPoint(CustomGraphicsItem):
         # get updated appearance settings
         theme = hub.settings.getTheme("key_point")
         self._pen.setColor(theme.line)
-        self._brush.setColor(theme.fill)
+        self._brush.setColor(theme.line)
         r = hub.settings.get("display/key_point/radius")
         # update for hit testing
         self._rect.setCoords(-r, -r, r, r)
         self._shape.clear()
         self._shape.addRect(self._rect)
-        # update appearance
+        # update normal appearance
         self._normal.clear()
-        self._anchor.clear()
-        if self._resize: # resizable => square
-            self._normal.addRect(self._rect)
-            self._anchor.addPath(self._normal)
-            self._anchor.moveTo(-r, -r)
-            self._anchor.lineTo(r, r)
-            self._anchor.lineTo(r, -r)
-            self._anchor.lineTo(-r, r)
+        if self._resize: # resizable => circle
+            self._normal.addEllipse(self._rect)
         else: # not resizable => rhombus
             self._normal.moveTo(-r, 0)
             self._normal.lineTo(0, -r)
             self._normal.lineTo(r, 0)
             self._normal.lineTo(0, r)
             self._normal.closeSubpath()
-            self._anchor.addPath(self._normal)
-            self._anchor.moveTo(-r, 0)
-            self._anchor.lineTo(r, 0)
-            self._anchor.lineTo(0, -r)
-            self._anchor.lineTo(0, r)
+        # update anchor appearance
+        self._anchor.clear()
+        self._anchor.addRect(self._rect)
 
     def onAnchorChanged(self : Self, anchor : KP) -> None:
         self._path = self._anchor if anchor == self._loc else self._normal

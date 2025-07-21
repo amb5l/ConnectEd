@@ -4,10 +4,6 @@ ortho movement requires initial position to be recorded
 
 
 
-Key Points
-==========
-- central keypoint should not offer resize
-
 Selection Behaviour
 ===================
 - child elements e.g. property texts? sequential/incremental selection?
