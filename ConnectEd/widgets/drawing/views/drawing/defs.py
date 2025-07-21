@@ -60,6 +60,18 @@ class DrawingViewPLPos:
         self.physical = physical
         self.logical  = logical
 
+class DrawingViewMouseCurrent(DrawingViewPLPos):
+    modifiers : Qt.KeyboardModifier = Qt.KeyboardModifier.NoModifier
+
+    def __init__(
+        self      : Self,
+        physical  : Optional[QPoint] = None,
+        logical   : Optional[QPointF] = None,
+        modifiers : Qt.KeyboardModifier = Qt.KeyboardModifier.NoModifier
+    ) -> None:
+        super().__init__(physical, logical)
+        self.modifiers = modifiers
+
 class DrawingViewMousePress(DrawingViewPLPos):
     modifiers : Qt.KeyboardModifier = Qt.KeyboardModifier.NoModifier
 
@@ -72,7 +84,7 @@ class DrawingViewMousePress(DrawingViewPLPos):
         super().__init__(physical, logical)
         self.modifiers = modifiers
 
-class DrawingViewMouseRelease(DrawingViewPLPos):
+class DrawingViewMouseRelease(DrawingViewMousePress):
     pass
 
 class DrawingViewMouseButtonState(Enum):
@@ -93,7 +105,7 @@ class DrawingViewMouseButton:
         self.state   = DrawingViewMouseButtonState.Idle
 
 class DrawingViewMouse:
-    current : DrawingViewPLPos
+    current : DrawingViewMouseCurrent
     left    : DrawingViewMouseButton
     middle  : DrawingViewMouseButton
 
@@ -167,7 +179,9 @@ class DrawingViewWip:
     macro     : bool
     elements  : Optional[list[QGraphicsItem]]
     pos       : Optional[QPointF | QPoint]
+    pos0      : Optional[QPointF | QPoint]    # start position e.g. for ortho
     selection : Optional[list[QGraphicsItem]]
+    slide     : Optional[bool]
 
     def __init__(self : Self) -> None:
         self.clear()
@@ -176,6 +190,7 @@ class DrawingViewWip:
         self.macro     = False
         self.elements  = None
         self.pos       = None
+        self.pos0      = None
         self.selection = None
 
     @property

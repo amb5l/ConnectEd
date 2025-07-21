@@ -33,8 +33,9 @@ class DrawingViewMouseMixin:
         hub.main_window.status_bar.xy.setText("-,-")
 
     def mouseMoveEvent(self : "DrawingView", event : QMouseEvent) -> None:
-        p = event.pos(); l = self.mapToScene(p)
+        p = event.pos(); l = self.mapToScene(p); m = self._getModifiers(event)
         self.mouse.current.setPL(p, l)
+        self.mouse.current.modifiers = m
         hub.main_window.status_bar.xy.setText(
             str(int(round(l.x()))) + "," + str(int(round(l.y())))
         )
@@ -82,9 +83,10 @@ class DrawingViewMouseMixin:
             self.mouse.middle.state = MouseButtonState.Pressed
 
     def mouseReleaseEvent(self : "DrawingView", event : QMouseEvent) -> None:
-        p = event.pos(); l = self.mapToScene(p)
+        p = event.pos(); l = self.mapToScene(p); m = self._getModifiers(event)
         if event.button() & Qt.MouseButton.LeftButton:
             self.mouse.left.release.setPL(p, l)
+            self.mouse.left.release.modifiers = m
             match self.mouse.left.state:
                 case MouseButtonState.Pressed:
                     self.mouseLeftClick()
@@ -96,6 +98,7 @@ class DrawingViewMouseMixin:
                     logger.warning(f"Mouse left button released when idle")
         if event.button() & Qt.MouseButton.MiddleButton:
             self.mouse.middle.release.setPL(p, l)
+            self.mouse.middle.release.modifiers = m
             match self.mouse.middle.state:
                 case MouseButtonState.Pressed:
                     self.mouseMiddleClick()
@@ -160,13 +163,13 @@ class DrawingViewMouseMixin:
                     self._snap(self.mouse.left.release.logical)
                 )
                 self._goState(
-                    State.EditSlide2 if self.state == State.EditSlide1
+                    State.EditSlide2 if slide
                     else State.EditMove2
                 )
             case State.EditMove2 | State.EditSlide2:
                 self.editMoveComplete(
                     self._snap(self.mouse.left.release.logical),
-                    self.state == State.EditSlide2
+                    m & qkm.ShiftModifier
                 )
                 self._goState(State.Idle)
             case State.EditResize1:
@@ -186,7 +189,8 @@ class DrawingViewMouseMixin:
                         self._goState(State.EditResize3)
             case State.EditResize3:
                 self.editMoveComplete(
-                    self._snap(self.mouse.left.release.logical)
+                    self._snap(self.mouse.left.release.logical),
+                    m & qkm.ShiftModifier
                 )
                 self._goState(State.Idle)
             case State.EditAppearance1:
@@ -326,21 +330,27 @@ class DrawingViewMouseMixin:
                 )
 
     def mouseLeftDragContinue(self : "DrawingView") -> None:
+        m = self.mouse.current.modifiers
         match self.state:
             case State.SelectArea2:
                 self.marquee.resize(self.mouse.current.physical)
             case State.EditSlide2:
                 self.editMoveContinue(
-                    self._snap(self.mouse.current.logical), True
+                    self._snap(self.mouse.current.logical),
+                    m & qkm.ShiftModifier
                 )
             case State.EditDuplicate2:
                 self.editDuplicateContinue()
             case State.EditMove2:
                 self.editMoveContinue(
-                    self._snap(self.mouse.current.logical)
+                    self._snap(self.mouse.current.logical),
+                    m & qkm.ShiftModifier
                 )
             case State.EditResize3:
-                self.editMoveContinue(self._snap(self.mouse.current.logical))
+                self.editMoveContinue(
+                    self._snap(self.mouse.current.logical),
+                    m & qkm.ShiftModifier
+                )
             case State.ViewPan2:
                 delta = self.mouse.current.physical - self.wip.pos
                 self.horizontalScrollBar().setValue(
@@ -362,7 +372,7 @@ class DrawingViewMouseMixin:
                 )
 
     def mouseLeftDragEnd(self : "DrawingView") -> None:
-        m = self.mouse.left.press.modifiers
+        m = self.mouse.left.release.modifiers
         match self.state:
             case State.SelectArea2:
                 self.marquee.end(self.mouse.left.release.physical)
@@ -374,7 +384,7 @@ class DrawingViewMouseMixin:
             case State.EditMove2 | State.EditSlide2 | State.EditResize3:
                 self.editMoveComplete(
                     self._snap(self.mouse.left.release.logical),
-                    self.state == State.EditSlide2
+                    m & qkm.ShiftModifier
                 )
                 self._goState(State.Idle)
             case State.EditDuplicate2:
@@ -457,6 +467,7 @@ class DrawingViewMouseMixin:
                 self._goState(State.Idle)
 
     def mouseMove(self : "DrawingView") -> None:
+        m = self.mouse.current.modifiers
         match self.state:
             case State.EditPaste:
                 self.editPasteContinue()
@@ -465,7 +476,7 @@ class DrawingViewMouseMixin:
             case State.EditMove2 | State.EditSlide2 | State.EditResize3:
                 self.editMoveContinue(
                     self._snap(self.mouse.current.logical),
-                    self.state == State.EditSlide2
+                    m & qkm.ShiftModifier
                 )
             case State.ViewPan2:
                 delta = self.mouse.current.physical - self.wip.pos

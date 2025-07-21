@@ -237,23 +237,37 @@ class DrawingViewEditMixin:
         if isinstance(elements[0], KeyPoint):
             pos = elements[0].scenePos()
         self.wip.pos = pos
+        self.wip.pos0 = pos
+        self.wip.slide = slide
 
     def editMoveContinue(
         self  : "DrawingView",
         pos   : QPointF,
-        slide : bool = False
+        ortho : bool = False
     ) -> None:
         scene : DrawingScene = self.scene()
-        scene.editMove(self.wip.elements, pos - self.wip.pos, slide)
+        if ortho:
+            pos0 = self.wip.pos0
+            if abs(pos.x() - pos0.x()) > abs(pos.y() - pos0.y()):
+                pos.setY(pos0.y())
+            else:
+                pos.setX(pos0.x())
+        scene.editMove(self.wip.elements, pos - self.wip.pos, self.wip.slide)
         self.wip.pos = pos
 
     def editMoveComplete(
         self  : "DrawingView",
         pos   : QPointF,
-        slide : bool = False
+        ortho : bool = False
     ) -> None:
         scene : DrawingScene = self.scene()
-        scene.editMove(self.wip.elements, pos - self.wip.pos, slide)
+        if ortho:
+            pos0 = self.wip.pos0
+            if abs(pos.x() - pos0.x()) > abs(pos.y() - pos0.y()):
+                pos.setY(pos0.y())
+            else:
+                pos.setX(pos0.x())
+        scene.editMove(self.wip.elements, pos - self.wip.pos, self.wip.slide)
         self.wip.clear()
 
     def editResize(self : "DrawingView") -> None:
