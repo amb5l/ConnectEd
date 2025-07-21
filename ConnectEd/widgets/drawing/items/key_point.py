@@ -108,13 +108,13 @@ class KeyPoint(CustomGraphicsItem):
 
     def getMenu(self : Self) -> QMenu | None:
         menu = QMenu()
-        a_move = QAction("Move", menu)
-        a_move.triggered.connect(lambda: None)
-        menu.addAction(a_move)
         if self._resize:
             a_resize = QAction("Resize", menu)
             a_resize.triggered.connect(lambda: None)
             menu.addAction(a_resize)
+        a_move = QAction("Move", menu)
+        a_move.triggered.connect(lambda: None)
+        menu.addAction(a_move)
         if self._manager.element._ANCHORED:
             a_anchor = QAction("Assign Anchor", menu)
             a_anchor.triggered.connect(lambda: None)
@@ -185,14 +185,18 @@ class KeyPoint(CustomGraphicsItem):
         checked : bool,
         view    : "DrawingView"
     ) -> None:
-        view.editMoveBegin([self], self.scenePos())
+        from ..views.drawing.defs import DrawingViewState as State
+        view.editMoveBegin([self.parentItem()], self.scenePos())
+        view._goState(State.EditMove2)
 
     def ctxMenuResize(
         self    : Self,
         checked : bool,
         view    : "DrawingView"
     ) -> None:
-        view.editResizeBegin([self])
+        from ..views.drawing.defs import DrawingViewState as State
+        view.editMoveBegin([self], self.scenePos())
+        view._goState(State.EditMove2)
 
     def ctxMenuAssignAnchor(
         self    : Self,
