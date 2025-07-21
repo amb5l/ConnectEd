@@ -7,8 +7,6 @@ from ....dialogs import AppearanceDialog, PropertiesDialog, PropertyTextDialog
 from ...scenes import DrawingScene
 from ...items  import BeforeAfter, ElementMixin, KeyPoint, PropertyText
 
-from .defs import DrawingViewState as State
-
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ... import DrawingView
@@ -28,12 +26,12 @@ class DrawingViewEditMixin:
         scene.undo_stack.undo()
         self.wip.clear()
         self.scene().clearSelection()
-        self._goState(State.Idle)
+        self.state.go(self.stateIdle)
 
     def editComplete(self : "DrawingView") -> None:
         # TODO seriously consider this
         match self.state:
-            case State.PlaceRectangle2:
+            case self.statePlaceRectangle2:
                 self.placeRectangleComplete(
                     self._snap(self.mouse.current.logical)
                 )
@@ -52,12 +50,12 @@ class DrawingViewEditMixin:
         items, copy_pos = paste()
         if not items:
             logger.warning("No valid data to paste")
-            self._goState(State.Idle)
+            self.state.go(self.stateIdle)
             return
         elements = [item for item in items if isinstance(item, ElementMixin)]
         if not elements:
             logger.warning("No valid elements to paste")
-            self._goState(State.Idle)
+            self.state.go(self.stateIdle)
             return
         # Capture the current selection before clearing
         selection = [item for item in scene.selectedItems() if isinstance(item, ElementMixin)]
@@ -86,13 +84,13 @@ class DrawingViewEditMixin:
         self.wip.macro = True
         self.wip.selection = selection  # Store for use in editPasteComplete
         scene.undo_stack.beginMacro("Paste Elements")
-        self._goState(State.EditPaste)
+        self.state.go(self.stateEditPaste)
 
     def editPasteContinue(self : "DrawingView") -> None:
         scene : DrawingScene = self.scene()
         if not self.wip.elements:
             logger.warning("editPasteContinue: No elements in wip, aborting")
-            self._goState(State.Idle)
+            self.state.go(self.stateIdle)
             return
         new_pos = self._snap(self.mouse.current.logical)
         mouse_delta = new_pos - self.wip.pos
@@ -112,7 +110,7 @@ class DrawingViewEditMixin:
         scene : DrawingScene = self.scene()
         if not self.wip.elements:
             logger.warning("editPasteComplete: No elements in wip, aborting")
-            self._goState(State.Idle)
+            self.state.go(self.stateIdle)
             return
         pos = self._snap(self.mouse.current.logical)
         offset = pos - self.wip.pos
@@ -125,7 +123,7 @@ class DrawingViewEditMixin:
         if self.wip.macro:
             scene.undo_stack.endMacro()
         self.wip.clear()
-        self._goState(State.Idle)
+        self.state.go(self.stateIdle)
 
     def editDelete(self : "DrawingView") -> None:
         scene : DrawingScene = self.scene()
@@ -140,7 +138,7 @@ class DrawingViewEditMixin:
         ]
         if not elements:
             # Enter selection mode if nothing is selected
-            self._goState(State.EditDuplicate1)
+            self.state.go(self.stateEditDuplicate1)
             return
         # Start duplication with selected elements
         self.wip.clear()
@@ -167,13 +165,13 @@ class DrawingViewEditMixin:
         self.wip.macro = True
         self.wip.selection = selection  # Store for use in editDuplicateComplete
         scene.undo_stack.beginMacro("Duplicate Elements")
-        self._goState(State.EditDuplicate2)
+        self.state.go(self.stateEditDuplicate2)
 
     def editDuplicateContinue(self : "DrawingView") -> None:
         scene : DrawingScene = self.scene()
         if not self.wip.elements:
             logger.warning("editDuplicateContinue: No elements in wip, aborting")
-            self._goState(State.Idle)
+            self.state.go(self.stateIdle)
             return
         new_pos = self._snap(self.mouse.current.logical)
         mouse_delta = new_pos - self.wip.pos
@@ -193,7 +191,7 @@ class DrawingViewEditMixin:
         scene : DrawingScene = self.scene()
         if not self.wip.elements:
             logger.warning("editDuplicateComplete: No elements in wip, aborting")
-            self._goState(State.Idle)
+            self.state.go(self.stateIdle)
             return
         pos = self._snap(self.mouse.current.logical)
         offset = pos - self.wip.pos
@@ -209,23 +207,23 @@ class DrawingViewEditMixin:
         if self.wip.macro:
             scene.undo_stack.endMacro()
         self.wip.clear()
-        self._goState(State.Idle)
+        self.state.go(self.stateIdle)
 
     def editSlide(self : "DrawingView") -> None:
         if self.scene().selectedItems():
             pos = self._snap(self._selectedItemsRect().center())
             self.editMoveBegin(self.scene().selectedItems(), pos, True)
         else:
-            self._goState(State.EditSlide1)
+            self.state.go(self.stateEditSlide1)
 
     def editMove(self : "DrawingView") -> None:
         scene : DrawingScene = self.scene()
         if scene.selectedItems():
             pos = self._snap(self._selectedItemsRect().center())
             self.editMoveBegin(scene.selectedItems(), pos)
-            self._goState(State.EditMove2)
+            self.state.go(self.stateEditMove2)
         else:
-            self._goState(State.EditMove1)
+            self.state.go(self.stateEditMove1)
 
     def editMoveBegin(
         self     : "DrawingView",
@@ -272,10 +270,10 @@ class DrawingViewEditMixin:
 
     def editResize(self : "DrawingView") -> None:
         if len(self.scene().selectedItems()) == 1:
-            self._goState(State.EditResize2)
+            self.state.go(self.stateEditResize2)
         else:
             self.scene().clearSelection()
-            self._goState(State.EditResize1)
+            self.state.go(self.stateEditResize1)
 
     def editPropertyText(self : "DrawingView", element: PropertyText) -> None:
         scene : DrawingScene = self.scene()
@@ -293,7 +291,7 @@ class DrawingViewEditMixin:
             scene.editPropertyText(
                 element, name_change, value_change, appearance_change
             )
-        self._goState(State.Idle)
+        self.state.go(self.stateIdle)
 
     def editAppearance(
         self : "DrawingView",
@@ -305,20 +303,20 @@ class DrawingViewEditMixin:
         elif not isinstance(elements, list):
             elements = [elements]
         if elements:
-            self._goState(State.EditAppearance2)
+            self.state.go(self.stateEditAppearance2)
             dialog = AppearanceDialog(elements)
             if dialog.exec():
                 scene.editAppearance(
                     elements,
                     dialog.getChoice()
                 )
-            self._goState(State.Idle)
+            self.state.go(self.stateIdle)
         else:
-            self._goState(State.EditAppearance1)
+            self.state.go(self.stateEditAppearance1)
 
     def editProperties(self : "DrawingView", element: ElementMixin) -> None:
         scene : DrawingScene = self.scene()
         dialog = PropertiesDialog(element)
         if dialog.exec():
             scene.editProperties(element, dialog.getChanges())
-        self._goState(State.Idle)
+        self.state.go(self.stateIdle)

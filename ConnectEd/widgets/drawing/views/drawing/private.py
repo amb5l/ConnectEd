@@ -5,7 +5,7 @@ from PyQt6.QtCore    import Qt, QPointF, QRectF, QPoint
 from PyQt6.QtWidgets import QMenu, QGraphicsItem
 from PyQt6.QtGui     import QMouseEvent, QPainterPath, QIcon, QAction, QCursor
 
-from .defs import DrawingViewState, DrawingViewStateTip
+from .state import DrawingViewStateBase
 
 from ..... import hub
 
@@ -13,13 +13,9 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from . import DrawingView
 
+qkm = Qt.KeyboardModifier
 
 class DrawingViewPrivateMixin:
-    def _goState(self : "DrawingView", state : DrawingViewState) -> None:
-        self.state = state
-        if hub.main_window is not None:
-            hub.main_window.status_bar.tip.setText(DrawingViewStateTip[state])
-
     def _allItemsRect(self : "DrawingView") -> Optional[QRectF]:
         items_rect = None
         if hasattr(self.scene(), "paperRect"):
@@ -116,7 +112,6 @@ class DrawingViewPrivateMixin:
         self  : "DrawingView",
         event : QMouseEvent
     ) -> Qt.KeyboardModifier:
-        qkm = Qt.KeyboardModifier
         mask = qkm.ControlModifier | qkm.ShiftModifier | qkm.AltModifier
         return event.modifiers() & mask
 
@@ -139,10 +134,12 @@ class DrawingViewPrivateMixin:
         return [i for i in items if i.zValue() in self.layer.value]
 
     def _selectRect(
-        self   : "DrawingView",
-        rect   : QRectF,
-        toggle : bool = False
+        self      : "DrawingView",
+        rect      : QRectF,
+        modifiers : Qt.KeyboardModifier
     ) -> None:
+        toggle = modifiers & (qkm.ControlModifier | qkm.ShiftModifier) \
+            == qkm.ControlModifier
         path = QPainterPath()
         path.addRect(rect)
         if toggle:
@@ -163,12 +160,14 @@ class DrawingViewPrivateMixin:
             )
 
     def _selectPoint(
-        self   : "DrawingView",
-        point  : QPointF,
-        toggle : bool = False,
-        choice : bool = False
+        self      : "DrawingView",
+        point     : QPointF,
+        modifiers : Qt.KeyboardModifier
     ) -> None:
         items = self._itemsAt(point)
+        toggle = modifiers & (qkm.ControlModifier | qkm.ShiftModifier) \
+            == qkm.ControlModifier
+        choice = modifiers & qkm.AltModifier
         if len(items) > 1 and choice: # multiple choice case
             init_sel = {item: item.isSelected() for item in items}
             menu = QMenu(self)

@@ -7,8 +7,6 @@ __all__ = [
     "DrawingViewMouseButtonState",
     "DrawingViewMouseButton",
     "DrawingViewMouse",
-    "DrawingViewState",
-    "DrawingViewStateTip",
     "DrawingViewWip",
 ]
 
@@ -113,67 +111,6 @@ class DrawingViewMouse:
         self.current = DrawingViewPLPos()
         self.left    = DrawingViewMouseButton()
         self.middle  = DrawingViewMouseButton()
-
-class DrawingViewState(Enum):
-    Idle            = auto()
-    ViewPan1        = auto()
-    ViewPan2        = auto()
-    ViewZoomWindow1 = auto()
-    ViewZoomWindow2 = auto()
-    SelectArea2     = auto()
-    EditPaste       = auto()
-    EditDuplicate1  = auto()
-    EditDuplicate2  = auto()
-    EditSlide1      = auto()
-    EditSlide2      = auto()
-    EditMove1       = auto()
-    EditMove2       = auto()
-    EditResize1     = auto()
-    EditResize2     = auto()
-    EditResize3     = auto()
-    EditAppearance1 = auto()
-    EditAppearance2 = auto()
-    PlaceBlock1     = auto()
-    PlaceBlock2     = auto()
-    PlaceRectangle1 = auto()
-    PlaceRectangle2 = auto()
-    PlaceTextBlock1 = auto()
-    PlaceTextBlock2 = auto()
-    PlaceText       = auto()
-    PlaceBlockPin1  = auto()
-    PlaceBlockPin2  = auto()
-    PlaceBlockPin3  = auto()
-
-DrawingViewStateTip = {
-    DrawingViewState.Idle            : "Idle",
-    DrawingViewState.ViewPan1        : "Pan: pick the first point",
-    DrawingViewState.ViewPan2        : "Pan: pick the second point",
-    DrawingViewState.ViewZoomWindow1 : "Zoom Window: pick the first point",
-    DrawingViewState.ViewZoomWindow2 : "Zoom Window: pick the second point",
-    DrawingViewState.SelectArea2     : "Select: complete the marquee selection",
-    DrawingViewState.EditPaste       : "Paste: select the paste position",
-    DrawingViewState.EditDuplicate1  : "Duplicate: select one or more items",
-    DrawingViewState.EditDuplicate2  : "Duplicate: place the duplicated item(s) as required",
-    DrawingViewState.EditSlide1      : "Slide: select one or more items",
-    DrawingViewState.EditSlide2      : "Slide: place the selected item(s) as required",
-    DrawingViewState.EditMove1       : "Move: select one or more items",
-    DrawingViewState.EditMove2       : "Move: place the selected item(s) as required",
-    DrawingViewState.EditResize1     : "Resize: select a single resizeable item",
-    DrawingViewState.EditResize2     : "Resize: select a grip to begin resizing",
-    DrawingViewState.EditResize3     : "Resize: place the selected grip as required",
-    DrawingViewState.EditAppearance1 : "Appearance: select one or more items",
-    DrawingViewState.EditAppearance2 : "Appearance: specify changes",
-    DrawingViewState.PlaceBlock1     : "Place Block: pick the first point",
-    DrawingViewState.PlaceBlock2     : "Place Block: pick the second point",
-    DrawingViewState.PlaceRectangle1 : "Place Rectangle: pick the first point",
-    DrawingViewState.PlaceRectangle2 : "Place Rectangle: pick the second point",
-    DrawingViewState.PlaceTextBlock1 : "Place Text Block: pick a position",
-    DrawingViewState.PlaceTextBlock2 : "Place Text Block: enter the text",
-    DrawingViewState.PlaceText       : "Place Text: pick a position",
-    DrawingViewState.PlaceBlockPin1  : "Place Block Pin: pick a block",
-    DrawingViewState.PlaceBlockPin2  : "Place Block Pin: enter the pin details",
-    DrawingViewState.PlaceBlockPin3  : "Place Block Pin: pick a location"
-}
 
 class DrawingViewWip:
     macro     : bool

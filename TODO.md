@@ -1,9 +1,5 @@
 New DrawingView state machine
 
-ortho movement requires initial position to be recorded
-
-
-
 Selection Behaviour
 ===================
 - child elements e.g. property texts? sequential/incremental selection?

@@ -187,7 +187,7 @@ class KeyPoint(CustomGraphicsItem):
     ) -> None:
         from ..views.drawing.defs import DrawingViewState as State
         view.editMoveBegin([self.parentItem()], self.scenePos())
-        view._goState(State.EditMove2)
+        view.state.go(view.stateEditMove2)
 
     def ctxMenuResize(
         self    : Self,
@@ -196,7 +196,7 @@ class KeyPoint(CustomGraphicsItem):
     ) -> None:
         from ..views.drawing.defs import DrawingViewState as State
         view.editMoveBegin([self], self.scenePos())
-        view._goState(State.EditMove2)
+        view.state.go(view.stateEditMove2)
 
     def ctxMenuAssignAnchor(
         self    : Self,

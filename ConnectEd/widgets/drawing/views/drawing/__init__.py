@@ -17,6 +17,7 @@ from .private import DrawingViewPrivateMixin
 from .edit    import DrawingViewEditMixin
 from .view    import DrawingViewViewMixin
 from .place   import DrawingViewPlaceMixin
+from .state   import DrawingViewStateMixin, DrawingViewStateBase
 from .defs    import *
 
 from ..... import hub
@@ -36,6 +37,7 @@ class DrawingView(
     DrawingViewEditMixin,
     DrawingViewViewMixin,
     DrawingViewPlaceMixin,
+    DrawingViewStateMixin,
     DrawingViewPrivateMixin
 ):
     _shown  : bool = False
@@ -45,7 +47,7 @@ class DrawingView(
     zoom    : float
     grid    : DrawingViewGrid
     mouse   : DrawingViewMouse
-    state   : DrawingViewState
+    state   : DrawingViewStateBase
     wip     : DrawingViewWip
 
     def __init__(self : Self, scene : DrawingScene) -> None:
@@ -67,14 +69,16 @@ class DrawingView(
         self.mouse    = DrawingViewMouse()
         self.wip      = DrawingViewWip()
 
-        self._goState(DrawingViewState.Idle)
-
         self.setMouseTracking(True)
         self.setRenderHint(QPainter.RenderHint.Antialiasing)
         # uncomment to enable keypress events
         #self.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
 
         self._setLayer(DrawingViewLayer.Drawing)
+
+        self.initStates()
+        self.state = self.stateIdle
+        self.state.go(self.stateIdle)
 
     def showEvent(self : Self, event : QEvent) -> None:
         super().showEvent(event)

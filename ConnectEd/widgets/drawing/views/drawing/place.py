@@ -10,8 +10,6 @@ from ...items  import TextBlock, Block
 
 from ...items.pin import BlockPin
 
-from .defs import DrawingViewState as State
-
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from . import DrawingView
@@ -19,7 +17,7 @@ if TYPE_CHECKING:
 
 class DrawingViewPlaceMixin:
     def placeBlock(self : "DrawingView") -> None:
-        self._goState(State.PlaceBlock1)
+        self.state.go(self.statePlaceBlock1)
 
     def placeBlockBegin(self : "DrawingView", pos : QPointF) -> None:
         scene : DrawingScene = self.scene()
@@ -29,7 +27,7 @@ class DrawingViewPlaceMixin:
         element.setSelected(True)
         self.wip.element = element
         self.wip.pos = pos
-        self._goState(State.PlaceBlock2)
+        self.state.go(self.statePlaceBlock2)
 
     def placeBlockContinue(self : "DrawingView", pos : QPointF) -> None:
         scene : DrawingScene = self.scene()
@@ -39,12 +37,12 @@ class DrawingViewPlaceMixin:
         scene : DrawingScene = self.scene()
         scene.placeBlock(self.wip.pos, pos, inst=self.wip.element)
         self.wip.clear()
-        self._goState(State.Idle)
+        self.state.go(self.stateIdle)
 
     def placeBlockPin(self : "DrawingView") -> None:
         if not self.placeBlockPinBegin():
             self.scene().clearSelection()
-            self._goState(State.PlaceBlockPin1)
+            self.state.go(self.statePlaceBlockPin1)
 
     def placeBlockPinBegin(self : "DrawingView") -> bool:
         selected_items = [item for item in self.scene().selectedItems() \
@@ -58,7 +56,7 @@ class DrawingViewPlaceMixin:
 
     def placeBlockPinDialog(self : "DrawingView") -> None:
         dialog = PlaceBlockPinDialog()
-        self._goState(State.PlaceBlockPin2)
+        self.state.go(self.statePlaceBlockPin2)
         if dialog.exec():
             block : Block = self.wip.element
             name = dialog.getName()
@@ -73,10 +71,10 @@ class DrawingViewPlaceMixin:
                 block
             )
             self.wip.element = pin
-            self._goState(State.PlaceBlockPin3)
+            self.state.go(self.statePlaceBlockPin3)
         else:
             self.wip.clear()
-            self._goState(State.Idle)
+            self.state.go(self.stateIdle)
 
     def placeBlockPinContinue(self : "DrawingView", pos : QPointF) -> None:
         pin : BlockPin = self.wip.element
@@ -86,10 +84,10 @@ class DrawingViewPlaceMixin:
         pin : BlockPin = self.wip.element
         pin.setLocPos(pos, self.grid.pitch if self.grid.snap else None)
         self.wip.clear()
-        self._goState(State.Idle)
+        self.state.go(self.stateIdle)
 
     def placeRectangle(self : "DrawingView") -> None:
-        self._goState(State.PlaceRectangle1)
+        self.state.go(self.statePlaceRectangle1)
 
     def placeRectangleBegin(self : "DrawingView", p1: QPointF) -> None:
         scene : DrawingScene = self.scene()
@@ -99,7 +97,7 @@ class DrawingViewPlaceMixin:
         element.setSelected(True)
         self.wip.element = element
         self.wip.pos = p1
-        self._goState(State.PlaceRectangle2)
+        self.state.go(self.statePlaceRectangle2)
 
     def placeRectangleContinue(self : "DrawingView", p2: QPointF) -> None:
         scene : DrawingScene = self.scene()
@@ -109,10 +107,10 @@ class DrawingViewPlaceMixin:
         scene : DrawingScene = self.scene()
         scene.placeRectangle(self.wip.pos, p2, inst=self.wip.element)
         self.wip.clear()
-        self._goState(State.Idle)
+        self.state.go(self.stateIdle)
 
     def placeTextBlock(self : "DrawingView") -> None:
-        self._goState(State.PlaceTextBlock1)
+        self.state.go(self.statePlaceTextBlock1)
 
     def placeTextBlockBegin(self : "DrawingView", pos : QPointF) -> None:
         scene : DrawingScene = self.scene()
@@ -123,7 +121,7 @@ class DrawingViewPlaceMixin:
         element.setFocus()
         self.wip.element = element
         self.wip.pos = pos
-        self._goState(State.PlaceTextBlock2)
+        self.state.go(self.statePlaceTextBlock2)
 
     def placeTextBlockComplete(self : "DrawingView") -> None:
         self.wip.element.clearFocus()
@@ -141,7 +139,7 @@ class DrawingViewPlaceMixin:
         else:
             logger.warning("placeTextBlockFinalize: text_item != wip.element")
         self.wip.clear()
-        self._goState(State.Idle)
+        self.state.go(self.stateIdle)
 
     def placeText(self : "DrawingView") -> None:
         scene : DrawingScene = self.scene()
@@ -159,7 +157,7 @@ class DrawingViewPlaceMixin:
             element.setPos(
                 self.mapToScene(self.mapFromGlobal(QCursor.pos()))
             )
-            self._goState(State.PlaceText)
+            self.state.go(self.statePlaceText)
         else:
             self.wip.clear()
 
@@ -170,4 +168,4 @@ class DrawingViewPlaceMixin:
         scene : DrawingScene = self.scene()
         scene.placeText(pos, inst=self.wip.element)
         self.wip.clear()
-        self._goState(State.Idle)
+        self.state.go(self.stateIdle)
