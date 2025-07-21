@@ -28,16 +28,16 @@ class DrawingViewPlaceMixin:
         element = scene.placeBlock(pos)
         element.setSelected(True)
         self.wip.element = element
-        self.wip.pos0 = pos
+        self.wip.pos = pos
         self._goState(State.PlaceBlock2)
 
     def placeBlockContinue(self : "DrawingView", pos : QPointF) -> None:
         scene : DrawingScene = self.scene()
-        scene.placeBlock(self.wip.pos0, pos, inst=self.wip.element)
+        scene.placeBlock(self.wip.pos, pos, inst=self.wip.element)
 
     def placeBlockComplete(self : "DrawingView", pos : QPointF) -> None:
         scene : DrawingScene = self.scene()
-        scene.placeBlock(self.wip.pos0, pos, inst=self.wip.element)
+        scene.placeBlock(self.wip.pos, pos, inst=self.wip.element)
         self.wip.clear()
         self._goState(State.Idle)
 
@@ -51,7 +51,7 @@ class DrawingViewPlaceMixin:
                           if item.parentItem() is None]
         if len(selected_items) == 1 and isinstance(selected_items[0], Block):
             self.wip.element = selected_items[0]
-            self.wip.pos0 = self.mapToScene(self.mapFromGlobal(QCursor.pos()))
+            self.wip.pos = self.mapToScene(self.mapFromGlobal(QCursor.pos()))
             self.placeBlockPinDialog()
             return True
         return False
@@ -67,7 +67,7 @@ class DrawingViewPlaceMixin:
             pin = BlockPin(
                 name, direction, range,
                 block.getEdgeLoc(
-                    self.wip.pos0,
+                    self.wip.pos,
                     self.grid.pitch if self.grid.snap else None
                 ),
                 block
@@ -98,16 +98,16 @@ class DrawingViewPlaceMixin:
         element = scene.placeRectangle(p1)
         element.setSelected(True)
         self.wip.element = element
-        self.wip.pos0 = p1
+        self.wip.pos = p1
         self._goState(State.PlaceRectangle2)
 
     def placeRectangleContinue(self : "DrawingView", p2: QPointF) -> None:
         scene : DrawingScene = self.scene()
-        scene.placeRectangle(self.wip.pos0, p2, inst=self.wip.element)
+        scene.placeRectangle(self.wip.pos, p2, inst=self.wip.element)
 
     def placeRectangleComplete(self : "DrawingView", p2: QPointF) -> None:
         scene : DrawingScene = self.scene()
-        scene.placeRectangle(self.wip.pos0, p2, inst=self.wip.element)
+        scene.placeRectangle(self.wip.pos, p2, inst=self.wip.element)
         self.wip.clear()
         self._goState(State.Idle)
 
@@ -122,7 +122,7 @@ class DrawingViewPlaceMixin:
         element.setEditable(True)
         element.setFocus()
         self.wip.element = element
-        self.wip.pos0 = pos
+        self.wip.pos = pos
         self._goState(State.PlaceTextBlock2)
 
     def placeTextBlockComplete(self : "DrawingView") -> None:
@@ -135,7 +135,7 @@ class DrawingViewPlaceMixin:
             if text:
                 self.wip.element.setEditable(False)
                 self.wip.element.update()
-                scene.placeTextBlock(text, self.wip.pos0, inst=self.wip.element)
+                scene.placeTextBlock(text, self.wip.pos, inst=self.wip.element)
             else: # cancel empty text
                 self.scene().undo_stack.undo()
         else:

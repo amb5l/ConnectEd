@@ -166,7 +166,7 @@ DrawingViewStateTip = {
 class DrawingViewWip:
     macro     : bool
     elements  : Optional[list[QGraphicsItem]]
-    pos0      : Optional[QPointF | QPoint]
+    pos       : Optional[QPointF | QPoint]
     selection : Optional[list[QGraphicsItem]]
 
     def __init__(self : Self) -> None:
@@ -175,7 +175,7 @@ class DrawingViewWip:
     def clear(self : Self) -> None:
         self.macro     = False
         self.elements  = None
-        self.pos0      = None
+        self.pos       = None
         self.selection = None
 
     @property

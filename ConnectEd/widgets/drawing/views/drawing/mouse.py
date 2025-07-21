@@ -196,11 +196,11 @@ class DrawingViewMouseMixin:
                 )
                 self.editAppearance()
             case State.ViewPan1:
-                self.wip.pos0 = self.mouse.left.release.physical
+                self.wip.pos = self.mouse.left.release.physical
                 self.setCursor(Qt.CursorShape.ClosedHandCursor)
                 self._goState(State.ViewPan2)
             case State.ViewPan2:
-                delta = self.mouse.left.release.physical - self.wip.pos0
+                delta = self.mouse.left.release.physical - self.wip.pos
                 self.horizontalScrollBar().setValue(
                     self.horizontalScrollBar().value() - delta.x()
                 )
@@ -342,14 +342,14 @@ class DrawingViewMouseMixin:
             case State.EditResize3:
                 self.editMoveContinue(self._snap(self.mouse.current.logical))
             case State.ViewPan2:
-                delta = self.mouse.current.physical - self.wip.pos0
+                delta = self.mouse.current.physical - self.wip.pos
                 self.horizontalScrollBar().setValue(
                     self.horizontalScrollBar().value() - delta.x()
                 )
                 self.verticalScrollBar().setValue(
                     self.verticalScrollBar().value() - delta.y()
                 )
-                self.wip.pos0 = self.mouse.current.physical
+                self.wip.pos = self.mouse.current.physical
             case State.ViewZoomWindow2:
                 self.marquee.resize(self.mouse.current.physical)
             case State.PlaceBlock2:
@@ -391,7 +391,7 @@ class DrawingViewMouseMixin:
                 self._zoomRect(self.marquee.rect())
                 self._goState(State.Idle)
             case State.ViewPan2:
-                delta = self.mouse.left.release.physical - self.wip.pos0
+                delta = self.mouse.left.release.physical - self.wip.pos
                 self.horizontalScrollBar().setValue(
                     self.horizontalScrollBar().value() - delta.x()
                 )
@@ -417,7 +417,7 @@ class DrawingViewMouseMixin:
         if self.state == State.Idle:
             match self.mouse.middle.press.modifiers:
                 case Qt.KeyboardModifier.NoModifier:
-                    self.wip.pos0 = self.mouse.current.physical
+                    self.wip.pos = self.mouse.current.physical
                     self.setCursor(Qt.CursorShape.ClosedHandCursor)
                     self._goState(State.ViewPan2)
                 case Qt.KeyboardModifier.ControlModifier:
@@ -427,21 +427,21 @@ class DrawingViewMouseMixin:
     def mouseMiddleDragContinue(self : "DrawingView") -> None:
         match self.state:
             case State.ViewPan2:
-                delta = self.mouse.current.physical - self.wip.pos0
+                delta = self.mouse.current.physical - self.wip.pos
                 self.horizontalScrollBar().setValue(
                     self.horizontalScrollBar().value() - delta.x()
                 )
                 self.verticalScrollBar().setValue(
                     self.verticalScrollBar().value() - delta.y()
                 )
-                self.wip.pos0 = self.mouse.current.physical
+                self.wip.pos = self.mouse.current.physical
             case State.ViewZoomWindow2:
                 self.marquee.resize(self.mouse.current.physical)
 
     def mouseMiddleDragEnd(self : "DrawingView") -> None:
         match self.state:
             case State.ViewPan2:
-                delta = self.mouse.middle.release.physical - self.wip.pos0
+                delta = self.mouse.middle.release.physical - self.wip.pos
                 self.horizontalScrollBar().setValue(
                     self.horizontalScrollBar().value() - delta.x()
                 )
@@ -468,10 +468,10 @@ class DrawingViewMouseMixin:
                     self.state == State.EditSlide2
                 )
             case State.ViewPan2:
-                delta = self.mouse.current.physical - self.wip.pos0
+                delta = self.mouse.current.physical - self.wip.pos
                 self.horizontalScrollBar().setValue(self.horizontalScrollBar().value() - delta.x())
                 self.verticalScrollBar().setValue(self.verticalScrollBar().value() - delta.y())
-                self.wip.pos0 = self.mouse.current.physical
+                self.wip.pos = self.mouse.current.physical
             case State.ViewZoomWindow2:
                 self.marquee.resize(self.mouse.current.physical)
             case State.PlaceBlock2:

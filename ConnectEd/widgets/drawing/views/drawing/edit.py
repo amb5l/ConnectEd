@@ -73,7 +73,7 @@ class DrawingViewEditMixin:
             (elements[0].pos() if elements else QPointF(0, 0))
         offset = current_pos - copy_pos
         # Set current position as reference for future mouse movement
-        self.wip.pos0 = current_pos
+        self.wip.pos = current_pos
         scene.blockSignals(True)
         for element in elements:
             if element.scene() != scene:
@@ -95,7 +95,7 @@ class DrawingViewEditMixin:
             self._goState(State.Idle)
             return
         new_pos = self._snap(self.mouse.current.logical)
-        mouse_delta = new_pos - self.wip.pos0
+        mouse_delta = new_pos - self.wip.pos
         # Block signals to avoid multiple selection updates
         scene.blockSignals(True)
         for element in self.wip.elements:
@@ -106,7 +106,7 @@ class DrawingViewEditMixin:
         scene.blockSignals(False)
         # Manually trigger selection changed to update key points
         scene.selectionChanged.emit()
-        self.wip.pos0 = new_pos
+        self.wip.pos = new_pos
 
     def editPasteComplete(self : "DrawingView") -> None:
         scene : DrawingScene = self.scene()
@@ -115,13 +115,13 @@ class DrawingViewEditMixin:
             self._goState(State.Idle)
             return
         pos = self._snap(self.mouse.current.logical)
-        offset = pos - self.wip.pos0
+        offset = pos - self.wip.pos
         for element in self.wip.elements:
             if element.scene() == scene:
                 scene.removeItem(element)
                 element.setPos(element.pos() - offset)
         # Pass the original selection to editPaste
-        scene.editPaste(pos, (self.wip.elements, self.wip.pos0, self.wip.selection))
+        scene.editPaste(pos, (self.wip.elements, self.wip.pos, self.wip.selection))
         if self.wip.macro:
             scene.undo_stack.endMacro()
         self.wip.clear()
@@ -155,7 +155,7 @@ class DrawingViewEditMixin:
                 item.setKPVisible(False)
         self.wip.elements = cloned_elements
         # Use provided position or current mouse position
-        self.wip.pos0 = pos if pos is not None else self._snap(self.mouse.current.logical)
+        self.wip.pos = pos if pos is not None else self._snap(self.mouse.current.logical)
         # Don't apply any initial offset - keep cloned elements at their original positions
         scene.blockSignals(True)
         for element in cloned_elements:
@@ -176,7 +176,7 @@ class DrawingViewEditMixin:
             self._goState(State.Idle)
             return
         new_pos = self._snap(self.mouse.current.logical)
-        mouse_delta = new_pos - self.wip.pos0
+        mouse_delta = new_pos - self.wip.pos
         # Block signals to avoid multiple selection updates
         scene.blockSignals(True)
         for element in self.wip.elements:
@@ -187,7 +187,7 @@ class DrawingViewEditMixin:
         scene.blockSignals(False)
         # Manually trigger selection changed to update key points
         scene.selectionChanged.emit()
-        self.wip.pos0 = new_pos
+        self.wip.pos = new_pos
 
     def editDuplicateComplete(self : "DrawingView") -> None:
         scene : DrawingScene = self.scene()
@@ -196,7 +196,7 @@ class DrawingViewEditMixin:
             self._goState(State.Idle)
             return
         pos = self._snap(self.mouse.current.logical)
-        offset = pos - self.wip.pos0
+        offset = pos - self.wip.pos
         # Remove temporary elements from scene before final placement
         for element in self.wip.elements:
             if element.scene() == scene:
@@ -205,7 +205,7 @@ class DrawingViewEditMixin:
         # Use the original selection to determine what was duplicated
         original_elements = self.wip.selection if self.wip.selection else []
         # Pass the cloned elements to editDuplicate for final placement
-        scene.editDuplicate(pos, (self.wip.elements, self.wip.pos0, original_elements))
+        scene.editDuplicate(pos, (self.wip.elements, self.wip.pos, original_elements))
         if self.wip.macro:
             scene.undo_stack.endMacro()
         self.wip.clear()
@@ -236,7 +236,7 @@ class DrawingViewEditMixin:
         self.wip.elements = elements
         if isinstance(elements[0], KeyPoint):
             pos = elements[0].scenePos()
-        self.wip.pos0 = pos
+        self.wip.pos = pos
 
     def editMoveContinue(
         self  : "DrawingView",
@@ -244,8 +244,8 @@ class DrawingViewEditMixin:
         slide : bool = False
     ) -> None:
         scene : DrawingScene = self.scene()
-        scene.editMove(self.wip.elements, pos - self.wip.pos0, slide)
-        self.wip.pos0 = pos
+        scene.editMove(self.wip.elements, pos - self.wip.pos, slide)
+        self.wip.pos = pos
 
     def editMoveComplete(
         self  : "DrawingView",
@@ -253,7 +253,7 @@ class DrawingViewEditMixin:
         slide : bool = False
     ) -> None:
         scene : DrawingScene = self.scene()
-        scene.editMove(self.wip.elements, pos - self.wip.pos0, slide)
+        scene.editMove(self.wip.elements, pos - self.wip.pos, slide)
         self.wip.clear()
 
     def editResize(self : "DrawingView") -> None:
