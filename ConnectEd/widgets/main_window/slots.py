@@ -208,6 +208,10 @@ class Slots:
         widget.scene().update()
 
     @withCurrentWidget(DrawingView)
+    def placePort(self : Self, widget: DrawingView) -> None:
+        widget.placePort()
+
+    @withCurrentWidget(DrawingView)
     def placeBlock(self : Self, widget: DrawingView) -> None:
         widget.placeBlock()
 

@@ -7,10 +7,11 @@ from PyQt6.QtWidgets import QGraphicsItem
 
 from .....core import logger
 
-from ... import Block, cmdPlaceBlock, \
+from ... import Port,      cmdPlacePort, \
+                Block,     cmdPlaceBlock, \
                 Rectangle, cmdPlaceRectangle, \
                 TextBlock, cmdPlaceTextBlock, \
-                Text, cmdPlaceText, \
+                Text,      cmdPlaceText, \
                 KP
 
 from ...items.pin import BlockPin
@@ -31,6 +32,7 @@ class DrawingSceneApiPlaceMixin:
         inst  : Optional[T] = None
     ) -> T:
         CMD_DICT = {
+            "Port"      : cmdPlacePort,
             "Block"     : cmdPlaceBlock,
             "Rectangle" : cmdPlaceRectangle,
             "TextBlock" : cmdPlaceTextBlock,
@@ -44,6 +46,13 @@ class DrawingSceneApiPlaceMixin:
             logger.error(f"No place command found for {etype.__name__}")
             return None
         return element
+
+    def placePort(
+        self  : "DrawingScene",
+        *args : QPointF,
+        inst  : Optional[Port] = None
+    ) -> Port:
+        return self.placeElement(Port, *args, inst=inst)
 
     def placeBlock(
         self  : "DrawingScene",

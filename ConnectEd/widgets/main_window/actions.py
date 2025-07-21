@@ -54,6 +54,7 @@ class Actions:
         self.viewGridSnap       = Action( self._parent, "Grid Snap"     , "Toggle grid snap"                       , "Ctrl+Shift+G" , True , True )
         self.viewThemeDark      = Action( self._parent, "Dark"          , "Set dark theme"                         , None                         )
         self.viewThemeLightMono = Action( self._parent, "Light Mono"    , "Set light mono theme"                   , None                         )
+        self.placePort          = Action( self._parent, "Port"          , "Place Port"                             , "Ctrl+I"                     )
         self.placeBlock         = Action( self._parent, "Block"         , "Place Block"                            , "Ctrl+B"                     )
         self.placeBlockPin      = Action( self._parent, "Block Pin"     , "Place Block Pin"                        , "Ctrl+P"                     )
         self.placeRectangle     = Action( self._parent, "Rectangle"     , "Place Rectangle"                        , "Ctrl+R"                     )

@@ -8,14 +8,14 @@ from PyQt6.QtWidgets import QWidget, QStyleOptionGraphicsItem, \
 from PyQt6.QtGui     import QPainter, QPainterPath
 
 from .. import Edge, EdgeLoc, SignalDirection, VectorRange, \
-               CustomGraphicsItem, ElementMixin, \
-               Block, cmdPlaceElement
+               CustomGraphicsItem, Block, cmdPlaceElement
 
 from .node       import Node
 from .annotation import Annotation
+from .arrow      import SignalArrow
 from .base_rect  import BaseRectWithPins
 
-from . import LinePref, FillPref
+from .... import hub
 
 
 class BasePin(QGraphicsItemGroup):
@@ -49,11 +49,6 @@ class BasePin(QGraphicsItemGroup):
         super().__init__(parent)
         self.setPos(-parent.pos())
         self.setFlag(self.GraphicsItemFlag.ItemIsSelectable, True)
-        self._rect = QRectF()
-        self._shape = QPainterPath()
-        self._name = name
-        self._direction = direction
-        self._range = range
         self._node = self._NODE_CLASS(self)
         self.addToGroup(self._node)
         if self._INNER_CLASS is not None:
@@ -64,9 +59,15 @@ class BasePin(QGraphicsItemGroup):
             self.addToGroup(self._outer)
         self._name_text = self._NAME_CLASS(name, QPointF(), self)
         self.addToGroup(self._name_text)
+        self._rect = QRectF()
+        self._shape = QPainterPath()
+        self.name = name
+        self.direction = direction
+        self.range = range
         self.refresh()
         self.setLoc(loc)
         parent._esm.sizeChanged.connect(self.onParentSizeChanged)
+        hub.settings.changed.connect(self.onSettingsChange)
 
     def itemChange(
         self   : Self,
@@ -78,7 +79,6 @@ class BasePin(QGraphicsItemGroup):
         return super().itemChange(change, value)
 
     def onSettingsChange(self : Self) -> None:
-        super().onSettingsChange()
         self.refresh()
         self.update()
 
@@ -144,12 +144,12 @@ class BasePin(QGraphicsItemGroup):
         self.prepareGeometryChange()
         self._node.setPos(self._entryPos())
         self._name_text.setPos(self._namePos())
-        self._rect = self._entryRect() | self._nameRect()
+        self._rect = self._nodeRect() | self._nameRect()
         self._rect |= self._innerRect() | self._outerRect()
         self._shape.clear()
         self._shape.addRect(self._rect)
 
-    def _entryRect(self : Self) -> QRectF:
+    def _nodeRect(self : Self) -> QRectF:
         rect = self._node.boundingRect()
         rect.translate(self._node.pos())
         return rect
@@ -167,9 +167,6 @@ class BasePin(QGraphicsItemGroup):
     def _outerRect(self : Self) -> QRectF:
         if hasattr(self, "_outer"):
             return self._outer.boundingRect()
-        return QRectF()
-
-    def _otherRect(self : Self) -> QRectF:
         return QRectF()
 
     def _entryPos(self : Self) -> QPointF:
@@ -217,96 +214,26 @@ class BlockPinNode(Node):
 class BlockPinName(Annotation):
     pass
 
-class BlockPinInner(CustomGraphicsItem, ElementMixin):
-    """Inner pin shape (direction) for block pins."""
-    _SIZE     = 8
-    _S        = _SIZE
-    _H        = _SIZE/2
-    _PATH_IN  = [(_S,0), (_H,-_H), (0,-_H), (0,_H), (_H,_H)]
-    _PATH_OUT = [(0,0), (_H,-_H), (_S,-_H), (_S,_H), (_H,_H)]
-    _PATH_BI  = [(0,0), (_H,-_H), (_S,0), (_H,_H)]
-
-    _rect     : QRectF
-    _shape    : QPainterPath
-    _path_in  : QPainterPath
-    _path_out : QPainterPath
-    _path_bi  : QPainterPath
-    _path     : QPainterPath
-
-    def __init__(
-        self    : Self,
-        parent  : "BlockPin"
-    ) -> None:
-        CustomGraphicsItem.__init__(self, parent)
-        ElementMixin.initElement(self, line=LinePref(), fill=FillPref())
-        self._rect = QRectF()
-        self._shape = QPainterPath()
-        self._path_in = self._buildPath(self._PATH_IN)
-        self._path_out = self._buildPath(self._PATH_OUT)
-        self._path_bi = self._buildPath(self._PATH_BI)
-        self.updateDirection(parent.direction)
-        self.refresh()
-
-    def onSettingsChange(self : Self) -> None:
-        super().onSettingsChange()
-        self.refresh()
-        self.update()
-
-    def _buildPath(self : Self, points : list[tuple[int, int]]) -> QPainterPath:
-        p = QPainterPath()
-        p.moveTo(QPointF(*points[0]))
-        for point in points[1:]:
-            p.lineTo(QPointF(*point))
-        p.closeSubpath()
-        return p
-
-    def updateDirection(self : Self, direction : SignalDirection) -> None:
-        self._direction = direction
-        match direction:
-            case SignalDirection.IN:
-                self._path = self._path_in
-            case SignalDirection.OUT:
-                self._path = self._path_out
-            case SignalDirection.BI:
-                self._path = self._path_bi
-
-    def boundingRect(self : Self) -> QRectF:
-        return self._rect
-
-    def shape(self : Self) -> QPainterPath:
-        return self._shape
-
-    def paint(
-        self    : Self,
-        painter : QPainter,
-        option  : QStyleOptionGraphicsItem,
-        widget  : Optional[QWidget] = None
-    ) -> None:
-        painter.setPen(self.appearance.line.pen)
-        painter.setBrush(self.appearance.fill.brush)
-        painter.drawPath(self._path)
-
-    def refresh(self : Self) -> None:
-        L = self._SIZE + self.appearance.line.pen.width()
-        self._rect.setRect(0, -L/2, L, L)
-        self._shape.clear()
-        self._shape.addRect(self._rect)
+class BlockPinArrow(SignalArrow):
+    _PATH_IN  = SignalArrow._PATH_AWAY
+    _PATH_OUT = SignalArrow._PATH_TOWARDS
 
 class BlockPin(BasePin):
     _NODE_CLASS  = BlockPinNode
-    _INNER_CLASS = BlockPinInner
+    _INNER_CLASS = BlockPinArrow
     _NAME_CLASS  = BlockPinName
 
-    def __init__(
-        self      : Self,
-        name      : str,
-        direction : SignalDirection,
-        range     : Optional[VectorRange],
-        loc       : EdgeLoc,
-        block     : Block
-    ) -> None:
-        super().__init__(name, direction, range, loc, block)
-        block._esm.directionChanged.connect(self._inner.updateDirection)
+    _inner : BlockPinArrow
+
+    @property
+    def direction(self : Self) -> SignalDirection:
+        return self._direction
+
+    @direction.setter
+    def direction(self : Self, direction : SignalDirection) -> None:
+        self._direction = direction
+        self._inner.updateDirection(direction)
+        self.update()
 
 class cmdPlaceBlockPin(cmdPlaceElement):
     pass

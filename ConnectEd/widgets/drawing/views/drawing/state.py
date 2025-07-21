@@ -711,7 +711,28 @@ class DrawingViewStateEditAppearance1(DrawingViewStateBase):
 class DrawingViewStateEditAppearance2(DrawingViewStateBase):
     TIP = "Appearance: specify changes"
 
-    pass
+class DrawingViewStatePlacePort1(DrawingViewStateBase):
+    TIP = "Place Port: enter the port details"
+
+class DrawingViewStatePlacePort2(DrawingViewStateBase):
+    TIP = "Place Port: pick a location"
+
+    def mouseLeftClick(
+        self      : Self,
+        vpos      : QPoint,
+        spos      : QPointF,
+        modifiers : Qt.KeyboardModifier
+    ) -> None:
+        self.view.placePortComplete(self.view._snap(spos))
+        self.view.state.go(self.view.stateIdle)
+
+    def mouseMove(
+        self      : Self,
+        vpos      : QPoint,
+        spos      : QPointF,
+        modifiers : Qt.KeyboardModifier
+    ) -> None:
+        self.view.placePortContinue(self.view._snap(spos))
 
 class DrawingViewStatePlaceBlock1(DrawingViewStateBase):
     TIP = "Place Block: pick the first point"
@@ -768,6 +789,50 @@ class DrawingViewStatePlaceBlock2(DrawingViewStateBase):
         modifiers : Qt.KeyboardModifier
     ) -> None:
         self.view.placeBlockContinue(self.view._snap(spos))
+
+class DrawingViewStatePlaceBlockPin1(DrawingViewStateBase):
+    TIP = "Place Block Pin: pick a block"
+
+    def mouseLeftClick(
+        self      : Self,
+        vpos      : QPoint,
+        spos      : QPointF,
+        modifiers : Qt.KeyboardModifier
+    ) -> None:
+        self.view._selectPoint(spos, modifiers)
+        self.placeBlockPinBegin()
+
+class DrawingViewStatePlaceBlockPin2(DrawingViewStateBase):
+    TIP = "Place Block Pin: enter the pin details"
+
+    def mouseLeftClick(
+        self      : Self,
+        vpos      : QPoint,
+        spos      : QPointF,
+        modifiers : Qt.KeyboardModifier
+    ) -> None:
+        self.view.placeBlockPinComplete(self.view._snap(spos))
+        self.view.state.go(self.view.stateIdle)
+
+class DrawingViewStatePlaceBlockPin3(DrawingViewStateBase):
+    TIP = "Place Block Pin: pick a location"
+
+    def mouseLeftClick(
+        self      : Self,
+        vpos      : QPoint,
+        spos      : QPointF,
+        modifiers : Qt.KeyboardModifier
+    ) -> None:
+        self.view.placeBlockPinComplete(self.view._snap(spos))
+        self.view.state.go(self.view.stateIdle)
+
+    def mouseMove(
+        self      : Self,
+        vpos      : QPoint,
+        spos      : QPointF,
+        modifiers : Qt.KeyboardModifier
+    ) -> None:
+        self.view.placeBlockPinContinue(self.view._snap(spos))
 
 class DrawingViewStatePlaceRectangle1(DrawingViewStateBase):
     TIP = "Place Rectangle: pick the first point"
@@ -849,7 +914,10 @@ class DrawingViewStatePlaceTextBlock2(DrawingViewStateBase):
         self.view.placeTextBlockComplete()
         self.view.state.go(self.view.stateIdle)
 
-class DrawingViewStatePlaceText(DrawingViewStateBase):
+class DrawingViewStatePlaceText1(DrawingViewStateBase):
+    TIP = "Place Text: enter the text"
+
+class DrawingViewStatePlaceText2(DrawingViewStateBase):
     TIP = "Place Text: pick a position"
 
     def mouseLeftClick(
@@ -868,50 +936,6 @@ class DrawingViewStatePlaceText(DrawingViewStateBase):
         modifiers : Qt.KeyboardModifier
     ) -> None:
         self.view.placeTextContinue(self.view._snap(spos))
-
-class DrawingViewStatePlaceBlockPin1(DrawingViewStateBase):
-    TIP = "Place Block Pin: pick a block"
-
-    def mouseLeftClick(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
-    ) -> None:
-        self.view._selectPoint(spos, modifiers)
-        self.placeBlockPinBegin()
-
-class DrawingViewStatePlaceBlockPin2(DrawingViewStateBase):
-    TIP = "Place Block Pin: enter the pin details"
-
-    def mouseLeftClick(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
-    ) -> None:
-        self.view.placeBlockPinComplete(self.view._snap(spos))
-        self.view.state.go(self.view.stateIdle)
-
-class DrawingViewStatePlaceBlockPin3(DrawingViewStateBase):
-    TIP = "Place Block Pin: pick a location"
-
-    def mouseLeftClick(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
-    ) -> None:
-        self.view.placeBlockPinComplete(self.view._snap(spos))
-        self.view.state.go(self.view.stateIdle)
-
-    def mouseMove(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
-    ) -> None:
-        self.view.placeBlockPinContinue(self.view._snap(spos))
 
 class DrawingViewStateMixin:
     state                : DrawingViewStateBase
@@ -933,16 +957,19 @@ class DrawingViewStateMixin:
     stateEditResize3     : DrawingViewStateEditResize3
     stateEditAppearance1 : DrawingViewStateEditAppearance1
     stateEditAppearance2 : DrawingViewStateEditAppearance2
+    statePlacePort1      : DrawingViewStatePlacePort1
+    statePlacePort2      : DrawingViewStatePlacePort2
     statePlaceBlock1     : DrawingViewStatePlaceBlock1
     statePlaceBlock2     : DrawingViewStatePlaceBlock2
+    statePlaceBlockPin1  : DrawingViewStatePlaceBlockPin1
+    statePlaceBlockPin2  : DrawingViewStatePlaceBlockPin2
+    statePlaceBlockPin3  : DrawingViewStatePlaceBlockPin3
     statePlaceRectangle1 : DrawingViewStatePlaceRectangle1
     statePlaceRectangle2 : DrawingViewStatePlaceRectangle2
     statePlaceTextBlock1 : DrawingViewStatePlaceTextBlock1
     statePlaceTextBlock2 : DrawingViewStatePlaceTextBlock2
-    statePlaceText       : DrawingViewStatePlaceText
-    statePlaceBlockPin1  : DrawingViewStatePlaceBlockPin1
-    statePlaceBlockPin2  : DrawingViewStatePlaceBlockPin2
-    statePlaceBlockPin3  : DrawingViewStatePlaceBlockPin3
+    statePlaceText1      : DrawingViewStatePlaceText1
+    statePlaceText2      : DrawingViewStatePlaceText2
 
     def initStates(self : "DrawingView") -> None:
         self.stateIdle            = DrawingViewStateIdle            (self)
@@ -963,22 +990,16 @@ class DrawingViewStateMixin:
         self.stateEditResize3     = DrawingViewStateEditResize3     (self)
         self.stateEditAppearance1 = DrawingViewStateEditAppearance1 (self)
         self.stateEditAppearance2 = DrawingViewStateEditAppearance2 (self)
+        self.statePlacePort1      = DrawingViewStatePlacePort1      (self)
+        self.statePlacePort2      = DrawingViewStatePlacePort2      (self)
         self.statePlaceBlock1     = DrawingViewStatePlaceBlock1     (self)
         self.statePlaceBlock2     = DrawingViewStatePlaceBlock2     (self)
+        self.statePlaceBlockPin1  = DrawingViewStatePlaceBlockPin1  (self)
+        self.statePlaceBlockPin2  = DrawingViewStatePlaceBlockPin2  (self)
+        self.statePlaceBlockPin3  = DrawingViewStatePlaceBlockPin3  (self)
         self.statePlaceRectangle1 = DrawingViewStatePlaceRectangle1 (self)
         self.statePlaceRectangle2 = DrawingViewStatePlaceRectangle2 (self)
         self.statePlaceTextBlock1 = DrawingViewStatePlaceTextBlock1 (self)
         self.statePlaceTextBlock2 = DrawingViewStatePlaceTextBlock2 (self)
-        self.statePlaceText       = DrawingViewStatePlaceText       (self)
-        self.statePlaceBlockPin1  = DrawingViewStatePlaceBlockPin1  (self)
-        self.statePlaceBlockPin2  = DrawingViewStatePlaceBlockPin2  (self)
-        self.statePlaceBlockPin3  = DrawingViewStatePlaceBlockPin3  (self)
-
-
-
-
-
-
-
-
-
+        self.statePlaceText1      = DrawingViewStatePlaceText1      (self)
+        self.statePlaceText2      = DrawingViewStatePlaceText2      (self)

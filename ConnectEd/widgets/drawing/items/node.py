@@ -6,9 +6,7 @@ from PyQt6.QtCore    import QRectF
 from PyQt6.QtWidgets import QWidget, QStyleOptionGraphicsItem
 from PyQt6.QtGui     import QPainter, QPainterPath
 
-from .. import CustomGraphicsItem, ElementMixin
-
-from . import LinePref, FillPref
+from . import CustomGraphicsItem, ElementMixin, LinePref, FillPref
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:

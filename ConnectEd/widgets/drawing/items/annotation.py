@@ -6,7 +6,7 @@ from PyQt6.QtCore    import Qt, QPointF, QRectF
 from PyQt6.QtWidgets import QWidget, QStyleOptionGraphicsItem, QStyle
 from PyQt6.QtGui     import QPainter, QPen, QBrush, QFontMetrics
 
-from .. import CustomGraphicsSimpleTextItem, ElementMixin, TextPref
+from . import CustomGraphicsSimpleTextItem, ElementMixin, TextPref
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -28,6 +28,7 @@ class Annotation(CustomGraphicsSimpleTextItem, ElementMixin):
         CustomGraphicsSimpleTextItem.__init__(self, text, parent)
         self.initElement(line=None, fill=None, text=TextPref(), bare=True)
         self._pos = pos
+        self._anchor_offset = QPointF(0,0)
         self.refresh()
 
     def setPos(self : Self, pos : QPointF) -> None:

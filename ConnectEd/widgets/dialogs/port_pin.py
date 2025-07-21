@@ -1,4 +1,4 @@
-__all__ = ["PlaceBlockPinDialog"]
+__all__ = ["PlacePortPinDialog"]
 
 from typing import Self
 
@@ -11,34 +11,34 @@ from ..drawing.items import SignalDirection, RangeDirection, VectorRange
 from . import okCancelLayout
 
 
-class PlaceBlockPinDialog(QDialog):
-    name_label        : QLabel
-    name_edit         : QLineEdit
-    signal_dir_label  : QLabel
-    signal_dir_combo  : QComboBox
-    name_dir_layout   : QHBoxLayout
-    scalar_check      : QCheckBox
-    left_label        : QLabel
-    left_edit         : QLineEdit
-    right_label       : QLabel
-    right_edit        : QLineEdit
-    range_lr_layout   : QGridLayout
-    unspec_radio      : QRadioButton
-    down_radio        : QRadioButton
-    up_radio          : QRadioButton
-    range_dir_layout  : QHBoxLayout
-    range_dir_group   : QGroupBox
-    range_layout      : QHBoxLayout
-    range_group       : QGroupBox
-    width_layout      : QHBoxLayout
-    ok_button         : QPushButton
-    cancel_button     : QPushButton
-    ok_cancel_layout  : QHBoxLayout
-    dialog_layout     : QVBoxLayout
+class PlacePortPinDialog(QDialog):
+    name_label       : QLabel
+    name_edit        : QLineEdit
+    signal_dir_label : QLabel
+    signal_dir_combo : QComboBox
+    name_dir_layout  : QHBoxLayout
+    scalar_check     : QCheckBox
+    left_label       : QLabel
+    left_edit        : QLineEdit
+    right_label      : QLabel
+    right_edit       : QLineEdit
+    range_lr_layout  : QGridLayout
+    unspec_radio     : QRadioButton
+    down_radio       : QRadioButton
+    up_radio         : QRadioButton
+    range_dir_layout : QHBoxLayout
+    range_dir_group  : QGroupBox
+    range_layout     : QHBoxLayout
+    range_group      : QGroupBox
+    width_layout     : QHBoxLayout
+    ok_button        : QPushButton
+    cancel_button    : QPushButton
+    ok_cancel_layout : QHBoxLayout
+    dialog_layout    : QVBoxLayout
 
-    def __init__(self : Self):
+    def __init__(self : Self, title : str):
         super().__init__()
-        self.setWindowTitle("Place Block Pin")
+        self.setWindowTitle(title)
         self.dialog_layout = QVBoxLayout(self)
         self.name_dir_layout = QHBoxLayout()
         self.name_label = QLabel("Name:")

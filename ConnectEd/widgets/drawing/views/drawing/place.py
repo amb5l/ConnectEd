@@ -3,12 +3,12 @@ from PyQt6.QtGui  import QCursor
 
 from .....core import logger
 
-from ....dialogs import TextDialog, PlaceBlockPinDialog
+from ....dialogs import TextDialog, PlacePortPinDialog
 
 from ...scenes import DrawingScene
 from ...items  import TextBlock, Block
 
-from ...items.pin import BlockPin
+from ...items.pin  import BlockPin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -16,6 +16,31 @@ if TYPE_CHECKING:
 
 
 class DrawingViewPlaceMixin:
+    def placePort(self : "DrawingView") -> None:
+        dialog = PlacePortPinDialog("Port")
+        self.state.go(self.statePlacePort1)
+        if dialog.exec():
+            name = dialog.getName()
+            direction = dialog.getDirection()
+            range = dialog.getRange()
+            pos = self.mapToScene(self.mapFromGlobal(QCursor.pos()))
+            scene : DrawingScene = self.scene()
+            port = scene.placePort(name, direction, range, pos)
+            self.wip.element = port
+            self.state.go(self.statePlacePort2)
+        else:
+            self.wip.clear()
+            self.state.go(self.stateIdle)
+
+    def placePortContinue(self : "DrawingView", pos : QPointF) -> None:
+        self.wip.element.setPos(pos)
+
+    def placePortComplete(self : "DrawingView", pos : QPointF) -> None:
+        scene : DrawingScene = self.scene()
+        scene.placePort(pos, inst=self.wip.element)
+        self.wip.clear()
+        self.state.go(self.stateIdle)
+
     def placeBlock(self : "DrawingView") -> None:
         self.state.go(self.statePlaceBlock1)
 
@@ -55,7 +80,7 @@ class DrawingViewPlaceMixin:
         return False
 
     def placeBlockPinDialog(self : "DrawingView") -> None:
-        dialog = PlaceBlockPinDialog()
+        dialog = PlacePortPinDialog("Block Pin")
         self.state.go(self.statePlaceBlockPin2)
         if dialog.exec():
             block : Block = self.wip.element
@@ -150,6 +175,7 @@ class DrawingViewPlaceMixin:
         self.wip.clear()
         self.wip.element = element
         dialog = TextDialog(element)
+        self.state.go(self.statePlaceText1)
         if dialog.exec():
             text, appearance = dialog.getChoice()
             element.setText(text)
@@ -157,7 +183,7 @@ class DrawingViewPlaceMixin:
             element.setPos(
                 self.mapToScene(self.mapFromGlobal(QCursor.pos()))
             )
-            self.state.go(self.statePlaceText)
+            self.state.go(self.statePlaceText2)
         else:
             self.wip.clear()
 

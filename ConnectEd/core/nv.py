@@ -88,6 +88,38 @@ FACTORY_SETTINGS = {
             "sheet"      : PaletteDark.Sheet,
             "border"     : PaletteDark.Border,
             "elements" : {
+                "PortNode" : {
+                    "line" : {
+                        "color" : PaletteDark.BlockPin,
+                        "width" : 0,
+                        "style" : Qt.PenStyle.SolidLine
+                    },
+                    "fill" : {
+                        "color" : PaletteDark.BlockPin,
+                        "style" : Qt.BrushStyle.NoBrush
+                    }
+                },
+                "PortName" : {
+                    "text" : {
+                        "color"     : PaletteDark.BlockPinName,
+                        "family"    : "Liberation Sans",
+                        "size"      : 7,
+                        "bold"      : False,
+                        "italic"    : False,
+                        "underline" : False
+                    }
+                },
+                "PortArrow" : {
+                    "line" : {
+                        "color" : PaletteDark.BlockPinArrow,
+                        "width" : 1,
+                        "style" : Qt.PenStyle.SolidLine
+                    },
+                    "fill" : {
+                        "color" : PaletteDark.BlockPinArrow,
+                        "style" : Qt.BrushStyle.NoBrush
+                    }
+                },
                 "Block" : {
                     "line" : {
                         "color" : PaletteDark.BlockLine,
@@ -120,14 +152,14 @@ FACTORY_SETTINGS = {
                         "underline" : False
                     }
                 },
-                "BlockPinInner" : {
+                "BlockPinArrow" : {
                     "line" : {
-                        "color" : PaletteDark.BlockPinInner,
+                        "color" : PaletteDark.BlockPinArrow,
                         "width" : 1,
                         "style" : Qt.PenStyle.SolidLine
                     },
                     "fill" : {
-                        "color" : PaletteDark.BlockPinInner,
+                        "color" : PaletteDark.BlockPinArrow,
                         "style" : Qt.BrushStyle.NoBrush
                     }
                 },
@@ -191,6 +223,38 @@ FACTORY_SETTINGS = {
             "sheet"      : PaletteLightMono.Sheet,
             "border"     : PaletteLightMono.Border,
             "elements" : {
+                "PortNode" : {
+                    "line" : {
+                        "color" : PaletteLightMono.PortLine,
+                        "width" : 0,
+                        "style" : Qt.PenStyle.SolidLine
+                    },
+                    "fill" : {
+                        "color" : PaletteLightMono.PortFill,
+                        "style" : Qt.BrushStyle.NoBrush
+                    }
+                },
+                "PortName" : {
+                    "text" : {
+                        "color"     : PaletteLightMono.PortName,
+                        "family"    : "Liberation Sans",
+                        "size"      : 7,
+                        "bold"      : False,
+                        "italic"    : False,
+                        "underline" : False
+                    }
+                },
+                "PortArrow" : {
+                    "line" : {
+                        "color" : PaletteLightMono.PortArrow,
+                        "width" : 1,
+                        "style" : Qt.PenStyle.SolidLine
+                    },
+                    "fill" : {
+                        "color" : PaletteLightMono.PortArrow,
+                        "style" : Qt.BrushStyle.NoBrush
+                    }
+                },
                 "Block" : {
                     "line" : {
                         "color" : PaletteLightMono.BlockLine,
@@ -223,14 +287,14 @@ FACTORY_SETTINGS = {
                         "underline" : False
                     }
                 },
-                "BlockPinInner" : {
+                "BlockPinArrow" : {
                     "line" : {
-                        "color" : PaletteLightMono.BlockPinInner,
+                        "color" : PaletteLightMono.BlockPinArrow,
                         "width" : 1,
                         "style" : Qt.PenStyle.SolidLine
                     },
                     "fill" : {
-                        "color" : PaletteLightMono.BlockPinInner,
+                        "color" : PaletteLightMono.BlockPinArrow,
                         "style" : Qt.BrushStyle.NoBrush
                     }
                 },
