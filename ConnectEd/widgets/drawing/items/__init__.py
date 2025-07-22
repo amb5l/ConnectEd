@@ -768,7 +768,7 @@ class PropertiesMixin:
         self.properties[name] = value
         for child in self.childItems():
             if isinstance(child, PropertyText) and child.name() == name:
-                child.onPropertyChanged(name, value)
+                child.setProperty(name, value)
 
     def deleteProperty(self: Self, name: str) -> None:
         """Delete a property and emit signal to notify PropertyText objects."""
@@ -980,10 +980,15 @@ class ElementMixin(PropertiesMixin):
         return self.uuid == other.uuid
 
     def onSettingsChange(self : Self) -> None:
+        self.prepareGeometryChange()
         if self.appearance.line is not None: self.appearance.line.onSettingsChange()
         if self.appearance.fill is not None: self.appearance.fill.onSettingsChange()
         if self.appearance.text is not None: self.appearance.text.onSettingsChange()
         self.appearance.outline.onSettingsChange()
+        self.onGeometryChange()
+
+    def onGeometryChange(self : Self) -> None:
+        raise NotImplementedError("onGeometryChange() is not implemented")
 
     def onSelectionChange(self : Self, selected : bool) -> None:
         if self.appearance.line is not None: self.appearance.line.onSelectionChange(selected)

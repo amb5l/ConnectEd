@@ -29,7 +29,20 @@ class Annotation(CustomGraphicsSimpleTextItem, ElementMixin):
         self.initElement(line=None, fill=None, text=TextPref(), bare=True)
         self._pos = pos
         self._anchor_offset = QPointF(0,0)
-        self.refresh()
+        self.onGeometryChange()
+
+    def onGeometryChange(self : Self) -> None:
+        self.prepareGeometryChange()
+        if not self.text():
+            self._tight_rect = QRectF()
+            return
+        font = self.font()
+        metrics = QFontMetrics(font)
+        baseline_tight_rect = metrics.tightBoundingRect(self.text())
+        baseline_y = metrics.ascent()
+        self._tight_rect = baseline_tight_rect.translated(0, baseline_y)
+        self._anchor_offset = QPointF(0, self.boundingRect().height() / 2)
+        self.setPos(self._pos)
 
     def setPos(self : Self, pos : QPointF) -> None:
         self._pos = pos
@@ -40,7 +53,7 @@ class Annotation(CustomGraphicsSimpleTextItem, ElementMixin):
 
     def setText(self : Self, text : str) -> None:
         super().setText(text)
-        self.refresh()
+        self.onGeometryChange()
 
     def tightBoundingRect(self : Self) -> QRectF:
         return self._tight_rect
@@ -56,14 +69,3 @@ class Annotation(CustomGraphicsSimpleTextItem, ElementMixin):
         self.setBrush(QBrush(self.appearance.text.current))
         super().paint(painter, option, widget)
 
-    def refresh(self : Self) -> None:
-        if not self.text():
-            self._tight_rect = QRectF()
-            return
-        font = self.font()
-        metrics = QFontMetrics(font)
-        baseline_tight_rect = metrics.tightBoundingRect(self.text())
-        baseline_y = metrics.ascent()
-        self._tight_rect = baseline_tight_rect.translated(0, baseline_y)
-        self._anchor_offset = QPointF(0, self.boundingRect().height() / 2)
-        self.setPos(self._pos)

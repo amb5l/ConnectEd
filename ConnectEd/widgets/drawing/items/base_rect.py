@@ -105,10 +105,23 @@ class BaseRectangle(CustomGraphicsRectItem, ElementMixin):
         else:
             logger.error(f"Invalid arguments: expected (x, y, w, h), (pos, size), or (rect); got {a1}, {a2}, {a3}, {a4}")
 
-    def onSettingsChange(self : Self) -> None:
-        super().onSettingsChange()
-        self.refresh()
-        self.update()
+    def onGeometryChange(self : Self) -> None:
+        self.prepareGeometryChange()
+        pen_width = self.appearance.line.pen.widthF()
+        tolerance = hub.settings.get("display/select/tolerance")
+        stroke_width = pen_width + (2 * tolerance)
+        rect_path = QPainterPath()
+        rect_path.addRect(self._rect)
+        stroker = QPainterPathStroker()
+        stroker.setWidth(stroke_width)
+        stroker.setCapStyle(Qt.PenCapStyle.SquareCap)
+        stroker.setJoinStyle(Qt.PenJoinStyle.MiterJoin)
+        stroker_path = stroker.createStroke(rect_path)
+        self._bounding_rect = stroker_path.boundingRect()
+        if self.appearance.fill.brush.style() != Qt.BrushStyle.NoBrush:
+            self._shape = rect_path.united(stroker_path)
+        else:
+            self._shape = stroker_path
 
     @overload
     def setRect(
@@ -139,11 +152,11 @@ class BaseRectangle(CustomGraphicsRectItem, ElementMixin):
         else:
             super().setRect(rect_or_ax, ay, w, h)
         self._rect = self.rect()
-        self.refresh()
+        self.onGeometryChange()
         self._kpm.updatePositions()
         for item in self.childItems():
             if isinstance(item, BasePin | PropertyText):
-                item.refresh()
+                item.onGeometryChange()
 
     def boundingRect(self : Self) -> QRectF:
         return self._bounding_rect
@@ -256,23 +269,6 @@ class BaseRectangle(CustomGraphicsRectItem, ElementMixin):
                 self.setPoints(p1, p2 + d)
             case _:
                 raise ValueError(f"Invalid key point: {kp}")
-
-    def refresh(self : Self) -> None:
-        pen_width = self.appearance.line.pen.widthF()
-        tolerance = hub.settings.get("display/select/tolerance")
-        stroke_width = pen_width + (2 * tolerance)
-        rect_path = QPainterPath()
-        rect_path.addRect(self._rect)
-        stroker = QPainterPathStroker()
-        stroker.setWidth(stroke_width)
-        stroker.setCapStyle(Qt.PenCapStyle.SquareCap)
-        stroker.setJoinStyle(Qt.PenJoinStyle.MiterJoin)
-        stroker_path = stroker.createStroke(rect_path)
-        self._bounding_rect = stroker_path.boundingRect()
-        if self.appearance.fill.brush.style() != Qt.BrushStyle.NoBrush:
-            self._shape = rect_path.united(stroker_path)
-        else:
-            self._shape = stroker_path
 
     @overload
     @classmethod

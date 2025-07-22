@@ -100,11 +100,10 @@ class KeyPoint(CustomGraphicsItem):
         self._normal = QPainterPath()
         self._anchor = QPainterPath()
         self.onSettingsChange()
-        self.onAnchorChanged(self._manager.anchor)
         hub.settings.changed.connect(self.onSettingsChange)
         self._actions = []
         self._menu = self.getMenu()
-        self._manager.anchorChanged.connect(self.onAnchorChanged)
+        self._manager.anchorChanged.connect(self.onGeometryChange)
 
     def getMenu(self : Self) -> QMenu | None:
         menu = QMenu()
@@ -144,11 +143,15 @@ class KeyPoint(CustomGraphicsItem):
         self.parentItem().moveKeyPoint(self._loc, QPointF(dx, dy))
 
     def onSettingsChange(self : Self) -> None:
-        # get updated appearance settings
         theme = hub.settings.getTheme("key_point")
         self._pen.setColor(theme.line)
         self._brush.setColor(theme.line)
-        r = hub.settings.get("display/key_point/radius")
+        self._radius = hub.settings.get("display/key_point/radius")
+        self.onGeometryChange()
+
+    def onGeometryChange(self : Self) -> None:
+        self.prepareGeometryChange()
+        r = self._radius
         # update for hit testing
         self._rect.setCoords(-r, -r, r, r)
         self._shape.clear()
@@ -166,9 +169,8 @@ class KeyPoint(CustomGraphicsItem):
         # update anchor appearance
         self._anchor.clear()
         self._anchor.addRect(self._rect)
-
-    def onAnchorChanged(self : Self, anchor : KP) -> None:
-        self._path = self._anchor if anchor == self._loc else self._normal
+        # set appearance
+        self._path = self._anchor if self._manager.anchor == self._loc else self._normal
 
     def isMoveable(self : Self) -> bool:
         return self._resize

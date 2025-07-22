@@ -43,12 +43,16 @@ class SignalArrow(CustomGraphicsItem, ElementMixin):
         self._path_in = self._buildPath(self._PATH_IN)
         self._path_out = self._buildPath(self._PATH_OUT)
         self._path_bi = self._buildPath(self._PATH_BI)
-        self.refresh()
+        self.onGeometryChange()
 
-    def onSettingsChange(self : Self) -> None:
-        super().onSettingsChange()
-        self.refresh()
-        self.update()
+    def onGeometryChange(self : Self) -> None:
+        self.prepareGeometryChange()
+        w = self.appearance.line.pen.width()
+        hw = w * 2 # TODO investigate clipping, this shouldn't be needed
+        s = self._SIZE
+        self._rect.setRect(-(hw/2), -(s+w)/2, s+hw, s+w)
+        self._shape.clear()
+        self._shape.addRect(self._rect)
 
     def _buildPath(self : Self, points : list[tuple[int, int]]) -> QPainterPath:
         p = QPainterPath()
@@ -83,11 +87,3 @@ class SignalArrow(CustomGraphicsItem, ElementMixin):
         painter.setPen(self.appearance.line.pen)
         painter.setBrush(self.appearance.fill.brush)
         painter.drawPath(self._path)
-
-    def refresh(self : Self) -> None:
-        w = self.appearance.line.pen.width()
-        hw = w * 2 # TODO investigate clipping, this shouldn't be needed
-        s = self._SIZE
-        self._rect.setRect(-(hw/2), -(s+w)/2, s+hw, s+w)
-        self._shape.clear()
-        self._shape.addRect(self._rect)

@@ -38,12 +38,14 @@ class Node(CustomGraphicsItem, ElementMixin):
         self._path_nc.lineTo(+s, -s)
         self._path_nc.moveTo(+s, +s)
         self._path_nc.lineTo(-s, -s)
-        self.refresh()
+        self.onGeometryChange()
 
-    def onSettingsChange(self : Self) -> None:
-        super().onSettingsChange()
-        self.refresh()
-        self.update()
+    def onGeometryChange(self : Self) -> None:
+        self.prepareGeometryChange()
+        s = (self._SIZE + self.appearance.line.pen.width()) / 2
+        self._rect.setRect(-s, -s, 2*s, 2*s)
+        self._shape.clear()
+        self._shape.addRect(self._rect)
 
     def boundingRect(self : Self) -> QRectF:
         return self._rect
@@ -60,9 +62,3 @@ class Node(CustomGraphicsItem, ElementMixin):
         painter.setPen(self.appearance.line.pen)
         painter.setBrush(self.appearance.fill.brush)
         painter.drawPath(self._path_open)
-
-    def refresh(self : Self) -> None:
-        s = (self._SIZE + self.appearance.line.pen.width()) / 2
-        self._rect.setRect(-s, -s, 2*s, 2*s)
-        self._shape.clear()
-        self._shape.addRect(self._rect)

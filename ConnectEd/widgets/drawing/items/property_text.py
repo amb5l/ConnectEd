@@ -62,7 +62,7 @@ class PropertyText(TetherText):
         self._display = display
         self._cache   = ""
         self.setFlag(self.GraphicsItemFlag.ItemIsSelectable , True)
-        self.refresh()
+        self.onGeometryChange()
 
     def mouseDoubleClickEvent(self : Self, event : QGraphicsSceneMouseEvent) -> None:
         """Handle double-click events to open the edit dialog."""
@@ -79,31 +79,39 @@ class PropertyText(TetherText):
             view.editPropertyText(self)
         super().mouseDoubleClickEvent(event)
 
-    def onPropertyChanged(self : Self, name : str, value : str) -> None:
-        """Handle property value change signal from parent."""
+    def onGeometryChange(self : Self) -> None:
+        self.prepareGeometryChange()
+        self._cache = self.value()
+        text_to_set = ""
+        value = self._cache
+        match self._display:
+            case PropertyDisplay.VALUE:
+                text_to_set = f"<{self._name}>" if value == "" else value
+            case PropertyDisplay.NAME_VALUE:
+                text_to_set = f"{self._name}: {value}"
+        super().setText(text_to_set)
+        if hasattr(self, "_kpm"):
+            self._kpm.updatePositions()
+            self.setPos(self._pos)
+
+    def setProperty(self : Self, name : str, value : str) -> None:
         if name == self._name:
             self._cache = value
-            self.refresh()
-
-    def onPropertyDeleted(self : Self, name : str) -> None:
-        """Handle property deletion signal from parent."""
-        if name == self._name:
-            self._cache = ""
-            self.refresh()
+            self.onGeometryChange()
 
     def name(self : Self) -> str:
         return self._name
 
     def setName(self : Self, value : str) -> None:
         self._name = value
-        self.refresh()
+        self.onGeometryChange()
 
     def display(self : Self) -> PropertyDisplay:
         return self._display
 
     def setDisplay(self : Self, value : PropertyDisplay) -> None:
         self._display = value
-        self.refresh()
+        self.onGeometryChange()
 
     def cleat(self : Self) -> KP:
         return self._cleat
@@ -137,22 +145,8 @@ class PropertyText(TetherText):
     def itemChange(self, change: QGraphicsItem.GraphicsItemChange, value):
         result = super().itemChange(change, value)
         if change == QGraphicsItem.GraphicsItemChange.ItemParentHasChanged:
-            self.refresh()
+            self.onGeometryChange()
         return result
-
-    def refresh(self : Self) -> None:
-        self._cache = self.value()
-        text_to_set = ""
-        value = self._cache
-        match self._display:
-            case PropertyDisplay.VALUE:
-                text_to_set = f"<{self._name}>" if value == "" else value
-            case PropertyDisplay.NAME_VALUE:
-                text_to_set = f"{self._name}: {value}"
-        super().setText(text_to_set)
-        if hasattr(self, "_kpm"):
-            self._kpm.updatePositions()
-            self.setPos(self._pos)
 
     def clone(self : Self) -> Self:
         """Create a clone of this PropertyText with a new UUID."""

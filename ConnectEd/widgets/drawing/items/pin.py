@@ -67,8 +67,8 @@ class BasePin(QGraphicsItemGroup):
         self.name = name
         self.direction = direction
         self.range = range
-        self.refresh()
         self.setLoc(loc)
+        self.onSettingsChange()
         hub.settings.changed.connect(self.onSettingsChange)
 
     def itemChange(
@@ -81,8 +81,16 @@ class BasePin(QGraphicsItemGroup):
         return super().itemChange(change, value)
 
     def onSettingsChange(self : Self) -> None:
-        self.refresh()
-        self.update()
+        self.onGeometryChange()
+
+    def onGeometryChange(self : Self) -> None:
+        self.prepareGeometryChange()
+        self._node.setPos(self._entryPos())
+        self._name_text.setPos(self._namePos())
+        self._rect = self._nodeRect() | self._nameRect()
+        self._rect |= self._innerRect() | self._outerRect()
+        self._shape.clear()
+        self._shape.addRect(self._rect)
 
     def onSelectionChange(self : Self, selected : bool) -> None:
         self._node.onSelectionChange(selected)
@@ -141,15 +149,6 @@ class BasePin(QGraphicsItemGroup):
         if self.isSelected():
             painter.setPen(self._node.appearance.outline.pen)
             painter.drawRect(self._rect)
-
-    def refresh(self : Self) -> None:
-        self.prepareGeometryChange()
-        self._node.setPos(self._entryPos())
-        self._name_text.setPos(self._namePos())
-        self._rect = self._nodeRect() | self._nameRect()
-        self._rect |= self._innerRect() | self._outerRect()
-        self._shape.clear()
-        self._shape.addRect(self._rect)
 
     def _nodeRect(self : Self) -> QRectF:
         rect = self._node.boundingRect()

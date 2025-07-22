@@ -61,7 +61,7 @@ class Port(QGraphicsItemGroup):
         self.name = name
         self.direction = direction
         self.range = range
-        self.refresh()
+        self.onSettingsChange()
         hub.settings.changed.connect(self.onSettingsChange)
 
     def itemChange(
@@ -74,8 +74,15 @@ class Port(QGraphicsItemGroup):
         return super().itemChange(change, value)
 
     def onSettingsChange(self : Self) -> None:
-        self.refresh()
-        self.update()
+        self.onGeometryChange()
+
+    def onGeometryChange(self : Self) -> None:
+        self.prepareGeometryChange()
+        self._node.setPos(QPointF(0, 0))
+        self._name_text.setPos(self._namePos())
+        self._rect = self._nodeRect() | self._nameRect() | self._arrowRect()
+        self._shape.clear()
+        self._shape.addRect(self._rect)
 
     def onSelectionChange(self : Self, selected : bool) -> None:
         self._node.onSelectionChange(selected)
@@ -99,14 +106,6 @@ class Port(QGraphicsItemGroup):
         if self.isSelected():
             painter.setPen(self._node.appearance.outline.pen)
             painter.drawRect(self._rect)
-
-    def refresh(self : Self) -> None:
-        self.prepareGeometryChange()
-        self._node.setPos(QPointF(0, 0))
-        self._name_text.setPos(self._namePos())
-        self._rect = self._nodeRect() | self._nameRect() | self._arrowRect()
-        self._shape.clear()
-        self._shape.addRect(self._rect)
 
     def _nodeRect(self : Self) -> QRectF:
         rect = self._node.boundingRect()
@@ -132,9 +131,8 @@ class Port(QGraphicsItemGroup):
     @name.setter
     def name(self : Self, name : str) -> None:
         self._name = name
-        self.prepareGeometryChange()
         self._name_text.setText(name)
-        self.refresh()
+        self.onGeometryChange()
 
     @property
     def direction(self : Self) -> SignalDirection:
