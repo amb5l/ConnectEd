@@ -41,7 +41,6 @@ class PropertyText(TetherText):
         TetherText._ATTR_SPECS_BASIC + \
         _ATTR_SPECS_TEXT + \
         TetherText._ATTR_SPECS_APPEARANCE_TEXT
-    _MENU_ITEM_NAMES = ["Edit"]
 
     # instance variables
     _name    : str
@@ -93,6 +92,9 @@ class PropertyText(TetherText):
         if hasattr(self, "_kpm"):
             self._kpm.updatePositions()
             self.setPos(self._pos)
+
+    def getMenuItems(self : Self) -> list[str]:
+        return ["Edit..."]
 
     def setProperty(self : Self, name : str, value : str) -> None:
         if name == self._name:

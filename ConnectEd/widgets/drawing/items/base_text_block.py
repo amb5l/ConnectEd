@@ -3,19 +3,20 @@ __all__ = ["BaseTextBlock"]
 from typing import Self, Optional
 
 from PyQt6.QtCore    import Qt, QPointF, QRectF
-from PyQt6.QtWidgets import QWidget, QStyleOptionGraphicsItem, QStyle
+from PyQt6.QtWidgets import QWidget, QStyleOptionGraphicsItem, QStyle, \
+                            QGraphicsTextItem
 from PyQt6.QtGui     import QColor, QPainter, QPainterPath, \
                             QKeyEvent, QFocusEvent, QTextCursor
 
-from . import CustomGraphicsTextItem, ElementMixin, cmdPlaceElement, \
+from . import ElementMenuMixin, ElementMixin, cmdPlaceElement, \
               AttrSpec, KP, KPDef, TextPref
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from .. import DrawingScene, DrawingView
+    from .. import DrawingScene
 
 
-class BaseTextBlock(CustomGraphicsTextItem, ElementMixin):
+class BaseTextBlock(ElementMenuMixin, ElementMixin, QGraphicsTextItem):
     # class variables
     _ATTR_SPECS_TEXT = [
         AttrSpec(
@@ -30,9 +31,6 @@ class BaseTextBlock(CustomGraphicsTextItem, ElementMixin):
         ElementMixin._ATTR_SPECS_BASIC + \
         _ATTR_SPECS_TEXT + \
         ElementMixin._ATTR_SPECS_APPEARANCE_TEXT
-    _MENU_ITEM_NAMES = [
-        "Appearance..."
-    ]
     _KEY_POINTS = [KPDef(k, False, False) for k in KP.__iter__()]
 
     # instance variables
@@ -91,6 +89,9 @@ class BaseTextBlock(CustomGraphicsTextItem, ElementMixin):
         scene : Optional["DrawingScene"] = self.scene()
         if scene:
             scene.onTextEditingComplete(self)
+
+    def getMenuItems(self : Self) -> list[str]:
+        return ["Appearance..."]
 
     def setPos(self : Self, pos : QPointF) -> None:
         super().setPos(pos - self._kpm.anchor_offset)

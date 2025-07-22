@@ -3,12 +3,12 @@ __all__ = ["BaseRectangle"]
 from typing import Self, Optional, overload
 
 from PyQt6.QtCore    import Qt, QPointF, QRectF, QSizeF
-from PyQt6.QtWidgets import QWidget, QStyleOptionGraphicsItem
+from PyQt6.QtWidgets import QWidget, QStyleOptionGraphicsItem, QGraphicsRectItem
 from PyQt6.QtGui     import QPainter, QPainterPath, QPainterPathStroker
 
 from ....core   import logger, Z_DRAWING
 
-from . import CustomGraphicsRectItem, ElementMixin, cmdPlaceElement, \
+from . import ElementMixin, cmdPlaceElement, \
               EdgeLoc, Edge, AttrSpec, KP, KPDef, LinePref, FillPref
 
 from .port_pin      import BasePin
@@ -17,7 +17,7 @@ from .property_text import PropertyText
 from .... import hub
 
 
-class BaseRectangle(CustomGraphicsRectItem, ElementMixin):
+class BaseRectangle(ElementMixin, QGraphicsRectItem):
     """Base class for rectangle elements."""
 
     # class variables

@@ -7,13 +7,12 @@ from dataclasses import dataclass
 from PyQt6.QtCore    import Qt, QRectF, QPointF, QObject, pyqtSignal, \
                             QXmlStreamWriter, QXmlStreamReader
 from PyQt6.QtWidgets import QGraphicsItem, QStyleOptionGraphicsItem, \
-                            QWidget, QGraphicsView, QMenu
-from PyQt6.QtGui     import QPainter, QPen, QBrush, QPainterPath, QTransform, \
-                            QAction
+                            QWidget, QGraphicsView
+from PyQt6.QtGui     import QPainter, QPen, QBrush, QPainterPath, QAction
 
 from ....core import logger
 
-from . import CustomGraphicsItem
+from . import ElementMenuMixin
 
 from .... import hub
 
@@ -51,13 +50,9 @@ KPReverse = {
     "Bottom Right"  : KP.BOTTOM_RIGHT
 }
 
-class KeyPoint(CustomGraphicsItem):
+class KeyPoint(ElementMenuMixin, QGraphicsItem):
     # class variables
     Z_DELTA = 1
-    _MENU = None
-    _MENU_ITEM_NAMES = [
-        "Assign Anchor"
-    ]
 
     # instance variables
     _manager : "KPManager"
@@ -72,7 +67,6 @@ class KeyPoint(CustomGraphicsItem):
     _anchor  : QPainterPath       # drawn shape when anchor
     _path    : QPainterPath       # drawn shape
     _actions : dict[str, QAction]
-    _menu    : QMenu
 
     def __init__(
         self    : Self,
@@ -102,23 +96,16 @@ class KeyPoint(CustomGraphicsItem):
         self.onSettingsChange()
         hub.settings.changed.connect(self.onSettingsChange)
         self._actions = []
-        self._menu = self.getMenu()
         self._manager.anchorChanged.connect(self.onGeometryChange)
 
-    def getMenu(self : Self) -> QMenu | None:
-        menu = QMenu()
+    def getMenuItems(self : Self) -> list[str]:
+        items = []
         if self._resize:
-            a_resize = QAction("Resize", menu)
-            a_resize.triggered.connect(lambda: None)
-            menu.addAction(a_resize)
-        a_move = QAction("Move", menu)
-        a_move.triggered.connect(lambda: None)
-        menu.addAction(a_move)
+            items.append("Resize")
+        items.append("Move")
         if self._manager.element._ANCHORED:
-            a_anchor = QAction("Assign Anchor", menu)
-            a_anchor.triggered.connect(lambda: None)
-            menu.addAction(a_anchor)
-        return menu
+            items.append("Assign Anchor")
+        return items
 
     def boundingRect(
         self : Self,
@@ -170,7 +157,7 @@ class KeyPoint(CustomGraphicsItem):
         self._anchor.clear()
         self._anchor.addRect(self._rect)
         # set appearance
-        self._path = self._anchor if self._manager.anchor == self._loc else self._normal
+        self._path = self._anchor if self._manager.anchor == self else self._normal
 
     def isMoveable(self : Self) -> bool:
         return self._resize
@@ -256,7 +243,8 @@ class KPManager(QObject):
         self.anchor_loc = anchor
         self.anchor_offset = self.getKeyPointPos(anchor)
         self.anchorChanged.emit(anchor)
-        self.element.update()
+        for kp in self.key_points.values():
+            kp.onGeometryChange()
 
     def getKeyPointPos(self, kp : KP) -> QPointF:
         rect = self.element.boundingRect()

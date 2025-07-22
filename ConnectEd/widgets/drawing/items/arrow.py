@@ -3,10 +3,10 @@ __all__ = ["BlockPin", "cmdPlaceBlockPin"]
 from typing import Self, Optional
 
 from PyQt6.QtCore    import QPointF, QRectF
-from PyQt6.QtWidgets import QWidget, QStyleOptionGraphicsItem
+from PyQt6.QtWidgets import QWidget, QStyleOptionGraphicsItem, QGraphicsItem
 from PyQt6.QtGui     import QPainter, QPainterPath
 
-from . import CustomGraphicsItem, ElementMixin, SignalDirection, \
+from . import ElementMixin, SignalDirection, \
               LinePref, FillPref
 
 from typing import TYPE_CHECKING
@@ -14,7 +14,7 @@ if TYPE_CHECKING:
     from .port_pin import Port, BasePin
 
 
-class SignalArrow(CustomGraphicsItem, ElementMixin):
+class SignalArrow(ElementMixin, QGraphicsItem):
     _SIZE         = 8
     _S            = _SIZE
     _H            = _SIZE/2
@@ -35,7 +35,7 @@ class SignalArrow(CustomGraphicsItem, ElementMixin):
         self    : Self,
         parent  : "BasePin | Port"
     ) -> None:
-        CustomGraphicsItem.__init__(self, parent)
+        QGraphicsItem.__init__(self, parent)
         ElementMixin.initElement(self, line=LinePref(), fill=FillPref())
         self._rect = QRectF()
         self._shape = QPainterPath()

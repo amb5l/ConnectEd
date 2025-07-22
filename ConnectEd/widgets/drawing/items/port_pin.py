@@ -4,11 +4,11 @@ from typing import Self, Optional, Any
 
 from PyQt6.QtCore    import QPointF, QRectF, QXmlStreamWriter, QXmlStreamReader
 from PyQt6.QtWidgets import QWidget, QStyleOptionGraphicsItem, \
-                            QGraphicsItemGroup, QStyle
+                            QGraphicsItemGroup, QStyle, QGraphicsItem
 from PyQt6.QtGui     import QPainter, QPainterPath
 
 from . import SignalDirection, VectorRange, Edge, EdgeLoc, \
-              ElementCloneMixin, CustomGraphicsItem, cmdPlaceElement, AttrSpec
+              ElementCloneMixin, cmdPlaceElement, AttrSpec
 
 from .node       import Node
 from .annotation import Annotation
@@ -288,8 +288,8 @@ class BasePin(ElementCloneMixin, PortPinMixin, QGraphicsItemGroup):
     _range      : Optional[VectorRange]
     _loc        : EdgeLoc
     _node       : Node
-    _inner      : Optional[CustomGraphicsItem]
-    _outer      : Optional[CustomGraphicsItem]
+    _inner      : Optional[QGraphicsItem]
+    _outer      : Optional[QGraphicsItem]
     _name_text  : Annotation
     _rect       : QRectF
     _shape      : QPainterPath

@@ -3,17 +3,18 @@ __all__ = ["Annotation"]
 from typing import Self, Optional
 
 from PyQt6.QtCore    import Qt, QPointF, QRectF
-from PyQt6.QtWidgets import QWidget, QStyleOptionGraphicsItem, QStyle
+from PyQt6.QtWidgets import QWidget, QStyleOptionGraphicsItem, QStyle, \
+                            QGraphicsSimpleTextItem
 from PyQt6.QtGui     import QPainter, QPen, QBrush, QFontMetrics
 
-from . import CustomGraphicsSimpleTextItem, ElementMixin, TextPref
+from . import TextPref, ElementMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from .port_pin import Port, BasePin
 
 
-class Annotation(CustomGraphicsSimpleTextItem, ElementMixin):
+class Annotation(ElementMixin, QGraphicsSimpleTextItem):
     _pos           : QPointF
     _tight_rect    : QRectF
     _anchor_offset : QPointF
@@ -24,7 +25,7 @@ class Annotation(CustomGraphicsSimpleTextItem, ElementMixin):
         pos    : QPointF = QPointF(0, 0),
         parent : Optional["BasePin | Port"] = None
     ) -> None:
-        CustomGraphicsSimpleTextItem.__init__(self, text, parent)
+        QGraphicsSimpleTextItem.__init__(self, text, parent)
         self.initElement(line=None, fill=None, text=TextPref(), bare=True)
         self._pos = pos
         self._anchor_offset = QPointF(0,0)

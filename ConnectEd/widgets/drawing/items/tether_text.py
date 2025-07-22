@@ -2,12 +2,12 @@ __all__ = ["Tether","TetherText"]
 
 from typing import Self, Optional
 
-from PyQt6.QtCore    import Qt, QPointF, QRectF
+from PyQt6.QtCore    import QPointF, QRectF
 from PyQt6.QtWidgets import QWidget, QGraphicsItem, QStyleOptionGraphicsItem, \
                             QGraphicsSceneMouseEvent
 from PyQt6.QtGui     import QPainter
 
-from . import ElementMixin, TextColorFont,\
+from . import ElementMenuMixin, ElementMixin, TextColorFont,\
               AttrSpec, KP, KPManager
 
 from .base_text import BaseText
@@ -63,7 +63,7 @@ class Tether(QGraphicsItem):
 # and then anchor offset is subtracted.
 # This cleat-to-anchor pos is stored in _pos. Useful for cleat (keypoint) moves.
 
-class TetherText(BaseText):
+class TetherText(ElementMenuMixin, BaseText):
     # class variables
     _ATTR_SPECS_BASIC = [
         AttrSpec(
@@ -111,6 +111,9 @@ class TetherText(BaseText):
     def onSelectionChange(self : Self, selected : bool) -> None:
         super().onSelectionChange(selected)
         self._tether.setVisible(selected)
+
+    def getMenuItems(self : Self) -> list[str]:
+        return ["Appearance..."]
 
     def setPos(self : Self, pos : QPointF) -> None:
         """Set offset from parent cleat to my anchor."""

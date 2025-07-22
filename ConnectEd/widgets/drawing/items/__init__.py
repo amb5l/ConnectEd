@@ -6,7 +6,7 @@ from types       import SimpleNamespace
 from dataclasses import dataclass
 from enum        import Enum
 
-from PyQt6.QtCore    import Qt, QXmlStreamWriter, QXmlStreamReader
+from PyQt6.QtCore    import Qt, QPoint, QXmlStreamWriter, QXmlStreamReader
 from PyQt6.QtGui     import QPen, QBrush, QColor, QFont, QAction, QUndoCommand
 from PyQt6.QtWidgets import QGraphicsItem, QGraphicsRectItem, \
                             QGraphicsTextItem, QGraphicsSimpleTextItem, \
@@ -90,6 +90,18 @@ class VectorRange:
         self.left  = left
         self.dir   = dir
         self.right = right
+
+@dataclass
+class AttrSpec:
+    name      : str
+    type_name : str
+    exists    : Callable[[Any], bool]
+    getter    : Callable[[Any], Any]
+    setter    : Callable[[Any, Any], None]
+
+    @property
+    def tag(self) -> str:
+        return self.name.lower().replace(" ", "_")
 
 @dataclass
 class LineSpec:
@@ -605,16 +617,11 @@ class Appearance:
     text    : Optional[TextColorFont] = None
     outline : Optional[OutlinePen]    = None
 
-class CustomGraphicsItemMixin:
-    """Mixin for custom graphics items, providing hashability and itemChange."""
-    _MENU = None # class context menu
-
-    _instance : Optional[Self]
-
+class ElementChangeMixin:
     def itemChange(
-        self: QGraphicsItem,
-        change: QGraphicsItem.GraphicsItemChange,
-        value: Any
+        self   : QGraphicsItem,
+        change : QGraphicsItem.GraphicsItemChange,
+        value  : Any
     ) -> Any:
         match change:
             case QGraphicsItem.GraphicsItemChange.ItemParentHasChanged:
@@ -631,75 +638,47 @@ class CustomGraphicsItemMixin:
                     self.onSelectionChange(value)
         return super().itemChange(change, value)
 
-    @staticmethod
-    def getMenu(cls) -> QMenu:
-        if cls._MENU is None:
-            cls._MENU = QMenu()
-            title = QAction(camel_to_proper(cls.__name__), cls._MENU)
-            title.setEnabled(False)
-            font = QFont()
-            font.setBold(True)
-            title.setFont(font)
-            cls._MENU.addAction(title)
-            cls._MENU.addSeparator()
-            for item_name in cls._MENU_ITEM_NAMES:
-                if item_name.startswith("-"):
-                    cls._MENU.addSeparator()
-                else:
-                    action = QAction(item_name, cls._MENU)
-                    action.triggered.connect(lambda: None)  # placeholder
-                    cls._MENU.addAction(action)
-        return cls._MENU
-
+class ElementMenuMixin:
     def contextMenuEvent(
         self  : Self,
         event : QGraphicsSceneContextMenuEvent
     ) -> None:
-        from .. import getView
-        view = getView(event.screenPos())
-        self._instance = self
-        if not hasattr(self, "_menu"):
+        items = self.getMenuItems()  # subclass must provide this method
+        if len(items) == 0:
             return
-        for action in self._menu.actions():
-            slot_name = \
-                f"ctxMenu{action.text().replace(' ', '').replace('.', '')}"
-            slot = getattr(self, slot_name, None)
-            if slot:
-                try:
-                    action.triggered.disconnect()
-                except TypeError:
-                    pass
+        pos = event.screenPos()
+        menu = QMenu()
+        for item in items:
+            if item.startswith("-"):
+                menu.addSeparator()
+            else:
+                from .. import getView
+                view = getView(pos)
+                slot_name = f"ctxMenu{item.replace(' ', '').replace('.', '')}"
+                slot = getattr(self, slot_name, None)
+                action = QAction(item, menu)
                 action.triggered.connect(
                     lambda checked=False, w=view, s=slot: s(checked, w)
                 )
-        self._menu.exec(event.screenPos())
-        self._instance = None
+                menu.addAction(action)
+        menu.exec(pos)
 
-class CustomGraphicsItem(CustomGraphicsItemMixin, QGraphicsItem):
-    pass
+    def ctxMenuAppearance(
+        self    : Self,
+        checked : bool,
+        view    : "DrawingView"
+    ) -> None:
+        view.editAppearance(self)
 
-class CustomGraphicsRectItem(CustomGraphicsItemMixin, QGraphicsRectItem):
-    pass
-
-class CustomGraphicsTextItem(CustomGraphicsItemMixin, QGraphicsTextItem):
-    pass
-
-class CustomGraphicsSimpleTextItem(CustomGraphicsItemMixin, QGraphicsSimpleTextItem):
-    pass
-
-@dataclass
-class AttrSpec:
-    name      : str
-    type_name : str
-    exists    : Callable[[Any], bool]
-    getter    : Callable[[Any], Any]
-    setter    : Callable[[Any, Any], None]
-
-    @property
-    def tag(self) -> str:
-        return self.name.lower().replace(" ", "_")
+    def ctxMenuProperties(
+        self    : Self,
+        checked : bool,
+        view    : "DrawingView"
+    ) -> None:
+        view.editProperties(self)
 
 class PropertiesMixin:
+    """Mixin for elements and scenes that have properties."""
     _ATTR_SPECS         : list[AttrSpec]         = []
     _ATTR_SPECS_BY_NAME : dict[str, AttrSpec]    = {}
     _ATTR_SPECS_BY_TAG  : dict[str, AttrSpec]    = {}
@@ -846,7 +825,7 @@ class ElementCloneMixin:
         clone.onGeometryChange()
         return clone
 
-class ElementMixin(ElementCloneMixin, PropertiesMixin):
+class ElementMixin(ElementChangeMixin, ElementCloneMixin, PropertiesMixin):
     """Mixin class for all elements."""
     Z = Z_DRAWING
     _CAP_STYLE = Qt.PenCapStyle.SquareCap
@@ -957,14 +936,12 @@ class ElementMixin(ElementCloneMixin, PropertiesMixin):
             setter    = lambda self, value: self.appearance.text.setUnderline(value)
         )
     ]
-    _MENU_ITEM_NAMES : list[str] = ["Appearance...", "Properties..."]
-    _KEY_POINTS      : Optional[list["KP"]] = None
-    _ANCHORED        : bool = False
+    _KEY_POINTS : Optional[list["KP"]] = None
+    _ANCHORED   : bool = False
 
     _settings_name : str
     uuid           : str
     appearance     : Appearance
-    _menu          : QMenu
     _kpm           : Optional["KPManager"]
 
     def initElement(
@@ -993,7 +970,6 @@ class ElementMixin(ElementCloneMixin, PropertiesMixin):
         self.setFlag( f.ItemSendsScenePositionChanges , True )
         self.setCacheMode(QGraphicsItem.CacheMode.DeviceCoordinateCache)
         hub.settings.changed.connect(self.onSettingsChange)
-        self._menu = CustomGraphicsItemMixin.getMenu(self.__class__)
         if self._KEY_POINTS is not None:
             self._kpm = KPManager(self, self._KEY_POINTS)
         else:
@@ -1240,10 +1216,6 @@ __all__ = [
     "AppearanceSpec",
     "AppearancePref",
     "AppearancePrefChange",
-    "CustomGraphicsItem",
-    "CustomGraphicsRectItem",
-    "CustomGraphicsSimpleTextItem",
-    "CustomGraphicsTextItem",
     "AttrSpec",
     "ElementMixin",
     "cmdElement",

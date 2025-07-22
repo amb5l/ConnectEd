@@ -3,16 +3,16 @@ __all__ = ["BlockPin", "cmdPlaceBlockPin"]
 from typing import Self, Optional
 
 from PyQt6.QtCore    import QRectF
-from PyQt6.QtWidgets import QWidget, QStyleOptionGraphicsItem
+from PyQt6.QtWidgets import QWidget, QStyleOptionGraphicsItem, QGraphicsItem
 from PyQt6.QtGui     import QPainter, QPainterPath
 
-from . import CustomGraphicsItem, ElementMixin, LinePref, FillPref
+from . import LinePref, FillPref, ElementMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from .port_pin import BasePin
 
-class Node(CustomGraphicsItem, ElementMixin):
+class Node(ElementMixin, QGraphicsItem):
     # class attributes
     _SIZE = 4
 
@@ -26,7 +26,7 @@ class Node(CustomGraphicsItem, ElementMixin):
         self   : Self,
         parent : "BasePin"
     ) -> None:
-        CustomGraphicsItem.__init__(self, parent)
+        QGraphicsItem.__init__(self, parent)
         ElementMixin.initElement(self, line=LinePref(), fill=FillPref())
         self._rect = QRectF()
         self._shape = QPainterPath()

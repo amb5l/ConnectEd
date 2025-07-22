@@ -1,14 +1,14 @@
 from typing import Self, Optional
 
 from PyQt6.QtCore    import Qt, QPointF, QRectF
-from PyQt6.QtWidgets import QWidget, QStyleOptionGraphicsItem, QStyle
+from PyQt6.QtWidgets import QWidget, QStyleOptionGraphicsItem, QStyle, \
+                            QGraphicsSimpleTextItem
 from PyQt6.QtGui     import QPainter, QPen, QBrush
 
-from . import CustomGraphicsSimpleTextItem, ElementMixin, TextPref, \
-              AttrSpec, KP, KPDef, cmdPlaceElement
+from . import TextPref, AttrSpec, KP, KPDef, ElementMixin, cmdPlaceElement
 
 
-class BaseText(CustomGraphicsSimpleTextItem, ElementMixin):
+class BaseText(ElementMixin, QGraphicsSimpleTextItem):
     # class variables
     _ATTR_SPECS_TEXT = [
         AttrSpec(
@@ -36,7 +36,7 @@ class BaseText(CustomGraphicsSimpleTextItem, ElementMixin):
         anchor : KP = KP.TOP_LEFT,
         bare   : bool = False
     ) -> None:
-        CustomGraphicsSimpleTextItem.__init__(self)
+        QGraphicsSimpleTextItem.__init__(self)
         self.initElement(line=None, fill=None, text=TextPref(), bare=bare)
         self.setAnchor(anchor)
         self.setPos(pos)
