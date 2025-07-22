@@ -6,8 +6,7 @@ from types       import SimpleNamespace
 from dataclasses import dataclass
 from enum        import Enum
 
-from PyQt6.QtCore    import Qt, QXmlStreamWriter, QXmlStreamReader, QObject, \
-                            pyqtSignal
+from PyQt6.QtCore    import Qt, QXmlStreamWriter, QXmlStreamReader
 from PyQt6.QtGui     import QPen, QBrush, QColor, QFont, QAction, QUndoCommand
 from PyQt6.QtWidgets import QGraphicsItem, QGraphicsRectItem, \
                             QGraphicsTextItem, QGraphicsSimpleTextItem, \
