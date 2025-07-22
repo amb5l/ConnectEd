@@ -98,10 +98,6 @@ class TetherText(BaseText):
         self.setFlag(self.GraphicsItemFlag.ItemIsSelectable , True)
 
     def onParentChange(self : Self, parent : Optional[QGraphicsItem]) -> None:
-        if parent is None:
-            self._disconnectFromKPMSignals()
-        else:
-            self._connectToKPMSignals()
         self.setPos(self._pos)
 
     def onPositionChange(self : Self, pos : QPointF) -> None:
@@ -147,18 +143,6 @@ class TetherText(BaseText):
     def setCleat(self : Self, cleat : KP) -> None:
         self._cleat = cleat
         self.setPos(self._pos)
-
-    def _connectToKPMSignals(self : Self) -> None:
-        """Connect to parent element's KPManager signals."""
-        parent : Optional[ElementMixin] = self.parentItem()
-        if parent is not None and hasattr(parent, '_kpm') and parent._kpm is not None:
-            parent._kpm.posChanged.connect(self.updatePos)
-
-    def _disconnectFromKPMSignals(self : Self) -> None:
-        """Disconnect from parent element's KPManager signals."""
-        parent : Optional[ElementMixin] = self.parentItem()
-        if parent is not None and hasattr(parent, '_kpm') and parent._kpm is not None:
-            parent._kpm.posChanged.disconnect(self.updatePos)
 
     def clone(self : Self) -> Self:
         """Create a clone of this TetherText with a new UUID."""

@@ -3,7 +3,7 @@ from typing import Self, Optional
 from PyQt6.QtWidgets import QApplication, QMdiSubWindow, QGraphicsItem
 from PyQt6.QtGui     import QKeySequence
 
-from ...core    import MIME_TYPE
+from ...core    import MIME_TYPE, logger
 from ...widgets import DrawingSubWindow, DrawingScene
 from ..private  import Action
 
@@ -90,7 +90,7 @@ class Actions:
         self._scene = subwindow.widget().scene() if en else None
         self.onCanUndoChanged(en and self._scene.undo_stack.canUndo())
         self.onCanRedoChanged(en and self._scene.undo_stack.canRedo())
-        self.onSelectionChanged(self._scene.selectedItems() if en else [])
+        self.onSelectionChanged()
         self.onClipboardDataChanged()
         self.fileSave        .setEnabled(en)
         self.fileSaveAs      .setEnabled(en)
@@ -117,15 +117,21 @@ class Actions:
         self.placeRectangle  .setEnabled(en)
         self.placeTextBlock  .setEnabled(en)
         self.placeText   .setEnabled(en)
-        if en:
+        if en and self._scene is not None:
             # connect signals
-            self._scene.selectionChangedItems.connect(self.onSelectionChanged)
+            self._scene.selectionChanged.connect(self.onSelectionChanged)
             self._scene.undo_stack.canUndoChanged.connect(self.onCanUndoChanged)
             self._scene.undo_stack.canRedoChanged.connect(self.onCanRedoChanged)
+            self.onClipboardDataChanged()
+            self.onSelectionChanged()
 
-    def onSelectionChanged(self : Self, items : list[QGraphicsItem]) -> None:
+    def onSelectionChanged(self : Self) -> None:
         try:
-            n = len(items)
+            if self._scene:
+                selected_items = self._scene.selectedItems()
+                n = len(selected_items)
+            else:
+                n = 0
             self.editCut        .setEnabled( n > 0 )
             self.editCopy       .setEnabled( n > 0 )
             self.editDelete     .setEnabled( n > 0 )
@@ -136,6 +142,10 @@ class Actions:
             self.editAppearance .setEnabled( n > 0 )
         except RuntimeError:
             pass  # Objects deleted during shutdown
+        except Exception as e:
+            logger.error(f"Exception in onSelectionChanged: {e}")
+            import traceback
+            traceback.print_exc()
 
     def onClipboardDataChanged(self : Self) -> None:
         if not self._scene:

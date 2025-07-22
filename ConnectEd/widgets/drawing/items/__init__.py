@@ -989,6 +989,8 @@ class ElementMixin(PropertiesMixin):
         if self.appearance.line is not None: self.appearance.line.onSelectionChange(selected)
         if self.appearance.fill is not None: self.appearance.fill.onSelectionChange(selected)
         if self.appearance.text is not None: self.appearance.text.onSelectionChange(selected)
+        if self._kpm is not None:
+            self._kpm.onSelectionChange(selected)
 
     def setPosX(self : Self, value : float) -> None:
         pos = self.pos()
@@ -1054,7 +1056,6 @@ class ElementMixin(PropertiesMixin):
         fromXmlAttrs(instance, xr)
         # check if we're already at the end element (self-closing)
         if xr.isEndElement() and xr.name() == cls.__name__:
-            instance.setKPVisible(False)
             return instance
         # read properties
         PropertiesMixin.fromXml(instance, xr)
@@ -1068,7 +1069,6 @@ class ElementMixin(PropertiesMixin):
                 else:
                     logger.warning(f"Unexpected child element: {xr.name()}")
             xr.readNext()
-        instance.setKPVisible(False)  # Ensure keypoints are hidden
         return instance
 
     def clone(self : Self) -> Self:

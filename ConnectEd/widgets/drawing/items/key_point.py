@@ -219,7 +219,6 @@ class KPManager(QObject):
     anchor_loc    : Optional[KP]
     anchor_offset : QPointF
 
-    posChanged    = pyqtSignal()
     anchorChanged = pyqtSignal(KP)
 
     def __init__(
@@ -244,6 +243,11 @@ class KPManager(QObject):
         else:
             if anchor:
                 logger.error("anchor specified for non-anchorable element")
+        self.onSelectionChange(parent.isSelected())
+
+    def onSelectionChange(self : Self, selected : bool) -> None:
+        for kp in self.key_points.values():
+            kp.setVisible(selected)
 
     def setAnchor(self, anchor : KP) -> None:
         self.anchor = self.key_points[anchor]
@@ -257,7 +261,7 @@ class KPManager(QObject):
         return QPointF(kp.value.h * rect.width(), kp.value.v * rect.height())
 
     def updatePositions(self : Self) -> None:
-        rect = self.element.KPRect()
+        rect = self.element._rect
         for kp_loc in self.key_points.keys():
             new_pos = QPointF(
                 kp_loc.value.h * rect.width(),
@@ -265,11 +269,5 @@ class KPManager(QObject):
             )
             if kp_loc != self.key_points[kp_loc]:
                 self.key_points[kp_loc].setPos(new_pos)
-        # Also update anchor_offset when size changes
         if self.anchor_loc is not None:
             self.anchor_offset = self.getKeyPointPos(self.anchor_loc)
-        self.posChanged.emit()
-
-    def setVisible(self : Self, visible : bool) -> None:
-        for kp in self.key_points.values():
-            kp.setVisible(visible)

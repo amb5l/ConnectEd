@@ -26,6 +26,9 @@ class BaseText(CustomGraphicsSimpleTextItem, ElementMixin):
     _KEY_POINTS = [KPDef(k, False, False) for k in KP.__iter__()]
     _ANCHORED = True
 
+    # instance variables
+    _rect  : QRectF
+
     def __init__(
         self   : Self,
         text   : str = "",
@@ -33,10 +36,11 @@ class BaseText(CustomGraphicsSimpleTextItem, ElementMixin):
         anchor : KP = KP.TOP_LEFT,
         bare   : bool = False
     ) -> None:
-        CustomGraphicsSimpleTextItem.__init__(self, text)
+        CustomGraphicsSimpleTextItem.__init__(self)
         self.initElement(line=None, fill=None, text=TextPref(), bare=bare)
         self.setAnchor(anchor)
         self.setPos(pos)
+        self.setText(text)
         self.setFlag(self.GraphicsItemFlag.ItemIsSelectable , True)
 
     def setPos(self : Self, pos : QPointF) -> None:
@@ -48,11 +52,9 @@ class BaseText(CustomGraphicsSimpleTextItem, ElementMixin):
     def setText(self, text: str) -> None:
         current_pos = self.pos()
         super().setText(text)
+        self._rect = super().boundingRect()
         self._kpm.updatePositions()
         self.setPos(current_pos)
-
-    def KPRect(self : Self) -> QRectF:
-        return self.boundingRect()
 
     def paint(
         self    : Self,
@@ -67,9 +69,6 @@ class BaseText(CustomGraphicsSimpleTextItem, ElementMixin):
         if self.isSelected():
             painter.setPen(self.appearance.outline.pen)
             painter.drawRect(self.boundingRect())
-
-    def setKPVisible(self : Self, visible : bool) -> None:
-        self._kpm.setVisible(visible)
 
     def moveKeyPoint(self : Self, kp : KP, delta : QPointF) -> None:
         """Move the entire Text when any keypoint is dragged."""

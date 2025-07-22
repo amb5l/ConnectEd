@@ -118,8 +118,6 @@ class BaseTextBlock(CustomGraphicsTextItem, ElementMixin):
         else:
             return self._rect
 
-    KPRect = boundingRect
-
     def shape(self : Self) -> QPainterPath:
         if self.hasFocus():
             path = QPainterPath()
@@ -148,9 +146,6 @@ class BaseTextBlock(CustomGraphicsTextItem, ElementMixin):
         if self.isSelected():
             painter.setPen(self.appearance.outline.pen)
             painter.drawRect(self.boundingRect())
-
-    def setKPVisible(self : Self, visible : bool) -> None:
-        self._kpm.setVisible(visible)
 
     @classmethod
     def createOrUpdate(

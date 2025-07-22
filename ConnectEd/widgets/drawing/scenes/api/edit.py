@@ -53,7 +53,6 @@ class cmdEditPaste(cmdElements):
                 self._scene.addItem(element)
             element.setPos(element.pos() + self._offset)
             element.setSelected(True)
-            element.setKPVisible(False)  # Explicitly hide keypoints
         self._scene.blockSignals(False)
         self._scene.selectionChanged.emit()
 
@@ -65,8 +64,6 @@ class cmdEditPaste(cmdElements):
         for element in self._selection:
             if element.scene() == self._scene:
                 element.setSelected(True)
-                if len(self._selection) == 1:
-                    element.setKPVisible(True)
                 element.update()  # Force repaint
         self._scene.blockSignals(False)
         self._scene.selectionChanged.emit()
@@ -108,11 +105,6 @@ class cmdEditDelete(cmdElements):
         for element in self._selection:
             if element.scene() == self._scene:
                 element.setSelected(True)
-                # Show key points if only one element was selected
-                if len(self._selection) == 1:
-                    element.setKPVisible(True)
-                else:
-                    element.setKPVisible(False)
                 element.update()
         self._scene.blockSignals(False)
         self._scene.selectionChanged.emit()
@@ -146,7 +138,6 @@ class cmdEditDuplicate(cmdElements):
                 self._scene.addItem(element)
             element.setPos(element.pos() + self._offset)
             element.setSelected(True)
-            element.setKPVisible(False)  # Explicitly hide keypoints
         self._scene.blockSignals(False)
         self._scene.selectionChanged.emit()
 
@@ -158,8 +149,6 @@ class cmdEditDuplicate(cmdElements):
         for element in self._selection:
             if element.scene() == self._scene:
                 element.setSelected(True)
-                if len(self._selection) == 1:
-                    element.setKPVisible(True)
                 element.update()  # Force repaint
         self._scene.blockSignals(False)
         self._scene.selectionChanged.emit()

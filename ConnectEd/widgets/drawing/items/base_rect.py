@@ -161,12 +161,6 @@ class BaseRectangle(CustomGraphicsRectItem, ElementMixin):
         painter.setBrush(self.appearance.fill.brush)
         painter.drawRect(self._rect)
 
-    def KPRect(self : Self) -> QRectF:
-        return self._rect
-
-    def setKPVisible(self : Self, visible : bool) -> None:
-        self._kpm.setVisible(visible)
-
     def setSize(self : Self, size : QSizeF) -> None:
         self.setRect(0, 0, size.width(), size.height())
 

@@ -59,11 +59,8 @@ class DrawingViewEditMixin:
             return
         # Capture the current selection before clearing
         selection = [item for item in scene.selectedItems() if isinstance(item, ElementMixin)]
-        # Clear selection and hide keypoints
+        # Clear selection
         scene.clearSelection()
-        for item in scene.items():
-            if isinstance(item, ElementMixin):
-                item.setKPVisible(False)
         self.wip.elements = elements
         # Calculate offset from copy position to current mouse position
         current_pos = self._snap(self.mouse.current.logical)
@@ -100,7 +97,6 @@ class DrawingViewEditMixin:
             if element.scene() == scene:
                 element.setPos(element.pos() + mouse_delta)
                 element.setSelected(True)  # Ensure elements remain selected
-                element.setKPVisible(False)  # Explicitly hide keypoints
         scene.blockSignals(False)
         # Manually trigger selection changed to update key points
         scene.selectionChanged.emit()
@@ -146,11 +142,8 @@ class DrawingViewEditMixin:
         selection = [item for item in scene.selectedItems() if isinstance(item, ElementMixin)]
         # Clone the elements
         cloned_elements = [element.clone() for element in elements]
-        # Clear selection and hide keypoints
+        # Clear selection
         scene.clearSelection()
-        for item in scene.items():
-            if isinstance(item, ElementMixin):
-                item.setKPVisible(False)
         self.wip.elements = cloned_elements
         # Use provided position or current mouse position
         self.wip.pos = pos if pos is not None else self._snap(self.mouse.current.logical)
@@ -181,7 +174,6 @@ class DrawingViewEditMixin:
             if element.scene() == scene:
                 element.setPos(element.pos() + mouse_delta)
                 element.setSelected(True)  # Ensure elements remain selected
-                element.setKPVisible(False)  # Explicitly hide keypoints
         scene.blockSignals(False)
         # Manually trigger selection changed to update key points
         scene.selectionChanged.emit()

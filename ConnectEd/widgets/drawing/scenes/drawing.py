@@ -42,10 +42,8 @@ class DrawingScene(
     # instance variables
     item       : Optional["DrawingItem"]
     undo_stack : Optional[QUndoStack]
-    kp_items   : list[QGraphicsItem] # TODO private name
 
     # custom signals
-    selectionChangedItems = pyqtSignal("QList<QGraphicsItem*>")
     textEditingComplete   = pyqtSignal(TextBlock)
 
     def __init__(
@@ -60,21 +58,11 @@ class DrawingScene(
         self.setSceneRect(QRectF(QPointF(0, 0), extents))
         self.setItemIndexMethod(QGraphicsScene.ItemIndexMethod.NoIndex)
         self.undo_stack = None
-        self.kp_items = []
         self.undo_stack = QUndoStack(self)
-        if hub.main_window: # GUI is running
-            self.selectionChanged.connect(self.onSelectionChanged)
         self.initProperties()
 
     def setParent(self : Self, parent : "DrawingItem") -> None:
         self.item = parent
-
-    def clearSelection(self : Self) -> None:
-        super().clearSelection()
-        for item in self.items():
-            if hasattr(item, "setKPVisible"):
-                item.setKPVisible(False)
-        self.kp_items.clear()
 
     def toXml(self : Self, xw : QXmlStreamWriter) -> None:
         xw.writeStartElement(self.__class__.__name__)
@@ -101,21 +89,6 @@ class DrawingScene(
                     logger.warning(f"Unexpected element: {attr_name}")
             xr.readNext()
         return drawing_scene
-
-    def onSelectionChanged(self : Self) -> None:
-        # Hide key points for previously selected items
-        if self.kp_items:
-            for kp_item in self.kp_items:
-                if kp_item.scene() == self:  # Ensure item still exists
-                    kp_item.setKPVisible(False)
-            self.kp_items.clear()
-        # Show key points only if exactly one item is selected
-        items = self.selectedItems()
-        if len(items) == 1:
-            if hasattr(items[0], "setKPVisible"):
-                items[0].setKPVisible(True)
-                self.kp_items.append(items[0])
-        self.selectionChangedItems.emit(items)
 
     def onTextEditingComplete(self, text_item: TextBlock):
         self.textEditingComplete.emit(text_item)

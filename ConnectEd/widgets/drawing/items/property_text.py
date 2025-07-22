@@ -140,9 +140,6 @@ class PropertyText(TetherText):
             self.refresh()
         return result
 
-    def setText(self : Self, text : str) -> None:
-        raise NotImplementedError("setText is not implemented")
-
     def refresh(self : Self) -> None:
         self._cache = self.value()
         text_to_set = ""
