@@ -96,7 +96,6 @@ class PropertyText(TetherText):
 
     def setName(self : Self, value : str) -> None:
         self._name = value
-        self._updateCache()
         self.refresh()
 
     def display(self : Self) -> PropertyDisplay:
@@ -135,42 +134,17 @@ class PropertyText(TetherText):
         else:
             return
 
-    def _updateCache(self : Self) -> None:
-        """Update the cached property value from parent."""
-        self._cache = self.value()
-
-    def _connectToPropertySignals(self : Self) -> None:
-        """Connect to parent element's property signals."""
-        parent = self.parentItem()
-        if parent is None: # no parent means we get properties from the scene
-            scene = self.scene()
-            if scene is not None:
-                scene.connectToPropertySignals(self)
-        elif hasattr(parent, 'connectToPropertySignals') and self._name:
-            parent.connectToPropertySignals(self)
-
-    def _disconnectFromPropertySignals(self : Self) -> None:
-        """Disconnect from parent element's property signals."""
-        parent = self.parentItem()
-        if parent is not None and hasattr(parent, 'disconnectFromPropertySignals'):
-            parent.disconnectFromPropertySignals(self)
-
     def itemChange(self, change: QGraphicsItem.GraphicsItemChange, value):
-        """Override to detect when parented and connect to parent signals."""
         result = super().itemChange(change, value)
         if change == QGraphicsItem.GraphicsItemChange.ItemParentHasChanged:
-            if value is None: # being removed from parent
-                self._disconnectFromPropertySignals()
-            else: # being parented
-                self._updateCache()
-                self._connectToPropertySignals()
-                self.refresh()  # Ensure display is updated after cache update
+            self.refresh()
         return result
 
     def setText(self : Self, text : str) -> None:
         raise NotImplementedError("setText is not implemented")
 
     def refresh(self : Self) -> None:
+        self._cache = self.value()
         text_to_set = ""
         value = self._cache
         match self._display:

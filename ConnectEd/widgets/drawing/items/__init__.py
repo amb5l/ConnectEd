@@ -694,12 +694,6 @@ class AttrSpec:
     def tag(self) -> str:
         return self.name.lower().replace(" ", "_")
 
-class ElementSignalManager(QObject):
-    sizeChanged      = pyqtSignal()
-    textChanged      = pyqtSignal(str, str)
-    propertyChanged  = pyqtSignal(str, str)
-    propertyDeleted  = pyqtSignal(str)
-
 class PropertiesMixin:
     _ATTR_SPECS         : list[AttrSpec]         = []
     _ATTR_SPECS_BY_NAME : dict[str, AttrSpec]    = {}
@@ -770,11 +764,11 @@ class PropertiesMixin:
         return self.properties[name]
 
     def setProperty(self: Self, name: str, value: str) -> None:
-        """Set a property value and emit signal to notify PropertyText objects."""
-        old_value = self.properties[name]
+        """Set a property value update affected PropertyText instance(s)."""
         self.properties[name] = value
-        if old_value != value:
-            self._esm.propertyChanged.emit(name, value)
+        for child in self.childItems():
+            if isinstance(child, PropertyText) and child.name() == name:
+                child.onPropertyChanged(name, value)
 
     def deleteProperty(self: Self, name: str) -> None:
         """Delete a property and emit signal to notify PropertyText objects."""
@@ -782,7 +776,12 @@ class PropertiesMixin:
             logger.warning(f"Property not found: {name}")
             return
         del self.properties[name]
-        self._esm.propertyDeleted.emit(name)
+        for child in self.childItems():
+            if isinstance(child, PropertyText) and child.name() == name:
+                child.setParentItem(None)
+                scene = self.scene()
+                scene.removeItem(child)
+                del child
 
     def getPropAttr(self : Self, name: str) -> str| None:
         if name in self.properties:
@@ -796,19 +795,6 @@ class PropertiesMixin:
         else:
             logger.warning(f"Property or attribute not found: {name}")
             return None
-
-    def connectToPropertySignals(self : Self, item : "PropertyText") -> None:
-        """Connect a PropertyText object to this element's property signals."""
-        self._esm.propertyChanged.connect(item.onPropertyChanged)
-        self._esm.propertyDeleted.connect(item.onPropertyDeleted)
-
-    def disconnectFromPropertySignals(self: Self, item: "PropertyText") -> None:
-        """Disconnect a PropertyText object from this element's property signals."""
-        try:
-            self._esm.propertyChanged.disconnect(item.onPropertyChanged)
-            self._esm.propertyDeleted.disconnect(item.onPropertyDeleted)
-        except TypeError:
-            pass # signal was not connected
 
     def toXml(self : Self, xw : QXmlStreamWriter) -> None:
         for name, value in self.properties.items():
@@ -824,9 +810,7 @@ class PropertiesMixin:
             name = xr.attributes().value("name")
             if name is not None:
                 value = xr.attributes().value("value")
-                if value is not None:
-                    self.properties[name] = value
-                    self._esm.propertyChanged.emit(name, value)
+                self.setProperty(name, value)
             xr.readNext()
             if xr.isEndElement():
                 xr.readNext()
@@ -953,7 +937,6 @@ class ElementMixin(PropertiesMixin):
     appearance     : Appearance
     _menu          : QMenu
     _kpm           : Optional["KPManager"]
-    _esm           : ElementSignalManager
 
     def initElement(
         self : Self,
@@ -982,7 +965,6 @@ class ElementMixin(PropertiesMixin):
         self.setCacheMode(QGraphicsItem.CacheMode.DeviceCoordinateCache)
         hub.settings.changed.connect(self.onSettingsChange)
         self._menu = CustomGraphicsItemMixin.getMenu(self.__class__)
-        self._esm = ElementSignalManager()
         if self._KEY_POINTS is not None:
             self._kpm = KPManager(self, self._KEY_POINTS)
         else:
@@ -1247,7 +1229,6 @@ __all__ = [
     "CustomGraphicsSimpleTextItem",
     "CustomGraphicsTextItem",
     "AttrSpec",
-    "ElementSignalManager",
     "ElementMixin",
     "cmdElement",
     "cmdElements",

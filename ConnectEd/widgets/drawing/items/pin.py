@@ -7,13 +7,16 @@ from PyQt6.QtWidgets import QWidget, QStyleOptionGraphicsItem, \
                             QGraphicsItemGroup, QStyle
 from PyQt6.QtGui     import QPainter, QPainterPath
 
-from .. import Edge, EdgeLoc, SignalDirection, VectorRange, \
-               CustomGraphicsItem, Block, cmdPlaceElement
+from . import Edge, EdgeLoc, SignalDirection, VectorRange, \
+              CustomGraphicsItem, cmdPlaceElement
 
 from .node       import Node
 from .annotation import Annotation
 from .arrow      import SignalArrow
-from .base_rect  import BaseRectWithPins
+
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from .base_rect  import BaseRectWithPins
 
 from .... import hub
 
@@ -44,7 +47,7 @@ class BasePin(QGraphicsItemGroup):
         direction : SignalDirection,
         range     : Optional[VectorRange],
         loc       : EdgeLoc,
-        parent    : BaseRectWithPins
+        parent    : "BaseRectWithPins"
     ) -> None:
         super().__init__(parent)
         self.setPos(-parent.pos())
@@ -66,7 +69,6 @@ class BasePin(QGraphicsItemGroup):
         self.range = range
         self.refresh()
         self.setLoc(loc)
-        parent._esm.sizeChanged.connect(self.onParentSizeChanged)
         hub.settings.changed.connect(self.onSettingsChange)
 
     def itemChange(
@@ -110,7 +112,7 @@ class BasePin(QGraphicsItemGroup):
                 case Edge.RIGHT:  self._name_text.setRotation(180)
                 case Edge.TOP:    self._name_text.setRotation(180)
                 case Edge.BOTTOM: self._name_text.setRotation(0)
-        parent : BaseRectWithPins = self.parentItem()
+        parent : "BaseRectWithPins" = self.parentItem()
         edge_pos = parent.getEdgeLocPos(loc)
         self.setPos(edge_pos)
 
@@ -119,7 +121,7 @@ class BasePin(QGraphicsItemGroup):
         pos  : QPointF,
         snap : Optional[QPointF] = None
     ) -> None:
-        parent : BaseRectWithPins = self.parentItem()
+        parent : "BaseRectWithPins" = self.parentItem()
         self.setLoc(parent.getEdgeLoc(pos, snap))
 
     def boundingRect(self : Self) -> QRectF:
@@ -175,7 +177,7 @@ class BasePin(QGraphicsItemGroup):
         return QPointF(0, 0)
 
     def _namePos(self : Self) -> QPointF:
-        parent : BaseRectWithPins = self.parentItem()
+        parent : "BaseRectWithPins" = self.parentItem()
         parent_edge_width = parent.appearance.line.pen.width()
         name_offset = parent_edge_width + self._NAME_GAP
         if hasattr(self, "_inner"):

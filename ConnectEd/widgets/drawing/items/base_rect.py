@@ -11,6 +11,7 @@ from ....core   import logger, Z_DRAWING
 from . import CustomGraphicsRectItem, ElementMixin, cmdPlaceElement, \
               EdgeLoc, Edge, AttrSpec, KP, KPDef, LinePref, FillPref
 
+from .pin           import BasePin
 from .property_text import PropertyText
 
 from .... import hub
@@ -109,14 +110,30 @@ class BaseRectangle(CustomGraphicsRectItem, ElementMixin):
         self.refresh()
         self.update()
 
+    @overload
+    def setRect(
+        self : Self,
+        ax : float | int,
+        ay : float | int,
+        w : float | int,
+        h : float | int
+    ) -> None:
+        ...
+
+    @overload
+    def setRect(
+        self : Self,
+        rect : QRectF
+    ) -> None:
+        ...
+
     def setRect(
         self       : Self,
-        rect_or_ax : Optional[QRectF | float | int] = None,
-        ay         : Optional[float | int]          = None,
-        w          : Optional[float | int]          = None,
-        h          : Optional[float | int]          = None
+        rect_or_ax : float | int,
+        ay         : float | int = None,
+        w          : float | int = None,
+        h          : float | int = None
     ) -> None:
-        # TODO handle minimum size
         if isinstance(rect_or_ax, QRectF):
             super().setRect(rect_or_ax)
         else:
@@ -124,10 +141,9 @@ class BaseRectangle(CustomGraphicsRectItem, ElementMixin):
         self._rect = self.rect()
         self.refresh()
         self._kpm.updatePositions()
-        for item in self.childItems(): # TODO change to use signal
-            if isinstance(item, PropertyText):
+        for item in self.childItems():
+            if isinstance(item, BasePin | PropertyText):
                 item.refresh()
-        self._esm.sizeChanged.emit()
 
     def boundingRect(self : Self) -> QRectF:
         return self._bounding_rect
