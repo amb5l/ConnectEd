@@ -64,7 +64,6 @@ class cmdEditPaste(cmdElements):
         for element in self._selection:
             if element.scene() == self._scene:
                 element.setSelected(True)
-                element.update()  # Force repaint
         self._scene.blockSignals(False)
         self._scene.selectionChanged.emit()
 
@@ -105,7 +104,6 @@ class cmdEditDelete(cmdElements):
         for element in self._selection:
             if element.scene() == self._scene:
                 element.setSelected(True)
-                element.update()
         self._scene.blockSignals(False)
         self._scene.selectionChanged.emit()
 
@@ -149,7 +147,6 @@ class cmdEditDuplicate(cmdElements):
         for element in self._selection:
             if element.scene() == self._scene:
                 element.setSelected(True)
-                element.update()  # Force repaint
         self._scene.blockSignals(False)
         self._scene.selectionChanged.emit()
 
