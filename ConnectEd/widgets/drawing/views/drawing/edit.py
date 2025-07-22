@@ -52,7 +52,7 @@ class DrawingViewEditMixin:
             logger.warning("No valid data to paste")
             self.state.go(self.stateIdle)
             return
-        elements = [item for item in items if isinstance(item, ElementMixin)]
+        elements = items # no filtering at the moment
         if not elements:
             logger.warning("No valid elements to paste")
             self.state.go(self.stateIdle)

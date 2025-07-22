@@ -58,8 +58,17 @@ class Edge(Enum):
 
 @dataclass
 class EdgeLoc:
-    edge     : Edge
-    distance : float # from top or left end of edge
+    edge     : Optional[Edge]  = None
+    distance : Optional[float] = None
+
+    def toStr(self) -> str:
+        return f"{self.edge.value},{self.distance}" \
+              if self.edge is not None else "None"
+
+    @classmethod
+    def fromStr(cls, s : str) -> Self:
+        edge, distance = s.split(",")
+        return cls(Edge(edge), float(distance))
 
 # TODO: consider passive, 3-state etc for EE schematics
 class SignalDirection(Enum):
@@ -813,7 +822,31 @@ class PropertiesMixin:
             while not xr.isStartElement() and not xr.isEndElement():
                 xr.readNext()
 
-class ElementMixin(PropertiesMixin):
+class ElementCloneMixin:
+    def clone(self : Self, original : Optional[Self] = None) -> Self:
+        """Create a clone of this element with a new UUID."""
+        source = original if original is not None else self
+        clone = self.__class__(bare=True)
+        # clone attributes
+        if hasattr(source, "_ATTR_SPECS"):
+            for attr_spec in source._ATTR_SPECS:
+                if attr_spec.exists(source):
+                    value = attr_spec.getter(source)
+                    attr_spec.setter(clone, value)
+        # clone properties, property texts, and pins
+        if hasattr(source, "properties"):
+            clone.properties = source.properties.copy()
+        from .port_pin import BasePin
+        for item in source.childItems():
+            if isinstance(item, BasePin):
+                clone_pin = item.clone(item)
+                clone_pin.setParentItem(clone)
+            elif isinstance(item, PropertyText):
+                item.clone().setParentItem(clone)
+        clone.onGeometryChange()
+        return clone
+
+class ElementMixin(ElementCloneMixin, PropertiesMixin):
     """Mixin class for all elements."""
     Z = Z_DRAWING
     _CAP_STYLE = Qt.PenCapStyle.SquareCap
@@ -1047,8 +1080,11 @@ class ElementMixin(PropertiesMixin):
         xw.writeStartElement(self.__class__.__name__)
         toXmlAttrs(self, xw)
         PropertiesMixin.toXml(self, xw)
+        from .port_pin import BasePin
         for item in self.childItems():
             if isinstance(item, PropertyText):
+                item.toXml(xw)
+            elif isinstance(item, BasePin):
                 item.toXml(xw)
         xw.writeEndElement()
 
@@ -1061,43 +1097,21 @@ class ElementMixin(PropertiesMixin):
             return instance
         # read properties
         PropertiesMixin.fromXml(instance, xr)
-        # read child PropertyText elements
+        # read child PropertyText and BasePin elements
         while not (xr.isEndElement() and xr.name() == cls.__name__):
             if xr.isStartElement():
                 if xr.name() == "PropertyText":
                     from .property_text import PropertyText
                     p : PropertyText = PropertyText.fromXml(xr)
                     p.setParentItem(instance)
+                elif xr.name() == "BlockPin":
+                    from .port_pin import BlockPin
+                    pin : BlockPin = BlockPin.fromXml(xr)
+                    pin.setParentItem(instance)
                 else:
                     logger.warning(f"Unexpected child element: {xr.name()}")
             xr.readNext()
         return instance
-
-    def clone(self : Self) -> Self:
-        """Create a clone of this element with a new UUID."""
-        clone = self.__class__(bare=True)
-        clone.setPos(self.pos())
-        if self.appearance.line is not None:
-            setattr(
-                clone.appearance, "line",
-                LinePen(clone, self.appearance.line.getPref())
-            )
-        if self.appearance.fill is not None:
-            setattr(
-                clone.appearance, "fill",
-                FillBrush(clone, self.appearance.fill.getPref()))
-        if self.appearance.text is not None:
-            setattr(
-                clone.appearance, "text",
-                TextColorFont(clone, self.appearance.text.getPref())
-            )
-        # clone properties and property texts
-        clone.properties = self.properties.copy()
-        for item in self.childItems():
-            if isinstance(item, PropertyText):
-                item.clone().setParentItem(clone)
-        # New UUID is automatically assigned in initElement() via resetUuid()
-        return clone
 
 class cmdElement(QUndoCommand):
     """Base class for all commands that work with an element."""
@@ -1249,7 +1263,7 @@ from .text_block import TextBlock, cmdPlaceTextBlock
 __all__ += text_block.__all__
 from .rectangle import Rectangle, cmdPlaceRectangle
 __all__ += rectangle.__all__
-from .port_pin import Port, cmdPlacePort
+from .port_pin import Port, cmdPlacePort, BlockPin
 __all__ += port_pin.__all__
 from .block import Block, cmdPlaceBlock
 __all__ += block.__all__

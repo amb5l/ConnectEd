@@ -313,7 +313,7 @@ class DrawingSceneApiEditMixin:
     ) -> None:
         elements = \
             [item for item in self.selectedItems() \
-                if isinstance(item, ElementMixin) \
+                if hasattr(item, "toXml") \
                 and item.parentItem() is None]
         if elements:
             copy(elements, pos)
@@ -331,12 +331,12 @@ class DrawingSceneApiEditMixin:
             if not items:
                 logger.warning("No valid data to paste")
                 return False
-            elements = [item for item in items if isinstance(item, ElementMixin)]
+            elements = items # no filtering at the moment
         else:
             items, pos0, selection = ips
             if not isinstance(items, list):
                 items = [items]
-            elements = [item for item in items if isinstance(item, ElementMixin)]
+            elements = items # no filtering at the moment
         if not elements:
             logger.warning("No valid elements to paste")
             return False

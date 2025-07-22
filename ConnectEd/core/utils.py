@@ -83,13 +83,16 @@ def val2str(v : Any) -> str:
         case "TextPref"        : s = v.toStr()
         case "PropertyDisplay" : s = v.value
         case "KP"              : s = v.value.name
+        case "EdgeLoc"         : s = v.toStr()
+        case "SignalDirection" : s = v.value
         case _ :
             raise ValueError(f"Unsupported type: {t}")
     return s
 
 def str2val(s : str, t : str) -> Any:
     """Convert a text representation of a Python value to a Python value."""
-    from ..widgets import DEFAULT, TextPref, LinePref, FillPref, \
+    from ..widgets import DEFAULT, EdgeLoc,SignalDirection, \
+                          TextPref, LinePref, FillPref, \
                           PropertyDisplay, KPReverse
     def strValuesToFloats(s : str) -> list[float]:
         return [float(p) for p in s.strip("()").split(",")]
@@ -114,5 +117,7 @@ def str2val(s : str, t : str) -> Any:
         case "FillPref"        : return FillPref.fromStr(s)
         case "PropertyDisplay" : return PropertyDisplay(s)
         case "KP"              : return KPReverse[s]
+        case "EdgeLoc"         : return EdgeLoc.fromStr(s)
+        case "SignalDirection" : return SignalDirection(s)
         case _:
             raise ValueError(f"Unsupported type: {t}")
