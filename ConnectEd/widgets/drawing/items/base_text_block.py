@@ -147,6 +147,10 @@ class BaseTextBlock(CustomGraphicsTextItem, ElementMixin):
             painter.setPen(self.appearance.outline.pen)
             painter.drawRect(self.boundingRect())
 
+    def moveKeyPoint(self : Self, kp : KP, delta : QPointF) -> None:
+        """Move the entire Text when any keypoint is dragged."""
+        self.setPos(self.pos() + delta)
+
     @classmethod
     def createOrUpdate(
         cls    : Self,
