@@ -14,7 +14,7 @@ from ... import Port,      cmdPlacePort, \
                 Text,      cmdPlaceText, \
                 KP
 
-from ...items.pin import BlockPin
+from ...items.port_pin import BlockPin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:

@@ -1250,8 +1250,8 @@ from .text_block import TextBlock, cmdPlaceTextBlock
 __all__ += text_block.__all__
 from .rectangle import Rectangle, cmdPlaceRectangle
 __all__ += rectangle.__all__
-from .port import Port, cmdPlacePort
-__all__ += port.__all__
+from .port_pin import Port, cmdPlacePort
+__all__ += port_pin.__all__
 from .block import Block, cmdPlaceBlock
 __all__ += block.__all__
 from .symbol_instance import SymbolInstance

@@ -11,8 +11,7 @@ from . import CustomGraphicsItem, ElementMixin, SignalDirection, \
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from .pin  import BasePin
-    from .port import Port
+    from .port_pin import Port, BasePin
 
 
 class SignalArrow(CustomGraphicsItem, ElementMixin):

@@ -10,7 +10,7 @@ from . import CustomGraphicsItem, ElementMixin, LinePref, FillPref
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from .pin import BasePin
+    from .port_pin import BasePin
 
 class Node(CustomGraphicsItem, ElementMixin):
     # class attributes

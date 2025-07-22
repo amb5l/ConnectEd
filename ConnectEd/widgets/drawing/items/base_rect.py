@@ -11,7 +11,7 @@ from ....core   import logger, Z_DRAWING
 from . import CustomGraphicsRectItem, ElementMixin, cmdPlaceElement, \
               EdgeLoc, Edge, AttrSpec, KP, KPDef, LinePref, FillPref
 
-from .pin           import BasePin
+from .port_pin      import BasePin
 from .property_text import PropertyText
 
 from .... import hub

@@ -8,7 +8,7 @@ from ....dialogs import TextDialog, PlacePortPinDialog
 from ...scenes import DrawingScene
 from ...items  import TextBlock, Block
 
-from ...items.pin  import BlockPin
+from ...items.port_pin import BlockPin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
