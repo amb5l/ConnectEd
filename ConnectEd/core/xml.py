@@ -168,11 +168,11 @@ def paste() -> tuple[list[XmlItemTypes], Optional[QPointF]]:
             try:
                 return fromXmlItems(xr)
             except ValueError as e:
-                print(f"paste error: {e}")
+                logger.error(f"paste error: {e}")
                 if xr.hasError():
-                    print(f"XML parser error: {xr.errorString()} at line {xr.lineNumber()}, column {xr.columnNumber()}")
+                    logger.error(f"XML parser error: {xr.errorString()} at line {xr.lineNumber()}, column {xr.columnNumber()}")
             except Exception as e:
-                print(f"Unexpected error during paste: {str(e)}")
+                logger.error(f"Unexpected error during paste: {str(e)}")
                 import traceback
                 traceback.print_exc()
     logger.warning("No valid ConnectEd data in clipboard")
