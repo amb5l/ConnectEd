@@ -763,9 +763,9 @@ class PropertiesMixin:
     def setProperty(self: Self, name: str, value: str) -> None:
         """Set a property value update affected PropertyText instance(s)."""
         self.properties[name] = value
-        for child in self.childItems():
-            if isinstance(child, PropertyText) and child.name() == name:
-                child.setProperty(name, value)
+        for item in self.childItems():
+            if isinstance(item, PropertyText) and item.name() == name:
+                item.setProperty(name, value)
 
     def deleteProperty(self: Self, name: str) -> None:
         """Delete a property and emit signal to notify PropertyText objects."""
@@ -773,12 +773,12 @@ class PropertiesMixin:
             logger.warning(f"Property not found: {name}")
             return
         del self.properties[name]
-        for child in self.childItems():
-            if isinstance(child, PropertyText) and child.name() == name:
-                child.setParentItem(None)
+        for item in self.childItems():
+            if isinstance(item, PropertyText) and item.name() == name:
+                item.setParentItem(None)
                 scene = self.scene()
-                scene.removeItem(child)
-                del child
+                scene.removeItem(item)
+                del item
 
     def getPropAttr(self : Self, name: str) -> str| None:
         if name in self.properties:
