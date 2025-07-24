@@ -6,11 +6,9 @@ from types       import SimpleNamespace
 from dataclasses import dataclass
 from enum        import Enum
 
-from PyQt6.QtCore    import Qt, QPoint, QXmlStreamWriter, QXmlStreamReader
+from PyQt6.QtCore    import Qt, QXmlStreamWriter, QXmlStreamReader
 from PyQt6.QtGui     import QPen, QBrush, QColor, QFont, QAction, QUndoCommand
-from PyQt6.QtWidgets import QGraphicsItem, QGraphicsRectItem, \
-                            QGraphicsTextItem, QGraphicsSimpleTextItem, \
-                            QGraphicsSceneContextMenuEvent, QMenu
+from PyQt6.QtWidgets import QGraphicsItem, QGraphicsSceneContextMenuEvent, QMenu
 
 from ....core import Z_DRAWING, logger, \
                      val2str, str2val, camel_to_proper, toXmlAttrs, fromXmlAttrs
@@ -239,24 +237,6 @@ class QuillPrefChange:
     bold      : Optional[ NoChange | Default | bool   ] = None
     italic    : Optional[ NoChange | Default | bool   ] = None
     underline : Optional[ NoChange | Default | bool   ] = None
-
-@dataclass
-class AppearanceSpec:
-    line : Optional[LineSpec] = None
-    fill : Optional[FillSpec] = None
-    text : Optional[QuillSpec] = None
-
-@dataclass
-class AppearancePref:
-    line : Optional[LinePref] = None
-    fill : Optional[FillPref] = None
-    text : Optional[QuillPref] = None
-
-@dataclass
-class AppearancePrefChange:
-    line : Optional[LinePrefChange] = None
-    fill : Optional[FillPrefChange] = None
-    text : Optional[QuillPrefChange] = None
 
 class LinePen:
     element  : "ElementMixin"
@@ -610,12 +590,117 @@ class OutlinePen:
         self.pen.setWidthF(hub.settings.get("display/select/outline/width"))
         self.pen.setStyle(hub.settings.get("display/select/outline/style"))
 
-@dataclass
-class Appearance:
-    line    : Optional[LinePen]       = None
-    fill    : Optional[FillBrush]     = None
-    quill   : Optional[QuillColorFont] = None
-    outline : Optional[OutlinePen]    = None
+class ElementLineMixin:
+    _CAP_STYLE  = Qt.PenCapStyle.SquareCap
+    _JOIN_STYLE = Qt.PenJoinStyle.MiterJoin
+    _ATTR_SPECS_LINE = [
+        AttrSpec(
+            name      = "Line Color",
+            type_name = "QColor",
+            exists    = lambda self: self.line is not None,
+            getter    = lambda self: self.line.getColor(),
+            setter    = lambda self, value: self.line.setColor(value)
+        ),
+        AttrSpec(
+            name      = "Line Width",
+            type_name = "float",
+            exists    = lambda self: self.line is not None,
+            getter    = lambda self: self.line.getWidth(),
+            setter    = lambda self, value: self.line.setWidth(value)
+        ),
+        AttrSpec(
+            name      = "Line Style",
+            type_name = "Qt.PenStyle",
+            exists    = lambda self: self.line is not None,
+            getter    = lambda self: self.line.getStyle(),
+            setter    = lambda self, value: self.line.setStyle(value)
+        )
+    ]
+
+    line : LinePen
+
+    def initLine(self : Self):
+        self.line = LinePen(self)
+
+class ElementFillMixin:
+    _ATTR_SPECS_FILL = [
+        AttrSpec(
+            name      = "Fill Color",
+            type_name = "QColor",
+            exists    = lambda self: self.fill is not None,
+            getter    = lambda self: self.fill.getColor(),
+            setter    = lambda self, value: self.fill.setColor(value)
+        ),
+        AttrSpec(
+            name      = "Fill Style",
+            type_name = "Qt.BrushStyle",
+            exists    = lambda self: self.fill is not None,
+            getter    = lambda self: self.fill.getStyle(),
+            setter    = lambda self, value: self.fill.setStyle(value)
+        )
+    ]
+
+    fill : FillBrush
+
+    def initFill(self : Self):
+        self.fill = FillBrush(self)
+
+class ElementQuillMixin:
+    _ATTR_SPECS_QUILL = [
+        AttrSpec(
+            name      = "Text Color",
+            type_name = "QColor",
+            exists    = lambda self: self.quill is not None,
+            getter    = lambda self: self.quill.getColor(),
+            setter    = lambda self, value: self.quill.setColor(value)
+        ),
+        AttrSpec(
+            name      = "Text Font",
+            type_name = "str",
+            exists    = lambda self: self.quill is not None,
+            getter    = lambda self: self.quill.getFamily(),
+            setter    = lambda self, value: self.quill.setFamily(value)
+        ),
+        AttrSpec(
+            name      = "Text Size",
+            type_name = "float",
+            exists    = lambda self: self.quill is not None,
+            getter    = lambda self: self.quill.getSize(),
+            setter    = lambda self, value: self.quill.setSize(value)
+        ),
+        AttrSpec(
+            name      = "Text Bold",
+            type_name = "bool",
+            exists    = lambda self: self.quill is not None,
+            getter    = lambda self: self.quill.getBold(),
+            setter    = lambda self, value: self.quill.setBold(value)
+        ),
+        AttrSpec(
+            name      = "Text Italic",
+            type_name = "bool",
+            exists    = lambda self: self.quill is not None,
+            getter    = lambda self: self.quill.getItalic(),
+            setter    = lambda self, value: self.quill.setItalic(value)
+        ),
+        AttrSpec(
+            name      = "Text Underline",
+            type_name = "bool",
+            exists    = lambda self: self.quill is not None,
+            getter    = lambda self: self.quill.getUnderline(),
+            setter    = lambda self, value: self.quill.setUnderline(value)
+        )
+    ]
+
+    quill : QuillColorFont
+
+    def initQuill(self : Self):
+        self.quill = QuillColorFont(self)
+
+class ElementOutlineMixin:
+    outline : OutlinePen
+
+    def initOutline(self : Self):
+        self.outline = OutlinePen()
 
 class ElementChangeMixin:
     def itemChange(
@@ -655,12 +740,15 @@ class ElementMenuMixin:
                 from .. import getView
                 view = getView(pos)
                 slot_name = f"ctxMenu{item.replace(' ', '').replace('.', '')}"
-                slot = getattr(self, slot_name, None)
-                action = QAction(item, menu)
-                action.triggered.connect(
-                    lambda checked=False, w=view, s=slot: s(checked, w)
-                )
-                menu.addAction(action)
+                if hasattr(self, slot_name):
+                    slot = getattr(self, slot_name)
+                    action = QAction(item, menu)
+                    action.triggered.connect(
+                        lambda checked=False, w=view, s=slot: s(checked, w)
+                    )
+                    menu.addAction(action)
+                else:
+                    logger.error(f"{slot_name} missing from {self.__class__.__name__}")
         menu.exec(pos)
 
     def ctxMenuAppearance(
@@ -853,116 +941,26 @@ class ElementMixin(ElementChangeMixin, ElementCloneMixin, PropertiesMixin):
             setter    = lambda self, value: self.setPosY(value)
         )
     ]
-    _ATTR_SPECS_APPEARANCE_LINE = [
-        AttrSpec(
-            name      = "Line Color",
-            type_name = "QColor",
-            exists    = lambda self: self.appearance.line is not None,
-            getter    = lambda self: self.appearance.line.getColor(),
-            setter    = lambda self, value: self.appearance.line.setColor(value)
-        ),
-        AttrSpec(
-            name      = "Line Width",
-            type_name = "float",
-            exists    = lambda self: self.appearance.line is not None,
-            getter    = lambda self: self.appearance.line.getWidth(),
-            setter    = lambda self, value: self.appearance.line.setWidth(value)
-        ),
-        AttrSpec(
-            name      = "Line Style",
-            type_name = "Qt.PenStyle",
-            exists    = lambda self: self.appearance.line is not None,
-            getter    = lambda self: self.appearance.line.getStyle(),
-            setter    = lambda self, value: self.appearance.line.setStyle(value)
-        )
-    ]
-    _ATTR_SPECS_APPEARANCE_FILL = [
-        AttrSpec(
-            name      = "Fill Color",
-            type_name = "QColor",
-            exists    = lambda self: self.appearance.fill is not None,
-            getter    = lambda self: self.appearance.fill.getColor(),
-            setter    = lambda self, value: self.appearance.fill.setColor(value)
-        ),
-        AttrSpec(
-            name      = "Fill Style",
-            type_name = "Qt.BrushStyle",
-            exists    = lambda self: self.appearance.fill is not None,
-            getter    = lambda self: self.appearance.fill.getStyle(),
-            setter    = lambda self, value: self.appearance.fill.setStyle(value)
-        )
-    ]
-    _ATTR_SPECS_APPEARANCE_QUILL = [
-        AttrSpec(
-            name      = "Text Color",
-            type_name = "QColor",
-            exists    = lambda self: self.appearance.quill is not None,
-            getter    = lambda self: self.appearance.quill.getColor(),
-            setter    = lambda self, value: self.appearance.quill.setColor(value)
-        ),
-        AttrSpec(
-            name      = "Text Font",
-            type_name = "str",
-            exists    = lambda self: self.appearance.quill is not None,
-            getter    = lambda self: self.appearance.quill.getFamily(),
-            setter    = lambda self, value: self.appearance.quill.setFamily(value)
-        ),
-        AttrSpec(
-            name      = "Text Size",
-            type_name = "float",
-            exists    = lambda self: self.appearance.quill is not None,
-            getter    = lambda self: self.appearance.quill.getSize(),
-            setter    = lambda self, value: self.appearance.quill.setSize(value)
-        ),
-        AttrSpec(
-            name      = "Text Bold",
-            type_name = "bool",
-            exists    = lambda self: self.appearance.quill is not None,
-            getter    = lambda self: self.appearance.quill.getBold(),
-            setter    = lambda self, value: self.appearance.quill.setBold(value)
-        ),
-        AttrSpec(
-            name      = "Text Italic",
-            type_name = "bool",
-            exists    = lambda self: self.appearance.quill is not None,
-            getter    = lambda self: self.appearance.quill.getItalic(),
-            setter    = lambda self, value: self.appearance.quill.setItalic(value)
-        ),
-        AttrSpec(
-            name      = "Text Underline",
-            type_name = "bool",
-            exists    = lambda self: self.appearance.quill is not None,
-            getter    = lambda self: self.appearance.quill.getUnderline(),
-            setter    = lambda self, value: self.appearance.quill.setUnderline(value)
-        )
-    ]
     _KEY_POINTS : Optional[list["KP"]] = None
     _ANCHORED   : bool = False
 
     _settings_name : str
     uuid           : str
-    appearance     : Appearance
     _kpm           : Optional["KPManager"]
 
-    def initElement(
-        self : Self,
-        line : Optional[LinePref] = None,
-        fill : Optional[FillPref] = None,
-        text : Optional[QuillPref] = None,
-        bare : bool = False
-    ) -> None:
+    def initElement(self : Self, bare : bool = False) -> None:
         self._settings_name = \
             self.__class__.__name__ if not hasattr(self, "_SETTINGS_NAME") \
             else self._SETTINGS_NAME
         self.resetUuid()
-        self.appearance = Appearance()
-        if line is not None:
-            self.appearance.line = LinePen(self, line)
-        if fill is not None:
-            self.appearance.fill = FillBrush(self, fill)
-        if text is not None:
-            self.appearance.quill = QuillColorFont(self, text)
-        self.appearance.outline = OutlinePen()
+        if hasattr(self, "initLine"):
+            self.initLine()
+        if hasattr(self, "initFill"):
+            self.initFill()
+        if hasattr(self, "initQuill"):
+            self.initQuill()
+        if hasattr(self, "initOutline"):
+            self.initOutline()
         self.setZValue(self.Z)
         f = QGraphicsItem.GraphicsItemFlag
         self.setFlag( f.ItemIsSelectable              , True )
@@ -986,19 +984,19 @@ class ElementMixin(ElementChangeMixin, ElementCloneMixin, PropertiesMixin):
 
     def onSettingsChange(self : Self) -> None:
         self.prepareGeometryChange()
-        if self.appearance.line is not None: self.appearance.line.onSettingsChange()
-        if self.appearance.fill is not None: self.appearance.fill.onSettingsChange()
-        if self.appearance.quill is not None: self.appearance.quill.onSettingsChange()
-        self.appearance.outline.onSettingsChange()
+        if hasattr(self, "line"): self.line.onSettingsChange()
+        if hasattr(self, "fill"): self.fill.onSettingsChange()
+        if hasattr(self, "quill"): self.quill.onSettingsChange()
+        if hasattr(self, "outline"): self.outline.onSettingsChange()
         self.onGeometryChange()
 
     def onGeometryChange(self : Self) -> None:
         raise NotImplementedError("onGeometryChange() is not implemented")
 
     def onSelectionChange(self : Self, selected : bool) -> None:
-        if self.appearance.line is not None: self.appearance.line.onSelectionChange(selected)
-        if self.appearance.fill is not None: self.appearance.fill.onSelectionChange(selected)
-        if self.appearance.quill is not None: self.appearance.quill.onSelectionChange(selected)
+        if hasattr(self, "line"): self.line.onSelectionChange(selected)
+        if hasattr(self, "fill"): self.fill.onSelectionChange(selected)
+        if hasattr(self, "quill"): self.quill.onSelectionChange(selected)
         if self._kpm is not None:
             self._kpm.onSelectionChange(selected)
         self.update()
@@ -1015,13 +1013,6 @@ class ElementMixin(ElementChangeMixin, ElementCloneMixin, PropertiesMixin):
 
     def resetUuid(self : Self) -> None:
         self.uuid = str(uuid.uuid4())
-
-    def getDefaults(self : Self) -> SimpleNamespace:
-        r = SimpleNamespace()
-        if self.appearance.line is not None: r.line = self.appearance.line.getDefaults()
-        if self.appearance.fill is not None: r.fill = self.appearance.fill.getDefaults()
-        if self.appearance.quill is not None: r.text = self.appearance.quill.getDefaults()
-        return r
 
     def hasAnchor(self : Self) -> bool:
         return hasattr(self, "_kpm") and self._kpm.anchor is not None
@@ -1190,6 +1181,7 @@ __all__ = [
     "SignalDirection",
     "RangeDirection",
     "VectorRange",
+    "AttrSpec",
     "LineSpec",
     "LinePref",
     "LinePrefChange",
@@ -1199,10 +1191,6 @@ __all__ = [
     "QuillSpec",
     "QuillPref",
     "QuillPrefChange",
-    "AppearanceSpec",
-    "AppearancePref",
-    "AppearancePrefChange",
-    "AttrSpec",
     "ElementMixin",
     "cmdElement",
     "cmdElements",

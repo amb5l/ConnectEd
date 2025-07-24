@@ -179,7 +179,7 @@ class DrawingViewPlaceMixin:
         if dialog.exec():
             text, appearance = dialog.getChoice()
             element.setText(text)
-            element.appearance.quill.setPref(appearance)
+            element.quill.setPref(appearance)
             element.setPos(
                 self.mapToScene(self.mapFromGlobal(QCursor.pos()))
             )

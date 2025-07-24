@@ -5,11 +5,25 @@ from PyQt6.QtWidgets import QWidget, QStyleOptionGraphicsItem, QStyle, \
                             QGraphicsSimpleTextItem
 from PyQt6.QtGui     import QPainter, QPen, QBrush
 
-from . import QuillPref, AttrSpec, KP, KPDef, \
-              ElementMenuMixin, ElementMixin, cmdPlaceElement
+from . import AttrSpec, KP, KPDef, \
+              ElementQuillMixin, \
+              ElementOutlineMixin, \
+              ElementMenuMixin, \
+              ElementMixin, \
+              cmdPlaceElement
 
 
-class BaseText(ElementMenuMixin, ElementMixin, QGraphicsSimpleTextItem):
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from ..views import DrawingView
+
+class BaseText(
+    ElementQuillMixin,
+    ElementOutlineMixin,
+    ElementMenuMixin,
+    ElementMixin,
+    QGraphicsSimpleTextItem
+):
     # class variables
     _ATTR_SPECS_TEXT = [
         AttrSpec(
@@ -23,7 +37,7 @@ class BaseText(ElementMenuMixin, ElementMixin, QGraphicsSimpleTextItem):
     _ATTR_SPECS = \
         ElementMixin._ATTR_SPECS_BASIC + \
         _ATTR_SPECS_TEXT + \
-        ElementMixin._ATTR_SPECS_APPEARANCE_QUILL
+        ElementQuillMixin._ATTR_SPECS_QUILL
     _KEY_POINTS = [KPDef(k, False, False) for k in KP.__iter__()]
     _ANCHORED = True
 
@@ -38,11 +52,14 @@ class BaseText(ElementMenuMixin, ElementMixin, QGraphicsSimpleTextItem):
         bare   : bool = False
     ) -> None:
         QGraphicsSimpleTextItem.__init__(self)
-        self.initElement(line=None, fill=None, text=QuillPref(), bare=bare)
+        self.initElement(bare=bare)
         self.setAnchor(anchor)
         self.setPos(pos)
         self.setText(text)
         self.setFlag(self.GraphicsItemFlag.ItemIsSelectable , True)
+
+    def getMenuItems(self : Self) -> list[str]:
+        return ["Edit..."]
 
     def setPos(self : Self, pos : QPointF) -> None:
         super().setPos(pos - self._kpm.anchor_offset)
@@ -64,11 +81,11 @@ class BaseText(ElementMenuMixin, ElementMixin, QGraphicsSimpleTextItem):
         widget  : QWidget
     ) -> None:
         self.setPen(QPen(Qt.PenStyle.NoPen))
-        self.setBrush(QBrush(self.appearance.quill.current))
+        self.setBrush(QBrush(self.quill.current))
         option.state &= ~QStyle.StateFlag.State_Selected
         super().paint(painter, option, widget)
         if self.isSelected():
-            painter.setPen(self.appearance.outline.pen)
+            painter.setPen(self.outline.pen)
             painter.drawRect(self.boundingRect())
 
     def moveKeyPoint(self : Self, kp : KP, delta : QPointF) -> None:
@@ -100,6 +117,13 @@ class BaseText(ElementMenuMixin, ElementMixin, QGraphicsSimpleTextItem):
         clone.setAnchor(self._kpm.anchor_loc)
         clone.setPos(self.pos())
         return clone
+
+    def ctxMenuEdit(
+        self    : Self,
+        checked : bool,
+        view    : "DrawingView"
+    ) -> None:
+        view.editText(self)
 
 class cmdPlaceBaseText(cmdPlaceElement):
     pass

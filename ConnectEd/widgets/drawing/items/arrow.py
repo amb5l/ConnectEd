@@ -6,15 +6,19 @@ from PyQt6.QtCore    import QPointF, QRectF
 from PyQt6.QtWidgets import QWidget, QStyleOptionGraphicsItem, QGraphicsItem
 from PyQt6.QtGui     import QPainter, QPainterPath
 
-from . import ElementMixin, SignalDirection, \
-              LinePref, FillPref
+from . import ElementLineMixin, ElementFillMixin, ElementMixin, SignalDirection
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from .port_pin import Port, BasePin
 
 
-class SignalArrow(ElementMixin, QGraphicsItem):
+class SignalArrow(
+    ElementLineMixin,
+    ElementFillMixin,
+    ElementMixin,
+    QGraphicsItem
+):
     _SIZE         = 8
     _S            = _SIZE
     _H            = _SIZE/2
@@ -36,7 +40,7 @@ class SignalArrow(ElementMixin, QGraphicsItem):
         parent  : "BasePin | Port"
     ) -> None:
         QGraphicsItem.__init__(self, parent)
-        ElementMixin.initElement(self, line=LinePref(), fill=FillPref())
+        ElementMixin.initElement(self)
         self._rect = QRectF()
         self._shape = QPainterPath()
         self._path_in = self._buildPath(self._PATH_IN)
@@ -46,7 +50,7 @@ class SignalArrow(ElementMixin, QGraphicsItem):
 
     def onGeometryChange(self : Self) -> None:
         self.prepareGeometryChange()
-        w = self.appearance.line.pen.width()
+        w = self.line.pen.width()
         hw = w * 2 # TODO investigate clipping, this shouldn't be needed
         s = self._SIZE
         self._rect.setRect(-(hw/2), -(s+w)/2, s+hw, s+w)
@@ -83,6 +87,6 @@ class SignalArrow(ElementMixin, QGraphicsItem):
         option  : QStyleOptionGraphicsItem,
         widget  : Optional[QWidget] = None
     ) -> None:
-        painter.setPen(self.appearance.line.pen)
-        painter.setBrush(self.appearance.fill.brush)
+        painter.setPen(self.line.pen)
+        painter.setBrush(self.fill.brush)
         painter.drawPath(self._path)

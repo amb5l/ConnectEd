@@ -7,7 +7,7 @@ from PyQt6.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, \
 
 from ... import hub
 
-from ..drawing.items import ElementMixin, QuillPref, QuillPrefChange
+from ..drawing.items import ElementQuillMixin, QuillPref, QuillPrefChange
 
 from .appearance import TextAppearanceLayout
 
@@ -26,7 +26,7 @@ class TextDialog(QDialog):
 
     def __init__(
         self    : Self,
-        element : ElementMixin
+        element : ElementQuillMixin
     ):
         super().__init__(hub.main_window)
         self.setWindowTitle("Text")
@@ -40,15 +40,15 @@ class TextDialog(QDialog):
         self.text_layout.addWidget(self.text_edit)
         self.dialog_layout.addLayout(self.text_layout)
 
-        initial = element.appearance.quill.getPref()
-        defaults = element.getDefaults()
+        initial = element.quill.getPref()
+        defaults = element.quill.getDefaults()
         default = QuillPref(
-            color     = defaults.text.color,
-            family    = defaults.text.family,
-            size      = defaults.text.size,
-            bold      = defaults.text.bold,
-            italic    = defaults.text.italic,
-            underline = defaults.text.underline
+            color     = defaults.color,
+            family    = defaults.family,
+            size      = defaults.size,
+            bold      = defaults.bold,
+            italic    = defaults.italic,
+            underline = defaults.underline
         )
         self.appearance_layout = TextAppearanceLayout(initial, default)
         self.dialog_layout.addLayout(self.appearance_layout)

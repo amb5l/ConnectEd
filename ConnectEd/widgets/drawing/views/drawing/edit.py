@@ -2,10 +2,13 @@ from PyQt6.QtCore import QPointF
 
 from .....core import logger, paste
 
-from ....dialogs import AppearanceDialog, PropertiesDialog, PropertyTextDialog
+from ....dialogs import TextDialog, AppearanceDialog, \
+                        PropertiesDialog, PropertyTextDialog
 
 from ...scenes import DrawingScene
 from ...items  import BeforeAfter, ElementMixin, KeyPoint, PropertyText
+
+from ...items.base_text import BaseText
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -267,23 +270,24 @@ class DrawingViewEditMixin:
             self.scene().clearSelection()
             self.state.go(self.stateEditResize1)
 
+    def editText(self : "DrawingView", element: BaseText) -> None:
+        self.state.go(self.stateIdle) # TODO have state/tip for dialog
+        scene : DrawingScene = self.scene()
+        dialog = TextDialog(element)
+        if dialog.exec():
+            scene.editText(element, *dialog.getChoice())
+
     def editPropertyText(self : "DrawingView", element: PropertyText) -> None:
+        self.state.go(self.stateIdle) # TODO have state/tip for dialog
         scene : DrawingScene = self.scene()
         dialog = PropertyTextDialog(element)
         if dialog.exec():
-            name_before = element.name()
-            name_after = dialog.getName()
-            name_change = None if name_before == name_after else \
-                BeforeAfter(str, name_before, name_after)
-            value_before = element.value()
-            value_after = dialog.getValue()
-            value_change = None if value_before == value_after else \
-                BeforeAfter(str, value_before, value_after)
-            appearance_change = dialog.getAppearanceChange()
             scene.editPropertyText(
-                element, name_change, value_change, appearance_change
+                element,
+                dialog.getName(),
+                dialog.getValue(),
+                dialog.getAppearanceChange()
             )
-        self.state.go(self.stateIdle)
 
     def editAppearance(
         self : "DrawingView",

@@ -8,8 +8,11 @@ from PyQt6.QtGui     import QPainter, QPainterPath, QPainterPathStroker
 
 from ....core   import logger, Z_DRAWING
 
-from . import ElementMixin, cmdPlaceElement, \
-              EdgeLoc, Edge, AttrSpec, KP, KPDef, LinePref, FillPref
+from . import EdgeLoc, Edge, AttrSpec, KP, KPDef, LinePref, FillPref, \
+              ElementLineMixin, \
+              ElementFillMixin, \
+              ElementMixin, \
+              cmdPlaceElement
 
 from .port_pin      import BasePin
 from .property_text import PropertyText
@@ -17,7 +20,12 @@ from .property_text import PropertyText
 from .... import hub
 
 
-class BaseRectangle(ElementMixin, QGraphicsRectItem):
+class BaseRectangle(
+    ElementLineMixin,
+    ElementFillMixin,
+    ElementMixin,
+    QGraphicsRectItem
+):
     """Base class for rectangle elements."""
 
     # class variables
@@ -40,8 +48,8 @@ class BaseRectangle(ElementMixin, QGraphicsRectItem):
     ]
     _ATTR_SPECS = \
         _ATTR_SPECS_BASIC + \
-        ElementMixin._ATTR_SPECS_APPEARANCE_LINE + \
-        ElementMixin._ATTR_SPECS_APPEARANCE_FILL
+        ElementLineMixin._ATTR_SPECS_LINE + \
+        ElementFillMixin._ATTR_SPECS_FILL
     MIN_SIZE = QSizeF(1.0, 1.0)
     _KEY_POINTS = [KPDef(k, True, True) for k in KP.__iter__()]
 
@@ -92,7 +100,7 @@ class BaseRectangle(ElementMixin, QGraphicsRectItem):
         bare : bool = False
     ) -> None:
         super().__init__()
-        self.initElement(line=LinePref(), fill=FillPref(), text=None, bare=bare)
+        self.initElement(bare=bare)
         if isinstance(a1, QRectF):
             self.setRect(a1)
         elif isinstance(a1, QPointF) and isinstance(a2, QSizeF):
@@ -107,7 +115,7 @@ class BaseRectangle(ElementMixin, QGraphicsRectItem):
 
     def onGeometryChange(self : Self) -> None:
         self.prepareGeometryChange()
-        pen_width = self.appearance.line.pen.widthF()
+        pen_width = self.line.pen.widthF()
         tolerance = hub.settings.get("display/select/tolerance")
         stroke_width = pen_width + (2 * tolerance)
         rect_path = QPainterPath()
@@ -118,7 +126,7 @@ class BaseRectangle(ElementMixin, QGraphicsRectItem):
         stroker.setJoinStyle(Qt.PenJoinStyle.MiterJoin)
         stroker_path = stroker.createStroke(rect_path)
         self._bounding_rect = stroker_path.boundingRect()
-        if self.appearance.fill.brush.style() != Qt.BrushStyle.NoBrush:
+        if self.fill.brush.style() != Qt.BrushStyle.NoBrush:
             self._shape = rect_path.united(stroker_path)
         else:
             self._shape = stroker_path
@@ -170,8 +178,8 @@ class BaseRectangle(ElementMixin, QGraphicsRectItem):
         option  : QStyleOptionGraphicsItem,
         widget  : QWidget
     ) -> None:
-        painter.setPen(self.appearance.line.pen)
-        painter.setBrush(self.appearance.fill.brush)
+        painter.setPen(self.line.pen)
+        painter.setBrush(self.fill.brush)
         painter.drawRect(self._rect)
 
     def setSize(self : Self, size : QSizeF) -> None:

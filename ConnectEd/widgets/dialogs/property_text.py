@@ -56,15 +56,15 @@ class PropertyTextDialog(QDialog):
         self.name_value_layout.addWidget(self.value_edit, 1, 1)
         self.dialog_layout.addLayout(self.name_value_layout)
 
-        initial = element.appearance.quill.getPref()
-        defaults = element.getDefaults()
+        initial = element.quill.getPref()
+        defaults = element.quill.getDefaults()
         default = QuillPref(
-            color     = defaults.text.color,
-            family    = defaults.text.family,
-            size      = defaults.text.size,
-            bold      = defaults.text.bold,
-            italic    = defaults.text.italic,
-            underline = defaults.text.underline
+            color     = defaults.color,
+            family    = defaults.family,
+            size      = defaults.size,
+            bold      = defaults.bold,
+            italic    = defaults.italic,
+            underline = defaults.underline
         )
         self.appearance_layout = TextAppearanceLayout(initial, default)
         self.dialog_layout.addLayout(self.appearance_layout)

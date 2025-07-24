@@ -40,7 +40,7 @@ class PropertyText(TetherText):
     _ATTR_SPECS = \
         TetherText._ATTR_SPECS_BASIC + \
         _ATTR_SPECS_TEXT + \
-        TetherText._ATTR_SPECS_APPEARANCE_QUILL
+        TetherText._ATTR_SPECS_QUILL
 
     # instance variables
     _name    : str
@@ -159,8 +159,8 @@ class PropertyText(TetherText):
             anchor  = self.anchor(),
             cleat   = self.cleat()
          )
-        clone.appearance.quill = QuillColorFont(
-            clone, self.appearance.quill.getPref()
+        clone.quill = QuillColorFont(
+            clone, self.quill.getPref()
         )
         return clone
 

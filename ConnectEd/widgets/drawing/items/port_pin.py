@@ -113,7 +113,7 @@ class PortPinMixin:
         option.state &= ~QStyle.StateFlag.State_Selected
         super().paint(painter, option, widget)
         if self.isSelected():
-            painter.setPen(self._node.appearance.outline.pen)
+            painter.setPen(self._node.outline.pen)
             painter.drawRect(self._rect)
 
     def _nodeRect(self : Self) -> QRectF:
@@ -397,7 +397,7 @@ class BasePin(ElementCloneMixin, PortPinMixin, QGraphicsItemGroup):
     def _namePos(self : Self) -> QPointF:
         """Pin specific (includes inner/outer)."""
         parent : "BaseRectWithPins" = self.parentItem()
-        parent_edge_width = parent.appearance.line.pen.width() if parent else 0
+        parent_edge_width = parent.line.pen.width() if parent else 0
         name_offset = parent_edge_width + self._NAME_GAP
         if hasattr(self, "_inner"):
             name_offset += self._inner._SIZE

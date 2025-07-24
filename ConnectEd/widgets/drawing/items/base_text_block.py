@@ -8,15 +8,23 @@ from PyQt6.QtWidgets import QWidget, QStyleOptionGraphicsItem, QStyle, \
 from PyQt6.QtGui     import QColor, QPainter, QPainterPath, \
                             QKeyEvent, QFocusEvent, QTextCursor
 
-from . import ElementMenuMixin, ElementMixin, cmdPlaceElement, \
-              AttrSpec, KP, KPDef, QuillPref
+from . import AttrSpec, KP, KPDef, QuillPref, \
+              ElementQuillMixin, \
+              ElementMenuMixin, \
+              ElementMixin, \
+              cmdPlaceElement
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from .. import DrawingScene
 
 
-class BaseTextBlock(ElementMenuMixin, ElementMixin, QGraphicsTextItem):
+class BaseTextBlock(
+    ElementQuillMixin,
+    ElementMenuMixin,
+    ElementMixin,
+    QGraphicsTextItem
+):
     # class variables
     _ATTR_SPECS_TEXT = [
         AttrSpec(
@@ -30,7 +38,7 @@ class BaseTextBlock(ElementMenuMixin, ElementMixin, QGraphicsTextItem):
     _ATTR_SPECS = \
         ElementMixin._ATTR_SPECS_BASIC + \
         _ATTR_SPECS_TEXT + \
-        ElementMixin._ATTR_SPECS_APPEARANCE_QUILL
+        ElementQuillMixin._ATTR_SPECS_QUILL
     _KEY_POINTS = [KPDef(k, False, False) for k in KP.__iter__()]
 
     # instance variables
@@ -47,7 +55,7 @@ class BaseTextBlock(ElementMenuMixin, ElementMixin, QGraphicsTextItem):
         self._rect = QRectF()
         self._shape = QPainterPath()
         super().__init__(text)
-        self.initElement(line=None, fill=None, text=QuillPref(), bare=bare)
+        self.initElement(bare=bare)
         self.setPos(pos)
         self.setAnchor(anchor)
         self.setEditable(False)
@@ -145,7 +153,7 @@ class BaseTextBlock(ElementMenuMixin, ElementMixin, QGraphicsTextItem):
             self.setDefaultTextColor(c)
         super().paint(painter, option, widget)
         if self.isSelected():
-            painter.setPen(self.appearance.outline.pen)
+            painter.setPen(self.outline.pen)
             painter.drawRect(self.boundingRect())
 
     def moveKeyPoint(self : Self, kp : KP, delta : QPointF) -> None:

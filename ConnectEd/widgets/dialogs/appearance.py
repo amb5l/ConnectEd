@@ -1,6 +1,7 @@
 __all__ = ["AppearanceDialog", "TextAppearanceLayout"]
 
 from typing import Self, Optional
+from dataclasses import dataclass
 
 from PyQt6.QtCore    import Qt, QSize
 from PyQt6.QtWidgets import QWidget, QDialog, QColorDialog, \
@@ -14,10 +15,9 @@ from ...core import logger
 from ...core.icon import getDefaultIconSize, getFgBgColors, \
                          SvgIconSingleton, CharIconSingleton
 
-from ..drawing.items import ElementMixin, \
-                            AppearanceSpec, AppearancePrefChange, \
-                            LinePref, LinePrefDefault, LinePrefChange, \
-                            FillPref, FillPrefDefault, FillPrefChange, \
+from ..drawing.items import ElementLineMixin, ElementFillMixin, ElementQuillMixin, \
+                            LineSpec,LinePref, LinePrefDefault, LinePrefChange, \
+                            FillSpec, FillPref, FillPrefDefault, FillPrefChange, \
                             QuillSpec, QuillPref, QuillPrefDefault, QuillPrefChange, \
                             Default, DEFAULT, NoChange, NO_CHANGE
 
@@ -25,6 +25,24 @@ from . import okCancelLayout
 
 from ... import hub
 
+
+@dataclass
+class AppearanceSpec:
+    line : Optional[LineSpec] = None
+    fill : Optional[FillSpec] = None
+    text : Optional[QuillSpec] = None
+
+@dataclass
+class AppearancePref:
+    line : Optional[LinePref] = None
+    fill : Optional[FillPref] = None
+    text : Optional[QuillPref] = None
+
+@dataclass
+class AppearancePrefChange:
+    line : Optional[LinePrefChange] = None
+    fill : Optional[FillPrefChange] = None
+    text : Optional[QuillPrefChange] = None
 
 CUSTOM_ICON_SIZE = QSize(getDefaultIconSize() * 2, getDefaultIconSize())
 
@@ -840,7 +858,7 @@ class AppearanceDialog(QDialog):
 
     def __init__(
         self     : Self,
-        elements : list[ElementMixin]
+        elements : list[ElementLineMixin | ElementFillMixin |ElementQuillMixin]
     ) -> None:
         super().__init__(hub.main_window)
         initial   = AppearancePrefChange()
@@ -889,7 +907,7 @@ class AppearanceDialog(QDialog):
                         i_subcat = NO_CHANGE
                     setattr(i_cat, subcat_name, i_subcat)
                     # populate default values
-                    d = element.getDefaults()
+                    d = element.quill.getDefaults()
                     if not hasattr(d, cat_name):
                         logger.error(f"No {cat_name} defaults for element {element}")
                         continue

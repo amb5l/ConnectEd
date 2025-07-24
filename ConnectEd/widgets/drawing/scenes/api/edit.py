@@ -3,6 +3,8 @@ __all__ = [
     "cmdEditDelete",
     "cmdEditDuplicate",
     "cmdEditMove",
+    "cmdEditText",
+    "cmdEditPropertyText",
     "cmdEditAppearance",
     "cmdEditProperties",
     "DrawingSceneApiEditMixin"
@@ -15,12 +17,14 @@ from PyQt6.QtGui  import QUndoCommand
 
 from .....core import logger,copy, paste
 
+from ....dialogs.appearance import AppearancePref, AppearancePrefChange
 from ....dialogs.properties import PropertiesType
 
 from ...items import BeforeAfter, ElementMixin, cmdElement, cmdElements, \
-                     AppearancePref, AppearancePrefChange, \
                      QuillPref, QuillPrefChange, \
                      clone
+
+from ...items.base_text import BaseText
 
 from ...items.property_text import PropertyText
 
@@ -184,41 +188,77 @@ class cmdEditMove(cmdElements):
             element.moveBy(-self._offset.x(), -self._offset.y())
             # TODO: add slide logic
 
-class cmdEditPropertyText(cmdElement):
-    _element           : PropertyText
-    _name_change       : Optional[BeforeAfter[str]]
-    _value_change      : Optional[BeforeAfter[str]]
+class cmdEditText(cmdElement):
+    _element           : BaseText
+    _text_before       : str
+    _text_after        : str
     _appearance_before : QuillPref
     _appearance_after  : QuillPrefChange
 
     def __init__(
-        self              : Self,
-        scene             : "DrawingScene",
-        element           : PropertyText,
-        name_change       : Optional[BeforeAfter[str]],
-        value_change      : Optional[BeforeAfter[str]],
-        appearance_change : QuillPrefChange
+        self       : Self,
+        scene      : "DrawingScene",
+        element    : BaseText,
+        text       : str,
+        appearance : QuillPrefChange
     ):
         super().__init__(scene, element)
         self._element           = element
-        self._name_change       = name_change
-        self._value_change      = value_change
-        self._appearance_before = element.appearance.quill.getPref()
-        self._appearance_after  = appearance_change
+        self._text_before       = element.text()
+        self._text_after        = text
+        self._appearance_before = element.quill.getPref()
+        self._appearance_after  = appearance
 
     def redo(self : Self) -> None:
-        if self._name_change is not None:
-            self._element.setName(self._name_change.after)
-        if self._value_change is not None:
-            self._element.setValue(self._value_change.after)
-        self._element.appearance.quill.setPref(self._appearance_after)
+        self._element.setText(self._text_after)
+        self._element.quill.setPref(self._appearance_after)
+        self._element.update()
 
     def undo(self : Self) -> None:
-        if self._name_change is not None:
-            self._element.setName(self._name_change.before)
-        if self._value_change is not None:
-            self._element.setValue(self._value_change.before)
-        self._element.appearance.quill.setPref(self._appearance_before)
+        self._element.setText(self._text_before)
+        self._element.quill.setPref(self._appearance_before)
+        self._element.update()
+
+    def mergeWith(self : Self, other : QUndoCommand) -> bool:
+        return False
+
+class cmdEditPropertyText(cmdElement):
+    _element           : PropertyText
+    _name_before       : str
+    _name_after        : str
+    _value_before      : str
+    _value_after       : str
+    _appearance_before : QuillPref
+    _appearance_after  : QuillPrefChange
+
+    def __init__(
+        self       : Self,
+        scene      : "DrawingScene",
+        element    : PropertyText,
+        name       : str,
+        value      : str,
+        appearance : QuillPrefChange
+    ):
+        super().__init__(scene, element)
+        self._element           = element
+        self._name_before       = element.name()
+        self._name_after        = name
+        self._value_before      = element.value()
+        self._value_after       = value
+        self._appearance_before = element.quill.getPref()
+        self._appearance_after  = appearance
+
+    def redo(self : Self) -> None:
+        self._element.setName(self._name_after)
+        self._element.setValue(self._value_after)
+        self._element.quill.setPref(self._appearance_after)
+        self._element.update()
+
+    def undo(self : Self) -> None:
+        self._element.setName(self._name_before)
+        self._element.setValue(self._value_before)
+        self._element.quill.setPref(self._appearance_before)
+        self._element.update()
 
     def mergeWith(self : Self, other : QUndoCommand) -> bool:
         return False
@@ -397,15 +437,23 @@ class DrawingSceneApiEditMixin:
     ) -> None:
         self.undo_stack.push(cmdEditMove(self, elements, offset, slide))
 
+    def editText(
+        self       : "DrawingScene",
+        element    : BaseText,
+        text       : str,
+        appearance : QuillPrefChange
+    ) -> None:
+        self.undo_stack.push(cmdEditText(self, element, text, appearance))
+
     def editPropertyText(
-        self              : "DrawingScene",
-        element           : PropertyText,
-        name_change       : Optional[BeforeAfter[str]],
-        value_change      : Optional[BeforeAfter[str]],
-        appearance_change : QuillPrefChange
+        self       : "DrawingScene",
+        element    : PropertyText,
+        name       : str,
+        value      : str,
+        appearance : QuillPrefChange
     ) -> None:
         self.undo_stack.push(cmdEditPropertyText(
-            self, element, name_change, value_change, appearance_change
+            self, element, name, value, appearance
         ))
 
     def editProperties(

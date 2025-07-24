@@ -6,13 +6,18 @@ from PyQt6.QtCore    import QRectF
 from PyQt6.QtWidgets import QWidget, QStyleOptionGraphicsItem, QGraphicsItem
 from PyQt6.QtGui     import QPainter, QPainterPath
 
-from . import LinePref, FillPref, ElementMixin
+from . import ElementLineMixin, ElementFillMixin, ElementMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from .port_pin import BasePin
 
-class Node(ElementMixin, QGraphicsItem):
+class Node(
+    ElementLineMixin,
+    ElementFillMixin,
+    ElementMixin,
+    QGraphicsItem
+):
     # class attributes
     _SIZE = 4
 
@@ -27,7 +32,7 @@ class Node(ElementMixin, QGraphicsItem):
         parent : "BasePin"
     ) -> None:
         QGraphicsItem.__init__(self, parent)
-        ElementMixin.initElement(self, line=LinePref(), fill=FillPref())
+        ElementMixin.initElement(self)
         self._rect = QRectF()
         self._shape = QPainterPath()
         s = self._SIZE / 2
@@ -42,7 +47,7 @@ class Node(ElementMixin, QGraphicsItem):
 
     def onGeometryChange(self : Self) -> None:
         self.prepareGeometryChange()
-        s = (self._SIZE + self.appearance.line.pen.width()) / 2
+        s = (self._SIZE + self.line.pen.width()) / 2
         self._rect.setRect(-s, -s, 2*s, 2*s)
         self._shape.clear()
         self._shape.addRect(self._rect)
@@ -59,6 +64,6 @@ class Node(ElementMixin, QGraphicsItem):
         option  : QStyleOptionGraphicsItem,
         widget  : Optional[QWidget] = None
     ) -> None:
-        painter.setPen(self.appearance.line.pen)
-        painter.setBrush(self.appearance.fill.brush)
+        painter.setPen(self.line.pen)
+        painter.setBrush(self.fill.brush)
         painter.drawPath(self._path_open)

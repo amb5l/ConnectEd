@@ -52,7 +52,7 @@ class Tether(QGraphicsItem):
         anchor_pos = self._item._kpm.anchor_offset
         cleat_pos_parent = parent._kpm.key_points[self._item._cleat].pos()
         cleat_pos_local = self._item.mapFromParent(cleat_pos_parent)
-        painter.setPen(self._item.appearance.outline.pen)
+        painter.setPen(self._item.outline.pen)
         painter.drawLine(anchor_pos, cleat_pos_local)
 
 # Understanding positioning:
@@ -77,7 +77,7 @@ class TetherText(BaseText):
     _ATTR_SPECS = \
         _ATTR_SPECS_BASIC + \
         BaseText._ATTR_SPECS_TEXT + \
-        BaseText._ATTR_SPECS_APPEARANCE_QUILL
+        BaseText._ATTR_SPECS_QUILL
 
     # instance variables
     _cleat   : KP
@@ -150,7 +150,7 @@ class TetherText(BaseText):
     def clone(self : Self) -> Self:
         """Create a clone of this TetherText with a new UUID."""
         clone = TetherText(self.pos(), self.anchor(), self.cleat())
-        clone.appearance.quill = QuillColorFont(
-            clone, self.appearance.quill.getPref()
+        clone.quill = QuillColorFont(
+            clone, self.quill.getPref()
         )
         return clone
