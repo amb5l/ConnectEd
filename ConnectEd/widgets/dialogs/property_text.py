@@ -9,7 +9,7 @@ from PyQt6.QtCore import Qt
 
 from ...core import logger
 
-from ..drawing.items import PropertyText, TextPref, TextPrefChange
+from ..drawing.items import PropertyText, QuillPref, QuillPrefChange
 
 from .appearance import TextAppearanceLayout
 
@@ -56,9 +56,9 @@ class PropertyTextDialog(QDialog):
         self.name_value_layout.addWidget(self.value_edit, 1, 1)
         self.dialog_layout.addLayout(self.name_value_layout)
 
-        initial = element.appearance.text.getPref()
+        initial = element.appearance.quill.getPref()
         defaults = element.getDefaults()
-        default = TextPref(
+        default = QuillPref(
             color     = defaults.text.color,
             family    = defaults.text.family,
             size      = defaults.text.size,
@@ -87,5 +87,5 @@ class PropertyTextDialog(QDialog):
     def getValue(self : Self) -> str:
         return self.value_edit.text()
 
-    def getAppearanceChange(self : Self) -> TextPrefChange:
+    def getAppearanceChange(self : Self) -> QuillPrefChange:
         return self.appearance_layout.getChoice()

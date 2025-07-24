@@ -7,7 +7,7 @@ from PyQt6.QtWidgets import QWidget, QGraphicsItem, QStyleOptionGraphicsItem, \
                             QGraphicsSceneMouseEvent
 from PyQt6.QtGui     import QPainter
 
-from . import ElementMixin, TextColorFont,\
+from . import ElementMixin, QuillColorFont,\
               AttrSpec, KP, KPManager
 
 from .base_text import BaseText
@@ -77,7 +77,7 @@ class TetherText(BaseText):
     _ATTR_SPECS = \
         _ATTR_SPECS_BASIC + \
         BaseText._ATTR_SPECS_TEXT + \
-        BaseText._ATTR_SPECS_APPEARANCE_TEXT
+        BaseText._ATTR_SPECS_APPEARANCE_QUILL
 
     # instance variables
     _cleat   : KP
@@ -150,7 +150,7 @@ class TetherText(BaseText):
     def clone(self : Self) -> Self:
         """Create a clone of this TetherText with a new UUID."""
         clone = TetherText(self.pos(), self.anchor(), self.cleat())
-        clone.appearance.text = TextColorFont(
-            clone, self.appearance.text.getPref()
+        clone.appearance.quill = QuillColorFont(
+            clone, self.appearance.quill.getPref()
         )
         return clone

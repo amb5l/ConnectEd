@@ -5,7 +5,7 @@ from PyQt6.QtWidgets import QWidget, QStyleOptionGraphicsItem, QStyle, \
                             QGraphicsSimpleTextItem
 from PyQt6.QtGui     import QPainter, QPen, QBrush
 
-from . import TextPref, AttrSpec, KP, KPDef, \
+from . import QuillPref, AttrSpec, KP, KPDef, \
               ElementMenuMixin, ElementMixin, cmdPlaceElement
 
 
@@ -23,7 +23,7 @@ class BaseText(ElementMenuMixin, ElementMixin, QGraphicsSimpleTextItem):
     _ATTR_SPECS = \
         ElementMixin._ATTR_SPECS_BASIC + \
         _ATTR_SPECS_TEXT + \
-        ElementMixin._ATTR_SPECS_APPEARANCE_TEXT
+        ElementMixin._ATTR_SPECS_APPEARANCE_QUILL
     _KEY_POINTS = [KPDef(k, False, False) for k in KP.__iter__()]
     _ANCHORED = True
 
@@ -38,7 +38,7 @@ class BaseText(ElementMenuMixin, ElementMixin, QGraphicsSimpleTextItem):
         bare   : bool = False
     ) -> None:
         QGraphicsSimpleTextItem.__init__(self)
-        self.initElement(line=None, fill=None, text=TextPref(), bare=bare)
+        self.initElement(line=None, fill=None, text=QuillPref(), bare=bare)
         self.setAnchor(anchor)
         self.setPos(pos)
         self.setText(text)
@@ -64,7 +64,7 @@ class BaseText(ElementMenuMixin, ElementMixin, QGraphicsSimpleTextItem):
         widget  : QWidget
     ) -> None:
         self.setPen(QPen(Qt.PenStyle.NoPen))
-        self.setBrush(QBrush(self.appearance.text.current))
+        self.setBrush(QBrush(self.appearance.quill.current))
         option.state &= ~QStyle.StateFlag.State_Selected
         super().paint(painter, option, widget)
         if self.isSelected():

@@ -19,7 +19,7 @@ from ....dialogs.properties import PropertiesType
 
 from ...items import BeforeAfter, ElementMixin, cmdElement, cmdElements, \
                      AppearancePref, AppearancePrefChange, \
-                     TextPref, TextPrefChange, \
+                     QuillPref, QuillPrefChange, \
                      clone
 
 from ...items.property_text import PropertyText
@@ -188,8 +188,8 @@ class cmdEditPropertyText(cmdElement):
     _element           : PropertyText
     _name_change       : Optional[BeforeAfter[str]]
     _value_change      : Optional[BeforeAfter[str]]
-    _appearance_before : TextPref
-    _appearance_after  : TextPrefChange
+    _appearance_before : QuillPref
+    _appearance_after  : QuillPrefChange
 
     def __init__(
         self              : Self,
@@ -197,13 +197,13 @@ class cmdEditPropertyText(cmdElement):
         element           : PropertyText,
         name_change       : Optional[BeforeAfter[str]],
         value_change      : Optional[BeforeAfter[str]],
-        appearance_change : TextPrefChange
+        appearance_change : QuillPrefChange
     ):
         super().__init__(scene, element)
         self._element           = element
         self._name_change       = name_change
         self._value_change      = value_change
-        self._appearance_before = element.appearance.text.getPref()
+        self._appearance_before = element.appearance.quill.getPref()
         self._appearance_after  = appearance_change
 
     def redo(self : Self) -> None:
@@ -211,14 +211,14 @@ class cmdEditPropertyText(cmdElement):
             self._element.setName(self._name_change.after)
         if self._value_change is not None:
             self._element.setValue(self._value_change.after)
-        self._element.appearance.text.setPref(self._appearance_after)
+        self._element.appearance.quill.setPref(self._appearance_after)
 
     def undo(self : Self) -> None:
         if self._name_change is not None:
             self._element.setName(self._name_change.before)
         if self._value_change is not None:
             self._element.setValue(self._value_change.before)
-        self._element.appearance.text.setPref(self._appearance_before)
+        self._element.appearance.quill.setPref(self._appearance_before)
 
     def mergeWith(self : Self, other : QUndoCommand) -> bool:
         return False
@@ -241,7 +241,7 @@ class cmdEditAppearance(cmdElements):
             p = AppearancePref()
             p.line = a.line.getPref() if a.line is not None else None
             p.fill = a.fill.getPref() if a.fill is not None else None
-            p.text = a.text.getPref() if a.text is not None else None
+            p.text = a.quill.getPref() if a.quill is not None else None
             self._before[e] = p
 
     def redo(self) -> None:
@@ -250,7 +250,7 @@ class cmdEditAppearance(cmdElements):
             a = e.appearance
             if a.line is not None: a.line.setPref(c.line)
             if a.fill is not None: a.fill.setPref(c.fill)
-            if a.text is not None: a.text.setPref(c.text)
+            if a.quill is not None: a.quill.setPref(c.text)
             e.update()
 
     def undo(self) -> None:
@@ -259,7 +259,7 @@ class cmdEditAppearance(cmdElements):
             c = self._before[e]
             if a.line is not None: a.line.setPref(c.line)
             if a.fill is not None: a.fill.setPref(c.fill)
-            if a.text is not None: a.text.setPref(c.text)
+            if a.quill is not None: a.quill.setPref(c.text)
             e.update()
 
     def mergeWith(self : Self, other : QUndoCommand) -> bool:
@@ -402,7 +402,7 @@ class DrawingSceneApiEditMixin:
         element           : PropertyText,
         name_change       : Optional[BeforeAfter[str]],
         value_change      : Optional[BeforeAfter[str]],
-        appearance_change : TextPrefChange
+        appearance_change : QuillPrefChange
     ) -> None:
         self.undo_stack.push(cmdEditPropertyText(
             self, element, name_change, value_change, appearance_change

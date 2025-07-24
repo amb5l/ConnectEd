@@ -7,7 +7,7 @@ from PyQt6.QtWidgets import QWidget, QStyleOptionGraphicsItem, QStyle, \
                             QGraphicsSimpleTextItem
 from PyQt6.QtGui     import QPainter, QPen, QBrush, QFontMetrics
 
-from . import TextPref, ElementMixin
+from . import QuillPref, ElementMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -26,7 +26,7 @@ class Annotation(ElementMixin, QGraphicsSimpleTextItem):
         parent : Optional["BasePin | Port"] = None
     ) -> None:
         QGraphicsSimpleTextItem.__init__(self, text, parent)
-        self.initElement(line=None, fill=None, text=TextPref(), bare=True)
+        self.initElement(line=None, fill=None, text=QuillPref(), bare=True)
         self._pos = pos
         self._anchor_offset = QPointF(0,0)
         self.onGeometryChange()
@@ -66,6 +66,6 @@ class Annotation(ElementMixin, QGraphicsSimpleTextItem):
     ) -> None:
         option.state &= ~QStyle.StateFlag.State_Selected
         self.setPen(QPen(Qt.PenStyle.NoPen))
-        self.setBrush(QBrush(self.appearance.text.current))
+        self.setBrush(QBrush(self.appearance.quill.current))
         super().paint(painter, option, widget)
 

@@ -6,7 +6,7 @@ from enum   import Enum
 from PyQt6.QtCore    import Qt, QPointF
 from PyQt6.QtWidgets import QGraphicsItem, QGraphicsSceneMouseEvent
 
-from . import AttrSpec, KP, TextColorFont
+from . import AttrSpec, KP, QuillColorFont
 
 from .tether_text import TetherText
 
@@ -40,7 +40,7 @@ class PropertyText(TetherText):
     _ATTR_SPECS = \
         TetherText._ATTR_SPECS_BASIC + \
         _ATTR_SPECS_TEXT + \
-        TetherText._ATTR_SPECS_APPEARANCE_TEXT
+        TetherText._ATTR_SPECS_APPEARANCE_QUILL
 
     # instance variables
     _name    : str
@@ -159,8 +159,8 @@ class PropertyText(TetherText):
             anchor  = self.anchor(),
             cleat   = self.cleat()
          )
-        clone.appearance.text = TextColorFont(
-            clone, self.appearance.text.getPref()
+        clone.appearance.quill = QuillColorFont(
+            clone, self.appearance.quill.getPref()
         )
         return clone
 

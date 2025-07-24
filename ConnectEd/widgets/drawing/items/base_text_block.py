@@ -9,7 +9,7 @@ from PyQt6.QtGui     import QColor, QPainter, QPainterPath, \
                             QKeyEvent, QFocusEvent, QTextCursor
 
 from . import ElementMenuMixin, ElementMixin, cmdPlaceElement, \
-              AttrSpec, KP, KPDef, TextPref
+              AttrSpec, KP, KPDef, QuillPref
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -30,7 +30,7 @@ class BaseTextBlock(ElementMenuMixin, ElementMixin, QGraphicsTextItem):
     _ATTR_SPECS = \
         ElementMixin._ATTR_SPECS_BASIC + \
         _ATTR_SPECS_TEXT + \
-        ElementMixin._ATTR_SPECS_APPEARANCE_TEXT
+        ElementMixin._ATTR_SPECS_APPEARANCE_QUILL
     _KEY_POINTS = [KPDef(k, False, False) for k in KP.__iter__()]
 
     # instance variables
@@ -47,7 +47,7 @@ class BaseTextBlock(ElementMenuMixin, ElementMixin, QGraphicsTextItem):
         self._rect = QRectF()
         self._shape = QPainterPath()
         super().__init__(text)
-        self.initElement(line=None, fill=None, text=TextPref(), bare=bare)
+        self.initElement(line=None, fill=None, text=QuillPref(), bare=bare)
         self.setPos(pos)
         self.setAnchor(anchor)
         self.setEditable(False)

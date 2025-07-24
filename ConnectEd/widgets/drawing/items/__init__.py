@@ -179,7 +179,7 @@ class FillPrefChange:
     style : Optional[ NoChange | Default | Qt.BrushStyle ] = None
 
 @dataclass
-class TextSpec:
+class QuillSpec:
     color     : QColor
     family    : str
     size      : float
@@ -188,7 +188,7 @@ class TextSpec:
     underline : bool
 
 @dataclass
-class TextPref:
+class QuillPref:
     color     : Default | QColor = DEFAULT
     family    : Default | str    = DEFAULT
     size      : Default | float  = DEFAULT
@@ -223,7 +223,7 @@ class TextPref:
         return cls(color, family, size, bold, italic, underline)
 
 @dataclass
-class TextPrefDefault:
+class QuillPrefDefault:
     color     : Optional[ Default | QColor ] = None
     family    : Optional[ Default | str    ] = None
     size      : Optional[ Default | float  ] = None
@@ -232,7 +232,7 @@ class TextPrefDefault:
     underline : Optional[ Default | bool   ] = None
 
 @dataclass
-class TextPrefChange:
+class QuillPrefChange:
     color     : Optional[ NoChange | Default | QColor ] = None
     family    : Optional[ NoChange | Default | str    ] = None
     size      : Optional[ NoChange | Default | float  ] = None
@@ -244,19 +244,19 @@ class TextPrefChange:
 class AppearanceSpec:
     line : Optional[LineSpec] = None
     fill : Optional[FillSpec] = None
-    text : Optional[TextSpec] = None
+    text : Optional[QuillSpec] = None
 
 @dataclass
 class AppearancePref:
     line : Optional[LinePref] = None
     fill : Optional[FillPref] = None
-    text : Optional[TextPref] = None
+    text : Optional[QuillPref] = None
 
 @dataclass
 class AppearancePrefChange:
     line : Optional[LinePrefChange] = None
     fill : Optional[FillPrefChange] = None
-    text : Optional[TextPrefChange] = None
+    text : Optional[QuillPrefChange] = None
 
 class LinePen:
     element  : "ElementMixin"
@@ -440,7 +440,7 @@ class FillBrush:
                     inst.setStyle(str2val(attr.value(), Qt.BrushStyle))
         return inst
 
-class TextColorFont:
+class QuillColorFont:
     element   : "ElementMixin"
     color     : Default | QColor
     family    : Default | str
@@ -456,8 +456,8 @@ class TextColorFont:
     def __init__(
         self    : Self,
         element : "ElementMixin",
-        pref    : TextPref = \
-                  TextPref(DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT)
+        pref    : QuillPref = \
+                  QuillPref(DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT)
     ) -> None:
         self.element   = element
         self.color     = pref.color
@@ -513,8 +513,8 @@ class TextColorFont:
         self.underline = underline
         self.onSettingsChange()
 
-    def getPref(self : Self) -> TextPref:
-        return TextPref(
+    def getPref(self : Self) -> QuillPref:
+        return QuillPref(
             self.color,
             self.family,
             self.size,
@@ -523,7 +523,7 @@ class TextColorFont:
             self.underline
         )
 
-    def setPref(self : Self, c : TextPref | TextPrefChange) -> None:
+    def setPref(self : Self, c : QuillPref | QuillPrefChange) -> None:
         if c.color     is not NO_CHANGE: self.color     = c.color
         if c.family    is not NO_CHANGE: self.family    = c.family
         if c.size      is not NO_CHANGE: self.size      = c.size
@@ -586,7 +586,7 @@ class TextColorFont:
     def fromXml(cls : Self, xr : QXmlStreamReader) -> Self:
         attributes = xr.attributes()
         xr.readNext()
-        element_text : TextColorFont = cls()
+        element_text : QuillColorFont = cls()
         for attr in attributes:
             v = attr.value()
             match attr.name():
@@ -614,7 +614,7 @@ class OutlinePen:
 class Appearance:
     line    : Optional[LinePen]       = None
     fill    : Optional[FillBrush]     = None
-    text    : Optional[TextColorFont] = None
+    quill   : Optional[QuillColorFont] = None
     outline : Optional[OutlinePen]    = None
 
 class ElementChangeMixin:
@@ -892,48 +892,48 @@ class ElementMixin(ElementChangeMixin, ElementCloneMixin, PropertiesMixin):
             setter    = lambda self, value: self.appearance.fill.setStyle(value)
         )
     ]
-    _ATTR_SPECS_APPEARANCE_TEXT = [
+    _ATTR_SPECS_APPEARANCE_QUILL = [
         AttrSpec(
             name      = "Text Color",
             type_name = "QColor",
-            exists    = lambda self: self.appearance.text is not None,
-            getter    = lambda self: self.appearance.text.getColor(),
-            setter    = lambda self, value: self.appearance.text.setColor(value)
+            exists    = lambda self: self.appearance.quill is not None,
+            getter    = lambda self: self.appearance.quill.getColor(),
+            setter    = lambda self, value: self.appearance.quill.setColor(value)
         ),
         AttrSpec(
             name      = "Text Font",
             type_name = "str",
-            exists    = lambda self: self.appearance.text is not None,
-            getter    = lambda self: self.appearance.text.getFamily(),
-            setter    = lambda self, value: self.appearance.text.setFamily(value)
+            exists    = lambda self: self.appearance.quill is not None,
+            getter    = lambda self: self.appearance.quill.getFamily(),
+            setter    = lambda self, value: self.appearance.quill.setFamily(value)
         ),
         AttrSpec(
             name      = "Text Size",
             type_name = "float",
-            exists    = lambda self: self.appearance.text is not None,
-            getter    = lambda self: self.appearance.text.getSize(),
-            setter    = lambda self, value: self.appearance.text.setSize(value)
+            exists    = lambda self: self.appearance.quill is not None,
+            getter    = lambda self: self.appearance.quill.getSize(),
+            setter    = lambda self, value: self.appearance.quill.setSize(value)
         ),
         AttrSpec(
             name      = "Text Bold",
             type_name = "bool",
-            exists    = lambda self: self.appearance.text is not None,
-            getter    = lambda self: self.appearance.text.getBold(),
-            setter    = lambda self, value: self.appearance.text.setBold(value)
+            exists    = lambda self: self.appearance.quill is not None,
+            getter    = lambda self: self.appearance.quill.getBold(),
+            setter    = lambda self, value: self.appearance.quill.setBold(value)
         ),
         AttrSpec(
             name      = "Text Italic",
             type_name = "bool",
-            exists    = lambda self: self.appearance.text is not None,
-            getter    = lambda self: self.appearance.text.getItalic(),
-            setter    = lambda self, value: self.appearance.text.setItalic(value)
+            exists    = lambda self: self.appearance.quill is not None,
+            getter    = lambda self: self.appearance.quill.getItalic(),
+            setter    = lambda self, value: self.appearance.quill.setItalic(value)
         ),
         AttrSpec(
             name      = "Text Underline",
             type_name = "bool",
-            exists    = lambda self: self.appearance.text is not None,
-            getter    = lambda self: self.appearance.text.getUnderline(),
-            setter    = lambda self, value: self.appearance.text.setUnderline(value)
+            exists    = lambda self: self.appearance.quill is not None,
+            getter    = lambda self: self.appearance.quill.getUnderline(),
+            setter    = lambda self, value: self.appearance.quill.setUnderline(value)
         )
     ]
     _KEY_POINTS : Optional[list["KP"]] = None
@@ -948,7 +948,7 @@ class ElementMixin(ElementChangeMixin, ElementCloneMixin, PropertiesMixin):
         self : Self,
         line : Optional[LinePref] = None,
         fill : Optional[FillPref] = None,
-        text : Optional[TextPref] = None,
+        text : Optional[QuillPref] = None,
         bare : bool = False
     ) -> None:
         self._settings_name = \
@@ -961,7 +961,7 @@ class ElementMixin(ElementChangeMixin, ElementCloneMixin, PropertiesMixin):
         if fill is not None:
             self.appearance.fill = FillBrush(self, fill)
         if text is not None:
-            self.appearance.text = TextColorFont(self, text)
+            self.appearance.quill = QuillColorFont(self, text)
         self.appearance.outline = OutlinePen()
         self.setZValue(self.Z)
         f = QGraphicsItem.GraphicsItemFlag
@@ -988,7 +988,7 @@ class ElementMixin(ElementChangeMixin, ElementCloneMixin, PropertiesMixin):
         self.prepareGeometryChange()
         if self.appearance.line is not None: self.appearance.line.onSettingsChange()
         if self.appearance.fill is not None: self.appearance.fill.onSettingsChange()
-        if self.appearance.text is not None: self.appearance.text.onSettingsChange()
+        if self.appearance.quill is not None: self.appearance.quill.onSettingsChange()
         self.appearance.outline.onSettingsChange()
         self.onGeometryChange()
 
@@ -998,7 +998,7 @@ class ElementMixin(ElementChangeMixin, ElementCloneMixin, PropertiesMixin):
     def onSelectionChange(self : Self, selected : bool) -> None:
         if self.appearance.line is not None: self.appearance.line.onSelectionChange(selected)
         if self.appearance.fill is not None: self.appearance.fill.onSelectionChange(selected)
-        if self.appearance.text is not None: self.appearance.text.onSelectionChange(selected)
+        if self.appearance.quill is not None: self.appearance.quill.onSelectionChange(selected)
         if self._kpm is not None:
             self._kpm.onSelectionChange(selected)
         self.update()
@@ -1020,7 +1020,7 @@ class ElementMixin(ElementChangeMixin, ElementCloneMixin, PropertiesMixin):
         r = SimpleNamespace()
         if self.appearance.line is not None: r.line = self.appearance.line.getDefaults()
         if self.appearance.fill is not None: r.fill = self.appearance.fill.getDefaults()
-        if self.appearance.text is not None: r.text = self.appearance.text.getDefaults()
+        if self.appearance.quill is not None: r.text = self.appearance.quill.getDefaults()
         return r
 
     def hasAnchor(self : Self) -> bool:
@@ -1196,9 +1196,9 @@ __all__ = [
     "FillSpec",
     "FillPref",
     "FillPrefChange",
-    "TextSpec",
-    "TextPref",
-    "TextPrefChange",
+    "QuillSpec",
+    "QuillPref",
+    "QuillPrefChange",
     "AppearanceSpec",
     "AppearancePref",
     "AppearancePrefChange",

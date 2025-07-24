@@ -18,7 +18,7 @@ from ..drawing.items import ElementMixin, \
                             AppearanceSpec, AppearancePrefChange, \
                             LinePref, LinePrefDefault, LinePrefChange, \
                             FillPref, FillPrefDefault, FillPrefChange, \
-                            TextSpec, TextPref, TextPrefDefault, TextPrefChange, \
+                            QuillSpec, QuillPref, QuillPrefDefault, QuillPrefChange, \
                             Default, DEFAULT, NoChange, NO_CHANGE
 
 from . import okCancelLayout
@@ -680,8 +680,8 @@ class FillAppearanceLayout(QGridLayout):
         return r
 
 class TextAppearanceLayout(QVBoxLayout):
-    no_change       : TextPrefChange
-    default         : TextPref
+    no_change       : QuillPrefChange
+    default         : QuillPref
     options_layout  : QGridLayout
     color_label     : QLabel
     color_combo     : ColorComboBox
@@ -698,9 +698,9 @@ class TextAppearanceLayout(QVBoxLayout):
     preview         : QLabel
 
     def __init__(self : Self,
-        initial   : TextPrefChange | TextPref,
-        default   : TextPref | TextSpec,
-        no_change : Optional[TextPrefChange] = None,
+        initial   : QuillPrefChange | QuillPref,
+        default   : QuillPref | QuillSpec,
+        no_change : Optional[QuillPrefChange] = None,
         parent    : Optional[QWidget] = None
     ) -> None:
         super().__init__(parent)
@@ -810,8 +810,8 @@ class TextAppearanceLayout(QVBoxLayout):
             self.preview.setFont(font)
             self.preview.setText("Sample Text")
 
-    def getChoice(self : Self) -> TextPrefChange:
-        r = TextPrefChange()
+    def getChoice(self : Self) -> QuillPrefChange:
+        r = QuillPrefChange()
         if hasattr(self, "color_combo"):
             r.color = self.color_combo.getChoice()
         if hasattr(self, "family_combo"):
@@ -865,7 +865,7 @@ class AppearanceDialog(QDialog):
                     if n_cat is None:
                         n_cat = LinePrefChange() if cat_name == "line" else \
                                 FillPrefChange() if cat_name == "fill" else \
-                                TextPrefChange() if cat_name == "text" else \
+                                QuillPrefChange() if cat_name == "text" else \
                                 None
                         setattr(no_change, cat_name, n_cat)
                     n_subcat = getattr(n_cat, subcat_name)
@@ -879,7 +879,7 @@ class AppearanceDialog(QDialog):
                     if i_cat is None:
                         i_cat = LinePrefChange() if cat_name == "line" else \
                                 FillPrefChange() if cat_name == "fill" else \
-                                TextPrefChange() if cat_name == "text" else \
+                                QuillPrefChange() if cat_name == "text" else \
                                 None
                         setattr(initial, cat_name, i_cat)
                     i_subcat = getattr(i_cat, subcat_name)
@@ -908,7 +908,7 @@ class AppearanceDialog(QDialog):
                     if v_cat is None:
                         v_cat = LinePrefDefault() if cat_name == "line" else \
                                 FillPrefDefault() if cat_name == "fill" else \
-                                TextPrefDefault() if cat_name == "text" else \
+                                QuillPrefDefault() if cat_name == "text" else \
                                 None
                         setattr(default, cat_name, v_cat)
                     v_subcat = getattr(v_cat, subcat_name)

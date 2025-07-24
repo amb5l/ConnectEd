@@ -7,7 +7,7 @@ from PyQt6.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, \
 
 from ... import hub
 
-from ..drawing.items import ElementMixin, TextPref, TextPrefChange
+from ..drawing.items import ElementMixin, QuillPref, QuillPrefChange
 
 from .appearance import TextAppearanceLayout
 
@@ -40,9 +40,9 @@ class TextDialog(QDialog):
         self.text_layout.addWidget(self.text_edit)
         self.dialog_layout.addLayout(self.text_layout)
 
-        initial = element.appearance.text.getPref()
+        initial = element.appearance.quill.getPref()
         defaults = element.getDefaults()
-        default = TextPref(
+        default = QuillPref(
             color     = defaults.text.color,
             family    = defaults.text.family,
             size      = defaults.text.size,
@@ -63,7 +63,7 @@ class TextDialog(QDialog):
             self.text_edit.selectAll()
             self.text_edit.setFocus()
 
-    def getChoice(self : Self) -> tuple[str, TextPrefChange]:
+    def getChoice(self : Self) -> tuple[str, QuillPrefChange]:
         text = self.text_edit.text()
         appearance = self.appearance_layout.getChoice()
         return text, appearance
