@@ -7,7 +7,7 @@ from PyQt6.QtWidgets import QWidget, QGraphicsItem, QStyleOptionGraphicsItem, \
                             QGraphicsSceneMouseEvent
 from PyQt6.QtGui     import QPainter
 
-from . import ElementMenuMixin, ElementMixin, TextColorFont,\
+from . import ElementMixin, TextColorFont,\
               AttrSpec, KP, KPManager
 
 from .base_text import BaseText
@@ -63,7 +63,7 @@ class Tether(QGraphicsItem):
 # and then anchor offset is subtracted.
 # This cleat-to-anchor pos is stored in _pos. Useful for cleat (keypoint) moves.
 
-class TetherText(ElementMenuMixin, BaseText):
+class TetherText(BaseText):
     # class variables
     _ATTR_SPECS_BASIC = [
         AttrSpec(

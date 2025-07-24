@@ -5,10 +5,11 @@ from PyQt6.QtWidgets import QWidget, QStyleOptionGraphicsItem, QStyle, \
                             QGraphicsSimpleTextItem
 from PyQt6.QtGui     import QPainter, QPen, QBrush
 
-from . import TextPref, AttrSpec, KP, KPDef, ElementMixin, cmdPlaceElement
+from . import TextPref, AttrSpec, KP, KPDef, \
+              ElementMenuMixin, ElementMixin, cmdPlaceElement
 
 
-class BaseText(ElementMixin, QGraphicsSimpleTextItem):
+class BaseText(ElementMenuMixin, ElementMixin, QGraphicsSimpleTextItem):
     # class variables
     _ATTR_SPECS_TEXT = [
         AttrSpec(

@@ -1038,20 +1038,6 @@ class ElementMixin(ElementChangeMixin, ElementCloneMixin, PropertiesMixin):
         else:
             raise NotImplementedError("setAnchor() is not implemented")
 
-    def ctxMenuAppearance(
-        self    : Self,
-        checked : bool,
-        view    : "DrawingView"
-    ) -> None:
-        view.editAppearance(self)
-
-    def ctxMenuProperties(
-        self    : Self,
-        checked : bool,
-        view    : "DrawingView"
-    ) -> None:
-        view.editProperties(self)
-
     def toXml(self : Self, xw : QXmlStreamWriter) -> None:
         xw.writeStartElement(self.__class__.__name__)
         toXmlAttrs(self, xw)
