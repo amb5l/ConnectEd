@@ -42,7 +42,8 @@ class BaseText(
     _ANCHORED = True
 
     # instance variables
-    _rect  : QRectF
+    _pos  : QPointF
+    _rect : QRectF
 
     def __init__(
         self   : Self,
@@ -58,21 +59,25 @@ class BaseText(
         self.setText(text)
         self.setFlag(self.GraphicsItemFlag.ItemIsSelectable , True)
 
+    def onGeometryChange(self : Self) -> None:
+        self.prepareGeometryChange()
+        self._rect = super().boundingRect()
+        self._kpm.updatePositions()
+
     def getMenuItems(self : Self) -> list[str]:
         return ["Edit..."]
 
     def setPos(self : Self, pos : QPointF) -> None:
+        self._pos = pos
         super().setPos(pos - self._kpm.anchor_offset)
 
     def pos(self : Self) -> QPointF:
-        return super().pos() + self._kpm.anchor_offset
+        return self._pos
 
     def setText(self, text: str) -> None:
-        current_pos = self.pos()
         super().setText(text)
-        self._rect = super().boundingRect()
-        self._kpm.updatePositions()
-        self.setPos(current_pos)
+        self.onGeometryChange()
+        self.setPos(self._pos)
 
     def paint(
         self    : Self,
