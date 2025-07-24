@@ -98,6 +98,36 @@ class KeyPoint(ElementMenuMixin, QGraphicsItem):
         self._actions = []
         self._manager.anchorChanged.connect(self.onGeometryChange)
 
+    def onSettingsChange(self : Self) -> None:
+        theme = hub.settings.getTheme("key_point")
+        self._pen.setColor(theme.line)
+        self._brush.setColor(theme.line)
+        self._radius = hub.settings.get("display/key_point/radius")
+        self.onGeometryChange()
+
+    def onGeometryChange(self : Self) -> None:
+        self.prepareGeometryChange()
+        r = self._radius
+        # update for hit testing
+        self._rect.setCoords(-r, -r, r, r)
+        self._shape.clear()
+        self._shape.addRect(self._rect)
+        # update normal appearance
+        self._normal.clear()
+        if self._resize: # resizable => circle
+            self._normal.addEllipse(self._rect)
+        else: # not resizable => rhombus
+            self._normal.moveTo(-r, 0)
+            self._normal.lineTo(0, -r)
+            self._normal.lineTo(r, 0)
+            self._normal.lineTo(0, r)
+            self._normal.closeSubpath()
+        # update anchor appearance
+        self._anchor.clear()
+        self._anchor.addRect(self._rect)
+        # set appearance
+        self._path = self._anchor if self._manager.anchor == self else self._normal
+
     def getMenuItems(self : Self) -> list[str]:
         items = []
         if self._resize:
@@ -128,36 +158,6 @@ class KeyPoint(ElementMenuMixin, QGraphicsItem):
 
     def moveBy(self : Self, dx : float, dy : float) -> None:
         self.parentItem().moveKeyPoint(self._loc, QPointF(dx, dy))
-
-    def onSettingsChange(self : Self) -> None:
-        theme = hub.settings.getTheme("key_point")
-        self._pen.setColor(theme.line)
-        self._brush.setColor(theme.line)
-        self._radius = hub.settings.get("display/key_point/radius")
-        self.onGeometryChange()
-
-    def onGeometryChange(self : Self) -> None:
-        self.prepareGeometryChange()
-        r = self._radius
-        # update for hit testing
-        self._rect.setCoords(-r, -r, r, r)
-        self._shape.clear()
-        self._shape.addRect(self._rect)
-        # update normal appearance
-        self._normal.clear()
-        if self._resize: # resizable => circle
-            self._normal.addEllipse(self._rect)
-        else: # not resizable => rhombus
-            self._normal.moveTo(-r, 0)
-            self._normal.lineTo(0, -r)
-            self._normal.lineTo(r, 0)
-            self._normal.lineTo(0, r)
-            self._normal.closeSubpath()
-        # update anchor appearance
-        self._anchor.clear()
-        self._anchor.addRect(self._rect)
-        # set appearance
-        self._path = self._anchor if self._manager.anchor == self else self._normal
 
     def isMoveable(self : Self) -> bool:
         return self._resize

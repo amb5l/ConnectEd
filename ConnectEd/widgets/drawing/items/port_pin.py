@@ -303,7 +303,6 @@ class BasePin(ElementCloneMixin, PortPinMixin, QGraphicsItemGroup):
         parent    : Optional["BaseRectWithPins"] = None,
         bare      : bool                         = False
     ) -> None:
-
         QGraphicsItemGroup.__init__(self, parent)
         if self._INNER_CLASS is not None:
             self._inner = self._INNER_CLASS(self)
