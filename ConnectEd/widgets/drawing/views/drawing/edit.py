@@ -6,7 +6,7 @@ from ....dialogs import TextDialog, AppearanceDialog, \
                         PropertiesDialog, PropertyTextDialog
 
 from ...scenes import DrawingScene
-from ...items  import BeforeAfter, ElementMixin, KeyPoint, PropertyText
+from ...items  import ElementMixin, KeyPoint, PropertyText
 
 from ...items.base_text import BaseText
 

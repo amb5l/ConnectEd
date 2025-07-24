@@ -1,7 +1,6 @@
 import uuid
 
-from typing      import TypeVar, Generic, Type, Optional, \
-                        Self, Optional, Callable, Any
+from typing      import Optional, Self, Optional, Callable, Any
 from types       import SimpleNamespace
 from dataclasses import dataclass
 from enum        import Enum
@@ -33,20 +32,6 @@ class NoChange:
 
 NO_CHANGE = NoChange()
 
-T = TypeVar('T')
-
-class BeforeAfter(Generic[T]):
-    before : Optional[T]
-    after  : Optional[T]
-
-    def __init__(self, typ: Type[T], before: Optional[T] = None, after: Optional[T] = None):
-        self.typ = typ
-        if before is not None and not isinstance(before, typ):
-            raise ValueError(f"before must be of type {typ.__name__} or None, got {type(before).__name__}")
-        if after is not None and not isinstance(after, typ):
-            raise ValueError(f"after must be of type {typ.__name__} or None, got {type(after).__name__}")
-        self.before = before
-        self.after = after
 
 class Edge(Enum):
     LEFT   = "left"
@@ -991,7 +976,9 @@ class ElementMixin(ElementChangeMixin, ElementCloneMixin, PropertiesMixin):
         self.onGeometryChange()
 
     def onGeometryChange(self : Self) -> None:
-        raise NotImplementedError("onGeometryChange() is not implemented")
+        raise NotImplementedError(
+            f"onGeometryChange() is not implemented in {self.__class__.__name__}"
+        )
 
     def onSelectionChange(self : Self, selected : bool) -> None:
         if hasattr(self, "line"): self.line.onSelectionChange(selected)
@@ -1175,7 +1162,6 @@ __all__ = [
     "DEFAULT",
     "NoChange",
     "NO_CHANGE",
-    "BeforeAfter",
     "Edge",
     "EdgeLoc",
     "SignalDirection",

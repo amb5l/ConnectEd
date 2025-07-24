@@ -20,7 +20,7 @@ from .....core import logger,copy, paste
 from ....dialogs.appearance import AppearancePref, AppearancePrefChange
 from ....dialogs.properties import PropertiesType
 
-from ...items import BeforeAfter, ElementMixin, cmdElement, cmdElements, \
+from ...items import ElementMixin, cmdElement, cmdElements, \
                      QuillPref, QuillPrefChange, \
                      clone
 
