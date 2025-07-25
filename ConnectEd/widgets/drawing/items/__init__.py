@@ -708,6 +708,27 @@ class ElementChangeMixin:
                     self.onSelectionChange(value)
         return super().itemChange(change, value)
 
+    def onSettingsChange(self : Self) -> None:
+        self.prepareGeometryChange()
+        if hasattr(self, "line"): self.line.onSettingsChange()
+        if hasattr(self, "fill"): self.fill.onSettingsChange()
+        if hasattr(self, "quill"): self.quill.onSettingsChange()
+        if hasattr(self, "outline"): self.outline.onSettingsChange()
+        self.onGeometryChange()
+
+    def onGeometryChange(self : Self) -> None:
+        raise NotImplementedError(
+            f"onGeometryChange() is not implemented in {self.__class__.__name__}"
+        )
+
+    def onSelectionChange(self : Self, selected : bool) -> None:
+        if hasattr(self, "line"): self.line.onSelectionChange(selected)
+        if hasattr(self, "fill"): self.fill.onSelectionChange(selected)
+        if hasattr(self, "quill"): self.quill.onSelectionChange(selected)
+        if self._kpm is not None:
+            self._kpm.onSelectionChange(selected)
+        self.update()
+
 class ElementMenuMixin:
     def contextMenuEvent(
         self  : Self,
@@ -1004,27 +1025,6 @@ class ElementMixin(ElementChangeMixin, ElementCloneMixin, ElementXmlMixin, Prope
         if not isinstance(other, ElementMixin):
             return NotImplemented
         return self.uuid == other.uuid
-
-    def onSettingsChange(self : Self) -> None:
-        self.prepareGeometryChange()
-        if hasattr(self, "line"): self.line.onSettingsChange()
-        if hasattr(self, "fill"): self.fill.onSettingsChange()
-        if hasattr(self, "quill"): self.quill.onSettingsChange()
-        if hasattr(self, "outline"): self.outline.onSettingsChange()
-        self.onGeometryChange()
-
-    def onGeometryChange(self : Self) -> None:
-        raise NotImplementedError(
-            f"onGeometryChange() is not implemented in {self.__class__.__name__}"
-        )
-
-    def onSelectionChange(self : Self, selected : bool) -> None:
-        if hasattr(self, "line"): self.line.onSelectionChange(selected)
-        if hasattr(self, "fill"): self.fill.onSelectionChange(selected)
-        if hasattr(self, "quill"): self.quill.onSelectionChange(selected)
-        if self._kpm is not None:
-            self._kpm.onSelectionChange(selected)
-        self.update()
 
     def setPosX(self : Self, value : float) -> None:
         pos = self.pos()
