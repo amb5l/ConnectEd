@@ -174,7 +174,6 @@ class KeyPoint(ElementMenuMixin, QGraphicsItem):
         checked : bool,
         view    : "DrawingView"
     ) -> None:
-        from ..views.drawing.defs import DrawingViewState as State
         view.editMoveBegin([self.parentItem()], self.scenePos())
         view.state.go(view.stateEditMove2)
 
@@ -183,7 +182,6 @@ class KeyPoint(ElementMenuMixin, QGraphicsItem):
         checked : bool,
         view    : "DrawingView"
     ) -> None:
-        from ..views.drawing.defs import DrawingViewState as State
         view.editMoveBegin([self], self.scenePos())
         view.state.go(view.stateEditMove2)
 
