@@ -984,8 +984,6 @@ class ElementXmlMixin:
 class ElementMixin(ElementChangeMixin, ElementCloneMixin, ElementXmlMixin, PropertiesMixin):
     """Mixin class for all elements."""
     Z = Z_DRAWING
-    _CAP_STYLE = Qt.PenCapStyle.SquareCap
-    _JOIN_STYLE = Qt.PenJoinStyle.MiterJoin
     _ATTR_SPECS_BASIC = [
         AttrSpec(
             name      = "Anchor",
