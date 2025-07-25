@@ -575,6 +575,30 @@ class OutlinePen:
         self.pen.setWidthF(hub.settings.get("display/select/outline/width"))
         self.pen.setStyle(hub.settings.get("display/select/outline/style"))
 
+class ElementKeypointsMixin:
+    _KEY_POINTS : Optional[list["KP"]] = None
+    _ANCHORED   : bool = False
+
+    _kpm : "KPManager"
+
+    def initKeypoints(self : Self) -> None:
+        self._kpm = KPManager(self, self._KEY_POINTS)
+
+    def hasAnchor(self : Self) -> bool:
+        return hasattr(self, "_kpm") and self._kpm.anchor is not None
+
+    def anchor(self : Self) -> "KP":
+        if hasattr(self, "_kpm"):
+            return self._kpm.anchor_loc
+        else:
+            raise NotImplementedError("anchor() is not implemented")
+
+    def setAnchor(self : Self, anchor : "KP") -> None:
+        if hasattr(self, "_kpm"):
+            self._kpm.setAnchor(anchor)
+        else:
+            raise NotImplementedError("setAnchor() is not implemented")
+
 class ElementLineMixin:
     _CAP_STYLE  = Qt.PenCapStyle.SquareCap
     _JOIN_STYLE = Qt.PenJoinStyle.MiterJoin
@@ -985,11 +1009,8 @@ class ElementMixin(ElementChangeMixin, ElementCloneMixin, ElementXmlMixin, Prope
             setter    = lambda self, value: self.setPosY(value)
         )
     ]
-    _KEY_POINTS : Optional[list["KP"]] = None
-    _ANCHORED   : bool = False
 
     uuid           : str
-    _kpm           : Optional["KPManager"]
 
     def initElement(self : Self, bare : bool = False) -> None:
         self.resetUuid()
@@ -1008,10 +1029,8 @@ class ElementMixin(ElementChangeMixin, ElementCloneMixin, ElementXmlMixin, Prope
         self.setFlag( f.ItemSendsScenePositionChanges , True )
         self.setCacheMode(QGraphicsItem.CacheMode.DeviceCoordinateCache)
         hub.settings.changed.connect(self.onSettingsChange)
-        if self._KEY_POINTS is not None:
-            self._kpm = KPManager(self, self._KEY_POINTS)
-        else:
-            self._kpm = None
+        if hasattr(self, "initKeypoints"):
+            self.initKeypoints()
         self.initProperties(bare)
 
     def __hash__(self):
@@ -1034,21 +1053,6 @@ class ElementMixin(ElementChangeMixin, ElementCloneMixin, ElementXmlMixin, Prope
 
     def resetUuid(self : Self) -> None:
         self.uuid = str(uuid.uuid4())
-
-    def hasAnchor(self : Self) -> bool:
-        return hasattr(self, "_kpm") and self._kpm.anchor is not None
-
-    def anchor(self : Self) -> "KP":
-        if hasattr(self, "_kpm"):
-            return self._kpm.anchor_loc
-        else:
-            raise NotImplementedError("anchor() is not implemented")
-
-    def setAnchor(self : Self, anchor : "KP") -> None:
-        if hasattr(self, "_kpm"):
-            self._kpm.setAnchor(anchor)
-        else:
-            raise NotImplementedError("setAnchor() is not implemented")
 
 class cmdElement(QUndoCommand):
     """Base class for all commands that work with an element."""

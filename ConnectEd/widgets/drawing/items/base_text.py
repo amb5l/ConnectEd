@@ -6,6 +6,7 @@ from PyQt6.QtWidgets import QWidget, QStyleOptionGraphicsItem, QStyle, \
 from PyQt6.QtGui     import QPainter, QPen, QBrush
 
 from . import AttrSpec, KP, KPDef, \
+              ElementKeypointsMixin, \
               ElementQuillMixin, \
               ElementOutlineMixin, \
               ElementMenuMixin, \
@@ -18,6 +19,7 @@ if TYPE_CHECKING:
     from ..views import DrawingView
 
 class BaseText(
+    ElementKeypointsMixin,
     ElementQuillMixin,
     ElementOutlineMixin,
     ElementMenuMixin,

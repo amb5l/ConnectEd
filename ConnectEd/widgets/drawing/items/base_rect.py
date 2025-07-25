@@ -8,7 +8,8 @@ from PyQt6.QtGui     import QPainter, QPainterPath, QPainterPathStroker
 
 from ....core   import logger, Z_DRAWING
 
-from . import EdgeLoc, Edge, AttrSpec, KP, KPDef, LinePref, FillPref, \
+from . import EdgeLoc, Edge, AttrSpec, KP, KPDef, \
+              ElementKeypointsMixin, \
               ElementLineMixin, \
               ElementFillMixin, \
               ElementMixin, \
@@ -21,6 +22,7 @@ from .... import hub
 
 
 class BaseRectangle(
+    ElementKeypointsMixin,
     ElementLineMixin,
     ElementFillMixin,
     ElementMixin,

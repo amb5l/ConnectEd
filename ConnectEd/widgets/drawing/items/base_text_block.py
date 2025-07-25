@@ -9,6 +9,7 @@ from PyQt6.QtGui     import QColor, QPainter, QPainterPath, \
                             QKeyEvent, QFocusEvent, QTextCursor
 
 from . import AttrSpec, KP, KPDef, QuillPref, \
+              ElementKeypointsMixin, \
               ElementQuillMixin, \
               ElementMenuMixin, \
               ElementMixin, \
@@ -20,6 +21,7 @@ if TYPE_CHECKING:
 
 
 class BaseTextBlock(
+    ElementKeypointsMixin,
     ElementQuillMixin,
     ElementMenuMixin,
     ElementMixin,
