@@ -64,7 +64,7 @@ class BaseRectangle(
         ElementLineMixin._ATTR_SPECS_LINE + \
         ElementFillMixin._ATTR_SPECS_FILL
     MIN_SIZE = QSizeF(1.0, 1.0)
-    _KEY_POINTS = [KPDef(k, True, True) for k in KP.__iter__()]
+    _KEY_POINTS = [KPDef(k, k != KP.CENTER, True) for k in KP.__iter__()]
 
     # instance variables
     _rect          : QRectF
