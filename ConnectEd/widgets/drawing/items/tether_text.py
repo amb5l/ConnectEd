@@ -80,9 +80,9 @@ class TetherText(BaseText):
         BaseText._ATTR_SPECS_QUILL
 
     # instance variables
-    _cleat   : KP
-    _pos     : QPointF
-    _tether  : Optional[Tether]
+    _cleat  : KP
+    _cpos   : QPointF  # anchor posistion w.r.t. cleat
+    _tether : Optional[Tether]
 
     def __init__(
         self    : Self,
@@ -91,22 +91,25 @@ class TetherText(BaseText):
         cleat   : KP = KP.BOTTOM_LEFT,
         bare    : bool = False
     ) -> None:
-        super().__init__("", pos, anchor, bare)
-        self._pos    = pos
         self._cleat  = cleat
+        super().__init__("", pos, anchor, bare)
         self._tether = Tether(self)
-        self.setFlag(self.GraphicsItemFlag.ItemIsSelectable , True)
 
     def onParentChange(self : Self, parent : Optional[QGraphicsItem]) -> None:
-        self.setPos(self._pos)
+        self.setPos()
 
-    def onPositionChange(self : Self, pos : QPointF) -> None:
+    def onPositionChange(self : Self, new_pos : QPointF) -> None:
         parent = self.parentItem()
-        if parent is not None:
+        if parent is not None and hasattr(parent, '_kpm') and parent._kpm is not None:
             parent_kpm = parent._kpm
             cleat_pos = parent_kpm.key_points[self._cleat].pos()
-            anchor_pos = pos + self._kpm.anchor_offset
-            self._pos = anchor_pos - cleat_pos
+            # Calculate the new cleat-relative position
+            self._cpos = new_pos - cleat_pos + self._kpm.anchor_offset
+
+    def onGeometryChange(self : Self) -> None:
+        self._rect = super().boundingRect()
+        self._kpm.updatePositions()
+        self.setPos()
 
     def onSelectionChange(self : Self, selected : bool) -> None:
         super().onSelectionChange(selected)
@@ -115,9 +118,12 @@ class TetherText(BaseText):
     def getMenuItems(self : Self) -> list[str]:
         return ["Appearance..."]
 
-    def setPos(self : Self, pos : QPointF) -> None:
+    def setPos(self : Self, pos : Optional[QPointF] = None) -> None:
         """Set offset from parent cleat to my anchor."""
-        self._pos = pos
+        if pos is None:
+            pos = self._cpos
+        else:
+            self._cpos = pos
         parent : Optional[ElementMixin] = self.parentItem()
         if parent is not None and hasattr(parent, '_kpm') and parent._kpm is not None:
             parent_kpm : KPManager = parent._kpm
@@ -129,23 +135,20 @@ class TetherText(BaseText):
         super().setPos(anchor_pos)
 
     def setPosX(self : Self, value : float) -> None:
-        self.setPos(QPointF(value, self._pos.y()))
+        self.setPos(QPointF(value, self._cpos.y()))
 
     def setPosY(self : Self, value : float) -> None:
-        self.setPos(QPointF(self._pos.x(), value))
+        self.setPos(QPointF(self._cpos.x(), value))
 
     def pos(self : Self) -> QPointF:
-        return self._pos
-
-    def updatePos(self : Self) -> None:
-        self.setPos(self._pos)
+        return self._cpos
 
     def cleat(self : Self) -> KP:
         return self._cleat
 
     def setCleat(self : Self, cleat : KP) -> None:
         self._cleat = cleat
-        self.setPos(self._pos)
+        self.setPos()
 
     def clone(self : Self) -> Self:
         """Create a clone of this TetherText with a new UUID."""
