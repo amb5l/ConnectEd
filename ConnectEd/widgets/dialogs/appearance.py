@@ -28,21 +28,21 @@ from ... import hub
 
 @dataclass
 class AppearanceSpec:
-    line : Optional[LineSpec] = None
-    fill : Optional[FillSpec] = None
-    text : Optional[QuillSpec] = None
+    line  : Optional[LineSpec]  = None
+    fill  : Optional[FillSpec]  = None
+    quill : Optional[QuillSpec] = None
 
 @dataclass
 class AppearancePref:
-    line : Optional[LinePref] = None
-    fill : Optional[FillPref] = None
-    text : Optional[QuillPref] = None
+    line  : Optional[LinePref]  = None
+    fill  : Optional[FillPref]  = None
+    quill : Optional[QuillPref] = None
 
 @dataclass
 class AppearancePrefChange:
-    line : Optional[LinePrefChange] = None
-    fill : Optional[FillPrefChange] = None
-    text : Optional[QuillPrefChange] = None
+    line  : Optional[LinePrefChange]  = None
+    fill  : Optional[FillPrefChange]  = None
+    quill : Optional[QuillPrefChange] = None
 
 CUSTOM_ICON_SIZE = QSize(getDefaultIconSize() * 2, getDefaultIconSize())
 
@@ -865,8 +865,10 @@ class AppearanceDialog(QDialog):
         no_change = AppearancePrefChange()
         default   = AppearanceSpec()
         for element in elements:
-            for cat_name in ["line", "fill", "text"]:
-                cat = getattr(element.appearance, cat_name)
+            for cat_name in ["line", "fill", "quill"]:
+                if not hasattr(element, cat_name):
+                    continue
+                cat = getattr(element, cat_name)
                 if cat is None:
                     continue
                 pref = cat.getPref()
@@ -883,7 +885,7 @@ class AppearanceDialog(QDialog):
                     if n_cat is None:
                         n_cat = LinePrefChange() if cat_name == "line" else \
                                 FillPrefChange() if cat_name == "fill" else \
-                                QuillPrefChange() if cat_name == "text" else \
+                                QuillPrefChange() if cat_name == "quill" else \
                                 None
                         setattr(no_change, cat_name, n_cat)
                     n_subcat = getattr(n_cat, subcat_name)
@@ -897,7 +899,7 @@ class AppearanceDialog(QDialog):
                     if i_cat is None:
                         i_cat = LinePrefChange() if cat_name == "line" else \
                                 FillPrefChange() if cat_name == "fill" else \
-                                QuillPrefChange() if cat_name == "text" else \
+                                QuillPrefChange() if cat_name == "quill" else \
                                 None
                         setattr(initial, cat_name, i_cat)
                     i_subcat = getattr(i_cat, subcat_name)
@@ -907,11 +909,7 @@ class AppearanceDialog(QDialog):
                         i_subcat = NO_CHANGE
                     setattr(i_cat, subcat_name, i_subcat)
                     # populate default values
-                    d = element.quill.getDefaults()
-                    if not hasattr(d, cat_name):
-                        logger.error(f"No {cat_name} defaults for element {element}")
-                        continue
-                    d_cat = getattr(d, cat_name)
+                    d_cat = getattr(element, cat_name).getDefaults()
                     if d_cat is None:
                         logger.error(f"{cat_name} is None in defaults for element {element}")
                         continue
@@ -926,7 +924,7 @@ class AppearanceDialog(QDialog):
                     if v_cat is None:
                         v_cat = LinePrefDefault() if cat_name == "line" else \
                                 FillPrefDefault() if cat_name == "fill" else \
-                                QuillPrefDefault() if cat_name == "text" else \
+                                QuillPrefDefault() if cat_name == "quill" else \
                                 None
                         setattr(default, cat_name, v_cat)
                     v_subcat = getattr(v_cat, subcat_name)
@@ -936,9 +934,9 @@ class AppearanceDialog(QDialog):
                         v_subcat = DEFAULT
                     setattr(v_cat, subcat_name, v_subcat)
         categories = \
-            (0 if initial.line is None else 1) + \
-            (0 if initial.fill is None else 1) + \
-            (0 if initial.text is None else 1)
+            (0 if initial.line  is None else 1) + \
+            (0 if initial.fill  is None else 1) + \
+            (0 if initial.quill is None else 1)
         if categories == 0:
             logger.warning("No appearance data found in element(s)")
             return
@@ -984,12 +982,12 @@ class AppearanceDialog(QDialog):
         else:
             self.fill_group_box = None
             self.fill_layout    = None
-        if initial.text is not None:
+        if initial.quill is not None:
             self.text_group_box = QGroupBox("Text") if categories > 1 else None
             self.text_layout = TextAppearanceLayout(
-                initial.text,
-                default.text,
-                no_change.text
+                initial.quill,
+                default.quill,
+                no_change.quill
             )
             if categories > 1:
                 self.text_group_box.setLayout(self.text_layout)
@@ -1052,5 +1050,5 @@ class AppearanceDialog(QDialog):
         if self.fill_layout is not None:
             r.fill = self.fill_layout.getChoice()
         if self.text_layout is not None:
-            r.text = self.text_layout.getChoice()
+            r.quill = self.text_layout.getChoice()
         return r
