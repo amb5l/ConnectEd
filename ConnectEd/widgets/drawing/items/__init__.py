@@ -280,7 +280,7 @@ class LinePen:
         self.onSettingsChange()
 
     def getDefaults(self : Self) -> SimpleNamespace:
-        settings_name = self.element._settings_name
+        settings_name = self.element.__class__.__name__
         return hub.settings.getTheme(f"elements/{settings_name}/line")
 
     def onSettingsChange(self : Self) -> None:
@@ -367,7 +367,7 @@ class FillBrush:
         self.onSettingsChange()
 
     def getDefaults(self : Self) -> SimpleNamespace:
-        settings_name = self.element._settings_name
+        settings_name = self.element.__class__.__name__
         return hub.settings.getTheme(f"elements/{settings_name}/fill")
 
     def onSettingsChange(self : Self) -> None:
@@ -498,7 +498,7 @@ class QuillColorFont:
         self.onSettingsChange()
 
     def getDefaults(self : Self) -> SimpleNamespace:
-        settings_name = self.element._settings_name
+        settings_name = self.element.__class__.__name__
         return hub.settings.getTheme(f"elements/{settings_name}/text")
 
     def onSettingsChange(self : Self) -> None:
@@ -988,14 +988,10 @@ class ElementMixin(ElementChangeMixin, ElementCloneMixin, ElementXmlMixin, Prope
     _KEY_POINTS : Optional[list["KP"]] = None
     _ANCHORED   : bool = False
 
-    _settings_name : str
     uuid           : str
     _kpm           : Optional["KPManager"]
 
     def initElement(self : Self, bare : bool = False) -> None:
-        self._settings_name = \
-            self.__class__.__name__ if not hasattr(self, "_SETTINGS_NAME") \
-            else self._SETTINGS_NAME
         self.resetUuid()
         if hasattr(self, "initLine"):
             self.initLine()
