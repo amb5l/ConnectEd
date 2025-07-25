@@ -52,8 +52,10 @@ class BaseTextBlock(
         ] + \
         ElementQuillMixin._ATTR_SPECS_QUILL
     _KEY_POINTS = [KPDef(k, False, False) for k in KP.__iter__()]
+    _ANCHORED = True
 
     # instance variables
+    _apos  : QPointF  # anchor position (pos is adjusted from this)
     _rect  : QRectF
     _shape : QPainterPath
 
@@ -110,14 +112,29 @@ class BaseTextBlock(
         if scene:
             scene.onTextEditingComplete(self)
 
+    def onGeometryChange(self : Self) -> None:
+        self._rect = super().boundingRect()
+        self._shape.clear()
+        self._shape.addRect(self._rect)
+        self._kpm.updatePositions()
+
+    def onGeometryChange(self : Self) -> None:
+        self._rect = super().boundingRect()
+        self._kpm.updatePositions()
+        self.setPos()
+
     def getMenuItems(self : Self) -> list[str]:
         return ["Appearance..."]
 
-    def setPos(self : Self, pos : QPointF) -> None:
+    def setPos(self : Self, pos : Optional[QPointF] = None) -> None:
+        if pos is None:
+            pos = self._apos
+        else:
+            self._apos = pos
         super().setPos(pos - self._kpm.anchor_offset)
 
     def pos(self : Self) -> QPointF:
-        return super().pos() + self._kpm.anchor_offset
+        return self._apos
 
     def setPlainText(self, text: str) -> None:
         super().setPlainText(text)

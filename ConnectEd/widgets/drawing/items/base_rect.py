@@ -18,6 +18,7 @@ from . import EdgeLoc, Edge, AttrSpec, KP, KPDef, \
               ElementCloneMixin, \
               ElementXmlMixin, \
               PropertiesMixin, \
+              ElementMenuMixin, \
               cmdPlaceElement
 
 from .port_pin      import BasePin
@@ -36,6 +37,7 @@ class BaseRectangle(
     ElementCloneMixin,
     ElementXmlMixin,
     PropertiesMixin,
+    ElementMenuMixin,
     QGraphicsRectItem
 ):
     """Base class for rectangle elements."""
@@ -141,6 +143,9 @@ class BaseRectangle(
             self._shape = rect_path.united(stroker_path)
         else:
             self._shape = stroker_path
+
+    def getMenuItems(self : Self) -> list[str]:
+        return ["Appearance..."]
 
     @overload
     def setRect(
