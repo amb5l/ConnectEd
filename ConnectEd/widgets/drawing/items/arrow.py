@@ -6,7 +6,11 @@ from PyQt6.QtCore    import QPointF, QRectF
 from PyQt6.QtWidgets import QWidget, QStyleOptionGraphicsItem, QGraphicsItem
 from PyQt6.QtGui     import QPainter, QPainterPath
 
-from . import ElementLineMixin, ElementFillMixin, ElementMixin, SignalDirection
+from . import SignalDirection, \
+              ElementChangeMixin, \
+              ElementLineMixin, \
+              ElementFillMixin, \
+              ElementMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -14,6 +18,7 @@ if TYPE_CHECKING:
 
 
 class SignalArrow(
+    ElementChangeMixin,
     ElementLineMixin,
     ElementFillMixin,
     ElementMixin,

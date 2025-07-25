@@ -785,11 +785,10 @@ class ElementChangeMixin:
         )
 
     def onSelectionChange(self : Self, selected : bool) -> None:
-        if hasattr(self, "line"): self.line.onSelectionChange(selected)
-        if hasattr(self, "fill"): self.fill.onSelectionChange(selected)
+        if hasattr(self, "line"):  self.line.onSelectionChange(selected)
+        if hasattr(self, "fill"):  self.fill.onSelectionChange(selected)
         if hasattr(self, "quill"): self.quill.onSelectionChange(selected)
-        if self._kpm is not None:
-            self._kpm.onSelectionChange(selected)
+        if hasattr(self, "_kpm"):  self._kpm.onSelectionChange(selected)
         self.update()
 
 class ElementMenuMixin:

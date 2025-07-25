@@ -7,7 +7,10 @@ from PyQt6.QtWidgets import QWidget, QStyleOptionGraphicsItem, QStyle, \
                             QGraphicsSimpleTextItem
 from PyQt6.QtGui     import QPainter, QPen, QBrush, QFontMetrics
 
-from . import ElementQuillMixin, ElementMixin
+from . import ElementChangeMixin, \
+              ElementQuillMixin, \
+              ElementOutlineMixin, \
+              ElementMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -15,7 +18,9 @@ if TYPE_CHECKING:
 
 
 class Annotation(
+    ElementChangeMixin,
     ElementQuillMixin,
+    ElementOutlineMixin,
     ElementMixin,
     QGraphicsSimpleTextItem
 ):

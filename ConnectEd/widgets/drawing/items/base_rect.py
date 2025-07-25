@@ -380,6 +380,9 @@ class cmdPlaceBaseRectangle(cmdPlaceElement):
     pass
 
 class BaseRectWithPins(BaseRectangle):
+    def getMenuItems(self : Self) -> list[str]:
+        return ["Add Pin...", "-", "Appearance..."]
+
     def getEdgeLoc(
         self : Self,
         pos  : QPointF,

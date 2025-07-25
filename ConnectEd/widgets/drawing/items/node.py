@@ -6,15 +6,21 @@ from PyQt6.QtCore    import QRectF
 from PyQt6.QtWidgets import QWidget, QStyleOptionGraphicsItem, QGraphicsItem
 from PyQt6.QtGui     import QPainter, QPainterPath
 
-from . import ElementLineMixin, ElementFillMixin, ElementMixin
+from . import ElementChangeMixin, \
+              ElementLineMixin, \
+              ElementFillMixin, \
+              ElementOutlineMixin, \
+              ElementMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from .port_pin import BasePin
 
 class Node(
+    ElementChangeMixin,
     ElementLineMixin,
     ElementFillMixin,
+    ElementOutlineMixin,
     ElementMixin,
     QGraphicsItem
 ):
