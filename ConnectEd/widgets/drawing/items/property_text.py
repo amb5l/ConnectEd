@@ -6,7 +6,10 @@ from enum   import Enum
 from PyQt6.QtCore    import Qt, QPointF
 from PyQt6.QtWidgets import QGraphicsItem, QGraphicsSceneMouseEvent
 
-from . import AttrSpec, KP, QuillColorFont
+from . import AttrSpec, KP, QuillColorFont, \
+              ElementPosMixin, \
+              ElementKeypointsMixin, \
+              ElementQuillMixin
 
 from .tether_text import TetherText
 
@@ -21,26 +24,27 @@ class PropertyDisplay(Enum):
 
 class PropertyText(TetherText):
     # class variables
-    _ATTR_SPECS_TEXT = [
-        AttrSpec(
-            name      = "Name",
-            type_name = "str",
-            exists    = lambda self: True,
-            getter    = lambda self: self.name(),
-            setter    = lambda self, value: self.setName(value)
-        ),
-        AttrSpec(
-            name      = "Display",
-            type_name = "PropertyDisplay",
-            exists    = lambda self: True,
-            getter    = lambda self: self.display(),
-            setter    = lambda self, value: self.setDisplay(value)
-        )
-    ]
+    _ATTR_SPECS_PROPERTY = \
+        [
+            AttrSpec(
+                name      = "Name",
+                type_name = "str",
+                exists    = lambda self: True,
+                getter    = lambda self: self.name(),
+                setter    = lambda self, value: self.setName(value)
+            ),
+            AttrSpec(
+                name      = "Display",
+                type_name = "PropertyDisplay",
+                exists    = lambda self: True,
+                getter    = lambda self: self.display(),
+                setter    = lambda self, value: self.setDisplay(value)
+            )
+        ]
     _ATTR_SPECS = \
-        TetherText._ATTR_SPECS_BASIC + \
-        _ATTR_SPECS_TEXT + \
-        TetherText._ATTR_SPECS_QUILL
+        TetherText._ATTR_SPECS_POS + \
+        _ATTR_SPECS_PROPERTY + \
+        TetherText._ATTR_SPECS_APPEARANCE
 
     # instance variables
     _name    : str

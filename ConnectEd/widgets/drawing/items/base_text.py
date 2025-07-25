@@ -6,11 +6,16 @@ from PyQt6.QtWidgets import QWidget, QStyleOptionGraphicsItem, QStyle, \
 from PyQt6.QtGui     import QPainter, QPen, QBrush
 
 from . import AttrSpec, KP, KPDef, \
+              ElementMixin, \
+              ElementPosMixin, \
               ElementKeypointsMixin, \
               ElementQuillMixin, \
               ElementOutlineMixin, \
+              ElementChangeMixin, \
+              ElementCloneMixin, \
+              ElementXmlMixin, \
+              PropertiesMixin, \
               ElementMenuMixin, \
-              ElementMixin, \
               cmdPlaceElement
 
 
@@ -19,14 +24,22 @@ if TYPE_CHECKING:
     from ..views import DrawingView
 
 class BaseText(
+    ElementMixin,
+    ElementPosMixin,
     ElementKeypointsMixin,
     ElementQuillMixin,
     ElementOutlineMixin,
+    ElementChangeMixin,
+    ElementCloneMixin,
+    ElementXmlMixin,
+    PropertiesMixin,
     ElementMenuMixin,
-    ElementMixin,
     QGraphicsSimpleTextItem
 ):
     # class variables
+    _ATTR_SPECS_POS = \
+        ElementKeypointsMixin._ATTR_SPECS_KP + \
+        ElementPosMixin._ATTR_SPECS_POS
     _ATTR_SPECS_TEXT = [
         AttrSpec(
             name      = "Text",
@@ -36,10 +49,12 @@ class BaseText(
             setter    = lambda self, value: self.setText(value)
         )
     ]
-    _ATTR_SPECS = \
-        ElementMixin._ATTR_SPECS_BASIC + \
-        _ATTR_SPECS_TEXT + \
+    _ATTR_SPECS_APPEARANCE = \
         ElementQuillMixin._ATTR_SPECS_QUILL
+    _ATTR_SPECS = \
+        _ATTR_SPECS_POS + \
+        _ATTR_SPECS_TEXT + \
+        _ATTR_SPECS_APPEARANCE
     _KEY_POINTS = [KPDef(k, False, False) for k in KP.__iter__()]
     _ANCHORED = True
 

@@ -65,7 +65,7 @@ class Tether(QGraphicsItem):
 
 class TetherText(BaseText):
     # class variables
-    _ATTR_SPECS_BASIC = [
+    _ATTR_SPECS_POS = [
         AttrSpec(
             name      = "Cleat",
             type_name = "KP",
@@ -73,11 +73,11 @@ class TetherText(BaseText):
             getter    = lambda self: self.cleat(),
             setter    = lambda self, value: self.setCleat(value)
         )
-    ] + BaseText._ATTR_SPECS_BASIC
+    ] + BaseText._ATTR_SPECS_POS
     _ATTR_SPECS = \
-        _ATTR_SPECS_BASIC + \
+        _ATTR_SPECS_POS + \
         BaseText._ATTR_SPECS_TEXT + \
-        BaseText._ATTR_SPECS_QUILL
+        BaseText._ATTR_SPECS_APPEARANCE
 
     # instance variables
     _cleat  : KP

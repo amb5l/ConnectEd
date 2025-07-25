@@ -8,11 +8,16 @@ from PyQt6.QtWidgets import QWidget, QStyleOptionGraphicsItem, QStyle, \
 from PyQt6.QtGui     import QColor, QPainter, QPainterPath, \
                             QKeyEvent, QFocusEvent, QTextCursor
 
-from . import AttrSpec, KP, KPDef, QuillPref, \
+from . import AttrSpec, KP, KPDef, \
+              ElementMixin, \
+              ElementPosMixin, \
               ElementKeypointsMixin, \
               ElementQuillMixin, \
+              ElementOutlineMixin, \
+              ElementChangeMixin, \
+              ElementCloneMixin, \
+              ElementXmlMixin, \
               ElementMenuMixin, \
-              ElementMixin, \
               cmdPlaceElement
 
 from typing import TYPE_CHECKING
@@ -21,25 +26,30 @@ if TYPE_CHECKING:
 
 
 class BaseTextBlock(
+    ElementMixin,
+    ElementPosMixin,
     ElementKeypointsMixin,
     ElementQuillMixin,
+    ElementOutlineMixin,
+    ElementChangeMixin,
+    ElementCloneMixin,
+    ElementXmlMixin,
     ElementMenuMixin,
-    ElementMixin,
     QGraphicsTextItem
 ):
     # class variables
-    _ATTR_SPECS_TEXT = [
-        AttrSpec(
-            name      = "Text",
-            type_name = "str",
-            exists    = lambda self: True,
-            getter    = lambda self: self.toPlainText(),
-            setter    = lambda self, value: self.setPlainText(value)
-        )
-    ]
     _ATTR_SPECS = \
-        ElementMixin._ATTR_SPECS_BASIC + \
-        _ATTR_SPECS_TEXT + \
+        ElementKeypointsMixin._ATTR_SPECS_KP + \
+        ElementPosMixin._ATTR_SPECS_POS + \
+        [
+            AttrSpec(
+                name      = "Text",
+                type_name = "str",
+                exists    = lambda self: True,
+                getter    = lambda self: self.toPlainText(),
+                setter    = lambda self, value: self.setPlainText(value)
+            )
+        ] + \
         ElementQuillMixin._ATTR_SPECS_QUILL
     _KEY_POINTS = [KPDef(k, False, False) for k in KP.__iter__()]
 

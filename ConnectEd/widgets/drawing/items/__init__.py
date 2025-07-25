@@ -575,9 +575,48 @@ class OutlinePen:
         self.pen.setWidthF(hub.settings.get("display/select/outline/width"))
         self.pen.setStyle(hub.settings.get("display/select/outline/style"))
 
+class ElementPosMixin:
+    _ATTR_SPECS_POS = [
+        AttrSpec(
+            name      = "Position X",
+            type_name = "float",
+            exists    = lambda self: True,
+            getter    = lambda self: self.pos().x(),
+            setter    = lambda self, value: self.setPosX(value)
+        ),
+        AttrSpec(
+            name      = "Position Y",
+            type_name = "float",
+            exists    = lambda self: True,
+            getter    = lambda self: self.pos().y(),
+            setter    = lambda self, value: self.setPosY(value)
+        )
+    ]
+
+    def setPosX(self : Self, value : float) -> None:
+        pos = self.pos()
+        pos.setX(value)
+        self.setPos(pos)
+
+    def setPosY(self : Self, value : float) -> None:
+        pos = self.pos()
+        pos.setY(value)
+        self.setPos(pos)
+
+# TODO: ElementEdgeLocMixin (disables setPos?)
+
 class ElementKeypointsMixin:
+    _ATTR_SPECS_KP = [
+        AttrSpec(
+            name      = "Anchor",
+            type_name = "KP",
+            exists    = lambda self: self.hasAnchor(),
+            getter    = lambda self: self.anchor(),
+            setter    = lambda self, value: self.setAnchor(value)
+        )
+    ]
     _KEY_POINTS : Optional[list["KP"]] = None
-    _ANCHORED   : bool = False
+    _ANCHORED : bool = False
 
     _kpm : "KPManager"
 
@@ -981,34 +1020,10 @@ class ElementXmlMixin:
             xr.readNext()
         return instance
 
-class ElementMixin(ElementChangeMixin, ElementCloneMixin, ElementXmlMixin, PropertiesMixin):
-    """Mixin class for all elements."""
+class ElementMixin:
     Z = Z_DRAWING
-    _ATTR_SPECS_BASIC = [
-        AttrSpec(
-            name      = "Anchor",
-            type_name = "KP",
-            exists    = lambda self: self.hasAnchor(),
-            getter    = lambda self: self.anchor(),
-            setter    = lambda self, value: self.setAnchor(value)
-        ),
-        AttrSpec(
-            name      = "Position X",
-            type_name = "float",
-            exists    = lambda self: True,
-            getter    = lambda self: self.pos().x(),
-            setter    = lambda self, value: self.setPosX(value)
-        ),
-        AttrSpec(
-            name      = "Position Y",
-            type_name = "float",
-            exists    = lambda self: True,
-            getter    = lambda self: self.pos().y(),
-            setter    = lambda self, value: self.setPosY(value)
-        )
-    ]
 
-    uuid           : str
+    uuid : str
 
     def initElement(self : Self, bare : bool = False) -> None:
         self.resetUuid()
@@ -1029,7 +1044,8 @@ class ElementMixin(ElementChangeMixin, ElementCloneMixin, ElementXmlMixin, Prope
         hub.settings.changed.connect(self.onSettingsChange)
         if hasattr(self, "initKeypoints"):
             self.initKeypoints()
-        self.initProperties(bare)
+        if hasattr(self, "initProperties"):
+            self.initProperties(bare)
 
     def __hash__(self):
         return hash(self.uuid)
@@ -1038,16 +1054,6 @@ class ElementMixin(ElementChangeMixin, ElementCloneMixin, ElementXmlMixin, Prope
         if not isinstance(other, ElementMixin):
             return NotImplemented
         return self.uuid == other.uuid
-
-    def setPosX(self : Self, value : float) -> None:
-        pos = self.pos()
-        pos.setX(value)
-        self.setPos(pos)
-
-    def setPosY(self : Self, value : float) -> None:
-        pos = self.pos()
-        pos.setY(value)
-        self.setPos(pos)
 
     def resetUuid(self : Self) -> None:
         self.uuid = str(uuid.uuid4())

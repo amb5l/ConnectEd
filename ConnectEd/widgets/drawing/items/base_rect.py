@@ -9,10 +9,15 @@ from PyQt6.QtGui     import QPainter, QPainterPath, QPainterPathStroker
 from ....core   import logger, Z_DRAWING
 
 from . import EdgeLoc, Edge, AttrSpec, KP, KPDef, \
+              ElementMixin, \
+              ElementPosMixin, \
               ElementKeypointsMixin, \
               ElementLineMixin, \
               ElementFillMixin, \
-              ElementMixin, \
+              ElementChangeMixin, \
+              ElementCloneMixin, \
+              ElementXmlMixin, \
+              PropertiesMixin, \
               cmdPlaceElement
 
 from .port_pin      import BasePin
@@ -22,34 +27,38 @@ from .... import hub
 
 
 class BaseRectangle(
+    ElementMixin,
+    ElementPosMixin,
     ElementKeypointsMixin,
     ElementLineMixin,
     ElementFillMixin,
-    ElementMixin,
+    ElementChangeMixin,
+    ElementCloneMixin,
+    ElementXmlMixin,
+    PropertiesMixin,
     QGraphicsRectItem
 ):
     """Base class for rectangle elements."""
 
     # class variables
-    Z = Z_DRAWING
-    _ATTR_SPECS_BASIC = ElementMixin._ATTR_SPECS_BASIC + [
-        AttrSpec(
-            name      = "Width",
-            type_name = "float",
-            exists    = lambda self: True,
-            getter    = lambda self: self.rect().width(),
-            setter    = lambda self, value: self.setWidth(value)
-        ),
-        AttrSpec(
-            name      = "Height",
-            type_name = "float",
-            exists    = lambda self: True,
-            getter    = lambda self: self.rect().height(),
-            setter    = lambda self, value: self.setHeight(value)
-        )
-    ]
     _ATTR_SPECS = \
-        _ATTR_SPECS_BASIC + \
+        ElementPosMixin._ATTR_SPECS_POS + \
+        [
+            AttrSpec(
+                name      = "Width",
+                type_name = "float",
+                exists    = lambda self: True,
+                getter    = lambda self: self.rect().width(),
+                setter    = lambda self, value: self.setWidth(value)
+            ),
+            AttrSpec(
+                name      = "Height",
+                type_name = "float",
+                exists    = lambda self: True,
+                getter    = lambda self: self.rect().height(),
+                setter    = lambda self, value: self.setHeight(value)
+            )
+        ] + \
         ElementLineMixin._ATTR_SPECS_LINE + \
         ElementFillMixin._ATTR_SPECS_FILL
     MIN_SIZE = QSizeF(1.0, 1.0)
