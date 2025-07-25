@@ -898,7 +898,45 @@ class ElementCloneMixin:
         clone.onGeometryChange()
         return clone
 
-class ElementMixin(ElementChangeMixin, ElementCloneMixin, PropertiesMixin):
+class ElementXmlMixin:
+    def toXml(self : Self, xw : QXmlStreamWriter) -> None:
+        xw.writeStartElement(self.__class__.__name__)
+        toXmlAttrs(self, xw)
+        PropertiesMixin.toXml(self, xw)
+        from .port_pin import BasePin
+        for item in self.childItems():
+            if isinstance(item, PropertyText):
+                item.toXml(xw)
+            elif isinstance(item, BasePin):
+                item.toXml(xw)
+        xw.writeEndElement()
+
+    @classmethod
+    def fromXml(cls : Self, xr: QXmlStreamReader) -> Self:
+        instance = cls(bare=True)
+        fromXmlAttrs(instance, xr)
+        # check if we're already at the end element (self-closing)
+        if xr.isEndElement() and xr.name() == cls.__name__:
+            return instance
+        # read properties
+        PropertiesMixin.fromXml(instance, xr)
+        # read child PropertyText and BasePin elements
+        while not (xr.isEndElement() and xr.name() == cls.__name__):
+            if xr.isStartElement():
+                if xr.name() == "PropertyText":
+                    from .property_text import PropertyText
+                    p : PropertyText = PropertyText.fromXml(xr)
+                    p.setParentItem(instance)
+                elif xr.name() == "BlockPin":
+                    from .port_pin import BlockPin
+                    pin : BlockPin = BlockPin.fromXml(xr)
+                    pin.setParentItem(instance)
+                else:
+                    logger.warning(f"Unexpected child element: {xr.name()}")
+            xr.readNext()
+        return instance
+
+class ElementMixin(ElementChangeMixin, ElementCloneMixin, ElementXmlMixin, PropertiesMixin):
     """Mixin class for all elements."""
     Z = Z_DRAWING
     _CAP_STYLE = Qt.PenCapStyle.SquareCap
@@ -1015,43 +1053,6 @@ class ElementMixin(ElementChangeMixin, ElementCloneMixin, PropertiesMixin):
             self._kpm.setAnchor(anchor)
         else:
             raise NotImplementedError("setAnchor() is not implemented")
-
-    def toXml(self : Self, xw : QXmlStreamWriter) -> None:
-        xw.writeStartElement(self.__class__.__name__)
-        toXmlAttrs(self, xw)
-        PropertiesMixin.toXml(self, xw)
-        from .port_pin import BasePin
-        for item in self.childItems():
-            if isinstance(item, PropertyText):
-                item.toXml(xw)
-            elif isinstance(item, BasePin):
-                item.toXml(xw)
-        xw.writeEndElement()
-
-    @classmethod
-    def fromXml(cls : Self, xr: QXmlStreamReader) -> Self:
-        instance = cls(bare=True)
-        fromXmlAttrs(instance, xr)
-        # check if we're already at the end element (self-closing)
-        if xr.isEndElement() and xr.name() == cls.__name__:
-            return instance
-        # read properties
-        PropertiesMixin.fromXml(instance, xr)
-        # read child PropertyText and BasePin elements
-        while not (xr.isEndElement() and xr.name() == cls.__name__):
-            if xr.isStartElement():
-                if xr.name() == "PropertyText":
-                    from .property_text import PropertyText
-                    p : PropertyText = PropertyText.fromXml(xr)
-                    p.setParentItem(instance)
-                elif xr.name() == "BlockPin":
-                    from .port_pin import BlockPin
-                    pin : BlockPin = BlockPin.fromXml(xr)
-                    pin.setParentItem(instance)
-                else:
-                    logger.warning(f"Unexpected child element: {xr.name()}")
-            xr.readNext()
-        return instance
 
 class cmdElement(QUndoCommand):
     """Base class for all commands that work with an element."""
