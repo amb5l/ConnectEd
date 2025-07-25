@@ -644,6 +644,28 @@ class LineAppearanceLayout(QGridLayout):
                 None if no_change is None else no_change.style,
             )
             self.addWidget(self.style_combo, row, 1)
+        if hasattr(self, 'color_combo') and hasattr(self, 'style_combo'):
+            self.color_combo.activated.connect(self._onColorChanged)
+        if hasattr(self, 'width_combo') and hasattr(self, 'style_combo'):
+            self.width_combo.activated.connect(self._onWidthChanged)
+
+    def _onColorChanged(self : Self) -> None:
+        color = self.color_combo.getChoice()
+        style = self.style_combo.getChoice()
+        if color not in (NO_CHANGE, DEFAULT) and style in (DEFAULT, Qt.PenStyle.NoPen):
+            for i in range(self.style_combo.count()):
+                if self.style_combo.itemText(i) == "Solid":
+                    self.style_combo.setCurrentIndex(i)
+                    break
+
+    def _onWidthChanged(self : Self) -> None:
+        width = self.width_combo.getChoice()
+        style = self.style_combo.getChoice()
+        if width not in (NO_CHANGE, DEFAULT) and style in (DEFAULT, Qt.PenStyle.NoPen):
+            for i in range(self.style_combo.count()):
+                if self.style_combo.itemText(i) == "Solid":
+                    self.style_combo.setCurrentIndex(i)
+                    break
 
     def getChoice(self : Self) -> LinePrefChange:
         r = LinePrefChange()
@@ -688,6 +710,32 @@ class FillAppearanceLayout(QGridLayout):
                 None if no_change is None else no_change.style,
             )
             self.addWidget(self.style_combo, row, 1)
+        if hasattr(self, 'color_combo') and hasattr(self, 'style_combo'):
+            self.color_combo.activated.connect(self._onColorChanged)
+        if hasattr(self, 'width_combo') and hasattr(self, 'style_combo'):
+            self.width_combo.activated.connect(self._onWidthChanged)
+
+    def _onColorChanged(self : Self) -> None:
+        """Automatically set SolidLine when color is specified and style is NoPen."""
+        color = self.color_combo.getChoice()
+        style = self.style_combo.getChoice()
+
+        if color not in (NO_CHANGE, DEFAULT) and style in (DEFAULT, Qt.PenStyle.NoPen):
+            for i in range(self.style_combo.count()):
+                if self.style_combo.itemText(i) == "Solid":
+                    self.style_combo.setCurrentIndex(i)
+                    break
+
+    def _onWidthChanged(self : Self) -> None:
+        """Automatically set SolidLine when width is specified and style is NoPen."""
+        width = self.width_combo.getChoice()
+        style = self.style_combo.getChoice()
+
+        if width not in (NO_CHANGE, DEFAULT) and style in (DEFAULT, Qt.PenStyle.NoPen):
+            for i in range(self.style_combo.count()):
+                if self.style_combo.itemText(i) == "Solid":
+                    self.style_combo.setCurrentIndex(i)
+                    break
 
     def getChoice(self : Self) -> FillPrefChange:
         r = FillPrefChange()
