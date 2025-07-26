@@ -59,6 +59,7 @@ class KeyPoint(ElementMenuMixin, QGraphicsItem):
     _loc     : KP                 # location of key point in parent
     _resize  : bool               # whether the key point is a resize grip
     _cleat   : bool               # whether the key point can be a cleat
+    _visible : bool               # whether the key point is visible
     _rect    : QRectF             # bounding rect
     _shape   : QPainterPath       # shape for hit detection
     _pen     : QPen               # pen for drawing
@@ -83,6 +84,7 @@ class KeyPoint(ElementMenuMixin, QGraphicsItem):
         self._loc     = loc
         self._resize  = resize
         self._cleat   = cleat
+        self._visible = True
         self._pen     = QPen()
         self._brush   = QBrush()
         self._path    = QPainterPath()
@@ -98,6 +100,36 @@ class KeyPoint(ElementMenuMixin, QGraphicsItem):
         self._actions = []
         self._manager.anchorChanged.connect(self.onGeometryChange)
 
+    def mousePressEvent(self, event):
+        if not self._visible:
+            event.ignore()
+            return
+        super().mousePressEvent(event)
+
+    def mouseMoveEvent(self, event):
+        if not self._visible:
+            event.ignore()
+            return
+        super().mouseMoveEvent(event)
+
+    def mouseReleaseEvent(self, event):
+        if not self._visible:
+            event.ignore()
+            return
+        super().mouseReleaseEvent(event)
+
+    def mouseDoubleClickEvent(self, event):
+        if not self._visible:
+            event.ignore()
+            return
+        super().mouseDoubleClickEvent(event)
+
+    def contextMenuEvent(self, event):
+        if not self._visible:
+            event.ignore()
+            return
+        super().contextMenuEvent(event)
+
     def onSettingsChange(self : Self) -> None:
         theme = hub.settings.getTheme("key_point")
         self._pen.setColor(theme.line)
@@ -108,7 +140,6 @@ class KeyPoint(ElementMenuMixin, QGraphicsItem):
     def onGeometryChange(self : Self) -> None:
         self.prepareGeometryChange()
         r = self._radius
-        # update for hit testing
         self._rect.setCoords(-r, -r, r, r)
         self._shape.clear()
         self._shape.addRect(self._rect)
@@ -137,6 +168,13 @@ class KeyPoint(ElementMenuMixin, QGraphicsItem):
             items.append("Assign Anchor")
         return items
 
+    def setVisible(self : Self, visible : bool) -> None:
+        # TODO: consider changing bounding rect / shape
+        self._visible = visible
+        self.setFlag(self.GraphicsItemFlag.ItemIsSelectable, visible)
+        self.setFlag(self.GraphicsItemFlag.ItemIsMovable, visible)
+        self.update()
+
     def boundingRect(
         self : Self,
         view : Optional[QGraphicsView] = None
@@ -152,11 +190,15 @@ class KeyPoint(ElementMenuMixin, QGraphicsItem):
         option  : QStyleOptionGraphicsItem,
         widget  : QWidget
     ) -> None:
+        if not self._visible:
+            return
         painter.setPen(self._pen)
         painter.setBrush(self._brush)
         painter.drawPath(self._path)
 
     def moveBy(self : Self, dx : float, dy : float) -> None:
+        if not self._visible:
+            return
         self.parentItem().moveKeyPoint(self._loc, QPointF(dx, dy))
 
     def isMoveable(self : Self) -> bool:

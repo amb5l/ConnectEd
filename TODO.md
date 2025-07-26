@@ -1,4 +1,25 @@
-New DrawingView state machine
+ElementLineMixin._ATTR_SPECS_LINE
+parent properties to keypoints - keypoints always visible?
+MOVE TO ELEMENT BASE MIXIN AND NEW MIXIN STRUCTURE
+
+
+annotation => TetherText
+
+editPaste in view vs scene?
+
+editCopy use ElementXmlMixin
+
+Cloning blocks leaves out pins
+Move to BaseText for pin/port name
+Port and other element rotation
+_ATTR_SPECS => _PROPERTY_SPECS?
+
+Change
+  pin = BlockPin(
+to
+  pin = scene.placeBlockPin
+GroupElementMixin?
+XML for block pins, ports?
 
 Selection Behaviour
 ===================
