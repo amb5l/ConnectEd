@@ -41,11 +41,25 @@ class PortPinMixin:
             setter    = lambda self, value: setattr(self, 'direction', value)
         ),
         AttrSpec(
-            name      = "Range",
-            type_name = "VectorRange",
+            name      = "Range Left",
+            type_name = "str",
             exists    = lambda self: self.range is not None,
-            getter    = lambda self: self.range,
-            setter    = lambda self, value: setattr(self, 'range', value)
+            getter    = lambda self: self.range.left,
+            setter    = lambda self, value: setattr(self.range, 'left', value)
+        ),
+        AttrSpec(
+            name      = "Range Direction",
+            type_name = "RangeDirection",
+            exists    = lambda self: self.range is not None,
+            getter    = lambda self: self.range.dir,
+            setter    = lambda self, value: setattr(self.range, 'dir', value)
+        ),
+        AttrSpec(
+            name      = "Range Right",
+            type_name = "str",
+            exists    = lambda self: self.range is not None,
+            getter    = lambda self: self.range.right,
+            setter    = lambda self, value: setattr(self.range, 'right', value)
         )
     ]
 
