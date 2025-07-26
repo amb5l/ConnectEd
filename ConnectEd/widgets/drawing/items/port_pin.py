@@ -223,9 +223,7 @@ class Port(PortPinMixin, QGraphicsItemGroup):
     ]
 
     # instance attributes
-    _node      : PortNode
-    _name_text : PortName
-    _arrow     : PortArrow
+    _arrow : PortArrow
 
     def __init__(
         self      : Self,
@@ -301,16 +299,9 @@ class BasePin(ElementCloneMixin, PortPinMixin, QGraphicsItemGroup):
     ]
 
     # instance attributes
-    _name       : str
-    _direction  : SignalDirection
-    _range      : Optional[VectorRange]
-    _loc        : EdgeLoc
-    _node       : Node
-    _inner      : Optional[QGraphicsItem]
-    _outer      : Optional[QGraphicsItem]
-    _name_text  : Annotation
-    _rect       : QRectF
-    _shape      : QPainterPath
+    _loc   : EdgeLoc
+    _inner : Optional[QGraphicsItem]
+    _outer : Optional[QGraphicsItem]
 
     def __init__(
         self      : Self,
