@@ -27,11 +27,11 @@ class SignalArrow(
     _SIZE         = 8
     _S            = _SIZE
     _H            = _SIZE/2
-    _PATH_AWAY    = [(_S,0), (_H,-_H), (0,-_H), (0,_H), (_H,_H)]
-    _PATH_TOWARDS = [(0,0), (_H,-_H), (_S,-_H), (_S,_H), (_H,_H)]
+    _PATH_AWAY    = [(-_S,0), (-_H,-_H), (0,-_H), (0,_H), (-_H,_H)]
+    _PATH_TOWARDS = [(0,0), (-_H,-_H), (-_S,-_H), (-_S,_H), (-_H,_H)]
     _PATH_IN      = None # subclass to override
     _PATH_OUT     = None # subclass to override
-    _PATH_BI      = [(0,0), (_H,-_H), (_S,0), (_H,_H)]
+    _PATH_BI      = [(0,0), (-_H,-_H), (-_S,0), (-_H,_H)]
 
     _rect     : QRectF
     _shape    : QPainterPath
@@ -58,9 +58,18 @@ class SignalArrow(
         w = self.line.pen.width()
         hw = w * 2 # TODO investigate clipping, this shouldn't be needed
         s = self._SIZE
-        self._rect.setRect(-(hw/2), -(s+w)/2, s+hw, s+w)
+        self._rect.setRect(-(s+(hw/2)), -(s+w)/2, s+hw, s+w)
         self._shape.clear()
         self._shape.addRect(self._rect)
+
+    def setDirection(self : Self, direction : SignalDirection) -> None:
+        match direction:
+            case SignalDirection.IN:
+                self._path = self._path_in
+            case SignalDirection.OUT:
+                self._path = self._path_out
+            case _:
+                self._path = self._path_bi
 
     def _buildPath(self : Self, points : list[tuple[int, int]]) -> QPainterPath:
         p = QPainterPath()
@@ -69,16 +78,6 @@ class SignalArrow(
             p.lineTo(QPointF(*point))
         p.closeSubpath()
         return p
-
-    def updateDirection(self : Self, direction : SignalDirection) -> None:
-        self._direction = direction
-        match direction:
-            case SignalDirection.IN:
-                self._path = self._path_in
-            case SignalDirection.OUT:
-                self._path = self._path_out
-            case SignalDirection.BI:
-                self._path = self._path_bi
 
     def boundingRect(self : Self) -> QRectF:
         return self._rect
