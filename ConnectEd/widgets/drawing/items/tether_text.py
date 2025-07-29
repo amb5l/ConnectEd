@@ -7,22 +7,27 @@ from PyQt6.QtWidgets import QWidget, QGraphicsItem, QStyleOptionGraphicsItem, \
                             QGraphicsSceneMouseEvent
 from PyQt6.QtGui     import QPainter
 
-from . import ElementMixin, QuillColorFont,\
-              AttrSpec, KP, KPManager
+from . import KPLoc
 
 from .base_text import BaseText
+from .key_point import KeyPoint
 
 
 class Tether(QGraphicsItem):
-    """Tether line between a TetherText anchor and its parent cleat."""
+    """Tether line between a TetherText anchor and its parent."""
 
-    _item: "TetherText"
+    _item  : "TetherText"
+    _pos   : QPointF      # TetherText anchor position
+    _ppos  : QPointF      # Parent position
+    _brect : QRectF       # Bounding rectangle
 
     def __init__(self, item: "TetherText", visible : bool = False):
-        super().__init__(item)  # Parent it to the Property
+        super().__init__(item)  # Parent it to the TetherText
         self._item = item
-        self.setZValue(-1)  # Draw behind the property text
+        self.setZValue(-1)  # Draw behind the TetherText
         self.setVisible(visible)
+        self.setFlag( self.GraphicsItemFlag.ItemIgnoresTransformations , False )
+        self.onPositionChange(self._item.pos())
 
     def mousePressEvent(self : Self, event : QGraphicsSceneMouseEvent) -> None:
         self._item.mousePressEvent(event)
@@ -33,127 +38,43 @@ class Tether(QGraphicsItem):
     def mouseDoubleClickEvent(self : Self, event : QGraphicsSceneMouseEvent) -> None:
         self._item.mouseDoubleClickEvent(event)
 
+    def onPositionChange(self : Self, pos : QPointF) -> None:
+        self._brect = QRectF()
+        parent : Optional[KeyPoint] = self._item.parentItem()
+        if parent is None:
+            return
+        self._pos = self._item._anchor_offset
+        self._ppos = self._item.mapFromParent(parent.pos())
+        rect = QRectF(self._pos, self._ppos).normalized()
+        self._brect = rect.adjusted(-5, -5, 5, 5) # TODO check this
+
     def boundingRect(self) -> QRectF:
-        parent : Optional[ElementMixin] = self._item.parentItem()
-        if not parent:
-            return QRectF()
-        anchor_pos = self._item._kpm.anchor_offset
-        cleat_pos_parent = parent._kpm.key_points[self._item._cleat].pos()
-        cleat_pos_local = self._item.mapFromParent(cleat_pos_parent)
-        rect = QRectF(anchor_pos, cleat_pos_local).normalized()
-        return rect.adjusted(-5, -5, 5, 5)
+        return self._brect
 
     def paint(self, painter: QPainter, option: QStyleOptionGraphicsItem, widget: QWidget) -> None:
         if not self._item:
             return
-        parent = self._item.parentItem()
-        if not parent:
+        if self._brect == QRectF():
             return
-        anchor_pos = self._item._kpm.anchor_offset
-        cleat_pos_parent = parent._kpm.key_points[self._item._cleat].pos()
-        cleat_pos_local = self._item.mapFromParent(cleat_pos_parent)
         painter.setPen(self._item.outline.pen)
-        painter.drawLine(anchor_pos, cleat_pos_local)
-
-# Understanding positioning:
-# 1. TetherText pos is offset from cleat pos to TetherText anchor
-# 2. cleat pos is relative to parent top left
-# 3. TetherText anchor offset is relative to TetherText top left
-# So when a TetherText pos is specified, the cleat pos is added,
-# and then anchor offset is subtracted.
-# This cleat-to-anchor pos is stored in _pos. Useful for cleat (keypoint) moves.
+        painter.drawLine(self._pos, self._ppos)
 
 class TetherText(BaseText):
-    # class variables
-    _ATTR_SPECS_POS = [
-        AttrSpec(
-            name      = "Cleat",
-            type_name = "KP",
-            exists    = lambda self: True,
-            getter    = lambda self: self.cleat(),
-            setter    = lambda self, value: self.setCleat(value)
-        )
-    ] + BaseText._ATTR_SPECS_POS
-    _ATTR_SPECS = \
-        _ATTR_SPECS_POS + \
-        BaseText._ATTR_SPECS_TEXT + \
-        BaseText._ATTR_SPECS_APPEARANCE
-
     # instance variables
-    _cleat  : KP
-    _cpos   : QPointF  # anchor posistion w.r.t. cleat
     _tether : Optional[Tether]
 
     def __init__(
         self    : Self,
+        text    : str = "",
         pos     : QPointF = QPointF(0, 0),
-        anchor  : KP = KP.TOP_LEFT,
-        cleat   : KP = KP.BOTTOM_LEFT,
+        anchor  : KPLoc = KPLoc.TOP_LEFT,
         bare    : bool = False
     ) -> None:
-        self._cleat  = cleat
-        super().__init__("", pos, anchor, bare)
+        super().__init__(text, pos, anchor, bare)
         self._tether = Tether(self)
 
-    def onParentChange(self : Self, parent : Optional[QGraphicsItem]) -> None:
-        self.setPos()
-
-    def onPositionChange(self : Self, new_pos : QPointF) -> None:
-        parent = self.parentItem()
-        if parent is not None and hasattr(parent, '_kpm') and parent._kpm is not None:
-            parent_kpm = parent._kpm
-            cleat_pos = parent_kpm.key_points[self._cleat].pos()
-            # Calculate the new cleat-relative position
-            self._cpos = new_pos - cleat_pos + self._kpm.anchor_offset
-
-    def onGeometryChange(self : Self) -> None:
-        self._rect = super().boundingRect()
-        self._kpm.updatePositions()
-        self.setPos()
+    def onPositionChange(self : Self, pos : QPointF) -> None:
+        self._tether.onPositionChange(pos)
 
     def onSelectionChange(self : Self, selected : bool) -> None:
-        super().onSelectionChange(selected)
         self._tether.setVisible(selected)
-
-    def getMenuItems(self : Self) -> list[str]:
-        return ["Appearance..."]
-
-    def setPos(self : Self, pos : Optional[QPointF] = None) -> None:
-        """Set offset from parent cleat to my anchor."""
-        if pos is None:
-            pos = self._cpos
-        else:
-            self._cpos = pos
-        parent : Optional[ElementMixin] = self.parentItem()
-        if parent is not None and hasattr(parent, '_kpm') and parent._kpm is not None:
-            parent_kpm : KPManager = parent._kpm
-            # cleat position is relative to parent top left
-            cleat_pos = parent_kpm.key_points[self._cleat].pos()
-        else:
-            cleat_pos = QPointF(0, 0)
-        anchor_pos = pos + cleat_pos
-        super().setPos(anchor_pos)
-
-    def setPosX(self : Self, value : float) -> None:
-        self.setPos(QPointF(value, self._cpos.y()))
-
-    def setPosY(self : Self, value : float) -> None:
-        self.setPos(QPointF(self._cpos.x(), value))
-
-    def pos(self : Self) -> QPointF:
-        return self._cpos
-
-    def cleat(self : Self) -> KP:
-        return self._cleat
-
-    def setCleat(self : Self, cleat : KP) -> None:
-        self._cleat = cleat
-        self.setPos()
-
-    def clone(self : Self) -> Self:
-        """Create a clone of this TetherText with a new UUID."""
-        clone = TetherText(self.pos(), self.anchor(), self.cleat())
-        clone.quill = QuillColorFont(
-            clone, self.quill.getPref()
-        )
-        return clone

@@ -4,12 +4,10 @@ from typing import Self, Optional
 
 from PyQt6.QtCore    import pyqtSignal, QPointF, QRectF, QSizeF, \
                             QXmlStreamWriter, QXmlStreamReader
-from PyQt6.QtWidgets import QGraphicsScene, QGraphicsItem
+from PyQt6.QtWidgets import QGraphicsScene
 from PyQt6.QtGui     import QUndoStack
 
 from ....core import logger, toXmlAttrs, fromXmlAttrs
-
-from ..items import PropertiesMixin, ElementMixin, element_class_dict
 
 from ..items.text_block    import TextBlock
 
@@ -17,34 +15,33 @@ from .api import *
 
 from .... import hub
 
-from .. import AttrSpec
+from ..properties import PropertySpec, PropertiesMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ....core import DrawingItem
 
 class DrawingScene(
-    QGraphicsScene,
     DrawingSceneApiMixin,
-    PropertiesMixin
+    PropertiesMixin,
+    QGraphicsScene
 ):
     # class variables
-    _ATTR_SPECS = [
-        AttrSpec(
-            name      = "Name",
+    _PROPERTY_SPECS = {
+        "Name" : PropertySpec(
             type_name = "str",
             exists    = lambda self: True,
             getter    = lambda self: self.getName(),
             setter    = lambda self, value: self.setName(value)
         )
-    ]
+    }
 
     # instance variables
     item       : Optional["DrawingItem"]
     undo_stack : Optional[QUndoStack]
 
     # custom signals
-    textEditingComplete   = pyqtSignal(TextBlock)
+    textEditingComplete = pyqtSignal(TextBlock)
 
     def __init__(
         self    : Self,
@@ -73,6 +70,7 @@ class DrawingScene(
 
     @classmethod
     def fromXml(cls : Self, xr : QXmlStreamReader, parent : Optional["DrawingItem"] = None) -> Self:
+        from ..items import element_class_dict
         cls_name = cls.__name__
         if xr.name() != cls_name:
             raise ValueError(f"Expected {cls_name} element, got {xr.name()}")

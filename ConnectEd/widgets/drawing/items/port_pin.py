@@ -1,4 +1,4 @@
-__all__ = ["Port", "cmdPlacePort", "BlockPin"]
+__all__ = ["Port", "cmdPlacePort", "BlockPin", "cmdPlaceBlockPin"]
 
 from typing import Self, Optional, Any
 
@@ -7,70 +7,68 @@ from PyQt6.QtWidgets import QWidget, QStyleOptionGraphicsItem, \
                             QGraphicsItemGroup, QStyle, QGraphicsItem
 from PyQt6.QtGui     import QPainter, QPainterPath
 
-from . import SignalDirection, VectorRange, Edge, EdgeLoc, \
-              ElementCloneMixin, cmdPlaceElement, AttrSpec
+from ..properties import SimplePropertySpec, PropertySpec, PropertiesMixin
 
-from .node       import Node
-from .annotation import Annotation
-from .arrow      import SignalArrow
+from . import SignalDirection, VectorRange, Edge, EdgeLoc, KPLoc, \
+              ElementBoundShapeMixin, \
+              ElementChangeMixin, \
+              ElementCloneMixin, \
+              cmdPlaceElement
+
+from .node import Node
+from .arrow import SignalArrow
+from .tether_text import TetherText
 
 from .... import hub
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from .base_rect import BaseRectWithPins
+    from .pin_rect import PinRect
 
-class PortPinMixin:
+
+class PortPinMixin(ElementBoundShapeMixin, PropertiesMixin):
     # class attributes
     _NODE_CLASS  = None  # subclass to override
     _NAME_CLASS  = None  # subclass to override
-    _NAME_GAP    = 2
-    _ATTR_SPECS = [
-        AttrSpec(
-            name      = "Name",
-            type_name = "str",
-            exists    = lambda self: True,
-            getter    = lambda self: self.name,
-            setter    = lambda self, value: setattr(self, 'name', value)
+    _NAME_OFFSET = 2.5
+    _PROPERTY_SPECS = {
+        "Name" : SimplePropertySpec(
+            value     = "",
+            inherent  = True
         ),
-        AttrSpec(
-            name      = "Direction",
+        "Direction" : PropertySpec(
             type_name = "SignalDirection",
             exists    = lambda self: True,
             getter    = lambda self: self.direction,
             setter    = lambda self, value: setattr(self, 'direction', value)
         ),
-        AttrSpec(
-            name      = "Range Left",
+        "Range Left" : PropertySpec(
             type_name = "str",
             exists    = lambda self: self.range is not None,
             getter    = lambda self: self.range.left,
             setter    = lambda self, value: setattr(self.range, 'left', value)
         ),
-        AttrSpec(
-            name      = "Range Direction",
+        "Range Direction" : PropertySpec(
             type_name = "RangeDirection",
             exists    = lambda self: self.range is not None,
             getter    = lambda self: self.range.dir,
             setter    = lambda self, value: setattr(self.range, 'dir', value)
         ),
-        AttrSpec(
-            name      = "Range Right",
+        "Range Right" : PropertySpec(
             type_name = "str",
             exists    = lambda self: self.range is not None,
             getter    = lambda self: self.range.right,
             setter    = lambda self, value: setattr(self.range, 'right', value)
         )
-    ]
+    }
 
     # instance attributes
-    _name      : str
-    _direction : SignalDirection
-    _range     : Optional[VectorRange]
+    _direction : SignalDirection        # in/out/bi
+    _range     : Optional[VectorRange]  # vector range if applicable
     _node      : Node
-    _name_text : Annotation
-    _rect      : QRectF
-    _shape     : QPainterPath
+    _name_text : TetherText
+    _brect     : QRectF                 # bounding rect
+    _hshape    : QPainterPath           # hit detect shape
 
     def initPortPin(
         self        : Self,
@@ -79,46 +77,31 @@ class PortPinMixin:
         range       : Optional[VectorRange] = None,
         name_parent : Optional[QGraphicsItem] = None
     ) -> None:
-        if hasattr(self, '_ATTR_SPECS'):
-            self._ATTR_SPECS_BY_NAME = {spec.name: spec for spec in self._ATTR_SPECS}
-            self._ATTR_SPECS_BY_TAG = {spec.tag: spec for spec in self._ATTR_SPECS}
         self.setFlag(self.GraphicsItemFlag.ItemIsSelectable, True)
+        self.initBoundShape()
         self._node = self._NODE_CLASS(self)
         self.addToGroup(self._node)
         self._name_text = self._NAME_CLASS(
             name,
-            QPointF(),
-            self if name_parent is None else name_parent
+            QPointF(self._NAME_OFFSET, 0),
+            KPLoc.CENTER_LEFT
         )
-        self._rect = QRectF()
-        self._shape = QPainterPath()
         self.name = name
         self.direction = direction
         self.range = range
         self.onSettingsChange()
+        self.initProperties()
         hub.settings.changed.connect(self.onSettingsChange)
 
-    def itemChange(
-        self   : Self,
-        change : QGraphicsItemGroup.GraphicsItemChange,
-        value  : Any
-    ) -> Any:
-        if change == self.GraphicsItemChange.ItemSelectedHasChanged:
-            self.onSelectionChange(value)
-        return super().itemChange(change, value)
-
-    def onSettingsChange(self : Self) -> None:
-        self.onGeometryChange()
-
     def onSelectionChange(self : Self, selected : bool) -> None:
-        self._node.onSelectionChange(selected)
-        self._name_text.onSelectionChange(selected)
+        self._node.setSelected(selected)
+        self._name_text.setSelected(selected)
 
     def boundingRect(self : Self) -> QRectF:
-        return self._rect
+        return self._brect
 
     def shape(self : Self) -> QPainterPath:
-        return self._shape
+        return self._hshape
 
     def paint(
         self    : Self,
@@ -130,10 +113,10 @@ class PortPinMixin:
         super().paint(painter, option, widget)
         if self.isSelected():
             painter.setPen(self._node.outline.pen)
-            painter.drawRect(self._rect)
+            painter.drawRect(self._brect)
 
     def _nodeRect(self : Self) -> QRectF:
-        rect = self._node.boundingRect()
+        rect = self._node._brect
         rect.translate(self._node.pos())
         return rect
 
@@ -143,9 +126,7 @@ class PortPinMixin:
 
     @name.setter
     def name(self : Self, name : str) -> None:
-        self._name = name
-        self._name_text.setText(name)
-        self.onGeometryChange()
+        self.setProperty("Name", name)
 
     @property
     def range(self : Self) -> Optional[VectorRange]:
@@ -154,29 +135,6 @@ class PortPinMixin:
     @range.setter
     def range(self : Self, range : Optional[VectorRange]) -> None:
         self._range = range
-
-    @classmethod
-    def createOrUpdate(
-        cls  : Self,
-        *args,
-        inst : Optional[Self] = None
-    ) -> "Port":
-        inst = cls() if inst is None else inst
-        for arg in args:
-            match arg:
-                case str() as name:
-                    inst.name = name
-                case SignalDirection() as direction:
-                    inst.direction = direction
-                case VectorRange() as range:
-                    inst.range = range
-                case QPointF() as pos:
-                    inst.setPos(pos)
-                case None:
-                    pass
-                case _:
-                    raise TypeError(f"Unsupported argument type: {type(arg)}")
-        return inst
 
     def toXml(self : Self, xw : QXmlStreamWriter) -> None:
         from ....core import toXmlAttrs
@@ -194,33 +152,35 @@ class PortPinMixin:
 class PortNode(Node):
     pass
 
-class PortName(Annotation):
-    pass
-
 class PortArrow(SignalArrow):
     _PATH_IN  = SignalArrow._PATH_AWAY
     _PATH_OUT = SignalArrow._PATH_TOWARDS
 
-class Port(PortPinMixin, QGraphicsItemGroup):
+class PortName(TetherText):
+    pass
+
+class Port(
+    ElementChangeMixin,
+    PortPinMixin,
+    QGraphicsItemGroup
+):
     # class attributes
-    _NODE_CLASS  = PortNode
-    _NAME_CLASS  = PortName
-    _ATTR_SPECS = PortPinMixin._ATTR_SPECS + [
-        AttrSpec(
-            name      = "Position X",
+    _NODE_CLASS = PortNode
+    _NAME_CLASS = PortName
+    _PROPERTY_SPECS = PortPinMixin._PROPERTY_SPECS | {
+        "Position X" : PropertySpec(
             type_name = "float",
             exists    = lambda self: True,
             getter    = lambda self: self.pos().x(),
             setter    = lambda self, value: self.setPos(QPointF(value, self.pos().y()))
         ),
-        AttrSpec(
-            name      = "Position Y",
+        "Position Y" : PropertySpec(
             type_name = "float",
             exists    = lambda self: True,
             getter    = lambda self: self.pos().y(),
             setter    = lambda self, value: self.setPos(QPointF(self.pos().x(), value))
         )
-    ]
+    }
 
     # instance attributes
     _arrow : PortArrow
@@ -237,17 +197,20 @@ class Port(PortPinMixin, QGraphicsItemGroup):
         self._arrow = PortArrow(self)
         self._arrow.setDirection(direction)
         self._arrow.setPos(QPointF(self._arrow._SIZE, 0))
+        self.addToGroup(self._arrow)
         self.initPortPin(name, direction, range, self._arrow)
         self.setPos(pos)
-        self.addToGroup(self._arrow)
 
     def onGeometryChange(self : Self) -> None:
         """Port specific (includes arrow)."""
         self.prepareGeometryChange()
-        self._name_text.setPos(self._namePos())
-        self._rect = self._nodeRect() | self._nameRect() | self._arrowRect()
-        self._shape.clear()
-        self._shape.addRect(self._rect)
+        node_rect = self._node._brect
+        node_rect.translate(self._node.pos())
+        arrow_rect = self._arrow._brect
+        arrow_rect.translate(self._arrow.pos())
+        self._brect = node_rect | arrow_rect
+        self._hshape.clear()
+        self._hshape.addRect(self._brect)
 
     def onSelectionChange(self : Self, selected : bool) -> None:
         """Port specific (includes arrow)."""
@@ -270,33 +233,41 @@ class Port(PortPinMixin, QGraphicsItemGroup):
         rect.translate(name_pos - self._name_text._anchor_offset)
         return rect
 
-    def _arrowRect(self : Self) -> QRectF:
-        return self._arrow.boundingRect()
-
-    def _namePos(self : Self) -> QPointF:
-        name_offset = self._arrow.line.pen.width()/2 + self._NAME_GAP
-        return QPointF(name_offset, 0)
+    @classmethod
+    def createOrUpdate(
+        cls  : Self,
+        name        : Optional[str]             = None,
+        direction   : Optional[SignalDirection] = None,
+        range       : Optional[VectorRange]     = None,
+        pos         : Optional[QPointF]         = None,
+        inst        : Optional[Self]            = None
+    ) -> Self:
+        inst = cls() if inst is None else inst
+        if name is not None:
+            inst.name = name
+        if direction is not None:
+            inst.direction = direction
+        if range is not None:
+            inst.range = range
+        if pos is not None:
+            inst.setPos(pos)
+        return inst
 
 class cmdPlacePort(cmdPlaceElement):
     pass
 
 class BasePin(ElementCloneMixin, PortPinMixin, QGraphicsItemGroup):
     # class attributes
-    _NODE_CLASS  = None  # subclass to override
     _INNER_CLASS = None  # subclass to override
     _OUTER_CLASS = None  # subclass to override
-    _NAME_CLASS  = None  # subclass to override
-    _NAME_GAP    = 2
-    # Extend PortPinMixin._ATTR_SPECS with Location attribute
-    _ATTR_SPECS = PortPinMixin._ATTR_SPECS + [
-        AttrSpec(
-            name      = "Location",
+    _PROPERTY_SPECS = PortPinMixin._PROPERTY_SPECS | {
+        "Location" : PropertySpec(
             type_name = "EdgeLoc",
             exists    = lambda self: True,
             getter    = lambda self: self.loc(),
             setter    = lambda self, value: self.setLoc(value)
         )
-    ]
+    }
 
     # instance attributes
     _loc   : EdgeLoc
@@ -305,12 +276,12 @@ class BasePin(ElementCloneMixin, PortPinMixin, QGraphicsItemGroup):
 
     def __init__(
         self      : Self,
-        name      : str                          = "",
-        direction : SignalDirection              = SignalDirection.IN,
-        range     : Optional[VectorRange]        = None,
-        loc       : EdgeLoc                      = EdgeLoc(),
-        parent    : Optional["BaseRectWithPins"] = None,
-        bare      : bool                         = False
+        name      : str                   = "",
+        direction : SignalDirection       = SignalDirection.IN,
+        range     : Optional[VectorRange] = None,
+        loc       : EdgeLoc               = EdgeLoc(),
+        parent    : Optional["PinRect"]   = None,
+        bare      : bool                  = False
     ) -> None:
         QGraphicsItemGroup.__init__(self, parent)
         if self._INNER_CLASS is not None:
@@ -331,10 +302,10 @@ class BasePin(ElementCloneMixin, PortPinMixin, QGraphicsItemGroup):
         self.prepareGeometryChange()
         self._node.setPos(self._nodePos())
         self._name_text.setPos(self._namePos())
-        self._rect = self._nodeRect() | self._nameRect()
-        self._rect |= self._innerRect() | self._outerRect()
-        self._shape.clear()
-        self._shape.addRect(self._rect)
+        self._brect = self._nodeRect() | self._nameRect()
+        self._brect |= self._innerRect() | self._outerRect()
+        self._hshape.clear()
+        self._hshape.addRect(self._brect)
 
     def onSelectionChange(self : Self, selected : bool) -> None:
         """Pin specific (includes inner/outer)."""
@@ -378,7 +349,7 @@ class BasePin(ElementCloneMixin, PortPinMixin, QGraphicsItemGroup):
                 case Edge.RIGHT:  self._name_text.setRotation(180)
                 case Edge.TOP:    self._name_text.setRotation(180)
                 case Edge.BOTTOM: self._name_text.setRotation(0)
-        parent : "BaseRectWithPins" = self.parentItem()
+        parent : "PinRect" = self.parentItem()
         edge_pos = parent.getEdgeLocPos(loc) if parent else QPointF()
         self.setPos(edge_pos)
 
@@ -387,7 +358,7 @@ class BasePin(ElementCloneMixin, PortPinMixin, QGraphicsItemGroup):
         pos  : QPointF,
         snap : Optional[QPointF] = None
     ) -> None:
-        parent : "BaseRectWithPins" = self.parentItem()
+        parent : "PinRect" = self.parentItem()
         self.setLoc(parent.getEdgeLoc(pos, snap))
 
     def _nameRect(self : Self) -> QRectF:
@@ -398,9 +369,7 @@ class BasePin(ElementCloneMixin, PortPinMixin, QGraphicsItemGroup):
         return rect
 
     def _innerRect(self : Self) -> QRectF:
-        if hasattr(self, "_inner"):
-            return self._inner.boundingRect()
-        return QRectF()
+        return self._inner.boundingRect() if hasattr(self, "_inner") else QRectF()
 
     def _outerRect(self : Self) -> QRectF:
         if hasattr(self, "_outer"):
@@ -415,11 +384,8 @@ class BasePin(ElementCloneMixin, PortPinMixin, QGraphicsItemGroup):
 
     def _namePos(self : Self) -> QPointF:
         """Pin specific (includes inner/outer)."""
-        parent : "BaseRectWithPins" = self.parentItem()
-        parent_edge_width = parent.line.pen.width() if parent else 0
-        name_offset = parent_edge_width + self._NAME_GAP
-        if hasattr(self, "_inner"):
-            name_offset += self._inner._SIZE
+        parent : "PinRect" = self.parentItem()
+        name_offset = parent.line.pen.width()/2 + self._NAME_OFFSET
         return QPointF(name_offset, 0)
 
     def _namePos(self : Self) -> QPointF:
@@ -429,17 +395,17 @@ class BasePin(ElementCloneMixin, PortPinMixin, QGraphicsItemGroup):
 class BlockPinNode(Node):
     pass
 
-class BlockPinName(Annotation):
-    pass
-
 class BlockPinArrow(SignalArrow):
     _PATH_IN  = SignalArrow._PATH_TOWARDS
     _PATH_OUT = SignalArrow._PATH_AWAY
 
+class BlockPinName(TetherText):
+    pass
+
 class BlockPin(BasePin):
     _NODE_CLASS  = BlockPinNode
-    _INNER_CLASS = BlockPinArrow
     _NAME_CLASS  = BlockPinName
+    _INNER_CLASS = BlockPinArrow
 
     _inner : BlockPinArrow
 
@@ -455,4 +421,3 @@ class BlockPin(BasePin):
 
 class cmdPlaceBlockPin(cmdPlaceElement):
     pass
-

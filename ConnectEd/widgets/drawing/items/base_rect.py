@@ -3,131 +3,78 @@ __all__ = ["BaseRectangle"]
 from typing import Self, Optional, overload
 
 from PyQt6.QtCore    import Qt, QPointF, QRectF, QSizeF
-from PyQt6.QtWidgets import QWidget, QStyleOptionGraphicsItem, QGraphicsRectItem
+from PyQt6.QtWidgets import QGraphicsRectItem, \
+                            QWidget, QStyleOptionGraphicsItem, QStyle
 from PyQt6.QtGui     import QPainter, QPainterPath, QPainterPathStroker
 
-from ....core   import logger, Z_DRAWING
+from ....core   import logger
 
-from . import EdgeLoc, Edge, AttrSpec, KP, KPDef, \
+from ..properties import PropertySpec
+
+from ..properties import PropertySpec, PropertiesMixin
+
+from . import KPLoc, \
               ElementMixin, \
+              ElementBoundShapeMixin, \
               ElementPosMixin, \
-              ElementKeypointsMixin, \
+              ElementRectKeypointsMixin, \
               ElementLineMixin, \
               ElementFillMixin, \
               ElementChangeMixin, \
               ElementCloneMixin, \
               ElementXmlMixin, \
-              PropertiesMixin, \
               ElementMenuMixin, \
               cmdPlaceElement
-
-from .port_pin      import BasePin
-from .property_text import PropertyText
 
 from .... import hub
 
 
 class BaseRectangle(
     ElementMixin,
+    ElementBoundShapeMixin,
     ElementPosMixin,
-    ElementKeypointsMixin,
+    ElementRectKeypointsMixin,
     ElementLineMixin,
     ElementFillMixin,
     ElementChangeMixin,
     ElementCloneMixin,
     ElementXmlMixin,
-    PropertiesMixin,
     ElementMenuMixin,
+    PropertiesMixin,
     QGraphicsRectItem
 ):
     """Base class for rectangle elements."""
 
     # class variables
-    _ATTR_SPECS = \
-        ElementPosMixin._ATTR_SPECS_POS + \
-        [
-            AttrSpec(
-                name      = "Width",
+    _PROPERTY_SPECS = \
+        ElementPosMixin._PROPERTY_SPECS_POS | \
+        {
+            "Width" : PropertySpec(
                 type_name = "float",
                 exists    = lambda self: True,
                 getter    = lambda self: self.rect().width(),
                 setter    = lambda self, value: self.setWidth(value)
             ),
-            AttrSpec(
-                name      = "Height",
+            "Height" : PropertySpec(
                 type_name = "float",
                 exists    = lambda self: True,
                 getter    = lambda self: self.rect().height(),
                 setter    = lambda self, value: self.setHeight(value)
             )
-        ] + \
-        ElementLineMixin._ATTR_SPECS_LINE + \
-        ElementFillMixin._ATTR_SPECS_FILL
-    MIN_SIZE = QSizeF(1.0, 1.0)
-    _KEY_POINTS = [KPDef(k, k != KP.CENTER, True) for k in KP.__iter__()]
+        } | \
+        ElementLineMixin._PROPERTY_SPECS_LINE | \
+        ElementFillMixin._PROPERTY_SPECS_FILL
+    _MIN_SIZE = QSizeF(1.0, 1.0)
 
     # instance variables
-    _rect          : QRectF
-    _bounding_rect : QRectF
-    _shape         : QPainterPath
+    _rect : QRectF  # cached rectangle
 
-    @overload
-    def __init__(
-        self : Self,
-        rect : QRectF
-    ) -> None:
-        ...
-
-    @overload
-    def __init__(
-        self : Self,
-        pos  : QPointF,
-        size : QSizeF
-    ) -> None:
-        ...
-
-    @overload
-    def __init__(
-        self : Self,
-        p1   : QPointF,
-        p2   : QPointF
-    ) -> None:
-        ...
-
-    @overload
-    def __init__(
-        self : Self,
-        a1   : float | int,
-        a2   : float | int,
-        a3   : float | int,
-        a4   : float | int
-    ) -> None:
-        ...
-
-    def __init__(
-        self : Self,
-        a1   : QRectF | QPointF | float = QRectF(),
-        a2   : Optional[QSizeF | QPointF | float] = None,
-        a3   : Optional[float | int]              = None,
-        a4   : Optional[float | int]              = None,
-        bare : bool = False
-    ) -> None:
+    def __init__(self : Self, bare : bool = False) -> None:
         super().__init__()
         self.initElement(bare=bare)
-        if isinstance(a1, QRectF):
-            self.setRect(a1)
-        elif isinstance(a1, QPointF) and isinstance(a2, QSizeF):
-            self.setRect(a1, a2)
-        elif isinstance(a1, QPointF) and isinstance(a2, QPointF):
-            self.setPoints(a1, a2)
-        elif isinstance(a1, (float, int)) and isinstance(a2, (float, int)) \
-              and isinstance(a3, (float, int)) and isinstance(a4, (float, int)):
-            self.setRect(a1, a2, a3, a4)
-        else:
-            logger.error(f"Invalid arguments: expected (x, y, w, h), (pos, size), or (rect); got {a1}, {a2}, {a3}, {a4}")
 
-    def onGeometryChange(self : Self) -> None:
-        self.prepareGeometryChange()
+    def onSizeChange(self : Self) -> None:
+        self.prepareGeometryChange() # because boundaryRect and shape may change
         pen_width = self.line.pen.widthF()
         tolerance = hub.settings.get("display/select/tolerance")
         stroke_width = pen_width + (2 * tolerance)
@@ -138,11 +85,12 @@ class BaseRectangle(
         stroker.setCapStyle(Qt.PenCapStyle.SquareCap)
         stroker.setJoinStyle(Qt.PenJoinStyle.MiterJoin)
         stroker_path = stroker.createStroke(rect_path)
-        self._bounding_rect = stroker_path.boundingRect()
+        self._brect = stroker_path.boundingRect()
         if self.fill.brush.style() != Qt.BrushStyle.NoBrush:
-            self._shape = rect_path.united(stroker_path)
+            self._hshape = rect_path.united(stroker_path)
         else:
-            self._shape = stroker_path
+            self._hshape = stroker_path
+        self.updateKeypoints()
 
     def getMenuItems(self : Self) -> list[str]:
         return ["Appearance..."]
@@ -175,18 +123,8 @@ class BaseRectangle(
             super().setRect(rect_or_ax)
         else:
             super().setRect(rect_or_ax, ay, w, h)
-        self._rect = self.rect()
-        self.onGeometryChange()
-        self._kpm.updatePositions()
-        for item in self.childItems():
-            if isinstance(item, BasePin | PropertyText):
-                item.onGeometryChange()
-
-    def boundingRect(self : Self) -> QRectF:
-        return self._bounding_rect
-
-    def shape(self : Self) -> QPainterPath:
-        return self._shape
+        self._kprect = self._rect = self.rect()
+        self.onSizeChange()
 
     def paint(
         self    : Self,
@@ -194,27 +132,13 @@ class BaseRectangle(
         option  : QStyleOptionGraphicsItem,
         widget  : QWidget
     ) -> None:
-        painter.setPen(self.line.pen)
-        painter.setBrush(self.fill.brush)
-        painter.drawRect(self._rect)
-
-    def setSize(self : Self, size : QSizeF) -> None:
-        self.setRect(0, 0, size.width(), size.height())
-
-    def setWidth(self : Self, width : float) -> None:
-        rect = self.rect()
-        rect.setWidth(width)
-        self.setRect(rect)
-
-    def setHeight(self : Self, height : float) -> None:
-        rect = self.rect()
-        rect.setHeight(height)
-        self.setRect(rect)
+        option.state &= ~QStyle.StateFlag.State_Selected
+        super().paint(painter, option, widget)
 
     def setPosSize(self : Self, pos : QPointF, size : QSizeF) -> None:
         self.setPos(pos)
-        size.setWidth(max(size.width(), self.MIN_SIZE.width()))
-        size.setHeight(max(size.height(), self.MIN_SIZE.height()))
+        size.setWidth(max(size.width(), self._MIN_SIZE.width()))
+        size.setHeight(max(size.height(), self._MIN_SIZE.height()))
         self.setRect(0, 0, size.width(), size.height())
 
     @overload
@@ -269,104 +193,54 @@ class BaseRectangle(
     def getPoints(self : Self) -> tuple[QPointF, QPointF]:
         return self.pos(), self.pos() + self.rect().bottomRight()
 
-    def moveKeyPoint(self : Self, kp : KP, delta : QPointF) -> None:
+    def moveKeypoint(self : Self, kp : KPLoc, delta : QPointF) -> None:
         p1, p2 = self.getPoints()
         d = delta
         match kp:
-            case KP.TOP_LEFT:
+            case KPLoc.TOP_LEFT:
                 self.setPoints(p1 + d, p2)
-            case KP.TOP_CENTER:
+            case KPLoc.TOP_CENTER:
                 self.setPoints(p1.x(), p1.y() + d.y(), p2.x(), p2.y())
-            case KP.TOP_RIGHT:
+            case KPLoc.TOP_RIGHT:
                 self.setPoints(p1.x(), p1.y() + d.y(), p2.x() + d.x(), p2.y())
-            case KP.CENTER_LEFT:
+            case KPLoc.CENTER_LEFT:
                 self.setPoints(p1.x() + d.x(), p1.y(), p2.x(), p2.y())
-            case KP.CENTER:
+            case KPLoc.CENTER:
                 self.setPos(self.pos() + d)
-            case KP.CENTER_RIGHT:
+            case KPLoc.CENTER_RIGHT:
                 self.setPoints(p1.x(), p1.y(), p2.x() + d.x(), p2.y())
-            case KP.BOTTOM_LEFT:
+            case KPLoc.BOTTOM_LEFT:
                 self.setPoints(p1.x() + d.x(), p1.y(), p2.x(), p2.y() + d.y())
-            case KP.BOTTOM_CENTER:
+            case KPLoc.BOTTOM_CENTER:
                 self.setPoints(p1.x(), p1.y(), p2.x(), p2.y() + d.y())
-            case KP.BOTTOM_RIGHT:
+            case KPLoc.BOTTOM_RIGHT:
                 self.setPoints(p1, p2 + d)
             case _:
                 raise ValueError(f"Invalid key point: {kp}")
 
-    @overload
-    @classmethod
-    def createOrUpdate(
-        cls   : Self,
-        rect  : QRectF,
-        *,
-        inst  : Optional[Self] = None
-    ) -> "BaseRectangle":
-        ...
-
-    @overload
     @classmethod
     def createOrUpdate(
         cls  : Self,
-        pos  : QPointF,
-        size : QSizeF,
         *,
-        inst : Optional[Self] = None
-    ) -> "BaseRectangle":
-        ...
-
-    @overload
-    @classmethod
-    def createOrUpdate(
-        cls  : Self,
-        p1   : QPointF,
-        p2   : QPointF,
-        *,
-        inst : Optional[Self] = None
-    ) -> "BaseRectangle":
-        ...
-
-    @overload
-    @classmethod
-    def createOrUpdate(
-        cls  : Self,
-        ax   : float | int,
-        ay   : float | int,
-        w    : float | int,
-        h    : float | int,
-        *,
-        inst : Optional[Self] = None
-    ) -> "BaseRectangle":
-        ...
-
-    @classmethod
-    def createOrUpdate(
-        cls  : Self,
-        a1   : QRectF | QPointF | float | int,
-        a2   : Optional[QSizeF | QPointF | float | int] = None,
-        a3   : Optional[float | int] = None,
-        a4   : Optional[float | int] = None,
-        *,
+        pos  : Optional[QPointF]     = None,
+        size : Optional[QSizeF]      = None,
+        p1   : Optional[QPointF]     = None,
+        p2   : Optional[QPointF]     = None,
+        x1   : Optional[float | int] = None,
+        y1   : Optional[float | int] = None,
+        x2   : Optional[float | int] = None,
+        y2   : Optional[float | int] = None,
         inst : Optional[Self] = None
     ) -> "BaseRectangle":
         inst = cls() if inst is None else inst
-        if isinstance(a1, QRectF) and a2 is None and a3 is None and a4 is None:
-            inst.setRect(a1)
-        elif isinstance(a1, QPointF) and isinstance(a2, QSizeF) \
-             and a3 is None and a4 is None:
-            inst.setPosSize(a1, a2)
-        elif isinstance(a1, QPointF) and isinstance(a2, QPointF) \
-             and a3 is None and a4 is None:
-            inst.setPoints(a1, a2)
-        elif isinstance(a1, QPointF) and a2 is None \
-             and a3 is None and a4 is None:
-            inst.setPosSize(a1, cls.MIN_SIZE)
-        elif isinstance(a1, float | int) and isinstance(a2, float | int) \
-             and isinstance(a3, float | int) and isinstance(a4, float | int):
-            inst.setRect(a1, a2, a3, a4)
-        else:
-            logger.error(f"Invalid arguments: expected (rect), (pos, size), (p1, p2), or (x, y, w, h); got {a1}, {a2}, {a3}, {a4}")
-            inst = None
+        if pos is not None:
+            inst.setPos(pos)
+        if size is not None:
+            inst.setSize(size)
+        if p1 is not None and p2 is not None:
+            inst.setPoints(p1, p2)
+        if x1 is not None and y1 is not None and x2 is not None and y2 is not None:
+            inst.setRect(x1, y1, x2 - x1, y2 - y1)
         return inst
 
     def clone(self : Self) -> Self:
@@ -378,85 +252,3 @@ class BaseRectangle(
 
 class cmdPlaceBaseRectangle(cmdPlaceElement):
     pass
-
-class BaseRectWithPins(BaseRectangle):
-    def getMenuItems(self : Self) -> list[str]:
-        return ["Add Pin...", "-", "Appearance..."]
-
-    def getEdgeLoc(
-        self : Self,
-        pos  : QPointF,
-        snap : Optional[QPointF] = None
-    ) -> EdgeLoc:
-        def _snap(loc : EdgeLoc) -> EdgeLoc:
-            e = loc.edge
-            if snap is None:
-                d = loc.distance
-            elif loc.edge in [Edge.LEFT, Edge.RIGHT]:
-                d = round(loc.distance / snap.x()) * snap.x()
-            else:
-                d = round(loc.distance / snap.y()) * snap.y()
-            return EdgeLoc(e, d)
-        centre_pos = self._rect.center() # always +ve (offset from top left)
-        centre_lpos = self.pos() + centre_pos
-        size = self._rect.size()
-        w = size.width(); h = size.height()
-        half_w = w / 2; half_h = h / 2
-        # special case: centre
-        if pos == centre_lpos:
-            return _snap(EdgeLoc(Edge.LEFT, half_h))
-        offset = pos - centre_lpos
-        dx = offset.x(); dy = offset.y()
-        # special case: zero width or height => capped linear distance
-        if size.width() == 0 and size.height() != 0:
-            edge = Edge.LEFT if dx <= 0 else Edge.RIGHT
-            distance = min(max(half_h + dy, 0), h)
-            return _snap(EdgeLoc(edge, distance))
-        elif size.height() == 0 and size.width() != 0:
-            edge = Edge.TOP if dy <= 0 else Edge.BOTTOM
-            distance = min(max(half_w + dx, 0), w)
-            return _snap(EdgeLoc(edge, distance))
-        # special case: zero size
-        if size == QSizeF(0, 0):
-            if abs(dx) >= abs(dy):
-                edge = Edge.LEFT if dx <= 0 else Edge.RIGHT
-            else:
-                edge = Edge.TOP if dy <= 0 else Edge.BOTTOM
-            return EdgeLoc(edge, 0)
-        # get edge (quadrant)
-        if dx == 0:
-            is_vertical = False
-        elif dy == 0:
-            is_vertical = True
-        elif (h >= w):  # true for tall or square:
-            is_vertical = (abs(dx / dy) >= abs(w / h))
-        else:  # wide: flip for = case
-            is_vertical = (abs(dx / dy) > abs(w / h))
-        if is_vertical:
-            edge = Edge.LEFT if dx < 0 else Edge.RIGHT
-        else:
-            edge = Edge.TOP if dy < 0 else Edge.BOTTOM
-        # get distance
-        if edge in [Edge.LEFT, Edge.RIGHT]:
-            scaled_dy = dy * abs(half_w/ dx)
-            distance = half_h + scaled_dy
-        elif edge in [Edge.TOP, Edge.BOTTOM]:
-            scaled_dx = dx * abs(half_h / dy)
-            distance = half_w + scaled_dx
-        return _snap(EdgeLoc(edge, distance))
-
-    def getEdgeLocPos(self : Self, loc : EdgeLoc) -> QPointF:
-        match loc.edge:
-            case Edge.LEFT:
-                return QPointF(0, loc.distance)
-            case Edge.RIGHT:
-                return QPointF(self.rect().width(), loc.distance)
-            case Edge.TOP:
-                return QPointF(loc.distance, 0)
-            case Edge.BOTTOM:
-                return QPointF(loc.distance, self.rect().height())
-            case _:
-                raise ValueError(f"Invalid edge: {loc.edge}")
-
-class cmdPlaceBaseRectWithPins(cmdPlaceBaseRectangle):
-    element : BaseRectWithPins

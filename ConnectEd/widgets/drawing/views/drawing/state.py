@@ -2,7 +2,8 @@ from typing import Self
 
 from PyQt6.QtCore import Qt, QPoint, QPointF
 
-from ...items import ElementMixin, KeyPoint
+from ...items import ElementMixin
+from ...items.grip import Grip
 
 from ..... import hub
 
@@ -108,7 +109,7 @@ class DrawingViewStateIdle(DrawingViewStateBase):
     ) -> None:
         items = self.view._itemsAt(spos)
         for item in items:
-            if isinstance(item, KeyPoint):
+            if isinstance(item, Grip):
                 return
         if modifiers == qkm.NoModifier:
             if not items or not items[0].isSelected():
@@ -122,13 +123,12 @@ class DrawingViewStateIdle(DrawingViewStateBase):
         modifiers : Qt.KeyboardModifier
     ) -> None:
         items_at = self.view._itemsAt(spos)
-        keypoints_at = [item for item in items_at if isinstance(item, KeyPoint)]
-        if len(keypoints_at) == 1:
-            keypoint = keypoints_at[0]
-            self.view.editMoveBegin([keypoint], keypoint.scenePos())
+        grips_at = [item for item in items_at if isinstance(item, Grip)]
+        if len(grips_at) == 1:
+            grip = grips_at[0]
+            self.view.editMoveBegin([grip], grip.scenePos())
             self.view.state.go(self.view.stateEditResize3)
             return
-        items = self.view.scene().selectedItems()
         # Check for CTRL+drag duplication when starting on an element
         if (modifiers & qkm.ControlModifier) and items_at:
             # Add element under cursor to selection if not already selected
@@ -151,6 +151,7 @@ class DrawingViewStateIdle(DrawingViewStateBase):
             self.view.scene().clearSelection()
             items = []
         self.view._selectPoint(spos, modifiers)
+        items = self.view.scene().selectedItems()
         if items: # slide/move
             self.view.editMoveBegin(
                 items,
@@ -613,7 +614,7 @@ class DrawingViewStateEditResize2(DrawingViewStateBase):
     ) -> None:
         items = self.view._itemsAt(spos)
         for item in items:
-            if isinstance(item, KeyPoint) and item.isMoveable():
+            if isinstance(item, Grip):
                 self.view.editMoveBegin(
                     [item], self.view._snap(spos)
                 )

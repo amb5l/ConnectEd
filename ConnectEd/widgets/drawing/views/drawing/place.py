@@ -118,7 +118,7 @@ class DrawingViewPlaceMixin:
         scene : DrawingScene = self.scene()
         scene.clearSelection()
         self.wip.clear()
-        element = scene.placeRectangle(p1)
+        element = scene.placeRectangle(p1=p1)
         element.setSelected(True)
         self.wip.element = element
         self.wip.pos = p1
@@ -126,11 +126,11 @@ class DrawingViewPlaceMixin:
 
     def placeRectangleContinue(self : "DrawingView", p2: QPointF) -> None:
         scene : DrawingScene = self.scene()
-        scene.placeRectangle(self.wip.pos, p2, inst=self.wip.element)
+        scene.placeRectangle(p1=self.wip.pos, p2=p2, inst=self.wip.element)
 
     def placeRectangleComplete(self : "DrawingView", p2: QPointF) -> None:
         scene : DrawingScene = self.scene()
-        scene.placeRectangle(self.wip.pos, p2, inst=self.wip.element)
+        scene.placeRectangle(p1=self.wip.pos, p2=p2, inst=self.wip.element)
         self.wip.clear()
         self.state.go(self.stateIdle)
 
@@ -141,7 +141,7 @@ class DrawingViewPlaceMixin:
         scene : DrawingScene = self.scene()
         scene.clearSelection()
         self.wip.clear()
-        element = scene.placeTextBlock("", pos)
+        element = scene.placeTextBlock(text="", pos=pos)
         element.setEditable(True)
         element.setFocus()
         self.wip.element = element
@@ -158,7 +158,9 @@ class DrawingViewPlaceMixin:
             if text:
                 self.wip.element.setEditable(False)
                 self.wip.element.update()
-                scene.placeTextBlock(text, self.wip.pos, inst=self.wip.element)
+                scene.placeTextBlock(
+                    text=text, pos=self.wip.pos, inst=self.wip.element
+                )
             else: # cancel empty text
                 self.scene().undo_stack.undo()
         else:
@@ -170,7 +172,7 @@ class DrawingViewPlaceMixin:
         scene : DrawingScene = self.scene()
         scene.clearSelection()
         pos = self.mapToScene(self.mapFromGlobal(QCursor.pos()))
-        element = scene.placeText("<text>", pos)
+        element = scene.placeText(text="", pos=pos)
         element.setSelected(True)
         self.wip.clear()
         self.wip.element = element
@@ -192,6 +194,6 @@ class DrawingViewPlaceMixin:
 
     def placeTextComplete(self : "DrawingView", pos : QPointF) -> None:
         scene : DrawingScene = self.scene()
-        scene.placeText(pos, inst=self.wip.element)
+        scene.placeText(pos=pos, inst=self.wip.element)
         self.wip.clear()
         self.state.go(self.stateIdle)

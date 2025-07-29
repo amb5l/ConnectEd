@@ -1,28 +1,26 @@
 __all__ = ["Block", "cmdPlaceBlock"]
 
-from typing import Self
-
 from PyQt6.QtCore import QPointF
 
-from ....core import Z_DRAWING
+from ..properties import SimplePropertySpec, PropertyTextSpec
 
-from . import KP, KPDef
+from . import KPLoc, KPDef
 
-from .base_rect     import BaseRectWithPins, cmdPlaceBaseRectWithPins
+from .pin_rect      import PinRect, cmdPlacePinRect
 from .property_text import PropertyDisplay as pd
 
 
-class Block(BaseRectWithPins):
-    _KEY_POINTS = [KPDef(k, k != KP.CENTER, True) for k in KP.__iter__()]
-    _PROPERTIES = {
-    # properties with PropertyText instances
-    #   name            value   display     anchor           pos                cleat
-        "Reference" : ( ""    , pd.VALUE  , KP.BOTTOM_LEFT , QPointF( 0,  0 ) , KP.TOP_LEFT    ),
-        "Name"      : ( ""    , pd.VALUE  , KP.TOP_LEFT    , QPointF( 0,  0 ) , KP.BOTTOM_LEFT ),
-    # properties
-    #   name          value
-        "Path"      : ""
+class Block(PinRect):
+    _PROPERTY_SPECS = PinRect._PROPERTY_SPECS | {
+        "Reference" : SimplePropertySpec(value="", inherent=False),
+        "Name"      : SimplePropertySpec(value="", inherent=False),
+        "Path"      : SimplePropertySpec(value="", inherent=False)
+    }
+    _PROPERTY_TEXTS = {
+    #   name            display     anchor           pos                cleat
+        "Reference" : PropertyTextSpec( pd.VALUE  , KPLoc.BOTTOM_LEFT , QPointF( 0,  0 ) , KPLoc.TOP_LEFT    ),
+        "Name"      : PropertyTextSpec( pd.VALUE  , KPLoc.TOP_LEFT    , QPointF( 0,  0 ) , KPLoc.BOTTOM_LEFT ),
     }
 
-class cmdPlaceBlock(cmdPlaceBaseRectWithPins):
+class cmdPlaceBlock(cmdPlacePinRect):
     pass

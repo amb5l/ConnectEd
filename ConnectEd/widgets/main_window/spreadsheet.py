@@ -15,7 +15,7 @@ from ...core import logger
 
 from ...core.icon import getCharIcon
 
-from .. import ElementMixin, KP, PropertyDisplay
+from .. import ElementMixin, KPLoc, PropertyDisplay
 
 from ... import hub
 
@@ -100,15 +100,15 @@ class SpreadsheetKPDelegate(SpreadsheetComboDelegate):
     """Delegate for anchor KP enum values."""
     TOOLTIP = "Controls position of anchor point"
     ENTRIES = [
-        KP .TOP_LEFT      .value .name,
-        KP .TOP_CENTER    .value .name,
-        KP .TOP_RIGHT     .value .name,
-        KP .CENTER_LEFT   .value .name,
-        KP .CENTER        .value .name,
-        KP .CENTER_RIGHT  .value .name,
-        KP .BOTTOM_LEFT   .value .name,
-        KP .BOTTOM_CENTER .value .name,
-        KP .BOTTOM_RIGHT  .value .name
+        KPLoc .TOP_LEFT      .value .name,
+        KPLoc .TOP_CENTER    .value .name,
+        KPLoc .TOP_RIGHT     .value .name,
+        KPLoc .CENTER_LEFT   .value .name,
+        KPLoc .CENTER        .value .name,
+        KPLoc .CENTER_RIGHT  .value .name,
+        KPLoc .BOTTOM_LEFT   .value .name,
+        KPLoc .BOTTOM_CENTER .value .name,
+        KPLoc .BOTTOM_RIGHT  .value .name
     ]
 
 class SpreadsheetDisplayDelegate(SpreadsheetComboDelegate):

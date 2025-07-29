@@ -1,3 +1,16 @@
+appearance
+  settings - default appearance
+  direct appearance edit
+
+text change
+size change
+
+position change
+
+
+
+_ATTR_SPECS => _PROPERTY_SPECS?
+
 ElementLineMixin._ATTR_SPECS_LINE
 parent properties to keypoints - keypoints always visible?
 MOVE TO ELEMENT BASE MIXIN AND NEW MIXIN STRUCTURE
@@ -12,7 +25,6 @@ editCopy use ElementXmlMixin
 Cloning blocks leaves out pins
 Move to BaseText for pin/port name
 Port and other element rotation
-_ATTR_SPECS => _PROPERTY_SPECS?
 
 Change
   pin = BlockPin(

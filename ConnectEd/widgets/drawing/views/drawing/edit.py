@@ -245,6 +245,7 @@ class DrawingViewEditMixin:
                 pos.setY(pos0.y())
             else:
                 pos.setX(pos0.x())
+        offset = pos - self.wip.pos
         scene.editMove(self.wip.elements, pos - self.wip.pos, self.wip.slide)
         self.wip.pos = pos
 

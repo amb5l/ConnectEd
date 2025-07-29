@@ -7,12 +7,13 @@ from PyQt6.QtWidgets import QGraphicsItem
 
 from .....core import logger
 
-from ... import Port,      cmdPlacePort, \
+from ... import SignalDirection, VectorRange, EdgeLoc, \
+                Port,      cmdPlacePort, \
                 Block,     cmdPlaceBlock, \
+                BlockPin,  cmdPlaceBlockPin, \
                 Rectangle, cmdPlaceRectangle, \
                 TextBlock, cmdPlaceTextBlock, \
-                Text,      cmdPlaceText, \
-                KP
+                Text,      cmdPlaceText
 
 from ...items.port_pin import BlockPin
 
@@ -25,66 +26,85 @@ T = TypeVar("T", bound=QGraphicsItem)
 
 class DrawingSceneApiPlaceMixin:
 
-    def placeElement(
-        self  : "DrawingScene",
-        etype : Type[T],
-        *args : Any,
-        inst  : Optional[T] = None
-    ) -> T:
-        CMD_DICT = {
-            "Port"      : cmdPlacePort,
-            "Block"     : cmdPlaceBlock,
-            "Rectangle" : cmdPlaceRectangle,
-            "TextBlock" : cmdPlaceTextBlock,
-            "Text"      : cmdPlaceText
-        }
-        element = etype.createOrUpdate(*args, inst=inst)
-        if etype.__name__ in CMD_DICT:
-            cmd = CMD_DICT[etype.__name__]
-            self.undo_stack.push(cmd(self, element))
-        else:
-            logger.error(f"No place command found for {etype.__name__}")
-            return None
+    def placePort(
+        self      : "DrawingScene",
+        *,
+        name      : Optional[str]             = None,
+        direction : Optional[SignalDirection] = None,
+        range     : Optional[VectorRange]     = None,
+        pos       : Optional[QPointF]         = None,
+        inst      : Optional[Port]            = None
+    ) -> Port:
+        element = Port.createOrUpdate(
+            name      = name,
+            direction = direction,
+            range     = range,
+            pos       = pos,
+            inst      = inst
+        )
+        self.undo_stack.push(cmdPlacePort(self, element))
         return element
 
-    def placePort(
-        self  : "DrawingScene",
-        *args : QPointF,
-        inst  : Optional[Port] = None
-    ) -> Port:
-        return self.placeElement(Port, *args, inst=inst)
-
     def placeBlock(
-        self  : "DrawingScene",
-        *args : QPointF,
-        inst  : Optional[Block] = None
+        self : "DrawingScene",
+        *,
+        p1   : Optional[QPointF] = None,
+        p2   : Optional[QPointF] = None,
+        inst : Optional[Block] = None
     ) -> Block:
-        return self.placeElement(Block, *args, inst=inst)
+        element = Block.createOrUpdate(p1=p1, p2=p2, inst=inst)
+        self.undo_stack.push(cmdPlaceBlock(self, element))
+        return element
 
     def placeBlockPin(
-        self  : "DrawingScene",
-        *args : QPointF,
-        inst  : Optional[BlockPin] = None
+        self      : "DrawingScene",
+        name      : Optional[str]             = None,
+        direction : Optional[SignalDirection] = None,
+        range     : Optional[VectorRange]     = None,
+        loc       : Optional[EdgeLoc]         = None,
+        parent    : Optional[Block]           = None,
+        inst      : Optional[BlockPin]        = None
     ) -> BlockPin:
-        return self.placeElement(BlockPin, *args, inst=inst)
+        element = BlockPin.createOrUpdate(
+            name      = name,
+            direction = direction,
+            range     = range,
+            loc       = loc,
+            parent    = parent,
+            inst      = inst
+        )
+        self.undo_stack.push(cmdPlaceBlockPin(self, element))
+        return element
 
     def placeRectangle(
-        self  : "DrawingScene",
-        *args : QRectF | QPointF | QSizeF | float | int,
-        inst  : Optional[Rectangle] = None
+        self : "DrawingScene",
+        *,
+        p1   : Optional[QPointF] = None,
+        p2   : Optional[QPointF] = None,
+        inst : Optional[Rectangle] = None
     ) -> Rectangle:
-        return self.placeElement(Rectangle, *args, inst=inst)
+        element = Rectangle.createOrUpdate(p1=p1, p2=p2, inst=inst)
+        self.undo_stack.push(cmdPlaceRectangle(self, element))
+        return element
 
     def placeTextBlock(
         self  : "DrawingScene",
-        *args : str | QPointF | KP,
+        *,
+        text  : Optional[str]     = None,
+        pos   : Optional[QPointF] = None,
         inst  : Optional[TextBlock] = None
     ) -> TextBlock:
-        return self.placeElement(TextBlock, *args, inst=inst)
+        element = TextBlock.createOrUpdate(text=text, pos=pos, inst=inst)
+        self.undo_stack.push(cmdPlaceTextBlock(self, element))
+        return element
 
     def placeText(
         self  : "DrawingScene",
-        *args : str | QPointF | KP,
-        inst  : Optional[Text] = None
+        *,
+        text  : Optional[str]     = None,
+        pos   : Optional[QPointF] = None,
+        inst  : Optional[Text]    = None
     ) -> Text:
-        return self.placeElement(Text, *args, inst=inst)
+        element = Text.createOrUpdate(text=text, pos=pos, inst=inst)
+        self.undo_stack.push(cmdPlaceText(self, element))
+        return element

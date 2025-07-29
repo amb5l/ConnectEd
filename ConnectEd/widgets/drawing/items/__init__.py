@@ -1,22 +1,28 @@
 import uuid
 
-from typing      import Optional, Self, Optional, Callable, Any
+from typing      import Optional, Self, Optional, Any
 from types       import SimpleNamespace
 from dataclasses import dataclass
 from enum        import Enum
 
-from PyQt6.QtCore    import Qt, QXmlStreamWriter, QXmlStreamReader
-from PyQt6.QtGui     import QPen, QBrush, QColor, QFont, QAction, QUndoCommand
+from PyQt6.QtCore    import Qt, QPointF, QRectF, \
+                            QXmlStreamWriter, QXmlStreamReader
+from PyQt6.QtGui     import QPen, QBrush, QColor, QFont, QPainterPath, \
+                            QAction, QUndoCommand
 from PyQt6.QtWidgets import QGraphicsItem, QGraphicsSceneContextMenuEvent, QMenu
 
 from ....core import Z_DRAWING, logger, \
                      val2str, str2val, camel_to_proper, toXmlAttrs, fromXmlAttrs
 
+from ..properties import PropertySpec
+
+from .key_point import KPLoc, KPDef
+
 from .... import hub
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from ..             import DrawingView, DrawingScene
+    from .. import DrawingView, DrawingScene
     from .property_text import PropertyText
 
 
@@ -73,18 +79,6 @@ class VectorRange:
         self.left  = left
         self.dir   = dir
         self.right = right
-
-@dataclass
-class AttrSpec:
-    name      : str
-    type_name : str
-    exists    : Callable[[Any], bool]
-    getter    : Callable[[Any], Any]
-    setter    : Callable[[Any, Any], None]
-
-    @property
-    def tag(self) -> str:
-        return self.name.lower().replace(" ", "_")
 
 @dataclass
 class LineSpec:
@@ -223,8 +217,8 @@ class QuillPrefChange:
     italic    : Optional[ NoChange | Default | bool   ] = None
     underline : Optional[ NoChange | Default | bool   ] = None
 
-class LinePen:
-    element  : "ElementMixin"
+class Line:
+    parent   : "ElementMixin"
     color    : Default | QColor
     width    : Default | float
     style    : Default | Qt.PenStyle
@@ -233,20 +227,20 @@ class LinePen:
     pen      : QPen
 
     def __init__(
-        self    : Self,
-        element : "ElementMixin",
-        pref    : LinePref = LinePref(DEFAULT, DEFAULT, DEFAULT)
+        self   : Self,
+        parent : "ElementMixin",
+        pref   : LinePref = LinePref(DEFAULT, DEFAULT, DEFAULT)
     ) -> None:
-        self.element  = element
-        self.color    = pref.color
-        self.width    = pref.width
-        self.style    = pref.style
-        self.normal   = QPen()
-        self.normal.setCapStyle(element._CAP_STYLE)
-        self.normal.setJoinStyle(element._JOIN_STYLE)
+        self.parent = parent
+        self.color  = pref.color
+        self.width  = pref.width
+        self.style  = pref.style
+        self.normal = QPen()
+        self.normal.setCapStyle(parent._CAP_STYLE)
+        self.normal.setJoinStyle(parent._JOIN_STYLE)
         self.selected = QPen()
-        self.selected.setCapStyle(element._CAP_STYLE)
-        self.selected.setJoinStyle(element._JOIN_STYLE)
+        self.selected.setCapStyle(parent._CAP_STYLE)
+        self.selected.setJoinStyle(parent._JOIN_STYLE)
         self.onSettingsChange()
 
     def getColor(self : Self) -> QColor:
@@ -280,7 +274,7 @@ class LinePen:
         self.onSettingsChange()
 
     def getDefaults(self : Self) -> SimpleNamespace:
-        settings_name = self.element.__class__.__name__
+        settings_name = self.parent.__class__.__name__
         return hub.settings.getTheme(f"elements/{settings_name}/line")
 
     def onSettingsChange(self : Self) -> None:
@@ -297,10 +291,12 @@ class LinePen:
         self.selected.setColor(color_selected)
         self.selected.setWidthF(width)
         self.selected.setStyle(style)
-        self.onSelectionChange(self.element.isSelected())
+        self.onSelectionChange(self.parent.isSelected())
 
     def onSelectionChange(self : Self, selected : bool) -> None:
         self.pen = self.selected if selected else self.normal
+        if hasattr(self.parent, "setPen"):
+            self.parent.setPen(self.pen)
 
     def toXml(self : Self, xw : QXmlStreamWriter) -> None:
         xw.writeStartElement("line")
@@ -313,7 +309,7 @@ class LinePen:
     def fromXml(cls : Self, xr : QXmlStreamReader) -> Self:
         attributes = xr.attributes()
         xr.readNext()
-        inst : LinePen = cls()
+        inst : Line = cls()
         for attr in attributes:
             match attr.name():
                 case "color":
@@ -324,8 +320,8 @@ class LinePen:
                     inst.setStyle(str2val(attr.value(), Qt.PenStyle))
         return inst
 
-class FillBrush:
-    element  : "ElementMixin"
+class Fill:
+    parent   : "ElementMixin"
     color    : Default | QColor
     style    : Default | Qt.BrushStyle
     normal   : QBrush
@@ -333,11 +329,11 @@ class FillBrush:
     brush    : QBrush
 
     def __init__(
-        self    : Self,
-        element : "ElementMixin",
-        pref    : FillPref = FillPref(DEFAULT, DEFAULT)
+        self   : Self,
+        parent : "ElementMixin",
+        pref   : FillPref = FillPref(DEFAULT, DEFAULT)
     ) -> None:
-        self.element  = element
+        self.parent   = parent
         self.color    = pref.color
         self.style    = pref.style
         self.normal   = QBrush()
@@ -367,7 +363,7 @@ class FillBrush:
         self.onSettingsChange()
 
     def getDefaults(self : Self) -> SimpleNamespace:
-        settings_name = self.element.__class__.__name__
+        settings_name = self.parent.__class__.__name__
         return hub.settings.getTheme(f"elements/{settings_name}/fill")
 
     def onSettingsChange(self : Self) -> None:
@@ -381,10 +377,12 @@ class FillBrush:
         self.normal.setStyle(style)
         self.selected.setColor(color_selected)
         self.selected.setStyle(style)
-        self.onSelectionChange(self.element.isSelected())
+        self.onSelectionChange(self.parent.isSelected())
 
     def onSelectionChange(self : Self, selected : bool) -> None:
         self.brush = self.selected if selected else self.normal
+        if hasattr(self.parent, "setBrush"):
+            self.parent.setBrush(self.brush)
 
     def toXml(self : Self, xw : QXmlStreamWriter) -> None:
         xw.writeStartElement("fill")
@@ -396,7 +394,7 @@ class FillBrush:
     def fromXml(cls : Self, xr : QXmlStreamReader) -> Self:
         attributes = xr.attributes()
         xr.readNext()
-        inst : FillBrush = cls()
+        inst : Fill = cls()
         for attr in attributes:
             match attr.name():
                 case "color":
@@ -405,163 +403,173 @@ class FillBrush:
                     inst.setStyle(str2val(attr.value(), Qt.BrushStyle))
         return inst
 
-class QuillColorFont:
-    element   : "ElementMixin"
-    color     : Default | QColor
-    family    : Default | str
-    size      : Default | float
-    bold      : Default | bool
-    italic    : Default | bool
-    underline : Default | bool
-    normal    : QColor
-    selected  : QColor
-    current   : QColor
-    font      : QFont
+class Quill:
+    _parent    : "ElementMixin"
+    _color     : Default | QColor
+    _family    : Default | str
+    _size      : Default | float
+    _bold      : Default | bool
+    _italic    : Default | bool
+    _underline : Default | bool
+    _normal    : QColor
+    _selected  : QColor
+    _pen       : Optional[QPen]
+    _brush     : Optional[QBrush]
+    _font      : QFont
 
     def __init__(
-        self    : Self,
-        element : "ElementMixin",
-        pref    : QuillPref = \
+        self   : Self,
+        parent : "ElementMixin",
+        pref   : QuillPref = \
                   QuillPref(DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT)
     ) -> None:
-        self.element   = element
-        self.color     = pref.color
-        self.family    = pref.family
-        self.size      = pref.size
-        self.bold      = pref.bold
-        self.italic    = pref.italic
-        self.underline = pref.underline
-        self.normal    = QColor()
-        self.selected  = QColor()
-        self.font      = QFont()
+        self._parent    = parent
+        self._color     = pref.color
+        self._family    = pref.family
+        self._size      = pref.size
+        self._bold      = pref.bold
+        self._italic    = pref.italic
+        self._underline = pref.underline
+        self._normal = QColor()
+        self._selected = QColor()
+        self._font = QFont()
+        if not hasattr(self._parent, "setDefaultTextColor"):
+            self._pen = QPen()
+            self._pen.setStyle(Qt.PenStyle.NoPen)
+            self._brush = QBrush()
+            self._brush.setStyle(Qt.BrushStyle.SolidPattern)
+            self._parent.setPen(self._pen)
+            self._parent.setBrush(self._brush)
+        else:
+            self._pen = None
+            self._brush = None
+        self._parent.setFont(self._font)
         self.onSettingsChange()
 
     def getColor(self : Self) -> QColor:
-        return self.color
+        return self._color
 
     def setColor(self : Self, color : QColor) -> None:
-        self.color = color
+        self._color = color
         self.onSettingsChange()
 
     def getFamily(self : Self) -> str:
-        return self.family
+        return self._family
 
     def setFamily(self : Self, family : str) -> None:
-        self.family = family
+        self._family = family
         self.onSettingsChange()
 
     def getSize(self : Self) -> float:
-        return self.size
+        return self._size
 
     def setSize(self : Self, size : float) -> None:
-        self.size = size
+        self._size = size
         self.onSettingsChange()
 
     def getBold(self : Self) -> bool:
-        return self.bold
+        return self._bold
 
     def setBold(self : Self, bold : bool) -> None:
-        self.bold = bold
+        self._bold = bold
         self.onSettingsChange()
 
     def getItalic(self : Self) -> bool:
-        return self.italic
+        return self._italic
 
     def setItalic(self : Self, italic : bool) -> None:
-        self.italic = italic
+        self._italic = italic
         self.onSettingsChange()
 
     def getUnderline(self : Self) -> bool:
-        return self.underline
+        return self._underline
 
     def setUnderline(self : Self, underline : bool) -> None:
-        self.underline = underline
+        self._underline = underline
         self.onSettingsChange()
 
     def getPref(self : Self) -> QuillPref:
         return QuillPref(
-            self.color,
-            self.family,
-            self.size,
-            self.bold,
-            self.italic,
-            self.underline
+            self._color,
+            self._family,
+            self._size,
+            self._bold,
+            self._italic,
+            self._underline
         )
 
     def setPref(self : Self, c : QuillPref | QuillPrefChange) -> None:
-        if c.color     is not NO_CHANGE: self.color     = c.color
-        if c.family    is not NO_CHANGE: self.family    = c.family
-        if c.size      is not NO_CHANGE: self.size      = c.size
-        if c.bold      is not NO_CHANGE: self.bold      = c.bold
-        if c.italic    is not NO_CHANGE: self.italic    = c.italic
-        if c.underline is not NO_CHANGE: self.underline = c.underline
+        if c.color     is not NO_CHANGE: self._color     = c.color
+        if c.family    is not NO_CHANGE: self._family    = c.family
+        if c.size      is not NO_CHANGE: self._size      = c.size
+        if c.bold      is not NO_CHANGE: self._bold      = c.bold
+        if c.italic    is not NO_CHANGE: self._italic    = c.italic
+        if c.underline is not NO_CHANGE: self._underline = c.underline
         self.onSettingsChange()
 
     def getDefaults(self : Self) -> SimpleNamespace:
-        settings_name = self.element.__class__.__name__
+        settings_name = self._parent.__class__.__name__
         return hub.settings.getTheme(f"elements/{settings_name}/text")
 
     def onSettingsChange(self : Self) -> None:
         default = self.getDefaults()
-        self.selected.setRgb(hub.settings.getTheme("selected/text").rgb())
-        self.selected.setAlpha(hub.settings.get("display/alpha"))
-        self.normal.setRgb(
-            default.color.rgb() if self.color is DEFAULT else self.color.rgb()
+        self._selected.setRgb(hub.settings.getTheme("selected/text").rgb())
+        self._selected.setAlpha(hub.settings.get("display/alpha"))
+        self._normal.setRgb(
+            default.color.rgb() if self._color is DEFAULT else self._color.rgb()
         )
-        self.normal.setAlpha(hub.settings.get("display/alpha"))
-        self.font.setFamily(
-            default.family if self.family is DEFAULT else self.family
+        self._normal.setAlpha(hub.settings.get("display/alpha"))
+        self._font.setFamily(
+            default.family if self._family is DEFAULT else self._family
         )
-        self.font.setPointSizeF(
-            default.size if self.size is DEFAULT else self.size
+        self._font.setPointSizeF(
+            default.size if self._size is DEFAULT else self._size
         )
-        self.font.setBold(
-            default.bold if self.bold is DEFAULT else self.bold
+        self._font.setBold(
+            default.bold if self._bold is DEFAULT else self._bold
         )
-        self.font.setItalic(
-            default.italic if self.italic is DEFAULT else self.italic
+        self._font.setItalic(
+            default.italic if self._italic is DEFAULT else self._italic
         )
-        self.font.setUnderline(
-            default.underline if self.underline is DEFAULT else self.underline
+        self._font.setUnderline(
+            default.underline if self._underline is DEFAULT else self._underline
         )
-        if hasattr(self.element, "setDefaultFont"):
-            self.element.setDefaultFont(self.font)
-        elif hasattr(self.element, "setFont"):
-            self.element.setFont(self.font)
-        self.onSelectionChange(self.element.isSelected())
+        self._parent.setFont(self._font)
+        self.onSelectionChange(self._parent.isSelected())
 
     def onSelectionChange(self : Self, selected : bool) -> None:
-        self.current = self.selected if selected else self.normal
-        if hasattr(self.element, "setDefaultTextColor"):
-            self.element.setDefaultTextColor(self.current)
-        elif hasattr(self.element, "setColor"):
-            self.element.setColor(self.current)
+        color = self._selected if selected else self._normal
+        if hasattr(self._parent, "setDefaultTextColor"):
+            self._parent.setDefaultTextColor(color)
+        else:
+            self._brush.setColor(color)
+            self._parent.setBrush(self._brush)
 
     def toXml(self : Self, xw : QXmlStreamWriter) -> None:
         xw.writeStartElement("text")
-        xw.writeAttribute( "color",     val2str( self.color     ))
-        xw.writeAttribute( "family",    val2str( self.family    ))
-        xw.writeAttribute( "size",      val2str( self.size      ))
-        xw.writeAttribute( "bold",      val2str( self.bold      ))
-        xw.writeAttribute( "italic",    val2str( self.italic    ))
-        xw.writeAttribute( "underline", val2str( self.underline ))
+        xw.writeAttribute( "color",     val2str( self._color     ))
+        xw.writeAttribute( "family",    val2str( self._family    ))
+        xw.writeAttribute( "size",      val2str( self._size      ))
+        xw.writeAttribute( "bold",      val2str( self._bold      ))
+        xw.writeAttribute( "italic",    val2str( self._italic    ))
+        xw.writeAttribute( "underline", val2str( self._underline ))
         xw.writeEndElement()
 
     @classmethod
     def fromXml(cls : Self, xr : QXmlStreamReader) -> Self:
         attributes = xr.attributes()
         xr.readNext()
-        element_text : QuillColorFont = cls()
+        inst : Quill = cls()
         for attr in attributes:
             v = attr.value()
             match attr.name():
-                case "color"     : element_text.setColor(str2val(v, QColor))
-                case "family"    : element_text.setFamily(str2val(v, str))
-                case "size"      : element_text.setSize(str2val(v, float))
-                case "bold"      : element_text.setBold(str2val(v, bool))
-                case "italic"    : element_text.setItalic(str2val(v, bool))
-                case "underline" : element_text.setUnderline(str2val(v, bool))
-        return element_text
+                case "color"     : inst.setColor(str2val(v, QColor))
+                case "family"    : inst.setFamily(str2val(v, str))
+                case "size"      : inst.setSize(str2val(v, float))
+                case "bold"      : inst.setBold(str2val(v, bool))
+                case "italic"    : inst.setItalic(str2val(v, bool))
+                case "underline" : inst.setUnderline(str2val(v, bool))
+        return inst
 
 class OutlinePen:
     pen : QPen
@@ -575,23 +583,79 @@ class OutlinePen:
         self.pen.setWidthF(hub.settings.get("display/select/outline/width"))
         self.pen.setStyle(hub.settings.get("display/select/outline/style"))
 
+class ElementMixin:
+    Z = Z_DRAWING
+
+    uuid : str
+
+    def initElement(self : Self, bare : bool = False) -> None:
+        self.setZValue(self.Z)
+        f = QGraphicsItem.GraphicsItemFlag
+        self.setFlag( f.ItemIsSelectable              , True )
+        self.setFlag( f.ItemSendsGeometryChanges      , True )
+        self.setFlag( f.ItemSendsScenePositionChanges , True )
+        self.setCacheMode(QGraphicsItem.CacheMode.DeviceCoordinateCache)
+        self.resetUuid()
+        if hasattr(self, "initBoundShape"):
+            self.initBoundShape()
+        if hasattr(self, "initLine"):
+            self.initLine()
+        if hasattr(self, "initFill"):
+            self.initFill()
+        if hasattr(self, "initQuill"):
+            self.initQuill()
+        if hasattr(self, "initOutline"):
+            self.initOutline()
+        if hasattr(self, "initKeypoints"):
+            self.initKeypoints()
+        if hasattr(self, "initAnchor"):
+            self.initAnchor()
+        if hasattr(self, "initProperties"):
+            self.initProperties(bare)
+        if hasattr(self, "onSettingsChange"):
+            hub.settings.changed.connect(self.onSettingsChange)
+
+    def __hash__(self):
+        return hash(self.uuid)
+
+    def __eq__(self, other):
+        if not isinstance(other, ElementMixin):
+            return NotImplemented
+        return self.uuid == other.uuid
+
+    def resetUuid(self : Self) -> None:
+        self.uuid = str(uuid.uuid4())
+
+class ElementBoundShapeMixin:
+    # instance variables
+    _brect  : QRectF       # bounding rect
+    _hshape : QPainterPath # hit detect shape
+
+    def initBoundShape(self : Self) -> None:
+        self._brect  = QRectF()
+        self._hshape = QPainterPath()
+
+    def boundingRect(self : Self) -> QRectF:
+        return self._brect
+
+    def shape(self : Self) -> QPainterPath:
+        return self._hshape
+
 class ElementPosMixin:
-    _ATTR_SPECS_POS = [
-        AttrSpec(
-            name      = "Position X",
+    _PROPERTY_SPECS_POS = {
+        "Position X" : PropertySpec(
             type_name = "float",
             exists    = lambda self: True,
             getter    = lambda self: self.pos().x(),
             setter    = lambda self, value: self.setPosX(value)
         ),
-        AttrSpec(
-            name      = "Position Y",
+        "Position Y" : PropertySpec(
             type_name = "float",
             exists    = lambda self: True,
             getter    = lambda self: self.pos().y(),
             setter    = lambda self, value: self.setPosY(value)
         )
-    ]
+    }
 
     def setPosX(self : Self, value : float) -> None:
         pos = self.pos()
@@ -606,143 +670,181 @@ class ElementPosMixin:
 # TODO: ElementEdgeLocMixin (disables setPos?)
 
 class ElementKeypointsMixin:
-    _ATTR_SPECS_KP = [
-        AttrSpec(
-            name      = "Anchor",
+    # class variables
+    _PROPERTY_SPECS_KP = {
+        "Anchor" : PropertySpec(
             type_name = "KP",
             exists    = lambda self: self.hasAnchor(),
             getter    = lambda self: self.anchor(),
             setter    = lambda self, value: self.setAnchor(value)
         )
-    ]
-    _KEY_POINTS : Optional[list["KP"]] = None
-    _ANCHORED : bool = False
+    }
+    _KEY_POINTS : Optional[list["KPDef"]] = None
 
-    _kpm : "KPManager"
+    # instance variables
+    _kprect     : QRectF
+    _key_points : dict["KPLoc", "KeyPoint"]
 
     def initKeypoints(self : Self) -> None:
-        self._kpm = KPManager(self, self._KEY_POINTS)
+        self._kprect = QRectF()
+        self._key_points = {
+            kp.loc: KeyPoint(self, kp.loc, kp.resize) for kp in self._KEY_POINTS
+        }
+        self.updateKeypoints()
+        self.updateGrips()
+
+    def updateGrips(self : Self) -> None:
+        for kp in self._key_points.values():
+            kp.grip.setVisible(self.isSelected())
+
+    def getKeyPointPos(self, kp : "KPLoc") -> QPointF:
+        rect = self._kprect
+        return QPointF(kp.value.h * rect.width(), kp.value.v * rect.height())
+
+class ElementRectKeypointsMixin(ElementKeypointsMixin):
+    _KEY_POINTS = [KPDef(k, k != KPLoc.CENTER, True) for k in KPLoc.__iter__()]
+
+    def updateKeypoints(self : Self) -> None:
+        """
+        Call this after size change to update keypoint positions and adjust
+        position in case anchor has moved.
+        """
+        for kp_loc in self._key_points.keys():
+            self._key_points[kp_loc].setPos(QPointF(
+                kp_loc.value.h * self._kprect.width(),
+                kp_loc.value.v * self._kprect.height()
+            ))
+
+class ElementAnchorMixin:
+    # instance variables
+    _pos           : QPointF
+    _anchor        : Optional["KeyPoint"]
+    _anchor_loc    : Optional["KPLoc"]
+    _anchor_offset : QPointF
+
+    def initAnchor(self : Self) -> None:
+        self.setAnchorLoc(self._KEY_POINTS[0].loc)
+        self.setPos(super().pos())
+
+    def pos(self : Self) -> QPointF:
+        return self._pos
+
+    def setPos(self : Self, pos : QPointF) -> None:
+        self._pos = pos
+        super().setPos(pos - self._anchor_offset)
 
     def hasAnchor(self : Self) -> bool:
-        return hasattr(self, "_kpm") and self._kpm.anchor is not None
+        return self._anchor is not None
 
-    def anchor(self : Self) -> "KP":
-        if hasattr(self, "_kpm"):
-            return self._kpm.anchor_loc
-        else:
-            raise NotImplementedError("anchor() is not implemented")
+    def getAnchorLoc(self : Self) -> "KPLoc":
+        return self._anchor_loc
 
-    def setAnchor(self : Self, anchor : "KP") -> None:
-        if hasattr(self, "_kpm"):
-            self._kpm.setAnchor(anchor)
-        else:
-            raise NotImplementedError("setAnchor() is not implemented")
+    def setAnchorLoc(self, loc : "KPLoc") -> None:
+        if hasattr(self, "_anchor") and self._anchor is not None:
+            self._anchor.onAnchorChange(False)
+        self._anchor = self._key_points[loc]
+        self._anchor_loc = loc
+        self._anchor_offset = self.getKeyPointPos(loc)
+        self._anchor.onAnchorChange(True)
+
+    def updateAnchor(self : Self) -> None:
+        self._anchor_offset = self.getKeyPointPos(self._anchor_loc)
+        self.setPos(self.pos()) # reposition following possible anchor movement
 
 class ElementLineMixin:
     _CAP_STYLE  = Qt.PenCapStyle.SquareCap
     _JOIN_STYLE = Qt.PenJoinStyle.MiterJoin
-    _ATTR_SPECS_LINE = [
-        AttrSpec(
-            name      = "Line Color",
+    _PROPERTY_SPECS_LINE = {
+        "Line Color" : PropertySpec(
             type_name = "QColor",
             exists    = lambda self: self.line is not None,
             getter    = lambda self: self.line.getColor(),
             setter    = lambda self, value: self.line.setColor(value)
         ),
-        AttrSpec(
-            name      = "Line Width",
+        "Line Width" : PropertySpec(
             type_name = "float",
             exists    = lambda self: self.line is not None,
             getter    = lambda self: self.line.getWidth(),
             setter    = lambda self, value: self.line.setWidth(value)
         ),
-        AttrSpec(
-            name      = "Line Style",
+        "Line Style" : PropertySpec(
             type_name = "Qt.PenStyle",
             exists    = lambda self: self.line is not None,
             getter    = lambda self: self.line.getStyle(),
             setter    = lambda self, value: self.line.setStyle(value)
         )
-    ]
+    }
 
-    line : LinePen
+    line : Line
 
     def initLine(self : Self):
-        self.line = LinePen(self)
+        self.line = Line(self)
 
 class ElementFillMixin:
-    _ATTR_SPECS_FILL = [
-        AttrSpec(
-            name      = "Fill Color",
+    _PROPERTY_SPECS_FILL = {
+        "Fill Color" : PropertySpec(
             type_name = "QColor",
             exists    = lambda self: self.fill is not None,
             getter    = lambda self: self.fill.getColor(),
             setter    = lambda self, value: self.fill.setColor(value)
         ),
-        AttrSpec(
-            name      = "Fill Style",
+        "Fill Style" : PropertySpec(
             type_name = "Qt.BrushStyle",
             exists    = lambda self: self.fill is not None,
             getter    = lambda self: self.fill.getStyle(),
             setter    = lambda self, value: self.fill.setStyle(value)
         )
-    ]
+    }
 
-    fill : FillBrush
+    fill : Fill
 
     def initFill(self : Self):
-        self.fill = FillBrush(self)
+        self.fill = Fill(self)
 
 class ElementQuillMixin:
-    _ATTR_SPECS_QUILL = [
-        AttrSpec(
-            name      = "Text Color",
+    _PROPERTY_SPECS_QUILL = {
+        "Text Color" : PropertySpec(
             type_name = "QColor",
             exists    = lambda self: self.quill is not None,
             getter    = lambda self: self.quill.getColor(),
             setter    = lambda self, value: self.quill.setColor(value)
         ),
-        AttrSpec(
-            name      = "Text Font",
+        "Text Font" : PropertySpec(
             type_name = "str",
             exists    = lambda self: self.quill is not None,
             getter    = lambda self: self.quill.getFamily(),
             setter    = lambda self, value: self.quill.setFamily(value)
         ),
-        AttrSpec(
-            name      = "Text Size",
+        "Text Size" : PropertySpec(
             type_name = "float",
             exists    = lambda self: self.quill is not None,
             getter    = lambda self: self.quill.getSize(),
             setter    = lambda self, value: self.quill.setSize(value)
         ),
-        AttrSpec(
-            name      = "Text Bold",
+        "Text Bold" : PropertySpec(
             type_name = "bool",
             exists    = lambda self: self.quill is not None,
             getter    = lambda self: self.quill.getBold(),
             setter    = lambda self, value: self.quill.setBold(value)
         ),
-        AttrSpec(
-            name      = "Text Italic",
+        "Text Italic" : PropertySpec(
             type_name = "bool",
             exists    = lambda self: self.quill is not None,
             getter    = lambda self: self.quill.getItalic(),
             setter    = lambda self, value: self.quill.setItalic(value)
         ),
-        AttrSpec(
-            name      = "Text Underline",
+        "Text Underline" : PropertySpec(
             type_name = "bool",
             exists    = lambda self: self.quill is not None,
             getter    = lambda self: self.quill.getUnderline(),
             setter    = lambda self, value: self.quill.setUnderline(value)
         )
-    ]
+    }
 
-    quill : QuillColorFont
+    quill : Quill
 
     def initQuill(self : Self):
-        self.quill = QuillColorFont(self)
+        self.quill = Quill(self)
 
 class ElementOutlineMixin:
     outline : OutlinePen
@@ -767,29 +869,30 @@ class ElementChangeMixin:
                 if hasattr(self, 'onPositionChange'):
                     self.onPositionChange(value)
             case QGraphicsItem.GraphicsItemChange.ItemSelectedHasChanged:
-                if hasattr(self, 'onSelectionChange'):
+                if hasattr(self, "line"):
+                    self.line.onSelectionChange(value)
+                if hasattr(self, "fill"):
+                    self.fill.onSelectionChange(value)
+                if hasattr(self, "quill"):
+                    self.quill.onSelectionChange(value)
+                if hasattr(self, "updateGrips"):
+                    self.updateGrips()
+                if hasattr(self, "onSelectionChange"):
                     self.onSelectionChange(value)
         return super().itemChange(change, value)
 
     def onSettingsChange(self : Self) -> None:
         self.prepareGeometryChange()
-        if hasattr(self, "line"): self.line.onSettingsChange()
-        if hasattr(self, "fill"): self.fill.onSettingsChange()
-        if hasattr(self, "quill"): self.quill.onSettingsChange()
-        if hasattr(self, "outline"): self.outline.onSettingsChange()
-        self.onGeometryChange()
-
-    def onGeometryChange(self : Self) -> None:
-        raise NotImplementedError(
-            f"onGeometryChange() is not implemented in {self.__class__.__name__}"
-        )
-
-    def onSelectionChange(self : Self, selected : bool) -> None:
-        if hasattr(self, "line"):  self.line.onSelectionChange(selected)
-        if hasattr(self, "fill"):  self.fill.onSelectionChange(selected)
-        if hasattr(self, "quill"): self.quill.onSelectionChange(selected)
-        if hasattr(self, "_kpm"):  self._kpm.onSelectionChange(selected)
-        self.update()
+        if hasattr(self, "line"):
+            self.line.onSettingsChange()
+        if hasattr(self, "fill"):
+            self.fill.onSettingsChange()
+        if hasattr(self, "quill"):
+            self.quill.onSettingsChange()
+        if hasattr(self, "outline"):
+            self.outline.onSettingsChange()
+        if hasattr(self, "onAppearanceChange"):
+            self.onAppearanceChange()
 
 class ElementMenuMixin:
     def contextMenuEvent(
@@ -833,151 +936,28 @@ class ElementMenuMixin:
     ) -> None:
         view.editProperties(self)
 
-class PropertiesMixin:
-    """Mixin for elements and scenes that have properties."""
-    _ATTR_SPECS         : list[AttrSpec]         = []
-    _ATTR_SPECS_BY_NAME : dict[str, AttrSpec]    = {}
-    _ATTR_SPECS_BY_TAG  : dict[str, AttrSpec]    = {}
-    _PROPERTIES         : dict[str, str | tuple] = {}
-
-    properties : dict[str, str]
-
-    def initProperties(self : Self, bare : bool = False) -> None:
-        self._ATTR_SPECS_BY_NAME = {spec.name: spec for spec in self._ATTR_SPECS}
-        self._ATTR_SPECS_BY_TAG = {spec.tag: spec for spec in self._ATTR_SPECS}
-        self.properties = {}
-        if not bare and self._PROPERTIES is not None:
-            for name, value in self._PROPERTIES.items():
-                if name in self._ATTR_SPECS_BY_NAME:
-                    logger.error(f"Custom/inherent property clash: {name}")
-                    return
-                if name in self.properties:
-                    logger.error(f"Duplicate property: {name}")
-                    return
-                if isinstance(value, tuple):
-                    value, display, anchor, pos, cleat = value
-                    self.properties[name] = value
-                    p = PropertyText(name, display, pos, anchor, cleat)
-                    p.setParentItem(self)
-                elif isinstance(value, str):
-                    self.properties[name] = value
-                else:
-                    logger.error(f"Invalid property value: {value}")
-                    return
-
-    def getAttributes(self : Self) -> list[str]:
-        return self._ATTR_SPECS_BY_NAME.keys()
-
-    def hasAttribute(self : Self, name: str) -> bool:
-        return False if name not in self._ATTR_SPECS_BY_NAME else \
-            self._ATTR_SPECS_BY_NAME[name].exists(self)
-
-    def getAttributeTypeName(self : Self, name: str) -> str | None:
-        if name not in self._ATTR_SPECS_BY_NAME:
-            logger.warning(f"Attribute not found: {name}")
-            return None
-        return self._ATTR_SPECS_BY_NAME[name].type_name
-
-    def getAttribute(self : Self, name: str) -> str| None:
-        if name not in self._ATTR_SPECS_BY_NAME:
-            logger.warning(f"Attribute not found: {name}")
-            return None
-        return self._ATTR_SPECS_BY_NAME[name].getter(self)
-
-    def setAttribute(self : Self, name: str, value: Any) -> None:
-        if name not in self._ATTR_SPECS_BY_NAME:
-            logger.warning(f"Attribute not found: {name}")
-            return
-        self._ATTR_SPECS_BY_NAME[name].setter(self, value)
-
-    def getProperties(self : Self) -> list[str]:
-        return sorted(self.properties.keys())
-
-    def hasProperty(self : Self, name: str) -> bool:
-        return False if self.properties is None else name in self.properties
-
-    def getProperty(self: Self, name: str) -> str| None:
-        """Get a property value, returning empty string if not found."""
-        if name not in self.properties:
-            logger.warning(f"Property not found: {name}")
-            return None
-        return self.properties[name]
-
-    def setProperty(self: Self, name: str, value: str) -> None:
-        """Set a property value update affected PropertyText instance(s)."""
-        self.properties[name] = value
-        for item in self.childItems():
-            if isinstance(item, PropertyText) and item.name() == name:
-                item.setProperty(name, value)
-
-    def deleteProperty(self: Self, name: str) -> None:
-        """Delete a property and emit signal to notify PropertyText objects."""
-        if name not in self.properties:
-            logger.warning(f"Property not found: {name}")
-            return
-        del self.properties[name]
-        for item in self.childItems():
-            if isinstance(item, PropertyText) and item.name() == name:
-                item.setParentItem(None)
-                scene = self.scene()
-                scene.removeItem(item)
-                del item
-
-    def getPropAttr(self : Self, name: str) -> str| None:
-        if name in self.properties:
-            return self.properties[name]
-        elif name in self._ATTR_SPECS_BY_NAME:
-            attr_spec = self._ATTR_SPECS_BY_NAME[name]
-            if attr_spec.exists(self):
-                return val2str(attr_spec.getter(self))
-            else:
-                return None
-        else:
-            logger.warning(f"Property or attribute not found: {name}")
-            return None
-
-    def toXml(self : Self, xw : QXmlStreamWriter) -> None:
-        for name, value in self.properties.items():
-            xw.writeStartElement("property")
-            xw.writeAttribute("name", name)
-            xw.writeAttribute("value", value)
-            xw.writeEndElement()
-
-    def fromXml(self : Self, xr : QXmlStreamReader) -> None:
-        while not xr.isStartElement() and not xr.isEndElement():
-            xr.readNext()
-        while xr.isStartElement() and xr.name() == "property":
-            name = xr.attributes().value("name")
-            if name is not None:
-                value = xr.attributes().value("value")
-                self.setProperty(name, value)
-            xr.readNext()
-            if xr.isEndElement():
-                xr.readNext()
-            while not xr.isStartElement() and not xr.isEndElement():
-                xr.readNext()
-
 class ElementCloneMixin:
     def clone(self : Self, original : Optional[Self] = None) -> Self:
         """Create a clone of this element with a new UUID."""
         source = original if original is not None else self
         clone = self.__class__(bare=True)
-        # clone attributes
-        if hasattr(source, "_ATTR_SPECS"):
-            for attr_spec in source._ATTR_SPECS:
-                if attr_spec.exists(source):
-                    value = attr_spec.getter(source)
-                    attr_spec.setter(clone, value)
-        # clone properties, property texts, and pins
-        if hasattr(source, "properties"):
-            clone.properties = source.properties.copy()
+        # clone properties
+        if hasattr(self, "_properties"):
+            clone._properties = self._properties.copy()
+        # clone property texts and pins
         from .port_pin import BasePin
-        for item in source.childItems():
-            if isinstance(item, BasePin):
-                clone_pin = item.clone(item)
+        for source_child in source.childItems():
+            if isinstance(source_child, BasePin):
+                clone_pin = source_child.clone(source_child) # TODO is passing item needed?
                 clone_pin.setParentItem(clone)
-            elif isinstance(item, PropertyText):
-                item.clone().setParentItem(clone)
+            elif isinstance(source_child, KeyPoint):
+                for source_kp_child in source_child.childItems():
+                    if isinstance(source_kp_child, PropertyText):
+                        clone_kp_child = source_kp_child.clone(source_kp_child)
+                        clone_kp_loc = clone_kp_child._loc
+                        clone_kp_child.setParentItem(
+                            clone._key_points[source_child.getLoc()]
+                        )
         clone.onGeometryChange()
         return clone
 
@@ -985,13 +965,10 @@ class ElementXmlMixin:
     def toXml(self : Self, xw : QXmlStreamWriter) -> None:
         xw.writeStartElement(self.__class__.__name__)
         toXmlAttrs(self, xw)
-        PropertiesMixin.toXml(self, xw)
         from .port_pin import BasePin
-        for item in self.childItems():
-            if isinstance(item, PropertyText):
-                item.toXml(xw)
-            elif isinstance(item, BasePin):
-                item.toXml(xw)
+        for child in self.childItems():
+            if isinstance(child, PropertyText | BasePin):
+                child.toXml(xw)
         xw.writeEndElement()
 
     @classmethod
@@ -1001,61 +978,20 @@ class ElementXmlMixin:
         # check if we're already at the end element (self-closing)
         if xr.isEndElement() and xr.name() == cls.__name__:
             return instance
-        # read properties
-        PropertiesMixin.fromXml(instance, xr)
-        # read child PropertyText and BasePin elements
+        # read child PropertyText and pin elements
         while not (xr.isEndElement() and xr.name() == cls.__name__):
             if xr.isStartElement():
-                if xr.name() == "PropertyText":
-                    from .property_text import PropertyText
-                    p : PropertyText = PropertyText.fromXml(xr)
-                    p.setParentItem(instance)
-                elif xr.name() == "BlockPin":
-                    from .port_pin import BlockPin
-                    pin : BlockPin = BlockPin.fromXml(xr)
-                    pin.setParentItem(instance)
+                if xr.name() == "BlockPin":
+                    child = BlockPin.fromXml(xr)
+                    child.setParentItem(instance)
+                elif xr.name() == "PropertyText":
+                    child : PropertyText = PropertyText.fromXml(xr)
+                    child.setParentItem(instance._key_points[child._anchor()])
                 else:
                     logger.warning(f"Unexpected child element: {xr.name()}")
+                    continue
             xr.readNext()
         return instance
-
-class ElementMixin:
-    Z = Z_DRAWING
-
-    uuid : str
-
-    def initElement(self : Self, bare : bool = False) -> None:
-        self.resetUuid()
-        if hasattr(self, "initLine"):
-            self.initLine()
-        if hasattr(self, "initFill"):
-            self.initFill()
-        if hasattr(self, "initQuill"):
-            self.initQuill()
-        if hasattr(self, "initOutline"):
-            self.initOutline()
-        self.setZValue(self.Z)
-        f = QGraphicsItem.GraphicsItemFlag
-        self.setFlag( f.ItemIsSelectable              , True )
-        self.setFlag( f.ItemSendsGeometryChanges      , True )
-        self.setFlag( f.ItemSendsScenePositionChanges , True )
-        self.setCacheMode(QGraphicsItem.CacheMode.DeviceCoordinateCache)
-        hub.settings.changed.connect(self.onSettingsChange)
-        if hasattr(self, "initKeypoints"):
-            self.initKeypoints()
-        if hasattr(self, "initProperties"):
-            self.initProperties(bare)
-
-    def __hash__(self):
-        return hash(self.uuid)
-
-    def __eq__(self, other):
-        if not isinstance(other, ElementMixin):
-            return NotImplemented
-        return self.uuid == other.uuid
-
-    def resetUuid(self : Self) -> None:
-        self.uuid = str(uuid.uuid4())
 
 class cmdElement(QUndoCommand):
     """Base class for all commands that work with an element."""
@@ -1171,7 +1107,6 @@ __all__ = [
     "SignalDirection",
     "RangeDirection",
     "VectorRange",
-    "AttrSpec",
     "LineSpec",
     "LinePref",
     "LinePrefChange",
@@ -1187,7 +1122,7 @@ __all__ = [
     "cmdPlaceElement",
     "clone"
 ]
-from .key_point import KP, KPReverse, KeyPoint, KPDef, KPManager
+from .key_point import KPLoc, KPReverse, KeyPoint, KPDef
 __all__ += key_point.__all__
 from .tether_text import TetherText, Tether
 __all__ += tether_text.__all__
@@ -1199,7 +1134,7 @@ from .text_block import TextBlock, cmdPlaceTextBlock
 __all__ += text_block.__all__
 from .rectangle import Rectangle, cmdPlaceRectangle
 __all__ += rectangle.__all__
-from .port_pin import Port, cmdPlacePort, BlockPin
+from .port_pin import Port, cmdPlacePort, BlockPin, cmdPlaceBlockPin
 __all__ += port_pin.__all__
 from .block import Block, cmdPlaceBlock
 __all__ += block.__all__

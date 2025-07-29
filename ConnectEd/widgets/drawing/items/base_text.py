@@ -3,18 +3,20 @@ from typing import Self, Optional
 from PyQt6.QtCore    import Qt, QPointF, QRectF
 from PyQt6.QtWidgets import QWidget, QStyleOptionGraphicsItem, QStyle, \
                             QGraphicsSimpleTextItem
-from PyQt6.QtGui     import QPainter, QPen, QBrush
+from PyQt6.QtGui     import QPainter, QPen, QBrush, QFontMetrics
 
-from . import AttrSpec, KP, KPDef, \
+from ..properties import PropertySpec, PropertiesMixin
+
+from . import KPLoc, KPDef, \
               ElementMixin, \
               ElementPosMixin, \
-              ElementKeypointsMixin, \
+              ElementRectKeypointsMixin, \
+              ElementAnchorMixin, \
               ElementQuillMixin, \
               ElementOutlineMixin, \
               ElementChangeMixin, \
               ElementCloneMixin, \
               ElementXmlMixin, \
-              PropertiesMixin, \
               ElementMenuMixin, \
               cmdPlaceElement
 
@@ -26,77 +28,69 @@ if TYPE_CHECKING:
 class BaseText(
     ElementMixin,
     ElementPosMixin,
-    ElementKeypointsMixin,
+    ElementRectKeypointsMixin,
+    ElementAnchorMixin,
     ElementQuillMixin,
     ElementOutlineMixin,
     ElementChangeMixin,
     ElementCloneMixin,
     ElementXmlMixin,
-    PropertiesMixin,
     ElementMenuMixin,
+    PropertiesMixin,
     QGraphicsSimpleTextItem
 ):
     # class variables
-    _ATTR_SPECS_POS = \
-        ElementKeypointsMixin._ATTR_SPECS_KP + \
-        ElementPosMixin._ATTR_SPECS_POS
-    _ATTR_SPECS_TEXT = [
-        AttrSpec(
-            name      = "Text",
+    _PROPERTY_SPECS_POS = \
+        ElementRectKeypointsMixin._PROPERTY_SPECS_KP | \
+        ElementPosMixin._PROPERTY_SPECS_POS
+    _PROPERTY_SPECS_TEXT = {
+        "Text" : PropertySpec(
             type_name = "str",
             exists    = lambda self: True,
             getter    = lambda self: self.text(),
             setter    = lambda self, value: self.setText(value)
         )
-    ]
-    _ATTR_SPECS_APPEARANCE = \
-        ElementQuillMixin._ATTR_SPECS_QUILL
-    _ATTR_SPECS = \
-        _ATTR_SPECS_POS + \
-        _ATTR_SPECS_TEXT + \
-        _ATTR_SPECS_APPEARANCE
-    _KEY_POINTS = [KPDef(k, False, False) for k in KP.__iter__()]
-    _ANCHORED = True
+    }
+    _PROPERTY_SPECS_APPEARANCE = \
+        ElementQuillMixin._PROPERTY_SPECS_QUILL
+    _PROPERTY_SPECS = \
+        _PROPERTY_SPECS_POS | \
+        _PROPERTY_SPECS_TEXT | \
+        _PROPERTY_SPECS_APPEARANCE
 
     # instance variables
-    _apos : QPointF  # anchor position (pos is adjusted from this)
-    _rect : QRectF
+    _trect : QRectF  # tight bounding rect
 
-    def __init__(
-        self   : Self,
-        text   : str = "",
-        pos    : QPointF = QPointF(0, 0),
-        anchor : KP = KP.TOP_LEFT,
-        bare   : bool = False
-    ) -> None:
+    def __init__(self : Self, bare : bool = False) -> None:
         QGraphicsSimpleTextItem.__init__(self)
         self.initElement(bare=bare)
-        self.setAnchor(anchor)
-        self.setPos(pos)
-        self.setText(text)
-        self.setFlag(self.GraphicsItemFlag.ItemIsSelectable , True)
+        self.onSizeChange()
 
-    def onGeometryChange(self : Self) -> None:
-        self._rect = super().boundingRect()
-        self._kpm.updatePositions()
-        self.setPos()
+    def onSizeChange(self : Self) -> None:
+        self._kprect = self._brect = super().boundingRect()
+        if not self.text():
+            self._trect = QRectF()
+            return
+        font = self.font()
+        metrics = QFontMetrics(font)
+        baseline_trect = metrics.tightBoundingRect(self.text())
+        baseline_y = metrics.ascent()
+        self._trect = baseline_trect.translated(0, baseline_y)
+        self.updateKeypoints()
+        self.updateAnchor()
 
     def getMenuItems(self : Self) -> list[str]:
         return ["Edit..."]
 
-    def setPos(self : Self, pos : Optional[QPointF] = None) -> None:
-        if pos is None:
-            pos = self._apos
-        else:
-            self._apos = pos
-        super().setPos(pos - self._kpm.anchor_offset)
+    def setPos(self : Self, pos : QPointF) -> None:
+        super().setPos(pos - self._anchor_offset)
 
     def pos(self : Self) -> QPointF:
-        return self._apos
+        return self._pos
 
     def setText(self, text: str) -> None:
         super().setText(text)
-        self.onGeometryChange()
+        self.onSizeChange()
 
     def paint(
         self    : Self,
@@ -104,41 +98,38 @@ class BaseText(
         option  : QStyleOptionGraphicsItem,
         widget  : QWidget
     ) -> None:
-        self.setPen(QPen(Qt.PenStyle.NoPen))
-        self.setBrush(QBrush(self.quill.current))
         option.state &= ~QStyle.StateFlag.State_Selected
         super().paint(painter, option, widget)
         if self.isSelected():
             painter.setPen(self.outline.pen)
             painter.drawRect(self.boundingRect())
 
-    def moveKeyPoint(self : Self, kp : KP, delta : QPointF) -> None:
+    def moveKeyPoint(self : Self, kp : KPLoc, delta : QPointF) -> None:
         """Move the entire Text when any keypoint is dragged."""
         self.setPos(self.pos() + delta)
 
     @classmethod
     def createOrUpdate(
-        cls  : Self,
-        *args,
-        inst : Optional[Self] = None
+        cls    : Self,
+        *,
+        text   : Optional[str]     = None,
+        pos    : Optional[QPointF] = None,
+        anchor : Optional[KPLoc]   = None,
+        inst   : Optional[Self]    = None
     ) -> "BaseText":
         inst = cls() if inst is None else inst
-        for arg in args:
-            match arg:
-                case str() as text:
-                    inst.setText(text)
-                case QPointF() as pos:
-                    inst.setPos(pos)
-                case KP() as anchor:
-                    inst.setAnchor(anchor)
-                case _:
-                    raise TypeError(f"Unsupported argument type: {type(arg)}")
+        if text is not None:
+            inst.setText(text)
+        if pos is not None:
+            inst.setPos(pos)
+        if anchor is not None:
+            inst.setAnchorLoc(anchor)
         return inst
 
     def clone(self : Self) -> Self:
         clone = super().clone()
         clone.setText(self.text())
-        clone.setAnchor(self._kpm.anchor_loc)
+        clone.setAnchorLoc(self.getAnchorLoc())
         clone.setPos(self.pos())
         return clone
 

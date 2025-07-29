@@ -7,7 +7,7 @@ from PyQt6.QtGui  import QPainter, QPen, QBrush
 
 from . import DrawingScene
 
-from ..items import AttrSpec
+from ..properties import PropertySpec
 
 from .... import hub
 
@@ -18,29 +18,26 @@ if TYPE_CHECKING:
 # TODO: paper => sheet
 # TODO: record actual size of sheet
 class DiagramScene(DrawingScene):
-    _ATTR_SPECS = DrawingScene._ATTR_SPECS + [
-        AttrSpec(
-            name      = "Paper Size",
+    _PROPERTY_SPECS = DrawingScene._PROPERTY_SPECS | {
+        "Paper Size" : PropertySpec(
             type_name = "str",
             exists    = lambda self: True,
             getter    = lambda self: self.paper_size,
             setter    = lambda self, value: self.setPaperSize(value)
         ),
-        AttrSpec(
-            name      = "Margin",
+        "Margin" : PropertySpec(
             type_name = "float",
             exists    = lambda self: True,
             getter    = lambda self: self.margin,
             setter    = lambda self, value: self.setMargin(value)
         ),
-        AttrSpec(
-            name      = "Border",
+        "Border" : PropertySpec(
             type_name = "float",
             exists    = lambda self: True,
             getter    = lambda self: self.border,
             setter    = lambda self, value: self.setBorder(value)
-        ),
-    ]
+        )
+    }
 
     paper_size : str | QSizeF
     margin     : float # distance from paper edge to border line

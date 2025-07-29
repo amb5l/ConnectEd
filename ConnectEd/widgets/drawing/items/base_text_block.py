@@ -8,10 +8,14 @@ from PyQt6.QtWidgets import QWidget, QStyleOptionGraphicsItem, QStyle, \
 from PyQt6.QtGui     import QColor, QPainter, QPainterPath, \
                             QKeyEvent, QFocusEvent, QTextCursor
 
-from . import AttrSpec, KP, KPDef, \
+from ..properties import PropertySpec, PropertiesMixin
+
+from . import KPLoc, \
               ElementMixin, \
+              ElementBoundShapeMixin, \
               ElementPosMixin, \
-              ElementKeypointsMixin, \
+              ElementRectKeypointsMixin, \
+              ElementAnchorMixin, \
               ElementQuillMixin, \
               ElementOutlineMixin, \
               ElementChangeMixin, \
@@ -27,54 +31,45 @@ if TYPE_CHECKING:
 
 class BaseTextBlock(
     ElementMixin,
+    ElementBoundShapeMixin,
     ElementPosMixin,
-    ElementKeypointsMixin,
+    ElementRectKeypointsMixin,
+    ElementAnchorMixin,
     ElementQuillMixin,
     ElementOutlineMixin,
     ElementChangeMixin,
     ElementCloneMixin,
     ElementXmlMixin,
     ElementMenuMixin,
+    PropertiesMixin,
     QGraphicsTextItem
 ):
     # class variables
-    _ATTR_SPECS = \
-        ElementKeypointsMixin._ATTR_SPECS_KP + \
-        ElementPosMixin._ATTR_SPECS_POS + \
-        [
-            AttrSpec(
-                name      = "Text",
+    _PROPERTY_SPECS = \
+        ElementRectKeypointsMixin._PROPERTY_SPECS_KP | \
+        ElementPosMixin._PROPERTY_SPECS_POS | \
+        {
+            "Text" : PropertySpec(
                 type_name = "str",
                 exists    = lambda self: True,
                 getter    = lambda self: self.toPlainText(),
                 setter    = lambda self, value: self.setPlainText(value)
             )
-        ] + \
-        ElementQuillMixin._ATTR_SPECS_QUILL
-    _KEY_POINTS = [KPDef(k, False, False) for k in KP.__iter__()]
-    _ANCHORED = True
+        } | \
+        ElementQuillMixin._PROPERTY_SPECS_QUILL
 
     # instance variables
-    _apos  : QPointF  # anchor position (pos is adjusted from this)
-    _rect  : QRectF
-    _shape : QPainterPath
+    _brectf  : QRectF        # bounding rect when has focus
+    _hshapef : QPainterPath  # hit detect shape when has focus
 
-    def __init__(
-        self   : Self,
-        text   : str = "",
-        pos    : QPointF = QPointF(0, 0),
-        anchor : KP = KP.TOP_LEFT,
-        bare   : bool = False
-    ) -> None:
-        self._rect = QRectF()
-        self._shape = QPainterPath()
-        super().__init__(text)
+    def __init__(self : Self, bare : bool = False) -> None:
+        super().__init__()
         self.initElement(bare=bare)
-        self.setPos(pos)
-        self.setAnchor(anchor)
         self.setEditable(False)
-        self.setFlag(self.GraphicsItemFlag.ItemIsSelectable , True)
-        self.setFlag(self.GraphicsItemFlag.ItemIsFocusable  , True)
+        self.setFlag(self.GraphicsItemFlag.ItemIsFocusable, True)
+        self._brectf = QRectF()
+        self._hshapef = QPainterPath()
+        self.onSizeChange()
 
     def keyPressEvent(self, event: QKeyEvent) -> None:
         if event.key() in (Qt.Key.Key_Return, Qt.Key.Key_Enter):
@@ -104,7 +99,8 @@ class BaseTextBlock(
             event.accept()
         else:
             super().keyPressEvent(event)
-        self._kpm.updatePositions()
+        self.onSizeChange()  # text change means size change
+        print(self.toPlainText(), self._brect, super().boundingRect())
 
     def focusOutEvent(self, event: QFocusEvent) -> None:
         super().focusOutEvent(event)
@@ -112,37 +108,33 @@ class BaseTextBlock(
         if scene:
             scene.onTextEditingComplete(self)
 
-    def onGeometryChange(self : Self) -> None:
-        self._rect = super().boundingRect()
-        self._shape.clear()
-        self._shape.addRect(self._rect)
-        self._kpm.updatePositions()
+    def onAppearanceChange(self : Self) -> None:
+        self.onSizeChange()
 
-    def onGeometryChange(self : Self) -> None:
-        self._rect = super().boundingRect()
-        self._kpm.updatePositions()
-        self.setPos()
+    def onSizeChange(self : Self) -> None:
+        self.prepareGeometryChange()
+        self._kprect = self._brect = super().boundingRect()
+        self._brectf = self._brect.adjusted(-0.5, -0.5, 0.5, 0.5)
+        self._hshape.clear()
+        self._hshape.addRect(self._brect)
+        self._hshapef.clear()
+        self._hshapef.addRect(self._brectf)
+        self.updateKeypoints()
+        self.updateAnchor()
 
     def getMenuItems(self : Self) -> list[str]:
         return ["Appearance..."]
 
-    def setPos(self : Self, pos : Optional[QPointF] = None) -> None:
-        if pos is None:
-            pos = self._apos
-        else:
-            self._apos = pos
-        super().setPos(pos - self._kpm.anchor_offset)
+    def setPos(self : Self, pos : QPointF) -> None:
+        self._pos = pos
+        super().setPos(pos - self._anchor_offset)
 
     def pos(self : Self) -> QPointF:
-        return self._apos
+        return self._pos
 
     def setPlainText(self, text: str) -> None:
         super().setPlainText(text)
-        self._rect = super().boundingRect()
-        self._shape.clear()
-        self._shape.addRect(self._rect)
-        if hasattr(self, "_kpm"):
-            self._kpm.updatePositions()
+        self.onSizeChange()
 
     def setEditable(self, editable: bool) -> None:
         self.setTextInteractionFlags(
@@ -151,18 +143,10 @@ class BaseTextBlock(
         )
 
     def boundingRect(self : Self) -> QRectF:
-        if self.hasFocus():
-            return super().boundingRect().adjusted(-0.5, -0.5, 0.5, 0.5)
-        else:
-            return self._rect
+        return self._brectf if self.hasFocus() else self._brect
 
     def shape(self : Self) -> QPainterPath:
-        if self.hasFocus():
-            path = QPainterPath()
-            path.addRect(self.boundingRect())
-            return path
-        else:
-            return self._shape
+        return self._hshapef if self.hasFocus() else self._hshape
 
     def paint(
         self    : Self,
@@ -185,7 +169,7 @@ class BaseTextBlock(
             painter.setPen(self.outline.pen)
             painter.drawRect(self.boundingRect())
 
-    def moveKeyPoint(self : Self, kp : KP, delta : QPointF) -> None:
+    def moveKeyPoint(self : Self, kp : KPLoc, delta : QPointF) -> None:
         """Move the entire Text when any keypoint is dragged."""
         self.setPos(self.pos() + delta)
 
@@ -194,7 +178,7 @@ class BaseTextBlock(
         cls    : Self,
         text   : Optional[str]     = None,
         pos    : Optional[QPointF] = None,
-        anchor : Optional[KP]      = None,
+        anchor : Optional[KPLoc]      = None,
         *,
         inst   : Optional[Self] = None
     ) -> "BaseTextBlock":
@@ -204,13 +188,13 @@ class BaseTextBlock(
         if pos is not None:
             inst.setPos(pos)
         if anchor is not None:
-            inst.setAnchor(anchor)
+            inst.setAnchorLoc(anchor)
         return inst
 
     def clone(self : Self) -> Self:
         clone = super().clone()
         clone.setPlainText(self.toPlainText())
-        clone.setAnchor(self._kpm.anchor_loc)
+        clone.setAnchorLoc(self.getAnchorLoc())
         clone.setPos(self.pos())
         return clone
 

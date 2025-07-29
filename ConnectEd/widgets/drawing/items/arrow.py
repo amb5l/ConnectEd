@@ -7,6 +7,7 @@ from PyQt6.QtWidgets import QWidget, QStyleOptionGraphicsItem, QGraphicsItem
 from PyQt6.QtGui     import QPainter, QPainterPath
 
 from . import SignalDirection, \
+              ElementBoundShapeMixin, \
               ElementChangeMixin, \
               ElementLineMixin, \
               ElementFillMixin, \
@@ -18,10 +19,10 @@ if TYPE_CHECKING:
 
 
 class SignalArrow(
+    ElementBoundShapeMixin,
     ElementChangeMixin,
     ElementLineMixin,
     ElementFillMixin,
-    ElementMixin,
     QGraphicsItem
 ):
     _SIZE         = 8
@@ -33,34 +34,33 @@ class SignalArrow(
     _PATH_OUT     = None # subclass to override
     _PATH_BI      = [(0,0), (-_H,-_H), (-_S,0), (-_H,_H)]
 
-    _rect     : QRectF
-    _shape    : QPainterPath
-    _path_in  : QPainterPath
-    _path_out : QPainterPath
-    _path_bi  : QPainterPath
-    _path     : QPainterPath
+    _path_in  : QPainterPath # path when in
+    _path_out : QPainterPath # path when out
+    _path_bi  : QPainterPath # path when bi
+    _path     : QPainterPath # current path
 
     def __init__(
         self    : Self,
         parent  : "BasePin | Port"
     ) -> None:
         QGraphicsItem.__init__(self, parent)
-        ElementMixin.initElement(self)
-        self._rect = QRectF()
-        self._shape = QPainterPath()
+        self.initBoundShape()
+        self.initLine(self)
+        self.initFill(self)
         self._path_in = self._buildPath(self._PATH_IN)
         self._path_out = self._buildPath(self._PATH_OUT)
         self._path_bi = self._buildPath(self._PATH_BI)
-        self.onGeometryChange()
+        self.onAppearanceChange()
 
-    def onGeometryChange(self : Self) -> None:
+    def onAppearanceChange(self : Self) -> None:
+        """Adjust bounding rect and hit detect shape after appearance change."""
         self.prepareGeometryChange()
         w = self.line.pen.width()
         hw = w * 2 # TODO investigate clipping, this shouldn't be needed
         s = self._SIZE
-        self._rect.setRect(-(s+(hw/2)), -(s+w)/2, s+hw, s+w)
-        self._shape.clear()
-        self._shape.addRect(self._rect)
+        self._brect.setRect(-(s+(hw/2)), -(s+w)/2, s+hw, s+w)
+        self._hshape.clear()
+        self._hshape.addRect(self._brect)
 
     def setDirection(self : Self, direction : SignalDirection) -> None:
         match direction:
@@ -77,13 +77,6 @@ class SignalArrow(
         for point in points[1:]:
             p.lineTo(QPointF(*point))
         p.closeSubpath()
-        return p
-
-    def boundingRect(self : Self) -> QRectF:
-        return self._rect
-
-    def shape(self : Self) -> QPainterPath:
-        return self._shape
 
     def paint(
         self    : Self,

@@ -37,8 +37,8 @@ FACTORY_SETTINGS = {
                 "style" : Qt.PenStyle.DotLine
             }
         },
-        "key_point" : {
-            "radius" : 6
+        "grip" : {
+            "size" : 12
         },
         "zoom" : {
             "padding" : 0.1,
@@ -210,9 +210,9 @@ FACTORY_SETTINGS = {
                 "fill" : PaletteDark.SelectedFill,
                 "text" : PaletteDark.SelectedText
             },
-            "key_point" : {
-                "line" : PaletteDark.KeyPointLine,
-                "fill" : PaletteDark.KeyPointFill
+            "grip" : {
+                "line" : PaletteDark.GripLine,
+                "fill" : PaletteDark.GripFill
             },
             "grid" : {
                 "line" : PaletteDark.Grid
@@ -345,9 +345,9 @@ FACTORY_SETTINGS = {
                 "fill" : PaletteLightMono.SelectedFill,
                 "text" : PaletteLightMono.SelectedText
             },
-            "key_point" : {
-                "line" : PaletteLightMono.KeyPointLine,
-                "fill" : PaletteLightMono.KeyPointFill
+            "grip" : {
+                "line" : PaletteLightMono.GripLine,
+                "fill" : PaletteLightMono.GripFill
             },
             "grid" : {
                 "line" : PaletteLightMono.Grid

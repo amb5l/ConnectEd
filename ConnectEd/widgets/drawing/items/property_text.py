@@ -6,10 +6,9 @@ from enum   import Enum
 from PyQt6.QtCore    import Qt, QPointF
 from PyQt6.QtWidgets import QGraphicsItem, QGraphicsSceneMouseEvent
 
-from . import AttrSpec, KP, QuillColorFont, \
-              ElementPosMixin, \
-              ElementKeypointsMixin, \
-              ElementQuillMixin
+from ..properties import PropertySpec
+
+from . import KPLoc, Quill
 
 from .tether_text import TetherText
 
@@ -24,46 +23,41 @@ class PropertyDisplay(Enum):
 
 class PropertyText(TetherText):
     # class variables
-    _ATTR_SPECS_PROPERTY = \
-        [
-            AttrSpec(
-                name      = "Name",
+    _PROPERTY_SPECS_PROPERTY = \
+        {
+            "Name" : PropertySpec(
                 type_name = "str",
                 exists    = lambda self: True,
                 getter    = lambda self: self.name(),
                 setter    = lambda self, value: self.setName(value)
             ),
-            AttrSpec(
-                name      = "Display",
+            "Display" : PropertySpec(
                 type_name = "PropertyDisplay",
                 exists    = lambda self: True,
                 getter    = lambda self: self.display(),
                 setter    = lambda self, value: self.setDisplay(value)
             )
-        ]
-    _ATTR_SPECS = \
-        TetherText._ATTR_SPECS_POS + \
-        _ATTR_SPECS_PROPERTY + \
-        TetherText._ATTR_SPECS_APPEARANCE
+        }
+    _PROPERTY_SPECS = \
+        TetherText._PROPERTY_SPECS_POS | \
+        _PROPERTY_SPECS_PROPERTY | \
+        TetherText._PROPERTY_SPECS_APPEARANCE
 
     # instance variables
     _name    : str
     _display : PropertyDisplay
-    _cache   : str
 
     def __init__(
         self    : Self,
         name    : str = "",
         display : PropertyDisplay = PropertyDisplay.VALUE,
         pos     : QPointF = QPointF(0, 0),
-        anchor  : KP = KP.TOP_LEFT,
-        cleat   : KP = KP.BOTTOM_LEFT,
+        anchor  : KPLoc = KPLoc.TOP_LEFT,
         bare    : bool = False
     ) -> None:
         self._name    = name
         self._display = display
-        self._cache   = ""
-        super().__init__(pos, anchor, cleat, bare)
+        super().__init__("", pos, anchor, bare)
         self.onTextChange()
 
     def mouseDoubleClickEvent(self : Self, event : QGraphicsSceneMouseEvent) -> None:
@@ -82,16 +76,15 @@ class PropertyText(TetherText):
         super().mouseDoubleClickEvent(event)
 
     def onTextChange(self : Self) -> None:
-        self._cache = self.value()
         text_to_set = ""
-        value = self._cache
+        value = self.value()
         match self._display:
             case PropertyDisplay.VALUE:
                 text_to_set = f"<{self._name}>" if value == "" else value
             case PropertyDisplay.NAME_VALUE:
                 text_to_set = f"{self._name}: {value}"
         super().setText(text_to_set)
-        self.onGeometryChange()
+        self.onSizeChange()
 
     def setParentItem(self : Self, parent : QGraphicsItem) -> None:
         super().setParentItem(parent)
@@ -102,7 +95,6 @@ class PropertyText(TetherText):
 
     def setProperty(self : Self, name : str, value : str) -> None:
         if name == self._name:
-            self._cache = value
             self.onTextChange()
 
     def name(self : Self) -> str:
@@ -147,10 +139,9 @@ class PropertyText(TetherText):
             name    = self.name(),
             display = self.display(),
             pos     = self.pos(),
-            anchor  = self.anchor(),
-            cleat   = self.cleat()
+            anchor  = self._anchor()
          )
-        clone.quill = QuillColorFont(
+        clone.quill = Quill(
             clone, self.quill.getPref()
         )
         return clone

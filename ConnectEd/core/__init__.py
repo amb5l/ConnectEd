@@ -1,21 +1,4 @@
-from dataclasses import dataclass
-from typing import Callable, Any
-
-
-@dataclass
-class AttrSpec:
-    name      : str
-    type_name : str
-    exists    : Callable[[Any], bool]
-    getter    : Callable[[Any], Any]
-    setter    : Callable[[Any, Any], None]
-
-    @property
-    def tag(self) -> str:
-        return self.name.lower().replace(" ", "_")
-
-__all__ = ["AttrSpec"]
-
+__all__ = []
 from .defs import *
 __all__ += defs.__all__
 from .log import *
