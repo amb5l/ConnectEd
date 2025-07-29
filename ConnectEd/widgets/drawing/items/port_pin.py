@@ -120,7 +120,7 @@ class PortPinMixin(ElementBoundShapeMixin, PropertiesMixin):
 
     @name.setter
     def name(self : Self, name : str) -> None:
-        self.setProperty("Name", name)
+        self.setPropertyValue("Name", name)
 
     @property
     def range(self : Self) -> Optional[VectorRange]:

@@ -93,7 +93,7 @@ class PropertyText(TetherText):
     def getMenuItems(self : Self) -> list[str]:
         return ["Edit..."]
 
-    def setProperty(self : Self, name : str, value : str) -> None:
+    def setPropertyValue(self : Self, name : str, value : str) -> None:
         if name == self._name:
             self.onTextChange()
 

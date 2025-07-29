@@ -42,27 +42,29 @@ def toXmlBegin(xw : QXmlStreamWriter) -> None:
     xw.writeStartElement(APP_NAME) # TODO: version
 
 def toXmlAttrs(instance : Any, xw : QXmlStreamWriter) -> None:
-    for name, value in instance.getPropertyValues().items():
-        xw.writeAttribute(name, value)
+    for name, value in instance.getPropertyNamesAndValues().items():
+        xml_attr_name = name.replace(" ", "_")
+        xw.writeAttribute(xml_attr_name, value)
 
 def toXmlEnd(xw : QXmlStreamWriter) -> None:
     xw.writeEndDocument()
 
-def fromXmlBegin(xr : QXmlStreamReader, token_name : str) -> None:
-    while not xr.atEnd() and \
-        xr.tokenType() != QXmlStreamReader.TokenType.StartElement:
+def fromXmlBegin(xr : QXmlStreamReader, element_name : str) -> None:
+    xr.readNext()
+    while not (xr.isStartElement() and xr.name() == element_name):
         xr.readNext()
-    if xr.atEnd():
-        raise ValueError("Empty or invalid XML")
-    if xr.name() != token_name:
-        raise ValueError(f"Expected '{token_name}' element, got '{xr.name()}'")
+
+def fromXmlEnd(xr : QXmlStreamReader, element_name : str) -> None:
+    while not (xr.isEndElement() and xr.name() == element_name):
+        xr.readNext()
 
 def fromXmlAttrs(instance : Any, xr : QXmlStreamReader) -> None:
     attributes = xr.attributes()
     for attribute in attributes:
-        name = attribute.name()
+        xml_attr_name = attribute.name()
         value = attribute.value()
-        instance.setProperty(name, value)
+        property_name = xml_attr_name.replace("_", " ")
+        instance.setPropertyValue(property_name, value)
     xr.readNext()
 
 def fromXmlItems(
