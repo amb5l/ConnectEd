@@ -42,7 +42,7 @@ def toXmlBegin(xw : QXmlStreamWriter) -> None:
     xw.writeStartElement(APP_NAME) # TODO: version
 
 def toXmlAttrs(instance : Any, xw : QXmlStreamWriter) -> None:
-    for name, value in instance._dpm.getPropertyValues().items():
+    for name, value in instance.getPropertyValues().items():
         xw.writeAttribute(name, value)
 
 def toXmlEnd(xw : QXmlStreamWriter) -> None:
@@ -62,7 +62,7 @@ def fromXmlAttrs(instance : Any, xr : QXmlStreamReader) -> None:
     for attribute in attributes:
         name = attribute.name()
         value = attribute.value()
-        instance._dpm.setProperty(name, value)
+        instance.setProperty(name, value)
     xr.readNext()
 
 def fromXmlItems(

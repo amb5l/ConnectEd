@@ -88,12 +88,12 @@ class Grip(
         if self._key_point._resize:
             items.append("Resize")
         items.append("Move")
-        if hasattr(self._element, "anchor"):
+        if hasattr(self._element, "setAnchorLoc"):
             items.append("Assign Anchor")
         return items
 
     def moveBy(self : Self, dx : float, dy : float) -> None:
-        self._element.moveKeypoint(self._key_point.getLoc(), QPointF(dx, dy))
+        self._element.moveKeyPoint(self._key_point.getLoc(), QPointF(dx, dy))
 
     def toXml(self : Self, xw : QXmlStreamWriter) -> None:
         pass
@@ -115,7 +115,7 @@ class Grip(
         checked : bool,
         view    : "DrawingView"
     ) -> None:
-        view.editMoveBegin([self._key_point], self.scenePos())
+        view.editMoveBegin([self], self.scenePos())
         view.state.go(view.stateEditMove2)
 
     def ctxMenuAssignAnchor(

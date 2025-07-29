@@ -127,7 +127,7 @@ class BaseText(
         return inst
 
     def clone(self : Self) -> Self:
-        clone = super().clone()
+        clone = ElementCloneMixin.clone(self)
         clone.setText(self.text())
         clone.setAnchorLoc(self.getAnchorLoc())
         clone.setPos(self.pos())

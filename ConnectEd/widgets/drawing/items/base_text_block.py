@@ -63,9 +63,10 @@ class BaseTextBlock(
     _hshapef : QPainterPath  # hit detect shape when has focus
 
     def __init__(self : Self, bare : bool = False) -> None:
-        super().__init__()
+        QGraphicsTextItem.__init__(self)
         self.initElement(bare=bare)
         self.setEditable(False)
+        self.setFlag(self.GraphicsItemFlag.ItemIsSelectable , True)
         self.setFlag(self.GraphicsItemFlag.ItemIsFocusable, True)
         self._brectf = QRectF()
         self._hshapef = QPainterPath()
@@ -98,12 +99,11 @@ class BaseTextBlock(
             self.setTextCursor(cursor)
             event.accept()
         else:
-            super().keyPressEvent(event)
+            QGraphicsTextItem.keyPressEvent(self, event)
         self.onSizeChange()  # text change means size change
-        print(self.toPlainText(), self._brect, super().boundingRect())
 
     def focusOutEvent(self, event: QFocusEvent) -> None:
-        super().focusOutEvent(event)
+        QGraphicsTextItem.focusOutEvent(self, event)
         scene : Optional["DrawingScene"] = self.scene()
         if scene:
             scene.onTextEditingComplete(self)
@@ -113,7 +113,7 @@ class BaseTextBlock(
 
     def onSizeChange(self : Self) -> None:
         self.prepareGeometryChange()
-        self._kprect = self._brect = super().boundingRect()
+        self._kprect = self._brect = QGraphicsTextItem.boundingRect(self)
         self._brectf = self._brect.adjusted(-0.5, -0.5, 0.5, 0.5)
         self._hshape.clear()
         self._hshape.addRect(self._brect)
@@ -125,15 +125,8 @@ class BaseTextBlock(
     def getMenuItems(self : Self) -> list[str]:
         return ["Appearance..."]
 
-    def setPos(self : Self, pos : QPointF) -> None:
-        self._pos = pos
-        super().setPos(pos - self._anchor_offset)
-
-    def pos(self : Self) -> QPointF:
-        return self._pos
-
     def setPlainText(self, text: str) -> None:
-        super().setPlainText(text)
+        QGraphicsTextItem.setPlainText(self, text)
         self.onSizeChange()
 
     def setEditable(self, editable: bool) -> None:
@@ -164,7 +157,7 @@ class BaseTextBlock(
             self.setDefaultTextColor(QColor(255, 0, 255))
         if c:
             self.setDefaultTextColor(c)
-        super().paint(painter, option, widget)
+        QGraphicsTextItem.paint(self, painter, option, widget)
         if self.isSelected():
             painter.setPen(self.outline.pen)
             painter.drawRect(self.boundingRect())
@@ -192,7 +185,7 @@ class BaseTextBlock(
         return inst
 
     def clone(self : Self) -> Self:
-        clone = super().clone()
+        clone = ElementCloneMixin.clone(self)
         clone.setPlainText(self.toPlainText())
         clone.setAnchorLoc(self.getAnchorLoc())
         clone.setPos(self.pos())

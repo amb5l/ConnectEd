@@ -71,6 +71,7 @@ class BaseRectangle(
 
     def __init__(self : Self, bare : bool = False) -> None:
         super().__init__()
+        self._rect = self.rect()
         self.initElement(bare=bare)
 
     def onSizeChange(self : Self) -> None:
@@ -135,70 +136,32 @@ class BaseRectangle(
         option.state &= ~QStyle.StateFlag.State_Selected
         super().paint(painter, option, widget)
 
-    def setPosSize(self : Self, pos : QPointF, size : QSizeF) -> None:
-        self.setPos(pos)
-        size.setWidth(max(size.width(), self._MIN_SIZE.width()))
-        size.setHeight(max(size.height(), self._MIN_SIZE.height()))
-        self.setRect(0, 0, size.width(), size.height())
+    def setWidth(self : Self, width : float | int) -> None:
+        self._rect.setWidth(width)
+        self.setRect(self._rect)
 
-    @overload
-    def setPoints(
-        self     : Self,
-        p1       : QPointF,
-        p2       : QPointF
-    ) -> None:
-        ...
-
-    @overload
-    def setPoints(
-        self     : Self,
-        x1       : float | int,
-        y1       : float | int,
-        x2       : float | int,
-        y2       : float | int
-    ) -> None:
-        ...
+    def setHeight(self : Self, height : float | int) -> None:
+        self._rect.setHeight(height)
+        self.setRect(self._rect)
 
     def setPoints(
-        self     : Self,
-        p1_or_x1 : QPointF | float | int,
-        p2_or_y1 : QPointF | float | int,
-        x2       : Optional[float | int] = None,
-        y2       : Optional[float | int] = None
+        self : Self,
+        x1   : float | int,
+        y1   : float | int,
+        x2   : float | int,
+        y2   : float | int
     ) -> None:
-        if isinstance(p1_or_x1, QPointF) and isinstance(p2_or_y1, QPointF) \
-             and x2 is None and y2 is None:
-            p1, p2 = p1_or_x1, p2_or_y1
-        elif isinstance(p1_or_x1, float | int) \
-             and isinstance(p2_or_y1, float | int) \
-             and isinstance(x2, float | int) \
-             and isinstance(y2, float | int):
-            p1, p2 = QPointF(p1_or_x1, p2_or_y1), QPointF(x2, y2)
-        else:
-            logger.error(f"Invalid arguments: expected (p1, p2) or (x1, y1, x2, y2); got {p1_or_x1}, {p2_or_y1}, {x2}, {y2}")
-            return
-        rect = QRectF(p1, p2).normalized()
-        self.setPosSize(rect.topLeft(), rect.size())
+        self.setPos(x1, y1)
+        self._rect.setCoords(0, 0, x2-x1, y2-y1)
+        self.setRect(self._rect)
 
-    def setPosSizeOrP2(
-        self       : Self,
-        pos        : QPointF,
-        size_or_p2 : QSizeF | QPointF
-    ) -> None:
-        if isinstance(size_or_p2, QSizeF):
-            self.setPosSize(pos, size_or_p2)
-        else:
-            self.setPoints(pos, size_or_p2)
-
-    def getPoints(self : Self) -> tuple[QPointF, QPointF]:
-        return self.pos(), self.pos() + self.rect().bottomRight()
-
-    def moveKeypoint(self : Self, kp : KPLoc, delta : QPointF) -> None:
-        p1, p2 = self.getPoints()
+    def moveKeyPoint(self : Self, kp : KPLoc, delta : QPointF) -> None:
+        p1 = self.pos()
+        p2 = p1 + self._rect.bottomRight()
         d = delta
         match kp:
             case KPLoc.TOP_LEFT:
-                self.setPoints(p1 + d, p2)
+                self.setPoints(p1.x() + d.x(), p1.y() + d.y(), p2.x(), p2.y())
             case KPLoc.TOP_CENTER:
                 self.setPoints(p1.x(), p1.y() + d.y(), p2.x(), p2.y())
             case KPLoc.TOP_RIGHT:
@@ -214,7 +177,7 @@ class BaseRectangle(
             case KPLoc.BOTTOM_CENTER:
                 self.setPoints(p1.x(), p1.y(), p2.x(), p2.y() + d.y())
             case KPLoc.BOTTOM_RIGHT:
-                self.setPoints(p1, p2 + d)
+                self.setPoints(p1.x(), p1.y(), p2.x() + d.x(), p2.y() + d.y())
             case _:
                 raise ValueError(f"Invalid key point: {kp}")
 
@@ -222,30 +185,20 @@ class BaseRectangle(
     def createOrUpdate(
         cls  : Self,
         *,
-        pos  : Optional[QPointF]     = None,
-        size : Optional[QSizeF]      = None,
-        p1   : Optional[QPointF]     = None,
-        p2   : Optional[QPointF]     = None,
-        x1   : Optional[float | int] = None,
-        y1   : Optional[float | int] = None,
-        x2   : Optional[float | int] = None,
-        y2   : Optional[float | int] = None,
-        inst : Optional[Self] = None
+        p1   : QPointF,
+        p2   : Optional[QPointF] = None,
+        inst : Optional[Self]    = None
     ) -> "BaseRectangle":
         inst = cls() if inst is None else inst
-        if pos is not None:
-            inst.setPos(pos)
-        if size is not None:
-            inst.setSize(size)
-        if p1 is not None and p2 is not None:
-            inst.setPoints(p1, p2)
-        if x1 is not None and y1 is not None and x2 is not None and y2 is not None:
-            inst.setRect(x1, y1, x2 - x1, y2 - y1)
+        if p2 is None:
+            inst.setPos(p1)
+        else:
+            inst.setPoints(p1.x(), p1.y(), p2.x(), p2.y())
         return inst
 
     def clone(self : Self) -> Self:
         """Create a clone of this rectangle with a new UUID."""
-        clone = super().clone()
+        clone = ElementCloneMixin.clone(self)
         # Copy rectangle-specific properties
         clone.setRect(self.rect())
         return clone

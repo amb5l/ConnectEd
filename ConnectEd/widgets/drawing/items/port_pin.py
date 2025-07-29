@@ -97,12 +97,6 @@ class PortPinMixin(ElementBoundShapeMixin, PropertiesMixin):
         self._node.setSelected(selected)
         self._name_text.setSelected(selected)
 
-    def boundingRect(self : Self) -> QRectF:
-        return self._brect
-
-    def shape(self : Self) -> QPainterPath:
-        return self._hshape
-
     def paint(
         self    : Self,
         painter : QPainter,

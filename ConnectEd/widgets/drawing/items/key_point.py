@@ -105,10 +105,6 @@ class KeyPoint(QGraphicsItem):
     def getLoc(self : Self) -> KPLoc:
         return self._loc
 
-    #def moveBy(self : Self, dx : float, dy : float) -> None:
-    #    parent_element = self.parentItem()
-    #    parent_element.moveKeypoint(self._loc, QPointF(dx, dy))
-
     def boundingRect(self : Self) -> QRectF:
         return self._brect
 

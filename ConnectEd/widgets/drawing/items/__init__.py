@@ -944,6 +944,13 @@ class ElementCloneMixin:
         # clone properties
         if hasattr(self, "_properties"):
             clone._properties = self._properties.copy()
+            for pn in clone._properties:
+                clone_ps = clone._properties[pn]
+                source_ps = source._properties[pn]
+                if isinstance(clone_ps, PropertySpec):
+                    clone_ps.setter(clone, source_ps.getter(source))
+                else:
+                    clone_ps.value = source_ps.value
         # clone property texts and pins
         from .port_pin import BasePin
         for source_child in source.childItems():
@@ -954,11 +961,9 @@ class ElementCloneMixin:
                 for source_kp_child in source_child.childItems():
                     if isinstance(source_kp_child, PropertyText):
                         clone_kp_child = source_kp_child.clone(source_kp_child)
-                        clone_kp_loc = clone_kp_child._loc
                         clone_kp_child.setParentItem(
                             clone._key_points[source_child.getLoc()]
                         )
-        clone.onGeometryChange()
         return clone
 
 class ElementXmlMixin:
