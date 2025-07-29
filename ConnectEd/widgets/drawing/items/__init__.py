@@ -671,14 +671,6 @@ class ElementPosMixin:
 
 class ElementKeypointsMixin:
     # class variables
-    _PROPERTY_SPECS_KP = {
-        "Anchor" : PropertySpec(
-            type_name = "KP",
-            exists    = lambda self: self.hasAnchor(),
-            getter    = lambda self: self.anchor(),
-            setter    = lambda self, value: self.setAnchor(value)
-        )
-    }
     _KEY_POINTS : Optional[list["KPDef"]] = None
 
     # instance variables
@@ -716,6 +708,16 @@ class ElementRectKeypointsMixin(ElementKeypointsMixin):
             ))
 
 class ElementAnchorMixin:
+    # class variables
+    _PROPERTY_SPECS_ANCHOR = {
+        "Anchor" : PropertySpec(
+            type_name = "KPLoc",
+            exists    = lambda self: self.hasAnchor(),
+            getter    = lambda self: self.getAnchorLoc(),
+            setter    = lambda self, value: self.setAnchorLoc(value)
+        )
+    }
+
     # instance variables
     _pos           : QPointF
     _anchor        : Optional["KeyPoint"]

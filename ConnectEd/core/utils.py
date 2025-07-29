@@ -82,7 +82,7 @@ def val2str(v : Any) -> str:
         case "FillPref"        : s = v.toStr()
         case "TextPref"        : s = v.toStr()
         case "PropertyDisplay" : s = v.value
-        case "KP"              : s = v.value.name
+        case "KPLoc"           : s = v.value.name
         case "EdgeLoc"         : s = v.toStr()
         case "SignalDirection" : s = v.value
         case _ :
@@ -116,7 +116,7 @@ def str2val(s : str, t : str) -> Any:
         case "LinePref"        : return LinePref.fromStr(s)
         case "FillPref"        : return FillPref.fromStr(s)
         case "PropertyDisplay" : return PropertyDisplay(s)
-        case "KP"              : return KPReverse[s]
+        case "KPLoc"           : return KPReverse[s]
         case "EdgeLoc"         : return EdgeLoc.fromStr(s)
         case "SignalDirection" : return SignalDirection(s)
         case _:

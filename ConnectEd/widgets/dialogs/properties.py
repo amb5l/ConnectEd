@@ -41,7 +41,7 @@ class PropertiesItem(QStandardItem):
             type_name = "PropertyDisplay"
         elif isinstance(value, KPLoc):
             text = value.value.name
-            type_name = "KP"
+            type_name = "KPLoc"
         else:
             raise ValueError(f"Invalid value type: {type(value)}")
         super().__init__(text)
@@ -59,10 +59,10 @@ class PropertiesItem(QStandardItem):
                 return float(text)
             elif type_name == "PropertyDisplay":
                 return PropertyDisplay(text)
-            elif type_name == "KP":
+            elif type_name == "KPLoc":
                 enum_key = text.upper().replace(" ", "_")
                 if enum_key not in KPLoc.__members__:
-                    logger.error(f"Invalid KP enum value: {enum_key}")
+                    logger.error(f"Invalid KPLoc enum value: {enum_key}")
                     return self.getInitialValue()
                 return KPLoc[enum_key]
             else:

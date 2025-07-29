@@ -41,7 +41,7 @@ class BaseText(
 ):
     # class variables
     _PROPERTY_SPECS_POS = \
-        ElementRectKeypointsMixin._PROPERTY_SPECS_KP | \
+        ElementAnchorMixin._PROPERTY_SPECS_ANCHOR | \
         ElementPosMixin._PROPERTY_SPECS_POS
     _PROPERTY_SPECS_TEXT = {
         "Text" : PropertySpec(

@@ -661,7 +661,7 @@ class SpreadsheetTabWidget(QTabWidget):
             for idx, name in enumerate(self._tab_headings[tab_name].keys()):
                 type_name = tab_htypenames[name]
                 match type_name:
-                    case "KP":
+                    case "KPLoc":
                         _setupDelegate(
                             tab_name, idx, type_name, SpreadsheetKPDelegate
                         )

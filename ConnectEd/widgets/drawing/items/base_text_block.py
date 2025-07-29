@@ -46,7 +46,7 @@ class BaseTextBlock(
 ):
     # class variables
     _PROPERTY_SPECS = \
-        ElementRectKeypointsMixin._PROPERTY_SPECS_KP | \
+        ElementAnchorMixin._PROPERTY_SPECS_ANCHOR | \
         ElementPosMixin._PROPERTY_SPECS_POS | \
         {
             "Text" : PropertySpec(
