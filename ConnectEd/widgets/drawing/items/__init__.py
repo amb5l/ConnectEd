@@ -770,7 +770,7 @@ class ElementLineMixin:
             setter    = lambda self, value: self.line.setWidth(value)
         ),
         "Line Style" : PropertySpec(
-            type_name = "Qt.PenStyle",
+            type_name = "PenStyle",
             exists    = lambda self: self.line is not None,
             getter    = lambda self: self.line.getStyle(),
             setter    = lambda self, value: self.line.setStyle(value)
@@ -791,7 +791,7 @@ class ElementFillMixin:
             setter    = lambda self, value: self.fill.setColor(value)
         ),
         "Fill Style" : PropertySpec(
-            type_name = "Qt.BrushStyle",
+            type_name = "BrushStyle",
             exists    = lambda self: self.fill is not None,
             getter    = lambda self: self.fill.getStyle(),
             setter    = lambda self, value: self.fill.setStyle(value)

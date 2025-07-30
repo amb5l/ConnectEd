@@ -66,6 +66,9 @@ class BaseText(
         self.initElement(bare=bare)
         self.onSizeChange()
 
+    def onAppearanceChange(self : Self) -> None:
+        self.onSizeChange()
+
     def onSizeChange(self : Self) -> None:
         self._kprect = self._brect = super().boundingRect()
         if not self.text():

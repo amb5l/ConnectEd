@@ -74,6 +74,9 @@ class BaseRectangle(
         self._rect = self.rect()
         self.initElement(bare=bare)
 
+    def onAppearanceChange(self : Self) -> None:
+        self.onSizeChange()
+
     def onSizeChange(self : Self) -> None:
         self.prepareGeometryChange() # because boundaryRect and shape may change
         pen_width = self.line.pen.widthF()

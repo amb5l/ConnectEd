@@ -195,7 +195,7 @@ class Port(
         self.initPortPin(name, direction, range, self._arrow)
         self.setPos(pos)
 
-    def onGeometryChange(self : Self) -> None:
+    def onAppearanceChange(self : Self) -> None:
         """Port specific (includes arrow)."""
         self.prepareGeometryChange()
         node_rect = self._node._brect
@@ -291,7 +291,7 @@ class BasePin(ElementCloneMixin, PortPinMixin, QGraphicsItemGroup):
         )
         self._loc = loc
 
-    def onGeometryChange(self : Self) -> None:
+    def onAppearanceChange(self : Self) -> None:
         """Pin specific (includes inner/outer)."""
         self.prepareGeometryChange()
         self._node.setPos(self._nodePos())

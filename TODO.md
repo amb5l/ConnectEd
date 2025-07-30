@@ -1,3 +1,8 @@
+If I change the anchor of a Text to bottom right then copy and paste it, positioning goes a bit mad, as if cumulative errors are creeping in.
+
+common menus for elements
+
+
 appearance
   settings - default appearance
   direct appearance edit
