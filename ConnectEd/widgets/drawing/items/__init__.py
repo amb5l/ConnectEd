@@ -723,6 +723,7 @@ class ElementAnchorMixin:
     _anchor_offset : QPointF
 
     def initAnchor(self : Self) -> None:
+        self._pos = super().pos()
         self.setAnchorLoc(self._KEY_POINTS[0].loc)
         self.setPos(super().pos())
 
@@ -746,6 +747,7 @@ class ElementAnchorMixin:
         self._anchor_loc = loc
         self._anchor_offset = self.getKeyPointPos(loc)
         self._anchor.onAnchorChange(True)
+        self.setPos(self._pos + self._anchor_offset)
 
     def updateAnchor(self : Self) -> None:
         self._anchor_offset = self.getKeyPointPos(self._anchor_loc)
