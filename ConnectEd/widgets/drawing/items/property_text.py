@@ -8,7 +8,7 @@ from PyQt6.QtWidgets import QGraphicsItem, QGraphicsSceneMouseEvent
 
 from ..properties import PropertySpec
 
-from . import KPLoc, Quill
+from . import KPLoc
 
 from .tether_text import TetherText
 
@@ -132,19 +132,6 @@ class PropertyText(TetherText):
             parent.setProperty(self._name, value)
         else:
             return
-
-    def clone(self : Self) -> Self:
-        """Create a clone of this PropertyText with a new UUID."""
-        clone = PropertyText(
-            name    = self.name(),
-            display = self.display(),
-            pos     = self.pos(),
-            anchor  = self._anchor()
-         )
-        clone.quill = Quill(
-            clone, self.quill.getPref()
-        )
-        return clone
 
     def ctxMenuEdit(
         self    : Self,

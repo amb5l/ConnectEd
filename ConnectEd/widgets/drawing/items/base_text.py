@@ -120,13 +120,6 @@ class BaseText(
             inst.setAnchorLoc(anchor)
         return inst
 
-    def clone(self : Self) -> Self:
-        clone = ElementCloneMixin.clone(self)
-        clone.setText(self.text())
-        clone.setAnchorLoc(self.getAnchorLoc())
-        clone.setPos(self.pos())
-        return clone
-
     def ctxMenuEdit(
         self    : Self,
         checked : bool,

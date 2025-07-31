@@ -196,12 +196,5 @@ class BaseRectangle(
             inst.setPoints(p1.x(), p1.y(), p2.x(), p2.y())
         return inst
 
-    def clone(self : Self) -> Self:
-        """Create a clone of this rectangle with a new UUID."""
-        clone = ElementCloneMixin.clone(self)
-        # Copy rectangle-specific properties
-        clone.setRect(self.rect())
-        return clone
-
 class cmdPlaceBaseRectangle(cmdPlaceElement):
     pass

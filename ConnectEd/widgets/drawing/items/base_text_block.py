@@ -181,13 +181,6 @@ class BaseTextBlock(
             inst.setAnchorLoc(anchor)
         return inst
 
-    def clone(self : Self) -> Self:
-        clone = ElementCloneMixin.clone(self)
-        clone.setPlainText(self.toPlainText())
-        clone.setAnchorLoc(self.getAnchorLoc())
-        clone.setPos(self.pos())
-        return clone
-
 class cmdPlaceBaseTextBlock(cmdPlaceElement):
     pass
 
