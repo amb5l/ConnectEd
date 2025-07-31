@@ -65,16 +65,14 @@ class PropertiesMixin:
     def getPropertyNamesAndValues(self : Self) -> dict[str, str]:
         d = {}
         for name, ps in self._properties.items():
-            d[name] = val2str(ps.getter(self)) if isinstance(ps, PropertySpec) \
-                else ps.value
+            d[name] = val2str(ps.getter(self))
         return d
 
     def getPropertyValue(self, name : str) -> str:
         if name not in self._properties:
             logger.warning(f"Property {name} does not exist")
         ps = self._properties[name]
-        return val2str(ps.getter(self)) if isinstance(ps, PropertySpec) \
-            else ps.value
+        return val2str(ps.getter(self))
 
     def setPropertyValue(self, name : str, value : str) -> None:
         if name not in self._properties:

@@ -12,9 +12,9 @@ from .property_text import PropertyDisplay as pd
 
 class Block(PinRect):
     _PROPERTY_SPECS = PinRect._PROPERTY_SPECS | {
-        "Reference" : PropertySpec(value="", custom=True),
-        "Name"      : PropertySpec(value="", custom=True),
-        "Path"      : PropertySpec(value="", custom=True)
+        "Reference" : PropertySpec(custom=True),
+        "Name"      : PropertySpec(custom=True),
+        "Path"      : PropertySpec(custom=True)
     }
     _PROPERTY_TEXTS = {
     #   name            display     anchor           pos                cleat
