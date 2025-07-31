@@ -84,7 +84,7 @@ class PropertyText(TetherText):
             case PropertyDisplay.NAME_VALUE:
                 text_to_set = f"{self._name}: {value}"
         super().setText(text_to_set)
-        self.onSizeChange()
+        self.onGeometryChange()
 
     def setParentItem(self : Self, parent : QGraphicsItem) -> None:
         super().setParentItem(parent)

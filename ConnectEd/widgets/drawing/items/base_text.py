@@ -1,13 +1,13 @@
 from typing import Self, Optional
 
-from PyQt6.QtCore    import Qt, QPointF, QRectF
+from PyQt6.QtCore    import QPointF, QRectF
 from PyQt6.QtWidgets import QWidget, QStyleOptionGraphicsItem, QStyle, \
                             QGraphicsSimpleTextItem
-from PyQt6.QtGui     import QPainter, QPen, QBrush, QFontMetrics
+from PyQt6.QtGui     import QPainter, QFontMetrics
 
 from ..properties import PropertySpec, PropertiesMixin
 
-from . import KPLoc, KPDef, \
+from . import KPLoc, \
               ElementMixin, \
               ElementPosMixin, \
               ElementRectKeypointsMixin, \
@@ -64,12 +64,9 @@ class BaseText(
     def __init__(self : Self, bare : bool = False) -> None:
         QGraphicsSimpleTextItem.__init__(self)
         self.initElement(bare=bare)
-        self.onSizeChange()
+        self.onGeometryChange()
 
-    def onAppearanceChange(self : Self) -> None:
-        self.onSizeChange()
-
-    def onSizeChange(self : Self) -> None:
+    def onGeometryChange(self : Self) -> None:
         self._kprect = self._brect = super().boundingRect()
         if not self.text():
             self._trect = QRectF()
@@ -83,17 +80,11 @@ class BaseText(
         self.updateAnchor()
 
     def getMenuItems(self : Self) -> list[str]:
-        return ["Edit..."]
-
-    def setPos(self : Self, pos : QPointF) -> None:
-        super().setPos(pos - self._anchor_offset)
-
-    def pos(self : Self) -> QPointF:
-        return self._pos
+        return ["Edit...", "-", "Properties..."]
 
     def setText(self, text: str) -> None:
         super().setText(text)
-        self.onSizeChange()
+        self.onGeometryChange()
 
     def paint(
         self    : Self,

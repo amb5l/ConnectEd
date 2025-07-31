@@ -10,8 +10,8 @@ from .base_rect import BaseRectangle, cmdPlaceBaseRectangle
 
 
 class PinRect(BaseRectangle):
-    def onSizeChange(self : Self) -> None:
-        super().onSizeChange()
+    def onGeometryChange(self : Self) -> None:
+        super().onGeometryChange()
         # reposition pins
         for item in self.childItems():
             if isinstance(item, BasePin):

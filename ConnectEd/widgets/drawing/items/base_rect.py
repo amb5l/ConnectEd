@@ -74,11 +74,8 @@ class BaseRectangle(
         self._rect = self.rect()
         self.initElement(bare=bare)
 
-    def onAppearanceChange(self : Self) -> None:
-        self.onSizeChange()
-
-    def onSizeChange(self : Self) -> None:
-        self.prepareGeometryChange() # because boundaryRect and shape may change
+    def onGeometryChange(self : Self) -> None:
+        self.prepareGeometryChange()
         pen_width = self.line.pen.widthF()
         tolerance = hub.settings.get("display/select/tolerance")
         stroke_width = pen_width + (2 * tolerance)
@@ -128,7 +125,7 @@ class BaseRectangle(
         else:
             super().setRect(rect_or_ax, ay, w, h)
         self._kprect = self._rect = self.rect()
-        self.onSizeChange()
+        self.onGeometryChange()
 
     def paint(
         self    : Self,

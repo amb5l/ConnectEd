@@ -48,9 +48,9 @@ class Node(
         self._path_nc.lineTo(+s, -s)
         self._path_nc.moveTo(+s, +s)
         self._path_nc.lineTo(-s, -s)
-        self.onAppearanceChange()
+        self.onGeometryChange()
 
-    def onAppearanceChange(self : Self) -> None:
+    def onGeometryChange(self : Self) -> None:
         self.prepareGeometryChange()
         s = (self._SIZE + self.line.pen.width()) / 2
         self._brect.setRect(-s, -s, 2*s, 2*s)

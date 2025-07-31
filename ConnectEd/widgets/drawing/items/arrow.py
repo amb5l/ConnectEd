@@ -50,9 +50,9 @@ class SignalArrow(
         self._path_in = self._buildPath(self._PATH_IN)
         self._path_out = self._buildPath(self._PATH_OUT)
         self._path_bi = self._buildPath(self._PATH_BI)
-        self.onAppearanceChange()
+        self.onGeometryChange()
 
-    def onAppearanceChange(self : Self) -> None:
+    def onGeometryChange(self : Self) -> None:
         """Adjust bounding rect and hit detect shape after appearance change."""
         self.prepareGeometryChange()
         w = self.line.pen.width()

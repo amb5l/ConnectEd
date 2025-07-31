@@ -289,7 +289,7 @@ class cmdEditAppearance(cmdElements):
             if hasattr(e, "line"):  e.line.setPref(c.line)
             if hasattr(e, "fill"):  e.fill.setPref(c.fill)
             if hasattr(e, "quill"): e.quill.setPref(c.quill)
-            e.onAppearanceChange()
+            e.onGeometryChange()
             e.update()
 
     def undo(self) -> None:
@@ -298,7 +298,7 @@ class cmdEditAppearance(cmdElements):
             if hasattr(e, "line"):  e.line.setPref(c.line)
             if hasattr(e, "fill"):  e.fill.setPref(c.fill)
             if hasattr(e, "quill"): e.quill.setPref(c.quill)
-            e.onAppearanceChange()
+            e.onGeometryChange()
             e.update()
 
     def mergeWith(self : Self, other : QUndoCommand) -> bool:

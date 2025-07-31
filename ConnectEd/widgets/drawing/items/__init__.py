@@ -893,8 +893,7 @@ class ElementChangeMixin:
             self.quill.onSettingsChange()
         if hasattr(self, "outline"):
             self.outline.onSettingsChange()
-        if hasattr(self, "onAppearanceChange"):
-            self.onAppearanceChange()
+        self.onGeometryChange()
 
 class ElementMenuMixin:
     def contextMenuEvent(
@@ -982,6 +981,7 @@ class ElementXmlMixin:
     def fromXml(cls : Self, xr: QXmlStreamReader) -> Self:
         instance = cls(bare=True)
         fromXmlAttrs(instance, xr)
+        instance.onGeometryChange()
         # check if we're already at the end element (self-closing)
         if xr.isEndElement() and xr.name() == cls.__name__:
             return instance

@@ -70,7 +70,7 @@ class BaseTextBlock(
         self.setFlag(self.GraphicsItemFlag.ItemIsFocusable, True)
         self._brectf = QRectF()
         self._hshapef = QPainterPath()
-        self.onSizeChange()
+        self.onGeometryChange()
 
     def keyPressEvent(self, event: QKeyEvent) -> None:
         if event.key() in (Qt.Key.Key_Return, Qt.Key.Key_Enter):
@@ -100,7 +100,7 @@ class BaseTextBlock(
             event.accept()
         else:
             QGraphicsTextItem.keyPressEvent(self, event)
-        self.onSizeChange()  # text change means size change
+        self.onGeometryChange()  # text change means size change
 
     def focusOutEvent(self, event: QFocusEvent) -> None:
         QGraphicsTextItem.focusOutEvent(self, event)
@@ -108,10 +108,7 @@ class BaseTextBlock(
         if scene:
             scene.onTextEditingComplete(self)
 
-    def onAppearanceChange(self : Self) -> None:
-        self.onSizeChange()
-
-    def onSizeChange(self : Self) -> None:
+    def onGeometryChange(self : Self) -> None:
         self.prepareGeometryChange()
         self._kprect = self._brect = QGraphicsTextItem.boundingRect(self)
         self._brectf = self._brect.adjusted(-0.5, -0.5, 0.5, 0.5)
@@ -127,7 +124,7 @@ class BaseTextBlock(
 
     def setPlainText(self, text: str) -> None:
         QGraphicsTextItem.setPlainText(self, text)
-        self.onSizeChange()
+        self.onGeometryChange()
 
     def setEditable(self, editable: bool) -> None:
         self.setTextInteractionFlags(
