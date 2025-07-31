@@ -114,6 +114,18 @@ class Slots:
         widget.editComplete()
 
     @withCurrentWidget(DrawingView)
+    def editSelectAll(self : Self, widget: DrawingView) -> None:
+        widget.editSelectAll()
+
+    @withCurrentWidget(DrawingView)
+    def editSelectArea(self : Self, widget: DrawingView) -> None:
+        widget.editSelectArea()
+
+    @withCurrentWidget(DrawingView)
+    def editDeselectAll(self : Self, widget: DrawingView) -> None:
+        widget.editDeselectAll()
+
+    @withCurrentWidget(DrawingView)
     def editCut(self : Self, widget: DrawingView) -> None:
         widget.editCut()
 

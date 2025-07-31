@@ -39,6 +39,18 @@ class DrawingViewEditMixin:
                     self._snap(self.mouse.current.logical)
                 )
 
+    def editSelectAll(self : "DrawingView") -> None:
+        scene : DrawingScene = self.scene()
+        scene.editSelectAll()
+
+    def editSelectArea(self : "DrawingView") -> None:
+        scene : DrawingScene = self.scene()
+        scene.editSelectArea()
+
+    def editDeselectAll(self : "DrawingView") -> None:
+        scene : DrawingScene = self.scene()
+        scene.editDeselectAll()
+
     def editCut(self : "DrawingView") -> None:
         scene : DrawingScene = self.scene()
         scene.editCut(self._snap(self.mouse.current.logical))

@@ -332,6 +332,15 @@ class cmdEditProperties(cmdElement):
         return False
 
 class DrawingSceneApiEditMixin:
+    def editSelectAll(self : "DrawingScene") -> None:
+        raise NotImplementedError("Not implemented yet")
+
+    def editSelectArea(self : "DrawingScene") -> None:
+        raise NotImplementedError("Not implemented yet")
+
+    def editDeselectAll(self : "DrawingScene") -> None:
+        raise NotImplementedError("Not implemented yet")
+
     def editCut(
         self : "DrawingScene",
         pos  : QPointF = QPointF(0, 0)
