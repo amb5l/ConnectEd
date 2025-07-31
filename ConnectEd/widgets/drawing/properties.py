@@ -59,8 +59,12 @@ class PropertiesMixin:
         if not hasattr(self, "_PROPERTY_TEXTS"):
             return
         for name, pts in self._PROPERTY_TEXTS.items():
-            p = PropertyText(name, pts.display, pts.pos, pts.anchor)
-            p.setParentItem(self.key_points[pts.cleat])
+            p = PropertyText()
+            p.setAnchorLoc(pts.anchor)
+            p.setPos(pts.pos)
+            p.setName(name)
+            p.setDisplay(pts.display)
+            p.setParentItem(self._key_points[pts.cleat])
 
     def getPropertyNamesAndValues(self : Self) -> dict[str, str]:
         d = {}

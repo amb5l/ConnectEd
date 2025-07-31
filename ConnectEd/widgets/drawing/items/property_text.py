@@ -45,18 +45,10 @@ class PropertyText(TetherText):
     _name    : str
     _display : PropertyDisplay
 
-    def __init__(
-        self    : Self,
-        name    : str = "",
-        display : PropertyDisplay = PropertyDisplay.VALUE,
-        pos     : QPointF = QPointF(0, 0),
-        anchor  : KPLoc = KPLoc.TOP_LEFT,
-        bare    : bool = False
-    ) -> None:
-        self._name    = name
-        self._display = display
-        super().__init__("", pos, anchor, bare)
-        self.onTextChange()
+    def __init__(self : Self, bare : bool = False) -> None:
+        super().__init__(bare=bare)
+        self._name = "?"
+        self._display = PropertyDisplay.VALUE
 
     def mouseDoubleClickEvent(self : Self, event : QGraphicsSceneMouseEvent) -> None:
         """Handle double-click events to open the edit dialog."""

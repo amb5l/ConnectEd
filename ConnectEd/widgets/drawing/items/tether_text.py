@@ -63,14 +63,8 @@ class TetherText(BaseText):
     # instance variables
     _tether : Optional[Tether]
 
-    def __init__(
-        self    : Self,
-        text    : str = "",
-        pos     : QPointF = QPointF(0, 0),
-        anchor  : KPLoc = KPLoc.TOP_LEFT,
-        bare    : bool = False
-    ) -> None:
-        super().__init__(text, pos, anchor, bare)
+    def __init__(self : Self, bare : bool = False) -> None:
+        super().__init__(bare=bare)
         self._tether = Tether(self)
 
     def onPositionChange(self : Self, pos : QPointF) -> None:

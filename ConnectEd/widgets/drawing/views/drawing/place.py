@@ -48,7 +48,7 @@ class DrawingViewPlaceMixin:
         scene : DrawingScene = self.scene()
         scene.clearSelection()
         self.wip.clear()
-        element = scene.placeBlock(pos)
+        element = scene.placeBlock(p1=pos)
         element.setSelected(True)
         self.wip.element = element
         self.wip.pos = pos
@@ -56,11 +56,11 @@ class DrawingViewPlaceMixin:
 
     def placeBlockContinue(self : "DrawingView", pos : QPointF) -> None:
         scene : DrawingScene = self.scene()
-        scene.placeBlock(self.wip.pos, pos, inst=self.wip.element)
+        scene.placeBlock(p1=self.wip.pos, p2=pos, inst=self.wip.element)
 
     def placeBlockComplete(self : "DrawingView", pos : QPointF) -> None:
         scene : DrawingScene = self.scene()
-        scene.placeBlock(self.wip.pos, pos, inst=self.wip.element)
+        scene.placeBlock(p1=self.wip.pos, p2=pos, inst=self.wip.element)
         self.wip.clear()
         self.state.go(self.stateIdle)
 
