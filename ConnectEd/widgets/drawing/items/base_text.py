@@ -46,7 +46,6 @@ class BaseText(
     _PROPERTY_SPECS_TEXT = {
         "Text" : PropertySpec(
             type_name = "str",
-            exists    = lambda self: True,
             getter    = lambda self: self.text(),
             setter    = lambda self, value: self.setText(value)
         )

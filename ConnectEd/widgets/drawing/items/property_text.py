@@ -27,13 +27,11 @@ class PropertyText(TetherText):
         {
             "Name" : PropertySpec(
                 type_name = "str",
-                exists    = lambda self: True,
                 getter    = lambda self: self.name(),
                 setter    = lambda self, value: self.setName(value)
             ),
             "Display" : PropertySpec(
                 type_name = "PropertyDisplay",
-                exists    = lambda self: True,
                 getter    = lambda self: self.display(),
                 setter    = lambda self, value: self.setDisplay(value)
             )

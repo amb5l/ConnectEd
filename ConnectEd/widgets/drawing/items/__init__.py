@@ -645,13 +645,11 @@ class ElementPosMixin:
     _PROPERTY_SPECS_POS = {
         "Position X" : PropertySpec(
             type_name = "float",
-            exists    = lambda self: True,
             getter    = lambda self: self.pos().x(),
             setter    = lambda self, value: self.setPosX(value)
         ),
         "Position Y" : PropertySpec(
             type_name = "float",
-            exists    = lambda self: True,
             getter    = lambda self: self.pos().y(),
             setter    = lambda self, value: self.setPosY(value)
         )

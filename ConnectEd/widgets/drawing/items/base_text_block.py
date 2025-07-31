@@ -51,7 +51,6 @@ class BaseTextBlock(
         {
             "Text" : PropertySpec(
                 type_name = "str",
-                exists    = lambda self: True,
                 getter    = lambda self: self.toPlainText(),
                 setter    = lambda self, value: self.setPlainText(value)
             )

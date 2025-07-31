@@ -30,7 +30,6 @@ class DrawingScene(
     _PROPERTY_SPECS = {
         "Name" : PropertySpec(
             type_name = "str",
-            exists    = lambda self: True,
             getter    = lambda self: self.getName(),
             setter    = lambda self, value: self.setName(value)
         )

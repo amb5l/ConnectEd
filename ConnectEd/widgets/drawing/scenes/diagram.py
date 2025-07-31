@@ -21,19 +21,16 @@ class DiagramScene(DrawingScene):
     _PROPERTY_SPECS = DrawingScene._PROPERTY_SPECS | {
         "Paper Size" : PropertySpec(
             type_name = "str",
-            exists    = lambda self: True,
             getter    = lambda self: self.paper_size,
             setter    = lambda self, value: self.setPaperSize(value)
         ),
         "Margin" : PropertySpec(
             type_name = "float",
-            exists    = lambda self: True,
             getter    = lambda self: self.margin,
             setter    = lambda self, value: self.setMargin(value)
         ),
         "Border" : PropertySpec(
             type_name = "float",
-            exists    = lambda self: True,
             getter    = lambda self: self.border,
             setter    = lambda self, value: self.setBorder(value)
         )

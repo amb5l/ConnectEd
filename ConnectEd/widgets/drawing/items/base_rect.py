@@ -51,13 +51,11 @@ class BaseRectangle(
         {
             "Width" : PropertySpec(
                 type_name = "float",
-                exists    = lambda self: True,
                 getter    = lambda self: self.rect().width(),
                 setter    = lambda self, value: self.setWidth(value)
             ),
             "Height" : PropertySpec(
                 type_name = "float",
-                exists    = lambda self: True,
                 getter    = lambda self: self.rect().height(),
                 setter    = lambda self, value: self.setHeight(value)
             )

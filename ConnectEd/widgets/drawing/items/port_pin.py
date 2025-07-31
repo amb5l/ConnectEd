@@ -7,7 +7,7 @@ from PyQt6.QtWidgets import QWidget, QStyleOptionGraphicsItem, \
                             QGraphicsItemGroup, QStyle, QGraphicsItem
 from PyQt6.QtGui     import QPainter, QPainterPath
 
-from ..properties import SimplePropertySpec, PropertySpec, PropertiesMixin
+from ..properties import PropertySpec, PropertiesMixin
 
 from . import SignalDirection, VectorRange, Edge, EdgeLoc, KPLoc, \
               ElementBoundShapeMixin, \
@@ -32,13 +32,9 @@ class PortPinMixin(ElementBoundShapeMixin, PropertiesMixin):
     _NAME_CLASS  = None  # subclass to override
     _NAME_OFFSET = 2.5
     _PROPERTY_SPECS = {
-        "Name" : SimplePropertySpec(
-            value     = "",
-            inherent  = True
-        ),
+        "Name" : PropertySpec(),
         "Direction" : PropertySpec(
             type_name = "SignalDirection",
-            exists    = lambda self: True,
             getter    = lambda self: self.direction,
             setter    = lambda self, value: setattr(self, 'direction', value)
         ),
@@ -164,13 +160,11 @@ class Port(
     _PROPERTY_SPECS = PortPinMixin._PROPERTY_SPECS | {
         "Position X" : PropertySpec(
             type_name = "float",
-            exists    = lambda self: True,
             getter    = lambda self: self.pos().x(),
             setter    = lambda self, value: self.setPos(QPointF(value, self.pos().y()))
         ),
         "Position Y" : PropertySpec(
             type_name = "float",
-            exists    = lambda self: True,
             getter    = lambda self: self.pos().y(),
             setter    = lambda self, value: self.setPos(QPointF(self.pos().x(), value))
         )
@@ -257,7 +251,6 @@ class BasePin(ElementCloneMixin, PortPinMixin, QGraphicsItemGroup):
     _PROPERTY_SPECS = PortPinMixin._PROPERTY_SPECS | {
         "Location" : PropertySpec(
             type_name = "EdgeLoc",
-            exists    = lambda self: True,
             getter    = lambda self: self.loc(),
             setter    = lambda self, value: self.setLoc(value)
         )

@@ -1,11 +1,10 @@
 __all__ = [
-    "SimplePropertySpec",
     "PropertySpec",
     "PropertyTextSpec",
     "PropertiesMixin"
 ]
 
-from typing import Callable, Any, Self
+from typing import Callable, Optional, Any, Self
 from dataclasses import dataclass
 
 from PyQt6.QtCore import QPointF
@@ -20,16 +19,24 @@ if TYPE_CHECKING:
 
 
 @dataclass
-class SimplePropertySpec:
-    value    : str
-    inherent : bool
-
-@dataclass
 class PropertySpec:
-    type_name : str
-    exists    : Callable[[], bool]
-    getter    : Callable[[], Any]
-    setter    : Callable[[Any], None]
+    type_name : str                             = "str"
+    exists    : Optional[Callable[[], bool]]    = None
+    getter    : Optional[Callable[[], Any]]     = None
+    setter    : Optional[Callable[[Any], None]] = None
+    value     : Optional[Any]                   = None  # for simple strings
+    custom    : bool                            = False
+
+    def __post_init__(self):
+        # defaults for simple strings
+        if self.exists is None:
+            self.exists = lambda: True
+        if self.getter is None:
+            self.getter = lambda self: "" if self.value is None else self.value
+        if self.setter is None:
+            self.setter = lambda obj, val: setattr(self, 'value', str(val))
+            if self.value is None:
+                self.value = ""
 
 @dataclass
 class PropertyTextSpec:
@@ -40,12 +47,11 @@ class PropertyTextSpec:
 
 class PropertiesMixin:
     # class variables
-    _PROPERTY_SPECS : dict[str, PropertySpec | SimplePropertySpec]
+    _PROPERTY_SPECS : dict[str, PropertySpec]
     _PROPERTY_TEXTS : dict[str, PropertyTextSpec]
 
     # instance variables
-    _properties : dict[str, PropertySpec | SimplePropertySpec]
-    _inherent   : list[str]
+    _properties : dict[str, PropertySpec]
 
     def initProperties(self : Self, bare : bool = False) -> None:
         from .items.property_text import PropertyText
@@ -84,13 +90,12 @@ class PropertiesMixin:
         if name in self._properties:
             logger.warning(f"Property {name} already exists")
             return
-        self._properties[name] = SimplePropertySpec(value="", inherent=False)
+        self._properties[name] = PropertySpec(custom=True)
 
     def deleteProperty(self, name : str) -> None:
         if name in self._properties:
             v = self._properties[name]
-            if isinstance(v, SimplePropertySpec):
-                if not v.inherent:
-                    del self._properties[name]
+            if v.custom:
+                del self._properties[name]
         else:
             logger.warning(f"Property {name} does not exist")

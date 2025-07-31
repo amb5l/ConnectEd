@@ -1,4 +1,5 @@
-Edit - Select All
+embed name in property spec
+
 cloning offset with non-default anchor
 
 OK false alarm, forget that for now. New issue: I place a Text, then copy and paste it nearby. I drag the 2nd Text to a new position. I then drag select both Text instances and copy/paste. The 2 new instances have the original (pre-drag) positions w.r.t. each other.
