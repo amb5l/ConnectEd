@@ -18,7 +18,7 @@ class Tether(QGraphicsItem):
 
     _item  : "TetherText"
     _pos   : QPointF      # TetherText anchor position
-    _ppos  : QPointF      # Parent position
+    _ppos  : QPointF      # parent leat keypoint position in parent coords
     _brect : QRectF       # Bounding rectangle
 
     def __init__(self, item: "TetherText", visible : bool = False):
@@ -40,11 +40,11 @@ class Tether(QGraphicsItem):
 
     def onPositionChange(self : Self, pos : QPointF) -> None:
         self._brect = QRectF()
-        parent : Optional[KeyPoint] = self._item.parentItem()
-        if parent is None:
+        cleat : Optional[KeyPoint] = self._item.parentItem()
+        if cleat is None:
             return
         self._pos = self._item._anchor_offset
-        self._ppos = self._item.mapFromParent(parent.pos())
+        self._ppos = cleat.scenePos() - self.scenePos()
         rect = QRectF(self._pos, self._ppos).normalized()
         self._brect = rect.adjusted(-5, -5, 5, 5) # TODO check this
 
