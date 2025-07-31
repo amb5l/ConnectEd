@@ -43,6 +43,7 @@ class Actions:
         self.editMove           = Action( self._parent, "Move"          , "Move"                                   , None                         )
         self.editResize         = Action( self._parent, "Resize"        , "Resize"                                 , None                         )
         self.editAppearance     = Action( self._parent, "Appearance..." , "Edit appearance of selected element(s)" , None                         )
+        self.editQuery          = Action( self._parent, "Query"         , "Query"                                  , "Ctrl+Q"                     )
         self.viewZoomAll        = Action( self._parent, "Zoom All"      , "Zoom to fit all"                        , "Ctrl+Home"                  )
         self.viewZoomSheet      = Action( self._parent, "Zoom Sheet"    , "Zoom to fit sheet"                      , "Ctrl+Shift+S"               )
         self.viewZoomArea       = Action( self._parent, "Zoom Area"     , "Zoom to area"                           , "Ctrl+Shift+W"               )

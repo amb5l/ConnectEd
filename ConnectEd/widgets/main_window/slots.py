@@ -162,6 +162,10 @@ class Slots:
         widget.editAppearance()
 
     @withCurrentWidget(DrawingView)
+    def editQuery(self : Self, widget: DrawingView) -> None:
+        widget.editQuery()
+
+    @withCurrentWidget(DrawingView)
     def viewZoomAll(self : Self, widget: DrawingView) -> None:
         widget.viewZoomAll()
 

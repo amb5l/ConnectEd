@@ -712,6 +712,18 @@ class DrawingViewStateEditAppearance1(DrawingViewStateBase):
 class DrawingViewStateEditAppearance2(DrawingViewStateBase):
     TIP = "Appearance: specify changes"
 
+class DrawingViewStateEditQuery(DrawingViewStateBase):
+    TIP = "Query: pick an item"
+
+    def mouseLeftClick(
+        self      : Self,
+        vpos      : QPoint,
+        spos      : QPointF,
+        modifiers : Qt.KeyboardModifier
+    ) -> None:
+        self.view._selectPoint(spos, modifiers)
+        self.view.editQuery()
+
 class DrawingViewStatePlacePort1(DrawingViewStateBase):
     TIP = "Place Port: enter the port details"
 
@@ -958,6 +970,7 @@ class DrawingViewStateMixin:
     stateEditResize3     : DrawingViewStateEditResize3
     stateEditAppearance1 : DrawingViewStateEditAppearance1
     stateEditAppearance2 : DrawingViewStateEditAppearance2
+    stateEditQuery       : DrawingViewStateEditQuery
     statePlacePort1      : DrawingViewStatePlacePort1
     statePlacePort2      : DrawingViewStatePlacePort2
     statePlaceBlock1     : DrawingViewStatePlaceBlock1
@@ -991,6 +1004,7 @@ class DrawingViewStateMixin:
         self.stateEditResize3     = DrawingViewStateEditResize3     (self)
         self.stateEditAppearance1 = DrawingViewStateEditAppearance1 (self)
         self.stateEditAppearance2 = DrawingViewStateEditAppearance2 (self)
+        self.stateEditQuery       = DrawingViewStateEditQuery       (self)
         self.statePlacePort1      = DrawingViewStatePlacePort1      (self)
         self.statePlacePort2      = DrawingViewStatePlacePort2      (self)
         self.statePlaceBlock1     = DrawingViewStatePlaceBlock1     (self)
