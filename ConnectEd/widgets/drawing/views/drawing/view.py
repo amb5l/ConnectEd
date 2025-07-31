@@ -14,8 +14,8 @@ class DrawingViewViewMixin:
         else:
             self._zoomRect(rect)
 
-    def viewZoomWindow(self : "DrawingView") -> None:
-        self.state.go(self.stateViewZoomWindow1)
+    def viewZoomArea(self : "DrawingView") -> None:
+        self.state.go(self.stateViewZoomArea1)
 
     def viewZoomIn(self : "DrawingView", n : int = 1) -> None:
         from ..... import hub

@@ -158,8 +158,8 @@ class Slots:
         widget.viewZoomSheet()
 
     @withCurrentWidget(DrawingView)
-    def viewZoomWindow(self : Self, widget: DrawingView) -> None:
-        widget.viewZoomWindow()
+    def viewZoomArea(self : Self, widget: DrawingView) -> None:
+        widget.viewZoomArea()
 
     @withCurrentWidget(DrawingView)
     def viewZoomIn(self : Self, widget: DrawingView) -> None:

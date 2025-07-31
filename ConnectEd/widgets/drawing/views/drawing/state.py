@@ -178,7 +178,7 @@ class DrawingViewStateIdle(DrawingViewStateBase):
             self.view.state.go(self.view.stateViewPan2)
         elif modifiers & qkm.ControlModifier:
             self.view.marquee.begin(vpos)
-            self.view.state.go(self.view.stateViewZoomWindow2)
+            self.view.state.go(self.view.stateViewZoomArea2)
 
 class DrawingViewStateViewPan1(DrawingViewStateBase):
     TIP = "Pan: pick the first point"
@@ -292,7 +292,7 @@ class DrawingViewStateViewPan2(DrawingViewStateBase):
         )
         self.view.wip.pos = vpos
 
-class DrawingViewStateViewZoomWindow1(DrawingViewStateBase):
+class DrawingViewStateViewZoomArea1(DrawingViewStateBase):
     TIP = "Zoom Window: pick the first point"
 
     def mouseLeftClick(
@@ -302,7 +302,7 @@ class DrawingViewStateViewZoomWindow1(DrawingViewStateBase):
         modifiers : Qt.KeyboardModifier
     ) -> None:
         self.view.marquee.begin(vpos)
-        self.view.state.go(self.view.stateViewZoomWindow2)
+        self.view.state.go(self.view.stateViewZoomArea2)
 
     def mouseLeftDragBegin(
         self      : Self,
@@ -311,9 +311,9 @@ class DrawingViewStateViewZoomWindow1(DrawingViewStateBase):
         modifiers : Qt.KeyboardModifier
     ) -> None:
         self.view.marquee.begin(vpos)
-        self.view.state.go(self.view.stateViewZoomWindow2)
+        self.view.state.go(self.view.stateViewZoomArea2)
 
-class DrawingViewStateViewZoomWindow2(DrawingViewStateBase):
+class DrawingViewStateViewZoomArea2(DrawingViewStateBase):
     TIP = "Zoom Window: pick the second point"
 
     def mouseLeftClick(
@@ -943,8 +943,8 @@ class DrawingViewStateMixin:
     stateIdle            : DrawingViewStateIdle
     stateViewPan1        : DrawingViewStateViewPan1
     stateViewPan2        : DrawingViewStateViewPan2
-    stateViewZoomWindow1 : DrawingViewStateViewZoomWindow1
-    stateViewZoomWindow2 : DrawingViewStateViewZoomWindow2
+    stateViewZoomArea1   : DrawingViewStateViewZoomArea1
+    stateViewZoomArea2   : DrawingViewStateViewZoomArea2
     stateSelectArea2     : DrawingViewStateSelectArea2
     stateEditPaste       : DrawingViewStateEditPaste
     stateEditDuplicate1  : DrawingViewStateEditDuplicate1
@@ -976,8 +976,8 @@ class DrawingViewStateMixin:
         self.stateIdle            = DrawingViewStateIdle            (self)
         self.stateViewPan1        = DrawingViewStateViewPan1        (self)
         self.stateViewPan2        = DrawingViewStateViewPan2        (self)
-        self.stateViewZoomWindow1 = DrawingViewStateViewZoomWindow1 (self)
-        self.stateViewZoomWindow2 = DrawingViewStateViewZoomWindow2 (self)
+        self.stateViewZoomArea1   = DrawingViewStateViewZoomArea1   (self)
+        self.stateViewZoomArea2   = DrawingViewStateViewZoomArea2   (self)
         self.stateSelectArea2     = DrawingViewStateSelectArea2     (self)
         self.stateEditPaste       = DrawingViewStateEditPaste       (self)
         self.stateEditDuplicate1  = DrawingViewStateEditDuplicate1  (self)
