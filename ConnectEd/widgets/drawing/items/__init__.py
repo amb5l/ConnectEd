@@ -16,8 +16,6 @@ from ....core import Z_DRAWING, logger, \
 
 from ..properties import PropertySpec
 
-from .key_point import KPLoc, KPDef
-
 from .... import hub
 
 from typing import TYPE_CHECKING
@@ -38,6 +36,10 @@ class NoChange:
 
 NO_CHANGE = NoChange()
 
+class KPType(Enum):
+    Static  = 0
+    Mover   = 1
+    Resizer = 2
 
 class Edge(Enum):
     LEFT   = "left"
@@ -668,90 +670,76 @@ class ElementPosMixin:
 # TODO: ElementEdgeLocMixin (disables setPos?)
 
 class ElementKeypointsMixin:
-    # class variables
-    _KEY_POINTS : Optional[list["KPDef"]] = None
-
     # instance variables
-    _kprect     : QRectF
-    _key_points : dict["KPLoc", "KeyPoint"]
-
-    def initKeypoints(self : Self) -> None:
-        self._kprect = QRectF()
-        self._key_points = {
-            kp.loc: KeyPoint(self, kp.loc, kp.resize) for kp in self._KEY_POINTS
-        }
-        self.updateKeypoints()
-        self.updateGrips()
-
-    def updateGrips(self : Self) -> None:
-        for kp in self._key_points.values():
-            kp.grip.setVisible(self.isSelected())
-
-    def getKeyPointPos(self, kp : "KPLoc") -> QPointF:
-        rect = self._kprect
-        return QPointF(kp.value.h * rect.width(), kp.value.v * rect.height())
+    _key_points : dict[str, "KeyPoint"]
 
 class ElementRectKeypointsMixin(ElementKeypointsMixin):
-    _KEY_POINTS = [KPDef(k, k != KPLoc.CENTER, True) for k in KPLoc.__iter__()]
+    # class variables
+    _KEY_POINTS = {
+        "Top Left"      : ( 0.0 , 0.0 ),
+        "Top Center"    : ( 0.5 , 0.0 ),
+        "Top Right"     : ( 1.0 , 0.0 ),
+        "Center Left"   : ( 0.0 , 0.5 ),
+        "Center"        : ( 0.5 , 0.5 ),
+        "Center Right"  : ( 1.0 , 0.5 ),
+        "Bottom Left"   : ( 0.0 , 1.0 ),
+        "Bottom Center" : ( 0.5 , 1.0 ),
+        "Bottom Right"  : ( 1.0 , 1.0 )
+    }
+    _KP_TYPES : dict[str, KPType]
+
+    # instance variables
+    _rect   : QRectF   # border rectangle, maintained by element
+
+    def initKeypoints(self : Self) -> None:
+        self._key_points = {}
+        for kp_name, kp_type in self._KP_TYPES.items():
+            self._key_points[kp_name] = KeyPoint(kp_name, kp_type, self)
 
     def updateKeypoints(self : Self) -> None:
-        """
-        Call this after size change to update keypoint positions and adjust
-        position in case anchor has moved.
-        """
-        for kp_loc in self._key_points.keys():
-            self._key_points[kp_loc].setPos(QPointF(
-                kp_loc.value.h * self._kprect.width(),
-                kp_loc.value.v * self._kprect.height()
+        for name, (x, y) in self._KEY_POINTS.items():
+            self._key_points[name].setPos(QPointF(
+                x * self._rect.width(),
+                y * self._rect.height()
             ))
+
+    def updateGripsVisibility(self : Self) -> None:
+        for kp in self._key_points.values():
+            kp._grip.setVisible(self.isSelected())
 
 class ElementAnchorMixin:
     # class variables
     _PROPERTY_SPECS_ANCHOR = {
         "Anchor" : PropertySpec(
-            type_name = "KPLoc",
-            exists    = lambda self: self.hasAnchor(),
-            getter    = lambda self: self.getAnchorLoc(),
-            setter    = lambda self, value: self.setAnchorLoc(value)
+            getter    = lambda self: self.getAnchor(),
+            setter    = lambda self, value: self.setAnchor(value)
         )
     }
 
     # instance variables
-    _pos           : QPointF
-    _anchor        : Optional["KeyPoint"]
-    _anchor_loc    : Optional["KPLoc"]
-    _anchor_offset : QPointF
+    _pos    : QPointF     # position of anchor w.r.t. scene/parent
+    _anchor : "KeyPoint"  # anchor key point
 
     def initAnchor(self : Self) -> None:
         self._pos = super().pos()
-        self.setAnchorLoc(self._KEY_POINTS[0].loc)
-        self.setPos(super().pos())
+        self._anchor = next(iter(self._key_points.values()))
+        self.updateAnchor()
 
     def pos(self : Self) -> QPointF:
-        return self._pos
+        return super().pos() + self._anchor.pos()
 
     def setPos(self : Self, pos : QPointF) -> None:
         self._pos = pos
-        super().setPos(pos - self._anchor_offset)
+        super().setPos(pos - self._anchor.pos())
 
-    def hasAnchor(self : Self) -> bool:
-        return self._anchor is not None
-
-    def getAnchorLoc(self : Self) -> "KPLoc":
-        return self._anchor_loc
-
-    def setAnchorLoc(self, loc : "KPLoc") -> None:
-        if hasattr(self, "_anchor") and self._anchor is not None:
-            self._anchor.onAnchorChange(False)
-        self._anchor = self._key_points[loc]
-        self._anchor_loc = loc
-        self._anchor_offset = self.getKeyPointPos(loc)
-        self._anchor.onAnchorChange(True)
-        self.setPos(self._pos + self._anchor_offset)
+    def setAnchor(self, name : str) -> None:
+        self._anchor._grip.onAnchorChange(False)
+        self._anchor = self._key_points[name]
+        self._anchor._grip.onAnchorChange(True)
+        self.setPos(self.pos())
 
     def updateAnchor(self : Self) -> None:
-        self._anchor_offset = self.getKeyPointPos(self._anchor_loc)
-        self.setPos(self.pos()) # reposition following possible anchor movement
+        self.setPos(self._pos) # reposition following possible anchor movement
 
 class ElementLineMixin:
     _CAP_STYLE  = Qt.PenCapStyle.SquareCap
@@ -877,8 +865,8 @@ class ElementChangeMixin:
                     self.fill.onSelectionChange(value)
                 if hasattr(self, "quill"):
                     self.quill.onSelectionChange(value)
-                if hasattr(self, "updateGrips"):
-                    self.updateGrips()
+                if hasattr(self, "updateGripsVisibility"):
+                    self.updateGripsVisibility()
                 if hasattr(self, "onSelectionChange"):
                     self.onSelectionChange(value)
         return super().itemChange(change, value)
@@ -1109,6 +1097,7 @@ __all__ = [
     "DEFAULT",
     "NoChange",
     "NO_CHANGE",
+    "KPType",
     "Edge",
     "EdgeLoc",
     "SignalDirection",
@@ -1129,7 +1118,7 @@ __all__ = [
     "cmdPlaceElement",
     "clone"
 ]
-from .key_point import KPLoc, KPReverse, KeyPoint, KPDef
+from .key_point import KeyPoint
 __all__ += key_point.__all__
 from .tether_text import TetherText, Tether
 __all__ += tether_text.__all__

@@ -13,7 +13,7 @@ from ..properties import PropertySpec
 
 from ..properties import PropertySpec, PropertiesMixin
 
-from . import KPLoc, \
+from . import KPType, \
               ElementMixin, \
               ElementBoundShapeMixin, \
               ElementPosMixin, \
@@ -46,6 +46,8 @@ class BaseRectangle(
     """Base class for rectangle elements."""
 
     # class variables
+    _KP_TYPES = { k : KPType.Mover if v == "Center" else KPType.Resizer \
+            for k, v in ElementRectKeypointsMixin._KEY_POINTS.items() }
     _PROPERTY_SPECS = \
         ElementPosMixin._PROPERTY_SPECS_POS | \
         {
@@ -122,7 +124,7 @@ class BaseRectangle(
             super().setRect(rect_or_ax)
         else:
             super().setRect(rect_or_ax, ay, w, h)
-        self._kprect = self._rect = self.rect()
+        self._rect = self.rect()
         self.onGeometryChange()
 
     def paint(
@@ -153,31 +155,31 @@ class BaseRectangle(
         self._rect.setCoords(0, 0, x2-x1, y2-y1)
         self.setRect(self._rect)
 
-    def moveKeyPoint(self : Self, kp : KPLoc, delta : QPointF) -> None:
+    def moveKeyPoint(self : Self, name : str, delta : QPointF) -> None:
         p1 = self.pos()
         p2 = p1 + self._rect.bottomRight()
         d = delta
-        match kp:
-            case KPLoc.TOP_LEFT:
+        match name:
+            case "Top Left":
                 self.setPoints(p1.x() + d.x(), p1.y() + d.y(), p2.x(), p2.y())
-            case KPLoc.TOP_CENTER:
+            case "Top Center":
                 self.setPoints(p1.x(), p1.y() + d.y(), p2.x(), p2.y())
-            case KPLoc.TOP_RIGHT:
+            case "Top Right":
                 self.setPoints(p1.x(), p1.y() + d.y(), p2.x() + d.x(), p2.y())
-            case KPLoc.CENTER_LEFT:
+            case "Center Left":
                 self.setPoints(p1.x() + d.x(), p1.y(), p2.x(), p2.y())
-            case KPLoc.CENTER:
+            case "Center":
                 self.setPos(self.pos() + d)
-            case KPLoc.CENTER_RIGHT:
+            case "Center Right":
                 self.setPoints(p1.x(), p1.y(), p2.x() + d.x(), p2.y())
-            case KPLoc.BOTTOM_LEFT:
+            case "Bottom Left":
                 self.setPoints(p1.x() + d.x(), p1.y(), p2.x(), p2.y() + d.y())
-            case KPLoc.BOTTOM_CENTER:
+            case "Bottom Center":
                 self.setPoints(p1.x(), p1.y(), p2.x(), p2.y() + d.y())
-            case KPLoc.BOTTOM_RIGHT:
+            case "Bottom Right":
                 self.setPoints(p1.x(), p1.y(), p2.x() + d.x(), p2.y() + d.y())
             case _:
-                raise ValueError(f"Invalid key point: {kp}")
+                raise ValueError(f"Invalid key point: {name}")
 
     @classmethod
     def createOrUpdate(

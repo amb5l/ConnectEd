@@ -9,7 +9,7 @@ from PyQt6.QtGui     import QPainter, QPainterPath
 
 from ..properties import PropertySpec, PropertiesMixin
 
-from . import SignalDirection, VectorRange, Edge, EdgeLoc, KPLoc, \
+from . import SignalDirection, VectorRange, Edge, EdgeLoc, \
               ElementBoundShapeMixin, \
               ElementChangeMixin, \
               ElementCloneMixin, \
@@ -80,7 +80,7 @@ class PortPinMixin(ElementBoundShapeMixin, PropertiesMixin):
         self._name_text = self._NAME_CLASS(
             name,
             QPointF(self._NAME_OFFSET, 0),
-            KPLoc.CENTER_LEFT
+            "Center Left"
         )
         self.name = name
         self.direction = direction
@@ -218,7 +218,7 @@ class Port(
     def _nameRect(self : Self) -> QRectF:
         rect = QRectF(self._name_text.tightBoundingRect())
         name_pos = self._arrow.pos() + self._name_text.pos()
-        rect.translate(name_pos - self._name_text._anchor_offset)
+        rect.translate(name_pos - self._name_text._anchor.pos())
         return rect
 
     @classmethod
@@ -352,7 +352,7 @@ class BasePin(ElementCloneMixin, PortPinMixin, QGraphicsItemGroup):
         rect = QRectF(self._name_text.tightBoundingRect())
         name_pos = self._inner.pos() if hasattr(self, "_inner") else QPointF()
         name_pos += self._name_text.pos()
-        rect.translate(name_pos - self._name_text._anchor_offset)
+        rect.translate(name_pos - self._name_text._anchor.pos())
         return rect
 
     def _innerRect(self : Self) -> QRectF:

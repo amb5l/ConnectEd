@@ -12,13 +12,13 @@ from .table_view import TableView
 from ... import hub
 from ...core import logger
 
-from ..drawing.items import ElementMixin, KPLoc
+from ..drawing.items import ElementMixin
 from ..drawing.items.property_text import PropertyText, PropertyDisplay
 
 from . import okCancelNewLayout
 
 
-type PropertiesType = str | float | PropertyDisplay | KPLoc
+type PropertiesType = str | float | PropertyDisplay
 
 class PropertiesItem(QStandardItem):
     IDX_INITIAL_TEXT = 0
@@ -39,9 +39,6 @@ class PropertiesItem(QStandardItem):
         elif isinstance(value, PropertyDisplay):
             text = value.value
             type_name = "PropertyDisplay"
-        elif isinstance(value, KPLoc):
-            text = value.value.name
-            type_name = "KPLoc"
         else:
             raise ValueError(f"Invalid value type: {type(value)}")
         super().__init__(text)
@@ -61,10 +58,10 @@ class PropertiesItem(QStandardItem):
                 return PropertyDisplay(text)
             elif type_name == "KPLoc":
                 enum_key = text.upper().replace(" ", "_")
-                if enum_key not in KPLoc.__members__:
-                    logger.error(f"Invalid KPLoc enum value: {enum_key}")
-                    return self.getInitialValue()
-                return KPLoc[enum_key]
+                #if enum_key not in KPLoc.__members__:
+                #    logger.error(f"Invalid KPLoc enum value: {enum_key}")
+                #    return self.getInitialValue()
+                return enum_key
             else:
                 raise ValueError(f"Invalid type name: {type_name}")
         except Exception as e:
@@ -154,16 +151,16 @@ class PropertiesDisplayItemDelegate(PropertiesItemDelegate):
 
 class PropertiesAnchorItemDelegate(PropertiesItemDelegate):
     TOOLTIP = "Controls position of property anchor point"
-    ENTRIES = [
-        KPLoc.TOP_LEFT.value.name,
-        KPLoc.TOP_CENTER.value.name,
-        KPLoc.TOP_RIGHT.value.name,
-        KPLoc.CENTER_LEFT.value.name,
-        KPLoc.CENTER.value.name,
-        KPLoc.CENTER_RIGHT.value.name,
-        KPLoc.BOTTOM_LEFT.value.name,
-        KPLoc.BOTTOM_CENTER.value.name,
-        KPLoc.BOTTOM_RIGHT.value.name
+    ENTRIES = [  # TODO fix this to work with other key point names
+        "Top Left",
+        "Top Center",
+        "Top Right",
+        "Center Left",
+        "Center",
+        "Center Right",
+        "Bottom Left",
+        "Bottom Center",
+        "Bottom Right"
     ]
 
 class PropertiesCleatItemDelegate(PropertiesAnchorItemDelegate):
@@ -259,10 +256,10 @@ class PropertiesDialog(QDialog):
             PropertiesItem(""),
             PropertiesItem(""),
             PropertiesItem(PropertyDisplay.VALUE),
-            PropertiesItem(KPLoc.TOP_LEFT),
+            PropertiesItem("Top Left"),
             PropertiesItem(0),
             PropertiesItem(0),
-            PropertiesItem(KPLoc.BOTTOM_RIGHT)
+            PropertiesItem("Bottom Right")
         ])
         self.table_view.setCurrentIndex(self.model.index(row, 0))
 

@@ -8,8 +8,6 @@ from PyQt6.QtWidgets import QGraphicsItem, QGraphicsSceneMouseEvent
 
 from ..properties import PropertySpec
 
-from . import KPLoc
-
 from .tether_text import TetherText
 
 from typing import TYPE_CHECKING

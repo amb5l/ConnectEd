@@ -7,7 +7,7 @@ from PyQt6.QtGui     import QPainter, QFontMetrics
 
 from ..properties import PropertySpec, PropertiesMixin
 
-from . import KPLoc, \
+from . import KPType, \
               ElementMixin, \
               ElementPosMixin, \
               ElementRectKeypointsMixin, \
@@ -40,6 +40,8 @@ class BaseText(
     QGraphicsSimpleTextItem
 ):
     # class variables
+    _KP_TYPES = { k : KPType.Mover \
+            for k in ElementRectKeypointsMixin._KEY_POINTS.keys() }
     _PROPERTY_SPECS_POS = \
         ElementAnchorMixin._PROPERTY_SPECS_ANCHOR | \
         ElementPosMixin._PROPERTY_SPECS_POS
@@ -58,7 +60,8 @@ class BaseText(
         _PROPERTY_SPECS_APPEARANCE
 
     # instance variables
-    _trect : QRectF  # tight bounding rect
+    _rect  : QRectF  # border rectangle (for keypoints)
+    _trect : QRectF  # tight bounding rectangle
 
     def __init__(self : Self, bare : bool = False) -> None:
         QGraphicsSimpleTextItem.__init__(self)
@@ -66,7 +69,7 @@ class BaseText(
         self.onGeometryChange()
 
     def onGeometryChange(self : Self) -> None:
-        self._kprect = self._brect = super().boundingRect()
+        self._brect = self._rect = super().boundingRect()
         if not self.text():
             self._trect = QRectF()
             return
@@ -97,7 +100,7 @@ class BaseText(
             painter.setPen(self.outline.pen)
             painter.drawRect(self.boundingRect())
 
-    def moveKeyPoint(self : Self, kp : KPLoc, delta : QPointF) -> None:
+    def moveKeyPoint(self : Self, _ : str, delta : QPointF) -> None:
         """Move the entire Text when any keypoint is dragged."""
         self.setPos(self.pos() + delta)
 
@@ -107,7 +110,7 @@ class BaseText(
         *,
         text   : Optional[str]     = None,
         pos    : Optional[QPointF] = None,
-        anchor : Optional[KPLoc]   = None,
+        anchor : Optional[str]     = None,
         inst   : Optional[Self]    = None
     ) -> "BaseText":
         inst = cls() if inst is None else inst
@@ -116,7 +119,7 @@ class BaseText(
         if pos is not None:
             inst.setPos(pos)
         if anchor is not None:
-            inst.setAnchorLoc(anchor)
+            inst.setAnchor(anchor)
         return inst
 
     def ctxMenuEdit(

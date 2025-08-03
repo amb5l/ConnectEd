@@ -2,12 +2,10 @@ from typing      import Self
 
 from PyQt6.QtCore    import Qt, QRectF, QPointF, \
                             QXmlStreamWriter, QXmlStreamReader
-from PyQt6.QtWidgets import QGraphicsPathItem, QStyleOptionGraphicsItem, QWidget
-from PyQt6.QtGui     import QPainter, QPen, QBrush, QPainterPath, QAction
+from PyQt6.QtWidgets import QGraphicsPathItem
+from PyQt6.QtGui     import QPen, QBrush, QPainterPath, QAction
 
 from . import ElementMenuMixin
-
-from .key_point import KeyPoint
 
 from .... import hub
 
@@ -15,6 +13,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ... import DrawingView
     from . import ElementKeypointsMixin
+    from .key_point import KeyPoint
 
 
 class Grip(
@@ -25,7 +24,7 @@ class Grip(
     Z_DELTA = 1
 
     # instance variables
-    _key_point   : KeyPoint                 # parent key point
+    _key_point   : "KeyPoint"               # parent key point
     _element     : "ElementKeypointsMixin"  # parent element
     _pen         : QPen                     # pen for drawing
     _brush       : QBrush                   # brush for drawing
@@ -33,7 +32,7 @@ class Grip(
     _path_anchor : QPainterPath             # path when anchor
     _actions     : dict[str, QAction]       # context menu actions
 
-    def __init__(self : Self, parent : KeyPoint) -> None:
+    def __init__(self : Self, parent : "KeyPoint") -> None:
         super().__init__(parent)
         self._key_point = parent
         self._element = parent.parentItem()
@@ -50,9 +49,9 @@ class Grip(
         self._path_anchor = QPainterPath()
         self.onSettingsChange()
         hub.settings.changed.connect(self.onSettingsChange)
-        self._actions = []
 
     def onSettingsChange(self : Self) -> None:
+        from . import KPType
         self.prepareGeometryChange()
         theme = hub.settings.getTheme("grip")
         self._pen.setColor(theme.line)
@@ -64,7 +63,7 @@ class Grip(
         square = QRectF(-r, -r, r*2, r*2)
         # update normal appearance
         self._path_normal.clear()
-        if self._key_point._resize: # resizable => circle
+        if self._key_point._type == KPType.Resizer: # resizable => circle
             self._path_normal.addEllipse(square)
         else: # not resizable => rhombus
             self._path_normal.moveTo(-r, 0)
@@ -76,51 +75,53 @@ class Grip(
         self._path_anchor.clear()
         self._path_anchor.addRect(square)
         # set current appearance
-        is_anchor = hasattr(self._element, "anchor") and \
-            self._element.getAnchorLoc() == self._key_point.getLoc()
+        is_anchor = hasattr(self._element, "_anchor") and \
+            self._element._anchor == self._key_point
         self.onAnchorChange(is_anchor)
 
     def onAnchorChange(self : Self, anchor : bool) -> None:
         self.setPath(self._path_anchor if anchor else self._path_normal)
 
     def getMenuItems(self : Self) -> list[str]:
+        from . import KPType
         items = []
-        if self._key_point._resize:
+        if self._key_point._type == KPType.Resizer:
             items.append("Resize")
-        items.append("Move")
-        if hasattr(self._element, "setAnchorLoc"):
+        if self._key_point._type != KPType.Static:
+            items.append("Move")
+        if hasattr(self._element, "setAnchor"):
             items.append("Assign Anchor")
         return items
 
     def moveBy(self : Self, dx : float, dy : float) -> None:
-        self._element.moveKeyPoint(self._key_point.getLoc(), QPointF(dx, dy))
+        self._element.moveKeyPoint(self._key_point._name, QPointF(dx, dy))
 
-    def toXml(self : Self, xw : QXmlStreamWriter) -> None:
+    def toXml(self : Self, _ : QXmlStreamWriter) -> None:
         pass
 
     @classmethod
-    def fromXml(cls : Self, xr : QXmlStreamReader) -> Self:
+    def fromXml(cls : Self, _ : QXmlStreamReader) -> Self:
         pass
 
     def ctxMenuMove(
-        self    : Self,
-        checked : bool,
-        view    : "DrawingView"
+        self : Self,
+        _    : bool,
+        view : "DrawingView"
     ) -> None:
         view.editMoveBegin([self._element], self.scenePos())
         view.state.go(view.stateEditMove2)
 
     def ctxMenuResize(
-        self    : Self,
-        checked : bool,
-        view    : "DrawingView"
+        self : Self,
+        _    : bool,
+        view : "DrawingView"
     ) -> None:
         view.editMoveBegin([self], self.scenePos())
         view.state.go(view.stateEditMove2)
 
     def ctxMenuAssignAnchor(
-        self    : Self,
-        checked : bool,
-        view    : "DrawingView"
+        self : Self,
+        _    : bool,
+        view : "DrawingView"
     ) -> None:
-        self._element.setAnchorLoc(self._key_point.getLoc())
+        self._element.setAnchor(self._key_point._name)

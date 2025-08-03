@@ -10,7 +10,7 @@ from PyQt6.QtGui     import QColor, QPainter, QPainterPath, \
 
 from ..properties import PropertySpec, PropertiesMixin
 
-from . import KPLoc, \
+from . import KPType, \
               ElementMixin, \
               ElementBoundShapeMixin, \
               ElementPosMixin, \
@@ -45,6 +45,8 @@ class BaseTextBlock(
     QGraphicsTextItem
 ):
     # class variables
+    _KP_TYPES = { k : KPType.Mover \
+            for k in ElementRectKeypointsMixin._KEY_POINTS.keys() }
     _PROPERTY_SPECS = \
         ElementAnchorMixin._PROPERTY_SPECS_ANCHOR | \
         ElementPosMixin._PROPERTY_SPECS_POS | \
@@ -58,6 +60,7 @@ class BaseTextBlock(
         ElementQuillMixin._PROPERTY_SPECS_QUILL
 
     # instance variables
+    _rect    : QRectF        # border rectangle (for keypoints)
     _brectf  : QRectF        # bounding rect when has focus
     _hshapef : QPainterPath  # hit detect shape when has focus
 
@@ -109,7 +112,7 @@ class BaseTextBlock(
 
     def onGeometryChange(self : Self) -> None:
         self.prepareGeometryChange()
-        self._kprect = self._brect = QGraphicsTextItem.boundingRect(self)
+        self._brect = self._rect = QGraphicsTextItem.boundingRect(self)
         self._brectf = self._brect.adjusted(-0.5, -0.5, 0.5, 0.5)
         self._hshape.clear()
         self._hshape.addRect(self._brect)
@@ -158,7 +161,7 @@ class BaseTextBlock(
             painter.setPen(self.outline.pen)
             painter.drawRect(self.boundingRect())
 
-    def moveKeyPoint(self : Self, kp : KPLoc, delta : QPointF) -> None:
+    def moveKeyPoint(self : Self, _ : str, delta : QPointF) -> None:
         """Move the entire Text when any keypoint is dragged."""
         self.setPos(self.pos() + delta)
 
@@ -167,7 +170,7 @@ class BaseTextBlock(
         cls    : Self,
         text   : Optional[str]     = None,
         pos    : Optional[QPointF] = None,
-        anchor : Optional[KPLoc]      = None,
+        anchor : Optional[str]     = None,
         *,
         inst   : Optional[Self] = None
     ) -> "BaseTextBlock":
@@ -177,7 +180,7 @@ class BaseTextBlock(
         if pos is not None:
             inst.setPos(pos)
         if anchor is not None:
-            inst.setAnchorLoc(anchor)
+            inst.setAnchor(anchor)
         return inst
 
 class cmdPlaceBaseTextBlock(cmdPlaceElement):

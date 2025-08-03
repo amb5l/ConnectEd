@@ -15,7 +15,7 @@ from ...core import logger
 
 from ...core.icon import getCharIcon
 
-from .. import ElementMixin, KPLoc, PropertyDisplay
+from .. import ElementMixin, PropertyDisplay
 
 from ... import hub
 
@@ -99,16 +99,16 @@ class SpreadsheetComboDelegate(QStyledItemDelegate):
 class SpreadsheetKPDelegate(SpreadsheetComboDelegate):
     """Delegate for anchor KP enum values."""
     TOOLTIP = "Controls position of anchor point"
-    ENTRIES = [
-        KPLoc .TOP_LEFT      .value .name,
-        KPLoc .TOP_CENTER    .value .name,
-        KPLoc .TOP_RIGHT     .value .name,
-        KPLoc .CENTER_LEFT   .value .name,
-        KPLoc .CENTER        .value .name,
-        KPLoc .CENTER_RIGHT  .value .name,
-        KPLoc .BOTTOM_LEFT   .value .name,
-        KPLoc .BOTTOM_CENTER .value .name,
-        KPLoc .BOTTOM_RIGHT  .value .name
+    ENTRIES = [  # TODO fix this to work with other key point names
+        "Top Left",
+        "Top Center",
+        "Top Right",
+        "Center Left",
+        "Center",
+        "Center Right",
+        "Bottom Left",
+        "Bottom Center",
+        "Bottom Right"
     ]
 
 class SpreadsheetDisplayDelegate(SpreadsheetComboDelegate):

@@ -82,7 +82,7 @@ def val2str(v : Any) -> str:
         case "FillPref"        : s = v.toStr()
         case "TextPref"        : s = v.toStr()
         case "PropertyDisplay" : s = v.value
-        case "KPLoc"           : s = v.value.name
+        case "KPLoc"           : s = v
         case "EdgeLoc"         : s = v.toStr()
         case "SignalDirection" : s = v.value
         case _ :
@@ -93,7 +93,7 @@ def str2val(s : str, t : str) -> Any:
     """Convert a text representation of a Python value to a Python value."""
     from ..widgets import DEFAULT, EdgeLoc,SignalDirection, \
                           LinePref, FillPref, QuillPref,\
-                          PropertyDisplay, KPReverse
+                          PropertyDisplay
     def strValuesToFloats(s : str) -> list[float]:
         return [float(p) for p in s.strip("()").split(",")]
     if s == "None":
@@ -116,7 +116,7 @@ def str2val(s : str, t : str) -> Any:
         case "LinePref"        : return LinePref.fromStr(s)
         case "FillPref"        : return FillPref.fromStr(s)
         case "PropertyDisplay" : return PropertyDisplay(s)
-        case "KPLoc"           : return KPReverse[s]
+        case "KPLoc"           : return "not implemented"
         case "EdgeLoc"         : return EdgeLoc.fromStr(s)
         case "SignalDirection" : return SignalDirection(s)
         case _:

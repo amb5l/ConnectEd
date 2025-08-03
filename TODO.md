@@ -1,3 +1,5 @@
+should KeyPoint be a QPointF subclass?
+
 ratsnest
 
 cloning offset with non-default anchor

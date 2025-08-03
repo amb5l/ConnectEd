@@ -4,8 +4,6 @@ from PyQt6.QtCore import QPointF
 
 from ..properties import PropertySpec, PropertyTextSpec
 
-from . import KPLoc, KPDef
-
 from .pin_rect      import PinRect, cmdPlacePinRect
 from .property_text import PropertyDisplay as pd
 
@@ -18,8 +16,8 @@ class Block(PinRect):
     }
     _PROPERTY_TEXTS = {
     #   name            display     anchor           pos                cleat
-        "Reference" : PropertyTextSpec( pd.VALUE  , KPLoc.BOTTOM_LEFT , QPointF( 0,  0 ) , KPLoc.TOP_LEFT    ),
-        "Name"      : PropertyTextSpec( pd.VALUE  , KPLoc.TOP_LEFT    , QPointF( 0,  0 ) , KPLoc.BOTTOM_LEFT ),
+        "Reference" : PropertyTextSpec( pd.VALUE  , "Bottom Left" , QPointF( 0,  0 ) , "Top Left"    ),
+        "Name"      : PropertyTextSpec( pd.VALUE  , "Top Left"    , QPointF( 0,  0 ) , "Bottom Left" ),
     }
 
 class cmdPlaceBlock(cmdPlacePinRect):
