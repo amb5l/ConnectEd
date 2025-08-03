@@ -6,7 +6,7 @@ from PyQt6.QtCore    import QPointF, QLineF
 from PyQt6.QtWidgets import QGraphicsLineItem, QGraphicsSceneMouseEvent
 
 from .base_text import BaseText
-from .key_point import KeyPoint
+from .anchor_point import AnchorPoint
 
 
 class Tether(QGraphicsLineItem):
@@ -39,7 +39,7 @@ class Tether(QGraphicsLineItem):
         self.setPen(self._item.outline.pen)
 
     def onPositionChange(self : Self, _ : QPointF) -> None:
-        cleat : Optional[KeyPoint] = self._item.parentItem()
+        cleat : Optional[AnchorPoint] = self._item.parentItem()
         if cleat is None:
             return
         self._line.setP2(cleat.scenePos() - self.scenePos())
@@ -62,7 +62,7 @@ class TetherText(BaseText):
     def onSelectionChange(self : Self, selected : bool) -> None:
         self._tether.setVisible(selected)
 
-    def setAnchor(self : Self, name : str) -> None:
-        super().setAnchor(name)
-        self._tether.setParentItem(self._anchor)
+    def setOrigin(self : Self, name : str) -> None:
+        super().setOrigin(name)
+        self._tether.setParentItem(self._origin)
         self._tether.onPositionChange(self.pos())

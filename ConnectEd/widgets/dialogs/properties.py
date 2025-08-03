@@ -56,10 +56,10 @@ class PropertiesItem(QStandardItem):
                 return float(text)
             elif type_name == "PropertyDisplay":
                 return PropertyDisplay(text)
-            elif type_name == "KPLoc":
+            elif type_name == "APLoc":
                 enum_key = text.upper().replace(" ", "_")
-                #if enum_key not in KPLoc.__members__:
-                #    logger.error(f"Invalid KPLoc enum value: {enum_key}")
+                #if enum_key not in APLoc.__members__:
+                #    logger.error(f"Invalid APLoc enum value: {enum_key}")
                 #    return self.getInitialValue()
                 return enum_key
             else:
@@ -151,7 +151,7 @@ class PropertiesDisplayItemDelegate(PropertiesItemDelegate):
 
 class PropertiesAnchorItemDelegate(PropertiesItemDelegate):
     TOOLTIP = "Controls position of property anchor point"
-    ENTRIES = [  # TODO fix this to work with other key point names
+    ENTRIES = [  # TODO fix this to work with other anchor point names
         "Top Left",
         "Top Center",
         "Top Right",

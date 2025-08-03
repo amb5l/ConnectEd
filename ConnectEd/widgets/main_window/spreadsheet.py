@@ -96,10 +96,10 @@ class SpreadsheetComboDelegate(QStyledItemDelegate):
             return QSize(width, height)
         return QSize(100, 25)
 
-class SpreadsheetKPDelegate(SpreadsheetComboDelegate):
-    """Delegate for anchor KP enum values."""
+class SpreadsheetAPDelegate(SpreadsheetComboDelegate):
+    """Delegate for anchor AP enum values."""
     TOOLTIP = "Controls position of anchor point"
-    ENTRIES = [  # TODO fix this to work with other key point names
+    ENTRIES = [  # TODO fix this to work with other anchor point names
         "Top Left",
         "Top Center",
         "Top Right",
@@ -661,9 +661,9 @@ class SpreadsheetTabWidget(QTabWidget):
             for idx, name in enumerate(self._tab_headings[tab_name].keys()):
                 type_name = tab_htypenames[name]
                 match type_name:
-                    case "KPLoc":
+                    case "APLoc":
                         _setupDelegate(
-                            tab_name, idx, type_name, SpreadsheetKPDelegate
+                            tab_name, idx, type_name, SpreadsheetAPDelegate
                         )
                     case "PropertyDisplay":
                         _setupDelegate(

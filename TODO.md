@@ -1,3 +1,5 @@
+assign origin is not undoable
+
 should KeyPoint be a QPointF subclass?
 
 ratsnest

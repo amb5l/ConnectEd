@@ -218,7 +218,7 @@ class Port(
     def _nameRect(self : Self) -> QRectF:
         rect = QRectF(self._name_text.tightBoundingRect())
         name_pos = self._arrow.pos() + self._name_text.pos()
-        rect.translate(name_pos - self._name_text._anchor.pos())
+        rect.translate(name_pos - self._name_text._origin.pos())
         return rect
 
     @classmethod
@@ -352,7 +352,7 @@ class BasePin(ElementCloneMixin, PortPinMixin, QGraphicsItemGroup):
         rect = QRectF(self._name_text.tightBoundingRect())
         name_pos = self._inner.pos() if hasattr(self, "_inner") else QPointF()
         name_pos += self._name_text.pos()
-        rect.translate(name_pos - self._name_text._anchor.pos())
+        rect.translate(name_pos - self._name_text._origin.pos())
         return rect
 
     def _innerRect(self : Self) -> QRectF:

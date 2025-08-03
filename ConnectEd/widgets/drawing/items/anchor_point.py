@@ -1,24 +1,24 @@
-__all__ = ["KeyPoint"]
+__all__ = ["AnchorPoint"]
 
 from typing import Self
 
-from . import KPType, ElementKeypointsMixin
+from . import APType, ElementAnchorPointsMixin
 
 from .null_point import NullPoint
 from .grip       import Grip
 
 
-class KeyPoint(NullPoint):
+class AnchorPoint(NullPoint):
     # instance variables
     _name : str
-    _type : "KPType"
+    _type : "APType"
     _grip : Grip
 
     def __init__(
         self   : Self,
         name   : str,
-        type   : "KPType",
-        parent : "ElementKeypointsMixin"
+        type   : "APType",
+        parent : "ElementAnchorPointsMixin"
     ) -> None:
         super().__init__(parent)
         self._name   = name

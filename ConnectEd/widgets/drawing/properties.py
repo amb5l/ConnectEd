@@ -39,9 +39,9 @@ class PropertySpec:
 @dataclass
 class PropertyTextSpec:
     display : "PropertyDisplay"
-    anchor  : str                # name of anchor key point
+    anchor  : str
     pos     : QPointF
-    cleat   : str                # name of cleat key point
+    cleat   : str
 
 class PropertiesMixin:
     # class variables
@@ -59,7 +59,7 @@ class PropertiesMixin:
         for name, pts in self._PROPERTY_TEXTS.items():
             p = PropertyText()
             print(f"Property {name} position {p.pos()}")
-            p.setAnchor(pts.anchor)
+            p.setOrigin(pts.anchor)
             print(f"Property {name} position {p.pos()}")
             p.setPos(pts.pos)
             print(f"Property {name} position {p.pos()}")
@@ -67,7 +67,7 @@ class PropertiesMixin:
             print(f"Property {name} position {p.pos()}")
             p.setDisplay(pts.display)
             print(f"Property {name} position {p.pos()}")
-            p.setParentItem(self._key_points[pts.cleat])
+            p.setParentItem(self._anchor_points[pts.cleat])
             print(f"Property {name} position {p.pos()}")
 
     def getPropertyNamesAndValues(self : Self) -> dict[str, str]:

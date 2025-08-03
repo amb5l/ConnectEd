@@ -36,7 +36,7 @@ class NoChange:
 
 NO_CHANGE = NoChange()
 
-class KPType(Enum):
+class APType(Enum):
     Static  = 0
     Mover   = 1
     Resizer = 2
@@ -608,10 +608,10 @@ class ElementMixin:
             self.initQuill()
         if hasattr(self, "initOutline"):
             self.initOutline()
-        if hasattr(self, "initKeypoints"):
-            self.initKeypoints()
-        if hasattr(self, "initAnchor"):
-            self.initAnchor()
+        if hasattr(self, "initAnchorPoints"):
+            self.initAnchorPoints()
+        if hasattr(self, "initOrigin"):
+            self.initOrigin()
         if hasattr(self, "initProperties"):
             self.initProperties(bare)
         if hasattr(self, "onSettingsChange"):
@@ -669,13 +669,13 @@ class ElementPosMixin:
 
 # TODO: ElementEdgeLocMixin (disables setPos?)
 
-class ElementKeypointsMixin:
+class ElementAnchorPointsMixin:
     # instance variables
-    _key_points : dict[str, "KeyPoint"]
+    _anchor_points : dict[str, "AnchorPoint"]
 
-class ElementRectKeypointsMixin(ElementKeypointsMixin):
+class ElementRectAnchorPointsMixin(ElementAnchorPointsMixin):
     # class variables
-    _KEY_POINTS = {
+    _ANCHOR_POINTS = {
         "Top Left"      : ( 0.0 , 0.0 ),
         "Top Center"    : ( 0.5 , 0.0 ),
         "Top Right"     : ( 1.0 , 0.0 ),
@@ -686,60 +686,65 @@ class ElementRectKeypointsMixin(ElementKeypointsMixin):
         "Bottom Center" : ( 0.5 , 1.0 ),
         "Bottom Right"  : ( 1.0 , 1.0 )
     }
-    _KP_TYPES : dict[str, KPType]
+    _AP_TYPES : dict[str, APType]
 
     # instance variables
     _rect   : QRectF   # border rectangle, maintained by element
 
-    def initKeypoints(self : Self) -> None:
-        self._key_points = {}
-        for kp_name, kp_type in self._KP_TYPES.items():
-            self._key_points[kp_name] = KeyPoint(kp_name, kp_type, self)
+    def initAnchorPoints(self : Self) -> None:
+        self._anchor_points = {}
+        for ap_name, ap_type in self._AP_TYPES.items():
+            self._anchor_points[ap_name] = AnchorPoint(ap_name, ap_type, self)
 
     def updateKeypoints(self : Self) -> None:
-        for name, (x, y) in self._KEY_POINTS.items():
-            self._key_points[name].setPos(QPointF(
+        for name, (x, y) in self._ANCHOR_POINTS.items():
+            self._anchor_points[name].setPos(QPointF(
                 x * self._rect.width(),
                 y * self._rect.height()
             ))
 
     def updateGripsVisibility(self : Self) -> None:
-        for kp in self._key_points.values():
-            kp._grip.setVisible(self.isSelected())
+        for ap in self._anchor_points.values():
+            ap._grip.setVisible(self.isSelected())
 
-class ElementAnchorMixin:
+class ElementOriginMixin:
     # class variables
-    _PROPERTY_SPECS_ANCHOR = {
-        "Anchor" : PropertySpec(
-            getter    = lambda self: self.getAnchor(),
-            setter    = lambda self, value: self.setAnchor(value)
+    _PROPERTY_SPECS_ORIGIN = {
+        "Origin" : PropertySpec(
+            getter    = lambda self: self.getOrigin(),
+            setter    = lambda self, value: self.setOrigin(value)
         )
     }
 
     # instance variables
-    _pos    : QPointF     # position of anchor w.r.t. scene/parent
-    _anchor : "KeyPoint"  # anchor key point
+    _pos    : QPointF        # position of origin w.r.t. scene/parent
+    _origin : "AnchorPoint"  # origin anchor point
 
-    def initAnchor(self : Self) -> None:
+    def initOrigin(self : Self) -> None:
         self._pos = super().pos()
-        self._anchor = next(iter(self._key_points.values()))
-        self.updateAnchor()
+        self._origin = next(iter(self._anchor_points.values()))
+        self._origin._grip.onOriginChange(True)
+        self.updateOrigin()
 
     def pos(self : Self) -> QPointF:
-        return super().pos() + self._anchor.pos()
+        return super().pos() + self._origin.pos()
 
     def setPos(self : Self, pos : QPointF) -> None:
         self._pos = pos
-        super().setPos(pos - self._anchor.pos())
+        super().setPos(pos - self._origin.pos())
 
-    def setAnchor(self, name : str) -> None:
-        self._anchor._grip.onAnchorChange(False)
-        self._anchor = self._key_points[name]
-        self._anchor._grip.onAnchorChange(True)
+    def getOrigin(self : Self) -> str:
+        return self._origin._name
+
+    def setOrigin(self, name : str) -> None:
+        self._origin._grip.onOriginChange(False)
+        self._origin = self._anchor_points[name]
+        self._origin._grip.onOriginChange(True)
         self.setPos(self.pos())
 
-    def updateAnchor(self : Self) -> None:
-        self.setPos(self._pos) # reposition following possible anchor movement
+    def updateOrigin(self : Self) -> None:
+        """Reposition following possible movement of origin anchor point."""
+        self.setPos(self._pos)
 
 class ElementLineMixin:
     _CAP_STYLE  = Qt.PenCapStyle.SquareCap
@@ -946,12 +951,12 @@ class ElementCloneMixin:
             if isinstance(source_child, BasePin):
                 clone_pin = source_child.clone(source_child) # TODO is passing item needed?
                 clone_pin.setParentItem(clone)
-            elif isinstance(source_child, KeyPoint):
-                for source_kp_child in source_child.childItems():
-                    if isinstance(source_kp_child, PropertyText):
-                        clone_kp_child = source_kp_child.clone(source_kp_child)
-                        clone_kp_child.setParentItem(
-                            clone._key_points[source_child.getLoc()]
+            elif isinstance(source_child, AnchorPoint):
+                for source_ap_child in source_child.childItems():
+                    if isinstance(source_ap_child, PropertyText):
+                        clone_ap_child = source_ap_child.clone(source_ap_child)
+                        clone_ap_child.setParentItem(
+                            clone._anchor_points[source_child.getLoc()]
                         )
         return clone
 
@@ -981,7 +986,7 @@ class ElementXmlMixin:
                     child.setParentItem(instance)
                 elif xr.name() == "PropertyText":
                     child : PropertyText = PropertyText.fromXml(xr)
-                    child.setParentItem(instance._key_points[child._anchor()])
+                    child.setParentItem(instance._anchor_points[child._origin()])
                 else:
                     logger.warning(f"Unexpected child element: {xr.name()}")
                     continue
@@ -1097,7 +1102,7 @@ __all__ = [
     "DEFAULT",
     "NoChange",
     "NO_CHANGE",
-    "KPType",
+    "APType",
     "Edge",
     "EdgeLoc",
     "SignalDirection",
@@ -1118,8 +1123,8 @@ __all__ = [
     "cmdPlaceElement",
     "clone"
 ]
-from .key_point import KeyPoint
-__all__ += key_point.__all__
+from .anchor_point import AnchorPoint
+__all__ += anchor_point.__all__
 from .tether_text import TetherText, Tether
 __all__ += tether_text.__all__
 from .property_text import PropertyDisplay, PropertyText

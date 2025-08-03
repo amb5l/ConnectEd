@@ -8,7 +8,7 @@ from ....dialogs import TextDialog, AppearanceDialog, \
                         PropertiesDialog, PropertyTextDialog
 
 from ...scenes import DrawingScene
-from ...items  import ElementMixin, KeyPoint, PropertyText
+from ...items  import ElementMixin, AnchorPoint, PropertyText
 from ...query  import QueryWindow
 
 from ...items.base_text import BaseText
@@ -116,7 +116,7 @@ class DrawingViewEditMixin:
                 element.setPos(element.pos() + mouse_delta)
                 element.setSelected(True)  # Ensure elements remain selected
         scene.blockSignals(False)
-        # Manually trigger selection changed to update key points
+        # Manually trigger selection changed to update anchor points
         scene.selectionChanged.emit()
         self.wip.pos = new_pos
 
@@ -193,7 +193,7 @@ class DrawingViewEditMixin:
                 element.setPos(element.pos() + mouse_delta)
                 element.setSelected(True)  # Ensure elements remain selected
         scene.blockSignals(False)
-        # Manually trigger selection changed to update key points
+        # Manually trigger selection changed to update anchor points
         scene.selectionChanged.emit()
         self.wip.pos = new_pos
 
@@ -242,7 +242,7 @@ class DrawingViewEditMixin:
         slide    : bool = False
     ) -> None:
         self.wip.elements = elements
-        if isinstance(elements[0], KeyPoint):
+        if isinstance(elements[0], AnchorPoint):
             pos = elements[0].scenePos()
         self.wip.pos = pos
         self.wip.pos0 = pos

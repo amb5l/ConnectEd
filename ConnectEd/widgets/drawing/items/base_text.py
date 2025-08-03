@@ -7,11 +7,11 @@ from PyQt6.QtGui     import QPainter, QFontMetrics
 
 from ..properties import PropertySpec, PropertiesMixin
 
-from . import KPType, \
+from . import APType, \
               ElementMixin, \
               ElementPosMixin, \
-              ElementRectKeypointsMixin, \
-              ElementAnchorMixin, \
+              ElementRectAnchorPointsMixin, \
+              ElementOriginMixin, \
               ElementQuillMixin, \
               ElementOutlineMixin, \
               ElementChangeMixin, \
@@ -28,8 +28,8 @@ if TYPE_CHECKING:
 class BaseText(
     ElementMixin,
     ElementPosMixin,
-    ElementRectKeypointsMixin,
-    ElementAnchorMixin,
+    ElementRectAnchorPointsMixin,
+    ElementOriginMixin,
     ElementQuillMixin,
     ElementOutlineMixin,
     ElementChangeMixin,
@@ -40,10 +40,10 @@ class BaseText(
     QGraphicsSimpleTextItem
 ):
     # class variables
-    _KP_TYPES = { k : KPType.Mover \
-            for k in ElementRectKeypointsMixin._KEY_POINTS.keys() }
+    _AP_TYPES = { k : APType.Mover \
+            for k in ElementRectAnchorPointsMixin._ANCHOR_POINTS.keys() }
     _PROPERTY_SPECS_POS = \
-        ElementAnchorMixin._PROPERTY_SPECS_ANCHOR | \
+        ElementOriginMixin._PROPERTY_SPECS_ORIGIN | \
         ElementPosMixin._PROPERTY_SPECS_POS
     _PROPERTY_SPECS_TEXT = {
         "Text" : PropertySpec(
@@ -79,7 +79,7 @@ class BaseText(
         baseline_y = metrics.ascent()
         self._trect = baseline_trect.translated(0, baseline_y)
         self.updateKeypoints()
-        self.updateAnchor()
+        self.updateOrigin()
 
     def getMenuItems(self : Self) -> list[str]:
         return ["Edit...", "-", "Properties..."]
@@ -100,7 +100,7 @@ class BaseText(
             painter.setPen(self.outline.pen)
             painter.drawRect(self.boundingRect())
 
-    def moveKeyPoint(self : Self, _ : str, delta : QPointF) -> None:
+    def moveAnchorPoint(self : Self, _ : str, delta : QPointF) -> None:
         """Move the entire Text when any keypoint is dragged."""
         self.setPos(self.pos() + delta)
 
@@ -119,7 +119,7 @@ class BaseText(
         if pos is not None:
             inst.setPos(pos)
         if anchor is not None:
-            inst.setAnchor(anchor)
+            inst.setOrigin(anchor)
         return inst
 
     def ctxMenuEdit(

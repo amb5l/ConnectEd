@@ -13,11 +13,11 @@ from ..properties import PropertySpec
 
 from ..properties import PropertySpec, PropertiesMixin
 
-from . import KPType, \
+from . import APType, \
               ElementMixin, \
               ElementBoundShapeMixin, \
               ElementPosMixin, \
-              ElementRectKeypointsMixin, \
+              ElementRectAnchorPointsMixin, \
               ElementLineMixin, \
               ElementFillMixin, \
               ElementChangeMixin, \
@@ -33,7 +33,7 @@ class BaseRectangle(
     ElementMixin,
     ElementBoundShapeMixin,
     ElementPosMixin,
-    ElementRectKeypointsMixin,
+    ElementRectAnchorPointsMixin,
     ElementLineMixin,
     ElementFillMixin,
     ElementChangeMixin,
@@ -46,8 +46,8 @@ class BaseRectangle(
     """Base class for rectangle elements."""
 
     # class variables
-    _KP_TYPES = { k : KPType.Mover if v == "Center" else KPType.Resizer \
-            for k, v in ElementRectKeypointsMixin._KEY_POINTS.items() }
+    _AP_TYPES = { k : APType.Mover if k == "Center" else APType.Resizer \
+            for k in ElementRectAnchorPointsMixin._ANCHOR_POINTS.keys() }
     _PROPERTY_SPECS = \
         ElementPosMixin._PROPERTY_SPECS_POS | \
         {
@@ -73,6 +73,7 @@ class BaseRectangle(
         super().__init__()
         self._rect = self.rect()
         self.initElement(bare=bare)
+        print(self._AP_TYPES)
 
     def onGeometryChange(self : Self) -> None:
         self.prepareGeometryChange()
@@ -155,7 +156,7 @@ class BaseRectangle(
         self._rect.setCoords(0, 0, x2-x1, y2-y1)
         self.setRect(self._rect)
 
-    def moveKeyPoint(self : Self, name : str, delta : QPointF) -> None:
+    def moveAnchorPoint(self : Self, name : str, delta : QPointF) -> None:
         p1 = self.pos()
         p2 = p1 + self._rect.bottomRight()
         d = delta
@@ -179,7 +180,7 @@ class BaseRectangle(
             case "Bottom Right":
                 self.setPoints(p1.x(), p1.y(), p2.x() + d.x(), p2.y() + d.y())
             case _:
-                raise ValueError(f"Invalid key point: {name}")
+                raise ValueError(f"Invalid anchor point: {name}")
 
     @classmethod
     def createOrUpdate(

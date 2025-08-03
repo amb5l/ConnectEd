@@ -10,12 +10,12 @@ from PyQt6.QtGui     import QColor, QPainter, QPainterPath, \
 
 from ..properties import PropertySpec, PropertiesMixin
 
-from . import KPType, \
+from . import APType, \
               ElementMixin, \
               ElementBoundShapeMixin, \
               ElementPosMixin, \
-              ElementRectKeypointsMixin, \
-              ElementAnchorMixin, \
+              ElementRectAnchorPointsMixin, \
+              ElementOriginMixin, \
               ElementQuillMixin, \
               ElementOutlineMixin, \
               ElementChangeMixin, \
@@ -33,8 +33,8 @@ class BaseTextBlock(
     ElementMixin,
     ElementBoundShapeMixin,
     ElementPosMixin,
-    ElementRectKeypointsMixin,
-    ElementAnchorMixin,
+    ElementRectAnchorPointsMixin,
+    ElementOriginMixin,
     ElementQuillMixin,
     ElementOutlineMixin,
     ElementChangeMixin,
@@ -45,10 +45,10 @@ class BaseTextBlock(
     QGraphicsTextItem
 ):
     # class variables
-    _KP_TYPES = { k : KPType.Mover \
-            for k in ElementRectKeypointsMixin._KEY_POINTS.keys() }
+    _AP_TYPES = { k : APType.Mover \
+            for k in ElementRectAnchorPointsMixin._ANCHOR_POINTS.keys() }
     _PROPERTY_SPECS = \
-        ElementAnchorMixin._PROPERTY_SPECS_ANCHOR | \
+        ElementOriginMixin._PROPERTY_SPECS_ORIGIN | \
         ElementPosMixin._PROPERTY_SPECS_POS | \
         {
             "Text" : PropertySpec(
@@ -119,7 +119,7 @@ class BaseTextBlock(
         self._hshapef.clear()
         self._hshapef.addRect(self._brectf)
         self.updateKeypoints()
-        self.updateAnchor()
+        self.updateOrigin()
 
     def getMenuItems(self : Self) -> list[str]:
         return ["Appearance..."]
@@ -161,7 +161,7 @@ class BaseTextBlock(
             painter.setPen(self.outline.pen)
             painter.drawRect(self.boundingRect())
 
-    def moveKeyPoint(self : Self, _ : str, delta : QPointF) -> None:
+    def moveAnchorPoint(self : Self, _ : str, delta : QPointF) -> None:
         """Move the entire Text when any keypoint is dragged."""
         self.setPos(self.pos() + delta)
 
@@ -180,7 +180,7 @@ class BaseTextBlock(
         if pos is not None:
             inst.setPos(pos)
         if anchor is not None:
-            inst.setAnchor(anchor)
+            inst.setOrigin(anchor)
         return inst
 
 class cmdPlaceBaseTextBlock(cmdPlaceElement):
