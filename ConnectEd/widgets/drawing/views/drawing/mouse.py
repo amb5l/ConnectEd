@@ -3,7 +3,7 @@ from PyQt6.QtGui  import QEnterEvent, QMouseEvent, QWheelEvent, QCursor
 
 from .....core import logger
 
-from ...items.grip import Grip
+from ...items.handle import Handle
 
 from .defs import DrawingViewMouseButtonState as MouseButtonState
 
@@ -86,7 +86,7 @@ class DrawingViewMouseMixin:
         or (event.buttons() & Qt.MouseButton.LeftButton and m == qkm.NoModifier):
             items = self._itemsAt(l)
             if items:
-                if not isinstance(items[0], Grip):
+                if not isinstance(items[0], Handle):
                     if not items[0].isSelected():
                         self.scene().clearSelection()
                         items[0].setSelected(True)

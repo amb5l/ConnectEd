@@ -73,7 +73,6 @@ class BaseRectangle(
         super().__init__()
         self._rect = self.rect()
         self.initElement(bare=bare)
-        print(self._AP_TYPES)
 
     def onGeometryChange(self : Self) -> None:
         self.prepareGeometryChange()

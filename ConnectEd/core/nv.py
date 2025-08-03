@@ -37,7 +37,7 @@ FACTORY_SETTINGS = {
                 "style" : Qt.PenStyle.DotLine
             }
         },
-        "grip" : {
+        "handle" : {
             "size" : 12
         },
         "zoom" : {
@@ -210,9 +210,9 @@ FACTORY_SETTINGS = {
                 "fill" : PaletteDark.SelectedFill,
                 "text" : PaletteDark.SelectedText
             },
-            "grip" : {
-                "line" : PaletteDark.GripLine,
-                "fill" : PaletteDark.GripFill
+            "handle" : {
+                "line" : PaletteDark.HandleLine,
+                "fill" : PaletteDark.HandleFill
             },
             "grid" : {
                 "line" : PaletteDark.Grid
@@ -345,9 +345,9 @@ FACTORY_SETTINGS = {
                 "fill" : PaletteLightMono.SelectedFill,
                 "text" : PaletteLightMono.SelectedText
             },
-            "grip" : {
-                "line" : PaletteLightMono.GripLine,
-                "fill" : PaletteLightMono.GripFill
+            "handle" : {
+                "line" : PaletteLightMono.HandleLine,
+                "fill" : PaletteLightMono.HandleFill
             },
             "grid" : {
                 "line" : PaletteLightMono.Grid

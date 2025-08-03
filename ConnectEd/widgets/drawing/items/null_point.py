@@ -18,7 +18,6 @@ class NullPoint(QGraphicsItem):
 
     def __init__(self : Self, parent : "ElementMixin") -> None:
         super().__init__(parent)
-        self.setZValue(parent.zValue())
         self.setFlag( self.GraphicsItemFlag.ItemHasNoContents , True  )
         self.setFlag( self.GraphicsItemFlag.ItemIsMovable     , False )
         self.setFlag( self.GraphicsItemFlag.ItemIsSelectable  , False )

@@ -3,7 +3,7 @@ __all__ = ["PropertyDisplay", "PropertyText"]
 from typing import Self
 from enum   import Enum
 
-from PyQt6.QtCore    import Qt, QPointF
+from PyQt6.QtCore    import Qt
 from PyQt6.QtWidgets import QGraphicsItem, QGraphicsSceneMouseEvent
 
 from ..properties import PropertySpec

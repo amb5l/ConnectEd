@@ -18,7 +18,6 @@ class Tether(QGraphicsLineItem):
     def __init__(self, item: "TetherText", visible : bool = False):
         super().__init__(item)  # Parent it to the TetherText
         self._item = item
-        self.setZValue(-1)  # Draw behind the TetherText
         self.setVisible(visible)
         self.setFlag( self.GraphicsItemFlag.ItemIgnoresTransformations , False )
         self._line = QLineF()

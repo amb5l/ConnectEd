@@ -4,7 +4,7 @@ from PyQt6.QtCore    import Qt, QTimer
 from PyQt6.QtWidgets import QGraphicsItem, QWidget, QTableView, QVBoxLayout, QHeaderView
 from PyQt6.QtGui     import QStandardItemModel, QStandardItem
 
-from .items.grip import Grip
+from .items.handle import Handle
 
 
 class QueryWindow(QWidget):
@@ -49,7 +49,7 @@ class QueryWindow(QWidget):
 
     def _populateModel(self : Self, element : QGraphicsItem) -> None:
         """Populate the model with element properties."""
-        if isinstance(element, Grip):
+        if isinstance(element, Handle):
             self._model.appendRow([
                 QStandardItem("Position X"),
                 QStandardItem(f"{element.scenePos().x()}")

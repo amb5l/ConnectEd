@@ -591,7 +591,6 @@ class ElementMixin:
     uuid : str
 
     def initElement(self : Self, bare : bool = False) -> None:
-        self.setZValue(self.Z)
         f = QGraphicsItem.GraphicsItemFlag
         self.setFlag( f.ItemIsSelectable              , True )
         self.setFlag( f.ItemSendsGeometryChanges      , True )
@@ -703,9 +702,9 @@ class ElementRectAnchorPointsMixin(ElementAnchorPointsMixin):
                 y * self._rect.height()
             ))
 
-    def updateGripsVisibility(self : Self) -> None:
+    def updateHandlesVisibility(self : Self) -> None:
         for ap in self._anchor_points.values():
-            ap._grip.setVisible(self.isSelected())
+            ap._handle.setVisible(self.isSelected())
 
 class ElementOriginMixin:
     # class variables
@@ -723,7 +722,7 @@ class ElementOriginMixin:
     def initOrigin(self : Self) -> None:
         self._pos = super().pos()
         self._origin = next(iter(self._anchor_points.values()))
-        self._origin._grip.onOriginChange(True)
+        self._origin._handle.onOriginChange(True)
         self.updateOrigin()
 
     def pos(self : Self) -> QPointF:
@@ -737,9 +736,9 @@ class ElementOriginMixin:
         return self._origin._name
 
     def setOrigin(self, name : str) -> None:
-        self._origin._grip.onOriginChange(False)
+        self._origin._handle.onOriginChange(False)
         self._origin = self._anchor_points[name]
-        self._origin._grip.onOriginChange(True)
+        self._origin._handle.onOriginChange(True)
         self.setPos(self.pos())
 
     def updateOrigin(self : Self) -> None:
@@ -870,8 +869,8 @@ class ElementChangeMixin:
                     self.fill.onSelectionChange(value)
                 if hasattr(self, "quill"):
                     self.quill.onSelectionChange(value)
-                if hasattr(self, "updateGripsVisibility"):
-                    self.updateGripsVisibility()
+                if hasattr(self, "updateHandlesVisibility"):
+                    self.updateHandlesVisibility()
                 if hasattr(self, "onSelectionChange"):
                     self.onSelectionChange(value)
         return super().itemChange(change, value)

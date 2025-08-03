@@ -5,14 +5,14 @@ from typing import Self
 from . import APType, ElementAnchorPointsMixin
 
 from .null_point import NullPoint
-from .grip       import Grip
+from .handle     import Handle
 
 
 class AnchorPoint(NullPoint):
     # instance variables
     _name : str
     _type : "APType"
-    _grip : Grip
+    _handle : Handle
 
     def __init__(
         self   : Self,
@@ -23,4 +23,4 @@ class AnchorPoint(NullPoint):
         super().__init__(parent)
         self._name   = name
         self._type   = type
-        self._grip   = Grip(self)
+        self._handle = Handle(self)

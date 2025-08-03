@@ -3,7 +3,7 @@ from typing import Self
 from PyQt6.QtCore import Qt, QPoint, QPointF
 
 from ...items import ElementMixin
-from ...items.grip import Grip
+from ...items.handle import Handle
 
 from ..... import hub
 
@@ -109,7 +109,7 @@ class DrawingViewStateIdle(DrawingViewStateBase):
     ) -> None:
         items = self.view._itemsAt(spos)
         for item in items:
-            if isinstance(item, Grip):
+            if isinstance(item, Handle):
                 return
         if modifiers == qkm.NoModifier:
             if not items or not items[0].isSelected():
@@ -123,10 +123,10 @@ class DrawingViewStateIdle(DrawingViewStateBase):
         modifiers : Qt.KeyboardModifier
     ) -> None:
         items_at = self.view._itemsAt(spos)
-        grips_at = [item for item in items_at if isinstance(item, Grip)]
-        if len(grips_at) == 1:
-            grip = grips_at[0]
-            self.view.editMoveBegin([grip], grip.scenePos())
+        handles_at = [item for item in items_at if isinstance(item, Handle)]
+        if len(handles_at) == 1:
+            handle = handles_at[0]
+            self.view.editMoveBegin([handle], handle.scenePos())
             self.view.state.go(self.view.stateEditResize3)
             return
         # Check for CTRL+drag duplication when starting on an element
@@ -604,7 +604,7 @@ class DrawingViewStateEditResize1(DrawingViewStateBase):
             self.view.state.go(self.view.stateEditResize2)
 
 class DrawingViewStateEditResize2(DrawingViewStateBase):
-    TIP = "Resize: select a grip to begin resizing"
+    TIP = "Resize: select a handle to begin resizing"
 
     def mouseLeftClick(
         self      : Self,
@@ -614,7 +614,7 @@ class DrawingViewStateEditResize2(DrawingViewStateBase):
     ) -> None:
         items = self.view._itemsAt(spos)
         for item in items:
-            if isinstance(item, Grip):
+            if isinstance(item, Handle):
                 self.view.editMoveBegin(
                     [item], self.view._snap(spos)
                 )
@@ -633,7 +633,7 @@ class DrawingViewStateEditResize2(DrawingViewStateBase):
         self.view.state.go(self.view.stateIdle)
 
 class DrawingViewStateEditResize3(DrawingViewStateBase):
-    TIP = "Resize: place the selected grip as required"
+    TIP = "Resize: place the selected handle as required"
 
     def mouseLeftClick(
         self      : Self,

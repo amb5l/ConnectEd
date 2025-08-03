@@ -16,13 +16,10 @@ if TYPE_CHECKING:
     from .anchor_point import AnchorPoint
 
 
-class Grip(
+class Handle(
     ElementMenuMixin,
     QGraphicsPathItem
 ):
-    # class variables
-    Z_DELTA = 1
-
     # instance variables
     _parent      : "AnchorPoint"               # parent anchor point
     _element     : "ElementAnchorPointsMixin"  # parent element
@@ -36,7 +33,6 @@ class Grip(
         super().__init__(parent)
         self._parent = parent
         self._element = parent.parentItem()
-        self.setZValue(self.parentItem().zValue() + self.Z_DELTA)
         self.setFlag( self.GraphicsItemFlag.ItemIgnoresTransformations , True  )
         self.setFlag( self.GraphicsItemFlag.ItemIsSelectable           , False )
         self.setFlag( self.GraphicsItemFlag.ItemIsMovable              , False )
@@ -53,12 +49,12 @@ class Grip(
     def onSettingsChange(self : Self) -> None:
         from . import APType
         self.prepareGeometryChange()
-        theme = hub.settings.getTheme("grip")
+        theme = hub.settings.getTheme("handle")
         self._pen.setColor(theme.line)
         self.setPen(self._pen)
         self._brush.setColor(theme.fill)
         self.setBrush(self._brush)
-        self._size = hub.settings.get("display/grip/size")
+        self._size = hub.settings.get("display/handle/size")
         r = self._size / 2
         square = QRectF(-r, -r, r*2, r*2)
         # update normal appearance
