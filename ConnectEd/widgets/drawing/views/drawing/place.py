@@ -25,7 +25,12 @@ class DrawingViewPlaceMixin:
             range = dialog.getRange()
             pos = self.mapToScene(self.mapFromGlobal(QCursor.pos()))
             scene : DrawingScene = self.scene()
-            port = scene.placePort(name, direction, range, pos)
+            port = scene.placePort(
+                name      = name,
+                direction = direction,
+                range     = range,
+                pos       = pos
+            )
             self.wip.element = port
             self.state.go(self.statePlacePort2)
         else:
@@ -37,7 +42,7 @@ class DrawingViewPlaceMixin:
 
     def placePortComplete(self : "DrawingView", pos : QPointF) -> None:
         scene : DrawingScene = self.scene()
-        scene.placePort(pos, inst=self.wip.element)
+        scene.placePort(pos=pos, inst=self.wip.element)
         self.wip.clear()
         self.state.go(self.stateIdle)
 
@@ -87,7 +92,8 @@ class DrawingViewPlaceMixin:
             name = dialog.getName()
             direction = dialog.getDirection()
             range = dialog.getRange()
-            pin = BlockPin(
+            scene : DrawingScene = self.scene()
+            element = scene.placeBlockPin(
                 name, direction, range,
                 block.getEdgeLoc(
                     self.wip.pos,
@@ -95,7 +101,7 @@ class DrawingViewPlaceMixin:
                 ),
                 block
             )
-            self.wip.element = pin
+            self.wip.element = element
             self.state.go(self.statePlaceBlockPin3)
         else:
             self.wip.clear()

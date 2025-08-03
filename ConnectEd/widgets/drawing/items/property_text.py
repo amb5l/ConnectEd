@@ -1,9 +1,10 @@
-__all__ = ["PropertyDisplay", "PropertyText"]
+__all__ = ["PropertyDisplay", "PropertyTextSpec", "PropertyText"]
 
 from typing import Self
 from enum   import Enum
+from dataclasses import dataclass
 
-from PyQt6.QtCore    import Qt
+from PyQt6.QtCore    import Qt, QPointF
 from PyQt6.QtWidgets import QGraphicsItem, QGraphicsSceneMouseEvent
 
 from ..properties import PropertySpec
@@ -18,6 +19,13 @@ if TYPE_CHECKING:
 class PropertyDisplay(Enum):
     VALUE      = "Value"
     NAME_VALUE = "Name:Value"
+
+@dataclass
+class PropertyTextSpec:
+    anchor  : str
+    pos     : QPointF
+    cleat   : str
+    display : PropertyDisplay = PropertyDisplay.VALUE
 
 class PropertyText(TetherText):
     # class variables

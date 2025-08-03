@@ -1,3 +1,9 @@
+setters and getters, properties vs not, use of get prefix for getters
+
+# instance variables
+
+revisit selection state propagation parent => child
+
 assign origin is not undoable
 
 should KeyPoint be a QPointF subclass?

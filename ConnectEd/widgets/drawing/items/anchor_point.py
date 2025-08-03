@@ -2,6 +2,8 @@ __all__ = ["AnchorPoint"]
 
 from typing import Self
 
+from PyQt6.QtCore import QPointF
+
 from . import APType, ElementAnchorPointsMixin
 
 from .null_point import NullPoint
@@ -16,9 +18,10 @@ class AnchorPoint(NullPoint):
 
     def __init__(
         self   : Self,
-        name   : str,
-        type   : "APType",
-        parent : "ElementAnchorPointsMixin"
+        name   : str                        = "",
+        type   : "APType"                   = APType.Static,
+        pos    : QPointF                    = QPointF(),
+        parent : "ElementAnchorPointsMixin" = None
     ) -> None:
         super().__init__(parent)
         self._name   = name

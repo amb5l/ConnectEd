@@ -666,7 +666,54 @@ class ElementPosMixin:
         pos.setY(value)
         self.setPos(pos)
 
-# TODO: ElementEdgeLocMixin (disables setPos?)
+class ElementLocMixin:
+    # instance variables
+    _loc : EdgeLoc
+
+    _PROPERTY_SPECS_LOC = {
+        "Location" : PropertySpec(
+            type_name = "EdgeLoc",
+            getter    = lambda self: self.loc(),
+            setter    = lambda self, value: self.setLoc(value)
+        )
+    }
+
+    def loc(self : Self) -> EdgeLoc:
+        return self._loc
+
+    def setLoc(self : Self, loc : EdgeLoc) -> None:
+        self._loc = loc
+        self.prepareGeometryChange()
+        match loc.edge:
+            case Edge.LEFT:   self.setRotation(0)
+            case Edge.RIGHT:  self.setRotation(180)
+            case Edge.TOP:    self.setRotation(90)
+            case Edge.BOTTOM: self.setRotation(270)
+        if hasattr(self, "_name_text"):
+            name_centre = QPointF(self._name_text.boundingRect().center())
+            self._name_text.setTransformOriginPoint(name_centre)
+            match loc.edge:
+                case Edge.LEFT:   self._name_text.setRotation(0)
+                case Edge.RIGHT:  self._name_text.setRotation(180)
+                case Edge.TOP:    self._name_text.setRotation(180)
+                case Edge.BOTTOM: self._name_text.setRotation(0)
+        parent : "PinRect" = self.parentItem()
+        edge_pos = parent.getEdgeLocPos(loc) if parent else QPointF()
+        super().setPos(edge_pos)
+
+    def setLocPos(
+        self : Self,
+        pos  : QPointF,
+        snap : Optional[QPointF] = None
+    ) -> None:
+        parent : "PinRect" = self.parentItem()
+        self.setLoc(parent.getEdgeLoc(pos, snap))
+
+    def pos(self : Self) -> QPointF:
+        raise NotImplementedError("pos is not implemented for ElementLocMixin")
+
+    def setPos(self : Self, pos : QPointF) -> None:
+        raise NotImplementedError("setPos is not implemented for ElementLocMixin")
 
 class ElementAnchorPointsMixin:
     # instance variables
@@ -693,7 +740,11 @@ class ElementRectAnchorPointsMixin(ElementAnchorPointsMixin):
     def initAnchorPoints(self : Self) -> None:
         self._anchor_points = {}
         for ap_name, ap_type in self._AP_TYPES.items():
-            self._anchor_points[ap_name] = AnchorPoint(ap_name, ap_type, self)
+            self._anchor_points[ap_name] = AnchorPoint(
+                name   = ap_name,
+                type   = ap_type,
+                parent = self
+            )
 
     def updateKeypoints(self : Self) -> None:
         for name, (x, y) in self._ANCHOR_POINTS.items():
@@ -1126,7 +1177,7 @@ from .anchor_point import AnchorPoint
 __all__ += anchor_point.__all__
 from .tether_text import TetherText, Tether
 __all__ += tether_text.__all__
-from .property_text import PropertyDisplay, PropertyText
+from .property_text import PropertyDisplay, PropertyTextSpec, PropertyText
 __all__ += property_text.__all__
 from .text import Text, cmdPlaceText
 __all__ += text.__all__
@@ -1136,6 +1187,8 @@ from .rectangle import Rectangle, cmdPlaceRectangle
 __all__ += rectangle.__all__
 from .port_pin import Port, cmdPlacePort, BlockPin, cmdPlaceBlockPin
 __all__ += port_pin.__all__
+from .pin_rect import PinRect, cmdPlacePinRect
+__all__ += pin_rect.__all__
 from .block import Block, cmdPlaceBlock
 __all__ += block.__all__
 from .symbol_instance import SymbolInstance

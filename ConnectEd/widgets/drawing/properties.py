@@ -1,19 +1,13 @@
-__all__ = [
-    "PropertySpec",
-    "PropertyTextSpec",
-    "PropertiesMixin"
-]
+__all__ = ["PropertySpec", "PropertiesMixin"]
 
 from typing import Callable, Optional, Any, Self
 from dataclasses import dataclass
-
-from PyQt6.QtCore import QPointF
 
 from ...core import logger, val2str,str2val
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from .items.property_text import PropertyDisplay
+    from .items.property_text import PropertyTextSpec
 
 
 @dataclass
@@ -36,17 +30,10 @@ class PropertySpec:
             if self.value is None:
                 self.value = ""
 
-@dataclass
-class PropertyTextSpec:
-    display : "PropertyDisplay"
-    anchor  : str
-    pos     : QPointF
-    cleat   : str
-
 class PropertiesMixin:
     # class variables
     _PROPERTY_SPECS : dict[str, PropertySpec]
-    _PROPERTY_TEXTS : dict[str, PropertyTextSpec]
+    _PROPERTY_TEXTS : dict[str, "PropertyTextSpec"]
 
     # instance variables
     _properties : dict[str, PropertySpec]
