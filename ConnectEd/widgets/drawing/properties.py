@@ -58,17 +58,11 @@ class PropertiesMixin:
             return
         for name, pts in self._PROPERTY_TEXTS.items():
             p = PropertyText()
-            print(f"Property {name} position {p.pos()}")
             p.setOrigin(pts.anchor)
-            print(f"Property {name} position {p.pos()}")
             p.setPos(pts.pos)
-            print(f"Property {name} position {p.pos()}")
             p.setName(name)
-            print(f"Property {name} position {p.pos()}")
             p.setDisplay(pts.display)
-            print(f"Property {name} position {p.pos()}")
             p.setParentItem(self._anchor_points[pts.cleat])
-            print(f"Property {name} position {p.pos()}")
 
     def getPropertyNamesAndValues(self : Self) -> dict[str, str]:
         d = {}
