@@ -12,6 +12,8 @@ from ....marquee import Marquee
 
 from ...scenes import DrawingScene
 
+from ...scenes.api.operation import BaseOperation
+
 from .operation import DrawingViewOperationMixin
 from .mouse     import DrawingViewMouseMixin
 from .private   import DrawingViewPrivateMixin
@@ -42,15 +44,15 @@ class DrawingView(
     DrawingViewStateMixin,
     DrawingViewPrivateMixin
 ):
-    _shown  : bool = False
-    _zoomed : bool = False
-    marquee : Marquee
-    layer   : DrawingViewLayer
-    zoom    : float
-    grid    : DrawingViewGrid
-    mouse   : DrawingViewMouse
-    state   : DrawingViewStateBase
-    wip     : DrawingViewWip
+    _shown    : bool = False
+    _zoomed   : bool = False
+    marquee   : Marquee
+    layer     : DrawingViewLayer
+    zoom      : float
+    grid      : DrawingViewGrid
+    mouse     : DrawingViewMouse
+    state     : DrawingViewStateBase
+    operation : Optional[BaseOperation]
 
     def __init__(self : Self, scene : DrawingScene) -> None:
         super().__init__(scene)
@@ -62,14 +64,14 @@ class DrawingView(
             QGraphicsView.ViewportUpdateMode.FullViewportUpdate
         )
 
-        self._shown   = False
-        self._zoomed  = False
-        self.marquee  = Marquee(self)
-        self.layer    = DrawingViewLayer.Drawing
-        self.zoom     = 1.0
-        self.grid     = DrawingViewGrid()
-        self.mouse    = DrawingViewMouse()
-        self.wip      = DrawingViewWip()
+        self._shown    = False
+        self._zoomed   = False
+        self.marquee   = Marquee(self)
+        self.layer     = DrawingViewLayer.Drawing
+        self.zoom      = 1.0
+        self.grid      = DrawingViewGrid()
+        self.mouse     = DrawingViewMouse()
+        self.operation = None
 
         self.setMouseTracking(True)
         self.setRenderHint(QPainter.RenderHint.Antialiasing)

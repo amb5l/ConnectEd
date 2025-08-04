@@ -2,6 +2,8 @@ from typing import Optional
 
 from .....core import logger
 
+from ...scenes import DrawingScene
+
 from ...scenes.api.operation import OperationParams, OpType
 
 from .state import DrawingViewStateBase
@@ -18,49 +20,28 @@ class DrawingViewOperationMixin:
         state   : DrawingViewStateBase,
         params  : Optional[OperationParams] = None
     ) -> None:
-        """Generic operation begin pattern"""
+        scene : DrawingScene = self.scene()
         pos = self._snap(self.mouse.current.logical)
-        operation = self.scene().beginOperation(op_type, pos, params)
-
+        operation = scene.beginOperation(op_type, pos, params)
         if not operation or not operation.is_valid:
             logger.warning(f"Failed to begin {op_type.name.lower()} operation")
             self.state.go(self.stateIdle)
             return
-
-        self.wip.operation = operation
-        self.wip.pos = pos
+        self.operation = operation
         self.state.go(state)
 
     def _continueOperation(self : "DrawingView") -> None:
-        """Generic operation continue pattern"""
-        if not self.wip.operation:
+        if not self.operation:
             logger.warning("No operation in progress")
             self.state.go(self.stateIdle)
             return
-
-        new_pos = self._snap(self.mouse.current.logical)
-
-        # Different operations use different update methods
-        match self.wip.operation:
-            case operation if hasattr(operation, 'update_position'):
-                operation.update_position(new_pos)
-            case operation if hasattr(operation, 'update_rect'):
-                operation.update_rect(self.wip.pos, new_pos)
-            case operation if hasattr(operation, 'update_movement'):
-                offset = new_pos - self.wip.pos
-                operation.update_movement(offset)
-
-        self.wip.pos = new_pos
+        self.operation.update(self._snap(self.mouse.current.logical))
 
     def _completeOperation(self : "DrawingView", **commit_params) -> None:
-        """Generic operation complete pattern"""
-        if not self.wip.operation:
+        if not self.operation:
             logger.warning("No operation in progress")
             self.state.go(self.stateIdle)
             return
-
-        final_pos = self._snap(self.mouse.current.logical)
-        success = self.wip.operation.commit(pos=final_pos, **commit_params)
-
-        self.wip.clear()
+        self.operation.complete(self._snap(self.mouse.current.logical))
+        self.operation = None
         self.state.go(self.stateIdle)
