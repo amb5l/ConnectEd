@@ -27,74 +27,47 @@ class DrawingViewStateBase:
         self.view.state = state
 
     def mouseLeftClick(
-        self      : Self,
-        vpos      : QPoint,  # view position
-        spos      : QPointF, # scene position
-        modifiers : Qt.KeyboardModifier
+        self : Self, vpos : QPoint, spos : QPointF, modifiers : qkm
     ) -> None:
         pass
 
     def mouseLeftDragBegin(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
+        self : Self, vpos : QPoint, spos : QPointF, modifiers : qkm
     ) -> None:
         pass
 
     def mouseLeftDragContinue(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
+        self : Self, vpos : QPoint, spos : QPointF, modifiers : qkm
     ) -> None:
         pass
 
     def mouseLeftDragEnd(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
+        self : Self, vpos : QPoint, spos : QPointF, modifiers : qkm
     ) -> None:
         pass
 
     def mouseMiddleClick(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
+        self : Self, vpos : QPoint, spos : QPointF, modifiers : qkm
     ) -> None:
         pass
 
     def mouseMiddleDragBegin(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
+        self : Self, vpos : QPoint, spos : QPointF, modifiers : qkm
     ) -> None:
         pass
 
     def mouseMiddleDragContinue(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
+        self : Self, vpos : QPoint, spos : QPointF, modifiers : qkm
     ) -> None:
         pass
 
     def mouseMiddleDragEnd(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
+        self : Self, vpos : QPoint, spos : QPointF, modifiers : qkm
     ) -> None:
         pass
 
     def mouseMove(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
+        self : Self, vpos : QPoint, spos : QPointF, modifiers : qkm
     ) -> None:
         pass
 
@@ -102,10 +75,7 @@ class DrawingViewStateIdle(DrawingViewStateBase):
     TIP = "Idle"
 
     def mouseLeftClick(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
+        self : Self, vpos : QPoint, spos : QPointF, modifiers : qkm
     ) -> None:
         items = self.view._itemsAt(spos)
         for item in items:
@@ -117,10 +87,7 @@ class DrawingViewStateIdle(DrawingViewStateBase):
         self.view._selectPoint(spos, modifiers)
 
     def mouseLeftDragBegin(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
+        self : Self, vpos : QPoint, spos : QPointF, modifiers : qkm
     ) -> None:
         items_at = self.view._itemsAt(spos)
         handles_at = [item for item in items_at if isinstance(item, Handle)]
@@ -167,10 +134,7 @@ class DrawingViewStateIdle(DrawingViewStateBase):
             self.view.state.go(self.view.stateSelectArea2)
 
     def mouseMiddleDragBegin(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
+        self : Self, vpos : QPoint, spos : QPointF, modifiers : qkm
     ) -> None:
         if modifiers == qkm.NoModifier:
             self.view.wip.pos = vpos
@@ -184,10 +148,7 @@ class DrawingViewStateViewPan1(DrawingViewStateBase):
     TIP = "Pan: pick the first point"
 
     def mouseLeftClick(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
+        self : Self, vpos : QPoint, spos : QPointF, modifiers : qkm
     ) -> None:
         self.view.wip.pos = vpos
         self.view.setCursor(Qt.CursorShape.ClosedHandCursor)
@@ -197,10 +158,7 @@ class DrawingViewStateViewPan2(DrawingViewStateBase):
     TIP = "Pan: pick the second point"
 
     def mouseLeftClick(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
+        self : Self, vpos : QPoint, spos : QPointF, modifiers : qkm
     ) -> None:
         delta = vpos - self.view.wip.pos
         self.view.horizontalScrollBar().setValue(
@@ -214,10 +172,7 @@ class DrawingViewStateViewPan2(DrawingViewStateBase):
         self.view.state.go(self.view.stateIdle)
 
     def mouseLeftDragContinue(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
+        self : Self, vpos : QPoint, spos : QPointF, modifiers : qkm
     ) -> None:
         delta = vpos - self.view.wip.pos
         self.view.horizontalScrollBar().setValue(
@@ -229,10 +184,7 @@ class DrawingViewStateViewPan2(DrawingViewStateBase):
         self.view.wip.pos = vpos
 
     def mouseLeftDragEnd(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
+        self : Self, vpos : QPoint, spos : QPointF, modifiers : qkm
     ) -> None:
         delta = vpos - self.view.wip.pos
         self.view.horizontalScrollBar().setValue(
@@ -246,10 +198,7 @@ class DrawingViewStateViewPan2(DrawingViewStateBase):
         self.view.state.go(self.view.stateIdle)
 
     def mouseMiddleDragContinue(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
+        self : Self, vpos : QPoint, spos : QPointF, modifiers : qkm
     ) -> None:
         delta = vpos - self.view.wip.pos
         self.view.horizontalScrollBar().setValue(
@@ -261,10 +210,7 @@ class DrawingViewStateViewPan2(DrawingViewStateBase):
         self.view.wip.pos = vpos
 
     def mouseMiddleDragEnd(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
+        self : Self, vpos : QPoint, spos : QPointF, modifiers : qkm
     ) -> None:
         delta = vpos - self.view.wip.pos
         self.view.horizontalScrollBar().setValue(
@@ -278,10 +224,7 @@ class DrawingViewStateViewPan2(DrawingViewStateBase):
         self.view.state.go(self.view.stateIdle)
 
     def mouseMove(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
+        self : Self, vpos : QPoint, spos : QPointF, modifiers : qkm
     ) -> None:
         delta = vpos - self.view.wip.pos
         self.view.horizontalScrollBar().setValue(
@@ -296,19 +239,13 @@ class DrawingViewStateViewZoomArea1(DrawingViewStateBase):
     TIP = "Zoom Window: pick the first point"
 
     def mouseLeftClick(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
+        self : Self, vpos : QPoint, spos : QPointF, modifiers : qkm
     ) -> None:
         self.view.marquee.begin(vpos)
         self.view.state.go(self.view.stateViewZoomArea2)
 
     def mouseLeftDragBegin(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
+        self : Self, vpos : QPoint, spos : QPointF, modifiers : qkm
     ) -> None:
         self.view.marquee.begin(vpos)
         self.view.state.go(self.view.stateViewZoomArea2)
@@ -317,56 +254,38 @@ class DrawingViewStateViewZoomArea2(DrawingViewStateBase):
     TIP = "Zoom Window: pick the second point"
 
     def mouseLeftClick(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
+        self : Self, vpos : QPoint, spos : QPointF, modifiers : qkm
     ) -> None:
         self.view.marquee.end(vpos)
         self.view._zoomRect(self.view.marquee.rect())
         self.view.state.go(self.view.stateIdle)
 
     def mouseLeftDragContinue(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
+        self : Self, vpos : QPoint, spos : QPointF, modifiers : qkm
     ) -> None:
         self.view.marquee.resize(vpos)
 
     def mouseLeftDragEnd(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
+        self : Self, vpos : QPoint, spos : QPointF, modifiers : qkm
     ) -> None:
         self.view.marquee.end(vpos)
         self.view._zoomRect(self.view.marquee.rect())
         self.view.state.go(self.view.stateIdle)
 
     def mouseMiddleDragContinue(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
+        self : Self, vpos : QPoint, spos : QPointF, modifiers : qkm
     ) -> None:
         self.view.marquee.resize(vpos)
 
     def mouseMiddleDragEnd(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
+        self : Self, vpos : QPoint, spos : QPointF, modifiers : qkm
     ) -> None:
         self.view.marquee.end(vpos)
         self.view._zoomRect(self.view.marquee.rect())
         self.view.state.go(self.view.stateIdle)
 
     def mouseMove(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
+        self : Self, vpos : QPoint, spos : QPointF, modifiers : qkm
     ) -> None:
         self.view.marquee.resize(vpos)
 
@@ -374,18 +293,12 @@ class DrawingViewStateSelectArea2(DrawingViewStateBase):
     TIP = "Select: complete the marquee selection"
 
     def mouseLeftDragContinue(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
+        self : Self, vpos : QPoint, spos : QPointF, modifiers : qkm
     ) -> None:
         self.view.marquee.resize(vpos)
 
     def mouseLeftDragEnd(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
+        self : Self, vpos : QPoint, spos : QPointF, modifiers : qkm
     ) -> None:
         self.view.marquee.end(vpos)
         self.view._selectRect(self.view.marquee.rect(), modifiers & qkm.ControlModifier)
@@ -395,18 +308,12 @@ class DrawingViewStateEditPaste(DrawingViewStateBase):
     TIP = "Paste: select the paste position"
 
     def mouseLeftClick(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
+        self : Self, vpos : QPoint, spos : QPointF, modifiers : qkm
     ) -> None:
         self.view.editPasteComplete()
 
     def mouseMove(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
+        self : Self, vpos : QPoint, spos : QPointF, modifiers : qkm
     ) -> None:
         self.view.editPasteContinue()
 
@@ -414,10 +321,7 @@ class DrawingViewStateEditDuplicate1(DrawingViewStateBase):
     TIP = "Duplicate: select one or more items"
 
     def mouseLeftClick(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
+        self : Self, vpos : QPoint, spos : QPointF, modifiers : qkm
     ) -> None:
         self.view._selectPoint(spos, modifiers)
         items = self.view.scene().selectedItems()
@@ -428,10 +332,7 @@ class DrawingViewStateEditDuplicate1(DrawingViewStateBase):
                 self.view.editDuplicate()
 
     def mouseLeftDragBegin(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
+        self : Self, vpos : QPoint, spos : QPointF, modifiers : qkm
     ) -> None:
         self.view.marquee.begin(vpos)
         self.view.state.go(self.view.stateSelectArea2)
@@ -440,34 +341,22 @@ class DrawingViewStateEditDuplicate2(DrawingViewStateBase):
     TIP = "Duplicate: place the duplicated item(s) as required"
 
     def mouseLeftClick(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
+        self : Self, vpos : QPoint, spos : QPointF, modifiers : qkm
     ) -> None:
         self.view.editDuplicateComplete()
 
     def mouseLeftDragContinue(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
+        self : Self, vpos : QPoint, spos : QPointF, modifiers : qkm
     ) -> None:
         self.view.editDuplicateContinue()
 
     def mouseLeftDragEnd(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
+        self : Self, vpos : QPoint, spos : QPointF, modifiers : qkm
     ) -> None:
         self.view.editDuplicateComplete()
 
     def mouseMove(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
+        self : Self, vpos : QPoint, spos : QPointF, modifiers : qkm
     ) -> None:
         self.view.editDuplicateContinue()
 
@@ -475,10 +364,7 @@ class DrawingViewStateEditSlide1(DrawingViewStateBase):
     TIP = "Slide: select one or more items"
 
     def mouseLeftClick(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
+        self : Self, vpos : QPoint, spos : QPointF, modifiers : qkm
     ) -> None:
         self.view._selectPoint(spos, modifiers)
         self.view.editMoveBegin(
@@ -491,10 +377,7 @@ class DrawingViewStateEditSlide2(DrawingViewStateBase):
     TIP = "Slide: place the selected item(s) as required"
 
     def mouseLeftDragContinue(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
+        self : Self, vpos : QPoint, spos : QPointF, modifiers : qkm
     ) -> None:
 
         self.view.editMoveContinue(
@@ -503,10 +386,7 @@ class DrawingViewStateEditSlide2(DrawingViewStateBase):
         )
 
     def mouseLeftDragEnd(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
+        self : Self, vpos : QPoint, spos : QPointF, modifiers : qkm
     ) -> None:
         self.view.editMoveComplete(
             self.view._snap(spos),
@@ -515,10 +395,7 @@ class DrawingViewStateEditSlide2(DrawingViewStateBase):
         self.view.state.go(self.view.stateIdle)
 
     def mouseMove(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
+        self : Self, vpos : QPoint, spos : QPointF, modifiers : qkm
     ) -> None:
         self.view.editMoveContinue(
             self.view._snap(spos),
@@ -529,10 +406,7 @@ class DrawingViewStateEditMove1(DrawingViewStateBase):
     TIP = "Move: select one or more items"
 
     def mouseLeftClick(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
+        self : Self, vpos : QPoint, spos : QPointF, modifiers : qkm
     ) -> None:
         self.view._selectPoint(spos, modifiers)
         self.view.editMoveBegin(
@@ -545,10 +419,7 @@ class DrawingViewStateEditMove2(DrawingViewStateBase):
     TIP = "Move: place the selected item(s) as required"
 
     def mouseLeftClick(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
+        self : Self, vpos : QPoint, spos : QPointF, modifiers : qkm
     ) -> None:
         self.view.editMoveComplete(
             self.view._snap(spos),
@@ -557,10 +428,7 @@ class DrawingViewStateEditMove2(DrawingViewStateBase):
         self.view.state.go(self.view.stateIdle)
 
     def mouseLeftDragContinue(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
+        self : Self, vpos : QPoint, spos : QPointF, modifiers : qkm
     ) -> None:
         self.view.editMoveContinue(
             self.view._snap(spos),
@@ -568,10 +436,7 @@ class DrawingViewStateEditMove2(DrawingViewStateBase):
         )
 
     def mouseLeftDragEnd(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
+        self : Self, vpos : QPoint, spos : QPointF, modifiers : qkm
     ) -> None:
         self.view.editMoveComplete(
             self.view._snap(spos),
@@ -580,10 +445,7 @@ class DrawingViewStateEditMove2(DrawingViewStateBase):
         self.view.state.go(self.view.stateIdle)
 
     def mouseMove(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
+        self : Self, vpos : QPoint, spos : QPointF, modifiers : qkm
     ) -> None:
         self.view.editMoveContinue(
             self.view._snap(spos),
@@ -594,10 +456,7 @@ class DrawingViewStateEditResize1(DrawingViewStateBase):
     TIP = "Resize: select a single resizeable item"
 
     def mouseLeftClick(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
+        self : Self, vpos : QPoint, spos : QPointF, modifiers : qkm
     ) -> None:
         self.view._selectPoint(spos, modifiers)
         if len(self.view.scene().selectedItems()) == 1:
@@ -607,10 +466,7 @@ class DrawingViewStateEditResize2(DrawingViewStateBase):
     TIP = "Resize: select a handle to begin resizing"
 
     def mouseLeftClick(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
+        self : Self, vpos : QPoint, spos : QPointF, modifiers : qkm
     ) -> None:
         items = self.view._itemsAt(spos)
         for item in items:
@@ -621,10 +477,7 @@ class DrawingViewStateEditResize2(DrawingViewStateBase):
                 self.view.state.go(self.view.stateEditResize3)
 
     def mouseLeftDragEnd(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
+        self : Self, vpos : QPoint, spos : QPointF, modifiers : qkm
     ) -> None:
         self.view.editMoveComplete(
             self.view._snap(spos),
@@ -636,10 +489,7 @@ class DrawingViewStateEditResize3(DrawingViewStateBase):
     TIP = "Resize: place the selected handle as required"
 
     def mouseLeftClick(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
+        self : Self, vpos : QPoint, spos : QPointF, modifiers : qkm
     ) -> None:
         self.view.editMoveComplete(
             self.view._snap(spos),
@@ -648,18 +498,12 @@ class DrawingViewStateEditResize3(DrawingViewStateBase):
         self.view.state.go(self.view.stateIdle)
 
     def mouseLeftDragContinue(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
+        self : Self, vpos : QPoint, spos : QPointF, modifiers : qkm
     ) -> None:
         self.view.editMoveContinue(self.view._snap(spos), modifiers & qkm.ShiftModifier)
 
     def mouseLeftDragEnd(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
+        self : Self, vpos : QPoint, spos : QPointF, modifiers : qkm
     ) -> None:
         self.view.editMoveComplete(
             self.view._snap(spos),
@@ -668,10 +512,7 @@ class DrawingViewStateEditResize3(DrawingViewStateBase):
         self.view.state.go(self.view.stateIdle)
 
     def mouseMove(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
+        self : Self, vpos : QPoint, spos : QPointF, modifiers : qkm
     ) -> None:
         self.view.editMoveContinue(
             self.view._snap(spos),
@@ -682,28 +523,19 @@ class DrawingViewStateEditAppearance1(DrawingViewStateBase):
     TIP = "Appearance: select one or more items"
 
     def mouseLeftClick(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
+        self : Self, vpos : QPoint, spos : QPointF, modifiers : qkm
     ) -> None:
         self.view._selectPoint(spos, modifiers)
         self.view.editAppearance()
 
     def mouseLeftDragBegin(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
+        self : Self, vpos : QPoint, spos : QPointF, modifiers : qkm
     ) -> None:
         self.view.marquee.begin(spos)
         self.view.state.go(self.view.stateEditAppearance2)
 
     def mouseLeftDragEnd(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
+        self : Self, vpos : QPoint, spos : QPointF, modifiers : qkm
     ) -> None:
         self.view.marquee.end(vpos)
         self.view._selectRect(self.view.marquee.rect(), modifiers)
@@ -716,10 +548,7 @@ class DrawingViewStateEditQuery(DrawingViewStateBase):
     TIP = "Query: pick an item"
 
     def mouseLeftClick(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
+        self : Self, vpos : QPoint, spos : QPointF, modifiers : qkm
     ) -> None:
         self.view._selectPoint(spos, modifiers)
         self.view.editQuery()
@@ -731,19 +560,13 @@ class DrawingViewStatePlacePort2(DrawingViewStateBase):
     TIP = "Place Port: pick a location"
 
     def mouseLeftClick(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
+        self : Self, vpos : QPoint, spos : QPointF, modifiers : qkm
     ) -> None:
         self.view.placePortComplete(self.view._snap(spos))
         self.view.state.go(self.view.stateIdle)
 
     def mouseMove(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
+        self : Self, vpos : QPoint, spos : QPointF, modifiers : qkm
     ) -> None:
         self.view.placePortContinue(self.view._snap(spos))
 
@@ -751,19 +574,13 @@ class DrawingViewStatePlaceBlock1(DrawingViewStateBase):
     TIP = "Place Block: pick the first point"
 
     def mouseLeftClick(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
+        self : Self, vpos : QPoint, spos : QPointF, modifiers : qkm
     ) -> None:
         self.view.placeBlockBegin(self.view._snap(spos))
         self.view.state.go(self.view.statePlaceBlock2)
 
     def mouseLeftDragBegin(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
+        self : Self, vpos : QPoint, spos : QPointF, modifiers : qkm
     ) -> None:
         self.view.placeBlockBegin(self.view._snap(spos))
 
@@ -771,35 +588,23 @@ class DrawingViewStatePlaceBlock2(DrawingViewStateBase):
     TIP = "Place Block: pick the second point"
 
     def mouseLeftClick(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
+        self : Self, vpos : QPoint, spos : QPointF, modifiers : qkm
     ) -> None:
         self.view.placeBlockComplete(self.view._snap(spos))
         self.view.state.go(self.view.stateIdle)
 
     def mouseLeftDragContinue(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
+        self : Self, vpos : QPoint, spos : QPointF, modifiers : qkm
     ) -> None:
         self.view.placeBlockContinue(self.view._snap(spos))
 
     def mouseLeftDragEnd(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
+        self : Self, vpos : QPoint, spos : QPointF, modifiers : qkm
     ) -> None:
         self.view.placeBlockComplete(self.view._snap(spos))
 
     def mouseMove(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
+        self : Self, vpos : QPoint, spos : QPointF, modifiers : qkm
     ) -> None:
         self.view.placeBlockContinue(self.view._snap(spos))
 
@@ -807,10 +612,7 @@ class DrawingViewStatePlaceBlockPin1(DrawingViewStateBase):
     TIP = "Place Block Pin: pick a block"
 
     def mouseLeftClick(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
+        self : Self, vpos : QPoint, spos : QPointF, modifiers : qkm
     ) -> None:
         self.view._selectPoint(spos, modifiers)
         self.placeBlockPinBegin()
@@ -819,10 +621,7 @@ class DrawingViewStatePlaceBlockPin2(DrawingViewStateBase):
     TIP = "Place Block Pin: enter the pin details"
 
     def mouseLeftClick(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
+        self : Self, vpos : QPoint, spos : QPointF, modifiers : qkm
     ) -> None:
         self.view.placeBlockPinComplete(self.view._snap(spos))
         self.view.state.go(self.view.stateIdle)
@@ -831,19 +630,13 @@ class DrawingViewStatePlaceBlockPin3(DrawingViewStateBase):
     TIP = "Place Block Pin: pick a location"
 
     def mouseLeftClick(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
+        self : Self, vpos : QPoint, spos : QPointF, modifiers : qkm
     ) -> None:
         self.view.placeBlockPinComplete(self.view._snap(spos))
         self.view.state.go(self.view.stateIdle)
 
     def mouseMove(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
+        self : Self, vpos : QPoint, spos : QPointF, modifiers : qkm
     ) -> None:
         self.view.placeBlockPinContinue(self.view._snap(spos))
 
@@ -851,19 +644,13 @@ class DrawingViewStatePlaceRectangle1(DrawingViewStateBase):
     TIP = "Place Rectangle: pick the first point"
 
     def mouseLeftClick(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
+        self : Self, vpos : QPoint, spos : QPointF, modifiers : qkm
     ) -> None:
         self.view.placeRectangleBegin(self.view._snap(spos))
         self.view.state.go(self.view.statePlaceRectangle2)
 
     def mouseLeftDragBegin(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
+        self : Self, vpos : QPoint, spos : QPointF, modifiers : qkm
     ) -> None:
         self.view.placeRectangleBegin(self.view._snap(spos))
 
@@ -871,35 +658,23 @@ class DrawingViewStatePlaceRectangle2(DrawingViewStateBase):
     TIP = "Place Rectangle: pick the second point"
 
     def mouseLeftClick(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
+        self : Self, vpos : QPoint, spos : QPointF, modifiers : qkm
     ) -> None:
         self.view.placeRectangleComplete(self.view._snap(spos))
         self.view.state.go(self.view.stateIdle)
 
     def mouseLeftDragContinue(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
+        self : Self, vpos : QPoint, spos : QPointF, modifiers : qkm
     ) -> None:
         self.view.placeRectangleContinue(self.view._snap(spos))
 
     def mouseLeftDragEnd(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
+        self : Self, vpos : QPoint, spos : QPointF, modifiers : qkm
     ) -> None:
         self.view.placeRectangleComplete(self.view._snap(spos))
 
     def mouseMove(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
+        self : Self, vpos : QPoint, spos : QPointF, modifiers : qkm
     ) -> None:
         self.view.placeRectangleContinue(self.view._snap(spos))
 
@@ -907,10 +682,7 @@ class DrawingViewStatePlaceTextBlock1(DrawingViewStateBase):
     TIP = "Place Text Block: pick a position"
 
     def mouseLeftClick(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
+        self : Self, vpos : QPoint, spos : QPointF, modifiers : qkm
     ) -> None:
         self.view.placeTextBlockBegin(self.view._snap(spos))
         self.view.state.go(self.view.statePlaceTextBlock2)
@@ -919,10 +691,7 @@ class DrawingViewStatePlaceTextBlock2(DrawingViewStateBase):
     TIP = "Place Text Block: enter the text"
 
     def mouseLeftClick(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
+        self : Self, vpos : QPoint, spos : QPointF, modifiers : qkm
     ) -> None:
         self.view.placeTextBlockComplete()
         self.view.state.go(self.view.stateIdle)
@@ -934,19 +703,13 @@ class DrawingViewStatePlaceText2(DrawingViewStateBase):
     TIP = "Place Text: pick a position"
 
     def mouseLeftClick(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
+        self : Self, vpos : QPoint, spos : QPointF, modifiers : qkm
     ) -> None:
         self.view.placeTextComplete(self.view._snap(spos))
         self.view.state.go(self.view.stateIdle)
 
     def mouseMove(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
+        self : Self, vpos : QPoint, spos : QPointF, modifiers : qkm
     ) -> None:
         self.view.placeTextContinue(self.view._snap(spos))
 
