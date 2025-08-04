@@ -1,22 +1,11 @@
-setters and getters, properties vs not, use of get prefix for getters
-
-# instance variables
-
-revisit selection state propagation parent => child
-
-assign origin is not undoable
-
-should KeyPoint be a QPointF subclass?
-
-ratsnest
-
-cloning offset with non-default anchor
-
-OK false alarm, forget that for now. New issue: I place a Text, then copy and paste it nearby. I drag the 2nd Text to a new position. I then drag select both Text instances and copy/paste. The 2 new instances have the original (pre-drag) positions w.r.t. each other.
-
-If I change the anchor of a Text to bottom right then copy and paste it, positioning goes a bit mad, as if cumulative errors are creeping in.
-
-common menus for elements
+- settings propagation
+- setters and getters, properties vs not, use of get prefix for getters
+- "# instance attributes"
+- revisit selection state propagation parent => child
+- assign origin is not undoable
+- should KeyPoint be a QPointF subclass?
+- ratsnest
+- common menus for elements
 
 
 appearance

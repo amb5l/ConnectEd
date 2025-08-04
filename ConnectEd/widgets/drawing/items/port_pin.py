@@ -76,7 +76,7 @@ class BasePortPin(
     }
     _NAME_OFFSET = 2.5
 
-    # instance variables
+    # instance attributes
     _direction : SignalDirection
     _range     : VectorRange
     _node      : Node
@@ -152,7 +152,7 @@ class PortPinArrowMixin:
     # class variables
     _ARROW_CLASS = Arrow
 
-    # instance variables
+    # instance attributes
     _brect  : QRectF
     _hshape : QPainterPath
     _node   : Node
@@ -206,7 +206,7 @@ class Port(ElementPosMixin, PortPinArrowMixin, BasePortPin):
         ElementPosMixin._PROPERTY_SPECS_POS | \
         BasePortPin._PROPERTY_SPECS
 
-    # instance variables
+    # instance attributes
     _node  : PortNode
     _arrow : PortArrow
 
@@ -285,7 +285,7 @@ class BlockPin(PortPinArrowMixin, BasePin):
     _ARROW_CLASS = BlockPinArrow
     _PROPERTY_TEXT_CLASS = BlockPinPropertyText
 
-    # instance variables
+    # instance attributes
     _node  : BlockPinNode
     _arrow : BlockPinArrow
 

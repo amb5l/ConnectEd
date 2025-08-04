@@ -66,7 +66,7 @@ class BaseRectangle(
         ElementFillMixin._PROPERTY_SPECS_FILL
     _MIN_SIZE = QSizeF(1.0, 1.0)
 
-    # instance variables
+    # instance attributes
     _rect : QRectF  # cached rectangle
 
     def __init__(self : Self, bare : bool = False) -> None:

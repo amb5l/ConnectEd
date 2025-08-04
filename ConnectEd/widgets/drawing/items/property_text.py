@@ -47,7 +47,7 @@ class PropertyText(TetherText):
         _PROPERTY_SPECS_PROPERTY | \
         TetherText._PROPERTY_SPECS_APPEARANCE
 
-    # instance variables
+    # instance attributes
     _name    : str
     _display : PropertyDisplay
 

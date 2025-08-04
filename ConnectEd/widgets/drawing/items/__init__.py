@@ -628,7 +628,7 @@ class ElementMixin:
         self.uuid = str(uuid.uuid4())
 
 class ElementBoundShapeMixin:
-    # instance variables
+    # instance attributes
     _brect  : QRectF       # bounding rect
     _hshape : QPainterPath # hit detect shape
 
@@ -667,7 +667,7 @@ class ElementPosMixin:
         self.setPos(pos)
 
 class ElementLocMixin:
-    # instance variables
+    # instance attributes
     _loc : EdgeLoc
 
     _PROPERTY_SPECS_LOC = {
@@ -716,7 +716,7 @@ class ElementLocMixin:
         raise NotImplementedError("setPos is not implemented for ElementLocMixin")
 
 class ElementAnchorPointsMixin:
-    # instance variables
+    # instance attributes
     _anchor_points : dict[str, "AnchorPoint"]
 
 class ElementRectAnchorPointsMixin(ElementAnchorPointsMixin):
@@ -734,7 +734,7 @@ class ElementRectAnchorPointsMixin(ElementAnchorPointsMixin):
     }
     _AP_TYPES : dict[str, APType]
 
-    # instance variables
+    # instance attributes
     _rect   : QRectF   # border rectangle, maintained by element
 
     def initAnchorPoints(self : Self) -> None:
@@ -766,7 +766,7 @@ class ElementOriginMixin:
         )
     }
 
-    # instance variables
+    # instance attributes
     _pos    : QPointF        # position of origin w.r.t. scene/parent
     _origin : "AnchorPoint"  # origin anchor point
 

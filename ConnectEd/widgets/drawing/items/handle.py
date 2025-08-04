@@ -20,7 +20,7 @@ class Handle(
     ElementMenuMixin,
     QGraphicsPathItem
 ):
-    # instance variables
+    # instance attributes
     _parent      : "AnchorPoint"               # parent anchor point
     _element     : "ElementAnchorPointsMixin"  # parent element
     _pen         : QPen                        # pen for drawing

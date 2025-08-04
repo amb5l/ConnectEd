@@ -11,7 +11,7 @@ from .handle     import Handle
 
 
 class AnchorPoint(NullPoint):
-    # instance variables
+    # instance attributes
     _name : str
     _type : "APType"
     _handle : Handle

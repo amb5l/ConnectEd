@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 
 
 class NullPoint(QGraphicsItem):
-    # instance variables
+    # instance attributes
     _brect  : QRectF        # bounding rect
     _hshape : QPainterPath  # shape for hit detection
 

@@ -59,7 +59,7 @@ class BaseText(
         _PROPERTY_SPECS_TEXT | \
         _PROPERTY_SPECS_APPEARANCE
 
-    # instance variables
+    # instance attributes
     _rect  : QRectF  # border rectangle (for keypoints)
     _trect : QRectF  # tight bounding rectangle
 

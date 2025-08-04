@@ -35,7 +35,7 @@ class PropertiesMixin:
     _PROPERTY_SPECS : dict[str, PropertySpec]
     _PROPERTY_TEXTS : dict[str, "PropertyTextSpec"]
 
-    # instance variables
+    # instance attributes
     _properties : dict[str, PropertySpec]
 
     def initProperties(self : Self, bare : bool = False) -> None:

@@ -59,7 +59,7 @@ class BaseTextBlock(
         } | \
         ElementQuillMixin._PROPERTY_SPECS_QUILL
 
-    # instance variables
+    # instance attributes
     _rect    : QRectF        # border rectangle (for keypoints)
     _brectf  : QRectF        # bounding rect when has focus
     _hshapef : QPainterPath  # hit detect shape when has focus

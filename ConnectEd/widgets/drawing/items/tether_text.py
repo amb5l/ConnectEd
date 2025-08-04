@@ -45,7 +45,7 @@ class Tether(QGraphicsLineItem):
         self.setLine(self._line)
 
 class TetherText(BaseText):
-    # instance variables
+    # instance attributes
     _tether : Optional[Tether]
 
     def __init__(self : Self, bare : bool = False) -> None:

@@ -35,7 +35,7 @@ class DrawingScene(
         )
     }
 
-    # instance variables
+    # instance attributes
     item       : Optional["DrawingItem"]
     undo_stack : Optional[QUndoStack]
 
