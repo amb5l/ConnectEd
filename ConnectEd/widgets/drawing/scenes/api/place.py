@@ -1,11 +1,9 @@
 __all__ = ["DrawingSceneApiPlaceMixin"]
 
-from typing import Any, Optional, Type, TypeVar
+from typing import Optional, TypeVar
 
-from PyQt6.QtCore    import QPointF, QRectF, QSizeF
+from PyQt6.QtCore    import QPointF
 from PyQt6.QtWidgets import QGraphicsItem
-
-from .....core import logger
 
 from ... import SignalDirection, VectorRange, EdgeLoc, \
                 Port,      \
@@ -13,8 +11,8 @@ from ... import SignalDirection, VectorRange, EdgeLoc, \
                 Block,     \
                 BlockPin,  \
                 Rectangle, \
-                TextBlock, \
-                Text
+                Text,      \
+                TextBlock
 
 from .cmd import cmdPlaceElement
 
@@ -37,15 +35,14 @@ class cmdPlaceBlock(cmdPlacePinRect):
 class cmdPlaceBlockPin(cmdPlaceElement):
     element : BlockPin
 
+class cmdPlaceRectangle(cmdPlaceElement):
+    element : Rectangle
+
 class cmdPlaceText(cmdPlaceElement):
     element : Text
 
 class cmdPlaceTextBlock(cmdPlaceElement):
     element : TextBlock
-
-class cmdPlaceRectangle(cmdPlaceElement):
-    element : Rectangle
-
 
 class DrawingSceneApiPlaceMixin:
 
@@ -110,17 +107,6 @@ class DrawingSceneApiPlaceMixin:
         self.undo_stack.push(cmdPlaceRectangle(self, element))
         return element
 
-    def placeTextBlock(
-        self  : "DrawingScene",
-        *,
-        text  : Optional[str]     = None,
-        pos   : Optional[QPointF] = None,
-        inst  : Optional[TextBlock] = None
-    ) -> TextBlock:
-        element = TextBlock.createOrUpdate(text=text, pos=pos, inst=inst)
-        self.undo_stack.push(cmdPlaceTextBlock(self, element))
-        return element
-
     def placeText(
         self  : "DrawingScene",
         *,
@@ -130,4 +116,15 @@ class DrawingSceneApiPlaceMixin:
     ) -> Text:
         element = Text.createOrUpdate(text=text, pos=pos, inst=inst)
         self.undo_stack.push(cmdPlaceText(self, element))
+        return element
+
+    def placeTextBlock(
+        self  : "DrawingScene",
+        *,
+        text  : Optional[str]     = None,
+        pos   : Optional[QPointF] = None,
+        inst  : Optional[TextBlock] = None
+    ) -> TextBlock:
+        element = TextBlock.createOrUpdate(text=text, pos=pos, inst=inst)
+        self.undo_stack.push(cmdPlaceTextBlock(self, element))
         return element
