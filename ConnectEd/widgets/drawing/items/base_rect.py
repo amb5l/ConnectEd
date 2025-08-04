@@ -7,10 +7,6 @@ from PyQt6.QtWidgets import QGraphicsRectItem, \
                             QWidget, QStyleOptionGraphicsItem, QStyle
 from PyQt6.QtGui     import QPainter, QPainterPath, QPainterPathStroker
 
-from ....core   import logger
-
-from ..properties import PropertySpec
-
 from ..properties import PropertySpec, PropertiesMixin
 
 from . import APType, \
@@ -23,8 +19,7 @@ from . import APType, \
               ElementChangeMixin, \
               ElementCloneMixin, \
               ElementXmlMixin, \
-              ElementMenuMixin, \
-              cmdPlaceElement
+              ElementMenuMixin
 
 from .... import hub
 
@@ -195,6 +190,3 @@ class BaseRectangle(
         else:
             inst.setPoints(p1.x(), p1.y(), p2.x(), p2.y())
         return inst
-
-class cmdPlaceBaseRectangle(cmdPlaceElement):
-    pass

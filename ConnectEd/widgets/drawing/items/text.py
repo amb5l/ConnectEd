@@ -1,10 +1,7 @@
-__all__ = ["Text", "cmdPlaceText"]
+__all__ = ["Text"]
 
-from .base_text import BaseText, cmdPlaceBaseText
+from .base_text import BaseText
 
 
 class Text(BaseText):
-    pass
-
-class cmdPlaceText(cmdPlaceBaseText):
     pass

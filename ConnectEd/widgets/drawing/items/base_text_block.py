@@ -21,8 +21,7 @@ from . import APType, \
               ElementChangeMixin, \
               ElementCloneMixin, \
               ElementXmlMixin, \
-              ElementMenuMixin, \
-              cmdPlaceElement
+              ElementMenuMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -182,7 +181,3 @@ class BaseTextBlock(
         if anchor is not None:
             inst.setOrigin(anchor)
         return inst
-
-class cmdPlaceBaseTextBlock(cmdPlaceElement):
-    pass
-

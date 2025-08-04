@@ -1,3 +1,6 @@
+- copy/paste issue with Block
+- moves are merging
+- selection propagation - new elements
 - settings propagation
 - setters and getters, properties vs not, use of get prefix for getters
 - "# instance attributes"

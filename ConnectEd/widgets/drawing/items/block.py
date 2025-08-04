@@ -1,10 +1,10 @@
-__all__ = ["Block", "cmdPlaceBlock"]
+__all__ = ["Block"]
 
 from PyQt6.QtCore import QPointF
 
 from ..properties import PropertySpec
 
-from .pin_rect      import PinRect, cmdPlacePinRect
+from .pin_rect      import PinRect
 from .property_text import PropertyTextSpec
 
 
@@ -19,5 +19,3 @@ class Block(PinRect):
         "Name"      : PropertyTextSpec( "Top Left"    , QPointF( 0,  0 ) , "Bottom Left" ),
     }
 
-class cmdPlaceBlock(cmdPlacePinRect):
-    pass

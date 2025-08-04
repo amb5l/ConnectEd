@@ -1,10 +1,7 @@
-__all__ = ["Rectangle", "cmdPlaceRectangle"]
+__all__ = ["Rectangle"]
 
-from .base_rect import BaseRectangle, cmdPlaceBaseRectangle
+from .base_rect import BaseRectangle
 
 
 class Rectangle(BaseRectangle):
-    pass
-
-class cmdPlaceRectangle(cmdPlaceBaseRectangle):
     pass

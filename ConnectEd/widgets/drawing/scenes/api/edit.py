@@ -20,13 +20,13 @@ from .....core import logger,copy, paste
 from ....dialogs.appearance import AppearancePref, AppearancePrefChange
 from ....dialogs.properties import PropertiesType
 
-from ...items import ElementMixin, cmdElement, cmdElements, \
-                     QuillPref, QuillPrefChange, \
-                     clone
+from ...items import ElementMixin, QuillPref, QuillPrefChange, clone
 
 from ...items.base_text import BaseText
 
 from ...items.property_text import PropertyText
+
+from .cmd import cmdElement, cmdElements
 
 
 from typing import TYPE_CHECKING

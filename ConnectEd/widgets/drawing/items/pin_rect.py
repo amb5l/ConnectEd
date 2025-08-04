@@ -1,4 +1,4 @@
-__all__ = ["PinRect", "cmdPlacePinRect"]
+__all__ = ["PinRect"]
 
 from typing import Self, Optional
 
@@ -8,7 +8,7 @@ from . import EdgeLoc, Edge
 
 from .port_pin import BasePin
 
-from .base_rect import BaseRectangle, cmdPlaceBaseRectangle
+from .base_rect import BaseRectangle
 
 
 class PinRect(BaseRectangle):
@@ -97,5 +97,3 @@ class PinRect(BaseRectangle):
             case _:
                 raise ValueError(f"Invalid edge: {loc.edge}")
 
-class cmdPlacePinRect(cmdPlaceBaseRectangle):
-    element : PinRect

@@ -8,14 +8,15 @@ from PyQt6.QtWidgets import QGraphicsItem
 from .....core import logger
 
 from ... import SignalDirection, VectorRange, EdgeLoc, \
-                Port,      cmdPlacePort, \
-                Block,     cmdPlaceBlock, \
-                BlockPin,  cmdPlaceBlockPin, \
-                Rectangle, cmdPlaceRectangle, \
-                TextBlock, cmdPlaceTextBlock, \
-                Text,      cmdPlaceText
+                Port,      \
+                PinRect,   \
+                Block,     \
+                BlockPin,  \
+                Rectangle, \
+                TextBlock, \
+                Text
 
-from ...items.port_pin import BlockPin
+from .cmd import cmdPlaceElement
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -23,6 +24,28 @@ if TYPE_CHECKING:
 
 
 T = TypeVar("T", bound=QGraphicsItem)
+
+class cmdPlacePort(cmdPlaceElement):
+    pass
+
+class cmdPlacePinRect(cmdPlaceElement):
+    element : PinRect
+
+class cmdPlaceBlock(cmdPlacePinRect):
+    element : Block
+
+class cmdPlaceBlockPin(cmdPlaceElement):
+    element : BlockPin
+
+class cmdPlaceText(cmdPlaceElement):
+    element : Text
+
+class cmdPlaceTextBlock(cmdPlaceElement):
+    element : TextBlock
+
+class cmdPlaceRectangle(cmdPlaceElement):
+    element : Rectangle
+
 
 class DrawingSceneApiPlaceMixin:
 

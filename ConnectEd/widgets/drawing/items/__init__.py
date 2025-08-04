@@ -1043,100 +1043,7 @@ class ElementXmlMixin:
             xr.readNext()
         return instance
 
-class cmdElement(QUndoCommand):
-    """Base class for all commands that work with an element."""
-    _scene   : "DrawingScene"
-    _element : ElementMixin
 
-    def __init__(
-        self    : Self,
-        scene   : "DrawingScene",
-        element : ElementMixin
-    ):
-        text = camel_to_proper(self.__class__.__name__.replace("cmd", ""))
-        super().__init__(text)
-        self._scene = scene
-        self._element = element
-
-    def id(self : Self) -> int:
-        """Return a unique ID for merging commands."""
-        element_id = id(self._element) & 0x7FFFFFFF
-        class_id = hash(self.__class__.__name__) & 0x7FFFFFFF
-        return ((element_id + class_id) & 0x7FFFFFFF)
-
-    def mergeWith(self : Self, other : QUndoCommand) -> bool:
-        """Merge this command with another identical command."""
-        if not isinstance(other, self.__class__) \
-        or other._scene != self._scene \
-        or other._element != self._element:
-            return False
-        return True
-
-    def redo(self : Self) -> None:
-        raise NotImplementedError(
-            f"{self.__class__.__name__} must implement redo"
-        )
-
-    def undo(self : Self) -> None:
-        raise NotImplementedError(
-            f"{self.__class__.__name__} must implement undo"
-        )
-
-class cmdElements(QUndoCommand):
-    """Base class for all commands that work with multiple elements."""
-    _scene    : "DrawingScene"
-    _elements : list[ElementMixin]
-
-    def __init__(
-        self     : Self,
-        scene    : "DrawingScene",
-        elements : list[ElementMixin]
-    ):
-        text = camel_to_proper(self.__class__.__name__.replace("cmd", ""))
-        QUndoCommand.__init__(self, text)
-        self._scene = scene
-        self._elements = elements
-
-    def id(self : Self) -> int:
-        """Return a unique ID for merging commands."""
-        element_ids = [id(element) & 0x7FFFFFFF for element in self._elements]
-        class_id = hash(self.__class__.__name__) & 0x7FFFFFFF
-        return ((sum(element_ids) + class_id) & 0x7FFFFFFF)
-
-    def mergeWith(self : Self, other : QUndoCommand) -> bool:
-        """Merge this command with another identical command."""
-        if not isinstance(other, self.__class__) \
-        or other._scene != self._scene \
-        or other._elements != self._elements:
-            return False
-        return True
-
-    def redo(self : Self) -> None:
-        raise NotImplementedError(
-            f"{self.__class__.__name__} must implement redo"
-        )
-
-    def undo(self : Self) -> None:
-        raise NotImplementedError(
-            f"{self.__class__.__name__} must implement undo"
-        )
-
-class cmdPlaceElement(cmdElement):
-    """Base class for all commands that place an element."""
-
-    def __init__(
-        self    : Self,
-        scene   : "DrawingScene",
-        element : ElementMixin
-    ):
-        super().__init__(scene, element) # record scene and element instances
-
-    def redo(self : Self) -> None:
-        if self._element.scene() != self._scene:
-            self._scene.addItem(self._element)
-
-    def undo(self : Self) -> None:
-        self._scene.removeItem(self._element)
 
 def clone(elements : list[ElementMixin]) -> list[ElementMixin]:
     r = []
@@ -1168,9 +1075,6 @@ __all__ = [
     "QuillPref",
     "QuillPrefChange",
     "ElementMixin",
-    "cmdElement",
-    "cmdElements",
-    "cmdPlaceElement",
     "clone"
 ]
 from .anchor_point import AnchorPoint
@@ -1179,17 +1083,17 @@ from .tether_text import TetherText, Tether
 __all__ += tether_text.__all__
 from .property_text import PropertyDisplay, PropertyTextSpec, PropertyText
 __all__ += property_text.__all__
-from .text import Text, cmdPlaceText
+from .text import Text
 __all__ += text.__all__
-from .text_block import TextBlock, cmdPlaceTextBlock
+from .text_block import TextBlock
 __all__ += text_block.__all__
-from .rectangle import Rectangle, cmdPlaceRectangle
+from .rectangle import Rectangle
 __all__ += rectangle.__all__
-from .port_pin import Port, cmdPlacePort, BlockPin, cmdPlaceBlockPin
+from .port_pin import Port, BlockPin
 __all__ += port_pin.__all__
-from .pin_rect import PinRect, cmdPlacePinRect
+from .pin_rect import PinRect
 __all__ += pin_rect.__all__
-from .block import Block, cmdPlaceBlock
+from .block import Block
 __all__ += block.__all__
 from .symbol_instance import SymbolInstance
 __all__ += symbol_instance.__all__

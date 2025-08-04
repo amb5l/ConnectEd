@@ -1,4 +1,4 @@
-__all__ = ["Port", "cmdPlacePort", "BlockPin", "cmdPlaceBlockPin"]
+__all__ = ["Port", "BlockPin"]
 
 from typing import Self, Optional
 
@@ -18,8 +18,7 @@ from . import APType, EdgeLoc, SignalDirection, VectorRange, \
               ElementChangeMixin, \
               ElementCloneMixin, \
               ElementXmlMixin, \
-              ElementMenuMixin, \
-              cmdPlaceElement
+              ElementMenuMixin
 
 from .node          import Node
 from .arrow         import Arrow
@@ -236,9 +235,6 @@ class Port(ElementPosMixin, PortPinArrowMixin, BasePortPin):
             inst.setPos(pos)
         return inst
 
-class cmdPlacePort(cmdPlaceElement):
-    pass
-
 class BasePin(ElementLocMixin, BasePortPin):
     # class attributes
     _PROPERTY_SPECS = \
@@ -313,6 +309,3 @@ class BlockPin(PortPinArrowMixin, BasePin):
             parent    = parent,
             inst      = inst
         )
-
-class cmdPlaceBlockPin(cmdPlaceElement):
-    pass

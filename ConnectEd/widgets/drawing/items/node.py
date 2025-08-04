@@ -1,4 +1,4 @@
-__all__ = ["BlockPin", "cmdPlaceBlockPin"]
+__all__ = ["Node"]
 
 from typing import Self, Optional
 

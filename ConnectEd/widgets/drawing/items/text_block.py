@@ -1,10 +1,9 @@
-__all__ = ["TextBlock", "cmdPlaceTextBlock"]
+__all__ = ["TextBlock"]
 
-from .base_text_block import BaseTextBlock, cmdPlaceBaseTextBlock
+from .base_text_block import BaseTextBlock
 
 
 class TextBlock(BaseTextBlock):
     pass
 
-class cmdPlaceTextBlock(cmdPlaceBaseTextBlock):
-    pass
+

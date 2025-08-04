@@ -17,8 +17,7 @@ from . import APType, \
               ElementChangeMixin, \
               ElementCloneMixin, \
               ElementXmlMixin, \
-              ElementMenuMixin, \
-              cmdPlaceElement
+              ElementMenuMixin
 
 
 from typing import TYPE_CHECKING
@@ -128,6 +127,3 @@ class BaseText(
         view    : "DrawingView"
     ) -> None:
         view.editText(self)
-
-class cmdPlaceBaseText(cmdPlaceElement):
-    pass
