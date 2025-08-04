@@ -14,12 +14,9 @@ from ...scenes import DrawingScene
 
 from ...scenes.api.operation import BaseOperation
 
-from .operation import DrawingViewOperationMixin
 from .mouse     import DrawingViewMouseMixin
 from .private   import DrawingViewPrivateMixin
-from .edit      import DrawingViewEditMixin
-from .view      import DrawingViewViewMixin
-from .place     import DrawingViewPlaceMixin
+from .api       import DrawingViewApiMixin
 from .state     import DrawingViewStateMixin, DrawingViewStateBase
 from .defs      import *
 
@@ -37,10 +34,7 @@ def getView(pos : QPoint):
 class DrawingView(
     DrawingViewMouseMixin,
     QGraphicsView,
-    DrawingViewOperationMixin,
-    DrawingViewEditMixin,
-    DrawingViewViewMixin,
-    DrawingViewPlaceMixin,
+    DrawingViewApiMixin,
     DrawingViewStateMixin,
     DrawingViewPrivateMixin
 ):
@@ -49,14 +43,16 @@ class DrawingView(
     marquee   : Marquee
     layer     : DrawingViewLayer
     zoom      : float
+    pan       : Optional[QPoint]
     grid      : DrawingViewGrid
     mouse     : DrawingViewMouse
     state     : DrawingViewStateBase
     operation : Optional[BaseOperation]
 
+
     def __init__(self : Self, scene : DrawingScene) -> None:
         super().__init__(scene)
-        scene.textEditingComplete.connect(self.placeTextBlockFinalize)
+        #scene.textEditingComplete.connect(self.placeTextBlockFinalize)
         self.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
         self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
@@ -69,6 +65,7 @@ class DrawingView(
         self.marquee   = Marquee(self)
         self.layer     = DrawingViewLayer.Drawing
         self.zoom      = 1.0
+        self.pan       = None
         self.grid      = DrawingViewGrid()
         self.mouse     = DrawingViewMouse()
         self.operation = None

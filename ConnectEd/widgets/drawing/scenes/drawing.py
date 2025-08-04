@@ -60,6 +60,12 @@ class DrawingScene(
     def setParent(self : Self, parent : "DrawingItem") -> None:
         self.item = parent
 
+    def undo(self : Self) -> None:
+        self.undo_stack.undo()
+
+    def redo(self : Self) -> None:
+        self.undo_stack.redo()
+
     def toXml(self : Self, xw : QXmlStreamWriter) -> None:
         xw.writeStartElement(self.__class__.__name__)
         toXmlAttrs(self, xw)

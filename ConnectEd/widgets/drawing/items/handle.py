@@ -105,7 +105,7 @@ class Handle(
         view : "DrawingView"
     ) -> None:
         view.editMoveBegin([self._element], self.scenePos())
-        view.state.go(view.stateEditMove2)
+        view.state.go(view.stateEditMove)
 
     def ctxMenuResize(
         self : Self,
@@ -113,7 +113,7 @@ class Handle(
         view : "DrawingView"
     ) -> None:
         view.editMoveBegin([self], self.scenePos())
-        view.state.go(view.stateEditMove2)
+        view.state.go(view.stateEditMove)
 
     def ctxMenuAssignOrigin(
         self : Self,

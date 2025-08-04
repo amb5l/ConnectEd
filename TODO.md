@@ -1,3 +1,4 @@
+- what about moving PropertyTexts when their parents are or are not selected?
 - preserve selection set with placement commands
 - copy/paste issue with Block
 - moves are merging

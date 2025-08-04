@@ -96,17 +96,6 @@ class DrawingSceneApiPlaceMixin:
         self.undo_stack.push(cmdPlaceBlockPin(self, element))
         return element
 
-    def placeRectangle(
-        self : "DrawingScene",
-        *,
-        p1   : Optional[QPointF] = None,
-        p2   : Optional[QPointF] = None,
-        inst : Optional[Rectangle] = None
-    ) -> Rectangle:
-        element = Rectangle.createOrUpdate(p1=p1, p2=p2, inst=inst)
-        self.undo_stack.push(cmdPlaceRectangle(self, element))
-        return element
-
     def placeText(
         self  : "DrawingScene",
         *,

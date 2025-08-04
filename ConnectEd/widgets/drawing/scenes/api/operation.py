@@ -1,16 +1,16 @@
-from typing import Any, Optional
 from abc import ABC, abstractmethod
-from enum import Enum, auto
 
 from PyQt6.QtCore    import QPointF, QRectF
 from PyQt6.QtWidgets import QGraphicsItem
 
+from pyTooling.Decorators import export
+
 from .....core import logger, paste
 
-from ...items import ElementMixin, clone
+from ...items import ElementMixin, clone, Rectangle
 
 from .edit  import cmdEditPaste, cmdEditMove
-from .place import cmdPlaceBlock
+from .place import cmdPlaceBlock, cmdPlaceRectangle
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -18,6 +18,31 @@ if TYPE_CHECKING:
 
 
 ElementType = ElementMixin | QGraphicsItem
+
+class Operation(ABC):
+    """Base for all view-scene operations"""
+    # instance attributes
+    scene : "DrawingScene"
+
+    def __init__(self, scene: "DrawingScene"):
+        self.scene = scene
+
+    @abstractmethod
+    def is_valid(self) -> bool: ...
+
+class ImmediateOperation(Operation):
+    """Operations that execute immediately"""
+    @abstractmethod
+    def execute(self, pos: QPointF) -> bool: ...
+
+class InteractiveOperation(Operation):
+    """Operations with begin → continue → complete cycle"""
+    @abstractmethod
+    def update(self, pos: QPointF) -> None: ...
+    @abstractmethod
+    def complete(self, pos: QPointF) -> bool: ...
+    @abstractmethod
+    def cancel(self) -> None: ...
 
 class BaseOperation(ABC):
     # instance attributes
@@ -38,106 +63,24 @@ class BaseOperation(ABC):
     @abstractmethod
     def is_valid(self) -> bool: ...
 
-class EditMoveOperation(BaseOperation):
-    # instance attributes
-    elements     : list[ElementType]
-    slide        : bool
-    initial_pos  : QPointF  # where the operation started
-    current_pos  : QPointF  # current position during updates
-    initial_epos : dict[ElementType, QPointF]  # initial element positions
-
-    def __init__(self, scene, elements, start_pos, slide=False):
+@export
+class EditCutOperation(ImmediateOperation):
+    def __init__(self, scene):
         super().__init__(scene)
-        self.elements    = elements
-        self.slide       = slide
-        self.initial_pos = start_pos
-        self.current_pos = start_pos
-        self.initial_epos = {e: e.pos() for e in elements}
 
-    def update(self, pos: QPointF):
-        offset = pos - self.current_pos
-        for element in self.elements:
-            element.moveBy(offset.x(), offset.y())
-        self.current_pos = pos
+    def execute(self, pos: QPointF) -> bool:
+        pass
 
-    def complete(self, pos: QPointF) -> bool:
-        self._revert()
-        offset = pos - self.initial_pos
-        if offset != QPointF(0, 0):
-            move_cmd = cmdEditMove(
-                self.scene, self.elements, offset, self.slide
-            )
-            self.scene.undo_stack.push(move_cmd)
-        return True
-
-    def cancel(self) -> None:
-        self._revert()
-
-    @property
-    def is_valid(self) -> bool:
-        return bool(self.elements)
-
-    def _revert(self) -> None:
-        """Reset elements back to their exact initial positions"""
-        for element in self.elements:
-            element.setPos(self.initial_epos[element])
-        self.current_pos = self.initial_pos
-
-class EditDuplicateOperation(BaseOperation):
-    # instance attributes
-    elements : list[ElementType]
-    pos      : QPointF
-    prev_sel : list[ElementType]
-
-    def __init__(self, scene, elements, pos):
+@export
+class EditCopyOperation(ImmediateOperation):
+    def __init__(self, scene):
         super().__init__(scene)
-        self.elements = clone(elements)
-        self.pos      = pos
-        # Capture current selection - operation's responsibility
-        self.prev_sel = [item for item in scene.selectedItems() if isinstance(item, ElementMixin)]
-        # Add cloned elements to scene for preview
-        for element in self.elements:
-            if element.scene() != self.scene:
-                self.scene.addItem(element)
-        self.update(pos)
 
-    @property
-    def is_valid(self) -> bool:
-        return bool(self.elements)
+    def execute(self, pos: QPointF) -> bool:
+        pass
 
-    def update(self, pos: QPointF):
-        """Update with current position for duplicate preview"""
-        offset = pos - self.pos
-        for element in self.elements:
-            element.moveBy(offset.x(), offset.y())
-        self.pos = pos
-
-    def complete(self, pos: QPointF) -> bool:
-        offset = pos - self.pos
-
-        # Remove preview elements and reset position for command
-        for element in self.elements:
-            if element.scene() == self.scene:
-                self.scene.removeItem(element)
-            element.moveBy(-offset.x(), -offset.y())
-
-        # Create proper undo command (reuse paste command for duplicates)
-        duplicate_cmd = cmdEditPaste(self.scene, self.elements, offset, self.prev_sel)
-        self.scene.undo_stack.push(duplicate_cmd)
-
-        # Reset UUIDs for duplicated elements
-        for element in self.elements:
-            element.resetUuid()
-
-        return True
-
-    def cancel(self) -> None:
-        # Remove preview elements from scene
-        for element in self.elements:
-            if element.scene() == self.scene:
-                self.scene.removeItem(element)
-
-class EditPasteOperation(BaseOperation):
+@export
+class EditPasteOperation(InteractiveOperation):
     # instance attributes
     elements : list[ElementType]
     pos      : QPointF
@@ -197,40 +140,146 @@ class EditPasteOperation(BaseOperation):
             self.scene.clearSelection()
             self.scene.setSelected(element, True)
 
-class PlaceRectangleOperation(BaseOperation):
+@export
+class EditDeleteOperation(ImmediateOperation):
+    def __init__(self, scene):
+        super().__init__(scene)
+
+    def execute(self, _: QPointF) -> bool:
+        pass
+
+@export
+class EditDuplicateOperation(InteractiveOperation):
     # instance attributes
-    rectangle : ElementType  # The preview rectangle element
-    p1        : QPointF      # Starting corner
-    p2        : QPointF      # Current second corner
+    elements : list[ElementType]
+    pos      : QPointF
+    prev_sel : list[ElementType]
+
+    def __init__(self, scene, elements, pos):
+        super().__init__(scene)
+        self.elements = clone(elements)
+        self.pos      = pos
+        # Capture current selection - operation's responsibility
+        self.prev_sel = [item for item in scene.selectedItems() if isinstance(item, ElementMixin)]
+        # Add cloned elements to scene for preview
+        for element in self.elements:
+            if element.scene() != self.scene:
+                self.scene.addItem(element)
+        self.update(pos)
+
+    @property
+    def is_valid(self) -> bool:
+        return bool(self.elements)
+
+    def update(self, pos: QPointF):
+        """Update with current position for duplicate preview"""
+        offset = pos - self.pos
+        for element in self.elements:
+            element.moveBy(offset.x(), offset.y())
+        self.pos = pos
+
+    def complete(self, pos: QPointF) -> bool:
+        offset = pos - self.pos
+
+        # Remove preview elements and reset position for command
+        for element in self.elements:
+            if element.scene() == self.scene:
+                self.scene.removeItem(element)
+            element.moveBy(-offset.x(), -offset.y())
+
+        # Create proper undo command (reuse paste command for duplicates)
+        self.scene.undo_stack.push(cmdEditPaste(
+            self.scene, self.elements, offset, self.prev_sel
+        ))
+
+        # Reset UUIDs for duplicated elements
+        for element in self.elements:
+            element.resetUuid()
+
+        return True
+
+    def cancel(self) -> None:
+        # Remove preview elements from scene
+        for element in self.elements:
+            if element.scene() == self.scene:
+                self.scene.removeItem(element)
+
+@export
+class EditMoveOperation(InteractiveOperation):
+    # instance attributes
+    elements     : list[ElementType]
+    slide        : bool
+    initial_pos  : QPointF  # where the operation started
+    current_pos  : QPointF  # current position during updates
+    initial_epos : dict[ElementType, QPointF]  # initial element positions
+
+    def __init__(self, scene, elements, start_pos, slide=False):
+        super().__init__(scene)
+        self.elements    = elements
+        self.slide       = slide
+        self.initial_pos = start_pos
+        self.current_pos = start_pos
+        self.initial_epos = {e: e.pos() for e in elements}
+
+    def update(self, pos: QPointF):
+        offset = pos - self.current_pos
+        for element in self.elements:
+            element.moveBy(offset.x(), offset.y())
+        self.current_pos = pos
+
+    def complete(self, pos: QPointF) -> bool:
+        self._revert()
+        offset = pos - self.initial_pos
+        if offset != QPointF(0, 0):
+            move_cmd = cmdEditMove(
+                self.scene, self.elements, offset, self.slide
+            )
+            self.scene.undo_stack.push(move_cmd)
+        return True
+
+    def cancel(self) -> None:
+        self._revert()
+
+    @property
+    def is_valid(self) -> bool:
+        return bool(self.elements)
+
+    def _revert(self) -> None:
+        """Reset elements back to their exact initial positions"""
+        for element in self.elements:
+            element.setPos(self.initial_epos[element])
+        self.current_pos = self.initial_pos
+
+
+class PlaceBaseOperation(InteractiveOperation):
+    @property
+    def is_valid(self) -> bool:
+        return self.element is not None
+
+@export
+class PlaceRectangleOperation(PlaceBaseOperation):
+    # instance attributes
+    element : Rectangle
+    p1      : QPointF    # first corner 1
 
     def __init__(self, scene, pos):
         super().__init__(scene)
         self.p1 = pos
-        self.p2 = pos
-        # TODO: Create preview rectangle
-        self.rectangle = None  # scene._createPreviewRectangle(pos)
-
-    @property
-    def is_valid(self) -> bool:
-        return self.rectangle is not None
+        self.element = Rectangle(pos)
+        self.scene.addItem(self.element)
 
     def update(self, pos: QPointF):
-        """Update with current position as second corner of rectangle"""
-        self.p2 = pos
-        if self.rectangle:
-            rect = QRectF(self.p1, pos).normalized()
-            self.rectangle.setRect(rect)
+        self.element.setP2(pos)
 
     def complete(self, pos: QPointF) -> bool:
-        # TODO: Implement PlaceRectangleOperation.complete()
-        logger.warning("PlaceRectangleOperation.complete() not implemented")
-        return False
+        self.scene.undo_stack.push(cmdPlaceRectangle(self.scene, self.element))
+        return True
 
     def cancel(self) -> None:
-        # TODO: Remove preview rectangle from scene
-        pass
+        self.scene.removeItem(self.element)
 
-class PlacePortOperation(BaseOperation):
+@export
+class PlacePortOperation(InteractiveOperation):
     # instance attributes
     port      : ElementType  # The preview port element
     name      : str
@@ -263,7 +312,8 @@ class PlacePortOperation(BaseOperation):
         # TODO: Remove preview port from scene
         pass
 
-class PlaceBlockOperation(BaseOperation):
+@export
+class PlaceBlockOperation(InteractiveOperation):
     # instance attributes
     block : ElementMixin  # The preview block element
     p1    : QPointF       # Starting corner
@@ -305,71 +355,3 @@ class PlaceBlockOperation(BaseOperation):
         # Remove preview block from scene
         if self.block and self.block.scene() == self.scene:
             self.scene.removeItem(self.block)
-
-class OperationParams:
-    """Type-safe parameter container for operations"""
-    def __init__(self, **kwargs):
-        self.data = kwargs
-
-    def get(self, key: str, default: Any = None) -> Any:
-        return self.data.get(key, default)
-
-class OpType(Enum):
-    EDIT_PASTE         = auto()
-    EDIT_DUPLICATE     = auto()
-    EDIT_MOVE          = auto()
-    EDIT_SLIDE         = auto()
-    EDIT_ASSIGN_ORIGIN = auto()
-    PLACE_PORT         = auto()
-    PLACE_BLOCK        = auto()
-    PLACE_BLOCK_PIN    = auto()
-    PLACE_RECTANGLE    = auto()
-    PLACE_TEXT_BLOCK   = auto()
-    PLACE_TEXT         = auto()
-
-class DrawingSceneApiOperationMixin:
-    def beginOperation(
-        self    : "DrawingScene",
-        op_type : OpType,
-        pos     : QPointF,
-        params  : Optional[OperationParams] = None
-    ) -> Optional[BaseOperation]:
-        """Single entry point for all interactive operations"""
-
-        params = params or OperationParams()
-
-        # Direct operation creation - no need for factory methods
-        match op_type:
-            case OpType.EDIT_PASTE:
-                return EditPasteOperation(self, pos)
-
-            case OpType.EDIT_DUPLICATE:
-                elements = params.get('elements', self.selectedItems())
-                if not elements:
-                    return None
-                return EditDuplicateOperation(self, elements, pos)
-
-            case OpType.EDIT_MOVE:
-                elements = params.get('elements', self.selectedItems())
-                if not elements:
-                    return None
-                slide = params.get('slide', False)
-                return EditMoveOperation(self, elements, pos, slide)
-
-            case OpType.PLACE_BLOCK:
-                return PlaceBlockOperation(self, pos)
-
-            case OpType.PLACE_RECTANGLE:
-                return PlaceRectangleOperation(self, pos)
-
-            case OpType.PLACE_PORT:
-                name = params.get('name')
-                if not name:  # Require valid port name
-                    return None
-                direction = params.get('direction')
-                range_val = params.get('range')
-                return PlacePortOperation(self, pos, name, direction, range_val)
-
-            case _:
-                logger.error(f"Unknown operation type: {op_type}")
-                return None

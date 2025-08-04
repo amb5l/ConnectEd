@@ -6,9 +6,16 @@ if TYPE_CHECKING:
 
 
 class DrawingSceneApiPrivateMixin:
-    def _selectedElements(self : "DrawingScene") -> list[ElementMixin]:
+    def _selectedTopElements(self : "DrawingScene") -> list[ElementMixin]:
         """Returns selected items that are Elements, and are not children."""
         return [
             item for item in self.scene().selectedItems()
             if isinstance(item, ElementMixin) and not item.parent()
+        ]
+
+    def _selectedElements(self : "DrawingScene") -> list[ElementMixin]:
+        """Returns selected items that are Elements (includes children)."""
+        return [
+            item for item in self.scene().selectedItems()
+            if isinstance(item, ElementMixin)
         ]

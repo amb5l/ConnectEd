@@ -106,26 +106,6 @@ class Slots:
         widget.editRedo()
 
     @withCurrentWidget(DrawingView)
-    def editCancel(self : Self, widget: DrawingView) -> None:
-        widget.editCancel()
-
-    @withCurrentWidget(DrawingView)
-    def editComplete(self : Self, widget: DrawingView) -> None:
-        widget.editComplete()
-
-    @withCurrentWidget(DrawingView)
-    def editSelectAll(self : Self, widget: DrawingView) -> None:
-        widget.editSelectAll()
-
-    @withCurrentWidget(DrawingView)
-    def editSelectArea(self : Self, widget: DrawingView) -> None:
-        widget.editSelectArea()
-
-    @withCurrentWidget(DrawingView)
-    def editDeselectAll(self : Self, widget: DrawingView) -> None:
-        widget.editDeselectAll()
-
-    @withCurrentWidget(DrawingView)
     def editCut(self : Self, widget: DrawingView) -> None:
         widget.editCut()
 
@@ -146,16 +126,16 @@ class Slots:
         widget.editDuplicate()
 
     @withCurrentWidget(DrawingView)
-    def editSlide(self : Self, widget: DrawingView) -> None:
-        widget.editSlide()
+    def editSelectArea(self : Self, widget: DrawingView) -> None:
+        widget.editSelectArea()
 
     @withCurrentWidget(DrawingView)
-    def editMove(self : Self, widget: DrawingView) -> None:
-        widget.editMove()
+    def editSelectAll(self : Self, widget: DrawingView) -> None:
+        widget.editSelectAll()
 
     @withCurrentWidget(DrawingView)
-    def editResize(self : Self, widget: DrawingView) -> None:
-        widget.editResize()
+    def editProperties(self : Self, widget: DrawingView) -> None:
+        widget.editProperties()
 
     @withCurrentWidget(DrawingView)
     def editAppearance(self : Self, widget: DrawingView) -> None:
