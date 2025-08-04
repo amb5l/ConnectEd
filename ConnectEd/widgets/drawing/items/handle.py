@@ -89,8 +89,8 @@ class Handle(
             items.append("Assign Origin")
         return items
 
-    def moveBy(self : Self, dx : float, dy : float) -> None:
-        self._element.moveAnchorPoint(self._parent._name, QPointF(dx, dy))
+    def moveBy(self : Self, delta : QPointF) -> None:
+        self._element.moveAnchorPointBy(self._parent._name, delta)
 
     def toXml(self : Self, _ : QXmlStreamWriter) -> None:
         pass

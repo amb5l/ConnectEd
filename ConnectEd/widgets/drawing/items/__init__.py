@@ -656,6 +656,9 @@ class ElementPosMixin:
         )
     }
 
+    def moveBy(self : Self, offset : QPointF) -> None:
+        super().moveBy(offset.x(), offset.y())
+
     def setPosX(self : Self, value : float) -> None:
         pos = self.pos()
         pos.setX(value)

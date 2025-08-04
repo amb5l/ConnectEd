@@ -76,6 +76,9 @@ class DrawingViewStateBase:
 class DrawingViewStateIdle(DrawingViewStateBase):
     TIP = "Idle"
 
+    def enter(self : Self, v : QPoint, s : QPointF) -> None:
+        self.view.operation = None
+
     def mouseLeftClick(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
         items = self.view._itemsAt(s)
         for item in items:
@@ -90,8 +93,11 @@ class DrawingViewStateIdle(DrawingViewStateBase):
         items_at = self.view._itemsAt(s)
         handles_at = [item for item in items_at if isinstance(item, Handle)]
         if len(handles_at) == 1:
+            # handle dragging => resize
             handle = handles_at[0]
-            self.view.editMoveBegin([handle], handle.scenePos())
+            self.view.operation = EditMoveOperation(
+                self.scene, [handle], handle.scenePos()
+            )
             self.view.state.go(self.view.stateEditResize)
             return
         # Check for CTRL+drag duplication when starting on an element
@@ -118,10 +124,8 @@ class DrawingViewStateIdle(DrawingViewStateBase):
         self.view._selectPoint(s, m)
         items = self.view.scene().selectedItems()
         if items: # slide/move
-            self.view.editMoveBegin(
-                items,
-                self._snap(s),
-                not(m & qkm.AltModifier)
+            self.view.operation = EditMoveOperation(
+                self.scene, items, self._snap(s), not(m & qkm.AltModifier)
             )
             self.view.state.go(
                 self.view.stateEditSlide if not(m & qkm.AltModifier)
@@ -285,6 +289,7 @@ class DrawingViewStateEditPaste(DrawingViewStateBase):
 
     def mouseLeftClick(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
         self.view.operation.complete(self._snap(s))
+        self.view.state.go(self.view.stateIdle)
 
     def mouseMove(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
         self.view.operation.update(self._snap(s))
@@ -343,19 +348,12 @@ class DrawingViewStateEditSlide(DrawingViewStateBase):
             logger.warning("No top-level elements selected")
             self.view.state.go(self.view.stateIdle)
 
-    def mouseLeftClick(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
-        self.view.operation.complete(self._snap(s))
-        self.view.state.go(self.view.stateIdle)
-
     def mouseLeftDragCont(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
         self.view.operation.update(self._snap(s))
 
     def mouseLeftDragEnd(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
         self.view.operation.complete(self._snap(s))
         self.view.state.go(self.view.stateIdle)
-
-    def mouseMove(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
-        self.view.operation.update(self._snap(s))
 
 class DrawingViewStateEditMove(DrawingViewStateEditSlide):
     TIP = "Move: position the selected item(s) as required"
@@ -364,28 +362,13 @@ class DrawingViewStateEditMove(DrawingViewStateEditSlide):
 class DrawingViewStateEditResize(DrawingViewStateBase):
     TIP = "Resize: position the selected handle as required"
 
-    def mouseLeftClick(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
-        self.view.editMoveComplete(
-            self._snap(s),
-            m & qkm.ShiftModifier
-        )
-        self.view.state.go(self.view.stateIdle)
-
     def mouseLeftDragCont(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
-        self.view.editMoveCont(self._snap(s), m & qkm.ShiftModifier)
+        self.view.operation.update(self._snap(s))
 
     def mouseLeftDragEnd(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
-        self.view.editMoveComplete(
-            self._snap(s),
-            m & qkm.ShiftModifier
-        )
+        op : EditMoveOperation = self.view.operation
+        op.complete(self._snap(s))
         self.view.state.go(self.view.stateIdle)
-
-    def mouseMove(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
-        self.view.editMoveCont(
-            self._snap(s),
-            m & qkm.ShiftModifier
-        )
 
 class DrawingViewStateEditAppearance(DrawingViewStateBase):
     TIP = "Appearance: specify changes"

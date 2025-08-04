@@ -12,7 +12,7 @@ from ....marquee import Marquee
 
 from ...scenes import DrawingScene
 
-from ...scenes.api.operation import BaseOperation
+from ...scenes.api.operation import Operation
 
 from .mouse     import DrawingViewMouseMixin
 from .private   import DrawingViewPrivateMixin
@@ -47,7 +47,7 @@ class DrawingView(
     grid      : DrawingViewGrid
     mouse     : DrawingViewMouse
     state     : DrawingViewStateBase
-    operation : Optional[BaseOperation]
+    operation : Optional[Operation]
 
 
     def __init__(self : Self, scene : DrawingScene) -> None:

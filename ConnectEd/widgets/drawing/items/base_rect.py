@@ -204,13 +204,13 @@ class BaseRectangle(
         )
         self.setRect(self._rect)
 
-    def moveAnchorPoint(self : Self, name : str, delta : QPointF) -> None:
+    def moveAnchorPointBy(self : Self, name : str, delta : QPointF) -> None:
         p1 = self.pos()
         p2 = p1 + self._rect.bottomRight()
         d = delta
         match name:
             case "Top Left":
-                self.setPoints(p1.x() + d.x(), p1.y() + d.y(), p2.x(), p2.y())
+                self.setPoints(p1 + d, p2)
             case "Top Center":
                 self.setPoints(p1.x(), p1.y() + d.y(), p2.x(), p2.y())
             case "Top Right":
@@ -226,6 +226,6 @@ class BaseRectangle(
             case "Bottom Center":
                 self.setPoints(p1.x(), p1.y(), p2.x(), p2.y() + d.y())
             case "Bottom Right":
-                self.setPoints(p1.x(), p1.y(), p2.x() + d.x(), p2.y() + d.y())
+                self.setPoints(p1, p2 + d)
             case _:
                 raise ValueError(f"Invalid anchor point: {name}")

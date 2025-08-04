@@ -99,7 +99,7 @@ class BaseText(
             painter.setPen(self.outline.pen)
             painter.drawRect(self.boundingRect())
 
-    def moveAnchorPoint(self : Self, _ : str, delta : QPointF) -> None:
+    def moveAnchorPointBy(self : Self, _ : str, delta : QPointF) -> None:
         """Move the entire Text when any keypoint is dragged."""
         self.setPos(self.pos() + delta)
 

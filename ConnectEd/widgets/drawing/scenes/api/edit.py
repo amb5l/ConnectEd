@@ -173,19 +173,16 @@ class cmdEditMove(cmdElements):
         self._slide = slide
 
     def mergeWith(self : Self, other : QUndoCommand) -> bool:
-        if not super().mergeWith(other):
-            return False
-        self._offset += other._offset
-        return True
+        return False
 
     def redo(self : Self) -> None:
         for element in self._elements:
-            element.moveBy(self._offset.x(), self._offset.y())
+            element.moveBy(self._offset)
             # TODO: add slide logic
 
     def undo(self : Self) -> None:
         for element in self._elements:
-            element.moveBy(-self._offset.x(), -self._offset.y())
+            element.moveBy(-self._offset)
             # TODO: add slide logic
 
 class cmdEditText(cmdElement):

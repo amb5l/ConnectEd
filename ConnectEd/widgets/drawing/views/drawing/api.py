@@ -16,7 +16,7 @@ if TYPE_CHECKING:
 
 def withScene(func):
     def wrapper(self : Self, *args, **kwargs):
-        return func(*args, **kwargs, scene=self.scene())
+        return func(self, *args, **kwargs, scene=self.scene())
     return wrapper
 
 class DrawingViewApiMixin:

@@ -44,25 +44,6 @@ class InteractiveOperation(Operation):
     @abstractmethod
     def cancel(self) -> None: ...
 
-class BaseOperation(ABC):
-    # instance attributes
-    scene : "DrawingScene"
-
-    def __init__(self, scene: "DrawingScene"):
-        self.scene = scene
-
-    @abstractmethod
-    def update(self, pos: QPointF) -> None: ...
-
-    @abstractmethod
-    def complete(self, pos: QPointF) -> bool: ...
-
-    @abstractmethod
-    def cancel(self) -> None: ...
-
-    @abstractmethod
-    def is_valid(self) -> bool: ...
-
 @export
 class EditCutOperation(ImmediateOperation):
     def __init__(self, scene):
@@ -110,7 +91,7 @@ class EditPasteOperation(InteractiveOperation):
         """Update with current position for paste preview"""
         offset = pos - self.pos
         for element in self.elements:
-            element.moveBy(offset.x(), offset.y())
+            element.moveBy(offset)
         self.pos = pos
 
     def complete(self, pos: QPointF) -> bool:
@@ -120,7 +101,7 @@ class EditPasteOperation(InteractiveOperation):
         for element in self.elements:
             if element.scene() == self.scene:
                 self.scene.removeItem(element)
-            element.moveBy(-offset.x(), -offset.y())
+            element.moveBy(-offset)
 
         # Create proper undo command
         paste_cmd = cmdEditPaste(
@@ -175,7 +156,7 @@ class EditDuplicateOperation(InteractiveOperation):
         """Update with current position for duplicate preview"""
         offset = pos - self.pos
         for element in self.elements:
-            element.moveBy(offset.x(), offset.y())
+            element.moveBy(offset)
         self.pos = pos
 
     def complete(self, pos: QPointF) -> bool:
@@ -185,7 +166,7 @@ class EditDuplicateOperation(InteractiveOperation):
         for element in self.elements:
             if element.scene() == self.scene:
                 self.scene.removeItem(element)
-            element.moveBy(-offset.x(), -offset.y())
+            element.moveBy(-offset)
 
         # Create proper undo command (reuse paste command for duplicates)
         self.scene.undo_stack.push(cmdEditPaste(
@@ -211,20 +192,20 @@ class EditMoveOperation(InteractiveOperation):
     slide        : bool
     initial_pos  : QPointF  # where the operation started
     current_pos  : QPointF  # current position during updates
-    initial_epos : dict[ElementType, QPointF]  # initial element positions
+    initial_spos : dict[ElementType, QPointF]  # initial element scene positions
 
-    def __init__(self, scene, elements, start_pos, slide=False):
+    def __init__(self, scene, elements, pos, slide=False):
         super().__init__(scene)
         self.elements    = elements
         self.slide       = slide
-        self.initial_pos = start_pos
-        self.current_pos = start_pos
-        self.initial_epos = {e: e.pos() for e in elements}
+        self.initial_pos = pos
+        self.current_pos = pos
+        self.initial_spos = {e: e.scenePos() for e in elements}
 
     def update(self, pos: QPointF):
         offset = pos - self.current_pos
         for element in self.elements:
-            element.moveBy(offset.x(), offset.y())
+            element.moveBy(offset)
         self.current_pos = pos
 
     def complete(self, pos: QPointF) -> bool:
@@ -247,9 +228,8 @@ class EditMoveOperation(InteractiveOperation):
     def _revert(self) -> None:
         """Reset elements back to their exact initial positions"""
         for element in self.elements:
-            element.setPos(self.initial_epos[element])
+            element.moveBy(self.initial_spos[element] - element.scenePos())
         self.current_pos = self.initial_pos
-
 
 class PlaceBaseOperation(InteractiveOperation):
     @property
