@@ -5,8 +5,6 @@ from PyQt6.QtCore    import Qt, QPointF, QRectF, QPoint
 from PyQt6.QtWidgets import QMenu, QGraphicsItem
 from PyQt6.QtGui     import QMouseEvent, QPainterPath, QIcon, QAction, QCursor
 
-from .state import DrawingViewStateBase
-
 from ..... import hub
 
 from typing import TYPE_CHECKING

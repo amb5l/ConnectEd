@@ -12,13 +12,14 @@ from ....marquee import Marquee
 
 from ...scenes import DrawingScene
 
-from .mouse   import DrawingViewMouseMixin
-from .private import DrawingViewPrivateMixin
-from .edit    import DrawingViewEditMixin
-from .view    import DrawingViewViewMixin
-from .place   import DrawingViewPlaceMixin
-from .state   import DrawingViewStateMixin, DrawingViewStateBase
-from .defs    import *
+from .operation import DrawingViewOperationMixin
+from .mouse     import DrawingViewMouseMixin
+from .private   import DrawingViewPrivateMixin
+from .edit      import DrawingViewEditMixin
+from .view      import DrawingViewViewMixin
+from .place     import DrawingViewPlaceMixin
+from .state     import DrawingViewStateMixin, DrawingViewStateBase
+from .defs      import *
 
 from ..... import hub
 
@@ -34,6 +35,7 @@ def getView(pos : QPoint):
 class DrawingView(
     DrawingViewMouseMixin,
     QGraphicsView,
+    DrawingViewOperationMixin,
     DrawingViewEditMixin,
     DrawingViewViewMixin,
     DrawingViewPlaceMixin,

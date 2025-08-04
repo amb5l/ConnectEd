@@ -7,6 +7,7 @@ from .place import *
 class DrawingSceneApiMixin(
     DrawingSceneApiFileMixin,
     DrawingSceneApiEditMixin,
-    DrawingSceneApiPlaceMixin
+    DrawingSceneApiPlaceMixin,
+    DrawingSceneApiPrivateMixin
 ):
     pass

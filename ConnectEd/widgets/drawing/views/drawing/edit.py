@@ -1,5 +1,5 @@
 from PyQt6.QtCore    import QPointF
-from PyQt6.QtWidgets import QApplication, QGraphicsItem
+from PyQt6.QtWidgets import QApplication
 from PyQt6.QtGui     import QCursor
 
 from .....core import logger, paste
@@ -11,6 +11,7 @@ from ...scenes import DrawingScene
 from ...items  import ElementMixin, AnchorPoint, PropertyText
 from ...query  import QueryWindow
 
+from ...scenes.api.operation import OpType
 from ...items.base_text import BaseText
 
 from typing import TYPE_CHECKING
@@ -63,120 +64,23 @@ class DrawingViewEditMixin:
         scene.editCopy(self._snap(self.mouse.current.logical))
 
     def editPaste(self : "DrawingView") -> None:
-        scene : DrawingScene = self.scene()
-        self.wip.clear()
-        items, copy_pos = paste()
-        if not items:
-            logger.warning("No valid data to paste")
-            self.state.go(self.stateIdle)
-            return
-        elements = items # no filtering at the moment
-        if not elements:
-            logger.warning("No valid elements to paste")
-            self.state.go(self.stateIdle)
-            return
-        # Capture the current selection before clearing
-        selection = [item for item in scene.selectedItems() if isinstance(item, ElementMixin)]
-        # Clear selection
-        scene.clearSelection()
-        self.wip.elements = elements
-        # Calculate offset from copy position to current mouse position
-        current_pos = self._snap(self.mouse.current.logical)
-        copy_pos = copy_pos if copy_pos is not None else \
-            (elements[0].pos() if elements else QPointF(0, 0))
-        offset = current_pos - copy_pos
-        # Set current position as reference for future mouse movement
-        self.wip.pos = current_pos
-        scene.blockSignals(True)
-        for element in elements:
-            if element.scene() != scene:
-                scene.addItem(element)
-            # Apply initial offset to position elements at mouse location
-            element.setPos(element.pos() + offset)
-            element.setSelected(True)
-        scene.blockSignals(False)
-        scene.selectionChanged.emit()
-        self.wip.macro = True
-        self.wip.selection = selection  # Store for use in editPasteComplete
-        scene.undo_stack.beginMacro("Paste Elements")
-        self.state.go(self.stateEditPaste)
+        self._beginOperation(OpType.PASTE, self.stateEditPaste)
 
     def editPasteContinue(self : "DrawingView") -> None:
-        scene : DrawingScene = self.scene()
-        if not self.wip.elements:
-            logger.warning("editPasteContinue: No elements in wip, aborting")
-            self.state.go(self.stateIdle)
-            return
-        new_pos = self._snap(self.mouse.current.logical)
-        mouse_delta = new_pos - self.wip.pos
-        # Block signals to avoid multiple selection updates
-        scene.blockSignals(True)
-        for element in self.wip.elements:
-            if element.scene() == scene:
-                element.setPos(element.pos() + mouse_delta)
-                element.setSelected(True)  # Ensure elements remain selected
-        scene.blockSignals(False)
-        # Manually trigger selection changed to update anchor points
-        scene.selectionChanged.emit()
-        self.wip.pos = new_pos
+        self._continueOperation()
 
     def editPasteComplete(self : "DrawingView") -> None:
-        scene : DrawingScene = self.scene()
-        if not self.wip.elements:
-            logger.warning("editPasteComplete: No elements in wip, aborting")
-            self.state.go(self.stateIdle)
-            return
-        pos = self._snap(self.mouse.current.logical)
-        offset = pos - self.wip.pos
-        for element in self.wip.elements:
-            if element.scene() == scene:
-                scene.removeItem(element)
-                element.setPos(element.pos() - offset)
-        # Pass the original selection to editPaste
-        scene.editPaste(pos, (self.wip.elements, self.wip.pos, self.wip.selection))
-        if self.wip.macro:
-            scene.undo_stack.endMacro()
-        self.wip.clear()
-        self.state.go(self.stateIdle)
+        self._completeOperation()
 
     def editDelete(self : "DrawingView") -> None:
         scene : DrawingScene = self.scene()
         scene.editDelete()
 
     def editDuplicate(self : "DrawingView", pos: QPointF = None) -> None:
-        scene : DrawingScene = self.scene()
-        elements = [
-            item for item in scene.selectedItems() \
-                if isinstance(item, ElementMixin) \
-                and item.parentItem() is None # don't clone child elements e.g. PropertyText
-        ]
-        if not elements:
-            # Enter selection mode if nothing is selected
-            self.state.go(self.stateEditDuplicate1)
-            return
-        # Start duplication with selected elements
-        self.wip.clear()
-        # Store original selection before clearing
-        selection = [item for item in scene.selectedItems() if isinstance(item, ElementMixin)]
-        # Clone the elements
-        cloned_elements = [element.clone() for element in elements]
-        # Clear selection
-        scene.clearSelection()
-        self.wip.elements = cloned_elements
-        # Use provided position or current mouse position
-        self.wip.pos = pos if pos is not None else self._snap(self.mouse.current.logical)
-        # Don't apply any initial offset - keep cloned elements at their original positions
-        scene.blockSignals(True)
-        for element in cloned_elements:
-            if element.scene() != scene:
-                scene.addItem(element)
-            element.setSelected(True)
-        scene.blockSignals(False)
-        scene.selectionChanged.emit()
-        self.wip.macro = True
-        self.wip.selection = selection  # Store for use in editDuplicateComplete
-        scene.undo_stack.beginMacro("Duplicate Elements")
-        self.state.go(self.stateEditDuplicate2)
+        elements = [item for item in self.scene().selectedItems() 
+                   if isinstance(item, ElementMixin)]
+        params = OperationParams(elements=elements)
+        self._beginOperation(OperationType.DUPLICATE, self.stateEditDuplicate2, params)
 
     def editDuplicateContinue(self : "DrawingView") -> None:
         scene : DrawingScene = self.scene()

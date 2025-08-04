@@ -72,7 +72,7 @@ def fromXmlItems(
 ) -> tuple[list[XmlItemTypes], Optional[QPointF]]:
     from .db import DesignDbItem, LibraryDbItem, DiagramItem, SymbolItem
     from ..widgets import element_class_dict
-    copy_pos = None
+    pos = None
     items = []
     fromXmlBegin(xr, APP_NAME)
     xr.readNext()
@@ -82,7 +82,7 @@ def fromXmlItems(
                 attributes = xr.attributes()
                 for attr in attributes:
                     if attr.name() == "pos":
-                        copy_pos = str2val(attr.value(), "QPointF")
+                        pos = str2val(attr.value(), "QPointF")
                 xr.readNext()
                 while not (xr.isEndElement() and xr.name() == "Metadata"):
                     xr.readNext()
@@ -106,7 +106,7 @@ def fromXmlItems(
                 if item:
                     items.append(item)
         xr.readNext()
-    return items, copy_pos
+    return items, pos
 
 def saveBegin(path : str) -> tuple[QXmlStreamWriter, QFile]:
     # TODO: handle file open error
