@@ -1,3 +1,4 @@
+- preserve selection set with placement commands
 - copy/paste issue with Block
 - moves are merging
 - selection propagation - new elements

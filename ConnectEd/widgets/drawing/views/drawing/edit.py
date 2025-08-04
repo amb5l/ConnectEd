@@ -241,6 +241,8 @@ class DrawingViewEditMixin:
         pos      : QPointF,
         slide    : bool = False
     ) -> None:
+        scene : DrawingScene = self.scene()
+        scene.undo_stack.beginMacro("Move Elements")
         self.wip.elements = elements
         if isinstance(elements[0], AnchorPoint):
             pos = elements[0].scenePos()
@@ -260,7 +262,6 @@ class DrawingViewEditMixin:
                 pos.setY(pos0.y())
             else:
                 pos.setX(pos0.x())
-        offset = pos - self.wip.pos
         scene.editMove(self.wip.elements, pos - self.wip.pos, self.wip.slide)
         self.wip.pos = pos
 
@@ -277,6 +278,7 @@ class DrawingViewEditMixin:
             else:
                 pos.setX(pos0.x())
         scene.editMove(self.wip.elements, pos - self.wip.pos, self.wip.slide)
+        scene.undo_stack.endMacro()
         self.wip.clear()
 
     def editResize(self : "DrawingView") -> None:
