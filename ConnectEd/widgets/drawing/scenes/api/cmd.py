@@ -16,8 +16,11 @@ if TYPE_CHECKING:
 class cmdBase(QUndoCommand):
     """Base class for all commands."""
 
-    _PRESERVE_SELECTION : bool = False
+    # class attributes
+    _PREVIEW   : bool = False  # supports preview phase
+    _SELECTION : bool = False  # preserves selection set
 
+    # instance attributes
     _scene     : "DrawingScene"
     _selection : Optional[list[ElementMixin]]
 
@@ -25,8 +28,8 @@ class cmdBase(QUndoCommand):
         text = camel_to_proper(self.__class__.__name__.replace("cmd", ""))
         super().__init__(text)
         self._scene = scene
-        if self._PRESERVE_SELECTION:
-            self._selection = scene.selectedItems()
+        if self._SELECTION and not self._PREVIEW:
+            self._selection = self._scene.selectedItems()
 
     def id(self : Self) -> int:
         """Return a unique ID for merging commands."""
@@ -35,10 +38,25 @@ class cmdBase(QUndoCommand):
 
     def mergeWith(self : Self, other : QUndoCommand) -> bool:
         """Merge this command with another identical command."""
-        if not isinstance(other, self.__class__) \
-        or other._scene != self._scene:
-            return False
-        return True
+        # return isinstance(other, self.__class__) and other._scene == self._scene
+        return False
+
+    def begin(self : Self) -> None:
+        if self._PREVIEW:
+            if self._SELECTION:
+                self._selection = self._scene.selectedItems()
+        else:
+            raise NotImplementedError(
+                f"{self.__class__.__name__} does not support preview"
+            )
+
+    def cancel(self : Self) -> None:
+        if self._PREVIEW:
+            self.undo()
+        else:
+            raise NotImplementedError(
+                f"{self.__class__.__name__} does not support preview"
+            )
 
     def redo(self : Self) -> None:
         raise NotImplementedError(
@@ -46,8 +64,9 @@ class cmdBase(QUndoCommand):
         )
 
     def undo(self : Self) -> None:
-        if self._PRESERVE_SELECTION:
+        if self._SELECTION:
             self._scene.blockSignals(True)
+            self._scene.clearSelection()
             for element in self._selection:
                 element.setSelected(True)
             self._scene.blockSignals(False)
@@ -66,8 +85,13 @@ class cmdElement(cmdBase):
         super().__init__(scene)
         self._element = element
 
+    @property
+    def element(self : Self) -> ElementMixin:
+        return self._element
+
     def mergeWith(self : Self, other : QUndoCommand) -> bool:
-        return super().mergeWith(other) and other._element == self._element
+        # return super().mergeWith(other) and other._element == self._element
+        return False
 
 class cmdElements(cmdBase):
     """Base class for all commands that work with multiple elements."""
@@ -82,14 +106,20 @@ class cmdElements(cmdBase):
         super().__init__(scene)
         self._elements = elements
 
+    @property
+    def elements(self):
+        return self._clones
+
     def mergeWith(self : Self, other : QUndoCommand) -> bool:
-        return super().mergeWith(other) and other._elements == self._elements
+        # return super().mergeWith(other) and other._elements == self._elements
+        return False
 
 class cmdPlaceElement(cmdBase):
     """Base class for all commands that place an element."""
 
     # class attributes
-    _PRESERVE_SELECTION = True
+    _PREVIEW   = True
+    _SELECTION = True
     _CLASS : ElementMixin
 
     # instance attributes
@@ -99,12 +129,10 @@ class cmdPlaceElement(cmdBase):
         super().__init__(scene)
 
     def begin(self : Self, pos : QPointF) -> None:
-        self._element = self._CLASS(pos) # TODO
+        super().begin() # preserve selection set
+        self._element = self._CLASS(pos)
         self._element.setSelected(True)
         self._scene.addItem(self._element)
-
-    def cancel(self : Self) -> None:
-        self.undo()
 
     @property
     def element(self : Self) -> ElementMixin:

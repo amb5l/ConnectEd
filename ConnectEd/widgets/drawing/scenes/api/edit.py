@@ -35,7 +35,8 @@ if TYPE_CHECKING:
 
 
 class cmdEditPaste(cmdElements):
-    _PRESERVE_SELECTION = True
+    _PREVIEW   = True
+    _SELECTION = True
 
     _offset    : QPointF
 
@@ -65,11 +66,8 @@ class cmdEditPaste(cmdElements):
             if element.scene() == self._scene:
                 self._scene.removeItem(element)
 
-    def mergeWith(self, other: QUndoCommand) -> bool:
-        return super().mergeWith(other) and self._offset == other._offset
-
 class cmdEditDelete(cmdElements):
-    _PRESERVE_SELECTION = True
+    _SELECTION = True
 
     def __init__(
         self     : Self,
@@ -93,12 +91,9 @@ class cmdEditDelete(cmdElements):
             self._scene.addItem(element)
         super().undo() # restore selection set, should include restored elements
 
-    def mergeWith(self, other: QUndoCommand) -> bool:
-        """Delete commands cannot be merged."""
-        return False
-
 class cmdEditDuplicate(cmdElements):
-    _PRESERVE_SELECTION = True
+    _PREVIEW   = True
+    _SELECTION = True
 
     _clones : list[ElementMixin]
 
@@ -110,12 +105,9 @@ class cmdEditDuplicate(cmdElements):
         super().__init__(scene, elements)
 
     def begin(self) -> None:
-        """Create clones of the elements for interactive preview."""
+        super().begin() # preserve selection set
         self._clones = clone(self._elements)
         self._addToScene()
-
-    def cancel(self) -> None:
-        self.undo()
 
     @property
     def elements(self):
@@ -128,9 +120,6 @@ class cmdEditDuplicate(cmdElements):
         super().undo() # restore selection set
         for element in self._clones:
             self._scene.removeItem(element)
-
-    def mergeWith(self, other: QUndoCommand) -> bool:
-        return False
 
     def _addToScene(self) -> None:
         self._scene.blockSignals(True)
@@ -156,9 +145,6 @@ class cmdEditMove(cmdElements):
         super().__init__(scene, elements)
         self._offset = offset
         self._slide = slide
-
-    def mergeWith(self : Self, other : QUndoCommand) -> bool:
-        return False
 
     def redo(self : Self) -> None:
         for element in self._elements:
@@ -201,9 +187,6 @@ class cmdEditText(cmdElement):
         self._element.quill.setPref(self._appearance_before)
         self._element.update()
 
-    def mergeWith(self : Self, other : QUndoCommand) -> bool:
-        return False
-
 class cmdEditPropertyText(cmdElement):
     _element           : PropertyText
     _name_before       : str
@@ -241,9 +224,6 @@ class cmdEditPropertyText(cmdElement):
         self._element.setValue(self._value_before)
         self._element.quill.setPref(self._appearance_before)
         self._element.update()
-
-    def mergeWith(self : Self, other : QUndoCommand) -> bool:
-        return False
 
 class cmdEditAppearance(cmdElements):
     _before : dict[ElementMixin, AppearancePref]
@@ -283,9 +263,6 @@ class cmdEditAppearance(cmdElements):
             e.onGeometryChange()
             e.update()
 
-    def mergeWith(self : Self, other : QUndoCommand) -> bool:
-        return False
-
 class cmdEditProperties(cmdElement):
     _changes : dict[PropertyText, tuple[str, PropertiesType, PropertiesType]]
 
@@ -310,19 +287,7 @@ class cmdEditProperties(cmdElement):
                 setter, _ = PropertyText.TABLE_ATTRS[label]
                 setter(p, before)
 
-    def mergeWith(self: Self, other: QUndoCommand) -> bool:
-        return False
-
 class DrawingSceneApiEditMixin:
-    def editSelectAll(self : "DrawingScene") -> None:
-        raise NotImplementedError("Not implemented yet")
-
-    def editSelectArea(self : "DrawingScene") -> None:
-        raise NotImplementedError("Not implemented yet")
-
-    def editDeselectAll(self : "DrawingScene") -> None:
-        raise NotImplementedError("Not implemented yet")
-
     def editCut(
         self : "DrawingScene",
         pos  : QPointF = QPointF(0, 0)
@@ -350,33 +315,6 @@ class DrawingSceneApiEditMixin:
         else:
             logger.warning("No elements selected to copy")
 
-    def editPaste(
-        self : "DrawingScene",
-        pos  : QPointF = QPointF(0, 0),
-        ips  : Optional[tuple[ElementMixin | list[ElementMixin], QPointF, list[ElementMixin]]] = None
-    ) -> bool:
-        if ips is None:
-            items, pos0 = paste()
-            selection = []
-            if not items:
-                logger.warning("No valid data to paste")
-                return False
-            elements = items # no filtering at the moment
-        else:
-            items, pos0, selection = ips
-            if not isinstance(items, list):
-                items = [items]
-            elements = items # no filtering at the moment
-        if not elements:
-            logger.warning("No valid elements to paste")
-            return False
-        self.clearSelection()
-        offset = pos - pos0
-        self.undo_stack.push(cmdEditPaste(self, elements, offset, selection))
-        for element in elements:
-            element.resetUuid()  # new identity for pasted elements
-        return True
-
     def editDelete(
         self : "DrawingScene"
     ) -> None:
@@ -387,44 +325,11 @@ class DrawingSceneApiEditMixin:
         else:
             logger.warning("No elements selected to delete")
 
-    def editDuplicate(
-        self : "DrawingScene",
-        pos  : QPointF = QPointF(0, 0),
-        ips  : Optional[tuple[ElementMixin | list[ElementMixin], QPointF, list[ElementMixin]]] = None
-    ) -> bool:
-        """Duplicate selected elements."""
-        if ips is None:
-            elements = [item for item in self.selectedItems() if isinstance(item, ElementMixin)]
-            if not elements:
-                logger.warning("No elements selected to duplicate")
-                return False
-            clones = clone(elements)
-            pos0 = elements[0].pos() if elements else QPointF(0, 0)
-            selection = []
-        else:
-            originals, pos0, selection = ips
-            if not isinstance(originals, list):
-                originals = [originals]
-            elements = [item for item in originals if isinstance(item, ElementMixin)]
-            if not elements:
-                logger.warning("No valid elements to duplicate")
-                return False
-            clones = clone(elements)
-        if not clones:
-            logger.warning("No valid elements to duplicate")
-            return False
-        self.clearSelection()
-        offset = pos - pos0
-        self.undo_stack.push(cmdEditDuplicate(self, clones, offset, selection))
-        return True
+    def editSelectArea(self : "DrawingScene") -> None:
+        raise NotImplementedError("Not implemented yet")
 
-    def editMove(
-        self     : "DrawingScene",
-        elements : list[ElementMixin],
-        offset   : QPointF,
-        slide    : bool = False
-    ) -> None:
-        self.undo_stack.push(cmdEditMove(self, elements, offset, slide))
+    def editSelectAll(self : "DrawingScene") -> None:
+        raise NotImplementedError("Not implemented yet")
 
     def editText(
         self       : "DrawingScene",

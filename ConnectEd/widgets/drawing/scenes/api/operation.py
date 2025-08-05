@@ -195,7 +195,7 @@ class EditMoveOperation(InteractiveOperation):
         self._current_pos = pos
 
     def complete(self, pos: QPointF) -> bool:
-        self._revert()
+        self._restore()
         offset = pos - self._initial_pos
         if offset != QPointF(0, 0):
             move_cmd = cmdEditMove(
@@ -205,14 +205,14 @@ class EditMoveOperation(InteractiveOperation):
         return True
 
     def cancel(self) -> None:
-        self._revert()
+        self._restore()
 
     @property
     def is_valid(self) -> bool:
         return bool(self._elements)
 
-    def _revert(self) -> None:
-        """Reset elements back to their exact initial positions"""
+    def _restore(self) -> None:
+        """Restore elements to their initial positions."""
         for element in self._elements:
             element.moveBy(self._initial_spos[element] - element.scenePos())
         self._current_pos = self._initial_pos
