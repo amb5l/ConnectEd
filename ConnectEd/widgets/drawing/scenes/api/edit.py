@@ -115,10 +115,7 @@ class cmdEditDuplicate(cmdElements):
         self._addToScene()
 
     def cancel(self) -> None:
-        """Remove clones from the scene and restore the selection set."""
-        super().undo() # restore selection set
-        for element in self._clones:
-            self._scene.removeItem(element)
+        self.undo()
 
     @property
     def elements(self):
@@ -128,7 +125,9 @@ class cmdEditDuplicate(cmdElements):
         self._addToScene()
 
     def undo(self) -> None:
-        self.cancel()
+        super().undo() # restore selection set
+        for element in self._clones:
+            self._scene.removeItem(element)
 
     def mergeWith(self, other: QUndoCommand) -> bool:
         return False

@@ -8,7 +8,6 @@ from .private   import *
 class DrawingSceneApiMixin(
     DrawingSceneApiFileMixin,
     DrawingSceneApiEditMixin,
-    DrawingSceneApiPlaceMixin,
     DrawingSceneApiPrivateMixin
 ):
     pass

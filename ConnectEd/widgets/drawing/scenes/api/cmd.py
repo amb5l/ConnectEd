@@ -1,6 +1,7 @@
 from typing import Self, Optional
 
-from PyQt6.QtGui import QUndoCommand
+from PyQt6.QtCore import QPointF
+from PyQt6.QtGui  import QUndoCommand
 
 from .....core import camel_to_proper
 
@@ -84,19 +85,35 @@ class cmdElements(cmdBase):
     def mergeWith(self : Self, other : QUndoCommand) -> bool:
         return super().mergeWith(other) and other._elements == self._elements
 
-class cmdPlaceElement(cmdElement):
+class cmdPlaceElement(cmdBase):
     """Base class for all commands that place an element."""
 
-    def __init__(
-        self    : Self,
-        scene   : "DrawingScene",
-        element : ElementMixin
-    ):
-        super().__init__(scene, element) # record scene and element instances
+    # class attributes
+    _PRESERVE_SELECTION = True
+    _CLASS : ElementMixin
+
+    # instance attributes
+    _element : ElementMixin
+
+    def __init__(self : Self, scene : "DrawingScene"):
+        super().__init__(scene)
+
+    def begin(self : Self, pos : QPointF) -> None:
+        self._element = self._CLASS(pos) # TODO
+        self._element.setSelected(True)
+        self._scene.addItem(self._element)
+
+    def cancel(self : Self) -> None:
+        self.undo()
+
+    @property
+    def element(self : Self) -> ElementMixin:
+        return self._element
 
     def redo(self : Self) -> None:
         if self._element.scene() != self._scene:
             self._scene.addItem(self._element)
 
     def undo(self : Self) -> None:
+        super().undo() # restore selection set
         self._scene.removeItem(self._element)

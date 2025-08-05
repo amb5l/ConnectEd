@@ -8,8 +8,9 @@ from pyTooling.Decorators import export
 
 from .....core import logger, paste
 
-from ...items import ElementMixin, clone, Rectangle
+from ...items import ElementMixin, Rectangle
 
+from .cmd   import cmdBase
 from .edit  import cmdEditPaste, cmdEditDuplicate, cmdEditMove
 from .place import cmdPlaceBlock, cmdPlaceRectangle
 
@@ -217,31 +218,39 @@ class EditMoveOperation(InteractiveOperation):
         self._current_pos = self._initial_pos
 
 class PlaceBaseOperation(InteractiveOperation):
+    # class attributes
+    _CMD : cmdBase
+
+    # instance attributes
+    _pos     : QPointF
+    _command : cmdBase
+
+    def __init__(self, scene, pos):
+        super().__init__(scene)
+        self._pos = pos
+        self._command = self._CMD(scene)
+        self._command.begin(pos)
+
+    def complete(self, pos: QPointF) -> bool:
+        self._scene.undo_stack.push(self._command)
+        return True
+
+    def cancel(self) -> None:
+        self._command.cancel()
+
     @property
     def is_valid(self) -> bool:
         return self.element is not None
 
 @export
 class PlaceRectangleOperation(PlaceBaseOperation):
-    # instance attributes
-    element : Rectangle
-    p1      : QPointF    # first corner 1
+    # class attributes
+    _CMD = cmdPlaceRectangle
 
-    def __init__(self, scene, pos):
-        super().__init__(scene)
-        self.p1 = pos
-        self.element = Rectangle(pos)
-        self._scene.addItem(self.element)
+    _command : cmdPlaceRectangle
 
     def update(self, pos: QPointF):
-        self.element.setP2(pos)
-
-    def complete(self, pos: QPointF) -> bool:
-        self._scene.undo_stack.push(cmdPlaceRectangle(self._scene, self.element))
-        return True
-
-    def cancel(self) -> None:
-        self._scene.removeItem(self.element)
+        self._command.element.setP2(pos)
 
 @export
 class PlacePortOperation(InteractiveOperation):
