@@ -82,6 +82,8 @@ class BaseRectangle(
         else:
             self._p1 = p1
             self.setPoints(p1, p2)
+        self.onGeometryChange()
+        self.updateHandlesVisibility()
 
     def onGeometryChange(self : Self) -> None:
         self.prepareGeometryChange()

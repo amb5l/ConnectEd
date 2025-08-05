@@ -66,6 +66,7 @@ class BaseText(
         QGraphicsSimpleTextItem.__init__(self)
         self.initElement(bare=bare)
         self.onGeometryChange()
+        self.updateHandlesVisibility()
 
     def onGeometryChange(self : Self) -> None:
         self._brect = self._rect = super().boundingRect()

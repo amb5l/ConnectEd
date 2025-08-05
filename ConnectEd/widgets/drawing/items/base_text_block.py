@@ -72,6 +72,7 @@ class BaseTextBlock(
         self._brectf = QRectF()
         self._hshapef = QPainterPath()
         self.onGeometryChange()
+        self.updateHandlesVisibility()
 
     def keyPressEvent(self, event: QKeyEvent) -> None:
         if event.key() in (Qt.Key.Key_Return, Qt.Key.Key_Enter):
