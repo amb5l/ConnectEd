@@ -7,12 +7,11 @@ from enum        import Enum
 
 from PyQt6.QtCore    import Qt, QPointF, QRectF, \
                             QXmlStreamWriter, QXmlStreamReader
-from PyQt6.QtGui     import QPen, QBrush, QColor, QFont, QPainterPath, \
-                            QAction, QUndoCommand
+from PyQt6.QtGui     import QPen, QBrush, QColor, QFont, QPainterPath, QAction
 from PyQt6.QtWidgets import QGraphicsItem, QGraphicsSceneContextMenuEvent, QMenu
 
 from ....core import Z_DRAWING, logger, \
-                     val2str, str2val, camel_to_proper, toXmlAttrs, fromXmlAttrs
+                     val2str, str2val, toXmlAttrs, fromXmlAttrs
 
 from ..properties import PropertySpec
 
