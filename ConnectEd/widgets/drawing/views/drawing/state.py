@@ -95,9 +95,7 @@ class DrawingViewStateIdle(DrawingViewStateBase):
         if len(handles_at) == 1:
             # handle dragging => resize
             handle = handles_at[0]
-            self.view.operation = EditMoveOperation(
-                self.scene, [handle], handle.scenePos()
-            )
+            self.view.operation = EditMoveOperation(self.scene, handle.scenePos())
             self.view.state.go(self.view.stateEditResize)
             return
         # Check for CTRL+drag duplication when starting on an element
@@ -125,7 +123,7 @@ class DrawingViewStateIdle(DrawingViewStateBase):
         items = self.view.scene().selectedItems()
         if items: # slide/move
             self.view.operation = EditMoveOperation(
-                self.scene, items, self._snap(s), not(m & qkm.AltModifier)
+                self.scene, self._snap(s), not(m & qkm.AltModifier)
             )
             self.view.state.go(
                 self.view.stateEditSlide if not(m & qkm.AltModifier)
@@ -321,10 +319,7 @@ class DrawingViewStateEditSlide(DrawingViewStateBase):
     def enter(self : Self, v : QPoint, s : QPointF) -> None:
         if self.scene._selectedTopElements():
             self.view.operation = EditMoveOperation(
-                scene    = self.scene,
-                elements = self.scene._selectedTopElements(),
-                pos      = self._snap(s),
-                slide    = self.SLIDE
+                self.scene, self._snap(s), self.SLIDE
             )
         else:
             logger.warning("No top-level elements selected")
@@ -348,8 +343,7 @@ class DrawingViewStateEditResize(DrawingViewStateBase):
         self.view.operation.update(self._snap(s))
 
     def mouseLeftDragEnd(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
-        op : EditMoveOperation = self.view.operation
-        op.complete(self._snap(s))
+        self.view.operation.complete(self._snap(s))
         self.view.state.go(self.view.stateIdle)
 
 class DrawingViewStateEditAppearance(DrawingViewStateBase):

@@ -10,12 +10,11 @@ __all__ = [
     "DrawingSceneApiEditMixin"
 ]
 
-from typing import Self, Optional
+from typing import Self
 
 from PyQt6.QtCore import QPointF
-from PyQt6.QtGui  import QUndoCommand
 
-from .....core import logger,copy, paste
+from .....core import logger, copy
 
 from ....dialogs.appearance import AppearancePref, AppearancePrefChange
 from ....dialogs.properties import PropertiesType
@@ -26,7 +25,7 @@ from ...items.base_text import BaseText
 
 from ...items.property_text import PropertyText
 
-from .cmd import cmdBase, cmdElement, cmdElements
+from .cmd import cmdElement, cmdElements, cmdMoveMixin, cmdOffsetMixin
 
 
 from typing import TYPE_CHECKING
@@ -38,33 +37,23 @@ class cmdEditPaste(cmdElements):
     _PREVIEW   = True
     _SELECTION = True
 
-    _offset    : QPointF
-
     def __init__(
-        self      : Self,
-        scene     : "DrawingScene",
-        elements  : list[ElementMixin],
-        offset    : QPointF
+        self     : Self,
+        scene    : "DrawingScene",
+        elements : list[ElementMixin],
     ):
         super().__init__(scene, elements)
-        self._offset = offset
 
     def redo(self) -> None:
         self._scene.blockSignals(True)
         self._scene.clearSelection()
-        for element in self._elements:
-            if element.scene() != self._scene:
-                self._scene.addItem(element)
-            element.setPos(element.pos() + self._offset)
-            element.setSelected(True)
+        self._addToScene(select=True)
         self._scene.blockSignals(False)
         self._scene.selectionChanged.emit()
 
     def undo(self) -> None:
+        self._removeFromScene()
         super().undo() # restore selection set
-        for element in self._elements:
-            if element.scene() == self._scene:
-                self._scene.removeItem(element)
 
 class cmdEditDelete(cmdElements):
     _SELECTION = True
@@ -80,15 +69,12 @@ class cmdEditDelete(cmdElements):
         """Delete the elements from the scene."""
         self._scene.blockSignals(True)
         self._scene.clearSelection()
-        for element in self._elements:
-            self._scene.removeItem(element) # TODO is element in scene?
+        self._removeFromScene()
         self._scene.blockSignals(False)
         self._scene.selectionChanged.emit()
 
     def undo(self) -> None:
-        self._scene.blockSignals(True)
-        for element in self._elements:
-            self._scene.addItem(element)
+        self._addToScene()
         super().undo() # restore selection set, should include restored elements
 
 class cmdEditDuplicate(cmdElements):
@@ -106,45 +92,31 @@ class cmdEditDuplicate(cmdElements):
 
     def begin(self) -> None:
         super().begin() # preserve selection set
-        self._clones = clone(self._elements)
-        self._addToScene()
-
-    @property
-    def elements(self):
-        return self._clones
+        self._elements = clone(self._elements)
+        self._addToScene(select=True)
 
     def redo(self) -> None:
-        self._addToScene()
+        self._addToScene(select=True)
 
     def undo(self) -> None:
+        self._removeFromScene()
         super().undo() # restore selection set
-        for element in self._clones:
-            self._scene.removeItem(element)
 
-    def _addToScene(self) -> None:
-        self._scene.blockSignals(True)
-        self._scene.clearSelection()
-        for element in self._clones:
-            if element.scene() != self._scene:
-                self._scene.addItem(element)
-            element.setSelected(True)
-        self._scene.blockSignals(False)
-        self._scene.selectionChanged.emit()
+class cmdEditMove(cmdElements, cmdMoveMixin, cmdOffsetMixin):
+    _PREVIEW = True
 
-class cmdEditMove(cmdElements):
-    _offset : QPointF
     _slide  : bool
 
     def __init__(
         self     : Self,
         scene    : "DrawingScene",
         elements : list[ElementMixin],
-        offset   : QPointF,
         slide    : bool = False
     ):
         super().__init__(scene, elements)
-        self._offset = offset
         self._slide = slide
+        self._offset = QPointF(0, 0)
+        self._storePos() # store initial positions
 
     def redo(self : Self) -> None:
         for element in self._elements:
@@ -152,9 +124,8 @@ class cmdEditMove(cmdElements):
             # TODO: add slide logic
 
     def undo(self : Self) -> None:
-        for element in self._elements:
-            element.moveBy(-self._offset)
-            # TODO: add slide logic
+        self._restorePos()
+        # TODO: add slide logic
 
 class cmdEditText(cmdElement):
     _element           : BaseText

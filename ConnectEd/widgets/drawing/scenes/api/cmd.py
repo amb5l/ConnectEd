@@ -67,14 +67,15 @@ class cmdBase(QUndoCommand):
         if self._SELECTION:
             self._scene.blockSignals(True)
             self._scene.clearSelection()
-            for element in self._selection:
-                element.setSelected(True)
+            for e in self._selection:
+                e.setSelected(True)
             self._scene.blockSignals(False)
             self._scene.selectionChanged.emit()
 
 class cmdElement(cmdBase):
     """Base class for all commands that work with an element."""
 
+    # instance attributes
     _element : ElementMixin
 
     def __init__(
@@ -96,7 +97,8 @@ class cmdElement(cmdBase):
 class cmdElements(cmdBase):
     """Base class for all commands that work with multiple elements."""
 
-    _elements  : list[ElementMixin]
+    # instance attributes
+    _elements : list[ElementMixin]
 
     def __init__(
         self     : Self,
@@ -113,6 +115,53 @@ class cmdElements(cmdBase):
     def mergeWith(self : Self, other : QUndoCommand) -> bool:
         # return super().mergeWith(other) and other._elements == self._elements
         return False
+
+    def _addToScene(self : Self, select : bool = False) -> None:
+        if select:
+            self._scene.blockSignals(True)
+            self._scene.clearSelection()
+        for element in self._elements:
+            if element.scene() != self._scene:
+                self._scene.addItem(element)
+            if select:
+                element.setSelected(True)
+        if select:
+            self._scene.blockSignals(False)
+            self._scene.selectionChanged.emit()
+
+    def _removeFromScene(self : Self) -> None:
+        for element in self._elements:
+            if element.scene() == self._scene:
+                self._scene.removeItem(element)
+
+class cmdMoveMixin:
+    """Mixin for commands supporting interactive movement of elements."""
+
+    def _moveBy(self, offset: QPointF) -> None:
+        for e in self._elements:
+            e.moveBy(offset)
+
+class cmdOffsetMixin:
+    """Mixin for commands that move elements by an offset."""
+
+    # instance attributes
+    _spos     : dict[ElementMixin, QPointF]
+    _offset   : QPointF
+
+    @property
+    def offset(self : Self) -> QPointF:
+        return self._offset
+
+    @offset.setter
+    def offset(self : Self, offset: QPointF) -> None:
+        self._offset = offset
+
+    def _storePos(self) -> None:
+        self._spos = {e: e.scenePos() for e in self._elements}
+
+    def _restorePos(self) -> None:
+        for e in self._elements:
+            e.moveBy(self._spos[e] - e.scenePos())
 
 class cmdPlaceElement(cmdBase):
     """Base class for all commands that place an element."""
