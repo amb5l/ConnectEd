@@ -83,17 +83,15 @@ class cmdEditDelete(cmdElements):
         self._scene.blockSignals(True)
         self._scene.clearSelection()
         for element in self._elements:
-            if element.scene() == self._scene:
-                self._scene.removeItem(element)
+            self._scene.removeItem(element) # TODO is element in scene?
         self._scene.blockSignals(False)
         self._scene.selectionChanged.emit()
 
     def undo(self) -> None:
-        super().undo() # restore selection set
         self._scene.blockSignals(True)
         for element in self._elements:
-            if element.scene() != self._scene:
-                self._scene.addItem(element)
+            self._scene.addItem(element)
+        super().undo() # restore selection set, should include restored elements
 
     def mergeWith(self, other: QUndoCommand) -> bool:
         """Delete commands cannot be merged."""
@@ -384,8 +382,7 @@ class DrawingSceneApiEditMixin:
         self : "DrawingScene"
     ) -> None:
         """Delete selected elements from the scene."""
-        elements = \
-            [item for item in self.selectedItems() if isinstance(item, ElementMixin)]
+        elements = self._selectedTopElements()
         if elements:
             self.undo_stack.push(cmdEditDelete(self, elements))
         else:
