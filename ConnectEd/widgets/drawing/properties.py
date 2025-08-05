@@ -24,9 +24,13 @@ class PropertySpec:
         if self.exists is None:
             self.exists = lambda: True
         if self.getter is None:
-            self.getter = lambda self: "" if self.value is None else self.value
+            # Capture the PropertySpec instance in closure so lambda can access its value
+            prop_spec = self
+            self.getter = lambda obj: "" if prop_spec.value is None else prop_spec.value
         if self.setter is None:
-            self.setter = lambda obj, val: setattr(self, 'value', str(val))
+            # Capture the PropertySpec instance in closure so lambda can set its value
+            prop_spec = self
+            self.setter = lambda obj, val: setattr(prop_spec, 'value', str(val))
             if self.value is None:
                 self.value = ""
 
