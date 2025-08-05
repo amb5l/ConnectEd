@@ -10,6 +10,7 @@ from .....core import logger, paste
 
 from ...items import ElementMixin
 
+from ...items.handle     import Handle
 from ...items.base_rect  import BaseRectangle
 from ...items.port_pin   import Port
 from ...items.text       import Text
@@ -27,6 +28,7 @@ if TYPE_CHECKING:
 
 ElementType = ElementMixin | QGraphicsItem
 
+@export
 class Operation:
     """Base for all view-scene operations"""
     _scene : "DrawingScene"
@@ -81,14 +83,13 @@ class MoveOperationMixin:
 @export
 class EditPasteOperation(MoveOperationMixin, CommandOperation):
     def __init__(self, scene, pos):
-        super().__init__(scene)
         elements, copy_pos = paste()
         if elements:
+            super().__init__(scene)
             self._initial_pos = pos if copy_pos is None else copy_pos
             self._current_pos = self._initial_pos
             self._command = cmdEditPaste(scene, elements)
             self._command.begin() # snapshot selection set
-            self._storePos()  # store initial positions
             self.update(pos) # offset to specified position
         else:
             self._command = None
@@ -98,16 +99,15 @@ class EditDuplicateOperation(MoveOperationMixin, CommandOperation):
     def __init__(
         self     : Self,
         scene    : "DrawingScene",
+        elements : list[ElementType],
         pos      : QPointF
     ) -> None:
-        super().__init__(scene)
-        self._initial_pos = pos
-        self._current_pos = pos
-        originals = scene._selectedTopElements()
-        if originals:
-            self._command = cmdEditDuplicate(scene, originals)
+        if elements:
+            super().__init__(scene)
+            self._initial_pos = pos
+            self._current_pos = pos
+            self._command = cmdEditDuplicate(scene, elements)
             self._command.begin() # create clones and add them to the scene
-            self._storePos()  # store initial positions
         else:
             self._command = None
 
@@ -117,16 +117,16 @@ class EditMoveOperation(MoveOperationMixin, CommandOperation):
     _slide  : bool
 
     def __init__(
-        self  : Self,
-        scene : "DrawingScene",
-        pos   : QPointF,
-        slide : bool = False
+        self     : Self,
+        scene    : "DrawingScene",
+        elements : list[ElementType],
+        pos      : QPointF,
+        slide    : bool = False
     ) -> None:
-        super().__init__(scene)
-        self._initial_pos = pos
-        self._current_pos = pos
-        elements = scene._selectedTopElements()
         if elements:
+            super().__init__(scene)
+            self._initial_pos = pos
+            self._current_pos = pos
             self._command = cmdEditMove(scene, elements, slide)
             self._command.begin()  # snapshot selection set
         else:
@@ -134,6 +134,23 @@ class EditMoveOperation(MoveOperationMixin, CommandOperation):
 
     def update(self, pos: QPointF):
         super().update(pos)
+
+@export
+class EditResizeOperation(MoveOperationMixin, CommandOperation):
+    def __init__(
+        self   : Self,
+        scene  : "DrawingScene",
+        handle : Handle,
+        pos    : QPointF
+    ) -> None:
+        super().__init__(scene)
+        self._initial_pos = pos
+        self._current_pos = pos
+        if isinstance(handle, Handle):
+            self._command = cmdEditMove(scene, [handle], pos)
+            self._command.begin()  # snapshot selection set
+        else:
+            self._command = None
 
 class PlaceBaseOperation(CommandOperation):
     # class attributes

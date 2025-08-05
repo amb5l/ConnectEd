@@ -1,7 +1,8 @@
 from typing import Self, Optional
 
-from PyQt6.QtCore import QPointF
-from PyQt6.QtGui  import QUndoCommand
+from PyQt6.QtCore    import QPointF
+from PyQt6.QtWidgets import QGraphicsItem
+from PyQt6.QtGui     import QUndoCommand
 
 from .....core import camel_to_proper
 
@@ -24,7 +25,7 @@ class cmdBase(QUndoCommand):
     _scene     : "DrawingScene"
     _selection : Optional[list[ElementMixin]]
 
-    def __init__(self    : Self, scene   : "DrawingScene"):
+    def __init__(self : Self, scene : "DrawingScene"):
         text = camel_to_proper(self.__class__.__name__.replace("cmd", ""))
         super().__init__(text)
         self._scene = scene
@@ -110,7 +111,7 @@ class cmdElements(cmdBase):
 
     @property
     def elements(self):
-        return self._clones
+        return self._elements
 
     def mergeWith(self : Self, other : QUndoCommand) -> bool:
         # return super().mergeWith(other) and other._elements == self._elements
@@ -145,6 +146,7 @@ class cmdOffsetMixin:
     """Mixin for commands that move elements by an offset."""
 
     # instance attributes
+    _elements : list[QGraphicsItem | ElementMixin]
     _spos     : dict[ElementMixin, QPointF]
     _offset   : QPointF
 

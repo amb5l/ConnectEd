@@ -52,7 +52,10 @@ class DrawingViewApiMixin:
         scene.editCopy(self._snap(self.mouse.current.logical))
 
     def editPaste(self : "DrawingView") -> None:
-        self.state.go(self.stateEditPaste)
+        self.state.opgo(
+            EditPasteOperation(self.scene(), self._snap(self.mouse.current.logical)),
+            self.stateEditPaste
+        )
 
     @withScene
     def editDelete(self : "DrawingView", scene : DrawingScene) -> None:

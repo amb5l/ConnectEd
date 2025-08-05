@@ -1,8 +1,10 @@
-from typing import Self
+from typing import Self, Optional
 
 from PyQt6.QtCore import Qt, QPoint, QPointF
 
 from .....core import logger
+
+from ....dialogs import AppearanceDialog
 
 from ...items import ElementMixin
 from ...items.handle import Handle
@@ -10,8 +12,6 @@ from ...items.handle import Handle
 from ...scenes import DrawingScene
 
 from ...scenes.api.operation import *
-
-from ....dialogs import AppearanceDialog
 
 from ..... import hub
 
@@ -39,6 +39,18 @@ class DrawingViewStateBase:
             self.view.mouse.current.physical,
             self.view.mouse.current.logical
         )
+
+    def opgo(
+        self  : Self,
+        op    : Operation,
+        state : Optional["DrawingViewStateBase"] = None
+    ) -> None:
+        if op.is_valid:
+            self.view.operation = op
+            if state is not None:
+                self.go(state)
+        else:
+            self.view.state.go(self.view.stateIdle)
 
     def enter(self : Self, v : QPoint, s : QPointF) -> None:
         pass
@@ -95,8 +107,10 @@ class DrawingViewStateIdle(DrawingViewStateBase):
         if len(handles_at) == 1:
             # handle dragging => resize
             handle = handles_at[0]
-            self.view.operation = EditMoveOperation(self.scene, handle.scenePos())
-            self.view.state.go(self.view.stateEditResize)
+            self.opgo(
+                EditResizeOperation(self.scene, handle, handle.scenePos()),
+                self.view.stateEditResize
+            )
             return
         # Check for CTRL+drag duplication when starting on an element
         if (m & qkm.ControlModifier) and items_at:
@@ -113,7 +127,10 @@ class DrawingViewStateIdle(DrawingViewStateBase):
                     [item for item in items if isinstance(item, ElementMixin)]
                 if elements:
                     # Pass the press position for CTRL+drag duplication
-                    self.view.state.go(self.view.stateEditDuplicate)
+                    self.opgo(
+                        EditDuplicateOperation(self.scene, elements, self._snap(s)),
+                        self.view.stateEditDuplicate
+                    )
                     return
         if not items_at \
             and not (m & (qkm.ControlModifier | qkm.ShiftModifier)):
@@ -122,12 +139,10 @@ class DrawingViewStateIdle(DrawingViewStateBase):
         self.view._selectPoint(s, m)
         items = self.view.scene().selectedItems()
         if items: # slide/move
-            self.view.operation = EditMoveOperation(
-                self.scene, self._snap(s), not(m & qkm.AltModifier)
-            )
-            self.view.state.go(
-                self.view.stateEditSlide if not(m & qkm.AltModifier)
-                else self.view.stateEditMove
+            slide = not(m & qkm.AltModifier)
+            self.opgo(
+                EditMoveOperation(self.scene, items, self._snap(s), slide),
+                self.view.stateEditSlide if slide else self.view.stateEditMove
             )
         else: # start marquee selection
             self.view.marquee.begin(v)
@@ -282,9 +297,6 @@ class DrawingViewStateEditSelectArea2(DrawingViewStateBase):
 class DrawingViewStateEditPaste(DrawingViewStateBase):
     TIP = "Paste: select the paste position"
 
-    def enter(self : Self, v : QPoint, s : QPointF) -> None:
-        self.view.operation = EditPasteOperation(self.scene, self._snap(s))
-
     def mouseLeftClick(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
         self.view.operation.complete(self._snap(s))
         self.view.state.go(self.view.stateIdle)
@@ -294,9 +306,6 @@ class DrawingViewStateEditPaste(DrawingViewStateBase):
 
 class DrawingViewStateEditDuplicate(DrawingViewStateBase):
     TIP = "Duplicate: place the duplicated item(s) as required"
-
-    def enter(self : Self, v : QPoint, s : QPointF) -> None:
-        self.view.operation = EditDuplicateOperation(self.scene, self._snap(s))
 
     def mouseLeftClick(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
         self.view.operation.complete(self._snap(s))
@@ -315,15 +324,6 @@ class DrawingViewStateEditDuplicate(DrawingViewStateBase):
 class DrawingViewStateEditSlide(DrawingViewStateBase):
     TIP = "Slide: position the selected item(s) as required"
     SLIDE = True
-
-    def enter(self : Self, v : QPoint, s : QPointF) -> None:
-        if self.scene._selectedTopElements():
-            self.view.operation = EditMoveOperation(
-                self.scene, self._snap(s), self.SLIDE
-            )
-        else:
-            logger.warning("No top-level elements selected")
-            self.view.state.go(self.view.stateIdle)
 
     def mouseLeftDragCont(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
         self.view.operation.update(self._snap(s))

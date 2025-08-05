@@ -33,18 +33,24 @@ if TYPE_CHECKING:
     from .. import DrawingScene
 
 
-class cmdEditPaste(cmdElements):
+class cmdEditPaste(cmdElements, cmdMoveMixin, cmdOffsetMixin):
     _PREVIEW   = True
     _SELECTION = True
 
     def __init__(
         self     : Self,
         scene    : "DrawingScene",
-        elements : list[ElementMixin],
+        elements : list[ElementMixin]
     ):
         super().__init__(scene, elements)
 
+    def begin(self) -> None:
+        super().begin() # snapshot selection set
+        self._storePos()
+        self._addToScene(select=True)
+
     def redo(self) -> None:
+        self._moveBy(self._offset)
         self._scene.blockSignals(True)
         self._scene.clearSelection()
         self._addToScene(select=True)
@@ -52,6 +58,7 @@ class cmdEditPaste(cmdElements):
         self._scene.selectionChanged.emit()
 
     def undo(self) -> None:
+        self._restorePos()
         self._removeFromScene()
         super().undo() # restore selection set
 
@@ -77,11 +84,9 @@ class cmdEditDelete(cmdElements):
         self._addToScene()
         super().undo() # restore selection set, should include restored elements
 
-class cmdEditDuplicate(cmdElements):
+class cmdEditDuplicate(cmdElements, cmdMoveMixin, cmdOffsetMixin):
     _PREVIEW   = True
     _SELECTION = True
-
-    _clones : list[ElementMixin]
 
     def __init__(
         self     : Self,
@@ -93,12 +98,15 @@ class cmdEditDuplicate(cmdElements):
     def begin(self) -> None:
         super().begin() # preserve selection set
         self._elements = clone(self._elements)
+        self._storePos()
         self._addToScene(select=True)
 
     def redo(self) -> None:
         self._addToScene(select=True)
+        self._moveBy(self._offset)
 
     def undo(self) -> None:
+        self._restorePos()
         self._removeFromScene()
         super().undo() # restore selection set
 
@@ -119,9 +127,8 @@ class cmdEditMove(cmdElements, cmdMoveMixin, cmdOffsetMixin):
         self._storePos() # store initial positions
 
     def redo(self : Self) -> None:
-        for element in self._elements:
-            element.moveBy(self._offset)
-            # TODO: add slide logic
+        self._moveBy(self._offset)
+        # TODO: add slide logic
 
     def undo(self : Self) -> None:
         self._restorePos()
