@@ -59,7 +59,7 @@ class DrawingViewApiMixin:
         scene.editDelete(self._snap(self.mouse.current.logical))
 
     def editDuplicate(self : "DrawingView") -> None:
-        self.state.go(self.stateEditDuplicate1)
+        self.state.go(self.stateEditDuplicate)
 
     def editSelectArea(self : "DrawingView") -> None:
         self.state.go(self.stateEditSelectArea1)

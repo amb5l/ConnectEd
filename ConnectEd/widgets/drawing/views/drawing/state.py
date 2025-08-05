@@ -115,7 +115,7 @@ class DrawingViewStateIdle(DrawingViewStateBase):
                     [item for item in items if isinstance(item, ElementMixin)]
                 if elements:
                     # Pass the press position for CTRL+drag duplication
-                    self.view.editDuplicate(self._snap(s))
+                    self.view.state.go(self.view.stateEditDuplicate)
                     return
         if not items_at \
             and not (m & (qkm.ControlModifier | qkm.ShiftModifier)):
@@ -294,27 +294,7 @@ class DrawingViewStateEditPaste(DrawingViewStateBase):
     def mouseMove(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
         self.view.operation.update(self._snap(s))
 
-class DrawingViewStateEditDuplicate1(DrawingViewStateBase):
-    TIP = "Duplicate: select one or more items"
-
-    def enter(self : Self, v : QPoint, s : QPointF) -> None:
-        if self.scene._selectedTopElements():
-            self.view.state.go(self.view.stateEditDuplicate2)
-
-    def mouseLeftClick(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
-        self.view._selectPoint(s, m)
-        items = self.view.scene().selectedItems()
-        if items:
-            elements = \
-                [item for item in items if isinstance(item, ElementMixin)]
-            if elements:
-                self.view.editDuplicate()
-
-    def mouseLeftDragBegin(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
-        self.view.marquee.begin(v)
-        self.view.state.go(self.view.stateEditSelectArea2)
-
-class DrawingViewStateEditDuplicate2(DrawingViewStateBase):
+class DrawingViewStateEditDuplicate(DrawingViewStateBase):
     TIP = "Duplicate: place the duplicated item(s) as required"
 
     def enter(self : Self, v : QPoint, s : QPointF) -> None:
@@ -322,12 +302,14 @@ class DrawingViewStateEditDuplicate2(DrawingViewStateBase):
 
     def mouseLeftClick(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
         self.view.operation.complete(self._snap(s))
+        self.view.state.go(self.view.stateIdle)
 
     def mouseLeftDragCont(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
         self.view.operation.update(self._snap(s))
 
     def mouseLeftDragEnd(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
         self.view.operation.complete(self._snap(s))
+        self.view.state.go(self.view.stateIdle)
 
     def mouseMove(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
         self.view.operation.update(self._snap(s))
@@ -519,8 +501,7 @@ class DrawingViewStateMixin:
     stateEditSelectArea1 : DrawingViewStateEditSelectArea1
     stateEditSelectArea2 : DrawingViewStateEditSelectArea2
     stateEditPaste       : DrawingViewStateEditPaste
-    stateEditDuplicate1  : DrawingViewStateEditDuplicate1
-    stateEditDuplicate2  : DrawingViewStateEditDuplicate2
+    stateEditDuplicate   : DrawingViewStateEditDuplicate
     stateEditSlide       : DrawingViewStateEditSlide
     stateEditMove        : DrawingViewStateEditMove
     stateEditResize      : DrawingViewStateEditResize
@@ -549,8 +530,7 @@ class DrawingViewStateMixin:
         self.stateEditSelectArea1 = DrawingViewStateEditSelectArea1 (self)
         self.stateEditSelectArea2 = DrawingViewStateEditSelectArea2 (self)
         self.stateEditPaste       = DrawingViewStateEditPaste       (self)
-        self.stateEditDuplicate1  = DrawingViewStateEditDuplicate1  (self)
-        self.stateEditDuplicate2  = DrawingViewStateEditDuplicate2  (self)
+        self.stateEditDuplicate   = DrawingViewStateEditDuplicate   (self)
         self.stateEditSlide       = DrawingViewStateEditSlide       (self)
         self.stateEditMove        = DrawingViewStateEditMove        (self)
         self.stateEditResize      = DrawingViewStateEditResize      (self)

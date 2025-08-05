@@ -26,7 +26,7 @@ from ...items.base_text import BaseText
 
 from ...items.property_text import PropertyText
 
-from .cmd import cmdElement, cmdElements
+from .cmd import cmdBase, cmdElement, cmdElements
 
 
 from typing import TYPE_CHECKING
@@ -35,19 +35,18 @@ if TYPE_CHECKING:
 
 
 class cmdEditPaste(cmdElements):
+    _PRESERVE_SELECTION = True
+
     _offset    : QPointF
-    _selection : list[ElementMixin]  # selected elements before pasting
 
     def __init__(
         self      : Self,
         scene     : "DrawingScene",
         elements  : list[ElementMixin],
-        offset    : QPointF,
-        selection : list[ElementMixin] = None
+        offset    : QPointF
     ):
         super().__init__(scene, elements)
         self._offset = offset
-        self._selection = selection or []
 
     def redo(self) -> None:
         self._scene.blockSignals(True)
@@ -61,22 +60,16 @@ class cmdEditPaste(cmdElements):
         self._scene.selectionChanged.emit()
 
     def undo(self) -> None:
-        self._scene.blockSignals(True)
+        super().undo() # restore selection set
         for element in self._elements:
             if element.scene() == self._scene:
                 self._scene.removeItem(element)
-        for element in self._selection:
-            if element.scene() == self._scene:
-                element.setSelected(True)
-        self._scene.blockSignals(False)
-        self._scene.selectionChanged.emit()
 
     def mergeWith(self, other: QUndoCommand) -> bool:
         return super().mergeWith(other) and self._offset == other._offset
 
 class cmdEditDelete(cmdElements):
-    """Command for deleting multiple elements with selection state restoration."""
-    _selection : list[ElementMixin]  # Elements that were selected before deletion
+    _PRESERVE_SELECTION = True
 
     def __init__(
         self     : Self,
@@ -84,8 +77,6 @@ class cmdEditDelete(cmdElements):
         elements : list[ElementMixin]
     ):
         super().__init__(scene, elements)
-        # Store current selection state before deletion
-        self._selection = [item for item in scene.selectedItems() if isinstance(item, ElementMixin)]
 
     def redo(self) -> None:
         """Delete the elements from the scene."""
@@ -98,64 +89,61 @@ class cmdEditDelete(cmdElements):
         self._scene.selectionChanged.emit()
 
     def undo(self) -> None:
-        """Restore the deleted elements and their selection state."""
+        super().undo() # restore selection set
         self._scene.blockSignals(True)
         for element in self._elements:
             if element.scene() != self._scene:
                 self._scene.addItem(element)
-        # Restore original selection state
-        self._scene.clearSelection()
-        for element in self._selection:
-            if element.scene() == self._scene:
-                element.setSelected(True)
-        self._scene.blockSignals(False)
-        self._scene.selectionChanged.emit()
 
     def mergeWith(self, other: QUndoCommand) -> bool:
         """Delete commands cannot be merged."""
         return False
 
 class cmdEditDuplicate(cmdElements):
-    _offset    : QPointF
-    _selection : list[ElementMixin]  # selected elements before duplication
-    _originals : list[ElementMixin]  # original elements that were duplicated
+    _PRESERVE_SELECTION = True
+
+    _clones : list[ElementMixin]
 
     def __init__(
-        self      : Self,
-        scene     : "DrawingScene",
-        elements  : list[ElementMixin],
-        offset    : QPointF,
-        selection : list[ElementMixin] = None
+        self     : Self,
+        scene    : "DrawingScene",
+        elements : list[ElementMixin]
     ):
         super().__init__(scene, elements)
-        self._offset = offset
-        self._selection = selection or []
-        self._originals = []
+
+    def begin(self) -> None:
+        """Create clones of the elements for interactive preview."""
+        self._clones = clone(self._elements)
+        self._addToScene()
+
+    def cancel(self) -> None:
+        """Remove clones from the scene and restore the selection set."""
+        super().undo() # restore selection set
+        for element in self._clones:
+            self._scene.removeItem(element)
+
+    @property
+    def elements(self):
+        return self._clones
 
     def redo(self) -> None:
+        self._addToScene()
+
+    def undo(self) -> None:
+        self.cancel()
+
+    def mergeWith(self, other: QUndoCommand) -> bool:
+        return False
+
+    def _addToScene(self) -> None:
         self._scene.blockSignals(True)
         self._scene.clearSelection()
-        for element in self._elements:
+        for element in self._clones:
             if element.scene() != self._scene:
                 self._scene.addItem(element)
-            element.setPos(element.pos() + self._offset)
             element.setSelected(True)
         self._scene.blockSignals(False)
         self._scene.selectionChanged.emit()
-
-    def undo(self) -> None:
-        self._scene.blockSignals(True)
-        for element in self._elements:
-            if element.scene() == self._scene:
-                self._scene.removeItem(element)
-        for element in self._selection:
-            if element.scene() == self._scene:
-                element.setSelected(True)
-        self._scene.blockSignals(False)
-        self._scene.selectionChanged.emit()
-
-    def mergeWith(self, other: QUndoCommand) -> bool:
-        return super().mergeWith(other) and self._offset == other._offset
 
 class cmdEditMove(cmdElements):
     _offset : QPointF

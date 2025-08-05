@@ -1046,8 +1046,6 @@ class ElementXmlMixin:
             xr.readNext()
         return instance
 
-
-
 def clone(elements : list[ElementMixin]) -> list[ElementMixin]:
     r = []
     for element in elements:
