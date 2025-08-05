@@ -175,13 +175,19 @@ class DrawingViewApiMixin:
     ############################################################################
 
     def placePort(self : "DrawingView") -> None:
-        self.state.go(self.statePlacePort1)
+        self.state.opgo(
+            PlacePortOperation(self.scene(), self._snap(self.mouse.current.logical)),
+            self.statePlacePort
+        )
 
     def placeBlock(self : "DrawingView") -> None:
         self.state.go(self.statePlaceBlock1)
 
     def placeBlockPin(self : "DrawingView") -> None:
-        self.state.go(self.statePlaceBlockPin1)
+        self.state.opgo(
+            PlaceBlockPinOperation(self.scene(), self._snap(self.mouse.current.logical)),
+            self.statePlaceBlockPin
+        )
 
     def placeRectangle(self : "DrawingView") -> None:
         self.state.go(self.statePlaceRectangle1)
