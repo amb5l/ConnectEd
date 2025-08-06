@@ -4,14 +4,13 @@ from PyQt6.QtCore import Qt, QPoint, QPointF
 
 from .....core import logger
 
-from ....dialogs import AppearanceDialog
+from ....dialogs.appearance import AppearanceDialog
 
-from ...items import ElementMixin
-from ...items.handle import Handle
+from ...items import ElementMixin, Handle, PinRect
 
 from ...scenes import DrawingScene
 
-from ...scenes.api.operation import *
+from ...scenes.api.interaction import *
 
 from ..... import hub
 
@@ -35,24 +34,24 @@ class DrawingViewStateBase:
         self.view.state = state
         if hub.main_window is not None:
             hub.main_window.status_bar.tip.setText(state.TIP)
-        state.enter(
+        state.entry(
             self.view.mouse.current.physical,
             self.view.mouse.current.logical
         )
 
-    def opgo(
-        self  : Self,
-        op    : Operation,
-        state : Optional["DrawingViewStateBase"] = None
+    def interact(
+        self        : Self,
+        interaction : Interaction,
+        state       : Optional["DrawingViewStateBase"] = None
     ) -> None:
-        if op.is_valid:
-            self.view.operation = op
+        if interaction.valid:
+            self.view.interaction = interaction
             if state is not None:
                 self.go(state)
         else:
             self.view.state.go(self.view.stateIdle)
 
-    def enter(self : Self, v : QPoint, s : QPointF) -> None:
+    def entry(self : Self, v : QPoint, s : QPointF) -> None:
         pass
 
     def mouseLeftClick(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
@@ -87,25 +86,25 @@ class DrawingViewStateBase:
 
 class ClickMixin(DrawingViewStateBase):
     def mouseLeftClick(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
-        self.view.operation.complete(self._snap(s))
+        self.view.interaction.complete(self._snap(s))
         self.view.state.go(self.view.stateIdle)
 
     def mouseMove(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
-        self.view.operation.update(self._snap(s))
+        self.view.interaction.update(self._snap(s))
 
 class DragMixin(DrawingViewStateBase):
     def mouseLeftDragCont(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
-        self.view.operation.update(self._snap(s))
+        self.view.interaction.update(self._snap(s))
 
     def mouseLeftDragEnd(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
-        self.view.operation.complete(self._snap(s))
+        self.view.interaction.complete(self._snap(s))
         self.view.state.go(self.view.stateIdle)
 
 class DrawingViewStateIdle(DrawingViewStateBase):
     TIP = "Idle"
 
-    def enter(self : Self, v : QPoint, s : QPointF) -> None:
-        self.view.operation = None
+    def entry(self : Self, v : QPoint, s : QPointF) -> None:
+        self.view.interaction = None
 
     def mouseLeftClick(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
         items = self.view._itemsAt(s)
@@ -114,7 +113,7 @@ class DrawingViewStateIdle(DrawingViewStateBase):
                 return
         if m == qkm.NoModifier:
             if not items or not items[0].isSelected():
-                self.view.scene().clearSelection()
+                self.scene.clearSelection()
         self.view._selectPoint(s, m)
 
     def mouseLeftDragBegin(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
@@ -123,8 +122,8 @@ class DrawingViewStateIdle(DrawingViewStateBase):
         if len(handles_at) == 1:
             # handle dragging => resize
             handle = handles_at[0]
-            self.opgo(
-                EditResizeOperation(self.scene, handle, handle.scenePos()),
+            self.interact(
+                EditResizeInteraction(self.scene, handle, handle.scenePos()),
                 self.view.stateEditResize
             )
             return
@@ -138,26 +137,26 @@ class DrawingViewStateIdle(DrawingViewStateBase):
                 if not element.isSelected():
                     element.setSelected(True)
                 # Get all currently selected elements for duplication
-                items = self.view.scene().selectedItems()
+                items = self.scene.selectedItems()
                 elements = \
                     [item for item in items if isinstance(item, ElementMixin)]
                 if elements:
                     # Pass the press position for CTRL+drag duplication
-                    self.opgo(
-                        EditDuplicateOperation(self.scene, elements, self._snap(s)),
+                    self.interact(
+                        EditDuplicateInteraction(self.scene, elements, self._snap(s)),
                         self.view.stateEditDuplicate
                     )
                     return
         if not items_at \
             and not (m & (qkm.ControlModifier | qkm.ShiftModifier)):
-            self.view.scene().clearSelection()
+            self.view.scene.clearSelection()
             items = []
         self.view._selectPoint(s, m)
-        items = self.view.scene().selectedItems()
+        items = self.scene.selectedItems()
         if items: # slide/move
             slide = not(m & qkm.AltModifier)
-            self.opgo(
-                EditMoveOperation(self.scene, items, self._snap(s), slide),
+            self.interact(
+                EditMoveInteraction(self.scene, items, self._snap(s), slide),
                 self.view.stateEditSlide if slide else self.view.stateEditMove
             )
         else: # start marquee selection
@@ -281,6 +280,9 @@ class DrawingViewStateEditSelectArea2(DrawingViewStateBase):
 class DrawingViewStateEditPaste(ClickMixin):
     TIP = "Paste: select the paste position"
 
+    def entry(self : Self, v : QPoint, s : QPointF) -> None:
+        self.view.state.interact(EditPasteInteraction(self.scene, self._snap(s)))
+
 class DrawingViewStateEditDuplicate(ClickMixin, DragMixin):
     TIP = "Duplicate: place the duplicated item(s) as required"
 
@@ -298,13 +300,12 @@ class DrawingViewStateEditResize(DragMixin):
 class DrawingViewStateEditAppearance(DrawingViewStateBase):
     TIP = "Appearance: specify changes"
 
-    def enter(self : Self, v : QPoint, s : QPointF) -> None:
-        scene : DrawingScene = self.view.scene()
-        elements = scene._selectedTopElements()
+    def entry(self : Self, v : QPoint, s : QPointF) -> None:
+        elements = self.scene._selectedTopElements()
         if elements:
             dialog = AppearanceDialog(elements)
             if dialog.exec():
-                scene.editAppearance(elements, dialog.getChoice())
+                self.scene.editAppearance(elements, dialog.getChoice())
         else:
             logger.warning("No top-level elements selected")
         self.view.state.go(self.view.stateIdle)
@@ -319,12 +320,15 @@ class DrawingViewStateEditQuery(DrawingViewStateBase):
 class DrawingViewStatePlacePort(ClickMixin):
     TIP = "Place Port: pick a location"
 
+    def entry(self : Self, v : QPoint, s : QPointF) -> None:
+        self.view.state.interact(PlacePortInteraction(self.scene, self._snap(s)))
+
 class DrawingViewStatePlaceBlock1(DrawingViewStateBase):
     TIP = "Place Block: pick the first point"
 
     def mouseLeftClick(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
-        self.opgo(
-            PlaceBlockOperation(self.scene, self._snap(s)),
+        self.interact(
+            PlaceBlockInteraction(self.scene, self._snap(s)),
             self.view.statePlaceBlock2
         )
 
@@ -337,12 +341,18 @@ class DrawingViewStatePlaceBlock2(ClickMixin, DragMixin):
 class DrawingViewStatePlaceBlockPin(ClickMixin):
     TIP = "Place Block Pin: pick a location"
 
+    def entry(self : Self, v : QPoint, s : QPointF) -> None:
+        elements = self.scene._selectedTopElements()
+        pin_rects = [e for e in elements if isinstance(e, PinRect)]
+        pin_rect = pin_rects[0] if pin_rects else None
+        self.interact(PlaceBlockPinInteraction(pin_rect, self._snap(s)))
+
 class DrawingViewStatePlaceRectangle1(DrawingViewStateBase):
     TIP = "Place Rectangle: pick the first point"
 
     def mouseLeftClick(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
-        self.opgo(
-            PlaceRectangleOperation(self.scene, self._snap(s)),
+        self.interact(
+            PlaceRectangleInteraction(self.scene, self._snap(s)),
             self.view.statePlaceRectangle2
         )
 
@@ -355,19 +365,14 @@ class DrawingViewStatePlaceRectangle2(ClickMixin, DragMixin):
 class DrawingViewStatePlaceText(ClickMixin):
     TIP = "Place Text: pick a position"
 
-class DrawingViewStatePlaceTextBlock1(DrawingViewStateBase):
+    def entry(self : Self, v : QPoint, s : QPointF) -> None:
+        self.interact(PlaceTextInteraction(self.scene, self._snap(s)))
+
+class DrawingViewStatePlaceTextBlock1(ClickMixin):
     TIP = "Place Text Block: pick a position"
 
-    def mouseLeftClick(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
-        self.view.placeTextBlockBegin(self._snap(s))
-        self.view.state.go(self.view.statePlaceTextBlock2)
-
-class DrawingViewStatePlaceTextBlock2(DrawingViewStateBase):
-    TIP = "Place Text Block: enter the text"
-
-    def mouseLeftClick(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
-        self.view.placeTextBlockComplete()
-        self.view.state.go(self.view.stateIdle)
+    def entry(self : Self, v : QPoint, s : QPointF) -> None:
+        self.interact(PlaceTextBlockInteraction(self.scene, self._snap(s)))
 
 class DrawingViewStateMixin:
     state                : DrawingViewStateBase
@@ -393,7 +398,6 @@ class DrawingViewStateMixin:
     statePlaceRectangle2 : DrawingViewStatePlaceRectangle2
     statePlaceText       : DrawingViewStatePlaceText
     statePlaceTextBlock1 : DrawingViewStatePlaceTextBlock1
-    statePlaceTextBlock2 : DrawingViewStatePlaceTextBlock2
 
     def initStates(self : "DrawingView") -> None:
         self.stateIdle            = DrawingViewStateIdle            (self)
@@ -418,4 +422,3 @@ class DrawingViewStateMixin:
         self.statePlaceRectangle2 = DrawingViewStatePlaceRectangle2 (self)
         self.statePlaceText       = DrawingViewStatePlaceText       (self)
         self.statePlaceTextBlock1 = DrawingViewStatePlaceTextBlock1 (self)
-        self.statePlaceTextBlock2 = DrawingViewStatePlaceTextBlock2 (self)

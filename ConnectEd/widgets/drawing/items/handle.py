@@ -1,3 +1,4 @@
+__all__ = ["Handle"]
 from typing      import Self
 
 from PyQt6.QtCore    import Qt, QRectF, QPointF, \

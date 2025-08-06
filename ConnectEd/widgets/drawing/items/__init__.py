@@ -700,7 +700,7 @@ class ElementLocMixin:
                 case Edge.TOP:    self._name_text.setRotation(180)
                 case Edge.BOTTOM: self._name_text.setRotation(0)
         parent : "PinRect" = self.parentItem()
-        edge_pos = parent.getEdgeLocPos(loc) if parent else QPointF()
+        edge_pos = parent.getLocPos(loc) if parent else QPointF()
         super().setPos(edge_pos)
 
     def setLocPos(
@@ -709,7 +709,7 @@ class ElementLocMixin:
         snap : Optional[QPointF] = None
     ) -> None:
         parent : "PinRect" = self.parentItem()
-        self.setLoc(parent.getEdgeLoc(pos, snap))
+        self.setLoc(parent.getLoc(pos, snap))
 
     def pos(self : Self) -> QPointF:
         raise NotImplementedError("pos is not implemented for ElementLocMixin")
@@ -1079,6 +1079,20 @@ __all__ = [
 ]
 from .anchor_point import AnchorPoint
 __all__ += anchor_point.__all__
+from .handle import Handle
+__all__ += handle.__all__
+
+from .port_pin import Port, BasePin, BlockPin
+__all__ += port_pin.__all__
+from .pin_rect import PinRect
+__all__ += pin_rect.__all__
+from .block import Block
+__all__ += block.__all__
+from .symbol_instance import SymbolInstance
+__all__ += symbol_instance.__all__
+
+from .base_text import BaseText
+__all__ += base_text.__all__
 from .tether_text import TetherText, Tether
 __all__ += tether_text.__all__
 from .property_text import PropertyDisplay, PropertyTextSpec, PropertyText
@@ -1087,16 +1101,9 @@ from .text import Text
 __all__ += text.__all__
 from .text_block import TextBlock
 __all__ += text_block.__all__
+
 from .rectangle import Rectangle
 __all__ += rectangle.__all__
-from .port_pin import Port, BlockPin
-__all__ += port_pin.__all__
-from .pin_rect import PinRect
-__all__ += pin_rect.__all__
-from .block import Block
-__all__ += block.__all__
-from .symbol_instance import SymbolInstance
-__all__ += symbol_instance.__all__
 
 element_class_dict = {}
 for class_name in __all__:

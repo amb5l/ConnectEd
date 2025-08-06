@@ -9,4 +9,3 @@ __all__ += drawing.__all__
 __all__ += splash.__all__
 __all__ += main_window.__all__
 __all__ += marquee.__all__
-__all__ += dialogs.__all__

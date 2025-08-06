@@ -7,7 +7,7 @@ from PyQt6.QtGui     import QCursor
 from ...scenes import DrawingScene
 from ...query  import QueryWindow
 
-from ...scenes.api.operation import *
+from ...scenes.api.interaction import *
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -22,7 +22,7 @@ def withScene(func):
 class DrawingViewApiMixin:
 
     ############################################################################
-    # edit menu
+    # edit menu and associated context menus
     ############################################################################
 
     @withScene
@@ -37,9 +37,9 @@ class DrawingViewApiMixin:
 
     @withScene
     def editCancel(self : "DrawingView", scene : DrawingScene) -> None:
-        if self.operation:
-            self.operation.cancel()
-        self.operation = None
+        if self.interaction:
+            self.interaction.cancel()
+        self.interaction = None
         scene.clearSelection()
         self.state.go(self.stateIdle)
 
@@ -52,10 +52,7 @@ class DrawingViewApiMixin:
         scene.editCopy(self._snap(self.mouse.current.logical))
 
     def editPaste(self : "DrawingView") -> None:
-        self.state.opgo(
-            EditPasteOperation(self.scene(), self._snap(self.mouse.current.logical)),
-            self.stateEditPaste
-        )
+        self.state.go(self.stateEditPaste)
 
     @withScene
     def editDelete(self : "DrawingView", scene : DrawingScene) -> None:
@@ -111,6 +108,13 @@ class DrawingViewApiMixin:
                 self._query_windows.remove(query_window)
         query_window.destroyed.connect(cleanup)
         self.state.go(self.stateIdle)
+
+    ############################################################################
+    # edit context menus
+    ############################################################################
+
+    def editText(self : "DrawingView") -> None:
+        self.state.go(self.stateEditText)
 
     ############################################################################
     # view menu
@@ -175,19 +179,13 @@ class DrawingViewApiMixin:
     ############################################################################
 
     def placePort(self : "DrawingView") -> None:
-        self.state.opgo(
-            PlacePortOperation(self.scene(), self._snap(self.mouse.current.logical)),
-            self.statePlacePort
-        )
+        self.state.go(self.statePlacePort)
 
     def placeBlock(self : "DrawingView") -> None:
         self.state.go(self.statePlaceBlock1)
 
     def placeBlockPin(self : "DrawingView") -> None:
-        self.state.opgo(
-            PlaceBlockPinOperation(self.scene(), self._snap(self.mouse.current.logical)),
-            self.statePlaceBlockPin
-        )
+        self.state.go(self.statePlaceBlockPin)
 
     def placeRectangle(self : "DrawingView") -> None:
         self.state.go(self.statePlaceRectangle1)
@@ -196,4 +194,4 @@ class DrawingViewApiMixin:
         self.state.go(self.statePlaceTextBlock1)
 
     def placeText(self : "DrawingView") -> None:
-        self.state.go(self.statePlaceText1)
+        self.state.go(self.statePlaceText)

@@ -5,7 +5,13 @@ from PyQt6.QtWidgets import QWidget, QStyleOptionGraphicsItem, QStyle, \
                             QGraphicsSimpleTextItem
 from PyQt6.QtGui     import QPainter, QFontMetrics
 
+from pyTooling.Decorators import export
+
+from ...dialogs.text import TextDialog
+
 from ..properties import PropertySpec, PropertiesMixin
+
+
 
 from . import APType, \
               ElementMixin, \
@@ -22,8 +28,10 @@ from . import APType, \
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from ..views import DrawingView
+    from ..views  import DrawingView
+    from ..scenes import DrawingScene
 
+@export
 class BaseText(
     ElementMixin,
     ElementPosMixin,
@@ -62,9 +70,14 @@ class BaseText(
     _rect  : QRectF  # border rectangle (for keypoints)
     _trect : QRectF  # tight bounding rectangle
 
-    def __init__(self : Self, bare : bool = False) -> None:
-        QGraphicsSimpleTextItem.__init__(self)
+    def __init__(
+        self : Self,
+        pos  : QPointF = QPointF(),
+        bare : bool = False
+    ) -> None:
+        QGraphicsSimpleTextItem.__init__(self, "")
         self.initElement(bare=bare)
+        self.setPos(pos)
         self.onGeometryChange()
         self.updateHandlesVisibility()
 
@@ -127,4 +140,9 @@ class BaseText(
         checked : bool,
         view    : "DrawingView"
     ) -> None:
-        view.editText(self)
+        from ..scenes.api.cmd.edit import cmdEditText
+        dialog = TextDialog(self)
+        if dialog.exec():
+            text, appearance = dialog.getChoice()
+            scene : "DrawingScene" = self.scene()
+            scene.undo_stack.push(cmdEditText(scene, self, text, appearance))

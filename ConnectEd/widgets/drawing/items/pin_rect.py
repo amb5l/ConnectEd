@@ -22,7 +22,7 @@ class PinRect(BaseRectangle):
     def getMenuItems(self : Self) -> list[str]:
         return ["Add Pin...", "-", "Appearance..."]
 
-    def getEdgeLoc(
+    def getLoc(
         self : Self,
         pos  : QPointF,
         snap : Optional[QPointF] = None
@@ -84,7 +84,7 @@ class PinRect(BaseRectangle):
             distance = half_w + scaled_dx
         return _snap(EdgeLoc(edge, distance))
 
-    def getEdgeLocPos(self : Self, loc : EdgeLoc) -> QPointF:
+    def getLocPos(self : Self, loc : EdgeLoc) -> QPointF:
         match loc.edge:
             case Edge.LEFT:
                 return QPointF(0, loc.distance)

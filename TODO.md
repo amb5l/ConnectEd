@@ -1,4 +1,4 @@
-- check operation.is_valid in state.py
+- check operation.valid in state.py
 - what about moving PropertyTexts when their parents are or are not selected?
 - preserve selection set with placement commands
 - copy/paste issue with Block

@@ -11,7 +11,7 @@ from PyQt6.QtGui  import QStandardItemModel, QStandardItem
 
 from .. import hub
 
-from ..widgets import FileSaveAsDialog
+from ..widgets.dialogs.file import FileSaveAsDialog
 
 from . import logger, \
               LIB_EXT, DSN_EXT, \

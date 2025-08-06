@@ -1,5 +1,6 @@
 from PyQt6.QtWidgets import QHBoxLayout, QPushButton
 
+
 def okCancelLayoutStart(self) -> None:
     self.ok_cancel_layout = QHBoxLayout()
 
@@ -24,19 +25,3 @@ def okCancelNewLayout(self) -> None:
     self.ok_cancel_layout.addWidget(self.new_button)
     self.ok_cancel_layout.addStretch()
     okCancelLayoutFinish(self)
-
-__all__ = ["okCancelLayout"]
-
-from .file          import *
-from .text          import *
-from .port_pin      import *
-from .appearance    import *
-from .properties    import *
-from .property_text import *
-
-__all__ += file.__all__
-__all__ += text.__all__
-__all__ += port_pin.__all__
-__all__ += appearance.__all__
-__all__ += properties.__all__
-__all__ += property_text.__all__

@@ -97,11 +97,12 @@ class DrawingViewPrivateMixin:
     def _round2nearest(self : "DrawingView", x : float, n : float) -> float:
         return round(x / n) * n
 
-    def _snap(self : "DrawingView", pos: QPointF) -> QPoint:
-        return QPointF(
-            self._round2nearest(pos.x(), self.grid.pitch.x()),
-            self._round2nearest(pos.y(), self.grid.pitch.y())
-        ) if self.grid.snap else pos
+    def _snap(self : "DrawingView", pos: Optional[QPointF]) -> QPointF:
+        return QPointF(0, 0) if pos is None else \
+            QPointF(
+                self._round2nearest(pos.x(), self.grid.pitch.x()),
+                self._round2nearest(pos.y(), self.grid.pitch.y())
+            ) if self.grid.snap else pos
 
     def _distance(self : "DrawingView", cp1: QPoint, cp2: QPoint) -> int:
         return int(round(sqrt((cp1.x() - cp2.x())**2 + (cp1.y() - cp2.y())**2)))

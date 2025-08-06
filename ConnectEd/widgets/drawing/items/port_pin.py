@@ -1,10 +1,10 @@
-__all__ = ["Port", "BlockPin"]
-
 from typing import Self, Optional
 
 from PyQt6.QtCore    import QPointF, QRectF
 from PyQt6.QtWidgets import QGraphicsItem, QStyleOptionGraphicsItem, QWidget
 from PyQt6.QtGui     import QPainter, QPainterPath
+
+from pyTooling.Decorators import export
 
 from ....core import logger
 
@@ -196,6 +196,7 @@ class PortArrow(Arrow):
 class PortPropertyText(PropertyText):
     pass
 
+@export
 class Port(ElementPosMixin, PortPinArrowMixin, BasePortPin):
     # class attributes
     _NODE_CLASS = PortNode
@@ -235,11 +236,24 @@ class Port(ElementPosMixin, PortPinArrowMixin, BasePortPin):
             inst.setPos(pos)
         return inst
 
+@export
 class BasePin(ElementLocMixin, BasePortPin):
     # class attributes
     _PROPERTY_SPECS = \
         ElementLocMixin._PROPERTY_SPECS_LOC | \
         BasePortPin._PROPERTY_SPECS
+
+    # instance attributes
+    _loc : EdgeLoc
+
+    def getLoc(self : Self) -> EdgeLoc:
+        return self._loc
+
+    def setLoc(self : Self, loc : EdgeLoc) -> None:
+        parent : PinRect = self.parentItem()
+        if parent is not None:
+            self._loc = loc
+            self.setPos(parent.getLocPos(loc))
 
     @classmethod
     def createOrUpdate(
@@ -252,7 +266,7 @@ class BasePin(ElementLocMixin, BasePortPin):
         parent    : Optional["PinRect"]       = None,
         inst      : Optional[Self]            = None
     ) -> "BasePin":
-        inst : Port = cls() if inst is None else inst
+        inst : BasePin = cls() if inst is None else inst
         if name is not None:
             inst.name = name
         if direction is not None:
@@ -275,6 +289,7 @@ class BlockPinArrow(Arrow):
 class BlockPinPropertyText(PropertyText):
     pass
 
+@export
 class BlockPin(PortPinArrowMixin, BasePin):
     # class attributes
     _NODE_CLASS = BlockPinNode

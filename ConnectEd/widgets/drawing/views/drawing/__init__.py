@@ -12,7 +12,7 @@ from ....marquee import Marquee
 
 from ...scenes import DrawingScene
 
-from ...scenes.api.operation import Operation
+from ...scenes.api.interaction import Interaction
 
 from .mouse     import DrawingViewMouseMixin
 from .private   import DrawingViewPrivateMixin
@@ -38,17 +38,16 @@ class DrawingView(
     DrawingViewStateMixin,
     DrawingViewPrivateMixin
 ):
-    _shown    : bool = False
-    _zoomed   : bool = False
-    marquee   : Marquee
-    layer     : DrawingViewLayer
-    zoom      : float
-    pan       : Optional[QPoint]
-    grid      : DrawingViewGrid
-    mouse     : DrawingViewMouse
-    state     : DrawingViewStateBase
-    operation : Optional[Operation]
-
+    _shown      : bool = False
+    _zoomed     : bool = False
+    marquee     : Marquee
+    layer       : DrawingViewLayer
+    zoom        : float
+    pan         : Optional[QPoint]
+    grid        : DrawingViewGrid
+    mouse       : DrawingViewMouse
+    state       : DrawingViewStateBase
+    interaction : Optional[Interaction]
 
     def __init__(self : Self, scene : DrawingScene) -> None:
         super().__init__(scene)
@@ -68,7 +67,7 @@ class DrawingView(
         self.pan       = None
         self.grid      = DrawingViewGrid()
         self.mouse     = DrawingViewMouse()
-        self.operation = None
+        self.interaction = None
 
         self.setMouseTracking(True)
         self.setRenderHint(QPainter.RenderHint.Antialiasing)
