@@ -269,7 +269,7 @@ class DrawingViewStateEditSelectArea2(DrawingViewStateBase):
     def mouseLeftClick(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
         self.view.marquee.end(v)
         self.view._selectRect(self.view.marquee.rect(), m & qkm.ControlModifier)
-        self.view.state.go(self.view.stateEditSelectArea1)
+        self.view.state.go(self.view.stateIdle)
 
     def mouseMove(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
         self.view.marquee.resize(v)
