@@ -1,3 +1,5 @@
+- sort out editAppearance, editProperties in view/scene/cmd
+
 - what about moving PropertyTexts when their parents are or are not selected?
 - settings propagation
 - selection state propagation parent => child

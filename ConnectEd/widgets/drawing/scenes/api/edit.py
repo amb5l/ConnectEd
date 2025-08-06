@@ -19,15 +19,12 @@ from ...items.property_text import PropertyText
 from .cmd import cmdSceneElement, cmdSceneElements, \
                  cmdSelectionMixin, cmdAddRemoveMixin
 
-
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from .. import DrawingScene
 
 
 ElementType = ElementMixin | QGraphicsItem
-
-
 
 class DrawingSceneApiEditMixin:
     def editCut(

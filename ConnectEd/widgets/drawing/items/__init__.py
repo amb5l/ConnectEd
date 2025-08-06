@@ -25,6 +25,7 @@ if TYPE_CHECKING:
     from ..scenes.drawing import DrawingScene
     from .anchor_point    import AnchorPoint
     from .property_text   import PropertyText
+    from .pin_rect        import PinRect
 
 
 class Default:
