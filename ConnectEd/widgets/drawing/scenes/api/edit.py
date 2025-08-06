@@ -3,9 +3,9 @@ from typing import Self, Optional
 from PyQt6.QtCore    import QPointF
 from PyQt6.QtWidgets import QGraphicsItem
 
-from pyTooling.Decorators import export
 
-from .....core import logger, copy
+from .....core.log import logger
+from .....core.xml import copy
 
 from ....dialogs.appearance import AppearancePref, AppearancePrefChange
 from ....dialogs.properties import PropertiesType
@@ -29,7 +29,6 @@ ElementType = ElementMixin | QGraphicsItem
 
 
 
-@export
 class DrawingSceneApiEditMixin:
     def editCut(
         self : "DrawingScene",

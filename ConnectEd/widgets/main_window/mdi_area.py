@@ -4,7 +4,10 @@ from PyQt6.QtCore    import Qt, QChildEvent, QEvent
 from PyQt6.QtWidgets import QMdiArea, QWidget, QMdiSubWindow
 
 from ..private import Action
-from .. import DrawingSubWindow, DrawingView, DrawingScene
+
+from ...widgets.drawing.views.drawing import DrawingSubWindow, DrawingView
+
+from ...widgets.drawing.scenes.drawing import DrawingScene
 
 from .spreadsheet import SpreadsheetSubWindow
 

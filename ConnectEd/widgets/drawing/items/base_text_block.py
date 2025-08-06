@@ -1,12 +1,11 @@
-__all__ = ["BaseTextBlock"]
-
 from typing import Self, Optional
 
-from PyQt6.QtCore    import Qt, QPointF, QRectF
+from PyQt6.QtCore    import QPointF, QRectF
 from PyQt6.QtWidgets import QWidget, QStyleOptionGraphicsItem, QStyle, \
                             QGraphicsTextItem
-from PyQt6.QtGui     import QColor, QPainter, QPainterPath, \
-                            QKeyEvent, QFocusEvent, QTextCursor
+from PyQt6.QtGui     import QColor, QPainter, QPainterPath
+
+from ...dialogs.text_block import TextBlockDialog
 
 from ..properties import PropertySpec, PropertiesMixin
 
@@ -25,7 +24,7 @@ from . import APType, \
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from .. import DrawingScene
+    from ..scenes.drawing import DrawingScene
 
 
 class BaseTextBlock(
@@ -66,49 +65,11 @@ class BaseTextBlock(
     def __init__(self : Self, bare : bool = False) -> None:
         QGraphicsTextItem.__init__(self)
         self.initElement(bare=bare)
-        self.setEditable(False)
-        self.setFlag(self.GraphicsItemFlag.ItemIsSelectable , True)
-        self.setFlag(self.GraphicsItemFlag.ItemIsFocusable, True)
+
         self._brectf = QRectF()
         self._hshapef = QPainterPath()
         self.onGeometryChange()
         self.updateHandlesVisibility()
-
-    def keyPressEvent(self, event: QKeyEvent) -> None:
-        if event.key() in (Qt.Key.Key_Return, Qt.Key.Key_Enter):
-            self.clearFocus()
-            event.accept()
-        elif event.key() in (
-            Qt.Key.Key_Left, Qt.Key.Key_Right, Qt.Key.Key_Up, Qt.Key.Key_Down,
-            Qt.Key.Key_Home, Qt.Key.Key_End
-        ):
-            cursor = self.textCursor()
-            shift = event.modifiers() & Qt.KeyboardModifier.ShiftModifier
-            move_mode = QTextCursor.MoveMode.KeepAnchor if shift else \
-                QTextCursor.MoveMode.MoveAnchor
-            if event.key() == Qt.Key.Key_Left:
-                cursor.movePosition(cursor.MoveOperation.Left, move_mode)
-            elif event.key() == Qt.Key.Key_Right:
-                cursor.movePosition(cursor.MoveOperation.Right, move_mode)
-            elif event.key() == Qt.Key.Key_Up:
-                cursor.movePosition(cursor.MoveOperation.Up, move_mode)
-            elif event.key() == Qt.Key.Key_Down:
-                cursor.movePosition(cursor.MoveOperation.Down, move_mode)
-            elif event.key() == Qt.Key.Key_Home:
-                cursor.movePosition(cursor.MoveOperation.StartOfLine, move_mode)
-            elif event.key() == Qt.Key.Key_End:
-                cursor.movePosition(cursor.MoveOperation.EndOfLine, move_mode)
-            self.setTextCursor(cursor)
-            event.accept()
-        else:
-            QGraphicsTextItem.keyPressEvent(self, event)
-        self.onGeometryChange()  # text change means size change
-
-    def focusOutEvent(self, event: QFocusEvent) -> None:
-        QGraphicsTextItem.focusOutEvent(self, event)
-        scene : Optional["DrawingScene"] = self.scene()
-        if scene:
-            scene.onTextEditingComplete(self)
 
     def onGeometryChange(self : Self) -> None:
         self.prepareGeometryChange()
@@ -122,17 +83,19 @@ class BaseTextBlock(
         self.updateOrigin()
 
     def getMenuItems(self : Self) -> list[str]:
-        return ["Appearance..."]
+        return ["Edit..."]
 
     def setPlainText(self, text: str) -> None:
         QGraphicsTextItem.setPlainText(self, text)
         self.onGeometryChange()
 
-    def setEditable(self, editable: bool) -> None:
-        self.setTextInteractionFlags(
-            Qt.TextInteractionFlag.TextEditable if editable else
-            Qt.TextInteractionFlag.NoTextInteraction
-        )
+    def text(self : Self) -> str:
+        """Convenience method to align with BaseText."""
+        return self.toPlainText()
+
+    def setText(self, text: str) -> None:
+        """Convenience method to align with BaseText."""
+        self.setPlainText(text)
 
     def boundingRect(self : Self) -> QRectF:
         return self._brectf if self.hasFocus() else self._brect
@@ -182,3 +145,15 @@ class BaseTextBlock(
         if anchor is not None:
             inst.setOrigin(anchor)
         return inst
+
+    def ctxMenuEdit(
+        self    : Self,
+        checked : bool,
+        view    : "DrawingView"
+    ) -> None:
+        from ..scenes.api.cmd.edit import cmdEditText
+        dialog = TextBlockDialog(self)
+        if dialog.exec():
+            text, appearance = dialog.getChoice()
+            scene : "DrawingScene" = self.scene()
+            scene.undo_stack.push(cmdEditText(scene, self, text, appearance))

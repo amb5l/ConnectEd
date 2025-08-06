@@ -4,9 +4,7 @@ from PyQt6.QtCore    import QPointF, QRectF
 from PyQt6.QtWidgets import QGraphicsItem, QStyleOptionGraphicsItem, QWidget
 from PyQt6.QtGui     import QPainter, QPainterPath
 
-from pyTooling.Decorators import export
-
-from ....core import logger
+from ....core.log import logger
 
 from ..properties import PropertySpec, PropertiesMixin
 
@@ -196,7 +194,6 @@ class PortArrow(Arrow):
 class PortPropertyText(PropertyText):
     pass
 
-@export
 class Port(ElementPosMixin, PortPinArrowMixin, BasePortPin):
     # class attributes
     _NODE_CLASS = PortNode
@@ -236,7 +233,6 @@ class Port(ElementPosMixin, PortPinArrowMixin, BasePortPin):
             inst.setPos(pos)
         return inst
 
-@export
 class BasePin(ElementLocMixin, BasePortPin):
     # class attributes
     _PROPERTY_SPECS = \
@@ -289,7 +285,6 @@ class BlockPinArrow(Arrow):
 class BlockPinPropertyText(PropertyText):
     pass
 
-@export
 class BlockPin(PortPinArrowMixin, BasePin):
     # class attributes
     _NODE_CLASS = BlockPinNode

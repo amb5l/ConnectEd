@@ -1,5 +1,3 @@
-__all__ = ["PropertyTextDialog"]
-
 from typing import Self
 
 from PyQt6.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, QGridLayout,\
@@ -7,7 +5,7 @@ from PyQt6.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, QGridLayout,\
 from PyQt6.QtGui import QFont
 from PyQt6.QtCore import Qt
 
-from ...core import logger
+from ...core.log import logger
 
 from ..drawing.items import PropertyText, QuillPref, QuillPrefChange
 

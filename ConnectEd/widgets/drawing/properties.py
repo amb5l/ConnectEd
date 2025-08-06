@@ -1,9 +1,8 @@
-__all__ = ["PropertySpec", "PropertiesMixin"]
-
 from typing import Callable, Optional, Any, Self
 from dataclasses import dataclass
 
-from ...core import logger, val2str,str2val
+from ...core.log   import logger
+from ...core.utils import val2str, str2val
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:

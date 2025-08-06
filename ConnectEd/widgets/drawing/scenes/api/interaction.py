@@ -4,9 +4,7 @@ from abc import ABC, abstractmethod
 from PyQt6.QtCore    import QPointF
 from PyQt6.QtWidgets import QGraphicsItem
 
-from pyTooling.Decorators import export
-
-from .....core import paste
+from .....core.xml import paste
 
 from ....dialogs.text       import TextDialog
 from ....dialogs.text_block import TextBlockDialog
@@ -42,7 +40,6 @@ if TYPE_CHECKING:
 
 ElementType = ElementMixin | QGraphicsItem
 
-@export
 class Interaction(ABC):
     """Base for all interactions."""
 
@@ -180,7 +177,6 @@ class SelectionMixin:
         self._scene.blockSignals(False)
         self._scene.selectionChanged.emit()
 
-@export
 class EditPasteInteraction(
     MoveMixin,                 # update, _moveBy, _storePos, _restorePos
     AddRemoveMixin,            # _addToScene, _removeFromScene
@@ -218,7 +214,6 @@ class EditPasteInteraction(
         self._removeFromScene()   # remove preview elements
         self._restoreSelection()  # restore original selection
 
-@export
 class EditDuplicateInteraction(EditPasteInteraction):
     """Very similar to paste, but elements come from cloning."""
 
@@ -238,7 +233,6 @@ class EditDuplicateInteraction(EditPasteInteraction):
         else:
             self._elements = None
 
-@export
 class EditMoveInteraction(
     MoveMixin,                 # update, _moveBy, _storePos, _restorePos
     SceneElementsInteraction,  # _scene, _elements, valid
@@ -270,7 +264,6 @@ class EditMoveInteraction(
     def cancel(self) -> None:
         self._restorePos()  # restore initial positions
 
-@export
 class EditResizeInteraction(EditMoveInteraction):
     def __init__(
         self   : Self,
@@ -342,29 +335,21 @@ class PlaceBasePinInteraction(PinInteraction):
     def cancel(self : Self) -> None:
         self._pin.setParentItem(None)
 
-@export
 class PlacePortInteraction(PlaceBaseInteraction):
     _ELEMENT = Port
 
-@export
 class PlaceBlockInteraction(PlaceBaseRectInteraction):
     _ELEMENT = Block
 
-@export
 class PlaceBlockPinInteraction(PlaceBasePinInteraction):
     _PIN = BlockPin
-    _parent : Block
-    _pin    : BlockPin
 
-#@export
-#class PlaceSymbolPinOp(PlacePinBaseOp):
+##class PlaceSymbolPinOp(PlacePinBaseOp):
 #    _CMD = cmdPlaceSymbolPin
 
-@export
 class PlaceRectangleInteraction(PlaceBaseRectInteraction):
     _ELEMENT = Rectangle
 
-@export
 class PlaceTextInteraction(PlaceBaseInteraction):
     _ELEMENT = Text
     _DIALOG  = TextDialog
@@ -384,7 +369,6 @@ class PlaceTextInteraction(PlaceBaseInteraction):
         else:
             self._element = None
 
-@export
 class PlaceTextBlockInteraction(PlaceTextInteraction):
     _ELEMENT = TextBlock
     _DIALOG  = TextBlockDialog

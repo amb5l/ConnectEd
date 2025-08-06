@@ -1,9 +1,5 @@
 """Private classes for the widgets."""
 
-__all__ = [
-    "Action"
-]
-
 from typing import Self, Optional, Any
 
 from PyQt6.QtCore import QObject

@@ -11,11 +11,13 @@ from PyQt6.QtGui     import QBrush, QFont, QAction, QUndoStack, \
                             QWheelEvent, QContextMenuEvent, QCloseEvent, \
                             QStandardItemModel, QStandardItem, QFontMetrics
 
-from ...core import logger
+from ...core.log import logger
 
 from ...core.icon import getCharIcon
 
-from .. import ElementMixin, PropertyDisplay
+from ...widgets.drawing.items import ElementMixin
+
+from ...widgets.drawing.items.property_text import PropertyDisplay
 
 from ... import hub
 

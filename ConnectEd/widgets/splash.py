@@ -1,5 +1,3 @@
-__all__ = ["Splash"]
-
 import time
 
 from typing import Optional, Self
@@ -8,7 +6,7 @@ from PyQt6.QtCore    import Qt, QRectF, QTimer
 from PyQt6.QtWidgets import QSplashScreen, QApplication
 from PyQt6.QtGui     import QPixmap, QFont, QColor, QPainter
 
-from ..core import APP_NAME
+from ..core.defs import APP_NAME
 
 from .. import hub
 

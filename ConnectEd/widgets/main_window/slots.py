@@ -4,8 +4,10 @@ from typing import Self, Callable, Type, TypeVar, cast
 
 from PyQt6.QtWidgets import QMessageBox
 
-from ...core    import logger, APP_NAME
-from ...widgets import DrawingView, DiagramView
+from ...core.defs import APP_NAME
+
+from ...widgets.drawing.views.drawing import DrawingView
+from ...widgets.drawing.views.diagram import DiagramView
 
 from ... import hub
 

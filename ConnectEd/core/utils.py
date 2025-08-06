@@ -1,12 +1,3 @@
-__all__ = [
-    "NameCounter",
-    "check",
-    "camel_to_proper",
-    "getDefaultPath",
-    "val2str",
-    "str2val"
-]
-
 import os, platform
 
 from typing import Self, Any
@@ -91,9 +82,9 @@ def val2str(v : Any) -> str:
 
 def str2val(s : str, t : str) -> Any:
     """Convert a text representation of a Python value to a Python value."""
-    from ..widgets import DEFAULT, EdgeLoc,SignalDirection, \
-                          LinePref, FillPref, QuillPref,\
-                          PropertyDisplay
+    from ..widgets.drawing.items import \
+        DEFAULT, EdgeLoc, SignalDirection, LinePref, FillPref, QuillPref
+    from ..widgets.drawing.items.property_text import PropertyDisplay
     def strValuesToFloats(s : str) -> list[float]:
         return [float(p) for p in s.strip("()").split(",")]
     if s == "None":

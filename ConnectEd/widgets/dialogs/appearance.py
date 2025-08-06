@@ -1,5 +1,3 @@
-__all__ = ["AppearanceDialog", "TextAppearanceLayout"]
-
 from typing import Self, Optional
 from dataclasses import dataclass
 
@@ -10,7 +8,7 @@ from PyQt6.QtWidgets import QWidget, QDialog, QColorDialog, \
 from PyQt6.QtGui     import QPainter, QColor, QPen, QBrush, \
                             QPixmap, QIcon, QFontDatabase, QFont
 
-from ...core import logger
+from ...core.log import logger
 
 from ...core.icon import getDefaultIconSize, getFgBgColors, \
                          SvgIconSingleton, CharIconSingleton

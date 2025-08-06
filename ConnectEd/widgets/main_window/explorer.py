@@ -6,9 +6,10 @@ from PyQt6.QtWidgets import QWidget, QMenu
 from PyQt6.QtGui     import QAction, QStandardItem, \
                             QKeyEvent, QMouseEvent, QWheelEvent, QFocusEvent
 
-from ...core import logger
+from ...core.log import logger
 
-from ..drawing import AnchorPoint, Tether
+from ...widgets.drawing.items.anchor_point import AnchorPoint
+from ...widgets.drawing.items.tether_text  import Tether
 
 from .tree_view import TreeView, TreeViewDock
 
@@ -213,10 +214,13 @@ class Explorer(TreeView):
                 hub.model.load(file)
 
     def editDrawing(self : Self, item : QStandardItem) -> None:
-        from ...core    import DrawingItem
-        from ...widgets import DrawingScene, DrawingView, DrawingSubWindow, \
-                               SymbolScene, SymbolView, SymbolSubWindow, \
-                               DiagramScene, DiagramView, DiagramSubWindow
+        from ...core.db import DrawingItem
+        from ...widgets.drawing.views.drawing import DrawingView, DrawingSubWindow
+        from ...widgets.drawing.views.diagram import DiagramView, DiagramSubWindow
+        from ...widgets.drawing.views.symbol import SymbolView, SymbolSubWindow
+        from ...widgets.drawing.scenes.drawing import DrawingScene
+        from ...widgets.drawing.scenes.diagram import DiagramScene
+        from ...widgets.drawing.scenes.symbol import SymbolScene
         if isinstance(item, DrawingItem):
             # focus existing subwindow if one exists
             for subwindow in hub.main_window.mdi_area.subWindowList():

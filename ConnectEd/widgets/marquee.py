@@ -1,5 +1,3 @@
-__all__ = ["Marquee"]
-
 from typing import Self
 
 from PyQt6.QtCore    import Qt, QPoint, QRect, QRectF, QTimer

@@ -1,6 +1,4 @@
-__all__ = ["SymbolScene"]
-
-from . import DrawingScene
+from .drawing import DrawingScene
 
 
 class SymbolScene(DrawingScene):

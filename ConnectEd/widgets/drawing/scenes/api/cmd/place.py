@@ -2,7 +2,6 @@ from typing import Self
 
 from PyQt6.QtCore    import QPointF
 
-from pyTooling.Decorators import export
 
 from ....items import EdgeLoc, ElementMixin
 
@@ -44,31 +43,24 @@ class cmdPlaceBase(cmdSceneBase):
         super().undo() # restore selection set
         self._scene.removeItem(self._element)
 
-@export
 class cmdPlacePort(cmdPlaceBase):
     _CLASS = Port
 
-@export
 class cmdPlacePinRect(cmdPlaceBase):
     _CLASS = PinRect
 
-@export
 class cmdPlaceBlock(cmdPlacePinRect):
     _CLASS = Block
 
-@export
 class cmdPlaceRectangle(cmdPlaceBase):
     _CLASS = Rectangle
 
-@export
 class cmdPlaceText(cmdPlaceBase):
     _CLASS = Text
 
-@export
 class cmdPlaceTextBlock(cmdPlaceBase):
     _CLASS = TextBlock
 
-@export
 class cmdPlaceBasePin(cmdBase):
     """Base class for commands that place a pin."""
 
@@ -84,10 +76,8 @@ class cmdPlaceBasePin(cmdBase):
     def begin(self : Self, pos : QPointF) -> None:
         raise NotImplementedError
 
-@export
 class cmdPlaceBlockPin(cmdPlaceBasePin):
     _CLASS = BlockPin
 
-#@export
-#class cmdPlaceSymbolPin(cmdPlacePinBase):
+##class cmdPlaceSymbolPin(cmdPlacePinBase):
 #    _CLASS = SymbolPin

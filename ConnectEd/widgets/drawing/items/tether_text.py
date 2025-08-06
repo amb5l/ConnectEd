@@ -1,5 +1,3 @@
-__all__ = ["Tether","TetherText"]
-
 from typing import Self, Optional
 
 from PyQt6.QtCore    import QPointF, QLineF

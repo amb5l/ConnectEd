@@ -1,5 +1,3 @@
-__all__ = ["PropertiesDialog"]
-
 from typing import Self, Optional, Any
 
 from PyQt6.QtCore    import Qt, QModelIndex
@@ -10,7 +8,8 @@ from PyQt6.QtGui     import QStandardItemModel, QStandardItem, QBrush
 from .table_view import TableView
 
 from ... import hub
-from ...core import logger
+
+from ...core.log import logger
 
 from ..drawing.items import ElementMixin
 from ..drawing.items.property_text import PropertyText, PropertyDisplay

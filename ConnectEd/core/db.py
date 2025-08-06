@@ -1,9 +1,3 @@
-__all__ = [
-    "DrawingItem", "SymbolItem", "DiagramItem",
-    "DbItem", "DesignDbItem", "LibraryDbItem",
-    "Model"
-]
-
 from typing import Self, Optional
 
 from PyQt6.QtCore import Qt, QXmlStreamWriter, QXmlStreamReader
@@ -13,9 +7,9 @@ from .. import hub
 
 from ..widgets.dialogs.file import FileSaveAsDialog
 
-from . import logger, \
-              LIB_EXT, DSN_EXT, \
-              copy, paste, fromXmlBegin, loadItems, saveBegin, saveEnd
+from .log  import logger
+from .defs import LIB_EXT, DSN_EXT
+from .xml  import copy, paste, fromXmlBegin, loadItems, saveBegin, saveEnd
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -119,7 +113,7 @@ class SymbolItem(DrawingItem):
     @classmethod
     def sceneClass(cls):
         if cls._scene_class is None:
-            from ..widgets.drawing.scenes import SymbolScene # deferred import
+            from ..widgets.drawing.scenes.symbol import SymbolScene # deferred import
             cls._scene_class = SymbolScene
         return cls._scene_class
 
@@ -129,7 +123,7 @@ class DiagramItem(DrawingItem):
     @classmethod
     def sceneClass(cls):
         if cls._scene_class is None:
-            from ..widgets.drawing.scenes import DiagramScene # deferred import
+            from ..widgets.drawing.scenes.diagram import DiagramScene # deferred import
             cls._scene_class = DiagramScene
         return cls._scene_class
 

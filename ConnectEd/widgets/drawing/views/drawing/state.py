@@ -2,13 +2,16 @@ from typing import Self, Optional
 
 from PyQt6.QtCore import Qt, QPoint, QPointF
 
-from .....core import logger
+from .....core.log import logger
 
 from ....dialogs.appearance import AppearanceDialog
 
-from ...items import ElementMixin, Handle, PinRect
+from ...items import ElementMixin
 
-from ...scenes import DrawingScene
+from ...items.handle   import Handle
+from ...items.pin_rect import PinRect
+
+from ...scenes.drawing import DrawingScene
 
 from ...scenes.api.interaction import *
 
@@ -149,7 +152,7 @@ class DrawingViewStateIdle(DrawingViewStateBase):
                     return
         if not items_at \
             and not (m & (qkm.ControlModifier | qkm.ShiftModifier)):
-            self.view.scene.clearSelection()
+            self.scene.clearSelection()
             items = []
         self.view._selectPoint(s, m)
         items = self.scene.selectedItems()

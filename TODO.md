@@ -24,20 +24,6 @@ size change
 position change
 
 
-
-_ATTR_SPECS => _PROPERTY_SPECS?
-
-ElementLineMixin._ATTR_SPECS_LINE
-parent properties to keypoints - keypoints always visible?
-MOVE TO ELEMENT BASE MIXIN AND NEW MIXIN STRUCTURE
-
-
-annotation => TetherText
-
-editPaste in view vs scene?
-
-editCopy use ElementXmlMixin
-
 Cloning blocks leaves out pins
 Move to BaseText for pin/port name
 Port and other element rotation
@@ -84,8 +70,7 @@ General
 - review setPos/pos - use _local_pos to simplify/speed up pos()
 - review itemChange to connect to KeyPointManager change signal
 
-- use pyTooling @export
-- class variable type hints
+- use pyTooling - class variable type hints
 
 - improve context menu handling for single vs multiple elements;
   consider adding title; handle properties and appearance automatically?

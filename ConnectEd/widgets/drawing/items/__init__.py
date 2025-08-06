@@ -10,17 +10,20 @@ from PyQt6.QtCore    import Qt, QPointF, QRectF, \
 from PyQt6.QtGui     import QPen, QBrush, QColor, QFont, QPainterPath, QAction
 from PyQt6.QtWidgets import QGraphicsItem, QGraphicsSceneContextMenuEvent, QMenu
 
-from ....core import Z_DRAWING, logger, \
-                     val2str, str2val, toXmlAttrs, fromXmlAttrs
+from .... import hub
+
+from ....core.log   import logger
+from ....core.defs  import Z_DRAWING
+from ....core.utils import val2str, str2val
+from ....core.xml   import toXmlAttrs, fromXmlAttrs
 
 from ..properties import PropertySpec
 
-from .... import hub
-
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from .. import DrawingView, DrawingScene
-    from .property_text import PropertyText
+    from ..views.drawing import DrawingView
+    from .anchor_point   import AnchorPoint
+    from .property_text  import PropertyText
 
 
 class Default:
@@ -740,6 +743,7 @@ class ElementRectAnchorPointsMixin(ElementAnchorPointsMixin):
     _rect   : QRectF   # border rectangle, maintained by element
 
     def initAnchorPoints(self : Self) -> None:
+        from .anchor_point import AnchorPoint
         self._anchor_points = {}
         for ap_name, ap_type in self._AP_TYPES.items():
             self._anchor_points[ap_name] = AnchorPoint(
@@ -954,7 +958,7 @@ class ElementMenuMixin:
             if item.startswith("-"):
                 menu.addSeparator()
             else:
-                from .. import getView
+                from ..views.drawing import getView
                 view = getView(pos)
                 slot_name = f"ctxMenu{item.replace(' ', '').replace('.', '')}"
                 if hasattr(self, slot_name):
@@ -985,6 +989,9 @@ class ElementMenuMixin:
 class ElementCloneMixin:
     def clone(self : Self, original : Optional[Self] = None) -> Self:
         """Create a clone of this element with a new UUID."""
+        from .anchor_point  import AnchorPoint
+        from .property_text import PropertyText
+        from .port_pin      import BasePin
         source = original if original is not None else self
         clone = self.__class__(bare=True)
         # clone properties
@@ -1014,6 +1021,8 @@ class ElementCloneMixin:
 
 class ElementXmlMixin:
     def toXml(self : Self, xw : QXmlStreamWriter) -> None:
+        from .property_text import PropertyText
+        from .port_pin      import BasePin
         xw.writeStartElement(self.__class__.__name__)
         toXmlAttrs(self, xw)
         from .port_pin import BasePin
@@ -1054,58 +1063,19 @@ def clone(elements : list[ElementMixin]) -> list[ElementMixin]:
             logger.warning(f"Failed to clone element {element}: {e}")
     return r
 
-__all__ = [
-    "Default",
-    "DEFAULT",
-    "NoChange",
-    "NO_CHANGE",
-    "APType",
-    "Edge",
-    "EdgeLoc",
-    "SignalDirection",
-    "RangeDirection",
-    "VectorRange",
-    "LineSpec",
-    "LinePref",
-    "LinePrefChange",
-    "FillSpec",
-    "FillPref",
-    "FillPrefChange",
-    "QuillSpec",
-    "QuillPref",
-    "QuillPrefChange",
-    "ElementMixin",
-    "clone"
-]
-from .anchor_point import AnchorPoint
-__all__ += anchor_point.__all__
-from .handle import Handle
-__all__ += handle.__all__
+_element_classes = {}
 
-from .port_pin import Port, BasePin, BlockPin
-__all__ += port_pin.__all__
-from .pin_rect import PinRect
-__all__ += pin_rect.__all__
-from .block import Block
-__all__ += block.__all__
-from .symbol_instance import SymbolInstance
-__all__ += symbol_instance.__all__
+def register_element(module_name: str, class_name: str):
+    """Import a class from a submodule and register it in _element_classes."""
+    import importlib
+    module = importlib.import_module(f".{module_name}", package=__name__)
+    cls = getattr(module, class_name)
+    _element_classes[class_name] = cls
+    return cls
 
-from .base_text import BaseText
-__all__ += base_text.__all__
-from .tether_text import TetherText, Tether
-__all__ += tether_text.__all__
-from .property_text import PropertyDisplay, PropertyTextSpec, PropertyText
-__all__ += property_text.__all__
-from .text import Text
-__all__ += text.__all__
-from .text_block import TextBlock
-__all__ += text_block.__all__
-
-from .rectangle import Rectangle
-__all__ += rectangle.__all__
-
-element_class_dict = {}
-for class_name in __all__:
-    element_class_dict[class_name] = globals()[class_name]
-__all__ += ["element_class_dict"]
+register_element("port_pin", "Port")
+register_element("block", "Block")
+register_element("property_text", "PropertyText")
+register_element("rectangle", "Rectangle")
+register_element("text", "Text")
+register_element("text_block", "TextBlock")

@@ -1,5 +1,3 @@
-__all__ = ["getView", "DrawingView", "DrawingSubWindow"]
-
 from typing import Self, Optional
 from math   import ceil
 
@@ -10,7 +8,7 @@ from PyQt6.QtGui     import QPainter, QPen, QCloseEvent, QKeyEvent
 
 from ....marquee import Marquee
 
-from ...scenes import DrawingScene
+from ...scenes.drawing import DrawingScene
 
 from ...scenes.api.interaction import Interaction
 
@@ -51,14 +49,12 @@ class DrawingView(
 
     def __init__(self : Self, scene : DrawingScene) -> None:
         super().__init__(scene)
-        #scene.textEditingComplete.connect(self.placeTextBlockFinalize)
         self.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
         self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
         self.setViewportUpdateMode(
             QGraphicsView.ViewportUpdateMode.FullViewportUpdate
         )
-
         self._shown    = False
         self._zoomed   = False
         self.marquee   = Marquee(self)

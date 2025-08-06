@@ -4,9 +4,14 @@ from PyQt6.QtCore    import Qt
 from PyQt6.QtWidgets import QApplication
 from PyQt6.QtGui     import QIcon
 
-from ..core      import NameCounter, Settings, Model, known_args, unknown_args
-from ..resources import initResources
-from ..widgets   import Splash, MainWindow
+from ..core.utils import NameCounter
+from ..core.nv    import Settings
+from ..core.db    import Model
+from ..core.args  import known_args, unknown_args
+from ..resources  import initResources
+
+from ..widgets.splash      import Splash
+from ..widgets.main_window import MainWindow
 
 from .. import hub
 

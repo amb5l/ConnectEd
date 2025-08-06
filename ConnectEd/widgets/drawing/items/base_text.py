@@ -5,13 +5,9 @@ from PyQt6.QtWidgets import QWidget, QStyleOptionGraphicsItem, QStyle, \
                             QGraphicsSimpleTextItem
 from PyQt6.QtGui     import QPainter, QFontMetrics
 
-from pyTooling.Decorators import export
-
 from ...dialogs.text import TextDialog
 
 from ..properties import PropertySpec, PropertiesMixin
-
-
 
 from . import APType, \
               ElementMixin, \
@@ -31,7 +27,6 @@ if TYPE_CHECKING:
     from ..views  import DrawingView
     from ..scenes import DrawingScene
 
-@export
 class BaseText(
     ElementMixin,
     ElementPosMixin,

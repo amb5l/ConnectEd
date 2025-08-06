@@ -1,6 +1,5 @@
 from typing import Self
 
-from pyTooling.Decorators import export
 
 from .....dialogs.appearance import QuillPref, QuillPrefChange, \
                                     AppearancePref, AppearancePrefChange
@@ -11,11 +10,10 @@ from ....items import ElementMixin
 from ....items.base_text     import BaseText
 from ....items.property_text import PropertyText
 
-from ... import DrawingScene
+from ....scenes.drawing import DrawingScene
 
 from . import cmdSceneElement, cmdSceneElements
 
-@export
 class cmdEditText(cmdSceneElement):
     _element           : BaseText
     _text_before       : str
@@ -47,7 +45,6 @@ class cmdEditText(cmdSceneElement):
         self._element.quill.setPref(self._appearance_before)
         self._element.update()
 
-@export
 class cmdEditPropertyText(cmdSceneElement):
     _element           : PropertyText
     _name_before       : str
@@ -86,7 +83,6 @@ class cmdEditPropertyText(cmdSceneElement):
         self._element.quill.setPref(self._appearance_before)
         self._element.update()
 
-@export
 class cmdEditAppearance(cmdSceneElements):
     _before : dict[ElementMixin, AppearancePref]
     _after  : AppearancePrefChange
@@ -125,7 +121,6 @@ class cmdEditAppearance(cmdSceneElements):
             e.onGeometryChange()
             e.update()
 
-@export
 class cmdEditProperties(cmdSceneElement):
     _changes : dict[PropertyText, tuple[str, PropertiesType, PropertiesType]]
 

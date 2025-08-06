@@ -1,5 +1,3 @@
-__all__ = ["known_args", "unknown_args"]
-
 import argparse
 
 parser = argparse.ArgumentParser(

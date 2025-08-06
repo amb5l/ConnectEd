@@ -1,5 +1,3 @@
-__all__ = ["PropertyDisplay", "PropertyTextSpec", "PropertyText"]
-
 from typing import Self
 from enum   import Enum
 from dataclasses import dataclass
@@ -13,7 +11,7 @@ from .tether_text import TetherText
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from .. import DrawingView
+    from ..views.drawing import DrawingView
 
 
 class PropertyDisplay(Enum):

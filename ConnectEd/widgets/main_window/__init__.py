@@ -5,15 +5,15 @@ This module provides the main application window, including menu bars,
 status bars, and the central MDI area for document management.
 """
 
-__all__ = ["MainWindow"]
-
 from typing import Self
 
 from PyQt6.QtCore    import Qt
 from PyQt6.QtWidgets import QApplication, QMainWindow
 from PyQt6.QtGui     import QIcon, QCloseEvent
 
-from ...core     import APP_NAME, check
+from ...core.defs  import APP_NAME
+from ...core.utils import check
+
 from .actions    import Actions
 from .slots      import Slots
 from .menu_bar   import MenuBar

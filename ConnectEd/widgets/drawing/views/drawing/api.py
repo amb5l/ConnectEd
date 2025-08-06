@@ -4,10 +4,9 @@ from PyQt6.QtCore    import QPointF
 from PyQt6.QtWidgets import QApplication
 from PyQt6.QtGui     import QCursor
 
-from ...scenes import DrawingScene
 from ...query  import QueryWindow
 
-from ...scenes.api.interaction import *
+from ...scenes.drawing import DrawingScene
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:

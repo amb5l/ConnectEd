@@ -1,5 +1,3 @@
-__all__ = ["DrawingScene"]
-
 from typing import Self, Optional
 
 from PyQt6.QtCore    import pyqtSignal, QPointF, QRectF, QSizeF, \
@@ -7,23 +5,26 @@ from PyQt6.QtCore    import pyqtSignal, QPointF, QRectF, QSizeF, \
 from PyQt6.QtWidgets import QGraphicsScene
 from PyQt6.QtGui     import QUndoStack
 
-from ....core import logger, toXmlAttrs, fromXmlAttrs
-
-from ..items.text_block    import TextBlock
-
-from .api import *
-
 from .... import hub
 
+from ....core.log import logger
+from ....core.xml import toXmlAttrs, fromXmlAttrs
+
+from ..items.text_block import TextBlock
+
 from ..properties import PropertySpec, PropertiesMixin
+
+from .api.file import DrawingSceneApiFileMixin
+from .api.edit import DrawingSceneApiEditMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ....core import DrawingItem
 
 class DrawingScene(
-    DrawingSceneApiMixin,
     PropertiesMixin,
+    DrawingSceneApiFileMixin,
+    DrawingSceneApiEditMixin,
     QGraphicsScene
 ):
     # class variables
@@ -38,9 +39,6 @@ class DrawingScene(
     # instance attributes
     item       : Optional["DrawingItem"]
     undo_stack : Optional[QUndoStack]
-
-    # custom signals
-    textEditingComplete = pyqtSignal(TextBlock)
 
     def __init__(
         self    : Self,
@@ -75,7 +73,7 @@ class DrawingScene(
 
     @classmethod
     def fromXml(cls : Self, xr : QXmlStreamReader, parent : Optional["DrawingItem"] = None) -> Self:
-        from ..items import element_class_dict
+        from ..items import _element_classes
         cls_name = cls.__name__
         if xr.name() != cls_name:
             raise ValueError(f"Expected {cls_name} element, got {xr.name()}")
@@ -84,17 +82,11 @@ class DrawingScene(
         while not (xr.isEndElement() and xr.name() == cls_name):
             if xr.tokenType() == QXmlStreamReader.TokenType.StartElement:
                 attr_name = xr.name()
-                if attr_name in element_class_dict:
-                    cls = element_class_dict[attr_name]
+                if attr_name in _element_classes:
+                    cls = _element_classes[attr_name]
                     element = cls.fromXml(xr)
                     drawing_scene.addItem(element)
                 else:
                     logger.warning(f"Unexpected element: {attr_name}")
             xr.readNext()
         return drawing_scene
-
-    def onTextEditingComplete(self, text_item: TextBlock):
-        self.textEditingComplete.emit(text_item)
-
-    def getName(self : Self) -> str:
-        return self.item.text()

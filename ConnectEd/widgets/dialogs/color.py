@@ -1,5 +1,3 @@
-__all__ = ["ColorDialog"]
-
 from typing import Self, Optional
 
 from PyQt6.QtCore    import Qt, QRect

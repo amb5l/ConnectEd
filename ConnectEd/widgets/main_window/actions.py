@@ -1,10 +1,14 @@
 from typing import Self, Optional
 
-from PyQt6.QtWidgets import QApplication, QMdiSubWindow, QGraphicsItem
+from PyQt6.QtWidgets import QApplication, QMdiSubWindow
 from PyQt6.QtGui     import QKeySequence
 
-from ...core    import MIME_TYPE, logger
-from ...widgets import DrawingSubWindow, DrawingScene
+from ...core.log  import logger
+from ...core.defs import MIME_TYPE
+
+from ...widgets.drawing.views.drawing  import DrawingSubWindow
+from ...widgets.drawing.scenes.drawing import DrawingScene
+
 from ..private  import Action
 
 from typing import TYPE_CHECKING

@@ -4,24 +4,13 @@ from PyQt6.QtCore    import QPointF
 from PyQt6.QtWidgets import QGraphicsItem
 from PyQt6.QtGui     import QUndoCommand
 
-from pyTooling.Decorators import export
 
-from ......core import camel_to_proper
-
-from .....dialogs.appearance import QuillPref, QuillPrefChange, \
-                                    AppearancePref, AppearancePrefChange
-from .....dialogs.properties import PropertiesType
+from ......core.utils import camel_to_proper
 
 from ....items import EdgeLoc, ElementMixin
 
-from ....items.port_pin      import BasePin, Port, BlockPin
-from ....items.pin_rect      import PinRect
-from ....items.base_text     import BaseText
-from ....items.property_text import PropertyText
-from ....items.block         import Block
-from ....items.rectangle     import Rectangle
-from ....items.text          import Text
-from ....items.text_block    import TextBlock
+from ....items.port_pin import BasePin
+from ....items.pin_rect import PinRect
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -30,7 +19,6 @@ if TYPE_CHECKING:
 
 ElementType = ElementMixin | QGraphicsItem
 
-@export
 class cmdBase(QUndoCommand):
     """Base class for all commands."""
 
@@ -43,7 +31,6 @@ class cmdBase(QUndoCommand):
         """Merge this command with another identical command."""
         return False  # never merge (for now)
 
-@export
 class cmdSceneBase(cmdBase):
     """Base class for all commands that work with a scene."""
 
@@ -65,7 +52,6 @@ class cmdSceneBase(cmdBase):
             f"{self.__class__.__name__} must implement redo"
         )
 
-@export
 class cmdSceneElement(cmdSceneBase):
     """Base class for all commands that work with an element."""
 
@@ -80,7 +66,6 @@ class cmdSceneElement(cmdSceneBase):
         super().__init__(scene)
         self._element = element
 
-@export
 class cmdSceneElements(cmdSceneBase):
     """Base class for all commands that work with multiple elements."""
 
@@ -155,7 +140,6 @@ class cmdAddRemoveMixin:
         self._scene.blockSignals(False)
         self._scene.selectionChanged.emit()
 
-@export
 class cmdMoveMixin:
     """Mixin for commands that move elements by an offset."""
 
@@ -174,7 +158,6 @@ class cmdMoveMixin:
         for e in self._elements:
             e.moveBy(self._spos[e] - e.scenePos())
 
-@export
 class cmdAdd(
     cmdSceneElements,   # _scene, _elements, _selection
     cmdSelectionMixin,  # _preserveSelection, _restoreSelection
@@ -201,7 +184,6 @@ class cmdAdd(
         self._removeFromScene()
         self._restoreSelection()
 
-@export
 class cmdDelete(
     cmdSceneElements,   # _scene, _elements, _selection
     cmdSelectionMixin,  # _preserveSelection, _restoreSelection
@@ -226,7 +208,6 @@ class cmdDelete(
         self._addToScene()
         self._restoreSelection()
 
-@export
 class cmdMove(
     cmdSceneElements, # _scene, _elements
     cmdMoveMixin      # _moveBy, _storePos, _restorePos
@@ -257,7 +238,6 @@ class cmdMove(
         self._restorePos()
         # TODO: add slide logic
 
-@export
 class cmdAddPin(cmdPinBase):
     """Command to add a pin to a pin rect."""
 
@@ -267,7 +247,6 @@ class cmdAddPin(cmdPinBase):
     def undo(self : Self) -> None:
         self._pin.setParentItem(None)
 
-@export
 class cmdDeletePin(cmdPinBase):
     """Command to delete a pin from a pin rect."""
 
@@ -277,7 +256,6 @@ class cmdDeletePin(cmdPinBase):
     def undo(self : Self) -> None:
         self._pin.setParentItem(self._parent)
 
-@export
 class cmdMovePin(cmdPinBase):
     """Command to move a pin."""
 

@@ -1,5 +1,3 @@
-__all__ = ["PinRect"]
-
 from typing import Self, Optional
 
 from PyQt6.QtCore    import QPointF, QSizeF

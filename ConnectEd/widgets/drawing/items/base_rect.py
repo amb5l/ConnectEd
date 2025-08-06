@@ -1,5 +1,3 @@
-__all__ = ["BaseRectangle"]
-
 from typing import Self, Optional, overload
 
 from PyQt6.QtCore    import Qt, QPointF, QRectF, QSizeF

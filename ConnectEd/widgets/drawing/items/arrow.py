@@ -1,5 +1,3 @@
-__all__ = ["Arrow"]
-
 from typing import Self
 
 from PyQt6.QtCore    import QPointF, QRectF

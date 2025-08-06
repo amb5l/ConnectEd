@@ -1,30 +1,17 @@
-__all__ = [
-    "fromXmlBegin",
-    "saveBegin",
-    "saveEnd",
-    "save",
-    "loadItems",
-    "copy",
-    "paste",
-    "toXmlBegin",
-    "toXmlEnd",
-    "toXmlAttrs",
-    "fromXmlAttrs",
-    "fromXmlItems"
-]
-
 from typing import TypeAlias, Union, Any, Optional
 
 from PyQt6.QtCore    import QByteArray, QXmlStreamWriter, QXmlStreamReader, \
                             QFile, QIODevice, QMimeData, QPointF
 from PyQt6.QtWidgets import QApplication
 
-from . import logger, APP_NAME, MIME_TYPE, val2str, str2val
+from .log   import logger
+from .defs  import APP_NAME, MIME_TYPE
+from .utils import val2str, str2val
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from .db import DesignDbItem, LibraryDbItem, DiagramItem, SymbolItem
-    from ..widgets import ElementMixin
+    from ..widgets.drawing.items import ElementMixin
 
 
 XmlItemTypes: TypeAlias = Union[
@@ -71,7 +58,7 @@ def fromXmlItems(
     xr : QXmlStreamReader
 ) -> tuple[list[XmlItemTypes], Optional[QPointF]]:
     from .db import DesignDbItem, LibraryDbItem, DiagramItem, SymbolItem
-    from ..widgets import element_class_dict
+    from ..widgets.drawing.items import _element_classes
     pos = None
     items = []
     fromXmlBegin(xr, APP_NAME)
@@ -97,8 +84,8 @@ def fromXmlItems(
                     case "SymbolItem":
                         item = SymbolItem.fromXml(xr)
                     case _:  # Assume it's an Element
-                        if xr.name() in element_class_dict:
-                            item_class = element_class_dict[xr.name()]
+                        if xr.name() in _element_classes:
+                            item_class = _element_classes[xr.name()]
                             item = item_class.fromXml(xr)
                         else:
                             item = None

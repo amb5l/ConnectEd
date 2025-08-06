@@ -1,5 +1,3 @@
-__all__ = ["PlacePortPinDialog"]
-
 from typing import Self
 
 from PyQt6.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, QGridLayout, \

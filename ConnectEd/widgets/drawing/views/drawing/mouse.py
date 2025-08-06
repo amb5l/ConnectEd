@@ -1,7 +1,7 @@
 from PyQt6.QtCore import Qt, QEvent, QPoint
 from PyQt6.QtGui  import QEnterEvent, QMouseEvent, QWheelEvent, QCursor
 
-from .....core import logger
+from .....core.log import logger
 
 from ...items.handle import Handle
 

@@ -1,4 +1,3 @@
-__all__ = ["Handle"]
 from typing      import Self
 
 from PyQt6.QtCore    import Qt, QRectF, QPointF, \
@@ -6,7 +5,7 @@ from PyQt6.QtCore    import Qt, QRectF, QPointF, \
 from PyQt6.QtWidgets import QGraphicsPathItem
 from PyQt6.QtGui     import QPen, QBrush, QPainterPath, QAction
 
-from . import ElementMenuMixin
+from . import ElementMenuMixin, APType
 
 from .... import hub
 
@@ -48,7 +47,6 @@ class Handle(
         hub.settings.changed.connect(self.onSettingsChange)
 
     def onSettingsChange(self : Self) -> None:
-        from . import APType
         self.prepareGeometryChange()
         theme = hub.settings.getTheme("handle")
         self._pen.setColor(theme.line)
@@ -80,7 +78,6 @@ class Handle(
         self.setPath(self._path_origin if origin else self._path_normal)
 
     def getMenuItems(self : Self) -> list[str]:
-        from . import APType
         items = []
         if self._parent._type == APType.Resizer:
             items.append("Resize")

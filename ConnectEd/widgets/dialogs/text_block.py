@@ -4,7 +4,6 @@ from PyQt6.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, \
                             QLabel, QTextEdit, QPushButton, \
                             QGraphicsTextItem
 
-from pyTooling.Decorators import export
 
 from ... import hub
 
@@ -15,7 +14,6 @@ from .appearance import TextAppearanceLayout
 from . import okCancelLayout
 
 
-@export
 class TextBlockDialog(QDialog):
     dialog_layout     : QVBoxLayout
     text_layout       : QVBoxLayout
