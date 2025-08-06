@@ -16,8 +16,9 @@ from ...items.base_text import BaseText
 
 from ...items.property_text import PropertyText
 
-from .cmd import cmdSceneElement, cmdSceneElements, \
-                 cmdSelectionMixin, cmdAddRemoveMixin
+from .cmd import cmdDelete
+from .cmd.edit import cmdEditText, cmdEditPropertyText, \
+                      cmdEditProperties, cmdEditAppearance
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:

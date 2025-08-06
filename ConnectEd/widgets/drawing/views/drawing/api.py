@@ -70,8 +70,9 @@ class DrawingViewApiMixin:
     def editProperties(self : "DrawingView") -> None:
         self.state.go(self.stateEditProperties)
 
-    def editAppearance(self : "DrawingView") -> None:
-        self.state.go(self.stateEditAppearance)
+    @withScene
+    def editAppearance(self : "DrawingView", scene : DrawingScene) -> None:
+        scene.editAppearance(self.scene().selectedItems(), self.scene().appearance)
 
     def editQuery(self : "DrawingView") -> None:
         self.state.go(self.stateEditQuery)
@@ -190,7 +191,7 @@ class DrawingViewApiMixin:
         self.state.go(self.statePlaceRectangle1)
 
     def placeTextBlock(self : "DrawingView") -> None:
-        self.state.go(self.statePlaceTextBlock1)
+        self.state.go(self.statePlaceTextBlock)
 
     def placeText(self : "DrawingView") -> None:
         self.state.go(self.statePlaceText)

@@ -6,16 +6,12 @@ from PyQt6.QtWidgets import QGraphicsItem
 
 from .....core.xml import paste
 
-from ....dialogs.text       import TextDialog
-from ....dialogs.text_block import TextBlockDialog
-
 from ...items import ElementMixin, clone
 
 from ...items.handle     import Handle
 
 from ...items.base_rect  import BaseRectangle
 from ...items.port_pin   import BasePin
-from ...items.base_text  import BaseText
 from ...items.pin_rect   import PinRect
 from ...items.port_pin   import Port
 from ...items.block      import Block
@@ -24,14 +20,7 @@ from ...items.rectangle  import Rectangle
 from ...items.text       import Text
 from ...items.text_block import TextBlock
 
-from .cmd   import cmdAdd, cmdDelete, cmdMove, \
-                   cmdAddPin, cmdDeletePin, cmdMovePin
-
-from .cmd.edit import cmdEditText, cmdEditPropertyText, cmdEditAppearance, \
-                      cmdEditProperties
-
-from .cmd.place import cmdPlacePort, cmdPlaceBlock, cmdPlaceRectangle, \
-                       cmdPlaceText, cmdPlaceTextBlock, cmdPlaceBlockPin
+from .cmd   import cmdAdd, cmdMove, cmdAddPin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -282,8 +271,16 @@ class PlaceBaseInteraction(
     # class attributes
     _ELEMENT : ElementType  # subclass to override with element class
 
-    def __init__(self : Self, scene : "DrawingScene", pos : QPointF):
-        element = self._ELEMENT(pos)
+    def __init__(
+        self    : Self,
+        scene   : "DrawingScene",
+        pos     : QPointF,
+        element : Optional[ElementType] = None
+    ) -> None:
+        if element is None:
+            element = self._ELEMENT(pos)
+        else:
+            element.setPos(pos)
         SceneElementInteraction.__init__(self, scene, element)
         self._preserveSelection()
         self._scene.clearSelection()
@@ -352,23 +349,6 @@ class PlaceRectangleInteraction(PlaceBaseRectInteraction):
 
 class PlaceTextInteraction(PlaceBaseInteraction):
     _ELEMENT = Text
-    _DIALOG  = TextDialog
 
-    def __init__(self : Self, scene : "DrawingScene", pos : QPointF):
-        element : Text = self._ELEMENT(pos)
-        dialog = self._DIALOG(element)
-        if dialog.exec():
-            text, appearance = dialog.getChoice()
-            element.setText(text)
-            element.quill.setPref(appearance)
-            SceneElementInteraction.__init__(self, scene, element)
-            self._preserveSelection()
-            self._scene.clearSelection()
-            self._scene.addItem(self._element)
-            self._element.setSelected(True)
-        else:
-            self._element = None
-
-class PlaceTextBlockInteraction(PlaceTextInteraction):
+class PlaceTextBlockInteraction(PlaceBaseInteraction):
     _ELEMENT = TextBlock
-    _DIALOG  = TextBlockDialog

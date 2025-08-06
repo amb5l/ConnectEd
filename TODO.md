@@ -1,4 +1,6 @@
 - sort out editAppearance, editProperties in view/scene/cmd
+- scene:
+  editText, editPropertyText, editProperties, editAppearance
 
 - what about moving PropertyTexts when their parents are or are not selected?
 - settings propagation

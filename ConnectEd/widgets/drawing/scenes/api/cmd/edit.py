@@ -9,9 +9,11 @@ from ....items import ElementMixin, ElementOriginMixin
 from ....items.base_text     import BaseText
 from ....items.property_text import PropertyText
 
-from ....scenes.drawing import DrawingScene
-
 from . import cmdSceneElement, cmdSceneElements
+
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from ....scenes.drawing import DrawingScene
 
 class cmdEditText(cmdSceneElement):
     _element           : BaseText

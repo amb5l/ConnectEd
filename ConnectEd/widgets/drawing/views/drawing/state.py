@@ -5,11 +5,15 @@ from PyQt6.QtCore import Qt, QPoint, QPointF
 from .....core.log import logger
 
 from ....dialogs.appearance import AppearanceDialog
+from ....dialogs.text       import TextDialog
+from ....dialogs.text_block import TextBlockDialog
 
 from ...items import ElementMixin
 
-from ...items.handle   import Handle
-from ...items.pin_rect import PinRect
+from ...items.handle     import Handle
+from ...items.pin_rect   import PinRect
+from ...items.text       import Text
+from ...items.text_block import TextBlock
 
 from ...scenes.drawing import DrawingScene
 
@@ -369,13 +373,33 @@ class DrawingViewStatePlaceText(ClickMixin):
     TIP = "Place Text: pick a position"
 
     def entry(self : Self, v : QPoint, s : QPointF) -> None:
-        self.interact(PlaceTextInteraction(self.scene, self._snap(s)))
+        element = Text(self._snap(s))
+        dialog = TextDialog(element)
+        if dialog.exec():
+            text, appearance = dialog.getChoice()
+            element.setText(text)
+            element.quill.setPref(appearance)
+            self.interact(PlaceTextInteraction(
+                self.scene, self._snap(s), element)
+            )
+        else:
+            self.view.state.go(self.view.stateIdle)
 
-class DrawingViewStatePlaceTextBlock1(ClickMixin):
+class DrawingViewStatePlaceTextBlock(ClickMixin):
     TIP = "Place Text Block: pick a position"
 
     def entry(self : Self, v : QPoint, s : QPointF) -> None:
-        self.interact(PlaceTextBlockInteraction(self.scene, self._snap(s)))
+        element = TextBlock(self._snap(s))
+        dialog = TextBlockDialog(element)
+        if dialog.exec():
+            text, appearance = dialog.getChoice()
+            element.setPlainText(text)
+            element.quill.setPref(appearance)
+            self.interact(PlaceTextBlockInteraction(
+                self.scene, self._snap(s), element)
+            )
+        else:
+            self.view.state.go(self.view.stateIdle)
 
 class DrawingViewStateMixin:
     state                : DrawingViewStateBase
@@ -400,7 +424,7 @@ class DrawingViewStateMixin:
     statePlaceRectangle1 : DrawingViewStatePlaceRectangle1
     statePlaceRectangle2 : DrawingViewStatePlaceRectangle2
     statePlaceText       : DrawingViewStatePlaceText
-    statePlaceTextBlock1 : DrawingViewStatePlaceTextBlock1
+    statePlaceTextBlock  : DrawingViewStatePlaceTextBlock
 
     def initStates(self : "DrawingView") -> None:
         self.stateIdle            = DrawingViewStateIdle            (self)
@@ -424,4 +448,4 @@ class DrawingViewStateMixin:
         self.statePlaceRectangle1 = DrawingViewStatePlaceRectangle1 (self)
         self.statePlaceRectangle2 = DrawingViewStatePlaceRectangle2 (self)
         self.statePlaceText       = DrawingViewStatePlaceText       (self)
-        self.statePlaceTextBlock1 = DrawingViewStatePlaceTextBlock1 (self)
+        self.statePlaceTextBlock  = DrawingViewStatePlaceTextBlock  (self)
