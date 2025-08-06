@@ -1,11 +1,10 @@
 from typing import Self
 
-
 from .....dialogs.appearance import QuillPref, QuillPrefChange, \
                                     AppearancePref, AppearancePrefChange
 from .....dialogs.properties import PropertiesType
 
-from ....items import ElementMixin
+from ....items import ElementMixin, ElementOriginMixin
 
 from ....items.base_text     import BaseText
 from ....items.property_text import PropertyText
@@ -144,3 +143,24 @@ class cmdEditProperties(cmdSceneElement):
             for label, before, _ in self._changes[p]:
                 setter, _ = PropertyText.TABLE_ATTRS[label]
                 setter(p, before)
+
+class cmdEditOrigin(cmdSceneElement):
+    _element : ElementOriginMixin
+    _old     : str
+    _new     : str
+
+    def __init__(
+        self : Self,
+        scene   : "DrawingScene",
+        element : ElementOriginMixin,
+        origin  : str
+    ):
+        super().__init__(scene, element)
+        self._old = element.getOrigin()
+        self._new = origin
+
+    def redo(self : Self) -> None:
+        self._element.setOrigin(self._new)
+
+    def undo(self : Self) -> None:
+        self._element.setOrigin(self._old)

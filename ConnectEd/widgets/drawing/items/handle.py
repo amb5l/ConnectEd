@@ -11,7 +11,8 @@ from .... import hub
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from ... import DrawingView
+    from ..views.drawing  import DrawingView
+    from ..scenes.drawing import DrawingScene
     from . import ElementAnchorPointsMixin
     from .anchor_point import AnchorPoint
 
@@ -113,8 +114,14 @@ class Handle(
         view.state.go(view.stateEditResize)
 
     def ctxMenuAssignOrigin(
-        self : Self,
-        _    : bool,
-        view : "DrawingView"
+        self    : Self,
+        checked : bool,
+        view    : "DrawingView"
     ) -> None:
-        self._element.setOrigin(self._parent._name)
+        from ..scenes.api.cmd.edit import cmdEditOrigin
+        scene : "DrawingScene" = self.scene()
+        scene.undo_stack.push(cmdEditOrigin(
+            scene,
+            self._element,      # element
+            self._parent._name  # name of anchor point
+        ))
