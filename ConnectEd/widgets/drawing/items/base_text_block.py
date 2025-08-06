@@ -56,6 +56,7 @@ class BaseTextBlock(
             )
         } | \
         ElementQuillMixin._PROPERTY_SPECS_QUILL
+    _EDIT_DIALOG = TextBlockDialog
 
     # instance attributes
     _rect    : QRectF        # border rectangle (for keypoints)
@@ -145,15 +146,3 @@ class BaseTextBlock(
         if anchor is not None:
             inst.setOrigin(anchor)
         return inst
-
-    def ctxMenuEdit(
-        self    : Self,
-        checked : bool,
-        view    : "DrawingView"
-    ) -> None:
-        from ..scenes.api.cmd.edit import cmdEditText
-        dialog = TextBlockDialog(self)
-        if dialog.exec():
-            text, appearance = dialog.getChoice()
-            scene : "DrawingScene" = self.scene()
-            scene.undo_stack.push(cmdEditText(scene, self, text, appearance))

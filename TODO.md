@@ -1,13 +1,7 @@
-- check operation.valid in state.py
 - what about moving PropertyTexts when their parents are or are not selected?
-- preserve selection set with placement commands
-- copy/paste issue with Block
-- moves are merging
-- selection propagation - new elements
 - settings propagation
+- selection state propagation parent => child
 - setters and getters, properties vs not, use of get prefix for getters
-- "# instance attributes"
-- revisit selection state propagation parent => child
 - assign origin is not undoable
 - should KeyPoint be a QPointF subclass?
 - ratsnest
@@ -149,8 +143,5 @@ Connect the stack’s state changes to action enablement in DrawingView.
 - look at windowFilePath
 - move some context menu logic into TreeView
 - tidy up MDI subwindow top right button icons
-- rectangle move/slide can end up off grid
 - apply default path to new databases
-- review global imports
-- resize graphical artifacts
-- modified state tracking and GUI indication
+

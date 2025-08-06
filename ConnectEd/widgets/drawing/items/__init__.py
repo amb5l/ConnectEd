@@ -21,9 +21,10 @@ from ..properties import PropertySpec
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from ..views.drawing import DrawingView
-    from .anchor_point   import AnchorPoint
-    from .property_text  import PropertyText
+    from ..views.drawing  import DrawingView
+    from ..scenes.drawing import DrawingScene
+    from .anchor_point    import AnchorPoint
+    from .property_text   import PropertyText
 
 
 class Default:
@@ -985,6 +986,18 @@ class ElementMenuMixin:
         view    : "DrawingView"
     ) -> None:
         view.editProperties(self)
+
+    def ctxMenuEdit(
+        self    : Self,
+        checked : bool,
+        view    : "DrawingView"
+    ) -> None:
+        from ..scenes.api.cmd.edit import cmdEditText
+        dialog = self._EDIT_DIALOG(self)
+        if dialog.exec():
+            text, appearance = dialog.getChoice()
+            scene : "DrawingScene" = self.scene()
+            scene.undo_stack.push(cmdEditText(scene, self, text, appearance))
 
 class ElementCloneMixin:
     def clone(self : Self, original : Optional[Self] = None) -> Self:
