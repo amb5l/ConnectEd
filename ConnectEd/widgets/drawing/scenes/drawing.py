@@ -14,8 +14,9 @@ from ..items.text_block import TextBlock
 
 from ..properties import PropertySpec, PropertiesMixin
 
-from .api.file import DrawingSceneApiFileMixin
-from .api.edit import DrawingSceneApiEditMixin
+from .api.file    import DrawingSceneApiFileMixin
+from .api.edit    import DrawingSceneApiEditMixin
+from .api.private import DrawingSceneApiPrivateMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -25,6 +26,7 @@ class DrawingScene(
     PropertiesMixin,
     DrawingSceneApiFileMixin,
     DrawingSceneApiEditMixin,
+    DrawingSceneApiPrivateMixin,
     QGraphicsScene
 ):
     # class variables

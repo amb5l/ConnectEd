@@ -979,7 +979,7 @@ class ElementMenuMixin:
         checked : bool,
         view    : "DrawingView"
     ) -> None:
-        view.editAppearance(self)
+        view.editAppearance()
 
     def ctxMenuProperties(
         self    : Self,

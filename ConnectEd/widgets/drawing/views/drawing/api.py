@@ -72,7 +72,7 @@ class DrawingViewApiMixin:
 
     @withScene
     def editAppearance(self : "DrawingView", scene : DrawingScene) -> None:
-        scene.editAppearance(self.scene().selectedItems(), self.scene().appearance)
+        self.state.go(self.stateEditAppearance)
 
     def editQuery(self : "DrawingView") -> None:
         self.state.go(self.stateEditQuery)
