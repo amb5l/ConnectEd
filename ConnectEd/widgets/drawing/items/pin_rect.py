@@ -13,9 +13,9 @@ class PinRect(BaseRectangle):
     def onGeometryChange(self : Self) -> None:
         super().onGeometryChange()
         # reposition pins
-        for item in self.childItems():
-            if isinstance(item, BasePin):
-                item.onPositionChange()
+        #for item in self.childItems():
+        #    if isinstance(item, BasePin):
+        #        item.onPositionChange()
 
     def getMenuItems(self : Self) -> list[str]:
         return ["Add Pin...", "-", "Appearance..."]

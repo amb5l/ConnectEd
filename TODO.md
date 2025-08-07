@@ -1,4 +1,6 @@
-- private attribute names in dialogs
+- property change propagation
+- override setRotation to maintain ortho angles
+- review OnPositionChange
 - move hub import to top everywhere
 - sort out editAppearance, editProperties in view/scene/cmd
 - scene:

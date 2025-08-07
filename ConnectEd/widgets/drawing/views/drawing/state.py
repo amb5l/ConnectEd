@@ -10,6 +10,7 @@ from ....dialogs.appearance    import AppearanceDialog
 from ....dialogs.text          import TextDialog
 from ....dialogs.text_block    import TextBlockDialog
 from ....dialogs.property_text import PropertyTextDialog
+from ....dialogs.port_pin      import PortPinDialog
 
 from ...items import ElementMixin
 
@@ -386,9 +387,17 @@ class DrawingViewStatePlaceBlockPin(ClickMixin):
     TIP = "Place Block Pin: pick a location"
 
     def entry(self : Self, v : QPoint, s : QPointF) -> None:
-        element = self.view._selectedElement(PinRect)
-        if element:
-            self.interact(PlaceBlockPinInteraction(element, self._snap(s)))
+        block = self.view._selectedElement(PinRect)
+        if block:
+            pin = BlockPin() # don't parent to block yet
+            dialog = PortPinDialog("Block Pin", pin)
+            if dialog.exec():
+                pin.name = dialog.getName()
+                pin.direction = dialog.getDirection()
+                pin.range = dialog.getRange()
+                self.interact(PlaceBlockPinInteraction(
+                    self.scene, block, pin, self._snap(s)
+                ))
         else:
             logger.warning("No pin rect selected")
             self.view.state.go(self.view.stateIdle)

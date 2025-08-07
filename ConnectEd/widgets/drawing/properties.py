@@ -47,7 +47,10 @@ class PropertiesMixin:
         if not hasattr(self, "_PROPERTY_TEXTS"):
             return
         for name, pts in self._PROPERTY_TEXTS.items():
-            p = PropertyText()
+            if hasattr(self, "_PROPERTY_TEXT_CLASS"):
+                p = self._PROPERTY_TEXT_CLASS()
+            else:
+                p = PropertyText()
             p.setOrigin(pts.anchor)
             p.setPos(pts.pos)
             p.setName(name)

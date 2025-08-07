@@ -32,6 +32,12 @@ ElementType = ElementMixin | QGraphicsItem
 class Interaction(ABC):
     """Base for all interactions."""
 
+    # instance attributes
+    _scene        : "DrawingScene"
+
+    def __init__(self, scene: "DrawingScene"):
+        self._scene = scene
+
     @abstractmethod
     def valid(self) -> bool: ...
 
@@ -44,36 +50,27 @@ class Interaction(ABC):
     @abstractmethod
     def cancel(self) -> None: ...
 
-class SceneInteraction(Interaction):
-    """Base for all interactions that operate on a scene."""
-
-    # instance attributes
-    _scene        : "DrawingScene"
-
-    def __init__(self, scene: "DrawingScene"):
-        self._scene = scene
-
-class SceneElementInteraction(SceneInteraction):
+class SceneElementInteraction(Interaction):
     """Base for all interactions that operate on a single scene element."""
     # instance attributes
     _element : ElementType
 
     def __init__(self, scene: "DrawingScene", element: ElementType):
-        SceneInteraction.__init__(self, scene)
+        Interaction.__init__(self, scene)
         self._element = element
 
     @property
     def valid(self) -> bool:
         return self._element is not None
 
-class SceneElementsInteraction(SceneInteraction):
+class SceneElementsInteraction(Interaction):
     """Base for all interactions that operate on one or morescene elements."""
 
     # instance attributes
     _elements : list[ElementType]
 
     def __init__(self, scene: "DrawingScene", elements: list[ElementType]):
-        SceneInteraction.__init__(self, scene)
+        Interaction.__init__(self, scene)
         self._elements = elements
 
     @property
@@ -90,11 +87,22 @@ class PinInteraction(Interaction):
     _parent : PinRect
     _pin    : BasePin
 
-    def __init__(self : Self, parent : PinRect, pos : QPointF):
+    def __init__(
+        self   : Self,
+        scene  : "DrawingScene",
+        parent : PinRect,
+        pin    : BasePin,
+        pos    : QPointF
+    ) -> None:
+        Interaction.__init__(self, scene)
         if isinstance(parent, PinRect):
             self._parent = parent
+            self._pin = self._PIN(parent)
+            self._pin.setParentItem(parent)
+            self.update(pos)
         else:
             self._parent = None
+            self._pin = None
 
     @property
     def valid(self : Self) -> bool:
@@ -313,14 +321,14 @@ class PlaceBaseRectInteraction(PlaceBaseInteraction):
 class PlaceBasePinInteraction(PinInteraction):
     """Base for all interactions that place a pin."""
 
-    def __init__(self : Self, parent : PinRect, pos : QPointF):
-        self._parent = parent
-        if isinstance(parent, PinRect):
-            self._pin = self._PIN(parent)
-            self._pin.setParentItem(parent)
-            self.update(pos)
-        else:
-            self._pin = None
+    def __init__(
+        self   : Self,
+        scene  : "DrawingScene",
+        parent : PinRect,
+        pin    : BasePin,
+        pos    : QPointF
+    ) -> None:
+        PinInteraction.__init__(self, scene, parent, pin, pos)
 
     def update(self : Self, pos : QPointF) -> None:
         self._pin.setLoc(self._parent.getLoc(pos))

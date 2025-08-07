@@ -692,21 +692,18 @@ class ElementLocMixin:
         self._loc = loc
         self.prepareGeometryChange()
         match loc.edge:
-            case Edge.LEFT:   self.setRotation(0)
-            case Edge.RIGHT:  self.setRotation(180)
-            case Edge.TOP:    self.setRotation(90)
-            case Edge.BOTTOM: self.setRotation(270)
-        if hasattr(self, "_name_text"):
-            name_centre = QPointF(self._name_text.boundingRect().center())
-            self._name_text.setTransformOriginPoint(name_centre)
-            match loc.edge:
-                case Edge.LEFT:   self._name_text.setRotation(0)
-                case Edge.RIGHT:  self._name_text.setRotation(180)
-                case Edge.TOP:    self._name_text.setRotation(180)
-                case Edge.BOTTOM: self._name_text.setRotation(0)
+            case Edge.LEFT:   r = 0
+            case Edge.RIGHT:  r = 180
+            case Edge.TOP:    r = 90
+            case Edge.BOTTOM: r = 270
+        self.setRotation(r)
         parent : "PinRect" = self.parentItem()
         edge_pos = parent.getLocPos(loc) if parent else QPointF()
         super().setPos(edge_pos)
+        for child in self.childItems():
+            for grandchild in child.childItems():
+                if hasattr(grandchild, 'compensateRotation'):
+                    grandchild.compensateRotation(r)
 
     def setLocPos(
         self : Self,
@@ -1047,6 +1044,8 @@ class ElementXmlMixin:
 
     @classmethod
     def fromXml(cls : Self, xr: QXmlStreamReader) -> Self:
+        from .property_text import PropertyText
+        from .port_pin      import BlockPin
         instance = cls(bare=True)
         fromXmlAttrs(instance, xr)
         instance.onGeometryChange()

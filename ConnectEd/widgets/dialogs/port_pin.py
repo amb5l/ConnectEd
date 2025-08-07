@@ -1,4 +1,4 @@
-from typing import Self
+from typing import Self, Optional
 
 from PyQt6.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, QGridLayout, \
                             QGroupBox, QLabel, QLineEdit, QComboBox, \
@@ -6,10 +6,12 @@ from PyQt6.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, QGridLayout, \
 
 from ..drawing.items import SignalDirection, RangeDirection, VectorRange
 
+from ..drawing.items.port_pin import BasePortPin
+
 from . import okCancelLayout
 
 
-class PlacePortPinDialog(QDialog):
+class PortPinDialog(QDialog):
     _name_label       : QLabel
     _name_edit        : QLineEdit
     _signal_dir_label : QLabel
@@ -34,7 +36,11 @@ class PlacePortPinDialog(QDialog):
     _ok_cancel_layout : QHBoxLayout
     _dialog_layout    : QVBoxLayout
 
-    def __init__(self : Self, title : str):
+    def __init__(
+        self    : Self,
+        title   : str,
+        element : Optional[BasePortPin] = None
+    ) -> None:
         super().__init__()
         self.setWindowTitle(title)
         self._dialog_layout = QVBoxLayout(self)
@@ -84,6 +90,19 @@ class PlacePortPinDialog(QDialog):
         self._dialog_layout.addLayout(self._width_layout)
         okCancelLayout(self)
         self.setLayout(self._dialog_layout)
+        if element is not None:
+            self._name_edit.setText(element.name)
+            self._signal_dir_combo.setCurrentText(element.direction.value)
+            if element.range is None:
+                self._scalar_check.setChecked(True)
+                self._range_group.setEnabled(False)
+            else:
+                self._scalar_check.setChecked(False)
+                self._range_group.setEnabled(True)
+                self._left_edit.setText(str(element.range.left))
+                self._right_edit.setText(str(element.range.right))
+                self._range_dir_group.setEnabled(True)
+                self._range_dir_group.setChecked(element.range.dir.value)
         self._scalar_check.stateChanged.connect(self.onScalarChanged)
 
     def onScalarChanged(self, state: int) -> None:

@@ -63,3 +63,11 @@ class TetherText(BaseText):
         super().setOrigin(name)
         self._tether.setParentItem(self._origin)
         self._tether.onPositionChange(self.pos())
+
+    def getTotalRotation(self) -> float:
+        r = 0.0
+        item = self
+        while item is not None:
+            r += item.rotation()
+            item = item.parentItem()
+        return r % 360

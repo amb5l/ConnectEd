@@ -29,6 +29,12 @@ if TYPE_CHECKING:
     from .block    import Block
 
 
+class PortPinText(PropertyText):
+    def compensateRotation(self, angle : float) -> None:
+        self.setTransformOriginPoint(self._brect.center())
+        r = self.getTotalRotation()
+        self.setRotation(180 if 45 <= angle < 225 else 0)
+
 class BasePortPin(
     ElementMixin,
     ElementBoundShapeMixin,
@@ -67,11 +73,11 @@ class BasePortPin(
             setter    = lambda self, value: setattr(self.range, 'right', value)
         )
     }
-    _PROPERTY_TEXT_CLASS = PropertyText
+    _PROPERTY_TEXT_CLASS = PortPinText
     _PROPERTY_TEXTS = {
         "Name" : PropertyTextSpec("Center Left", QPointF(0, 0), "Name")
     }
-    _NAME_OFFSET = 2.5
+    _NAME_OFFSET = 1.5
 
     # instance attributes
     _direction : SignalDirection
@@ -134,7 +140,6 @@ class BasePortPin(
     @direction.setter
     def direction(self : Self, value : SignalDirection) -> None:
         self._direction = value
-        self.onDirectionChange(value)
 
     @property
     def range(self : Self) -> VectorRange:
@@ -143,7 +148,6 @@ class BasePortPin(
     @range.setter
     def range(self : Self, value : VectorRange) -> None:
         self._range = value
-        self.onRangeChange()
 
 class PortPinArrowMixin:
     # class variables
@@ -157,6 +161,7 @@ class PortPinArrowMixin:
 
     def initArrow(self : Self) -> None:
         self._arrow = self._ARROW_CLASS(self)
+        self._arrow.setDirection(self._direction)
 
     def initAnchorPoints(self : Self) -> None:
         BasePortPin.initAnchorPoints(self)
@@ -191,7 +196,7 @@ class PortArrow(Arrow):
     _PATH_IN  = Arrow._PATH_TOWARDS
     _PATH_OUT = Arrow._PATH_AWAY
 
-class PortPropertyText(PropertyText):
+class PortPropertyText(PortPinText):
     pass
 
 class Port(ElementPosMixin, PortPinArrowMixin, BasePortPin):
@@ -245,12 +250,6 @@ class BasePin(ElementLocMixin, BasePortPin):
     def getLoc(self : Self) -> EdgeLoc:
         return self._loc
 
-    def setLoc(self : Self, loc : EdgeLoc) -> None:
-        parent : PinRect = self.parentItem()
-        if parent is not None:
-            self._loc = loc
-            self.setPos(parent.getLocPos(loc))
-
     @classmethod
     def createOrUpdate(
         cls       : Self,
@@ -282,21 +281,22 @@ class BlockPinArrow(Arrow):
     _PATH_IN  = Arrow._PATH_AWAY
     _PATH_OUT = Arrow._PATH_TOWARDS
 
-class BlockPinPropertyText(PropertyText):
+class BlockPinText(PortPinText):
     pass
 
 class BlockPin(PortPinArrowMixin, BasePin):
     # class attributes
     _NODE_CLASS = BlockPinNode
     _ARROW_CLASS = BlockPinArrow
-    _PROPERTY_TEXT_CLASS = BlockPinPropertyText
+    _PROPERTY_TEXT_CLASS = BlockPinText
 
     # instance attributes
     _node  : BlockPinNode
     _arrow : BlockPinArrow
 
-    def __init__(self : Self) -> None:
+    def __init__(self : Self, parent : Optional["Block"] = None) -> None:
         BasePortPin.__init__(self)
+        self.setParentItem(parent)
         self.initArrow()
         self.onGeometryChange()
 
