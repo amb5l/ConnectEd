@@ -1,4 +1,5 @@
 from typing import Self
+from dataclasses import dataclass
 
 from .....dialogs.appearance import QuillPref, QuillPrefChange, \
                                     AppearancePref, AppearancePrefChange
@@ -16,11 +17,14 @@ if TYPE_CHECKING:
     from ....scenes.drawing import DrawingScene
 
 class cmdEditText(cmdSceneElement):
-    _element           : BaseText
-    _text_before       : str
-    _text_after        : str
-    _appearance_before : QuillPref
-    _appearance_after  : QuillPrefChange
+    @dataclass
+    class TextState:
+        text       : str
+        appearance : QuillPref
+
+    _element : BaseText
+    _before  : TextState
+    _after   : TextState
 
     def __init__(
         self       : Self,
@@ -31,31 +35,30 @@ class cmdEditText(cmdSceneElement):
     ):
         super().__init__(scene, element)
         self._element           = element
-        self._text_before       = element.text()
-        self._text_after        = text
-        self._appearance_before = element.quill.getPref()
-        self._appearance_after  = appearance
+        self._before = self.TextState(element.text(), element.quill.getPref())
+        self._after  = self.TextState(text, appearance)
 
     def redo(self : Self) -> None:
-        self._element.setText(self._text_after)
-        self._element.quill.setPref(self._appearance_after)
+        self._element.setText(self._after.text)
+        self._element.quill.setPref(self._after.appearance)
         self._element.update()
 
     def undo(self : Self) -> None:
-        self._element.setText(self._text_before)
-        self._element.quill.setPref(self._appearance_before)
+        self._element.setText(self._before.text)
+        self._element.quill.setPref(self._before.appearance)
         self._element.update()
 
 class cmdEditPropertyText(cmdSceneElement):
-    _element           : PropertyText
-    _name_before       : str
-    _name_after        : str
-    _value_before      : str
-    _value_after       : str
-    _display_before    : PropertyDisplay
-    _display_after     : PropertyDisplay
-    _appearance_before : QuillPref
-    _appearance_after  : QuillPrefChange
+    @dataclass
+    class PropertyTextState:
+        name       : str
+        value      : str
+        display    : PropertyDisplay
+        appearance : QuillPref
+
+    _element : PropertyText
+    _before  : PropertyTextState
+    _after   : PropertyTextState
 
     def __init__(
         self       : Self,
@@ -68,27 +71,24 @@ class cmdEditPropertyText(cmdSceneElement):
     ):
         super().__init__(scene, element)
         self._element           = element
-        self._name_before       = element.name()
-        self._name_after        = name
-        self._value_before      = element.value()
-        self._value_after       = value
-        self._display_before    = element.display()
-        self._display_after     = display
-        self._appearance_before = element.quill.getPref()
-        self._appearance_after  = appearance
+        self._before = self.PropertyTextState(
+            element.name(), element.value(), element.display(), \
+            element.quill.getPref()
+        )
+        self._after  = self.PropertyTextState(name, value, display, appearance)
 
     def redo(self : Self) -> None:
-        self._element.setName(self._name_after)
-        self._element.setValue(self._value_after)
-        self._element.setDisplay(self._display_after)
-        self._element.quill.setPref(self._appearance_after)
+        self._element.setName(self._after.name)
+        self._element.setValue(self._after.value)
+        self._element.setDisplay(self._after.display)
+        self._element.quill.setPref(self._after.appearance)
         self._element.update()
 
     def undo(self : Self) -> None:
-        self._element.setName(self._name_before)
-        self._element.setValue(self._value_before)
-        self._element.setDisplay(self._display_before)
-        self._element.quill.setPref(self._appearance_before)
+        self._element.setName(self._before.name)
+        self._element.setValue(self._before.value)
+        self._element.setDisplay(self._before.display)
+        self._element.quill.setPref(self._before.appearance)
         self._element.update()
 
 class cmdEditAppearance(cmdSceneElements):
@@ -155,8 +155,8 @@ class cmdEditProperties(cmdSceneElement):
 
 class cmdEditOrigin(cmdSceneElement):
     _element : ElementOriginMixin
-    _old     : str
-    _new     : str
+    _before  : str
+    _after   : str
 
     def __init__(
         self : Self,
@@ -165,11 +165,11 @@ class cmdEditOrigin(cmdSceneElement):
         origin  : str
     ):
         super().__init__(scene, element)
-        self._old = element.getOrigin()
-        self._new = origin
+        self._before = element.getOrigin()
+        self._after = origin
 
     def redo(self : Self) -> None:
-        self._element.setOrigin(self._new)
+        self._element.setOrigin(self._after)
 
     def undo(self : Self) -> None:
-        self._element.setOrigin(self._old)
+        self._element.setOrigin(self._before)
