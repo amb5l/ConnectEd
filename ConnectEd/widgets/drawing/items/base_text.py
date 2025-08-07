@@ -21,11 +21,11 @@ from . import APType, \
               ElementXmlMixin, \
               ElementMenuMixin
 
-
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from ..views  import DrawingView
-    from ..scenes import DrawingScene
+    from ..views.drawing  import DrawingView
+    from ..scenes.drawing import DrawingScene
+
 
 class BaseText(
     ElementMixin,
@@ -60,7 +60,6 @@ class BaseText(
         _PROPERTY_SPECS_POS | \
         _PROPERTY_SPECS_TEXT | \
         _PROPERTY_SPECS_APPEARANCE
-    _EDIT_DIALOG = TextDialog
 
     # instance attributes
     _rect  : QRectF  # border rectangle (for keypoints)
@@ -130,3 +129,15 @@ class BaseText(
         if anchor is not None:
             inst.setOrigin(anchor)
         return inst
+
+    def ctxMenuEdit(
+        self    : Self,
+        checked : bool,
+        view    : "DrawingView"
+    ) -> None:
+        from ..scenes.api.cmd.edit import cmdEditText
+        dialog = TextDialog(self)
+        if dialog.exec():
+            text, appearance = dialog.getChoice()
+            scene : "DrawingScene" = self.scene()
+            scene.undo_stack.push(cmdEditText(scene, self, text, appearance))

@@ -985,18 +985,6 @@ class ElementMenuMixin:
     ) -> None:
         view.editProperties(self)
 
-    def ctxMenuEdit(
-        self    : Self,
-        checked : bool,
-        view    : "DrawingView"
-    ) -> None:
-        from ..scenes.api.cmd.edit import cmdEditText
-        dialog = self._EDIT_DIALOG(self)
-        if dialog.exec():
-            text, appearance = dialog.getChoice()
-            scene : "DrawingScene" = self.scene()
-            scene.undo_stack.push(cmdEditText(scene, self, text, appearance))
-
 class ElementCloneMixin:
     def clone(self : Self, original : Optional[Self] = None) -> Self:
         """Create a clone of this element with a new UUID."""
