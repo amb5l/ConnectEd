@@ -166,66 +166,66 @@ class PropertiesCleatItemDelegate(PropertiesAnchorItemDelegate):
     TOOLTIP = "Controls position of property cleat point"
 
 class PropertiesDialog(QDialog):
-    model            : QStandardItemModel
-    dialog_layout    : QVBoxLayout
-    table_view       : TableView
-    ok_cancel_layout : QHBoxLayout
-    new_button       : QPushButton
-    ok_button        : QPushButton
-    cancel_button    : QPushButton
-    display_delegate : PropertiesDisplayItemDelegate
-    anchor_delegate  : PropertiesAnchorItemDelegate
-    cleat_delegate   : PropertiesCleatItemDelegate
+    _model            : QStandardItemModel
+    _dialog_layout    : QVBoxLayout
+    _table_view       : TableView
+    _ok_cancel_layout : QHBoxLayout
+    _new_button       : QPushButton
+    _ok_button        : QPushButton
+    _cancel_button    : QPushButton
+    _display_delegate : PropertiesDisplayItemDelegate
+    _anchor_delegate  : PropertiesAnchorItemDelegate
+    _cleat_delegate   : PropertiesCleatItemDelegate
 
     def __init__(self: Self, element: ElementMixin) -> None:
         super().__init__(hub.main_window)
         self.setWindowTitle("Properties")
         self.setModal(True)
-        self.dialog_layout = QVBoxLayout(self)
-        self.model = QStandardItemModel()
+        self._dialog_layout = QVBoxLayout(self)
+        self._model = QStandardItemModel()
         headers = [label for label in PropertyText.TABLE_ATTRS.keys()]
-        self.model.setHorizontalHeaderLabels(headers)
+        self._model.setHorizontalHeaderLabels(headers)
         for p in element.properties:
             row = []
             for label, (_, getter) in PropertyText.TABLE_ATTRS.items():
                 value = getter(p)
                 item = PropertiesItem(value, p)
                 row.append(item)
-            self.model.appendRow(row)
-        self.table_view = TableView(self.model)
-        self.display_delegate = PropertiesDisplayItemDelegate()
-        self.anchor_delegate = PropertiesAnchorItemDelegate()
-        self.cleat_delegate = PropertiesCleatItemDelegate()
-        self.display_delegate.destroyed.connect(
+            self._model.appendRow(row)
+        self._table_view = TableView(self._model)
+        self._display_delegate = PropertiesDisplayItemDelegate()
+        self._anchor_delegate = PropertiesAnchorItemDelegate()
+        self._cleat_delegate = PropertiesCleatItemDelegate()
+        self._display_delegate.destroyed.connect(
             lambda: self.onDelegateDestroyed("Display")
         )
-        self.anchor_delegate.destroyed.connect(
+        self._anchor_delegate.destroyed.connect(
             lambda: self.onDelegateDestroyed("Anchor")
         )
-        self.cleat_delegate.destroyed.connect(
+        self._cleat_delegate.destroyed.connect(
             lambda: self.onDelegateDestroyed("Cleat")
         )
-        self.table_view.setItemDelegateForColumn(
+        self._table_view.setItemDelegateForColumn(
             list(PropertyText.TABLE_ATTRS.keys()).index("Display"),
-            self.display_delegate
+            self._display_delegate
         )
-        self.table_view.setItemDelegateForColumn(
+        self._table_view.setItemDelegateForColumn(
             list(PropertyText.TABLE_ATTRS.keys()).index("Anchor"),
-            self.anchor_delegate
+            self._anchor_delegate
         )
-        self.table_view.setItemDelegateForColumn(
+        self._table_view.setItemDelegateForColumn(
             list(PropertyText.TABLE_ATTRS.keys()).index("Cleat"),
-            self.cleat_delegate
+            self._cleat_delegate
         )
-        self.table_view.resizeColumnsToContents()
-        self.dialog_layout.addWidget(self.table_view)
+        self._table_view.resizeColumnsToContents()
+        self._dialog_layout.addWidget(self._table_view)
         okCancelNewLayout(self)
-        self.setLayout(self.dialog_layout)
+        self.setLayout(self._dialog_layout)
         self.adjustSize()
-        min_width = self.table_view.horizontalHeader().length() + 50
-        min_height = self.table_view.verticalHeader().length() + 50
+        min_width = self._table_view.horizontalHeader().length() + 50
+        min_height = self._table_view.verticalHeader().length() + 50
         self.setMinimumSize(min_width, min_height)
-        self.model.dataChanged.connect(self.onDataChanged)
+        self._model.dataChanged.connect(self.onDataChanged)
 
     def onDelegateDestroyed(self, delegate_name: str) -> None:
         """Workaround to fix delegate lifecycle issue (silent crash)."""
@@ -243,15 +243,15 @@ class PropertiesDialog(QDialog):
             bg_highlight = Qt.GlobalColor.yellow
         for row in range(top_left.row(), bottom_right.row() + 1):
             for col in range(top_left.column(), bottom_right.column() + 1):
-                item = self.model.item(row, col)
+                item = self._model.item(row, col)
                 if item and item.getInitialText() != item.text():
                     item.setBackground(QBrush(bg_highlight))
                 else:
                     item.setBackground(QBrush(Qt.GlobalColor.transparent))
 
     def new(self: Self) -> None:
-        row = self.model.rowCount()
-        self.model.appendRow([
+        row = self._model.rowCount()
+        self._model.appendRow([
             PropertiesItem(""),
             PropertiesItem(""),
             PropertiesItem(PropertyDisplay.VALUE),
@@ -260,18 +260,18 @@ class PropertiesDialog(QDialog):
             PropertiesItem(0),
             PropertiesItem("Bottom Right")
         ])
-        self.table_view.setCurrentIndex(self.model.index(row, 0))
+        self._table_view.setCurrentIndex(self._model.index(row, 0))
 
     def getChanges(self: Self) -> dict[PropertyText, tuple[str, PropertiesType, PropertiesType]]:
         r = {}
-        for row_num in range(self.model.rowCount()):
-            item_name: PropertiesItem = self.model.item(row_num, 0)
+        for row_num in range(self._model.rowCount()):
+            item_name: PropertiesItem = self._model.item(row_num, 0)
             key: PropertyText = item_name.getInst()
             r[key] = []
-            for col in range(self.model.columnCount()):
-                item: PropertiesItem = self.model.item(row_num, col)
+            for col in range(self._model.columnCount()):
+                item: PropertiesItem = self._model.item(row_num, col)
                 if item.changed():
-                    label = self.model.horizontalHeaderItem(col).text()
+                    label = self._model.horizontalHeaderItem(col).text()
                     before = item.getInitialValue()
                     after = item.getValue()
                     r[key].append((label, before, after))

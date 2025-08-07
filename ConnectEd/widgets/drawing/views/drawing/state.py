@@ -2,24 +2,28 @@ from typing import Self, Optional
 
 from PyQt6.QtCore import Qt, QPoint, QPointF
 
+from ..... import hub
+
 from .....core.log import logger
 
-from ....dialogs.appearance import AppearanceDialog
-from ....dialogs.text       import TextDialog
-from ....dialogs.text_block import TextBlockDialog
+from ....dialogs.appearance    import AppearanceDialog
+from ....dialogs.text          import TextDialog
+from ....dialogs.text_block    import TextBlockDialog
+from ....dialogs.property_text import PropertyTextDialog
 
 from ...items import ElementMixin
 
-from ...items.handle     import Handle
-from ...items.pin_rect   import PinRect
-from ...items.text       import Text
-from ...items.text_block import TextBlock
+from ...items.handle        import Handle
+from ...items.pin_rect      import PinRect
+from ...items.text          import Text
+from ...items.text_block    import TextBlock
+from ...items.property_text import PropertyText
 
 from ...scenes.drawing import DrawingScene
 
 from ...scenes.api.interaction import *
 
-from ..... import hub
+from ...scenes.api.cmd.edit import cmdEditText, cmdEditPropertyText
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -31,7 +35,7 @@ qkm = Qt.KeyboardModifier
 class DrawingViewStateBase:
     # instance attributes
     view  : "DrawingView"
-    scene : DrawingScene
+    scene : "DrawingScene"
 
     def __init__(self : Self, view : "DrawingView") -> None:
         self.view = view
@@ -144,9 +148,7 @@ class DrawingViewStateIdle(DrawingViewStateBase):
                 if not element.isSelected():
                     element.setSelected(True)
                 # Get all currently selected elements for duplication
-                items = self.scene.selectedItems()
-                elements = \
-                    [item for item in items if isinstance(item, ElementMixin)]
+                elements = self.view._selectedElements(ElementMixin)
                 if elements:
                     # Pass the press position for CTRL+drag duplication
                     self.interact(
@@ -308,7 +310,7 @@ class DrawingViewStateEditAppearance(DrawingViewStateBase):
     TIP = "Appearance: specify changes"
 
     def entry(self : Self, v : QPoint, s : QPointF) -> None:
-        elements = self.scene._selectedTopElements()
+        elements = self.view._selectedElements(ElementMixin)
         if elements:
             dialog = AppearanceDialog(elements)
             if dialog.exec():
@@ -323,6 +325,41 @@ class DrawingViewStateEditQuery(DrawingViewStateBase):
     def mouseLeftClick(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
         self.view._selectPoint(s, m)
         self.view.editQuery()
+
+class DrawingViewStateEditText(DrawingViewStateBase):
+    TIP = "Edit Text: specify changes"
+
+    def entry(self : Self, v : QPoint, s : QPointF) -> None:
+        element = self.view._selectedElement(Text)
+        if element:
+            dialog = TextDialog(element)
+            if dialog.exec():
+                text, appearance = dialog.getChoice()
+                self.scene.undo_stack.push(cmdEditText(
+                    self.scene, element, text, appearance
+                ))
+        else:
+            logger.warning("No text selected")
+        self.view.state.go(self.view.stateIdle)
+
+class DrawingViewStateEditPropertyText(DrawingViewStateBase):
+    TIP = "Edit Property Text: specify changes"
+
+    def entry(self : Self, v : QPoint, s : QPointF) -> None:
+        element = self.view._selectedElement(PropertyText)
+        if element:
+            dialog = PropertyTextDialog(element)
+            if dialog.exec():
+                name = dialog.getName()
+                value = dialog.getValue()
+                display = dialog.getDisplay()
+                appearance = dialog.getAppearanceChange()
+                self.scene.undo_stack.push(cmdEditPropertyText(
+                    self.scene, element, name, value, display, appearance
+                ))
+        else:
+            logger.warning("No property text selected")
+        self.view.state.go(self.view.stateIdle)
 
 class DrawingViewStatePlacePort(ClickMixin):
     TIP = "Place Port: pick a location"
@@ -349,10 +386,12 @@ class DrawingViewStatePlaceBlockPin(ClickMixin):
     TIP = "Place Block Pin: pick a location"
 
     def entry(self : Self, v : QPoint, s : QPointF) -> None:
-        elements = self.scene._selectedTopElements()
-        pin_rects = [e for e in elements if isinstance(e, PinRect)]
-        pin_rect = pin_rects[0] if pin_rects else None
-        self.interact(PlaceBlockPinInteraction(pin_rect, self._snap(s)))
+        element = self.view._selectedElement(PinRect)
+        if element:
+            self.interact(PlaceBlockPinInteraction(element, self._snap(s)))
+        else:
+            logger.warning("No pin rect selected")
+            self.view.state.go(self.view.stateIdle)
 
 class DrawingViewStatePlaceRectangle1(DrawingViewStateBase):
     TIP = "Place Rectangle: pick the first point"
@@ -402,50 +441,54 @@ class DrawingViewStatePlaceTextBlock(ClickMixin):
             self.view.state.go(self.view.stateIdle)
 
 class DrawingViewStateMixin:
-    state                : DrawingViewStateBase
-    stateIdle            : DrawingViewStateIdle
-    stateViewPan1        : DrawingViewStateViewPan1
-    stateViewPan2        : DrawingViewStateViewPan2
-    stateViewZoomArea1   : DrawingViewStateViewZoomArea1
-    stateViewZoomArea2   : DrawingViewStateViewZoomArea2
-    stateEditSelectArea1 : DrawingViewStateEditSelectArea1
-    stateEditSelectArea2 : DrawingViewStateEditSelectArea2
-    stateEditPaste       : DrawingViewStateEditPaste
-    stateEditDuplicate   : DrawingViewStateEditDuplicate
-    stateEditSlide       : DrawingViewStateEditSlide
-    stateEditMove        : DrawingViewStateEditMove
-    stateEditResize      : DrawingViewStateEditResize
-    stateEditAppearance  : DrawingViewStateEditAppearance
-    stateEditQuery       : DrawingViewStateEditQuery
-    statePlacePort       : DrawingViewStatePlacePort
-    statePlaceBlock1     : DrawingViewStatePlaceBlock1
-    statePlaceBlock2     : DrawingViewStatePlaceBlock2
-    statePlaceBlockPin   : DrawingViewStatePlaceBlockPin
-    statePlaceRectangle1 : DrawingViewStatePlaceRectangle1
-    statePlaceRectangle2 : DrawingViewStatePlaceRectangle2
-    statePlaceText       : DrawingViewStatePlaceText
-    statePlaceTextBlock  : DrawingViewStatePlaceTextBlock
+    state                 : DrawingViewStateBase
+    stateIdle             : DrawingViewStateIdle
+    stateViewPan1         : DrawingViewStateViewPan1
+    stateViewPan2         : DrawingViewStateViewPan2
+    stateViewZoomArea1    : DrawingViewStateViewZoomArea1
+    stateViewZoomArea2    : DrawingViewStateViewZoomArea2
+    stateEditSelectArea1  : DrawingViewStateEditSelectArea1
+    stateEditSelectArea2  : DrawingViewStateEditSelectArea2
+    stateEditPaste        : DrawingViewStateEditPaste
+    stateEditDuplicate    : DrawingViewStateEditDuplicate
+    stateEditSlide        : DrawingViewStateEditSlide
+    stateEditMove         : DrawingViewStateEditMove
+    stateEditResize       : DrawingViewStateEditResize
+    stateEditAppearance   : DrawingViewStateEditAppearance
+    stateEditQuery        : DrawingViewStateEditQuery
+    stateEditText         : DrawingViewStateEditText
+    stateEditPropertyText : DrawingViewStateEditPropertyText
+    statePlacePort        : DrawingViewStatePlacePort
+    statePlaceBlock1      : DrawingViewStatePlaceBlock1
+    statePlaceBlock2      : DrawingViewStatePlaceBlock2
+    statePlaceBlockPin    : DrawingViewStatePlaceBlockPin
+    statePlaceRectangle1  : DrawingViewStatePlaceRectangle1
+    statePlaceRectangle2  : DrawingViewStatePlaceRectangle2
+    statePlaceText        : DrawingViewStatePlaceText
+    statePlaceTextBlock   : DrawingViewStatePlaceTextBlock
 
     def initStates(self : "DrawingView") -> None:
-        self.stateIdle            = DrawingViewStateIdle            (self)
-        self.stateViewPan1        = DrawingViewStateViewPan1        (self)
-        self.stateViewPan2        = DrawingViewStateViewPan2        (self)
-        self.stateViewZoomArea1   = DrawingViewStateViewZoomArea1   (self)
-        self.stateViewZoomArea2   = DrawingViewStateViewZoomArea2   (self)
-        self.stateEditSelectArea1 = DrawingViewStateEditSelectArea1 (self)
-        self.stateEditSelectArea2 = DrawingViewStateEditSelectArea2 (self)
-        self.stateEditPaste       = DrawingViewStateEditPaste       (self)
-        self.stateEditDuplicate   = DrawingViewStateEditDuplicate   (self)
-        self.stateEditSlide       = DrawingViewStateEditSlide       (self)
-        self.stateEditMove        = DrawingViewStateEditMove        (self)
-        self.stateEditResize      = DrawingViewStateEditResize      (self)
-        self.stateEditAppearance  = DrawingViewStateEditAppearance  (self)
-        self.stateEditQuery       = DrawingViewStateEditQuery       (self)
-        self.statePlacePort       = DrawingViewStatePlacePort       (self)
-        self.statePlaceBlock1     = DrawingViewStatePlaceBlock1     (self)
-        self.statePlaceBlock2     = DrawingViewStatePlaceBlock2     (self)
-        self.statePlaceBlockPin   = DrawingViewStatePlaceBlockPin   (self)
-        self.statePlaceRectangle1 = DrawingViewStatePlaceRectangle1 (self)
-        self.statePlaceRectangle2 = DrawingViewStatePlaceRectangle2 (self)
-        self.statePlaceText       = DrawingViewStatePlaceText       (self)
-        self.statePlaceTextBlock  = DrawingViewStatePlaceTextBlock  (self)
+        self.stateIdle             = DrawingViewStateIdle             (self)
+        self.stateViewPan1         = DrawingViewStateViewPan1         (self)
+        self.stateViewPan2         = DrawingViewStateViewPan2         (self)
+        self.stateViewZoomArea1    = DrawingViewStateViewZoomArea1    (self)
+        self.stateViewZoomArea2    = DrawingViewStateViewZoomArea2    (self)
+        self.stateEditSelectArea1  = DrawingViewStateEditSelectArea1  (self)
+        self.stateEditSelectArea2  = DrawingViewStateEditSelectArea2  (self)
+        self.stateEditPaste        = DrawingViewStateEditPaste        (self)
+        self.stateEditDuplicate    = DrawingViewStateEditDuplicate    (self)
+        self.stateEditSlide        = DrawingViewStateEditSlide        (self)
+        self.stateEditMove         = DrawingViewStateEditMove         (self)
+        self.stateEditResize       = DrawingViewStateEditResize       (self)
+        self.stateEditAppearance   = DrawingViewStateEditAppearance   (self)
+        self.stateEditQuery        = DrawingViewStateEditQuery        (self)
+        self.stateEditText         = DrawingViewStateEditText         (self)
+        self.stateEditPropertyText = DrawingViewStateEditPropertyText (self)
+        self.statePlacePort        = DrawingViewStatePlacePort        (self)
+        self.statePlaceBlock1      = DrawingViewStatePlaceBlock1      (self)
+        self.statePlaceBlock2      = DrawingViewStatePlaceBlock2      (self)
+        self.statePlaceBlockPin    = DrawingViewStatePlaceBlockPin    (self)
+        self.statePlaceRectangle1  = DrawingViewStatePlaceRectangle1  (self)
+        self.statePlaceRectangle2  = DrawingViewStatePlaceRectangle2  (self)
+        self.statePlaceText        = DrawingViewStatePlaceText        (self)
+        self.statePlaceTextBlock   = DrawingViewStatePlaceTextBlock   (self)

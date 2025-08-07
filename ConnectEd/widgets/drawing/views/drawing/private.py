@@ -211,3 +211,16 @@ class DrawingViewPrivateMixin:
             item.setSelected(not item.isSelected() if toggle else True)
         else:
             item.setSelected(not prev if toggle else True)
+
+    def _selectedElements(
+        self  : "DrawingView",
+        etype : type
+    ) -> list[QGraphicsItem]:
+        return [i for i in self.scene().selectedItems() if isinstance(i, etype)]
+
+    def _selectedElement(
+        self  : "DrawingView",
+        etype : type
+    ) -> QGraphicsItem:
+        elements = self._selectedElements(etype)
+        return elements[0] if elements else None

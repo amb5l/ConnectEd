@@ -891,16 +891,16 @@ class TextAppearanceLayout(QVBoxLayout):
         return r
 
 class AppearanceDialog(QDialog):
-    dialog_layout    : QVBoxLayout
-    line_group_box   : Optional[QGroupBox]
-    line_layout      : Optional[LineAppearanceLayout]
-    fill_group_box   : Optional[QGroupBox]
-    fill_layout      : Optional[FillAppearanceLayout]
-    text_group_box   : Optional[QGroupBox]
-    text_layout      : Optional[TextAppearanceLayout]
-    ok_cancel_layout : QHBoxLayout
-    ok_button        : QPushButton
-    cancel_button    : QPushButton
+    _dialog_layout    : QVBoxLayout
+    _line_group_box   : Optional[QGroupBox]
+    _line_layout      : Optional[LineAppearanceLayout]
+    _fill_group_box   : Optional[QGroupBox]
+    _fill_layout      : Optional[FillAppearanceLayout]
+    _text_group_box   : Optional[QGroupBox]
+    _text_layout      : Optional[TextAppearanceLayout]
+    _ok_cancel_layout : QHBoxLayout
+    _ok_button        : QPushButton
+    _cancel_button    : QPushButton
 
     def __init__(
         self     : Self,
@@ -997,75 +997,75 @@ class AppearanceDialog(QDialog):
         if len(elements) > 1:
             title += f" ({len(elements)} elements)"
         self.setWindowTitle(title)
-        self.dialog_layout = QVBoxLayout()
+        self._dialog_layout = QVBoxLayout()
         if initial.line is not None:
             self.line_group_box = QGroupBox("Line") if categories > 1 else None
-            self.line_layout = LineAppearanceLayout(
+            self._line_layout = LineAppearanceLayout(
                 initial.line,
                 default.line,
                 no_change.line
             )
             if categories > 1:
-                self.line_group_box.setLayout(self.line_layout)
-                self.dialog_layout.addWidget(self.line_group_box)
+                self.line_group_box.setLayout(self._line_layout)
+                self._dialog_layout.addWidget(self.line_group_box)
             else:
-                self.dialog_layout.addLayout(self.line_layout)
+                self._dialog_layout.addLayout(self._line_layout)
         else:
             self.line_group_box = None
-            self.line_layout    = None
+            self._line_layout    = None
         if initial.fill is not None:
-            self.fill_group_box = QGroupBox("Fill") if categories > 1 else None
-            self.fill_layout = FillAppearanceLayout(
+            self._fill_group_box = QGroupBox("Fill") if categories > 1 else None
+            self._fill_layout = FillAppearanceLayout(
                 initial.fill,
                 default.fill,
                 no_change.fill
             )
             if categories > 1:
-                self.fill_group_box.setLayout(self.fill_layout)
-                self.dialog_layout.addWidget(self.fill_group_box)
+                self._fill_group_box.setLayout(self._fill_layout)
+                self._dialog_layout.addWidget(self._fill_group_box)
             else:
-                self.dialog_layout.addLayout(self.fill_layout)
+                self._dialog_layout.addLayout(self._fill_layout)
         else:
-            self.fill_group_box = None
-            self.fill_layout    = None
+            self._fill_group_box = None
+            self._fill_layout    = None
         if initial.quill is not None:
-            self.text_group_box = QGroupBox("Text") if categories > 1 else None
-            self.text_layout = TextAppearanceLayout(
+            self._text_group_box = QGroupBox("Text") if categories > 1 else None
+            self._text_layout = TextAppearanceLayout(
                 initial.quill,
                 default.quill,
                 no_change.quill
             )
             if categories > 1:
-                self.text_group_box.setLayout(self.text_layout)
-                self.dialog_layout.addWidget(self.text_group_box)
+                self._text_group_box.setLayout(self._text_layout)
+                self._dialog_layout.addWidget(self._text_group_box)
             else:
-                self.dialog_layout.addLayout(self.text_layout)
+                self._dialog_layout.addLayout(self._text_layout)
         else:
-            self.text_group_box = None
-            self.text_layout    = None
+            self._text_group_box = None
+            self._text_layout    = None
         okCancelLayout(self)
-        self.setLayout(self.dialog_layout)
+        self.setLayout(self._dialog_layout)
 
     def _adjustComboBoxWidths(self : Self) -> None:
         """Find all combo boxes in the dialog and set them to the width of the widest one."""
         combo_boxes = []
 
         # Collect all combo boxes from all layouts
-        if self.line_layout is not None:
+        if self._line_layout is not None:
             for attr_name in ['color_combo', 'width_combo', 'style_combo']:
-                if hasattr(self.line_layout, attr_name):
-                    combo_boxes.append(getattr(self.line_layout, attr_name))
+                if hasattr(self._line_layout, attr_name):
+                    combo_boxes.append(getattr(self._line_layout, attr_name))
 
-        if self.fill_layout is not None:
+        if self._fill_layout is not None:
             for attr_name in ['color_combo', 'style_combo']:
-                if hasattr(self.fill_layout, attr_name):
-                    combo_boxes.append(getattr(self.fill_layout, attr_name))
+                if hasattr(self._fill_layout, attr_name):
+                    combo_boxes.append(getattr(self._fill_layout, attr_name))
 
-        if self.text_layout is not None:
+        if self._text_layout is not None:
             for attr_name in ['color_combo', 'family_combo', 'size_combo',
                             'bold_combo', 'italic_combo', 'underline_combo']:
-                if hasattr(self.text_layout, attr_name):
-                    combo_boxes.append(getattr(self.text_layout, attr_name))
+                if hasattr(self._text_layout, attr_name):
+                    combo_boxes.append(getattr(self._text_layout, attr_name))
 
         if not combo_boxes:
             return
@@ -1091,10 +1091,10 @@ class AppearanceDialog(QDialog):
 
     def getChoice(self : Self) -> AppearancePrefChange:
         r = AppearancePrefChange()
-        if self.line_layout is not None:
-            r.line = self.line_layout.getChoice()
-        if self.fill_layout is not None:
-            r.fill = self.fill_layout.getChoice()
-        if self.text_layout is not None:
-            r.quill = self.text_layout.getChoice()
+        if self._line_layout is not None:
+            r.line = self._line_layout.getChoice()
+        if self._fill_layout is not None:
+            r.fill = self._fill_layout.getChoice()
+        if self._text_layout is not None:
+            r.quill = self._text_layout.getChoice()
         return r

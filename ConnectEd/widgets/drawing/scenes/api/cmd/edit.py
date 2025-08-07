@@ -7,7 +7,7 @@ from .....dialogs.properties import PropertiesType
 from ....items import ElementMixin, ElementOriginMixin
 
 from ....items.base_text     import BaseText
-from ....items.property_text import PropertyText
+from ....items.property_text import PropertyText, PropertyDisplay
 
 from . import cmdSceneElement, cmdSceneElements
 
@@ -52,6 +52,8 @@ class cmdEditPropertyText(cmdSceneElement):
     _name_after        : str
     _value_before      : str
     _value_after       : str
+    _display_before    : PropertyDisplay
+    _display_after     : PropertyDisplay
     _appearance_before : QuillPref
     _appearance_after  : QuillPrefChange
 
@@ -61,6 +63,7 @@ class cmdEditPropertyText(cmdSceneElement):
         element    : PropertyText,
         name       : str,
         value      : str,
+        display    : PropertyDisplay,
         appearance : QuillPrefChange
     ):
         super().__init__(scene, element)
@@ -69,18 +72,22 @@ class cmdEditPropertyText(cmdSceneElement):
         self._name_after        = name
         self._value_before      = element.value()
         self._value_after       = value
+        self._display_before    = element.display()
+        self._display_after     = display
         self._appearance_before = element.quill.getPref()
         self._appearance_after  = appearance
 
     def redo(self : Self) -> None:
         self._element.setName(self._name_after)
         self._element.setValue(self._value_after)
+        self._element.setDisplay(self._display_after)
         self._element.quill.setPref(self._appearance_after)
         self._element.update()
 
     def undo(self : Self) -> None:
         self._element.setName(self._name_before)
         self._element.setValue(self._value_before)
+        self._element.setDisplay(self._display_before)
         self._element.quill.setPref(self._appearance_before)
         self._element.update()
 

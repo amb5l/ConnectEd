@@ -10,7 +10,7 @@ from ...scenes.drawing import DrawingScene
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from ... import DrawingView
+    from ..drawing import DrawingView
 
 
 def withScene(func):
@@ -115,6 +115,9 @@ class DrawingViewApiMixin:
 
     def editText(self : "DrawingView") -> None:
         self.state.go(self.stateEditText)
+
+    def editPropertyText(self : "DrawingView") -> None:
+        self.state.go(self.stateEditPropertyText)
 
     ############################################################################
     # view menu

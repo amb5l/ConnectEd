@@ -54,6 +54,9 @@ class PropertiesMixin:
             p.setDisplay(pts.display)
             p.setParentItem(self._anchor_points[pts.cleat])
 
+    def getPropertyNames(self : Self) -> list[str]:
+        return list(self._properties.keys())
+
     def getPropertyNamesAndValues(self : Self) -> dict[str, str]:
         d = {}
         for name, ps in self._properties.items():

@@ -1,3 +1,5 @@
+- private attribute names in dialogs
+- move hub import to top everywhere
 - sort out editAppearance, editProperties in view/scene/cmd
 - scene:
   editText, editPropertyText, editProperties, editAppearance
