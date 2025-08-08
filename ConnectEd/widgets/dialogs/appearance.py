@@ -10,6 +10,8 @@ from PyQt6.QtGui     import QPainter, QColor, QPen, QBrush, \
 
 from ...core.log import logger
 
+from ...core.utils import val2str
+
 from ...core.icon import getDefaultIconSize, getFgBgColors, \
                          SvgIconSingleton, CharIconSingleton
 
@@ -144,6 +146,7 @@ class ColorComboBox(QComboBox):
         if isinstance(initial, QColor) and custom and custom_idx is not None:
             self.setCurrentIndex(custom_idx)
             self.setItemIcon(custom_idx, self.getIcon(initial))
+            self.setItemText(custom_idx, f"<custom = {val2str(initial)}>")
         self.choice = initial
         self.activated.connect(self.onActivated)
 
@@ -153,13 +156,14 @@ class ColorComboBox(QComboBox):
             self.choice = NO_CHANGE
         elif selected_text == "<default>":
             self.choice = DEFAULT
-        elif selected_text == "<custom>":
+        elif selected_text.startswith("<custom"):
             dialog = CustomColorDialog(
                 self.choice if isinstance(self.choice, QColor) else None
             )
             if dialog.exec():
                 self.choice = dialog.getChoice()
                 self.setItemIcon(index, self.getIcon(self.choice))
+                self.setItemText(index, f"<custom = {val2str(self.choice)}>")
         else:
             self.choice = self.COLORS[selected_text]
 
