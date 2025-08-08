@@ -455,7 +455,17 @@ class DrawingViewStatePlacePort(ClickMixin):
         s :    QPointF,
         e :    Optional[list[ElementMixin]] = None
     ) -> None:
-        self.view.state.interact(PlacePortInteraction(self.scene, self._snap(s)))
+        element = Port(self._snap(s))
+        dialog = PortPinDialog("Port", element)
+        if dialog.exec():
+            element.name = dialog.getName()
+            element.direction = dialog.getDirection()
+            element.range = dialog.getRange()
+            self.interact(
+                PlacePortInteraction(self.scene, self._snap(s), element)
+            )
+        else:
+            self.view.state.go(self.view.stateIdle)
 
 class DrawingViewStatePlaceBlock1(DrawingViewStateBase):
     TIP = "Place Block: pick the first point"

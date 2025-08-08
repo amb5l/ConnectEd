@@ -50,7 +50,6 @@ class PropertiesMixin:
         else:
             return
         for name, pts in property_texts.items():
-            print(f"pts class: {pts._class}")
             p = pts._class()
             p.setOrigin(pts.anchor)
             p.setPos(pts.pos)

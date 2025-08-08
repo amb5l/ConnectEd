@@ -107,6 +107,16 @@ FACTORY_SETTINGS = {
                         "underline" : False
                     }
                 },
+                "PortComment" : {
+                    "text" : {
+                        "color"     : PaletteDark.BlockPinComment,
+                        "family"    : "Liberation Sans",
+                        "size"      : 7,
+                        "bold"      : False,
+                        "italic"    : False,
+                        "underline" : False
+                    }
+                },
                 "PortArrow" : {
                     "line" : {
                         "color" : PaletteDark.BlockPinArrow,
@@ -143,6 +153,16 @@ FACTORY_SETTINGS = {
                 "BlockPinName" : {
                     "text" : {
                         "color"     : PaletteDark.BlockPinName,
+                        "family"    : "Liberation Sans",
+                        "size"      : 7,
+                        "bold"      : False,
+                        "italic"    : False,
+                        "underline" : False
+                    }
+                },
+                "BlockPinComment" : {
+                    "text" : {
+                        "color"     : PaletteDark.BlockPinComment,
                         "family"    : "Liberation Sans",
                         "size"      : 7,
                         "bold"      : False,

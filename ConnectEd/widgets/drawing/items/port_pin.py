@@ -72,9 +72,11 @@ class BasePortPin(
             exists    = lambda self: self.range is not None,
             getter    = lambda self: self.range.right,
             setter    = lambda self, value: setattr(self.range, 'right', value)
-        )
+        ),
+        "Comment" : PropertySpec()
     }
     _NAME_CLASS = PortPinText
+    _COMMENT_CLASS = PortPinText
     _NAME_OFFSET = 1.5
 
     @classmethod
@@ -206,11 +208,15 @@ class PortArrow(Arrow):
 class PortName(PortPinText):
     pass
 
+class PortComment(PortPinText):
+    pass
+
 class Port(ElementPosMixin, PortPinArrowMixin, BasePortPin):
     # class attributes
-    _NODE_CLASS  = PortNode
-    _ARROW_CLASS = PortArrow
-    _NAME_CLASS  = PortName
+    _NODE_CLASS    = PortNode
+    _ARROW_CLASS   = PortArrow
+    _NAME_CLASS    = PortName
+    _COMMENT_CLASS = PortComment
     _PROPERTY_SPECS = \
         ElementPosMixin._PROPERTY_SPECS_POS | \
         BasePortPin._PROPERTY_SPECS
@@ -300,11 +306,15 @@ class BlockPinArrow(Arrow):
 class BlockPinName(PortPinText):
     pass
 
+class BlockPinComment(PortPinText):
+    pass
+
 class BlockPin(PortPinArrowMixin, BasePin):
     # class attributes
-    _NODE_CLASS  = BlockPinNode
-    _ARROW_CLASS = BlockPinArrow
-    _NAME_CLASS  = BlockPinName
+    _NODE_CLASS    = BlockPinNode
+    _ARROW_CLASS   = BlockPinArrow
+    _NAME_CLASS    = BlockPinName
+    _COMMENT_CLASS = BlockPinComment
 
     # instance attributes
     _node  : BlockPinNode
