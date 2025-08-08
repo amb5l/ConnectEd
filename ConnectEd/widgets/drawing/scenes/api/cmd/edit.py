@@ -3,7 +3,7 @@ from dataclasses import dataclass
 
 from .....dialogs.appearance import QuillPref, QuillPrefChange, \
                                     AppearancePref, AppearancePrefChange
-from .....dialogs.properties import PropertyState
+from .....dialogs.properties import PropertyChange
 
 from ....properties import PropertiesMixin
 
@@ -172,37 +172,61 @@ class cmdEditAppearance(cmdSceneElements):
 
 class cmdEditProperties(cmdSceneElement):
     _element : PropertiesMixin
-    _before  : dict[str, PropertyState]
-    _after   : dict[str, PropertyState]
+    _changes : list[PropertyChange]
 
     def __init__(
         self    : Self,
         scene   : "DrawingScene",
         element : PropertiesMixin,
-        changes : dict[PropertyText, tuple[str, PropertyState]]
+        changes : list[PropertyChange]
     ):
         super().__init__(scene, element)
-        self._before = {}
-        self._after = {}
-        for name, change in changes.items():
-            self._before[name] = PropertyState(
-                name,
-                element.getPropertyValue(name),
-                element.getPropertyDescription(name)
-            )
-            self._after[name] = change
+        self._changes = changes
 
     def redo(self: Self) -> None:
-        for name, change in self._after.items():
-            self._element.renameProperty(change.name, name)
-            self._element.setPropertyValue(name, change.value)
-            self._element.setPropertyDescription(name, change.description)
+        for change in self._changes:
+            if change.before is None:  # new property
+                self._element.addProperty(change.after.name)
+                self._element.setPropertyValue(
+                    change.after.name, change.after.value
+                )
+                self._element.setPropertyDescription(
+                    change.after.name, change.after.description
+                )
+            else:  # existing property
+                if change.after is None:  # deleted property
+                    self._element.deleteProperty(change.before.name)
+                else:
+                    self._element.renameProperty(
+                        change.before.name, change.after.name
+                    )
+                    self._element.setPropertyValue(
+                        change.after.name, change.after.value
+                    )
 
     def undo(self: Self) -> None:
-        for name, change in self._before.items():
-            self._element.renameProperty(name, change.name)
-            self._element.setPropertyValue(name, change.value)
-            self._element.setPropertyDescription(name, change.description)
+        for change in self._changes:
+            if change.before is None:  # new property
+                self._element.deleteProperty(change.after.name)
+            else:  # existing property
+                if change.after is None:  # deleted property
+                    self._element.addProperty(change.before.name)
+                    self._element.setPropertyValue(
+                        change.before.name, change.before.value
+                    )
+                    self._element.setPropertyDescription(
+                        change.before.name, change.before.description
+                    )
+                else:
+                    self._element.renameProperty(
+                        change.after.name, change.before.name
+                    )
+                    self._element.setPropertyValue(
+                        change.before.name, change.before.value
+                    )
+                    self._element.setPropertyDescription(
+                        change.before.name, change.before.description
+                    )
 
 class cmdEditOrigin(cmdSceneElement):
     _element : ElementOriginMixin

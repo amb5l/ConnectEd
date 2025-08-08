@@ -16,6 +16,7 @@ class PropertySpec:
     exists      : Optional[Callable[[], bool]]    = None
     getter      : Optional[Callable[[], Any]]     = None
     setter      : Optional[Callable[[Any], None]] = None  # None = read only
+    default     : Optional[Callable[[], Any]]     = None  # for when the value is DEFAULT
     value       : Optional[Any]                   = None  # for simple strings
     description : str                             = ""
     custom      : bool                            = False
@@ -34,6 +35,8 @@ class PropertySpec:
             self.setter = lambda obj, val: setattr(ps, 'value', str(val))
             if self.value is None:
                 self.value = ""
+        if self.default is None:
+            self.default = lambda: None
 
 class PropertiesMixin:
     # class variables
@@ -82,21 +85,21 @@ class PropertiesMixin:
             d[name] = val2str(ps.getter(self))
         return d
 
-    def getPropertyValue(self, name : str) -> str:
+    def getPropertyValue(self, name : str) -> Any:
         if name not in self._properties:
             logger.warning(f"Property {name} does not exist")
         ps = self._properties[name]
-        return val2str(ps.getter(self))
+        return ps.getter(self)
 
-    def setPropertyValue(self, name : str, value : str) -> None:
+    def setPropertyValue(self, name : str, value : Any) -> None:
         if name not in self._properties:
             logger.warning(f"Property {name} does not exist")
             return
         ps = self._properties[name]
-        if isinstance(ps, PropertySpec):
-            ps.setter(self, str2val(value, ps.type_name))
+        if ps.setter is not None:
+            ps.setter(self, value)
         else:
-            ps.value = value
+            logger.warning(f"Property {name} is read only")
         self.onPropertyChange()
 
     def getPropertyDescription(self, name : str) -> str:

@@ -824,22 +824,25 @@ class ElementLineMixin:
     _JOIN_STYLE = Qt.PenJoinStyle.MiterJoin
     _PROPERTY_SPECS_LINE = {
         "Line Color" : PropertySpec(
-            type_name = "Color",
+            type_name = "QColor",
             exists    = lambda self: self.line is not None,
             getter    = lambda self: self.line.getColor(),
-            setter    = lambda self, value: self.line.setColor(value)
+            setter    = lambda self, value: self.line.setColor(value),
+            default   = lambda self: self.line.getDefaults().color
         ),
         "Line Width" : PropertySpec(
             type_name = "float",
             exists    = lambda self: self.line is not None,
             getter    = lambda self: self.line.getWidth(),
-            setter    = lambda self, value: self.line.setWidth(value)
+            setter    = lambda self, value: self.line.setWidth(value),
+            default   = lambda self: self.line.getDefaults().width
         ),
         "Line Style" : PropertySpec(
             type_name = "PenStyle",
             exists    = lambda self: self.line is not None,
             getter    = lambda self: self.line.getStyle(),
-            setter    = lambda self, value: self.line.setStyle(value)
+            setter    = lambda self, value: self.line.setStyle(value),
+            default   = lambda self: self.line.getDefaults().style
         )
     }
 
@@ -854,13 +857,15 @@ class ElementFillMixin:
             type_name = "QColor",
             exists    = lambda self: self.fill is not None,
             getter    = lambda self: self.fill.getColor(),
-            setter    = lambda self, value: self.fill.setColor(value)
+            setter    = lambda self, value: self.fill.setColor(value),
+            default   = lambda self: self.fill.getDefaults().color
         ),
         "Fill Style" : PropertySpec(
             type_name = "BrushStyle",
             exists    = lambda self: self.fill is not None,
             getter    = lambda self: self.fill.getStyle(),
-            setter    = lambda self, value: self.fill.setStyle(value)
+            setter    = lambda self, value: self.fill.setStyle(value),
+            default   = lambda self: self.fill.getDefaults().style
         )
     }
 
@@ -875,37 +880,43 @@ class ElementQuillMixin:
             type_name = "QColor",
             exists    = lambda self: self.quill is not None,
             getter    = lambda self: self.quill.getColor(),
-            setter    = lambda self, value: self.quill.setColor(value)
+            setter    = lambda self, value: self.quill.setColor(value),
+            default   = lambda self: self.quill.getDefaults().color
         ),
         "Text Font" : PropertySpec(
             type_name = "str",
             exists    = lambda self: self.quill is not None,
             getter    = lambda self: self.quill.getFamily(),
-            setter    = lambda self, value: self.quill.setFamily(value)
+            setter    = lambda self, value: self.quill.setFamily(value),
+            default   = lambda self: self.quill.getDefaults().family
         ),
         "Text Size" : PropertySpec(
             type_name = "float",
             exists    = lambda self: self.quill is not None,
             getter    = lambda self: self.quill.getSize(),
-            setter    = lambda self, value: self.quill.setSize(value)
+            setter    = lambda self, value: self.quill.setSize(value),
+            default   = lambda self: self.quill.getDefaults().size
         ),
         "Text Bold" : PropertySpec(
             type_name = "bool",
             exists    = lambda self: self.quill is not None,
             getter    = lambda self: self.quill.getBold(),
-            setter    = lambda self, value: self.quill.setBold(value)
+            setter    = lambda self, value: self.quill.setBold(value),
+            default   = lambda self: self.quill.getDefaults().bold
         ),
         "Text Italic" : PropertySpec(
             type_name = "bool",
             exists    = lambda self: self.quill is not None,
             getter    = lambda self: self.quill.getItalic(),
-            setter    = lambda self, value: self.quill.setItalic(value)
+            setter    = lambda self, value: self.quill.setItalic(value),
+            default   = lambda self: self.quill.getDefaults().italic
         ),
         "Text Underline" : PropertySpec(
             type_name = "bool",
             exists    = lambda self: self.quill is not None,
             getter    = lambda self: self.quill.getUnderline(),
-            setter    = lambda self, value: self.quill.setUnderline(value)
+            setter    = lambda self, value: self.quill.setUnderline(value),
+            default   = lambda self: self.quill.getDefaults().underline
         )
     }
 
