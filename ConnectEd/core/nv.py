@@ -140,7 +140,7 @@ FACTORY_SETTINGS = {
                         "style" : Qt.BrushStyle.NoBrush
                     }
                 },
-                "BlockPinText" : {
+                "BlockPinName" : {
                     "text" : {
                         "color"     : PaletteDark.BlockPinName,
                         "family"    : "Liberation Sans",

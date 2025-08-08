@@ -74,11 +74,14 @@ class BasePortPin(
             setter    = lambda self, value: setattr(self.range, 'right', value)
         )
     }
-    _PROPERTY_TEXT_CLASS = PortPinText
-    _PROPERTY_TEXTS = {
-        "Name" : PropertyTextSpec("Center Left", QPointF(0, 0), "Name")
-    }
+    _NAME_CLASS = PortPinText
     _NAME_OFFSET = 1.5
+
+    @classmethod
+    def _getPropertyTexts(cls):
+        return {
+            "Name" : PropertyTextSpec("Center Left", QPointF(0, 0), "Name", _class=cls._NAME_CLASS)
+        }
 
     # instance attributes
     _direction : SignalDirection
@@ -200,14 +203,14 @@ class PortArrow(Arrow):
     _PATH_IN  = Arrow._PATH_TOWARDS
     _PATH_OUT = Arrow._PATH_AWAY
 
-class PortPropertyText(PortPinText):
+class PortName(PortPinText):
     pass
 
 class Port(ElementPosMixin, PortPinArrowMixin, BasePortPin):
     # class attributes
-    _NODE_CLASS = PortNode
+    _NODE_CLASS  = PortNode
     _ARROW_CLASS = PortArrow
-    _PROPERTY_TEXT_CLASS = PortPropertyText
+    _NAME_CLASS  = PortName
     _PROPERTY_SPECS = \
         ElementPosMixin._PROPERTY_SPECS_POS | \
         BasePortPin._PROPERTY_SPECS
@@ -216,8 +219,10 @@ class Port(ElementPosMixin, PortPinArrowMixin, BasePortPin):
     _node  : PortNode
     _arrow : PortArrow
 
-    def __init__(self : Self) -> None:
+    def __init__(self : Self, pos : Optional[QPointF] = None) -> None:
         BasePortPin.__init__(self)
+        if pos is not None:
+            self.setPos(pos)
         self.initArrow()
         self.onGeometryChange()
 
@@ -292,14 +297,14 @@ class BlockPinArrow(Arrow):
     _PATH_IN  = Arrow._PATH_AWAY
     _PATH_OUT = Arrow._PATH_TOWARDS
 
-class BlockPinText(PortPinText):
+class BlockPinName(PortPinText):
     pass
 
 class BlockPin(PortPinArrowMixin, BasePin):
     # class attributes
-    _NODE_CLASS = BlockPinNode
+    _NODE_CLASS  = BlockPinNode
     _ARROW_CLASS = BlockPinArrow
-    _PROPERTY_TEXT_CLASS = BlockPinText
+    _NAME_CLASS  = BlockPinName
 
     # instance attributes
     _node  : BlockPinNode

@@ -115,8 +115,11 @@ class DrawingViewApiMixin:
     # edit context menus
     ############################################################################
 
-    def editPort(self : "DrawingView") -> None:
-        self.state.go(self.stateEditPort)
+    def editPort(
+        self    : "DrawingView",
+        element : Optional[ElementMixin] = None
+    ) -> None:
+        self.state.go(self.stateEditPort, [element])
 
     def editBlockPin(
         self    : "DrawingView",

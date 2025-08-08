@@ -20,13 +20,6 @@ class PropertyDisplay(Enum):
     VALUE      = "Value"
     NAME_VALUE = "Name:Value"
 
-@dataclass
-class PropertyTextSpec:
-    anchor  : str
-    pos     : QPointF
-    cleat   : str
-    display : PropertyDisplay = PropertyDisplay.VALUE
-
 class PropertyText(TetherText):
     # class variables
     _PROPERTY_SPECS_PROPERTY = \
@@ -124,3 +117,11 @@ class PropertyText(TetherText):
         view    : "DrawingView"
     ) -> None:
         view.editPropertyText()
+
+@dataclass
+class PropertyTextSpec:
+    anchor  : str
+    pos     : QPointF
+    cleat   : str
+    display : PropertyDisplay = PropertyDisplay.VALUE
+    _class  : type = PropertyText

@@ -42,15 +42,16 @@ class PropertiesMixin:
     _properties : dict[str, PropertySpec]
 
     def initProperties(self : Self, bare : bool = False) -> None:
-        from .items.property_text import PropertyText
         self._properties = self._PROPERTY_SPECS.copy()
-        if not hasattr(self, "_PROPERTY_TEXTS"):
+        if hasattr(self.__class__, "_getPropertyTexts"):
+            property_texts = self.__class__._getPropertyTexts()
+        elif hasattr(self, "_PROPERTY_TEXTS"):
+            property_texts = self._PROPERTY_TEXTS
+        else:
             return
-        for name, pts in self._PROPERTY_TEXTS.items():
-            if hasattr(self, "_PROPERTY_TEXT_CLASS"):
-                p = self._PROPERTY_TEXT_CLASS()
-            else:
-                p = PropertyText()
+        for name, pts in property_texts.items():
+            print(f"pts class: {pts._class}")
+            p = pts._class()
             p.setOrigin(pts.anchor)
             p.setPos(pts.pos)
             p.setName(name)
