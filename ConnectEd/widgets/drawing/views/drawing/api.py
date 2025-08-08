@@ -1,4 +1,4 @@
-from typing import Self
+from typing import Self, Optional
 
 from PyQt6.QtCore    import QPointF
 from PyQt6.QtWidgets import QApplication
@@ -7,6 +7,8 @@ from PyQt6.QtGui     import QCursor
 from ...query  import QueryWindow
 
 from ...scenes.drawing import DrawingScene
+
+from ...items import ElementMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -112,6 +114,15 @@ class DrawingViewApiMixin:
     ############################################################################
     # edit context menus
     ############################################################################
+
+    def editPort(self : "DrawingView") -> None:
+        self.state.go(self.stateEditPort)
+
+    def editBlockPin(
+        self    : "DrawingView",
+        element : Optional[ElementMixin] = None
+    ) -> None:
+        self.state.go(self.stateEditBlockPin, [element])
 
     def editText(self : "DrawingView") -> None:
         self.state.go(self.stateEditText)

@@ -24,7 +24,10 @@ from ...scenes.drawing import DrawingScene
 
 from ...scenes.api.interaction import *
 
-from ...scenes.api.cmd.edit import cmdEditText, cmdEditPropertyText
+from ...scenes.api.cmd.edit import cmdEditPortPin,     \
+                                   cmdEditText,        \
+                                   cmdEditPropertyText
+
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -42,13 +45,18 @@ class DrawingViewStateBase:
         self.view = view
         self.scene = view.scene()
 
-    def go(self : Self, state : "DrawingViewStateBase") -> None:
+    def go(
+        self     : Self,
+        state    : "DrawingViewStateBase",
+        elements : Optional[list[ElementMixin]] = None
+    ) -> None:
         self.view.state = state
         if hub.main_window is not None:
             hub.main_window.status_bar.tip.setText(state.TIP)
         state.entry(
             self.view.mouse.current.physical,
-            self.view.mouse.current.logical
+            self.view.mouse.current.logical,
+            elements
         )
 
     def interact(
@@ -63,7 +71,12 @@ class DrawingViewStateBase:
         else:
             self.view.state.go(self.view.stateIdle)
 
-    def entry(self : Self, v : QPoint, s : QPointF) -> None:
+    def entry(
+        self : Self,
+        v :    QPoint,
+        s :    QPointF,
+        e :    Optional[list[ElementMixin]] = None
+    ) -> None:
         pass
 
     def mouseLeftClick(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
@@ -115,8 +128,14 @@ class DragMixin(DrawingViewStateBase):
 class DrawingViewStateIdle(DrawingViewStateBase):
     TIP = "Idle"
 
-    def entry(self : Self, v : QPoint, s : QPointF) -> None:
+    def entry(
+        self : Self,
+        v :    QPoint,
+        s :    QPointF,
+        e :    Optional[list[ElementMixin]] = None
+    ) -> None:
         self.view.interaction = None
+        self.view.target = None
 
     def mouseLeftClick(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
         items = self.view._itemsAt(s)
@@ -290,8 +309,12 @@ class DrawingViewStateEditSelectArea2(DrawingViewStateBase):
 class DrawingViewStateEditPaste(ClickMixin):
     TIP = "Paste: select the paste position"
 
-    def entry(self : Self, v : QPoint, s : QPointF) -> None:
-        self.view.state.interact(EditPasteInteraction(self.scene, self._snap(s)))
+    def entry(
+        self : Self,
+        v :    QPoint,
+        s :    QPointF,
+        e :    Optional[list[ElementMixin]] = None
+    ) -> None:        self.view.state.interact(EditPasteInteraction(self.scene, self._snap(s)))
 
 class DrawingViewStateEditDuplicate(ClickMixin, DragMixin):
     TIP = "Duplicate: place the duplicated item(s) as required"
@@ -310,8 +333,13 @@ class DrawingViewStateEditResize(DragMixin):
 class DrawingViewStateEditAppearance(DrawingViewStateBase):
     TIP = "Appearance: specify changes"
 
-    def entry(self : Self, v : QPoint, s : QPointF) -> None:
-        elements = self.view._selectedElements(ElementMixin)
+    def entry(
+        self : Self,
+        v :    QPoint,
+        s :    QPointF,
+        e :    Optional[list[ElementMixin]] = None
+    ) -> None:
+        elements = e or self.view._selectedElements(ElementMixin)
         if elements:
             dialog = AppearanceDialog(elements)
             if dialog.exec():
@@ -327,12 +355,63 @@ class DrawingViewStateEditQuery(DrawingViewStateBase):
         self.view._selectPoint(s, m)
         self.view.editQuery()
 
+class DrawingViewStateEditPort(DrawingViewStateBase):
+    TIP = "Edit Port: specify changes"
+
+    def entry(
+        self : Self,
+        v :    QPoint,
+        s :    QPointF,
+        e :    Optional[list[ElementMixin]] = None
+    ) -> None:
+        element = e[0] if e else self.view._selectedElement(Port)
+        if element:
+            dialog = PortPinDialog("Port", element)
+            if dialog.exec():
+                name = dialog.getName()
+                direction = dialog.getDirection()
+                range = dialog.getRange()
+                self.scene.undo_stack.push(cmdEditPortPin(
+                    self.scene, element, name, direction, range
+                ))
+        else:
+            logger.warning("No port selected")
+        self.view.state.go(self.view.stateIdle)
+
+class DrawingViewStateEditBlockPin(DrawingViewStateBase):
+    TIP = "Edit Block Pin: specify changes"
+
+    def entry(
+        self : Self,
+        v :    QPoint,
+        s :    QPointF,
+        e :    Optional[list[ElementMixin]] = None
+    ) -> None:
+        element = e[0] if e else self.view._selectedElement(BlockPin)
+        if element and isinstance(element, BlockPin):
+            dialog = PortPinDialog("Block Pin", element)
+            if dialog.exec():
+                name = dialog.getName()
+                direction = dialog.getDirection()
+                range = dialog.getRange()
+                self.scene.undo_stack.push(cmdEditPortPin(
+                    self.scene, element, name, direction, range
+                ))
+        else:
+            logger.warning("No block pin selected")
+        self.view.state.go(self.view.stateIdle)
+
 class DrawingViewStateEditText(DrawingViewStateBase):
     TIP = "Edit Text: specify changes"
 
-    def entry(self : Self, v : QPoint, s : QPointF) -> None:
-        element = self.view._selectedElement(Text)
-        if element:
+    def entry(
+        self : Self,
+        v :    QPoint,
+        s :    QPointF,
+        e :    Optional[list[ElementMixin]] = None
+    ) -> None:
+        element = e[0] if e else self.view._selectedElement(Text)
+        if element and isinstance(element, Text):
             dialog = TextDialog(element)
             if dialog.exec():
                 text, appearance = dialog.getChoice()
@@ -346,9 +425,14 @@ class DrawingViewStateEditText(DrawingViewStateBase):
 class DrawingViewStateEditPropertyText(DrawingViewStateBase):
     TIP = "Edit Property Text: specify changes"
 
-    def entry(self : Self, v : QPoint, s : QPointF) -> None:
-        element = self.view._selectedElement(PropertyText)
-        if element:
+    def entry(
+        self : Self,
+        v :    QPoint,
+        s :    QPointF,
+        e :    Optional[list[ElementMixin]] = None
+    ) -> None:
+        element = e[0] if e else self.view._selectedElement(PropertyText)
+        if element and isinstance(element, PropertyText):
             dialog = PropertyTextDialog(element)
             if dialog.exec():
                 name = dialog.getName()
@@ -365,7 +449,12 @@ class DrawingViewStateEditPropertyText(DrawingViewStateBase):
 class DrawingViewStatePlacePort(ClickMixin):
     TIP = "Place Port: pick a location"
 
-    def entry(self : Self, v : QPoint, s : QPointF) -> None:
+    def entry(
+        self : Self,
+        v :    QPoint,
+        s :    QPointF,
+        e :    Optional[list[ElementMixin]] = None
+    ) -> None:
         self.view.state.interact(PlacePortInteraction(self.scene, self._snap(s)))
 
 class DrawingViewStatePlaceBlock1(DrawingViewStateBase):
@@ -386,9 +475,14 @@ class DrawingViewStatePlaceBlock2(ClickMixin, DragMixin):
 class DrawingViewStatePlaceBlockPin(ClickMixin):
     TIP = "Place Block Pin: pick a location"
 
-    def entry(self : Self, v : QPoint, s : QPointF) -> None:
-        block = self.view._selectedElement(PinRect)
-        if block:
+    def entry(
+        self : Self,
+        v :    QPoint,
+        s :    QPointF,
+        e :    Optional[list[ElementMixin]] = None
+    ) -> None:
+        block = e[0] if e else self.view._selectedElement(PinRect)
+        if block and isinstance(block, PinRect):
             pin = BlockPin() # don't parent to block yet
             dialog = PortPinDialog("Block Pin", pin)
             if dialog.exec():
@@ -420,7 +514,12 @@ class DrawingViewStatePlaceRectangle2(ClickMixin, DragMixin):
 class DrawingViewStatePlaceText(ClickMixin):
     TIP = "Place Text: pick a position"
 
-    def entry(self : Self, v : QPoint, s : QPointF) -> None:
+    def entry(
+        self : Self,
+        v :    QPoint,
+        s :    QPointF,
+        e :    Optional[list[ElementMixin]] = None
+    ) -> None:
         element = Text(self._snap(s))
         dialog = TextDialog(element)
         if dialog.exec():
@@ -436,7 +535,12 @@ class DrawingViewStatePlaceText(ClickMixin):
 class DrawingViewStatePlaceTextBlock(ClickMixin):
     TIP = "Place Text Block: pick a position"
 
-    def entry(self : Self, v : QPoint, s : QPointF) -> None:
+    def entry(
+        self : Self,
+        v :    QPoint,
+        s :    QPointF,
+        e :    Optional[list[ElementMixin]] = None
+    ) -> None:
         element = TextBlock(self._snap(s))
         dialog = TextBlockDialog(element)
         if dialog.exec():
@@ -465,6 +569,8 @@ class DrawingViewStateMixin:
     stateEditResize       : DrawingViewStateEditResize
     stateEditAppearance   : DrawingViewStateEditAppearance
     stateEditQuery        : DrawingViewStateEditQuery
+    stateEditPort         : DrawingViewStateEditPort
+    stateEditBlockPin     : DrawingViewStateEditBlockPin
     stateEditText         : DrawingViewStateEditText
     stateEditPropertyText : DrawingViewStateEditPropertyText
     statePlacePort        : DrawingViewStatePlacePort
@@ -491,6 +597,8 @@ class DrawingViewStateMixin:
         self.stateEditResize       = DrawingViewStateEditResize       (self)
         self.stateEditAppearance   = DrawingViewStateEditAppearance   (self)
         self.stateEditQuery        = DrawingViewStateEditQuery        (self)
+        self.stateEditPort         = DrawingViewStateEditPort         (self)
+        self.stateEditBlockPin     = DrawingViewStateEditBlockPin     (self)
         self.stateEditText         = DrawingViewStateEditText         (self)
         self.stateEditPropertyText = DrawingViewStateEditPropertyText (self)
         self.statePlacePort        = DrawingViewStatePlacePort        (self)

@@ -81,6 +81,7 @@ class PropertiesMixin:
             ps.setter(self, str2val(value, ps.type_name))
         else:
             ps.value = value
+        self.onPropertyChange()
 
     def addProperty(self, name : str) -> None:
         if name in self._properties:
@@ -95,3 +96,12 @@ class PropertiesMixin:
                 del self._properties[name]
         else:
             logger.warning(f"Property {name} does not exist")
+
+    def onPropertyChange(self) -> None:
+        """Notify all PropertyText children to refresh their display."""
+        for child in self.childItems():
+            if hasattr(child, "onTextChange"):
+                child.onTextChange()
+            for grandchild in child.childItems():
+                if hasattr(grandchild, "onTextChange"):
+                    grandchild.onTextChange()

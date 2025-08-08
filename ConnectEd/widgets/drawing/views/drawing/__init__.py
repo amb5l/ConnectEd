@@ -6,19 +6,21 @@ from PyQt6.QtWidgets import QApplication, QMdiArea, QMdiSubWindow, \
                             QGraphicsView, QGraphicsTextItem
 from PyQt6.QtGui     import QPainter, QPen, QCloseEvent, QKeyEvent
 
+from ..... import hub
+
 from ....marquee import Marquee
 
 from ...scenes.drawing import DrawingScene
 
 from ...scenes.api.interaction import Interaction
 
+from ...items import ElementMixin
+
 from .mouse     import DrawingViewMouseMixin
 from .private   import DrawingViewPrivateMixin
 from .api       import DrawingViewApiMixin
 from .state     import DrawingViewStateMixin, DrawingViewStateBase
 from .defs      import *
-
-from ..... import hub
 
 
 def getView(pos : QPoint):
@@ -46,6 +48,7 @@ class DrawingView(
     mouse       : DrawingViewMouse
     state       : DrawingViewStateBase
     interaction : Optional[Interaction]
+    target      : Optional[ElementMixin]  # for context menus
 
     def __init__(self : Self, scene : DrawingScene) -> None:
         super().__init__(scene)

@@ -25,6 +25,7 @@ from .property_text import PropertyTextSpec, PropertyText
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
+    from ..views.drawing import DrawingView
     from .pin_rect import PinRect
     from .block    import Block
 
@@ -100,6 +101,9 @@ class BasePortPin(
 
     def onSelectionChange(self : Self, selected : bool) -> None:
         self._node.setSelected(selected)
+
+    def getMenuItems(self : Self) -> list[str]:
+        return ["Edit"]
 
     def initAnchorPoints(self : Self) -> None:
         self._anchor_points = {
@@ -238,6 +242,13 @@ class Port(ElementPosMixin, PortPinArrowMixin, BasePortPin):
             inst.setPos(pos)
         return inst
 
+    def ctxMenuEdit(
+        self    : Self,
+        checked : bool,
+        view    : "DrawingView"
+    ) -> None:
+        view.editPort(self)
+
 class BasePin(ElementLocMixin, BasePortPin):
     # class attributes
     _PROPERTY_SPECS = \
@@ -319,3 +330,11 @@ class BlockPin(PortPinArrowMixin, BasePin):
             parent    = parent,
             inst      = inst
         )
+
+    def ctxMenuEdit(
+        self    : Self,
+        checked : bool,
+        view    : "DrawingView"
+    ) -> None:
+        view.target = self
+        view.editBlockPin(self)

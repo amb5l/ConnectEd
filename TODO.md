@@ -1,3 +1,4 @@
+- remove hub
 - property change propagation
 - override setRotation to maintain ortho angles
 - review OnPositionChange

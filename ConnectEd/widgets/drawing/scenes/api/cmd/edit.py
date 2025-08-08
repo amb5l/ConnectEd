@@ -5,8 +5,10 @@ from .....dialogs.appearance import QuillPref, QuillPrefChange, \
                                     AppearancePref, AppearancePrefChange
 from .....dialogs.properties import PropertiesType
 
-from ....items import ElementMixin, ElementOriginMixin
+from ....items import SignalDirection, VectorRange, \
+                      ElementMixin, ElementOriginMixin
 
+from ....items.port_pin      import BasePortPin
 from ....items.base_text     import BaseText
 from ....items.property_text import PropertyText, PropertyDisplay
 
@@ -15,6 +17,43 @@ from . import cmdSceneElement, cmdSceneElements
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ....scenes.drawing import DrawingScene
+
+class cmdEditPortPin(cmdSceneElement):
+    @dataclass
+    class BasePortPinState:
+        name      : str
+        direction : SignalDirection
+        range     : VectorRange
+
+    _element : BasePortPin
+    _before  : BasePortPinState
+    _after   : BasePortPinState
+
+    def __init__(
+        self       : Self,
+        scene      : "DrawingScene",
+        element    : BasePortPin,
+        name       : str,
+        direction  : SignalDirection,
+        range      : VectorRange
+    ):
+        super().__init__(scene, element)
+        self._before = self.BasePortPinState(
+            element.name, element.direction, element.range
+        )
+        self._after  = self.BasePortPinState(name, direction, range)
+
+    def redo(self : Self) -> None:
+        self._element.name = self._after.name
+        self._element.direction = self._after.direction
+        self._element.range = self._after.range
+        self._element.update()
+
+    def undo(self : Self) -> None:
+        self._element.name = self._before.name
+        self._element.direction = self._before.direction
+        self._element.range = self._before.range
+        self._element.update()
 
 class cmdEditText(cmdSceneElement):
     @dataclass
