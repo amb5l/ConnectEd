@@ -11,12 +11,13 @@ if TYPE_CHECKING:
 
 @dataclass
 class PropertySpec:
-    type_name : str                             = "str"
-    exists    : Optional[Callable[[], bool]]    = None
-    getter    : Optional[Callable[[], Any]]     = None
-    setter    : Optional[Callable[[Any], None]] = None
-    value     : Optional[Any]                   = None  # for simple strings
-    custom    : bool                            = False
+    type_name   : str                             = "str"
+    exists      : Optional[Callable[[], bool]]    = None
+    getter      : Optional[Callable[[], Any]]     = None
+    setter      : Optional[Callable[[Any], None]] = None
+    value       : Optional[Any]                   = None  # for simple strings
+    description : str                             = ""
+    custom      : bool                            = False
 
     def __post_init__(self):
         # defaults for simple strings

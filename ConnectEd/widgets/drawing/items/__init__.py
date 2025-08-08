@@ -649,14 +649,14 @@ class ElementBoundShapeMixin:
 class ElementPosMixin:
     _PROPERTY_SPECS_POS = {
         "Position X" : PropertySpec(
-            type_name = "float",
-            getter    = lambda self: self.pos().x(),
-            setter    = lambda self, value: self.setPosX(value)
+            type_name   = "float",
+            getter      = lambda self: self.pos().x(),
+            setter      = lambda self, value: self.setPosX(value)
         ),
         "Position Y" : PropertySpec(
-            type_name = "float",
-            getter    = lambda self: self.pos().y(),
-            setter    = lambda self, value: self.setPosY(value)
+            type_name   = "float",
+            getter      = lambda self: self.pos().y(),
+            setter      = lambda self, value: self.setPosY(value)
         )
     }
 
@@ -678,10 +678,17 @@ class ElementLocMixin:
     _loc : EdgeLoc
 
     _PROPERTY_SPECS_LOC = {
-        "Location" : PropertySpec(
-            type_name = "EdgeLoc",
-            getter    = lambda self: self.loc(),
-            setter    = lambda self, value: self.setLoc(value)
+        "Location (Edge)" : PropertySpec(
+            type_name   = "EdgeLoc",
+            getter      = lambda self: self.loc().edge,
+            setter      = lambda self, value: self.setLocEdge(value),
+            description = "Parent edge"
+        ),
+        "Location (Distance)" : PropertySpec(
+            type_name   = "float",
+            getter      = lambda self: self.loc().distance,
+            setter      = lambda self, value: self.setLocDistance(value),
+            description = "Distance from start of parent edge"
         )
     }
 
@@ -704,6 +711,12 @@ class ElementLocMixin:
             for grandchild in child.childItems():
                 if hasattr(grandchild, 'compensateRotation'):
                     grandchild.compensateRotation(r)
+
+    def setLocEdge(self : Self, edge : Edge) -> None:
+        self.setLoc(EdgeLoc(edge, self._loc.distance))
+
+    def setLocDistance(self : Self, distance : float) -> None:
+        self.setLoc(EdgeLoc(self._loc.edge, distance))
 
     def setLocPos(
         self : Self,
@@ -766,8 +779,9 @@ class ElementOriginMixin:
     # class variables
     _PROPERTY_SPECS_ORIGIN = {
         "Origin" : PropertySpec(
-            getter    = lambda self: self.getOrigin(),
-            setter    = lambda self, value: self.setOrigin(value)
+            getter      = lambda self: self.getOrigin(),
+            setter      = lambda self, value: self.setOrigin(value),
+            description = "Origin anchor point"
         )
     }
 
