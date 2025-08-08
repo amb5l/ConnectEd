@@ -58,6 +58,18 @@ class PropertiesMixin:
             p.setDisplay(pts.display)
             p.setParentItem(self._anchor_points[pts.cleat])
 
+    def renameProperty(self : Self, old : str, new : str) -> None:
+        if old not in self._properties:
+            logger.error(f"Property {old} does not exist")
+            return
+        if new in self._properties:
+            logger.error(f"Property {new} already exists")
+            return
+        new_dict = {}
+        for name, ps in self._properties.items():
+            new_dict[new if name == old else name] = ps
+        self._properties = new_dict
+
     def getPropertyNames(self : Self) -> list[str]:
         return list(self._properties.keys())
 
