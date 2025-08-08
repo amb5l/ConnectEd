@@ -46,10 +46,10 @@ class APType(Enum):
     Resizer = 2
 
 class Edge(Enum):
-    LEFT   = "left"
-    RIGHT  = "right"
-    TOP    = "top"
-    BOTTOM = "bottom"
+    LEFT   = "Left"
+    RIGHT  = "Right"
+    TOP    = "Top"
+    BOTTOM = "Bottom"
 
 @dataclass
 class EdgeLoc:
@@ -679,7 +679,7 @@ class ElementLocMixin:
 
     _PROPERTY_SPECS_LOC = {
         "Location (Edge)" : PropertySpec(
-            type_name   = "EdgeLoc",
+            type_name   = "str",
             getter      = lambda self: self.loc().edge,
             setter      = lambda self, value: self.setLocEdge(value),
             description = "Parent edge"
@@ -713,7 +713,7 @@ class ElementLocMixin:
                     grandchild.compensateRotation(r)
 
     def setLocEdge(self : Self, edge : Edge) -> None:
-        self.setLoc(EdgeLoc(edge, self._loc.distance))
+        self.setLoc(EdgeLoc(Edge(edge), self._loc.distance))
 
     def setLocDistance(self : Self, distance : float) -> None:
         self.setLoc(EdgeLoc(self._loc.edge, distance))
@@ -735,6 +735,9 @@ class ElementLocMixin:
 class ElementAnchorPointsMixin:
     # instance attributes
     _anchor_points : dict[str, "AnchorPoint"]
+
+    def getAnchorPoint(self : Self, name : str) -> "AnchorPoint":
+        return self._anchor_points[name]
 
 class ElementRectAnchorPointsMixin(ElementAnchorPointsMixin):
     # class variables
@@ -779,6 +782,7 @@ class ElementOriginMixin:
     # class variables
     _PROPERTY_SPECS_ORIGIN = {
         "Origin" : PropertySpec(
+            type_name   = "AnchorPoint",
             getter      = lambda self: self.getOrigin(),
             setter      = lambda self, value: self.setOrigin(value),
             description = "Origin anchor point"
@@ -820,7 +824,7 @@ class ElementLineMixin:
     _JOIN_STYLE = Qt.PenJoinStyle.MiterJoin
     _PROPERTY_SPECS_LINE = {
         "Line Color" : PropertySpec(
-            type_name = "QColor",
+            type_name = "Color",
             exists    = lambda self: self.line is not None,
             getter    = lambda self: self.line.getColor(),
             setter    = lambda self, value: self.line.setColor(value)
@@ -990,7 +994,7 @@ class ElementMenuMixin:
         checked : bool,
         view    : "DrawingView"
     ) -> None:
-        view.editAppearance()
+        view.editAppearance(self)
 
     def ctxMenuProperties(
         self    : Self,

@@ -7,10 +7,10 @@ from PyQt6.QtWidgets import QGraphicsItem
 from .....core.log import logger
 from .....core.xml import copy
 
-from ....dialogs.appearance import AppearancePref, AppearancePrefChange
-from ....dialogs.properties import PropertiesType
+from ....dialogs.appearance import AppearancePrefChange
+from ....dialogs.properties import PropertyState
 
-from ...items import ElementMixin, QuillPref, QuillPrefChange, clone
+from ...items import ElementMixin, QuillPrefChange
 
 from ...items.base_text import BaseText
 
@@ -90,16 +90,16 @@ class DrawingSceneApiEditMixin:
             self, element, name, value, appearance
         ))
 
-    def editProperties(
-        self    : "DrawingScene",
-        element : ElementMixin,
-        changes : dict[PropertyText, tuple[str, PropertiesType, PropertiesType]]
-    ) -> None:
-        self.undo_stack.push(cmdEditProperties(self, element, changes))
-
     def editAppearance(
         self     : "DrawingScene",
         elements : list[ElementMixin],
         changes  : AppearancePrefChange
     ) -> None:
         self.undo_stack.push(cmdEditAppearance(self, elements, changes))
+
+    def editProperties(
+        self    : "DrawingScene",
+        element : ElementMixin,
+        changes : dict[str, PropertyState]
+    ) -> None:
+        self.undo_stack.push(cmdEditProperties(self, element, changes))

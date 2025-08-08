@@ -103,7 +103,7 @@ class BaseRectangle(
         self.updateKeypoints()
 
     def getMenuItems(self : Self) -> list[str]:
-        return ["Appearance..."]
+        return ["Appearance...", "Properties..."]
 
     @overload
     def setRect(

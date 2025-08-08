@@ -3,7 +3,13 @@ from typing import Self, Optional
 from PyQt6.QtCore    import QPointF, QLineF
 from PyQt6.QtWidgets import QGraphicsLineItem, QGraphicsSceneMouseEvent
 
-from .base_text import BaseText
+from ....core.log import logger
+
+from ..properties import PropertySpec
+
+from . import ElementAnchorPointsMixin
+
+from .base_text    import BaseText
 from .anchor_point import AnchorPoint
 
 
@@ -43,6 +49,17 @@ class Tether(QGraphicsLineItem):
         self.setLine(self._line)
 
 class TetherText(BaseText):
+
+    # class attributes
+    _PROPERTY_SPECS_TETHER = {
+        "Cleat" : PropertySpec(
+            type_name   = "str",
+            getter      = lambda self: self.cleat(),
+            setter      = lambda self, value: self.setCleat(value),
+            description = "Parent anchor point"
+        )
+    }
+
     # instance attributes
     _tether : Optional[Tether]
 
@@ -60,9 +77,30 @@ class TetherText(BaseText):
         self._tether.setVisible(selected)
 
     def setOrigin(self : Self, name : str) -> None:
+        """Override to update tether line."""
         super().setOrigin(name)
         self._tether.setParentItem(self._origin)
         self._tether.onPositionChange(self.pos())
+
+    def cleat(self : Self) -> str:
+        parent = self.parentItem()
+        if isinstance(parent, AnchorPoint):
+            return parent.name()
+        else:
+            logger.error(f"Parent is not an AnchorPoint: {type(parent).__name__}")
+            return ""
+
+    def setCleat(self : Self, name : str) -> None:
+        parent = self.parentItem()
+        if isinstance(parent, AnchorPoint):
+            grandparent = parent.parentItem()
+            if isinstance(grandparent, ElementAnchorPointsMixin):
+                self.setParentItem(grandparent.getAnchorPoint(name))
+            else:
+                logger.error(f"Grandparent is not an ElementAnchorPointsMixin: {type(grandparent).__name__}")
+            parent.setName(name)
+        else:
+            logger.error(f"Parent is not an AnchorPoint: {type(parent).__name__}")
 
     def getTotalRotation(self) -> float:
         r = 0.0

@@ -69,12 +69,17 @@ class DrawingViewApiMixin:
     def editSelectAll(self : "DrawingView", scene : DrawingScene) -> None:
         scene.editSelectAll()
 
-    def editProperties(self : "DrawingView") -> None:
-        self.state.go(self.stateEditProperties)
+    def editAppearance(
+        self    : "DrawingView",
+        element : Optional[ElementMixin] = None
+    ) -> None:
+        self.state.go(self.stateEditAppearance, [element] if element else None)
 
-    @withScene
-    def editAppearance(self : "DrawingView", scene : DrawingScene) -> None:
-        self.state.go(self.stateEditAppearance)
+    def editProperties(
+        self    : "DrawingView",
+        element : Optional[ElementMixin] = None
+    ) -> None:
+        self.state.go(self.stateEditProperties, [element] if element else None)
 
     def editQuery(self : "DrawingView") -> None:
         self.state.go(self.stateEditQuery)
@@ -119,13 +124,13 @@ class DrawingViewApiMixin:
         self    : "DrawingView",
         element : Optional[ElementMixin] = None
     ) -> None:
-        self.state.go(self.stateEditPort, [element])
+        self.state.go(self.stateEditPort, [element] if element else None)
 
     def editBlockPin(
         self    : "DrawingView",
         element : Optional[ElementMixin] = None
     ) -> None:
-        self.state.go(self.stateEditBlockPin, [element])
+        self.state.go(self.stateEditBlockPin, [element] if element else None)
 
     def editText(self : "DrawingView") -> None:
         self.state.go(self.stateEditText)

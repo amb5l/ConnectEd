@@ -6,6 +6,7 @@ from ...core.utils import val2str, str2val
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
+    from .views.drawing import DrawingView
     from .items.property_text import PropertyTextSpec
 
 
@@ -14,7 +15,7 @@ class PropertySpec:
     type_name   : str                             = "str"
     exists      : Optional[Callable[[], bool]]    = None
     getter      : Optional[Callable[[], Any]]     = None
-    setter      : Optional[Callable[[Any], None]] = None
+    setter      : Optional[Callable[[Any], None]] = None  # None = read only
     value       : Optional[Any]                   = None  # for simple strings
     description : str                             = ""
     custom      : bool                            = False
@@ -59,11 +60,13 @@ class PropertiesMixin:
             p.setParentItem(self._anchor_points[pts.cleat])
 
     def renameProperty(self : Self, old : str, new : str) -> None:
+        if old == new:
+            return
         if old not in self._properties:
-            logger.error(f"Property {old} does not exist")
+            logger.warning(f"Property {old} does not exist")
             return
         if new in self._properties:
-            logger.error(f"Property {new} already exists")
+            logger.warning(f"Property {new} already exists")
             return
         new_dict = {}
         for name, ps in self._properties.items():
@@ -96,6 +99,19 @@ class PropertiesMixin:
             ps.value = value
         self.onPropertyChange()
 
+    def getPropertyDescription(self, name : str) -> str:
+        if name not in self._properties:
+            logger.warning(f"Property {name} does not exist")
+        ps = self._properties[name]
+        return ps.description
+
+    def setPropertyDescription(self, name : str, description : str) -> None:
+        if name not in self._properties:
+            logger.warning(f"Property {name} does not exist")
+            return
+        ps = self._properties[name]
+        ps.description = description
+
     def addProperty(self, name : str) -> None:
         if name in self._properties:
             logger.warning(f"Property {name} already exists")
@@ -118,3 +134,10 @@ class PropertiesMixin:
             for grandchild in child.childItems():
                 if hasattr(grandchild, "onTextChange"):
                     grandchild.onTextChange()
+
+    def ctxMenuProperties(
+        self    : Self,
+        checked : bool,
+        view    : "DrawingView"
+    ) -> None:
+        view.editProperties(self)

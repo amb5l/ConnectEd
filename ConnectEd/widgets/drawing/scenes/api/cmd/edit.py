@@ -1,9 +1,11 @@
-from typing import Self
+from typing import Self, Any
 from dataclasses import dataclass
 
 from .....dialogs.appearance import QuillPref, QuillPrefChange, \
                                     AppearancePref, AppearancePrefChange
-from .....dialogs.properties import PropertiesType
+from .....dialogs.properties import PropertyState
+
+from ....properties import PropertiesMixin
 
 from ....items import SignalDirection, VectorRange, \
                       ElementMixin, ElementOriginMixin
@@ -169,28 +171,38 @@ class cmdEditAppearance(cmdSceneElements):
             e.update()
 
 class cmdEditProperties(cmdSceneElement):
-    _changes : dict[PropertyText, tuple[str, PropertiesType, PropertiesType]]
+    _element : PropertiesMixin
+    _before  : dict[str, PropertyState]
+    _after   : dict[str, PropertyState]
 
     def __init__(
         self    : Self,
         scene   : "DrawingScene",
-        element : ElementMixin,
-        changes : dict[PropertyText, tuple[str, PropertiesType, PropertiesType]]
+        element : PropertiesMixin,
+        changes : dict[PropertyText, tuple[str, PropertyState]]
     ):
         super().__init__(scene, element)
-        self._changes = changes.copy()
+        self._before = {}
+        self._after = {}
+        for name, change in changes.items():
+            self._before[name] = PropertyState(
+                name,
+                element.getPropertyValue(name),
+                element.getPropertyDescription(name)
+            )
+            self._after[name] = change
 
     def redo(self: Self) -> None:
-        for p in self._changes.keys():
-            for label, _, after in self._changes[p]:
-                setter, _ = PropertyText.TABLE_ATTRS[label]
-                setter(p, after)
+        for name, change in self._after.items():
+            self._element.renameProperty(change.name, name)
+            self._element.setPropertyValue(name, change.value)
+            self._element.setPropertyDescription(name, change.description)
 
     def undo(self: Self) -> None:
-        for p in self._changes.keys():
-            for label, before, _ in self._changes[p]:
-                setter, _ = PropertyText.TABLE_ATTRS[label]
-                setter(p, before)
+        for name, change in self._before.items():
+            self._element.renameProperty(name, change.name)
+            self._element.setPropertyValue(name, change.value)
+            self._element.setPropertyDescription(name, change.description)
 
 class cmdEditOrigin(cmdSceneElement):
     _element : ElementOriginMixin

@@ -6,6 +6,7 @@ from ..... import hub
 
 from .....core.log import logger
 
+from ....dialogs.properties    import PropertiesDialog
 from ....dialogs.appearance    import AppearanceDialog
 from ....dialogs.text          import TextDialog
 from ....dialogs.text_block    import TextBlockDialog
@@ -344,7 +345,25 @@ class DrawingViewStateEditAppearance(DrawingViewStateBase):
             if dialog.exec():
                 self.scene.editAppearance(elements, dialog.getChoice())
         else:
-            logger.warning("No top-level elements selected")
+            logger.warning("No elements selected")
+        self.view.state.go(self.view.stateIdle)
+
+class DrawingViewStateEditProperties(DrawingViewStateBase):
+    TIP = "Properties: specify changes"
+
+    def entry(
+        self : Self,
+        v :    QPoint,
+        s :    QPointF,
+        e :    Optional[list[ElementMixin]] = None
+    ) -> None:
+        element = e[0] if e else self.view._selectedElement(ElementMixin)
+        if element:
+            dialog = PropertiesDialog(element)
+            if dialog.exec():
+                self.scene.editProperties(element, dialog.getChanges())
+        else:
+            logger.warning("No elements selected")
         self.view.state.go(self.view.stateIdle)
 
 class DrawingViewStateEditQuery(DrawingViewStateBase):
@@ -577,6 +596,7 @@ class DrawingViewStateMixin:
     stateEditMove         : DrawingViewStateEditMove
     stateEditResize       : DrawingViewStateEditResize
     stateEditAppearance   : DrawingViewStateEditAppearance
+    stateEditProperties   : DrawingViewStateEditProperties
     stateEditQuery        : DrawingViewStateEditQuery
     stateEditPort         : DrawingViewStateEditPort
     stateEditBlockPin     : DrawingViewStateEditBlockPin
@@ -605,6 +625,7 @@ class DrawingViewStateMixin:
         self.stateEditMove         = DrawingViewStateEditMove         (self)
         self.stateEditResize       = DrawingViewStateEditResize       (self)
         self.stateEditAppearance   = DrawingViewStateEditAppearance   (self)
+        self.stateEditProperties   = DrawingViewStateEditProperties   (self)
         self.stateEditQuery        = DrawingViewStateEditQuery        (self)
         self.stateEditPort         = DrawingViewStateEditPort         (self)
         self.stateEditBlockPin     = DrawingViewStateEditBlockPin     (self)

@@ -4,9 +4,11 @@ from PyQt6.QtCore    import QPointF, QSizeF
 
 from . import EdgeLoc, Edge
 
-from .port_pin import BasePin
-
 from .base_rect import BaseRectangle
+
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from ..views.drawing import DrawingView
 
 
 class PinRect(BaseRectangle):
@@ -18,7 +20,7 @@ class PinRect(BaseRectangle):
         #        item.onPositionChange()
 
     def getMenuItems(self : Self) -> list[str]:
-        return ["Add Pin...", "-", "Appearance..."]
+        return ["Add Pin...", "-", "Appearance...", "Properties..."]
 
     def getLoc(
         self : Self,
@@ -95,3 +97,9 @@ class PinRect(BaseRectangle):
             case _:
                 raise ValueError(f"Invalid edge: {loc.edge}")
 
+    def ctxMenuAddPin(
+        self    : Self,
+        checked : bool,
+        view    : "DrawingView"
+    ) -> None:
+        pass
