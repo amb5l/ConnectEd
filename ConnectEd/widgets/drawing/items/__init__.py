@@ -249,24 +249,24 @@ class Line:
         self.selected.setJoinStyle(parent._JOIN_STYLE)
         self.onSettingsChange()
 
-    def getColor(self : Self) -> QColor:
+    def getColor(self : Self) -> Default | QColor:
         return self.color
 
-    def setColor(self : Self, color : QColor) -> None:
+    def setColor(self : Self, color : Default | QColor) -> None:
         self.color = color
         self.onSettingsChange()
 
-    def getWidth(self : Self) -> float:
+    def getWidth(self : Self) -> Default | float:
         return self.width
 
-    def setWidth(self : Self, width : float) -> None:
+    def setWidth(self : Self, width : Default | float) -> None:
         self.width = width
         self.onSettingsChange()
 
-    def getStyle(self : Self) -> Qt.PenStyle:
+    def getStyle(self : Self) -> Default | Qt.PenStyle:
         return self.style
 
-    def setStyle(self : Self, style : Qt.PenStyle) -> None:
+    def setStyle(self : Self, style : Default | Qt.PenStyle) -> None:
         self.style = style
         self.onSettingsChange()
 
@@ -346,17 +346,17 @@ class Fill:
         self.selected = QBrush()
         self.onSettingsChange()
 
-    def getColor(self : Self) -> QColor:
+    def getColor(self : Self) -> Default | QColor:
         return self.color
 
-    def setColor(self : Self, color : QColor) -> None:
+    def setColor(self : Self, color : Default | QColor) -> None:
         self.color = color
         self.onSettingsChange()
 
-    def getStyle(self : Self) -> Qt.BrushStyle:
+    def getStyle(self : Self) -> Default | Qt.BrushStyle:
         return self.style
 
-    def setStyle(self : Self, style : Qt.BrushStyle) -> None:
+    def setStyle(self : Self, style : Default | Qt.BrushStyle) -> None:
         self.style = style
         self.onSettingsChange()
 
@@ -452,45 +452,45 @@ class Quill:
         self._parent.setFont(self._font)
         self.onSettingsChange()
 
-    def getColor(self : Self) -> QColor:
+    def getColor(self : Self) -> Default | QColor:
         return self._color
 
-    def setColor(self : Self, color : QColor) -> None:
+    def setColor(self : Self, color : Default | QColor) -> None:
         self._color = color
         self.onSettingsChange()
 
-    def getFamily(self : Self) -> str:
+    def getFamily(self : Self) -> Default | str:
         return self._family
 
-    def setFamily(self : Self, family : str) -> None:
+    def setFamily(self : Self, family : Default | str) -> None:
         self._family = family
         self.onSettingsChange()
 
-    def getSize(self : Self) -> float:
+    def getSize(self : Self) -> Default | float:
         return self._size
 
-    def setSize(self : Self, size : float) -> None:
+    def setSize(self : Self, size : Default | float) -> None:
         self._size = size
         self.onSettingsChange()
 
-    def getBold(self : Self) -> bool:
+    def getBold(self : Self) -> Default | bool:
         return self._bold
 
-    def setBold(self : Self, bold : bool) -> None:
+    def setBold(self : Self, bold : Default | bool) -> None:
         self._bold = bold
         self.onSettingsChange()
 
-    def getItalic(self : Self) -> bool:
+    def getItalic(self : Self) -> Default | bool:
         return self._italic
 
-    def setItalic(self : Self, italic : bool) -> None:
+    def setItalic(self : Self, italic : Default | bool) -> None:
         self._italic = italic
         self.onSettingsChange()
 
-    def getUnderline(self : Self) -> bool:
+    def getUnderline(self : Self) -> Default | bool:
         return self._underline
 
-    def setUnderline(self : Self, underline : bool) -> None:
+    def setUnderline(self : Self, underline : Default | bool) -> None:
         self._underline = underline
         self.onSettingsChange()
 
