@@ -135,7 +135,6 @@ class DrawingViewStateIdle(DrawingViewStateBase):
         e :    Optional[list[ElementMixin]] = None
     ) -> None:
         self.view.interaction = None
-        self.view.target = None
 
     def mouseLeftClick(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
         items = self.view._itemsAt(s)

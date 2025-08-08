@@ -48,7 +48,6 @@ class DrawingView(
     mouse       : DrawingViewMouse
     state       : DrawingViewStateBase
     interaction : Optional[Interaction]
-    target      : Optional[ElementMixin]  # for context menus
 
     def __init__(self : Self, scene : DrawingScene) -> None:
         super().__init__(scene)

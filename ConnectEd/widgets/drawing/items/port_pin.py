@@ -351,5 +351,4 @@ class BlockPin(PortPinArrowMixin, BasePin):
         checked : bool,
         view    : "DrawingView"
     ) -> None:
-        view.target = self
         view.editBlockPin(self)
