@@ -1,12 +1,10 @@
-__all__ = ["Port", "BlockPin"]
-
 from typing import Self, Optional
 
 from PyQt6.QtCore    import QPointF, QRectF
 from PyQt6.QtWidgets import QGraphicsItem, QStyleOptionGraphicsItem, QWidget
 from PyQt6.QtGui     import QPainter, QPainterPath
 
-from ....core import logger
+from ....core.log import logger
 
 from ..properties import PropertySpec, PropertiesMixin
 
@@ -27,9 +25,16 @@ from .property_text import PropertyTextSpec, PropertyText
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
+    from ..views.drawing import DrawingView
     from .pin_rect import PinRect
     from .block    import Block
 
+
+class PortPinText(PropertyText):
+    def compensateRotation(self, angle : float) -> None:
+        self.setTransformOriginPoint(self._brect.center())
+        r = self.getTotalRotation()
+        self.setRotation(180 if 45 <= angle < 225 else 0)
 
 class BasePortPin(
     ElementMixin,
@@ -67,13 +72,18 @@ class BasePortPin(
             exists    = lambda self: self.range is not None,
             getter    = lambda self: self.range.right,
             setter    = lambda self, value: setattr(self.range, 'right', value)
-        )
+        ),
+        "Comment" : PropertySpec()
     }
-    _PROPERTY_TEXT_CLASS = PropertyText
-    _PROPERTY_TEXTS = {
-        "Name" : PropertyTextSpec("Center Left", QPointF(0, 0), "Name")
-    }
-    _NAME_OFFSET = 2.5
+    _NAME_CLASS = PortPinText
+    _COMMENT_CLASS = PortPinText
+    _NAME_OFFSET = 1.5
+
+    @classmethod
+    def _getPropertyTexts(cls):
+        return {
+            "Name" : PropertyTextSpec("Center Left", QPointF(0, 0), "Name", _class=cls._NAME_CLASS)
+        }
 
     # instance attributes
     _direction : SignalDirection
@@ -96,6 +106,9 @@ class BasePortPin(
 
     def onSelectionChange(self : Self, selected : bool) -> None:
         self._node.setSelected(selected)
+
+    def getMenuItems(self : Self) -> list[str]:
+        return ["Edit"]
 
     def initAnchorPoints(self : Self) -> None:
         self._anchor_points = {
@@ -136,7 +149,6 @@ class BasePortPin(
     @direction.setter
     def direction(self : Self, value : SignalDirection) -> None:
         self._direction = value
-        self.onDirectionChange(value)
 
     @property
     def range(self : Self) -> VectorRange:
@@ -145,7 +157,6 @@ class BasePortPin(
     @range.setter
     def range(self : Self, value : VectorRange) -> None:
         self._range = value
-        self.onRangeChange()
 
 class PortPinArrowMixin:
     # class variables
@@ -159,6 +170,7 @@ class PortPinArrowMixin:
 
     def initArrow(self : Self) -> None:
         self._arrow = self._ARROW_CLASS(self)
+        self._arrow.setDirection(self._direction)
 
     def initAnchorPoints(self : Self) -> None:
         BasePortPin.initAnchorPoints(self)
@@ -193,14 +205,18 @@ class PortArrow(Arrow):
     _PATH_IN  = Arrow._PATH_TOWARDS
     _PATH_OUT = Arrow._PATH_AWAY
 
-class PortPropertyText(PropertyText):
+class PortName(PortPinText):
+    pass
+
+class PortComment(PortPinText):
     pass
 
 class Port(ElementPosMixin, PortPinArrowMixin, BasePortPin):
     # class attributes
-    _NODE_CLASS = PortNode
-    _ARROW_CLASS = PortArrow
-    _PROPERTY_TEXT_CLASS = PortPropertyText
+    _NODE_CLASS    = PortNode
+    _ARROW_CLASS   = PortArrow
+    _NAME_CLASS    = PortName
+    _COMMENT_CLASS = PortComment
     _PROPERTY_SPECS = \
         ElementPosMixin._PROPERTY_SPECS_POS | \
         BasePortPin._PROPERTY_SPECS
@@ -209,8 +225,10 @@ class Port(ElementPosMixin, PortPinArrowMixin, BasePortPin):
     _node  : PortNode
     _arrow : PortArrow
 
-    def __init__(self : Self) -> None:
+    def __init__(self : Self, pos : Optional[QPointF] = None) -> None:
         BasePortPin.__init__(self)
+        if pos is not None:
+            self.setPos(pos)
         self.initArrow()
         self.onGeometryChange()
 
@@ -235,11 +253,24 @@ class Port(ElementPosMixin, PortPinArrowMixin, BasePortPin):
             inst.setPos(pos)
         return inst
 
+    def ctxMenuEdit(
+        self    : Self,
+        checked : bool,
+        view    : "DrawingView"
+    ) -> None:
+        view.editPort(self)
+
 class BasePin(ElementLocMixin, BasePortPin):
     # class attributes
     _PROPERTY_SPECS = \
         ElementLocMixin._PROPERTY_SPECS_LOC | \
         BasePortPin._PROPERTY_SPECS
+
+    # instance attributes
+    _loc : EdgeLoc
+
+    def getLoc(self : Self) -> EdgeLoc:
+        return self._loc
 
     @classmethod
     def createOrUpdate(
@@ -252,7 +283,7 @@ class BasePin(ElementLocMixin, BasePortPin):
         parent    : Optional["PinRect"]       = None,
         inst      : Optional[Self]            = None
     ) -> "BasePin":
-        inst : Port = cls() if inst is None else inst
+        inst : BasePin = cls() if inst is None else inst
         if name is not None:
             inst.name = name
         if direction is not None:
@@ -272,21 +303,26 @@ class BlockPinArrow(Arrow):
     _PATH_IN  = Arrow._PATH_AWAY
     _PATH_OUT = Arrow._PATH_TOWARDS
 
-class BlockPinPropertyText(PropertyText):
+class BlockPinName(PortPinText):
+    pass
+
+class BlockPinComment(PortPinText):
     pass
 
 class BlockPin(PortPinArrowMixin, BasePin):
     # class attributes
-    _NODE_CLASS = BlockPinNode
-    _ARROW_CLASS = BlockPinArrow
-    _PROPERTY_TEXT_CLASS = BlockPinPropertyText
+    _NODE_CLASS    = BlockPinNode
+    _ARROW_CLASS   = BlockPinArrow
+    _NAME_CLASS    = BlockPinName
+    _COMMENT_CLASS = BlockPinComment
 
     # instance attributes
     _node  : BlockPinNode
     _arrow : BlockPinArrow
 
-    def __init__(self : Self) -> None:
+    def __init__(self : Self, parent : Optional["Block"] = None) -> None:
         BasePortPin.__init__(self)
+        self.setParentItem(parent)
         self.initArrow()
         self.onGeometryChange()
 
@@ -309,3 +345,10 @@ class BlockPin(PortPinArrowMixin, BasePin):
             parent    = parent,
             inst      = inst
         )
+
+    def ctxMenuEdit(
+        self    : Self,
+        checked : bool,
+        view    : "DrawingView"
+    ) -> None:
+        view.editBlockPin(self)

@@ -5,13 +5,14 @@ from PyQt6.QtCore    import Qt, QRectF, QPointF, \
 from PyQt6.QtWidgets import QGraphicsPathItem
 from PyQt6.QtGui     import QPen, QBrush, QPainterPath, QAction
 
-from . import ElementMenuMixin
+from . import ElementMenuMixin, APType
 
 from .... import hub
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from ... import DrawingView
+    from ..views.drawing  import DrawingView
+    from ..scenes.drawing import DrawingScene
     from . import ElementAnchorPointsMixin
     from .anchor_point import AnchorPoint
 
@@ -47,7 +48,6 @@ class Handle(
         hub.settings.changed.connect(self.onSettingsChange)
 
     def onSettingsChange(self : Self) -> None:
-        from . import APType
         self.prepareGeometryChange()
         theme = hub.settings.getTheme("handle")
         self._pen.setColor(theme.line)
@@ -79,7 +79,6 @@ class Handle(
         self.setPath(self._path_origin if origin else self._path_normal)
 
     def getMenuItems(self : Self) -> list[str]:
-        from . import APType
         items = []
         if self._parent._type == APType.Resizer:
             items.append("Resize")
@@ -89,8 +88,8 @@ class Handle(
             items.append("Assign Origin")
         return items
 
-    def moveBy(self : Self, dx : float, dy : float) -> None:
-        self._element.moveAnchorPoint(self._parent._name, QPointF(dx, dy))
+    def moveBy(self : Self, delta : QPointF) -> None:
+        self._element.moveAnchorPointBy(self._parent._name, delta)
 
     def toXml(self : Self, _ : QXmlStreamWriter) -> None:
         pass
@@ -105,19 +104,24 @@ class Handle(
         view : "DrawingView"
     ) -> None:
         view.editMoveBegin([self._element], self.scenePos())
-        view.state.go(view.stateEditMove2)
+        view.state.go(view.stateEditMove)
 
     def ctxMenuResize(
         self : Self,
         _    : bool,
         view : "DrawingView"
     ) -> None:
-        view.editMoveBegin([self], self.scenePos())
-        view.state.go(view.stateEditMove2)
+        view.state.go(view.stateEditResize)
 
     def ctxMenuAssignOrigin(
-        self : Self,
-        _    : bool,
-        view : "DrawingView"
+        self    : Self,
+        checked : bool,
+        view    : "DrawingView"
     ) -> None:
-        self._element.setOrigin(self._parent._name)
+        from ..scenes.api.cmd.edit import cmdEditOrigin
+        scene : "DrawingScene" = self.scene()
+        scene.undo_stack.push(cmdEditOrigin(
+            scene,
+            self._element,      # element
+            self._parent._name  # name of anchor point
+        ))

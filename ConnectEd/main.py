@@ -1,7 +1,8 @@
 import sys
 
+from .core.log import logger
+
 from .api  import initGui
-from .core import logger
 
 from . import hub
 

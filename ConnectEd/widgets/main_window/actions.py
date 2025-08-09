@@ -1,10 +1,14 @@
 from typing import Self, Optional
 
-from PyQt6.QtWidgets import QApplication, QMdiSubWindow, QGraphicsItem
+from PyQt6.QtWidgets import QApplication, QMdiSubWindow
 from PyQt6.QtGui     import QKeySequence
 
-from ...core    import MIME_TYPE, logger
-from ...widgets import DrawingSubWindow, DrawingScene
+from ...core.log  import logger
+from ...core.defs import MIME_TYPE
+
+from ...widgets.drawing.views.drawing  import DrawingSubWindow
+from ...widgets.drawing.scenes.drawing import DrawingScene
+
 from ..private  import Action
 
 from typing import TYPE_CHECKING
@@ -29,19 +33,14 @@ class Actions:
         self.fileExit           = Action( self._parent, "Exit"          , "Exit the application"                   , SK.Quit                      )
         self.editUndo           = Action( self._parent, "Undo"          , "Undo"                                   , SK.Undo                      )
         self.editRedo           = Action( self._parent, "Redo"          , "Redo"                                   , SK.Redo                      )
-        self.editCancel         = Action( self._parent, "Cancel"        , "Cancel the current action"              , SK.Cancel                    )
-        self.editComplete       = Action( self._parent, "Complete"      , "Complete the current action"            , SK.InsertParagraphSeparator  )
-        self.editSelectAll      = Action( self._parent, "Select All"    , "Select all"                             , SK.SelectAll                 )
-        self.editSelectArea     = Action( self._parent, "Select Area"   , "Select area"                            , None                         )
-        self.editDeselectAll    = Action( self._parent, "Deselect All"  , "Deselect all"                           , SK.Deselect                  )
         self.editCut            = Action( self._parent, "Cut"           , "Cut"                                    , SK.Cut                       )
         self.editCopy           = Action( self._parent, "Copy"          , "Copy"                                   , SK.Copy                      )
         self.editPaste          = Action( self._parent, "Paste"         , "Paste"                                  , SK.Paste                     )
         self.editDelete         = Action( self._parent, "Delete"        , "Delete"                                 , SK.Delete                    )
         self.editDuplicate      = Action( self._parent, "Duplicate"     , "Duplicate"                              , "Ctrl+D"                     )
-        self.editSlide          = Action( self._parent, "Slide"         , "Slide"                                  , None                         )
-        self.editMove           = Action( self._parent, "Move"          , "Move"                                   , None                         )
-        self.editResize         = Action( self._parent, "Resize"        , "Resize"                                 , None                         )
+        self.editSelectArea     = Action( self._parent, "Select Area"   , "Select area"                            , None                         )
+        self.editSelectAll      = Action( self._parent, "Select All"    , "Select all"                             , SK.SelectAll                 )
+        self.editProperties     = Action( self._parent, "Properties..." , "Edit properties of selected element(s)" , None                         )
         self.editAppearance     = Action( self._parent, "Appearance..." , "Edit appearance of selected element(s)" , None                         )
         self.editQuery          = Action( self._parent, "Query"         , "Query"                                  , "Ctrl+Q"                     )
         self.viewZoomAll        = Action( self._parent, "Zoom All"      , "Zoom to fit all"                        , "Ctrl+Home"                  )
@@ -98,12 +97,7 @@ class Actions:
         self.onClipboardDataChanged()
         self.fileSave        .setEnabled(en)
         self.fileSaveAs      .setEnabled(en)
-        self.editCancel      .setEnabled(en)
-        self.editComplete    .setEnabled(en)
         self.editDuplicate   .setEnabled(en)
-        self.editMove        .setEnabled(en)
-        self.editSlide       .setEnabled(en)
-        self.editResize      .setEnabled(en)
         self.editAppearance  .setEnabled(en)
         self.viewZoomAll     .setEnabled(en)
         self.viewZoomSheet   .setEnabled(en)
@@ -140,9 +134,6 @@ class Actions:
             self.editCopy       .setEnabled( n > 0 )
             self.editDelete     .setEnabled( n > 0 )
             self.editDuplicate  .setEnabled( n > 0 )
-            self.editSlide      .setEnabled( n > 0 )
-            self.editMove       .setEnabled( n > 0 )
-            self.editResize     .setEnabled( n > 0 )
             self.editAppearance .setEnabled( n > 0 )
         except RuntimeError:
             pass  # Objects deleted during shutdown

@@ -1,5 +1,3 @@
-__all__ = ["Arrow"]
-
 from typing import Self
 
 from PyQt6.QtCore    import QPointF, QRectF
@@ -49,7 +47,7 @@ class Arrow(
 
     def onSettingsChange(self : Self) -> None:
         s = self._SIZE + self.line.pen.width()
-        self._brect = QRectF(0, -s, 2*s, 2*s)
+        self._brect = QRectF(0, -s/2, s, s)
         self._hshape.clear()
         self._hshape.addRect(self._brect)
 

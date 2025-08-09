@@ -1,28 +1,28 @@
-__all__ = ["PinRect"]
-
 from typing import Self, Optional
 
 from PyQt6.QtCore    import QPointF, QSizeF
 
 from . import EdgeLoc, Edge
 
-from .port_pin import BasePin
-
 from .base_rect import BaseRectangle
+
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from ..views.drawing import DrawingView
 
 
 class PinRect(BaseRectangle):
     def onGeometryChange(self : Self) -> None:
         super().onGeometryChange()
         # reposition pins
-        for item in self.childItems():
-            if isinstance(item, BasePin):
-                item.onPositionChange()
+        #for item in self.childItems():
+        #    if isinstance(item, BasePin):
+        #        item.onPositionChange()
 
     def getMenuItems(self : Self) -> list[str]:
-        return ["Add Pin...", "-", "Appearance..."]
+        return ["Add Pin...", "-", "Appearance...", "Properties..."]
 
-    def getEdgeLoc(
+    def getLoc(
         self : Self,
         pos  : QPointF,
         snap : Optional[QPointF] = None
@@ -84,7 +84,7 @@ class PinRect(BaseRectangle):
             distance = half_w + scaled_dx
         return _snap(EdgeLoc(edge, distance))
 
-    def getEdgeLocPos(self : Self, loc : EdgeLoc) -> QPointF:
+    def getLocPos(self : Self, loc : EdgeLoc) -> QPointF:
         match loc.edge:
             case Edge.LEFT:
                 return QPointF(0, loc.distance)
@@ -97,3 +97,9 @@ class PinRect(BaseRectangle):
             case _:
                 raise ValueError(f"Invalid edge: {loc.edge}")
 
+    def ctxMenuAddPin(
+        self    : Self,
+        checked : bool,
+        view    : "DrawingView"
+    ) -> None:
+        pass

@@ -1,12 +1,10 @@
-__all__ = ["NullPoint"]
-
 from typing      import Self
 
 from PyQt6.QtCore    import QRectF
 from PyQt6.QtWidgets import QGraphicsItem, QStyleOptionGraphicsItem, QWidget
 from PyQt6.QtGui     import QPainter, QPainterPath
 
-from ....core import logger
+from ....core.log import logger
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:

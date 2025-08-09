@@ -1,5 +1,3 @@
-__all__ = ["getView", "DrawingView", "DrawingSubWindow"]
-
 from typing import Self, Optional
 from math   import ceil
 
@@ -8,19 +6,21 @@ from PyQt6.QtWidgets import QApplication, QMdiArea, QMdiSubWindow, \
                             QGraphicsView, QGraphicsTextItem
 from PyQt6.QtGui     import QPainter, QPen, QCloseEvent, QKeyEvent
 
+from ..... import hub
+
 from ....marquee import Marquee
 
-from ...scenes import DrawingScene
+from ...scenes.drawing import DrawingScene
 
-from .mouse   import DrawingViewMouseMixin
-from .private import DrawingViewPrivateMixin
-from .edit    import DrawingViewEditMixin
-from .view    import DrawingViewViewMixin
-from .place   import DrawingViewPlaceMixin
-from .state   import DrawingViewStateMixin, DrawingViewStateBase
-from .defs    import *
+from ...scenes.api.interaction import Interaction
 
-from ..... import hub
+from ...items import ElementMixin
+
+from .mouse     import DrawingViewMouseMixin
+from .private   import DrawingViewPrivateMixin
+from .api       import DrawingViewApiMixin
+from .state     import DrawingViewStateMixin, DrawingViewStateBase
+from .defs      import *
 
 
 def getView(pos : QPoint):
@@ -34,40 +34,38 @@ def getView(pos : QPoint):
 class DrawingView(
     DrawingViewMouseMixin,
     QGraphicsView,
-    DrawingViewEditMixin,
-    DrawingViewViewMixin,
-    DrawingViewPlaceMixin,
+    DrawingViewApiMixin,
     DrawingViewStateMixin,
     DrawingViewPrivateMixin
 ):
-    _shown  : bool = False
-    _zoomed : bool = False
-    marquee : Marquee
-    layer   : DrawingViewLayer
-    zoom    : float
-    grid    : DrawingViewGrid
-    mouse   : DrawingViewMouse
-    state   : DrawingViewStateBase
-    wip     : DrawingViewWip
+    _shown      : bool = False
+    _zoomed     : bool = False
+    marquee     : Marquee
+    layer       : DrawingViewLayer
+    zoom        : float
+    pan         : Optional[QPoint]
+    grid        : DrawingViewGrid
+    mouse       : DrawingViewMouse
+    state       : DrawingViewStateBase
+    interaction : Optional[Interaction]
 
     def __init__(self : Self, scene : DrawingScene) -> None:
         super().__init__(scene)
-        scene.textEditingComplete.connect(self.placeTextBlockFinalize)
         self.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
         self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
         self.setViewportUpdateMode(
             QGraphicsView.ViewportUpdateMode.FullViewportUpdate
         )
-
-        self._shown   = False
-        self._zoomed  = False
-        self.marquee  = Marquee(self)
-        self.layer    = DrawingViewLayer.Drawing
-        self.zoom     = 1.0
-        self.grid     = DrawingViewGrid()
-        self.mouse    = DrawingViewMouse()
-        self.wip      = DrawingViewWip()
+        self._shown    = False
+        self._zoomed   = False
+        self.marquee   = Marquee(self)
+        self.layer     = DrawingViewLayer.Drawing
+        self.zoom      = 1.0
+        self.pan       = None
+        self.grid      = DrawingViewGrid()
+        self.mouse     = DrawingViewMouse()
+        self.interaction = None
 
         self.setMouseTracking(True)
         self.setRenderHint(QPainter.RenderHint.Antialiasing)

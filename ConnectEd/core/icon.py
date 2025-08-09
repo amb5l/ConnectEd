@@ -1,12 +1,3 @@
-__all__ = [
-    "getDefaultIconSize",
-    "getFgBgColors",
-    "getSvgIcon",
-    "SvgIconSingleton",
-    "getCharIcon",
-    "CharIconSingleton"
-]
-
 import sys
 from typing import Self
 
@@ -16,7 +7,7 @@ from PyQt6.QtGui     import QColor, QPainter, QPixmap, \
                             QIcon, QFont, QFontMetrics
 from PyQt6.QtSvg     import QSvgRenderer
 
-from . import logger
+from .log import logger
 
 from .. import hub
 

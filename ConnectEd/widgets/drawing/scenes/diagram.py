@@ -1,11 +1,9 @@
-__all__ = ["DiagramScene"]
-
 from typing import Self, Optional
 
 from PyQt6.QtCore import Qt, QPointF, QRectF, QSizeF
 from PyQt6.QtGui  import QPainter, QPen, QBrush
 
-from . import DrawingScene
+from .drawing import DrawingScene
 
 from ..properties import PropertySpec
 

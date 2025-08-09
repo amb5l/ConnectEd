@@ -1,11 +1,17 @@
-- preserve selection set with placement commands
-- copy/paste issue with Block
-- moves are merging
-- selection propagation - new elements
+- propagate property name change to texts
+- remove hub
+- property change propagation
+- override setRotation to maintain ortho angles
+- review OnPositionChange
+- move hub import to top everywhere
+- sort out editAppearance, editProperties in view/scene/cmd
+- scene:
+  editText, editPropertyText, editProperties, editAppearance
+
+- what about moving PropertyTexts when their parents are or are not selected?
 - settings propagation
+- selection state propagation parent => child
 - setters and getters, properties vs not, use of get prefix for getters
-- "# instance attributes"
-- revisit selection state propagation parent => child
 - assign origin is not undoable
 - should KeyPoint be a QPointF subclass?
 - ratsnest
@@ -21,20 +27,6 @@ size change
 
 position change
 
-
-
-_ATTR_SPECS => _PROPERTY_SPECS?
-
-ElementLineMixin._ATTR_SPECS_LINE
-parent properties to keypoints - keypoints always visible?
-MOVE TO ELEMENT BASE MIXIN AND NEW MIXIN STRUCTURE
-
-
-annotation => TetherText
-
-editPaste in view vs scene?
-
-editCopy use ElementXmlMixin
 
 Cloning blocks leaves out pins
 Move to BaseText for pin/port name
@@ -82,8 +74,7 @@ General
 - review setPos/pos - use _local_pos to simplify/speed up pos()
 - review itemChange to connect to KeyPointManager change signal
 
-- use pyTooling @export
-- class variable type hints
+- use pyTooling - class variable type hints
 
 - improve context menu handling for single vs multiple elements;
   consider adding title; handle properties and appearance automatically?
@@ -162,8 +153,5 @@ Connect the stack’s state changes to action enablement in DrawingView.
 - look at windowFilePath
 - move some context menu logic into TreeView
 - tidy up MDI subwindow top right button icons
-- rectangle move/slide can end up off grid
 - apply default path to new databases
-- review global imports
-- resize graphical artifacts
-- modified state tracking and GUI indication
+

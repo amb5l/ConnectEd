@@ -1,5 +1,3 @@
-__all__ = ["PropertyDisplay", "PropertyTextSpec", "PropertyText"]
-
 from typing import Self
 from enum   import Enum
 from dataclasses import dataclass
@@ -7,25 +5,20 @@ from dataclasses import dataclass
 from PyQt6.QtCore    import Qt, QPointF
 from PyQt6.QtWidgets import QGraphicsItem, QGraphicsSceneMouseEvent
 
-from ..properties import PropertySpec
+from ..properties import PropertySpec, PropertiesMixin
+
+from ..items.anchor_point import AnchorPoint
 
 from .tether_text import TetherText
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from .. import DrawingView
+    from ..views.drawing import DrawingView
 
 
 class PropertyDisplay(Enum):
     VALUE      = "Value"
     NAME_VALUE = "Name:Value"
-
-@dataclass
-class PropertyTextSpec:
-    anchor  : str
-    pos     : QPointF
-    cleat   : str
-    display : PropertyDisplay = PropertyDisplay.VALUE
 
 class PropertyText(TetherText):
     # class variables
@@ -59,8 +52,8 @@ class PropertyText(TetherText):
     def mouseDoubleClickEvent(self : Self, event : QGraphicsSceneMouseEvent) -> None:
         """Handle double-click events to open the edit dialog."""
         if event.button() == Qt.MouseButton.LeftButton:
-            from .. import getView
-            view = getView(event.screenPos())
+            from ..views.drawing import getView
+            view : "DrawingView" = getView(event.screenPos())
             # workaround for Qt event routing bug
             scene = self.scene()
             if scene:
@@ -68,7 +61,7 @@ class PropertyText(TetherText):
                 if item_at_pos is not None and item_at_pos != self:
                     item_at_pos.mouseDoubleClickEvent(event)
                     return
-            view.editPropertyText(self)
+            view.editPropertyText()
         super().mouseDoubleClickEvent(event)
 
     def onTextChange(self : Self) -> None:
@@ -89,15 +82,26 @@ class PropertyText(TetherText):
     def getMenuItems(self : Self) -> list[str]:
         return ["Edit..."]
 
-    def setPropertyValue(self : Self, name : str, value : str) -> None:
-        if name == self._name:
-            self.onTextChange()
+    def parent(self : Self) -> PropertiesMixin:
+        p = self.parentItem()
+        return \
+            self.scene() if p is None else \
+            p.parentItem() if isinstance(p, AnchorPoint) else \
+            p
 
     def name(self : Self) -> str:
         return self._name
 
     def setName(self : Self, value : str) -> None:
         self._name = value
+        self.onTextChange()
+
+    def value(self : Self) -> str:
+        parent = self.parent()
+        return "" if parent is None else parent.getPropertyValue(self._name)
+
+    def setValue(self : Self, value : str) -> None:
+        self.parent().setPropertyValue(self._name, value)
         self.onTextChange()
 
     def display(self : Self) -> PropertyDisplay:
@@ -107,31 +111,17 @@ class PropertyText(TetherText):
         self._display = value
         self.onTextChange()
 
-    def value(self : Self) -> str:
-        parent = self.parentItem()
-        if parent is None:
-            parent = self.scene()
-        if parent is None:
-            return ""
-        elif hasattr(parent, 'getProperty') and self._name:
-            return parent.getProperty(self._name)
-        else:
-            return ""
-
-    def setValue(self : Self, value : str) -> None:
-        parent = self.parentItem()
-        if parent is None:
-            parent = self.scene()
-        if parent is None:
-            return
-        elif hasattr(parent, 'setProperty') and self._name:
-            parent.setProperty(self._name, value)
-        else:
-            return
-
     def ctxMenuEdit(
         self    : Self,
         checked : bool,
         view    : "DrawingView"
     ) -> None:
-        view.editPropertyText(self)
+        view.editPropertyText()
+
+@dataclass
+class PropertyTextSpec:
+    anchor  : str
+    pos     : QPointF
+    cleat   : str
+    display : PropertyDisplay = PropertyDisplay.VALUE
+    _class  : type = PropertyText

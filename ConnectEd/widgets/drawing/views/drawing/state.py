@@ -1,136 +1,165 @@
-from typing import Self
+from typing import Self, Optional
 
 from PyQt6.QtCore import Qt, QPoint, QPointF
 
-from ...items import ElementMixin
-from ...items.handle import Handle
-
 from ..... import hub
+
+from .....core.log import logger
+
+from ....dialogs.properties    import PropertiesDialog
+from ....dialogs.appearance    import AppearanceDialog
+from ....dialogs.text          import TextDialog
+from ....dialogs.text_block    import TextBlockDialog
+from ....dialogs.property_text import PropertyTextDialog
+from ....dialogs.port_pin      import PortPinDialog
+
+from ...items import ElementMixin
+
+from ...items.handle        import Handle
+from ...items.pin_rect      import PinRect
+from ...items.text          import Text
+from ...items.text_block    import TextBlock
+from ...items.property_text import PropertyText
+
+from ...scenes.drawing import DrawingScene
+
+from ...scenes.api.interaction import *
+
+from ...scenes.api.cmd.edit import cmdEditPortPin,     \
+                                   cmdEditText,        \
+                                   cmdEditPropertyText
+
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from .. import DrawingView
+    from . import DrawingView
 
 
 qkm = Qt.KeyboardModifier
 
 class DrawingViewStateBase:
-    view : "DrawingView"
+    # instance attributes
+    view  : "DrawingView"
+    scene : "DrawingScene"
 
     def __init__(self : Self, view : "DrawingView") -> None:
         self.view = view
+        self.scene = view.scene()
 
-    def go(self : Self, state : "DrawingViewStateBase") -> None:
-        """Opportunity to tidy up before changing state."""
+    def go(
+        self     : Self,
+        state    : "DrawingViewStateBase",
+        elements : Optional[list[ElementMixin]] = None
+    ) -> None:
+        self.view.state = state
         if hub.main_window is not None:
             hub.main_window.status_bar.tip.setText(state.TIP)
-        self.view.state = state
+        state.entry(
+            self.view.mouse.current.physical,
+            self.view.mouse.current.logical,
+            elements
+        )
 
-    def mouseLeftClick(
-        self      : Self,
-        vpos      : QPoint,  # view position
-        spos      : QPointF, # scene position
-        modifiers : Qt.KeyboardModifier
+    def interact(
+        self        : Self,
+        interaction : Interaction,
+        state       : Optional["DrawingViewStateBase"] = None
+    ) -> None:
+        if interaction.valid:
+            self.view.interaction = interaction
+            if state is not None:
+                self.go(state)
+        else:
+            self.view.state.go(self.view.stateIdle)
+
+    def entry(
+        self : Self,
+        v :    QPoint,
+        s :    QPointF,
+        e :    Optional[list[ElementMixin]] = None
     ) -> None:
         pass
 
-    def mouseLeftDragBegin(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
-    ) -> None:
+    def mouseLeftClick(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
         pass
 
-    def mouseLeftDragContinue(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
-    ) -> None:
+    def mouseLeftDragBegin(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
         pass
 
-    def mouseLeftDragEnd(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
-    ) -> None:
+    def mouseLeftDragCont(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
         pass
 
-    def mouseMiddleClick(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
-    ) -> None:
+    def mouseLeftDragEnd(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
         pass
 
-    def mouseMiddleDragBegin(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
-    ) -> None:
+    def mouseMiddleClick(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
         pass
 
-    def mouseMiddleDragContinue(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
-    ) -> None:
+    def mouseMiddleDragBegin(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
         pass
 
-    def mouseMiddleDragEnd(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
-    ) -> None:
+    def mouseMiddleDragCont(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
         pass
 
-    def mouseMove(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
-    ) -> None:
+    def mouseMiddleDragEnd(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
         pass
+
+    def mouseMove(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
+        pass
+
+    def _snap(self : Self, s : QPointF) -> QPointF:
+        return self.view._snap(s)
+
+class ClickMixin(DrawingViewStateBase):
+    def mouseLeftClick(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
+        self.view.interaction.complete(self._snap(s))
+        self.view.state.go(self.view.stateIdle)
+
+    def mouseMove(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
+        self.view.interaction.update(self._snap(s))
+
+class DragMixin(DrawingViewStateBase):
+    def mouseLeftDragCont(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
+        self.view.interaction.update(self._snap(s))
+
+    def mouseLeftDragEnd(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
+        self.view.interaction.complete(self._snap(s))
+        self.view.state.go(self.view.stateIdle)
 
 class DrawingViewStateIdle(DrawingViewStateBase):
     TIP = "Idle"
 
-    def mouseLeftClick(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
+    def entry(
+        self : Self,
+        v :    QPoint,
+        s :    QPointF,
+        e :    Optional[list[ElementMixin]] = None
     ) -> None:
-        items = self.view._itemsAt(spos)
+        self.view.interaction = None
+
+    def mouseLeftClick(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
+        items = self.view._itemsAt(s)
         for item in items:
             if isinstance(item, Handle):
                 return
-        if modifiers == qkm.NoModifier:
+        if m == qkm.NoModifier:
             if not items or not items[0].isSelected():
-                self.view.scene().clearSelection()
-        self.view._selectPoint(spos, modifiers)
+                self.scene.clearSelection()
+        self.view._selectPoint(s, m)
 
-    def mouseLeftDragBegin(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
-    ) -> None:
-        items_at = self.view._itemsAt(spos)
+    def mouseLeftDragBegin(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
+        items_at = self.view._itemsAt(s)
         handles_at = [item for item in items_at if isinstance(item, Handle)]
         if len(handles_at) == 1:
+            # handle dragging => resize
             handle = handles_at[0]
-            self.view.editMoveBegin([handle], handle.scenePos())
-            self.view.state.go(self.view.stateEditResize3)
+            self.interact(
+                EditResizeInteraction(self.scene, handle, handle.scenePos()),
+                self.view.stateEditResize
+            )
             return
         # Check for CTRL+drag duplication when starting on an element
-        if (modifiers & qkm.ControlModifier) and items_at:
+        if (m & qkm.ControlModifier) and items_at:
             # Add element under cursor to selection if not already selected
             elements_at = \
                 [item for item in items_at if isinstance(item, ElementMixin)]
@@ -139,882 +168,474 @@ class DrawingViewStateIdle(DrawingViewStateBase):
                 if not element.isSelected():
                     element.setSelected(True)
                 # Get all currently selected elements for duplication
-                items = self.view.scene().selectedItems()
-                elements = \
-                    [item for item in items if isinstance(item, ElementMixin)]
+                elements = self.view._selectedElements(ElementMixin)
                 if elements:
                     # Pass the press position for CTRL+drag duplication
-                    self.view.editDuplicate(self.view._snap(spos))
+                    self.interact(
+                        EditDuplicateInteraction(self.scene, elements, self._snap(s)),
+                        self.view.stateEditDuplicate
+                    )
                     return
         if not items_at \
-            and not (modifiers & (qkm.ControlModifier | qkm.ShiftModifier)):
-            self.view.scene().clearSelection()
+            and not (m & (qkm.ControlModifier | qkm.ShiftModifier)):
+            self.scene.clearSelection()
             items = []
-        self.view._selectPoint(spos, modifiers)
-        items = self.view.scene().selectedItems()
+        self.view._selectPoint(s, m)
+        items = self.scene.selectedItems()
         if items: # slide/move
-            self.view.editMoveBegin(
-                items,
-                self.view._snap(spos),
-                not(modifiers & qkm.AltModifier)
-            )
-            self.view.state.go(
-                self.view.stateEditSlide2 if not(modifiers & qkm.AltModifier)
-                else self.view.stateEditMove2
+            slide = not(m & qkm.AltModifier)
+            self.interact(
+                EditMoveInteraction(self.scene, items, self._snap(s), slide),
+                self.view.stateEditSlide if slide else self.view.stateEditMove
             )
         else: # start marquee selection
-            self.view.marquee.begin(vpos)
-            self.view.state.go(self.view.stateSelectArea2)
+            self.view.marquee.begin(v)
+            self.view.state.go(self.view.stateEditSelectArea2)
 
-    def mouseMiddleDragBegin(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
-    ) -> None:
-        if modifiers == qkm.NoModifier:
-            self.view.wip.pos = vpos
+    def mouseMiddleDragBegin(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
+        if m == qkm.NoModifier:
+            self.view.pan = v
             self.view.setCursor(Qt.CursorShape.ClosedHandCursor)
             self.view.state.go(self.view.stateViewPan2)
-        elif modifiers & qkm.ControlModifier:
-            self.view.marquee.begin(vpos)
+        elif m & qkm.ControlModifier:
+            self.view.marquee.begin(v)
             self.view.state.go(self.view.stateViewZoomArea2)
 
 class DrawingViewStateViewPan1(DrawingViewStateBase):
     TIP = "Pan: pick the first point"
 
-    def mouseLeftClick(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
-    ) -> None:
-        self.view.wip.pos = vpos
+    def mouseLeftClick(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
+        self.view.pan = v
         self.view.setCursor(Qt.CursorShape.ClosedHandCursor)
         self.view.state.go(self.view.stateViewPan2)
 
 class DrawingViewStateViewPan2(DrawingViewStateBase):
     TIP = "Pan: pick the second point"
 
-    def mouseLeftClick(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
-    ) -> None:
-        delta = vpos - self.view.wip.pos
+    def mouseLeftClick(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
+        delta = v - self.view.pan
         self.view.horizontalScrollBar().setValue(
             self.view.horizontalScrollBar().value() - delta.x()
         )
         self.view.verticalScrollBar().setValue(
             self.view.verticalScrollBar().value() - delta.y()
         )
-        self.view.wip.clear()
+        self.view.pan = None
         self.view.setCursor(Qt.CursorShape.ArrowCursor)
         self.view.state.go(self.view.stateIdle)
 
-    def mouseLeftDragContinue(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
-    ) -> None:
-        delta = vpos - self.view.wip.pos
+    def mouseMove(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
+        delta = v - self.view.pan
         self.view.horizontalScrollBar().setValue(
             self.view.horizontalScrollBar().value() - delta.x()
         )
         self.view.verticalScrollBar().setValue(
             self.view.verticalScrollBar().value() - delta.y()
         )
-        self.view.wip.pos = vpos
+        self.view.pan = v
 
-    def mouseLeftDragEnd(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
-    ) -> None:
-        delta = vpos - self.view.wip.pos
-        self.view.horizontalScrollBar().setValue(
-            self.view.horizontalScrollBar().value() - delta.x()
-        )
-        self.view.verticalScrollBar().setValue(
-            self.view.verticalScrollBar().value() - delta.y()
-        )
-        self.view.wip.clear()
-        self.view.setCursor(Qt.CursorShape.ArrowCursor)
-        self.view.state.go(self.view.stateIdle)
+    def mouseLeftDragCont(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
+        self.mouseMove(v, s, m)
 
-    def mouseMiddleDragContinue(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
-    ) -> None:
-        delta = vpos - self.view.wip.pos
-        self.view.horizontalScrollBar().setValue(
-            self.view.horizontalScrollBar().value() - delta.x()
-        )
-        self.view.verticalScrollBar().setValue(
-            self.view.verticalScrollBar().value() - delta.y()
-        )
-        self.view.wip.pos = vpos
+    def mouseLeftDragEnd(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
+        self.mouseLeftClick(v, s, m)
 
-    def mouseMiddleDragEnd(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
-    ) -> None:
-        delta = vpos - self.view.wip.pos
-        self.view.horizontalScrollBar().setValue(
-            self.view.horizontalScrollBar().value() - delta.x()
-        )
-        self.view.verticalScrollBar().setValue(
-            self.view.verticalScrollBar().value() - delta.y()
-        )
-        self.view.wip.clear()
-        self.view.setCursor(Qt.CursorShape.ArrowCursor)
-        self.view.state.go(self.view.stateIdle)
+    def mouseMiddleDragCont(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
+        self.mouseMove(v, s, m)
 
-    def mouseMove(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
-    ) -> None:
-        delta = vpos - self.view.wip.pos
-        self.view.horizontalScrollBar().setValue(
-            self.view.horizontalScrollBar().value() - delta.x()
-        )
-        self.view.verticalScrollBar().setValue(
-            self.view.verticalScrollBar().value() - delta.y()
-        )
-        self.view.wip.pos = vpos
+    def mouseMiddleDragEnd(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
+        self.mouseLeftClick(v, s, m)
 
 class DrawingViewStateViewZoomArea1(DrawingViewStateBase):
     TIP = "Zoom Window: pick the first point"
 
-    def mouseLeftClick(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
-    ) -> None:
-        self.view.marquee.begin(vpos)
+    def mouseLeftClick(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
+        self.view.marquee.begin(v)
         self.view.state.go(self.view.stateViewZoomArea2)
 
-    def mouseLeftDragBegin(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
-    ) -> None:
-        self.view.marquee.begin(vpos)
-        self.view.state.go(self.view.stateViewZoomArea2)
+    def mouseLeftDragBegin(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
+        self.mouseLeftClick(v, s, m)
 
 class DrawingViewStateViewZoomArea2(DrawingViewStateBase):
     TIP = "Zoom Window: pick the second point"
 
-    def mouseLeftClick(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
-    ) -> None:
-        self.view.marquee.end(vpos)
+    def mouseLeftClick(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
+        self.view.marquee.end(v)
         self.view._zoomRect(self.view.marquee.rect())
         self.view.state.go(self.view.stateIdle)
 
-    def mouseLeftDragContinue(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
-    ) -> None:
-        self.view.marquee.resize(vpos)
+    def mouseMove(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
+        self.view.marquee.resize(v)
 
-    def mouseLeftDragEnd(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
-    ) -> None:
-        self.view.marquee.end(vpos)
-        self.view._zoomRect(self.view.marquee.rect())
-        self.view.state.go(self.view.stateIdle)
+    def mouseLeftDragCont(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
+        self.mouseMove(v, s, m)
 
-    def mouseMiddleDragContinue(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
-    ) -> None:
-        self.view.marquee.resize(vpos)
+    def mouseLeftDragEnd(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
+        self.mouseLeftClick(v, s, m)
 
-    def mouseMiddleDragEnd(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
-    ) -> None:
-        self.view.marquee.end(vpos)
-        self.view._zoomRect(self.view.marquee.rect())
-        self.view.state.go(self.view.stateIdle)
+    def mouseMiddleDragCont(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
+        self.mouseMove(v, s, m)
 
-    def mouseMove(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
-    ) -> None:
-        self.view.marquee.resize(vpos)
+    def mouseMiddleDragEnd(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
+        self.mouseLeftClick(v, s, m)
 
-class DrawingViewStateSelectArea2(DrawingViewStateBase):
+class DrawingViewStateEditSelectArea1(DrawingViewStateBase):
+    TIP = "Select: pick the first point of the marquee"
+
+    def mouseLeftClick(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
+        self.view.marquee.begin(v)
+        self.view.state.go(self.view.stateEditSelectArea2)
+
+    def mouseLeftDragBegin(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
+        self.mouseLeftClick(v, s, m)
+
+class DrawingViewStateEditSelectArea2(DrawingViewStateBase):
     TIP = "Select: complete the marquee selection"
 
-    def mouseLeftDragContinue(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
-    ) -> None:
-        self.view.marquee.resize(vpos)
-
-    def mouseLeftDragEnd(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
-    ) -> None:
-        self.view.marquee.end(vpos)
-        self.view._selectRect(self.view.marquee.rect(), modifiers & qkm.ControlModifier)
+    def mouseLeftClick(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
+        self.view.marquee.end(v)
+        self.view._selectRect(self.view.marquee.rect(), m & qkm.ControlModifier)
         self.view.state.go(self.view.stateIdle)
 
-class DrawingViewStateEditPaste(DrawingViewStateBase):
+    def mouseMove(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
+        self.view.marquee.resize(v)
+
+    def mouseLeftDragCont(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
+        self.mouseMove(v, s, m)
+
+    def mouseLeftDragEnd(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
+        self.mouseLeftClick(v, s, m)
+
+class DrawingViewStateEditPaste(ClickMixin):
     TIP = "Paste: select the paste position"
 
-    def mouseLeftClick(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
-    ) -> None:
-        self.view.editPasteComplete()
+    def entry(
+        self : Self,
+        v :    QPoint,
+        s :    QPointF,
+        e :    Optional[list[ElementMixin]] = None
+    ) -> None:        self.view.state.interact(EditPasteInteraction(self.scene, self._snap(s)))
 
-    def mouseMove(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
-    ) -> None:
-        self.view.editPasteContinue()
-
-class DrawingViewStateEditDuplicate1(DrawingViewStateBase):
-    TIP = "Duplicate: select one or more items"
-
-    def mouseLeftClick(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
-    ) -> None:
-        self.view._selectPoint(spos, modifiers)
-        items = self.view.scene().selectedItems()
-        if items:
-            elements = \
-                [item for item in items if isinstance(item, ElementMixin)]
-            if elements:
-                self.view.editDuplicate()
-
-    def mouseLeftDragBegin(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
-    ) -> None:
-        self.view.marquee.begin(vpos)
-        self.view.state.go(self.view.stateSelectArea2)
-
-class DrawingViewStateEditDuplicate2(DrawingViewStateBase):
+class DrawingViewStateEditDuplicate(ClickMixin, DragMixin):
     TIP = "Duplicate: place the duplicated item(s) as required"
 
-    def mouseLeftClick(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
-    ) -> None:
-        self.view.editDuplicateComplete()
+class DrawingViewStateEditSlide(DragMixin):
+    TIP = "Slide: position the selected item(s) as required"
+    SLIDE = True
 
-    def mouseLeftDragContinue(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
-    ) -> None:
-        self.view.editDuplicateContinue()
+class DrawingViewStateEditMove(DrawingViewStateEditSlide):
+    TIP = "Move: position the selected item(s) as required"
+    SLIDE = False
 
-    def mouseLeftDragEnd(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
-    ) -> None:
-        self.view.editDuplicateComplete()
+class DrawingViewStateEditResize(DragMixin):
+    TIP = "Resize: position the selected handle as required"
 
-    def mouseMove(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
-    ) -> None:
-        self.view.editDuplicateContinue()
-
-class DrawingViewStateEditSlide1(DrawingViewStateBase):
-    TIP = "Slide: select one or more items"
-
-    def mouseLeftClick(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
-    ) -> None:
-        self.view._selectPoint(spos, modifiers)
-        self.view.editMoveBegin(
-            self.view.scene().selectedItems(),
-            self.view._snap(spos)
-        )
-        self.view.state.go(self.view.stateEditSlide2)
-
-class DrawingViewStateEditSlide2(DrawingViewStateBase):
-    TIP = "Slide: place the selected item(s) as required"
-
-    def mouseLeftDragContinue(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
-    ) -> None:
-
-        self.view.editMoveContinue(
-            self.view._snap(spos),
-            modifiers & qkm.ShiftModifier
-        )
-
-    def mouseLeftDragEnd(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
-    ) -> None:
-        self.view.editMoveComplete(
-            self.view._snap(spos),
-            modifiers & qkm.ShiftModifier
-        )
-        self.view.state.go(self.view.stateIdle)
-
-    def mouseMove(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
-    ) -> None:
-        self.view.editMoveContinue(
-            self.view._snap(spos),
-            modifiers & qkm.ShiftModifier
-        )
-
-class DrawingViewStateEditMove1(DrawingViewStateBase):
-    TIP = "Move: select one or more items"
-
-    def mouseLeftClick(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
-    ) -> None:
-        self.view._selectPoint(spos, modifiers)
-        self.view.editMoveBegin(
-            self.view.scene().selectedItems(),
-            self.view._snap(spos)
-        )
-        self.view.state.go(self.view.stateEditMove2)
-
-class DrawingViewStateEditMove2(DrawingViewStateBase):
-    TIP = "Move: place the selected item(s) as required"
-
-    def mouseLeftClick(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
-    ) -> None:
-        self.view.editMoveComplete(
-            self.view._snap(spos),
-            modifiers & qkm.ShiftModifier
-        )
-        self.view.state.go(self.view.stateIdle)
-
-    def mouseLeftDragContinue(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
-    ) -> None:
-        self.view.editMoveContinue(
-            self.view._snap(spos),
-            modifiers & qkm.ShiftModifier
-        )
-
-    def mouseLeftDragEnd(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
-    ) -> None:
-        self.view.editMoveComplete(
-            self.view._snap(spos),
-            modifiers & qkm.ShiftModifier
-        )
-        self.view.state.go(self.view.stateIdle)
-
-    def mouseMove(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
-    ) -> None:
-        self.view.editMoveContinue(
-            self.view._snap(spos),
-            modifiers & qkm.ShiftModifier
-        )
-
-class DrawingViewStateEditResize1(DrawingViewStateBase):
-    TIP = "Resize: select a single resizeable item"
-
-    def mouseLeftClick(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
-    ) -> None:
-        self.view._selectPoint(spos, modifiers)
-        if len(self.view.scene().selectedItems()) == 1:
-            self.view.state.go(self.view.stateEditResize2)
-
-class DrawingViewStateEditResize2(DrawingViewStateBase):
-    TIP = "Resize: select a handle to begin resizing"
-
-    def mouseLeftClick(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
-    ) -> None:
-        items = self.view._itemsAt(spos)
-        for item in items:
-            if isinstance(item, Handle):
-                self.view.editMoveBegin(
-                    [item], self.view._snap(spos)
-                )
-                self.view.state.go(self.view.stateEditResize3)
-
-    def mouseLeftDragEnd(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
-    ) -> None:
-        self.view.editMoveComplete(
-            self.view._snap(spos),
-            modifiers & qkm.ShiftModifier
-        )
-        self.view.state.go(self.view.stateIdle)
-
-class DrawingViewStateEditResize3(DrawingViewStateBase):
-    TIP = "Resize: place the selected handle as required"
-
-    def mouseLeftClick(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
-    ) -> None:
-        self.view.editMoveComplete(
-            self.view._snap(spos),
-            modifiers & qkm.ShiftModifier
-        )
-        self.view.state.go(self.view.stateIdle)
-
-    def mouseLeftDragContinue(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
-    ) -> None:
-        self.view.editMoveContinue(self.view._snap(spos), modifiers & qkm.ShiftModifier)
-
-    def mouseLeftDragEnd(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
-    ) -> None:
-        self.view.editMoveComplete(
-            self.view._snap(spos),
-            modifiers & qkm.ShiftModifier
-        )
-        self.view.state.go(self.view.stateIdle)
-
-    def mouseMove(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
-    ) -> None:
-        self.view.editMoveContinue(
-            self.view._snap(spos),
-            modifiers & qkm.ShiftModifier
-        )
-
-class DrawingViewStateEditAppearance1(DrawingViewStateBase):
-    TIP = "Appearance: select one or more items"
-
-    def mouseLeftClick(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
-    ) -> None:
-        self.view._selectPoint(spos, modifiers)
-        self.view.editAppearance()
-
-    def mouseLeftDragBegin(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
-    ) -> None:
-        self.view.marquee.begin(spos)
-        self.view.state.go(self.view.stateEditAppearance2)
-
-    def mouseLeftDragEnd(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
-    ) -> None:
-        self.view.marquee.end(vpos)
-        self.view._selectRect(self.view.marquee.rect(), modifiers)
-        self.view.editAppearance()
-
-class DrawingViewStateEditAppearance2(DrawingViewStateBase):
+class DrawingViewStateEditAppearance(DrawingViewStateBase):
     TIP = "Appearance: specify changes"
+
+    def entry(
+        self : Self,
+        v :    QPoint,
+        s :    QPointF,
+        e :    Optional[list[ElementMixin]] = None
+    ) -> None:
+        elements = e or self.view._selectedElements(ElementMixin)
+        if elements:
+            dialog = AppearanceDialog(elements)
+            if dialog.exec():
+                self.scene.editAppearance(elements, dialog.getChoice())
+        else:
+            logger.warning("No elements selected")
+        self.view.state.go(self.view.stateIdle)
+
+class DrawingViewStateEditProperties(DrawingViewStateBase):
+    TIP = "Properties: specify changes"
+
+    def entry(
+        self : Self,
+        v :    QPoint,
+        s :    QPointF,
+        e :    Optional[list[ElementMixin]] = None
+    ) -> None:
+        element = e[0] if e else self.view._selectedElement(ElementMixin)
+        if element:
+            dialog = PropertiesDialog(element)
+            if dialog.exec():
+                self.scene.editProperties(element, dialog.getChanges())
+        else:
+            logger.warning("No elements selected")
+        self.view.state.go(self.view.stateIdle)
 
 class DrawingViewStateEditQuery(DrawingViewStateBase):
     TIP = "Query: pick an item"
 
-    def mouseLeftClick(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
-    ) -> None:
-        self.view._selectPoint(spos, modifiers)
+    def mouseLeftClick(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
+        self.view._selectPoint(s, m)
         self.view.editQuery()
 
-class DrawingViewStatePlacePort1(DrawingViewStateBase):
-    TIP = "Place Port: enter the port details"
+class DrawingViewStateEditPort(DrawingViewStateBase):
+    TIP = "Edit Port: specify changes"
 
-class DrawingViewStatePlacePort2(DrawingViewStateBase):
-    TIP = "Place Port: pick a location"
-
-    def mouseLeftClick(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
+    def entry(
+        self : Self,
+        v :    QPoint,
+        s :    QPointF,
+        e :    Optional[list[ElementMixin]] = None
     ) -> None:
-        self.view.placePortComplete(self.view._snap(spos))
+        element = e[0] if e else self.view._selectedElement(Port)
+        if element:
+            dialog = PortPinDialog("Port", element)
+            if dialog.exec():
+                name = dialog.getName()
+                direction = dialog.getDirection()
+                range = dialog.getRange()
+                self.scene.undo_stack.push(cmdEditPortPin(
+                    self.scene, element, name, direction, range
+                ))
+        else:
+            logger.warning("No port selected")
         self.view.state.go(self.view.stateIdle)
 
-    def mouseMove(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
+class DrawingViewStateEditBlockPin(DrawingViewStateBase):
+    TIP = "Edit Block Pin: specify changes"
+
+    def entry(
+        self : Self,
+        v :    QPoint,
+        s :    QPointF,
+        e :    Optional[list[ElementMixin]] = None
     ) -> None:
-        self.view.placePortContinue(self.view._snap(spos))
+        element = e[0] if e else self.view._selectedElement(BlockPin)
+        if element and isinstance(element, BlockPin):
+            dialog = PortPinDialog("Block Pin", element)
+            if dialog.exec():
+                name = dialog.getName()
+                direction = dialog.getDirection()
+                range = dialog.getRange()
+                self.scene.undo_stack.push(cmdEditPortPin(
+                    self.scene, element, name, direction, range
+                ))
+        else:
+            logger.warning("No block pin selected")
+        self.view.state.go(self.view.stateIdle)
+
+class DrawingViewStateEditText(DrawingViewStateBase):
+    TIP = "Edit Text: specify changes"
+
+    def entry(
+        self : Self,
+        v :    QPoint,
+        s :    QPointF,
+        e :    Optional[list[ElementMixin]] = None
+    ) -> None:
+        element = e[0] if e else self.view._selectedElement(Text)
+        if element and isinstance(element, Text):
+            dialog = TextDialog(element)
+            if dialog.exec():
+                text, appearance = dialog.getChoice()
+                self.scene.undo_stack.push(cmdEditText(
+                    self.scene, element, text, appearance
+                ))
+        else:
+            logger.warning("No text selected")
+        self.view.state.go(self.view.stateIdle)
+
+class DrawingViewStateEditPropertyText(DrawingViewStateBase):
+    TIP = "Edit Property Text: specify changes"
+
+    def entry(
+        self : Self,
+        v :    QPoint,
+        s :    QPointF,
+        e :    Optional[list[ElementMixin]] = None
+    ) -> None:
+        element = e[0] if e else self.view._selectedElement(PropertyText)
+        if element and isinstance(element, PropertyText):
+            dialog = PropertyTextDialog(element)
+            if dialog.exec():
+                name = dialog.getName()
+                value = dialog.getValue()
+                display = dialog.getDisplay()
+                appearance = dialog.getAppearanceChange()
+                self.scene.undo_stack.push(cmdEditPropertyText(
+                    self.scene, element, name, value, display, appearance
+                ))
+        else:
+            logger.warning("No property text selected")
+        self.view.state.go(self.view.stateIdle)
+
+class DrawingViewStatePlacePort(ClickMixin):
+    TIP = "Place Port: pick a location"
+
+    def entry(
+        self : Self,
+        v :    QPoint,
+        s :    QPointF,
+        e :    Optional[list[ElementMixin]] = None
+    ) -> None:
+        element = Port(self._snap(s))
+        dialog = PortPinDialog("Port", element)
+        if dialog.exec():
+            element.name = dialog.getName()
+            element.direction = dialog.getDirection()
+            element.range = dialog.getRange()
+            self.interact(
+                PlacePortInteraction(self.scene, self._snap(s), element)
+            )
+        else:
+            self.view.state.go(self.view.stateIdle)
 
 class DrawingViewStatePlaceBlock1(DrawingViewStateBase):
     TIP = "Place Block: pick the first point"
 
-    def mouseLeftClick(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
-    ) -> None:
-        self.view.placeBlockBegin(self.view._snap(spos))
-        self.view.state.go(self.view.statePlaceBlock2)
+    def mouseLeftClick(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
+        self.interact(
+            PlaceBlockInteraction(self.scene, self._snap(s)),
+            self.view.statePlaceBlock2
+        )
 
-    def mouseLeftDragBegin(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
-    ) -> None:
-        self.view.placeBlockBegin(self.view._snap(spos))
+    def mouseLeftDragBegin(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
+        self.mouseLeftClick(v, s, m)
 
-class DrawingViewStatePlaceBlock2(DrawingViewStateBase):
+class DrawingViewStatePlaceBlock2(ClickMixin, DragMixin):
     TIP = "Place Block: pick the second point"
 
-    def mouseLeftClick(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
-    ) -> None:
-        self.view.placeBlockComplete(self.view._snap(spos))
-        self.view.state.go(self.view.stateIdle)
-
-    def mouseLeftDragContinue(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
-    ) -> None:
-        self.view.placeBlockContinue(self.view._snap(spos))
-
-    def mouseLeftDragEnd(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
-    ) -> None:
-        self.view.placeBlockComplete(self.view._snap(spos))
-
-    def mouseMove(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
-    ) -> None:
-        self.view.placeBlockContinue(self.view._snap(spos))
-
-class DrawingViewStatePlaceBlockPin1(DrawingViewStateBase):
-    TIP = "Place Block Pin: pick a block"
-
-    def mouseLeftClick(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
-    ) -> None:
-        self.view._selectPoint(spos, modifiers)
-        self.placeBlockPinBegin()
-
-class DrawingViewStatePlaceBlockPin2(DrawingViewStateBase):
-    TIP = "Place Block Pin: enter the pin details"
-
-    def mouseLeftClick(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
-    ) -> None:
-        self.view.placeBlockPinComplete(self.view._snap(spos))
-        self.view.state.go(self.view.stateIdle)
-
-class DrawingViewStatePlaceBlockPin3(DrawingViewStateBase):
+class DrawingViewStatePlaceBlockPin(ClickMixin):
     TIP = "Place Block Pin: pick a location"
 
-    def mouseLeftClick(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
+    def entry(
+        self : Self,
+        v :    QPoint,
+        s :    QPointF,
+        e :    Optional[list[ElementMixin]] = None
     ) -> None:
-        self.view.placeBlockPinComplete(self.view._snap(spos))
-        self.view.state.go(self.view.stateIdle)
-
-    def mouseMove(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
-    ) -> None:
-        self.view.placeBlockPinContinue(self.view._snap(spos))
+        block = e[0] if e else self.view._selectedElement(PinRect)
+        if block and isinstance(block, PinRect):
+            pin = BlockPin() # don't parent to block yet
+            dialog = PortPinDialog("Block Pin", pin)
+            if dialog.exec():
+                pin.name = dialog.getName()
+                pin.direction = dialog.getDirection()
+                pin.range = dialog.getRange()
+                self.interact(PlaceBlockPinInteraction(
+                    self.scene, block, pin, self._snap(s)
+                ))
+        else:
+            logger.warning("No pin rect selected")
+            self.view.state.go(self.view.stateIdle)
 
 class DrawingViewStatePlaceRectangle1(DrawingViewStateBase):
     TIP = "Place Rectangle: pick the first point"
 
-    def mouseLeftClick(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
-    ) -> None:
-        self.view.placeRectangleBegin(self.view._snap(spos))
-        self.view.state.go(self.view.statePlaceRectangle2)
+    def mouseLeftClick(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
+        self.interact(
+            PlaceRectangleInteraction(self.scene, self._snap(s)),
+            self.view.statePlaceRectangle2
+        )
 
-    def mouseLeftDragBegin(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
-    ) -> None:
-        self.view.placeRectangleBegin(self.view._snap(spos))
+    def mouseLeftDragBegin(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
+        self.mouseLeftClick(v, s, m)
 
-class DrawingViewStatePlaceRectangle2(DrawingViewStateBase):
+class DrawingViewStatePlaceRectangle2(ClickMixin, DragMixin):
     TIP = "Place Rectangle: pick the second point"
 
-    def mouseLeftClick(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
-    ) -> None:
-        self.view.placeRectangleComplete(self.view._snap(spos))
-        self.view.state.go(self.view.stateIdle)
-
-    def mouseLeftDragContinue(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
-    ) -> None:
-        self.view.placeRectangleContinue(self.view._snap(spos))
-
-    def mouseLeftDragEnd(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
-    ) -> None:
-        self.view.placeRectangleComplete(self.view._snap(spos))
-
-    def mouseMove(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
-    ) -> None:
-        self.view.placeRectangleContinue(self.view._snap(spos))
-
-class DrawingViewStatePlaceTextBlock1(DrawingViewStateBase):
-    TIP = "Place Text Block: pick a position"
-
-    def mouseLeftClick(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
-    ) -> None:
-        self.view.placeTextBlockBegin(self.view._snap(spos))
-        self.view.state.go(self.view.statePlaceTextBlock2)
-
-class DrawingViewStatePlaceTextBlock2(DrawingViewStateBase):
-    TIP = "Place Text Block: enter the text"
-
-    def mouseLeftClick(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
-    ) -> None:
-        self.view.placeTextBlockComplete()
-        self.view.state.go(self.view.stateIdle)
-
-class DrawingViewStatePlaceText1(DrawingViewStateBase):
-    TIP = "Place Text: enter the text"
-
-class DrawingViewStatePlaceText2(DrawingViewStateBase):
+class DrawingViewStatePlaceText(ClickMixin):
     TIP = "Place Text: pick a position"
 
-    def mouseLeftClick(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
+    def entry(
+        self : Self,
+        v :    QPoint,
+        s :    QPointF,
+        e :    Optional[list[ElementMixin]] = None
     ) -> None:
-        self.view.placeTextComplete(self.view._snap(spos))
-        self.view.state.go(self.view.stateIdle)
+        element = Text(self._snap(s))
+        dialog = TextDialog(element)
+        if dialog.exec():
+            text, appearance = dialog.getChoice()
+            element.setText(text)
+            element.quill.setPref(appearance)
+            self.interact(PlaceTextInteraction(
+                self.scene, self._snap(s), element)
+            )
+        else:
+            self.view.state.go(self.view.stateIdle)
 
-    def mouseMove(
-        self      : Self,
-        vpos      : QPoint,
-        spos      : QPointF,
-        modifiers : Qt.KeyboardModifier
+class DrawingViewStatePlaceTextBlock(ClickMixin):
+    TIP = "Place Text Block: pick a position"
+
+    def entry(
+        self : Self,
+        v :    QPoint,
+        s :    QPointF,
+        e :    Optional[list[ElementMixin]] = None
     ) -> None:
-        self.view.placeTextContinue(self.view._snap(spos))
+        element = TextBlock(self._snap(s))
+        dialog = TextBlockDialog(element)
+        if dialog.exec():
+            text, appearance = dialog.getChoice()
+            element.setPlainText(text)
+            element.quill.setPref(appearance)
+            self.interact(PlaceTextBlockInteraction(
+                self.scene, self._snap(s), element)
+            )
+        else:
+            self.view.state.go(self.view.stateIdle)
 
 class DrawingViewStateMixin:
-    state                : DrawingViewStateBase
-    stateIdle            : DrawingViewStateIdle
-    stateViewPan1        : DrawingViewStateViewPan1
-    stateViewPan2        : DrawingViewStateViewPan2
-    stateViewZoomArea1   : DrawingViewStateViewZoomArea1
-    stateViewZoomArea2   : DrawingViewStateViewZoomArea2
-    stateSelectArea2     : DrawingViewStateSelectArea2
-    stateEditPaste       : DrawingViewStateEditPaste
-    stateEditDuplicate1  : DrawingViewStateEditDuplicate1
-    stateEditDuplicate2  : DrawingViewStateEditDuplicate2
-    stateEditSlide1      : DrawingViewStateEditSlide1
-    stateEditSlide2      : DrawingViewStateEditSlide2
-    stateEditMove1       : DrawingViewStateEditMove1
-    stateEditMove2       : DrawingViewStateEditMove2
-    stateEditResize1     : DrawingViewStateEditResize1
-    stateEditResize2     : DrawingViewStateEditResize2
-    stateEditResize3     : DrawingViewStateEditResize3
-    stateEditAppearance1 : DrawingViewStateEditAppearance1
-    stateEditAppearance2 : DrawingViewStateEditAppearance2
-    stateEditQuery       : DrawingViewStateEditQuery
-    statePlacePort1      : DrawingViewStatePlacePort1
-    statePlacePort2      : DrawingViewStatePlacePort2
-    statePlaceBlock1     : DrawingViewStatePlaceBlock1
-    statePlaceBlock2     : DrawingViewStatePlaceBlock2
-    statePlaceBlockPin1  : DrawingViewStatePlaceBlockPin1
-    statePlaceBlockPin2  : DrawingViewStatePlaceBlockPin2
-    statePlaceBlockPin3  : DrawingViewStatePlaceBlockPin3
-    statePlaceRectangle1 : DrawingViewStatePlaceRectangle1
-    statePlaceRectangle2 : DrawingViewStatePlaceRectangle2
-    statePlaceTextBlock1 : DrawingViewStatePlaceTextBlock1
-    statePlaceTextBlock2 : DrawingViewStatePlaceTextBlock2
-    statePlaceText1      : DrawingViewStatePlaceText1
-    statePlaceText2      : DrawingViewStatePlaceText2
+    state                 : DrawingViewStateBase
+    stateIdle             : DrawingViewStateIdle
+    stateViewPan1         : DrawingViewStateViewPan1
+    stateViewPan2         : DrawingViewStateViewPan2
+    stateViewZoomArea1    : DrawingViewStateViewZoomArea1
+    stateViewZoomArea2    : DrawingViewStateViewZoomArea2
+    stateEditSelectArea1  : DrawingViewStateEditSelectArea1
+    stateEditSelectArea2  : DrawingViewStateEditSelectArea2
+    stateEditPaste        : DrawingViewStateEditPaste
+    stateEditDuplicate    : DrawingViewStateEditDuplicate
+    stateEditSlide        : DrawingViewStateEditSlide
+    stateEditMove         : DrawingViewStateEditMove
+    stateEditResize       : DrawingViewStateEditResize
+    stateEditAppearance   : DrawingViewStateEditAppearance
+    stateEditProperties   : DrawingViewStateEditProperties
+    stateEditQuery        : DrawingViewStateEditQuery
+    stateEditPort         : DrawingViewStateEditPort
+    stateEditBlockPin     : DrawingViewStateEditBlockPin
+    stateEditText         : DrawingViewStateEditText
+    stateEditPropertyText : DrawingViewStateEditPropertyText
+    statePlacePort        : DrawingViewStatePlacePort
+    statePlaceBlock1      : DrawingViewStatePlaceBlock1
+    statePlaceBlock2      : DrawingViewStatePlaceBlock2
+    statePlaceBlockPin    : DrawingViewStatePlaceBlockPin
+    statePlaceRectangle1  : DrawingViewStatePlaceRectangle1
+    statePlaceRectangle2  : DrawingViewStatePlaceRectangle2
+    statePlaceText        : DrawingViewStatePlaceText
+    statePlaceTextBlock   : DrawingViewStatePlaceTextBlock
 
     def initStates(self : "DrawingView") -> None:
-        self.stateIdle            = DrawingViewStateIdle            (self)
-        self.stateViewPan1        = DrawingViewStateViewPan1        (self)
-        self.stateViewPan2        = DrawingViewStateViewPan2        (self)
-        self.stateViewZoomArea1   = DrawingViewStateViewZoomArea1   (self)
-        self.stateViewZoomArea2   = DrawingViewStateViewZoomArea2   (self)
-        self.stateSelectArea2     = DrawingViewStateSelectArea2     (self)
-        self.stateEditPaste       = DrawingViewStateEditPaste       (self)
-        self.stateEditDuplicate1  = DrawingViewStateEditDuplicate1  (self)
-        self.stateEditDuplicate2  = DrawingViewStateEditDuplicate2  (self)
-        self.stateEditSlide1      = DrawingViewStateEditSlide1      (self)
-        self.stateEditSlide2      = DrawingViewStateEditSlide2      (self)
-        self.stateEditMove1       = DrawingViewStateEditMove1       (self)
-        self.stateEditMove2       = DrawingViewStateEditMove2       (self)
-        self.stateEditResize1     = DrawingViewStateEditResize1     (self)
-        self.stateEditResize2     = DrawingViewStateEditResize2     (self)
-        self.stateEditResize3     = DrawingViewStateEditResize3     (self)
-        self.stateEditAppearance1 = DrawingViewStateEditAppearance1 (self)
-        self.stateEditAppearance2 = DrawingViewStateEditAppearance2 (self)
-        self.stateEditQuery       = DrawingViewStateEditQuery       (self)
-        self.statePlacePort1      = DrawingViewStatePlacePort1      (self)
-        self.statePlacePort2      = DrawingViewStatePlacePort2      (self)
-        self.statePlaceBlock1     = DrawingViewStatePlaceBlock1     (self)
-        self.statePlaceBlock2     = DrawingViewStatePlaceBlock2     (self)
-        self.statePlaceBlockPin1  = DrawingViewStatePlaceBlockPin1  (self)
-        self.statePlaceBlockPin2  = DrawingViewStatePlaceBlockPin2  (self)
-        self.statePlaceBlockPin3  = DrawingViewStatePlaceBlockPin3  (self)
-        self.statePlaceRectangle1 = DrawingViewStatePlaceRectangle1 (self)
-        self.statePlaceRectangle2 = DrawingViewStatePlaceRectangle2 (self)
-        self.statePlaceTextBlock1 = DrawingViewStatePlaceTextBlock1 (self)
-        self.statePlaceTextBlock2 = DrawingViewStatePlaceTextBlock2 (self)
-        self.statePlaceText1      = DrawingViewStatePlaceText1      (self)
-        self.statePlaceText2      = DrawingViewStatePlaceText2      (self)
+        self.stateIdle             = DrawingViewStateIdle             (self)
+        self.stateViewPan1         = DrawingViewStateViewPan1         (self)
+        self.stateViewPan2         = DrawingViewStateViewPan2         (self)
+        self.stateViewZoomArea1    = DrawingViewStateViewZoomArea1    (self)
+        self.stateViewZoomArea2    = DrawingViewStateViewZoomArea2    (self)
+        self.stateEditSelectArea1  = DrawingViewStateEditSelectArea1  (self)
+        self.stateEditSelectArea2  = DrawingViewStateEditSelectArea2  (self)
+        self.stateEditPaste        = DrawingViewStateEditPaste        (self)
+        self.stateEditDuplicate    = DrawingViewStateEditDuplicate    (self)
+        self.stateEditSlide        = DrawingViewStateEditSlide        (self)
+        self.stateEditMove         = DrawingViewStateEditMove         (self)
+        self.stateEditResize       = DrawingViewStateEditResize       (self)
+        self.stateEditAppearance   = DrawingViewStateEditAppearance   (self)
+        self.stateEditProperties   = DrawingViewStateEditProperties   (self)
+        self.stateEditQuery        = DrawingViewStateEditQuery        (self)
+        self.stateEditPort         = DrawingViewStateEditPort         (self)
+        self.stateEditBlockPin     = DrawingViewStateEditBlockPin     (self)
+        self.stateEditText         = DrawingViewStateEditText         (self)
+        self.stateEditPropertyText = DrawingViewStateEditPropertyText (self)
+        self.statePlacePort        = DrawingViewStatePlacePort        (self)
+        self.statePlaceBlock1      = DrawingViewStatePlaceBlock1      (self)
+        self.statePlaceBlock2      = DrawingViewStatePlaceBlock2      (self)
+        self.statePlaceBlockPin    = DrawingViewStatePlaceBlockPin    (self)
+        self.statePlaceRectangle1  = DrawingViewStatePlaceRectangle1  (self)
+        self.statePlaceRectangle2  = DrawingViewStatePlaceRectangle2  (self)
+        self.statePlaceText        = DrawingViewStatePlaceText        (self)
+        self.statePlaceTextBlock   = DrawingViewStatePlaceTextBlock   (self)

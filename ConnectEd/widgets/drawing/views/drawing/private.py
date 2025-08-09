@@ -5,8 +5,6 @@ from PyQt6.QtCore    import Qt, QPointF, QRectF, QPoint
 from PyQt6.QtWidgets import QMenu, QGraphicsItem
 from PyQt6.QtGui     import QMouseEvent, QPainterPath, QIcon, QAction, QCursor
 
-from .state import DrawingViewStateBase
-
 from ..... import hub
 
 from typing import TYPE_CHECKING
@@ -99,11 +97,12 @@ class DrawingViewPrivateMixin:
     def _round2nearest(self : "DrawingView", x : float, n : float) -> float:
         return round(x / n) * n
 
-    def _snap(self : "DrawingView", pos: QPointF) -> QPoint:
-        return QPointF(
-            self._round2nearest(pos.x(), self.grid.pitch.x()),
-            self._round2nearest(pos.y(), self.grid.pitch.y())
-        ) if self.grid.snap else pos
+    def _snap(self : "DrawingView", pos: Optional[QPointF]) -> QPointF:
+        return QPointF(0, 0) if pos is None else \
+            QPointF(
+                self._round2nearest(pos.x(), self.grid.pitch.x()),
+                self._round2nearest(pos.y(), self.grid.pitch.y())
+            ) if self.grid.snap else pos
 
     def _distance(self : "DrawingView", cp1: QPoint, cp2: QPoint) -> int:
         return int(round(sqrt((cp1.x() - cp2.x())**2 + (cp1.y() - cp2.y())**2)))
@@ -212,3 +211,16 @@ class DrawingViewPrivateMixin:
             item.setSelected(not item.isSelected() if toggle else True)
         else:
             item.setSelected(not prev if toggle else True)
+
+    def _selectedElements(
+        self  : "DrawingView",
+        etype : type
+    ) -> list[QGraphicsItem]:
+        return [i for i in self.scene().selectedItems() if isinstance(i, etype)]
+
+    def _selectedElement(
+        self  : "DrawingView",
+        etype : type
+    ) -> QGraphicsItem:
+        elements = self._selectedElements(etype)
+        return elements[0] if elements else None

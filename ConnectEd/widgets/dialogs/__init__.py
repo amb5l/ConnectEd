@@ -1,42 +1,27 @@
 from PyQt6.QtWidgets import QHBoxLayout, QPushButton
 
+
 def okCancelLayoutStart(self) -> None:
-    self.ok_cancel_layout = QHBoxLayout()
+    self._ok_cancel_layout = QHBoxLayout()
 
 def okCancelLayoutFinish(self) -> None:
-    self.ok_button = QPushButton("OK")
-    self.ok_button.clicked.connect(self.accept)
-    self.ok_cancel_layout.addWidget(self.ok_button)
-    self.cancel_button = QPushButton("Cancel")
-    self.cancel_button.clicked.connect(self.reject)
-    self.ok_cancel_layout.addWidget(self.cancel_button)
-    self.dialog_layout.addLayout(self.ok_cancel_layout)
+    self._ok_button = QPushButton("OK")
+    self._ok_button.clicked.connect(self.accept)
+    self._ok_cancel_layout.addWidget(self._ok_button)
+    self._cancel_button = QPushButton("Cancel")
+    self._cancel_button.clicked.connect(self.reject)
+    self._ok_cancel_layout.addWidget(self._cancel_button)
+    self._dialog_layout.addLayout(self._ok_cancel_layout)
 
 def okCancelLayout(self) -> None:
     okCancelLayoutStart(self)
-    self.ok_cancel_layout.addStretch()
+    self._ok_cancel_layout.addStretch()
     okCancelLayoutFinish(self)
 
 def okCancelNewLayout(self) -> None:
     okCancelLayoutStart(self)
-    self.new_button = QPushButton("New")
-    self.new_button.clicked.connect(self.new)
-    self.ok_cancel_layout.addWidget(self.new_button)
-    self.ok_cancel_layout.addStretch()
+    self._new_button = QPushButton("New")
+    self._new_button.clicked.connect(self.new)
+    self._ok_cancel_layout.addWidget(self._new_button)
+    self._ok_cancel_layout.addStretch()
     okCancelLayoutFinish(self)
-
-__all__ = ["okCancelLayout"]
-
-from .file          import *
-from .text          import *
-from .port_pin      import *
-from .appearance    import *
-from .properties    import *
-from .property_text import *
-
-__all__ += file.__all__
-__all__ += text.__all__
-__all__ += port_pin.__all__
-__all__ += appearance.__all__
-__all__ += properties.__all__
-__all__ += property_text.__all__

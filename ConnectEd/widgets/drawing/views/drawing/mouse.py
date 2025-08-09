@@ -1,7 +1,7 @@
 from PyQt6.QtCore import Qt, QEvent, QPoint
 from PyQt6.QtGui  import QEnterEvent, QMouseEvent, QWheelEvent, QCursor
 
-from .....core import logger
+from .....core.log import logger
 
 from ...items.handle import Handle
 
@@ -50,7 +50,7 @@ class DrawingViewMouseMixin:
                     )
                     return
             case MouseButtonState.Dragging:
-                self.state.mouseLeftDragContinue(
+                self.state.mouseLeftDragCont(
                     self.mouse.current.physical,
                     self.mouse.current.logical,
                     self.mouse.current.modifiers
@@ -68,7 +68,7 @@ class DrawingViewMouseMixin:
                     )
                     return
             case MouseButtonState.Dragging:
-                self.state.mouseMiddleDragContinue(
+                self.state.mouseMiddleDragCont(
                     self.mouse.current.physical,
                     self.mouse.current.logical,
                     self.mouse.current.modifiers

@@ -7,21 +7,25 @@ from enum        import Enum
 
 from PyQt6.QtCore    import Qt, QPointF, QRectF, \
                             QXmlStreamWriter, QXmlStreamReader
-from PyQt6.QtGui     import QPen, QBrush, QColor, QFont, QPainterPath, \
-                            QAction, QUndoCommand
+from PyQt6.QtGui     import QPen, QBrush, QColor, QFont, QPainterPath, QAction
 from PyQt6.QtWidgets import QGraphicsItem, QGraphicsSceneContextMenuEvent, QMenu
-
-from ....core import Z_DRAWING, logger, \
-                     val2str, str2val, camel_to_proper, toXmlAttrs, fromXmlAttrs
-
-from ..properties import PropertySpec
 
 from .... import hub
 
+from ....core.log   import logger
+from ....core.defs  import Z_DRAWING
+from ....core.utils import val2str, str2val
+from ....core.xml   import toXmlAttrs, fromXmlAttrs
+
+from ..properties import PropertySpec
+
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from .. import DrawingView, DrawingScene
-    from .property_text import PropertyText
+    from ..views.drawing  import DrawingView
+    from ..scenes.drawing import DrawingScene
+    from .anchor_point    import AnchorPoint
+    from .property_text   import PropertyText
+    from .pin_rect        import PinRect
 
 
 class Default:
@@ -42,10 +46,10 @@ class APType(Enum):
     Resizer = 2
 
 class Edge(Enum):
-    LEFT   = "left"
-    RIGHT  = "right"
-    TOP    = "top"
-    BOTTOM = "bottom"
+    LEFT   = "Left"
+    RIGHT  = "Right"
+    TOP    = "Top"
+    BOTTOM = "Bottom"
 
 @dataclass
 class EdgeLoc:
@@ -245,24 +249,24 @@ class Line:
         self.selected.setJoinStyle(parent._JOIN_STYLE)
         self.onSettingsChange()
 
-    def getColor(self : Self) -> QColor:
+    def getColor(self : Self) -> Default | QColor:
         return self.color
 
-    def setColor(self : Self, color : QColor) -> None:
+    def setColor(self : Self, color : Default | QColor) -> None:
         self.color = color
         self.onSettingsChange()
 
-    def getWidth(self : Self) -> float:
+    def getWidth(self : Self) -> Default | float:
         return self.width
 
-    def setWidth(self : Self, width : float) -> None:
+    def setWidth(self : Self, width : Default | float) -> None:
         self.width = width
         self.onSettingsChange()
 
-    def getStyle(self : Self) -> Qt.PenStyle:
+    def getStyle(self : Self) -> Default | Qt.PenStyle:
         return self.style
 
-    def setStyle(self : Self, style : Qt.PenStyle) -> None:
+    def setStyle(self : Self, style : Default | Qt.PenStyle) -> None:
         self.style = style
         self.onSettingsChange()
 
@@ -342,17 +346,17 @@ class Fill:
         self.selected = QBrush()
         self.onSettingsChange()
 
-    def getColor(self : Self) -> QColor:
+    def getColor(self : Self) -> Default | QColor:
         return self.color
 
-    def setColor(self : Self, color : QColor) -> None:
+    def setColor(self : Self, color : Default | QColor) -> None:
         self.color = color
         self.onSettingsChange()
 
-    def getStyle(self : Self) -> Qt.BrushStyle:
+    def getStyle(self : Self) -> Default | Qt.BrushStyle:
         return self.style
 
-    def setStyle(self : Self, style : Qt.BrushStyle) -> None:
+    def setStyle(self : Self, style : Default | Qt.BrushStyle) -> None:
         self.style = style
         self.onSettingsChange()
 
@@ -448,45 +452,45 @@ class Quill:
         self._parent.setFont(self._font)
         self.onSettingsChange()
 
-    def getColor(self : Self) -> QColor:
+    def getColor(self : Self) -> Default | QColor:
         return self._color
 
-    def setColor(self : Self, color : QColor) -> None:
+    def setColor(self : Self, color : Default | QColor) -> None:
         self._color = color
         self.onSettingsChange()
 
-    def getFamily(self : Self) -> str:
+    def getFamily(self : Self) -> Default | str:
         return self._family
 
-    def setFamily(self : Self, family : str) -> None:
+    def setFamily(self : Self, family : Default | str) -> None:
         self._family = family
         self.onSettingsChange()
 
-    def getSize(self : Self) -> float:
+    def getSize(self : Self) -> Default | float:
         return self._size
 
-    def setSize(self : Self, size : float) -> None:
+    def setSize(self : Self, size : Default | float) -> None:
         self._size = size
         self.onSettingsChange()
 
-    def getBold(self : Self) -> bool:
+    def getBold(self : Self) -> Default | bool:
         return self._bold
 
-    def setBold(self : Self, bold : bool) -> None:
+    def setBold(self : Self, bold : Default | bool) -> None:
         self._bold = bold
         self.onSettingsChange()
 
-    def getItalic(self : Self) -> bool:
+    def getItalic(self : Self) -> Default | bool:
         return self._italic
 
-    def setItalic(self : Self, italic : bool) -> None:
+    def setItalic(self : Self, italic : Default | bool) -> None:
         self._italic = italic
         self.onSettingsChange()
 
-    def getUnderline(self : Self) -> bool:
+    def getUnderline(self : Self) -> Default | bool:
         return self._underline
 
-    def setUnderline(self : Self, underline : bool) -> None:
+    def setUnderline(self : Self, underline : Default | bool) -> None:
         self._underline = underline
         self.onSettingsChange()
 
@@ -645,16 +649,19 @@ class ElementBoundShapeMixin:
 class ElementPosMixin:
     _PROPERTY_SPECS_POS = {
         "Position X" : PropertySpec(
-            type_name = "float",
-            getter    = lambda self: self.pos().x(),
-            setter    = lambda self, value: self.setPosX(value)
+            type_name   = "float",
+            getter      = lambda self: self.pos().x(),
+            setter      = lambda self, value: self.setPosX(value)
         ),
         "Position Y" : PropertySpec(
-            type_name = "float",
-            getter    = lambda self: self.pos().y(),
-            setter    = lambda self, value: self.setPosY(value)
+            type_name   = "float",
+            getter      = lambda self: self.pos().y(),
+            setter      = lambda self, value: self.setPosY(value)
         )
     }
+
+    def moveBy(self : Self, offset : QPointF) -> None:
+        super().moveBy(offset.x(), offset.y())
 
     def setPosX(self : Self, value : float) -> None:
         pos = self.pos()
@@ -671,10 +678,17 @@ class ElementLocMixin:
     _loc : EdgeLoc
 
     _PROPERTY_SPECS_LOC = {
-        "Location" : PropertySpec(
-            type_name = "EdgeLoc",
-            getter    = lambda self: self.loc(),
-            setter    = lambda self, value: self.setLoc(value)
+        "Location (Edge)" : PropertySpec(
+            type_name   = "str",
+            getter      = lambda self: self.loc().edge,
+            setter      = lambda self, value: self.setLocEdge(value),
+            description = "Parent edge"
+        ),
+        "Location (Distance)" : PropertySpec(
+            type_name   = "float",
+            getter      = lambda self: self.loc().distance,
+            setter      = lambda self, value: self.setLocDistance(value),
+            description = "Distance from start of parent edge"
         )
     }
 
@@ -685,21 +699,24 @@ class ElementLocMixin:
         self._loc = loc
         self.prepareGeometryChange()
         match loc.edge:
-            case Edge.LEFT:   self.setRotation(0)
-            case Edge.RIGHT:  self.setRotation(180)
-            case Edge.TOP:    self.setRotation(90)
-            case Edge.BOTTOM: self.setRotation(270)
-        if hasattr(self, "_name_text"):
-            name_centre = QPointF(self._name_text.boundingRect().center())
-            self._name_text.setTransformOriginPoint(name_centre)
-            match loc.edge:
-                case Edge.LEFT:   self._name_text.setRotation(0)
-                case Edge.RIGHT:  self._name_text.setRotation(180)
-                case Edge.TOP:    self._name_text.setRotation(180)
-                case Edge.BOTTOM: self._name_text.setRotation(0)
+            case Edge.LEFT:   r = 0
+            case Edge.RIGHT:  r = 180
+            case Edge.TOP:    r = 90
+            case Edge.BOTTOM: r = 270
+        self.setRotation(r)
         parent : "PinRect" = self.parentItem()
-        edge_pos = parent.getEdgeLocPos(loc) if parent else QPointF()
+        edge_pos = parent.getLocPos(loc) if parent else QPointF()
         super().setPos(edge_pos)
+        for child in self.childItems():
+            for grandchild in child.childItems():
+                if hasattr(grandchild, 'compensateRotation'):
+                    grandchild.compensateRotation(r)
+
+    def setLocEdge(self : Self, edge : Edge) -> None:
+        self.setLoc(EdgeLoc(Edge(edge), self._loc.distance))
+
+    def setLocDistance(self : Self, distance : float) -> None:
+        self.setLoc(EdgeLoc(self._loc.edge, distance))
 
     def setLocPos(
         self : Self,
@@ -707,7 +724,7 @@ class ElementLocMixin:
         snap : Optional[QPointF] = None
     ) -> None:
         parent : "PinRect" = self.parentItem()
-        self.setLoc(parent.getEdgeLoc(pos, snap))
+        self.setLoc(parent.getLoc(pos, snap))
 
     def pos(self : Self) -> QPointF:
         raise NotImplementedError("pos is not implemented for ElementLocMixin")
@@ -718,6 +735,9 @@ class ElementLocMixin:
 class ElementAnchorPointsMixin:
     # instance attributes
     _anchor_points : dict[str, "AnchorPoint"]
+
+    def getAnchorPoint(self : Self, name : str) -> "AnchorPoint":
+        return self._anchor_points[name]
 
 class ElementRectAnchorPointsMixin(ElementAnchorPointsMixin):
     # class variables
@@ -738,6 +758,7 @@ class ElementRectAnchorPointsMixin(ElementAnchorPointsMixin):
     _rect   : QRectF   # border rectangle, maintained by element
 
     def initAnchorPoints(self : Self) -> None:
+        from .anchor_point import AnchorPoint
         self._anchor_points = {}
         for ap_name, ap_type in self._AP_TYPES.items():
             self._anchor_points[ap_name] = AnchorPoint(
@@ -761,8 +782,10 @@ class ElementOriginMixin:
     # class variables
     _PROPERTY_SPECS_ORIGIN = {
         "Origin" : PropertySpec(
-            getter    = lambda self: self.getOrigin(),
-            setter    = lambda self, value: self.setOrigin(value)
+            type_name   = "AnchorPoint",
+            getter      = lambda self: self.getOrigin(),
+            setter      = lambda self, value: self.setOrigin(value),
+            description = "Origin anchor point"
         )
     }
 
@@ -804,19 +827,22 @@ class ElementLineMixin:
             type_name = "QColor",
             exists    = lambda self: self.line is not None,
             getter    = lambda self: self.line.getColor(),
-            setter    = lambda self, value: self.line.setColor(value)
+            setter    = lambda self, value: self.line.setColor(value),
+            default   = lambda self: self.line.getDefaults().color
         ),
         "Line Width" : PropertySpec(
             type_name = "float",
             exists    = lambda self: self.line is not None,
             getter    = lambda self: self.line.getWidth(),
-            setter    = lambda self, value: self.line.setWidth(value)
+            setter    = lambda self, value: self.line.setWidth(value),
+            default   = lambda self: self.line.getDefaults().width
         ),
         "Line Style" : PropertySpec(
             type_name = "PenStyle",
             exists    = lambda self: self.line is not None,
             getter    = lambda self: self.line.getStyle(),
-            setter    = lambda self, value: self.line.setStyle(value)
+            setter    = lambda self, value: self.line.setStyle(value),
+            default   = lambda self: self.line.getDefaults().style
         )
     }
 
@@ -831,13 +857,15 @@ class ElementFillMixin:
             type_name = "QColor",
             exists    = lambda self: self.fill is not None,
             getter    = lambda self: self.fill.getColor(),
-            setter    = lambda self, value: self.fill.setColor(value)
+            setter    = lambda self, value: self.fill.setColor(value),
+            default   = lambda self: self.fill.getDefaults().color
         ),
         "Fill Style" : PropertySpec(
             type_name = "BrushStyle",
             exists    = lambda self: self.fill is not None,
             getter    = lambda self: self.fill.getStyle(),
-            setter    = lambda self, value: self.fill.setStyle(value)
+            setter    = lambda self, value: self.fill.setStyle(value),
+            default   = lambda self: self.fill.getDefaults().style
         )
     }
 
@@ -852,37 +880,43 @@ class ElementQuillMixin:
             type_name = "QColor",
             exists    = lambda self: self.quill is not None,
             getter    = lambda self: self.quill.getColor(),
-            setter    = lambda self, value: self.quill.setColor(value)
+            setter    = lambda self, value: self.quill.setColor(value),
+            default   = lambda self: self.quill.getDefaults().color
         ),
         "Text Font" : PropertySpec(
             type_name = "str",
             exists    = lambda self: self.quill is not None,
             getter    = lambda self: self.quill.getFamily(),
-            setter    = lambda self, value: self.quill.setFamily(value)
+            setter    = lambda self, value: self.quill.setFamily(value),
+            default   = lambda self: self.quill.getDefaults().family
         ),
         "Text Size" : PropertySpec(
             type_name = "float",
             exists    = lambda self: self.quill is not None,
             getter    = lambda self: self.quill.getSize(),
-            setter    = lambda self, value: self.quill.setSize(value)
+            setter    = lambda self, value: self.quill.setSize(value),
+            default   = lambda self: self.quill.getDefaults().size
         ),
         "Text Bold" : PropertySpec(
             type_name = "bool",
             exists    = lambda self: self.quill is not None,
             getter    = lambda self: self.quill.getBold(),
-            setter    = lambda self, value: self.quill.setBold(value)
+            setter    = lambda self, value: self.quill.setBold(value),
+            default   = lambda self: self.quill.getDefaults().bold
         ),
         "Text Italic" : PropertySpec(
             type_name = "bool",
             exists    = lambda self: self.quill is not None,
             getter    = lambda self: self.quill.getItalic(),
-            setter    = lambda self, value: self.quill.setItalic(value)
+            setter    = lambda self, value: self.quill.setItalic(value),
+            default   = lambda self: self.quill.getDefaults().italic
         ),
         "Text Underline" : PropertySpec(
             type_name = "bool",
             exists    = lambda self: self.quill is not None,
             getter    = lambda self: self.quill.getUnderline(),
-            setter    = lambda self, value: self.quill.setUnderline(value)
+            setter    = lambda self, value: self.quill.setUnderline(value),
+            default   = lambda self: self.quill.getDefaults().underline
         )
     }
 
@@ -952,7 +986,7 @@ class ElementMenuMixin:
             if item.startswith("-"):
                 menu.addSeparator()
             else:
-                from .. import getView
+                from ..views.drawing import getView
                 view = getView(pos)
                 slot_name = f"ctxMenu{item.replace(' ', '').replace('.', '')}"
                 if hasattr(self, slot_name):
@@ -983,6 +1017,9 @@ class ElementMenuMixin:
 class ElementCloneMixin:
     def clone(self : Self, original : Optional[Self] = None) -> Self:
         """Create a clone of this element with a new UUID."""
+        from .anchor_point  import AnchorPoint
+        from .property_text import PropertyText
+        from .port_pin      import BasePin
         source = original if original is not None else self
         clone = self.__class__(bare=True)
         # clone properties
@@ -1012,6 +1049,8 @@ class ElementCloneMixin:
 
 class ElementXmlMixin:
     def toXml(self : Self, xw : QXmlStreamWriter) -> None:
+        from .property_text import PropertyText
+        from .port_pin      import BasePin
         xw.writeStartElement(self.__class__.__name__)
         toXmlAttrs(self, xw)
         from .port_pin import BasePin
@@ -1022,6 +1061,8 @@ class ElementXmlMixin:
 
     @classmethod
     def fromXml(cls : Self, xr: QXmlStreamReader) -> Self:
+        from .property_text import PropertyText
+        from .port_pin      import BlockPin
         instance = cls(bare=True)
         fromXmlAttrs(instance, xr)
         instance.onGeometryChange()
@@ -1043,8 +1084,6 @@ class ElementXmlMixin:
             xr.readNext()
         return instance
 
-
-
 def clone(elements : list[ElementMixin]) -> list[ElementMixin]:
     r = []
     for element in elements:
@@ -1054,51 +1093,19 @@ def clone(elements : list[ElementMixin]) -> list[ElementMixin]:
             logger.warning(f"Failed to clone element {element}: {e}")
     return r
 
-__all__ = [
-    "Default",
-    "DEFAULT",
-    "NoChange",
-    "NO_CHANGE",
-    "APType",
-    "Edge",
-    "EdgeLoc",
-    "SignalDirection",
-    "RangeDirection",
-    "VectorRange",
-    "LineSpec",
-    "LinePref",
-    "LinePrefChange",
-    "FillSpec",
-    "FillPref",
-    "FillPrefChange",
-    "QuillSpec",
-    "QuillPref",
-    "QuillPrefChange",
-    "ElementMixin",
-    "clone"
-]
-from .anchor_point import AnchorPoint
-__all__ += anchor_point.__all__
-from .tether_text import TetherText, Tether
-__all__ += tether_text.__all__
-from .property_text import PropertyDisplay, PropertyTextSpec, PropertyText
-__all__ += property_text.__all__
-from .text import Text
-__all__ += text.__all__
-from .text_block import TextBlock
-__all__ += text_block.__all__
-from .rectangle import Rectangle
-__all__ += rectangle.__all__
-from .port_pin import Port, BlockPin
-__all__ += port_pin.__all__
-from .pin_rect import PinRect
-__all__ += pin_rect.__all__
-from .block import Block
-__all__ += block.__all__
-from .symbol_instance import SymbolInstance
-__all__ += symbol_instance.__all__
+_element_classes = {}
 
-element_class_dict = {}
-for class_name in __all__:
-    element_class_dict[class_name] = globals()[class_name]
-__all__ += ["element_class_dict"]
+def register_element(module_name: str, class_name: str):
+    """Import a class from a submodule and register it in _element_classes."""
+    import importlib
+    module = importlib.import_module(f".{module_name}", package=__name__)
+    cls = getattr(module, class_name)
+    _element_classes[class_name] = cls
+    return cls
+
+register_element("port_pin", "Port")
+register_element("block", "Block")
+register_element("property_text", "PropertyText")
+register_element("rectangle", "Rectangle")
+register_element("text", "Text")
+register_element("text_block", "TextBlock")

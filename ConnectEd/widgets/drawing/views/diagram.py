@@ -1,5 +1,3 @@
-__all__ = ["DiagramView", "DiagramSubWindow"]
-
 from typing import Self
 
 from .drawing import DrawingView, DrawingSubWindow

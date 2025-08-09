@@ -1,5 +1,3 @@
-__all__ = ["BaseRectangle"]
-
 from typing import Self, Optional, overload
 
 from PyQt6.QtCore    import Qt, QPointF, QRectF, QSizeF
@@ -63,11 +61,27 @@ class BaseRectangle(
 
     # instance attributes
     _rect : QRectF  # cached rectangle
+    _p1   : QPointF # first corner
 
-    def __init__(self : Self, bare : bool = False) -> None:
+    def __init__(
+        self : Self,
+        p1   : Optional[QPointF] = None,
+        p2   : Optional[QPointF] = None,
+        bare : bool = False
+    ) -> None:
         super().__init__()
-        self._rect = self.rect()
         self.initElement(bare=bare)
+        self._rect = QRectF()
+        if p1 is None and p2 is None:
+            self._p1 = QPointF()
+        elif p2 is None:
+            self._p1 = p1
+            self.setPos(p1)
+        else:
+            self._p1 = p1
+            self.setPoints(p1, p2)
+        self.onGeometryChange()
+        self.updateHandlesVisibility()
 
     def onGeometryChange(self : Self) -> None:
         self.prepareGeometryChange()
@@ -89,7 +103,7 @@ class BaseRectangle(
         self.updateKeypoints()
 
     def getMenuItems(self : Self) -> list[str]:
-        return ["Appearance..."]
+        return ["Appearance...", "Properties..."]
 
     @overload
     def setRect(
@@ -139,6 +153,15 @@ class BaseRectangle(
         self._rect.setHeight(height)
         self.setRect(self._rect)
 
+    @overload
+    def setPoints(
+        self : Self,
+        p1   : QPointF,
+        p2   : QPointF
+    ) -> None:
+        ...
+
+    @overload
     def setPoints(
         self : Self,
         x1   : float | int,
@@ -146,17 +169,48 @@ class BaseRectangle(
         x2   : float | int,
         y2   : float | int
     ) -> None:
-        self.setPos(x1, y1)
-        self._rect.setCoords(0, 0, x2-x1, y2-y1)
+        ...
+
+    def setPoints(
+        self : Self,
+        p1_x1 : QPointF | float | int,
+        p2_y1 : QPointF | float | int,
+        x2    : Optional[float | int] = None,
+        y2    : Optional[float | int] = None
+    ) -> None:
+        if x2 is None or y2 is None:
+            x1 = p1_x1.x()
+            y1 = p1_x1.y()
+            x2 = p2_y1.x()
+            y2 = p2_y1.y()
+        else:
+            x1 = p1_x1
+            y1 = p2_y1
+        self.setPos(QPointF(
+            x1 if x1 < x2 else x2,
+            y1 if y1 < y2 else y2,
+        ))
+        w = max(abs(x2-x1), self._MIN_SIZE.width())
+        h = max(abs(y2-y1), self._MIN_SIZE.height())
+        self._rect.setSize(QSizeF(w, h))
         self.setRect(self._rect)
 
-    def moveAnchorPoint(self : Self, name : str, delta : QPointF) -> None:
+    def setP2(self : Self, p2 : QPointF) -> None:
+        self.setPoints(
+            self._p1.x(),
+            self._p1.y(),
+            p2.x(),
+            p2.y()
+        )
+        self.setRect(self._rect)
+
+    def moveAnchorPointBy(self : Self, name : str, delta : QPointF) -> None:
         p1 = self.pos()
         p2 = p1 + self._rect.bottomRight()
         d = delta
         match name:
             case "Top Left":
-                self.setPoints(p1.x() + d.x(), p1.y() + d.y(), p2.x(), p2.y())
+                self.setPoints(p1 + d, p2)
             case "Top Center":
                 self.setPoints(p1.x(), p1.y() + d.y(), p2.x(), p2.y())
             case "Top Right":
@@ -172,21 +226,6 @@ class BaseRectangle(
             case "Bottom Center":
                 self.setPoints(p1.x(), p1.y(), p2.x(), p2.y() + d.y())
             case "Bottom Right":
-                self.setPoints(p1.x(), p1.y(), p2.x() + d.x(), p2.y() + d.y())
+                self.setPoints(p1, p2 + d)
             case _:
                 raise ValueError(f"Invalid anchor point: {name}")
-
-    @classmethod
-    def createOrUpdate(
-        cls  : Self,
-        *,
-        p1   : QPointF,
-        p2   : Optional[QPointF] = None,
-        inst : Optional[Self]    = None
-    ) -> "BaseRectangle":
-        inst = cls() if inst is None else inst
-        if p2 is None:
-            inst.setPos(p1)
-        else:
-            inst.setPoints(p1.x(), p1.y(), p2.x(), p2.y())
-        return inst

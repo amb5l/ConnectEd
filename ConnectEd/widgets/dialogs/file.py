@@ -1,10 +1,8 @@
-__all__ = ["FileOpenDialog", "FileSaveAsDialog"]
-
 from typing import Optional
 
 from PyQt6.QtWidgets import QFileDialog
 
-from ...core import GEN_EXT, LIB_EXT, DSN_EXT
+from ...core.defs import GEN_EXT, LIB_EXT, DSN_EXT
 
 from ... import hub
 

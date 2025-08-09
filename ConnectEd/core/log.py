@@ -1,5 +1,3 @@
-__all__ = ["logger"]
-
 import os, logging, weakref
 
 from typing import Self

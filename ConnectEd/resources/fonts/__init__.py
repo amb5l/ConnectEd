@@ -4,7 +4,7 @@ from os      import walk
 from PyQt6.QtCore import QDir
 from PyQt6.QtGui  import QFontDatabase
 
-from ...core import logger
+from ...core.log import logger
 
 def initFonts() -> None:
     module_dir = Path(__file__).parent

@@ -1,5 +1,3 @@
-__all__ = ["SymbolView", "SymbolSubWindow"]
-
 from typing import Self, Optional
 
 from PyQt6.QtWidgets import QMdiArea

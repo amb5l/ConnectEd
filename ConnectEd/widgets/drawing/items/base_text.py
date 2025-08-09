@@ -5,6 +5,8 @@ from PyQt6.QtWidgets import QWidget, QStyleOptionGraphicsItem, QStyle, \
                             QGraphicsSimpleTextItem
 from PyQt6.QtGui     import QPainter, QFontMetrics
 
+from ...dialogs.text import TextDialog
+
 from ..properties import PropertySpec, PropertiesMixin
 
 from . import APType, \
@@ -19,10 +21,11 @@ from . import APType, \
               ElementXmlMixin, \
               ElementMenuMixin
 
-
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from ..views import DrawingView
+    from ..views.drawing  import DrawingView
+    from ..scenes.drawing import DrawingScene
+
 
 class BaseText(
     ElementMixin,
@@ -62,10 +65,16 @@ class BaseText(
     _rect  : QRectF  # border rectangle (for keypoints)
     _trect : QRectF  # tight bounding rectangle
 
-    def __init__(self : Self, bare : bool = False) -> None:
-        QGraphicsSimpleTextItem.__init__(self)
+    def __init__(
+        self : Self,
+        pos  : QPointF = QPointF(),
+        bare : bool = False
+    ) -> None:
+        QGraphicsSimpleTextItem.__init__(self, "")
         self.initElement(bare=bare)
+        self.setPos(pos)
         self.onGeometryChange()
+        self.updateHandlesVisibility()
 
     def onGeometryChange(self : Self) -> None:
         self._brect = self._rect = super().boundingRect()
@@ -99,7 +108,7 @@ class BaseText(
             painter.setPen(self.outline.pen)
             painter.drawRect(self.boundingRect())
 
-    def moveAnchorPoint(self : Self, _ : str, delta : QPointF) -> None:
+    def moveAnchorPointBy(self : Self, _ : str, delta : QPointF) -> None:
         """Move the entire Text when any keypoint is dragged."""
         self.setPos(self.pos() + delta)
 
@@ -126,4 +135,9 @@ class BaseText(
         checked : bool,
         view    : "DrawingView"
     ) -> None:
-        view.editText(self)
+        from ..scenes.api.cmd.edit import cmdEditText
+        dialog = TextDialog(self)
+        if dialog.exec():
+            text, appearance = dialog.getChoice()
+            scene : "DrawingScene" = self.scene()
+            scene.undo_stack.push(cmdEditText(scene, self, text, appearance))
