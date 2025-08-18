@@ -21,6 +21,7 @@ from . import APType, EdgeLoc, SignalDirection, VectorRange, \
 from .node          import Node
 from .arrow         import Arrow
 from .anchor_point  import AnchorPoint
+from .handle        import Handle
 from .property_text import PropertyTextSpec, PropertyText
 
 from typing import TYPE_CHECKING
@@ -104,8 +105,21 @@ class BasePortPin(
         self._range = range
         self._node = self._NODE_CLASS(self)
 
-    def onSelectionChange(self : Self, selected : bool) -> None:
-        self._node.setSelected(selected)
+    def propagateSelection(
+        self     : Self,
+        selected : bool,
+        source   : Optional[QGraphicsItem] = None
+    ) -> None:
+        for child in self.childItems():
+            if child is not source:
+                if isinstance(child, AnchorPoint):
+                    for grandchild in child.childItems():
+                        if isinstance(grandchild, Handle):
+                            grandchild.setVisible(selected)
+                        else:
+                            grandchild.setSelected(selected)
+                else:
+                    child.setSelected(selected)
 
     def getMenuItems(self : Self) -> list[str]:
         return ["Edit"]
@@ -178,25 +192,14 @@ class PortPinArrowMixin:
             PortArrow._SIZE + self._NAME_OFFSET, 0
         )
 
-    def onGeometryChange(self : Self) -> None:
-        self.prepareGeometryChange()
-        node_rect = self._node._brect
-        node_rect.translate(self._node.pos())
-        arrow_rect = self._arrow._brect
-        arrow_rect.translate(self._arrow.pos())
-        self._brect = node_rect | arrow_rect
-        self._hshape.clear()
-        self._hshape.addRect(self._brect)
+    @property
+    def direction(self : Self) -> SignalDirection:
+        return self._direction
 
-    def onSelectionChange(self : Self, selected : bool) -> None:
-        BasePortPin.onSelectionChange(self, selected)
-        self._arrow.setSelected(selected)
-
-    def onSettingsChange(self : Self) -> None:
-        self._arrow.onSettingsChange()
-
-    def onDirectionChange(self : Self, direction : SignalDirection) -> None:
-        self._arrow.setDirection(direction)
+    @direction.setter
+    def direction(self : Self, value : SignalDirection) -> None:
+        self._direction = value
+        self._arrow.setDirection(value)
 
 class PortNode(Node):
     pass
@@ -230,7 +233,6 @@ class Port(ElementPosMixin, PortPinArrowMixin, BasePortPin):
         if pos is not None:
             self.setPos(pos)
         self.initArrow()
-        self.onGeometryChange()
 
     @classmethod
     def createOrUpdate(
@@ -324,7 +326,6 @@ class BlockPin(PortPinArrowMixin, BasePin):
         BasePortPin.__init__(self)
         self.setParentItem(parent)
         self.initArrow()
-        self.onGeometryChange()
 
     @classmethod
     def createOrUpdate(

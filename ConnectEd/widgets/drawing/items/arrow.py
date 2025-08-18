@@ -1,8 +1,9 @@
-from typing import Self
+from typing import Self, Optional
 
 from PyQt6.QtCore    import QPointF, QRectF
-from PyQt6.QtGui     import QPainterPath
-from PyQt6.QtWidgets import QGraphicsPathItem
+from PyQt6.QtWidgets import QGraphicsPathItem, QWidget, \
+                            QStyle, QStyleOptionGraphicsItem
+from PyQt6.QtGui     import QPainterPath, QPainter
 
 from . import SignalDirection, \
               ElementBoundShapeMixin, \
@@ -12,7 +13,7 @@ from . import SignalDirection, \
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from .port_pin import Port, BasePin
+    from .port_pin import BasePortPin, Port, BasePin
 
 
 class Arrow(
@@ -36,7 +37,9 @@ class Arrow(
     _path_bi  : QPainterPath # path when bi
 
     def __init__(self : Self, parent : "BasePin | Port") -> None:
-        super().__init__(parent)
+        QGraphicsPathItem.__init__(self, parent)
+        f = self.GraphicsItemFlag
+        self.setFlag(f.ItemIsSelectable, True)
         self.initBoundShape()
         self.initLine()
         self.initFill()
@@ -50,6 +53,10 @@ class Arrow(
         self._brect = QRectF(0, -s/2, s, s)
         self._hshape.clear()
         self._hshape.addRect(self._brect)
+
+    def onSelectionChange(self : Self, selected : bool) -> None:
+        parent : BasePortPin = self.parentItem()
+        parent.propagateSelection(selected, self)
 
     def setDirection(self : Self, direction : SignalDirection) -> None:
         match direction:
@@ -67,3 +74,12 @@ class Arrow(
             p.lineTo(QPointF(*point))
         p.closeSubpath()
         return p
+
+    def paint(
+        self    : Self,
+        painter : QPainter,
+        option  : QStyleOptionGraphicsItem,
+        widget  : Optional[QWidget] = None
+    ) -> None:
+        option.state &= ~QStyle.StateFlag.State_Selected
+        QGraphicsPathItem.paint(self, painter, option, widget)

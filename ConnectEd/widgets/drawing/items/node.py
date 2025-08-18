@@ -33,6 +33,8 @@ class Node(
         parent : "BasePortPin"
     ) -> None:
         QGraphicsPathItem.__init__(self, parent)
+        f = self.GraphicsItemFlag
+        self.setFlag(f.ItemIsSelectable, True)
         self.initLine()
         self.initFill()
         s = self._SIZE / 2
@@ -41,7 +43,8 @@ class Node(
         self.onSettingsChange()
 
     def onSelectionChange(self : Self, selected : bool) -> None:
-        self.parentItem().setSelected(selected)
+        parent : BasePortPin = self.parentItem()
+        parent.propagateSelection(selected)
 
     def onSettingsChange(self : Self) -> None:
         s = self._SIZE / 2

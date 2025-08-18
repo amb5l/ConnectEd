@@ -1,5 +1,9 @@
-- propagate property name change to texts
+- editing BlockPin name resets text position
+- selected appearance of BlockPin
+- rotate ports during/after placement
 - remove hub
+
+- propagate property name change to texts
 - property change propagation
 - override setRotation to maintain ortho angles
 - review OnPositionChange
