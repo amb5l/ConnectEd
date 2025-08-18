@@ -500,7 +500,7 @@ class DrawingViewStatePlaceBlock1(DrawingViewStateBase):
 class DrawingViewStatePlaceBlock2(ClickMixin, DragMixin):
     TIP = "Place Block: pick the second point"
 
-class DrawingViewStatePlaceBlockPin(ClickMixin):
+class DrawingViewStatePlaceBlockPin(DrawingViewStateBase):
     TIP = "Place Block Pin: pick a location"
 
     def entry(
@@ -518,11 +518,25 @@ class DrawingViewStatePlaceBlockPin(ClickMixin):
                 pin.direction = dialog.getDirection()
                 pin.range = dialog.getRange()
                 self.interact(PlaceBlockPinInteraction(
-                    self.scene, block, pin, self._snap(s)
+                    self.scene, block, pin, self._snap(s),
+                    self.view.grid.pitch if self.view.grid.snap else None
                 ))
         else:
             logger.warning("No pin rect selected")
             self.view.state.go(self.view.stateIdle)
+
+    def mouseLeftClick(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
+        self.view.interaction.complete(
+            self._snap(s),
+            self.view.grid.pitch if self.view.grid.snap else None
+        )
+        self.view.state.go(self.view.stateIdle)
+
+    def mouseMove(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
+        self.view.interaction.update(
+            self._snap(s),
+            self.view.grid.pitch if self.view.grid.snap else None
+        )
 
 class DrawingViewStatePlaceRectangle1(DrawingViewStateBase):
     TIP = "Place Rectangle: pick the first point"

@@ -91,15 +91,16 @@ class PinInteraction(Interaction):
         self   : Self,
         scene  : "DrawingScene",
         parent : PinRect,
-        pin    : BasePin,
-        pos    : QPointF
+        pin    : Optional[BasePin],
+        pos    : QPointF,
+        snap   : Optional[QPointF] = None
     ) -> None:
         Interaction.__init__(self, scene)
         if isinstance(parent, PinRect):
             self._parent = parent
-            self._pin = self._PIN(parent)
+            self._pin = pin or self._PIN(parent)
             self._pin.setParentItem(parent)
-            self.update(pos)
+            self.update(pos, snap)
         else:
             self._parent = None
             self._pin = None
@@ -326,15 +327,16 @@ class PlaceBasePinInteraction(PinInteraction):
         scene  : "DrawingScene",
         parent : PinRect,
         pin    : BasePin,
-        pos    : QPointF
+        pos    : QPointF,
+        snap   : Optional[QPointF] = None
     ) -> None:
-        PinInteraction.__init__(self, scene, parent, pin, pos)
+        PinInteraction.__init__(self, scene, parent, pin, pos, snap)
 
-    def update(self : Self, pos : QPointF) -> None:
-        self._pin.setLoc(self._parent.getLoc(pos))
+    def update(self : Self, pos : QPointF, snap : Optional[QPointF] = None) -> None:
+        self._pin.setLoc(self._parent.getLoc(pos, snap))
 
-    def complete(self : Self, pos : QPointF) -> bool:
-        self.update(pos)
+    def complete(self : Self, pos : QPointF, snap : Optional[QPointF] = None) -> bool:
+        self.update(pos, snap)
         self._scene.undo_stack.push(cmdAddPin(self._parent, self._pin))
 
     def cancel(self : Self) -> None:

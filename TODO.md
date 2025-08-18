@@ -1,3 +1,4 @@
+- placing BlockPin doesn't snap properly
 - editing BlockPin name resets text position
 - selected appearance of BlockPin
 - rotate ports during/after placement
