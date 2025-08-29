@@ -4,9 +4,9 @@ from PyQt6.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, QGridLayout, \
                             QGroupBox, QLabel, QLineEdit, QComboBox, \
                             QCheckBox, QRadioButton, QPushButton
 
-from ..drawing.items import SignalDirection, RangeDirection, VectorRange
+from ..graphics.items import SignalDirection, RangeDirection, VectorRange
 
-from ..drawing.items.port_pin import BasePortPin
+from ..graphics.items.port_pin import BasePortPin
 
 from . import okCancelLayout
 

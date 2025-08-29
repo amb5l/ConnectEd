@@ -5,7 +5,7 @@ from PyQt6.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, \
 
 from ... import hub
 
-from ..drawing.items import ElementQuillMixin, QuillPref, QuillPrefChange
+from ..graphics.items import ElementQuillMixin, QuillPref, QuillPrefChange
 
 from .appearance import TextAppearanceLayout
 

@@ -6,8 +6,8 @@ from PyQt6.QtWidgets import QMessageBox
 
 from ...core.defs import APP_NAME
 
-from ...widgets.drawing.views.drawing import DrawingView
-from ...widgets.drawing.views.diagram import DiagramView
+from ...widgets.graphics.views.drawing import DrawingView
+from ...widgets.graphics.views.diagram import DiagramView
 
 from ... import hub
 

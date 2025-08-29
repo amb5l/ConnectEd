@@ -13,9 +13,9 @@ from ... import hub
 from ...core.log   import logger
 from ...core.utils import str2val, val2str
 
-from ..drawing.properties import PropertiesMixin
+from ..graphics.properties import PropertiesMixin
 
-from ..drawing.items import DEFAULT
+from ..graphics.items import DEFAULT
 
 from .components import ColorComboBox,      \
                         LineWidthComboBox,  \

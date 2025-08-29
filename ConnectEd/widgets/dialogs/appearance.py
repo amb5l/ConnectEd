@@ -8,11 +8,12 @@ from ... import hub
 
 from ...core.log import logger
 
-from ..drawing.items import DEFAULT, NO_CHANGE, \
-                            ElementLineMixin, ElementFillMixin, ElementQuillMixin, \
-                            LineSpec,LinePref, LinePrefDefault, LinePrefChange, \
-                            FillSpec, FillPref, FillPrefDefault, FillPrefChange, \
-                            QuillSpec, QuillPref, QuillPrefDefault, QuillPrefChange
+from ..graphics.items import \
+    DEFAULT, NO_CHANGE, \
+    ElementLineMixin, ElementFillMixin, ElementQuillMixin, \
+    LineSpec,LinePref, LinePrefDefault, LinePrefChange, \
+    FillSpec, FillPref, FillPrefDefault, FillPrefChange, \
+    QuillSpec, QuillPref, QuillPrefDefault, QuillPrefChange
 
 from . import okCancelLayout
 

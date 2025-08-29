@@ -50,7 +50,7 @@ class DrawingItem(QStandardItem):
     @classmethod
     def sceneClass(cls):
         if cls._scene_class is None:
-            from ..widgets.drawing.scenes import DrawingScene # deferred import
+            from ..widgets.graphics.scenes import DrawingScene # deferred import
             cls._scene_class = DrawingScene
         return cls._scene_class
 
@@ -113,7 +113,7 @@ class SymbolItem(DrawingItem):
     @classmethod
     def sceneClass(cls):
         if cls._scene_class is None:
-            from ..widgets.drawing.scenes.symbol import SymbolScene # deferred import
+            from ..widgets.graphics.scenes.symbol import SymbolScene # deferred import
             cls._scene_class = SymbolScene
         return cls._scene_class
 
@@ -123,7 +123,7 @@ class DiagramItem(DrawingItem):
     @classmethod
     def sceneClass(cls):
         if cls._scene_class is None:
-            from ..widgets.drawing.scenes.diagram import DiagramScene # deferred import
+            from ..widgets.graphics.scenes.diagram import DiagramScene # deferred import
             cls._scene_class = DiagramScene
         return cls._scene_class
 

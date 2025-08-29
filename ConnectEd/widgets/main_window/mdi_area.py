@@ -5,9 +5,9 @@ from PyQt6.QtWidgets import QMdiArea, QWidget, QMdiSubWindow
 
 from ..private import Action
 
-from ...widgets.drawing.views.drawing import DrawingSubWindow, DrawingView
+from ...widgets.graphics.views.drawing import DrawingSubWindow, DrawingView
 
-from ...widgets.drawing.scenes.drawing import DrawingScene
+from ...widgets.graphics.scenes.drawing import DrawingScene
 
 from .spreadsheet import SpreadsheetSubWindow
 

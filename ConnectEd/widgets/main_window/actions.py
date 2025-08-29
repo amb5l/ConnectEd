@@ -6,8 +6,8 @@ from PyQt6.QtGui     import QKeySequence
 from ...core.log  import logger
 from ...core.defs import MIME_TYPE
 
-from ...widgets.drawing.views.drawing  import DrawingSubWindow
-from ...widgets.drawing.scenes.drawing import DrawingScene
+from ...widgets.graphics.views.drawing  import DrawingSubWindow
+from ...widgets.graphics.scenes.drawing import DrawingScene
 
 from ..private  import Action
 

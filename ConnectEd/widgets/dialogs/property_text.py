@@ -7,12 +7,12 @@ from ... import hub
 
 from ...core.log import logger
 
-from ..drawing.properties import PropertiesMixin
+from ..graphics.properties import PropertiesMixin
 
-from ..drawing.items import QuillPref, QuillPrefChange
+from ..graphics.items import QuillPref, QuillPrefChange
 
-from ..drawing.items.anchor_point  import AnchorPoint
-from ..drawing.items.property_text import PropertyText, PropertyDisplay
+from ..graphics.items.anchor_point  import AnchorPoint
+from ..graphics.items.property_text import PropertyText, PropertyDisplay
 
 from .appearance import TextAppearanceLayout
 

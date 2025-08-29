@@ -11,7 +11,7 @@ from .utils import val2str, str2val
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from .db import DesignDbItem, LibraryDbItem, DiagramItem, SymbolItem
-    from ..widgets.drawing.items import ElementMixin
+    from ..widgets.graphics.items import ElementMixin
 
 
 XmlItemTypes: TypeAlias = Union[
@@ -58,7 +58,7 @@ def fromXmlItems(
     xr : QXmlStreamReader
 ) -> tuple[list[XmlItemTypes], Optional[QPointF]]:
     from .db import DesignDbItem, LibraryDbItem, DiagramItem, SymbolItem
-    from ..widgets.drawing.items import _element_classes
+    from ..widgets.graphics.items import _element_classes
     pos = None
     items = []
     fromXmlBegin(xr, APP_NAME)

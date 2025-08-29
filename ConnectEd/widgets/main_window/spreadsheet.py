@@ -15,9 +15,9 @@ from ...core.log import logger
 
 from ...core.icon import getCharIcon
 
-from ...widgets.drawing.items import ElementMixin
+from ...widgets.graphics.items import ElementMixin
 
-from ...widgets.drawing.items.property_text import PropertyDisplay
+from ...widgets.graphics.items.property_text import PropertyDisplay
 
 from ... import hub
 

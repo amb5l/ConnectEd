@@ -8,8 +8,8 @@ from PyQt6.QtGui     import QAction, QStandardItem, \
 
 from ...core.log import logger
 
-from ...widgets.drawing.items.anchor_point import AnchorPoint
-from ...widgets.drawing.items.tether_text  import Tether
+from ...widgets.graphics.items.anchor_point import AnchorPoint
+from ...widgets.graphics.items.tether_text  import Tether
 
 from .tree_view import TreeView, TreeViewDock
 
@@ -215,12 +215,12 @@ class Explorer(TreeView):
 
     def editDrawing(self : Self, item : QStandardItem) -> None:
         from ...core.db import DrawingItem
-        from ...widgets.drawing.views.drawing import DrawingView, DrawingSubWindow
-        from ...widgets.drawing.views.diagram import DiagramView, DiagramSubWindow
-        from ...widgets.drawing.views.symbol import SymbolView, SymbolSubWindow
-        from ...widgets.drawing.scenes.drawing import DrawingScene
-        from ...widgets.drawing.scenes.diagram import DiagramScene
-        from ...widgets.drawing.scenes.symbol import SymbolScene
+        from ...widgets.graphics.views.drawing import DrawingView, DrawingSubWindow
+        from ...widgets.graphics.views.diagram import DiagramView, DiagramSubWindow
+        from ...widgets.graphics.views.symbol import SymbolView, SymbolSubWindow
+        from ...widgets.graphics.scenes.drawing import DrawingScene
+        from ...widgets.graphics.scenes.diagram import DiagramScene
+        from ...widgets.graphics.scenes.symbol import SymbolScene
         if isinstance(item, DrawingItem):
             # focus existing subwindow if one exists
             for subwindow in hub.main_window.mdi_area.subWindowList():

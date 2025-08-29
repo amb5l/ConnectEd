@@ -16,10 +16,10 @@ from ...core.utils import val2str
 from ...core.icon import getDefaultIconSize, getFgBgColors, \
                          SvgIconSingleton, CharIconSingleton
 
-from ..drawing.items import Default, DEFAULT, NoChange, NO_CHANGE, Edge,\
-                            LinePref, LinePrefChange, \
-                            FillPref, FillPrefChange, \
-                            QuillSpec, QuillPref, QuillPrefChange
+from ..graphics.items import Default, DEFAULT, NoChange, NO_CHANGE, Edge, \
+                             LinePref, LinePrefChange, \
+                             FillPref, FillPrefChange, \
+                             QuillSpec, QuillPref, QuillPrefChange
 
 from . import okCancelLayout
 
