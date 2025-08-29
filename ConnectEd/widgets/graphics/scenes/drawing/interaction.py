@@ -24,7 +24,7 @@ from .cmd   import cmdAdd, cmdMove, cmdAddPin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from .. import DrawingScene
+    from . import DrawingScene
 
 
 ElementType = ElementMixin | QGraphicsItem

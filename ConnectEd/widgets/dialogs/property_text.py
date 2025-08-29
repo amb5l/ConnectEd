@@ -14,7 +14,7 @@ from ..graphics.items import QuillPref, QuillPrefChange
 from ..graphics.items.anchor_point  import AnchorPoint
 from ..graphics.items.property_text import PropertyText, PropertyDisplay
 
-from .appearance import TextAppearanceLayout
+from .components import TextAppearanceLayout
 
 from . import okCancelLayout
 

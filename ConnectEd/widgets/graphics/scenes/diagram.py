@@ -11,7 +11,7 @@ from .... import hub
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from ....core import DiagramItem
+    from ....core.db import DiagramItem
 
 # TODO: paper => sheet
 # TODO: record actual size of sheet

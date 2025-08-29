@@ -9,7 +9,7 @@ from ... import hub
 
 from ..graphics.items import ElementQuillMixin, QuillPref, QuillPrefChange
 
-from .appearance import TextAppearanceLayout
+from .components import TextAppearanceLayout
 
 from . import okCancelLayout
 

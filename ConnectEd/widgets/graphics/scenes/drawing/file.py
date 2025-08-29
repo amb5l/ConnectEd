@@ -5,7 +5,7 @@ from .....core.xml import save, loadItems
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from .. import DrawingScene
+    from . import DrawingScene
 
 
 class DrawingSceneApiFileMixin:

@@ -118,7 +118,7 @@ class Handle(
         checked : bool,
         view    : "DrawingView"
     ) -> None:
-        from ..scenes.api.cmd.edit import cmdEditOrigin
+        from ..scenes.drawing.cmd.edit import cmdEditOrigin
         scene : "DrawingScene" = self.scene()
         scene.undo_stack.push(cmdEditOrigin(
             scene,

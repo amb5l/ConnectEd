@@ -12,7 +12,7 @@ from ....marquee import Marquee
 
 from ...scenes.drawing import DrawingScene
 
-from ...scenes.api.interaction import Interaction
+from ...scenes.drawing.interaction import Interaction
 
 from ...items import ElementMixin
 

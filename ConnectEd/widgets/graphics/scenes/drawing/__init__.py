@@ -1,22 +1,20 @@
 from typing import Self, Optional
 
-from PyQt6.QtCore    import pyqtSignal, QPointF, QRectF, QSizeF, \
+from PyQt6.QtCore    import QPointF, QRectF, QSizeF, \
                             QXmlStreamWriter, QXmlStreamReader
 from PyQt6.QtWidgets import QGraphicsScene
 from PyQt6.QtGui     import QUndoStack
 
-from .... import hub
+from ..... import hub
 
-from ....core.log import logger
-from ....core.xml import toXmlAttrs, fromXmlAttrs
+from .....core.log import logger
+from .....core.xml import toXmlAttrs, fromXmlAttrs
 
-from ..items.text_block import TextBlock
+from ...properties import PropertySpec, PropertiesMixin
 
-from ..properties import PropertySpec, PropertiesMixin
-
-from .api.file    import DrawingSceneApiFileMixin
-from .api.edit    import DrawingSceneApiEditMixin
-from .api.private import DrawingSceneApiPrivateMixin
+from .file    import DrawingSceneApiFileMixin
+from .edit    import DrawingSceneApiEditMixin
+from .private import DrawingSceneApiPrivateMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:

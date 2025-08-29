@@ -2,7 +2,7 @@ from ...items import ElementMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from .. import DrawingScene
+    from . import DrawingScene
 
 
 class DrawingSceneApiPrivateMixin:

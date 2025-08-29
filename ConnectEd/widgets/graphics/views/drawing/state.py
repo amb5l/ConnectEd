@@ -23,11 +23,11 @@ from ...items.property_text import PropertyText
 
 from ...scenes.drawing import DrawingScene
 
-from ...scenes.api.interaction import *
+from ...scenes.drawing.interaction import *
 
-from ...scenes.api.cmd.edit import cmdEditPortPin,     \
-                                   cmdEditText,        \
-                                   cmdEditPropertyText
+from ...scenes.drawing.cmd.edit import cmdEditPortPin,     \
+                                       cmdEditText,        \
+                                       cmdEditPropertyText
 
 
 from typing import TYPE_CHECKING

@@ -135,7 +135,7 @@ class BaseText(
         checked : bool,
         view    : "DrawingView"
     ) -> None:
-        from ..scenes.api.cmd.edit import cmdEditText
+        from ..scenes.drawing.cmd.edit import cmdEditText
         dialog = TextDialog(self)
         if dialog.exec():
             text, appearance = dialog.getChoice()
