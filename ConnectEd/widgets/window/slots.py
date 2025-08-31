@@ -16,6 +16,7 @@ if TYPE_CHECKING:
     from ...widgets.window import Window
     from ...core.db import Model
 
+
 T = TypeVar("T")
 
 def withCurrentWidget(widget_type: Type[T]) -> Callable[[Callable[["Slots", T], None]], Callable[["Slots"], None]]:

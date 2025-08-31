@@ -2,7 +2,7 @@ from typing import Callable, Optional, Any, Self
 from dataclasses import dataclass
 
 from ...core.log   import logger
-from ...core.utils import val2str, str2val
+from ...core.utils import val2str
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:

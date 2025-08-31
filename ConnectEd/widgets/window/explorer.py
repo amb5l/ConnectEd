@@ -13,8 +13,6 @@ from ...widgets.graphics.items.tether_text  import Tether
 
 from .tree_view import TreeView, TreeViewDock
 
-from ... import hub
-
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ..window import Window

@@ -2,8 +2,6 @@ from typing import Self, Optional
 
 from PyQt6.QtCore import Qt, QPoint, QPointF
 
-from ..... import hub
-
 from .....core.log import logger
 
 from ....dialogs.properties    import PropertiesDialog

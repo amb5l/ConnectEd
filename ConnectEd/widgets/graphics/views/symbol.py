@@ -4,7 +4,6 @@ from PyQt6.QtWidgets import QMdiArea
 
 from .drawing import DrawingView, DrawingSubWindow
 
-from .... import hub
 
 class SymbolView(DrawingView):
     pass

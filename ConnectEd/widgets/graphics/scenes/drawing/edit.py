@@ -1,5 +1,3 @@
-from typing import Self, Optional
-
 from PyQt6.QtCore    import QPointF
 from PyQt6.QtWidgets import QGraphicsItem
 

@@ -2,11 +2,10 @@ from typing import Self
 
 from PyQt6.QtWidgets import QMenuBar, QMenu
 
-from ... import hub
-
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from . import Window
+
 
 class MenuBar(QMenuBar):
     def __init__(

@@ -11,8 +11,6 @@ from ...widgets.graphics.scenes.drawing import DrawingScene
 
 from .spreadsheet import SpreadsheetSubWindow
 
-from ... import hub
-
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ...widgets.window import Window

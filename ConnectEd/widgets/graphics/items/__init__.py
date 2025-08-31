@@ -21,11 +21,9 @@ from ..properties import PropertySpec
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from ..views.drawing  import DrawingView
-    from ..scenes.drawing import DrawingScene
-    from .anchor_point    import AnchorPoint
-    from .property_text   import PropertyText
-    from .pin_rect        import PinRect
+    from ..views.drawing import DrawingView
+    from .anchor_point   import AnchorPoint
+    from .pin_rect       import PinRect
 
 
 class Default:

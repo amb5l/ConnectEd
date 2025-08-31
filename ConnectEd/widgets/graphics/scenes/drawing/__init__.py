@@ -18,7 +18,7 @@ from .private import DrawingSceneApiPrivateMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from ....core import DrawingItem
+    from .....core.db import DrawingItem
 
 class DrawingScene(
     PropertiesMixin,
