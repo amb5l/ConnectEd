@@ -3,8 +3,6 @@ from typing import Self, Optional
 from PyQt6.QtCore import Qt, QXmlStreamWriter, QXmlStreamReader
 from PyQt6.QtGui  import QStandardItemModel, QStandardItem
 
-from .. import hub
-
 from ..widgets.dialogs.file import FileSaveAsDialog
 
 from .log  import logger
@@ -13,8 +11,25 @@ from .xml  import copy, paste, fromXmlBegin, loadItems, saveBegin, saveEnd
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from ..widgets import DrawingScene, SymbolScene, DiagramScene
+    from ..widgets.window import Window
+    from ..widgets.graphics.scenes.drawing import DrawingScene
+    from ..widgets.graphics.scenes.symbol  import SymbolScene
+    from ..widgets.graphics.scenes.diagram import DiagramScene
 
+
+class NameCounter:
+    counts : dict[str, int]
+
+    def __init__(self : Self) -> None:
+        self.counts = {}
+
+    def get(self : Self, name : str) -> str:
+        if name not in self.counts:
+            self.counts[name] = 0
+        self.counts[name] += 1
+        return f"{name}{self.counts[name]}"
+
+name_counter = NameCounter()
 
 class Container(QStandardItem):
     NAME   = "<unspecified>"
@@ -62,7 +77,7 @@ class DrawingItem(QStandardItem):
         scene : Optional["DrawingScene"] = None
     ) -> None:
         if name is None:
-            name = hub.name_counter.get(
+            name = name_counter.get(
                 f"Untitled{self.__class__.__name__.replace('Item', '')}"
             )
         super().__init__(name)
@@ -130,11 +145,13 @@ class DiagramItem(DrawingItem):
     scene : "DiagramScene"
 
 class DbItem(QStandardItem):
-    path : Optional[str]
+    window : "Window"
+    path   : Optional[str]
 
-    def __init__(self : Self) -> None:
+    def __init__(self : Self, window : "Window") -> None:
+        self.window = window
         u = "Untitled" + self.__class__.__name__.replace("Db", "")
-        super().__init__(hub.name_counter.get(u))
+        super().__init__(name_counter.get(u))
         self.setFlags(self.flags() | Qt.ItemFlag.ItemIsEditable)
         self.path = None
 
@@ -155,7 +172,7 @@ class DbItem(QStandardItem):
             saveEnd(xw, file)
 
     def saveAs(self : Self) -> str:
-        dialog = FileSaveAsDialog(self.__class__.__name__)
+        dialog = FileSaveAsDialog(self.__class__.__name__, self.window)
         path = None
         if dialog.exec():
             path, _ = dialog.getSaveFileName()
@@ -218,8 +235,8 @@ class DesignDbItem(DbItem):
     diagrams : DiagramsContainer
     symbols  : SymbolCacheContainer
 
-    def __init__(self : Self) -> None:
-        super().__init__()
+    def __init__(self : Self, window : "Window") -> None:
+        super().__init__(window)
         self.diagrams = DiagramsContainer()
         self.appendRow(self.diagrams)
         self.symbols = SymbolCacheContainer()
@@ -279,6 +296,7 @@ class DesignDbItem(DbItem):
         return [self.symbols.child(i) for i in range(self.symbols.rowCount())]
 
 class Model(QStandardItemModel):
+    window    : "Window"
     designs   : DesignDbContainer
     libraries : LibraryDbContainer
 
@@ -290,13 +308,16 @@ class Model(QStandardItemModel):
         self.libraries = LibraryDbContainer()
         self.appendRow(self.libraries)
 
+    def setWindow(self : Self, window : "Window") -> None:
+        self.window = window
+
     def newDesignItem(self : Self) -> DesignDbItem:
-        item = DesignDbItem()
+        item = DesignDbItem(self.window)
         self.designs.appendRow(item)
         return item
 
     def newLibraryItem(self : Self) -> LibraryDbItem:
-        item = LibraryDbItem()
+        item = LibraryDbItem(self.window)
         self.libraries.appendRow(item)
         return item
 
@@ -386,7 +407,7 @@ class Model(QStandardItemModel):
                     existing_names = \
                         [paste_item.child(i).text() for i in range(paste_item.rowCount())]
                     if base_name in existing_names:
-                        paste_item.setText(hub.name_counter.get(base_name))
+                        paste_item.setText(name_counter.get(base_name))
                     item.appendRow(paste_item)
             if invalid_item_count:
                 # TODO message box

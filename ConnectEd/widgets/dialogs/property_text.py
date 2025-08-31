@@ -1,17 +1,13 @@
-from typing import Self
+from typing import Self, Optional
 
-from PyQt6.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, QGridLayout,\
+from PyQt6.QtWidgets import QWidget, QDialog, \
+                            QVBoxLayout, QHBoxLayout, QGridLayout,\
                             QLabel, QComboBox, QLineEdit, QPushButton
-
-from ... import hub
-
-from ...core.log import logger
 
 from ..graphics.properties import PropertiesMixin
 
 from ..graphics.items import QuillPref, QuillPrefChange
 
-from ..graphics.items.anchor_point  import AnchorPoint
 from ..graphics.items.property_text import PropertyText, PropertyDisplay
 
 from .components import TextAppearanceLayout
@@ -34,8 +30,12 @@ class PropertyTextDialog(QDialog):
     _ok_button         : QPushButton
     _cancel_button     : QPushButton
 
-    def __init__(self : Self, element : PropertyText):
-        super().__init__(hub.window)
+    def __init__(
+        self    : Self,
+        element : PropertyText,
+        parent  : Optional[QWidget] = None # not to be confused with _parent
+    ) -> None:
+        super().__init__(parent)
         self.setWindowTitle("Property Text")
         self.setModal(True)
         self._parent = element.parent()

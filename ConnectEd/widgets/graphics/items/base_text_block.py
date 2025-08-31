@@ -153,7 +153,7 @@ class BaseTextBlock(
         view    : "DrawingView"
     ) -> None:
         from ..scenes.drawing.cmd.edit import cmdEditText
-        dialog = TextBlockDialog(self)
+        dialog = TextBlockDialog(self, view)
         if dialog.exec():
             text, appearance = dialog.getChoice()
             scene : "DrawingScene" = self.scene()

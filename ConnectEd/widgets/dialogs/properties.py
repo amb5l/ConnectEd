@@ -2,7 +2,7 @@ from typing import Self, Any, Optional
 from dataclasses import dataclass
 
 from PyQt6.QtCore    import Qt, QModelIndex
-from PyQt6.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, \
+from PyQt6.QtWidgets import QWidget, QDialog, QVBoxLayout, QHBoxLayout, \
                             QPushButton, QStyledItemDelegate, QAbstractItemView
 from PyQt6.QtGui     import QStandardItemModel, QStandardItem, QBrush
 
@@ -182,9 +182,13 @@ class PropertiesDialog(QDialog):
     _cancel_button  : QPushButton
     _initial        : dict[str, tuple[Any, str]]
 
-    def __init__(self: Self, element: PropertiesMixin) -> None:
+    def __init__(
+        self    : Self,
+        element : PropertiesMixin,
+        parent  : Optional[QWidget] = None
+    ) -> None:
         # initialise
-        super().__init__(hub.window)
+        super().__init__(parent)
         self.setWindowTitle("Properties")
         self.setModal(True)
         self._dialog_layout = QVBoxLayout(self)

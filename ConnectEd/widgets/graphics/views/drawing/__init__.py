@@ -14,13 +14,15 @@ from ...scenes.drawing import DrawingScene
 
 from ...scenes.drawing.interaction import Interaction
 
-from ...items import ElementMixin
-
 from .mouse     import DrawingViewMouseMixin
 from .private   import DrawingViewPrivateMixin
 from .api       import DrawingViewApiMixin
 from .state     import DrawingViewStateMixin, DrawingViewStateBase
 from .defs      import *
+
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from ....window import Window
 
 
 def getView(pos : QPoint):
@@ -38,6 +40,7 @@ class DrawingView(
     DrawingViewStateMixin,
     DrawingViewPrivateMixin
 ):
+    _window     : "Window"
     _shown      : bool = False
     _zoomed     : bool = False
     marquee     : Marquee
@@ -49,8 +52,9 @@ class DrawingView(
     state       : DrawingViewStateBase
     interaction : Optional[Interaction]
 
-    def __init__(self : Self, scene : DrawingScene) -> None:
+    def __init__(self : Self, scene : DrawingScene, window : "Window") -> None:
         super().__init__(scene)
+        self._window = window
         self.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
         self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
@@ -153,8 +157,6 @@ class DrawingSubWindow(QMdiSubWindow):
         self   : Self,
         parent : Optional[QMdiArea] = None
     ) -> None:
-        if parent is None:
-            parent = hub.window.mdi_area
         super().__init__(parent)
         self.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
 

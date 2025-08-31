@@ -1,11 +1,7 @@
-from typing import Self
+from typing import Self, Optional
 
-from PyQt6.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, \
-                            QLabel, QLineEdit, QPushButton, \
-                            QGraphicsSimpleTextItem
-
-
-from ... import hub
+from PyQt6.QtWidgets import QWidget, QDialog, QVBoxLayout, QHBoxLayout, \
+                            QLabel, QLineEdit, QPushButton
 
 from ..graphics.items import ElementQuillMixin, QuillPref, QuillPrefChange
 
@@ -26,9 +22,10 @@ class TextDialog(QDialog):
 
     def __init__(
         self    : Self,
-        element : ElementQuillMixin
+        element : ElementQuillMixin,
+        parent  : Optional[QWidget] = None
     ):
-        super().__init__(hub.window)
+        super().__init__(parent)
         self.setWindowTitle("Text")
         self.setModal(True)
         self._dialog_layout = QVBoxLayout(self)

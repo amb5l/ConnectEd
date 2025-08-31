@@ -1,16 +1,50 @@
 import sys
 
-from .core.log import logger
+from PyQt6.QtCore    import Qt
+from PyQt6.QtWidgets import QApplication
+from PyQt6.QtGui     import QIcon
 
-from .api  import initGui
+from .core.log   import logger
+from .core.nv    import Settings
+from .core.db    import Model
+from .core.args  import known_args, unknown_args
+from .resources  import getIconPath, initResources
+
+from .widgets.splash import Splash
+from .widgets.window import Window
 
 from . import hub
 
 
 def main() -> int:
     logger.info("started")
-    initGui()
-    r = hub.app.exec()
+
+    app = QApplication(sys.argv[:1] + unknown_args)
+    app.setStyle("Fusion")
+    scheme = QApplication.instance().styleHints().colorScheme()
+    splash = Splash(scheme == Qt.ColorScheme.Light)
+    splash.show()
+    app.processEvents()
+    hub.settings = Settings()
+    if known_args.reset:
+        hub.settings.reset()
+    hub.settings.load()
+    icon = QIcon(getIconPath("ConnectEd.png"))
+    app.setWindowIcon(icon)
+    if sys.platform == "win32":
+        try:
+            import ctypes
+            ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(
+                "ConnectEd.Application"
+            )
+        except Exception:
+            pass
+    initResources()
+    model = Model()
+    window = Window(model)
+    model.setWindow(window)
+    splash.finish(window)
+    r = app.exec()
     hub.settings.save()
     logger.info("finished")
     return r

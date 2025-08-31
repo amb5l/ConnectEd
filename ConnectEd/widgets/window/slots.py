@@ -14,6 +14,7 @@ from ... import hub
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ...widgets.window import Window
+    from ...core.db import Model
 
 T = TypeVar("T")
 
@@ -31,7 +32,7 @@ def withCurrentWidget(widget_type: Type[T]) -> Callable[[Callable[["Slots", T], 
     def decorator(func: Callable[["Slots", T], None]) -> Callable[["Slots"], None]:
         @functools.wraps(func)
         def wrapper(self : "Slots") -> None:
-            current_sub_window = self._parent.mdi_area.currentSubWindow()
+            current_sub_window = self._window.mdi_area.currentSubWindow()
             if current_sub_window is None:
                 return
             current_widget = current_sub_window.widget()
@@ -58,12 +59,12 @@ def withCurrentWidgetCheckable(widget_type: Type[T], action_name: str) -> Callab
     def decorator(func: Callable[["Slots", T, bool], None]) -> Callable[["Slots"], None]:
         @functools.wraps(func)
         def wrapper(self : "Slots") -> None:
-            current_sub_window = self._parent.mdi_area.currentSubWindow()
+            current_sub_window = self._window.mdi_area.currentSubWindow()
             if current_sub_window is None:
                 return
             current_widget = current_sub_window.widget()
             if isinstance(current_widget, widget_type):
-                checked = getattr(self._parent.actions, action_name).isChecked()
+                checked = getattr(self._window.actions, action_name).isChecked()
                 # Cast to T since we know it"s a subclass
                 func(self, cast(T, current_widget), checked)
             else:
@@ -72,32 +73,34 @@ def withCurrentWidgetCheckable(widget_type: Type[T], action_name: str) -> Callab
     return decorator
 
 class Slots:
-    _parent : "Window"
+    _window : "Window"
+    _model  : "Model"
 
-    def __init__(self : Self, parent : "Window") -> None:
-        self._parent = parent
+    def __init__(self : Self, model : "Model", window : "Window") -> None:
+        self._model = model
+        self._window = window
 
     def fileNewDesign(self : Self) -> None:
-        hub.window.explorer.widget().newDesign()
+        self._window.explorer.widget().newDesign()
 
     def fileNewLibrary(self : Self) -> None:
-        hub.window.explorer.widget().newLibrary()
+        self._window.explorer.widget().newLibrary()
 
     def fileOpen(self : Self) -> None:
-        hub.window.explorer.widget().openItem()
+        self._window.explorer.widget().openItem()
 
     @withCurrentWidget(DrawingView)
     def fileSave(self : Self, widget: DrawingView) -> None:
-        item = hub.model.getDbItemFromScene(widget.scene())
+        item = self._model.getDbItemFromScene(widget.scene())
         if item:
             item.save()
 
     @withCurrentWidget(DrawingView)
     def fileSaveAs(self : Self, widget: DrawingView) -> None:
-        hub.model.saveAsScene(widget.scene())
+        self._model.saveAsScene(widget.scene())
 
     def fileExit(self : Self) -> None:
-        self._parent.close()
+        self._window.close()
 
     @withCurrentWidget(DrawingView)
     def editUndo(self : Self, widget: DrawingView) -> None:
@@ -230,26 +233,26 @@ class Slots:
         widget.placeText()
 
     def windowExplorer(self : Self) -> None:
-        self._parent.explorer.show()
-        self._parent.explorer.raise_()
+        self._window.explorer.show()
+        self._window.explorer.raise_()
 
     def windowMessages(self : Self) -> None:
-        self._parent.messages_viewer.show()
-        self._parent.messages_viewer.raise_()
+        self._window.messages_viewer.show()
+        self._window.messages_viewer.raise_()
 
     def windowTranscript(self : Self) -> None:
-        self._parent.transcript_viewer.show()
-        self._parent.transcript_viewer.raise_()
+        self._window.transcript_viewer.show()
+        self._window.transcript_viewer.raise_()
 
     def windowLog(self : Self) -> None:
-        self._parent.log_viewer.show()
-        self._parent.log_viewer.raise_()
+        self._window.log_viewer.show()
+        self._window.log_viewer.raise_()
 
     def windowNext(self : Self) -> None:
-        self._parent.mdi_area.nextSubWindow()
+        self._window.mdi_area.nextSubWindow()
 
     def windowPrevious(self : Self) -> None:
-        self._parent.mdi_area.previousSubWindow()
+        self._window.mdi_area.previousSubWindow()
 
     def helpAbout(self : Self) -> None:
-        QMessageBox.about(self._parent, "About", APP_NAME)
+        QMessageBox.about(self._window, "About", APP_NAME)

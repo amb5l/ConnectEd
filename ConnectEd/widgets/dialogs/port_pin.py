@@ -1,6 +1,7 @@
 from typing import Self, Optional
 
-from PyQt6.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, QGridLayout, \
+from PyQt6.QtWidgets import QWidget, QDialog, \
+                            QVBoxLayout, QHBoxLayout, QGridLayout, \
                             QGroupBox, QLabel, QLineEdit, QComboBox, \
                             QCheckBox, QRadioButton, QPushButton
 
@@ -39,9 +40,10 @@ class PortPinDialog(QDialog):
     def __init__(
         self    : Self,
         title   : str,
-        element : Optional[BasePortPin] = None
+        element : Optional[BasePortPin] = None,
+        parent  : Optional[QWidget] = None
     ) -> None:
-        super().__init__()
+        super().__init__(parent)
         self.setWindowTitle(title)
         self._dialog_layout = QVBoxLayout(self)
         self._name_dir_layout = QHBoxLayout()

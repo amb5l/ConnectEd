@@ -14,6 +14,4 @@ class SymbolSubWindow(DrawingSubWindow):
         self   : Self,
         parent : Optional[QMdiArea] = None
     ) -> None:
-        if parent is None:
-            parent = hub.window.mdi_area
         super().__init__(parent)

@@ -99,17 +99,18 @@ class MenuBar(QMenuBar):
         self.addMenu(self.help_menu)
 
     def updateWindowMenu(self : Self) -> None:
-        actions = hub.window.actions
+        window : "Window" = self.parent()
+        actions = window.actions
         self.window_menu.clear()
         self.window_menu.addAction(actions.windowExplorer)
         self.window_menu.addAction(actions.windowMessages)
         self.window_menu.addAction(actions.windowTranscript)
         self.window_menu.addAction(actions.windowLog)
-        if len(hub.window.mdi_area.subWindowList()) > 1:
+        if len(window.mdi_area.subWindowList()) > 1:
             self.window_menu.addSeparator()
             self.window_menu.addAction(actions.windowNext)
             self.window_menu.addAction(actions.windowPrevious)
-            subwindow_actions = hub.window.mdi_area.subwindow_actions
+            subwindow_actions = window.mdi_area.subwindow_actions
             if subwindow_actions == {}:
                 return
             for key, actions in subwindow_actions.items():

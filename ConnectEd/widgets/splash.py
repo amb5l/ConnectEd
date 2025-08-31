@@ -8,7 +8,7 @@ from PyQt6.QtGui     import QPixmap, QFont, QColor, QPainter
 
 from ..core.defs import APP_NAME
 
-from .. import hub
+from ..resources import getIconPath
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -48,7 +48,7 @@ class Splash(QSplashScreen):
     ) -> QPixmap:
         screen = QApplication.primaryScreen()
         screen_geometry = screen.geometry()
-        bitmap = QPixmap(f"{hub.APP_ROOT}/resources/icons/ConnectEd.png")
+        bitmap = QPixmap(getIconPath("ConnectEd.png"))
         pixmap = QPixmap(splash_width, splash_height)
         bg_color = Qt.GlobalColor.white if light else QColor("#202020")
         fg_color = Qt.GlobalColor.black if light else Qt.GlobalColor.lightGray

@@ -1,18 +1,17 @@
 from typing import Optional
 
-from PyQt6.QtWidgets import QFileDialog
+from PyQt6.QtWidgets import QFileDialog, QWidget
 
 from ...core.defs import GEN_EXT, LIB_EXT, DSN_EXT
-
-from ... import hub
 
 
 class FileOpenDialog(QFileDialog):
     def __init__(
         self      : "FileOpenDialog",
-        type_name : Optional[str] = None
+        type_name : Optional[str] = None,
+        parent    : Optional[QWidget] = None
     ) -> None:
-        super().__init__(hub.window)
+        super().__init__(parent)
         self.setWindowTitle(f"Open")
         self.setFileMode(QFileDialog.FileMode.ExistingFiles)
         match type_name:
@@ -29,7 +28,8 @@ class FileOpenDialog(QFileDialog):
 class FileSaveAsDialog(QFileDialog):
     def __init__(
         self      : "FileSaveAsDialog",
-        type_name : str
+        type_name : str,
+        parent    : Optional[QWidget] = None
     ) -> None:
         match type_name:
             case "LibraryDb":
@@ -40,7 +40,7 @@ class FileSaveAsDialog(QFileDialog):
                 default_suffix = DSN_EXT
             case _:
                 raise ValueError(f"Unknown type name: {type_name}")
-        super().__init__(hub.window)
+        super().__init__(parent)
         self.setWindowTitle(f"Save {type_name} As")
         self.setFileMode(QFileDialog.FileMode.AnyFile)
         self.setNameFilter(name_filter)

@@ -23,7 +23,8 @@ from ... import hub
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from .. import DrawingScene
+    from ..graphics.scenes.drawing import DrawingScene
+    from ..window import Window
 
 
 class SpreadsheetCell(QStandardItem):
@@ -282,6 +283,7 @@ class SpreadsheetWidget(QWidget):
     a toolbar.
     """
 
+    _window           : "Window"
     _parent           : "SpreadsheetTabWidget"
     _model            : QStandardItemModel
     _proxy            : QTransposeProxyModel
@@ -301,9 +303,12 @@ class SpreadsheetWidget(QWidget):
         self     : Self,
         model    : QStandardItemModel,
         proxy    : QTransposeProxyModel,
-        parent   : Optional[QWidget] = None
+        parent   : Optional[QWidget] = None,
+        *,
+        window   : "Window"
     ) -> None:
         super().__init__(parent)
+        self._window = window
         self._parent = parent
         self._undo_stack = QUndoStack()
         self._transposed = False
@@ -523,6 +528,7 @@ class SpreadsheetWidget(QWidget):
         update()
 
 class SpreadsheetTabWidget(QTabWidget):
+    _window         : "Window"
     _tab_elements   : dict[str, list[ElementMixin]]
     _tab_headings   : dict[str, dict[str, bool]]
     _tab_htypenames : dict[str, dict[str, str]]
@@ -537,9 +543,12 @@ class SpreadsheetTabWidget(QTabWidget):
     def __init__(
         self     : Self,
         elements : list[ElementMixin],
-        parent   : Optional[QWidget] = None
+        parent   : Optional[QWidget] = None,
+        *,
+        window   : "Window"
     ) -> None:
         super().__init__(parent)
+        self._window = window
         self.setTabsClosable(True)
         self.tabCloseRequested.connect(self.closeTab)
         # group elements by type
@@ -619,9 +628,10 @@ class SpreadsheetTabWidget(QTabWidget):
         self._tabs = {}
         for tab_name, tab_elements in self._tab_elements.items():
             self._tabs[tab_name] = SpreadsheetWidget(
-                self._tab_models[tab_name],
-                self._tab_proxies[tab_name],
-                self
+                model=self._tab_models[tab_name],
+                proxy=self._tab_proxies[tab_name],
+                parent=self,
+                window=self._window
             )
             self.addTab(self._tabs[tab_name], tab_name)
         self.setCurrentWidget(self.widget(0))
@@ -704,15 +714,19 @@ class SpreadsheetTabWidget(QTabWidget):
             tab._table_proxy.resizeRowsToContents()
 
 class SpreadsheetSubWindow(QMdiSubWindow):
+    _window     : "Window"
     _scene      : "DrawingScene"
     _tab_widget : Optional[QTabWidget]
 
     def __init__(
             self     : Self,
             scene    : "DrawingScene",
-            elements : list[ElementMixin]
+            elements : list[ElementMixin],
+            *,
+            window   : "Window"
         ) -> None:
         super().__init__()
+        self._window = window
         self._scene = scene
         element_scenes = set(element.scene() for element in elements)
         if len(element_scenes) != 1:
@@ -720,7 +734,11 @@ class SpreadsheetSubWindow(QMdiSubWindow):
             elements = []
         self.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
         if len(elements) > 0:
-            self._tab_widget = SpreadsheetTabWidget(elements, self)
+            self._tab_widget = SpreadsheetTabWidget(
+                elements=elements,
+                parent=self,
+                window=self._window
+            )
             self.setWidget(self._tab_widget)
             self.setWindowTitle("Properties")
         else:
@@ -733,7 +751,7 @@ class SpreadsheetSubWindow(QMdiSubWindow):
 
     def closeEvent(self, event: QCloseEvent) -> None:
         """Handle subwindow close event."""
-        hub.window.menu_bar.updateWindowMenu()
+        self._window.menu_bar.updateWindowMenu()
         super().closeEvent(event)
 
     def scene(self : Self) -> "DrawingScene":

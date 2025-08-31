@@ -14,6 +14,8 @@ from PyQt6.QtGui     import QIcon, QCloseEvent
 from ...core.defs  import APP_NAME
 from ...core.utils import check
 
+from ...resources import getIconPath
+
 from .actions    import Actions
 from .slots      import Slots
 from .menu_bar   import MenuBar
@@ -27,8 +29,13 @@ from .explorer        import ExplorerDock
 
 from ... import hub
 
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from ...core.db import Model
+
 
 class Window(QMainWindow):
+    model             : "Model"
     actions           : Actions
     slots             : Slots
     menu_bar          : MenuBar
@@ -39,8 +46,9 @@ class Window(QMainWindow):
     log_viewer        : LogViewDock
     mdi_area          : MdiArea
 
-    def __init__(self : Self) -> None:
+    def __init__(self : Self, model : "Model") -> None:
         super().__init__()
+        self.model = model
 
         # default position
         screen = self.screen()
@@ -53,7 +61,7 @@ class Window(QMainWindow):
 
         # saved position
         self.setWindowTitle(APP_NAME)
-        self.setWindowIcon(QIcon(f"{hub.APP_ROOT}/resources/icons/ConnectEd.png"))
+        self.setWindowIcon(QIcon(getIconPath("ConnectEd.png")))
         self.setUnifiedTitleAndToolBarOnMac(False)
         self.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonIconOnly)
         g = hub.settings.get("startup/geometry")
@@ -61,7 +69,7 @@ class Window(QMainWindow):
             self.restoreGeometry(g)
 
         # actions and slots
-        self.slots = Slots(self)
+        self.slots = Slots(model, self)
         self.actions = Actions(self)
         self.connectActionsToSlots(self.actions, self.slots)
 
@@ -84,11 +92,11 @@ class Window(QMainWindow):
         self.tabifyDockWidget(self.messages_viewer, self.transcript_viewer)
         self.tabifyDockWidget(self.messages_viewer, self.log_viewer)
         self.messages_viewer.raise_()
-        self.explorer = ExplorerDock(self)
+        self.explorer = ExplorerDock(model, self)
         self.addDockWidget(qd.LeftDockWidgetArea, self.explorer)
 
         # MDI area
-        self.mdi_area = MdiArea()
+        self.mdi_area = MdiArea(model)
 
         # central widget
         self.setCentralWidget(self.mdi_area)

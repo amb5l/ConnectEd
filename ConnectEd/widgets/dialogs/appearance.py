@@ -1,10 +1,8 @@
 from typing import Self, Optional
 from dataclasses import dataclass
 
-from PyQt6.QtWidgets import QDialog, QPushButton, QGroupBox, \
+from PyQt6.QtWidgets import QWidget, QDialog, QPushButton, QGroupBox, \
                             QVBoxLayout, QHBoxLayout
-
-from ... import hub
 
 from ...core.log import logger
 
@@ -54,9 +52,10 @@ class AppearanceDialog(QDialog):
 
     def __init__(
         self     : Self,
-        elements : list[ElementLineMixin | ElementFillMixin |ElementQuillMixin]
+        elements : list[ElementLineMixin | ElementFillMixin |ElementQuillMixin],
+        parent   : Optional[QWidget] = None
     ) -> None:
-        super().__init__(hub.window)
+        super().__init__(parent)
         initial   = AppearancePrefChange()
         no_change = AppearancePrefChange()
         default   = AppearanceSpec()

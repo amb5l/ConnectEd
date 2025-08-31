@@ -9,12 +9,12 @@ from PyQt6.QtGui     import QPainter, QColor, QPen, QBrush, \
                             QPixmap, QIcon, QFontDatabase, QFont, \
                             QIntValidator, QDoubleValidator
 
-from ... import hub
-
 from ...core.utils import val2str
 
 from ...core.icon import getDefaultIconSize, getFgBgColors, \
                          SvgIconSingleton, CharIconSingleton
+
+from ...resources import getIconPath
 
 from ..graphics.items import Default, DEFAULT, NoChange, NO_CHANGE, Edge, \
                              LinePref, LinePrefChange, \
@@ -27,11 +27,11 @@ from . import okCancelLayout
 CUSTOM_ICON_SIZE = QSize(getDefaultIconSize() * 2, getDefaultIconSize())
 
 class NoChangeIcon(SvgIconSingleton):
-    PATH = f"{hub.APP_ROOT}/resources/icons/no_change.svg"
+    PATH = getIconPath("no_change.svg")
     SIZE = CUSTOM_ICON_SIZE
 
 class DefaultIcon(SvgIconSingleton):
-    PATH = f"{hub.APP_ROOT}/resources/icons/default.svg"
+    PATH = getIconPath("default.svg")
     SIZE = CUSTOM_ICON_SIZE
 
 class QueryIcon(CharIconSingleton):
@@ -43,7 +43,7 @@ class CustomColorDialog(QColorDialog):
     def __init__(
         self   : Self,
         color  : QColor,
-        parent : Optional[QWidget] = hub.window
+        parent : Optional[QWidget] = None
     ) -> None:
         super().__init__(parent)
         self.setWindowTitle("Color")
@@ -167,7 +167,8 @@ class ColorComboBox(QComboBox):
             self.choice = DEFAULT
         elif selected_text.startswith("<custom"):
             dialog = CustomColorDialog(
-                self.choice if isinstance(self.choice, QColor) else None
+                self.choice if isinstance(self.choice, QColor) else None,
+                parent=self
             )
             if dialog.exec():
                 self.choice = dialog.getChoice()
@@ -191,7 +192,7 @@ class CustomLineWidthDialog(QDialog):
     def __init__(
         self    : Self,
         initial : Optional[float | int] = None,
-        parent  : Optional[QWidget] = hub.window
+        parent  : Optional[QWidget] = None
     ) -> None:
         super().__init__(parent)
         self.setWindowTitle("Line Width")
@@ -270,7 +271,7 @@ class LineWidthComboBox(QComboBox):
     def onActivated(self : Self, index : int) -> None:
         keys = list(self.WIDTHS.keys())
         if keys[index].startswith("<custom"):
-            dialog = CustomLineWidthDialog()
+            dialog = CustomLineWidthDialog(parent=self)
             if dialog.exec():
                 w = dialog.getChoice()
                 self.setItemText(
