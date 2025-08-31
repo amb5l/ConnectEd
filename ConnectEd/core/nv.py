@@ -15,7 +15,7 @@ from typing import Self, Optional, Any, Dict, List
 from PyQt6.QtCore import Qt, QObject, pyqtSignal, QSettings, QPointF, QSizeF
 
 from .log     import logger
-from .defs    import ORG_NAME, APP_NAME
+from .defs    import ORG_NAME, APP_NAME, DEFS
 from .utils   import getDefaultPath, val2str, str2val
 from .palette import PaletteDark, PaletteLightMono
 
@@ -49,10 +49,13 @@ FACTORY_SETTINGS = {
         }
     },
     "defaults" : {
-        "extents"    : QSizeF(100, 100),
-        "paper_size" : "A4",
-        "margin"     : 10,
-        "border"     : 1,
+        "extents" : QSizeF(1280.0, 800.0),
+        "sheet" : {
+            "name" : "A4 (landscape)",
+            "size" : DEFS["sheets"]["A4 (landscape)"]
+        },
+        "margin" : 10.0,
+        "border" : 1.0,
         "grid" : {
             "display"    : True,
             "snap"       : True,
@@ -371,18 +374,6 @@ FACTORY_SETTINGS = {
                 "line" : PaletteLightMono.Grid
             }
         }
-    },
-    "paper_sizes" : {
-        "A4" : QSizeF( 1169.0 ,  827.0 ),
-        "A3" : QSizeF( 1654.0 , 1169.0 ),
-        "A2" : QSizeF( 2338.0 , 1654.0 ),
-        "A1" : QSizeF( 3307.0 , 2338.0 ),
-        "A0" : QSizeF( 4677.0 , 3307.0 ),
-        "A"  : QSizeF(  970.0 ,  720.0 ),
-        "B"  : QSizeF( 1520.0 ,  970.0 ),
-        "C"  : QSizeF( 2020.0 , 1520.0 ),
-        "D"  : QSizeF( 3220.0 , 2020.0 ),
-        "E"  : QSizeF( 4220.0 , 3220.0 )
     }
 }
 
