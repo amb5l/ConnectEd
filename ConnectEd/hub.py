@@ -6,8 +6,11 @@ from PyQt6.QtWidgets import QApplication
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from .core    import NameCounter, Settings, Model
-    from .widgets import Splash, MainWindow
+    from .core.utils          import NameCounter
+    from .core.nv             import Settings
+    from .core.db             import Model
+    from .widgets.splash      import Splash
+    from .widgets.main_window import MainWindow
 
 APP_ROOT = os.path.dirname(os.path.abspath(__file__))
 
