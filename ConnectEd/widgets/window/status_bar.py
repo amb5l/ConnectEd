@@ -4,7 +4,7 @@ from typing import Self
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from . import MainWindow
+    from . import Window
 
 
 class StatusBar(QStatusBar):
@@ -13,7 +13,7 @@ class StatusBar(QStatusBar):
     select : QLabel
     msg    : QLabel
 
-    def __init__(self : Self, parent : "MainWindow") -> None:
+    def __init__(self : Self, parent : "Window") -> None:
         super().__init__(parent)
         self.msg    = QLabel("Initializing...")
         self.tip    = QLabel("")

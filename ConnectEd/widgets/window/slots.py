@@ -13,7 +13,7 @@ from ... import hub
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from ...widgets import MainWindow
+    from ...widgets.window import Window
 
 T = TypeVar("T")
 
@@ -72,19 +72,19 @@ def withCurrentWidgetCheckable(widget_type: Type[T], action_name: str) -> Callab
     return decorator
 
 class Slots:
-    _parent : "MainWindow"
+    _parent : "Window"
 
-    def __init__(self : Self, parent : "MainWindow") -> None:
+    def __init__(self : Self, parent : "Window") -> None:
         self._parent = parent
 
     def fileNewDesign(self : Self) -> None:
-        hub.main_window.explorer.widget().newDesign()
+        hub.window.explorer.widget().newDesign()
 
     def fileNewLibrary(self : Self) -> None:
-        hub.main_window.explorer.widget().newLibrary()
+        hub.window.explorer.widget().newLibrary()
 
     def fileOpen(self : Self) -> None:
-        hub.main_window.explorer.widget().openItem()
+        hub.window.explorer.widget().openItem()
 
     @withCurrentWidget(DrawingView)
     def fileSave(self : Self, widget: DrawingView) -> None:

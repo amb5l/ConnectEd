@@ -10,8 +10,8 @@ from ..core.db    import Model
 from ..core.args  import known_args, unknown_args
 from ..resources  import initResources
 
-from ..widgets.splash      import Splash
-from ..widgets.main_window import MainWindow
+from ..widgets.splash import Splash
+from ..widgets.window import Window
 
 from .. import hub
 
@@ -49,6 +49,6 @@ def initGui():
         except Exception:
             pass
     initResources()
-    hub.main_window = MainWindow()
-    hub.splash.finish(hub.main_window)
+    hub.window = Window()
+    hub.splash.finish(hub.window)
 

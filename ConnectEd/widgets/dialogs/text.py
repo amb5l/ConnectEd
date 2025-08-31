@@ -28,7 +28,7 @@ class TextDialog(QDialog):
         self    : Self,
         element : ElementQuillMixin
     ):
-        super().__init__(hub.main_window)
+        super().__init__(hub.window)
         self.setWindowTitle("Text")
         self.setModal(True)
         self._dialog_layout = QVBoxLayout(self)

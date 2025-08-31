@@ -52,7 +52,7 @@ class ColorDialog(QColorDialog):
         color  : tuple[Optional[QColor], QColor]
     ) -> None:
         specified_color, default_color = color
-        super().__init__(hub.main_window)
+        super().__init__(hub.window)
         self.setWindowTitle("Color")
         self.setOption(QColorDialog.ColorDialogOption.NoButtons, True)
         self.setOption(QColorDialog.ColorDialogOption.DontUseNativeDialog, True)

@@ -56,7 +56,7 @@ class AppearanceDialog(QDialog):
         self     : Self,
         elements : list[ElementLineMixin | ElementFillMixin |ElementQuillMixin]
     ) -> None:
-        super().__init__(hub.main_window)
+        super().__init__(hub.window)
         initial   = AppearancePrefChange()
         no_change = AppearancePrefChange()
         default   = AppearanceSpec()

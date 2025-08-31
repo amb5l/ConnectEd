@@ -43,7 +43,7 @@ class CustomColorDialog(QColorDialog):
     def __init__(
         self   : Self,
         color  : QColor,
-        parent : Optional[QWidget] = hub.main_window
+        parent : Optional[QWidget] = hub.window
     ) -> None:
         super().__init__(parent)
         self.setWindowTitle("Color")
@@ -191,7 +191,7 @@ class CustomLineWidthDialog(QDialog):
     def __init__(
         self    : Self,
         initial : Optional[float | int] = None,
-        parent  : Optional[QWidget] = hub.main_window
+        parent  : Optional[QWidget] = hub.window
     ) -> None:
         super().__init__(parent)
         self.setWindowTitle("Line Width")

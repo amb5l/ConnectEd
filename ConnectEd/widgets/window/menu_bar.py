@@ -6,12 +6,12 @@ from ... import hub
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from . import MainWindow
+    from . import Window
 
 class MenuBar(QMenuBar):
     def __init__(
         self    : Self,
-        parent  : "MainWindow"
+        parent  : "Window"
     ) -> None:
         super().__init__(parent)
         actions = parent.actions
@@ -99,17 +99,17 @@ class MenuBar(QMenuBar):
         self.addMenu(self.help_menu)
 
     def updateWindowMenu(self : Self) -> None:
-        actions = hub.main_window.actions
+        actions = hub.window.actions
         self.window_menu.clear()
         self.window_menu.addAction(actions.windowExplorer)
         self.window_menu.addAction(actions.windowMessages)
         self.window_menu.addAction(actions.windowTranscript)
         self.window_menu.addAction(actions.windowLog)
-        if len(hub.main_window.mdi_area.subWindowList()) > 1:
+        if len(hub.window.mdi_area.subWindowList()) > 1:
             self.window_menu.addSeparator()
             self.window_menu.addAction(actions.windowNext)
             self.window_menu.addAction(actions.windowPrevious)
-            subwindow_actions = hub.main_window.mdi_area.subwindow_actions
+            subwindow_actions = hub.window.mdi_area.subwindow_actions
             if subwindow_actions == {}:
                 return
             for key, actions in subwindow_actions.items():

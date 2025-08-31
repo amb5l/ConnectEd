@@ -20,7 +20,7 @@ class DrawingViewMouseMixin:
         p = self.mapFromGlobal(QCursor.pos())
         l = self.mapToScene(p)
         self.mouse.current.setPL(p, l)
-        hub.main_window.status_bar.xy.setText(
+        hub.window.status_bar.xy.setText(
             str(int(round(l.x()))) + "," + str(int(round(l.y())))
         )
 
@@ -29,13 +29,13 @@ class DrawingViewMouseMixin:
         p = QPoint(rect.width() // 2, rect.height() // 2)
         l = self.mapToScene(p)
         self.mouse.current.setPL(p, l)
-        hub.main_window.status_bar.xy.setText("-,-")
+        hub.window.status_bar.xy.setText("-,-")
 
     def mouseMoveEvent(self : "DrawingView", event : QMouseEvent) -> None:
         p = event.pos(); l = self.mapToScene(p); m = self._getModifiers(event)
         self.mouse.current.setPL(p, l)
         self.mouse.current.modifiers = m
-        hub.main_window.status_bar.xy.setText(
+        hub.window.status_bar.xy.setText(
             str(int(round(l.x()))) + "," + str(int(round(l.y())))
         )
         match self.mouse.left.state:

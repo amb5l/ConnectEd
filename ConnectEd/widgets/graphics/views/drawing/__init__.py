@@ -154,7 +154,7 @@ class DrawingSubWindow(QMdiSubWindow):
         parent : Optional[QMdiArea] = None
     ) -> None:
         if parent is None:
-            parent = hub.main_window.mdi_area
+            parent = hub.window.mdi_area
         super().__init__(parent)
         self.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
 

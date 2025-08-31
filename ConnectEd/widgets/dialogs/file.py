@@ -12,7 +12,7 @@ class FileOpenDialog(QFileDialog):
         self      : "FileOpenDialog",
         type_name : Optional[str] = None
     ) -> None:
-        super().__init__(hub.main_window)
+        super().__init__(hub.window)
         self.setWindowTitle(f"Open")
         self.setFileMode(QFileDialog.FileMode.ExistingFiles)
         match type_name:
@@ -40,7 +40,7 @@ class FileSaveAsDialog(QFileDialog):
                 default_suffix = DSN_EXT
             case _:
                 raise ValueError(f"Unknown type name: {type_name}")
-        super().__init__(hub.main_window)
+        super().__init__(hub.window)
         self.setWindowTitle(f"Save {type_name} As")
         self.setFileMode(QFileDialog.FileMode.AnyFile)
         self.setNameFilter(name_filter)

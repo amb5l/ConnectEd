@@ -52,8 +52,8 @@ class DrawingViewStateBase:
         elements : Optional[list[ElementMixin]] = None
     ) -> None:
         self.view.state = state
-        if hub.main_window is not None:
-            hub.main_window.status_bar.tip.setText(state.TIP)
+        if hub.window is not None:
+            hub.window.status_bar.tip.setText(state.TIP)
         state.entry(
             self.view.mouse.current.physical,
             self.view.mouse.current.logical,

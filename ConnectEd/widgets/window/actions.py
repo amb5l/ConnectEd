@@ -13,14 +13,14 @@ from ..private  import Action
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from ..main_window import MainWindow
+    from ..window import Window
 
 
 class Actions:
-    _parent : "MainWindow"
+    _parent : "Window"
     _scene  : Optional[DrawingScene]
 
-    def __init__(self : Self, parent : "MainWindow") -> None:
+    def __init__(self : Self, parent : "Window") -> None:
         self._parent = parent
         self._scene  = None
         SK = QKeySequence.StandardKey

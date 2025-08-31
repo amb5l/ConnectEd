@@ -43,7 +43,7 @@ class MdiArea(QMdiArea):
     def update(self : Self) -> None:
         self._updateSubWindowTitles()
         self._updateSubWindowActions()
-        hub.main_window.menu_bar.updateWindowMenu()
+        hub.window.menu_bar.updateWindowMenu()
 
     def childEvent(self : Self, event : QChildEvent) -> None:
         """Handle child events, particularly when subwindows are removed."""
@@ -108,7 +108,7 @@ class MdiArea(QMdiArea):
                         w.setWindowTitle(f"{db_name}:{scene_name}:{i}")
 
     def _updateSubWindowActions(self : Self) -> None:
-        m = hub.main_window
+        m = hub.window
         self.subwindow_actions = {}
         for w in self.subWindowList():
             key = "_"

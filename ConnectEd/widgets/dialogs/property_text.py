@@ -35,7 +35,7 @@ class PropertyTextDialog(QDialog):
     _cancel_button     : QPushButton
 
     def __init__(self : Self, element : PropertyText):
-        super().__init__(hub.main_window)
+        super().__init__(hub.window)
         self.setWindowTitle("Property Text")
         self.setModal(True)
         self._parent = element.parent()

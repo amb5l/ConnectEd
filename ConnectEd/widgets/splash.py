@@ -10,6 +10,10 @@ from ..core.defs import APP_NAME
 
 from .. import hub
 
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from ..widgets.window import Window
+
 
 class Splash(QSplashScreen):
     _SIZE             = 0.25   # fraction of screen size
@@ -85,17 +89,17 @@ class Splash(QSplashScreen):
         super().show()
         self._start_time = time.time()
 
-    def finish(self, main_window):
+    def finish(self : Self, window : "Window"):
         if self._start_time is not None:
             elapsed = (time.time() - self._start_time) * 1000
             if elapsed < self._MIN_DISPLAY_TIME:
                 remaining_time = int(self._MIN_DISPLAY_TIME - elapsed)
-                QTimer.singleShot(remaining_time, lambda: self._actually_finish(main_window))
+                QTimer.singleShot(remaining_time, lambda: self._actually_finish(window))
                 return
-        self._actually_finish(main_window)
+        self._actually_finish(window)
 
-    def _actually_finish(self, main_window):
-        super().finish(main_window)
-        main_window.show()
-        main_window.raise_()
-        main_window.activateWindow()
+    def _actually_finish(self : Self, window : "Window"):
+        super().finish(window)
+        window.show()
+        window.raise_()
+        window.activateWindow()

@@ -110,7 +110,7 @@ class Explorer(TreeView):
             scene = item.data(Qt.ItemDataRole.UserRole)
             if scene:
                 scene.name = item.text()
-        hub.main_window.mdi_area.update()
+        hub.window.mdi_area.update()
 
     def focusInEvent(self : Self, event: QFocusEvent) -> None:
         self._focus_in = True
@@ -223,7 +223,7 @@ class Explorer(TreeView):
         from ...widgets.graphics.scenes.symbol import SymbolScene
         if isinstance(item, DrawingItem):
             # focus existing subwindow if one exists
-            for subwindow in hub.main_window.mdi_area.subWindowList():
+            for subwindow in hub.window.mdi_area.subWindowList():
                 if not isinstance(subwindow, DrawingSubWindow):
                     continue
                 if not isinstance(subwindow.widget(), DrawingView):
@@ -232,7 +232,7 @@ class Explorer(TreeView):
                     continue
                 if item.scene != subwindow.widget().scene():
                     continue
-                hub.main_window.mdi_area.setActiveSubWindow(subwindow)
+                hub.window.mdi_area.setActiveSubWindow(subwindow)
                 subwindow.show()
                 subwindow.raise_()
                 subwindow.setFocus()
@@ -243,18 +243,18 @@ class Explorer(TreeView):
             if isinstance(drawing_scene, DiagramScene):
                 drawing_view = DiagramView(drawing_scene)
                 db_item = item.parent().parent()
-                subwindow = DiagramSubWindow(hub.main_window.mdi_area)
+                subwindow = DiagramSubWindow(hub.window.mdi_area)
             elif isinstance(drawing_scene, SymbolScene):
                 drawing_view = SymbolView(drawing_scene)
                 db_item = item.parent()
-                subwindow = SymbolSubWindow(hub.main_window.mdi_area)
+                subwindow = SymbolSubWindow(hub.window.mdi_area)
             else:
                 raise ValueError(f"Unknown drawing scene: {type(drawing_scene)}")
             subwindow.setWidget(drawing_view)
             subwindow.setWindowTitle(f"{db_item.text()}: {drawing_name}")
-            hub.main_window.mdi_area.addSubWindow(subwindow)
+            hub.window.mdi_area.addSubWindow(subwindow)
             subwindow.showMaximized()
-            hub.main_window.menu_bar.updateWindowMenu()
+            hub.window.menu_bar.updateWindowMenu()
         else:
             logger.warning(f"Unsupported item: {item.text()} ({type(item)})")
 
@@ -278,9 +278,9 @@ class Explorer(TreeView):
         dwg_name = item.text()
         subwindow.setWidget(dwg_view)
         subwindow.setWindowTitle(f"{db_item.text()}:{dwg_name}")
-        hub.main_window.mdi_area.addSubWindow(subwindow)
+        hub.window.mdi_area.addSubWindow(subwindow)
         subwindow.showMaximized()
-        hub.main_window.menu_bar.updateWindowMenu()
+        hub.window.menu_bar.updateWindowMenu()
 
     def spreadsheet(self : Self, item : "DrawingItem") -> None:
         from ...core import DrawingItem
@@ -290,9 +290,9 @@ class Explorer(TreeView):
             logger.warning(f"Unsupported item: {item.text()} ({type(item)})")
             return
         scene : DiagramScene = item.data(Qt.ItemDataRole.UserRole)
-        for subwindow in hub.main_window.mdi_area.subWindowList():
+        for subwindow in hub.window.mdi_area.subWindowList():
             if isinstance(subwindow, SpreadsheetSubWindow) and subwindow.scene() == scene:
-                hub.main_window.mdi_area.setActiveSubWindow(subwindow)
+                hub.window.mdi_area.setActiveSubWindow(subwindow)
                 subwindow.show()
                 subwindow.raise_()
                 subwindow.setFocus()
@@ -302,9 +302,9 @@ class Explorer(TreeView):
                     if not isinstance(e, AnchorPoint | Tether)]
         subwindow = SpreadsheetSubWindow(scene, elements)
         subwindow.setWindowTitle(f"{db_item.text()}:{item.text()}: Properties")
-        hub.main_window.mdi_area.addSubWindow(subwindow)
+        hub.window.mdi_area.addSubWindow(subwindow)
         subwindow.showMaximized()
-        hub.main_window.menu_bar.updateWindowMenu()
+        hub.window.menu_bar.updateWindowMenu()
 
     def saveDb(self : Self, item : "DbItem") -> None:
         item.save()

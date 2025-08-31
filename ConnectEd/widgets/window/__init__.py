@@ -28,7 +28,7 @@ from .explorer        import ExplorerDock
 from ... import hub
 
 
-class MainWindow(QMainWindow):
+class Window(QMainWindow):
     actions           : Actions
     slots             : Slots
     menu_bar          : MenuBar

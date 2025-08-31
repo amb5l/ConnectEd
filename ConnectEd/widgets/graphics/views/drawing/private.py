@@ -54,14 +54,14 @@ class DrawingViewPrivateMixin:
         self.zoom = abs
         self.resetTransform()
         self.scale(self.zoom, self.zoom)
-        hub.main_window.status_bar.zoom.setText(
+        hub.window.status_bar.zoom.setText(
             "{:.2f}%".format(self.zoom * 100)
         )
-        hub.main_window.actions.actionEnable(
+        hub.window.actions.actionEnable(
             "viewZoomIn",
             self.zoom < hub.settings.get("display/zoom/max")
         )
-        hub.main_window.actions.actionEnable(
+        hub.window.actions.actionEnable(
             "viewZoomOut",
             self.zoom > hub.settings.get("display/zoom/min")
         )

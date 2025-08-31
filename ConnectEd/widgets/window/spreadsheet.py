@@ -733,7 +733,7 @@ class SpreadsheetSubWindow(QMdiSubWindow):
 
     def closeEvent(self, event: QCloseEvent) -> None:
         """Handle subwindow close event."""
-        hub.main_window.menu_bar.updateWindowMenu()
+        hub.window.menu_bar.updateWindowMenu()
         super().closeEvent(event)
 
     def scene(self : Self) -> "DrawingScene":

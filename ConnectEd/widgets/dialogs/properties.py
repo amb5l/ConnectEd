@@ -184,7 +184,7 @@ class PropertiesDialog(QDialog):
 
     def __init__(self: Self, element: PropertiesMixin) -> None:
         # initialise
-        super().__init__(hub.main_window)
+        super().__init__(hub.window)
         self.setWindowTitle("Properties")
         self.setModal(True)
         self._dialog_layout = QVBoxLayout(self)
