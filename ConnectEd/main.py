@@ -18,7 +18,6 @@ from . import hub
 
 def main() -> int:
     logger.info("started")
-
     app = QApplication(sys.argv[:1] + unknown_args)
     app.setStyle("Fusion")
     scheme = QApplication.instance().styleHints().colorScheme()
@@ -42,7 +41,6 @@ def main() -> int:
     initResources()
     model = Model()
     window = Window(model)
-    model.setWindow(window)
     splash.finish(window)
     r = app.exec()
     hub.settings.save()

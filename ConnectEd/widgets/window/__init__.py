@@ -48,6 +48,7 @@ class Window(QMainWindow):
 
     def __init__(self : Self, model : "Model") -> None:
         super().__init__()
+        model.setWindow(self)
         self.model = model
 
         # default position
