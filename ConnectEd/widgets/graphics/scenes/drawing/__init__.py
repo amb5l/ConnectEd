@@ -27,7 +27,7 @@ class DrawingScene(
     DrawingSceneApiPrivateMixin,
     QGraphicsScene
 ):
-    # class variables
+    # class attributes
     _PROPERTY_SPECS = {
         "Name" : PropertySpec(
             type_name = "str",

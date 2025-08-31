@@ -39,7 +39,7 @@ class PropertySpec:
             self.default = lambda: None
 
 class PropertiesMixin:
-    # class variables
+    # class attributes
     _PROPERTY_SPECS : dict[str, PropertySpec]
     _PROPERTY_TEXTS : dict[str, "PropertyTextSpec"]
 

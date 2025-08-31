@@ -38,7 +38,7 @@ class BaseRectangle(
 ):
     """Base class for rectangle elements."""
 
-    # class variables
+    # class attributes
     _AP_TYPES = { k : APType.Mover if k == "Center" else APType.Resizer \
             for k in ElementRectAnchorPointsMixin._ANCHOR_POINTS.keys() }
     _PROPERTY_SPECS = \

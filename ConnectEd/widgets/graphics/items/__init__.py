@@ -740,7 +740,7 @@ class ElementAnchorPointsMixin:
         return self._anchor_points[name]
 
 class ElementRectAnchorPointsMixin(ElementAnchorPointsMixin):
-    # class variables
+    # class attributes
     _ANCHOR_POINTS = {
         "Top Left"      : ( 0.0 , 0.0 ),
         "Top Center"    : ( 0.5 , 0.0 ),
@@ -779,7 +779,7 @@ class ElementRectAnchorPointsMixin(ElementAnchorPointsMixin):
             ap._handle.setVisible(self.isSelected())
 
 class ElementOriginMixin:
-    # class variables
+    # class attributes
     _PROPERTY_SPECS_ORIGIN = {
         "Origin" : PropertySpec(
             type_name   = "AnchorPoint",

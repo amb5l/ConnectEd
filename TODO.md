@@ -1,3 +1,4 @@
+- MainWindow => Window
 - theme is view specific so you can have 2 views with 2 different themes
 - placing BlockPin doesn't snap properly
 - editing BlockPin name resets text position

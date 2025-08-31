@@ -47,7 +47,7 @@ class BasePortPin(
     PropertiesMixin,
     QGraphicsItem
 ):
-    # class variables
+    # class attributes
     _NODE_CLASS = Node
     _PROPERTY_SPECS = {
         "Name" : PropertySpec(),
@@ -173,7 +173,7 @@ class BasePortPin(
         self._range = value
 
 class PortPinArrowMixin:
-    # class variables
+    # class attributes
     _ARROW_CLASS = Arrow
 
     # instance attributes

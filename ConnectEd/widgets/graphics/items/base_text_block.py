@@ -43,7 +43,7 @@ class BaseTextBlock(
     PropertiesMixin,
     QGraphicsTextItem
 ):
-    # class variables
+    # class attributes
     _AP_TYPES = { k : APType.Mover \
             for k in ElementRectAnchorPointsMixin._ANCHOR_POINTS.keys() }
     _PROPERTY_SPECS = \

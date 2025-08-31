@@ -21,7 +21,7 @@ class PropertyDisplay(Enum):
     NAME_VALUE = "Name:Value"
 
 class PropertyText(TetherText):
-    # class variables
+    # class attributes
     _PROPERTY_SPECS_PROPERTY = \
         {
             "Name" : PropertySpec(
