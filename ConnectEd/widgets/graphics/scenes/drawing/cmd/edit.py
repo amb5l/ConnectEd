@@ -7,8 +7,10 @@ from .....dialogs.properties import PropertyChange
 
 from ....properties import PropertiesMixin
 
-from ....items import SignalDirection, VectorRange, \
-                      ElementMixin, ElementOriginMixin
+from ....items import SignalDirection, VectorRange
+
+from ....items.mixin        import ElementMixin
+from ....items.mixin.origin import ElementOriginMixin
 
 from ....items.port_pin      import BasePortPin
 from ....items.base_text     import BaseText

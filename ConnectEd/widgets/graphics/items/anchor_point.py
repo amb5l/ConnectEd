@@ -2,10 +2,14 @@ from typing import Self
 
 from PyQt6.QtCore import QPointF
 
-from . import APType, ElementAnchorPointsMixin
+from . import APType
 
 from .null_point import NullPoint
 from .handle     import Handle
+
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from .mixin.anchor import ElementAnchorPointsMixin
 
 
 class AnchorPoint(NullPoint):

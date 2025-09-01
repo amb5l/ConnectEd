@@ -7,17 +7,18 @@ from PyQt6.QtGui     import QPainter, QPainterPath, QPainterPathStroker
 
 from ..properties import PropertySpec, PropertiesMixin
 
-from . import APType, \
-              ElementMixin, \
-              ElementBoundShapeMixin, \
-              ElementPosMixin, \
-              ElementRectAnchorPointsMixin, \
-              ElementLineMixin, \
-              ElementFillMixin, \
-              ElementChangeMixin, \
-              ElementCloneMixin, \
-              ElementXmlMixin, \
-              ElementMenuMixin
+from . import APType
+
+from .mixin        import ElementMixin
+from .mixin.bound  import ElementBoundShapeMixin
+from .mixin.pos    import ElementPosMixin
+from .mixin.anchor import ElementRectAnchorPointsMixin
+from .mixin.line   import ElementLineMixin
+from .mixin.fill   import ElementFillMixin
+from .mixin.change import ElementChangeMixin
+from .mixin.clone  import ElementCloneMixin
+from .mixin.xml    import ElementXmlMixin
+from .mixin.menu   import ElementMenuMixin
 
 from .... import hub
 

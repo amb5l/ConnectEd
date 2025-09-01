@@ -5,11 +5,12 @@ from PyQt6.QtWidgets import QGraphicsPathItem, QWidget, \
                             QStyle, QStyleOptionGraphicsItem
 from PyQt6.QtGui     import QPainterPath, QPainter
 
-from . import SignalDirection, \
-              ElementBoundShapeMixin, \
-              ElementChangeMixin, \
-              ElementLineMixin, \
-              ElementFillMixin
+from . import SignalDirection
+
+from .mixin.bound  import ElementBoundShapeMixin
+from .mixin.change import ElementChangeMixin
+from .mixin.line   import ElementLineMixin
+from .mixin.fill   import ElementFillMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:

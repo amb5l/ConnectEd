@@ -8,15 +8,16 @@ from ....core.log import logger
 
 from ..properties import PropertySpec, PropertiesMixin
 
-from . import APType, EdgeLoc, SignalDirection, VectorRange, \
-              ElementMixin, \
-              ElementPosMixin, \
-              ElementLocMixin, \
-              ElementBoundShapeMixin, \
-              ElementChangeMixin, \
-              ElementCloneMixin, \
-              ElementXmlMixin, \
-              ElementMenuMixin
+from . import APType, EdgeLoc, SignalDirection, VectorRange
+
+from .mixin        import ElementMixin
+from .mixin.pos    import ElementPosMixin
+from .mixin.loc    import ElementLocMixin
+from .mixin.bound  import ElementBoundShapeMixin
+from .mixin.change import ElementChangeMixin
+from .mixin.clone  import ElementCloneMixin
+from .mixin.xml    import ElementXmlMixin
+from .mixin.menu   import ElementMenuMixin
 
 from .node          import Node
 from .arrow         import Arrow

@@ -7,7 +7,7 @@ from ....core.log import logger
 
 from ..properties import PropertySpec
 
-from . import ElementAnchorPointsMixin
+from .mixin.anchor import ElementAnchorPointsMixin
 
 from .base_text    import BaseText
 from .anchor_point import AnchorPoint

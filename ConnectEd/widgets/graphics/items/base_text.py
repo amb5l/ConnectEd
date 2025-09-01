@@ -9,17 +9,18 @@ from ...dialogs.text import TextDialog
 
 from ..properties import PropertySpec, PropertiesMixin
 
-from . import APType, \
-              ElementMixin, \
-              ElementPosMixin, \
-              ElementRectAnchorPointsMixin, \
-              ElementOriginMixin, \
-              ElementQuillMixin, \
-              ElementOutlineMixin, \
-              ElementChangeMixin, \
-              ElementCloneMixin, \
-              ElementXmlMixin, \
-              ElementMenuMixin
+from . import APType
+
+from .mixin         import ElementMixin
+from .mixin.pos     import ElementPosMixin
+from .mixin.anchor  import ElementRectAnchorPointsMixin
+from .mixin.origin  import ElementOriginMixin
+from .mixin.quill   import ElementQuillMixin
+from .mixin.outline import ElementOutlineMixin
+from .mixin.change  import ElementChangeMixin
+from .mixin.clone   import ElementCloneMixin
+from .mixin.xml     import ElementXmlMixin
+from .mixin.menu    import ElementMenuMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:

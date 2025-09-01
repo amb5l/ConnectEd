@@ -3,7 +3,9 @@ from typing import Self, Optional
 from PyQt6.QtWidgets import QWidget, QDialog, QVBoxLayout, QHBoxLayout, \
                             QLabel, QTextEdit, QPushButton
 
-from ..graphics.items import ElementQuillMixin, QuillPref, QuillPrefChange
+from ..graphics.items import QuillPref, QuillPrefChange
+
+from ..graphics.items.mixin.quill import ElementQuillMixin
 
 from .components import TextAppearanceLayout
 

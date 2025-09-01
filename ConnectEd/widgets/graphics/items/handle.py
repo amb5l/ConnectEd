@@ -5,7 +5,9 @@ from PyQt6.QtCore    import Qt, QRectF, QPointF, \
 from PyQt6.QtWidgets import QGraphicsPathItem
 from PyQt6.QtGui     import QPen, QBrush, QPainterPath, QAction
 
-from . import ElementMenuMixin, APType
+from . import APType
+
+from .mixin.menu import ElementMenuMixin
 
 from .... import hub
 
@@ -13,8 +15,8 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ..views.drawing  import DrawingView
     from ..scenes.drawing import DrawingScene
-    from . import ElementAnchorPointsMixin
-    from .anchor_point import AnchorPoint
+    from .mixin.anchor    import ElementAnchorPointsMixin
+    from .anchor_point    import AnchorPoint
 
 
 class Handle(

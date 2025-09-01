@@ -8,10 +8,13 @@ from ...core.log import logger
 
 from ..graphics.items import \
     DEFAULT, NO_CHANGE, \
-    ElementLineMixin, ElementFillMixin, ElementQuillMixin, \
     LineSpec,LinePref, LinePrefDefault, LinePrefChange, \
     FillSpec, FillPref, FillPrefDefault, FillPrefChange, \
     QuillSpec, QuillPref, QuillPrefDefault, QuillPrefChange
+
+from ..graphics.items.mixin.line  import ElementLineMixin
+from ..graphics.items.mixin.fill  import ElementFillMixin
+from ..graphics.items.mixin.quill import ElementQuillMixin
 
 from . import okCancelLayout
 
