@@ -1,8 +1,187 @@
-from typing import Self
+from typing import Self, Optional
+from types  import SimpleNamespace
+
+from PyQt6.QtCore import Qt, QXmlStreamWriter, QXmlStreamReader
+from PyQt6.QtGui  import QColor, QFont, QPen, QBrush
 
 from ...properties import PropertySpec
 
-from .. import Quill
+from .....core.utils import val2str, str2val
+
+from .. import Default, DEFAULT, NO_CHANGE, QuillPref, QuillPrefChange
+
+from . import ElementMixin
+
+from ..... import hub
+
+
+class Quill:
+    _parent    : "ElementMixin"
+    _color     : Default | QColor
+    _family    : Default | str
+    _size      : Default | float
+    _bold      : Default | bool
+    _italic    : Default | bool
+    _underline : Default | bool
+    _normal    : QColor
+    _selected  : QColor
+    _pen       : Optional[QPen]
+    _brush     : Optional[QBrush]
+    _font      : QFont
+
+    def __init__(
+        self   : Self,
+        parent : "ElementMixin",
+        pref   : QuillPref = \
+                  QuillPref(DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT)
+    ) -> None:
+        self._parent    = parent
+        self._color     = pref.color
+        self._family    = pref.family
+        self._size      = pref.size
+        self._bold      = pref.bold
+        self._italic    = pref.italic
+        self._underline = pref.underline
+        self._normal = QColor()
+        self._selected = QColor()
+        self._font = QFont()
+        if not hasattr(self._parent, "setDefaultTextColor"):
+            self._pen = QPen()
+            self._pen.setStyle(Qt.PenStyle.NoPen)
+            self._brush = QBrush()
+            self._brush.setStyle(Qt.BrushStyle.SolidPattern)
+            self._parent.setPen(self._pen)
+            self._parent.setBrush(self._brush)
+        else:
+            self._pen = None
+            self._brush = None
+        self._parent.setFont(self._font)
+        self.onSettingsChange()
+
+    def getColor(self : Self) -> Default | QColor:
+        return self._color
+
+    def setColor(self : Self, color : Default | QColor) -> None:
+        self._color = color
+        self.onSettingsChange()
+
+    def getFamily(self : Self) -> Default | str:
+        return self._family
+
+    def setFamily(self : Self, family : Default | str) -> None:
+        self._family = family
+        self.onSettingsChange()
+
+    def getSize(self : Self) -> Default | float:
+        return self._size
+
+    def setSize(self : Self, size : Default | float) -> None:
+        self._size = size
+        self.onSettingsChange()
+
+    def getBold(self : Self) -> Default | bool:
+        return self._bold
+
+    def setBold(self : Self, bold : Default | bool) -> None:
+        self._bold = bold
+        self.onSettingsChange()
+
+    def getItalic(self : Self) -> Default | bool:
+        return self._italic
+
+    def setItalic(self : Self, italic : Default | bool) -> None:
+        self._italic = italic
+        self.onSettingsChange()
+
+    def getUnderline(self : Self) -> Default | bool:
+        return self._underline
+
+    def setUnderline(self : Self, underline : Default | bool) -> None:
+        self._underline = underline
+        self.onSettingsChange()
+
+    def getPref(self : Self) -> QuillPref:
+        return QuillPref(
+            self._color,
+            self._family,
+            self._size,
+            self._bold,
+            self._italic,
+            self._underline
+        )
+
+    def setPref(self : Self, c : QuillPref | QuillPrefChange) -> None:
+        if c.color     is not NO_CHANGE: self._color     = c.color
+        if c.family    is not NO_CHANGE: self._family    = c.family
+        if c.size      is not NO_CHANGE: self._size      = c.size
+        if c.bold      is not NO_CHANGE: self._bold      = c.bold
+        if c.italic    is not NO_CHANGE: self._italic    = c.italic
+        if c.underline is not NO_CHANGE: self._underline = c.underline
+        self.onSettingsChange()
+
+    def getDefaults(self : Self) -> SimpleNamespace:
+        settings_name = self._parent.__class__.__name__
+        return hub.settings.getTheme(f"elements/{settings_name}/text")
+
+    def onSettingsChange(self : Self) -> None:
+        default = self.getDefaults()
+        self._selected.setRgb(hub.settings.getTheme("selected/text").rgb())
+        self._selected.setAlpha(hub.settings.get("display/alpha"))
+        self._normal.setRgb(
+            default.color.rgb() if self._color is DEFAULT else self._color.rgb()
+        )
+        self._normal.setAlpha(hub.settings.get("display/alpha"))
+        self._font.setFamily(
+            default.family if self._family is DEFAULT else self._family
+        )
+        self._font.setPointSizeF(
+            default.size if self._size is DEFAULT else self._size
+        )
+        self._font.setBold(
+            default.bold if self._bold is DEFAULT else self._bold
+        )
+        self._font.setItalic(
+            default.italic if self._italic is DEFAULT else self._italic
+        )
+        self._font.setUnderline(
+            default.underline if self._underline is DEFAULT else self._underline
+        )
+        self._parent.setFont(self._font)
+        self.onSelectionChange(self._parent.isSelected())
+
+    def onSelectionChange(self : Self, selected : bool) -> None:
+        color = self._selected if selected else self._normal
+        if hasattr(self._parent, "setDefaultTextColor"):
+            self._parent.setDefaultTextColor(color)
+        else:
+            self._brush.setColor(color)
+            self._parent.setBrush(self._brush)
+
+    def toXml(self : Self, xw : QXmlStreamWriter) -> None:
+        xw.writeStartElement("text")
+        xw.writeAttribute( "color",     val2str( self._color     ))
+        xw.writeAttribute( "family",    val2str( self._family    ))
+        xw.writeAttribute( "size",      val2str( self._size      ))
+        xw.writeAttribute( "bold",      val2str( self._bold      ))
+        xw.writeAttribute( "italic",    val2str( self._italic    ))
+        xw.writeAttribute( "underline", val2str( self._underline ))
+        xw.writeEndElement()
+
+    @classmethod
+    def fromXml(cls : Self, xr : QXmlStreamReader) -> Self:
+        attributes = xr.attributes()
+        xr.readNext()
+        inst : Quill = cls()
+        for attr in attributes:
+            v = attr.value()
+            match attr.name():
+                case "color"     : inst.setColor(str2val(v, QColor))
+                case "family"    : inst.setFamily(str2val(v, str))
+                case "size"      : inst.setSize(str2val(v, float))
+                case "bold"      : inst.setBold(str2val(v, bool))
+                case "italic"    : inst.setItalic(str2val(v, bool))
+                case "underline" : inst.setUnderline(str2val(v, bool))
+        return inst
 
 
 class ElementQuillMixin:
