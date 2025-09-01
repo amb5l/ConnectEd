@@ -5,10 +5,9 @@ from PyQt6.QtWidgets import QGraphicsItem
 from .....core.log import logger
 from .....core.xml import copy
 
-from ....dialogs.appearance import AppearancePrefChange
 from ....dialogs.properties import PropertyState
 
-from ...items import ElementMixin, QuillPrefChange
+from ...items import ElementMixin, QuillPrefChange, AppearancePrefChange
 
 from ...items.base_text import BaseText
 

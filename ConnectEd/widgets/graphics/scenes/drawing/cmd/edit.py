@@ -1,13 +1,13 @@
 from typing import Self, Any
 from dataclasses import dataclass
 
-from .....dialogs.appearance import QuillPref, QuillPrefChange, \
-                                    AppearancePref, AppearancePrefChange
 from .....dialogs.properties import PropertyChange
 
 from ....properties import PropertiesMixin
 
-from ....items import SignalDirection, VectorRange
+from ....items import SignalDirection, VectorRange, \
+                      QuillPref, QuillPrefChange, \
+                      AppearancePref, AppearancePrefChange
 
 from ....items.mixin        import ElementMixin
 from ....items.mixin.origin import ElementOriginMixin

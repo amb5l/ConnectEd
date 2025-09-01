@@ -209,6 +209,24 @@ class QuillPrefChange:
     italic    : Optional[ NoChange | Default | bool   ] = None
     underline : Optional[ NoChange | Default | bool   ] = None
 
+@dataclass
+class AppearanceSpec:
+    line  : Optional[LineSpec]  = None
+    fill  : Optional[FillSpec]  = None
+    quill : Optional[QuillSpec] = None
+
+@dataclass
+class AppearancePref:
+    line  : Optional[LinePref]  = None
+    fill  : Optional[FillPref]  = None
+    quill : Optional[QuillPref] = None
+
+@dataclass
+class AppearancePrefChange:
+    line  : Optional[LinePrefChange]  = None
+    fill  : Optional[FillPrefChange]  = None
+    quill : Optional[QuillPrefChange] = None
+
 class Line:
     parent   : "ElementMixin"
     color    : Default | QColor

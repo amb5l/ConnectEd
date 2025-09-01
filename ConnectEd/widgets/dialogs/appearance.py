@@ -1,5 +1,4 @@
 from typing import Self, Optional
-from dataclasses import dataclass
 
 from PyQt6.QtWidgets import QWidget, QDialog, QPushButton, QGroupBox, \
                             QVBoxLayout, QHBoxLayout
@@ -8,9 +7,10 @@ from ...core.log import logger
 
 from ..graphics.items import \
     DEFAULT, NO_CHANGE, \
-    LineSpec,LinePref, LinePrefDefault, LinePrefChange, \
-    FillSpec, FillPref, FillPrefDefault, FillPrefChange, \
-    QuillSpec, QuillPref, QuillPrefDefault, QuillPrefChange
+    LinePrefDefault, LinePrefChange, \
+    FillPrefDefault, FillPrefChange, \
+    QuillPrefDefault, QuillPrefChange, \
+    AppearanceSpec, AppearancePrefChange
 
 from ..graphics.items.mixin.line  import ElementLineMixin
 from ..graphics.items.mixin.fill  import ElementFillMixin
@@ -21,24 +21,6 @@ from . import okCancelLayout
 from .components import LineAppearanceLayout, \
                         FillAppearanceLayout, \
                         TextAppearanceLayout
-
-@dataclass
-class AppearanceSpec:
-    line  : Optional[LineSpec]  = None
-    fill  : Optional[FillSpec]  = None
-    quill : Optional[QuillSpec] = None
-
-@dataclass
-class AppearancePref:
-    line  : Optional[LinePref]  = None
-    fill  : Optional[FillPref]  = None
-    quill : Optional[QuillPref] = None
-
-@dataclass
-class AppearancePrefChange:
-    line  : Optional[LinePrefChange]  = None
-    fill  : Optional[FillPrefChange]  = None
-    quill : Optional[QuillPrefChange] = None
 
 
 class AppearanceDialog(QDialog):
