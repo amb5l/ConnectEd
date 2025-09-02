@@ -1,4 +1,8 @@
-- theme is view specific so you can have 2 views with 2 different themes
+- new line/fill/quill approach with shared default objects (per scene)
+- global and scene appearance managers
+- tackle onGeometryChange usage
+- unitary port/pin element (rather than composed of children)
+
 - placing BlockPin doesn't snap properly
 - editing BlockPin name resets text position
 - selected appearance of BlockPin
