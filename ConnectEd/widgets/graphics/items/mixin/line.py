@@ -16,6 +16,11 @@ from ..... import hub
 
 
 class Line:
+    # class attributes
+    _CAP_STYLE  = Qt.PenCapStyle.SquareCap
+    _JOIN_STYLE = Qt.PenJoinStyle.MiterJoin
+
+    # instance attributes
     parent   : "ElementMixin"
     color    : Default | QColor
     width    : Default | float
@@ -34,11 +39,11 @@ class Line:
         self.width  = pref.width
         self.style  = pref.style
         self.normal = QPen()
-        self.normal.setCapStyle(parent._CAP_STYLE)
-        self.normal.setJoinStyle(parent._JOIN_STYLE)
+        self.normal.setCapStyle(self._CAP_STYLE)
+        self.normal.setJoinStyle(self._JOIN_STYLE)
         self.selected = QPen()
-        self.selected.setCapStyle(parent._CAP_STYLE)
-        self.selected.setJoinStyle(parent._JOIN_STYLE)
+        self.selected.setCapStyle(self._CAP_STYLE)
+        self.selected.setJoinStyle(self._JOIN_STYLE)
         self.onSettingsChange()
 
     def getColor(self : Self) -> Default | QColor:
@@ -120,8 +125,6 @@ class Line:
 
 
 class ElementLineMixin:
-    _CAP_STYLE  = Qt.PenCapStyle.SquareCap
-    _JOIN_STYLE = Qt.PenJoinStyle.MiterJoin
     _PROPERTY_SPECS_LINE = {
         "Line Color" : PropertySpec(
             type_name = "QColor",
