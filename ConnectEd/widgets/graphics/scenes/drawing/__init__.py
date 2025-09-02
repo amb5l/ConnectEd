@@ -73,7 +73,7 @@ class DrawingScene(
 
     @classmethod
     def fromXml(cls : Self, xr : QXmlStreamReader, parent : Optional["DrawingItem"] = None) -> Self:
-        from ..items import _element_classes
+        from ...items import _element_classes
         cls_name = cls.__name__
         if xr.name() != cls_name:
             raise ValueError(f"Expected {cls_name} element, got {xr.name()}")
