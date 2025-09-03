@@ -14,7 +14,7 @@ class ElementCloneMixin:
         """Create a clone of this element with a new UUID."""
         from ..anchor_point  import AnchorPoint
         from ..property_text import PropertyText
-        from ..port_pin      import BasePin
+        from ..port_pin      import Pin
         source : ElementType = original if original is not None else self
         clone : ElementType = self.__class__(bare=True)
         # clone properties
@@ -28,9 +28,9 @@ class ElementCloneMixin:
                 else:
                     clone_ps.value = source_ps.value
         # clone property texts and pins
-        from ..port_pin import BasePin
+        from ..port_pin import Pin
         for source_child in source.childItems():
-            if isinstance(source_child, BasePin):
+            if isinstance(source_child, Pin):
                 clone_pin = source_child.clone(source_child) # TODO is passing item needed?
                 clone_pin.setParentItem(clone)
             elif isinstance(source_child, AnchorPoint):

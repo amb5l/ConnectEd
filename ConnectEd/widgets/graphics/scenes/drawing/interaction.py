@@ -11,7 +11,7 @@ from ...items import ElementMixin, clone
 from ...items.handle     import Handle
 
 from ...items.base_rect  import BaseRectangle
-from ...items.port_pin   import BasePin
+from ...items.port_pin   import Pin
 from ...items.pin_rect   import PinRect
 from ...items.port_pin   import Port
 from ...items.block      import Block
@@ -81,17 +81,17 @@ class PinInteraction(Interaction):
     """Base for all interactions that operate on a pin."""
 
     # class attributes
-    _PIN : BasePin  # subclass to override with specific pin class
+    _PIN : Pin  # subclass to override with specific pin class
 
     # instance attributes
     _parent : PinRect
-    _pin    : BasePin
+    _pin    : Pin
 
     def __init__(
         self   : Self,
         scene  : "DrawingScene",
         parent : PinRect,
-        pin    : Optional[BasePin],
+        pin    : Optional[Pin],
         pos    : QPointF,
         snap   : Optional[QPointF] = None
     ) -> None:
@@ -319,14 +319,14 @@ class PlaceBaseRectInteraction(PlaceBaseInteraction):
     def update(self, pos: QPointF):
         self._element.setP2(pos)
 
-class PlaceBasePinInteraction(PinInteraction):
+class PlacePinInteraction(PinInteraction):
     """Base for all interactions that place a pin."""
 
     def __init__(
         self   : Self,
         scene  : "DrawingScene",
         parent : PinRect,
-        pin    : BasePin,
+        pin    : Pin,
         pos    : QPointF,
         snap   : Optional[QPointF] = None
     ) -> None:
@@ -348,7 +348,7 @@ class PlacePortInteraction(PlaceBaseInteraction):
 class PlaceBlockInteraction(PlaceBaseRectInteraction):
     _ELEMENT = Block
 
-class PlaceBlockPinInteraction(PlaceBasePinInteraction):
+class PlaceBlockPinInteraction(PlacePinInteraction):
     _PIN = BlockPin
 
 ##class PlaceSymbolPinOp(PlacePinBaseOp):

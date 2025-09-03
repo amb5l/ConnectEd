@@ -61,7 +61,7 @@ class cmdPlaceText(cmdPlaceBase):
 class cmdPlaceTextBlock(cmdPlaceBase):
     _CLASS = TextBlock
 
-class cmdPlaceBasePin(cmdBase):
+class cmdPlacePin(cmdBase):
     """Base class for commands that place a pin."""
 
     # instance attributes
@@ -76,7 +76,7 @@ class cmdPlaceBasePin(cmdBase):
     def begin(self : Self, pos : QPointF) -> None:
         raise NotImplementedError
 
-class cmdPlaceBlockPin(cmdPlaceBasePin):
+class cmdPlaceBlockPin(cmdPlacePin):
     _CLASS = BlockPin
 
 ##class cmdPlaceSymbolPin(cmdPlacePinBase):

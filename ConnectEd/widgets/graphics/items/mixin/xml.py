@@ -9,12 +9,12 @@ from .....core.xml import toXmlAttrs, fromXmlAttrs
 class ElementXmlMixin:
     def toXml(self : Self, xw : QXmlStreamWriter) -> None:
         from ..property_text import PropertyText
-        from ..port_pin      import BasePin
+        from ..port_pin      import Pin
         xw.writeStartElement(self.__class__.__name__)
         toXmlAttrs(self, xw)
-        from ..port_pin import BasePin
+        from ..port_pin import Pin
         for child in self.childItems():
-            if isinstance(child, PropertyText | BasePin):
+            if isinstance(child, PropertyText | Pin):
                 child.toXml(xw)
         xw.writeEndElement()
 

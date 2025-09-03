@@ -89,6 +89,17 @@ FACTORY_SETTINGS = {
             "sheet"      : PaletteDark.Sheet,
             "border"     : PaletteDark.Border,
             "elements" : {
+                "Port" : {
+                    "line" : {
+                        "color" : PaletteDark.PortLine,
+                        "width" : 1,
+                        "style" : Qt.PenStyle.SolidLine
+                    },
+                    "fill" : {
+                        "color" : PaletteDark.PortFill,
+                        "style" : Qt.BrushStyle.NoBrush
+                    }
+                },
                 "PortNode" : {
                     "line" : {
                         "color" : PaletteDark.BlockPin,
@@ -120,17 +131,6 @@ FACTORY_SETTINGS = {
                         "underline" : False
                     }
                 },
-                "PortArrow" : {
-                    "line" : {
-                        "color" : PaletteDark.BlockPinArrow,
-                        "width" : 1,
-                        "style" : Qt.PenStyle.SolidLine
-                    },
-                    "fill" : {
-                        "color" : PaletteDark.BlockPinArrow,
-                        "style" : Qt.BrushStyle.NoBrush
-                    }
-                },
                 "Block" : {
                     "line" : {
                         "color" : PaletteDark.BlockLine,
@@ -140,6 +140,17 @@ FACTORY_SETTINGS = {
                     "fill" : {
                         "color" : PaletteDark.BlockFill,
                         "style" : Qt.BrushStyle.SolidPattern
+                    }
+                },
+                "BlockPin" : {
+                    "line" : {
+                        "color" : PaletteDark.BlockPin,
+                        "width" : 1,
+                        "style" : Qt.PenStyle.SolidLine
+                    },
+                    "fill" : {
+                        "color" : PaletteDark.BlockPin,
+                        "style" : Qt.BrushStyle.NoBrush
                     }
                 },
                 "BlockPinNode" : {
@@ -171,17 +182,6 @@ FACTORY_SETTINGS = {
                         "bold"      : False,
                         "italic"    : False,
                         "underline" : False
-                    }
-                },
-                "BlockPinArrow" : {
-                    "line" : {
-                        "color" : PaletteDark.BlockPinArrow,
-                        "width" : 1,
-                        "style" : Qt.PenStyle.SolidLine
-                    },
-                    "fill" : {
-                        "color" : PaletteDark.BlockPinArrow,
-                        "style" : Qt.BrushStyle.NoBrush
                     }
                 },
                 "PropertyText" : {
@@ -244,6 +244,17 @@ FACTORY_SETTINGS = {
             "sheet"      : PaletteLightMono.Sheet,
             "border"     : PaletteLightMono.Border,
             "elements" : {
+                "Port" : {
+                    "line" : {
+                        "color" : PaletteLightMono.PortLine,
+                        "width" : 1,
+                        "style" : Qt.PenStyle.SolidLine
+                    },
+                    "fill" : {
+                        "color" : PaletteLightMono.PortFill,
+                        "style" : Qt.BrushStyle.NoBrush
+                    }
+                },
                 "PortNode" : {
                     "line" : {
                         "color" : PaletteLightMono.PortLine,
@@ -265,17 +276,6 @@ FACTORY_SETTINGS = {
                         "underline" : False
                     }
                 },
-                "PortArrow" : {
-                    "line" : {
-                        "color" : PaletteLightMono.PortArrow,
-                        "width" : 1,
-                        "style" : Qt.PenStyle.SolidLine
-                    },
-                    "fill" : {
-                        "color" : PaletteLightMono.PortArrow,
-                        "style" : Qt.BrushStyle.NoBrush
-                    }
-                },
                 "Block" : {
                     "line" : {
                         "color" : PaletteLightMono.BlockLine,
@@ -285,6 +285,17 @@ FACTORY_SETTINGS = {
                     "fill" : {
                         "color" : PaletteLightMono.BlockFill,
                         "style" : Qt.BrushStyle.SolidPattern
+                    }
+                },
+                "BlockPin" : {
+                    "line" : {
+                        "color" : PaletteLightMono.BlockPin,
+                        "width" : 1,
+                        "style" : Qt.PenStyle.SolidLine
+                    },
+                    "fill" : {
+                        "color" : PaletteLightMono.BlockPin,
+                        "style" : Qt.BrushStyle.NoBrush
                     }
                 },
                 "BlockPinNode" : {
@@ -306,17 +317,6 @@ FACTORY_SETTINGS = {
                         "bold"      : False,
                         "italic"    : False,
                         "underline" : False
-                    }
-                },
-                "BlockPinArrow" : {
-                    "line" : {
-                        "color" : PaletteLightMono.BlockPinArrow,
-                        "width" : 1,
-                        "style" : Qt.PenStyle.SolidLine
-                    },
-                    "fill" : {
-                        "color" : PaletteLightMono.BlockPinArrow,
-                        "style" : Qt.BrushStyle.NoBrush
                     }
                 },
                 "PropertyText" : {

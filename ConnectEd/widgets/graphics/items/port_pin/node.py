@@ -1,17 +1,17 @@
 from typing import Self, Optional
 
-from PyQt6.QtCore    import QRectF
+from PyQt6.QtCore    import QPointF, QRectF
 from PyQt6.QtWidgets import QStyleOptionGraphicsItem, QGraphicsPathItem, \
                             QWidget, QStyle
 from PyQt6.QtGui     import QPainter, QPainterPath
 
-from .mixin.line   import ElementLineMixin
-from .mixin.fill   import ElementFillMixin
-from .mixin.change import ElementChangeMixin
+from ..mixin.line   import ElementLineMixin
+from ..mixin.fill   import ElementFillMixin
+from ..mixin.change import ElementChangeMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from .port_pin import BasePortPin
+    from .port_pin import PortPinMixin
 
 
 class Node(
@@ -30,7 +30,7 @@ class Node(
 
     def __init__(
         self   : Self,
-        parent : "BasePortPin"
+        parent : "PortPinMixin"
     ) -> None:
         QGraphicsPathItem.__init__(self, parent)
         f = self.GraphicsItemFlag
@@ -41,10 +41,6 @@ class Node(
         self._path_open = QPainterPath()
         self._path_nc = QPainterPath()
         self.onSettingsChange()
-
-    def onSelectionChange(self : Self, selected : bool) -> None:
-        parent : BasePortPin = self.parentItem()
-        parent.propagateSelection(selected)
 
     def onSettingsChange(self : Self) -> None:
         s = self._SIZE / 2
@@ -58,6 +54,10 @@ class Node(
         self._path_nc.lineTo(-s, -s)
         self.setPath(self._path_open)
         # TODO change appearance with connectivity
+
+    def moveBy(self : Self, delta : QPointF) -> None:
+        parent : "PortPinMixin" = self.parentItem()
+        parent.moveBy(delta)
 
     def paint(
         self    : Self,

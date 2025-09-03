@@ -16,7 +16,7 @@ class PinRect(BaseRectangle):
         super().onGeometryChange()
         # reposition pins
         #for item in self.childItems():
-        #    if isinstance(item, BasePin):
+        #    if isinstance(item, Pin):
         #        item.onPositionChange()
 
     def getMenuItems(self : Self) -> list[str]:

@@ -474,12 +474,13 @@ class DrawingViewStatePlacePort(ClickMixin):
         s :    QPointF,
         e :    Optional[list[ElementMixin]] = None
     ) -> None:
-        element = Port(self._snap(s))
+        element = Port()
+        element.setPos(self._snap(s))
         dialog = PortPinDialog("Port", element, self.view)
         if dialog.exec():
-            element.name = dialog.getName()
-            element.direction = dialog.getDirection()
-            element.range = dialog.getRange()
+            element._name = dialog.getName()
+            element._direction = dialog.getDirection()
+            element._range = dialog.getRange()
             self.interact(
                 PlacePortInteraction(self.scene, self._snap(s), element)
             )
@@ -515,9 +516,9 @@ class DrawingViewStatePlaceBlockPin(DrawingViewStateBase):
             pin = BlockPin() # don't parent to block yet
             dialog = PortPinDialog("Block Pin", pin, self.view)
             if dialog.exec():
-                pin.name = dialog.getName()
-                pin.direction = dialog.getDirection()
-                pin.range = dialog.getRange()
+                pin._name = dialog.getName()
+                pin._direction = dialog.getDirection()
+                pin._range = dialog.getRange()
                 self.interact(PlaceBlockPinInteraction(
                     self.scene, block, pin, self._snap(s),
                     self.view.grid.pitch if self.view.grid.snap else None

@@ -23,7 +23,7 @@ class NoChange:
 NO_CHANGE = NoChange()
 
 class APType(Enum):
-    Static  = 0
+    Cleat   = 0
     Mover   = 1
     Resizer = 2
 

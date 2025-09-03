@@ -14,18 +14,19 @@ if TYPE_CHECKING:
 
 class AnchorPoint(NullPoint):
     # instance attributes
-    _name : str
-    _type : "APType"
+    _name   : str
+    _type   : "APType"
     _handle : Handle
 
     def __init__(
         self   : Self,
         name   : str                        = "",
-        type   : "APType"                   = APType.Static,
+        type   : "APType"                   = APType.Cleat,
         pos    : QPointF                    = QPointF(),
         parent : "ElementAnchorPointsMixin" = None
     ) -> None:
         super().__init__(parent)
-        self._name   = name
-        self._type   = type
+        self._name = name
+        self._type = type
+        self.setPos(pos)
         self._handle = Handle(self)

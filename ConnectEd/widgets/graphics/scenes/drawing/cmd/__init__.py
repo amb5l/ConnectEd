@@ -9,7 +9,7 @@ from ......core.utils import camel_to_proper
 
 from ....items import EdgeLoc, ElementMixin
 
-from ....items.port_pin import BasePin
+from ....items.port_pin import Pin
 from ....items.pin_rect import PinRect
 
 from typing import TYPE_CHECKING
@@ -85,12 +85,12 @@ class cmdPinBase(cmdBase):
 
     # instance attributes
     _parent : PinRect
-    _pin    : BasePin
+    _pin    : Pin
 
     def __init__(
         self : Self,
         parent : PinRect,
-        pin    : BasePin
+        pin    : Pin
     ):
         super().__init__()
         self._parent = parent
@@ -266,7 +266,7 @@ class cmdMovePin(cmdPinBase):
     def __init__(
         self : Self,
         parent : PinRect,
-        pin    : BasePin,
+        pin    : Pin,
         loc    : EdgeLoc
     ):
         super().__init__(parent, pin)

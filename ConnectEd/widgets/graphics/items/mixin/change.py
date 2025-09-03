@@ -42,4 +42,5 @@ class ElementChangeMixin:
             self.quill.onSettingsChange()
         if hasattr(self, "outline"):
             self.outline.onSettingsChange()
-        self.onGeometryChange()
+        if hasattr(self, "onGeometryChange"):
+            self.onGeometryChange()

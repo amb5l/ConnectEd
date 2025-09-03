@@ -1,5 +1,4 @@
-- new line/fill/quill approach with shared default objects (per scene)
-- global and scene appearance managers
+- Line.toXml used?
 - tackle onGeometryChange usage
 - unitary port/pin element (rather than composed of children)
 

@@ -9,7 +9,6 @@ if TYPE_CHECKING:
 
 class DiagramView(DrawingView):
     def viewZoomSheet(self : Self) -> None:
-        print("viewZoomSheet")
         scene : "DiagramScene" = self.scene()
         rect = scene.sheet.rect
         self._zoomRect(rect)

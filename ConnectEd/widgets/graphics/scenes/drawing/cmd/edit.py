@@ -12,7 +12,6 @@ from ....items import SignalDirection, VectorRange, \
 from ....items.mixin        import ElementMixin
 from ....items.mixin.origin import ElementOriginMixin
 
-from ....items.port_pin      import BasePortPin
 from ....items.base_text     import BaseText
 from ....items.property_text import PropertyText, PropertyDisplay
 
@@ -21,42 +20,44 @@ from . import cmdSceneElement, cmdSceneElements
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ....scenes.drawing import DrawingScene
+    from ....items.port_pin import PortPinMixin
+
 
 class cmdEditPortPin(cmdSceneElement):
     @dataclass
-    class BasePortPinState:
+    class PortPinState:
         name      : str
         direction : SignalDirection
         range     : VectorRange
 
-    _element : BasePortPin
-    _before  : BasePortPinState
-    _after   : BasePortPinState
+    _element : "PortPinMixin"
+    _before  : PortPinState
+    _after   : PortPinState
 
     def __init__(
         self       : Self,
         scene      : "DrawingScene",
-        element    : BasePortPin,
+        element    : "PortPinMixin",
         name       : str,
         direction  : SignalDirection,
         range      : VectorRange
     ):
         super().__init__(scene, element)
-        self._before = self.BasePortPinState(
-            element.name, element.direction, element.range
+        self._before = self.PortPinState(
+            element._name, element._direction, element._range
         )
-        self._after  = self.BasePortPinState(name, direction, range)
+        self._after  = self.PortPinState(name, direction, range)
 
     def redo(self : Self) -> None:
-        self._element.name = self._after.name
-        self._element.direction = self._after.direction
-        self._element.range = self._after.range
+        self._element._name = self._after.name
+        self._element._direction = self._after.direction
+        self._element._range = self._after.range
         self._element.update()
 
     def undo(self : Self) -> None:
-        self._element.name = self._before.name
-        self._element.direction = self._before.direction
-        self._element.range = self._before.range
+        self._element._name = self._before.name
+        self._element._direction = self._before.direction
+        self._element._range = self._before.range
         self._element.update()
 
 class cmdEditText(cmdSceneElement):

@@ -7,9 +7,11 @@ from PyQt6.QtWidgets import QWidget, QDialog, \
 
 from ..graphics.items import SignalDirection, RangeDirection, VectorRange
 
-from ..graphics.items.port_pin import BasePortPin
-
 from . import okCancelLayout
+
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from ..graphics.items.port_pin import PortPinMixin
 
 
 class PortPinDialog(QDialog):
@@ -40,7 +42,7 @@ class PortPinDialog(QDialog):
     def __init__(
         self    : Self,
         title   : str,
-        element : Optional[BasePortPin] = None,
+        element : Optional["PortPinMixin"] = None,
         parent  : Optional[QWidget] = None
     ) -> None:
         super().__init__(parent)
