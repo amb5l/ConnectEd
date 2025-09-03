@@ -113,24 +113,6 @@ class BaseText(
         """Move the entire Text when any keypoint is dragged."""
         self.setPos(self.pos() + delta)
 
-    @classmethod
-    def createOrUpdate(
-        cls    : Self,
-        *,
-        text   : Optional[str]     = None,
-        pos    : Optional[QPointF] = None,
-        anchor : Optional[str]     = None,
-        inst   : Optional[Self]    = None
-    ) -> "BaseText":
-        inst = cls() if inst is None else inst
-        if text is not None:
-            inst.setText(text)
-        if pos is not None:
-            inst.setPos(pos)
-        if anchor is not None:
-            inst.setOrigin(anchor)
-        return inst
-
     def ctxMenuEdit(
         self    : Self,
         checked : bool,

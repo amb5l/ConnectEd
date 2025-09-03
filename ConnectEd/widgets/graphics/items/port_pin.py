@@ -235,27 +235,6 @@ class Port(ElementPosMixin, PortPinArrowMixin, BasePortPin):
             self.setPos(pos)
         self.initArrow()
 
-    @classmethod
-    def createOrUpdate(
-        cls       : Self,
-        *,
-        name      : str                       = "",
-        direction : Optional[SignalDirection] = None,
-        range     : Optional[VectorRange]     = None,
-        pos       : Optional[QPointF]         = None,
-        inst      : Optional[Self]            = None
-    ) -> "Port":
-        inst : Port = cls() if inst is None else inst
-        if name is not None:
-            inst.name = name
-        if direction is not None:
-            inst.direction = direction
-        if range is not None:
-            inst.range = range
-        if pos is not None:
-            inst.setPos(pos)
-        return inst
-
     def ctxMenuEdit(
         self    : Self,
         checked : bool,
@@ -274,30 +253,6 @@ class BasePin(ElementLocMixin, BasePortPin):
 
     def getLoc(self : Self) -> EdgeLoc:
         return self._loc
-
-    @classmethod
-    def createOrUpdate(
-        cls       : Self,
-        *,
-        name      : str                       = "",
-        direction : Optional[SignalDirection] = None,
-        range     : Optional[VectorRange]     = None,
-        loc       : Optional[EdgeLoc]         = None,
-        parent    : Optional["PinRect"]       = None,
-        inst      : Optional[Self]            = None
-    ) -> "BasePin":
-        inst : BasePin = cls() if inst is None else inst
-        if name is not None:
-            inst.name = name
-        if direction is not None:
-            inst.direction = direction
-        if range is not None:
-            inst.range = range
-        if loc is not None:
-            inst.setLoc(loc)
-        if parent is not None:
-            inst.setParentItem(parent)
-        return inst
 
 class BlockPinNode(Node):
     pass
@@ -327,26 +282,6 @@ class BlockPin(PortPinArrowMixin, BasePin):
         BasePortPin.__init__(self)
         self.setParentItem(parent)
         self.initArrow()
-
-    @classmethod
-    def createOrUpdate(
-        cls       : Self,
-        *,
-        name      : str                       = "",
-        direction : Optional[SignalDirection] = None,
-        range     : Optional[VectorRange]     = None,
-        loc       : Optional[EdgeLoc]         = None,
-        parent    : Optional["Block"]         = None,
-        inst      : Optional[Self]            = None
-    ) -> "BlockPin":
-        return super().createOrUpdate(
-            name      = name,
-            direction = direction,
-            range     = range,
-            loc       = loc,
-            parent    = parent,
-            inst      = inst
-        )
 
     def ctxMenuEdit(
         self    : Self,
