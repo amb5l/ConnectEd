@@ -28,6 +28,8 @@ def main() -> int:
     if known_args.reset:
         hub.settings.reset()
     hub.settings.load()
+    if known_args.dump:
+        print(hub.settings.dump())
     icon = QIcon(getIconPath("ConnectEd.png"))
     app.setWindowIcon(icon)
     if sys.platform == "win32":

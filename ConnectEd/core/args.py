@@ -7,4 +7,5 @@ parser = argparse.ArgumentParser(
     )
 modeGroup = parser.add_mutually_exclusive_group()
 parser.add_argument("-r", "--reset", action="store_true", help="clear stored preferences")
+parser.add_argument("-d", "--dump", action="store_true", help="dump settings")
 known_args, unknown_args = parser.parse_known_args()
