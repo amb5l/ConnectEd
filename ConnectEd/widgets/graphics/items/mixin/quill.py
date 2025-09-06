@@ -157,32 +157,6 @@ class Quill:
             self._brush.setColor(color)
             self._parent.setBrush(self._brush)
 
-    def toXml(self : Self, xw : QXmlStreamWriter) -> None:
-        xw.writeStartElement("text")
-        xw.writeAttribute( "color",     val2str( self._color     ))
-        xw.writeAttribute( "family",    val2str( self._family    ))
-        xw.writeAttribute( "size",      val2str( self._size      ))
-        xw.writeAttribute( "bold",      val2str( self._bold      ))
-        xw.writeAttribute( "italic",    val2str( self._italic    ))
-        xw.writeAttribute( "underline", val2str( self._underline ))
-        xw.writeEndElement()
-
-    @classmethod
-    def fromXml(cls : Self, xr : QXmlStreamReader) -> Self:
-        attributes = xr.attributes()
-        xr.readNext()
-        inst : Quill = cls()
-        for attr in attributes:
-            v = attr.value()
-            match attr.name():
-                case "color"     : inst.setColor(str2val(v, QColor))
-                case "family"    : inst.setFamily(str2val(v, str))
-                case "size"      : inst.setSize(str2val(v, float))
-                case "bold"      : inst.setBold(str2val(v, bool))
-                case "italic"    : inst.setItalic(str2val(v, bool))
-                case "underline" : inst.setUnderline(str2val(v, bool))
-        return inst
-
 
 class ElementQuillMixin:
     _PROPERTY_SPECS_QUILL = {

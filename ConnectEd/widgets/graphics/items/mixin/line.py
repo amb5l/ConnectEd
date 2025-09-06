@@ -101,28 +101,6 @@ class Line:
         if hasattr(self.parent, "setPen"):
             self.parent.setPen(self.pen)
 
-    def toXml(self : Self, xw : QXmlStreamWriter) -> None:
-        xw.writeStartElement("line")
-        xw.writeAttribute("color", val2str(self.color))
-        xw.writeAttribute("width", val2str(self.width))
-        xw.writeAttribute("style", val2str(self.style))
-        xw.writeEndElement()
-
-    @classmethod
-    def fromXml(cls : Self, xr : QXmlStreamReader) -> Self:
-        attributes = xr.attributes()
-        xr.readNext()
-        inst : Line = cls()
-        for attr in attributes:
-            match attr.name():
-                case "color":
-                    inst.setColor(str2val(attr.value(), QColor))
-                case "width":
-                    inst.setWidth(str2val(attr.value(), float))
-                case "style":
-                    inst.setStyle(str2val(attr.value(), Qt.PenStyle))
-        return inst
-
 
 class ElementLineMixin:
     _PROPERTY_SPECS_LINE = {

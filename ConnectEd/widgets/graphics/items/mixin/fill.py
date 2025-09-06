@@ -79,25 +79,6 @@ class Fill:
         if hasattr(self.parent, "setBrush"):
             self.parent.setBrush(self.brush)
 
-    def toXml(self : Self, xw : QXmlStreamWriter) -> None:
-        xw.writeStartElement("fill")
-        xw.writeAttribute("color", val2str(self.color))
-        xw.writeAttribute("style", val2str(self.style))
-        xw.writeEndElement()
-
-    @classmethod
-    def fromXml(cls : Self, xr : QXmlStreamReader) -> Self:
-        attributes = xr.attributes()
-        xr.readNext()
-        inst : Fill = cls()
-        for attr in attributes:
-            match attr.name():
-                case "color":
-                    inst.setColor(str2val(attr.value(), QColor))
-                case "style":
-                    inst.setStyle(str2val(attr.value(), Qt.BrushStyle))
-        return inst
-
 
 class ElementFillMixin:
     _PROPERTY_SPECS_FILL = {
