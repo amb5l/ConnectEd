@@ -11,6 +11,7 @@ from .utils import val2str, str2val
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from .db import DesignDbItem, LibraryDbItem, DiagramItem, SymbolItem
+    from ..widgets.graphics.properties import PropertiesMixin
     from ..widgets.graphics.items import ElementMixin
 
 
@@ -45,13 +46,15 @@ def fromXmlEnd(xr : QXmlStreamReader, element_name : str) -> None:
     while not (xr.isEndElement() and xr.name() == element_name):
         xr.readNext()
 
-def fromXmlAttrs(instance : Any, xr : QXmlStreamReader) -> None:
+def fromXmlAttrs(instance : "PropertiesMixin", xr : QXmlStreamReader) -> None:
     attributes = xr.attributes()
     for attribute in attributes:
         xml_attr_name = attribute.name()
-        value = attribute.value()
+        xml_attr_value_str = attribute.value()
         property_name = xml_attr_name.replace("_", " ")
-        instance.setPropertyValue(property_name, value)
+        property_spec = instance.getPropertySpec(property_name)
+        property_value = str2val(xml_attr_value_str, property_spec.type_name)
+        instance.setPropertyValue(property_name, property_value)
     xr.readNext()
 
 def fromXmlItems(

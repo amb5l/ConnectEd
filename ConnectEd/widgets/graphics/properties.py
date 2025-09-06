@@ -62,6 +62,9 @@ class PropertiesMixin:
             p.setDisplay(pts.display)
             p.setParentItem(self._anchor_points[pts.cleat])
 
+    def getPropertySpec(self : Self, name : str) -> PropertySpec:
+        return self._properties[name]
+
     def renameProperty(self : Self, old : str, new : str) -> None:
         if old == new:
             return
