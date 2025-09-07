@@ -1,3 +1,5 @@
+from PyQt6.QtCore import QPointF
+
 from ...items import ElementMixin
 
 from typing import TYPE_CHECKING
@@ -19,3 +21,9 @@ class DrawingSceneApiPrivateMixin:
             item for item in self.selectedItems()
             if isinstance(item, ElementMixin)
         ]
+
+    def _snap(self : "DrawingScene", pos : QPointF, snap : QPointF) -> QPointF:
+        return QPointF(
+                round(pos.x() / snap.x()) * snap.x(),
+                round(pos.y() / snap.y()) * snap.y()
+            )

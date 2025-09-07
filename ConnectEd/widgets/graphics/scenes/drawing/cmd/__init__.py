@@ -96,6 +96,22 @@ class cmdPinBase(cmdBase):
         self._parent = parent
         self._pin = pin
 
+class cmdPinsBase(cmdBase):
+    """Base class for all commands that work with multiple pins."""
+
+    # instance attributes
+    _parent : PinRect
+    _pins   : list[Pin]
+
+    def __init__(
+        self : Self,
+        parent : PinRect,
+        pins   : list[Pin]
+    ):
+        super().__init__()
+        self._parent = parent
+        self._pins = pins
+
 class cmdSelectionMixin:
     """Mixin for commands that need to preserve/restore the scene selection."""
 
@@ -142,6 +158,7 @@ class cmdAddRemoveMixin:
 
 class cmdMoveMixin:
     """Mixin for commands that move elements by an offset."""
+    # TODO merge this into cmdMove?
 
     # instance attributes
     _elements : list[ElementType]
@@ -256,22 +273,28 @@ class cmdDeletePin(cmdPinBase):
     def undo(self : Self) -> None:
         self._pin.setParentItem(self._parent)
 
-class cmdMovePin(cmdPinBase):
-    """Command to move a pin."""
+class cmdMovePins(cmdPinsBase):
+    """Command to move multiple pins by an offset."""
 
     # instance attributes
-    _old_loc : EdgeLoc
-    _new_loc : EdgeLoc
+    _new    : dict[Pin, EdgeLoc] # new locations
+    _old    : dict[Pin, EdgeLoc] # old locations
 
     def __init__(
         self : Self,
         parent : PinRect,
-        pin    : Pin,
-        loc    : EdgeLoc
+        pins   : list[Pin],
+        new    : dict[Pin, EdgeLoc],
+        old    : dict[Pin, EdgeLoc]
     ):
-        super().__init__(parent, pin)
-        self._old_loc = self._pin.getLoc()
-        self._new_loc = loc
+        super().__init__(parent, pins)
+        self._new = new
+        self._old = old
 
     def redo(self : Self) -> None:
-        self._pin.setLoc(self._new_loc)
+        for pin in self._pins:
+            pin.setLoc(self._new[pin])
+
+    def undo(self : Self) -> None:
+        for pin in self._pins:
+            pin.setLoc(self._old[pin])

@@ -43,7 +43,7 @@ class ElementLocMixin:
             case Edge.BOTTOM: r = 270
         self.setRotation(r)
         parent : "PinRect" = self.parentItem()
-        edge_pos = parent.getLocPos(loc) if parent else QPointF()
+        edge_pos = parent.loc2pos(loc) if parent else QPointF()
         super().setPos(edge_pos)
         for child in self.childItems():
             for grandchild in child.childItems():
@@ -56,13 +56,15 @@ class ElementLocMixin:
     def setLocDistance(self : Self, distance : float) -> None:
         self.setLoc(EdgeLoc(self._loc.edge, distance))
 
-    def setLocPos(
-        self : Self,
-        pos  : QPointF,
-        snap : Optional[QPointF] = None
-    ) -> None:
-        parent : "PinRect" = self.parentItem()
-        self.setLoc(parent.getLoc(pos, snap))
+    def locSnap(self : Self, loc : EdgeLoc, snap : Optional[QPointF] = None) -> EdgeLoc:
+        e = loc.edge
+        if snap is None:
+            d = loc.distance
+        elif loc.edge in [Edge.LEFT, Edge.RIGHT]:
+            d = round(loc.distance / snap.x()) * snap.x()
+        else:
+            d = round(loc.distance / snap.y()) * snap.y()
+        return EdgeLoc(e, d)
 
     def pos(self : Self) -> QPointF:
         raise NotImplementedError("pos is not implemented for ElementLocMixin")

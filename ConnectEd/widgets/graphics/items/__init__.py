@@ -28,10 +28,11 @@ class APType(Enum):
     Resizer = 2
 
 class Edge(Enum):
-    LEFT   = "Left"
-    RIGHT  = "Right"
-    TOP    = "Top"
-    BOTTOM = "Bottom"
+    UNDEFINED = "Undefined"
+    LEFT      = "Left"
+    BOTTOM    = "Bottom"
+    RIGHT     = "Right"
+    TOP       = "Top"
 
 @dataclass
 class EdgeLoc:

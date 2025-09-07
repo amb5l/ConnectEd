@@ -6,7 +6,7 @@ from PyQt6.QtWidgets import QGraphicsItem
 
 from .....core.xml import paste
 
-from ...items import ElementMixin, clone
+from ...items import EdgeLoc, ElementMixin, clone
 
 from ...items.handle     import Handle
 
@@ -20,7 +20,7 @@ from ...items.rectangle  import Rectangle
 from ...items.text       import Text
 from ...items.text_block import TextBlock
 
-from .cmd   import cmdAdd, cmdMove, cmdAddPin
+from .cmd   import cmdAdd, cmdMove, cmdAddPin, cmdMovePins
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -64,7 +64,7 @@ class SceneElementInteraction(Interaction):
         return self._element is not None
 
 class SceneElementsInteraction(Interaction):
-    """Base for all interactions that operate on one or morescene elements."""
+    """Base for all interactions that operate on one or more scene elements."""
 
     # instance attributes
     _elements : list[ElementType]
@@ -271,6 +271,70 @@ class EditResizeInteraction(EditMoveInteraction):
     ) -> None:
         EditMoveInteraction.__init__(self, scene, [handle], pos, False)
 
+class EditMovePinsInteraction(Interaction):
+    # instance attributes
+    _parent : PinRect
+    _pins   : list[Pin]                   # first element is primary pin
+    _sloc   : dict[ElementType, EdgeLoc]  # stored locations of all pins
+
+    def __init__(
+        self   : Self,
+        scene  : "DrawingScene",
+        parent : PinRect,
+        pins   : list[Pin]
+    ) -> None:
+        Interaction.__init__(self, scene)
+        self._parent = parent
+        self._pins = pins
+        self._storeLoc()
+
+    @property
+    def valid(self : Self) -> bool:
+        return \
+            self._parent is not None and \
+            hasattr(self, "_pins") and \
+            len(self._pins) > 0
+
+    def update(self, pos: QPointF, snap: Optional[QPointF] = None) -> None:
+        pos_snap = self._scene._snap(pos, snap) if snap else pos
+        primary = self._pins[0]
+        loc_old = primary.loc()
+        loc_new = self._parent.pos2loc(pos)
+        loc_new_snap = self._parent.pos2loc(pos_snap)
+        offset = self._parent.locDelta(loc_old, loc_new_snap)
+        snap_pressure = self._parent.locDelta(loc_new, loc_new_snap)
+        corner = +1 if snap_pressure > 0 else -1 if snap_pressure < 0 else 0
+        self._pins[0].setLoc(loc_new_snap)
+        for pin in self._pins[1:]:
+            pin.setLoc(self._parent.locOffset(pin.loc(), offset, corner))
+        if offset != 0:
+            print(loc_old, loc_new_snap, offset, corner)
+            for pin in self._pins:
+                print(" pin loc = ", pin.loc())
+
+    def complete(self, pos: QPointF, snap: Optional[QPointF] = None) -> bool:
+        self._restoreLoc()
+        self.update(pos, snap)
+        if all(p.loc() == self._sloc[p] for p in self._pins):
+            return False # no change
+        self._scene.undo_stack.push(cmdMovePins(
+            self._parent,
+            self._pins,
+            {p: p.loc() for p in self._pins},
+            self._sloc
+        ))
+        return True
+
+    def cancel(self) -> None:
+        self._restoreLoc()
+
+    def _storeLoc(self : Self) -> None:
+        self._sloc = {p: p.loc() for p in self._pins}
+
+    def _restoreLoc(self : Self) -> None:
+        for p in self._pins:
+            p.setLoc(self._sloc[p])
+
 class PlaceBaseInteraction(
     SelectionMixin,          # _preserveSelection, _restoreSelection
     SceneElementInteraction  # _scene, _element, valid
@@ -333,7 +397,7 @@ class PlacePinInteraction(PinInteraction):
         PinInteraction.__init__(self, scene, parent, pin, pos, snap)
 
     def update(self : Self, pos : QPointF, snap : Optional[QPointF] = None) -> None:
-        self._pin.setLoc(self._parent.getLoc(pos, snap))
+        self._pin.setLoc(self._pin.locSnap(self._parent.pos2loc(pos), snap))
 
     def complete(self : Self, pos : QPointF, snap : Optional[QPointF] = None) -> bool:
         self.update(pos, snap)

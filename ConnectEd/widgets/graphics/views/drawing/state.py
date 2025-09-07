@@ -19,6 +19,8 @@ from ...items.text          import Text
 from ...items.text_block    import TextBlock
 from ...items.property_text import PropertyText
 
+from ...items.port_pin.pin import PinMixin
+
 from ...scenes.drawing import DrawingScene
 
 from ...scenes.drawing.interaction import *
@@ -26,7 +28,6 @@ from ...scenes.drawing.interaction import *
 from ...scenes.drawing.cmd.edit import cmdEditPortPin,     \
                                        cmdEditText,        \
                                        cmdEditPropertyText
-
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -184,11 +185,22 @@ class DrawingViewStateIdle(DrawingViewStateBase):
         self.view._selectPoint(s, m)
         items = self.scene.selectedItems()
         if items: # slide/move
-            slide = not(m & qkm.AltModifier)
-            self.interact(
-                EditMoveInteraction(self.scene, items, self._snap(s), slide),
-                self.view.stateEditSlide if slide else self.view.stateEditMove
-            )
+            if all(isinstance(item, PinMixin) for item in items) \
+            and all(item.parentItem() is not None for item in items) \
+            and all(item.parentItem() == items[0].parentItem() for item in items):
+                # move pins
+                self.interact(
+                    EditMovePinsInteraction(self.scene, items[0].parentItem(), items),
+                    self.view.stateEditMovePins
+                )
+            else:
+                # other move scenarios
+                # TODO filter out pins and child items?
+                slide = not(m & qkm.AltModifier)
+                self.interact(
+                    EditMoveInteraction(self.scene, items, self._snap(s), slide),
+                    self.view.stateEditSlide if slide else self.view.stateEditMove
+                )
         else: # start marquee selection
             self.view.marquee.begin(v)
             self.view.state.go(self.view.stateEditSelectArea2)
@@ -315,7 +327,8 @@ class DrawingViewStateEditPaste(ClickMixin):
         v :    QPoint,
         s :    QPointF,
         e :    Optional[list[ElementMixin]] = None
-    ) -> None:        self.view.state.interact(EditPasteInteraction(self.scene, self._snap(s)))
+    ) -> None:
+        self.view.state.interact(EditPasteInteraction(self.scene, self._snap(s)))
 
 class DrawingViewStateEditDuplicate(ClickMixin, DragMixin):
     TIP = "Duplicate: place the duplicated item(s) as required"
@@ -330,6 +343,27 @@ class DrawingViewStateEditMove(DrawingViewStateEditSlide):
 
 class DrawingViewStateEditResize(DragMixin):
     TIP = "Resize: position the selected handle as required"
+
+class DrawingViewStateEditMovePins(DrawingViewStateBase):
+    TIP = "Move Pins: position the selected pin(s) as required"
+
+    def mouseLeftClick(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
+        g = self.view.grid
+        self.view.interaction.complete(s, g.pitch if g.snap else None)
+        self.view.state.go(self.view.stateIdle)
+
+    def mouseMove(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
+        g = self.view.grid
+        self.view.interaction.update(s, g.pitch if g.snap else None)
+
+    def mouseLeftDragCont(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
+        g = self.view.grid
+        self.view.interaction.update(s, g.pitch if g.snap else None)
+
+    def mouseLeftDragEnd(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
+        g = self.view.grid
+        self.view.interaction.complete(s, g.pitch if g.snap else None)
+        self.view.state.go(self.view.stateIdle)
 
 class DrawingViewStateEditAppearance(DrawingViewStateBase):
     TIP = "Appearance: specify changes"
@@ -611,6 +645,7 @@ class DrawingViewStateMixin:
     stateEditSlide        : DrawingViewStateEditSlide
     stateEditMove         : DrawingViewStateEditMove
     stateEditResize       : DrawingViewStateEditResize
+    stateEditMovePins     : DrawingViewStateEditMovePins
     stateEditAppearance   : DrawingViewStateEditAppearance
     stateEditProperties   : DrawingViewStateEditProperties
     stateEditQuery        : DrawingViewStateEditQuery
@@ -640,6 +675,7 @@ class DrawingViewStateMixin:
         self.stateEditSlide        = DrawingViewStateEditSlide        (self._window, self)
         self.stateEditMove         = DrawingViewStateEditMove         (self._window, self)
         self.stateEditResize       = DrawingViewStateEditResize       (self._window, self)
+        self.stateEditMovePins     = DrawingViewStateEditMovePins     (self._window, self)
         self.stateEditAppearance   = DrawingViewStateEditAppearance   (self._window, self)
         self.stateEditProperties   = DrawingViewStateEditProperties   (self._window, self)
         self.stateEditQuery        = DrawingViewStateEditQuery        (self._window, self)

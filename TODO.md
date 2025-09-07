@@ -1,4 +1,8 @@
-- Line.toXml used?
+- Pin name not updating
+- Pin appearance
+- Pin movement
+
+- check interactions that don't change anything don't push a cmd
 - tackle onGeometryChange usage
 - unitary port/pin element (rather than composed of children)
 
