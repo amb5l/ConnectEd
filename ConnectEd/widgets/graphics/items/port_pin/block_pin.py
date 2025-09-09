@@ -1,6 +1,10 @@
 from .node     import Node
-from .port_pin import PortPinText, PortPinArrow
-from .pin      import PinMixin
+from .port_pin import PortPinText
+from .pin      import PinArrow, Pin
+
+
+class BlockPinArrow(PinArrow):
+    pass
 
 
 class BlockPinNode(Node):
@@ -15,10 +19,19 @@ class BlockPinComment(PortPinText):
     pass
 
 
-class BlockPin(PinMixin, PortPinArrow):
-    # class attributes
-    _PATH_IN       = PortPinArrow._PATH_AWAY
-    _PATH_OUT      = PortPinArrow._PATH_TOWARDS
-    _NODE_CLASS    = BlockPinNode
-    _NAME_CLASS    = BlockPinName
-    _COMMENT_CLASS = BlockPinComment
+class BlockPin(Pin):
+    @classmethod
+    def _getArrowClass(cls) -> type[BlockPinArrow]:
+        return BlockPinArrow
+
+    @classmethod
+    def _getNodeClass(cls) -> type[BlockPinNode]:
+        return BlockPinNode
+
+    @classmethod
+    def _getNameClass(cls) -> type[BlockPinName]:
+        return BlockPinName
+
+    @classmethod
+    def _getCommentClass(cls) -> type[BlockPinComment]:
+        return BlockPinComment

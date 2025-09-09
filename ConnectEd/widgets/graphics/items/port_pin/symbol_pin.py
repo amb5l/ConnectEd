@@ -1,6 +1,10 @@
 from .node     import Node
 from .port_pin import PortPinText
-from .pin      import PinMixin, Pin
+from .pin      import PinArrow, Pin
+
+
+class SymbolPinArrow(PinArrow):
+    pass
 
 
 class SymbolPinNode(Node):
@@ -16,7 +20,18 @@ class SymbolPinComment(PortPinText):
 
 
 class SymbolPin(Pin):
-    # class attributes
-    _NODE_CLASS    = SymbolPinNode
-    _NAME_CLASS    = SymbolPinName
-    _COMMENT_CLASS = SymbolPinComment
+    @classmethod
+    def _getArrowClass(cls) -> type[SymbolPinArrow]:
+        return SymbolPinArrow
+
+    @classmethod
+    def _getNodeClass(cls) -> type[SymbolPinNode]:
+        return SymbolPinNode
+
+    @classmethod
+    def _getNameClass(cls) -> type[SymbolPinName]:
+        return SymbolPinName
+
+    @classmethod
+    def _getCommentClass(cls) -> type[SymbolPinComment]:
+        return SymbolPinComment

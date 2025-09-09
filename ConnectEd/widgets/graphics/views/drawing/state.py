@@ -19,7 +19,7 @@ from ...items.text          import Text
 from ...items.text_block    import TextBlock
 from ...items.property_text import PropertyText
 
-from ...items.port_pin.pin import PinMixin
+from ...items.port_pin.pin import Pin
 
 from ...scenes.drawing import DrawingScene
 
@@ -185,7 +185,7 @@ class DrawingViewStateIdle(DrawingViewStateBase):
         self.view._selectPoint(s, m)
         items = self.scene.selectedItems()
         if items: # slide/move
-            if all(isinstance(item, PinMixin) for item in items) \
+            if all(isinstance(item, Pin) for item in items) \
             and all(item.parentItem() is not None for item in items) \
             and all(item.parentItem() == items[0].parentItem() for item in items):
                 # move pins

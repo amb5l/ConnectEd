@@ -1,3 +1,6 @@
+- connect settings changes to DrawingScenePaths
+- move handle size to theme
+- DrawingItem => DrawingModelItem
 - Pin name not updating
 - Pin appearance
 - Pin movement

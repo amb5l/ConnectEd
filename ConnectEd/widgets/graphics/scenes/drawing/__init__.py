@@ -15,6 +15,7 @@ from ...properties import PropertySpec, PropertiesMixin
 from .file    import DrawingSceneApiFileMixin
 from .edit    import DrawingSceneApiEditMixin
 from .private import DrawingSceneApiPrivateMixin
+from .paths   import DrawingScenePathsMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -25,6 +26,7 @@ class DrawingScene(
     DrawingSceneApiFileMixin,
     DrawingSceneApiEditMixin,
     DrawingSceneApiPrivateMixin,
+    DrawingScenePathsMixin,
     QGraphicsScene
 ):
     # class attributes
@@ -54,6 +56,7 @@ class DrawingScene(
         self.undo_stack = None
         self.undo_stack = QUndoStack(self)
         self.initProperties()
+        self.initPaths()
 
     def setParent(self : Self, parent : "DrawingItem") -> None:
         self.item = parent

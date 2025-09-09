@@ -98,22 +98,24 @@ FACTORY_SETTINGS = {
                     "fill" : {
                         "color" : PaletteDark.PortFill,
                         "style" : Qt.BrushStyle.NoBrush
-                    }
+                    },
+                    "size" : 8
                 },
                 "PortNode" : {
                     "line" : {
-                        "color" : PaletteDark.BlockPin,
+                        "color" : PaletteDark.PortNode,
                         "width" : 0,
                         "style" : Qt.PenStyle.SolidLine
                     },
                     "fill" : {
-                        "color" : PaletteDark.BlockPin,
+                        "color" : PaletteDark.PortNode,
                         "style" : Qt.BrushStyle.NoBrush
-                    }
+                    },
+                    "size" : 4
                 },
                 "PortName" : {
                     "text" : {
-                        "color"     : PaletteDark.BlockPinName,
+                        "color"     : PaletteDark.PortName,
                         "family"    : "Liberation Sans",
                         "size"      : 7,
                         "bold"      : False,
@@ -123,7 +125,7 @@ FACTORY_SETTINGS = {
                 },
                 "PortComment" : {
                     "text" : {
-                        "color"     : PaletteDark.BlockPinComment,
+                        "color"     : PaletteDark.PortComment,
                         "family"    : "Liberation Sans",
                         "size"      : 7,
                         "bold"      : False,
@@ -151,7 +153,15 @@ FACTORY_SETTINGS = {
                     "fill" : {
                         "color" : PaletteDark.BlockPin,
                         "style" : Qt.BrushStyle.NoBrush
-                    }
+                    },
+                },
+                "BlockPinArrow" : {
+                    "line" : {
+                        "color" : PaletteDark.BlockPinArrow,
+                        "width" : 1,
+                        "style" : Qt.PenStyle.SolidLine
+                    },
+                    "size" : 4
                 },
                 "BlockPinNode" : {
                     "line" : {
@@ -162,7 +172,8 @@ FACTORY_SETTINGS = {
                     "fill" : {
                         "color" : PaletteDark.BlockPin,
                         "style" : Qt.BrushStyle.NoBrush
-                    }
+                    },
+                    "size" : 4
                 },
                 "BlockPinName" : {
                     "text" : {
@@ -183,6 +194,14 @@ FACTORY_SETTINGS = {
                         "italic"    : False,
                         "underline" : False
                     }
+                },
+                "SymbolPinArrow" : {
+                    "line" : {
+                        "color" : PaletteDark.SymbolPinArrow,
+                        "width" : 1,
+                        "style" : Qt.PenStyle.SolidLine
+                    },
+                    "size" : 4
                 },
                 "PropertyText" : {
                     "text" : {
@@ -298,6 +317,14 @@ FACTORY_SETTINGS = {
                         "style" : Qt.BrushStyle.NoBrush
                     }
                 },
+                "BlockPinArrow" : {
+                    "line" : {
+                        "color" : PaletteLightMono.BlockPinArrow,
+                        "width" : 1,
+                        "style" : Qt.PenStyle.SolidLine
+                    },
+                    "size" : 4
+                },
                 "BlockPinNode" : {
                     "line" : {
                         "color" : PaletteLightMono.BlockPin,
@@ -318,6 +345,24 @@ FACTORY_SETTINGS = {
                         "italic"    : False,
                         "underline" : False
                     }
+                },
+                "BlockPinComment" : {
+                    "text" : {
+                        "color"     : PaletteLightMono.BlockPinComment,
+                        "family"    : "Liberation Sans",
+                        "size"      : 7,
+                        "bold"      : False,
+                        "italic"    : False,
+                        "underline" : False
+                    }
+                },
+                "SymbolPinArrow" : {
+                    "line" : {
+                        "color" : PaletteLightMono.SymbolPinArrow,
+                        "width" : 1,
+                        "style" : Qt.PenStyle.SolidLine
+                    },
+                    "size" : 4
                 },
                 "PropertyText" : {
                     "text" : {
