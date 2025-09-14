@@ -1,12 +1,10 @@
 from typing import Self, Optional
 from types  import SimpleNamespace
 
-from PyQt6.QtCore import Qt, QXmlStreamWriter, QXmlStreamReader
+from PyQt6.QtCore import Qt
 from PyQt6.QtGui  import QColor, QFont, QPen, QBrush
 
 from ...properties import PropertySpec
-
-from .....core.utils import val2str, str2val
 
 from .. import Default, DEFAULT, NO_CHANGE, QuillPref, QuillPrefChange
 
