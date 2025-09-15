@@ -55,6 +55,13 @@ class Port(ElementPosMixin, ElementFillMixin, PortPinMixin, QGraphicsPathItem):
         self.initPortPin()
         self.onSettingsChange()
 
+    def onSettingsChange(self : Self) -> None:
+        size = settings().getTheme("elements/Port/size")
+        self.getAnchorPoint("Name").setPos(size + self._NAME_OFFSET, 0)
+
+    def onSceneChange(self : Self, scene : "DrawingScene") -> None:
+        self._setPath(scene)
+
     @property
     def direction(self : Self) -> "SignalDirection":
         return super().direction
@@ -62,15 +69,15 @@ class Port(ElementPosMixin, ElementFillMixin, PortPinMixin, QGraphicsPathItem):
     @direction.setter
     def direction(self : Self, value : "SignalDirection") -> None:
         super(Port, Port).direction.__set__(self, value)
+        self._setPath(self.scene())
+
+    def _setPath(self : Self, scene : "DrawingScene") -> None:
         scene : "DrawingScene" = self.scene()
         if scene is not None \
         and self.__class__.__name__ in scene.paths \
-        and value.value in scene.paths[self.__class__.__name__]:
-            self.setPath(scene.paths[self.__class__.__name__][value.value])
-
-    def onSettingsChange(self : Self) -> None:
-        size = settings().getTheme("elements/Port/size")
-        self.getAnchorPoint("Name").setPos(size + self._NAME_OFFSET, 0)
+        and self._direction.value in scene.paths[self.__class__.__name__]:
+            path = scene.paths[self.__class__.__name__][self._direction.value]
+            self.setPath(path)
 
     def paint(
         self    : Self,

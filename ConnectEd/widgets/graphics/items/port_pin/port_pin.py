@@ -80,6 +80,7 @@ class PortPinMixin(
             )
         } | \
         ElementLineMixin._PROPERTY_SPECS_LINE
+        
     # instance attributes
     _name      : str
     _comment   : str
