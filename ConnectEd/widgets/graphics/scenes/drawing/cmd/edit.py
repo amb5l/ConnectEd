@@ -44,20 +44,20 @@ class cmdEditPortPin(cmdSceneElement):
     ):
         super().__init__(scene, element)
         self._before = self.PortPinState(
-            element._name, element._direction, element._range
+            element.name, element.direction, element.range
         )
         self._after  = self.PortPinState(name, direction, range)
 
     def redo(self : Self) -> None:
-        self._element._name = self._after.name
-        self._element._direction = self._after.direction
-        self._element._range = self._after.range
+        self._element.name = self._after.name
+        self._element.direction = self._after.direction
+        self._element.range = self._after.range
         self._element.update()
 
     def undo(self : Self) -> None:
-        self._element._name = self._before.name
-        self._element._direction = self._before.direction
-        self._element._range = self._before.range
+        self._element.name = self._before.name
+        self._element.direction = self._before.direction
+        self._element.range = self._before.range
         self._element.update()
 
 class cmdEditText(cmdSceneElement):

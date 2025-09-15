@@ -18,24 +18,13 @@ class PropertySpec:
     getter      : Optional[Callable[[], Any]]     = None
     setter      : Optional[Callable[[Any], None]] = None  # None = read only
     default     : Optional[Callable[[], Any]]     = None  # for when the value is DEFAULT
-    value       : Optional[Any]                   = None  # for simple strings
     description : str                             = ""
     custom      : bool                            = False
 
     def __post_init__(self):
-        # defaults for simple strings
+        # Set defaults for optional functions
         if self.exists is None:
             self.exists = lambda: True
-        if self.getter is None:
-            # Capture the PropertySpec instance in closure so lambda can access its value
-            ps = self
-            self.getter = lambda obj: "" if ps.value is None else ps.value
-        if self.setter is None:
-            # Capture the PropertySpec instance in closure so lambda can set its value
-            ps = self
-            self.setter = lambda obj, val: setattr(ps, 'value', str(val))
-            if self.value is None:
-                self.value = ""
         if self.default is None:
             self.default = lambda: None
 

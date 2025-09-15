@@ -45,11 +45,15 @@ class PortPinMixin(
     _NAME_OFFSET = 1.5
     _PROPERTY_SPECS = \
         {
-            "Name" : PropertySpec(),
+            "Name" : PropertySpec(
+                type_name = "str",
+                getter    = lambda self: self._name,
+                setter    = lambda self, value: setattr(self, '_name', value)
+            ),
             "Direction" : PropertySpec(
                 type_name = "SignalDirection",
                 getter    = lambda self: self._direction,
-                setter    = lambda self, value: setattr(self, 'direction', value)  # Use property setter
+                setter    = lambda self, value: setattr(self, '_direction', value)  # Use property setter
             ),
             "Range Left" : PropertySpec(
                 type_name = "str",
@@ -69,10 +73,16 @@ class PortPinMixin(
                 getter    = lambda self: self._range.right,
                 setter    = lambda self, value: setattr(self._range, 'right', value)
             ),
-            "Comment" : PropertySpec()
+            "Comment" : PropertySpec(
+                type_name = "str",
+                getter    = lambda self: self._comment,
+                setter    = lambda self, value: setattr(self, '_comment', value)
+            )
         } | \
         ElementLineMixin._PROPERTY_SPECS_LINE
     # instance attributes
+    _name      : str
+    _comment   : str
     _direction : SignalDirection
     _range     : VectorRange
     _node      : Node
@@ -105,16 +115,14 @@ class PortPinMixin(
 
     def initPortPin(self : Self) -> None:
         # Initialize attributes that properties will access
+        self._name      = ""
         self._direction = SignalDirection.IN
         self._range     = None
-        self._node      = None
+        self._comment   = ""
         # Initialize the element (this sets up properties system)
         self.initElement()
-        # Set properties that require the property system
-        self.name = ""
-        self.comment = ""
         # Initialize the node
-        self.node = self._getNodeClass()(self)
+        self._node = self._getNodeClass()(self)
 
     def initAnchorPoints(self : Self) -> None:
         self._anchor_points = {
@@ -132,6 +140,9 @@ class PortPinMixin(
             )
         }
 
+    ############################################################################
+    # convenience properties
+
     @property
     def name(self : Self) -> str:
         return self.getPropertyValue("Name")
@@ -142,11 +153,11 @@ class PortPinMixin(
 
     @property
     def direction(self : Self) -> SignalDirection:
-        return self._direction
+        return self.getPropertyValue("Direction")
 
     @direction.setter
     def direction(self : Self, value : SignalDirection) -> None:
-        self._direction = value
+        self.setPropertyValue("Direction", value)
 
     @property
     def range(self : Self) -> VectorRange:
@@ -155,14 +166,17 @@ class PortPinMixin(
     @range.setter
     def range(self : Self, value : VectorRange) -> None:
         self._range = value
+        self.onPropertyChange()
 
     @property
-    def node(self : Self) -> Node:
-        return self._node
+    def comment(self : Self) -> str:
+        return self.getPropertyValue("Comment")
 
-    @node.setter
-    def node(self : Self, value : Node) -> None:
-        self._node = value
+    @comment.setter
+    def comment(self : Self, value : str) -> None:
+        self.setPropertyValue("Comment", value)
+
+    ############################################################################
 
     def getMenuItems(self : Self) -> list[str]:
         return ["Edit"]

@@ -94,6 +94,17 @@ class PortPinDialog(QDialog):
         self._dialog_layout.addLayout(self._width_layout)
         okCancelLayout(self)
         self.setLayout(self._dialog_layout)
+        # default field values
+        self._name_edit.setText("")
+        self._signal_dir_combo.setCurrentIndex(0)
+        self._scalar_check.setChecked(True)
+        self._range_group.setEnabled(False)
+        self._left_edit.setText("")
+        self._right_edit.setText("")
+        self._unspec_radio.setChecked(True)
+        self._down_radio.setChecked(False)
+        self._up_radio.setChecked(False)
+        # initialise fields from element if provided
         if element is not None:
             self._name_edit.setText(element.name)
             self._signal_dir_combo.setCurrentText(element.direction.value)
@@ -105,8 +116,16 @@ class PortPinDialog(QDialog):
                 self._range_group.setEnabled(True)
                 self._left_edit.setText(str(element.range.left))
                 self._right_edit.setText(str(element.range.right))
-                self._range_dir_group.setEnabled(True)
-                self._range_dir_group.setChecked(element.range.dir.value)
+                self._up_radio.setChecked(
+                    element.range.dir == RangeDirection.UP
+                )
+                self._down_radio.setChecked(
+                    element.range.dir == RangeDirection.DOWN
+                )
+                self._unspec_radio.setChecked(
+                    element.range.dir == RangeDirection.UNSPECIFIED
+                )
+        # catch scalar/vector change
         self._scalar_check.stateChanged.connect(self.onScalarChanged)
 
     def onScalarChanged(self, state: int) -> None:
