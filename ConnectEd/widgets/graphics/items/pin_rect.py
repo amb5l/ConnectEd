@@ -56,11 +56,11 @@ class PinRect(BaseRectangle):
         if loc.edge == Edge.LEFT:
             return d
         elif loc.edge == Edge.BOTTOM:
-            return w + d
+            return h + d
         elif loc.edge == Edge.RIGHT:
-            return w + h + (w - d)
+            return h + w + (h - d)
         elif loc.edge == Edge.TOP:
-            return w + h + w + (h - d)
+            return h + w + h + (w - d)
         else:
             raise ValueError(f"Invalid edge: {loc.edge}")
 
