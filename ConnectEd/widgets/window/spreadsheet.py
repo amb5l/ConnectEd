@@ -619,8 +619,7 @@ class SpreadsheetTabWidget(QTabWidget):
             self._tabs[tab_name] = SpreadsheetWidget(
                 model=self._tab_models[tab_name],
                 proxy=self._tab_proxies[tab_name],
-                parent=self,
-                window=self._window
+                parent=self
             )
             self.addTab(self._tabs[tab_name], tab_name)
         self.setCurrentWidget(self.widget(0))

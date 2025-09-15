@@ -1,3 +1,8 @@
+- drop design, just have diagram?
+
+- cut/paste test
+- save/load diagram
+
 - connect settings changes to DrawingScenePaths
 - move handle size to theme
 - DrawingItem => DrawingModelItem

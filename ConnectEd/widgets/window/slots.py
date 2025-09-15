@@ -247,4 +247,4 @@ class Slots:
         window().mdi_area.previousSubWindow()
 
     def helpAbout(self : Self) -> None:
-        QMessageBox.about(self._window, "About", APP_NAME)
+        QMessageBox.about(window(), "About", APP_NAME)
