@@ -1,8 +1,9 @@
 import sys
 
 from PyQt6.QtCore    import Qt
-from PyQt6.QtWidgets import QApplication
 from PyQt6.QtGui     import QIcon
+
+from .app import ConnectEdApp
 
 from .core.log   import logger
 from .core.nv    import Settings
@@ -18,9 +19,9 @@ from . import hub
 
 def main() -> int:
     logger.info("started")
-    app = QApplication(sys.argv[:1] + unknown_args)
+    app = ConnectEdApp(sys.argv[:1] + unknown_args)
     app.setStyle("Fusion")
-    scheme = QApplication.instance().styleHints().colorScheme()
+    scheme = app.styleHints().colorScheme()
     splash = Splash(scheme == Qt.ColorScheme.Light)
     splash.show()
     app.processEvents()
