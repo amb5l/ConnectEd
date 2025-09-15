@@ -178,13 +178,3 @@ class PortPinMixin(
         self.setPropertyValue("Comment", value)
 
     ############################################################################
-
-    def getMenuItems(self : Self) -> list[str]:
-        return ["Edit"]
-
-    def ctxMenuEdit(
-        self    : Self,
-        _checked : bool,
-        view    : "DrawingView"
-    ) -> None:
-        view.editPort(self)

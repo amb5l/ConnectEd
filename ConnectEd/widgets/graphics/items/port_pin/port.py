@@ -14,6 +14,7 @@ from .port_pin import PortPinText, PortPinMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
+    from ...views.drawing import DrawingView
     from ...scenes.drawing import DrawingScene
     from .. import SignalDirection
 
@@ -87,3 +88,27 @@ class Port(ElementPosMixin, ElementFillMixin, PortPinMixin, QGraphicsPathItem):
     ) -> None:
         option.state &= ~QStyle.StateFlag.State_Selected
         QGraphicsPathItem.paint(self, painter, option, widget)
+
+    def getMenuItems(self : Self) -> list[str]:
+        return ["Rotate CCW", "Rotate CW", "-", "Edit"]
+
+    def ctxMenuRotateCCW(
+        self    : Self,
+        _checked : bool,
+        view    : "DrawingView"
+    ) -> None:
+        view.rotateCCW(self)
+
+    def ctxMenuRotateCW(
+        self    : Self,
+        _checked : bool,
+        view    : "DrawingView"
+    ) -> None:
+        view.rotateCW(self)
+
+    def ctxMenuEdit(
+        self     : Self,
+        _checked : bool,
+        view     : "DrawingView"
+    ) -> None:
+        view.editPort(self)

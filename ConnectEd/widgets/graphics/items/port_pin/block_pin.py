@@ -1,5 +1,11 @@
+from typing import Self
+
 from .port_pin import PortPinText
 from .pin      import PinArrow, PinNode, Pin
+
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from ...views.drawing import DrawingView
 
 
 class BlockPinArrow(PinArrow):
@@ -34,3 +40,13 @@ class BlockPin(Pin):
     @classmethod
     def _getCommentClass(cls) -> type[BlockPinComment]:
         return BlockPinComment
+
+    def getMenuItems(self : Self) -> list[str]:
+        return ["Edit"]
+
+    def ctxMenuEdit(
+        self    : Self,
+        _checked : bool,
+        view    : "DrawingView"
+    ) -> None:
+        view.editBlockPin(self)
