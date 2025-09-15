@@ -24,8 +24,8 @@ class PaletteDark:
     TextBlock       = QColor("#A8CC7C")
     Rectangle       = QColor("#D6D6DD")
     SelectedLine    = QColor("#C000C0")
-    SelectedFill    = QColor("#300030")
-    SelectedText    = QColor("#800080")
+    SelectedFill    = QColor("#800080")
+    SelectedText    = QColor("#A000A0")
     HandleLine      = QColor("#FF00FF")
     HandleFill      = QColor("#FF00FF")
 
