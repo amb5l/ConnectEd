@@ -1,13 +1,12 @@
-from .node     import Node
 from .port_pin import PortPinText
-from .pin      import PinArrow, Pin
+from .pin      import PinArrow, PinNode, Pin
 
 
 class BlockPinArrow(PinArrow):
     pass
 
 
-class BlockPinNode(Node):
+class BlockPinNode(PinNode):
     pass
 
 

@@ -307,10 +307,6 @@ class EditMovePinsInteraction(Interaction):
         self._pins[0].setLoc(loc_new_snap)
         for pin in self._pins[1:]:
             pin.setLoc(self._parent.locOffset(pin.loc(), offset, corner))
-        if offset != 0:
-            print(loc_old, loc_new_snap, offset, corner)
-            for pin in self._pins:
-                print(" pin loc = ", pin.loc())
 
     def complete(self, pos: QPointF, snap: Optional[QPointF] = None) -> bool:
         self._restoreLoc()

@@ -55,6 +55,11 @@ class Node(
         self.setPath(self._path_open)
         # TODO change appearance with connectivity
 
+    def onSelectionChange(self : Self, selected : bool) -> None:
+        parent = self.parentItem()
+        if parent and parent.isSelected() != selected:
+            parent.setSelected(selected)
+
     def moveBy(self : Self, delta : QPointF) -> None:
         parent : "PortPinMixin" = self.parentItem()
         parent.moveBy(delta)

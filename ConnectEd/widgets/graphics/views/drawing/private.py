@@ -7,6 +7,10 @@ from PyQt6.QtGui     import QMouseEvent, QPainterPath, QIcon, QAction, QCursor
 
 from .....app import settings, window
 
+from ...items.pin_rect import PinRect
+
+from ...items.port_pin.pin import Pin, PinArrow, PinNode
+
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from . import DrawingView
@@ -132,6 +136,20 @@ class DrawingViewPrivateMixin:
             self.viewportTransform()
         )
         return [i for i in items if i.zValue() in self.layer.value]
+
+    def _siblingPins(self : "DrawingView", items : QGraphicsItem) -> list[Pin]:
+        pins = []
+        parent : Optional[PinRect] = None
+        for item in items:
+            if isinstance(item, Pin):
+                if parent is None:
+                    parent = item.parentItem()
+                elif item.parentItem() != parent:
+                    return []
+                pins.append(item)
+            elif not isinstance(item, PinArrow | PinNode):
+                return []
+        return [] if parent is None else pins
 
     def _selectRect(
         self      : "DrawingView",

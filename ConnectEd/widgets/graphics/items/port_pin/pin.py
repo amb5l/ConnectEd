@@ -1,11 +1,14 @@
 from typing import Self, Optional, Any
 
-from PyQt6.QtCore    import QLineF
-from PyQt6.QtWidgets import QGraphicsItem, QGraphicsPathItem, QGraphicsLineItem
+from PyQt6.QtCore    import QPointF, QLineF
+from PyQt6.QtWidgets import QGraphicsItem, QGraphicsPathItem, QGraphicsLineItem, \
+                            QStyleOptionGraphicsItem, QWidget, QStyle
+from PyQt6.QtGui     import QPainter
 
 from .. import SignalDirection
 
 from ..mixin.loc    import ElementLocMixin
+from ..mixin.change import ElementChangeMixin
 from ..mixin.line   import ElementLineMixin
 from ..mixin.fill   import ElementFillMixin
 
@@ -20,26 +23,30 @@ if TYPE_CHECKING:
 _PIN_LEN = 10 # documentation - DO NOT CHANGE
 
 
-class PinArrow(ElementLineMixin, ElementFillMixin, QGraphicsPathItem):
+class PinArrow(
+    ElementChangeMixin,
+    ElementLineMixin,
+    ElementFillMixin,
+    QGraphicsPathItem
+):
 
     # instance attributes
     _direction : SignalDirection
 
     def __init__(self : Self, parent : Optional[QGraphicsItem] = None) -> None:
         QGraphicsPathItem.__init__(self, parent)
+        self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsSelectable, True)
         self.initLine()
         self.initFill()
         self._direction = SignalDirection.BI
 
-    def itemChange(
-        self   : Self,
-        change : QGraphicsItem.GraphicsItemChange,
-        value  : Any
-    ) -> Any:
-        match change:
-            case QGraphicsItem.GraphicsItemChange.ItemSceneChange:
-                self._setPath(value)
-        return super().itemChange(change, value)
+    def onSceneChange(self : Self, scene : "DrawingScene") -> None:
+        self._setPath(scene)
+
+    def onSelectionChange(self : Self, selected : bool) -> None:
+        parent = self.parentItem()
+        if parent and parent.isSelected() != selected:
+            parent.setSelected(selected)
 
     @property
     def direction(self : Self) -> SignalDirection:
@@ -57,6 +64,15 @@ class PinArrow(ElementLineMixin, ElementFillMixin, QGraphicsPathItem):
         and self._direction.value in scene.paths[self.__class__.__name__]:
             path = scene.paths[self.__class__.__name__][self._direction.value]
             self.setPath(path)
+
+    def paint(
+        self    : Self,
+        painter : QPainter,
+        option  : QStyleOptionGraphicsItem,
+        widget  : Optional[QWidget] = None
+    ) -> None:
+        option.state &= ~QStyle.StateFlag.State_Selected
+        QGraphicsPathItem.paint(self, painter, option, widget)
 
 
 class PinNode(Node):
@@ -109,3 +125,16 @@ class Pin(ElementLocMixin, PortPinMixin, QGraphicsLineItem):
     def direction(self : Self, value : SignalDirection) -> None:
         super(Pin, Pin).direction.__set__(self, value)
         self._arrow.direction = value
+
+    def onSelectionChange(self : Self, selected : bool) -> None:
+        self._arrow.setSelected(selected)
+        self._node.setSelected(selected)
+
+    def paint(
+        self    : Self,
+        painter : QPainter,
+        option  : QStyleOptionGraphicsItem,
+        widget  : Optional[QWidget] = None
+    ) -> None:
+        option.state &= ~QStyle.StateFlag.State_Selected
+        QGraphicsLineItem.paint(self, painter, option, widget)
