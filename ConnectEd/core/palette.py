@@ -14,7 +14,7 @@ class PaletteDark:
     BlockLine       = QColor("#828282")
     BlockFill       = QColor("#333333")
     BlockPin        = QColor("#A2A2A2")
-    BlockPinArrow   = QColor("#A2A2A2")
+    BlockPinArrow   = QColor("#EBC88D")
     BlockPinNode    = QColor("#A2A2A2")
     BlockPinName    = QColor("#EBC88D")
     BlockPinComment = QColor("#EBC88D")

@@ -7,6 +7,7 @@ from .. import SignalDirection
 
 from ..mixin.loc    import ElementLocMixin
 from ..mixin.line   import ElementLineMixin
+from ..mixin.fill   import ElementFillMixin
 
 from .node     import Node
 from .port_pin import PortPinMixin, PortPinText
@@ -19,7 +20,7 @@ if TYPE_CHECKING:
 _PIN_LEN = 10 # documentation - DO NOT CHANGE
 
 
-class PinArrow(ElementLineMixin, QGraphicsPathItem):
+class PinArrow(ElementLineMixin, ElementFillMixin, QGraphicsPathItem):
 
     # instance attributes
     _direction : SignalDirection
@@ -27,6 +28,7 @@ class PinArrow(ElementLineMixin, QGraphicsPathItem):
     def __init__(self : Self, parent : Optional[QGraphicsItem] = None) -> None:
         QGraphicsPathItem.__init__(self, parent)
         self.initLine()
+        self.initFill()
         self._direction = SignalDirection.BI
 
     def itemChange(

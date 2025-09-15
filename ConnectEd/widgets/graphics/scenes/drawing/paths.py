@@ -95,17 +95,21 @@ class DrawingScenePathsMixin:
         _in.moveTo(c-q, -h)
         _in.lineTo(c+q,  0)
         _in.lineTo(c-q, +h)
+        _in.closeSubpath()
         _out = QPainterPath()
         _out.moveTo(c+q, -h)
         _out.lineTo(c-q,  0)
         _out.lineTo(c+q, +h)
+        _out.closeSubpath()
         _bi = QPainterPath()
         c = c + 1
         _bi.moveTo(c,   -h)
         _bi.lineTo(c+h,  0)
         _bi.lineTo(c,   +h)
+        _bi.closeSubpath()
         c = c - 2
         _bi.moveTo(c,   -h)
         _bi.lineTo(c-h,  0)
         _bi.lineTo(c,   +h)
+        _bi.closeSubpath()
         return _in, _out, _bi

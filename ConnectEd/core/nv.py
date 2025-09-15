@@ -159,8 +159,12 @@ FACTORY_SETTINGS = {
                 "BlockPinArrow" : {
                     "line" : {
                         "color" : PaletteDark.BlockPinArrow,
-                        "width" : 1,
-                        "style" : Qt.PenStyle.SolidLine
+                        "width" : 0,
+                        "style" : Qt.PenStyle.NoPen
+                    },
+                    "fill" : {
+                        "color" : PaletteDark.BlockPinArrow,
+                        "style" : Qt.BrushStyle.SolidPattern
                     },
                     "size" : 4
                 },
@@ -321,8 +325,12 @@ FACTORY_SETTINGS = {
                 "BlockPinArrow" : {
                     "line" : {
                         "color" : PaletteLightMono.BlockPinArrow,
-                        "width" : 1,
-                        "style" : Qt.PenStyle.SolidLine
+                        "width" : 0,
+                        "style" : Qt.PenStyle.NoPen
+                    },
+                    "fill" : {
+                        "color" : PaletteLightMono.BlockPinArrow,
+                        "style" : Qt.BrushStyle.SolidPattern
                     },
                     "size" : 4
                 },
