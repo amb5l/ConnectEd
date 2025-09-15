@@ -4,7 +4,7 @@ from os      import walk
 from PyQt6.QtCore import QDir
 from PyQt6.QtGui  import QFontDatabase
 
-from ...core.log import logger
+from ...app import logger
 
 def initFonts() -> None:
     module_dir = Path(__file__).parent
@@ -14,6 +14,6 @@ def initFonts() -> None:
                 font_path = QDir.fromNativeSeparators(str(Path(root) / file))
                 font_id = QFontDatabase.addApplicationFont(font_path)
                 if font_id < 0:
-                    logger.error(f"Error loading font: {font_path}")
+                    logger().error(f"Error loading font: {font_path}")
                 else:
-                    logger.info(f"Loaded font: {font_path}")
+                    logger().info(f"Loaded font: {font_path}")

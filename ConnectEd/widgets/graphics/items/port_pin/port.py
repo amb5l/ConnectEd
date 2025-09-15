@@ -4,13 +4,13 @@ from PyQt6.QtWidgets import QWidget, QGraphicsItem, QGraphicsPathItem, \
                             QStyleOptionGraphicsItem, QStyle
 from PyQt6.QtGui     import QPainter
 
+from .....app import settings
+
 from ..mixin.pos  import ElementPosMixin
 from ..mixin.fill import ElementFillMixin
 
 from .node     import Node
 from .port_pin import PortPinText, PortPinMixin
-
-from ..... import hub
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -69,8 +69,8 @@ class Port(ElementPosMixin, ElementFillMixin, PortPinMixin, QGraphicsPathItem):
             self.setPath(scene.paths[self.__class__.__name__][value.value])
 
     def onSettingsChange(self : Self) -> None:
-        size = hub.settings.getTheme("elements/Port/size")
-        self.getAnchorPoint("Name").setPos(self._size + self._NAME_OFFSET, 0)
+        size = settings().getTheme("elements/Port/size")
+        self.getAnchorPoint("Name").setPos(size + self._NAME_OFFSET, 0)
 
     def paint(
         self    : Self,

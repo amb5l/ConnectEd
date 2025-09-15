@@ -1,17 +1,16 @@
 from PyQt6.QtCore import Qt, QEvent, QPoint
 from PyQt6.QtGui  import QEnterEvent, QMouseEvent, QWheelEvent, QCursor
 
-from .....core.log import logger
+from .....app import logger, settings, window
 
 from ...items.handle import Handle
 
 from .defs import DrawingViewMouseButtonState as MouseButtonState
 
-from ..... import hub
-
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from . import DrawingView
+
 
 qkm = Qt.KeyboardModifier
 
@@ -20,7 +19,7 @@ class DrawingViewMouseMixin:
         p = self.mapFromGlobal(QCursor.pos())
         l = self.mapToScene(p)
         self.mouse.current.setPL(p, l)
-        self._window.status_bar.xy.setText(
+        window().status_bar.xy.setText(
             str(int(round(l.x()))) + "," + str(int(round(l.y())))
         )
 
@@ -29,19 +28,19 @@ class DrawingViewMouseMixin:
         p = QPoint(rect.width() // 2, rect.height() // 2)
         l = self.mapToScene(p)
         self.mouse.current.setPL(p, l)
-        self._window.status_bar.xy.setText("-,-")
+        window().status_bar.xy.setText("-,-")
 
     def mouseMoveEvent(self : "DrawingView", event : QMouseEvent) -> None:
         p = event.pos(); l = self.mapToScene(p); m = self._getModifiers(event)
         self.mouse.current.setPL(p, l)
         self.mouse.current.modifiers = m
-        self._window.status_bar.xy.setText(
+        window().status_bar.xy.setText(
             str(int(round(l.x()))) + "," + str(int(round(l.y())))
         )
         match self.mouse.left.state:
             case MouseButtonState.Pressed:
                 d = self._distance(self.mouse.left.press.physical, event.pos())
-                if d >= hub.settings.get("prefs/mouse/drag"):
+                if d >= settings().get("prefs/mouse/drag"):
                     self.mouse.left.state = MouseButtonState.Dragging
                     self.state.mouseLeftDragBegin(
                         self.mouse.left.press.physical,
@@ -59,7 +58,7 @@ class DrawingViewMouseMixin:
         match self.mouse.middle.state:
             case MouseButtonState.Pressed:
                 d = self._distance(self.mouse.middle.press.physical, event.pos())
-                if d >= hub.settings.get("prefs/mouse/drag"):
+                if d >= settings().get("prefs/mouse/drag"):
                     self.mouse.middle.state = MouseButtonState.Dragging
                     self.state.mouseMiddleDragBegin(
                         self.mouse.middle.press.physical,
@@ -122,7 +121,7 @@ class DrawingViewMouseMixin:
                     )
                     self.mouse.left.state = MouseButtonState.Idle
                 case _:
-                    logger.warning(f"Mouse left button released when idle")
+                    logger().warning(f"Mouse left button released when idle")
         if event.button() & Qt.MouseButton.MiddleButton:
             self.mouse.middle.release.setPL(p, l)
             self.mouse.middle.release.modifiers = m
@@ -142,13 +141,13 @@ class DrawingViewMouseMixin:
                     )
                     self.mouse.middle.state = MouseButtonState.Idle
                 case _:
-                    logger.warning(f"Mouse middle button released when idle")
+                    logger().warning(f"Mouse middle button released when idle")
 
     def wheelEvent(self : "DrawingView", event : QWheelEvent) -> None:
         p = event.position().toPoint(); l = self.mapToScene(p)
         self.mouse.current.setPL(p, l)
         self.mouse.current.modifiers = self._getModifiers(event)
-        n = event.angleDelta().y() / hub.settings.get("prefs/mouse/wheel")
+        n = event.angleDelta().y() / settings().get("prefs/mouse/wheel")
         match self.mouse.current.modifiers:
             case qkm.NoModifier:      # pan up/down
                 self.viewPanUp(n) if n >= 0 else self.viewPanDown(-n)

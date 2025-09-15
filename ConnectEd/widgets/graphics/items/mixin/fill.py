@@ -4,13 +4,13 @@ from types  import SimpleNamespace
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui  import QBrush, QColor
 
+from .....app import settings
+
 from ...properties import PropertySpec
 
 from .. import Default, DEFAULT, NO_CHANGE, FillPref, FillPrefChange
 
 from . import ElementMixin
-
-from ..... import hub
 
 
 class Fill:
@@ -57,14 +57,14 @@ class Fill:
 
     def getDefaults(self : Self) -> SimpleNamespace:
         settings_name = self.parent.__class__.__name__
-        return hub.settings.getTheme(f"elements/{settings_name}/fill")
+        return settings().getTheme(f"elements/{settings_name}/fill")
 
     def onSettingsChange(self : Self) -> None:
         default = self.getDefaults()
         color_normal = default.color if self.color is DEFAULT else self.color
-        color_normal.setAlpha(hub.settings.get("display/alpha"))
-        color_selected = hub.settings.getTheme("selected/fill")
-        color_selected.setAlpha(hub.settings.get("display/alpha"))
+        color_normal.setAlpha(settings().get("display/alpha"))
+        color_selected = settings().getTheme("selected/fill")
+        color_selected.setAlpha(settings().get("display/alpha"))
         style = default.style if self.style is DEFAULT else self.style
         self.normal.setColor(color_normal)
         self.normal.setStyle(style)

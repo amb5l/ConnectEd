@@ -3,7 +3,7 @@ from typing import Self
 from PyQt6.QtGui     import QAction
 from PyQt6.QtWidgets import QGraphicsSceneContextMenuEvent, QMenu
 
-from .....core.log import logger
+from .....app import logger
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -35,7 +35,7 @@ class ElementMenuMixin:
                     )
                     menu.addAction(action)
                 else:
-                    logger.error(f"{slot_name} missing from {self.__class__.__name__}")
+                    logger().error(f"{slot_name} missing from {self.__class__.__name__}")
         menu.exec(pos)
 
     def ctxMenuAppearance(

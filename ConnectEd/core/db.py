@@ -3,15 +3,15 @@ from typing import Self, Optional
 from PyQt6.QtCore import Qt, QXmlStreamWriter, QXmlStreamReader
 from PyQt6.QtGui  import QStandardItemModel, QStandardItem
 
+from ..app import logger, window
+
 from ..widgets.dialogs.file import FileSaveAsDialog
 
-from .log  import logger
 from .defs import LIB_EXT, DSN_EXT
 from .xml  import copy, paste, fromXmlBegin, loadItems, saveBegin, saveEnd
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from ..widgets.window import Window
     from ..widgets.graphics.scenes.drawing import DrawingScene
     from ..widgets.graphics.scenes.symbol  import SymbolScene
     from ..widgets.graphics.scenes.diagram import DiagramScene
@@ -145,11 +145,9 @@ class DiagramItem(DrawingItem):
     scene : "DiagramScene"
 
 class DbItem(QStandardItem):
-    window : "Window"
     path   : Optional[str]
 
-    def __init__(self : Self, window : "Window") -> None:
-        self.window = window
+    def __init__(self : Self) -> None:
         u = "Untitled" + self.__class__.__name__.replace("Db", "")
         super().__init__(name_counter.get(u))
         self.setFlags(self.flags() | Qt.ItemFlag.ItemIsEditable)
@@ -172,7 +170,7 @@ class DbItem(QStandardItem):
             saveEnd(xw, file)
 
     def saveAs(self : Self) -> str:
-        dialog = FileSaveAsDialog(self.__class__.__name__, self.window)
+        dialog = FileSaveAsDialog(self.__class__.__name__, window())
         path = None
         if dialog.exec():
             path, _ = dialog.getSaveFileName()
@@ -189,7 +187,7 @@ class DbItem(QStandardItem):
             if tag == "name":
                 db_item.setText(value_str)
             else:
-                logger.warning(f"Unexpected attribute: {tag} value: {value_str}")
+                logger().warning(f"Unexpected attribute: {tag} value: {value_str}")
         xr.readNext()
         return db_item
 
@@ -203,7 +201,7 @@ class DbItem(QStandardItem):
         for item in items:
             if isinstance(item, cls):
                 return item
-        logger.warning(f"{cls.__name__} not found in {file}")
+        logger().warning(f"{cls.__name__} not found in {file}")
         return None
 
     copy = copy
@@ -235,8 +233,8 @@ class DesignDbItem(DbItem):
     diagrams : DiagramsContainer
     symbols  : SymbolCacheContainer
 
-    def __init__(self : Self, window : "Window") -> None:
-        super().__init__(window)
+    def __init__(self : Self) -> None:
+        super().__init__()
         self.diagrams = DiagramsContainer()
         self.appendRow(self.diagrams)
         self.symbols = SymbolCacheContainer()
@@ -296,7 +294,6 @@ class DesignDbItem(DbItem):
         return [self.symbols.child(i) for i in range(self.symbols.rowCount())]
 
 class Model(QStandardItemModel):
-    window    : "Window"
     designs   : DesignDbContainer
     libraries : LibraryDbContainer
 
@@ -308,16 +305,13 @@ class Model(QStandardItemModel):
         self.libraries = LibraryDbContainer()
         self.appendRow(self.libraries)
 
-    def setWindow(self : Self, window : "Window") -> None:
-        self.window = window
-
     def newDesignItem(self : Self) -> DesignDbItem:
-        item = DesignDbItem(self.window)
+        item = DesignDbItem()
         self.designs.appendRow(item)
         return item
 
     def newLibraryItem(self : Self) -> LibraryDbItem:
-        item = LibraryDbItem(self.window)
+        item = LibraryDbItem()
         self.libraries.appendRow(item)
         return item
 
@@ -332,7 +326,7 @@ class Model(QStandardItemModel):
             item = DiagramItem()
             parent.appendRow(item)
         else:
-            logger.warning(
+            logger().warning(
                 f"Unexpected parent item: {parent.text()} ({type(parent)})"
             )
         return item
@@ -348,7 +342,7 @@ class Model(QStandardItemModel):
             item = SymbolItem()
             parent.appendRow(item)
         else:
-            logger.warning(
+            logger().warning(
                 f"Unexpected parent item: {parent.text()} ({type(parent)})"
             )
         return item
@@ -362,7 +356,7 @@ class Model(QStandardItemModel):
             db_item = LibraryDbItem.load(path)
             self.libraries.appendRow(db_item)
         else:
-            logger.warning(f"Unsupported file extension: {path}")
+            logger().warning(f"Unsupported file extension: {path}")
         return db_item
 
     def close(self : Self, item: QStandardItem) -> None:
@@ -376,7 +370,7 @@ class Model(QStandardItemModel):
                 if item == self.libraries.child(i):
                     self.libraries.removeRow(i)
         else:
-            logger.warning(f"Unsupported item: {item.text()} ({type(item)})")
+            logger().warning(f"Unsupported item: {item.text()} ({type(item)})")
 
     def copy(self : Self, item : QStandardItem) -> None:
         copy(item)

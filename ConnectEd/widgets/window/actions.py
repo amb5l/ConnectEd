@@ -3,7 +3,8 @@ from typing import Self, Optional
 from PyQt6.QtWidgets import QApplication, QMdiSubWindow
 from PyQt6.QtGui     import QKeySequence
 
-from ...core.log  import logger
+from ...app import logger, window
+
 from ...core.defs import MIME_TYPE
 
 from ...widgets.graphics.views.drawing  import DrawingSubWindow
@@ -11,65 +12,59 @@ from ...widgets.graphics.scenes.drawing import DrawingScene
 
 from ..private  import Action
 
-from typing import TYPE_CHECKING
-if TYPE_CHECKING:
-    from ..window import Window
-
 
 class Actions:
-    _parent : "Window"
     _scene  : Optional[DrawingScene]
 
-    def __init__(self : Self, parent : "Window") -> None:
-        self._parent = parent
+    def __init__(self : Self) -> None:
         self._scene  = None
         SK = QKeySequence.StandardKey
 
-        self.fileNewDesign      = Action( self._parent, "Design"        , "Create a new design"                    , "Ctrl+N"                     )
-        self.fileNewLibrary     = Action( self._parent, "Library"       , "Create a new library"                   , None                         )
-        self.fileOpen           = Action( self._parent, "Open"          , "Open database"                          , "Ctrl+O"                     )
-        self.fileSave           = Action( self._parent, "Save"          , "Save database"                          , "Ctrl+S"                     )
-        self.fileSaveAs         = Action( self._parent, "Save As"       , "Save database as"                       , None                         )
-        self.fileExit           = Action( self._parent, "Exit"          , "Exit the application"                   , SK.Quit                      )
-        self.editUndo           = Action( self._parent, "Undo"          , "Undo"                                   , SK.Undo                      )
-        self.editRedo           = Action( self._parent, "Redo"          , "Redo"                                   , SK.Redo                      )
-        self.editCut            = Action( self._parent, "Cut"           , "Cut"                                    , SK.Cut                       )
-        self.editCopy           = Action( self._parent, "Copy"          , "Copy"                                   , SK.Copy                      )
-        self.editPaste          = Action( self._parent, "Paste"         , "Paste"                                  , SK.Paste                     )
-        self.editDelete         = Action( self._parent, "Delete"        , "Delete"                                 , SK.Delete                    )
-        self.editDuplicate      = Action( self._parent, "Duplicate"     , "Duplicate"                              , "Ctrl+D"                     )
-        self.editSelectArea     = Action( self._parent, "Select Area"   , "Select area"                            , None                         )
-        self.editSelectAll      = Action( self._parent, "Select All"    , "Select all"                             , SK.SelectAll                 )
-        self.editProperties     = Action( self._parent, "Properties..." , "Edit properties of selected element(s)" , None                         )
-        self.editAppearance     = Action( self._parent, "Appearance..." , "Edit appearance of selected element(s)" , None                         )
-        self.editQuery          = Action( self._parent, "Query"         , "Query"                                  , "Ctrl+Q"                     )
-        self.viewZoomAll        = Action( self._parent, "Zoom All"      , "Zoom to fit all"                        , "Ctrl+Home"                  )
-        self.viewZoomSheet      = Action( self._parent, "Zoom Sheet"    , "Zoom to fit sheet"                      , "Ctrl+Shift+S"               )
-        self.viewZoomArea       = Action( self._parent, "Zoom Area"     , "Zoom to area"                           , "Ctrl+Shift+W"               )
-        self.viewZoomIn         = Action( self._parent, "Zoom In"       , "Zoom in"                                , "Ctrl++"                     )
-        self.viewZoomOut        = Action( self._parent, "Zoom Out"      , "Zoom out"                               , "Ctrl+-"                     )
-        self.viewPan            = Action( self._parent, "Pan"           , "Pan"                                    , None                         )
-        self.viewPanUp          = Action( self._parent, "Pan Up"        , "Pan up"                                 , "Ctrl+Up"                    )
-        self.viewPanDown        = Action( self._parent, "Pan Down"      , "Pan down"                               , "Ctrl+Down"                  )
-        self.viewPanLeft        = Action( self._parent, "Pan Left"      , "Pan left"                               , "Ctrl+Left"                  )
-        self.viewPanRight       = Action( self._parent, "Pan Right"     , "Pan right"                              , "Ctrl+Right"                 )
-        self.viewGridDisplay    = Action( self._parent, "Grid Display"  , "Toggle grid display"                    , "Ctrl+G"       , True , True )
-        self.viewGridSnap       = Action( self._parent, "Grid Snap"     , "Toggle grid snap"                       , "Ctrl+Shift+G" , True , True )
-        self.viewThemeDark      = Action( self._parent, "Dark"          , "Set dark theme"                         , None                         )
-        self.viewThemeLightMono = Action( self._parent, "Light Mono"    , "Set light mono theme"                   , None                         )
-        self.placePort          = Action( self._parent, "Port"          , "Place Port"                             , "Ctrl+I"                     )
-        self.placeBlock         = Action( self._parent, "Block"         , "Place Block"                            , "Ctrl+B"                     )
-        self.placeBlockPin      = Action( self._parent, "Block Pin"     , "Place Block Pin"                        , "Ctrl+P"                     )
-        self.placeRectangle     = Action( self._parent, "Rectangle"     , "Place Rectangle"                        , "Ctrl+R"                     )
-        self.placeTextBlock     = Action( self._parent, "Text Block"    , "Place Text Block"                       , "Ctrl+T"                     )
-        self.placeText          = Action( self._parent, "Text"          , "Place Text"                             , "Ctrl+L"                     )
-        self.windowExplorer     = Action( self._parent, "Explorer"      , "Show the explorer window"               , None                         )
-        self.windowMessages     = Action( self._parent, "Messages"      , "Show the messages window"               , None                         )
-        self.windowTranscript   = Action( self._parent, "Transcript"    , "Show the transcript window"             , None                         )
-        self.windowLog          = Action( self._parent, "Log"           , "Show the log window"                    , None                         )
-        self.windowNext         = Action( self._parent, "Next"          , "Next"                                   , "Ctrl+F6"                    )
-        self.windowPrevious     = Action( self._parent, "Previous"      , "Previous"                               , "Ctrl+Shift+F6"              )
-        self.helpAbout          = Action( self._parent, "About"         , ""                                       , "Ctrl+Shift+T"               )
+        self.fileNewDesign      = Action( window(), "Design"        , "Create a new design"                    , "Ctrl+N"                     )
+        self.fileNewLibrary     = Action( window(), "Library"       , "Create a new library"                   , None                         )
+        self.fileOpen           = Action( window(), "Open"          , "Open database"                          , "Ctrl+O"                     )
+        self.fileSave           = Action( window(), "Save"          , "Save database"                          , "Ctrl+S"                     )
+        self.fileSaveAs         = Action( window(), "Save As"       , "Save database as"                       , None                         )
+        self.fileExit           = Action( window(), "Exit"          , "Exit the application"                   , SK.Quit                      )
+        self.editUndo           = Action( window(), "Undo"          , "Undo"                                   , SK.Undo                      )
+        self.editRedo           = Action( window(), "Redo"          , "Redo"                                   , SK.Redo                      )
+        self.editCut            = Action( window(), "Cut"           , "Cut"                                    , SK.Cut                       )
+        self.editCopy           = Action( window(), "Copy"          , "Copy"                                   , SK.Copy                      )
+        self.editPaste          = Action( window(), "Paste"         , "Paste"                                  , SK.Paste                     )
+        self.editDelete         = Action( window(), "Delete"        , "Delete"                                 , SK.Delete                    )
+        self.editDuplicate      = Action( window(), "Duplicate"     , "Duplicate"                              , "Ctrl+D"                     )
+        self.editSelectArea     = Action( window(), "Select Area"   , "Select area"                            , None                         )
+        self.editSelectAll      = Action( window(), "Select All"    , "Select all"                             , SK.SelectAll                 )
+        self.editProperties     = Action( window(), "Properties..." , "Edit properties of selected element(s)" , None                         )
+        self.editAppearance     = Action( window(), "Appearance..." , "Edit appearance of selected element(s)" , None                         )
+        self.editQuery          = Action( window(), "Query"         , "Query"                                  , "Ctrl+Q"                     )
+        self.viewZoomAll        = Action( window(), "Zoom All"      , "Zoom to fit all"                        , "Ctrl+Home"                  )
+        self.viewZoomSheet      = Action( window(), "Zoom Sheet"    , "Zoom to fit sheet"                      , "Ctrl+Shift+S"               )
+        self.viewZoomArea       = Action( window(), "Zoom Area"     , "Zoom to area"                           , "Ctrl+Shift+W"               )
+        self.viewZoomIn         = Action( window(), "Zoom In"       , "Zoom in"                                , "Ctrl++"                     )
+        self.viewZoomOut        = Action( window(), "Zoom Out"      , "Zoom out"                               , "Ctrl+-"                     )
+        self.viewPan            = Action( window(), "Pan"           , "Pan"                                    , None                         )
+        self.viewPanUp          = Action( window(), "Pan Up"        , "Pan up"                                 , "Ctrl+Up"                    )
+        self.viewPanDown        = Action( window(), "Pan Down"      , "Pan down"                               , "Ctrl+Down"                  )
+        self.viewPanLeft        = Action( window(), "Pan Left"      , "Pan left"                               , "Ctrl+Left"                  )
+        self.viewPanRight       = Action( window(), "Pan Right"     , "Pan right"                              , "Ctrl+Right"                 )
+        self.viewGridDisplay    = Action( window(), "Grid Display"  , "Toggle grid display"                    , "Ctrl+G"       , True , True )
+        self.viewGridSnap       = Action( window(), "Grid Snap"     , "Toggle grid snap"                       , "Ctrl+Shift+G" , True , True )
+        self.viewThemeDark      = Action( window(), "Dark"          , "Set dark theme"                         , None                         )
+        self.viewThemeLightMono = Action( window(), "Light Mono"    , "Set light mono theme"                   , None                         )
+        self.placePort          = Action( window(), "Port"          , "Place Port"                             , "Ctrl+I"                     )
+        self.placeBlock         = Action( window(), "Block"         , "Place Block"                            , "Ctrl+B"                     )
+        self.placeBlockPin      = Action( window(), "Block Pin"     , "Place Block Pin"                        , "Ctrl+P"                     )
+        self.placeRectangle     = Action( window(), "Rectangle"     , "Place Rectangle"                        , "Ctrl+R"                     )
+        self.placeTextBlock     = Action( window(), "Text Block"    , "Place Text Block"                       , "Ctrl+T"                     )
+        self.placeText          = Action( window(), "Text"          , "Place Text"                             , "Ctrl+L"                     )
+        self.windowExplorer     = Action( window(), "Explorer"      , "Show the explorer window"               , None                         )
+        self.windowMessages     = Action( window(), "Messages"      , "Show the messages window"               , None                         )
+        self.windowTranscript   = Action( window(), "Transcript"    , "Show the transcript window"             , None                         )
+        self.windowLog          = Action( window(), "Log"           , "Show the log window"                    , None                         )
+        self.windowNext         = Action( window(), "Next"          , "Next"                                   , "Ctrl+F6"                    )
+        self.windowPrevious     = Action( window(), "Previous"      , "Previous"                               , "Ctrl+Shift+F6"              )
+        self.helpAbout          = Action( window(), "About"         , ""                                       , "Ctrl+Shift+T"               )
 
         self.onSubWindowActivated(None)
 
@@ -138,7 +133,7 @@ class Actions:
         except RuntimeError:
             pass  # Objects deleted during shutdown
         except Exception as e:
-            logger.error(f"Exception in onSelectionChanged: {e}")
+            logger().error(f"Exception in onSelectionChanged: {e}")
             import traceback
             traceback.print_exc()
 

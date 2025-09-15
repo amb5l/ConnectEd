@@ -2,7 +2,8 @@ from typing import Self
 
 from PyQt6.QtCore import QXmlStreamWriter, QXmlStreamReader
 
-from .....core.log import logger
+from .....app import logger
+
 from .....core.xml import toXmlAttrs, fromXmlAttrs
 
 
@@ -38,7 +39,7 @@ class ElementXmlMixin:
                     child : PropertyText = PropertyText.fromXml(xr)
                     child.setParentItem(instance._anchor_points[child._origin()])
                 else:
-                    logger.warning(f"Unexpected child element: {xr.name()}")
+                    logger().warning(f"Unexpected child element: {xr.name()}")
                     continue
             xr.readNext()
         return instance

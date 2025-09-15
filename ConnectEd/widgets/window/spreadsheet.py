@@ -11,7 +11,7 @@ from PyQt6.QtGui     import QBrush, QFont, QAction, QUndoStack, \
                             QWheelEvent, QContextMenuEvent, QCloseEvent, \
                             QStandardItemModel, QStandardItem, QFontMetrics
 
-from ...core.log import logger
+from ...app import logger, settings, window
 
 from ...core.icon import getCharIcon
 
@@ -19,12 +19,9 @@ from ...widgets.graphics.items import ElementMixin
 
 from ...widgets.graphics.items.property_text import PropertyDisplay
 
-from ... import hub
-
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ..graphics.scenes.drawing import DrawingScene
-    from ..window import Window
 
 
 class SpreadsheetCell(QStandardItem):
@@ -53,7 +50,7 @@ class SpreadsheetComboDelegate(QStyledItemDelegate):
 
     def createEditor(self, parent, option, index):
         if not self.ENTRIES:
-            logger.error(f"ENTRIES is None or empty for delegate {self.__class__.__name__}")
+            logger().error(f"ENTRIES is None or empty for delegate {self.__class__.__name__}")
             return None
         try:
             editor = QComboBox(parent)
@@ -62,24 +59,24 @@ class SpreadsheetComboDelegate(QStyledItemDelegate):
                 editor.setToolTip(self.TOOLTIP)
             return editor
         except Exception as e:
-            logger.error(f"Error creating editor for delegate {self.__class__.__name__}: {e}")
+            logger().error(f"Error creating editor for delegate {self.__class__.__name__}: {e}")
             return None
 
     def setEditorData(self, editor, index):
         if editor is None:
-            logger.error("Editor is None in setEditorData")
+            logger().error("Editor is None in setEditorData")
             return
         value = index.model().data(index, Qt.ItemDataRole.EditRole)
         value_str = str(value) if value is not None else ""
         if value_str in self.ENTRIES:
             editor.setCurrentText(value_str)
         else:
-            logger.warning(f"Value '{value_str}' not in ENTRIES, defaulting to {self.ENTRIES[0]}")
+            logger().warning(f"Value '{value_str}' not in ENTRIES, defaulting to {self.ENTRIES[0]}")
             editor.setCurrentText(self.ENTRIES[0])
 
     def setModelData(self, editor, model, index):
         if editor is None:
-            logger.error("Editor is None in setModelData")
+            logger().error("Editor is None in setModelData")
             return
         text = editor.currentText()
         model.setData(index, text, Qt.ItemDataRole.EditRole)
@@ -283,7 +280,6 @@ class SpreadsheetWidget(QWidget):
     a toolbar.
     """
 
-    _window           : "Window"
     _parent           : "SpreadsheetTabWidget"
     _model            : QStandardItemModel
     _proxy            : QTransposeProxyModel
@@ -303,12 +299,9 @@ class SpreadsheetWidget(QWidget):
         self     : Self,
         model    : QStandardItemModel,
         proxy    : QTransposeProxyModel,
-        parent   : Optional[QWidget] = None,
-        *,
-        window   : "Window"
+        parent   : Optional[QWidget] = None
     ) -> None:
         super().__init__(parent)
-        self._window = window
         self._parent = parent
         self._undo_stack = QUndoStack()
         self._transposed = False
@@ -528,7 +521,6 @@ class SpreadsheetWidget(QWidget):
         update()
 
 class SpreadsheetTabWidget(QTabWidget):
-    _window         : "Window"
     _tab_elements   : dict[str, list[ElementMixin]]
     _tab_headings   : dict[str, dict[str, bool]]
     _tab_htypenames : dict[str, dict[str, str]]
@@ -543,12 +535,9 @@ class SpreadsheetTabWidget(QTabWidget):
     def __init__(
         self     : Self,
         elements : list[ElementMixin],
-        parent   : Optional[QWidget] = None,
-        *,
-        window   : "Window"
+        parent   : Optional[QWidget] = None
     ) -> None:
         super().__init__(parent)
-        self._window = window
         self.setTabsClosable(True)
         self.tabCloseRequested.connect(self.closeTab)
         # group elements by type
@@ -558,7 +547,7 @@ class SpreadsheetTabWidget(QTabWidget):
             if scene is None:
                 scene = element.scene()
             elif scene != element.scene():
-                logger.error("Elements must belong to the same scene")
+                logger().error("Elements must belong to the same scene")
                 elements = []
                 break
             tab_name = type(element).__name__
@@ -583,7 +572,7 @@ class SpreadsheetTabWidget(QTabWidget):
                             e.getAttributeTypeName(a)
                 else:
                     if tab_attributes != e.getAttributes():
-                        logger.error("Inconsistent inherent properties")
+                        logger().error("Inconsistent inherent properties")
                         self._tab_elements.pop(tab_name)
                         self._tab_headings.pop(tab_name)
                         self._tab_htypenames.pop(tab_name)
@@ -623,7 +612,7 @@ class SpreadsheetTabWidget(QTabWidget):
         # highlight
         self._transparent = QBrush(Qt.GlobalColor.transparent)
         self.updateHighlight()
-        hub.settings.changed.connect(self.updateHighlight)
+        settings().changed.connect(self.updateHighlight)
         # create tabs
         self._tabs = {}
         for tab_name, tab_elements in self._tab_elements.items():
@@ -639,7 +628,7 @@ class SpreadsheetTabWidget(QTabWidget):
         self._delegates = {}
         self._setupDelegates()
         # initialize font size
-        self.setFontSize(hub.settings.get("display/font_size"))
+        self.setFontSize(settings().get("display/font_size"))
 
     def closeTab(self, index: int) -> None:
         """Close the tab at the given index."""
@@ -648,7 +637,7 @@ class SpreadsheetTabWidget(QTabWidget):
             self.parent().close()
 
     def updateHighlight(self : Self) -> None:
-        if hub.settings.get("display/theme") == "dark":
+        if settings().get("display/theme") == "dark":
             self._highlight = QBrush(Qt.GlobalColor.darkYellow)
         else:
             self._highlight = QBrush(Qt.GlobalColor.yellow)
@@ -714,31 +703,23 @@ class SpreadsheetTabWidget(QTabWidget):
             tab._table_proxy.resizeRowsToContents()
 
 class SpreadsheetSubWindow(QMdiSubWindow):
-    _window     : "Window"
     _scene      : "DrawingScene"
     _tab_widget : Optional[QTabWidget]
 
     def __init__(
             self     : Self,
             scene    : "DrawingScene",
-            elements : list[ElementMixin],
-            *,
-            window   : "Window"
+            elements : list[ElementMixin]
         ) -> None:
         super().__init__()
-        self._window = window
         self._scene = scene
         element_scenes = set(element.scene() for element in elements)
         if len(element_scenes) != 1:
-            logger.error("Elements must belong to the same scene")
+            logger().error("Elements must belong to the same scene")
             elements = []
         self.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
         if len(elements) > 0:
-            self._tab_widget = SpreadsheetTabWidget(
-                elements=elements,
-                parent=self,
-                window=self._window
-            )
+            self._tab_widget = SpreadsheetTabWidget(elements, self)
             self.setWidget(self._tab_widget)
             self.setWindowTitle("Properties")
         else:
@@ -751,7 +732,7 @@ class SpreadsheetSubWindow(QMdiSubWindow):
 
     def closeEvent(self, event: QCloseEvent) -> None:
         """Handle subwindow close event."""
-        self._window.menu_bar.updateWindowMenu()
+        window().menu_bar.updateWindowMenu()
         super().closeEvent(event)
 
     def scene(self : Self) -> "DrawingScene":

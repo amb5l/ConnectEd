@@ -4,7 +4,7 @@ from PyQt6.QtCore    import QRectF
 from PyQt6.QtWidgets import QGraphicsItem, QStyleOptionGraphicsItem, QWidget
 from PyQt6.QtGui     import QPainter, QPainterPath
 
-from ....core.log import logger
+from ....app import logger
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -58,4 +58,4 @@ class NullPoint(QGraphicsItem):
         option  : QStyleOptionGraphicsItem,
         widget  : QWidget
     ) -> None:
-        logger.error("Paint should never be called")
+        logger().error("Paint should never be called")

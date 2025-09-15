@@ -5,7 +5,7 @@ from PyQt6.QtCore    import Qt
 from PyQt6.QtWidgets import QWidget, QTableView
 from PyQt6.QtGui     import QStandardItemModel, QAction, QWheelEvent, QFont
 
-from ... import hub
+from ...app import settings
 
 
 class TableView(QTableView):
@@ -20,7 +20,7 @@ class TableView(QTableView):
         super().__init__(parent)
         self.setModel(model)
         self.resizeColumnsToContents()
-        self.setFontSize(hub.settings.get("display/font_size"))
+        self.setFontSize(settings().get("display/font_size"))
         self.actions = SimpleNamespace()
         a = self.actions
         a.increaseTextSize = QAction("Increase Text Size", self)

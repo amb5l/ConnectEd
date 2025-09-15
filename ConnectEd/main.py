@@ -14,8 +14,6 @@ from .resources  import getIconPath, initResources
 from .widgets.splash import Splash
 from .widgets.window import Window
 
-from . import hub
-
 
 def main() -> int:
     logger.info("started")
@@ -24,13 +22,13 @@ def main() -> int:
     scheme = app.styleHints().colorScheme()
     splash = Splash(scheme == Qt.ColorScheme.Light)
     splash.show()
-    app.processEvents()
-    hub.settings = Settings()
+    app.logger = logger
+    app.settings = Settings()
     if known_args.reset:
-        hub.settings.reset()
-    hub.settings.load()
+        app.settings.reset()
+    app.settings.load()
     if known_args.dump:
-        print(hub.settings.dump())
+        print(app.settings.dump())
     icon = QIcon(getIconPath("ConnectEd.png"))
     app.setWindowIcon(icon)
     if sys.platform == "win32":
@@ -42,11 +40,12 @@ def main() -> int:
         except Exception:
             pass
     initResources()
-    model = Model()
-    window = Window(model)
-    splash.finish(window)
+    app.model = Model()
+    app.window = Window()
+    app.processEvents()   
+    splash.finish(app.window)
     r = app.exec()
-    hub.settings.save()
+    app.settings.save()
     logger.info("finished")
     return r
 

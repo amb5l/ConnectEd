@@ -6,7 +6,7 @@ from PyQt6.QtWidgets import QApplication, QMdiArea, QMdiSubWindow, \
                             QGraphicsView, QGraphicsTextItem
 from PyQt6.QtGui     import QPainter, QPen, QCloseEvent, QKeyEvent
 
-from ..... import hub
+from .....app import settings, window
 
 from ....marquee import Marquee
 
@@ -19,10 +19,6 @@ from .private   import DrawingViewPrivateMixin
 from .api       import DrawingViewApiMixin
 from .state     import DrawingViewStateMixin, DrawingViewStateBase
 from .defs      import *
-
-from typing import TYPE_CHECKING
-if TYPE_CHECKING:
-    from ....window import Window
 
 
 def getView(pos : QPoint):
@@ -40,7 +36,6 @@ class DrawingView(
     DrawingViewStateMixin,
     DrawingViewPrivateMixin
 ):
-    _window     : "Window"
     _shown      : bool = False
     _zoomed     : bool = False
     marquee     : Marquee
@@ -52,9 +47,8 @@ class DrawingView(
     state       : DrawingViewStateBase
     interaction : Optional[Interaction]
 
-    def __init__(self : Self, scene : DrawingScene, window : "Window") -> None:
+    def __init__(self : Self, scene : DrawingScene) -> None:
         super().__init__(scene)
-        self._window = window
         self.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
         self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
@@ -109,7 +103,7 @@ class DrawingView(
                 QPointF(rect.topLeft())     - QPointF(px, py),
                 QPointF(rect.bottomRight()) + QPointF(px, py)
             ).toRect()
-            color = hub.settings.getTheme("grid/line")
+            color = settings().getTheme("grid/line")
             color.setAlpha(self.grid.alpha)
             painter.setPen(QPen(color, 0, Qt.PenStyle.SolidLine))
             painter.setBrush(Qt.BrushStyle.NoBrush)

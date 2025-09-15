@@ -4,7 +4,7 @@ from PyQt6.QtCore    import QAbstractItemModel
 from PyQt6.QtWidgets import QTreeView, QWidget, QDockWidget
 from PyQt6.QtGui     import QFont, QShortcut, QKeySequence
 
-from ... import hub
+from ...app import settings
 
 
 class TreeView(QTreeView):
@@ -18,7 +18,7 @@ class TreeView(QTreeView):
         super().__init__(parent)
         self.setModel(model)
         self.header().setVisible(False)
-        self.setFontSize(hub.settings.get("display/font_size"))
+        self.setFontSize(settings().get("display/font_size"))
         self.customizeAppearance()
         self.expandAll()
 
@@ -28,7 +28,7 @@ class TreeView(QTreeView):
         self.decreaseFontShortcut.activated.connect(self.decreaseFontSize)
 
     def customizeAppearance(self : Self) -> None:
-        if hub.settings.get("display/theme") == "dark":
+        if settings().get("display/theme") == "dark":
             self.setStyleSheet("""
                 QTreeView::branch {
                     image: none;

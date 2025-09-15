@@ -6,7 +6,7 @@ from PyQt6.QtWidgets import QWidget, QMenu
 from PyQt6.QtGui     import QAction, QStandardItem, \
                             QKeyEvent, QMouseEvent, QWheelEvent, QFocusEvent
 
-from ...core.log import logger
+from ...app import logger, model, window
 
 from ...widgets.graphics.items.anchor_point import AnchorPoint
 from ...widgets.graphics.items.tether_text  import Tether
@@ -15,29 +15,18 @@ from .tree_view import TreeView, TreeViewDock
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from ..window import Window
-    from ...core.db import Model, DrawingItem, DbItem
+    from ...core.db import DrawingItem, DbItem
 
 
 class Explorer(TreeView):
-    _window   : "Window"
-    model     : "Model"
     actions   : SimpleNamespace
     menus     : SimpleNamespace
     item      : QStandardItem
     _focus_in : bool
 
-    def __init__(
-        self : Self,
-        model : "Model",
-        parent : QWidget,
-        *,
-        window   : "Window"
-    ) -> None:
-        super().__init__(model, parent)
-        self._window = window
-        self.model = model
-        self.model.itemChanged.connect(self.onItemChanged)
+    def __init__(self : Self, parent : QWidget) -> None:
+        super().__init__(model(), parent)
+        model().itemChanged.connect(self.onItemChanged)
         self.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
         self.customContextMenuRequested.connect(self.showContextMenu)
         self.setEditTriggers(self.EditTrigger.EditKeyPressed)
@@ -119,7 +108,7 @@ class Explorer(TreeView):
             scene = item.data(Qt.ItemDataRole.UserRole)
             if scene:
                 scene.name = item.text()
-        self._window.mdi_area.update()
+        window().mdi_area.update()
 
     def focusInEvent(self : Self, event: QFocusEvent) -> None:
         self._focus_in = True
@@ -130,7 +119,7 @@ class Explorer(TreeView):
             if len(self.selectedIndexes()) == 1:
                 index = self.selectedIndexes()[0]
                 if index.isValid():
-                    self.expandOrEdit(self.model.itemFromIndex(index))
+                    self.expandOrEdit(model().itemFromIndex(index))
                     event.accept()
 
     def mousePressEvent(self : Self, event: QMouseEvent) -> None:
@@ -142,7 +131,7 @@ class Explorer(TreeView):
                 self._focus_in = False
             else:
                 self.clearSelection()
-                self.setCurrentIndex(self.model.index(-1, -1))  # invalid index
+                self.setCurrentIndex(model().index(-1, -1))  # invalid index
                 if event.button() == Qt.MouseButton.LeftButton:
                     event.accept()
                     return
@@ -153,7 +142,7 @@ class Explorer(TreeView):
         if event.button() == Qt.MouseButton.LeftButton:
             index = self.indexAt(event.pos())
             if index.isValid():
-                self.expandOrEdit(self.model.itemFromIndex(index))
+                self.expandOrEdit(model().itemFromIndex(index))
                 event.accept()
                 return
         super().mouseDoubleClickEvent(event)
@@ -172,7 +161,7 @@ class Explorer(TreeView):
         super().wheelEvent(event)
 
     def selectItem(self : Self, item : QStandardItem) -> None:
-        index = self.model.indexFromItem(item)
+        index = model().indexFromItem(item)
         self.selectionModel().clearSelection()
         self.selectionModel().select(
             index,
@@ -183,7 +172,7 @@ class Explorer(TreeView):
 
     def expandOrEdit(self : Self, item : QStandardItem) -> None:
         self.selectItem(item)
-        match self.model.getItemDescription(item):
+        match model().getItemDescription(item):
             case "Designs"  | "Libraries"    | \
                  "Design"   | "Library"      | \
                  "Diagrams" | "Symbol Cache":
@@ -193,24 +182,24 @@ class Explorer(TreeView):
                 self.editDrawing(item)
 
     def newDesign(self : Self) -> None:
-        design_item = self.model.newDesignItem()
+        design_item = model().newDesignItem()
         diagram_item = design_item.diagrams.child(0)
-        self.expand(self.model.indexFromItem(design_item))
-        self.expand(self.model.indexFromItem(design_item.diagrams))
+        self.expand(model().indexFromItem(design_item))
+        self.expand(model().indexFromItem(design_item.diagrams))
         self.editDrawing(diagram_item)
 
     def newLibrary(self : Self) -> None:
-        library_item = self.model.newLibraryItem()
-        self.expand(self.model.indexFromItem(library_item))
+        library_item = model().newLibraryItem()
+        self.expand(model().indexFromItem(library_item))
 
     def newDiagram(self : Self, item : QStandardItem) -> None:
-        diagram_item = self.model.newDiagramItem(item)
-        self.expand(self.model.indexFromItem(item))
+        diagram_item = model().newDiagramItem(item)
+        self.expand(model().indexFromItem(item))
         self.editDrawing(diagram_item)
 
     def newSymbol(self : Self, item : QStandardItem) -> None:
-        symbol_item = self.model.newSymbolItem(item)
-        self.expand(self.model.indexFromItem(item))
+        symbol_item = model().newSymbolItem(item)
+        self.expand(model().indexFromItem(item))
         self.editDrawing(symbol_item)
 
     def openDb(self : Self, type_name : Optional[str] = None) -> None:
@@ -220,7 +209,7 @@ class Explorer(TreeView):
         if result == dialog.DialogCode.Accepted:
             files = dialog.selectedFiles()
             for file in files:
-                self.model.load(file)
+                model().load(file)
 
     def editDrawing(self : Self, item : QStandardItem) -> None:
         from ...core.db import DrawingItem
@@ -232,7 +221,7 @@ class Explorer(TreeView):
         from ...widgets.graphics.scenes.symbol import SymbolScene
         if isinstance(item, DrawingItem):
             # focus existing subwindow if one exists
-            for subwindow in self._window.mdi_area.subWindowList():
+            for subwindow in window().mdi_area.subWindowList():
                 if not isinstance(subwindow, DrawingSubWindow):
                     continue
                 if not isinstance(subwindow.widget(), DrawingView):
@@ -241,7 +230,7 @@ class Explorer(TreeView):
                     continue
                 if item.scene != subwindow.widget().scene():
                     continue
-                self._window.mdi_area.setActiveSubWindow(subwindow)
+                window().mdi_area.setActiveSubWindow(subwindow)
                 subwindow.show()
                 subwindow.raise_()
                 subwindow.setFocus()
@@ -250,22 +239,22 @@ class Explorer(TreeView):
             drawing_name = item.text()
             drawing_scene : DrawingScene = item.data(Qt.ItemDataRole.UserRole)
             if isinstance(drawing_scene, DiagramScene):
-                drawing_view = DiagramView(drawing_scene, self._window)
+                drawing_view = DiagramView(drawing_scene)
                 db_item = item.parent().parent()
-                subwindow = DiagramSubWindow(self._window.mdi_area)
+                subwindow = DiagramSubWindow(window().mdi_area)
             elif isinstance(drawing_scene, SymbolScene):
-                drawing_view = SymbolView(drawing_scene, self._window)
+                drawing_view = SymbolView(drawing_scene)
                 db_item = item.parent()
-                subwindow = SymbolSubWindow(self._window.mdi_area)
+                subwindow = SymbolSubWindow(window().mdi_area)
             else:
                 raise ValueError(f"Unknown drawing scene: {type(drawing_scene)}")
             subwindow.setWidget(drawing_view)
             subwindow.setWindowTitle(f"{db_item.text()}: {drawing_name}")
-            self._window.mdi_area.addSubWindow(subwindow)
+            window().mdi_area.addSubWindow(subwindow)
             subwindow.showMaximized()
-            self._window.menu_bar.updateWindowMenu()
+            window().menu_bar.updateWindowMenu()
         else:
-            logger.warning(f"Unsupported item: {item.text()} ({type(item)})")
+            logger().warning(f"Unsupported item: {item.text()} ({type(item)})")
 
     def newDrawingWindow(self : Self, item : "DrawingItem") -> None:
         from ...core.db import DesignDbItem, LibraryDbItem, \
@@ -277,34 +266,34 @@ class Explorer(TreeView):
         if isinstance(item, DiagramItem):
             db_item : DesignDbItem = item.parent().parent()
             dwg_scene : DiagramScene = item.data(Qt.ItemDataRole.UserRole)
-            dwg_view = DiagramView(dwg_scene, self._window)
-            subwindow = DiagramSubWindow(self._window.mdi_area)
+            dwg_view = DiagramView(dwg_scene)
+            subwindow = DiagramSubWindow(window().mdi_area)
         elif isinstance(item, SymbolItem):
             db_item : LibraryDbItem = item.parent()
             dwg_scene : SymbolScene = item.data(Qt.ItemDataRole.UserRole)
-            dwg_view = SymbolView(dwg_scene, self._window)
-            subwindow = SymbolSubWindow(self._window.mdi_area)
+            dwg_view = SymbolView(dwg_scene)
+            subwindow = SymbolSubWindow(window().mdi_area)
         else:
-            logger.warning(f"Unsupported item: {item.text()} ({type(item)})")
+            logger().warning(f"Unsupported item: {item.text()} ({type(item)})")
             return
         dwg_name = item.text()
         subwindow.setWidget(dwg_view)
         subwindow.setWindowTitle(f"{db_item.text()}:{dwg_name}")
-        self._window.mdi_area.addSubWindow(subwindow)
+        window().mdi_area.addSubWindow(subwindow)
         subwindow.showMaximized()
-        self._window.menu_bar.updateWindowMenu()
+        window().menu_bar.updateWindowMenu()
 
     def spreadsheet(self : Self, item : "DrawingItem") -> None:
         from ...core import DrawingItem
         from ...widgets import DiagramScene
         from .spreadsheet import SpreadsheetSubWindow
         if not isinstance(item, DrawingItem):
-            logger.warning(f"Unsupported item: {item.text()} ({type(item)})")
+            logger().warning(f"Unsupported item: {item.text()} ({type(item)})")
             return
         scene : DiagramScene = item.data(Qt.ItemDataRole.UserRole)
-        for subwindow in self._window.mdi_area.subWindowList():
+        for subwindow in window().mdi_area.subWindowList():
             if isinstance(subwindow, SpreadsheetSubWindow) and subwindow.scene() == scene:
-                self._window.mdi_area.setActiveSubWindow(subwindow)
+                window().mdi_area.setActiveSubWindow(subwindow)
                 subwindow.show()
                 subwindow.raise_()
                 subwindow.setFocus()
@@ -312,11 +301,11 @@ class Explorer(TreeView):
         db_item = item.parent().parent()
         elements = [e for e in scene.items() \
                     if not isinstance(e, AnchorPoint | Tether)]
-        subwindow = SpreadsheetSubWindow(scene, elements, window=self._window)
+        subwindow = SpreadsheetSubWindow(scene, elements)
         subwindow.setWindowTitle(f"{db_item.text()}:{item.text()}: Properties")
-        self._window.mdi_area.addSubWindow(subwindow)
+        window().mdi_area.addSubWindow(subwindow)
         subwindow.showMaximized()
-        self._window.menu_bar.updateWindowMenu()
+        window().menu_bar.updateWindowMenu()
 
     def saveDb(self : Self, item : "DbItem") -> None:
         item.save()
@@ -329,28 +318,28 @@ class Explorer(TreeView):
             selected_files = dialog.selectedFiles()
             if len(selected_files) > 1:
                 unexpected_files = [f for f in selected_files[1:]]
-                logger.warning(f"Unexpected files: {unexpected_files}")
+                logger().warning(f"Unexpected files: {unexpected_files}")
             path = selected_files[0]
             item.save(path)
 
     def closeDb(self : Self, item : "DbItem") -> None:
         # TODO offer to save if modified
-        self.model.close(item)
+        model().close(item)
 
     def rename(self : Self) -> None:
         """Start editing the selected item"s text."""
         from ...core import DbItem, DrawingItem
         if self.currentIndex().isValid():
-            item = self.model().itemFromIndex(self.currentIndex())
+            item = model().itemFromIndex(self.currentIndex())
             if isinstance(item, DbItem) \
             or isinstance(item, DrawingItem):
                 self.edit(self.currentIndex())
 
     def copy(self : Self, item : QStandardItem) -> None:
-        self.model.copy(item)
+        model().copy(item)
 
     def paste(self : Self, item : QStandardItem) -> None:
-        self.model.paste(item)
+        model().paste(item)
 
     def showContextMenu(self : Self, pos : QPoint) -> None:
         menu = QMenu(self)
@@ -360,9 +349,9 @@ class Explorer(TreeView):
         if not index.isValid(): # if clicking in empty space
             index = self.currentIndex()
         if index.isValid():
-            self.item = self.model().itemFromIndex(index)
-            item = self.model().itemFromIndex(index)
-            match self.model.getItemDescription(item):
+            self.item = model().itemFromIndex(index)
+            item = model().itemFromIndex(index)
+            match model().getItemDescription(item):
                 case "Designs":
                     menu.addAction(a.newDesign)
                     menu.addAction(a.openDesign)
@@ -417,7 +406,7 @@ class ExplorerDock(TreeViewDock):
 
     explorer : Explorer
 
-    def __init__(self : Self, model : "Model", parent : QWidget) -> None:
+    def __init__(self : Self, parent : QWidget) -> None:
         super().__init__(None, parent)
-        self.explorer = Explorer(model, self, window=parent)
+        self.explorer = Explorer(self)
         self.setWidget(self.explorer)

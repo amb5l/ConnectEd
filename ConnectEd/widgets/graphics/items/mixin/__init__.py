@@ -4,7 +4,7 @@ from typing import Self
 
 from PyQt6.QtWidgets import QGraphicsItem
 
-from ..... import hub
+from .....app import settings
 
 from .....core.defs  import Z_DRAWING
 
@@ -38,7 +38,7 @@ class ElementMixin:
         if hasattr(self, "initProperties"):
             self.initProperties(bare)
         if hasattr(self, "onSettingsChange"):
-            hub.settings.changed.connect(self.onSettingsChange)
+            settings().changed.connect(self.onSettingsChange)
 
     def __hash__(self):
         return hash(self.uuid)

@@ -5,7 +5,7 @@ from enum        import Enum
 from PyQt6.QtCore    import Qt
 from PyQt6.QtGui     import QColor
 
-from ....core.log import logger
+from ....app import logger
 
 from .mixin import ElementMixin
 
@@ -230,7 +230,7 @@ def clone(elements : list[ElementMixin]) -> list[ElementMixin]:
         try:
             r.append(element.clone())
         except Exception as e:
-            logger.warning(f"Failed to clone element {element}: {e}")
+            logger().warning(f"Failed to clone element {element}: {e}")
     return r
 
 _element_classes = {}

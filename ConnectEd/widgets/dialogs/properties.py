@@ -6,16 +6,15 @@ from PyQt6.QtWidgets import QWidget, QDialog, QVBoxLayout, QHBoxLayout, \
                             QPushButton, QStyledItemDelegate, QAbstractItemView
 from PyQt6.QtGui     import QStandardItemModel, QStandardItem, QBrush
 
-from .table_view import TableView
+from ...app import logger, settings
 
-from ... import hub
-
-from ...core.log   import logger
 from ...core.utils import str2val, val2str
 
 from ..graphics.properties import PropertiesMixin
 
 from ..graphics.items import DEFAULT
+
+from .table_view import TableView
 
 from .components import ColorComboBox,      \
                         LineWidthComboBox,  \
@@ -135,7 +134,7 @@ class ValueDelegate(QStyledItemDelegate):
                 editor = OnOffComboBox(item_value, default, None, parent)
             case _:
                 editor = None
-                logger.error(f"Invalid value type: {item_type}")
+                logger().error(f"Invalid value type: {item_type}")
                 return super().createEditor(parent, option, index)
         return editor
 
@@ -278,7 +277,7 @@ class PropertiesDialog(QDialog):
         bottom_right: QModelIndex,
         roles: list[int]
     ) -> None:
-        if hub.settings.get("display/theme") == "dark":
+        if settings().get("display/theme") == "dark":
             bg_highlight = Qt.GlobalColor.darkYellow
         else:
             bg_highlight = Qt.GlobalColor.yellow

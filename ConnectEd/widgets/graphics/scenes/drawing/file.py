@@ -1,6 +1,7 @@
 from typing import Optional
 
-from .....core.log import logger
+from .....app import logger
+
 from .....core.xml import save, loadItems
 
 from typing import TYPE_CHECKING
@@ -17,5 +18,5 @@ class DrawingSceneApiFileMixin:
         for item in items:
             if isinstance(item, cls):
                 return item
-        logger.warning(f"{cls.__name__} not found in {path}")
+        logger().warning(f"{cls.__name__} not found in {path}")
         return None

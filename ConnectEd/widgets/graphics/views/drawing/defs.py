@@ -6,7 +6,7 @@ from PyQt6.QtWidgets import QGraphicsItem
 
 from .....core.defs import LAYER_SHEET, LAYER_DRAWING
 
-from ..... import hub
+from .....app import settings
 
 
 class DrawingViewLayer(Enum):
@@ -22,7 +22,7 @@ class DrawingViewGrid:
     min_pixels : int
 
     def __init__(self : Self) -> None:
-        s = hub.settings.get("defaults/grid")
+        s = settings().get("defaults/grid")
         self.display    = s.display
         self.snap       = s.snap
         self.pitch      = s.pitch

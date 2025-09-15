@@ -4,15 +4,16 @@ from dataclasses import dataclass
 from PyQt6.QtCore import Qt, QPointF, QRectF, QSizeF
 from PyQt6.QtGui  import QPainter, QPen, QBrush
 
+from ....app import settings
+
 from .drawing import DrawingScene
 
 from ..properties import PropertySpec
 
-from .... import hub
-
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ....core.db import DiagramItem
+
 
 @dataclass
 class DiagramSheet:
@@ -56,22 +57,22 @@ class DiagramScene(DrawingScene):
 
     def __init__(self : Self, parent : Optional["DiagramItem"] = None) -> None:
         super().__init__(parent)
-        sheet_name = hub.settings.get("defaults/sheet/name")
-        sheet_size = hub.settings.get("defaults/sheet/size")
+        sheet_name = settings().get("defaults/sheet/name")
+        sheet_size = settings().get("defaults/sheet/size")
         sheet_rect = QRectF(QPointF(0, 0), sheet_size)
         self.sheet = DiagramSheet(sheet_name, sheet_rect)
-        self.margin = hub.settings.get("defaults/margin")
-        self.border = hub.settings.get("defaults/border")
+        self.margin = settings().get("defaults/margin")
+        self.border = settings().get("defaults/border")
         self.updateSceneRect()
 
     def drawBackground(self : Self, painter : QPainter, rect : QRectF) -> None:
-        painter.fillRect(rect, hub.settings.getTheme("background"))
+        painter.fillRect(rect, settings().getTheme("background"))
         painter.fillRect(
             self.sheet.rect,
-            hub.settings.getTheme("sheet")
+            settings().getTheme("sheet")
         )
         painter.setPen(QPen(
-            hub.settings.getTheme("border"),
+            settings().getTheme("border"),
             self.border,
             Qt.PenStyle.SolidLine
         ))

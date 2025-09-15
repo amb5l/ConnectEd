@@ -1,8 +1,8 @@
 from PyQt6.QtCore    import QPointF
 from PyQt6.QtWidgets import QGraphicsItem
 
+from .....app import logger
 
-from .....core.log import logger
 from .....core.xml import copy
 
 from ....dialogs.properties import PropertyState
@@ -37,7 +37,7 @@ class DrawingSceneApiEditMixin:
             copy(elements, pos)
             self.undo_stack.push(cmdDelete(self, elements))
         else:
-            logger.warning("No elements selected to cut")
+            logger().warning("No elements selected to cut")
 
     def editCopy(
         self : "DrawingScene",
@@ -50,7 +50,7 @@ class DrawingSceneApiEditMixin:
         if elements:
             copy(elements, pos)
         else:
-            logger.warning("No elements selected to copy")
+            logger().warning("No elements selected to copy")
 
     def editDelete(
         self : "DrawingScene"
@@ -60,7 +60,7 @@ class DrawingSceneApiEditMixin:
         if elements:
             self.undo_stack.push(cmdDelete(self, elements))
         else:
-            logger.warning("No elements selected to delete")
+            logger().warning("No elements selected to delete")
 
     def editSelectArea(self : "DrawingScene") -> None:
         raise NotImplementedError("Not implemented yet")

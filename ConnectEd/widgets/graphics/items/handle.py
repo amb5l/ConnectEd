@@ -5,11 +5,11 @@ from PyQt6.QtCore    import Qt, QRectF, QPointF, \
 from PyQt6.QtWidgets import QGraphicsPathItem
 from PyQt6.QtGui     import QPen, QBrush, QPainterPath, QAction
 
+from ....app import settings
+
 from . import APType
 
 from .mixin.menu import ElementMenuMixin
-
-from .... import hub
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -47,16 +47,16 @@ class Handle(
         self._path_normal = QPainterPath()
         self._path_origin = QPainterPath()
         self.onSettingsChange()
-        hub.settings.changed.connect(self.onSettingsChange)
+        settings().changed.connect(self.onSettingsChange)
 
     def onSettingsChange(self : Self) -> None:
         self.prepareGeometryChange()
-        theme = hub.settings.getTheme("handle")
+        theme = settings().getTheme("handle")
         self._pen.setColor(theme.line)
         self.setPen(self._pen)
         self._brush.setColor(theme.fill)
         self.setBrush(self._brush)
-        self._size = hub.settings.get("display/handle/size")
+        self._size = settings().get("display/handle/size")
         r = self._size / 2
         square = QRectF(-r, -r, r*2, r*2)
         # update normal appearance

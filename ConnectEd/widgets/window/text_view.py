@@ -7,11 +7,9 @@ from PyQt6.QtCore    import Qt
 from PyQt6.QtWidgets import QWidget, QPlainTextEdit, QDockWidget, QVBoxLayout
 from PyQt6.QtGui     import QTextOption, QAction, QContextMenuEvent, QWheelEvent
 
-from ...core.log   import logger
+from ...app import logger, settings
 
 from .find_bar import FindBar
-
-from ... import hub
 
 
 class TextView(QPlainTextEdit):
@@ -30,7 +28,7 @@ class TextView(QPlainTextEdit):
         self.setWordWrapMode(QTextOption.WrapMode.NoWrap)
         font = self.font()
         font.setFamily("Liberation Mono")  # TODO: get from settings
-        font.setPointSizeF(hub.settings.get("display/font_size"))
+        font.setPointSizeF(settings().get("display/font_size"))
         self.setFont(font)
         if filename:
             with open(filename, "r") as f:
@@ -82,7 +80,7 @@ class TextView(QPlainTextEdit):
     def __del__(self : Self) -> None:
         if hasattr(self, "handler") and self.handler:
             try:
-                logger.removeHandler(self.handler)
+                logger().removeHandler(self.handler)
             except:
                 pass
 

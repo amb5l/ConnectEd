@@ -4,7 +4,8 @@ from PyQt6.QtCore    import QByteArray, QXmlStreamWriter, QXmlStreamReader, \
                             QFile, QIODevice, QMimeData, QPointF
 from PyQt6.QtWidgets import QApplication
 
-from .log   import logger
+from ..app import logger
+
 from .defs  import APP_NAME, MIME_TYPE
 from .utils import val2str, str2val
 
@@ -92,7 +93,7 @@ def fromXmlItems(
                             item = item_class.fromXml(xr)
                         else:
                             item = None
-                            logger.warning(f"Unexpected element: {xr.name()}")
+                            logger().warning(f"Unexpected element: {xr.name()}")
                 if item:
                     items.append(item)
         xr.readNext()
@@ -155,12 +156,12 @@ def paste() -> tuple[list[XmlItemTypes], Optional[QPointF]]:
             try:
                 return fromXmlItems(xr)
             except ValueError as e:
-                logger.error(f"paste error: {e}")
+                logger().error(f"paste error: {e}")
                 if xr.hasError():
-                    logger.error(f"XML parser error: {xr.errorString()} at line {xr.lineNumber()}, column {xr.columnNumber()}")
+                    logger().error(f"XML parser error: {xr.errorString()} at line {xr.lineNumber()}, column {xr.columnNumber()}")
             except Exception as e:
-                logger.error(f"Unexpected error during paste: {str(e)}")
+                logger().error(f"Unexpected error during paste: {str(e)}")
                 import traceback
                 traceback.print_exc()
-    logger.warning("No valid ConnectEd data in clipboard")
+    logger().warning("No valid ConnectEd data in clipboard")
     return [], None

@@ -14,7 +14,8 @@ from typing import Self, Optional, Any, Dict, List
 
 from PyQt6.QtCore import Qt, QObject, pyqtSignal, QSettings, QPointF, QSizeF
 
-from .log     import logger
+from ..app import logger
+
 from .defs    import ORG_NAME, APP_NAME, DEFS
 from .utils   import getDefaultPath, val2str, str2val
 from .palette import PaletteDark, PaletteLightMono
@@ -438,7 +439,7 @@ class Settings(QObject):
     def getTheme(self : Self, path : str) -> Any:
         theme_name = self.get("display/theme")
         if theme_name not in self._settings["themes"]:
-            logger.warning(f"Unknown theme: {theme_name}")
+            logger().warning(f"Unknown theme: {theme_name}")
             theme_name = "dark"
         return self.get(f"themes/{theme_name}/{path}")
 
@@ -446,7 +447,7 @@ class Settings(QObject):
         tn = type(value).__name__
         tnx = self._getSettingTypeName(path) # type name expected
         if tn != tnx:
-            logger.warning(
+            logger().warning(
                 f"Bad type for setting {path} - expected {tnx} but got {tn}"
             )
             return
@@ -456,7 +457,7 @@ class Settings(QObject):
 
     def reset(self : Self) -> None:
         """Clear all saved settings from QSettings."""
-        logger.info("Clearing all persistent settings")
+        logger().info("Clearing all persistent settings")
         qsettings = QSettings(ORG_NAME, APP_NAME)
         qsettings.clear()
         self._settings = self._deepCopy(FACTORY_SETTINGS)
@@ -464,7 +465,7 @@ class Settings(QObject):
 
     def load(self : Self) -> None:
         """Load settings from QSettings into the settings store."""
-        logger.debug("Loading settings")
+        logger().debug("Loading settings")
         qsettings = QSettings(ORG_NAME, APP_NAME)
         for group in FACTORY_SETTINGS.keys():
             qsettings.beginGroup(group)
@@ -474,7 +475,7 @@ class Settings(QObject):
 
     def save(self : Self) -> None:
         """Save settings to QSettings storage."""
-        logger.debug("Saving settings")
+        logger().debug("Saving settings")
         qsettings = QSettings(ORG_NAME, APP_NAME)
         for group, value in self._settings.items():
             qsettings.beginGroup(group)
@@ -542,10 +543,10 @@ class Settings(QObject):
                 full_path = f"{path}/{key}"
                 type_name = self._getSettingTypeName(full_path)
                 if type_name is not None:
-                    logger.debug(f"Loading setting: {full_path} = {value} ({type_name})")
+                    logger().debug(f"Loading setting: {full_path} = {value} ({type_name})")
                     settings[key] = str2val(value, type_name)
                 else:
-                    logger.warning(f"Unknown setting: {full_path}")
+                    logger().warning(f"Unknown setting: {full_path}")
 
     def _save(
         self      : Self,
@@ -561,7 +562,7 @@ class Settings(QObject):
                 qsettings.endGroup()
             else:
                 full_path = f"{path}/{key}"
-                logger.debug(f"Saving setting: {full_path} = {value}")
+                logger().debug(f"Saving setting: {full_path} = {value}")
                 qsettings.setValue(key, val2str(value))
 
     def _toNamespace(self : Self, d : Dict) -> SimpleNamespace:

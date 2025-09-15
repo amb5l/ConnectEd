@@ -2,7 +2,7 @@ from typing import Self
 
 from PyQt6.QtGui     import QPainterPath
 
-from ..... import hub
+from .....app import settings
 
 
 _PIN_LEN = 10 # documentation - DO NOT CHANGE
@@ -40,21 +40,21 @@ class DrawingScenePathsMixin:
             self.paths["Port"]["out"],
             self.paths["Port"]["bi"]
         ) = self._buildPortPaths(
-            hub.settings.getTheme("elements/Port/size")
+            settings().getTheme("elements/Port/size")
         )
         (
             self.paths["BlockPinArrow"]["in"],
             self.paths["BlockPinArrow"]["out"],
             self.paths["BlockPinArrow"]["bi"]
         ) = self._buildPinArrowPaths(
-            hub.settings.getTheme("elements/BlockPinArrow/size")
+            settings().getTheme("elements/BlockPinArrow/size")
         )
         (
             self.paths["SymbolPinArrow"]["in"],
             self.paths["SymbolPinArrow"]["out"],
             self.paths["SymbolPinArrow"]["bi"]
         ) = self._buildPinArrowPaths(
-            hub.settings.getTheme("elements/SymbolPinArrow/size")
+            settings().getTheme("elements/SymbolPinArrow/size")
         )
 
     def _buildPortPaths(

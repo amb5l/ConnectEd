@@ -5,11 +5,12 @@ from PyQt6.QtCore    import Qt, QPointF, QRectF, QPoint
 from PyQt6.QtWidgets import QMenu, QGraphicsItem
 from PyQt6.QtGui     import QMouseEvent, QPainterPath, QIcon, QAction, QCursor
 
-from ..... import hub
+from .....app import settings, window
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from . import DrawingView
+
 
 qkm = Qt.KeyboardModifier
 
@@ -49,21 +50,21 @@ class DrawingViewPrivateMixin:
         )
 
     def _zoomAbs(self : "DrawingView", abs: float) -> None:
-        abs = max(abs, hub.settings.get("display/zoom/min"))
-        abs = min(abs, hub.settings.get("display/zoom/max"))
+        abs = max(abs, settings().get("display/zoom/min"))
+        abs = min(abs, settings().get("display/zoom/max"))
         self.zoom = abs
         self.resetTransform()
         self.scale(self.zoom, self.zoom)
-        self._window.status_bar.zoom.setText(
+        window().status_bar.zoom.setText(
             "{:.2f}%".format(self.zoom * 100)
         )
-        self._window.actions.actionEnable(
+        window().actions.actionEnable(
             "viewZoomIn",
-            self.zoom < hub.settings.get("display/zoom/max")
+            self.zoom < settings().get("display/zoom/max")
         )
-        self._window.actions.actionEnable(
+        window().actions.actionEnable(
             "viewZoomOut",
-            self.zoom > hub.settings.get("display/zoom/min")
+            self.zoom > settings().get("display/zoom/min")
         )
 
     def _zoomRel(self : "DrawingView", rel: float) -> None:
@@ -90,7 +91,7 @@ class DrawingViewPrivateMixin:
         factor = min(
             self.viewport().width()  / rect.width(),
             self.viewport().height() / rect.height()
-            ) * (1 - hub.settings.get("display/zoom/padding"))
+        ) * (1 - settings().get("display/zoom/padding"))
         self._zoomAbs(factor)
         self.centerOn(rect.center())
 

@@ -4,13 +4,13 @@ from types  import SimpleNamespace
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui  import QColor, QFont, QPen, QBrush
 
+from .....app import settings
+
 from ...properties import PropertySpec
 
 from .. import Default, DEFAULT, NO_CHANGE, QuillPref, QuillPrefChange
 
 from . import ElementMixin
-
-from ..... import hub
 
 
 class Quill:
@@ -119,16 +119,16 @@ class Quill:
 
     def getDefaults(self : Self) -> SimpleNamespace:
         settings_name = self._parent.__class__.__name__
-        return hub.settings.getTheme(f"elements/{settings_name}/text")
+        return settings().getTheme(f"elements/{settings_name}/text")
 
     def onSettingsChange(self : Self) -> None:
         default = self.getDefaults()
-        self._selected.setRgb(hub.settings.getTheme("selected/text").rgb())
-        self._selected.setAlpha(hub.settings.get("display/alpha"))
+        self._selected.setRgb(settings().getTheme("selected/text").rgb())
+        self._selected.setAlpha(settings().get("display/alpha"))
         self._normal.setRgb(
             default.color.rgb() if self._color is DEFAULT else self._color.rgb()
         )
-        self._normal.setAlpha(hub.settings.get("display/alpha"))
+        self._normal.setAlpha(settings().get("display/alpha"))
         self._font.setFamily(
             default.family if self._family is DEFAULT else self._family
         )

@@ -3,7 +3,7 @@ from typing import Self, Optional
 from PyQt6.QtCore    import QPointF, QLineF
 from PyQt6.QtWidgets import QGraphicsLineItem, QGraphicsSceneMouseEvent
 
-from ....core.log import logger
+from ....app import logger
 
 from ..properties import PropertySpec
 
@@ -87,7 +87,7 @@ class TetherText(BaseText):
         if isinstance(parent, AnchorPoint):
             return parent.name()
         else:
-            logger.error(f"Parent is not an AnchorPoint: {type(parent).__name__}")
+            logger().error(f"Parent is not an AnchorPoint: {type(parent).__name__}")
             return ""
 
     def setCleat(self : Self, name : str) -> None:
@@ -97,10 +97,10 @@ class TetherText(BaseText):
             if isinstance(grandparent, ElementAnchorPointsMixin):
                 self.setParentItem(grandparent.getAnchorPoint(name))
             else:
-                logger.error(f"Grandparent is not an ElementAnchorPointsMixin: {type(grandparent).__name__}")
+                logger().error(f"Grandparent is not an ElementAnchorPointsMixin: {type(grandparent).__name__}")
             parent.setName(name)
         else:
-            logger.error(f"Parent is not an AnchorPoint: {type(parent).__name__}")
+            logger().error(f"Parent is not an AnchorPoint: {type(parent).__name__}")
 
     def getTotalRotation(self) -> float:
         r = 0.0

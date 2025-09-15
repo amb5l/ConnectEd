@@ -5,6 +5,8 @@ from PyQt6.QtWidgets import QGraphicsRectItem, \
                             QWidget, QStyleOptionGraphicsItem, QStyle
 from PyQt6.QtGui     import QPainter, QPainterPath, QPainterPathStroker
 
+from ....app import settings
+
 from ..properties import PropertySpec, PropertiesMixin
 
 from . import APType
@@ -19,8 +21,6 @@ from .mixin.change import ElementChangeMixin
 from .mixin.clone  import ElementCloneMixin
 from .mixin.xml    import ElementXmlMixin
 from .mixin.menu   import ElementMenuMixin
-
-from .... import hub
 
 
 class BaseRectangle(
@@ -87,7 +87,7 @@ class BaseRectangle(
     def onGeometryChange(self : Self) -> None:
         self.prepareGeometryChange()
         pen_width = self.line.pen.widthF()
-        tolerance = hub.settings.get("display/select/tolerance")
+        tolerance = settings().get("display/select/tolerance")
         stroke_width = pen_width + (2 * tolerance)
         rect_path = QPainterPath()
         rect_path.addRect(self._rect)

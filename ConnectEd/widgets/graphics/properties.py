@@ -1,7 +1,8 @@
 from typing import Callable, Optional, Any, Self
 from dataclasses import dataclass
 
-from ...core.log   import logger
+from ...app import logger
+
 from ...core.utils import val2str
 
 from typing import TYPE_CHECKING
@@ -69,10 +70,10 @@ class PropertiesMixin:
         if old == new:
             return
         if old not in self._properties:
-            logger.warning(f"Property {old} does not exist")
+            logger().warning(f"Property {old} does not exist")
             return
         if new in self._properties:
-            logger.warning(f"Property {new} already exists")
+            logger().warning(f"Property {new} already exists")
             return
         new_dict = {}
         for name, ps in self._properties.items():
@@ -90,37 +91,37 @@ class PropertiesMixin:
 
     def getPropertyValue(self, name : str) -> Any:
         if name not in self._properties:
-            logger.warning(f"Property {name} does not exist")
+            logger().warning(f"Property {name} does not exist")
         ps = self._properties[name]
         return ps.getter(self)
 
     def setPropertyValue(self, name : str, value : Any) -> None:
         if name not in self._properties:
-            logger.warning(f"Property {name} does not exist")
+            logger().warning(f"Property {name} does not exist")
             return
         ps = self._properties[name]
         if ps.setter is not None:
             ps.setter(self, value)
         else:
-            logger.warning(f"Property {name} is read only")
+            logger().warning(f"Property {name} is read only")
         self.onPropertyChange()
 
     def getPropertyDescription(self, name : str) -> str:
         if name not in self._properties:
-            logger.warning(f"Property {name} does not exist")
+            logger().warning(f"Property {name} does not exist")
         ps = self._properties[name]
         return ps.description
 
     def setPropertyDescription(self, name : str, description : str) -> None:
         if name not in self._properties:
-            logger.warning(f"Property {name} does not exist")
+            logger().warning(f"Property {name} does not exist")
             return
         ps = self._properties[name]
         ps.description = description
 
     def addProperty(self, name : str) -> None:
         if name in self._properties:
-            logger.warning(f"Property {name} already exists")
+            logger().warning(f"Property {name} already exists")
             return
         self._properties[name] = PropertySpec(custom=True)
 
@@ -130,7 +131,7 @@ class PropertiesMixin:
             if v.custom:
                 del self._properties[name]
         else:
-            logger.warning(f"Property {name} does not exist")
+            logger().warning(f"Property {name} does not exist")
 
     def onPropertyChange(self) -> None:
         """Notify all PropertyText children to refresh their display."""

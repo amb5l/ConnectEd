@@ -7,9 +7,8 @@ from PyQt6.QtGui     import QColor, QPainter, QPixmap, \
                             QIcon, QFont, QFontMetrics
 from PyQt6.QtSvg     import QSvgRenderer
 
-from .log import logger
+from ..app import logger, settings
 
-from .. import hub
 
 def getDefaultIconSize() -> int:
     app = QApplication(sys.argv)
@@ -17,7 +16,7 @@ def getDefaultIconSize() -> int:
     return style.pixelMetric(QStyle.PixelMetric.PM_SmallIconSize)
 
 def getFgBgColors() -> tuple[QColor, QColor]:
-    if hub.settings.get("display/theme") == "dark":
+    if settings().get("display/theme") == "dark":
         return Qt.GlobalColor.white, Qt.GlobalColor.black
     else:
         return Qt.GlobalColor.black, Qt.GlobalColor.white
@@ -33,7 +32,7 @@ def getSvgIcon(path : str, size : QSize, margin : int = 1) -> QIcon:
     svg_content = svg_content.replace('currentColor', QColor(fgColor).name())
     renderer = QSvgRenderer(svg_content.encode('utf-8'))
     if not renderer.isValid():
-        logger.error("Invalid SVG file")
+        logger().error("Invalid SVG file")
         return QIcon()
     svg_size = renderer.defaultSize()
     scale_factor = min(

@@ -3,7 +3,7 @@ from typing import Self, Optional
 from PyQt6.QtWidgets import QWidget, QDialog, QPushButton, QGroupBox, \
                             QVBoxLayout, QHBoxLayout
 
-from ...core.log import logger
+from ...app import logger
 
 from ..graphics.items import \
     DEFAULT, NO_CHANGE, \
@@ -58,7 +58,7 @@ class AppearanceDialog(QDialog):
                  ["color", "family", "size", "bold", "italic", "underline"]:
                     subcat = getattr(pref, subcat_name)
                     if subcat is None:
-                        logger.error(f"{cat_name}/{subcat_name} is None for element {element}")
+                        logger().error(f"{cat_name}/{subcat_name} is None for element {element}")
                         continue
                     # populate no_change values
                     n_cat = getattr(no_change, cat_name)
@@ -91,14 +91,14 @@ class AppearanceDialog(QDialog):
                     # populate default values
                     d_cat = getattr(element, cat_name).getDefaults()
                     if d_cat is None:
-                        logger.error(f"{cat_name} is None in defaults for element {element}")
+                        logger().error(f"{cat_name} is None in defaults for element {element}")
                         continue
                     if not hasattr(d_cat, subcat_name):
-                        logger.error(f"No {cat_name}/{subcat_name} attribute in defaults for element {element}")
+                        logger().error(f"No {cat_name}/{subcat_name} attribute in defaults for element {element}")
                         continue
                     d_subcat = getattr(d_cat, subcat_name)
                     if d_subcat is None:
-                        logger.error(f"{cat_name}/{subcat_name} is None in defaults for element {element}")
+                        logger().error(f"{cat_name}/{subcat_name} is None in defaults for element {element}")
                         continue
                     v_cat = getattr(default, cat_name)
                     if v_cat is None:
@@ -118,7 +118,7 @@ class AppearanceDialog(QDialog):
             (0 if initial.fill  is None else 1) + \
             (0 if initial.quill is None else 1)
         if categories == 0:
-            logger.warning("No appearance data found in element(s)")
+            logger().warning("No appearance data found in element(s)")
             return
         if categories > 1:
             title = "Appearance"

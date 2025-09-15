@@ -3,6 +3,8 @@ from typing import Self
 from PyQt6.QtCore    import Qt, QChildEvent, QEvent
 from PyQt6.QtWidgets import QMdiArea, QWidget, QMdiSubWindow
 
+from ...app import model, window
+
 from ..private import Action
 
 from ...widgets.graphics.views.drawing import DrawingSubWindow, DrawingView
@@ -11,20 +13,13 @@ from ...widgets.graphics.scenes.drawing import DrawingScene
 
 from .spreadsheet import SpreadsheetSubWindow
 
-from typing import TYPE_CHECKING
-if TYPE_CHECKING:
-    from ...widgets.window import Window
-    from ...core.db import Model
-
 
 class MdiArea(QMdiArea):
-    model             : "Model"
     subwindow_actions : dict[any, list[Action]]
     subwindow_scenes  : dict[any, list[QMdiSubWindow]]
 
-    def __init__(self : Self, model : "Model") -> None:
+    def __init__(self : Self) -> None:
         super().__init__()
-        self.model = model
 
     def addSubWindow(
         self   : Self,
@@ -51,8 +46,7 @@ class MdiArea(QMdiArea):
     def update(self : Self) -> None:
         self._updateSubWindowTitles()
         self._updateSubWindowActions()
-        window : "Window" = self.parent()
-        window.menu_bar.updateWindowMenu()
+        window().menu_bar.updateWindowMenu()
 
     def childEvent(self : Self, event : QChildEvent) -> None:
         """Handle child events, particularly when subwindows are removed."""
@@ -96,7 +90,7 @@ class MdiArea(QMdiArea):
             if scene is None:
                 continue
             scene_name = scene.item.text()
-            db_name = self.model.getDbItemFromScene(scene).text()
+            db_name = model().getDbItemFromScene(scene).text()
             properties_windows = [w for w in windows if isinstance(w, SpreadsheetSubWindow)]
             drawing_windows = [w for w in windows if isinstance(w, DrawingSubWindow)]
             sorted_windows = properties_windows + drawing_windows
@@ -117,16 +111,16 @@ class MdiArea(QMdiArea):
                         w.setWindowTitle(f"{db_name}:{scene_name}:{i}")
 
     def _updateSubWindowActions(self : Self) -> None:
-        m : "Window" = self.parent()
+        m = window()
         self.subwindow_actions = {}
         for w in self.subWindowList():
             key = "_"
             if isinstance(w, DrawingSubWindow) \
             and isinstance(w.widget(), DrawingView) \
             and isinstance(w.widget().scene(), DrawingScene):
-                key = id(self.model.getDbItemFromScene(w.widget().scene()))
+                key = id(model().getDbItemFromScene(w.widget().scene()))
             elif isinstance(w, SpreadsheetSubWindow) and w.scene() is not None:
-                key = id(self.model.getDbItemFromScene(w.scene()))
+                key = id(model().getDbItemFromScene(w.scene()))
             action = Action(m, w.windowTitle(), None, None, False, False, w)
             action.triggered.connect(
                 lambda checked=False, sw=w: self._activateSubWindow(sw)

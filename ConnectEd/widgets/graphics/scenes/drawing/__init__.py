@@ -5,9 +5,8 @@ from PyQt6.QtCore    import QPointF, QRectF, QSizeF, \
 from PyQt6.QtWidgets import QGraphicsScene
 from PyQt6.QtGui     import QUndoStack
 
-from ..... import hub
+from .....app import logger, settings
 
-from .....core.log import logger
 from .....core.xml import toXmlAttrs, fromXmlAttrs
 
 from ...properties import PropertySpec, PropertiesMixin
@@ -50,7 +49,7 @@ class DrawingScene(
         super().__init__()
         self.item = item
         if extents is None:
-            extents = hub.settings.get("defaults/extents")
+            extents = settings().get("defaults/extents")
         self.setSceneRect(QRectF(QPointF(0, 0), extents))
         self.setItemIndexMethod(QGraphicsScene.ItemIndexMethod.NoIndex)
         self.undo_stack = None
@@ -90,6 +89,6 @@ class DrawingScene(
                     element = cls.fromXml(xr)
                     drawing_scene.addItem(element)
                 else:
-                    logger.warning(f"Unexpected element: {attr_name}")
+                    logger().warning(f"Unexpected element: {attr_name}")
             xr.readNext()
         return drawing_scene
