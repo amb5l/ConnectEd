@@ -48,9 +48,7 @@ class DrawingScene(
     ) -> None:
         super().__init__()
         self.item = item
-        if extents is None:
-            extents = settings().get("defaults/extents")
-        self.setSceneRect(QRectF(QPointF(0, 0), extents))
+        self.updateSceneRect()
         self.setItemIndexMethod(QGraphicsScene.ItemIndexMethod.NoIndex)
         self.undo_stack = None
         self.undo_stack = QUndoStack(self)
@@ -65,6 +63,15 @@ class DrawingScene(
 
     def redo(self : Self) -> None:
         self.undo_stack.redo()
+
+    def updateSceneRect(self : Self, rect : Optional[QRectF] = None) -> None:
+        ext_rect = QRectF(QPointF(0, 0), settings().get("defaults/extents"))
+        scene_rect = rect or ext_rect
+        for item in self.items():
+            item_rect = item.mapToScene(item.boundingRect()).boundingRect()
+            scene_rect = item_rect if scene_rect is None else scene_rect.united(item_rect)        
+        if scene_rect is not None:
+            self.setSceneRect(scene_rect)
 
     def toXml(self : Self, xw : QXmlStreamWriter) -> None:
         xw.writeStartElement(self.__class__.__name__)

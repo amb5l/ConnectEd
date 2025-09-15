@@ -56,14 +56,16 @@ class DiagramScene(DrawingScene):
     border : float         # line width
 
     def __init__(self : Self, parent : Optional["DiagramItem"] = None) -> None:
-        super().__init__(parent)
         sheet_name = settings().get("defaults/sheet/name")
         sheet_size = settings().get("defaults/sheet/size")
         sheet_rect = QRectF(QPointF(0, 0), sheet_size)
         self.sheet = DiagramSheet(sheet_name, sheet_rect)
         self.margin = settings().get("defaults/margin")
         self.border = settings().get("defaults/border")
-        self.updateSceneRect()
+        super().__init__(parent)
+
+    def updateSceneRect(self : Self, rect : Optional[QRectF] = None) -> None:
+        super().updateSceneRect(self.sheet.rect)
 
     def drawBackground(self : Self, painter : QPainter, rect : QRectF) -> None:
         painter.fillRect(rect, settings().getTheme("background"))
@@ -79,12 +81,6 @@ class DiagramScene(DrawingScene):
         painter.setBrush(QBrush(Qt.BrushStyle.NoBrush))
         painter.drawRect(self.sheet.rect.adjusted(
             self.margin, self.margin, -self.margin, -self.margin
-        ))
-
-    def updateSceneRect(self : Self) -> None:
-        self.setSceneRect(QRectF(
-            QPointF(-self.sheet.rect.width(), -self.sheet.rect.height()),
-            QSizeF(self.sheet.rect.width() * 3, self.sheet.rect.height() * 3)
         ))
 
     def getSheetName(self : Self) -> str:

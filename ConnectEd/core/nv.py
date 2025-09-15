@@ -50,7 +50,7 @@ FACTORY_SETTINGS = {
         }
     },
     "defaults" : {
-        "extents" : QSizeF(1280.0, 800.0),
+        "extents" : QSizeF(800.0, 600.0),
         "sheet" : {
             "name" : "A4 (landscape)",
             "size" : DEFS["sheets"]["A4 (landscape)"]
