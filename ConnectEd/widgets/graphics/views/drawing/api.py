@@ -146,8 +146,12 @@ class DrawingViewApiMixin:
 
     def viewZoomAll(self : "DrawingView") -> None:
         scene : DrawingScene = self.scene()
-        scene.updateSceneRect()
-        self._zoomRect(scene.sceneRect())
+        if scene.items():
+            rect = self._allItemsRect() 
+        else:
+            scene.updateSceneRect()            
+            rect = scene.sceneRect()
+        self._zoomRect(rect)
 
     def viewZoomArea(self : "DrawingView") -> None:
         self.state.go(self.stateViewZoomArea1)
