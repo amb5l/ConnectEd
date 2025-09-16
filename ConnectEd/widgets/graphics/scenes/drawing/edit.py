@@ -35,7 +35,7 @@ class DrawingSceneApiEditMixin:
                 and item.parentItem() is None]
         if elements:
             copy(elements, pos)
-            self.undo_stack.push(cmdDelete(self, elements))
+            self.undo_stack.push(cmdDelete(self, elements, self.selectedItems()))
         else:
             logger().warning("No elements selected to cut")
 
@@ -58,7 +58,7 @@ class DrawingSceneApiEditMixin:
         """Delete selected elements from the scene."""
         elements = self._selectedTopElements()
         if elements:
-            self.undo_stack.push(cmdDelete(self, elements))
+            self.undo_stack.push(cmdDelete(self, elements, self.selectedItems()))
         else:
             logger().warning("No elements selected to delete")
 
