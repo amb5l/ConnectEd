@@ -126,35 +126,26 @@ class DrawingItem(QStandardItem):
             scene.setParent(self)
         else:
             scene = scene_class(self)
+        scene.name = name
         self.scene = scene
         self.setData(self.scene, Qt.ItemDataRole.UserRole)
         self.setFlags(self.flags() | Qt.ItemFlag.ItemIsEditable)
 
+    def text(self : Self) -> str:
+        return self.scene.name if self.scene else ""
+    
+    def setText(self : Self, text : str) -> None:
+        self.scene.name = text
+
     def toXml(self : Self, xw : QXmlStreamWriter) -> None:
-        xw.writeStartElement(self.__class__.__name__)
-        xw.writeAttribute("name", self.text())
         self.scene.toXml(xw)
-        xw.writeEndElement()
 
     @classmethod
     def fromXml(cls : Self, xr : QXmlStreamReader) -> Self:
-        cls_name = cls.__name__
-        if xr.name() != cls_name:
-            raise ValueError(f"Expected {cls_name} element, got {xr.name()}")
-        attributes = xr.attributes()
-        for attr in attributes:
-            if attr.name() == "name":
-                name = attr.value()
-        xr.readNext()
-        while not (xr.isEndElement() and xr.name() == cls_name):
-            if xr.tokenType() == QXmlStreamReader.TokenType.StartElement:
-                scene_class = cls.sceneClass()
-                scene = scene_class.fromXml(xr)
-                instance : "DrawingItem" = cls(name, scene)
-                scene.setParent(instance)
-                return instance
-            xr.readNext()
-        raise ValueError(f"No scene element found in {cls_name}")
+        scene : "DrawingScene" = cls.sceneClass().fromXml(xr)
+        instance : "DrawingItem" = cls(None, scene)
+        scene.setParent(instance)
+        return instance
 
     copy = copy
 
@@ -199,7 +190,7 @@ class DbItem(QStandardItem):
     path   : Optional[str]
 
     def __init__(self : Self) -> None:
-        u = "Untitled" + self.__class__.__name__.replace("Db", "")
+        u = "Untitled" + self.__class__.__name__.replace("DbItem", "")
         super().__init__(name_counter.get(u))
         self.setFlags(self.flags() | Qt.ItemFlag.ItemIsEditable)
         self.path = None

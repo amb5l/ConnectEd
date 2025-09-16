@@ -1,6 +1,6 @@
 from typing      import Self
 
-from PyQt6.QtCore    import QRectF
+from PyQt6.QtCore    import QRectF, QXmlStreamWriter
 from PyQt6.QtWidgets import QGraphicsItem, QStyleOptionGraphicsItem, QWidget
 from PyQt6.QtGui     import QPainter, QPainterPath
 
@@ -59,3 +59,7 @@ class NullPoint(QGraphicsItem):
         widget  : QWidget
     ) -> None:
         logger().error("Paint should never be called")
+
+    def toXml(self : Self, xw : QXmlStreamWriter) -> None:
+        """Dummy toXml method - NullPoints are not serialized."""
+        pass

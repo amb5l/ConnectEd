@@ -62,7 +62,7 @@ class DiagramScene(DrawingScene):
         self.sheet = DiagramSheet(sheet_name, sheet_rect)
         self.margin = settings().get("defaults/margin")
         self.border = settings().get("defaults/border")
-        super().__init__(parent)
+        super().__init__(parent, sheet_size)
 
     def updateSceneRect(self : Self, rect : Optional[QRectF] = None) -> None:
         super().updateSceneRect(self.sheet.rect)

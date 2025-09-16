@@ -32,14 +32,15 @@ class DrawingScene(
     _PROPERTY_SPECS = {
         "Name" : PropertySpec(
             type_name = "str",
-            getter    = lambda self: self.getName(),
-            setter    = lambda self, value: self.setName(value)
+            getter    = lambda self: self._name,
+            setter    = lambda self, value: setattr(self, '_name', value)
         )
     }
 
     # instance attributes
     item       : Optional["DrawingItem"]
     undo_stack : Optional[QUndoStack]
+    _name      : str
 
     def __init__(
         self    : Self,
@@ -48,6 +49,7 @@ class DrawingScene(
     ) -> None:
         super().__init__()
         self.item = item
+        self._name = ""
         self.updateSceneRect()
         self.setItemIndexMethod(QGraphicsScene.ItemIndexMethod.NoIndex)
         self.undo_stack = None
@@ -57,6 +59,14 @@ class DrawingScene(
 
     def setParent(self : Self, parent : "DrawingItem") -> None:
         self.item = parent
+
+    @property
+    def name(self : Self) -> str:
+        return self._name
+
+    @name.setter
+    def name(self : Self, name : str) -> None:
+        self._name = name
 
     def undo(self : Self) -> None:
         self.undo_stack.undo()

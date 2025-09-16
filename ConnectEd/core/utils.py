@@ -11,7 +11,9 @@ def check(b : bool, s : str) -> bool:
         print(s)
     return b
 
+
 def camel_to_proper(s : str) -> str:
+    """FooBar -> Foo Bar"""
     r = []
     for i, char in enumerate(s):
         if i == 0:
@@ -21,6 +23,17 @@ def camel_to_proper(s : str) -> str:
                 r.append(" ")
             r.append(char)
     return "".join(r)
+
+
+def proper_to_snake(s : str) -> str:
+    """Foo Bar -> foo_bar"""
+    return s.replace(" ", "_").lower()
+
+
+def snake_to_proper(s : str) -> str:
+    """foo_bar -> Foo Bar"""
+    return s.replace("_", " ").title()
+
 
 def getDefaultPath() -> str:
     if platform.system() == "Windows":
@@ -40,6 +53,7 @@ def getDefaultPath() -> str:
         else:
             r = "~"
     return r
+
 
 def val2str(v : Any) -> str:
     """Convert a Python value to a text representation."""
@@ -68,6 +82,7 @@ def val2str(v : Any) -> str:
         case _ :
             raise ValueError(f"Unsupported type: {t}")
     return s
+
 
 def str2val(s : str, t : str) -> Any:
     """Convert a text representation of a Python value to a Python value."""
