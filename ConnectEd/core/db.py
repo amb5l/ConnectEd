@@ -196,7 +196,7 @@ class DbItem(QStandardItem):
         self.path = None
 
     def toXmlBegin(self : Self, xw : QXmlStreamWriter) -> None:
-        xw.writeStartElement(self.__class__.__name__.replace("Item", ""))
+        xw.writeStartElement(self.__class__.__name__.replace("DbItem", ""))
         xw.writeAttribute("name", self.text())
 
     def toXmlEnd(self : Self, xw : QXmlStreamWriter) -> None:
@@ -220,8 +220,15 @@ class DbItem(QStandardItem):
 
     @classmethod
     def fromXmlBegin(cls : Self, xr : QXmlStreamReader) -> Self:
-        fromXmlBegin(xr, cls.__name__.replace("Item", ""))
-        db_item = cls()
+        element_name = cls.__name__.replace("DbItem", "")
+        if xr.name() == element_name and xr.isStartElement():
+            pass  # Already at target element
+        else:
+            fromXmlBegin(xr, element_name)        
+        if cls.__name__ == 'DesignDbItem':
+            db_item = cls(new=False)
+        else:
+            db_item = cls()        
         attributes = xr.attributes()
         for attribute in attributes:
             tag = attribute.name()
@@ -234,7 +241,7 @@ class DbItem(QStandardItem):
         return db_item
 
     def fromXmlEnd(self : Self, xr : QXmlStreamReader) -> None:
-        while not (xr.isEndElement() and xr.name() == self.__class__.__name__.replace("Item", "")):
+        while not (xr.isEndElement() and xr.name() == self.__class__.__name__.replace("DbItem", "")):
             xr.readNext()
 
     @classmethod
@@ -258,18 +265,23 @@ class DesignDbItem(DbItem):
     diagrams : DiagramsContainer
     symbols  : SymbolCacheContainer
 
-    def __init__(self : Self) -> None:
+    def __init__(self : Self, new : bool = True) -> None:
         super().__init__()
         self.diagrams = DiagramsContainer()
         self.appendRow(self.diagrams)
         self.symbols = SymbolCacheContainer()
         self.appendRow(self.symbols)
-        self.diagrams.appendRow(DiagramItem())
-        self.diagrams.root = self.diagrams.child(0)
+        if new:
+            self.diagrams.appendRow(DiagramItem())
+            self.diagrams.root = self.diagrams.child(0)
+        else:
+            self.diagrams.root = None
 
     def toXml(self : Self, xw : QXmlStreamWriter) -> None:
         self.toXmlBegin(xw)
         xw.writeStartElement("Diagrams")
+        root = "" if self.diagrams.root is None else self.diagrams.root.text()
+        xw.writeAttribute("root", root)
         for i in range(self.diagrams.rowCount()):
             diagram_item : DiagramItem = self.diagrams.child(i)
             diagram_scene = diagram_item.scene
@@ -285,9 +297,20 @@ class DesignDbItem(DbItem):
     @classmethod
     def fromXml(cls : Self, xr : QXmlStreamReader) -> Self:
         db_item = cls.fromXmlBegin(xr)
-        while not (xr.isEndElement() and xr.name() == cls.__name__.replace("Item", "")):
+        while not (xr.isEndElement() and xr.name() == cls.__name__.replace("DbItem", "")):            
+            if xr.tokenType() == xr.TokenType.EndDocument:
+                logger().error(f"DesignDbItem.fromXml: Reached end of document while looking for end of '{cls.__name__.replace('DbItem', '')}'")
+                break
             if xr.tokenType() == QXmlStreamReader.TokenType.StartElement:
                 if xr.name() == "Diagrams":
+                    root_name = ""
+                    attributes = xr.attributes()
+                    for attribute in attributes:
+                        if attribute.name() == "root":
+                            root_name = attribute.value()
+                            break
+                        else:
+                            logger().warning(f"Unexpected attribute: {attribute.name()} value: {attribute.value()}")                    
                     xr.readNext()  # Move past <Diagrams>
                     while not (xr.isEndElement() and xr.name() == "Diagrams"):
                         if xr.tokenType() == QXmlStreamReader.TokenType.StartElement:
@@ -296,7 +319,22 @@ class DesignDbItem(DbItem):
                                 db_item.diagrams.appendRow(diagram_item)
                             else:
                                 raise ValueError(f"Unexpected element in Diagrams: {xr.name()}")
-                        xr.readNext()
+                        xr.readNext()                    
+                    # Set the root diagram based on the loaded name
+                    if root_name:
+                        root = None
+                        for i in range(db_item.diagrams.rowCount()):
+                            diagram_item = db_item.diagrams.child(i)
+                            if diagram_item.text() == root_name:
+                                root = diagram_item
+                                db_item.diagrams.root = root
+                                break
+                        if root is None:
+                            logger().warning(f"DesignDbItem.fromXml: Root diagram '{root_name}' not found, defaulting to first")
+                            if db_item.diagrams.rowCount() > 0:
+                                db_item.diagrams.root = db_item.diagrams.child(0)
+                    elif db_item.diagrams.rowCount() > 0:
+                        db_item.diagrams.root = db_item.diagrams.child(0)                        
                 elif xr.name() == "SymbolCache":
                     xr.readNext()  # Move past <SymbolCache>
                     while not (xr.isEndElement() and xr.name() == "SymbolCache"):
@@ -334,7 +372,7 @@ class LibraryDbItem(DbItem):
     @classmethod
     def fromXml(cls : Self, xr : QXmlStreamReader) -> Self:
         db_item = cls.fromXmlBegin(xr)
-        while not (xr.isEndElement() and xr.name() == cls.__name__.replace("Item", "")):
+        while not (xr.isEndElement() and xr.name() == cls.__name__.replace("DbItem", "")):
             xr.readNext()
         return db_item
 

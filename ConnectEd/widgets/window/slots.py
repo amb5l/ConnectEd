@@ -11,6 +11,10 @@ from ...core.defs import APP_NAME
 from ...widgets.graphics.views.drawing import DrawingView
 from ...widgets.graphics.views.diagram import DiagramView
 
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from ...widgets.window.explorer import Explorer
+
 
 T = TypeVar("T")
 
@@ -73,13 +77,14 @@ class Slots:
         pass
 
     def fileNewDesign(self : Self) -> None:
+        explorer : "Explorer" = window().explorer.widget()
         window().explorer.widget().newDesign()
 
     def fileNewLibrary(self : Self) -> None:
         window().explorer.widget().newLibrary()
 
     def fileOpen(self : Self) -> None:
-        window().explorer.widget().openItem()
+        window().explorer.widget().openDb()
 
     @withCurrentWidget(DrawingView)
     def fileSave(self : Self, widget: DrawingView) -> None:

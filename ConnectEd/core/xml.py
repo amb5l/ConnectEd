@@ -81,13 +81,13 @@ def fromXmlItems(
                     xr.readNext()
             else:
                 match xr.name():
-                    case "DesignDbItem":
+                    case "Design":
                         item = DesignDbItem.fromXml(xr)
-                    case "LibraryDbItem":
+                    case "Library":
                         item = LibraryDbItem.fromXml(xr)
-                    case "DiagramItem":
+                    case "Diagram":
                         item = DiagramItem.fromXml(xr)
-                    case "SymbolItem":
+                    case "Symbol":
                         item = SymbolItem.fromXml(xr)
                     case _:  # Assume it's an Element
                         if xr.name() in _element_classes:
@@ -124,11 +124,11 @@ def loadItems(path : str) -> list[XmlItemTypes]:
     file = QFile(path)
     if file.open(QIODevice.OpenModeFlag.ReadOnly | QIODevice.OpenModeFlag.Text):
         xr = QXmlStreamReader(file)
-        r = fromXmlItems(xr)
+        items, pos = fromXmlItems(xr)
         file.close()
     else:
-        r = []
-    return r
+        items = []
+    return items
 
 def copy(instances : Any | list[Any], pos : QPointF = QPointF(0, 0)) -> None:
     if not isinstance(instances, list):

@@ -124,12 +124,18 @@ class PropertiesMixin:
 
     def onPropertyChange(self) -> None:
         """Notify all PropertyText children to refresh their display."""
-        for child in self.childItems():
+        from PyQt6.QtWidgets import QGraphicsScene
+        if isinstance(self, QGraphicsScene):
+            children = self.items()  # QGraphicsScene uses items()
+        else:
+            children = self.childItems()  # QGraphicsItem uses childItems()        
+        for child in children:
             if hasattr(child, "onTextChange"):
                 child.onTextChange()
-            for grandchild in child.childItems():
-                if hasattr(grandchild, "onTextChange"):
-                    grandchild.onTextChange()
+            if hasattr(child, "childItems"):
+                for grandchild in child.childItems():
+                    if hasattr(grandchild, "onTextChange"):
+                        grandchild.onTextChange()
 
     def ctxMenuProperties(
         self    : Self,
