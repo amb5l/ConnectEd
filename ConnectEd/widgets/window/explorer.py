@@ -203,7 +203,7 @@ class Explorer(TreeView):
         self.editDrawing(symbol_item)
 
     def openDb(self : Self, type_name : Optional[str] = None) -> None:
-        from ..dialogs import FileOpenDialog
+        from ..dialogs.file import FileOpenDialog
         dialog = FileOpenDialog(type_name)
         result = dialog.exec()
         if result == dialog.DialogCode.Accepted:
@@ -284,8 +284,8 @@ class Explorer(TreeView):
         window().menu_bar.updateWindowMenu()
 
     def spreadsheet(self : Self, item : "DrawingItem") -> None:
-        from ...core import DrawingItem
-        from ...widgets import DiagramScene
+        from ...core.db import DrawingItem
+        from ...widgets.graphics.scenes.diagram import DiagramScene
         from .spreadsheet import SpreadsheetSubWindow
         if not isinstance(item, DrawingItem):
             logger().warning(f"Unsupported item: {item.text()} ({type(item)})")
@@ -311,7 +311,7 @@ class Explorer(TreeView):
         item.save()
 
     def saveDbAs(self : Self, item : "DbItem") -> None:
-        from ..dialogs import FileSaveAsDialog
+        from ..dialogs.file import FileSaveAsDialog
         dialog = FileSaveAsDialog(item.__class__.__name__.replace("Item", ""))
         result = dialog.exec()
         if result == dialog.DialogCode.Accepted:
@@ -328,7 +328,7 @@ class Explorer(TreeView):
 
     def rename(self : Self) -> None:
         """Start editing the selected item"s text."""
-        from ...core import DbItem, DrawingItem
+        from ...core.db import DbItem, DrawingItem
         if self.currentIndex().isValid():
             item = model().itemFromIndex(self.currentIndex())
             if isinstance(item, DbItem) \
