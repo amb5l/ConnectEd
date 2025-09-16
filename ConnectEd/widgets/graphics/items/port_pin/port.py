@@ -6,6 +6,8 @@ from PyQt6.QtGui     import QPainter
 
 from .....app import settings
 
+from ...scenes.drawing.cmd import cmdRotate
+
 from ..mixin.pos  import ElementPosMixin
 from ..mixin.fill import ElementFillMixin
 
@@ -63,6 +65,13 @@ class Port(ElementPosMixin, ElementFillMixin, PortPinMixin, QGraphicsPathItem):
     def onSceneChange(self : Self, scene : "DrawingScene") -> None:
         self._setPath(scene)
 
+    def setRotation(self : Self, angle : float) -> None:
+        super().setRotation(angle)
+        for child in self.childItems(): # anchor points
+            for grandchild in child.childItems(): # property texts
+                if hasattr(grandchild, 'compensateRotation'):
+                    grandchild.compensateRotation(angle)
+
     @property
     def direction(self : Self) -> "SignalDirection":
         return super().direction
@@ -90,21 +99,23 @@ class Port(ElementPosMixin, ElementFillMixin, PortPinMixin, QGraphicsPathItem):
         QGraphicsPathItem.paint(self, painter, option, widget)
 
     def getMenuItems(self : Self) -> list[str]:
-        return ["Rotate CCW", "Rotate CW", "-", "Edit"]
-
-    def ctxMenuRotateCCW(
-        self    : Self,
-        _checked : bool,
-        view    : "DrawingView"
-    ) -> None:
-        view.rotateCCW(self)
+        return ["Rotate CW", "Rotate CCW", "-", "Edit"]
 
     def ctxMenuRotateCW(
         self    : Self,
         _checked : bool,
         view    : "DrawingView"
     ) -> None:
-        view.rotateCW(self)
+        scene : "DrawingScene" = self.scene()
+        scene.undo_stack.push(cmdRotate(scene, [self], +90))
+
+    def ctxMenuRotateCCW(
+        self    : Self,
+        _checked : bool,
+        view    : "DrawingView"
+    ) -> None:
+        scene : "DrawingScene" = self.scene()
+        scene.undo_stack.push(cmdRotate(scene, [self], -90))
 
     def ctxMenuEdit(
         self     : Self,

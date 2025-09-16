@@ -4,7 +4,6 @@ from PyQt6.QtCore    import QPointF
 from PyQt6.QtWidgets import QGraphicsItem
 from PyQt6.QtGui     import QUndoCommand
 
-
 from ......core.utils import camel_to_proper
 
 from ....items import EdgeLoc, ElementMixin
@@ -19,6 +18,7 @@ if TYPE_CHECKING:
 
 ElementType = ElementMixin | QGraphicsItem
 
+
 class cmdBase(QUndoCommand):
     """Base class for all commands."""
 
@@ -30,6 +30,7 @@ class cmdBase(QUndoCommand):
     def mergeWith(self : Self, _ : QUndoCommand) -> bool:
         """Merge this command with another identical command."""
         return False  # never merge (for now)
+
 
 class cmdSceneBase(cmdBase):
     """Base class for all commands that work with a scene."""
@@ -52,19 +53,21 @@ class cmdSceneBase(cmdBase):
             f"{self.__class__.__name__} must implement redo"
         )
 
+
 class cmdSceneElement(cmdSceneBase):
     """Base class for all commands that work with an element."""
 
     # instance attributes
-    _element : ElementMixin
+    _element : ElementType
 
     def __init__(
         self    : Self,
         scene   : "DrawingScene",
-        element : ElementMixin
+        element : ElementType
     ):
         super().__init__(scene)
         self._element = element
+
 
 class cmdSceneElements(cmdSceneBase):
     """Base class for all commands that work with multiple elements."""
@@ -79,6 +82,7 @@ class cmdSceneElements(cmdSceneBase):
     ):
         super().__init__(scene)
         self._elements = elements
+
 
 class cmdPinBase(cmdBase):
     """Base class for all commands that work with a pin."""
@@ -96,6 +100,7 @@ class cmdPinBase(cmdBase):
         self._parent = parent
         self._pin = pin
 
+
 class cmdPinsBase(cmdBase):
     """Base class for all commands that work with multiple pins."""
 
@@ -111,6 +116,7 @@ class cmdPinsBase(cmdBase):
         super().__init__()
         self._parent = parent
         self._pins = pins
+
 
 class cmdSelectionMixin:
     """Mixin for commands that need to preserve/restore the scene selection."""
@@ -129,6 +135,7 @@ class cmdSelectionMixin:
             e.setSelected(True)
         self._scene.blockSignals(False)
         self._scene.selectionChanged.emit()
+
 
 class cmdAddRemoveMixin:
     """Mixin for commands that add/remove elements to/from the scene."""
@@ -156,6 +163,7 @@ class cmdAddRemoveMixin:
         self._scene.blockSignals(False)
         self._scene.selectionChanged.emit()
 
+
 class cmdMoveMixin:
     """Mixin for commands that move elements by an offset."""
     # TODO merge this into cmdMove?
@@ -174,6 +182,7 @@ class cmdMoveMixin:
     def _restorePos(self) -> None:
         for e in self._elements:
             e.moveBy(self._spos[e] - e.scenePos())
+
 
 class cmdAdd(
     cmdSceneElements,   # _scene, _elements, _selection
@@ -201,6 +210,7 @@ class cmdAdd(
         self._removeFromScene()
         self._restoreSelection()
 
+
 class cmdDelete(
     cmdSceneElements,   # _scene, _elements, _selection
     cmdSelectionMixin,  # _preserveSelection, _restoreSelection
@@ -225,6 +235,7 @@ class cmdDelete(
         self._addToScene()
         self._restoreSelection()
 
+
 class cmdMove(
     cmdSceneElements, # _scene, _elements
     cmdMoveMixin      # _moveBy, _storePos, _restorePos
@@ -238,7 +249,7 @@ class cmdMove(
     def __init__(
         self     : Self,
         scene    : "DrawingScene",
-        elements : list[ElementMixin],
+        elements : list[ElementType],
         offset   : QPointF,
         slide    : bool = False
     ):
@@ -255,6 +266,32 @@ class cmdMove(
         self._restorePos()
         # TODO: add slide logic
 
+
+class cmdRotate(cmdSceneElements):
+
+    # instance attributes
+    _angle  : float
+    _before : dict[ElementType, float] # angles before
+
+    def __init__(
+        self     : Self,
+        scene    : "DrawingScene",
+        elements : list[ElementType],
+        angle    : float
+    ):
+        super().__init__(scene, elements)
+        self._angle = angle
+        self._before = {e: e.rotation() for e in self._elements}
+
+    def redo(self : Self) -> None:
+        for e in self._elements:
+            e.setRotation(self._before[e] + self._angle)
+
+    def undo(self : Self) -> None:
+        for e in self._elements:
+            e.setRotation(self._before[e])
+
+
 class cmdAddPin(cmdPinBase):
     """Command to add a pin to a pin rect."""
 
@@ -263,6 +300,7 @@ class cmdAddPin(cmdPinBase):
 
     def undo(self : Self) -> None:
         self._pin.setParentItem(None)
+
 
 class cmdDeletePin(cmdPinBase):
     """Command to delete a pin from a pin rect."""
@@ -273,28 +311,29 @@ class cmdDeletePin(cmdPinBase):
     def undo(self : Self) -> None:
         self._pin.setParentItem(self._parent)
 
+
 class cmdMovePins(cmdPinsBase):
     """Command to move multiple pins by an offset."""
 
     # instance attributes
-    _new    : dict[Pin, EdgeLoc] # new locations
-    _old    : dict[Pin, EdgeLoc] # old locations
+    _after  : dict[Pin, EdgeLoc] # locations after
+    _before : dict[Pin, EdgeLoc] # locations before
 
     def __init__(
-        self : Self,
+        self   : Self,
         parent : PinRect,
         pins   : list[Pin],
-        new    : dict[Pin, EdgeLoc],
-        old    : dict[Pin, EdgeLoc]
+        after  : dict[Pin, EdgeLoc],
+        before : dict[Pin, EdgeLoc]
     ):
         super().__init__(parent, pins)
-        self._new = new
-        self._old = old
+        self._after = after
+        self._before = before
 
     def redo(self : Self) -> None:
         for pin in self._pins:
-            pin.setLoc(self._new[pin])
+            pin.setLoc(self._after[pin])
 
     def undo(self : Self) -> None:
         for pin in self._pins:
-            pin.setLoc(self._old[pin])
+            pin.setLoc(self._before[pin])

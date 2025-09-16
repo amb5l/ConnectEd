@@ -101,11 +101,3 @@ class TetherText(BaseText):
             parent.setName(name)
         else:
             logger().error(f"Parent is not an AnchorPoint: {type(parent).__name__}")
-
-    def getTotalRotation(self) -> float:
-        r = 0.0
-        item = self
-        while item is not None:
-            r += item.rotation()
-            item = item.parentItem()
-        return r % 360

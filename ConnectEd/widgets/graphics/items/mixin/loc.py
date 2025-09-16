@@ -37,18 +37,18 @@ class ElementLocMixin:
         self._loc = loc
         self.prepareGeometryChange()
         match loc.edge:
-            case Edge.LEFT:   r = 0
-            case Edge.RIGHT:  r = 180
-            case Edge.TOP:    r = 90
-            case Edge.BOTTOM: r = 270
-        self.setRotation(r)
+            case Edge.LEFT:   angle = 0
+            case Edge.RIGHT:  angle = 180
+            case Edge.TOP:    angle = 90
+            case Edge.BOTTOM: angle = 270
+        self.setRotation(angle)
         parent : "PinRect" = self.parentItem()
         edge_pos = parent.loc2pos(loc) if parent else QPointF()
         super().setPos(edge_pos)
         for child in self.childItems():
             for grandchild in child.childItems():
                 if hasattr(grandchild, 'compensateRotation'):
-                    grandchild.compensateRotation(r)
+                    grandchild.compensateRotation(angle)
 
     def setLocEdge(self : Self, edge : Edge) -> None:
         self.setLoc(EdgeLoc(Edge(edge), self._loc.distance))

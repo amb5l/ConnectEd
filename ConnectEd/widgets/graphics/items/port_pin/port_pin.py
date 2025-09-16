@@ -19,15 +19,10 @@ from ..anchor_point  import AnchorPoint
 
 from .node import Node
 
-from typing import TYPE_CHECKING
-if TYPE_CHECKING:
-    from ...views.drawing import DrawingView
-
 
 class PortPinText(PropertyText):
-    def compensateRotation(self, angle : float) -> None:
+    def compensateRotation(self : Self, angle : float) -> None:
         self.setTransformOriginPoint(self._brect.center())
-        #r = self.getTotalRotation()
         self.setRotation(180 if 45 <= angle < 225 else 0)
 
 
