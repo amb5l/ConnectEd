@@ -1,4 +1,5 @@
 *.log
+*.ce*
 **/__pycache__/**
 **/*.tokens
 **/*.interp
