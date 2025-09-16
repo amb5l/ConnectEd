@@ -24,7 +24,7 @@ def getFgBgColors() -> tuple[QColor, QColor]:
 def getSvgIcon(path : str, size : QSize, margin : int = 1) -> QIcon:
     fgColor, bgColor = getFgBgColors()
     pixmap = QPixmap(size)
-    pixmap.fill(bgColor)
+    pixmap.fill(Qt.GlobalColor.transparent)
     painter = QPainter(pixmap)
     painter.setRenderHint(QPainter.RenderHint.Antialiasing)
     with open(path, 'r') as f:

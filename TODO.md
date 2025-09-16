@@ -1,7 +1,5 @@
-- drop design, just have diagram?
-
-- cut/paste test
 - save/load diagram
+- handle visibility
 
 - connect settings changes to DrawingScenePaths
 - move handle size to theme
@@ -12,12 +10,8 @@
 
 - check interactions that don't change anything don't push a cmd
 - tackle onGeometryChange usage
-- unitary port/pin element (rather than composed of children)
 
-- placing BlockPin doesn't snap properly
-- editing BlockPin name resets text position
-- selected appearance of BlockPin
-- rotate ports during/after placement
+- rotate ports during placement
 - remove hub
 
 - propagate property name change to texts

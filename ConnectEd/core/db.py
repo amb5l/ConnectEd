@@ -1,9 +1,13 @@
 from typing import Self, Optional
 
-from PyQt6.QtCore import Qt, QXmlStreamWriter, QXmlStreamReader
+from PyQt6.QtCore import Qt, QSize,QXmlStreamWriter, QXmlStreamReader
 from PyQt6.QtGui  import QStandardItemModel, QStandardItem
 
 from ..app import logger, window
+
+from ..resources import getIconPath
+
+from ..core.icon import SvgIconSingleton
 
 from ..widgets.dialogs.file import FileSaveAsDialog
 
@@ -31,6 +35,17 @@ class NameCounter:
 
 name_counter = NameCounter()
 
+
+class RootIcon(SvgIconSingleton):
+    PATH = getIconPath("root.svg")
+    SIZE = QSize(16, 16)
+
+
+class EmptyIcon(SvgIconSingleton):
+    PATH = getIconPath("empty.svg")
+    SIZE = QSize(16, 16)
+
+
 class Container(QStandardItem):
     NAME   = "<unspecified>"
     BOLD   = False
@@ -43,21 +58,46 @@ class Container(QStandardItem):
         font.setItalic(self.ITALIC)
         self.setFont(font)
 
-class DiagramsContainer(Container):
-    NAME   = "Diagrams"
-    ITALIC = True
-
-class SymbolCacheContainer(Container):
-    NAME   = "Symbol Cache"
-    ITALIC = True
 
 class DesignDbContainer(Container):
     NAME   = "Designs"
     BOLD   = True
 
+
 class LibraryDbContainer(Container):
     NAME   = "Libraries"
     BOLD   = True
+
+
+class DiagramsContainer(Container):
+    NAME   = "Diagrams"
+    ITALIC = True
+
+    # instance attributes
+    _root : "DiagramItem"
+
+    def __init__(self : Self) -> None:
+        super().__init__()
+        self._root = None
+
+    @property
+    def root(self : Self) -> "DiagramItem":
+        return self._root
+    
+    @root.setter
+    def root(self : Self, item : "DiagramItem") -> None:
+        if self._root is not None:
+            self._root.setIcon(EmptyIcon().get())
+        self._root = item       
+        if self._root is not None:
+            icon = RootIcon().get()
+            self._root.setIcon(icon)
+
+
+class SymbolCacheContainer(Container):
+    NAME   = "Symbol Cache"
+    ITALIC = True
+
 
 class DrawingItem(QStandardItem):
     _scene_class = None
@@ -124,6 +164,7 @@ class DrawingItem(QStandardItem):
     def getScene(self : Self) -> "DrawingScene":
         return self.scene
 
+
 class SymbolItem(DrawingItem):
     @classmethod
     def sceneClass(cls):
@@ -134,6 +175,7 @@ class SymbolItem(DrawingItem):
 
     scene : "SymbolScene"
 
+
 class DiagramItem(DrawingItem):
     @classmethod
     def sceneClass(cls):
@@ -143,6 +185,15 @@ class DiagramItem(DrawingItem):
         return cls._scene_class
 
     scene : "DiagramScene"
+
+    def __init__(
+        self  : Self,
+        name  : Optional[str] = None,
+        scene : Optional["DiagramScene"] = None
+    ) -> None:
+        super().__init__(name, scene)
+        self.setIcon(EmptyIcon().get())
+
 
 class DbItem(QStandardItem):
     path   : Optional[str]
@@ -209,23 +260,6 @@ class DbItem(QStandardItem):
     def getPath(self : Self) -> str:
         return self.path
 
-class LibraryDbItem(DbItem):
-    FILE_EXT = LIB_EXT
-
-    def toXml(self : Self, xw : QXmlStreamWriter) -> None:
-        self.toXmlBegin(xw)
-        for i in range(self.rowCount()):
-            symbol_item : SymbolItem = self.child(i)
-            symbol_scene = symbol_item.scene
-            symbol_scene.toXml(xw)
-        self.toXmlEnd(xw)
-
-    @classmethod
-    def fromXml(cls : Self, xr : QXmlStreamReader) -> Self:
-        db_item = cls.fromXmlBegin(xr)
-        while not (xr.isEndElement() and xr.name() == cls.__name__.replace("Item", "")):
-            xr.readNext()
-        return db_item
 
 class DesignDbItem(DbItem):
     FILE_EXT = DSN_EXT
@@ -240,6 +274,7 @@ class DesignDbItem(DbItem):
         self.symbols = SymbolCacheContainer()
         self.appendRow(self.symbols)
         self.diagrams.appendRow(DiagramItem())
+        self.diagrams.root = self.diagrams.child(0)
 
     def toXml(self : Self, xw : QXmlStreamWriter) -> None:
         self.toXmlBegin(xw)
@@ -292,6 +327,26 @@ class DesignDbItem(DbItem):
 
     def getSymbols(self : Self) -> list[SymbolItem]:
         return [self.symbols.child(i) for i in range(self.symbols.rowCount())]
+
+
+class LibraryDbItem(DbItem):
+    FILE_EXT = LIB_EXT
+
+    def toXml(self : Self, xw : QXmlStreamWriter) -> None:
+        self.toXmlBegin(xw)
+        for i in range(self.rowCount()):
+            symbol_item : SymbolItem = self.child(i)
+            symbol_scene = symbol_item.scene
+            symbol_scene.toXml(xw)
+        self.toXmlEnd(xw)
+
+    @classmethod
+    def fromXml(cls : Self, xr : QXmlStreamReader) -> Self:
+        db_item = cls.fromXmlBegin(xr)
+        while not (xr.isEndElement() and xr.name() == cls.__name__.replace("Item", "")):
+            xr.readNext()
+        return db_item
+
 
 class Model(QStandardItemModel):
     designs   : DesignDbContainer
