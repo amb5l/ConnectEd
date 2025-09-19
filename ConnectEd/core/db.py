@@ -83,12 +83,12 @@ class DiagramsContainer(Container):
     @property
     def root(self : Self) -> "DiagramItem":
         return self._root
-    
+
     @root.setter
     def root(self : Self, item : "DiagramItem") -> None:
         if self._root is not None:
             self._root.setIcon(EmptyIcon().get())
-        self._root = item       
+        self._root = item
         if self._root is not None:
             icon = RootIcon().get()
             self._root.setIcon(icon)
@@ -133,7 +133,7 @@ class DrawingItem(QStandardItem):
 
     def text(self : Self) -> str:
         return self.scene.name if self.scene else ""
-    
+
     def setText(self : Self, text : str) -> None:
         self.scene.name = text
 
@@ -224,11 +224,11 @@ class DbItem(QStandardItem):
         if xr.name() == element_name and xr.isStartElement():
             pass  # Already at target element
         else:
-            fromXmlBegin(xr, element_name)        
+            fromXmlBegin(xr, element_name)
         if cls.__name__ == 'DesignDbItem':
             db_item = cls(new=False)
         else:
-            db_item = cls()        
+            db_item = cls()
         attributes = xr.attributes()
         for attribute in attributes:
             tag = attribute.name()
@@ -297,7 +297,7 @@ class DesignDbItem(DbItem):
     @classmethod
     def fromXml(cls : Self, xr : QXmlStreamReader) -> Self:
         db_item = cls.fromXmlBegin(xr)
-        while not (xr.isEndElement() and xr.name() == cls.__name__.replace("DbItem", "")):            
+        while not (xr.isEndElement() and xr.name() == cls.__name__.replace("DbItem", "")):
             if xr.tokenType() == xr.TokenType.EndDocument:
                 logger().error(f"DesignDbItem.fromXml: Reached end of document while looking for end of '{cls.__name__.replace('DbItem', '')}'")
                 break
@@ -310,7 +310,7 @@ class DesignDbItem(DbItem):
                             root_name = attribute.value()
                             break
                         else:
-                            logger().warning(f"Unexpected attribute: {attribute.name()} value: {attribute.value()}")                    
+                            logger().warning(f"Unexpected attribute: {attribute.name()} value: {attribute.value()}")
                     xr.readNext()  # Move past <Diagrams>
                     while not (xr.isEndElement() and xr.name() == "Diagrams"):
                         if xr.tokenType() == QXmlStreamReader.TokenType.StartElement:
@@ -319,7 +319,7 @@ class DesignDbItem(DbItem):
                                 db_item.diagrams.appendRow(diagram_item)
                             else:
                                 raise ValueError(f"Unexpected element in Diagrams: {xr.name()}")
-                        xr.readNext()                    
+                        xr.readNext()
                     # Set the root diagram based on the loaded name
                     if root_name:
                         root = None
@@ -334,7 +334,7 @@ class DesignDbItem(DbItem):
                             if db_item.diagrams.rowCount() > 0:
                                 db_item.diagrams.root = db_item.diagrams.child(0)
                     elif db_item.diagrams.rowCount() > 0:
-                        db_item.diagrams.root = db_item.diagrams.child(0)                        
+                        db_item.diagrams.root = db_item.diagrams.child(0)
                 elif xr.name() == "SymbolCache":
                     xr.readNext()  # Move past <SymbolCache>
                     while not (xr.isEndElement() and xr.name() == "SymbolCache"):

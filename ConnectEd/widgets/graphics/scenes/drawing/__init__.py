@@ -79,7 +79,7 @@ class DrawingScene(
         scene_rect = rect or ext_rect
         for item in self.items():
             item_rect = item.mapToScene(item.boundingRect()).boundingRect()
-            scene_rect = item_rect if scene_rect is None else scene_rect.united(item_rect)        
+            scene_rect = item_rect if scene_rect is None else scene_rect.united(item_rect)
         if scene_rect is not None:
             self.setSceneRect(scene_rect)
 

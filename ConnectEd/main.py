@@ -42,7 +42,7 @@ def main() -> int:
     initResources()
     app.model = Model()
     app.window = Window()
-    app.processEvents()   
+    app.processEvents()
     splash.finish(app.window)
     r = app.exec()
     app.settings.save()

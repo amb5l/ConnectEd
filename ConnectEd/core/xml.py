@@ -33,7 +33,7 @@ def toXmlBegin(xw : QXmlStreamWriter) -> None:
 def toXmlAttrs(instance : Any, xw : QXmlStreamWriter) -> None:
     for name, value in instance.getPropertyNamesAndValues().items():
         if value == "default":
-            continue        
+            continue
         xml_attr_name = proper_to_snake(name)
         xw.writeAttribute(xml_attr_name, value)
 

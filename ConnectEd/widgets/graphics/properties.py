@@ -128,7 +128,7 @@ class PropertiesMixin:
         if isinstance(self, QGraphicsScene):
             children = self.items()  # QGraphicsScene uses items()
         else:
-            children = self.childItems()  # QGraphicsItem uses childItems()        
+            children = self.childItems()  # QGraphicsItem uses childItems()
         for child in children:
             if hasattr(child, "onTextChange"):
                 child.onTextChange()
