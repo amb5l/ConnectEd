@@ -1,6 +1,6 @@
 import os, platform
 
-from typing import Self, Any
+from typing import Any, TypeVar
 
 from PyQt6.QtCore import Qt, QPointF, QRectF, QSizeF
 from PyQt6.QtGui  import QColor
@@ -10,6 +10,17 @@ def check(b : bool, s : str) -> bool:
     if not b:
         print(s)
     return b
+
+
+T = TypeVar('T')
+
+def getItemOfType(l: list, types: type[T] | tuple[type[T], ...]) -> T | None:
+    types = (types,) if isinstance(types, type) else types
+    for t in types:
+        item = next((item for item in l if isinstance(item, t)), None)
+        if item is not None:
+            return item
+    return None
 
 
 def camel_to_proper(s : str) -> str:

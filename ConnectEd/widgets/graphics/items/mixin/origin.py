@@ -4,11 +4,13 @@ from PyQt6.QtCore import QPointF
 
 from ...properties import PropertySpec
 
-from ..anchor_point import AnchorPoint
+from ..anchor_point import APName, AnchorPoint
+from ..handle       import Origin
 
 
 class ElementOriginMixin:
     # class attributes
+    _ORIGIN : APName  # subclass must specify
     _PROPERTY_SPECS_ORIGIN = {
         "Origin" : PropertySpec(
             type_name   = "AnchorPoint",
@@ -19,13 +21,16 @@ class ElementOriginMixin:
     }
 
     # instance attributes
-    _pos    : QPointF        # position of origin w.r.t. scene/parent
-    _origin : "AnchorPoint"  # origin anchor point
+    _pos    : QPointF  # position of origin w.r.t. scene/parent
+    _origin : Origin   # origin anchor point
+
+    # external instance attributes
+    _anchor_points : dict[APName, AnchorPoint]
 
     def initOrigin(self : Self) -> None:
         self._pos = super().pos()
-        self._origin = next(iter(self._anchor_points.values()))
-        self._origin._handle.onOriginChange(True)
+        self._origin = Origin(self._anchor_points[self._ORIGIN])
+        print(f"initOrigin : {self._origin}")
         self.updateOrigin()
 
     def pos(self : Self) -> QPointF:
@@ -35,13 +40,12 @@ class ElementOriginMixin:
         self._pos = pos
         super().setPos(pos - self._origin.pos())
 
-    def getOrigin(self : Self) -> str:
-        return self._origin._name
+    def getOrigin(self : Self) -> APName:
+        ap : AnchorPoint = self._origin.parentItem()
+        return ap.name
 
-    def setOrigin(self, name : str) -> None:
-        self._origin._handle.onOriginChange(False)
-        self._origin = self._anchor_points[name]
-        self._origin._handle.onOriginChange(True)
+    def setOrigin(self, ap : APName) -> None:
+        self._origin.setParentItem(self._anchor_points[ap])
         self.setPos(self.pos())
 
     def updateOrigin(self : Self) -> None:

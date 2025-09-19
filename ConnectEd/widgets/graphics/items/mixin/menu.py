@@ -38,6 +38,9 @@ class ElementMenuMixin:
                     logger().error(f"{slot_name} missing from {self.__class__.__name__}")
         menu.exec(pos)
 
+    def getMenuItems(self : Self) -> list[str]:
+        raise NotImplementedError(f"{self.__class__.__name__} missing getMenuItems method")
+
     def ctxMenuAppearance(
         self : Self,
         _    : bool,

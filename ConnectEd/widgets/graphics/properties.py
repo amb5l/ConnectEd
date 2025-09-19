@@ -8,7 +8,7 @@ from ...core.utils import val2str
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from .views.drawing import DrawingView
-    from .items.property_text import PropertyTextSpec
+    from .items.property_text import PropertyText, PropertyTextSpec
 
 
 @dataclass
@@ -45,7 +45,7 @@ class PropertiesMixin:
         else:
             return
         for name, pts in property_texts.items():
-            p = pts._class()
+            p : "PropertyText" = pts._class()
             p.setOrigin(pts.anchor)
             p.setPos(pts.pos)
             p.setName(name)

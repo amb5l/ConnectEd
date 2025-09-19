@@ -1,8 +1,11 @@
-from typing import Self
-
-from PyQt6.QtGui     import QPainterPath
+from PyQt6.QtCore import QRectF
+from PyQt6.QtGui  import QPainterPath
 
 from .....app import settings
+
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from . import DrawingScene
 
 
 _PIN_LEN = 10 # documentation - DO NOT CHANGE
@@ -13,103 +16,127 @@ class DrawingScenePathsMixin:
 
     paths : dict[str, dict[str, QPainterPath]]
 
-
-    def initPaths(self : Self) -> None:
+    def initPaths(self : "DrawingScene") -> None:
         self.paths = {
-            "Port": {
+            "Grip"   : QPainterPath(),
+            "Origin" : QPainterPath(),
+            "Port" : {
                 "in"  : QPainterPath(),
                 "out" : QPainterPath(),
                 "bi"  : QPainterPath()
             },
-            "BlockPinArrow": {
+            "BlockPinArrow" : {
                 "in"  : QPainterPath(),
                 "out" : QPainterPath(),
                 "bi"  : QPainterPath()
             },
-            "SymbolPinArrow": {
+            "SymbolPinArrow" : {
                 "in"  : QPainterPath(),
                 "out" : QPainterPath(),
                 "bi"  : QPainterPath()
             }
         }
         self.updatePaths()
+        settings().changed.connect(self.updatePaths)
 
-    def updatePaths(self : Self) -> None:
-        (
-            self.paths["Port"]["in"],
-            self.paths["Port"]["out"],
-            self.paths["Port"]["bi"]
-        ) = self._buildPortPaths(
-            settings().getTheme("elements/Port/size")
-        )
-        (
-            self.paths["BlockPinArrow"]["in"],
-            self.paths["BlockPinArrow"]["out"],
-            self.paths["BlockPinArrow"]["bi"]
-        ) = self._buildPinArrowPaths(
-            settings().getTheme("elements/BlockPinArrow/size")
-        )
-        (
-            self.paths["SymbolPinArrow"]["in"],
-            self.paths["SymbolPinArrow"]["out"],
-            self.paths["SymbolPinArrow"]["bi"]
-        ) = self._buildPinArrowPaths(
-            settings().getTheme("elements/SymbolPinArrow/size")
-        )
+    def updatePaths(self : "DrawingScene") -> None:
+        self._gripPath ( self.paths["Grip"] )
+        self._originPath ( self.paths["Origin"] )
+        size = settings().get("theme/elements/Port/size")
+        self._portInPath  ( self.paths["Port"][ "in"  ] , size )
+        self._portOutPath ( self.paths["Port"][ "out" ] , size )
+        self._portBiPath  ( self.paths["Port"][ "bi"  ] , size )
+        size = settings().get("theme/elements/BlockPinArrow/size")
+        self._pinArrowInPath  ( self.paths["BlockPinArrow"][ "in"  ] , size )
+        self._pinArrowOutPath ( self.paths["BlockPinArrow"][ "out" ] , size )
+        self._pinArrowBiPath  ( self.paths["BlockPinArrow"][ "bi"  ] , size )
+        size = settings().get("theme/elements/SymbolPinArrow/size")
+        self._pinArrowInPath  ( self.paths["SymbolPinArrow"][ "in"  ] , size )
+        self._pinArrowOutPath ( self.paths["SymbolPinArrow"][ "out" ] , size )
+        self._pinArrowBiPath  ( self.paths["SymbolPinArrow"][ "bi"  ] , size )
 
-    def _buildPortPaths(
-        self : Self,
+    def _gripPath(self : "DrawingScene", path : QPainterPath) -> None:
+        size = settings().get("theme/grip/size")
+        path.clear()
+        path.addEllipse(QRectF(-size/2, -size/2, size, size))
+
+    def _originPath(self : "DrawingScene", path : QPainterPath) -> None:
+        size = settings().get("theme/origin/size")
+        path.clear()
+        path.addRect(QRectF(-size/2, -size/2, size, size))
+
+    def _portInPath(
+        self : "DrawingScene",
+        path : QPainterPath,
         size : float
-    ) -> tuple[QPainterPath, QPainterPath, QPainterPath]:
+    ) -> None:
         s = size / 2
-        _in = QPainterPath()
-        _in.moveTo(0, 0)
-        _in.lineTo(s, -s)
-        _in.lineTo(s*2, -s)
-        _in.lineTo(s*2, s)
-        _in.lineTo(s, s)
-        _in.closeSubpath()
-        _out = QPainterPath()
-        _out.moveTo(s*2, 0)
-        _out.lineTo(s, -s)
-        _out.lineTo(0, -s)
-        _out.lineTo(0, s)
-        _out.lineTo(s, s)
-        _out.closeSubpath()
-        _bi = QPainterPath()
-        _bi.moveTo(0, 0)
-        _bi.lineTo(s, -s)
-        _bi.lineTo(2*s, 0)
-        _bi.lineTo(s, s)
-        _bi.closeSubpath()
-        return _in, _out, _bi
+        path.clear()
+        path.moveTo(0, 0)
+        path.lineTo(s, -s)
+        path.lineTo(s*2, -s)
+        path.lineTo(s*2, s)
+        path.lineTo(s, s)
+        path.closeSubpath()
 
-    def _buildPinArrowPaths(
-        self : Self,
+    def _portOutPath(
+        self : "DrawingScene",
+        path : QPainterPath,
         size : float
-    ) -> tuple[QPainterPath, QPainterPath, QPainterPath]:
-        h = size / 2
-        q = h / 2
-        c = -_PIN_LEN / 2
-        _in = QPainterPath()
-        _in.moveTo(c-q, -h)
-        _in.lineTo(c+q,  0)
-        _in.lineTo(c-q, +h)
-        _in.closeSubpath()
-        _out = QPainterPath()
-        _out.moveTo(c+q, -h)
-        _out.lineTo(c-q,  0)
-        _out.lineTo(c+q, +h)
-        _out.closeSubpath()
-        _bi = QPainterPath()
-        c = c + 1
-        _bi.moveTo(c,   -h)
-        _bi.lineTo(c+h,  0)
-        _bi.lineTo(c,   +h)
-        _bi.closeSubpath()
-        c = c - 2
-        _bi.moveTo(c,   -h)
-        _bi.lineTo(c-h,  0)
-        _bi.lineTo(c,   +h)
-        _bi.closeSubpath()
-        return _in, _out, _bi
+    ) -> None:
+        s = size / 2
+        path.clear()
+        path.moveTo(s*2, 0)
+        path.lineTo(s, -s)
+        path.lineTo(0, -s)
+        path.lineTo(0, s)
+        path.lineTo(s, s)
+        path.closeSubpath()
+
+    def _portBiPath(
+        self : "DrawingScene",
+        path : QPainterPath,
+        size : float
+    ) -> None:
+        s = size / 2
+        path.clear()
+        path.moveTo(0, 0)
+        path.lineTo(s, -s)
+        path.lineTo(2*s, 0)
+        path.lineTo(s, s)
+        path.closeSubpath()
+
+    def _pinArrowInPath(
+        self : "DrawingScene",
+        path : QPainterPath,
+        size : float
+    ) -> None:
+        h = size / 2 ; q = h / 2 ; c = -_PIN_LEN / 2
+        path.clear()
+        path.moveTo(c-q, -h)
+        path.lineTo(c+q,  0)
+        path.lineTo(c-q, +h)
+        path.closeSubpath()
+
+    def _pinArrowOutPath(
+        self : "DrawingScene",
+        path : QPainterPath,
+        size : float
+    ) -> None:
+        h = size / 2 ; q = h / 2 ; c = -_PIN_LEN / 2
+        path.clear()
+        path.moveTo(c+q, -h)
+        path.lineTo(c-q,  0)
+        path.lineTo(c+q, +h)
+
+    def _pinArrowBiPath(
+        self : "DrawingScene",
+        path : QPainterPath,
+        size : float
+    ) -> None:
+        h = size / 2 ; q = h / 2 ; c = -_PIN_LEN / 2
+        path.clear()
+        path.moveTo(c,   -h)
+        path.lineTo(c+h,  0)
+        path.lineTo(c,   +h)
+        path.closeSubpath()

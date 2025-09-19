@@ -9,7 +9,7 @@ from ...dialogs.text import TextDialog
 
 from ..properties import PropertySpec, PropertiesMixin
 
-from . import APType
+from .anchor_point import APName
 
 from .mixin         import ElementMixin
 from .mixin.pos     import ElementPosMixin
@@ -43,8 +43,7 @@ class BaseText(
     QGraphicsSimpleTextItem
 ):
     # class attributes
-    _AP_TYPES = { k : APType.Mover \
-            for k in ElementRectAnchorPointsMixin._ANCHOR_POINTS.keys() }
+    _ORIGIN = APName.TopLeft
     _PROPERTY_SPECS_POS = \
         ElementOriginMixin._PROPERTY_SPECS_ORIGIN | \
         ElementPosMixin._PROPERTY_SPECS_POS
@@ -75,9 +74,13 @@ class BaseText(
         self.initElement(bare=bare)
         self.setPos(pos)
         self.onGeometryChange()
-        self.updateHandlesVisibility()
 
     def onGeometryChange(self : Self) -> None:
+        # Store the current scene position of the origin anchor point
+        origin_scene_pos = None
+        if hasattr(self, '_origin') and self._origin is not None:
+            origin_scene_pos = self.mapToScene(self._origin.pos())
+
         self._brect = self._rect = super().boundingRect()
         if not self.text():
             self._trect = QRectF()
@@ -87,7 +90,15 @@ class BaseText(
         baseline_trect = metrics.tightBoundingRect(self.text())
         baseline_y = metrics.ascent()
         self._trect = baseline_trect.translated(0, baseline_y)
-        self.updateKeypoints()
+        self.updateAnchorPoints()
+
+        # If we had an origin, maintain its scene position
+        if origin_scene_pos is not None:
+            new_origin_local_pos = self._origin.pos()
+            new_origin_scene_pos = self.mapToScene(new_origin_local_pos)
+            delta = origin_scene_pos - new_origin_scene_pos
+            self._pos = self.pos() + delta
+
         self.updateOrigin()
 
     def getMenuItems(self : Self) -> list[str]:
@@ -109,7 +120,7 @@ class BaseText(
             painter.setPen(self.outline.pen)
             painter.drawRect(self.boundingRect())
 
-    def moveAnchorPointBy(self : Self, _ : str, delta : QPointF) -> None:
+    def moveAnchorPointBy(self : Self, _ : "APName", delta : QPointF) -> None:
         """Move the entire Text when any keypoint is dragged."""
         self.setPos(self.pos() + delta)
 

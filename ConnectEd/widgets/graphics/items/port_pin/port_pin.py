@@ -4,7 +4,7 @@ from PyQt6.QtCore    import QPointF
 
 from ...properties import PropertySpec, PropertiesMixin
 
-from .. import APType, SignalDirection, VectorRange
+from .. import SignalDirection, VectorRange
 
 from ..mixin        import ElementMixin
 from ..mixin.anchor import ElementAnchorPointsMixin
@@ -15,7 +15,7 @@ from ..mixin.xml    import ElementXmlMixin
 from ..mixin.menu   import ElementMenuMixin
 
 from ..property_text import PropertyText, PropertyTextSpec
-from ..anchor_point  import AnchorPoint
+from ..anchor_point  import APName, AnchorPoint
 
 from .node import Node
 
@@ -102,9 +102,9 @@ class PortPinMixin(
     def _getPropertyTexts(cls) -> dict[str, PropertyTextSpec]:
         return {
             "Name" : PropertyTextSpec(
-                anchor  = "Center Left",
+                anchor  = APName.CenterLeft,
                 pos     = QPointF(0, 0),
-                cleat   = "Name",
+                cleat   = APName.Name,
                 _class  = cls._getNameClass()
             ),
         }
@@ -124,14 +124,14 @@ class PortPinMixin(
         self._anchor_points = {
             "Origin" : AnchorPoint(
                 name   = "Origin",
-                type   = APType.Mover,
                 pos    = QPointF(0, 0),
+                resize = False,
                 parent = self
             ),
             "Name" : AnchorPoint(
                 name   = "Name",
-                type   = APType.Cleat,
                 pos    = QPointF(self._NAME_OFFSET, 0),
+                resize = False,
                 parent = self
             )
         }

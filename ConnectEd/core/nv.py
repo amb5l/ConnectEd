@@ -36,9 +36,6 @@ FACTORY_SETTINGS = {
                 "style" : Qt.PenStyle.DotLine
             }
         },
-        "handle" : {
-            "size" : 12
-        },
         "zoom" : {
             "padding" : 0.1,
             "step"    : 0.25,
@@ -255,9 +252,11 @@ FACTORY_SETTINGS = {
                 "fill" : PaletteDark.SelectedFill,
                 "text" : PaletteDark.SelectedText
             },
-            "handle" : {
-                "line" : PaletteDark.HandleLine,
-                "fill" : PaletteDark.HandleFill
+            "grip" : {
+                "size" : 12
+            },
+            "origin" : {
+                "size" : 12
             },
             "grid" : {
                 "line" : PaletteDark.Grid
@@ -420,9 +419,11 @@ FACTORY_SETTINGS = {
                 "fill" : PaletteLightMono.SelectedFill,
                 "text" : PaletteLightMono.SelectedText
             },
-            "handle" : {
-                "line" : PaletteLightMono.HandleLine,
-                "fill" : PaletteLightMono.HandleFill
+            "grip" : {
+                "size" : 12
+            },
+            "origin" : {
+                "size" : 12
             },
             "grid" : {
                 "line" : PaletteLightMono.Grid
@@ -441,6 +442,8 @@ class Settings(QObject):
         self._settings = self._deepCopy(FACTORY_SETTINGS)
 
     def get(self : Self, path : str) -> Any:
+        theme = self._get(self._settings, "display/theme")
+        path = f"/{path}".replace("/theme/", f"/themes/{theme}/").strip("/")
         value = self._get(self._settings, path)
         return self._toNamespace(value) if isinstance(value, dict) else value
 

@@ -10,7 +10,7 @@ from ..properties import PropertySpec
 from .mixin.anchor import ElementAnchorPointsMixin
 
 from .base_text    import BaseText
-from .anchor_point import AnchorPoint
+from .anchor_point import APName, AnchorPoint
 
 
 class Tether(QGraphicsLineItem):
@@ -76,13 +76,13 @@ class TetherText(BaseText):
     def onSelectionChange(self : Self, selected : bool) -> None:
         self._tether.setVisible(selected)
 
-    def setOrigin(self : Self, name : str) -> None:
+    def setOrigin(self : Self, name : APName) -> None:
         """Override to update tether line."""
         super().setOrigin(name)
         self._tether.setParentItem(self._origin)
         self._tether.onPositionChange(self.pos())
 
-    def cleat(self : Self) -> str:
+    def cleat(self : Self) -> APName:
         parent = self.parentItem()
         if isinstance(parent, AnchorPoint):
             return parent.name()
@@ -90,7 +90,7 @@ class TetherText(BaseText):
             logger().error(f"Parent is not an AnchorPoint: {type(parent).__name__}")
             return ""
 
-    def setCleat(self : Self, name : str) -> None:
+    def setCleat(self : Self, name : APName) -> None:
         parent = self.parentItem()
         if isinstance(parent, AnchorPoint):
             grandparent = parent.parentItem()

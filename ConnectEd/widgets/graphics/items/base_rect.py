@@ -9,7 +9,7 @@ from ....app import settings
 
 from ..properties import PropertySpec, PropertiesMixin
 
-from . import APType
+from .anchor_point import APName
 
 from .mixin        import ElementMixin
 from .mixin.bound  import ElementBoundShapeMixin
@@ -40,8 +40,6 @@ class BaseRectangle(
     """Base class for rectangle elements."""
 
     # class attributes
-    _AP_TYPES = { k : APType.Mover if k == "Center" else APType.Resizer \
-            for k in ElementRectAnchorPointsMixin._ANCHOR_POINTS.keys() }
     _PROPERTY_SPECS = \
         ElementPosMixin._PROPERTY_SPECS_POS | \
         {
@@ -82,7 +80,6 @@ class BaseRectangle(
             self._p1 = p1
             self.setPoints(p1, p2)
         self.onGeometryChange()
-        self.updateHandlesVisibility()
 
     def onGeometryChange(self : Self) -> None:
         self.prepareGeometryChange()
@@ -101,7 +98,7 @@ class BaseRectangle(
             self._hshape = rect_path.united(stroker_path)
         else:
             self._hshape = stroker_path
-        self.updateKeypoints()
+        self.updateAnchorPoints()
 
     def getMenuItems(self : Self) -> list[str]:
         return ["Appearance...", "Properties..."]
@@ -205,28 +202,28 @@ class BaseRectangle(
         )
         self.setRect(self._rect)
 
-    def moveAnchorPointBy(self : Self, name : str, delta : QPointF) -> None:
+    def moveAnchorPointBy(self : Self, name : "APName", delta : QPointF) -> None:
         p1 = self.pos()
         p2 = p1 + self._rect.bottomRight()
         d = delta
         match name:
-            case "Top Left":
+            case APName.TopLeft:
                 self.setPoints(p1 + d, p2)
-            case "Top Center":
+            case APName.TopCenter:
                 self.setPoints(p1.x(), p1.y() + d.y(), p2.x(), p2.y())
-            case "Top Right":
+            case APName.TopRight:
                 self.setPoints(p1.x(), p1.y() + d.y(), p2.x() + d.x(), p2.y())
-            case "Center Left":
+            case APName.CenterLeft:
                 self.setPoints(p1.x() + d.x(), p1.y(), p2.x(), p2.y())
-            case "Center":
+            case APName.Center:
                 self.setPos(self.pos() + d)
-            case "Center Right":
+            case APName.CenterRight:
                 self.setPoints(p1.x(), p1.y(), p2.x() + d.x(), p2.y())
-            case "Bottom Left":
+            case APName.BottomLeft:
                 self.setPoints(p1.x() + d.x(), p1.y(), p2.x(), p2.y() + d.y())
-            case "Bottom Center":
+            case APName.BottomCenter:
                 self.setPoints(p1.x(), p1.y(), p2.x(), p2.y() + d.y())
-            case "Bottom Right":
+            case APName.BottomRight:
                 self.setPoints(p1, p2 + d)
             case _:
                 raise ValueError(f"Invalid anchor point: {name}")

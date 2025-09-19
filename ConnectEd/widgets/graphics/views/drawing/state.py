@@ -13,17 +13,28 @@ from ....dialogs.port_pin      import PortPinDialog
 
 from ...items import ElementMixin
 
-from ...items.handle        import Handle
+from ...items.handle        import Handle, ResizeGrip
 from ...items.pin_rect      import PinRect
 from ...items.text          import Text
 from ...items.text_block    import TextBlock
 from ...items.property_text import PropertyText
 
-from ...items.port_pin.pin import Pin, PinArrow, PinNode
+from ...items.port_pin.port      import Port
+from ...items.port_pin.block_pin import BlockPin
 
 from ...scenes.drawing import DrawingScene
 
-from ...scenes.drawing.interaction import *
+from ...scenes.drawing.interaction import Interaction,                \
+                                          EditMoveInteraction,        \
+                                          EditMovePinsInteraction,    \
+                                          EditPasteInteraction,       \
+                                          EditDuplicateInteraction,   \
+                                          PlacePortInteraction,       \
+                                          PlaceBlockInteraction,      \
+                                          PlaceBlockPinInteraction,   \
+                                          PlaceRectangleInteraction,  \
+                                          PlaceTextInteraction,       \
+                                          PlaceTextBlockInteraction
 
 from ...scenes.drawing.cmd.edit import cmdEditPortPin,     \
                                        cmdEditText,        \
@@ -148,12 +159,14 @@ class DrawingViewStateIdle(DrawingViewStateBase):
 
     def mouseLeftDragBegin(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
         items_at = self.view._itemsAt(s)
-        handles_at = [item for item in items_at if isinstance(item, Handle)]
-        if len(handles_at) == 1:
+        resize_grips_at = \
+            [item for item in items_at if isinstance(item, ResizeGrip)]
+        # resizing
+        if len(resize_grips_at) == 1 and not (m & qkm.AltModifier):
             # handle dragging => resize
-            handle = handles_at[0]
+            grip = resize_grips_at[0]
             self.interact(
-                EditResizeInteraction(self.scene, handle, handle.scenePos()),
+                EditMoveInteraction(self.scene, grip, grip.scenePos()),
                 self.view.stateEditResize
             )
             return
@@ -329,7 +342,7 @@ class DrawingViewStateEditPaste(ClickMixin):
 class DrawingViewStateEditDuplicate(ClickMixin, DragMixin):
     TIP = "Duplicate: place the duplicated item(s) as required"
 
-class DrawingViewStateEditSlide(DragMixin):
+class DrawingViewStateEditSlide(ClickMixin, DragMixin):
     TIP = "Slide: position the selected item(s) as required"
     SLIDE = True
 
@@ -337,7 +350,7 @@ class DrawingViewStateEditMove(DrawingViewStateEditSlide):
     TIP = "Move: position the selected item(s) as required"
     SLIDE = False
 
-class DrawingViewStateEditResize(DragMixin):
+class DrawingViewStateEditResize(ClickMixin, DragMixin):
     TIP = "Resize: position the selected handle as required"
 
 class DrawingViewStateEditMovePins(DrawingViewStateBase):

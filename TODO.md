@@ -1,4 +1,5 @@
-- save/load diagram
+- get rid of Optional
+
 - handle visibility
 
 - connect settings changes to DrawingScenePaths

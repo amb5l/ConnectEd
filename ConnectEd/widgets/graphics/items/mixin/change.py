@@ -26,8 +26,6 @@ class ElementChangeMixin:
                     self.fill.onSelectionChange(value)
                 if hasattr(self, "quill"):
                     self.quill.onSelectionChange(value)
-                if hasattr(self, "updateHandlesVisibility"):
-                    self.updateHandlesVisibility()
                 if hasattr(self, "onSelectionChange"):
                     self.onSelectionChange(value)
         return super().itemChange(change, value)

@@ -8,8 +8,6 @@ from .....core.xml import paste
 
 from ...items import EdgeLoc, ElementMixin, clone
 
-from ...items.handle     import Handle
-
 from ...items.base_rect  import BaseRectangle
 from ...items.port_pin   import Pin
 from ...items.pin_rect   import PinRect
@@ -28,6 +26,7 @@ if TYPE_CHECKING:
 
 
 ElementType = ElementMixin | QGraphicsItem
+
 
 class Interaction(ABC):
     """Base for all interactions."""
@@ -50,6 +49,7 @@ class Interaction(ABC):
     @abstractmethod
     def cancel(self) -> None: ...
 
+
 class SceneElementInteraction(Interaction):
     """Base for all interactions that operate on a single scene element."""
     # instance attributes
@@ -62,6 +62,7 @@ class SceneElementInteraction(Interaction):
     @property
     def valid(self) -> bool:
         return self._element is not None
+
 
 class SceneElementsInteraction(Interaction):
     """Base for all interactions that operate on one or more scene elements."""
@@ -76,6 +77,7 @@ class SceneElementsInteraction(Interaction):
     @property
     def valid(self) -> bool:
         return self._elements is not None
+
 
 class PinInteraction(Interaction):
     """Base for all interactions that operate on a pin."""
@@ -112,6 +114,7 @@ class PinInteraction(Interaction):
             hasattr(self, "_pin") and \
             self._pin is not None
 
+
 class MoveMixin:
     """Mixin for interactions that move elements."""
     # instance attributes
@@ -135,6 +138,7 @@ class MoveMixin:
             e.moveBy(self._spos[e] - e.scenePos())
         self._cpos = self._ipos
 
+
 class AddRemoveMixin:
     """Mixin for interactions that add or remove elements from the scene."""
 
@@ -157,6 +161,7 @@ class AddRemoveMixin:
             if element.scene() == self._scene:
                 self._scene.removeItem(element)
 
+
 class SelectionMixin:
     """Mixin for interactions that preserve/restore the selection."""
 
@@ -174,6 +179,7 @@ class SelectionMixin:
             element.setSelected(True)
         self._scene.blockSignals(False)
         self._scene.selectionChanged.emit()
+
 
 class EditPasteInteraction(
     MoveMixin,                 # update, _moveBy, _storePos, _restorePos
@@ -212,6 +218,7 @@ class EditPasteInteraction(
         self._removeFromScene()   # remove preview elements
         self._restoreSelection()  # restore original selection
 
+
 class EditDuplicateInteraction(EditPasteInteraction):
     """Very similar to paste, but elements come from cloning."""
 
@@ -231,6 +238,7 @@ class EditDuplicateInteraction(EditPasteInteraction):
         else:
             self._elements = None
 
+
 class EditMoveInteraction(
     MoveMixin,                 # update, _moveBy, _storePos, _restorePos
     SceneElementsInteraction,  # _scene, _elements, valid
@@ -245,6 +253,7 @@ class EditMoveInteraction(
         pos      : QPointF,
         slide    : bool = False
     ) -> None:
+        elements = elements if isinstance(elements, list) else [elements]
         SceneElementsInteraction.__init__(self, scene, elements)
         self._ipos     = pos
         self._cpos     = pos
@@ -262,14 +271,6 @@ class EditMoveInteraction(
     def cancel(self) -> None:
         self._restorePos()  # restore initial positions
 
-class EditResizeInteraction(EditMoveInteraction):
-    def __init__(
-        self   : Self,
-        scene  : "DrawingScene",
-        handle : Handle,
-        pos    : QPointF
-    ) -> None:
-        EditMoveInteraction.__init__(self, scene, [handle], pos, False)
 
 class EditMovePinsInteraction(Interaction):
     # instance attributes
@@ -331,6 +332,7 @@ class EditMovePinsInteraction(Interaction):
         for p in self._pins:
             p.setLoc(self._sloc[p])
 
+
 class PlaceBaseInteraction(
     SelectionMixin,          # _preserveSelection, _restoreSelection
     SceneElementInteraction  # _scene, _element, valid
@@ -370,6 +372,7 @@ class PlaceBaseInteraction(
         self._scene.removeItem(self._element)
         self._restoreSelection()
 
+
 class PlaceBaseRectInteraction(PlaceBaseInteraction):
     """Base for all interactions that place a single rectangular element."""
 
@@ -378,6 +381,7 @@ class PlaceBaseRectInteraction(PlaceBaseInteraction):
 
     def update(self, pos: QPointF):
         self._element.setP2(pos)
+
 
 class PlacePinInteraction(PinInteraction):
     """Base for all interactions that place a pin."""
@@ -402,23 +406,26 @@ class PlacePinInteraction(PinInteraction):
     def cancel(self : Self) -> None:
         self._pin.setParentItem(None)
 
+
 class PlacePortInteraction(PlaceBaseInteraction):
     _ELEMENT = Port
+
 
 class PlaceBlockInteraction(PlaceBaseRectInteraction):
     _ELEMENT = Block
 
+
 class PlaceBlockPinInteraction(PlacePinInteraction):
     _PIN = BlockPin
 
-##class PlaceSymbolPinOp(PlacePinBaseOp):
-#    _CMD = cmdPlaceSymbolPin
 
 class PlaceRectangleInteraction(PlaceBaseRectInteraction):
     _ELEMENT = Rectangle
 
+
 class PlaceTextInteraction(PlaceBaseInteraction):
     _ELEMENT = Text
+
 
 class PlaceTextBlockInteraction(PlaceBaseInteraction):
     _ELEMENT = TextBlock

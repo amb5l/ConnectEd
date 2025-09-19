@@ -3,54 +3,48 @@ from typing import Self
 from PyQt6.QtCore import QRectF
 from PyQt6.QtCore import QPointF
 
-from ..anchor_point import AnchorPoint
-
-from .. import APType
+from ..anchor_point import APName, AnchorPoint
 
 
 class ElementAnchorPointsMixin:
     # instance attributes
-    _anchor_points : dict[str, "AnchorPoint"]
+    _anchor_points : dict[APName, "AnchorPoint"]
 
-    def getAnchorPoint(self : Self, name : str) -> "AnchorPoint":
+    def getAnchorPoint(self : Self, name : APName) -> "AnchorPoint":
         return self._anchor_points[name]
+
+    def moveAnchorPointBy(self : Self, name : APName, delta : QPointF) -> None:
+        raise NotImplementedError("Subclass must implement this method")
 
 
 class ElementRectAnchorPointsMixin(ElementAnchorPointsMixin):
     # class attributes
     _ANCHOR_POINTS = {
-        "Top Left"      : ( 0.0 , 0.0 ),
-        "Top Center"    : ( 0.5 , 0.0 ),
-        "Top Right"     : ( 1.0 , 0.0 ),
-        "Center Left"   : ( 0.0 , 0.5 ),
-        "Center"        : ( 0.5 , 0.5 ),
-        "Center Right"  : ( 1.0 , 0.5 ),
-        "Bottom Left"   : ( 0.0 , 1.0 ),
-        "Bottom Center" : ( 0.5 , 1.0 ),
-        "Bottom Right"  : ( 1.0 , 1.0 )
+        APName.TopLeft      : ( 0.0 , 0.0 ),
+        APName.TopCenter    : ( 0.5 , 0.0 ),
+        APName.TopRight     : ( 1.0 , 0.0 ),
+        APName.CenterLeft   : ( 0.0 , 0.5 ),
+        APName.Center       : ( 0.5 , 0.5 ),
+        APName.CenterRight  : ( 1.0 , 0.5 ),
+        APName.BottomLeft   : ( 0.0 , 1.0 ),
+        APName.BottomCenter : ( 0.5 , 1.0 ),
+        APName.BottomRight  : ( 1.0 , 1.0 )
     }
-    _AP_TYPES : dict[str, APType]
+    _AP_RESIZE = { k : k != "Center" for k in _ANCHOR_POINTS.keys() }
 
-    # instance attributes
-    _rect   : QRectF   # border rectangle, maintained by element
+    # external instance attributes
+    _rect : QRectF  # border rectangle, maintained by element
 
     def initAnchorPoints(self : Self) -> None:
-        from ..anchor_point import AnchorPoint
         self._anchor_points = {}
-        for ap_name, ap_type in self._AP_TYPES.items():
-            self._anchor_points[ap_name] = AnchorPoint(
-                name   = ap_name,
-                type   = ap_type,
-                parent = self
-            )
+        for name, _ in self._ANCHOR_POINTS.items():
+            resize = name in self._AP_RESIZE
+            anchor_point = AnchorPoint(name=name, resize=resize, parent=self)
+            self._anchor_points[name] = anchor_point
 
-    def updateKeypoints(self : Self) -> None:
+    def updateAnchorPoints(self : Self) -> None:
         for name, (x, y) in self._ANCHOR_POINTS.items():
             self._anchor_points[name].setPos(QPointF(
                 x * self._rect.width(),
                 y * self._rect.height()
             ))
-
-    def updateHandlesVisibility(self : Self) -> None:
-        for ap in self._anchor_points.values():
-            ap._handle.setVisible(self.isSelected())

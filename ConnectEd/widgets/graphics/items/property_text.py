@@ -7,7 +7,7 @@ from PyQt6.QtWidgets import QGraphicsItem, QGraphicsSceneMouseEvent
 
 from ..properties import PropertySpec, PropertiesMixin
 
-from ..items.anchor_point import AnchorPoint
+from ..items.anchor_point import APName, AnchorPoint
 
 from .tether_text import TetherText
 
@@ -120,8 +120,8 @@ class PropertyText(TetherText):
 
 @dataclass
 class PropertyTextSpec:
-    anchor  : str
+    anchor  : APName
     pos     : QPointF
-    cleat   : str
+    cleat   : APName
     display : PropertyDisplay = PropertyDisplay.VALUE
     _class  : type = PropertyText

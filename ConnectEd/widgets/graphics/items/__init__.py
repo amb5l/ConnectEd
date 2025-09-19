@@ -22,11 +22,6 @@ class NoChange:
 
 NO_CHANGE = NoChange()
 
-class APType(Enum):
-    Cleat   = 0
-    Mover   = 1
-    Resizer = 2
-
 class Edge(Enum):
     UNDEFINED = "Undefined"
     LEFT      = "Left"

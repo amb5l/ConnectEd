@@ -26,8 +26,6 @@ class PaletteDark:
     SelectedLine    = QColor("#C000C0")
     SelectedFill    = QColor("#800080")
     SelectedText    = QColor("#A000A0")
-    HandleLine      = QColor("#FF00FF")
-    HandleFill      = QColor("#FF00FF")
 
 class PaletteLightMono:
     Background      = QColor("#202020")
@@ -54,5 +52,3 @@ class PaletteLightMono:
     SelectedLine    = QColor("#C000C0")
     SelectedFill    = QColor("#800080")
     SelectedText    = QColor("#C000C0")
-    HandleLine      = QColor("#FF00FF")
-    HandleFill      = QColor("#FF00FF")

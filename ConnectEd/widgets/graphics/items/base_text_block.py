@@ -9,7 +9,7 @@ from ...dialogs.text_block import TextBlockDialog
 
 from ..properties import PropertySpec, PropertiesMixin
 
-from . import APType
+from .anchor_point import APName
 
 from .mixin         import ElementMixin
 from .mixin.bound   import ElementBoundShapeMixin
@@ -45,8 +45,7 @@ class BaseTextBlock(
     QGraphicsTextItem
 ):
     # class attributes
-    _AP_TYPES = { k : APType.Mover \
-            for k in ElementRectAnchorPointsMixin._ANCHOR_POINTS.keys() }
+    _ORIGIN = APName.TopLeft
     _PROPERTY_SPECS = \
         ElementOriginMixin._PROPERTY_SPECS_ORIGIN | \
         ElementPosMixin._PROPERTY_SPECS_POS | \
@@ -67,13 +66,16 @@ class BaseTextBlock(
     def __init__(self : Self, bare : bool = False) -> None:
         QGraphicsTextItem.__init__(self)
         self.initElement(bare=bare)
-
         self._brectf = QRectF()
         self._hshapef = QPainterPath()
         self.onGeometryChange()
-        self.updateHandlesVisibility()
 
     def onGeometryChange(self : Self) -> None:
+        # Store the current scene position of the origin anchor point
+        origin_scene_pos = None
+        if hasattr(self, '_origin') and self._origin is not None:
+            origin_scene_pos = self.mapToScene(self._origin.pos())
+        
         self.prepareGeometryChange()
         self._brect = self._rect = QGraphicsTextItem.boundingRect(self)
         self._brectf = self._brect.adjusted(-0.5, -0.5, 0.5, 0.5)
@@ -81,7 +83,15 @@ class BaseTextBlock(
         self._hshape.addRect(self._brect)
         self._hshapef.clear()
         self._hshapef.addRect(self._brectf)
-        self.updateKeypoints()
+        self.updateAnchorPoints()
+        
+        # If we had an origin, maintain its scene position
+        if origin_scene_pos is not None:
+            new_origin_local_pos = self._origin.pos()
+            new_origin_scene_pos = self.mapToScene(new_origin_local_pos)
+            delta = origin_scene_pos - new_origin_scene_pos
+            self._pos = self.pos() + delta
+        
         self.updateOrigin()
 
     def getMenuItems(self : Self) -> list[str]:
@@ -126,7 +136,7 @@ class BaseTextBlock(
             painter.setPen(self.outline.pen)
             painter.drawRect(self.boundingRect())
 
-    def moveAnchorPointBy(self : Self, _ : str, delta : QPointF) -> None:
+    def moveAnchorPointBy(self : Self, _ : "APName", delta : QPointF) -> None:
         """Move the entire Text when any keypoint is dragged."""
         self.setPos(self.pos() + delta)
 
