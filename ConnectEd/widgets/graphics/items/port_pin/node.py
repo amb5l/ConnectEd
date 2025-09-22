@@ -1,4 +1,4 @@
-from typing import Self, Optional
+from typing import Self
 
 from PyQt6.QtCore    import QPointF, QRectF
 from PyQt6.QtWidgets import QStyleOptionGraphicsItem, QGraphicsPathItem, \
@@ -68,7 +68,7 @@ class Node(
         self    : Self,
         painter : QPainter,
         option  : QStyleOptionGraphicsItem,
-        widget  : Optional[QWidget] = None
+        widget  : QWidget | None = None
     ) -> None:
         option.state &= ~QStyle.StateFlag.State_Selected
         QGraphicsPathItem.paint(self, painter, option, widget)

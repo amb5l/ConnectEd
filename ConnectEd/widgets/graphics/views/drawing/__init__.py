@@ -1,4 +1,4 @@
-from typing import Self, Optional
+from typing import Self
 from math   import ceil
 
 from PyQt6.QtCore    import Qt, QPoint, QPointF, QRectF, QEvent
@@ -41,11 +41,11 @@ class DrawingView(
     marquee     : Marquee
     layer       : DrawingViewLayer
     zoom        : float
-    pan         : Optional[QPoint]
+    pan         : QPoint | None
     grid        : DrawingViewGrid
     mouse       : DrawingViewMouse
     state       : DrawingViewStateBase
-    interaction : Optional[Interaction]
+    interaction : Interaction | None
 
     def __init__(self : Self, scene : DrawingScene) -> None:
         super().__init__(scene)
@@ -149,7 +149,7 @@ class DrawingView(
 class DrawingSubWindow(QMdiSubWindow):
     def __init__(
         self   : Self,
-        parent : Optional[QMdiArea] = None
+        parent : QMdiArea | None = None
     ) -> None:
         super().__init__(parent)
         self.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)

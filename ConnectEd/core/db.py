@@ -1,4 +1,4 @@
-from typing import Self, Optional
+from typing import Self
 
 from PyQt6.QtCore import Qt, QSize,QXmlStreamWriter, QXmlStreamReader
 from PyQt6.QtGui  import QStandardItemModel, QStandardItem
@@ -113,8 +113,8 @@ class DrawingItem(QStandardItem):
 
     def __init__(
         self  : Self,
-        name  : Optional[str] = None,
-        scene : Optional["DrawingScene"] = None
+        name  : str | None = None,
+        scene : "DrawingScene | None" = None
     ) -> None:
         if name is None:
             name = name_counter.get(
@@ -179,15 +179,15 @@ class DiagramItem(DrawingItem):
 
     def __init__(
         self  : Self,
-        name  : Optional[str] = None,
-        scene : Optional["DiagramScene"] = None
+        name  : str | None = None,
+        scene : "DiagramScene | None" = None
     ) -> None:
         super().__init__(name, scene)
         self.setIcon(EmptyIcon().get())
 
 
 class DbItem(QStandardItem):
-    path   : Optional[str]
+    path   : str | None
 
     def __init__(self : Self) -> None:
         u = "Untitled" + self.__class__.__name__.replace("DbItem", "")
@@ -202,7 +202,7 @@ class DbItem(QStandardItem):
     def toXmlEnd(self : Self, xw : QXmlStreamWriter) -> None:
         xw.writeEndElement()
 
-    def save(self : Self, path : Optional[str] = None) -> None:
+    def save(self : Self, path : str | None = None) -> None:
         self.path = path
         if self.path is None:
             self.path = self.saveAs()

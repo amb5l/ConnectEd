@@ -1,4 +1,4 @@
-from typing import Self, Optional
+from typing import Self
 
 from PyQt6.QtWidgets import QApplication, QMdiSubWindow
 from PyQt6.QtGui     import QKeySequence
@@ -14,7 +14,7 @@ from ..private  import Action
 
 
 class Actions:
-    _scene  : Optional[DrawingScene]
+    _scene  : DrawingScene | None
 
     def __init__(self : Self) -> None:
         self._scene  = None
@@ -73,7 +73,7 @@ class Actions:
 
     def onSubWindowActivated(
         self      : Self,
-        subwindow : Optional[QMdiSubWindow]
+        subwindow : QMdiSubWindow | None
     ) -> None:
         # disconnect previous signals
         s = self._scene

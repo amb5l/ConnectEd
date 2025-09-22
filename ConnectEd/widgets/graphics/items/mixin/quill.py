@@ -1,4 +1,4 @@
-from typing import Self, Optional
+from typing import Self
 from types  import SimpleNamespace
 
 from PyQt6.QtCore import Qt
@@ -23,8 +23,8 @@ class Quill:
     _underline : Default | bool
     _normal    : QColor
     _selected  : QColor
-    _pen       : Optional[QPen]
-    _brush     : Optional[QBrush]
+    _pen       : QPen | None
+    _brush     : QBrush | None
     _font      : QFont
 
     def __init__(

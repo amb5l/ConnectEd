@@ -1,4 +1,4 @@
-from typing import Self, Optional
+from typing import Self
 
 from PyQt6.QtWidgets import QWidget, QDialog, \
                             QVBoxLayout, QHBoxLayout, QGridLayout,\
@@ -33,7 +33,7 @@ class PropertyTextDialog(QDialog):
     def __init__(
         self    : Self,
         element : PropertyText,
-        parent  : Optional[QWidget] = None # not to be confused with _parent
+        parent  : QWidget | None = None # not to be confused with _parent
     ) -> None:
         super().__init__(parent)
         self.setWindowTitle("Property Text")

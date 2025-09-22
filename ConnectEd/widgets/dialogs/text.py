@@ -1,4 +1,4 @@
-from typing import Self, Optional
+from typing import Self
 
 from PyQt6.QtWidgets import QWidget, QDialog, QVBoxLayout, QHBoxLayout, \
                             QLabel, QLineEdit, QPushButton
@@ -25,7 +25,7 @@ class TextDialog(QDialog):
     def __init__(
         self    : Self,
         element : ElementQuillMixin,
-        parent  : Optional[QWidget] = None
+        parent  : QWidget | None = None
     ):
         super().__init__(parent)
         self.setWindowTitle("Text")

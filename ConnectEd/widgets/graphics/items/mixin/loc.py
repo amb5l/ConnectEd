@@ -1,4 +1,4 @@
-from typing import Optional, Self
+from typing import Self
 
 from PyQt6.QtCore import QPointF
 
@@ -56,7 +56,7 @@ class ElementLocMixin:
     def setLocDistance(self : Self, distance : float) -> None:
         self.setLoc(EdgeLoc(self._loc.edge, distance))
 
-    def locSnap(self : Self, loc : EdgeLoc, snap : Optional[QPointF] = None) -> EdgeLoc:
+    def locSnap(self : Self, loc : EdgeLoc, snap : QPointF | None = None) -> EdgeLoc:
         e = loc.edge
         if snap is None:
             d = loc.distance

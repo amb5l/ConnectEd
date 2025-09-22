@@ -1,4 +1,4 @@
-from typing import Callable, Optional, Any, Self
+from typing import Callable, Any, Self
 from dataclasses import dataclass
 
 from ...app import logger
@@ -13,13 +13,13 @@ if TYPE_CHECKING:
 
 @dataclass
 class PropertySpec:
-    type_name   : str                             = "str"
-    exists      : Optional[Callable[[], bool]]    = None
-    getter      : Optional[Callable[[], Any]]     = None
-    setter      : Optional[Callable[[Any], None]] = None  # None = read only
-    default     : Optional[Callable[[], Any]]     = None  # for when the value is DEFAULT
-    description : str                             = ""
-    custom      : bool                            = False
+    type_name   : str                          = "str"
+    exists      : Callable[[], bool] | None    = None
+    getter      : Callable[[], Any] | None     = None
+    setter      : Callable[[Any], None] | None = None  # None = read only
+    default     : Callable[[], Any] | None     = None  # for when the value is DEFAULT
+    description : str                          = ""
+    custom      : bool                         = False
 
     def __post_init__(self):
         # Set defaults for optional functions

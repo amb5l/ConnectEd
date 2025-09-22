@@ -1,4 +1,4 @@
-from typing import Self, Optional
+from typing import Self
 
 from PyQt6.QtWidgets import QWidget, QDialog, \
                             QVBoxLayout, QHBoxLayout, QGridLayout, \
@@ -42,8 +42,8 @@ class PortPinDialog(QDialog):
     def __init__(
         self    : Self,
         title   : str,
-        element : Optional["PortPinMixin"] = None,
-        parent  : Optional[QWidget] = None
+        element : "PortPinMixin | None" = None,
+        parent  : QWidget | None = None
     ) -> None:
         super().__init__(parent)
         self.setWindowTitle(title)

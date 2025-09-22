@@ -1,4 +1,4 @@
-from typing import Self, Any, Optional
+from typing import Self, Any
 from dataclasses import dataclass
 
 from PyQt6.QtCore    import Qt, QModelIndex
@@ -37,8 +37,8 @@ class PropertyState:
 
 @dataclass
 class PropertyChange:
-    before : Optional[PropertyState]
-    after  : Optional[PropertyState]
+    before : PropertyState | None
+    after  : PropertyState | None
 
 class PropertiesItem(QStandardItem):
     IDX_INITIAL_TEXT = 0
@@ -70,7 +70,7 @@ class ValueItem(PropertiesItem):
         self      : Self,
         type_name : str,
         value     : Any,
-        default   : Any  = None,
+        default   : Any | None = None,
         read_only : bool = False
     ) -> None:
         text = val2str(value)
@@ -184,7 +184,7 @@ class PropertiesDialog(QDialog):
     def __init__(
         self    : Self,
         element : PropertiesMixin,
-        parent  : Optional[QWidget] = None
+        parent  : QWidget | None = None
     ) -> None:
         # initialise
         super().__init__(parent)
@@ -272,10 +272,10 @@ class PropertiesDialog(QDialog):
         pass
 
     def onDataChanged(
-        self: Self,
-        top_left: QModelIndex,
-        bottom_right: QModelIndex,
-        roles: list[int]
+        self         : Self,
+        top_left     : QModelIndex,
+        bottom_right : QModelIndex,
+        _roles       : list[int]
     ) -> None:
         if settings().get("display/theme") == "dark":
             bg_highlight = Qt.GlobalColor.darkYellow

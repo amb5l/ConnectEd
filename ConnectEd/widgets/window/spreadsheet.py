@@ -1,4 +1,4 @@
-from typing import Self, Optional
+from typing import Self
 from types  import SimpleNamespace
 
 from PyQt6.QtCore    import Qt, QModelIndex, QPoint, QSize, QTransposeProxyModel
@@ -299,7 +299,7 @@ class SpreadsheetWidget(QWidget):
         self     : Self,
         model    : QStandardItemModel,
         proxy    : QTransposeProxyModel,
-        parent   : Optional[QWidget] = None
+        parent   : QWidget | None = None
     ) -> None:
         super().__init__(parent)
         self._parent = parent
@@ -369,7 +369,7 @@ class SpreadsheetWidget(QWidget):
         self._table_model.clearFocus()
         self._table_proxy.clearFocus()
 
-    def _toggleTranspose(self : Self, checked: Optional[bool] = None) -> None:
+    def _toggleTranspose(self : Self, checked: bool | None = None) -> None:
         """Toggle between normal and transposed table views."""
         self._completeEditing()
         if checked is None:
@@ -535,7 +535,7 @@ class SpreadsheetTabWidget(QTabWidget):
     def __init__(
         self     : Self,
         elements : list[ElementMixin],
-        parent   : Optional[QWidget] = None
+        parent   : QWidget | None = None
     ) -> None:
         super().__init__(parent)
         self.setTabsClosable(True)
@@ -703,7 +703,7 @@ class SpreadsheetTabWidget(QTabWidget):
 
 class SpreadsheetSubWindow(QMdiSubWindow):
     _scene      : "DrawingScene"
-    _tab_widget : Optional[QTabWidget]
+    _tab_widget : QTabWidget | None
 
     def __init__(
             self     : Self,

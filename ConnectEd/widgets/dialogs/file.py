@@ -1,5 +1,3 @@
-from typing import Optional
-
 from PyQt6.QtWidgets import QFileDialog, QWidget
 
 from ...core.defs import GEN_EXT, LIB_EXT, DSN_EXT
@@ -8,8 +6,8 @@ from ...core.defs import GEN_EXT, LIB_EXT, DSN_EXT
 class FileOpenDialog(QFileDialog):
     def __init__(
         self      : "FileOpenDialog",
-        type_name : Optional[str] = None,
-        parent    : Optional[QWidget] = None
+        type_name : str | None = None,
+        parent    : QWidget | None = None
     ) -> None:
         super().__init__(parent)
         self.setWindowTitle(f"Open")
@@ -29,7 +27,7 @@ class FileSaveAsDialog(QFileDialog):
     def __init__(
         self      : "FileSaveAsDialog",
         type_name : str,
-        parent    : Optional[QWidget] = None
+        parent    : QWidget | None = None
     ) -> None:
         match type_name:
             case "LibraryDb":

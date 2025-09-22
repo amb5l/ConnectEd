@@ -1,4 +1,4 @@
-from typing import Self, Optional
+from typing import Self
 
 from PyQt6.QtWidgets import QWidget
 
@@ -12,7 +12,7 @@ class LogViewDock(TextViewDockWidget):
 
     def __init__(
         self     : Self,
-        parent   : Optional[QWidget] = None,
+        parent   : QWidget | None = None,
         filename : str = LOG_FILENAME
     ) -> None:
         super().__init__(parent, filename)

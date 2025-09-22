@@ -1,4 +1,4 @@
-from typing import Self, Optional
+from typing import Self
 
 from PyQt6.QtCore import Qt, QPoint, QPointF
 
@@ -59,7 +59,7 @@ class DrawingViewStateBase:
     def go(
         self     : Self,
         state    : "DrawingViewStateBase",
-        elements : Optional[list[ElementMixin]] = None
+        elements : list[ElementMixin] | None = None
     ) -> None:
         self.view.state = state
         if window() is not None:
@@ -73,7 +73,7 @@ class DrawingViewStateBase:
     def interact(
         self        : Self,
         interaction : Interaction,
-        state       : Optional["DrawingViewStateBase"] = None
+        state       : "DrawingViewStateBase | None" = None
     ) -> None:
         if interaction.valid:
             self.view.interaction = interaction
@@ -84,9 +84,9 @@ class DrawingViewStateBase:
 
     def entry(
         self : Self,
-        v :    QPoint,
-        s :    QPointF,
-        e :    Optional[list[ElementMixin]] = None
+        v    : QPoint,
+        s    : QPointF,
+        e    : list[ElementMixin] | None = None
     ) -> None:
         pass
 
@@ -141,9 +141,9 @@ class DrawingViewStateIdle(DrawingViewStateBase):
 
     def entry(
         self : Self,
-        v :    QPoint,
-        s :    QPointF,
-        e :    Optional[list[ElementMixin]] = None
+        v    : QPoint,
+        s    : QPointF,
+        e    : list[ElementMixin] | None = None
     ) -> None:
         self.view.interaction = None
 
@@ -333,9 +333,9 @@ class DrawingViewStateEditPaste(ClickMixin):
 
     def entry(
         self : Self,
-        v :    QPoint,
-        s :    QPointF,
-        e :    Optional[list[ElementMixin]] = None
+        v    : QPoint,
+        s    : QPointF,
+        e    : list[ElementMixin] | None = None
     ) -> None:
         self.view.state.interact(EditPasteInteraction(self.scene, self._snap(s)))
 
@@ -379,9 +379,9 @@ class DrawingViewStateEditAppearance(DrawingViewStateBase):
 
     def entry(
         self : Self,
-        v :    QPoint,
-        s :    QPointF,
-        e :    Optional[list[ElementMixin]] = None
+        v    : QPoint,
+        s    : QPointF,
+        e    : list[ElementMixin] | None = None
     ) -> None:
         elements = e or self.view._selectedElements(ElementMixin)
         if elements:
@@ -397,9 +397,9 @@ class DrawingViewStateEditProperties(DrawingViewStateBase):
 
     def entry(
         self : Self,
-        v :    QPoint,
-        s :    QPointF,
-        e :    Optional[list[ElementMixin]] = None
+        v    : QPoint,
+        s    : QPointF,
+        e    : list[ElementMixin] | None = None
     ) -> None:
         element = e[0] if e else self.view._selectedElement(ElementMixin)
         if element:
@@ -422,9 +422,9 @@ class DrawingViewStateEditPort(DrawingViewStateBase):
 
     def entry(
         self : Self,
-        v :    QPoint,
-        s :    QPointF,
-        e :    Optional[list[ElementMixin]] = None
+        v    : QPoint,
+        s    : QPointF,
+        e    : list[ElementMixin] | None = None
     ) -> None:
         element = e[0] if e else self.view._selectedElement(Port)
         if element:
@@ -445,9 +445,9 @@ class DrawingViewStateEditBlockPin(DrawingViewStateBase):
 
     def entry(
         self : Self,
-        v :    QPoint,
-        s :    QPointF,
-        e :    Optional[list[ElementMixin]] = None
+        v    : QPoint,
+        s    : QPointF,
+        e    : list[ElementMixin] | None = None
     ) -> None:
         element = e[0] if e else self.view._selectedElement(BlockPin)
         if element and isinstance(element, BlockPin):
@@ -468,9 +468,9 @@ class DrawingViewStateEditText(DrawingViewStateBase):
 
     def entry(
         self : Self,
-        v :    QPoint,
-        s :    QPointF,
-        e :    Optional[list[ElementMixin]] = None
+        v    : QPoint,
+        s    : QPointF,
+        e    : list[ElementMixin] | None = None
     ) -> None:
         element = e[0] if e else self.view._selectedElement(Text)
         if element and isinstance(element, Text):
@@ -489,9 +489,9 @@ class DrawingViewStateEditPropertyText(DrawingViewStateBase):
 
     def entry(
         self : Self,
-        v :    QPoint,
-        s :    QPointF,
-        e :    Optional[list[ElementMixin]] = None
+        v    : QPoint,
+        s    : QPointF,
+        e    : list[ElementMixin] | None = None
     ) -> None:
         element = e[0] if e else self.view._selectedElement(PropertyText)
         if element and isinstance(element, PropertyText):
@@ -513,9 +513,9 @@ class DrawingViewStatePlacePort(ClickMixin):
 
     def entry(
         self : Self,
-        v :    QPoint,
-        s :    QPointF,
-        e :    Optional[list[ElementMixin]] = None
+        v    : QPoint,
+        s    : QPointF,
+        e    : list[ElementMixin] | None = None
     ) -> None:
         element = Port()
         element.setPos(self._snap(s))
@@ -550,9 +550,9 @@ class DrawingViewStatePlaceBlockPin(DrawingViewStateBase):
 
     def entry(
         self : Self,
-        v :    QPoint,
-        s :    QPointF,
-        e :    Optional[list[ElementMixin]] = None
+        v    : QPoint,
+        s    : QPointF,
+        e    : list[ElementMixin] | None = None
     ) -> None:
         block = e[0] if e else self.view._selectedElement(PinRect)
         if block and isinstance(block, PinRect):
@@ -603,9 +603,9 @@ class DrawingViewStatePlaceText(ClickMixin):
 
     def entry(
         self : Self,
-        v :    QPoint,
-        s :    QPointF,
-        e :    Optional[list[ElementMixin]] = None
+        v    : QPoint,
+        s    : QPointF,
+        e    : list[ElementMixin] | None = None
     ) -> None:
         element = Text(self._snap(s))
         dialog = TextDialog(element, self.view)
@@ -624,9 +624,9 @@ class DrawingViewStatePlaceTextBlock(ClickMixin):
 
     def entry(
         self : Self,
-        v :    QPoint,
-        s :    QPointF,
-        e :    Optional[list[ElementMixin]] = None
+        v    : QPoint,
+        s    : QPointF,
+        e    : list[ElementMixin] | None = None
     ) -> None:
         element = TextBlock(self._snap(s))
         dialog = TextBlockDialog(element, self.view)

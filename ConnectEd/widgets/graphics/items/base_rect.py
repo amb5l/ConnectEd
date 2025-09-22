@@ -1,4 +1,4 @@
-from typing import Self, Optional, overload
+from typing import Self, overload
 
 from PyQt6.QtCore    import Qt, QPointF, QRectF, QSizeF
 from PyQt6.QtWidgets import QGraphicsRectItem, \
@@ -64,8 +64,8 @@ class BaseRectangle(
 
     def __init__(
         self : Self,
-        p1   : Optional[QPointF] = None,
-        p2   : Optional[QPointF] = None,
+        p1   : QPointF | None = None,
+        p2   : QPointF | None = None,
         bare : bool = False
     ) -> None:
         super().__init__()
@@ -173,8 +173,8 @@ class BaseRectangle(
         self : Self,
         p1_x1 : QPointF | float | int,
         p2_y1 : QPointF | float | int,
-        x2    : Optional[float | int] = None,
-        y2    : Optional[float | int] = None
+        x2    : float | int | None = None,
+        y2    : float | int | None = None
     ) -> None:
         if x2 is None or y2 is None:
             x1 = p1_x1.x()

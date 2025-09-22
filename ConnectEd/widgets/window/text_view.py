@@ -1,7 +1,7 @@
 import logging
 
 from types  import SimpleNamespace
-from typing import Self, Optional
+from typing import Self
 
 from PyQt6.QtCore    import Qt
 from PyQt6.QtWidgets import QWidget, QPlainTextEdit, QDockWidget, QVBoxLayout
@@ -14,13 +14,13 @@ from .find_bar import FindBar
 
 class TextView(QPlainTextEdit):
     actions  : SimpleNamespace
-    find_bar : Optional[FindBar] = None
-    handler  : Optional[logging.Handler] = None
+    find_bar : FindBar | None = None
+    handler  : logging.Handler | None = None
 
     def __init__(
         self     : Self,
         parent   : QWidget,
-        filename : Optional[str] = None
+        filename : str | None = None
     ) -> None:
         super().__init__(parent)
         self.setReadOnly(True)
@@ -92,8 +92,8 @@ class TextViewDockWidget(QDockWidget):
 
     def __init__(
         self     : Self,
-        parent   : Optional[QWidget] = None,
-        filename : Optional[str] = None
+        parent   : QWidget | None = None,
+        filename : str | None = None
     ) -> None:
         super().__init__(parent)
         self.setWindowTitle(self.WINDOW_TITLE)

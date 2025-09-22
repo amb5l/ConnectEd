@@ -1,6 +1,6 @@
 """Private classes for the widgets."""
 
-from typing import Self, Optional, Any
+from typing import Self, Any
 
 from PyQt6.QtCore import QObject
 from PyQt6.QtGui  import QAction, QKeySequence
@@ -11,11 +11,11 @@ class Action(QAction):
         self      : Self,
         parent    : QObject,
         text      : str,
-        tooltip   : Optional[str] = None,
-        shortcut  : Optional[QKeySequence | str] = None,
+        tooltip   : str | None = None,
+        shortcut  : QKeySequence | str | None = None,
         checkable : bool = False,
         checked   : bool = False,
-        data      : Optional[Any] = None
+        data      : Any | None = None
     ) -> None:
         super().__init__(parent)
         self.setText(text)

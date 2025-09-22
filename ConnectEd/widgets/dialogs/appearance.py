@@ -1,4 +1,4 @@
-from typing import Self, Optional
+from typing import Self
 
 from PyQt6.QtWidgets import QWidget, QDialog, QPushButton, QGroupBox, \
                             QVBoxLayout, QHBoxLayout
@@ -25,12 +25,12 @@ from .components import LineAppearanceLayout, \
 
 class AppearanceDialog(QDialog):
     _dialog_layout    : QVBoxLayout
-    _line_group_box   : Optional[QGroupBox]
-    _line_layout      : Optional[LineAppearanceLayout]
-    _fill_group_box   : Optional[QGroupBox]
-    _fill_layout      : Optional[FillAppearanceLayout]
-    _text_group_box   : Optional[QGroupBox]
-    _text_layout      : Optional[TextAppearanceLayout]
+    _line_group_box   : QGroupBox | None
+    _line_layout      : LineAppearanceLayout | None
+    _fill_group_box   : QGroupBox | None
+    _fill_layout      : FillAppearanceLayout | None
+    _text_group_box   : QGroupBox | None
+    _text_layout      : TextAppearanceLayout | None
     _ok_cancel_layout : QHBoxLayout
     _ok_button        : QPushButton
     _cancel_button    : QPushButton
@@ -38,7 +38,7 @@ class AppearanceDialog(QDialog):
     def __init__(
         self     : Self,
         elements : list[ElementLineMixin | ElementFillMixin |ElementQuillMixin],
-        parent   : Optional[QWidget] = None
+        parent   : QWidget | None = None
     ) -> None:
         super().__init__(parent)
         initial   = AppearancePrefChange()

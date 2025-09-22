@@ -1,4 +1,4 @@
-from typing import Self, Optional
+from typing import Self
 from abc import ABC, abstractmethod
 
 from PyQt6.QtCore    import QPointF
@@ -94,9 +94,9 @@ class PinInteraction(Interaction):
         self   : Self,
         scene  : "DrawingScene",
         parent : PinRect,
-        pin    : Optional[Pin],
+        pin    : Pin | None,
         pos    : QPointF,
-        snap   : Optional[QPointF] = None
+        snap   : QPointF | None = None
     ) -> None:
         Interaction.__init__(self, scene)
         if isinstance(parent, PinRect):
@@ -167,7 +167,7 @@ class SelectionMixin:
     """Mixin for interactions that preserve/restore the selection."""
 
     # instance attributes
-    _selection : Optional[list[ElementType]]
+    _selection : list[ElementType] | None
     _scene     : "DrawingScene"
 
     def _preserveSelection(self : Self) -> None:
@@ -297,7 +297,7 @@ class EditMovePinsInteraction(Interaction):
             hasattr(self, "_pins") and \
             len(self._pins) > 0
 
-    def update(self, pos: QPointF, snap: Optional[QPointF] = None) -> None:
+    def update(self, pos: QPointF, snap: QPointF | None = None) -> None:
         pos_snap = self._scene._snap(pos, snap) if snap else pos
         primary = self._pins[0]
         loc_old = primary.loc()
@@ -310,7 +310,7 @@ class EditMovePinsInteraction(Interaction):
         for pin in self._pins[1:]:
             pin.setLoc(self._parent.locOffset(pin.loc(), offset, corner))
 
-    def complete(self, pos: QPointF, snap: Optional[QPointF] = None) -> bool:
+    def complete(self, pos: QPointF, snap: QPointF | None = None) -> bool:
         self._restoreLoc()
         self.update(pos, snap)
         if all(p.loc() == self._sloc[p] for p in self._pins):
@@ -347,7 +347,7 @@ class PlaceBaseInteraction(
         self    : Self,
         scene   : "DrawingScene",
         pos     : QPointF,
-        element : Optional[ElementType] = None
+        element : ElementType | None = None
     ) -> None:
         if element is None:
             element = self._ELEMENT(pos)
@@ -393,14 +393,14 @@ class PlacePinInteraction(PinInteraction):
         parent : PinRect,
         pin    : Pin,
         pos    : QPointF,
-        snap   : Optional[QPointF] = None
+        snap   : QPointF | None = None
     ) -> None:
         PinInteraction.__init__(self, scene, parent, pin, pos, snap)
 
-    def update(self : Self, pos : QPointF, snap : Optional[QPointF] = None) -> None:
+    def update(self : Self, pos : QPointF, snap : QPointF | None = None) -> None:
         self._pin.setLoc(self._pin.locSnap(self._parent.pos2loc(pos), snap))
 
-    def complete(self : Self, pos : QPointF, snap : Optional[QPointF] = None) -> bool:
+    def complete(self : Self, pos : QPointF, snap : QPointF | None = None) -> bool:
         self.update(pos, snap)
         self._scene.undo_stack.push(cmdAddPin(self._parent, self._pin))
 

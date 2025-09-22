@@ -1,5 +1,5 @@
 from types  import SimpleNamespace
-from typing import Self, Optional
+from typing import Self
 
 from PyQt6.QtCore    import Qt, QPoint, QItemSelectionModel
 from PyQt6.QtWidgets import QWidget, QMenu
@@ -202,7 +202,7 @@ class Explorer(TreeView):
         self.expand(model().indexFromItem(item))
         self.editDrawing(symbol_item)
 
-    def openDb(self : Self, type_name : Optional[str] = None) -> None:
+    def openDb(self : Self, type_name : str | None = None) -> None:
         from ..dialogs.file import FileOpenDialog
         dialog = FileOpenDialog(type_name)
         result = dialog.exec()

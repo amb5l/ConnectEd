@@ -1,4 +1,4 @@
-from typing      import Optional, Self
+from typing      import Self
 from dataclasses import dataclass
 from enum        import Enum
 
@@ -31,8 +31,8 @@ class Edge(Enum):
 
 @dataclass
 class EdgeLoc:
-    edge     : Optional[Edge]  = None
-    distance : Optional[float] = None
+    edge     : Edge  | None = None
+    distance : float | None = None
 
     def toStr(self) -> str:
         return f"{self.edge.value},{self.distance}" \
@@ -95,15 +95,15 @@ class LinePref:
 
 @dataclass
 class LinePrefDefault:
-    color : Optional[ Default | QColor      ] = None
-    width : Optional[ Default | float       ] = None
-    style : Optional[ Default | Qt.PenStyle ] = None
+    color : Default | QColor      | None = None
+    width : Default | float       | None = None
+    style : Default | Qt.PenStyle | None = None
 
 @dataclass
 class LinePrefChange:
-    color : Optional[ NoChange | Default | QColor      ] = None
-    width : Optional[ NoChange | Default | float       ] = None
-    style : Optional[ NoChange | Default | Qt.PenStyle ] = None
+    color : NoChange | Default | QColor      | None = None
+    width : NoChange | Default | float       | None = None
+    style : NoChange | Default | Qt.PenStyle | None = None
 
 @dataclass
 class FillSpec:
@@ -131,13 +131,13 @@ class FillPref:
 
 @dataclass
 class FillPrefDefault:
-    color : Optional[ Default | QColor        ] = None
-    style : Optional[ Default | Qt.BrushStyle ] = None
+    color : Default | QColor        | None = None
+    style : Default | Qt.BrushStyle | None = None
 
 @dataclass
 class FillPrefChange:
-    color : Optional[ NoChange | Default | QColor        ] = None
-    style : Optional[ NoChange | Default | Qt.BrushStyle ] = None
+    color : NoChange | Default | QColor        | None = None
+    style : NoChange | Default | Qt.BrushStyle | None = None
 
 @dataclass
 class QuillSpec:
@@ -185,39 +185,39 @@ class QuillPref:
 
 @dataclass
 class QuillPrefDefault:
-    color     : Optional[ Default | QColor ] = None
-    family    : Optional[ Default | str    ] = None
-    size      : Optional[ Default | float  ] = None
-    bold      : Optional[ Default | bool   ] = None
-    italic    : Optional[ Default | bool   ] = None
-    underline : Optional[ Default | bool   ] = None
+    color     : Default | QColor | None = None
+    family    : Default | str    | None = None
+    size      : Default | float  | None = None
+    bold      : Default | bool   | None = None
+    italic    : Default | bool   | None = None
+    underline : Default | bool   | None = None
 
 @dataclass
 class QuillPrefChange:
-    color     : Optional[ NoChange | Default | QColor ] = None
-    family    : Optional[ NoChange | Default | str    ] = None
-    size      : Optional[ NoChange | Default | float  ] = None
-    bold      : Optional[ NoChange | Default | bool   ] = None
-    italic    : Optional[ NoChange | Default | bool   ] = None
-    underline : Optional[ NoChange | Default | bool   ] = None
+    color     : NoChange | Default | QColor | None = None
+    family    : NoChange | Default | str    | None = None
+    size      : NoChange | Default | float  | None = None
+    bold      : NoChange | Default | bool   | None = None
+    italic    : NoChange | Default | bool   | None = None
+    underline : NoChange | Default | bool   | None = None
 
 @dataclass
 class AppearanceSpec:
-    line  : Optional[LineSpec]  = None
-    fill  : Optional[FillSpec]  = None
-    quill : Optional[QuillSpec] = None
+    line  : LineSpec  | None = None
+    fill  : FillSpec  | None = None
+    quill : QuillSpec | None = None
 
 @dataclass
 class AppearancePref:
-    line  : Optional[LinePref]  = None
-    fill  : Optional[FillPref]  = None
-    quill : Optional[QuillPref] = None
+    line  : LinePref  | None = None
+    fill  : FillPref  | None = None
+    quill : QuillPref | None = None
 
 @dataclass
 class AppearancePrefChange:
-    line  : Optional[LinePrefChange]  = None
-    fill  : Optional[FillPrefChange]  = None
-    quill : Optional[QuillPrefChange] = None
+    line  : LinePrefChange  | None = None
+    fill  : FillPrefChange  | None = None
+    quill : QuillPrefChange | None = None
 
 def clone(elements : list[ElementMixin]) -> list[ElementMixin]:
     r = []

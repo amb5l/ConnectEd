@@ -49,7 +49,7 @@ class Handle(
         self.onSettingsChange()
         settings().changed.connect(self.onSettingsChange)
 
-    def onSceneChange(self : Self, scene : "DrawingScene | NoneType") -> None:
+    def onSceneChange(self : Self, scene : "DrawingScene | None") -> None:
         if scene is not None:
             self.setPath(scene.paths[self._PATH])
         print(f"{self.__class__.__name__}.onSceneChange : {self._PATH}")

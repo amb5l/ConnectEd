@@ -1,4 +1,4 @@
-from typing import Self, Optional
+from typing import Self
 from types  import SimpleNamespace
 
 from PyQt6.QtCore    import Qt
@@ -15,7 +15,7 @@ class TableView(QTableView):
     def __init__(
         self   : Self,
         model  : QStandardItemModel,
-        parent : Optional[QWidget] = None
+        parent : QWidget | None = None
     ) -> None:
         super().__init__(parent)
         self.setModel(model)

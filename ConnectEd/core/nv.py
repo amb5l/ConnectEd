@@ -10,7 +10,7 @@ including loading, saving, and accessing configuration values.
 # session settings for diagram and library
 
 from types  import SimpleNamespace
-from typing import Self, Optional, Any, Dict, List
+from typing import Self, Any, Dict, List
 
 from PyQt6.QtCore import Qt, QObject, pyqtSignal, QSettings, QPointF, QSizeF
 
@@ -531,7 +531,7 @@ class Settings(QObject):
             current = current[part]
         current[path_parts[-1]] = value
 
-    def _getSettingTypeName(self : Self, path : str) -> Optional[str]:
+    def _getSettingTypeName(self : Self, path : str) -> str | None:
         """Determine the expected type of a setting based on FACTORY_SETTINGS."""
         value = self._get(FACTORY_SETTINGS, path)
         return None if isinstance(value, dict) else type(value).__name__

@@ -1,6 +1,6 @@
-from typing import Self, Optional, Any
+from typing import Self
 
-from PyQt6.QtCore    import QPointF, QLineF
+from PyQt6.QtCore    import QLineF
 from PyQt6.QtWidgets import QGraphicsItem, QGraphicsPathItem, QGraphicsLineItem, \
                             QStyleOptionGraphicsItem, QWidget, QStyle
 from PyQt6.QtGui     import QPainter
@@ -33,7 +33,7 @@ class PinArrow(
     # instance attributes
     _direction : SignalDirection
 
-    def __init__(self : Self, parent : Optional[QGraphicsItem] = None) -> None:
+    def __init__(self : Self, parent : QGraphicsItem | None = None) -> None:
         QGraphicsPathItem.__init__(self, parent)
         self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsSelectable, True)
         self.initLine()
@@ -69,7 +69,7 @@ class PinArrow(
         self    : Self,
         painter : QPainter,
         option  : QStyleOptionGraphicsItem,
-        widget  : Optional[QWidget] = None
+        widget  : QWidget | None = None
     ) -> None:
         option.state &= ~QStyle.StateFlag.State_Selected
         QGraphicsPathItem.paint(self, painter, option, widget)
@@ -109,7 +109,7 @@ class Pin(ElementLocMixin, PortPinMixin, QGraphicsLineItem):
     def _getCommentClass(cls) -> type[PinComment]:
         return PinComment
 
-    def __init__(self : Self, parent : Optional[QGraphicsItem] = None) -> None:
+    def __init__(self : Self, parent : QGraphicsItem | None = None) -> None:
         QGraphicsLineItem.__init__(self, parent)
         self.initPortPin()
         line = QLineF(-_PIN_LEN, 0, 0, 0)
@@ -134,7 +134,7 @@ class Pin(ElementLocMixin, PortPinMixin, QGraphicsLineItem):
         self    : Self,
         painter : QPainter,
         option  : QStyleOptionGraphicsItem,
-        widget  : Optional[QWidget] = None
+        widget  : QWidget | None = None
     ) -> None:
         option.state &= ~QStyle.StateFlag.State_Selected
         QGraphicsLineItem.paint(self, painter, option, widget)

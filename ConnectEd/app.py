@@ -1,4 +1,4 @@
-from typing  import Self, Optional
+from typing  import Self
 from logging import Logger
 
 from PyQt6.QtWidgets import QApplication
@@ -12,10 +12,10 @@ if TYPE_CHECKING:
 
 class ConnectEdApp(QApplication):
     # instance attributes
-    logger   : Optional[Logger]
-    settings : Optional["Settings"]
-    model    : Optional["Model"]
-    window   : Optional["Window"]
+    logger   : "Logger | None"
+    settings : "Settings | None"
+    model    : "Model | None"
+    window   : "Window | None"
 
     def __init__(self : Self, argv : list[str]) -> None:
         super().__init__(argv)

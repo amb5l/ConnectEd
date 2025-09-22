@@ -1,4 +1,4 @@
-from typing import Self, Optional
+from typing import Self
 
 from PyQt6.QtCore    import QAbstractItemModel
 from PyQt6.QtWidgets import QTreeView, QWidget, QDockWidget
@@ -64,7 +64,7 @@ class TreeViewDock(QDockWidget):
 
     def __init__(
         self   : Self,
-        widget : Optional[TreeView],
+        widget : TreeView | None,
         parent : QWidget
     ) -> None:
         super().__init__(parent)

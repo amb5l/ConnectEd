@@ -1,4 +1,4 @@
-from typing import Self, Optional
+from typing import Self
 from dataclasses import dataclass
 
 from PyQt6.QtCore import Qt, QPointF, QRectF
@@ -56,7 +56,7 @@ class DiagramScene(DrawingScene):
     margin : float         # distance from paper edge to border line
     border : float         # line width
 
-    def __init__(self : Self, parent : Optional["DiagramItem"] = None) -> None:
+    def __init__(self : Self, parent : "DiagramItem | None" = None) -> None:
         sheet_name = settings().get("defaults/sheet/name")
         sheet_size = settings().get("defaults/sheet/size")
         sheet_rect = QRectF(QPointF(0, 0), sheet_size)
@@ -65,7 +65,7 @@ class DiagramScene(DrawingScene):
         self.border = settings().get("defaults/border")
         super().__init__(parent, sheet_size)
 
-    def updateSceneRect(self : Self, rect : Optional[QRectF] = None) -> None:
+    def updateSceneRect(self : Self, rect : QRectF | None = None) -> None:
         super().updateSceneRect(self.sheet.rect)
 
     def drawBackground(self : Self, painter : QPainter, rect : QRectF) -> None:

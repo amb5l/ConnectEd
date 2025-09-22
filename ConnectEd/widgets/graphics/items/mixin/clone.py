@@ -1,4 +1,4 @@
-from typing import Optional, Self, Optional
+from typing import Self
 
 from ...properties import PropertiesMixin, PropertySpec
 
@@ -10,7 +10,7 @@ from .anchor import ElementAnchorPointsMixin
 ElementType = ElementMixin | ElementAnchorPointsMixin | PropertiesMixin
 
 class ElementCloneMixin:
-    def clone(self : Self, original : Optional[Self] = None) -> Self:
+    def clone(self : Self, original : Self | None = None) -> Self:
         """Create a clone of this element with a new UUID."""
         from ..anchor_point  import AnchorPoint
         from ..property_text import PropertyText

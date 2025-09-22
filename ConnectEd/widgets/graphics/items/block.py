@@ -1,4 +1,4 @@
-from typing import Self, Optional
+from typing import Self
 
 from PyQt6.QtCore import QPointF
 
@@ -40,8 +40,8 @@ class Block(PinRect):
 
     def __init__(
         self : Self,
-        p1   : Optional[QPointF] = None,
-        p2   : Optional[QPointF] = None,
+        p1   : QPointF | None = None,
+        p2   : QPointF | None = None,
         bare : bool = False
     ) -> None:
         self._reference = ""

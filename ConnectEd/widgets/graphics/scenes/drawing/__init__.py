@@ -1,4 +1,4 @@
-from typing import Self, Optional
+from typing import Self
 
 from PyQt6.QtCore    import QPointF, QRectF, QSizeF, \
                             QXmlStreamWriter, QXmlStreamReader
@@ -41,14 +41,14 @@ class DrawingScene(
     }
 
     # instance attributes
-    item       : Optional["DrawingItem"]
-    undo_stack : Optional[QUndoStack]
+    item       : "DrawingItem | None"
+    undo_stack : QUndoStack | None
     _name      : str
 
     def __init__(
         self    : Self,
         item    : "DrawingItem",
-        extents : Optional[QSizeF] = None
+        extents : QSizeF | None = None
     ) -> None:
         super().__init__()
         self.item = item
@@ -82,7 +82,7 @@ class DrawingScene(
     def redo(self : Self) -> None:
         self.undo_stack.redo()
 
-    def updateSceneRect(self : Self, rect : Optional[QRectF] = None) -> None:
+    def updateSceneRect(self : Self, rect : QRectF | None = None) -> None:
         ext_rect = QRectF(QPointF(0, 0), settings().get("defaults/extents"))
         scene_rect = rect or ext_rect
         for item in self.items():
@@ -99,7 +99,7 @@ class DrawingScene(
         xw.writeEndElement()
 
     @classmethod
-    def fromXml(cls : Self, xr : QXmlStreamReader, parent : Optional["DrawingItem"] = None) -> Self:
+    def fromXml(cls : Self, xr : QXmlStreamReader, parent : "DrawingItem | None" = None) -> Self:
         from ...items import _element_classes
         cls_name = cls.__name__
         # Use the same naming convention as toXml: remove "Scene" suffix

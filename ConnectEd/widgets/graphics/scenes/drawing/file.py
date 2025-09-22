@@ -1,5 +1,3 @@
-from typing import Optional
-
 from .....app import logger
 
 from .....core.xml import save, loadItems
@@ -13,7 +11,7 @@ class DrawingSceneApiFileMixin:
     save = save
 
     @classmethod
-    def load(cls, path: str) -> Optional["DrawingScene"]:
+    def load(cls, path: str) -> "DrawingScene | None":
         items = loadItems(path)
         for item in items:
             if isinstance(item, cls):

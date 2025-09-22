@@ -1,4 +1,4 @@
-from typing import Self, Optional
+from typing import Self
 from enum import Enum, auto
 
 from PyQt6.QtCore    import Qt, QPoint, QPointF
@@ -31,13 +31,13 @@ class DrawingViewGrid:
         self.min_pixels = s.min_pixels
 
 class DrawingViewPLPos:
-    physical : Optional[QPoint] = None
-    logical  : Optional[QPointF] = None
+    physical : QPoint  | None = None
+    logical  : QPointF | None = None
 
     def __init__(
         self     : Self,
-        physical : Optional[QPoint] = None,
-        logical  : Optional[QPointF] = None
+        physical : QPoint  | None = None,
+        logical  : QPointF | None = None
     ) -> None:
         self.physical = physical
         self.logical  = logical
@@ -51,8 +51,8 @@ class DrawingViewMouseCurrent(DrawingViewPLPos):
 
     def __init__(
         self      : Self,
-        physical  : Optional[QPoint] = None,
-        logical   : Optional[QPointF] = None,
+        physical  : QPoint  | None = None,
+        logical   : QPointF | None = None,
         modifiers : Qt.KeyboardModifier = Qt.KeyboardModifier.NoModifier
     ) -> None:
         super().__init__(physical, logical)
@@ -63,8 +63,8 @@ class DrawingViewMousePress(DrawingViewPLPos):
 
     def __init__(
         self      : Self,
-        physical  : Optional[QPoint] = None,
-        logical   : Optional[QPointF] = None,
+        physical  : QPoint  | None = None,
+        logical   : QPointF | None = None,
         modifiers : Qt.KeyboardModifier = Qt.KeyboardModifier.NoModifier
     ) -> None:
         super().__init__(physical, logical)
@@ -102,11 +102,11 @@ class DrawingViewMouse:
 
 class DrawingViewWip:
     macro     : bool
-    elements  : Optional[list[QGraphicsItem]]
-    pos       : Optional[QPointF | QPoint]
-    pos0      : Optional[QPointF | QPoint]    # start position e.g. for ortho
-    selection : Optional[list[QGraphicsItem]]
-    slide     : Optional[bool]
+    elements  : list[QGraphicsItem] | None
+    pos       : QPointF | QPoint | None
+    pos0      : QPointF | QPoint | None     # start position e.g. for ortho
+    selection : list[QGraphicsItem] | None
+    slide     : bool | None
 
     def __init__(self : Self) -> None:
         self.clear()
@@ -119,7 +119,7 @@ class DrawingViewWip:
         self.selection = None
 
     @property
-    def element(self : Self) -> Optional[QGraphicsItem]:
+    def element(self : Self) -> QGraphicsItem | None:
         return \
             None if self.elements is None else \
             self.elements[0] if len(self.elements) == 1 else \

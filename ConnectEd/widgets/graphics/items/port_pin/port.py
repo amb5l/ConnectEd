@@ -1,4 +1,4 @@
-from typing import Self, Optional
+from typing import Self
 
 from PyQt6.QtWidgets import QWidget, QGraphicsItem, QGraphicsPathItem, \
                             QStyleOptionGraphicsItem, QStyle
@@ -53,7 +53,7 @@ class Port(ElementPosMixin, ElementFillMixin, PortPinMixin, QGraphicsPathItem):
     def _getCommentClass(cls) -> type[PortComment]:
         return PortComment
 
-    def __init__(self : Self, parent : Optional[QGraphicsItem] = None) -> None:
+    def __init__(self : Self, parent : QGraphicsItem | None = None) -> None:
         QGraphicsPathItem.__init__(self, parent)
         self.initPortPin()
         self.onSettingsChange()
@@ -93,7 +93,7 @@ class Port(ElementPosMixin, ElementFillMixin, PortPinMixin, QGraphicsPathItem):
         self    : Self,
         painter : QPainter,
         option  : QStyleOptionGraphicsItem,
-        widget  : Optional[QWidget] = None
+        widget  : QWidget | None = None
     ) -> None:
         option.state &= ~QStyle.StateFlag.State_Selected
         QGraphicsPathItem.paint(self, painter, option, widget)

@@ -1,6 +1,6 @@
 import time
 
-from typing import Optional, Self
+from typing import Self
 
 from PyQt6.QtCore    import Qt, QRectF, QTimer
 from PyQt6.QtWidgets import QSplashScreen, QApplication
@@ -22,7 +22,7 @@ class Splash(QSplashScreen):
     _GAP              = 0.025  # fraction of screen size
     _MIN_DISPLAY_TIME = 1500   # milliseconds
 
-    _start_time : Optional[float] = None
+    _start_time : float | None = None
 
     def __init__(self : Self, light : bool, parent=None):
         screen = QApplication.primaryScreen()

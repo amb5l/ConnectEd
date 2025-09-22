@@ -1,4 +1,3 @@
-from typing import Optional
 from math   import sqrt
 
 from PyQt6.QtCore    import Qt, QPointF, QRectF, QPoint
@@ -19,7 +18,7 @@ if TYPE_CHECKING:
 qkm = Qt.KeyboardModifier
 
 class DrawingViewPrivateMixin:
-    def _allItemsRect(self : "DrawingView") -> Optional[QRectF]:
+    def _allItemsRect(self : "DrawingView") -> QRectF | None:
         items_rect = None
         for item in self.scene().items():
             item_rect = item.mapToScene(item.boundingRect()).boundingRect()
@@ -27,7 +26,7 @@ class DrawingViewPrivateMixin:
                 items_rect.united(item_rect)
         return items_rect
 
-    def _selectedItemsRect(self : "DrawingView") -> Optional[QRectF]:
+    def _selectedItemsRect(self : "DrawingView") -> QRectF | None:
         items_rect = None
         for item in self.scene().selectedItems():
             item_rect = item.mapToScene(item.boundingRect()).boundingRect()
@@ -100,7 +99,7 @@ class DrawingViewPrivateMixin:
     def _round2nearest(self : "DrawingView", x : float, n : float) -> float:
         return round(x / n) * n
 
-    def _snap(self : "DrawingView", pos: Optional[QPointF]) -> QPointF:
+    def _snap(self : "DrawingView", pos: QPointF | None) -> QPointF:
         return QPointF(0, 0) if pos is None else \
             QPointF(
                 self._round2nearest(pos.x(), self.grid.pitch.x()),
@@ -137,7 +136,7 @@ class DrawingViewPrivateMixin:
 
     def _siblingPins(self : "DrawingView", items : QGraphicsItem) -> list[Pin]:
         pins = []
-        parent : Optional[PinRect] = None
+        parent : PinRect | None = None
         for item in items:
             if isinstance(item, Pin):
                 if parent is None:

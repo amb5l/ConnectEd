@@ -1,4 +1,4 @@
-from typing import Self, Optional
+from typing import Self
 
 from PyQt6.QtCore    import QPointF
 from PyQt6.QtWidgets import QApplication
@@ -73,13 +73,13 @@ class DrawingViewApiMixin:
 
     def editAppearance(
         self    : "DrawingView",
-        element : Optional[ElementMixin] = None
+        element : ElementMixin | None = None
     ) -> None:
         self.state.go(self.stateEditAppearance, [element] if element else None)
 
     def editProperties(
         self    : "DrawingView",
-        element : Optional[ElementMixin] = None
+        element : ElementMixin | None = None
     ) -> None:
         self.state.go(self.stateEditProperties, [element] if element else None)
 
@@ -124,13 +124,13 @@ class DrawingViewApiMixin:
 
     def editPort(
         self    : "DrawingView",
-        element : Optional[ElementMixin] = None
+        element : ElementMixin | None = None
     ) -> None:
         self.state.go(self.stateEditPort, [element] if element else None)
 
     def editBlockPin(
         self    : "DrawingView",
-        element : Optional[ElementMixin] = None
+        element : ElementMixin | None = None
     ) -> None:
         self.state.go(self.stateEditBlockPin, [element] if element else None)
 

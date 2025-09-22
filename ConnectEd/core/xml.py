@@ -1,4 +1,4 @@
-from typing import TypeAlias, Union, Any, Optional
+from typing import TypeAlias, Union, Any
 
 from PyQt6.QtCore    import QByteArray, QXmlStreamWriter, QXmlStreamReader, \
                             QFile, QIODevice, QMimeData, QPointF
@@ -62,7 +62,7 @@ def fromXmlAttrs(instance : "PropertiesMixin", xr : QXmlStreamReader) -> None:
 
 def fromXmlItems(
     xr : QXmlStreamReader
-) -> tuple[list[XmlItemTypes], Optional[QPointF]]:
+) -> tuple[list[XmlItemTypes], QPointF | None]:
     from .db import DesignDbItem, LibraryDbItem, DiagramItem, SymbolItem
     from ..widgets.graphics.items import _element_classes
     pos = None
@@ -148,7 +148,7 @@ def copy(instances : Any | list[Any], pos : QPointF = QPointF(0, 0)) -> None:
     clipboard = QApplication.clipboard()
     clipboard.setMimeData(mime_data)
 
-def paste() -> tuple[list[XmlItemTypes], Optional[QPointF]]:
+def paste() -> tuple[list[XmlItemTypes], QPointF | None]:
     clipboard = QApplication.clipboard()
     mime_data = clipboard.mimeData()
     if mime_data and mime_data.hasFormat(MIME_TYPE):
