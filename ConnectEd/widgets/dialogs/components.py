@@ -547,7 +547,11 @@ class FontSizeComboBox(QComboBox):
         elif initial is DEFAULT:
             self.setCurrentIndex(default_idx)
         elif isinstance(initial, float | int) and initial in self.SIZES:
-            self.setCurrentIndex(self.sizes.index(str(initial)))
+            size_str = str(int(initial) if initial == int(initial) else initial)
+            if size_str in self.sizes:
+                self.setCurrentIndex(self.sizes.index(size_str))
+            else:
+                self.setCurrentIndex(default_idx)
 
     def getChoice(self) -> Optional[NoChange | Default | float]:
         text = self.currentText()
