@@ -11,8 +11,9 @@ from ...scenes.drawing.cmd import cmdRotate
 from ..mixin.pos  import ElementPosMixin
 from ..mixin.fill import ElementFillMixin
 
-from .node     import Node
-from .port_pin import PortPinText, PortPinMixin
+from . import PortPinText, PortPinMixin
+
+from .node import Node
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:

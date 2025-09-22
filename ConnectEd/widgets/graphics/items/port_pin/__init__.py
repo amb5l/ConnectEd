@@ -122,14 +122,14 @@ class PortPinMixin(
 
     def initAnchorPoints(self : Self) -> None:
         self._anchor_points = {
-            "Origin" : AnchorPoint(
-                name   = "Origin",
+            APName.Origin : AnchorPoint(
+                name   = APName.Origin,
                 pos    = QPointF(0, 0),
                 resize = False,
                 parent = self
             ),
-            "Name" : AnchorPoint(
-                name   = "Name",
+            APName.Name : AnchorPoint(
+                name   = APName.Name,
                 pos    = QPointF(self._NAME_OFFSET, 0),
                 resize = False,
                 parent = self

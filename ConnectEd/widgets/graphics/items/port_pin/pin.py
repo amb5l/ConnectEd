@@ -12,8 +12,9 @@ from ..mixin.change import ElementChangeMixin
 from ..mixin.line   import ElementLineMixin
 from ..mixin.fill   import ElementFillMixin
 
-from .node     import Node
-from .port_pin import PortPinMixin, PortPinText
+from . import PortPinMixin, PortPinText
+
+from .node import Node
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:

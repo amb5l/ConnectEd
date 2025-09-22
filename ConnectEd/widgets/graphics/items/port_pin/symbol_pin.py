@@ -1,6 +1,7 @@
-from .node     import Node
-from .port_pin import PortPinText
-from .pin      import PinArrow, Pin
+from . import PortPinText
+
+from .node import Node
+from .pin  import PinArrow, Pin
 
 
 class SymbolPinArrow(PinArrow):

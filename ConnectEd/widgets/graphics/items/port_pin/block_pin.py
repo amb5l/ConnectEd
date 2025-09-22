@@ -1,7 +1,8 @@
 from typing import Self
 
-from .port_pin import PortPinText
-from .pin      import PinArrow, PinNode, Pin
+from . import PortPinText
+
+from .pin import PinArrow, PinNode, Pin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:

@@ -403,6 +403,7 @@ class PlacePinInteraction(PinInteraction):
     def complete(self : Self, pos : QPointF, snap : QPointF | None = None) -> bool:
         self.update(pos, snap)
         self._scene.undo_stack.push(cmdAddPin(self._parent, self._pin))
+        return True
 
     def cancel(self : Self) -> None:
         self._pin.setParentItem(None)
