@@ -30,7 +30,6 @@ class ElementOriginMixin:
     def initOrigin(self : Self) -> None:
         self._pos = super().pos()
         self._origin = Origin(self._anchor_points[self._ORIGIN])
-        print(f"initOrigin : {self._origin}")
         self.updateOrigin()
 
     def pos(self : Self) -> QPointF:

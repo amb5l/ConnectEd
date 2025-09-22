@@ -27,7 +27,6 @@ class DrawingSceneHandlesMixin:
                 for ap in element._anchor_points.values():
                     ap._grip.setVisible(True)
                 if hasattr(element, "_origin"):
-                    print(f"updateHandles : {element._origin}")
                     element._origin.setVisible(True)
 
     def hideHandles(self : "DrawingScene") -> None:

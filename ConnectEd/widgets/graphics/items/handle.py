@@ -52,7 +52,6 @@ class Handle(
     def onSceneChange(self : Self, scene : "DrawingScene | None") -> None:
         if scene is not None:
             self.setPath(scene.paths[self._PATH])
-        print(f"{self.__class__.__name__}.onSceneChange : {self._PATH}")
 
     def onSettingsChange(self : Self) -> None:
         self.prepareGeometryChange()
@@ -138,7 +137,6 @@ class Origin(Handle):
         move   : bool = False,
         resize : bool = False
     ) -> None:
-        print(f"Origin.__init__ : {parent}")
         super().__init__(parent, move, resize)
 
     def getMenuItems(self : Self) -> list[str]:
