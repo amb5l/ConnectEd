@@ -1,7 +1,7 @@
 from typing import Self, Optional
 from dataclasses import dataclass
 
-from PyQt6.QtCore import Qt, QPointF, QRectF, QSizeF
+from PyQt6.QtCore import Qt, QPointF, QRectF
 from PyQt6.QtGui  import QPainter, QPen, QBrush
 
 from ....app import settings
@@ -19,6 +19,7 @@ if TYPE_CHECKING:
 class DiagramSheet:
     name : str
     rect : QRectF
+
 
 class DiagramScene(DrawingScene):
     # class attributes

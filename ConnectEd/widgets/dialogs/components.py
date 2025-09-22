@@ -1,5 +1,4 @@
 from typing import Self, Optional
-from dataclasses import dataclass
 
 from PyQt6.QtCore    import Qt, QSize, QTimer
 from PyQt6.QtWidgets import QWidget, QDialog, QColorDialog, \

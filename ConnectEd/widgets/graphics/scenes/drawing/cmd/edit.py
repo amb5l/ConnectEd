@@ -1,4 +1,4 @@
-from typing import Self, Any
+from typing import Self
 from dataclasses import dataclass
 
 from .....dialogs.properties import PropertyChange

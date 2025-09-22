@@ -1,6 +1,5 @@
 from typing import Self
 from types  import NoneType
-from enum   import Flag
 
 from PyQt6.QtCore    import Qt, QPointF, QXmlStreamWriter, QXmlStreamReader
 from PyQt6.QtWidgets import QGraphicsPathItem

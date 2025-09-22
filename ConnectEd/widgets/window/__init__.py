@@ -11,7 +11,7 @@ from PyQt6.QtCore    import Qt
 from PyQt6.QtWidgets import QApplication, QMainWindow
 from PyQt6.QtGui     import QIcon, QCloseEvent
 
-from ...app import settings, model
+from ...app import settings
 
 from ...core.defs  import APP_NAME
 from ...core.utils import check

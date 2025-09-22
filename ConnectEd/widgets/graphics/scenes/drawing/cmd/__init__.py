@@ -8,8 +8,9 @@ from ......core.utils import camel_to_proper
 
 from ....items import EdgeLoc, ElementMixin
 
-from ....items.port_pin import Pin
 from ....items.pin_rect import PinRect
+
+from ....items.port_pin.pin import Pin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:

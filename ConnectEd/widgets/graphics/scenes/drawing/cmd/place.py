@@ -1,16 +1,18 @@
 from typing import Self
 
-from PyQt6.QtCore    import QPointF
+from PyQt6.QtCore import QPointF
 
 
 from ....items import EdgeLoc, ElementMixin
 
 from ....items.pin_rect   import PinRect
-from ....items.port_pin   import Port, BlockPin
 from ....items.block      import Block
 from ....items.rectangle  import Rectangle
 from ....items.text       import Text
 from ....items.text_block import TextBlock
+
+from ....items.port_pin.port      import Port
+from ....items.port_pin.block_pin import BlockPin
 
 from . import cmdBase, cmdSceneBase
 

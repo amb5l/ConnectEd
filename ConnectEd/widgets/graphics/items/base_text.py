@@ -1,4 +1,4 @@
-from typing import Self, Optional
+from typing import Self
 
 from PyQt6.QtCore    import QPointF, QRectF
 from PyQt6.QtWidgets import QWidget, QStyleOptionGraphicsItem, QStyle, \

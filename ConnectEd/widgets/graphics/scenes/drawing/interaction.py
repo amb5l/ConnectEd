@@ -9,14 +9,15 @@ from .....core.xml import paste
 from ...items import EdgeLoc, ElementMixin, clone
 
 from ...items.base_rect  import BaseRectangle
-from ...items.port_pin   import Pin
 from ...items.pin_rect   import PinRect
-from ...items.port_pin   import Port
 from ...items.block      import Block
-from ...items.port_pin   import BlockPin
 from ...items.rectangle  import Rectangle
 from ...items.text       import Text
 from ...items.text_block import TextBlock
+
+from ...items.port_pin.port      import Port
+from ...items.port_pin.pin       import Pin
+from ...items.port_pin.block_pin import BlockPin
 
 from .cmd   import cmdAdd, cmdMove, cmdAddPin, cmdMovePins
 

@@ -1,4 +1,4 @@
-from typing import Self, Optional
+from typing import Self
 
 from PyQt6.QtCore    import QPointF, QRectF
 from PyQt6.QtWidgets import QWidget, QStyleOptionGraphicsItem, QStyle, \
@@ -75,7 +75,7 @@ class BaseTextBlock(
         origin_scene_pos = None
         if hasattr(self, '_origin') and self._origin is not None:
             origin_scene_pos = self.mapToScene(self._origin.pos())
-        
+
         self.prepareGeometryChange()
         self._brect = self._rect = QGraphicsTextItem.boundingRect(self)
         self._brectf = self._brect.adjusted(-0.5, -0.5, 0.5, 0.5)
@@ -84,14 +84,14 @@ class BaseTextBlock(
         self._hshapef.clear()
         self._hshapef.addRect(self._brectf)
         self.updateAnchorPoints()
-        
+
         # If we had an origin, maintain its scene position
         if origin_scene_pos is not None:
             new_origin_local_pos = self._origin.pos()
             new_origin_scene_pos = self.mapToScene(new_origin_local_pos)
             delta = origin_scene_pos - new_origin_scene_pos
             self._pos = self.pos() + delta
-        
+
         self.updateOrigin()
 
     def getMenuItems(self : Self) -> list[str]:

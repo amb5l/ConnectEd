@@ -21,6 +21,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from .....core.db import DrawingItem
 
+
 class DrawingScene(
     PropertiesMixin,
     DrawingSceneApiFileMixin,

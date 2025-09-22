@@ -1,4 +1,4 @@
-from typing      import Self
+from typing import Self
 
 from PyQt6.QtCore    import QRectF, QXmlStreamWriter
 from PyQt6.QtWidgets import QGraphicsItem, QStyleOptionGraphicsItem, QWidget

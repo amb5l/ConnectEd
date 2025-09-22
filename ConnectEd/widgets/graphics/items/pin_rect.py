@@ -1,6 +1,6 @@
-from typing import Self, Optional
+from typing import Self
 
-from PyQt6.QtCore    import QPointF, QSizeF
+from PyQt6.QtCore    import QPointF
 
 from . import EdgeLoc, Edge
 
