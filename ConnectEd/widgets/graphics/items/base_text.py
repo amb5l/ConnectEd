@@ -76,29 +76,22 @@ class BaseText(
         self.onGeometryChange()
 
     def onGeometryChange(self : Self) -> None:
-        # Store the current scene position of the origin anchor point
-        origin_scene_pos = None
-        if hasattr(self, '_origin') and self._origin is not None:
-            origin_scene_pos = self.mapToScene(self._origin.pos())
-
+        if not hasattr(self, "_origin"):
+            return
+        old_origin_scene_pos = self.getOriginScenePos()
         self._brect = self._rect = super().boundingRect()
         if not self.text():
             self._trect = QRectF()
-            return
-        font = self.font()
-        metrics = QFontMetrics(font)
-        baseline_trect = metrics.tightBoundingRect(self.text())
-        baseline_y = metrics.ascent()
-        self._trect = baseline_trect.translated(0, baseline_y)
+        else:
+            font = self.font()
+            metrics = QFontMetrics(font)
+            baseline_trect = metrics.tightBoundingRect(self.text())
+            baseline_y = metrics.ascent()
+            self._trect = baseline_trect.translated(0, baseline_y)
         self.updateAnchorPoints()
-
-        # If we had an origin, maintain its scene position
-        if origin_scene_pos is not None:
-            new_origin_local_pos = self._origin.pos()
-            new_origin_scene_pos = self.mapToScene(new_origin_local_pos)
-            delta = origin_scene_pos - new_origin_scene_pos
-            self._pos = self.pos() + delta
-
+        new_origin_scene_pos = self.getOriginScenePos()
+        delta = old_origin_scene_pos - new_origin_scene_pos
+        self._pos = self.pos() + delta
         self.updateOrigin()
 
     def getMenuItems(self : Self) -> list[str]:

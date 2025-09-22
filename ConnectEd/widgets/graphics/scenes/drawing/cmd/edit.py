@@ -243,11 +243,11 @@ class cmdEditOrigin(cmdSceneElement):
         origin  : str
     ):
         super().__init__(scene, element)
-        self._before = element.getOrigin()
+        self._before = element.getOriginAPName()
         self._after = origin
 
     def redo(self : Self) -> None:
-        self._element.setOrigin(self._after)
+        self._element.setOriginAPName(self._after)
 
     def undo(self : Self) -> None:
-        self._element.setOrigin(self._before)
+        self._element.setOriginAPName(self._before)

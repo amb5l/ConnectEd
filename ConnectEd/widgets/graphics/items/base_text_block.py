@@ -60,38 +60,23 @@ class BaseTextBlock(
 
     # instance attributes
     _rect    : QRectF        # border rectangle (for keypoints)
-    _brectf  : QRectF        # bounding rect when has focus
-    _hshapef : QPainterPath  # hit detect shape when has focus
 
     def __init__(self : Self, bare : bool = False) -> None:
         QGraphicsTextItem.__init__(self)
         self.initElement(bare=bare)
-        self._brectf = QRectF()
-        self._hshapef = QPainterPath()
         self.onGeometryChange()
 
     def onGeometryChange(self : Self) -> None:
-        # Store the current scene position of the origin anchor point
-        origin_scene_pos = None
-        if hasattr(self, '_origin') and self._origin is not None:
-            origin_scene_pos = self.mapToScene(self._origin.pos())
-
-        self.prepareGeometryChange()
+        if not hasattr(self, "_origin"):
+            return
+        old_origin_scene_pos = self.getOriginScenePos()
         self._brect = self._rect = QGraphicsTextItem.boundingRect(self)
-        self._brectf = self._brect.adjusted(-0.5, -0.5, 0.5, 0.5)
         self._hshape.clear()
         self._hshape.addRect(self._brect)
-        self._hshapef.clear()
-        self._hshapef.addRect(self._brectf)
         self.updateAnchorPoints()
-
-        # If we had an origin, maintain its scene position
-        if origin_scene_pos is not None:
-            new_origin_local_pos = self._origin.pos()
-            new_origin_scene_pos = self.mapToScene(new_origin_local_pos)
-            delta = origin_scene_pos - new_origin_scene_pos
-            self._pos = self.pos() + delta
-
+        new_origin_scene_pos = self.getOriginScenePos()
+        delta = old_origin_scene_pos - new_origin_scene_pos
+        self._pos = self.pos() + delta
         self.updateOrigin()
 
     def getMenuItems(self : Self) -> list[str]:
@@ -109,12 +94,6 @@ class BaseTextBlock(
         """Convenience method to align with BaseText."""
         self.setPlainText(text)
 
-    def boundingRect(self : Self) -> QRectF:
-        return self._brectf if self.hasFocus() else self._brect
-
-    def shape(self : Self) -> QPainterPath:
-        return self._hshapef if self.hasFocus() else self._hshape
-
     def paint(
         self    : Self,
         painter : QPainter,
@@ -125,7 +104,7 @@ class BaseTextBlock(
         c = None
         option.state &= ~QStyle.StateFlag.State_Selected
         if option.state & QStyle.StateFlag.State_HasFocus:
-            rect = self.boundingRect() #.adjusted(0.5, 0.5, -0.5, -0.5)
+            rect = self.boundingRect()
             painter.fillRect(rect, QColor(255, 255, 255, 192))
             c = self.defaultTextColor()
             self.setDefaultTextColor(QColor(255, 0, 255))

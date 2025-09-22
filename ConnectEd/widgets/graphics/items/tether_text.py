@@ -76,9 +76,9 @@ class TetherText(BaseText):
     def onSelectionChange(self : Self, selected : bool) -> None:
         self._tether.setVisible(selected)
 
-    def setOrigin(self : Self, name : APName) -> None:
+    def setOriginAPName(self : Self, name : APName) -> None:
         """Override to update tether line."""
-        super().setOrigin(name)
+        super().setOriginAPName(name)
         self._tether.setParentItem(self._origin)
         self._tether.onPositionChange(self.pos())
 

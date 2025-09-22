@@ -13,16 +13,16 @@ class ElementOriginMixin:
     _ORIGIN : APName  # subclass must specify
     _PROPERTY_SPECS_ORIGIN = {
         "Origin" : PropertySpec(
-            type_name   = "AnchorPoint",
-            getter      = lambda self: self.getOrigin(),
-            setter      = lambda self, value: self.setOrigin(value),
+            type_name   = "str",
+            getter      = lambda self: self.getOriginName(),
+            setter      = lambda self, value: self.setOriginName(value),
             description = "Origin anchor point"
         )
     }
 
     # instance attributes
     _pos    : QPointF  # position of origin w.r.t. scene/parent
-    _origin : Origin   # origin anchor point
+    _origin : Origin   # origin object
 
     # external instance attributes
     _anchor_points : dict[APName, AnchorPoint]
@@ -40,12 +40,25 @@ class ElementOriginMixin:
         self._pos = pos
         super().setPos(pos - self._origin.pos())
 
-    def getOrigin(self : Self) -> APName:
-        ap : AnchorPoint = self._origin.parentItem()
-        return ap.name
+    def getOriginScenePos(self : Self) -> QPointF:
+        if hasattr(self, "_origin"):
+            return self._origin.scenePos()
+        else:
+            return self.scenePos()
 
-    def setOrigin(self, ap : APName) -> None:
-        self._origin.setParentItem(self._anchor_points[ap])
+    def getOriginAP(self : Self) -> AnchorPoint:
+        return self._origin.parentItem()
+
+    def setOriginAP(self : Self, ap : AnchorPoint) -> None:
+        self._origin.setParentItem(ap)
+        self.setPos(self.pos())
+
+    def getOriginAPName(self : Self) -> APName:
+        ap : AnchorPoint = self._origin.parentItem()
+        return self.getOriginAP().name
+
+    def setOriginAPName(self, ap : APName) -> None:
+        self.setOriginAP(self._anchor_points[ap])
         self.setPos(self.pos())
 
     def updateOrigin(self : Self) -> None:

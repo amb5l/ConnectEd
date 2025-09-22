@@ -46,7 +46,7 @@ class PropertiesMixin:
             return
         for name, pts in property_texts.items():
             p : "PropertyText" = pts._class()
-            p.setOrigin(pts.anchor)
+            p.setOriginAPName(pts.anchor)
             p.setPos(pts.pos)
             p.setName(name)
             p.setDisplay(pts.display)

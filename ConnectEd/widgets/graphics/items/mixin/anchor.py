@@ -43,6 +43,8 @@ class ElementRectAnchorPointsMixin(ElementAnchorPointsMixin):
             self._anchor_points[name] = anchor_point
 
     def updateAnchorPoints(self : Self) -> None:
+        if not hasattr(self, "_anchor_points"):
+            return
         for name, (x, y) in self._ANCHOR_POINTS.items():
             self._anchor_points[name].setPos(QPointF(
                 x * self._rect.width(),
