@@ -97,7 +97,7 @@ class BaseText(
     def getMenuItems(self : Self) -> list[str]:
         return ["Edit...", "-", "Properties..."]
 
-    def setText(self, text: str) -> None:
+    def setText(self : Self, text: str) -> None:
         super().setText(text)
         self.onGeometryChange()
 

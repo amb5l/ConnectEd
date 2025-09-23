@@ -53,7 +53,7 @@ class CustomColorDialog(QColorDialog):
         self._find_html_box()
         self.currentColorChanged.connect(self._on_color_changed)
 
-    def _find_html_box(self) -> None:
+    def _find_html_box(self : Self) -> None:
         for line_edit in self.findChildren(QLineEdit):
             if line_edit.text().startswith("#"):
                 self._html_box = line_edit
@@ -64,7 +64,7 @@ class CustomColorDialog(QColorDialog):
         if self._html_box is None:
             QTimer.singleShot(100, self._find_html_box)
 
-    def _make_uppercase(self) -> None:
+    def _make_uppercase(self : Self) -> None:
         if self._html_box:
             current_text = self._html_box.text()
             if current_text.startswith("#") and current_text != current_text.upper():
@@ -72,14 +72,14 @@ class CustomColorDialog(QColorDialog):
                 self._html_box.setText(current_text.upper())
                 self._html_box.textChanged.connect(self._on_html_text_changed)
 
-    def _on_color_changed(self, color: QColor) -> None:
+    def _on_color_changed(self : Self, color: QColor) -> None:
         QTimer.singleShot(10, self._make_uppercase)
 
-    def _on_html_text_changed(self, text: str) -> None:
+    def _on_html_text_changed(self : Self, text: str) -> None:
         if text.startswith("#") and text != text.upper():
             self._make_uppercase()
 
-    def getChoice(self : Self) -> QColor:
+    def getChoice(self : Self) -> QColor | None:
         return self.currentColor()
 
 class ColorComboBox(QComboBox):
@@ -184,7 +184,7 @@ class ColorComboBox(QComboBox):
             painter.fillRect(0, 0, size.width(), size.height(), color)
         return QIcon(pixmap)
 
-    def getChoice(self) -> NoChange | Default | QColor | None:
+    def getChoice(self : Self) -> NoChange | Default | QColor | None:
         return self.choice
 
 class CustomLineWidthDialog(QDialog):
@@ -205,7 +205,7 @@ class CustomLineWidthDialog(QDialog):
         okCancelLayout(self)
         self.setLayout(self.dialog_layout)
 
-    def getChoice(self) -> float | None:
+    def getChoice(self : Self) -> float | None:
         try:
             return float(self.width_input.text())
         except:
@@ -227,7 +227,7 @@ class LineWidthComboBox(QComboBox):
         default   : Default | float | int,
         no_change : NoChange | Default | float | int | None = None,
         parent    : QWidget | None = None
-    ):
+    ) -> None:
         super().__init__(parent)
         self.setIconSize(CUSTOM_ICON_SIZE)
         if isinstance(default, float | int):
@@ -295,7 +295,7 @@ class LineWidthComboBox(QComboBox):
             )
         return QIcon(pixmap)
 
-    def getChoice(self) -> float | None | NoChange:
+    def getChoice(self : Self) -> float | None | NoChange:
         text = self.currentText()
         if text.startswith("<no change"):
             r = NO_CHANGE
@@ -377,7 +377,7 @@ class LineStyleComboBox(QComboBox):
             )
         return QIcon(pixmap)
 
-    def getChoice(self) -> NoChange | Default | Qt.PenStyle | None:
+    def getChoice(self : Self) -> NoChange | Default | Qt.PenStyle | None:
         text = self.currentText()
         if text.startswith("<no change"):
             return NO_CHANGE
@@ -461,7 +461,7 @@ class FillStyleComboBox(QComboBox):
             painter.drawRect(0, 0, size.width(), size.height())
         return QIcon(pixmap)
 
-    def getChoice(self) -> NoChange | Default | Qt.PenStyle | None:
+    def getChoice(self : Self) -> NoChange | Default | Qt.PenStyle | None:
         text = self.currentText()
         if text.startswith("<no change"):
             return NO_CHANGE
@@ -503,7 +503,7 @@ class FontFamilyComboBox(QComboBox):
         elif isinstance(initial, str):
             self.setCurrentIndex(self.families.index(initial))
 
-    def getChoice(self) -> NoChange | Default | str:
+    def getChoice(self : Self) -> NoChange | Default | str:
         text = self.currentText()
         if text.startswith("<no change"):
             return NO_CHANGE
@@ -553,7 +553,7 @@ class FontSizeComboBox(QComboBox):
             else:
                 self.setCurrentIndex(default_idx)
 
-    def getChoice(self) -> NoChange | Default | float | None:
+    def getChoice(self : Self) -> NoChange | Default | float | None:
         text = self.currentText()
         if text.startswith("<no change"):
             return NO_CHANGE
@@ -600,7 +600,7 @@ class OnOffComboBox(QComboBox):
             no_change_idx
         )
 
-    def getChoice(self) -> NoChange | Default | bool | None:
+    def getChoice(self : Self) -> NoChange | Default | bool | None:
         if self.currentIndex() < 0:
             return None
         if self.currentText().startswith("<no change"):

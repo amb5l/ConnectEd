@@ -2,6 +2,7 @@ from typing import Self
 
 from PyQt6.QtWidgets import QWidget, QDialog, QVBoxLayout, QHBoxLayout, \
                             QLabel, QLineEdit, QPushButton
+from PyQt6.QtGui     import QShowEvent
 
 from ..graphics.items import QuillPref, QuillPrefChange
 
@@ -55,7 +56,7 @@ class TextDialog(QDialog):
         okCancelLayout(self)
         self.setLayout(self._dialog_layout)
 
-    def showEvent(self, event):
+    def showEvent(self : Self, event : QShowEvent):
         """Override showEvent to select all text when dialog appears."""
         super().showEvent(event)
         if self._text_edit.text() == "<text>":

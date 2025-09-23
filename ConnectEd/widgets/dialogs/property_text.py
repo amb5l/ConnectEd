@@ -76,10 +76,10 @@ class PropertyTextDialog(QDialog):
         okCancelLayout(self)
         self.setLayout(self._dialog_layout)
 
-    def onPropertyNameChanged(self, name: str) -> None:
+    def onPropertyNameChanged(self : Self, name: str) -> None:
         self._value_edit.setText(self._parent.getProperty(name))
 
-    def showEvent(self, event):
+    def showEvent(self : Self, event : QShowEvent):
         """Override showEvent to select value text when dialog appears."""
         super().showEvent(event)
         self._value_edit.selectAll()

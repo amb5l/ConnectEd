@@ -21,7 +21,7 @@ class PropertySpec:
     description : str                          = ""
     custom      : bool                         = False
 
-    def __post_init__(self):
+    def __post_init__(self : Self):
         # Set defaults for optional functions
         if self.exists is None:
             self.exists = lambda: True
@@ -78,13 +78,13 @@ class PropertiesMixin:
             d[name] = val2str(ps.getter(self))
         return d
 
-    def getPropertyValue(self, name : str) -> Any:
+    def getPropertyValue(self : Self, name : str) -> Any:
         if name not in self._properties:
             logger().warning(f"Property {name} does not exist")
         ps = self._properties[name]
         return ps.getter(self)
 
-    def setPropertyValue(self, name : str, value : Any) -> None:
+    def setPropertyValue(self : Self, name : str, value : Any) -> None:
         if name not in self._properties:
             logger().warning(f"Property {name} does not exist")
             return
@@ -95,26 +95,26 @@ class PropertiesMixin:
             logger().warning(f"Property {name} is read only")
         self.onPropertyChange()
 
-    def getPropertyDescription(self, name : str) -> str:
+    def getPropertyDescription(self : Self, name : str) -> str:
         if name not in self._properties:
             logger().warning(f"Property {name} does not exist")
         ps = self._properties[name]
         return ps.description
 
-    def setPropertyDescription(self, name : str, description : str) -> None:
+    def setPropertyDescription(self : Self, name : str, description : str) -> None:
         if name not in self._properties:
             logger().warning(f"Property {name} does not exist")
             return
         ps = self._properties[name]
         ps.description = description
 
-    def addProperty(self, name : str) -> None:
+    def addProperty(self : Self, name : str) -> None:
         if name in self._properties:
             logger().warning(f"Property {name} already exists")
             return
         self._properties[name] = PropertySpec(custom=True)
 
-    def deleteProperty(self, name : str) -> None:
+    def deleteProperty(self : Self, name : str) -> None:
         if name in self._properties:
             v = self._properties[name]
             if v.custom:
@@ -122,7 +122,7 @@ class PropertiesMixin:
         else:
             logger().warning(f"Property {name} does not exist")
 
-    def onPropertyChange(self) -> None:
+    def onPropertyChange(self : Self) -> None:
         """Notify all PropertyText children to refresh their display."""
         from PyQt6.QtWidgets import QGraphicsScene
         if isinstance(self, QGraphicsScene):

@@ -35,20 +35,20 @@ class Interaction(ABC):
     # instance attributes
     _scene        : "DrawingScene"
 
-    def __init__(self, scene: "DrawingScene"):
+    def __init__(self : Self, scene: "DrawingScene"):
         self._scene = scene
 
     @abstractmethod
-    def valid(self) -> bool: ...
+    def valid(self : Self) -> bool: ...
 
     @abstractmethod
-    def update(self, pos: QPointF) -> None: ...
+    def update(self : Self, pos: QPointF) -> None: ...
 
     @abstractmethod
-    def complete(self, pos: QPointF) -> bool: ...
+    def complete(self : Self, pos: QPointF) -> bool: ...
 
     @abstractmethod
-    def cancel(self) -> None: ...
+    def cancel(self : Self) -> None: ...
 
 
 class SceneElementInteraction(Interaction):
@@ -56,12 +56,12 @@ class SceneElementInteraction(Interaction):
     # instance attributes
     _element : ElementType
 
-    def __init__(self, scene: "DrawingScene", element: ElementType):
+    def __init__(self : Self, scene: "DrawingScene", element: ElementType):
         Interaction.__init__(self, scene)
         self._element = element
 
     @property
-    def valid(self) -> bool:
+    def valid(self : Self) -> bool:
         return self._element is not None
 
 
@@ -71,12 +71,12 @@ class SceneElementsInteraction(Interaction):
     # instance attributes
     _elements : list[ElementType]
 
-    def __init__(self, scene: "DrawingScene", elements: list[ElementType]):
+    def __init__(self : Self, scene: "DrawingScene", elements: list[ElementType]):
         Interaction.__init__(self, scene)
         self._elements = elements
 
     @property
-    def valid(self) -> bool:
+    def valid(self : Self) -> bool:
         return self._elements is not None
 
 
@@ -123,7 +123,7 @@ class MoveMixin:
     _cpos : QPointF                     # current position
     _spos : dict[ElementType, QPointF]  # stored positions
 
-    def update(self, pos: QPointF):
+    def update(self : Self, pos: QPointF):
         self._moveBy(pos - self._cpos)
         self._cpos = pos
 
@@ -206,7 +206,7 @@ class EditPasteInteraction(
         else:
             self._elements = None
 
-    def complete(self, pos: QPointF) -> bool:
+    def complete(self : Self, pos: QPointF) -> bool:
         self._restorePos()  # restore initial positions
         self.update(pos)    # apply final offset
         # add pasted elements to scene
@@ -215,7 +215,7 @@ class EditPasteInteraction(
         ))
         return True
 
-    def cancel(self) -> None:
+    def cancel(self : Self) -> None:
         self._removeFromScene()   # remove preview elements
         self._restoreSelection()  # restore original selection
 
@@ -261,7 +261,7 @@ class EditMoveInteraction(
         self._slide    = slide
         self._storePos()  # record initial positions
 
-    def complete(self, pos: QPointF) -> bool:
+    def complete(self : Self, pos: QPointF) -> bool:
         self._restorePos()  # restore initial positions
         # apply final offset
         self._scene.undo_stack.push(cmdMove(
@@ -269,7 +269,7 @@ class EditMoveInteraction(
         ))
         return True
 
-    def cancel(self) -> None:
+    def cancel(self : Self) -> None:
         self._restorePos()  # restore initial positions
 
 
@@ -297,7 +297,7 @@ class EditMovePinsInteraction(Interaction):
             hasattr(self, "_pins") and \
             len(self._pins) > 0
 
-    def update(self, pos: QPointF, snap: QPointF | None = None) -> None:
+    def update(self : Self, pos: QPointF, snap: QPointF | None = None) -> None:
         pos_snap = self._scene._snap(pos, snap) if snap else pos
         primary = self._pins[0]
         loc_old = primary.loc()
@@ -310,7 +310,7 @@ class EditMovePinsInteraction(Interaction):
         for pin in self._pins[1:]:
             pin.setLoc(self._parent.locOffset(pin.loc(), offset, corner))
 
-    def complete(self, pos: QPointF, snap: QPointF | None = None) -> bool:
+    def complete(self : Self, pos: QPointF, snap: QPointF | None = None) -> bool:
         self._restoreLoc()
         self.update(pos, snap)
         if all(p.loc() == self._sloc[p] for p in self._pins):
@@ -323,7 +323,7 @@ class EditMovePinsInteraction(Interaction):
         ))
         return True
 
-    def cancel(self) -> None:
+    def cancel(self : Self) -> None:
         self._restoreLoc()
 
     def _storeLoc(self : Self) -> None:
@@ -359,17 +359,17 @@ class PlaceBaseInteraction(
         self._scene.addItem(self._element)
         self._element.setSelected(True)
 
-    def update(self, pos: QPointF):
+    def update(self : Self, pos: QPointF):
         self._element.setPos(pos)
 
-    def complete(self, pos: QPointF) -> bool:
+    def complete(self : Self, pos: QPointF) -> bool:
         self.update(pos)
         self._scene.undo_stack.push(cmdAdd(
             self._scene, [self._element], self._selection
         ))
         return True
 
-    def cancel(self) -> None:
+    def cancel(self : Self) -> None:
         self._scene.removeItem(self._element)
         self._restoreSelection()
 
@@ -380,7 +380,7 @@ class PlaceBaseRectInteraction(PlaceBaseInteraction):
     # instance attributes
     _element : BaseRectangle  # type hint specific to this interaction
 
-    def update(self, pos: QPointF):
+    def update(self : Self, pos: QPointF):
         self._element.setP2(pos)
 
 

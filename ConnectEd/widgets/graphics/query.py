@@ -1,8 +1,9 @@
-from typing import Self
+from typing import Self, Any
 
-from PyQt6.QtCore    import Qt, QTimer
-from PyQt6.QtWidgets import QGraphicsItem, QWidget, QTableView, QVBoxLayout, QHeaderView
-from PyQt6.QtGui     import QStandardItemModel, QStandardItem
+from PyQt6.QtCore    import Qt, QTimer, QEvent
+from PyQt6.QtWidgets import QGraphicsItem, QWidget, QTableView, \
+                            QVBoxLayout, QHeaderView
+from PyQt6.QtGui     import QStandardItemModel, QStandardItem, QCloseEvent
 
 from .items.handle import Handle
 
@@ -66,21 +67,21 @@ class QueryWindow(QWidget):
                     QStandardItem(prop_value)
                 ])
 
-    def leaveEvent(self, event):
+    def leaveEvent(self : Self, event : QEvent):
         # Close when mouse leaves the window (with reasonable delay)
         self._timer.start(1000)  # 1 second delay
         super().leaveEvent(event)
 
-    def enterEvent(self, event):
+    def enterEvent(self : Self, event : QEvent):
         # Cancel close timer when mouse re-enters
         self._timer.stop()
         super().enterEvent(event)
 
-    def show(self):
+    def show(self : Self):
         super().show()
 
-    def move(self, *args):
+    def move(self : Self, *args : Any):
         super().move(*args)
 
-    def closeEvent(self, event):
+    def closeEvent(self : Self, event : QCloseEvent):
         super().closeEvent(event)

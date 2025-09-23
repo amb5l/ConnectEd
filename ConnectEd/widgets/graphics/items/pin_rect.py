@@ -49,7 +49,7 @@ class PinRect(BaseRectangle):
             case _:
                 raise ValueError(f"Invalid edge: {loc.edge}")
 
-    def loc2peri(self, loc: EdgeLoc) -> float:
+    def loc2peri(self : Self, loc: EdgeLoc) -> float:
         w = self._rect.width()
         h = self._rect.height()
         d = loc.distance
@@ -64,7 +64,7 @@ class PinRect(BaseRectangle):
         else:
             raise ValueError(f"Invalid edge: {loc.edge}")
 
-    def peri2loc(self, peri: float) -> EdgeLoc:
+    def peri2loc(self : Self, peri: float) -> EdgeLoc:
         w = self._rect.width()
         h = self._rect.height()
         p = 2 * (w + h)

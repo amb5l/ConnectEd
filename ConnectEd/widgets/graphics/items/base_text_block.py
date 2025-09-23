@@ -82,7 +82,7 @@ class BaseTextBlock(
     def getMenuItems(self : Self) -> list[str]:
         return ["Edit..."]
 
-    def setPlainText(self, text: str) -> None:
+    def setPlainText(self : Self, text: str) -> None:
         QGraphicsTextItem.setPlainText(self, text)
         self.onGeometryChange()
 
@@ -90,7 +90,7 @@ class BaseTextBlock(
         """Convenience method to align with BaseText."""
         return self.toPlainText()
 
-    def setText(self, text: str) -> None:
+    def setText(self : Self, text: str) -> None:
         """Convenience method to align with BaseText."""
         self.setPlainText(text)
 

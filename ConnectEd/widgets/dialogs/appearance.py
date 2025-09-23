@@ -2,6 +2,7 @@ from typing import Self
 
 from PyQt6.QtWidgets import QWidget, QDialog, QPushButton, QGroupBox, \
                             QVBoxLayout, QHBoxLayout
+from PyQt6.QtGui     import QShowEvent
 
 from ...app import logger
 
@@ -216,7 +217,7 @@ class AppearanceDialog(QDialog):
         for combo in combo_boxes:
             combo.setMinimumWidth(max_width)
 
-    def showEvent(self, event):
+    def showEvent(self : Self, event : QShowEvent):
         """Override showEvent to adjust combo box widths after layout is complete."""
         super().showEvent(event)
         # Use QTimer.singleShot to defer the width adjustment until after the event loop

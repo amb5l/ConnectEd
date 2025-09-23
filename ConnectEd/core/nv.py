@@ -499,7 +499,7 @@ class Settings(QObject):
         self._dump("settings", self._settings, lines)
         return "\n".join(lines)
 
-    def _deepCopy(self, d : Dict) -> Dict:
+    def _deepCopy(self : Self, d : Dict) -> Dict:
         """Create a deep copy of a settings dictionary."""
         result = {}
         for k, v in d.items():

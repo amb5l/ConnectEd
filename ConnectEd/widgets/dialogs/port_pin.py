@@ -128,7 +128,7 @@ class PortPinDialog(QDialog):
         # catch scalar/vector change
         self._scalar_check.stateChanged.connect(self.onScalarChanged)
 
-    def onScalarChanged(self, state: int) -> None:
+    def onScalarChanged(self : Self, state: int) -> None:
         self._range_group.setEnabled(state == 0)
 
     def getName(self : Self) -> str:

@@ -59,7 +59,7 @@ class VectorRange:
     dir   : RangeDirection # down or up
     right : str            # right value (may refer to parameter/generic)
 
-    def __init__(self, left : str, dir : RangeDirection, right : str) -> None:
+    def __init__(self : Self, left : str, dir : RangeDirection, right : str) -> None:
         self.left  = left
         self.dir   = dir
         self.right = right

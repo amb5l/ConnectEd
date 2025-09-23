@@ -85,7 +85,7 @@ class Splash(QSplashScreen):
         painter.end()
         return pixmap
 
-    def show(self):
+    def show(self : Self):
         super().show()
         self._start_time = time.time()
 

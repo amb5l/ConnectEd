@@ -2,7 +2,8 @@ from typing import Self
 
 from PyQt6.QtCore    import QRectF, QXmlStreamWriter
 from PyQt6.QtWidgets import QGraphicsItem, QStyleOptionGraphicsItem, QWidget
-from PyQt6.QtGui     import QPainter, QPainterPath
+from PyQt6.QtGui     import QPainter, QPainterPath, \
+                            QMouseEvent, QContextMenuEvent
 
 from ....app import logger
 
@@ -26,23 +27,23 @@ class NullPoint(QGraphicsItem):
         self._hshape = QPainterPath()
         self._hshape.addRect(self._brect)
 
-    def mousePressEvent(self, event):
+    def mousePressEvent(self : Self, event : QMouseEvent):
         event.ignore()
         return
 
-    def mouseMoveEvent(self, event):
+    def mouseMoveEvent(self : Self, event : QMouseEvent):
         event.ignore()
         return
 
-    def mouseReleaseEvent(self, event):
+    def mouseReleaseEvent(self : Self, event : QMouseEvent):
         event.ignore()
         return
 
-    def mouseDoubleClickEvent(self, event):
+    def mouseDoubleClickEvent(self : Self, event : QMouseEvent):
         event.ignore()
         return
 
-    def contextMenuEvent(self, event):
+    def contextMenuEvent(self : Self, event : QContextMenuEvent):
         event.ignore()
         return
 

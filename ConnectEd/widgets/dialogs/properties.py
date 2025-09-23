@@ -98,7 +98,7 @@ class DescriptionItem(PropertiesItem):
         self.setEditable(custom)
 
 class ValueDelegate(QStyledItemDelegate):
-    def createEditor(self, parent, option, index):
+    def createEditor(self : Self, parent, option, index):
         item : ValueItem = index.model().item(index.row(), index.column())
         item_type = item.getTypeName()
         item_value = str2val(item.text(), item_type)
@@ -138,7 +138,7 @@ class ValueDelegate(QStyledItemDelegate):
                 return super().createEditor(parent, option, index)
         return editor
 
-    def setEditorData(self, editor, index):
+    def setEditorData(self : Self, editor, index):
         item : ValueItem = index.model().item(index.row(), index.column())
         text = item.text()
         if isinstance(editor, StringEdit):
@@ -154,7 +154,7 @@ class ValueDelegate(QStyledItemDelegate):
         else:
             super().setEditorData(editor, index)
 
-    def setModelData(self, editor, model, index):
+    def setModelData(self : Self, editor, model, index):
         if isinstance(editor, StringEdit):
             text = editor.text()
         elif isinstance(editor, FloatEdit | IntEdit):
@@ -267,7 +267,7 @@ class PropertiesDialog(QDialog):
                 editor.deleteLater()  # Clean up
         return max_width + 20  # padding
 
-    def onDelegateDestroyed(self, _: str) -> None:
+    def onDelegateDestroyed(self : Self, _: str) -> None:
         """Workaround to fix delegate lifecycle issue (silent crash)."""
         pass
 

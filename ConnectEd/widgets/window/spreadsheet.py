@@ -6,10 +6,12 @@ from PyQt6.QtWidgets import QMdiSubWindow, QTabWidget, QWidget, QSizePolicy, \
                             QHBoxLayout, QVBoxLayout, \
                             QMenu, QPushButton, QLabel, \
                             QTableView, QAbstractItemView, QAbstractButton, \
-                            QHeaderView, QStyledItemDelegate, QComboBox
+                            QHeaderView, QStyledItemDelegate, QComboBox, \
+                            QStyleOptionViewItem
 from PyQt6.QtGui     import QBrush, QFont, QAction, QUndoStack, \
                             QWheelEvent, QContextMenuEvent, QCloseEvent, \
-                            QStandardItemModel, QStandardItem, QFontMetrics
+                            QStandardItemModel, QStandardItem, QFontMetrics, \
+                            QShowEvent
 
 from ...app import logger, settings, window
 
@@ -48,7 +50,12 @@ class SpreadsheetComboDelegate(QStyledItemDelegate):
     def __init__(self):
         super().__init__()
 
-    def createEditor(self, parent, option, index):
+    def createEditor(
+        self   : Self,
+        parent : QWidget,
+        option : QStyleOptionViewItem,
+        index  : QModelIndex
+    ):
         if not self.ENTRIES:
             logger().error(f"ENTRIES is None or empty for delegate {self.__class__.__name__}")
             return None
@@ -62,7 +69,7 @@ class SpreadsheetComboDelegate(QStyledItemDelegate):
             logger().error(f"Error creating editor for delegate {self.__class__.__name__}: {e}")
             return None
 
-    def setEditorData(self, editor, index):
+    def setEditorData(self : Self, editor : QComboBox, index : QModelIndex):
         if editor is None:
             logger().error("Editor is None in setEditorData")
             return
@@ -74,18 +81,32 @@ class SpreadsheetComboDelegate(QStyledItemDelegate):
             logger().warning(f"Value '{value_str}' not in ENTRIES, defaulting to {self.ENTRIES[0]}")
             editor.setCurrentText(self.ENTRIES[0])
 
-    def setModelData(self, editor, model, index):
+    def setModelData(
+        self   : Self,
+        editor : QComboBox,
+        model  : QStandardItemModel,
+        index : QModelIndex
+    ):
         if editor is None:
             logger().error("Editor is None in setModelData")
             return
         text = editor.currentText()
         model.setData(index, text, Qt.ItemDataRole.EditRole)
 
-    def updateEditorGeometry(self, editor, option, index):
+    def updateEditorGeometry(
+        self   : Self,
+        editor : QComboBox,
+        option : QStyleOptionViewItem,
+        index  : QModelIndex
+    ):
         if editor is not None:
             editor.setGeometry(option.rect)
 
-    def sizeHint(self, option, index):
+    def sizeHint(
+        self   : Self,
+        option : QStyleOptionViewItem,
+        index  : QModelIndex
+    ):
         from PyQt6.QtCore import QSize
         if hasattr(self, 'ENTRIES') and self.ENTRIES:
             from PyQt6.QtGui import QFontMetrics
@@ -140,7 +161,7 @@ class SpreadsheetHeader(QHeaderView):
         self.setSectionsClickable(True)
         self.setSectionsMovable(False)
 
-    def contextMenuEvent(self, event: QContextMenuEvent) -> None:
+    def contextMenuEvent(self : Self, event: QContextMenuEvent) -> None:
         o = Qt.Orientation
         if (self.orientation() == o.Horizontal and not self._transposed) \
         or (self.orientation() == o.Vertical and self._transposed):
@@ -156,7 +177,7 @@ class SpreadsheetHeader(QHeaderView):
         else:
             super().contextMenuEvent(event)
 
-    def _showContextMenu(self, header_index: int, global_pos: QPoint):
+    def _showContextMenu(self : Self, header_index: int, global_pos: QPoint):
         menu = QMenu(self)
         menu_font = menu.font()
         font_metrics = QFontMetrics(menu_font)
@@ -239,7 +260,7 @@ class SpreadsheetTable(QTableView):
         # corner button styling
         self._styled = False
 
-    def showEvent(self, event):
+    def showEvent(self : Self, event : QShowEvent):
         super().showEvent(event)
         self.style_corner_button()
 
@@ -390,21 +411,21 @@ class SpreadsheetWidget(QWidget):
         self._multiSort()
         self._updateHeaderText()
 
-    def _sortAscending(self, header_index: int) -> None:
+    def _sortAscending(self : Self, header_index: int) -> None:
         """Sort the selected header in ascending order."""
         self._completeEditing()
         self._sorting[header_index] = Qt.SortOrder.AscendingOrder
         self._multiSort()
         self._updateHeaderText()
 
-    def _sortDescending(self, header_index: int) -> None:
+    def _sortDescending(self : Self, header_index: int) -> None:
         """Sort the selected header in descending order."""
         self._completeEditing()
         self._sorting[header_index] = Qt.SortOrder.DescendingOrder
         self._multiSort()
         self._updateHeaderText()
 
-    def _sortNone(self, header_index: int) -> None:
+    def _sortNone(self : Self, header_index: int) -> None:
         """Remove sorting from the selected header."""
         self._completeEditing()
         if header_index in self._sorting:
@@ -412,7 +433,7 @@ class SpreadsheetWidget(QWidget):
             self._multiSort()
             self._updateHeaderText()
 
-    def _updateHeaderText(self) -> None:
+    def _updateHeaderText(self : Self) -> None:
         """Update header text to include sort indicators."""
         for i in range(self._model.columnCount()):
             name = self._model.horizontalHeaderItem(i).text()
@@ -431,7 +452,7 @@ class SpreadsheetWidget(QWidget):
                 text = name
             self._sorted_model.setHorizontalHeaderItem(i, QStandardItem(text))
 
-    def _multiSort(self) -> None:
+    def _multiSort(self : Self) -> None:
         """Apply multi-column sorting."""
         def update():
             self._table_model.resizeColumnsToContents()
@@ -439,7 +460,7 @@ class SpreadsheetWidget(QWidget):
             self._table_proxy.resizeColumnsToContents()
             self._table_proxy.resizeRowsToContents()
 
-        def multi_column_compare(row1, row2):
+        def multi_column_compare(row1 : tuple, row2 : tuple) -> int:
             """Compare two rows using multi-column sorting priority."""
             _, data1 = row1
             _, data2 = row2
@@ -629,7 +650,7 @@ class SpreadsheetTabWidget(QTabWidget):
         # initialize font size
         self.setFontSize(settings().get("display/font_size"))
 
-    def closeTab(self, index: int) -> None:
+    def closeTab(self : Self, index: int) -> None:
         """Close the tab at the given index."""
         self.removeTab(index)
         if self.count() == 0:
@@ -729,7 +750,7 @@ class SpreadsheetSubWindow(QMdiSubWindow):
             self.setWidget(label)
             self.setWindowTitle("Properties")
 
-    def closeEvent(self, event: QCloseEvent) -> None:
+    def closeEvent(self : Self, event: QCloseEvent) -> None:
         """Handle subwindow close event."""
         window().menu_bar.updateWindowMenu()
         super().closeEvent(event)

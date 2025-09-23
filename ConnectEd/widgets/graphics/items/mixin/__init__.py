@@ -40,10 +40,10 @@ class ElementMixin:
         if hasattr(self, "onSettingsChange"):
             settings().changed.connect(self.onSettingsChange)
 
-    def __hash__(self):
+    def __hash__(self : Self):
         return hash(self.uuid)
 
-    def __eq__(self, other):
+    def __eq__(self : Self, other):
         if not isinstance(other, ElementMixin):
             return NotImplemented
         return self.uuid == other.uuid
