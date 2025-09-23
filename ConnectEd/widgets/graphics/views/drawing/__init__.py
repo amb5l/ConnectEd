@@ -14,11 +14,11 @@ from ...scenes.drawing import DrawingScene
 
 from ...scenes.drawing.interaction import Interaction
 
-from .mouse     import DrawingViewMouseMixin
-from .private   import DrawingViewPrivateMixin
-from .api       import DrawingViewApiMixin
-from .state     import DrawingViewStateMixin, DrawingViewStateBase
-from .defs      import *
+from .mouse   import DrawingViewMouseMixin
+from .private import DrawingViewPrivateMixin
+from .slots   import DrawingViewSlotsMixin
+from .state   import DrawingViewStateMixin, DrawingViewStateBase
+from .defs    import *
 
 
 def getView(pos : QPoint):
@@ -32,7 +32,7 @@ def getView(pos : QPoint):
 class DrawingView(
     DrawingViewMouseMixin,
     QGraphicsView,
-    DrawingViewApiMixin,
+    DrawingViewSlotsMixin,
     DrawingViewStateMixin,
     DrawingViewPrivateMixin
 ):

@@ -22,7 +22,7 @@ def withScene(func):
         return func(self, *args, **kwargs, scene=self.scene())
     return wrapper
 
-class DrawingViewApiMixin:
+class DrawingViewSlotsMixin:
 
     ############################################################################
     # edit menu and associated context menus
