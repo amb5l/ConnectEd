@@ -77,14 +77,13 @@ class Slots:
         pass
 
     def fileNewDesign(self : Self) -> None:
-        explorer : "Explorer" = window().explorer.widget()
-        window().explorer.widget().newDesign()
+        window().explorer.newDesign()
 
     def fileNewLibrary(self : Self) -> None:
-        window().explorer.widget().newLibrary()
+        window().explorer.newLibrary()
 
     def fileOpen(self : Self) -> None:
-        window().explorer.widget().openDb()
+        window().explorer.openDb()
 
     @withCurrentWidget(DrawingView)
     def fileSave(self : Self, widget: DrawingView) -> None:
@@ -230,8 +229,8 @@ class Slots:
         widget.placeText()
 
     def windowExplorer(self : Self) -> None:
-        window().explorer.show()
-        window().explorer.raise_()
+        window().explorer_dock.show()
+        window().explorer_dock.raise_()
 
     def windowMessages(self : Self) -> None:
         window().messages_viewer.show()

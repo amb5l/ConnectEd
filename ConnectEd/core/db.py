@@ -19,6 +19,7 @@ if TYPE_CHECKING:
     from ..widgets.graphics.scenes.drawing import DrawingScene
     from ..widgets.graphics.scenes.symbol  import SymbolScene
     from ..widgets.graphics.scenes.diagram import DiagramScene
+    from ..widgets.graphics.views.drawing  import DrawingView
 
 
 class NameCounter:
@@ -109,7 +110,7 @@ class DrawingItem(QStandardItem):
             cls._scene_class = DrawingScene
         return cls._scene_class
 
-    scene : "DrawingScene"
+    _scene : "DrawingScene"
 
     def __init__(
         self  : Self,
@@ -127,18 +128,18 @@ class DrawingItem(QStandardItem):
         else:
             scene = scene_class(self)
         scene.name = name
-        self.scene = scene
-        self.setData(self.scene, Qt.ItemDataRole.UserRole)
+        self._scene = scene
+        self.setData(self._scene, Qt.ItemDataRole.UserRole)
         self.setFlags(self.flags() | Qt.ItemFlag.ItemIsEditable)
 
     def text(self : Self) -> str:
-        return self.scene.name if self.scene else ""
+        return self._scene.name if self._scene else ""
 
     def setText(self : Self, text : str) -> None:
-        self.scene.name = text
+        self._scene.name = text
 
     def toXml(self : Self, xw : QXmlStreamWriter) -> None:
-        self.scene.toXml(xw)
+        self._scene.toXml(xw)
 
     @classmethod
     def fromXml(cls : Self, xr : QXmlStreamReader) -> Self:
@@ -149,11 +150,14 @@ class DrawingItem(QStandardItem):
 
     copy = copy
 
-    def getName(self : Self) -> str:
+    def name(self : Self) -> str:
         return self.text()
 
-    def getScene(self : Self) -> "DrawingScene":
-        return self.scene
+    def scene(self : Self) -> "DrawingScene":
+        return self._scene
+
+    def views(self : Self) -> list["DrawingView"]:
+        return self._scene.views()
 
 
 class SymbolItem(DrawingItem):
@@ -175,7 +179,7 @@ class DiagramItem(DrawingItem):
             cls._scene_class = DiagramScene
         return cls._scene_class
 
-    scene : "DiagramScene"
+    _scene : "DiagramScene"
 
     def __init__(
         self  : Self,
@@ -187,13 +191,13 @@ class DiagramItem(DrawingItem):
 
 
 class DbItem(QStandardItem):
-    path   : str | None
+    _path : str | None
 
     def __init__(self : Self) -> None:
         u = "Untitled" + self.__class__.__name__.replace("DbItem", "")
         super().__init__(name_counter.get(u))
         self.setFlags(self.flags() | Qt.ItemFlag.ItemIsEditable)
-        self.path = None
+        self._path = None
 
     def toXmlBegin(self : Self, xw : QXmlStreamWriter) -> None:
         xw.writeStartElement(self.__class__.__name__.replace("DbItem", ""))
@@ -203,11 +207,11 @@ class DbItem(QStandardItem):
         xw.writeEndElement()
 
     def save(self : Self, path : str | None = None) -> None:
-        self.path = path
-        if self.path is None:
-            self.path = self.saveAs()
-        if self.path:
-            xw, file = saveBegin(self.path)
+        self._path = path
+        if self._path is None:
+            self._path = self.saveAs()
+        if self._path:
+            xw, file = saveBegin(self._path)
             self.toXml(xw)
             saveEnd(xw, file)
 
@@ -256,40 +260,40 @@ class DbItem(QStandardItem):
     copy = copy
 
     def getPath(self : Self) -> str:
-        return self.path
+        return self._path
 
 
 class DesignDbItem(DbItem):
     FILE_EXT = DSN_EXT
 
-    diagrams : DiagramsContainer
-    symbols  : SymbolCacheContainer
+    _diagrams : DiagramsContainer
+    _symbols  : SymbolCacheContainer
 
     def __init__(self : Self, new : bool = True) -> None:
         super().__init__()
-        self.diagrams = DiagramsContainer()
-        self.appendRow(self.diagrams)
-        self.symbols = SymbolCacheContainer()
-        self.appendRow(self.symbols)
+        self._diagrams = DiagramsContainer()
+        self.appendRow(self._diagrams)
+        self._symbols = SymbolCacheContainer()
+        self.appendRow(self._symbols)
         if new:
-            self.diagrams.appendRow(DiagramItem())
-            self.diagrams.root = self.diagrams.child(0)
+            self._diagrams.appendRow(DiagramItem())
+            self._diagrams.root = self._diagrams.child(0)
         else:
-            self.diagrams.root = None
+            self._diagrams.root = None
 
     def toXml(self : Self, xw : QXmlStreamWriter) -> None:
         self.toXmlBegin(xw)
         xw.writeStartElement("Diagrams")
-        root = "" if self.diagrams.root is None else self.diagrams.root.text()
+        root = "" if self._diagrams.root is None else self._diagrams.root.text()
         xw.writeAttribute("root", root)
-        for i in range(self.diagrams.rowCount()):
-            diagram_item : DiagramItem = self.diagrams.child(i)
-            diagram_scene = diagram_item.scene
+        for i in range(self._diagrams.rowCount()):
+            diagram_item : DiagramItem = self._diagrams.child(i)
+            diagram_scene = diagram_item._scene
             diagram_scene.toXml(xw)
         xw.writeEndElement()
         xw.writeStartElement("SymbolCache")
-        for i in range(self.symbols.rowCount()):
-            symbol_item : SymbolItem = self.symbols.child(i)
+        for i in range(self._symbols.rowCount()):
+            symbol_item : SymbolItem = self._symbols.child(i)
             symbol_scene = symbol_item.scene
             symbol_scene.toXml(xw)
         self.toXmlEnd(xw)
@@ -351,11 +355,17 @@ class DesignDbItem(DbItem):
         db_item.fromXmlEnd(xr)
         return db_item
 
-    def getDiagrams(self : Self) -> list[DiagramItem]:
-        return [self.diagrams.child(i) for i in range(self.diagrams.rowCount())]
+    def diagramsItem(self : Self) -> DiagramsContainer:
+        return self._diagrams
 
-    def getSymbols(self : Self) -> list[SymbolItem]:
-        return [self.symbols.child(i) for i in range(self.symbols.rowCount())]
+    def symbolsItem(self : Self) -> SymbolCacheContainer:
+        return self._symbols
+
+    def diagramItems(self : Self) -> list[DiagramItem]:
+        return [self._diagrams.child(i) for i in range(self._diagrams.rowCount())]
+
+    def symbolItems(self : Self) -> list[SymbolItem]:
+        return [self._symbols.child(i) for i in range(self._symbols.rowCount())]
 
 
 class LibraryDbItem(DbItem):
@@ -378,25 +388,25 @@ class LibraryDbItem(DbItem):
 
 
 class Model(QStandardItemModel):
-    designs   : DesignDbContainer
-    libraries : LibraryDbContainer
+    _designs   : DesignDbContainer
+    _libraries : LibraryDbContainer
 
     def __init__(self : Self) -> None:
         super().__init__()
         self.setHorizontalHeaderLabels(["Database Hierarchy"])
-        self.designs = DesignDbContainer()
-        self.appendRow(self.designs)
-        self.libraries = LibraryDbContainer()
-        self.appendRow(self.libraries)
+        self._designs = DesignDbContainer()
+        self.appendRow(self._designs)
+        self._libraries = LibraryDbContainer()
+        self.appendRow(self._libraries)
 
     def newDesignItem(self : Self) -> DesignDbItem:
         item = DesignDbItem()
-        self.designs.appendRow(item)
+        self._designs.appendRow(item)
         return item
 
     def newLibraryItem(self : Self) -> LibraryDbItem:
         item = LibraryDbItem()
-        self.libraries.appendRow(item)
+        self._libraries.appendRow(item)
         return item
 
     def newDiagramItem(
@@ -405,7 +415,7 @@ class Model(QStandardItemModel):
     ) -> DiagramItem | None:
         item = None
         if isinstance(parent, DesignDbItem):
-            parent = parent.diagrams
+            parent = parent._diagrams
         if isinstance(parent, DiagramsContainer):
             item = DiagramItem()
             parent.appendRow(item)
@@ -421,7 +431,7 @@ class Model(QStandardItemModel):
     ) -> SymbolItem | None:
         item = None
         if isinstance(parent, DesignDbItem):
-            parent = parent.symbols
+            parent = parent._symbols
         if isinstance(parent, (SymbolCacheContainer, LibraryDbItem)):
             item = SymbolItem()
             parent.appendRow(item)
@@ -435,10 +445,10 @@ class Model(QStandardItemModel):
         db_item = None
         if path.endswith(DSN_EXT):
             db_item = DesignDbItem.load(path)
-            self.designs.appendRow(db_item)
+            self._designs.appendRow(db_item)
         elif path.endswith(LIB_EXT):
             db_item = LibraryDbItem.load(path)
-            self.libraries.appendRow(db_item)
+            self._libraries.appendRow(db_item)
         else:
             logger().warning(f"Unsupported file extension: {path}")
         return db_item
@@ -446,13 +456,13 @@ class Model(QStandardItemModel):
     def close(self : Self, item: QStandardItem) -> None:
         """Close a database and remove it from the model."""
         if isinstance(item, DesignDbItem):
-            for i in range(self.designs.rowCount()):
-                if item == self.designs.child(i):
-                    self.designs.removeRow(i)
+            for i in range(self._designs.rowCount()):
+                if item == self._designs.child(i):
+                    self._designs.removeRow(i)
         elif isinstance(item, LibraryDbItem):
-            for i in range(self.libraries.rowCount()):
-                if item == self.libraries.child(i):
-                    self.libraries.removeRow(i)
+            for i in range(self._libraries.rowCount()):
+                if item == self._libraries.child(i):
+                    self._libraries.removeRow(i)
         else:
             logger().warning(f"Unsupported item: {item.text()} ({type(item)})")
 
@@ -494,21 +504,23 @@ class Model(QStandardItemModel):
                 raise ValueError(f"{n} invalid items for paste operation: {s}")
 
     def getDbItemFromScene(self : Self, scene : "DrawingScene") -> DbItem:
-        for i in range(self.designs.rowCount()):
-            db_item = self.designs.child(i)
-            for j in range(db_item.diagrams.rowCount()):
-                drawing_item : DrawingItem = db_item.diagrams.child(j)
-                if scene == drawing_item.scene:
+        for i in range(self._designs.rowCount()):
+            db_item : DesignDbItem = self._designs.child(i)
+            diagrams_item : DiagramsContainer = db_item.diagramsItem()
+            for j in range(diagrams_item.rowCount()):
+                drawing_item : DrawingItem = diagrams_item.child(j)
+                if scene == drawing_item._scene:
                     return db_item
-            for j in range(db_item.symbols.rowCount()):
-                drawing_item : DrawingItem = db_item.symbols.child(j)
-                if scene == drawing_item.scene:
+            symbols_item : SymbolCacheContainer = db_item.symbolsItem()
+            for j in range(symbols_item.rowCount()):
+                drawing_item : DrawingItem = symbols_item.child(j)
+                if scene == drawing_item._scene:
                     return db_item
-        for i in range(self.libraries.rowCount()):
-            db_item = self.libraries.child(i)
+        for i in range(self._libraries.rowCount()):
+            db_item : LibraryDbItem = self._libraries.child(i)
             for j in range(db_item.rowCount()):
                 drawing_item : DrawingItem = db_item.child(j)
-                if scene == drawing_item.scene:
+                if scene == drawing_item._scene:
                     return db_item
         return None
 
@@ -535,3 +547,6 @@ class Model(QStandardItemModel):
             elif i.text() == "Symbol Cache":
                 return "Symbol Cache"
         raise ValueError(f"Unsupported item: {i.text()}  type: {type(i)}")
+
+    def designItems(self : Self) -> list[DesignDbItem]:
+        return [self._designs.child(i) for i in range(self._designs.rowCount())]

@@ -1,9 +1,11 @@
 from typing import Self
 
 from PyQt6.QtGui     import QAction
-from PyQt6.QtWidgets import QGraphicsSceneContextMenuEvent, QMenu
+from PyQt6.QtWidgets import QGraphicsSceneContextMenuEvent
 
 from .....app import logger
+
+from ....menu import Menu
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -19,7 +21,7 @@ class ElementMenuMixin:
         if len(items) == 0:
             return
         pos = event.screenPos()
-        menu = QMenu()
+        menu = Menu()
         for item in items:
             if item.startswith("-"):
                 menu.addSeparator()

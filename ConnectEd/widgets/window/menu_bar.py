@@ -1,6 +1,8 @@
 from typing import Self
 
-from PyQt6.QtWidgets import QMenuBar, QMenu
+from PyQt6.QtWidgets import QMenuBar
+
+from ..menu import Menu
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -8,15 +10,18 @@ if TYPE_CHECKING:
 
 
 class MenuBar(QMenuBar):
+    _menus_dict : dict[str, Menu]
+
     def __init__(
         self    : Self,
         parent  : "Window"
     ) -> None:
         super().__init__(parent)
+        self._menus_dict = {}
         actions = parent.actions
 
-        self.file_menu = QMenu("&File")
-        self.file_new_menu = QMenu("&New")
+        self.file_menu = Menu("&File")
+        self.file_new_menu = Menu("&New")
         self.file_new_menu.addAction(actions.fileNewDesign)
         self.file_new_menu.addAction(actions.fileNewLibrary)
         self.file_menu.addMenu(self.file_new_menu)
@@ -25,7 +30,7 @@ class MenuBar(QMenuBar):
         self.file_menu.addAction(actions.fileSaveAs)
         self.file_menu.addAction(actions.fileExit)
 
-        self.edit_menu = QMenu("&Edit")
+        self.edit_menu = Menu("&Edit")
         self.edit_menu.addAction(actions.editUndo)
         self.edit_menu.addAction(actions.editRedo)
         # TODO: repeat
@@ -49,7 +54,7 @@ class MenuBar(QMenuBar):
         # TODO: editFindPrevious
         # TODO: editFindReplace
 
-        self.view_menu = QMenu("&View")
+        self.view_menu = Menu("&View")
         # TODO: viewNext
         # TODO: viewPrevious
         self.view_menu.addAction(actions.viewZoomAll)
@@ -67,12 +72,12 @@ class MenuBar(QMenuBar):
         self.view_menu.addAction(actions.viewGridDisplay)
         self.view_menu.addAction(actions.viewGridSnap)
         self.view_menu.addSeparator()
-        self.view_theme_menu = QMenu("&Theme")
+        self.view_theme_menu = Menu("&Theme")
         self.view_theme_menu.addAction(actions.viewThemeDark)
         self.view_theme_menu.addAction(actions.viewThemeLightMono)
         self.view_menu.addMenu(self.view_theme_menu)
 
-        self.place_menu = QMenu("&Place")
+        self.place_menu = Menu("&Place")
         self.place_menu.addAction(actions.placePort)
         self.place_menu.addAction(actions.placeBlock)
         self.place_menu.addAction(actions.placeBlockPin)
@@ -81,13 +86,13 @@ class MenuBar(QMenuBar):
         self.place_menu.addAction(actions.placeTextBlock)
         self.place_menu.addAction(actions.placeText)
 
-        self.window_menu = QMenu("&Window")
+        self.window_menu = Menu("&Window")
         self.window_menu.addAction(actions.windowExplorer)
         self.window_menu.addAction(actions.windowMessages)
         self.window_menu.addAction(actions.windowTranscript)
         self.window_menu.addAction(actions.windowLog)
 
-        self.help_menu = QMenu("&Help")
+        self.help_menu = Menu("&Help")
         self.help_menu.addAction(actions.helpAbout)
 
         self.addMenu(self.file_menu)
@@ -96,6 +101,13 @@ class MenuBar(QMenuBar):
         self.addMenu(self.place_menu)
         self.addMenu(self.window_menu)
         self.addMenu(self.help_menu)
+
+    def addMenu(self : Self, menu : Menu) -> None:
+        super().addMenu(menu)
+        self._menus_dict[menu.title().replace("&", "")] = menu
+
+    def menusDict(self : Self) -> dict[str, Menu]:
+        return self._menus_dict
 
     def updateWindowMenu(self : Self) -> None:
         window : "Window" = self.parent()

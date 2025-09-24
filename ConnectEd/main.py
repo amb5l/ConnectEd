@@ -1,9 +1,11 @@
 import sys
 
+from typing import Callable
+
 from PyQt6.QtCore    import Qt
 from PyQt6.QtGui     import QIcon
 
-from .app import ConnectEdApp
+from .app import ConnectEdCliApp, ConnectEdGuiApp
 
 from .core.log   import logger
 from .core.nv    import Settings
@@ -15,37 +17,48 @@ from .widgets.splash import Splash
 from .widgets.window import Window
 
 
-def main() -> int:
+def main(func : Callable | None = None) -> int:
     logger.info("started")
-    app = ConnectEdApp(sys.argv[:1] + unknown_args)
-    app.setStyle("Fusion")
-    scheme = app.styleHints().colorScheme()
-    splash = Splash(scheme == Qt.ColorScheme.Light)
-    splash.show()
-    app.logger = logger
-    app.settings = Settings()
+    args = sys.argv[:1] + unknown_args
+    app = ConnectEdCliApp(args) if known_args.cli else ConnectEdGuiApp(args)
+    if not known_args.cli:
+        app.setStyle("Fusion")
+    if not known_args.nosplash:
+        scheme = app.styleHints().colorScheme()
+        splash = Splash(scheme == Qt.ColorScheme.Light)
+        splash.show()
+    app.setLogger(logger)
+    app.setSettings(Settings())
     if known_args.reset:
-        app.settings.reset()
-    app.settings.load()
+        app.settings().reset()
+    app.settings().load()
     if known_args.dump:
-        print(app.settings.dump())
-    icon = QIcon(getIconPath("ConnectEd.png"))
-    app.setWindowIcon(icon)
-    if sys.platform == "win32":
-        try:
-            import ctypes
-            ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(
-                "ConnectEd.Application"
-            )
-        except Exception:
-            pass
-    initResources()
-    app.model = Model()
-    app.window = Window()
+        print(app.settings().dump())
+    if not known_args.cli:
+        icon = QIcon(getIconPath("ConnectEd.png"))
+        app.setWindowIcon(icon)
+        if sys.platform == "win32":
+            try:
+                import ctypes
+                ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(
+                    "ConnectEd.Application"
+                )
+            except Exception:
+                pass
+        initResources()
+    app.setModel(Model())
+    if not known_args.cli:
+        app.setWindow(Window())
     app.processEvents()
-    splash.finish(app.window)
+    if not (known_args.cli or known_args.nosplash):
+        splash.finish(app.window())
+    if func is not None:
+        if known_args.cli:
+            func(app)
+        else:
+            app.window().ready.connect(lambda: func(app))
     r = app.exec()
-    app.settings.save()
+    app.settings().save()
     logger.info("finished")
     return r
 

@@ -433,8 +433,10 @@ FACTORY_SETTINGS = {
 }
 
 class Settings(QObject):
+    # instance attributes
     _settings : dict[str, Any]
 
+    # signals
     changed = pyqtSignal()
 
     def __init__(self : Self) -> None:

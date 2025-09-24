@@ -1,10 +1,12 @@
 from math   import sqrt
 
 from PyQt6.QtCore    import Qt, QPointF, QRectF, QPoint
-from PyQt6.QtWidgets import QMenu, QGraphicsItem
+from PyQt6.QtWidgets import QGraphicsItem
 from PyQt6.QtGui     import QMouseEvent, QPainterPath, QIcon, QAction, QCursor
 
 from .....app import settings, window
+
+from ....menu import Menu
 
 from ...items.pin_rect import PinRect
 
@@ -185,12 +187,12 @@ class DrawingViewPrivateMixin:
         choice = modifiers & qkm.AltModifier
         if len(items) > 1 and choice: # multiple choice case
             init_sel = {item: item.isSelected() for item in items}
-            menu = QMenu(self)
+            menu = Menu(self)
             menu.setStyleSheet("""
-                QMenu::item {
+                Menu::item {
                     padding: 2px 10px 2px 4px;  /* Reduce left padding */
                 }
-                QMenu::icon {
+                Menu::icon {
                     width: 0px;  /* Ensure no space for icons */
                 }
             """)

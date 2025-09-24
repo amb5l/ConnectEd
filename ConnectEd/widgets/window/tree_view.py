@@ -4,7 +4,8 @@ from PyQt6.QtCore    import QAbstractItemModel
 from PyQt6.QtWidgets import QTreeView, QWidget, QDockWidget
 from PyQt6.QtGui     import QFont, QShortcut, QKeySequence
 
-from ...app import settings
+from ...app       import settings
+from ...resources import getIconPath
 
 
 class TreeView(QTreeView):
@@ -34,10 +35,10 @@ class TreeView(QTreeView):
                     image: none;
                 }
                 QTreeView::branch:has-children:closed {
-                    image: url(ConnectEd/resources/icons/expand_bright.svg);
+                    image: url(""" + getIconPath("expand_bright.svg").replace("\\", "/") + """);
                 }
                 QTreeView::branch:has-children:open {
-                    image: url(ConnectEd/resources/icons/collapse_bright.svg);
+                    image: url(""" + getIconPath("collapse_bright.svg").replace("\\", "/") + """);
                 }
                 QTreeView::branch:hover {
                     background-color: rgba(255, 255, 255, 50);

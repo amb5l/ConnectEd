@@ -103,3 +103,5 @@ class Splash(QSplashScreen):
         window.show()
         window.raise_()
         window.activateWindow()
+        window.ready.emit()
+

@@ -1,7 +1,3 @@
-- get rid of Optional
-
-- handle visibility
-
 - connect settings changes to DrawingScenePaths
 - move handle size to theme
 - DrawingItem => DrawingModelItem

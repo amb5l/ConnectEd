@@ -1,5 +1,6 @@
 from PyQt6.QtCore import Qt, QEvent, QPoint
 from PyQt6.QtGui  import QEnterEvent, QMouseEvent, QWheelEvent, QCursor
+import inspect
 
 from .....app import logger, settings, window
 
@@ -15,7 +16,7 @@ if TYPE_CHECKING:
 qkm = Qt.KeyboardModifier
 
 class DrawingViewMouseMixin:
-    def enterEvent(self : "DrawingView", event : QEnterEvent) -> None:
+    def enterEvent(self : "DrawingView", _event : QEnterEvent) -> None:
         p = self.mapFromGlobal(QCursor.pos())
         l = self.mapToScene(p)
         self.mouse.current.setPL(p, l)
@@ -155,3 +156,91 @@ class DrawingViewMouseMixin:
                 self.viewPanLeft(n) if n >= 0 else self.viewPanRight(-n)
             case qkm.ControlModifier: # zoom in/out
                 self.viewZoomIn(n) if n >= 0 else self.viewZoomOut(-n)
+
+    # shims to support scripting
+
+    def _vsCoords(self : "DrawingView", pos : QPoint, physical : bool):
+        """Helper to map coordinates based on physical parameter"""
+        if physical:
+            return pos, self.mapFromGlobal(pos)  # view, scene
+        else:
+            return self.mapFromGlobal(pos), pos  # view, scene
+
+    def _mouseMethod(self : "DrawingView", pos : QPoint, physical : bool, modifiers : qkm):
+        """Helper that automatically calls the corresponding state method"""
+        method_name = inspect.currentframe().f_back.f_code.co_name
+        view_pos, scene_pos = self._vsCoords(pos, physical)
+        state_method = getattr(self.state, method_name)
+        state_method(view_pos, scene_pos, modifiers)
+
+    def mouseLeftClick(
+        self      : "DrawingView",
+        pos       : QPoint,
+        physical  : bool = False,
+        modifiers : qkm = qkm.NoModifier
+    ) -> None:
+        self._mouseMethod(pos, physical, modifiers)
+
+    def mouseLeftDragBegin(
+        self      : "DrawingView",
+        pos       : QPoint,
+        physical  : bool = False,
+        modifiers : qkm = qkm.NoModifier
+    ) -> None:
+        self._mouseMethod(pos, physical, modifiers)
+
+    def mouseLeftDragCont(
+        self      : "DrawingView",
+        pos       : QPoint,
+        physical  : bool = False,
+        modifiers : qkm = qkm.NoModifier
+    ) -> None:
+        self._mouseMethod(pos, physical, modifiers)
+
+    def mouseLeftDragEnd(
+        self      : "DrawingView",
+        pos       : QPoint,
+        physical  : bool = False,
+        modifiers : qkm = qkm.NoModifier
+    ) -> None:
+        self._mouseMethod(pos, physical, modifiers)
+
+    def mouseMiddleClick(
+        self      : "DrawingView",
+        pos       : QPoint,
+        physical  : bool = False,
+        modifiers : qkm = qkm.NoModifier
+    ) -> None:
+        self._mouseMethod(pos, physical, modifiers)
+
+    def mouseMiddleDragBegin(
+        self      : "DrawingView",
+        pos       : QPoint,
+        physical  : bool = False,
+        modifiers : qkm = qkm.NoModifier
+    ) -> None:
+        self._mouseMethod(pos, physical, modifiers)
+
+    def mouseMiddleDragCont(
+        self      : "DrawingView",
+        pos       : QPoint,
+        physical  : bool = False,
+        modifiers : qkm = qkm.NoModifier
+    ) -> None:
+        self._mouseMethod(pos, physical, modifiers)
+
+    def mouseMiddleDragEnd(
+        self      : "DrawingView",
+        pos       : QPoint,
+        physical  : bool = False,
+        modifiers : qkm = qkm.NoModifier
+    ) -> None:
+        self._mouseMethod(pos, physical, modifiers)
+
+    def mouseMove(
+        self      : "DrawingView",
+        pos       : QPoint,
+        physical  : bool = False,
+        modifiers : qkm = qkm.NoModifier
+    ) -> None:
+        self._mouseMethod(pos, physical, modifiers)

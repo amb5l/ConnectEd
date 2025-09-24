@@ -3,7 +3,7 @@ from ConnectEd import api as ce
 ce.initCli()
 design_db = ce.DesignDbItem()
 print("design database path =", design_db.getPath())
-diagrams = design_db.getDiagrams()
+diagrams = design_db.diagrams()
 if len(diagrams) != 1:
     raise Exception("expected 1 diagram, got", len(diagrams))
 diagram = diagrams[0]

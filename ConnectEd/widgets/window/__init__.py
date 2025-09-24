@@ -7,7 +7,7 @@ status bars, and the central MDI area for document management.
 
 from typing import Self
 
-from PyQt6.QtCore    import Qt
+from PyQt6.QtCore    import Qt, pyqtSignal
 from PyQt6.QtWidgets import QApplication, QMainWindow
 from PyQt6.QtGui     import QIcon, QCloseEvent
 
@@ -24,26 +24,27 @@ from .menu_bar   import MenuBar
 from .status_bar import StatusBar
 from .mdi_area   import MdiArea
 
+from .text_view       import TextView
 from .messages_view   import MessagesViewDock
 from .transcript_view import TranscriptViewDock
 from .log_view        import LogViewDock
-from .explorer        import ExplorerDock
-
-from typing import TYPE_CHECKING
-if TYPE_CHECKING:
-    from ...core.db import Model
+from .explorer        import ExplorerDock, Explorer
 
 
 class Window(QMainWindow):
+    # instance attributes
     actions           : Actions
     slots             : Slots
-    menu_bar          : MenuBar
+    _menu_bar         : MenuBar
     status_bar        : StatusBar
-    explorer          : ExplorerDock
+    explorer_dock     : ExplorerDock
     messages_viewer   : MessagesViewDock
     transcript_viewer : TranscriptViewDock
     log_viewer        : LogViewDock
     mdi_area          : MdiArea
+
+    # signals
+    ready = pyqtSignal()
 
     def __init__(self : Self) -> None:
         super().__init__()
@@ -72,8 +73,8 @@ class Window(QMainWindow):
         self.connectActionsToSlots(self.actions, self.slots)
 
         # menu bar
-        self.menu_bar = MenuBar(self)
-        self.setMenuBar(self.menu_bar)
+        self._menu_bar = MenuBar(self)
+        self.setMenuBar(self._menu_bar)
 
         # status bar
         self.status_bar = StatusBar(self)
@@ -90,8 +91,8 @@ class Window(QMainWindow):
         self.tabifyDockWidget(self.messages_viewer, self.transcript_viewer)
         self.tabifyDockWidget(self.messages_viewer, self.log_viewer)
         self.messages_viewer.raise_()
-        self.explorer = ExplorerDock(self)
-        self.addDockWidget(qd.LeftDockWidgetArea, self.explorer)
+        self.explorer_dock = ExplorerDock(self)
+        self.addDockWidget(qd.LeftDockWidgetArea, self.explorer_dock)
 
         # MDI area
         self.mdi_area = MdiArea()
@@ -101,11 +102,11 @@ class Window(QMainWindow):
 
         # signal-slot connections
         self.mdi_area.subWindowActivated.connect(self.actions.onSubWindowActivated)
-        self.mdi_area.subWindowActivated.connect(self.menu_bar.updateWindowMenu)
+        self.mdi_area.subWindowActivated.connect(self._menu_bar.updateWindowMenu)
         clipboard = QApplication.clipboard()
         clipboard.dataChanged.connect(self.actions.onClipboardDataChanged)
 
-        # ready message
+        # ready
         self.messages_viewer.text_view.appendPlainText("ConnectEd ready!")
 
     def closeEvent(self : Self, event : QCloseEvent) -> None:
@@ -152,3 +153,25 @@ class Window(QMainWindow):
             action = getattr(actions, action_name)
             slot = getattr(slots, action_name)
             action.triggered.connect(slot)
+
+    # convenience properties
+
+    @property
+    def menu_bar(self : Self) -> MenuBar:
+        return self._menu_bar
+
+    @property
+    def explorer(self : Self) -> Explorer:
+        return self.explorer_dock.widget()
+
+    @property
+    def messages(self : Self) -> TextView:
+        return self.messages_viewer.text_view
+
+    @property
+    def transcript(self : Self) -> TextView:
+        return self.transcript_viewer.text_view
+
+    @property
+    def log(self : Self) -> TextView:
+        return self.log_viewer.text_view

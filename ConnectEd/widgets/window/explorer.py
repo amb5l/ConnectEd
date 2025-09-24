@@ -2,7 +2,7 @@ from types  import SimpleNamespace
 from typing import Self
 
 from PyQt6.QtCore    import Qt, QPoint, QItemSelectionModel
-from PyQt6.QtWidgets import QWidget, QMenu
+from PyQt6.QtWidgets import QWidget
 from PyQt6.QtGui     import QAction, QStandardItem, \
                             QKeyEvent, QMouseEvent, QWheelEvent, QFocusEvent
 
@@ -10,6 +10,8 @@ from ...app import logger, model, window
 
 from ...widgets.graphics.items.anchor_point import AnchorPoint
 from ...widgets.graphics.items.tether_text  import Tether
+
+from ..menu import Menu
 
 from .tree_view import TreeView, TreeViewDock
 
@@ -95,10 +97,10 @@ class Explorer(TreeView):
         a.paste.triggered.connect(lambda: self.paste(self.item))
         self.menus = SimpleNamespace()
         m = self.menus
-        m.new_db = QMenu("New", self)
+        m.new_db = Menu("New", self)
         m.new_db.addAction(a.newMenuDesign)
         m.new_db.addAction(a.newMenuLibrary)
-        m.new_dwg = QMenu("New", self)
+        m.new_dwg = Menu("New", self)
         m.new_dwg.addAction(a.newMenuDiagram)
         m.new_dwg.addAction(a.newMenuSymbol)
 
@@ -183,9 +185,9 @@ class Explorer(TreeView):
 
     def newDesign(self : Self) -> None:
         design_item = model().newDesignItem()
-        diagram_item = design_item.diagrams.child(0)
+        diagram_item = design_item._diagrams.child(0)
         self.expand(model().indexFromItem(design_item))
-        self.expand(model().indexFromItem(design_item.diagrams))
+        self.expand(model().indexFromItem(design_item._diagrams))
         self.editDrawing(diagram_item)
 
     def newLibrary(self : Self) -> None:
@@ -228,7 +230,7 @@ class Explorer(TreeView):
                     continue
                 if not isinstance(subwindow.widget().scene(), DrawingScene):
                     continue
-                if item.scene != subwindow.widget().scene():
+                if item._scene != subwindow.widget().scene():
                     continue
                 window().mdi_area.setActiveSubWindow(subwindow)
                 subwindow.show()
@@ -342,7 +344,7 @@ class Explorer(TreeView):
         model().paste(item)
 
     def showContextMenu(self : Self, pos : QPoint) -> None:
-        menu = QMenu(self)
+        menu = Menu(self)
         a = self.actions
         m = self.menus
         index = self.indexAt(pos)

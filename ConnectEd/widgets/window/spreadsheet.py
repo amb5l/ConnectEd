@@ -3,8 +3,7 @@ from types  import SimpleNamespace
 
 from PyQt6.QtCore    import Qt, QModelIndex, QPoint, QSize, QTransposeProxyModel
 from PyQt6.QtWidgets import QMdiSubWindow, QTabWidget, QWidget, QSizePolicy, \
-                            QHBoxLayout, QVBoxLayout, \
-                            QMenu, QPushButton, QLabel, \
+                            QHBoxLayout, QVBoxLayout, QPushButton, QLabel, \
                             QTableView, QAbstractItemView, QAbstractButton, \
                             QHeaderView, QStyledItemDelegate, QComboBox, \
                             QStyleOptionViewItem
@@ -20,6 +19,8 @@ from ...core.icon import getCharIcon
 from ...widgets.graphics.items import ElementMixin
 
 from ...widgets.graphics.items.property_text import PropertyDisplay
+
+from ..menu import Menu
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -178,7 +179,7 @@ class SpreadsheetHeader(QHeaderView):
             super().contextMenuEvent(event)
 
     def _showContextMenu(self : Self, header_index: int, global_pos: QPoint):
-        menu = QMenu(self)
+        menu = Menu(self)
         menu_font = menu.font()
         font_metrics = QFontMetrics(menu_font)
         text_height = font_metrics.height()
@@ -281,7 +282,7 @@ class SpreadsheetTable(QTableView):
 
     def contextMenuEvent(self : Self, event: QContextMenuEvent) -> None:
         """Show context menu for table cells."""
-        menu = QMenu(self)
+        menu = Menu(self)
         menu.addAction(self._parent._actions.unsort)
         menu.addAction(self._parent._actions.transpose)
         menu.exec(event.globalPos())
