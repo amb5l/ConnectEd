@@ -7,16 +7,19 @@ from .app  import ConnectEdCliApp, ConnectEdGuiApp, app
 
 def run(
     func : Callable[["ConnectEdCliApp | ConnectEdGuiApp"], None],
-    argv : list[str] = []
+    argv : list[str] = [],
+    exit : bool = True
 ) -> None:
     try:
         if app() is None:
             sys.argv = [sys.argv[0]] + argv + sys.argv[1:]
             from .core import args
             from .main import main
-            main(func)
+            main(func, exit)
         else:
             func(app())
+            if exit:
+                app().quit()
     except Exception as e:
         print(f"Script error: {e}")
         raise

@@ -16,7 +16,7 @@ from .widgets.splash import Splash
 from .widgets.window import Window
 
 
-def main(func : Callable | None = None) -> int:
+def main(func : Callable | None = None, exit : bool = False) -> int:
     from .core.args import known_args, unknown_args
     logger.info("started")
     args = sys.argv[:1] + unknown_args
@@ -56,12 +56,21 @@ def main(func : Callable | None = None) -> int:
         app.window().show()
         app.window().raise_()
         app.window().activateWindow()
-        app.window().ready.emit()
     if func is not None:
         if known_args.cli:
             func(app)
+            if exit:
+                return 0
         else:
-            app.window().ready.connect(lambda: func(app))
+            def _run():
+                func(app)
+                if exit:
+                    app.window().close()
+                    app.quit()
+                    sys.exit(0)
+            app.window().ready.connect(_run)
+            if known_args.nosplash:
+                app.window().ready.emit()
     r = app.exec()
     app.settings().save()
     logger.info("finished")

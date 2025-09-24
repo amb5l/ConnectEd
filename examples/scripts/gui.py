@@ -1,5 +1,3 @@
-import time
-
 from PyQt6.QtCore import QPointF, QSizeF
 
 import ConnectEd.scripting as cs
@@ -138,7 +136,16 @@ def test(app : cs.ConnectEdGuiApp):
     assert model is not None
 
     # create a new design
-    menus["File"].subMenusDict()["New"].actionsDict()["Design"].trigger()
+    assert "File" in menus.keys()
+    file_menu = menus["File"]
+    assert file_menu is not None
+    assert "New" in file_menu.subMenusDict().keys()
+    file_new_menu = file_menu.subMenusDict()["New"]
+    assert file_new_menu is not None
+    assert "Design" in file_new_menu.actionsDict().keys()
+    file_new_design_action = file_new_menu.actionsDict()["Design"]
+    assert file_new_design_action is not None
+    file_new_design_action.trigger()
 
     # verify newly created design
     design_items = model.designItems()
@@ -153,7 +160,6 @@ def test(app : cs.ConnectEdGuiApp):
     assert diagram_item.text() == "UntitledDiagram1"
     symbol_items = design_item.symbolItems()
     assert len(symbol_items) == 0
-
 
     # get view of design diagram and verify it
     views = diagram_item.views()
