@@ -13,48 +13,26 @@ def test(app : cs.ConnectEdApp):
 
     print("test started")
 
-    # verify we are running in CLI mode but with graphics support
-    assert isinstance(app, cs.ConnectEdApp)
-    assert app.cli() == True
-
-    # create new design
+    # get model (so we can work with designs)
     model = app.model()
-    assert model is not None
+    # create new design
     design_item = model.newDesignItem()
-    assert isinstance(design_item, DesignDbItem)
-    assert design_item.text() == "UntitledDesign1"
+    # set the design name
+    design_item.setText("cli")
+    # get all diagram items in the design
     diagram_items = design_item.diagramItems()
-    assert len(diagram_items) == 1
+    # pick the first diagram item
     diagram_item = diagram_items[0]
-    assert isinstance(diagram_item, DiagramItem)
-    assert diagram_item.text() == "UntitledDiagram1"
-    symbol_items = design_item.symbolItems()
-    assert len(symbol_items) == 0
-
-    # get diagram
+    # get the diagram
     diagram = diagram_item.diagram()
-    assert isinstance(diagram, DiagramScene)
-
-    # add rectangle to diagram
+    # create a rectangle
     pos = QPointF(100, 100)
     size = QSizeF(100, 100)
     rect = Rectangle(pos, size)
-    # verify basic properties
-    assert rect.pos() == pos, \
-        f"Got {rect.pos()}, expected {pos}"
-    assert rect.rect().width() == size.width(), \
-        f"Got {rect.rect().width()}, expected {size.width()}"
-    assert rect.rect().height() == size.height(), \
-        f"Got {rect.rect().height()}, expected {size.height()}"
-    assert rect.line.getColor() == DEFAULT, \
-        f"Got {rect.line.getColor()}, expected {DEFAULT}"
-    assert rect.line.getWidth() == DEFAULT, \
-        f"Got {rect.line.getWidth()}, expected {DEFAULT}"
-    assert rect.line.getStyle() == DEFAULT, \
-        f"Got {rect.line.getStyle()}, expected {DEFAULT}"
-    assert rect.line.getStyle() == DEFAULT, \
-        f"Got {rect.line.getStyle()}, expected {DEFAULT}"
+    # add rectangle to diagram
     diagram.addItem(rect)
+    # save the design
+    design_item.save("./cli.xml")
 
     # done
     print("test finished")

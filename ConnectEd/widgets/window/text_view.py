@@ -81,7 +81,7 @@ class TextView(QPlainTextEdit):
         if hasattr(self, "handler") and self.handler:
             try:
                 logger().removeHandler(self.handler)
-            except:
+            except: # workaround for Qt cleanup
                 pass
 
 class TextViewDockWidget(QDockWidget):

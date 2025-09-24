@@ -6,6 +6,8 @@ from PyQt6.QtCore    import Qt, QRectF, QTimer
 from PyQt6.QtWidgets import QSplashScreen, QApplication
 from PyQt6.QtGui     import QPixmap, QFont, QColor, QPainter
 
+from ..app import app
+
 from ..core.defs import APP_NAME
 
 from ..resources import getIconPath
@@ -103,5 +105,4 @@ class Splash(QSplashScreen):
         window.show()
         window.raise_()
         window.activateWindow()
-        window.ready.emit()
-
+        app().ready.splash.emit()

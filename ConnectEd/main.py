@@ -2,12 +2,13 @@ import sys
 
 from typing import Callable
 
-from PyQt6.QtCore    import Qt
+from PyQt6.QtCore    import Qt, QTimer
 from PyQt6.QtGui     import QIcon
 
 from .app import ConnectEdApp
 
 from .core.log   import logger
+from .core.args  import known_args, unknown_args
 from .core.nv    import Settings
 from .core.db    import Model
 from .resources  import getIconPath, initResources
@@ -16,14 +17,22 @@ from .widgets.splash import Splash
 from .widgets.window import Window
 
 
-def main(func : Callable | None = None, exit : bool = False) -> int:
-    from .core.args import known_args, unknown_args
+def main(func : Callable | None = None) -> int:
+    def _func():
+        func(app)
+        if not known_args.noexit:
+            app.window().close()
+            QTimer.singleShot(100, app.quit)
+
     logger.info("started")
-    args = sys.argv[:1] + unknown_args
-    app = ConnectEdApp(args)
+    app = ConnectEdApp(known_args.cli)
     app.setCli(known_args.cli)
     if not known_args.cli:
         app.setStyle("Fusion")
+    if known_args.nosplash:
+        app.ready.window.connect(_func)
+    else:
+        app.ready.splash.connect(_func)
     if not (known_args.cli or known_args.nosplash):
         scheme = app.styleHints().colorScheme()
         splash = Splash(scheme == Qt.ColorScheme.Light)
@@ -49,30 +58,15 @@ def main(func : Callable | None = None, exit : bool = False) -> int:
         initResources()
     app.setModel(Model())
     if not known_args.cli:
-        app.setWindow(Window())
+        Window() # create window
     app.processEvents()
     if not (known_args.cli or known_args.nosplash):
         splash.finish(app.window())
-    elif not known_args.cli:
-        app.window().show()
-        app.window().raise_()
-        app.window().activateWindow()
-    if func is not None:
-        if known_args.cli:
-            func(app)
-            if exit:
-                sys.exit(0)
-        else:
-            def _run():
-                func(app)
-                if exit:
-                    app.window().close()
-                    app.quit()
-                    sys.exit(0)
-            app.window().ready.connect(_run)
-            if known_args.nosplash:
-                app.window().ready.emit()
-    r = app.exec()
+    r = 0
+    if func is not None and known_args.cli:
+        func(app)
+    elif func is None or known_args.noexit or not known_args.cli:
+        r = app.exec()
     app.settings().save()
     logger.info("finished")
     return r

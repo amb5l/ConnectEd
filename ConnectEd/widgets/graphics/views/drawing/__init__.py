@@ -162,6 +162,6 @@ class DrawingSubWindow(QMdiSubWindow):
                     scene.undo_stack.canUndoChanged.disconnect()
                     scene.undo_stack.canRedoChanged.disconnect()
                     scene.selectionChanged.disconnect()
-                except TypeError:
+                except TypeError: # workaround for Qt cleanup
                     pass
         super().closeEvent(event)

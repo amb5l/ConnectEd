@@ -11,7 +11,7 @@ from PyQt6.QtCore    import Qt, pyqtSignal
 from PyQt6.QtWidgets import QApplication, QMainWindow
 from PyQt6.QtGui     import QIcon, QCloseEvent
 
-from ...app import settings
+from ...app import app, settings
 
 from ...core.defs  import APP_NAME
 from ...core.utils import check
@@ -48,7 +48,7 @@ class Window(QMainWindow):
 
     def __init__(self : Self) -> None:
         super().__init__()
-
+        app().setWindow(self)
         # default position
         screen = self.screen()
         screenSize = screen.size()
@@ -107,14 +107,20 @@ class Window(QMainWindow):
         clipboard.dataChanged.connect(self.actions.onClipboardDataChanged)
 
         # ready
+        if not app().cli():
+            self.show()
+            self.raise_()
+            self.activateWindow()
+            app().processEvents()
         self.messages_viewer.text_view.appendPlainText("ConnectEd ready!")
+        app().ready.window.emit()
 
     def closeEvent(self : Self, event : QCloseEvent) -> None:
         try:
             self.mdi_area.subWindowActivated.disconnect(
                 self.actions.onSubWindowActivated
             )
-        except TypeError:
+        except TypeError: # workaround for Qt cleanup
             pass
         try:
             clipboard = QApplication.clipboard()
@@ -122,7 +128,7 @@ class Window(QMainWindow):
                 clipboard.dataChanged.disconnect(
                     self.actions.onClipboardDataChanged
                 )
-        except TypeError:
+        except TypeError: # workaround for Qt cleanup
             pass
         if hasattr(self, 'actions') and self.actions:
             self.actions.onSubWindowActivated(None)

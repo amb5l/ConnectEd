@@ -1,6 +1,7 @@
 from typing  import Self
 from logging import Logger
 
+from PyQt6.QtCore    import QObject, pyqtSignal
 from PyQt6.QtWidgets import QApplication
 
 from typing import TYPE_CHECKING
@@ -11,20 +12,26 @@ if TYPE_CHECKING:
 
 
 class ConnectEdApp(QApplication):
+    class Ready(QObject):
+        window = pyqtSignal()
+        splash = pyqtSignal()
+
     # Instance attributes
     _logger   : "Logger | None"
     _settings : "Settings | None"
     _model    : "Model | None"
     _window   : "Window | None"
     _cli      : bool
+    ready     : Ready
 
-    def __init__(self : Self, argv : list[str], cli : bool = False) -> None:
-        super().__init__(argv)
+    def __init__(self   : Self, cli : bool = False) -> None:
+        super().__init__([])
         self._logger   = None
         self._settings = None
         self._model    = None
         self._window   = None
         self._cli      = cli
+        self.ready     = self.Ready()
 
     def logger(self : Self) -> "Logger":
         return self._logger

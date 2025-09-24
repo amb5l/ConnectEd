@@ -197,9 +197,12 @@ class DiagramItem(DrawingItem):
 class DbItem(QStandardItem):
     _path : str | None
 
-    def __init__(self : Self) -> None:
-        u = "Untitled" + self.__class__.__name__.replace("DbItem", "")
-        super().__init__(name_counter.get(u))
+    def __init__(self : Self, name : str | None = None) -> None:
+        if name is None:
+            name = name_counter.get(
+                "Untitled" + self.__class__.__name__.replace("DbItem", "")
+            )
+        super().__init__(name)
         self.setFlags(self.flags() | Qt.ItemFlag.ItemIsEditable)
         self._path = None
 
@@ -233,10 +236,7 @@ class DbItem(QStandardItem):
             pass  # Already at target element
         else:
             fromXmlBegin(xr, element_name)
-        if cls.__name__ == 'DesignDbItem':
-            db_item = cls(new=False)
-        else:
-            db_item = cls()
+        db_item = cls("")
         attributes = xr.attributes()
         for attribute in attributes:
             tag = attribute.name()
@@ -263,6 +263,9 @@ class DbItem(QStandardItem):
 
     copy = copy
 
+    def close(self : Self) -> None:
+        pass
+
     def getPath(self : Self) -> str:
         return self._path
 
@@ -273,13 +276,13 @@ class DesignDbItem(DbItem):
     _diagrams : DiagramsContainer
     _symbols  : SymbolCacheContainer
 
-    def __init__(self : Self, new : bool = True) -> None:
-        super().__init__()
+    def __init__(self : Self, name : str | None = None) -> None:
+        super().__init__(name)
         self._diagrams = DiagramsContainer()
         self.appendRow(self._diagrams)
         self._symbols = SymbolCacheContainer()
         self.appendRow(self._symbols)
-        if new:
+        if name is None:
             self._diagrams.appendRow(DiagramItem())
             self._diagrams.root = self._diagrams.child(0)
         else:
@@ -300,11 +303,12 @@ class DesignDbItem(DbItem):
             symbol_item : SymbolItem = self._symbols.child(i)
             symbol_scene = symbol_item._scene
             symbol_scene.toXml(xw)
+        xw.writeEndElement()
         self.toXmlEnd(xw)
 
     @classmethod
     def fromXml(cls : Self, xr : QXmlStreamReader) -> Self:
-        db_item = cls.fromXmlBegin(xr)
+        db_item : Self = cls.fromXmlBegin(xr)
         while not (xr.isEndElement() and xr.name() == cls.__name__.replace("DbItem", "")):
             if xr.tokenType() == xr.TokenType.EndDocument:
                 logger().error(f"DesignDbItem.fromXml: Reached end of document while looking for end of '{cls.__name__.replace('DbItem', '')}'")
@@ -324,32 +328,32 @@ class DesignDbItem(DbItem):
                         if xr.tokenType() == QXmlStreamReader.TokenType.StartElement:
                             if xr.name() == "Diagram":
                                 diagram_item = DiagramItem.fromXml(xr)
-                                db_item.diagrams.appendRow(diagram_item)
+                                db_item._diagrams.appendRow(diagram_item)
                             else:
                                 raise ValueError(f"Unexpected element in Diagrams: {xr.name()}")
                         xr.readNext()
                     # Set the root diagram based on the loaded name
                     if root_name:
                         root = None
-                        for i in range(db_item.diagrams.rowCount()):
-                            diagram_item = db_item.diagrams.child(i)
+                        for i in range(db_item._diagrams.rowCount()):
+                            diagram_item = db_item._diagrams.child(i)
                             if diagram_item.text() == root_name:
                                 root = diagram_item
-                                db_item.diagrams.root = root
+                                db_item._diagrams.root = root
                                 break
                         if root is None:
                             logger().warning(f"DesignDbItem.fromXml: Root diagram '{root_name}' not found, defaulting to first")
-                            if db_item.diagrams.rowCount() > 0:
-                                db_item.diagrams.root = db_item.diagrams.child(0)
-                    elif db_item.diagrams.rowCount() > 0:
-                        db_item.diagrams.root = db_item.diagrams.child(0)
+                            if db_item._diagrams.rowCount() > 0:
+                                db_item.diagrams.root = db_item._diagrams.child(0)
+                    elif db_item._diagrams.rowCount() > 0:
+                        db_item._diagrams.root = db_item._diagrams.child(0)
                 elif xr.name() == "SymbolCache":
                     xr.readNext()  # Move past <SymbolCache>
                     while not (xr.isEndElement() and xr.name() == "SymbolCache"):
                         if xr.tokenType() == QXmlStreamReader.TokenType.StartElement:
                             if xr.name() == "Symbol":
                                 symbol_item = SymbolItem.fromXml(xr)
-                                db_item.symbols.appendRow(symbol_item)
+                                db_item._symbols.appendRow(symbol_item)
                             else:
                                 raise ValueError(f"Unexpected element in SymbolCache: {xr.name()}")
                         xr.readNext()
@@ -385,7 +389,7 @@ class LibraryDbItem(DbItem):
 
     @classmethod
     def fromXml(cls : Self, xr : QXmlStreamReader) -> Self:
-        db_item = cls.fromXmlBegin(xr)
+        db_item : Self = cls.fromXmlBegin(xr)
         while not (xr.isEndElement() and xr.name() == cls.__name__.replace("DbItem", "")):
             xr.readNext()
         return db_item
@@ -403,8 +407,8 @@ class Model(QStandardItemModel):
         self._libraries = LibraryDbContainer()
         self.appendRow(self._libraries)
 
-    def newDesignItem(self : Self) -> DesignDbItem:
-        item = DesignDbItem()
+    def newDesignItem(self : Self, name : str | None = None) -> DesignDbItem:
+        item = DesignDbItem(name)
         self._designs.appendRow(item)
         return item
 
@@ -415,13 +419,14 @@ class Model(QStandardItemModel):
 
     def newDiagramItem(
         self   : Self,
-        parent : QStandardItem
+        parent : QStandardItem,
+        name   : str | None = None
     ) -> DiagramItem | None:
         item = None
         if isinstance(parent, DesignDbItem):
             parent = parent._diagrams
         if isinstance(parent, DiagramsContainer):
-            item = DiagramItem()
+            item = DiagramItem(name)
             parent.appendRow(item)
         else:
             logger().warning(

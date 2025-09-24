@@ -82,7 +82,7 @@ class Actions:
                 s.selectionChanged.disconnect(self.onSelectionChanged)
                 s.undo_stack.canUndoChanged.disconnect(self.onCanUndoChanged)
                 s.undo_stack.canRedoChanged.disconnect(self.onCanRedoChanged)
-            except TypeError:
+            except: # workaround for Qt cleanup
                 pass
         en = subwindow is not None and isinstance(subwindow, DrawingSubWindow)
         self._scene = subwindow.widget().scene() if en else None
@@ -119,23 +119,16 @@ class Actions:
             self.onSelectionChanged()
 
     def onSelectionChanged(self : Self) -> None:
-        try:
-            if self._scene:
-                selected_items = self._scene.selectedItems()
-                n = len(selected_items)
-            else:
-                n = 0
-            self.editCut        .setEnabled( n > 0 )
-            self.editCopy       .setEnabled( n > 0 )
-            self.editDelete     .setEnabled( n > 0 )
-            self.editDuplicate  .setEnabled( n > 0 )
-            self.editAppearance .setEnabled( n > 0 )
-        except RuntimeError:
-            pass  # Objects deleted during shutdown
-        except Exception as e:
-            logger().error(f"Exception in onSelectionChanged: {e}")
-            import traceback
-            traceback.print_exc()
+        if self._scene:
+            selected_items = self._scene.selectedItems()
+            n = len(selected_items)
+        else:
+            n = 0
+        self.editCut        .setEnabled( n > 0 )
+        self.editCopy       .setEnabled( n > 0 )
+        self.editDelete     .setEnabled( n > 0 )
+        self.editDuplicate  .setEnabled( n > 0 )
+        self.editAppearance .setEnabled( n > 0 )
 
     def onClipboardDataChanged(self : Self) -> None:
         if not self._scene:
@@ -147,15 +140,9 @@ class Actions:
         self.editPaste.setEnabled(en)
 
     def onCanUndoChanged(self : Self, canUndo : bool) -> None:
-        try:
-            self.editUndo.setEnabled(canUndo)
-        except RuntimeError:
-            pass  # Object deleted during shutdown
+        self.editUndo.setEnabled(canUndo)
 
     def onCanRedoChanged(self : Self, canRedo : bool) -> None:
-        try:
-            self.editRedo.setEnabled(canRedo)
-        except RuntimeError:
-            pass  # Object deleted during shutdown
+        self.editRedo.setEnabled(canRedo)
 
 # TODO control status of edit cancel/complete
