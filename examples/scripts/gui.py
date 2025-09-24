@@ -7,12 +7,12 @@ from ConnectEd.widgets.graphics.items import DEFAULT
 from ConnectEd.widgets.graphics.items.rectangle import Rectangle
 
 
-def test(app : cs.ConnectEdGuiApp):
+def test(app : cs.ConnectEdApp):
 
     print("test started")
 
     # verify we are running in GUI mode
-    assert isinstance(app, cs.ConnectEdGuiApp)
+    assert isinstance(app, cs.ConnectEdApp)
 
     # get main window
     window = app.window()
@@ -183,25 +183,41 @@ def test(app : cs.ConnectEdGuiApp):
     view.mouseLeftClick(QPointF(pos.x() + size.width(), pos.y() + size.height()))
     # verify existence and basic properties
     rect = view.scene().items()[0]
-    assert rect is not None
-    assert isinstance(rect, Rectangle)
-    assert rect.pos() == pos
-    assert rect.rect().width() == size.width()
-    assert rect.rect().height() == size.height()
-    assert rect.line.getColor() == DEFAULT
-    assert rect.line.getWidth() == DEFAULT
+    assert isinstance(rect, Rectangle), \
+        f"Got {type(rect)}, expected {Rectangle}"
+    assert rect.pos() == pos, \
+        f"Got {rect.pos()}, expected {pos}"
+    assert rect.rect().width() == size.width(), \
+        f"Got {rect.rect().width()}, expected {size.width()}"
+    assert rect.rect().height() == size.height(), \
+        f"Got {rect.rect().height()}, expected {size.height()}"
+    assert rect.line.getColor() == DEFAULT, \
+        f"Got {rect.line.getColor()}, expected {DEFAULT}"
+    assert rect.line.getWidth() == DEFAULT, \
+        f"Got {rect.line.getWidth()}, expected {DEFAULT}"
+    assert rect.line.getStyle() == DEFAULT, \
+        f"Got {rect.line.getStyle()}, expected {DEFAULT}"
     assert rect.line.getStyle() == DEFAULT
      # verify selected and unselected appearance
     defaults = app.settings().getTheme("elements/Rectangle")
-    assert rect.isSelected()
+    assert rect.isSelected(), \
+        f"Got {rect.isSelected()}, expected True"
     rect_pen = rect.pen()
-    assert rect_pen.color() == app.settings().getTheme("selected").line
-    assert rect_pen.width() == defaults.line.width
+    assert rect_pen.color() == app.settings().getTheme("selected").line, \
+        f"Got {rect_pen.color()}, expected {app.settings().getTheme('selected').line}"
+    assert rect_pen.width() == defaults.line.width, \
+        f"Got {rect_pen.width()}, expected {defaults.line.width}"
+    assert rect_pen.style() == defaults.line.style, \
+        f"Got {rect_pen.style()}, expected {defaults.line.style}"
     assert rect_pen.style() == defaults.line.style
     rect.setSelected(False)
     rect_pen = rect.pen()
-    assert rect_pen.color() == defaults.line.color
-    assert rect_pen.width() == defaults.line.width
+    assert rect_pen.color() == defaults.line.color, \
+        f"Got {rect_pen.color()}, expected {defaults.line.color}"
+    assert rect_pen.width() == defaults.line.width, \
+        f"Got {rect_pen.width()}, expected {defaults.line.width}"
+    assert rect_pen.style() == defaults.line.style, \
+        f"Got {rect_pen.style()}, expected {defaults.line.style}"
     assert rect_pen.style() == defaults.line.style
 
     # done

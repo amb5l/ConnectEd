@@ -2,11 +2,11 @@ import sys
 
 from typing import Callable
 
-from .app  import ConnectEdCliApp, ConnectEdGuiApp, app
+from .app  import ConnectEdApp, app
 
 
 def run(
-    func : Callable[["ConnectEdCliApp | ConnectEdGuiApp"], None],
+    func : Callable[["ConnectEdApp"], None],
     argv : list[str] = [],
     exit : bool = True
 ) -> None:

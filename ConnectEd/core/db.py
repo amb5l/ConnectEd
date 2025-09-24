@@ -168,8 +168,10 @@ class SymbolItem(DrawingItem):
             cls._scene_class = SymbolScene
         return cls._scene_class
 
-    scene : "SymbolScene"
+    _scene : "SymbolScene"
 
+    def symbol(self : Self) -> "SymbolScene":
+        return self._scene
 
 class DiagramItem(DrawingItem):
     @classmethod
@@ -189,6 +191,8 @@ class DiagramItem(DrawingItem):
         super().__init__(name, scene)
         self.setIcon(EmptyIcon().get())
 
+    def diagram(self : Self) -> "DiagramScene":
+        return self._scene
 
 class DbItem(QStandardItem):
     _path : str | None
@@ -294,7 +298,7 @@ class DesignDbItem(DbItem):
         xw.writeStartElement("SymbolCache")
         for i in range(self._symbols.rowCount()):
             symbol_item : SymbolItem = self._symbols.child(i)
-            symbol_scene = symbol_item.scene
+            symbol_scene = symbol_item._scene
             symbol_scene.toXml(xw)
         self.toXmlEnd(xw)
 
@@ -375,7 +379,7 @@ class LibraryDbItem(DbItem):
         self.toXmlBegin(xw)
         for i in range(self.rowCount()):
             symbol_item : SymbolItem = self.child(i)
-            symbol_scene = symbol_item.scene
+            symbol_scene = symbol_item._scene
             symbol_scene.toXml(xw)
         self.toXmlEnd(xw)
 

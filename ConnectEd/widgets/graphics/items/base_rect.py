@@ -60,25 +60,44 @@ class BaseRectangle(
 
     # instance attributes
     _rect : QRectF  # cached rectangle
-    _p1   : QPointF # first corner
 
+    @overload
     def __init__(
         self : Self,
         p1   : QPointF | None = None,
         p2   : QPointF | None = None,
         bare : bool = False
     ) -> None:
+        ...
+
+    @overload
+    def __init__(
+        self : Self,
+        pos  : QPointF | None = None,
+        size : QSizeF | None = None,
+        bare : bool = False
+    ) -> None:
+        ...
+
+    def __init__(
+        self       : Self,
+        p1_or_pos  : QPointF | None = None,
+        p2_or_size : QPointF | None = None,
+        bare       : bool = False
+    ) -> None:
         super().__init__()
         self.initElement(bare=bare)
         self._rect = QRectF()
-        if p1 is None and p2 is None:
-            self._p1 = QPointF()
-        elif p2 is None:
-            self._p1 = p1
-            self.setPos(p1)
-        else:
-            self._p1 = p1
-            self.setPoints(p1, p2)
+        if p1_or_pos is None:
+            p1_or_pos = QPointF()
+        if p2_or_size is None:
+            p2_or_size = QSizeF(0, 0)
+        if isinstance(p2_or_size, QSizeF):
+            p2_or_size = QPointF(
+                p1_or_pos.x() + p2_or_size.width(),
+                p1_or_pos.y() + p2_or_size.height()
+            )
+        self.setPoints(p1_or_pos, p2_or_size)
         self.onGeometryChange()
 
     def onGeometryChange(self : Self) -> None:
@@ -184,22 +203,19 @@ class BaseRectangle(
         else:
             x1 = p1_x1
             y1 = p2_y1
-        self.setPos(QPointF(
+        final_pos = QPointF(
             x1 if x1 < x2 else x2,
             y1 if y1 < y2 else y2,
-        ))
+        )
+        self.setPos(final_pos)
         w = max(abs(x2-x1), self._MIN_SIZE.width())
         h = max(abs(y2-y1), self._MIN_SIZE.height())
         self._rect.setSize(QSizeF(w, h))
         self.setRect(self._rect)
 
     def setP2(self : Self, p2 : QPointF) -> None:
-        self.setPoints(
-            self._p1.x(),
-            self._p1.y(),
-            p2.x(),
-            p2.y()
-        )
+        p1 = self.pos()
+        self.setPoints(p1.x(), p1.y(), p2.x(), p2.y())
         self.setRect(self._rect)
 
     def moveAnchorPointBy(self : Self, name : "APName", delta : QPointF) -> None:

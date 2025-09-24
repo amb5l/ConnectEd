@@ -5,7 +5,7 @@ from typing import Callable
 from PyQt6.QtCore    import Qt
 from PyQt6.QtGui     import QIcon
 
-from .app import ConnectEdCliApp, ConnectEdGuiApp
+from .app import ConnectEdApp
 
 from .core.log   import logger
 from .core.nv    import Settings
@@ -20,10 +20,11 @@ def main(func : Callable | None = None, exit : bool = False) -> int:
     from .core.args import known_args, unknown_args
     logger.info("started")
     args = sys.argv[:1] + unknown_args
-    app = ConnectEdCliApp(args) if known_args.cli else ConnectEdGuiApp(args)
+    app = ConnectEdApp(args)
+    app.setCli(known_args.cli)
     if not known_args.cli:
         app.setStyle("Fusion")
-    if not known_args.nosplash:
+    if not (known_args.cli or known_args.nosplash):
         scheme = app.styleHints().colorScheme()
         splash = Splash(scheme == Qt.ColorScheme.Light)
         splash.show()
@@ -60,7 +61,7 @@ def main(func : Callable | None = None, exit : bool = False) -> int:
         if known_args.cli:
             func(app)
             if exit:
-                return 0
+                sys.exit(0)
         else:
             def _run():
                 func(app)
