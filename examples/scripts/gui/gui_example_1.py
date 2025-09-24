@@ -202,4 +202,4 @@ def test(app : cs.ConnectEdGuiApp):
     print("test finished")
 
 # run test
-cs.run(test)
+cs.run(test, ["--nosplash"])

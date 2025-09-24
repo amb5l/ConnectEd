@@ -10,7 +10,6 @@ from .app import ConnectEdCliApp, ConnectEdGuiApp
 from .core.log   import logger
 from .core.nv    import Settings
 from .core.db    import Model
-from .core.args  import known_args, unknown_args
 from .resources  import getIconPath, initResources
 
 from .widgets.splash import Splash
@@ -18,6 +17,7 @@ from .widgets.window import Window
 
 
 def main(func : Callable | None = None) -> int:
+    from .core.args import known_args, unknown_args
     logger.info("started")
     args = sys.argv[:1] + unknown_args
     app = ConnectEdCliApp(args) if known_args.cli else ConnectEdGuiApp(args)
@@ -52,6 +52,11 @@ def main(func : Callable | None = None) -> int:
     app.processEvents()
     if not (known_args.cli or known_args.nosplash):
         splash.finish(app.window())
+    elif not known_args.cli:
+        app.window().show()
+        app.window().raise_()
+        app.window().activateWindow()
+        app.window().ready.emit()
     if func is not None:
         if known_args.cli:
             func(app)

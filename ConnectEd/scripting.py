@@ -1,12 +1,19 @@
+import sys
+
 from typing import Callable
 
-from .app  import ConnectEdApp, ConnectEdCliApp, ConnectEdGuiApp, app
-from .main import main
+from .app  import ConnectEdCliApp, ConnectEdGuiApp, app
 
 
-def run(func : Callable[["ConnectEdCliApp | ConnectEdGuiApp"], None]) -> None:
+def run(
+    func : Callable[["ConnectEdCliApp | ConnectEdGuiApp"], None],
+    argv : list[str] = []
+) -> None:
     try:
         if app() is None:
+            sys.argv = [sys.argv[0]] + argv + sys.argv[1:]
+            from .core import args
+            from .main import main
             main(func)
         else:
             func(app())
