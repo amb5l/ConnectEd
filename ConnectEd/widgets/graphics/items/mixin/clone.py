@@ -14,7 +14,7 @@ class ElementCloneMixin:
         """Create a clone of this element with a new UUID."""
         from ..anchor_point  import AnchorPoint
         from ..property_text import PropertyText
-        from ..port_pin      import Pin
+        from ..port_pin.pin  import Pin
         source : ElementType = original if original is not None else self
         clone : ElementType = self.__class__(bare=True)
         # clone properties
