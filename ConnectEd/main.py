@@ -29,10 +29,11 @@ def main(func : Callable | None = None) -> int:
     app.setCli(known_args.cli)
     if not known_args.cli:
         app.setStyle("Fusion")
-    if known_args.nosplash:
-        app.ready.window.connect(_func)
-    else:
-        app.ready.splash.connect(_func)
+    if func is not None:
+        if known_args.nosplash:
+            app.ready.window.connect(_func)
+        else:
+            app.ready.splash.connect(_func)
     if not (known_args.cli or known_args.nosplash):
         scheme = app.styleHints().colorScheme()
         splash = Splash(scheme == Qt.ColorScheme.Light)
