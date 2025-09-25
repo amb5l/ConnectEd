@@ -66,7 +66,7 @@ class DiagramScene(DrawingScene):
         super().__init__(parent, sheet_size)
 
     def updateSceneRect(self : Self, rect : QRectF | None = None) -> None:
-        super().updateSceneRect(self.sheet.rect)
+        super().updateSceneRect(self.sheet.rect)  # sheet is minimum rect
 
     def drawBackground(self : Self, painter : QPainter, rect : QRectF) -> None:
         painter.fillRect(rect, settings().getTheme("background"))

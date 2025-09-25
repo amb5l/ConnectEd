@@ -1,6 +1,6 @@
 from typing import Self
 
-from PyQt6.QtCore    import QPointF
+from PyQt6.QtCore    import QPointF, QRectF
 from PyQt6.QtWidgets import QApplication
 from PyQt6.QtGui     import QCursor
 
@@ -146,11 +146,13 @@ class DrawingViewSlotsMixin:
 
     def viewZoomAll(self : "DrawingView") -> None:
         scene : DrawingScene = self.scene()
+        scene.updateSceneRect()
         if scene.items():
             rect = self._allItemsRect()
+        elif hasattr(scene, 'sheet'):
+            rect = scene.sheet.rect
         else:
-            scene.updateSceneRect()
-            rect = scene.sceneRect()
+            rect = QRectF(QPointF(0, 0), settings().get("defaults/extents"))
         self._zoomRect(rect)
 
     def viewZoomArea(self : "DrawingView") -> None:

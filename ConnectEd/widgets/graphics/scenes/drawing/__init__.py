@@ -84,11 +84,20 @@ class DrawingScene(
 
     def updateSceneRect(self : Self, rect : QRectF | None = None) -> None:
         ext_rect = QRectF(QPointF(0, 0), settings().get("defaults/extents"))
-        scene_rect = rect or ext_rect
+        scene_rect = QRectF(rect) if rect is not None else ext_rect
         for item in self.items():
             item_rect = item.mapToScene(item.boundingRect()).boundingRect()
             scene_rect = item_rect if scene_rect is None else scene_rect.united(item_rect)
         if scene_rect is not None:
+            # triple size of calculated scene rect
+            w = scene_rect.size().width()
+            h = scene_rect.size().height()
+            scene_rect.setRect(
+                scene_rect.left() - w,
+                scene_rect.top() - h,
+                w * 3,
+                h * 3
+            )
             self.setSceneRect(scene_rect)
 
     def toXml(self : Self, xw : QXmlStreamWriter) -> None:
