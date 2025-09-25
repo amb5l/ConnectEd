@@ -86,147 +86,147 @@ class Slots:
         window().explorer.openDb()
 
     @withCurrentWidget(DrawingView)
-    def fileSave(self : Self, widget: DrawingView) -> None:
-        item = model().getDbItemFromScene(widget.scene())
+    def fileSave(self : Self, view: DrawingView) -> None:
+        item = model().getDbItemFromScene(view.scene())
         if item:
             item.save()
 
     @withCurrentWidget(DrawingView)
-    def fileSaveAs(self : Self, widget: DrawingView) -> None:
-        model().saveAsScene(widget.scene())
+    def fileSaveAs(self : Self, view: DrawingView) -> None:
+        model().saveAsScene(view.scene())
 
     def fileExit(self : Self) -> None:
         window().close()
 
     @withCurrentWidget(DrawingView)
-    def editUndo(self : Self, widget: DrawingView) -> None:
-        widget.editUndo()
+    def editUndo(self : Self, view: DrawingView) -> None:
+        view.editUndo()
 
     @withCurrentWidget(DrawingView)
-    def editRedo(self : Self, widget: DrawingView) -> None:
-        widget.editRedo()
+    def editRedo(self : Self, view: DrawingView) -> None:
+        view.editRedo()
 
     @withCurrentWidget(DrawingView)
-    def editCut(self : Self, widget: DrawingView) -> None:
-        widget.editCut()
+    def editCut(self : Self, view: DrawingView) -> None:
+        view.editCut()
 
     @withCurrentWidget(DrawingView)
-    def editCopy(self : Self, widget: DrawingView) -> None:
-        widget.editCopy()
+    def editCopy(self : Self, view: DrawingView) -> None:
+        view.editCopy()
 
     @withCurrentWidget(DrawingView)
-    def editPaste(self : Self, widget: DrawingView) -> None:
-        widget.editPaste()
+    def editPaste(self : Self, view: DrawingView) -> None:
+        view.editPaste()
 
     @withCurrentWidget(DrawingView)
-    def editDelete(self : Self, widget: DrawingView) -> None:
-        widget.editDelete()
+    def editDelete(self : Self, view: DrawingView) -> None:
+        view.editDelete()
 
     @withCurrentWidget(DrawingView)
-    def editDuplicate(self : Self, widget: DrawingView) -> None:
-        widget.editDuplicate()
+    def editDuplicate(self : Self, view: DrawingView) -> None:
+        view.editDuplicate()
 
     @withCurrentWidget(DrawingView)
-    def editSelectArea(self : Self, widget: DrawingView) -> None:
-        widget.editSelectArea()
+    def editSelectArea(self : Self, view: DrawingView) -> None:
+        view.editSelectArea()
 
     @withCurrentWidget(DrawingView)
-    def editSelectAll(self : Self, widget: DrawingView) -> None:
-        widget.editSelectAll()
+    def editSelectAll(self : Self, view: DrawingView) -> None:
+        view.editSelectAll()
 
     @withCurrentWidget(DrawingView)
-    def editProperties(self : Self, widget: DrawingView) -> None:
-        widget.editProperties()
+    def editProperties(self : Self, view: DrawingView) -> None:
+        view.editProperties()
 
     @withCurrentWidget(DrawingView)
-    def editAppearance(self : Self, widget: DrawingView) -> None:
-        widget.editAppearance()
+    def editAppearance(self : Self, view: DrawingView) -> None:
+        view.editAppearance()
 
     @withCurrentWidget(DrawingView)
-    def editQuery(self : Self, widget: DrawingView) -> None:
-        widget.editQuery()
+    def editQuery(self : Self, view: DrawingView) -> None:
+        view.editQuery()
 
     @withCurrentWidget(DrawingView)
-    def viewZoomAll(self : Self, widget: DrawingView) -> None:
-        widget.viewZoomAll()
+    def viewZoomAll(self : Self, view: DrawingView) -> None:
+        view.viewZoomAll()
 
     @withCurrentWidget(DiagramView)
-    def viewZoomSheet(self : Self, widget: DiagramView) -> None:
-        widget.viewZoomSheet()
+    def viewZoomSheet(self : Self, view: DiagramView) -> None:
+        view.viewZoomSheet()
 
     @withCurrentWidget(DrawingView)
-    def viewZoomArea(self : Self, widget: DrawingView) -> None:
-        widget.viewZoomArea()
+    def viewZoomArea(self : Self, view: DrawingView) -> None:
+        view.viewZoomArea()
 
     @withCurrentWidget(DrawingView)
-    def viewZoomIn(self : Self, widget: DrawingView) -> None:
-        widget.viewZoomIn()
+    def viewZoomIn(self : Self, view: DrawingView) -> None:
+        view.viewZoomIn()
 
     @withCurrentWidget(DrawingView)
-    def viewZoomOut(self : Self, widget: DrawingView) -> None:
-        widget.viewZoomOut()
+    def viewZoomOut(self : Self, view: DrawingView) -> None:
+        view.viewZoomOut()
 
     @withCurrentWidget(DrawingView)
-    def viewPan(self : Self, widget: DrawingView) -> None:
-        widget.viewPan()
+    def viewPan(self : Self, view: DrawingView) -> None:
+        view.viewPan()
 
     @withCurrentWidget(DrawingView)
-    def viewPanUp(self : Self, widget: DrawingView) -> None:
-        widget.viewPanUp()
+    def viewPanUp(self : Self, view: DrawingView) -> None:
+        view.viewPanUp()
 
     @withCurrentWidget(DrawingView)
-    def viewPanDown(self : Self, widget: DrawingView) -> None:
-        widget.viewPanDown()
+    def viewPanDown(self : Self, view: DrawingView) -> None:
+        view.viewPanDown()
 
     @withCurrentWidget(DrawingView)
-    def viewPanLeft(self : Self, widget: DrawingView) -> None:
-        widget.viewPanLeft()
+    def viewPanLeft(self : Self, view: DrawingView) -> None:
+        view.viewPanLeft()
 
     @withCurrentWidget(DrawingView)
-    def viewPanRight(self : Self, widget: DrawingView) -> None:
-        widget.viewPanRight()
+    def viewPanRight(self : Self, view: DrawingView) -> None:
+        view.viewPanRight()
 
     @withCurrentWidgetCheckable(DrawingView, "viewGridDisplay")
-    def viewGridDisplay(self : Self, widget: DrawingView, checked: bool) -> None:
-        widget.viewGridDisplay(checked)
+    def viewGridDisplay(self : Self, view: DrawingView, checked: bool) -> None:
+        view.viewGridDisplay(checked)
 
     @withCurrentWidgetCheckable(DrawingView, "viewGridSnap")
-    def viewGridSnap(self : Self, widget: DrawingView, checked: bool) -> None:
-        widget.viewGridSnap(checked)
+    def viewGridSnap(self : Self, view: DrawingView, checked: bool) -> None:
+        view.viewGridSnap(checked)
 
     @withCurrentWidget(DrawingView)
-    def viewThemeDark(self : Self, widget: DrawingView) -> None:
+    def viewThemeDark(self : Self, view: DrawingView) -> None:
         settings().set("display/theme", "dark")
-        widget.scene().update()
+        view.scene().update()
 
     @withCurrentWidget(DrawingView)
-    def viewThemeLightMono(self : Self, widget: DrawingView) -> None:
+    def viewThemeLightMono(self : Self, view: DrawingView) -> None:
         settings().set("display/theme", "light_mono")
-        widget.scene().update()
+        view.scene().update()
 
     @withCurrentWidget(DrawingView)
-    def placePort(self : Self, widget: DrawingView) -> None:
-        widget.placePort()
+    def placePort(self : Self, view: DrawingView) -> None:
+        view.placePort()
 
     @withCurrentWidget(DrawingView)
-    def placeBlock(self : Self, widget: DrawingView) -> None:
-        widget.placeBlock()
+    def placeBlock(self : Self, view: DrawingView) -> None:
+        view.placeBlock()
 
     @withCurrentWidget(DrawingView)
-    def placeBlockPin(self : Self, widget: DrawingView) -> None:
-        widget.placeBlockPin()
+    def placeBlockPin(self : Self, view: DrawingView) -> None:
+        view.placeBlockPin()
 
     @withCurrentWidget(DrawingView)
-    def placeRectangle(self : Self, widget: DrawingView) -> None:
-        widget.placeRectangle()
+    def placeRectangle(self : Self, view: DrawingView) -> None:
+        view.placeRectangle()
 
     @withCurrentWidget(DrawingView)
-    def placeTextBlock(self : Self, widget: DrawingView) -> None:
-        widget.placeTextBlock()
+    def placeTextBlock(self : Self, view: DrawingView) -> None:
+        view.placeTextBlock()
 
     @withCurrentWidget(DrawingView)
-    def placeText(self : Self, widget: DrawingView) -> None:
-        widget.placeText()
+    def placeText(self : Self, view: DrawingView) -> None:
+        view.placeText()
 
     def windowExplorer(self : Self) -> None:
         window().explorer_dock.show()
