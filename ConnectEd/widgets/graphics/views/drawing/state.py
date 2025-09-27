@@ -18,9 +18,8 @@ from ...items.pin_rect      import PinRect
 from ...items.text          import Text
 from ...items.text_block    import TextBlock
 from ...items.property_text import PropertyText
-
-from ...items.port_pin.port      import Port
-from ...items.port_pin.block_pin import BlockPin
+from ...items.port          import Port
+from ...items.block_pin     import BlockPin
 
 from ...scenes.drawing import DrawingScene
 

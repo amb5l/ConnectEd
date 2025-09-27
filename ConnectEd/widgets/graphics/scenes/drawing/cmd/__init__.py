@@ -10,7 +10,7 @@ from ....items import EdgeLoc, ElementMixin
 
 from ....items.pin_rect import PinRect
 
-from ....items.port_pin.pin import Pin
+from ....items.pin import Pin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:

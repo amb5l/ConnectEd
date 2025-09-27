@@ -10,9 +10,8 @@ from ....items.block      import Block
 from ....items.rectangle  import Rectangle
 from ....items.text       import Text
 from ....items.text_block import TextBlock
-
-from ....items.port_pin.port      import Port
-from ....items.port_pin.block_pin import BlockPin
+from ....items.port       import Port
+from ....items.block_pin  import BlockPin
 
 from . import cmdBase, cmdSceneBase
 

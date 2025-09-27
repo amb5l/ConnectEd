@@ -4,22 +4,22 @@ from PyQt6.QtWidgets import QWidget, QGraphicsItem, QGraphicsPathItem, \
                             QStyleOptionGraphicsItem, QStyle
 from PyQt6.QtGui     import QPainter
 
-from .....app import settings
+from ....app import settings
 
-from ...scenes.drawing.cmd import cmdRotate
+from ..scenes.drawing.cmd import cmdRotate
 
-from ..mixin.pos  import ElementPosMixin
-from ..mixin.fill import ElementFillMixin
+from .mixin.pos  import ElementPosMixin
+from .mixin.fill import ElementFillMixin
 
-from . import PortPinText, PortPinMixin
-
-from .node import Node
+from .anchor_point import APName
+from .port_pin     import PortPinText, PortPinMixin
+from .node         import Node
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from ...views.drawing import DrawingView
-    from ...scenes.drawing import DrawingScene
-    from .. import SignalDirection
+    from ..views.drawing import DrawingView
+    from ..scenes.drawing import DrawingScene
+    from . import SignalDirection
 
 
 class PortNode(Node):
@@ -61,7 +61,7 @@ class Port(ElementPosMixin, ElementFillMixin, PortPinMixin, QGraphicsPathItem):
 
     def onSettingsChange(self : Self) -> None:
         size = settings().getTheme("elements/Port/size")
-        self.getAnchorPoint("Name").setPos(size + self._NAME_OFFSET, 0)
+        self.getAnchorPoint(APName.Name).setPos(size + self._NAME_OFFSET, 0)
 
     def onSceneChange(self : Self, scene : "DrawingScene") -> None:
         self._setPath(scene)

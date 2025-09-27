@@ -5,20 +5,19 @@ from PyQt6.QtWidgets import QGraphicsItem, QGraphicsPathItem, QGraphicsLineItem,
                             QStyleOptionGraphicsItem, QWidget, QStyle
 from PyQt6.QtGui     import QPainter
 
-from .. import SignalDirection
+from . import SignalDirection
 
-from ..mixin.loc    import ElementLocMixin
-from ..mixin.change import ElementChangeMixin
-from ..mixin.line   import ElementLineMixin
-from ..mixin.fill   import ElementFillMixin
+from .mixin.loc    import ElementLocMixin
+from .mixin.change import ElementChangeMixin
+from .mixin.line   import ElementLineMixin
+from .mixin.fill   import ElementFillMixin
 
-from . import PortPinMixin, PortPinText
-
-from .node import Node
+from .port_pin import PortPinMixin, PortPinText
+from .node     import Node
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from ...scenes.drawing import DrawingScene
+    from ..scenes.drawing import DrawingScene
 
 
 _PIN_LEN = 10 # documentation - DO NOT CHANGE

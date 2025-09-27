@@ -9,8 +9,7 @@ from .....app import settings, window
 from ....menu import Menu
 
 from ...items.pin_rect import PinRect
-
-from ...items.port_pin.pin import Pin, PinArrow, PinNode
+from ...items.pin      import Pin, PinArrow, PinNode
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:

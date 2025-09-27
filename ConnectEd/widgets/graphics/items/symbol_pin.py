@@ -1,4 +1,4 @@
-from . import PortPinText
+from .port_pin import PortPinText
 
 from .node import Node
 from .pin  import PinArrow, Pin

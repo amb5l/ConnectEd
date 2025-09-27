@@ -1,12 +1,11 @@
 from typing import Self
 
-from . import PortPinText
-
-from .pin import PinArrow, PinNode, Pin
+from .port_pin import PortPinText
+from .pin      import PinArrow, PinNode, Pin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from ...views.drawing import DrawingView
+    from ..views.drawing import DrawingView
 
 
 class BlockPinArrow(PinArrow):

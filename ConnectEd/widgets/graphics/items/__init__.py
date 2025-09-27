@@ -238,7 +238,7 @@ def register_element(module_name: str, class_name: str):
     _element_classes[class_name] = cls
     return cls
 
-register_element("port_pin.port", "Port")
+register_element("port", "Port")
 register_element("block", "Block")
 register_element("property_text", "PropertyText")
 register_element("rectangle", "Rectangle")

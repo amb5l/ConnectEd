@@ -10,10 +10,9 @@ from .....core.xml import toXmlAttrs, fromXmlAttrs
 class ElementXmlMixin:
     def toXml(self : Self, xw : QXmlStreamWriter) -> None:
         from ..property_text import PropertyText
-        from ..port_pin.pin  import Pin
+        from ..pin           import Pin
         xw.writeStartElement(self.__class__.__name__)
         toXmlAttrs(self, xw)
-        from ..port_pin.pin import Pin
         for child in self.childItems():
             if isinstance(child, PropertyText | Pin):
                 child.toXml(xw)
@@ -22,7 +21,7 @@ class ElementXmlMixin:
     @classmethod
     def fromXml(cls : Self, xr: QXmlStreamReader) -> Self:
         from ..property_text import PropertyText
-        from ..port_pin.block_pin import BlockPin
+        from ..block_pin     import BlockPin
         instance = cls(bare=True)
         fromXmlAttrs(instance, xr)
         instance.onGeometryChange()

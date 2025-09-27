@@ -2,20 +2,20 @@ from typing import Self
 
 from PyQt6.QtCore    import QPointF
 
-from ...properties import PropertySpec, PropertiesMixin
+from ..properties import PropertySpec, PropertiesMixin
 
-from .. import SignalDirection, VectorRange
+from . import SignalDirection, VectorRange
 
-from ..mixin        import ElementMixin
-from ..mixin.anchor import ElementAnchorPointsMixin
-from ..mixin.line   import ElementLineMixin
-from ..mixin.change import ElementChangeMixin
-from ..mixin.clone  import ElementCloneMixin
-from ..mixin.xml    import ElementXmlMixin
-from ..mixin.menu   import ElementMenuMixin
+from .mixin        import ElementMixin
+from .mixin.anchor import ElementAnchorPointsMixin
+from .mixin.line   import ElementLineMixin
+from .mixin.change import ElementChangeMixin
+from .mixin.clone  import ElementCloneMixin
+from .mixin.xml    import ElementXmlMixin
+from .mixin.menu   import ElementMenuMixin
 
-from ..property_text import PropertyText, PropertyTextSpec
-from ..anchor_point  import APName, AnchorPoint
+from .property_text import PropertyText, PropertyTextSpec
+from .anchor_point  import APName, AnchorPoint
 
 from .node import Node
 
