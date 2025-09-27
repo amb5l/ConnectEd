@@ -88,34 +88,34 @@ class DrawingViewStateBase:
         s    : QPointF,
         e    : list[ElementMixin] | None = None
     ) -> None:
-        pass
+        raise NotImplementedError
 
     def mouseLeftClick(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
-        pass
+        raise NotImplementedError
 
     def mouseLeftDragBegin(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
-        pass
+        raise NotImplementedError
 
     def mouseLeftDragCont(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
-        pass
+        raise NotImplementedError
 
     def mouseLeftDragEnd(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
-        pass
+        raise NotImplementedError
 
     def mouseMiddleClick(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
-        pass
+        raise NotImplementedError
 
     def mouseMiddleDragBegin(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
-        pass
+        raise NotImplementedError
 
     def mouseMiddleDragCont(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
-        pass
+        raise NotImplementedError
 
     def mouseMiddleDragEnd(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
-        pass
+        raise NotImplementedError
 
     def mouseMove(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
-        pass
+        raise NotImplementedError
 
     def _snap(self : Self, s : QPointF) -> QPointF:
         return self.view._snap(s)
