@@ -20,9 +20,8 @@ class cmdPlaceBase(cmdSceneBase):
     """Base class for commands that place an element."""
 
     # class attributes
-    _PREVIEW   = True
-    _SELECTION = True
     _CLASS : ElementMixin
+    _SELECTION = True
 
     # instance attributes
     _element : ElementMixin
