@@ -6,6 +6,9 @@ from PyQt6.QtCore import Qt, QPointF, QRectF, QSizeF
 from PyQt6.QtGui  import QColor
 
 
+sign = lambda x: -1 if x < 0 else (1 if x > 0 else 0)
+
+
 def check(b : bool, s : str) -> bool:
     if not b:
         print(s)

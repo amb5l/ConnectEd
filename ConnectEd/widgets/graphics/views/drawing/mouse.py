@@ -82,8 +82,10 @@ class DrawingViewMouseMixin:
 
     def mousePressEvent(self : "DrawingView", event : QMouseEvent) -> None:
         p = event.pos(); l = self.mapToScene(p); m = self._getModifiers(event)
-        if (event.buttons() & Qt.MouseButton.RightButton) \
-        or (event.buttons() & Qt.MouseButton.LeftButton and m == qkm.NoModifier):
+        # handle selection in idle state to avoid interfering with interactions
+        if self.state == self.stateIdle and \
+        ((event.buttons() & Qt.MouseButton.RightButton) \
+        or (event.buttons() & Qt.MouseButton.LeftButton and m == qkm.NoModifier)):
             items = self._itemsAt(l)
             if items:
                 if not isinstance(items[0], Handle):
@@ -143,6 +145,12 @@ class DrawingViewMouseMixin:
                     self.mouse.middle.state = MouseButtonState.Idle
                 case _:
                     logger().warning(f"Mouse middle button released when idle")
+
+    def mouseDoubleClickEvent(self : "DrawingView", event : QMouseEvent) -> None:
+        p = event.pos(); l = self.mapToScene(p); m = self._getModifiers(event)
+        if event.button() & Qt.MouseButton.LeftButton:
+            self.mouse.left.state = MouseButtonState.Idle
+            self.state.mouseLeftDoubleClick(p, l, m)
 
     def wheelEvent(self : "DrawingView", event : QWheelEvent) -> None:
         p = event.position().toPoint(); l = self.mapToScene(p)

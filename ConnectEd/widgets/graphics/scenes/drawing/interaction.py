@@ -1,24 +1,30 @@
 from typing import Self
 from abc import ABC, abstractmethod
 
-from PyQt6.QtCore    import QPointF
+from PyQt6.QtCore    import Qt, QPointF, QRectF, QLineF
 from PyQt6.QtWidgets import QGraphicsItem
 
-from .....core.xml import paste
+from .....core.xml   import paste
+from .....core.utils import sign
 
 from ...items import EdgeLoc, ElementMixin, clone
 
-from ...items.base_rect  import BaseRectangle
-from ...items.pin_rect   import PinRect
-from ...items.block      import Block
-from ...items.rectangle  import Rectangle
-from ...items.text       import Text
-from ...items.text_block import TextBlock
-from ...items.port       import Port
-from ...items.pin        import Pin
-from ...items.block_pin  import BlockPin
+from ...items.base_rect    import BaseRectangle
+from ...items.pin_rect     import PinRect
+from ...items.block        import Block
+from ...items.rectangle    import Rectangle
+from ...items.text         import Text
+from ...items.text_block   import TextBlock
+from ...items.port         import Port
+from ...items.pin          import Pin
+from ...items.block_pin    import BlockPin
+from ...items.node         import Node
+from ...items.wire_vertex  import WireVertex
+from ...items.wire_segment import WireSegment
 
-from .cmd   import cmdAdd, cmdMove, cmdAddPin, cmdMovePins
+from .cmd import cmdAdd, cmdMove, cmdAddPin, cmdMovePins
+
+from .cmd.conn import cmdAddWireSegment
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -44,7 +50,12 @@ class Interaction(ABC):
     def update(self : Self, pos: QPointF) -> None: ...
 
     @abstractmethod
-    def complete(self : Self, pos: QPointF) -> bool: ...
+    def complete(self : Self, pos: QPointF) -> bool:
+        """
+        Returns True if the interaction actually completed.
+        For example, if wire placement ended at a node.
+        """
+        ...
 
     @abstractmethod
     def cancel(self : Self) -> None: ...
@@ -313,7 +324,7 @@ class EditMovePinsInteraction(Interaction):
         self._restoreLoc()
         self.update(pos, snap)
         if all(p.loc() == self._sloc[p] for p in self._pins):
-            return False # no change
+            return True # no change so skip command push
         self._scene.undo_stack.push(cmdMovePins(
             self._parent,
             self._pins,
@@ -430,3 +441,105 @@ class PlaceTextInteraction(PlaceBaseInteraction):
 
 class PlaceTextBlockInteraction(PlaceBaseInteraction):
     _ELEMENT = TextBlock
+
+
+class PlaceWireInteraction(SelectionMixin):
+    """Interactive wire placement involves two preview segments."""
+
+    # instance attributes
+    _scene : "DrawingScene"
+    _v     : list[WireVertex]   # 3 vertices
+    _seg   : list[WireSegment]  # 2 segments
+
+    def __init__(
+        self   : Self,
+        scene  : "DrawingScene",
+        pos    : QPointF
+    ) -> None:
+        self._scene = scene
+        self._preserveSelection()  # store prior selection set
+        self._scene.clearSelection()
+        # create 3 vertices, add to scene
+        self._v = []
+        for i in range(3):
+            self._v.append(WireVertex())
+            self._v[i].setPos(pos)
+            self._scene.addItem(self._v[i])
+        # create 2 segments, select, add to scene
+        self._seg = []
+        for i in range(2):
+            self._seg.append(WireSegment(self._v[i], self._v[i+1]))
+            self._scene.addItem(self._seg[i])
+        self._seg[1].setSelected(True)
+
+    def valid(self : Self) -> bool:
+        return \
+            self._v is not None and \
+            len(self._v) == 3 and \
+            self._seg is not None and \
+            len(self._seg) == 2
+
+    def update(self : Self, pos: QPointF) -> None:
+        self._updateVertices(pos)
+
+    def complete(self : Self, pos: QPointF) -> bool:
+        self._updateVertices(pos)
+        # process first segment
+        cmd = cmdAddWireSegment(self._scene, self._v[0].pos(), self._v[1].pos())
+        self._scene.undo_stack.push(cmd)
+        if cmd.terminated():  # segment terminated at a connection point
+            self._cleanup()
+            return True  # interaction completed
+        # process second segment if it ends at a connection point
+        items = self._scene.items(self._v[2].pos())
+        item_types = set(item.__class__ for item in items)
+        if WireVertex | Node in item_types:
+            self._scene.undo_stack.push(cmdAddWireSegment(
+                self._scene, self._v[1].pos(), self._v[2].pos()
+            ))
+            self._cleanup()
+            return True  # interaction completed
+        self._restart(pos)
+        return False  # continue interaction
+
+    def cancel(self : Self) -> None:
+        self._cleanup()
+
+    def _updateVertices(self : Self, pos: QPointF) -> None:
+        # update end point
+        self._v[2].setPos(pos)
+        # conditions
+        h = self._v[1].pos().y() == self._v[0].pos().y()
+        v = self._v[1].pos().x() == self._v[0].pos().x()
+        h_restart = h and \
+            sign(pos.x() - self._v[0].pos().x()) != \
+                sign(self._v[1].pos().x() - self._v[0].pos().x())
+        v_restart = v and \
+            sign(pos.y() - self._v[0].pos().y()) != \
+                sign(self._v[1].pos().y() - self._v[0].pos().y())
+        # if new start or restart, establish first segment based on quadrant
+        if self._v[1].pos() == self._v[0].pos() or h_restart or v_restart:
+            vector = pos - self._v[0].pos()
+            if abs(vector.x()) >= abs(vector.y()):
+                self._v[1].setPos(pos.x(), self._v[0].pos().y())
+            else:
+                self._v[1].setPos(self._v[0].pos().x(), pos.y())
+        # update first segment
+        elif h and not v:
+            self._v[1].setPos(pos.x(), self._v[0].pos().y())
+        elif v and not h:
+            self._v[1].setPos(self._v[0].pos().x(), pos.y())
+        else:
+            self._v[1].setPos(pos)
+        self._seg[0].onGeometryChange()
+        self._seg[1].onGeometryChange()
+
+    def _restart(self : Self, pos: QPointF) -> None:
+        self._v[0].setPos(self._v[1].pos())
+        self._updateVertices(pos)
+
+    # todo: _commit method
+
+    def _cleanup(self : Self) -> None:
+        for item in self._v + self._seg:
+            self._scene.removeItem(item)

@@ -19,6 +19,9 @@ class ElementChangeMixin:
             case QGraphicsItem.GraphicsItemChange.ItemPositionHasChanged:
                 if hasattr(self, 'onPositionChange'):
                     self.onPositionChange(value)
+            case QGraphicsItem.GraphicsItemChange.ItemScenePositionHasChanged:
+                if hasattr(self, 'onScenePositionChange'):
+                    self.onScenePositionChange(value)
             case QGraphicsItem.GraphicsItemChange.ItemSelectedHasChanged:
                 if hasattr(self, "line"):
                     self.line.onSelectionChange(value)

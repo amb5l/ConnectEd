@@ -37,7 +37,7 @@ class cmdSceneBase(cmdBase):
     """Base class for all commands that work with a scene."""
 
     # instance attributes
-    _scene     : "DrawingScene"
+    _scene : "DrawingScene"
 
     def __init__(self : Self, scene : "DrawingScene"):
         text = camel_to_proper(self.__class__.__name__.replace("cmd", ""))

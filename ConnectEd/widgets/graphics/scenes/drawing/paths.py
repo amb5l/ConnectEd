@@ -34,7 +34,8 @@ class DrawingScenePathsMixin:
                 "in"  : QPainterPath(),
                 "out" : QPainterPath(),
                 "bi"  : QPainterPath()
-            }
+            },
+            "WireVertex" : QPainterPath()
         }
         self.updatePaths()
         settings().changed.connect(self.updatePaths)
@@ -54,6 +55,8 @@ class DrawingScenePathsMixin:
         self._pinArrowInPath  ( self.paths["SymbolPinArrow"][ "in"  ] , size )
         self._pinArrowOutPath ( self.paths["SymbolPinArrow"][ "out" ] , size )
         self._pinArrowBiPath  ( self.paths["SymbolPinArrow"][ "bi"  ] , size )
+        size = settings().get("theme/elements/WireVertex/size")
+        self._wireVertexPath( self.paths["WireVertex"] , size )
 
     def _gripPath(self : "DrawingScene", path : QPainterPath) -> None:
         size = settings().get("theme/grip/size")
@@ -139,4 +142,17 @@ class DrawingScenePathsMixin:
         path.moveTo(c,   -h)
         path.lineTo(c+h,  0)
         path.lineTo(c,   +h)
+        path.closeSubpath()
+
+    def _wireVertexPath(
+        self : "DrawingScene",
+        path : QPainterPath,
+        size : float
+    ) -> None:
+        s = size / 2
+        path.clear()
+        path.moveTo(-s, 0)
+        path.lineTo(0, -s)
+        path.lineTo(s, 0)
+        path.lineTo(0, s)
         path.closeSubpath()

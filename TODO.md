@@ -1,15 +1,12 @@
+- delete interactions when complete (careful in the wire case)
 - connect settings changes to DrawingScenePaths
 - move handle size to theme
 - DrawingItem => DrawingModelItem
-- Pin name not updating
-- Pin appearance
-- Pin movement
 
 - check interactions that don't change anything don't push a cmd
 - tackle onGeometryChange usage
 
 - rotate ports during placement
-- remove hub
 
 - propagate property name change to texts
 - property change propagation

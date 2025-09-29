@@ -99,6 +99,10 @@ class Slots:
         window().close()
 
     @withCurrentWidget(DrawingView)
+    def editCancel(self : Self, view: DrawingView) -> None:
+        view.editCancel()
+
+    @withCurrentWidget(DrawingView)
     def editUndo(self : Self, view: DrawingView) -> None:
         view.editUndo()
 
@@ -219,6 +223,10 @@ class Slots:
     @withCurrentWidget(DrawingView)
     def placeRectangle(self : Self, view: DrawingView) -> None:
         view.placeRectangle()
+
+    @withCurrentWidget(DrawingView)
+    def placeWire(self : Self, view: DrawingView) -> None:
+        view.placeWire()
 
     @withCurrentWidget(DrawingView)
     def placeTextBlock(self : Self, view: DrawingView) -> None:

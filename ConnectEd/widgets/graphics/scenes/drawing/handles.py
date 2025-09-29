@@ -19,8 +19,8 @@ class DrawingSceneHandlesMixin:
 
     def updateHandles(self : "DrawingScene") -> None:
         self.hideHandles()
-        self._handle_items = \
-            [i for i in self.selectedItems() if i.parentItem() is None]
+        self._handle_items = [i for i in self.selectedItems() \
+                if i.parentItem() is None and hasattr(i, "_anchor_points")]
         for item in self.selectedItems():
             if item.parentItem() is None and hasattr(item, "_anchor_points"):
                 element : "ElementAnchorPointsMixin | ElementOriginMixin" = item

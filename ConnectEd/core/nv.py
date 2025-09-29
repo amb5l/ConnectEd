@@ -245,6 +245,25 @@ FACTORY_SETTINGS = {
                         "italic"    : False,
                         "underline" : False
                     }
+                },
+                "Junction" : {
+                    "size"  : 4,
+                    "color" : PaletteDark.Junction
+                },
+                "WireVertex" : {
+                    "visible" : True,
+                    "size"    : 12,
+                    "fill"    : {
+                        "color" : PaletteDark.WireVertex,
+                        "style" : Qt.BrushStyle.SolidPattern
+                    },
+                },
+                "WireSegment" : {
+                    "line" : {
+                        "color" : PaletteDark.WireSegment,
+                        "width" : 1,
+                        "style" : Qt.PenStyle.SolidLine
+                    }
                 }
             },
             "selected" : {
@@ -411,6 +430,25 @@ FACTORY_SETTINGS = {
                         "bold"      : False,
                         "italic"    : False,
                         "underline" : False
+                    }
+                },
+                "Junction" : {
+                    "size"  : 4,
+                    "color" : PaletteLightMono.Junction
+                },
+                "WireVertex" : {
+                    "visible" : True,
+                    "size"    : 12,
+                    "fill"    : {
+                        "color" : PaletteLightMono.WireVertex,
+                        "style" : Qt.BrushStyle.SolidPattern
+                    },
+                },
+                "WireSegment" : {
+                    "line" : {
+                        "color" : PaletteLightMono.WireSegment,
+                        "width" : 1,
+                        "style" : Qt.PenStyle.SolidLine
                     }
                 }
             },

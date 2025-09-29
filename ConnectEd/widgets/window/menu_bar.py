@@ -31,6 +31,8 @@ class MenuBar(QMenuBar):
         self.file_menu.addAction(actions.fileExit)
 
         self.edit_menu = Menu("&Edit")
+        self.edit_menu.addAction(actions.editCancel)
+        self.edit_menu.addSeparator()
         self.edit_menu.addAction(actions.editUndo)
         self.edit_menu.addAction(actions.editRedo)
         # TODO: repeat
@@ -81,6 +83,8 @@ class MenuBar(QMenuBar):
         self.place_menu.addAction(actions.placePort)
         self.place_menu.addAction(actions.placeBlock)
         self.place_menu.addAction(actions.placeBlockPin)
+        self.place_menu.addSeparator()
+        self.place_menu.addAction(actions.placeWire)
         self.place_menu.addSeparator()
         self.place_menu.addAction(actions.placeRectangle)
         self.place_menu.addAction(actions.placeTextBlock)

@@ -8,6 +8,12 @@ if TYPE_CHECKING:
 
 
 class DrawingSceneApiPrivateMixin:
+    def _itemTypes(self : "DrawingScene", pos : QPointF) -> list[type]:
+        items = self.items(pos)
+        # use a set to avoid duplicates
+        types = set(tuple(item.__class__ for item in items))
+        return list(types)
+
     def _selectedTopElements(self : "DrawingScene") -> list[ElementMixin]:
         """Returns selected items that are Elements, and are not children."""
         return [
