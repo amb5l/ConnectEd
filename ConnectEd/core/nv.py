@@ -250,17 +250,31 @@ FACTORY_SETTINGS = {
                     "size"  : 4,
                     "color" : PaletteDark.Junction
                 },
-                "WireVertex" : {
+                "ConnSegPreview1" : {
+                    "line" : {
+                        "color" : PaletteDark.ConnSegPreview1,
+                        "width" : 1,
+                        "style" : Qt.PenStyle.SolidLine
+                    }
+                },
+                "ConnSegPreview2" : {
+                    "line" : {
+                        "color" : PaletteDark.ConnSegPreview2,
+                        "width" : 1,
+                        "style" : Qt.PenStyle.DashDotDotLine
+                    }
+                },
+                "ConnVtx" : {
                     "visible" : True,
                     "size"    : 12,
                     "fill"    : {
-                        "color" : PaletteDark.WireVertex,
+                        "color" : PaletteDark.ConnVtx,
                         "style" : Qt.BrushStyle.SolidPattern
                     },
                 },
-                "WireSegment" : {
+                "ConnSeg" : {
                     "line" : {
-                        "color" : PaletteDark.WireSegment,
+                        "color" : PaletteDark.ConnSeg,
                         "width" : 1,
                         "style" : Qt.PenStyle.SolidLine
                     }
@@ -436,17 +450,31 @@ FACTORY_SETTINGS = {
                     "size"  : 4,
                     "color" : PaletteLightMono.Junction
                 },
-                "WireVertex" : {
+                "ConnSegPreview1" : {
+                    "line" : {
+                        "color" : PaletteLightMono.ConnSegPreview1,
+                        "width" : 1,
+                        "style" : Qt.PenStyle.SolidLine
+                    }
+                },
+                "ConnSegPreview2" : {
+                    "line" : {
+                        "color" : PaletteLightMono.ConnSegPreview2,
+                        "width" : 1,
+                        "style" : Qt.PenStyle.DashDotDotLine
+                    }
+                },
+                "ConnVtx" : {
                     "visible" : True,
                     "size"    : 12,
                     "fill"    : {
-                        "color" : PaletteLightMono.WireVertex,
+                        "color" : PaletteLightMono.ConnVtx,
                         "style" : Qt.BrushStyle.SolidPattern
                     },
                 },
-                "WireSegment" : {
+                "ConnSeg" : {
                     "line" : {
-                        "color" : PaletteLightMono.WireSegment,
+                        "color" : PaletteLightMono.ConnSeg,
                         "width" : 1,
                         "style" : Qt.PenStyle.SolidLine
                     }

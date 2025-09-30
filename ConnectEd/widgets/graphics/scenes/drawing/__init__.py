@@ -16,6 +16,7 @@ from .edit    import DrawingSceneApiEditMixin
 from .private import DrawingSceneApiPrivateMixin
 from .paths   import DrawingScenePathsMixin
 from .handles import DrawingSceneHandlesMixin
+from .conn    import DrawingSceneConnMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -29,6 +30,7 @@ class DrawingScene(
     DrawingSceneApiPrivateMixin,
     DrawingScenePathsMixin,
     DrawingSceneHandlesMixin,
+    DrawingSceneConnMixin,
     QGraphicsScene
 ):
     # class attributes

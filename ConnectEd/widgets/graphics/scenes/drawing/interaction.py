@@ -1,7 +1,7 @@
 from typing import Self
 from abc import ABC, abstractmethod
 
-from PyQt6.QtCore    import Qt, QPointF, QRectF, QLineF
+from PyQt6.QtCore    import QPointF
 from PyQt6.QtWidgets import QGraphicsItem
 
 from .....core.xml   import paste
@@ -9,22 +9,20 @@ from .....core.utils import sign
 
 from ...items import EdgeLoc, ElementMixin, clone
 
-from ...items.base_rect    import BaseRectangle
-from ...items.pin_rect     import PinRect
-from ...items.block        import Block
-from ...items.rectangle    import Rectangle
-from ...items.text         import Text
-from ...items.text_block   import TextBlock
-from ...items.port         import Port
-from ...items.pin          import Pin
-from ...items.block_pin    import BlockPin
-from ...items.node         import Node
-from ...items.wire_vertex  import WireVertex
-from ...items.wire_segment import WireSegment
+from ...items.base_rect  import BaseRectangle
+from ...items.pin_rect   import PinRect
+from ...items.block      import Block
+from ...items.rectangle  import Rectangle
+from ...items.text       import Text
+from ...items.text_block import TextBlock
+from ...items.port       import Port
+from ...items.pin        import Pin
+from ...items.block_pin  import BlockPin
+from ...items.node       import Node
+from ...items.conn_vtx   import ConnVtx
+from ...items.conn_seg   import ConnSegPreview1, ConnSegPreview2
 
 from .cmd import cmdAdd, cmdMove, cmdAddPin, cmdMovePins
-
-from .cmd.conn import cmdAddWireSegment
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -448,8 +446,8 @@ class PlaceWireInteraction(SelectionMixin):
 
     # instance attributes
     _scene : "DrawingScene"
-    _v     : list[WireVertex]   # 3 vertices
-    _seg   : list[WireSegment]  # 2 segments
+    _seg1  : ConnSegPreview1
+    _seg2  : ConnSegPreview2
 
     def __init__(
         self   : Self,
@@ -457,27 +455,18 @@ class PlaceWireInteraction(SelectionMixin):
         pos    : QPointF
     ) -> None:
         self._scene = scene
+        self._seg1 = ConnSegPreview1()
+        self._seg2 = ConnSegPreview2()
+        self._setP0(pos)
+        self._setP1(pos)
+        self._setP2(pos)
+        self._scene.addItem(self._seg1)
+        self._scene.addItem(self._seg2)
         self._preserveSelection()  # store prior selection set
         self._scene.clearSelection()
-        # create 3 vertices, add to scene
-        self._v = []
-        for i in range(3):
-            self._v.append(WireVertex())
-            self._v[i].setPos(pos)
-            self._scene.addItem(self._v[i])
-        # create 2 segments, select, add to scene
-        self._seg = []
-        for i in range(2):
-            self._seg.append(WireSegment(self._v[i], self._v[i+1]))
-            self._scene.addItem(self._seg[i])
-        self._seg[1].setSelected(True)
 
     def valid(self : Self) -> bool:
-        return \
-            self._v is not None and \
-            len(self._v) == 3 and \
-            self._seg is not None and \
-            len(self._seg) == 2
+        return True
 
     def update(self : Self, pos: QPointF) -> None:
         self._updateVertices(pos)
@@ -485,61 +474,74 @@ class PlaceWireInteraction(SelectionMixin):
     def complete(self : Self, pos: QPointF) -> bool:
         self._updateVertices(pos)
         # process first segment
-        cmd = cmdAddWireSegment(self._scene, self._v[0].pos(), self._v[1].pos())
-        self._scene.undo_stack.push(cmd)
-        if cmd.terminated():  # segment terminated at a connection point
-            self._cleanup()
+        print(f"p0: {self._p0().x()}, {self._p0().y()}")
+        print(f"p1: {self._p1().x()}, {self._p1().y()}")
+        if self._scene.addWireSeg(self._p0(), self._p1()):
+            self._cleanup()  # segment terminated at a connection point
             return True  # interaction completed
         # process second segment if it ends at a connection point
-        items = self._scene.items(self._v[2].pos())
+        items = self._scene.items(self._p2())
         item_types = set(item.__class__ for item in items)
-        if WireVertex | Node in item_types:
-            self._scene.undo_stack.push(cmdAddWireSegment(
-                self._scene, self._v[1].pos(), self._v[2].pos()
-            ))
-            self._cleanup()
-            return True  # interaction completed
+        if ConnVtx | Node in item_types:
+            if self._scene.addWireSeg(self._p0(), self._p1()):
+                self._cleanup()  # segment terminated at a connection point
+                return True  # interaction completed
         self._restart(pos)
         return False  # continue interaction
 
     def cancel(self : Self) -> None:
         self._cleanup()
 
+    def _p0(self : Self) -> QPointF:
+        return self._seg1.p1()
+
+    def _setP0(self : Self, pos: QPointF) -> None:
+        self._seg1.setP1(pos)
+
+    def _p1(self : Self) -> QPointF:
+        return self._seg1.p2()
+
+    def _setP1(self : Self, pos: QPointF) -> None:
+        self._seg1.setP2(pos)
+        self._seg2.setP1(pos)
+
+    def _p2(self : Self) -> QPointF:
+        return self._seg2.p2()
+
+    def _setP2(self : Self, pos: QPointF) -> None:
+        self._seg2.setP2(pos)
+
     def _updateVertices(self : Self, pos: QPointF) -> None:
+        v0 = self._seg1.p1()
+        v1 = self._seg1.p2()
         # update end point
-        self._v[2].setPos(pos)
+        self._seg2.setP2(pos)
         # conditions
-        h = self._v[1].pos().y() == self._v[0].pos().y()
-        v = self._v[1].pos().x() == self._v[0].pos().x()
-        h_restart = h and \
-            sign(pos.x() - self._v[0].pos().x()) != \
-                sign(self._v[1].pos().x() - self._v[0].pos().x())
-        v_restart = v and \
-            sign(pos.y() - self._v[0].pos().y()) != \
-                sign(self._v[1].pos().y() - self._v[0].pos().y())
+        h = v1.y() == v0.y()
+        v = v1.x() == v0.x()
+        h_restart = h and sign(pos.x() - v0.x()) != sign(v1.x() - v0.x())
+        v_restart = v and sign(pos.y() - v0.y()) != sign(v1.y() - v0.y())
         # if new start or restart, establish first segment based on quadrant
-        if self._v[1].pos() == self._v[0].pos() or h_restart or v_restart:
-            vector = pos - self._v[0].pos()
+        if v1 == v0 or h_restart or v_restart:
+            vector = pos - v0
             if abs(vector.x()) >= abs(vector.y()):
-                self._v[1].setPos(pos.x(), self._v[0].pos().y())
+                self._setP1(QPointF(pos.x(), v0.y()))
             else:
-                self._v[1].setPos(self._v[0].pos().x(), pos.y())
+                self._setP1(QPointF(v0.x(), pos.y()))
         # update first segment
         elif h and not v:
-            self._v[1].setPos(pos.x(), self._v[0].pos().y())
+            self._setP1(QPointF(pos.x(), v0.y()))
         elif v and not h:
-            self._v[1].setPos(self._v[0].pos().x(), pos.y())
+            self._setP1(QPointF(v0.x(), pos.y()))
         else:
-            self._v[1].setPos(pos)
-        self._seg[0].onGeometryChange()
-        self._seg[1].onGeometryChange()
+            self._setP1(pos)
 
     def _restart(self : Self, pos: QPointF) -> None:
-        self._v[0].setPos(self._v[1].pos())
+        self._seg1.setP1(self._seg1.p2())
         self._updateVertices(pos)
 
     # todo: _commit method
 
     def _cleanup(self : Self) -> None:
-        for item in self._v + self._seg:
+        for item in [self._seg1, self._seg2]:
             self._scene.removeItem(item)

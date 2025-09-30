@@ -8,7 +8,7 @@ from ....app import settings
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from .wire_vertex import WireVertex
+    from .conn_vtx import ConnVtx
 
 
 class Junction(QGraphicsEllipseItem):
@@ -16,7 +16,7 @@ class Junction(QGraphicsEllipseItem):
     _rect  : QRectF
     _brush : QBrush
 
-    def __init__(self : Self, parent : "WireVertex") -> None:
+    def __init__(self : Self, parent : "ConnVtx") -> None:
         QGraphicsEllipseItem.__init__(self, parent)
         self.setFlag(self.GraphicsItemFlag.ItemIsSelectable, True)
         self._rect = QRectF()

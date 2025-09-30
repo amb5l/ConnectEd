@@ -2,6 +2,8 @@ import os, platform
 
 from typing import Any, TypeVar
 
+from collections import defaultdict
+
 from PyQt6.QtCore import Qt, QPointF, QRectF, QSizeF
 from PyQt6.QtGui  import QColor
 
@@ -17,13 +19,22 @@ def check(b : bool, s : str) -> bool:
 
 T = TypeVar('T')
 
-def getItemOfType(l: list, types: type[T] | tuple[type[T], ...]) -> T | None:
+def getItemOfType(items: list[Any], types: type[T] | tuple[type[T], ...]) -> T | None:
+    """Get the first item of the specified type."""
     types = (types,) if isinstance(types, type) else types
     for t in types:
-        item = next((item for item in l if isinstance(item, t)), None)
+        item = next((item for item in items if isinstance(item, t)), None)
         if item is not None:
             return item
     return None
+
+
+def itemsTypeDict(items: list[Any]) -> dict[type, list[Any]]:
+    """Group items by their type."""
+    result: defaultdict[type, list[Any]] = defaultdict(list)
+    for item in items:
+        result[type(item)].append(item)
+    return dict(result)
 
 
 def camel_to_proper(s : str) -> str:

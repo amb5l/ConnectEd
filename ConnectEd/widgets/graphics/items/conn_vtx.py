@@ -18,11 +18,11 @@ from .junction import Junction
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ..scenes.drawing import DrawingScene
-    from .wire_segment    import WireSegment
-    from .node            import Node
+    from .conn_seg import ConnSeg
+    from .node     import Node
 
 
-class WireVertex(
+class ConnVtx(
     ElementMixin,
     ElementPosMixin,
     ElementFillMixin,
@@ -35,21 +35,20 @@ class WireVertex(
     Junction appears when there are more than 2 connections to the vertex.
     """
     # class attributes
-    _PATH = "WireVertex"
+    _PATH = "ConnVtx"
 
     # instance attributes
     _path        : QPainterPath
     _pen         : QPen
     _junction    : Junction
-    _connections : list["WireSegment"]
+    _connections : list["ConnSeg"]
 
     def __init__(self : Self, parent : "Node | None" = None) -> None:
         QGraphicsPathItem.__init__(self, parent)
         self._connections = []
         self._junction = Junction(self)
-        self.initFill()
+        self.initElement()
         self.onSettingsChange()
-        settings().changed.connect(self.onSettingsChange)
 
     def onScenePositionChange(self : Self, _pos : QPointF) -> None:
         """Update all connected segments."""
@@ -62,7 +61,8 @@ class WireVertex(
 
     def onSettingsChange(self : Self) -> None:
         # update visibility
-        visible = settings().get("theme/elements/WireVertex/visible")
+        settings_path = f"theme/elements/{self.__class__.__name__}/visible"
+        visible = settings().get(settings_path)
         self.setFlag(self.GraphicsItemFlag.ItemIsSelectable, visible)
         if not visible:
             return
@@ -71,22 +71,21 @@ class WireVertex(
 
     def updateJunction(self : Self) -> None:
         """Update junction visibility - show if >2 connections."""
-        vertex : "WireVertex" = self.parentItem()
         connections = len(self._connections)
-        # special case: parent is node, segments are not colinear
-        node : "Node | None" = vertex.parentItem()
-
-
+        # TODO: special case: parent is node, segments are not colinear
         self._junction.setVisible((connections > 2))
 
-    def connect(self : Self, segment : "WireSegment") -> None:
+    def attach(self : Self, segment : "ConnSeg") -> None:
         if segment not in self._connections:
             self._connections.append(segment)
         self.updateJunction()
 
-    def disconnect(self : Self, segment : "WireSegment") -> None:
+    def detach(self : Self, segment : "ConnSeg") -> None:
         if segment not in self._connections:
             logger().warning(f"Segment {segment} not found in connections")
             return
         self._connections.remove(segment)
         self.updateJunction()
+
+    def connections(self : Self) -> list["ConnSeg"]:
+        return self._connections
