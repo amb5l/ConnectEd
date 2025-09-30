@@ -45,6 +45,7 @@ class ConnVtx(
 
     def __init__(self : Self, parent : "Node | None" = None) -> None:
         QGraphicsPathItem.__init__(self, parent)
+        self.setZValue(-1)
         self._connections = []
         self._junction = Junction(self)
         self.initElement()

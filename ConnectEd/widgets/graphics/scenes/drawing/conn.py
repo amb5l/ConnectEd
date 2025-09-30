@@ -88,13 +88,13 @@ def _calculate_overlap_interval(other_line: QLineF, project_func):
 
 def pointOnInfiniteLine(point: QPointF, line: QLineF, tol: float = 1e-6) -> bool:
     """Returns True if the point is on the infinite line."""
-    cross_product = _xp(point, line, tol)
+    cross_product = _xp(point, line)
     return isclose(cross_product, 0.0, abs_tol=tol)
 
 
 def pointOnLine(point: QPointF, line: QLineF, tol: float = 1e-6) -> bool:
     """Returns True if the point is on the finite line."""
-    cross_product = _xp(point, line, tol)
+    cross_product = _xp(point, line)
     if not isclose(cross_product, 0.0, abs_tol=tol):
         return False
     # check if point is within the segment bounds (project onto line)
@@ -148,6 +148,19 @@ def overlapping(line1: QLineF, line2: QLineF) -> bool:
     # overlapping if positive overlap length (strict > for not just touching)
     return start_overlap < end_overlap
 
+def dump(items):
+    from ...items.junction import Junction
+    for item in items:
+        if isinstance(item, ConnSeg):
+            print(" WireSeg", item.vtx1().pos(), item.vtx2().pos())
+        elif isinstance(item, ConnVtx):
+            print(" WireVtx", item.pos())
+        elif isinstance(item, Junction):
+            print(" Junction", item.pos())
+        elif isinstance(item, Node):
+            print(" Node", item.pos())
+        else:
+            print(" ", item)
 
 ################################################################################
 # mixin
@@ -275,14 +288,17 @@ class DrawingSceneConnMixin:
         # add segment
         self.undo_stack.push(cmdAddConnSeg(self, v1, v2))
         # get bounding rect and line for segment
-        rect = QRectF(p1, p2).normalized()
+        rect = QRectF(p1, p2).normalized().adjusted(-1e-6, -1e-6, 1e-6, 1e-6)
         line = QLineF(p1, p2)
         # get items in rect
         items = self.items(rect)
+        dump(items)
         # get nodes in rect
         nodes = [item for item in items if isinstance(item, Node)]
         # get nodes that are on the line
         nodes = [node for node in nodes if pointOnLine(node.scenePos(), line)]
+        print("nodes:")
+        dump(nodes)
         # add vertices to unconnected nodes
         for node in nodes:
             children = node.childItems()
@@ -294,8 +310,12 @@ class DrawingSceneConnMixin:
                 vtx.setParentItem(node)
         # get all vertices in rect
         vtxs = [item for item in items if isinstance(item, ConnVtx)]
+        print("all vtxs:")
+        dump(vtxs)
         # get vertices that are on the line
         vtxs = [vtx for vtx in vtxs if pointOnLine(vtx.scenePos(), line)]
+        print("on line vtxs:")
+        dump(vtxs)
         # basic checks before finishing
         if len(vtxs) < 2:
             logger().warning(f"Less than 2 vertices on line: {len(vtxs)}")

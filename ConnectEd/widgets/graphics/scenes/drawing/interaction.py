@@ -20,7 +20,7 @@ from ...items.pin        import Pin
 from ...items.block_pin  import BlockPin
 from ...items.node       import Node
 from ...items.conn_vtx   import ConnVtx
-from ...items.conn_seg   import ConnSegPreview1, ConnSegPreview2
+from ...items.conn_seg   import ConnSeg, ConnSegPreview1, ConnSegPreview2
 
 from .cmd import cmdAdd, cmdMove, cmdAddPin, cmdMovePins
 
@@ -474,18 +474,27 @@ class PlaceWireInteraction(SelectionMixin):
     def complete(self : Self, pos: QPointF) -> bool:
         self._updateVertices(pos)
         # process first segment
+        print("************************************************************")
         print(f"p0: {self._p0().x()}, {self._p0().y()}")
         print(f"p1: {self._p1().x()}, {self._p1().y()}")
-        if self._scene.addWireSeg(self._p0(), self._p1()):
+        items_1 = self._scene.items(self._p1())
+        item_types_1 = set(item.__class__ for item in items_1)
+        items_2 = self._scene.items(self._p2())
+        item_types_2 = set(item.__class__ for item in items_2)
+        print(f"*********** item_types 1: {[i.__name__ for i in item_types_1]}")
+        print(f"*********** item_types 2: {[i.__name__ for i in item_types_1]}")
+        self._scene.addWireSeg(self._p0(), self._p1())
+        if {ConnSeg, ConnVtx, Node} & item_types_1:
+            print("*********** TERMINAL 1")
             self._cleanup()  # segment terminated at a connection point
             return True  # interaction completed
-        # process second segment if it ends at a connection point
-        items = self._scene.items(self._p2())
-        item_types = set(item.__class__ for item in items)
-        if ConnVtx | Node in item_types:
-            if self._scene.addWireSeg(self._p0(), self._p1()):
-                self._cleanup()  # segment terminated at a connection point
-                return True  # interaction completed
+        items_1 = self._scene.items(self._p2())
+        item_types_1 = set(item.__class__ for item in items_1)
+        if {ConnSeg, ConnVtx, Node} & item_types_2:
+            print("*********** TERMINAL 2")
+            self._scene.addWireSeg(self._p1(), self._p2())
+            self._cleanup()  # segment terminated at a connection point
+            return True  # interaction completed
         self._restart(pos)
         return False  # continue interaction
 
