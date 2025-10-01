@@ -1,12 +1,7 @@
-- onSettingsChange in initElement
-- wiring segment merging
-- connect settings changes to DrawingScenePaths
-- move handle size to theme
-- DrawingItem => DrawingModelItem
-
+- tidyConnVtx to preserve vertices as much as possible
+- background netlist extraction
 - check interactions that don't change anything don't push a cmd
 - tackle onGeometryChange usage
-
 - rotate ports during placement
 
 - propagate property name change to texts

@@ -5,7 +5,7 @@ from PyQt6.QtCore    import QPointF
 from PyQt6.QtWidgets import QGraphicsItem
 
 from .....core.xml   import paste
-from .....core.utils import sign
+from .....core.utils import sign, itemsTypeDict
 
 from ...items import EdgeLoc, ElementMixin, clone
 
@@ -473,22 +473,27 @@ class PlaceConnInteraction(SelectionMixin):
 
     def complete(self : Self, pos: QPointF) -> bool:
         self._updateVertices(pos)
-        # check for existing connections BEFORE creating segments
-        items_1 = self._scene.items(self._p1())
-        item_types_1 = set(item.__class__ for item in items_1)
+        print(f"{self._p0()} {self._p1()} {self._p2()}")
+        # check for existing connections before creating segments
         items_2 = self._scene.items(self._p2())
-        item_types_2 = set(item.__class__ for item in items_2)
+        item_types_2 = itemsTypeDict(items_2)
         # create first segment
-        self._scene.addConnSeg(self._p0(), self._p1())
-        # check if first segment ended on existing connection
-        if {ConnSeg, ConnVtx, Node} & item_types_1:
-            self._cleanup()  # segment terminated at a connection point
+        r1 = self._scene.addConnSeg(self._p0(), self._p1()) # True/False/None
+        if r1 == True:
+            print("terminal 1")
+            self._cleanup()  # segment ended on node or multi-segment vertex
             return True  # interaction completed
-        # check if second segment would end on existing connection
-        if {ConnSeg, ConnVtx, Node} & item_types_2:
-            self._scene.addConnSeg(self._p1(), self._p2())
-            self._cleanup()  # segment terminated at a connection point
+        print("not terminal 1")
+        # create second segment
+        r2 = self._scene.addConnSeg(self._p1(), self._p2()) # True/False/None
+        if r2 == True:
+            print("terminal 2")
+            self._cleanup()  # segment ended on node or multi-segment vertex
             return True  # interaction completed
+        elif r2 == False:
+            print("undo 2")
+            # undo if it didn't end on a vertex
+            self._scene.undo_stack.undo()
         self._restart(pos)
         return False  # continue interaction
 
@@ -540,7 +545,7 @@ class PlaceConnInteraction(SelectionMixin):
             self._setP1(pos)
 
     def _restart(self : Self, pos: QPointF) -> None:
-        self._seg1.setP1(self._seg1.p2())
+        self._setP0(self._p1())
         self._updateVertices(pos)
 
     # todo: _commit method

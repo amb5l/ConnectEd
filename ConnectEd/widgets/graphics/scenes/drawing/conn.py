@@ -264,13 +264,14 @@ class DrawingSceneConnMixin:
         self : "DrawingScene",
         p1   : QPointF,
         p2   : QPointF
-    ) -> None:
+    ) -> bool | None:
         """
         Add a segment, add vertices at any nodes between endpoints, tidy.
         """
         # handle zero length - can happen on double click
         if p1 == p2:
-            return  # do nothing
+            print("zero length")
+            return None  # do nothing
         # get items at start and end points
         items_dict_1 = itemsTypeDict(self.items(p1))
         items_dict_2 = itemsTypeDict(self.items(p2))
@@ -280,7 +281,8 @@ class DrawingSceneConnMixin:
                 for seg1 in items_dict_1[ConnSeg]:
                     for seg2 in items_dict_2[ConnSeg]:
                         if seg1 is seg2:
-                            return  # do nothing
+                            print("full overlap")
+                            return None  # do nothing
         # begin macro
         self.undo_stack.beginMacro("addConnSeg")
         # add vertices at endpoint
@@ -328,3 +330,9 @@ class DrawingSceneConnMixin:
             self.tidyConnVtx(vtx)
         # end macro
         self.undo_stack.endMacro()
+        # return if segment ended at a node or multi-segment vertex
+        for item in self.items(p2):
+            if isinstance(item, Node) \
+            or isinstance(item, ConnVtx) and len(item.connections()) > 1:
+                return True
+        return False
