@@ -671,7 +671,6 @@ class DrawingViewStatePlaceWire2(ClickMixin):
 
     def mouseLeftClick(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
         if self.view.interaction.complete(self._snap(s)):
-            self.view.interaction.cancel()
             self.view.state.go(self.view.statePlaceWire1)
 
     def mouseMove(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
@@ -682,7 +681,6 @@ class DrawingViewStatePlaceWire2(ClickMixin):
 
     def mouseLeftDragEnd(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
         if self.view.interaction.complete(self._snap(s)):
-            self.view.interaction.cancel()
             self.view.state.go(self.view.statePlaceWire1)
 
 class DrawingViewStateMixin:
