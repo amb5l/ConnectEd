@@ -473,25 +473,19 @@ class PlaceWireInteraction(SelectionMixin):
 
     def complete(self : Self, pos: QPointF) -> bool:
         self._updateVertices(pos)
-        # process first segment
-        print("************************************************************")
-        print(f"p0: {self._p0().x()}, {self._p0().y()}")
-        print(f"p1: {self._p1().x()}, {self._p1().y()}")
+        # check for existing connections BEFORE creating segments
         items_1 = self._scene.items(self._p1())
         item_types_1 = set(item.__class__ for item in items_1)
         items_2 = self._scene.items(self._p2())
         item_types_2 = set(item.__class__ for item in items_2)
-        print(f"*********** item_types 1: {[i.__name__ for i in item_types_1]}")
-        print(f"*********** item_types 2: {[i.__name__ for i in item_types_1]}")
+        # create first segment
         self._scene.addWireSeg(self._p0(), self._p1())
+        # check if first segment ended on existing connection
         if {ConnSeg, ConnVtx, Node} & item_types_1:
-            print("*********** TERMINAL 1")
             self._cleanup()  # segment terminated at a connection point
             return True  # interaction completed
-        items_1 = self._scene.items(self._p2())
-        item_types_1 = set(item.__class__ for item in items_1)
+        # check if second segment would end on existing connection
         if {ConnSeg, ConnVtx, Node} & item_types_2:
-            print("*********** TERMINAL 2")
             self._scene.addWireSeg(self._p1(), self._p2())
             self._cleanup()  # segment terminated at a connection point
             return True  # interaction completed

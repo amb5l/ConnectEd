@@ -186,7 +186,7 @@ class DrawingSceneConnMixin:
         pos = vtx.scenePos()
         # get existing vertices
         items_dict = itemsTypeDict(self.items(pos)) # get all items at position
-        xvtxs : list[ConnVtx] = items_dict[ConnVtx] # get all vertices at position
+        xvtxs : list[ConnVtx] = items_dict.get(ConnVtx, []) # get all vertices at position
         # create new clean vertex
         cmd = cmdAddConnVtx(self, pos)
         self.undo_stack.push(cmd)
@@ -201,7 +201,8 @@ class DrawingSceneConnMixin:
             nodes : list[Node] = items_dict[Node]
             if len(nodes) > 1:
                 logger().warning("Multiple nodes found")
-            nvtx.setParentItem(nodes[0])
+            if nodes:
+                nvtx.setParentItem(nodes[0])
         # split segments that cross the new vertex but are not attached to it
         if ConnSeg in items_dict:
             segs : list[ConnSeg] = items_dict[ConnSeg]
@@ -217,7 +218,7 @@ class DrawingSceneConnMixin:
                 # add new segment from split
                 self.undo_stack.push(cmdAddConnSeg(self, nvtx, vtx))
         # remove duplicate segments
-        segs = nvtx.connections()
+        segs = nvtx.connections().copy()  # copy to avoid race conditions
         if len(segs) > 1:
             for i, seg1 in enumerate(segs[:-1]):
                 for seg2 in segs[i+1:]:
@@ -225,12 +226,12 @@ class DrawingSceneConnMixin:
                     and seg1.vtx2() is seg2.vtx2():
                         self.undo_stack.push(cmdRemoveConnSeg(self, seg2))
         # remove if useless break in a straight line
-        segs = nvtx.connections()
+        segs = nvtx.connections().copy()  # copy to avoid race conditions
         if len(segs) == 2 \
         and colinear(segs[0].toLine(), segs[1].toLine()) \
         and touching(segs[0].toLine(), segs[1].toLine()):
             # get far end of 2nd segment
-            v2 = segs[1].v1() if segs[1].v2() is nvtx else segs[1].v2()
+            v2 = segs[1].vtx1() if segs[1].vtx2() is nvtx else segs[1].vtx2()
             # reattach 1st segment to far end of 2nd segment
             self.undo_stack.push(
                 cmdReattachConnSeg(self, segs[0], nvtx, v2)
@@ -244,6 +245,8 @@ class DrawingSceneConnMixin:
             self.undo_stack.push(cmdRemoveConnVtx(self, nvtx))
         # end macro
         self.undo_stack.endMacro()
+        # debug
+        items = self.items(pos)
 
     def addConnVtx(
         self : "DrawingScene",
@@ -251,17 +254,18 @@ class DrawingSceneConnMixin:
     ) -> None:
         """Add a vertex/junction, tidy."""
         self.undo_stack.beginMacro("addConnVtx")
-        self.undo_stack.push(cmdAddConnVtx(self, pos))
-        self.tidyConnVtx(pos)
+        cmd = cmdAddConnVtx(self, pos)
+        self.undo_stack.push(cmd)
+        vtx = cmd.vtx()
+        self.tidyConnVtx(vtx)
 
     def addWireSeg(
         self : "DrawingScene",
         p1   : QPointF,
         p2   : QPointF
-    ) -> bool:
+    ) -> None:
         """
         Add a segment, add vertices at any nodes between endpoints, tidy.
-        Returns True if the segment terminated at a connection point.
         """
         # handle zero length - can happen on double click
         if p1 == p2:
@@ -297,8 +301,6 @@ class DrawingSceneConnMixin:
         nodes = [item for item in items if isinstance(item, Node)]
         # get nodes that are on the line
         nodes = [node for node in nodes if pointOnLine(node.scenePos(), line)]
-        print("nodes:")
-        dump(nodes)
         # add vertices to unconnected nodes
         for node in nodes:
             children = node.childItems()
@@ -310,12 +312,10 @@ class DrawingSceneConnMixin:
                 vtx.setParentItem(node)
         # get all vertices in rect
         vtxs = [item for item in items if isinstance(item, ConnVtx)]
-        print("all vtxs:")
-        dump(vtxs)
         # get vertices that are on the line
         vtxs = [vtx for vtx in vtxs if pointOnLine(vtx.scenePos(), line)]
-        print("on line vtxs:")
-        dump(vtxs)
+        # sort by distance from p1 (TODO: is this needed?)
+        vtxs.sort(key=lambda vtx: QLineF(p1, vtx.scenePos()).length())
         # basic checks before finishing
         if len(vtxs) < 2:
             logger().warning(f"Less than 2 vertices on line: {len(vtxs)}")
@@ -323,14 +323,8 @@ class DrawingSceneConnMixin:
             logger().warning(f"First vertex on line is not at p1: {vtxs[0].scenePos()}")
         elif vtxs[-1].scenePos() != p2:
             logger().warning(f"Last vertex on line is not at p2: {vtxs[-1].scenePos()}")
-        else:
-            # sort by distance from p1 (TODO: is this needed?)
-            vtxs.sort(key=lambda vtx: QLineF(p1, vtx.scenePos()).length())
-            # tidy all vertices on line
-            for vtx in vtxs:
-                self.tidyConnVtx(vtx)
-            # end macro
-            self.undo_stack.endMacro()
-            # return whether the segment terminated at a connection point
-            vtx = vtxs[-1]
-            return vtx.connections() > 1 or vtx.parentItem().__class__ is Node
+        # tidy all vertices on line
+        for vtx in vtxs:
+            self.tidyConnVtx(vtx)
+        # end macro
+        self.undo_stack.endMacro()
