@@ -49,7 +49,6 @@ class ConnVtx(
         self._connections = []
         self._junction = Junction(self)
         self.initElement()
-        self.onSettingsChange()
 
     def onScenePositionChange(self : Self, _pos : QPointF) -> None:
         """Update all connected segments."""

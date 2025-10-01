@@ -38,6 +38,7 @@ class ElementMixin:
         if hasattr(self, "initProperties"):
             self.initProperties(bare)
         if hasattr(self, "onSettingsChange"):
+            self.onSettingsChange()
             settings().changed.connect(self.onSettingsChange)
 
     def __hash__(self : Self):

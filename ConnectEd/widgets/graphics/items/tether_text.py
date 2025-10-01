@@ -64,11 +64,13 @@ class TetherText(BaseText):
     _tether : Tether | None
 
     def __init__(self : Self, bare : bool = False) -> None:
+        self._tether = None
         super().__init__(bare=bare)
         self._tether = Tether(self)
 
     def onSettingsChange(self : Self) -> None:
-        self._tether.onSettingsChange()
+        if self._tether is not None:
+            self._tether.onSettingsChange()
 
     def onPositionChange(self : Self, pos : QPointF) -> None:
         self._tether.onPositionChange(pos)

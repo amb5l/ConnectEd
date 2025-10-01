@@ -1,4 +1,3 @@
-- camel_to_proper name change
 - onSettingsChange in initElement
 - wiring segment merging
 - connect settings changes to DrawingScenePaths

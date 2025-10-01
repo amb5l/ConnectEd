@@ -57,7 +57,6 @@ class Port(ElementPosMixin, ElementFillMixin, PortPinMixin, QGraphicsPathItem):
     def __init__(self : Self, parent : QGraphicsItem | None = None) -> None:
         QGraphicsPathItem.__init__(self, parent)
         self.initPortPin()
-        self.onSettingsChange()
 
     def onSettingsChange(self : Self) -> None:
         size = settings().getTheme("elements/Port/size")
