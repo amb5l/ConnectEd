@@ -47,8 +47,8 @@ class ConnSeg(
     def onGeometryChange(self : Self) -> None:
         if self._vtx1 is None or self._vtx2 is None:
             return
-        self._line.setP1(self._vtx1.pos())
-        self._line.setP2(self._vtx2.pos())
+        self._line.setP1(self._vtx1.scenePos())
+        self._line.setP2(self._vtx2.scenePos())
         self.setLine(self._line)
 
     def vtx1(self : Self) -> ConnVtx:
@@ -60,7 +60,7 @@ class ConnSeg(
         self._vtx1 = vtx
         if vtx is not None:
             vtx.attach(self)
-            self._line.setP1(vtx.pos())
+            self._line.setP1(vtx.scenePos())
             self.setLine(self._line)
 
     def vtx2(self : Self) -> ConnVtx:
@@ -72,7 +72,7 @@ class ConnSeg(
         self._vtx2 = vtx
         if vtx is not None:
             vtx.attach(self)
-            self._line.setP2(vtx.pos())
+            self._line.setP2(vtx.scenePos())
             self.setLine(self._line)
 
     def reattach(self : Self, old : ConnVtx, new : ConnVtx) -> bool:

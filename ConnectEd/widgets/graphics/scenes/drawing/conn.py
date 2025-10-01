@@ -6,9 +6,9 @@ from .....app import logger
 
 from .....core.utils import itemsTypeDict
 
-from ...items.conn_vtx import ConnVtx
-from ...items.conn_seg import ConnSeg
-from ...items.node     import Node
+from ...items.conn_vtx   import ConnVtx
+from ...items.conn_seg   import ConnSeg
+from ...items.node       import Node
 
 from .cmd.conn import cmdAddConnVtx,     \
                       cmdRemoveConnVtx,  \
@@ -152,13 +152,13 @@ def dump(items):
     from ...items.junction import Junction
     for item in items:
         if isinstance(item, ConnSeg):
-            print(" WireSeg", item.vtx1().pos(), item.vtx2().pos())
+            print(" WireSeg", item.vtx1().scenePos(), item.vtx2().scenePos())
         elif isinstance(item, ConnVtx):
-            print(" WireVtx", item.pos())
+            print(f" WireVtx pos={item.pos()} scenePos={item.scenePos()}")
         elif isinstance(item, Junction):
-            print(" Junction", item.pos())
+            print(f" Junction pos={item.pos()} scenePos={item.scenePos()}")
         elif isinstance(item, Node):
-            print(" Node", item.pos())
+            print(f" Node pos={item.pos()} scenePos={item.scenePos()}")
         else:
             print(" ", item)
 
@@ -185,6 +185,7 @@ class DrawingSceneConnMixin:
         # get position
         pos = vtx.scenePos()
         # get existing vertices
+        items = self.items(pos)
         items_dict = itemsTypeDict(self.items(pos)) # get all items at position
         xvtxs : list[ConnVtx] = items_dict.get(ConnVtx, []) # get all vertices at position
         # create new clean vertex
@@ -197,15 +198,15 @@ class DrawingSceneConnMixin:
                 self.undo_stack.push(cmdReattachConnSeg(self, seg, xvtx, nvtx))
             self.undo_stack.push(cmdRemoveConnVtx(self, xvtx))
         # parent to node if present
-        if Node in items_dict:
-            nodes : list[Node] = items_dict[Node]
-            if len(nodes) > 1:
-                logger().warning("Multiple nodes found")
-            if nodes:
-                nvtx.setParentItem(nodes[0])
+        nodes = [item for item in items if isinstance(item, Node)]
+        if len(nodes) > 1:
+            logger().warning("Multiple nodes found")
+        if nodes:
+            nvtx.setParentItem(nodes[0])
+            nvtx.setPos(QPointF())  # pos is relative to node
         # split segments that cross the new vertex but are not attached to it
+        segs = [item for item in items if isinstance(item, ConnSeg)]
         if ConnSeg in items_dict:
-            segs : list[ConnSeg] = items_dict[ConnSeg]
             for xseg in segs:
                 # exclude segments that are already attached to the new vertex
                 if xseg.vtx1() is nvtx or xseg.vtx2() is nvtx:
@@ -296,7 +297,6 @@ class DrawingSceneConnMixin:
         line = QLineF(p1, p2)
         # get items in rect
         items = self.items(rect)
-        dump(items)
         # get nodes in rect
         nodes = [item for item in items if isinstance(item, Node)]
         # get nodes that are on the line
@@ -306,7 +306,7 @@ class DrawingSceneConnMixin:
             children = node.childItems()
             child_vtxs = [item for item in children if isinstance(item, ConnVtx)]
             if len(child_vtxs) == 0:
-                cmd = cmdAddConnVtx(self, node.scenePos())
+                cmd = cmdAddConnVtx(self, QPointF())  # pos is relative to node
                 self.undo_stack.push(cmd)
                 vtx = cmd.vtx()
                 vtx.setParentItem(node)
