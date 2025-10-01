@@ -4,7 +4,7 @@ from PyQt6.QtCore    import QPointF
 from PyQt6.QtWidgets import QGraphicsItem
 from PyQt6.QtGui     import QUndoCommand
 
-from ......core.utils import camel_to_proper
+from ......core.utils import camel2proper
 
 from ....items import EdgeLoc, ElementMixin
 
@@ -40,7 +40,7 @@ class cmdSceneBase(cmdBase):
     _scene : "DrawingScene"
 
     def __init__(self : Self, scene : "DrawingScene"):
-        text = camel_to_proper(self.__class__.__name__.replace("cmd", ""))
+        text = camel2proper(self.__class__.__name__.replace("cmd", ""))
         super().__init__(text)
         self._scene = scene
 

@@ -37,7 +37,7 @@ def itemsTypeDict(items: list[Any]) -> dict[type, list[Any]]:
     return dict(result)
 
 
-def camel_to_proper(s : str) -> str:
+def camel2proper(s : str) -> str:
     """FooBar -> Foo Bar"""
     r = []
     for i, char in enumerate(s):
@@ -50,12 +50,12 @@ def camel_to_proper(s : str) -> str:
     return "".join(r)
 
 
-def proper_to_snake(s : str) -> str:
+def proper2snake(s : str) -> str:
     """Foo Bar -> foo_bar"""
     return s.replace(" ", "_").lower()
 
 
-def snake_to_proper(s : str) -> str:
+def snake2proper(s : str) -> str:
     """foo_bar -> Foo Bar"""
     return s.replace("_", " ").title()
 
