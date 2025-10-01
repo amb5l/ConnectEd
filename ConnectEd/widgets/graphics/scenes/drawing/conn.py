@@ -152,9 +152,9 @@ def dump(items):
     from ...items.junction import Junction
     for item in items:
         if isinstance(item, ConnSeg):
-            print(" WireSeg", item.vtx1().scenePos(), item.vtx2().scenePos())
+            print(" ConnSeg", item.vtx1().scenePos(), item.vtx2().scenePos())
         elif isinstance(item, ConnVtx):
-            print(f" WireVtx pos={item.pos()} scenePos={item.scenePos()}")
+            print(f" ConnVtx pos={item.pos()} scenePos={item.scenePos()}")
         elif isinstance(item, Junction):
             print(f" Junction pos={item.pos()} scenePos={item.scenePos()}")
         elif isinstance(item, Node):
@@ -260,7 +260,7 @@ class DrawingSceneConnMixin:
         vtx = cmd.vtx()
         self.tidyConnVtx(vtx)
 
-    def addWireSeg(
+    def addConnSeg(
         self : "DrawingScene",
         p1   : QPointF,
         p2   : QPointF
@@ -282,7 +282,7 @@ class DrawingSceneConnMixin:
                         if seg1 is seg2:
                             return  # do nothing
         # begin macro
-        self.undo_stack.beginMacro("addWireSeg")
+        self.undo_stack.beginMacro("addConnSeg")
         # add vertices at endpoint
         cmd = cmdAddConnVtx(self, p1)
         self.undo_stack.push(cmd)

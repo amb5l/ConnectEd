@@ -209,8 +209,8 @@ class DrawingViewSlotsMixin:
     def placeBlockPin(self : "DrawingView") -> None:
         self.state.go(self.statePlaceBlockPin)
 
-    def placeWire(self : "DrawingView") -> None:
-        self.state.go(self.statePlaceWire1)
+    def placeConnection(self : "DrawingView") -> None:
+        self.state.go(self.statePlaceConn1)
 
     def placeRectangle(self : "DrawingView") -> None:
         self.state.go(self.statePlaceRectangle1)

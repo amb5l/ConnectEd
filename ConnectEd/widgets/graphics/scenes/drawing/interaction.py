@@ -441,7 +441,7 @@ class PlaceTextBlockInteraction(PlaceBaseInteraction):
     _ELEMENT = TextBlock
 
 
-class PlaceWireInteraction(SelectionMixin):
+class PlaceConnInteraction(SelectionMixin):
     """Interactive wire placement involves two preview segments."""
 
     # instance attributes
@@ -479,14 +479,14 @@ class PlaceWireInteraction(SelectionMixin):
         items_2 = self._scene.items(self._p2())
         item_types_2 = set(item.__class__ for item in items_2)
         # create first segment
-        self._scene.addWireSeg(self._p0(), self._p1())
+        self._scene.addConnSeg(self._p0(), self._p1())
         # check if first segment ended on existing connection
         if {ConnSeg, ConnVtx, Node} & item_types_1:
             self._cleanup()  # segment terminated at a connection point
             return True  # interaction completed
         # check if second segment would end on existing connection
         if {ConnSeg, ConnVtx, Node} & item_types_2:
-            self._scene.addWireSeg(self._p1(), self._p2())
+            self._scene.addConnSeg(self._p1(), self._p2())
             self._cleanup()  # segment terminated at a connection point
             return True  # interaction completed
         self._restart(pos)

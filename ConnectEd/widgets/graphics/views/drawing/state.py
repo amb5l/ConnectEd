@@ -34,7 +34,7 @@ from ...scenes.drawing.interaction import Interaction,                \
                                           PlaceRectangleInteraction,  \
                                           PlaceTextInteraction,       \
                                           PlaceTextBlockInteraction,  \
-                                          PlaceWireInteraction
+                                          PlaceConnInteraction
 
 from ...scenes.drawing.cmd.edit import cmdEditPortPin,     \
                                        cmdEditText,        \
@@ -649,29 +649,29 @@ class DrawingViewStatePlaceTextBlock(ClickMixin):
         else:
             self.view.state.go(self.view.stateIdle)
 
-class DrawingViewStatePlaceWire1(ClickMixin):
-    TIP = "Place Wire: pick a starting position"
+class DrawingViewStatePlaceConn1(ClickMixin):
+    TIP = "Place Connection: pick a starting position"
 
     def mouseLeftClick(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
         self.interact(
-            PlaceWireInteraction(self.scene, self._snap(s)),
-            self.view.statePlaceWire2
+            PlaceConnInteraction(self.scene, self._snap(s)),
+            self.view.statePlaceConn2
         )
 
     def mouseLeftDragBegin(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
         self.mouseLeftClick(v, s, m)
 
-class DrawingViewStatePlaceWire2(ClickMixin):
-    TIP = "Place Wire: place a mid- or end-point"
+class DrawingViewStatePlaceConn2(ClickMixin):
+    TIP = "Place Connection: place a mid- or end-point"
 
     def mouseLeftDoubleClick(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
         if not self.view.interaction.complete(self._snap(s)):
             self.view.interaction.cancel()
-        self.view.state.go(self.view.statePlaceWire1)
+        self.view.state.go(self.view.statePlaceConn1)
 
     def mouseLeftClick(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
         if self.view.interaction.complete(self._snap(s)):
-            self.view.state.go(self.view.statePlaceWire1)
+            self.view.state.go(self.view.statePlaceConn1)
 
     def mouseMove(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
         self.view.interaction.update(self._snap(s))
@@ -681,7 +681,7 @@ class DrawingViewStatePlaceWire2(ClickMixin):
 
     def mouseLeftDragEnd(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
         if self.view.interaction.complete(self._snap(s)):
-            self.view.state.go(self.view.statePlaceWire1)
+            self.view.state.go(self.view.statePlaceConn1)
 
 class DrawingViewStateMixin:
     state                 : DrawingViewStateBase
@@ -713,8 +713,8 @@ class DrawingViewStateMixin:
     statePlaceRectangle2  : DrawingViewStatePlaceRectangle2
     statePlaceText        : DrawingViewStatePlaceText
     statePlaceTextBlock   : DrawingViewStatePlaceTextBlock
-    statePlaceWire1       : DrawingViewStatePlaceWire1
-    statePlaceWire2       : DrawingViewStatePlaceWire2
+    statePlaceConn1       : DrawingViewStatePlaceConn1
+    statePlaceConn2       : DrawingViewStatePlaceConn2
 
     def initStates(self : "DrawingView") -> None:
         self.stateIdle             = DrawingViewStateIdle             (self)
@@ -745,5 +745,5 @@ class DrawingViewStateMixin:
         self.statePlaceRectangle2  = DrawingViewStatePlaceRectangle2  (self)
         self.statePlaceText        = DrawingViewStatePlaceText        (self)
         self.statePlaceTextBlock   = DrawingViewStatePlaceTextBlock   (self)
-        self.statePlaceWire1       = DrawingViewStatePlaceWire1       (self)
-        self.statePlaceWire2       = DrawingViewStatePlaceWire2       (self)
+        self.statePlaceConn1       = DrawingViewStatePlaceConn1       (self)
+        self.statePlaceConn2       = DrawingViewStatePlaceConn2       (self)

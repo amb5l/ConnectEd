@@ -56,7 +56,7 @@ class Actions:
         self.placePort          = Action( window(), "Port"          , "Place Port"                             , "Ctrl+I"                     )
         self.placeBlock         = Action( window(), "Block"         , "Place Block"                            , "Ctrl+B"                     )
         self.placeBlockPin      = Action( window(), "Block Pin"     , "Place Block Pin"                        , "Ctrl+P"                     )
-        self.placeWire          = Action( window(), "Wire"          , "Place Wire"                             , "W"                          )
+        self.placeConnection    = Action( window(), "Connection"    , "Place Connection"                       , "C"                          )
         self.placeRectangle     = Action( window(), "Rectangle"     , "Place Rectangle"                        , "Ctrl+R"                     )
         self.placeTextBlock     = Action( window(), "Text Block"    , "Place Text Block"                       , "Ctrl+T"                     )
         self.placeText          = Action( window(), "Text"          , "Place Text"                             , "Ctrl+L"                     )

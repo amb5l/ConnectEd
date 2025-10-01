@@ -225,8 +225,8 @@ class Slots:
         view.placeRectangle()
 
     @withCurrentWidget(DrawingView)
-    def placeWire(self : Self, view: DrawingView) -> None:
-        view.placeWire()
+    def placeConnection(self : Self, view: DrawingView) -> None:
+        view.placeConnection()
 
     @withCurrentWidget(DrawingView)
     def placeTextBlock(self : Self, view: DrawingView) -> None:
