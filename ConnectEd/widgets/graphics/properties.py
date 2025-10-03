@@ -24,9 +24,9 @@ class PropertySpec:
     def __post_init__(self : Self):
         # Set defaults for optional functions
         if self.exists is None:
-            self.exists = lambda: True
+            self.exists = lambda instance: True
         if self.default is None:
-            self.default = lambda: None
+            self.default = lambda instance: None
 
 class PropertiesMixin:
     # class attributes
@@ -75,13 +75,18 @@ class PropertiesMixin:
     def getPropertyNamesAndValues(self : Self) -> dict[str, str]:
         d = {}
         for name, ps in self._properties.items():
-            d[name] = val2str(ps.getter(self))
+            if ps.exists(self):
+                d[name] = val2str(ps.getter(self))
         return d
 
     def getPropertyValue(self : Self, name : str) -> Any:
         if name not in self._properties:
             logger().warning(f"Property {name} does not exist")
+            return None
         ps = self._properties[name]
+        if not ps.exists(self):
+            logger().warning(f"Property {name} does not exist for this instance")
+            return None
         return ps.getter(self)
 
     def setPropertyValue(self : Self, name : str, value : Any) -> None:
@@ -89,6 +94,9 @@ class PropertiesMixin:
             logger().warning(f"Property {name} does not exist")
             return
         ps = self._properties[name]
+        if not ps.exists(self):
+            logger().warning(f"Property {name} does not exist for this instance")
+            return
         if ps.setter is not None:
             ps.setter(self, value)
         else:
