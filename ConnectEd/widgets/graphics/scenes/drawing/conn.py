@@ -14,8 +14,8 @@ from .cmd.conn import cmdAddConnVtx,      \
                       cmdReparentConnVtx, \
                       cmdRemoveConnVtx,   \
                       cmdAddConnSeg,      \
-                      cmdRemoveConnSeg,   \
-                      cmdReattachConnSeg
+                      cmdReattachConnSeg, \
+                      cmdRemoveConnSeg
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
