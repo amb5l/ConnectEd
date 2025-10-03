@@ -17,7 +17,7 @@ class ElementLocMixin:
 
     _PROPERTY_SPECS_LOC = {
         "Location (Edge)" : PropertySpec(
-            type_name   = "str",
+            type_name   = "Edge",
             getter      = lambda self: self.loc().edge,
             setter      = lambda self, value: self.setLocEdge(value),
             description = "Parent edge"
