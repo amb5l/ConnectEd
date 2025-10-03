@@ -1,6 +1,6 @@
 from typing import Self
 
-from PyQt6.QtCore    import QPointF, QLineF
+from PyQt6.QtCore    import QPointF, QLineF, QXmlStreamWriter
 from PyQt6.QtWidgets import QGraphicsLineItem, QGraphicsSceneMouseEvent
 
 from ....app import logger
@@ -48,10 +48,13 @@ class Tether(QGraphicsLineItem):
         self._line.setP2(cleat.scenePos() - self.scenePos())
         self.setLine(self._line)
 
+    def toXml(self : Self, xw : QXmlStreamWriter) -> str:
+        pass  # no need to serialise
+
 
 class TetherText(BaseText):
     # class attributes
-    _PROPERTY_SPECS_TETHER = {
+    _PROPERTY_SPECS_CLEAT = {
         "Cleat" : PropertySpec(
             type_name   = "str",
             getter      = lambda self: self.cleat(),
@@ -59,8 +62,6 @@ class TetherText(BaseText):
             description = "Parent anchor point"
         )
     }
-    _PROPERTY_SPECS = \
-        _PROPERTY_SPECS_TETHER | BaseText._PROPERTY_SPECS
 
     # instance attributes
     _tether : Tether | None
