@@ -86,8 +86,8 @@ class BaseRectangle(
         bare       : bool = False
     ) -> None:
         super().__init__()
-        self.initElement(bare=bare)
         self._rect = QRectF()
+        self.initElement(bare=bare)
         if p1_or_pos is None:
             p1_or_pos = QPointF()
         if p2_or_size is None:
