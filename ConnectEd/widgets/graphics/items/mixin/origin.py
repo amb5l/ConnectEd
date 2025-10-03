@@ -14,8 +14,8 @@ class ElementOriginMixin:
     _PROPERTY_SPECS_ORIGIN = {
         "Origin" : PropertySpec(
             type_name   = "str",
-            getter      = lambda self: self.getOriginName(),
-            setter      = lambda self, value: self.setOriginName(value),
+            getter      = lambda self: self.getOriginAPName(),
+            setter      = lambda self, value: self.setOriginAPName(value),
             description = "Origin anchor point"
         )
     }
