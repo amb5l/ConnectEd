@@ -18,6 +18,7 @@ class Junction(QGraphicsEllipseItem):
 
     def __init__(self : Self, parent : "ConnVtx") -> None:
         QGraphicsEllipseItem.__init__(self, parent)
+        self.setZValue(1)
         self.setFlag(self.GraphicsItemFlag.ItemIsSelectable, True)
         self._rect = QRectF()
         self._brush = QBrush()

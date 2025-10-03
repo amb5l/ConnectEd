@@ -10,11 +10,13 @@ from ...items.conn_vtx   import ConnVtx
 from ...items.conn_seg   import ConnSeg
 from ...items.node       import Node
 
-from .cmd.conn import cmdAddConnVtx,     \
-                      cmdRemoveConnVtx,  \
-                      cmdAddConnSeg,     \
-                      cmdRemoveConnSeg,  \
-                      cmdReattachConnSeg
+from .cmd.conn import cmdAddConnVtx,      \
+                      cmdReparentConnVtx, \
+                      cmdRemoveConnVtx,   \
+                      cmdAddConnSeg,      \
+                      cmdRemoveConnSeg,   \
+                      cmdReattachConnSeg, \
+                      cmdReparentConnVtx
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -180,74 +182,79 @@ class DrawingSceneConnMixin:
         - Remove if the vertex breaks a simple straight line.
         - Remove if no segments are attached.
         """
+        # sanity check
+        if vtx.scene() is not self:
+            logger().warning(f"Vertex {vtx} is not in scene {self}")
+            return
         # start macro
         self.undo_stack.beginMacro("tidyConnVtx")
         # get position
         pos = vtx.scenePos()
+        print(f"*************** tidyConnVtx {pos}")
         # get existing vertices
         items = self.items(pos)
-        items_dict = itemsTypeDict(self.items(pos)) # get all items at position
-        xvtxs : list[ConnVtx] = items_dict.get(ConnVtx, []) # get all vertices at position
-        # create new clean vertex
-        cmd = cmdAddConnVtx(self, pos)
-        self.undo_stack.push(cmd)
-        nvtx = cmd.vtx()
-        # connect existing segments to new vertex
+        print("items", items)
+        xvtxs = [item for item in items if isinstance(item, ConnVtx)]
+        print("existing vertices", len(xvtxs))
+        # pick oldest existing vertex to be clean single vertex
+        vtx1 = xvtxs[-1]
+        # connect existing segments to single vertex, remove existing vertices
         for xvtx in xvtxs:
+            if xvtx is vtx1:
+                continue
             for seg in xvtx.connections():
-                self.undo_stack.push(cmdReattachConnSeg(self, seg, xvtx, nvtx))
+                print(f"Reattaching segment {seg} to {vtx1}")
+                self.undo_stack.push(cmdReattachConnSeg(self, seg, xvtx, vtx1))
             self.undo_stack.push(cmdRemoveConnVtx(self, xvtx))
-        # parent to node if present
+        # (re)parent to node if present
         nodes = [item for item in items if isinstance(item, Node)]
         if len(nodes) > 1:
             logger().warning("Multiple nodes found")
         if nodes:
-            nvtx.setParentItem(nodes[0])
-            nvtx.setPos(QPointF())  # pos is relative to node
+            if vtx1.parentItem() is not nodes[0]:
+                self.undo_stack.push(cmdReparentConnVtx(self, vtx1, nodes[0]))
         # split segments that cross the new vertex but are not attached to it
         segs = [item for item in items if isinstance(item, ConnSeg)]
-        if ConnSeg in items_dict:
-            for xseg in segs:
-                # exclude segments that are already attached to the new vertex
-                if xseg.vtx1() is nvtx or xseg.vtx2() is nvtx:
-                    continue
-                # get existing vertex (the one that will be detached)
-                len1 = QLineF(xseg.vtx1().scenePos(), nvtx.scenePos()).length()
-                len2 = QLineF(xseg.vtx2().scenePos(), nvtx.scenePos()).length()
-                vtx = xseg.vtx2() if len1 >= len2 else xseg.vtx1()
-                self.undo_stack.push(cmdReattachConnSeg(self, xseg, vtx, nvtx))
-                # add new segment from split
-                self.undo_stack.push(cmdAddConnSeg(self, nvtx, vtx))
-        # remove duplicate segments
-        segs = nvtx.connections().copy()  # copy to avoid race conditions
+        for seg in segs:
+            # exclude segments attached to the clean vertex
+            if seg.vtx1() is vtx1 or seg.vtx2() is vtx1:
+                continue
+            # get existing vertex (the one that will be detached)
+            len1 = QLineF(seg.vtx1().scenePos(), vtx1.scenePos()).length()
+            len2 = QLineF(seg.vtx2().scenePos(), vtx1.scenePos()).length()
+            vtx = seg.vtx2() if len1 >= len2 else seg.vtx1()
+            print(f"Splitting {seg}")
+            self.undo_stack.push(cmdReattachConnSeg(self, seg, vtx, vtx1))
+            # add new segment from split
+            self.undo_stack.push(cmdAddConnSeg(self, vtx1, vtx))
+        # remove duplicate segments (that share the same vertices pair)
+        segs = vtx1.connections().copy()  # take copy because we're making changes
         if len(segs) > 1:
             for i, seg1 in enumerate(segs[:-1]):
                 for seg2 in segs[i+1:]:
-                    if seg1.vtx1() is seg2.vtx1() \
-                    and seg1.vtx2() is seg2.vtx2():
+                    if (seg1.vtx1() is seg2.vtx1() and seg1.vtx2() is seg2.vtx2()) \
+                    or (seg1.vtx1() is seg2.vtx2() and seg1.vtx2() is seg2.vtx1()):
+                        print(f"Removing duplicate segment {seg2}")
                         self.undo_stack.push(cmdRemoveConnSeg(self, seg2))
         # remove if useless break in a straight line
-        segs = nvtx.connections().copy()  # copy to avoid race conditions
-        if len(segs) == 2 \
-        and colinear(segs[0].toLine(), segs[1].toLine()) \
-        and touching(segs[0].toLine(), segs[1].toLine()):
-            # get far end of 2nd segment
-            v2 = segs[1].vtx1() if segs[1].vtx2() is nvtx else segs[1].vtx2()
-            # reattach 1st segment to far end of 2nd segment
-            self.undo_stack.push(
-                cmdReattachConnSeg(self, segs[0], nvtx, v2)
-            )
-            # remove 2nd segment
-            self.undo_stack.push(cmdRemoveConnSeg(self, segs[1]))
-            # remove new vertex
-            self.undo_stack.push(cmdRemoveConnVtx(self, nvtx))
+        segs = vtx1.connections().copy()  # take copy because we're making changes
+        if len(segs) >= 2:
+            for i, seg1 in enumerate(segs[:-1]):
+                for seg2 in segs[i+1:]:
+                    if colinear(seg1.toLine(), seg2.toLine()) \
+                    and touching(seg1.toLine(), seg2.toLine()):
+                        print(f"Removing useless break in a straight line")
+                        # get far end of 2nd segment
+                        v2 = seg2.vtx1() if seg2.vtx2() is vtx1 else seg2.vtx2()
+                        # reattach 1st segment to far end of 2nd segment
+                        self.undo_stack.push(cmdReattachConnSeg(self, seg1, vtx1, v2))
+                        # remove 2nd segment
+                        self.undo_stack.push(cmdRemoveConnSeg(self, seg2))
         # remove if no connections
-        elif len(segs) == 0:
-            self.undo_stack.push(cmdRemoveConnVtx(self, nvtx))
+        if len(vtx1.connections()) == 0:
+            self.undo_stack.push(cmdRemoveConnVtx(self, vtx1))
         # end macro
         self.undo_stack.endMacro()
-        # debug
-        items = self.items(pos)
 
     def addConnVtx(
         self : "DrawingScene",
@@ -270,7 +277,6 @@ class DrawingSceneConnMixin:
         """
         # handle zero length - can happen on double click
         if p1 == p2:
-            print("zero length")
             return None  # do nothing
         # get items at start and end points
         items_dict_1 = itemsTypeDict(self.items(p1))
@@ -281,7 +287,6 @@ class DrawingSceneConnMixin:
                 for seg1 in items_dict_1[ConnSeg]:
                     for seg2 in items_dict_2[ConnSeg]:
                         if seg1 is seg2:
-                            print("full overlap")
                             return None  # do nothing
         # begin macro
         self.undo_stack.beginMacro("addConnSeg")

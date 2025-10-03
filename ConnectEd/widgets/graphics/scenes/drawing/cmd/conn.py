@@ -1,4 +1,5 @@
-from typing import Self
+from typing      import Self
+from dataclasses import dataclass
 
 from PyQt6.QtCore    import QPointF
 
@@ -6,6 +7,7 @@ from ......app import logger
 
 from ....items.conn_vtx import ConnVtx
 from ....items.conn_seg import ConnSeg
+from ....items.node     import Node
 
 from . import cmdSceneBase
 
@@ -37,6 +39,45 @@ class cmdAddConnVtx(cmdSceneBase):
 
     def vtx(self : Self) -> ConnVtx:
         return self._vtx
+
+
+class cmdReparentConnVtx(cmdSceneBase):
+    @dataclass
+    class ConnVtxState:
+        parent : Node | None
+        pos   : QPointF | None
+
+    # instance attributes
+    _vtx    : ConnVtx
+    _before : ConnVtxState
+    _after  : ConnVtxState
+
+    def __init__(
+        self   : Self,
+        scene  : "DrawingScene",
+        vtx    : ConnVtx,
+        parent : Node | None
+    ) -> None:
+        super().__init__(scene)
+        self._vtx = vtx
+        self._before.parent = vtx.parentItem()
+        self._before.pos = vtx.pos()
+        self._after.parent = parent
+        if parent is None:
+            if self._before.parent is None:
+                self._after.pos = self._before.pos
+            else:
+                self._after.pos = self._before.parent.scenePos()
+        else:
+            self._after.pos = QPointF()  # pos is relative to parent
+
+    def redo(self : Self) -> None:
+        self._vtx.setParentItem(self._after.parent)
+        self._vtx.setPos(self._after.pos)
+
+    def undo(self : Self) -> None:
+        self._vtx.setParentItem(self._before.parent)
+        self._vtx.setPos(self._before.pos)
 
 
 class cmdRemoveConnVtx(cmdSceneBase):

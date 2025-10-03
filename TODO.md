@@ -1,3 +1,5 @@
+- don't terminate connection when hitting an inline segment!
+  - remove
 - tidyConnVtx to preserve vertices as much as possible
 - background netlist extraction
 - check interactions that don't change anything don't push a cmd
