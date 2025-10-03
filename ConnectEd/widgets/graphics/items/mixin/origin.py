@@ -13,7 +13,7 @@ class ElementOriginMixin:
     _ORIGIN : APName  # subclass must specify
     _PROPERTY_SPECS_ORIGIN = {
         "Origin" : PropertySpec(
-            type_name   = "str",
+            type_name   = "APName",
             getter      = lambda self: self.getOriginAPName(),
             setter      = lambda self, value: self.setOriginAPName(value),
             description = "Origin anchor point"

@@ -36,7 +36,7 @@ class ElementXmlMixin:
                     child.setParentItem(instance)
                 elif xr.name() == "PropertyText":
                     child : PropertyText = PropertyText.fromXml(xr)
-                    child.setParentItem(instance._anchor_points[child._origin()])
+                    child.setParentItem(instance._anchor_points[child.cleat()])
                 else:
                     logger().warning(f"Unexpected child element: {xr.name()}")
                     continue

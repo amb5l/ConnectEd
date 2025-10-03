@@ -56,7 +56,7 @@ class TetherText(BaseText):
     # class attributes
     _PROPERTY_SPECS_CLEAT = {
         "Cleat" : PropertySpec(
-            type_name   = "str",
+            type_name   = "APName",
             getter      = lambda self: self.cleat(),
             setter      = lambda self, value: self.setCleat(value),
             description = "Parent anchor point"
@@ -65,9 +65,11 @@ class TetherText(BaseText):
 
     # instance attributes
     _tether : Tether | None
+    _cleat_name : APName | None
 
     def __init__(self : Self, bare : bool = False) -> None:
         self._tether = None
+        self._cleat_name = None
         super().__init__(bare=bare)
         self._tether = Tether(self)
 
@@ -90,14 +92,22 @@ class TetherText(BaseText):
 
     def cleat(self : Self) -> APName:
         parent = self.parentItem()
-        if isinstance(parent, AnchorPoint):
+        if parent is None:
+            return self._cleat_name
+        elif isinstance(parent, AnchorPoint):
             return parent.name()
         else:
             logger().error(f"Parent is not an AnchorPoint: {type(parent).__name__}")
-            return ""
+            return APName.Undefined
 
     def setCleat(self : Self, name : APName) -> None:
+        self._cleat_name = name
+
         parent = self.parentItem()
+        if parent is None:  # handle deserialization
+            # During deserialization, parent isn't set yet - just store the value
+            # The parent will be set after fromXml() returns
+            return
         if isinstance(parent, AnchorPoint):
             grandparent = parent.parentItem()
             if isinstance(grandparent, ElementAnchorPointsMixin):
