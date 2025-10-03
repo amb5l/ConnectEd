@@ -33,11 +33,11 @@ class ElementOriginMixin:
         self.updateOrigin()
 
     def pos(self : Self) -> QPointF:
-        return super().pos() + self._origin.pos()
+        return super().pos() + self._origin.parentItem().pos()
 
     def setPos(self : Self, pos : QPointF) -> None:
         self._pos = pos
-        super().setPos(pos - self._origin.pos())
+        super().setPos(pos - self._origin.parentItem().pos())
 
     def getOriginScenePos(self : Self) -> QPointF:
         if hasattr(self, "_origin"):
