@@ -1,7 +1,8 @@
 from typing import Self
 
-from PyQt6.QtCore import Qt, QSize,QXmlStreamWriter, QXmlStreamReader
-from PyQt6.QtGui  import QStandardItemModel, QStandardItem
+from PyQt6.QtCore    import Qt, QSize,QXmlStreamWriter, QXmlStreamReader
+from PyQt6.QtWidgets import QMdiSubWindow
+from PyQt6.QtGui     import QStandardItemModel, QStandardItem
 
 from ..app import logger, window
 
@@ -19,7 +20,7 @@ if TYPE_CHECKING:
     from ..widgets.graphics.scenes.drawing import DrawingScene
     from ..widgets.graphics.scenes.symbol  import SymbolScene
     from ..widgets.graphics.scenes.diagram import DiagramScene
-    from ..widgets.graphics.views.drawing  import DrawingView
+    from ..widgets.graphics.views.drawing  import DrawingView, DrawingSubWindow
 
 
 class NameCounter:
@@ -465,15 +466,54 @@ class Model(QStandardItemModel):
     def close(self : Self, item: QStandardItem) -> None:
         """Close a database and remove it from the model."""
         if isinstance(item, DesignDbItem):
+            # close all open diagram windows for this design
+            for i in range(item._diagrams.rowCount()):
+                diagram_item = item._diagrams.child(i)
+                if isinstance(diagram_item, DiagramItem):
+                    for view in diagram_item.views():
+                        if view:
+                            subwindow : DrawingSubWindow | None = \
+                                view.parentWidget()
+                            if subwindow:
+                                subwindow.close()
+            # close all open symbol windows for this design
+            for i in range(item._symbols.rowCount()):
+                symbol_item = item._symbols.child(i)
+                if isinstance(symbol_item, SymbolItem):
+                    for view in symbol_item.views():
+                        if view:
+                            subwindow : DrawingSubWindow | None = \
+                                view.parentWidget()
+                            if subwindow:
+                                subwindow.close()
+            # remove the design from the model
             for i in range(self._designs.rowCount()):
                 if item == self._designs.child(i):
+                    print(f"Removing design from model: {item.text()}")
                     self._designs.removeRow(i)
+                    break
         elif isinstance(item, LibraryDbItem):
+            # close all open symbol windows for this library
+            for i in range(item.rowCount()):
+                symbol_item = item.child(i)
+                if isinstance(symbol_item, SymbolItem):
+                    for view in symbol_item.views():
+                        if view:
+                            # Find the parent QMdiSubWindow instead of using window()
+                            subwindow = view.parentWidget()
+                            while subwindow and not isinstance(subwindow, QMdiSubWindow):
+                                subwindow = subwindow.parentWidget()
+                            if subwindow:
+                                print(f"Closing symbol subwindow for {symbol_item.text()}")
+                                subwindow.close()
+            # remove the library from the model
             for i in range(self._libraries.rowCount()):
                 if item == self._libraries.child(i):
                     self._libraries.removeRow(i)
+                    break
         else:
             logger().warning(f"Unsupported item: {item.text()} ({type(item)})")
+        print(f"Close operation complete")
 
     def copy(self : Self, item : QStandardItem) -> None:
         copy(item)
@@ -532,6 +572,28 @@ class Model(QStandardItemModel):
                 if scene == drawing_item._scene:
                     return db_item
         return None
+
+    def saveAsScene(self : Self, scene : "DrawingScene") -> None:
+        """Save a DbItem given a scene."""
+        design_db_items : list[DesignDbItem] = \
+            [self._designs.child(i) for i in range(self._designs.rowCount())]
+        for design_item in design_db_items:
+            diagram_items : list[DiagramItem] = \
+                [design_item.diagramsItem().child(i) \
+                    for i in range(design_item.diagramsItem().rowCount())]
+            for diagram_item in diagram_items:
+                if diagram_item._scene == scene:
+                    design_item.saveAs()
+                    break
+        library_db_items : list[LibraryDbItem] = \
+            [self._libraries.child(i) for i in range(self._libraries.rowCount())]
+        for library_item in library_db_items:
+            symbol_items : list[SymbolItem] = \
+                [library_item.child(i) for i in range(library_item.rowCount())]
+            for symbol_item in symbol_items:
+                if symbol_item._scene == scene:
+                    library_item.saveAs()
+                    break
 
     def getItemDescription(self : Self, i : QStandardItem) -> str | None:
         if isinstance(i, DesignDbItem):
