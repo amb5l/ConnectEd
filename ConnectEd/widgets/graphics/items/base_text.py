@@ -12,9 +12,9 @@ from ..properties import PropertySpec, PropertiesMixin
 from .anchor_point import APName
 
 from .mixin         import ElementMixin
+from .mixin.origin  import ElementOriginMixin
 from .mixin.pos     import ElementPosMixin
 from .mixin.anchor  import ElementRectAnchorPointsMixin
-from .mixin.origin  import ElementOriginMixin
 from .mixin.quill   import ElementQuillMixin
 from .mixin.outline import ElementOutlineMixin
 from .mixin.change  import ElementChangeMixin
@@ -30,9 +30,9 @@ if TYPE_CHECKING:
 
 class BaseText(
     ElementMixin,
+    ElementOriginMixin,
     ElementPosMixin,
     ElementRectAnchorPointsMixin,
-    ElementOriginMixin,
     ElementQuillMixin,
     ElementOutlineMixin,
     ElementChangeMixin,
