@@ -48,8 +48,8 @@ class Tether(QGraphicsLineItem):
         self._line.setP2(cleat.scenePos() - self.scenePos())
         self.setLine(self._line)
 
-class TetherText(BaseText):
 
+class TetherText(BaseText):
     # class attributes
     _PROPERTY_SPECS_TETHER = {
         "Cleat" : PropertySpec(
@@ -59,6 +59,8 @@ class TetherText(BaseText):
             description = "Parent anchor point"
         )
     }
+    _PROPERTY_SPECS = \
+        _PROPERTY_SPECS_TETHER | BaseText._PROPERTY_SPECS
 
     # instance attributes
     _tether : Tether | None
