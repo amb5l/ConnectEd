@@ -28,7 +28,7 @@ class ElementCloneMixin:
                 else:
                     clone_ps.value = source_ps.value
         # clone property texts and pins
-        from ..port_pin import Pin
+        from ..pin import Pin
         for source_child in source.childItems():
             if isinstance(source_child, Pin):
                 clone_pin = source_child.clone(source_child) # TODO is passing item needed?
@@ -38,6 +38,6 @@ class ElementCloneMixin:
                     if isinstance(source_ap_child, PropertyText):
                         clone_ap_child = source_ap_child.clone(source_ap_child)
                         clone_ap_child.setParentItem(
-                            clone._anchor_points[source_child.getLoc()]
+                            clone._anchor_points[source_child.name]
                         )
         return clone
