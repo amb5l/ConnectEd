@@ -38,6 +38,8 @@ class PropertiesMixin:
 
     def initProperties(self : Self, bare : bool = False) -> None:
         self._properties = self._PROPERTY_SPECS.copy()
+        if bare:
+            return
         if hasattr(self.__class__, "_getPropertyTexts"):
             property_texts = self.__class__._getPropertyTexts()
         elif hasattr(self, "_PROPERTY_TEXTS"):
