@@ -473,22 +473,23 @@ class PlaceConnInteraction(SelectionMixin):
 
     def complete(self : Self, pos: QPointF) -> bool:
         self._updateVertices(pos)
-        # check for existing connections before creating segments
+        # get scene content before changing it
+        items_1 = self._scene.items(self._p1())
+        connectables_1 = [item for item in items_1 \
+            if isinstance(item, ConnSeg | ConnVtx | Node)]
         items_2 = self._scene.items(self._p2())
-        item_types_2 = itemsTypeDict(items_2)
+        connectables_2 = [item for item in items_2 \
+            if isinstance(item, ConnSeg | ConnVtx | Node)]
         # create first segment
-        r1 = self._scene.addConnSeg(self._p0(), self._p1()) # True/False/None
-        if r1 == True:
-            self._cleanup()  # segment ended on node or multi-segment vertex
+        self._scene.addConnSeg(self._p0(), self._p1())
+        if connectables_1:
+            self._cleanup()
             return True  # interaction completed
-        # create second segment
-        r2 = self._scene.addConnSeg(self._p1(), self._p2()) # True/False/None
-        if r2 == True:
-            self._cleanup()  # segment ended on node or multi-segment vertex
+        # create second segment if mouse is over a connectable destination
+        if connectables_2:
+            self._scene.addConnSeg(self._p1(), self._p2())
+            self._cleanup()
             return True  # interaction completed
-        elif r2 == False:
-            # undo if it didn't end on a vertex
-            self._scene.undo_stack.undo()
         self._restart(pos)
         return False  # continue interaction
 

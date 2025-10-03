@@ -60,16 +60,13 @@ class cmdReparentConnVtx(cmdSceneBase):
     ) -> None:
         super().__init__(scene)
         self._vtx = vtx
-        self._before.parent = vtx.parentItem()
-        self._before.pos = vtx.pos()
-        self._after.parent = parent
-        if parent is None:
-            if self._before.parent is None:
-                self._after.pos = self._before.pos
-            else:
-                self._after.pos = self._before.parent.scenePos()
-        else:
-            self._after.pos = QPointF()  # pos is relative to parent
+        self._before = self.ConnVtxState(vtx.parentItem(), vtx.pos())
+        self._after = self.ConnVtxState(
+            parent,
+            QPointF() if parent is not None else
+            self._before.pos if self._before.parent is None else
+            self._before.parent.scenePos()
+        )
 
     def redo(self : Self) -> None:
         self._vtx.setParentItem(self._after.parent)
@@ -135,35 +132,6 @@ class cmdAddConnSeg(cmdSceneBase):
         self._scene.removeItem(self._seg)
 
 
-class cmdRemoveConnSeg(cmdSceneBase):
-    """Remove a specified segment from the scene."""
-
-    # instance attributes
-    _vtx1 : ConnVtx
-    _vtx2 : ConnVtx
-    _seg  : ConnSeg
-
-    def __init__(
-        self : Self,
-        scene : "DrawingScene",
-        seg : ConnSeg
-    ) -> None:
-        super().__init__(scene)
-        self._vtx1 = seg.vtx1()
-        self._vtx2 = seg.vtx2()
-        self._seg = seg
-
-    def redo(self : Self) -> None:
-        self._seg.setVtx1(None)
-        self._seg.setVtx2(None)
-        self._scene.removeItem(self._seg)
-
-    def undo(self : Self) -> None:
-        self._seg.setVtx1(self._vtx1)
-        self._seg.setVtx2(self._vtx2)
-        self._scene.addItem(self._seg)
-
-
 class cmdReattachConnSeg(cmdSceneBase):
     """Detach a segment from one vertex and attach it to another."""
 
@@ -191,3 +159,32 @@ class cmdReattachConnSeg(cmdSceneBase):
     def undo(self : Self) -> None:
         if not self._seg.reattach(self._vtx_new, self._vtx_old):
             logger().warning(f"Failed to reattach segment {self._seg} to {self._vtx_old}")
+
+
+class cmdRemoveConnSeg(cmdSceneBase):
+    """Remove a specified segment from the scene."""
+
+    # instance attributes
+    _vtx1 : ConnVtx
+    _vtx2 : ConnVtx
+    _seg  : ConnSeg
+
+    def __init__(
+        self : Self,
+        scene : "DrawingScene",
+        seg : ConnSeg
+    ) -> None:
+        super().__init__(scene)
+        self._vtx1 = seg.vtx1()
+        self._vtx2 = seg.vtx2()
+        self._seg = seg
+
+    def redo(self : Self) -> None:
+        self._seg.setVtx1(None)
+        self._seg.setVtx2(None)
+        self._scene.removeItem(self._seg)
+
+    def undo(self : Self) -> None:
+        self._seg.setVtx1(self._vtx1)
+        self._seg.setVtx2(self._vtx2)
+        self._scene.addItem(self._seg)
