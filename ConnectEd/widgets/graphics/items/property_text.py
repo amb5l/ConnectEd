@@ -9,6 +9,7 @@ from ..properties import PropertySpec, PropertiesMixin
 
 from ..items.anchor_point import APName, AnchorPoint
 
+from .base_text   import BaseText
 from .tether_text import TetherText
 
 from typing import TYPE_CHECKING
@@ -36,9 +37,11 @@ class PropertyText(TetherText):
             )
         }
     _PROPERTY_SPECS = \
-        TetherText._PROPERTY_SPECS_POS | \
+        TetherText._PROPERTY_SPECS_CLEAT | \
+        BaseText._PROPERTY_SPECS_ORIGIN | \
+        BaseText._PROPERTY_SPECS_POS | \
         _PROPERTY_SPECS_PROPERTY | \
-        TetherText._PROPERTY_SPECS_APPEARANCE
+        BaseText._PROPERTY_SPECS_APPEARANCE
 
     # instance attributes
     _name    : str
