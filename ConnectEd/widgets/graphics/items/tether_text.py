@@ -81,7 +81,8 @@ class TetherText(BaseText):
     def setOriginAPName(self : Self, name : APName) -> None:
         """Override to update tether line."""
         super().setOriginAPName(name)
-        self._tether.setParentItem(self._origin)
+        # parent to origin anchor point
+        self._tether.setParentItem(self._origin.parentItem())
         self._tether.onPositionChange(self.pos())
 
     def cleat(self : Self) -> APName:
