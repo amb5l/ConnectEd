@@ -44,10 +44,8 @@ class AnchorPoint(NullPoint):
         grip_class = ResizeGrip if resize else MoveGrip
         self._grip = grip_class(self)
 
-    @property
     def name(self : Self) -> APName:
         return self._name
 
-    @name.setter
-    def name(self : Self, value : APName) -> None:
+    def setName(self : Self, value : APName) -> None:
         self._name = value

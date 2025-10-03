@@ -54,7 +54,7 @@ class ElementOriginMixin:
 
     def getOriginAPName(self : Self) -> APName:
         ap : AnchorPoint = self._origin.parentItem()
-        return self.getOriginAP().name
+        return self.getOriginAP().name()
 
     def setOriginAPName(self : Self, ap : APName) -> None:
         self.setOriginAP(self._anchor_points[ap])

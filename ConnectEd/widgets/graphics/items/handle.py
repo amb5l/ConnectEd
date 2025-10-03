@@ -61,7 +61,7 @@ class Handle(
 
     def moveBy(self : Self, delta : QPointF) -> None:
         parent : "AnchorPoint" = self.parentItem()
-        self._element.moveAnchorPointBy(parent.name, delta)
+        self._element.moveAnchorPointBy(parent.name(), delta)
 
     def toXml(self : Self, _ : QXmlStreamWriter) -> None:
         pass
@@ -105,8 +105,8 @@ class Handle(
         parent : "AnchorPoint" = self.parentItem()
         scene.undo_stack.push(cmdEditOrigin(
             scene,
-            self._element,      # element
-            parent.name         # name of anchor point
+            self._element, # element
+            parent.name()  # name of anchor point
         ))
 
 

@@ -38,6 +38,6 @@ class ElementCloneMixin:
                     if isinstance(source_ap_child, PropertyText):
                         clone_ap_child = source_ap_child.clone(source_ap_child)
                         clone_ap_child.setParentItem(
-                            clone._anchor_points[source_child.name]
+                            clone._anchor_points[source_child.name()]
                         )
         return clone
