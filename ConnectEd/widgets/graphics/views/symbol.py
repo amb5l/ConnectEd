@@ -1,12 +1,16 @@
 from typing import Self
 
+from PyQt6.QtCore    import QEvent
 from PyQt6.QtWidgets import QMdiArea
 
 from .drawing import DrawingView, DrawingSubWindow
 
 
 class SymbolView(DrawingView):
-    pass
+    def showEvent(self : Self, event : QEvent) -> None:
+        super().showEvent(event)
+        self.viewZoomAll()
+
 
 class SymbolSubWindow(DrawingSubWindow):
     def __init__(

@@ -79,7 +79,6 @@ class DrawingView(
     def showEvent(self : Self, event : QEvent) -> None:
         super().showEvent(event)
         self._shown = True
-        self.viewZoomAll()
 
     def resizeEvent(self : Self, event : QEvent) -> None:
         super().resizeEvent(event)

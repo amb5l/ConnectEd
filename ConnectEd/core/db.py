@@ -107,7 +107,7 @@ class DrawingItem(QStandardItem):
     @classmethod
     def sceneClass(cls):
         if cls._scene_class is None:
-            from ..widgets.graphics.scenes import DrawingScene # deferred import
+            from ..widgets.graphics.scenes.drawing import DrawingScene
             cls._scene_class = DrawingScene
         return cls._scene_class
 

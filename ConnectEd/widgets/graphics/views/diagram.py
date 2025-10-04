@@ -1,5 +1,7 @@
 from typing import Self
 
+from PyQt6.QtCore import QEvent
+
 from .drawing import DrawingView, DrawingSubWindow
 
 from typing import TYPE_CHECKING
@@ -12,6 +14,11 @@ class DiagramView(DrawingView):
         scene : "DiagramScene" = self.scene()
         rect = scene.sheet.rect
         self._zoomRect(rect)
+
+    def showEvent(self : Self, event : QEvent) -> None:
+        super().showEvent(event)
+        self.viewZoomSheet()
+
 
 class DiagramSubWindow(DrawingSubWindow):
     pass
