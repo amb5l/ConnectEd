@@ -139,6 +139,9 @@ class Pin(ElementLocMixin, PortPinMixin, QGraphicsLineItem):
         if hasattr(self, '_loc') and self.parentItem():
             self.setLoc(self._loc)
 
+    def onSceneChange(self : Self, scene : "DrawingScene") -> None:
+        self._arrow.direction = self._direction
+
     def paint(
         self    : Self,
         painter : QPainter,
