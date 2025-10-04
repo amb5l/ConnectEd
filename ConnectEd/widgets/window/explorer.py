@@ -216,11 +216,7 @@ class Explorer(TreeView):
     def editDrawing(self : Self, item : QStandardItem) -> None:
         from ...core.db import DrawingItem
         from ...widgets.graphics.views.drawing import DrawingView, DrawingSubWindow
-        from ...widgets.graphics.views.diagram import DiagramView, DiagramSubWindow
-        from ...widgets.graphics.views.symbol import SymbolView, SymbolSubWindow
         from ...widgets.graphics.scenes.drawing import DrawingScene
-        from ...widgets.graphics.scenes.diagram import DiagramScene
-        from ...widgets.graphics.scenes.symbol import SymbolScene
         if isinstance(item, DrawingItem):
             # focus existing subwindow if one exists
             for subwindow in window().mdi_area.subWindowList():
@@ -237,24 +233,7 @@ class Explorer(TreeView):
                 subwindow.raise_()
                 subwindow.setFocus()
                 return
-            # create new subwindow
-            drawing_name = item.text()
-            drawing_scene : DrawingScene = item.data(Qt.ItemDataRole.UserRole)
-            if isinstance(drawing_scene, DiagramScene):
-                drawing_view = DiagramView(drawing_scene)
-                db_item = item.parent().parent()
-                subwindow = DiagramSubWindow(window().mdi_area)
-            elif isinstance(drawing_scene, SymbolScene):
-                drawing_view = SymbolView(drawing_scene)
-                db_item = item.parent()
-                subwindow = SymbolSubWindow(window().mdi_area)
-            else:
-                raise ValueError(f"Unknown drawing scene: {type(drawing_scene)}")
-            subwindow.setWidget(drawing_view)
-            subwindow.setWindowTitle(f"{db_item.text()}: {drawing_name}")
-            window().mdi_area.addSubWindow(subwindow)
-            subwindow.showMaximized()
-            window().menu_bar.updateWindowMenu()
+            self.newDrawingWindow(item)
         else:
             logger().warning(f"Unsupported item: {item.text()} ({type(item)})")
 
