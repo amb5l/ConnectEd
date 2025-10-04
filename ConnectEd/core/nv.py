@@ -248,7 +248,15 @@ FACTORY_SETTINGS = {
                 },
                 "Junction" : {
                     "size"  : 4,
-                    "color" : PaletteDark.Junction
+                    "line" : {
+                        "color" : PaletteDark.Junction,
+                        "width" : 0,
+                        "style" : Qt.PenStyle.NoPen
+                    },
+                    "fill" : {
+                        "color" : PaletteDark.Junction,
+                        "style" : Qt.BrushStyle.SolidPattern
+                    }
                 },
                 "ConnSegPreview1" : {
                     "line" : {
@@ -266,10 +274,15 @@ FACTORY_SETTINGS = {
                 },
                 "ConnVtx" : {
                     "visible" : True,
-                    "size"    : 12,
+                    "size"    : 4,
+                    "line" : {
+                        "color" : PaletteDark.ConnVtx,
+                        "width" : 0,
+                        "style" : Qt.PenStyle.SolidLine
+                    },
                     "fill"    : {
                         "color" : PaletteDark.ConnVtx,
-                        "style" : Qt.BrushStyle.SolidPattern
+                        "style" : Qt.BrushStyle.NoBrush
                     },
                 },
                 "ConnSeg" : {
@@ -448,7 +461,15 @@ FACTORY_SETTINGS = {
                 },
                 "Junction" : {
                     "size"  : 4,
-                    "color" : PaletteLightMono.Junction
+                    "line" : {
+                        "color" : PaletteLightMono.Junction,
+                        "width" : 0,
+                        "style" : Qt.PenStyle.NoPen
+                    },
+                    "fill" : {
+                        "color" : PaletteLightMono.Junction,
+                        "style" : Qt.BrushStyle.SolidPattern
+                    }
                 },
                 "ConnSegPreview1" : {
                     "line" : {
@@ -466,10 +487,15 @@ FACTORY_SETTINGS = {
                 },
                 "ConnVtx" : {
                     "visible" : True,
-                    "size"    : 12,
+                    "size"    : 4,
+                    "line" : {
+                        "color" : PaletteLightMono.ConnVtx,
+                        "width" : 0,
+                        "style" : Qt.PenStyle.SolidLine
+                    },
                     "fill"    : {
                         "color" : PaletteLightMono.ConnVtx,
-                        "style" : Qt.BrushStyle.SolidPattern
+                        "style" : Qt.BrushStyle.NoBrush
                     },
                 },
                 "ConnSeg" : {

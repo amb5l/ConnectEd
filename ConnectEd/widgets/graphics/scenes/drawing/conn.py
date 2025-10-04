@@ -174,7 +174,7 @@ class DrawingSceneConnMixin:
     def tidyConnVtx(self : "DrawingScene", vtx : ConnVtx) -> None:
         """
         Tidy up an existing vertex:
-        - Merge existing vertices into one new one. Reattach existing segments.
+        - Merge existing vertices into one. Reattach existing segments.
         - Parent to node if present.
         - Split and attach any segments that cross the vertex.
         - Remove duplicate segments.
@@ -189,7 +189,7 @@ class DrawingSceneConnMixin:
         self.undo_stack.beginMacro("tidyConnVtx")
         # get position
         pos = vtx.scenePos()
-        print(f"*************** tidyConnVtx {pos}")
+        print(f"*** tidyConnVtx {pos}")
         # get existing vertices
         items = self.items(pos)
         print("items", items)
@@ -237,18 +237,16 @@ class DrawingSceneConnMixin:
                         self.undo_stack.push(cmdRemoveConnSeg(self, seg2))
         # remove if useless break in a straight line
         segs = vtx1.connections().copy()  # take copy because we're making changes
-        if len(segs) >= 2:
-            for i, seg1 in enumerate(segs[:-1]):
-                for seg2 in segs[i+1:]:
-                    if colinear(seg1.toLine(), seg2.toLine()) \
-                    and touching(seg1.toLine(), seg2.toLine()):
-                        print(f"Removing useless break in a straight line")
-                        # get far end of 2nd segment
-                        v2 = seg2.vtx1() if seg2.vtx2() is vtx1 else seg2.vtx2()
-                        # reattach 1st segment to far end of 2nd segment
-                        self.undo_stack.push(cmdReattachConnSeg(self, seg1, vtx1, v2))
-                        # remove 2nd segment
-                        self.undo_stack.push(cmdRemoveConnSeg(self, seg2))
+        if len(segs) == 2:
+            if colinear(segs[0].toLine(), segs[1].toLine()) \
+            and touching(segs[0].toLine(), segs[1].toLine()):
+                print(f"Removing useless break in a straight line")
+                # get far end of 2nd segment
+                v2 = segs[1].vtx1() if segs[1].vtx2() is vtx1 else segs[1].vtx2()
+                # reattach 1st segment to far end of 2nd segment
+                self.undo_stack.push(cmdReattachConnSeg(self, segs[0], vtx1, v2))
+                # remove 2nd segment
+                self.undo_stack.push(cmdRemoveConnSeg(self, segs[1]))
         # remove if no connections
         if len(vtx1.connections()) == 0:
             self.undo_stack.push(cmdRemoveConnVtx(self, vtx1))

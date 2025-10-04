@@ -3,6 +3,8 @@ from typing import Self
 from PyQt6.QtCore    import QPointF, QLineF
 from PyQt6.QtWidgets import QGraphicsLineItem
 
+from ....core.defs  import Z_DRAWING
+
 from .mixin        import ElementMixin
 from .mixin.line   import ElementLineMixin
 from .mixin.change import ElementChangeMixin
@@ -23,6 +25,8 @@ class ConnSeg(
     QGraphicsLineItem
 ):
     """Runs between two ConnVtx instances."""
+    # class attributes
+    Z = Z_DRAWING - 1
 
     # instance attributes
     _vtx1 : ConnVtx | None

@@ -15,6 +15,7 @@ class ElementMixin:
     uuid : str
 
     def initElement(self : Self, bare : bool = False) -> None:
+        self.setZValue(self.Z)
         f = QGraphicsItem.GraphicsItemFlag
         self.setFlag( f.ItemIsSelectable              , True )
         self.setFlag( f.ItemSendsGeometryChanges      , True )

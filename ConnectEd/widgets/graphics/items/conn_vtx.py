@@ -6,8 +6,11 @@ from PyQt6.QtGui     import QPainterPath, QPen
 
 from ....app import logger, settings
 
+from ....core.defs  import Z_DRAWING
+
 from .mixin        import ElementMixin
 from .mixin.pos    import ElementPosMixin
+from .mixin.line   import ElementLineMixin
 from .mixin.fill   import ElementFillMixin
 from .mixin.change import ElementChangeMixin
 from .mixin.clone  import ElementCloneMixin
@@ -25,6 +28,7 @@ if TYPE_CHECKING:
 class ConnVtx(
     ElementMixin,
     ElementPosMixin,
+    ElementLineMixin,
     ElementFillMixin,
     ElementChangeMixin,
     ElementCloneMixin,
@@ -35,20 +39,19 @@ class ConnVtx(
     Junction appears when there are more than 2 connections to the vertex.
     """
     # class attributes
+    Z = Z_DRAWING + 1
     _PATH = "ConnVtx"
 
     # instance attributes
     _path        : QPainterPath
-    _pen         : QPen
     _junction    : Junction
     _connections : list["ConnSeg"]
 
     def __init__(self : Self, parent : "Node | None" = None) -> None:
         QGraphicsPathItem.__init__(self, parent)
-        self.setZValue(-1)
         self._connections = []
-        self._junction = Junction(self)
         self.initElement()
+        self._junction = Junction(self)
 
     def onScenePositionChange(self : Self, _pos : QPointF) -> None:
         """Update all connected segments."""
@@ -74,6 +77,7 @@ class ConnVtx(
         connections = len(self._connections)
         # TODO: special case: parent is node, segments are not colinear
         self._junction.setVisible((connections > 2))
+        print(f"updateJunction: {connections}")
 
     def attach(self : Self, segment : "ConnSeg") -> None:
         if segment not in self._connections:
