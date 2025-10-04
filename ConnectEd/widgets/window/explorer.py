@@ -206,12 +206,24 @@ class Explorer(TreeView):
 
     def openDb(self : Self, type_name : str | None = None) -> None:
         from ..dialogs.file import FileOpenDialog
+        from ...core.db import DesignDbItem, LibraryDbItem
         dialog = FileOpenDialog(type_name)
         result = dialog.exec()
         if result == dialog.DialogCode.Accepted:
             files = dialog.selectedFiles()
             for file in files:
-                model().load(file)
+                db_item = model().load(file)
+                if db_item:
+                    db_idx = model().indexFromItem(db_item)
+                    self.expand(db_idx)
+                    if isinstance(db_item, DesignDbItem):
+                        diagrams_idx = model().indexFromItem(db_item._diagrams)
+                        self.expand(diagrams_idx)
+                        root_diagram = db_item._diagrams.root
+                        self.editDrawing(root_diagram)
+                    elif isinstance(db_item, LibraryDbItem):
+                        symbols_idx = model().indexFromItem(db_item._symbols)
+                        self.expand(symbols_idx)
 
     def editDrawing(self : Self, item : QStandardItem) -> None:
         from ...core.db import DrawingItem
