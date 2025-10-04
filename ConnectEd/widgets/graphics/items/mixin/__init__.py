@@ -23,6 +23,8 @@ class ElementMixin:
         self.resetUuid()
         if hasattr(self, "initBoundShape"):
             self.initBoundShape()
+        if hasattr(self, "initLoc"):
+            self.initLoc()
         if hasattr(self, "initLine"):
             self.initLine()
         if hasattr(self, "initFill"):

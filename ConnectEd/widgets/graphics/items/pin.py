@@ -109,9 +109,13 @@ class Pin(ElementLocMixin, PortPinMixin, QGraphicsLineItem):
     def _getCommentClass(cls) -> type[PinComment]:
         return PinComment
 
-    def __init__(self : Self, parent : QGraphicsItem | None = None) -> None:
+    def __init__(
+        self   : Self,
+        parent : QGraphicsItem | None = None,
+        bare   : bool = False
+    ) -> None:
         QGraphicsLineItem.__init__(self, parent)
-        self.initPortPin()
+        self.initPortPin(bare)
         line = QLineF(-_PIN_LEN, 0, 0, 0)
         self.setLine(line)
         self._node.setPos(-_PIN_LEN, 0)
@@ -129,6 +133,11 @@ class Pin(ElementLocMixin, PortPinMixin, QGraphicsLineItem):
     def onSelectionChange(self : Self, selected : bool) -> None:
         self._arrow.setSelected(selected)
         self._node.setSelected(selected)
+
+    def onGeometryChange(self : Self) -> None:
+        """Update position when geometry changes (e.g., parent is set)."""
+        if hasattr(self, '_loc') and self.parentItem():
+            self.setLoc(self._loc)
 
     def paint(
         self    : Self,

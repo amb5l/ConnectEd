@@ -31,17 +31,17 @@ class Edge(Enum):
 
 @dataclass
 class EdgeLoc:
-    edge     : Edge  | None = None
-    distance : float | None = None
+    edge   : Edge  | None = None
+    offset : float | None = None
 
     def toStr(self) -> str:
-        return f"{self.edge.value},{self.distance}" \
+        return f"{self.edge.value},{self.offset}" \
               if self.edge is not None else "None"
 
     @classmethod
     def fromStr(cls, s : str) -> Self:
-        edge, distance = s.split(",")
-        return cls(Edge(edge), float(distance))
+        edge, offset = s.split(",")
+        return cls(Edge(edge), float(offset))
 
 # TODO: consider passive, 3-state etc for EE schematics
 class SignalDirection(Enum):

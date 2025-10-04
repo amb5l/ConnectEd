@@ -54,9 +54,13 @@ class Port(ElementPosMixin, ElementFillMixin, PortPinMixin, QGraphicsPathItem):
     def _getCommentClass(cls) -> type[PortComment]:
         return PortComment
 
-    def __init__(self : Self, parent : QGraphicsItem | None = None) -> None:
+    def __init__(
+        self   : Self,
+        parent : QGraphicsItem | None = None,
+        bare   : bool = False
+    ) -> None:
         QGraphicsPathItem.__init__(self, parent)
-        self.initPortPin()
+        self.initPortPin(bare)
 
     def onSettingsChange(self : Self) -> None:
         size = settings().getTheme("elements/Port/size")

@@ -16,19 +16,22 @@ class ElementLocMixin:
     _loc : EdgeLoc
 
     _PROPERTY_SPECS_LOC = {
-        "Location (Edge)" : PropertySpec(
+        "Edge" : PropertySpec(
             type_name   = "Edge",
             getter      = lambda self: self.loc().edge,
             setter      = lambda self, value: self.setLocEdge(value),
             description = "Parent edge"
         ),
-        "Location (Distance)" : PropertySpec(
+        "Offset" : PropertySpec(
             type_name   = "float",
-            getter      = lambda self: self.loc().distance,
-            setter      = lambda self, value: self.setLocDistance(value),
-            description = "Distance from start of parent edge"
+            getter      = lambda self: self.loc().offset,
+            setter      = lambda self, value: self.setLocOffset(value),
+            description = "Offset from start of parent edge"
         )
     }
+
+    def initLoc(self : Self) -> None:
+        self._loc = EdgeLoc(Edge.UNDEFINED, 0)
 
     def loc(self : Self) -> EdgeLoc:
         return self._loc
@@ -51,19 +54,19 @@ class ElementLocMixin:
                     grandchild.compensateRotation(angle)
 
     def setLocEdge(self : Self, edge : Edge) -> None:
-        self.setLoc(EdgeLoc(Edge(edge), self._loc.distance))
+        self.setLoc(EdgeLoc(Edge(edge), self._loc.offset))
 
-    def setLocDistance(self : Self, distance : float) -> None:
-        self.setLoc(EdgeLoc(self._loc.edge, distance))
+    def setLocOffset(self : Self, offset : float) -> None:
+        self.setLoc(EdgeLoc(self._loc.edge, offset))
 
     def locSnap(self : Self, loc : EdgeLoc, snap : QPointF | None = None) -> EdgeLoc:
         e = loc.edge
         if snap is None:
-            d = loc.distance
+            d = loc.offset
         elif loc.edge in [Edge.LEFT, Edge.RIGHT]:
-            d = round(loc.distance / snap.x()) * snap.x()
+            d = round(loc.offset / snap.x()) * snap.x()
         else:
-            d = round(loc.distance / snap.y()) * snap.y()
+            d = round(loc.offset / snap.y()) * snap.y()
         return EdgeLoc(e, d)
 
     def pos(self : Self) -> QPointF:

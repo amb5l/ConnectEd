@@ -26,24 +26,40 @@ class ElementXmlMixin:
     @classmethod
     def fromXml(cls : Self, xr: QXmlStreamReader) -> Self:
         from ..property_text import PropertyText
-        from ..block_pin     import BlockPin
+        from ..block_pin     import BlockPin, BlockPinName, BlockPinComment
+        from ..symbol_pin    import SymbolPin, SymbolPinName, SymbolPinComment
         instance = cls(bare=True)
         fromXmlAttrs(instance, xr)
         instance.onGeometryChange()
         # check if we're already at the end element (self-closing)
         if xr.isEndElement() and xr.name() == cls.__name__:
             return instance
-        # read child PropertyText and pin elements
+        # read child pin and PropertyText elements
+        pin_classes = {
+            "BlockPin"  : BlockPin,
+            "SymbolPin" : SymbolPin
+        }
+        property_text_classes = {
+            "PropertyText"     : PropertyText,
+            "BlockPinName"     : BlockPinName,
+            "BlockPinComment"  : BlockPinComment,
+            "SymbolPinName"    : SymbolPinName,
+            "SymbolPinComment" : SymbolPinComment
+        }
         while not (xr.isEndElement() and xr.name() == cls.__name__):
             if xr.isStartElement():
-                if xr.name() == "BlockPin":
-                    child = BlockPin.fromXml(xr)
+                element_name = xr.name()
+                if element_name in pin_classes:
+                    child_cls = pin_classes[element_name]
+                    child = child_cls.fromXml(xr)
                     child.setParentItem(instance)
-                elif xr.name() == "PropertyText":
-                    child : PropertyText = PropertyText.fromXml(xr)
+                    child.onGeometryChange()
+                elif element_name in property_text_classes:
+                    child_cls = property_text_classes[element_name]
+                    child = child_cls.fromXml(xr)
                     child.setParentItem(instance._anchor_points[child.cleat()])
+                    child.onGeometryChange()
                 else:
-                    logger().warning(f"Unexpected child element: {xr.name()}")
-                    continue
+                    logger().warning(f"Unexpected child element: {element_name}")
             xr.readNext()
         return instance

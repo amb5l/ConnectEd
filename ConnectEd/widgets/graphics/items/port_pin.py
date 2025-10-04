@@ -109,14 +109,14 @@ class PortPinMixin(
             ),
         }
 
-    def initPortPin(self : Self) -> None:
+    def initPortPin(self : Self, bare : bool = False) -> None:
         # Initialize attributes that properties will access
         self._name      = ""
         self._direction = SignalDirection.IN
         self._range     = None
         self._comment   = ""
         # Initialize the element (this sets up properties system)
-        self.initElement()
+        self.initElement(bare)
         # Initialize the node
         self._node = self._getNodeClass()(self)
 

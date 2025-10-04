@@ -29,30 +29,30 @@ class PinRect(BaseRectangle):
         r = pos - c                          # pos relative to rectangle center
         hq = False if r.x() == 0 or abs(r.y()/r.x()) > abs(h/w) else True
         if hq:
-            distance = min(max(r.y(), -h/2), h/2) + h/2
+            offset = min(max(r.y(), -h/2), h/2) + h/2
             edge = Edge.LEFT if r.x() <= 0 else Edge.RIGHT
         else:
-            distance = min(max(r.x(), -w/2), w/2) + w/2
+            offset = min(max(r.x(), -w/2), w/2) + w/2
             edge = Edge.TOP if r.y() <= 0 else Edge.BOTTOM
-        return EdgeLoc(edge, distance)
+        return EdgeLoc(edge, offset)
 
     def loc2pos(self : Self, loc : EdgeLoc) -> QPointF:
         match loc.edge:
             case Edge.LEFT:
-                return QPointF(0, loc.distance)
+                return QPointF(0, loc.offset)
             case Edge.RIGHT:
-                return QPointF(self.rect().width(), loc.distance)
+                return QPointF(self.rect().width(), loc.offset)
             case Edge.TOP:
-                return QPointF(loc.distance, 0)
+                return QPointF(loc.offset, 0)
             case Edge.BOTTOM:
-                return QPointF(loc.distance, self.rect().height())
+                return QPointF(loc.offset, self.rect().height())
             case _:
                 raise ValueError(f"Invalid edge: {loc.edge}")
 
     def loc2peri(self : Self, loc: EdgeLoc) -> float:
         w = self._rect.width()
         h = self._rect.height()
-        d = loc.distance
+        d = loc.offset
         if loc.edge == Edge.LEFT:
             return d
         elif loc.edge == Edge.BOTTOM:
@@ -118,45 +118,45 @@ class PinRect(BaseRectangle):
         if offset >= 0: # CCW
             # convert EdgeLoc to EdgeLocCCW
             if loc.edge in [Edge.RIGHT, Edge.TOP]:
-                loc.distance = edgeLen(loc.edge) - loc.distance
+                loc.offset = edgeLen(loc.edge) - loc.offset
             # advance by offset
             while offset > 0:
-                d = edgeLen(loc.edge) - loc.distance
+                d = edgeLen(loc.edge) - loc.offset
                 if d >= offset:
-                    loc.distance += offset
+                    loc.offset += offset
                     offset = 0
                 else:
                     offset -= d
                     loc.edge = edgeNextCCW(loc.edge)
-                    loc.distance = 0
+                    loc.offset = 0
             # handle corner
-            if loc.distance == edgeLen(loc.edge) and corner == +1:
+            if loc.offset == edgeLen(loc.edge) and corner == +1:
                 loc.edge = edgeNextCCW(loc.edge)
             # convert EdgeLocCCW to EdgeLoc
             if loc.edge in [Edge.RIGHT, Edge.TOP]:
-                loc.distance = edgeLen(loc.edge) - loc.distance
+                loc.offset = edgeLen(loc.edge) - loc.offset
         else: # CW
             # normalize offset
             offset = -offset
             # convert EdgeLoc to EdgeLocCW
             if loc.edge in [Edge.LEFT, Edge.BOTTOM]:
-                loc.distance = edgeLen(loc.edge) - loc.distance
+                loc.offset = edgeLen(loc.edge) - loc.offset
             # advance by offset
             while offset > 0:
-                d = edgeLen(loc.edge) - loc.distance
+                d = edgeLen(loc.edge) - loc.offset
                 if d >= offset:
-                    loc.distance += offset
+                    loc.offset += offset
                     offset = 0
                 else:
                     offset -= d
                     loc.edge = edgeNextCW(loc.edge)
-                    loc.distance = 0
+                    loc.offset = 0
             # handle corner
-            if loc.distance == 0 and corner == -1:
+            if loc.offset == 0 and corner == -1:
                 loc.edge = edgeNextCW(loc.edge)
             # convert EdgeLocCW to EdgeLoc
             if loc.edge in [Edge.LEFT, Edge.BOTTOM]:
-                loc.distance = edgeLen(loc.edge) - loc.distance
+                loc.offset = edgeLen(loc.edge) - loc.offset
         return loc
 
     def locOffset(
@@ -185,16 +185,16 @@ class PinRect(BaseRectangle):
                 Edge.UNDEFINED
         loc = self.peri2loc(self.loc2peri(loc) + offset)
         if offset >= 0 and corner == +1: # CCW
-            if (loc.edge in [Edge.LEFT, Edge.BOTTOM] and loc.distance == edgeLen(loc.edge)) \
-            or (loc.edge in [Edge.RIGHT, Edge.TOP] and loc.distance == 0):
+            if (loc.edge in [Edge.LEFT, Edge.BOTTOM] and loc.offset == edgeLen(loc.edge)) \
+            or (loc.edge in [Edge.RIGHT, Edge.TOP] and loc.offset == 0):
                 loc.edge = edgeNextCCW(loc.edge)
-                loc.distance = edgeLen(loc.edge) \
+                loc.offset = edgeLen(loc.edge) \
                     if loc.edge in [Edge.RIGHT, Edge.TOP] else 0
         elif offset < 0 and corner == -1: # CW
-            if (loc.edge in [Edge.TOP, Edge.RIGHT] and loc.distance == edgeLen(loc.edge)) \
-            or (loc.edge in [Edge.BOTTOM, Edge.LEFT] and loc.distance == 0):
+            if (loc.edge in [Edge.TOP, Edge.RIGHT] and loc.offset == edgeLen(loc.edge)) \
+            or (loc.edge in [Edge.BOTTOM, Edge.LEFT] and loc.offset == 0):
                 loc.edge = edgeNextCW(loc.edge)
-                loc.distance = edgeLen(loc.edge) \
+                loc.offset = edgeLen(loc.edge) \
                     if loc.edge in [Edge.BOTTOM, Edge.LEFT] else 0
         return loc
 
