@@ -106,7 +106,8 @@ class DrawingScene(
         xw.writeStartElement(self.__class__.__name__.replace("Scene", ""))
         toXmlAttrs(self, xw)
         for item in self.items():
-            item.toXml(xw)
+            if item.parentItem() is None:  # top level items only
+                item.toXml(xw)
         xw.writeEndElement()
 
     @classmethod

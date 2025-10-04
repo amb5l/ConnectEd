@@ -65,11 +65,11 @@ class TetherText(BaseText):
 
     # instance attributes
     _tether : Tether | None
-    _cleat_name : APName | None
+    _cleat  : APName | None
 
     def __init__(self : Self, bare : bool = False) -> None:
         self._tether = None
-        self._cleat_name = None
+        self._cleat  = None
         super().__init__(bare=bare)
         self._tether = Tether(self)
 
@@ -93,7 +93,7 @@ class TetherText(BaseText):
     def cleat(self : Self) -> APName:
         parent = self.parentItem()
         if parent is None:
-            return self._cleat_name
+            return self._cleat  # workaround for deserialization
         elif isinstance(parent, AnchorPoint):
             return parent.name()
         else:
@@ -101,12 +101,9 @@ class TetherText(BaseText):
             return APName.Undefined
 
     def setCleat(self : Self, name : APName) -> None:
-        self._cleat_name = name
-
+        self._cleat = name
         parent = self.parentItem()
         if parent is None:  # handle deserialization
-            # During deserialization, parent isn't set yet - just store the value
-            # The parent will be set after fromXml() returns
             return
         if isinstance(parent, AnchorPoint):
             grandparent = parent.parentItem()

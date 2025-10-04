@@ -1,5 +1,5 @@
-- don't terminate connection when hitting an inline segment!
-  - remove
+- recursively expand a newly loaded design
+- new design then load doesn't work
 - tidyConnVtx to preserve vertices as much as possible
 - background netlist extraction
 - check interactions that don't change anything don't push a cmd

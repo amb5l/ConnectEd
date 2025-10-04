@@ -24,6 +24,7 @@ class APName(Enum):
     Origin       = "Origin"
     Name         = "Name"
     Node         = "Node"
+    Undefined    = "Undefined"
 
 
 class AnchorPoint(NullPoint):

@@ -11,11 +11,16 @@ class ElementXmlMixin:
     def toXml(self : Self, xw : QXmlStreamWriter) -> None:
         from ..property_text import PropertyText
         from ..pin           import Pin
+        from ..anchor_point  import AnchorPoint
         xw.writeStartElement(self.__class__.__name__)
         toXmlAttrs(self, xw)
         for child in self.childItems():
-            if isinstance(child, PropertyText | Pin):
+            if isinstance(child, Pin):
                 child.toXml(xw)
+            elif isinstance(child, AnchorPoint):
+                for anchor_child in child.childItems():
+                    if isinstance(anchor_child, PropertyText):
+                        anchor_child.toXml(xw)
         xw.writeEndElement()
 
     @classmethod
