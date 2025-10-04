@@ -345,7 +345,7 @@ class DesignDbItem(DbItem):
                         if root is None:
                             logger().warning(f"DesignDbItem.fromXml: Root diagram '{root_name}' not found, defaulting to first")
                             if db_item._diagrams.rowCount() > 0:
-                                db_item.diagrams.root = db_item._diagrams.child(0)
+                                db_item._diagrams.root = db_item._diagrams.child(0)
                     elif db_item._diagrams.rowCount() > 0:
                         db_item._diagrams.root = db_item._diagrams.child(0)
                 elif xr.name() == "SymbolCache":
