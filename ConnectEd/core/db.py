@@ -218,13 +218,14 @@ class DbItem(QStandardItem):
         self._path = path
         if self._path is None:
             self._path = self.saveAs()
-        if self._path:
+        elif self._path:
             xw, file = saveBegin(self._path)
             self.toXml(xw)
             saveEnd(xw, file)
 
     def saveAs(self : Self) -> str:
-        dialog = FileSaveAsDialog(self.__class__.__name__, window())
+        type_name = self.__class__.__name__.replace("Item", "")
+        dialog = FileSaveAsDialog(type_name, window())
         path = None
         if dialog.exec():
             path, _ = dialog.getSaveFileName()
