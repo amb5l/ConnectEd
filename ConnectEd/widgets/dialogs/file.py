@@ -15,9 +15,9 @@ class FileOpenDialog(QFileDialog):
         match type_name:
             case None:
                 self.setNameFilter(f"Connected Files (*{GEN_EXT});;All Files (*.*)`")
-            case "DesignDb":
+            case "Design":
                 self.setNameFilter(f"Connected Designs (*{DSN_EXT});;Connected Libraries (*{LIB_EXT});;Connected Files (*{GEN_EXT});;All Files (*.*)")
-            case "LibraryDb":
+            case "Library":
                 self.setNameFilter(f"Connected Libraries (*{LIB_EXT});;Connected Designs (*{DSN_EXT});;Connected Files (*{GEN_EXT});;All Files (*.*)")
             case _:
                 raise ValueError(f"Unknown type name: {type_name}")
@@ -30,11 +30,11 @@ class FileSaveAsDialog(QFileDialog):
         parent    : QWidget | None = None
     ) -> None:
         match type_name:
-            case "LibraryDb":
-                name_filter    = f"Connected Libraries ({LIB_EXT})"
+            case "Library":
+                name_filter    = f"Connected Libraries (*{LIB_EXT})"
                 default_suffix = LIB_EXT
-            case "DesignDb":
-                name_filter    = f"Connected Designs ({DSN_EXT})"
+            case "Design":
+                name_filter    = f"Connected Designs (*{DSN_EXT})"
                 default_suffix = DSN_EXT
             case _:
                 raise ValueError(f"Unknown type name: {type_name}")

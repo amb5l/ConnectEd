@@ -215,16 +215,17 @@ class DbItem(QStandardItem):
         xw.writeEndElement()
 
     def save(self : Self, path : str | None = None) -> None:
-        self._path = path
+        if path is not None:
+            self._path = path
         if self._path is None:
             self._path = self.saveAs()
-        elif self._path:
+        else:
             xw, file = saveBegin(self._path)
             self.toXml(xw)
             saveEnd(xw, file)
 
     def saveAs(self : Self) -> str:
-        type_name = self.__class__.__name__.replace("Item", "")
+        type_name = self.__class__.__name__.replace("DbItem", "")
         dialog = FileSaveAsDialog(type_name, window())
         path = None
         if dialog.exec():
@@ -259,6 +260,7 @@ class DbItem(QStandardItem):
         items = loadItems(file)
         for item in items:
             if isinstance(item, cls):
+                item._path = file
                 return item
         logger().warning(f"{cls.__name__} not found in {file}")
         return None
