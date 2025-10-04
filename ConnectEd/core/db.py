@@ -145,7 +145,7 @@ class DrawingItem(QStandardItem):
     @classmethod
     def fromXml(cls : Self, xr : QXmlStreamReader) -> Self:
         scene : "DrawingScene" = cls.sceneClass().fromXml(xr)
-        instance : "DrawingItem" = cls(None, scene)
+        instance : "DrawingItem" = cls(scene.name, scene)
         scene.setParent(instance)
         return instance
 
