@@ -2,11 +2,14 @@ from typing import Self
 
 from PyQt6.QtWidgets import QMenuBar
 
+from ...app import settings
+
 from ..menu import Menu
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from . import Window
+    from .actions import Actions
 
 
 class MenuBar(QMenuBar):
@@ -24,11 +27,7 @@ class MenuBar(QMenuBar):
         self.file_new_menu = Menu("&New")
         self.file_new_menu.addAction(actions.fileNewDesign)
         self.file_new_menu.addAction(actions.fileNewLibrary)
-        self.file_menu.addMenu(self.file_new_menu)
-        self.file_menu.addAction(actions.fileOpen)
-        self.file_menu.addAction(actions.fileSave)
-        self.file_menu.addAction(actions.fileSaveAs)
-        self.file_menu.addAction(actions.fileExit)
+        self.updateFileMenu(actions)
 
         self.edit_menu = Menu("&Edit")
         self.edit_menu.addAction(actions.editCancel)
@@ -106,6 +105,8 @@ class MenuBar(QMenuBar):
         self.addMenu(self.window_menu)
         self.addMenu(self.help_menu)
 
+        settings().mruChanged.connect(lambda: self.updateFileMenu(actions))
+
     def addMenu(self : Self, menu : Menu) -> None:
         super().addMenu(menu)
         self._menus_dict[menu.title().replace("&", "")] = menu
@@ -134,3 +135,21 @@ class MenuBar(QMenuBar):
                 self.window_menu.addSeparator()
                 for action in actions:
                     self.window_menu.addAction(action)
+
+    def updateFileMenu(self : Self, actions : "Actions") -> None:
+        self.file_menu.clear()
+        self.file_menu.addMenu(self.file_new_menu)
+        self.file_menu.addAction(actions.fileOpen)
+        self.file_menu.addAction(actions.fileSave)
+        self.file_menu.addAction(actions.fileSaveAs)
+        mru = settings().getMRU()
+        if mru:
+            self.file_menu.addSeparator()
+            for i, file_name in enumerate(mru):
+                if file_name == "":
+                    break
+                action = getattr(actions, f"fileOpenMRU{i + 1}")
+                action.setText(f"&{i + 1}: {file_name}")
+                self.file_menu.addAction(action)
+            self.file_menu.addSeparator()
+        self.file_menu.addAction(actions.fileExit)

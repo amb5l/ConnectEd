@@ -1,3 +1,5 @@
+- MRU
+- getTheme
 - support defaults in PortPinText
 - background netlist extraction
 - check interactions that don't change anything don't push a cmd

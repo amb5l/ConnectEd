@@ -6,7 +6,7 @@ from PyQt6.QtWidgets import QWidget
 from PyQt6.QtGui     import QAction, QStandardItem, \
                             QKeyEvent, QMouseEvent, QWheelEvent, QFocusEvent
 
-from ...app import logger, model, window
+from ...app import logger, settings, model, window
 
 from ...widgets.graphics.items.anchor_point import AnchorPoint
 from ...widgets.graphics.items.tether_text  import Tether
@@ -212,18 +212,23 @@ class Explorer(TreeView):
         if result == dialog.DialogCode.Accepted:
             files = dialog.selectedFiles()
             for file in files:
-                db_item = model().load(file)
-                if db_item:
-                    db_idx = model().indexFromItem(db_item)
-                    self.expand(db_idx)
-                    if isinstance(db_item, DesignDbItem):
-                        diagrams_idx = model().indexFromItem(db_item._diagrams)
-                        self.expand(diagrams_idx)
-                        root_diagram = db_item._diagrams.root
-                        self.editDrawing(root_diagram)
-                    elif isinstance(db_item, LibraryDbItem):
-                        symbols_idx = model().indexFromItem(db_item._symbols)
-                        self.expand(symbols_idx)
+                self.openFile(file)
+                settings().addMRU(file)
+
+    def openFile(self : Self, file_name : str) -> None:
+        from ...core.db import DesignDbItem, LibraryDbItem
+        db_item = model().load(file_name)
+        if db_item:
+            db_idx = model().indexFromItem(db_item)
+            self.expand(db_idx)
+            if isinstance(db_item, DesignDbItem):
+                diagrams_idx = model().indexFromItem(db_item._diagrams)
+                self.expand(diagrams_idx)
+                root_diagram = db_item._diagrams.root
+                self.editDrawing(root_diagram)
+            elif isinstance(db_item, LibraryDbItem):
+                symbols_idx = model().indexFromItem(db_item._symbols)
+                self.expand(symbols_idx)
 
     def editDrawing(self : Self, item : QStandardItem) -> None:
         from ...core.db import DrawingItem

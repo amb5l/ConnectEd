@@ -25,6 +25,17 @@ FACTORY_SETTINGS = {
     "startup" : {
         "geometry" : b''
     },
+    "mru" : {
+        "1" : "",
+        "2" : "",
+        "3" : "",
+        "4" : "",
+        "5" : "",
+        "6" : "",
+        "7" : "",
+        "8" : "",
+        "9" : ""
+    },
     "display" : {
         "theme" : "dark",
         "font_size" : 10,
@@ -530,6 +541,7 @@ class Settings(QObject):
 
     # signals
     changed = pyqtSignal()
+    mruChanged = pyqtSignal()
 
     def __init__(self : Self) -> None:
         super().__init__()
@@ -547,6 +559,20 @@ class Settings(QObject):
             logger().warning(f"Unknown theme: {theme_name}")
             theme_name = "dark"
         return self.get(f"themes/{theme_name}/{path}")
+
+    def getMRU(self : Self) -> list[str]:
+        r = []
+        for i in range(1, 10):
+            mru = self.get(f"mru/{i}")
+            if mru:
+                r.append(mru)
+        return r
+
+    def addMRU(self : Self, file_name : str) -> None:
+        for i in range(1, 9):
+            self.set(f"mru/{i+1}", self.get(f"mru/{i}"))
+        self.set(f"mru/1", file_name)
+        self.mruChanged.emit()
 
     def set(self : Self, path : str, value : Any, emit : bool = True) -> None:
         tn = type(value).__name__
