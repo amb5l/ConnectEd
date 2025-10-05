@@ -83,7 +83,6 @@ class ConnVtx(
         connections = len(self._connections)
         # TODO: special case: parent is node, segments are not colinear
         self._junction.setVisible((connections > 2))
-        print(f"updateJunction: {connections}")
 
     def attach(self : Self, segment : "ConnSeg") -> None:
         if segment not in self._connections:

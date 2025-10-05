@@ -6,10 +6,6 @@ from .....app import logger
 
 from .....core.xml import toXmlAttrs, fromXmlAttrs
 
-from typing import TYPE_CHECKING
-if TYPE_CHECKING:
-    from ...scenes.drawing import DrawingScene
-
 
 class ElementXmlMixin:
     def toXml(self : Self, xw : QXmlStreamWriter) -> None:
@@ -28,11 +24,7 @@ class ElementXmlMixin:
         xw.writeEndElement()
 
     @classmethod
-    def fromXml(
-        cls : Self,
-        xr  : QXmlStreamReader,
-        _   : "DrawingScene | None" = None
-    ) -> Self:
+    def fromXml(cls : Self, xr : QXmlStreamReader) -> Self:
         from ..property_text import PropertyText
         from ..block_pin     import BlockPin, BlockPinName, BlockPinComment
         from ..symbol_pin    import SymbolPin, SymbolPinName, SymbolPinComment

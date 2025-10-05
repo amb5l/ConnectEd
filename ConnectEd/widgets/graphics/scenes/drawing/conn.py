@@ -171,7 +171,7 @@ def dump(items):
 class DrawingSceneConnMixin:
     """Connection handling."""
 
-    def tidyConnVtx(self : "DrawingScene", vtx : ConnVtx) -> None:
+    def tidyConnVtx(self: "DrawingScene", vtx: ConnVtx, undo: bool) -> None:
         """
         Tidy up an existing vertex:
         - Merge existing vertices into one. Reattach existing segments.
@@ -181,20 +181,19 @@ class DrawingSceneConnMixin:
         - Remove if the vertex breaks a simple straight line.
         - Remove if no segments are attached.
         """
-        # sanity check
-        if vtx.scene() is not self:
-            logger().warning(f"Vertex {vtx} is not in scene {self}")
-            return
+        # executor depends on undo
+        if undo:
+            executor = lambda cmd: self.undo_stack.push(cmd)
+        else:
+            executor = lambda cmd: cmd.redo()
         # start macro
-        self.undo_stack.beginMacro("tidyConnVtx")
+        if undo:
+            self.undo_stack.beginMacro("tidyConnVtx")
         # get position
         pos = vtx.scenePos()
-        print(f"*** tidyConnVtx {pos}")
         # get existing vertices
         items = self.items(pos)
-        print("items", items)
         xvtxs = [item for item in items if isinstance(item, ConnVtx)]
-        print("existing vertices", len(xvtxs))
         # pick oldest existing vertex to be clean single vertex
         vtx1 = xvtxs[-1]
         # connect existing segments to single vertex, remove existing vertices
@@ -202,16 +201,18 @@ class DrawingSceneConnMixin:
             if xvtx is vtx1:
                 continue
             for seg in xvtx.connections():
-                print(f"Reattaching segment {seg} to {vtx1}")
-                self.undo_stack.push(cmdReattachConnSeg(self, seg, xvtx, vtx1))
-            self.undo_stack.push(cmdRemoveConnVtx(self, xvtx))
+                cmd = cmdReattachConnSeg(self, seg, xvtx, vtx1)
+                executor(cmd)
+            cmd = cmdRemoveConnVtx(self, xvtx)
+            executor(cmd)
         # (re)parent to node if present
         nodes = [item for item in items if isinstance(item, Node)]
         if len(nodes) > 1:
             logger().warning("Multiple nodes found")
         if nodes:
             if vtx1.parentItem() is not nodes[0]:
-                self.undo_stack.push(cmdReparentConnVtx(self, vtx1, nodes[0]))
+                cmd = cmdReparentConnVtx(self, vtx1, nodes[0])
+                executor(cmd)
         # split segments that cross the new vertex but are not attached to it
         segs = [item for item in items if isinstance(item, ConnSeg)]
         for seg in segs:
@@ -222,10 +223,11 @@ class DrawingSceneConnMixin:
             len1 = QLineF(seg.vtx1().scenePos(), vtx1.scenePos()).length()
             len2 = QLineF(seg.vtx2().scenePos(), vtx1.scenePos()).length()
             vtx = seg.vtx2() if len1 >= len2 else seg.vtx1()
-            print(f"Splitting {seg}")
-            self.undo_stack.push(cmdReattachConnSeg(self, seg, vtx, vtx1))
+            cmd = cmdReattachConnSeg(self, seg, vtx, vtx1)
+            executor(cmd)
             # add new segment from split
-            self.undo_stack.push(cmdAddConnSeg(self, vtx1, vtx))
+            cmd = cmdAddConnSeg(self, vtx1, vtx)
+            executor(cmd)
         # remove duplicate segments (that share the same vertices pair)
         segs = vtx1.connections().copy()  # take copy because we're making changes
         if len(segs) > 1:
@@ -233,45 +235,88 @@ class DrawingSceneConnMixin:
                 for seg2 in segs[i+1:]:
                     if (seg1.vtx1() is seg2.vtx1() and seg1.vtx2() is seg2.vtx2()) \
                     or (seg1.vtx1() is seg2.vtx2() and seg1.vtx2() is seg2.vtx1()):
-                        print(f"Removing duplicate segment {seg2}")
-                        self.undo_stack.push(cmdRemoveConnSeg(self, seg2))
+                        cmd = cmdRemoveConnSeg(self, seg2)
+                        executor(cmd)
         # remove if useless break in a straight line
         segs = vtx1.connections().copy()  # take copy because we're making changes
         if len(segs) == 2:
             if colinear(segs[0].toLine(), segs[1].toLine()) \
             and touching(segs[0].toLine(), segs[1].toLine()):
-                print(f"Removing useless break in a straight line")
                 # get far end of 2nd segment
                 v2 = segs[1].vtx1() if segs[1].vtx2() is vtx1 else segs[1].vtx2()
                 # reattach 1st segment to far end of 2nd segment
-                self.undo_stack.push(cmdReattachConnSeg(self, segs[0], vtx1, v2))
+                cmd = cmdReattachConnSeg(self, segs[0], vtx1, v2)
+                executor(cmd)
                 # remove 2nd segment
-                self.undo_stack.push(cmdRemoveConnSeg(self, segs[1]))
+                cmd = cmdRemoveConnSeg(self, segs[1])
+                executor(cmd)
         # remove if no connections
         if len(vtx1.connections()) == 0:
-            self.undo_stack.push(cmdRemoveConnVtx(self, vtx1))
+            cmd = cmdRemoveConnVtx(self, vtx1)
+            executor(cmd)
         # end macro
-        self.undo_stack.endMacro()
+        if undo:
+            self.undo_stack.endMacro()
+
+    def tidyConns(self : "DrawingScene", undo : bool) -> None:
+        """Tidy all connections in the scene."""
+        items = self.items()
+        segs = [item for item in items if isinstance(item, ConnSeg)]
+        # tidy segments (replace QPointF with ConnVtx)
+        for seg in segs:
+            v1 = seg.vtx1()
+            if v1 is None:
+                logger().warning(f"Segment {seg} has no vertex 1")
+                seg.setVtx1(QPointF())
+            if isinstance(v1, QPointF):
+                seg.setVtx1(self.addConnVtx(v1, undo))
+            v2 = seg.vtx2()
+            if v2 is None:
+                logger().warning(f"Segment {seg} has no vertex 2")
+                seg.setVtx2(QPointF())
+            if isinstance(v2, QPointF):
+                seg.setVtx2(self.addConnVtx(v2, undo))
+        # tidy vertices
+        items = self.items()
+        vtxs = [item for item in items if isinstance(item, ConnVtx)]
+        for vtx in vtxs:
+            self.tidyConnVtx(vtx, undo)
 
     def addConnVtx(
         self : "DrawingScene",
-        pos  : QPointF
-    ) -> None:
-        """Add a vertex/junction, tidy."""
-        self.undo_stack.beginMacro("addConnVtx")
-        cmd = cmdAddConnVtx(self, pos)
-        self.undo_stack.push(cmd)
-        vtx = cmd.vtx()
-        self.tidyConnVtx(vtx)
+        pos  : QPointF,
+        undo : bool,
+        cls  : type[ConnVtx] = ConnVtx
+    ) -> ConnVtx:
+        """Add a vertex/junction."""
+        # executor depends on undo
+        if undo:
+            executor = lambda cmd: self.undo_stack.push(cmd)
+        else:
+            executor = lambda cmd: cmd.redo()
+        # add vertex
+        cmd = cmdAddConnVtx(self, pos, cls)
+        executor(cmd)
+        return cmd.vtx()
 
     def addConnSeg(
         self : "DrawingScene",
         p1   : QPointF,
-        p2   : QPointF
-    ) -> bool | None:
+        p2   : QPointF,
+        undo : bool,
+        cls  : type[ConnSeg] = ConnSeg
+    ) -> ConnSeg | None:
         """
         Add a segment, add vertices at any nodes between endpoints, tidy.
         """
+        # executor depends on undo
+        if undo:
+            executor = lambda cmd: self.undo_stack.push(cmd)
+        else:
+            executor = lambda cmd: cmd.redo()
+        # begin macro
+        if undo:
+            self.undo_stack.beginMacro("addConnSeg")
         # handle zero length - can happen on double click
         if p1 == p2:
             return None  # do nothing
@@ -285,17 +330,17 @@ class DrawingSceneConnMixin:
                     for seg2 in items_dict_2[ConnSeg]:
                         if seg1 is seg2:
                             return None  # do nothing
-        # begin macro
-        self.undo_stack.beginMacro("addConnSeg")
         # add vertices at endpoint
         cmd = cmdAddConnVtx(self, p1)
-        self.undo_stack.push(cmd)
+        executor(cmd)
         v1 = cmd.vtx()
         cmd = cmdAddConnVtx(self, p2)
-        self.undo_stack.push(cmd)
+        executor(cmd)
         v2 = cmd.vtx()
         # add segment
-        self.undo_stack.push(cmdAddConnSeg(self, v1, v2))
+        cmd = cmdAddConnSeg(self, v1, v2, cls)
+        executor(cmd)
+        seg = cmd.seg()
         # get bounding rect and line for segment
         rect = QRectF(p1, p2).normalized().adjusted(-1e-6, -1e-6, 1e-6, 1e-6)
         line = QLineF(p1, p2)
@@ -311,7 +356,7 @@ class DrawingSceneConnMixin:
             child_vtxs = [item for item in children if isinstance(item, ConnVtx)]
             if len(child_vtxs) == 0:
                 cmd = cmdAddConnVtx(self, QPointF())  # pos is relative to node
-                self.undo_stack.push(cmd)
+                executor(cmd)
                 vtx = cmd.vtx()
                 vtx.setParentItem(node)
         # get all vertices in rect
@@ -329,12 +374,9 @@ class DrawingSceneConnMixin:
             logger().warning(f"Last vertex on line is not at p2: {vtxs[-1].scenePos()}")
         # tidy all vertices on line
         for vtx in vtxs:
-            self.tidyConnVtx(vtx)
+            self.tidyConnVtx(vtx, undo)
         # end macro
-        self.undo_stack.endMacro()
-        # return if segment ended at a node or multi-segment vertex
-        for item in self.items(p2):
-            if isinstance(item, Node) \
-            or isinstance(item, ConnVtx) and len(item.connections()) > 1:
-                return True
-        return False
+        if undo:
+            self.undo_stack.endMacro()
+        # done
+        return seg

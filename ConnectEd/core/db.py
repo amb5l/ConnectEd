@@ -492,7 +492,6 @@ class Model(QStandardItemModel):
             # remove the design from the model
             for i in range(self._designs.rowCount()):
                 if item == self._designs.child(i):
-                    print(f"Removing design from model: {item.text()}")
                     self._designs.removeRow(i)
                     break
         elif isinstance(item, LibraryDbItem):
@@ -507,7 +506,6 @@ class Model(QStandardItemModel):
                             while subwindow and not isinstance(subwindow, QMdiSubWindow):
                                 subwindow = subwindow.parentWidget()
                             if subwindow:
-                                print(f"Closing symbol subwindow for {symbol_item.text()}")
                                 subwindow.close()
             # remove the library from the model
             for i in range(self._libraries.rowCount()):
@@ -516,7 +514,6 @@ class Model(QStandardItemModel):
                     break
         else:
             logger().warning(f"Unsupported item: {item.text()} ({type(item)})")
-        print(f"Close operation complete")
 
     def copy(self : Self, item : QStandardItem) -> None:
         copy(item)

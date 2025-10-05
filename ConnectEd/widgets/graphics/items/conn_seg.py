@@ -14,10 +14,6 @@ from .mixin.menu   import ElementMenuMixin
 
 from .conn_vtx import ConnVtx
 
-from typing import TYPE_CHECKING
-if TYPE_CHECKING:
-    from ..scenes.drawing import DrawingScene
-
 
 class ConnSeg(
     ElementMixin,
@@ -30,14 +26,14 @@ class ConnSeg(
 ):
     """Runs between two ConnVtx instances."""
     # instance attributes
-    _vtx1 : ConnVtx | None
-    _vtx2 : ConnVtx | None
+    _vtx1 : ConnVtx | QPointF | None
+    _vtx2 : ConnVtx | QPointF | None
     _line : QLineF
 
     def __init__(
         self : Self,
-        vtx1 : ConnVtx | None = None,
-        vtx2 : ConnVtx | None = None
+        vtx1 : ConnVtx | QPointF | None = None,
+        vtx2 : ConnVtx | QPointF | None = None
     ) -> None:
         QGraphicsLineItem.__init__(self)
         self._line = QLineF()
@@ -49,35 +45,35 @@ class ConnSeg(
         self.onGeometryChange()
 
     def onGeometryChange(self : Self) -> None:
-        if self._vtx1 is None or self._vtx2 is None:
+        v1 = self._vtx1
+        v2 = self._vtx2
+        if v1 is None or v2 is None:
             return
-        self._line.setP1(self._vtx1.scenePos())
-        self._line.setP2(self._vtx2.scenePos())
+        self._line.setP1(v1.scenePos() if isinstance(v1, ConnVtx) else v1)
+        self._line.setP2(v2.scenePos() if isinstance(v2, ConnVtx) else v2)
         self.setLine(self._line)
 
-    def vtx1(self : Self) -> ConnVtx:
+    def vtx1(self : Self) -> ConnVtx | QPointF | None:
         return self._vtx1
 
-    def setVtx1(self : Self, vtx : ConnVtx | None) -> None:
-        if self._vtx1 is not None:
+    def setVtx1(self : Self, vtx : ConnVtx | QPointF | None) -> None:
+        if isinstance(self._vtx1, ConnVtx):
             self._vtx1.detach(self)
         self._vtx1 = vtx
-        if vtx is not None:
+        if isinstance(vtx, ConnVtx):
             vtx.attach(self)
-            self._line.setP1(vtx.scenePos())
-            self.setLine(self._line)
+        self.onGeometryChange()
 
-    def vtx2(self : Self) -> ConnVtx:
+    def vtx2(self : Self) -> ConnVtx | QPointF | None:
         return self._vtx2
 
-    def setVtx2(self : Self, vtx : ConnVtx | None) -> None:
-        if self._vtx2 is not None:
+    def setVtx2(self : Self, vtx : ConnVtx | QPointF | None) -> None:
+        if isinstance(self._vtx2, ConnVtx):
             self._vtx2.detach(self)
         self._vtx2 = vtx
-        if vtx is not None:
+        if isinstance(vtx, ConnVtx):
             vtx.attach(self)
-            self._line.setP2(vtx.scenePos())
-            self.setLine(self._line)
+        self.onGeometryChange()
 
     def reattach(self : Self, old : ConnVtx, new : ConnVtx) -> bool:
         if self._vtx1 is old:
@@ -93,48 +89,36 @@ class ConnSeg(
         return self._line
 
     def toXml(self : Self, xw : QXmlStreamWriter) -> None:
+        def getVal(s : str) -> float:
+            a = s[0]; n = int(s[1:])
+            attr_val = getattr(self, f"_vtx{n}")  # value of self._vtx{n}
+            p = attr_val.scenePos() if isinstance(attr_val, ConnVtx) else \
+                attr_val if isinstance(attr_val, QPointF) else \
+                None
+            return None if p is None else getattr(p, a)()
         xw.writeStartElement(self.__class__.__name__)
-        xw.writeAttribute("x1", str(self._vtx1.scenePos().x()))
-        xw.writeAttribute("y1", str(self._vtx1.scenePos().y()))
-        xw.writeAttribute("x2", str(self._vtx2.scenePos().x()))
-        xw.writeAttribute("y2", str(self._vtx2.scenePos().y()))
+        xw.writeAttribute("x1", str(getVal("x1")))
+        xw.writeAttribute("y1", str(getVal("y1")))
+        xw.writeAttribute("x2", str(getVal("x2")))
+        xw.writeAttribute("y2", str(getVal("y2")))
         xw.writeEndElement()
 
     @classmethod
-    def fromXml(
-        cls   : Self,
-        xr    : QXmlStreamReader,
-        scene : "DrawingScene"
-    ) -> Self:
-        def findOrCreateConnVtx(p : QPointF) -> ConnVtx:
-            items = scene.items(p)
-            vtxs = [i for i in items if isinstance(i, ConnVtx)]
-            if len(vtxs) == 0:
-                vtx = ConnVtx(p)
-                scene.addItem(vtx)
-            else:
-                if len(vtxs) > 1:
-                    logger().warning(f"Multiple ConnVtxs found at {p}")
-                vtx = vtxs[0]
-            return vtx
+    def fromXml(cls : Self, xr : QXmlStreamReader) -> Self:
         xml_attrs = {a.name(): a.value() for a in xr.attributes()}
-        vtx1 = None
-        if "x1" in xml_attrs \
-        and "y1" in xml_attrs:
-            p1 = QPointF(float(xml_attrs["x1"]), float(xml_attrs["y1"]))
-            vtx1 = findOrCreateConnVtx(p1)
-            xml_attrs.pop("x1")
-            xml_attrs.pop("y1")
-        vtx2 = None
-        if "x2" in xml_attrs \
-        and "y2" in xml_attrs:
-            p2 = QPointF(float(xml_attrs["x2"]), float(xml_attrs["y2"]))
-            vtx2 = findOrCreateConnVtx(p2)
-            xml_attrs.pop("x2")
-            xml_attrs.pop("y2")
+        def getVal(attr_name : str) -> float:
+            value = 0
+            if attr_name in xml_attrs:
+                value = float(xml_attrs[attr_name])
+                xml_attrs.pop(attr_name)
+            return value
+        x1 = getVal("x1")
+        y1 = getVal("y1")
+        x2 = getVal("x2")
+        y2 = getVal("y2")
         if xml_attrs.keys():
             logger().warning(f"Unexpected attributes: {xml_attrs.keys()}")
-        instance = cls(vtx1, vtx2)
+        instance = cls(QPointF(x1, y1), QPointF(x2, y2))
         xr.readNext()
         return instance
 

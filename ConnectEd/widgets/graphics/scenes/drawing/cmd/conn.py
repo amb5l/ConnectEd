@@ -25,10 +25,11 @@ class cmdAddConnVtx(cmdSceneBase):
     def __init__(
         self  : Self,
         scene : "DrawingScene",
-        pos   : QPointF
+        pos   : QPointF,
+        cls   : type[ConnVtx] = ConnVtx
     ) -> None:
         super().__init__(scene)
-        self._vtx = ConnVtx(pos)
+        self._vtx = cls(pos)
 
     def redo(self : Self) -> None:
         self._scene.addItem(self._vtx)
@@ -109,12 +110,13 @@ class cmdAddConnSeg(cmdSceneBase):
         self : Self,
         scene : "DrawingScene",
         vtx1 : ConnVtx,
-        vtx2 : ConnVtx
+        vtx2 : ConnVtx,
+        cls  : type[ConnSeg] = ConnSeg
     ) -> None:
         super().__init__(scene)
         self._vtx1 = vtx1
         self._vtx2 = vtx2
-        self._seg = ConnSeg()
+        self._seg = cls()
 
     def redo(self : Self) -> None:
         # attach segment to vertices
@@ -129,6 +131,9 @@ class cmdAddConnSeg(cmdSceneBase):
         self._seg.setVtx2(None)
         # remove segment from scene
         self._scene.removeItem(self._seg)
+
+    def seg(self : Self) -> ConnSeg:
+        return self._seg
 
 
 class cmdReattachConnSeg(cmdSceneBase):

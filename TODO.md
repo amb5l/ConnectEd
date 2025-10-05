@@ -1,3 +1,14 @@
+BUGS
+- designs can be opened twice
+
+DEAD ENDS
+- DrawingSceneApiFileMixin
+
+FEATURES
+- live marquee selection
+- settings - preferences dialog
+  - vertex visibility
+
 - support defaults in PortPinText
 - background netlist extraction
 - check interactions that don't change anything don't push a cmd
@@ -8,7 +19,6 @@
 - property change propagation
 - override setRotation to maintain ortho angles
 - review OnPositionChange
-- move hub import to top everywhere
 - sort out editAppearance, editProperties in view/scene/cmd
 - scene:
   editText, editPropertyText, editProperties, editAppearance
@@ -17,24 +27,10 @@
 - settings propagation
 - selection state propagation parent => child
 - setters and getters, properties vs not, use of get prefix for getters
-- assign origin is not undoable
-- should KeyPoint be a QPointF subclass?
 - ratsnest
 - common menus for elements
 
 
-appearance
-  settings - default appearance
-  direct appearance edit
-
-text change
-size change
-
-position change
-
-
-Cloning blocks leaves out pins
-Move to BaseText for pin/port name
 Port and other element rotation
 
 Change
