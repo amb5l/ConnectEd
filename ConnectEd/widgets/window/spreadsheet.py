@@ -48,7 +48,7 @@ class SpreadsheetComboDelegate(QStyledItemDelegate):
     TOOLTIP = None
     ENTRIES = None
 
-    def __init__(self):
+    def __init__(self : Self):
         super().__init__()
 
     def createEditor(
@@ -56,7 +56,7 @@ class SpreadsheetComboDelegate(QStyledItemDelegate):
         parent : QWidget,
         option : QStyleOptionViewItem,
         index  : QModelIndex
-    ):
+    ) -> QComboBox | None:
         if not self.ENTRIES:
             logger().error(f"ENTRIES is None or empty for delegate {self.__class__.__name__}")
             return None
@@ -287,7 +287,7 @@ class SpreadsheetTable(QTableView):
         menu.addAction(self._parent._actions.transpose)
         menu.exec(event.globalPos())
 
-    def style_corner_button(self):
+    def style_corner_button(self : Self) -> None:
         if self._styled:
             return
         self._styled = True
@@ -405,7 +405,7 @@ class SpreadsheetWidget(QWidget):
             self._table_proxy.hide()
             self._table_model.show()
 
-    def _resetSorting(self) -> None:
+    def _resetSorting(self : Self) -> None:
         """Reset all sorting."""
         self._completeEditing()
         self._sorting.clear()
@@ -663,7 +663,7 @@ class SpreadsheetTabWidget(QTabWidget):
         else:
             self._highlight = QBrush(Qt.GlobalColor.yellow)
 
-    def _setupDelegates(self) -> None:
+    def _setupDelegates(self : Self) -> None:
         def _setupDelegate(
             tab_name  : str,
             idx       : int,

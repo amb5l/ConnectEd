@@ -13,14 +13,14 @@ from .mixin import ElementMixin
 
 
 class Default:
-    def __str__(self): return "default"
-    def __repr__(self): return "<default>"
+    def __str__(self : Self): return "default"
+    def __repr__(self : Self): return "<default>"
 
 DEFAULT = Default()
 
 class NoChange:
-    def __str__(self): return "no change"
-    def __repr__(self): return "<no change>"
+    def __str__(self : Self): return "no change"
+    def __repr__(self : Self): return "<no change>"
 
 NO_CHANGE = NoChange()
 
@@ -36,7 +36,7 @@ class EdgeLoc:
     edge   : Edge  | None = None
     offset : float | None = None
 
-    def toStr(self) -> str:
+    def toStr(self : Self) -> str:
         return f"{self.edge.value},{self.offset}" \
               if self.edge is not None else "None"
 
@@ -78,7 +78,7 @@ class LinePref:
     width : Default | float       = DEFAULT
     style : Default | Qt.PenStyle = DEFAULT
 
-    def toStr(self):
+    def toStr(self : Self):
         s_c = "default" if self.color is DEFAULT else \
             hex(self.color.rgba())
         s_w = "default" if self.width is DEFAULT else \
@@ -117,7 +117,7 @@ class FillPref:
     color : Default | QColor        = DEFAULT
     style : Default | Qt.BrushStyle = DEFAULT
 
-    def toStr(self):
+    def toStr(self : Self):
         s_c = "default" if self.color is DEFAULT else \
             hex(self.color.rgba())
         s_s = "default" if self.style is DEFAULT else \
@@ -159,7 +159,7 @@ class QuillPref:
     italic    : Default | bool   = DEFAULT
     underline : Default | bool   = DEFAULT
 
-    def toStr(self):
+    def toStr(self : Self):
         s_c = "default" if self.color is DEFAULT else \
             hex(self.color.rgba())
         s_f = "default" if self.family is DEFAULT else \
@@ -232,7 +232,7 @@ def clone(elements : list[ElementMixin]) -> list[ElementMixin]:
 
 _element_classes = {}
 
-def register_element(name: str):
+def register_element(name : str):
     """Import a class from a submodule and register it in _element_classes."""
     module_name = pascal2snake(name)
     import importlib

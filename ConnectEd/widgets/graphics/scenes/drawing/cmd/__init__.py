@@ -177,10 +177,10 @@ class cmdMoveMixin:
         for e in self._elements:
             e.moveBy(offset)
 
-    def _storePos(self) -> None:
+    def _storePos(self : Self) -> None:
         self._spos = {e: e.scenePos() for e in self._elements}
 
-    def _restorePos(self) -> None:
+    def _restorePos(self : Self) -> None:
         for e in self._elements:
             e.moveBy(self._spos[e] - e.scenePos())
 
@@ -204,10 +204,10 @@ class cmdAdd(
         super().__init__(scene, elements) # record scene, elements
         self._preserveSelection(selection)   # store selection set
 
-    def redo(self) -> None:
+    def redo(self : Self) -> None:
         self._addToScene(select=True)
 
-    def undo(self) -> None:
+    def undo(self : Self) -> None:
         self._removeFromScene()
         self._restoreSelection()
 
@@ -228,11 +228,11 @@ class cmdDelete(
         super().__init__(scene, elements) # record scene, elements
         self._preserveSelection(selection)   # store selection set
 
-    def redo(self) -> None:
+    def redo(self : Self) -> None:
         """Delete the elements from the scene."""
         self._removeFromScene()
 
-    def undo(self) -> None:
+    def undo(self : Self) -> None:
         self._addToScene()
         self._restoreSelection()
 

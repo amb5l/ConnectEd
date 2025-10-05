@@ -155,7 +155,7 @@ class cmdEditAppearance(cmdSceneElements):
             p.quill = e.quill.getPref() if hasattr(e, "quill") else None
             self._before[e] = p
 
-    def redo(self) -> None:
+    def redo(self : Self) -> None:
         c = self._after
         for e in self._elements:
             if hasattr(e, "line"):  e.line.setPref(c.line)
@@ -164,7 +164,7 @@ class cmdEditAppearance(cmdSceneElements):
             e.onGeometryChange()
             e.update()
 
-    def undo(self) -> None:
+    def undo(self : Self) -> None:
         for e in self._elements:
             c = self._before[e]
             if hasattr(e, "line"):  e.line.setPref(c.line)
@@ -187,6 +187,8 @@ class cmdEditProperties(cmdSceneElement):
         self._changes = changes
 
     def redo(self : Self) -> None:
+        """
+        """
         for change in self._changes:
             if change.before is None:  # new property
                 self._element.addProperty(change.after.name)

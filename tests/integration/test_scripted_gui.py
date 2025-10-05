@@ -1,3 +1,5 @@
+from typing import Self
+
 from PyQt6.QtCore import QPointF, QSizeF
 
 import ConnectEd.scripting as cs
@@ -219,7 +221,7 @@ def test(app : cs.ConnectEdApp):
 
 
 class TestScriptedGUI:
-    def test_scripted_gui(self):
+    def test_scripted_gui(self : Self) -> None:
         cs.run(test, ["--nosplash"])
 
 

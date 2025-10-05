@@ -94,7 +94,7 @@ def test(app : cs.ConnectEdApp):
 
 
 class TestScriptedCLI:
-    def test_scripted_cli(self):
+    def test_scripted_cli(self : Self) -> None:
         cs.run(test, ["--cli"])
 
 

@@ -109,7 +109,7 @@ class TestFixtures:
 
 
 class TestRandom:
-    def test_random_entities(self):
+    def test_random_entities(self : Self) -> None:
         for n in range(1, 100):
             stream = StringIO()
 
@@ -216,7 +216,7 @@ class TestRandom:
 
 
 class TestMisc:
-    def test_extract_constraint(self):
+    def test_extract_constraint(self : Self) -> None:
         good_test_cases = [
             ("WIDTH-1 downto 0", ("width-1", "downto", "0")),
             ("WIDTH-1downto0", ("width-1", "downto", "0")),
