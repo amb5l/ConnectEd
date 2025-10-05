@@ -69,13 +69,13 @@ class DiagramScene(DrawingScene):
         super().updateSceneRect(self.sheet.rect)  # sheet is minimum rect
 
     def drawBackground(self : Self, painter : QPainter, rect : QRectF) -> None:
-        painter.fillRect(rect, settings().getTheme("background"))
+        painter.fillRect(rect, settings().get("theme/background"))
         painter.fillRect(
             self.sheet.rect,
-            settings().getTheme("sheet")
+            settings().get("theme/sheet")
         )
         painter.setPen(QPen(
-            settings().getTheme("border"),
+            settings().get("theme/border"),
             self.border,
             Qt.PenStyle.SolidLine
         ))

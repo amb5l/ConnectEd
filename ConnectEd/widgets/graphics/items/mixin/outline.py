@@ -13,7 +13,7 @@ class OutlinePen:
         self.onSettingsChange()
 
     def onSettingsChange(self : Self) -> None:
-        self.pen.setColor(settings().getTheme("selected/line"))
+        self.pen.setColor(settings().get("theme/selected/line"))
         self.pen.setWidthF(settings().get("display/select/outline/width"))
         self.pen.setStyle(settings().get("display/select/outline/style"))
 

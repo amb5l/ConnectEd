@@ -102,7 +102,7 @@ class DrawingView(
                 QPointF(rect.topLeft())     - QPointF(px, py),
                 QPointF(rect.bottomRight()) + QPointF(px, py)
             ).toRect()
-            color = settings().getTheme("grid/line")
+            color = settings().get("theme/grid/line")
             color.setAlpha(self.grid.alpha)
             painter.setPen(QPen(color, 0, Qt.PenStyle.SolidLine))
             painter.setBrush(Qt.BrushStyle.NoBrush)

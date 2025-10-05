@@ -76,13 +76,13 @@ class Line:
 
     def getDefaults(self : Self) -> SimpleNamespace:
         settings_name = self.parent.__class__.__name__
-        return settings().getTheme(f"elements/{settings_name}/line")
+        return settings().get(f"theme/elements/{settings_name}/line")
 
     def onSettingsChange(self : Self) -> None:
         default = self.getDefaults()
         color_normal = default.color if self.color is DEFAULT else self.color
         color_normal.setAlpha(settings().get("display/alpha"))
-        color_selected = settings().getTheme("selected/line")
+        color_selected = settings().get("theme/selected/line")
         color_selected.setAlpha(settings().get("display/alpha"))
         width = default.width if self.width is DEFAULT else self.width
         style = default.style if self.style is DEFAULT else self.style

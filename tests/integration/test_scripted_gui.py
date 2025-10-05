@@ -193,12 +193,12 @@ def test(app : cs.ConnectEdApp):
         f"Got {rect.line.getStyle()}, expected {DEFAULT}"
     assert rect.line.getStyle() == DEFAULT
      # verify selected and unselected appearance
-    defaults = app.settings().getTheme("elements/Rectangle")
+    defaults = app.settings().get("theme/elements/Rectangle")
     assert rect.isSelected(), \
         f"Got {rect.isSelected()}, expected True"
     rect_pen = rect.pen()
-    assert rect_pen.color() == app.settings().getTheme("selected").line, \
-        f"Got {rect_pen.color()}, expected {app.settings().getTheme('selected').line}"
+    assert rect_pen.color() == app.settings().get("theme/selected").line, \
+        f"Got {rect_pen.color()}, expected {app.settings().get("theme/selected").line}"
     assert rect_pen.width() == defaults.line.width, \
         f"Got {rect_pen.width()}, expected {defaults.line.width}"
     assert rect_pen.style() == defaults.line.style, \

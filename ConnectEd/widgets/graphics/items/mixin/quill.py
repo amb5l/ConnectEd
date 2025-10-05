@@ -119,11 +119,11 @@ class Quill:
 
     def getDefaults(self : Self) -> SimpleNamespace:
         settings_name = self._parent.__class__.__name__
-        return settings().getTheme(f"elements/{settings_name}/text")
+        return settings().get(f"theme/elements/{settings_name}/text")
 
     def onSettingsChange(self : Self) -> None:
         default = self.getDefaults()
-        self._selected.setRgb(settings().getTheme("selected/text").rgb())
+        self._selected.setRgb(settings().get("theme/selected/text").rgb())
         self._selected.setAlpha(settings().get("display/alpha"))
         self._normal.setRgb(
             default.color.rgb() if self._color is DEFAULT else self._color.rgb()

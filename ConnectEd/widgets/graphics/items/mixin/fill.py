@@ -57,13 +57,13 @@ class Fill:
 
     def getDefaults(self : Self) -> SimpleNamespace:
         settings_name = self.parent.__class__.__name__
-        return settings().getTheme(f"elements/{settings_name}/fill")
+        return settings().get(f"theme/elements/{settings_name}/fill")
 
     def onSettingsChange(self : Self) -> None:
         default = self.getDefaults()
         color_normal = default.color if self.color is DEFAULT else self.color
         color_normal.setAlpha(settings().get("display/alpha"))
-        color_selected = settings().getTheme("selected/fill")
+        color_selected = settings().get("theme/selected/fill")
         color_selected.setAlpha(settings().get("display/alpha"))
         style = default.style if self.style is DEFAULT else self.style
         self.normal.setColor(color_normal)

@@ -63,7 +63,7 @@ class Port(ElementPosMixin, ElementFillMixin, PortPinMixin, QGraphicsPathItem):
         self.initPortPin(bare)
 
     def onSettingsChange(self : Self) -> None:
-        size = settings().getTheme("elements/Port/size")
+        size = settings().get("theme/elements/Port/size")
         self.getAnchorPoint(APName.Name).setPos(size + self._NAME_OFFSET, 0)
 
     def onSceneChange(self : Self, scene : "DrawingScene") -> None:

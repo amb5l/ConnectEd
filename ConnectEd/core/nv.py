@@ -553,13 +553,6 @@ class Settings(QObject):
         value = self._get(self._settings, path)
         return self._toNamespace(value) if isinstance(value, dict) else value
 
-    def getTheme(self : Self, path : str) -> Any:
-        theme_name = self.get("display/theme")
-        if theme_name not in self._settings["themes"]:
-            logger().warning(f"Unknown theme: {theme_name}")
-            theme_name = "dark"
-        return self.get(f"themes/{theme_name}/{path}")
-
     def getMRU(self : Self) -> list[str]:
         r = []
         for i in range(1, 10):
