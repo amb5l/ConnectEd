@@ -8,9 +8,13 @@ from PyQt6.QtGui     import QIcon
 from .app import ConnectEdApp
 
 from .core.log   import logger
-from .core.args  import known_args, unknown_args
-from .core.nv    import Settings
+
+from .core.args  import known_args
+
+from .core.settings import Settings
+
 from .core.db    import Model
+
 from .resources  import getIconPath, initResources
 
 from .widgets.splash import Splash

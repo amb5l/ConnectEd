@@ -6,7 +6,7 @@ from PyQt6.QtWidgets import QApplication
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from .core.nv        import Settings
+    from .core.settings  import Settings
     from .core.db        import Model
     from .widgets.window import Window
 
