@@ -7,6 +7,8 @@ from PyQt6.QtGui     import QColor
 
 from ....app import logger
 
+from ....core.utils import pascal2snake
+
 from .mixin import ElementMixin
 
 
@@ -230,17 +232,19 @@ def clone(elements : list[ElementMixin]) -> list[ElementMixin]:
 
 _element_classes = {}
 
-def register_element(module_name: str, class_name: str):
+def register_element(name: str):
     """Import a class from a submodule and register it in _element_classes."""
+    module_name = pascal2snake(name)
     import importlib
     module = importlib.import_module(f".{module_name}", package=__name__)
-    cls = getattr(module, class_name)
-    _element_classes[class_name] = cls
+    cls = getattr(module, name)
+    _element_classes[name] = cls
     return cls
 
-register_element("port", "Port")
-register_element("block", "Block")
-register_element("property_text", "PropertyText")
-register_element("rectangle", "Rectangle")
-register_element("text", "Text")
-register_element("text_block", "TextBlock")
+register_element("Port")
+register_element("Block")
+register_element("PropertyText")
+register_element("Rectangle")
+register_element("Text")
+register_element("TextBlock")
+register_element("ConnSeg")
