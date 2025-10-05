@@ -1,6 +1,6 @@
 from typing import Self
 
-from PyQt6.QtCore    import QPointF
+from PyQt6.QtCore    import QPointF, QXmlStreamWriter
 from PyQt6.QtWidgets import QGraphicsPathItem
 from PyQt6.QtGui     import QPainterPath, QPen
 
@@ -47,8 +47,14 @@ class ConnVtx(
     _junction    : Junction
     _connections : list["ConnSeg"]
 
-    def __init__(self : Self, parent : "Node | None" = None) -> None:
+    def __init__(
+        self   : Self,
+        pos    : QPointF | None = None,
+        parent : "Node | None" = None
+    ) -> None:
         QGraphicsPathItem.__init__(self, parent)
+        if pos is not None:
+            self.setPos(pos)
         self._connections = []
         self.initElement()
         self._junction = Junction(self)
@@ -93,3 +99,7 @@ class ConnVtx(
 
     def connections(self : Self) -> list["ConnSeg"]:
         return self._connections
+
+    def toXml(self : Self, xw : QXmlStreamWriter) -> None:
+        """Do not serialise."""
+        pass

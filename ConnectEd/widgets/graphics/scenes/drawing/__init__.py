@@ -125,7 +125,7 @@ class DrawingScene(
                 attr_name = xr.name()
                 if attr_name in _element_classes:
                     element_cls = _element_classes[attr_name]
-                    element = element_cls.fromXml(xr)
+                    element = element_cls.fromXml(xr, drawing_scene)
                     drawing_scene.addItem(element)
                 else:
                     logger().warning(f"Unexpected element: {attr_name}")

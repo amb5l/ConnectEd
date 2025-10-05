@@ -28,8 +28,7 @@ class cmdAddConnVtx(cmdSceneBase):
         pos   : QPointF
     ) -> None:
         super().__init__(scene)
-        self._vtx = ConnVtx()
-        self._vtx.setPos(pos)
+        self._vtx = ConnVtx(pos)
 
     def redo(self : Self) -> None:
         self._scene.addItem(self._vtx)

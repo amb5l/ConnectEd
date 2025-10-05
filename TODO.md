@@ -1,6 +1,4 @@
-- recursively expand a newly loaded design
-- new design then load doesn't work
-- tidyConnVtx to preserve vertices as much as possible
+- support defaults in PortPinText
 - background netlist extraction
 - check interactions that don't change anything don't push a cmd
 - tackle onGeometryChange usage

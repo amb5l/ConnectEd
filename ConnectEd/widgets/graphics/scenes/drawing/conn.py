@@ -255,7 +255,7 @@ class DrawingSceneConnMixin:
 
     def addConnVtx(
         self : "DrawingScene",
-        pos : QPointF
+        pos  : QPointF
     ) -> None:
         """Add a vertex/junction, tidy."""
         self.undo_stack.beginMacro("addConnVtx")
