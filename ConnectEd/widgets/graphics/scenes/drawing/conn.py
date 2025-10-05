@@ -180,9 +180,11 @@ class DrawingSceneConnMixin:
         """
         # executor depends on undo
         if undo:
-            executor = lambda cmd: self.undo_stack.push(cmd)
+            def executor(cmd : cmdAddConnVtx) -> None:
+                self.undo_stack.push(cmd)
         else:
-            executor = lambda cmd: cmd.redo()
+            def executor(cmd : cmdAddConnVtx) -> None:
+                cmd.redo()
         # start macro
         if undo:
             self.undo_stack.beginMacro("tidyConnVtx")
@@ -288,9 +290,11 @@ class DrawingSceneConnMixin:
         """Add a vertex/junction."""
         # executor depends on undo
         if undo:
-            executor = lambda cmd: self.undo_stack.push(cmd)
+            def executor(cmd : cmdAddConnVtx) -> None:
+                self.undo_stack.push(cmd)
         else:
-            executor = lambda cmd: cmd.redo()
+            def executor(cmd : cmdAddConnVtx) -> None:
+                cmd.redo()
         # add vertex
         cmd = cmdAddConnVtx(self, pos, cls)
         executor(cmd)
@@ -308,9 +312,11 @@ class DrawingSceneConnMixin:
         """
         # executor depends on undo
         if undo:
-            executor = lambda cmd: self.undo_stack.push(cmd)
+            def executor(cmd : cmdAddConnVtx) -> None:
+                self.undo_stack.push(cmd)
         else:
-            executor = lambda cmd: cmd.redo()
+            def executor(cmd : cmdAddConnVtx) -> None:
+                cmd.redo()
         # begin macro
         if undo:
             self.undo_stack.beginMacro("addConnSeg")

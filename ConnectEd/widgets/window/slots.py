@@ -11,10 +11,6 @@ from ...core.defs import APP_NAME
 from ...widgets.graphics.views.drawing import DrawingView
 from ...widgets.graphics.views.diagram import DiagramView
 
-from typing import TYPE_CHECKING
-if TYPE_CHECKING:
-    from ...widgets.window.explorer import Explorer
-
 
 T = TypeVar("T")
 

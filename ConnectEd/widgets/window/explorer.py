@@ -206,7 +206,6 @@ class Explorer(TreeView):
 
     def openDb(self : Self, type_name : str | None = None) -> None:
         from ..dialogs.file import FileOpenDialog
-        from ...core.db import DesignDbItem, LibraryDbItem
         dialog = FileOpenDialog(type_name)
         result = dialog.exec()
         if result == dialog.DialogCode.Accepted:

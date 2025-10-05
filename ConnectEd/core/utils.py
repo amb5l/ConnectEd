@@ -1,4 +1,5 @@
-import os, platform
+import os
+import platform
 
 from typing import Any, TypeVar
 
@@ -8,7 +9,9 @@ from PyQt6.QtCore import Qt, QPointF, QRectF, QSizeF
 from PyQt6.QtGui  import QColor
 
 
-sign = lambda x: -1 if x < 0 else (1 if x > 0 else 0)
+def sign(x):
+    """Return -1, 0, or 1 based on sign of x."""
+    return -1 if x < 0 else (1 if x > 0 else 0)
 
 
 def check(b : bool, s : str) -> bool:

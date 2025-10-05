@@ -6,7 +6,7 @@ from PyQt6.QtWidgets import QApplication, QMdiArea, QMdiSubWindow, \
                             QGraphicsView, QGraphicsTextItem
 from PyQt6.QtGui     import QPainter, QPen, QCloseEvent, QKeyEvent
 
-from .....app import settings, window
+from .....app import settings
 
 from ....marquee import Marquee
 
@@ -18,7 +18,7 @@ from .mouse   import DrawingViewMouseMixin
 from .private import DrawingViewPrivateMixin
 from .slots   import DrawingViewSlotsMixin
 from .state   import DrawingViewStateMixin, DrawingViewStateBase
-from .defs    import *
+from .defs    import DrawingViewLayer, DrawingViewGrid, DrawingViewMouse
 
 
 def getView(pos : QPoint):

@@ -5,7 +5,7 @@ from PyQt6.QtCore    import QPointF
 from PyQt6.QtWidgets import QGraphicsItem
 
 from .....core.xml   import paste
-from .....core.utils import sign, itemsTypeDict
+from .....core.utils import sign
 
 from ...items import EdgeLoc, ElementMixin, clone
 

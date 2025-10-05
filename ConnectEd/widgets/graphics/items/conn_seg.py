@@ -90,7 +90,8 @@ class ConnSeg(
 
     def toXml(self : Self, xw : QXmlStreamWriter) -> None:
         def getVal(s : str) -> float:
-            a = s[0]; n = int(s[1:])
+            a = s[0]
+            n = int(s[1:])
             attr_val = getattr(self, f"_vtx{n}")  # value of self._vtx{n}
             p = attr_val.scenePos() if isinstance(attr_val, ConnVtx) else \
                 attr_val if isinstance(attr_val, QPointF) else \

@@ -20,7 +20,6 @@ from .components import ColorComboBox,      \
                         LineWidthComboBox,  \
                         LineStyleComboBox,  \
                         FillStyleComboBox,  \
-                        FontFamilyComboBox, \
                         FontSizeComboBox,   \
                         OnOffComboBox,      \
                         StringEdit,         \

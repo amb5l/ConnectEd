@@ -532,7 +532,7 @@ class Model(QStandardItemModel):
                     valid_item_types = [SymbolItem]
                 case _:
                     raise ValueError(
-                        f"Cannot paste into item: {paste_item.text()} ({type(paste_item)})")
+                        f"Cannot paste into item: {item.text()} ({type(item)})")
             invalid_item_types = []
             invalid_item_count = 0
             for paste_item in paste_items:

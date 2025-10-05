@@ -208,7 +208,7 @@ class CustomLineWidthDialog(QDialog):
     def getChoice(self : Self) -> float | None:
         try:
             return float(self.width_input.text())
-        except:
+        except ValueError:
             return None
 
 class LineWidthComboBox(QComboBox):
@@ -306,7 +306,7 @@ class LineWidthComboBox(QComboBox):
                 r = float(text)
                 if r < 0:
                     r = None
-            except:
+            except ValueError:
                 r = None
         return r
 
@@ -562,7 +562,7 @@ class FontSizeComboBox(QComboBox):
         else:
             try:
                 return float(text)
-            except:
+            except ValueError:
                 return None
 
 class OnOffComboBox(QComboBox):

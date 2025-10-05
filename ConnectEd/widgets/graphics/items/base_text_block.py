@@ -3,7 +3,7 @@ from typing import Self
 from PyQt6.QtCore    import QPointF, QRectF
 from PyQt6.QtWidgets import QWidget, QStyleOptionGraphicsItem, QStyle, \
                             QGraphicsTextItem
-from PyQt6.QtGui     import QColor, QPainter, QPainterPath
+from PyQt6.QtGui     import QColor, QPainter
 
 from ...dialogs.text_block import TextBlockDialog
 
