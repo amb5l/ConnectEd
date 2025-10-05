@@ -28,7 +28,7 @@ class TableView(QTableView):
         a.decreaseTextSize = QAction("Decrease Text Size", self)
         a.decreaseTextSize.triggered.connect(self.decreaseFontSize)
 
-    def wheelEvent(self : Self, event: QWheelEvent) -> None:
+    def wheelEvent(self : Self, event : QWheelEvent) -> None:
         """Handle mouse wheel events to adjust font size when Ctrl is pressed."""
         modifiers = event.modifiers()
         if modifiers & Qt.KeyboardModifier.ControlModifier:

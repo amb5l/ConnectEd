@@ -35,7 +35,7 @@ class DrawingViewPrivateMixin:
                 items_rect.united(item_rect)
         return items_rect
 
-    def _pan(self : "DrawingView", delta: QPointF) -> None:
+    def _pan(self : "DrawingView", delta : QPointF) -> None:
         lrect = self.mapToScene(self.viewport().rect()).boundingRect()  # Scene coords
         pan = QPointF(lrect.width()  * delta.x(), lrect.height() * delta.y())
         transform = self.transform()
@@ -51,7 +51,7 @@ class DrawingViewPrivateMixin:
             self.mapToScene(self.mouse.current.physical)
         )
 
-    def _zoomAbs(self : "DrawingView", abs: float) -> None:
+    def _zoomAbs(self : "DrawingView", abs : float) -> None:
         abs = max(abs, settings().get("display/zoom/min"))
         abs = min(abs, settings().get("display/zoom/max"))
         self.zoom = abs
@@ -69,10 +69,10 @@ class DrawingViewPrivateMixin:
             self.zoom > settings().get("display/zoom/min")
         )
 
-    def _zoomRel(self : "DrawingView", rel: float) -> None:
+    def _zoomRel(self : "DrawingView", rel : float) -> None:
         self._zoomAbs(self.zoom * rel)
 
-    def _zoomRelMouse(self : "DrawingView", rel: float) -> None:
+    def _zoomRelMouse(self : "DrawingView", rel : float) -> None:
         ppos_old = self.mouse.current.physical
         lpos_old = self.mouse.current.logical
         self._zoomRel(rel)
@@ -100,14 +100,14 @@ class DrawingViewPrivateMixin:
     def _round2nearest(self : "DrawingView", x : float, n : float) -> float:
         return round(x / n) * n
 
-    def _snap(self : "DrawingView", pos: QPointF | None) -> QPointF:
+    def _snap(self : "DrawingView", pos : QPointF | None) -> QPointF:
         return QPointF(0, 0) if pos is None else \
             QPointF(
                 self._round2nearest(pos.x(), self.grid.pitch.x()),
                 self._round2nearest(pos.y(), self.grid.pitch.y())
             ) if self.grid.snap else pos
 
-    def _distance(self : "DrawingView", cp1: QPoint, cp2: QPoint) -> int:
+    def _distance(self : "DrawingView", cp1 : QPoint, cp2 : QPoint) -> int:
         return int(round(sqrt((cp1.x() - cp2.x())**2 + (cp1.y() - cp2.y())**2)))
 
     def _getModifiers(
@@ -117,7 +117,7 @@ class DrawingViewPrivateMixin:
         mask = qkm.ControlModifier | qkm.ShiftModifier | qkm.AltModifier
         return event.modifiers() & mask
 
-    def _setLayer(self : "DrawingView", layer: "DrawingView.Layer") -> None:
+    def _setLayer(self : "DrawingView", layer : "DrawingView.Layer") -> None:
         self.layer = layer
         for item in self.scene().items():
             item.setFlag(
@@ -126,7 +126,7 @@ class DrawingViewPrivateMixin:
             )
             item.setSelected(False)
 
-    def _itemsAt(self : "DrawingView", point: QPointF) -> list[QGraphicsItem]:
+    def _itemsAt(self : "DrawingView", point : QPointF) -> list[QGraphicsItem]:
         items = self.scene().items(
             point,
             Qt.ItemSelectionMode.IntersectsItemShape,

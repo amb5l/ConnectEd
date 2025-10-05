@@ -1,4 +1,5 @@
-from math import isclose
+from typing import Callable
+from math   import isclose
 
 from PyQt6.QtCore import QPointF, QLineF, QRectF
 
@@ -27,7 +28,7 @@ if TYPE_CHECKING:
 ################################################################################
 
 
-def _xp(point: QPointF, line: QLineF) -> float:
+def _xp(point : QPointF, line : QLineF) -> float:
     """Returns the cross product magnitude for colinearity (should be ~0)."""
     if line.isNull():  # degenerate line (zero length)
         return point == line.p1()
@@ -37,7 +38,10 @@ def _xp(point: QPointF, line: QLineF) -> float:
     return ap.x() * ab.y() - ap.y() * ab.x()
 
 
-def _setup_line_projection(line1: QLineF, line2: QLineF):
+def _setup_line_projection(
+    line1 : QLineF,
+    line2 : QLineF
+) -> tuple[QLineF, QLineF, Callable[[QPointF], float]]:
     """
     Setup projection calculation for two colinear lines.
     Returns (base_line, other_line, projection_function),
@@ -66,7 +70,10 @@ def _setup_line_projection(line1: QLineF, line2: QLineF):
     return base, other, project
 
 
-def _calculate_overlap_interval(other_line: QLineF, project_func):
+def _calculate_overlap_interval(
+    other_line   : QLineF,
+    project_func : Callable[[QPointF], float]
+) -> tuple[float, float]:
     """
     Calculate the overlap interval in parameter space [0,1].
     Returns (start_overlap, end_overlap).
@@ -87,13 +94,17 @@ def _calculate_overlap_interval(other_line: QLineF, project_func):
 ################################################################################
 
 
-def pointOnInfiniteLine(point: QPointF, line: QLineF, tol: float = 1e-6) -> bool:
+def pointOnInfiniteLine(
+    point : QPointF,
+    line  : QLineF,
+    tol   : float = 1e-6
+) -> bool:
     """Returns True if the point is on the infinite line."""
     cross_product = _xp(point, line)
     return isclose(cross_product, 0.0, abs_tol=tol)
 
 
-def pointOnLine(point: QPointF, line: QLineF, tol: float = 1e-6) -> bool:
+def pointOnLine(point : QPointF, line : QLineF, tol : float = 1e-6) -> bool:
     """Returns True if the point is on the finite line."""
     cross_product = _xp(point, line)
     if not isclose(cross_product, 0.0, abs_tol=tol):
@@ -110,7 +121,7 @@ def pointOnLine(point: QPointF, line: QLineF, tol: float = 1e-6) -> bool:
     return 0.0 <= projection <= 1.0
 
 
-def colinear(line1: QLineF, line2: QLineF) -> bool:
+def colinear(line1 : QLineF, line2 : QLineF) -> bool:
     """
     Returns True if the lines are colinear.
     NOTE: they may or may not be touching or overlapping.
@@ -122,7 +133,7 @@ def colinear(line1: QLineF, line2: QLineF) -> bool:
         pointOnInfiniteLine(line2.p2(), line1)
 
 
-def touching(line1: QLineF, line2: QLineF, tol: float = 1e-6) -> bool:
+def touching(line1 : QLineF, line2 : QLineF, tol : float = 1e-6) -> bool:
     """Returns True if the lines are touching, but not overlapping."""
     if not colinear(line1, line2):
         return False
@@ -136,7 +147,7 @@ def touching(line1: QLineF, line2: QLineF, tol: float = 1e-6) -> bool:
     return isclose(start_overlap, end_overlap, abs_tol=tol)
 
 
-def overlapping(line1: QLineF, line2: QLineF) -> bool:
+def overlapping(line1 : QLineF, line2 : QLineF) -> bool:
     """Returns True if the lines are overlapping, not just touching."""
     if not colinear(line1, line2):
         return False
@@ -149,20 +160,6 @@ def overlapping(line1: QLineF, line2: QLineF) -> bool:
     # overlapping if positive overlap length (strict > for not just touching)
     return start_overlap < end_overlap
 
-def dump(items):
-    from ...items.junction import Junction
-    for item in items:
-        if isinstance(item, ConnSeg):
-            print(" ConnSeg", item.vtx1().scenePos(), item.vtx2().scenePos())
-        elif isinstance(item, ConnVtx):
-            print(f" ConnVtx pos={item.pos()} scenePos={item.scenePos()}")
-        elif isinstance(item, Junction):
-            print(f" Junction pos={item.pos()} scenePos={item.scenePos()}")
-        elif isinstance(item, Node):
-            print(f" Node pos={item.pos()} scenePos={item.scenePos()}")
-        else:
-            print(" ", item)
-
 ################################################################################
 # mixin
 ################################################################################
@@ -171,7 +168,7 @@ def dump(items):
 class DrawingSceneConnMixin:
     """Connection handling."""
 
-    def tidyConnVtx(self: "DrawingScene", vtx: ConnVtx, undo: bool) -> None:
+    def tidyConnVtx(self : "DrawingScene", vtx : ConnVtx, undo : bool) -> None:
         """
         Tidy up an existing vertex:
         - Merge existing vertices into one. Reattach existing segments.

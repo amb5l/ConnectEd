@@ -38,17 +38,17 @@ class Interaction(ABC):
     # instance attributes
     _scene        : "DrawingScene"
 
-    def __init__(self : Self, scene: "DrawingScene"):
+    def __init__(self : Self, scene : "DrawingScene"):
         self._scene = scene
 
     @abstractmethod
     def valid(self : Self) -> bool: ...
 
     @abstractmethod
-    def update(self : Self, pos: QPointF) -> None: ...
+    def update(self : Self, pos : QPointF) -> None: ...
 
     @abstractmethod
-    def complete(self : Self, pos: QPointF) -> bool:
+    def complete(self : Self, pos : QPointF) -> bool:
         """
         Returns True if the interaction actually completed.
         For example, if wire placement ended at a node.
@@ -64,7 +64,11 @@ class SceneElementInteraction(Interaction):
     # instance attributes
     _element : ElementType
 
-    def __init__(self : Self, scene: "DrawingScene", element: ElementType):
+    def __init__(
+        self    : Self,
+        scene   : "DrawingScene",
+        element : ElementType
+    ) -> None:
         Interaction.__init__(self, scene)
         self._element = element
 
@@ -79,7 +83,11 @@ class SceneElementsInteraction(Interaction):
     # instance attributes
     _elements : list[ElementType]
 
-    def __init__(self : Self, scene: "DrawingScene", elements: list[ElementType]):
+    def __init__(
+        self     : Self,
+        scene    : "DrawingScene",
+        elements : list[ElementType]
+    ) -> None:
         Interaction.__init__(self, scene)
         self._elements = elements
 
@@ -131,11 +139,11 @@ class MoveMixin:
     _cpos : QPointF                     # current position
     _spos : dict[ElementType, QPointF]  # stored positions
 
-    def update(self : Self, pos: QPointF):
+    def update(self : Self, pos : QPointF):
         self._moveBy(pos - self._cpos)
         self._cpos = pos
 
-    def _moveBy(self : Self, offset: QPointF) -> None:
+    def _moveBy(self : Self, offset : QPointF) -> None:
         for e in self._elements:
             e.moveBy(offset)
 
@@ -214,7 +222,7 @@ class EditPasteInteraction(
         else:
             self._elements = None
 
-    def complete(self : Self, pos: QPointF) -> bool:
+    def complete(self : Self, pos : QPointF) -> bool:
         self._restorePos()  # restore initial positions
         self.update(pos)    # apply final offset
         # add pasted elements to scene
@@ -269,7 +277,7 @@ class EditMoveInteraction(
         self._slide    = slide
         self._storePos()  # record initial positions
 
-    def complete(self : Self, pos: QPointF) -> bool:
+    def complete(self : Self, pos : QPointF) -> bool:
         self._restorePos()  # restore initial positions
         # apply final offset
         self._scene.undo_stack.push(cmdMove(
@@ -305,7 +313,7 @@ class EditMovePinsInteraction(Interaction):
             hasattr(self, "_pins") and \
             len(self._pins) > 0
 
-    def update(self : Self, pos: QPointF, snap: QPointF | None = None) -> None:
+    def update(self : Self, pos : QPointF, snap : QPointF | None = None) -> None:
         pos_snap = self._scene._snap(pos, snap) if snap else pos
         primary = self._pins[0]
         loc_old = primary.loc()
@@ -318,7 +326,7 @@ class EditMovePinsInteraction(Interaction):
         for pin in self._pins[1:]:
             pin.setLoc(self._parent.locOffset(pin.loc(), offset, corner))
 
-    def complete(self : Self, pos: QPointF, snap: QPointF | None = None) -> bool:
+    def complete(self : Self, pos : QPointF, snap : QPointF | None = None) -> bool:
         self._restoreLoc()
         self.update(pos, snap)
         if all(p.loc() == self._sloc[p] for p in self._pins):
@@ -367,10 +375,10 @@ class PlaceBaseInteraction(
         self._scene.addItem(self._element)
         self._element.setSelected(True)
 
-    def update(self : Self, pos: QPointF):
+    def update(self : Self, pos : QPointF):
         self._element.setPos(pos)
 
-    def complete(self : Self, pos: QPointF) -> bool:
+    def complete(self : Self, pos : QPointF) -> bool:
         self.update(pos)
         self._scene.undo_stack.push(cmdAdd(
             self._scene, [self._element], self._selection
@@ -388,7 +396,7 @@ class PlaceBaseRectInteraction(PlaceBaseInteraction):
     # instance attributes
     _element : BaseRectangle  # type hint specific to this interaction
 
-    def update(self : Self, pos: QPointF):
+    def update(self : Self, pos : QPointF):
         self._element.setP2(pos)
 
 
@@ -468,10 +476,10 @@ class PlaceConnInteraction(SelectionMixin):
     def valid(self : Self) -> bool:
         return True
 
-    def update(self : Self, pos: QPointF) -> None:
+    def update(self : Self, pos : QPointF) -> None:
         self._updateVertices(pos)
 
-    def complete(self : Self, pos: QPointF) -> bool:
+    def complete(self : Self, pos : QPointF) -> bool:
         self._updateVertices(pos)
         # get scene content before changing it
         items_1 = self._scene.items(self._p1())
@@ -499,23 +507,23 @@ class PlaceConnInteraction(SelectionMixin):
     def _p0(self : Self) -> QPointF:
         return self._seg1.p1()
 
-    def _setP0(self : Self, pos: QPointF) -> None:
+    def _setP0(self : Self, pos : QPointF) -> None:
         self._seg1.setP1(pos)
 
     def _p1(self : Self) -> QPointF:
         return self._seg1.p2()
 
-    def _setP1(self : Self, pos: QPointF) -> None:
+    def _setP1(self : Self, pos : QPointF) -> None:
         self._seg1.setP2(pos)
         self._seg2.setP1(pos)
 
     def _p2(self : Self) -> QPointF:
         return self._seg2.p2()
 
-    def _setP2(self : Self, pos: QPointF) -> None:
+    def _setP2(self : Self, pos : QPointF) -> None:
         self._seg2.setP2(pos)
 
-    def _updateVertices(self : Self, pos: QPointF) -> None:
+    def _updateVertices(self : Self, pos : QPointF) -> None:
         v0 = self._seg1.p1()
         v1 = self._seg1.p2()
         # update end point
@@ -540,7 +548,7 @@ class PlaceConnInteraction(SelectionMixin):
         else:
             self._setP1(pos)
 
-    def _restart(self : Self, pos: QPointF) -> None:
+    def _restart(self : Self, pos : QPointF) -> None:
         self._setP0(self._p1())
         self._updateVertices(pos)
 

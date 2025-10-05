@@ -252,7 +252,7 @@ class PropertiesDialog(QDialog):
         self.setMinimumSize(min_width, min_height)
         self._table_model.dataChanged.connect(self.onDataChanged)
 
-    def _getValueColumnWidth(self: Self) -> int:
+    def _getValueColumnWidth(self : Self) -> int:
         max_width = 50  # minimum width
         test_editors = [
             ColorComboBox     (DEFAULT, DEFAULT, DEFAULT, None),
@@ -267,7 +267,7 @@ class PropertiesDialog(QDialog):
                 editor.deleteLater()  # Clean up
         return max_width + 20  # padding
 
-    def onDelegateDestroyed(self : Self, _: str) -> None:
+    def onDelegateDestroyed(self : Self, _ : str) -> None:
         """Workaround to fix delegate lifecycle issue (silent crash)."""
         pass
 
@@ -289,7 +289,7 @@ class PropertiesDialog(QDialog):
                 else:
                     item.setBackground(QBrush(Qt.GlobalColor.transparent))
 
-    def add(self: Self) -> None:
+    def add(self : Self) -> None:
         row = self._table_model.rowCount()
         self._table_model.appendRow([
             NameItem("", True),
@@ -298,13 +298,13 @@ class PropertiesDialog(QDialog):
         ])
         self._table_view.setCurrentIndex(self._table_model.index(row, 0))
 
-    def delete(self: Self) -> None:
+    def delete(self : Self) -> None:
         row = self._table_view.currentIndex().row()
         name_item : NameItem = self._table_model.item(row, 0)
         if name_item.isEditable():
             self._table_model.removeRow(row)
 
-    def getChanges(self: Self) -> list[PropertyChange]:
+    def getChanges(self : Self) -> list[PropertyChange]:
         r = []
         initial_names = list(self._initial.keys())
         # changed and new properties

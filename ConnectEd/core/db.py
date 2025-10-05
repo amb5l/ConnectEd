@@ -466,7 +466,7 @@ class Model(QStandardItemModel):
             logger().warning(f"Unsupported file extension: {path}")
         return db_item
 
-    def close(self : Self, item: QStandardItem) -> None:
+    def close(self : Self, item : QStandardItem) -> None:
         """Close a database and remove it from the model."""
         if isinstance(item, DesignDbItem):
             # close all open diagram windows for this design

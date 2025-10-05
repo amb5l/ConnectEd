@@ -77,7 +77,7 @@ class PropertyTextDialog(QDialog):
         okCancelLayout(self)
         self.setLayout(self._dialog_layout)
 
-    def onPropertyNameChanged(self : Self, name: str) -> None:
+    def onPropertyNameChanged(self : Self, name : str) -> None:
         self._value_edit.setText(self._parent.getProperty(name))
 
     def showEvent(self : Self, event : QShowEvent):

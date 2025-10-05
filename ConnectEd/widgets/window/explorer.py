@@ -112,11 +112,11 @@ class Explorer(TreeView):
                 scene.name = item.text()
         window().mdi_area.update()
 
-    def focusInEvent(self : Self, event: QFocusEvent) -> None:
+    def focusInEvent(self : Self, event : QFocusEvent) -> None:
         self._focus_in = True
         super().focusInEvent(event)
 
-    def keyPressEvent(self : Self, event: QKeyEvent) -> None:
+    def keyPressEvent(self : Self, event : QKeyEvent) -> None:
         if event.key() in [Qt.Key.Key_Return, Qt.Key.Key_Enter]:
             if len(self.selectedIndexes()) == 1:
                 index = self.selectedIndexes()[0]
@@ -124,7 +124,7 @@ class Explorer(TreeView):
                     self.expandOrEdit(model().itemFromIndex(index))
                     event.accept()
 
-    def mousePressEvent(self : Self, event: QMouseEvent) -> None:
+    def mousePressEvent(self : Self, event : QMouseEvent) -> None:
         """Handle mouse press to deselect items when clicking in empty space."""
         index = self.indexAt(event.pos())
         if not index.isValid() and event.button() in \
@@ -139,7 +139,7 @@ class Explorer(TreeView):
                     return
         super().mousePressEvent(event)
 
-    def mouseDoubleClickEvent(self : Self, event: QMouseEvent) -> None:
+    def mouseDoubleClickEvent(self : Self, event : QMouseEvent) -> None:
         """Handle double-click."""
         if event.button() == Qt.MouseButton.LeftButton:
             index = self.indexAt(event.pos())
@@ -149,7 +149,7 @@ class Explorer(TreeView):
                 return
         super().mouseDoubleClickEvent(event)
 
-    def wheelEvent(self : Self, event: QWheelEvent) -> None:
+    def wheelEvent(self : Self, event : QWheelEvent) -> None:
         """Handle mouse wheel events to adjust font size when Ctrl is pressed."""
         modifiers = event.modifiers()
         if modifiers & Qt.KeyboardModifier.ControlModifier:

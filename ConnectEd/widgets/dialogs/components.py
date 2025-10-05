@@ -72,10 +72,10 @@ class CustomColorDialog(QColorDialog):
                 self._html_box.setText(current_text.upper())
                 self._html_box.textChanged.connect(self._on_html_text_changed)
 
-    def _on_color_changed(self : Self, color: QColor) -> None:
+    def _on_color_changed(self : Self, color : QColor) -> None:
         QTimer.singleShot(10, self._make_uppercase)
 
-    def _on_html_text_changed(self : Self, text: str) -> None:
+    def _on_html_text_changed(self : Self, text : str) -> None:
         if text.startswith("#") and text != text.upper():
             self._make_uppercase()
 
@@ -919,35 +919,35 @@ class EdgeComboBox(QComboBox):
         return Edge(self.currentText())
 
 class StringEdit(QLineEdit):
-    def __init__(self, value: str, parent=None):
+    def __init__(self : Self, value : str, parent=None):
         super().__init__(parent)
         self.setText(value)
 
 class IntEdit(QLineEdit):
-    def __init__(self, value: int, parent=None):
+    def __init__(self : Self, value : int, parent=None):
         super().__init__(parent)
         self.setValidator(QIntValidator())
         self.setText(str(value))
 
-    def setValue(self, value: int) -> None:
+    def setValue(self : Self, value : int) -> None:
         self.setText(str(value))
 
-    def getValue(self) -> int:
+    def getValue(self : Self) -> int:
         try:
             return int(self.text())
         except ValueError:
             return 0
 
 class FloatEdit(QLineEdit):
-    def __init__(self, value: float, parent=None):
+    def __init__(self : Self, value : float, parent=None):
         super().__init__(parent)
         self.setValidator(QDoubleValidator())
         self.setValue(value)
 
-    def setValue(self, value: float) -> None:
+    def setValue(self : Self, value : float) -> None:
         self.setText(str(value))
 
-    def getValue(self) -> float:
+    def getValue(self : Self) -> float:
         try:
             return float(self.text())
         except ValueError:

@@ -42,7 +42,7 @@ class DrawingViewPLPos:
         self.physical = physical
         self.logical  = logical
 
-    def setPL(self : Self, physical: QPoint, logical: QPointF) -> None:
+    def setPL(self : Self, physical : QPoint, logical : QPointF) -> None:
         self.physical = physical
         self.logical  = logical
 

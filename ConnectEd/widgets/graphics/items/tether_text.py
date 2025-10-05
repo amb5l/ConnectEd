@@ -19,7 +19,7 @@ class Tether(QGraphicsLineItem):
     _item  : "TetherText"
     _line  : QLineF
 
-    def __init__(self : Self, item: "TetherText", visible : bool = False):
+    def __init__(self : Self, item : "TetherText", visible : bool = False):
         super().__init__(item)  # Parent it to the TetherText
         self._item = item
         self.setVisible(visible)

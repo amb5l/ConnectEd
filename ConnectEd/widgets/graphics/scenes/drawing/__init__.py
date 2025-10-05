@@ -38,7 +38,7 @@ class DrawingScene(
         "Name" : PropertySpec(
             type_name = "str",
             getter    = lambda self: self._name,
-            setter    = lambda self, value: setattr(self, '_name', value)
+            setter    = lambda self, value : setattr(self, '_name', value)
         )
     }
 

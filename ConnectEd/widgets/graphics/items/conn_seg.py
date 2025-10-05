@@ -131,7 +131,7 @@ class ConnSegPreview(ElementLineMixin, ElementChangeMixin, QGraphicsLineItem):
     def p1(self : Self) -> QPointF:
         return QGraphicsLineItem.line(self).p1()
 
-    def setP1(self : Self, pos: QPointF) -> None:
+    def setP1(self : Self, pos : QPointF) -> None:
         line = QGraphicsLineItem.line(self)
         line.setP1(pos)
         QGraphicsLineItem.setLine(self, line)
@@ -139,7 +139,7 @@ class ConnSegPreview(ElementLineMixin, ElementChangeMixin, QGraphicsLineItem):
     def p2(self : Self) -> QPointF:
         return QGraphicsLineItem.line(self).p2()
 
-    def setP2(self : Self, pos: QPointF) -> None:
+    def setP2(self : Self, pos : QPointF) -> None:
         line = QGraphicsLineItem.line(self)
         line.setP2(pos)
         QGraphicsLineItem.setLine(self, line)

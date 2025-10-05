@@ -186,7 +186,7 @@ class cmdEditProperties(cmdSceneElement):
         super().__init__(scene, element)
         self._changes = changes
 
-    def redo(self: Self) -> None:
+    def redo(self : Self) -> None:
         for change in self._changes:
             if change.before is None:  # new property
                 self._element.addProperty(change.after.name)
@@ -207,7 +207,7 @@ class cmdEditProperties(cmdSceneElement):
                         change.after.name, change.after.value
                     )
 
-    def undo(self: Self) -> None:
+    def undo(self : Self) -> None:
         for change in self._changes:
             if change.before is None:  # new property
                 self._element.deleteProperty(change.after.name)

@@ -29,7 +29,7 @@ if TYPE_CHECKING:
 
 class SpreadsheetCell(QStandardItem):
     """Custom item for spreadsheet cells, storing string values."""
-    def __init__(self : Self, value: any) -> None:
+    def __init__(self : Self, value : any) -> None:
         text_value = "" if value is None else str(value)
         super().__init__(text_value)
         self.setFlags(
@@ -162,7 +162,7 @@ class SpreadsheetHeader(QHeaderView):
         self.setSectionsClickable(True)
         self.setSectionsMovable(False)
 
-    def contextMenuEvent(self : Self, event: QContextMenuEvent) -> None:
+    def contextMenuEvent(self : Self, event : QContextMenuEvent) -> None:
         o = Qt.Orientation
         if (self.orientation() == o.Horizontal and not self._transposed) \
         or (self.orientation() == o.Vertical and self._transposed):
@@ -178,7 +178,7 @@ class SpreadsheetHeader(QHeaderView):
         else:
             super().contextMenuEvent(event)
 
-    def _showContextMenu(self : Self, header_index: int, global_pos: QPoint):
+    def _showContextMenu(self : Self, header_index : int, global_pos : QPoint):
         menu = Menu(self)
         menu_font = menu.font()
         font_metrics = QFontMetrics(menu_font)
@@ -265,7 +265,7 @@ class SpreadsheetTable(QTableView):
         super().showEvent(event)
         self.style_corner_button()
 
-    def wheelEvent(self : Self, event: QWheelEvent) -> None:
+    def wheelEvent(self : Self, event : QWheelEvent) -> None:
         """Handle mouse wheel events to adjust font size when Ctrl is pressed."""
         modifiers = event.modifiers()
         if modifiers & Qt.KeyboardModifier.ControlModifier:
@@ -280,7 +280,7 @@ class SpreadsheetTable(QTableView):
         else:
             super().wheelEvent(event)
 
-    def contextMenuEvent(self : Self, event: QContextMenuEvent) -> None:
+    def contextMenuEvent(self : Self, event : QContextMenuEvent) -> None:
         """Show context menu for table cells."""
         menu = Menu(self)
         menu.addAction(self._parent._actions.unsort)
@@ -391,7 +391,7 @@ class SpreadsheetWidget(QWidget):
         self._table_model.clearFocus()
         self._table_proxy.clearFocus()
 
-    def _toggleTranspose(self : Self, checked: bool | None = None) -> None:
+    def _toggleTranspose(self : Self, checked : bool | None = None) -> None:
         """Toggle between normal and transposed table views."""
         self._completeEditing()
         if checked is None:
@@ -412,21 +412,21 @@ class SpreadsheetWidget(QWidget):
         self._multiSort()
         self._updateHeaderText()
 
-    def _sortAscending(self : Self, header_index: int) -> None:
+    def _sortAscending(self : Self, header_index : int) -> None:
         """Sort the selected header in ascending order."""
         self._completeEditing()
         self._sorting[header_index] = Qt.SortOrder.AscendingOrder
         self._multiSort()
         self._updateHeaderText()
 
-    def _sortDescending(self : Self, header_index: int) -> None:
+    def _sortDescending(self : Self, header_index : int) -> None:
         """Sort the selected header in descending order."""
         self._completeEditing()
         self._sorting[header_index] = Qt.SortOrder.DescendingOrder
         self._multiSort()
         self._updateHeaderText()
 
-    def _sortNone(self : Self, header_index: int) -> None:
+    def _sortNone(self : Self, header_index : int) -> None:
         """Remove sorting from the selected header."""
         self._completeEditing()
         if header_index in self._sorting:
@@ -651,7 +651,7 @@ class SpreadsheetTabWidget(QTabWidget):
         # initialize font size
         self.setFontSize(settings().get("display/font_size"))
 
-    def closeTab(self : Self, index: int) -> None:
+    def closeTab(self : Self, index : int) -> None:
         """Close the tab at the given index."""
         self.removeTab(index)
         if self.count() == 0:
@@ -710,7 +710,7 @@ class SpreadsheetTabWidget(QTabWidget):
         self._font_size = max(self._font_size - 1, 6)
         self.setFontSize(self._font_size)
 
-    def setFontSize(self : Self, size: int) -> None:
+    def setFontSize(self : Self, size : int) -> None:
         """Set the font size for all tables."""
         self._font_size = size
         font = QFont()
@@ -751,7 +751,7 @@ class SpreadsheetSubWindow(QMdiSubWindow):
             self.setWidget(label)
             self.setWindowTitle("Properties")
 
-    def closeEvent(self : Self, event: QCloseEvent) -> None:
+    def closeEvent(self : Self, event : QCloseEvent) -> None:
         """Handle subwindow close event."""
         window().menu_bar.updateWindowMenu()
         super().closeEvent(event)

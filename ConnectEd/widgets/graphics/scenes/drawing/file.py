@@ -11,7 +11,7 @@ class DrawingSceneApiFileMixin:
     save = save
 
     @classmethod
-    def load(cls, path: str) -> "DrawingScene | None":
+    def load(cls, path : str) -> "DrawingScene | None":
         items = loadItems(path)
         for item in items:
             if isinstance(item, cls):

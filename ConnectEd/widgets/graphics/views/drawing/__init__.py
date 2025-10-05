@@ -153,7 +153,7 @@ class DrawingSubWindow(QMdiSubWindow):
         super().__init__(parent)
         self.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
 
-    def closeEvent(self : Self, event: QCloseEvent) -> None:
+    def closeEvent(self : Self, event : QCloseEvent) -> None:
         if isinstance(self.widget(), DrawingView):
             scene = self.widget().scene()
             if scene and scene.undo_stack:
