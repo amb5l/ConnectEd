@@ -454,7 +454,9 @@ class Model(QStandardItemModel):
             )
         return item
 
-    def load(self : Self, path : str) -> DbItem:
+    def load(self : Self, path : str) -> DbItem | None:
+        if self._alreadyLoaded(path):
+            return None
         db_item = None
         if path.endswith(DSN_EXT):
             db_item = DesignDbItem.load(path)
@@ -621,3 +623,14 @@ class Model(QStandardItemModel):
 
     def designItems(self : Self) -> list[DesignDbItem]:
         return [self._designs.child(i) for i in range(self._designs.rowCount())]
+
+    def _alreadyLoaded(self : Self, path : str) -> bool:
+        for i in range(self._designs.rowCount()):
+            db_item : DesignDbItem = self._designs.child(i)
+            if db_item._path == path:
+                return True
+        for i in range(self._libraries.rowCount()):
+            db_item : LibraryDbItem = self._libraries.child(i)
+            if db_item._path == path:
+                return True
+        return False

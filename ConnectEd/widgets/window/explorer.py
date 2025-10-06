@@ -211,15 +211,16 @@ class Explorer(TreeView):
         if result == dialog.DialogCode.Accepted:
             files = dialog.selectedFiles()
             for file in files:
-                self.openDbFile(file)
-                settings().addMRU(file)
+                if self.openDbFile(file):
+                    settings().addMRU(file)
 
-    def openDbFile(self : Self, file_name : str) -> None:
+    def openDbFile(self : Self, file_name : str) -> "DbItem | None":
         db_item = model().load(file_name)
         if db_item:
             self._expandDb(db_item)
             root_diagram = db_item._diagrams.root
             self.editDrawing(root_diagram)
+        return db_item
 
     def editDrawing(self : Self, item : QStandardItem) -> None:
         from ...core.db import DrawingItem

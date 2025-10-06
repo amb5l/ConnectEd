@@ -1,6 +1,4 @@
 BUGS
-- cloning block with pins
-- designs can be opened twice
 
 DEAD ENDS
 - DrawingSceneApiFileMixin
