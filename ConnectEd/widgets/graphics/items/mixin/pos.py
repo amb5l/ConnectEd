@@ -20,7 +20,32 @@ class ElementPosMixin:
     }
 
     def moveBy(self : Self, offset : QPointF) -> None:
-        super().moveBy(offset.x(), offset.y())
+        x = offset.x()
+        y = offset.y()
+        r = self.parentSceneRotation()
+        match r:
+            case 0   : super().moveBy(x, y)
+            case 90  : super().moveBy(y, -x)
+            case 180 : super().moveBy(-x, -y)
+            case 270 : super().moveBy(-y, x)
+            case _   : raise ValueError(f"Invalid rotation: {r}")
+
+    def setPos(self : Self, pos : QPointF) -> None:
+        """
+        Set position, compensating for item's own rotation.
+        When an item is rotated, position changes must be inverted accordingly.
+        Supports 0/90/180/270 degree rotation angles only.
+        """
+        x = pos.x()
+        y = pos.y()
+        r = self.parentSceneRotation()
+        match r:
+            case 0   : pass
+            case 90  : pos = QPointF(y, -x)
+            case 180 : pos = QPointF(-x, -y)
+            case 270 : pos = QPointF(-y, x)
+            case _   : raise ValueError(f"Invalid rotation: {r}")
+        super().setPos(pos)
 
     def setPosX(self : Self, value : float) -> None:
         pos = self.pos()

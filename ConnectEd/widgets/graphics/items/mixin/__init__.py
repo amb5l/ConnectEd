@@ -54,3 +54,15 @@ class ElementMixin:
 
     def resetUuid(self : Self) -> None:
         self.uuid = str(uuid.uuid4())
+
+    def parentSceneRotation(self: Self) -> float:
+            """
+            Returns the effective rotation angle (degrees) of the parent
+            w.r.t. the scene by summing hierarchy.
+            """
+            angle : float = 0.0
+            item  : QGraphicsItem = self.parentItem()
+            while item is not None:
+                angle += item.rotation()
+                item = item.parentItem()
+            return angle % 360.0
