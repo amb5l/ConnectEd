@@ -1,8 +1,9 @@
 from typing import Self
 
 from PyQt6.QtCore    import Qt, QPointF, QLineF
-from PyQt6.QtWidgets import QGraphicsLineItem
-from PyQt6.QtGui     import QPainterPath, QPainterPathStroker
+from PyQt6.QtWidgets import QGraphicsLineItem, QStyleOptionGraphicsItem, \
+                            QWidget, QStyle
+from PyQt6.QtGui     import QPainter, QPainterPath, QPainterPathStroker
 
 from ....app import settings
 
@@ -67,10 +68,8 @@ class Line(
     ) -> None:
         QGraphicsLineItem.__init__(self)
         self.initElement()
-        if p1 is None:
-            p1 = QPointF()
-        if p2 is None:
-            p2 = QPointF()
+        p1 = QPointF() if p1 is None else p1
+        p2 = p1 if p2 is None else p2
         self._line = QLineF()
         self.setP1P2(p1, p2)
 
@@ -168,3 +167,12 @@ class Line(
 
     def shape(self : Self) -> QPainterPath:
         return self._hshape
+
+    def paint(
+        self    : Self,
+        painter : QPainter,
+        option  : QStyleOptionGraphicsItem,
+        widget  : QWidget
+    ) -> None:
+        option.state &= ~QStyle.StateFlag.State_Selected
+        super().paint(painter, option, widget)
