@@ -130,17 +130,15 @@ class Pin(ElementLocMixin, PortPinMixin, QGraphicsLineItem):
         super(Pin, Pin).direction.__set__(self, value)
         self._arrow.direction = value
 
-    def onSelectionChange(self : Self, selected : bool) -> None:
-        self._arrow.setSelected(selected)
-        self._node.setSelected(selected)
-
     def onGeometryChange(self : Self) -> None:
-        """Update position when geometry changes (e.g., parent is set)."""
-        if hasattr(self, '_loc') and self.parentItem():
-            self.setLoc(self._loc)
+        pass
 
     def onSceneChange(self : Self, scene : "DrawingScene") -> None:
         self._arrow.direction = self._direction
+
+    def onSelectionChange(self : Self, selected : bool) -> None:
+        self._arrow.setSelected(selected)
+        self._node.setSelected(selected)
 
     def paint(
         self    : Self,

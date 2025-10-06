@@ -24,7 +24,8 @@ class ElementCloneMixin:
                 clone_ps = clone._properties[pn]
                 source_ps = source._properties[pn]
                 if isinstance(clone_ps, PropertySpec):
-                    clone_ps.setter(clone, source_ps.getter(source))
+                    if source_ps.exists(source):
+                        clone_ps.setter(clone, source_ps.getter(source))
                 else:
                     clone_ps.value = source_ps.value
         # clone property texts and pins

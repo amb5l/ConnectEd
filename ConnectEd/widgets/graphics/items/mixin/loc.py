@@ -1,6 +1,7 @@
 from typing import Self
 
-from PyQt6.QtCore import QPointF
+from PyQt6.QtCore    import QPointF
+from PyQt6.QtWidgets import QGraphicsItem
 
 from ...properties import PropertySpec
 
@@ -32,6 +33,11 @@ class ElementLocMixin:
 
     def initLoc(self : Self) -> None:
         self._loc = EdgeLoc(Edge.UNDEFINED, 0)
+
+    def onParentChange(self : Self, parent : QGraphicsItem | None) -> None:
+        """Update position when parent changes."""
+        if hasattr(self, '_loc') and parent is not None:
+            self.setLoc(self._loc)
 
     def loc(self : Self) -> EdgeLoc:
         return self._loc
