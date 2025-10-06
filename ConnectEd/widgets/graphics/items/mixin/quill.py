@@ -8,7 +8,7 @@ from .....app import settings
 
 from ...properties import PropertySpec
 
-from .. import Default, DEFAULT, NO_CHANGE, QuillPref, QuillPrefChange
+from .. import Default, DEFAULT, NO_CHANGE, Appearance, QuillPref, QuillPrefChange
 
 from . import ElementMixin
 
@@ -162,49 +162,51 @@ class ElementQuillMixin:
     _PROPERTY_SPECS_QUILL = {
         "Text Color" : PropertySpec(
             type_name = "QColor",
-            exists    = lambda self: self.quill is not None,
-            getter    = lambda self: self.quill.getColor(),
-            setter    = lambda self, value: self.quill.setColor(value),
-            default   = lambda self: self.quill.getDefaults().color
+            exists    = lambda self: self.a.quill is not None,
+            getter    = lambda self: self.a.quill.getColor(),
+            setter    = lambda self, value: self.a.quill.setColor(value),
+            default   = lambda self: self.a.quill.getDefaults().color
         ),
         "Text Font" : PropertySpec(
             type_name = "str",
-            exists    = lambda self: self.quill is not None,
-            getter    = lambda self: self.quill.getFamily(),
-            setter    = lambda self, value: self.quill.setFamily(value),
-            default   = lambda self: self.quill.getDefaults().family
+            exists    = lambda self: self.a.quill is not None,
+            getter    = lambda self: self.a.quill.getFamily(),
+            setter    = lambda self, value: self.a.quill.setFamily(value),
+            default   = lambda self: self.a.quill.getDefaults().family
         ),
         "Text Size" : PropertySpec(
             type_name = "float",
-            exists    = lambda self: self.quill is not None,
-            getter    = lambda self: self.quill.getSize(),
-            setter    = lambda self, value: self.quill.setSize(value),
-            default   = lambda self: self.quill.getDefaults().size
+            exists    = lambda self: self.a.quill is not None,
+            getter    = lambda self: self.a.quill.getSize(),
+            setter    = lambda self, value: self.a.quill.setSize(value),
+            default   = lambda self: self.a.quill.getDefaults().size
         ),
         "Text Bold" : PropertySpec(
             type_name = "bool",
-            exists    = lambda self: self.quill is not None,
-            getter    = lambda self: self.quill.getBold(),
-            setter    = lambda self, value: self.quill.setBold(value),
-            default   = lambda self: self.quill.getDefaults().bold
+            exists    = lambda self: self.a.quill is not None,
+            getter    = lambda self: self.a.quill.getBold(),
+            setter    = lambda self, value: self.a.quill.setBold(value),
+            default   = lambda self: self.a.quill.getDefaults().bold
         ),
         "Text Italic" : PropertySpec(
             type_name = "bool",
-            exists    = lambda self: self.quill is not None,
-            getter    = lambda self: self.quill.getItalic(),
-            setter    = lambda self, value: self.quill.setItalic(value),
-            default   = lambda self: self.quill.getDefaults().italic
+            exists    = lambda self: self.a.quill is not None,
+            getter    = lambda self: self.a.quill.getItalic(),
+            setter    = lambda self, value: self.a.quill.setItalic(value),
+            default   = lambda self: self.a.quill.getDefaults().italic
         ),
         "Text Underline" : PropertySpec(
             type_name = "bool",
-            exists    = lambda self: self.quill is not None,
-            getter    = lambda self: self.quill.getUnderline(),
-            setter    = lambda self, value: self.quill.setUnderline(value),
-            default   = lambda self: self.quill.getDefaults().underline
+            exists    = lambda self: self.a.quill is not None,
+            getter    = lambda self: self.a.quill.getUnderline(),
+            setter    = lambda self, value: self.a.quill.setUnderline(value),
+            default   = lambda self: self.a.quill.getDefaults().underline
         )
     }
 
-    quill : Quill
+    a : Appearance
 
     def initQuill(self : Self):
-        self.quill = Quill(self)
+        if not hasattr(self, "a"):
+            self.a = Appearance()
+        self.a.quill = Quill(self)

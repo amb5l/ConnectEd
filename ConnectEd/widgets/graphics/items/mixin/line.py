@@ -8,7 +8,7 @@ from .....app import settings
 
 from ...properties import PropertySpec
 
-from .. import Default, DEFAULT, NO_CHANGE, LinePref, LinePrefChange
+from .. import Default, DEFAULT, NO_CHANGE, Appearance, LinePref, LinePrefChange
 
 from . import ElementMixin
 
@@ -104,28 +104,30 @@ class ElementLineMixin:
     _PROPERTY_SPECS_LINE = {
         "Line Color" : PropertySpec(
             type_name = "QColor",
-            exists    = lambda self: self.line is not None,
-            getter    = lambda self: self.line.getColor(),
-            setter    = lambda self, value: self.line.setColor(value),
-            default   = lambda self: self.line.getDefaults().color
+            exists    = lambda self: self.a.line is not None,
+            getter    = lambda self: self.a.line.getColor(),
+            setter    = lambda self, value: self.a.line.setColor(value),
+            default   = lambda self: self.a.line.getDefaults().color
         ),
         "Line Width" : PropertySpec(
             type_name = "float",
-            exists    = lambda self: self.line is not None,
-            getter    = lambda self: self.line.getWidth(),
-            setter    = lambda self, value: self.line.setWidth(value),
-            default   = lambda self: self.line.getDefaults().width
+            exists    = lambda self: self.a.line is not None,
+            getter    = lambda self: self.a.line.getWidth(),
+            setter    = lambda self, value: self.a.line.setWidth(value),
+            default   = lambda self: self.a.line.getDefaults().width
         ),
         "Line Style" : PropertySpec(
             type_name = "PenStyle",
-            exists    = lambda self: self.line is not None,
-            getter    = lambda self: self.line.getStyle(),
-            setter    = lambda self, value: self.line.setStyle(value),
-            default   = lambda self: self.line.getDefaults().style
+            exists    = lambda self: self.a.line is not None,
+            getter    = lambda self: self.a.line.getStyle(),
+            setter    = lambda self, value: self.a.line.setStyle(value),
+            default   = lambda self: self.a.line.getDefaults().style
         )
     }
 
-    line : Line
+    a : Appearance
 
     def initLine(self : Self):
-        self.line = Line(self)
+        if not hasattr(self, "a"):
+            self.a = Appearance()
+        self.a.line = Line(self)

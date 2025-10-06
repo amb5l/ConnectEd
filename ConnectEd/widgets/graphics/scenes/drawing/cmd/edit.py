@@ -158,18 +158,22 @@ class cmdEditAppearance(cmdSceneElements):
     def redo(self : Self) -> None:
         c = self._after
         for e in self._elements:
-            if hasattr(e, "line"):  e.line.setPref(c.line)
-            if hasattr(e, "fill"):  e.fill.setPref(c.fill)
-            if hasattr(e, "quill"): e.quill.setPref(c.quill)
+            if not hasattr(e, "a"):
+                continue
+            if e.a.line  is not None: e.a.line.setPref(c.line)
+            if e.a.fill  is not None: e.a.fill.setPref(c.fill)
+            if e.a.quill is not None: e.a.quill.setPref(c.quill)
             e.onGeometryChange()
             e.update()
 
     def undo(self : Self) -> None:
         for e in self._elements:
             c = self._before[e]
-            if hasattr(e, "line"):  e.line.setPref(c.line)
-            if hasattr(e, "fill"):  e.fill.setPref(c.fill)
-            if hasattr(e, "quill"): e.quill.setPref(c.quill)
+            if not hasattr(e, "a"):
+                continue
+            if e.a.line  is not None: e.a.line.setPref(c.line)
+            if e.a.fill  is not None: e.a.fill.setPref(c.fill)
+            if e.a.quill is not None: e.a.quill.setPref(c.quill)
             e.onGeometryChange()
             e.update()
 

@@ -47,9 +47,11 @@ class AppearanceDialog(QDialog):
         default   = AppearanceSpec()
         for element in elements:
             for cat_name in ["line", "fill", "quill"]:
-                if not hasattr(element, cat_name):
+                if not hasattr(element, "a"):
                     continue
-                cat = getattr(element, cat_name)
+                if not hasattr(element.a, cat_name):
+                    continue
+                cat = getattr(element.a, cat_name)
                 if cat is None:
                     continue
                 pref = cat.getPref()
@@ -90,7 +92,7 @@ class AppearanceDialog(QDialog):
                         i_subcat = NO_CHANGE
                     setattr(i_cat, subcat_name, i_subcat)
                     # populate default values
-                    d_cat = getattr(element, cat_name).getDefaults()
+                    d_cat = getattr(element.a, cat_name).getDefaults()
                     if d_cat is None:
                         logger().error(f"{cat_name} is None in defaults for element {element}")
                         continue

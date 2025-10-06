@@ -8,7 +8,7 @@ from .....app import settings
 
 from ...properties import PropertySpec
 
-from .. import Default, DEFAULT, NO_CHANGE, FillPref, FillPrefChange
+from .. import Default, DEFAULT, NO_CHANGE, Appearance, FillPref, FillPrefChange
 
 from . import ElementMixin
 
@@ -82,21 +82,23 @@ class ElementFillMixin:
     _PROPERTY_SPECS_FILL = {
         "Fill Color" : PropertySpec(
             type_name = "QColor",
-            exists    = lambda self: self.fill is not None,
-            getter    = lambda self: self.fill.getColor(),
-            setter    = lambda self, value: self.fill.setColor(value),
-            default   = lambda self: self.fill.getDefaults().color
+            exists    = lambda self: self.a.fill is not None,
+            getter    = lambda self: self.a.fill.getColor(),
+            setter    = lambda self, value: self.a.fill.setColor(value),
+            default   = lambda self: self.a.fill.getDefaults().color
         ),
         "Fill Style" : PropertySpec(
             type_name = "BrushStyle",
-            exists    = lambda self: self.fill is not None,
-            getter    = lambda self: self.fill.getStyle(),
-            setter    = lambda self, value: self.fill.setStyle(value),
-            default   = lambda self: self.fill.getDefaults().style
+            exists    = lambda self: self.a.fill is not None,
+            getter    = lambda self: self.a.fill.getStyle(),
+            setter    = lambda self, value: self.a.fill.setStyle(value),
+            default   = lambda self: self.a.fill.getDefaults().style
         )
     }
 
-    fill : Fill
+    a : Appearance
 
     def initFill(self : Self):
-        self.fill = Fill(self)
+        if not hasattr(self, "a"):
+            self.a = Appearance()
+        self.a.fill = Fill(self)

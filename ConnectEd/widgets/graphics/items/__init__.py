@@ -2,14 +2,20 @@ from typing      import Self
 from dataclasses import dataclass
 from enum        import Enum
 
-from PyQt6.QtCore    import Qt
-from PyQt6.QtGui     import QColor
+from PyQt6.QtCore import Qt
+from PyQt6.QtGui  import QColor
 
 from ....app import logger
 
 from ....core.utils import pascal2snake
 
 from .mixin import ElementMixin
+
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from .mixin.line  import Line
+    from .mixin.fill  import Fill
+    from .mixin.quill import Quill
 
 
 class Default:
@@ -202,6 +208,12 @@ class QuillPrefChange:
     bold      : NoChange | Default | bool   | None = None
     italic    : NoChange | Default | bool   | None = None
     underline : NoChange | Default | bool   | None = None
+
+@dataclass
+class Appearance:
+    line  : "Line  | None" = None
+    fill  : "Fill  | None" = None
+    quill : "Quill | None" = None
 
 @dataclass
 class AppearanceSpec:

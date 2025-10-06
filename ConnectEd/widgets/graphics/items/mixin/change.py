@@ -23,24 +23,26 @@ class ElementChangeMixin:
                 if hasattr(self, 'onScenePositionChange'):
                     self.onScenePositionChange(value)
             case QGraphicsItem.GraphicsItemChange.ItemSelectedHasChanged:
-                if hasattr(self, "line"):
-                    self.line.onSelectionChange(value)
-                if hasattr(self, "fill"):
-                    self.fill.onSelectionChange(value)
-                if hasattr(self, "quill"):
-                    self.quill.onSelectionChange(value)
+                if hasattr(self, "a"):
+                    if self.a.line is not None:
+                        self.a.line.onSelectionChange(value)
+                    if self.a.fill is not None:
+                        self.a.fill.onSelectionChange(value)
+                    if self.a.quill is not None:
+                        self.a.quill.onSelectionChange(value)
                 if hasattr(self, "onSelectionChange"):
                     self.onSelectionChange(value)
         return super().itemChange(change, value)
 
     def onSettingsChange(self : Self) -> None:
         self.prepareGeometryChange()
-        if hasattr(self, "line"):
-            self.line.onSettingsChange()
-        if hasattr(self, "fill"):
-            self.fill.onSettingsChange()
-        if hasattr(self, "quill"):
-            self.quill.onSettingsChange()
+        if hasattr(self, "a"):
+            if self.a.line is not None:
+                self.a.line.onSettingsChange()
+            if self.a.fill is not None:
+                self.a.fill.onSettingsChange()
+            if self.a.quill is not None:
+                self.a.quill.onSettingsChange()
         if hasattr(self, "outline"):
             self.outline.onSettingsChange()
         if hasattr(self, "onGeometryChange"):

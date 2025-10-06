@@ -8,13 +8,21 @@ from .....app import settings
 
 from .....core.defs  import Z_DRAWING
 
+from .....core.utils import hasAnyAttr
+
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from .. import Appearance
+
 
 class ElementMixin:
     Z = Z_DRAWING
 
     _uuid : str
+    a     : "Appearance | None"
 
     def initElement(self : Self, bare : bool = False) -> None:
+        from .. import Appearance
         self.setZValue(self.Z)
         f = QGraphicsItem.GraphicsItemFlag
         self.setFlag( f.ItemIsSelectable              , True )
