@@ -495,7 +495,7 @@ class PlaceConnInteraction(SelectionMixin):
             return True  # interaction completed
         # create second segment if mouse is over a connectable destination
         if connectables_2:
-            self._scene.addConnSeg(self._p1(), self._p2())
+            self._scene.addConnSeg(self._p1(), self._p2(), undo=True)
             self._cleanup()
             return True  # interaction completed
         self._restart(pos)
