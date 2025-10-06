@@ -12,7 +12,7 @@ from .....core.defs  import Z_DRAWING
 class ElementMixin:
     Z = Z_DRAWING
 
-    uuid : str
+    _uuid : str
 
     def initElement(self : Self, bare : bool = False) -> None:
         self.setZValue(self.Z)
@@ -45,15 +45,15 @@ class ElementMixin:
             settings().changed.connect(self.onSettingsChange)
 
     def __hash__(self : Self):
-        return hash(self.uuid)
+        return hash(self._uuid)
 
     def __eq__(self : Self, other):
         if not isinstance(other, ElementMixin):
             return NotImplemented
-        return self.uuid == other.uuid
+        return self._uuid == other._uuid
 
     def resetUuid(self : Self) -> None:
-        self.uuid = str(uuid.uuid4())
+        self._uuid = str(uuid.uuid4())
 
     def parentSceneRotation(self: Self) -> float:
             """
