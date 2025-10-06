@@ -31,6 +31,7 @@ from ...scenes.drawing.interaction import Interaction,                \
                                           PlacePortInteraction,       \
                                           PlaceBlockInteraction,      \
                                           PlaceBlockPinInteraction,   \
+                                          PlaceLineInteraction,       \
                                           PlaceRectangleInteraction,  \
                                           PlaceTextInteraction,       \
                                           PlaceTextBlockInteraction,  \
@@ -595,6 +596,21 @@ class DrawingViewStatePlaceBlockPin(DrawingViewStateBase):
             self.view.grid.pitch if self.view.grid.snap else None
         )
 
+class DrawingViewStatePlaceLine1(ClickMixin):
+    TIP = "Place Line: pick the first point"
+
+    def mouseLeftClick(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
+        self.interact(
+            PlaceLineInteraction(self.scene, self._snap(s)),
+            self.view.statePlaceLine2
+        )
+
+    def mouseLeftDragBegin(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
+        self.mouseLeftClick(v, s, m)
+
+class DrawingViewStatePlaceLine2(ClickMixin, DragMixin):
+    TIP = "Place Line: pick the second point"
+
 class DrawingViewStatePlaceRectangle1(DrawingViewStateBase):
     TIP = "Place Rectangle: pick the first point"
 
@@ -744,6 +760,8 @@ class DrawingViewStateMixin:
         self.statePlaceBlock1      = DrawingViewStatePlaceBlock1      (self)
         self.statePlaceBlock2      = DrawingViewStatePlaceBlock2      (self)
         self.statePlaceBlockPin    = DrawingViewStatePlaceBlockPin    (self)
+        self.statePlaceLine1       = DrawingViewStatePlaceLine1       (self)
+        self.statePlaceLine2       = DrawingViewStatePlaceLine2       (self)
         self.statePlaceRectangle1  = DrawingViewStatePlaceRectangle1  (self)
         self.statePlaceRectangle2  = DrawingViewStatePlaceRectangle2  (self)
         self.statePlaceText        = DrawingViewStatePlaceText        (self)

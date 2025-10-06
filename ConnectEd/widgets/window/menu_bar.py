@@ -85,9 +85,10 @@ class MenuBar(QMenuBar):
         self.place_menu.addSeparator()
         self.place_menu.addAction(actions.placeConnection)
         self.place_menu.addSeparator()
+        self.place_menu.addAction(actions.placeLine)
         self.place_menu.addAction(actions.placeRectangle)
-        self.place_menu.addAction(actions.placeTextBlock)
         self.place_menu.addAction(actions.placeText)
+        self.place_menu.addAction(actions.placeTextBlock)
 
         self.window_menu = Menu("&Window")
         self.window_menu.addAction(actions.windowExplorer)

@@ -247,20 +247,24 @@ class Slots:
         view.placeBlockPin()
 
     @withCurrentWidget(DrawingView)
-    def placeRectangle(self : Self, view : DrawingView) -> None:
-        view.placeRectangle()
-
-    @withCurrentWidget(DrawingView)
     def placeConnection(self : Self, view : DrawingView) -> None:
         view.placeConnection()
 
     @withCurrentWidget(DrawingView)
-    def placeTextBlock(self : Self, view : DrawingView) -> None:
-        view.placeTextBlock()
+    def placeLine(self : Self, view : DrawingView) -> None:
+        view.placeLine()
+
+    @withCurrentWidget(DrawingView)
+    def placeRectangle(self : Self, view : DrawingView) -> None:
+        view.placeRectangle()
 
     @withCurrentWidget(DrawingView)
     def placeText(self : Self, view : DrawingView) -> None:
         view.placeText()
+
+    @withCurrentWidget(DrawingView)
+    def placeTextBlock(self : Self, view : DrawingView) -> None:
+        view.placeTextBlock()
 
     def windowExplorer(self : Self) -> None:
         window().explorer_dock.show()

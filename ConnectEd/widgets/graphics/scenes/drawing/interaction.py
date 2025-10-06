@@ -9,6 +9,7 @@ from .....core.utils import sign
 
 from ...items import EdgeLoc, ElementMixin, clone
 
+from ...items.line       import Line
 from ...items.base_rect  import BaseRectangle
 from ...items.pin_rect   import PinRect
 from ...items.block      import Block
@@ -388,6 +389,16 @@ class PlaceBaseInteraction(
     def cancel(self : Self) -> None:
         self._scene.removeItem(self._element)
         self._restoreSelection()
+
+
+class PlaceLineInteraction(PlaceBaseInteraction):
+    _ELEMENT = Line
+
+    # instance attributes
+    _element : Line  # type hint specific to this interaction
+
+    def update(self : Self, pos : QPointF):
+        self._element.setP2(pos)
 
 
 class PlaceBaseRectInteraction(PlaceBaseInteraction):

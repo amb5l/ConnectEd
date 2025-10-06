@@ -226,37 +226,6 @@ FACTORY_SETTINGS = {
                         "underline" : False
                     }
                 },
-                "Rectangle" : {
-                    "line" : {
-                        "color" : PaletteDark.Rectangle,
-                        "width" : 1,
-                        "style" : Qt.PenStyle.SolidLine
-                    },
-                    "fill" : {
-                        "color" : PaletteDark.Rectangle,
-                        "style" : Qt.BrushStyle.NoBrush
-                    }
-                },
-                "TextBlock" : {
-                    "text" : {
-                        "color"     : PaletteDark.TextBlock,
-                        "family"    : "Liberation Sans",
-                        "size"      : 7,
-                        "bold"      : False,
-                        "italic"    : False,
-                        "underline" : False
-                    }
-                },
-                "Text" : {
-                    "text" : {
-                        "color"     : PaletteDark.Text,
-                        "family"    : "Liberation Sans",
-                        "size"      : 7,
-                        "bold"      : False,
-                        "italic"    : False,
-                        "underline" : False
-                    }
-                },
                 "Junction" : {
                     "size"  : 4,
                     "line" : {
@@ -302,7 +271,45 @@ FACTORY_SETTINGS = {
                         "width" : 1,
                         "style" : Qt.PenStyle.SolidLine
                     }
-                }
+                },
+                "Line" : {
+                    "line" : {
+                        "color" : PaletteDark.Line,
+                        "width" : 1,
+                        "style" : Qt.PenStyle.SolidLine
+                    }
+                },
+                "Rectangle" : {
+                    "line" : {
+                        "color" : PaletteDark.Rectangle,
+                        "width" : 1,
+                        "style" : Qt.PenStyle.SolidLine
+                    },
+                    "fill" : {
+                        "color" : PaletteDark.Rectangle,
+                        "style" : Qt.BrushStyle.NoBrush
+                    }
+                },
+                "Text" : {
+                    "text" : {
+                        "color"     : PaletteDark.Text,
+                        "family"    : "Liberation Sans",
+                        "size"      : 7,
+                        "bold"      : False,
+                        "italic"    : False,
+                        "underline" : False
+                    }
+                },
+                "TextBlock" : {
+                    "text" : {
+                        "color"     : PaletteDark.TextBlock,
+                        "family"    : "Liberation Sans",
+                        "size"      : 7,
+                        "bold"      : False,
+                        "italic"    : False,
+                        "underline" : False
+                    }
+                },
             },
             "selected" : {
                 "line" : PaletteDark.SelectedLine,
@@ -439,37 +446,6 @@ FACTORY_SETTINGS = {
                         "underline" : False
                     }
                 },
-                "Rectangle" : {
-                    "line" : {
-                        "color" : PaletteLightMono.Rectangle,
-                        "width" : 1,
-                        "style" : Qt.PenStyle.SolidLine
-                    },
-                    "fill" : {
-                        "color" : PaletteLightMono.Rectangle,
-                        "style" : Qt.BrushStyle.NoBrush
-                    }
-                },
-                "TextBlock" : {
-                    "text" : {
-                        "color"     : PaletteLightMono.TextBlock,
-                        "family"    : "Liberation Sans",
-                        "size"      : 7,
-                        "bold"      : False,
-                        "italic"    : False,
-                        "underline" : False
-                    }
-                },
-                "Text" : {
-                    "text" : {
-                        "color"     : PaletteLightMono.Text,
-                        "family"    : "Liberation Sans",
-                        "size"      : 7,
-                        "bold"      : False,
-                        "italic"    : False,
-                        "underline" : False
-                    }
-                },
                 "Junction" : {
                     "size"  : 4,
                     "line" : {
@@ -514,6 +490,44 @@ FACTORY_SETTINGS = {
                         "color" : PaletteLightMono.ConnSeg,
                         "width" : 1,
                         "style" : Qt.PenStyle.SolidLine
+                    }
+                },
+                "Line" : {
+                    "line" : {
+                        "color" : PaletteLightMono.Line,
+                        "width" : 1,
+                        "style" : Qt.PenStyle.SolidLine
+                    }
+                },
+                "Rectangle" : {
+                    "line" : {
+                        "color" : PaletteLightMono.Rectangle,
+                        "width" : 1,
+                        "style" : Qt.PenStyle.SolidLine
+                    },
+                    "fill" : {
+                        "color" : PaletteLightMono.Rectangle,
+                        "style" : Qt.BrushStyle.NoBrush
+                    }
+                },
+                "Text" : {
+                    "text" : {
+                        "color"     : PaletteLightMono.Text,
+                        "family"    : "Liberation Sans",
+                        "size"      : 7,
+                        "bold"      : False,
+                        "italic"    : False,
+                        "underline" : False
+                    }
+                },
+                "TextBlock" : {
+                    "text" : {
+                        "color"     : PaletteLightMono.TextBlock,
+                        "family"    : "Liberation Sans",
+                        "size"      : 7,
+                        "bold"      : False,
+                        "italic"    : False,
+                        "underline" : False
                     }
                 }
             },

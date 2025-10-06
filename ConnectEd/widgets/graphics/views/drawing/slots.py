@@ -212,11 +212,14 @@ class DrawingViewSlotsMixin:
     def placeConnection(self : "DrawingView") -> None:
         self.state.go(self.statePlaceConn1)
 
+    def placeLine(self : "DrawingView") -> None:
+        self.state.go(self.statePlaceLine1)
+
     def placeRectangle(self : "DrawingView") -> None:
         self.state.go(self.statePlaceRectangle1)
 
-    def placeTextBlock(self : "DrawingView") -> None:
-        self.state.go(self.statePlaceTextBlock)
-
     def placeText(self : "DrawingView") -> None:
         self.state.go(self.statePlaceText)
+
+    def placeTextBlock(self : "DrawingView") -> None:
+        self.state.go(self.statePlaceTextBlock)
