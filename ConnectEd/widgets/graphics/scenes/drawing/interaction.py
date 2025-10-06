@@ -489,7 +489,7 @@ class PlaceConnInteraction(SelectionMixin):
         connectables_2 = [item for item in items_2 \
             if isinstance(item, ConnSeg | ConnVtx | Node)]
         # create first segment
-        self._scene.addConnSeg(self._p0(), self._p1())
+        self._scene.addConnSeg(self._p0(), self._p1(), undo=True)
         if connectables_1:
             self._cleanup()
             return True  # interaction completed
