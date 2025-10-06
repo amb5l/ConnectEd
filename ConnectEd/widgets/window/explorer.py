@@ -215,19 +215,11 @@ class Explorer(TreeView):
                 settings().addMRU(file)
 
     def openFile(self : Self, file_name : str) -> None:
-        from ...core.db import DesignDbItem, LibraryDbItem
         db_item = model().load(file_name)
         if db_item:
-            db_idx = model().indexFromItem(db_item)
-            self.expand(db_idx)
-            if isinstance(db_item, DesignDbItem):
-                diagrams_idx = model().indexFromItem(db_item._diagrams)
-                self.expand(diagrams_idx)
-                root_diagram = db_item._diagrams.root
-                self.editDrawing(root_diagram)
-            elif isinstance(db_item, LibraryDbItem):
-                symbols_idx = model().indexFromItem(db_item._symbols)
-                self.expand(symbols_idx)
+            self._expandDb(db_item)
+            root_diagram = db_item._diagrams.root
+            self.editDrawing(root_diagram)
 
     def editDrawing(self : Self, item : QStandardItem) -> None:
         from ...core.db import DrawingItem
@@ -397,6 +389,17 @@ class Explorer(TreeView):
         menu.addAction(self.actions.increaseTextSize)
         menu.addAction(self.actions.decreaseTextSize)
         menu.exec(self.viewport().mapToGlobal(pos))
+
+    def _expandDb(self : Self, item : "DbItem") -> None:
+        from ...core.db import DesignDbItem, LibraryDbItem
+        db_idx = model().indexFromItem(item)
+        self.expand(db_idx)
+        if isinstance(item, DesignDbItem):
+            diagrams_idx = model().indexFromItem(item._diagrams)
+            self.expand(diagrams_idx)
+        elif isinstance(item, LibraryDbItem):
+            symbols_idx = model().indexFromItem(item._symbols)
+            self.expand(symbols_idx)
 
 class ExplorerDock(TreeViewDock):
     WINDOW_TITLE = "Explorer"
