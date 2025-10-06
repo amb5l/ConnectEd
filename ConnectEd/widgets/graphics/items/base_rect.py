@@ -10,7 +10,8 @@ from ....app import settings
 from ..properties import PropertySpec, PropertiesMixin
 
 from .mixin        import ElementMixin
-from .mixin.bound  import ElementBoundShapeMixin
+from .mixin.bound  import ElementBoundMixin
+from .mixin.shape  import ElementShapeMixin
 from .mixin.pos    import ElementPosMixin
 from .mixin.anchor import ElementRectAnchorPointsMixin
 from .mixin.line   import ElementLineMixin
@@ -23,7 +24,8 @@ from .mixin.menu   import ElementMenuMixin
 
 class BaseRectangle(
     ElementMixin,
-    ElementBoundShapeMixin,
+    ElementBoundMixin,
+    ElementShapeMixin,
     ElementPosMixin,
     ElementRectAnchorPointsMixin,
     ElementLineMixin,
@@ -57,7 +59,7 @@ class BaseRectangle(
     _MIN_SIZE = QSizeF(1.0, 1.0)
 
     # instance attributes
-    _rect : QRectF  # cached rectangle
+    _ap_rect : QRectF  # anchor point rectangle
 
     @overload
     def __init__(
@@ -84,7 +86,7 @@ class BaseRectangle(
         bare       : bool = False
     ) -> None:
         super().__init__()
-        self._rect = QRectF()
+        self._ap_rect = QRectF()
         self.initElement(bare=bare)
         if p1_or_pos is None:
             p1_or_pos = QPointF()
@@ -104,7 +106,7 @@ class BaseRectangle(
         tolerance = settings().get("display/select/tolerance")
         stroke_width = pen_width + (2 * tolerance)
         rect_path = QPainterPath()
-        rect_path.addRect(self._rect)
+        rect_path.addRect(self.rect())
         stroker = QPainterPathStroker()
         stroker.setWidth(stroke_width)
         stroker.setCapStyle(Qt.PenCapStyle.SquareCap)
@@ -148,7 +150,7 @@ class BaseRectangle(
             super().setRect(rect_or_ax)
         else:
             super().setRect(rect_or_ax, ay, w, h)
-        self._rect = self.rect()
+        self._ap_rect = self.rect()
         self.onGeometryChange()
 
     def paint(
@@ -161,12 +163,14 @@ class BaseRectangle(
         super().paint(painter, option, widget)
 
     def setWidth(self : Self, width : float | int) -> None:
-        self._rect.setWidth(width)
-        self.setRect(self._rect)
+        rect = self.rect()
+        rect.setWidth(width)
+        self.setRect(rect)
 
     def setHeight(self : Self, height : float | int) -> None:
-        self._rect.setHeight(height)
-        self.setRect(self._rect)
+        rect = self.rect()
+        rect.setHeight(height)
+        self.setRect(rect)
 
     @overload
     def setPoints(
@@ -208,17 +212,17 @@ class BaseRectangle(
         self.setPos(final_pos)
         w = max(abs(x2-x1), self._MIN_SIZE.width())
         h = max(abs(y2-y1), self._MIN_SIZE.height())
-        self._rect.setSize(QSizeF(w, h))
-        self.setRect(self._rect)
+        rect = self.rect()
+        rect.setSize(QSizeF(w, h))
+        self.setRect(rect)
 
     def setP2(self : Self, p2 : QPointF) -> None:
         p1 = self.pos()
         self.setPoints(p1.x(), p1.y(), p2.x(), p2.y())
-        self.setRect(self._rect)
 
     def moveAnchorPointBy(self : Self, name : str, delta : QPointF) -> None:
         p1 = self.pos()
-        p2 = p1 + self._rect.bottomRight()
+        p2 = p1 + self.rect().bottomRight()
         d = delta
         match name:
             case "Top Left":

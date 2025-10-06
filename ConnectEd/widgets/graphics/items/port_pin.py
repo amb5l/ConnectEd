@@ -22,7 +22,8 @@ from .node import Node
 
 class PortPinText(PropertyText):
     def compensateRotation(self : Self, angle : float) -> None:
-        self.setTransformOriginPoint(self._brect.center())
+        rect = self.boundingRect()
+        self.setTransformOriginPoint(rect.center())
         self.setRotation(180 if 45 <= angle < 225 else 0)
 
 

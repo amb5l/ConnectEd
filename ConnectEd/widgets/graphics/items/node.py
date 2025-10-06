@@ -64,6 +64,9 @@ class Node(
         parent : "PortPinMixin" = self.parentItem()
         parent.moveBy(delta)
 
+    def boundingRect(self : Self) -> QRectF:
+        return self._brect
+
     def paint(
         self    : Self,
         painter : QPainter,

@@ -60,8 +60,7 @@ class BaseText(
         _PROPERTY_SPECS_APPEARANCE
 
     # instance attributes
-    _rect  : QRectF  # border rectangle (for keypoints)
-    _trect : QRectF  # tight bounding rectangle
+    _ap_rect : QRectF  # anchor point rectangle
 
     def __init__(
         self : Self,
@@ -77,15 +76,7 @@ class BaseText(
         if not hasattr(self, "_origin"):
             return
         old_origin_scene_pos = self.getOriginScenePos()
-        self._brect = self._rect = super().boundingRect()
-        if not self.text():
-            self._trect = QRectF()
-        else:
-            font = self.font()
-            metrics = QFontMetrics(font)
-            baseline_trect = metrics.tightBoundingRect(self.text())
-            baseline_y = metrics.ascent()
-            self._trect = baseline_trect.translated(0, baseline_y)
+        self._ap_rect = self.boundingRect()
         self.updateAnchorPoints()
         new_origin_scene_pos = self.getOriginScenePos()
         delta = old_origin_scene_pos - new_origin_scene_pos

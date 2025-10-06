@@ -33,7 +33,7 @@ class ElementRectAnchorPointsMixin(ElementAnchorPointsMixin):
     _AP_RESIZE = { k : k != "Center" for k in _ANCHOR_POINTS.keys() }
 
     # external instance attributes
-    _rect : QRectF  # border rectangle, maintained by element
+    _ap_rect : QRectF  # anchor point rectangle, maintained by element
 
     def initAnchorPoints(self : Self) -> None:
         self._anchor_points = {}
@@ -47,6 +47,6 @@ class ElementRectAnchorPointsMixin(ElementAnchorPointsMixin):
             return
         for name, (x, y) in self._ANCHOR_POINTS.items():
             self._anchor_points[name].setPos(QPointF(
-                x * self._rect.width(),
-                y * self._rect.height()
+                x * self._ap_rect.width(),
+                y * self._ap_rect.height()
             ))

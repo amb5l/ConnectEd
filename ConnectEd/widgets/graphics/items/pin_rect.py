@@ -23,9 +23,10 @@ class PinRect(BaseRectangle):
         return ["Add Pin...", "-", "Appearance...", "Properties..."]
 
     def pos2loc(self : Self, pos : QPointF) -> EdgeLoc:
-        w = self._rect.width()
-        h = self._rect.height()
-        c = self.pos() + self._rect.center() # scene pos of rectangle center
+        rect = self.rect()
+        w = rect.width()
+        h = rect.height()
+        c = self.pos() + rect.center() # scene pos of rectangle center
         r = pos - c                          # pos relative to rectangle center
         hq = False if r.x() == 0 or abs(r.y()/r.x()) > abs(h/w) else True
         if hq:
@@ -50,8 +51,9 @@ class PinRect(BaseRectangle):
                 raise ValueError(f"Invalid edge: {loc.edge}")
 
     def loc2peri(self : Self, loc : EdgeLoc) -> float:
-        w = self._rect.width()
-        h = self._rect.height()
+        rect = self.rect()
+        w = rect.width()
+        h = rect.height()
         d = loc.offset
         if loc.edge == Edge.LEFT:
             return d
@@ -65,8 +67,9 @@ class PinRect(BaseRectangle):
             raise ValueError(f"Invalid edge: {loc.edge}")
 
     def peri2loc(self : Self, peri : float) -> EdgeLoc:
-        w = self._rect.width()
-        h = self._rect.height()
+        rect = self.rect()
+        w = rect.width()
+        h = rect.height()
         p = 2 * (w + h)
         peri = peri % p if p > 0 else 0
         if peri < h:
@@ -79,8 +82,9 @@ class PinRect(BaseRectangle):
             return EdgeLoc(Edge.TOP, w - (peri - h - w - h))
 
     def locDelta(self : Self, loc1 : EdgeLoc, loc2 : EdgeLoc) -> float:
-        w = self._rect.width()
-        h = self._rect.height()
+        rect = self.rect()
+        w = rect.width()
+        h = rect.height()
         p = 2 * (w + h)
         d = self.loc2peri(loc2) - self.loc2peri(loc1)
         if d >= 0: # CCW
@@ -97,8 +101,9 @@ class PinRect(BaseRectangle):
         offset : float,
         corner : int
     ) -> EdgeLoc:
-        w = self._rect.width()
-        h = self._rect.height()
+        rect = self.rect()
+        w = rect.width()
+        h = rect.height()
         def edgeLen(edge : Edge) -> float:
             return h if edge in [Edge.LEFT, Edge.RIGHT] else w
         def edgeNextCCW(edge : Edge) -> Edge:

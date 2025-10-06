@@ -10,7 +10,6 @@ from ...dialogs.text_block import TextBlockDialog
 from ..properties import PropertySpec, PropertiesMixin
 
 from .mixin         import ElementMixin
-from .mixin.bound   import ElementBoundShapeMixin
 from .mixin.origin  import ElementOriginMixin
 from .mixin.pos     import ElementPosMixin
 from .mixin.anchor  import ElementRectAnchorPointsMixin
@@ -29,7 +28,6 @@ if TYPE_CHECKING:
 
 class BaseTextBlock(
     ElementMixin,
-    ElementBoundShapeMixin,
     ElementOriginMixin,
     ElementPosMixin,
     ElementRectAnchorPointsMixin,
@@ -57,7 +55,7 @@ class BaseTextBlock(
         ElementQuillMixin._PROPERTY_SPECS_QUILL
 
     # instance attributes
-    _rect    : QRectF        # border rectangle (for keypoints)
+    _ap_rect : QRectF  # anchor point rectangle
 
     def __init__(self : Self, bare : bool = False) -> None:
         QGraphicsTextItem.__init__(self)
@@ -68,9 +66,7 @@ class BaseTextBlock(
         if not hasattr(self, "_origin"):
             return
         old_origin_scene_pos = self.getOriginScenePos()
-        self._brect = self._rect = QGraphicsTextItem.boundingRect(self)
-        self._hshape.clear()
-        self._hshape.addRect(self._brect)
+        self._ap_rect = self.boundingRect()
         self.updateAnchorPoints()
         new_origin_scene_pos = self.getOriginScenePos()
         delta = old_origin_scene_pos - new_origin_scene_pos
