@@ -56,11 +56,11 @@ class Explorer(TreeView):
         a.newMenuSymbol = QAction("Symbol", self)
         a.newMenuSymbol.triggered.connect(lambda: self.newSymbol(self.item))
         a.open = QAction("Open...", self)
-        a.open.triggered.connect(lambda: self.openDb())
+        a.open.triggered.connect(lambda: self.openDbFiles())
         a.openDesign = QAction("Open Design...", self)
-        a.openDesign.triggered.connect(lambda: self.openDb("Design"))
+        a.openDesign.triggered.connect(lambda: self.openDbFiles("Design"))
         a.openLibrary = QAction("Open Library...", self)
-        a.openLibrary.triggered.connect(lambda: self.openDb("Library"))
+        a.openLibrary.triggered.connect(lambda: self.openDbFiles("Library"))
         a.editDiagram = QAction("Edit Diagram", self)
         a.editDiagram.triggered.connect(lambda: self.editDrawing(self.item))
         a.editSymbol = QAction("Edit Symbol", self)
@@ -204,17 +204,17 @@ class Explorer(TreeView):
         self.expand(model().indexFromItem(item))
         self.editDrawing(symbol_item)
 
-    def openDb(self : Self, type_name : str | None = None) -> None:
+    def openDbFiles(self : Self, type_name : str | None = None) -> None:
         from ..dialogs.file import FileOpenDialog
         dialog = FileOpenDialog(type_name)
         result = dialog.exec()
         if result == dialog.DialogCode.Accepted:
             files = dialog.selectedFiles()
             for file in files:
-                self.openFile(file)
+                self.openDbFile(file)
                 settings().addMRU(file)
 
-    def openFile(self : Self, file_name : str) -> None:
+    def openDbFile(self : Self, file_name : str) -> None:
         db_item = model().load(file_name)
         if db_item:
             self._expandDb(db_item)

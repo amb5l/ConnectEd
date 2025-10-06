@@ -82,7 +82,7 @@ class Slots:
         window().explorer.newLibrary()
 
     def fileOpen(self : Self) -> None:
-        window().explorer.openDb()
+        window().explorer.openDbFiles()
 
     @withCurrentWidget(DrawingView)
     def fileSave(self : Self, view : DrawingView) -> None:
@@ -95,31 +95,31 @@ class Slots:
         model().saveAsScene(view.scene())
 
     def fileOpenMRU1(self : Self) -> None:
-        window().explorer.openFile(settings().getMRU()[0])
+        window().explorer.openDbFile(settings().getMRU()[0])
 
     def fileOpenMRU2(self : Self) -> None:
-        window().explorer.openFile(settings().getMRU()[1])
+        window().explorer.openDbFile(settings().getMRU()[1])
 
     def fileOpenMRU3(self : Self) -> None:
-        window().explorer.openFile(settings().getMRU()[2])
+        window().explorer.openDbFile(settings().getMRU()[2])
 
     def fileOpenMRU4(self : Self) -> None:
-        window().explorer.openFile(settings().getMRU()[3])
+        window().explorer.openDbFile(settings().getMRU()[3])
 
     def fileOpenMRU5(self : Self) -> None:
-        window().explorer.openFile(settings().getMRU()[4])
+        window().explorer.openDbFile(settings().getMRU()[4])
 
     def fileOpenMRU6(self : Self) -> None:
-        window().explorer.openFile(settings().getMRU()[5])
+        window().explorer.openDbFile(settings().getMRU()[5])
 
     def fileOpenMRU7(self : Self) -> None:
-        window().explorer.openFile(settings().getMRU()[6])
+        window().explorer.openDbFile(settings().getMRU()[6])
 
     def fileOpenMRU8(self : Self) -> None:
-        window().explorer.openFile(settings().getMRU()[7])
+        window().explorer.openDbFile(settings().getMRU()[7])
 
     def fileOpenMRU9(self : Self) -> None:
-        window().explorer.openFile(settings().getMRU()[8])
+        window().explorer.openDbFile(settings().getMRU()[8])
 
     def fileExit(self : Self) -> None:
         window().close()
