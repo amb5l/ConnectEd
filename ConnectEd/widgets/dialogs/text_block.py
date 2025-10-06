@@ -41,8 +41,8 @@ class TextBlockDialog(QDialog):
         self._text_layout.addWidget(self._text_edit)
         self._dialog_layout.addLayout(self._text_layout)
 
-        initial = element.quill.getPref()
-        defaults = element.quill.getDefaults()
+        initial = element.a.quill.getPref()
+        defaults = element.a.quill.getDefaults()
         default = QuillPref(
             color     = defaults.color,
             family    = defaults.family,

@@ -624,7 +624,7 @@ class DrawingViewStatePlaceText(ClickMixin):
         if dialog.exec():
             text, appearance = dialog.getChoice()
             element.setText(text)
-            element.quill.setPref(appearance)
+            element.a.quill.setPref(appearance)
             self.interact(PlaceTextInteraction(
                 self.scene, self._snap(s), element)
             )
@@ -645,7 +645,7 @@ class DrawingViewStatePlaceTextBlock(ClickMixin):
         if dialog.exec():
             text, appearance = dialog.getChoice()
             element.setPlainText(text)
-            element.quill.setPref(appearance)
+            element.a.quill.setPref(appearance)
             self.interact(PlaceTextBlockInteraction(
                 self.scene, self._snap(s), element)
             )

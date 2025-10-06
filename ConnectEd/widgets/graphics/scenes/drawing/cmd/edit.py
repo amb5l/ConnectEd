@@ -79,17 +79,17 @@ class cmdEditText(cmdSceneElement):
     ):
         super().__init__(scene, element)
         self._element           = element
-        self._before = self.TextState(element.text(), element.quill.getPref())
+        self._before = self.TextState(element.text(), element.a.quill.getPref())
         self._after  = self.TextState(text, appearance)
 
     def redo(self : Self) -> None:
         self._element.setText(self._after.text)
-        self._element.quill.setPref(self._after.appearance)
+        self._element.a.quill.setPref(self._after.appearance)
         self._element.update()
 
     def undo(self : Self) -> None:
         self._element.setText(self._before.text)
-        self._element.quill.setPref(self._before.appearance)
+        self._element.a.quill.setPref(self._before.appearance)
         self._element.update()
 
 class cmdEditPropertyText(cmdSceneElement):
@@ -117,7 +117,7 @@ class cmdEditPropertyText(cmdSceneElement):
         self._element           = element
         self._before = self.PropertyTextState(
             element.name(), element.value(), element.display(), \
-            element.quill.getPref()
+            element.a.quill.getPref()
         )
         self._after  = self.PropertyTextState(name, value, display, appearance)
 
@@ -125,14 +125,14 @@ class cmdEditPropertyText(cmdSceneElement):
         self._element.setName(self._after.name)
         self._element.setValue(self._after.value)
         self._element.setDisplay(self._after.display)
-        self._element.quill.setPref(self._after.appearance)
+        self._element.a.quill.setPref(self._after.appearance)
         self._element.update()
 
     def undo(self : Self) -> None:
         self._element.setName(self._before.name)
         self._element.setValue(self._before.value)
         self._element.setDisplay(self._before.display)
-        self._element.quill.setPref(self._before.appearance)
+        self._element.a.quill.setPref(self._before.appearance)
         self._element.update()
 
 class cmdEditAppearance(cmdSceneElements):
