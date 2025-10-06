@@ -91,6 +91,7 @@ class Line(
         stroker.setJoinStyle(Qt.PenJoinStyle.MiterJoin)
         stroker_path = stroker.createStroke(line_path)
         self._hshape = stroker_path
+        self.updateAnchorPoints()
 
     def initAnchorPoints(self : Self) -> None:
         self._anchor_points = {
@@ -107,6 +108,9 @@ class Line(
                 parent = self
             )
         }
+
+    def updateAnchorPoints(self : Self) -> None:
+        self._anchor_points["P2"].setPos(self._line.p2())
 
     def getMenuItems(self : Self) -> list[str]:
         return ["Appearance..."]
@@ -148,10 +152,6 @@ class Line(
         self.setP2(QPointF(self.p2().x(), value))
 
     def setP1P2(self : Self, p1 : QPointF, p2 : QPointF) -> None:
-        print(
-            f"setP1P2: ({p1.x()}, {p1.y()}) -> ({p2.x()}, {p2.y()})",
-            "brect", self.boundingRect()
-        )
         self.setPos(p1)
         self._line.setP2(p2-p1)
         self.setLine(self._line)
