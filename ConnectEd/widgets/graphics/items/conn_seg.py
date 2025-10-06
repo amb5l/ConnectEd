@@ -49,8 +49,10 @@ class ConnSeg(
         v2 = self._vtx2
         if v1 is None or v2 is None:
             return
-        self._line.setP1(v1.scenePos() if isinstance(v1, ConnVtx) else v1)
-        self._line.setP2(v2.scenePos() if isinstance(v2, ConnVtx) else v2)
+        p1 = v1.scenePos() if isinstance(v1, ConnVtx) else v1
+        p2 = v2.scenePos() if isinstance(v2, ConnVtx) else v2
+        self.setPos(p1)
+        self._line.setP2(p2-p1)
         self.setLine(self._line)
 
     def vtx1(self : Self) -> ConnVtx | QPointF | None:
@@ -126,20 +128,22 @@ class ConnSegPreview(ElementLineMixin, ElementChangeMixin, QGraphicsLineItem):
         self.initLine()
 
     def p1(self : Self) -> QPointF:
-        return QGraphicsLineItem.line(self).p1()
+        return self.pos()
 
     def setP1(self : Self, pos : QPointF) -> None:
-        line = QGraphicsLineItem.line(self)
-        line.setP1(pos)
-        QGraphicsLineItem.setLine(self, line)
+        self.setP1P2(pos, self.p2())
 
     def p2(self : Self) -> QPointF:
-        return QGraphicsLineItem.line(self).p2()
+        return self.pos() + self.line().p2()
 
     def setP2(self : Self, pos : QPointF) -> None:
-        line = QGraphicsLineItem.line(self)
-        line.setP2(pos)
-        QGraphicsLineItem.setLine(self, line)
+        self.setP1P2(self.pos(), pos)
+
+    def setP1P2(self : Self, p1 : QPointF, p2 : QPointF) -> None:
+        self.setPos(p1)
+        line = self.line()
+        line.setP2(p2-p1)
+        self.setLine(line)
 
 
 class ConnSegPreview1(ConnSegPreview):
