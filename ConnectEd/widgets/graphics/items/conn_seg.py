@@ -84,10 +84,6 @@ class ConnSeg(
             return True
         return False
 
-    def toLine(self : Self) -> QLineF:
-        """Return the line geometry as QLineF."""
-        return self._line
-
     def toXml(self : Self, xw : QXmlStreamWriter) -> None:
         def getVal(s : str) -> float:
             a = s[0]

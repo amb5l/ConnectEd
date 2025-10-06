@@ -239,8 +239,8 @@ class DrawingSceneConnMixin:
         # remove if useless break in a straight line
         segs = vtx1.connections().copy()  # take copy because we're making changes
         if len(segs) == 2:
-            if colinear(segs[0].toLine(), segs[1].toLine()) \
-            and touching(segs[0].toLine(), segs[1].toLine()):
+            if colinear(segs[0].line(), segs[1].line()) \
+            and touching(segs[0].line(), segs[1].line()):
                 # get far end of 2nd segment
                 v2 = segs[1].vtx1() if segs[1].vtx2() is vtx1 else segs[1].vtx2()
                 # reattach 1st segment to far end of 2nd segment
