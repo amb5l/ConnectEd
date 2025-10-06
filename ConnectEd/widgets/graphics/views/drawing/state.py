@@ -11,7 +11,7 @@ from ....dialogs.text_block    import TextBlockDialog
 from ....dialogs.property_text import PropertyTextDialog
 from ....dialogs.port_pin      import PortPinDialog
 
-from ...items import ElementMixin
+from ...items import SignalDirection, ElementMixin
 
 from ...items.handle        import Handle, ResizeGrip
 from ...items.pin_rect      import PinRect
@@ -533,6 +533,9 @@ class DrawingViewStatePlacePort(ClickMixin):
             element.name = dialog.getName()
             element.direction = dialog.getDirection()
             element.range = dialog.getRange()
+            element.setRotation(
+                180 if dialog.getDirection() == SignalDirection.IN else 0
+            )
             self.interact(
                 PlacePortInteraction(self.scene, self._snap(s), element)
             )
