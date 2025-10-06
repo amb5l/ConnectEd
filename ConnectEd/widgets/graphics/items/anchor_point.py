@@ -11,30 +11,14 @@ if TYPE_CHECKING:
     from .mixin.anchor import ElementAnchorPointsMixin
 
 
-class APName(Enum):
-    TopLeft      = "Top Left"
-    TopCenter    = "Top Center"
-    TopRight     = "Top Right"
-    CenterLeft   = "Center Left"
-    Center       = "Center"
-    CenterRight  = "Center Right"
-    BottomLeft   = "Bottom Left"
-    BottomCenter = "Bottom Center"
-    BottomRight  = "Bottom Right"
-    Origin       = "Origin"
-    Name         = "Name"
-    Node         = "Node"
-    Undefined    = "Undefined"
-
-
 class AnchorPoint(NullPoint):
     # instance attributes
-    _name   : APName
-    _grip   : Grip
+    _name : str
+    _grip : Grip
 
     def __init__(
         self   : Self,
-        name   : APName,
+        name   : str,
         pos    : QPointF = QPointF(),
         resize : bool = False,
         parent : "ElementAnchorPointsMixin" = None
@@ -45,8 +29,8 @@ class AnchorPoint(NullPoint):
         grip_class = ResizeGrip if resize else MoveGrip
         self._grip = grip_class(self)
 
-    def name(self : Self) -> APName:
+    def name(self : Self) -> str:
         return self._name
 
-    def setName(self : Self, value : APName) -> None:
+    def setName(self : Self, value : str) -> None:
         self._name = value

@@ -4,16 +4,16 @@ from PyQt6.QtCore import QPointF
 
 from ...properties import PropertySpec
 
-from ..anchor_point import APName, AnchorPoint
+from ..anchor_point import AnchorPoint
 from ..handle       import Origin
 
 
 class ElementOriginMixin:
     # class attributes
-    _ORIGIN : APName  # subclass must specify
+    _ORIGIN : str  # subclass must specify
     _PROPERTY_SPECS_ORIGIN = {
         "Origin" : PropertySpec(
-            type_name   = "APName",
+            type_name   = "str",
             getter      = lambda self: self.getOriginAPName(),
             setter      = lambda self, value: self.setOriginAPName(value),
             description = "Origin anchor point"
@@ -25,7 +25,7 @@ class ElementOriginMixin:
     _origin : Origin   # origin object
 
     # external instance attributes
-    _anchor_points : dict[APName, AnchorPoint]
+    _anchor_points : dict[str, AnchorPoint]
 
     def initOrigin(self : Self) -> None:
         self._pos = super().pos()
@@ -52,12 +52,12 @@ class ElementOriginMixin:
         self._origin.setParentItem(ap)
         self.setPos(self.pos())
 
-    def getOriginAPName(self : Self) -> APName:
+    def getOriginAPName(self : Self) -> str:
         ap : AnchorPoint = self._origin.parentItem()
-        return self.getOriginAP().name()
+        return ap.name()
 
-    def setOriginAPName(self : Self, ap : APName) -> None:
-        self.setOriginAP(self._anchor_points[ap])
+    def setOriginAPName(self : Self, name : str) -> None:
+        self.setOriginAP(self._anchor_points[name])
         self.setPos(self.pos())
 
     def updateOrigin(self : Self) -> None:

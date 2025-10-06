@@ -11,7 +11,6 @@ from ..scenes.drawing.cmd import cmdRotate
 from .mixin.pos  import ElementPosMixin
 from .mixin.fill import ElementFillMixin
 
-from .anchor_point import APName
 from .port_pin     import PortPinText, PortPinMixin
 from .node         import Node
 
@@ -64,7 +63,7 @@ class Port(ElementPosMixin, ElementFillMixin, PortPinMixin, QGraphicsPathItem):
 
     def onSettingsChange(self : Self) -> None:
         size = settings().get("theme/elements/Port/size")
-        self.getAnchorPoint(APName.Name).setPos(size + self._NAME_OFFSET, 0)
+        self.getAnchorPoint("Name").setPos(size + self._NAME_OFFSET, 0)
 
     def onSceneChange(self : Self, scene : "DrawingScene") -> None:
         self._setPath(scene)

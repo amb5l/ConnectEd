@@ -116,7 +116,6 @@ def val2str(v : Any) -> str:
         case "FillPref"        : s = v.toStr()
         case "TextPref"        : s = v.toStr()
         case "PropertyDisplay" : s = v.value
-        case "APName"          : s = v.value
         case "Edge"            : s = v.value
         case "EdgeLoc"         : s = v.toStr()
         case "SignalDirection" : s = v.value
@@ -129,7 +128,6 @@ def str2val(s : str, t : str) -> Any:
     """Convert a text representation of a Python value to a Python value."""
     from ..widgets.graphics.items import \
         DEFAULT, Edge, EdgeLoc, SignalDirection, LinePref, FillPref, QuillPref
-    from ..widgets.graphics.items.anchor_point import APName
     from ..widgets.graphics.items.property_text import PropertyDisplay
     def strValuesToFloats(s : str) -> list[float]:
         return [float(p) for p in s.strip("()").split(",")]
@@ -153,7 +151,6 @@ def str2val(s : str, t : str) -> Any:
         case "LinePref"        : return LinePref.fromStr(s)
         case "FillPref"        : return FillPref.fromStr(s)
         case "PropertyDisplay" : return PropertyDisplay(s)
-        case "APName"          : return APName(s)
         case "Edge"            : return Edge(s)
         case "EdgeLoc"         : return EdgeLoc.fromStr(s)
         case "SignalDirection" : return SignalDirection(s)

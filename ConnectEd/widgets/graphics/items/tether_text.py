@@ -10,7 +10,7 @@ from ..properties import PropertySpec
 from .mixin.anchor import ElementAnchorPointsMixin
 
 from .base_text    import BaseText
-from .anchor_point import APName, AnchorPoint
+from .anchor_point import AnchorPoint
 
 
 class Tether(QGraphicsLineItem):
@@ -56,7 +56,7 @@ class TetherText(BaseText):
     # class attributes
     _PROPERTY_SPECS_CLEAT = {
         "Cleat" : PropertySpec(
-            type_name   = "APName",
+            type_name   = "str",
             getter      = lambda self: self.cleat(),
             setter      = lambda self, value: self.setCleat(value),
             description = "Parent anchor point"
@@ -65,7 +65,7 @@ class TetherText(BaseText):
 
     # instance attributes
     _tether : Tether | None
-    _cleat  : APName | None
+    _cleat  : str | None
 
     def __init__(self : Self, bare : bool = False) -> None:
         self._tether = None
@@ -83,14 +83,14 @@ class TetherText(BaseText):
     def onSelectionChange(self : Self, selected : bool) -> None:
         self._tether.setVisible(selected)
 
-    def setOriginAPName(self : Self, name : APName) -> None:
+    def setOriginAPName(self : Self, name : str) -> None:
         """Override to update tether line."""
         super().setOriginAPName(name)
         # parent to origin anchor point
         self._tether.setParentItem(self._origin.parentItem())
         self._tether.onPositionChange(self.pos())
 
-    def cleat(self : Self) -> APName:
+    def cleat(self : Self) -> str:
         parent = self.parentItem()
         if parent is None:
             return self._cleat  # workaround for deserialization
@@ -98,9 +98,9 @@ class TetherText(BaseText):
             return parent.name()
         else:
             logger().error(f"Parent is not an AnchorPoint: {type(parent).__name__}")
-            return APName.Undefined
+            return "Undefined"
 
-    def setCleat(self : Self, name : APName) -> None:
+    def setCleat(self : Self, name : str) -> None:
         self._cleat = name
         parent = self.parentItem()
         if parent is None:  # handle deserialization

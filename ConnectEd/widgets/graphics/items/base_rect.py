@@ -9,8 +9,6 @@ from ....app import settings
 
 from ..properties import PropertySpec, PropertiesMixin
 
-from .anchor_point import APName
-
 from .mixin        import ElementMixin
 from .mixin.bound  import ElementBoundShapeMixin
 from .mixin.pos    import ElementPosMixin
@@ -218,28 +216,28 @@ class BaseRectangle(
         self.setPoints(p1.x(), p1.y(), p2.x(), p2.y())
         self.setRect(self._rect)
 
-    def moveAnchorPointBy(self : Self, name : "APName", delta : QPointF) -> None:
+    def moveAnchorPointBy(self : Self, name : str, delta : QPointF) -> None:
         p1 = self.pos()
         p2 = p1 + self._rect.bottomRight()
         d = delta
         match name:
-            case APName.TopLeft:
+            case "Top Left":
                 self.setPoints(p1 + d, p2)
-            case APName.TopCenter:
+            case "Top Center":
                 self.setPoints(p1.x(), p1.y() + d.y(), p2.x(), p2.y())
-            case APName.TopRight:
+            case "Top Right":
                 self.setPoints(p1.x(), p1.y() + d.y(), p2.x() + d.x(), p2.y())
-            case APName.CenterLeft:
+            case "Center Left":
                 self.setPoints(p1.x() + d.x(), p1.y(), p2.x(), p2.y())
-            case APName.Center:
+            case "Center":
                 self.setPos(self.pos() + d)
-            case APName.CenterRight:
+            case "Center Right":
                 self.setPoints(p1.x(), p1.y(), p2.x() + d.x(), p2.y())
-            case APName.BottomLeft:
+            case "Bottom Left":
                 self.setPoints(p1.x() + d.x(), p1.y(), p2.x(), p2.y() + d.y())
-            case APName.BottomCenter:
+            case "Bottom Center":
                 self.setPoints(p1.x(), p1.y(), p2.x(), p2.y() + d.y())
-            case APName.BottomRight:
+            case "Bottom Right":
                 self.setPoints(p1, p2 + d)
             case _:
                 raise ValueError(f"Invalid anchor point: {name}")

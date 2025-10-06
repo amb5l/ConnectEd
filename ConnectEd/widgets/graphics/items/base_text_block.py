@@ -9,8 +9,6 @@ from ...dialogs.text_block import TextBlockDialog
 
 from ..properties import PropertySpec, PropertiesMixin
 
-from .anchor_point import APName
-
 from .mixin         import ElementMixin
 from .mixin.bound   import ElementBoundShapeMixin
 from .mixin.origin  import ElementOriginMixin
@@ -45,7 +43,7 @@ class BaseTextBlock(
     QGraphicsTextItem
 ):
     # class attributes
-    _ORIGIN = APName.TopLeft
+    _ORIGIN = "Top Left"
     _PROPERTY_SPECS = \
         ElementOriginMixin._PROPERTY_SPECS_ORIGIN | \
         ElementPosMixin._PROPERTY_SPECS_POS | \
@@ -115,7 +113,7 @@ class BaseTextBlock(
             painter.setPen(self.outline.pen)
             painter.drawRect(self.boundingRect())
 
-    def moveAnchorPointBy(self : Self, _ : "APName", delta : QPointF) -> None:
+    def moveAnchorPointBy(self : Self, _ : str, delta : QPointF) -> None:
         """Move the entire Text when any keypoint is dragged."""
         self.setPos(self.pos() + delta)
 

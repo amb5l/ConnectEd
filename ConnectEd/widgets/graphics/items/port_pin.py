@@ -15,7 +15,7 @@ from .mixin.xml    import ElementXmlMixin
 from .mixin.menu   import ElementMenuMixin
 
 from .property_text import PropertyText, PropertyTextSpec
-from .anchor_point  import APName, AnchorPoint
+from .anchor_point  import AnchorPoint
 
 from .node import Node
 
@@ -102,9 +102,9 @@ class PortPinMixin(
     def _getPropertyTexts(cls) -> dict[str, PropertyTextSpec]:
         return {
             "Name" : PropertyTextSpec(
-                anchor  = APName.CenterLeft,
+                anchor  = "Center Left",
                 pos     = QPointF(0, 0),
-                cleat   = APName.Name,
+                cleat   = "Name",
                 _class  = cls._getNameClass()
             ),
         }
@@ -122,14 +122,14 @@ class PortPinMixin(
 
     def initAnchorPoints(self : Self) -> None:
         self._anchor_points = {
-            APName.Origin : AnchorPoint(
-                name   = APName.Origin,
+            "Origin" : AnchorPoint(
+                name   = "Origin",
                 pos    = QPointF(0, 0),
                 resize = False,
                 parent = self
             ),
-            APName.Name : AnchorPoint(
-                name   = APName.Name,
+            "Name" : AnchorPoint(
+                name   = "Name",
                 pos    = QPointF(self._NAME_OFFSET, 0),
                 resize = False,
                 parent = self

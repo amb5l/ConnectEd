@@ -6,7 +6,6 @@ from ..properties import PropertySpec
 
 from .pin_rect      import PinRect
 from .property_text import PropertyTextSpec
-from .anchor_point  import APName
 
 
 class Block(PinRect):
@@ -29,8 +28,8 @@ class Block(PinRect):
         )
     }
     _PROPERTY_TEXTS = {
-        "Reference" : PropertyTextSpec( APName.BottomLeft , QPointF( 0,  0 ) , APName.TopLeft    ),
-        "Name"      : PropertyTextSpec( APName.TopLeft    , QPointF( 0,  0 ) , APName.BottomLeft ),
+        "Reference" : PropertyTextSpec( "Bottom Left" , QPointF( 0,  0 ) , "Top Left"    ),
+        "Name"      : PropertyTextSpec( "Top Left"    , QPointF( 0,  0 ) , "Bottom Left" ),
     }
 
     # instance attributes

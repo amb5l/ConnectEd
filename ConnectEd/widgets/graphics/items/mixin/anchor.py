@@ -3,32 +3,32 @@ from typing import Self
 from PyQt6.QtCore import QRectF
 from PyQt6.QtCore import QPointF
 
-from ..anchor_point import APName, AnchorPoint
+from ..anchor_point import AnchorPoint
 
 
 class ElementAnchorPointsMixin:
     # instance attributes
-    _anchor_points : dict[APName, "AnchorPoint"]
+    _anchor_points : dict[str, "AnchorPoint"]
 
-    def getAnchorPoint(self : Self, name : APName) -> "AnchorPoint":
+    def getAnchorPoint(self : Self, name : str) -> "AnchorPoint":
         return self._anchor_points[name]
 
-    def moveAnchorPointBy(self : Self, name : APName, delta : QPointF) -> None:
+    def moveAnchorPointBy(self : Self, name : str, delta : QPointF) -> None:
         raise NotImplementedError("Subclass must implement this method")
 
 
 class ElementRectAnchorPointsMixin(ElementAnchorPointsMixin):
     # class attributes
     _ANCHOR_POINTS = {
-        APName.TopLeft      : ( 0.0 , 0.0 ),
-        APName.TopCenter    : ( 0.5 , 0.0 ),
-        APName.TopRight     : ( 1.0 , 0.0 ),
-        APName.CenterLeft   : ( 0.0 , 0.5 ),
-        APName.Center       : ( 0.5 , 0.5 ),
-        APName.CenterRight  : ( 1.0 , 0.5 ),
-        APName.BottomLeft   : ( 0.0 , 1.0 ),
-        APName.BottomCenter : ( 0.5 , 1.0 ),
-        APName.BottomRight  : ( 1.0 , 1.0 )
+        "Top Left"      : ( 0.0 , 0.0 ),
+        "Top Center"    : ( 0.5 , 0.0 ),
+        "Top Right"     : ( 1.0 , 0.0 ),
+        "Center Left"   : ( 0.0 , 0.5 ),
+        "Center"        : ( 0.5 , 0.5 ),
+        "Center Right"  : ( 1.0 , 0.5 ),
+        "Bottom Left"   : ( 0.0 , 1.0 ),
+        "Bottom Center" : ( 0.5 , 1.0 ),
+        "Bottom Right"  : ( 1.0 , 1.0 )
     }
     _AP_RESIZE = { k : k != "Center" for k in _ANCHOR_POINTS.keys() }
 
