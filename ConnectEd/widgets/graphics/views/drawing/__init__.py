@@ -29,6 +29,7 @@ def getView(pos : QPoint):
         widget = widget.parent()
     return widget
 
+
 class DrawingView(
     DrawingViewMouseMixin,
     QGraphicsView,
@@ -144,6 +145,7 @@ class DrawingView(
                 event.ignore()
             return
         super().keyPressEvent(event)
+
 
 class DrawingSubWindow(QMdiSubWindow):
     def __init__(
