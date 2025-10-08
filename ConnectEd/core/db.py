@@ -575,28 +575,6 @@ class Model(QStandardItemModel):
                     return db_item
         return None
 
-    def saveAsScene(self : Self, scene : "DrawingScene") -> None:
-        """Save a DbItem given a scene."""
-        design_db_items : list[DesignDbItem] = \
-            [self._designs.child(i) for i in range(self._designs.rowCount())]
-        for design_item in design_db_items:
-            diagram_items : list[DiagramItem] = \
-                [design_item.diagramsItem().child(i) \
-                    for i in range(design_item.diagramsItem().rowCount())]
-            for diagram_item in diagram_items:
-                if diagram_item._scene == scene:
-                    design_item.saveAs()
-                    break
-        library_db_items : list[LibraryDbItem] = \
-            [self._libraries.child(i) for i in range(self._libraries.rowCount())]
-        for library_item in library_db_items:
-            symbol_items : list[SymbolItem] = \
-                [library_item.child(i) for i in range(library_item.rowCount())]
-            for symbol_item in symbol_items:
-                if symbol_item._scene == scene:
-                    library_item.saveAs()
-                    break
-
     def getItemDescription(self : Self, i : QStandardItem) -> str | None:
         if isinstance(i, DesignDbItem):
             return "Design"
