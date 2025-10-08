@@ -70,6 +70,8 @@ select = [
 # Ignore specific rules if needed
 ignore = [
     "N802",  # function name should be lowercase
+    "N999",  # module names should be snake_case (ConnectEd is not)
+    "UP037"  # remove quotes from type annotation
 ]
 
 # Exclude directories
