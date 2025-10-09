@@ -17,7 +17,7 @@ from .tree_view import TreeView, TreeViewDock
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from ...core.db import Node, DrawingNode, DbNode
+    from ...core.db import Node, DrawingNode, DbNode, DbNodeType
 
 
 class Explorer(TreeView):
@@ -104,11 +104,11 @@ class Explorer(TreeView):
         m.new_dwg.addAction(a.newMenuDiagram)
         m.new_dwg.addAction(a.newMenuSymbol)
 
-    def onItemChanged(self : Self, item : "Node") -> None:
+    def onItemChanged(self : Self, node : "Node") -> None:
         """Handle changes to items in the model, such as renaming."""
-        scene = item.scene() if hasattr(item, "scene") else None
+        scene = node.scene() if hasattr(node, "scene") else None
         if scene:
-            scene.setName(item.text())
+            scene.setName(node.text())
         window().mdi_area.update()
 
     def focusInEvent(self : Self, event : QFocusEvent) -> None:
@@ -161,8 +161,8 @@ class Explorer(TreeView):
             return
         super().wheelEvent(event)
 
-    def selectItem(self : Self, item : "Node") -> None:
-        index = model().indexFromItem(item)
+    def selectItem(self : Self, node : "Node") -> None:
+        index = model().indexFromItem(node)
         self.selectionModel().clearSelection()
         self.selectionModel().select(
             index,
@@ -171,16 +171,16 @@ class Explorer(TreeView):
         )
         self.setCurrentIndex(index)
 
-    def expandOrEdit(self : Self, item : "Node") -> None:
-        self.selectItem(item)
-        match model().getNodeDescription(item):
+    def expandOrEdit(self : Self, node : "Node") -> None:
+        self.selectItem(node)
+        match model().getNodeDescription(node):
             case "Designs"  | "Libraries"    | \
                  "Design"   | "Library"      | \
                  "Diagrams" | "Symbol Cache":
                 index = self.currentIndex()
                 self.setExpanded(index, not self.isExpanded(index))
             case "Diagram" | "Design Symbol" | "Library Symbol":
-                self.editDrawing(item)
+                self.editDrawing(node)
 
     def newDesign(self : Self) -> None:
         # create new design
@@ -195,17 +195,17 @@ class Explorer(TreeView):
         self.editDrawing(diagram_node)
 
     def newLibrary(self : Self) -> None:
-        library_item = model().newLibraryDbNode()
-        self.expand(model().indexFromItem(library_item))
+        library_db_node = model().newLibraryDbNode()
+        self.expand(model().indexFromItem(library_db_node))
 
-    def newDiagram(self : Self, item : "Node") -> None:
-        diagram_node = model().newDiagramNode(item)
-        self.expand(model().indexFromItem(item))
+    def newDiagram(self : Self, node : "Node") -> None:
+        diagram_node = model().newDiagramNode(node)
+        self.expand(model().indexFromItem(node))
         self.editDrawing(diagram_node)
 
-    def newSymbol(self : Self, item : "Node") -> None:
-        symbol_node = model().newSymbolNode(item)
-        self.expand(model().indexFromItem(item))
+    def newSymbol(self : Self, node : "Node") -> None:
+        symbol_node = model().newSymbolNode(node)
+        self.expand(model().indexFromItem(node))
         self.editDrawing(symbol_node)
 
     def openDbFiles(self : Self, type_name : str | None = None) -> None:
@@ -218,19 +218,19 @@ class Explorer(TreeView):
                 if self.openDbFile(file):
                     settings().addMRU(file)
 
-    def openDbFile(self : Self, file_name : str) -> "DbNode | None":
-        db_item = model().load(file_name)
-        if db_item:
-            self._expandDb(db_item)
-            if hasattr(db_item, "rootDiagramNode"):
-                self.editDrawing(db_item.rootDiagramNode())
-        return db_item
+    def openDbFile(self : Self, file_name : str) -> "DbNodeType | None":
+        db_node = model().load(file_name)
+        if db_node:
+            self._expandDb(db_node)
+            if hasattr(db_node, "rootDiagramNode"):
+                self.editDrawing(db_node.rootDiagramNode())
+        return db_node
 
-    def editDrawing(self : Self, item : "Node") -> None:
+    def editDrawing(self : Self, node : "Node") -> None:
         from ...core.db import DrawingNode
         from ...widgets.graphics.views.drawing import DrawingView, DrawingSubWindow
         from ...widgets.graphics.scenes.drawing import DrawingScene
-        if isinstance(item, DrawingNode):
+        if isinstance(node, DrawingNode):
             # focus existing subwindow if one exists
             for subwindow in window().mdi_area.subWindowList():
                 if not isinstance(subwindow, DrawingSubWindow):
@@ -239,49 +239,49 @@ class Explorer(TreeView):
                     continue
                 if not isinstance(subwindow.widget().scene(), DrawingScene):
                     continue
-                if item._scene != subwindow.widget().scene():
+                if node._scene != subwindow.widget().scene():
                     continue
                 window().mdi_area.setActiveSubWindow(subwindow)
                 subwindow.show()
                 subwindow.raise_()
                 subwindow.setFocus()
                 return
-            self.newDrawingWindow(item)
+            self.newDrawingWindow(node)
         else:
-            logger().warning(f"Unsupported item: {item.text()} ({type(item)})")
+            logger().warning(f"Unsupported node: {node.text()} ({type(node)})")
 
-    def newDrawingWindow(self : Self, item : "DrawingNode") -> None:
+    def newDrawingWindow(self : Self, node : "DrawingNode") -> None:
         from ...core.db import DesignDbNode, LibraryDbNode, \
                                DiagramNode, SymbolNode
         from ...widgets.graphics.views.diagram  import DiagramView, DiagramSubWindow
         from ...widgets.graphics.views.symbol   import SymbolView, SymbolSubWindow
-        if isinstance(item, DiagramNode):
-            db_item : DesignDbNode = item.parent().parent()
-            dwg_scene = item.scene()
+        if isinstance(node, DiagramNode):
+            db_node : DesignDbNode = node.parent().parent()
+            dwg_scene = node.scene()
             dwg_view = DiagramView(dwg_scene)
             subwindow = DiagramSubWindow(window().mdi_area)
-        elif isinstance(item, SymbolNode):
-            db_item : LibraryDbNode = item.parent()
-            dwg_scene = item.scene()
+        elif isinstance(node, SymbolNode):
+            db_node : LibraryDbNode = node.parent()
+            dwg_scene = node.scene()
             dwg_view = SymbolView(dwg_scene)
             subwindow = SymbolSubWindow(window().mdi_area)
         else:
-            logger().warning(f"Unsupported item: {item.text()} ({type(item)})")
+            logger().warning(f"Unsupported node: {node.text()} ({type(node)})")
             return
-        dwg_name = item.text()
+        dwg_name = node.text()
         subwindow.setWidget(dwg_view)
-        subwindow.setWindowTitle(f"{db_item.text()}:{dwg_name}")
+        subwindow.setWindowTitle(f"{db_node.text()}:{dwg_name}")
         window().mdi_area.addSubWindow(subwindow)
         subwindow.showMaximized()
         window().menu_bar.updateWindowMenu()
 
-    def spreadsheet(self : Self, item : "DrawingNode") -> None:
+    def spreadsheet(self : Self, node : "DrawingNode") -> None:
         from ...core.db import DrawingNode
         from .spreadsheet import SpreadsheetSubWindow
-        if not isinstance(item, DrawingNode):
-            logger().warning(f"Unsupported item: {item.text()} ({type(item)})")
+        if not isinstance(node, DrawingNode):
+            logger().warning(f"Unsupported node: {node.text()} ({type(node)})")
             return
-        scene = item.scene()
+        scene = node.scene()
         for subwindow in window().mdi_area.subWindowList():
             if isinstance(subwindow, SpreadsheetSubWindow) and subwindow.scene() == scene:
                 window().mdi_area.setActiveSubWindow(subwindow)
@@ -289,21 +289,21 @@ class Explorer(TreeView):
                 subwindow.raise_()
                 subwindow.setFocus()
                 return
-        db_item = item.parent().parent()
+        db_node = node.parent().parent()
         elements = [e for e in scene.items() \
                     if not isinstance(e, AnchorPoint | Tether)]
         subwindow = SpreadsheetSubWindow(scene, elements)
-        subwindow.setWindowTitle(f"{db_item.text()}:{item.text()}: Properties")
+        subwindow.setWindowTitle(f"{db_node.text()}:{node.text()}: Properties")
         window().mdi_area.addSubWindow(subwindow)
         subwindow.showMaximized()
         window().menu_bar.updateWindowMenu()
 
-    def saveDb(self : Self, item : "DbNode") -> None:
-        item.save()
+    def saveDb(self : Self, node : "DbNode") -> None:
+        node.save()
 
-    def saveDbAs(self : Self, item : "DbNode") -> None:
+    def saveDbAs(self : Self, node : "DbNode") -> None:
         from ..dialogs.file import FileSaveAsDialog
-        dialog = FileSaveAsDialog(item.dbTypeName())
+        dialog = FileSaveAsDialog(node.dbTypeName())
         result = dialog.exec()
         if result == dialog.DialogCode.Accepted:
             selected_files = dialog.selectedFiles()
@@ -311,26 +311,26 @@ class Explorer(TreeView):
                 unexpected_files = [f for f in selected_files[1:]]
                 logger().warning(f"Unexpected files: {unexpected_files}")
             path = selected_files[0]
-            item.save(path)
+            node.save(path)
 
-    def closeDb(self : Self, item : "DbNode") -> None:
+    def closeDb(self : Self, node : "DbNode") -> None:
         # TODO offer to save if modified
-        model().close(item)
+        model().close(node)
 
     def rename(self : Self) -> None:
-        """Start editing the selected item"s text."""
+        """Start editing the selected node's text."""
         from ...core.db import DbNode, DrawingNode
         if self.currentIndex().isValid():
-            item = model().itemFromIndex(self.currentIndex())
-            if isinstance(item, DbNode) \
-            or isinstance(item, DrawingNode):
+            node = model().itemFromIndex(self.currentIndex())
+            if isinstance(node, DbNode) \
+            or isinstance(node, DrawingNode):
                 self.edit(self.currentIndex())
 
-    def copy(self : Self, item : "Node") -> None:
-        model().copy(item)
+    def copy(self : Self, node : "Node") -> None:
+        model().copy(node)
 
-    def paste(self : Self, item : "Node") -> None:
-        model().paste(item)
+    def paste(self : Self, node : "Node") -> None:
+        model().paste(node)
 
     def showContextMenu(self : Self, pos : QPoint) -> None:
         menu = Menu(self)
@@ -341,8 +341,7 @@ class Explorer(TreeView):
             index = self.currentIndex()
         if index.isValid():
             self.node = model().itemFromIndex(index)
-            item = model().itemFromIndex(index)
-            match model().getNodeDescription(item):
+            match model().getNodeDescription(self.node):
                 case "Designs":
                     menu.addAction(a.newDesign)
                     menu.addAction(a.openDesign)
@@ -392,15 +391,15 @@ class Explorer(TreeView):
         menu.addAction(self.actions.decreaseTextSize)
         menu.exec(self.viewport().mapToGlobal(pos))
 
-    def _expandDb(self : Self, item : "DbNode") -> None:
+    def _expandDb(self : Self, node : "DbNode") -> None:
         from ...core.db import DesignDbNode, LibraryDbNode
-        db_idx = model().indexFromItem(item)
+        db_idx = model().indexFromItem(node)
         self.expand(db_idx)
-        if isinstance(item, DesignDbNode):
-            diagrams_idx = model().indexFromItem(item._diagrams)
+        if isinstance(node, DesignDbNode):
+            diagrams_idx = model().indexFromItem(node._diagrams)
             self.expand(diagrams_idx)
-        elif isinstance(item, LibraryDbNode):
-            symbols_idx = model().indexFromItem(item._symbols)
+        elif isinstance(node, LibraryDbNode):
+            symbols_idx = model().indexFromItem(node._symbols)
             self.expand(symbols_idx)
 
 class ExplorerDock(TreeViewDock):
