@@ -1,3 +1,5 @@
+import uuid
+
 from typing import Self
 
 from PyQt6.QtCore    import QPointF, QRectF, QSizeF, \
@@ -17,10 +19,6 @@ from .private import DrawingSceneApiPrivateMixin
 from .paths   import DrawingScenePathsMixin
 from .handles import DrawingSceneHandlesMixin
 from .conn    import DrawingSceneConnMixin
-
-from typing import TYPE_CHECKING
-if TYPE_CHECKING:
-    from .....core.db import DrawingItem
 
 
 class DrawingScene(
@@ -43,39 +41,37 @@ class DrawingScene(
     }
 
     # instance attributes
-    item       : "DrawingItem | None"
+    _uuid      : str
+    _name      : str | None
     undo_stack : QUndoStack | None
-    _name      : str
 
-    def __init__(
-        self    : Self,
-        item    : "DrawingItem",
-        extents : QSizeF | None = None
-    ) -> None:
+    def __init__(self : Self, extents : QSizeF | None = None) -> None:
         super().__init__()
-        self.item = item
-        self._name = ""
-        self.updateSceneRect()
+        self._uuid = str(uuid.uuid4())
+        self._name = None
+        self.updateSceneRect(extents)
         self.setItemIndexMethod(QGraphicsScene.ItemIndexMethod.NoIndex)
-        self.undo_stack = None
         self.undo_stack = QUndoStack(self)
         self.initProperties()
         self.initPaths()
         self.initHandle()
         self.selectionChanged.connect(self.onSelectionChanged)
 
+    def __hash__(self : Self):
+        return hash(self._uuid)
+
+    def __eq__(self : Self, other):
+        if not isinstance(other, DrawingScene):
+            return NotImplemented
+        return self._uuid == other._uuid
+
     def onSelectionChanged(self : Self) -> None:
         self.updateHandles()
 
-    def setParent(self : Self, parent : "DrawingItem") -> None:
-        self.item = parent
-
-    @property
-    def name(self : Self) -> str:
+    def name(self : Self) -> str | None:
         return self._name
 
-    @name.setter
-    def name(self : Self, name : str) -> None:
+    def setName(self : Self, name : str | None) -> None:
         self._name = name
 
     def undo(self : Self) -> None:
@@ -111,14 +107,14 @@ class DrawingScene(
         xw.writeEndElement()
 
     @classmethod
-    def fromXml(cls : Self, xr : QXmlStreamReader, parent : "DrawingItem | None" = None) -> Self:
+    def fromXml(cls : Self, xr : QXmlStreamReader) -> Self:
         from ...items import _element_classes
         cls_name = cls.__name__
         # Use the same naming convention as toXml: remove "Scene" suffix
         expected_element_name = cls_name.replace("Scene", "")
         if xr.name() != expected_element_name:
             raise ValueError(f"Expected {expected_element_name} element, got {xr.name()}")
-        drawing_scene : DrawingScene = cls(parent)
+        drawing_scene : DrawingScene = cls()
         fromXmlAttrs(drawing_scene, xr)
         while not (xr.isEndElement() and xr.name() == expected_element_name):
             if xr.tokenType() == QXmlStreamReader.TokenType.StartElement:

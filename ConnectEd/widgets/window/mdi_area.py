@@ -89,7 +89,7 @@ class MdiArea(QMdiArea):
                     break
             if scene is None:
                 continue
-            scene_name = scene.item.text()
+            scene_name = scene.name()
             db_name = model().getDbItemFromScene(scene).text()
             properties_windows = [w for w in windows if isinstance(w, SpreadsheetSubWindow)]
             drawing_windows = [w for w in windows if isinstance(w, DrawingSubWindow)]

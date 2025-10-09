@@ -10,10 +10,6 @@ from .drawing import DrawingScene
 
 from ..properties import PropertySpec
 
-from typing import TYPE_CHECKING
-if TYPE_CHECKING:
-    from ....core.db import DiagramItem
-
 
 @dataclass
 class DiagramSheet:
@@ -56,14 +52,14 @@ class DiagramScene(DrawingScene):
     margin : float         # distance from paper edge to border line
     border : float         # line width
 
-    def __init__(self : Self, parent : "DiagramItem | None" = None) -> None:
+    def __init__(self : Self) -> None:
         sheet_name = settings().get("defaults/sheet/name")
         sheet_size = settings().get("defaults/sheet/size")
         sheet_rect = QRectF(QPointF(0, 0), sheet_size)
         self.sheet = DiagramSheet(sheet_name, sheet_rect)
         self.margin = settings().get("defaults/margin")
         self.border = settings().get("defaults/border")
-        super().__init__(parent, sheet_size)
+        super().__init__(sheet_size)
 
     def updateSceneRect(self : Self, rect : QRectF | None = None) -> None:
         super().updateSceneRect(self.sheet.rect)  # sheet is minimum rect

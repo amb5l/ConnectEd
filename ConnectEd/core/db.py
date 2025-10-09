@@ -118,7 +118,7 @@ class DrawingItem(QStandardItem):
             scene.setName(name_counter.get(self.drawingTypeName()))
         self._scene = scene
         super().__init__()
-        super().setText(scene.name)
+        super().setText(scene.name())
         self.setFlags(self.flags() | Qt.ItemFlag.ItemIsEditable)
 
     def setText(self : Self, text : str) -> None:
