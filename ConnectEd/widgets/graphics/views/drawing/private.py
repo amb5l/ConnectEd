@@ -9,7 +9,7 @@ from .....app import settings, window
 from ....menu import Menu
 
 from ...items.pin_rect import PinRect
-from ...items.pin      import Pin, PinArrow, PinNode
+from ...items.pin      import Pin, PinArrow, PinEntry
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -145,7 +145,7 @@ class DrawingViewPrivateMixin:
                 elif item.parentItem() != parent:
                     return []
                 pins.append(item)
-            elif not isinstance(item, PinArrow | PinNode):
+            elif not isinstance(item, PinArrow | PinEntry):
                 return []
         return [] if parent is None else pins
 

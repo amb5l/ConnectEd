@@ -11,8 +11,8 @@ from ..scenes.drawing.cmd import cmdRotate
 from .mixin.pos  import ElementPosMixin
 from .mixin.fill import ElementFillMixin
 
-from .port_pin     import PortPinText, PortPinMixin
-from .node         import Node
+from .port_pin import PortPinText, PortPinMixin
+from .entry    import Entry
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -21,7 +21,7 @@ if TYPE_CHECKING:
     from . import SignalDirection
 
 
-class PortNode(Node):
+class PortEntry(Entry):
     pass
 
 
@@ -42,8 +42,8 @@ class Port(ElementPosMixin, ElementFillMixin, PortPinMixin, QGraphicsPathItem):
         ElementFillMixin._PROPERTY_SPECS_FILL
 
     @classmethod
-    def _getNodeClass(cls) -> type[PortNode]:
-        return PortNode
+    def _getEntryClass(cls) -> type[PortEntry]:
+        return PortEntry
 
     @classmethod
     def _getNameClass(cls) -> type[PortName]:

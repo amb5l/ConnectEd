@@ -19,7 +19,7 @@ from ...items.text_block import TextBlock
 from ...items.port       import Port
 from ...items.pin        import Pin
 from ...items.block_pin  import BlockPin
-from ...items.node       import Node
+from ...items.entry      import Entry
 from ...items.conn_vtx   import ConnVtx
 from ...items.conn_seg   import ConnSeg, ConnSegPreview1, ConnSegPreview2
 
@@ -52,7 +52,7 @@ class Interaction(ABC):
     def complete(self : Self, pos : QPointF) -> bool:
         """
         Returns True if the interaction actually completed.
-        For example, if wire placement ended at a node.
+        For example, if wire placement ended at an entry.
         """
         ...
 
@@ -495,10 +495,10 @@ class PlaceConnInteraction(SelectionMixin):
         # get scene content before changing it
         items_1 = self._scene.items(self._p1())
         connectables_1 = [item for item in items_1 \
-            if isinstance(item, ConnSeg | ConnVtx | Node)]
+            if isinstance(item, ConnSeg | ConnVtx | Entry)]
         items_2 = self._scene.items(self._p2())
         connectables_2 = [item for item in items_2 \
-            if isinstance(item, ConnSeg | ConnVtx | Node)]
+            if isinstance(item, ConnSeg | ConnVtx | Entry)]
         # create first segment
         self._scene.addConnSeg(self._p0(), self._p1(), undo=True)
         if connectables_1:

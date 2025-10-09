@@ -1,7 +1,7 @@
 from typing import Self
 
 from .port_pin import PortPinText
-from .pin      import PinArrow, PinNode, Pin
+from .pin      import PinArrow, PinEntry, Pin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -12,7 +12,7 @@ class BlockPinArrow(PinArrow):
     pass
 
 
-class BlockPinNode(PinNode):
+class BlockPinEntry(PinEntry):
     pass
 
 
@@ -30,8 +30,8 @@ class BlockPin(Pin):
         return BlockPinArrow
 
     @classmethod
-    def _getNodeClass(cls) -> type[BlockPinNode]:
-        return BlockPinNode
+    def _getEntryClass(cls) -> type[BlockPinEntry]:
+        return BlockPinEntry
 
     @classmethod
     def _getNameClass(cls) -> type[BlockPinName]:

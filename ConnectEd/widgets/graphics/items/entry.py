@@ -14,7 +14,7 @@ if TYPE_CHECKING:
     from .port_pin import PortPinMixin
 
 
-class Node(
+class Entry(
     ElementLineMixin,
     ElementFillMixin,
     ElementChangeMixin,

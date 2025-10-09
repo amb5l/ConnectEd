@@ -17,7 +17,7 @@ from .mixin.menu   import ElementMenuMixin
 from .property_text import PropertyText, PropertyTextSpec
 from .anchor_point  import AnchorPoint
 
-from .node import Node
+from .entry import Entry
 
 
 class PortPinText(PropertyText):
@@ -82,12 +82,12 @@ class PortPinMixin(
     _comment   : str
     _direction : SignalDirection
     _range     : VectorRange
-    _node      : Node
+    _entry      : Entry
 
     @classmethod
-    def _getNodeClass(cls) -> type[Node]:
-        """Return the node class. Subclasses should override this."""
-        return Node
+    def _getEntryClass(cls) -> type[Entry]:
+        """Return the entry class. Subclasses should override this."""
+        return Entry
 
     @classmethod
     def _getNameClass(cls) -> type[PortPinText]:
@@ -118,8 +118,8 @@ class PortPinMixin(
         self._comment   = ""
         # Initialize the element (this sets up properties system)
         self.initElement(bare)
-        # Initialize the node
-        self._node = self._getNodeClass()(self)
+        # Initialize the entry
+        self._entry = self._getEntryClass()(self)
 
     def initAnchorPoints(self : Self) -> None:
         self._anchor_points = {

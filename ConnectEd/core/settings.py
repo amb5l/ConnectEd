@@ -110,14 +110,14 @@ FACTORY_SETTINGS = {
                     },
                     "size" : 8
                 },
-                "PortNode" : {
+                "PortEntry" : {
                     "line" : {
-                        "color" : PaletteDark.PortNode,
+                        "color" : PaletteDark.PortEntry,
                         "width" : 0,
                         "style" : Qt.PenStyle.SolidLine
                     },
                     "fill" : {
-                        "color" : PaletteDark.PortNode,
+                        "color" : PaletteDark.PortEntry,
                         "style" : Qt.BrushStyle.NoBrush
                     },
                     "size" : 4
@@ -176,7 +176,7 @@ FACTORY_SETTINGS = {
                     },
                     "size" : 4
                 },
-                "BlockPinNode" : {
+                "BlockPinEntry" : {
                     "line" : {
                         "color" : PaletteDark.BlockPin,
                         "width" : 0,
@@ -342,7 +342,7 @@ FACTORY_SETTINGS = {
                         "style" : Qt.BrushStyle.NoBrush
                     }
                 },
-                "PortNode" : {
+                "PortEntry" : {
                     "line" : {
                         "color" : PaletteLightMono.PortLine,
                         "width" : 0,
@@ -397,7 +397,7 @@ FACTORY_SETTINGS = {
                     },
                     "size" : 4
                 },
-                "BlockPinNode" : {
+                "BlockPinEntry" : {
                     "line" : {
                         "color" : PaletteLightMono.BlockPin,
                         "width" : 0,

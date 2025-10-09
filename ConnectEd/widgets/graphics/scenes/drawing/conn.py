@@ -7,9 +7,9 @@ from .....app import logger
 
 from .....core.utils import itemsTypeDict
 
-from ...items.conn_vtx   import ConnVtx
-from ...items.conn_seg   import ConnSeg
-from ...items.node       import Node
+from ...items.conn_vtx import ConnVtx
+from ...items.conn_seg import ConnSeg
+from ...items.entry    import Entry
 
 from .cmd.conn import cmdAddConnVtx,      \
                       cmdReparentConnVtx, \
@@ -172,7 +172,7 @@ class DrawingSceneConnMixin:
         """
         Tidy up an existing vertex:
         - Merge existing vertices into one. Reattach existing segments.
-        - Parent to node if present.
+        - Parent to entry if present.
         - Split and attach any segments that cross the vertex.
         - Remove duplicate segments.
         - Remove if the vertex breaks a simple straight line.
@@ -204,13 +204,13 @@ class DrawingSceneConnMixin:
                 executor(cmd)
             cmd = cmdRemoveConnVtx(self, xvtx)
             executor(cmd)
-        # (re)parent to node if present
-        nodes = [item for item in items if isinstance(item, Node)]
-        if len(nodes) > 1:
-            logger().warning("Multiple nodes found")
-        if nodes:
-            if vtx1.parentItem() is not nodes[0]:
-                cmd = cmdReparentConnVtx(self, vtx1, nodes[0])
+        # (re)parent to entry if present
+        entries = [item for item in items if isinstance(item, Entry)]
+        if len(entries) > 1:
+            logger().warning("Multiple entries found")
+        if entries:
+            if vtx1.parentItem() is not entries[0]:
+                cmd = cmdReparentConnVtx(self, vtx1, entries[0])
                 executor(cmd)
         # split segments that cross the new vertex but are not attached to it
         segs = [item for item in items if isinstance(item, ConnSeg)]
@@ -308,7 +308,7 @@ class DrawingSceneConnMixin:
         cls  : type[ConnSeg] = ConnSeg
     ) -> ConnSeg | None:
         """
-        Add a segment, add vertices at any nodes between endpoints, tidy.
+        Add a segment, add vertices at any entries between endpoints, tidy.
         """
         # executor depends on undo
         if undo:
@@ -349,19 +349,19 @@ class DrawingSceneConnMixin:
         line = QLineF(p1, p2)
         # get items in rect
         items = self.items(rect)
-        # get nodes in rect
-        nodes = [item for item in items if isinstance(item, Node)]
-        # get nodes that are on the line
-        nodes = [node for node in nodes if pointOnLine(node.scenePos(), line)]
-        # add vertices to unconnected nodes
-        for node in nodes:
-            children = node.childItems()
+        # get entries in rect
+        entries = [item for item in items if isinstance(item, Entry)]
+        # get entries that are on the line
+        entries = [entry for entry in entries if pointOnLine(entry.scenePos(), line)]
+        # add vertices to unconnected entries
+        for entry in entries:
+            children = entry.childItems()
             child_vtxs = [item for item in children if isinstance(item, ConnVtx)]
             if len(child_vtxs) == 0:
-                cmd = cmdAddConnVtx(self, QPointF())  # pos is relative to node
+                cmd = cmdAddConnVtx(self, QPointF())  # pos is relative to entry
                 executor(cmd)
                 vtx = cmd.vtx()
-                vtx.setParentItem(node)
+                vtx.setParentItem(entry)
         # get all vertices in rect
         vtxs = [item for item in items if isinstance(item, ConnVtx)]
         # get vertices that are on the line

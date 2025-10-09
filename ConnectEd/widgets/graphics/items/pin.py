@@ -13,7 +13,7 @@ from .mixin.line   import ElementLineMixin
 from .mixin.fill   import ElementFillMixin
 
 from .port_pin import PortPinMixin, PortPinText
-from .node     import Node
+from .entry    import Entry
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -75,7 +75,7 @@ class PinArrow(
         QGraphicsPathItem.paint(self, painter, option, widget)
 
 
-class PinNode(Node):
+class PinEntry(Entry):
     pass
 
 
@@ -98,8 +98,8 @@ class Pin(ElementLocMixin, PortPinMixin, QGraphicsLineItem):
         return PinArrow
 
     @classmethod
-    def _getNodeClass(cls) -> type[PinNode]:
-        return PinNode
+    def _getEntryClass(cls) -> type[PinEntry]:
+        return PinEntry
 
     @classmethod
     def _getNameClass(cls) -> type[PinName]:
@@ -118,7 +118,7 @@ class Pin(ElementLocMixin, PortPinMixin, QGraphicsLineItem):
         self.initPortPin(bare)
         line = QLineF(-_PIN_LEN, 0, 0, 0)
         self.setLine(line)
-        self._node.setPos(-_PIN_LEN, 0)
+        self._entry.setPos(-_PIN_LEN, 0)
         self._arrow = self._getArrowClass()(self)
 
     @property
@@ -138,7 +138,7 @@ class Pin(ElementLocMixin, PortPinMixin, QGraphicsLineItem):
 
     def onSelectionChange(self : Self, selected : bool) -> None:
         self._arrow.setSelected(selected)
-        self._node.setSelected(selected)
+        self._entry.setSelected(selected)
 
     def paint(
         self    : Self,

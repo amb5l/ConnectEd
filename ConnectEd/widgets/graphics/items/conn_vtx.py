@@ -22,7 +22,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ..scenes.drawing import DrawingScene
     from .conn_seg import ConnSeg
-    from .node     import Node
+    from .entry    import Entry
 
 
 class ConnVtx(
@@ -50,7 +50,7 @@ class ConnVtx(
     def __init__(
         self   : Self,
         pos    : QPointF | None = None,
-        parent : "Node | None" = None
+        parent : "Entry | None" = None
     ) -> None:
         QGraphicsPathItem.__init__(self, parent)
         if pos is not None:
@@ -81,7 +81,7 @@ class ConnVtx(
     def updateJunction(self : Self) -> None:
         """Update junction visibility - show if >2 connections."""
         connections = len(self._connections)
-        # TODO: special case: parent is node, segments are not colinear
+        # TODO: special case: parent is entry, segments are not colinear
         self._junction.setVisible((connections > 2))
 
     def attach(self : Self, segment : "ConnSeg") -> None:

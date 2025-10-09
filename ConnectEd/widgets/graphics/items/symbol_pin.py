@@ -1,14 +1,14 @@
 from .port_pin import PortPinText
 
-from .node import Node
-from .pin  import PinArrow, Pin
+from .entry import Entry
+from .pin   import PinArrow, Pin
 
 
 class SymbolPinArrow(PinArrow):
     pass
 
 
-class SymbolPinNode(Node):
+class SymbolPinEntry(Entry):
     pass
 
 
@@ -26,8 +26,8 @@ class SymbolPin(Pin):
         return SymbolPinArrow
 
     @classmethod
-    def _getNodeClass(cls) -> type[SymbolPinNode]:
-        return SymbolPinNode
+    def _getEntryClass(cls) -> type[SymbolPinEntry]:
+        return SymbolPinEntry
 
     @classmethod
     def _getNameClass(cls) -> type[SymbolPinName]:

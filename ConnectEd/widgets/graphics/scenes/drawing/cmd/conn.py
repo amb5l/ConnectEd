@@ -1,13 +1,13 @@
 from typing      import Self
 from dataclasses import dataclass
 
-from PyQt6.QtCore    import QPointF
+from PyQt6.QtCore import QPointF
 
 from ......app import logger
 
 from ....items.conn_vtx import ConnVtx
 from ....items.conn_seg import ConnSeg
-from ....items.node     import Node
+from ....items.entry    import Entry
 
 from . import cmdSceneBase
 
@@ -44,8 +44,8 @@ class cmdAddConnVtx(cmdSceneBase):
 class cmdReparentConnVtx(cmdSceneBase):
     @dataclass
     class ConnVtxState:
-        parent : Node | None
-        pos   : QPointF | None
+        parent : Entry   | None
+        pos    : QPointF | None
 
     # instance attributes
     _vtx    : ConnVtx
@@ -56,7 +56,7 @@ class cmdReparentConnVtx(cmdSceneBase):
         self   : Self,
         scene  : "DrawingScene",
         vtx    : ConnVtx,
-        parent : Node | None
+        parent : Entry | None
     ) -> None:
         super().__init__(scene)
         self._vtx = vtx
