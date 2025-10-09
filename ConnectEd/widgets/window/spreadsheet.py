@@ -2,7 +2,7 @@ from typing import Self
 from types  import SimpleNamespace
 
 from PyQt6.QtCore    import Qt, QModelIndex, QPoint, QSize, QTransposeProxyModel
-from PyQt6.QtWidgets import QMdiSubWindow, QTabWidget, QWidget, QSizePolicy, \
+from PyQt6.QtWidgets import QTabWidget, QWidget, QSizePolicy, \
                             QHBoxLayout, QVBoxLayout, QPushButton, QLabel, \
                             QTableView, QAbstractItemView, QAbstractButton, \
                             QHeaderView, QStyledItemDelegate, QComboBox, \
@@ -21,6 +21,8 @@ from ...widgets.graphics.items import ElementMixin
 from ...widgets.graphics.items.property_text import PropertyDisplay
 
 from ..menu import Menu
+
+from .sub_window import SubWindow
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -723,7 +725,8 @@ class SpreadsheetTabWidget(QTabWidget):
             tab._table_proxy.resizeColumnsToContents()
             tab._table_proxy.resizeRowsToContents()
 
-class SpreadsheetSubWindow(QMdiSubWindow):
+
+class SpreadsheetSubWindow(SubWindow):
     _scene      : "DrawingScene"
     _tab_widget : QTabWidget | None
 

@@ -3,7 +3,6 @@ import os
 from typing import Self
 
 from PyQt6.QtCore    import Qt, QSize,QXmlStreamWriter, QXmlStreamReader
-from PyQt6.QtWidgets import QMdiSubWindow
 from PyQt6.QtGui     import QStandardItemModel, QStandardItem
 
 from ..app import logger
@@ -461,6 +460,7 @@ class Model(QStandardItemModel):
         return db_item
 
     def close(self : Self, item : QStandardItem) -> None:
+        from ..widgets.window.sub_window import SubWindow
         """Close a database and remove it from the model."""
         if isinstance(item, DesignDbItem):
             # close all open diagram windows for this design
@@ -495,9 +495,9 @@ class Model(QStandardItemModel):
                 if isinstance(symbol_item, SymbolItem):
                     for view in symbol_item.views():
                         if view:
-                            # Find the parent QMdiSubWindow instead of using window()
+                            # Find the parent SubWindow instead of using window()
                             subwindow = view.parentWidget()
-                            while subwindow and not isinstance(subwindow, QMdiSubWindow):
+                            while subwindow and not isinstance(subwindow, SubWindow):
                                 subwindow = subwindow.parentWidget()
                             if subwindow:
                                 subwindow.close()

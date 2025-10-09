@@ -2,13 +2,15 @@ from typing import Self
 from math   import ceil
 
 from PyQt6.QtCore    import Qt, QPoint, QPointF, QRectF, QEvent
-from PyQt6.QtWidgets import QApplication, QMdiArea, QMdiSubWindow, \
-                            QGraphicsView, QGraphicsTextItem
+from PyQt6.QtWidgets import QApplication, QGraphicsView, QGraphicsTextItem
 from PyQt6.QtGui     import QPainter, QPen, QCloseEvent, QKeyEvent
 
 from .....app import settings
 
 from ....marquee import Marquee
+
+from ....window.mdi_area   import MdiArea
+from ....window.sub_window import SubWindow
 
 from ...scenes.drawing import DrawingScene
 
@@ -147,10 +149,10 @@ class DrawingView(
         super().keyPressEvent(event)
 
 
-class DrawingSubWindow(QMdiSubWindow):
+class DrawingSubWindow(SubWindow):
     def __init__(
         self   : Self,
-        parent : QMdiArea | None = None
+        parent : MdiArea | None = None
     ) -> None:
         super().__init__(parent)
         self.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)

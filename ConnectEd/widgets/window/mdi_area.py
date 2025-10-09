@@ -1,40 +1,41 @@
 from typing import Self
 
 from PyQt6.QtCore    import Qt, QChildEvent, QEvent
-from PyQt6.QtWidgets import QMdiArea, QWidget, QMdiSubWindow
+from PyQt6.QtWidgets import QMdiArea, QWidget
 
 from ...app import model, window
 
 from ..private import Action
 
-from ...widgets.graphics.views.drawing import DrawingSubWindow, DrawingView
-
 from ...widgets.graphics.scenes.drawing import DrawingScene
+
+from .sub_window import SubWindow
 
 from .spreadsheet import SpreadsheetSubWindow
 
 
 class MdiArea(QMdiArea):
     subwindow_actions : dict[any, list[Action]]
-    subwindow_scenes  : dict[any, list[QMdiSubWindow]]
+    subwindow_scenes  : dict[any, list[SubWindow]]
 
     def __init__(self : Self) -> None:
         super().__init__()
 
     def addSubWindow(
-        self   : Self,
-        widget : QWidget,
-        flags  : Qt.WindowType = Qt.WindowType.SubWindow
+        self      : Self,
+        subwindow : QWidget,
+        flags     : Qt.WindowType = Qt.WindowType.SubWindow
     ) -> None:
-        super().addSubWindow(widget, flags)
-        if isinstance(widget, DrawingSubWindow):
-            if not isinstance(widget.widget(), DrawingView):
+        from ...widgets.graphics.views.drawing import DrawingSubWindow, DrawingView
+        super().addSubWindow(subwindow, flags)
+        if isinstance(subwindow, DrawingSubWindow):
+            if not isinstance(subwindow.widget(), DrawingView):
                 return
-            if not isinstance(widget.widget().scene(), DrawingScene):
+            if not isinstance(subwindow.widget().scene(), DrawingScene):
                 return
             self.update()
-        elif isinstance(widget, SpreadsheetSubWindow):
-            if widget.scene() is not None:
+        elif isinstance(subwindow, SpreadsheetSubWindow):
+            if subwindow.scene() is not None:
                 self.update()
 
     def nextSubWindow(self : Self) -> None:
@@ -52,10 +53,11 @@ class MdiArea(QMdiArea):
         """Handle child events, particularly when subwindows are removed."""
         super().childEvent(event)
         if (event.type() == QEvent.Type.ChildRemoved and
-            isinstance(event.child(), QMdiSubWindow)):
+            isinstance(event.child(), SubWindow)):
             self.update()
 
     def _updateSubWindowTitles(self : Self) -> None:
+        from ...widgets.graphics.views.drawing import DrawingSubWindow, DrawingView
         self.subwindow_scenes = {}
         for w in self.subWindowList():
             # skip windows that are closing or closed
@@ -111,6 +113,7 @@ class MdiArea(QMdiArea):
                         w.setWindowTitle(f"{db_name}:{scene_name}:{i}")
 
     def _updateSubWindowActions(self : Self) -> None:
+        from ...widgets.graphics.views.drawing import DrawingSubWindow, DrawingView
         m = window()
         self.subwindow_actions = {}
         for w in self.subWindowList():
@@ -149,7 +152,7 @@ class MdiArea(QMdiArea):
         next_window = windows[next_index]
         self._activateSubWindow(next_window)
 
-    def _activateSubWindow(self : Self, subwindow : QMdiSubWindow) -> None:
+    def _activateSubWindow(self : Self, subwindow : SubWindow) -> None:
         super().setActiveSubWindow(subwindow)
         subwindow.show()
         subwindow.raise_()
