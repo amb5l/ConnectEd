@@ -183,10 +183,15 @@ class Explorer(TreeView):
                 self.editDrawing(item)
 
     def newDesign(self : Self) -> None:
+        # create new design
         design_item = model().newDesignItem()
-        diagram_item = design_item._diagrams.child(0)
+        # create new diagram
+        diagram_item = design_item.newDiagramItem()
+        # expand design to show diagram and symbol cache containers
         self.expand(model().indexFromItem(design_item))
-        self.expand(model().indexFromItem(design_item._diagrams))
+        # expand diagrams container to show new diagram
+        self.expand(model().indexFromItem(design_item.diagramsItem()))
+        # open diagram editor for new diagram
         self.editDrawing(diagram_item)
 
     def newLibrary(self : Self) -> None:

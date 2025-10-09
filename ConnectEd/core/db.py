@@ -275,11 +275,13 @@ class DesignDbItem(DbItem):
         self.appendRow(self._diagrams)
         self._symbols = SymbolCacheContainer()
         self.appendRow(self._symbols)
-        if name is None:
-            self._diagrams.appendRow(DiagramItem())
-            self._diagrams.setRoot(self._diagrams.child(0))
-        else:
-            self._diagrams.setRoot(None)
+
+    def newDiagramItem(self : Self, name : str | None = None) -> DiagramItem:
+        item = DiagramItem(name)
+        self._diagrams.appendRow(item)
+        if self._diagrams.root() is None:
+            self._diagrams.setRoot(item)
+        return item
 
     def diagramsItem(self : Self) -> DiagramsContainer:
         return self._diagrams
@@ -291,6 +293,11 @@ class DesignDbItem(DbItem):
         if self._diagrams.root() is None:
             return None
         return self._diagrams.root()
+
+    def newSymbolItem(self : Self, name : str | None = None) -> SymbolItem:
+        item = SymbolItem(name)
+        self._symbols.appendRow(item)
+        return item
 
     def symbolsItem(self : Self) -> SymbolCacheContainer:
         return self._symbols
@@ -423,8 +430,8 @@ class Model(QStandardItemModel):
         self._designs.appendRow(item)
         return item
 
-    def newLibraryItem(self : Self) -> LibraryDbItem:
-        item = LibraryDbItem()
+    def newLibraryItem(self : Self, name : str | None = None) -> LibraryDbItem:
+        item = LibraryDbItem(name)
         self._libraries.appendRow(item)
         return item
 
