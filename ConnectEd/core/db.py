@@ -6,13 +6,11 @@ from PyQt6.QtCore    import Qt, QSize,QXmlStreamWriter, QXmlStreamReader
 from PyQt6.QtWidgets import QMdiSubWindow
 from PyQt6.QtGui     import QStandardItemModel, QStandardItem
 
-from ..app import logger, window
+from ..app import logger
 
 from ..resources import getIconPath
 
 from ..core.icon import SvgIconSingleton
-
-from ..widgets.dialogs.file import FileSaveAsDialog
 
 from .defs import LIB_EXT, DSN_EXT
 from .xml  import copy, paste, fromXmlBegin, loadItems, saveBegin, saveEnd
@@ -266,9 +264,6 @@ class DbItem(QStandardItem):
         return None
 
     copy = copy
-
-    def close(self : Self) -> None:
-        pass
 
 
 class DesignDbItem(DbItem):

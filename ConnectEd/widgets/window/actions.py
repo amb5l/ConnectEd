@@ -3,7 +3,7 @@ from typing import Self
 from PyQt6.QtWidgets import QApplication, QMdiSubWindow
 from PyQt6.QtGui     import QKeySequence
 
-from ...app import logger, window
+from ...app import window
 
 from ...core.defs import MIME_TYPE
 
