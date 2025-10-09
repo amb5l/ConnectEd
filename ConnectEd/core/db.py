@@ -203,40 +203,41 @@ class DbItem(QStandardItem):
     def __init__(self : Self, name : str | None = None) -> None:
         if name is None:
             name = name_counter.get(
-                "Untitled" + self.__class__.__name__.replace("DbItem", "")
+                "Untitled" + self.dbTypeName()
             )
         super().__init__(name)
         self.setFlags(self.flags() | Qt.ItemFlag.ItemIsEditable)
         self._path = None
 
+    def dbTypeName(self) -> str:
+        cls = self if isinstance(self, type) else self.__class__
+        return cls.__name__.replace("DbItem", "")
+
+    def path(self : Self) -> str:
+        return self._path
+
+    def setPath(self : Self, path : str) -> None:
+        self._path = path
+
+    def close(self : Self) -> None:  # TODO: needed?
+        pass
+
     def toXmlBegin(self : Self, xw : QXmlStreamWriter) -> None:
-        xw.writeStartElement(self.__class__.__name__.replace("DbItem", ""))
+        xw.writeStartElement(self.dbTypeName())
         xw.writeAttribute("name", self.text())
 
     def toXmlEnd(self : Self, xw : QXmlStreamWriter) -> None:
         xw.writeEndElement()
 
-    def save(self : Self, path : str | None = None) -> None:
-        if path is not None:
-            self._path = path
-        if self._path is None:
-            self._path = self.saveAs()
-        else:
-            xw, file = saveBegin(self._path)
-            self.toXml(xw)
-            saveEnd(xw, file)
-
-    def saveAs(self : Self) -> str:
-        type_name = self.__class__.__name__.replace("DbItem", "")
-        dialog = FileSaveAsDialog(type_name, window())
-        path = None
-        if dialog.exec():
-            path, _ = dialog.getSaveFileName()
-        return path
+    def save(self : Self, path : str) -> None:
+        self.setPath(path)
+        xw, file = saveBegin(self._path)
+        self.toXml(xw)
+        saveEnd(xw, file)
 
     @classmethod
     def fromXmlBegin(cls : Self, xr : QXmlStreamReader) -> Self:
-        element_name = cls.__name__.replace("DbItem", "")
+        element_name = cls.dbTypeName(cls)
         if xr.name() == element_name and xr.isStartElement():
             pass  # Already at target element
         else:
@@ -254,7 +255,7 @@ class DbItem(QStandardItem):
         return db_item
 
     def fromXmlEnd(self : Self, xr : QXmlStreamReader) -> None:
-        while not (xr.isEndElement() and xr.name() == self.__class__.__name__.replace("DbItem", "")):
+        while not (xr.isEndElement() and xr.name() == self.dbTypeName()):
             xr.readNext()
 
     @classmethod
@@ -274,9 +275,6 @@ class DbItem(QStandardItem):
 
     def close(self : Self) -> None:
         pass
-
-    def getPath(self : Self) -> str:
-        return self._path
 
 
 class DesignDbItem(DbItem):
@@ -318,7 +316,7 @@ class DesignDbItem(DbItem):
     @classmethod
     def fromXml(cls : Self, xr : QXmlStreamReader) -> Self:
         db_item : Self = cls.fromXmlBegin(xr)
-        while not (xr.isEndElement() and xr.name() == cls.__name__.replace("DbItem", "")):
+        while not (xr.isEndElement() and xr.name() == cls.dbTypeName(cls)):
             if xr.tokenType() == xr.TokenType.EndDocument:
                 logger().error(f"DesignDbItem.fromXml: Reached end of document while looking for end of '{cls.__name__.replace('DbItem', '')}'")
                 break
@@ -399,7 +397,7 @@ class LibraryDbItem(DbItem):
     @classmethod
     def fromXml(cls : Self, xr : QXmlStreamReader) -> Self:
         db_item : Self = cls.fromXmlBegin(xr)
-        while not (xr.isEndElement() and xr.name() == cls.__name__.replace("DbItem", "")):
+        while not (xr.isEndElement() and xr.name() == cls.dbTypeName(cls)):
             xr.readNext()
         return db_item
 

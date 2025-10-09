@@ -302,7 +302,7 @@ class Explorer(TreeView):
 
     def saveDbAs(self : Self, item : "DbItem") -> None:
         from ..dialogs.file import FileSaveAsDialog
-        dialog = FileSaveAsDialog(item.__class__.__name__.replace("Item", ""))
+        dialog = FileSaveAsDialog(item.dbTypeName())
         result = dialog.exec()
         if result == dialog.DialogCode.Accepted:
             selected_files = dialog.selectedFiles()
