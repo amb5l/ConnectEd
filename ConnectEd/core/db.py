@@ -81,12 +81,10 @@ class DiagramsContainer(Container):
         super().__init__()
         self._root = None
 
-    @property
     def root(self : Self) -> "DiagramItem":
         return self._root
 
-    @root.setter
-    def root(self : Self, item : "DiagramItem") -> None:
+    def setRoot(self : Self, item : "DiagramItem") -> None:
         if self._root is not None:
             self._root.setIcon(EmptyIcon().get())
         self._root = item
@@ -279,14 +277,15 @@ class DesignDbItem(DbItem):
         self.appendRow(self._symbols)
         if name is None:
             self._diagrams.appendRow(DiagramItem())
-            self._diagrams.root = self._diagrams.child(0)
+            self._diagrams.setRoot(self._diagrams.child(0))
         else:
-            self._diagrams.root = None
+            self._diagrams.setRoot(None)
 
     def toXml(self : Self, xw : QXmlStreamWriter) -> None:
         self.toXmlBegin(xw)
         xw.writeStartElement("Diagrams")
-        root = "" if self._diagrams.root is None else self._diagrams.root.text()
+        root = "" if self._diagrams.root() is None \
+            else self._diagrams.root().text()
         xw.writeAttribute("root", root)
         for i in range(self._diagrams.rowCount()):
             diagram_item : DiagramItem = self._diagrams.child(i)
@@ -334,14 +333,14 @@ class DesignDbItem(DbItem):
                             diagram_item = db_item._diagrams.child(i)
                             if diagram_item.text() == root_name:
                                 root = diagram_item
-                                db_item._diagrams.root = root
+                                db_item._diagrams.setRoot(root)
                                 break
                         if root is None:
                             logger().warning(f"DesignDbItem.fromXml: Root diagram '{root_name}' not found, defaulting to first")
                             if db_item._diagrams.rowCount() > 0:
-                                db_item._diagrams.root = db_item._diagrams.child(0)
+                                db_item._diagrams.setRoot(db_item._diagrams.child(0))
                     elif db_item._diagrams.rowCount() > 0:
-                        db_item._diagrams.root = db_item._diagrams.child(0)
+                        db_item._diagrams.setRoot(db_item._diagrams.child(0))
                 elif xr.name() == "SymbolCache":
                     xr.readNext()  # Move past <SymbolCache>
                     while not (xr.isEndElement() and xr.name() == "SymbolCache"):
