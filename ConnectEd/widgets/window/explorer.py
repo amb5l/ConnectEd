@@ -108,7 +108,7 @@ class Explorer(TreeView):
         """Handle changes to items in the model, such as renaming."""
         scene = item.scene() if hasattr(item, "scene") else None
         if scene:
-            scene.name = item.text()
+            scene.setName(item.text())
         window().mdi_area.update()
 
     def focusInEvent(self : Self, event : QFocusEvent) -> None:
