@@ -28,10 +28,10 @@ def withCurrentWidget(widget_type: Type[T]) -> Callable[[Callable[["Slots", T], 
     def decorator(func: Callable[["Slots", T], None]) -> Callable[["Slots"], None]:
         @functools.wraps(func)
         def wrapper(self : "Slots") -> None:
-            current_sub_window = window().mdi_area.currentSubWindow()
-            if current_sub_window is None:
+            current_subwindow = window().mdi_area.currentSubWindow()
+            if current_subwindow is None:
                 return
-            current_widget = current_sub_window.widget()
+            current_widget = current_subwindow.widget()
             if isinstance(current_widget, widget_type):
                 # Cast to T since we know it"s a subclass
                 func(self, cast(T, current_widget))
@@ -58,10 +58,10 @@ def withCurrentWidgetCheckable(
     def decorator(func: Callable[["Slots", T, bool], None]) -> Callable[["Slots"], None]:
         @functools.wraps(func)
         def wrapper(self : "Slots") -> None:
-            current_sub_window = window().mdi_area.currentSubWindow()
-            if current_sub_window is None:
+            current_subwindow = window().mdi_area.currentSubWindow()
+            if current_subwindow is None:
                 return
-            current_widget = current_sub_window.widget()
+            current_widget = current_subwindow.widget()
             if isinstance(current_widget, widget_type):
                 checked = getattr(window().actions, action_name).isChecked()
                 # Cast to T since we know it"s a subclass
