@@ -1,3 +1,5 @@
+import os
+
 from typing import Self
 
 from PyQt6.QtCore    import Qt, QSize,QXmlStreamWriter, QXmlStreamReader
@@ -256,13 +258,16 @@ class DbItem(QStandardItem):
             xr.readNext()
 
     @classmethod
-    def load(cls : Self, file : str) -> Self:
-        items = loadItems(file)
+    def load(cls : Self, path : str) -> Self:
+        if not os.path.exists(path):
+            logger().warning(f"{path} not found")
+            return None
+        items = loadItems(path)
         for item in items:
             if isinstance(item, cls):
-                item._path = file
+                item._path = path
                 return item
-        logger().warning(f"{cls.__name__} not found in {file}")
+        logger().warning(f"{cls.__name__} not found in {path}")
         return None
 
     copy = copy
