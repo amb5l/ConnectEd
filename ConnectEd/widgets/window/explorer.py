@@ -106,10 +106,9 @@ class Explorer(TreeView):
 
     def onItemChanged(self : Self, item : QStandardItem) -> None:
         """Handle changes to items in the model, such as renaming."""
-        if item.parent() and item.parent().text() in ("Diagrams", "Symbol Cache"):
-            scene = item.data(Qt.ItemDataRole.UserRole)
-            if scene:
-                scene.name = item.text()
+        scene = item.scene() if hasattr(item, "scene") else None
+        if scene:
+            scene.name = item.text()
         window().mdi_area.update()
 
     def focusInEvent(self : Self, event : QFocusEvent) -> None:
@@ -249,18 +248,16 @@ class Explorer(TreeView):
     def newDrawingWindow(self : Self, item : "DrawingItem") -> None:
         from ...core.db import DesignDbItem, LibraryDbItem, \
                                DiagramItem, SymbolItem
-        from ...widgets.graphics.scenes.diagram import DiagramScene
         from ...widgets.graphics.views.diagram  import DiagramView, DiagramSubWindow
-        from ...widgets.graphics.scenes.symbol  import SymbolScene
         from ...widgets.graphics.views.symbol   import SymbolView, SymbolSubWindow
         if isinstance(item, DiagramItem):
             db_item : DesignDbItem = item.parent().parent()
-            dwg_scene : DiagramScene = item.data(Qt.ItemDataRole.UserRole)
+            dwg_scene = item.scene()
             dwg_view = DiagramView(dwg_scene)
             subwindow = DiagramSubWindow(window().mdi_area)
         elif isinstance(item, SymbolItem):
             db_item : LibraryDbItem = item.parent()
-            dwg_scene : SymbolScene = item.data(Qt.ItemDataRole.UserRole)
+            dwg_scene = item.scene()
             dwg_view = SymbolView(dwg_scene)
             subwindow = SymbolSubWindow(window().mdi_area)
         else:
@@ -275,12 +272,11 @@ class Explorer(TreeView):
 
     def spreadsheet(self : Self, item : "DrawingItem") -> None:
         from ...core.db import DrawingItem
-        from ...widgets.graphics.scenes.diagram import DiagramScene
         from .spreadsheet import SpreadsheetSubWindow
         if not isinstance(item, DrawingItem):
             logger().warning(f"Unsupported item: {item.text()} ({type(item)})")
             return
-        scene : DiagramScene = item.data(Qt.ItemDataRole.UserRole)
+        scene = item.scene()
         for subwindow in window().mdi_area.subWindowList():
             if isinstance(subwindow, SpreadsheetSubWindow) and subwindow.scene() == scene:
                 window().mdi_area.setActiveSubWindow(subwindow)

@@ -104,42 +104,38 @@ class SymbolCacheContainer(Container):
 
 
 class DrawingItem(QStandardItem):
-    _scene_class = None
-
     @classmethod
     def sceneClass(cls):
-        if cls._scene_class is None:
-            from ..widgets.graphics.scenes.drawing import DrawingScene
-            cls._scene_class = DrawingScene
-        return cls._scene_class
+        from ..widgets.graphics.scenes.drawing import DrawingScene
+        return DrawingScene
 
     _scene : "DrawingScene"
 
-    def __init__(
-        self  : Self,
-        name  : str | None = None,
-        scene : "DrawingScene | None" = None
-    ) -> None:
-        if name is None:
-            name = name_counter.get(
-                f"Untitled{self.__class__.__name__.replace('Item', '')}"
-            )
-        super().__init__(name)
-        scene_class = self.__class__.sceneClass()
-        if scene:
-            scene.setParent(self)
-        else:
-            scene = scene_class(self)
-        scene.name = name
+    def __init__(self : Self, scene : "DrawingScene | None" = None) -> None:
+        if scene is None:
+            scene_class = self.__class__.sceneClass()
+            scene = scene_class()
+            scene.setName(name_counter.get(self.drawingTypeName()))
         self._scene = scene
-        self.setData(self._scene, Qt.ItemDataRole.UserRole)
+        super().__init__()
+        super().setText(scene.name)
         self.setFlags(self.flags() | Qt.ItemFlag.ItemIsEditable)
 
-    def text(self : Self) -> str:
-        return self._scene.name if self._scene else ""
-
     def setText(self : Self, text : str) -> None:
-        self._scene.name = text
+        super().setText(text)
+        self._scene.setName(text)
+
+    def scene(self : Self) -> "DrawingScene":
+        return self._scene
+
+    def setScene(self : Self, scene : "DrawingScene") -> None:
+        self._scene = scene
+
+    def views(self : Self) -> list["DrawingView"]:
+        return self._scene.views()
+
+    def drawingTypeName(self : Self) -> str:
+        return self.__class__.__name__.replace("Item", "")
 
     def toXml(self : Self, xw : QXmlStreamWriter) -> None:
         self._scene.toXml(xw)
@@ -147,55 +143,53 @@ class DrawingItem(QStandardItem):
     @classmethod
     def fromXml(cls : Self, xr : QXmlStreamReader) -> Self:
         scene : "DrawingScene" = cls.sceneClass().fromXml(xr)
-        instance : "DrawingItem" = cls(scene.name, scene)
-        scene.setParent(instance)
-        return instance
+        item : "DrawingItem" = cls(scene)
+        return item
 
     copy = copy
-
-    def name(self : Self) -> str:
-        return self.text()
-
-    def scene(self : Self) -> "DrawingScene":
-        return self._scene
-
-    def views(self : Self) -> list["DrawingView"]:
-        return self._scene.views()
 
 
 class SymbolItem(DrawingItem):
     @classmethod
     def sceneClass(cls):
-        if cls._scene_class is None:
-            from ..widgets.graphics.scenes.symbol import SymbolScene # deferred import
-            cls._scene_class = SymbolScene
-        return cls._scene_class
+        from ..widgets.graphics.scenes.symbol import SymbolScene
+        return SymbolScene
 
     _scene : "SymbolScene"
 
     def symbol(self : Self) -> "SymbolScene":
         return self._scene
 
+    def dbItem(self : Self) -> "LibraryDbItem | DesignDbItem":
+        """Symbols live in the Symbol Cache of a design, or in a library."""
+        parent = self.parent()
+        if isinstance(parent, SymbolCacheContainer):
+            return parent.parent()
+        else:
+            return parent
+
+
 class DiagramItem(DrawingItem):
     @classmethod
     def sceneClass(cls):
-        if cls._scene_class is None:
-            from ..widgets.graphics.scenes.diagram import DiagramScene # deferred import
-            cls._scene_class = DiagramScene
-        return cls._scene_class
+        from ..widgets.graphics.scenes.diagram import DiagramScene
+        return DiagramScene
 
     _scene : "DiagramScene"
 
-    def __init__(
-        self  : Self,
-        name  : str | None = None,
-        scene : "DiagramScene | None" = None
-    ) -> None:
-        super().__init__(name, scene)
+    def __init__(self : Self, scene : "DiagramScene | None" = None) -> None:
+        super().__init__(scene)
         self.setIcon(EmptyIcon().get())
 
     def diagram(self : Self) -> "DiagramScene":
         return self._scene
+
+    def dbItem(self : Self) -> "DesignDbItem":
+        """
+        For now, diagrams always live in a diagrams container under a design.
+        """
+        return self.parent().parent()
+
 
 class DbItem(QStandardItem):
     _path : str | None
