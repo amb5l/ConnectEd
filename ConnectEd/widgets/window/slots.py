@@ -86,7 +86,7 @@ class Slots:
 
     @withCurrentWidget(DrawingView)
     def fileSave(self : Self, view : DrawingView) -> None:
-        item = model().getDbItemFromScene(view.scene())
+        item = model().getDbNodeFromScene(view.scene())
         if item:
             item.save()
 

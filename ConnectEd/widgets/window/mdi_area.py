@@ -92,7 +92,7 @@ class MdiArea(QMdiArea):
             if scene is None:
                 continue
             scene_name = scene.name()
-            db_name = model().getDbItemFromScene(scene).text()
+            db_name = model().getDbNodeFromScene(scene).text()
             properties_windows = [w for w in windows if isinstance(w, SpreadsheetSubWindow)]
             drawing_windows = [w for w in windows if isinstance(w, DrawingSubWindow)]
             sorted_windows = properties_windows + drawing_windows
@@ -121,9 +121,9 @@ class MdiArea(QMdiArea):
             if isinstance(w, DrawingSubWindow) \
             and isinstance(w.widget(), DrawingView) \
             and isinstance(w.widget().scene(), DrawingScene):
-                key = id(model().getDbItemFromScene(w.widget().scene()))
+                key = id(model().getDbNodeFromScene(w.widget().scene()))
             elif isinstance(w, SpreadsheetSubWindow) and w.scene() is not None:
-                key = id(model().getDbItemFromScene(w.scene()))
+                key = id(model().getDbNodeFromScene(w.scene()))
             action = Action(m, w.windowTitle(), None, None, False, False, w)
             action.triggered.connect(
                 lambda checked=False, sw=w: self._activateSubWindow(sw)

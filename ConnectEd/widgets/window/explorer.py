@@ -3,8 +3,8 @@ from typing import Self
 
 from PyQt6.QtCore    import Qt, QPoint, QItemSelectionModel
 from PyQt6.QtWidgets import QWidget
-from PyQt6.QtGui     import QAction, QStandardItem, \
-                            QKeyEvent, QMouseEvent, QWheelEvent, QFocusEvent
+from PyQt6.QtGui     import QKeyEvent, QMouseEvent, QWheelEvent, QFocusEvent, \
+                            QAction
 
 from ...app import logger, settings, model, window
 
@@ -17,13 +17,13 @@ from .tree_view import TreeView, TreeViewDock
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from ...core.db import DrawingItem, DbItem
+    from ...core.db import Node, DrawingNode, DbNode
 
 
 class Explorer(TreeView):
     actions   : SimpleNamespace
     menus     : SimpleNamespace
-    item      : QStandardItem
+    node      : "Node"
     _focus_in : bool
 
     def __init__(self : Self, parent : QWidget) -> None:
@@ -48,13 +48,13 @@ class Explorer(TreeView):
         a.newMenuLibrary = QAction("Library", self)
         a.newMenuLibrary.triggered.connect(self.newLibrary)
         a.newDiagram = QAction("New Diagram", self)
-        a.newDiagram.triggered.connect(lambda: self.newDiagram(self.item))
+        a.newDiagram.triggered.connect(lambda: self.newDiagram(self.node))
         a.newMenuDiagram = QAction("Diagram", self)
-        a.newMenuDiagram.triggered.connect(lambda: self.newDiagram(self.item))
+        a.newMenuDiagram.triggered.connect(lambda: self.newDiagram(self.node))
         a.newSymbol = QAction("New Symbol", self)
-        a.newSymbol.triggered.connect(lambda: self.newSymbol(self.item))
+        a.newSymbol.triggered.connect(lambda: self.newSymbol(self.node))
         a.newMenuSymbol = QAction("Symbol", self)
-        a.newMenuSymbol.triggered.connect(lambda: self.newSymbol(self.item))
+        a.newMenuSymbol.triggered.connect(lambda: self.newSymbol(self.node))
         a.open = QAction("Open...", self)
         a.open.triggered.connect(lambda: self.openDbFiles())
         a.openDesign = QAction("Open Design...", self)
@@ -62,27 +62,27 @@ class Explorer(TreeView):
         a.openLibrary = QAction("Open Library...", self)
         a.openLibrary.triggered.connect(lambda: self.openDbFiles("Library"))
         a.editDiagram = QAction("Edit Diagram", self)
-        a.editDiagram.triggered.connect(lambda: self.editDrawing(self.item))
+        a.editDiagram.triggered.connect(lambda: self.editDrawing(self.node))
         a.editSymbol = QAction("Edit Symbol", self)
-        a.editSymbol.triggered.connect(lambda: self.editDrawing(self.item))
+        a.editSymbol.triggered.connect(lambda: self.editDrawing(self.node))
         a.newDiagramWindow = QAction("New Diagram Window", self)
-        a.newDiagramWindow.triggered.connect(lambda: self.newDrawingWindow(self.item))
+        a.newDiagramWindow.triggered.connect(lambda: self.newDrawingWindow(self.node))
         a.newSymbolWindow = QAction("New Symbol Window", self)
-        a.newSymbolWindow.triggered.connect(lambda: self.newDrawingWindow(self.item))
+        a.newSymbolWindow.triggered.connect(lambda: self.newDrawingWindow(self.node))
         a.spreadsheet = QAction("Spreadsheet", self)
-        a.spreadsheet.triggered.connect(lambda: self.spreadsheet(self.item))
+        a.spreadsheet.triggered.connect(lambda: self.spreadsheet(self.node))
         a.saveDesign = QAction("Save Design", self)
-        a.saveDesign.triggered.connect(lambda: self.saveDb(self.item))
+        a.saveDesign.triggered.connect(lambda: self.saveDb(self.node))
         a.saveLibrary = QAction("Save Library", self)
-        a.saveLibrary.triggered.connect(lambda: self.saveDb(self.item))
+        a.saveLibrary.triggered.connect(lambda: self.saveDb(self.node))
         a.saveDesignAs = QAction("Save Design As...", self)
-        a.saveDesignAs.triggered.connect(lambda: self.saveDbAs(self.item))
+        a.saveDesignAs.triggered.connect(lambda: self.saveDbAs(self.node))
         a.saveLibraryAs = QAction("Save Library As...", self)
-        a.saveLibraryAs.triggered.connect(lambda: self.saveDbAs(self.item))
+        a.saveLibraryAs.triggered.connect(lambda: self.saveDbAs(self.node))
         a.closeDesign = QAction("Close Design", self)
-        a.closeDesign.triggered.connect(lambda: self.closeDb(self.item))
+        a.closeDesign.triggered.connect(lambda: self.closeDb(self.node))
         a.closeLibrary = QAction("Close Library", self)
-        a.closeLibrary.triggered.connect(lambda: self.closeDb(self.item))
+        a.closeLibrary.triggered.connect(lambda: self.closeDb(self.node))
         a.renameDesign = QAction("Rename Design", self)
         a.renameDesign.triggered.connect(self.rename)
         a.renameLibrary = QAction("Rename Library", self)
@@ -92,9 +92,9 @@ class Explorer(TreeView):
         a.renameSymbol = QAction("Rename Symbol", self)
         a.renameSymbol.triggered.connect(self.rename)
         a.copy = QAction("Copy", self)
-        a.copy.triggered.connect(lambda: self.copy(self.item))
+        a.copy.triggered.connect(lambda: self.copy(self.node))
         a.paste = QAction("Paste", self)
-        a.paste.triggered.connect(lambda: self.paste(self.item))
+        a.paste.triggered.connect(lambda: self.paste(self.node))
         self.menus = SimpleNamespace()
         m = self.menus
         m.new_db = Menu("New", self)
@@ -104,7 +104,7 @@ class Explorer(TreeView):
         m.new_dwg.addAction(a.newMenuDiagram)
         m.new_dwg.addAction(a.newMenuSymbol)
 
-    def onItemChanged(self : Self, item : QStandardItem) -> None:
+    def onItemChanged(self : Self, item : "Node") -> None:
         """Handle changes to items in the model, such as renaming."""
         scene = item.scene() if hasattr(item, "scene") else None
         if scene:
@@ -161,7 +161,7 @@ class Explorer(TreeView):
             return
         super().wheelEvent(event)
 
-    def selectItem(self : Self, item : QStandardItem) -> None:
+    def selectItem(self : Self, item : "Node") -> None:
         index = model().indexFromItem(item)
         self.selectionModel().clearSelection()
         self.selectionModel().select(
@@ -171,9 +171,9 @@ class Explorer(TreeView):
         )
         self.setCurrentIndex(index)
 
-    def expandOrEdit(self : Self, item : QStandardItem) -> None:
+    def expandOrEdit(self : Self, item : "Node") -> None:
         self.selectItem(item)
-        match model().getItemDescription(item):
+        match model().getNodeDescription(item):
             case "Designs"  | "Libraries"    | \
                  "Design"   | "Library"      | \
                  "Diagrams" | "Symbol Cache":
@@ -184,29 +184,29 @@ class Explorer(TreeView):
 
     def newDesign(self : Self) -> None:
         # create new design
-        design_item = model().newDesignItem()
+        design_db_node = model().newDesignDbNode()
         # create new diagram
-        diagram_item = design_item.newDiagramItem()
+        diagram_node = design_db_node.newDiagramNode()
         # expand design to show diagram and symbol cache containers
-        self.expand(model().indexFromItem(design_item))
+        self.expand(model().indexFromItem(design_db_node))
         # expand diagrams container to show new diagram
-        self.expand(model().indexFromItem(design_item.diagramsItem()))
+        self.expand(model().indexFromItem(design_db_node.diagramsNode()))
         # open diagram editor for new diagram
-        self.editDrawing(diagram_item)
+        self.editDrawing(diagram_node)
 
     def newLibrary(self : Self) -> None:
-        library_item = model().newLibraryItem()
+        library_item = model().newLibraryDbNode()
         self.expand(model().indexFromItem(library_item))
 
-    def newDiagram(self : Self, item : QStandardItem) -> None:
-        diagram_item = model().newDiagramItem(item)
+    def newDiagram(self : Self, item : "Node") -> None:
+        diagram_node = model().newDiagramNode(item)
         self.expand(model().indexFromItem(item))
-        self.editDrawing(diagram_item)
+        self.editDrawing(diagram_node)
 
-    def newSymbol(self : Self, item : QStandardItem) -> None:
-        symbol_item = model().newSymbolItem(item)
+    def newSymbol(self : Self, item : "Node") -> None:
+        symbol_node = model().newSymbolNode(item)
         self.expand(model().indexFromItem(item))
-        self.editDrawing(symbol_item)
+        self.editDrawing(symbol_node)
 
     def openDbFiles(self : Self, type_name : str | None = None) -> None:
         from ..dialogs.file import FileOpenDialog
@@ -218,19 +218,19 @@ class Explorer(TreeView):
                 if self.openDbFile(file):
                     settings().addMRU(file)
 
-    def openDbFile(self : Self, file_name : str) -> "DbItem | None":
+    def openDbFile(self : Self, file_name : str) -> "DbNode | None":
         db_item = model().load(file_name)
         if db_item:
             self._expandDb(db_item)
-            if hasattr(db_item, "rootDiagramItem"):
-                self.editDrawing(db_item.rootDiagramItem())
+            if hasattr(db_item, "rootDiagramNode"):
+                self.editDrawing(db_item.rootDiagramNode())
         return db_item
 
-    def editDrawing(self : Self, item : QStandardItem) -> None:
-        from ...core.db import DrawingItem
+    def editDrawing(self : Self, item : "Node") -> None:
+        from ...core.db import DrawingNode
         from ...widgets.graphics.views.drawing import DrawingView, DrawingSubWindow
         from ...widgets.graphics.scenes.drawing import DrawingScene
-        if isinstance(item, DrawingItem):
+        if isinstance(item, DrawingNode):
             # focus existing subwindow if one exists
             for subwindow in window().mdi_area.subWindowList():
                 if not isinstance(subwindow, DrawingSubWindow):
@@ -250,18 +250,18 @@ class Explorer(TreeView):
         else:
             logger().warning(f"Unsupported item: {item.text()} ({type(item)})")
 
-    def newDrawingWindow(self : Self, item : "DrawingItem") -> None:
-        from ...core.db import DesignDbItem, LibraryDbItem, \
-                               DiagramItem, SymbolItem
+    def newDrawingWindow(self : Self, item : "DrawingNode") -> None:
+        from ...core.db import DesignDbNode, LibraryDbNode, \
+                               DiagramNode, SymbolNode
         from ...widgets.graphics.views.diagram  import DiagramView, DiagramSubWindow
         from ...widgets.graphics.views.symbol   import SymbolView, SymbolSubWindow
-        if isinstance(item, DiagramItem):
-            db_item : DesignDbItem = item.parent().parent()
+        if isinstance(item, DiagramNode):
+            db_item : DesignDbNode = item.parent().parent()
             dwg_scene = item.scene()
             dwg_view = DiagramView(dwg_scene)
             subwindow = DiagramSubWindow(window().mdi_area)
-        elif isinstance(item, SymbolItem):
-            db_item : LibraryDbItem = item.parent()
+        elif isinstance(item, SymbolNode):
+            db_item : LibraryDbNode = item.parent()
             dwg_scene = item.scene()
             dwg_view = SymbolView(dwg_scene)
             subwindow = SymbolSubWindow(window().mdi_area)
@@ -275,10 +275,10 @@ class Explorer(TreeView):
         subwindow.showMaximized()
         window().menu_bar.updateWindowMenu()
 
-    def spreadsheet(self : Self, item : "DrawingItem") -> None:
-        from ...core.db import DrawingItem
+    def spreadsheet(self : Self, item : "DrawingNode") -> None:
+        from ...core.db import DrawingNode
         from .spreadsheet import SpreadsheetSubWindow
-        if not isinstance(item, DrawingItem):
+        if not isinstance(item, DrawingNode):
             logger().warning(f"Unsupported item: {item.text()} ({type(item)})")
             return
         scene = item.scene()
@@ -298,10 +298,10 @@ class Explorer(TreeView):
         subwindow.showMaximized()
         window().menu_bar.updateWindowMenu()
 
-    def saveDb(self : Self, item : "DbItem") -> None:
+    def saveDb(self : Self, item : "DbNode") -> None:
         item.save()
 
-    def saveDbAs(self : Self, item : "DbItem") -> None:
+    def saveDbAs(self : Self, item : "DbNode") -> None:
         from ..dialogs.file import FileSaveAsDialog
         dialog = FileSaveAsDialog(item.dbTypeName())
         result = dialog.exec()
@@ -313,23 +313,23 @@ class Explorer(TreeView):
             path = selected_files[0]
             item.save(path)
 
-    def closeDb(self : Self, item : "DbItem") -> None:
+    def closeDb(self : Self, item : "DbNode") -> None:
         # TODO offer to save if modified
         model().close(item)
 
     def rename(self : Self) -> None:
         """Start editing the selected item"s text."""
-        from ...core.db import DbItem, DrawingItem
+        from ...core.db import DbNode, DrawingNode
         if self.currentIndex().isValid():
             item = model().itemFromIndex(self.currentIndex())
-            if isinstance(item, DbItem) \
-            or isinstance(item, DrawingItem):
+            if isinstance(item, DbNode) \
+            or isinstance(item, DrawingNode):
                 self.edit(self.currentIndex())
 
-    def copy(self : Self, item : QStandardItem) -> None:
+    def copy(self : Self, item : "Node") -> None:
         model().copy(item)
 
-    def paste(self : Self, item : QStandardItem) -> None:
+    def paste(self : Self, item : "Node") -> None:
         model().paste(item)
 
     def showContextMenu(self : Self, pos : QPoint) -> None:
@@ -340,9 +340,9 @@ class Explorer(TreeView):
         if not index.isValid(): # if clicking in empty space
             index = self.currentIndex()
         if index.isValid():
-            self.item = model().itemFromIndex(index)
+            self.node = model().itemFromIndex(index)
             item = model().itemFromIndex(index)
-            match model().getItemDescription(item):
+            match model().getNodeDescription(item):
                 case "Designs":
                     menu.addAction(a.newDesign)
                     menu.addAction(a.openDesign)
@@ -392,14 +392,14 @@ class Explorer(TreeView):
         menu.addAction(self.actions.decreaseTextSize)
         menu.exec(self.viewport().mapToGlobal(pos))
 
-    def _expandDb(self : Self, item : "DbItem") -> None:
-        from ...core.db import DesignDbItem, LibraryDbItem
+    def _expandDb(self : Self, item : "DbNode") -> None:
+        from ...core.db import DesignDbNode, LibraryDbNode
         db_idx = model().indexFromItem(item)
         self.expand(db_idx)
-        if isinstance(item, DesignDbItem):
+        if isinstance(item, DesignDbNode):
             diagrams_idx = model().indexFromItem(item._diagrams)
             self.expand(diagrams_idx)
-        elif isinstance(item, LibraryDbItem):
+        elif isinstance(item, LibraryDbNode):
             symbols_idx = model().indexFromItem(item._symbols)
             self.expand(symbols_idx)
 

@@ -11,16 +11,16 @@ from .utils import val2str, str2val, proper2snake, snake2proper
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from .db import DesignDbItem, LibraryDbItem, DiagramItem, SymbolItem
+    from .db import DesignDbNode, LibraryDbNode, DiagramNode, SymbolNode
     from ..widgets.graphics.properties import PropertiesMixin
     from ..widgets.graphics.items import ElementMixin
 
 
 XmlItemTypes: TypeAlias = Union[
-    "DesignDbItem",
-    "LibraryDbItem",
-    "DiagramItem",
-    "SymbolItem",
+    "DesignDbNode",
+    "LibraryDbNode",
+    "DiagramNode",
+    "SymbolNode",
     "ElementMixin"
 ]
 
@@ -63,7 +63,7 @@ def fromXmlAttrs(instance : "PropertiesMixin", xr : QXmlStreamReader) -> None:
 def fromXmlItems(
     xr : QXmlStreamReader
 ) -> tuple[list[XmlItemTypes], QPointF | None]:
-    from .db import DesignDbItem, LibraryDbItem, DiagramItem, SymbolItem
+    from .db import DesignDbNode, LibraryDbNode, DiagramNode, SymbolNode
     from ..widgets.graphics.items import _element_classes
     pos = None
     items = []
@@ -82,13 +82,13 @@ def fromXmlItems(
             else:
                 match xr.name():
                     case "Design":
-                        item = DesignDbItem.fromXml(xr)
+                        item = DesignDbNode.fromXml(xr)
                     case "Library":
-                        item = LibraryDbItem.fromXml(xr)
+                        item = LibraryDbNode.fromXml(xr)
                     case "Diagram":
-                        item = DiagramItem.fromXml(xr)
+                        item = DiagramNode.fromXml(xr)
                     case "Symbol":
-                        item = SymbolItem.fromXml(xr)
+                        item = SymbolNode.fromXml(xr)
                     case _:  # Assume it's an Element
                         if xr.name() in _element_classes:
                             item_class = _element_classes[xr.name()]

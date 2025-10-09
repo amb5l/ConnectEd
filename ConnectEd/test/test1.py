@@ -1,7 +1,7 @@
 from ConnectEd import api as ce
 
 ce.initCli()
-design_db = ce.DesignDbItem()
+design_db = ce.DesignDbNode()
 print("design database path =", design_db.getPath())
 diagrams = design_db.diagrams()
 if len(diagrams) != 1:

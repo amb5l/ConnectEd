@@ -4,7 +4,7 @@ from PyQt6.QtCore import QPointF, QSizeF
 
 from ConnectEd.widgets.graphics.items.rectangle import Rectangle
 
-from ConnectEd.core.db import DesignDbItem, DiagramItem
+from ConnectEd.core.db import DesignDbNode, DiagramNode
 from ConnectEd.widgets.graphics.scenes.diagram import DiagramScene
 from ConnectEd.widgets.graphics.items import DEFAULT
 
@@ -16,15 +16,15 @@ def test(app : cs.ConnectEdApp):
     # get model (so we can work with designs)
     model = app.model()
     # create new design
-    design_item = model.newDesignItem()
+    design_db_node = model.newDesignDbNode()
     # set the design name
-    design_item.setText("cli")
+    design_db_node.setText("cli")
     # get all diagram items in the design
-    diagram_items = design_item.diagramItems()
+    diagram_nodes = design_db_node.diagramNodes()
     # pick the first diagram item
-    diagram_item = diagram_items[0]
+    diagram_node = diagram_nodes[0]
     # get the diagram
-    diagram = diagram_item.diagram()
+    diagram = diagram_node.diagram()
     # create a rectangle
     pos = QPointF(100, 100)
     size = QSizeF(100, 100)
@@ -32,7 +32,7 @@ def test(app : cs.ConnectEdApp):
     # add rectangle to diagram
     diagram.addItem(rect)
     # save the design
-    design_item.save("./cli.xml")
+    design_db_node.save("./cli.xml")
 
     # done
     print("test finished")

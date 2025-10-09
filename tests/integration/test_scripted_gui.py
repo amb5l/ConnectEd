@@ -144,21 +144,21 @@ def test(app : cs.ConnectEdApp):
     file_new_design_action.trigger()
 
     # verify newly created design
-    design_items = model.designItems()
-    assert len(design_items) == 1
-    design_item = design_items[0]
-    assert design_item is not None
-    assert design_item.text() == "UntitledDesign1"
-    diagram_items = design_item.diagramItems()
-    assert len(diagram_items) == 1
-    diagram_item = diagram_items[0]
-    assert diagram_item is not None
-    assert diagram_item.text() == "UntitledDiagram1"
-    symbol_items = design_item.symbolItems()
-    assert len(symbol_items) == 0
+    design_db_nodes = model.designDbNodes()
+    assert len(design_db_nodes) == 1
+    design_db_node = design_db_nodes[0]
+    assert design_db_node is not None
+    assert design_db_node.text() == "UntitledDesign1"
+    diagram_nodes = design_db_node.diagramNodes()
+    assert len(diagram_nodes) == 1
+    diagram_node = diagram_nodes[0]
+    assert diagram_node is not None
+    assert diagram_node.text() == "UntitledDiagram1"
+    symbol_nodes = design_db_node.symbolNodes()
+    assert len(symbol_nodes) == 0
 
     # get view of design diagram and verify it
-    views = diagram_item.views()
+    views = diagram_node.views()
     assert len(views) == 1
     view = views[0]
     assert view is not None

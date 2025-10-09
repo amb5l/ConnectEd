@@ -24,15 +24,15 @@ def test(app : cs.ConnectEdApp):
     # trigger the action to create a new design
     file_new_design_action.trigger()
     # get all design items
-    design_items = model.designItems()
+    design_db_nodes = model.designDbNodes()
     # pick the first design item
-    design_item = design_items[0]
+    design_db_node = design_db_nodes[0]
     # get all diagram items in the design
-    diagram_items = design_item.diagramItems()
+    diagram_nodes = design_db_node.diagramNodes()
     # pick the first diagram item
-    diagram_item = diagram_items[0]
+    diagram_node = diagram_nodes[0]
     # get all views for the diagram item
-    views = diagram_item.views()
+    views = diagram_node.views()
     # pick the first view
     view = views[0]
     # zoom to fit all the diagram contents

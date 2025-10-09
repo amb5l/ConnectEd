@@ -6,7 +6,7 @@ from PyQt6.QtCore import QPointF, QSizeF
 
 from ConnectEd.widgets.graphics.items.rectangle import Rectangle
 
-from ConnectEd.core.db import DesignDbItem, DiagramItem
+from ConnectEd.core.db import DesignDbNode, DiagramNode
 from ConnectEd.widgets.graphics.scenes.diagram import DiagramScene
 from ConnectEd.widgets.graphics.items import DEFAULT
 
@@ -28,20 +28,20 @@ def test(app : cs.ConnectEdApp):
     # create new design
     model = app.model()
     assert model is not None
-    design_item = model.newDesignItem(TEST_DESIGN)
-    assert isinstance(design_item, DesignDbItem)
-    assert design_item.text() == TEST_DESIGN
-    diagram_item = model.newDiagramItem(design_item, TEST_DIAGRAM)
-    assert isinstance(diagram_item, DiagramItem)
-    assert diagram_item.text() == TEST_DIAGRAM
-    diagram_items = design_item.diagramItems()
-    assert len(diagram_items) == 1
-    assert diagram_items[0] is diagram_item
-    symbol_items = design_item.symbolItems()
-    assert len(symbol_items) == 0
+    design_db_node = model.newDesignDbNode(TEST_DESIGN)
+    assert isinstance(design_db_node, DesignDbNode)
+    assert design_db_node.text() == TEST_DESIGN
+    diagram_node = model.newDiagramNode(design_db_node, TEST_DIAGRAM)
+    assert isinstance(diagram_node, DiagramNode)
+    assert diagram_node.text() == TEST_DIAGRAM
+    diagram_nodes = design_db_node.diagramNodes()
+    assert len(diagram_nodes) == 1
+    assert diagram_nodes[0] is diagram_node
+    symbol_nodes = design_db_node.symbolNodes()
+    assert len(symbol_nodes) == 0
 
     # get diagram
-    diagram = diagram_item.diagram()
+    diagram = diagram_node.diagram()
     assert isinstance(diagram, DiagramScene)
 
     # add rectangle to diagram
@@ -69,25 +69,25 @@ def test(app : cs.ConnectEdApp):
     if os.path.exists(TEST_FILE):
         os.remove(TEST_FILE)
     assert not os.path.exists(TEST_FILE)
-    design_item.save(TEST_FILE)
+    design_db_node.save(TEST_FILE)
     assert os.path.exists(TEST_FILE)
 
     # close the design
-    model.close(design_item)
+    model.close(design_db_node)
 
     # verify the design is not in the model
-    assert design_item not in model.designItems()
+    assert design_db_node not in model.designDbNodes()
 
     # discard the design
-    del design_item
+    del design_db_node
 
     # load the design
-    design_item = DesignDbItem.load(TEST_FILE)
-    assert isinstance(design_item, DesignDbItem)
-    assert design_item.text() == TEST_DESIGN
-    diagram_items = design_item.diagramItems()
-    assert len(diagram_items) == 1
-    diagram_item = diagram_items[0]
+    design_db_node = DesignDbNode.load(TEST_FILE)
+    assert isinstance(design_db_node, DesignDbNode)
+    assert design_db_node.text() == TEST_DESIGN
+    diagram_nodes = design_db_node.diagramNodes()
+    assert len(diagram_nodes) == 1
+    diagram_node = diagram_nodes[0]
 
     # done
     print("test finished")
