@@ -281,6 +281,23 @@ class DesignDbItem(DbItem):
         else:
             self._diagrams.setRoot(None)
 
+    def diagramsItem(self : Self) -> DiagramsContainer:
+        return self._diagrams
+
+    def diagramItems(self : Self) -> list[DiagramItem]:
+        return [self._diagrams.child(i) for i in range(self._diagrams.rowCount())]
+
+    def rootDiagramItem(self : Self) -> DiagramItem | None:
+        if self._diagrams.root() is None:
+            return None
+        return self._diagrams.root()
+
+    def symbolsItem(self : Self) -> SymbolCacheContainer:
+        return self._symbols
+
+    def symbolItems(self : Self) -> list[SymbolItem]:
+        return [self._symbols.child(i) for i in range(self._symbols.rowCount())]
+
     def toXml(self : Self, xw : QXmlStreamWriter) -> None:
         self.toXmlBegin(xw)
         xw.writeStartElement("Diagrams")

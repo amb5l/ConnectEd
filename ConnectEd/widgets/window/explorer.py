@@ -217,8 +217,8 @@ class Explorer(TreeView):
         db_item = model().load(file_name)
         if db_item:
             self._expandDb(db_item)
-            root_diagram = db_item._diagrams.root
-            self.editDrawing(root_diagram)
+            if hasattr(db_item, "rootDiagramItem"):
+                self.editDrawing(db_item.rootDiagramItem())
         return db_item
 
     def editDrawing(self : Self, item : QStandardItem) -> None:
