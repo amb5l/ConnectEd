@@ -1,5 +1,7 @@
 import os
 
+from typing import Self
+
 import ConnectEd.scripting as cs
 
 from PyQt6.QtCore import QPointF, QSizeF
