@@ -20,7 +20,7 @@ if TYPE_CHECKING:
     from ...core.db import Node, DrawingNode, DbNode, DbNodeType
 
 
-class Explorer(TreeView):
+class Navigator(TreeView):
     actions   : SimpleNamespace
     menus     : SimpleNamespace
     node      : "Node"
@@ -402,12 +402,12 @@ class Explorer(TreeView):
             symbols_idx = model().indexFromItem(node._symbols)
             self.expand(symbols_idx)
 
-class ExplorerDock(TreeViewDock):
-    WINDOW_TITLE = "Explorer"
+class NavigatorDock(TreeViewDock):
+    WINDOW_TITLE = "Navigator"
 
-    explorer : Explorer
+    navigator : Navigator
 
     def __init__(self : Self, parent : QWidget) -> None:
         super().__init__(None, parent)
-        self.explorer = Explorer(self)
-        self.setWidget(self.explorer)
+        self.navigator = Navigator(self)
+        self.setWidget(self.navigator)

@@ -28,7 +28,7 @@ from .text_view       import TextView
 from .messages_view   import MessagesViewDock
 from .transcript_view import TranscriptViewDock
 from .log_view        import LogViewDock
-from .explorer        import ExplorerDock, Explorer
+from .navigator       import NavigatorDock, Navigator
 
 
 class Window(QMainWindow):
@@ -37,7 +37,7 @@ class Window(QMainWindow):
     slots             : Slots
     _menu_bar         : MenuBar
     status_bar        : StatusBar
-    explorer_dock     : ExplorerDock
+    navigator_dock    : NavigatorDock
     messages_viewer   : MessagesViewDock
     transcript_viewer : TranscriptViewDock
     log_viewer        : LogViewDock
@@ -91,8 +91,8 @@ class Window(QMainWindow):
         self.tabifyDockWidget(self.messages_viewer, self.transcript_viewer)
         self.tabifyDockWidget(self.messages_viewer, self.log_viewer)
         self.messages_viewer.raise_()
-        self.explorer_dock = ExplorerDock(self)
-        self.addDockWidget(qd.LeftDockWidgetArea, self.explorer_dock)
+        self.navigator_dock = NavigatorDock(self)
+        self.addDockWidget(qd.LeftDockWidgetArea, self.navigator_dock)
 
         # MDI area
         self.mdi_area = MdiArea()
@@ -167,8 +167,8 @@ class Window(QMainWindow):
         return self._menu_bar
 
     @property
-    def explorer(self : Self) -> Explorer:
-        return self.explorer_dock.widget()
+    def navigator(self : Self) -> Navigator:
+        return self.navigator_dock.widget()
 
     @property
     def messages(self : Self) -> TextView:

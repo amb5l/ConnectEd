@@ -27,9 +27,9 @@ def test(app : cs.ConnectEdApp):
     menu_bar = window.menu_bar
     assert menu_bar is not None
     assert menu_bar.isHidden() == False
-    explorer_dock = window.explorer_dock
-    assert explorer_dock is not None
-    assert explorer_dock.isHidden() == False
+    navigator_dock = window.navigator_dock
+    assert navigator_dock is not None
+    assert navigator_dock.isHidden() == False
     messages_viewer = window.messages_viewer
     assert messages_viewer is not None
     assert messages_viewer.isHidden() == False
@@ -82,58 +82,58 @@ def test(app : cs.ConnectEdApp):
 
     # verify existence of File menu and submenu actions
     file_actions = file_menu.actionsDict()
-    assert "Open"         in file_actions
-    assert "Save"         in file_actions
-    assert "Save As"      in file_actions
-    assert "Exit"         in file_actions
+    assert "Open"    in file_actions
+    assert "Save"    in file_actions
+    assert "Save As" in file_actions
+    assert "Exit"    in file_actions
     file_new_actions = file_new_menu.actionsDict()
-    assert "Design"   in file_new_actions
-    assert "Library"  in file_new_actions
+    assert "Design"  in file_new_actions
+    assert "Library" in file_new_actions
 
     # verify existence of Edit menu actions
     edit_actions = edit_menu.actionsDict()
-    assert "Undo"         in edit_actions
-    assert "Redo"         in edit_actions
-    assert "Cut"          in edit_actions
-    assert "Copy"         in edit_actions
-    assert "Paste"        in edit_actions
-    assert "Delete"       in edit_actions
-    assert "Duplicate"    in edit_actions
-    assert "Select Area"  in edit_actions
-    assert "Select All"   in edit_actions
-    assert "Properties"   in edit_actions
-    assert "Appearance"   in edit_actions
-    assert "Query"        in edit_actions
+    assert "Undo"        in edit_actions
+    assert "Redo"        in edit_actions
+    assert "Cut"         in edit_actions
+    assert "Copy"        in edit_actions
+    assert "Paste"       in edit_actions
+    assert "Delete"      in edit_actions
+    assert "Duplicate"   in edit_actions
+    assert "Select Area" in edit_actions
+    assert "Select All"  in edit_actions
+    assert "Properties"  in edit_actions
+    assert "Appearance"  in edit_actions
+    assert "Query"       in edit_actions
 
     # verify existence of View menu and submenu actions
     view_actions = view_menu.actionsDict()
-    assert "Zoom All"      in view_actions
-    assert "Zoom Sheet"    in view_actions
-    assert "Zoom Area"     in view_actions
-    assert "Zoom In"       in view_actions
-    assert "Zoom Out"      in view_actions
+    assert "Zoom All"   in view_actions
+    assert "Zoom Sheet" in view_actions
+    assert "Zoom Area"  in view_actions
+    assert "Zoom In"    in view_actions
+    assert "Zoom Out"   in view_actions
     view_theme_actions = view_theme_menu.actionsDict()
-    assert "Dark"         in view_theme_actions
-    assert "Light Mono"   in view_theme_actions
+    assert "Dark"       in view_theme_actions
+    assert "Light Mono" in view_theme_actions
 
     # verify existence of Place menu actions
     place_actions = place_menu.actionsDict()
-    assert "Port"         in place_actions
-    assert "Block"        in place_actions
-    assert "Block Pin"    in place_actions
-    assert "Rectangle"    in place_actions
-    assert "Text Block"   in place_actions
+    assert "Port"       in place_actions
+    assert "Block"      in place_actions
+    assert "Block Pin"  in place_actions
+    assert "Rectangle"  in place_actions
+    assert "Text Block" in place_actions
 
     # verify existence of Window menu actions
     window_actions = window_menu.actionsDict()
-    assert "Explorer"     in window_actions
-    assert "Messages"     in window_actions
-    assert "Transcript"   in window_actions
-    assert "Log"          in window_actions
+    assert "Navigator"  in window_actions
+    assert "Messages"   in window_actions
+    assert "Transcript" in window_actions
+    assert "Log"        in window_actions
 
     # verify existence of Help menu actions
     help_actions = help_menu.actionsDict()
-    assert "About"        in help_actions
+    assert "About" in help_actions
 
     # get model
     model = app.model()

@@ -72,7 +72,7 @@ class Actions:
         self.placeRectangle     = Action( window(), "Rectangle"     , "Place Rectangle"                        , "Ctrl+R"                     )  # noqa E501
         self.placeText          = Action( window(), "Text"          , "Place Text"                             , "Ctrl+T"                     )  # noqa E501
         self.placeTextBlock     = Action( window(), "Text Block"    , "Place Text Block"                       , "Ctrl+K"                     )  # noqa E501
-        self.windowExplorer     = Action( window(), "Explorer"      , "Show the explorer window"               , None                         )  # noqa E501
+        self.windowNavigator    = Action( window(), "Navigator"     , "Show the navigator window"              , None                         )  # noqa E501
         self.windowMessages     = Action( window(), "Messages"      , "Show the messages window"               , None                         )  # noqa E501
         self.windowTranscript   = Action( window(), "Transcript"    , "Show the transcript window"             , None                         )  # noqa E501
         self.windowLog          = Action( window(), "Log"           , "Show the log window"                    , None                         )  # noqa E501

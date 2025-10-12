@@ -91,7 +91,7 @@ class MenuBar(QMenuBar):
         self.place_menu.addAction(actions.placeTextBlock)
 
         self.window_menu = Menu("&Window")
-        self.window_menu.addAction(actions.windowExplorer)
+        self.window_menu.addAction(actions.windowNavigator)
         self.window_menu.addAction(actions.windowMessages)
         self.window_menu.addAction(actions.windowTranscript)
         self.window_menu.addAction(actions.windowLog)
@@ -119,7 +119,7 @@ class MenuBar(QMenuBar):
         window : "Window" = self.parent()
         actions = window.actions
         self.window_menu.clear()
-        self.window_menu.addAction(actions.windowExplorer)
+        self.window_menu.addAction(actions.windowNavigator)
         self.window_menu.addAction(actions.windowMessages)
         self.window_menu.addAction(actions.windowTranscript)
         self.window_menu.addAction(actions.windowLog)

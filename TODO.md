@@ -1,3 +1,8 @@
+NEXT
+- rename explorer to navigator
+- align navigator with windows
+- rotate port during placement
+
 BUGS
 
 DEAD ENDS
