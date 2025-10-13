@@ -5,7 +5,7 @@ from typing import Self
 from PyQt6.QtCore    import Qt, QSize,QXmlStreamWriter, QXmlStreamReader
 from PyQt6.QtGui     import QStandardItemModel, QStandardItem
 
-from ..app import logger
+from ..app import logger, window
 
 from ..resources import getIconPath
 
@@ -64,12 +64,12 @@ class Container(Node):
         self.setFont(font)
 
 
-class DesignDbContainer(Container):
+class DesignsDbContainer(Container):
     NAME   = "Designs"
     BOLD   = True
 
 
-class LibraryDbContainer(Container):
+class LibrariesDbContainer(Container):
     NAME   = "Libraries"
     BOLD   = True
 
@@ -97,9 +97,21 @@ class DiagramsContainer(Container):
             self._root.setIcon(icon)
 
 
-class SymbolCacheContainer(Container):
-    NAME   = "Symbol Cache"
+class SymbolsContainer(Container):
+    NAME   = "Symbols"
     ITALIC = True
+
+
+class DrawingWindowNode(Node):
+    pass
+
+
+class DiagramWindowNode(DrawingWindowNode):
+    pass
+
+
+class SymbolWindowNode(DrawingWindowNode):
+    pass
 
 
 class DrawingNode(Node):
@@ -148,26 +160,6 @@ class DrawingNode(Node):
     copy = copy
 
 
-class SymbolNode(DrawingNode):
-    @classmethod
-    def sceneClass(cls):
-        from ..widgets.graphics.scenes.symbol import SymbolScene
-        return SymbolScene
-
-    _scene : "SymbolScene"
-
-    def symbol(self : Self) -> "SymbolScene":
-        return self._scene
-
-    def dbNode(self : Self) -> "LibraryDbNode | DesignDbNode":
-        """Symbols live in the Symbol Cache of a design, or in a library."""
-        parent = self.parent()
-        if isinstance(parent, SymbolCacheContainer):
-            return parent.parent()
-        else:
-            return parent
-
-
 class DiagramNode(DrawingNode):
     @classmethod
     def sceneClass(cls):
@@ -188,6 +180,36 @@ class DiagramNode(DrawingNode):
         For now, diagrams always live in a diagrams container under a design.
         """
         return self.parent().parent()
+
+    def newDiagramWindow(self : Self) -> None:
+        from ..widgets.graphics.views.diagram import DiagramView, DiagramSubWindow
+        dwg_scene = self.diagram()
+        dwg_view = DiagramView(dwg_scene)
+        subwindow = DiagramSubWindow(window().mdi_area)
+        subwindow.setWidget(dwg_view)
+        subwindow.setWindowTitle(f"{self.dbNode().text()}:{self.text()}")
+        window().mdi_area.addSubWindow(subwindow)
+        subwindow.showMaximized()
+        window().menu_bar.updateWindowMenu()
+
+class SymbolNode(DrawingNode):
+    @classmethod
+    def sceneClass(cls):
+        from ..widgets.graphics.scenes.symbol import SymbolScene
+        return SymbolScene
+
+    _scene : "SymbolScene"
+
+    def symbol(self : Self) -> "SymbolScene":
+        return self._scene
+
+    def dbNode(self : Self) -> "LibraryDbNode | DesignDbNode":
+        """Symbols live in the Symbol Cache of a design, or in a library."""
+        parent = self.parent()
+        if isinstance(parent, SymbolsContainer):
+            return parent.parent()
+        else:
+            return parent
 
 
 class DbNode(Node):
@@ -271,13 +293,13 @@ class DesignDbNode(DbNode):
     FILE_EXT = DSN_EXT
 
     _diagrams : DiagramsContainer
-    _symbols  : SymbolCacheContainer
+    _symbols  : SymbolsContainer
 
     def __init__(self : Self, name : str | None = None) -> None:
         super().__init__(name)
         self._diagrams = DiagramsContainer()
         self.appendRow(self._diagrams)
-        self._symbols = SymbolCacheContainer()
+        self._symbols = SymbolsContainer()
         self.appendRow(self._symbols)
 
     def newDiagramNode(self : Self, name : str | None = None) -> DiagramNode:
@@ -303,7 +325,7 @@ class DesignDbNode(DbNode):
         self._symbols.appendRow(item)
         return item
 
-    def symbolsNode(self : Self) -> SymbolCacheContainer:
+    def symbolsNode(self : Self) -> SymbolsContainer:
         return self._symbols
 
     def symbolNodes(self : Self) -> list[SymbolNode]:
@@ -389,7 +411,7 @@ class DesignDbNode(DbNode):
 class LibraryDbNode(DbNode):
     FILE_EXT = LIB_EXT
 
-    def symbolsNode(self : Self) -> SymbolCacheContainer:
+    def symbolsNode(self : Self) -> SymbolsContainer:
         return self._symbols
 
     def symbolNodes(self : Self) -> list[SymbolNode]:
@@ -415,15 +437,15 @@ DbNodeType = DesignDbNode | LibraryDbNode
 
 
 class Model(QStandardItemModel):
-    _designs   : DesignDbContainer
-    _libraries : LibraryDbContainer
+    _designs   : DesignsDbContainer
+    _libraries : LibrariesDbContainer
 
     def __init__(self : Self) -> None:
         super().__init__()
         self.setHorizontalHeaderLabels(["Database Hierarchy"])
-        self._designs = DesignDbContainer()
+        self._designs = DesignsDbContainer()
         self.appendRow(self._designs)
-        self._libraries = LibraryDbContainer()
+        self._libraries = LibrariesDbContainer()
         self.appendRow(self._libraries)
 
     def newDesignDbNode(self : Self, name : str | None = None) -> DesignDbNode:
@@ -460,7 +482,7 @@ class Model(QStandardItemModel):
         node = None
         if isinstance(parent, DesignDbNode):
             parent = parent._symbols
-        if isinstance(parent, (SymbolCacheContainer, LibraryDbNode)):
+        if isinstance(parent, (SymbolsContainer, LibraryDbNode)):
             node = SymbolNode()
             parent.appendRow(node)
         else:
@@ -597,7 +619,11 @@ class Model(QStandardItemModel):
                 return "Design Symbol"
             elif isinstance(i.parent(), LibraryDbNode):
                 return "Library Symbol"
-        elif isinstance(i, Node):
+        elif isinstance(i, DiagramWindowNode):
+            return "Diagram Window"
+        elif isinstance(i, SymbolWindowNode):
+            return "Symbol Window"
+        elif isinstance(i, Container):
             if i.text() == "Designs":
                 return "Designs"
             elif i.text() == "Libraries":

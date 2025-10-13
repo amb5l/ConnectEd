@@ -1,4 +1,3 @@
-from types  import SimpleNamespace
 from typing import Self
 
 from PyQt6.QtCore    import Qt, QPoint, QItemSelectionModel
@@ -17,12 +16,75 @@ from .tree_view import TreeView, TreeViewDock
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from ...core.db import Node, DrawingNode, DbNode, DbNodeType
+    from ...core.db import Node, \
+                           DesignsDbContainer, LibrariesDbContainer, \
+                           DesignDbNode, LibraryDbNode, \
+                           DrawingWindowNode, \
+                           DrawingNode, DiagramNode, SymbolNode, \
+                           DbNode, DbNodeType
+
+
+_MENU_SPECS = (
+    ("DesignsDbContainer", (
+        ( "New Design"  , "newDesign"  ),
+        ( "Open Design" , "openDesign" )
+    )),
+    ("LibrariesDbContainer", (
+        ( "New Library"  , "newLibrary"  ),
+        ( "Open Library" , "openLibrary" )
+    )),
+    ("DesignDbNode", (
+        ("New", (
+            ( "Diagram" , "newDiagram" ),
+            ( "Symbol"  , "newSymbol"  )
+        )),
+        ( "Save"    , "saveDesign"   ),
+        ( "Save As" , "saveDesignAs" ),
+        ( "Close"   , "closeDesign"  ),
+        "--",
+        ( "Rename"  , "renameDesign" )
+    )),
+    ("LibraryDbNode", (
+        ( "New Symbol" , "newSymbol" ),
+        "--",
+        ( "Save"    , "saveLibrary"  ),
+        ( "Save As" , "saveLibraryAs" ),
+        ( "Close"   , "closeLibrary"  ),
+        "--",
+        ( "Rename"  , "renameLibrary" )
+    )),
+    ("DiagramsContainer", (
+        ( "New Diagram" , "newDiagram" ),
+    )),
+    ("SymbolCacheContainer", (
+        ( "New Symbol" , "newSymbol" ),
+    )),
+    ("DiagramNode", (
+        ( "Edit"       , "editDiagram"      ),
+        ( "Rename"     , "renameDiagram"    ),
+        ( "New Window" , "newDiagramWindow" ),
+        "--",
+        ( "Spreadsheet" , "spreadsheet" )
+    )),
+    ("SymbolNode", (
+        ( "Edit"       , "editSymbol"      ),
+        ( "Rename"     , "renameSymbol"    ),
+        ( "New Window" , "newSymbolWindow" )
+    )),
+    ("DrawingWindowNode", (
+        ( "Activate"   , "activateDrawingWindow" ),
+        ( "New Window" , "newDrawingWindow"      ),
+    )),
+    ("SymbolWindowNode", (
+        ( "Activate"   , "activateDrawingWindow" ),
+        ( "New Window" , "newSymbolWindow"       )
+    ))
+)
 
 
 class Navigator(TreeView):
-    actions   : SimpleNamespace
-    menus     : SimpleNamespace
+
+    menus     : dict[str, Menu]
     node      : "Node"
     _focus_in : bool
 
@@ -33,76 +95,8 @@ class Navigator(TreeView):
         self.customContextMenuRequested.connect(self.showContextMenu)
         self.setEditTriggers(self.EditTrigger.EditKeyPressed)
         self._focus_in = False
-        self.actions = SimpleNamespace()
-        a = self.actions
-        a.increaseTextSize = QAction("Increase Text Size", self)
-        a.increaseTextSize.triggered.connect(self.increaseFontSize)
-        a.decreaseTextSize = QAction("Decrease Text Size", self)
-        a.decreaseTextSize.triggered.connect(self.decreaseFontSize)
-        a.newDesign = QAction("New Design", self)
-        a.newDesign.triggered.connect(self.newDesign)
-        a.newMenuDesign = QAction("Design", self)
-        a.newMenuDesign.triggered.connect(self.newDesign)
-        a.newLibrary = QAction("New Library", self)
-        a.newLibrary.triggered.connect(self.newLibrary)
-        a.newMenuLibrary = QAction("Library", self)
-        a.newMenuLibrary.triggered.connect(self.newLibrary)
-        a.newDiagram = QAction("New Diagram", self)
-        a.newDiagram.triggered.connect(lambda: self.newDiagram(self.node))
-        a.newMenuDiagram = QAction("Diagram", self)
-        a.newMenuDiagram.triggered.connect(lambda: self.newDiagram(self.node))
-        a.newSymbol = QAction("New Symbol", self)
-        a.newSymbol.triggered.connect(lambda: self.newSymbol(self.node))
-        a.newMenuSymbol = QAction("Symbol", self)
-        a.newMenuSymbol.triggered.connect(lambda: self.newSymbol(self.node))
-        a.open = QAction("Open...", self)
-        a.open.triggered.connect(lambda: self.openDbFiles())
-        a.openDesign = QAction("Open Design...", self)
-        a.openDesign.triggered.connect(lambda: self.openDbFiles("Design"))
-        a.openLibrary = QAction("Open Library...", self)
-        a.openLibrary.triggered.connect(lambda: self.openDbFiles("Library"))
-        a.editDiagram = QAction("Edit Diagram", self)
-        a.editDiagram.triggered.connect(lambda: self.editDrawing(self.node))
-        a.editSymbol = QAction("Edit Symbol", self)
-        a.editSymbol.triggered.connect(lambda: self.editDrawing(self.node))
-        a.newDiagramWindow = QAction("New Diagram Window", self)
-        a.newDiagramWindow.triggered.connect(lambda: self.newDrawingWindow(self.node))
-        a.newSymbolWindow = QAction("New Symbol Window", self)
-        a.newSymbolWindow.triggered.connect(lambda: self.newDrawingWindow(self.node))
-        a.spreadsheet = QAction("Spreadsheet", self)
-        a.spreadsheet.triggered.connect(lambda: self.spreadsheet(self.node))
-        a.saveDesign = QAction("Save Design", self)
-        a.saveDesign.triggered.connect(lambda: self.saveDb(self.node))
-        a.saveLibrary = QAction("Save Library", self)
-        a.saveLibrary.triggered.connect(lambda: self.saveDb(self.node))
-        a.saveDesignAs = QAction("Save Design As...", self)
-        a.saveDesignAs.triggered.connect(lambda: self.saveDbAs(self.node))
-        a.saveLibraryAs = QAction("Save Library As...", self)
-        a.saveLibraryAs.triggered.connect(lambda: self.saveDbAs(self.node))
-        a.closeDesign = QAction("Close Design", self)
-        a.closeDesign.triggered.connect(lambda: self.closeDb(self.node))
-        a.closeLibrary = QAction("Close Library", self)
-        a.closeLibrary.triggered.connect(lambda: self.closeDb(self.node))
-        a.renameDesign = QAction("Rename Design", self)
-        a.renameDesign.triggered.connect(self.rename)
-        a.renameLibrary = QAction("Rename Library", self)
-        a.renameLibrary.triggered.connect(self.rename)
-        a.renameDiagram = QAction("Rename Diagram", self)
-        a.renameDiagram.triggered.connect(self.rename)
-        a.renameSymbol = QAction("Rename Symbol", self)
-        a.renameSymbol.triggered.connect(self.rename)
-        a.copy = QAction("Copy", self)
-        a.copy.triggered.connect(lambda: self.copy(self.node))
-        a.paste = QAction("Paste", self)
-        a.paste.triggered.connect(lambda: self.paste(self.node))
-        self.menus = SimpleNamespace()
-        m = self.menus
-        m.new_db = Menu("New", self)
-        m.new_db.addAction(a.newMenuDesign)
-        m.new_db.addAction(a.newMenuLibrary)
-        m.new_dwg = Menu("New", self)
-        m.new_dwg.addAction(a.newMenuDiagram)
-        m.new_dwg.addAction(a.newMenuSymbol)
+        self.menus = {}
+        self._buildMenus(_MENU_SPECS)
 
     def onItemChanged(self : Self, node : "Node") -> None:
         """Handle changes to items in the model, such as renaming."""
@@ -182,31 +176,82 @@ class Navigator(TreeView):
             case "Diagram" | "Design Symbol" | "Library Symbol":
                 self.editDrawing(node)
 
-    def newDesign(self : Self) -> None:
+    def newDesign(self : Self, _node : "DesignsDbContainer | None" = None) -> None:
         # create new design
         design_db_node = model().newDesignDbNode()
-        # create new diagram
+        # create new diagram inside design
         diagram_node = design_db_node.newDiagramNode()
-        # expand design to show diagram and symbol cache containers
+        # expand design to show diagrams and symbols containers
         self.expand(model().indexFromItem(design_db_node))
         # expand diagrams container to show new diagram
         self.expand(model().indexFromItem(design_db_node.diagramsNode()))
         # open diagram editor for new diagram
         self.editDrawing(diagram_node)
 
-    def newLibrary(self : Self) -> None:
+    def openDesign(self : Self) -> None:
+        self.openDbFiles("Design")
+
+    def saveDesign(self : Self) -> None:
+        self.saveDb(self.node)
+
+    def saveDesignAs(self : Self) -> None:
+        self.saveDbAs(self.node)
+
+    def renameDesign(self : Self) -> None:
+        self.rename(self.node)
+
+    def closeDesign(self : Self, node : "DesignDbNode") -> None:
+        self.closeDb(node)
+
+    def newLibrary(self : Self, _node : "LibrariesDbContainer | None" = None) -> None:
         library_db_node = model().newLibraryDbNode()
         self.expand(model().indexFromItem(library_db_node))
+
+    def openLibrary(self : Self) -> None:
+        self.openDbFiles("Library")
+
+    def saveLibrary(self : Self) -> None:
+        self.saveDb(self.node)
+
+    def saveLibraryAs(self : Self) -> None:
+        self.saveDbAs(self.node)
+
+    def renameLibrary(self : Self) -> None:
+        self.rename(self.node)
+
+    def closeLibrary(self : Self) -> None:
+        self.closeDb(self.node)
+
+    def renameDesign(self : Self) -> None:
+        self.renameDb(self.node)
 
     def newDiagram(self : Self, node : "Node") -> None:
         diagram_node = model().newDiagramNode(node)
         self.expand(model().indexFromItem(node))
         self.editDrawing(diagram_node)
 
+    def editDiagram(self : Self, node : "DiagramNode") -> None:
+        self.editDrawing(node)
+
+    def renameDiagram(self : Self, node : "DiagramNode") -> None:
+        self.rename(node)
+
+    def newDiagramWindow(self : Self, node : "DiagramNode") -> None:
+        node.newDiagramWindow()
+
     def newSymbol(self : Self, node : "Node") -> None:
         symbol_node = model().newSymbolNode(node)
         self.expand(model().indexFromItem(node))
         self.editDrawing(symbol_node)
+
+    def editSymbol(self : Self, node : "SymbolNode") -> None:
+        self.editDrawing(node)
+
+    def renameSymbol(self : Self, node : "SymbolNode") -> None:
+        self.rename(node)
+
+    def newSymbolWindow(self : Self, node : "SymbolNode") -> None:
+        self.newDrawingWindow(node)
 
     def openDbFiles(self : Self, type_name : str | None = None) -> None:
         from ..dialogs.file import FileOpenDialog
@@ -226,29 +271,19 @@ class Navigator(TreeView):
                 self.editDrawing(db_node.rootDiagramNode())
         return db_node
 
-    def editDrawing(self : Self, node : "Node") -> None:
-        from ...core.db import DrawingNode
-        from ...widgets.graphics.views.drawing import DrawingView, DrawingSubWindow
-        from ...widgets.graphics.scenes.drawing import DrawingScene
-        if isinstance(node, DrawingNode):
-            # focus existing subwindow if one exists
-            for subwindow in window().mdi_area.subWindowList():
-                if not isinstance(subwindow, DrawingSubWindow):
-                    continue
-                if not isinstance(subwindow.widget(), DrawingView):
-                    continue
-                if not isinstance(subwindow.widget().scene(), DrawingScene):
-                    continue
-                if node._scene != subwindow.widget().scene():
-                    continue
-                window().mdi_area.setActiveSubWindow(subwindow)
-                subwindow.show()
-                subwindow.raise_()
-                subwindow.setFocus()
-                return
-            self.newDrawingWindow(node)
-        else:
+    def editDrawing(self : Self, node : "DrawingNode") -> None:
+        from ...core.db import DrawingWindowNode, DrawingNode
+        if not isinstance(node, DrawingNode):
             logger().warning(f"Unsupported node: {node.text()} ({type(node)})")
+            return
+        # open first existing window if one exists
+        for row in range(node.rowCount()):
+            child = node.child(row)
+            if isinstance(child, DrawingWindowNode):
+                self.activateDrawingWindow(child)
+                return
+        # otherwise create a new window
+        self.newDrawingWindow(node)
 
     def newDrawingWindow(self : Self, node : "DrawingNode") -> None:
         from ...core.db import DesignDbNode, LibraryDbNode, \
@@ -256,6 +291,7 @@ class Navigator(TreeView):
         from ...widgets.graphics.views.diagram  import DiagramView, DiagramSubWindow
         from ...widgets.graphics.views.symbol   import SymbolView, SymbolSubWindow
         if isinstance(node, DiagramNode):
+            node.newDiagramWindow()
             db_node : DesignDbNode = node.parent().parent()
             dwg_scene = node.scene()
             dwg_view = DiagramView(dwg_scene)
@@ -274,6 +310,16 @@ class Navigator(TreeView):
         window().mdi_area.addSubWindow(subwindow)
         subwindow.showMaximized()
         window().menu_bar.updateWindowMenu()
+
+    def activateDrawingWindow(self : Self, node : "DrawingWindowNode") -> None:
+        from ...core.db import DrawingWindowNode
+        if not isinstance(node, DrawingWindowNode):
+            logger().warning(f"Unsupported node: {node.text()} ({type(node)})")
+            return
+        subwindow = node.subwindow()
+        subwindow.show()
+        subwindow.raise_()
+        subwindow.setFocus()
 
     def spreadsheet(self : Self, node : "DrawingNode") -> None:
         from ...core.db import DrawingNode
@@ -333,63 +379,17 @@ class Navigator(TreeView):
         model().paste(node)
 
     def showContextMenu(self : Self, pos : QPoint) -> None:
-        menu = Menu(self)
-        a = self.actions
-        m = self.menus
         index = self.indexAt(pos)
         if not index.isValid(): # if clicking in empty space
             index = self.currentIndex()
         if index.isValid():
             self.node = model().itemFromIndex(index)
-            match model().getNodeDescription(self.node):
-                case "Designs":
-                    menu.addAction(a.newDesign)
-                    menu.addAction(a.openDesign)
-                case "Libraries":
-                    menu.addAction(a.newLibrary)
-                    menu.addAction(a.openLibrary)
-                case "Design":
-                    menu.addMenu(m.new_dwg)
-                    menu.addAction(a.saveDesign)
-                    menu.addAction(a.saveDesignAs)
-                    menu.addAction(a.closeDesign)
-                    menu.addSeparator()
-                    menu.addAction(a.renameDesign)
-                case "Library":
-                    menu.addAction(a.saveLibrary)
-                    menu.addAction(a.saveLibraryAs)
-                    menu.addAction(a.closeLibrary)
-                    menu.addSeparator()
-                    menu.addAction(a.newSymbol)
-                    menu.addSeparator()
-                    menu.addAction(a.renameLibrary)
-                case "Diagrams":
-                    menu.addAction(a.newDiagram)
-                case "Symbol Cache":
-                    menu.addAction(a.newSymbol)
-                case "Diagram":
-                    menu.addAction(a.newDiagramWindow)
-                    menu.addAction(a.editDiagram)
-                    menu.addAction(a.renameDiagram)
-                    menu.addSeparator()
-                    menu.addAction(a.spreadsheet)
-                case "Design Symbol" | "Library Symbol":
-                    menu.addAction(a.newSymbolWindow)
-                    menu.addAction(a.editSymbol)
-                    menu.addAction(a.renameSymbol)
-                    menu.addSeparator()
-                    menu.addAction(a.spreadsheet)
-            menu.addSeparator()
-            menu.addAction(self.actions.copy)
-            menu.addAction(self.actions.paste)
-            menu.addSeparator()
-        else:
-            menu.addMenu(m.new_db)
-            menu.addAction(a.open)
-            menu.addSeparator()
-        menu.addAction(self.actions.increaseTextSize)
-        menu.addAction(self.actions.decreaseTextSize)
-        menu.exec(self.viewport().mapToGlobal(pos))
+            node_type_name = type(self.node).__name__
+            if node_type_name not in self.menus:
+                logger().error(f"Unknown node type: {node_type_name}")
+                return
+            menu = self.menus[node_type_name]
+            menu.exec(self.viewport().mapToGlobal(pos))
 
     def _expandDb(self : Self, node : "DbNode") -> None:
         from ...core.db import DesignDbNode, LibraryDbNode
@@ -401,6 +401,42 @@ class Navigator(TreeView):
         elif isinstance(node, LibraryDbNode):
             symbols_idx = model().indexFromItem(node._symbols)
             self.expand(symbols_idx)
+
+    def _buildMenus(
+        self  : Self,
+        specs : tuple[tuple]
+    ) -> None:
+        for name, spec in specs:
+            self.menus[name] = self._buildMenu(spec)
+
+    def _buildMenu(
+        self : Self,
+        spec : tuple[str, str | tuple]
+    ) -> Menu:
+        # create empty menu
+        menu = Menu(self)
+        # add actions/submenus to menu
+        for name, method_or_spec in spec:
+            if isinstance(method_or_spec, str):  # it's a method name
+                if method_or_spec.startswith("-"):
+                    action = QAction()
+                    action.setSeparator(True)
+                    menu.addSeparator()
+                else:
+                    action = QAction(name, self)
+                    method = getattr(self, method_or_spec)
+                    wrapper = lambda checked=False, m=method: m(self.node)
+                    action.triggered.connect(wrapper)
+                menu.addAction(action)
+            elif isinstance(method_or_spec, tuple):  # it's a submenu spec
+                # this entry is a submenu
+                submenu = self._buildMenu(method_or_spec)
+                menu.addMenu(submenu)
+            else:
+                logger().error(f"Unknown entry type: {method_or_spec}")
+                continue
+        return menu
+
 
 class NavigatorDock(TreeViewDock):
     WINDOW_TITLE = "Navigator"

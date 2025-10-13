@@ -1,7 +1,8 @@
 NEXT
-- rename explorer to navigator
+- move subwindow title management into db/navigator
 - align navigator with windows
 - rotate port during placement
+- symbols
 
 BUGS
 
