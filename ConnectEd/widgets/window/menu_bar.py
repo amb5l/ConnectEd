@@ -143,6 +143,7 @@ class MenuBar(QMenuBar):
         self.file_menu.addAction(actions.fileOpen)
         self.file_menu.addAction(actions.fileSave)
         self.file_menu.addAction(actions.fileSaveAs)
+        self.file_menu.addAction(actions.fileClose)
         mru = settings().getMRU()
         if mru:
             self.file_menu.addSeparator()

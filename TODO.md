@@ -1,8 +1,10 @@
 NEXT
+- change window convenience properties to methods
 - move subwindow title management into db/navigator
 - align navigator with windows
 - rotate port during placement
 - symbols
+- Callable (collections.abc)
 
 BUGS
 

@@ -20,6 +20,9 @@ if TYPE_CHECKING:
     from ..widgets.graphics.scenes.symbol  import SymbolScene
     from ..widgets.graphics.scenes.diagram import DiagramScene
     from ..widgets.graphics.views.drawing  import DrawingView, DrawingSubWindow
+    from ..widgets.graphics.views.diagram  import DiagramView, DiagramSubWindow
+    from ..widgets.graphics.views.symbol   import SymbolView, SymbolSubWindow
+    from ..widgets.window.spreadsheet      import SpreadsheetSubWindow
 
 
 class NameCounter:
@@ -103,15 +106,70 @@ class SymbolsContainer(Container):
 
 
 class DrawingWindowNode(Node):
-    pass
+    @classmethod
+    def subWindowClass(cls):
+        from ..widgets.graphics.views.drawing import DrawingSubWindow
+        return DrawingSubWindow
+
+    @classmethod
+    def viewClass(cls) -> "DrawingView":
+        from ..widgets.graphics.views.drawing import DrawingView
+        return DrawingView
+
+    _view      : "DrawingView | None"
+    _subwindow : "DrawingSubWindow | None"
+
+    def __init__(self : Self, parent : "DrawingNode") -> None:
+        super().__init__()
+        scene = parent.scene()
+        self._view = self.__class__.viewClass()(scene)
+        self._subwindow = self.__class__.subWindowClass()(window().mdi_area)
+        self._subwindow.setWidget(self._view)
+        self.setText("???")
+        self._subwindow.setWindowTitle(self.text())
+        self._subwindow.showMaximized()
+        window().menu_bar.updateWindowMenu()
+
+    def setWindowTitle(self : Self, text : str) -> None:
+        self._subwindow.setWindowTitle(text)
 
 
 class DiagramWindowNode(DrawingWindowNode):
-    pass
+    @classmethod
+    def subWindowClass(cls):
+        from ..widgets.graphics.views.diagram import DiagramSubWindow
+        return DiagramSubWindow
+
+    @classmethod
+    def viewClass(cls) -> "DiagramView":
+        from ..widgets.graphics.views.diagram import DiagramView
+        return DiagramView
+
+    _view      : "DiagramView | None"
+    _subwindow : "DiagramSubWindow | None"
 
 
 class SymbolWindowNode(DrawingWindowNode):
-    pass
+    @classmethod
+    def subWindowClass(cls):
+        from ..widgets.graphics.views.symbol import SymbolSubWindow
+        return SymbolSubWindow
+
+    @classmethod
+    def viewClass(cls) -> "SymbolView":
+        from ..widgets.graphics.views.symbol import SymbolView
+        return SymbolView
+
+    _view      : "SymbolView | None"
+    _subwindow : "SymbolSubWindow | None"
+
+
+class SpreadsheetWindowNode(Node):
+
+    _subwindow : "SpreadsheetSubWindow | None"
+
+    def setWindowTitle(self : Self, text : str) -> None:
+        self._subwindow.setWindowTitle(text)
 
 
 class DrawingNode(Node):
@@ -119,6 +177,8 @@ class DrawingNode(Node):
     def sceneClass(cls):
         from ..widgets.graphics.scenes.drawing import DrawingScene
         return DrawingScene
+
+    _WINDOW_NODE_CLASS = DrawingWindowNode
 
     _scene : "DrawingScene"
 
@@ -145,8 +205,16 @@ class DrawingNode(Node):
     def views(self : Self) -> list["DrawingView"]:
         return self._scene.views()
 
+    def newWindow(self : Self) -> "DrawingWindowNode":
+        drawing_window_node = self._WINDOW_NODE_CLASS(self)
+        self.appendRow(drawing_window_node)
+        return drawing_window_node
+
     def drawingTypeName(self : Self) -> str:
         return self.__class__.__name__.replace("Node", "")
+
+    def dbNode(self : Self) -> "DbNode":
+        raise NotImplementedError("Subclasses must implement dbNode()")
 
     def toXml(self : Self, xw : QXmlStreamWriter) -> None:
         self._scene.toXml(xw)
@@ -166,6 +234,8 @@ class DiagramNode(DrawingNode):
         from ..widgets.graphics.scenes.diagram import DiagramScene
         return DiagramScene
 
+    _WINDOW_NODE_CLASS = DiagramWindowNode
+
     _scene : "DiagramScene"
 
     def __init__(self : Self, scene : "DiagramScene | None" = None) -> None:
@@ -181,22 +251,23 @@ class DiagramNode(DrawingNode):
         """
         return self.parent().parent()
 
-    def newDiagramWindow(self : Self) -> None:
-        from ..widgets.graphics.views.diagram import DiagramView, DiagramSubWindow
-        dwg_scene = self.diagram()
-        dwg_view = DiagramView(dwg_scene)
-        subwindow = DiagramSubWindow(window().mdi_area)
-        subwindow.setWidget(dwg_view)
-        subwindow.setWindowTitle(f"{self.dbNode().text()}:{self.text()}")
-        window().mdi_area.addSubWindow(subwindow)
-        subwindow.showMaximized()
-        window().menu_bar.updateWindowMenu()
+    def setRoot(self : Self) -> None:
+        diagrams_container : DiagramsContainer = self.parent()
+        diagrams_container.setRoot(self)
+
+    def newDiagramWindow(self : Self) -> "DiagramWindowNode":
+        diagram_window_node = DiagramWindowNode(self)
+        self.appendRow(diagram_window_node)
+        return diagram_window_node
+
 
 class SymbolNode(DrawingNode):
     @classmethod
     def sceneClass(cls):
         from ..widgets.graphics.scenes.symbol import SymbolScene
         return SymbolScene
+
+    _WINDOW_NODE_CLASS = SymbolWindowNode
 
     _scene : "SymbolScene"
 
@@ -309,7 +380,7 @@ class DesignDbNode(DbNode):
             self._diagrams.setRoot(item)
         return item
 
-    def diagramsNode(self : Self) -> DiagramsContainer:
+    def diagramsContainer(self : Self) -> DiagramsContainer:
         return self._diagrams
 
     def diagramNodes(self : Self) -> list[DiagramNode]:
@@ -325,7 +396,7 @@ class DesignDbNode(DbNode):
         self._symbols.appendRow(item)
         return item
 
-    def symbolsNode(self : Self) -> SymbolsContainer:
+    def symbolsContainer(self : Self) -> SymbolsContainer:
         return self._symbols
 
     def symbolNodes(self : Self) -> list[SymbolNode]:

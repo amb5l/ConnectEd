@@ -82,7 +82,7 @@ class Slots:
         window().navigator.newLibrary()
 
     def fileOpen(self : Self) -> None:
-        window().navigator.openDbFiles()
+        window().navigator.open()
 
     @withCurrentWidget(DrawingView)
     def fileSave(self : Self, view : DrawingView) -> None:
@@ -92,34 +92,38 @@ class Slots:
 
     @withCurrentWidget(DrawingView)
     def fileSaveAs(self : Self, view : DrawingView) -> None:
-        model().saveAsScene(view.scene())
+        window().navigator.saveAs(view.scene())
+
+    @withCurrentWidget(DrawingView)
+    def fileClose(self : Self, view : DrawingView) -> None:
+        window().navigator.close(view.scene())
 
     def fileOpenMRU1(self : Self) -> None:
-        window().navigator.openDbFile(settings().getMRU()[0])
+        window().navigator.openFile(settings().getMRU()[0])
 
     def fileOpenMRU2(self : Self) -> None:
-        window().navigator.openDbFile(settings().getMRU()[1])
+        window().navigator.openFile(settings().getMRU()[1])
 
     def fileOpenMRU3(self : Self) -> None:
-        window().navigator.openDbFile(settings().getMRU()[2])
+        window().navigator.openFile(settings().getMRU()[2])
 
     def fileOpenMRU4(self : Self) -> None:
-        window().navigator.openDbFile(settings().getMRU()[3])
+        window().navigator.openFile(settings().getMRU()[3])
 
     def fileOpenMRU5(self : Self) -> None:
-        window().navigator.openDbFile(settings().getMRU()[4])
+        window().navigator.openFile(settings().getMRU()[4])
 
     def fileOpenMRU6(self : Self) -> None:
-        window().navigator.openDbFile(settings().getMRU()[5])
+        window().navigator.openFile(settings().getMRU()[5])
 
     def fileOpenMRU7(self : Self) -> None:
-        window().navigator.openDbFile(settings().getMRU()[6])
+        window().navigator.openFile(settings().getMRU()[6])
 
     def fileOpenMRU8(self : Self) -> None:
-        window().navigator.openDbFile(settings().getMRU()[7])
+        window().navigator.openFile(settings().getMRU()[7])
 
     def fileOpenMRU9(self : Self) -> None:
-        window().navigator.openDbFile(settings().getMRU()[8])
+        window().navigator.openFile(settings().getMRU()[8])
 
     def fileExit(self : Self) -> None:
         window().close()

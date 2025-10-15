@@ -27,6 +27,7 @@ class Actions:
         self.fileOpen           = Action( window(), "Open"          , "Open database"                          , "Ctrl+O"                     )  # noqa E501
         self.fileSave           = Action( window(), "Save"          , "Save database"                          , "Ctrl+S"                     )  # noqa E501
         self.fileSaveAs         = Action( window(), "Save As"       , "Save database as"                       , None                         )  # noqa E501
+        self.fileClose          = Action( window(), "Close"         , "Close database"                         , None                         )  # noqa E501
         self.fileOpenMRU1       = Action( window(), "&1:"           , "Open recent file"                       , None                         )  # noqa E501
         self.fileOpenMRU2       = Action( window(), "&2:"           , "Open recent file"                       , None                         )  # noqa E501
         self.fileOpenMRU3       = Action( window(), "&3:"           , "Open recent file"                       , None                         )  # noqa E501
