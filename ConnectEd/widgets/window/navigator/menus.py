@@ -10,6 +10,13 @@ if TYPE_CHECKING:
 
 
 _MENU_SPECS = (
+    (None, (
+        ( "New Design"  , "NewDesign"  ),
+        ( "Open Design" , "OpenDesign" ),
+        "--",
+        ( "New Library"  , "NewLibrary"  ),
+        ( "Open Library" , "OpenLibrary" ),
+    )),
     ("DesignDbContainer", (
         ( "New Design"  , "NewDesign"  ),
         ( "Open Design" , "OpenDesign" )
@@ -54,7 +61,7 @@ _MENU_SPECS = (
 class NavigatorMenusMixin:
 
     # instance attributes
-    menus : dict[str, Menu]
+    menus : dict[str | None, Menu]
 
     def _initMenus(self : "Navigator") -> None:
         self.menus = {}

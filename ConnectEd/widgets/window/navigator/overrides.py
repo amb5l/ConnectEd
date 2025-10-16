@@ -62,8 +62,6 @@ class NavigatorOverridesMixin:
 
     def showContextMenu(self : "Navigator", pos : QPoint) -> None:
         index = self.indexAt(pos)
-        if not index.isValid(): # if clicking in empty space
-            index = self.currentIndex()
         if index.isValid():
             self.node = model().itemFromIndex(index)
             node_type_name = type(self.node).__name__
@@ -71,4 +69,6 @@ class NavigatorOverridesMixin:
                 logger().error(f"Unknown node type: {node_type_name}")
                 return
             menu = self.menus[node_type_name]
-            menu.exec(self.viewport().mapToGlobal(pos))
+        else:
+            menu = self.menus[None]
+        menu.exec(self.viewport().mapToGlobal(pos))
