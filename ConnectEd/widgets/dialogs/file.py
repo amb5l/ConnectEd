@@ -30,12 +30,12 @@ class FileSaveAsDialog(QFileDialog):
         parent    : QWidget | None = None
     ) -> None:
         match type_name:
-            case "Library":
-                name_filter    = f"Connected Libraries (*{LIB_EXT})"
-                default_suffix = LIB_EXT
             case "Design":
                 name_filter    = f"Connected Designs (*{DSN_EXT})"
                 default_suffix = DSN_EXT
+            case "Library":
+                name_filter    = f"Connected Libraries (*{LIB_EXT})"
+                default_suffix = LIB_EXT
             case _:
                 raise ValueError(f"Unknown type name: {type_name}")
         super().__init__(parent)
