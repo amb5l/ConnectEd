@@ -1,14 +1,11 @@
 from ....app import logger, model
 
+from ....core.utils import typeCheck
+
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from ....core.db import Node, \
-                            DesignDbNode, LibraryDbNode, \
-                            DiagramsContainer, SymbolsContainer, \
-                            DiagramNode, SymbolNode, \
-                            DrawingWindowNode
+    from ....core.db import Node, DesignDbNode, LibraryDbNode, SymbolNode
     from ....widgets.graphics.scenes.drawing import DrawingScene
-    from ....widgets.graphics.scenes.diagram import DiagramScene
     from . import Navigator
 
 
@@ -17,36 +14,39 @@ class NavigatorApiMixin:
     ############################################################################
     # database methods
 
-    def newDesign(self : "Navigator") -> None:
-        design_db_node = model().newDesignDbNode()
-        diagram_node = design_db_node.newDiagramNode()
-        self.expand(model().indexFromItem(design_db_node))
-        self.expand(model().indexFromItem(design_db_node.diagramsContainer()))
-        self._editDrawing(diagram_node)
+    def newDiagram(self : "Navigator") -> None:
+        node = model().newDesignDbNode()
+        self._editDrawing(node)
 
     def newLibrary(self : "Navigator") -> None:
-        library_db_node = model().newLibraryDbNode()
-        self.expand(model().indexFromItem(library_db_node))
+        node = model().newLibraryDbNode()
+        self.expand(model().indexFromItem(node))
 
     def open(self : "Navigator") -> None:
-        self._openDb()
+        self._open()
 
-    def openDesign(self : "Navigator") -> None:
-        self._openDb("Design")
+    def openDiagram(self : "Navigator") -> None:
+        self._open("Diagram")
 
     def openLibrary(self : "Navigator") -> None:
-        self._openDb("Library")
+        self._open("Library")
 
-    def openFile(self : "Navigator", path : str) -> None:
-        self._openDbFile(path)
+    def load(self : "Navigator", path : str) -> None:
+        self._load(path)
 
     def save(
         self : "Navigator",
-        x    : "DesignDbNode | LibraryDbNode | DrawingScene"
+        x    : "DesignDbNode | LibraryDbNode | SymbolNode | DrawingScene"
     ) -> None:
+        from ....core.db import DesignDbNode, LibraryDbNode, SymbolNode
+        from ....widgets.graphics.scenes.drawing import DrawingScene
+        if not typeCheck(x, DesignDbNode | LibraryDbNode | SymbolNode | DrawingScene):
+            return
         if isinstance(x, DrawingScene):
             x = model().getDbNodeFromScene(x)
-        if isinstance(x, DesignDbNode):
+        elif isinstance(x, SymbolNode):
+            x = x.dbNode()
+        if isinstance(x, DesignDbNode | LibraryDbNode):
             self._save(x)
         else:
             logger().warning(f"Unsupported node: {x.text()} ({type(x)})")
@@ -54,11 +54,13 @@ class NavigatorApiMixin:
 
     def saveAs(
         self : "Navigator",
-        x    : "DesignDbNode | LibraryDbNode | DrawingScene"
+        x    : "DesignDbNode | LibraryDbNode | SymbolNode | DrawingScene"
     ) -> None:
         if isinstance(x, DrawingScene):
             x = model().getDbNodeFromScene(x)
-        if isinstance(x, DesignDbNode):
+        elif isinstance(x, SymbolNode):
+            x = x.dbNode()
+        if isinstance(x, DesignDbNode | LibraryDbNode):
             self._saveAs(x)
         else:
             logger().warning(f"Unsupported node: {x.text()} ({type(x)})")
@@ -66,11 +68,13 @@ class NavigatorApiMixin:
 
     def close(
         self : "Navigator",
-        x    : "DesignDbNode | LibraryDbNode | DrawingScene"
+        x    : "DesignDbNode | LibraryDbNode | SymbolNode | DrawingScene"
     ) -> None:
         if isinstance(x, DrawingScene):
             x = model().getDbNodeFromScene(x)
-        if isinstance(x, DesignDbNode):
+        elif isinstance(x, SymbolNode):
+            x = x.dbNode()
+        if isinstance(x, DesignDbNode | LibraryDbNode):
             self._close(x)
         else:
             logger().warning(f"Unsupported node: {x.text()} ({type(x)})")
@@ -79,66 +83,37 @@ class NavigatorApiMixin:
     ############################################################################
     # drawing methods
 
-    def newDiagram(
-        self : "Navigator",
-        node : "DesignDbNode | DiagramsContainer | DiagramNode"
-    ) -> None:
-        from ....core.db import DesignDbNode, DiagramsContainer, DiagramNode
-        if not self._nodeTypeOK(
-            node, DesignDbNode | DiagramsContainer | DiagramNode
-        ):
-            return
-        if isinstance(node, DiagramNode):
-            node = node.parent()
-        if isinstance(node, DiagramsContainer):
-            node = node.parent()
-        diagram_node = model().newDiagramNode(node)
-        self.expand(model().indexFromItem(diagram_node))
-        self._editDrawing(diagram_node)
-
     def newSymbol(
         self : "Navigator",
-        node : "LibraryDbNode | SymbolsContainer | SymbolNode"
+        node : "DesignDbNode | LibraryDbNode | SymbolNode"
     ) -> None:
-        from ....core.db import LibraryDbNode, SymbolsContainer, SymbolNode
-        if not self._nodeTypeOK(
-            node, LibraryDbNode | SymbolsContainer | SymbolNode
-        ):
+        from ....core.db import DesignDbNode, LibraryDbNode, SymbolNode
+        if not typeCheck(node, DesignDbNode | LibraryDbNode | SymbolNode):
             return
         if isinstance(node, SymbolNode):
-            node = node.parent()
-        if isinstance(node, SymbolsContainer):
-            node = node.parent()
-        symbol_node = model().newSymbolNode(node)
-        self.expand(model().indexFromItem(symbol_node))
+            node = node.dbNode()
+        symbol_node = node.newSymbolNode()
+        self.expand(model().indexFromItem(node))
         self._editDrawing(symbol_node)
 
     def editDrawing(
         self : "Navigator",
-        node : "DiagramNode | SymbolNode"
+        node : "DesignDbNode | SymbolNode"
     ) -> None:
-        from ....core.db import DiagramNode, SymbolNode
-        if not self._nodeTypeOK(node, DiagramNode | SymbolNode):
-            return
         self._editDrawing(node)
 
-    def newDrawingWindow(self : "Navigator", node : "DiagramNode") -> None:
-        print("newDiagramWindow")
-        from ....core.db import DiagramNode
-        if not self._nodeTypeOK(node, DiagramNode):
-            return
-        node.newWindow()
-        self._updateWindowTitles(node)
+    def newDrawingWindow(self : "Navigator", node : "DesignDbNode") -> None:
+        self._newDrawingWindow(node)
 
     def editProperties(self : "Navigator", node : "DiagramNode") -> None:
         from ....core.db import DiagramNode
-        if not self._nodeTypeOK(node, DiagramNode):
+        if not typeCheck(node, DiagramNode):
             return
         self._spreadsheet(node)
 
     def setRoot(self : "Navigator", node : "DiagramNode") -> None:
         from ....core.db import DiagramNode
-        if not self._nodeTypeOK(node, DiagramNode):
+        if not typeCheck(node, DiagramNode):
             return
         node.setRoot()
 
@@ -147,22 +122,14 @@ class NavigatorApiMixin:
 
     def activateDrawingWindow(self : "Navigator", node : "DrawingWindowNode") -> None:
         from ....core.db import DrawingWindowNode
-        if not self._nodeTypeOK(node, DrawingWindowNode):
+        if not typeCheck(node, DrawingWindowNode):
             return
         node.activate()
 
     ############################################################################
     # misc
 
-    def rename(
-        self : "Navigator",
-        node : "DesignDbNode | LibraryDbNode | DiagramNode | SymbolNode"
-    ) -> None:
-        if not self._nodeTypeOK(
-            node,
-            DesignDbNode | LibraryDbNode | DiagramNode | SymbolNode
-        ):
-            return
+    def rename(self : "Navigator", node : "Node") -> None:
         self.edit(self.currentIndex())
 
     def copy(self : "Navigator", node : "Node") -> None:

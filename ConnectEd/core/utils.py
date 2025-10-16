@@ -1,5 +1,6 @@
 import os
 import platform
+import inspect
 
 from typing import Any, TypeVar
 
@@ -7,6 +8,8 @@ from collections import defaultdict
 
 from PyQt6.QtCore import Qt, QPointF, QRectF, QSizeF
 from PyQt6.QtGui  import QColor
+
+from ..app import logger
 
 
 def sign(x):
@@ -22,6 +25,16 @@ def check(b : bool, s : str) -> bool:
     if not b:
         print(s)
     return b
+
+
+def typeCheck(x : Any, t : type) -> None:
+    # get name of calling function/method
+    frame = inspect.currentframe().f_back
+    func_name = frame.f_code.co_name
+    if not isinstance(x, t):
+        logger().warning(f"Type {type(x)} does not match {t} ({func_name})")
+        return False
+    return True
 
 
 T = TypeVar('T')

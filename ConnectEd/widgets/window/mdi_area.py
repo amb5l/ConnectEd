@@ -1,22 +1,23 @@
 from typing import Self
 
-from PyQt6.QtCore    import Qt, QChildEvent, QEvent
+from PyQt6.QtCore    import Qt
 from PyQt6.QtWidgets import QMdiArea, QWidget
+from PyQt6.QtGui     import QAction
 
-from ...app import model, window
+from ...app import logger,model, window
 
 from ..private import Action
 
-from ...widgets.graphics.scenes.drawing import DrawingScene
-
-from .sub_window import SubWindow
-
+from .sub_window  import SubWindow
 from .spreadsheet import SpreadsheetSubWindow
+
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from ...widgets.graphics.scenes.drawing import DrawingScene
 
 
 class MdiArea(QMdiArea):
-    subwindow_actions : dict[any, list[Action]]
-    subwindow_scenes  : dict[any, list[SubWindow]]
+    _scene_subwindow_actions : dict["DrawingScene", list[Action]]
 
     def __init__(self : Self) -> None:
         super().__init__()
@@ -26,17 +27,11 @@ class MdiArea(QMdiArea):
         subwindow : QWidget,
         flags     : Qt.WindowType = Qt.WindowType.SubWindow
     ) -> None:
-        from ...widgets.graphics.views.drawing import DrawingSubWindow, DrawingView
         super().addSubWindow(subwindow, flags)
-        if isinstance(subwindow, DrawingSubWindow):
-            if not isinstance(subwindow.widget(), DrawingView):
-                return
-            if not isinstance(subwindow.widget().scene(), DrawingScene):
-                return
-            self.update()
-        elif isinstance(subwindow, SpreadsheetSubWindow):
-            if subwindow.scene() is not None:
-                self.update()
+        if isinstance(subwindow, SubWindow):
+            # Connect to destroyed signal to update menu when window is closed
+            subwindow.destroyed.connect(self.update)
+        self.update()
 
     def nextSubWindow(self : Self) -> None:
         self._activateSubWindowIndexOffset(1)
@@ -45,99 +40,102 @@ class MdiArea(QMdiArea):
         self._activateSubWindowIndexOffset(-1)
 
     def update(self : Self) -> None:
-        self._updateSubWindowTitles()
-        self._updateSubWindowActions()
+        self._updateSubWindows()
         window().menu_bar.updateWindowMenu()
 
-    def childEvent(self : Self, event : QChildEvent) -> None:
-        """Handle child events, particularly when subwindows are removed."""
-        super().childEvent(event)
-        if (event.type() == QEvent.Type.ChildRemoved and
-            isinstance(event.child(), SubWindow)):
-            self.update()
+    def activateSubWindow(self : Self, subwindow : SubWindow) -> None:
+        super().setActiveSubWindow(subwindow)
+        subwindow.show()
+        subwindow.raise_()
+        subwindow.setFocus()
 
-    def _updateSubWindowTitles(self : Self) -> None:
-        from ...widgets.graphics.views.drawing import DrawingSubWindow, DrawingView
-        self.subwindow_scenes = {}
+    def sceneSubWindows(self : Self, scene : "DrawingScene") -> list[SubWindow]:
+        """Return all scene subwindows in top down Z order."""
+        r = []
+        for w in reversed(self.subWindowList()):
+            if hasattr(w, "scene") and w.scene() == scene:
+                r.append(w)
+        return r
+
+    def scenesActions(self : Self) -> dict["DrawingScene", list[Action]]:
+        return self._scene_subwindow_actions
+
+    def closeScene(self : Self, scene : "DrawingScene") -> None:
+        """Close all subwindows related to the specified scene."""
         for w in self.subWindowList():
-            # skip windows that are closing or closed
-            if w.isHidden():
-                continue
-            if isinstance(w, DrawingSubWindow) and not w.widget():
-                continue
-            scene = None
-            if isinstance(w, DrawingSubWindow) \
-            and isinstance(w.widget(), DrawingView) \
-            and isinstance(w.widget().scene(), DrawingScene):
-                scene = w.widget().scene()
-            elif isinstance(w, SpreadsheetSubWindow) and w.scene() is not None:
-                scene = w.scene()
-            if scene is not None:
-                key = id(scene)
-                if key in self.subwindow_scenes:
-                    self.subwindow_scenes[key].append(w)
-                else:
-                    self.subwindow_scenes[key] = [w]
-        for key, windows in self.subwindow_scenes.items():
-            if not windows:
-                continue
-            scene = None
-            for w in windows:
-                if isinstance(w, DrawingSubWindow) and isinstance(w.widget(), DrawingView):
-                    scene = w.widget().scene()
-                    break
-                elif isinstance(w, SpreadsheetSubWindow):
+            if hasattr(w, "scene") and w.scene() == scene:
+                w.close()
+
+    def _updateSubWindows(self : Self) -> None:
+        from ...widgets.graphics.scenes.diagram import DiagramScene
+        from ...widgets.graphics.scenes.symbol  import SymbolScene
+        from ...widgets.graphics.views.drawing  import DrawingSubWindow
+        # create dictionaries
+        scene_subwindows : dict["DrawingScene" | None, list[SubWindow]] = {}
+        self._scene_subwindow_actions = {}
+        # build scene => subwindow list dictionary
+        for w in self.subWindowList():
+            if isinstance(w, SubWindow):
+                if hasattr(w, "scene"):
                     scene = w.scene()
-                    break
+                    scene_subwindows.setdefault(scene, []).append(w)
+                else:
+                    logger().warning(f"Subwindow {w} has no scene method")
+        # set titles
+        for scene in scene_subwindows.keys():
             if scene is None:
                 continue
-            scene_name = scene.name()
-            db_name = model().getDbNodeFromScene(scene).text()
-            properties_windows = [w for w in windows if isinstance(w, SpreadsheetSubWindow)]
-            drawing_windows = [w for w in windows if isinstance(w, DrawingSubWindow)]
-            sorted_windows = properties_windows + drawing_windows
-            if len(sorted_windows) == 1:
-                if isinstance(sorted_windows[0], SpreadsheetSubWindow):
-                    sorted_windows[0].setWindowTitle(f"{db_name}:{scene_name}: Properties")
-                else:
-                    sorted_windows[0].setWindowTitle(f"{db_name}:{scene_name}")
+            # get DB name
+            db_node = model().getDbNodeFromScene(scene)
+            if db_node is None:
+                logger().warning(f"No db node found for scene: {scene}")
+                db_name = "???"
             else:
-                properties_count = len(properties_windows)
-                drawing_count = len(drawing_windows)
-                for w in properties_windows:
-                    w.setWindowTitle(f"{db_name}:{scene_name}: Properties")
-                if drawing_count == 1:
-                    drawing_windows[0].setWindowTitle(f"{db_name}:{scene_name}")
+                db_name = db_node.text()
+            # build lists of subwindows
+            drawing_subwindows : list[DrawingSubWindow] = []
+            spreadsheet_subwindows : list[SpreadsheetSubWindow] = []
+            for w in scene_subwindows[scene]:
+                if isinstance(w, DrawingSubWindow):
+                    drawing_subwindows.append(w)
+                elif isinstance(w, SpreadsheetSubWindow):
+                    spreadsheet_subwindows.append(w)
+            # drawing subwindow titles and actions
+            for i, w in enumerate(drawing_subwindows):
+                if isinstance(scene, DiagramScene):
+                    title = f"{db_name} - Diagram Editor"
+                elif isinstance(scene, SymbolScene):
+                    title = f"{db_name}:{scene.name()} - Symbol Editor"
                 else:
-                    for i, w in enumerate(drawing_windows):
-                        w.setWindowTitle(f"{db_name}:{scene_name}:{i}")
-
-    def _updateSubWindowActions(self : Self) -> None:
-        from ...widgets.graphics.views.drawing import DrawingSubWindow, DrawingView
-        m = window()
-        self.subwindow_actions = {}
-        for w in self.subWindowList():
-            key = "_"
-            if isinstance(w, DrawingSubWindow) \
-            and isinstance(w.widget(), DrawingView) \
-            and isinstance(w.widget().scene(), DrawingScene):
-                key = id(model().getDbNodeFromScene(w.widget().scene()))
-            elif isinstance(w, SpreadsheetSubWindow) and w.scene() is not None:
-                key = id(model().getDbNodeFromScene(w.scene()))
-            action = Action(m, w.windowTitle(), None, None, False, False, w)
-            action.triggered.connect(
-                lambda checked=False, sw=w: self._activateSubWindow(sw)
-            )
-            if key in self.subwindow_actions:
-                self.subwindow_actions[key].append(action)
-            else:
-                self.subwindow_actions[key] = [action]
-        for key, actions in self.subwindow_actions.items():
-            if key == "_":
-                continue
-            properties_actions = [a for a in actions if isinstance(a.data(), SpreadsheetSubWindow)]
-            drawing_actions = [a for a in actions if isinstance(a.data(), DrawingSubWindow)]
-            self.subwindow_actions[key] = properties_actions + drawing_actions
+                    title = f"{db_name}:{scene.name()} - Drawing Editor"
+                suffix = "" if len(drawing_subwindows) == 1 else f" ({i + 1})"
+                w.setWindowTitle(title + suffix)
+                action = QAction(window())
+                action.setText(title + suffix)
+                def showSubWindow(checked=False, window=w) -> None:
+                    window.show()
+                    window.raise_()
+                    window.setFocus()
+                action.triggered.connect(showSubWindow)
+                self._scene_subwindow_actions.setdefault(scene, []).append(action)
+            # spreadsheet subwindow titles and actions
+            for i, w in enumerate(spreadsheet_subwindows):
+                if isinstance(scene, DiagramScene):
+                    title = f"{db_name} - Diagram Properties"
+                elif isinstance(scene, SymbolScene):
+                    title = f"{db_name}:{scene.name()} - Symbol Properties"
+                else:
+                    title = f"{db_name}:{scene.name()} - Drawing Properties"
+                suffix = "" if len(spreadsheet_subwindows) == 1 else f" ({i + 1})"
+                w.setWindowTitle(title + suffix)
+                action = QAction(window())
+                action.setText(title + suffix)
+                def showSubWindow(checked=False, window=w) -> None:
+                    window.show()
+                    window.raise_()
+                    window.setFocus()
+                action.triggered.connect(showSubWindow)
+                self._scene_subwindow_actions.setdefault(scene, []).append(action)
 
     def _activateSubWindowIndexOffset(self : Self, offset : int) -> None:
         windows = self.subWindowList()
@@ -150,10 +148,4 @@ class MdiArea(QMdiArea):
         current_index = windows.index(current_window)
         next_index = (current_index + offset) % len(windows)
         next_window = windows[next_index]
-        self._activateSubWindow(next_window)
-
-    def _activateSubWindow(self : Self, subwindow : SubWindow) -> None:
-        super().setActiveSubWindow(subwindow)
-        subwindow.show()
-        subwindow.raise_()
-        subwindow.setFocus()
+        self.activateSubWindow(next_window)

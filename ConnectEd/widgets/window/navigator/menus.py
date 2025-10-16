@@ -10,62 +10,44 @@ if TYPE_CHECKING:
 
 
 _MENU_SPECS = (
-    ("DesignsDbContainer", (
+    ("DesignDbContainer", (
         ( "New Design"  , "NewDesign"  ),
         ( "Open Design" , "OpenDesign" )
     )),
-    ("LibrariesDbContainer", (
+    ("LibraryDbContainer", (
         ( "New Library"  , "NewLibrary"  ),
         ( "Open Library" , "OpenLibrary" )
     )),
     ("DesignDbNode", (
-        ("New", (
-            ( "Diagram" , "NewDiagram" ),
-            ( "Symbol"  , "NewSymbol"  )
-        )),
-        ( "Save"    , "SaveDesign"   ),
-        ( "Save As" , "SaveDesignAs" ),
-        ( "Close"   , "CloseDesign"  ),
+        ( "Save Design"           , "SaveDesign"          ),
+        ( "Save Design As"        , "SaveDesignAs"        ),
+        ( "Close Design"          , "CloseDesign"         ),
         "--",
-        ( "Rename"  , "Rename"       )
+        ( "Rename Design"         , "RenameDesign"        ),
+        "--",
+        ( "New Symbol"            , "NewSymbol"           ),
+        "--",
+        ( "Edit Diagram"          , "EditDiagram"         ),
+        ( "New Diagram Window"    , "NewDiagramWindow"    ),
+        "--",
+        ( "Edit Properties"       , "EditProperties"      ),
+        ( "New Properties Window" , "NewPropertiesWindow" )
     )),
     ("LibraryDbNode", (
-        ( "New Symbol" , "NewSymbol"  ),
         "--",
-        ( "Save"    , "SaveLibrary"   ),
-        ( "Save As" , "SaveLibraryAs" ),
-        ( "Close"   , "CloseLibrary"  ),
+        ( "Save Library"    , "SaveLibrary"   ),
+        ( "Save Library As" , "SaveLibraryAs" ),
+        ( "Close Library"   , "CloseLibrary"  ),
         "--",
-        ( "Rename"  , "Rename"        )
-    )),
-    ("DiagramsContainer", (
-        ( "New Diagram" , "NewDiagram" ),
-    )),
-    ("SymbolCacheContainer", (
-        ( "New Symbol" , "NewSymbol" ),
-    )),
-    ("DiagramNode", (
-        ( "Edit"       , "EditDrawing"      ),
-        ( "Rename"     , "Rename"           ),
+        ( "Rename Library"  , "RenameLibrary" ),
         "--",
-        ( "Set Root"   , "SetRoot"          ),
-        "--",
-        ( "Properties" , "EditProperties"   )
+        ( "New Symbol"      , "NewSymbol"     )
     )),
     ("SymbolNode", (
-        ( "Edit"       , "EditDrawing"      ),
-        ( "Rename"     , "Rename"           ),
-        ( "New Window" , "NewDrawingWindow" )
-    )),
-    ("DrawingWindowNode", (
-        ( "Activate"  , "ActivateDrawingWindow"  ),
-        ( "Duplicate" , "DuplicateDrawingWindow" ),
-        ( "Close"     , "CloseDrawingWindow"     )
-    )),
-    ("SymbolWindowNode", (
-        ( "Activate"  , "ActivateDrawingWindow"  ),
-        ( "Duplicate" , "DuplicateDrawingWindow" ),
-        ( "Close"     , "CloseDrawingWindow"     )
+        ( "Edit Symbol"       , "EditSymbol"      ),
+        ( "New Symbol Window" , "NewSymbolWindow" ),
+        "--",
+        ( "Rename Symbol"     , "RenameSymbol"    )
     ))
 )
 
@@ -107,10 +89,10 @@ class NavigatorMenusMixin:
         return menu
 
     def _slotNewDesign(self : "Navigator") -> None:
-        self.newDesign()
+        self.newDiagram()
 
     def _slotOpenDesign(self : "Navigator") -> None:
-        self.openDesign()
+        self.openDiagram()
 
     def _slotSaveDesign(self : "Navigator") -> None:
         self.save(self.node)
@@ -120,6 +102,9 @@ class NavigatorMenusMixin:
 
     def _slotCloseDesign(self : "Navigator") -> None:
         self.close(self.node)
+
+    def _slotRenameDesign(self : "Navigator") -> None:
+        self.rename(self.node)
 
     def _slotNewLibrary(self : "Navigator") -> None:
         self.newLibrary()
@@ -136,32 +121,32 @@ class NavigatorMenusMixin:
     def _slotCloseLibrary(self : "Navigator") -> None:
         self.closeLibrary(self.node)
 
-    def _slotNewDiagram(self : "Navigator") -> None:
-        self.newDiagram(self.node)
+    def _slotRenameLibrary(self : "Navigator") -> None:
+        self.rename(self.node)
 
     def _slotNewSymbol(self : "Navigator") -> None:
         self.newSymbol(self.node)
 
-    def _slotEditDrawing(self : "Navigator") -> None:
+    def _slotEditSymbol(self : "Navigator") -> None:
         self.editDrawing(self.node)
 
-    def _slotNewDrawingWindow(self : "Navigator") -> None:
+    def _slotNewSymbolWindow(self : "Navigator") -> None:
+        self.newSymbolWindow(self.node)
+
+    def _slotRenameSymbol(self : "Navigator") -> None:
+        self.rename(self.node)
+
+    def _slotEditDiagram(self : "Navigator") -> None:
+        self.editDrawing(self.node)
+
+    def _slotNewDiagramWindow(self : "Navigator") -> None:
         self.newDrawingWindow(self.node)
 
     def _slotEditProperties(self : "Navigator") -> None:
         self.editProperties(self.node)
 
-    def _slotSetRoot(self : "Navigator") -> None:
-        self.setRoot(self.node)
-
-    def _slotActivateDrawingWindow(self : "Navigator") -> None:
-        self.activateDrawingWindow(self.node)
-
-    def _slotDuplicateDrawingWindow(self : "Navigator") -> None:
-        self.duplicateDrawingWindow(self.node)
-
-    def _slotCloseDrawingWindow(self : "Navigator") -> None:
-        self.closeDrawingWindow(self.node)
+    def _slotNewPropertiesWindow(self : "Navigator") -> None:
+        self.newPropertiesWindow(self.node)
 
     def _slotRename(self : "Navigator") -> None:
         self.rename(self.node)

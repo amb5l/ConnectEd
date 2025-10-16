@@ -119,23 +119,17 @@ class MenuBar(QMenuBar):
         window : "Window" = self.parent()
         actions = window.actions
         self.window_menu.clear()
+        self.window_menu.addAction(actions.windowNext)
+        self.window_menu.addAction(actions.windowPrevious)
+        self.window_menu.addSeparator()
         self.window_menu.addAction(actions.windowNavigator)
         self.window_menu.addAction(actions.windowMessages)
         self.window_menu.addAction(actions.windowTranscript)
         self.window_menu.addAction(actions.windowLog)
-        if len(window.mdi_area.subWindowList()) > 1:
+        for scene in window.mdi_area.scenesActions().keys():
             self.window_menu.addSeparator()
-            self.window_menu.addAction(actions.windowNext)
-            self.window_menu.addAction(actions.windowPrevious)
-            subwindow_actions = window.mdi_area.subwindow_actions
-            if subwindow_actions == {}:
-                return
-            for key, actions in subwindow_actions.items():
-                if key == "_":
-                    continue
-                self.window_menu.addSeparator()
-                for action in actions:
-                    self.window_menu.addAction(action)
+            for action in window.mdi_area.scenesActions()[scene]:
+                self.window_menu.addAction(action)
 
     def updateFileMenu(self : Self, actions : "Actions") -> None:
         self.file_menu.clear()

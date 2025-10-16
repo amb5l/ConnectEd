@@ -2,8 +2,8 @@ import os
 
 from typing import Self
 
-from PyQt6.QtCore    import Qt, QSize,QXmlStreamWriter, QXmlStreamReader
-from PyQt6.QtGui     import QStandardItemModel, QStandardItem
+from PyQt6.QtCore import Qt, QSize,QXmlStreamWriter, QXmlStreamReader
+from PyQt6.QtGui  import QStandardItemModel, QStandardItem
 
 from ..app import logger, window
 
@@ -19,10 +19,6 @@ if TYPE_CHECKING:
     from ..widgets.graphics.scenes.drawing import DrawingScene
     from ..widgets.graphics.scenes.symbol  import SymbolScene
     from ..widgets.graphics.scenes.diagram import DiagramScene
-    from ..widgets.graphics.views.drawing  import DrawingView, DrawingSubWindow
-    from ..widgets.graphics.views.diagram  import DiagramView, DiagramSubWindow
-    from ..widgets.graphics.views.symbol   import SymbolView, SymbolSubWindow
-    from ..widgets.window.spreadsheet      import SpreadsheetSubWindow
 
 
 class NameCounter:
@@ -50,6 +46,21 @@ class EmptyIcon(SvgIconSingleton):
     SIZE = QSize(16, 16)
 
 
+class DiagramIcon(SvgIconSingleton):
+    PATH = getIconPath("diagram.svg")
+    SIZE = QSize(16, 16)
+
+
+class SymbolIcon(SvgIconSingleton):
+    PATH = getIconPath("symbol.svg")
+    SIZE = QSize(16, 16)
+
+
+class LibraryIcon(SvgIconSingleton):
+    PATH = getIconPath("library.svg")
+    SIZE = QSize(16, 16)
+
+
 class Node(QStandardItem):
     pass
 
@@ -67,129 +78,37 @@ class Container(Node):
         self.setFont(font)
 
 
-class DesignsDbContainer(Container):
+class DesignDbContainer(Container):
     NAME   = "Designs"
     BOLD   = True
 
 
-class LibrariesDbContainer(Container):
+class LibraryDbContainer(Container):
     NAME   = "Libraries"
     BOLD   = True
-
-
-class DiagramsContainer(Container):
-    NAME   = "Diagrams"
-    ITALIC = True
-
-    # instance attributes
-    _root : "DiagramNode"
-
-    def __init__(self : Self) -> None:
-        super().__init__()
-        self._root = None
-
-    def root(self : Self) -> "DiagramNode":
-        return self._root
-
-    def setRoot(self : Self, item : "DiagramNode") -> None:
-        if self._root is not None:
-            self._root.setIcon(EmptyIcon().get())
-        self._root = item
-        if self._root is not None:
-            icon = RootIcon().get()
-            self._root.setIcon(icon)
-
-
-class SymbolsContainer(Container):
-    NAME   = "Symbols"
-    ITALIC = True
-
-
-class DrawingWindowNode(Node):
-    @classmethod
-    def subWindowClass(cls):
-        from ..widgets.graphics.views.drawing import DrawingSubWindow
-        return DrawingSubWindow
-
-    @classmethod
-    def viewClass(cls) -> "DrawingView":
-        from ..widgets.graphics.views.drawing import DrawingView
-        return DrawingView
-
-    _view      : "DrawingView | None"
-    _subwindow : "DrawingSubWindow | None"
-
-    def __init__(self : Self, parent : "DrawingNode") -> None:
-        super().__init__()
-        scene = parent.scene()
-        self._view = self.__class__.viewClass()(scene)
-        self._subwindow = self.__class__.subWindowClass()(window().mdi_area)
-        self._subwindow.setWidget(self._view)
-        self.setText("???")
-        self._subwindow.setWindowTitle(self.text())
-        self._subwindow.showMaximized()
-        window().menu_bar.updateWindowMenu()
-
-    def setWindowTitle(self : Self, text : str) -> None:
-        self._subwindow.setWindowTitle(text)
-
-
-class DiagramWindowNode(DrawingWindowNode):
-    @classmethod
-    def subWindowClass(cls):
-        from ..widgets.graphics.views.diagram import DiagramSubWindow
-        return DiagramSubWindow
-
-    @classmethod
-    def viewClass(cls) -> "DiagramView":
-        from ..widgets.graphics.views.diagram import DiagramView
-        return DiagramView
-
-    _view      : "DiagramView | None"
-    _subwindow : "DiagramSubWindow | None"
-
-
-class SymbolWindowNode(DrawingWindowNode):
-    @classmethod
-    def subWindowClass(cls):
-        from ..widgets.graphics.views.symbol import SymbolSubWindow
-        return SymbolSubWindow
-
-    @classmethod
-    def viewClass(cls) -> "SymbolView":
-        from ..widgets.graphics.views.symbol import SymbolView
-        return SymbolView
-
-    _view      : "SymbolView | None"
-    _subwindow : "SymbolSubWindow | None"
-
-
-class SpreadsheetWindowNode(Node):
-
-    _subwindow : "SpreadsheetSubWindow | None"
-
-    def setWindowTitle(self : Self, text : str) -> None:
-        self._subwindow.setWindowTitle(text)
 
 
 class DrawingNode(Node):
     @classmethod
     def sceneClass(cls):
-        from ..widgets.graphics.scenes.drawing import DrawingScene
-        return DrawingScene
+        from ..widgets.graphics.scenes.symbol import SymbolScene
+        return SymbolScene
 
-    _WINDOW_NODE_CLASS = DrawingWindowNode
+    _scene : "DrawingScene | None"
 
-    _scene : "DrawingScene"
-
-    def __init__(self : Self, scene : "DrawingScene | None" = None) -> None:
-        if scene is None:
+    def __init__(
+        self  : Self,
+        scene : "DrawingScene | None" = None,
+        bare  : bool = False
+    ) -> None:
+        if scene is None and not bare:
             scene_class = self.__class__.sceneClass()
             scene = scene_class()
             scene.setName(name_counter.get(self.drawingTypeName()))
         self._scene = scene
         super().__init__()
-        super().setText(scene.name())
+        if scene:
+            super().setText(scene.name())
         self.setFlags(self.flags() | Qt.ItemFlag.ItemIsEditable)
 
     def setText(self : Self, text : str) -> None:
@@ -202,19 +121,8 @@ class DrawingNode(Node):
     def setScene(self : Self, scene : "DrawingScene") -> None:
         self._scene = scene
 
-    def views(self : Self) -> list["DrawingView"]:
-        return self._scene.views()
-
-    def newWindow(self : Self) -> "DrawingWindowNode":
-        drawing_window_node = self._WINDOW_NODE_CLASS(self)
-        self.appendRow(drawing_window_node)
-        return drawing_window_node
-
     def drawingTypeName(self : Self) -> str:
         return self.__class__.__name__.replace("Node", "")
-
-    def dbNode(self : Self) -> "DbNode":
-        raise NotImplementedError("Subclasses must implement dbNode()")
 
     def toXml(self : Self, xw : QXmlStreamWriter) -> None:
         self._scene.toXml(xw)
@@ -228,59 +136,20 @@ class DrawingNode(Node):
     copy = copy
 
 
-class DiagramNode(DrawingNode):
-    @classmethod
-    def sceneClass(cls):
-        from ..widgets.graphics.scenes.diagram import DiagramScene
-        return DiagramScene
-
-    _WINDOW_NODE_CLASS = DiagramWindowNode
-
-    _scene : "DiagramScene"
-
-    def __init__(self : Self, scene : "DiagramScene | None" = None) -> None:
-        super().__init__(scene)
-        self.setIcon(EmptyIcon().get())
-
-    def diagram(self : Self) -> "DiagramScene":
-        return self._scene
-
-    def dbNode(self : Self) -> "DesignDbNode":
-        """
-        For now, diagrams always live in a diagrams container under a design.
-        """
-        return self.parent().parent()
-
-    def setRoot(self : Self) -> None:
-        diagrams_container : DiagramsContainer = self.parent()
-        diagrams_container.setRoot(self)
-
-    def newDiagramWindow(self : Self) -> "DiagramWindowNode":
-        diagram_window_node = DiagramWindowNode(self)
-        self.appendRow(diagram_window_node)
-        return diagram_window_node
-
-
 class SymbolNode(DrawingNode):
     @classmethod
     def sceneClass(cls):
         from ..widgets.graphics.scenes.symbol import SymbolScene
         return SymbolScene
 
-    _WINDOW_NODE_CLASS = SymbolWindowNode
+    _scene : "SymbolScene | None"
 
-    _scene : "SymbolScene"
+    def __init__(self : Self, name : str | None = None) -> None:
+        super().__init__(name)
+        self.setIcon(SymbolIcon().get())
 
-    def symbol(self : Self) -> "SymbolScene":
-        return self._scene
-
-    def dbNode(self : Self) -> "LibraryDbNode | DesignDbNode":
-        """Symbols live in the Symbol Cache of a design, or in a library."""
-        parent = self.parent()
-        if isinstance(parent, SymbolsContainer):
-            return parent.parent()
-        else:
-            return parent
+    def dbNode(self : Self) -> "DesignDbNode | LibraryDbNode":
+        return self.parent()
 
 
 class DbNode(Node):
@@ -294,6 +163,7 @@ class DbNode(Node):
         super().__init__(name)
         self.setFlags(self.flags() | Qt.ItemFlag.ItemIsEditable)
         self._path = None
+        self.setToolTip("(not yet saved)")
 
     def dbTypeName(self) -> str:
         cls = self if isinstance(self, type) else self.__class__
@@ -304,9 +174,30 @@ class DbNode(Node):
 
     def setPath(self : Self, path : str) -> None:
         self._path = path
+        self.setToolTip(path)
 
-    def close(self : Self) -> None:  # TODO: needed?
-        pass
+    def symbolNodes(self : Self) -> list[SymbolNode]:
+        r = []
+        for i in range(self.rowCount()):
+            node = self.child(i)
+            if isinstance(node, SymbolNode):
+                r.append(node)
+            else:
+                logger().warning(f"Unexpected node: {node.text()} ({type(node)})")
+        return r
+
+    def newSymbolNode(self : Self) -> SymbolNode:
+        item = SymbolNode()
+        self.addSymbolNode(item)
+        return item
+
+    def addSymbolNode(self : Self, node : SymbolNode) -> None:
+        self.appendRow(node)
+
+    def toXml(self : Self, xw : QXmlStreamWriter) -> None:
+        raise NotImplementedError(
+            f"Subclass {self.__class__.__name__} must implement toXml"
+        )
 
     def toXmlBegin(self : Self, xw : QXmlStreamWriter) -> None:
         xw.writeStartElement(self.dbTypeName())
@@ -360,65 +251,43 @@ class DbNode(Node):
     copy = copy
 
 
+# TODO: reintroduce support for multiple diagrams?
 class DesignDbNode(DbNode):
     FILE_EXT = DSN_EXT
 
-    _diagrams : DiagramsContainer
-    _symbols  : SymbolsContainer
+    _scene   : "DiagramScene | None"
 
-    def __init__(self : Self, name : str | None = None) -> None:
+    def __init__(
+        self : Self,
+        name : str | None = None,
+        bare : bool = False
+    ) -> None:
+        from ..widgets.graphics.scenes.diagram import DiagramScene
+        self._scene = None if bare else DiagramScene()
         super().__init__(name)
-        self._diagrams = DiagramsContainer()
-        self.appendRow(self._diagrams)
-        self._symbols = SymbolsContainer()
-        self.appendRow(self._symbols)
+        self.setIcon(DiagramIcon().get())
 
-    def newDiagramNode(self : Self, name : str | None = None) -> DiagramNode:
-        item = DiagramNode(name)
-        self._diagrams.appendRow(item)
-        if self._diagrams.root() is None:
-            self._diagrams.setRoot(item)
-        return item
+    def setText(self : Self, text : str) -> None:
+        super().setText(text)
+        if self._scene is not None:
+            self._scene.setName(text)
 
-    def diagramsContainer(self : Self) -> DiagramsContainer:
-        return self._diagrams
+    def scene(self : Self) -> "DiagramScene":
+        return self._scene
 
-    def diagramNodes(self : Self) -> list[DiagramNode]:
-        return [self._diagrams.child(i) for i in range(self._diagrams.rowCount())]
-
-    def rootDiagramNode(self : Self) -> DiagramNode | None:
-        if self._diagrams.root() is None:
-            return None
-        return self._diagrams.root()
-
-    def newSymbolNode(self : Self, name : str | None = None) -> SymbolNode:
-        item = SymbolNode(name)
-        self._symbols.appendRow(item)
-        return item
-
-    def symbolsContainer(self : Self) -> SymbolsContainer:
-        return self._symbols
-
-    def symbolNodes(self : Self) -> list[SymbolNode]:
-        return [self._symbols.child(i) for i in range(self._symbols.rowCount())]
+    def setScene(self : Self, scene : "DiagramScene") -> None:
+        self._scene = scene
+        super().setText(scene.name())
 
     def toXml(self : Self, xw : QXmlStreamWriter) -> None:
         self.toXmlBegin(xw)
-        xw.writeStartElement("Diagrams")
-        root = "" if self._diagrams.root() is None \
-            else self._diagrams.root().text()
-        xw.writeAttribute("root", root)
-        for i in range(self._diagrams.rowCount()):
-            diagram_node : DiagramNode = self._diagrams.child(i)
-            diagram_scene = diagram_node._scene
-            diagram_scene.toXml(xw)
-        xw.writeEndElement()
-        xw.writeStartElement("SymbolCache")
+        xw.writeStartElement("Symbols")
         for i in range(self._symbols.rowCount()):
             symbol_node : SymbolNode = self._symbols.child(i)
             symbol_scene = symbol_node._scene
             symbol_scene.toXml(xw)
         xw.writeEndElement()
+        self.scene().toXml(xw)
         self.toXmlEnd(xw)
 
     @classmethod
@@ -426,55 +295,27 @@ class DesignDbNode(DbNode):
         db_node : Self = cls.fromXmlBegin(xr)
         while not (xr.isEndElement() and xr.name() == cls.dbTypeName(cls)):
             if xr.tokenType() == xr.TokenType.EndDocument:
-                logger().error(f"Reached end of document while looking for end of '{cls.dbTypeName(cls)}'")
+                logger().error(f"End of document before end of '{cls.dbTypeName(cls)}'")
                 break
-            if xr.tokenType() == QXmlStreamReader.TokenType.StartElement:
-                if xr.name() == "Diagrams":
-                    root_name = ""
-                    attributes = xr.attributes()
-                    for attribute in attributes:
-                        if attribute.name() == "root":
-                            root_name = attribute.value()
-                            break
+            # process symbols
+            if xr.name() == "Symbols":
+                xr.readNext()  # move past <Symbols>
+                while not (xr.isEndElement() and xr.name() == "Symbols"):
+                    if xr.tokenType() == QXmlStreamReader.TokenType.StartElement:
+                        if xr.name() == "Symbol":
+                            symbol_node = SymbolNode.fromXml(xr)
+                            db_node.addSymbolNode(symbol_node)
                         else:
-                            logger().warning(f"Unexpected attribute: {attribute.name()} value: {attribute.value()}")
-                    xr.readNext()  # Move past <Diagrams>
-                    while not (xr.isEndElement() and xr.name() == "Diagrams"):
-                        if xr.tokenType() == QXmlStreamReader.TokenType.StartElement:
-                            if xr.name() == "Diagram":
-                                diagram_node = DiagramNode.fromXml(xr)
-                                db_node._diagrams.appendRow(diagram_node)
-                            else:
-                                raise ValueError(f"Unexpected element in Diagrams: {xr.name()}")
+                            raise ValueError(f"Unexpected element in Symbols: {xr.name()}")
                         xr.readNext()
-                    # Set the root diagram based on the loaded name
-                    if root_name:
-                        root = None
-                        for i in range(db_node._diagrams.rowCount()):
-                            diagram_node = db_node._diagrams.child(i)
-                            if diagram_node.text() == root_name:
-                                root = diagram_node
-                                db_node._diagrams.setRoot(root)
-                                break
-                        if root is None:
-                            logger().warning(f"Root diagram '{root_name}' not found, defaulting to first")
-                            if db_node._diagrams.rowCount() > 0:
-                                db_node._diagrams.setRoot(db_node._diagrams.child(0))
-                    elif db_node._diagrams.rowCount() > 0:
-                        db_node._diagrams.setRoot(db_node._diagrams.child(0))
-                elif xr.name() == "SymbolCache":
-                    xr.readNext()  # Move past <SymbolCache>
-                    while not (xr.isEndElement() and xr.name() == "SymbolCache"):
-                        if xr.tokenType() == QXmlStreamReader.TokenType.StartElement:
-                            if xr.name() == "Symbol":
-                                symbol_node = SymbolNode.fromXml(xr)
-                                db_node._symbols.appendRow(symbol_node)
-                            else:
-                                raise ValueError(f"Unexpected element in SymbolCache: {xr.name()}")
-                        xr.readNext()
+            # process scene
+            if xr.tokenType() == QXmlStreamReader.TokenType.StartElement:
+                if xr.name() == "Diagram":
+                    diagram_scene = DiagramScene.fromXml(xr)
+                    db_node.setScene(diagram_scene)
                 else:
-                    raise ValueError(f"Unexpected element in Design: {xr.name()}")
-            xr.readNext()
+                    raise ValueError(f"Expected Diagram, got {xr.name()}")
+                xr.readNext()
         db_node.fromXmlEnd(xr)
         return db_node
 
@@ -482,18 +323,18 @@ class DesignDbNode(DbNode):
 class LibraryDbNode(DbNode):
     FILE_EXT = LIB_EXT
 
-    def symbolsNode(self : Self) -> SymbolsContainer:
-        return self._symbols
-
-    def symbolNodes(self : Self) -> list[SymbolNode]:
-        return [self._symbols.child(i) for i in range(self._symbols.rowCount())]
+    def __init__(self : Self, name : str | None = None) -> None:
+        super().__init__(name)
+        self.setIcon(LibraryIcon().get())
 
     def toXml(self : Self, xw : QXmlStreamWriter) -> None:
         self.toXmlBegin(xw)
         for i in range(self.rowCount()):
-            symbol_node : SymbolNode = self.child(i)
-            symbol_scene = symbol_node._scene
-            symbol_scene.toXml(xw)
+            child = self.child(i)
+            if isinstance(child, SymbolNode):
+                child.toXml(xw)
+            else:
+                logger().warning(f"Unexpected node: {child.text()} ({type(child)})")
         self.toXmlEnd(xw)
 
     @classmethod
@@ -504,71 +345,53 @@ class LibraryDbNode(DbNode):
         return db_node
 
 
-DbNodeType = DesignDbNode | LibraryDbNode
-
-
 class Model(QStandardItemModel):
-    _designs   : DesignsDbContainer
-    _libraries : LibrariesDbContainer
+    _diagrams  : DesignDbContainer
+    _libraries : LibraryDbContainer
 
     def __init__(self : Self) -> None:
         super().__init__()
         self.setHorizontalHeaderLabels(["Database Hierarchy"])
-        self._designs = DesignsDbContainer()
-        self.appendRow(self._designs)
-        self._libraries = LibrariesDbContainer()
+        self._diagrams = DesignDbContainer()
+        self.appendRow(self._diagrams)
+        self._libraries = LibraryDbContainer()
         self.appendRow(self._libraries)
+
+    def designDbContainer(self : Self) -> DesignDbContainer:
+        return self._diagrams
+
+    def designDbNodes(self : Self) -> list[DesignDbNode]:
+        return [self._diagrams.child(i) for i in range(self._diagrams.rowCount())]
 
     def newDesignDbNode(self : Self, name : str | None = None) -> DesignDbNode:
         node = DesignDbNode(name)
-        self._designs.appendRow(node)
+        self.addDesignDbNode(node)
         return node
+
+    def addDesignDbNode(self : Self, node : DesignDbNode) -> None:
+        self.designDbContainer().appendRow(node)
+
+    def libraryDbContainer(self : Self) -> LibraryDbContainer:
+        return self._libraries
+
+    def libraryDbNodes(self : Self) -> list[LibraryDbNode]:
+        return [self._libraries.child(i) for i in range(self._libraries.rowCount())]
 
     def newLibraryDbNode(self : Self, name : str | None = None) -> LibraryDbNode:
         node = LibraryDbNode(name)
-        self._libraries.appendRow(node)
+        self.addLibraryDbNode(node)
         return node
 
-    def newDiagramNode(
-        self   : Self,
-        parent : Node,
-        name   : str | None = None
-    ) -> DiagramNode | None:
-        node = None
-        if isinstance(parent, DesignDbNode):
-            parent = parent._diagrams
-        if isinstance(parent, DiagramsContainer):
-            node = DiagramNode(name)
-            parent.appendRow(node)
-        else:
-            logger().warning(
-                f"Unexpected parent item: {parent.text()} ({type(parent)})"
-            )
-        return node
+    def addLibraryDbNode(self : Self, node : LibraryDbNode) -> None:
+        self.libraryDbContainer().appendRow(node)
 
-    def newSymbolNode(
-        self   : "Model",
-        parent : Node
-    ) -> SymbolNode | None:
-        node = None
-        if isinstance(parent, DesignDbNode):
-            parent = parent._symbols
-        if isinstance(parent, (SymbolsContainer, LibraryDbNode)):
-            node = SymbolNode()
-            parent.appendRow(node)
-        else:
-            logger().warning(
-                f"Unexpected parent item: {parent.text()} ({type(parent)})"
-            )
-        return node
-
-    def load(self : Self, path : str) -> DbNodeType | None:
+    def load(self : Self, path : str) -> DesignDbNode | LibraryDbNode | None:
         if self._alreadyLoaded(path):
             return None
         db_node = None
         if path.endswith(DSN_EXT):
             db_node = DesignDbNode.load(path)
-            self._designs.appendRow(db_node)
+            self._diagrams.appendRow(db_node)
         elif path.endswith(LIB_EXT):
             db_node = LibraryDbNode.load(path)
             self._libraries.appendRow(db_node)
@@ -576,55 +399,22 @@ class Model(QStandardItemModel):
             logger().warning(f"Unsupported file extension: {path}")
         return db_node
 
-    def close(self : Self, node : Node) -> None:
-        from ..widgets.window.sub_window import SubWindow
+    def close(self : Self, node : DesignDbNode | LibraryDbNode) -> bool:
         """Close a database and remove it from the model."""
+        if not node.model() or node.model() != self:
+            logger().warning(f"Node not found in model: {node.text()} ({type(node)})")
+            return False
+        if not isinstance(node, DesignDbNode | LibraryDbNode):
+            logger().warning(f"Unsupported node: {node.text()} ({type(node)})")
+            return False
         if isinstance(node, DesignDbNode):
-            # close all open diagram windows for this design
-            for i in range(node._diagrams.rowCount()):
-                diagram_node = node._diagrams.child(i)
-                if isinstance(diagram_node, DiagramNode):
-                    for view in diagram_node.views():
-                        if view:
-                            subwindow : DrawingSubWindow | None = \
-                                view.parentWidget()
-                            if subwindow:
-                                subwindow.close()
-            # close all open symbol windows for this design
-            for i in range(node._symbols.rowCount()):
-                symbol_node = node._symbols.child(i)
-                if isinstance(symbol_node, SymbolNode):
-                    for view in symbol_node.views():
-                        if view:
-                            subwindow : DrawingSubWindow | None = \
-                                view.parentWidget()
-                            if subwindow:
-                                subwindow.close()
-            # remove the design from the model
-            for i in range(self._designs.rowCount()):
-                if node == self._designs.child(i):
-                    self._designs.removeRow(i)
-                    break
+            window().mdi_area.closeScene(node.scene())
         elif isinstance(node, LibraryDbNode):
-            # close all open symbol windows for this library
             for i in range(node.rowCount()):
                 symbol_node = node.child(i)
                 if isinstance(symbol_node, SymbolNode):
-                    for view in symbol_node.views():
-                        if view:
-                            # Find the parent SubWindow instead of using window()
-                            subwindow = view.parentWidget()
-                            while subwindow and not isinstance(subwindow, SubWindow):
-                                subwindow = subwindow.parentWidget()
-                            if subwindow:
-                                subwindow.close()
-            # remove the library from the model
-            for i in range(self._libraries.rowCount()):
-                if node == self._libraries.child(i):
-                    self._libraries.removeRow(i)
-                    break
-        else:
-            logger().warning(f"Unsupported item: {node.text()} ({type(node)})")
+                    window().mdi_area.closeScene(symbol_node.scene())
+        return self._removeNode(node)
 
     def copy(self : Self, item : Node) -> None:
         copy(item)
@@ -632,18 +422,16 @@ class Model(QStandardItemModel):
     def paste(self : Self, node : Node) -> None:
         paste_items, _ = paste()
         if paste_items:
-            match self.getNodeDescription(node):
-                case "Designs":
-                    valid_item_types = [DesignDbNode]
-                case "Libraries":
-                    valid_item_types = [LibraryDbNode]
-                case "Diagrams":
-                    valid_item_types = [DiagramNode]
-                case "Symbol Cache":
-                    valid_item_types = [SymbolNode]
-                case _:
-                    raise ValueError(
-                        f"Cannot paste into item: {node.text()} ({type(node)})")
+            if isinstance(node, DesignDbContainer):
+                valid_item_types = [DesignDbNode]
+            elif isinstance(node, LibraryDbContainer):
+                valid_item_types = [LibraryDbNode]
+            elif isinstance(node, DesignDbNode | LibraryDbNode | SymbolNode):
+                valid_item_types = [SymbolNode]
+            else:
+                raise ValueError(
+                    f"Cannot paste into item: {node.text()} ({type(node)})"
+                )
             invalid_item_types = []
             invalid_item_count = 0
             for paste_item in paste_items:
@@ -664,52 +452,17 @@ class Model(QStandardItemModel):
                 raise ValueError(f"{n} invalid items for paste operation: {s}")
 
     def getDbNodeFromScene(self : Self, scene : "DrawingScene") -> DbNode:
-        for design_db_node in self.designDbNodes():
-            for diagram_node in design_db_node.diagramNodes():
-                if scene == diagram_node.scene():
-                    return design_db_node
-            for symbol_node in design_db_node.symbolNodes():
+        for diagram_db_node in self.designDbNodes():
+            if scene == diagram_db_node.scene():
+                return diagram_db_node
+            for symbol_node in diagram_db_node.symbolNodes():
                 if scene == symbol_node.scene():
-                    return design_db_node
+                    return diagram_db_node
         for library_db_node in self.libraryDbNodes():
             for symbol_node in library_db_node.symbolNodes():
                 if scene == symbol_node.scene():
                     return library_db_node
         return None
-
-    def getNodeDescription(self : Self, i : Node) -> str | None:
-        if isinstance(i, DesignDbNode):
-            return "Design"
-        elif isinstance(i, LibraryDbNode):
-            return "Library"
-        elif isinstance(i, DiagramNode):
-            return "Diagram"
-        elif isinstance(i, SymbolNode):
-            if isinstance(i.parent(), Node) \
-            and i.parent().text() == "Symbol Cache":
-                return "Design Symbol"
-            elif isinstance(i.parent(), LibraryDbNode):
-                return "Library Symbol"
-        elif isinstance(i, DiagramWindowNode):
-            return "Diagram Window"
-        elif isinstance(i, SymbolWindowNode):
-            return "Symbol Window"
-        elif isinstance(i, Container):
-            if i.text() == "Designs":
-                return "Designs"
-            elif i.text() == "Libraries":
-                return "Libraries"
-            elif i.text() == "Diagrams":
-                return "Diagrams"
-            elif i.text() == "Symbol Cache":
-                return "Symbol Cache"
-        raise ValueError(f"Unsupported item: {i.text()}  type: {type(i)}")
-
-    def designDbNodes(self : Self) -> list[DesignDbNode]:
-        return [self._designs.child(i) for i in range(self._designs.rowCount())]
-
-    def libraryDbNodes(self : Self) -> list[LibraryDbNode]:
-        return [self._libraries.child(i) for i in range(self._libraries.rowCount())]
 
     def _alreadyLoaded(self : Self, path : str) -> bool:
         for db_node in self.designDbNodes():
@@ -719,3 +472,17 @@ class Model(QStandardItemModel):
             if db_node._path == path:
                 return True
         return False
+
+    def _removeNode(self : Self, node : Node) -> bool:
+        if not node.model() or node.model() != self:
+            logger().warning(f"Node not found in model: {node.text()} ({type(node)})")
+            return False
+        row = node.index().row()
+        if row == -1:
+            logger().warning(f"Node is detached: {node.text()} ({type(node)})")
+            return False
+        parent = node.parent()
+        if parent is None:
+            return self.removeRow(row)
+        else:
+            return parent.removeRow(row)

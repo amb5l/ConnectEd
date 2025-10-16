@@ -19,7 +19,7 @@ class NavigatorOverridesMixin:
             if len(self.selectedIndexes()) == 1:
                 index = self.selectedIndexes()[0]
                 if index.isValid():
-                    self._expandOrEdit(model().itemFromIndex(index))
+                    self._doubleClickOrEnter(model().itemFromIndex(index))
                     event.accept()
 
     def mousePressEvent(self : "Navigator", event : QMouseEvent) -> None:
@@ -42,7 +42,7 @@ class NavigatorOverridesMixin:
         if event.button() == Qt.MouseButton.LeftButton:
             index = self.indexAt(event.pos())
             if index.isValid():
-                self._expandOrEdit(model().itemFromIndex(index))
+                self._doubleClickOrEnter(model().itemFromIndex(index))
                 event.accept()
                 return
         super().mouseDoubleClickEvent(event)

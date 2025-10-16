@@ -2,23 +2,16 @@ from PyQt6.QtCore import QItemSelectionModel
 
 from ....app import logger, settings, model, window
 
+from ....core.utils import typeCheck
+
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from ....core.db import Node, DbNode, DbNodeType, \
-                            DrawingNode, DrawingWindowNode, \
-                            SpreadsheetWindowNode
+    from ....core.db import Node, DrawingNode, SymbolNode, \
+                            DbNode, DesignDbNode, LibraryDbNode
     from . import Navigator
 
 
 class NavigatorPrivateMixin:
-
-    def _nodeTypeOK(self : "Navigator", node : "Node", type_ : type) -> None:
-        if not isinstance(node, type_):
-            logger().warning(
-                f"Unsupported node: {self.node.text()} ({type(self.node)})"
-            )
-            return False
-        return True
 
     def _selectItem(self : "Navigator", node : "Node") -> None:
         index = model().indexFromItem(node)
@@ -30,94 +23,86 @@ class NavigatorPrivateMixin:
         )
         self.setCurrentIndex(index)
 
-    def _expandDb(self : "Navigator", node : "DbNode") -> None:
-        from ....core.db import DesignDbNode, LibraryDbNode
-        db_idx = model().indexFromItem(node)
-        self.expand(db_idx)
-        if isinstance(node, DesignDbNode):
-            diagrams_idx = model().indexFromItem(node._diagrams)
-            self.expand(diagrams_idx)
-        elif isinstance(node, LibraryDbNode):
-            symbols_idx = model().indexFromItem(node._symbols)
-            self.expand(symbols_idx)
-
-    def _expandOrEdit(self : "Navigator", node : "Node") -> None:
+    def _doubleClickOrEnter(
+        self : "Navigator",
+        node : "DesignDbNode | LibraryDbNode | SymbolNode"
+    ) -> None:
+        from ....core.db import DesignDbNode, LibraryDbNode, SymbolNode
+        if not isinstance(node, DesignDbNode | LibraryDbNode | SymbolNode):
+            logger().warning(f"Unsupported node: {node.text()} ({type(node)})")
+            return
         self._selectItem(node)
-        match model().getNodeDescription(node):
-            case "Designs"  | "Libraries"    | \
-                 "Design"   | "Library"      | \
-                 "Diagrams" | "Symbol Cache":
-                index = self.currentIndex()
-                self.setExpanded(index, not self.isExpanded(index))
-            case "Diagram" | "Design Symbol" | "Library Symbol":
-                self._editDrawing(node)
+        if isinstance(node, DesignDbNode | SymbolNode):
+            self._editDrawing(node)
+        elif isinstance(node, LibraryDbNode):
+            index = self.currentIndex()
+            self.setExpanded(index, not self.isExpanded(index))
 
-    def _openDb(self : "Navigator", type_name : str | None = None) -> None:
+    def _open(self : "Navigator", type_name : str | None = None) -> None:
         from ...dialogs.file import FileOpenDialog
         dialog = FileOpenDialog(type_name)
         result = dialog.exec()
         if result == dialog.DialogCode.Accepted:
             files = dialog.selectedFiles()
             for file in files:
-                if self._openDbFile(file):
+                if self._load(file):
                     settings().addMRU(file)
 
-    def _openDbFile(self : "Navigator", file_name : str) -> "DbNodeType | None":
-        db_node = model().load(file_name)
-        if db_node:
-            self._expandDb(db_node)
-            if hasattr(db_node, "rootDiagramNode"):
-                self._editDrawing(db_node.rootDiagramNode())
+    def _load(
+        self : "Navigator",
+        path : str
+    ) -> "DesignDbNode | LibraryDbNode | None":
+        """
+        Load diagram or library from file. Expand. Open drawing if diagram.
+        """
+        from ....core.db import DesignDbNode, LibraryDbNode
+        db_node = model().load(path)
+        if not isinstance(db_node, DesignDbNode | LibraryDbNode):
+            logger().warning(f"Load failed ({type(db_node)})")
+            return None
+        self.expand(model().indexFromItem(db_node))
+        if isinstance(db_node, DesignDbNode):
+            self._editDrawing(db_node)
         return db_node
 
-    def _editDrawing(self : "Navigator", node : "DrawingNode") -> None:
-        from ....core.db import DrawingNode, DrawingWindowNode
-        if not self._nodeTypeOK(node, DrawingNode):
+    def _editDrawing(self : "Navigator", node : "DesignDbNode | DrawingNode") -> None:
+        """
+        Either bring existing window to front or create a new one.
+        """
+        from ....core.db import DesignDbNode, DrawingNode
+        if not typeCheck(node, DesignDbNode | DrawingNode):
             return
-        # open first existing window if one exists
-        for row in range(node.rowCount()):
-            child = node.child(row)
-            if isinstance(child, DrawingWindowNode):
-                self._activateDrawingWindow(child)
-                return
-        # otherwise create a new window
-        self._newDrawingWindow(node)
+        scene = node.scene()
+        # get existing subwindows in top down Z order
+        subwindows = window().mdi_area.sceneSubWindows(scene)
+        if subwindows:
+            # bring existing window to front
+            window().mdi_area.activateSubWindow(subwindows[0])
+        else:
+            # create a new window
+            self._newDrawingWindow(node)
 
-    def _newDrawingWindow(self : "Navigator", node : "DrawingNode") -> None:
-        from ....core.db import DesignDbNode, LibraryDbNode, \
-                               DiagramNode, SymbolNode
-        from ....widgets.graphics.views.diagram  import DiagramView, DiagramSubWindow
-        from ....widgets.graphics.views.symbol   import SymbolView, SymbolSubWindow
-        if isinstance(node, DiagramNode):
-            node.newDiagramWindow()
-            db_node : DesignDbNode = node.parent().parent()
-            dwg_scene = node.scene()
-            dwg_view = DiagramView(dwg_scene)
+    def _newDrawingWindow(
+        self : "Navigator",
+        node : "DesignDbNode | SymbolNode"
+    ) -> None:
+        from ....core.db import DesignDbNode, SymbolNode
+        from ....widgets.graphics.views.diagram import DiagramView, DiagramSubWindow
+        from ....widgets.graphics.views.symbol  import SymbolView, SymbolSubWindow
+        if not typeCheck(node, DesignDbNode | SymbolNode):
+            return
+        scene = node.scene()
+        if isinstance(node, DesignDbNode):
+            view = DiagramView(scene)
             subwindow = DiagramSubWindow(window().mdi_area)
         elif isinstance(node, SymbolNode):
-            db_node : LibraryDbNode = node.parent()
-            dwg_scene = node.scene()
-            dwg_view = SymbolView(dwg_scene)
+            view = SymbolView(scene)
             subwindow = SymbolSubWindow(window().mdi_area)
-        else:
-            logger().warning(f"Unsupported node: {node.text()} ({type(node)})")
-            return
-        dwg_name = node.text()
-        subwindow.setWidget(dwg_view)
-        subwindow.setWindowTitle(f"{db_node.text()}:{dwg_name}")
+        subwindow.setWidget(view)
         window().mdi_area.addSubWindow(subwindow)
         subwindow.showMaximized()
-        window().menu_bar.updateWindowMenu()
-
-    def _activateDrawingWindow(self : "Navigator", node : "DrawingWindowNode") -> None:
-        from ....core.db import DrawingWindowNode
-        if not isinstance(node, DrawingWindowNode):
-            logger().warning(f"Unsupported node: {node.text()} ({type(node)})")
-            return
-        subwindow = node.subwindow()
-        subwindow.show()
-        subwindow.raise_()
-        subwindow.setFocus()
+        window().mdi_area.activateSubWindow(subwindow)
+        window().mdi_area.update()
 
     def _spreadsheet(self : "Navigator", node : "DrawingNode") -> None:
         from ....core.db import DrawingNode

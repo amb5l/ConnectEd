@@ -76,7 +76,7 @@ class Slots:
         pass
 
     def fileNewDesign(self : Self) -> None:
-        window().navigator.newDesign()
+        window().navigator.newDiagram()
 
     def fileNewLibrary(self : Self) -> None:
         window().navigator.newLibrary()
@@ -99,31 +99,31 @@ class Slots:
         window().navigator.close(view.scene())
 
     def fileOpenMRU1(self : Self) -> None:
-        window().navigator.openFile(settings().getMRU()[0])
+        window().navigator.load(settings().getMRU()[0])
 
     def fileOpenMRU2(self : Self) -> None:
-        window().navigator.openFile(settings().getMRU()[1])
+        window().navigator.load(settings().getMRU()[1])
 
     def fileOpenMRU3(self : Self) -> None:
-        window().navigator.openFile(settings().getMRU()[2])
+        window().navigator.load(settings().getMRU()[2])
 
     def fileOpenMRU4(self : Self) -> None:
-        window().navigator.openFile(settings().getMRU()[3])
+        window().navigator.load(settings().getMRU()[3])
 
     def fileOpenMRU5(self : Self) -> None:
-        window().navigator.openFile(settings().getMRU()[4])
+        window().navigator.load(settings().getMRU()[4])
 
     def fileOpenMRU6(self : Self) -> None:
-        window().navigator.openFile(settings().getMRU()[5])
+        window().navigator.load(settings().getMRU()[5])
 
     def fileOpenMRU7(self : Self) -> None:
-        window().navigator.openFile(settings().getMRU()[6])
+        window().navigator.load(settings().getMRU()[6])
 
     def fileOpenMRU8(self : Self) -> None:
-        window().navigator.openFile(settings().getMRU()[7])
+        window().navigator.load(settings().getMRU()[7])
 
     def fileOpenMRU9(self : Self) -> None:
-        window().navigator.openFile(settings().getMRU()[8])
+        window().navigator.load(settings().getMRU()[8])
 
     def fileExit(self : Self) -> None:
         window().close()
