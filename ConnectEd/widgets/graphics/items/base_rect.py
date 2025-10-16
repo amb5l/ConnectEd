@@ -216,10 +216,6 @@ class BaseRectangle(
         rect.setSize(QSizeF(w, h))
         self.setRect(rect)
 
-    def setP2(self : Self, p2 : QPointF) -> None:
-        p1 = self.pos()
-        self.setPoints(p1.x(), p1.y(), p2.x(), p2.y())
-
     def moveAnchorPointBy(self : Self, name : str, delta : QPointF) -> None:
         p1 = self.pos()
         p2 = p1 + self.rect().bottomRight()

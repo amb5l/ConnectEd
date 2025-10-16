@@ -406,9 +406,19 @@ class PlaceBaseRectInteraction(PlaceBaseInteraction):
 
     # instance attributes
     _element : BaseRectangle  # type hint specific to this interaction
+    _pos     : QPointF        # initial position
+
+    def __init__(
+        self    : Self,
+        scene   : "DrawingScene",
+        pos     : QPointF,
+        element : ElementType | None = None
+    ) -> None:
+        super().__init__(scene, pos, element)
+        self._pos = pos
 
     def update(self : Self, pos : QPointF):
-        self._element.setP2(pos)
+        self._element.setPoints(self._pos, pos)
 
 
 class PlacePinInteraction(PinInteraction):
