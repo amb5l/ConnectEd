@@ -1,7 +1,8 @@
-from .port_pin import PortPinText
+from .mixin.pos import ElementPosMixin
 
-from .entry import Entry
-from .pin   import PinArrow, Pin
+from .port_pin import PortPinText, PortPinMixin
+from .pin      import PinArrow, Pin
+from .entry    import Entry
 
 
 class SymbolPinArrow(PinArrow):
@@ -20,7 +21,12 @@ class SymbolPinComment(PortPinText):
     pass
 
 
-class SymbolPin(Pin):
+class SymbolPin(ElementPosMixin, Pin):
+    # class attributes
+    _PROPERTY_SPECS = \
+        ElementPosMixin._PROPERTY_SPECS_POS | \
+        PortPinMixin._PROPERTY_SPECS
+
     @classmethod
     def _getArrowClass(cls) -> type[SymbolPinArrow]:
         return SymbolPinArrow

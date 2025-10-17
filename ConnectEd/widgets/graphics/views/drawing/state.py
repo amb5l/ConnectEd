@@ -14,7 +14,7 @@ from ....dialogs.port_pin      import PortPinDialog
 from ...items import SignalDirection, ElementMixin
 
 from ...items.handle        import Handle, ResizeGrip
-from ...items.pin_rect      import PinRect
+from ...items.block         import Block
 from ...items.text          import Text
 from ...items.text_block    import TextBlock
 from ...items.property_text import PropertyText
@@ -25,7 +25,7 @@ from ...scenes.drawing import DrawingScene
 
 from ...scenes.drawing.interaction import Interaction,                \
                                           EditMoveInteraction,        \
-                                          EditMovePinsInteraction,    \
+                                          EditMoveBlockPinsInteraction,    \
                                           EditPasteInteraction,       \
                                           EditDuplicateInteraction,   \
                                           PlacePortInteraction,       \
@@ -205,11 +205,11 @@ class DrawingViewStateIdle(DrawingViewStateBase):
         self.view._selectPoint(s, m)
         items = self.scene.selectedItems()
         if items: # slide/move
-            pins = self.view._siblingPins(items)
+            pins = self.view._siblingBlockPins(items)
             if pins:
                 # move pins
                 self.interact(
-                    EditMovePinsInteraction(self.scene, pins[0].parentItem(), pins),
+                    EditMoveBlockPinsInteraction(self.scene, pins[0].parentItem(), pins),
                     self.view.stateEditMovePins
                 )
             else:
@@ -567,8 +567,8 @@ class DrawingViewStatePlaceBlockPin(DrawingViewStateBase):
         s    : QPointF,
         e    : list[ElementMixin] | None = None
     ) -> None:
-        block = e[0] if e else self.view._selectedElement(PinRect)
-        if block and isinstance(block, PinRect):
+        block = e[0] if e else self.view._selectedElement(Block)
+        if block and isinstance(block, Block):
             pin = BlockPin() # don't parent to block yet
             dialog = PortPinDialog("Block Pin", pin, self.view)
             if dialog.exec():

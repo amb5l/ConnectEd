@@ -1,6 +1,8 @@
 from typing import Self
 
-from .port_pin import PortPinText
+from .mixin.loc    import ElementLocMixin
+
+from .port_pin import PortPinText, PortPinMixin
 from .pin      import PinArrow, PinEntry, Pin
 
 from typing import TYPE_CHECKING
@@ -24,7 +26,12 @@ class BlockPinComment(PortPinText):
     pass
 
 
-class BlockPin(Pin):
+class BlockPin(ElementLocMixin, Pin):
+    # class attributes
+    _PROPERTY_SPECS = \
+        ElementLocMixin._PROPERTY_SPECS_LOC | \
+        PortPinMixin._PROPERTY_SPECS
+
     @classmethod
     def _getArrowClass(cls) -> type[BlockPinArrow]:
         return BlockPinArrow

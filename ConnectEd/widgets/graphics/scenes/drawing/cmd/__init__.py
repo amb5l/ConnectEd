@@ -8,9 +8,8 @@ from ......core.utils import camel2proper
 
 from ....items import EdgeLoc, ElementMixin
 
-from ....items.pin_rect import PinRect
-
-from ....items.pin import Pin
+from ....items.block     import Block
+from ....items.block_pin import BlockPin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -85,34 +84,34 @@ class cmdSceneElements(cmdSceneBase):
         self._elements = elements
 
 
-class cmdPinBase(cmdBase):
+class cmdBlockPinBase(cmdBase):
     """Base class for all commands that work with a pin."""
 
     # instance attributes
-    _parent : PinRect
-    _pin    : Pin
+    _parent : Block
+    _pin    : BlockPin
 
     def __init__(
         self : Self,
-        parent : PinRect,
-        pin    : Pin
+        parent : Block,
+        pin    : BlockPin
     ):
         super().__init__()
         self._parent = parent
         self._pin = pin
 
 
-class cmdPinsBase(cmdBase):
-    """Base class for all commands that work with multiple pins."""
+class cmdBlockPinsBase(cmdBase):
+    """Base class for all commands that work with multiple block pins."""
 
     # instance attributes
-    _parent : PinRect
-    _pins   : list[Pin]
+    _parent : Block
+    _pins   : list[BlockPin]
 
     def __init__(
         self : Self,
-        parent : PinRect,
-        pins   : list[Pin]
+        parent : Block,
+        pins   : list[BlockPin]
     ):
         super().__init__()
         self._parent = parent
@@ -293,7 +292,7 @@ class cmdRotate(cmdSceneElements):
             e.setRotation(self._before[e])
 
 
-class cmdAddPin(cmdPinBase):
+class cmdAddBlockPin(cmdBlockPinBase):
     """Command to add a pin to a pin rect."""
 
     def redo(self : Self) -> None:
@@ -303,7 +302,7 @@ class cmdAddPin(cmdPinBase):
         self._pin.setParentItem(None)
 
 
-class cmdDeletePin(cmdPinBase):
+class cmdDeleteBlockPin(cmdBlockPinBase):
     """Command to delete a pin from a pin rect."""
 
     def redo(self : Self) -> None:
@@ -313,19 +312,19 @@ class cmdDeletePin(cmdPinBase):
         self._pin.setParentItem(self._parent)
 
 
-class cmdMovePins(cmdPinsBase):
+class cmdMoveBlockPins(cmdBlockPinsBase):
     """Command to move multiple pins by an offset."""
 
     # instance attributes
-    _after  : dict[Pin, EdgeLoc] # locations after
-    _before : dict[Pin, EdgeLoc] # locations before
+    _after  : dict[BlockPin, EdgeLoc] # locations after
+    _before : dict[BlockPin, EdgeLoc] # locations before
 
     def __init__(
         self   : Self,
-        parent : PinRect,
-        pins   : list[Pin],
-        after  : dict[Pin, EdgeLoc],
-        before : dict[Pin, EdgeLoc]
+        parent : Block,
+        pins   : list[BlockPin],
+        after  : dict[BlockPin, EdgeLoc],
+        before : dict[BlockPin, EdgeLoc]
     ):
         super().__init__(parent, pins)
         self._after = after

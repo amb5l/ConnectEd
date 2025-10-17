@@ -5,7 +5,6 @@ from PyQt6.QtCore import QPointF
 
 from ....items import EdgeLoc, ElementMixin
 
-from ....items.pin_rect   import PinRect
 from ....items.block      import Block
 from ....items.rectangle  import Rectangle
 from ....items.text       import Text
@@ -46,10 +45,7 @@ class cmdPlaceBase(cmdSceneBase):
 class cmdPlacePort(cmdPlaceBase):
     _CLASS = Port
 
-class cmdPlacePinRect(cmdPlaceBase):
-    _CLASS = PinRect
-
-class cmdPlaceBlock(cmdPlacePinRect):
+class cmdPlaceBlock(cmdPlaceBase):
     _CLASS = Block
 
 class cmdPlaceRectangle(cmdPlaceBase):
@@ -61,14 +57,14 @@ class cmdPlaceText(cmdPlaceBase):
 class cmdPlaceTextBlock(cmdPlaceBase):
     _CLASS = TextBlock
 
-class cmdPlacePin(cmdBase):
+class cmdPlaceBlockPin(cmdBase):
     """Base class for commands that place a pin."""
 
     # instance attributes
-    _parent : PinRect
+    _parent : Block
     _loc    : EdgeLoc
 
-    def __init__(self : Self, parent : PinRect, loc : EdgeLoc):
+    def __init__(self : Self, parent : Block, loc : EdgeLoc):
         super().__init__(parent.scene())
         self._parent = parent
         self._loc    = loc
@@ -76,7 +72,7 @@ class cmdPlacePin(cmdBase):
     def begin(self : Self, pos : QPointF) -> None:
         raise NotImplementedError
 
-class cmdPlaceBlockPin(cmdPlacePin):
+class cmdPlaceBlockPin(cmdPlaceBlockPin):
     _CLASS = BlockPin
 
 ##class cmdPlaceSymbolPin(cmdPlacePinBase):

@@ -11,19 +11,17 @@ from ...items import EdgeLoc, ElementMixin, clone
 
 from ...items.line       import Line
 from ...items.base_rect  import BaseRectangle
-from ...items.pin_rect   import PinRect
 from ...items.block      import Block
 from ...items.rectangle  import Rectangle
 from ...items.text       import Text
 from ...items.text_block import TextBlock
 from ...items.port       import Port
-from ...items.pin        import Pin
 from ...items.block_pin  import BlockPin
 from ...items.entry      import Entry
 from ...items.conn_vtx   import ConnVtx
 from ...items.conn_seg   import ConnSeg, ConnSegPreview1, ConnSegPreview2
 
-from .cmd import cmdAdd, cmdMove, cmdAddPin, cmdMovePins
+from .cmd import cmdAdd, cmdMove, cmdAddBlockPin, cmdMoveBlockPins
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -97,28 +95,25 @@ class SceneElementsInteraction(Interaction):
         return self._elements is not None
 
 
-class PinInteraction(Interaction):
-    """Base for all interactions that operate on a pin."""
-
-    # class attributes
-    _PIN : Pin  # subclass to override with specific pin class
+class BlockPinInteraction(Interaction):
+    """Base for all interactions that operate on a block pin."""
 
     # instance attributes
-    _parent : PinRect
-    _pin    : Pin
+    _parent : Block
+    _pin    : BlockPin
 
     def __init__(
         self   : Self,
         scene  : "DrawingScene",
-        parent : PinRect,
-        pin    : Pin | None,
+        parent : Block,
+        pin    : BlockPin | None,
         pos    : QPointF,
         snap   : QPointF | None = None
     ) -> None:
         Interaction.__init__(self, scene)
-        if isinstance(parent, PinRect):
+        if isinstance(parent, Block):
             self._parent = parent
-            self._pin = pin or self._PIN(parent)
+            self._pin = pin or BlockPin(parent)
             self._pin.setParentItem(parent)
             self.update(pos, snap)
         else:
@@ -290,17 +285,17 @@ class EditMoveInteraction(
         self._restorePos()  # restore initial positions
 
 
-class EditMovePinsInteraction(Interaction):
+class EditMoveBlockPinsInteraction(Interaction):
     # instance attributes
-    _parent : PinRect
-    _pins   : list[Pin]                   # first element is primary pin
+    _parent : Block
+    _pins   : list[BlockPin]              # first element is primary pin
     _sloc   : dict[ElementType, EdgeLoc]  # stored locations of all pins
 
     def __init__(
         self   : Self,
         scene  : "DrawingScene",
-        parent : PinRect,
-        pins   : list[Pin]
+        parent : Block,
+        pins   : list[BlockPin]
     ) -> None:
         Interaction.__init__(self, scene)
         self._parent = parent
@@ -332,7 +327,7 @@ class EditMovePinsInteraction(Interaction):
         self.update(pos, snap)
         if all(p.loc() == self._sloc[p] for p in self._pins):
             return True # no change so skip command push
-        self._scene.undo_stack.push(cmdMovePins(
+        self._scene.undo_stack.push(cmdMoveBlockPins(
             self._parent,
             self._pins,
             {p: p.loc() for p in self._pins},
@@ -421,25 +416,25 @@ class PlaceBaseRectInteraction(PlaceBaseInteraction):
         self._element.setPoints(self._pos, pos)
 
 
-class PlacePinInteraction(PinInteraction):
+class PlaceBlockPinInteraction(BlockPinInteraction):
     """Base for all interactions that place a pin."""
 
     def __init__(
         self   : Self,
         scene  : "DrawingScene",
-        parent : PinRect,
-        pin    : Pin,
+        parent : Block,
+        pin    : BlockPin,
         pos    : QPointF,
         snap   : QPointF | None = None
     ) -> None:
-        PinInteraction.__init__(self, scene, parent, pin, pos, snap)
+        BlockPinInteraction.__init__(self, scene, parent, pin, pos, snap)
 
     def update(self : Self, pos : QPointF, snap : QPointF | None = None) -> None:
         self._pin.setLoc(self._pin.locSnap(self._parent.pos2loc(pos), snap))
 
     def complete(self : Self, pos : QPointF, snap : QPointF | None = None) -> bool:
         self.update(pos, snap)
-        self._scene.undo_stack.push(cmdAddPin(self._parent, self._pin))
+        self._scene.undo_stack.push(cmdAddBlockPin(self._parent, self._pin))
         return True
 
     def cancel(self : Self) -> None:
@@ -454,7 +449,7 @@ class PlaceBlockInteraction(PlaceBaseRectInteraction):
     _ELEMENT = Block
 
 
-class PlaceBlockPinInteraction(PlacePinInteraction):
+class PlaceBlockPinInteraction(PlaceBlockPinInteraction):
     _PIN = BlockPin
 
 

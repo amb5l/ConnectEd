@@ -82,7 +82,7 @@ class PortPinMixin(
     _comment   : str
     _direction : SignalDirection
     _range     : VectorRange
-    _entry      : Entry
+    _entry     : Entry
 
     @classmethod
     def _getEntryClass(cls) -> type[Entry]:

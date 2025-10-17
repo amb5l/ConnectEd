@@ -3,15 +3,18 @@ from typing import Self
 from PyQt6.QtCore    import QPointF
 from PyQt6.QtWidgets import QGraphicsItem
 
+from .....app import logger
+
 from ...properties import PropertySpec
 
 from .. import EdgeLoc, Edge
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from ..pin_rect import PinRect
+    from ..block import Block
 
 
+# TODO - merge into Block, which is the only item that uses it?
 class ElementLocMixin:
     # instance attributes
     _loc : EdgeLoc
@@ -36,7 +39,9 @@ class ElementLocMixin:
 
     def onParentChange(self : Self, parent : QGraphicsItem | None) -> None:
         """Update position when parent changes."""
-        if hasattr(self, '_loc') and parent is not None:
+        if hasattr(self, '_loc') \
+        and parent is not None \
+        and self._loc.edge != Edge.UNDEFINED:
             self.setLoc(self._loc)
 
     def loc(self : Self) -> EdgeLoc:
@@ -46,12 +51,15 @@ class ElementLocMixin:
         self._loc = loc
         self.prepareGeometryChange()
         match loc.edge:
-            case Edge.LEFT:   angle = 0
-            case Edge.RIGHT:  angle = 180
-            case Edge.TOP:    angle = 90
-            case Edge.BOTTOM: angle = 270
+            case Edge.LEFT   : angle = 0
+            case Edge.RIGHT  : angle = 180
+            case Edge.TOP    : angle = 90
+            case Edge.BOTTOM : angle = 270
+            case _ :
+                logger().error(f"Invalid edge: {loc.edge}")
+                angle = 0
         self.setRotation(angle)
-        parent : "PinRect" = self.parentItem()
+        parent : "Block" = self.parentItem()
         edge_pos = parent.loc2pos(loc) if parent else QPointF()
         super().setPos(edge_pos)
         for child in self.childItems():

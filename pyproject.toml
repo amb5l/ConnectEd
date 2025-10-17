@@ -69,6 +69,7 @@ select = [
 
 # Ignore specific rules if needed
 ignore = [
+    "E701",  # multiple statements on one line (colon)
     "N802",  # function name should be lowercase
     "N999",  # module names should be snake_case (ConnectEd is not)
     "UP037"  # remove quotes from type annotation

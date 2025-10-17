@@ -87,12 +87,7 @@ class PinComment(PortPinText):
     pass
 
 
-class Pin(ElementLocMixin, PortPinMixin, QGraphicsLineItem):
-    # class attributes
-    _PROPERTY_SPECS = \
-        ElementLocMixin._PROPERTY_SPECS_LOC | \
-        PortPinMixin._PROPERTY_SPECS
-
+class Pin(PortPinMixin, QGraphicsLineItem):
     @classmethod
     def _getArrowClass(cls) -> type[PinArrow]:
         return PinArrow

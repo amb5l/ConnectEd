@@ -8,8 +8,8 @@ from .....app import settings, window
 
 from ....menu import Menu
 
-from ...items.pin_rect import PinRect
-from ...items.pin      import Pin, PinArrow, PinEntry
+from ...items.block     import Block
+from ...items.block_pin import BlockPin, BlockPinArrow, BlockPinEntry
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -135,17 +135,20 @@ class DrawingViewPrivateMixin:
         )
         return [i for i in items if i.zValue() in self.layer.value]
 
-    def _siblingPins(self : "DrawingView", items : QGraphicsItem) -> list[Pin]:
+    def _siblingBlockPins(
+        self  : "DrawingView",
+        items : QGraphicsItem
+    ) -> list[BlockPin]:
         pins = []
-        parent : PinRect | None = None
+        parent : Block | None = None
         for item in items:
-            if isinstance(item, Pin):
+            if isinstance(item, BlockPin):
                 if parent is None:
                     parent = item.parentItem()
                 elif item.parentItem() != parent:
                     return []
                 pins.append(item)
-            elif not isinstance(item, PinArrow | PinEntry):
+            elif not isinstance(item, BlockPinArrow | BlockPinEntry):
                 return []
         return [] if parent is None else pins
 
