@@ -1,9 +1,13 @@
 NEXT
-- change window convenience properties to methods
-- move subwindow title management into db/navigator
-- align navigator with windows
-- rotate port during placement
 - symbols
+  - symbol placement singleton - loads libraries and symbols
+    - initial placeholder loads system library
+  - symbol placement dialog with live filter
+  - symbol placement states and interaction
+
+- asterisk on modified windows
+- change window convenience properties to methods
+- rotate port during placement
 - Callable (collections.abc)
 
 BUGS
