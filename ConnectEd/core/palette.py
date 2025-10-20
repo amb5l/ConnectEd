@@ -3,6 +3,7 @@ from PyQt6.QtGui import QColor
 
 class PaletteDark:
     Background      = QColor("#000000")
+    Origin          = QColor("#FFFF00")
     Sheet           = QColor("#1A1A1A")
     Border          = QColor("#494949")
     Grid            = QColor("#404040")
@@ -35,6 +36,7 @@ class PaletteDark:
 
 class PaletteLightMono:
     Background      = QColor("#202020")
+    Origin          = QColor("#000000")
     Sheet           = QColor("#FFFFFF")
     Border          = QColor("#000000")
     Grid            = QColor("#E0E0E0")

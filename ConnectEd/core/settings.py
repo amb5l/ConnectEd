@@ -95,6 +95,10 @@ FACTORY_SETTINGS = {
     "themes" : {
         "dark" : {
             "background" : PaletteDark.Background,
+            "origin" : {
+                "color" : PaletteDark.Origin,
+                "size"  : 12
+            },
             "sheet"      : PaletteDark.Sheet,
             "border"     : PaletteDark.Border,
             "elements" : {
@@ -319,15 +323,16 @@ FACTORY_SETTINGS = {
             "grip" : {
                 "size" : 12
             },
-            "origin" : {
-                "size" : 12
-            },
             "grid" : {
                 "line" : PaletteDark.Grid
             }
         },
         "light_mono" : {
             "background" : PaletteLightMono.Background,
+            "origin" : {
+                "color" : PaletteLightMono.Origin,
+                "size"  : 12
+            },
             "sheet"      : PaletteLightMono.Sheet,
             "border"     : PaletteLightMono.Border,
             "elements" : {
@@ -537,9 +542,6 @@ FACTORY_SETTINGS = {
                 "text" : PaletteLightMono.SelectedText
             },
             "grip" : {
-                "size" : 12
-            },
-            "origin" : {
                 "size" : 12
             },
             "grid" : {
