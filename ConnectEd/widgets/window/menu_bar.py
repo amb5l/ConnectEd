@@ -27,7 +27,7 @@ class MenuBar(QMenuBar):
         self.file_new_menu = Menu("&New")
         self.file_new_menu.addAction(actions.fileNewDesign)
         self.file_new_menu.addAction(actions.fileNewLibrary)
-        self.updateFileMenu(actions)
+        self.updateFileMenu()
 
         self.edit_menu = Menu("&Edit")
         self.edit_menu.addAction(actions.editCancel)
@@ -91,10 +91,7 @@ class MenuBar(QMenuBar):
         self.place_menu.addAction(actions.placeTextBlock)
 
         self.window_menu = Menu("&Window")
-        self.window_menu.addAction(actions.windowNavigator)
-        self.window_menu.addAction(actions.windowMessages)
-        self.window_menu.addAction(actions.windowTranscript)
-        self.window_menu.addAction(actions.windowLog)
+        self.updateWindowMenu()
 
         self.help_menu = Menu("&Help")
         self.help_menu.addAction(actions.helpAbout)
@@ -106,7 +103,7 @@ class MenuBar(QMenuBar):
         self.addMenu(self.window_menu)
         self.addMenu(self.help_menu)
 
-        settings().mruChanged.connect(lambda: self.updateFileMenu(actions))
+        settings().mruChanged.connect(lambda: self.updateFileMenu())
 
     def addMenu(self : Self, menu : Menu) -> None:
         super().addMenu(menu)
@@ -115,23 +112,9 @@ class MenuBar(QMenuBar):
     def menusDict(self : Self) -> dict[str, Menu]:
         return self._menus_dict
 
-    def updateWindowMenu(self : Self) -> None:
+    def updateFileMenu(self : Self) -> None:
         window : "Window" = self.parent()
         actions = window.actions
-        self.window_menu.clear()
-        self.window_menu.addAction(actions.windowNext)
-        self.window_menu.addAction(actions.windowPrevious)
-        self.window_menu.addSeparator()
-        self.window_menu.addAction(actions.windowNavigator)
-        self.window_menu.addAction(actions.windowMessages)
-        self.window_menu.addAction(actions.windowTranscript)
-        self.window_menu.addAction(actions.windowLog)
-        for scene in window.mdi_area.scenesActions().keys():
-            self.window_menu.addSeparator()
-            for action in window.mdi_area.scenesActions()[scene]:
-                self.window_menu.addAction(action)
-
-    def updateFileMenu(self : Self, actions : "Actions") -> None:
         self.file_menu.clear()
         self.file_menu.addMenu(self.file_new_menu)
         self.file_menu.addAction(actions.fileOpen)
@@ -149,3 +132,21 @@ class MenuBar(QMenuBar):
                 self.file_menu.addAction(action)
             self.file_menu.addSeparator()
         self.file_menu.addAction(actions.fileExit)
+
+    def updateWindowMenu(self : Self) -> None:
+        window : "Window" = self.parent()
+        actions = window.actions
+        self.window_menu.clear()
+        self.window_menu.addAction(actions.windowNext)
+        self.window_menu.addAction(actions.windowPrevious)
+        self.window_menu.addSeparator()
+        self.window_menu.addAction(actions.windowNavigator)
+        self.window_menu.addAction(actions.windowMessages)
+        self.window_menu.addAction(actions.windowTranscript)
+        self.window_menu.addAction(actions.windowLog)
+        if not hasattr(window, "mdi_area"):
+            return
+        for scene in window.mdi_area.scenesActions().keys():
+            self.window_menu.addSeparator()
+            for action in window.mdi_area.scenesActions()[scene]:
+                self.window_menu.addAction(action)
