@@ -56,6 +56,8 @@ class NavigatorApiMixin:
         self : "Navigator",
         x    : "DesignDbNode | LibraryDbNode | SymbolNode | DrawingScene"
     ) -> None:
+        from ....core.db import DesignDbNode, LibraryDbNode, SymbolNode
+        from ....widgets.graphics.scenes.drawing import DrawingScene
         if isinstance(x, DrawingScene):
             x = model().getDbNodeFromScene(x)
         elif isinstance(x, SymbolNode):
@@ -70,6 +72,8 @@ class NavigatorApiMixin:
         self : "Navigator",
         x    : "DesignDbNode | LibraryDbNode | SymbolNode | DrawingScene"
     ) -> None:
+        from ....core.db import DesignDbNode, LibraryDbNode, SymbolNode
+        from ....widgets.graphics.scenes.drawing import DrawingScene
         if isinstance(x, DrawingScene):
             x = model().getDbNodeFromScene(x)
         elif isinstance(x, SymbolNode):
