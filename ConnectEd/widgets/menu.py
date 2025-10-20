@@ -10,8 +10,6 @@ if TYPE_CHECKING:
 
 
 class Menu(QMenu):
-    subwindow_class : type["SubWindow"] | None = None
-
     def subMenusDict(self : Self) -> dict[str, "Menu"]:
         return {a.menu().title().replace("&", "") : a.menu() \
             for a in self.actions() if a.menu() is not None}
@@ -19,3 +17,7 @@ class Menu(QMenu):
     def actionsDict(self : Self) -> dict[str, Action]:
         return {a.text().replace("&", "").replace("...", "") : a \
             for a in self.actions() if a.menu() is None}
+
+
+class PlaceMenu(Menu):
+    subwindow_class : type["SubWindow"] | None = None

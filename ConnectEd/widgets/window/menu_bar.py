@@ -4,7 +4,7 @@ from PyQt6.QtWidgets import QMenuBar
 
 from ...app import settings
 
-from ..menu import Menu
+from ..menu import Menu, PlaceMenu
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -77,7 +77,7 @@ class MenuBar(QMenuBar):
         self.view_theme_menu.addAction(actions.viewThemeLightMono)
         self.view_menu.addMenu(self.view_theme_menu)
 
-        self.place_menu = Menu("&Place")
+        self.place_menu = PlaceMenu("&Place")
         self.updatePlaceMenu()
 
         self.window_menu = Menu("&Window")
