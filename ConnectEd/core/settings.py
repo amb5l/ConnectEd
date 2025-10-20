@@ -212,13 +212,59 @@ FACTORY_SETTINGS = {
                         "underline" : False
                     }
                 },
+                "SymbolPin" : {
+                    "line" : {
+                        "color" : PaletteDark.SymbolPin,
+                        "width" : 1,
+                        "style" : Qt.PenStyle.SolidLine
+                    },
+                    "fill" : {
+                        "color" : PaletteDark.SymbolPin,
+                        "style" : Qt.BrushStyle.NoBrush
+                    }
+                },
                 "SymbolPinArrow" : {
                     "line" : {
                         "color" : PaletteDark.SymbolPinArrow,
                         "width" : 1,
                         "style" : Qt.PenStyle.SolidLine
                     },
+                    "fill" : {
+                        "color" : PaletteDark.SymbolPinArrow,
+                        "style" : Qt.BrushStyle.SolidPattern
+                    },
                     "size" : 4
+                },
+                "SymbolPinEntry" : {
+                    "line" : {
+                        "color" : PaletteDark.SymbolPin,
+                        "width" : 0,
+                        "style" : Qt.PenStyle.SolidLine
+                    },
+                    "fill" : {
+                        "color" : PaletteDark.SymbolPin,
+                        "style" : Qt.BrushStyle.NoBrush
+                    }
+                },
+                "SymbolPinName" : {
+                    "text" : {
+                        "color"     : PaletteDark.SymbolPinName,
+                        "family"    : "Liberation Sans",
+                        "size"      : 7,
+                        "bold"      : False,
+                        "italic"    : False,
+                        "underline" : False
+                    }
+                },
+                "SymbolPinComment" : {
+                    "text" : {
+                        "color"     : PaletteDark.SymbolPinComment,
+                        "family"    : "Liberation Sans",
+                        "size"      : 7,
+                        "bold"      : False,
+                        "italic"    : False,
+                        "underline" : False
+                    }
                 },
                 "PropertyText" : {
                     "text" : {
@@ -433,13 +479,59 @@ FACTORY_SETTINGS = {
                         "underline" : False
                     }
                 },
+                "SymbolPin" : {
+                    "line" : {
+                        "color" : PaletteLightMono.SymbolPin,
+                        "width" : 1,
+                        "style" : Qt.PenStyle.SolidLine
+                    },
+                    "fill" : {
+                        "color" : PaletteLightMono.SymbolPin,
+                        "style" : Qt.BrushStyle.NoBrush
+                    }
+                },
                 "SymbolPinArrow" : {
                     "line" : {
                         "color" : PaletteLightMono.SymbolPinArrow,
                         "width" : 1,
                         "style" : Qt.PenStyle.SolidLine
                     },
+                    "fill" : {
+                        "color" : PaletteLightMono.SymbolPinArrow,
+                        "style" : Qt.BrushStyle.SolidPattern
+                    },
                     "size" : 4
+                },
+                "SymbolPinEntry" : {
+                    "line" : {
+                        "color" : PaletteLightMono.SymbolPin,
+                        "width" : 0,
+                        "style" : Qt.PenStyle.SolidLine
+                    },
+                    "fill" : {
+                        "color" : PaletteLightMono.SymbolPin,
+                        "style" : Qt.BrushStyle.NoBrush
+                    }
+                },
+                "SymbolPinName" : {
+                    "text" : {
+                        "color"     : PaletteLightMono.SymbolPinName,
+                        "family"    : "Liberation Sans",
+                        "size"      : 7,
+                        "bold"      : False,
+                        "italic"    : False,
+                        "underline" : False
+                    }
+                },
+                "SymbolPinComment" : {
+                    "text" : {
+                        "color"     : PaletteLightMono.SymbolPinComment,
+                        "family"    : "Liberation Sans",
+                        "size"      : 7,
+                        "bold"      : False,
+                        "italic"    : False,
+                        "underline" : False
+                    }
                 },
                 "PropertyText" : {
                     "text" : {

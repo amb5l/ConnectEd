@@ -1,4 +1,5 @@
 from typing import Self
+from types  import NoneType
 
 from PyQt6.QtCore import Qt, QPoint, QPointF
 
@@ -20,21 +21,23 @@ from ...items.text_block    import TextBlock
 from ...items.property_text import PropertyText
 from ...items.port          import Port
 from ...items.block_pin     import BlockPin
+from ...items.symbol_pin    import SymbolPin
 
 from ...scenes.drawing import DrawingScene
 
-from ...scenes.drawing.interaction import Interaction,                \
-                                          EditMoveInteraction,        \
-                                          EditMoveBlockPinsInteraction,    \
-                                          EditPasteInteraction,       \
-                                          EditDuplicateInteraction,   \
-                                          PlacePortInteraction,       \
-                                          PlaceBlockInteraction,      \
-                                          PlaceBlockPinInteraction,   \
-                                          PlaceLineInteraction,       \
-                                          PlaceRectangleInteraction,  \
-                                          PlaceTextInteraction,       \
-                                          PlaceTextBlockInteraction,  \
+from ...scenes.drawing.interaction import Interaction,                  \
+                                          EditMoveInteraction,          \
+                                          EditMoveBlockPinsInteraction, \
+                                          EditPasteInteraction,         \
+                                          EditDuplicateInteraction,     \
+                                          PlacePortInteraction,         \
+                                          PlaceBlockInteraction,        \
+                                          PlaceBlockPinInteraction,     \
+                                          PlaceSymbolPinInteraction,    \
+                                          PlaceLineInteraction,         \
+                                          PlaceRectangleInteraction,    \
+                                          PlaceTextInteraction,         \
+                                          PlaceTextBlockInteraction,    \
                                           PlaceConnInteraction
 
 from ...scenes.drawing.cmd.edit import cmdEditPortPin,     \
@@ -596,6 +599,28 @@ class DrawingViewStatePlaceBlockPin(DrawingViewStateBase):
             self.view.grid.pitch if self.view.grid.snap else None
         )
 
+class DrawingViewStatePlaceSymbolPin(ClickMixin):
+    TIP = "Place Symbol Pin: pick a location"
+
+    def entry(
+        self : Self,
+        v    : QPoint,
+        s    : QPointF,
+        e    : NoneType = None  # not used
+    ) -> None:
+        pin = SymbolPin()
+        pin.setPos(self._snap(s))
+        dialog = PortPinDialog("Pin", pin, self.view)
+        if dialog.exec():
+            pin.name = dialog.getName()
+            pin.direction = dialog.getDirection()
+            pin.range = dialog.getRange()
+            self.interact(PlaceSymbolPinInteraction(
+                self.scene, self._snap(s), pin
+            ))
+        else:
+            self.view.state.go(self.view.stateIdle)
+
 class DrawingViewStatePlaceLine1(ClickMixin):
     TIP = "Place Line: pick the first point"
 
@@ -728,6 +753,7 @@ class DrawingViewStateMixin:
     statePlaceBlock1      : DrawingViewStatePlaceBlock1
     statePlaceBlock2      : DrawingViewStatePlaceBlock2
     statePlaceBlockPin    : DrawingViewStatePlaceBlockPin
+    statePlaceSymbolPin   : DrawingViewStatePlaceSymbolPin
     statePlaceRectangle1  : DrawingViewStatePlaceRectangle1
     statePlaceRectangle2  : DrawingViewStatePlaceRectangle2
     statePlaceText        : DrawingViewStatePlaceText
@@ -760,6 +786,7 @@ class DrawingViewStateMixin:
         self.statePlaceBlock1      = DrawingViewStatePlaceBlock1      (self)
         self.statePlaceBlock2      = DrawingViewStatePlaceBlock2      (self)
         self.statePlaceBlockPin    = DrawingViewStatePlaceBlockPin    (self)
+        self.statePlaceSymbolPin   = DrawingViewStatePlaceSymbolPin   (self)
         self.statePlaceLine1       = DrawingViewStatePlaceLine1       (self)
         self.statePlaceLine2       = DrawingViewStatePlaceLine2       (self)
         self.statePlaceRectangle1  = DrawingViewStatePlaceRectangle1  (self)

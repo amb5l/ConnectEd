@@ -17,6 +17,7 @@ from ...items.text       import Text
 from ...items.text_block import TextBlock
 from ...items.port       import Port
 from ...items.block_pin  import BlockPin
+from ...items.symbol_pin import SymbolPin
 from ...items.entry      import Entry
 from ...items.conn_vtx   import ConnVtx
 from ...items.conn_seg   import ConnSeg, ConnSegPreview1, ConnSegPreview2
@@ -416,9 +417,15 @@ class PlaceBaseRectInteraction(PlaceBaseInteraction):
         self._element.setPoints(self._pos, pos)
 
 
-class PlaceBlockPinInteraction(BlockPinInteraction):
-    """Base for all interactions that place a pin."""
+class PlacePortInteraction(PlaceBaseInteraction):
+    _ELEMENT = Port
 
+
+class PlaceBlockInteraction(PlaceBaseRectInteraction):
+    _ELEMENT = Block
+
+
+class PlaceBlockPinInteraction(BlockPinInteraction):
     def __init__(
         self   : Self,
         scene  : "DrawingScene",
@@ -441,16 +448,8 @@ class PlaceBlockPinInteraction(BlockPinInteraction):
         self._pin.setParentItem(None)
 
 
-class PlacePortInteraction(PlaceBaseInteraction):
-    _ELEMENT = Port
-
-
-class PlaceBlockInteraction(PlaceBaseRectInteraction):
-    _ELEMENT = Block
-
-
-class PlaceBlockPinInteraction(PlaceBlockPinInteraction):
-    _PIN = BlockPin
+class PlaceSymbolPinInteraction(PlaceBaseInteraction):
+    _ELEMENT = SymbolPin
 
 
 class PlaceRectangleInteraction(PlaceBaseRectInteraction):

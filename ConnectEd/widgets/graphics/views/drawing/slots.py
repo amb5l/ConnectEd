@@ -15,6 +15,8 @@ from ...items import ElementMixin
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ..drawing import DrawingView
+    from ..diagram import DiagramView
+    from ..symbol  import SymbolView
 
 
 def withScene(func):
@@ -200,16 +202,19 @@ class DrawingViewSlotsMixin:
     # place menu
     ############################################################################
 
-    def placePort(self : "DrawingView") -> None:
+    def placePort(self : "DiagramView") -> None:
         self.state.go(self.statePlacePort)
 
-    def placeBlock(self : "DrawingView") -> None:
+    def placeBlock(self : "DiagramView") -> None:
         self.state.go(self.statePlaceBlock1)
 
-    def placeBlockPin(self : "DrawingView") -> None:
+    def placeBlockPin(self : "DiagramView") -> None:
         self.state.go(self.statePlaceBlockPin)
 
-    def placeConnection(self : "DrawingView") -> None:
+    def placeSymbolPin(self : "SymbolView") -> None:
+        self.state.go(self.statePlaceSymbolPin)
+
+    def placeConnection(self : "DiagramView") -> None:
         self.state.go(self.statePlaceConn1)
 
     def placeLine(self : "DrawingView") -> None:
