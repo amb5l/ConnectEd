@@ -10,6 +10,7 @@ from ...core.defs import APP_NAME
 
 from ...widgets.graphics.views.drawing import DrawingView
 from ...widgets.graphics.views.diagram import DiagramView
+from ...widgets.graphics.views.symbol  import SymbolView
 
 
 T = TypeVar("T")
@@ -239,19 +240,23 @@ class Slots:
         view.scene().update()
 
     @withCurrentWidget(DrawingView)
-    def placePort(self : Self, view : DrawingView) -> None:
+    def placePort(self : Self, view : DiagramView) -> None:
         view.placePort()
 
     @withCurrentWidget(DrawingView)
-    def placeBlock(self : Self, view : DrawingView) -> None:
+    def placeBlock(self : Self, view : DiagramView) -> None:
         view.placeBlock()
 
     @withCurrentWidget(DrawingView)
-    def placeBlockPin(self : Self, view : DrawingView) -> None:
+    def placeBlockPin(self : Self, view : DiagramView) -> None:
         view.placeBlockPin()
 
+    @withCurrentWidget(SymbolView)
+    def placeSymbolPin(self : Self, view : SymbolView) -> None:
+        view.placeSymbolPin()
+
     @withCurrentWidget(DrawingView)
-    def placeConnection(self : Self, view : DrawingView) -> None:
+    def placeConnection(self : Self, view : DiagramView) -> None:
         view.placeConnection()
 
     @withCurrentWidget(DrawingView)

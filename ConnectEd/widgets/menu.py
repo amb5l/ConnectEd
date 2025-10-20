@@ -4,8 +4,14 @@ from PyQt6.QtWidgets import QMenu
 
 from .private import Action
 
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from .window.sub_window import SubWindow
+
 
 class Menu(QMenu):
+    subwindow_class : type["SubWindow"] | None = None
+
     def subMenusDict(self : Self) -> dict[str, "Menu"]:
         return {a.menu().title().replace("&", "") : a.menu() \
             for a in self.actions() if a.menu() is not None}

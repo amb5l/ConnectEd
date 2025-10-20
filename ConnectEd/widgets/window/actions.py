@@ -68,6 +68,7 @@ class Actions:
         self.placePort          = Action( window(), "Port"          , "Place Port"                             , "Ctrl+I"                     )  # noqa E501
         self.placeBlock         = Action( window(), "Block"         , "Place Block"                            , "Ctrl+B"                     )  # noqa E501
         self.placeBlockPin      = Action( window(), "Block Pin"     , "Place Block Pin"                        , "Ctrl+P"                     )  # noqa E501
+        self.placeSymbolPin     = Action( window(), "Pin"           , "Place Symbol Pin"                       , "Ctrl+P"                     )  # noqa E501
         self.placeConnection    = Action( window(), "Connection"    , "Place Connection"                       , "C"                          )  # noqa E501
         self.placeLine          = Action( window(), "Line"          , "Place Line"                             , "Ctrl+L"                     )  # noqa E501
         self.placeRectangle     = Action( window(), "Rectangle"     , "Place Rectangle"                        , "Ctrl+R"                     )  # noqa E501

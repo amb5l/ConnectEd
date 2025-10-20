@@ -103,6 +103,7 @@ class Window(QMainWindow):
         # signal-slot connections
         self.mdi_area.subWindowActivated.connect(self.actions.onSubWindowActivated)
         self.mdi_area.subWindowActivated.connect(self._menu_bar.updateWindowMenu)
+        self.mdi_area.subWindowActivated.connect(self._menu_bar.updatePlaceMenu)
         clipboard = QApplication.clipboard()
         clipboard.dataChanged.connect(self.actions.onClipboardDataChanged)
 
@@ -119,6 +120,12 @@ class Window(QMainWindow):
         try:
             self.mdi_area.subWindowActivated.disconnect(
                 self.actions.onSubWindowActivated
+            )
+            self.mdi_area.subWindowActivated.disconnect(
+                self._menu_bar.updateWindowMenu
+            )
+            self.mdi_area.subWindowActivated.disconnect(
+                self._menu_bar.updatePlaceMenu
             )
         except TypeError: # workaround for Qt cleanup
             pass

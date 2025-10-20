@@ -9,15 +9,14 @@ from ..menu import Menu
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from . import Window
-    from .actions import Actions
 
 
 class MenuBar(QMenuBar):
     _menus_dict : dict[str, Menu]
 
     def __init__(
-        self    : Self,
-        parent  : "Window"
+        self   : Self,
+        parent : "Window"
     ) -> None:
         super().__init__(parent)
         self._menus_dict = {}
@@ -79,16 +78,7 @@ class MenuBar(QMenuBar):
         self.view_menu.addMenu(self.view_theme_menu)
 
         self.place_menu = Menu("&Place")
-        self.place_menu.addAction(actions.placePort)
-        self.place_menu.addAction(actions.placeBlock)
-        self.place_menu.addAction(actions.placeBlockPin)
-        self.place_menu.addSeparator()
-        self.place_menu.addAction(actions.placeConnection)
-        self.place_menu.addSeparator()
-        self.place_menu.addAction(actions.placeLine)
-        self.place_menu.addAction(actions.placeRectangle)
-        self.place_menu.addAction(actions.placeText)
-        self.place_menu.addAction(actions.placeTextBlock)
+        self.updatePlaceMenu()
 
         self.window_menu = Menu("&Window")
         self.updateWindowMenu()
@@ -132,6 +122,49 @@ class MenuBar(QMenuBar):
                 self.file_menu.addAction(action)
             self.file_menu.addSeparator()
         self.file_menu.addAction(actions.fileExit)
+
+    def updatePlaceMenu(self : Self) -> None:
+        from ..graphics.views.diagram import DiagramSubWindow
+        from ..graphics.views.symbol  import SymbolSubWindow
+        from .spreadsheet import SpreadsheetSubWindow
+        window : "Window" = self.parent()
+        actions = window.actions
+        if not hasattr(window, "mdi_area"):
+            return
+        subwindow = window.mdi_area.activeSubWindow()
+        if subwindow.__class__ == self.place_menu.subwindow_class:
+            return  # no change
+        self.place_menu.clear()
+        if isinstance(window.mdi_area.activeSubWindow(), DiagramSubWindow):
+            # Diagram window - show diagram-appropriate actions
+            self.place_menu.addAction(actions.placePort)
+            self.place_menu.addAction(actions.placeBlock)
+            self.place_menu.addAction(actions.placeBlockPin)
+            self.place_menu.addSeparator()
+            self.place_menu.addAction(actions.placeConnection)
+            self.place_menu.addSeparator()
+            self.place_menu.addAction(actions.placeLine)
+            self.place_menu.addAction(actions.placeRectangle)
+            self.place_menu.addAction(actions.placeText)
+            self.place_menu.addAction(actions.placeTextBlock)
+            self.place_menu.setEnabled(True)
+        elif isinstance(subwindow, SymbolSubWindow):
+            # Symbol window - show symbol-appropriate actions
+            self.place_menu.addAction(actions.placeSymbolPin)
+            self.place_menu.addSeparator()
+            self.place_menu.addAction(actions.placeLine)
+            self.place_menu.addAction(actions.placeRectangle)
+            self.place_menu.addAction(actions.placeText)
+            self.place_menu.addAction(actions.placeTextBlock)
+            self.place_menu.setEnabled(True)
+        elif isinstance(subwindow, SpreadsheetSubWindow):
+            # Spreadsheet window - disable the menu
+            self.place_menu.setEnabled(False)
+        else:
+            # No active window or unknown type - disable the menu
+            self.place_menu.setEnabled(False)
+        # Remember the current subwindow class
+        self.place_menu.subwindow_class = subwindow.__class__
 
     def updateWindowMenu(self : Self) -> None:
         window : "Window" = self.parent()
