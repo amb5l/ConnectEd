@@ -2,7 +2,8 @@ from typing import Self
 from abc import ABC, abstractmethod
 
 from PyQt6.QtCore    import QPointF
-from PyQt6.QtWidgets import QGraphicsItem
+from PyQt6.QtWidgets import QGraphicsItem, QMenu
+from PyQt6.QtGui     import QAction
 
 from .....core.xml   import paste
 from .....core.utils import sign
@@ -32,6 +33,17 @@ if TYPE_CHECKING:
 ElementType = ElementMixin | QGraphicsItem
 
 
+class RotateMixin:
+    # instance attributes
+    _element : ElementType
+
+    def rotateCW(self : Self) -> None:
+        self._element.setRotation((self._element.rotation() + 90) % 360)
+
+    def rotateCCW(self : Self) -> None:
+        self._element.setRotation((self._element.rotation() - 90) % 360)
+
+
 class Interaction(ABC):
     """Base for all interactions."""
 
@@ -57,6 +69,13 @@ class Interaction(ABC):
 
     @abstractmethod
     def cancel(self : Self) -> None: ...
+
+    def ctxMenuItems(self : Self, pos : QPointF) -> list[QAction | QMenu]:
+        complete_action = QAction("Complete")
+        complete_action.triggered.connect(lambda: self.complete(pos))
+        cancel_action = QAction("Cancel")
+        cancel_action.triggered.connect(self.cancel)
+        return [complete_action, cancel_action]
 
 
 class SceneElementInteraction(Interaction):
@@ -417,8 +436,23 @@ class PlaceBaseRectInteraction(PlaceBaseInteraction):
         self._element.setPoints(self._pos, pos)
 
 
-class PlacePortInteraction(PlaceBaseInteraction):
+class PlacePortInteraction(RotateMixin, PlaceBaseInteraction):
     _ELEMENT = Port
+
+    def ctxMenuItems(self : Self, pos : QPointF) -> list[QAction | QMenu]:
+        separator = QAction()
+        separator.setSeparator(True)
+        rotate_cw_action = QAction("Rotate CW")
+        rotate_cw_action.setShortcut("]")
+        rotate_cw_action.triggered.connect(self.rotateCW)
+        rotate_ccw_action = QAction("Rotate CCW")
+        rotate_ccw_action.setShortcut("[")
+        rotate_ccw_action.triggered.connect(self.rotateCCW)
+        return super().ctxMenuItems(pos) + [
+            separator,
+            rotate_cw_action,
+            rotate_ccw_action
+        ]
 
 
 class PlaceBlockInteraction(PlaceBaseRectInteraction):

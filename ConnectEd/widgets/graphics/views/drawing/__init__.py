@@ -2,15 +2,20 @@ from typing import Self
 from math   import ceil
 
 from PyQt6.QtCore    import Qt, QPoint, QPointF, QRectF, QEvent
-from PyQt6.QtWidgets import QApplication, QGraphicsView, QGraphicsTextItem
-from PyQt6.QtGui     import QPainter, QPen, QCloseEvent, QKeyEvent
+from PyQt6.QtWidgets import QApplication, QGraphicsView, QGraphicsTextItem, \
+                            QMenu
+from PyQt6.QtGui     import QPainter, QPen, \
+                            QCloseEvent, QKeyEvent, QContextMenuEvent, \
+                            QAction
 
-from .....app import settings
+from .....app import settings, window
 
 from ....marquee import Marquee
 
 from ....window.mdi_area   import MdiArea
 from ....window.sub_window import SubWindow
+
+from ....menu import Menu
 
 from ...scenes.drawing import DrawingScene
 
@@ -88,6 +93,37 @@ class DrawingView(
         if self._shown and not self._zoomed:
             self._zoomed = True
             self.viewZoomAll()
+
+    def contextMenuEvent(self : Self, event : QContextMenuEvent) -> None:
+        from ...views.diagram import DiagramView
+        # TODO: implement the following
+        menu = Menu()
+        # add interaction related actions/submenus
+        if self.interaction is not None:
+            scene_pos = self.mapToScene(event.pos())
+            items = self.interaction.ctxMenuItems(scene_pos)
+            if items:
+                for item in items:
+                    if isinstance(item, QAction):
+                        menu.addAction(item)
+                    elif isinstance(item, QMenu):
+                        menu.addMenu(item)
+                menu.addSeparator()
+        # EITHER add selection related actions/submenus
+        pass
+        # OR add element related actions/submenus
+        pass
+        # add view related actions/submenus (e.g. zoom)
+        view_zoom_menu = Menu("&Zoom")
+        view_zoom_menu.addAction(window().actions.viewZoomAll)
+        if isinstance(self, DiagramView):
+            view_zoom_menu.addAction(window().actions.viewZoomSheet)
+        view_zoom_menu.addAction(window().actions.viewZoomArea)
+        view_zoom_menu.addAction(window().actions.viewZoomIn)
+        view_zoom_menu.addAction(window().actions.viewZoomOut)
+        menu.addMenu(view_zoom_menu)
+        # display menu
+        menu.exec(event.globalPos())
 
     def drawForeground(self : Self, painter : QPainter, rect : QRectF) -> None:
         # draw grid
