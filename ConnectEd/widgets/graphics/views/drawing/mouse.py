@@ -13,7 +13,9 @@ if TYPE_CHECKING:
     from . import DrawingView
 
 
+qmb = Qt.MouseButton
 qkm = Qt.KeyboardModifier
+
 
 class DrawingViewMouseMixin:
     def enterEvent(self : "DrawingView", _event : QEnterEvent) -> None:
@@ -83,9 +85,8 @@ class DrawingViewMouseMixin:
     def mousePressEvent(self : "DrawingView", event : QMouseEvent) -> None:
         p = event.pos(); l = self.mapToScene(p); m = self._getModifiers(event)
         # handle selection in idle state to avoid interfering with interactions
-        if self.state == self.stateIdle and \
-        ((event.buttons() & Qt.MouseButton.RightButton) \
-        or (event.buttons() & Qt.MouseButton.LeftButton and m == qkm.NoModifier)):
+        if self.state == self.stateIdle \
+        and (event.buttons() & qmb.LeftButton and m == qkm.NoModifier):
             items = self._itemsAt(l)
             if items:
                 if not isinstance(items[0], Handle):
@@ -94,18 +95,18 @@ class DrawingViewMouseMixin:
                         items[0].setSelected(True)
             else:
                 self.scene().clearSelection()
-        if event.buttons() & Qt.MouseButton.LeftButton:
+        if event.buttons() & qmb.LeftButton:
             self.mouse.left.press.setPL(p, l)
             self.mouse.left.press.modifiers = m
             self.mouse.left.state = MouseButtonState.Pressed
-        if event.buttons() & Qt.MouseButton.MiddleButton:
+        if event.buttons() & qmb.MiddleButton:
             self.mouse.middle.press.setPL(p, l)
             self.mouse.middle.press.modifiers = m
             self.mouse.middle.state = MouseButtonState.Pressed
 
     def mouseReleaseEvent(self : "DrawingView", event : QMouseEvent) -> None:
         p = event.pos(); l = self.mapToScene(p); m = self._getModifiers(event)
-        if event.button() & Qt.MouseButton.LeftButton:
+        if event.button() & qmb.LeftButton:
             self.mouse.left.release.setPL(p, l)
             self.mouse.left.release.modifiers = m
             match self.mouse.left.state:
@@ -125,7 +126,7 @@ class DrawingViewMouseMixin:
                     self.mouse.left.state = MouseButtonState.Idle
                 case _:
                     logger().warning(f"Mouse left button released when idle")
-        if event.button() & Qt.MouseButton.MiddleButton:
+        if event.button() & qmb.MiddleButton:
             self.mouse.middle.release.setPL(p, l)
             self.mouse.middle.release.modifiers = m
             match self.mouse.middle.state:
@@ -148,7 +149,7 @@ class DrawingViewMouseMixin:
 
     def mouseDoubleClickEvent(self : "DrawingView", event : QMouseEvent) -> None:
         p = event.pos(); l = self.mapToScene(p); m = self._getModifiers(event)
-        if event.button() & Qt.MouseButton.LeftButton:
+        if event.button() & qmb.LeftButton:
             self.mouse.left.state = MouseButtonState.Idle
             self.state.mouseLeftDoubleClick(p, l, m)
 
