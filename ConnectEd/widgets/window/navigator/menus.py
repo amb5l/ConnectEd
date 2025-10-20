@@ -120,10 +120,10 @@ class NavigatorMenusMixin:
         self.openLibrary()
 
     def _slotSaveLibrary(self : "Navigator") -> None:
-        self.saveLibrary(self.node)
+        self.save(self.node)
 
     def _slotSaveLibraryAs(self : "Navigator") -> None:
-        self.saveLibraryAs(self.node)
+        self.saveAs(self.node)
 
     def _slotCloseLibrary(self : "Navigator") -> None:
         self.closeLibrary(self.node)
