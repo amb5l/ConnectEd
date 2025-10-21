@@ -1,6 +1,10 @@
 from typing import Self
 
-from PyQt6.QtCore import QPointF
+from PyQt6.QtCore    import QPointF
+from PyQt6.QtWidgets import QMenu
+from PyQt6.QtGui     import QAction
+
+from ....app import window
 
 from ..properties import PropertySpec
 
@@ -60,8 +64,11 @@ class Block(BaseRectangle):
         #    if isinstance(item, Pin):
         #        item.onPositionChange()
 
-    def getMenuItems(self : Self) -> list[str]:
-        return ["Add Pin...", "-", "Appearance...", "Properties..."]
+    def ctxMenuItems(self : Self) -> list[QAction | QMenu]:
+        return [
+            window().actions.ctxPlaceBlockPin,
+            self.ctxMenuSeparator()
+        ] + super().ctxMenuItems()
 
     def pos2loc(self : Self, pos : QPointF) -> EdgeLoc:
         rect = self.rect()

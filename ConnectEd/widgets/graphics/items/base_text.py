@@ -1,11 +1,11 @@
 from typing import Self
 
 from PyQt6.QtCore    import QPointF, QRectF
-from PyQt6.QtWidgets import QWidget, QStyleOptionGraphicsItem, QStyle, \
-                            QGraphicsSimpleTextItem
-from PyQt6.QtGui     import QPainter, QFontMetrics
+from PyQt6.QtWidgets import QGraphicsSimpleTextItem, \
+                            QWidget, QStyleOptionGraphicsItem, QStyle, QMenu
+from PyQt6.QtGui     import QPainter, QAction
 
-from ...dialogs.text import TextDialog
+from ....app import window
 
 from ..properties import PropertySpec, PropertiesMixin
 
@@ -83,8 +83,11 @@ class BaseText(
         self._pos = self.pos() + delta
         self.updateOrigin()
 
-    def getMenuItems(self : Self) -> list[str]:
-        return ["Edit...", "-", "Properties..."]
+    def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
+        return [
+            window().actions.editText,
+            self.ctxMenuSeparator()
+        ] + super().ctxMenuItems()
 
     def setText(self : Self, text : str) -> None:
         super().setText(text)
@@ -105,15 +108,3 @@ class BaseText(
     def moveAnchorPointBy(self : Self, _ : str, delta : QPointF) -> None:
         """Move the entire Text when any keypoint is dragged."""
         self.setPos(self.pos() + delta)
-
-    def ctxMenuEdit(
-        self    : Self,
-        checked : bool,
-        view    : "DrawingView"
-    ) -> None:
-        from ..scenes.drawing.cmd.edit import cmdEditText
-        dialog = TextDialog(self, view)
-        if dialog.exec():
-            text, appearance = dialog.getChoice()
-            scene : "DrawingScene" = self.scene()
-            scene.undo_stack.push(cmdEditText(scene, self, text, appearance))

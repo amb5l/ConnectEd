@@ -76,6 +76,8 @@ class Slots:
     def __init__(self : Self) -> None:
         pass
 
+    # slots for main menu actions
+
     def fileNewDesign(self : Self) -> None:
         window().navigator.newDiagram()
 
@@ -299,3 +301,14 @@ class Slots:
 
     def helpAbout(self : Self) -> None:
         QMessageBox.about(window(), "About", APP_NAME)
+
+    # slots for context menu actions
+
+    def ctxEdit(self : Self) -> None:
+        pass
+
+    def ctxPlaceBlockPin(self : Self) -> None:
+        pass
+
+    def ctxAssignOrigin(self : Self) -> None:
+        pass

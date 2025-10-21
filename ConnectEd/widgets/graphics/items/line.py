@@ -111,9 +111,6 @@ class Line(
     def updateAnchorPoints(self : Self) -> None:
         self._anchor_points["P2"].setPos(self._line.p2())
 
-    def getMenuItems(self : Self) -> list[str]:
-        return ["Appearance..."]
-
     def p1(self : Self) -> QPointF:
         return self.pos()
 

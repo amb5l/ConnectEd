@@ -1,10 +1,10 @@
 from typing import Self
 
 from PyQt6.QtWidgets import QWidget, QGraphicsItem, QGraphicsPathItem, \
-                            QStyleOptionGraphicsItem, QStyle
-from PyQt6.QtGui     import QPainter
+                            QStyleOptionGraphicsItem, QStyle, QMenu
+from PyQt6.QtGui     import QPainter, QAction
 
-from ....app import settings
+from ....app import settings, window
 
 from ..scenes.drawing.cmd import cmdRotate
 
@@ -101,28 +101,11 @@ class Port(ElementPosMixin, ElementFillMixin, PortPinMixin, QGraphicsPathItem):
         option.state &= ~QStyle.StateFlag.State_Selected
         QGraphicsPathItem.paint(self, painter, option, widget)
 
-    def getMenuItems(self : Self) -> list[str]:
-        return ["Rotate CW", "Rotate CCW", "-", "Edit"]
-
-    def ctxMenuRotateCW(
-        self    : Self,
-        _checked : bool,
-        view    : "DrawingView"
-    ) -> None:
-        scene : "DrawingScene" = self.scene()
-        scene.undo_stack.push(cmdRotate(scene, [self], +90))
-
-    def ctxMenuRotateCCW(
-        self    : Self,
-        _checked : bool,
-        view    : "DrawingView"
-    ) -> None:
-        scene : "DrawingScene" = self.scene()
-        scene.undo_stack.push(cmdRotate(scene, [self], -90))
-
-    def ctxMenuEdit(
-        self     : Self,
-        _checked : bool,
-        view     : "DrawingView"
-    ) -> None:
-        view.editPort(self)
+    def ctxMenuItems(self : Self) -> list[QAction | QMenu]:
+        return [
+            window().actions.ctxEdit,
+            self.ctxMenuSeparator(),
+            window().actions.editRotateCW,
+            window().actions.editRotateCCW,
+            self.ctxMenuSeparator()
+        ] + super().ctxMenuItems()

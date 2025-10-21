@@ -1,11 +1,10 @@
 from typing import Self
-from types  import NoneType
 
 from PyQt6.QtCore    import Qt, QPointF, QXmlStreamWriter, QXmlStreamReader
-from PyQt6.QtWidgets import QGraphicsPathItem
-from PyQt6.QtGui     import QPen, QBrush, QPainterPath
+from PyQt6.QtWidgets import QGraphicsPathItem, QMenu
+from PyQt6.QtGui     import QPen, QBrush, QPainterPath, QAction
 
-from ....app import settings
+from ....app import settings, window
 
 from .mixin.change import ElementChangeMixin
 from .mixin.menu   import ElementMenuMixin
@@ -70,62 +69,31 @@ class Handle(
     def fromXml(cls : Self, _ : QXmlStreamReader) -> Self:
         pass
 
-    def getMenuItems(self : Self) -> list[str]:
-        return self._MENU.copy()
-
-    def ctxMenuMove(
-        self : Self,
-        _    : bool,
-        view : "DrawingView"
-    ) -> None:
-        from ..scenes.drawing.interaction import EditMoveInteraction
-        view.interaction = EditMoveInteraction(
-            self.scene(), self._element, self.scenePos()
-        )
-        view.state.go(view.stateEditMove)
-
-    def ctxMenuResize(
-        self : Self,
-        _    : bool,
-        view : "DrawingView"
-    ) -> None:
-        from ..scenes.drawing.interaction import EditMoveInteraction
-        view.interaction = EditMoveInteraction(
-            self.scene(), self, self.scenePos()
-        )
-        view.state.go(view.stateEditResize)
-
-    def ctxMenuAssignOrigin(
-        self    : Self,
-        checked : bool,
-        view    : "DrawingView"
-    ) -> None:
-        from ..scenes.drawing.cmd.edit import cmdEditOrigin
-        scene : "DrawingScene" = self.scene()
-        parent : "AnchorPoint" = self.parentItem()
-        scene.undo_stack.push(cmdEditOrigin(
-            scene,
-            self._element, # element
-            parent.name()  # name of anchor point
-        ))
+    def ctxMenuItems(self : Self) -> list[QAction | QMenu]:
+        l = []
+        if hasattr(self._element, "_origin"):
+            l.extend(window().actions.ctxAssignOrigin)
+        return l
 
 
 class Grip(Handle):
     _PATH = "Grip"
 
-    def getMenuItems(self : Self) -> list[str]:
-        r = self._MENU.copy()
-        if hasattr(self._element, "_origin"):
-            r.extend(["-", "Assign Origin"])
-        return r
-
-
 class MoveGrip(Grip):
-    _MENU = ["Move"]
+    def ctxMenuItems(self : Self) -> list[QAction | QMenu]:
+        return [
+            window().actions.editMove,
+            self.ctxMenuSeparator()
+        ] + super().ctxMenuItems()
 
 
 class ResizeGrip(Grip):
-    _MENU = ["Resize", "Move"]
+    def ctxMenuItems(self : Self) -> list[QAction | QMenu]:
+        return [
+            window().actions.editResize,
+            window().actions.editMove,
+            self.ctxMenuSeparator()
+        ] + super().ctxMenuItems()
 
 
 class Origin(Handle):
@@ -139,5 +107,5 @@ class Origin(Handle):
     ) -> None:
         super().__init__(parent, move, resize)
 
-    def getMenuItems(self : Self) -> list[str]:
+    def ctxMenuItems(self : Self) -> list[QAction | QMenu]:
         return []

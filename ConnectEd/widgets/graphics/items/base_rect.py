@@ -2,10 +2,10 @@ from typing import Self, overload
 
 from PyQt6.QtCore    import Qt, QPointF, QRectF, QSizeF
 from PyQt6.QtWidgets import QGraphicsRectItem, \
-                            QWidget, QStyleOptionGraphicsItem, QStyle
-from PyQt6.QtGui     import QPainter, QPainterPath, QPainterPathStroker
+                            QWidget, QStyleOptionGraphicsItem, QStyle, QMenu
+from PyQt6.QtGui     import QPainter, QPainterPath, QPainterPathStroker, QAction
 
-from ....app import settings
+from ....app import settings, window
 
 from ..properties import PropertySpec, PropertiesMixin
 
@@ -20,6 +20,10 @@ from .mixin.change import ElementChangeMixin
 from .mixin.clone  import ElementCloneMixin
 from .mixin.xml    import ElementXmlMixin
 from .mixin.menu   import ElementMenuMixin
+
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from ..views.drawing import DrawingView
 
 
 class BaseRectangle(
@@ -118,9 +122,6 @@ class BaseRectangle(
         else:
             self._hshape = stroker_path
         self.updateAnchorPoints()
-
-    def getMenuItems(self : Self) -> list[str]:
-        return ["Appearance...", "Properties..."]
 
     @overload
     def setRect(

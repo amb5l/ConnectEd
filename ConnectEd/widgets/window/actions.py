@@ -22,6 +22,7 @@ class Actions:
         self._scene  = None
         SK = QKeySequence.StandardKey
 
+        # actions for main menus
         self.fileNewDesign      = Action( window(), "Design"        , "Create a new design"                    , "Ctrl+N"                     )  # noqa E501
         self.fileNewLibrary     = Action( window(), "Library"       , "Create a new library"                   , None                         )  # noqa E501
         self.fileOpen           = Action( window(), "Open"          , "Open database"                          , "Ctrl+O"                     )  # noqa E501
@@ -81,6 +82,11 @@ class Actions:
         self.windowNext         = Action( window(), "Next"          , "Next"                                   , "Ctrl+F6"                    )  # noqa E501
         self.windowPrevious     = Action( window(), "Previous"      , "Previous"                               , "Ctrl+Shift+F6"              )  # noqa E501
         self.helpAbout          = Action( window(), "About"         , ""                                       , "Ctrl+Shift+T"               )  # noqa E501
+
+        # actions for context menus
+        self.ctxEdit            = Action( window(), "Edit"          , "Edit"                                   , None                         )  # noqa E501
+        self.ctxPlaceBlockPin   = Action( window(), "Add Pin..."    , "Place Block Pin"                        , None                         )  # noqa E501
+        self.ctxAssignOrigin    = Action( window(), "Assign Origin" , "Assign Origin"                          , None                         )  # noqa E501
 
         self.onSubWindowActivated(None)
 

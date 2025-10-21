@@ -3,7 +3,10 @@ from enum   import Enum
 from dataclasses import dataclass
 
 from PyQt6.QtCore    import Qt, QPointF
-from PyQt6.QtWidgets import QGraphicsItem, QGraphicsSceneMouseEvent
+from PyQt6.QtWidgets import QGraphicsItem, QGraphicsSceneMouseEvent, QMenu
+from PyQt6.QtGui     import QAction
+
+from ....app import window
 
 from ..properties import PropertySpec, PropertiesMixin
 
@@ -82,8 +85,11 @@ class PropertyText(TetherText):
         super().setParentItem(parent)
         self.onTextChange()
 
-    def getMenuItems(self : Self) -> list[str]:
-        return ["Edit..."]
+    def ctxMenuItems(self : Self) -> list[QAction | QMenu]:
+        return [
+            window().actions.ctxEdit,
+            self.ctxMenuSeparator()
+        ] + super().ctxMenuItems()
 
     def parent(self : Self) -> PropertiesMixin:
         p = self.parentItem()

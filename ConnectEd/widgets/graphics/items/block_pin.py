@@ -1,5 +1,10 @@
 from typing import Self
 
+from PyQt6.QtGui     import QAction
+from PyQt6.QtWidgets import QMenu
+
+from ....app import window
+
 from .mixin.loc    import ElementLocMixin
 
 from .port_pin import PortPinText, PortPinMixin
@@ -48,12 +53,8 @@ class BlockPin(ElementLocMixin, Pin):
     def _getCommentClass(cls) -> type[BlockPinComment]:
         return BlockPinComment
 
-    def getMenuItems(self : Self) -> list[str]:
-        return ["Edit"]
-
-    def ctxMenuEdit(
-        self    : Self,
-        _checked : bool,
-        view    : "DrawingView"
-    ) -> None:
-        view.editBlockPin(self)
+    def ctxMenuItems(self : Self) -> list[QAction | QMenu]:
+        return [
+            window().actions.editBlockPin,
+            self.ctxMenuSeparator()
+        ] + super().ctxMenuItems()
