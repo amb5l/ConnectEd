@@ -10,7 +10,7 @@ from ...core.defs import MIME_TYPE
 from ...widgets.graphics.views.drawing  import DrawingSubWindow
 from ...widgets.graphics.scenes.drawing import DrawingScene
 
-from ..private  import Action
+from ..action  import Action
 
 from .sub_window import SubWindow
 

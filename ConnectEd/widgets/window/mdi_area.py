@@ -6,7 +6,7 @@ from PyQt6.QtGui     import QAction
 
 from ...app import logger,model, window
 
-from ..private import Action
+from ..action import Action
 
 from .sub_window  import SubWindow
 from .spreadsheet import SpreadsheetSubWindow

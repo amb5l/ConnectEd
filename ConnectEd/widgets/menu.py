@@ -2,7 +2,7 @@ from typing import Self
 
 from PyQt6.QtWidgets import QMenu
 
-from .private import Action
+from .action import Action
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
