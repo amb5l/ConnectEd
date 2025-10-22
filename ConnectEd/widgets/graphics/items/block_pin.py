@@ -55,6 +55,6 @@ class BlockPin(ElementLocMixin, Pin):
 
     def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
         return [
-            view.ctxMenuAction("Edit...", view.ui.editBlockPin),
-            self.ctxMenuSeparator()
+            view.action("Edit...", view.ui.editBlockPin),
+            view.separator()
         ] + super().ctxMenuItems()

@@ -87,7 +87,7 @@ class DrawingViewMenuMixin:
         # display menu
         menu.exec(event.globalPos())
 
-    def ctxMenuAction(
+    def action(
         self   : "DrawingView",
         text   : str,
         slot   : Callable,
@@ -98,7 +98,7 @@ class DrawingViewMenuMixin:
         action.setEnabled(enable)
         return action
 
-    def ctxMenuSeparator(self : "DrawingView") -> QAction:
+    def separator(self : "DrawingView") -> QAction:
         action = QAction()
         action.setSeparator(True)
         return action

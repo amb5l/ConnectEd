@@ -103,6 +103,6 @@ class Port(ElementPosMixin, ElementFillMixin, PortPinMixin, QGraphicsPathItem):
 
     def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
         return [
-            view.ctxMenuAction("Edit...", view.ui.editPort),
-            self.ctxMenuSeparator()
+            view.action("Edit...", view.ui.editPort),
+            view.separator()
         ] + super().ctxMenuItems()

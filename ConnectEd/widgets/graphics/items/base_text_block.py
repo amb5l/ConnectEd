@@ -75,8 +75,8 @@ class BaseTextBlock(
 
     def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
         return [
-            view.ctxMenuAction("Edit...", view.ui.editText),
-            self.ctxMenuSeparator()
+            view.action("Edit...", view.ui.editText),
+            view.separator()
         ] + super().ctxMenuItems()
 
     def setPlainText(self : Self, text : str) -> None:

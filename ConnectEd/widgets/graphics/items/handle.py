@@ -72,7 +72,7 @@ class Handle(
     def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
         items = []
         if hasattr(self._element, "_origin"):
-            items.extend(view.ctxMenuAction(
+            items.extend(view.action(
                 "Assign Origin",
                 lambda: view.ui.editAssignOrigin(self.parentItem())
             ))
@@ -85,16 +85,16 @@ class Grip(Handle):
 class MoveGrip(Grip):
     def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
         return [
-            view.ctxMenuAction("Slide", view.ui.editSlide),
-            view.ctxMenuAction("Move", view.ui.editMove),
-            self.ctxMenuSeparator()
+            view.action("Slide", view.ui.editSlide),
+            view.action("Move", view.ui.editMove),
+            view.separator()
         ] + super().ctxMenuItems()
 
 
 class ResizeGrip(MoveGrip):
     def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
         return [
-            view.ctxMenuAction("Resize", lambda: view.ui.editResize(self)),
+            view.action("Resize", lambda: view.ui.editResize(self)),
         ] + super().ctxMenuItems()
 
 
