@@ -19,8 +19,7 @@ class ElementMixin:
     _uuid : str
     a     : "Appearance | None"
 
-    def initElement(self : Self, bare : bool = False) -> None:
-        from .. import Appearance
+    def initElement(self : Self | QGraphicsItem, bare : bool = False) -> None:
         self.setZValue(self.Z)
         f = QGraphicsItem.GraphicsItemFlag
         self.setFlag( f.ItemIsSelectable              , True )
@@ -50,18 +49,18 @@ class ElementMixin:
             self.onSettingsChange()
             settings().changed.connect(self.onSettingsChange)
 
-    def __hash__(self : Self):
+    def __hash__(self : Self | QGraphicsItem):
         return hash(self._uuid)
 
-    def __eq__(self : Self, other):
+    def __eq__(self : Self | QGraphicsItem, other : Self | QGraphicsItem):
         if not isinstance(other, ElementMixin):
             return NotImplemented
         return self._uuid == other._uuid
 
-    def resetUuid(self : Self) -> None:
+    def resetUuid(self : Self | QGraphicsItem) -> None:
         self._uuid = str(uuid.uuid4())
 
-    def parentSceneRotation(self: Self) -> float:
+    def parentSceneRotation(self: Self | QGraphicsItem) -> float:
             """
             Returns the effective rotation angle (degrees) of the parent
             w.r.t. the scene by summing hierarchy.
