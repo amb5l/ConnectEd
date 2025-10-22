@@ -53,8 +53,8 @@ class BlockPin(ElementLocMixin, Pin):
     def _getCommentClass(cls) -> type[BlockPinComment]:
         return BlockPinComment
 
-    def ctxMenuItems(self : Self) -> list[QAction | QMenu]:
+    def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
         return [
-            window().actions.editBlockPin,
+            view.ctxMenuAction("Edit...", view.ui.editBlockPin),
             self.ctxMenuSeparator()
         ] + super().ctxMenuItems()

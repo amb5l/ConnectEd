@@ -64,9 +64,9 @@ class Block(BaseRectangle):
         #    if isinstance(item, Pin):
         #        item.onPositionChange()
 
-    def ctxMenuItems(self : Self) -> list[QAction | QMenu]:
+    def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
         return [
-            window().actions.ctxPlaceBlockPin,
+            view.ctxMenuAction("Add Pin...", view.ui.placeBlockPin),
             self.ctxMenuSeparator()
         ] + super().ctxMenuItems()
 

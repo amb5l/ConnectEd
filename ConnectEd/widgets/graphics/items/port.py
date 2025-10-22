@@ -101,11 +101,11 @@ class Port(ElementPosMixin, ElementFillMixin, PortPinMixin, QGraphicsPathItem):
         option.state &= ~QStyle.StateFlag.State_Selected
         QGraphicsPathItem.paint(self, painter, option, widget)
 
-    def ctxMenuItems(self : Self) -> list[QAction | QMenu]:
+    def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
         return [
-            window().actions.ctxEdit,
+            view.ctxMenuAction("Edit...", view.ui.editPort),
             self.ctxMenuSeparator(),
-            window().actions.editRotateCW,
-            window().actions.editRotateCCW,
+            view.ctxMenuAction("Rotate CW", view.ui.editRotateCW),
+            view.ctxMenuAction("Rotate CCW", view.ui.editRotateCCW),
             self.ctxMenuSeparator()
         ] + super().ctxMenuItems()

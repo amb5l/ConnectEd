@@ -85,7 +85,7 @@ class BaseText(
 
     def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
         return [
-            window().actions.editText,
+            view.ctxMenuAction("Edit...", view.ui.editText),
             self.ctxMenuSeparator()
         ] + super().ctxMenuItems()
 

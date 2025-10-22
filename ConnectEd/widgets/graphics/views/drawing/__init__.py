@@ -23,11 +23,10 @@ from ...scenes.drawing.interaction import Interaction
 
 from .mouse   import DrawingViewMouseMixin
 from .private import DrawingViewPrivateMixin
-from .slots   import DrawingViewSlotsMixin
 from .state   import DrawingViewStateMixin, DrawingViewStateBase
 from .menu    import DrawingViewMenuMixin
 from .defs    import DrawingViewLayer, DrawingViewGrid, DrawingViewMouse
-
+from .ui      import DrawingViewUi
 
 def getView(pos : QPoint):
     widget = QApplication.widgetAt(pos)
@@ -41,7 +40,6 @@ def getView(pos : QPoint):
 class DrawingView(
     DrawingViewMouseMixin,
     QGraphicsView,
-    DrawingViewSlotsMixin,
     DrawingViewStateMixin,
     DrawingViewMenuMixin,
     DrawingViewPrivateMixin
@@ -56,6 +54,7 @@ class DrawingView(
     mouse       : DrawingViewMouse
     state       : DrawingViewStateBase
     interaction : Interaction | None
+    ui          : DrawingViewUi
 
     def __init__(self : Self, scene : DrawingScene) -> None:
         super().__init__(scene)

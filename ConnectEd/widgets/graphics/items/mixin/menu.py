@@ -11,10 +11,10 @@ if TYPE_CHECKING:
 
 
 class ElementMenuMixin:
-    def ctxMenuItems(self : Self) -> list[QAction | QMenu]:
+    def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
         return [
-            window().actions.editAppearance,
-            window().actions.editProperties
+            view.ctxMenuAction("Appearance...", view.ui.editAppearance),
+            view.ctxMenuAction("Properties...", view.ui.editProperties)
         ]
 
     def ctxMenuSeparator(self : Self) -> QAction:

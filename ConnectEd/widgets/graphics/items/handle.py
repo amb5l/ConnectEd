@@ -69,30 +69,29 @@ class Handle(
     def fromXml(cls : Self, _ : QXmlStreamReader) -> Self:
         pass
 
-    def ctxMenuItems(self : Self) -> list[QAction | QMenu]:
-        l = []
+    def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
+        items = []
         if hasattr(self._element, "_origin"):
-            l.extend(window().actions.ctxAssignOrigin)
-        return l
+            items.extend(view.ctxMenuAction("Assign Origin", view.ui.editAssignOrigin))
+        return items
 
 
 class Grip(Handle):
     _PATH = "Grip"
 
 class MoveGrip(Grip):
-    def ctxMenuItems(self : Self) -> list[QAction | QMenu]:
+    def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
         return [
-            window().actions.editMove,
+            view.ctxMenuAction("Slide", view.ui.editSlide),
+            view.ctxMenuAction("Move", view.ui.editMove),
             self.ctxMenuSeparator()
         ] + super().ctxMenuItems()
 
 
-class ResizeGrip(Grip):
-    def ctxMenuItems(self : Self) -> list[QAction | QMenu]:
+class ResizeGrip(MoveGrip):
+    def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
         return [
-            window().actions.editResize,
-            window().actions.editMove,
-            self.ctxMenuSeparator()
+            view.ctxMenuAction("Resize", view.ui.editResize),
         ] + super().ctxMenuItems()
 
 
