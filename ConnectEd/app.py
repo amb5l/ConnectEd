@@ -16,7 +16,7 @@ class ConnectEdApp(QApplication):
         window = pyqtSignal()
         splash = pyqtSignal()
 
-    # Instance attributes
+    # instance attributes
     _logger   : "Logger | None"
     _settings : "Settings | None"
     _model    : "Model | None"
