@@ -92,7 +92,7 @@ class DrawingViewStateBase:
         self : Self,
         v    : QPoint,
         s    : QPointF,
-        e    : list[ItemMixin] | None = None
+        i    : list[ItemMixin] | None = None
     ) -> None:
         pass
 
@@ -156,7 +156,7 @@ class DrawingViewStateIdle(DrawingViewStateBase):
         self : Self,
         v    : QPoint,
         s    : QPointF,
-        e    : list[ItemMixin] | None = None
+        i    : list[ItemMixin] | None = None
     ) -> None:
         self.view.interaction = None
 
@@ -348,7 +348,7 @@ class DrawingViewStateEditPaste(ClickMixin):
         self : Self,
         v    : QPoint,
         s    : QPointF,
-        e    : list[ItemMixin] | None = None
+        i    : list[ItemMixin] | None = None
     ) -> None:
         self.view.state.interact(EditPasteInteraction(self.scene, self._snap(s)))
 
@@ -394,9 +394,9 @@ class DrawingViewStateEditAppearance(DrawingViewStateBase):
         self : Self,
         v    : QPoint,
         s    : QPointF,
-        e    : list[ItemMixin] | None = None
+        i    : list[ItemMixin] | None = None
     ) -> None:
-        items = e or self.view._selectedItems(ItemMixin)
+        items = i or self.view._selectedItems(ItemMixin)
         if items:
             dialog = AppearanceDialog(items, self.view)
             if dialog.exec():
@@ -412,9 +412,9 @@ class DrawingViewStateEditProperties(DrawingViewStateBase):
         self : Self,
         v    : QPoint,
         s    : QPointF,
-        e    : list[ItemMixin] | None = None
+        i    : list[ItemMixin] | None = None
     ) -> None:
-        item = e[0] if e else self.view._selectedItem(ItemMixin)
+        item = i[0] if i else self.view._selectedItem(ItemMixin)
         if item:
             dialog = PropertiesDialog(item, self.view)
             if dialog.exec():
@@ -437,9 +437,9 @@ class DrawingViewStateEditPort(DrawingViewStateBase):
         self : Self,
         v    : QPoint,
         s    : QPointF,
-        e    : list[ItemMixin] | None = None
+        i    : list[ItemMixin] | None = None
     ) -> None:
-        item = e[0] if e else self.view._selectedItem(Port)
+        item = i[0] if i else self.view._selectedItem(Port)
         if item:
             dialog = PortPinDialog("Port", item, self.view)
             if dialog.exec():
@@ -460,9 +460,9 @@ class DrawingViewStateEditBlockPin(DrawingViewStateBase):
         self : Self,
         v    : QPoint,
         s    : QPointF,
-        e    : list[ItemMixin] | None = None
+        i    : list[ItemMixin] | None = None
     ) -> None:
-        item = e[0] if e else self.view._selectedItem(BlockPin)
+        item = i[0] if i else self.view._selectedItem(BlockPin)
         if item and isinstance(item, BlockPin):
             dialog = PortPinDialog("Block Pin", item, self.view)
             if dialog.exec():
@@ -483,9 +483,9 @@ class DrawingViewStateEditText(DrawingViewStateBase):
         self : Self,
         v    : QPoint,
         s    : QPointF,
-        e    : list[ItemMixin] | None = None
+        i    : list[ItemMixin] | None = None
     ) -> None:
-        item = e[0] if e else self.view._selectedItem(Text)
+        item = i[0] if i else self.view._selectedItem(Text)
         if item and isinstance(item, Text):
             dialog = TextDialog(item, self.view)
             if dialog.exec():
@@ -504,9 +504,9 @@ class DrawingViewStateEditPropertyText(DrawingViewStateBase):
         self : Self,
         v    : QPoint,
         s    : QPointF,
-        e    : list[ItemMixin] | None = None
+        i    : list[ItemMixin] | None = None
     ) -> None:
-        item = e[0] if e else self.view._selectedItem(PropertyText)
+        item = i[0] if i else self.view._selectedItem(PropertyText)
         if item and isinstance(item, PropertyText):
             dialog = PropertyTextDialog(item, self.view)
             if dialog.exec():
@@ -528,7 +528,7 @@ class DrawingViewStatePlacePort(ClickMixin):
         self : Self,
         v    : QPoint,
         s    : QPointF,
-        e    : list[ItemMixin] | None = None
+        i    : list[ItemMixin] | None = None
     ) -> None:
         item = Port()
         item.setPos(self._snap(s))
@@ -568,9 +568,9 @@ class DrawingViewStatePlaceBlockPin(DrawingViewStateBase):
         self : Self,
         v    : QPoint,
         s    : QPointF,
-        e    : list[ItemMixin] | None = None
+        i    : list[ItemMixin] | None = None
     ) -> None:
-        block = e[0] if e else self.view._selectedItem(Block)
+        block = i[0] if i else self.view._selectedItem(Block)
         if block and isinstance(block, Block):
             pin = BlockPin() # don't parent to block yet
             dialog = PortPinDialog("Block Pin", pin, self.view)
@@ -606,7 +606,7 @@ class DrawingViewStatePlaceSymbolPin(ClickMixin):
         self : Self,
         v    : QPoint,
         s    : QPointF,
-        e    : NoneType = None  # not used
+        i    : NoneType = None  # not used
     ) -> None:
         pin = SymbolPin()
         pin.setPos(self._snap(s))
@@ -658,7 +658,7 @@ class DrawingViewStatePlaceText(ClickMixin):
         self : Self,
         v    : QPoint,
         s    : QPointF,
-        e    : list[ItemMixin] | None = None
+        i    : list[ItemMixin] | None = None
     ) -> None:
         item = Text(self._snap(s))
         dialog = TextDialog(item, self.view)
@@ -679,7 +679,7 @@ class DrawingViewStatePlaceTextBlock(ClickMixin):
         self : Self,
         v    : QPoint,
         s    : QPointF,
-        e    : list[ItemMixin] | None = None
+        i    : list[ItemMixin] | None = None
     ) -> None:
         item = TextBlock(self._snap(s))
         dialog = TextBlockDialog(item, self.view)

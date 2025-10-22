@@ -1,7 +1,4 @@
 NEXT
-- DrawingViewStateBase v,s,e too short
-- remove None options for elements arguments to view ui methods
-- element => item
 - fixed/locked property
 - symbols
   - symbol placement singleton - loads libraries and symbols
