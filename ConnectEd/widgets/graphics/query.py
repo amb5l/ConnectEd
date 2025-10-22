@@ -1,39 +1,48 @@
 from typing import Self, Any
+from collections import defaultdict
 
 from PyQt6.QtCore    import Qt, QTimer, QEvent
-from PyQt6.QtWidgets import QGraphicsItem, QWidget, QTableView, \
+from PyQt6.QtWidgets import QGraphicsItem, QWidget, \
                             QVBoxLayout, QHeaderView
 from PyQt6.QtGui     import QStandardItemModel, QStandardItem, QCloseEvent
+
+from ..window.tree_view import TreeView
+
+from .properties import PropertiesMixin
 
 from .items.handle import Handle
 
 
 class QueryWindow(QWidget):
     _model  : QStandardItemModel
-    _view   : QTableView
+    _view   : TreeView
     _layout : QVBoxLayout
     _timer  : QTimer
 
-    def __init__(self : Self, element : QGraphicsItem, parent=None):
+    def __init__(self : Self, elements : list[QGraphicsItem], parent=None):
         super().__init__(parent)
+        self.setWindowTitle("Query")
         self.setWindowFlags(
             Qt.WindowType.Window           |
             Qt.WindowType.WindowTitleHint  |
             Qt.WindowType.WindowStaysOnTopHint
         )
-        element_type = element.__class__.__name__
-        title = f"Query - {element_type}"
-        self.setWindowTitle(title)
         # create model
         self._model = QStandardItemModel()
-        self._model.setHorizontalHeaderLabels(["Property", "Value"])
-        # populate model with element properties if available
-        self._populateModel(element)
+        self._model.setHorizontalHeaderLabels(["Item", "Property", "Value"])
+        # populate model
+        hdict = self._getHDict(elements)
+        print("hdict", hdict)
+        self._populate(self._model, hdict)
+        for i in range(self._model.rowCount()):
+            item = self._model.item(i)
+            print(f"Item {item.text()} has {item.rowCount()} children")
         # create table view
-        self._view = QTableView()
+        self._view = TreeView(self._model, self)
+        self._view.customizeAppearance()
         self._view.setModel(self._model)
-        self._view.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
-        self._view.verticalHeader().setVisible(False)
+        #self._view.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+        #self._view.verticalHeader().setVisible(False)
         self._view.setMinimumWidth(300)
         self._view.setMinimumHeight(150)
         self._view.setMaximumHeight(400)
@@ -48,24 +57,59 @@ class QueryWindow(QWidget):
         self._timer.setSingleShot(True)
         self._timer.timeout.connect(self.close)
 
-    def _populateModel(self : Self, element : QGraphicsItem) -> None:
-        """Populate the model with element properties."""
-        if isinstance(element, Handle):
-            self._model.appendRow([
-                QStandardItem("Position X"),
-                QStandardItem(f"{element.scenePos().x()}")
-            ])
-            self._model.appendRow([
-                QStandardItem("Position Y"),
-                QStandardItem(f"{element.scenePos().y()}")
-            ])
-        else:
-            for prop_name, prop_value in \
-                element.getPropertyNamesAndValues().items():
-                self._model.appendRow([
-                    QStandardItem(prop_name),
-                    QStandardItem(prop_value)
+    def _getHDict(
+        self: Self,
+        items: list[QGraphicsItem]
+    ) -> dict[QGraphicsItem, dict]:
+        if not items:
+            return {}
+        item_set = set(items)
+        child_map: defaultdict[QGraphicsItem, list[QGraphicsItem]] = defaultdict(list)
+        roots: list[QGraphicsItem] = []
+        for item in items:
+            parent = item.parentItem()
+            if parent in item_set:
+                child_map[parent].append(item)
+            else:
+                roots.append(item)
+        hierarchy: dict[QGraphicsItem, dict] = {}
+        for root in roots:
+            hierarchy[root] = self._getHDict(child_map[root])
+        return hierarchy
+
+    def _populate(
+        self: Self,
+        obj: QStandardItemModel | QStandardItem,
+        hdict: dict[QGraphicsItem | PropertiesMixin, dict]
+    ) -> None:
+        """Populate the model or item row with hierarchical item data."""
+        for item, child_item_dict in hdict.items():
+            item_row = QStandardItem(item.__class__.__name__)
+            obj.appendRow(item_row)
+            # Add property rows
+            if isinstance(item, Handle):
+                pos = item.scenePos()
+                item_row.appendRow([
+                    QStandardItem(),
+                    QStandardItem("Position X"),
+                    QStandardItem(str(pos.x()))
                 ])
+                item_row.appendRow([
+                    QStandardItem(),
+                    QStandardItem("Position Y"),
+                    QStandardItem(str(pos.y()))
+                ])
+            elif isinstance(item, PropertiesMixin):
+                for prop_name, prop_value in item.getPropertyNamesAndValues().items():
+                    print("prop_name", prop_name, "prop_value", prop_value)
+                    item_row.appendRow([
+                        QStandardItem(),
+                        QStandardItem(prop_name),
+                        QStandardItem(prop_value)
+                    ])
+            # Recurse on children
+            if child_item_dict:
+                self._populate(item_row, child_item_dict)
 
     def leaveEvent(self : Self, event : QEvent):
         # Close when mouse leaves the window (with reasonable delay)

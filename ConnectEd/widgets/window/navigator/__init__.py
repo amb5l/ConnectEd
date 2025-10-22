@@ -29,6 +29,7 @@ class Navigator(
 
     def __init__(self : Self, parent : QWidget) -> None:
         super().__init__(model(), parent)
+        self.header().setVisible(False)
         model().itemChanged.connect(self.onItemChanged)
         self.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
         self.customContextMenuRequested.connect(self.showContextMenu)

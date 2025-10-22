@@ -1,5 +1,5 @@
 from PyQt6.QtCore    import QPoint
-from PyQt6.QtWidgets import QApplication
+from PyQt6.QtWidgets import QApplication, QGraphicsItem
 from PyQt6.QtGui     import QCursor
 
 from ....query import QueryWindow
@@ -113,12 +113,22 @@ class DrawingViewUiEditMixin:
 
     def editQuery(self : "DrawingViewUi", vpos : QPoint | None = None) -> None:
         if vpos is None:
-            items = self._view.scene().selectedItems()
+            initial_items = self._view.scene().selectedItems()
+            items = []
+            print("items", items)
+            # add (unselected) children
+            def _addChildren(item : QGraphicsItem) -> None:
+                if item in items:
+                    return
+                items.append(item)
+                for child in item.childItems():
+                    _addChildren(child)
+            for item in initial_items:
+                _addChildren(item)
+            print("items", items)
         else:
             items = self._view._itemsAt(vpos)
-        if not items:
-            return
-        query_window = QueryWindow(items[0])
+        query_window = QueryWindow(items)
         if not hasattr(self, '_query_windows'):
             self._query_windows = []
         self._query_windows.append(query_window)
@@ -142,7 +152,6 @@ class DrawingViewUiEditMixin:
             if query_window in self._query_windows:
                 self._query_windows.remove(query_window)
         query_window.destroyed.connect(cleanup)
-        self._view.state.go(self._view.stateIdle)
 
     def editPort(
         self    : "DrawingViewUi",
