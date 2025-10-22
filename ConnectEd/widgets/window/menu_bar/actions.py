@@ -3,16 +3,16 @@ from typing import Self
 from PyQt6.QtWidgets import QApplication
 from PyQt6.QtGui     import QKeySequence
 
-from ...app import window
+from ....app import window
 
-from ...core.defs import MIME_TYPE
+from ....core.defs import MIME_TYPE
 
-from ...widgets.graphics.views.drawing  import DrawingSubWindow
-from ...widgets.graphics.scenes.drawing import DrawingScene
+from ....widgets.graphics.views.drawing  import DrawingSubWindow
+from ....widgets.graphics.scenes.drawing import DrawingScene
 
-from ..action  import Action
+from ...action  import Action
 
-from .sub_window import SubWindow
+from ..sub_window import SubWindow
 
 
 class Actions:
@@ -83,12 +83,11 @@ class Actions:
         self.windowPrevious     = Action( window(), "Previous"      , "Previous"                               , "Ctrl+Shift+F6"              )  # noqa E501
         self.helpAbout          = Action( window(), "About"         , ""                                       , "Ctrl+Shift+T"               )  # noqa E501
 
-        # actions for context menus
-        self.ctxEdit            = Action( window(), "Edit"          , "Edit"                                   , None                         )  # noqa E501
-        self.ctxPlaceBlockPin   = Action( window(), "Add Pin..."    , "Place Block Pin"                        , None                         )  # noqa E501
-        self.ctxAssignOrigin    = Action( window(), "Assign Origin" , "Assign Origin"                          , None                         )  # noqa E501
-
         self.onSubWindowActivated(None)
+        window().mdi_area.subWindowActivated.connect(self.onSubWindowActivated)
+        clipboard = QApplication.clipboard()
+        clipboard.dataChanged.connect(self.onClipboardDataChanged)
+
 
     def actionEnable(self : Self, name : str, enable : bool) -> None:
         getattr(self, name).setEnabled(enable)

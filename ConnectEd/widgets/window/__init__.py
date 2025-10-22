@@ -14,12 +14,9 @@ from PyQt6.QtGui     import QIcon, QCloseEvent
 from ...app import app, settings
 
 from ...core.defs  import APP_NAME
-from ...core.utils import check
 
 from ...resources import getIconPath
 
-from .actions    import Actions
-from .slots      import Slots
 from .menu_bar   import MenuBar
 from .status_bar import StatusBar
 from .mdi_area   import MdiArea
@@ -33,8 +30,6 @@ from .navigator       import NavigatorDock, Navigator
 
 class Window(QMainWindow):
     # instance attributes
-    actions           : Actions
-    slots             : Slots
     _menu_bar         : MenuBar
     status_bar        : StatusBar
     navigator_dock    : NavigatorDock
@@ -67,10 +62,8 @@ class Window(QMainWindow):
         if g:
             self.restoreGeometry(g)
 
-        # actions and slots
-        self.slots = Slots()
-        self.actions = Actions()
-        self.connectActionsToSlots(self.actions, self.slots)
+        # MDI area
+        self.mdi_area = MdiArea()
 
         # menu bar
         self._menu_bar = MenuBar(self)
@@ -94,18 +87,8 @@ class Window(QMainWindow):
         self.navigator_dock = NavigatorDock(self)
         self.addDockWidget(qd.LeftDockWidgetArea, self.navigator_dock)
 
-        # MDI area
-        self.mdi_area = MdiArea()
-
         # central widget
         self.setCentralWidget(self.mdi_area)
-
-        # signal-slot connections
-        self.mdi_area.subWindowActivated.connect(self.actions.onSubWindowActivated)
-        self.mdi_area.subWindowActivated.connect(self._menu_bar.updateWindowMenu)
-        self.mdi_area.subWindowActivated.connect(self._menu_bar.updatePlaceMenu)
-        clipboard = QApplication.clipboard()
-        clipboard.dataChanged.connect(self.actions.onClipboardDataChanged)
 
         # ready
         if not app().cli():
@@ -141,31 +124,6 @@ class Window(QMainWindow):
             self.actions.onSubWindowActivated(None)
         settings().set("startup/geometry", self.saveGeometry().data())
         super().closeEvent(event)
-
-    def connectActionsToSlots(
-        self    : Self,
-        actions : Actions,
-        slots   : Slots
-    ) -> None:
-        action_names = [a for a in dir(actions) if not a.startswith("_") and not callable(getattr(actions, a))]
-        slot_names   = [s for s in dir(slots)   if not s.startswith("_")]
-        error = False
-        error &= check(len(action_names) > 0, "No actions found")
-        error &= check(len(slot_names)   > 0, "No slots found")
-        error &= check(len(action_names) == len(slot_names), \
-            f"Number of actions ({len(action_names)}) and slots ({len(slot_names)}) do not match")
-        for action_name in action_names:
-            error &= check(action_name in slot_names, \
-                f"No matching slot found for action '{action_name}'")
-        for slot_name in slot_names:
-            error &= check(slot_name in action_names, \
-                f"No matching action found for slot '{slot_name}'")
-        if error:
-            raise Exception("Action-slot mismatch")
-        for action_name in action_names:
-            action = getattr(actions, action_name)
-            slot = getattr(slots, action_name)
-            action.triggered.connect(slot)
 
     # convenience properties
 

@@ -21,6 +21,7 @@ class MdiArea(QMdiArea):
 
     def __init__(self : Self) -> None:
         super().__init__()
+        self._scene_subwindow_actions = {}
 
     def addSubWindow(
         self      : Self,

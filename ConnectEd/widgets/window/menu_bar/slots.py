@@ -1,24 +1,25 @@
 import functools
 
-from typing import Self, Callable, Type, TypeVar, cast
+from typing import Self, Callable, TypeVar, cast
 
 from PyQt6.QtWidgets import QMessageBox
 
-from ...app import settings, model, window
+from ....app import settings, model, window
 
-from ...core.defs import APP_NAME
+from ....core.defs import APP_NAME
 
-from ...widgets.graphics.views.drawing import DrawingView
-from ...widgets.graphics.views.diagram import DiagramView
-from ...widgets.graphics.views.symbol  import SymbolView
+from ....widgets.graphics.views.drawing import DrawingView
+from ....widgets.graphics.views.diagram import DiagramView
+from ....widgets.graphics.views.symbol  import SymbolView
 
 
 T = TypeVar("T")
 
-def withCurrentWidget(widget_type: Type[T]) -> Callable[[Callable[["Slots", T], None]], Callable[["Slots"], None]]:
+
+def withCurrentWidget(widget_type: type[T]) -> Callable[[Callable[["Slots", T], None]], Callable[["Slots"], None]]:
     """
-    Decorator that gets the current widget from the MDI area and checks if it"s of the specified type
-    or a subclass of it before calling the decorated method.
+    Decorator that gets the current widget from the MDI area and checks if it's
+    of the specified type or a subclass of it before calling the decorated method.
 
     Args:
         widget_type: The type to check the current widget against
@@ -41,13 +42,15 @@ def withCurrentWidget(widget_type: Type[T]) -> Callable[[Callable[["Slots", T], 
         return wrapper
     return decorator
 
+
 def withCurrentWidgetCheckable(
-    widget_type : Type[T],
+    widget_type : type[T],
     action_name : str
 ) -> Callable[[Callable[["Slots", T, bool], None]], Callable[["Slots"], None]]:
     """
-    Decorator for checkable actions that gets the current widget from the MDI area,
-    checks if it"s of the specified type or a subclass, and passes the checked state from the action.
+    Decorator for checkable actions that gets the current widget from the MDI
+    area, checks if it's of the specified type or a subclass, and passes the
+    checked state from the action.
 
     Args:
         widget_type: The type to check the current widget against
@@ -75,8 +78,6 @@ def withCurrentWidgetCheckable(
 class Slots:
     def __init__(self : Self) -> None:
         pass
-
-    # slots for main menu actions
 
     def fileNewDesign(self : Self) -> None:
         window().navigator.newDiagram()
@@ -133,103 +134,103 @@ class Slots:
 
     @withCurrentWidget(DrawingView)
     def editCancel(self : Self, view : DrawingView) -> None:
-        view.editCancel()
+        view.slots.editCancel()
 
     @withCurrentWidget(DrawingView)
     def editUndo(self : Self, view : DrawingView) -> None:
-        view.editUndo()
+        view.slots.editUndo()
 
     @withCurrentWidget(DrawingView)
     def editRedo(self : Self, view : DrawingView) -> None:
-        view.editRedo()
+        view.slots.editRedo()
 
     @withCurrentWidget(DrawingView)
     def editCut(self : Self, view : DrawingView) -> None:
-        view.editCut()
+        view.slots.editCut()
 
     @withCurrentWidget(DrawingView)
     def editCopy(self : Self, view : DrawingView) -> None:
-        view.editCopy()
+        view.slots.editCopy()
 
     @withCurrentWidget(DrawingView)
     def editPaste(self : Self, view : DrawingView) -> None:
-        view.editPaste()
+        view.slots.editPaste()
 
     @withCurrentWidget(DrawingView)
     def editDelete(self : Self, view : DrawingView) -> None:
-        view.editDelete()
+        view.slots.editDelete()
 
     @withCurrentWidget(DrawingView)
     def editDuplicate(self : Self, view : DrawingView) -> None:
-        view.editDuplicate()
+        view.slots.editDuplicate()
 
     @withCurrentWidget(DrawingView)
     def editSelectArea(self : Self, view : DrawingView) -> None:
-        view.editSelectArea()
+        view.slots.editSelectArea()
 
     @withCurrentWidget(DrawingView)
     def editSelectAll(self : Self, view : DrawingView) -> None:
-        view.editSelectAll()
+        view.slots.editSelectAll()
 
     @withCurrentWidget(DrawingView)
     def editProperties(self : Self, view : DrawingView) -> None:
-        view.editProperties()
+        view.slots.editProperties()
 
     @withCurrentWidget(DrawingView)
     def editAppearance(self : Self, view : DrawingView) -> None:
-        view.editAppearance()
+        view.slots.editAppearance()
 
     @withCurrentWidget(DrawingView)
     def editQuery(self : Self, view : DrawingView) -> None:
-        view.editQuery()
+        view.slots.editQuery()
 
     @withCurrentWidget(DrawingView)
     def viewZoomAll(self : Self, view : DrawingView) -> None:
-        view.viewZoomAll()
+        view.slots.viewZoomAll()
 
     @withCurrentWidget(DiagramView)
     def viewZoomSheet(self : Self, view : DiagramView) -> None:
-        view.viewZoomSheet()
+        view.slots.viewZoomSheet()
 
     @withCurrentWidget(DrawingView)
     def viewZoomArea(self : Self, view : DrawingView) -> None:
-        view.viewZoomArea()
+        view.slots.viewZoomArea()
 
     @withCurrentWidget(DrawingView)
     def viewZoomIn(self : Self, view : DrawingView) -> None:
-        view.viewZoomIn()
+        view.slots.viewZoomIn()
 
     @withCurrentWidget(DrawingView)
     def viewZoomOut(self : Self, view : DrawingView) -> None:
-        view.viewZoomOut()
+        view.slots.viewZoomOut()
 
     @withCurrentWidget(DrawingView)
     def viewPan(self : Self, view : DrawingView) -> None:
-        view.viewPan()
+        view.slots.viewPan()
 
     @withCurrentWidget(DrawingView)
     def viewPanUp(self : Self, view : DrawingView) -> None:
-        view.viewPanUp()
+        view.slots.viewPanUp()
 
     @withCurrentWidget(DrawingView)
     def viewPanDown(self : Self, view : DrawingView) -> None:
-        view.viewPanDown()
+        view.slots.viewPanDown()
 
     @withCurrentWidget(DrawingView)
     def viewPanLeft(self : Self, view : DrawingView) -> None:
-        view.viewPanLeft()
+        view.slots.viewPanLeft()
 
     @withCurrentWidget(DrawingView)
     def viewPanRight(self : Self, view : DrawingView) -> None:
-        view.viewPanRight()
+        view.slots.viewPanRight()
 
     @withCurrentWidgetCheckable(DrawingView, "viewGridDisplay")
     def viewGridDisplay(self : Self, view : DrawingView, checked : bool) -> None:
-        view.viewGridDisplay(checked)
+        view.slots.viewGridDisplay(checked)
 
     @withCurrentWidgetCheckable(DrawingView, "viewGridSnap")
     def viewGridSnap(self : Self, view : DrawingView, checked : bool) -> None:
-        view.viewGridSnap(checked)
+        view.slots.viewGridSnap(checked)
 
     @withCurrentWidget(DrawingView)
     def viewThemeDark(self : Self, view : DrawingView) -> None:
@@ -243,39 +244,39 @@ class Slots:
 
     @withCurrentWidget(DrawingView)
     def placePort(self : Self, view : DiagramView) -> None:
-        view.placePort()
+        view.slots.placePort()
 
     @withCurrentWidget(DrawingView)
     def placeBlock(self : Self, view : DiagramView) -> None:
-        view.placeBlock()
+        view.slots.placeBlock()
 
     @withCurrentWidget(DrawingView)
     def placeBlockPin(self : Self, view : DiagramView) -> None:
-        view.placeBlockPin()
+        view.slots.placeBlockPin()
 
     @withCurrentWidget(SymbolView)
     def placeSymbolPin(self : Self, view : SymbolView) -> None:
-        view.placeSymbolPin()
+        view.slots.placeSymbolPin()
 
     @withCurrentWidget(DrawingView)
     def placeConnection(self : Self, view : DiagramView) -> None:
-        view.placeConnection()
+        view.slots.placeConnection()
 
     @withCurrentWidget(DrawingView)
     def placeLine(self : Self, view : DrawingView) -> None:
-        view.placeLine()
+        view.slots.placeLine()
 
     @withCurrentWidget(DrawingView)
     def placeRectangle(self : Self, view : DrawingView) -> None:
-        view.placeRectangle()
+        view.slots.placeRectangle()
 
     @withCurrentWidget(DrawingView)
     def placeText(self : Self, view : DrawingView) -> None:
-        view.placeText()
+        view.slots.placeText()
 
     @withCurrentWidget(DrawingView)
     def placeTextBlock(self : Self, view : DrawingView) -> None:
-        view.placeTextBlock()
+        view.slots.placeTextBlock()
 
     def windowNavigator(self : Self) -> None:
         window().navigator_dock.show()
@@ -301,14 +302,3 @@ class Slots:
 
     def helpAbout(self : Self) -> None:
         QMessageBox.about(window(), "About", APP_NAME)
-
-    # slots for context menu actions
-
-    def ctxEdit(self : Self) -> None:
-        pass
-
-    def ctxPlaceBlockPin(self : Self) -> None:
-        pass
-
-    def ctxAssignOrigin(self : Self) -> None:
-        pass
