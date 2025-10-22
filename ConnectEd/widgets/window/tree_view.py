@@ -19,6 +19,7 @@ class TreeView(QTreeView):
         super().__init__(parent)
         self.setModel(model)
         self.header().setVisible(False)
+        self.setRootIsDecorated(False)
         self.setFontSize(settings().get("display/font_size"))
         self.customizeAppearance()
         self.expandAll()
