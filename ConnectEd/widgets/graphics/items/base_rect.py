@@ -2,10 +2,10 @@ from typing import Self, overload
 
 from PyQt6.QtCore    import Qt, QPointF, QRectF, QSizeF
 from PyQt6.QtWidgets import QGraphicsRectItem, \
-                            QWidget, QStyleOptionGraphicsItem, QStyle, QMenu
-from PyQt6.QtGui     import QPainter, QPainterPath, QPainterPathStroker, QAction
+                            QWidget, QStyleOptionGraphicsItem, QStyle
+from PyQt6.QtGui     import QPainter, QPainterPath, QPainterPathStroker
 
-from ....app import settings, window
+from ....app import settings
 
 from ..properties import PropertySpec, PropertiesMixin
 
@@ -20,10 +20,6 @@ from .mixin.change import ItemChangeMixin
 from .mixin.clone  import ItemCloneMixin
 from .mixin.xml    import ItemXmlMixin
 from .mixin.menu   import ItemMenuMixin
-
-from typing import TYPE_CHECKING
-if TYPE_CHECKING:
-    from ..views.drawing import DrawingView
 
 
 class BaseRectangle(

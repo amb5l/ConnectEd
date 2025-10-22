@@ -15,11 +15,13 @@ def getDefaultIconSize() -> int:
     style = app.style()
     return style.pixelMetric(QStyle.PixelMetric.PM_SmallIconSize)
 
+
 def getFgBgColors() -> tuple[QColor, QColor]:
     if settings().get("display/theme") == "dark":
         return Qt.GlobalColor.white, Qt.GlobalColor.black
     else:
         return Qt.GlobalColor.black, Qt.GlobalColor.white
+
 
 def getSvgIcon(path : str, size : QSize, margin : int = 1) -> QIcon:
     fgColor, bgColor = getFgBgColors()
@@ -51,6 +53,7 @@ def getSvgIcon(path : str, size : QSize, margin : int = 1) -> QIcon:
     # TODO: invert colors for dark theme?
     return QIcon(pixmap)
 
+
 class SvgIconSingleton:
     _instance = None
     _icon     = None
@@ -67,6 +70,7 @@ class SvgIconSingleton:
         if self._icon is None:
             self._icon = getSvgIcon(self.PATH, self.SIZE)
         return self._icon
+
 
 def getCharIcon(
     font_family : str,
@@ -99,6 +103,7 @@ def getCharIcon(
     painter.drawText(text_rect, Qt.AlignmentFlag.AlignCenter, char)
     painter.end()
     return QIcon(pixmap)
+
 
 class CharIconSingleton:
     _instance = None

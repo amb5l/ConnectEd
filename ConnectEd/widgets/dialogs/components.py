@@ -25,18 +25,22 @@ from . import okCancelLayout
 
 CUSTOM_ICON_SIZE = QSize(getDefaultIconSize() * 2, getDefaultIconSize())
 
+
 class NoChangeIcon(SvgIconSingleton):
     PATH = getIconPath("no_change.svg")
     SIZE = CUSTOM_ICON_SIZE
+
 
 class DefaultIcon(SvgIconSingleton):
     PATH = getIconPath("default.svg")
     SIZE = CUSTOM_ICON_SIZE
 
+
 class QueryIcon(CharIconSingleton):
     FONT_FAMILY = "Arial"
     CHAR = "?"
     SIZE = CUSTOM_ICON_SIZE
+
 
 class CustomColorDialog(QColorDialog):
     def __init__(
@@ -81,6 +85,7 @@ class CustomColorDialog(QColorDialog):
 
     def getChoice(self : Self) -> QColor | None:
         return self.currentColor()
+
 
 class ColorComboBox(QComboBox):
     COLORS = {
@@ -187,6 +192,7 @@ class ColorComboBox(QComboBox):
     def getChoice(self : Self) -> NoChange | Default | QColor | None:
         return self.choice
 
+
 class CustomLineWidthDialog(QDialog):
     def __init__(
         self    : Self,
@@ -210,6 +216,7 @@ class CustomLineWidthDialog(QDialog):
             return float(self.width_input.text())
         except ValueError:
             return None
+
 
 class LineWidthComboBox(QComboBox):
     WIDTHS = {
@@ -310,6 +317,7 @@ class LineWidthComboBox(QComboBox):
                 r = None
         return r
 
+
 class LineStyleComboBox(QComboBox):
     STYLES = {
         "<no change>"    : NO_CHANGE,
@@ -386,6 +394,7 @@ class LineStyleComboBox(QComboBox):
         else:
             keys = list(self.STYLES.keys())
             return self.STYLES[text] if text in keys else None
+
 
 class FillStyleComboBox(QComboBox):
     STYLES = {
@@ -471,6 +480,7 @@ class FillStyleComboBox(QComboBox):
             keys = list(self.STYLES.keys())
             return self.STYLES[text] if text in keys else None
 
+
 class FontFamilyComboBox(QComboBox):
     def __init__(
         self      : Self,
@@ -511,6 +521,7 @@ class FontFamilyComboBox(QComboBox):
             return DEFAULT
         else:
             return text
+
 
 class FontSizeComboBox(QComboBox):
     SIZES : list[float] = [6, 7, 8, 9, 10, 12, 14, 16, 18, 24, 36, 48, 72]
@@ -565,6 +576,7 @@ class FontSizeComboBox(QComboBox):
             except ValueError:
                 return None
 
+
 class OnOffComboBox(QComboBox):
     def __init__(
         self      : Self,
@@ -609,6 +621,7 @@ class OnOffComboBox(QComboBox):
             return DEFAULT
         else:
             return self.currentText().lower() == "on"
+
 
 class LineAppearanceLayout(QGridLayout):
     color_label : QLabel
@@ -692,6 +705,7 @@ class LineAppearanceLayout(QGridLayout):
             r.style = self.style_combo.getChoice()
         return r
 
+
 class FillAppearanceLayout(QGridLayout):
     color_label : QLabel
     color_combo : ColorComboBox
@@ -759,6 +773,7 @@ class FillAppearanceLayout(QGridLayout):
         if hasattr(self, "style_combo"):
             r.style = self.style_combo.getChoice()
         return r
+
 
 class TextAppearanceLayout(QVBoxLayout):
     no_change       : QuillPrefChange
@@ -907,6 +922,7 @@ class TextAppearanceLayout(QVBoxLayout):
             r.underline = self.underline_combo.getChoice()
         return r
 
+
 class EdgeComboBox(QComboBox):
     def __init__(self : Self,
         edge   : Edge,
@@ -918,10 +934,12 @@ class EdgeComboBox(QComboBox):
     def getChoice(self : Self) -> Edge:
         return Edge(self.currentText())
 
+
 class StringEdit(QLineEdit):
     def __init__(self : Self, value : str, parent=None):
         super().__init__(parent)
         self.setText(value)
+
 
 class IntEdit(QLineEdit):
     def __init__(self : Self, value : int, parent=None):
@@ -937,6 +955,7 @@ class IntEdit(QLineEdit):
             return int(self.text())
         except ValueError:
             return 0
+
 
 class FloatEdit(QLineEdit):
     def __init__(self : Self, value : float, parent=None):

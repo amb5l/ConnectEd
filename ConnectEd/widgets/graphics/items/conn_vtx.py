@@ -2,7 +2,7 @@ from typing import Self
 
 from PyQt6.QtCore    import QPointF, QXmlStreamWriter
 from PyQt6.QtWidgets import QGraphicsPathItem
-from PyQt6.QtGui     import QPainterPath, QPen
+from PyQt6.QtGui     import QPainterPath
 
 from ....app import logger, settings
 

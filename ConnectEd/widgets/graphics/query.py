@@ -2,8 +2,7 @@ from typing import Self, Any
 from collections import defaultdict
 
 from PyQt6.QtCore    import Qt, QTimer, QEvent
-from PyQt6.QtWidgets import QGraphicsItem, QWidget, \
-                            QVBoxLayout, QHeaderView
+from PyQt6.QtWidgets import QGraphicsItem, QWidget, QVBoxLayout
 from PyQt6.QtGui     import QStandardItemModel, QStandardItem, QCloseEvent
 
 from ..window.tree_view import TreeView

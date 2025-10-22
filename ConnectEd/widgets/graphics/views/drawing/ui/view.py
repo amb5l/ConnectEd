@@ -1,5 +1,3 @@
-from typing import Self
-
 from PyQt6.QtCore import QPointF, QRectF
 
 from ......app import settings

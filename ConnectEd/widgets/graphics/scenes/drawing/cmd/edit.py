@@ -61,6 +61,7 @@ class cmdEditPortPin(cmdSceneItem):
         self._item.range = self._before.range
         self._item.update()
 
+
 class cmdEditText(cmdSceneItem):
     @dataclass
     class TextState:
@@ -92,6 +93,7 @@ class cmdEditText(cmdSceneItem):
         self._item.setText(self._before.text)
         self._item.a.quill.setPref(self._before.appearance)
         self._item.update()
+
 
 class cmdEditPropertyText(cmdSceneItem):
     @dataclass
@@ -136,6 +138,7 @@ class cmdEditPropertyText(cmdSceneItem):
         self._item.a.quill.setPref(self._before.appearance)
         self._item.update()
 
+
 class cmdEditAppearance(cmdSceneItems):
     _before : dict[ItemMixin, AppearancePref]
     _after  : AppearancePrefChange
@@ -177,6 +180,7 @@ class cmdEditAppearance(cmdSceneItems):
             if e.a.quill is not None: e.a.quill.setPref(c.quill)
             e.onGeometryChange()
             e.update()
+
 
 class cmdEditProperties(cmdSceneItem):
     _item    : PropertiesMixin
@@ -237,6 +241,7 @@ class cmdEditProperties(cmdSceneItem):
                     self._item.setPropertyDescription(
                         change.before.name, change.before.description
                     )
+
 
 class cmdEditOrigin(cmdSceneItem):
     _item   : ItemOriginMixin

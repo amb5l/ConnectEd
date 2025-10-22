@@ -6,8 +6,6 @@ from PyQt6.QtCore    import Qt, QPointF
 from PyQt6.QtWidgets import QGraphicsItem, QGraphicsSceneMouseEvent, QMenu
 from PyQt6.QtGui     import QAction
 
-from ....app import window
-
 from ..properties import PropertySpec, PropertiesMixin
 
 from ..items.anchor_point import AnchorPoint
@@ -23,6 +21,7 @@ if TYPE_CHECKING:
 class PropertyDisplay(Enum):
     VALUE      = "Value"
     NAME_VALUE = "Name:Value"
+
 
 class PropertyText(TetherText):
     # class attributes
@@ -126,6 +125,7 @@ class PropertyText(TetherText):
         view    : "DrawingView"
     ) -> None:
         view.editPropertyText()
+
 
 @dataclass
 class PropertyTextSpec:

@@ -2,7 +2,6 @@ from typing import Self
 
 from PyQt6.QtCore import QPointF
 
-
 from ....items import EdgeLoc, ItemMixin
 
 from ....items.block      import Block
@@ -13,6 +12,7 @@ from ....items.port       import Port
 from ....items.block_pin  import BlockPin
 
 from . import cmdBase, cmdSceneBase
+
 
 class cmdPlaceBase(cmdSceneBase):
     """Base class for commands that place an item."""
@@ -42,20 +42,26 @@ class cmdPlaceBase(cmdSceneBase):
         super().undo() # restore selection set
         self._scene.removeItem(self._item)
 
+
 class cmdPlacePort(cmdPlaceBase):
     _CLASS = Port
+
 
 class cmdPlaceBlock(cmdPlaceBase):
     _CLASS = Block
 
+
 class cmdPlaceRectangle(cmdPlaceBase):
     _CLASS = Rectangle
+
 
 class cmdPlaceText(cmdPlaceBase):
     _CLASS = Text
 
+
 class cmdPlaceTextBlock(cmdPlaceBase):
     _CLASS = TextBlock
+
 
 class cmdPlaceBlockPin(cmdBase):
     """Base class for commands that place a pin."""
@@ -71,6 +77,7 @@ class cmdPlaceBlockPin(cmdBase):
 
     def begin(self : Self, pos : QPointF) -> None:
         raise NotImplementedError
+
 
 class cmdPlaceBlockPin(cmdPlaceBlockPin):
     _CLASS = BlockPin

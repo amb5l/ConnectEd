@@ -6,6 +6,7 @@ from PyQt6.QtWidgets import QHBoxLayout, QPushButton
 def okCancelLayoutStart(self : Self) -> None:
     self._ok_cancel_layout = QHBoxLayout()
 
+
 def okCancelLayoutFinish(self : Self) -> None:
     self._ok_button = QPushButton("OK")
     self._ok_button.clicked.connect(self.accept)
@@ -15,10 +16,12 @@ def okCancelLayoutFinish(self : Self) -> None:
     self._ok_cancel_layout.addWidget(self._cancel_button)
     self._dialog_layout.addLayout(self._ok_cancel_layout)
 
+
 def okCancelLayout(self : Self) -> None:
     okCancelLayoutStart(self)
     self._ok_cancel_layout.addStretch()
     okCancelLayoutFinish(self)
+
 
 def okCancelNewLayout(self : Self) -> None:
     okCancelLayoutStart(self)

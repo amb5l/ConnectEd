@@ -4,13 +4,10 @@ from PyQt6.QtCore    import QRectF
 from PyQt6.QtWidgets import QGraphicsEllipseItem
 from PyQt6.QtGui     import QBrush
 
-from ConnectEd.widgets.graphics.items.mixin.change import ItemChangeMixin
-
 from ....app import settings
 
-from .mixin.line import ItemLineMixin
-from .mixin.fill import ItemFillMixin
-
+from .mixin.line   import ItemLineMixin
+from .mixin.fill   import ItemFillMixin
 from .mixin.change import ItemChangeMixin
 
 from typing import TYPE_CHECKING

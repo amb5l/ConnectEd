@@ -15,6 +15,7 @@ class RelativePathFormatter(logging.Formatter):
             record.relpath = record.pathname
         return super().format(record)
 
+
 class LogViewerHandler(logging.Handler):
     log_viewer : QPlainTextEdit
 
@@ -29,6 +30,7 @@ class LogViewerHandler(logging.Handler):
             self.log_viewer.appendPlainText(msg)
         except (ReferenceError, RuntimeError): # widget is gone
             logger.removeHandler(self)
+
 
 logger = logging.getLogger(APP_NAME)
 logger.setLevel(logging.DEBUG)

@@ -2,7 +2,6 @@ from typing import Self
 from enum import Enum, auto
 
 from PyQt6.QtCore    import Qt, QPoint, QPointF
-from PyQt6.QtWidgets import QGraphicsItem
 
 from .....core.defs import LAYER_SHEET, LAYER_DRAWING
 

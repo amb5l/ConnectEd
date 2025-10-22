@@ -5,8 +5,6 @@ from PyQt6.QtWidgets import QGraphicsSimpleTextItem, \
                             QWidget, QStyleOptionGraphicsItem, QStyle, QMenu
 from PyQt6.QtGui     import QPainter, QAction
 
-from ....app import window
-
 from ..properties import PropertySpec, PropertiesMixin
 
 from .mixin         import ItemMixin
@@ -23,7 +21,6 @@ from .mixin.menu    import ItemMenuMixin
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ..views.drawing  import DrawingView
-    from ..scenes.drawing import DrawingScene
 
 
 class BaseText(

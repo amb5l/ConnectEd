@@ -28,6 +28,7 @@ class PropertySpec:
         if self.default is None:
             self.default = lambda instance: None
 
+
 class PropertiesMixin:
     # class attributes
     _PROPERTY_SPECS : dict[str, PropertySpec]

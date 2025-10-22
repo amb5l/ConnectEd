@@ -1,7 +1,6 @@
 from typing import Self
 
 from PyQt6.QtCore    import QPointF
-from PyQt6.QtWidgets import QGraphicsItem
 from PyQt6.QtGui     import QUndoCommand
 
 from ......core.utils import camel2proper

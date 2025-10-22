@@ -1,5 +1,4 @@
 from typing import Self
-from enum   import Enum
 
 from PyQt6.QtCore import QPointF
 

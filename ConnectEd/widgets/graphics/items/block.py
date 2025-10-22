@@ -4,8 +4,6 @@ from PyQt6.QtCore    import QPointF
 from PyQt6.QtWidgets import QMenu
 from PyQt6.QtGui     import QAction
 
-from ....app import window
-
 from ..properties import PropertySpec
 
 from .              import EdgeLoc, Edge

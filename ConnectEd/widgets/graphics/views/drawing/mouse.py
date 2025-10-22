@@ -1,6 +1,7 @@
+import inspect
+
 from PyQt6.QtCore import Qt, QEvent, QPoint
 from PyQt6.QtGui  import QEnterEvent, QMouseEvent, QWheelEvent, QCursor
-import inspect
 
 from .....app import logger, settings, window
 

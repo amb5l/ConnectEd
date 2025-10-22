@@ -2,8 +2,7 @@ from typing import Self
 
 from PyQt6.QtCore    import QRectF, QXmlStreamWriter
 from PyQt6.QtWidgets import QGraphicsItem, QStyleOptionGraphicsItem, QWidget
-from PyQt6.QtGui     import QPainter, QPainterPath, \
-                            QMouseEvent, QContextMenuEvent
+from PyQt6.QtGui     import QPainter, QPainterPath, QMouseEvent
 
 from ....app import logger
 

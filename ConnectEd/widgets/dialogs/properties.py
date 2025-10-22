@@ -34,10 +34,12 @@ class PropertyState:
     value       : Any
     description : str
 
+
 @dataclass
 class PropertyChange:
     before : PropertyState | None
     after  : PropertyState | None
+
 
 class PropertiesItem(QStandardItem):
     IDX_INITIAL_TEXT = 0
@@ -56,10 +58,12 @@ class PropertiesItem(QStandardItem):
         current_text = self.text()
         return current_text != self.getInitialText()
 
+
 class NameItem(PropertiesItem):
     def __init__(self : Self, name : str, custom : bool = False) -> None:
         super().__init__(name)
         self.setEditable(custom)
+
 
 class ValueItem(PropertiesItem):
     IDX_TYPE_NAME = 1
@@ -91,10 +95,12 @@ class ValueItem(PropertiesItem):
     def getDefault(self : Self) -> Any:
         return self.data(Qt.ItemDataRole.UserRole + self.IDX_DEFAULT)
 
+
 class DescriptionItem(PropertiesItem):
     def __init__(self : Self, description : str, custom : bool = False) -> None:
         super().__init__(description)
         self.setEditable(custom)
+
 
 class ValueDelegate(QStyledItemDelegate):
     def createEditor(self : Self, parent, option, index):
@@ -167,6 +173,7 @@ class ValueDelegate(QStyledItemDelegate):
             super().setModelData(editor, model, index)
             return
         model.setData(index, text, Qt.ItemDataRole.DisplayRole)
+
 
 class PropertiesDialog(QDialog):
     _dialog_layout  : QVBoxLayout

@@ -1,4 +1,5 @@
 NEXT
+- cmdX => CmdX
 - fixed/locked property
 - symbols
   - symbol placement singleton - loads libraries and symbols

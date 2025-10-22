@@ -1,4 +1,4 @@
-from math   import sqrt
+from math import sqrt
 
 from PyQt6.QtCore    import Qt, QPointF, QRectF, QPoint
 from PyQt6.QtWidgets import QGraphicsItem
@@ -17,6 +17,7 @@ if TYPE_CHECKING:
 
 
 qkm = Qt.KeyboardModifier
+
 
 class DrawingViewPrivateMixin:
     def _allItemsRect(self : "DrawingView") -> QRectF | None:

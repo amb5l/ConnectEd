@@ -23,6 +23,7 @@ class FileOpenDialog(QFileDialog):
                 raise ValueError(f"Unknown type name: {type_name}")
         self.setAcceptMode(QFileDialog.AcceptMode.AcceptOpen)
 
+
 class FileSaveAsDialog(QFileDialog):
     def __init__(
         self      : "FileSaveAsDialog",

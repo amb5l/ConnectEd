@@ -7,7 +7,6 @@ from PyQt6.QtGui     import QPainter
 
 from . import SignalDirection
 
-from .mixin.loc    import ItemLocMixin
 from .mixin.change import ItemChangeMixin
 from .mixin.line   import ItemLineMixin
 from .mixin.fill   import ItemFillMixin
@@ -29,7 +28,6 @@ class PinArrow(
     ItemFillMixin,
     QGraphicsPathItem
 ):
-
     # instance attributes
     _direction : SignalDirection
 

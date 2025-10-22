@@ -4,7 +4,7 @@ from PyQt6.QtCore    import Qt, QPointF, QXmlStreamWriter, QXmlStreamReader
 from PyQt6.QtWidgets import QGraphicsPathItem, QMenu
 from PyQt6.QtGui     import QPen, QBrush, QPainterPath, QAction
 
-from ....app import settings, window
+from ....app import settings
 
 from .mixin.change import ItemChangeMixin
 from .mixin.menu   import ItemMenuMixin

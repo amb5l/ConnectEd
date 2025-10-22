@@ -4,9 +4,7 @@ from PyQt6.QtWidgets import QWidget, QGraphicsItem, QGraphicsPathItem, \
                             QStyleOptionGraphicsItem, QStyle, QMenu
 from PyQt6.QtGui     import QPainter, QAction
 
-from ....app import settings, window
-
-from ..scenes.drawing.cmd import cmdRotate
+from ....app import settings
 
 from .mixin.pos  import ItemPosMixin
 from .mixin.fill import ItemFillMixin

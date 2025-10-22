@@ -21,11 +21,13 @@ if TYPE_CHECKING:
 
 ItemType = ItemMixin | QGraphicsItem
 
+
 class Default:
     def __str__(self : Self): return "default"
     def __repr__(self : Self): return "<default>"
 
 DEFAULT = Default()
+
 
 class NoChange:
     def __str__(self : Self): return "no change"
@@ -33,12 +35,14 @@ class NoChange:
 
 NO_CHANGE = NoChange()
 
+
 class Edge(Enum):
     UNDEFINED = "Undefined"
     LEFT      = "Left"
     BOTTOM    = "Bottom"
     RIGHT     = "Right"
     TOP       = "Top"
+
 
 @dataclass
 class EdgeLoc:
@@ -54,16 +58,19 @@ class EdgeLoc:
         edge, offset = s.split(",")
         return cls(Edge(edge), float(offset))
 
+
 # TODO: consider passive, 3-state etc for EE schematics
 class SignalDirection(Enum):
     IN  = "in"
     OUT = "out"
     BI  = "bi"
 
+
 class RangeDirection(Enum):
     UNSPECIFIED = ":"
     DOWN        = "\u25bc"
     UP          = "\u25b2"
+
 
 class VectorRange:
     left  : str            # left value (may refer to parameter/generic)
@@ -75,11 +82,13 @@ class VectorRange:
         self.dir   = dir
         self.right = right
 
+
 @dataclass
 class LineSpec:
     color : QColor
     width : float
     style : Qt.PenStyle
+
 
 @dataclass
 class LinePref:
@@ -104,11 +113,13 @@ class LinePref:
         style = DEFAULT if s_s == "default" else Qt.PenStyle[s_s]
         return cls(color, width, style)
 
+
 @dataclass
 class LinePrefDefault:
     color : Default | QColor      | None = None
     width : Default | float       | None = None
     style : Default | Qt.PenStyle | None = None
+
 
 @dataclass
 class LinePrefChange:
@@ -116,10 +127,12 @@ class LinePrefChange:
     width : NoChange | Default | float       | None = None
     style : NoChange | Default | Qt.PenStyle | None = None
 
+
 @dataclass
 class FillSpec:
     color : QColor
     style : Qt.BrushStyle
+
 
 @dataclass
 class FillPref:
@@ -140,15 +153,18 @@ class FillPref:
         style = DEFAULT if s_s == "default" else Qt.BrushStyle[s_s]
         return cls(color, style)
 
+
 @dataclass
 class FillPrefDefault:
     color : Default | QColor        | None = None
     style : Default | Qt.BrushStyle | None = None
 
+
 @dataclass
 class FillPrefChange:
     color : NoChange | Default | QColor        | None = None
     style : NoChange | Default | Qt.BrushStyle | None = None
+
 
 @dataclass
 class QuillSpec:
@@ -158,6 +174,7 @@ class QuillSpec:
     bold      : bool
     italic    : bool
     underline : bool
+
 
 @dataclass
 class QuillPref:
@@ -194,6 +211,7 @@ class QuillPref:
         underline = DEFAULT if s_u == "default" else s_u.lower() == "true"
         return cls(color, family, size, bold, italic, underline)
 
+
 @dataclass
 class QuillPrefDefault:
     color     : Default | QColor | None = None
@@ -202,6 +220,7 @@ class QuillPrefDefault:
     bold      : Default | bool   | None = None
     italic    : Default | bool   | None = None
     underline : Default | bool   | None = None
+
 
 @dataclass
 class QuillPrefChange:
@@ -212,11 +231,13 @@ class QuillPrefChange:
     italic    : NoChange | Default | bool   | None = None
     underline : NoChange | Default | bool   | None = None
 
+
 @dataclass
 class Appearance:
     line  : "Line  | None" = None
     fill  : "Fill  | None" = None
     quill : "Quill | None" = None
+
 
 @dataclass
 class AppearanceSpec:
@@ -224,17 +245,20 @@ class AppearanceSpec:
     fill  : FillSpec  | None = None
     quill : QuillSpec | None = None
 
+
 @dataclass
 class AppearancePref:
     line  : LinePref  | None = None
     fill  : FillPref  | None = None
     quill : QuillPref | None = None
 
+
 @dataclass
 class AppearancePrefChange:
     line  : LinePrefChange  | None = None
     fill  : FillPrefChange  | None = None
     quill : QuillPrefChange | None = None
+
 
 def clone(items : list[ItemMixin]) -> list[ItemMixin]:
     r = []
@@ -244,6 +268,7 @@ def clone(items : list[ItemMixin]) -> list[ItemMixin]:
         except Exception as e:
             logger().warning(f"Failed to clone item {item}: {e}")
     return r
+
 
 _item_classes = {}
 

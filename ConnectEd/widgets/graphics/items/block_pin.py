@@ -3,8 +3,6 @@ from typing import Self
 from PyQt6.QtGui     import QAction
 from PyQt6.QtWidgets import QMenu
 
-from ....app import window
-
 from .mixin.loc    import ItemLocMixin
 
 from .port_pin import PortPinText, PortPinMixin
