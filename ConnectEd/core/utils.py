@@ -17,10 +17,6 @@ def sign(x):
     return -1 if x < 0 else (1 if x > 0 else 0)
 
 
-def hasAnyAttr(obj : Any, attrs : list[str]) -> bool:
-    return any(hasattr(obj, attr) for attr in attrs)
-
-
 def check(b : bool, s : str) -> bool:
     if not b:
         print(s)

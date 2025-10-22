@@ -8,8 +8,6 @@ from .....app import settings
 
 from .....core.defs  import Z_DRAWING
 
-from .....core.utils import hasAnyAttr
-
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from .. import Appearance
