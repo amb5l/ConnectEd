@@ -9,14 +9,14 @@ from ....items import SignalDirection, VectorRange, \
                       QuillPref, QuillPrefChange, \
                       AppearancePref, AppearancePrefChange
 
-from ....items.mixin        import ElementMixin
-from ....items.mixin.origin import ElementOriginMixin
+from ....items.mixin        import ItemMixin
+from ....items.mixin.origin import ItemOriginMixin
 
 from ....items.base_text     import BaseText
 from ....items.property_text import PropertyText, PropertyDisplay
 from ....items.anchor_point  import AnchorPoint
 
-from . import cmdSceneElement, cmdSceneElements
+from . import cmdSceneItem, cmdSceneItems
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -24,76 +24,76 @@ if TYPE_CHECKING:
     from ....items.port_pin import PortPinMixin
 
 
-class cmdEditPortPin(cmdSceneElement):
+class cmdEditPortPin(cmdSceneItem):
     @dataclass
     class PortPinState:
         name      : str
         direction : SignalDirection
         range     : VectorRange
 
-    _element : "PortPinMixin"
-    _before  : PortPinState
-    _after   : PortPinState
+    _item   : "PortPinMixin"
+    _before : PortPinState
+    _after  : PortPinState
 
     def __init__(
-        self       : Self,
-        scene      : "DrawingScene",
-        element    : "PortPinMixin",
-        name       : str,
-        direction  : SignalDirection,
-        range      : VectorRange
+        self      : Self,
+        scene     : "DrawingScene",
+        item      : "PortPinMixin",
+        name      : str,
+        direction : SignalDirection,
+        range     : VectorRange
     ):
-        super().__init__(scene, element)
+        super().__init__(scene, item)
         self._before = self.PortPinState(
-            element.name, element.direction, element.range
+            item.name, item.direction, item.range
         )
         self._after  = self.PortPinState(name, direction, range)
 
     def redo(self : Self) -> None:
-        self._element.name = self._after.name
-        self._element.direction = self._after.direction
-        self._element.range = self._after.range
-        self._element.update()
+        self._item.name = self._after.name
+        self._item.direction = self._after.direction
+        self._item.range = self._after.range
+        self._item.update()
 
     def undo(self : Self) -> None:
-        self._element.name = self._before.name
-        self._element.direction = self._before.direction
-        self._element.range = self._before.range
-        self._element.update()
+        self._item.name = self._before.name
+        self._item.direction = self._before.direction
+        self._item.range = self._before.range
+        self._item.update()
 
-class cmdEditText(cmdSceneElement):
+class cmdEditText(cmdSceneItem):
     @dataclass
     class TextState:
         text       : str
         appearance : QuillPref
 
-    _element : BaseText
-    _before  : TextState
-    _after   : TextState
+    _item   : BaseText
+    _before : TextState
+    _after  : TextState
 
     def __init__(
         self       : Self,
         scene      : "DrawingScene",
-        element    : BaseText,
+        item       : BaseText,
         text       : str,
         appearance : QuillPrefChange
     ):
-        super().__init__(scene, element)
-        self._element           = element
-        self._before = self.TextState(element.text(), element.a.quill.getPref())
+        super().__init__(scene, item)
+        self._item           = item
+        self._before = self.TextState(item.text(), item.a.quill.getPref())
         self._after  = self.TextState(text, appearance)
 
     def redo(self : Self) -> None:
-        self._element.setText(self._after.text)
-        self._element.a.quill.setPref(self._after.appearance)
-        self._element.update()
+        self._item.setText(self._after.text)
+        self._item.a.quill.setPref(self._after.appearance)
+        self._item.update()
 
     def undo(self : Self) -> None:
-        self._element.setText(self._before.text)
-        self._element.a.quill.setPref(self._before.appearance)
-        self._element.update()
+        self._item.setText(self._before.text)
+        self._item.a.quill.setPref(self._before.appearance)
+        self._item.update()
 
-class cmdEditPropertyText(cmdSceneElement):
+class cmdEditPropertyText(cmdSceneItem):
     @dataclass
     class PropertyTextState:
         name       : str
@@ -101,55 +101,55 @@ class cmdEditPropertyText(cmdSceneElement):
         display    : PropertyDisplay
         appearance : QuillPref
 
-    _element : PropertyText
-    _before  : PropertyTextState
-    _after   : PropertyTextState
+    _item   : PropertyText
+    _before : PropertyTextState
+    _after  : PropertyTextState
 
     def __init__(
         self       : Self,
         scene      : "DrawingScene",
-        element    : PropertyText,
+        item       : PropertyText,
         name       : str,
         value      : str,
         display    : PropertyDisplay,
         appearance : QuillPrefChange
     ):
-        super().__init__(scene, element)
-        self._element           = element
+        super().__init__(scene, item)
+        self._item           = item
         self._before = self.PropertyTextState(
-            element.name(), element.value(), element.display(), \
-            element.a.quill.getPref()
+            item.name(), item.value(), item.display(), \
+            item.a.quill.getPref()
         )
         self._after  = self.PropertyTextState(name, value, display, appearance)
 
     def redo(self : Self) -> None:
-        self._element.setName(self._after.name)
-        self._element.setValue(self._after.value)
-        self._element.setDisplay(self._after.display)
-        self._element.a.quill.setPref(self._after.appearance)
-        self._element.update()
+        self._item.setName(self._after.name)
+        self._item.setValue(self._after.value)
+        self._item.setDisplay(self._after.display)
+        self._item.a.quill.setPref(self._after.appearance)
+        self._item.update()
 
     def undo(self : Self) -> None:
-        self._element.setName(self._before.name)
-        self._element.setValue(self._before.value)
-        self._element.setDisplay(self._before.display)
-        self._element.a.quill.setPref(self._before.appearance)
-        self._element.update()
+        self._item.setName(self._before.name)
+        self._item.setValue(self._before.value)
+        self._item.setDisplay(self._before.display)
+        self._item.a.quill.setPref(self._before.appearance)
+        self._item.update()
 
-class cmdEditAppearance(cmdSceneElements):
-    _before : dict[ElementMixin, AppearancePref]
+class cmdEditAppearance(cmdSceneItems):
+    _before : dict[ItemMixin, AppearancePref]
     _after  : AppearancePrefChange
 
     def __init__(
-        self     : Self,
-        scene    : "DrawingScene",
-        elements : list[ElementMixin],
-        changes  : AppearancePrefChange
+        self    : Self,
+        scene   : "DrawingScene",
+        items   : list[ItemMixin],
+        changes : AppearancePrefChange
     ):
-        super().__init__(scene, elements)
+        super().__init__(scene, items)
         self._after = changes
         self._before = {}
-        for e in elements:
+        for e in items:
             p = AppearancePref()
             p.line  = e.line.getPref()  if hasattr(e, "line")  else None
             p.fill  = e.fill.getPref()  if hasattr(e, "fill")  else None
@@ -158,7 +158,7 @@ class cmdEditAppearance(cmdSceneElements):
 
     def redo(self : Self) -> None:
         c = self._after
-        for e in self._elements:
+        for e in self._items:
             if not hasattr(e, "a"):
                 continue
             if e.a.line  is not None: e.a.line.setPref(c.line)
@@ -168,7 +168,7 @@ class cmdEditAppearance(cmdSceneElements):
             e.update()
 
     def undo(self : Self) -> None:
-        for e in self._elements:
+        for e in self._items:
             c = self._before[e]
             if not hasattr(e, "a"):
                 continue
@@ -178,17 +178,17 @@ class cmdEditAppearance(cmdSceneElements):
             e.onGeometryChange()
             e.update()
 
-class cmdEditProperties(cmdSceneElement):
-    _element : PropertiesMixin
+class cmdEditProperties(cmdSceneItem):
+    _item    : PropertiesMixin
     _changes : list[PropertyChange]
 
     def __init__(
         self    : Self,
         scene   : "DrawingScene",
-        element : PropertiesMixin,
+        item    : PropertiesMixin,
         changes : list[PropertyChange]
     ):
-        super().__init__(scene, element)
+        super().__init__(scene, item)
         self._changes = changes
 
     def redo(self : Self) -> None:
@@ -196,65 +196,65 @@ class cmdEditProperties(cmdSceneElement):
         """
         for change in self._changes:
             if change.before is None:  # new property
-                self._element.addProperty(change.after.name)
-                self._element.setPropertyValue(
+                self._item.addProperty(change.after.name)
+                self._item.setPropertyValue(
                     change.after.name, change.after.value
                 )
-                self._element.setPropertyDescription(
+                self._item.setPropertyDescription(
                     change.after.name, change.after.description
                 )
             else:  # existing property
                 if change.after is None:  # deleted property
-                    self._element.deleteProperty(change.before.name)
+                    self._item.deleteProperty(change.before.name)
                 else:
-                    self._element.renameProperty(
+                    self._item.renameProperty(
                         change.before.name, change.after.name
                     )
-                    self._element.setPropertyValue(
+                    self._item.setPropertyValue(
                         change.after.name, change.after.value
                     )
 
     def undo(self : Self) -> None:
         for change in self._changes:
             if change.before is None:  # new property
-                self._element.deleteProperty(change.after.name)
+                self._item.deleteProperty(change.after.name)
             else:  # existing property
                 if change.after is None:  # deleted property
-                    self._element.addProperty(change.before.name)
-                    self._element.setPropertyValue(
+                    self._item.addProperty(change.before.name)
+                    self._item.setPropertyValue(
                         change.before.name, change.before.value
                     )
-                    self._element.setPropertyDescription(
+                    self._item.setPropertyDescription(
                         change.before.name, change.before.description
                     )
                 else:
-                    self._element.renameProperty(
+                    self._item.renameProperty(
                         change.after.name, change.before.name
                     )
-                    self._element.setPropertyValue(
+                    self._item.setPropertyValue(
                         change.before.name, change.before.value
                     )
-                    self._element.setPropertyDescription(
+                    self._item.setPropertyDescription(
                         change.before.name, change.before.description
                     )
 
-class cmdEditOrigin(cmdSceneElement):
-    _element : ElementOriginMixin
-    _before  : AnchorPoint
-    _after   : AnchorPoint
+class cmdEditOrigin(cmdSceneItem):
+    _item   : ItemOriginMixin
+    _before : AnchorPoint
+    _after  : AnchorPoint
 
     def __init__(
         self : Self,
         scene   : "DrawingScene",
         origin  : AnchorPoint
     ):
-        element : ElementOriginMixin = origin.parentItem()
+        item : ItemOriginMixin = origin.parentItem()
         super().__init__(scene, origin.parentItem())
-        self._before = element.getOriginAP()
+        self._before = item.getOriginAP()
         self._after = origin
 
     def redo(self : Self) -> None:
-        self._element.setOriginAP(self._after)
+        self._item.setOriginAP(self._after)
 
     def undo(self : Self) -> None:
-        self._element.setOriginAP(self._before)
+        self._item.setOriginAP(self._before)

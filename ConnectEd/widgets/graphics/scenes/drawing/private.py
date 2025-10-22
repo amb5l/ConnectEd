@@ -1,6 +1,6 @@
 from PyQt6.QtCore import QPointF
 
-from ...items import ElementMixin
+from ...items import ItemMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -14,18 +14,18 @@ class DrawingSceneApiPrivateMixin:
         types = set(tuple(item.__class__ for item in items))
         return list(types)
 
-    def _selectedTopElements(self : "DrawingScene") -> list[ElementMixin]:
-        """Returns selected items that are Elements, and are not children."""
+    def _selectedTopItems(self : "DrawingScene") -> list[ItemMixin]:
+        """Returns selected items that are Items, and are not children."""
         return [
             item for item in self.selectedItems()
-            if isinstance(item, ElementMixin) and not item.parentItem()
+            if isinstance(item, ItemMixin) and not item.parentItem()
         ]
 
-    def _selectedElements(self : "DrawingScene") -> list[ElementMixin]:
-        """Returns selected items that are Elements (includes children)."""
+    def _selectedItems(self : "DrawingScene") -> list[ItemMixin]:
+        """Returns selected items that are Items (includes children)."""
         return [
             item for item in self.selectedItems()
-            if isinstance(item, ElementMixin)
+            if isinstance(item, ItemMixin)
         ]
 
     def _snap(self : "DrawingScene", pos : QPointF, snap : QPointF) -> QPointF:

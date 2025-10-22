@@ -5,7 +5,7 @@ from PyQt6.QtCore import QPointF
 from ...properties import PropertySpec
 
 
-class ElementPosMixin:
+class ItemPosMixin:
     _PROPERTY_SPECS_POS = {
         "Position X" : PropertySpec(
             type_name   = "float",

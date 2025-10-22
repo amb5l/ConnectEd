@@ -181,9 +181,9 @@ class PropertiesDialog(QDialog):
     _initial        : dict[str, tuple[Any, str]]
 
     def __init__(
-        self    : Self,
-        element : PropertiesMixin,
-        parent  : QWidget | None = None
+        self   : Self,
+        item   : PropertiesMixin,
+        parent : QWidget | None = None
     ) -> None:
         # initialise
         super().__init__(parent)
@@ -198,9 +198,9 @@ class PropertiesDialog(QDialog):
             "Value",
             "Description"
         ])
-        for name, spec in element._PROPERTY_SPECS.items():
+        for name, spec in item._PROPERTY_SPECS.items():
             custom = spec.custom
-            value = spec.getter(element)
+            value = spec.getter(item)
             type_name = spec.type_name
             default = spec.default
             read_only = spec.setter is None

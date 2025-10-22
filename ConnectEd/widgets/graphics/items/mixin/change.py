@@ -3,7 +3,7 @@ from typing import Self, Any
 from PyQt6.QtWidgets import QGraphicsItem
 
 
-class ElementChangeMixin:
+class ItemChangeMixin:
     def itemChange(
         self   : QGraphicsItem,
         change : QGraphicsItem.GraphicsItemChange,

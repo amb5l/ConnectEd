@@ -1,4 +1,4 @@
-from .mixin.pos import ElementPosMixin
+from .mixin.pos import ItemPosMixin
 
 from .port_pin import PortPinText, PortPinMixin
 from .pin      import PinArrow, Pin
@@ -21,10 +21,10 @@ class SymbolPinComment(PortPinText):
     pass
 
 
-class SymbolPin(ElementPosMixin, Pin):
+class SymbolPin(ItemPosMixin, Pin):
     # class attributes
     _PROPERTY_SPECS = \
-        ElementPosMixin._PROPERTY_SPECS_POS | \
+        ItemPosMixin._PROPERTY_SPECS_POS | \
         PortPinMixin._PROPERTY_SPECS
 
     @classmethod

@@ -5,23 +5,23 @@ from PyQt6.QtWidgets import QGraphicsLineItem
 
 from ....app import logger
 
-from .mixin        import ElementMixin
-from .mixin.line   import ElementLineMixin
-from .mixin.change import ElementChangeMixin
-from .mixin.clone  import ElementCloneMixin
-from .mixin.xml    import ElementXmlMixin
-from .mixin.menu   import ElementMenuMixin
+from .mixin        import ItemMixin
+from .mixin.line   import ItemLineMixin
+from .mixin.change import ItemChangeMixin
+from .mixin.clone  import ItemCloneMixin
+from .mixin.xml    import ItemXmlMixin
+from .mixin.menu   import ItemMenuMixin
 
 from .conn_vtx import ConnVtx
 
 
 class ConnSeg(
-    ElementMixin,
-    ElementLineMixin,
-    ElementChangeMixin,
-    ElementCloneMixin,
-    ElementXmlMixin,
-    ElementMenuMixin,
+    ItemMixin,
+    ItemLineMixin,
+    ItemChangeMixin,
+    ItemCloneMixin,
+    ItemXmlMixin,
+    ItemMenuMixin,
     QGraphicsLineItem
 ):
     """Runs between two ConnVtx instances."""
@@ -39,7 +39,7 @@ class ConnSeg(
         self._line = QLineF()
         self._vtx1 = None
         self._vtx2 = None
-        self.initElement()
+        self.initItem()
         self.setVtx1(vtx1)
         self.setVtx2(vtx2)
         self.onGeometryChange()
@@ -122,7 +122,7 @@ class ConnSeg(
         return instance
 
 
-class ConnSegPreview(ElementLineMixin, ElementChangeMixin, QGraphicsLineItem):
+class ConnSegPreview(ItemLineMixin, ItemChangeMixin, QGraphicsLineItem):
     def __init__(self : Self) -> None:
         QGraphicsLineItem.__init__(self)
         self.initLine()

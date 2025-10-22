@@ -10,7 +10,7 @@ from ..interaction.edit import EditMoveInteraction
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ....scenes.drawing     import DrawingScene
-    from ....items              import ElementMixin
+    from ....items              import ItemMixin
     from ....items.anchor_point import AnchorPoint
     from ....items.handle       import ResizeGrip
     from .                      import DrawingViewUi
@@ -56,31 +56,31 @@ class DrawingViewUiEditMixin:
         self._view.scene().editSelectAll()
 
     def editSlide(
-        self     : "DrawingViewUi",
-        elements : list["ElementMixin"] | None = None,
-        pos      : QPoint | QPointF | None = None
+        self  : "DrawingViewUi",
+        items : list["ItemMixin"] | None = None,
+        pos   : QPoint | QPointF | None = None
     ) -> None:
         scene : "DrawingScene" = self._view.scene()
-        if elements is None:
-            elements = scene.selectedItems()
+        if items is None:
+            items = scene.selectedItems()
         pos = self._view.mapToScene(pos) if isinstance(pos, QPoint) else pos
         if self._view.interaction:
             self._view.interaction.cancel()
-        self._view.interaction = EditMoveInteraction(scene, elements, pos, True)
+        self._view.interaction = EditMoveInteraction(scene, items, pos, True)
         self._view.state.go(self._view.stateEditSlide)
 
     def editMove(
-        self     : "DrawingViewUi",
-        elements : list["ElementMixin"] | None = None,
-        pos      : QPoint | QPointF | None = None
+        self  : "DrawingViewUi",
+        items : list["ItemMixin"] | None = None,
+        pos   : QPoint | QPointF | None = None
     ) -> None:
         scene : "DrawingScene" = self._view.scene()
-        if elements is None:
-            elements = scene.selectedItems()
+        if items is None:
+            items = scene.selectedItems()
         pos = self._view.mapToScene(pos) if isinstance(pos, QPoint) else pos
         if self._view.interaction:
             self._view.interaction.cancel()
-        self._view.interaction = EditMoveInteraction(scene, elements, pos, False)
+        self._view.interaction = EditMoveInteraction(scene, items, pos, False)
         self._view.state.go(self._view.stateEditMove)
 
     def editResize(
@@ -96,32 +96,32 @@ class DrawingViewUiEditMixin:
         self._view.state.go(self._view.stateEditResize)
 
     def editRotateCW(
-        self     : "DrawingViewUi",
-        elements : list["ElementMixin"] | None = None,
-        pos      : QPoint | QPointF | None = None
+        self  : "DrawingViewUi",
+        items : list["ItemMixin"] | None = None,
+        pos   : QPoint | QPointF | None = None
     ) -> None:
         if self._view.interaction:  # interaction in progress
             if isinstance(self._view.interaction, RotateMixin):
                 self._view.interaction.rotateCW()
         else:
             scene : "DrawingScene" = self._view.scene()
-            if elements is None:
-                elements = scene.selectedItems()
+            if items is None:
+                items = scene.selectedItems()
             pos = self._view.mapToScene(pos) if isinstance(pos, QPoint) else pos
             # TODO push command
 
     def editRotateCCW(
-        self     : "DrawingViewUi",
-        elements : list["ElementMixin"] | None = None,
-        pos      : QPoint | QPointF | None = None
+        self  : "DrawingViewUi",
+        items : list["ItemMixin"] | None = None,
+        pos   : QPoint | QPointF | None = None
     ) -> None:
         if self._view.interaction:  # interaction in progress
             if isinstance(self._view.interaction, RotateMixin):
                 self._view.interaction.rotateCCW()
         else:
             scene : "DrawingScene" = self._view.scene()
-            if elements is None:
-                elements = scene.selectedItems()
+            if items is None:
+                items = scene.selectedItems()
             pos = self._view.mapToScene(pos) if isinstance(pos, QPoint) else pos
             # TODO push command
 
@@ -131,16 +131,16 @@ class DrawingViewUiEditMixin:
         scene.undo_stack.push(cmdEditOrigin(scene, ap))
 
     def editAppearance(
-        self    : "DrawingViewUi",
-        element : "ElementMixin | None" = None
+        self : "DrawingViewUi",
+        item : "ItemMixin | None" = None
     ) -> None:
-        self._view.state.go(self._view.stateEditAppearance, [element] if element else None)
+        self._view.state.go(self._view.stateEditAppearance, [item] if item else None)
 
     def editProperties(
-        self    : "DrawingViewUi",
-        element : "ElementMixin | None" = None
+        self : "DrawingViewUi",
+        item : "ItemMixin | None" = None
     ) -> None:
-        self._view.state.go(self._view.stateEditProperties, [element] if element else None)
+        self._view.state.go(self._view.stateEditProperties, [item] if item else None)
 
     def editQuery(self : "DrawingViewUi", vpos : QPoint | None = None) -> None:
         if vpos is None:
@@ -185,17 +185,17 @@ class DrawingViewUiEditMixin:
         query_window.destroyed.connect(cleanup)
 
     def editPort(
-        self    : "DrawingViewUi",
-        element : "ElementMixin | None" = None
+        self : "DrawingViewUi",
+        item : "ItemMixin | None" = None
     ) -> None:
-        self._view.state.go(self._view.stateEditPort, [element] if element else None)
+        self._view.state.go(self._view.stateEditPort, [item] if item else None)
 
     def editBlockPin(
-        self    : "DrawingViewUi",
-        element : "ElementMixin | None" = None
+        self : "DrawingViewUi",
+        item : "ItemMixin | None" = None
     ) -> None:
         self._view.state.go(
-            self._view.stateEditBlockPin, [element] if element else None
+            self._view.stateEditBlockPin, [item] if item else None
         )
 
     def editText(self : "DrawingViewUi") -> None:

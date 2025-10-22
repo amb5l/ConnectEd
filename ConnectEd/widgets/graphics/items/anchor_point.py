@@ -8,7 +8,7 @@ from .handle     import Grip, MoveGrip, ResizeGrip
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from .mixin.anchor import ElementAnchorPointsMixin
+    from .mixin.anchor import ItemAnchorPointsMixin
 
 
 class AnchorPoint(NullPoint):
@@ -21,7 +21,7 @@ class AnchorPoint(NullPoint):
         name   : str,
         pos    : QPointF = QPointF(),
         resize : bool = False,
-        parent : "ElementAnchorPointsMixin" = None
+        parent : "ItemAnchorPointsMixin" = None
     ) -> None:
         super().__init__(parent)
         self._name = name

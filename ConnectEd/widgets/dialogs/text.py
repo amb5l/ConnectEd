@@ -6,7 +6,7 @@ from PyQt6.QtGui     import QShowEvent
 
 from ..graphics.items import QuillPref, QuillPrefChange
 
-from ..graphics.items.mixin.quill import ElementQuillMixin
+from ..graphics.items.mixin.quill import ItemQuillMixin
 
 from .components import TextAppearanceLayout
 
@@ -24,9 +24,9 @@ class TextDialog(QDialog):
     _cancel_button     : QPushButton
 
     def __init__(
-        self    : Self,
-        element : ElementQuillMixin,
-        parent  : QWidget | None = None
+        self   : Self,
+        item   : ItemQuillMixin,
+        parent : QWidget | None = None
     ):
         super().__init__(parent)
         self.setWindowTitle("Text")
@@ -36,12 +36,12 @@ class TextDialog(QDialog):
         self._text_layout = QHBoxLayout()
         self._text_label = QLabel("Text:")
         self._text_layout.addWidget(self._text_label)
-        self._text_edit = QLineEdit(element.text())
+        self._text_edit = QLineEdit(item.text())
         self._text_layout.addWidget(self._text_edit)
         self._dialog_layout.addLayout(self._text_layout)
 
-        initial = element.a.quill.getPref()
-        defaults = element.a.quill.getDefaults()
+        initial = item.a.quill.getPref()
+        defaults = item.a.quill.getDefaults()
         default = QuillPref(
             color     = defaults.color,
             family    = defaults.family,

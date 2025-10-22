@@ -6,7 +6,7 @@ from PyQt6.QtGui     import QUndoCommand
 
 from ......core.utils import camel2proper
 
-from ....items import EdgeLoc, ElementMixin
+from ....items import EdgeLoc, ItemMixin, ItemType
 
 from ....items.block     import Block
 from ....items.block_pin import BlockPin
@@ -14,9 +14,6 @@ from ....items.block_pin import BlockPin
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from .. import DrawingScene
-
-
-ElementType = ElementMixin | QGraphicsItem
 
 
 class cmdBase(QUndoCommand):
@@ -54,34 +51,34 @@ class cmdSceneBase(cmdBase):
         )
 
 
-class cmdSceneElement(cmdSceneBase):
-    """Base class for all commands that work with an element."""
+class cmdSceneItem(cmdSceneBase):
+    """Base class for all commands that work with an item."""
 
     # instance attributes
-    _element : ElementType
+    _item : ItemType
 
     def __init__(
-        self    : Self,
-        scene   : "DrawingScene",
-        element : ElementType
+        self  : Self,
+        scene : "DrawingScene",
+        item  : ItemType
     ):
         super().__init__(scene)
-        self._element = element
+        self._item = item
 
 
-class cmdSceneElements(cmdSceneBase):
-    """Base class for all commands that work with multiple elements."""
+class cmdSceneItems(cmdSceneBase):
+    """Base class for all commands that work with multiple items."""
 
     # instance attributes
-    _elements : list[ElementType]
+    _items : list[ItemType]
 
     def __init__(
-        self     : Self,
-        scene    : "DrawingScene",
-        elements : list[ElementType]
+        self  : Self,
+        scene : "DrawingScene",
+        items : list[ItemType]
     ):
         super().__init__(scene)
-        self._elements = elements
+        self._items = items
 
 
 class cmdBlockPinBase(cmdBase):
@@ -123,9 +120,9 @@ class cmdSelectionMixin:
 
     # instance attributes
     _scene     : "DrawingScene"
-    _selection : list[ElementType]
+    _selection : list[ItemType]
 
-    def _preserveSelection(self : Self, selection : list[ElementType]) -> None:
+    def _preserveSelection(self : Self, selection : list[ItemType]) -> None:
         self._selection = selection.copy()
 
     def _restoreSelection(self : Self) -> None:
@@ -138,16 +135,16 @@ class cmdSelectionMixin:
 
 
 class cmdAddRemoveMixin:
-    """Mixin for commands that add/remove elements to/from the scene."""
+    """Mixin for commands that add/remove scene items."""
 
     # instance attributes
-    _scene    : "DrawingScene"
-    _elements : list[ElementType]
+    _scene : "DrawingScene"
+    _items : list[ItemType]
 
     def _addToScene(self : Self, select : bool = True) -> None:
         self._scene.blockSignals(True)
         self._scene.clearSelection()
-        for e in self._elements:
+        for e in self._items:
             if e.scene() != self._scene:
                 self._scene.addItem(e)
             if select:
@@ -157,7 +154,7 @@ class cmdAddRemoveMixin:
 
     def _removeFromScene(self : Self) -> None:
         self._scene.blockSignals(True)
-        for e in self._elements:
+        for e in self._items:
             if e.scene() == self._scene:
                 self._scene.removeItem(e)
         self._scene.blockSignals(False)
@@ -165,31 +162,31 @@ class cmdAddRemoveMixin:
 
 
 class cmdMoveMixin:
-    """Mixin for commands that move elements by an offset."""
+    """Mixin for commands that move items by an offset."""
     # TODO merge this into cmdMove?
 
     # instance attributes
-    _elements : list[ElementType]
-    _spos     : dict[ElementMixin, QPointF]  # initial scene positions
+    _items : list[ItemType]
+    _spos  : dict[ItemMixin, QPointF]  # initial scene positions
 
     def _moveBy(self : Self, offset : QPointF) -> None:
-        for e in self._elements:
+        for e in self._items:
             e.moveBy(offset)
 
     def _storePos(self : Self) -> None:
-        self._spos = {e: e.scenePos() for e in self._elements}
+        self._spos = {e: e.scenePos() for e in self._items}
 
     def _restorePos(self : Self) -> None:
-        for e in self._elements:
+        for e in self._items:
             e.moveBy(self._spos[e] - e.scenePos())
 
 
 class cmdAdd(
-    cmdSceneElements,   # _scene, _elements, _selection
+    cmdSceneItems,      # _scene, _items, _selection
     cmdSelectionMixin,  # _preserveSelection, _restoreSelection
     cmdAddRemoveMixin   # _addToScene, _removeFromScene
 ):
-    """Command to add scene elements (paste, duplicate, etc.)."""
+    """Command to add scene items (paste, duplicate, etc.)."""
 
     # class attributes
     _SELECTION = True  # preserve selection set
@@ -197,10 +194,10 @@ class cmdAdd(
     def __init__(
         self      : Self,
         scene     : "DrawingScene",
-        elements  : list[ElementType],
-        selection : list[ElementType]
+        items     : list[ItemType],
+        selection : list[ItemType]
     ):
-        super().__init__(scene, elements) # record scene, elements
+        super().__init__(scene, items) # record scene, items
         self._preserveSelection(selection)   # store selection set
 
     def redo(self : Self) -> None:
@@ -212,23 +209,23 @@ class cmdAdd(
 
 
 class cmdDelete(
-    cmdSceneElements,   # _scene, _elements, _selection
+    cmdSceneItems,      # _scene, _items, _selection
     cmdSelectionMixin,  # _preserveSelection, _restoreSelection
     cmdAddRemoveMixin   # _addToScene, _removeFromScene
 ):
-    """Command to delete scene elements (cut, delete)."""
+    """Command to delete scene items (cut, delete)."""
 
     def __init__(
         self      : Self,
         scene     : "DrawingScene",
-        elements  : list[ElementType],
-        selection : list[ElementType]
+        items     : list[ItemType],
+        selection : list[ItemType]
     ):
-        super().__init__(scene, elements) # record scene, elements
-        self._preserveSelection(selection)   # store selection set
+        super().__init__(scene, items)      # record scene, items
+        self._preserveSelection(selection)  # store selection set
 
     def redo(self : Self) -> None:
-        """Delete the elements from the scene."""
+        """Delete the items from the scene."""
         self._removeFromScene()
 
     def undo(self : Self) -> None:
@@ -237,23 +234,23 @@ class cmdDelete(
 
 
 class cmdMove(
-    cmdSceneElements, # _scene, _elements
-    cmdMoveMixin      # _moveBy, _storePos, _restorePos
+    cmdSceneItems,  # _scene, _items
+    cmdMoveMixin    # _moveBy, _storePos, _restorePos
 ):
-    """Command to move scene elements by an offset."""
+    """Command to move scene items by an offset."""
 
     # instance attributes
     _offset : QPointF
     _slide  : bool     # true => retain connections, false => break connections
 
     def __init__(
-        self     : Self,
-        scene    : "DrawingScene",
-        elements : list[ElementType],
-        offset   : QPointF,
-        slide    : bool = False
+        self   : Self,
+        scene  : "DrawingScene",
+        items  : list[ItemType],
+        offset : QPointF,
+        slide  : bool = False
     ):
-        super().__init__(scene, elements)
+        super().__init__(scene, items)
         self._offset = offset
         self._slide = slide
         self._storePos() # store initial positions
@@ -267,28 +264,28 @@ class cmdMove(
         # TODO: add slide logic
 
 
-class cmdRotate(cmdSceneElements):
+class cmdRotate(cmdSceneItems):
 
     # instance attributes
     _angle  : float
-    _before : dict[ElementType, float] # angles before
+    _before : dict[ItemType, float] # angles before
 
     def __init__(
-        self     : Self,
-        scene    : "DrawingScene",
-        elements : list[ElementType],
-        angle    : float
+        self  : Self,
+        scene : "DrawingScene",
+        items : list[ItemType],
+        angle : float
     ):
-        super().__init__(scene, elements)
+        super().__init__(scene, items)
         self._angle = angle
-        self._before = {e: e.rotation() for e in self._elements}
+        self._before = {e: e.rotation() for e in self._items}
 
     def redo(self : Self) -> None:
-        for e in self._elements:
+        for e in self._items:
             e.setRotation(self._before[e] + self._angle)
 
     def undo(self : Self) -> None:
-        for e in self._elements:
+        for e in self._items:
             e.setRotation(self._before[e])
 
 

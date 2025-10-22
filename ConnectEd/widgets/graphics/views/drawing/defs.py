@@ -102,7 +102,7 @@ class DrawingViewMouse:
 
 class DrawingViewWip:
     macro     : bool
-    elements  : list[QGraphicsItem] | None
+    items     : list[QGraphicsItem] | None
     pos       : QPointF | QPoint | None
     pos0      : QPointF | QPoint | None     # start position e.g. for ortho
     selection : list[QGraphicsItem] | None
@@ -113,18 +113,18 @@ class DrawingViewWip:
 
     def clear(self : Self) -> None:
         self.macro     = False
-        self.elements  = None
+        self.items  = None
         self.pos       = None
         self.pos0      = None
         self.selection = None
 
     @property
-    def element(self : Self) -> QGraphicsItem | None:
+    def item(self : Self) -> QGraphicsItem | None:
         return \
-            None if self.elements is None else \
-            self.elements[0] if len(self.elements) == 1 else \
+            None if self.items is None else \
+            self.items[0] if len(self.items) == 1 else \
             None
 
-    @element.setter
-    def element(self : Self, element : QGraphicsItem) -> None:
-        self.elements = [element]
+    @item.setter
+    def item(self : Self, item : QGraphicsItem) -> None:
+        self.items = [item]

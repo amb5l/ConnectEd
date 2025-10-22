@@ -6,7 +6,7 @@ from PyQt6.QtCore import QPointF
 from ..anchor_point import AnchorPoint
 
 
-class ElementAnchorPointsMixin:
+class ItemAnchorPointsMixin:
     # instance attributes
     _anchor_points : dict[str, "AnchorPoint"]
 
@@ -17,7 +17,7 @@ class ElementAnchorPointsMixin:
         raise NotImplementedError("Subclass must implement this method")
 
 
-class ElementRectAnchorPointsMixin(ElementAnchorPointsMixin):
+class ItemRectAnchorPointsMixin(ItemAnchorPointsMixin):
     # class attributes
     _ANCHOR_POINTS = {
         "Top Left"      : ( 0.0 , 0.0 ),
@@ -33,7 +33,7 @@ class ElementRectAnchorPointsMixin(ElementAnchorPointsMixin):
     _AP_RESIZE = { k : k != "Center" for k in _ANCHOR_POINTS.keys() }
 
     # external instance attributes
-    _ap_rect : QRectF  # anchor point rectangle, maintained by element
+    _ap_rect : QRectF  # anchor point rectangle, maintained by item
 
     def initAnchorPoints(self : Self) -> None:
         self._anchor_points = {}

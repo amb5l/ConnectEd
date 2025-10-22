@@ -19,7 +19,7 @@ class QueryWindow(QWidget):
     _layout : QVBoxLayout
     _timer  : QTimer
 
-    def __init__(self : Self, elements : list[QGraphicsItem], parent=None):
+    def __init__(self : Self, items : list[QGraphicsItem], parent=None):
         super().__init__(parent)
         self.setWindowTitle("Query")
         self.setWindowFlags(
@@ -31,7 +31,7 @@ class QueryWindow(QWidget):
         self._model = QStandardItemModel()
         self._model.setHorizontalHeaderLabels(["Item", "Property", "Value"])
         # populate model
-        hdict = self._getHDict(elements)
+        hdict = self._getHDict(items)
         print("hdict", hdict)
         self._populate(self._model, hdict)
         for i in range(self._model.rowCount()):

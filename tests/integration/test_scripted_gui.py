@@ -195,7 +195,7 @@ def test(app : cs.ConnectEdApp):
         f"Got {rect.line.getStyle()}, expected {DEFAULT}"
     assert rect.line.getStyle() == DEFAULT
      # verify selected and unselected appearance
-    defaults = app.settings().get("theme/elements/Rectangle")
+    defaults = app.settings().get("theme/items/Rectangle")
     assert rect.isSelected(), \
         f"Got {rect.isSelected()}, expected True"
     rect_pen = rect.pen()

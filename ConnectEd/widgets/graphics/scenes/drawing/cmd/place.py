@@ -3,7 +3,7 @@ from typing import Self
 from PyQt6.QtCore import QPointF
 
 
-from ....items import EdgeLoc, ElementMixin
+from ....items import EdgeLoc, ItemMixin
 
 from ....items.block      import Block
 from ....items.rectangle  import Rectangle
@@ -15,32 +15,32 @@ from ....items.block_pin  import BlockPin
 from . import cmdBase, cmdSceneBase
 
 class cmdPlaceBase(cmdSceneBase):
-    """Base class for commands that place an element."""
+    """Base class for commands that place an item."""
 
     # class attributes
-    _CLASS : ElementMixin
+    _CLASS : ItemMixin
     _SELECTION = True
 
     # instance attributes
-    _element : ElementMixin
+    _item : ItemMixin
 
     def begin(self : Self, pos : QPointF) -> None:
         super().begin() # preserve selection set
-        self._element = self._CLASS(pos)
-        self._element.setSelected(True)
-        self._scene.addItem(self._element)
+        self._item = self._CLASS(pos)
+        self._item.setSelected(True)
+        self._scene.addItem(self._item)
 
     @property
-    def element(self : Self) -> ElementMixin:
-        return self._element
+    def item(self : Self) -> ItemMixin:
+        return self._item
 
     def redo(self : Self) -> None:
-        if self._element.scene() != self._scene:
-            self._scene.addItem(self._element)
+        if self._item.scene() != self._scene:
+            self._scene.addItem(self._item)
 
     def undo(self : Self) -> None:
         super().undo() # restore selection set
-        self._scene.removeItem(self._element)
+        self._scene.removeItem(self._item)
 
 class cmdPlacePort(cmdPlaceBase):
     _CLASS = Port

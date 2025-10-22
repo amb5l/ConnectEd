@@ -10,7 +10,7 @@ from ...properties import PropertySpec
 
 from .. import Default, DEFAULT, NO_CHANGE, Appearance, LinePref, LinePrefChange
 
-from . import ElementMixin
+from . import ItemMixin
 
 
 class Line:
@@ -19,7 +19,7 @@ class Line:
     _JOIN_STYLE = Qt.PenJoinStyle.MiterJoin
 
     # instance attributes
-    parent   : "ElementMixin"
+    parent   : "ItemMixin"
     color    : Default | QColor
     width    : Default | float
     style    : Default | Qt.PenStyle
@@ -29,7 +29,7 @@ class Line:
 
     def __init__(
         self   : Self,
-        parent : "ElementMixin",
+        parent : "ItemMixin",
         pref   : LinePref = LinePref(DEFAULT, DEFAULT, DEFAULT)
     ) -> None:
         self.parent = parent
@@ -76,7 +76,7 @@ class Line:
 
     def getDefaults(self : Self) -> SimpleNamespace:
         settings_name = self.parent.__class__.__name__
-        return settings().get(f"theme/elements/{settings_name}/line")
+        return settings().get(f"theme/items/{settings_name}/line")
 
     def onSettingsChange(self : Self) -> None:
         default = self.getDefaults()
@@ -100,7 +100,7 @@ class Line:
             self.parent.setPen(self.pen)
 
 
-class ElementLineMixin:
+class ItemLineMixin:
     _PROPERTY_SPECS_LINE = {
         "Line Color" : PropertySpec(
             type_name = "QColor",

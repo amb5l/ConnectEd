@@ -9,17 +9,17 @@ from ....app import settings, window
 
 from ..properties import PropertySpec, PropertiesMixin
 
-from .mixin        import ElementMixin
-from .mixin.bound  import ElementBoundMixin
-from .mixin.shape  import ElementShapeMixin
-from .mixin.pos    import ElementPosMixin
-from .mixin.anchor import ElementRectAnchorPointsMixin
-from .mixin.line   import ElementLineMixin
-from .mixin.fill   import ElementFillMixin
-from .mixin.change import ElementChangeMixin
-from .mixin.clone  import ElementCloneMixin
-from .mixin.xml    import ElementXmlMixin
-from .mixin.menu   import ElementMenuMixin
+from .mixin        import ItemMixin
+from .mixin.bound  import ItemBoundMixin
+from .mixin.shape  import ItemShapeMixin
+from .mixin.pos    import ItemPosMixin
+from .mixin.anchor import ItemRectAnchorPointsMixin
+from .mixin.line   import ItemLineMixin
+from .mixin.fill   import ItemFillMixin
+from .mixin.change import ItemChangeMixin
+from .mixin.clone  import ItemCloneMixin
+from .mixin.xml    import ItemXmlMixin
+from .mixin.menu   import ItemMenuMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -27,25 +27,25 @@ if TYPE_CHECKING:
 
 
 class BaseRectangle(
-    ElementMixin,
-    ElementBoundMixin,
-    ElementShapeMixin,
-    ElementPosMixin,
-    ElementRectAnchorPointsMixin,
-    ElementLineMixin,
-    ElementFillMixin,
-    ElementChangeMixin,
-    ElementCloneMixin,
-    ElementXmlMixin,
-    ElementMenuMixin,
+    ItemMixin,
+    ItemBoundMixin,
+    ItemShapeMixin,
+    ItemPosMixin,
+    ItemRectAnchorPointsMixin,
+    ItemLineMixin,
+    ItemFillMixin,
+    ItemChangeMixin,
+    ItemCloneMixin,
+    ItemXmlMixin,
+    ItemMenuMixin,
     PropertiesMixin,
     QGraphicsRectItem
 ):
-    """Base class for rectangle elements."""
+    """Base class for rectangle items."""
 
     # class attributes
     _PROPERTY_SPECS = \
-        ElementPosMixin._PROPERTY_SPECS_POS | \
+        ItemPosMixin._PROPERTY_SPECS_POS | \
         {
             "Width" : PropertySpec(
                 type_name = "float",
@@ -58,8 +58,8 @@ class BaseRectangle(
                 setter    = lambda self, value: self.setHeight(value)
             )
         } | \
-        ElementLineMixin._PROPERTY_SPECS_LINE | \
-        ElementFillMixin._PROPERTY_SPECS_FILL
+        ItemLineMixin._PROPERTY_SPECS_LINE | \
+        ItemFillMixin._PROPERTY_SPECS_FILL
     _MIN_SIZE = QSizeF(1.0, 1.0)
 
     # instance attributes
@@ -91,7 +91,7 @@ class BaseRectangle(
     ) -> None:
         super().__init__()
         self._ap_rect = QRectF()
-        self.initElement(bare=bare)
+        self.initItem(bare=bare)
         if p1_or_pos is None:
             p1_or_pos = QPointF()
         if p2_or_size is None:

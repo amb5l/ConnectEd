@@ -101,7 +101,7 @@ FACTORY_SETTINGS = {
             },
             "sheet"      : PaletteDark.Sheet,
             "border"     : PaletteDark.Border,
-            "elements" : {
+            "items" : {
                 "Port" : {
                     "line" : {
                         "color" : PaletteDark.PortLine,
@@ -381,7 +381,7 @@ FACTORY_SETTINGS = {
             },
             "sheet"      : PaletteLightMono.Sheet,
             "border"     : PaletteLightMono.Border,
-            "elements" : {
+            "items" : {
                 "Port" : {
                     "line" : {
                         "color" : PaletteLightMono.PortLine,

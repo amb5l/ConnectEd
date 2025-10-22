@@ -5,9 +5,9 @@ from PyQt6.QtWidgets import QStyleOptionGraphicsItem, QGraphicsPathItem, \
                             QWidget, QStyle
 from PyQt6.QtGui     import QPainter, QPainterPath
 
-from .mixin.line   import ElementLineMixin
-from .mixin.fill   import ElementFillMixin
-from .mixin.change import ElementChangeMixin
+from .mixin.line   import ItemLineMixin
+from .mixin.fill   import ItemFillMixin
+from .mixin.change import ItemChangeMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -15,9 +15,9 @@ if TYPE_CHECKING:
 
 
 class Entry(
-    ElementLineMixin,
-    ElementFillMixin,
-    ElementChangeMixin,
+    ItemLineMixin,
+    ItemFillMixin,
+    ItemChangeMixin,
     QGraphicsPathItem
 ):
     # class attributes

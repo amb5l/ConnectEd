@@ -10,11 +10,11 @@ from ...properties import PropertySpec
 
 from .. import Default, DEFAULT, NO_CHANGE, Appearance, FillPref, FillPrefChange
 
-from . import ElementMixin
+from . import ItemMixin
 
 
 class Fill:
-    parent   : "ElementMixin"
+    parent   : "ItemMixin"
     color    : Default | QColor
     style    : Default | Qt.BrushStyle
     normal   : QBrush
@@ -23,7 +23,7 @@ class Fill:
 
     def __init__(
         self   : Self,
-        parent : "ElementMixin",
+        parent : "ItemMixin",
         pref   : FillPref = FillPref(DEFAULT, DEFAULT)
     ) -> None:
         self.parent   = parent
@@ -57,7 +57,7 @@ class Fill:
 
     def getDefaults(self : Self) -> SimpleNamespace:
         settings_name = self.parent.__class__.__name__
-        return settings().get(f"theme/elements/{settings_name}/fill")
+        return settings().get(f"theme/items/{settings_name}/fill")
 
     def onSettingsChange(self : Self) -> None:
         default = self.getDefaults()
@@ -78,7 +78,7 @@ class Fill:
             self.parent.setBrush(self.brush)
 
 
-class ElementFillMixin:
+class ItemFillMixin:
     _PROPERTY_SPECS_FILL = {
         "Fill Color" : PropertySpec(
             type_name = "QColor",

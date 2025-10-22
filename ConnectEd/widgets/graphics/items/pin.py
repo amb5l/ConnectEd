@@ -7,10 +7,10 @@ from PyQt6.QtGui     import QPainter
 
 from . import SignalDirection
 
-from .mixin.loc    import ElementLocMixin
-from .mixin.change import ElementChangeMixin
-from .mixin.line   import ElementLineMixin
-from .mixin.fill   import ElementFillMixin
+from .mixin.loc    import ItemLocMixin
+from .mixin.change import ItemChangeMixin
+from .mixin.line   import ItemLineMixin
+from .mixin.fill   import ItemFillMixin
 
 from .port_pin import PortPinMixin, PortPinText
 from .entry    import Entry
@@ -24,9 +24,9 @@ _PIN_LEN = 10 # documentation - DO NOT CHANGE
 
 
 class PinArrow(
-    ElementChangeMixin,
-    ElementLineMixin,
-    ElementFillMixin,
+    ItemChangeMixin,
+    ItemLineMixin,
+    ItemFillMixin,
     QGraphicsPathItem
 ):
 

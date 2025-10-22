@@ -8,27 +8,27 @@ from ...graphics.scenes.symbol import SymbolScene
 
 from ..properties import PropertiesMixin
 
-from .mixin        import ElementMixin
-from .mixin.pos    import ElementPosMixin
-from .mixin.line   import ElementLineMixin
-from .mixin.fill   import ElementFillMixin
-from .mixin.change import ElementChangeMixin
-from .mixin.clone  import ElementCloneMixin
-from .mixin.xml    import ElementXmlMixin
-from .mixin.menu   import ElementMenuMixin
+from .mixin        import ItemMixin
+from .mixin.pos    import ItemPosMixin
+from .mixin.line   import ItemLineMixin
+from .mixin.fill   import ItemFillMixin
+from .mixin.change import ItemChangeMixin
+from .mixin.clone  import ItemCloneMixin
+from .mixin.xml    import ItemXmlMixin
+from .mixin.menu   import ItemMenuMixin
 
 from .symbol_pin import SymbolPin
 
 
 class Symbol(
-    ElementMixin,
-    ElementPosMixin,
-    ElementLineMixin,
-    ElementFillMixin,
-    ElementChangeMixin,
-    ElementCloneMixin,
-    ElementXmlMixin,
-    ElementMenuMixin,
+    ItemMixin,
+    ItemPosMixin,
+    ItemLineMixin,
+    ItemFillMixin,
+    ItemChangeMixin,
+    ItemCloneMixin,
+    ItemXmlMixin,
+    ItemMenuMixin,
     PropertiesMixin,
     QGraphicsItem
 ):

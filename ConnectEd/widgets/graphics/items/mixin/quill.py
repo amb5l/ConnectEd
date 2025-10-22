@@ -10,11 +10,11 @@ from ...properties import PropertySpec
 
 from .. import Default, DEFAULT, NO_CHANGE, Appearance, QuillPref, QuillPrefChange
 
-from . import ElementMixin
+from . import ItemMixin
 
 
 class Quill:
-    _parent    : "ElementMixin"
+    _parent    : "ItemMixin"
     _color     : Default | QColor
     _family    : Default | str
     _size      : Default | float
@@ -29,7 +29,7 @@ class Quill:
 
     def __init__(
         self   : Self,
-        parent : "ElementMixin",
+        parent : "ItemMixin",
         pref   : QuillPref = \
                   QuillPref(DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT)
     ) -> None:
@@ -119,7 +119,7 @@ class Quill:
 
     def getDefaults(self : Self) -> SimpleNamespace:
         settings_name = self._parent.__class__.__name__
-        return settings().get(f"theme/elements/{settings_name}/text")
+        return settings().get(f"theme/items/{settings_name}/text")
 
     def onSettingsChange(self : Self) -> None:
         default = self.getDefaults()
@@ -158,7 +158,7 @@ class Quill:
             self._parent.setBrush(self._brush)
 
 
-class ElementQuillMixin:
+class ItemQuillMixin:
     _PROPERTY_SPECS_QUILL = {
         "Text Color" : PropertySpec(
             type_name = "QColor",

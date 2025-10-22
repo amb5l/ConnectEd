@@ -8,8 +8,8 @@ from ....app import settings, window
 
 from ..scenes.drawing.cmd import cmdRotate
 
-from .mixin.pos  import ElementPosMixin
-from .mixin.fill import ElementFillMixin
+from .mixin.pos  import ItemPosMixin
+from .mixin.fill import ItemFillMixin
 
 from .port_pin import PortPinText, PortPinMixin
 from .entry    import Entry
@@ -33,13 +33,13 @@ class PortComment(PortPinText):
     pass
 
 
-class Port(ElementPosMixin, ElementFillMixin, PortPinMixin, QGraphicsPathItem):
+class Port(ItemPosMixin, ItemFillMixin, PortPinMixin, QGraphicsPathItem):
     # class attributes
     _NAME_OFFSET = 2
     _PROPERTY_SPECS = \
-        ElementPosMixin._PROPERTY_SPECS_POS | \
+        ItemPosMixin._PROPERTY_SPECS_POS | \
         PortPinMixin._PROPERTY_SPECS | \
-        ElementFillMixin._PROPERTY_SPECS_FILL
+        ItemFillMixin._PROPERTY_SPECS_FILL
 
     @classmethod
     def _getEntryClass(cls) -> type[PortEntry]:
@@ -62,7 +62,7 @@ class Port(ElementPosMixin, ElementFillMixin, PortPinMixin, QGraphicsPathItem):
         self.initPortPin(bare)
 
     def onSettingsChange(self : Self) -> None:
-        size = settings().get("theme/elements/Port/size")
+        size = settings().get("theme/items/Port/size")
         self.getAnchorPoint("Name").setPos(size + self._NAME_OFFSET, 0)
 
     def onSceneChange(self : Self, scene : "DrawingScene") -> None:

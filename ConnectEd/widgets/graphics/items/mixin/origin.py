@@ -8,7 +8,7 @@ from ..anchor_point import AnchorPoint
 from ..handle       import Origin
 
 
-class ElementOriginMixin:
+class ItemOriginMixin:
     # class attributes
     _ORIGIN : str  # subclass must specify
     _PROPERTY_SPECS_ORIGIN = {

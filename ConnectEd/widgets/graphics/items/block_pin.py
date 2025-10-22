@@ -5,7 +5,7 @@ from PyQt6.QtWidgets import QMenu
 
 from ....app import window
 
-from .mixin.loc    import ElementLocMixin
+from .mixin.loc    import ItemLocMixin
 
 from .port_pin import PortPinText, PortPinMixin
 from .pin      import PinArrow, PinEntry, Pin
@@ -31,10 +31,10 @@ class BlockPinComment(PortPinText):
     pass
 
 
-class BlockPin(ElementLocMixin, Pin):
+class BlockPin(ItemLocMixin, Pin):
     # class attributes
     _PROPERTY_SPECS = \
-        ElementLocMixin._PROPERTY_SPECS_LOC | \
+        ItemLocMixin._PROPERTY_SPECS_LOC | \
         PortPinMixin._PROPERTY_SPECS
 
     @classmethod

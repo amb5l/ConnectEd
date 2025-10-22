@@ -15,85 +15,85 @@ from ....scenes.drawing.cmd import cmdAdd, cmdMove, cmdMoveBlockPins
 from . import MoveMixin,                \
               AddRemoveMixin,           \
               SelectionMixin,           \
-              SceneElementsInteraction, \
+              SceneItemsInteraction, \
               Interaction,              \
-              ElementType
+              ItemType
 
 
 class EditPasteInteraction(
-    MoveMixin,                 # update, _moveBy, _storePos, _restorePos
-    AddRemoveMixin,            # _addToScene, _removeFromScene
-    SelectionMixin,            # _preserveSelection, _restoreSelection
-    SceneElementsInteraction   # _scene, _elements, valid
+    MoveMixin,             # update, _moveBy, _storePos, _restorePos
+    AddRemoveMixin,        # _addToScene, _removeFromScene
+    SelectionMixin,        # _preserveSelection, _restoreSelection
+    SceneItemsInteraction  # _scene, _items, valid
 ):
     def __init__(
         self  : Self,
         scene : "DrawingScene",
         pos   : QPointF
     ) -> None:
-        elements, copy_pos = paste()
-        if elements:
-            SceneElementsInteraction.__init__(self, scene, elements)
+        items, copy_pos = paste()
+        if items:
+            SceneItemsInteraction.__init__(self, scene, items)
             self._ipos = pos if copy_pos is None else copy_pos
             self._cpos = self._ipos
             self._preserveSelection()  # store prior selection set
-            self._elements = elements
+            self._items = items
             self._storePos()
             self._addToScene(select=True)
             self.update(pos)  # Move to initial position
         else:
-            self._elements = None
+            self._items = None
 
     def complete(self : Self, pos : QPointF) -> bool:
         self._restorePos()  # restore initial positions
         self.update(pos)    # apply final offset
-        # add pasted elements to scene
+        # add pasted items to scene
         self._scene.undo_stack.push(cmdAdd(
-            self._scene, self._elements, self._selection
+            self._scene, self._items, self._selection
         ))
         return True
 
     def cancel(self : Self) -> None:
-        self._removeFromScene()   # remove preview elements
+        self._removeFromScene()   # remove preview items
         self._restoreSelection()  # restore original selection
 
 
 class EditDuplicateInteraction(EditPasteInteraction):
-    """Very similar to paste, but elements come from cloning."""
+    """Very similar to paste, but items come from cloning."""
 
     def __init__(
-        self     : Self,
-        scene    : "DrawingScene",
-        elements : list[ElementType],  # elements to duplicate
-        pos      : QPointF             # duplication origin
+        self  : Self,
+        scene : "DrawingScene",
+        items : list[ItemType],  # items to duplicate
+        pos   : QPointF          # duplication origin
     ) -> None:
-        if elements:
-            SceneElementsInteraction.__init__(self, scene, clone(elements))
+        if items:
+            SceneItemsInteraction.__init__(self, scene, clone(items))
             self._ipos = pos
             self._cpos = pos
             self._preserveSelection()  # store prior selection set
             self._storePos()
             self._addToScene(select=True)
         else:
-            self._elements = None
+            self._items = None
 
 
 class EditMoveInteraction(
-    MoveMixin,                 # update, _moveBy, _storePos, _restorePos
-    SceneElementsInteraction,  # _scene, _elements, valid
+    MoveMixin,              # update, _moveBy, _storePos, _restorePos
+    SceneItemsInteraction,  # _scene, _items, valid
 ):
     # instance attributes
     _slide  : bool  # true => retain connections, false => break connections
 
     def __init__(
-        self     : Self,
-        scene    : "DrawingScene",
-        elements : list[ElementType],
-        pos      : QPointF,
-        slide    : bool = False
+        self  : Self,
+        scene : "DrawingScene",
+        items : list[ItemType],
+        pos   : QPointF,
+        slide : bool = False
     ) -> None:
-        elements = elements if isinstance(elements, list) else [elements]
-        SceneElementsInteraction.__init__(self, scene, elements)
+        items = items if isinstance(items, list) else [items]
+        SceneItemsInteraction.__init__(self, scene, items)
         self._ipos     = pos
         self._cpos     = pos
         self._slide    = slide
@@ -103,7 +103,7 @@ class EditMoveInteraction(
         self._restorePos()  # restore initial positions
         # apply final offset
         self._scene.undo_stack.push(cmdMove(
-            self._scene, self._elements, pos - self._ipos, self._slide
+            self._scene, self._items, pos - self._ipos, self._slide
         ))
         return True
 
@@ -114,8 +114,8 @@ class EditMoveInteraction(
 class EditMoveBlockPinsInteraction(Interaction):
     # instance attributes
     _parent : Block
-    _pins   : list[BlockPin]              # first element is primary pin
-    _sloc   : dict[ElementType, EdgeLoc]  # stored locations of all pins
+    _pins   : list[BlockPin]           # first item is primary pin
+    _sloc   : dict[ItemType, EdgeLoc]  # stored locations of all pins
 
     def __init__(
         self   : Self,

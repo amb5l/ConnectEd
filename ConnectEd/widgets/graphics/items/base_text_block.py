@@ -9,16 +9,16 @@ from ....app import window
 
 from ..properties import PropertySpec, PropertiesMixin
 
-from .mixin         import ElementMixin
-from .mixin.origin  import ElementOriginMixin
-from .mixin.pos     import ElementPosMixin
-from .mixin.anchor  import ElementRectAnchorPointsMixin
-from .mixin.quill   import ElementQuillMixin
-from .mixin.outline import ElementOutlineMixin
-from .mixin.change  import ElementChangeMixin
-from .mixin.clone   import ElementCloneMixin
-from .mixin.xml     import ElementXmlMixin
-from .mixin.menu    import ElementMenuMixin
+from .mixin         import ItemMixin
+from .mixin.origin  import ItemOriginMixin
+from .mixin.pos     import ItemPosMixin
+from .mixin.anchor  import ItemRectAnchorPointsMixin
+from .mixin.quill   import ItemQuillMixin
+from .mixin.outline import ItemOutlineMixin
+from .mixin.change  import ItemChangeMixin
+from .mixin.clone   import ItemCloneMixin
+from .mixin.xml     import ItemXmlMixin
+from .mixin.menu    import ItemMenuMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -27,24 +27,24 @@ if TYPE_CHECKING:
 
 
 class BaseTextBlock(
-    ElementMixin,
-    ElementOriginMixin,
-    ElementPosMixin,
-    ElementRectAnchorPointsMixin,
-    ElementQuillMixin,
-    ElementOutlineMixin,
-    ElementChangeMixin,
-    ElementCloneMixin,
-    ElementXmlMixin,
-    ElementMenuMixin,
+    ItemMixin,
+    ItemOriginMixin,
+    ItemPosMixin,
+    ItemRectAnchorPointsMixin,
+    ItemQuillMixin,
+    ItemOutlineMixin,
+    ItemChangeMixin,
+    ItemCloneMixin,
+    ItemXmlMixin,
+    ItemMenuMixin,
     PropertiesMixin,
     QGraphicsTextItem
 ):
     # class attributes
     _ORIGIN = "Top Left"
     _PROPERTY_SPECS = \
-        ElementOriginMixin._PROPERTY_SPECS_ORIGIN | \
-        ElementPosMixin._PROPERTY_SPECS_POS | \
+        ItemOriginMixin._PROPERTY_SPECS_ORIGIN | \
+        ItemPosMixin._PROPERTY_SPECS_POS | \
         {
             "Text" : PropertySpec(
                 type_name = "str",
@@ -52,14 +52,14 @@ class BaseTextBlock(
                 setter    = lambda self, value: self.setPlainText(value)
             )
         } | \
-        ElementQuillMixin._PROPERTY_SPECS_QUILL
+        ItemQuillMixin._PROPERTY_SPECS_QUILL
 
     # instance attributes
     _ap_rect : QRectF  # anchor point rectangle
 
     def __init__(self : Self, bare : bool = False) -> None:
         QGraphicsTextItem.__init__(self)
-        self.initElement(bare=bare)
+        self.initItem(bare=bare)
         self.onGeometryChange()
 
     def onGeometryChange(self : Self) -> None:

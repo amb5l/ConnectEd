@@ -13,9 +13,9 @@ from ..graphics.items import \
     QuillPrefDefault, QuillPrefChange, \
     AppearanceSpec, AppearancePrefChange
 
-from ..graphics.items.mixin.line  import ElementLineMixin
-from ..graphics.items.mixin.fill  import ElementFillMixin
-from ..graphics.items.mixin.quill import ElementQuillMixin
+from ..graphics.items.mixin.line  import ItemLineMixin
+from ..graphics.items.mixin.fill  import ItemFillMixin
+from ..graphics.items.mixin.quill import ItemQuillMixin
 
 from . import okCancelLayout
 
@@ -37,21 +37,21 @@ class AppearanceDialog(QDialog):
     _cancel_button    : QPushButton
 
     def __init__(
-        self     : Self,
-        elements : list[ElementLineMixin | ElementFillMixin |ElementQuillMixin],
-        parent   : QWidget | None = None
+        self   : Self,
+        items  : list[ItemLineMixin | ItemFillMixin |ItemQuillMixin],
+        parent : QWidget | None = None
     ) -> None:
         super().__init__(parent)
         initial   = AppearancePrefChange()
         no_change = AppearancePrefChange()
         default   = AppearanceSpec()
-        for element in elements:
+        for item in items:
             for cat_name in ["line", "fill", "quill"]:
-                if not hasattr(element, "a"):
+                if not hasattr(item, "a"):
                     continue
-                if not hasattr(element.a, cat_name):
+                if not hasattr(item.a, cat_name):
                     continue
-                cat = getattr(element.a, cat_name)
+                cat = getattr(item.a, cat_name)
                 if cat is None:
                     continue
                 pref = cat.getPref()
@@ -61,7 +61,7 @@ class AppearanceDialog(QDialog):
                  ["color", "family", "size", "bold", "italic", "underline"]:
                     subcat = getattr(pref, subcat_name)
                     if subcat is None:
-                        logger().error(f"{cat_name}/{subcat_name} is None for element {element}")
+                        logger().error(f"{cat_name}/{subcat_name} is None for item {item}")
                         continue
                     # populate no_change values
                     n_cat = getattr(no_change, cat_name)
@@ -92,16 +92,16 @@ class AppearanceDialog(QDialog):
                         i_subcat = NO_CHANGE
                     setattr(i_cat, subcat_name, i_subcat)
                     # populate default values
-                    d_cat = getattr(element.a, cat_name).getDefaults()
+                    d_cat = getattr(item.a, cat_name).getDefaults()
                     if d_cat is None:
-                        logger().error(f"{cat_name} is None in defaults for element {element}")
+                        logger().error(f"{cat_name} is None in defaults for item {item}")
                         continue
                     if not hasattr(d_cat, subcat_name):
-                        logger().error(f"No {cat_name}/{subcat_name} attribute in defaults for element {element}")
+                        logger().error(f"No {cat_name}/{subcat_name} attribute in defaults for item {item}")
                         continue
                     d_subcat = getattr(d_cat, subcat_name)
                     if d_subcat is None:
-                        logger().error(f"{cat_name}/{subcat_name} is None in defaults for element {element}")
+                        logger().error(f"{cat_name}/{subcat_name} is None in defaults for item {item}")
                         continue
                     v_cat = getattr(default, cat_name)
                     if v_cat is None:
@@ -121,7 +121,7 @@ class AppearanceDialog(QDialog):
             (0 if initial.fill  is None else 1) + \
             (0 if initial.quill is None else 1)
         if categories == 0:
-            logger().warning("No appearance data found in element(s)")
+            logger().warning("No appearance data found in item(s)")
             return
         if categories > 1:
             title = "Appearance"
@@ -131,8 +131,8 @@ class AppearanceDialog(QDialog):
                 "Fill Appearance" if initial.fill is not None else
                 "Text Appearance"
             )
-        if len(elements) > 1:
-            title += f" ({len(elements)} elements)"
+        if len(items) > 1:
+            title += f" ({len(items)} items)"
         self.setWindowTitle(title)
         self._dialog_layout = QVBoxLayout()
         if initial.line is not None:

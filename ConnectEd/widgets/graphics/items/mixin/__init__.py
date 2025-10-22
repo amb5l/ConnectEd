@@ -13,13 +13,13 @@ if TYPE_CHECKING:
     from .. import Appearance
 
 
-class ElementMixin:
+class ItemMixin:
     Z = Z_DRAWING
 
     _uuid : str
     a     : "Appearance | None"
 
-    def initElement(self : Self | QGraphicsItem, bare : bool = False) -> None:
+    def initItem(self : Self | QGraphicsItem, bare : bool = False) -> None:
         self.setZValue(self.Z)
         f = QGraphicsItem.GraphicsItemFlag
         self.setFlag( f.ItemIsSelectable              , True )
@@ -53,7 +53,7 @@ class ElementMixin:
         return hash(self._uuid)
 
     def __eq__(self : Self | QGraphicsItem, other : Self | QGraphicsItem):
-        if not isinstance(other, ElementMixin):
+        if not isinstance(other, ItemMixin):
             return NotImplemented
         return self._uuid == other._uuid
 

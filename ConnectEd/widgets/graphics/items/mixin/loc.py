@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 
 
 # TODO - merge into Block, which is the only item that uses it?
-class ElementLocMixin:
+class ItemLocMixin:
     # instance attributes
     _loc : EdgeLoc
 
@@ -84,7 +84,7 @@ class ElementLocMixin:
         return EdgeLoc(e, d)
 
     def pos(self : Self) -> QPointF:
-        raise NotImplementedError("pos is not implemented for ElementLocMixin")
+        raise NotImplementedError("pos is not implemented for ItemLocMixin")
 
     def setPos(self : Self, _ : QPointF) -> None:
-        raise NotImplementedError("setPos is not implemented for ElementLocMixin")
+        raise NotImplementedError("setPos is not implemented for ItemLocMixin")

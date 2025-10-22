@@ -6,20 +6,20 @@ from PyQt6.QtGui     import QPen, QBrush, QPainterPath, QAction
 
 from ....app import settings, window
 
-from .mixin.change import ElementChangeMixin
-from .mixin.menu   import ElementMenuMixin
+from .mixin.change import ItemChangeMixin
+from .mixin.menu   import ItemMenuMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ..views.drawing  import DrawingView
     from ..scenes.drawing import DrawingScene
-    from .mixin.anchor    import ElementAnchorPointsMixin
+    from .mixin.anchor    import ItemAnchorPointsMixin
     from .anchor_point    import AnchorPoint
 
 
 class Handle(
-    ElementChangeMixin,
-    ElementMenuMixin,
+    ItemChangeMixin,
+    ItemMenuMixin,
     QGraphicsPathItem
 ):
     # class attributes
@@ -27,9 +27,9 @@ class Handle(
     _MENU : list[str]
 
     # instance attributes
-    _element : "ElementAnchorPointsMixin"  # parent element
-    _path    : QPainterPath                # path
-    _brush   : QBrush                      # brush
+    _item  : "ItemAnchorPointsMixin"  # parent item
+    _path  : QPainterPath             # path
+    _brush : QBrush                   # brush
 
     def __init__(
         self   : Self,
@@ -38,7 +38,7 @@ class Handle(
         resize : bool = False
     ) -> None:
         super().__init__(parent)
-        self._element = parent.parentItem()
+        self._item = parent.parentItem()
         self.setFlag( self.GraphicsItemFlag.ItemIgnoresTransformations , True  )
         self.setFlag( self.GraphicsItemFlag.ItemIsSelectable           , False )
         self.setFlag( self.GraphicsItemFlag.ItemIsMovable              , False )
@@ -60,7 +60,7 @@ class Handle(
 
     def moveBy(self : Self, delta : QPointF) -> None:
         parent : "AnchorPoint" = self.parentItem()
-        self._element.moveAnchorPointBy(parent.name(), delta)
+        self._item.moveAnchorPointBy(parent.name(), delta)
 
     def toXml(self : Self, _ : QXmlStreamWriter) -> None:
         pass
@@ -71,7 +71,7 @@ class Handle(
 
     def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
         items = []
-        if hasattr(self._element, "_origin"):
+        if hasattr(self._item, "_origin"):
             items.extend(view.action(
                 "Assign Origin",
                 lambda: view.ui.editAssignOrigin(self.parentItem())

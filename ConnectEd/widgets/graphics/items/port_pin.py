@@ -6,13 +6,13 @@ from ..properties import PropertySpec, PropertiesMixin
 
 from . import SignalDirection, VectorRange
 
-from .mixin        import ElementMixin
-from .mixin.anchor import ElementAnchorPointsMixin
-from .mixin.line   import ElementLineMixin
-from .mixin.change import ElementChangeMixin
-from .mixin.clone  import ElementCloneMixin
-from .mixin.xml    import ElementXmlMixin
-from .mixin.menu   import ElementMenuMixin
+from .mixin        import ItemMixin
+from .mixin.anchor import ItemAnchorPointsMixin
+from .mixin.line   import ItemLineMixin
+from .mixin.change import ItemChangeMixin
+from .mixin.clone  import ItemCloneMixin
+from .mixin.xml    import ItemXmlMixin
+from .mixin.menu   import ItemMenuMixin
 
 from .property_text import PropertyText, PropertyTextSpec
 from .anchor_point  import AnchorPoint
@@ -28,13 +28,13 @@ class PortPinText(PropertyText):
 
 
 class PortPinMixin(
-    ElementMixin,
-    ElementAnchorPointsMixin,
-    ElementLineMixin,
-    ElementChangeMixin,
-    ElementCloneMixin,
-    ElementXmlMixin,
-    ElementMenuMixin,
+    ItemMixin,
+    ItemAnchorPointsMixin,
+    ItemLineMixin,
+    ItemChangeMixin,
+    ItemCloneMixin,
+    ItemXmlMixin,
+    ItemMenuMixin,
     PropertiesMixin
 ):
     # class attributes
@@ -75,7 +75,7 @@ class PortPinMixin(
                 setter    = lambda self, value: setattr(self, '_comment', value)
             )
         } | \
-        ElementLineMixin._PROPERTY_SPECS_LINE
+        ItemLineMixin._PROPERTY_SPECS_LINE
 
     # instance attributes
     _name      : str
@@ -116,8 +116,8 @@ class PortPinMixin(
         self._direction = SignalDirection.IN
         self._range     = None
         self._comment   = ""
-        # Initialize the element (this sets up properties system)
-        self.initElement(bare)
+        # Initialize the item (this sets up properties system)
+        self.initItem(bare)
         # Initialize the entry
         self._entry = self._getEntryClass()(self)
 

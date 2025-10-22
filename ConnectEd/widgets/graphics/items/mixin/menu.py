@@ -10,7 +10,7 @@ if TYPE_CHECKING:
     from ...views.drawing import DrawingView
 
 
-class ElementMenuMixin:
+class ItemMenuMixin:
     def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
         return [
             view.action("Appearance...", view.ui.editAppearance),

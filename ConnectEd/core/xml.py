@@ -13,7 +13,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from .db import DesignDbNode, LibraryDbNode, DiagramNode, SymbolNode
     from ..widgets.graphics.properties import PropertiesMixin
-    from ..widgets.graphics.items import ElementMixin
+    from ..widgets.graphics.items import ItemMixin
 
 
 XmlItemTypes: TypeAlias = Union[
@@ -21,7 +21,7 @@ XmlItemTypes: TypeAlias = Union[
     "LibraryDbNode",
     "DiagramNode",
     "SymbolNode",
-    "ElementMixin"
+    "ItemMixin"
 ]
 
 def toXmlBegin(xw : QXmlStreamWriter) -> None:
@@ -64,7 +64,7 @@ def fromXmlItems(
     xr : QXmlStreamReader
 ) -> tuple[list[XmlItemTypes], QPointF | None]:
     from .db import DesignDbNode, LibraryDbNode, DiagramNode, SymbolNode
-    from ..widgets.graphics.items import _element_classes
+    from ..widgets.graphics.items import _item_classes
     pos = None
     items = []
     fromXmlBegin(xr, APP_NAME)
@@ -89,9 +89,9 @@ def fromXmlItems(
                         item = DiagramNode.fromXml(xr)
                     case "Symbol":
                         item = SymbolNode.fromXml(xr)
-                    case _:  # Assume it's an Element
-                        if xr.name() in _element_classes:
-                            item_class = _element_classes[xr.name()]
+                    case _:  # Assume it's an Item
+                        if xr.name() in _item_classes:
+                            item_class = _item_classes[xr.name()]
                             item = item_class.fromXml(xr)
                         else:
                             item = None

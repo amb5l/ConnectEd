@@ -7,7 +7,7 @@ from ....app import logger
 
 from ..properties import PropertySpec
 
-from .mixin.anchor import ElementAnchorPointsMixin
+from .mixin.anchor import ItemAnchorPointsMixin
 
 from .base_text    import BaseText
 from .anchor_point import AnchorPoint
@@ -107,10 +107,10 @@ class TetherText(BaseText):
             return
         if isinstance(parent, AnchorPoint):
             grandparent = parent.parentItem()
-            if isinstance(grandparent, ElementAnchorPointsMixin):
+            if isinstance(grandparent, ItemAnchorPointsMixin):
                 self.setParentItem(grandparent.getAnchorPoint(name))
             else:
-                logger().error(f"Grandparent is not an ElementAnchorPointsMixin: {type(grandparent).__name__}")
+                logger().error(f"Grandparent is not an ItemAnchorPointsMixin: {type(grandparent).__name__}")
             parent.setName(name)
         else:
             logger().error(f"Parent is not an AnchorPoint: {type(parent).__name__}")

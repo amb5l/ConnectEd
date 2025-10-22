@@ -119,9 +119,9 @@ class NavigatorPrivateMixin:
                 subwindow.setFocus()
                 return
         db_node = node.parent().parent()
-        elements = [e for e in scene.items() \
+        items = [e for e in scene.items() \
                     if not isinstance(e, AnchorPoint | Tether)]
-        subwindow = SpreadsheetSubWindow(scene, elements)
+        subwindow = SpreadsheetSubWindow(scene, items)
         subwindow.setWindowTitle(f"{db_node.text()}:{node.text()}: Properties")
         window().mdi_area.addSubWindow(subwindow)
         subwindow.showMaximized()

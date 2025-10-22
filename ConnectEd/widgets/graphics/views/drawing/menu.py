@@ -9,7 +9,7 @@ from ....menu import Menu
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from ...items.mixin.menu import ElementMenuMixin
+    from ...items.mixin.menu import ItemMenuMixin
     from . import DrawingView
 
 
@@ -37,7 +37,7 @@ class DrawingViewMenuMixin:
             items = self.scene().selectedItems()  # selection set
         else:
             for item in items_at:
-                if isinstance(item, ElementMenuMixin):
+                if isinstance(item, ItemMenuMixin):
                     items.append(item)  # item at position
             else:
                 items = []  # no items at position
@@ -63,7 +63,7 @@ class DrawingViewMenuMixin:
 
         # EITHER add selection related actions/submenus
         pass
-        # OR add element related actions/submenus
+        # OR add item related actions/submenus
         pass
         # query
         menu.addAction("Query", lambda: self.ui.editQuery(spos))

@@ -11,25 +11,25 @@ from ..properties import PropertySpec
 
 from .anchor_point import AnchorPoint
 
-from .mixin        import ElementMixin
-from .mixin.shape  import ElementShapeMixin
-from .mixin.anchor import ElementAnchorPointsMixin
-from .mixin.line   import ElementLineMixin
-from .mixin.change import ElementChangeMixin
-from .mixin.clone  import ElementCloneMixin
-from .mixin.xml    import ElementXmlMixin
-from .mixin.menu   import ElementMenuMixin
+from .mixin        import ItemMixin
+from .mixin.shape  import ItemShapeMixin
+from .mixin.anchor import ItemAnchorPointsMixin
+from .mixin.line   import ItemLineMixin
+from .mixin.change import ItemChangeMixin
+from .mixin.clone  import ItemCloneMixin
+from .mixin.xml    import ItemXmlMixin
+from .mixin.menu   import ItemMenuMixin
 
 
 class Line(
-    ElementMixin,
-    ElementShapeMixin,
-    ElementAnchorPointsMixin,
-    ElementLineMixin,
-    ElementChangeMixin,
-    ElementCloneMixin,
-    ElementXmlMixin,
-    ElementMenuMixin,
+    ItemMixin,
+    ItemShapeMixin,
+    ItemAnchorPointsMixin,
+    ItemLineMixin,
+    ItemChangeMixin,
+    ItemCloneMixin,
+    ItemXmlMixin,
+    ItemMenuMixin,
     QGraphicsLineItem
 ):
     # class attributes
@@ -56,7 +56,7 @@ class Line(
                 setter    = lambda self, value: self.setY2(value)
             )
         } | \
-        ElementLineMixin._PROPERTY_SPECS_LINE
+        ItemLineMixin._PROPERTY_SPECS_LINE
 
     # instance attributes
     _line : QLineF
@@ -67,7 +67,7 @@ class Line(
         p2   : QPointF | None = None
     ) -> None:
         QGraphicsLineItem.__init__(self)
-        self.initElement()
+        self.initItem()
         p1 = QPointF() if p1 is None else p1
         p2 = p1 if p2 is None else p2
         self._line = QLineF()

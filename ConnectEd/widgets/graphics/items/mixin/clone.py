@@ -2,21 +2,22 @@ from typing import Self
 
 from ...properties import PropertiesMixin, PropertySpec
 
-from .. import ElementMixin
+from .. import ItemMixin
 
-from .anchor import ElementAnchorPointsMixin
+from .anchor import ItemAnchorPointsMixin
 
 
-ElementType = ElementMixin | ElementAnchorPointsMixin | PropertiesMixin
+ItemType = ItemMixin | ItemAnchorPointsMixin | PropertiesMixin
 
-class ElementCloneMixin:
+
+class ItemCloneMixin:
     def clone(self : Self, original : Self | None = None) -> Self:
-        """Create a clone of this or specified element with a new UUID."""
+        """Create a clone of this or specified item with a new UUID."""
         from ..anchor_point  import AnchorPoint
         from ..property_text import PropertyText
         from ..pin           import Pin
-        source : ElementType = original if original is not None else self
-        clone : ElementType = self.__class__(bare=True)
+        source : ItemType = original if original is not None else self
+        clone : ItemType = self.__class__(bare=True)
         # clone properties
         if hasattr(self, "_properties"):
             clone._properties = self._properties.copy()

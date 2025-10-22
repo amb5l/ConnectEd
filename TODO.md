@@ -1,5 +1,6 @@
 NEXT
-- ctxMenuAction => action
+- DrawingViewStateBase v,s,e too short
+- remove DrawingViewWip
 - remove None options for elements arguments to view ui methods
 - element => item
 - fixed/locked property

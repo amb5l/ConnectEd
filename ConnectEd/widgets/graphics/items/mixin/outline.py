@@ -18,7 +18,7 @@ class OutlinePen:
         self.pen.setStyle(settings().get("display/select/outline/style"))
 
 
-class ElementOutlineMixin:
+class ItemOutlineMixin:
     outline : OutlinePen
 
     def initOutline(self : Self):

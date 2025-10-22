@@ -2,14 +2,15 @@ from typing      import Self
 from dataclasses import dataclass
 from enum        import Enum
 
-from PyQt6.QtCore import Qt
-from PyQt6.QtGui  import QColor
+from PyQt6.QtCore    import Qt
+from PyQt6.QtWidgets import QGraphicsItem
+from PyQt6.QtGui     import QColor
 
 from ....app import logger
 
 from ....core.utils import pascal2snake
 
-from .mixin import ElementMixin
+from .mixin import ItemMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -17,6 +18,8 @@ if TYPE_CHECKING:
     from .mixin.fill  import Fill
     from .mixin.quill import Quill
 
+
+ItemType = ItemMixin | QGraphicsItem
 
 class Default:
     def __str__(self : Self): return "default"
@@ -233,30 +236,30 @@ class AppearancePrefChange:
     fill  : FillPrefChange  | None = None
     quill : QuillPrefChange | None = None
 
-def clone(elements : list[ElementMixin]) -> list[ElementMixin]:
+def clone(items : list[ItemMixin]) -> list[ItemMixin]:
     r = []
-    for element in elements:
+    for item in items:
         try:
-            r.append(element.clone())
+            r.append(item.clone())
         except Exception as e:
-            logger().warning(f"Failed to clone element {element}: {e}")
+            logger().warning(f"Failed to clone item {item}: {e}")
     return r
 
-_element_classes = {}
+_item_classes = {}
 
-def register_element(name : str):
-    """Import a class from a submodule and register it in _element_classes."""
+def register_item(name : str):
+    """Import a class from a submodule and register it in _item_classes."""
     module_name = pascal2snake(name)
     import importlib
     module = importlib.import_module(f".{module_name}", package=__name__)
     cls = getattr(module, name)
-    _element_classes[name] = cls
+    _item_classes[name] = cls
     return cls
 
-register_element("Port")
-register_element("Block")
-register_element("PropertyText")
-register_element("Rectangle")
-register_element("Text")
-register_element("TextBlock")
-register_element("ConnSeg")
+register_item("Port")
+register_item("Block")
+register_item("PropertyText")
+register_item("Rectangle")
+register_item("Text")
+register_item("TextBlock")
+register_item("ConnSeg")

@@ -43,19 +43,19 @@ class DrawingScenePathsMixin:
     def updatePaths(self : "DrawingScene") -> None:
         self._gripPath ( self.paths["Grip"] )
         self._originPath ( self.paths["Origin"] )
-        size = settings().get("theme/elements/Port/size")
+        size = settings().get("theme/items/Port/size")
         self._portInPath  ( self.paths["Port"][ "in"  ] , size )
         self._portOutPath ( self.paths["Port"][ "out" ] , size )
         self._portBiPath  ( self.paths["Port"][ "bi"  ] , size )
-        size = settings().get("theme/elements/BlockPinArrow/size")
+        size = settings().get("theme/items/BlockPinArrow/size")
         self._pinArrowInPath  ( self.paths["BlockPinArrow"][ "in"  ] , size )
         self._pinArrowOutPath ( self.paths["BlockPinArrow"][ "out" ] , size )
         self._pinArrowBiPath  ( self.paths["BlockPinArrow"][ "bi"  ] , size )
-        size = settings().get("theme/elements/SymbolPinArrow/size")
+        size = settings().get("theme/items/SymbolPinArrow/size")
         self._pinArrowInPath  ( self.paths["SymbolPinArrow"][ "in"  ] , size )
         self._pinArrowOutPath ( self.paths["SymbolPinArrow"][ "out" ] , size )
         self._pinArrowBiPath  ( self.paths["SymbolPinArrow"][ "bi"  ] , size )
-        size = settings().get("theme/elements/ConnVtx/size")
+        size = settings().get("theme/items/ConnVtx/size")
         self._connVtxPath( self.paths["ConnVtx"] , size )
 
     def _gripPath(self : "DrawingScene", path : QPainterPath) -> None:

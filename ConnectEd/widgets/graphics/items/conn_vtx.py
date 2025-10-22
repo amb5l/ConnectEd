@@ -8,13 +8,13 @@ from ....app import logger, settings
 
 from ....core.defs  import Z_DRAWING
 
-from .mixin        import ElementMixin
-from .mixin.pos    import ElementPosMixin
-from .mixin.line   import ElementLineMixin
-from .mixin.fill   import ElementFillMixin
-from .mixin.change import ElementChangeMixin
-from .mixin.clone  import ElementCloneMixin
-from .mixin.xml    import ElementXmlMixin
+from .mixin        import ItemMixin
+from .mixin.pos    import ItemPosMixin
+from .mixin.line   import ItemLineMixin
+from .mixin.fill   import ItemFillMixin
+from .mixin.change import ItemChangeMixin
+from .mixin.clone  import ItemCloneMixin
+from .mixin.xml    import ItemXmlMixin
 
 from .junction import Junction
 
@@ -26,13 +26,13 @@ if TYPE_CHECKING:
 
 
 class ConnVtx(
-    ElementMixin,
-    ElementPosMixin,
-    ElementLineMixin,
-    ElementFillMixin,
-    ElementChangeMixin,
-    ElementCloneMixin,
-    ElementXmlMixin,
+    ItemMixin,
+    ItemPosMixin,
+    ItemLineMixin,
+    ItemFillMixin,
+    ItemChangeMixin,
+    ItemCloneMixin,
+    ItemXmlMixin,
     QGraphicsPathItem
 ):
     """Vertex (end point of one or more wire segments).
@@ -56,7 +56,7 @@ class ConnVtx(
         if pos is not None:
             self.setPos(pos)
         self._connections = []
-        self.initElement()
+        self.initItem()
         self._junction = Junction(self)
 
     def onScenePositionChange(self : Self, _pos : QPointF) -> None:
@@ -70,7 +70,7 @@ class ConnVtx(
 
     def onSettingsChange(self : Self) -> None:
         # update visibility
-        settings_path = f"theme/elements/{self.__class__.__name__}/visible"
+        settings_path = f"theme/items/{self.__class__.__name__}/visible"
         visible = settings().get(settings_path)
         self.setFlag(self.GraphicsItemFlag.ItemIsSelectable, visible)
         if not visible:

@@ -16,7 +16,7 @@ from ...app import logger, settings, window
 
 from ...core.icon import getCharIcon
 
-from ...widgets.graphics.items import ElementMixin
+from ...widgets.graphics.items import ItemMixin
 
 from ...widgets.graphics.items.property_text import PropertyDisplay
 
@@ -214,7 +214,7 @@ class SpreadsheetHeader(QHeaderView):
 
 class SpreadsheetTable(QTableView):
     """
-    Table for editing properties and attributes of scene elements of a single
+    Table for editing properties and attributes of scene items of a single
     type.
     """
 
@@ -545,7 +545,7 @@ class SpreadsheetWidget(QWidget):
         update()
 
 class SpreadsheetTabWidget(QTabWidget):
-    _tab_elements   : dict[str, list[ElementMixin]]
+    _tab_items      : dict[str, list[ItemMixin]]
     _tab_headings   : dict[str, dict[str, bool]]
     _tab_htypenames : dict[str, dict[str, str]]
     _tab_models     : dict[str, QStandardItemModel]
@@ -557,38 +557,38 @@ class SpreadsheetTabWidget(QTabWidget):
     _font_size      : int
 
     def __init__(
-        self     : Self,
-        elements : list[ElementMixin],
-        parent   : QWidget | None = None
+        self   : Self,
+        items  : list[ItemMixin],
+        parent : QWidget | None = None
     ) -> None:
         super().__init__(parent)
         self.setTabsClosable(True)
         self.tabCloseRequested.connect(self.closeTab)
-        # group elements by type
-        self._tab_elements = {}
+        # group items by type
+        self._tab_items = {}
         scene = None
-        for element in elements:
+        for item in items:
             if scene is None:
-                scene = element.scene()
-            elif scene != element.scene():
-                logger().error("Elements must belong to the same scene")
-                elements = []
+                scene = item.scene()
+            elif scene != item.scene():
+                logger().error("Items must belong to the same scene")
+                items = []
                 break
-            tab_name = type(element).__name__
-            if tab_name not in self._tab_elements:
-                self._tab_elements[tab_name] = []
-            self._tab_elements[tab_name].append(element)
+            tab_name = type(item).__name__
+            if tab_name not in self._tab_items:
+                self._tab_items[tab_name] = []
+            self._tab_items[tab_name].append(item)
         # create models
         self._tab_headings   = {}
         self._tab_htypenames = {}
         self._tab_models     = {}
         self._tab_proxies    = {}
-        for tab_name, tab_elements in self._tab_elements.items():
+        for tab_name, tab_items in self._tab_items.items():
             self._tab_headings[tab_name] = {}
             self._tab_htypenames[tab_name] = {}
             tab_attributes = None
             tab_properties = set()
-            for e in tab_elements:
+            for e in tab_items:
                 if tab_attributes is None:
                     tab_attributes = e.getAttributes()
                     for a in tab_attributes:
@@ -597,7 +597,7 @@ class SpreadsheetTabWidget(QTabWidget):
                 else:
                     if tab_attributes != e.getAttributes():
                         logger().error("Inconsistent inherent properties")
-                        self._tab_elements.pop(tab_name)
+                        self._tab_items.pop(tab_name)
                         self._tab_headings.pop(tab_name)
                         self._tab_htypenames.pop(tab_name)
                         break
@@ -609,10 +609,10 @@ class SpreadsheetTabWidget(QTabWidget):
             self._tab_headings[tab_name].update(
                 {name : True for name in tab_attributes}
             )
-            num_elements = len(tab_elements)
+            num_items = len(tab_items)
             num_headings = len(self._tab_headings[tab_name])
             self._tab_models[tab_name] = QStandardItemModel(
-                num_elements, num_headings, self
+                num_items, num_headings, self
             )
             self._tab_proxies[tab_name] = QTransposeProxyModel()
             self._tab_proxies[tab_name].setSourceModel(self._tab_models[tab_name])
@@ -620,13 +620,13 @@ class SpreadsheetTabWidget(QTabWidget):
                 self._tab_models[tab_name].setHorizontalHeaderItem(
                     i, QStandardItem(name)
                 )
-            for i in range(num_elements):
+            for i in range(num_items):
                 self._tab_models[tab_name].setVerticalHeaderItem(
                     i, QStandardItem(str(i + 1))
                 )
             rows = [
                 [e.getPropAttr(h) for h in self._tab_headings[tab_name].keys()] \
-                    for e in self._tab_elements[tab_name]
+                    for e in self._tab_items[tab_name]
             ]
             for row_idx, row in enumerate(rows):
                 for col_idx, value in enumerate(row):
@@ -639,7 +639,7 @@ class SpreadsheetTabWidget(QTabWidget):
         settings().changed.connect(self.updateHighlight)
         # create tabs
         self._tabs = {}
-        for tab_name, tab_elements in self._tab_elements.items():
+        for tab_name, tab_items in self._tab_items.items():
             self._tabs[tab_name] = SpreadsheetWidget(
                 model=self._tab_models[tab_name],
                 proxy=self._tab_proxies[tab_name],
@@ -731,24 +731,24 @@ class SpreadsheetSubWindow(SubWindow):
     _tab_widget : QTabWidget | None
 
     def __init__(
-            self     : Self,
-            scene    : "DrawingScene",
-            elements : list[ElementMixin]
+            self  : Self,
+            scene : "DrawingScene",
+            items : list[ItemMixin]
         ) -> None:
         super().__init__()
         self._scene = scene
-        element_scenes = set(element.scene() for element in elements)
-        if len(element_scenes) != 1:
-            logger().error("Elements must belong to the same scene")
-            elements = []
+        item_scenes = set(item.scene() for item in items)
+        if len(item_scenes) != 1:
+            logger().error("Items must belong to the same scene")
+            items = []
         self.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
-        if len(elements) > 0:
-            self._tab_widget = SpreadsheetTabWidget(elements, self)
+        if len(items) > 0:
+            self._tab_widget = SpreadsheetTabWidget(items, self)
             self.setWidget(self._tab_widget)
             self.setWindowTitle("Properties")
         else:
             self._tab_widget = None
-            label = QLabel("NO ELEMENTS", self)
+            label = QLabel("NO ITEMS", self)
             label.setAlignment(Qt.AlignmentFlag.AlignCenter)
             label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
             self.setWidget(label)

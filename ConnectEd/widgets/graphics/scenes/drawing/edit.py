@@ -7,10 +7,9 @@ from .....core.xml import copy
 
 from ....dialogs.properties import PropertyState
 
-from ...items import ElementMixin, QuillPrefChange, AppearancePrefChange
-
-from ...items.base_text import BaseText
-
+from ...items               import QuillPrefChange, AppearancePrefChange
+from ...items.mixin         import ItemMixin
+from ...items.base_text     import BaseText
 from ...items.property_text import PropertyText
 
 from .cmd import cmdDelete
@@ -22,45 +21,43 @@ if TYPE_CHECKING:
     from . import DrawingScene
 
 
-ElementType = ElementMixin | QGraphicsItem
-
 class DrawingSceneApiEditMixin:
     def editCut(
         self : "DrawingScene",
         pos  : QPointF = QPointF(0, 0)
     ) -> None:
-        elements = \
+        items = \
             [item for item in self.selectedItems() \
-                if isinstance(item, ElementMixin) \
+                if isinstance(item, ItemMixin) \
                 and item.parentItem() is None]
-        if elements:
-            copy(elements, pos)
-            self.undo_stack.push(cmdDelete(self, elements, self.selectedItems()))
+        if items:
+            copy(items, pos)
+            self.undo_stack.push(cmdDelete(self, items, self.selectedItems()))
         else:
-            logger().warning("No elements selected to cut")
+            logger().warning("No items selected to cut")
 
     def editCopy(
         self : "DrawingScene",
         pos  : QPointF = QPointF(0, 0)
     ) -> None:
-        elements = \
+        items = \
             [item for item in self.selectedItems() \
                 if hasattr(item, "toXml") \
                 and item.parentItem() is None]
-        if elements:
-            copy(elements, pos)
+        if items:
+            copy(items, pos)
         else:
-            logger().warning("No elements selected to copy")
+            logger().warning("No items selected to copy")
 
     def editDelete(
         self : "DrawingScene"
     ) -> None:
-        """Delete selected elements from the scene."""
-        elements = self._selectedTopElements()
-        if elements:
-            self.undo_stack.push(cmdDelete(self, elements, self.selectedItems()))
+        """Delete selected items from the scene."""
+        items = self._selectedTopItems()
+        if items:
+            self.undo_stack.push(cmdDelete(self, items, self.selectedItems()))
         else:
-            logger().warning("No elements selected to delete")
+            logger().warning("No items selected to delete")
 
     def editSelectArea(self : "DrawingScene") -> None:
         raise NotImplementedError("Not implemented yet")
@@ -70,33 +67,33 @@ class DrawingSceneApiEditMixin:
 
     def editText(
         self       : "DrawingScene",
-        element    : BaseText,
+        item       : BaseText,
         text       : str,
         appearance : QuillPrefChange
     ) -> None:
-        self.undo_stack.push(cmdEditText(self, element, text, appearance))
+        self.undo_stack.push(cmdEditText(self, item, text, appearance))
 
     def editPropertyText(
         self       : "DrawingScene",
-        element    : PropertyText,
+        item       : PropertyText,
         name       : str,
         value      : str,
         appearance : QuillPrefChange
     ) -> None:
         self.undo_stack.push(cmdEditPropertyText(
-            self, element, name, value, appearance
+            self, item, name, value, appearance
         ))
 
     def editAppearance(
-        self     : "DrawingScene",
-        elements : list[ElementMixin],
-        changes  : AppearancePrefChange
+        self    : "DrawingScene",
+        items   : list[ItemMixin],
+        changes : AppearancePrefChange
     ) -> None:
-        self.undo_stack.push(cmdEditAppearance(self, elements, changes))
+        self.undo_stack.push(cmdEditAppearance(self, items, changes))
 
     def editProperties(
         self    : "DrawingScene",
-        element : ElementMixin,
+        item    : ItemMixin,
         changes : dict[str, PropertyState]
     ) -> None:
-        self.undo_stack.push(cmdEditProperties(self, element, changes))
+        self.undo_stack.push(cmdEditProperties(self, item, changes))

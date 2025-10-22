@@ -32,37 +32,37 @@ class PropertyTextDialog(QDialog):
     _cancel_button     : QPushButton
 
     def __init__(
-        self    : Self,
-        element : PropertyText,
-        parent  : QWidget | None = None # not to be confused with _parent
+        self   : Self,
+        item   : PropertyText,
+        parent : QWidget | None = None # not to be confused with _parent
     ) -> None:
         super().__init__(parent)
         self.setWindowTitle("Property Text")
         self.setModal(True)
-        self._parent = element.parent()
+        self._parent = item.parent()
         self._dialog_layout = QVBoxLayout(self)
         self._nvd_layout = QGridLayout()
         self._name_label = QLabel("Name:")
         self._nvd_layout.addWidget(self._name_label, 0, 0)
         self._name_edit = QComboBox()
         self._name_edit.addItems(self._parent.getPropertyNames())
-        self._name_edit.setCurrentText(element.name())
+        self._name_edit.setCurrentText(item.name())
         self._name_edit.currentTextChanged.connect(self.onPropertyNameChanged)
         self._nvd_layout.addWidget(self._name_edit, 0, 1)
         self._value_label = QLabel("Value:")
         self._nvd_layout.addWidget(self._value_label, 1, 0)
-        self._value_edit = QLineEdit(element.value())
+        self._value_edit = QLineEdit(item.value())
         self._nvd_layout.addWidget(self._value_edit, 1, 1)
         self._display_label = QLabel("Display:")
         self._nvd_layout.addWidget(self._display_label, 2, 0)
         self._display_combo = QComboBox()
         self._display_combo.addItems(pd.value for pd in PropertyDisplay)
-        self._display_combo.setCurrentText(str(element.display()))
+        self._display_combo.setCurrentText(str(item.display()))
         self._nvd_layout.addWidget(self._display_combo, 2, 1)
         self._dialog_layout.addLayout(self._nvd_layout)
 
-        initial = element.a.quill.getPref()
-        defaults = element.a.quill.getDefaults()
+        initial = item.a.quill.getPref()
+        defaults = item.a.quill.getDefaults()
         default = QuillPref(
             color     = defaults.color,
             family    = defaults.family,

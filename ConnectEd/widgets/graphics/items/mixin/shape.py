@@ -3,7 +3,7 @@ from typing import Self
 from PyQt6.QtGui  import QPainterPath
 
 
-class ElementShapeMixin:
+class ItemShapeMixin:
     # instance attributes
     _hshape : QPainterPath # hit detect shape
 

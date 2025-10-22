@@ -108,7 +108,7 @@ class DrawingScene(
 
     @classmethod
     def fromXml(cls : Self, xr : QXmlStreamReader) -> Self:
-        from ...items import _element_classes
+        from ...items import _item_classes
         cls_name = cls.__name__
         # Use the same naming convention as toXml: remove "Scene" suffix
         expected_element_name = cls_name.replace("Scene", "")
@@ -119,10 +119,10 @@ class DrawingScene(
         while not (xr.isEndElement() and xr.name() == expected_element_name):
             if xr.tokenType() == QXmlStreamReader.TokenType.StartElement:
                 attr_name = xr.name()
-                if attr_name in _element_classes:
-                    element_cls = _element_classes[attr_name]
-                    element = element_cls.fromXml(xr)
-                    drawing_scene.addItem(element)
+                if attr_name in _item_classes:
+                    item_cls = _item_classes[attr_name]
+                    item = item_cls.fromXml(xr)
+                    drawing_scene.addItem(item)
                 else:
                     logger().warning(f"Unexpected element: {attr_name}")
             xr.readNext()

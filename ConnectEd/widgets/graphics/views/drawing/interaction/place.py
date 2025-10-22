@@ -23,9 +23,9 @@ from ....scenes.drawing.cmd import cmdAdd, cmdAddBlockPin
 
 from . import SelectionMixin,          \
               RotateMixin,             \
-              SceneElementInteraction, \
+              SceneItemInteraction, \
               BlockPinInteraction,     \
-              ElementType
+              ItemType
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -33,77 +33,77 @@ if TYPE_CHECKING:
 
 
 class PlaceBaseInteraction(
-    SelectionMixin,          # _preserveSelection, _restoreSelection
-    SceneElementInteraction  # _scene, _element, valid
+    SelectionMixin,       # _preserveSelection, _restoreSelection
+    SceneItemInteraction  # _scene, _item, valid
 ):
-    """Base for all interactions that place a single element."""
+    """Base for all interactions that place a single item."""
 
     # class attributes
-    _ELEMENT : ElementType  # subclass to override with element class
+    _ITEM : ItemType  # subclass to override with item class
 
     def __init__(
-        self    : Self,
-        scene   : "DrawingScene",
-        pos     : QPointF,
-        element : ElementType | None = None
+        self  : Self,
+        scene : "DrawingScene",
+        pos   : QPointF,
+        item  : ItemType | None = None
     ) -> None:
-        if element is None:
-            element = self._ELEMENT(pos)
+        if item is None:
+            item = self._ITEM(pos)
         else:
-            element.setPos(pos)
-        SceneElementInteraction.__init__(self, scene, element)
+            item.setPos(pos)
+        SceneItemInteraction.__init__(self, scene, item)
         self._preserveSelection()
         self._scene.clearSelection()
-        self._scene.addItem(self._element)
-        self._element.setSelected(True)
+        self._scene.addItem(self._item)
+        self._item.setSelected(True)
 
     def update(self : Self, pos : QPointF):
-        self._element.setPos(pos)
+        self._item.setPos(pos)
 
     def complete(self : Self, pos : QPointF) -> bool:
         self.update(pos)
         self._scene.undo_stack.push(cmdAdd(
-            self._scene, [self._element], self._selection
+            self._scene, [self._item], self._selection
         ))
         return True
 
     def cancel(self : Self) -> None:
-        self._scene.removeItem(self._element)
+        self._scene.removeItem(self._item)
         self._restoreSelection()
 
 
 class PlaceLineInteraction(PlaceBaseInteraction):
-    _ELEMENT = Line
+    _ITEM = Line
 
     # instance attributes
-    _element : Line  # type hint specific to this interaction
+    _item : Line  # type hint specific to this interaction
 
     def update(self : Self, pos : QPointF):
-        self._element.setP2(pos)
+        self._item.setP2(pos)
 
 
 class PlaceBaseRectInteraction(PlaceBaseInteraction):
-    """Base for all interactions that place a single rectangular element."""
+    """Base for all interactions that place a single rectangular item."""
 
     # instance attributes
-    _element : BaseRectangle  # type hint specific to this interaction
-    _pos     : QPointF        # initial position
+    _item : BaseRectangle  # type hint specific to this interaction
+    _pos  : QPointF        # initial position
 
     def __init__(
-        self    : Self,
-        scene   : "DrawingScene",
-        pos     : QPointF,
-        element : ElementType | None = None
+        self  : Self,
+        scene : "DrawingScene",
+        pos   : QPointF,
+        item  : ItemType | None = None
     ) -> None:
-        super().__init__(scene, pos, element)
+        super().__init__(scene, pos, item)
         self._pos = pos
 
     def update(self : Self, pos : QPointF):
-        self._element.setPoints(self._pos, pos)
+        self._item.setPoints(self._pos, pos)
 
 
 class PlacePortInteraction(RotateMixin, PlaceBaseInteraction):
-    _ELEMENT = Port
+    _ITEM = Port
 
     def ctxMenuItems(self : Self, pos : QPointF) -> list[QAction | QMenu]:
         separator = QAction()
@@ -122,7 +122,7 @@ class PlacePortInteraction(RotateMixin, PlaceBaseInteraction):
 
 
 class PlaceBlockInteraction(PlaceBaseRectInteraction):
-    _ELEMENT = Block
+    _ITEM = Block
 
 
 class PlaceBlockPinInteraction(BlockPinInteraction):
@@ -149,19 +149,19 @@ class PlaceBlockPinInteraction(BlockPinInteraction):
 
 
 class PlaceSymbolPinInteraction(PlaceBaseInteraction):
-    _ELEMENT = SymbolPin
+    _ITEM = SymbolPin
 
 
 class PlaceRectangleInteraction(PlaceBaseRectInteraction):
-    _ELEMENT = Rectangle
+    _ITEM = Rectangle
 
 
 class PlaceTextInteraction(PlaceBaseInteraction):
-    _ELEMENT = Text
+    _ITEM = Text
 
 
 class PlaceTextBlockInteraction(PlaceBaseInteraction):
-    _ELEMENT = TextBlock
+    _ITEM = TextBlock
 
 
 class PlaceConnInteraction(SelectionMixin):
