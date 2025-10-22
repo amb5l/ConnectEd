@@ -52,7 +52,6 @@ class MenuBar(QMenuBar):
         self.edit_menu.addAction(a.editCut)
         self.edit_menu.addAction(a.editCopy)
         self.edit_menu.addAction(a.editPaste)
-        self.edit_menu.addSeparator()
         self.edit_menu.addAction(a.editDelete)
         self.edit_menu.addAction(a.editDuplicate)
         self.edit_menu.addSeparator()
@@ -111,7 +110,6 @@ class MenuBar(QMenuBar):
         settings().mruChanged.connect(lambda: self.updateFileMenu())
         window().mdi_area.subWindowActivated.connect(self.updateWindowMenu)
         window().mdi_area.subWindowActivated.connect(self.updatePlaceMenu)
-
 
     def addMenu(self : Self, menu : Menu) -> None:
         super().addMenu(menu)
