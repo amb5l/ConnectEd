@@ -13,7 +13,6 @@ from .....core.xml import toXmlAttrs, fromXmlAttrs
 
 from ...properties import PropertySpec, PropertiesMixin
 
-from .file    import DrawingSceneApiFileMixin
 from .edit    import DrawingSceneApiEditMixin
 from .private import DrawingSceneApiPrivateMixin
 from .paths   import DrawingScenePathsMixin
@@ -23,7 +22,6 @@ from .conn    import DrawingSceneConnMixin
 
 class DrawingScene(
     PropertiesMixin,
-    DrawingSceneApiFileMixin,
     DrawingSceneApiEditMixin,
     DrawingSceneApiPrivateMixin,
     DrawingScenePathsMixin,

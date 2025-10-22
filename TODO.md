@@ -13,9 +13,6 @@ NEXT
 
 BUGS
 
-DEAD ENDS
-- DrawingSceneApiFileMixin
-
 FEATURES
 - live marquee selection
 - settings - preferences dialog
