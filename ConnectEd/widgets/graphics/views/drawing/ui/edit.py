@@ -42,7 +42,8 @@ class DrawingViewUiEditMixin:
         self._view.state.go(self._view.stateEditPaste)
 
     def editDelete(self : "DrawingViewUi") -> None:
-        self.scene().editDelete()
+        scene : "DrawingScene" = self._view.scene()
+        scene.editDelete()
 
     def editDuplicate(self : "DrawingViewUi") -> None:
         self._view.state.go(self._view.stateEditDuplicate)
