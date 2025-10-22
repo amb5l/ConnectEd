@@ -51,14 +51,30 @@ class DrawingViewUiEditMixin:
     def editSelectAll(self : "DrawingViewUi") -> None:
         self._view.scene().editSelectAll()
 
-    def editSlide(self : "DrawingViewUi") -> None:
+    def editSlide(
+        self     : "DrawingViewUi",
+        elements : list["ElementMixin"] | None = None,
+        pos      : QPointF | None = None
+    ) -> None:
+        scene : "DrawingScene" = self._view.scene()
+        if elements is None:
+            elements = scene.selectedItems()
         if self._view.interaction:
             self._view.interaction.cancel()
-        self._view.interaction = EditMoveInteraction(
-            self._view.scene(), self._view.selectedItems())
+        self._view.interaction = EditMoveInteraction(scene, elements, pos, True)
         self._view.state.go(self._view.stateEditSlide)
 
-    def editMove(self : "DrawingViewUi") -> None:
+    def editMove(
+        self     : "DrawingViewUi",
+        elements : list["ElementMixin"] | None = None,
+        pos      : QPointF | None = None
+    ) -> None:
+        scene : "DrawingScene" = self._view.scene()
+        if elements is None:
+            elements = scene.selectedItems()
+        if self._view.interaction:
+            self._view.interaction.cancel()
+        self._view.interaction = EditMoveInteraction(scene, elements, pos, False)
         self._view.state.go(self._view.stateEditMove)
 
     def editResize(self : "DrawingViewUi") -> None:
