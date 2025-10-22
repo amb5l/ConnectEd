@@ -25,6 +25,7 @@ from .mouse   import DrawingViewMouseMixin
 from .private import DrawingViewPrivateMixin
 from .slots   import DrawingViewSlotsMixin
 from .state   import DrawingViewStateMixin, DrawingViewStateBase
+from .menu    import DrawingViewMenuMixin
 from .defs    import DrawingViewLayer, DrawingViewGrid, DrawingViewMouse
 
 
@@ -42,6 +43,7 @@ class DrawingView(
     QGraphicsView,
     DrawingViewSlotsMixin,
     DrawingViewStateMixin,
+    DrawingViewMenuMixin,
     DrawingViewPrivateMixin
 ):
     _shown      : bool = False
@@ -72,6 +74,7 @@ class DrawingView(
         self.grid      = DrawingViewGrid()
         self.mouse     = DrawingViewMouse()
         self.interaction = None
+        self.ui        = DrawingViewUi()
 
         self.setMouseTracking(True)
         self.setRenderHint(QPainter.RenderHint.Antialiasing)
