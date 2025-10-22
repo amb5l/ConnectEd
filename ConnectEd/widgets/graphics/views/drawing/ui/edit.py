@@ -1,4 +1,4 @@
-from PyQt6.QtCore    import QPointF
+from PyQt6.QtCore    import QPoint
 from PyQt6.QtWidgets import QApplication
 from PyQt6.QtGui     import QCursor
 
@@ -56,38 +56,41 @@ class DrawingViewUiEditMixin:
     def editSlide(
         self     : "DrawingViewUi",
         elements : list["ElementMixin"] | None = None,
-        pos      : QPointF | None = None
+        vpos     : QPoint | None = None
     ) -> None:
         scene : "DrawingScene" = self._view.scene()
         if elements is None:
             elements = scene.selectedItems()
+        spos = self._view.mapToScene(vpos)
         if self._view.interaction:
             self._view.interaction.cancel()
-        self._view.interaction = EditMoveInteraction(scene, elements, pos, True)
+        self._view.interaction = EditMoveInteraction(scene, elements, spos, True)
         self._view.state.go(self._view.stateEditSlide)
 
     def editMove(
         self     : "DrawingViewUi",
         elements : list["ElementMixin"] | None = None,
-        pos      : QPointF | None = None
+        vpos     : QPoint | None = None
     ) -> None:
         scene : "DrawingScene" = self._view.scene()
         if elements is None:
             elements = scene.selectedItems()
+        spos = self._view.mapToScene(vpos)
         if self._view.interaction:
             self._view.interaction.cancel()
-        self._view.interaction = EditMoveInteraction(scene, elements, pos, False)
+        self._view.interaction = EditMoveInteraction(scene, elements, spos, False)
         self._view.state.go(self._view.stateEditMove)
 
     def editResize(
         self : "DrawingViewUi",
         grip : "ResizeGrip",
-        pos  : QPointF | None = None
+        vpos : QPoint | None = None
     ) -> None:
         scene : "DrawingScene" = self._view.scene()
+        spos = self._view.mapToScene(vpos)
         if self._view.interaction:
             self._view.interaction.cancel()
-        self._view.interaction = EditMoveInteraction(scene, [grip], pos)
+        self._view.interaction = EditMoveInteraction(scene, [grip], spos)
         self._view.state.go(self._view.stateEditResize)
 
     def editAssignOrigin(self : "DrawingViewUi", ap : "AnchorPoint") -> None:
@@ -107,8 +110,8 @@ class DrawingViewUiEditMixin:
     ) -> None:
         self._view.state.go(self._view.stateEditProperties, [element] if element else None)
 
-    def editQuery(self : "DrawingViewUi") -> None:
-        self._view.state.go(self._view.stateEditQuery)
+    def editQuery(self : "DrawingViewUi", vpos : QPoint | None = None) -> None:
+        if vpos is None:
         items_at = self._itemsAt(self.mouse.current.logical)
         if items_at:
             element = items_at[0]
