@@ -14,6 +14,7 @@ from ....items.mixin.origin import ElementOriginMixin
 
 from ....items.base_text     import BaseText
 from ....items.property_text import PropertyText, PropertyDisplay
+from ....items.anchor_point  import AnchorPoint
 
 from . import cmdSceneElement, cmdSceneElements
 
@@ -239,21 +240,21 @@ class cmdEditProperties(cmdSceneElement):
 
 class cmdEditOrigin(cmdSceneElement):
     _element : ElementOriginMixin
-    _before  : str
-    _after   : str
+    _before  : AnchorPoint
+    _after   : AnchorPoint
 
     def __init__(
         self : Self,
         scene   : "DrawingScene",
-        element : ElementOriginMixin,
-        origin  : str
+        origin  : AnchorPoint
     ):
-        super().__init__(scene, element)
-        self._before = element.getOriginAPName()
+        element : ElementOriginMixin = origin.parentItem()
+        super().__init__(scene, origin.parentItem())
+        self._before = element.getOriginAP()
         self._after = origin
 
     def redo(self : Self) -> None:
-        self._element.setOriginAPName(self._after)
+        self._element.setOriginAP(self._after)
 
     def undo(self : Self) -> None:
-        self._element.setOriginAPName(self._before)
+        self._element.setOriginAP(self._before)

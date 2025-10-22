@@ -1,3 +1,4 @@
+from PyQt6.QtCore    import QPointF
 from PyQt6.QtWidgets import QApplication, QGraphicsItem
 from PyQt6.QtGui     import QCursor
 
@@ -80,15 +81,10 @@ class DrawingViewUiEditMixin:
     def editResize(self : "DrawingViewUi") -> None:
         self._view.state.go(self._view.stateEditResize)
 
-    def editAssignOrigin(self : "DrawingViewUi", element : "QGraphicsItem") -> None:
+    def editAssignOrigin(self : "DrawingViewUi", ap : "AnchorPoint") -> None:
         from ....scenes.drawing.cmd.edit import cmdEditOrigin
         scene  : "DrawingScene" = self._view.scene()
-        parent : "AnchorPoint" = element.parentItem()
-        scene.undo_stack.push(cmdEditOrigin(
-            scene,
-            self._element, # element
-            parent.name()  # name of anchor point
-        ))
+        scene.undo_stack.push(cmdEditOrigin(scene, ap))
 
     def editAppearance(
         self    : "DrawingViewUi",
