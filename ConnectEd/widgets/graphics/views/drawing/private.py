@@ -60,14 +60,7 @@ class DrawingViewPrivateMixin:
         window().status_bar.zoom.setText(
             "{:.2f}%".format(self.zoom * 100)
         )
-        window().actions.actionEnable(
-            "viewZoomIn",
-            self.zoom < settings().get("display/zoom/max")
-        )
-        window().actions.actionEnable(
-            "viewZoomOut",
-            self.zoom > settings().get("display/zoom/min")
-        )
+
 
     def _zoomRel(self : "DrawingView", rel : float) -> None:
         self._zoomAbs(self.zoom * rel)

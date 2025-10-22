@@ -8,11 +8,14 @@ from ....core.utils import check
 
 from ...menu import Menu, PlaceMenu
 
+from ...graphics.views.diagram import DiagramSubWindow
+
 from .actions import Actions
 from .slots   import Slots
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
+    from ...graphics.views.drawing import DrawingView
     from .. import Window
 
 
@@ -87,6 +90,7 @@ class MenuBar(QMenuBar):
         self.view_theme_menu.addAction(a.viewThemeDark)
         self.view_theme_menu.addAction(a.viewThemeLightMono)
         self.view_menu.addMenu(self.view_theme_menu)
+        self.updateViewMenu()
 
         self.place_menu = PlaceMenu("&Place")
         self.updatePlaceMenu()
@@ -135,6 +139,24 @@ class MenuBar(QMenuBar):
                 self.file_menu.addAction(action)
             self.file_menu.addSeparator()
         self.file_menu.addAction(a.fileExit)
+
+    def updateViewMenu(self : Self) -> None:
+        subwindow = window().mdi_area.activeSubWindow()
+        view : "DrawingView" = None if subwindow is None else subwindow.widget()
+        ok = subwindow is not None and view is not None
+        a = self._actions
+        a.viewZoomAll.setEnabled(ok)
+        a.viewZoomSheet.setEnabled(ok and isinstance(subwindow, DiagramSubWindow))
+        a.viewZoomArea.setEnabled(ok)
+        a.viewZoomIn.setEnabled(ok and view.zoom < settings().get("display/zoom/max"))
+        a.viewZoomOut.setEnabled(ok and view.zoom > settings().get("display/zoom/min"))
+        a.viewPan.setEnabled(ok)
+        a.viewPanUp.setEnabled(ok)
+        a.viewPanDown.setEnabled(ok)
+        a.viewPanLeft.setEnabled(ok)
+        a.viewPanRight.setEnabled(ok)
+        a.viewGridDisplay.setEnabled(ok)
+        a.viewGridSnap.setEnabled(ok)
 
     def updatePlaceMenu(self : Self) -> None:
         from ...graphics.views.diagram import DiagramSubWindow
@@ -192,7 +214,7 @@ class MenuBar(QMenuBar):
         self.window_menu.addAction(a.windowLog)
         if not hasattr(window, "mdi_area"):
             return
-            
+
         for scene in window.mdi_area.scenesActions().keys():
             self.window_menu.addSeparator()
             for action in window.mdi_area.scenesActions()[scene]:

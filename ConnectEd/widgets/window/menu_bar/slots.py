@@ -134,103 +134,103 @@ class Slots:
 
     @withCurrentWidget(DrawingView)
     def editCancel(self : Self, view : DrawingView) -> None:
-        view.slots.editCancel()
+        view.ui.editCancel()
 
     @withCurrentWidget(DrawingView)
     def editUndo(self : Self, view : DrawingView) -> None:
-        view.slots.editUndo()
+        view.ui.editUndo()
 
     @withCurrentWidget(DrawingView)
     def editRedo(self : Self, view : DrawingView) -> None:
-        view.slots.editRedo()
+        view.ui.editRedo()
 
     @withCurrentWidget(DrawingView)
     def editCut(self : Self, view : DrawingView) -> None:
-        view.slots.editCut()
+        view.ui.editCut()
 
     @withCurrentWidget(DrawingView)
     def editCopy(self : Self, view : DrawingView) -> None:
-        view.slots.editCopy()
+        view.ui.editCopy()
 
     @withCurrentWidget(DrawingView)
     def editPaste(self : Self, view : DrawingView) -> None:
-        view.slots.editPaste()
+        view.ui.editPaste()
 
     @withCurrentWidget(DrawingView)
     def editDelete(self : Self, view : DrawingView) -> None:
-        view.slots.editDelete()
+        view.ui.editDelete()
 
     @withCurrentWidget(DrawingView)
     def editDuplicate(self : Self, view : DrawingView) -> None:
-        view.slots.editDuplicate()
+        view.ui.editDuplicate()
 
     @withCurrentWidget(DrawingView)
     def editSelectArea(self : Self, view : DrawingView) -> None:
-        view.slots.editSelectArea()
+        view.ui.editSelectArea()
 
     @withCurrentWidget(DrawingView)
     def editSelectAll(self : Self, view : DrawingView) -> None:
-        view.slots.editSelectAll()
+        view.ui.editSelectAll()
 
     @withCurrentWidget(DrawingView)
     def editProperties(self : Self, view : DrawingView) -> None:
-        view.slots.editProperties()
+        view.ui.editProperties()
 
     @withCurrentWidget(DrawingView)
     def editAppearance(self : Self, view : DrawingView) -> None:
-        view.slots.editAppearance()
+        view.ui.editAppearance()
 
     @withCurrentWidget(DrawingView)
     def editQuery(self : Self, view : DrawingView) -> None:
-        view.slots.editQuery()
+        view.ui.editQuery()
 
     @withCurrentWidget(DrawingView)
     def viewZoomAll(self : Self, view : DrawingView) -> None:
-        view.slots.viewZoomAll()
+        view.ui.viewZoomAll()
 
     @withCurrentWidget(DiagramView)
     def viewZoomSheet(self : Self, view : DiagramView) -> None:
-        view.slots.viewZoomSheet()
+        view.ui.viewZoomSheet()
 
     @withCurrentWidget(DrawingView)
     def viewZoomArea(self : Self, view : DrawingView) -> None:
-        view.slots.viewZoomArea()
+        view.ui.viewZoomArea()
 
     @withCurrentWidget(DrawingView)
     def viewZoomIn(self : Self, view : DrawingView) -> None:
-        view.slots.viewZoomIn()
+        view.ui.viewZoomIn()
 
     @withCurrentWidget(DrawingView)
     def viewZoomOut(self : Self, view : DrawingView) -> None:
-        view.slots.viewZoomOut()
+        view.ui.viewZoomOut()
 
     @withCurrentWidget(DrawingView)
     def viewPan(self : Self, view : DrawingView) -> None:
-        view.slots.viewPan()
+        view.ui.viewPan()
 
     @withCurrentWidget(DrawingView)
     def viewPanUp(self : Self, view : DrawingView) -> None:
-        view.slots.viewPanUp()
+        view.ui.viewPanUp()
 
     @withCurrentWidget(DrawingView)
     def viewPanDown(self : Self, view : DrawingView) -> None:
-        view.slots.viewPanDown()
+        view.ui.viewPanDown()
 
     @withCurrentWidget(DrawingView)
     def viewPanLeft(self : Self, view : DrawingView) -> None:
-        view.slots.viewPanLeft()
+        view.ui.viewPanLeft()
 
     @withCurrentWidget(DrawingView)
     def viewPanRight(self : Self, view : DrawingView) -> None:
-        view.slots.viewPanRight()
+        view.ui.viewPanRight()
 
     @withCurrentWidgetCheckable(DrawingView, "viewGridDisplay")
     def viewGridDisplay(self : Self, view : DrawingView, checked : bool) -> None:
-        view.slots.viewGridDisplay(checked)
+        view.ui.viewGridDisplay(checked)
 
     @withCurrentWidgetCheckable(DrawingView, "viewGridSnap")
     def viewGridSnap(self : Self, view : DrawingView, checked : bool) -> None:
-        view.slots.viewGridSnap(checked)
+        view.ui.viewGridSnap(checked)
 
     @withCurrentWidget(DrawingView)
     def viewThemeDark(self : Self, view : DrawingView) -> None:
@@ -244,39 +244,39 @@ class Slots:
 
     @withCurrentWidget(DrawingView)
     def placePort(self : Self, view : DiagramView) -> None:
-        view.slots.placePort()
+        view.ui.placePort()
 
     @withCurrentWidget(DrawingView)
     def placeBlock(self : Self, view : DiagramView) -> None:
-        view.slots.placeBlock()
+        view.ui.placeBlock()
 
     @withCurrentWidget(DrawingView)
     def placeBlockPin(self : Self, view : DiagramView) -> None:
-        view.slots.placeBlockPin()
+        view.ui.placeBlockPin()
 
     @withCurrentWidget(SymbolView)
     def placeSymbolPin(self : Self, view : SymbolView) -> None:
-        view.slots.placeSymbolPin()
+        view.ui.placeSymbolPin()
 
     @withCurrentWidget(DrawingView)
     def placeConnection(self : Self, view : DiagramView) -> None:
-        view.slots.placeConnection()
+        view.ui.placeConnection()
 
     @withCurrentWidget(DrawingView)
     def placeLine(self : Self, view : DrawingView) -> None:
-        view.slots.placeLine()
+        view.ui.placeLine()
 
     @withCurrentWidget(DrawingView)
     def placeRectangle(self : Self, view : DrawingView) -> None:
-        view.slots.placeRectangle()
+        view.ui.placeRectangle()
 
     @withCurrentWidget(DrawingView)
     def placeText(self : Self, view : DrawingView) -> None:
-        view.slots.placeText()
+        view.ui.placeText()
 
     @withCurrentWidget(DrawingView)
     def placeTextBlock(self : Self, view : DrawingView) -> None:
-        view.slots.placeTextBlock()
+        view.ui.placeTextBlock()
 
     def windowNavigator(self : Self) -> None:
         window().navigator_dock.show()

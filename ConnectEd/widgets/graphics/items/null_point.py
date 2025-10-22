@@ -43,10 +43,6 @@ class NullPoint(QGraphicsItem):
         event.ignore()
         return
 
-    def contextMenuEvent(self : Self, event : QContextMenuEvent):
-        event.ignore()
-        return
-
     def boundingRect(self : Self) -> QRectF:
         return self._brect
 

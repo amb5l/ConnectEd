@@ -1,4 +1,4 @@
-from PyQt6.QtWidgets import QApplication
+from PyQt6.QtWidgets import QApplication, QGraphicsItem
 from PyQt6.QtGui     import QCursor
 
 from ....query import QueryWindow
@@ -8,61 +8,64 @@ if TYPE_CHECKING:
     from ....scenes.drawing import DrawingScene
     from ....items import ElementMixin
     from ....items.anchor_point import AnchorPoint
-    from .. import DrawingView
+    from . import DrawingViewUi
 
 
 class DrawingViewUiEditMixin:
-    def editUndo(self : "DrawingView") -> None:
+    def editUndo(self : "DrawingViewUi") -> None:
         self.scene().undo()
 
-    def editRedo(self : "DrawingView") -> None:
+    def editRedo(self : "DrawingViewUi") -> None:
         self.scene().redo()
 
-    def editRepeat(self : "DrawingView") -> None:
+    def editRepeat(self : "DrawingViewUi") -> None:
         raise NotImplementedError("editRepeat not implemented")
 
-    def editCancel(self : "DrawingView") -> None:
-        if self.interaction:
-            self.interaction.cancel()
-        self.interaction = None
-        self.scene().clearSelection()
-        self.state.go(self.stateIdle)
+    def editCancel(self : "DrawingViewUi") -> None:
+        if self._view.interaction:
+            self._view.interaction.cancel()
+        self._view.interaction = None
+        self._view.scene().clearSelection()
+        self._view.state.go(self._view.stateIdle)
 
-    def editCut(self : "DrawingView") -> None:
-        self.scene().editCut(self._snap(self.mouse.current.logical))
+    def editCut(self : "DrawingViewUi") -> None:
+        self._view.scene().editCut(self._snap(self._view.mouse.current.logical))
 
-    def editCopy(self : "DrawingView") -> None:
-        self.scene().editCopy(self._snap(self.mouse.current.logical))
+    def editCopy(self : "DrawingViewUi") -> None:
+        self._view.scene().editCopy(self._snap(self._view.mouse.current.logical))
 
-    def editPaste(self : "DrawingView") -> None:
-        self.state.go(self.stateEditPaste)
+    def editPaste(self : "DrawingViewUi") -> None:
+        self._view.state.go(self._view.stateEditPaste)
 
-    def editDelete(self : "DrawingView") -> None:
+    def editDelete(self : "DrawingViewUi") -> None:
         self.scene().editDelete()
 
-    def editDuplicate(self : "DrawingView") -> None:
+    def editDuplicate(self : "DrawingViewUi") -> None:
         self.state.go(self.stateEditDuplicate)
 
-    def editSelectArea(self : "DrawingView") -> None:
+    def editSelectArea(self : "DrawingViewUi") -> None:
         self.state.go(self.stateEditSelectArea1)
 
-    def editSelectAll(self : "DrawingView") -> None:
-        self.scene().editSelectAll()
+    def editSelectAll(self : "DrawingViewUi") -> None:
+        self._view.scene().editSelectAll()
 
-    def editSlide(self : "DrawingView") -> None:
-        self.state.go(self.stateEditSlide)
+    def editSlide(self : "DrawingViewUi") -> None:
+        #if self._view.interaction:
+        #    self._view.interaction.cancel()
+        #self._view.interaction = EditMoveInteraction(
+        #    self._view.scene(), self._view.selectedItems())
+        #self._view.state.go(self._view.stateEditSlide)
 
-    def editMove(self : "DrawingView") -> None:
-        self.state.go(self.stateEditMove)
+    def editMove(self : "DrawingViewUi") -> None:
+        self._view.state.go(self._view.stateEditMove)
 
-    def editResize(self : "DrawingView") -> None:
-        self.state.go(self.stateEditResize)
+    def editResize(self : "DrawingViewUi") -> None:
+        self._view.state.go(self._view.stateEditResize)
 
-    def editAssignOrigin(self : "DrawingView", element : "ElementMixin") -> None:
-        self.state.go(self.stateEditAssignOrigin, [element])
+    def editAssignOrigin(self : "DrawingViewUi", element : "QGraphicsItem") -> None:
         from ....scenes.drawing.cmd.edit import cmdEditOrigin
-        scene  : "DrawingScene" = self.scene()
-        parent : "AnchorPoint" = self.parentItem()
+        scene  : "DrawingScene" = self._view.scene()
+        parent : "AnchorPoint" = element.parentItem()
         scene.undo_stack.push(cmdEditOrigin(
             scene,
             self._element, # element
@@ -70,19 +73,19 @@ class DrawingViewUiEditMixin:
         ))
 
     def editAppearance(
-        self    : "DrawingView",
+        self    : "DrawingViewUi",
         element : "ElementMixin | None" = None
     ) -> None:
-        self.state.go(self.stateEditAppearance, [element] if element else None)
+        self._view.state.go(self.stateEditAppearance, [element] if element else None)
 
     def editProperties(
-        self    : "DrawingView",
+        self    : "DrawingViewUi",
         element : "ElementMixin | None" = None
     ) -> None:
-        self.state.go(self.stateEditProperties, [element] if element else None)
+        self._view.state.go(self._view.stateEditProperties, [element] if element else None)
 
-    def editQuery(self : "DrawingView") -> None:
-        self.state.go(self.stateEditQuery)
+    def editQuery(self : "DrawingViewUi") -> None:
+        self._view.state.go(self._view.stateEditQuery)
         items_at = self._itemsAt(self.mouse.current.logical)
         if items_at:
             element = items_at[0]
@@ -117,19 +120,21 @@ class DrawingViewUiEditMixin:
         self.state.go(self.stateIdle)
 
     def editPort(
-        self    : "DrawingView",
+        self    : "DrawingViewUi",
         element : "ElementMixin | None" = None
     ) -> None:
-        self.state.go(self.stateEditPort, [element] if element else None)
+        self._view.state.go(self._view.stateEditPort, [element] if element else None)
 
     def editBlockPin(
-        self    : "DrawingView",
+        self    : "DrawingViewUi",
         element : "ElementMixin | None" = None
     ) -> None:
-        self.state.go(self.stateEditBlockPin, [element] if element else None)
+        self._view.state.go(
+            self._view.stateEditBlockPin, [element] if element else None
+        )
 
-    def editText(self : "DrawingView") -> None:
-        self.state.go(self.stateEditText)
+    def editText(self : "DrawingViewUi") -> None:
+        self._view.state.go(self._view.stateEditText)
 
-    def editPropertyText(self : "DrawingView") -> None:
-        self.state.go(self.stateEditPropertyText)
+    def editPropertyText(self : "DrawingViewUi") -> None:
+        self._view.state.go(self._view.stateEditPropertyText)
