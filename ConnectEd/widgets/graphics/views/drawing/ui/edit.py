@@ -3,6 +3,8 @@ from PyQt6.QtGui     import QCursor
 
 from ....query import QueryWindow
 
+from ..interaction.edit import EditMoveInteraction
+
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ....scenes.drawing import DrawingScene
@@ -50,11 +52,11 @@ class DrawingViewUiEditMixin:
         self._view.scene().editSelectAll()
 
     def editSlide(self : "DrawingViewUi") -> None:
-        #if self._view.interaction:
-        #    self._view.interaction.cancel()
-        #self._view.interaction = EditMoveInteraction(
-        #    self._view.scene(), self._view.selectedItems())
-        #self._view.state.go(self._view.stateEditSlide)
+        if self._view.interaction:
+            self._view.interaction.cancel()
+        self._view.interaction = EditMoveInteraction(
+            self._view.scene(), self._view.selectedItems())
+        self._view.state.go(self._view.stateEditSlide)
 
     def editMove(self : "DrawingViewUi") -> None:
         self._view.state.go(self._view.stateEditMove)

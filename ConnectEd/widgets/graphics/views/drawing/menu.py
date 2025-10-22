@@ -41,6 +41,10 @@ class DrawingViewMenuMixin:
                     items.append(item)  # item at position
             else:
                 items = []  # no items at position
+        # slide/move/rotate
+        if items:
+            menu.addAction("Slide", lambda: self.ui.editSlide())
+
         # clipboard/delete/duplicate actions
         paste_items = paste()
         if items or paste_items:

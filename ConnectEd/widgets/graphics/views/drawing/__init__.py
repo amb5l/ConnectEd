@@ -2,24 +2,20 @@ from typing import Self
 from math   import ceil
 
 from PyQt6.QtCore    import Qt, QPoint, QPointF, QRectF, QEvent
-from PyQt6.QtWidgets import QApplication, QGraphicsView, QGraphicsTextItem, \
-                            QMenu
+from PyQt6.QtWidgets import QApplication, QGraphicsView, QGraphicsTextItem
 from PyQt6.QtGui     import QPainter, QPen, \
-                            QCloseEvent, QKeyEvent, QContextMenuEvent, \
-                            QAction
+                            QCloseEvent, QKeyEvent
 
-from .....app import settings, window
+from .....app import settings
 
 from ....marquee import Marquee
 
 from ....window.mdi_area   import MdiArea
 from ....window.sub_window import SubWindow
 
-from ....menu import Menu
-
 from ...scenes.drawing import DrawingScene
 
-from ...scenes.drawing.interaction import Interaction
+from ...views.drawing.interaction import Interaction
 
 from .mouse   import DrawingViewMouseMixin
 from .private import DrawingViewPrivateMixin
@@ -27,6 +23,7 @@ from .state   import DrawingViewStateMixin, DrawingViewStateBase
 from .menu    import DrawingViewMenuMixin
 from .defs    import DrawingViewLayer, DrawingViewGrid, DrawingViewMouse
 from .ui      import DrawingViewUi
+
 
 def getView(pos : QPoint):
     widget = QApplication.widgetAt(pos)
@@ -64,16 +61,16 @@ class DrawingView(
         self.setViewportUpdateMode(
             QGraphicsView.ViewportUpdateMode.FullViewportUpdate
         )
-        self._shown    = False
-        self._zoomed   = False
-        self.marquee   = Marquee(self)
-        self.layer     = DrawingViewLayer.Drawing
-        self.zoom      = 1.0
-        self.pan       = None
-        self.grid      = DrawingViewGrid()
-        self.mouse     = DrawingViewMouse()
+        self._shown      = False
+        self._zoomed     = False
+        self.marquee     = Marquee(self)
+        self.layer       = DrawingViewLayer.Drawing
+        self.zoom        = 1.0
+        self.pan         = None
+        self.grid        = DrawingViewGrid()
+        self.mouse       = DrawingViewMouse()
         self.interaction = None
-        self.ui        = DrawingViewUi(self)
+        self.ui          = DrawingViewUi(self)
 
         self.setMouseTracking(True)
         self.setRenderHint(QPainter.RenderHint.Antialiasing)

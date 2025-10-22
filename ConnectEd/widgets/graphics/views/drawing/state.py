@@ -25,20 +25,20 @@ from ...items.symbol_pin    import SymbolPin
 
 from ...scenes.drawing import DrawingScene
 
-from ...scenes.drawing.interaction import Interaction,                  \
-                                          EditMoveInteraction,          \
-                                          EditMoveBlockPinsInteraction, \
-                                          EditPasteInteraction,         \
-                                          EditDuplicateInteraction,     \
-                                          PlacePortInteraction,         \
-                                          PlaceBlockInteraction,        \
-                                          PlaceBlockPinInteraction,     \
-                                          PlaceSymbolPinInteraction,    \
-                                          PlaceLineInteraction,         \
-                                          PlaceRectangleInteraction,    \
-                                          PlaceTextInteraction,         \
-                                          PlaceTextBlockInteraction,    \
-                                          PlaceConnInteraction
+from .interaction       import Interaction
+from .interaction.edit import  EditMoveInteraction,          \
+                               EditMoveBlockPinsInteraction, \
+                               EditPasteInteraction,         \
+                               EditDuplicateInteraction
+from .interaction.place import PlacePortInteraction,         \
+                               PlaceBlockInteraction,        \
+                               PlaceBlockPinInteraction,     \
+                               PlaceSymbolPinInteraction,    \
+                               PlaceLineInteraction,         \
+                               PlaceRectangleInteraction,    \
+                               PlaceTextInteraction,         \
+                               PlaceTextBlockInteraction,    \
+                               PlaceConnInteraction
 
 from ...scenes.drawing.cmd.edit import cmdEditPortPin,     \
                                        cmdEditText,        \

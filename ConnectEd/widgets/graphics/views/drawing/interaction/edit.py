@@ -1,0 +1,172 @@
+from typing import Self
+
+from PyQt6.QtCore import QPointF
+
+from ......core.xml import paste
+
+from ....items import EdgeLoc, clone
+
+from ....items.block     import Block
+from ....items.block_pin import BlockPin
+
+from ....scenes.drawing     import DrawingScene
+from ....scenes.drawing.cmd import cmdAdd, cmdMove, cmdMoveBlockPins
+
+from . import MoveMixin,                \
+              AddRemoveMixin,           \
+              SelectionMixin,           \
+              SceneElementsInteraction, \
+              Interaction,              \
+              ElementType
+
+
+class EditPasteInteraction(
+    MoveMixin,                 # update, _moveBy, _storePos, _restorePos
+    AddRemoveMixin,            # _addToScene, _removeFromScene
+    SelectionMixin,            # _preserveSelection, _restoreSelection
+    SceneElementsInteraction   # _scene, _elements, valid
+):
+    def __init__(
+        self  : Self,
+        scene : "DrawingScene",
+        pos   : QPointF
+    ) -> None:
+        elements, copy_pos = paste()
+        if elements:
+            SceneElementsInteraction.__init__(self, scene, elements)
+            self._ipos = pos if copy_pos is None else copy_pos
+            self._cpos = self._ipos
+            self._preserveSelection()  # store prior selection set
+            self._elements = elements
+            self._storePos()
+            self._addToScene(select=True)
+            self.update(pos)  # Move to initial position
+        else:
+            self._elements = None
+
+    def complete(self : Self, pos : QPointF) -> bool:
+        self._restorePos()  # restore initial positions
+        self.update(pos)    # apply final offset
+        # add pasted elements to scene
+        self._scene.undo_stack.push(cmdAdd(
+            self._scene, self._elements, self._selection
+        ))
+        return True
+
+    def cancel(self : Self) -> None:
+        self._removeFromScene()   # remove preview elements
+        self._restoreSelection()  # restore original selection
+
+
+class EditDuplicateInteraction(EditPasteInteraction):
+    """Very similar to paste, but elements come from cloning."""
+
+    def __init__(
+        self     : Self,
+        scene    : "DrawingScene",
+        elements : list[ElementType],  # elements to duplicate
+        pos      : QPointF             # duplication origin
+    ) -> None:
+        if elements:
+            SceneElementsInteraction.__init__(self, scene, clone(elements))
+            self._ipos = pos
+            self._cpos = pos
+            self._preserveSelection()  # store prior selection set
+            self._storePos()
+            self._addToScene(select=True)
+        else:
+            self._elements = None
+
+
+class EditMoveInteraction(
+    MoveMixin,                 # update, _moveBy, _storePos, _restorePos
+    SceneElementsInteraction,  # _scene, _elements, valid
+):
+    # instance attributes
+    _slide  : bool  # true => retain connections, false => break connections
+
+    def __init__(
+        self     : Self,
+        scene    : "DrawingScene",
+        elements : list[ElementType],
+        pos      : QPointF,
+        slide    : bool = False
+    ) -> None:
+        elements = elements if isinstance(elements, list) else [elements]
+        SceneElementsInteraction.__init__(self, scene, elements)
+        self._ipos     = pos
+        self._cpos     = pos
+        self._slide    = slide
+        self._storePos()  # record initial positions
+
+    def complete(self : Self, pos : QPointF) -> bool:
+        self._restorePos()  # restore initial positions
+        # apply final offset
+        self._scene.undo_stack.push(cmdMove(
+            self._scene, self._elements, pos - self._ipos, self._slide
+        ))
+        return True
+
+    def cancel(self : Self) -> None:
+        self._restorePos()  # restore initial positions
+
+
+class EditMoveBlockPinsInteraction(Interaction):
+    # instance attributes
+    _parent : Block
+    _pins   : list[BlockPin]              # first element is primary pin
+    _sloc   : dict[ElementType, EdgeLoc]  # stored locations of all pins
+
+    def __init__(
+        self   : Self,
+        scene  : "DrawingScene",
+        parent : Block,
+        pins   : list[BlockPin]
+    ) -> None:
+        Interaction.__init__(self, scene)
+        self._parent = parent
+        self._pins = pins
+        self._storeLoc()
+
+    @property
+    def valid(self : Self) -> bool:
+        return \
+            self._parent is not None and \
+            hasattr(self, "_pins") and \
+            len(self._pins) > 0
+
+    def update(self : Self, pos : QPointF, snap : QPointF | None = None) -> None:
+        pos_snap = self._scene._snap(pos, snap) if snap else pos
+        primary = self._pins[0]
+        loc_old = primary.loc()
+        loc_new = self._parent.pos2loc(pos)
+        loc_new_snap = self._parent.pos2loc(pos_snap)
+        offset = self._parent.locDelta(loc_old, loc_new_snap)
+        snap_pressure = self._parent.locDelta(loc_new, loc_new_snap)
+        corner = +1 if snap_pressure > 0 else -1 if snap_pressure < 0 else 0
+        self._pins[0].setLoc(loc_new_snap)
+        for pin in self._pins[1:]:
+            pin.setLoc(self._parent.locOffset(pin.loc(), offset, corner))
+
+    def complete(self : Self, pos : QPointF, snap : QPointF | None = None) -> bool:
+        self._restoreLoc()
+        self.update(pos, snap)
+        if all(p.loc() == self._sloc[p] for p in self._pins):
+            return True # no change so skip command push
+        self._scene.undo_stack.push(cmdMoveBlockPins(
+            self._parent,
+            self._pins,
+            {p: p.loc() for p in self._pins},
+            self._sloc
+        ))
+        return True
+
+    def cancel(self : Self) -> None:
+        self._restoreLoc()
+
+    def _storeLoc(self : Self) -> None:
+        self._sloc = {p: p.loc() for p in self._pins}
+
+    def _restoreLoc(self : Self) -> None:
+        for p in self._pins:
+            p.setLoc(self._sloc[p])
