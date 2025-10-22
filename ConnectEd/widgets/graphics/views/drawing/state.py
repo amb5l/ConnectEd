@@ -69,7 +69,7 @@ class DrawingViewStateBase:
             self.view.interaction = None
         self.view.state = state
         if window() is not None:
-            window().status_bar.tip.setText(state.TIP)
+            window().status_bar.status.setText(state.STATUS)
         state.entry(
             self.view.mouse.current.physical,
             self.view.mouse.current.logical,
@@ -150,7 +150,7 @@ class DragMixin(DrawingViewStateBase):
         self.view.state.go(self.view.stateIdle)
 
 class DrawingViewStateIdle(DrawingViewStateBase):
-    TIP = "Idle"
+    STATUS = "Idle"
 
     def entry(
         self : Self,
@@ -237,7 +237,7 @@ class DrawingViewStateIdle(DrawingViewStateBase):
             self.view.state.go(self.view.stateViewZoomArea2)
 
 class DrawingViewStateViewPan1(DrawingViewStateBase):
-    TIP = "Pan: pick the first point"
+    STATUS = "Pan: pick the first point"
 
     def mouseLeftClick(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
         self.view.pan = v
@@ -245,7 +245,7 @@ class DrawingViewStateViewPan1(DrawingViewStateBase):
         self.view.state.go(self.view.stateViewPan2)
 
 class DrawingViewStateViewPan2(DrawingViewStateBase):
-    TIP = "Pan: pick the second point"
+    STATUS = "Pan: pick the second point"
 
     def mouseLeftClick(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
         delta = v - self.view.pan
@@ -282,7 +282,7 @@ class DrawingViewStateViewPan2(DrawingViewStateBase):
         self.mouseLeftClick(v, s, m)
 
 class DrawingViewStateViewZoomArea1(DrawingViewStateBase):
-    TIP = "Zoom Window: pick the first point"
+    STATUS = "Zoom Window: pick the first point"
 
     def mouseLeftClick(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
         self.view.marquee.begin(v)
@@ -292,7 +292,7 @@ class DrawingViewStateViewZoomArea1(DrawingViewStateBase):
         self.mouseLeftClick(v, s, m)
 
 class DrawingViewStateViewZoomArea2(DrawingViewStateBase):
-    TIP = "Zoom Window: pick the second point"
+    STATUS = "Zoom Window: pick the second point"
 
     def mouseLeftClick(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
         self.view.marquee.end(v)
@@ -315,7 +315,7 @@ class DrawingViewStateViewZoomArea2(DrawingViewStateBase):
         self.mouseLeftClick(v, s, m)
 
 class DrawingViewStateEditSelectArea1(DrawingViewStateBase):
-    TIP = "Select: pick the first point of the marquee"
+    STATUS = "Select: pick the first point of the marquee"
 
     def mouseLeftClick(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
         self.view.marquee.begin(v)
@@ -325,7 +325,7 @@ class DrawingViewStateEditSelectArea1(DrawingViewStateBase):
         self.mouseLeftClick(v, s, m)
 
 class DrawingViewStateEditSelectArea2(DrawingViewStateBase):
-    TIP = "Select: complete the marquee selection"
+    STATUS = "Select: complete the marquee selection"
 
     def mouseLeftClick(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
         self.view.marquee.end(v)
@@ -342,7 +342,7 @@ class DrawingViewStateEditSelectArea2(DrawingViewStateBase):
         self.mouseLeftClick(v, s, m)
 
 class DrawingViewStateEditPaste(ClickMixin):
-    TIP = "Paste: select the paste position"
+    STATUS = "Paste: select the paste position"
 
     def entry(
         self : Self,
@@ -353,21 +353,21 @@ class DrawingViewStateEditPaste(ClickMixin):
         self.view.state.interact(EditPasteInteraction(self.scene, self._snap(s)))
 
 class DrawingViewStateEditDuplicate(ClickMixin, DragMixin):
-    TIP = "Duplicate: place the duplicated item(s) as required"
+    STATUS = "Duplicate: place the duplicated item(s) as required"
 
 class DrawingViewStateEditSlide(ClickMixin, DragMixin):
-    TIP = "Slide: position the selected item(s) as required"
+    STATUS = "Slide: position the selected item(s) as required"
     SLIDE = True
 
 class DrawingViewStateEditMove(DrawingViewStateEditSlide):
-    TIP = "Move: position the selected item(s) as required"
+    STATUS = "Move: position the selected item(s) as required"
     SLIDE = False
 
 class DrawingViewStateEditResize(ClickMixin, DragMixin):
-    TIP = "Resize: position the selected handle as required"
+    STATUS = "Resize: position the selected handle as required"
 
 class DrawingViewStateEditMovePins(DrawingViewStateBase):
-    TIP = "Move Pins: position the selected pin(s) as required"
+    STATUS = "Move Pins: position the selected pin(s) as required"
 
     def mouseLeftClick(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
         g = self.view.grid
@@ -388,7 +388,7 @@ class DrawingViewStateEditMovePins(DrawingViewStateBase):
         self.view.state.go(self.view.stateIdle)
 
 class DrawingViewStateEditAppearance(DrawingViewStateBase):
-    TIP = "Appearance: specify changes"
+    STATUS = "Appearance: specify changes"
 
     def entry(
         self : Self,
@@ -406,7 +406,7 @@ class DrawingViewStateEditAppearance(DrawingViewStateBase):
         self.view.state.go(self.view.stateIdle)
 
 class DrawingViewStateEditProperties(DrawingViewStateBase):
-    TIP = "Properties: specify changes"
+    STATUS = "Properties: specify changes"
 
     def entry(
         self : Self,
@@ -424,14 +424,14 @@ class DrawingViewStateEditProperties(DrawingViewStateBase):
         self.view.state.go(self.view.stateIdle)
 
 class DrawingViewStateEditQuery(DrawingViewStateBase):
-    TIP = "Query: pick an item"
+    STATUS = "Query: pick an item"
 
     def mouseLeftClick(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
         self.view._selectPoint(s, m)
         self.view.editQuery()
 
 class DrawingViewStateEditPort(DrawingViewStateBase):
-    TIP = "Edit Port: specify changes"
+    STATUS = "Edit Port: specify changes"
 
     def entry(
         self : Self,
@@ -454,7 +454,7 @@ class DrawingViewStateEditPort(DrawingViewStateBase):
         self.view.state.go(self.view.stateIdle)
 
 class DrawingViewStateEditBlockPin(DrawingViewStateBase):
-    TIP = "Edit Block Pin: specify changes"
+    STATUS = "Edit Block Pin: specify changes"
 
     def entry(
         self : Self,
@@ -477,7 +477,7 @@ class DrawingViewStateEditBlockPin(DrawingViewStateBase):
         self.view.state.go(self.view.stateIdle)
 
 class DrawingViewStateEditText(DrawingViewStateBase):
-    TIP = "Edit Text: specify changes"
+    STATUS = "Edit Text: specify changes"
 
     def entry(
         self : Self,
@@ -498,7 +498,7 @@ class DrawingViewStateEditText(DrawingViewStateBase):
         self.view.state.go(self.view.stateIdle)
 
 class DrawingViewStateEditPropertyText(DrawingViewStateBase):
-    TIP = "Edit Property Text: specify changes"
+    STATUS = "Edit Property Text: specify changes"
 
     def entry(
         self : Self,
@@ -522,7 +522,7 @@ class DrawingViewStateEditPropertyText(DrawingViewStateBase):
         self.view.state.go(self.view.stateIdle)
 
 class DrawingViewStatePlacePort(ClickMixin):
-    TIP = "Place Port: pick a location"
+    STATUS = "Place Port: pick a location"
 
     def entry(
         self : Self,
@@ -547,7 +547,7 @@ class DrawingViewStatePlacePort(ClickMixin):
             self.view.state.go(self.view.stateIdle)
 
 class DrawingViewStatePlaceBlock1(DrawingViewStateBase):
-    TIP = "Place Block: pick the first point"
+    STATUS = "Place Block: pick the first point"
 
     def mouseLeftClick(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
         self.interact(
@@ -559,10 +559,10 @@ class DrawingViewStatePlaceBlock1(DrawingViewStateBase):
         self.mouseLeftClick(v, s, m)
 
 class DrawingViewStatePlaceBlock2(ClickMixin, DragMixin):
-    TIP = "Place Block: pick the second point"
+    STATUS = "Place Block: pick the second point"
 
 class DrawingViewStatePlaceBlockPin(DrawingViewStateBase):
-    TIP = "Place Block Pin: pick a location"
+    STATUS = "Place Block Pin: pick a location"
 
     def entry(
         self : Self,
@@ -600,7 +600,7 @@ class DrawingViewStatePlaceBlockPin(DrawingViewStateBase):
         )
 
 class DrawingViewStatePlaceSymbolPin(ClickMixin):
-    TIP = "Place Symbol Pin: pick a location"
+    STATUS = "Place Symbol Pin: pick a location"
 
     def entry(
         self : Self,
@@ -622,7 +622,7 @@ class DrawingViewStatePlaceSymbolPin(ClickMixin):
             self.view.state.go(self.view.stateIdle)
 
 class DrawingViewStatePlaceLine1(ClickMixin):
-    TIP = "Place Line: pick the first point"
+    STATUS = "Place Line: pick the first point"
 
     def mouseLeftClick(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
         self.interact(
@@ -634,10 +634,10 @@ class DrawingViewStatePlaceLine1(ClickMixin):
         self.mouseLeftClick(v, s, m)
 
 class DrawingViewStatePlaceLine2(ClickMixin, DragMixin):
-    TIP = "Place Line: pick the second point"
+    STATUS = "Place Line: pick the second point"
 
 class DrawingViewStatePlaceRectangle1(DrawingViewStateBase):
-    TIP = "Place Rectangle: pick the first point"
+    STATUS = "Place Rectangle: pick the first point"
 
     def mouseLeftClick(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
         self.interact(
@@ -649,10 +649,10 @@ class DrawingViewStatePlaceRectangle1(DrawingViewStateBase):
         self.mouseLeftClick(v, s, m)
 
 class DrawingViewStatePlaceRectangle2(ClickMixin, DragMixin):
-    TIP = "Place Rectangle: pick the second point"
+    STATUS = "Place Rectangle: pick the second point"
 
 class DrawingViewStatePlaceText(ClickMixin):
-    TIP = "Place Text: pick a position"
+    STATUS = "Place Text: pick a position"
 
     def entry(
         self : Self,
@@ -673,7 +673,7 @@ class DrawingViewStatePlaceText(ClickMixin):
             self.view.state.go(self.view.stateIdle)
 
 class DrawingViewStatePlaceTextBlock(ClickMixin):
-    TIP = "Place Text Block: pick a position"
+    STATUS = "Place Text Block: pick a position"
 
     def entry(
         self : Self,
@@ -694,7 +694,7 @@ class DrawingViewStatePlaceTextBlock(ClickMixin):
             self.view.state.go(self.view.stateIdle)
 
 class DrawingViewStatePlaceConn1(ClickMixin):
-    TIP = "Place Connection: pick a starting position"
+    STATUS = "Place Connection: pick a starting position"
 
     def mouseLeftClick(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
         self.interact(
@@ -706,7 +706,7 @@ class DrawingViewStatePlaceConn1(ClickMixin):
         self.mouseLeftClick(v, s, m)
 
 class DrawingViewStatePlaceConn2(ClickMixin):
-    TIP = "Place Connection: place a mid- or end-point"
+    STATUS = "Place Connection: place a mid- or end-point"
 
     def mouseLeftDoubleClick(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
         if not self.view.interaction.complete(self._snap(s)):

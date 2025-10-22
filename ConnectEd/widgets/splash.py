@@ -105,4 +105,5 @@ class Splash(QSplashScreen):
         window.show()
         window.raise_()
         window.activateWindow()
+        window.status_bar.status.setText("Ready")
         app().ready.splash.emit()

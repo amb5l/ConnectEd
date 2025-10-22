@@ -8,20 +8,18 @@ if TYPE_CHECKING:
 
 
 class StatusBar(QStatusBar):
+    status : QLabel
     xy     : QLabel
     zoom   : QLabel
     select : QLabel
-    msg    : QLabel
 
     def __init__(self : Self, parent : "Window") -> None:
         super().__init__(parent)
-        self.msg    = QLabel("Initializing...")
-        self.tip    = QLabel("")
+        self.status = QLabel("Initializing...")
         self.xy     = QLabel("?,?")
         self.zoom   = QLabel("? %")
         self.select = QLabel("0 items selected")
-        self.addWidget(self.msg)
-        self.addWidget(self.tip)
+        self.addWidget(self.status)
         self.addPermanentWidget(self.xy)
         self.addPermanentWidget(self.zoom)
         self.addPermanentWidget(self.select)
