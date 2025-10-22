@@ -1,4 +1,4 @@
-from typing import Self, Callable
+from typing import Callable
 
 from PyQt6.QtWidgets import QMenu
 from PyQt6.QtGui     import QContextMenuEvent, QAction
@@ -44,20 +44,22 @@ class DrawingViewMenuMixin:
         # slide/move/rotate
         if items:
             menu.addAction("Slide", lambda: self.ui.editSlide())
-
-        # clipboard/delete/duplicate actions
-        paste_items = paste()
-        if items or paste_items:
-            if items:
-                menu.addAction("Cut", self.ui.editCut)
-                menu.addAction("Copy", self.ui.editCopy)
-            if paste_items:
-                menu.addAction("Paste", self.ui.editPaste)
-            if items:
-                menu.addAction("Delete", self.ui.editDelete)
-                menu.addAction("Duplicate", self.ui.editDuplicate)
+            menu.addAction("Move", lambda: self.ui.editMove())
+            menu.addAction("Rotate CW", lambda: self.ui.editRotateCW(spos))
+            menu.addAction("Rotate CCW", lambda: self.ui.editRotateCCW(spos))
             menu.addSeparator()
 
+        # clipboard/delete/duplicate actions
+        paste_items, _ = paste()
+        if items:
+            menu.addAction("Cut", lambda: self.ui.editCut())
+            menu.addAction("Copy", lambda: self.ui.editCopy())
+        if paste_items:
+            menu.addAction("Paste", lambda: self.ui.editPaste())
+        if items:
+            menu.addAction("Delete", lambda: self.ui.editDelete())
+            menu.addAction("Duplicate", lambda: self.ui.editDuplicate())
+        menu.addSeparator()
 
         # EITHER add selection related actions/submenus
         pass
@@ -85,12 +87,18 @@ class DrawingViewMenuMixin:
         # display menu
         menu.exec(event.globalPos())
 
-    def ctxMenuAction(self : Self, text : str, slot : Callable):
+    def ctxMenuAction(
+        self   : "DrawingView",
+        text   : str,
+        slot   : Callable,
+        enable : bool = True
+    ):
         action = QAction(text)
         action.triggered.connect(slot)
+        action.setEnabled(enable)
         return action
 
-    def ctxMenuSeparator(self : Self) -> QAction:
+    def ctxMenuSeparator(self : "DrawingView") -> QAction:
         action = QAction()
         action.setSeparator(True)
         return action

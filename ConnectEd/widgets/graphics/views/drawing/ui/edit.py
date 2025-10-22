@@ -1,5 +1,5 @@
 from PyQt6.QtCore    import QPointF
-from PyQt6.QtWidgets import QApplication, QGraphicsItem
+from PyQt6.QtWidgets import QApplication
 from PyQt6.QtGui     import QCursor
 
 from ....query import QueryWindow
@@ -8,10 +8,11 @@ from ..interaction.edit import EditMoveInteraction
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from ....scenes.drawing import DrawingScene
-    from ....items import ElementMixin
+    from ....scenes.drawing     import DrawingScene
+    from ....items              import ElementMixin
     from ....items.anchor_point import AnchorPoint
-    from . import DrawingViewUi
+    from ....items.handle       import ResizeGrip
+    from .                      import DrawingViewUi
 
 
 class DrawingViewUiEditMixin:
@@ -78,7 +79,15 @@ class DrawingViewUiEditMixin:
         self._view.interaction = EditMoveInteraction(scene, elements, pos, False)
         self._view.state.go(self._view.stateEditMove)
 
-    def editResize(self : "DrawingViewUi") -> None:
+    def editResize(
+        self : "DrawingViewUi",
+        grip : "ResizeGrip",
+        pos  : QPointF | None = None
+    ) -> None:
+        scene : "DrawingScene" = self._view.scene()
+        if self._view.interaction:
+            self._view.interaction.cancel()
+        self._view.interaction = EditMoveInteraction(scene, [grip], pos)
         self._view.state.go(self._view.stateEditResize)
 
     def editAssignOrigin(self : "DrawingViewUi", ap : "AnchorPoint") -> None:

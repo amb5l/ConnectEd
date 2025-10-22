@@ -1,4 +1,6 @@
 NEXT
+- vpos vs spos
+- fixed/locked property
 - symbols
   - symbol placement singleton - loads libraries and symbols
     - initial placeholder loads system library
