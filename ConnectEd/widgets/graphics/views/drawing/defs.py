@@ -99,32 +99,3 @@ class DrawingViewMouse:
         self.current = DrawingViewPLPos()
         self.left    = DrawingViewMouseButton()
         self.middle  = DrawingViewMouseButton()
-
-class DrawingViewWip:
-    macro     : bool
-    items     : list[QGraphicsItem] | None
-    pos       : QPointF | QPoint | None
-    pos0      : QPointF | QPoint | None     # start position e.g. for ortho
-    selection : list[QGraphicsItem] | None
-    slide     : bool | None
-
-    def __init__(self : Self) -> None:
-        self.clear()
-
-    def clear(self : Self) -> None:
-        self.macro     = False
-        self.items  = None
-        self.pos       = None
-        self.pos0      = None
-        self.selection = None
-
-    @property
-    def item(self : Self) -> QGraphicsItem | None:
-        return \
-            None if self.items is None else \
-            self.items[0] if len(self.items) == 1 else \
-            None
-
-    @item.setter
-    def item(self : Self, item : QGraphicsItem) -> None:
-        self.items = [item]
