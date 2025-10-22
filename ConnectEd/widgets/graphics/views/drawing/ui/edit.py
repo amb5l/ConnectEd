@@ -45,10 +45,10 @@ class DrawingViewUiEditMixin:
         self.scene().editDelete()
 
     def editDuplicate(self : "DrawingViewUi") -> None:
-        self.state.go(self.stateEditDuplicate)
+        self._view.state.go(self._view.stateEditDuplicate)
 
     def editSelectArea(self : "DrawingViewUi") -> None:
-        self.state.go(self.stateEditSelectArea1)
+        self._view.state.go(self._view.stateEditSelectArea1)
 
     def editSelectAll(self : "DrawingViewUi") -> None:
         self._view.scene().editSelectAll()
@@ -102,7 +102,7 @@ class DrawingViewUiEditMixin:
         self    : "DrawingViewUi",
         element : "ElementMixin | None" = None
     ) -> None:
-        self._view.state.go(self.stateEditAppearance, [element] if element else None)
+        self._view.state.go(self._view.stateEditAppearance, [element] if element else None)
 
     def editProperties(
         self    : "DrawingViewUi",
@@ -112,14 +112,12 @@ class DrawingViewUiEditMixin:
 
     def editQuery(self : "DrawingViewUi", vpos : QPoint | None = None) -> None:
         if vpos is None:
-        items_at = self._itemsAt(self.mouse.current.logical)
-        if items_at:
-            element = items_at[0]
-        elif len(self.scene().selectedItems()) == 1:
-            element = self.scene().selectedItems()[0]
+            items = self._view.scene().selectedItems()
         else:
+            items = self._view._itemsAt(vpos)
+        if not items:
             return
-        query_window = QueryWindow(element)
+        query_window = QueryWindow(items[0])
         if not hasattr(self, '_query_windows'):
             self._query_windows = []
         self._query_windows.append(query_window)
@@ -143,7 +141,7 @@ class DrawingViewUiEditMixin:
             if query_window in self._query_windows:
                 self._query_windows.remove(query_window)
         query_window.destroyed.connect(cleanup)
-        self.state.go(self.stateIdle)
+        self._view.state.go(self._view.stateIdle)
 
     def editPort(
         self    : "DrawingViewUi",

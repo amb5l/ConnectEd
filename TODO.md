@@ -1,4 +1,5 @@
 NEXT
+- element => item
 - vpos vs spos
 - fixed/locked property
 - symbols
