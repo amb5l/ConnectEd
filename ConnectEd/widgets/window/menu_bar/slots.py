@@ -173,6 +173,14 @@ class Slots:
         view.ui.editSelectAll()
 
     @withCurrentWidget(DrawingView)
+    def editRotateCW(self : Self, view : DrawingView) -> None:
+        view.ui.editRotateCW()
+
+    @withCurrentWidget(DrawingView)
+    def editRotateCCW(self : Self, view : DrawingView) -> None:
+        view.ui.editRotateCCW()
+
+    @withCurrentWidget(DrawingView)
     def editProperties(self : Self, view : DrawingView) -> None:
         view.ui.editProperties()
 

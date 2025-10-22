@@ -83,6 +83,10 @@ class Actions:
         self.windowPrevious     = Action( window(), "Previous"      , "Previous"                               , "Ctrl+Shift+F6"              )  # noqa E501
         self.helpAbout          = Action( window(), "About"         , ""                                       , "Ctrl+Shift+T"               )  # noqa E501
 
+        # shortcut keys for view actions
+        self.editRotateCW       = Action( window(), "Rotate CW"    , "Rotate clockwise"                       , "]"                           )  # noqa E501
+        self.editRotateCCW      = Action( window(), "Rotate CCW"   , "Rotate counterclockwise"                , "["                           )  # noqa E501
+
         self.onSubWindowActivated(None)
         window().mdi_area.subWindowActivated.connect(self.onSubWindowActivated)
         clipboard = QApplication.clipboard()

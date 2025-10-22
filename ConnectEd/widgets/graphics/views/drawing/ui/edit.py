@@ -1,9 +1,10 @@
-from PyQt6.QtCore    import QPoint
+from PyQt6.QtCore    import QPoint, QPointF
 from PyQt6.QtWidgets import QApplication, QGraphicsItem
 from PyQt6.QtGui     import QCursor
 
 from ....query import QueryWindow
 
+from ..interaction      import RotateMixin
 from ..interaction.edit import EditMoveInteraction
 
 from typing import TYPE_CHECKING
@@ -57,42 +58,72 @@ class DrawingViewUiEditMixin:
     def editSlide(
         self     : "DrawingViewUi",
         elements : list["ElementMixin"] | None = None,
-        vpos     : QPoint | None = None
+        pos      : QPoint | QPointF | None = None
     ) -> None:
         scene : "DrawingScene" = self._view.scene()
         if elements is None:
             elements = scene.selectedItems()
-        spos = self._view.mapToScene(vpos)
+        pos = self._view.mapToScene(pos) if isinstance(pos, QPoint) else pos
         if self._view.interaction:
             self._view.interaction.cancel()
-        self._view.interaction = EditMoveInteraction(scene, elements, spos, True)
+        self._view.interaction = EditMoveInteraction(scene, elements, pos, True)
         self._view.state.go(self._view.stateEditSlide)
 
     def editMove(
         self     : "DrawingViewUi",
         elements : list["ElementMixin"] | None = None,
-        vpos     : QPoint | None = None
+        pos      : QPoint | QPointF | None = None
     ) -> None:
         scene : "DrawingScene" = self._view.scene()
         if elements is None:
             elements = scene.selectedItems()
-        spos = self._view.mapToScene(vpos)
+        pos = self._view.mapToScene(pos) if isinstance(pos, QPoint) else pos
         if self._view.interaction:
             self._view.interaction.cancel()
-        self._view.interaction = EditMoveInteraction(scene, elements, spos, False)
+        self._view.interaction = EditMoveInteraction(scene, elements, pos, False)
         self._view.state.go(self._view.stateEditMove)
 
     def editResize(
         self : "DrawingViewUi",
         grip : "ResizeGrip",
-        vpos : QPoint | None = None
+        pos  : QPoint | QPointF | None = None
     ) -> None:
         scene : "DrawingScene" = self._view.scene()
-        spos = self._view.mapToScene(vpos)
+        pos = self._view.mapToScene(pos) if isinstance(pos, QPoint) else pos
         if self._view.interaction:
             self._view.interaction.cancel()
-        self._view.interaction = EditMoveInteraction(scene, [grip], spos)
+        self._view.interaction = EditMoveInteraction(scene, [grip], pos)
         self._view.state.go(self._view.stateEditResize)
+
+    def editRotateCW(
+        self     : "DrawingViewUi",
+        elements : list["ElementMixin"] | None = None,
+        pos      : QPoint | QPointF | None = None
+    ) -> None:
+        if self._view.interaction:  # interaction in progress
+            if isinstance(self._view.interaction, RotateMixin):
+                self._view.interaction.rotateCW()
+        else:
+            scene : "DrawingScene" = self._view.scene()
+            if elements is None:
+                elements = scene.selectedItems()
+            pos = self._view.mapToScene(pos) if isinstance(pos, QPoint) else pos
+            # TODO push command
+
+    def editRotateCCW(
+        self     : "DrawingViewUi",
+        elements : list["ElementMixin"] | None = None,
+        pos      : QPoint | QPointF | None = None
+    ) -> None:
+        if self._view.interaction:  # interaction in progress
+            if isinstance(self._view.interaction, RotateMixin):
+                self._view.interaction.rotateCCW()
+        else:
+            scene : "DrawingScene" = self._view.scene()
+            if elements is None:
+                elements = scene.selectedItems()
+            pos = self._view.mapToScene(pos) if isinstance(pos, QPoint) else pos
+            # TODO push command
 
     def editAssignOrigin(self : "DrawingViewUi", ap : "AnchorPoint") -> None:
         from ....scenes.drawing.cmd.edit import cmdEditOrigin

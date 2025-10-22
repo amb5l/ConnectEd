@@ -43,10 +43,10 @@ class DrawingViewMenuMixin:
                 items = []  # no items at position
         # slide/move/rotate
         if items:
-            menu.addAction("Slide", lambda: self.ui.editSlide())
-            menu.addAction("Move", lambda: self.ui.editMove())
-            menu.addAction("Rotate CW", lambda: self.ui.editRotateCW(spos))
-            menu.addAction("Rotate CCW", lambda: self.ui.editRotateCCW(spos))
+            menu.addAction("Slide", lambda: self.ui.editSlide(items, spos))
+            menu.addAction("Move", lambda: self.ui.editMove(items, spos))
+            menu.addAction("Rotate CW", lambda: self.ui.editRotateCW(items, spos))
+            menu.addAction("Rotate CCW", lambda: self.ui.editRotateCCW(items, spos))
             menu.addSeparator()
 
         # clipboard/delete/duplicate actions

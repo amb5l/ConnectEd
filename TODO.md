@@ -1,6 +1,7 @@
 NEXT
+- ctxMenuAction => action
+- remove None options for elements arguments to view ui methods
 - element => item
-- vpos vs spos
 - fixed/locked property
 - symbols
   - symbol placement singleton - loads libraries and symbols
