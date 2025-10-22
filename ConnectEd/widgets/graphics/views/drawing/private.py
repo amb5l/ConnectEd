@@ -119,9 +119,11 @@ class DrawingViewPrivateMixin:
             )
             item.setSelected(False)
 
-    def _itemsAt(self : "DrawingView", point : QPointF) -> list[QGraphicsItem]:
+    def _itemsAt(self : "DrawingView", pos : QPoint | QPointF) -> list[QGraphicsItem]:
+        if isinstance(pos, QPoint):
+            pos = self.mapToScene(pos)
         items = self.scene().items(
-            point,
+            pos,
             Qt.ItemSelectionMode.IntersectsItemShape,
             Qt.SortOrder.DescendingOrder,
             self.viewportTransform()
