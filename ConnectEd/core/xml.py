@@ -165,5 +165,4 @@ def paste() -> tuple[list[XmlItemTypes], QPointF | None]:
                 logger().error(f"Unexpected error during paste: {str(e)}")
                 import traceback
                 traceback.print_exc()
-    logger().warning("No valid ConnectEd data in clipboard")
     return [], None
