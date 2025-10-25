@@ -226,8 +226,8 @@ FACTORY_SETTINGS = {
                 "SymbolPinArrow" : {
                     "line" : {
                         "color" : PaletteDark.SymbolPinArrow,
-                        "width" : 1,
-                        "style" : Qt.PenStyle.SolidLine
+                        "width" : 0,
+                        "style" : Qt.PenStyle.NoPen
                     },
                     "fill" : {
                         "color" : PaletteDark.SymbolPinArrow,
@@ -493,8 +493,8 @@ FACTORY_SETTINGS = {
                 "SymbolPinArrow" : {
                     "line" : {
                         "color" : PaletteLightMono.SymbolPinArrow,
-                        "width" : 1,
-                        "style" : Qt.PenStyle.SolidLine
+                        "width" : 0,
+                        "style" : Qt.PenStyle.NoPen
                     },
                     "fill" : {
                         "color" : PaletteLightMono.SymbolPinArrow,
