@@ -340,6 +340,17 @@ FACTORY_SETTINGS = {
                         "style" : Qt.BrushStyle.NoBrush
                     }
                 },
+                "Ellipse" : {
+                    "line" : {
+                        "color" : PaletteDark.Ellipse,
+                        "width" : 1,
+                        "style" : Qt.PenStyle.SolidLine
+                    },
+                    "fill" : {
+                        "color" : PaletteDark.Ellipse,
+                        "style" : Qt.BrushStyle.NoBrush
+                    }
+                },
                 "Text" : {
                     "text" : {
                         "color"     : PaletteDark.Text,
@@ -604,6 +615,17 @@ FACTORY_SETTINGS = {
                     },
                     "fill" : {
                         "color" : PaletteLightMono.Rectangle,
+                        "style" : Qt.BrushStyle.NoBrush
+                    }
+                },
+                "Ellipse" : {
+                    "line" : {
+                        "color" : PaletteLightMono.Ellipse,
+                        "width" : 1,
+                        "style" : Qt.PenStyle.SolidLine
+                    },
+                    "fill" : {
+                        "color" : PaletteLightMono.Ellipse,
                         "style" : Qt.BrushStyle.NoBrush
                     }
                 },

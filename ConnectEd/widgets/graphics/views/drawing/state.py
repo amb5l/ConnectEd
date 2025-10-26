@@ -36,6 +36,7 @@ from .interaction.place import PlacePortInteraction,         \
                                PlaceSymbolPinInteraction,    \
                                PlaceLineInteraction,         \
                                PlaceRectangleInteraction,    \
+                               PlaceEllipseInteraction,      \
                                PlaceTextInteraction,         \
                                PlaceTextBlockInteraction,    \
                                PlaceConnInteraction
@@ -684,6 +685,23 @@ class DrawingViewStatePlaceRectangle2(ClickMixin, DragMixin):
     STATUS = "Place Rectangle: pick the second point"
 
 
+class DrawingViewStatePlaceEllipse1(DrawingViewStateBase):
+    STATUS = "Place Ellipse: pick the first point"
+
+    def mouseLeftClick(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
+        self.interact(
+            PlaceEllipseInteraction(self.scene, self._snap(s)),
+            self.view.statePlaceEllipse2
+        )
+
+    def mouseLeftDragBegin(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
+        self.mouseLeftClick(v, s, m)
+
+
+class DrawingViewStatePlaceEllipse2(ClickMixin, DragMixin):
+    STATUS = "Place Ellipse: pick the second point"
+
+
 class DrawingViewStatePlaceText(ClickMixin):
     STATUS = "Place Text: pick a position"
 
@@ -793,6 +811,8 @@ class DrawingViewStateMixin:
     statePlaceSymbolPin   : DrawingViewStatePlaceSymbolPin
     statePlaceRectangle1  : DrawingViewStatePlaceRectangle1
     statePlaceRectangle2  : DrawingViewStatePlaceRectangle2
+    statePlaceEllipse1    : DrawingViewStatePlaceEllipse1
+    statePlaceEllipse2    : DrawingViewStatePlaceEllipse2
     statePlaceText        : DrawingViewStatePlaceText
     statePlaceTextBlock   : DrawingViewStatePlaceTextBlock
     statePlaceConn1       : DrawingViewStatePlaceConn1
@@ -828,6 +848,8 @@ class DrawingViewStateMixin:
         self.statePlaceLine2       = DrawingViewStatePlaceLine2       (self)
         self.statePlaceRectangle1  = DrawingViewStatePlaceRectangle1  (self)
         self.statePlaceRectangle2  = DrawingViewStatePlaceRectangle2  (self)
+        self.statePlaceEllipse1    = DrawingViewStatePlaceEllipse1    (self)
+        self.statePlaceEllipse2    = DrawingViewStatePlaceEllipse2    (self)
         self.statePlaceText        = DrawingViewStatePlaceText        (self)
         self.statePlaceTextBlock   = DrawingViewStatePlaceTextBlock   (self)
         self.statePlaceConn1       = DrawingViewStatePlaceConn1       (self)

@@ -279,6 +279,10 @@ class Slots:
         view.ui.placeRectangle()
 
     @withCurrentWidget(DrawingView)
+    def placeEllipse(self : Self, view : DrawingView) -> None:
+        view.ui.placeEllipse()
+
+    @withCurrentWidget(DrawingView)
     def placeText(self : Self, view : DrawingView) -> None:
         view.ui.placeText()
 

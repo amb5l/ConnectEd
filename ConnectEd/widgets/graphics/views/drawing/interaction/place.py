@@ -10,6 +10,7 @@ from ....items.line       import Line
 from ....items.base_rect  import BaseRectangle
 from ....items.block      import Block
 from ....items.rectangle  import Rectangle
+from ....items.ellipse    import Ellipse
 from ....items.text       import Text
 from ....items.text_block import TextBlock
 from ....items.port       import Port
@@ -154,6 +155,10 @@ class PlaceSymbolPinInteraction(PlaceBaseInteraction):
 
 class PlaceRectangleInteraction(PlaceBaseRectInteraction):
     _ITEM = Rectangle
+
+
+class PlaceEllipseInteraction(PlaceBaseRectInteraction):
+    _ITEM = Ellipse
 
 
 class PlaceTextInteraction(PlaceBaseInteraction):

@@ -22,7 +22,7 @@ from .mixin.xml    import ItemXmlMixin
 from .mixin.menu   import ItemMenuMixin
 
 
-class BaseRectangle(
+class BaseRectangleMixin(
     ItemMixin,
     ItemBoundMixin,
     ItemShapeMixin,
@@ -34,10 +34,9 @@ class BaseRectangle(
     ItemCloneMixin,
     ItemXmlMixin,
     ItemMenuMixin,
-    PropertiesMixin,
-    QGraphicsRectItem
+    PropertiesMixin
 ):
-    """Base class for rectangle items."""
+    """Base mixin class for rectangle-like items."""
 
     # class attributes
     _PROPERTY_SPECS = \
@@ -120,8 +119,8 @@ class BaseRectangle(
         self : Self,
         ax : float | int,
         ay : float | int,
-        w : float | int,
-        h : float | int
+        w  : float | int,
+        h  : float | int
     ) -> None:
         ...
 
@@ -236,3 +235,8 @@ class BaseRectangle(
                 self.setPoints(p1, p2 + d)
             case _:
                 raise ValueError(f"Invalid anchor point: {name}")
+
+
+class BaseRectangle(BaseRectangleMixin, QGraphicsRectItem):
+    """Base class for rectangle items."""
+    pass

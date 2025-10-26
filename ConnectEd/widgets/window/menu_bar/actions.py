@@ -73,6 +73,7 @@ class Actions:
         self.placeConnection    = Action( window(), "Connection"    , "Place Connection"                    , "C"                          )  # noqa E501
         self.placeLine          = Action( window(), "Line"          , "Place Line"                          , "Ctrl+L"                     )  # noqa E501
         self.placeRectangle     = Action( window(), "Rectangle"     , "Place Rectangle"                     , "Ctrl+R"                     )  # noqa E501
+        self.placeEllipse       = Action( window(), "Ellipse"       , "Place Ellipse"                       , "Ctrl+E"                     )  # noqa E501
         self.placeText          = Action( window(), "Text"          , "Place Text"                          , "Ctrl+T"                     )  # noqa E501
         self.placeTextBlock     = Action( window(), "Text Block"    , "Place Text Block"                    , "Ctrl+K"                     )  # noqa E501
         self.windowNavigator    = Action( window(), "Navigator"     , "Show the navigator window"           , None                         )  # noqa E501
