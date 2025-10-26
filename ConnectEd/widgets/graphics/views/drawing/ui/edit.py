@@ -18,10 +18,10 @@ if TYPE_CHECKING:
 
 class DrawingViewUiEditMixin:
     def editUndo(self : "DrawingViewUi") -> None:
-        self.scene().undo()
+        self._view.scene().undo()
 
     def editRedo(self : "DrawingViewUi") -> None:
-        self.scene().redo()
+        self._view.scene().redo()
 
     def editRepeat(self : "DrawingViewUi") -> None:
         raise NotImplementedError("editRepeat not implemented")
