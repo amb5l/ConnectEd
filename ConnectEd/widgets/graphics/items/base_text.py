@@ -56,9 +56,6 @@ class BaseText(
         _PROPERTY_SPECS_TEXT | \
         _PROPERTY_SPECS_APPEARANCE
 
-    # instance attributes
-    _ap_rect : QRectF  # anchor point rectangle
-
     def __init__(
         self : Self,
         pos  : QPointF = QPointF(),
@@ -73,7 +70,6 @@ class BaseText(
         if not hasattr(self, "_origin"):
             return
         old_origin_scene_pos = self.getOriginScenePos()
-        self._ap_rect = self.boundingRect()
         self.updateAnchorPoints()
         new_origin_scene_pos = self.getOriginScenePos()
         delta = old_origin_scene_pos - new_origin_scene_pos
@@ -101,6 +97,9 @@ class BaseText(
         if self.isSelected():
             painter.setPen(self.outline.pen)
             painter.drawRect(self.boundingRect())
+
+    def anchorPointRect(self : Self) -> QRectF:
+        return self.boundingRect()
 
     def moveAnchorPointBy(self : Self, _ : str, delta : QPointF) -> None:
         """Move the entire Text when any keypoint is dragged."""

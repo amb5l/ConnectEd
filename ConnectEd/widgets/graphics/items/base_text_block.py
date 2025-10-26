@@ -51,9 +51,6 @@ class BaseTextBlock(
         } | \
         ItemQuillMixin._PROPERTY_SPECS_QUILL
 
-    # instance attributes
-    _ap_rect : QRectF  # anchor point rectangle
-
     def __init__(self : Self, bare : bool = False) -> None:
         QGraphicsTextItem.__init__(self)
         self.initItem(bare=bare)
@@ -63,7 +60,6 @@ class BaseTextBlock(
         if not hasattr(self, "_origin"):
             return
         old_origin_scene_pos = self.getOriginScenePos()
-        self._ap_rect = self.boundingRect()
         self.updateAnchorPoints()
         new_origin_scene_pos = self.getOriginScenePos()
         delta = old_origin_scene_pos - new_origin_scene_pos
@@ -108,6 +104,9 @@ class BaseTextBlock(
         if self.isSelected():
             painter.setPen(self.outline.pen)
             painter.drawRect(self.boundingRect())
+
+    def anchorPointRect(self : Self) -> QRectF:
+        return self.boundingRect()
 
     def moveAnchorPointBy(self : Self, _ : str, delta : QPointF) -> None:
         """Move the entire Text when any keypoint is dragged."""

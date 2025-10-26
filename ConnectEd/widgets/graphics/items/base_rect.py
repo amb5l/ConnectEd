@@ -58,9 +58,6 @@ class BaseRectangle(
         ItemFillMixin._PROPERTY_SPECS_FILL
     _MIN_SIZE = QSizeF(1.0, 1.0)
 
-    # instance attributes
-    _ap_rect : QRectF  # anchor point rectangle
-
     @overload
     def __init__(
         self : Self,
@@ -86,7 +83,6 @@ class BaseRectangle(
         bare       : bool = False
     ) -> None:
         super().__init__()
-        self._ap_rect = QRectF()
         self.initItem(bare=bare)
         if p1_or_pos is None:
             p1_or_pos = QPointF()
@@ -147,7 +143,6 @@ class BaseRectangle(
             super().setRect(rect_or_ax)
         else:
             super().setRect(rect_or_ax, ay, w, h)
-        self._ap_rect = self.rect()
         self.onGeometryChange()
 
     def paint(
@@ -212,6 +207,9 @@ class BaseRectangle(
         rect = self.rect()
         rect.setSize(QSizeF(w, h))
         self.setRect(rect)
+
+    def anchorPointRect(self : Self) -> QRectF:
+        return self.rect()
 
     def moveAnchorPointBy(self : Self, name : str, delta : QPointF) -> None:
         p1 = self.pos()

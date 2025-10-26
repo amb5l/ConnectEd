@@ -32,9 +32,6 @@ class ItemRectAnchorPointsMixin(ItemAnchorPointsMixin):
     }
     _AP_RESIZE = { k : k != "Center" for k in _ANCHOR_POINTS.keys() }
 
-    # external instance attributes
-    _ap_rect : QRectF  # anchor point rectangle, maintained by item
-
     def initAnchorPoints(self : Self) -> None:
         self._anchor_points = {}
         for name, _ in self._ANCHOR_POINTS.items():
@@ -42,11 +39,14 @@ class ItemRectAnchorPointsMixin(ItemAnchorPointsMixin):
             anchor_point = AnchorPoint(name=name, resize=resize, parent=self)
             self._anchor_points[name] = anchor_point
 
+    def anchorPointRect(self : Self) -> QRectF:
+        raise NotImplementedError("Subclass must implement this method")
+
     def updateAnchorPoints(self : Self) -> None:
         if not hasattr(self, "_anchor_points"):
             return
+        rect = self.anchorPointRect()
         for name, (x, y) in self._ANCHOR_POINTS.items():
             self._anchor_points[name].setPos(QPointF(
-                x * self._ap_rect.width(),
-                y * self._ap_rect.height()
+                x * rect.width(), y * rect.height()
             ))
