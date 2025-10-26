@@ -9,14 +9,14 @@ from ....items.conn_vtx import ConnVtx
 from ....items.conn_seg import ConnSeg
 from ....items.entry    import Entry
 
-from . import cmdSceneBase
+from . import CmdSceneBase
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from .. import DrawingScene
 
 
-class cmdAddConnVtx(cmdSceneBase):
+class CmdAddConnVtx(CmdSceneBase):
     """Create and add a new vertex to the scene."""
 
     # instance attributes
@@ -41,7 +41,7 @@ class cmdAddConnVtx(cmdSceneBase):
         return self._vtx
 
 
-class cmdReparentConnVtx(cmdSceneBase):
+class CmdReparentConnVtx(CmdSceneBase):
     @dataclass
     class ConnVtxState:
         parent : Entry   | None
@@ -77,7 +77,7 @@ class cmdReparentConnVtx(cmdSceneBase):
         self._vtx.setPos(self._before.pos)
 
 
-class cmdRemoveConnVtx(cmdSceneBase):
+class CmdRemoveConnVtx(CmdSceneBase):
     """Remove a specified vertex from the scene."""
 
     # instance attributes
@@ -98,7 +98,7 @@ class cmdRemoveConnVtx(cmdSceneBase):
         self._scene.addItem(self._vtx)
 
 
-class cmdAddConnSeg(cmdSceneBase):
+class CmdAddConnSeg(CmdSceneBase):
     """Add a new segment to the scene between two specified vertices."""
 
     # instance attributes
@@ -136,7 +136,7 @@ class cmdAddConnSeg(cmdSceneBase):
         return self._seg
 
 
-class cmdReattachConnSeg(cmdSceneBase):
+class CmdReattachConnSeg(CmdSceneBase):
     """Detach a segment from one vertex and attach it to another."""
 
     # instance attributes
@@ -165,7 +165,7 @@ class cmdReattachConnSeg(cmdSceneBase):
             logger().warning(f"Failed to reattach segment {self._seg} to {self._vtx_old}")
 
 
-class cmdRemoveConnSeg(cmdSceneBase):
+class CmdRemoveConnSeg(CmdSceneBase):
     """Remove a specified segment from the scene."""
 
     # instance attributes

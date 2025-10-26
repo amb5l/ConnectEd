@@ -10,7 +10,7 @@ from ....items.block     import Block
 from ....items.block_pin import BlockPin
 
 from ....scenes.drawing     import DrawingScene
-from ....scenes.drawing.cmd import cmdAdd, cmdMove, cmdMoveBlockPins
+from ....scenes.drawing.cmd import CmdAdd, CmdMove, CmdMoveBlockPins
 
 from . import MoveMixin,                \
               AddRemoveMixin,           \
@@ -48,7 +48,7 @@ class EditPasteInteraction(
         self._restorePos()  # restore initial positions
         self.update(pos)    # apply final offset
         # add pasted items to scene
-        self._scene.undo_stack.push(cmdAdd(
+        self._scene.undo_stack.push(CmdAdd(
             self._scene, self._items, self._selection
         ))
         return True
@@ -102,7 +102,7 @@ class EditMoveInteraction(
     def complete(self : Self, pos : QPointF) -> bool:
         self._restorePos()  # restore initial positions
         # apply final offset
-        self._scene.undo_stack.push(cmdMove(
+        self._scene.undo_stack.push(CmdMove(
             self._scene, self._items, pos - self._ipos, self._slide
         ))
         return True
@@ -153,7 +153,7 @@ class EditMoveBlockPinsInteraction(Interaction):
         self.update(pos, snap)
         if all(p.loc() == self._sloc[p] for p in self._pins):
             return True # no change so skip command push
-        self._scene.undo_stack.push(cmdMoveBlockPins(
+        self._scene.undo_stack.push(CmdMoveBlockPins(
             self._parent,
             self._pins,
             {p: p.loc() for p in self._pins},

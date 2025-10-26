@@ -20,7 +20,7 @@ from ....items.entry      import Entry
 from ....items.conn_vtx   import ConnVtx
 from ....items.conn_seg   import ConnSeg, ConnSegPreview1, ConnSegPreview2
 
-from ....scenes.drawing.cmd import cmdAdd, cmdAddBlockPin
+from ....scenes.drawing.cmd import CmdAdd, CmdAddBlockPin
 
 from . import SelectionMixin,          \
               RotateMixin,             \
@@ -63,7 +63,7 @@ class PlaceBaseInteraction(
 
     def complete(self : Self, pos : QPointF) -> bool:
         self.update(pos)
-        self._scene.undo_stack.push(cmdAdd(
+        self._scene.undo_stack.push(CmdAdd(
             self._scene, [self._item], self._selection
         ))
         return True
@@ -142,7 +142,7 @@ class PlaceBlockPinInteraction(BlockPinInteraction):
 
     def complete(self : Self, pos : QPointF, snap : QPointF | None = None) -> bool:
         self.update(pos, snap)
-        self._scene.undo_stack.push(cmdAddBlockPin(self._parent, self._pin))
+        self._scene.undo_stack.push(CmdAddBlockPin(self._parent, self._pin))
         return True
 
     def cancel(self : Self) -> None:

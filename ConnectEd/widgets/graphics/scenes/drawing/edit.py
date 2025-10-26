@@ -11,9 +11,9 @@ from ...items.mixin         import ItemMixin
 from ...items.base_text     import BaseText
 from ...items.property_text import PropertyText
 
-from .cmd import cmdDelete
-from .cmd.edit import cmdEditText, cmdEditPropertyText, \
-                      cmdEditProperties, cmdEditAppearance
+from .cmd import CmdDelete
+from .cmd.edit import CmdEditText, CmdEditPropertyText, \
+                      CmdEditProperties, CmdEditAppearance
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -31,7 +31,7 @@ class DrawingSceneApiEditMixin:
                 and item.parentItem() is None]
         if items:
             copy(items, pos)
-            self.undo_stack.push(cmdDelete(self, items, self.selectedItems()))
+            self.undo_stack.push(CmdDelete(self, items, self.selectedItems()))
         else:
             logger().warning("No items selected to cut")
 
@@ -54,7 +54,7 @@ class DrawingSceneApiEditMixin:
         """Delete selected items from the scene."""
         items = self._selectedTopItems()
         if items:
-            self.undo_stack.push(cmdDelete(self, items, self.selectedItems()))
+            self.undo_stack.push(CmdDelete(self, items, self.selectedItems()))
         else:
             logger().warning("No items selected to delete")
 
@@ -70,7 +70,7 @@ class DrawingSceneApiEditMixin:
         text       : str,
         appearance : QuillPrefChange
     ) -> None:
-        self.undo_stack.push(cmdEditText(self, item, text, appearance))
+        self.undo_stack.push(CmdEditText(self, item, text, appearance))
 
     def editPropertyText(
         self       : "DrawingScene",
@@ -79,7 +79,7 @@ class DrawingSceneApiEditMixin:
         value      : str,
         appearance : QuillPrefChange
     ) -> None:
-        self.undo_stack.push(cmdEditPropertyText(
+        self.undo_stack.push(CmdEditPropertyText(
             self, item, name, value, appearance
         ))
 
@@ -88,11 +88,11 @@ class DrawingSceneApiEditMixin:
         items   : list[ItemMixin],
         changes : AppearancePrefChange
     ) -> None:
-        self.undo_stack.push(cmdEditAppearance(self, items, changes))
+        self.undo_stack.push(CmdEditAppearance(self, items, changes))
 
     def editProperties(
         self    : "DrawingScene",
         item    : ItemMixin,
         changes : dict[str, PropertyState]
     ) -> None:
-        self.undo_stack.push(cmdEditProperties(self, item, changes))
+        self.undo_stack.push(CmdEditProperties(self, item, changes))

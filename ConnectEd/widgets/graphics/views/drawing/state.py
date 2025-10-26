@@ -41,9 +41,9 @@ from .interaction.place import PlacePortInteraction,         \
                                PlaceTextBlockInteraction,    \
                                PlaceConnInteraction
 
-from ...scenes.drawing.cmd.edit import cmdEditPortPin,     \
-                                       cmdEditText,        \
-                                       cmdEditPropertyText
+from ...scenes.drawing.cmd.edit import CmdEditPortPin,     \
+                                       CmdEditText,        \
+                                       CmdEditPropertyText
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -467,7 +467,7 @@ class DrawingViewStateEditPort(DrawingViewStateBase):
                 name = dialog.getName()
                 direction = dialog.getDirection()
                 range = dialog.getRange()
-                self.scene.undo_stack.push(cmdEditPortPin(
+                self.scene.undo_stack.push(CmdEditPortPin(
                     self.scene, item, name, direction, range
                 ))
         else:
@@ -491,7 +491,7 @@ class DrawingViewStateEditBlockPin(DrawingViewStateBase):
                 name = dialog.getName()
                 direction = dialog.getDirection()
                 range = dialog.getRange()
-                self.scene.undo_stack.push(cmdEditPortPin(
+                self.scene.undo_stack.push(CmdEditPortPin(
                     self.scene, item, name, direction, range
                 ))
         else:
@@ -513,7 +513,7 @@ class DrawingViewStateEditText(DrawingViewStateBase):
             dialog = TextDialog(item, self.view)
             if dialog.exec():
                 text, appearance = dialog.getChoice()
-                self.scene.undo_stack.push(cmdEditText(
+                self.scene.undo_stack.push(CmdEditText(
                     self.scene, item, text, appearance
                 ))
         else:
@@ -538,7 +538,7 @@ class DrawingViewStateEditPropertyText(DrawingViewStateBase):
                 value = dialog.getValue()
                 display = dialog.getDisplay()
                 appearance = dialog.getAppearanceChange()
-                self.scene.undo_stack.push(cmdEditPropertyText(
+                self.scene.undo_stack.push(CmdEditPropertyText(
                     self.scene, item, name, value, display, appearance
                 ))
         else:

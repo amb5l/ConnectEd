@@ -16,7 +16,7 @@ from ....items.base_text     import BaseText
 from ....items.property_text import PropertyText, PropertyDisplay
 from ....items.anchor_point  import AnchorPoint
 
-from . import cmdSceneItem, cmdSceneItems
+from . import CmdSceneItem, CmdSceneItems
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -24,7 +24,7 @@ if TYPE_CHECKING:
     from ....items.port_pin import PortPinMixin
 
 
-class cmdEditPortPin(cmdSceneItem):
+class CmdEditPortPin(CmdSceneItem):
     @dataclass
     class PortPinState:
         name      : str
@@ -62,7 +62,7 @@ class cmdEditPortPin(cmdSceneItem):
         self._item.update()
 
 
-class cmdEditText(cmdSceneItem):
+class CmdEditText(CmdSceneItem):
     @dataclass
     class TextState:
         text       : str
@@ -95,7 +95,7 @@ class cmdEditText(cmdSceneItem):
         self._item.update()
 
 
-class cmdEditPropertyText(cmdSceneItem):
+class CmdEditPropertyText(CmdSceneItem):
     @dataclass
     class PropertyTextState:
         name       : str
@@ -139,7 +139,7 @@ class cmdEditPropertyText(cmdSceneItem):
         self._item.update()
 
 
-class cmdEditAppearance(cmdSceneItems):
+class CmdEditAppearance(CmdSceneItems):
     _before : dict[ItemMixin, AppearancePref]
     _after  : AppearancePrefChange
 
@@ -182,7 +182,7 @@ class cmdEditAppearance(cmdSceneItems):
             e.update()
 
 
-class cmdEditProperties(cmdSceneItem):
+class CmdEditProperties(CmdSceneItem):
     _item    : PropertiesMixin
     _changes : list[PropertyChange]
 
@@ -243,7 +243,7 @@ class cmdEditProperties(cmdSceneItem):
                     )
 
 
-class cmdEditOrigin(cmdSceneItem):
+class CmdEditOrigin(CmdSceneItem):
     _item   : ItemOriginMixin
     _before : AnchorPoint
     _after  : AnchorPoint

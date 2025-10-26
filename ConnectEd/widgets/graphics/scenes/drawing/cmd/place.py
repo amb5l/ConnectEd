@@ -11,10 +11,10 @@ from ....items.text_block import TextBlock
 from ....items.port       import Port
 from ....items.block_pin  import BlockPin
 
-from . import cmdBase, cmdSceneBase
+from . import CmdBase, CmdSceneBase
 
 
-class cmdPlaceBase(cmdSceneBase):
+class CmdPlaceBase(CmdSceneBase):
     """Base class for commands that place an item."""
 
     # class attributes
@@ -43,27 +43,27 @@ class cmdPlaceBase(cmdSceneBase):
         self._scene.removeItem(self._item)
 
 
-class cmdPlacePort(cmdPlaceBase):
+class CmdPlacePort(CmdPlaceBase):
     _CLASS = Port
 
 
-class cmdPlaceBlock(cmdPlaceBase):
+class CmdPlaceBlock(CmdPlaceBase):
     _CLASS = Block
 
 
-class cmdPlaceRectangle(cmdPlaceBase):
+class CmdPlaceRectangle(CmdPlaceBase):
     _CLASS = Rectangle
 
 
-class cmdPlaceText(cmdPlaceBase):
+class CmdPlaceText(CmdPlaceBase):
     _CLASS = Text
 
 
-class cmdPlaceTextBlock(cmdPlaceBase):
+class CmdPlaceTextBlock(CmdPlaceBase):
     _CLASS = TextBlock
 
 
-class cmdPlaceBlockPin(cmdBase):
+class CmdPlaceBlockPin(CmdBase):
     """Base class for commands that place a pin."""
 
     # instance attributes
@@ -79,8 +79,8 @@ class cmdPlaceBlockPin(cmdBase):
         raise NotImplementedError
 
 
-class cmdPlaceBlockPin(cmdPlaceBlockPin):
+class CmdPlaceBlockPin(CmdPlaceBlockPin):
     _CLASS = BlockPin
 
-##class cmdPlaceSymbolPin(cmdPlacePinBase):
+##class CmdPlaceSymbolPin(cmdPlacePinBase):
 #    _CLASS = SymbolPin

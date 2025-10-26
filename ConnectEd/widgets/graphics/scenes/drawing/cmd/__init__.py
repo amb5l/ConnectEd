@@ -15,7 +15,7 @@ if TYPE_CHECKING:
     from .. import DrawingScene
 
 
-class cmdBase(QUndoCommand):
+class CmdBase(QUndoCommand):
     """Base class for all commands."""
 
     def id(self : Self) -> int:
@@ -28,7 +28,7 @@ class cmdBase(QUndoCommand):
         return False  # never merge (for now)
 
 
-class cmdSceneBase(cmdBase):
+class CmdSceneBase(CmdBase):
     """Base class for all commands that work with a scene."""
 
     # instance attributes
@@ -50,7 +50,7 @@ class cmdSceneBase(cmdBase):
         )
 
 
-class cmdSceneItem(cmdSceneBase):
+class CmdSceneItem(CmdSceneBase):
     """Base class for all commands that work with an item."""
 
     # instance attributes
@@ -65,7 +65,7 @@ class cmdSceneItem(cmdSceneBase):
         self._item = item
 
 
-class cmdSceneItems(cmdSceneBase):
+class CmdSceneItems(CmdSceneBase):
     """Base class for all commands that work with multiple items."""
 
     # instance attributes
@@ -80,7 +80,7 @@ class cmdSceneItems(cmdSceneBase):
         self._items = items
 
 
-class cmdBlockPinBase(cmdBase):
+class CmdBlockPinBase(CmdBase):
     """Base class for all commands that work with a pin."""
 
     # instance attributes
@@ -97,7 +97,7 @@ class cmdBlockPinBase(cmdBase):
         self._pin = pin
 
 
-class cmdBlockPinsBase(cmdBase):
+class CmdBlockPinsBase(CmdBase):
     """Base class for all commands that work with multiple block pins."""
 
     # instance attributes
@@ -114,7 +114,7 @@ class cmdBlockPinsBase(cmdBase):
         self._pins = pins
 
 
-class cmdSelectionMixin:
+class CmdSelectionMixin:
     """Mixin for commands that need to preserve/restore the scene selection."""
 
     # instance attributes
@@ -133,7 +133,7 @@ class cmdSelectionMixin:
         self._scene.selectionChanged.emit()
 
 
-class cmdAddRemoveMixin:
+class CmdAddRemoveMixin:
     """Mixin for commands that add/remove scene items."""
 
     # instance attributes
@@ -160,7 +160,7 @@ class cmdAddRemoveMixin:
         self._scene.selectionChanged.emit()
 
 
-class cmdMoveMixin:
+class CmdMoveMixin:
     """Mixin for commands that move items by an offset."""
     # TODO merge this into cmdMove?
 
@@ -180,10 +180,10 @@ class cmdMoveMixin:
             e.moveBy(self._spos[e] - e.scenePos())
 
 
-class cmdAdd(
-    cmdSceneItems,      # _scene, _items, _selection
-    cmdSelectionMixin,  # _preserveSelection, _restoreSelection
-    cmdAddRemoveMixin   # _addToScene, _removeFromScene
+class CmdAdd(
+    CmdSceneItems,      # _scene, _items, _selection
+    CmdSelectionMixin,  # _preserveSelection, _restoreSelection
+    CmdAddRemoveMixin   # _addToScene, _removeFromScene
 ):
     """Command to add scene items (paste, duplicate, etc.)."""
 
@@ -207,10 +207,10 @@ class cmdAdd(
         self._restoreSelection()
 
 
-class cmdDelete(
-    cmdSceneItems,      # _scene, _items, _selection
-    cmdSelectionMixin,  # _preserveSelection, _restoreSelection
-    cmdAddRemoveMixin   # _addToScene, _removeFromScene
+class CmdDelete(
+    CmdSceneItems,      # _scene, _items, _selection
+    CmdSelectionMixin,  # _preserveSelection, _restoreSelection
+    CmdAddRemoveMixin   # _addToScene, _removeFromScene
 ):
     """Command to delete scene items (cut, delete)."""
 
@@ -232,9 +232,9 @@ class cmdDelete(
         self._restoreSelection()
 
 
-class cmdMove(
-    cmdSceneItems,  # _scene, _items
-    cmdMoveMixin    # _moveBy, _storePos, _restorePos
+class CmdMove(
+    CmdSceneItems,  # _scene, _items
+    CmdMoveMixin    # _moveBy, _storePos, _restorePos
 ):
     """Command to move scene items by an offset."""
 
@@ -263,7 +263,7 @@ class cmdMove(
         # TODO: add slide logic
 
 
-class cmdRotate(cmdSceneItems):
+class CmdRotate(CmdSceneItems):
 
     # instance attributes
     _angle  : float
@@ -288,7 +288,7 @@ class cmdRotate(cmdSceneItems):
             e.setRotation(self._before[e])
 
 
-class cmdAddBlockPin(cmdBlockPinBase):
+class CmdAddBlockPin(CmdBlockPinBase):
     """Command to add a pin to a pin rect."""
 
     def redo(self : Self) -> None:
@@ -298,7 +298,7 @@ class cmdAddBlockPin(cmdBlockPinBase):
         self._pin.setParentItem(None)
 
 
-class cmdDeleteBlockPin(cmdBlockPinBase):
+class CmdDeleteBlockPin(CmdBlockPinBase):
     """Command to delete a pin from a pin rect."""
 
     def redo(self : Self) -> None:
@@ -308,7 +308,7 @@ class cmdDeleteBlockPin(cmdBlockPinBase):
         self._pin.setParentItem(self._parent)
 
 
-class cmdMoveBlockPins(cmdBlockPinsBase):
+class CmdMoveBlockPins(CmdBlockPinsBase):
     """Command to move multiple pins by an offset."""
 
     # instance attributes

@@ -11,12 +11,12 @@ from ...items.conn_vtx import ConnVtx
 from ...items.conn_seg import ConnSeg
 from ...items.entry    import Entry
 
-from .cmd.conn import cmdAddConnVtx,      \
-                      cmdReparentConnVtx, \
-                      cmdRemoveConnVtx,   \
-                      cmdAddConnSeg,      \
-                      cmdReattachConnSeg, \
-                      cmdRemoveConnSeg
+from .cmd.conn import CmdAddConnVtx,      \
+                      CmdReparentConnVtx, \
+                      CmdRemoveConnVtx,   \
+                      CmdAddConnSeg,      \
+                      CmdReattachConnSeg, \
+                      CmdRemoveConnSeg
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -180,10 +180,10 @@ class DrawingSceneConnMixin:
         """
         # executor depends on undo
         if undo:
-            def executor(cmd : cmdAddConnVtx) -> None:
+            def executor(cmd : CmdAddConnVtx) -> None:
                 self.undo_stack.push(cmd)
         else:
-            def executor(cmd : cmdAddConnVtx) -> None:
+            def executor(cmd : CmdAddConnVtx) -> None:
                 cmd.redo()
         # start macro
         if undo:
@@ -200,9 +200,9 @@ class DrawingSceneConnMixin:
             if xvtx is vtx1:
                 continue
             for seg in xvtx.connections():
-                cmd = cmdReattachConnSeg(self, seg, xvtx, vtx1)
+                cmd = CmdReattachConnSeg(self, seg, xvtx, vtx1)
                 executor(cmd)
-            cmd = cmdRemoveConnVtx(self, xvtx)
+            cmd = CmdRemoveConnVtx(self, xvtx)
             executor(cmd)
         # (re)parent to entry if present
         entries = [item for item in items if isinstance(item, Entry)]
@@ -210,7 +210,7 @@ class DrawingSceneConnMixin:
             logger().warning("Multiple entries found")
         if entries:
             if vtx1.parentItem() is not entries[0]:
-                cmd = cmdReparentConnVtx(self, vtx1, entries[0])
+                cmd = CmdReparentConnVtx(self, vtx1, entries[0])
                 executor(cmd)
         # split segments that cross the new vertex but are not attached to it
         segs = [item for item in items if isinstance(item, ConnSeg)]
@@ -222,10 +222,10 @@ class DrawingSceneConnMixin:
             len1 = QLineF(seg.vtx1().scenePos(), vtx1.scenePos()).length()
             len2 = QLineF(seg.vtx2().scenePos(), vtx1.scenePos()).length()
             vtx = seg.vtx2() if len1 >= len2 else seg.vtx1()
-            cmd = cmdReattachConnSeg(self, seg, vtx, vtx1)
+            cmd = CmdReattachConnSeg(self, seg, vtx, vtx1)
             executor(cmd)
             # add new segment from split
-            cmd = cmdAddConnSeg(self, vtx1, vtx)
+            cmd = CmdAddConnSeg(self, vtx1, vtx)
             executor(cmd)
         # remove duplicate segments (that share the same vertices pair)
         segs = vtx1.connections().copy()  # take copy because we're making changes
@@ -234,7 +234,7 @@ class DrawingSceneConnMixin:
                 for seg2 in segs[i+1:]:
                     if (seg1.vtx1() is seg2.vtx1() and seg1.vtx2() is seg2.vtx2()) \
                     or (seg1.vtx1() is seg2.vtx2() and seg1.vtx2() is seg2.vtx1()):
-                        cmd = cmdRemoveConnSeg(self, seg2)
+                        cmd = CmdRemoveConnSeg(self, seg2)
                         executor(cmd)
         # remove if useless break in a straight line
         segs = vtx1.connections().copy()  # take copy because we're making changes
@@ -244,14 +244,14 @@ class DrawingSceneConnMixin:
                 # get far end of 2nd segment
                 v2 = segs[1].vtx1() if segs[1].vtx2() is vtx1 else segs[1].vtx2()
                 # reattach 1st segment to far end of 2nd segment
-                cmd = cmdReattachConnSeg(self, segs[0], vtx1, v2)
+                cmd = CmdReattachConnSeg(self, segs[0], vtx1, v2)
                 executor(cmd)
                 # remove 2nd segment
-                cmd = cmdRemoveConnSeg(self, segs[1])
+                cmd = CmdRemoveConnSeg(self, segs[1])
                 executor(cmd)
         # remove if no connections
         if len(vtx1.connections()) == 0:
-            cmd = cmdRemoveConnVtx(self, vtx1)
+            cmd = CmdRemoveConnVtx(self, vtx1)
             executor(cmd)
         # end macro
         if undo:
@@ -290,13 +290,13 @@ class DrawingSceneConnMixin:
         """Add a vertex/junction."""
         # executor depends on undo
         if undo:
-            def executor(cmd : cmdAddConnVtx) -> None:
+            def executor(cmd : CmdAddConnVtx) -> None:
                 self.undo_stack.push(cmd)
         else:
-            def executor(cmd : cmdAddConnVtx) -> None:
+            def executor(cmd : CmdAddConnVtx) -> None:
                 cmd.redo()
         # add vertex
-        cmd = cmdAddConnVtx(self, pos, cls)
+        cmd = CmdAddConnVtx(self, pos, cls)
         executor(cmd)
         return cmd.vtx()
 
@@ -312,10 +312,10 @@ class DrawingSceneConnMixin:
         """
         # executor depends on undo
         if undo:
-            def executor(cmd : cmdAddConnVtx) -> None:
+            def executor(cmd : CmdAddConnVtx) -> None:
                 self.undo_stack.push(cmd)
         else:
-            def executor(cmd : cmdAddConnVtx) -> None:
+            def executor(cmd : CmdAddConnVtx) -> None:
                 cmd.redo()
         # begin macro
         if undo:
@@ -334,14 +334,14 @@ class DrawingSceneConnMixin:
                         if seg1 is seg2:
                             return None  # do nothing
         # add vertices at endpoint
-        cmd = cmdAddConnVtx(self, p1)
+        cmd = CmdAddConnVtx(self, p1)
         executor(cmd)
         v1 = cmd.vtx()
-        cmd = cmdAddConnVtx(self, p2)
+        cmd = CmdAddConnVtx(self, p2)
         executor(cmd)
         v2 = cmd.vtx()
         # add segment
-        cmd = cmdAddConnSeg(self, v1, v2, cls)
+        cmd = CmdAddConnSeg(self, v1, v2, cls)
         executor(cmd)
         seg = cmd.seg()
         # get bounding rect and line for segment
@@ -358,7 +358,7 @@ class DrawingSceneConnMixin:
             children = entry.childItems()
             child_vtxs = [item for item in children if isinstance(item, ConnVtx)]
             if len(child_vtxs) == 0:
-                cmd = cmdAddConnVtx(self, QPointF())  # pos is relative to entry
+                cmd = CmdAddConnVtx(self, QPointF())  # pos is relative to entry
                 executor(cmd)
                 vtx = cmd.vtx()
                 vtx.setParentItem(entry)

@@ -126,9 +126,9 @@ class DrawingViewUiEditMixin:
             # TODO push command
 
     def editAssignOrigin(self : "DrawingViewUi", ap : "AnchorPoint") -> None:
-        from ....scenes.drawing.cmd.edit import cmdEditOrigin
+        from ....scenes.drawing.cmd.edit import CmdEditOrigin
         scene  : "DrawingScene" = self._view.scene()
-        scene.undo_stack.push(cmdEditOrigin(scene, ap))
+        scene.undo_stack.push(CmdEditOrigin(scene, ap))
 
     def editAppearance(
         self : "DrawingViewUi",
