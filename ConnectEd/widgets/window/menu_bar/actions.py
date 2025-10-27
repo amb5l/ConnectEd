@@ -149,14 +149,14 @@ class Actions:
     def onSelectionChanged(self : Self) -> None:
         try:
             selected_items = self._scene.selectedItems()
-        except: # workaround for Qt cleanup
-            selected_items = []
-        n = len(selected_items)
-        self.editCut        .setEnabled( n > 0 )
-        self.editCopy       .setEnabled( n > 0 )
-        self.editDelete     .setEnabled( n > 0 )
-        self.editDuplicate  .setEnabled( n > 0 )
-        self.editAppearance .setEnabled( n > 0 )
+            n = len(selected_items)
+            self.editCut        .setEnabled( n > 0 )
+            self.editCopy       .setEnabled( n > 0 )
+            self.editDelete     .setEnabled( n > 0 )
+            self.editDuplicate  .setEnabled( n > 0 )
+            self.editAppearance .setEnabled( n > 0 )
+        except (RuntimeError, AttributeError): # workaround for Qt cleanup
+            pass
 
     def onClipboardDataChanged(self : Self) -> None:
         if not self._scene:
