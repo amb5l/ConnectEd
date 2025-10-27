@@ -102,7 +102,7 @@ class Window(QMainWindow):
     def closeEvent(self : Self, event : QCloseEvent) -> None:
         try:
             self.mdi_area.subWindowActivated.disconnect(
-                self.actions.onSubWindowActivated
+                self._menu_bar._actions.onSubWindowActivated
             )
             self.mdi_area.subWindowActivated.disconnect(
                 self._menu_bar.updateWindowMenu
@@ -116,12 +116,10 @@ class Window(QMainWindow):
             clipboard = QApplication.clipboard()
             if clipboard:
                 clipboard.dataChanged.disconnect(
-                    self.actions.onClipboardDataChanged
+                    self._menu_bar._actions.onClipboardDataChanged
                 )
         except TypeError: # workaround for Qt cleanup
             pass
-        if hasattr(self, 'actions') and self.actions:
-            self.actions.onSubWindowActivated(None)
         settings().set("startup/geometry", self.saveGeometry().data())
         super().closeEvent(event)
 
