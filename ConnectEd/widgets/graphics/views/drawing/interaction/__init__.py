@@ -111,7 +111,7 @@ class BlockPinInteraction(Interaction):
             self._pin is not None
 
 
-class RotateMixin:
+class RotateItemMixin:
     """Mixin for interactions that rotate items."""
 
     # instance attributes
@@ -124,7 +124,7 @@ class RotateMixin:
         self._item.setRotation((self._item.rotation() - 90) % 360)
 
 
-class MoveMixin:
+class MoveItemsMixin:
     """Mixin for interactions that move items."""
 
     # instance attributes
@@ -150,7 +150,7 @@ class MoveMixin:
         self._cpos = self._ipos
 
 
-class AddRemoveMixin:
+class AddRemoveItemsMixin:
     """Mixin for interactions that add or remove items from the scene."""
 
     # instance attributes

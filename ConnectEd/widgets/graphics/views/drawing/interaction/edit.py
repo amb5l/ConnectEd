@@ -12,19 +12,19 @@ from ....items.block_pin import BlockPin
 from ....scenes.drawing     import DrawingScene
 from ....scenes.drawing.cmd import CmdAdd, CmdMove, CmdMoveBlockPins
 
-from . import MoveMixin,        \
-              AddRemoveMixin,   \
-              SelectionMixin,   \
-              ItemsInteraction, \
-              Interaction,      \
+from . import MoveItemsMixin,      \
+              AddRemoveItemsMixin, \
+              SelectionMixin,      \
+              ItemsInteraction,    \
+              Interaction,         \
               ItemType
 
 
 class EditPasteInteraction(
-    MoveMixin,        # update, _moveBy, _storePos, _restorePos
-    AddRemoveMixin,   # _addToScene, _removeFromScene
-    SelectionMixin,   # _preserveSelection, _restoreSelection
-    ItemsInteraction  # _scene, _items, valid
+    MoveItemsMixin,       # update, _moveBy, _storePos, _restorePos
+    AddRemoveItemsMixin,  # _addToScene, _removeFromScene
+    SelectionMixin,       # _preserveSelection, _restoreSelection
+    ItemsInteraction      # _scene, _items, valid
 ):
     def __init__(
         self  : Self,
@@ -79,7 +79,7 @@ class EditDuplicateInteraction(EditPasteInteraction):
 
 
 class EditMoveInteraction(
-    MoveMixin,              # update, _moveBy, _storePos, _restorePos
+    MoveItemsMixin,              # update, _moveBy, _storePos, _restorePos
     ItemsInteraction,  # _scene, _items, valid
 ):
     # instance attributes

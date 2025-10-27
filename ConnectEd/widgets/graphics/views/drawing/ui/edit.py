@@ -4,7 +4,7 @@ from PyQt6.QtGui     import QCursor
 
 from ....query import QueryWindow
 
-from ..interaction      import RotateMixin
+from ..interaction      import RotateItemMixin
 from ..interaction.edit import EditMoveInteraction
 
 from typing import TYPE_CHECKING
@@ -101,7 +101,7 @@ class DrawingViewUiEditMixin:
         pos   : QPoint | QPointF | None = None
     ) -> None:
         if self._view.interaction:  # interaction in progress
-            if isinstance(self._view.interaction, RotateMixin):
+            if isinstance(self._view.interaction, RotateItemMixin):
                 self._view.interaction.rotateCW()
         else:
             scene : "DrawingScene" = self._view.scene()
@@ -116,7 +116,7 @@ class DrawingViewUiEditMixin:
         pos   : QPoint | QPointF | None = None
     ) -> None:
         if self._view.interaction:  # interaction in progress
-            if isinstance(self._view.interaction, RotateMixin):
+            if isinstance(self._view.interaction, RotateItemMixin):
                 self._view.interaction.rotateCCW()
         else:
             scene : "DrawingScene" = self._view.scene()

@@ -23,7 +23,7 @@ from ....items.conn_seg   import ConnSeg, ConnSegPreview1, ConnSegPreview2
 from ....scenes.drawing.cmd import CmdAdd, CmdAddBlockPin
 
 from . import SelectionMixin,      \
-              RotateMixin,         \
+              RotateItemMixin,     \
               ItemInteraction,     \
               BlockPinInteraction, \
               ItemType
@@ -103,7 +103,7 @@ class PlaceBaseRectInteraction(PlaceBaseInteraction):
         self._item.setPoints(self._pos, pos)
 
 
-class PlacePortInteraction(RotateMixin, PlaceBaseInteraction):
+class PlacePortInteraction(RotateItemMixin, PlaceBaseInteraction):
     _ITEM = Port
 
     def ctxMenuItems(self : Self, pos : QPointF) -> list[QAction | QMenu]:
