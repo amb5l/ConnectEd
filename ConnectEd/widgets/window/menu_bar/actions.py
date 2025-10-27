@@ -147,11 +147,11 @@ class Actions:
             self.onSelectionChanged()
 
     def onSelectionChanged(self : Self) -> None:
-        if self._scene:
+        try:
             selected_items = self._scene.selectedItems()
-            n = len(selected_items)
-        else:
-            n = 0
+        except: # workaround for Qt cleanup
+            selected_items = []
+        n = len(selected_items)
         self.editCut        .setEnabled( n > 0 )
         self.editCopy       .setEnabled( n > 0 )
         self.editDelete     .setEnabled( n > 0 )
