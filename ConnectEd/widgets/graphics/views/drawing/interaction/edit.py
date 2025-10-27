@@ -44,7 +44,7 @@ class EditPasteInteraction(
         else:
             self._items = None
 
-    def complete(self : Self, pos : QPointF) -> bool:
+    def commit(self : Self, pos : QPointF) -> bool:
         self._restorePos()  # restore initial positions
         self.update(pos)    # apply final offset
         # add pasted items to scene
@@ -99,7 +99,7 @@ class EditMoveInteraction(
         self._slide    = slide
         self._storePos()  # record initial positions
 
-    def complete(self : Self, pos : QPointF) -> bool:
+    def commit(self : Self, pos : QPointF) -> bool:
         self._restorePos()  # restore initial positions
         # apply final offset
         self._scene.undo_stack.push(CmdMove(
@@ -148,7 +148,7 @@ class EditMoveBlockPinsInteraction(Interaction):
         for pin in self._pins[1:]:
             pin.setLoc(self._parent.locOffset(pin.loc(), offset, corner))
 
-    def complete(self : Self, pos : QPointF, snap : QPointF | None = None) -> bool:
+    def commit(self : Self, pos : QPointF, snap : QPointF | None = None) -> bool:
         self._restoreLoc()
         self.update(pos, snap)
         if all(p.loc() == self._sloc[p] for p in self._pins):

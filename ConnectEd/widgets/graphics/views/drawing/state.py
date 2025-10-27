@@ -135,7 +135,7 @@ class DrawingViewStateBase:
 class ClickMixin(DrawingViewStateBase):
     def mouseLeftClick(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
         if self.view.interaction is not None:
-            self.view.interaction.complete(self._snap(s))
+            self.view.interaction.commit(self._snap(s))
         self.view.state.go(self.view.stateIdle)
 
     def mouseMove(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
@@ -150,7 +150,7 @@ class DragMixin(DrawingViewStateBase):
 
     def mouseLeftDragEnd(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
         if self.view.interaction is not None:
-            self.view.interaction.complete(self._snap(s))
+            self.view.interaction.commit(self._snap(s))
         self.view.state.go(self.view.stateIdle)
 
 
@@ -388,7 +388,7 @@ class DrawingViewStateEditMovePins(DrawingViewStateBase):
 
     def mouseLeftClick(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
         g = self.view.grid
-        self.view.interaction.complete(s, g.pitch if g.snap else None)
+        self.view.interaction.commit(s, g.pitch if g.snap else None)
         self.view.state.go(self.view.stateIdle)
 
     def mouseMove(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
@@ -401,7 +401,7 @@ class DrawingViewStateEditMovePins(DrawingViewStateBase):
 
     def mouseLeftDragEnd(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
         g = self.view.grid
-        self.view.interaction.complete(s, g.pitch if g.snap else None)
+        self.view.interaction.commit(s, g.pitch if g.snap else None)
         self.view.state.go(self.view.stateIdle)
 
 
@@ -615,7 +615,7 @@ class DrawingViewStatePlaceBlockPin(DrawingViewStateBase):
             self.view.state.go(self.view.stateIdle)
 
     def mouseLeftClick(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
-        self.view.interaction.complete(
+        self.view.interaction.commit(
             self._snap(s),
             self.view.grid.pitch if self.view.grid.snap else None
         )
@@ -763,12 +763,12 @@ class DrawingViewStatePlaceConn2(ClickMixin):
     STATUS = "Place Connection: place a mid- or end-point"
 
     def mouseLeftDoubleClick(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
-        if not self.view.interaction.complete(self._snap(s)):
+        if not self.view.interaction.commit(self._snap(s)):
             self.view.interaction.cancel()
         self.view.state.go(self.view.statePlaceConn1)
 
     def mouseLeftClick(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
-        if self.view.interaction.complete(self._snap(s)):
+        if self.view.interaction.commit(self._snap(s)):
             self.view.state.go(self.view.statePlaceConn1)
 
     def mouseMove(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
@@ -778,7 +778,7 @@ class DrawingViewStatePlaceConn2(ClickMixin):
         self.mouseMove(v, s, m)
 
     def mouseLeftDragEnd(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
-        if self.view.interaction.complete(self._snap(s)):
+        if self.view.interaction.commit(self._snap(s)):
             self.view.state.go(self.view.statePlaceConn1)
 
 

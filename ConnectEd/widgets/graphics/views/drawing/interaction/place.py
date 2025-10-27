@@ -61,7 +61,7 @@ class PlaceBaseInteraction(
     def update(self : Self, pos : QPointF):
         self._item.setPos(pos)
 
-    def complete(self : Self, pos : QPointF) -> bool:
+    def commit(self : Self, pos : QPointF) -> bool:
         self.update(pos)
         self._scene.undo_stack.push(CmdAdd(
             self._scene, [self._item], self._selection
@@ -140,7 +140,7 @@ class PlaceBlockPinInteraction(BlockPinInteraction):
     def update(self : Self, pos : QPointF, snap : QPointF | None = None) -> None:
         self._pin.setLoc(self._pin.locSnap(self._parent.pos2loc(pos), snap))
 
-    def complete(self : Self, pos : QPointF, snap : QPointF | None = None) -> bool:
+    def commit(self : Self, pos : QPointF, snap : QPointF | None = None) -> bool:
         self.update(pos, snap)
         self._scene.undo_stack.push(CmdAddBlockPin(self._parent, self._pin))
         return True
@@ -199,7 +199,7 @@ class PlaceConnInteraction(SelectionMixin):
     def update(self : Self, pos : QPointF) -> None:
         self._updateVertices(pos)
 
-    def complete(self : Self, pos : QPointF) -> bool:
+    def commit(self : Self, pos : QPointF) -> bool:
         self._updateVertices(pos)
         # get scene content before changing it
         items_1 = self._scene.items(self._p1())

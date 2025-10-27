@@ -1,5 +1,4 @@
 from typing import Self
-from abc import ABC, abstractmethod
 
 from PyQt6.QtCore    import QPointF
 from PyQt6.QtWidgets import QMenu
@@ -26,7 +25,7 @@ class RotateMixin:
         self._item.setRotation((self._item.rotation() - 90) % 360)
 
 
-class Interaction(ABC):
+class Interaction:
     """Base for all interactions."""
 
     # instance attributes
@@ -35,26 +34,19 @@ class Interaction(ABC):
     def __init__(self : Self, scene : "DrawingScene"):
         self._scene = scene
 
-    @abstractmethod
-    def valid(self : Self) -> bool: ...
+    @property
+    def valid(self : Self) -> bool:
+        raise NotImplementedError("Subclass must implement valid")
 
-    @abstractmethod
-    def update(self : Self, pos : QPointF) -> None: ...
+    def update(self : Self, pos : QPointF) -> None:
+        raise NotImplementedError("Subclass must implement update")
 
-    @abstractmethod
-    def complete(self : Self, pos : QPointF) -> bool:
-        """
-        Returns True if the interaction actually completed.
-        For example, if wire placement ended at an entry.
-        """
-        ...
-
-    @abstractmethod
-    def cancel(self : Self) -> None: ...
+    def commit(self : Self, pos : QPointF) -> bool:
+        raise NotImplementedError("Subclass must implement commit")
 
     def ctxMenuItems(self : Self, pos : QPointF) -> list[QAction | QMenu]:
         complete_action = QAction("Complete")
-        complete_action.triggered.connect(lambda: self.complete(pos))
+        complete_action.triggered.connect(lambda: self.commit(pos))
         cancel_action = QAction("Cancel")
         cancel_action.triggered.connect(self.cancel)
         return [complete_action, cancel_action]
