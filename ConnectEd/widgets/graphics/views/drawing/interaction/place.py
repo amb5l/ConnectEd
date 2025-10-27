@@ -94,8 +94,21 @@ class PlaceBase1PosInteraction(PlaceBaseInteraction):
 class PlaceBase2PosInteraction(PlaceBase1PosInteraction):
     """Base for all interactions that place a single item using 2 positions."""
 
+    # instance attributes
+    _item : ItemVertexMixin  # type hint for this interaction
+    _p1   : QPointF          # first position
+
+    def __init__(
+        self  : Self,
+        scene : "DrawingScene",
+        pos   : QPointF,
+        item  : ItemType | None = None
+    ) -> None:
+        super().__init__(scene, pos, item)
+        self._p1 = pos
+
     def update(self : Self, pos : QPointF):
-        self._item.setPoints(self._item.pos(), pos)
+        self._item.setPoints(self._p1, pos)
 
 
 class PlaceBaseNPosInteraction(PlaceBase1PosInteraction):
