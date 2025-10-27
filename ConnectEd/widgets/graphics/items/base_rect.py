@@ -10,6 +10,7 @@ from ....app import settings
 from ..properties import PropertySpec, PropertiesMixin
 
 from .mixin        import ItemMixin
+from .mixin.paint  import ItemPaintMixin
 from .mixin.bound  import ItemBoundMixin
 from .mixin.shape  import ItemShapeMixin
 from .mixin.pos    import ItemPosMixin
@@ -24,6 +25,7 @@ from .mixin.menu   import ItemMenuMixin
 
 class BaseRectangleMixin(
     ItemMixin,
+    ItemPaintMixin,
     ItemBoundMixin,
     ItemShapeMixin,
     ItemPosMixin,
@@ -143,15 +145,6 @@ class BaseRectangleMixin(
         else:
             super().setRect(rect_or_ax, ay, w, h)
         self.onGeometryChange()
-
-    def paint(
-        self    : Self,
-        painter : QPainter,
-        option  : QStyleOptionGraphicsItem,
-        widget  : QWidget
-    ) -> None:
-        option.state &= ~QStyle.StateFlag.State_Selected
-        super().paint(painter, option, widget)
 
     def setWidth(self : Self, width : float | int) -> None:
         rect = self.rect()

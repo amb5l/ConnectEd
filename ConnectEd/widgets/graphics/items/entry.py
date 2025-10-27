@@ -1,10 +1,10 @@
 from typing import Self
 
 from PyQt6.QtCore    import QPointF, QRectF
-from PyQt6.QtWidgets import QStyleOptionGraphicsItem, QGraphicsPathItem, \
-                            QWidget, QStyle
-from PyQt6.QtGui     import QPainter, QPainterPath
+from PyQt6.QtWidgets import QGraphicsPathItem
+from PyQt6.QtGui     import QPainterPath
 
+from .mixin.paint  import ItemPaintMixin
 from .mixin.line   import ItemLineMixin
 from .mixin.fill   import ItemFillMixin
 from .mixin.change import ItemChangeMixin
@@ -15,6 +15,7 @@ if TYPE_CHECKING:
 
 
 class Entry(
+    ItemPaintMixin,
     ItemLineMixin,
     ItemFillMixin,
     ItemChangeMixin,
@@ -66,12 +67,3 @@ class Entry(
 
     def boundingRect(self : Self) -> QRectF:
         return self._brect
-
-    def paint(
-        self    : Self,
-        painter : QPainter,
-        option  : QStyleOptionGraphicsItem,
-        widget  : QWidget | None = None
-    ) -> None:
-        option.state &= ~QStyle.StateFlag.State_Selected
-        QGraphicsPathItem.paint(self, painter, option, widget)

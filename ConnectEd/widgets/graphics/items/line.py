@@ -1,9 +1,8 @@
 from typing import Self
 
 from PyQt6.QtCore    import Qt, QPointF, QLineF
-from PyQt6.QtWidgets import QGraphicsLineItem, QStyleOptionGraphicsItem, \
-                            QWidget, QStyle
-from PyQt6.QtGui     import QPainter, QPainterPath, QPainterPathStroker
+from PyQt6.QtWidgets import QGraphicsLineItem
+from PyQt6.QtGui     import QPainterPath, QPainterPathStroker
 
 from ....app import settings
 
@@ -12,6 +11,7 @@ from ..properties import PropertySpec
 from .anchor_point import AnchorPoint
 
 from .mixin        import ItemMixin
+from .mixin.paint  import ItemPaintMixin
 from .mixin.shape  import ItemShapeMixin
 from .mixin.anchor import ItemAnchorPointsMixin
 from .mixin.line   import ItemLineMixin
@@ -23,6 +23,7 @@ from .mixin.menu   import ItemMenuMixin
 
 class Line(
     ItemMixin,
+    ItemPaintMixin,
     ItemShapeMixin,
     ItemAnchorPointsMixin,
     ItemLineMixin,
@@ -164,12 +165,3 @@ class Line(
 
     def shape(self : Self) -> QPainterPath:
         return self._hshape
-
-    def paint(
-        self    : Self,
-        painter : QPainter,
-        option  : QStyleOptionGraphicsItem,
-        widget  : QWidget
-    ) -> None:
-        option.state &= ~QStyle.StateFlag.State_Selected
-        super().paint(painter, option, widget)

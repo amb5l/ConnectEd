@@ -1,13 +1,13 @@
 from typing import Self
 
-from PyQt6.QtWidgets import QWidget, QGraphicsItem, QGraphicsPathItem, \
-                            QStyleOptionGraphicsItem, QStyle, QMenu
-from PyQt6.QtGui     import QPainter, QAction
+from PyQt6.QtWidgets import QGraphicsItem, QGraphicsPathItem, QMenu
+from PyQt6.QtGui     import QAction
 
 from ....app import settings
 
-from .mixin.pos  import ItemPosMixin
-from .mixin.fill import ItemFillMixin
+from .mixin.paint import ItemPaintMixin
+from .mixin.pos   import ItemPosMixin
+from .mixin.fill  import ItemFillMixin
 
 from .port_pin import PortPinText, PortPinMixin
 from .entry    import Entry
@@ -31,7 +31,13 @@ class PortComment(PortPinText):
     pass
 
 
-class Port(ItemPosMixin, ItemFillMixin, PortPinMixin, QGraphicsPathItem):
+class Port(
+    ItemPaintMixin,
+    ItemPosMixin,
+    ItemFillMixin,
+    PortPinMixin,
+    QGraphicsPathItem
+):
     # class attributes
     _NAME_OFFSET = 2
     _PROPERTY_SPECS = \
@@ -89,15 +95,6 @@ class Port(ItemPosMixin, ItemFillMixin, PortPinMixin, QGraphicsPathItem):
         and self._direction.value in scene.paths[self.__class__.__name__]:
             path = scene.paths[self.__class__.__name__][self._direction.value]
             self.setPath(path)
-
-    def paint(
-        self    : Self,
-        painter : QPainter,
-        option  : QStyleOptionGraphicsItem,
-        widget  : QWidget | None = None
-    ) -> None:
-        option.state &= ~QStyle.StateFlag.State_Selected
-        QGraphicsPathItem.paint(self, painter, option, widget)
 
     def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
         return [

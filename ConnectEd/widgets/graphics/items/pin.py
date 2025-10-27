@@ -7,6 +7,7 @@ from PyQt6.QtGui     import QPainter
 
 from . import SignalDirection
 
+from .mixin.paint  import ItemPaintMixin
 from .mixin.change import ItemChangeMixin
 from .mixin.line   import ItemLineMixin
 from .mixin.fill   import ItemFillMixin
@@ -23,6 +24,7 @@ _PIN_LEN = 10 # documentation - DO NOT CHANGE
 
 
 class PinArrow(
+    ItemPaintMixin,
     ItemChangeMixin,
     ItemLineMixin,
     ItemFillMixin,
@@ -63,15 +65,6 @@ class PinArrow(
             path = scene.paths[self.__class__.__name__][self._direction.value]
             self.setPath(path)
 
-    def paint(
-        self    : Self,
-        painter : QPainter,
-        option  : QStyleOptionGraphicsItem,
-        widget  : QWidget | None = None
-    ) -> None:
-        option.state &= ~QStyle.StateFlag.State_Selected
-        QGraphicsPathItem.paint(self, painter, option, widget)
-
 
 class PinEntry(Entry):
     pass
@@ -85,7 +78,7 @@ class PinComment(PortPinText):
     pass
 
 
-class Pin(PortPinMixin, QGraphicsLineItem):
+class Pin(ItemPaintMixin, PortPinMixin, QGraphicsLineItem):
     @classmethod
     def _getArrowClass(cls) -> type[PinArrow]:
         return PinArrow
@@ -132,12 +125,3 @@ class Pin(PortPinMixin, QGraphicsLineItem):
     def onSelectionChange(self : Self, selected : bool) -> None:
         self._arrow.setSelected(selected)
         self._entry.setSelected(selected)
-
-    def paint(
-        self    : Self,
-        painter : QPainter,
-        option  : QStyleOptionGraphicsItem,
-        widget  : QWidget | None = None
-    ) -> None:
-        option.state &= ~QStyle.StateFlag.State_Selected
-        QGraphicsLineItem.paint(self, painter, option, widget)
