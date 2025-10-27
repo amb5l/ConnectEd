@@ -33,12 +33,11 @@ class Interaction:
     def commit(self : Self, pos : QPointF) -> bool:
         raise NotImplementedError("Subclass must implement commit")
 
+    def complete(self : Self, pos : QPointF) -> None:
+        raise NotImplementedError("Subclass must implement complete")
+
     def ctxMenuItems(self : Self, pos : QPointF) -> list[QAction | QMenu]:
-        complete_action = QAction("Complete")
-        complete_action.triggered.connect(lambda: self.commit(pos))
-        cancel_action = QAction("Cancel")
-        cancel_action.triggered.connect(self.cancel)
-        return [complete_action, cancel_action]
+        raise NotImplementedError("Subclass must implement ctxMenuItems")
 
 
 class ItemInteraction(Interaction):
@@ -51,7 +50,7 @@ class ItemInteraction(Interaction):
         scene : "DrawingScene",
         item  : ItemType
     ) -> None:
-        Interaction.__init__(self, scene)
+        super().__init__(scene)
         self._item = item
 
     @property
@@ -70,7 +69,7 @@ class ItemsInteraction(Interaction):
         scene    : "DrawingScene",
         items : list[ItemType]
     ) -> None:
-        Interaction.__init__(self, scene)
+        super().__init__(scene)
         self._items = items
 
     @property
@@ -93,7 +92,7 @@ class BlockPinInteraction(Interaction):
         pos    : QPointF,
         snap   : QPointF | None = None
     ) -> None:
-        Interaction.__init__(self, scene)
+        super().__init__(scene)
         if isinstance(parent, Block):
             self._parent = parent
             self._pin = pin or BlockPin(parent)

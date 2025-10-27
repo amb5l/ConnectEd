@@ -75,6 +75,17 @@ class PlaceBase1PosInteraction(PlaceBaseInteraction):
         ))
         return True
 
+    def complete(self : Self, pos : QPointF) -> None:
+        self.commit(pos)
+
+    def ctxMenuItems(self : Self, pos : QPointF) -> list[QAction | QMenu]:
+        complete_action = QAction("Complete")
+        complete_action.triggered.connect(lambda: self.commit(pos))
+        cancel_action = QAction("Cancel")
+        cancel_action.triggered.connect(self.cancel)
+        return [complete_action, cancel_action]
+
+
 class PlaceBase2PosInteraction(PlaceBase1PosInteraction):
     """Base for all interactions that place a single item using 2 positions."""
 
@@ -82,7 +93,7 @@ class PlaceBase2PosInteraction(PlaceBase1PosInteraction):
         self._item.setPoints(self._item.pos(), pos)
 
 
-class PlacePortInteraction(RotateItemMixin, PlaceBase2PosInteraction):
+class PlacePortInteraction(RotateItemMixin, PlaceBase1PosInteraction):
     _ITEM = Port
 
     def ctxMenuItems(self : Self, pos : QPointF) -> list[QAction | QMenu]:
@@ -182,7 +193,7 @@ class PlaceConnInteraction(SelectionMixin):
     def update(self : Self, pos : QPointF) -> None:
         self._updateVertices(pos)
 
-    def commit(self : Self, pos : QPointF) -> bool:
+    def commit(self : Self, pos : QPointF, complete : bool = False) -> bool:
         self._updateVertices(pos)
         # get scene content before changing it
         items_1 = self._scene.items(self._p1())
@@ -196,13 +207,18 @@ class PlaceConnInteraction(SelectionMixin):
         if connectables_1:
             self._cleanup()
             return True  # interaction completed
-        # create second segment if mouse is over a connectable destination
-        if connectables_2:
+        # create second segment if...
+        # - complete is requested
+        # - mouse is over a connectable destination
+        if complete or connectables_2:
             self._scene.addConnSeg(self._p1(), self._p2(), undo=True)
             self._cleanup()
             return True  # interaction completed
         self._restart(pos)
         return False  # continue interaction
+
+    def complete(self : Self, pos : QPointF) -> None:
+        self.commit(pos, complete=True)
 
     def cancel(self : Self) -> None:
         self._cleanup()
@@ -254,8 +270,6 @@ class PlaceConnInteraction(SelectionMixin):
     def _restart(self : Self, pos : QPointF) -> None:
         self._setP0(self._p1())
         self._updateVertices(pos)
-
-    # todo: _commit method
 
     def _cleanup(self : Self) -> None:
         for item in [self._seg1, self._seg2]:
