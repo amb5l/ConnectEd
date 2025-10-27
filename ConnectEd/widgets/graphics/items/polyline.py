@@ -38,7 +38,7 @@ class Polyline(
         self.updateVertices()
 
     def anchorPointRect(self : Self) -> QRectF:
-        return self.boundingRect()
+        return self.path().controlPointRect()
 
     def updateVertices(self : Self) -> None:
         path = QPainterPath()
