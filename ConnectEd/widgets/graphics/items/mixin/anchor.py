@@ -51,7 +51,9 @@ class ItemRectAnchorPointsMixin(ItemAnchorPointsMixin):
         if not hasattr(self, "_anchor_points"):
             return
         rect = self.anchorPointRect()
+        x0 = rect.topLeft().x()
+        y0 = rect.topLeft().y()
+        w = rect.width()
+        h = rect.height()
         for name, (x, y) in self._AP_RECT.items():
-            self._anchor_points[name].setPos(QPointF(
-                x * rect.width(), y * rect.height()
-            ))
+            self._anchor_points[name].setPos(QPointF(x0 + (x * w), y0 + (y * h)))

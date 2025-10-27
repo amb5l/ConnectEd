@@ -1,4 +1,5 @@
 NEXT
+- polyline anchor point rect includes line thickness and should not!
 - rect = self._allItemsRect()
 - review use of ItemBoundMixin and ItemShapeMixin to allow for tolerance
 - remove unnecessary reuse e.g. of QPainterPath
