@@ -71,7 +71,7 @@ class Line(
         p1 = QPointF() if p1 is None else p1
         p2 = p1 if p2 is None else p2
         self._line = QLineF()
-        self.setP1P2(p1, p2)
+        self.setPoints(p1, p2)
 
     def onGeometryChange(self : Self) -> None:
         """Allow for tolerance."""
@@ -115,7 +115,7 @@ class Line(
         return self.pos()
 
     def setP1(self : Self, pos : QPointF) -> None:
-        self.setP1P2(pos, self.p2())
+        self.setPoints(pos, self.p2())
 
     def x1(self : Self) -> float:
         return self.p1().x()
@@ -133,7 +133,7 @@ class Line(
         return self.pos() + self.line().p2()
 
     def setP2(self : Self, pos : QPointF) -> None:
-        self.setP1P2(self.p1(), pos)
+        self.setPoints(self.p1(), pos)
 
     def x2(self : Self) -> float:
         return self._line.p2().x()
@@ -147,7 +147,7 @@ class Line(
     def setY2(self : Self, value : float) -> None:
         self.setP2(QPointF(self.p2().x(), value))
 
-    def setP1P2(self : Self, p1 : QPointF, p2 : QPointF) -> None:
+    def setPoints(self : Self, p1 : QPointF, p2 : QPointF) -> None:
         self.setPos(p1)
         self._line.setP2(p2-p1)
         self.setLine(self._line)

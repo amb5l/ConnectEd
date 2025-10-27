@@ -6,19 +6,18 @@ from PyQt6.QtGui     import QAction
 
 from ......core.utils import sign
 
-from ....items.line       import Line
-from ....items.base_rect  import BaseRectangle
 from ....items.block      import Block
-from ....items.rectangle  import Rectangle
-from ....items.ellipse    import Ellipse
-from ....items.text       import Text
-from ....items.text_block import TextBlock
 from ....items.port       import Port
 from ....items.block_pin  import BlockPin
 from ....items.symbol_pin import SymbolPin
 from ....items.entry      import Entry
 from ....items.conn_vtx   import ConnVtx
 from ....items.conn_seg   import ConnSeg, ConnSegPreview1, ConnSegPreview2
+from ....items.line       import Line
+from ....items.rectangle  import Rectangle
+from ....items.ellipse    import Ellipse
+from ....items.text       import Text
+from ....items.text_block import TextBlock
 
 from ....scenes.drawing.cmd import CmdAdd, CmdAddBlockPin
 
@@ -58,6 +57,14 @@ class PlaceBaseInteraction(
         self._scene.addItem(self._item)
         self._item.setSelected(True)
 
+    def cancel(self : Self) -> None:
+        self._scene.removeItem(self._item)
+        self._restoreSelection()
+
+
+class PlaceBase1PosInteraction(PlaceBaseInteraction):
+    """Base for all interactions that place a single item using 1 position."""
+
     def update(self : Self, pos : QPointF):
         self._item.setPos(pos)
 
@@ -68,42 +75,14 @@ class PlaceBaseInteraction(
         ))
         return True
 
-    def cancel(self : Self) -> None:
-        self._scene.removeItem(self._item)
-        self._restoreSelection()
-
-
-class PlaceLineInteraction(PlaceBaseInteraction):
-    _ITEM = Line
-
-    # instance attributes
-    _item : Line  # type hint specific to this interaction
+class PlaceBase2PosInteraction(PlaceBase1PosInteraction):
+    """Base for all interactions that place a single item using 2 positions."""
 
     def update(self : Self, pos : QPointF):
-        self._item.setP2(pos)
+        self._item.setPoints(self._item.pos(), pos)
 
 
-class PlaceBaseRectInteraction(PlaceBaseInteraction):
-    """Base for all interactions that place a single rectangular item."""
-
-    # instance attributes
-    _item : BaseRectangle  # type hint specific to this interaction
-    _pos  : QPointF        # initial position
-
-    def __init__(
-        self  : Self,
-        scene : "DrawingScene",
-        pos   : QPointF,
-        item  : ItemType | None = None
-    ) -> None:
-        super().__init__(scene, pos, item)
-        self._pos = pos
-
-    def update(self : Self, pos : QPointF):
-        self._item.setPoints(self._pos, pos)
-
-
-class PlacePortInteraction(RotateItemMixin, PlaceBaseInteraction):
+class PlacePortInteraction(RotateItemMixin, PlaceBase2PosInteraction):
     _ITEM = Port
 
     def ctxMenuItems(self : Self, pos : QPointF) -> list[QAction | QMenu]:
@@ -122,7 +101,7 @@ class PlacePortInteraction(RotateItemMixin, PlaceBaseInteraction):
         ]
 
 
-class PlaceBlockInteraction(PlaceBaseRectInteraction):
+class PlaceBlockInteraction(PlaceBase2PosInteraction):
     _ITEM = Block
 
 
@@ -149,23 +128,27 @@ class PlaceBlockPinInteraction(BlockPinInteraction):
         self._pin.setParentItem(None)
 
 
-class PlaceSymbolPinInteraction(PlaceBaseInteraction):
+class PlaceSymbolPinInteraction(PlaceBase2PosInteraction):
     _ITEM = SymbolPin
 
 
-class PlaceRectangleInteraction(PlaceBaseRectInteraction):
+class PlaceLineInteraction(PlaceBase2PosInteraction):
+    _ITEM = Line
+
+
+class PlaceRectangleInteraction(PlaceBase2PosInteraction):
     _ITEM = Rectangle
 
 
-class PlaceEllipseInteraction(PlaceBaseRectInteraction):
+class PlaceEllipseInteraction(PlaceBase2PosInteraction):
     _ITEM = Ellipse
 
 
-class PlaceTextInteraction(PlaceBaseInteraction):
+class PlaceTextInteraction(PlaceBase1PosInteraction):
     _ITEM = Text
 
 
-class PlaceTextBlockInteraction(PlaceBaseInteraction):
+class PlaceTextBlockInteraction(PlaceBase1PosInteraction):
     _ITEM = TextBlock
 
 
