@@ -11,8 +11,8 @@ from ..properties import PropertySpec
 from .anchor_point import AnchorPoint
 
 from .mixin        import ItemMixin
-from .mixin.paint  import ItemPaintMixin
 from .mixin.shape  import ItemShapeMixin
+from .mixin.paint  import ItemPaintMixin
 from .mixin.anchor import ItemAnchorPointsMixin
 from .mixin.line   import ItemLineMixin
 from .mixin.change import ItemChangeMixin
@@ -23,8 +23,8 @@ from .mixin.menu   import ItemMenuMixin
 
 class Line(
     ItemMixin,
-    ItemPaintMixin,
     ItemShapeMixin,
+    ItemPaintMixin,
     ItemAnchorPointsMixin,
     ItemLineMixin,
     ItemChangeMixin,

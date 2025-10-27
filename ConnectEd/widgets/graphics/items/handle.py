@@ -1,43 +1,43 @@
 from typing import Self
 
 from PyQt6.QtCore    import Qt, QPointF, QXmlStreamWriter, QXmlStreamReader
-from PyQt6.QtWidgets import QGraphicsPathItem, QMenu
-from PyQt6.QtGui     import QPen, QBrush, QPainterPath, QAction
+from PyQt6.QtWidgets import QGraphicsPathItem, QGraphicsItem
+from PyQt6.QtGui     import QPen, QBrush, QPainterPath
 
 from ....app import settings
 
 from .mixin.change import ItemChangeMixin
-from .mixin.menu   import ItemMenuMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from ..views.drawing  import DrawingView
     from ..scenes.drawing import DrawingScene
     from .mixin.anchor    import ItemAnchorPointsMixin
-    from .anchor_point    import AnchorPoint
 
 
 class Handle(
     ItemChangeMixin,
-    ItemMenuMixin,
     QGraphicsPathItem
 ):
     # class attributes
-    _PATH = "Handle"
-    _MENU : list[str]
+    _PATH_NAME = "Handle"
 
     # instance attributes
-    _item  : "ItemAnchorPointsMixin"  # parent item
-    _path  : QPainterPath             # path
-    _brush : QBrush                   # brush
+    _item      : "ItemAnchorPointsMixin"  # parent item
+    _path_name : str                      # path name
+    _xxxpath      : QPainterPath             # path
+    _brush     : QBrush                   # brush
 
     def __init__(
         self   : Self,
-        parent : "AnchorPoint",
+        parent : QGraphicsItem,
+        pos    : QPointF | None = None,
         move   : bool = False,
         resize : bool = False
     ) -> None:
         super().__init__(parent)
+        if pos is None:
+            pos = QPointF()
+        self.setPos(pos)
         self._item = parent.parentItem()
         self.setFlag( self.GraphicsItemFlag.ItemIgnoresTransformations , True  )
         self.setFlag( self.GraphicsItemFlag.ItemIsSelectable           , False )
@@ -45,22 +45,19 @@ class Handle(
         self.setPen(QPen(Qt.PenStyle.NoPen))
         self._brush = QBrush(Qt.BrushStyle.SolidPattern)
         self.setVisible(False)
+        self._path_name = self._PATH_NAME
         self.onSettingsChange()
         settings().changed.connect(self.onSettingsChange)
 
     def onSceneChange(self : Self, scene : "DrawingScene | None") -> None:
         if scene is not None:
-            self.setPath(scene.paths[self._PATH])
+            self.setPath(scene.paths[self._path_name])
 
     def onSettingsChange(self : Self) -> None:
         self.prepareGeometryChange()
         self.onSceneChange(self.scene())
-        self._brush.setColor(settings().get(f"theme/selected/fill"))
+        self._brush.setColor(settings().get("theme/selected/fill"))
         self.setBrush(self._brush)
-
-    def moveBy(self : Self, delta : QPointF) -> None:
-        parent : "AnchorPoint" = self.parentItem()
-        self._item.moveAnchorPointBy(parent.name(), delta)
 
     def toXml(self : Self, _ : QXmlStreamWriter) -> None:
         pass
@@ -68,46 +65,3 @@ class Handle(
     @classmethod
     def fromXml(cls : Self, _ : QXmlStreamReader) -> Self:
         pass
-
-    def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
-        items = []
-        if hasattr(self._item, "_origin"):
-            items.extend(view.action(
-                "Assign Origin",
-                lambda: view.ui.editAssignOrigin(self.parentItem())
-            ))
-        return items
-
-
-class Grip(Handle):
-    _PATH = "Grip"
-
-class MoveGrip(Grip):
-    def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
-        return [
-            view.action("Slide", view.ui.editSlide),
-            view.action("Move", view.ui.editMove),
-            view.separator()
-        ] + super().ctxMenuItems()
-
-
-class ResizeGrip(MoveGrip):
-    def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
-        return [
-            view.action("Resize", lambda: view.ui.editResize(self)),
-        ] + super().ctxMenuItems()
-
-
-class Origin(Handle):
-    _PATH = "Origin"
-
-    def __init__(
-        self   : Self,
-        parent : "AnchorPoint",
-        move   : bool = False,
-        resize : bool = False
-    ) -> None:
-        super().__init__(parent, move, resize)
-
-    def ctxMenuItems(self : Self) -> list[QAction | QMenu]:
-        return []

@@ -14,7 +14,8 @@ from ....dialogs.port_pin      import PortPinDialog
 
 from ...items import SignalDirection, ItemMixin
 
-from ...items.handle        import Handle, ResizeGrip
+from ...items.handle        import Handle
+from ...items.grip          import ResizeGrip
 from ...items.block         import Block
 from ...items.text          import Text
 from ...items.text_block    import TextBlock
@@ -37,6 +38,8 @@ from .interaction.place import PlacePortInteraction,         \
                                PlaceLineInteraction,         \
                                PlaceRectangleInteraction,    \
                                PlaceEllipseInteraction,      \
+                               PlacePolylineInteraction,     \
+                               PlacePolygonInteraction,      \
                                PlaceTextInteraction,         \
                                PlaceTextBlockInteraction,    \
                                PlaceConnInteraction
@@ -135,8 +138,13 @@ class DrawingViewStateBase:
 class ClickMixin(DrawingViewStateBase):
     def mouseLeftClick(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
         if self.view.interaction is not None:
-            self.view.interaction.commit(self._snap(s))
-        self.view.state.go(self.view.stateIdle)
+            if self.view.interaction.commit(self._snap(s)):
+                self.view.state.go(self.view.stateIdle)
+
+    def mouseLeftDoubleClick(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
+        if self.view.interaction is not None:
+            self.view.interaction.complete(self._snap(s))
+            self.view.state.go(self.view.stateIdle)
 
     def mouseMove(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
         if self.view.interaction is not None:
@@ -150,8 +158,8 @@ class DragMixin(DrawingViewStateBase):
 
     def mouseLeftDragEnd(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
         if self.view.interaction is not None:
-            self.view.interaction.commit(self._snap(s))
-        self.view.state.go(self.view.stateIdle)
+            if self.view.interaction.commit(self._snap(s)):
+                self.view.state.go(self.view.stateIdle)
 
 
 class DrawingViewStateIdle(DrawingViewStateBase):
@@ -702,6 +710,40 @@ class DrawingViewStatePlaceEllipse2(ClickMixin, DragMixin):
     STATUS = "Place Ellipse: pick the second point"
 
 
+class DrawingViewStatePlacePolyline1(DrawingViewStateBase):
+    STATUS = "Place Polyline: pick the first point"
+
+    def mouseLeftClick(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
+        self.interact(
+            PlacePolylineInteraction(self.scene, self._snap(s)),
+            self.view.statePlaceEllipse2
+        )
+
+    def mouseLeftDragBegin(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
+        self.mouseLeftClick(v, s, m)
+
+
+class DrawingViewStatePlacePolyline2(ClickMixin, DragMixin):
+    STATUS = "Place Polyline: pick the next point"
+
+
+class DrawingViewStatePlacePolygon1(DrawingViewStateBase):
+    STATUS = "Place Polygon: pick the first point"
+
+    def mouseLeftClick(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
+        self.interact(
+            PlacePolygonInteraction(self.scene, self._snap(s)),
+            self.view.statePlaceEllipse2
+        )
+
+    def mouseLeftDragBegin(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
+        self.mouseLeftClick(v, s, m)
+
+
+class DrawingViewStatePlacePolygon2(ClickMixin, DragMixin):
+    STATUS = "Place Polygon: pick the next point"
+
+
 class DrawingViewStatePlaceText(ClickMixin):
     STATUS = "Place Text: pick a position"
 
@@ -813,6 +855,10 @@ class DrawingViewStateMixin:
     statePlaceRectangle2  : DrawingViewStatePlaceRectangle2
     statePlaceEllipse1    : DrawingViewStatePlaceEllipse1
     statePlaceEllipse2    : DrawingViewStatePlaceEllipse2
+    statePlacePolyline1   : DrawingViewStatePlacePolyline1
+    statePlacePolyline2   : DrawingViewStatePlacePolyline2
+    statePlacePolygon1    : DrawingViewStatePlacePolygon1
+    statePlacePolygon2    : DrawingViewStatePlacePolygon2
     statePlaceText        : DrawingViewStatePlaceText
     statePlaceTextBlock   : DrawingViewStatePlaceTextBlock
     statePlaceConn1       : DrawingViewStatePlaceConn1
@@ -850,6 +896,10 @@ class DrawingViewStateMixin:
         self.statePlaceRectangle2  = DrawingViewStatePlaceRectangle2  (self)
         self.statePlaceEllipse1    = DrawingViewStatePlaceEllipse1    (self)
         self.statePlaceEllipse2    = DrawingViewStatePlaceEllipse2    (self)
+        self.statePlacePolyline1   = DrawingViewStatePlacePolyline1   (self)
+        self.statePlacePolyline2   = DrawingViewStatePlacePolyline2   (self)
+        self.statePlacePolygon1    = DrawingViewStatePlacePolygon1    (self)
+        self.statePlacePolygon2    = DrawingViewStatePlacePolygon2    (self)
         self.statePlaceText        = DrawingViewStatePlaceText        (self)
         self.statePlaceTextBlock   = DrawingViewStatePlaceTextBlock   (self)
         self.statePlaceConn1       = DrawingViewStatePlaceConn1       (self)

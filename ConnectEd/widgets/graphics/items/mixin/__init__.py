@@ -20,6 +20,16 @@ class ItemMixin:
     a     : "Appearance | None"
 
     def initItem(self : Self | QGraphicsItem, bare : bool = False) -> None:
+        from .vertex  import ItemVertexMixin
+        from .loc     import ItemLocMixin
+        from .origin  import ItemOriginMixin
+        from .line    import ItemLineMixin
+        from .fill    import ItemFillMixin
+        from .quill   import ItemQuillMixin
+        from .outline import ItemOutlineMixin
+        from .change  import ItemChangeMixin
+        from .anchor  import ItemAnchorPointsMixin
+        from ...properties import PropertiesMixin
         self.setZValue(self.Z)
         f = QGraphicsItem.GraphicsItemFlag
         self.setFlag( f.ItemIsSelectable              , True )
@@ -27,27 +37,27 @@ class ItemMixin:
         self.setFlag( f.ItemSendsScenePositionChanges , True )
         self.setCacheMode(QGraphicsItem.CacheMode.DeviceCoordinateCache)
         self.resetUuid()
-        if hasattr(self, "initBoundShape"):
-            self.initBoundShape()
-        if hasattr(self, "initLoc"):
+        if isinstance(self, ItemVertexMixin):
+            self.initVertices()
+        if isinstance(self, ItemLocMixin):
             self.initLoc()
-        if hasattr(self, "initLine"):
-            self.initLine()
-        if hasattr(self, "initFill"):
-            self.initFill()
-        if hasattr(self, "initQuill"):
-            self.initQuill()
-        if hasattr(self, "initOutline"):
-            self.initOutline()
-        if hasattr(self, "initAnchorPoints"):
+        if isinstance(self, ItemAnchorPointsMixin):
             self.initAnchorPoints()
-        if hasattr(self, "initOrigin"):
+        if isinstance(self, ItemOriginMixin):
             self.initOrigin()
-        if hasattr(self, "initProperties"):
-            self.initProperties(bare)
-        if hasattr(self, "onSettingsChange"):
+        if isinstance(self, ItemLineMixin):
+            self.initLine()
+        if isinstance(self, ItemFillMixin):
+            self.initFill()
+        if isinstance(self, ItemQuillMixin):
+            self.initQuill()
+        if isinstance(self, ItemOutlineMixin):
+            self.initOutline()
+        if isinstance(self, ItemChangeMixin):
             self.onSettingsChange()
             settings().changed.connect(self.onSettingsChange)
+        if isinstance(self, PropertiesMixin):
+            self.initProperties(bare)
 
     def __hash__(self : Self | QGraphicsItem):
         return hash(self._uuid)

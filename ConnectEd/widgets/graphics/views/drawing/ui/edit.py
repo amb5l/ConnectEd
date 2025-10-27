@@ -12,7 +12,7 @@ if TYPE_CHECKING:
     from ....scenes.drawing     import DrawingScene
     from ....items              import ItemMixin
     from ....items.anchor_point import AnchorPoint
-    from ....items.handle       import ResizeGrip
+    from ....items.grip         import ResizeGrip
     from .                      import DrawingViewUi
 
 

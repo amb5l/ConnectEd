@@ -4,13 +4,14 @@ from PyQt6.QtCore import QPointF
 
 from ...properties import PropertySpec
 
-from ..anchor_point import AnchorPoint
-from ..handle       import Origin
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from ..anchor_point import AnchorPoint
 
 
 class ItemOriginMixin:
     # class attributes
-    _ORIGIN : str  # subclass must specify
+    _ORIGIN_NAME : str  # subclass must specify
     _PROPERTY_SPECS_ORIGIN = {
         "Origin" : PropertySpec(
             type_name   = "str",
@@ -21,23 +22,23 @@ class ItemOriginMixin:
     }
 
     # instance attributes
-    _pos    : QPointF  # position of origin w.r.t. scene/parent
-    _origin : Origin   # origin object
+    _pos    : QPointF        # position of origin w.r.t. scene/parent
+    _origin : "AnchorPoint"  # origin anchor point
 
     # external instance attributes
-    _anchor_points : dict[str, AnchorPoint]
+    _anchor_points : dict[str, "AnchorPoint"]
 
     def initOrigin(self : Self) -> None:
         self._pos = super().pos()
-        self._origin = Origin(self._anchor_points[self._ORIGIN])
+        self._origin = self._anchor_points[self._ORIGIN_NAME]
         self.updateOrigin()
 
     def pos(self : Self) -> QPointF:
-        return super().pos() + self._origin.parentItem().pos()
+        return super().pos() + self._origin.pos()
 
     def setPos(self : Self, pos : QPointF) -> None:
         self._pos = pos
-        super().setPos(pos - self._origin.parentItem().pos())
+        super().setPos(pos - self._origin.pos())
 
     def getOriginScenePos(self : Self) -> QPointF:
         if hasattr(self, "_origin"):
@@ -45,20 +46,23 @@ class ItemOriginMixin:
         else:
             return self.scenePos()
 
-    def getOriginAP(self : Self) -> AnchorPoint:
-        return self._origin.parentItem()
+    def getOriginAP(self : Self) -> "AnchorPoint":
+        return self._origin
 
-    def setOriginAP(self : Self, ap : AnchorPoint) -> None:
-        self._origin.setParentItem(ap)
+    def setOriginAP(self : Self, ap : "AnchorPoint") -> None:
+        self._origin = ap
         self.setPos(self.pos())
+        for ap in self._anchor_points.values():
+            ap.onOriginChange()
 
     def getOriginAPName(self : Self) -> str:
-        ap : AnchorPoint = self._origin.parentItem()
-        return ap.name()
+        if hasattr(self, "_origin"):
+            return self._origin.name()
+        else:
+            return ""
 
     def setOriginAPName(self : Self, name : str) -> None:
         self.setOriginAP(self._anchor_points[name])
-        self.setPos(self.pos())
 
     def updateOrigin(self : Self) -> None:
         """Reposition following possible movement of origin anchor point."""

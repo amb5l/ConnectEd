@@ -1,4 +1,8 @@
 NEXT
+- rect = self._allItemsRect()
+- review use of ItemBoundMixin and ItemShapeMixin to allow for tolerance
+- remove unnecessary reuse e.g. of QPainterPath
+- separate overrides from new methods in item classes
 - grid pitch: check, 2D (5,5)
 - cmdX => CmdX
 - fixed/locked property

@@ -10,10 +10,10 @@ from ....app import settings
 from ..properties import PropertySpec, PropertiesMixin
 
 from .mixin        import ItemMixin
-from .mixin.paint  import ItemPaintMixin
+from .mixin.pos    import ItemPosMixin
 from .mixin.bound  import ItemBoundMixin
 from .mixin.shape  import ItemShapeMixin
-from .mixin.pos    import ItemPosMixin
+from .mixin.paint  import ItemPaintMixin
 from .mixin.anchor import ItemRectAnchorPointsMixin
 from .mixin.line   import ItemLineMixin
 from .mixin.fill   import ItemFillMixin
@@ -25,10 +25,10 @@ from .mixin.menu   import ItemMenuMixin
 
 class BaseRectangleMixin(
     ItemMixin,
-    ItemPaintMixin,
+    ItemPosMixin,
     ItemBoundMixin,
     ItemShapeMixin,
-    ItemPosMixin,
+    ItemPaintMixin,
     ItemRectAnchorPointsMixin,
     ItemLineMixin,
     ItemFillMixin,

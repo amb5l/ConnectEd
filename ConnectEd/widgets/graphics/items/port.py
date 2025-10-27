@@ -32,8 +32,8 @@ class PortComment(PortPinText):
 
 
 class Port(
-    ItemPaintMixin,
     ItemPosMixin,
+    ItemPaintMixin,
     ItemFillMixin,
     PortPinMixin,
     QGraphicsPathItem

@@ -196,8 +196,8 @@ class CmdAdd(
         items     : list[ItemType],
         selection : list[ItemType]
     ):
-        super().__init__(scene, items) # record scene, items
-        self._preserveSelection(selection)   # store selection set
+        super().__init__(scene, items)      # record scene, items
+        self._preserveSelection(selection)  # store selection set
 
     def redo(self : Self) -> None:
         self._addToScene(select=True)

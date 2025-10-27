@@ -283,6 +283,14 @@ class Slots:
         view.ui.placeEllipse()
 
     @withCurrentWidget(DrawingView)
+    def placePolyline(self : Self, view : DrawingView) -> None:
+        view.ui.placePolyline()
+
+    @withCurrentWidget(DrawingView)
+    def placePolygon(self : Self, view : DrawingView) -> None:
+        view.ui.placePolygon()
+
+    @withCurrentWidget(DrawingView)
     def placeText(self : Self, view : DrawingView) -> None:
         view.ui.placeText()
 

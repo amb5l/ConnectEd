@@ -18,19 +18,14 @@ class DrawingSceneHandlesMixin:
         settings().changed.connect(self.updateHandles)
 
     def updateHandles(self : "DrawingScene") -> None:
+        from ...items.mixin.anchor import ItemAnchorPointsMixin
         self.hideHandles()
         self._handle_items = [i for i in self.selectedItems() \
-                if hasattr(i, "_anchor_points")]
+                if isinstance(i, ItemAnchorPointsMixin)]
         for item in self._handle_items:
-            for ap in item._anchor_points.values():
-                ap._grip.setVisible(True)
-            if hasattr(item, "_origin"):
-                item._origin.setVisible(True)
+            item.setHandlesVisible(True)
 
     def hideHandles(self : "DrawingScene") -> None:
         for item in self._handle_items:
-            for ap in item._anchor_points.values():
-                ap._grip.setVisible(False)
-            if hasattr(item, "_origin"):
-                item._origin.setVisible(False)
+            item.setHandlesVisible(False)
         self._handle_items = []

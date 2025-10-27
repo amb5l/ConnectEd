@@ -8,9 +8,9 @@ from PyQt6.QtGui     import QPainter, QAction
 from ..properties import PropertySpec, PropertiesMixin
 
 from .mixin         import ItemMixin
-from .mixin.origin  import ItemOriginMixin
 from .mixin.pos     import ItemPosMixin
 from .mixin.anchor  import ItemRectAnchorPointsMixin
+from .mixin.origin  import ItemOriginMixin
 from .mixin.quill   import ItemQuillMixin
 from .mixin.outline import ItemOutlineMixin
 from .mixin.change  import ItemChangeMixin
@@ -25,9 +25,9 @@ if TYPE_CHECKING:
 
 class BaseText(
     ItemMixin,
-    ItemOriginMixin,
     ItemPosMixin,
     ItemRectAnchorPointsMixin,
+    ItemOriginMixin,
     ItemQuillMixin,
     ItemOutlineMixin,
     ItemChangeMixin,
@@ -38,7 +38,7 @@ class BaseText(
     QGraphicsSimpleTextItem
 ):
     # class attributes
-    _ORIGIN = "Top Left"
+    _ORIGIN_NAME = "Top Left"
     _PROPERTY_SPECS_POS = \
         ItemOriginMixin._PROPERTY_SPECS_ORIGIN | \
         ItemPosMixin._PROPERTY_SPECS_POS

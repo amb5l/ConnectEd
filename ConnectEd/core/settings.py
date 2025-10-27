@@ -351,6 +351,36 @@ FACTORY_SETTINGS = {
                         "style" : Qt.BrushStyle.NoBrush
                     }
                 },
+                "PolyVtx" : {
+                    "size" : 4,
+                    "line" : {
+                        "color" : PaletteDark.PolyVtx,
+                        "width" : 0,
+                        "style" : Qt.PenStyle.SolidLine
+                    },
+                    "fill"    : {
+                        "color" : PaletteDark.PolyVtx,
+                        "style" : Qt.BrushStyle.NoBrush
+                    },
+                },
+                "Polyline" : {
+                    "line" : {
+                        "color" : PaletteDark.Polyline,
+                        "width" : 1,
+                        "style" : Qt.PenStyle.SolidLine
+                    }
+                },
+                "Polygon" : {
+                    "line" : {
+                        "color" : PaletteDark.Polygon,
+                        "width" : 1,
+                        "style" : Qt.PenStyle.SolidLine
+                    },
+                    "fill" : {
+                        "color" : PaletteDark.Polygon,
+                        "style" : Qt.BrushStyle.NoBrush
+                    },
+                },
                 "Text" : {
                     "text" : {
                         "color"     : PaletteDark.Text,
@@ -628,6 +658,36 @@ FACTORY_SETTINGS = {
                         "color" : PaletteLightMono.Ellipse,
                         "style" : Qt.BrushStyle.NoBrush
                     }
+                },
+                "PolyVtx" : {
+                    "size" : 4,
+                    "line" : {
+                        "color" : PaletteLightMono.PolyVtx,
+                        "width" : 0,
+                        "style" : Qt.PenStyle.SolidLine
+                    },
+                    "fill"    : {
+                        "color" : PaletteLightMono.PolyVtx,
+                        "style" : Qt.BrushStyle.NoBrush
+                    },
+                },
+                "Polyline" : {
+                    "line" : {
+                        "color" : PaletteLightMono.Polyline,
+                        "width" : 1,
+                        "style" : Qt.PenStyle.SolidLine
+                    }
+                },
+                "Polygon" : {
+                    "line" : {
+                        "color" : PaletteLightMono.Polygon,
+                        "width" : 1,
+                        "style" : Qt.PenStyle.SolidLine
+                    },
+                    "fill" : {
+                        "color" : PaletteLightMono.Polygon,
+                        "style" : Qt.BrushStyle.NoBrush
+                    },
                 },
                 "Text" : {
                     "text" : {

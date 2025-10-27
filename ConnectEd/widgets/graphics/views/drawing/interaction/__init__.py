@@ -25,19 +25,22 @@ class Interaction:
 
     @property
     def valid(self : Self) -> bool:
-        raise NotImplementedError("Subclass must implement valid")
+        raise NotImplementedError("Subclass must implement this method")
 
     def update(self : Self, pos : QPointF) -> None:
-        raise NotImplementedError("Subclass must implement update")
+        raise NotImplementedError("Subclass must implement this method")
 
     def commit(self : Self, pos : QPointF) -> bool:
-        raise NotImplementedError("Subclass must implement commit")
+        raise NotImplementedError("Subclass must implement this method")
+
+    def revert(self : Self) -> None:
+        raise NotImplementedError("Subclass must implement this method")
 
     def complete(self : Self, pos : QPointF) -> None:
-        raise NotImplementedError("Subclass must implement complete")
+        raise NotImplementedError("Subclass must implement this method")
 
     def ctxMenuItems(self : Self, pos : QPointF) -> list[QAction | QMenu]:
-        raise NotImplementedError("Subclass must implement ctxMenuItems")
+        raise NotImplementedError("Subclass must implement this method")
 
 
 class ItemInteraction(Interaction):

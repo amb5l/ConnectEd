@@ -16,12 +16,17 @@ from ....items.conn_seg   import ConnSeg, ConnSegPreview1, ConnSegPreview2
 from ....items.line       import Line
 from ....items.rectangle  import Rectangle
 from ....items.ellipse    import Ellipse
+from ....items.polyline   import Polyline
+from ....items.polygon    import Polygon
 from ....items.text       import Text
 from ....items.text_block import TextBlock
 
+from ....items.mixin.vertex import ItemVertexMixin
+
 from ....scenes.drawing.cmd import CmdAdd, CmdAddBlockPin
 
-from . import SelectionMixin,      \
+from . import Interaction,         \
+              SelectionMixin,      \
               RotateItemMixin,     \
               ItemInteraction,     \
               BlockPinInteraction, \
@@ -51,7 +56,7 @@ class PlaceBaseInteraction(
             item = self._ITEM(pos)
         else:
             item.setPos(pos)
-        ItemInteraction.__init__(self, scene, item)
+        super().__init__(scene, item)
         self._preserveSelection()
         self._scene.clearSelection()
         self._scene.addItem(self._item)
@@ -93,6 +98,26 @@ class PlaceBase2PosInteraction(PlaceBase1PosInteraction):
         self._item.setPoints(self._item.pos(), pos)
 
 
+class PlaceBaseNPosInteraction(PlaceBase1PosInteraction):
+    """Base for all interactions that place a single item using N positions."""
+
+    # instance attributes
+    _item : ItemVertexMixin  # type hint for this interaction
+
+    def update(self : Self, pos : QPointF):
+        self._item.setLastVertexPos(pos-self._item.pos())
+
+    def commit(self : Self, pos : QPointF) -> bool:
+        self._item.addVertex(pos-self._item.pos())
+        return False  # continue interaction
+
+    def revert(self : Self) -> None:
+        self._item.removeLastVertex()
+
+    def complete(self : Self, pos : QPointF) -> None:
+        self.commit(pos)
+
+
 class PlacePortInteraction(RotateItemMixin, PlaceBase1PosInteraction):
     _ITEM = Port
 
@@ -125,7 +150,7 @@ class PlaceBlockPinInteraction(BlockPinInteraction):
         pos    : QPointF,
         snap   : QPointF | None = None
     ) -> None:
-        BlockPinInteraction.__init__(self, scene, parent, pin, pos, snap)
+        super().__init__(scene, parent, pin, pos, snap)
 
     def update(self : Self, pos : QPointF, snap : QPointF | None = None) -> None:
         self._pin.setLoc(self._pin.locSnap(self._parent.pos2loc(pos), snap))
@@ -155,6 +180,14 @@ class PlaceEllipseInteraction(PlaceBase2PosInteraction):
     _ITEM = Ellipse
 
 
+class PlacePolylineInteraction(PlaceBaseNPosInteraction):
+    _ITEM = Polyline
+
+
+class PlacePolygonInteraction(PlaceBaseNPosInteraction):
+    _ITEM = Polygon
+
+
 class PlaceTextInteraction(PlaceBase1PosInteraction):
     _ITEM = Text
 
@@ -163,20 +196,19 @@ class PlaceTextBlockInteraction(PlaceBase1PosInteraction):
     _ITEM = TextBlock
 
 
-class PlaceConnInteraction(SelectionMixin):
+class PlaceConnInteraction(SelectionMixin, Interaction):
     """Interactive wire placement involves two preview segments."""
 
     # instance attributes
-    _scene : "DrawingScene"
     _seg1  : ConnSegPreview1
     _seg2  : ConnSegPreview2
 
     def __init__(
-        self   : Self,
-        scene  : "DrawingScene",
-        pos    : QPointF
+        self  : Self,
+        scene : "DrawingScene",
+        pos   : QPointF
     ) -> None:
-        self._scene = scene
+        super().__init__(scene)
         self._seg1 = ConnSegPreview1()
         self._seg2 = ConnSegPreview2()
         self._setP0(pos)

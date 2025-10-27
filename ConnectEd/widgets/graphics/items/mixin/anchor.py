@@ -5,10 +5,15 @@ from PyQt6.QtCore import QPointF
 
 from ..anchor_point import AnchorPoint
 
+from .handle import ItemHandleMixin
 
-class ItemAnchorPointsMixin:
+
+class ItemAnchorPointsMixin(ItemHandleMixin):
     # instance attributes
     _anchor_points : dict[str, "AnchorPoint"]
+
+    def initAnchorPoints(self : Self) -> None:
+        raise NotImplementedError("Subclass must implement this method")
 
     def getAnchorPoint(self : Self, name : str) -> "AnchorPoint":
         return self._anchor_points[name]
@@ -19,7 +24,7 @@ class ItemAnchorPointsMixin:
 
 class ItemRectAnchorPointsMixin(ItemAnchorPointsMixin):
     # class attributes
-    _ANCHOR_POINTS = {
+    _AP_RECT = {
         "Top Left"      : ( 0.0 , 0.0 ),
         "Top Center"    : ( 0.5 , 0.0 ),
         "Top Right"     : ( 1.0 , 0.0 ),
@@ -30,11 +35,11 @@ class ItemRectAnchorPointsMixin(ItemAnchorPointsMixin):
         "Bottom Center" : ( 0.5 , 1.0 ),
         "Bottom Right"  : ( 1.0 , 1.0 )
     }
-    _AP_RESIZE = { k : k != "Center" for k in _ANCHOR_POINTS.keys() }
+    _AP_RESIZE = { k : k != "Center" for k in _AP_RECT.keys() }
 
     def initAnchorPoints(self : Self) -> None:
         self._anchor_points = {}
-        for name, _ in self._ANCHOR_POINTS.items():
+        for name, _ in self._AP_RECT.items():
             resize = name in self._AP_RESIZE
             anchor_point = AnchorPoint(name=name, resize=resize, parent=self)
             self._anchor_points[name] = anchor_point
@@ -46,7 +51,7 @@ class ItemRectAnchorPointsMixin(ItemAnchorPointsMixin):
         if not hasattr(self, "_anchor_points"):
             return
         rect = self.anchorPointRect()
-        for name, (x, y) in self._ANCHOR_POINTS.items():
+        for name, (x, y) in self._AP_RECT.items():
             self._anchor_points[name].setPos(QPointF(
                 x * rect.width(), y * rect.height()
             ))

@@ -38,7 +38,6 @@ class Entry(
         self.setFlag(f.ItemIsSelectable, True)
         self.initLine()
         self.initFill()
-        s = self._SIZE / 2
         self._path_open = QPainterPath()
         self._path_nc = QPainterPath()
         self.onSettingsChange()

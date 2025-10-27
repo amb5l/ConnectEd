@@ -9,12 +9,12 @@ from ....menu import Menu
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from ...items.mixin.menu import ItemMenuMixin
     from . import DrawingView
 
 
 class DrawingViewMenuMixin:
     def contextMenuEvent(self : "DrawingView", event : QContextMenuEvent) -> None:
+        from ...items.mixin.menu import ItemMenuMixin
         print("contextMenuEvent")
         from ...views.diagram import DiagramView
         vpos = event.pos()
@@ -33,14 +33,13 @@ class DrawingViewMenuMixin:
                 menu.addSeparator()
         # get applicable item/items: selection or top item
         items_at = self._itemsAt(spos)
+        items = []
         if any(item.isSelected() for item in items_at):
             items = self.scene().selectedItems()  # selection set
         else:
             for item in items_at:
                 if isinstance(item, ItemMenuMixin):
                     items.append(item)  # item at position
-            else:
-                items = []  # no items at position
         # slide/move/rotate
         if items:
             menu.addAction("Slide", lambda: self.ui.editSlide(items, spos))

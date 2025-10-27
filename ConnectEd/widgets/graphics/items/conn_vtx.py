@@ -40,7 +40,7 @@ class ConnVtx(
     """
     # class attributes
     Z = Z_DRAWING + 1
-    _PATH = "ConnVtx"
+    _PATH_NAME = "ConnVtx"
 
     # instance attributes
     _path        : QPainterPath
@@ -66,7 +66,7 @@ class ConnVtx(
 
     def onSceneChange(self : Self, scene : "DrawingScene | None") -> None:
         if scene is not None:
-            self.setPath(scene.paths[self._PATH])
+            self.setPath(scene.paths[self._PATH_NAME])
 
     def onSettingsChange(self : Self) -> None:
         # update visibility

@@ -74,6 +74,8 @@ class Actions:
         self.placeLine          = Action( window(), "Line"          , "Place Line"                          , "Ctrl+L"                     )  # noqa E501
         self.placeRectangle     = Action( window(), "Rectangle"     , "Place Rectangle"                     , "Ctrl+R"                     )  # noqa E501
         self.placeEllipse       = Action( window(), "Ellipse"       , "Place Ellipse"                       , "Ctrl+E"                     )  # noqa E501
+        self.placePolyline      = Action( window(), "Polyline"      , "Place Polyline"                      , "Ctrl+M"                     )  # noqa E501
+        self.placePolygon       = Action( window(), "Polygon"       , "Place Polygon"                       , "Ctrl+N"                     )  # noqa E501
         self.placeText          = Action( window(), "Text"          , "Place Text"                          , "Ctrl+T"                     )  # noqa E501
         self.placeTextBlock     = Action( window(), "Text Block"    , "Place Text Block"                    , "Ctrl+K"                     )  # noqa E501
         self.windowNavigator    = Action( window(), "Navigator"     , "Show the navigator window"           , None                         )  # noqa E501

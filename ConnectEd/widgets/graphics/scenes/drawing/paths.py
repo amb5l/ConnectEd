@@ -35,7 +35,8 @@ class DrawingScenePathsMixin:
                 "out" : QPainterPath(),
                 "bi"  : QPainterPath()
             },
-            "ConnVtx" : QPainterPath()
+            "ConnVtx" : QPainterPath(),
+            "PolyVtx" : QPainterPath()
         }
         self.updatePaths()
         settings().changed.connect(self.updatePaths)
@@ -57,6 +58,8 @@ class DrawingScenePathsMixin:
         self._pinArrowBiPath  ( self.paths["SymbolPinArrow"][ "bi"  ] , size )
         size = settings().get("theme/items/ConnVtx/size")
         self._connVtxPath( self.paths["ConnVtx"] , size )
+        size = settings().get("theme/items/PolyVtx/size")
+        self._polyVtxPath( self.paths["PolyVtx"] , size )
 
     def _gripPath(self : "DrawingScene", path : QPainterPath) -> None:
         size = settings().get("theme/grip/size")
@@ -145,6 +148,19 @@ class DrawingScenePathsMixin:
         path.closeSubpath()
 
     def _connVtxPath(
+        self : "DrawingScene",
+        path : QPainterPath,
+        size : float
+    ) -> None:
+        s = size / 2
+        path.clear()
+        path.moveTo(-s, 0)
+        path.lineTo(0, -s)
+        path.lineTo(s, 0)
+        path.lineTo(0, s)
+        path.closeSubpath()
+
+    def _polyVtxPath(
         self : "DrawingScene",
         path : QPainterPath,
         size : float
