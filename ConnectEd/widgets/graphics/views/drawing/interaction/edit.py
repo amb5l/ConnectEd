@@ -12,19 +12,19 @@ from ....items.block_pin import BlockPin
 from ....scenes.drawing     import DrawingScene
 from ....scenes.drawing.cmd import CmdAdd, CmdMove, CmdMoveBlockPins
 
-from . import MoveMixin,                \
-              AddRemoveMixin,           \
-              SelectionMixin,           \
-              SceneItemsInteraction, \
-              Interaction,              \
+from . import MoveMixin,        \
+              AddRemoveMixin,   \
+              SelectionMixin,   \
+              ItemsInteraction, \
+              Interaction,      \
               ItemType
 
 
 class EditPasteInteraction(
-    MoveMixin,             # update, _moveBy, _storePos, _restorePos
-    AddRemoveMixin,        # _addToScene, _removeFromScene
-    SelectionMixin,        # _preserveSelection, _restoreSelection
-    SceneItemsInteraction  # _scene, _items, valid
+    MoveMixin,        # update, _moveBy, _storePos, _restorePos
+    AddRemoveMixin,   # _addToScene, _removeFromScene
+    SelectionMixin,   # _preserveSelection, _restoreSelection
+    ItemsInteraction  # _scene, _items, valid
 ):
     def __init__(
         self  : Self,
@@ -33,7 +33,7 @@ class EditPasteInteraction(
     ) -> None:
         items, copy_pos = paste()
         if items:
-            SceneItemsInteraction.__init__(self, scene, items)
+            ItemsInteraction.__init__(self, scene, items)
             self._ipos = pos if copy_pos is None else copy_pos
             self._cpos = self._ipos
             self._preserveSelection()  # store prior selection set
@@ -68,7 +68,7 @@ class EditDuplicateInteraction(EditPasteInteraction):
         pos   : QPointF          # duplication origin
     ) -> None:
         if items:
-            SceneItemsInteraction.__init__(self, scene, clone(items))
+            ItemsInteraction.__init__(self, scene, clone(items))
             self._ipos = pos
             self._cpos = pos
             self._preserveSelection()  # store prior selection set
@@ -80,7 +80,7 @@ class EditDuplicateInteraction(EditPasteInteraction):
 
 class EditMoveInteraction(
     MoveMixin,              # update, _moveBy, _storePos, _restorePos
-    SceneItemsInteraction,  # _scene, _items, valid
+    ItemsInteraction,  # _scene, _items, valid
 ):
     # instance attributes
     _slide  : bool  # true => retain connections, false => break connections
@@ -93,7 +93,7 @@ class EditMoveInteraction(
         slide : bool = False
     ) -> None:
         items = items if isinstance(items, list) else [items]
-        SceneItemsInteraction.__init__(self, scene, items)
+        ItemsInteraction.__init__(self, scene, items)
         self._ipos     = pos
         self._cpos     = pos
         self._slide    = slide

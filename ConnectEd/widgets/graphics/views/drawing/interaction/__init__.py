@@ -14,17 +14,6 @@ if TYPE_CHECKING:
     from ....scenes.drawing import DrawingScene
 
 
-class RotateMixin:
-    # instance attributes
-    _item : ItemType
-
-    def rotateCW(self : Self) -> None:
-        self._item.setRotation((self._item.rotation() + 90) % 360)
-
-    def rotateCCW(self : Self) -> None:
-        self._item.setRotation((self._item.rotation() - 90) % 360)
-
-
 class Interaction:
     """Base for all interactions."""
 
@@ -52,7 +41,7 @@ class Interaction:
         return [complete_action, cancel_action]
 
 
-class SceneItemInteraction(Interaction):
+class ItemInteraction(Interaction):
     """Base for all interactions that operate on a single scene item."""
     # instance attributes
     _item : ItemType
@@ -70,7 +59,7 @@ class SceneItemInteraction(Interaction):
         return self._item is not None
 
 
-class SceneItemsInteraction(Interaction):
+class ItemsInteraction(Interaction):
     """Base for all interactions that operate on one or more scene items."""
 
     # instance attributes
@@ -122,8 +111,22 @@ class BlockPinInteraction(Interaction):
             self._pin is not None
 
 
+class RotateMixin:
+    """Mixin for interactions that rotate items."""
+
+    # instance attributes
+    _item : ItemType
+
+    def rotateCW(self : Self) -> None:
+        self._item.setRotation((self._item.rotation() + 90) % 360)
+
+    def rotateCCW(self : Self) -> None:
+        self._item.setRotation((self._item.rotation() - 90) % 360)
+
+
 class MoveMixin:
     """Mixin for interactions that move items."""
+
     # instance attributes
     _items : list[ItemType]
     _ipos  : QPointF                     # initial position
@@ -188,5 +191,3 @@ class SelectionMixin:
             item.setSelected(True)
         self._scene.blockSignals(False)
         self._scene.selectionChanged.emit()
-
-

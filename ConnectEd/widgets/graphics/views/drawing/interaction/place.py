@@ -22,10 +22,10 @@ from ....items.conn_seg   import ConnSeg, ConnSegPreview1, ConnSegPreview2
 
 from ....scenes.drawing.cmd import CmdAdd, CmdAddBlockPin
 
-from . import SelectionMixin,          \
-              RotateMixin,             \
-              SceneItemInteraction, \
-              BlockPinInteraction,     \
+from . import SelectionMixin,      \
+              RotateMixin,         \
+              ItemInteraction,     \
+              BlockPinInteraction, \
               ItemType
 
 from typing import TYPE_CHECKING
@@ -34,8 +34,8 @@ if TYPE_CHECKING:
 
 
 class PlaceBaseInteraction(
-    SelectionMixin,       # _preserveSelection, _restoreSelection
-    SceneItemInteraction  # _scene, _item, valid
+    SelectionMixin,  # _preserveSelection, _restoreSelection
+    ItemInteraction  # _scene, _item, valid
 ):
     """Base for all interactions that place a single item."""
 
@@ -52,7 +52,7 @@ class PlaceBaseInteraction(
             item = self._ITEM(pos)
         else:
             item.setPos(pos)
-        SceneItemInteraction.__init__(self, scene, item)
+        ItemInteraction.__init__(self, scene, item)
         self._preserveSelection()
         self._scene.clearSelection()
         self._scene.addItem(self._item)
