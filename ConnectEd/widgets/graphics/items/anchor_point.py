@@ -38,3 +38,6 @@ class AnchorPoint(NullPoint):
 
     def onOriginChange(self : Self) -> None:
         self._grip.onOriginChange()
+
+    def grip(self : Self) -> Grip:
+        return self._grip

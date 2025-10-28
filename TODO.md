@@ -1,14 +1,14 @@
 NEXT
-- LINE_WIDTH
-- reinstate block pin arrows
-- polyline anchor point rect includes line thickness and should not!
-- rect = self._allItemsRect()
+- PropertyText.mouseDoubleClickEvent - move to view?
+- PropertyText moves badly as part of group of selected objects
+- if (cleat := self.cleat()) is None:
+- WIDTH, PITCH
+- error: rect = self._allItemsRect()
 - review use of ItemBoundMixin and ItemShapeMixin to allow for tolerance
 - remove unnecessary reuse e.g. of QPainterPath
 - separate overrides from new methods in item classes
 - grid pitch: check, 2D (5,5)
-- cmdX => CmdX
-- fixed/locked property
+- fixed (position) and locked (editing) properties
 - symbols
   - symbol placement singleton - loads libraries and symbols
     - initial placeholder loads system library

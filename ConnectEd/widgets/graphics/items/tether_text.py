@@ -39,12 +39,14 @@ class Tether(QGraphicsLineItem):
         self.setPen(self._item.outline.pen)
 
     def onPositionChange(self : Self, _ : QPointF) -> None:
-        cleat : AnchorPoint | None = self._item.parentItem()
-        if cleat is None:
+        if (cleat := self.cleat()) is None:
             return
         line = self.line()
         line.setP2(cleat.scenePos() - self.scenePos())
         self.setLine(line)
+
+    def cleat(self : Self) -> AnchorPoint | None:
+        return self._item.parentItem()
 
     def toXml(self : Self, xw : QXmlStreamWriter) -> str:
         pass  # no need to serialise
@@ -55,19 +57,21 @@ class TetherText(BaseText):
     _PROPERTY_SPECS_CLEAT = {
         "Cleat" : PropertySpec(
             type_name   = "str",
-            getter      = lambda self: self.cleat(),
-            setter      = lambda self, value: self.setCleat(value),
+            getter      = lambda self: self.getCleatAPName(),
+            setter      = lambda self, value: self.setCleatAPName(value),
             description = "Parent anchor point"
         )
     }
 
     # instance attributes
-    _tether : Tether | None
-    _cleat  : str | None
+    _tether      : Tether | None
+    _cleat       : str | None
+    _cleat_shown : bool
 
     def __init__(self : Self, bare : bool = False) -> None:
-        self._tether = None
-        self._cleat  = None
+        self._tether      = None
+        self._cleat       = None
+        self._cleat_shown = False
         super().__init__(bare=bare)
         self._tether = Tether(self)
 
@@ -80,6 +84,14 @@ class TetherText(BaseText):
 
     def onSelectionChange(self : Self, selected : bool) -> None:
         self._tether.setVisible(selected)
+        if selected:
+            if not self._tether.cleat().grip().isVisible():
+                self._cleat_shown = True
+                self._tether.cleat().grip().setVisible(True)
+        else:
+            if self._cleat_shown:
+                self._cleat_shown = False
+                self._tether.cleat().grip().setVisible(False)
 
     def setOriginAPName(self : Self, name : str) -> None:
         """Override to update tether line."""
@@ -88,7 +100,7 @@ class TetherText(BaseText):
         self._tether.setParentItem(self._origin)
         self._tether.onPositionChange(self.pos())
 
-    def cleat(self : Self) -> str:
+    def getCleatAPName(self : Self) -> str:
         parent = self.parentItem()
         if parent is None:
             return self._cleat  # workaround for deserialization
@@ -98,7 +110,7 @@ class TetherText(BaseText):
             logger().error(f"Parent is not an AnchorPoint: {type(parent).__name__}")
             return "Undefined"
 
-    def setCleat(self : Self, name : str) -> None:
+    def setCleatAPName(self : Self, name : str) -> None:
         self._cleat = name
         parent = self.parentItem()
         if parent is None:  # handle deserialization
