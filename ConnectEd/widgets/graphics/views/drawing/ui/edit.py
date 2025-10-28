@@ -146,7 +146,6 @@ class DrawingViewUiEditMixin:
         if vpos is None:
             initial_items = self._view.scene().selectedItems()
             items = []
-            print("items", items)
             # add (unselected) children
             def _addChildren(item : QGraphicsItem) -> None:
                 if item in items:
@@ -156,7 +155,6 @@ class DrawingViewUiEditMixin:
                     _addChildren(child)
             for item in initial_items:
                 _addChildren(item)
-            print("items", items)
         else:
             items = self._view._itemsAt(vpos)
         query_window = QueryWindow(items)

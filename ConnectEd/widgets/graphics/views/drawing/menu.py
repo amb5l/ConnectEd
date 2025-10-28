@@ -15,7 +15,6 @@ if TYPE_CHECKING:
 class DrawingViewMenuMixin:
     def contextMenuEvent(self : "DrawingView", event : QContextMenuEvent) -> None:
         from ...items.mixin.menu import ItemMenuMixin
-        print("contextMenuEvent")
         from ...views.diagram import DiagramView
         vpos = event.pos()
         spos = self.mapToScene(vpos)

@@ -115,6 +115,7 @@ FACTORY_SETTINGS = {
                     "size" : 8
                 },
                 "PortEntry" : {
+                    "size" : 3,
                     "line" : {
                         "color" : PaletteDark.PortEntry,
                         "width" : 0,
@@ -123,8 +124,7 @@ FACTORY_SETTINGS = {
                     "fill" : {
                         "color" : PaletteDark.PortEntry,
                         "style" : Qt.BrushStyle.NoBrush
-                    },
-                    "size" : 4
+                    }
                 },
                 "PortName" : {
                     "text" : {
@@ -162,11 +162,7 @@ FACTORY_SETTINGS = {
                         "color" : PaletteDark.BlockPin,
                         "width" : 1,
                         "style" : Qt.PenStyle.SolidLine
-                    },
-                    "fill" : {
-                        "color" : PaletteDark.BlockPin,
-                        "style" : Qt.BrushStyle.NoBrush
-                    },
+                    }
                 },
                 "BlockPinArrow" : {
                     "line" : {
@@ -177,10 +173,10 @@ FACTORY_SETTINGS = {
                     "fill" : {
                         "color" : PaletteDark.BlockPinArrow,
                         "style" : Qt.BrushStyle.SolidPattern
-                    },
-                    "size" : 4
+                    }
                 },
                 "BlockPinEntry" : {
+                    "size" : 3,
                     "line" : {
                         "color" : PaletteDark.BlockPin,
                         "width" : 0,
@@ -189,8 +185,7 @@ FACTORY_SETTINGS = {
                     "fill" : {
                         "color" : PaletteDark.BlockPin,
                         "style" : Qt.BrushStyle.NoBrush
-                    },
-                    "size" : 4
+                    }
                 },
                 "BlockPinName" : {
                     "text" : {
@@ -232,10 +227,10 @@ FACTORY_SETTINGS = {
                     "fill" : {
                         "color" : PaletteDark.SymbolPinArrow,
                         "style" : Qt.BrushStyle.SolidPattern
-                    },
-                    "size" : 4
+                    }
                 },
                 "SymbolPinEntry" : {
+                    "size" : 3,
                     "line" : {
                         "color" : PaletteDark.SymbolPin,
                         "width" : 0,
@@ -435,6 +430,7 @@ FACTORY_SETTINGS = {
                     }
                 },
                 "PortEntry" : {
+                    "size" : 3,
                     "line" : {
                         "color" : PaletteLightMono.PortLine,
                         "width" : 0,
@@ -471,10 +467,6 @@ FACTORY_SETTINGS = {
                         "color" : PaletteLightMono.BlockPin,
                         "width" : 1,
                         "style" : Qt.PenStyle.SolidLine
-                    },
-                    "fill" : {
-                        "color" : PaletteLightMono.BlockPin,
-                        "style" : Qt.BrushStyle.NoBrush
                     }
                 },
                 "BlockPinArrow" : {
@@ -486,10 +478,10 @@ FACTORY_SETTINGS = {
                     "fill" : {
                         "color" : PaletteLightMono.BlockPinArrow,
                         "style" : Qt.BrushStyle.SolidPattern
-                    },
-                    "size" : 4
+                    }
                 },
                 "BlockPinEntry" : {
+                    "size" : 3,
                     "line" : {
                         "color" : PaletteLightMono.BlockPin,
                         "width" : 0,
@@ -540,10 +532,10 @@ FACTORY_SETTINGS = {
                     "fill" : {
                         "color" : PaletteLightMono.SymbolPinArrow,
                         "style" : Qt.BrushStyle.SolidPattern
-                    },
-                    "size" : 4
+                    }
                 },
                 "SymbolPinEntry" : {
+                    "size" : 3,
                     "line" : {
                         "color" : PaletteLightMono.SymbolPin,
                         "width" : 0,

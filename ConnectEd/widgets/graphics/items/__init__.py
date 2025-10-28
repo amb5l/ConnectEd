@@ -61,15 +61,16 @@ class EdgeLoc:
 
 # TODO: consider passive, 3-state etc for EE schematics
 class SignalDirection(Enum):
-    IN  = "in"
-    OUT = "out"
-    BI  = "bi"
+    NONE = None
+    IN   = "in"
+    OUT  = "out"
+    BI   = "bi"
 
 
 class RangeDirection(Enum):
-    UNSPECIFIED = ":"
-    DOWN        = "\u25bc"
-    UP          = "\u25b2"
+    NONE = ":"
+    DOWN = "\u25bc"
+    UP   = "\u25b2"
 
 
 class VectorRange:

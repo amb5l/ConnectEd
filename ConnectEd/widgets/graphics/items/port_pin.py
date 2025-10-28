@@ -38,18 +38,21 @@ class PortPinMixin(
     PropertiesMixin
 ):
     # class attributes
-    _NAME_OFFSET = 1.5
-    _PROPERTY_SPECS = \
+    _AP_NAME_OFFSET = 1.5
+    _PROPERTY_SPECS_NAME = \
         {
             "Name" : PropertySpec(
                 type_name = "str",
                 getter    = lambda self: self._name,
                 setter    = lambda self, value: setattr(self, '_name', value)
-            ),
+            )
+        }
+    _PROPERTY_SPECS_PORT_PIN = \
+        {
             "Direction" : PropertySpec(
                 type_name = "SignalDirection",
                 getter    = lambda self: self._direction,
-                setter    = lambda self, value: setattr(self, '_direction', value)  # Use property setter
+                setter    = lambda self, value: setattr(self, '_direction', value)
             ),
             "Range Left" : PropertySpec(
                 type_name = "str",
@@ -74,7 +77,10 @@ class PortPinMixin(
                 getter    = lambda self: self._comment,
                 setter    = lambda self, value: setattr(self, '_comment', value)
             )
-        } | \
+        }
+    _PROPERTY_SPECS = \
+        _PROPERTY_SPECS_NAME | \
+        _PROPERTY_SPECS_PORT_PIN | \
         ItemLineMixin._PROPERTY_SPECS_LINE
 
     # instance attributes
@@ -86,18 +92,18 @@ class PortPinMixin(
 
     @classmethod
     def _getEntryClass(cls) -> type[Entry]:
-        """Return the entry class. Subclasses should override this."""
-        return Entry
+        """Return the entry class."""
+        raise NotImplementedError("Subclasses must implement this method")
 
     @classmethod
     def _getNameClass(cls) -> type[PortPinText]:
-        """Return the name text class. Subclasses should override this."""
-        return PortPinText
+        """Return the name text class."""
+        raise NotImplementedError("Subclasses must implement this method")
 
     @classmethod
     def _getCommentClass(cls) -> type[PortPinText]:
-        """Return the comment text class. Subclasses should override this."""
-        return PortPinText
+        """Return the comment text class."""
+        raise NotImplementedError("Subclasses must implement this method")
 
     @classmethod
     def _getPropertyTexts(cls) -> dict[str, PropertyTextSpec]:
@@ -131,7 +137,7 @@ class PortPinMixin(
             ),
             "Name" : AnchorPoint(
                 name   = "Name",
-                pos    = QPointF(self._NAME_OFFSET, 0),
+                pos    = QPointF(self._AP_NAME_OFFSET, 0),
                 resize = False,
                 parent = self
             )

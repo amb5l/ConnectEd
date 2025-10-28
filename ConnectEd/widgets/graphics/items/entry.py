@@ -14,6 +14,9 @@ if TYPE_CHECKING:
     from .port_pin import PortPinMixin
 
 
+_ENTRY_SIZE = 3
+
+
 class Entry(
     ItemPaintMixin,
     ItemLineMixin,
@@ -21,9 +24,6 @@ class Entry(
     ItemChangeMixin,
     QGraphicsPathItem
 ):
-    # class attributes
-    _SIZE = 4
-
     # instance attributes
     _path_open : QPainterPath  # path when open
     _path_nc   : QPainterPath  # path when closed
@@ -43,7 +43,7 @@ class Entry(
         self.onSettingsChange()
 
     def onSettingsChange(self : Self) -> None:
-        s = self._SIZE / 2
+        s = _ENTRY_SIZE / 2
         self._path_open.clear()
         self._path_open.addRect(QRectF(-s, -s, 2*s, 2*s))
         self._brect = self._path_open.boundingRect()

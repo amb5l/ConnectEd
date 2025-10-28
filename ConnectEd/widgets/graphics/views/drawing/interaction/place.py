@@ -177,7 +177,7 @@ class PlaceBlockPinInteraction(BlockPinInteraction):
         self._pin.setParentItem(None)
 
 
-class PlaceSymbolPinInteraction(PlaceBase2PosInteraction):
+class PlaceSymbolPinInteraction(PlaceBase1PosInteraction):
     _ITEM = SymbolPin
 
 

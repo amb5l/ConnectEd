@@ -31,11 +31,9 @@ class QueryWindow(QWidget):
         self._model.setHorizontalHeaderLabels(["Item", "Property", "Value"])
         # populate model
         hdict = self._getHDict(items)
-        print("hdict", hdict)
         self._populate(self._model, hdict)
         for i in range(self._model.rowCount()):
             item = self._model.item(i)
-            print(f"Item {item.text()} has {item.rowCount()} children")
         # create table view
         self._view = TreeView(self._model, self)
         self._view.customizeAppearance()
@@ -100,7 +98,6 @@ class QueryWindow(QWidget):
                 ])
             elif isinstance(item, PropertiesMixin):
                 for prop_name, prop_value in item.getPropertyNamesAndValues().items():
-                    print("prop_name", prop_name, "prop_value", prop_value)
                     item_row.appendRow([
                         QStandardItem(),
                         QStandardItem(prop_name),

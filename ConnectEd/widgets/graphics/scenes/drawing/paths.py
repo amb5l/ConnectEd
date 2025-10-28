@@ -3,12 +3,17 @@ from PyQt6.QtGui  import QPainterPath
 
 from .....app import settings
 
+from .....core.defs import WIDTH, PITCH
+
+from ...items import SignalDirection
+
+from ...items.base_pin import _PIN_DOT_SIZE, _PIN_CLK_SIZE, \
+                              _EXT_ARROW_SIZE, _INT_ARROW_SIZE
+from ...items.entry    import _ENTRY_SIZE
+
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from . import DrawingScene
-
-
-_PIN_LEN = 10 # documentation - DO NOT CHANGE
 
 
 class DrawingScenePathsMixin:
@@ -25,41 +30,31 @@ class DrawingScenePathsMixin:
                 "out" : QPainterPath(),
                 "bi"  : QPainterPath()
             },
-            "BlockPinArrow" : {
-                "in"  : QPainterPath(),
-                "out" : QPainterPath(),
-                "bi"  : QPainterPath()
-            },
-            "SymbolPinArrow" : {
-                "in"  : QPainterPath(),
-                "out" : QPainterPath(),
-                "bi"  : QPainterPath()
-            },
+            "BlockPin" : QPainterPath(),
+            "BlockPinArrow" : {},
+            "SymbolPin" : {},
+            "SymbolPinArrow" : {},
             "ConnVtx" : QPainterPath(),
             "PolyVtx" : QPainterPath()
         }
+        self._gripPath(self.paths["Grip"])
+        self._originPath(self.paths["Origin"])
+        self._blockPinPath(self.paths["BlockPin"])
+        self._symbolPinPaths(self.paths["SymbolPin"])
+        self._pinIntArrowPaths(self.paths["BlockPinArrow"])
+        self._pinExtArrowPaths(self.paths["SymbolPinArrow"])
         self.updatePaths()
         settings().changed.connect(self.updatePaths)
 
     def updatePaths(self : "DrawingScene") -> None:
-        self._gripPath ( self.paths["Grip"] )
-        self._originPath ( self.paths["Origin"] )
         size = settings().get("theme/items/Port/size")
-        self._portInPath  ( self.paths["Port"][ "in"  ] , size )
-        self._portOutPath ( self.paths["Port"][ "out" ] , size )
-        self._portBiPath  ( self.paths["Port"][ "bi"  ] , size )
-        size = settings().get("theme/items/BlockPinArrow/size")
-        self._pinArrowInPath  ( self.paths["BlockPinArrow"][ "in"  ] , size )
-        self._pinArrowOutPath ( self.paths["BlockPinArrow"][ "out" ] , size )
-        self._pinArrowBiPath  ( self.paths["BlockPinArrow"][ "bi"  ] , size )
-        size = settings().get("theme/items/SymbolPinArrow/size")
-        self._pinArrowInPath  ( self.paths["SymbolPinArrow"][ "in"  ] , size )
-        self._pinArrowOutPath ( self.paths["SymbolPinArrow"][ "out" ] , size )
-        self._pinArrowBiPath  ( self.paths["SymbolPinArrow"][ "bi"  ] , size )
+        self._portInPath(self.paths["Port"]["in"], size)
+        self._portOutPath(self.paths["Port"]["out"], size)
+        self._portBiPath(self.paths["Port"]["bi"], size)
         size = settings().get("theme/items/ConnVtx/size")
-        self._connVtxPath( self.paths["ConnVtx"] , size )
+        self._connVtxPath(self.paths["ConnVtx"], size)
         size = settings().get("theme/items/PolyVtx/size")
-        self._polyVtxPath( self.paths["PolyVtx"] , size )
+        self._polyVtxPath(self.paths["PolyVtx"], size)
 
     def _gripPath(self : "DrawingScene", path : QPainterPath) -> None:
         size = settings().get("theme/grip/size")
@@ -112,40 +107,109 @@ class DrawingScenePathsMixin:
         path.lineTo(s, s)
         path.closeSubpath()
 
-    def _pinArrowInPath(
-        self : "DrawingScene",
-        path : QPainterPath,
-        size : float
-    ) -> None:
-        h = size / 2 ; q = h / 2 ; c = -_PIN_LEN / 2
+    def _blockPinPath(self : "DrawingScene", path : QPainterPath) -> None:
         path.clear()
-        path.moveTo(c-q, -h)
-        path.lineTo(c+q,  0)
-        path.lineTo(c-q, +h)
-        path.closeSubpath()
+        path.moveTo(-PITCH, 0)
+        path.lineTo(0, 0)
 
-    def _pinArrowOutPath(
-        self : "DrawingScene",
-        path : QPainterPath,
-        size : float
+    def _symbolPinPath(
+        self      : "DrawingScene",
+        d         : dict,
+        dot       : bool,
+        clock     : bool
     ) -> None:
-        h = size / 2 ; q = h / 2 ; c = -_PIN_LEN / 2
-        path.clear()
-        path.moveTo(c+q, -h)
-        path.lineTo(c-q,  0)
-        path.lineTo(c+q, +h)
+        path = QPainterPath()
+        path.moveTo(-PITCH, 0)
+        if dot:
+            path.lineTo(-(WIDTH + _PIN_DOT_SIZE), 0)
+            path.arcTo(
+                -(WIDTH + _PIN_DOT_SIZE),
+                -_PIN_DOT_SIZE / 2,
+                _PIN_DOT_SIZE,
+                _PIN_DOT_SIZE,
+                180,
+                360
+            )
+            path.moveTo(-WIDTH, 0)
+            path.lineTo(0, 0)
+        else:
+            path.lineTo(0, 0)
+        if clock:
+            path.moveTo(0, -_PIN_CLK_SIZE / 2)
+            path.lineTo(_PIN_CLK_SIZE, 0)
+            path.lineTo(0, _PIN_CLK_SIZE / 2)
+            path.closeSubpath()
+        d[(dot, clock)] = path
 
-    def _pinArrowBiPath(
-        self : "DrawingScene",
-        path : QPainterPath,
-        size : float
-    ) -> None:
-        h = size / 2 ; q = h / 2 ; c = -_PIN_LEN / 2
-        path.clear()
-        path.moveTo(c,   -h)
-        path.lineTo(c+h,  0)
-        path.lineTo(c,   +h)
+    def _symbolPinPaths(self : "DrawingScene", d : dict) -> None:
+        d.clear()
+        for dot in [False, True]:
+            for clock in [False, True]:
+                self._symbolPinPath(d, dot, clock)
+
+    def _pinIntArrowPaths(self : "DrawingScene", d : dict) -> None:
+        s = _INT_ARROW_SIZE
+        h = s / 2
+        # in
+        path = QPainterPath()
+        path.moveTo(0 , -h)
+        path.lineTo(h , -h)
+        path.lineTo(s ,  0)
+        path.lineTo(h , +h)
+        path.lineTo(0 , +h)
         path.closeSubpath()
+        d[SignalDirection.IN.value] = path
+        # out
+        path = QPainterPath()
+        path.moveTo(s , -h)
+        path.lineTo(h , -h)
+        path.lineTo(0 ,  0)
+        path.lineTo(h , +h)
+        path.lineTo(s , +h)
+        path.closeSubpath()
+        d[SignalDirection.OUT.value] = path
+        # bi
+        path = QPainterPath()
+        path.moveTo(0 ,  0)
+        path.lineTo(h , -h)
+        path.lineTo(s ,  0)
+        path.lineTo(h , +h)
+        path.closeSubpath()
+        d[SignalDirection.BI.value] = path
+
+    def _pinExtArrowPaths(self : "DrawingScene", d : dict) -> None:
+        w = WIDTH
+        wh = WIDTH / 2
+        x1 = (w / 2) + _PIN_DOT_SIZE
+        x2 = PITCH - (_ENTRY_SIZE / 2)
+        c = -((x1 + x2) / 2)  # center point
+        sh = _EXT_ARROW_SIZE / 2
+        sq = _EXT_ARROW_SIZE / 4
+        # in
+        path = QPainterPath()
+        path.moveTo(c - sq , -sh)
+        path.lineTo(c + sq ,   0)
+        path.lineTo(c - sq , +sh)
+        path.closeSubpath()
+        d[SignalDirection.IN.value] = path
+        # out
+        path = QPainterPath()
+        path.moveTo(c + sq , -sh)
+        path.lineTo(c - sq ,   0)
+        path.lineTo(c + sq , +sh)
+        path.closeSubpath()
+        d[SignalDirection.OUT.value] = path
+        # bi
+        path = QPainterPath()
+        path.moveTo(c - wh      , -sh)
+        path.lineTo(c - wh - sh ,  0)
+        path.lineTo(c - wh      , +sh)
+        path.closeSubpath()
+        path.moveTo(c + wh      , -sh)
+        path.lineTo(c + wh + sh ,   0)
+        path.lineTo(c + wh      , +sh)
+        path.closeSubpath()
+        d[SignalDirection.BI.value] = path
 
     def _connVtxPath(
         self : "DrawingScene",

@@ -123,7 +123,7 @@ class PortPinDialog(QDialog):
                     item.range.dir == RangeDirection.DOWN
                 )
                 self._unspec_radio.setChecked(
-                    item.range.dir == RangeDirection.UNSPECIFIED
+                    item.range.dir == RangeDirection.NONE
                 )
         # catch scalar/vector change
         self._scalar_check.stateChanged.connect(self.onScalarChanged)
@@ -143,7 +143,7 @@ class PortPinDialog(QDialog):
         range_dir = \
             RangeDirection.UP if self._up_radio.isChecked() \
             else RangeDirection.DOWN if self._down_radio.isChecked() \
-            else RangeDirection.UNSPECIFIED
+            else RangeDirection.NONE
         return VectorRange(
             int(self._left_edit.text()),
             range_dir,

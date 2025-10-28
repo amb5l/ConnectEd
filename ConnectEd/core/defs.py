@@ -17,6 +17,9 @@ Z_TOP           = +100 # select box / WIP
 LAYER_SHEET   = (Z_TEMPLATE,)
 LAYER_DRAWING = (Z_DRAWING,)
 
+WIDTH = 1  # standard line width
+PITCH = 10 # standard item pitch
+
 DEFS = {
     "sheets" : {
         "A4 (landscape)" : QSizeF( 1169.0 ,  827.0 ),

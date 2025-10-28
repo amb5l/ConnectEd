@@ -39,7 +39,7 @@ class Port(
     QGraphicsPathItem
 ):
     # class attributes
-    _NAME_OFFSET = 2
+    _AP_NAME_OFFSET = 1.5
     _PROPERTY_SPECS = \
         ItemPosMixin._PROPERTY_SPECS_POS | \
         PortPinMixin._PROPERTY_SPECS | \
@@ -67,7 +67,7 @@ class Port(
 
     def onSettingsChange(self : Self) -> None:
         size = settings().get("theme/items/Port/size")
-        self.getAnchorPoint("Name").setPos(size + self._NAME_OFFSET, 0)
+        self.getAnchorPoint("Name").setPos(size + self._AP_NAME_OFFSET, 0)
 
     def onSceneChange(self : Self, scene : "DrawingScene") -> None:
         self._setPath(scene)

@@ -10,12 +10,12 @@ from .....core.xml import toXmlAttrs, fromXmlAttrs
 class ItemXmlMixin:
     def toXml(self : Self, xw : QXmlStreamWriter) -> None:
         from ..property_text import PropertyText
-        from ..pin           import Pin
+        from ..base_pin      import BasePin
         from ..anchor_point  import AnchorPoint
         xw.writeStartElement(self.__class__.__name__)
         toXmlAttrs(self, xw)
         for child in self.childItems():
-            if isinstance(child, Pin):
+            if isinstance(child, BasePin):
                 child.toXml(xw)
             elif isinstance(child, AnchorPoint):
                 for anchor_child in child.childItems():

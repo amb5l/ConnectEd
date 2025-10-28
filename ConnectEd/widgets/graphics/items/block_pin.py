@@ -3,21 +3,22 @@ from typing import Self
 from PyQt6.QtGui     import QAction
 from PyQt6.QtWidgets import QMenu
 
-from .mixin.loc    import ItemLocMixin
+from .mixin.loc import ItemLocMixin
 
 from .port_pin import PortPinText, PortPinMixin
-from .pin      import PinArrow, PinEntry, Pin
+from .base_pin import BasePinArrow, BasePinEntry, BasePin, _INT_ARROW_SIZE
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ..views.drawing import DrawingView
+    from ..scenes.drawing import DrawingScene
 
 
-class BlockPinArrow(PinArrow):
+class BlockPinArrow(BasePinArrow):
     pass
 
 
-class BlockPinEntry(PinEntry):
+class BlockPinEntry(BasePinEntry):
     pass
 
 
@@ -29,8 +30,9 @@ class BlockPinComment(PortPinText):
     pass
 
 
-class BlockPin(ItemLocMixin, Pin):
+class BlockPin(ItemLocMixin, BasePin):
     # class attributes
+    _AP_NAME_OFFSET  = _INT_ARROW_SIZE + 1.5
     _PROPERTY_SPECS = \
         ItemLocMixin._PROPERTY_SPECS_LOC | \
         PortPinMixin._PROPERTY_SPECS
@@ -56,3 +58,8 @@ class BlockPin(ItemLocMixin, Pin):
             view.action("Edit...", view.ui.editBlockPin),
             view.separator()
         ] + super().ctxMenuItems()
+
+    def _setPath(self : Self, scene : "DrawingScene | None") -> None:
+        if scene is None:
+            return
+        self.setPath(scene.paths["BlockPin"])

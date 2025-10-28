@@ -1,4 +1,6 @@
 NEXT
+- LINE_WIDTH
+- reinstate block pin arrows
 - polyline anchor point rect includes line thickness and should not!
 - rect = self._allItemsRect()
 - review use of ItemBoundMixin and ItemShapeMixin to allow for tolerance

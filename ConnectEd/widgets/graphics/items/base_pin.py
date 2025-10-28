@@ -1,27 +1,36 @@
 from typing import Self
+from enum   import Enum
 
-from PyQt6.QtCore    import QLineF
-from PyQt6.QtWidgets import QGraphicsItem, QGraphicsPathItem, QGraphicsLineItem
+from PyQt6.QtCore    import QPointF
+from PyQt6.QtWidgets import QGraphicsItem, QGraphicsPathItem
+
+from ....core.defs import PITCH
+
+from ..properties import PropertySpec
 
 from . import SignalDirection
+
+from .port_pin import PortPinMixin, PortPinText
+from .entry    import Entry
 
 from .mixin.paint  import ItemPaintMixin
 from .mixin.change import ItemChangeMixin
 from .mixin.line   import ItemLineMixin
 from .mixin.fill   import ItemFillMixin
 
-from .port_pin import PortPinMixin, PortPinText
-from .entry    import Entry
-
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ..scenes.drawing import DrawingScene
 
 
-_PIN_LEN = 10 # documentation - DO NOT CHANGE
+# documentation - DO NOT CHANGE
+_PIN_DOT_SIZE   = 2
+_PIN_CLK_SIZE   = 3
+_EXT_ARROW_SIZE = 3
+_INT_ARROW_SIZE = 6
 
 
-class PinArrow(
+class BasePinArrow(
     ItemPaintMixin,
     ItemChangeMixin,
     ItemLineMixin,
@@ -64,45 +73,47 @@ class PinArrow(
             self.setPath(path)
 
 
-class PinEntry(Entry):
+class BasePinEntry(Entry):
     pass
 
 
-class PinName(PortPinText):
+class BasePinName(PortPinText):
     pass
 
 
-class PinComment(PortPinText):
+class BasePinComment(PortPinText):
     pass
 
 
-class Pin(ItemPaintMixin, PortPinMixin, QGraphicsLineItem):
+class BasePin(ItemPaintMixin, PortPinMixin, QGraphicsPathItem):
     @classmethod
-    def _getArrowClass(cls) -> type[PinArrow]:
-        return PinArrow
+    def _getArrowClass(cls) -> type[BasePinArrow]:
+        raise NotImplementedError("Subclasses must implement this method")
 
     @classmethod
-    def _getEntryClass(cls) -> type[PinEntry]:
-        return PinEntry
+    def _getEntryClass(cls) -> type[BasePinEntry]:
+        raise NotImplementedError("Subclasses must implement this method")
 
     @classmethod
-    def _getNameClass(cls) -> type[PinName]:
-        return PinName
+    def _getNameClass(cls) -> type[BasePinName]:
+        raise NotImplementedError("Subclasses must implement this method")
 
     @classmethod
-    def _getCommentClass(cls) -> type[PinComment]:
-        return PinComment
+    def _getCommentClass(cls) -> type[BasePinComment]:
+        raise NotImplementedError("Subclasses must implement this method")
+
+    # instance attributes
+    _arrow : BasePinArrow
 
     def __init__(
         self   : Self,
         parent : QGraphicsItem | None = None,
         bare   : bool = False
     ) -> None:
-        QGraphicsLineItem.__init__(self, parent)
+        QGraphicsPathItem.__init__(self, parent)
         self.initPortPin(bare)
-        line = QLineF(-_PIN_LEN, 0, 0, 0)
-        self.setLine(line)
-        self._entry.setPos(-_PIN_LEN, 0)
+        self._setPath(self.scene())
+        self._entry.setPos(-PITCH, 0)
         self._arrow = self._getArrowClass()(self)
 
     @property
@@ -111,7 +122,7 @@ class Pin(ItemPaintMixin, PortPinMixin, QGraphicsLineItem):
 
     @direction.setter
     def direction(self : Self, value : SignalDirection) -> None:
-        super(Pin, Pin).direction.__set__(self, value)
+        super(BasePin, BasePin).direction.__set__(self, value)
         self._arrow.direction = value
 
     def onGeometryChange(self : Self) -> None:
@@ -119,7 +130,11 @@ class Pin(ItemPaintMixin, PortPinMixin, QGraphicsLineItem):
 
     def onSceneChange(self : Self, scene : "DrawingScene") -> None:
         self._arrow.direction = self._direction
+        self._setPath(scene)
 
     def onSelectionChange(self : Self, selected : bool) -> None:
         self._arrow.setSelected(selected)
         self._entry.setSelected(selected)
+
+    def _setPath(self : Self, scene : "DrawingScene | None") -> None:
+        raise NotImplementedError("Subclasses must implement this method")

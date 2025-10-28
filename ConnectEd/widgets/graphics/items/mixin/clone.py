@@ -15,15 +15,15 @@ class ItemCloneMixin:
         """Create a clone of this or specified item with a new UUID."""
         from ..anchor_point  import AnchorPoint
         from ..property_text import PropertyText
-        from ..pin           import Pin
+        from ..base_pin      import BasePin
         source : ItemType = original if original is not None else self
         clone : ItemType = self.__class__(bare=True)
         # clone properties
         if hasattr(self, "_properties"):
-            clone._properties = self._properties.copy()
-            for pn in clone._properties:
-                clone_ps = clone._properties[pn]
-                source_ps = source._properties[pn]
+            clone._property_specs = self._properties.copy()
+            for pn in clone._property_specs:
+                clone_ps = clone._property_specs[pn]
+                source_ps = source._property_specs[pn]
                 if isinstance(clone_ps, PropertySpec):
                     if source_ps.exists(source):
                         clone_ps.setter(clone, source_ps.getter(source))
@@ -31,7 +31,7 @@ class ItemCloneMixin:
                     clone_ps.value = source_ps.value
         # clone property texts and pins
         for source_child in source.childItems():
-            if isinstance(source_child, Pin):
+            if isinstance(source_child, BasePin):
                 clone_pin = source_child.clone()
                 clone_pin.setParentItem(clone)
             elif isinstance(source_child, AnchorPoint):
