@@ -14,18 +14,15 @@ from .anchor_point import AnchorPoint
 
 
 class Tether(QGraphicsLineItem):
-    """Tether line between a TetherText anchor and its parent."""
+    """Tether line between a TetherText origin and its parent cleat."""
 
     _item  : "TetherText"
-    _line  : QLineF
 
     def __init__(self : Self, item : "TetherText", visible : bool = False):
         super().__init__(item)  # Parent it to the TetherText
         self._item = item
         self.setVisible(visible)
         self.setFlag( self.GraphicsItemFlag.ItemIgnoresTransformations , False )
-        self._line = QLineF()
-        self.setLine(self._line)
         self.onSettingsChange()
         self.onPositionChange(self._item.pos())
 
@@ -45,8 +42,9 @@ class Tether(QGraphicsLineItem):
         cleat : AnchorPoint | None = self._item.parentItem()
         if cleat is None:
             return
-        self._line.setP2(cleat.scenePos() - self.scenePos())
-        self.setLine(self._line)
+        line = self.line()
+        line.setP2(cleat.scenePos() - self.scenePos())
+        self.setLine(line)
 
     def toXml(self : Self, xw : QXmlStreamWriter) -> str:
         pass  # no need to serialise
@@ -87,7 +85,7 @@ class TetherText(BaseText):
         """Override to update tether line."""
         super().setOriginAPName(name)
         # parent to origin anchor point
-        self._tether.setParentItem(self._origin.parentItem())
+        self._tether.setParentItem(self._origin)
         self._tether.onPositionChange(self.pos())
 
     def cleat(self : Self) -> str:
