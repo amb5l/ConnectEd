@@ -78,9 +78,9 @@ class DrawingViewMenuMixin:
         grid_snap_action.setChecked(self.grid.snap)
         menu.addAction(grid_snap_action)
         grid_pitch_menu = Menu("Grid Pitch")
-        grid_pitch_menu.addAction("10", lambda: self.ui.viewGridPitch(10))
-        grid_pitch_menu.addAction("5", lambda: self.ui.viewGridPitch(5))
-        grid_pitch_menu.addAction("1", lambda: self.ui.viewGridPitch(1))
+        grid_pitch_menu.addAction("(10,10)", lambda: self.ui.viewGridPitch(10,10))
+        grid_pitch_menu.addAction("(5,5)", lambda: self.ui.viewGridPitch(5,5))
+        grid_pitch_menu.addAction("(1,1)", lambda: self.ui.viewGridPitch(1,1))
         menu.addMenu(grid_pitch_menu)
         # display menu
         menu.exec(event.globalPos())

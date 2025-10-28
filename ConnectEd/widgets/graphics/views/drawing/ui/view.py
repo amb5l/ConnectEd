@@ -63,8 +63,8 @@ class DrawingViewUiViewMixin:
     def viewGridSnap(self : "DrawingViewUi", checked : bool) -> None:
         self._view.grid.snap = checked
 
-    def viewGridPitch(self : "DrawingViewUi", pitch : float) -> None:
-        self._view.grid.pitch = QPointF(pitch, pitch)
+    def viewGridPitch(self : "DrawingViewUi", pitch_x : float, pitch_y : float) -> None:
+        self._view.grid.pitch = QPointF(pitch_x, pitch_y)
         self._view.viewport().update()
 
     def viewGridSettings(self : "DrawingViewUi") -> None:
