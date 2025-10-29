@@ -42,7 +42,7 @@ class Tether(QGraphicsLineItem):
         if (cleat := self.cleat()) is None:
             return
         line = self.line()
-        line.setP2(cleat.scenePos() - self.scenePos())
+        line.setP2(self.mapFromItem(cleat, QPointF(0, 0)))
         self.setLine(line)
 
     def cleat(self : Self) -> AnchorPoint | None:
@@ -124,3 +124,13 @@ class TetherText(BaseText):
             parent.setName(name)
         else:
             logger().error(f"Parent is not an AnchorPoint: {type(parent).__name__}")
+
+    def compensateRotation(self : Self) -> None:
+        rect = self.boundingRect()
+        self.setTransformOriginPoint(rect.center())
+        if 135 < self.sceneRotation() <= 225:
+            self.setRotation((self.rotation() + 180) % 360)
+            # counter rotate anchor points
+            for ap in self._anchor_points.values():
+                ap.setTransformOriginPoint(self.mapToItem(ap, rect.center()))
+                ap.setRotation((ap.rotation() + 180) % 360)

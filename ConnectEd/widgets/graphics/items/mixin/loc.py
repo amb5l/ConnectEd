@@ -5,7 +5,7 @@ from PyQt6.QtWidgets import QGraphicsItem
 
 from .....app import logger
 
-from ...properties import PropertySpec
+from ...properties import PropertySpec, PropertiesMixin
 
 from .. import EdgeLoc, Edge
 
@@ -62,10 +62,9 @@ class ItemLocMixin:
         parent : "Block" = self.parentItem()
         edge_pos = parent.loc2pos(loc) if parent else QPointF()
         super().setPos(edge_pos)
-        for child in self.childItems():
-            for grandchild in child.childItems():
-                if hasattr(grandchild, 'compensateRotation'):
-                    grandchild.compensateRotation(angle)
+        if isinstance(self, PropertiesMixin):
+            for property_text in self._property_texts.values():
+                property_text.compensateRotation()
 
     def setLocEdge(self : Self, edge : Edge) -> None:
         self.setLoc(EdgeLoc(Edge(edge), self._loc.offset))

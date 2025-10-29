@@ -75,6 +75,14 @@ class ItemMixin:
             item = item.parentItem()
         return item
 
+    def sceneRotation(self: Self | QGraphicsItem) -> float:
+        angle = 0.0
+        item = self
+        while item is not None:
+            angle += item.rotation()
+            item = item.parentItem()
+        return angle % 360.0
+
     def parentSceneRotation(self: Self | QGraphicsItem) -> float:
             """
             Returns the effective rotation angle (degrees) of the parent

@@ -74,10 +74,8 @@ class Port(
 
     def setRotation(self : Self, angle : float) -> None:
         super().setRotation(angle)
-        for child in self.childItems(): # anchor points
-            for grandchild in child.childItems(): # property texts
-                if hasattr(grandchild, 'compensateRotation'):
-                    grandchild.compensateRotation(angle)
+        for property_text in self._property_texts.values():
+            property_text.compensateRotation()
 
     @property
     def direction(self : Self) -> "SignalDirection":
