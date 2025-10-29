@@ -65,8 +65,10 @@ class Block(BaseRectangle):
     def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
         return [
             view.action("Add Pin...", view.ui.placeBlockPin),
-            view.separator()
-        ] + super().ctxMenuItems()
+            view.separator(),
+            view.action("Appearance...", lambda: view.ui.editAppearance(self)),
+            view.action("Properties...", lambda: view.ui.editProperties(self))
+        ]
 
     def pos2loc(self : Self, pos : QPointF) -> EdgeLoc:
         rect = self.rect()

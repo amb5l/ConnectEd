@@ -56,8 +56,10 @@ class BlockPin(ItemLocMixin, BasePin):
     def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
         return [
             view.action("Edit...", view.ui.editBlockPin),
-            view.separator()
-        ] + super().ctxMenuItems()
+            view.separator(),
+            view.action("Appearance...", lambda: view.ui.editAppearance(self)),
+            view.action("Properties...", lambda: view.ui.editProperties(self))
+        ]
 
     def _setPath(self : Self, scene : "DrawingScene | None" = None) -> None:
         if scene is None:

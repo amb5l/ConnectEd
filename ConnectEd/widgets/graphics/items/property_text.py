@@ -87,8 +87,10 @@ class PropertyText(TetherText):
     def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
         return [
             view.action("Edit...", view.ui.editPropertyText),
-            view.separator()
-        ] + super().ctxMenuItems()
+            view.separator(),
+            view.action("Appearance...", lambda: view.ui.editAppearance(self)),
+            view.action("Properties...", lambda: view.ui.editProperties(self))
+        ]
 
     def parent(self : Self) -> PropertiesMixin:
         p = self.parentItem()
@@ -118,13 +120,6 @@ class PropertyText(TetherText):
     def setDisplay(self : Self, value : PropertyDisplay) -> None:
         self._display = value
         self.onTextChange()
-
-    def ctxMenuEdit(
-        self    : Self,
-        checked : bool,
-        view    : "DrawingView"
-    ) -> None:
-        view.editPropertyText()
 
 
 @dataclass
