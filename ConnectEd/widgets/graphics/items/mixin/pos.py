@@ -1,8 +1,13 @@
 from typing import Self
 
-from PyQt6.QtCore import QPointF
+from PyQt6.QtCore    import QPointF
+from PyQt6.QtWidgets import QGraphicsItem
 
 from ...properties import PropertySpec
+
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from ..mixin import ItemMixin
 
 
 class ItemPosMixin:
@@ -19,7 +24,7 @@ class ItemPosMixin:
         )
     }
 
-    def moveBy(self : Self, offset : QPointF) -> None:
+    def moveBy(self : "Self | ItemMixin | QGraphicsItem", offset : QPointF) -> None:
         x = offset.x()
         y = offset.y()
         r = self.parentSceneRotation()
@@ -30,7 +35,7 @@ class ItemPosMixin:
             case 270 : super().moveBy(-y, x)
             case _   : raise ValueError(f"Invalid rotation: {r}")
 
-    def setPos(self : Self, pos : QPointF) -> None:
+    def setPos(self : "Self | ItemMixin | QGraphicsItem", pos : QPointF) -> None:
         """
         Set position, compensating for item's own rotation.
         When an item is rotated, position changes must be inverted accordingly.
@@ -47,12 +52,12 @@ class ItemPosMixin:
             case _   : raise ValueError(f"Invalid rotation: {r}")
         super().setPos(pos)
 
-    def setPosX(self : Self, value : float) -> None:
+    def setPosX(self : "Self | ItemMixin | QGraphicsItem", value : float) -> None:
         pos = self.pos()
         pos.setX(value)
         self.setPos(pos)
 
-    def setPosY(self : Self, value : float) -> None:
+    def setPosY(self : "Self | ItemMixin | QGraphicsItem", value : float) -> None:
         pos = self.pos()
         pos.setY(value)
         self.setPos(pos)
