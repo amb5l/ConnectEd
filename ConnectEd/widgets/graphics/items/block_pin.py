@@ -59,7 +59,8 @@ class BlockPin(ItemLocMixin, BasePin):
             view.separator()
         ] + super().ctxMenuItems()
 
-    def _setPath(self : Self, scene : "DrawingScene | None") -> None:
+    def _setPath(self : Self, scene : "DrawingScene | None" = None) -> None:
         if scene is None:
-            return
+            if (scene := self.scene()) is None:
+                return
         self.setPath(scene.paths["BlockPin"])

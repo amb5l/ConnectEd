@@ -86,12 +86,13 @@ class Port(
     @direction.setter
     def direction(self : Self, value : "SignalDirection") -> None:
         super(Port, Port).direction.__set__(self, value)
-        self._setPath(self.scene())
+        self._setPath()
 
-    def _setPath(self : Self, scene : "DrawingScene") -> None:
-        scene : "DrawingScene" = self.scene()
-        if scene is not None \
-        and self.__class__.__name__ in scene.paths \
+    def _setPath(self : Self, scene : "DrawingScene | None" = None) -> None:
+        if scene is None:
+            if (scene := self.scene()) is None:
+                return
+        if  self.__class__.__name__ in scene.paths \
         and self._direction.value in scene.paths[self.__class__.__name__]:
             path = scene.paths[self.__class__.__name__][self._direction.value]
             self.setPath(path)

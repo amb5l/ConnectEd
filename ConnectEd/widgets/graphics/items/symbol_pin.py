@@ -1,7 +1,8 @@
 from typing import Self
 
 from PyQt6.QtCore    import QPointF
-from PyQt6.QtWidgets import QGraphicsItem
+from PyQt6.QtWidgets import QGraphicsItem, QMenu
+from PyQt6.QtGui     import QAction
 
 from ..properties import PropertySpec
 
@@ -14,6 +15,7 @@ from .entry    import Entry
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
+    from ..views.drawing import DrawingView
     from ..scenes.drawing import DrawingScene
 
 
@@ -100,9 +102,24 @@ class SymbolPin(ItemPosMixin, BasePin):
         self.setPropertyValue("Clock", value)
         self._setPath()
 
-    def _setPath(self : Self, scene : "DrawingScene | None") -> None:
+    def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
+        return [
+            view.action(
+                "Dot",
+                lambda: view.ui.editSymbolPinDot(self, not self._dot),
+                checked=self._dot
+            ),
+            view.action(
+                "Clock",
+                lambda: view.ui.editSymbolPinClock(self, not self._clock),
+                checked=self._clock
+            )
+        ]
+
+    def _setPath(self : Self, scene : "DrawingScene | None" = None) -> None:
         if scene is None:
-            return
+            if (scene := self.scene()) is None:
+                return
         key = (self._dot, self._clock)
         self.setPath(scene.paths["SymbolPin"][key])
         self._anchor_points["Name"].setPos(QPointF(

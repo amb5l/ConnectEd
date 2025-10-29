@@ -13,6 +13,7 @@ if TYPE_CHECKING:
     from ....items              import ItemMixin
     from ....items.anchor_point import AnchorPoint
     from ....items.grip         import ResizeGrip
+    from ....items.symbol_pin   import SymbolPin
     from .                      import DrawingViewUi
 
 
@@ -60,28 +61,14 @@ class DrawingViewUiEditMixin:
         items : list["ItemMixin"] | None = None,
         pos   : QPoint | QPointF | None = None
     ) -> None:
-        scene : "DrawingScene" = self._view.scene()
-        if items is None:
-            items = scene.selectedItems()
-        pos = self._view.mapToScene(pos) if isinstance(pos, QPoint) else pos
-        if self._view.interaction:
-            self._view.interaction.cancel()
-        self._view.interaction = EditMoveInteraction(scene, items, pos, True)
-        self._view.state.go(self._view.stateEditSlide)
+        self._editMove(items, pos, True)
 
     def editMove(
         self  : "DrawingViewUi",
         items : list["ItemMixin"] | None = None,
         pos   : QPoint | QPointF | None = None
     ) -> None:
-        scene : "DrawingScene" = self._view.scene()
-        if items is None:
-            items = scene.selectedItems()
-        pos = self._view.mapToScene(pos) if isinstance(pos, QPoint) else pos
-        if self._view.interaction:
-            self._view.interaction.cancel()
-        self._view.interaction = EditMoveInteraction(scene, items, pos, False)
-        self._view.state.go(self._view.stateEditMove)
+        self._editMove(items, pos, False)
 
     def editResize(
         self : "DrawingViewUi",
@@ -196,8 +183,53 @@ class DrawingViewUiEditMixin:
             self._view.stateEditBlockPin, [item] if item else None
         )
 
+    def editSymbolPinDot(
+        self   : "DrawingViewUi",
+        item   : "SymbolPin",
+        enable : bool
+    ):
+        from ....scenes.drawing.cmd.edit import CmdEditSymbolPinDot
+        if enable == item.dot:
+            return
+        scene : "DrawingScene" = self._view.scene()
+        scene.undo_stack.push(CmdEditSymbolPinDot(scene, item, enable))
+
+    def editSymbolPinClock(
+        self   : "DrawingViewUi",
+        item   : "SymbolPin",
+        enable : bool
+    ):
+        from ....scenes.drawing.cmd.edit import CmdEditSymbolPinClock
+        if enable == item.clock:
+            return
+        scene : "DrawingScene" = self._view.scene()
+        scene.undo_stack.push(CmdEditSymbolPinClock(scene, item, enable))
+
     def editText(self : "DrawingViewUi") -> None:
         self._view.state.go(self._view.stateEditText)
 
     def editPropertyText(self : "DrawingViewUi") -> None:
         self._view.state.go(self._view.stateEditPropertyText)
+
+    def _editMove(
+        self  : "DrawingViewUi",
+        items : list["ItemMixin"] | None = None,
+        pos   : QPoint | QPointF | None = None,
+        slide : bool = False
+    ) -> None:
+        scene : "DrawingScene" = self._view.scene()
+        if items is None:
+            items = scene.selectedItems()
+        pos = self._view.mapToScene(pos) if isinstance(pos, QPoint) else pos
+        # exclude: non-items and child items
+        for item in items:
+            if not isinstance(item, ItemMixin) \
+            or item.topParentItem() in items:
+                items.remove(item)
+        # slide/move
+        if self._view.interaction:
+            self._view.interaction.cancel()
+        self._view.interaction = EditMoveInteraction(scene, items, pos, slide)
+        self._view.state.go(
+            self._view.stateEditSlide if slide else self._view.stateEditMove
+        )

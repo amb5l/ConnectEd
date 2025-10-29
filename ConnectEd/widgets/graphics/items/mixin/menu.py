@@ -10,7 +10,4 @@ if TYPE_CHECKING:
 
 class ItemMenuMixin:
     def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
-        return [
-            view.action("Appearance...", view.ui.editAppearance),
-            view.action("Properties...", view.ui.editProperties)
-        ]
+        raise NotImplementedError("Subclass must implement this method")

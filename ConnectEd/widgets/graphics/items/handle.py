@@ -24,7 +24,7 @@ class Handle(
     # instance attributes
     _item      : "ItemAnchorPointsMixin"  # parent item
     _path_name : str                      # path name
-    _xxxpath      : QPainterPath             # path
+    _path      : QPainterPath             # path
     _brush     : QBrush                   # brush
 
     def __init__(

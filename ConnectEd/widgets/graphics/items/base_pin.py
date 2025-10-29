@@ -62,11 +62,13 @@ class BasePinArrow(
     @direction.setter
     def direction(self : Self, value : SignalDirection) -> None:
         self._direction = value
-        self._setPath(self.scene())
+        self._setPath()
 
-    def _setPath(self : Self, scene : "DrawingScene") -> None:
-        if scene is not None \
-        and hasattr(scene, 'paths') \
+    def _setPath(self : Self, scene : "DrawingScene | None" = None) -> None:
+        if scene is None:
+            if (scene := self.scene()) is None:
+                return
+        if hasattr(scene, 'paths') \
         and self.__class__.__name__ in scene.paths \
         and self._direction.value in scene.paths[self.__class__.__name__]:
             path = scene.paths[self.__class__.__name__][self._direction.value]
@@ -112,7 +114,7 @@ class BasePin(ItemPaintMixin, PortPinMixin, QGraphicsPathItem):
     ) -> None:
         QGraphicsPathItem.__init__(self, parent)
         self.initPortPin(bare)
-        self._setPath(self.scene())
+        self._setPath()
         self._entry.setPos(-PITCH, 0)
         self._arrow = self._getArrowClass()(self)
 
@@ -136,5 +138,5 @@ class BasePin(ItemPaintMixin, PortPinMixin, QGraphicsPathItem):
         self._arrow.setSelected(selected)
         self._entry.setSelected(selected)
 
-    def _setPath(self : Self, scene : "DrawingScene | None") -> None:
+    def _setPath(self : Self, scene : "DrawingScene | None" = None) -> None:
         raise NotImplementedError("Subclasses must implement this method")

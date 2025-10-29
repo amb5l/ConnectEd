@@ -1,9 +1,8 @@
 from typing import Self, overload
 
 from PyQt6.QtCore    import Qt, QPointF, QRectF, QSizeF
-from PyQt6.QtWidgets import QGraphicsRectItem, \
-                            QWidget, QStyleOptionGraphicsItem, QStyle
-from PyQt6.QtGui     import QPainter, QPainterPath, QPainterPathStroker
+from PyQt6.QtWidgets import QGraphicsRectItem, QMenu
+from PyQt6.QtGui     import QPainterPath, QPainterPathStroker, QAction
 
 from ....app import settings
 
@@ -21,6 +20,10 @@ from .mixin.change import ItemChangeMixin
 from .mixin.clone  import ItemCloneMixin
 from .mixin.xml    import ItemXmlMixin
 from .mixin.menu   import ItemMenuMixin
+
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from ..views.drawing  import DrawingView
 
 
 class BaseRectangleMixin(
@@ -228,6 +231,12 @@ class BaseRectangleMixin(
                 self.setPoints(p1, p2 + d)
             case _:
                 raise ValueError(f"Invalid anchor point: {name}")
+
+    def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
+        return [
+            view.action("Appearance...", lambda: view.ui.editAppearance(self)),
+            view.action("Properties...", lambda: view.ui.editProperties(self))
+        ]
 
 
 class BaseRectangle(BaseRectangleMixin, QGraphicsRectItem):

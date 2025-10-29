@@ -20,8 +20,9 @@ from . import CmdSceneItem, CmdSceneItems
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from ....scenes.drawing import DrawingScene
-    from ....items.port_pin import PortPinMixin
+    from ....scenes.drawing   import DrawingScene
+    from ....items.port_pin   import PortPinMixin
+    from ....items.symbol_pin import SymbolPin
 
 
 class CmdEditPortPin(CmdSceneItem):
@@ -59,6 +60,54 @@ class CmdEditPortPin(CmdSceneItem):
         self._item.name = self._before.name
         self._item.direction = self._before.direction
         self._item.range = self._before.range
+        self._item.update()
+
+
+class CmdEditSymbolPinDot(CmdSceneItem):
+    _item   : "SymbolPin"
+    _before : bool
+    _after  : bool
+
+    def __init__(
+        self   : Self,
+        scene  : "DrawingScene",
+        item   : "SymbolPin",
+        enable : bool
+    ):
+        super().__init__(scene, item)
+        self._before = item.dot
+        self._after = enable
+
+    def redo(self : Self) -> None:
+        self._item.dot = self._after
+        self._item.update()
+
+    def undo(self : Self) -> None:
+        self._item.dot = self._before
+        self._item.update()
+
+
+class CmdEditSymbolPinClock(CmdSceneItem):
+    _item   : "SymbolPin"
+    _before : bool
+    _after  : bool
+
+    def __init__(
+        self : Self,
+        scene : "DrawingScene",
+        item : "SymbolPin",
+        enable : bool
+    ):
+        super().__init__(scene, item)
+        self._before = item.clock
+        self._after = enable
+
+    def redo(self : Self) -> None:
+        self._item.clock = self._after
+        self._item.update()
+
+    def undo(self : Self) -> None:
+        self._item.clock = self._before
         self._item.update()
 
 

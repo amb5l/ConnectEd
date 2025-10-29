@@ -36,7 +36,7 @@ class ItemMixin:
         self.setFlag( f.ItemSendsGeometryChanges      , True )
         self.setFlag( f.ItemSendsScenePositionChanges , True )
         self.setCacheMode(QGraphicsItem.CacheMode.DeviceCoordinateCache)
-        self.resetUuid()
+        self._resetUuid()
         if isinstance(self, ItemVertexMixin):
             self.initVertices()
         if isinstance(self, ItemLocMixin):
@@ -67,17 +67,25 @@ class ItemMixin:
             return NotImplemented
         return self._uuid == other._uuid
 
-    def resetUuid(self : Self | QGraphicsItem) -> None:
-        self._uuid = str(uuid.uuid4())
+    def topParentItem(self: Self | QGraphicsItem) -> QGraphicsItem | None:
+        item = self.parentItem()
+        if item is None:
+            return None
+        while item.parentItem() is not None:
+            item = item.parentItem()
+        return item
 
     def parentSceneRotation(self: Self | QGraphicsItem) -> float:
             """
             Returns the effective rotation angle (degrees) of the parent
             w.r.t. the scene by summing hierarchy.
             """
-            angle : float = 0.0
-            item  : QGraphicsItem = self.parentItem()
+            angle = 0.0
+            item = self.parentItem()
             while item is not None:
                 angle += item.rotation()
                 item = item.parentItem()
             return angle % 360.0
+
+    def _resetUuid(self : Self | QGraphicsItem) -> None:
+        self._uuid = str(uuid.uuid4())

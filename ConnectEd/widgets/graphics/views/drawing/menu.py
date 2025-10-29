@@ -19,10 +19,7 @@ class DrawingViewMenuMixin:
         vpos = event.pos()
         spos = self.mapToScene(vpos)
         menu = Menu()
-        # interaction related actions/submenus (if applicable)
-        if self.interaction is not None:
-            spos = self.mapToScene(event.pos())
-            menu_items = self.interaction.ctxMenuItems(spos)
+        def _extendMenu(menu_items : list[QAction | QMenu]) -> None:
             if menu_items:
                 for menu_item in menu_items:
                     if isinstance(menu_item, QAction):
@@ -30,42 +27,41 @@ class DrawingViewMenuMixin:
                     elif isinstance(menu_item, QMenu):
                         menu.addMenu(menu_item)
                 menu.addSeparator()
-        # get applicable item/items: selection or top item
-        items_at = self._itemsAt(spos)
-        items = []
-        if any(item.isSelected() for item in items_at):
-            items = self.scene().selectedItems()  # selection set
-        else:
-            for item in items_at:
-                if isinstance(item, ItemMenuMixin):
-                    items.append(item)  # item at position
-        # slide/move/rotate
-        if items:
+        if self.interaction is None:
+            # menu for item/items
+            # 1. get all items at position
+            items = self._itemsAt(spos)
+            # 2. if any is selected, use selection set instead
+            if any(item.isSelected() for item in items):
+                items = self.scene().selectedItems()  # selection set
+            # 3. narrow down to items that support context menus
+            items = [item for item in items if isinstance(item, ItemMenuMixin)]
+            if len(items) == 0:
+                return
+            if len(items) == 1:
+                # item specific actions/submenus
+                _extendMenu(items[0].ctxMenuItems(self))
+            else:
+                # multiple items
+                pass
+            # common actions: slide/move/rotate
             menu.addAction("Slide", lambda: self.ui.editSlide(items, spos))
             menu.addAction("Move", lambda: self.ui.editMove(items, spos))
             menu.addAction("Rotate CW", lambda: self.ui.editRotateCW(items, spos))
             menu.addAction("Rotate CCW", lambda: self.ui.editRotateCCW(items, spos))
             menu.addSeparator()
-
-        # clipboard/delete/duplicate actions
-        paste_items, _ = paste()
-        if items:
+            # common actions: clipboard/delete/duplicate
+            paste_items, _ = paste()
             menu.addAction("Cut", lambda: self.ui.editCut())
             menu.addAction("Copy", lambda: self.ui.editCopy())
-        if paste_items:
-            menu.addAction("Paste", lambda: self.ui.editPaste())
-        if items:
+            if paste_items:
+                menu.addAction("Paste", lambda: self.ui.editPaste())
             menu.addAction("Delete", lambda: self.ui.editDelete())
             menu.addAction("Duplicate", lambda: self.ui.editDuplicate())
-        menu.addSeparator()
-
-        # EITHER add selection related actions/submenus
-        pass
-        # OR add item related actions/submenus
-        pass
-        # query
-        menu.addAction("Query", lambda: self.ui.editQuery(spos))
-        menu.addSeparator()
+            menu.addSeparator()
+        else:
+            # menu for interaction
+            _extendMenu(self.interaction.ctxMenuItems(spos))
         # zoom
         menu.addAction("Zoom All", self.ui.viewZoomAll)
         if isinstance(self, DiagramView):
@@ -86,17 +82,19 @@ class DrawingViewMenuMixin:
         menu.exec(event.globalPos())
 
     def action(
-        self   : "DrawingView",
-        text   : str,
-        slot   : Callable,
-        enable : bool = True
+        self    : "DrawingView",
+        text    : str,
+        slot    : Callable,
+        checked : bool | None = None
     ):
-        action = QAction(text)
+        action = QAction(text, self)
         action.triggered.connect(slot)
-        action.setEnabled(enable)
+        if checked is not None:
+            action.setCheckable(True)
+            action.setChecked(checked)
         return action
 
     def separator(self : "DrawingView") -> QAction:
-        action = QAction()
+        action = QAction(self)
         action.setSeparator(True)
         return action
