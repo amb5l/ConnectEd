@@ -108,8 +108,8 @@ class MenuBar(QMenuBar):
         self.addMenu(self.help_menu)
 
         # non-menu actions
-        self.addAction(a.editRotateCW)
-        self.addAction(a.editRotateCCW)
+        window().addAction(a.editRotateCW)
+        window().addAction(a.editRotateCCW)
 
         settings().mruChanged.connect(lambda: self.updateFileMenu())
         window().mdi_area.subWindowActivated.connect(self.updateWindowMenu)
