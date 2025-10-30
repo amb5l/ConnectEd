@@ -17,7 +17,6 @@ from ....items.line       import Line
 from ....items.rectangle  import Rectangle
 from ....items.ellipse    import Ellipse
 from ....items.polyline   import Polyline
-from ....items.polygon    import Polygon
 from ....items.text       import Text
 from ....items.text_block import TextBlock
 
@@ -195,10 +194,6 @@ class PlaceEllipseInteraction(PlaceBase2PosInteraction):
 
 class PlacePolylineInteraction(PlaceBaseNPosInteraction):
     _ITEM = Polyline
-
-
-class PlacePolygonInteraction(PlaceBaseNPosInteraction):
-    _ITEM = Polygon
 
 
 class PlaceTextInteraction(PlaceBase1PosInteraction):

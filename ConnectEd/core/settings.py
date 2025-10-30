@@ -365,17 +365,6 @@ FACTORY_SETTINGS = {
                         "style" : Qt.PenStyle.SolidLine
                     }
                 },
-                "Polygon" : {
-                    "line" : {
-                        "color" : PaletteDark.Polygon,
-                        "width" : 1,
-                        "style" : Qt.PenStyle.SolidLine
-                    },
-                    "fill" : {
-                        "color" : PaletteDark.Polygon,
-                        "style" : Qt.BrushStyle.NoBrush
-                    },
-                },
                 "Text" : {
                     "text" : {
                         "color"     : PaletteDark.Text,
@@ -669,17 +658,6 @@ FACTORY_SETTINGS = {
                         "width" : 1,
                         "style" : Qt.PenStyle.SolidLine
                     }
-                },
-                "Polygon" : {
-                    "line" : {
-                        "color" : PaletteLightMono.Polygon,
-                        "width" : 1,
-                        "style" : Qt.PenStyle.SolidLine
-                    },
-                    "fill" : {
-                        "color" : PaletteLightMono.Polygon,
-                        "style" : Qt.BrushStyle.NoBrush
-                    },
                 },
                 "Text" : {
                     "text" : {

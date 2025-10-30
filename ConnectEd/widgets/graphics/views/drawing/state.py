@@ -39,7 +39,6 @@ from .interaction.place import PlacePortInteraction,         \
                                PlaceRectangleInteraction,    \
                                PlaceEllipseInteraction,      \
                                PlacePolylineInteraction,     \
-                               PlacePolygonInteraction,      \
                                PlaceTextInteraction,         \
                                PlaceTextBlockInteraction,    \
                                PlaceConnInteraction
@@ -727,23 +726,6 @@ class DrawingViewStatePlacePolyline2(ClickMixin, DragMixin):
     STATUS = "Place Polyline: pick the next point"
 
 
-class DrawingViewStatePlacePolygon1(DrawingViewStateBase):
-    STATUS = "Place Polygon: pick the first point"
-
-    def mouseLeftClick(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
-        self.interact(
-            PlacePolygonInteraction(self.scene, self._snap(s)),
-            self.view.statePlaceEllipse2
-        )
-
-    def mouseLeftDragBegin(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
-        self.mouseLeftClick(v, s, m)
-
-
-class DrawingViewStatePlacePolygon2(ClickMixin, DragMixin):
-    STATUS = "Place Polygon: pick the next point"
-
-
 class DrawingViewStatePlaceText(ClickMixin):
     STATUS = "Place Text: pick a position"
 
@@ -857,8 +839,6 @@ class DrawingViewStateMixin:
     statePlaceEllipse2    : DrawingViewStatePlaceEllipse2
     statePlacePolyline1   : DrawingViewStatePlacePolyline1
     statePlacePolyline2   : DrawingViewStatePlacePolyline2
-    statePlacePolygon1    : DrawingViewStatePlacePolygon1
-    statePlacePolygon2    : DrawingViewStatePlacePolygon2
     statePlaceText        : DrawingViewStatePlaceText
     statePlaceTextBlock   : DrawingViewStatePlaceTextBlock
     statePlaceConn1       : DrawingViewStatePlaceConn1
@@ -898,8 +878,6 @@ class DrawingViewStateMixin:
         self.statePlaceEllipse2    = DrawingViewStatePlaceEllipse2    (self)
         self.statePlacePolyline1   = DrawingViewStatePlacePolyline1   (self)
         self.statePlacePolyline2   = DrawingViewStatePlacePolyline2   (self)
-        self.statePlacePolygon1    = DrawingViewStatePlacePolygon1    (self)
-        self.statePlacePolygon2    = DrawingViewStatePlacePolygon2    (self)
         self.statePlaceText        = DrawingViewStatePlaceText        (self)
         self.statePlaceTextBlock   = DrawingViewStatePlaceTextBlock   (self)
         self.statePlaceConn1       = DrawingViewStatePlaceConn1       (self)
