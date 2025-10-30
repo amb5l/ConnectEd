@@ -39,6 +39,9 @@ class Interaction:
     def complete(self : Self, pos : QPointF) -> None:
         raise NotImplementedError("Subclass must implement this method")
 
+    def cancel(self : Self) -> None:
+        raise NotImplementedError("Subclass must implement this method")
+
     def ctxMenuItems(self : Self, pos : QPointF) -> list[QAction | QMenu]:
         raise NotImplementedError("Subclass must implement this method")
 
