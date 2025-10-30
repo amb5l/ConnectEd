@@ -11,6 +11,7 @@ from ....items.block_pin  import BlockPin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
+    from ...drawing import DrawingView
     from ....scenes.drawing import DrawingScene
 
 
@@ -18,10 +19,12 @@ class Interaction:
     """Base for all interactions."""
 
     # instance attributes
-    _scene        : "DrawingScene"
+    _view  : "DrawingView"
+    _scene : "DrawingScene"
 
-    def __init__(self : Self, scene : "DrawingScene"):
-        self._scene = scene
+    def __init__(self : Self, view : "DrawingView"):
+        self._view = view
+        self._scene = view.scene()
 
     @property
     def valid(self : Self) -> bool:
@@ -52,11 +55,11 @@ class ItemInteraction(Interaction):
     _item : ItemType
 
     def __init__(
-        self  : Self,
-        scene : "DrawingScene",
-        item  : ItemType
+        self : Self,
+        view : "DrawingView",
+        item : ItemType
     ) -> None:
-        super().__init__(scene)
+        super().__init__(view)
         self._item = item
 
     @property
@@ -71,11 +74,11 @@ class ItemsInteraction(Interaction):
     _items : list[ItemType]
 
     def __init__(
-        self     : Self,
-        scene    : "DrawingScene",
+        self  : Self,
+        view  : "DrawingView",
         items : list[ItemType]
     ) -> None:
-        super().__init__(scene)
+        super().__init__(view)
         self._items = items
 
     @property
@@ -92,13 +95,13 @@ class BlockPinInteraction(Interaction):
 
     def __init__(
         self   : Self,
-        scene  : "DrawingScene",
+        view   : "DrawingView",
         parent : Block,
         pin    : BlockPin | None,
         pos    : QPointF,
         snap   : QPointF | None = None
     ) -> None:
-        super().__init__(scene)
+        super().__init__(view)
         if isinstance(parent, Block):
             self._parent = parent
             self._pin = pin or BlockPin(parent)

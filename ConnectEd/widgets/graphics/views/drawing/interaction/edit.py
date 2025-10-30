@@ -9,7 +9,6 @@ from ....items import EdgeLoc, clone
 from ....items.block     import Block
 from ....items.block_pin import BlockPin
 
-from ....scenes.drawing     import DrawingScene
 from ....scenes.drawing.cmd import CmdAdd, CmdMove, CmdMoveBlockPins
 
 from . import MoveItemsMixin,      \
@@ -19,21 +18,25 @@ from . import MoveItemsMixin,      \
               Interaction,         \
               ItemType
 
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from ...drawing import DrawingView
+
 
 class EditPasteInteraction(
     MoveItemsMixin,       # update, _moveBy, _storePos, _restorePos
     AddRemoveItemsMixin,  # _addToScene, _removeFromScene
     SelectionMixin,       # _preserveSelection, _restoreSelection
-    ItemsInteraction      # _scene, _items, valid
+    ItemsInteraction      # _view, _scene, _items, valid
 ):
     def __init__(
-        self  : Self,
-        scene : "DrawingScene",
-        pos   : QPointF
+        self : Self,
+        view : "DrawingView",
+        pos  : QPointF
     ) -> None:
         items, copy_pos = paste()
         if items:
-            ItemsInteraction.__init__(self, scene, items)
+            ItemsInteraction.__init__(self, view, items)
             self._ipos = pos if copy_pos is None else copy_pos
             self._cpos = self._ipos
             self._preserveSelection()  # store prior selection set
@@ -63,12 +66,12 @@ class EditDuplicateInteraction(EditPasteInteraction):
 
     def __init__(
         self  : Self,
-        scene : "DrawingScene",
+        view  : "DrawingView",
         items : list[ItemType],  # items to duplicate
         pos   : QPointF          # duplication origin
     ) -> None:
         if items:
-            ItemsInteraction.__init__(self, scene, clone(items))
+            ItemsInteraction.__init__(self, view, clone(items))
             self._ipos = pos
             self._cpos = pos
             self._preserveSelection()  # store prior selection set
@@ -79,21 +82,21 @@ class EditDuplicateInteraction(EditPasteInteraction):
 
 
 class EditMoveInteraction(
-    MoveItemsMixin,              # update, _moveBy, _storePos, _restorePos
-    ItemsInteraction,  # _scene, _items, valid
+    MoveItemsMixin,    # update, _moveBy, _storePos, _restorePos
+    ItemsInteraction,  # _view, _scene, _items, valid
 ):
     # instance attributes
     _slide  : bool  # true => retain connections, false => break connections
 
     def __init__(
         self  : Self,
-        scene : "DrawingScene",
+        view  : "DrawingView",
         items : list[ItemType],
         pos   : QPointF,
         slide : bool = False
     ) -> None:
         items = items if isinstance(items, list) else [items]
-        ItemsInteraction.__init__(self, scene, items)
+        ItemsInteraction.__init__(self, view, items)
         self._ipos     = pos
         self._cpos     = pos
         self._slide    = slide
@@ -119,11 +122,11 @@ class EditMoveBlockPinsInteraction(Interaction):
 
     def __init__(
         self   : Self,
-        scene  : "DrawingScene",
+        view   : "DrawingView",
         parent : Block,
         pins   : list[BlockPin]
     ) -> None:
-        Interaction.__init__(self, scene)
+        Interaction.__init__(self, view)
         self._parent = parent
         self._pins = pins
         self._storeLoc()

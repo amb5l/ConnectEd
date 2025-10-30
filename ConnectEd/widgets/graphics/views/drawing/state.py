@@ -191,7 +191,7 @@ class DrawingViewStateIdle(DrawingViewStateBase):
             # handle dragging => resize
             grip = resize_grips_at[0]
             self.interact(
-                EditMoveInteraction(self.scene, grip, grip.scenePos()),
+                EditMoveInteraction(self.view, grip, grip.scenePos()),
                 self.view.stateEditResize
             )
             return
@@ -209,7 +209,7 @@ class DrawingViewStateIdle(DrawingViewStateBase):
                 if items:
                     # Pass the press position for CTRL+drag duplication
                     self.interact(
-                        EditDuplicateInteraction(self.scene, items, self._snap(s)),
+                        EditDuplicateInteraction(self.view, items, self._snap(s)),
                         self.view.stateEditDuplicate
                     )
                     return
@@ -224,7 +224,7 @@ class DrawingViewStateIdle(DrawingViewStateBase):
             if pins:
                 # move pins
                 self.interact(
-                    EditMoveBlockPinsInteraction(self.scene, pins[0].parentItem(), pins),
+                    EditMoveBlockPinsInteraction(self.view, pins[0].parentItem(), pins),
                     self.view.stateEditMovePins
                 )
             else:
@@ -232,7 +232,7 @@ class DrawingViewStateIdle(DrawingViewStateBase):
                 # TODO filter out pins and child items?
                 slide = not(m & qkm.AltModifier)
                 self.interact(
-                    EditMoveInteraction(self.scene, items, self._snap(s), slide),
+                    EditMoveInteraction(self.view, items, self._snap(s), slide),
                     self.view.stateEditSlide if slide else self.view.stateEditMove
                 )
         else: # start marquee selection
@@ -369,7 +369,7 @@ class DrawingViewStateEditPaste(ClickMixin):
         s    : QPointF,
         i    : list[ItemMixin] | None = None
     ) -> None:
-        self.view.state.interact(EditPasteInteraction(self.scene, self._snap(s)))
+        self.view.state.interact(EditPasteInteraction(self.view, self._snap(s)))
 
 
 class DrawingViewStateEditDuplicate(ClickMixin, DragMixin):
@@ -573,7 +573,7 @@ class DrawingViewStatePlacePort(ClickMixin):
                 180 if dialog.getDirection() == SignalDirection.IN else 0
             )
             self.interact(
-                PlacePortInteraction(self.scene, self._snap(s), item)
+                PlacePortInteraction(self.view, self._snap(s), item)
             )
         else:
             self.view.state.go(self.view.stateIdle)
@@ -584,7 +584,7 @@ class DrawingViewStatePlaceBlock1(DrawingViewStateBase):
 
     def mouseLeftClick(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
         self.interact(
-            PlaceBlockInteraction(self.scene, self._snap(s)),
+            PlaceBlockInteraction(self.view, self._snap(s)),
             self.view.statePlaceBlock2
         )
 
@@ -614,7 +614,7 @@ class DrawingViewStatePlaceBlockPin(DrawingViewStateBase):
                 pin.direction = dialog.getDirection()
                 pin.range = dialog.getRange()
                 self.interact(PlaceBlockPinInteraction(
-                    self.scene, block, pin, self._snap(s),
+                    self.view, block, pin, self._snap(s),
                     self.view.grid.pitch if self.view.grid.snap else None
                 ))
         else:
@@ -651,9 +651,7 @@ class DrawingViewStatePlaceSymbolPin(ClickMixin):
             pin.name = dialog.getName()
             pin.direction = dialog.getDirection()
             pin.range = dialog.getRange()
-            self.interact(PlaceSymbolPinInteraction(
-                self.scene, self._snap(s), pin
-            ))
+            self.interact(PlaceSymbolPinInteraction(self.view, self._snap(s), pin))
         else:
             self.view.state.go(self.view.stateIdle)
 
@@ -663,7 +661,7 @@ class DrawingViewStatePlaceLine1(ClickMixin):
 
     def mouseLeftClick(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
         self.interact(
-            PlaceLineInteraction(self.scene, self._snap(s)),
+            PlaceLineInteraction(self.view, self._snap(s)),
             self.view.statePlaceLine2
         )
 
@@ -680,7 +678,7 @@ class DrawingViewStatePlaceRectangle1(DrawingViewStateBase):
 
     def mouseLeftClick(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
         self.interact(
-            PlaceRectangleInteraction(self.scene, self._snap(s)),
+            PlaceRectangleInteraction(self.view, self._snap(s)),
             self.view.statePlaceRectangle2
         )
 
@@ -697,7 +695,7 @@ class DrawingViewStatePlaceEllipse1(DrawingViewStateBase):
 
     def mouseLeftClick(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
         self.interact(
-            PlaceEllipseInteraction(self.scene, self._snap(s)),
+            PlaceEllipseInteraction(self.view, self._snap(s)),
             self.view.statePlaceEllipse2
         )
 
@@ -714,8 +712,8 @@ class DrawingViewStatePlacePolyline1(DrawingViewStateBase):
 
     def mouseLeftClick(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
         self.interact(
-            PlacePolylineInteraction(self.scene, self._snap(s)),
-            self.view.statePlaceEllipse2
+            PlacePolylineInteraction(self.view, self._snap(s)),
+            self.view.statePlacePolyline2
         )
 
     def mouseLeftDragBegin(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
@@ -741,9 +739,7 @@ class DrawingViewStatePlaceText(ClickMixin):
             text, appearance = dialog.getChoice()
             item.setText(text)
             item.a.quill.setPref(appearance)
-            self.interact(PlaceTextInteraction(
-                self.scene, self._snap(s), item)
-            )
+            self.interact(PlaceTextInteraction(self.view, self._snap(s), item))
         else:
             self.view.state.go(self.view.stateIdle)
 
@@ -763,9 +759,7 @@ class DrawingViewStatePlaceTextBlock(ClickMixin):
             text, appearance = dialog.getChoice()
             item.setPlainText(text)
             item.a.quill.setPref(appearance)
-            self.interact(PlaceTextBlockInteraction(
-                self.scene, self._snap(s), item)
-            )
+            self.interact(PlaceTextBlockInteraction(self.view, self._snap(s), item))
         else:
             self.view.state.go(self.view.stateIdle)
 
@@ -775,7 +769,7 @@ class DrawingViewStatePlaceConn1(ClickMixin):
 
     def mouseLeftClick(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
         self.interact(
-            PlaceConnInteraction(self.scene, self._snap(s)),
+            PlaceConnInteraction(self.view, self._snap(s)),
             self.view.statePlaceConn2
         )
 

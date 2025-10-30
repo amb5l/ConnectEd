@@ -33,12 +33,13 @@ from . import Interaction,         \
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from . import DrawingScene
+    from .. import DrawingView
+    from ....scenes.drawing import DrawingScene
 
 
 class PlaceBaseInteraction(
     SelectionMixin,  # _preserveSelection, _restoreSelection
-    ItemInteraction  # _scene, _item, valid
+    ItemInteraction  # _view, _scene, _item, valid
 ):
     """Base for all interactions that place a single item."""
 
@@ -46,16 +47,16 @@ class PlaceBaseInteraction(
     _ITEM : ItemType  # subclass to override with item class
 
     def __init__(
-        self  : Self,
-        scene : "DrawingScene",
-        pos   : QPointF,
-        item  : ItemType | None = None
+        self : Self,
+        view : "DrawingView",
+        pos  : QPointF,
+        item : ItemType | None = None
     ) -> None:
         if item is None:
             item = self._ITEM(pos)
         else:
             item.setPos(pos)
-        super().__init__(scene, item)
+        super().__init__(view, item)
         self._preserveSelection()
         self._scene.clearSelection()
         self._scene.addItem(self._item)
@@ -98,12 +99,12 @@ class PlaceBase2PosInteraction(PlaceBase1PosInteraction):
     _p1   : QPointF          # first position
 
     def __init__(
-        self  : Self,
-        scene : "DrawingScene",
-        pos   : QPointF,
-        item  : ItemType | None = None
+        self : Self,
+        view : "DrawingView",
+        pos  : QPointF,
+        item : ItemType | None = None
     ) -> None:
-        super().__init__(scene, pos, item)
+        super().__init__(view, pos, item)
         self._p1 = pos
 
     def update(self : Self, pos : QPointF):
@@ -156,13 +157,13 @@ class PlaceBlockInteraction(PlaceBase2PosInteraction):
 class PlaceBlockPinInteraction(BlockPinInteraction):
     def __init__(
         self   : Self,
-        scene  : "DrawingScene",
+        view   : "DrawingView",
         parent : Block,
         pin    : BlockPin,
         pos    : QPointF,
         snap   : QPointF | None = None
     ) -> None:
-        super().__init__(scene, parent, pin, pos, snap)
+        super().__init__(view, parent, pin, pos, snap)
 
     def update(self : Self, pos : QPointF, snap : QPointF | None = None) -> None:
         self._pin.setLoc(self._pin.locSnap(self._parent.pos2loc(pos), snap))
@@ -212,11 +213,11 @@ class PlaceConnInteraction(SelectionMixin, Interaction):
     _seg2  : ConnSegPreview2
 
     def __init__(
-        self  : Self,
-        scene : "DrawingScene",
-        pos   : QPointF
+        self : Self,
+        view : "DrawingView",
+        pos  : QPointF
     ) -> None:
-        super().__init__(scene)
+        super().__init__(view)
         self._seg1 = ConnSegPreview1()
         self._seg2 = ConnSegPreview2()
         self._setP0(pos)
