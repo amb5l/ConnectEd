@@ -36,9 +36,6 @@ class Interaction:
     def commit(self : Self, pos : QPointF) -> bool:
         raise NotImplementedError("Subclass must implement this method")
 
-    def revert(self : Self) -> None:
-        raise NotImplementedError("Subclass must implement this method")
-
     def complete(self : Self, pos : QPointF) -> None:
         raise NotImplementedError("Subclass must implement this method")
 

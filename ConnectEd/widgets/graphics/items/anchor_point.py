@@ -3,7 +3,7 @@ from typing import Self
 from PyQt6.QtCore import QPointF
 
 from .null_point import NullPoint
-from .grip       import Grip, MoveGrip, ResizeGrip
+from .grip       import APGrip, MoveGrip, ResizeGrip
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -13,7 +13,7 @@ if TYPE_CHECKING:
 class AnchorPoint(NullPoint):
     # instance attributes
     _name : str
-    _grip : Grip
+    _grip : APGrip
 
     def __init__(
         self   : Self,
@@ -39,5 +39,5 @@ class AnchorPoint(NullPoint):
     def onOriginChange(self : Self) -> None:
         self._grip.onOriginChange()
 
-    def grip(self : Self) -> Grip:
+    def grip(self : Self) -> APGrip:
         return self._grip

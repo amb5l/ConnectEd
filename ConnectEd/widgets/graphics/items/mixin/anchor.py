@@ -5,10 +5,10 @@ from PyQt6.QtCore import QPointF
 
 from ..anchor_point import AnchorPoint
 
-from .handle import ItemHandleMixin
+from .grip import ItemGripMixin
 
 
-class ItemAnchorPointsMixin(ItemHandleMixin):
+class ItemAnchorPointsMixin(ItemGripMixin):
     # instance attributes
     _anchor_points : dict[str, "AnchorPoint"]
 

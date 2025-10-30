@@ -1,5 +1,5 @@
-from PyQt6.QtCore import QRectF
-from PyQt6.QtGui  import QPainterPath
+from PyQt6.QtCore import QPointF, QRectF
+from PyQt6.QtGui  import QPainterPath, QPolygonF
 
 from .....app import settings
 
@@ -23,8 +23,7 @@ class DrawingScenePathsMixin:
 
     def initPaths(self : "DrawingScene") -> None:
         self.paths = {
-            "Grip"   : QPainterPath(),
-            "Origin" : QPainterPath(),
+            "Grip" : {},
             "Port" : {
                 "in"  : QPainterPath(),
                 "out" : QPainterPath(),
@@ -34,11 +33,8 @@ class DrawingScenePathsMixin:
             "BlockPinArrow" : {},
             "SymbolPin" : {},
             "SymbolPinArrow" : {},
-            "ConnVtx" : QPainterPath(),
-            "PolyVtx" : QPainterPath()
+            "ConnVtx" : QPainterPath()
         }
-        self._gripPath(self.paths["Grip"])
-        self._originPath(self.paths["Origin"])
         self._blockPinPath(self.paths["BlockPin"])
         self._symbolPinPaths(self.paths["SymbolPin"])
         self._pinIntArrowPaths(self.paths["BlockPinArrow"])
@@ -47,24 +43,42 @@ class DrawingScenePathsMixin:
         settings().changed.connect(self.updatePaths)
 
     def updatePaths(self : "DrawingScene") -> None:
+        size = settings().get("theme/grip/size")
+        self._gripPaths(self.paths["Grip"], size)
         size = settings().get("theme/items/Port/size")
         self._portInPath(self.paths["Port"]["in"], size)
         self._portOutPath(self.paths["Port"]["out"], size)
         self._portBiPath(self.paths["Port"]["bi"], size)
         size = settings().get("theme/items/ConnVtx/size")
         self._connVtxPath(self.paths["ConnVtx"], size)
-        size = settings().get("theme/items/PolyVtx/size")
-        self._polyVtxPath(self.paths["PolyVtx"], size)
 
-    def _gripPath(self : "DrawingScene", path : QPainterPath) -> None:
-        size = settings().get("theme/grip/size")
-        path.clear()
-        path.addEllipse(QRectF(-size/2, -size/2, size, size))
-
-    def _originPath(self : "DrawingScene", path : QPainterPath) -> None:
-        size = settings().get("theme/origin/size")
-        path.clear()
+    def _gripPaths(self : "DrawingScene", d : dict, size : float) -> None:
+        d.clear()
+        # square
+        path = QPainterPath()
         path.addRect(QRectF(-size/2, -size/2, size, size))
+        d["Square"] = path
+        # circle
+        path = QPainterPath()
+        path.addEllipse(QRectF(-size/2, -size/2, size, size))
+        d["Circle"] = path
+        # diamond
+        path = QPainterPath()
+        path.addPolygon(QPolygonF([
+                QPointF(-size/2, 0),
+                QPointF(0, -size/2),
+                QPointF(size/2, 0),
+                QPointF(0, size/2)
+        ]))
+        d["Diamond"] = path
+        # arrow
+        path = QPainterPath()
+        path.addPolygon(QPolygonF([
+                QPointF(-size/2, -size/2),
+                QPointF(size/2, 0),
+                QPointF(-size/2, size/2)
+        ]))
+        d["Arrow"] = path
 
     def _portInPath(
         self : "DrawingScene",

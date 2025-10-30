@@ -14,8 +14,7 @@ from ....dialogs.port_pin      import PortPinDialog
 
 from ...items import SignalDirection, ItemMixin
 
-from ...items.handle        import Handle
-from ...items.grip          import ResizeGrip
+from ...items.grip          import Grip, ResizeGrip
 from ...items.block         import Block
 from ...items.text          import Text
 from ...items.text_block    import TextBlock
@@ -175,7 +174,7 @@ class DrawingViewStateIdle(DrawingViewStateBase):
     def mouseLeftClick(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
         items = self.view._itemsAt(s)
         for item in items:
-            if isinstance(item, Handle):
+            if isinstance(item, Grip):
                 return
         if m == qkm.NoModifier:
             if not items or not items[0].isSelected():

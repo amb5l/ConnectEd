@@ -1,5 +1,5 @@
-from typing import Self
 
+from typing import Self
 from PyQt6.QtWidgets import QWidget, QDialog, \
                             QVBoxLayout, QHBoxLayout, QGridLayout, \
                             QGroupBox, QLabel, QLineEdit, QComboBox, \

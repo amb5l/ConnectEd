@@ -9,7 +9,7 @@ from ..window.tree_view import TreeView
 
 from .properties import PropertiesMixin
 
-from .items.handle import Handle
+from .items.grip import Grip
 
 
 class QueryWindow(QWidget):
@@ -84,7 +84,7 @@ class QueryWindow(QWidget):
             item_row = QStandardItem(item.__class__.__name__)
             obj.appendRow(item_row)
             # Add property rows
-            if isinstance(item, Handle):
+            if isinstance(item, Grip):
                 pos = item.scenePos()
                 item_row.appendRow([
                     QStandardItem(),

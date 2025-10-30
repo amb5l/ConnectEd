@@ -20,7 +20,6 @@ class ItemMixin:
     a     : "Appearance | None"
 
     def initItem(self : Self | QGraphicsItem, bare : bool = False) -> None:
-        from .vertex  import ItemVertexMixin
         from .loc     import ItemLocMixin
         from .origin  import ItemOriginMixin
         from .line    import ItemLineMixin
@@ -37,8 +36,6 @@ class ItemMixin:
         self.setFlag( f.ItemSendsScenePositionChanges , True )
         self.setCacheMode(QGraphicsItem.CacheMode.DeviceCoordinateCache)
         self._resetUuid()
-        if isinstance(self, ItemVertexMixin):
-            self.initVertices()
         if isinstance(self, ItemLocMixin):
             self.initLoc()
         if isinstance(self, ItemAnchorPointsMixin):

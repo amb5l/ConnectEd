@@ -6,6 +6,8 @@ from PyQt6.QtGui     import QAction
 
 from ......core.utils import sign
 
+from .....dialogs.arc import ArcDialog
+
 from ....items.block      import Block
 from ....items.port       import Port
 from ....items.block_pin  import BlockPin
@@ -20,8 +22,6 @@ from ....items.polyline   import Polyline
 from ....items.text       import Text
 from ....items.text_block import TextBlock
 
-from ....items.mixin.vertex import ItemVertexMixin
-
 from ....scenes.drawing.cmd import CmdAdd, CmdAddBlockPin
 
 from . import Interaction,         \
@@ -34,7 +34,6 @@ from . import Interaction,         \
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from .. import DrawingView
-    from ....scenes.drawing import DrawingScene
 
 
 class PlaceBaseInteraction(
@@ -95,8 +94,8 @@ class PlaceBase2PosInteraction(PlaceBase1PosInteraction):
     """Base for all interactions that place a single item using 2 positions."""
 
     # instance attributes
-    _item : ItemVertexMixin  # type hint for this interaction
-    _p1   : QPointF          # first position
+    _item : ItemType  # type hint for this interaction
+    _p1   : QPointF   # first position
 
     def __init__(
         self : Self,
@@ -109,26 +108,6 @@ class PlaceBase2PosInteraction(PlaceBase1PosInteraction):
 
     def update(self : Self, pos : QPointF):
         self._item.setPoints(self._p1, pos)
-
-
-class PlaceBaseNPosInteraction(PlaceBase1PosInteraction):
-    """Base for all interactions that place a single item using N positions."""
-
-    # instance attributes
-    _item : ItemVertexMixin  # type hint for this interaction
-
-    def update(self : Self, pos : QPointF):
-        self._item.setLastVertexPos(pos-self._item.pos())
-
-    def commit(self : Self, pos : QPointF) -> bool:
-        self._item.addVertex(pos-self._item.pos())
-        return False  # continue interaction
-
-    def revert(self : Self) -> None:
-        self._item.removeLastVertex()
-
-    def complete(self : Self, pos : QPointF) -> None:
-        self.commit(pos)
 
 
 class PlacePortInteraction(RotateItemMixin, PlaceBase1PosInteraction):
@@ -193,8 +172,56 @@ class PlaceEllipseInteraction(PlaceBase2PosInteraction):
     _ITEM = Ellipse
 
 
-class PlacePolylineInteraction(PlaceBaseNPosInteraction):
+class PlacePolylineInteraction(PlaceBase1PosInteraction):
     _ITEM = Polyline
+
+    _item : Polyline  # type hint for this interaction
+
+    def __init__(
+        self : Self,
+        view : "DrawingView",
+        pos  : QPointF,
+        item : ItemType | None = None
+    ) -> None:
+        super().__init__(view, pos, item)
+        self._item.setSelMode(1)
+
+    def update(self : Self, pos : QPointF):
+        self._item.setLastVertexPos(pos-self._item.pos())  # local coordinates
+
+    def commit(self : Self, pos : QPointF) -> bool:
+        self._item.addVertex(pos-self._item.pos())  # local coordinates
+        return False  # continue interaction
+
+    def complete(self : Self, pos : QPointF) -> None:
+        self.commit(pos)
+
+    def ctxMenuItems(self : Self, pos : QPointF) -> list[QAction | QMenu]:
+        items = []
+        items.append(self._view.action("Add Point", lambda: self.commit(pos)))
+        if self._item.vertexCount() > 2:
+            items.append(self._view.action("Remove Point", self._item.removeLastVertex))
+        s = "Make " + ("Open" if self._item.closed() else "Closed")
+        items.append(self._view.action(
+            s, lambda: self._item.setClosed(not self._item.closed())
+        ))
+        angle = self._item.lastSegment().arcAngle()
+        items.append(self._view.action("Line", self._toLine, angle == 0))
+        angle_text = f" ({angle}°)" if angle != 0 else ""
+        items.append(self._view.action(f"Arc{angle_text}...", self._toArc, angle != 0))
+        items.append(self._view.action("Closed", self._toggleClosed, self._item.closed()))
+        return items
+
+    def _toggleClosed(self : Self) -> None:
+        self._item.setClosed(not self._item.closed())
+
+    def _toLine(self : Self) -> None:
+        self._item.lastSegment().setArcAngle(0)
+
+    def _toArc(self : Self) -> None:
+        dialog = ArcDialog(self._item.lastSegment().arcAngle(), self._view)
+        if dialog.exec():
+            self._item.lastSegment().setArcAngle(dialog.getAngle())
 
 
 class PlaceTextInteraction(PlaceBase1PosInteraction):

@@ -346,18 +346,6 @@ FACTORY_SETTINGS = {
                         "style" : Qt.BrushStyle.NoBrush
                     }
                 },
-                "PolyVtx" : {
-                    "size" : 4,
-                    "line" : {
-                        "color" : PaletteDark.PolyVtx,
-                        "width" : 0,
-                        "style" : Qt.PenStyle.SolidLine
-                    },
-                    "fill"    : {
-                        "color" : PaletteDark.PolyVtx,
-                        "style" : Qt.BrushStyle.NoBrush
-                    },
-                },
                 "Polyline" : {
                     "line" : {
                         "color" : PaletteDark.Polyline,
@@ -639,18 +627,6 @@ FACTORY_SETTINGS = {
                         "color" : PaletteLightMono.Ellipse,
                         "style" : Qt.BrushStyle.NoBrush
                     }
-                },
-                "PolyVtx" : {
-                    "size" : 4,
-                    "line" : {
-                        "color" : PaletteLightMono.PolyVtx,
-                        "width" : 0,
-                        "style" : Qt.PenStyle.SolidLine
-                    },
-                    "fill"    : {
-                        "color" : PaletteLightMono.PolyVtx,
-                        "style" : Qt.BrushStyle.NoBrush
-                    },
                 },
                 "Polyline" : {
                     "line" : {

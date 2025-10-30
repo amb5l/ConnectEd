@@ -16,7 +16,7 @@ from ...properties import PropertySpec, PropertiesMixin
 from .edit    import DrawingSceneApiEditMixin
 from .private import DrawingSceneApiPrivateMixin
 from .paths   import DrawingScenePathsMixin
-from .handles import DrawingSceneHandlesMixin
+from .handles import DrawingSceneGripsMixin
 from .conn    import DrawingSceneConnMixin
 
 
@@ -25,7 +25,7 @@ class DrawingScene(
     DrawingSceneApiEditMixin,
     DrawingSceneApiPrivateMixin,
     DrawingScenePathsMixin,
-    DrawingSceneHandlesMixin,
+    DrawingSceneGripsMixin,
     DrawingSceneConnMixin,
     QGraphicsScene
 ):
@@ -52,7 +52,7 @@ class DrawingScene(
         self.undo_stack = QUndoStack(self)
         self.initProperties()
         self.initPaths()
-        self.initHandle()
+        self.initGrips()
         self.selectionChanged.connect(self.onSelectionChanged)
 
     def __hash__(self : Self):
@@ -64,7 +64,7 @@ class DrawingScene(
         return self._uuid == other._uuid
 
     def onSelectionChanged(self : Self) -> None:
-        self.updateHandles()
+        self.updateGrips()
 
     def name(self : Self) -> str | None:
         return self._name
