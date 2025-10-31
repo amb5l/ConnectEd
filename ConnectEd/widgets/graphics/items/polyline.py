@@ -1,9 +1,9 @@
 from typing import Self, overload
 from math import sqrt, degrees, radians, sin, cos, atan2
 
-from PyQt6.QtCore    import QPointF, QRectF
+from PyQt6.QtCore    import Qt, QPointF, QRectF
 from PyQt6.QtWidgets import QGraphicsPathItem
-from PyQt6.QtGui     import QPainterPath
+from PyQt6.QtGui     import QPainterPath, QColor
 
 from ....app import logger
 
@@ -50,24 +50,23 @@ class PolySeg(Grip):
     _PATH_NAME = "Arrow"
 
     # instance attributes
-    _v1        : PolyVtx  # start vertex
-    _v2        : PolyVtx  # end vertex
-    _arc_angle : float    # arc angle in degrees (0-180) (+ve = ccw, -ve = cw)
-    _arc_rect  : QRectF   # arc rectangle
-    _arc_start : float    # arc start angle in degrees
-    _arc_sweep : float    # arc sweep angle in degrees
+    _v1    : PolyVtx        # start vertex
+    _v2    : PolyVtx        # end vertex
+    _sweep : float          # arc sweep angle in degrees (-180..180), 0 = line
+    _start : float | None   # calculated arc start angle, None for line
+    _rect  : QRectF | None  # calculated arc rectangle, None for line
 
     def __init__(
         self   : Self,
         parent : "Polyline",
         v1     : PolyVtx,
         v2     : PolyVtx,
-        arc    : int = 0
+        sweep  : float = 0.0
     ) -> None:
         super().__init__(parent, QPointF(0, 0))
         self._v1 = v1
         self._v2 = v2
-        self._arc_angle = arc
+        self._sweep = sweep
         self.refresh()
 
     def refresh(self : Self) -> None:
@@ -75,17 +74,22 @@ class PolySeg(Grip):
         vector = self._v2.pos() - self._v1.pos()
         self.setRotation(degrees(atan2(vector.y(), vector.x())))
         # handle line and arc cases
-        if self._arc_angle == 0:  # line case
-            # set position to midpoint of chord
+        if self._sweep == 0:  # line case
             self.setPos(self._chordMidpoint())
+            self._rect = None
+            self._start = None
         else:  # arc case
             # calculate arc parameters
             a = self._v1.pos()
             b = self._v2.pos()
-            angle_deg = self._arc_angle
+            angle_deg = self._sweep
             chord_len = sqrt((a.x() - b.x())**2 + (a.y() - b.y())**2)
             if chord_len == 0 or abs(angle_deg) >= 360 or abs(angle_deg) == 0:
-                return QRectF(), 0.0, 0.0
+                # invalid arc, treat as line
+                self.setPos(self._chordMidpoint())
+                self._rect = None
+                self._start = None
+                return
             abs_angle = abs(angle_deg)
             r = chord_len / (2 * sin(radians(abs_angle / 2)))
             h = sqrt(r**2 - (chord_len / 2)**2)
@@ -95,29 +99,28 @@ class PolySeg(Grip):
             if angle_deg < 0:
                 perp = -perp  # flip side
             o = mid + perp * h
-            self._arc_rect = QRectF(o.x() - r, o.y() - r, 2 * r, 2 * r)
-            self._arc_start = degrees(atan2(a.y() - o.y(), a.x() - o.x()))
-            self._arc_sweep = abs_angle if angle_deg > 0 else -abs_angle
+            self._rect = QRectF(o.x() - r, o.y() - r, 2 * r, 2 * r)
+            self._start = degrees(atan2(a.y() - o.y(), a.x() - o.x()))
             # # set position to midpoint of arc
-            o = self._arc_rect.center()
-            r = self._arc_rect.width() / 2  # assuming circular
-            mid_angle = self._arc_start + self._arc_sweep / 2
+            o = self._rect.center()
+            r = self._rect.width() / 2  # assuming circular
+            mid_angle = self._start + self._sweep / 2
             self.setPos(QPointF(
                 o.x() + r * cos(radians(mid_angle)),
                 o.y() + r * sin(radians(mid_angle))
             ))
 
-    def arcAngle(self : Self) -> float:
-        """Get arc angle in degrees: 0 = line, >0 = ccw arc, <0 = cw arc."""
-        return self._arc_angle
+    def sweep(self : Self) -> float:
+        """Get arc sweep angle in degrees: 0 = line, >0 = ccw arc, <0 = cw arc."""
+        return self._sweep
 
-    def setArcAngle(self : Self, angle : float) -> None:
-        """Set arc angle in degrees: 0 = line, >0 = ccw arc, <0 = cw arc."""
-        self._arc_angle = angle
+    def setSweep(self : Self, angle : float) -> None:
+        """Set arc sweep angle in degrees: 0 = line, >0 = ccw arc, <0 = cw arc."""
+        self._sweep = angle
         self.refresh()
 
     def arcParams(self : Self) -> tuple[QRectF, float, float]:
-        return self._arc_rect, self._arc_start, self._arc_sweep
+        return self._rect, self._start, self._sweep
 
     def _chordMidpoint(self : Self) -> QPointF:
         """Calculate midpoint of chord."""
@@ -245,8 +248,8 @@ class Polyline(
             y1 if y1 < y2 else y2,
         )
         self.setPos(final_pos)
-        scale_x = abs(x2-x1) / self.rect().width()
         # scale vertex grip positions
+        scale_x = abs(x2-x1) / self.rect().width()
         scale_y = abs(y2-y1) / self.rect().height()
         for vertex in self._vertices:
             vertex.setPos(QPointF(
@@ -289,7 +292,7 @@ class Polyline(
                 v_prev = v.pos()
                 path.moveTo(v_prev)
             else:
-                if self._segments[i-1].arcAngle() == 0:
+                if self._segments[i-1].sweep() == 0:
                     path.lineTo(v.pos())
                 else:
                     path.arcTo(*self._segments[i-1].arcParams())
@@ -297,3 +300,17 @@ class Polyline(
         if self._closed:
             path.closeSubpath()
         self.setPath(path)
+
+    # temporary debug
+    def paint(self, painter, option, widget) -> None:
+        super().paint(painter, option, widget)
+        painter.save()
+        pen = painter.pen()
+        pen.setColor(QColor(Qt.GlobalColor.red))
+        pen.setWidthF(0)
+        pen.setStyle(Qt.PenStyle.DashLine)
+        painter.setPen(pen)
+        for segment in self._segments:
+            if segment.sweep() != 0:
+                painter.drawLine(segment._v1.pos(), segment._v2.pos())
+        painter.restore()

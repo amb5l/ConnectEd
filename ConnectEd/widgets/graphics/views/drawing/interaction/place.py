@@ -205,7 +205,7 @@ class PlacePolylineInteraction(PlaceBase1PosInteraction):
         items.append(self._view.action(
             s, lambda: self._item.setClosed(not self._item.closed())
         ))
-        angle = self._item.lastSegment().arcAngle()
+        angle = self._item.lastSegment().sweep()
         items.append(self._view.action("Line", self._toLine, angle == 0))
         angle_text = f" ({angle}°)" if angle != 0 else ""
         items.append(self._view.action(f"Arc{angle_text}...", self._toArc, angle != 0))
@@ -216,12 +216,12 @@ class PlacePolylineInteraction(PlaceBase1PosInteraction):
         self._item.setClosed(not self._item.closed())
 
     def _toLine(self : Self) -> None:
-        self._item.lastSegment().setArcAngle(0)
+        self._item.lastSegment().setSweep(0)
 
     def _toArc(self : Self) -> None:
-        dialog = ArcDialog(self._item.lastSegment().arcAngle(), self._view)
+        dialog = ArcDialog(self._item.lastSegment().sweep(), self._view)
         if dialog.exec():
-            self._item.lastSegment().setArcAngle(dialog.getAngle())
+            self._item.lastSegment().setSweep(dialog.getAngle())
 
 
 class PlaceTextInteraction(PlaceBase1PosInteraction):

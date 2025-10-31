@@ -44,6 +44,7 @@ class ArcDialog(QDialog):
         self._ccw_radio = QRadioButton("CCW")
         self._direction_layout.addWidget(self._ccw_radio)
         self._direction_group.setLayout(self._direction_layout)
+        self._dialog_layout.addWidget(self._direction_group)
         okCancelLayout(self)
         self.setLayout(self._dialog_layout)
 
