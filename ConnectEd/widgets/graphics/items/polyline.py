@@ -79,36 +79,56 @@ class PolySeg(Grip):
             self._rect = None
             self._start = None
         else:  # arc case
-            # calculate arc parameters
-            a = self._v1.pos()
-            b = self._v2.pos()
-            angle_deg = self._sweep
-            chord_len = sqrt((a.x() - b.x())**2 + (a.y() - b.y())**2)
-            if chord_len == 0 or abs(angle_deg) >= 360 or abs(angle_deg) == 0:
-                # invalid arc, treat as line
-                self.setPos(self._chordMidpoint())
-                self._rect = None
-                self._start = None
+            # clamp sweep angle to -180..180
+            self._sweep = max(-180, min(180, self._sweep))
+            # vertex positions
+            p1 = self._v1.pos()
+            p2 = self._v2.pos()
+            # chord
+            chord_len = sqrt((p2.x() - p1.x())**2 + (p2.y() - p1.y())**2)
+            if chord_len < 0.001:  # degenerate case
+                self.setPos(p1)
+                self._rect = QRectF(p1, QSizeF(0, 0))
+                self._start = 0
                 return
-            abs_angle = abs(angle_deg)
-            r = chord_len / (2 * sin(radians(abs_angle / 2)))
-            h = sqrt(r**2 - (chord_len / 2)**2)
-            mid = self._chordMidpoint()
-            dir_ab = QPointF(b.x() - a.x(), b.y() - a.y())
-            perp = QPointF(-dir_ab.y(), dir_ab.x()) / chord_len  # unit perp CCW
-            if angle_deg < 0:
-                perp = -perp  # flip side
-            o = mid + perp * h
-            self._rect = QRectF(o.x() - r, o.y() - r, 2 * r, 2 * r)
-            self._start = degrees(atan2(a.y() - o.y(), a.x() - o.x()))
-            # # set position to midpoint of arc
-            o = self._rect.center()
-            r = self._rect.width() / 2  # assuming circular
-            mid_angle = self._start + self._sweep / 2
-            self.setPos(QPointF(
-                o.x() + r * cos(radians(mid_angle)),
-                o.y() + r * sin(radians(mid_angle))
-            ))
+            chord_mid = QPointF((p1.x() + p2.x()) / 2, (p1.y() + p2.y()) / 2)
+            # radius: r = chord_len / (2 * sin(theta/2))
+            half_sweep_rad = radians(abs(self._sweep) / 2)
+            radius = chord_len / (2 * sin(half_sweep_rad))
+            # calculate distance from chord midpoint to arc center
+            # h = sqrt(r^2 - (chord/2)^2)
+            h = sqrt(radius**2 - (chord_len / 2)**2)
+            # calculate perpendicular direction to chord
+            dx = p2.x() - p1.x()
+            dy = p2.y() - p1.y()
+            # perpendicular to (dx, dy): rotate 90° = (-dy, dx)
+            perp_x = -dy / chord_len
+            perp_y = dx / chord_len
+            # determine which side of chord the center is on
+            # perpendicular (-dy, dx) points 90° CCW from chord
+            # For negative sweep (CW), center is on the opposite side = subtract perp
+            # For positive sweep (CCW), center is on the same side = add perp
+            if self._sweep > 0:
+                center = QPointF(chord_mid.x() + perp_x * h, chord_mid.y() + perp_y * h)
+            else:
+                center = QPointF(chord_mid.x() - perp_x * h, chord_mid.y() - perp_y * h)
+            # create bounding rectangle for the arc circle
+            self._rect = QRectF(
+                center.x() - radius,
+                center.y() - radius,
+                2 * radius,
+                2 * radius
+            )
+            # calculate start angle (angle from center to p1)
+            self._start = degrees(atan2(p1.y() - center.y(), p1.x() - center.x()))
+            print(f"Arc: sweep={self._sweep}, start={self._start}, p1={p1}, p2={p2}, center={center}, radius={radius}")
+            # position segment grip at arc midpoint
+            mid_angle_rad = radians(self._start + self._sweep / 2)
+            arc_mid = QPointF(
+                center.x() + radius * cos(mid_angle_rad),
+                center.y() + radius * sin(mid_angle_rad)
+            )
+            self.setPos(arc_mid)
 
     def sweep(self : Self) -> float:
         """Get arc sweep angle in degrees: 0 = line, >0 = ccw arc, <0 = cw arc."""
@@ -306,11 +326,19 @@ class Polyline(
         super().paint(painter, option, widget)
         painter.save()
         pen = painter.pen()
-        pen.setColor(QColor(Qt.GlobalColor.red))
         pen.setWidthF(0)
         pen.setStyle(Qt.PenStyle.DashLine)
-        painter.setPen(pen)
         for segment in self._segments:
             if segment.sweep() != 0:
+                pen.setColor(QColor(Qt.GlobalColor.red))
+                painter.setPen(pen)
                 painter.drawLine(segment._v1.pos(), segment._v2.pos())
+                pen.setColor(QColor(Qt.GlobalColor.yellow))
+                painter.setPen(pen)
+                painter.drawRect(segment._rect)
+                print("--------------------------------")
+                print("vertices:", segment._v1.pos(), segment._v2.pos())
+                print("sweep:", segment.sweep())
+                print("start:", segment._start)
+                print("rect:", segment._rect)
         painter.restore()
