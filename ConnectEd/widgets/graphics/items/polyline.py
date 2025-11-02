@@ -304,7 +304,10 @@ class Polyline(
         # adjust number of segments as required
         if len(self._segments) == len(self._vertices) - 1:
             if self._closed:
-                self._segments.append(PolySeg(self, QPointF(0, 0), None))
+                # Add closing segment from last vertex to first vertex
+                self._segments.append(PolySeg(
+                    self, self._vertices[-1], self._vertices[0], None
+                ))
         elif len(self._segments) == len(self._vertices):
             if not self._closed:
                 self._segments.pop()
