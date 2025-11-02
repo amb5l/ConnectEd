@@ -26,9 +26,9 @@ class Grip(
 
     # instance attributes
     _item      : "ItemGripMixin"  # parent item
-    _path_name : str                      # path name
-    _path      : QPainterPath             # path
-    _brush     : QBrush                   # brush
+    _path_name : str              # path name
+    _path      : QPainterPath     # path
+    _brush     : QBrush           # brush
 
     def __init__(
         self   : Self,
@@ -59,7 +59,7 @@ class Grip(
     def onSettingsChange(self : Self) -> None:
         self.prepareGeometryChange()
         self.onSceneChange(self.scene())
-        self._brush.setColor(settings().get("theme/selected/fill"))
+        self._brush.setColor(settings().get("theme/grip/color"))
         self.setBrush(self._brush)
 
     def toXml(self : Self, _ : QXmlStreamWriter) -> None:

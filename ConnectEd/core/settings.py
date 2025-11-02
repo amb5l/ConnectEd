@@ -380,7 +380,8 @@ FACTORY_SETTINGS = {
                 "text" : PaletteDark.SelectedText
             },
             "grip" : {
-                "size" : 12
+                "size"  : 12,
+                "color" : PaletteDark.Grip
             },
             "grid" : {
                 "line" : PaletteDark.Grid
@@ -662,7 +663,8 @@ FACTORY_SETTINGS = {
                 "text" : PaletteLightMono.SelectedText
             },
             "grip" : {
-                "size" : 12
+                "size"  : 12,
+                "color" : PaletteLightMono.Grip
             },
             "grid" : {
                 "line" : PaletteLightMono.Grid
