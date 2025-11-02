@@ -15,8 +15,8 @@ from . import ItemMixin
 
 class Line:
     # class attributes
-    _CAP_STYLE  = Qt.PenCapStyle.SquareCap
-    _JOIN_STYLE = Qt.PenJoinStyle.MiterJoin
+    _CAP_STYLE  = Qt.PenCapStyle.RoundCap
+    _JOIN_STYLE = Qt.PenJoinStyle.RoundJoin
 
     # instance attributes
     parent   : "ItemMixin"

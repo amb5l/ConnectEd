@@ -190,11 +190,19 @@ class PlacePolylineInteraction(PlaceBase1PosInteraction):
         self._item.setLastVertexPos(pos-self._item.pos())  # local coordinates
 
     def commit(self : Self, pos : QPointF) -> bool:
-        self._item.addVertex(pos-self._item.pos())  # local coordinates
+        # Ensure last vertex is at the click position
+        self.update(pos)
+        # Only add a new vertex if the last vertex has moved from the previous one
+        if self._item.vertex(-1).pos() != self._item.vertex(-2).pos():
+            pos_local = pos - self._item.pos()  # convert to local coordinates
+            self._item.addVertex(pos_local)
         return False  # continue interaction
 
     def complete(self : Self, pos : QPointF) -> None:
         self.commit(pos)
+        # Remove the last vertex if it's a duplicate (zero-length trailing segment)
+        if self._item.vertex(-1).pos() == self._item.vertex(-2).pos():
+            self._item.removeLastVertex()
 
     def ctxMenuItems(self : Self, pos : QPointF) -> list[QAction | QMenu]:
         items = []
@@ -205,10 +213,10 @@ class PlacePolylineInteraction(PlaceBase1PosInteraction):
         items.append(self._view.action(
             s, lambda: self._item.setClosed(not self._item.closed())
         ))
-        angle = self._item.lastSegment().sweep()
-        items.append(self._view.action("Line", self._toLine, angle == 0))
-        angle_text = f" ({angle}°)" if angle != 0 else ""
-        items.append(self._view.action(f"Arc{angle_text}...", self._toArc, angle != 0))
+        a = self._item.lastSegment().sweep()
+        items.append(self._view.action("Line", self._toLine, a is None))
+        a_text = f" ({a}°)" if a is not None else ""
+        items.append(self._view.action(f"Arc{a_text}...", self._toArc, a is not None))
         items.append(self._view.action("Closed", self._toggleClosed, self._item.closed()))
         return items
 
