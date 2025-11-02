@@ -204,6 +204,13 @@ class PlacePolylineInteraction(PlaceBase1PosInteraction):
         if self._item.vertex(-1).pos() == self._item.vertex(-2).pos():
             self._item.removeLastVertex()
 
+    def cancel(self : Self) -> None:
+        """Escape works a bit differently here."""
+        if self._item.vertexCount() > 2:
+            self._item.removeLastVertex()  # remove WIP vertex
+        else:
+            super().cancel()
+
     def ctxMenuItems(self : Self, pos : QPointF) -> list[QAction | QMenu]:
         items = []
         items.append(self._view.action("Add Point", lambda: self.commit(pos)))
