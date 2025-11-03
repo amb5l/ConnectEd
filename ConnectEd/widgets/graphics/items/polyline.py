@@ -86,6 +86,29 @@ class PolySeg(Grip):
             self.setPath(scene.paths["Grip"][self._path_name])
             self.setVisible(True)
 
+    def v1(self : Self) -> PolyVtx:
+        return self._v1
+
+    def setV1(self : Self, v1 : PolyVtx) -> None:
+        self._v1 = v1
+        self.refresh()
+
+    def v2(self : Self) -> PolyVtx:
+        return self._v2
+
+    def setV2(self : Self, v2 : PolyVtx) -> None:
+        self._v2 = v2
+        self.refresh()
+
+    def sweep(self : Self) -> float | None:
+        """Get arc sweep angle in degrees: None = line, >0 = ccw arc, <0 = cw arc."""
+        return self._sweep
+
+    def setSweep(self : Self, angle : float | None) -> None:
+        """Set arc sweep angle in degrees: None = line, >0 = ccw arc, <0 = cw arc."""
+        self._sweep = angle
+        self.refresh()
+
     def refresh(self : Self) -> None:
         # vertices
         x1 = self._v1.x()
@@ -135,15 +158,6 @@ class PolySeg(Grip):
             # position segment grip at arc midpoint
             a = radians(self._start + (self._sweep / 2))
             self.setPos(QPointF(cx + (r * cos(a)), cy - (r * sin(a))))
-
-    def sweep(self : Self) -> float | None:
-        """Get arc sweep angle in degrees: None = line, >0 = ccw arc, <0 = cw arc."""
-        return self._sweep
-
-    def setSweep(self : Self, angle : float | None) -> None:
-        """Set arc sweep angle in degrees: None = line, >0 = ccw arc, <0 = cw arc."""
-        self._sweep = angle
-        self.refresh()
 
     def arcParams(self : Self) -> tuple[QRectF, float, float]:
         return self._rect, self._start, self._sweep
@@ -198,6 +212,9 @@ class Polyline(
     def vertex(self : Self, index : int) -> PolyVtx:
         return self._vertices[index]
 
+    def segment(self : Self, index : int) -> PolySeg:
+        return self._segments[index]
+
     def lastVertexPos(self : Self) -> QPointF:
         return self._vertices[-1].pos()
 
@@ -215,11 +232,9 @@ class Polyline(
 
     def removeLastVertex(self : Self) -> None:
         """Remove the last vertex."""
-        # Remove and delete the last segment and vertex
         seg = self._segments.pop()
-        vtx = self._vertices.pop()
-        # Detach from parent (which also removes from scene)
         seg.setParentItem(None)
+        vtx = self._vertices.pop()
         vtx.setParentItem(None)
         self._updatePath()
 

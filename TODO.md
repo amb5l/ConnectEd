@@ -1,4 +1,6 @@
 NEXT
+- polyline grip visibility
+
 - PropertyText.mouseDoubleClickEvent - move to view?
 - PropertyText moves badly as part of group of selected objects
 - if (cleat := self.cleat()) is None:
