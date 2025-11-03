@@ -1,6 +1,4 @@
 NEXT
-- scene API
-- type checking assertions
 - polyline grip visibility
 
 

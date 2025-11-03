@@ -1,5 +1,7 @@
 from typing import Self
 
+from PyQt6.QtCore import QPointF
+
 from .edit  import DrawingViewUiEditMixin
 from .view  import DrawingViewUiViewMixin
 from .place import DrawingViewUiPlaceMixin
@@ -18,3 +20,6 @@ class DrawingViewUi(
 
     def __init__(self : Self, view : "DrawingView") -> None:
         self._view = view
+
+    def _snap(self : Self, pos : QPointF | None) -> QPointF:
+        return self._view._snap(pos)
