@@ -122,15 +122,6 @@ class NavigatorApiMixin:
         node.setRoot()
 
     ############################################################################
-    # drawing window methods
-
-    def activateDrawingWindow(self : "Navigator", node : "DrawingWindowNode") -> None:
-        from ....core.db import DrawingWindowNode
-        if not typeCheck(node, DrawingWindowNode):
-            return
-        node.activate()
-
-    ############################################################################
     # misc
 
     def rename(self : "Navigator", node : "Node") -> None:
