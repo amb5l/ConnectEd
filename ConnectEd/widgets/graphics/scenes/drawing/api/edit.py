@@ -1,23 +1,23 @@
 from PyQt6.QtCore import QPointF
 
-from .....app import logger
+from ......app import logger
 
-from .....core.xml import copy
+from ......core.xml import copy
 
-from ....dialogs.properties import PropertyState
+from .....dialogs.properties import PropertyState
 
-from ...items               import QuillPrefChange, AppearancePrefChange
-from ...items.mixin         import ItemMixin
-from ...items.base_text     import BaseText
-from ...items.property_text import PropertyText
+from ....items               import QuillPrefChange, AppearancePrefChange
+from ....items.mixin         import ItemMixin
+from ....items.base_text     import BaseText
+from ....items.property_text import PropertyText
 
-from .cmd import CmdDelete
-from .cmd.edit import CmdEditText, CmdEditPropertyText, \
-                      CmdEditProperties, CmdEditAppearance
+from ..cmd import CmdDelete
+from ..cmd.edit import CmdEditText, CmdEditPropertyText, \
+                       CmdEditProperties, CmdEditAppearance
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from . import DrawingScene
+    from .. import DrawingScene
 
 
 class DrawingSceneApiEditMixin:

@@ -9,7 +9,8 @@ from ....items import EdgeLoc, clone
 from ....items.block     import Block
 from ....items.block_pin import BlockPin
 
-from ....scenes.drawing.cmd import CmdAdd, CmdMove, CmdMoveBlockPins
+from ....scenes.drawing.cmd           import CmdAdd, CmdMove
+from ....scenes.drawing.cmd.block_pin import CmdMoveBlockPins
 
 from . import MoveItemsMixin,      \
               AddRemoveItemsMixin, \

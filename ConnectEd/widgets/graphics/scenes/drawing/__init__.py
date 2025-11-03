@@ -13,20 +13,18 @@ from .....core.xml import toXmlAttrs, fromXmlAttrs
 
 from ...properties import PropertySpec, PropertiesMixin
 
-from .edit    import DrawingSceneApiEditMixin
-from .private import DrawingSceneApiPrivateMixin
+from .api     import DrawingSceneApiMixin
+from .grips   import DrawingSceneGripsMixin
 from .paths   import DrawingScenePathsMixin
-from .handles import DrawingSceneGripsMixin
-from .conn    import DrawingSceneConnMixin
+from .private import DrawingSceneApiPrivateMixin
 
 
 class DrawingScene(
     PropertiesMixin,
-    DrawingSceneApiEditMixin,
-    DrawingSceneApiPrivateMixin,
-    DrawingScenePathsMixin,
+    DrawingSceneApiMixin,
     DrawingSceneGripsMixin,
-    DrawingSceneConnMixin,
+    DrawingScenePathsMixin,
+    DrawingSceneApiPrivateMixin,
     QGraphicsScene
 ):
     # class attributes

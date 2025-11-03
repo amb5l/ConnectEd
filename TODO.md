@@ -1,5 +1,8 @@
 NEXT
+- scene API
+- type checking assertions
 - polyline grip visibility
+
 
 - PropertyText.mouseDoubleClickEvent - move to view?
 - PropertyText moves badly as part of group of selected objects

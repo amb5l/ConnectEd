@@ -22,7 +22,8 @@ from ....items.polyline   import Polyline
 from ....items.text       import Text
 from ....items.text_block import TextBlock
 
-from ....scenes.drawing.cmd import CmdAdd, CmdAddBlockPin
+from ....scenes.drawing.cmd           import CmdAdd
+from ....scenes.drawing.cmd.block_pin import CmdAddBlockPin
 
 from . import Interaction,         \
               SelectionMixin,      \
@@ -43,7 +44,7 @@ class PlaceBaseInteraction(
     """Base for all interactions that place a single item."""
 
     # class attributes
-    _ITEM : ItemType  # subclass to override with item class
+    _ITEM_TYPE : ItemType  # subclass to override with item class
 
     def __init__(
         self : Self,
@@ -52,13 +53,14 @@ class PlaceBaseInteraction(
         item : ItemType | None = None
     ) -> None:
         if item is None:
-            item = self._ITEM(pos)
+            item = self._ITEM_TYPE(pos)
         else:
             item.setPos(pos)
         super().__init__(view, item)
         self._preserveSelection()
         self._scene.clearSelection()
-        self._scene.addItem(self._item)
+        if self._item.scene() != self._scene:
+            self._scene.addItem(self._item)
         self._item.setSelected(True)
 
     def cancel(self : Self) -> None:
@@ -111,7 +113,7 @@ class PlaceBase2PosInteraction(PlaceBase1PosInteraction):
 
 
 class PlacePortInteraction(RotateItemMixin, PlaceBase1PosInteraction):
-    _ITEM = Port
+    _ITEM_TYPE = Port
 
     def ctxMenuItems(self : Self, pos : QPointF) -> list[QAction | QMenu]:
         separator = QAction()
@@ -130,7 +132,7 @@ class PlacePortInteraction(RotateItemMixin, PlaceBase1PosInteraction):
 
 
 class PlaceBlockInteraction(PlaceBase2PosInteraction):
-    _ITEM = Block
+    _ITEM_TYPE = Block
 
 
 class PlaceBlockPinInteraction(BlockPinInteraction):
@@ -157,23 +159,23 @@ class PlaceBlockPinInteraction(BlockPinInteraction):
 
 
 class PlaceSymbolPinInteraction(PlaceBase1PosInteraction):
-    _ITEM = SymbolPin
+    _ITEM_TYPE = SymbolPin
 
 
 class PlaceLineInteraction(PlaceBase2PosInteraction):
-    _ITEM = Line
+    _ITEM_TYPE = Line
 
 
 class PlaceRectangleInteraction(PlaceBase2PosInteraction):
-    _ITEM = Rectangle
+    _ITEM_TYPE = Rectangle
 
 
 class PlaceEllipseInteraction(PlaceBase2PosInteraction):
-    _ITEM = Ellipse
+    _ITEM_TYPE = Ellipse
 
 
 class PlacePolylineInteraction(PlaceBase1PosInteraction):
-    _ITEM = Polyline
+    _ITEM_TYPE = Polyline
 
     _item : Polyline  # type hint for this interaction
 
@@ -184,32 +186,44 @@ class PlacePolylineInteraction(PlaceBase1PosInteraction):
         item : ItemType | None = None
     ) -> None:
         super().__init__(view, pos, item)
+        self._item.addVertex(pos)  # WIP polyline now has 2 vertices
         self._item.setSelMode(1)
 
     def update(self : Self, pos : QPointF):
-        self._item.setLastVertexPos(pos-self._item.pos())  # local coordinates
+        self._item.setLastVertexPos(pos)  # local coordinates
 
     def commit(self : Self, pos : QPointF) -> bool:
         # Ensure last vertex is at the click position
         self.update(pos)
-        # Only add a new vertex if the last vertex has moved from the previous one
-        if self._item.vertex(-1).pos() != self._item.vertex(-2).pos():
-            pos_local = pos - self._item.pos()  # convert to local coordinates
-            self._item.addVertex(pos_local)
+        # Only proceed if the last vertex has moved from the previous one
+        if self._item.vertex(-1).pos() == self._item.vertex(-2).pos():
+            return False  # continue interaction
+        if self._item.vertexCount() == 2:
+            # Add polyline to scene when 2nd vertex is committed
+            print("Adding polyline to scene")
+            self._scene.addItems([self._item], undoable=True)
+            self._item.addVertex(pos)  # add WIP vertex
+            return False  # continue interaction
+        # Handle closing the polyline
+        if pos == self._item.pos():
+            print("Closing polyline")
+            self._item.setClosed(True)
+            self._item.removeLastVertex()  # remove WIP vertex
+            return True  # interaction completed
+        # Add vertex to polyline when 3rd+ vertex is committed
+        print("Adding vertex to polyline")
+        self._item.removeLastVertex()  # remove WIP vertex
+        self._scene.addPolyVtx(self._item, pos, undoable=True)  # add new vertex
+        self._item.addVertex(pos)  # add WIP vertex
         return False  # continue interaction
 
     def complete(self : Self, pos : QPointF) -> None:
-        self.commit(pos)
-        # Remove the last vertex if it's a duplicate (zero-length trailing segment)
-        if self._item.vertex(-1).pos() == self._item.vertex(-2).pos():
-            self._item.removeLastVertex()
+        if not self.commit(pos):
+            self._item.removeLastVertex()  # remove WIP vertex
 
     def cancel(self : Self) -> None:
         """Escape works a bit differently here."""
-        if self._item.vertexCount() > 2:
-            self._item.removeLastVertex()  # remove WIP vertex
-        else:
-            super().cancel()
+        self._item.removeLastVertex()  # remove WIP vertex
 
     def ctxMenuItems(self : Self, pos : QPointF) -> list[QAction | QMenu]:
         items = []
@@ -240,11 +254,11 @@ class PlacePolylineInteraction(PlaceBase1PosInteraction):
 
 
 class PlaceTextInteraction(PlaceBase1PosInteraction):
-    _ITEM = Text
+    _ITEM_TYPE = Text
 
 
 class PlaceTextBlockInteraction(PlaceBase1PosInteraction):
-    _ITEM = TextBlock
+    _ITEM_TYPE = TextBlock
 
 
 class PlaceConnInteraction(SelectionMixin, Interaction):
@@ -286,7 +300,7 @@ class PlaceConnInteraction(SelectionMixin, Interaction):
         connectables_2 = [item for item in items_2 \
             if isinstance(item, ConnSeg | ConnVtx | Entry)]
         # create first segment
-        self._scene.addConnSeg(self._p0(), self._p1(), undo=True)
+        self._scene.addConnSeg(self._p0(), self._p1(), undoable=True)
         if connectables_1:
             self._cleanup()
             return True  # interaction completed
@@ -294,7 +308,7 @@ class PlaceConnInteraction(SelectionMixin, Interaction):
         # - complete is requested
         # - mouse is over a connectable destination
         if complete or connectables_2:
-            self._scene.addConnSeg(self._p1(), self._p2(), undo=True)
+            self._scene.addConnSeg(self._p1(), self._p2(), undoable=True)
             self._cleanup()
             return True  # interaction completed
         self._restart(pos)

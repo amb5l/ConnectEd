@@ -181,20 +181,26 @@ class Polyline(
     _closed   : bool           # whether the polyline is closed (a polygon)
     _sel_mode : int            # current selection mode (0 = outline, 1 = vtx/seg)
 
-    def __init__(self : Self, pos : QPointF) -> None:
+    def __init__(
+        self     : Self,
+        vertices : QPointF | list[QPointF],
+        closed   : bool = False
+    ) -> None:
+        if isinstance(vertices, QPointF):
+            vertices = [vertices]
         super().__init__()
         self.initItem()
-        self.setPos(pos)
-        # start open, with 2 vertices and 1 segment
-        self._vertices = [
-            PolyVtx(self, 0, QPointF(0, 0)),
-            PolyVtx(self, 1, QPointF(0, 0))
-        ]
+        self.setPos(vertices[0])
+        # initialize vertices and segments
         self._closed = False
-        self._sel_mode = 1  # Start in vertex-edit mode for interactive creation
+        self._vertices = []
+        self._segments = []
+        for vertex in vertices:
+            self.addVertex(vertex)
         self._buildSegments()
-        # update path
+        # build path
         self._updatePath()
+        self._sel_mode = 1  # Start in vertex-edit mode for interactive creation
 
     def onSelectionChange(self : Self, selected : bool) -> None:
         if not selected:
@@ -212,23 +218,14 @@ class Polyline(
     def vertex(self : Self, index : int) -> PolyVtx:
         return self._vertices[index]
 
-    def segment(self : Self, index : int) -> PolySeg:
-        return self._segments[index]
-
-    def lastVertexPos(self : Self) -> QPointF:
-        return self._vertices[-1].pos()
-
-    def setLastVertexPos(self : Self, pos : QPointF) -> None:
-        """Set position of last vertex. Note: pos is in local coordinates."""
-        self._vertices[-1].setPos(pos)
-        self._updatePath()
-
-    def addVertex(self : Self, pos : QPointF) -> None:
-        """Add a new vertex. Note: pos is in local coordinates."""
-        vtx = PolyVtx(self, len(self._vertices), pos)
+    def addVertex(self : Self, pos : QPointF) -> PolyVtx:
+        """Add a new vertex."""
+        vtx = PolyVtx(self, len(self._vertices), pos - self.pos())
         self._vertices.append(vtx)
-        self._segments.append(PolySeg(self, self._vertices[-2], vtx))
+        if self.vertexCount() > 1:
+            self._segments.append(PolySeg(self, self._vertices[-2], vtx))
         self._updatePath()
+        return vtx
 
     def removeLastVertex(self : Self) -> None:
         """Remove the last vertex."""
@@ -237,6 +234,17 @@ class Polyline(
         vtx = self._vertices.pop()
         vtx.setParentItem(None)
         self._updatePath()
+
+    def lastVertexPos(self : Self) -> QPointF:
+        return self._vertices[-1].pos() + self.pos()
+
+    def setLastVertexPos(self : Self, pos : QPointF) -> None:
+        """Set position of last vertex."""
+        self._vertices[-1].setPos(pos - self.pos())
+        self._updatePath()
+
+    def segment(self : Self, index : int) -> PolySeg:
+        return self._segments[index]
 
     def lastSegment(self : Self) -> PolySeg:
         return self._segments[-1]
@@ -307,6 +315,8 @@ class Polyline(
     def _buildSegments(self : Self) -> None:
         """Build segments from vertices. Default to lines not arcs."""
         self._segments = []
+        if len(self._vertices) < 2:  # degenerate case
+            return
         for i in range(len(self._vertices) - 1):
             v1 = self._vertices[i]
             v2 = self._vertices[i+1]
