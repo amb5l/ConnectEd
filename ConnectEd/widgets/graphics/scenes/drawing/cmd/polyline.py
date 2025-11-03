@@ -38,9 +38,7 @@ class CmdAddPolyVtx(CmdPolyVtxBase):
         self._pos = pos
 
     def redo(self : Self) -> None:
-        print("Adding vertex to polyline")
         self._vtx = self._polyline.addVertex(self._pos)
-        print("Vertex added to polyline - number =", self._polyline.vertexCount())
 
     def undo(self : Self) -> None:
         self._polyline.removeLastVertex()

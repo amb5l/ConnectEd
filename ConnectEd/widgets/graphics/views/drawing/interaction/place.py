@@ -189,18 +189,15 @@ class PlacePolylineInteraction(PlaceBase1PosInteraction):
             return False  # continue interaction
         if self._item.vertexCount() == 2:
             # Add polyline to scene when 2nd vertex is committed
-            print("Adding polyline to scene")
             self._scene.addItems([self._item], undoable=True)
             self._item.addVertex(pos)  # add WIP vertex
             return False  # continue interaction
         # Handle closing the polyline
         if pos == self._item.pos():
-            print("Closing polyline")
             self._item.setClosed(True)
             self._item.removeLastVertex()  # remove WIP vertex
             return True  # interaction completed
         # Add vertex to polyline when 3rd+ vertex is committed
-        print("Adding vertex to polyline")
         self._item.removeLastVertex()  # remove WIP vertex
         self._scene.addPolyVtx(self._item, pos, undoable=True)  # add new vertex
         self._item.addVertex(pos)  # add WIP vertex
