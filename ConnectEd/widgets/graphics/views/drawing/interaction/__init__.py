@@ -177,22 +177,3 @@ class AddRemoveItemsMixin:
         for item in self._items:
             if item.scene() == self._scene:
                 self._scene.removeItem(item)
-
-
-class SelectionMixin:
-    """Mixin for interactions that preserve/restore the selection."""
-
-    # instance attributes
-    _selection : list[ItemType] | None
-    _scene     : "DrawingScene"
-
-    def _preserveSelection(self : Self) -> None:
-        self._selection = self._scene.selectedItems().copy() # TODO: is copy needed?
-
-    def _restoreSelection(self : Self) -> None:
-        self._scene.blockSignals(True)
-        self._scene.clearSelection()
-        for item in self._selection:
-            item.setSelected(True)
-        self._scene.blockSignals(False)
-        self._scene.selectionChanged.emit()

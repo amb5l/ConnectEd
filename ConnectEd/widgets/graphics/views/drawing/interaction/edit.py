@@ -14,7 +14,6 @@ from ....scenes.drawing.cmd.block_pin import CmdMoveBlockPins
 
 from . import MoveItemsMixin,      \
               AddRemoveItemsMixin, \
-              SelectionMixin,      \
               ItemsInteraction,    \
               Interaction,         \
               ItemType
@@ -27,7 +26,6 @@ if TYPE_CHECKING:
 class EditPasteInteraction(
     MoveItemsMixin,       # update, _moveBy, _storePos, _restorePos
     AddRemoveItemsMixin,  # _addToScene, _removeFromScene
-    SelectionMixin,       # _preserveSelection, _restoreSelection
     ItemsInteraction      # _view, _scene, _items, valid
 ):
     def __init__(
@@ -40,7 +38,6 @@ class EditPasteInteraction(
             ItemsInteraction.__init__(self, view, items)
             self._ipos = pos if copy_pos is None else copy_pos
             self._cpos = self._ipos
-            self._preserveSelection()  # store prior selection set
             self._items = items
             self._storePos()
             self._addToScene(select=True)
@@ -75,7 +72,6 @@ class EditDuplicateInteraction(EditPasteInteraction):
             ItemsInteraction.__init__(self, view, clone(items))
             self._ipos = pos
             self._cpos = pos
-            self._preserveSelection()  # store prior selection set
             self._storePos()
             self._addToScene(select=True)
         else:

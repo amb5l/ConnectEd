@@ -91,25 +91,6 @@ class CmdSceneItems(CmdSceneBase):
         self._items = items
 
 
-class CmdSelectionMixin:
-    """Mixin for commands that need to preserve/restore the scene selection."""
-
-    # instance attributes
-    _scene     : "DrawingScene"
-    _selection : list[ItemType]
-
-    def _preserveSelection(self : Self, selection : list[ItemType]) -> None:
-        self._selection = selection.copy()
-
-    def _restoreSelection(self : Self) -> None:
-        self._scene.blockSignals(True)
-        self._scene.clearSelection()
-        for e in self._selection:
-            e.setSelected(True)
-        self._scene.blockSignals(False)
-        self._scene.selectionChanged.emit()
-
-
 class CmdAddRemoveMixin:
     """Mixin for commands that add/remove scene items."""
 
@@ -158,9 +139,8 @@ class CmdMoveMixin:
 
 
 class CmdAdd(
-    CmdSceneItems,      # _scene, _items, _selection
-    CmdSelectionMixin,  # _preserveSelection, _restoreSelection
-    CmdAddRemoveMixin   # _addToScene, _removeFromScene
+    CmdSceneItems,     # _scene, _items
+    CmdAddRemoveMixin  # _addToScene, _removeFromScene
 ):
     """Command to add scene items (paste, duplicate, etc.)."""
 
@@ -174,20 +154,17 @@ class CmdAdd(
         selection : list[ItemType]
     ):
         super().__init__(scene, items)      # record scene, items
-        self._preserveSelection(selection)  # store selection set
 
     def redo(self : Self) -> None:
         self._addToScene(select=True)
 
     def undo(self : Self) -> None:
         self._removeFromScene()
-        self._restoreSelection()
 
 
 class CmdDelete(
-    CmdSceneItems,      # _scene, _items, _selection
-    CmdSelectionMixin,  # _preserveSelection, _restoreSelection
-    CmdAddRemoveMixin   # _addToScene, _removeFromScene
+    CmdSceneItems,     # _scene, _items
+    CmdAddRemoveMixin  # _addToScene, _removeFromScene
 ):
     """Command to delete scene items (cut, delete)."""
 
@@ -198,7 +175,6 @@ class CmdDelete(
         selection : list[ItemType]
     ):
         super().__init__(scene, items)      # record scene, items
-        self._preserveSelection(selection)  # store selection set
 
     def redo(self : Self) -> None:
         """Delete the items from the scene."""
@@ -206,7 +182,6 @@ class CmdDelete(
 
     def undo(self : Self) -> None:
         self._addToScene()
-        self._restoreSelection()
 
 
 class CmdMove(

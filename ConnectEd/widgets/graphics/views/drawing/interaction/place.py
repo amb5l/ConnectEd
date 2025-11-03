@@ -22,11 +22,7 @@ from ....items.polyline   import Polyline
 from ....items.text       import Text
 from ....items.text_block import TextBlock
 
-from ....scenes.drawing.cmd           import CmdAdd
-from ....scenes.drawing.cmd.block_pin import CmdAddBlockPin
-
 from . import Interaction,         \
-              SelectionMixin,      \
               RotateItemMixin,     \
               ItemInteraction,     \
               BlockPinInteraction, \
@@ -37,10 +33,7 @@ if TYPE_CHECKING:
     from .. import DrawingView
 
 
-class PlaceBaseInteraction(
-    SelectionMixin,  # _preserveSelection, _restoreSelection
-    ItemInteraction  # _view, _scene, _item, valid
-):
+class PlaceBaseInteraction(ItemInteraction):  # _view, _scene, _item, valid
     """Base for all interactions that place a single item."""
 
     # class attributes
@@ -57,8 +50,6 @@ class PlaceBaseInteraction(
         else:
             item.setPos(pos)
         super().__init__(view, item)
-        self._preserveSelection()
-        self._scene.clearSelection()
         if self._item.scene() != self._scene:
             self._scene.addItem(self._item)
         self._item.setSelected(True)
@@ -76,9 +67,7 @@ class PlaceBase1PosInteraction(PlaceBaseInteraction):
 
     def commit(self : Self, pos : QPointF) -> bool:
         self.update(pos)
-        self._scene.undo_stack.push(CmdAdd(
-            self._scene, [self._item], self._selection
-        ))
+        self._scene.addItems([self._item], undoable=True)
         return True
 
     def complete(self : Self, pos : QPointF) -> None:
@@ -261,7 +250,7 @@ class PlaceTextBlockInteraction(PlaceBase1PosInteraction):
     _ITEM_TYPE = TextBlock
 
 
-class PlaceConnInteraction(SelectionMixin, Interaction):
+class PlaceConnInteraction(Interaction):
     """Interactive wire placement involves two preview segments."""
 
     # instance attributes
@@ -281,8 +270,6 @@ class PlaceConnInteraction(SelectionMixin, Interaction):
         self._setP2(pos)
         self._scene.addItem(self._seg1)
         self._scene.addItem(self._seg2)
-        self._preserveSelection()  # store prior selection set
-        self._scene.clearSelection()
 
     def valid(self : Self) -> bool:
         return True
