@@ -28,7 +28,7 @@ if TYPE_CHECKING:
 
 
 class PolyVtx(Grip):
-    _PATH_NAME = "Diamond"
+    _PATH_NAME = "Circle"
     _ORIGIN_PATH_NAME = "Square"
 
     # instance attributes
@@ -42,6 +42,7 @@ class PolyVtx(Grip):
     ) -> None:
         self._index = index
         super().__init__(parent, pos)
+        print(f"PolyVtx.__init__: index = {index}")
 
     def onSceneChange(self : Self, scene : "DrawingScene | None") -> None:
         """Override to update path based on origin status."""
@@ -233,12 +234,12 @@ class Polyline(
     def vertex(self : Self, index : int) -> PolyVtx:
         return self._vertices[index]
 
-    def addVertex(self : Self, pos : QPointF) -> PolyVtx:
+    def addVertex(self : Self, pos : QPointF, sweep : float | None = None) -> PolyVtx:
         """Add a new vertex."""
         vtx = PolyVtx(self, len(self._vertices), pos - self.pos())
         self._vertices.append(vtx)
         if self.vertexCount() > 1:
-            self._segments.append(PolySeg(self, self._vertices[-2], vtx))
+            self._segments.append(PolySeg(self, self._vertices[-2], vtx, sweep))
         self._updatePath()
         return vtx
 
@@ -270,6 +271,17 @@ class Polyline(
     def setClosed(self : Self, closed : bool) -> None:
         self._closed = closed
         self._updatePath()
+
+    def close(self : Self, sweep : float | None = None) -> None:
+        self._segments.append(PolySeg(
+            self, self._vertices[-1], self._vertices[0], sweep
+        ))
+        self.setClosed(True)
+
+    def open(self : Self) -> None:
+        seg = self._segments.pop()
+        seg.setParentItem(None)
+        self.setClosed(False)
 
     def anchorPointRect(self : Self) -> QRectF:
         return self.path().controlPointRect()
@@ -369,8 +381,13 @@ class Polyline(
                 else:
                     path.arcTo(*self._segments[i-1].arcParams())
                 v_prev = v.pos()
+        # handle closed case
         if self._closed:
+            if self._segments[-1].sweep() is not None:
+                path.arcTo(*self._segments[-1].arcParams())
             path.closeSubpath()
+        # update path
         self.setPath(path)
+        # update anchor points
         if hasattr(self, '_anchor_points'):
             self.updateAnchorPoints()

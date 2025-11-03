@@ -12,9 +12,10 @@ from ....items import SignalDirection, VectorRange, \
 from ....items.mixin        import ItemMixin
 from ....items.mixin.origin import ItemOriginMixin
 
+from ....items.anchor_point  import AnchorPoint
+from ....items.polyline      import Polyline
 from ....items.base_text     import BaseText
 from ....items.property_text import PropertyText, PropertyDisplay
-from ....items.anchor_point  import AnchorPoint
 
 from . import CmdSceneItem, CmdSceneItems
 
@@ -109,6 +110,38 @@ class CmdEditSymbolPinClock(CmdSceneItem):
     def undo(self : Self) -> None:
         self._item.clock = self._before
         self._item.update()
+
+
+class CmdEditPolylineClosed(CmdSceneItem):
+    _item   : Polyline
+    _before : bool
+    _after  : bool
+    _sweep  : float | None
+
+    def __init__(
+        self   : Self,
+        scene  : "DrawingScene",
+        item   : Polyline,
+        closed : bool,
+        sweep  : float | None
+    ):
+        super().__init__(scene, item)
+        self._item = item
+        self._before = item.closed()
+        self._after = closed
+        self._sweep = sweep
+
+    def redo(self : Self) -> None:
+        if self._after:
+            self._item.close(self._sweep)
+        else:
+            self._item.open()
+
+    def undo(self : Self) -> None:
+        if self._before:
+            self._item.close(self._sweep)
+        else:
+            self._item.open()
 
 
 class CmdEditText(CmdSceneItem):

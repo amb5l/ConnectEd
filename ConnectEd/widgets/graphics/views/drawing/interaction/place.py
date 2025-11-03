@@ -165,7 +165,8 @@ class PlaceEllipseInteraction(PlaceBase2PosInteraction):
 class PlacePolylineInteraction(PlaceBase1PosInteraction):
     _ITEM_TYPE = Polyline
 
-    _item : Polyline  # type hint for this interaction
+    _item  : Polyline      # type hint for this interaction
+    _sweep : float | None  # sweep angle for last segment
 
     def __init__(
         self : Self,
@@ -176,6 +177,7 @@ class PlacePolylineInteraction(PlaceBase1PosInteraction):
         super().__init__(view, pos, item)
         self._item.addVertex(pos)  # WIP polyline now has 2 vertices
         self._item.setSelMode(1)
+        self._sweep = None
 
     def update(self : Self, pos : QPointF):
         self._item.setLastVertexPos(pos)  # local coordinates
@@ -192,16 +194,18 @@ class PlacePolylineInteraction(PlaceBase1PosInteraction):
             self._scene.addItems([self._item], undoable=True)
             self._item.setSelMode(sel_mode)  # Restore selection mode
             self._item.addVertex(pos)  # add WIP vertex
+            self._sweep = None
             return False  # continue interaction
         # Handle closing the polyline
         if pos == self._item.pos():
-            self._item.setClosed(True)
             self._item.removeLastVertex()  # remove WIP vertex
+            self._scene.editPolylineClosed(self._item, True, self._sweep, undoable=True)
             return True  # interaction completed
         # Add vertex to polyline when 3rd+ vertex is committed
         self._item.removeLastVertex()  # remove WIP vertex
-        self._scene.addPolyVtx(self._item, pos, undoable=True)  # add new vertex
+        self._scene.addPolyVtx(self._item, pos, self._sweep, undoable=True)
         self._item.addVertex(pos)  # add WIP vertex
+        self._sweep = None
         return False  # continue interaction
 
     def complete(self : Self, pos : QPointF) -> None:
@@ -214,17 +218,14 @@ class PlacePolylineInteraction(PlaceBase1PosInteraction):
 
     def ctxMenuItems(self : Self, pos : QPointF) -> list[QAction | QMenu]:
         items = []
-        items.append(self._view.action("Add Point", lambda: self.commit(pos)))
-        if self._item.vertexCount() > 2:
-            items.append(self._view.action("Remove Point", self._item.removeLastVertex))
-        s = "Make " + ("Open" if self._item.closed() else "Closed")
-        items.append(self._view.action(
-            s, lambda: self._item.setClosed(not self._item.closed())
-        ))
+        items.append(self._view.action("Add Vertex", lambda: self.commit(pos)))
+        items.append(self._view.action("Finish", self.cancel))
         a = self._item.lastSegment().sweep()
+        items.append(self._view.separator())
         items.append(self._view.action("Line", self._toLine, a is None))
         a_text = f" ({a}°)" if a is not None else ""
         items.append(self._view.action(f"Arc{a_text}...", self._toArc, a is not None))
+        items.append(self._view.separator())
         items.append(self._view.action("Closed", self._toggleClosed, self._item.closed()))
         return items
 
@@ -232,12 +233,14 @@ class PlacePolylineInteraction(PlaceBase1PosInteraction):
         self._item.setClosed(not self._item.closed())
 
     def _toLine(self : Self) -> None:
-        self._item.lastSegment().setSweep(0)
+        self._sweep = None
+        self._item.lastSegment().setSweep(self._sweep)
 
     def _toArc(self : Self) -> None:
         dialog = ArcDialog(self._item.lastSegment().sweep(), self._view)
         if dialog.exec():
-            self._item.lastSegment().setSweep(dialog.getAngle())
+            self._sweep = dialog.getAngle()
+            self._item.lastSegment().setSweep(self._sweep)
 
 
 class PlaceTextInteraction(PlaceBase1PosInteraction):

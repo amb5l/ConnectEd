@@ -54,9 +54,10 @@ class DrawingSceneApiAddMixin:
         self     : "DrawingScene",
         polyline : Polyline,
         pos      : QPointF,
+        sweep    : float | None = None,
         undoable : bool = False
     ) -> PolyVtx:
         """Add a vertex to a polyline."""
-        cmd = CmdAddPolyVtx(polyline, pos)
+        cmd = CmdAddPolyVtx(polyline, pos, sweep)
         cmdExec(self, cmd, undoable)
         return cmd.vtx()

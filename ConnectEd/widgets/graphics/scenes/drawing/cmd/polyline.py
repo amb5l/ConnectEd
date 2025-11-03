@@ -27,18 +27,21 @@ class CmdAddPolyVtx(CmdPolyVtxBase):
     """Command to add a vertex to a polyline."""
 
     # instance attributes
-    _pos : QPointF
+    _pos   : QPointF
+    _sweep : float | None
 
     def __init__(
         self     : Self,
         polyline : Polyline,
-        pos      : QPointF
+        pos      : QPointF,
+        sweep    : float | None = None
     ):
         super().__init__(polyline)
         self._pos = pos
+        self._sweep = sweep
 
     def redo(self : Self) -> None:
-        self._vtx = self._polyline.addVertex(self._pos)
+        self._vtx = self._polyline.addVertex(self._pos, self._sweep)
 
     def undo(self : Self) -> None:
         self._polyline.removeLastVertex()
