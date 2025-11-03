@@ -424,7 +424,7 @@ class DrawingViewStateEditAppearance(DrawingViewStateBase):
         if items:
             dialog = AppearanceDialog(items, self.view)
             if dialog.exec():
-                self.scene.editAppearance(items, dialog.getChoice())
+                self.scene.editAppearance(items, dialog.getChoice(), undoable=True)
         else:
             logger().warning("No items selected")
         self.view.state.go(self.view.stateIdle)
@@ -443,7 +443,7 @@ class DrawingViewStateEditProperties(DrawingViewStateBase):
         if item:
             dialog = PropertiesDialog(item, self.view)
             if dialog.exec():
-                self.scene.editProperties(item, dialog.getChanges())
+                self.scene.editProperties(item, dialog.getChanges(), undoable=True)
         else:
             logger().warning("No items selected")
         self.view.state.go(self.view.stateIdle)

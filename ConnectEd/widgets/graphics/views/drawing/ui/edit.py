@@ -35,7 +35,9 @@ class DrawingViewUiEditMixin:
         self._view.state.go(self._view.stateIdle)
 
     def editCut(self : "DrawingViewUi") -> None:
-        self._view.scene().editCut(self._snap(self._view.mouse.current.logical))
+        self._view.scene().editCut(
+            self._snap(self._view.mouse.current.logical), undoable=True
+        )
 
     def editCopy(self : "DrawingViewUi") -> None:
         self._view.scene().editCopy(self._snap(self._view.mouse.current.logical))
@@ -45,7 +47,7 @@ class DrawingViewUiEditMixin:
 
     def editDelete(self : "DrawingViewUi") -> None:
         scene : "DrawingScene" = self._view.scene()
-        scene.editDelete()
+        scene.editDelete(undoable=True)
 
     def editDuplicate(self : "DrawingViewUi") -> None:
         self._view.state.go(self._view.stateEditDuplicate)
