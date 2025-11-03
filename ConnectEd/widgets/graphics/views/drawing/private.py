@@ -13,6 +13,7 @@ from ...items.block_pin import BlockPin, BlockPinArrow, BlockPinEntry
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
+    from ...scenes.drawing import DrawingScene
     from . import DrawingView
 
 
@@ -153,10 +154,12 @@ class DrawingViewPrivateMixin:
         rect      : QRectF,
         modifiers : Qt.KeyboardModifier
     ) -> None:
+        scene : "DrawingScene" = self.scene()
         toggle = modifiers & (qkm.ControlModifier | qkm.ShiftModifier) \
             == qkm.ControlModifier
         path = QPainterPath()
         path.addRect(rect)
+        scene.blockSignals(True)
         if toggle:
             items = self.scene().items(
                 path,
@@ -173,6 +176,8 @@ class DrawingViewPrivateMixin:
                 Qt.ItemSelectionMode.IntersectsItemShape,
                 self.transform()
             )
+        scene.blockSignals(False)
+        scene.selectionChanged.emit()
 
     def _selectPoint(
         self      : "DrawingView",
