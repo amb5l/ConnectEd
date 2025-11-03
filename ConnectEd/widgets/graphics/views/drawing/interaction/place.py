@@ -139,7 +139,7 @@ class PlaceBlockPinInteraction(BlockPinInteraction):
 
     def commit(self : Self, pos : QPointF, snap : QPointF | None = None) -> bool:
         self.update(pos, snap)
-        self._scene.undo_stack.push(CmdAddBlockPin(self._parent, self._pin))
+        self._scene.addBlockPin(self._parent, self._pin, undoable=True)
         return True
 
     def cancel(self : Self) -> None:

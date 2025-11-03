@@ -2,10 +2,13 @@ from PyQt6.QtCore import QPointF
 
 from ....items import ItemType
 
-from ....items.polyline import Polyline, PolyVtx
+from ....items.block     import Block
+from ....items.block_pin import BlockPin
+from ....items.polyline  import Polyline, PolyVtx
 
-from ..cmd          import cmdExec, CmdAdd
-from ..cmd.polyline import CmdAddPolyVtx
+from ..cmd           import cmdExec, CmdAdd
+from ..cmd.block_pin import CmdAddBlockPin
+from ..cmd.polyline  import CmdAddPolyVtx
 
 
 from typing import TYPE_CHECKING
@@ -24,6 +27,17 @@ class DrawingSceneApiAddMixin:
         """Add an item to the scene."""
         cmd = CmdAdd(self, items, self.selectedItems() if undoable else [])
         cmdExec(self, cmd, undoable)
+
+    def addBlockPin(
+        self     : "DrawingScene",
+        parent   : Block,
+        pin      : BlockPin,
+        undoable : bool = False
+    ) -> BlockPin:
+        """Add a block pin to the scene."""
+        cmd = CmdAddBlockPin(parent, pin)
+        cmdExec(self, cmd, undoable)
+        return cmd.pin()
 
     def addPolyline(
         self     : "DrawingScene",

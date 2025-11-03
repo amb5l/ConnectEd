@@ -9,9 +9,6 @@ from ....items import EdgeLoc, clone
 from ....items.block     import Block
 from ....items.block_pin import BlockPin
 
-from ....scenes.drawing.cmd           import CmdAdd, CmdMove
-from ....scenes.drawing.cmd.block_pin import CmdMoveBlockPins
-
 from . import MoveItemsMixin,      \
               AddRemoveItemsMixin, \
               ItemsInteraction,    \
@@ -49,9 +46,7 @@ class EditPasteInteraction(
         self._restorePos()  # restore initial positions
         self.update(pos)    # apply final offset
         # add pasted items to scene
-        self._scene.undo_stack.push(CmdAdd(
-            self._scene, self._items, self._selection
-        ))
+        self._scene.addItems(self._items, undoable=True)
         return True
 
     def cancel(self : Self) -> None:
@@ -101,9 +96,7 @@ class EditMoveInteraction(
     def commit(self : Self, pos : QPointF) -> bool:
         self._restorePos()  # restore initial positions
         # apply final offset
-        self._scene.undo_stack.push(CmdMove(
-            self._scene, self._items, pos - self._ipos, self._slide
-        ))
+        self._scene.editMove(self._items, pos - self._ipos, self._slide, undoable=True)
         return True
 
     def cancel(self : Self) -> None:
@@ -152,12 +145,13 @@ class EditMoveBlockPinsInteraction(Interaction):
         self.update(pos, snap)
         if all(p.loc() == self._sloc[p] for p in self._pins):
             return True # no change so skip command push
-        self._scene.undo_stack.push(CmdMoveBlockPins(
+        self._scene.editMoveBlockPins(
             self._parent,
             self._pins,
             {p: p.loc() for p in self._pins},
-            self._sloc
-        ))
+            self._sloc,
+            undoable=True
+        )
         return True
 
     def cancel(self : Self) -> None:

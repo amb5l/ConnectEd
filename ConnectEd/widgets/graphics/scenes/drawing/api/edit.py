@@ -6,14 +6,19 @@ from ......core.xml import copy
 
 from .....dialogs.properties import PropertyState
 
-from ....items               import QuillPrefChange, AppearancePrefChange
-from ....items.mixin         import ItemMixin
+from ....items               import ItemType, EdgeLoc, \
+                                    QuillPrefChange, AppearancePrefChange
+from ....items.block         import Block
+from ....items.block_pin     import BlockPin
 from ....items.base_text     import BaseText
 from ....items.property_text import PropertyText
+from ....items.mixin         import ItemMixin
 
-from ..cmd import CmdDelete
-from ..cmd.edit import CmdEditText, CmdEditPropertyText, \
-                       CmdEditProperties, CmdEditAppearance
+from ..cmd           import cmdExec, CmdDelete, CmdMove
+from ..cmd.block_pin import CmdMoveBlockPins
+from ..cmd.edit      import CmdEditText, CmdEditPropertyText, \
+                            CmdEditProperties, CmdEditAppearance
+
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -21,9 +26,31 @@ if TYPE_CHECKING:
 
 
 class DrawingSceneApiEditMixin:
+    def editMove(
+        self     : "DrawingScene",
+        items    : list[ItemType],
+        offset   : QPointF,
+        slide    : bool = False,
+        undoable : bool = False
+    ) -> None:
+        cmd = CmdMove(self, items, offset, slide)
+        cmdExec(self, cmd, undoable)
+
+    def editMoveBlockPins(
+        self     : "DrawingScene",
+        parent   : Block,
+        pins     : list[BlockPin],
+        after    : dict[BlockPin, EdgeLoc],
+        before   : dict[BlockPin, EdgeLoc],
+        undoable : bool = False
+    ) -> None:
+        cmd = CmdMoveBlockPins(parent, pins, after, before)
+        cmdExec(self, cmd, undoable)
+
     def editCut(
-        self : "DrawingScene",
-        pos  : QPointF = QPointF(0, 0)
+        self     : "DrawingScene",
+        pos      : QPointF = QPointF(0, 0),
+        undoable : bool = False
     ) -> None:
         items = \
             [item for item in self.selectedItems() \
@@ -31,13 +58,14 @@ class DrawingSceneApiEditMixin:
                 and item.parentItem() is None]
         if items:
             copy(items, pos)
-            self.undo_stack.push(CmdDelete(self, items, self.selectedItems()))
+            cmd = CmdDelete(self, items, self.selectedItems())
+            cmdExec(self, cmd, undoable)
         else:
             logger().warning("No items selected to cut")
 
     def editCopy(
-        self : "DrawingScene",
-        pos  : QPointF = QPointF(0, 0)
+        self     : "DrawingScene",
+        pos      : QPointF = QPointF(0, 0)
     ) -> None:
         items = \
             [item for item in self.selectedItems() \
@@ -49,12 +77,16 @@ class DrawingSceneApiEditMixin:
             logger().warning("No items selected to copy")
 
     def editDelete(
-        self : "DrawingScene"
+        self     : "DrawingScene",
+        items    : list[ItemType] | None = None,
+        undoable : bool = False
     ) -> None:
         """Delete selected items from the scene."""
-        items = self._selectedTopItems()
+        if items is None:
+            items = self._selectedTopItems()
         if items:
-            self.undo_stack.push(CmdDelete(self, items, self.selectedItems()))
+            cmd = CmdDelete(self, items, self.selectedItems())
+            cmdExec(self, cmd, undoable)
         else:
             logger().warning("No items selected to delete")
 
@@ -68,31 +100,37 @@ class DrawingSceneApiEditMixin:
         self       : "DrawingScene",
         item       : BaseText,
         text       : str,
-        appearance : QuillPrefChange
+        appearance : QuillPrefChange,
+        undoable   : bool = False
     ) -> None:
-        self.undo_stack.push(CmdEditText(self, item, text, appearance))
+        cmd = CmdEditText(self, item, text, appearance)
+        cmdExec(self, cmd, undoable)
 
     def editPropertyText(
         self       : "DrawingScene",
         item       : PropertyText,
         name       : str,
         value      : str,
-        appearance : QuillPrefChange
+        appearance : QuillPrefChange,
+        undoable   : bool = False
     ) -> None:
-        self.undo_stack.push(CmdEditPropertyText(
-            self, item, name, value, appearance
-        ))
+        cmd = CmdEditPropertyText(self, item, name, value, appearance)
+        cmdExec(self, cmd, undoable)
 
     def editAppearance(
-        self    : "DrawingScene",
-        items   : list[ItemMixin],
-        changes : AppearancePrefChange
+        self     : "DrawingScene",
+        items    : list[ItemMixin],
+        changes  : AppearancePrefChange,
+        undoable : bool = False
     ) -> None:
-        self.undo_stack.push(CmdEditAppearance(self, items, changes))
+        cmd = CmdEditAppearance(self, items, changes)
+        cmdExec(self, cmd, undoable)
 
     def editProperties(
-        self    : "DrawingScene",
-        item    : ItemMixin,
-        changes : dict[str, PropertyState]
+        self     : "DrawingScene",
+        item     : ItemMixin,
+        changes  : dict[str, PropertyState],
+        undoable : bool = False
     ) -> None:
-        self.undo_stack.push(CmdEditProperties(self, item, changes))
+        cmd = CmdEditProperties(self, item, changes)
+        cmdExec(self, cmd, undoable)

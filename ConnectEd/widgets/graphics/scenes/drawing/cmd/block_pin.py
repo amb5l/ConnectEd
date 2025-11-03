@@ -24,6 +24,9 @@ class CmdBlockPinBase(CmdBase):
         self._parent = parent
         self._pin = pin
 
+    def pin(self : Self) -> BlockPin:
+        return self._pin
+
 
 class CmdBlockPinsBase(CmdBase):
     """Base class for all commands that work with multiple block pins."""
