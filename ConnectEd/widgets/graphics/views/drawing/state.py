@@ -42,10 +42,6 @@ from .interaction.place import PlacePortInteraction,         \
                                PlaceTextBlockInteraction,    \
                                PlaceConnInteraction
 
-from ...scenes.drawing.cmd.edit import CmdEditPortPin,     \
-                                       CmdEditText,        \
-                                       CmdEditPropertyText
-
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from . import DrawingView
@@ -473,9 +469,7 @@ class DrawingViewStateEditPort(DrawingViewStateBase):
                 name = dialog.getName()
                 direction = dialog.getDirection()
                 range = dialog.getRange()
-                self.scene.undo_stack.push(CmdEditPortPin(
-                    self.scene, item, name, direction, range
-                ))
+                self.scene.editPortPin(item, name, direction, range, undoable=True)
         else:
             logger().warning("No port selected")
         self.view.state.go(self.view.stateIdle)
@@ -497,9 +491,7 @@ class DrawingViewStateEditBlockPin(DrawingViewStateBase):
                 name = dialog.getName()
                 direction = dialog.getDirection()
                 range = dialog.getRange()
-                self.scene.undo_stack.push(CmdEditPortPin(
-                    self.scene, item, name, direction, range
-                ))
+                self.scene.editPortPin(item, name, direction, range, undoable=True)
         else:
             logger().warning("No block pin selected")
         self.view.state.go(self.view.stateIdle)
@@ -519,9 +511,7 @@ class DrawingViewStateEditText(DrawingViewStateBase):
             dialog = TextDialog(item, self.view)
             if dialog.exec():
                 text, appearance = dialog.getChoice()
-                self.scene.undo_stack.push(CmdEditText(
-                    self.scene, item, text, appearance
-                ))
+                self.scene.editText(item, text, appearance, undoable=True)
         else:
             logger().warning("No text selected")
         self.view.state.go(self.view.stateIdle)
@@ -544,9 +534,9 @@ class DrawingViewStateEditPropertyText(DrawingViewStateBase):
                 value = dialog.getValue()
                 display = dialog.getDisplay()
                 appearance = dialog.getAppearanceChange()
-                self.scene.undo_stack.push(CmdEditPropertyText(
-                    self.scene, item, name, value, display, appearance
-                ))
+                self.scene.editPropertyText(
+                    item, name, value, display, appearance, undoable=True
+                )
         else:
             logger().warning("No property text selected")
         self.view.state.go(self.view.stateIdle)

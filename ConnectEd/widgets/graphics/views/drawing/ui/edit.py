@@ -9,7 +9,6 @@ from ..interaction.edit import EditMoveInteraction
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from ....scenes.drawing     import DrawingScene
     from ....items              import ItemMixin
     from ....items.anchor_point import AnchorPoint
     from ....items.grip         import ResizeGrip
@@ -19,10 +18,10 @@ if TYPE_CHECKING:
 
 class DrawingViewUiEditMixin:
     def editUndo(self : "DrawingViewUi") -> None:
-        self._view.scene().undo()
+        self._scene.undo()
 
     def editRedo(self : "DrawingViewUi") -> None:
-        self._view.scene().redo()
+        self._scene.redo()
 
     def editRepeat(self : "DrawingViewUi") -> None:
         raise NotImplementedError("editRepeat not implemented")
@@ -31,23 +30,22 @@ class DrawingViewUiEditMixin:
         if self._view.interaction:
             self._view.interaction.cancel()
         self._view.interaction = None
-        self._view.scene().clearSelection()
+        self._scene.clearSelection()
         self._view.state.go(self._view.stateIdle)
 
     def editCut(self : "DrawingViewUi") -> None:
-        self._view.scene().editCut(
+        self._scene.editCut(
             self._snap(self._view.mouse.current.logical), undoable=True
         )
 
     def editCopy(self : "DrawingViewUi") -> None:
-        self._view.scene().editCopy(self._snap(self._view.mouse.current.logical))
+        self._scene.editCopy(self._snap(self._view.mouse.current.logical))
 
     def editPaste(self : "DrawingViewUi") -> None:
         self._view.state.go(self._view.stateEditPaste)
 
     def editDelete(self : "DrawingViewUi") -> None:
-        scene : "DrawingScene" = self._view.scene()
-        scene.editDelete(undoable=True)
+        self._scene.editDelete(undoable=True)
 
     def editDuplicate(self : "DrawingViewUi") -> None:
         self._view.state.go(self._view.stateEditDuplicate)
@@ -56,7 +54,7 @@ class DrawingViewUiEditMixin:
         self._view.state.go(self._view.stateEditSelectArea1)
 
     def editSelectAll(self : "DrawingViewUi") -> None:
-        self._view.scene().editSelectAll()
+        self._scene.editSelectAll()
 
     def editSlide(
         self  : "DrawingViewUi",
@@ -77,11 +75,10 @@ class DrawingViewUiEditMixin:
         grip : "ResizeGrip",
         pos  : QPoint | QPointF | None = None
     ) -> None:
-        scene : "DrawingScene" = self._view.scene()
         pos = self._view.mapToScene(pos) if isinstance(pos, QPoint) else pos
         if self._view.interaction:
             self._view.interaction.cancel()
-        self._view.interaction = EditMoveInteraction(scene, [grip], pos)
+        self._view.interaction = EditMoveInteraction(self._view, [grip], pos)
         self._view.state.go(self._view.stateEditResize)
 
     def editRotateCW(
@@ -93,9 +90,8 @@ class DrawingViewUiEditMixin:
             if isinstance(self._view.interaction, RotateItemMixin):
                 self._view.interaction.rotateCW()
         else:
-            scene : "DrawingScene" = self._view.scene()
             if items is None:
-                items = scene.selectedItems()
+                items = self._scene.selectedItems()
             pos = self._view.mapToScene(pos) if isinstance(pos, QPoint) else pos
             # TODO push command
 
@@ -108,16 +104,13 @@ class DrawingViewUiEditMixin:
             if isinstance(self._view.interaction, RotateItemMixin):
                 self._view.interaction.rotateCCW()
         else:
-            scene : "DrawingScene" = self._view.scene()
             if items is None:
-                items = scene.selectedItems()
+                items = self._scene.selectedItems()
             pos = self._view.mapToScene(pos) if isinstance(pos, QPoint) else pos
             # TODO push command
 
     def editAssignOrigin(self : "DrawingViewUi", ap : "AnchorPoint") -> None:
-        from ....scenes.drawing.cmd.edit import CmdEditOrigin
-        scene  : "DrawingScene" = self._view.scene()
-        scene.undo_stack.push(CmdEditOrigin(scene, ap))
+        self._scene.editAssignOrigin(ap, undoable=True)
 
     def editAppearance(
         self : "DrawingViewUi",
@@ -133,7 +126,7 @@ class DrawingViewUiEditMixin:
 
     def editQuery(self : "DrawingViewUi", vpos : QPoint | None = None) -> None:
         if vpos is None:
-            initial_items = self._view.scene().selectedItems()
+            initial_items = self._scene.selectedItems()
             items = []
             # add (unselected) children
             def _addChildren(item : QGraphicsItem) -> None:
@@ -190,22 +183,18 @@ class DrawingViewUiEditMixin:
         item   : "SymbolPin",
         enable : bool
     ):
-        from ....scenes.drawing.cmd.edit import CmdEditSymbolPinDot
         if enable == item.dot:
             return
-        scene : "DrawingScene" = self._view.scene()
-        scene.undo_stack.push(CmdEditSymbolPinDot(scene, item, enable))
+        self._scene.editSymbolPinDot(item, enable, undoable=True)
 
     def editSymbolPinClock(
         self   : "DrawingViewUi",
         item   : "SymbolPin",
         enable : bool
     ):
-        from ....scenes.drawing.cmd.edit import CmdEditSymbolPinClock
         if enable == item.clock:
             return
-        scene : "DrawingScene" = self._view.scene()
-        scene.undo_stack.push(CmdEditSymbolPinClock(scene, item, enable))
+        self._scene.editSymbolPinClock(item, enable, undoable=True)
 
     def editText(self : "DrawingViewUi") -> None:
         self._view.state.go(self._view.stateEditText)
@@ -219,9 +208,8 @@ class DrawingViewUiEditMixin:
         pos   : QPoint | QPointF | None = None,
         slide : bool = False
     ) -> None:
-        scene : "DrawingScene" = self._view.scene()
         if items is None:
-            items = scene.selectedItems()
+            items = self._scene.selectedItems()
         pos = self._view.mapToScene(pos) if isinstance(pos, QPoint) else pos
         # exclude: non-items and child items
         for item in items:
@@ -231,7 +219,7 @@ class DrawingViewUiEditMixin:
         # slide/move
         if self._view.interaction:
             self._view.interaction.cancel()
-        self._view.interaction = EditMoveInteraction(scene, items, pos, slide)
+        self._view.interaction = EditMoveInteraction(self._view, items, pos, slide)
         self._view.state.go(
             self._view.stateEditSlide if slide else self._view.stateEditMove
         )

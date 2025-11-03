@@ -8,6 +8,7 @@ from .place import DrawingViewUiPlaceMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
+    from ....scenes.drawing import DrawingScene
     from .. import DrawingView
 
 
@@ -16,10 +17,12 @@ class DrawingViewUi(
     DrawingViewUiViewMixin,
     DrawingViewUiPlaceMixin
 ):
-    _view : "DrawingView"
+    _view  : "DrawingView"
+    _scene : "DrawingScene"
 
     def __init__(self : Self, view : "DrawingView") -> None:
         self._view = view
+        self._scene = view.scene()
 
     def _snap(self : Self, pos : QPointF | None) -> QPointF:
         return self._view._snap(pos)

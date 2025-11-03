@@ -7,16 +7,24 @@ from ......core.xml import copy
 from .....dialogs.properties import PropertyState
 
 from ....items               import ItemType, EdgeLoc, \
+                                    SignalDirection, VectorRange, \
                                     QuillPrefChange, AppearancePrefChange
+
 from ....items.block         import Block
+from ....items.port_pin      import PortPinMixin
 from ....items.block_pin     import BlockPin
+from ....items.symbol_pin    import SymbolPin
 from ....items.base_text     import BaseText
 from ....items.property_text import PropertyText
+from ....items.anchor_point  import AnchorPoint
 from ....items.mixin         import ItemMixin
 
 from ..cmd           import cmdExec, CmdDelete, CmdMove
 from ..cmd.block_pin import CmdMoveBlockPins
-from ..cmd.edit      import CmdEditText, CmdEditPropertyText, \
+from ..cmd.edit      import CmdEditPortPin, \
+                            CmdEditSymbolPinDot, CmdEditSymbolPinClock, \
+                            CmdEditOrigin, \
+                            CmdEditText, CmdEditPropertyText, \
                             CmdEditProperties, CmdEditAppearance
 
 
@@ -96,6 +104,43 @@ class DrawingSceneApiEditMixin:
     def editSelectAll(self : "DrawingScene") -> None:
         raise NotImplementedError("Not implemented yet")
 
+    def editPortPin(
+        self      : "DrawingScene",
+        item      : PortPinMixin,
+        name      : str,
+        direction : SignalDirection,
+        range     : VectorRange,
+        undoable  : bool = False
+    ) -> None:
+        cmd = CmdEditPortPin(self, item, name, direction, range)
+        cmdExec(self, cmd, undoable)
+
+    def editSymbolPinDot(
+        self     : "DrawingScene",
+        item     : SymbolPin,
+        enable   : bool,
+        undoable : bool = False
+    ) -> None:
+        cmd = CmdEditSymbolPinDot(self, item, enable)
+        cmdExec(self, cmd, undoable)
+
+    def editSymbolPinClock(
+        self     : "DrawingScene",
+        item     : SymbolPin,
+        enable   : bool,
+        undoable : bool = False
+    ) -> None:
+        cmd = CmdEditSymbolPinClock(self, item, enable)
+        cmdExec(self, cmd, undoable)
+
+    def editAssignOrigin(
+        self     : "DrawingScene",
+        ap       : AnchorPoint,
+        undoable : bool = False
+    ) -> None:
+        cmd = CmdEditOrigin(self, ap)
+        cmdExec(self, cmd, undoable)
+
     def editText(
         self       : "DrawingScene",
         item       : BaseText,
@@ -134,3 +179,4 @@ class DrawingSceneApiEditMixin:
     ) -> None:
         cmd = CmdEditProperties(self, item, changes)
         cmdExec(self, cmd, undoable)
+

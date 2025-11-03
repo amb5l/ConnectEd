@@ -11,19 +11,17 @@ if TYPE_CHECKING:
 
 class DrawingViewUiViewMixin:
     def viewZoomAll(self : "DrawingViewUi") -> None:
-        scene : "DrawingScene" = self._view.scene()
-        scene.updateSceneRect()
-        if scene.items():
+        self._scene.updateSceneRect()
+        if self._scene.items():
             rect = self._allItemsRect()
-        elif hasattr(scene, 'sheet'):
-            rect = scene.sheet.rect
+        elif hasattr(self._scene, 'sheet'):
+            rect = self._scene.sheet.rect
         else:
             rect = QRectF(QPointF(0, 0), settings().get("defaults/extents"))
         self._view._zoomRect(rect)
 
     def viewZoomSheet(self : "DrawingViewUi") -> None:
-        scene : "DiagramScene" = self._view.scene()
-        rect = scene.sheet.rect
+        rect = self._scene.sheet.rect
         self._view._zoomRect(rect)
 
     def viewZoomArea(self : "DrawingViewUi") -> None:
