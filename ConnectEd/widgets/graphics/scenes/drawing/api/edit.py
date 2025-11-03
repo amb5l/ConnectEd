@@ -58,7 +58,7 @@ class DrawingSceneApiEditMixin:
                 and item.parentItem() is None]
         if items:
             copy(items, pos)
-            cmd = CmdDelete(self, items, self.selectedItems())
+            cmd = CmdDelete(self, items)
             cmdExec(self, cmd, undoable)
         else:
             logger().warning("No items selected to cut")
@@ -85,7 +85,7 @@ class DrawingSceneApiEditMixin:
         if items is None:
             items = self._selectedTopItems()
         if items:
-            cmd = CmdDelete(self, items, self.selectedItems())
+            cmd = CmdDelete(self, items)
             cmdExec(self, cmd, undoable)
         else:
             logger().warning("No items selected to delete")

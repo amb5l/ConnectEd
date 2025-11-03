@@ -144,14 +144,10 @@ class CmdAdd(
 ):
     """Command to add scene items (paste, duplicate, etc.)."""
 
-    # class attributes
-    _SELECTION = True  # preserve selection set
-
     def __init__(
         self      : Self,
         scene     : "DrawingScene",
-        items     : list[ItemType],
-        selection : list[ItemType]
+        items     : list[ItemType]
     ):
         super().__init__(scene, items)      # record scene, items
 
@@ -171,8 +167,7 @@ class CmdDelete(
     def __init__(
         self      : Self,
         scene     : "DrawingScene",
-        items     : list[ItemType],
-        selection : list[ItemType]
+        items     : list[ItemType]
     ):
         super().__init__(scene, items)      # record scene, items
 
@@ -181,7 +176,7 @@ class CmdDelete(
         self._removeFromScene()
 
     def undo(self : Self) -> None:
-        self._addToScene()
+        self._addToScene(select=True)
 
 
 class CmdMove(

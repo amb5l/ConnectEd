@@ -25,7 +25,7 @@ class DrawingSceneApiAddMixin:
         undoable : bool = False
     ) -> None:
         """Add an item to the scene."""
-        cmd = CmdAdd(self, items, self.selectedItems() if undoable else [])
+        cmd = CmdAdd(self, items)
         cmdExec(self, cmd, undoable)
 
     def addBlockPin(
