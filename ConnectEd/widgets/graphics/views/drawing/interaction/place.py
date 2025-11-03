@@ -56,7 +56,6 @@ class PlaceBaseInteraction(ItemInteraction):  # _view, _scene, _item, valid
 
     def cancel(self : Self) -> None:
         self._scene.removeItem(self._item)
-        self._restoreSelection()
 
 
 class PlaceBase1PosInteraction(PlaceBaseInteraction):

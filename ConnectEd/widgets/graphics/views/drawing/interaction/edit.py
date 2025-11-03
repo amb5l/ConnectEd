@@ -56,7 +56,6 @@ class EditPasteInteraction(
 
     def cancel(self : Self) -> None:
         self._removeFromScene()   # remove preview items
-        self._restoreSelection()  # restore original selection
 
 
 class EditDuplicateInteraction(EditPasteInteraction):
