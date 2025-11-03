@@ -94,6 +94,11 @@ class APGrip(Grip):
         ap : "AnchorPoint" = self.parentItem()
         item = ap.parentItem()
         if not isinstance(item, ItemOriginMixin):
+            # Item doesn't have an origin point, just use regular path
+            self._path_name = self._PATH_NAME
+            scene : "DrawingScene" = self.scene()
+            if scene:
+                self.setPath(scene.paths["Grip"][self._path_name])
             return
         if item.getOriginAPName() == ap.name():
             self._path_name = self._ORIGIN_PATH_NAME

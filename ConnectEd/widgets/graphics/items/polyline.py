@@ -203,11 +203,14 @@ class Polyline(
         self._sel_mode = 1  # Start in vertex-edit mode for interactive creation
 
     def onSceneChange(self : Self, scene : "DrawingScene | None") -> None:
-        """When added to scene, ensure all vertices and segments are initialized."""
+        """Initialize vertices, segments, and APs on scene change."""
         for vtx in self._vertices:
             vtx.onSceneChange(scene)
         for seg in self._segments:
             seg.onSceneChange(scene)
+        if hasattr(self, '_anchor_points'):
+            for ap in self._anchor_points.values():
+                ap._grip.onSceneChange(scene)
 
     def onSelectionChange(self : Self, selected : bool) -> None:
         if not selected:
@@ -369,3 +372,5 @@ class Polyline(
         if self._closed:
             path.closeSubpath()
         self.setPath(path)
+        if hasattr(self, '_anchor_points'):
+            self.updateAnchorPoints()
