@@ -7,6 +7,8 @@ from .....core.xml import paste
 
 from ....menu import Menu
 
+from ...items.grip import Grip
+
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from . import DrawingView
@@ -29,36 +31,41 @@ class DrawingViewMenuMixin:
                 menu.addSeparator()
         if self.interaction is None:
             # menu for item/items
-            # 1. get all items at position
             items = self._itemsAt(spos)
-            # 2. if any is selected, use selection set instead
-            if any(item.isSelected() for item in items):
-                items = self.scene().selectedItems()  # selection set
-            # 3. narrow down to items that support context menus
-            items = [item for item in items if isinstance(item, ItemMenuMixin)]
-            if len(items) == 0:
-                return
-            if len(items) == 1:
-                # item specific actions/submenus
-                _extendMenu(items[0].ctxMenuItems(self))
-            else:
-                # multiple items
-                pass
-            # common actions: slide/move/rotate
-            menu.addAction("Slide", lambda: self.ui.editSlide(items, spos))
-            menu.addAction("Move", lambda: self.ui.editMove(items, spos))
-            menu.addAction("Rotate CW", lambda: self.ui.editRotateCW(items, spos))
-            menu.addAction("Rotate CCW", lambda: self.ui.editRotateCCW(items, spos))
-            menu.addSeparator()
-            # common actions: clipboard/delete/duplicate
-            paste_items, _ = paste()
-            menu.addAction("Cut", lambda: self.ui.editCut())
-            menu.addAction("Copy", lambda: self.ui.editCopy())
-            if paste_items:
-                menu.addAction("Paste", lambda: self.ui.editPaste())
-            menu.addAction("Delete", lambda: self.ui.editDelete())
-            menu.addAction("Duplicate", lambda: self.ui.editDuplicate())
-            menu.addSeparator()
+            if items:
+                # preference: top grip, selection set, top item
+                grips = [item for item in items if isinstance(item, Grip)]
+                if grips:
+                    items = [grips[0]] # top grip
+                elif any(item.isSelected() for item in items):
+                    items = self.scene().selectedItems()  # selection set
+                else:
+                    items = [items[0]] # top item
+                # narrow down to items that support context menus
+                items = [item for item in items if isinstance(item, ItemMenuMixin)]
+                if len(items) == 0:
+                    return
+                if len(items) == 1:
+                    # item specific actions/submenus
+                    _extendMenu(items[0].ctxMenuItems(self))
+                else:
+                    # multiple items
+                    pass
+                # common actions: slide/move/rotate
+                menu.addAction("Slide", lambda: self.ui.editSlide(items, spos))
+                menu.addAction("Move", lambda: self.ui.editMove(items, spos))
+                menu.addAction("Rotate CW", lambda: self.ui.editRotateCW(items, spos))
+                menu.addAction("Rotate CCW", lambda: self.ui.editRotateCCW(items, spos))
+                menu.addSeparator()
+                # common actions: clipboard/delete/duplicate
+                paste_items, _ = paste()
+                menu.addAction("Cut", lambda: self.ui.editCut())
+                menu.addAction("Copy", lambda: self.ui.editCopy())
+                if paste_items:
+                    menu.addAction("Paste", lambda: self.ui.editPaste())
+                menu.addAction("Delete", lambda: self.ui.editDelete())
+                menu.addAction("Duplicate", lambda: self.ui.editDuplicate())
+                menu.addSeparator()
         else:
             # menu for interaction
             _extendMenu(self.interaction.ctxMenuItems(spos))

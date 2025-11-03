@@ -8,6 +8,7 @@ from ....app import settings
 
 from .mixin.origin import ItemOriginMixin
 from .mixin.change import ItemChangeMixin
+from .mixin.menu   import ItemMenuMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -19,6 +20,7 @@ if TYPE_CHECKING:
 
 class Grip(
     ItemChangeMixin,
+    ItemMenuMixin,
     QGraphicsPathItem
 ):
     # class attributes

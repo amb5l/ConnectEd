@@ -220,8 +220,8 @@ class PlacePolylineInteraction(PlaceBase1PosInteraction):
         items = []
         items.append(self._view.action("Add Vertex", lambda: self.commit(pos)))
         items.append(self._view.action("Finish", self.cancel))
-        a = self._item.lastSegment().sweep()
         items.append(self._view.separator())
+        a = self._item.lastSegment().sweep()
         items.append(self._view.action("Line", self._toLine, a is None))
         a_text = f" ({a}°)" if a is not None else ""
         items.append(self._view.action(f"Arc{a_text}...", self._toArc, a is not None))

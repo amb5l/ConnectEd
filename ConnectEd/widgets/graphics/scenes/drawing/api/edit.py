@@ -14,7 +14,7 @@ from ....items.block         import Block
 from ....items.port_pin      import PortPinMixin
 from ....items.block_pin     import BlockPin
 from ....items.symbol_pin    import SymbolPin
-from ....items.polyline      import Polyline
+from ....items.polyline      import Polyline, PolySeg
 from ....items.base_text     import BaseText
 from ....items.property_text import PropertyText
 from ....items.anchor_point  import AnchorPoint
@@ -25,7 +25,7 @@ from ..cmd.block_pin import CmdMoveBlockPins
 from ..cmd.edit      import CmdEditPortPin, \
                             CmdEditSymbolPinDot, CmdEditSymbolPinClock, \
                             CmdEditOrigin, \
-                            CmdEditPolylineClosed, \
+                            CmdEditPolylineClosed, CmdEditPolySeg, \
                             CmdEditText, CmdEditPropertyText, \
                             CmdEditProperties, CmdEditAppearance
 
@@ -151,6 +151,15 @@ class DrawingSceneApiEditMixin:
         undoable : bool = False
     ) -> None:
         cmd = CmdEditPolylineClosed(self, polyline, closed, sweep)
+        cmdExec(self, cmd, undoable)
+
+    def editPolySeg(
+        self     : "DrawingScene",
+        seg      : PolySeg,
+        sweep    : float | None,
+        undoable : bool = False
+    ) -> None:
+        cmd = CmdEditPolySeg(self, seg, sweep)
         cmdExec(self, cmd, undoable)
 
     def editText(

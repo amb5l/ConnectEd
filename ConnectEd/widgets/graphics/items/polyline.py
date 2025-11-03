@@ -2,12 +2,14 @@ from typing import Self, overload
 from math import sqrt, degrees, radians, sin, cos, atan2
 
 from PyQt6.QtCore    import Qt, QPointF, QRectF, QSizeF
-from PyQt6.QtWidgets import QGraphicsPathItem
-from PyQt6.QtGui     import QPainterPath, QColor
+from PyQt6.QtWidgets import QGraphicsPathItem, QMenu
+from PyQt6.QtGui     import QPainterPath, QAction
 
 from ....app import logger
 
 from ....core.utils import sign
+
+from ...dialogs.arc import ArcDialog
 
 from .base_rect import BaseRectangleMixin
 from .grip      import Grip
@@ -25,6 +27,7 @@ from .mixin.menu   import ItemMenuMixin
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ..scenes.drawing import DrawingScene
+    from ..views.drawing import DrawingView
 
 
 class PolyVtx(Grip):
@@ -56,6 +59,10 @@ class PolyVtx(Grip):
         self.setPos(self.pos() + delta)
         parent : "Polyline" = self.parentItem()
         parent._updatePath()
+
+    def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
+        items = []
+        return items
 
 
 class PolySeg(Grip):
@@ -163,6 +170,28 @@ class PolySeg(Grip):
     def arcParams(self : Self) -> tuple[QRectF, float, float]:
         return self._rect, self._start, self._sweep
 
+    def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
+        print(f"PolySeg.ctxMenuItems: view = {view}")
+        items = []
+        a = self.sweep()
+        items.append(view.action("Line", self._toLine, a is None))
+        a_text = f" ({a}°)" if a is not None else ""
+        items.append(view.action(
+            f"Arc{a_text}...", lambda: self._toArc(view), a is not None
+        ))
+        return items
+
+    def _toLine(self : Self) -> None:
+        if self.sweep() is None:
+            return
+        scene : "DrawingScene" = self.scene()
+        scene.editPolySeg(self, None, undoable=True)
+
+    def _toArc(self : Self, view : "DrawingView") -> None:
+        dialog = ArcDialog(self.sweep(), view)
+        if dialog.exec():
+            scene : "DrawingScene" = self.scene()
+            scene.editPolySeg(self, dialog.getAngle(), undoable=True)
 
 class Polyline(
     ItemMixin,
@@ -338,6 +367,10 @@ class Polyline(
 
     def moveAnchorPointBy(self : Self, name : str, delta : QPointF) -> None:
         BaseRectangleMixin.moveAnchorPointBy(self, name, delta)
+
+    def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
+        items = []
+        return items
 
     def _buildSegments(self : Self) -> None:
         """Build segments from vertices. Default to lines not arcs."""

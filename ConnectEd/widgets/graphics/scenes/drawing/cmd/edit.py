@@ -13,7 +13,7 @@ from ....items.mixin        import ItemMixin
 from ....items.mixin.origin import ItemOriginMixin
 
 from ....items.anchor_point  import AnchorPoint
-from ....items.polyline      import Polyline
+from ....items.polyline      import Polyline, PolySeg
 from ....items.base_text     import BaseText
 from ....items.property_text import PropertyText, PropertyDisplay
 
@@ -142,6 +142,32 @@ class CmdEditPolylineClosed(CmdSceneItem):
             self._item.close(self._sweep)
         else:
             self._item.open()
+
+
+class CmdEditPolySeg(CmdSceneItem):
+    _item   : PolySeg
+    _before : float | None
+    _after  : float | None
+
+    def __init__(
+        self  : Self,
+        scene : "DrawingScene",
+        seg   : PolySeg,
+        sweep : float | None
+    ):
+        super().__init__(scene, seg)
+        self._before = seg.sweep()
+        self._after = sweep
+
+    def redo(self : Self) -> None:
+        self._item.setSweep(self._after)
+        parent : Polyline = self._item.parentItem()
+        parent._updatePath()
+
+    def undo(self : Self) -> None:
+        self._item.setSweep(self._before)
+        parent : Polyline = self._item.parentItem()
+        parent._updatePath()
 
 
 class CmdEditText(CmdSceneItem):
