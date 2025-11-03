@@ -109,15 +109,15 @@ class NavigatorApiMixin:
     def newDrawingWindow(self : "Navigator", node : "DesignDbNode") -> None:
         self._newDrawingWindow(node)
 
-    def editProperties(self : "Navigator", node : "DiagramNode") -> None:
-        from ....core.db import DiagramNode
-        if not typeCheck(node, DiagramNode):
+    def editProperties(self : "Navigator", node : "DesignDbNode") -> None:
+        from ....core.db import DesignDbNode
+        if not typeCheck(node, DesignDbNode):
             return
         self._spreadsheet(node)
 
-    def setRoot(self : "Navigator", node : "DiagramNode") -> None:
-        from ....core.db import DiagramNode
-        if not typeCheck(node, DiagramNode):
+    def setRoot(self : "Navigator", node : "DesignDbNode") -> None:
+        from ....core.db import DesignDbNode
+        if not typeCheck(node, DesignDbNode):
             return
         node.setRoot()
 

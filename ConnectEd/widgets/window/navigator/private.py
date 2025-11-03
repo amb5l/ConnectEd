@@ -4,6 +4,9 @@ from ....app import logger, settings, model, window
 
 from ....core.utils import typeCheck
 
+from ....widgets.graphics.items.anchor_point import AnchorPoint
+from ....widgets.graphics.items.tether_text  import Tether
+
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ....core.db import Node, DrawingNode, SymbolNode, \
@@ -138,7 +141,7 @@ class NavigatorPrivateMixin:
         if result == dialog.DialogCode.Accepted:
             selected_files = dialog.selectedFiles()
             if len(selected_files) > 1:
-                unexpected_files = [f for f in selected_files[1:]]
+                unexpected_files = list(selected_files[1:])
                 logger().warning(f"Unexpected files: {unexpected_files}")
             path = selected_files[0]
             node.save(path)
@@ -146,25 +149,3 @@ class NavigatorPrivateMixin:
     def _close(self : "Navigator", node : "DbNode") -> None:
         # TODO offer to save if modified
         model().close(node)
-
-    def _updateWindowTitles(self : "Navigator", node : "DrawingNode") -> None:
-        from ....core.db import DrawingWindowNode, SpreadsheetWindowNode
-        if node.rowCount() == 0:
-            return
-        drawing_window_nodes : list[DrawingWindowNode] = []
-        spreadsheet_window_nodes : list[SpreadsheetWindowNode] = []
-        for row in range(node.rowCount()):
-            child = node.child(row)
-            if isinstance(child, DrawingWindowNode):
-                drawing_window_nodes.append(child)
-            elif isinstance(child, SpreadsheetWindowNode):
-                spreadsheet_window_nodes.append(child)
-        title = f"{node.dbNode().text()}:{node.text()}"
-        for i, dn in enumerate(drawing_window_nodes):
-            suffix = f" ({i + 1})" if len(drawing_window_nodes) > 1 else ""
-            dn.setText("Drawing Editor" + suffix)
-            dn.setWindowTitle(title + " - Drawing Editor" + suffix)
-        for i, sn in enumerate(spreadsheet_window_nodes):
-            suffix = f" ({i + 1})" if len(spreadsheet_window_nodes) > 1 else ""
-            sn.setText("Properties Editor" + suffix)
-            sn.setWindowTitle(title + " - Properties Editor" + suffix)

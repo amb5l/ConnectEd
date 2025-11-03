@@ -91,8 +91,8 @@ class LibraryDbContainer(Container):
 class DrawingNode(Node):
     @classmethod
     def sceneClass(cls):
-        from ..widgets.graphics.scenes.symbol import SymbolScene
-        return SymbolScene
+        from ..widgets.graphics.scenes.drawing import DrawingScene
+        return DrawingScene
 
     _scene : "DrawingScene | None"
 
