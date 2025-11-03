@@ -5,7 +5,8 @@ from PyQt6.QtGui  import QEnterEvent, QMouseEvent, QWheelEvent, QCursor
 
 from .....app import logger, settings, window
 
-from ...items.grip import Grip
+from ...items.grip     import Grip
+from ...items.polyline import Polyline
 
 from .defs import DrawingViewMouseButtonState as MouseButtonState
 
@@ -94,6 +95,8 @@ class DrawingViewMouseMixin:
                     if not items[0].isSelected():
                         self.scene().clearSelection()
                         items[0].setSelected(True)
+                    elif isinstance(items[0], Polyline):
+                        items[0].cycleSelMode()
             else:
                 self.scene().clearSelection()
         if event.buttons() & qmb.LeftButton:

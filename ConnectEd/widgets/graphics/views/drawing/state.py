@@ -26,7 +26,7 @@ from ...items.symbol_pin    import SymbolPin
 from ...scenes.drawing import DrawingScene
 
 from .interaction       import Interaction
-from .interaction.edit import  EditMoveInteraction,          \
+from .interaction.edit  import EditMoveInteraction,          \
                                EditMoveBlockPinsInteraction, \
                                EditPasteInteraction,         \
                                EditDuplicateInteraction

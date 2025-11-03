@@ -202,6 +202,13 @@ class Polyline(
         self._updatePath()
         self._sel_mode = 1  # Start in vertex-edit mode for interactive creation
 
+    def onSceneChange(self : Self, scene : "DrawingScene | None") -> None:
+        """When added to scene, ensure all vertices and segments are initialized."""
+        for vtx in self._vertices:
+            vtx.onSceneChange(scene)
+        for seg in self._segments:
+            seg.onSceneChange(scene)
+
     def onSelectionChange(self : Self, selected : bool) -> None:
         if not selected:
             self._sel_mode = 0
@@ -211,6 +218,11 @@ class Polyline(
 
     def setSelMode(self : Self, mode : int) -> None:
         self._sel_mode = mode
+        scene : "DrawingScene" = self.scene()
+        scene.updateGrips()
+
+    def cycleSelMode(self : Self) -> None:
+        self.setSelMode((self._sel_mode + 1) % 2)
 
     def vertexCount(self : Self) -> int:
         return len(self._vertices)

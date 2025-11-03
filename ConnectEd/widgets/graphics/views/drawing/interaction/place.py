@@ -188,7 +188,9 @@ class PlacePolylineInteraction(PlaceBase1PosInteraction):
             return False  # continue interaction
         if self._item.vertexCount() == 2:
             # Add polyline to scene when 2nd vertex is committed
+            sel_mode = self._item.selMode()  # Save selection mode
             self._scene.addItems([self._item], undoable=True)
+            self._item.setSelMode(sel_mode)  # Restore selection mode
             self._item.addVertex(pos)  # add WIP vertex
             return False  # continue interaction
         # Handle closing the polyline
