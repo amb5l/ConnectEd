@@ -1,15 +1,14 @@
 from typing import Self, overload
-from math import sqrt, degrees, radians, sin, cos, atan2
 
-from PyQt6.QtCore    import Qt, QPointF, QRectF, QSizeF, QLineF
+from PyQt6.QtCore    import QPointF, QRectF
 from PyQt6.QtWidgets import QGraphicsPathItem, QMenu
-from PyQt6.QtGui     import QPainterPath, QAction
+from PyQt6.QtGui     import QAction
 
 from ....app import logger
 
-from ....core.utils import sign
-
 from ...dialogs.arc import ArcDialog
+
+from ..painter_path import PainterPath
 
 from .base_rect import BaseRectangleMixin
 from .grip      import Grip
@@ -58,7 +57,7 @@ class PolyVtx(Grip):
     def moveBy(self : Self, delta : QPointF) -> None:
         self.setPos(self.pos() + delta)
         parent : "Polyline" = self.parentItem()
-        parent._updatePath()
+        parent.updatePath()
 
     def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
         items = []
@@ -72,8 +71,6 @@ class PolySeg(Grip):
     _v1    : PolyVtx        # start vertex
     _v2    : PolyVtx        # end vertex
     _sweep : float  | None  # arc sweep angle (-180..180), +ve = CCW/RHS, None for line
-    _start : float  | None  # calculated arc start angle, None for line
-    _rect  : QRectF | None  # calculated arc rectangle, None for line
 
     def __init__(
         self   : Self,
@@ -86,7 +83,6 @@ class PolySeg(Grip):
         self._v1 = v1
         self._v2 = v2
         self._sweep = sweep
-        self.refresh()
 
     def onSceneChange(self : Self, scene : "DrawingScene | None") -> None:
         """Override to set path and visibility."""
@@ -99,76 +95,18 @@ class PolySeg(Grip):
 
     def setV1(self : Self, v1 : PolyVtx) -> None:
         self._v1 = v1
-        self.refresh()
 
     def v2(self : Self) -> PolyVtx:
         return self._v2
 
     def setV2(self : Self, v2 : PolyVtx) -> None:
         self._v2 = v2
-        self.refresh()
 
     def sweep(self : Self) -> float | None:
-        """Get arc sweep angle in degrees: None = line, >0 = ccw arc, <0 = cw arc."""
         return self._sweep
 
     def setSweep(self : Self, angle : float | None) -> None:
-        """Set arc sweep angle in degrees: None = line, >0 = ccw arc, <0 = cw arc."""
         self._sweep = angle
-        self.refresh()
-
-    def refresh(self : Self) -> None:
-        # vertices
-        x1 = self._v1.x()
-        y1 = self._v1.y()
-        x2 = self._v2.x()
-        y2 = self._v2.y()
-        # chord vector
-        dx = x2 - x1
-        dy = y2 - y1
-        # set rotation to match chord angle
-        self.setRotation(degrees(atan2(dy, dx)))
-        # chord midpoint
-        mx = (x1 + x2) / 2
-        my = (y1 + y2) / 2
-        # handle line and arc cases
-        if self._sweep is None:  # line case
-            self.setPos(mx, my)
-            self._rect = None
-            self._start = None
-        else:  # arc case
-            # clamp sweep angle to -180..180
-            self._sweep = max(-180, min(180, self._sweep))
-            # chord length
-            d = sqrt(dx**2 + dy**2)
-            if d < 0.001:  # degenerate case
-                self.setPos(self._v1.pos())
-                self._rect = QRectF(self._v1.pos(), QSizeF(0, 0))
-                self._start = 0
-                return
-            # arc circle radius: r = chord_len / (2 * sin(theta/2))
-            r = d / (2 * sin(radians(abs(self._sweep) / 2)))
-            # chord midpoint to arc circle center distance
-            # h = sqrt(r^2 - (chord/2)^2)
-            h = sqrt(r**2 - (d / 2)**2)
-            # calculate perpendicular unit vector
-            ux = sign(self._sweep) *  dy / d
-            uy = sign(self._sweep) * -dx / d
-            # arc circle center
-            cx = mx + (ux * h)
-            cy = my + (uy * h)
-            # arc circle bounding rect
-            self._rect = QRectF(cx - r, cy - r, 2 * r, 2 * r)
-            # calculate start angle
-            c1x = x1 - cx
-            c1y = y1 - cy
-            self._start = degrees(atan2(-c1y, c1x))
-            # position segment grip at arc midpoint
-            a = radians(self._start + (self._sweep / 2))
-            self.setPos(QPointF(cx + (r * cos(a)), cy - (r * sin(a))))
-
-    def arcParams(self : Self) -> tuple[QRectF, float, float]:
-        return self._rect, self._start, self._sweep
 
     def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
         print(f"PolySeg.ctxMenuItems: view = {view}")
@@ -229,7 +167,7 @@ class Polyline(
             self.addVertex(vertex)
         self._buildSegments()
         # build path
-        self._updatePath()
+        self.updatePath()
         self._sel_mode = 1  # Start in vertex-edit mode for interactive creation
 
     def onSceneChange(self : Self, scene : "DrawingScene | None") -> None:
@@ -269,7 +207,7 @@ class Polyline(
         self._vertices.append(vtx)
         if self.vertexCount() > 1:
             self._segments.append(PolySeg(self, self._vertices[-2], vtx, sweep))
-        self._updatePath()
+        self.updatePath()
         return vtx
 
     def removeLastVertex(self : Self) -> None:
@@ -278,7 +216,7 @@ class Polyline(
         seg.setParentItem(None)
         vtx = self._vertices.pop()
         vtx.setParentItem(None)
-        self._updatePath()
+        self.updatePath()
 
     def lastVertexPos(self : Self) -> QPointF:
         return self._vertices[-1].pos() + self.pos()
@@ -286,7 +224,7 @@ class Polyline(
     def setLastVertexPos(self : Self, pos : QPointF) -> None:
         """Set position of last vertex."""
         self._vertices[-1].setPos(pos - self.pos())
-        self._updatePath()
+        self.updatePath()
 
     def segment(self : Self, index : int) -> PolySeg:
         return self._segments[index]
@@ -299,7 +237,7 @@ class Polyline(
 
     def setClosed(self : Self, closed : bool) -> None:
         self._closed = closed
-        self._updatePath()
+        self.updatePath()
 
     def close(self : Self, sweep : float | None = None) -> None:
         self._segments.append(PolySeg(
@@ -363,7 +301,7 @@ class Polyline(
             vertex.setPos(QPointF(
                 vertex.pos().x() * scale_x, vertex.pos().y() * scale_y
             ))
-        self._updatePath()
+        self.updatePath()
 
     def moveAnchorPointBy(self : Self, name : str, delta : QPointF) -> None:
         BaseRectangleMixin.moveAnchorPointBy(self, name, delta)
@@ -372,19 +310,7 @@ class Polyline(
         items = []
         return items
 
-    def _buildSegments(self : Self) -> None:
-        """Build segments from vertices. Default to lines not arcs."""
-        self._segments = []
-        if len(self._vertices) < 2:  # degenerate case
-            return
-        for i in range(len(self._vertices) - 1):
-            v1 = self._vertices[i]
-            v2 = self._vertices[i+1]
-            self._segments.append(PolySeg(self, v1, v2, None))
-        if self._closed:
-            self._segments.append(PolySeg(self, v2, self._vertices[0], None))
-
-    def _updatePath(self : Self) -> None:
+    def updatePath(self : Self) -> None:
         """Rebuild path from vertices."""
         # adjust number of segments as required
         if len(self._segments) == len(self._vertices) - 1:
@@ -397,13 +323,13 @@ class Polyline(
             if not self._closed:
                 self._segments.pop()
         else:
-            logger().warning(f"Invalid number of segments vs vertices: {len(self._segments)} vs {len(self._vertices)}")
+            logger().warning(
+                f"Invalid number of segments vs vertices: "
+                f"{len(self._segments)} vs {len(self._vertices)}"
+            )
             self._buildSegments()
-        # update segments
-        for segment in self._segments:
-            segment.refresh()
         # build path
-        path = QPainterPath()
+        path = PainterPath()
         for i, v in enumerate(self._vertices):
             if i == 0:
                 v_prev = v.pos()
@@ -412,15 +338,33 @@ class Polyline(
                 if self._segments[i-1].sweep() is None:
                     path.lineTo(v.pos())
                 else:
-                    path.arcTo(*self._segments[i-1].arcParams())
+                    path.arcTo(v.pos(), self._segments[i-1].sweep())
+                self._segments[i-1].setPos(path.currentMidPos())
+                self._segments[i-1].setRotation(path.currentAngle())
                 v_prev = v.pos()
         # handle closed case
         if self._closed:
-            if self._segments[-1].sweep() is not None:
-                path.arcTo(*self._segments[-1].arcParams())
+            if self._segments[-1].sweep() is None:
+                path.lineTo(self._vertices[0].pos())
+            else:
+                path.arcTo(self._vertices[0].pos(), self._segments[-1].sweep())
+            self._segments[-1].setPos(path.currentMidPos())
+            self._segments[-1].setRotation(path.currentAngle())
             path.closeSubpath()
         # update path
         self.setPath(path)
         # update anchor points
         if hasattr(self, '_anchor_points'):
             self.updateAnchorPoints()
+
+    def _buildSegments(self : Self) -> None:
+        """Build segments from vertices. Default to lines not arcs."""
+        self._segments = []
+        if len(self._vertices) < 2:  # degenerate case
+            return
+        for i in range(len(self._vertices) - 1):
+            v1 = self._vertices[i]
+            v2 = self._vertices[i+1]
+            self._segments.append(PolySeg(self, v1, v2, None))
+        if self._closed:
+            self._segments.append(PolySeg(self, v2, self._vertices[0], None))

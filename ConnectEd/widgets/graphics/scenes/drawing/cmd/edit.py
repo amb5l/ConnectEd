@@ -162,12 +162,12 @@ class CmdEditPolySeg(CmdSceneItem):
     def redo(self : Self) -> None:
         self._item.setSweep(self._after)
         parent : Polyline = self._item.parentItem()
-        parent._updatePath()
+        parent.updatePath()
 
     def undo(self : Self) -> None:
         self._item.setSweep(self._before)
         parent : Polyline = self._item.parentItem()
-        parent._updatePath()
+        parent.updatePath()
 
 
 class CmdEditText(CmdSceneItem):

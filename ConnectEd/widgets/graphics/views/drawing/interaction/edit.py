@@ -229,7 +229,7 @@ class EditAdjustPolySegInteraction(Interaction):
         # done
         print(radius, sweep)
         self._seg.setSweep(sweep)
-        self._polyline._updatePath()
+        self._polyline.updatePath()
 
     def commit(self : Self, pos : QPointF) -> bool:
         self.update(pos)
