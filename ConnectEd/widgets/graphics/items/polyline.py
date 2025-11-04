@@ -336,7 +336,7 @@ class Polyline(
                 if self._segments[i-1].sweep() is None:
                     path.lineTo(v.pos())
                 else:
-                    path.arcTo(v.pos(), self._segments[i-1].sweep())
+                    path.arcSpanTo(v.pos(), self._segments[i-1].sweep())
                 self._segments[i-1].setPos(path.currentMidPos())
                 self._segments[i-1].setRotation(path.currentAngle())
                 v_prev = v.pos()
@@ -345,7 +345,7 @@ class Polyline(
             if self._segments[-1].sweep() is None:
                 path.lineTo(self._vertices[0].pos())
             else:
-                path.arcTo(self._vertices[0].pos(), self._segments[-1].sweep())
+                path.arcSpanTo(self._vertices[0].pos(), self._segments[-1].sweep())
             self._segments[-1].setPos(path.currentMidPos())
             self._segments[-1].setRotation(path.currentAngle())
             path.closeSubpath()
