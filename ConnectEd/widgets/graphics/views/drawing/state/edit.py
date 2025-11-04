@@ -51,7 +51,7 @@ class DrawingViewStateEditSelectArea2(DrawingViewStateBase):
         self.mouseLeftClick(v, s, m)
 
 
-class DrawingViewStateEditPaste(ClickMixin):
+class DrawingViewStateEditPaste(ClickMixin, DrawingViewStateBase):
     STATUS = "Paste: select the paste position"
 
     def entry(
@@ -63,11 +63,11 @@ class DrawingViewStateEditPaste(ClickMixin):
         self.view.state.interact(EditPasteInteraction(self.view, self._snap(s)))
 
 
-class DrawingViewStateEditDuplicate(ClickMixin, DragMixin):
+class DrawingViewStateEditDuplicate(ClickMixin, DragMixin, DrawingViewStateBase):
     STATUS = "Duplicate: place the duplicated item(s) as required"
 
 
-class DrawingViewStateEditSlide(ClickMixin, DragMixin):
+class DrawingViewStateEditSlide(ClickMixin, DragMixin, DrawingViewStateBase):
     STATUS = "Slide: position the selected item(s) as required"
     SLIDE = True
 
@@ -77,7 +77,7 @@ class DrawingViewStateEditMove(DrawingViewStateEditSlide):
     SLIDE = False
 
 
-class DrawingViewStateEditResize(ClickMixin, DragMixin):
+class DrawingViewStateEditResize(ClickMixin, DragMixin, DrawingViewStateBase):
     STATUS = "Resize: position the selected handle as required"
 
 
@@ -101,6 +101,10 @@ class DrawingViewStateEditMovePins(DrawingViewStateBase):
         g = self.view.grid
         self.view.interaction.commit(s, g.pitch if g.snap else None)
         self.view.state.go(self.view.stateIdle)
+
+
+class DrawingViewStateEditAdjustPolySeg(DragMixin, DrawingViewStateBase):
+    STATUS = "Adjust Polyline Segment/Arc: position the selected grip as required"
 
 
 class DrawingViewStateEditAppearance(DrawingViewStateBase):

@@ -33,7 +33,7 @@ from .base  import qkm, DrawingViewStateBase
 from .mixin import ClickMixin, DragMixin
 
 
-class DrawingViewStatePlacePort(ClickMixin):
+class DrawingViewStatePlacePort(ClickMixin, DrawingViewStateBase):
     STATUS = "Place Port: pick a location"
 
     def entry(
@@ -72,7 +72,7 @@ class DrawingViewStatePlaceBlock1(DrawingViewStateBase):
         self.mouseLeftClick(v, s, m)
 
 
-class DrawingViewStatePlaceBlock2(ClickMixin, DragMixin):
+class DrawingViewStatePlaceBlock2(ClickMixin, DragMixin, DrawingViewStateBase):
     STATUS = "Place Block: pick the second point"
 
 
@@ -115,7 +115,7 @@ class DrawingViewStatePlaceBlockPin(DrawingViewStateBase):
         )
 
 
-class DrawingViewStatePlaceSymbolPin(ClickMixin):
+class DrawingViewStatePlaceSymbolPin(ClickMixin, DrawingViewStateBase):
     STATUS = "Place Symbol Pin: pick a location"
 
     def entry(
@@ -136,7 +136,7 @@ class DrawingViewStatePlaceSymbolPin(ClickMixin):
             self.view.state.go(self.view.stateIdle)
 
 
-class DrawingViewStatePlaceLine1(ClickMixin):
+class DrawingViewStatePlaceLine1(ClickMixin, DrawingViewStateBase):
     STATUS = "Place Line: pick the first point"
 
     def mouseLeftClick(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
@@ -149,7 +149,7 @@ class DrawingViewStatePlaceLine1(ClickMixin):
         self.mouseLeftClick(v, s, m)
 
 
-class DrawingViewStatePlaceLine2(ClickMixin, DragMixin):
+class DrawingViewStatePlaceLine2(ClickMixin, DragMixin, DrawingViewStateBase):
     STATUS = "Place Line: pick the second point"
 
 
@@ -166,7 +166,7 @@ class DrawingViewStatePlaceRectangle1(DrawingViewStateBase):
         self.mouseLeftClick(v, s, m)
 
 
-class DrawingViewStatePlaceRectangle2(ClickMixin, DragMixin):
+class DrawingViewStatePlaceRectangle2(ClickMixin, DragMixin, DrawingViewStateBase):
     STATUS = "Place Rectangle: pick the second point"
 
 
@@ -183,7 +183,7 @@ class DrawingViewStatePlaceEllipse1(DrawingViewStateBase):
         self.mouseLeftClick(v, s, m)
 
 
-class DrawingViewStatePlaceEllipse2(ClickMixin, DragMixin):
+class DrawingViewStatePlaceEllipse2(ClickMixin, DragMixin, DrawingViewStateBase):
     STATUS = "Place Ellipse: pick the second point"
 
 
@@ -200,11 +200,11 @@ class DrawingViewStatePlacePolyline1(DrawingViewStateBase):
         self.mouseLeftClick(v, s, m)
 
 
-class DrawingViewStatePlacePolyline2(ClickMixin, DragMixin):
+class DrawingViewStatePlacePolyline2(ClickMixin, DragMixin, DrawingViewStateBase):
     STATUS = "Place Polyline: pick the next point"
 
 
-class DrawingViewStatePlaceText(ClickMixin):
+class DrawingViewStatePlaceText(ClickMixin, DrawingViewStateBase):
     STATUS = "Place Text: pick a position"
 
     def entry(
@@ -224,7 +224,7 @@ class DrawingViewStatePlaceText(ClickMixin):
             self.view.state.go(self.view.stateIdle)
 
 
-class DrawingViewStatePlaceTextBlock(ClickMixin):
+class DrawingViewStatePlaceTextBlock(ClickMixin, DrawingViewStateBase):
     STATUS = "Place Text Block: pick a position"
 
     def entry(
@@ -244,7 +244,7 @@ class DrawingViewStatePlaceTextBlock(ClickMixin):
             self.view.state.go(self.view.stateIdle)
 
 
-class DrawingViewStatePlaceConn1(ClickMixin):
+class DrawingViewStatePlaceConn1(ClickMixin, DrawingViewStateBase):
     STATUS = "Place Connection: pick a starting position"
 
     def mouseLeftClick(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
@@ -257,7 +257,7 @@ class DrawingViewStatePlaceConn1(ClickMixin):
         self.mouseLeftClick(v, s, m)
 
 
-class DrawingViewStatePlaceConn2(ClickMixin):
+class DrawingViewStatePlaceConn2(ClickMixin, DrawingViewStateBase):
     STATUS = "Place Connection: place a mid- or end-point"
 
     def mouseLeftDoubleClick(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:

@@ -1,6 +1,9 @@
 from typing import Self
+from math   import asin, degrees, copysign
 
-from PyQt6.QtCore import QPointF
+
+from PyQt6.QtCore    import QPointF, QLineF
+from PyQt6.QtWidgets import QGraphicsLineItem
 
 from ......core.xml import paste
 
@@ -8,6 +11,7 @@ from ....items import EdgeLoc, clone
 
 from ....items.block     import Block
 from ....items.block_pin import BlockPin
+from ....items.polyline  import Polyline, PolySeg
 
 from . import MoveItemsMixin,      \
               AddRemoveItemsMixin, \
@@ -163,3 +167,101 @@ class EditMoveBlockPinsInteraction(Interaction):
     def _restoreLoc(self : Self) -> None:
         for p in self._pins:
             p.setLoc(self._sloc[p])
+
+
+class EditAdjustPolySegInteraction(Interaction):
+    # instance attributes
+    _polyline : Polyline           # parent polyline
+    _seg      : PolySeg            # target segment
+    _before   : float | None       # initial sweep angle
+    _guide1   : QGraphicsLineItem  # inline guide
+    _guide2   : QGraphicsLineItem  # perpendicular guide
+
+    def __init__(
+        self     : Self,
+        view     : "DrawingView",
+        polyline : Polyline,
+        seg      : PolySeg,
+        pos      : QPointF
+    ) -> None:
+        super().__init__(view)
+        self._polyline = polyline
+        self._seg = seg
+        self._before = seg.sweep()
+        self._showGuides()
+        self.update(pos)
+
+    def valid(self : Self) -> bool:
+        return self._polyline is not None and self._seg is not None
+
+    def update(self : Self, pos : QPointF) -> None:
+        chord = self._guide1.line()  # chord line (p1 → p2)
+        p1 = chord.p1()
+        chord_vec = chord.p2() - p1  # vector along the chord
+        chord_len = chord.length()
+        if chord_len == 0:
+            return
+        pos_vec = pos - p1  # p1 -> pos
+        # 2-D cross product gives a signed area → side test
+        cross = chord_vec.x() * pos_vec.y() - chord_vec.y() * pos_vec.x()
+        signed_sagitta = cross / chord_len  # >0 right, <0 left
+        sagitta = abs(signed_sagitta)
+        if sagitta < 1e-6:  # mouse on the chord
+            return
+        # radius of the circle that passes through the two endpoints
+        radius = (sagitta ** 2 + (chord_len / 2) ** 2) / (2 * sagitta)
+        # central angle in degrees (always the *smaller* angle, 0°-180°)
+        minor_theta = 2 * degrees(asin((chord_len / 2) / radius))
+        # Switch to major arc if on the far side
+        theta = 360 - minor_theta if sagitta > radius else minor_theta
+        # Apply the side sign – now sweep can be ±0° to ±360°
+        sweep = copysign(theta, signed_sagitta)
+        if abs(sweep) < 1.0:
+            return
+        # Update guides
+        center = chord.center()
+        perp_vec = QPointF(chord.dy() / 2, -chord.dx() / 2)  # CCW
+        perp_line = QLineF(center, center + perp_vec)
+        pos_line = QLineF(pos, pos + chord_vec)
+        _, corner = perp_line.intersects(pos_line)
+        self._guide2.setLine(QLineF(center, corner))
+        self._guide3.setLine(QLineF(corner, pos))
+        # done
+        print(radius, sweep)
+        self._seg.setSweep(sweep)
+        self._polyline._updatePath()
+
+    def commit(self : Self, pos : QPointF) -> bool:
+        self.update(pos)
+        self._scene.editPolySeg(self._seg, self._seg.sweep(), undoable=True)
+        self._hideGuides()
+        return True
+
+    def complete(self : Self, pos : QPointF) -> None:
+        self.commit(pos)
+
+    def cancel(self : Self) -> None:
+        self._seg.setSweep(self._before)
+        self._hideGuides()
+
+    def _showGuides(self : Self) -> None:
+        # inline fixed
+        in_line = QLineF(self._seg.v1().scenePos(), self._seg.v2().scenePos())
+        self._guide1 = self._scene.guide(0)
+        self._guide1.setLine(in_line)
+        self._guide1.setVisible(True)
+        center = in_line.center()
+        zero_length_line = QLineF(center, center)
+        # 90 degree slider
+        self._guide2 = self._scene.guide(1)
+        self._guide2.setLine(zero_length_line)
+        self._guide2.setVisible(True)
+        # 0 degree slider
+        self._guide3 = self._scene.guide(2)
+        self._guide3.setLine(zero_length_line)
+        self._guide3.setVisible(True)
+
+    def _hideGuides(self : Self) -> None:
+        self._guide1.setVisible(False)
+        self._guide2.setVisible(False)
+        self._guide3.setVisible(False)

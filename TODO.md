@@ -1,5 +1,6 @@
 NEXT
 - polyline arc drag
+- single tether
 
 
 - PropertyText.mouseDoubleClickEvent - move to view?

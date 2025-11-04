@@ -1,7 +1,7 @@
 from typing import Self, overload
 from math import sqrt, degrees, radians, sin, cos, atan2
 
-from PyQt6.QtCore    import Qt, QPointF, QRectF, QSizeF
+from PyQt6.QtCore    import Qt, QPointF, QRectF, QSizeF, QLineF
 from PyQt6.QtWidgets import QGraphicsPathItem, QMenu
 from PyQt6.QtGui     import QPainterPath, QAction
 
@@ -31,7 +31,7 @@ if TYPE_CHECKING:
 
 
 class PolyVtx(Grip):
-    _PATH_NAME = "Circle"
+    _PATH_NAME = "Diamond"
     _ORIGIN_PATH_NAME = "Square"
 
     # instance attributes

@@ -2,10 +2,10 @@ from typing import Self
 
 from PyQt6.QtCore import QPoint, QPointF
 
-from .base import qkm, DrawingViewStateBase
+from .base import qkm
 
 
-class ClickMixin(DrawingViewStateBase):
+class ClickMixin:
     def mouseLeftClick(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
         if self.view.interaction is not None:
             if self.view.interaction.commit(self._snap(s)):
@@ -21,7 +21,7 @@ class ClickMixin(DrawingViewStateBase):
             self.view.interaction.update(self._snap(s))
 
 
-class DragMixin(DrawingViewStateBase):
+class DragMixin:
     def mouseLeftDragCont(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
         if self.view.interaction is not None:
             self.view.interaction.update(self._snap(s))

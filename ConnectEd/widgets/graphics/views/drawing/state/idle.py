@@ -4,10 +4,12 @@ from PyQt6.QtCore import Qt, QPoint, QPointF
 
 from ....items import ItemMixin
 
-from ....items.grip import Grip, ResizeGrip
+from ....items.grip     import Grip, ResizeGrip
+from ....items.polyline import PolySeg
 
 from ..interaction.edit  import EditMoveInteraction,          \
                                 EditMoveBlockPinsInteraction, \
+                                EditAdjustPolySegInteraction, \
                                 EditDuplicateInteraction
 
 from .base import qkm, DrawingViewStateBase
@@ -36,17 +38,27 @@ class DrawingViewStateIdle(DrawingViewStateBase):
 
     def mouseLeftDragBegin(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
         raw_items_at = self.view._itemsAt(s)
-        resize_grips_at = \
-            [item for item in raw_items_at if isinstance(item, ResizeGrip)]
+        grips_at = \
+            [item for item in raw_items_at if isinstance(item, Grip)]
         # resizing
-        if len(resize_grips_at) == 1 and not (m & qkm.AltModifier):
-            # handle dragging => resize
-            grip = resize_grips_at[0]
-            self.interact(
-                EditMoveInteraction(self.view, grip, grip.scenePos()),
-                self.view.stateEditResize
-            )
-            return
+        if len(grips_at) == 1 and not (m & qkm.AltModifier):
+            grip = grips_at[0]
+            if isinstance(grip, ResizeGrip):
+                # resize
+                self.interact(
+                    EditMoveInteraction(self.view, grip, grip.scenePos()),
+                    self.view.stateEditResize
+                )
+                return
+            elif isinstance(grip, PolySeg):
+                # adjust polyline segment/arc
+                self.interact(
+                    EditAdjustPolySegInteraction(
+                        self.view, grip.parentItem(), grip, grip.scenePos()
+                    ),
+                    self.view.stateEditAdjustPolySeg
+                )
+                return
         # Check for CTRL+drag duplication when starting on an item
         if (m & qkm.ControlModifier) and raw_items_at:
             # Add item under cursor to selection if not already selected
