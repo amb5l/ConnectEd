@@ -227,7 +227,6 @@ class EditAdjustPolySegInteraction(Interaction):
         self._guide2.setLine(QLineF(center, corner))
         self._guide3.setLine(QLineF(corner, pos))
         # done
-        print(radius, sweep)
         self._seg.setSweep(sweep)
         self._polyline.updatePath()
 

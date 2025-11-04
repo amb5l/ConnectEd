@@ -44,7 +44,6 @@ class PolyVtx(Grip):
     ) -> None:
         self._index = index
         super().__init__(parent, pos)
-        print(f"PolyVtx.__init__: index = {index}")
 
     def onSceneChange(self : Self, scene : "DrawingScene | None") -> None:
         """Override to update path based on origin status."""
@@ -109,7 +108,6 @@ class PolySeg(Grip):
         self._sweep = angle
 
     def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
-        print(f"PolySeg.ctxMenuItems: view = {view}")
         items = []
         a = self.sweep()
         items.append(view.action("Line", self._toLine, a is None))
