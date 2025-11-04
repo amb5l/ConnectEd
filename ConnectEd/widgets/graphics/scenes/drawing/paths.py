@@ -17,7 +17,7 @@ if TYPE_CHECKING:
 
 
 class DrawingScenePathsMixin:
-    """Container for shared paths."""
+    """Shared paths."""
 
     paths : dict[str, dict[str, QPainterPath]]
 
