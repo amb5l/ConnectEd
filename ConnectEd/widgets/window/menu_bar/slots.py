@@ -255,6 +255,10 @@ class Slots:
         view.ui.placePort()
 
     @withCurrentWidget(DrawingView)
+    def placeGate(self : Self, view : DrawingView) -> None:
+        view.ui.placeGate()
+
+    @withCurrentWidget(DrawingView)
     def placeBlock(self : Self, view : DiagramView) -> None:
         view.ui.placeBlock()
 

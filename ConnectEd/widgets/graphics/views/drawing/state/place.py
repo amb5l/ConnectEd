@@ -6,11 +6,13 @@ from PyQt6.QtCore import QPoint, QPointF
 from ......app import logger
 
 from .....dialogs.port_pin   import PortPinDialog
+from .....dialogs.gate       import GateDialog
 from .....dialogs.text       import TextDialog
 from .....dialogs.text_block import TextBlockDialog
 
 from ....items            import SignalDirection, ItemMixin
 from ....items.port       import Port
+from ....items.gate       import GateFunc, BufGate, AndGate, OrGate, XorGate
 from ....items.block      import Block
 from ....items.block_pin  import BlockPin
 from ....items.symbol_pin import SymbolPin
@@ -18,6 +20,7 @@ from ....items.text       import Text
 from ....items.text_block import TextBlock
 
 from ..interaction.place import PlacePortInteraction, \
+                                PlaceGateInteraction, \
                                 PlaceBlockInteraction, \
                                 PlaceBlockPinInteraction, \
                                 PlaceSymbolPinInteraction, \
@@ -55,6 +58,28 @@ class DrawingViewStatePlacePort(ClickMixin, DrawingViewStateBase):
             self.interact(
                 PlacePortInteraction(self.view, self._snap(s), item)
             )
+        else:
+            self.view.state.go(self.view.stateIdle)
+
+
+class DrawingViewStatePlaceGate(ClickMixin, DrawingViewStateBase):
+    STATUS = "Place Gate: pick a location"
+
+    def entry(
+        self : Self,
+        v    : QPoint,
+        s    : QPointF,
+        i    : list[ItemMixin] | None = None
+    ) -> None:
+        dialog = GateDialog(self.view)
+        if dialog.exec():
+            match dialog.getFunction():
+                case GateFunc.BUF_INV  : gate = BufGate()
+                case GateFunc.AND_NAND : gate = AndGate(dialog.getWidth())
+                case GateFunc.OR_NOR   : gate = OrGate(dialog.getWidth())
+                case GateFunc.XOR_XNOR : gate = XorGate(dialog.getWidth())
+            gate.setPos(self._snap(s))
+            self.interact(PlaceGateInteraction(self.view, self._snap(s), gate))
         else:
             self.view.state.go(self.view.stateIdle)
 

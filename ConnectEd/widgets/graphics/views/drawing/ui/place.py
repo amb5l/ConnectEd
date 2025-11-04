@@ -7,6 +7,9 @@ class DrawingViewUiPlaceMixin:
     def placePort(self : "DrawingViewUi") -> None:
         self._view.state.go(self._view.statePlacePort)
 
+    def placeGate(self : "DrawingViewUi") -> None:
+        self._view.state.go(self._view.statePlaceGate)
+
     def placeBlock(self : "DrawingViewUi") -> None:
         self._view.state.go(self._view.statePlaceBlock1)
 

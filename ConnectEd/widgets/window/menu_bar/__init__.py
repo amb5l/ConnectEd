@@ -175,6 +175,7 @@ class MenuBar(QMenuBar):
         if isinstance(window.mdi_area.activeSubWindow(), DiagramSubWindow):
             # Diagram window - show diagram-appropriate actions
             self.place_menu.addAction(a.placePort)
+            self.place_menu.addAction(a.placeGate)
             self.place_menu.addAction(a.placeBlock)
             self.place_menu.addAction(a.placeBlockPin)
             self.place_menu.addSeparator()

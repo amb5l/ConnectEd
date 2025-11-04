@@ -25,6 +25,7 @@ from .edit  import DrawingViewStateEditSelectArea1, \
 from .place import DrawingViewStatePlaceConn1, \
                    DrawingViewStatePlaceConn2, \
                    DrawingViewStatePlacePort, \
+                   DrawingViewStatePlaceGate, \
                    DrawingViewStatePlaceBlock1, \
                    DrawingViewStatePlaceBlock2, \
                    DrawingViewStatePlaceBlockPin, \
@@ -69,6 +70,7 @@ class DrawingViewStateMixin:
     stateEditText          : DrawingViewStateEditText
     stateEditPropertyText  : DrawingViewStateEditPropertyText
     statePlacePort         : DrawingViewStatePlacePort
+    statePlaceGate         : DrawingViewStatePlaceGate
     statePlaceBlock1       : DrawingViewStatePlaceBlock1
     statePlaceBlock2       : DrawingViewStatePlaceBlock2
     statePlaceBlockPin     : DrawingViewStatePlaceBlockPin
@@ -109,6 +111,7 @@ class DrawingViewStateMixin:
         self.statePlaceConn1        = DrawingViewStatePlaceConn1       (self)
         self.statePlaceConn2        = DrawingViewStatePlaceConn2       (self)
         self.statePlacePort         = DrawingViewStatePlacePort        (self)
+        self.statePlaceGate         = DrawingViewStatePlaceGate        (self)
         self.statePlaceBlock1       = DrawingViewStatePlaceBlock1      (self)
         self.statePlaceBlock2       = DrawingViewStatePlaceBlock2      (self)
         self.statePlaceBlockPin     = DrawingViewStatePlaceBlockPin    (self)

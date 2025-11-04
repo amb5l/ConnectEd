@@ -8,8 +8,9 @@ from ......core.utils import sign
 
 from .....dialogs.arc import ArcDialog
 
-from ....items.block      import Block
 from ....items.port       import Port
+from ....items.gate       import Gate
+from ....items.block      import Block
 from ....items.block_pin  import BlockPin
 from ....items.symbol_pin import SymbolPin
 from ....items.entry      import Entry
@@ -117,6 +118,10 @@ class PlacePortInteraction(RotateItemMixin, PlaceBase1PosInteraction):
             rotate_cw_action,
             rotate_ccw_action
         ]
+
+
+class PlaceGateInteraction(PlaceBase1PosInteraction):
+    _ITEM_TYPE = Gate
 
 
 class PlaceBlockInteraction(PlaceBase2PosInteraction):

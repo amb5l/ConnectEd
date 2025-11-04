@@ -17,6 +17,7 @@ from .api     import DrawingSceneApiMixin
 from .grips   import DrawingSceneGripsMixin
 from .paths   import DrawingScenePathsMixin
 from .guides  import DrawingSceneGuidesMixin
+from .netlist import DrawingSceneNetlistMixin
 from .private import DrawingSceneApiPrivateMixin
 
 
@@ -26,6 +27,7 @@ class DrawingScene(
     DrawingSceneGripsMixin,
     DrawingScenePathsMixin,
     DrawingSceneGuidesMixin,
+    DrawingSceneNetlistMixin,
     DrawingSceneApiPrivateMixin,
     QGraphicsScene
 ):

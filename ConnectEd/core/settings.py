@@ -146,6 +146,28 @@ FACTORY_SETTINGS = {
                         "underline" : False
                     }
                 },
+                "Gate" : {
+                    "line" : {
+                        "color" : PaletteDark.GateLine,
+                        "width" : 1,
+                        "style" : Qt.PenStyle.SolidLine
+                    },
+                    "fill" : {
+                        "color" : PaletteDark.GateFill,
+                        "style" : Qt.BrushStyle.NoBrush
+                    }
+                },
+                "GatePin" : {
+                    "line" : {
+                        "color" : PaletteDark.GatePin,
+                        "width" : 1,
+                        "style" : Qt.PenStyle.SolidLine
+                    },
+                    "fill" : {
+                        "color" : PaletteDark.GatePin,
+                        "style" : Qt.BrushStyle.NoBrush
+                    }
+                },
                 "Block" : {
                     "line" : {
                         "color" : PaletteDark.BlockLine,
@@ -438,6 +460,28 @@ FACTORY_SETTINGS = {
                     "fill" : {
                         "color" : PaletteLightMono.BlockFill,
                         "style" : Qt.BrushStyle.SolidPattern
+                    }
+                },
+                "Gate" : {
+                    "line" : {
+                        "color" : PaletteLightMono.GateLine,
+                        "width" : 1,
+                        "style" : Qt.PenStyle.SolidLine
+                    },
+                    "fill" : {
+                        "color" : PaletteLightMono.GateFill,
+                        "style" : Qt.BrushStyle.NoBrush
+                    }
+                },
+                "GatePin" : {
+                    "line" : {
+                        "color" : PaletteLightMono.GatePin,
+                        "width" : 1,
+                        "style" : Qt.PenStyle.SolidLine
+                    },
+                    "fill" : {
+                        "color" : PaletteLightMono.GatePin,
+                        "style" : Qt.BrushStyle.NoBrush
                     }
                 },
                 "BlockPin" : {

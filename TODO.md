@@ -1,8 +1,10 @@
 NEXT
-- polyline arc drag
+- PainterPath QPointF vs 2D
+- Gate pin names
 - single tether
 
-
+- @override
+- Line/Fill private attributes vs Quill (underscore)
 - PropertyText.mouseDoubleClickEvent - move to view?
 - PropertyText moves badly as part of group of selected objects
 - if (cleat := self.cleat()) is None:

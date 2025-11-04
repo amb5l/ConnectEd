@@ -118,7 +118,9 @@ class Quill:
         self.onSettingsChange()
 
     def getDefaults(self : Self) -> SimpleNamespace:
-        settings_name = self._parent.__class__.__name__
+        settings_name = \
+            self._parent._SETTINGS_NAME if hasattr(self._parent, "_SETTINGS_NAME") \
+            else self._parent.__class__.__name__
         return settings().get(f"theme/items/{settings_name}/text")
 
     def onSettingsChange(self : Self) -> None:

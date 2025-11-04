@@ -67,6 +67,7 @@ class Actions:
         self.viewThemeDark      = Action( window(), "Dark"          , "Set dark theme"                      , None                         )  # noqa E501
         self.viewThemeLightMono = Action( window(), "Light Mono"    , "Set light mono theme"                , None                         )  # noqa E501
         self.placePort          = Action( window(), "Port"          , "Place Port"                          , "Ctrl+I"                     )  # noqa E501
+        self.placeGate          = Action( window(), "Gate"          , "Place Gate"                          , "Ctrl+G"                     )  # noqa E501
         self.placeBlock         = Action( window(), "Block"         , "Place Block"                         , "Ctrl+B"                     )  # noqa E501
         self.placeBlockPin      = Action( window(), "Block Pin"     , "Place Block Pin"                     , "Ctrl+P"                     )  # noqa E501
         self.placeSymbolPin     = Action( window(), "Pin"           , "Place Symbol Pin"                    , "Ctrl+P"                     )  # noqa E501
