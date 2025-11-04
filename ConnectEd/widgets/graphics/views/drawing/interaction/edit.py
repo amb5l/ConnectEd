@@ -233,7 +233,11 @@ class EditAdjustPolySegInteraction(Interaction):
 
     def commit(self : Self, pos : QPointF) -> bool:
         self.update(pos)
-        self._scene.editPolySeg(self._seg, self._seg.sweep(), undoable=True)
+        new_sweep = self._seg.sweep()
+        # Restore original value before creating undo command
+        self._seg.setSweep(self._before)
+        # Now create command with before/after values
+        self._scene.editPolySeg(self._seg, new_sweep, undoable=True)
         self._hideGuides()
         return True
 
@@ -242,6 +246,7 @@ class EditAdjustPolySegInteraction(Interaction):
 
     def cancel(self : Self) -> None:
         self._seg.setSweep(self._before)
+        self._polyline.updatePath()
         self._hideGuides()
 
     def _showGuides(self : Self) -> None:
