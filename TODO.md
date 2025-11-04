@@ -1,5 +1,5 @@
 NEXT
-- polyline grip visibility
+- polyline arc drag
 
 
 - PropertyText.mouseDoubleClickEvent - move to view?
