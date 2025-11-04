@@ -10,7 +10,9 @@ from .mixin.pos  import ItemPosMixin
 from .mixin.line import ItemLineMixin
 
 from .port_pin import PortPinText, PortPinMixin
-from .base_pin import BasePinArrow, BasePin, _PIN_CLK_SIZE
+from .base_pin import BasePinArrow, BasePin, \
+                      BasePinDotMixin, BasePinClockMixin, \
+                      _PIN_CLK_SIZE
 from .entry    import Entry
 
 from typing import TYPE_CHECKING
@@ -35,23 +37,13 @@ class SymbolPinComment(PortPinText):
     pass
 
 
-class SymbolPin(ItemPosMixin, BasePin):
+class SymbolPin(ItemPosMixin, BasePinDotMixin, BasePinClockMixin, BasePin):
     # class attributes
     _PROPERTY_SPECS = \
         ItemPosMixin._PROPERTY_SPECS_POS | \
         PortPinMixin._PROPERTY_SPECS_NAME | \
-        {
-            "Dot" : PropertySpec(
-                type_name = "bool",
-                getter    = lambda self: self._dot,
-                setter    = lambda self, value: setattr(self, '_dot', value)
-            ),
-            "Clock" : PropertySpec(
-                type_name = "bool",
-                getter    = lambda self: self._clock,
-                setter    = lambda self, value: setattr(self, '_clock', value)
-            )
-        } | \
+        BasePinDotMixin._PROPERTY_SPECS_DOT | \
+        BasePinClockMixin._PROPERTY_SPECS_CLOCK | \
         PortPinMixin._PROPERTY_SPECS_PORT_PIN | \
         ItemLineMixin._PROPERTY_SPECS_LINE
 
@@ -71,36 +63,12 @@ class SymbolPin(ItemPosMixin, BasePin):
     def _getCommentClass(cls) -> type[SymbolPinComment]:
         return SymbolPinComment
 
-    # instance attributes
-    _dot   : bool
-    _clock : bool
-
     def __init__(
         self   : Self,
         parent : QGraphicsItem | None = None,
         bare   : bool = False
     ) -> None:
-        self._dot   = True
-        self._clock = True
         super().__init__(parent, bare)
-
-    @property
-    def dot(self : Self) -> bool:
-        return self.getPropertyValue("Dot")
-
-    @dot.setter
-    def dot(self : Self, value : bool) -> None:
-        self.setPropertyValue("Dot", value)
-        self._setPath()
-
-    @property
-    def clock(self : Self) -> bool:
-        return self.getPropertyValue("Clock")
-
-    @clock.setter
-    def clock(self : Self, value : bool) -> None:
-        self.setPropertyValue("Clock", value)
-        self._setPath()
 
     def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
         return [

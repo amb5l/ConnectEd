@@ -140,3 +140,46 @@ class BasePin(ItemPaintMixin, PortPinMixin, QGraphicsPathItem):
 
     def _setPath(self : Self, scene : "DrawingScene | None" = None) -> None:
         raise NotImplementedError("Subclasses must implement this method")
+
+
+class BasePinDotMixin:
+    _PROPERTY_SPECS_DOT = {
+        "Dot" : PropertySpec(
+            type_name = "bool",
+            getter    = lambda self: self._dot,
+            setter    = lambda self, value: setattr(self, '_dot', value)
+        )
+    }
+
+    # instance attributes
+    _dot : bool = False
+
+    @property
+    def dot(self : Self) -> bool:
+        return self._dot
+
+    @dot.setter
+    def dot(self : Self, value : bool) -> None:
+        self._dot = value
+
+
+class BasePinClockMixin:
+    _PROPERTY_SPECS_CLOCK = {
+        "Clock" : PropertySpec(
+            type_name = "bool",
+            getter    = lambda self: self._clock,
+            setter    = lambda self, value: setattr(self, '_clock', value)
+        )
+    }
+
+    # instance attributes
+    _clock : bool = False
+
+    @property
+    def clock(self : Self) -> bool:
+        return self._clock
+
+    @clock.setter
+    def clock(self : Self, value : bool) -> None:
+        self._clock = value
+        self.onPropertyChange()
