@@ -32,7 +32,7 @@ class EditPasteInteraction(
     ) -> None:
         items, copy_pos = paste()
         if items:
-            ItemsInteraction.__init__(self, view, items)
+            super().__init__(view, items)
             self._ipos = pos if copy_pos is None else copy_pos
             self._cpos = self._ipos
             self._items = items
@@ -63,7 +63,7 @@ class EditDuplicateInteraction(EditPasteInteraction):
         pos   : QPointF          # duplication origin
     ) -> None:
         if items:
-            ItemsInteraction.__init__(self, view, clone(items))
+            super().__init__(view, clone(items))
             self._ipos = pos
             self._cpos = pos
             self._storePos()
@@ -87,7 +87,7 @@ class EditMoveInteraction(
         slide : bool = False
     ) -> None:
         items = items if isinstance(items, list) else [items]
-        ItemsInteraction.__init__(self, view, items)
+        super().__init__(view, items)
         self._ipos     = pos
         self._cpos     = pos
         self._slide    = slide
@@ -115,7 +115,7 @@ class EditMoveBlockPinsInteraction(Interaction):
         parent : Block,
         pins   : list[BlockPin]
     ) -> None:
-        Interaction.__init__(self, view)
+        super().__init__(view)
         self._parent = parent
         self._pins = pins
         self._storeLoc()
