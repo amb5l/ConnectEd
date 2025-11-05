@@ -2,7 +2,8 @@ from typing import Self
 from enum import Enum
 
 from PyQt6.QtCore    import QPointF
-from PyQt6.QtWidgets import QGraphicsPathItem
+from PyQt6.QtWidgets import QGraphicsPathItem, QMenu
+from PyQt6.QtGui     import QAction
 
 from ..painter_path import PainterPath
 
@@ -23,6 +24,7 @@ from .mixin.menu   import ItemMenuMixin
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ..scenes.drawing import DrawingScene
+    from ..views.drawing import DrawingView
 
 
 class GateFunc(Enum):
@@ -63,6 +65,18 @@ class BaseGate(
     def initPath(self : Self) -> None:
         raise NotImplementedError("Subclasses must implement this method")
 
+    def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
+        return [
+            view.action(
+                "Rotate CW", lambda: view.ui.editRotateCW([self]), shortcut="]"
+            ),
+            view.action(
+                "Rotate CCW", lambda: view.ui.editRotateCCW([self]), shortcut="["
+            ),
+            view.separator(),
+            view.action("Appearance...", lambda: view.ui.editAppearance(self)),
+        ]
+
 
 class BufGate(BaseGate):
     """Buffer/Inverter gate."""
@@ -76,17 +90,18 @@ class BufGate(BaseGate):
         self._input = GatePin(self)
         self._input.direction = SignalDirection.IN
         self._input.name = "i"
-        self._input.setPos(QPointF(-20, 0))
+        self._input.setPos(QPointF(-30, 0))
         self._output = GatePin(self)
         self._output.direction = SignalDirection.OUT
-        self._output.setRotation(180)
         self._output.name = "o"
+        self._output.setPos(QPointF(-10, 0))
+        self._output.setRotation(180)
 
     def initPath(self : Self) -> None:
         path = PainterPath()
-        path.moveTo(-20, -10)
-        path.lineTo(0, 0)
-        path.lineTo(-20, 10)
+        path.moveTo(-30, -10)
+        path.lineTo(-10, 0)
+        path.lineTo(-30, 10)
         path.closeSubpath()
         self.setPath(path)
 
@@ -157,12 +172,13 @@ class Gate(BaseGate):
             pin.name = f"i{i+1}"
             a = 0 if width % 2 == 1 or i < width // 2 else 1 # skip/don't center
             y = 10 * (-(width // 2) + i + a)
-            pin.setPos(QPointF(-20, y))
+            pin.setPos(QPointF(-30, y))
             self._inputs.append(pin)
         # output pin
         pin = GatePin(self)
         pin.direction = SignalDirection.OUT
         pin.name = "o"
+        pin.setPos(QPointF(-10, 0))
         pin.setRotation(180)
         self._output = pin
 
@@ -175,10 +191,10 @@ class Gate(BaseGate):
         if self._width > 3:
             # widen gate input side
             y = 10 * (self._width // 2)
-            path.moveTo(-20, -y)
-            path.lineTo(-20, -10)
-            path.moveTo(-20, y)
-            path.lineTo(-20, 10)
+            path.moveTo(-30, -y)
+            path.lineTo(-30, -10)
+            path.moveTo(-30, y)
+            path.lineTo(-30, 10)
         self.setPath(path)
 
     def gatePath(self : Self) -> PainterPath:
@@ -254,10 +270,10 @@ class AndGate(Gate):
 
     def gatePath(self : Self) -> PainterPath:
         path = PainterPath()
-        path.moveTo(-20, -10)
-        path.lineTo(-10, -10)
-        path.arcSpanTo(-10, 10, -180)
-        path.lineTo(-20, 10)
+        path.moveTo(-30, -10)
+        path.lineTo(-20, -10)
+        path.arcSpanTo(-20, 10, -180)
+        path.lineTo(-30, 10)
         path.closeSubpath()
         return path
 
@@ -270,17 +286,17 @@ class OrGate(Gate):
         if self._width % 2 == 1:  # odd width => center input
             # tweak position and length of center input
             i = self._width // 2
-            self._inputs[i].setPos(QPointF(-16, 0))
+            self._inputs[i].setPos(QPointF(-26, 0))
             self._inputs[i].setLength(14)
 
     def gatePath(self : Self) -> PainterPath:
         path = PainterPath()
-        path.moveTo(-20, -10)
-        path.lineTo(-16, -10)
-        path.arcSpanTo(0, 0, -60)
-        path.arcSpanTo(-16, 10, -60)
-        path.lineTo(-20, 10)
-        path.arcSagittaTo(-20, -10, 4)
+        path.moveTo(-30, -10)
+        path.lineTo(-26, -10)
+        path.arcSpanTo(-10, 0, -60)
+        path.arcSpanTo(-26, 10, -60)
+        path.lineTo(-30, 10)
+        path.arcSagittaTo(-30, -10, 4)
         path.closeSubpath()
         return path
 
@@ -290,13 +306,13 @@ class XorGate(OrGate):
 
     def gatePath(self : Self) -> PainterPath:
         path = PainterPath()
-        path.moveTo(-16, -10)
-        path.arcSpanTo(0, 0, -60)
-        path.arcSpanTo(-16, 10, -60)
-        path.arcSagittaTo(-16, -10, 4)
+        path.moveTo(-26, -10)
+        path.arcSpanTo(-10, 0, -60)
+        path.arcSpanTo(-26, 10, -60)
+        path.arcSagittaTo(-26, -10, 4)
         path.closeSubpath()
-        path.moveTo(-20, -10)
-        path.arcSagittaTo(-20, 10, -4)
-        path.arcSagittaTo(-20, -10, 4)
+        path.moveTo(-30, -10)
+        path.arcSagittaTo(-30, 10, -4)
+        path.arcSagittaTo(-30, -10, 4)
         path.closeSubpath()
         return path

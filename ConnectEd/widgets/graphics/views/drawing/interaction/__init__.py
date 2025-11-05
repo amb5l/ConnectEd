@@ -128,6 +128,13 @@ class RotateItemMixin:
     def rotateCCW(self : Self) -> None:
         self._item.setRotation((self._item.rotation() - 90) % 360)
 
+    def ctxMenuItems(self : Self, pos : QPointF) -> list[QAction | QMenu]:
+        return super().ctxMenuItems(pos) + [
+            self._view.separator(),
+            self._view.action("Rotate CW", self.rotateCW, "]"),
+            self._view.action("Rotate CCW", self.rotateCCW, "["),
+        ]
+
 
 class MoveItemsMixin:
     """Mixin for interactions that move items."""
