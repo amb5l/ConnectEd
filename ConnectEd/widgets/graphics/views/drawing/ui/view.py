@@ -4,8 +4,6 @@ from ......app import settings
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from ....scenes.drawing import DrawingScene
-    from ....scenes.diagram import DiagramScene
     from . import DrawingViewUi
 
 
@@ -13,7 +11,7 @@ class DrawingViewUiViewMixin:
     def viewZoomAll(self : "DrawingViewUi") -> None:
         self._scene.updateSceneRect()
         if self._scene.items():
-            rect = self._allItemsRect()
+            rect = self._view._allItemsRect()
         elif hasattr(self._scene, 'sheet'):
             rect = self._scene.sheet.rect
         else:
