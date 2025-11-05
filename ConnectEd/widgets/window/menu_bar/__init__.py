@@ -41,6 +41,7 @@ class MenuBar(QMenuBar):
         self.file_new_menu.addAction(a.fileNewDesign)
         self.file_new_menu.addAction(a.fileNewLibrary)
         self.updateFileMenu()
+        settings().mruChanged.connect(self.updateFileMenu)
 
         self.edit_menu = Menu("&Edit")
         self.edit_menu.addAction(a.editCancel)

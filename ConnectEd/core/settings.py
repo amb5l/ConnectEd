@@ -768,9 +768,16 @@ class Settings(QObject):
         return r
 
     def addMRU(self : Self, file_name : str) -> None:
-        for i in range(1, 9):
-            self.set(f"mru/{i+1}", self.get(f"mru/{i}"))
-        self.set(f"mru/1", file_name)
+        old_mru = self.getMRU()  # existing list
+        new_mru = [file_name]
+        for entry in old_mru:
+            if entry != file_name:
+                new_mru.append(entry)
+        for i in range(1, 10):
+            if i - 1 < len(new_mru):
+                self.set(f"mru/{i}", new_mru[i - 1], emit=False)
+            else:
+                self.set(f"mru/{i}", "", emit=False)
         self.mruChanged.emit()
 
     def set(self : Self, path : str, value : Any, emit : bool = True) -> None:
