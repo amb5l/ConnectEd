@@ -4,13 +4,11 @@ from enum import Enum
 from PyQt6.QtCore    import QPointF
 from PyQt6.QtWidgets import QGraphicsPathItem
 
-from ....core.defs import PITCH
-
 from ..painter_path import PainterPath
 
 from . import SignalDirection
 
-from .symbol_pin import SymbolPin
+from .gate_pin import GatePin
 
 from .mixin        import ItemMixin
 from .mixin.pos    import ItemPosMixin
@@ -32,37 +30,6 @@ class GateFunc(Enum):
     AND_NAND = "AND/NAND"
     OR_NOR   = "OR/NOR"
     XOR_XNOR = "XOR/XNOR"
-
-
-class GatePin(SymbolPin):
-    # instance attributes
-    _length : float
-
-    def __init__(self : Self, parent : "Gate | None" = None) -> None:
-        self._length = PITCH
-        super().__init__(parent)
-
-    @property
-    def inverted(self : Self) -> bool:
-        return self._dot
-
-    @inverted.setter
-    def inverted(self : Self, value : bool) -> None:
-        self._dot = value
-        self._setPath()
-
-    def length(self : Self) -> float:
-        return self._length
-
-    def setLength(self : Self, length : float) -> None:
-        self._length = length
-
-    def _setPath(self : Self, scene : "DrawingScene | None" = None) -> None:
-        super()._setPath(scene)
-        if self._length != PITCH:
-            path = self.path()
-            path.setElementPositionAt(0, -self._length, 0)
-            self.setPath(path)
 
 
 class BaseGate(
