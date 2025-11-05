@@ -1,6 +1,5 @@
 NEXT
-- PainterPath QPointF vs 2D
-- Gate pin names
+- pin dot size, arrow position
 - single tether
 
 - @override

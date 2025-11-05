@@ -2,7 +2,7 @@ from typing import Self
 
 from PyQt6.QtCore    import QPointF
 from PyQt6.QtWidgets import QGraphicsItem, QMenu
-from PyQt6.QtGui     import QAction
+from PyQt6.QtGui     import QAction, QPainterPath
 
 from ....core.defs import PITCH
 
@@ -67,6 +67,8 @@ class GatePin(ItemPosMixin, BasePinDotMixin, BasePinClockMixin, BasePin):
 
     def setLength(self : Self, length : float) -> None:
         self._length = length
+        self._entry.setPos(-self._length, 0)  # move entry
+        self._setPath()  # adjust pin path
 
     def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
         return [
@@ -87,5 +89,6 @@ class GatePin(ItemPosMixin, BasePinDotMixin, BasePinClockMixin, BasePin):
             self._AP_NAME_OFFSET + (_PIN_CLK_SIZE if self._clock else 0), 0
         ))
         if self._length != PITCH:
+            path = QPainterPath(path)  # copy shared path
             path.setElementPositionAt(0, -self._length, 0)
         self.setPath(path)

@@ -164,6 +164,7 @@ class BasePinDotMixin:
     @dot.setter
     def dot(self : Self, value : bool) -> None:
         self._dot = value
+        self._setPath()
 
 
 class BasePinClockMixin:
@@ -185,4 +186,4 @@ class BasePinClockMixin:
     @clock.setter
     def clock(self : Self, value : bool) -> None:
         self._clock = value
-        self.onPropertyChange()
+        self._setPath()

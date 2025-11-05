@@ -177,8 +177,8 @@ class Gate(BaseGate):
             y = 10 * (self._width // 2)
             path.moveTo(-20, -y)
             path.lineTo(-20, -10)
-            path.moveTo(20, y)
-            path.lineTo(20, 10)
+            path.moveTo(-20, y)
+            path.lineTo(-20, 10)
         self.setPath(path)
 
     def gatePath(self : Self) -> PainterPath:
