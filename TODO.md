@@ -1,7 +1,7 @@
 NEXT
 - single tether
 
-- @override
+
 - Line/Fill private attributes vs Quill (underscore)
 - PropertyText.mouseDoubleClickEvent - move to view?
 - PropertyText moves badly as part of group of selected objects
@@ -18,11 +18,13 @@ NEXT
     - initial placeholder loads system library
   - symbol placement dialog with live filter
   - symbol placement states and interaction
-
 - asterisk on modified windows
 - change window convenience properties to methods
 - rotate port during placement
-- Callable (collections.abc)
+
+
+CODE QUALITY
+- @override
 
 BUGS
 

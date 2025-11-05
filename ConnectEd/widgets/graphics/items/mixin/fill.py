@@ -14,70 +14,70 @@ from . import ItemMixin
 
 
 class Fill:
-    parent   : "ItemMixin"
-    color    : Default | QColor
-    style    : Default | Qt.BrushStyle
-    normal   : QBrush
-    selected : QBrush
-    brush    : QBrush
+    _parent   : "ItemMixin"
+    _color    : Default | QColor
+    _style    : Default | Qt.BrushStyle
+    _normal   : QBrush
+    _selected : QBrush
+    _brush    : QBrush
 
     def __init__(
         self   : Self,
         parent : "ItemMixin",
         pref   : FillPref = FillPref(DEFAULT, DEFAULT)
     ) -> None:
-        self.parent   = parent
-        self.color    = pref.color
-        self.style    = pref.style
-        self.normal   = QBrush()
-        self.selected = QBrush()
+        self._parent   = parent
+        self._color    = pref.color
+        self._style    = pref.style
+        self._normal   = QBrush()
+        self._selected = QBrush()
         self.onSettingsChange()
 
     def getColor(self : Self) -> Default | QColor:
-        return self.color
+        return self._color
 
     def setColor(self : Self, color : Default | QColor) -> None:
-        self.color = color
+        self._color = color
         self.onSettingsChange()
 
     def getStyle(self : Self) -> Default | Qt.BrushStyle:
-        return self.style
+        return self._style
 
     def setStyle(self : Self, style : Default | Qt.BrushStyle) -> None:
-        self.style = style
+        self._style = style
         self.onSettingsChange()
 
     def getPref(self : Self) -> FillPref:
-        return FillPref(self.color, self.style)
+        return FillPref(self._color, self._style)
 
     def setPref(self : Self, c : FillPref | FillPrefChange) -> None:
-        if c.color is not NO_CHANGE: self.color = c.color
-        if c.style is not NO_CHANGE: self.style = c.style
+        if c.color is not NO_CHANGE: self._color = c.color
+        if c.style is not NO_CHANGE: self._style = c.style
         self.onSettingsChange()
 
     def getDefaults(self : Self) -> SimpleNamespace:
         settings_name = \
-            self.parent._SETTINGS_NAME if hasattr(self.parent, "_SETTINGS_NAME") \
-            else self.parent.__class__.__name__
+            self._parent._SETTINGS_NAME if hasattr(self._parent, "_SETTINGS_NAME") \
+            else self._parent.__class__.__name__
         return settings().get(f"theme/items/{settings_name}/fill")
 
     def onSettingsChange(self : Self) -> None:
         default = self.getDefaults()
-        color_normal = default.color if self.color is DEFAULT else self.color
+        color_normal = default.color if self._color is DEFAULT else self._color
         color_normal.setAlpha(settings().get("display/alpha"))
         color_selected = settings().get("theme/selected/fill")
         color_selected.setAlpha(settings().get("display/alpha"))
-        style = default.style if self.style is DEFAULT else self.style
-        self.normal.setColor(color_normal)
-        self.normal.setStyle(style)
-        self.selected.setColor(color_selected)
-        self.selected.setStyle(style)
-        self.onSelectionChange(self.parent.isSelected())
+        style = default.style if self._style is DEFAULT else self._style
+        self._normal.setColor(color_normal)
+        self._normal.setStyle(style)
+        self._selected.setColor(color_selected)
+        self._selected.setStyle(style)
+        self.onSelectionChange(self._parent.isSelected())
 
     def onSelectionChange(self : Self, selected : bool) -> None:
-        self.brush = self.selected if selected else self.normal
-        if hasattr(self.parent, "setBrush"):
-            self.parent.setBrush(self.brush)
+        self._brush = self._selected if selected else self._normal
+        if hasattr(self._parent, "setBrush"):
+            self._parent.setBrush(self._brush)
 
 
 class ItemFillMixin:

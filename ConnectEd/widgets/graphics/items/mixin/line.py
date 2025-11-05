@@ -19,87 +19,87 @@ class Line:
     _JOIN_STYLE = Qt.PenJoinStyle.RoundJoin
 
     # instance attributes
-    parent   : "ItemMixin"
-    color    : Default | QColor
-    width    : Default | float
-    style    : Default | Qt.PenStyle
-    normal   : QPen
-    selected : QPen
-    pen      : QPen
+    _parent   : "ItemMixin"
+    _color    : Default | QColor
+    _width    : Default | float
+    _style    : Default | Qt.PenStyle
+    _normal   : QPen
+    _selected : QPen
+    _pen      : QPen
 
     def __init__(
         self   : Self,
         parent : "ItemMixin",
         pref   : LinePref = LinePref(DEFAULT, DEFAULT, DEFAULT)
     ) -> None:
-        self.parent = parent
-        self.color  = pref.color
-        self.width  = pref.width
-        self.style  = pref.style
-        self.normal = QPen()
-        self.normal.setCapStyle(self._CAP_STYLE)
-        self.normal.setJoinStyle(self._JOIN_STYLE)
-        self.selected = QPen()
-        self.selected.setCapStyle(self._CAP_STYLE)
-        self.selected.setJoinStyle(self._JOIN_STYLE)
+        self._parent = parent
+        self._color  = pref.color
+        self._width  = pref.width
+        self._style  = pref.style
+        self._normal = QPen()
+        self._normal.setCapStyle(self._CAP_STYLE)
+        self._normal.setJoinStyle(self._JOIN_STYLE)
+        self._selected = QPen()
+        self._selected.setCapStyle(self._CAP_STYLE)
+        self._selected.setJoinStyle(self._JOIN_STYLE)
         self.onSettingsChange()
 
     def getColor(self : Self) -> Default | QColor:
-        return self.color
+        return self._color
 
     def setColor(self : Self, color : Default | QColor) -> None:
-        self.color = color
+        self._color = color
         self.onSettingsChange()
 
     def getWidth(self : Self) -> Default | float:
-        return self.width
+        return self._width
 
     def setWidth(self : Self, width : Default | float) -> None:
-        self.width = width
+        self._width = width
         self.onSettingsChange()
 
     def getStyle(self : Self) -> Default | Qt.PenStyle:
-        return self.style
+        return self._style
 
     def setStyle(self : Self, style : Default | Qt.PenStyle) -> None:
-        self.style = style
+        self._style = style
         self.onSettingsChange()
 
     def getPref(self : Self) -> LinePref:
-        return LinePref(self.color, self.width, self.style)
+        return LinePref(self._color, self._width, self._style)
 
     def setPref(self : Self, c : LinePref | LinePrefChange) -> None:
-        if c.color is not NO_CHANGE: self.color = c.color
-        if c.width is not NO_CHANGE: self.width = c.width
-        if c.style is not NO_CHANGE: self.style = c.style
+        if c.color is not NO_CHANGE: self._color = c.color
+        if c.width is not NO_CHANGE: self._width = c.width
+        if c.style is not NO_CHANGE: self._style = c.style
         self.onSettingsChange()
 
     def getDefaults(self : Self) -> SimpleNamespace:
         settings_name = \
-            self.parent._SETTINGS_NAME if hasattr(self.parent, "_SETTINGS_NAME") \
-            else self.parent.__class__.__name__
+            self._parent._SETTINGS_NAME if hasattr(self._parent, "_SETTINGS_NAME") \
+            else self._parent.__class__.__name__
         return settings().get(f"theme/items/{settings_name}/line")
 
     def onSettingsChange(self : Self) -> None:
         default = self.getDefaults()
-        color_normal = default.color if self.color is DEFAULT else self.color
+        color_normal = default.color if self._color is DEFAULT else self._color
         color_normal.setAlpha(settings().get("display/alpha"))
         color_selected = settings().get("theme/selected/line")
         color_selected.setAlpha(settings().get("display/alpha"))
-        width = default.width if self.width is DEFAULT else self.width
-        style = default.style if self.style is DEFAULT else self.style
-        self.normal.setColor(color_normal)
-        self.normal.setWidthF(width)
-        self.normal.setStyle(style)
-        self.selected.setColor(color_selected)
-        self.selected.setWidthF(width)
-        self.selected.setStyle(style)
-        self.onSelectionChange(self.parent.isSelected())
+        width = default.width if self._width is DEFAULT else self._width
+        style = default.style if self._style is DEFAULT else self._style
+        self._normal.setColor(color_normal)
+        self._normal.setWidthF(width)
+        self._normal.setStyle(style)
+        self._selected.setColor(color_selected)
+        self._selected.setWidthF(width)
+        self._selected.setStyle(style)
+        self.onSelectionChange(self._parent.isSelected())
 
     def onSelectionChange(self : Self, selected : bool) -> None:
-        self.pen = self.selected if selected else self.normal
-        if hasattr(self.parent, "setPen"):
-            self.parent.setPen(self.pen)
+        self._pen = self._selected if selected else self._normal
+        if hasattr(self._parent, "setPen"):
+            self._parent.setPen(self._pen)
 
 
 class ItemLineMixin:
