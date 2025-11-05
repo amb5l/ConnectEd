@@ -7,6 +7,7 @@ from ..properties import PropertySpec, PropertiesMixin
 from . import SignalDirection, VectorRange
 
 from .mixin        import ItemMixin
+from .mixin.rotate import ItemRotateMixin
 from .mixin.anchor import ItemAnchorPointsMixin
 from .mixin.line   import ItemLineMixin
 from .mixin.change import ItemChangeMixin
@@ -26,6 +27,7 @@ class PortPinText(PropertyText):
 
 class PortPinMixin(
     ItemMixin,
+    ItemRotateMixin,
     ItemAnchorPointsMixin,
     ItemLineMixin,
     ItemChangeMixin,

@@ -13,6 +13,7 @@ from .gate_pin import GatePin
 
 from .mixin        import ItemMixin
 from .mixin.pos    import ItemPosMixin
+from .mixin.rotate import ItemRotateMixin
 from .mixin.paint  import ItemPaintMixin
 from .mixin.line   import ItemLineMixin
 from .mixin.fill   import ItemFillMixin
@@ -37,6 +38,7 @@ class GateFunc(Enum):
 class BaseGate(
     ItemMixin,
     ItemPosMixin,
+    ItemRotateMixin,
     ItemPaintMixin,
     ItemLineMixin,
     ItemFillMixin,

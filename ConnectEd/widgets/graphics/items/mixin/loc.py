@@ -62,9 +62,6 @@ class ItemLocMixin:
         parent : "Block" = self.parentItem()
         edge_pos = parent.loc2pos(loc) if parent else QPointF()
         super().setPos(edge_pos)
-        if isinstance(self, PropertiesMixin):
-            for property_text in self._property_texts.values():
-                property_text.compensateRotation()
 
     def setLocEdge(self : Self, edge : Edge) -> None:
         self.setLoc(EdgeLoc(Edge(edge), self._loc.offset))

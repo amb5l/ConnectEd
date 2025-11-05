@@ -72,31 +72,5 @@ class ItemMixin:
             item = item.parentItem()
         return item
 
-    def rotateCW(self : Self | QGraphicsItem) -> None:
-        self.setRotation((self.rotation() + 90) % 360)
-
-    def rotateCCW(self : Self | QGraphicsItem) -> None:
-        self.setRotation((self.rotation() - 90) % 360)
-
-    def sceneRotation(self: Self | QGraphicsItem) -> float:
-        angle = 0.0
-        item = self
-        while item is not None:
-            angle += item.rotation()
-            item = item.parentItem()
-        return angle % 360.0
-
-    def parentSceneRotation(self: Self | QGraphicsItem) -> float:
-            """
-            Returns the effective rotation angle (degrees) of the parent
-            w.r.t. the scene by summing hierarchy.
-            """
-            angle = 0.0
-            item = self.parentItem()
-            while item is not None:
-                angle += item.rotation()
-                item = item.parentItem()
-            return angle % 360.0
-
     def _resetUuid(self : Self | QGraphicsItem) -> None:
         self._uuid = str(uuid.uuid4())

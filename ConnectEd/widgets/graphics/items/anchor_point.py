@@ -5,12 +5,15 @@ from PyQt6.QtCore import QPointF
 from .null_point import NullPoint
 from .grip       import APGrip, MoveGrip, ResizeGrip
 
+from .mixin.rotate import ItemRotateMixin
+from .mixin.change import ItemChangeMixin
+
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from .mixin.anchor import ItemAnchorPointsMixin
 
 
-class AnchorPoint(NullPoint):
+class AnchorPoint(ItemRotateMixin, ItemChangeMixin, NullPoint):
     # instance attributes
     _name : str
     _grip : APGrip

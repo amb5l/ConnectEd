@@ -9,6 +9,7 @@ from ..properties import PropertySpec, PropertiesMixin
 
 from .mixin         import ItemMixin
 from .mixin.pos     import ItemPosMixin
+from .mixin.rotate  import ItemRotateMixin
 from .mixin.anchor  import ItemRectAnchorPointsMixin
 from .mixin.origin  import ItemOriginMixin
 from .mixin.quill   import ItemQuillMixin
@@ -26,6 +27,7 @@ if TYPE_CHECKING:
 class BaseText(
     ItemMixin,
     ItemPosMixin,
+    ItemRotateMixin,
     ItemRectAnchorPointsMixin,
     ItemOriginMixin,
     ItemQuillMixin,

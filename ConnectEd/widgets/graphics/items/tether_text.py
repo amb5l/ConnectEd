@@ -1,6 +1,6 @@
 from typing import Self
 
-from PyQt6.QtCore    import QPointF, QLineF, QXmlStreamWriter
+from PyQt6.QtCore    import QPointF, QXmlStreamWriter
 from PyQt6.QtWidgets import QGraphicsLineItem, QGraphicsSceneMouseEvent
 
 from ....app import logger
@@ -79,6 +79,18 @@ class TetherText(BaseText):
         if self._tether is not None:
             self._tether.onSettingsChange()
 
+    def onRotationChange(self : Self) -> None:
+        """Rotation compensation."""
+        rect = self.boundingRect()
+        self.setTransformOriginPoint(rect.center())
+        if 135 < self.sceneRotation() <= 225:
+            # Use base class to prevent recursion
+            QGraphicsLineItem.setRotation(self, (self.rotation() + 180) % 360)
+            # counter rotate anchor points
+            for ap in self._anchor_points.values():
+                ap.setTransformOriginPoint(self.mapToItem(ap, rect.center()))
+                QGraphicsLineItem.setRotation(ap, (ap.rotation() + 180) % 360)
+
     def onPositionChange(self : Self, pos : QPointF) -> None:
         self._tether.onPositionChange(pos)
 
@@ -124,13 +136,3 @@ class TetherText(BaseText):
             parent.setName(name)
         else:
             logger().error(f"Parent is not an AnchorPoint: {type(parent).__name__}")
-
-    def compensateRotation(self : Self) -> None:
-        rect = self.boundingRect()
-        self.setTransformOriginPoint(rect.center())
-        if 135 < self.sceneRotation() <= 225:
-            self.setRotation((self.rotation() + 180) % 360)
-            # counter rotate anchor points
-            for ap in self._anchor_points.values():
-                ap.setTransformOriginPoint(self.mapToItem(ap, rect.center()))
-                ap.setRotation((ap.rotation() + 180) % 360)

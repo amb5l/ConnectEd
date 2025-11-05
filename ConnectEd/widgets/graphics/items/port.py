@@ -72,11 +72,6 @@ class Port(
     def onSceneChange(self : Self, scene : "DrawingScene") -> None:
         self._setPath(scene)
 
-    def setRotation(self : Self, angle : float) -> None:
-        super().setRotation(angle)
-        for property_text in self._property_texts.values():
-            property_text.compensateRotation()
-
     @property
     def direction(self : Self) -> "SignalDirection":
         return super().direction

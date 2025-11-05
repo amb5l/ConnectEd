@@ -1,7 +1,7 @@
 NEXT
 - save/load with gates
 - single tether
-
+- no duplicates in File MRU list
 
 
 - PropertyText.mouseDoubleClickEvent - move to view?

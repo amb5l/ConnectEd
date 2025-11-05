@@ -10,19 +10,22 @@ class ItemChangeMixin:
         value  : Any
     ) -> Any:
         match change:
-            case QGraphicsItem.GraphicsItemChange.ItemParentHasChanged:
-                if hasattr(self, 'onParentChange'):
+            case self.GraphicsItemChange.ItemParentHasChanged:
+                if hasattr(self, "onParentChange"):
                     self.onParentChange(value)
-            case QGraphicsItem.GraphicsItemChange.ItemSceneHasChanged:
-                if hasattr(self, 'onSceneChange'):
+            case self.GraphicsItemChange.ItemSceneHasChanged:
+                if hasattr(self, "onSceneChange"):
                     self.onSceneChange(value)
-            case QGraphicsItem.GraphicsItemChange.ItemPositionHasChanged:
-                if hasattr(self, 'onPositionChange'):
+            case self.GraphicsItemChange.ItemRotationHasChanged:
+                if hasattr(self, "onRotationChange"):
+                    self.onRotationChange()
+            case self.GraphicsItemChange.ItemPositionHasChanged:
+                if hasattr(self, "onPositionChange"):
                     self.onPositionChange(value)
-            case QGraphicsItem.GraphicsItemChange.ItemScenePositionHasChanged:
-                if hasattr(self, 'onScenePositionChange'):
+            case self.GraphicsItemChange.ItemScenePositionHasChanged:
+                if hasattr(self, "onScenePositionChange"):
                     self.onScenePositionChange(value)
-            case QGraphicsItem.GraphicsItemChange.ItemSelectedHasChanged:
+            case self.GraphicsItemChange.ItemSelectedHasChanged:
                 if hasattr(self, "a"):
                     if self.a.line is not None:
                         self.a.line.onSelectionChange(value)
