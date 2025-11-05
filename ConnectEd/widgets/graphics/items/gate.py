@@ -64,10 +64,10 @@ class BaseGate(
     # instance attributes
     _label  : str
 
-    def __init__(self : Self) -> None:
+    def __init__(self : Self, bare : bool = False) -> None:
         self._label = ""
         super().__init__()
-        self.initItem()
+        self.initItem(bare)
         self.initPath()
 
     @property
@@ -118,16 +118,16 @@ class BufGate(BaseGate):
     _input  : GatePin
     _output : GatePin
 
-    def __init__(self : Self) -> None:
-        super().__init__()
+    def __init__(self : Self, bare : bool = False) -> None:
+        super().__init__(bare)
         self.setOutput()
         self.setInput()
 
     def initPath(self : Self) -> None:
         path = PainterPath()
-        path.moveTo(-30, -10)
-        path.lineTo(-10, 0)
-        path.lineTo(-30, 10)
+        path.moveTo(-28, -8)
+        path.lineTo(-12, 0)
+        path.lineTo(-28, 8)
         path.closeSubpath()
         self.setPath(path)
 
@@ -188,7 +188,8 @@ class BufGate(BaseGate):
             self._output = GatePin(self)
             self._output.direction = SignalDirection.OUT
             self._output.name = "o"
-            self._output.setPos(QPointF(-10, 0))
+            self._output.setPos(QPointF(-12, 0))
+            self._output.setLength(12)
             self._output.setRotation(180)
         self._output.inverted = level == "L"
 
@@ -200,7 +201,8 @@ class BufGate(BaseGate):
             self._input = GatePin(self)
             self._input.direction = SignalDirection.IN
             self._input.name = "i"
-            self._input.setPos(QPointF(-30, 0))
+            self._input.setPos(QPointF(-28, 0))
+            self._input.setLength(12)
         self._input.inverted = level == "L"
 
 
@@ -233,7 +235,7 @@ class Gate(BaseGate):
     _output : GatePin
 
     def __init__(self : Self, width : int | None = None, bare : bool = False) -> None:
-        super().__init__()
+        super().__init__(bare)
         if not bare and width is not None:
             self.setOutput()
             self.setInputs("H" * width)
