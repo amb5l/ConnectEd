@@ -116,7 +116,8 @@ class BasePin(ItemPaintMixin, PortPinMixin, QGraphicsPathItem):
         self.initPortPin(bare)
         self._setPath()
         self._entry.setPos(-PITCH, 0)
-        self._arrow = self._getArrowClass()(self)
+        arrow_class = self._getArrowClass()
+        self._arrow = None if arrow_class is None else arrow_class(self)
 
     @property
     def direction(self : Self) -> SignalDirection:
@@ -125,13 +126,15 @@ class BasePin(ItemPaintMixin, PortPinMixin, QGraphicsPathItem):
     @direction.setter
     def direction(self : Self, value : SignalDirection) -> None:
         super(BasePin, BasePin).direction.__set__(self, value)
-        self._arrow.direction = value
+        if self._arrow is not None:
+            self._arrow.direction = value
 
     def onGeometryChange(self : Self) -> None:
         pass
 
     def onSceneChange(self : Self, scene : "DrawingScene") -> None:
-        self._arrow.direction = self._direction
+        if self._arrow is not None:
+            self._arrow.direction = self._direction
         self._setPath(scene)
 
     def onSelectionChange(self : Self, selected : bool) -> None:

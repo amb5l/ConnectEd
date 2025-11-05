@@ -168,6 +168,18 @@ FACTORY_SETTINGS = {
                         "style" : Qt.BrushStyle.NoBrush
                     }
                 },
+                "GatePinEntry" : {
+                    "size" : 3,
+                    "line" : {
+                        "color" : PaletteDark.GatePin,
+                        "width" : 0,
+                        "style" : Qt.PenStyle.SolidLine
+                    },
+                    "fill" : {
+                        "color" : PaletteDark.GatePin,
+                        "style" : Qt.BrushStyle.NoBrush
+                    }
+                },
                 "Block" : {
                     "line" : {
                         "color" : PaletteDark.BlockLine,
@@ -477,6 +489,18 @@ FACTORY_SETTINGS = {
                     "line" : {
                         "color" : PaletteLightMono.GatePin,
                         "width" : 1,
+                        "style" : Qt.PenStyle.SolidLine
+                    },
+                    "fill" : {
+                        "color" : PaletteLightMono.GatePin,
+                        "style" : Qt.BrushStyle.NoBrush
+                    }
+                },
+                "GatePinEntry" : {
+                    "size" : 3,
+                    "line" : {
+                        "color" : PaletteLightMono.GatePin,
+                        "width" : 0,
                         "style" : Qt.PenStyle.SolidLine
                     },
                     "fill" : {
