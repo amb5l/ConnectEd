@@ -117,7 +117,7 @@ def val2str(v : Any) -> str:
         case "bytes"           : s = v.hex()
         case "str"             : s = v # TODO escape special characters
         case "int"             : s = str(v)
-        case "float"           : s = str(v)
+        case "float"           : s = str(int(v)) if v.is_integer() else str(v)
         case "bool"            : s = str(v)
         case "QPointF"         : s = f"{v.x()},{v.y()}"
         case "QRectF"          : s = f"{v.x()},{v.y()},{v.width()},{v.height()}"
