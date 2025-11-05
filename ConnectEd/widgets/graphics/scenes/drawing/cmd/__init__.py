@@ -1,4 +1,5 @@
-from typing import Self, Callable
+from typing          import Self
+from collections.abc import Callable
 
 from PyQt6.QtCore    import QPointF
 from PyQt6.QtGui     import QUndoCommand

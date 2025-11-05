@@ -1,5 +1,4 @@
 NEXT
-- pin dot size, arrow position
 - single tether
 
 - @override

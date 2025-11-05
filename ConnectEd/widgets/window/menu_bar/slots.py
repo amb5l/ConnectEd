@@ -1,6 +1,7 @@
 import functools
 
-from typing import Self, Callable, TypeVar, cast
+from typing          import Self, TypeVar, cast
+from collections.abc import Callable
 
 from PyQt6.QtWidgets import QMessageBox
 

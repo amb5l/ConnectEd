@@ -1,5 +1,6 @@
-from typing import Callable, Any, Self
-from dataclasses import dataclass
+from typing          import Any, Self
+from collections.abc import Callable
+from dataclasses     import dataclass
 
 from ...app import logger
 

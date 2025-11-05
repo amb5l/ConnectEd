@@ -1,5 +1,5 @@
-from typing import Callable
-from math   import isclose
+from collections.abc import Callable
+from math            import isclose
 
 from PyQt6.QtCore import QPointF, QLineF, QRectF
 
