@@ -1,4 +1,4 @@
-from typing import Self
+from typing import Self, overload
 from math import copysign, sqrt, degrees, radians, sin, cos, asin, atan2
 
 from PyQt6.QtCore import QPointF, QLineF, QRectF
@@ -19,30 +19,101 @@ class PainterPath(QPainterPath):
         self._mid_pos = None
         self._angle = None
 
+    @overload
     def lineTo(self : Self, pos : QPointF) -> None:
-        """Override to store midpoint."""
+        ...
+
+    @overload
+    def lineTo(self : Self, x : float, y : float) -> None:
+        ...
+
+    def lineTo(self : Self, *args) -> None:
+        """Override to store midpoint. Accepts QPointF or (x, y) coordinates."""
+        if len(args) == 1 and isinstance(args[0], QPointF):
+            pos = args[0]
+        elif len(args) == 2:
+            pos = QPointF(float(args[0]), float(args[1]))
+        else:
+            raise TypeError("lineTo() takes either QPointF or (x, y) coordinates")
         p0 = self.currentPosition()
         super().lineTo(pos)
         self._mid_pos = (pos + p0) / 2
         self._angle = degrees(atan2(pos.y() - p0.y(), pos.x() - p0.x()))
 
+    @overload
     def arcTo(
         self       : Self,
         rect       : QRectF,
         startAngle : float,  # noqa: N803
         spanAngle  : float   # noqa: N803
     ) -> None:
+        ...
+
+    @overload
+    def arcTo(
+        self       : Self,
+        x          : float,
+        y          : float,
+        width      : float,
+        height     : float,
+        startAngle : float,  # noqa: N803
+        spanAngle  : float   # noqa: N803
+    ) -> None:
+        ...
+
+    def arcTo(self : Self, *args) -> None:
+        """Draw arc. Accepts QRectF or (x, y, width, height) coordinates."""
+        if len(args) == 3 and isinstance(args[0], QRectF):
+            rect = args[0]
+            startAngle = args[1]  # noqa: N806
+            spanAngle = args[2]   # noqa: N806
+        elif len(args) == 6:
+            rect = QRectF(
+                float(args[0]), float(args[1]),
+                float(args[2]), float(args[3])
+            )
+            startAngle = args[4]  # noqa: N806
+            spanAngle = args[5]   # noqa: N806
+        else:
+            raise TypeError(
+                "arcTo() takes (QRectF, startAngle, spanAngle) or "
+                "(x, y, width, height, startAngle, spanAngle)"
+            )
         p0 = self.currentPosition()
         super().arcTo(rect, startAngle, spanAngle)
         p1 = self.currentPosition()
         self._mid_pos = (p0 + p1) / 2
         self._angle = degrees(atan2(p1.y() - p0.y(), p1.x() - p0.x()))
 
+    @overload
     def arcSpanTo(
         self      : Self,
         pos       : QPointF,
         spanAngle : float   # noqa: N803
     ) -> None:
+        ...
+
+    @overload
+    def arcSpanTo(
+        self      : Self,
+        x         : float,
+        y         : float,
+        spanAngle : float   # noqa: N803
+    ) -> None:
+        ...
+
+    def arcSpanTo(self : Self, *args) -> None:
+        """Draw arc by span angle. Accepts QPointF or (x, y) coordinates."""
+        if len(args) == 2 and isinstance(args[0], QPointF):
+            pos = args[0]
+            spanAngle = args[1]  # noqa: N806
+        elif len(args) == 3:
+            pos = QPointF(float(args[0]), float(args[1]))
+            spanAngle = args[2]  # noqa: N806
+        else:
+            raise TypeError(
+                "arcSpanTo() takes (QPointF, spanAngle) or (x, y, spanAngle)"
+            )
         p0 = self.currentPosition()
         spanAngle = max(-180, min(180, spanAngle))  # noqa: N806
         # chord
@@ -79,11 +150,35 @@ class PainterPath(QPainterPath):
         self._angle = degrees(atan2(dy, dx))
         return super().arcTo(rect, startAngle, spanAngle)
 
+    @overload
     def arcSagittaTo(
         self    : Self,
         pos     : QPointF,
         sagitta : float
     ) -> None:
+        ...
+
+    @overload
+    def arcSagittaTo(
+        self    : Self,
+        x       : float,
+        y       : float,
+        sagitta : float
+    ) -> None:
+        ...
+
+    def arcSagittaTo(self : Self, *args) -> None:
+        """Draw arc by sagitta. Accepts QPointF or (x, y) coordinates."""
+        if len(args) == 2 and isinstance(args[0], QPointF):
+            pos = args[0]
+            sagitta = args[1]
+        elif len(args) == 3:
+            pos = QPointF(float(args[0]), float(args[1]))
+            sagitta = args[2]
+        else:
+            raise TypeError(
+                "arcSagittaTo() takes (QPointF, sagitta) or (x, y, sagitta)"
+            )
         p0 = self.currentPosition()
         chord_line = QLineF(p0, pos)
         d = chord_line.length()

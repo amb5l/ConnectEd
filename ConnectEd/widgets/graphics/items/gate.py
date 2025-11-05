@@ -117,9 +117,9 @@ class BufGate(BaseGate):
 
     def initPath(self : Self) -> None:
         path = PainterPath()
-        path.moveTo(QPointF(-20, -10))
-        path.lineTo(QPointF(0, 0))
-        path.lineTo(QPointF(-20, 10))
+        path.moveTo(-20, -10)
+        path.lineTo(0, 0)
+        path.lineTo(-20, 10)
         path.closeSubpath()
         self.setPath(path)
 
@@ -287,10 +287,10 @@ class AndGate(Gate):
 
     def gatePath(self : Self) -> PainterPath:
         path = PainterPath()
-        path.moveTo(QPointF(-20, -10))
-        path.lineTo(QPointF(-10, -10))
-        path.arcSpanTo(QPointF(-10, 10), -180)
-        path.lineTo(QPointF(-20, 10))
+        path.moveTo(-20, -10)
+        path.lineTo(-10, -10)
+        path.arcSpanTo(-10, 10, -180)
+        path.lineTo(-20, 10)
         path.closeSubpath()
         return path
 
@@ -308,12 +308,12 @@ class OrGate(Gate):
 
     def gatePath(self : Self) -> PainterPath:
         path = PainterPath()
-        path.moveTo(QPointF(-20, -10))
-        path.lineTo(QPointF(-16, -10))
-        path.arcSpanTo(QPointF(0, 0), -60)
-        path.arcSpanTo(QPointF(-16, 10), -60)
-        path.lineTo(QPointF(-20, 10))
-        path.arcSagittaTo(QPointF(-20, -10), 4)
+        path.moveTo(-20, -10)
+        path.lineTo(-16, -10)
+        path.arcSpanTo(0, 0, -60)
+        path.arcSpanTo(-16, 10, -60)
+        path.lineTo(-20, 10)
+        path.arcSagittaTo(-20, -10, 4)
         path.closeSubpath()
         return path
 
@@ -323,13 +323,13 @@ class XorGate(OrGate):
 
     def gatePath(self : Self) -> PainterPath:
         path = PainterPath()
-        path.moveTo(QPointF(-16, -10))
-        path.arcSpanTo(QPointF(0, 0), -60)
-        path.arcSpanTo(QPointF(-16, 10), -60)
-        path.arcSagittaTo(QPointF(-16, -10), 4)
+        path.moveTo(-16, -10)
+        path.arcSpanTo(0, 0, -60)
+        path.arcSpanTo(-16, 10, -60)
+        path.arcSagittaTo(-16, -10, 4)
         path.closeSubpath()
-        path.moveTo(QPointF(-20, -10))
-        path.arcSagittaTo(QPointF(-20, 10), -4)
-        path.arcSagittaTo(QPointF(-20, -10), 4)
+        path.moveTo(-20, -10)
+        path.arcSagittaTo(-20, 10, -4)
+        path.arcSagittaTo(-20, -10, 4)
         path.closeSubpath()
         return path
