@@ -129,14 +129,16 @@ class CmdMoveMixin:
 
     def _moveBy(self : Self, offset : QPointF) -> None:
         for e in self._items:
-            e.moveBy(offset)
+            if e.parentItem() is None:
+                e.moveBy(offset)
 
     def _storePos(self : Self) -> None:
-        self._spos = {e: e.scenePos() for e in self._items}
+        self._spos = \
+            {e: e.scenePos() for e in self._items if e.parentItem() is None}
 
     def _restorePos(self : Self) -> None:
-        for e in self._items:
-            e.moveBy(self._spos[e] - e.scenePos())
+        for e, pos in self._spos.items():
+            e.moveBy(pos - e.scenePos())
 
 
 class CmdAdd(
