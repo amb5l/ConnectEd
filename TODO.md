@@ -1,4 +1,10 @@
+BUGS
+- symbol pin drag to move doesn't work
+- symbol pin : edit name when not selected
+- close library
+
 NEXT
+- WIDTH, PITCH = STD_WIDTH, STD_PITCH
 - primitives library
 - round 10.0 to 10 in XML
 - reorder XML attributes of SymbolPin
@@ -7,13 +13,9 @@ NEXT
 
 - PropertyText.mouseDoubleClickEvent - move to view?
 - PropertyText moves badly as part of group of selected objects
-- if (cleat := self.cleat()) is None:
-- WIDTH, PITCH
 - error: rect = self._allItemsRect()
 - review use of ItemBoundMixin and ItemShapeMixin to allow for tolerance
-- remove unnecessary reuse e.g. of QPainterPath
 - separate overrides from new methods in item classes
-- grid pitch: check, 2D (5,5)
 - fixed (position) and locked (editing) properties
 - symbols
   - symbol placement singleton - loads libraries and symbols
@@ -22,17 +24,15 @@ NEXT
   - symbol placement states and interaction
 - asterisk on modified windows
 - change window convenience properties to methods
-- rotate port during placement
 
 
 CODE QUALITY
 - @override
 - private vs public method and attribute names
 - use of "raise"
+- if (cleat := self.cleat()) is None:
 
-BUGS
-- symbol pin : edit name when not selected
-- close library
+
 
 FEATURES
 - live marquee selection

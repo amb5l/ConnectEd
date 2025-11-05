@@ -94,12 +94,14 @@ class DrawingViewStateIdle(DrawingViewStateBase):
                 )
             else:
                 # other move scenarios
-                # TODO filter out pins and child items?
-                slide = not(m & qkm.AltModifier)
-                self.interact(
-                    EditMoveInteraction(self.view, items, self._snap(s), slide),
-                    self.view.stateEditSlide if slide else self.view.stateEditMove
-                )
+                # filter out child items
+                items = [item for item in items if item.parentItem() is None]
+                if items:
+                    slide = not(m & qkm.AltModifier)
+                    self.interact(
+                        EditMoveInteraction(self.view, items, self._snap(s), slide),
+                        self.view.stateEditSlide if slide else self.view.stateEditMove
+                    )
         else: # start marquee selection
             self.view.marquee.begin(v)
             self.view.state.go(self.view.stateEditSelectArea2)
