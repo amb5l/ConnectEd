@@ -1,6 +1,6 @@
 from PyQt6.QtWidgets import QFileDialog, QWidget
 
-from ...core.defs import GEN_EXT, LIB_EXT, DSN_EXT
+from ...core.defs import LIB_EXT, DSN_EXT
 
 
 class FileOpenDialog(QFileDialog):
@@ -14,11 +14,11 @@ class FileOpenDialog(QFileDialog):
         self.setFileMode(QFileDialog.FileMode.ExistingFiles)
         match type_name:
             case None:
-                self.setNameFilter(f"Connected Files (*{GEN_EXT});;All Files (*.*)`")
+                self.setNameFilter(f"All Files (*.*)")
             case "Design":
-                self.setNameFilter(f"Connected Designs (*{DSN_EXT});;Connected Libraries (*{LIB_EXT});;Connected Files (*{GEN_EXT});;All Files (*.*)")
+                self.setNameFilter(f"Connected Designs (*{DSN_EXT});;Connected Libraries (*{LIB_EXT});;All Files (*.*)")
             case "Library":
-                self.setNameFilter(f"Connected Libraries (*{LIB_EXT});;Connected Designs (*{DSN_EXT});;Connected Files (*{GEN_EXT});;All Files (*.*)")
+                self.setNameFilter(f"Connected Libraries (*{LIB_EXT});;Connected Designs (*{DSN_EXT});;All Files (*.*)")
             case _:
                 raise ValueError(f"Unknown type name: {type_name}")
         self.setAcceptMode(QFileDialog.AcceptMode.AcceptOpen)
