@@ -58,7 +58,7 @@ class ItemXmlMixin:
                 elif item_name in property_text_classes:
                     child_cls = property_text_classes[item_name]
                     child = child_cls.fromXml(xr)
-                    child.setParentItem(instance._anchor_points[child.cleat()])
+                    child.setParentItem(instance._anchor_points[child.getCleatAPName()])
                     child.onGeometryChange()
                 else:
                     logger().warning(f"Unexpected child element: {item_name}")
