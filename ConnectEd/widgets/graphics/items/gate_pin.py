@@ -1,6 +1,6 @@
 from typing import Self
 
-from PyQt6.QtCore    import QPointF
+from PyQt6.QtCore    import QPointF, QXmlStreamWriter
 from PyQt6.QtWidgets import QGraphicsItem, QMenu
 from PyQt6.QtGui     import QAction, QPainterPath
 
@@ -49,7 +49,11 @@ class GatePin(ItemPosMixin, BasePinDotMixin, BasePinClockMixin, BasePin):
     # instance attributes
     _length : float
 
-    def __init__(self : Self, parent : QGraphicsItem | None = None) -> None:
+    def __init__(
+        self : Self,
+        parent : QGraphicsItem | None = None,
+        bare : bool = False  # unused
+    ) -> None:
         self._length = PITCH
         super().__init__(parent)
 
@@ -78,6 +82,9 @@ class GatePin(ItemPosMixin, BasePinDotMixin, BasePinClockMixin, BasePin):
                 checked=self._dot
             )
         ]
+
+    def toXml(self : Self, xw : QXmlStreamWriter) -> None:
+        pass  # exclude from XML
 
     def _setPath(self : Self, scene : "DrawingScene | None" = None) -> None:
         if scene is None:

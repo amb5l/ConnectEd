@@ -273,9 +273,10 @@ def clone(items : list[ItemMixin]) -> list[ItemMixin]:
 
 _item_classes = {}
 
-def register_item(name : str):
+def register_item(name : str, module_name : str | None = None):
     """Import a class from a submodule and register it in _item_classes."""
-    module_name = pascal2snake(name)
+    if module_name is None:
+        module_name = pascal2snake(name)
     import importlib
     module = importlib.import_module(f".{module_name}", package=__name__)
     cls = getattr(module, name)
@@ -283,6 +284,10 @@ def register_item(name : str):
     return cls
 
 register_item("Port")
+register_item("BufGate", "gate")
+register_item("AndGate", "gate")
+register_item("OrGate", "gate")
+register_item("XorGate", "gate")
 register_item("Block")
 register_item("PropertyText")
 register_item("Rectangle")

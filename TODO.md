@@ -2,7 +2,7 @@ NEXT
 - save/load with gates
 - single tether
 - no duplicates in File MRU list
-
+- properties can be read only, read/write or write once (on creation)
 
 - PropertyText.mouseDoubleClickEvent - move to view?
 - PropertyText moves badly as part of group of selected objects
