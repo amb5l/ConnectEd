@@ -1,7 +1,8 @@
 NEXT
-- save/load with gates
+- primitives library
+- round 10.0 to 10 in XML
+- reorder XML attributes of SymbolPin
 - single tether
-- no duplicates in File MRU list
 - properties can be read only, read/write or write once (on creation)
 
 - PropertyText.mouseDoubleClickEvent - move to view?

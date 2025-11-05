@@ -43,7 +43,8 @@ class BaseText(
     _ORIGIN_NAME = "Top Left"
     _PROPERTY_SPECS_POS = \
         ItemOriginMixin._PROPERTY_SPECS_ORIGIN | \
-        ItemPosMixin._PROPERTY_SPECS_POS
+        ItemPosMixin._PROPERTY_SPECS_POS | \
+        ItemRotateMixin._PROPERTY_SPECS_ROT
     _PROPERTY_SPECS_TEXT = {
         "Text" : PropertySpec(
             type_name = "str",

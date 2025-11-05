@@ -340,7 +340,15 @@ class LibraryDbNode(DbNode):
     def fromXml(cls : Self, xr : QXmlStreamReader) -> Self:
         db_node : Self = cls.fromXmlBegin(xr)
         while not (xr.isEndElement() and xr.name() == cls.dbTypeName(cls)):
+            if xr.tokenType() == xr.TokenType.EndDocument:
+                logger().error(f"End of document before end of '{cls.dbTypeName(cls)}'")
+                break
+            # process symbols
+            if xr.name() == "Symbol" and xr.isStartElement():
+                symbol_node = SymbolNode.fromXml(xr)
+                db_node.addSymbolNode(symbol_node)
             xr.readNext()
+        db_node.fromXmlEnd(xr)
         return db_node
 
 

@@ -4,10 +4,9 @@ from PyQt6.QtCore    import QPointF
 from PyQt6.QtWidgets import QGraphicsItem, QMenu
 from PyQt6.QtGui     import QAction
 
-from ..properties import PropertySpec
-
-from .mixin.pos  import ItemPosMixin
-from .mixin.line import ItemLineMixin
+from .mixin.pos    import ItemPosMixin
+from .mixin.rotate import ItemRotateMixin
+from .mixin.line   import ItemLineMixin
 
 from .port_pin import PortPinText, PortPinMixin
 from .base_pin import BasePinArrow, BasePin, \
@@ -41,6 +40,7 @@ class SymbolPin(ItemPosMixin, BasePinDotMixin, BasePinClockMixin, BasePin):
     # class attributes
     _PROPERTY_SPECS = \
         ItemPosMixin._PROPERTY_SPECS_POS | \
+        ItemRotateMixin._PROPERTY_SPECS_ROT | \
         PortPinMixin._PROPERTY_SPECS_NAME | \
         BasePinDotMixin._PROPERTY_SPECS_DOT | \
         BasePinClockMixin._PROPERTY_SPECS_CLOCK | \

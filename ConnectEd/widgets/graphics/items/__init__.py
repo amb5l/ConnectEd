@@ -283,6 +283,7 @@ def register_item(name : str, module_name : str | None = None):
     _item_classes[name] = cls
     return cls
 
+register_item("ConnSeg")
 register_item("Port")
 register_item("BufGate", "gate")
 register_item("AndGate", "gate")
@@ -290,7 +291,9 @@ register_item("OrGate", "gate")
 register_item("XorGate", "gate")
 register_item("Block")
 register_item("PropertyText")
+register_item("SymbolPin")
+register_item("Line")
 register_item("Rectangle")
+register_item("Polyline")
 register_item("Text")
 register_item("TextBlock")
-register_item("ConnSeg")
