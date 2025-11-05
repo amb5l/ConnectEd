@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ConnectEd>
+  <Library name="primitives">
+    <Symbol name="FDCE">
+      <SymbolPin position_x="-20.0" position_y="-10.0" name="D" dot="False" clock="False" direction="in" comment="">
+        <SymbolPinName cleat="Name" origin="Center Left" position_x="0.0" position_y="0.0" name="Name" display="Value"/>
+      </SymbolPin>
+      <SymbolPin position_x="-20.0" position_y="0.0" name="E" dot="False" clock="False" direction="in" comment="">
+        <SymbolPinName cleat="Name" origin="Center Left" position_x="0.0" position_y="0.0" name="Name" display="Value"/>
+      </SymbolPin>
+      <SymbolPin position_x="-20.0" position_y="10.0" name="CLK" dot="False" clock="False" direction="in" comment="">
+        <SymbolPinName cleat="Name" origin="Center Left" position_x="0.0" position_y="0.0" name="Name" display="Value"/>
+      </SymbolPin>
+      <SymbolPin position_x="20" position_y="-10" rotation="180" name="Q" dot="False" clock="False" direction="out" comment="">
+        <SymbolPinName cleat="Name" origin="Center Left" position_x="0.0" position_y="0.0" name="Name" display="Value"/>
+      </SymbolPin>
+      <Rectangle position_x="-20.0" position_y="-30.0" width="40.0" height="60.0"/>
+    </Symbol>
+  </Library>
+</ConnectEd>

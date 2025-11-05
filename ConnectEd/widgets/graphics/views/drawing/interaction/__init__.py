@@ -6,6 +6,7 @@ from PyQt6.QtGui     import QAction
 
 from ....items import ItemType
 
+from ....items.grip       import Grip
 from ....items.block      import Block
 from ....items.block_pin  import BlockPin
 
@@ -151,12 +152,10 @@ class MoveItemsMixin:
 
     def _moveBy(self : Self, offset : QPointF) -> None:
         for e in self._items:
-            if e.parentItem() is None:
-                e.moveBy(offset)
+            e.moveBy(offset)
 
     def _storePos(self : Self) -> None:
-        self._spos = \
-            {e: e.scenePos() for e in self._items if e.parentItem() is None}
+        self._spos = {e: e.scenePos() for e in self._items}
 
     def _restorePos(self : Self) -> None:
         for e, pos in self._spos.items():

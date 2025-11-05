@@ -31,6 +31,8 @@ CODE QUALITY
 - use of "raise"
 
 BUGS
+- symbol pin : edit name when not selected
+- close library
 
 FEATURES
 - live marquee selection

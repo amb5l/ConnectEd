@@ -1,15 +1,15 @@
 from typing          import Self
 from collections.abc import Callable
 
-from PyQt6.QtCore    import QPointF
-from PyQt6.QtGui     import QUndoCommand
+from PyQt6.QtCore import QPointF
+from PyQt6.QtGui  import QUndoCommand
 
 from ......core.utils import camel2proper
 
-from ....items import EdgeLoc, ItemMixin, ItemType
+from ....items import ItemMixin, ItemType
 
-from ....items.block     import Block
-from ....items.block_pin import BlockPin
+from ....items.grip import Grip
+
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -129,12 +129,10 @@ class CmdMoveMixin:
 
     def _moveBy(self : Self, offset : QPointF) -> None:
         for e in self._items:
-            if e.parentItem() is None:
-                e.moveBy(offset)
+            e.moveBy(offset)
 
     def _storePos(self : Self) -> None:
-        self._spos = \
-            {e: e.scenePos() for e in self._items if e.parentItem() is None}
+        self._spos = {e: e.scenePos() for e in self._items}
 
     def _restorePos(self : Self) -> None:
         for e, pos in self._spos.items():
