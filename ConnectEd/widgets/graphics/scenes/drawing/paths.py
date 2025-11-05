@@ -194,7 +194,7 @@ class DrawingScenePathsMixin:
     def _pinExtArrowPaths(self : "DrawingScene", d : dict) -> None:
         w = WIDTH
         wh = WIDTH / 2
-        x1 = (w / 2) + _PIN_DOT_SIZE
+        x1 = wh + w + _PIN_DOT_SIZE
         x2 = PITCH - (_ENTRY_SIZE / 2)
         c = -((x1 + x2) / 2)  # center point
         sh = _EXT_ARROW_SIZE / 2
