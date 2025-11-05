@@ -206,9 +206,13 @@ class DbNode(Node):
     def toXmlEnd(self : Self, xw : QXmlStreamWriter) -> None:
         xw.writeEndElement()
 
-    def save(self : Self, path : str) -> None:
-        self.setPath(path)
-        xw, file = saveBegin(self._path)
+    def save(self : Self, path : str | None = None) -> None:
+        if path is None:
+            path = self.path()
+        else:
+            self.setPath(path)
+        # TODO handle overwrite, failure to save
+        xw, file = saveBegin(path)
         self.toXml(xw)
         saveEnd(xw, file)
 
