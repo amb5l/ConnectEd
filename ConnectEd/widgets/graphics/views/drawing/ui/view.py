@@ -56,7 +56,7 @@ class DrawingViewUiViewMixin:
 
     def viewGridDisplay(self : "DrawingViewUi", checked : bool) -> None:
         self._view.grid.display = checked
-        self.viewport().update()
+        self._view.viewport().update()
 
     def viewGridSnap(self : "DrawingViewUi", checked : bool) -> None:
         self._view.grid.snap = checked

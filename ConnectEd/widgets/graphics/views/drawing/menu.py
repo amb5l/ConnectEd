@@ -51,29 +51,36 @@ class DrawingViewMenuMixin:
                 else:
                     # multiple items
                     pass
-                # common actions: slide/move/rotate
-                menu.addAction("Slide", lambda: self.ui.editSlide(items, spos))
-                menu.addAction("Move", lambda: self.ui.editMove(items, spos))
-                menu.addAction("Rotate CW", lambda: self.ui.editRotateCW(items, spos))
-                menu.addAction("Rotate CCW", lambda: self.ui.editRotateCCW(items, spos))
-                menu.addSeparator()
-                # common actions: clipboard/delete/duplicate
-                paste_items, _ = paste()
-                menu.addAction("Cut", lambda: self.ui.editCut())
-                menu.addAction("Copy", lambda: self.ui.editCopy())
-                if paste_items:
-                    menu.addAction("Paste", lambda: self.ui.editPaste())
-                menu.addAction("Delete", lambda: self.ui.editDelete())
-                menu.addAction("Duplicate", lambda: self.ui.editDuplicate())
-                menu.addSeparator()
+                # get top items (items with no parent)
+                top_items = [item for item in items if item.parentItem() is None]
+                f = f" ({len(top_items)}/{len(items)})" \
+                    if len(top_items) != len(items) else ""
+                if top_items:
+                    # common actions: slide/move/rotate
+                    menu.addAction(f"Slide{f}", lambda: self.ui.editSlide(items, spos))
+                    menu.addAction(f"Move{f}", lambda: self.ui.editMove(items, spos))
+                    menu.addAction(f"Rotate CW{f}", lambda: self.ui.editRotateCW(items, spos))
+                    menu.addAction(f"Rotate CCW{f}", lambda: self.ui.editRotateCCW(items, spos))
+                    menu.addSeparator()
+                    # common actions: clipboard/delete/duplicate
+                    paste_items, _ = paste()
+                    menu.addAction(f"Cut{f}", lambda: self.ui.editCut())
+                    menu.addAction(f"Copy{f}", lambda: self.ui.editCopy())
+                    if paste_items:
+                        menu.addAction(f"Paste{f}", lambda: self.ui.editPaste())
+                    menu.addAction(f"Delete{f}", lambda: self.ui.editDelete())
+                    menu.addAction(f"Duplicate{f}", lambda: self.ui.editDuplicate())
+                    menu.addSeparator()
         else:
             # menu for interaction
             _extendMenu(self.interaction.ctxMenuItems(spos))
-        # zoom
-        menu.addAction("Zoom All", self.ui.viewZoomAll)
-        if isinstance(self, DiagramView):
-            menu.addAction("Zoom Sheet", self.ui.viewZoomSheet)
         # grid
+        grid_show_action = menu.addAction(
+            "Grid Display", lambda: self.ui.viewGridDisplay(not self.grid.display)
+        )
+        grid_show_action.setCheckable(True)
+        grid_show_action.setChecked(self.grid.display)
+        menu.addAction(grid_show_action)
         grid_snap_action = menu.addAction(
             "Grid Snap", lambda: self.ui.viewGridSnap(not self.grid.snap)
         )
