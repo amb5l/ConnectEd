@@ -93,7 +93,7 @@ class DrawingViewUiEditMixin:
             if items is None:
                 items = self._scene.selectedItems()
             pos = self._view.mapToScene(pos) if isinstance(pos, QPoint) else pos
-            # TODO push command
+            self._scene.editRotateCW(items, pos, undoable=True)
 
     def editRotateCCW(
         self  : "DrawingViewUi",
@@ -107,7 +107,7 @@ class DrawingViewUiEditMixin:
             if items is None:
                 items = self._scene.selectedItems()
             pos = self._view.mapToScene(pos) if isinstance(pos, QPoint) else pos
-            # TODO push command
+            self._scene.editRotateCCW(items, pos, undoable=True)
 
     def editAssignOrigin(self : "DrawingViewUi", ap : "AnchorPoint") -> None:
         self._scene.editAssignOrigin(ap, undoable=True)

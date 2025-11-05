@@ -211,26 +211,67 @@ class CmdMove(
         # TODO: add slide logic
 
 
-class CmdRotate(CmdSceneItems):
+class CmdRotateBase(CmdSceneItems):
+    # class attributes
+    _ROTATE   : Callable[[ItemType], None]
+    _UNROTATE : Callable[[ItemType], None]
+    _SIGN_X   : float
+    _SIGN_Y   : float
 
     # instance attributes
-    _angle  : float
-    _before : dict[ItemType, float] # angles before
+    _pos    : QPointF | None          # individual if None, group otherwise
+    _before : dict[ItemType, QPointF] # positions before
 
     def __init__(
         self  : Self,
         scene : "DrawingScene",
         items : list[ItemType],
-        angle : float
+        pos   : QPointF | None = None
     ):
         super().__init__(scene, items)
-        self._angle = angle
-        self._before = {e: e.rotation() for e in self._items}
+        self._pos = pos
+        if pos is not None:
+            self._before = {item: item.pos() for item in self._items}
 
     def redo(self : Self) -> None:
-        for e in self._items:
-            e.setRotation(self._before[e] + self._angle)
+        if self._pos is None:  # individual rotation
+            for item in self._items:
+                self._ROTATE(item)
+        else:  # group rotation
+            for item in self._items:
+                self._ROTATE(item)
+                offset = item.pos() - self._pos
+                offset_cw = QPointF(
+                    self._SIGN_X * offset.y(),
+                    self._SIGN_Y * offset.x()
+                )
+                new_pos = self._pos + offset_cw
+                item.setPos(new_pos)
 
     def undo(self : Self) -> None:
-        for e in self._items:
-            e.setRotation(self._before[e])
+        for item in self._items:
+            self._UNROTATE(item)
+            if self._pos is not None:
+                item.setPos(self._before[item])
+
+
+class CmdRotateCW(CmdRotateBase):
+    @staticmethod
+    def _ROTATE(item):
+        item.rotateCW()
+    @staticmethod
+    def _UNROTATE(item):
+        item.rotateCCW()
+    _SIGN_X   = -1
+    _SIGN_Y   = +1
+
+
+class CmdRotateCCW(CmdRotateBase):
+    @staticmethod
+    def _ROTATE(item):
+        item.rotateCCW()
+    @staticmethod
+    def _UNROTATE(item):
+        item.rotateCW()
+    _SIGN_X   = +1
+    _SIGN_Y   = -1

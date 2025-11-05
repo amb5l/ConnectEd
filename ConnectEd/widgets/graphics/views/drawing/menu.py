@@ -1,7 +1,7 @@
 from collections.abc import Callable
 
 from PyQt6.QtWidgets import QMenu
-from PyQt6.QtGui     import QContextMenuEvent, QAction
+from PyQt6.QtGui     import QContextMenuEvent, QAction, QKeySequence
 
 from .....core.xml import paste
 
@@ -96,16 +96,19 @@ class DrawingViewMenuMixin:
         menu.exec(event.globalPos())
 
     def action(
-        self    : "DrawingView",
-        text    : str,
-        slot    : Callable,
-        checked : bool | None = None
+        self     : "DrawingView",
+        text     : str,
+        slot     : Callable,
+        checked  : bool | None = None,
+        shortcut : QKeySequence | str | None = None
     ):
         action = QAction(text, self)
         action.triggered.connect(slot)
         if checked is not None:
             action.setCheckable(True)
             action.setChecked(checked)
+        if shortcut is not None:
+            action.setShortcut(shortcut)
         return action
 
     def separator(self : "DrawingView") -> QAction:

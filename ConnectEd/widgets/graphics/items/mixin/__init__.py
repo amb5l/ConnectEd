@@ -72,6 +72,12 @@ class ItemMixin:
             item = item.parentItem()
         return item
 
+    def rotateCW(self : Self | QGraphicsItem) -> None:
+        self.setRotation((self.rotation() + 90) % 360)
+
+    def rotateCCW(self : Self | QGraphicsItem) -> None:
+        self.setRotation((self.rotation() - 90) % 360)
+
     def sceneRotation(self: Self | QGraphicsItem) -> float:
         angle = 0.0
         item = self

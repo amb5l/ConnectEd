@@ -20,7 +20,7 @@ from ....items.property_text import PropertyText
 from ....items.anchor_point  import AnchorPoint
 from ....items.mixin         import ItemMixin
 
-from ..cmd           import cmdExec, CmdDelete, CmdMove
+from ..cmd           import cmdExec, CmdDelete, CmdMove, CmdRotateCW, CmdRotateCCW
 from ..cmd.block_pin import CmdMoveBlockPins
 from ..cmd.edit      import CmdEditPortPin, \
                             CmdEditSymbolPinDot, CmdEditSymbolPinClock, \
@@ -61,6 +61,24 @@ class DrawingSceneApiEditMixin:
         undoable : bool = False
     ) -> None:
         cmd = CmdMoveBlockPins(parent, pins, after, before)
+        cmdExec(self, cmd, undoable)
+
+    def editRotateCW(
+        self     : "DrawingScene",
+        items    : list[ItemType],
+        pos      : QPointF | None = None,  # individual if None, group otherwise
+        undoable : bool = False
+    ) -> None:
+        cmd = CmdRotateCW(self, items, pos)
+        cmdExec(self, cmd, undoable)
+
+    def editRotateCCW(
+        self     : "DrawingScene",
+        items    : list[ItemType],
+        pos      : QPointF | None = None,  # individual if None, group otherwise
+        undoable : bool = False
+    ) -> None:
+        cmd = CmdRotateCCW(self, items, pos)
         cmdExec(self, cmd, undoable)
 
     def editCut(

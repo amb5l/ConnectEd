@@ -105,18 +105,10 @@ class PlacePortInteraction(RotateItemMixin, PlaceBase1PosInteraction):
     _ITEM_TYPE = Port
 
     def ctxMenuItems(self : Self, pos : QPointF) -> list[QAction | QMenu]:
-        separator = QAction()
-        separator.setSeparator(True)
-        rotate_cw_action = QAction("Rotate CW")
-        rotate_cw_action.setShortcut("]")
-        rotate_cw_action.triggered.connect(self.rotateCW)
-        rotate_ccw_action = QAction("Rotate CCW")
-        rotate_ccw_action.setShortcut("[")
-        rotate_ccw_action.triggered.connect(self.rotateCCW)
         return super().ctxMenuItems(pos) + [
-            separator,
-            rotate_cw_action,
-            rotate_ccw_action
+            self._view.separator(),
+            self._view.action("Rotate CW", self.rotateCW, "]"),
+            self._view.action("Rotate CCW", self.rotateCCW, "["),
         ]
 
 

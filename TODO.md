@@ -26,6 +26,7 @@ NEXT
 
 CODE QUALITY
 - @override
+- private vs public method and attribute names
 
 BUGS
 

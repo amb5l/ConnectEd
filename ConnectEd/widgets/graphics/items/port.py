@@ -97,6 +97,12 @@ class Port(
 
     def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
         return [
+            view.action(
+                "Rotate CW", lambda: view.ui.editRotateCW([self]), shortcut="]"
+            ),
+            view.action(
+                "Rotate CCW", lambda: view.ui.editRotateCCW([self]), shortcut="["
+            ),
             view.action("Edit...", view.ui.editPort),
             view.separator(),
             view.action("Appearance...", lambda: view.ui.editAppearance(self)),
