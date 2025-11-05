@@ -282,9 +282,9 @@ class DesignDbNode(DbNode):
     def toXml(self : Self, xw : QXmlStreamWriter) -> None:
         self.toXmlBegin(xw)
         xw.writeStartElement("Symbols")
-        for i in range(self._symbols.rowCount()):
-            symbol_node : SymbolNode = self._symbols.child(i)
-            symbol_scene = symbol_node._scene
+        for i in range(self.rowCount()):
+            symbol_node : SymbolNode = self.child(i)
+            symbol_scene = symbol_node.scene()
             symbol_scene.toXml(xw)
         xw.writeEndElement()
         self.scene().toXml(xw)
@@ -292,13 +292,14 @@ class DesignDbNode(DbNode):
 
     @classmethod
     def fromXml(cls : Self, xr : QXmlStreamReader) -> Self:
+        from ..widgets.graphics.scenes.diagram import DiagramScene
         db_node : Self = cls.fromXmlBegin(xr)
         while not (xr.isEndElement() and xr.name() == cls.dbTypeName(cls)):
             if xr.tokenType() == xr.TokenType.EndDocument:
                 logger().error(f"End of document before end of '{cls.dbTypeName(cls)}'")
                 break
             # process symbols
-            if xr.name() == "Symbols":
+            if xr.name() == "Symbols" and xr.isStartElement():
                 xr.readNext()  # move past <Symbols>
                 while not (xr.isEndElement() and xr.name() == "Symbols"):
                     if xr.tokenType() == QXmlStreamReader.TokenType.StartElement:
@@ -306,16 +307,14 @@ class DesignDbNode(DbNode):
                             symbol_node = SymbolNode.fromXml(xr)
                             db_node.addSymbolNode(symbol_node)
                         else:
-                            raise ValueError(f"Unexpected element in Symbols: {xr.name()}")
-                        xr.readNext()
+                            msg = f"Unexpected element in Symbols: {xr.name()}"
+                            raise ValueError(msg)
+                    xr.readNext()
             # process scene
-            if xr.tokenType() == QXmlStreamReader.TokenType.StartElement:
-                if xr.name() == "Diagram":
-                    diagram_scene = DiagramScene.fromXml(xr)
-                    db_node.setScene(diagram_scene)
-                else:
-                    raise ValueError(f"Expected Diagram, got {xr.name()}")
-                xr.readNext()
+            elif xr.name() == "Diagram" and xr.isStartElement():
+                diagram_scene = DiagramScene.fromXml(xr)
+                db_node.setScene(diagram_scene)
+            xr.readNext()
         db_node.fromXmlEnd(xr)
         return db_node
 
@@ -440,8 +439,10 @@ class Model(QStandardItemModel):
                     invalid_item_count += 1
                 else:
                     base_name = paste_item.text()
-                    existing_names = \
-                        [paste_item.child(i).text() for i in range(paste_item.rowCount())]
+                    existing_names = [
+                        paste_item.child(i).text()
+                        for i in range(paste_item.rowCount())
+                    ]
                     if base_name in existing_names:
                         paste_item.setText(name_counter.get(base_name))
                     node.appendRow(paste_item)

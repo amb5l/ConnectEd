@@ -30,7 +30,8 @@ class ItemXmlMixin:
         from ..symbol_pin    import SymbolPin, SymbolPinName, SymbolPinComment
         instance = cls(bare=True)
         fromXmlAttrs(instance, xr)
-        instance.onGeometryChange()
+        if hasattr(instance, "onGeometryChange"):
+            instance.onGeometryChange()
         # check if we're already at the end element (self-closing)
         if xr.isEndElement() and xr.name() == cls.__name__:
             return instance

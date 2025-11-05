@@ -1,9 +1,9 @@
 NEXT
-- gate rotation
+- save/load with gates
 - single tether
 
 
-- Line/Fill private attributes vs Quill (underscore)
+
 - PropertyText.mouseDoubleClickEvent - move to view?
 - PropertyText moves badly as part of group of selected objects
 - if (cleat := self.cleat()) is None:
@@ -27,6 +27,7 @@ NEXT
 CODE QUALITY
 - @override
 - private vs public method and attribute names
+- use of "raise"
 
 BUGS
 

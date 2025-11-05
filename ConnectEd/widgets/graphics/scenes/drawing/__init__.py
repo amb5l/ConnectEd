@@ -126,5 +126,5 @@ class DrawingScene(
                 else:
                     logger().warning(f"Unexpected element: {attr_name}")
             xr.readNext()
-        drawing_scene.tidyConns(undo=False)
+        drawing_scene.tidyConns(undoable=False)
         return drawing_scene
