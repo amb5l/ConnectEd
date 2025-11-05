@@ -26,6 +26,7 @@ class ItemXmlMixin:
     @classmethod
     def fromXml(cls : Self, xr : QXmlStreamReader) -> Self:
         from ..property_text import PropertyText
+        from ..port          import PortName, PortComment
         from ..block_pin     import BlockPin, BlockPinName, BlockPinComment
         from ..symbol_pin    import SymbolPin, SymbolPinName, SymbolPinComment
         instance = cls(bare=True)
@@ -42,6 +43,8 @@ class ItemXmlMixin:
         }
         property_text_classes = {
             "PropertyText"     : PropertyText,
+            "PortName"         : PortName,
+            "PortComment"      : PortComment,
             "BlockPinName"     : BlockPinName,
             "BlockPinComment"  : BlockPinComment,
             "SymbolPinName"    : SymbolPinName,
