@@ -132,7 +132,10 @@ class NavigatorPrivateMixin:
 
     def _save(self : "Navigator", node : "DbNode") -> None:
         # TODO handle overwrite
-        node.save()
+        if node.path():
+            node.save()
+        else:
+            self._saveAs(node)
 
     def _saveAs(self : "Navigator", node : "DbNode") -> None:
         from ...dialogs.file import FileSaveAsDialog
