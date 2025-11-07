@@ -187,7 +187,7 @@ class BufGate(BaseGate):
         if not hasattr(self, '_output'):
             self._output = GatePin(self)
             self._output.direction = SignalDirection.OUT
-            self._output.name = "o"
+            self._output.setName("o")
             self._output.setPos(QPointF(-12, 0))
             self._output.setLength(12)
             self._output.setRotation(180)
@@ -200,7 +200,7 @@ class BufGate(BaseGate):
         if not hasattr(self, '_input'):
             self._input = GatePin(self)
             self._input.direction = SignalDirection.IN
-            self._input.name = "i"
+            self._input.setName("i")
             self._input.setPos(QPointF(-28, 0))
             self._input.setLength(12)
         self._input.inverted = level == "L"
@@ -311,7 +311,7 @@ class Gate(BaseGate):
         if not hasattr(self, '_output'):
             self._output = GatePin(self)
             self._output.direction = SignalDirection.OUT
-            self._output.name = "o"
+            self._output.setName("o")
             self._output.setPos(QPointF(-10, 0))
             self._output.setRotation(180)
         self._output.inverted = level == "L"
@@ -326,7 +326,7 @@ class Gate(BaseGate):
             for i, level in enumerate(levels):
                 pin = GatePin(self)
                 pin.direction = SignalDirection.IN
-                pin.name = f"i{i+1}"
+                pin.setName(f"i{i+1}")
                 a = 0 if w % 2 == 1 or i < w // 2 else 1 # skip/don't center
                 y = 10 * (-(w // 2) + i + a)
                 pin.setPos(QPointF(-30, y))

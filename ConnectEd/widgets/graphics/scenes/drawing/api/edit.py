@@ -193,13 +193,12 @@ class DrawingSceneApiEditMixin:
     def editPropertyText(
         self       : "DrawingScene",
         item       : PropertyText,
-        name       : str,
         value      : str,
         display    : PropertyDisplay,
         appearance : QuillPrefChange,
         undoable   : bool = False
     ) -> None:
-        cmd = CmdEditPropertyText(self, item, name, value, display, appearance)
+        cmd = CmdEditPropertyText(self, item, value, display, appearance)
         cmdExec(self, cmd, undoable)
 
     def editAppearance(

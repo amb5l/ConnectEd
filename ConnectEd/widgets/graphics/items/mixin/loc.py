@@ -21,16 +21,14 @@ class ItemLocMixin:
 
     _PROPERTY_SPECS_LOC = {
         "Edge" : PropertySpec(
-            type_name   = "Edge",
-            getter      = lambda self: self.loc().edge,
-            setter      = lambda self, value: self.setLocEdge(value),
-            description = "Parent edge"
+            type_name = "Edge",
+            getter    = lambda self: self.loc().edge,
+            setter    = lambda self, value: self.setLocEdge(value)
         ),
         "Offset" : PropertySpec(
-            type_name   = "float",
-            getter      = lambda self: self.loc().offset,
-            setter      = lambda self, value: self.setLocOffset(value),
-            description = "Offset from start of parent edge"
+            type_name = "float",
+            getter    = lambda self: self.loc().offset,
+            setter    = lambda self, value: self.setLocOffset(value)
         )
     }
 

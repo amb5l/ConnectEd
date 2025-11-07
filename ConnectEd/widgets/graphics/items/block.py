@@ -8,36 +8,42 @@ from ..properties import PropertySpec
 
 from .              import EdgeLoc, Edge
 from .base_rect     import BaseRectangle
-from .property_text import PropertyTextSpec
+from .property_text import PropertyTextSpec, PropertyText
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ..views.drawing import DrawingView
 
 
+class BlockLabel(PropertyText):
+    pass
+
+
+class BlockName(PropertyText):
+    pass
+
+
 class Block(BaseRectangle):
     # class attributes
-    _PROPERTY_SPECS = BaseRectangle._PROPERTY_SPECS | {
+    _PROPERTY_SPECS = {
         "Label" : PropertySpec(
             type_name = "str",
             getter    = lambda self: self._label,
-            setter    = lambda self, value: setattr(self, '_label', value)
+            setter    = lambda self, value: setattr(self, '_label', value),
+            text      = PropertyTextSpec(BlockLabel, "Top Left")
         ),
         "Name" : PropertySpec(
             type_name = "str",
             getter    = lambda self: self._name,
-            setter    = lambda self, value: setattr(self, '_name', value)
+            setter    = lambda self, value: setattr(self, '_name', value),
+            text      = PropertyTextSpec(BlockName, "Bottom Left")
         ),
         "Path" : PropertySpec(
             type_name = "str",
             getter    = lambda self: self._path,
             setter    = lambda self, value: setattr(self, '_path', value)
         )
-    }
-    _PROPERTY_TEXTS = {
-        "Label" : PropertyTextSpec( "Bottom Left" , QPointF( 0,  0 ) , "Top Left"    ),
-        "Name"  : PropertyTextSpec( "Top Left"    , QPointF( 0,  0 ) , "Bottom Left" ),
-    }
+    } | BaseRectangle._PROPERTY_SPECS
 
     # instance attributes
     _label : str

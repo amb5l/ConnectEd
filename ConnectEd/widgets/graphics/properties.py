@@ -4,160 +4,145 @@ from dataclasses     import dataclass
 
 from ...app import logger
 
-from ...core.utils import val2str
+from ...core.utils import str2val, val2str
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from .views.drawing import DrawingView
-    from .items.property_text import PropertyText, PropertyTextSpec
+    from .items.property_text import PropertyTextSpec, PropertyText
+    from .items.mixin.anchor import ItemAnchorPointsMixin
 
 
 @dataclass
 class PropertySpec:
-    type_name   : str                          = "str"
-    exists      : Callable[[], bool] | None    = None
-    getter      : Callable[[], Any] | None     = None
-    setter      : Callable[[Any], None] | None = None  # None = read only
-    default     : Callable[[], Any] | None     = None  # for when the value is DEFAULT
-    description : str                          = ""
-    custom      : bool                         = False
-
-    def __post_init__(self : Self):
-        # Set defaults for optional functions
-        if self.exists is None:
-            self.exists = lambda instance: True
-        if self.default is None:
-            self.default = lambda instance: None
+    type_name : str
+    exists    : Callable[[], bool]     | None = None
+    getter    : Callable[[], Any]      | None = None
+    setter    : Callable[[Any], None]  | None = None  # None = read only
+    default   : Callable[[], Any]      | None = None  # when getter returns DEFAULT
+    text      : "PropertyTextSpec      | None" = None
 
 
 class PropertiesMixin:
     # class attributes
-    _PROPERTY_SPECS : dict[str, PropertySpec]
-    _PROPERTY_TEXTS : dict[str, "PropertyTextSpec"]
+    _PROPERTY_SPECS : dict[str, "PropertySpec"]
 
     # instance attributes
-    _property_specs : dict[str, PropertySpec]
-    _property_texts : dict[str, "PropertyText"]
+    _custom_properties : dict[str, str]
+    _property_texts    : dict[str, "PropertyText"]
 
-    def initProperties(self : Self, bare : bool = False) -> None:
-        self._property_specs = self._PROPERTY_SPECS.copy()
+    def initProperties(self : Self | "ItemAnchorPointsMixin", bare : bool = False) -> None:
+        self._custom_properties = {}
+        self._property_texts = {}
         if bare:
             return
-        if hasattr(self.__class__, "_getPropertyTexts"):
-            property_texts = self.__class__._getPropertyTexts()
-        elif hasattr(self, "_PROPERTY_TEXTS"):
-            property_texts = self._PROPERTY_TEXTS
-        else:
-            return
-        self._property_texts = {}
-        for name, pts in property_texts.items():
-            p : "PropertyText" = pts._class()
-            p.setOriginAPName(pts.anchor)
-            p.setPos(pts.pos)
-            p.setName(name)
-            p.setDisplay(pts.display)
-            p.setParentItem(self._anchor_points[pts.cleat])
-            self._property_texts[name] = p
-
-    def getPropertySpec(self : Self, name : str) -> PropertySpec:
-        return self._property_specs[name]
-
-    def renameProperty(self : Self, old : str, new : str) -> None:
-        if old == new:
-            return
-        if old not in self._property_specs:
-            logger().warning(f"Property {old} does not exist")
-            return
-        if new in self._property_specs:
-            logger().warning(f"Property {new} already exists")
-            return
-        new_dict = {}
-        for name, ps in self._property_specs.items():
-            new_dict[new if name == old else name] = ps
-        self._property_specs = new_dict
+        for name, spec in self._PROPERTY_SPECS.items():
+            if spec.text is not None:
+                property_text = spec.text.cls(
+                    name,
+                    spec.text.cleat,
+                    spec.text.pos,
+                    spec.text.anchor,
+                    spec.text.display
+                )
+                property_text.setParentItem(self.getAnchorPoint(spec.text.cleat))
+                self._property_texts[name] = property_text
 
     def getPropertyNames(self : Self) -> list[str]:
-        return list(self._property_specs.keys())
+        return \
+            list(self._PROPERTY_SPECS.keys()) + \
+            list(self._custom_properties.keys())
 
     def getPropertyNamesAndValues(self : Self) -> dict[str, str]:
-        d = {}
-        for name, ps in self._property_specs.items():
-            if ps.exists(self):
-                d[name] = val2str(ps.getter(self))
-        return d
+        return {
+            name: val2str(self.getPropertyValue(name)) \
+                for name in self.getPropertyNames()
+        }
+
+    def isPropertyCustom(self : Self, name : str) -> bool:
+        return name in self._custom_properties
+
+    def isPropertyReadOnly(self : Self, name : str) -> bool:
+        if name in self._PROPERTY_SPECS:
+            return self._PROPERTY_SPECS[name].setter is None
+        elif name in self._custom_properties:
+            return False
+        else:
+            logger().error(f"Property '{name}' not found")
+            return True
 
     def getPropertyValue(self : Self, name : str) -> Any:
-        if name not in self._property_specs:
-            logger().warning(f"Property {name} does not exist")
+        if name in self._PROPERTY_SPECS:
+            if self._PROPERTY_SPECS[name].getter is None:
+                logger().error(f"Property '{name}' has no getter")
+                return None
+            return self._PROPERTY_SPECS[name].getter(self)
+        elif name in self._custom_properties:
+            return self._custom_properties[name]
+        else:
+            logger().error(f"Property '{name}' not found")
+        return None
+
+    def getPropertyDefault(self : Self, name : str) -> Any:
+        if name in self._PROPERTY_SPECS \
+        and self._PROPERTY_SPECS[name].default is not None:
+            return self._PROPERTY_SPECS[name].default(self)
+        else:
             return None
-        ps = self._property_specs[name]
-        if not ps.exists(self):
-            logger().warning(f"Property {name} does not exist for this instance")
+
+    def getPropertyTypeName(self : Self, name : str) -> str | None:
+        if name in self._PROPERTY_SPECS:
+            return self._PROPERTY_SPECS[name].type_name
+        elif name in self._custom_properties:
+            return "str"
+        else:
+            logger().error(f"Property '{name}' not found")
             return None
-        return ps.getter(self)
 
     def setPropertyValue(self : Self, name : str, value : Any) -> None:
-        if name not in self._property_specs:
-            logger().warning(f"Property {name} does not exist")
-            return
-        ps = self._property_specs[name]
-        if not ps.exists(self):
-            logger().warning(f"Property {name} does not exist for this instance")
-            return
-        if ps.setter is not None:
-            ps.setter(self, value)
+        if name in self._PROPERTY_SPECS:
+            if self._PROPERTY_SPECS[name].setter is None:
+                logger().error(f"Property '{name}' is read only")
+                return
+            if isinstance(value, str):  # convert string if needed
+                type_name = self._PROPERTY_SPECS[name].type_name
+                if type_name != "str":
+                    value = str2val(value, type_name)
+            self._PROPERTY_SPECS[name].setter(self, value)
+        elif name in self._custom_properties:
+            self._custom_properties[name] = value
         else:
-            logger().warning(f"Property {name} is read only")
-        self.onPropertyChange()
+            logger().error(f"Property '{name}' not found")
+        if name in self._property_texts:
+            self._property_texts[name].onTextChange()
 
-    def getPropertyDescription(self : Self, name : str) -> str:
-        if name not in self._property_specs:
-            logger().warning(f"Property {name} does not exist")
-        ps = self._property_specs[name]
-        return ps.description
-
-    def setPropertyDescription(self : Self, name : str, description : str) -> None:
-        if name not in self._property_specs:
-            logger().warning(f"Property {name} does not exist")
+    def addProperty(self : Self, name : str, value : str) -> None:
+        if name in self._PROPERTY_SPECS:
+            logger().error(f"Inherent property '{name}' already exists")
             return
-        ps = self._property_specs[name]
-        ps.description = description
-
-    def addProperty(self : Self, name : str) -> None:
-        if name in self._property_specs:
-            logger().warning(f"Property {name} already exists")
+        if name in self._custom_properties:
+            logger().error(f"Custom property '{name}' already exists")
             return
-        self._property_specs[name] = PropertySpec(custom=True)
+        self._custom_properties[name] = value
 
-    def deleteProperty(self : Self, name : str) -> None:
-        if name in self._property_specs:
-            v = self._property_specs[name]
-            if v.custom:
-                del self._property_specs[name]
-        else:
-            logger().warning(f"Property {name} does not exist")
+    def delProperty(self : Self, name : str) -> None:
+        if name in self._PROPERTY_SPECS:
+            logger().error(f"Inherent property '{name}' cannot be deleted")
+            return
+        if name not in self._custom_properties:
+            logger().error(f"Custom property '{name}' not found")
+            return
+        del self._custom_properties[name]
 
-    def getPropertyText(self : Self, name : str) -> "PropertyText":
-        return self._property_texts[name]
-
-    def onPropertyChange(self : Self) -> None:
-        """Notify all PropertyText children to refresh their display."""
-        from PyQt6.QtWidgets import QGraphicsScene
-        if isinstance(self, QGraphicsScene):
-            children = self.items()  # QGraphicsScene uses items()
-        else:
-            children = self.childItems()  # QGraphicsItem uses childItems()
-        for child in children:
-            if hasattr(child, "onTextChange"):
-                child.onTextChange()
-            if hasattr(child, "childItems"):
-                for grandchild in child.childItems():
-                    if hasattr(grandchild, "onTextChange"):
-                        grandchild.onTextChange()
-
-    def ctxMenuProperties(
-        self    : Self,
-        checked : bool,
-        view    : "DrawingView"
-    ) -> None:
-        view.editProperties(self)
+    def renProperty(self : Self, old_name : str, new_name : str) -> None:
+        if old_name in self._PROPERTY_SPECS:
+            logger().error(f"Inherent property '{old_name}' cannot be renamed")
+            return
+        if old_name not in self._custom_properties:
+            logger().error(f"Custom property '{old_name}' not found")
+            return
+        self._custom_properties[new_name] = self._custom_properties[old_name]
+        del self._custom_properties[old_name]
+        if old_name in self._property_texts:
+            self._property_texts[new_name] = self._property_texts[old_name]
+            del self._property_texts[old_name]
+            self._property_texts[new_name].setName(new_name)

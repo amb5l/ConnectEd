@@ -1,12 +1,18 @@
+Select an item, choose "Propertes > Display..." from the context menu
+Pick a property click OK.
+If the property is already visible, it will be activated, and can be placed somewhere new.
+If the property was not visible, a PropertyText instance will be created and this can be placed.
+Existing property texts may be deleted or hidden.
+
 BUGS
 - symbol pin drag to move doesn't work
 - symbol pin : edit name when not selected
 - close library
 
 NEXT
+- file save: handle overwrite, failure to save
 - WIDTH, PITCH = STD_WIDTH, STD_PITCH
 - primitives library
-- round 10.0 to 10 in XML
 - reorder XML attributes of SymbolPin
 - single tether
 - properties can be read only, read/write or write once (on creation)
@@ -49,9 +55,9 @@ FEATURES
 - property change propagation
 - override setRotation to maintain ortho angles
 - review OnPositionChange
-- sort out editAppearance, editProperties in view/scene/cmd
+- sort out editAppearance, editAttributes in view/scene/cmd
 - scene:
-  editText, editPropertyText, editProperties, editAppearance
+  editText, editPropertyText, editAttributes, editAppearance
 
 - what about moving PropertyTexts when their parents are or are not selected?
 - settings propagation

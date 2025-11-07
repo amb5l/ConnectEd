@@ -191,6 +191,26 @@ FACTORY_SETTINGS = {
                         "style" : Qt.BrushStyle.SolidPattern
                     }
                 },
+                "BlockLabel" : {
+                    "text" : {
+                        "color"     : PaletteDark.BlockLabel,
+                        "family"    : "Liberation Sans",
+                        "size"      : 7,
+                        "bold"      : False,
+                        "italic"    : False,
+                        "underline" : False
+                    }
+                },
+                "BlockName" : {
+                    "text" : {
+                        "color"     : PaletteDark.BlockName,
+                        "family"    : "Liberation Sans",
+                        "size"      : 7,
+                        "bold"      : False,
+                        "italic"    : False,
+                        "underline" : False
+                    }
+                },
                 "BlockPin" : {
                     "line" : {
                         "color" : PaletteDark.BlockPin,
@@ -463,17 +483,6 @@ FACTORY_SETTINGS = {
                         "underline" : False
                     }
                 },
-                "Block" : {
-                    "line" : {
-                        "color" : PaletteLightMono.BlockLine,
-                        "width" : 1,
-                        "style" : Qt.PenStyle.SolidLine
-                    },
-                    "fill" : {
-                        "color" : PaletteLightMono.BlockFill,
-                        "style" : Qt.BrushStyle.SolidPattern
-                    }
-                },
                 "Gate" : {
                     "line" : {
                         "color" : PaletteLightMono.GateLine,
@@ -506,6 +515,37 @@ FACTORY_SETTINGS = {
                     "fill" : {
                         "color" : PaletteLightMono.GatePin,
                         "style" : Qt.BrushStyle.NoBrush
+                    }
+                },
+                "Block" : {
+                    "line" : {
+                        "color" : PaletteLightMono.BlockLine,
+                        "width" : 1,
+                        "style" : Qt.PenStyle.SolidLine
+                    },
+                    "fill" : {
+                        "color" : PaletteLightMono.BlockFill,
+                        "style" : Qt.BrushStyle.SolidPattern
+                    }
+                },
+                "BlockLabel" : {
+                    "text" : {
+                        "color"     : PaletteLightMono.BlockLabel,
+                        "family"    : "Liberation Sans",
+                        "size"      : 7,
+                        "bold"      : False,
+                        "italic"    : False,
+                        "underline" : False
+                    }
+                },
+                "BlockName" : {
+                    "text" : {
+                        "color"     : PaletteLightMono.BlockName,
+                        "family"    : "Liberation Sans",
+                        "size"      : 7,
+                        "bold"      : False,
+                        "italic"    : False,
+                        "underline" : False
                     }
                 },
                 "BlockPin" : {

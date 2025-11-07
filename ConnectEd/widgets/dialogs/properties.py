@@ -32,7 +32,6 @@ from .components import ColorComboBox,      \
 class PropertyState:
     name        : str
     value       : Any
-    description : str
 
 
 @dataclass
@@ -94,12 +93,6 @@ class ValueItem(PropertiesItem):
 
     def getDefault(self : Self) -> Any:
         return self.data(Qt.ItemDataRole.UserRole + self.IDX_DEFAULT)
-
-
-class DescriptionItem(PropertiesItem):
-    def __init__(self : Self, description : str, custom : bool = False) -> None:
-        super().__init__(description)
-        self.setEditable(custom)
 
 
 class ValueDelegate(QStyledItemDelegate):
@@ -185,7 +178,7 @@ class PropertiesDialog(QDialog):
     _delete_button  : QPushButton
     _ok_button      : QPushButton
     _cancel_button  : QPushButton
-    _initial        : dict[str, tuple[Any, str]]
+    _initial        : dict[str, Any]
 
     def __init__(
         self   : Self,
@@ -202,22 +195,19 @@ class PropertiesDialog(QDialog):
         self._table_model = QStandardItemModel()
         self._table_model.setHorizontalHeaderLabels([
             "Name",
-            "Value",
-            "Description"
+            "Value"
         ])
-        for name, spec in item._PROPERTY_SPECS.items():
-            custom = spec.custom
-            value = spec.getter(item)
-            type_name = spec.type_name
-            default = spec.default
-            read_only = spec.setter is None
-            description = spec.description
+        for name in item.getPropertyNames():
+            custom = item.isPropertyCustom(name)
+            read_only = item.isPropertyReadOnly(name)
+            value = item.getPropertyValue(name)
+            type_name = item.getPropertyTypeName(name)
+            default = item.getPropertyDefault(name)
             self._table_model.appendRow([
                 NameItem(name, custom),
-                ValueItem(type_name, value, default, read_only),
-                DescriptionItem(description, custom)
+                ValueItem(type_name, value, default, read_only)
             ])
-            self._initial[name] = (value, description)
+            self._initial[name] = value
         # create delegate
         self._value_delegate = ValueDelegate()
         self._value_delegate.destroyed.connect(
@@ -299,10 +289,10 @@ class PropertiesDialog(QDialog):
         row = self._table_model.rowCount()
         self._table_model.appendRow([
             NameItem("", True),
-            ValueItem("", "str"),
-            DescriptionItem("user defined property", True)
+            ValueItem("str", "")
         ])
-        self._table_view.setCurrentIndex(self._table_model.index(row, 0))
+        #self._table_view.setCurrentIndex(self._table_model.index(row, 0))
+        self._table_view.edit(self._table_model.index(row, 0))
 
     def delete(self : Self) -> None:
         row = self._table_view.currentIndex().row()
@@ -318,25 +308,20 @@ class PropertiesDialog(QDialog):
             name_item : NameItem = self._table_model.item(row, 0)
             value_item : ValueItem = self._table_model.item(row, 1)
             type_name = value_item.getTypeName()
-            description_item : DescriptionItem = self._table_model.item(row, 2)
             new_name = name_item.text()
             new_value = str2val(value_item.text(), type_name)
-            new_description = description_item.text()
-            new_state = PropertyState(new_name, new_value, new_description)
+            new_state = PropertyState(new_name, new_value)
             old_name = name_item.getInitialText()
             if old_name == "":
                 old_state = None # new property
             else:
                 initial_names.remove(old_name)
                 old_value = str2val(value_item.getInitialText(), type_name)
-                old_description = description_item.getInitialText()
-                old_state = PropertyState(old_name, old_value, old_description)
+                old_state = PropertyState(old_name, old_value)
             r.append(PropertyChange(old_state, new_state))
         # deleted properties
         for initial_name in initial_names:
-            initial_value, initial_description = self._initial[initial_name]
-            initial_state = PropertyState(
-                initial_name, initial_value, initial_description
-            )
+            initial_value = self._initial[initial_name]
+            initial_state = PropertyState(initial_name, initial_value)
             r.append(PropertyChange(initial_state, None))
         return r

@@ -9,10 +9,9 @@ from ....core.defs import PITCH
 from .mixin.pos  import ItemPosMixin
 from .mixin.line import ItemLineMixin
 
-from .port_pin      import PortPinMixin
-from .base_pin      import BasePin, BasePinDotMixin, BasePinClockMixin, _PIN_CLK_SIZE
-from .entry         import Entry
-from .property_text import PropertyTextSpec
+from .port_pin import PortPinMixin
+from .base_pin import BasePin, BasePinDotMixin, BasePinClockMixin, _PIN_CLK_SIZE
+from .entry    import Entry
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -41,10 +40,6 @@ class GatePin(ItemPosMixin, BasePinDotMixin, BasePinClockMixin, BasePin):
     @classmethod
     def _getEntryClass(cls) -> type[GatePinEntry]:
         return GatePinEntry
-
-    @classmethod
-    def _getPropertyTexts(cls) -> dict[str, PropertyTextSpec]:
-        return {}
 
     # instance attributes
     _length : float

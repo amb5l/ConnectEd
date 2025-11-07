@@ -106,25 +106,19 @@ class PortPinDialog(QDialog):
         self._up_radio.setChecked(False)
         # initialise fields from item if provided
         if item is not None:
-            self._name_edit.setText(item.name)
-            self._signal_dir_combo.setCurrentText(item.direction.value)
-            if item.range is None:
+            self._name_edit.setText(item.name())
+            self._signal_dir_combo.setCurrentText(item.direction().value)
+            if item.range() is None:
                 self._scalar_check.setChecked(True)
                 self._range_group.setEnabled(False)
             else:
                 self._scalar_check.setChecked(False)
                 self._range_group.setEnabled(True)
-                self._left_edit.setText(str(item.range.left))
-                self._right_edit.setText(str(item.range.right))
-                self._up_radio.setChecked(
-                    item.range.dir == RangeDirection.UP
-                )
-                self._down_radio.setChecked(
-                    item.range.dir == RangeDirection.DOWN
-                )
-                self._unspec_radio.setChecked(
-                    item.range.dir == RangeDirection.NONE
-                )
+                self._left_edit.setText(str(item.range().left))
+                self._right_edit.setText(str(item.range().right))
+                self._up_radio.setChecked(item.range().dir == RangeDirection.UP)
+                self._down_radio.setChecked(item.range().dir == RangeDirection.DOWN)
+                self._unspec_radio.setChecked(item.range().dir == RangeDirection.NONE)
         # catch scalar/vector change
         self._scalar_check.stateChanged.connect(self.onScalarChanged)
 

@@ -3,18 +3,18 @@ from enum   import Enum
 from dataclasses import dataclass
 
 from PyQt6.QtCore    import Qt, QPointF
-from PyQt6.QtWidgets import QGraphicsItem, QGraphicsSceneMouseEvent, QMenu
+from PyQt6.QtWidgets import QGraphicsSceneMouseEvent, QMenu
 from PyQt6.QtGui     import QAction
 
-from ..properties import PropertySpec, PropertiesMixin
+from ..properties  import PropertySpec
 
-from ..items.anchor_point import AnchorPoint
-
-from .base_text   import BaseText
-from .tether_text import TetherText
+from .base_text    import BaseText
+from .tether_text  import TetherText
+from .anchor_point import AnchorPoint
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
+    from ..properties import PropertiesMixin
     from ..views.drawing import DrawingView
 
 
@@ -46,13 +46,30 @@ class PropertyText(TetherText):
         BaseText._PROPERTY_SPECS_APPEARANCE
 
     # instance attributes
-    _name    : str
-    _display : PropertyDisplay
+    _name     : str
+    _display  : PropertyDisplay
 
-    def __init__(self : Self, bare : bool = False) -> None:
-        super().__init__(bare=bare)
-        self._name = "?"
+    def __init__(
+        self     : Self,
+        name     : str | None = None,
+        cleat    : str | None = None,
+        pos      : QPointF | None = None,
+        origin   : str | None = None,
+        display  : PropertyDisplay = PropertyDisplay.VALUE,
+        bare     : bool = False
+    ) -> None:
+        self._name = name
         self._display = PropertyDisplay.VALUE
+        super().__init__(bare=bare)
+        if bare:
+            return
+        self.setCleatAPName(cleat)
+        if origin is None:
+            origin = "Bottom Left" if cleat == "Top Left" else "Top Left"
+        self.setOriginAPName(origin)
+        pos = QPointF(0, 0) if pos is None else pos
+        self.setPos(pos)
+        self.setDisplay(display)
 
     def mouseDoubleClickEvent(self : Self, event : QGraphicsSceneMouseEvent) -> None:
         """Handle double-click events to open the edit dialog."""
@@ -72,17 +89,15 @@ class PropertyText(TetherText):
     def onTextChange(self : Self) -> None:
         text_to_set = ""
         value = self.value()
+        if not hasattr(self, "_display"):
+            return
         match self._display:
             case PropertyDisplay.VALUE:
-                text_to_set = f"<{self._name}>" if value == "" else value
+                text_to_set = f"<{self.name()}>" if value == "" else value
             case PropertyDisplay.NAME_VALUE:
-                text_to_set = f"{self._name}: {value}"
+                text_to_set = f"{self.name()}: {value}"
         super().setText(text_to_set)
         self.onGeometryChange()
-
-    def setParentItem(self : Self, parent : QGraphicsItem) -> None:
-        super().setParentItem(parent)
-        self.onTextChange()
 
     def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
         return [
@@ -92,26 +107,22 @@ class PropertyText(TetherText):
             view.action("Properties...", lambda: view.ui.editProperties(self))
         ]
 
-    def parent(self : Self) -> PropertiesMixin:
-        p = self.parentItem()
-        return \
-            self.scene() if p is None else \
-            p.parentItem() if isinstance(p, AnchorPoint) else \
-            p
+    def item(self : Self) -> "PropertiesMixin | None":
+        ap : "AnchorPoint" = self.parentItem()
+        return None if ap is None else ap.parentItem()
 
     def name(self : Self) -> str:
         return self._name
 
-    def setName(self : Self, value : str) -> None:
-        self._name = value
+    def setName(self : Self, name : str) -> None:
+        self._name = name
         self.onTextChange()
 
     def value(self : Self) -> str:
-        parent = self.parent()
-        return "" if parent is None else parent.getPropertyValue(self._name)
+        return str(self.item().getPropertyValue(self._name)) if self.item() else ""
 
     def setValue(self : Self, value : str) -> None:
-        self.parent().setPropertyValue(self._name, value)
+        self.item().setPropertyValue(self._name, value)
         self.onTextChange()
 
     def display(self : Self) -> PropertyDisplay:
@@ -124,8 +135,8 @@ class PropertyText(TetherText):
 
 @dataclass
 class PropertyTextSpec:
-    anchor  : str
-    pos     : QPointF
+    cls     : type[PropertyText]
     cleat   : str
+    pos     : QPointF | None = None
+    anchor  : str | None = None
     display : PropertyDisplay = PropertyDisplay.VALUE
-    _class  : type = PropertyText

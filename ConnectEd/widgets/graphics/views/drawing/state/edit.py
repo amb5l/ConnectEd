@@ -230,12 +230,11 @@ class DrawingViewStateEditPropertyText(DrawingViewStateBase):
         if item and isinstance(item, PropertyText):
             dialog = PropertyTextDialog(item, self.view)
             if dialog.exec():
-                name = dialog.getName()
                 value = dialog.getValue()
                 display = dialog.getDisplay()
                 appearance = dialog.getAppearanceChange()
                 self.scene.editPropertyText(
-                    item, name, value, display, appearance, undoable=True
+                    item, value, display, appearance, undoable=True
                 )
         else:
             logger().warning("No property text selected")

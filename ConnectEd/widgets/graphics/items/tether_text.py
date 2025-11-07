@@ -7,7 +7,6 @@ from ....app import logger
 
 from ..properties import PropertySpec
 
-from .mixin.anchor import ItemAnchorPointsMixin
 
 from .base_text    import BaseText
 from .anchor_point import AnchorPoint
@@ -56,10 +55,9 @@ class TetherText(BaseText):
     # class attributes
     _PROPERTY_SPECS_CLEAT = {
         "Cleat" : PropertySpec(
-            type_name   = "str",
-            getter      = lambda self: self.getCleatAPName(),
-            setter      = lambda self, value: self.setCleatAPName(value),
-            description = "Parent anchor point"
+            type_name = "str",
+            getter    = lambda self: self.getCleatAPName(),
+            setter    = lambda self, value: self.setCleatAPName(value)
         )
     }
 

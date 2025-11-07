@@ -74,13 +74,8 @@ class Port(
     def onSceneChange(self : Self, scene : "DrawingScene") -> None:
         self._setPath(scene)
 
-    @property
-    def direction(self : Self) -> "SignalDirection":
-        return super().direction
-
-    @direction.setter
-    def direction(self : Self, value : "SignalDirection") -> None:
-        super(Port, Port).direction.__set__(self, value)
+    def setDirection(self : Self, value : "SignalDirection") -> None:
+        super(Port, Port).setDirection(value)
         self._setPath()
 
     def _setPath(self : Self, scene : "DrawingScene | None" = None) -> None:

@@ -15,8 +15,8 @@ from .mixin.clone  import ItemCloneMixin
 from .mixin.xml    import ItemXmlMixin
 from .mixin.menu   import ItemMenuMixin
 
-from .property_text import PropertyText, PropertyTextSpec
 from .anchor_point  import AnchorPoint
+from .property_text import PropertyText
 
 from .entry import Entry
 
@@ -104,17 +104,6 @@ class PortPinMixin(
         """Return the comment text class."""
         raise NotImplementedError("Subclasses must implement this method")
 
-    @classmethod
-    def _getPropertyTexts(cls) -> dict[str, PropertyTextSpec]:
-        return {
-            "Name" : PropertyTextSpec(
-                anchor  = "Center Left",
-                pos     = QPointF(0, 0),
-                cleat   = "Name",
-                _class  = cls._getNameClass()
-            ),
-        }
-
     def initPortPin(self : Self, bare : bool = False) -> None:
         # Initialize attributes that properties will access
         self._name      = ""
@@ -142,40 +131,28 @@ class PortPinMixin(
             )
         }
 
-    ############################################################################
-    # convenience properties
-
-    @property
     def name(self : Self) -> str:
-        return self.getPropertyValue("Name")
+        return self._name
 
-    @name.setter
-    def name(self : Self, value : str) -> None:
-        self.setPropertyValue("Name", value)
+    def setName(self : Self, value : str) -> None:
+        self._name = value
 
-    @property
     def direction(self : Self) -> SignalDirection:
-        return self.getPropertyValue("Direction")
+        return self._direction
 
-    @direction.setter
-    def direction(self : Self, value : SignalDirection) -> None:
-        self.setPropertyValue("Direction", value)
+    def setDirection(self : Self, value : SignalDirection) -> None:
+        self._direction = value
 
-    @property
     def range(self : Self) -> VectorRange:
         return self._range
 
-    @range.setter
-    def range(self : Self, value : VectorRange) -> None:
+    def setRange(self : Self, value : VectorRange) -> None:
         self._range = value
-        self.onPropertyChange()
 
-    @property
     def comment(self : Self) -> str:
-        return self.getPropertyValue("Comment")
+        return self._comment
 
-    @comment.setter
-    def comment(self : Self, value : str) -> None:
-        self.setPropertyValue("Comment", value)
+    def setComment(self : Self, value : str) -> None:
+        self._comment = value
 
     ############################################################################

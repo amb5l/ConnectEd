@@ -1,7 +1,5 @@
 from typing import Self
-from enum   import Enum
 
-from PyQt6.QtCore    import QPointF
 from PyQt6.QtWidgets import QGraphicsItem, QGraphicsPathItem
 
 from ....core.defs import PITCH
@@ -119,13 +117,8 @@ class BasePin(ItemPaintMixin, PortPinMixin, QGraphicsPathItem):
         arrow_class = self._getArrowClass()
         self._arrow = None if arrow_class is None else arrow_class(self)
 
-    @property
-    def direction(self : Self) -> SignalDirection:
-        return super().direction
-
-    @direction.setter
-    def direction(self : Self, value : SignalDirection) -> None:
-        super(BasePin, BasePin).direction.__set__(self, value)
+    def setDirection(self : Self, value : SignalDirection) -> None:
+        super(BasePin, BasePin).setDirection(value)
         if self._arrow is not None:
             self._arrow.direction = value
 
@@ -146,6 +139,7 @@ class BasePin(ItemPaintMixin, PortPinMixin, QGraphicsPathItem):
 
 
 class BasePinDotMixin:
+    # class attributes
     _PROPERTY_SPECS_DOT = {
         "Dot" : PropertySpec(
             type_name = "bool",
@@ -168,6 +162,7 @@ class BasePinDotMixin:
 
 
 class BasePinClockMixin:
+    # class attributes
     _PROPERTY_SPECS_CLOCK = {
         "Clock" : PropertySpec(
             type_name = "bool",

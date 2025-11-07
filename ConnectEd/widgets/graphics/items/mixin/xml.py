@@ -6,6 +6,8 @@ from .....app import logger
 
 from .....core.xml import toXmlAttrs, fromXmlAttrs
 
+from ..mixin.anchor import ItemAnchorPointsMixin
+
 
 class ItemXmlMixin:
     def toXml(self : Self, xw : QXmlStreamWriter) -> None:
@@ -28,9 +30,10 @@ class ItemXmlMixin:
         from ..property_text import PropertyText
         from ..port          import PortName, PortComment
         from ..gate_pin      import GatePin
+        from ..block         import BlockLabel, BlockName
         from ..block_pin     import BlockPin, BlockPinName, BlockPinComment
         from ..symbol_pin    import SymbolPin, SymbolPinName, SymbolPinComment
-        instance = cls(bare=True)
+        instance : "ItemAnchorPointsMixin" = cls(bare=True)
         fromXmlAttrs(instance, xr)
         if hasattr(instance, "onGeometryChange"):
             instance.onGeometryChange()
@@ -47,6 +50,8 @@ class ItemXmlMixin:
             "PropertyText"     : PropertyText,
             "PortName"         : PortName,
             "PortComment"      : PortComment,
+            "BlockLabel"       : BlockLabel,
+            "BlockName"        : BlockName,
             "BlockPinName"     : BlockPinName,
             "BlockPinComment"  : BlockPinComment,
             "SymbolPinName"    : SymbolPinName,
@@ -61,8 +66,8 @@ class ItemXmlMixin:
                     child.setParentItem(instance)
                 elif item_name in property_text_classes:
                     child_cls = property_text_classes[item_name]
-                    child = child_cls.fromXml(xr)
-                    child.setParentItem(instance._anchor_points[child.getCleatAPName()])
+                    child : PropertyText = child_cls.fromXml(xr)
+                    child.setParentItem(instance.getAnchorPoint(child.getCleatAPName()))
                     child.onGeometryChange()
                     # text rotation compensation
                     if hasattr(child, 'onRotationChange'):
