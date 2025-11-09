@@ -5,7 +5,7 @@ from PyQt6.QtCore    import Qt
 from PyQt6.QtWidgets import QWidget, QTableView
 from PyQt6.QtGui     import QStandardItemModel, QAction, QWheelEvent, QFont
 
-from ...app import settings
+from ....app import settings
 
 
 class TableView(QTableView):

@@ -4,7 +4,7 @@ from PyQt6.QtWidgets import QWidget, QDialog, \
                             QVBoxLayout, QHBoxLayout, QGroupBox, \
                             QLabel, QComboBox, QRadioButton
 
-from . import okCancelLayout
+from .components.layout.ok_cancel import okCancelLayout
 
 
 ANGLE_PRESETS = [30, 45, 60, 90, 180]

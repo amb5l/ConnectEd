@@ -9,9 +9,9 @@ from ..graphics.items import QuillPref, QuillPrefChange
 
 from ..graphics.items.property_text import PropertyText, PropertyDisplay
 
-from .components import TextAppearanceLayout
+from .components.layout.text_appearance import TextAppearanceLayout
 
-from . import okCancelLayout
+from .components.layout.ok_cancel import okCancelLayout
 
 
 class PropertyTextDialog(QDialog):

@@ -11,9 +11,9 @@ from ...core.icon import SvgIconSingleton
 
 from ..graphics.items.gate import GateFunc
 
-from . import okCancelLayout
+from .components.spin import CustomSpinBox
 
-from .components import CustomSpinBox
+from .components.layout.ok_cancel import okCancelLayout
 
 
 class BufIcon(SvgIconSingleton):

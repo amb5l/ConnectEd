@@ -7,7 +7,7 @@ from PyQt6.QtWidgets import QWidget, QDialog, \
 
 from ..graphics.items import SignalDirection, RangeDirection, VectorRange
 
-from . import okCancelLayout
+from .components.layout.ok_cancel import okCancelLayout
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:

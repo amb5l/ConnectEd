@@ -8,9 +8,9 @@ from ..graphics.items import QuillPref, QuillPrefChange
 
 from ..graphics.items.mixin.quill import ItemQuillMixin
 
-from .components import TextAppearanceLayout
+from .components.layout.text_appearance import TextAppearanceLayout
 
-from . import okCancelLayout
+from .components.layout.ok_cancel import okCancelLayout
 
 
 class TextDialog(QDialog):

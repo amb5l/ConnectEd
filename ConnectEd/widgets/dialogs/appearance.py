@@ -17,12 +17,10 @@ from ..graphics.items.mixin.line  import ItemLineMixin
 from ..graphics.items.mixin.fill  import ItemFillMixin
 from ..graphics.items.mixin.quill import ItemQuillMixin
 
-from . import okCancelLayout
-
-from .components import LineAppearanceLayout, \
-                        FillAppearanceLayout, \
-                        TextAppearanceLayout
-
+from .components.layout.line_appearance import LineAppearanceLayout
+from .components.layout.fill_appearance import FillAppearanceLayout
+from .components.layout.text_appearance import TextAppearanceLayout
+from .components.layout.ok_cancel       import okCancelLayout
 
 class AppearanceDialog(QDialog):
     _dialog_layout    : QVBoxLayout

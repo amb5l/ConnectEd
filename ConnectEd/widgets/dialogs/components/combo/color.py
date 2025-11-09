@@ -1,0 +1,119 @@
+from typing import Self
+
+from PyQt6.QtCore    import Qt
+from PyQt6.QtWidgets import QWidget, QComboBox
+from PyQt6.QtGui     import QColor, QIcon, QPixmap, QPainter
+
+from .....core.utils import val2str
+
+from ....graphics.items import NoChange, Default, DEFAULT, NO_CHANGE
+
+from .. import CUSTOM_ICON_SIZE, NoChangeIcon, DefaultIcon, QueryIcon
+
+from ..dialog import CustomColorDialog
+
+
+class ColorComboBox(QComboBox):
+    COLORS = {
+        "<no change>"  : NO_CHANGE,
+        "<default>"    : DEFAULT,
+        "<custom>"     : "placeholder",
+        "Black"        : QColor(Qt.GlobalColor.black),
+        "Dark Red"     : QColor(Qt.GlobalColor.darkRed),
+        "Red"          : QColor(Qt.GlobalColor.red),
+        "Dark Yellow"  : QColor(Qt.GlobalColor.darkYellow),
+        "Yellow"       : QColor(Qt.GlobalColor.yellow),
+        "Dark Green"   : QColor(Qt.GlobalColor.darkGreen),
+        "Green"        : QColor(Qt.GlobalColor.green),
+        "Dark Cyan"    : QColor(Qt.GlobalColor.darkCyan),
+        "Cyan"         : QColor(Qt.GlobalColor.cyan),
+        "Dark Blue"    : QColor(Qt.GlobalColor.darkBlue),
+        "Blue"         : QColor(Qt.GlobalColor.blue),
+        "Dark Magenta" : QColor(Qt.GlobalColor.darkMagenta),
+        "Magenta"      : QColor(Qt.GlobalColor.magenta),
+        "Dark Gray"    : QColor(Qt.GlobalColor.darkGray),
+        "Gray"         : QColor(Qt.GlobalColor.gray),
+        "Light Gray"   : QColor(Qt.GlobalColor.lightGray),
+        "White"        : QColor(Qt.GlobalColor.white)
+    }
+
+    choice : NoChange | Default | QColor | None
+
+    def __init__(
+        self      : Self,
+        initial   : NoChange | Default | QColor,
+        default   : Default | QColor,
+        no_change : NoChange | Default | QColor | None = None,
+        parent    : QWidget | None = None
+    ) -> None:
+        super().__init__(parent)
+        self.setIconSize(CUSTOM_ICON_SIZE)
+        default_icon = \
+            self.getIcon(default) if isinstance(default, QColor) else \
+            DefaultIcon().get()
+        no_change_icon = \
+            self.getIcon(no_change) if isinstance(no_change, QColor) else \
+            default_icon if no_change is DEFAULT else \
+            NoChangeIcon().get()
+        custom = True
+        custom_idx = None
+        for k, v in self.COLORS.items():
+            i = self.count()
+            text = k
+            match k:
+                case "<no change>":
+                    if no_change is None and initial is not NO_CHANGE:
+                        continue
+                    icon = no_change_icon
+                case "<default>":
+                    icon = default_icon
+                case "<custom>":
+                    custom_idx = i
+                    icon = QueryIcon().get()
+                case _:
+                    icon = self.getIcon(v)
+            self.addItem(icon, text)
+            if initial == v:
+                self.setCurrentIndex(i)
+                custom = False
+            elif initial is NO_CHANGE and k == "<no change>":
+                self.setCurrentIndex(i)
+                custom = False
+            elif isinstance(initial, Default) and k == "<default>":
+                self.setCurrentIndex(i)
+                custom = False
+        if isinstance(initial, QColor) and custom and custom_idx is not None:
+            self.setCurrentIndex(custom_idx)
+            self.setItemIcon(custom_idx, self.getIcon(initial))
+            self.setItemText(custom_idx, f"<custom = {val2str(initial)}>")
+        self.choice = initial
+        self.activated.connect(self.onActivated)
+
+    def onActivated(self : Self, index : int) -> None:
+        selected_text = self.currentText()
+        if selected_text == "<no change>":
+            self.choice = NO_CHANGE
+        elif selected_text == "<default>":
+            self.choice = DEFAULT
+        elif selected_text.startswith("<custom"):
+            dialog = CustomColorDialog(
+                self.choice if isinstance(self.choice, QColor) else None,
+                parent=self
+            )
+            if dialog.exec():
+                self.choice = dialog.getChoice()
+                self.setItemIcon(index, self.getIcon(self.choice))
+                self.setItemText(index, f"<custom = {val2str(self.choice)}>")
+        else:
+            self.choice = self.COLORS[selected_text]
+
+    def getIcon(self : Self, color : QColor) -> QIcon:
+        size = self.iconSize()
+        pixmap = QPixmap(size.width(), size.height())
+        pixmap.fill(color)
+        with QPainter(pixmap) as painter:
+            painter.fillRect(0, 0, size.width(), size.height(), color)
+        return QIcon(pixmap)
+
+    def getChoice(self : Self) -> NoChange | Default | QColor | None:
+        return self.choice
