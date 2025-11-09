@@ -7,9 +7,10 @@ from ....app import logger
 
 from ..properties import PropertySpec
 
-
 from .base_text    import BaseText
 from .anchor_point import AnchorPoint
+
+from .mixin.anchor import ItemAnchorPointsMixin
 
 
 class Tether(QGraphicsLineItem):
