@@ -94,8 +94,10 @@ class DrawingViewStateIdle(DrawingViewStateBase):
                 )
             else:
                 # other move scenarios
-                # filter out child items
-                items = [item for item in items if item.parentItem() is None]
+                # filter out child items if their parents are also selected
+                for item in items:
+                    if item.parentItem() in items:
+                        items.remove(item)
                 if items:
                     slide = not(m & qkm.AltModifier)
                     self.interact(
