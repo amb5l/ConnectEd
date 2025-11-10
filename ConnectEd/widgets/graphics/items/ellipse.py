@@ -5,3 +5,7 @@ from .base_rect import BaseRectangleMixin
 
 class Ellipse(BaseRectangleMixin, QGraphicsEllipseItem):
     pass
+
+
+class SymbolEllipse(Ellipse):
+    pass

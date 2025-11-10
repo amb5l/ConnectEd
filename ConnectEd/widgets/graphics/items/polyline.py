@@ -366,3 +366,7 @@ class Polyline(
             self._segments.append(PolySeg(self, v1, v2, None))
         if self._closed:
             self._segments.append(PolySeg(self, v2, self._vertices[0], None))
+
+
+class SymbolPolyline(Polyline):
+    pass

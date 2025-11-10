@@ -165,3 +165,7 @@ class Line(
 
     def shape(self : Self) -> QPainterPath:
         return self._hshape
+
+
+class SymbolLine(Line):
+    pass
