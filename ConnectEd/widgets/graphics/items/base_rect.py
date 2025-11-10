@@ -44,8 +44,7 @@ class BaseRectangleMixin(
     """Base mixin class for rectangle-like items."""
 
     # class attributes
-    _PROPERTY_SPECS = \
-        ItemPosMixin._PROPERTY_SPECS_POS | \
+    _PROPERTY_SPECS_SIZE = \
         {
             "Width" : PropertySpec(
                 type_name = "float",
@@ -57,7 +56,10 @@ class BaseRectangleMixin(
                 getter    = lambda self: self.rect().height(),
                 setter    = lambda self, value: self.setHeight(value)
             )
-        } | \
+        }
+    _PROPERTY_SPECS = \
+        ItemPosMixin._PROPERTY_SPECS_POS | \
+        _PROPERTY_SPECS_SIZE | \
         ItemLineMixin._PROPERTY_SPECS_LINE | \
         ItemFillMixin._PROPERTY_SPECS_FILL
     _MIN_SIZE = QSizeF(1.0, 1.0)
