@@ -1,6 +1,7 @@
 import os
 import platform
 import inspect
+import importlib
 
 from typing import Any, TypeVar
 
@@ -184,3 +185,20 @@ def str2val(s : str, t : str) -> Any:
         case "SignalDirection" : return SignalDirection(s)
         case _:
             raise ValueError(f"Unsupported type: {t}")
+
+
+def registerClass(
+    registry    : dict[str, type[Any]],
+    class_name  : str,
+    module_name : str | None = None
+) -> type[Any]:
+    """Import a class from a module and register it in registry."""
+    if module_name is None:
+        module_name = "." + pascal2snake(class_name)
+    package = None
+    if module_name.startswith("."):
+        caller_frame = inspect.stack()[1].frame
+        package = caller_frame.f_globals.get('__name__')
+    module = importlib.import_module(f"{module_name}", package=package)
+    cls = getattr(module, class_name)
+    registry[class_name] = cls

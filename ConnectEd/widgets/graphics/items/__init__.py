@@ -8,7 +8,7 @@ from PyQt6.QtGui     import QColor
 
 from ....app import logger
 
-from ....core.utils import pascal2snake
+from ....core.utils import pascal2snake, registerClass
 
 from .mixin import ItemMixin
 
@@ -272,28 +272,17 @@ def clone(items : list[ItemMixin]) -> list[ItemMixin]:
 
 
 _item_classes = {}
-
-def register_item(name : str, module_name : str | None = None):
-    """Import a class from a submodule and register it in _item_classes."""
-    if module_name is None:
-        module_name = pascal2snake(name)
-    import importlib
-    module = importlib.import_module(f".{module_name}", package=__name__)
-    cls = getattr(module, name)
-    _item_classes[name] = cls
-    return cls
-
-register_item("ConnSeg")
-register_item("Port")
-register_item("BufGate", "gate")
-register_item("AndGate", "gate")
-register_item("OrGate", "gate")
-register_item("XorGate", "gate")
-register_item("Block")
-register_item("PropertyText")
-register_item("SymbolPin")
-register_item("Line")
-register_item("Rectangle")
-register_item("Polyline")
-register_item("Text")
-register_item("TextBlock")
+registerClass( _item_classes , "ConnSeg"                )
+registerClass( _item_classes , "Port"                   )
+registerClass( _item_classes , "BufGate"      , ".gate" )
+registerClass( _item_classes , "AndGate"      , ".gate" )
+registerClass( _item_classes , "OrGate"       , ".gate" )
+registerClass( _item_classes , "XorGate"      , ".gate" )
+registerClass( _item_classes , "Block"                  )
+registerClass( _item_classes , "PropertyText"           )
+registerClass( _item_classes , "SymbolPin"              )
+registerClass( _item_classes , "Line"                   )
+registerClass( _item_classes , "Rectangle"              )
+registerClass( _item_classes , "Polyline"               )
+registerClass( _item_classes , "Text"                   )
+registerClass( _item_classes , "TextBlock"              )
