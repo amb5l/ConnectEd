@@ -9,6 +9,10 @@ from .grip import ItemGripMixin
 
 
 class ItemAnchorPointsMixin(ItemGripMixin):
+    @classmethod
+    def getAnchorPointNames(cls : type[Self]) -> list[str]:
+        raise NotImplementedError("Subclass must implement this method")
+
     # instance attributes
     _anchor_points : dict[str, "AnchorPoint"]
 
@@ -36,6 +40,10 @@ class ItemRectAnchorPointsMixin(ItemAnchorPointsMixin):
         "Bottom Right"  : ( 1.0 , 1.0 )
     }
     _AP_RESIZE = { k : k != "Center" for k in _AP_RECT.keys() }
+
+    @classmethod
+    def getAnchorPointNames(cls : type[Self]) -> list[str]:
+        return list(cls._AP_RECT.keys())
 
     def initAnchorPoints(self : Self) -> None:
         self._anchor_points = {}

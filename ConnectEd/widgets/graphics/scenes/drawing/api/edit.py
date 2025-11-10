@@ -4,7 +4,7 @@ from ......app import logger
 
 from ......core.xml import copy
 
-from .....dialogs.properties import PropertyState
+from .....dialogs.properties import PropertyChange
 
 from ....items               import ItemType, EdgeLoc, \
                                     SignalDirection, VectorRange, \
@@ -213,7 +213,7 @@ class DrawingSceneApiEditMixin:
     def editProperties(
         self     : "DrawingScene",
         item     : ItemMixin,
-        changes  : dict[str, PropertyState],
+        changes  : dict[str, PropertyChange],
         undoable : bool = False
     ) -> None:
         cmd = CmdEditProperties(self, item, changes)

@@ -123,6 +123,7 @@ def val2str(v : Any) -> str:
         case "QRectF"          : s = f"{v.x()},{v.y()},{v.width()},{v.height()}"
         case "QSizeF"          : s = f"{v.width()},{v.height()}"
         case "QColor"          : s = f"#{(v.rgb() & 0xFFFFFF):06X}"
+        case "DisplayChoice"   : s = v.value
         case "PenStyle"        : s = str(v).replace("PenStyle.", "")
         case "BrushStyle"      : s = str(v).replace("BrushStyle.", "")
         case "LinePref"        : s = v.toStr()
@@ -138,16 +139,29 @@ def val2str(v : Any) -> str:
 
 
 def str2val(s : str, t : str) -> Any:
-    """Convert a text representation of a Python value to a Python value."""
+    """
+    Convert a text representation of a Python value to a Python value.
+    Note: "subtypes" are substituted here; they exist to facilitate
+    table view delegates.
+    """
     from ..widgets.graphics.items import \
         DEFAULT, Edge, EdgeLoc, SignalDirection, LinePref, FillPref, QuillPref
     from ..widgets.graphics.items.property_text import PropertyDisplay
+    from ..widgets.dialogs.properties import DisplayChoice
     def strValuesToFloats(s : str) -> list[float]:
         return [float(p) for p in s.strip("()").split(",")]
+    # handle None
     if s == "None":
         return None
+    # handle default
     elif s == "default":
         return DEFAULT
+    # handle subtypes
+    if t in ["FontFamily"]:
+        t = "str"
+    if t in ["LineWidth", "FontSize"]:
+        t = "float"
+    # convert
     match t:
         case "bytes"           : return bytes.fromhex(s)
         case "str"             : return s # TODO unescape special characters
@@ -158,6 +172,7 @@ def str2val(s : str, t : str) -> Any:
         case "QRectF"          : return QRectF(*strValuesToFloats(s))
         case "QSizeF"          : return QSizeF(*strValuesToFloats(s))
         case "QColor"          : return QColor.fromRgb(int(s[1:], 16) | 0xFF000000)
+        case "DisplayChoice"   : return DisplayChoice(s)
         case "PenStyle"        : return Qt.PenStyle[s]
         case "BrushStyle"      : return Qt.BrushStyle[s]
         case "TextPref"        : return QuillPref.fromStr(s)

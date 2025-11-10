@@ -70,6 +70,7 @@ class BaseText(
         self.onGeometryChange()
 
     def onGeometryChange(self : Self) -> None:
+        self.prepareGeometryChange()
         if not hasattr(self, "_origin"):
             return
         old_origin_scene_pos = self.getOriginScenePos()

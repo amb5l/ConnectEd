@@ -112,7 +112,7 @@ class ItemLineMixin:
             default   = lambda self: self.a.line.getDefaults().color
         ),
         "Line Width" : PropertySpec(
-            type_name = "float",
+            type_name = "LineWidth",  # a "subtype" of float - see str2val
             exists    = lambda self: self.a.line is not None,
             getter    = lambda self: self.a.line.getWidth(),
             setter    = lambda self, value: self.a.line.setWidth(value),

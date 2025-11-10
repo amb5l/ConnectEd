@@ -134,15 +134,49 @@ class PropertiesMixin:
         del self._custom_properties[name]
 
     def renProperty(self : Self, old_name : str, new_name : str) -> None:
+        if old_name == new_name:  # no change
+            return
         if old_name in self._PROPERTY_SPECS:
             logger().error(f"Inherent property '{old_name}' cannot be renamed")
             return
         if old_name not in self._custom_properties:
             logger().error(f"Custom property '{old_name}' not found")
             return
+        # rename
         self._custom_properties[new_name] = self._custom_properties[old_name]
         del self._custom_properties[old_name]
+        # handle existing property text, if applicable
         if old_name in self._property_texts:
             self._property_texts[new_name] = self._property_texts[old_name]
             del self._property_texts[old_name]
             self._property_texts[new_name].setName(new_name)
+
+    def getPropertyTexts(self : Self) -> dict[str, "PropertyText"]:
+        return self._property_texts
+
+    def getPropertyText(self : Self, name : str) -> "PropertyText | None":
+        if name in self._property_texts:
+            return self._property_texts[name]
+        else:
+            return None
+
+    def getPropertyTextTypeName(self : Self, name : str) -> str | None:
+        if name in self._PROPERTY_SPECS:
+            if self._PROPERTY_SPECS[name].text is not None:
+                return self._PROPERTY_SPECS[name].text.cls.__name__
+        return "PropertyText"
+
+    def addPropertyText(self : Self, name : str, pt : "PropertyText") -> None:
+        if name in self._property_texts:
+            logger().error(f"Property text '{name}' already exists")
+            return
+        if name not in self._PROPERTY_SPECS \
+        and name not in self._custom_properties:
+            logger().error(f"Property '{name}' not found")
+            return
+        self._property_texts[name] = pt
+
+    def delPropertyText(self : Self, name : str) -> None:
+        if name not in self._property_texts:
+            logger().error(f"Property text '{name}' not found")
+        del self._property_texts[name]

@@ -1,3 +1,19 @@
+cleat => anchor
+family => font
+new appearance system
+
+PropertyDisplay dialog
+
+Property dialog:
+delete
+display
+
+New appearance system
+   .appearance.setTextColor
+   .appearance.setLineColor
+
+
+
 Select an item, choose "Propertes > Display..." from the context menu
 Pick a property click OK.
 If the property is already visible, it will be activated, and can be placed somewhere new.

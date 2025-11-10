@@ -91,11 +91,10 @@ class PropertyText(TetherText):
         value = self.value()
         if not hasattr(self, "_display"):
             return
-        match self._display:
-            case PropertyDisplay.VALUE:
-                text_to_set = f"<{self.name()}>" if value == "" else value
-            case PropertyDisplay.NAME_VALUE:
-                text_to_set = f"{self.name()}: {value}"
+        if self._display == PropertyDisplay.NAME_VALUE:
+            text_to_set = f"{self.name()}: {value}"
+        else:
+            text_to_set = f"<{self.name()}>" if value == "" else value
         super().setText(text_to_set)
         self.onGeometryChange()
 

@@ -170,14 +170,14 @@ class ItemQuillMixin:
             default   = lambda self: self.a.quill.getDefaults().color
         ),
         "Text Font" : PropertySpec(
-            type_name = "str",
+            type_name = "FontFamily",  # a "subtype" of str - see str2val
             exists    = lambda self: self.a.quill is not None,
             getter    = lambda self: self.a.quill.getFamily(),
             setter    = lambda self, value: self.a.quill.setFamily(value),
             default   = lambda self: self.a.quill.getDefaults().family
         ),
         "Text Size" : PropertySpec(
-            type_name = "float",
+            type_name = "FontSize",  # a "subtype" of float - see str2val
             exists    = lambda self: self.a.quill is not None,
             getter    = lambda self: self.a.quill.getSize(),
             setter    = lambda self, value: self.a.quill.setSize(value),
