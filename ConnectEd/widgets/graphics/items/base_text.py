@@ -89,14 +89,6 @@ class BaseText(
     def sceneTightBoundingRect(self : Self) -> QRectF:
         return self._stbrect
 
-    def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
-        return [
-            view.action("Edit...", view.ui.editText),
-            view.separator(),
-            view.action("Appearance...", lambda: view.ui.editAppearance(self)),
-            view.action("Properties...", lambda: view.ui.editItemProperties(self))
-        ]
-
     def setText(self : Self, text : str) -> None:
         super().setText(text)
         self.onGeometryChange()
@@ -119,3 +111,11 @@ class BaseText(
     def moveAnchorPointBy(self : Self, _ : str, delta : QPointF) -> None:
         """Move the entire Text when any keypoint is dragged."""
         self.setPos(self.pos() + delta)
+
+    def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
+        return [
+            view.action("Edit...", view.ui.editText),
+            view.separator(),
+            view.action("Appearance...", lambda: view.ui.editAppearance(self)),
+            view.action("Properties...", lambda: view.ui.editItemProperties(self))
+        ]
