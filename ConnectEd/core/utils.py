@@ -188,17 +188,17 @@ def str2val(s : str, t : str) -> Any:
 
 
 def registerClass(
-    registry    : dict[str, type[Any]],
-    class_name  : str,
-    module_name : str | None = None
+    registry : dict[str, type[Any]],
+    cls_name : str,
+    mod_name : str | None = None,
+    pkg      : str | None = None
 ) -> type[Any]:
     """Import a class from a module and register it in registry."""
-    if module_name is None:
-        module_name = "." + pascal2snake(class_name)
-    package = None
-    if module_name.startswith("."):
+    if mod_name is None:
+        mod_name = pascal2snake(cls_name)
+    if pkg is None:
         caller_frame = inspect.stack()[1].frame
-        package = caller_frame.f_globals.get('__name__')
-    module = importlib.import_module(f"{module_name}", package=package)
-    cls = getattr(module, class_name)
-    registry[class_name] = cls
+        pkg = caller_frame.f_globals.get('__name__')
+    module = importlib.import_module(f".{mod_name}", package=pkg)
+    cls = getattr(module, cls_name)
+    registry[cls_name] = cls

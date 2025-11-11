@@ -4,11 +4,13 @@ from PyQt6.QtCore import QXmlStreamWriter, QXmlStreamReader
 
 from .....app import logger
 
-from .....core.xml import toXmlAttrs, fromXmlAttrs
+from .....core.xml   import toXmlAttrs, fromXmlAttrs
+from .....core.utils import registerClass
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from ..mixin.handle import ItemHandlesMixin
+    from ..mixin.handle  import ItemHandlesMixin
+    from ..property_text import PropertyText
 
 
 class ItemXmlMixin:
@@ -29,12 +31,6 @@ class ItemXmlMixin:
 
     @classmethod
     def fromXml(cls : Self, xr : QXmlStreamReader) -> Self:
-        from ..property_text import PropertyText
-        from ..port          import PortName, PortComment
-        from ..gate_pin      import GatePin
-        from ..block         import BlockLabel, BlockName
-        from ..block_pin     import BlockPin, BlockPinName, BlockPinComment
-        from ..symbol_pin    import SymbolPin, SymbolPinName, SymbolPinComment
         instance : "ItemHandlesMixin" = cls(bare=True)
         fromXmlAttrs(instance, xr)
         if hasattr(instance, "onGeometryChange"):
@@ -42,23 +38,23 @@ class ItemXmlMixin:
         # check if we're already at the end element (self-closing)
         if xr.isEndElement() and xr.name() == cls.__name__:
             return instance
-        # read child pin and PropertyText items
-        pin_classes = {
-            "GatePin"   : GatePin,
-            "BlockPin"  : BlockPin,
-            "SymbolPin" : SymbolPin
-        }
-        property_text_classes = {
-            "PropertyText"     : PropertyText,
-            "PortName"         : PortName,
-            "PortComment"      : PortComment,
-            "BlockLabel"       : BlockLabel,
-            "BlockName"        : BlockName,
-            "BlockPinName"     : BlockPinName,
-            "BlockPinComment"  : BlockPinComment,
-            "SymbolPinName"    : SymbolPinName,
-            "SymbolPinComment" : SymbolPinComment
-        }
+        # import and registerchild pin and property text items
+        pp = "ConnectEd.widgets.graphics.items"
+        pin_classes = {}
+        registerClass( pin_classes , "GatePin"   , pkg=pp )
+        registerClass( pin_classes , "BlockPin"  , pkg=pp )
+        registerClass( pin_classes , "SymbolPin" , pkg=pp )
+        pt_classes = {}
+        registerClass( pt_classes , "PropertyText"                    , pkg=pp )
+        registerClass( pt_classes , "PortName"         , "port"       , pkg=pp )
+        registerClass( pt_classes , "PortComment"      , "port"       , pkg=pp )
+        registerClass( pt_classes , "BlockLabel"       , "block"      , pkg=pp )
+        registerClass( pt_classes , "BlockName"        , "block"      , pkg=pp )
+        registerClass( pt_classes , "BlockPinName"     , "block_pin"  , pkg=pp )
+        registerClass( pt_classes , "BlockPinComment"  , "block_pin"  , pkg=pp )
+        registerClass( pt_classes , "SymbolPinName"    , "symbol_pin" , pkg=pp )
+        registerClass( pt_classes , "SymbolPinComment" , "symbol_pin" , pkg=pp )
+        # process child items
         while not (xr.isEndElement() and xr.name() == cls.__name__):
             if xr.isStartElement():
                 item_name = xr.name()
@@ -66,9 +62,9 @@ class ItemXmlMixin:
                     child_cls = pin_classes[item_name]
                     child = child_cls.fromXml(xr)
                     child.setParentItem(instance)
-                elif item_name in property_text_classes:
-                    child_cls = property_text_classes[item_name]
-                    child : PropertyText = child_cls.fromXml(xr)
+                elif item_name in pt_classes:
+                    child_cls = pt_classes[item_name]
+                    child : "PropertyText" = child_cls.fromXml(xr)
                     child.setParentItem(instance.getHandle(child.getCleat()))
                     child.onGeometryChange()
                     # text rotation compensation
