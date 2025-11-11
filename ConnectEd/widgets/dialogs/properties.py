@@ -119,7 +119,7 @@ class PropertiesDialog(QDialog):
             "Name",
             "Value",
             "Display",
-            "Cleat",
+            "Anchor",
             "Offset X",
             "Offset Y",
             "Origin",

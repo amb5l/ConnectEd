@@ -42,12 +42,12 @@ class PropertiesMixin:
             if spec.text is not None:
                 property_text = spec.text.cls(
                     name,
-                    spec.text.cleat,
+                    spec.text.handle,
                     spec.text.pos,
                     spec.text.origin,
                     spec.text.display
                 )
-                property_text.setParentItem(self.getHandle(spec.text.cleat))
+                property_text.setParentItem(self.getHandle(spec.text.handle))
                 self._property_texts[name] = property_text
 
     def getPropertyNames(self : Self) -> list[str]:

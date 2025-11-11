@@ -139,7 +139,7 @@ class PropertyText(TetherText):
 @dataclass
 class PropertyTextSpec:
     cls     : type[PropertyText]
-    cleat   : str
+    handle  : str
     pos     : QPointF | None = None
     origin  : str | None = None
     display : PropertyDisplay = PropertyDisplay.VALUE
