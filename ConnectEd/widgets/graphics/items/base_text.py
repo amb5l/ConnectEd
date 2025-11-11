@@ -59,6 +59,9 @@ class BaseText(
         _PROPERTY_SPECS_TEXT | \
         _PROPERTY_SPECS_APPEARANCE
 
+    # instance attributes
+    _stbrect : QRectF  # tight bounding rect in scene coordinates
+
     def __init__(
         self : Self,
         pos  : QPointF = QPointF(),
@@ -79,6 +82,12 @@ class BaseText(
         delta = old_origin_scene_pos - new_origin_scene_pos
         self._pos = self.pos() + delta
         self.updateOrigin()
+        # update scene tight bounding rect
+        rect = self.boundingRect()
+        self._stbrect = self.mapToScene(rect.normalized())
+
+    def sceneTightBoundingRect(self : Self) -> QRectF:
+        return self._stbrect
 
     def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
         return [

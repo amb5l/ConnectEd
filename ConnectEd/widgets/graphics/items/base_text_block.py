@@ -51,6 +51,9 @@ class BaseTextBlock(
         } | \
         ItemQuillMixin._PROPERTY_SPECS_QUILL
 
+    # instance attributes
+    _stbrect : QRectF  # tight bounding rect in scene coordinates
+
     def __init__(self : Self, bare : bool = False) -> None:
         QGraphicsTextItem.__init__(self)
         self.initItem(bare=bare)
@@ -65,6 +68,9 @@ class BaseTextBlock(
         delta = old_origin_scene_pos - new_origin_scene_pos
         self._pos = self.pos() + delta
         self.updateOrigin()
+        # update scene tight bounding rect
+        rect = self.boundingRect()
+        self._stbrect = self.mapToScene(rect.normalized())
 
     def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
         return [
@@ -113,3 +119,6 @@ class BaseTextBlock(
     def moveAnchorPointBy(self : Self, _ : str, delta : QPointF) -> None:
         """Move the entire Text when any keypoint is dragged."""
         self.setPos(self.pos() + delta)
+
+    def sceneTightBoundingRect(self : Self) -> QRectF:
+        return self._stbrect

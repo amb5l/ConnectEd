@@ -146,6 +146,7 @@ class Polyline(
     _segments : list[PolySeg]  # list of segment grips
     _closed   : bool           # whether the polyline is closed (a polygon)
     _sel_mode : int            # current selection mode (0 = outline, 1 = vtx/seg)
+    _stbrect  : QRectF         # tight bounding rect in scene coordinates
 
     def __init__(
         self     : Self,
@@ -304,6 +305,9 @@ class Polyline(
     def moveAnchorPointBy(self : Self, name : str, delta : QPointF) -> None:
         BaseRectangleMixin.moveAnchorPointBy(self, name, delta)
 
+    def sceneTightBoundingRect(self : Self) -> QRectF:
+        return self._stbrect
+
     def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
         items = []
         return items
@@ -354,6 +358,9 @@ class Polyline(
         # update anchor points
         if hasattr(self, '_anchor_points'):
             self.updateAnchorPoints()
+        # update scene tight bounding rect
+        rect = self.path().controlPointRect()
+        self._stbrect = self.mapToScene(rect.normalized())
 
     def _buildSegments(self : Self) -> None:
         """Build segments from vertices. Default to lines not arcs."""

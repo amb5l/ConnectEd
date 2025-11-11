@@ -1,6 +1,6 @@
 from typing import Self
 
-from PyQt6.QtCore    import Qt, QPointF, QLineF
+from PyQt6.QtCore    import Qt, QPointF, QLineF, QRectF
 from PyQt6.QtWidgets import QGraphicsLineItem
 from PyQt6.QtGui     import QPainterPath, QPainterPathStroker
 
@@ -60,7 +60,8 @@ class Line(
         ItemLineMixin._PROPERTY_SPECS_LINE
 
     # instance attributes
-    _line : QLineF
+    _line    : QLineF
+    _stbrect : QRectF
 
     def __init__(
         self : Self,
@@ -79,6 +80,10 @@ class Line(
         if not hasattr(self, "_line"):
             self._hshape = QPainterPath()
             return
+        self._stbrect = QRectF(
+            self.mapToScene(self._line.p1()),
+            self.mapToScene(self._line.p2())
+        ).normalized()
         pen_width = self.pen().widthF()
         tolerance = settings().get("display/select/tolerance")
         stroke_width = pen_width + (2 * tolerance)
@@ -166,6 +171,8 @@ class Line(
     def shape(self : Self) -> QPainterPath:
         return self._hshape
 
+    def sceneTightBoundingRect(self : Self) -> QRectF:
+        return self._stbrect
 
 class SymbolLine(Line):
     pass
