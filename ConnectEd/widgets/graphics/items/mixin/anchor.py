@@ -47,7 +47,7 @@ class ItemRectAnchorPointsMixin(ItemAnchorPointsMixin):
 
     def initAnchorPoints(self : Self) -> None:
         self._anchor_points = {}
-        for name, _ in self._AP_RECT.items():
+        for name in self._AP_RECT.keys():
             resize = name in self._AP_RESIZE
             anchor_point = AnchorPoint(name=name, resize=resize, parent=self)
             self._anchor_points[name] = anchor_point
