@@ -2,6 +2,7 @@ import os
 import platform
 import inspect
 import importlib
+import re
 
 from typing import Any, TypeVar
 
@@ -185,6 +186,18 @@ def str2val(s : str, t : str) -> Any:
         case "SignalDirection" : return SignalDirection(s)
         case _:
             raise ValueError(f"Unsupported type: {t}")
+
+
+def getCurlyBraceVariables(s : str) -> list[str]:
+    """
+    Get the substitution variables (names in curly braces) from a string.
+    Curly braces may be escaped with a backslash; they may not be nested.
+    """
+    # Match {variable} where { is not escaped
+    # The capture group handles escaped } inside by consuming \} as escaped char
+    pattern = r'(?<!\\)\{((?:[^}\\]|\\.)+)\}'
+    matches = re.findall(pattern, s)
+    return matches
 
 
 def registerClass(
