@@ -14,8 +14,9 @@ from .anchor_point import AnchorPoint
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from ..properties import PropertiesMixin
-    from ..views.drawing import DrawingView
+    from ..properties     import PropertiesMixin
+    from ..views.drawing  import DrawingView
+    from ..scenes.drawing import DrawingScene
 
 
 class PropertyDisplay(Enum):
@@ -86,6 +87,9 @@ class PropertyText(TetherText):
             view.editPropertyText()
         super().mouseDoubleClickEvent(event)
 
+    def onSceneChange(self : Self, scene : "DrawingScene | None") -> None:
+        self.onTextChange()
+
     def onTextChange(self : Self) -> None:
         text_to_set = ""
         value = self.value()
@@ -103,7 +107,7 @@ class PropertyText(TetherText):
             view.action("Edit...", view.ui.editPropertyText),
             view.separator(),
             view.action("Appearance...", lambda: view.ui.editAppearance(self)),
-            view.action("Properties...", lambda: view.ui.editProperties(self))
+            view.action("Properties...", lambda: view.ui.editItemProperties(self))
         ]
 
     def item(self : Self) -> "PropertiesMixin | None":

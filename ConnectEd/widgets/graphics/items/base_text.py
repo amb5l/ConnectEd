@@ -83,8 +83,8 @@ class BaseText(
         self._pos = self.pos() + delta
         self.updateOrigin()
         # update scene tight bounding rect
-        rect = self.boundingRect()
-        self._stbrect = self.mapToScene(rect.normalized())
+        scene_polygon = self.mapToScene(self.boundingRect())
+        self._stbrect = scene_polygon.boundingRect().normalized()
 
     def sceneTightBoundingRect(self : Self) -> QRectF:
         return self._stbrect
@@ -94,7 +94,7 @@ class BaseText(
             view.action("Edit...", view.ui.editText),
             view.separator(),
             view.action("Appearance...", lambda: view.ui.editAppearance(self)),
-            view.action("Properties...", lambda: view.ui.editProperties(self))
+            view.action("Properties...", lambda: view.ui.editItemProperties(self))
         ]
 
     def setText(self : Self, text : str) -> None:

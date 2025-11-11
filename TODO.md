@@ -1,24 +1,17 @@
+onGeometryChange
+If you want zero-boilerplate in every setter, wrap the Qt geometry mutators with a decorator or a tiny base mixin
+
+new _settings_name system for controlling PropertyText appearance
+  - remove all subclasses
+  - on parent change, get parent class
+  - look at property name
+  - call central function to yield settings name
+sort out combo box for anchors in PropertiesDialog
 cleat => anchor
 family => font
 new appearance system
-
-PropertyDisplay dialog
-
-Property dialog:
-delete
-display
-
-New appearance system
    .appearance.setTextColor
    .appearance.setLineColor
-
-
-
-Select an item, choose "Propertes > Display..." from the context menu
-Pick a property click OK.
-If the property is already visible, it will be activated, and can be placed somewhere new.
-If the property was not visible, a PropertyText instance will be created and this can be placed.
-Existing property texts may be deleted or hidden.
 
 BUGS
 - symbol pin drag to move doesn't work

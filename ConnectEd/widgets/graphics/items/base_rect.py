@@ -107,8 +107,8 @@ class BaseRectangleMixin(
 
     def onGeometryChange(self : Self | QGraphicsRectItem) -> None:
         self.prepareGeometryChange()
-        scene_rect : QRectF = self.mapToScene(self.rect())
-        self._stbrect = scene_rect.normalized()
+        scene_polygon = self.mapToScene(self.rect())
+        self._stbrect = scene_polygon.boundingRect().normalized()
         pen_width = self.a.line._pen.widthF()
         tolerance = settings().get("display/select/tolerance")
         stroke_width = pen_width + (2 * tolerance)
@@ -209,7 +209,6 @@ class BaseRectangleMixin(
         rect = self.rect()
         rect.setSize(QSizeF(w, h))
         self.setRect(rect)
-        self._stbrect = QRectF(rect).normalized()
 
     def anchorPointRect(self : Self) -> QRectF:
         return self.rect()
@@ -246,7 +245,7 @@ class BaseRectangleMixin(
     def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
         return [
             view.action("Appearance...", lambda: view.ui.editAppearance(self)),
-            view.action("Properties...", lambda: view.ui.editProperties(self))
+            view.action("Properties...", lambda: view.ui.editItemProperties(self))
         ]
 
 

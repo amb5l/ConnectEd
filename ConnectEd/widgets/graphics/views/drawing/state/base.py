@@ -19,6 +19,9 @@ qkm = Qt.KeyboardModifier
 
 
 class DrawingViewStateBase:
+    # class attributes
+    STATUS : str
+
     # instance attributes
     view   : "DrawingView"
     scene  : "DrawingScene"
@@ -36,6 +39,14 @@ class DrawingViewStateBase:
             self.view.interaction = None
         self.view.state = state
         if window() is not None:
+            status = state.STATUS
+            if items is not None and len(items) == 1:
+                status = status.replace("{Item}", items[0].__class__.__name__)
+            else:
+                status = status.replace("{Item}", "Item")
+            status.replace(
+                "{Drawing}", self.scene.__class__.__name__.replace("Scene", "")
+            )
             window().status_bar.status.setText(state.STATUS)
         state.entry(
             self.view.mouse.current.physical,

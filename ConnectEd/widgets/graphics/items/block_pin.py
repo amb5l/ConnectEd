@@ -58,7 +58,7 @@ class BlockPin(ItemLocMixin, BasePin):
             view.action("Edit...", view.ui.editBlockPin),
             view.separator(),
             view.action("Appearance...", lambda: view.ui.editAppearance(self)),
-            view.action("Properties...", lambda: view.ui.editProperties(self))
+            view.action("Properties...", lambda: view.ui.editItemProperties(self))
         ]
 
     def _setPath(self : Self, scene : "DrawingScene | None" = None) -> None:

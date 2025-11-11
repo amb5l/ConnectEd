@@ -118,11 +118,14 @@ class DrawingViewUiEditMixin:
     ) -> None:
         self._view.state.go(self._view.stateEditAppearance, [item] if item else None)
 
-    def editProperties(
+    def editItemProperties(
         self : "DrawingViewUi",
         item : "ItemMixin | None" = None
     ) -> None:
-        self._view.state.go(self._view.stateEditProperties, [item] if item else None)
+        self._view.state.go(self._view.stateEditItemProperties, [item] if item else None)
+
+    def editDrawingProperties(self : "DrawingViewUi") -> None:
+        self._view.state.go(self._view.stateEditDrawingProperties)
 
     def editQuery(self : "DrawingViewUi", vpos : QPoint | None = None) -> None:
         if vpos is None:

@@ -8,7 +8,6 @@ from ....app import settings
 from ....core.defs import PITCH
 
 from ..items.anchor_point import AnchorPoint
-from ..items.grip         import Grip
 
 from ..items.mixin.anchor import ItemRectAnchorPointsMixin
 
@@ -57,7 +56,10 @@ class SymbolScene(DrawingScene):
             rect.setHeight(PITCH)
         if rect != self._brect:
             self._brect = rect
+            self.blockSignals(True)
             ItemRectAnchorPointsMixin.updateAnchorPoints(self)
+            self.blockSignals(False)
+            self.changed.connect(self.onChange)
 
     def anchorPointRect(self : Self) -> QRectF:
         return self._brect

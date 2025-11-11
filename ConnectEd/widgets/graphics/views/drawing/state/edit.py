@@ -126,8 +126,8 @@ class DrawingViewStateEditAppearance(DrawingViewStateBase):
         self.view.state.go(self.view.stateIdle)
 
 
-class DrawingViewStateEditProperties(DrawingViewStateBase):
-    STATUS = "Properties: specify changes"
+class DrawingViewStateEditItemProperties(DrawingViewStateBase):
+    STATUS = "{Item} Properties: specify changes"
 
     def entry(
         self : Self,
@@ -144,6 +144,20 @@ class DrawingViewStateEditProperties(DrawingViewStateBase):
             logger().warning("No items selected")
         self.view.state.go(self.view.stateIdle)
 
+
+class DrawingViewStateEditDrawingProperties(DrawingViewStateBase):
+    STATUS = "{Drawing} Properties: specify changes"
+
+    def entry(
+        self : Self,
+        v    : QPoint,
+        s    : QPointF,
+        i    : list[ItemMixin] | None = None
+    ) -> None:
+        dialog = PropertiesDialog(self.scene, self.view)
+        if dialog.exec():
+            self.scene.editProperties(self.scene, dialog.getChanges(), undoable=True)
+        self.view.state.go(self.view.stateIdle)
 
 class DrawingViewStateEditQuery(DrawingViewStateBase):
     STATUS = "Query: pick an item"

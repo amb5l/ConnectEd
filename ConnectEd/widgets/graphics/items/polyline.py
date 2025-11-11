@@ -359,8 +359,8 @@ class Polyline(
         if hasattr(self, '_anchor_points'):
             self.updateAnchorPoints()
         # update scene tight bounding rect
-        rect = self.path().controlPointRect()
-        self._stbrect = self.mapToScene(rect.normalized())
+        scene_polygon = self.mapToScene(self.path().controlPointRect())
+        self._stbrect = scene_polygon.boundingRect().normalized()
 
     def _buildSegments(self : Self) -> None:
         """Build segments from vertices. Default to lines not arcs."""

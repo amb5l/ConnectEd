@@ -77,8 +77,14 @@ class ExistingItem(DialogItem):
 
 
 class NewItem(DialogItem):
-    def __init__(self : Self) -> None:
-        super().__init__("", "", "str", None, True)
+    def __init__(
+        self      : Self,
+        value     : Any = "",
+        type_name : str = "str",
+        default   : Any = None,
+        editable  : bool = True
+    ) -> None:
+        super().__init__(None, value, type_name, default, editable)
 
 
 class PropertiesDialog(QDialog):
@@ -366,7 +372,21 @@ class PropertiesDialog(QDialog):
 
     def _add(self : Self) -> None:
         row_idx = self._table_model.rowCount()
-        self._table_model.appendRow([NewItem(), NewItem(), None])
+        self._table_model.appendRow([
+            NewItem(),
+            NewItem(),
+            NewItem(DisplayChoice.NONE, "DisplayChoice"),
+            NewItem( None , "str"        ),
+            NewItem( None , "float"      ),
+            NewItem( None , "float"      ),
+            NewItem( None , "str"        ),
+            NewItem( None , "QColor"     ),
+            NewItem( None , "FontFamily" ),
+            NewItem( None , "FontSize"   ),
+            NewItem( None , "bool"       ),
+            NewItem( None , "bool"       ),
+            NewItem( None , "bool"       )
+        ])
         self._table_view.setCurrentIndex(self._table_model.index(row_idx, 0))
         self._table_view.edit(self._table_model.index(row_idx, 0))
 

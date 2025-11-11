@@ -14,11 +14,12 @@ if TYPE_CHECKING:
 
 @dataclass
 class PropertySpec:
-    type_name : str
-    exists    : Callable[[], bool]     | None = None
-    getter    : Callable[[], Any]      | None = None
-    setter    : Callable[[Any], None]  | None = None  # None = read only
-    default   : Callable[[], Any]      | None = None  # when getter returns DEFAULT
+    type_name : str                            = "str"
+    value     : str                    | None  = None
+    exists    : Callable[[], bool]     | None  = None
+    getter    : Callable[[], Any]      | None  = None
+    setter    : Callable[[Any], None]  | None  = None  # None = read only
+    default   : Callable[[], Any]      | None  = None  # when getter returns DEFAULT
     text      : "PropertyTextSpec      | None" = None
 
 
@@ -36,6 +37,8 @@ class PropertiesMixin:
         if bare:
             return
         for name, spec in self._PROPERTY_SPECS.items():
+            if spec.value is not None:  # custom property
+                self.addProperty(name, spec.value)
             if spec.text is not None:
                 property_text = spec.text.cls(
                     name,
@@ -52,11 +55,17 @@ class PropertiesMixin:
             list(self._PROPERTY_SPECS.keys()) + \
             list(self._custom_properties.keys())
 
+    def getCustomPropertyNames(self : Self) -> list[str]:
+        return list(self._custom_properties.keys())
+
     def getPropertyNamesAndValues(self : Self) -> dict[str, str]:
         return {
             name: val2str(self.getPropertyValue(name)) \
                 for name in self.getPropertyNames()
         }
+
+    def hasProperty(self : Self, name : str) -> bool:
+        return name in self._PROPERTY_SPECS or name in self._custom_properties
 
     def isPropertyCustom(self : Self, name : str) -> bool:
         return name in self._custom_properties
@@ -114,6 +123,13 @@ class PropertiesMixin:
             logger().error(f"Property '{name}' not found")
         if name in self._property_texts:
             self._property_texts[name].onTextChange()
+
+    def initProperty(self : Self, name : str, value : str) -> None:
+        """Add or update a property."""
+        if self.hasProperty(name):
+            self.setPropertyValue(name, value)
+        else:
+            self.addProperty(name, value)
 
     def addProperty(self : Self, name : str, value : str) -> None:
         if name in self._PROPERTY_SPECS:

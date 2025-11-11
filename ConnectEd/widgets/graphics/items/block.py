@@ -73,7 +73,7 @@ class Block(BaseRectangle):
             view.action("Add Pin...", view.ui.placeBlockPin),
             view.separator(),
             view.action("Appearance...", lambda: view.ui.editAppearance(self)),
-            view.action("Properties...", lambda: view.ui.editProperties(self))
+            view.action("Properties...", lambda: view.ui.editItemProperties(self))
         ]
 
     def pos2loc(self : Self, pos : QPointF) -> EdgeLoc:

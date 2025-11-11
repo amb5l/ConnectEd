@@ -181,7 +181,7 @@ class Slots:
 
     @withCurrentWidget(DrawingView)
     def editProperties(self : Self, view : DrawingView) -> None:
-        view.ui.editProperties()
+        view.ui.editItemProperties()
 
     @withCurrentWidget(DrawingView)
     def editAppearance(self : Self, view : DrawingView) -> None:

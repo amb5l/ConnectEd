@@ -3,25 +3,14 @@ from typing import Self
 from PyQt6.QtCore import QRectF
 from PyQt6.QtCore import QPointF
 
+from ...anchor import AnchorPointsMixin
+
 from ..anchor_point import AnchorPoint
 
 from .grip import ItemGripMixin
 
 
-class ItemAnchorPointsMixin(ItemGripMixin):
-    @classmethod
-    def getAnchorPointNames(cls : type[Self]) -> list[str]:
-        raise NotImplementedError("Subclass must implement this method")
-
-    # instance attributes
-    _anchor_points : dict[str, "AnchorPoint"]
-
-    def initAnchorPoints(self : Self) -> None:
-        raise NotImplementedError("Subclass must implement this method")
-
-    def getAnchorPoint(self : Self, name : str) -> "AnchorPoint":
-        return self._anchor_points[name]
-
+class ItemAnchorPointsMixin(AnchorPointsMixin, ItemGripMixin):
     def moveAnchorPointBy(self : Self, name : str, delta : QPointF) -> None:
         raise NotImplementedError("Subclass must implement this method")
 

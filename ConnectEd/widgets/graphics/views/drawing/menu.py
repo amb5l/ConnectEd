@@ -17,7 +17,6 @@ if TYPE_CHECKING:
 class DrawingViewMenuMixin:
     def contextMenuEvent(self : "DrawingView", event : QContextMenuEvent) -> None:
         from ...items.mixin.menu import ItemMenuMixin
-        from ...views.diagram import DiagramView
         vpos = event.pos()
         spos = self.mapToScene(vpos)
         menu = Menu()
@@ -74,6 +73,12 @@ class DrawingViewMenuMixin:
         else:
             # menu for interaction
             _extendMenu(self.interaction.ctxMenuItems(spos))
+        # scene properties
+        menu.addAction(
+            f"{self.__class__.__name__.replace('View', '')} Properties...",
+            lambda: self.ui.editDrawingProperties()
+        )
+        menu.addSeparator()
         # grid
         grid_show_action = menu.addAction(
             "Grid Display", lambda: self.ui.viewGridDisplay(not self.grid.display)

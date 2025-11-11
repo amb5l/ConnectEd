@@ -6,6 +6,8 @@ from ......core.xml import copy
 
 from .....dialogs.properties import PropertyChange
 
+from ....properties import PropertiesMixin
+
 from ....items               import ItemType, EdgeLoc, \
                                     SignalDirection, VectorRange, \
                                     QuillPrefChange, AppearancePrefChange
@@ -212,10 +214,9 @@ class DrawingSceneApiEditMixin:
 
     def editProperties(
         self     : "DrawingScene",
-        item     : ItemMixin,
+        object   : PropertiesMixin,
         changes  : dict[str, PropertyChange],
         undoable : bool = False
     ) -> None:
-        cmd = CmdEditProperties(self, item, changes)
+        cmd = CmdEditProperties(object, changes)
         cmdExec(self, cmd, undoable)
-

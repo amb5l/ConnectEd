@@ -6,6 +6,7 @@ from PyQt6.QtCore import QPointF
 from .....dialogs.properties import DisplayChoice, PropertyVariables, PropertyChange
 
 from ....properties import PropertiesMixin
+from ....anchor     import AnchorPointsMixin
 
 from ....items import SignalDirection, VectorRange, \
                       QuillPref, QuillPrefChange, \
@@ -13,14 +14,13 @@ from ....items import SignalDirection, VectorRange, \
 
 from ....items.mixin        import ItemMixin
 from ....items.mixin.origin import ItemOriginMixin
-from ....items.mixin.anchor import ItemAnchorPointsMixin
 
 from ....items.anchor_point  import AnchorPoint
 from ....items.polyline      import Polyline, PolySeg
 from ....items.base_text     import BaseText
 from ....items.property_text import PropertyDisplay, PropertyText
 
-from . import CmdSceneItem, CmdSceneItems
+from . import CmdBase, CmdSceneItem, CmdSceneItems
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -288,18 +288,18 @@ class CmdEditAppearance(CmdSceneItems):
             e.update()
 
 
-class CmdEditProperties(CmdSceneItem):
-    _item    : PropertiesMixin | ItemAnchorPointsMixin
+class CmdEditProperties(CmdBase):
+    _object  : PropertiesMixin | AnchorPointsMixin
     _changes : dict[str, PropertyChange]
 
     def __init__(
         self    : Self,
-        scene   : "DrawingScene",
-        item    : PropertiesMixin,
+        object  : PropertiesMixin,  # item or scene
         changes : dict[str, PropertyChange]
     ):
-        super().__init__(scene, item)
+        self._object  = object
         self._changes = changes
+        super().__init__()
 
     def redo(self : Self) -> None:
         self._do("before", "after")
@@ -313,34 +313,34 @@ class CmdEditProperties(CmdSceneItem):
             after  : PropertyVariables | None = getattr(change, after_attr)
             if before is None:
                 # add property
-                self._item.addProperty(after.name, after.value)
+                self._object.addProperty(after.name, after.value)
                 if after.display != DisplayChoice.NONE:
                     self._addPropertyText(after)
             elif after is None:
                 # delete property
-                pt = self._item.getPropertyText(before.name)
+                pt = self._object.getPropertyText(before.name)
                 if pt is not None:
-                    self._item.delPropertyText(before.name)
-                self._item.delProperty(before.name)
+                    self._object.delPropertyText(before.name)
+                self._object.delProperty(before.name)
             else:
                 # existing property
-                self._item.renProperty(before.name, after.name)
-                self._item.setPropertyValue(after.name, after.value)
-                pt = self._item.getPropertyText(before.name)
+                self._object.renProperty(before.name, after.name)
+                self._object.setPropertyValue(after.name, after.value)
+                pt = self._object.getPropertyText(before.name)
                 if pt is None:
                     if after.display != DisplayChoice.NONE:
                         self._addPropertyText(after)
                 else:
                     if after.display == DisplayChoice.NONE:
-                        self._item.delPropertyText(before.name)
+                        self._object.delPropertyText(before.name)
                     else:
                         self._modifyPropertyText(pt, after)
 
     def _addPropertyText(self : Self, vars : PropertyVariables) -> None:
         pt = PropertyText()
         self._modifyPropertyText(pt, vars)
-        pt.setParentItem(self._item.getAnchorPoint(vars.cleat))
-        self._item.addPropertyText(vars.name, pt)
+        pt.setParentItem(self._object.getAnchorPoint(vars.cleat))
+        self._object.addPropertyText(vars.name, pt)
         pt.onTextChange()  # Refresh text after parenting
 
     def _modifyPropertyText(

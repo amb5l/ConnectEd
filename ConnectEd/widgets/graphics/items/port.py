@@ -98,5 +98,5 @@ class Port(
             view.action("Edit...", view.ui.editPort),
             view.separator(),
             view.action("Appearance...", lambda: view.ui.editAppearance(self)),
-            view.action("Properties...", lambda: view.ui.editProperties(self))
+            view.action("Properties...", lambda: view.ui.editItemProperties(self))
         ]
