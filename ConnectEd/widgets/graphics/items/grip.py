@@ -12,10 +12,10 @@ from .mixin.menu   import ItemMenuMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from ..views.drawing import DrawingView
+    from ..views.drawing  import DrawingView
     from ..scenes.drawing import DrawingScene
-    from .anchor_point import AnchorPoint
-    from .mixin.grip import ItemGripMixin
+    from .handle          import Handle
+    from .mixin.grip      import ItemGripMixin
 
 
 class Grip(
@@ -65,8 +65,8 @@ class Grip(
         self.setBrush(self._brush)
 
     def item(self : Self) -> "ItemGripMixin":
-        ap : AnchorPoint = self.parentItem()
-        return ap.parentItem()
+        h : Handle = self.parentItem()
+        return h.parentItem()
 
     def toXml(self : Self, _ : QXmlStreamWriter) -> None:
         pass
@@ -77,14 +77,14 @@ class Grip(
 
 
 class APGrip(Grip):
-    """Grip for anchor points. Base class for move and resize grips."""
+    """Grip for handles. Base class for move and resize grips."""
 
     _PATH_NAME = "Circle"
     _ORIGIN_PATH_NAME = "Square"
 
     def __init__(
         self   : Self,
-        parent : "AnchorPoint",
+        parent : "Handle",
         pos    : QPointF | None = None,
         move   : bool = False,
         resize : bool = False
@@ -97,8 +97,8 @@ class APGrip(Grip):
             self.onOriginChange()
 
     def onOriginChange(self : Self | QGraphicsItem) -> None:
-        ap : "AnchorPoint" = self.parentItem()
-        item = ap.parentItem()
+        h : "Handle" = self.parentItem()
+        item = h.parentItem()
         if not isinstance(item, ItemOriginMixin):
             # Item doesn't have an origin point, just use regular path
             self._path_name = self._PATH_NAME
@@ -106,7 +106,7 @@ class APGrip(Grip):
             if scene:
                 self.setPath(scene.paths["Grip"][self._path_name])
             return
-        if item.getOrigin() == ap.name():
+        if item.getOrigin() == h.name():
             self._path_name = self._ORIGIN_PATH_NAME
         else:
             self._path_name = self._PATH_NAME
@@ -115,8 +115,8 @@ class APGrip(Grip):
             self.setPath(scene.paths["Grip"][self._path_name])
 
     def moveBy(self : Self, delta : QPointF) -> None:
-        parent : "AnchorPoint" = self.parentItem()
-        self._item.moveAnchorPointBy(parent.name(), delta)
+        parent : "Handle" = self.parentItem()
+        self._item.moveHandleBy(parent.name(), delta)
 
 
 class MoveGrip(APGrip):
@@ -126,12 +126,12 @@ class MoveGrip(APGrip):
             view.action("Move", view.ui.editMove)
         ]
         if isinstance(self._item, ItemOriginMixin):
-            ap : AnchorPoint = self.parentItem()
+            h : Handle = self.parentItem()
             entries.extend([
                 view.separator(),
                 view.action(
                     "Assign Origin",
-                    lambda: view.ui.editAssignOrigin(self.item(), ap.name())
+                    lambda: view.ui.editAssignOrigin(self.item(), h.name())
                 )
             ])
         return entries

@@ -6,7 +6,7 @@ from ...properties import PropertySpec
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from ..anchor_point import AnchorPoint
+    from ..handle import Handle
 
 
 class ItemOriginMixin:
@@ -21,15 +21,15 @@ class ItemOriginMixin:
     }
 
     # instance attributes
-    _pos    : QPointF        # position of origin w.r.t. scene/parent
-    _origin : "AnchorPoint"  # origin anchor point
+    _pos    : QPointF   # position of origin w.r.t. scene/parent
+    _origin : "Handle"  # origin handle
 
     # external instance attributes
-    _anchor_points : dict[str, "AnchorPoint"]
+    _handles : dict[str, "Handle"]
 
     def initOrigin(self : Self) -> None:
         self._pos = super().pos()
-        self._origin = self._anchor_points[self._ORIGIN_NAME]
+        self._origin = self._handles[self._ORIGIN_NAME]
         self.updateOrigin()
 
     def pos(self : Self) -> QPointF:
@@ -52,11 +52,11 @@ class ItemOriginMixin:
             return ""
 
     def setOrigin(self : Self, name : str) -> None:
-        self._origin = self._anchor_points[name]
+        self._origin = self._handles[name]
         self.setPos(self.pos())
-        for ap in self._anchor_points.values():
-            ap.onOriginChange()
+        for h in self._handles.values():
+            h.onOriginChange()
 
     def updateOrigin(self : Self) -> None:
-        """Reposition following possible movement of origin anchor point."""
+        """Reposition following possible movement of origin handle."""
         self.setPos(self._pos)

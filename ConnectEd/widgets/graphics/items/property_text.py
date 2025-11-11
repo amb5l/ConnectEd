@@ -8,9 +8,9 @@ from PyQt6.QtGui     import QAction
 
 from ..properties  import PropertySpec
 
-from .base_text    import BaseText
-from .tether_text  import TetherText
-from .anchor_point import AnchorPoint
+from .base_text   import BaseText
+from .tether_text import TetherText
+from .handle      import Handle
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -64,10 +64,10 @@ class PropertyText(TetherText):
         super().__init__(bare=bare)
         if bare:
             return
-        self.setCleatAPName(cleat)
+        self.setCleat(cleat)
         if origin is None:
             origin = "Bottom Left" if cleat == "Top Left" else "Top Left"
-        self.setOriginAPName(origin)
+        self.setOrigin(origin)
         pos = QPointF(0, 0) if pos is None else pos
         self.setPos(pos)
         self.setDisplay(display)
@@ -111,8 +111,8 @@ class PropertyText(TetherText):
         ]
 
     def item(self : Self) -> "PropertiesMixin | None":
-        ap : "AnchorPoint" = self.parentItem()
-        return None if ap is None else ap.parentItem()
+        h : "Handle" = self.parentItem()
+        return None if h is None else h.parentItem()
 
     def name(self : Self) -> str:
         return self._name
@@ -141,5 +141,5 @@ class PropertyTextSpec:
     cls     : type[PropertyText]
     cleat   : str
     pos     : QPointF | None = None
-    anchor  : str | None = None
+    origin  : str | None = None
     display : PropertyDisplay = PropertyDisplay.VALUE

@@ -7,10 +7,10 @@ from ....app import logger
 
 from ..properties import PropertySpec
 
-from .base_text    import BaseText
-from .anchor_point import AnchorPoint
+from .base_text import BaseText
+from .handle    import Handle
 
-from .mixin.anchor import ItemAnchorPointsMixin
+from .mixin.handle import ItemHandlesMixin
 
 
 class Tether(QGraphicsLineItem):
@@ -45,7 +45,7 @@ class Tether(QGraphicsLineItem):
         line.setP2(self.mapFromItem(cleat, QPointF(0, 0)))
         self.setLine(line)
 
-    def cleat(self : Self) -> AnchorPoint | None:
+    def cleat(self : Self) -> Handle | None:
         return self._item.parentItem()
 
     def toXml(self : Self, xw : QXmlStreamWriter) -> str:
@@ -85,10 +85,10 @@ class TetherText(BaseText):
         if 135 < self.sceneRotation() <= 225:
             # Use base class to prevent recursion
             QGraphicsLineItem.setRotation(self, (self.rotation() + 180) % 360)
-            # counter rotate anchor points
-            for ap in self._anchor_points.values():
-                ap.setTransformOriginPoint(self.mapToItem(ap, rect.center()))
-                QGraphicsLineItem.setRotation(ap, (ap.rotation() + 180) % 360)
+            # counter rotate handles
+            for h in self._handles.values():
+                h.setTransformOriginPoint(self.mapToItem(h, rect.center()))
+                QGraphicsLineItem.setRotation(h, (h.rotation() + 180) % 360)
 
     def onPositionChange(self : Self, pos : QPointF) -> None:
         self._tether.onPositionChange(pos)
@@ -107,7 +107,6 @@ class TetherText(BaseText):
     def setOrigin(self : Self, name : str) -> None:
         """Override to update tether line."""
         super().setOrigin(name)
-        # parent to origin anchor point
         self._tether.setParentItem(self._origin)
         self._tether.onPositionChange(self.pos())
 
@@ -115,10 +114,10 @@ class TetherText(BaseText):
         parent = self.parentItem()
         if parent is None:
             return self._cleat  # workaround for deserialization
-        elif isinstance(parent, AnchorPoint):
+        elif isinstance(parent, Handle):
             return parent.name()
         else:
-            logger().error(f"Parent is not an AnchorPoint: {type(parent).__name__}")
+            logger().error(f"Parent is not a Handle: {type(parent).__name__}")
             return "Undefined"
 
     def setCleat(self : Self, name : str) -> None:
@@ -126,12 +125,12 @@ class TetherText(BaseText):
         parent = self.parentItem()
         if parent is None:  # handle deserialization
             return
-        if isinstance(parent, AnchorPoint):
+        if isinstance(parent, Handle):
             grandparent = parent.parentItem()
-            if isinstance(grandparent, ItemAnchorPointsMixin):
-                self.setParentItem(grandparent.getAnchorPoint(name))
+            if isinstance(grandparent, ItemHandlesMixin):
+                self.setParentItem(grandparent.getHandle(name))
             else:
-                logger().error(f"Grandparent is not an ItemAnchorPointsMixin: {type(grandparent).__name__}")
+                logger().error(f"Grandparent is not an ItemHandleMixin: {type(grandparent).__name__}")
             parent.setName(name)
         else:
-            logger().error(f"Parent is not an AnchorPoint: {type(parent).__name__}")
+            logger().error(f"Parent is not a Handle: {type(parent).__name__}")

@@ -33,10 +33,10 @@ def _xp(point : QPointF, line : QLineF) -> float:
     """Returns the cross product magnitude for colinearity (should be ~0)."""
     if line.isNull():  # degenerate line (zero length)
         return point == line.p1()
-    ap = point - line.p1()  # vector from p1 to point (AP)
+    h = point - line.p1()  # vector from p1 to point (AP)
     ab = line.p2() - line.p1()  # vector from p1 to p2 (AB)
     # cross product magnitude for collinearity (should be ~0)
-    return ap.x() * ab.y() - ap.y() * ab.x()
+    return h.x() * ab.y() - h.y() * ab.x()
 
 
 def _setup_line_projection(

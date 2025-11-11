@@ -27,7 +27,7 @@ class ItemMixin:
         from .quill   import ItemQuillMixin
         from .outline import ItemOutlineMixin
         from .change  import ItemChangeMixin
-        from .anchor  import ItemAnchorPointsMixin
+        from .handle  import ItemHandlesMixin
         from ...properties import PropertiesMixin
         self.setZValue(self.Z)
         f = QGraphicsItem.GraphicsItemFlag
@@ -38,8 +38,8 @@ class ItemMixin:
         self._resetUuid()
         if isinstance(self, ItemLocMixin):
             self.initLoc()
-        if isinstance(self, ItemAnchorPointsMixin):
-            self.initAnchorPoints()
+        if isinstance(self, ItemHandlesMixin):
+            self.initHandles()
         if isinstance(self, ItemOriginMixin):
             self.initOrigin()
         if isinstance(self, ItemLineMixin):

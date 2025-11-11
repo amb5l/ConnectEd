@@ -9,7 +9,7 @@ from ...core.utils import str2val, val2str
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from .items.property_text import PropertyTextSpec, PropertyText
-    from .items.mixin.anchor import ItemAnchorPointsMixin
+    from .items.mixin.handle  import ItemHandlesMixin
 
 
 @dataclass
@@ -31,7 +31,7 @@ class PropertiesMixin:
     _custom_properties : dict[str, str]
     _property_texts    : dict[str, "PropertyText"]
 
-    def initProperties(self : Self | "ItemAnchorPointsMixin", bare : bool = False) -> None:
+    def initProperties(self : Self | "ItemHandlesMixin", bare : bool = False) -> None:
         self._custom_properties = {}
         self._property_texts = {}
         if bare:
@@ -44,10 +44,10 @@ class PropertiesMixin:
                     name,
                     spec.text.cleat,
                     spec.text.pos,
-                    spec.text.anchor,
+                    spec.text.origin,
                     spec.text.display
                 )
-                property_text.setParentItem(self.getAnchorPoint(spec.text.cleat))
+                property_text.setParentItem(self.getHandle(spec.text.cleat))
                 self._property_texts[name] = property_text
 
     def getPropertyNames(self : Self) -> list[str]:

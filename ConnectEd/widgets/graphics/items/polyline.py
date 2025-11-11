@@ -16,7 +16,7 @@ from .grip      import Grip
 from .mixin        import ItemMixin
 from .mixin.pos    import ItemPosMixin
 from .mixin.paint  import ItemPaintMixin
-from .mixin.anchor import ItemRectAnchorPointsMixin
+from .mixin.handle import ItemRectHandlesMixin
 from .mixin.line   import ItemLineMixin
 from .mixin.change import ItemChangeMixin
 from .mixin.clone  import ItemCloneMixin
@@ -133,7 +133,7 @@ class Polyline(
     ItemMixin,
     ItemPosMixin,
     ItemPaintMixin,
-    ItemRectAnchorPointsMixin,
+    ItemRectHandlesMixin,
     ItemLineMixin,
     ItemChangeMixin,
     ItemCloneMixin,
@@ -175,9 +175,9 @@ class Polyline(
             vtx.onSceneChange(scene)
         for seg in self._segments:
             seg.onSceneChange(scene)
-        if hasattr(self, '_anchor_points'):
-            for ap in self._anchor_points.values():
-                ap._grip.onSceneChange(scene)
+        if hasattr(self, '_handles'):
+            for h in self._handles.values():
+                h._grip.onSceneChange(scene)
 
     def onSelectionChange(self : Self, selected : bool) -> None:
         if not selected:
@@ -249,7 +249,7 @@ class Polyline(
         seg.setParentItem(None)
         self.setClosed(False)
 
-    def anchorPointRect(self : Self) -> QRectF:
+    def handleRect(self : Self) -> QRectF:
         return self.path().controlPointRect()
 
     def rect(self : Self) -> QRectF:
@@ -302,8 +302,8 @@ class Polyline(
             ))
         self.updatePath()
 
-    def moveAnchorPointBy(self : Self, name : str, delta : QPointF) -> None:
-        BaseRectangleMixin.moveAnchorPointBy(self, name, delta)
+    def moveHandleBy(self : Self, name : str, delta : QPointF) -> None:
+        BaseRectangleMixin.moveHandleBy(self, name, delta)
 
     def sceneTightBoundingRect(self : Self) -> QRectF:
         return self._stbrect
@@ -355,9 +355,9 @@ class Polyline(
             path.closeSubpath()
         # update path
         self.setPath(path)
-        # update anchor points
-        if hasattr(self, '_anchor_points'):
-            self.updateAnchorPoints()
+        # update handles
+        if hasattr(self, '_handles'):
+            self.updateHandles()
         # update scene tight bounding rect
         scene_polygon = self.mapToScene(self.path().controlPointRect())
         self._stbrect = scene_polygon.boundingRect().normalized()

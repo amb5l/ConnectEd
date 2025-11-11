@@ -12,7 +12,6 @@ from .....app import logger, settings
 from .....core.xml import toXmlAttrs, fromXmlAttrs
 
 from ...properties import PropertySpec, PropertiesMixin
-from ...anchor     import AnchorPointsMixin
 
 from .api     import DrawingSceneApiMixin
 from .grips   import DrawingSceneGripsMixin
@@ -24,7 +23,6 @@ from .private import DrawingSceneApiPrivateMixin
 
 class DrawingScene(
     PropertiesMixin,
-    AnchorPointsMixin,
     DrawingSceneApiMixin,
     DrawingSceneGripsMixin,
     DrawingScenePathsMixin,
@@ -103,8 +101,6 @@ class DrawingScene(
     def toXml(self : Self, xw : QXmlStreamWriter) -> None:
         xw.writeStartElement(self.__class__.__name__.replace("Scene", ""))
         toXmlAttrs(self, xw)
-        for pt in self.getPropertyTexts().values():
-            pt.toXml(xw)
         for item in self.items():
             if item.parentItem() is None:  # top level items only
                 item.toXml(xw)
@@ -113,7 +109,6 @@ class DrawingScene(
     @classmethod
     def fromXml(cls : Self, xr : QXmlStreamReader) -> Self:
         from ...items import _item_classes
-        from ...items.property_text import PropertyText
         top_element_name = cls.__name__.replace("Scene", "")
         if xr.name() != top_element_name:
             raise ValueError(f"Expected {top_element_name} element, got {xr.name()}")
@@ -122,11 +117,7 @@ class DrawingScene(
         while not (xr.isEndElement() and xr.name() == top_element_name):
             if xr.tokenType() == QXmlStreamReader.TokenType.StartElement:
                 attr_name = xr.name()
-                if attr_name == "PropertyText":  # scene property text
-                    pt : PropertyText = PropertyText.fromXml(xr)
-                    pt.setParentItem(drawing_scene.getAnchorPoint(pt.getCleat()))
-                    drawing_scene.addPropertyText(pt)
-                elif attr_name in _item_classes:
+                if attr_name in _item_classes:
                     item_cls = _item_classes[attr_name]
                     item = item_cls.fromXml(xr)
                     drawing_scene.addItem(item)

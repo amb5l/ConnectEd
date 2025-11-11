@@ -1,6 +1,12 @@
-onGeometryChange
-If you want zero-boilerplate in every setter, wrap the Qt geometry mutators with a decorator or a tiny base mixin
+anchorpoints: rename to handle, rename cleat to handle
+ap => h
+PropertiesDisplayDialog
+scene property system with signallers and subscriber management
+item property system: add support for property Variable Substitution
+property text: add tethered and free versions
 
+onGeometryChange review
+@overload
 new _settings_name system for controlling PropertyText appearance
   - remove all subclasses
   - on parent change, get parent class

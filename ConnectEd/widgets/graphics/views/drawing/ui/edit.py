@@ -10,7 +10,6 @@ from ..interaction.edit import EditMoveInteraction
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ....items              import ItemMixin
-    from ....items.anchor_point import AnchorPoint
     from ....items.grip         import ResizeGrip
     from ....items.symbol_pin   import SymbolPin
     from .                      import DrawingViewUi

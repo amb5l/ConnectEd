@@ -8,12 +8,12 @@ from ....app import settings
 
 from ..properties import PropertySpec
 
-from .anchor_point import AnchorPoint
+from .handle import Handle
 
 from .mixin        import ItemMixin
 from .mixin.shape  import ItemShapeMixin
 from .mixin.paint  import ItemPaintMixin
-from .mixin.anchor import ItemAnchorPointsMixin
+from .mixin.handle import ItemHandlesMixin
 from .mixin.line   import ItemLineMixin
 from .mixin.change import ItemChangeMixin
 from .mixin.clone  import ItemCloneMixin
@@ -25,7 +25,7 @@ class Line(
     ItemMixin,
     ItemShapeMixin,
     ItemPaintMixin,
-    ItemAnchorPointsMixin,
+    ItemHandlesMixin,
     ItemLineMixin,
     ItemChangeMixin,
     ItemCloneMixin,
@@ -96,17 +96,17 @@ class Line(
         stroker.setJoinStyle(Qt.PenJoinStyle.MiterJoin)
         stroker_path = stroker.createStroke(line_path)
         self._hshape = stroker_path
-        self.updateAnchorPoints()
+        self.updateHandles()
 
-    def initAnchorPoints(self : Self) -> None:
-        self._anchor_points = {
-            "P1" : AnchorPoint(
+    def initHandles(self : Self) -> None:
+        self._handles = {
+            "P1" : Handle(
                 name   = "P1",
                 pos    = QPointF(0, 0),
                 resize = True,
                 parent = self
             ),
-            "P2" : AnchorPoint(
+            "P2" : Handle(
                 name   = "P2",
                 pos    = QPointF(0, 0),
                 resize = True,
@@ -114,8 +114,8 @@ class Line(
             )
         }
 
-    def updateAnchorPoints(self : Self) -> None:
-        self._anchor_points["P2"].setPos(self._line.p2())
+    def updateHandles(self : Self) -> None:
+        self._handles["P2"].setPos(self._line.p2())
 
     def p1(self : Self) -> QPointF:
         return self.pos()
@@ -159,14 +159,14 @@ class Line(
         self.setLine(self._line)
         self.onGeometryChange()
 
-    def moveAnchorPointBy(self : Self, name : str, delta : QPointF) -> None:
+    def moveHandleBy(self : Self, name : str, delta : QPointF) -> None:
             match name:
                 case "P1":
                     self.setP1(self.p1() + delta)
                 case "P2":
                     self.setP2(self.p2() + delta)
                 case _:
-                    raise ValueError(f"Invalid anchor point: {name}")
+                    raise ValueError(f"Invalid handle: {name}")
 
     def shape(self : Self) -> QPainterPath:
         return self._hshape

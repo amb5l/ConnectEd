@@ -3,19 +3,30 @@ from typing import Self
 from PyQt6.QtCore import QRectF
 from PyQt6.QtCore import QPointF
 
-from ...anchor import AnchorPointsMixin
-
-from ..anchor_point import AnchorPoint
+from ..handle import Handle
 
 from .grip import ItemGripMixin
 
 
-class ItemAnchorPointsMixin(AnchorPointsMixin, ItemGripMixin):
-    def moveAnchorPointBy(self : Self, name : str, delta : QPointF) -> None:
+class ItemHandlesMixin(ItemGripMixin):
+    @classmethod
+    def getHandleNames(cls : type[Self]) -> list[str]:
+        raise NotImplementedError("Subclass must implement this method")
+
+    # instance attributes
+    _handles : dict[str, "Handle"]
+
+    def initHandles(self : Self) -> None:
+        raise NotImplementedError("Subclass must implement this method")
+
+    def getHandle(self : Self, name : str) -> "Handle":
+        return self._handles[name]
+
+    def moveHandleBy(self : Self, name : str, delta : QPointF) -> None:
         raise NotImplementedError("Subclass must implement this method")
 
 
-class ItemRectAnchorPointsMixin(ItemAnchorPointsMixin):
+class ItemRectHandlesMixin(ItemHandlesMixin):
     # class attributes
     _AP_RECT = {
         "Top Left"      : ( 0.0 , 0.0 ),
@@ -31,26 +42,26 @@ class ItemRectAnchorPointsMixin(ItemAnchorPointsMixin):
     _AP_RESIZE = { k : k != "Center" for k in _AP_RECT.keys() }
 
     @classmethod
-    def getAnchorPointNames(cls : type[Self]) -> list[str]:
+    def getHandleNames(cls : type[Self]) -> list[str]:
         return list(cls._AP_RECT.keys())
 
-    def initAnchorPoints(self : Self) -> None:
-        self._anchor_points = {}
+    def initHandles(self : Self) -> None:
+        self._handles = {}
         for name in self._AP_RECT.keys():
             resize = name in self._AP_RESIZE
-            anchor_point = AnchorPoint(name=name, resize=resize, parent=self)
-            self._anchor_points[name] = anchor_point
+            handle = Handle(name=name, resize=resize, parent=self)
+            self._handles[name] = handle
 
-    def anchorPointRect(self : Self) -> QRectF:
+    def handleRect(self : Self) -> QRectF:
         raise NotImplementedError("Subclass must implement this method")
 
-    def updateAnchorPoints(self : Self) -> None:
-        if not hasattr(self, "_anchor_points"):
+    def updateHandles(self : Self) -> None:
+        if not hasattr(self, "_handles"):
             return
-        rect = self.anchorPointRect()
+        rect = self.handleRect()
         x0 = rect.topLeft().x()
         y0 = rect.topLeft().y()
         w = rect.width()
         h = rect.height()
         for name, (x, y) in self._AP_RECT.items():
-            self._anchor_points[name].setPos(QPointF(x0 + (x * w), y0 + (y * h)))
+            self._handles[name].setPos(QPointF(x0 + (x * w), y0 + (y * h)))

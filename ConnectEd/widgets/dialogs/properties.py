@@ -15,7 +15,7 @@ from ..graphics.items import Default, DEFAULT
 
 from ..graphics.items.property_text import PropertyDisplay, PropertyText
 
-from ..graphics.items.mixin.anchor import ItemAnchorPointsMixin
+from ..graphics.items.mixin.handle import ItemHandlesMixin
 
 from .components.model import DialogItem, DialogModel
 
@@ -88,7 +88,7 @@ class NewItem(DialogItem):
 
 
 class PropertiesDialog(QDialog):
-    _item           : "PropertiesMixin | ItemAnchorPointsMixin"
+    _item           : "PropertiesMixin | ItemHandlesMixin"
     _dialog_layout  : QVBoxLayout
     _table_model    : DialogModel
     _table_view     : TableView
@@ -104,7 +104,7 @@ class PropertiesDialog(QDialog):
 
     def __init__(
         self : Self,
-        item : "PropertiesMixin | ItemAnchorPointsMixin",
+        item : "PropertiesMixin | ItemHandlesMixin",
         view : "DrawingView | None" = None
     ) -> None:
         # initialise
@@ -337,13 +337,13 @@ class PropertiesDialog(QDialog):
                     italic_item    : DialogItem = self._table_model.item(row_idx, 11)
                     underline_item : DialogItem = self._table_model.item(row_idx, 12)
                     if cleat_item.getValue() is None:
-                        cleat_item.setInit(self._item.__class__.getAnchorPointNames()[0])
+                        cleat_item.setInit(self._item.__class__.getHandleNames()[0])
                     if offset_x_item.getValue() is None:
                         offset_x_item.setInit(0.0)
                     if offset_y_item.getValue() is None:
                         offset_y_item.setInit(0.0)
                     if origin_item.getValue() is None:
-                        origin_item.setInit(PropertyText.getAnchorPointNames()[0])
+                        origin_item.setInit(PropertyText.getHandleNames()[0])
                     if color_item.getValue() is None:
                         color_item.setInit(DEFAULT)
                     if font_item.getValue() is None:

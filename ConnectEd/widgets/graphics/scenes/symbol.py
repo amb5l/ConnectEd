@@ -7,29 +7,19 @@ from ....app import settings
 
 from ....core.defs import PITCH
 
-from ..items.anchor_point import AnchorPoint
-
-from ..items.mixin.anchor import ItemRectAnchorPointsMixin
+from ..items.handle import Handle
 
 from .drawing import DrawingScene
 
 
 class SymbolScene(DrawingScene):
-    # class attributes
-    _AP_RECT = ItemRectAnchorPointsMixin._AP_RECT
 
     # instance attributes
-    _brect         : QRectF | None
-    _anchor_points : dict[str, "AnchorPoint"]
+    _brect   : QRectF | None
 
     def __init__(self : Self) -> None:
         super().__init__()
         self._brect = None
-        self._anchor_points = {}
-        for name in self._AP_RECT.keys():
-            ap = AnchorPoint(name)
-            self.addItem(ap)
-            self._anchor_points[name] = ap
         self.onChange()
         self.changed.connect(self.onChange)
 
@@ -54,15 +44,8 @@ class SymbolScene(DrawingScene):
         if ha > 0:
             rect.setY(rect.y() - (ha / 2))
             rect.setHeight(PITCH)
-        if rect != self._brect:
-            self._brect = rect
-            self.blockSignals(True)
-            ItemRectAnchorPointsMixin.updateAnchorPoints(self)
-            self.blockSignals(False)
-            self.changed.connect(self.onChange)
-
-    def anchorPointRect(self : Self) -> QRectF:
-        return self._brect
+        # store result
+        self._brect = rect
 
     def drawBackground(
         self    : Self,

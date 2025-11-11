@@ -13,7 +13,7 @@ from .mixin.pos    import ItemPosMixin
 from .mixin.bound  import ItemBoundMixin
 from .mixin.shape  import ItemShapeMixin
 from .mixin.paint  import ItemPaintMixin
-from .mixin.anchor import ItemRectAnchorPointsMixin
+from .mixin.handle import ItemRectHandlesMixin
 from .mixin.line   import ItemLineMixin
 from .mixin.fill   import ItemFillMixin
 from .mixin.change import ItemChangeMixin
@@ -32,7 +32,7 @@ class BaseRectangleMixin(
     ItemBoundMixin,
     ItemShapeMixin,
     ItemPaintMixin,
-    ItemRectAnchorPointsMixin,
+    ItemRectHandlesMixin,
     ItemLineMixin,
     ItemFillMixin,
     ItemChangeMixin,
@@ -124,7 +124,7 @@ class BaseRectangleMixin(
             self._hshape = rect_path.united(stroker_path)
         else:
             self._hshape = stroker_path
-        self.updateAnchorPoints()
+        self.updateHandles()
 
     @overload
     def setRect(
@@ -210,10 +210,10 @@ class BaseRectangleMixin(
         rect.setSize(QSizeF(w, h))
         self.setRect(rect)
 
-    def anchorPointRect(self : Self) -> QRectF:
+    def handleRect(self : Self) -> QRectF:
         return self.rect()
 
-    def moveAnchorPointBy(self : Self, name : str, delta : QPointF) -> None:
+    def moveHandleBy(self : Self, name : str, delta : QPointF) -> None:
         p1 = self.pos()
         p2 = p1 + self.rect().bottomRight()
         d = delta
@@ -237,7 +237,7 @@ class BaseRectangleMixin(
             case "Bottom Right":
                 self.setPoints(p1, p2 + d)
             case _:
-                raise ValueError(f"Invalid anchor point: {name}")
+                raise ValueError(f"Invalid handle: {name}")
 
     def sceneTightBoundingRect(self : Self) -> QRectF:
         return self._stbrect

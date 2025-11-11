@@ -6,23 +6,25 @@ from .....app import logger
 
 from .....core.xml import toXmlAttrs, fromXmlAttrs
 
-from ..mixin.anchor import ItemAnchorPointsMixin
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from ..mixin.handle import ItemHandlesMixin
 
 
 class ItemXmlMixin:
     def toXml(self : Self, xw : QXmlStreamWriter) -> None:
         from ..property_text import PropertyText
         from ..base_pin      import BasePin
-        from ..anchor_point  import AnchorPoint
+        from ..handle        import Handle
         xw.writeStartElement(self.__class__.__name__)
         toXmlAttrs(self, xw)
         for child in self.childItems():
             if isinstance(child, BasePin):
                 child.toXml(xw)
-            elif isinstance(child, AnchorPoint):
-                for anchor_child in child.childItems():
-                    if isinstance(anchor_child, PropertyText):
-                        anchor_child.toXml(xw)
+            elif isinstance(child, Handle):
+                for handle_child in child.childItems():
+                    if isinstance(handle_child, PropertyText):
+                        handle_child.toXml(xw)
         xw.writeEndElement()
 
     @classmethod
@@ -33,7 +35,7 @@ class ItemXmlMixin:
         from ..block         import BlockLabel, BlockName
         from ..block_pin     import BlockPin, BlockPinName, BlockPinComment
         from ..symbol_pin    import SymbolPin, SymbolPinName, SymbolPinComment
-        instance : "ItemAnchorPointsMixin" = cls(bare=True)
+        instance : "ItemHandlesMixin" = cls(bare=True)
         fromXmlAttrs(instance, xr)
         if hasattr(instance, "onGeometryChange"):
             instance.onGeometryChange()
@@ -67,7 +69,7 @@ class ItemXmlMixin:
                 elif item_name in property_text_classes:
                     child_cls = property_text_classes[item_name]
                     child : PropertyText = child_cls.fromXml(xr)
-                    child.setParentItem(instance.getAnchorPoint(child.getCleat()))
+                    child.setParentItem(instance.getHandle(child.getCleat()))
                     child.onGeometryChange()
                     # text rotation compensation
                     if hasattr(child, 'onRotationChange'):

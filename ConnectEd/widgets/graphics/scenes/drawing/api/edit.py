@@ -19,7 +19,6 @@ from ....items.symbol_pin    import SymbolPin
 from ....items.polyline      import Polyline, PolySeg
 from ....items.base_text     import BaseText
 from ....items.property_text import PropertyDisplay, PropertyText
-from ....items.anchor_point  import AnchorPoint
 from ....items.mixin         import ItemMixin
 
 from ..cmd           import cmdExec, CmdDelete, CmdMove, CmdRotateCW, CmdRotateCCW

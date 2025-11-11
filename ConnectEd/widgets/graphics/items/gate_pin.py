@@ -87,7 +87,7 @@ class GatePin(ItemPosMixin, BasePinDotMixin, BasePinClockMixin, BasePin):
                 return
         key = (self._dot, self._clock)
         path = scene.paths["SymbolPin"][key]
-        self._anchor_points["Name"].setPos(QPointF(
+        self._handles["Name"].setPos(QPointF(
             self._AP_NAME_OFFSET + (_PIN_CLK_SIZE if self._clock else 0), 0
         ))
         if self._length != PITCH:

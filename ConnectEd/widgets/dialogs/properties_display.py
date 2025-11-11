@@ -21,7 +21,7 @@ if TYPE_CHECKING:
 @dataclass
 class PropertyDisplayState:
     display   : PropertyDisplay
-    anchor    : str
+    handle    : str
     offset_x  : float
     offset_y  : float
     origin    : str
@@ -71,8 +71,8 @@ class PropertiesDisplayDialog(QDialog):
         header = [
             "Name",      # Property - Name
             "Value",     # Property - Value
-            "Display",   # PropertyDisplayChoice
-            "Anchor",    # PropertyText - Cleat
+            "Display",   # DisplayChoice
+            "Handle",    # PropertyText - Handle
             "Offset X",  # PropertyText - Offset
             "Offset Y",  # PropertyText - Offset
             "Origin",    # PropertyText - Origin

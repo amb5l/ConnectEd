@@ -69,7 +69,7 @@ class Port(
 
     def onSettingsChange(self : Self) -> None:
         size = settings().get("theme/items/Port/size")
-        self.getAnchorPoint("Name").setPos(size + self._AP_NAME_OFFSET, 0)
+        self.getHandle("Name").setPos(size + self._AP_NAME_OFFSET, 0)
 
     def onSceneChange(self : Self, scene : "DrawingScene") -> None:
         self._setPath(scene)

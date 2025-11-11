@@ -9,7 +9,7 @@ from ..properties import PropertySpec, PropertiesMixin
 
 from .mixin         import ItemMixin
 from .mixin.pos     import ItemPosMixin
-from .mixin.anchor  import ItemRectAnchorPointsMixin
+from .mixin.handle  import ItemRectHandlesMixin
 from .mixin.origin  import ItemOriginMixin
 from .mixin.quill   import ItemQuillMixin
 from .mixin.outline import ItemOutlineMixin
@@ -26,7 +26,7 @@ if TYPE_CHECKING:
 class BaseTextBlock(
     ItemMixin,
     ItemPosMixin,
-    ItemRectAnchorPointsMixin,
+    ItemRectHandlesMixin,
     ItemOriginMixin,
     ItemQuillMixin,
     ItemOutlineMixin,
@@ -63,7 +63,7 @@ class BaseTextBlock(
         if not hasattr(self, "_origin"):
             return
         old_origin_scene_pos = self.getOriginScenePos()
-        self.updateAnchorPoints()
+        self.updateHandles()
         new_origin_scene_pos = self.getOriginScenePos()
         delta = old_origin_scene_pos - new_origin_scene_pos
         self._pos = self.pos() + delta
@@ -113,10 +113,10 @@ class BaseTextBlock(
             painter.setPen(self.outline.pen)
             painter.drawRect(self.boundingRect())
 
-    def anchorPointRect(self : Self) -> QRectF:
+    def handleRect(self : Self) -> QRectF:
         return self.boundingRect()
 
-    def moveAnchorPointBy(self : Self, _ : str, delta : QPointF) -> None:
+    def moveHandleBy(self : Self, _ : str, delta : QPointF) -> None:
         """Move the entire Text when any keypoint is dragged."""
         self.setPos(self.pos() + delta)
 

@@ -8,14 +8,14 @@ from . import SignalDirection, VectorRange
 
 from .mixin        import ItemMixin
 from .mixin.rotate import ItemRotateMixin
-from .mixin.anchor import ItemAnchorPointsMixin
+from .mixin.handle import ItemHandlesMixin
 from .mixin.line   import ItemLineMixin
 from .mixin.change import ItemChangeMixin
 from .mixin.clone  import ItemCloneMixin
 from .mixin.xml    import ItemXmlMixin
 from .mixin.menu   import ItemMenuMixin
 
-from .anchor_point  import AnchorPoint
+from .handle        import Handle
 from .property_text import PropertyText
 
 from .entry import Entry
@@ -28,7 +28,7 @@ class PortPinText(PropertyText):
 class PortPinMixin(
     ItemMixin,
     ItemRotateMixin,
-    ItemAnchorPointsMixin,
+    ItemHandlesMixin,
     ItemLineMixin,
     ItemChangeMixin,
     ItemCloneMixin,
@@ -115,15 +115,15 @@ class PortPinMixin(
         # Initialize the entry
         self._entry = self._getEntryClass()(self)
 
-    def initAnchorPoints(self : Self) -> None:
-        self._anchor_points = {
-            "Origin" : AnchorPoint(
+    def initHandles(self : Self) -> None:
+        self._handles = {
+            "Origin" : Handle(
                 name   = "Origin",
                 pos    = QPointF(0, 0),
                 resize = False,
                 parent = self
             ),
-            "Name" : AnchorPoint(
+            "Name" : Handle(
                 name   = "Name",
                 pos    = QPointF(self._AP_NAME_OFFSET, 0),
                 resize = False,

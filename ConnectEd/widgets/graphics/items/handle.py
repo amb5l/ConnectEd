@@ -10,10 +10,10 @@ from .mixin.change import ItemChangeMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from .mixin.anchor import ItemAnchorPointsMixin
+    from .mixin.handle import ItemHandlesMixin
 
 
-class AnchorPoint(ItemRotateMixin, ItemChangeMixin, NullPoint):
+class Handle(ItemRotateMixin, ItemChangeMixin, NullPoint):
     # instance attributes
     _name : str
     _grip : APGrip
@@ -23,7 +23,7 @@ class AnchorPoint(ItemRotateMixin, ItemChangeMixin, NullPoint):
         name   : str,
         pos    : QPointF | None = None,
         resize : bool = False,
-        parent : "ItemAnchorPointsMixin" = None
+        parent : "ItemHandlesMixin" = None
     ) -> None:
         super().__init__(parent)
         self._name = name

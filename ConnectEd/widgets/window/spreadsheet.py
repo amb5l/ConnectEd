@@ -121,9 +121,9 @@ class SpreadsheetComboDelegate(QStyledItemDelegate):
         return QSize(100, 25)
 
 class SpreadsheetAPDelegate(SpreadsheetComboDelegate):
-    """Delegate for anchor AP enum values."""
-    TOOLTIP = "Controls position of anchor point"
-    ENTRIES = [  # TODO fix this to work with other anchor point names
+    """Delegate for handle enum values."""
+    TOOLTIP = "Controls position of handle"
+    ENTRIES = [  # TODO fix this to work with other handle names
         "Top Left",
         "Top Center",
         "Top Right",

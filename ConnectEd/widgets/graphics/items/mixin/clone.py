@@ -4,16 +4,16 @@ from ...properties import PropertiesMixin, PropertySpec
 
 from .. import ItemMixin
 
-from .anchor import ItemAnchorPointsMixin
+from .handle import ItemHandlesMixin
 
 
-ItemType = ItemMixin | ItemAnchorPointsMixin | PropertiesMixin
+ItemType = ItemMixin | ItemHandlesMixin | PropertiesMixin
 
 
 class ItemCloneMixin:
     def clone(self : Self, original : Self | None = None) -> Self:
         """Create a clone of this or specified item with a new UUID."""
-        from ..anchor_point  import AnchorPoint
+        from ..handle        import Handle
         from ..property_text import PropertyText
         from ..base_pin      import BasePin
         source : ItemType = original if original is not None else self
@@ -34,11 +34,11 @@ class ItemCloneMixin:
             if isinstance(source_child, BasePin):
                 clone_pin = source_child.clone()
                 clone_pin.setParentItem(clone)
-            elif isinstance(source_child, AnchorPoint):
+            elif isinstance(source_child, Handle):
                 for source_ap_child in source_child.childItems():
                     if isinstance(source_ap_child, PropertyText):
                         clone_ap_child = source_ap_child.clone()
                         clone_ap_child.setParentItem(
-                            clone._anchor_points[source_child.name()]
+                            clone._handles[source_child.name()]
                         )
         return clone

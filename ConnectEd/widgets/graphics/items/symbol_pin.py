@@ -70,8 +70,8 @@ class SymbolPin(ItemPosMixin, BasePinDotMixin, BasePinClockMixin, BasePin):
     ) -> None:
         super().__init__(parent, bare)
 
-    def moveAnchorPointBy(self : Self, _ : str, delta : QPointF) -> None:
-        """Move the entire SymbolPin when any anchor point is dragged."""
+    def moveHandleBy(self : Self, _ : str, delta : QPointF) -> None:
+        """Move the entire SymbolPin when any grip is dragged."""
         self.setPos(self.pos() + delta)
 
     def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
@@ -94,6 +94,6 @@ class SymbolPin(ItemPosMixin, BasePinDotMixin, BasePinClockMixin, BasePin):
                 return
         key = (self._dot, self._clock)
         self.setPath(scene.paths["SymbolPin"][key])
-        self._anchor_points["Name"].setPos(QPointF(
+        self._handles["Name"].setPos(QPointF(
             self._AP_NAME_OFFSET + (_PIN_CLK_SIZE if self._clock else 0), 0
         ))
