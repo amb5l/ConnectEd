@@ -109,8 +109,12 @@ class DrawingViewUiEditMixin:
             pos = self._view.mapToScene(pos) if isinstance(pos, QPoint) else pos
             self._scene.editRotateCCW(items, pos, undoable=True)
 
-    def editAssignOrigin(self : "DrawingViewUi", ap : "AnchorPoint") -> None:
-        self._scene.editAssignOrigin(ap, undoable=True)
+    def editAssignOrigin(
+        self    : "DrawingViewUi",
+        item    : "ItemMixin",
+        ap_name : str
+    ) -> None:
+        self._scene.editAssignOrigin(item, ap_name, undoable=True)
 
     def editAppearance(
         self : "DrawingViewUi",

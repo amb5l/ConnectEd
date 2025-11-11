@@ -157,10 +157,11 @@ class DrawingSceneApiEditMixin:
 
     def editAssignOrigin(
         self     : "DrawingScene",
-        ap       : AnchorPoint,
+        item     : "ItemMixin",
+        ap_name  : str,
         undoable : bool = False
     ) -> None:
-        cmd = CmdEditOrigin(self, ap)
+        cmd = CmdEditOrigin(self, item, ap_name)
         cmdExec(self, cmd, undoable)
 
     def editPolylineClosed(

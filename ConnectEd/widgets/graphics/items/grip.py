@@ -64,6 +64,10 @@ class Grip(
         self._brush.setColor(settings().get("theme/grip/color"))
         self.setBrush(self._brush)
 
+    def item(self : Self) -> "ItemGripMixin":
+        ap : AnchorPoint = self.parentItem()
+        return ap.parentItem()
+
     def toXml(self : Self, _ : QXmlStreamWriter) -> None:
         pass
 
@@ -102,7 +106,7 @@ class APGrip(Grip):
             if scene:
                 self.setPath(scene.paths["Grip"][self._path_name])
             return
-        if item.getOriginAPName() == ap.name():
+        if item.getOrigin() == ap.name():
             self._path_name = self._ORIGIN_PATH_NAME
         else:
             self._path_name = self._PATH_NAME
@@ -117,28 +121,26 @@ class APGrip(Grip):
 
 class MoveGrip(APGrip):
     def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
-        items = [
+        entries = [
             view.action("Slide", view.ui.editSlide),
             view.action("Move", view.ui.editMove)
         ]
         if isinstance(self._item, ItemOriginMixin):
-            items.extend([
+            ap : AnchorPoint = self.parentItem()
+            entries.extend([
                 view.separator(),
                 view.action(
                     "Assign Origin",
-                    lambda: view.ui.editAssignOrigin(self.parentItem())
+                    lambda: view.ui.editAssignOrigin(self.item(), ap.name())
                 )
             ])
-        return items
+        return entries
 
 
 class ResizeGrip(MoveGrip):
     def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
-        items = [
+        entries = [
             view.action("Resize", lambda: view.ui.editResize(self)),
         ]
-        if isinstance(self._item, ItemOriginMixin):
-            items.extend([
-                view.action("Resize", lambda: view.ui.editResize(self)),
-            ])
-        return items
+        entries.extend(MoveGrip.ctxMenuItems(self, view))
+        return entries

@@ -57,8 +57,8 @@ class TetherText(BaseText):
     _PROPERTY_SPECS_CLEAT = {
         "Cleat" : PropertySpec(
             type_name = "str",
-            getter    = lambda self: self.getCleatAPName(),
-            setter    = lambda self, value: self.setCleatAPName(value)
+            getter    = lambda self: self.getCleat(),
+            setter    = lambda self, value: self.setCleat(value)
         )
     }
 
@@ -104,14 +104,14 @@ class TetherText(BaseText):
                 self._cleat_shown = False
                 self._tether.cleat().grip().setVisible(False)
 
-    def setOriginAPName(self : Self, name : str) -> None:
+    def setOrigin(self : Self, name : str) -> None:
         """Override to update tether line."""
-        super().setOriginAPName(name)
+        super().setOrigin(name)
         # parent to origin anchor point
         self._tether.setParentItem(self._origin)
         self._tether.onPositionChange(self.pos())
 
-    def getCleatAPName(self : Self) -> str:
+    def getCleat(self : Self) -> str:
         parent = self.parentItem()
         if parent is None:
             return self._cleat  # workaround for deserialization
@@ -121,7 +121,7 @@ class TetherText(BaseText):
             logger().error(f"Parent is not an AnchorPoint: {type(parent).__name__}")
             return "Undefined"
 
-    def setCleatAPName(self : Self, name : str) -> None:
+    def setCleat(self : Self, name : str) -> None:
         self._cleat = name
         parent = self.parentItem()
         if parent is None:  # handle deserialization

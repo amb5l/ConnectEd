@@ -15,8 +15,8 @@ class ItemOriginMixin:
     _PROPERTY_SPECS_ORIGIN = {
         "Origin" : PropertySpec(
             type_name = "str",
-            getter    = lambda self: self.getOriginAPName(),
-            setter    = lambda self, value: self.setOriginAPName(value)
+            getter    = lambda self: self.getOrigin(),
+            setter    = lambda self, value: self.setOrigin(value)
         )
     }
 
@@ -45,23 +45,17 @@ class ItemOriginMixin:
         else:
             return self.scenePos()
 
-    def getOriginAP(self : Self) -> "AnchorPoint":
-        return self._origin
-
-    def setOriginAP(self : Self, ap : "AnchorPoint") -> None:
-        self._origin = ap
-        self.setPos(self.pos())
-        for ap in self._anchor_points.values():
-            ap.onOriginChange()
-
-    def getOriginAPName(self : Self) -> str:
+    def getOrigin(self : Self) -> str:
         if hasattr(self, "_origin"):
             return self._origin.name()
         else:
             return ""
 
-    def setOriginAPName(self : Self, name : str) -> None:
-        self.setOriginAP(self._anchor_points[name])
+    def setOrigin(self : Self, name : str) -> None:
+        self._origin = self._anchor_points[name]
+        self.setPos(self.pos())
+        for ap in self._anchor_points.values():
+            ap.onOriginChange()
 
     def updateOrigin(self : Self) -> None:
         """Reposition following possible movement of origin anchor point."""

@@ -149,10 +149,10 @@ class PropertiesDialog(QDialog):
                     vars.display = DisplayChoice(f"Hidden {pt.display().value}")
                 else:
                     vars.display = DisplayChoice(pt.display().value)
-                vars.cleat     = item.getPropertyText(name).getCleatAPName()
+                vars.cleat     = item.getPropertyText(name).getCleat()
                 vars.offset_x  = item.getPropertyText(name).pos().x()
                 vars.offset_y  = item.getPropertyText(name).pos().y()
-                vars.origin    = item.getPropertyText(name).getOriginAPName()
+                vars.origin    = item.getPropertyText(name).getOrigin()
                 vars.color     = item.getPropertyText(name).a.quill.getColor()
                 vars.font      = item.getPropertyText(name).a.quill.getFamily()
                 vars.size      = item.getPropertyText(name).a.quill.getSize()

@@ -364,9 +364,9 @@ class CmdEditProperties(CmdBase):
                 visible = False
         pt.setVisible(visible)
         pt.setDisplay(display)
-        pt.setCleatAPName(vars.cleat)
+        pt.setCleat(vars.cleat)
         pt.setPos(QPointF(vars.offset_x, vars.offset_y))
-        pt.setOriginAPName(vars.origin)
+        pt.setOrigin(vars.origin)
         pt.a.quill.setFamily(vars.font)
         pt.a.quill.setSize(vars.size)
         pt.a.quill.setBold(vars.bold)
@@ -377,21 +377,21 @@ class CmdEditProperties(CmdBase):
 
 class CmdEditOrigin(CmdSceneItem):
     _item   : ItemOriginMixin
-    _before : AnchorPoint
-    _after  : AnchorPoint
+    _before : str
+    _after  : str
 
     def __init__(
-        self : Self,
+        self    : Self,
         scene   : "DrawingScene",
-        origin  : AnchorPoint
+        item    : ItemOriginMixin,
+        ap_name : str
     ):
-        item : ItemOriginMixin = origin.parentItem()
-        super().__init__(scene, origin.parentItem())
-        self._before = item.getOriginAP()
-        self._after = origin
+        super().__init__(scene, item)
+        self._before = item.getOrigin()
+        self._after = ap_name
 
     def redo(self : Self) -> None:
-        self._item.setOriginAP(self._after)
+        self._item.setOrigin(self._after)
 
     def undo(self : Self) -> None:
-        self._item.setOriginAP(self._before)
+        self._item.setOrigin(self._before)

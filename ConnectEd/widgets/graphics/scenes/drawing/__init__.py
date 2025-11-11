@@ -124,7 +124,7 @@ class DrawingScene(
                 attr_name = xr.name()
                 if attr_name == "PropertyText":  # scene property text
                     pt : PropertyText = PropertyText.fromXml(xr)
-                    pt.setParentItem(drawing_scene.getAnchorPoint(pt.getCleatAPName()))
+                    pt.setParentItem(drawing_scene.getAnchorPoint(pt.getCleat()))
                     drawing_scene.addPropertyText(pt)
                 elif attr_name in _item_classes:
                     item_cls = _item_classes[attr_name]

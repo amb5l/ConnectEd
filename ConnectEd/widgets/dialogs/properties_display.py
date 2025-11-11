@@ -87,10 +87,10 @@ class PropertiesDisplayDialog(QDialog):
         for name, property_text in item.getPropertyTexts().items():
             value = item.getPropertyValue(name)
             display = property_text.display()
-            cleat = property_text.getCleatAPName()
+            cleat = property_text.getCleat()
             offset_x = property_text.pos().x()
             offset_y = property_text.pos().y()
-            origin = property_text.getOriginAPName()
+            origin = property_text.getOrigin()
             color = property_text.a.quill.getColor()
             font = property_text.a.quill.getFamily()
             size = property_text.a.quill.getSize()

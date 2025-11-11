@@ -67,7 +67,7 @@ class ItemXmlMixin:
                 elif item_name in property_text_classes:
                     child_cls = property_text_classes[item_name]
                     child : PropertyText = child_cls.fromXml(xr)
-                    child.setParentItem(instance.getAnchorPoint(child.getCleatAPName()))
+                    child.setParentItem(instance.getAnchorPoint(child.getCleat()))
                     child.onGeometryChange()
                     # text rotation compensation
                     if hasattr(child, 'onRotationChange'):
