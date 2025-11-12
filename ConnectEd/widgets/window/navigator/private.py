@@ -4,8 +4,8 @@ from ....app import logger, settings, model, window
 
 from ....core.utils import typeCheck
 
-from ....widgets.graphics.items.handle      import Handle
-from ....widgets.graphics.items.tether_text import Tether
+from ....widgets.graphics.items.handle        import Handle
+from ....widgets.graphics.items.property_text import Tether
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:

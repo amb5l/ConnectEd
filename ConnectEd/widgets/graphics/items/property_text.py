@@ -2,16 +2,18 @@ from typing import Self
 from enum   import Enum
 from dataclasses import dataclass
 
-from PyQt6.QtCore    import Qt, QPointF
-from PyQt6.QtWidgets import QGraphicsItem, QGraphicsSceneMouseEvent, QMenu
+from PyQt6.QtCore    import Qt, QPointF, QXmlStreamWriter
+from PyQt6.QtWidgets import QGraphicsItem, \
+                            QGraphicsSimpleTextItem, QGraphicsLineItem, \
+                            QGraphicsSceneMouseEvent, QMenu
 from PyQt6.QtGui     import QAction
 
-from ....app import settings
+from ....app import settings, logger
 
-from .base_text   import BaseText
-from .tether_text import TetherText
-from .handle      import Handle
+from .base_text import BaseText
+from .handle    import Handle
 
+from .mixin.handle     import ItemHandlesMixin
 from .mixin.properties import ItemPropertiesMixin, ItemPropertySpec
 
 from typing import TYPE_CHECKING
@@ -25,7 +27,46 @@ class PropertyDisplay(Enum):
     NAME_VALUE = "Name:Value"
 
 
-class PropertyText(TetherText):
+class Tether(QGraphicsLineItem):
+    """Tether line between a PropertyText origin and its parent cleat."""
+
+    _item  : "PropertyText"
+
+    def __init__(self : Self, item : "PropertyText", visible : bool = False):
+        super().__init__(item)  # Parent it to the TetherText
+        self._item = item
+        self.setVisible(visible)
+        self.setFlag( self.GraphicsItemFlag.ItemIgnoresTransformations , False )
+        self.onSettingsChange()
+        self.onPositionChange(self._item.pos())
+
+    def mousePressEvent(self : Self, event : QGraphicsSceneMouseEvent) -> None:
+        self._item.mousePressEvent(event)
+
+    def mouseReleaseEvent(self : Self, event : QGraphicsSceneMouseEvent) -> None:
+        self._item.mouseReleaseEvent(event)
+
+    def mouseDoubleClickEvent(self : Self, event : QGraphicsSceneMouseEvent) -> None:
+        self._item.mouseDoubleClickEvent(event)
+
+    def onSettingsChange(self : Self) -> None:
+        self.setPen(self._item.outline.pen)
+
+    def onPositionChange(self : Self, _ : QPointF) -> None:
+        if (cleat := self.cleat()) is None:
+            return
+        line = self.line()
+        line.setP2(self.mapFromItem(cleat, QPointF(0, 0)))
+        self.setLine(line)
+
+    def cleat(self : Self) -> Handle | None:
+        return self._item.parentItem()
+
+    def toXml(self : Self, xw : QXmlStreamWriter) -> str:
+        pass  # no need to serialise
+
+
+class PropertyText(BaseText):
     # class attributes
     _PROPERTY_SPECS_PROPERTY = \
         {
@@ -41,15 +82,24 @@ class PropertyText(TetherText):
             )
         }
     _PROPERTY_SPECS = \
-        TetherText._PROPERTY_SPECS_CLEAT | \
+        {
+            "Cleat" : ItemPropertySpec(
+                type_name = "str",
+                getter    = lambda self: self.getCleat(),
+                setter    = lambda self, value: self.setCleat(value)
+            )
+        } | \
         BaseText._PROPERTY_SPECS_ORIGIN | \
         BaseText._PROPERTY_SPECS_POS | \
         _PROPERTY_SPECS_PROPERTY | \
         BaseText._PROPERTY_SPECS_APPEARANCE
 
     # instance attributes
-    _name     : str
-    _display  : PropertyDisplay
+    _name        : str
+    _cleat       : str | None
+    _cleat_shown : bool
+    _display     : PropertyDisplay
+    _tether      : Tether | None
 
     def __init__(
         self     : Self,
@@ -60,9 +110,14 @@ class PropertyText(TetherText):
         display  : PropertyDisplay = PropertyDisplay.VALUE,
         bare     : bool = False
     ) -> None:
-        self._name = name
-        self._display = PropertyDisplay.VALUE
+        self._name        = name
+        self._cleat       = None
+        self._cleat_shown = False
+        self._display     = PropertyDisplay.VALUE
+        self._tether      = None
         super().__init__(bare=bare)
+        self._tether = Tether(self)
+
         if bare:
             return
         self.setCleat(cleat)
@@ -94,6 +149,37 @@ class PropertyText(TetherText):
     def onParentChange(self : Self, _parent : QGraphicsItem) -> None:
         self.onSettingsChange()
 
+    def onPositionChange(self : Self, pos : QPointF) -> None:
+        self._tether.onPositionChange(pos)
+
+    def onSelectionChange(self : Self, selected : bool) -> None:
+        self._tether.setVisible(selected)
+        if selected:
+            if not self._tether.cleat().grip().isVisible():
+                self._cleat_shown = True
+                self._tether.cleat().grip().setVisible(True)
+        else:
+            if self._cleat_shown:
+                self._cleat_shown = False
+                self._tether.cleat().grip().setVisible(False)
+
+    def onSettingsChange(self : Self) -> None:
+        if self._tether is not None:
+            self._tether.onSettingsChange()
+        super().onSettingsChange()
+
+    def onRotationChange(self : Self) -> None:
+        """Rotation compensation."""
+        rect = self.boundingRect()
+        self.setTransformOriginPoint(rect.center())
+        if 135 < self.sceneRotation() <= 225:
+            # Use base class to prevent recursion
+            QGraphicsSimpleTextItem.setRotation(self, (self.rotation() + 180) % 360)
+            # counter rotate handles
+            for h in self._handles.values():
+                h.setTransformOriginPoint(self.mapToItem(h, rect.center()))
+                QGraphicsSimpleTextItem.setRotation(h, (h.rotation() + 180) % 360)
+
     def onTextChange(self : Self) -> None:
         text_to_set = ""
         value = self.value()
@@ -115,6 +201,37 @@ class PropertyText(TetherText):
             if settings_name in vars(settings_items).keys():
                 return settings_name
         return super().settingsName()
+
+    def getCleat(self : Self) -> str:
+        parent = self.parentItem()
+        if parent is None:
+            return self._cleat  # workaround for deserialization
+        elif isinstance(parent, Handle):
+            return parent.name()
+        else:
+            logger().error(f"Parent is not a Handle: {type(parent).__name__}")
+            return "Undefined"
+
+    def setCleat(self : Self, name : str) -> None:
+        self._cleat = name
+        parent = self.parentItem()
+        if parent is None:  # handle deserialization
+            return
+        if isinstance(parent, Handle):
+            grandparent = parent.parentItem()
+            if isinstance(grandparent, ItemHandlesMixin):
+                self.setParentItem(grandparent.getHandle(name))
+            else:
+                logger().error(f"Grandparent is not an ItemHandleMixin: {type(grandparent).__name__}")
+            parent.setName(name)
+        else:
+            logger().error(f"Parent is not a Handle: {type(parent).__name__}")
+
+    def setOrigin(self : Self, name : str) -> None:
+        """Override to update tether line."""
+        super().setOrigin(name)
+        self._tether.setParentItem(self._origin)
+        self._tether.onPositionChange(self.pos())
 
     def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
         return [
