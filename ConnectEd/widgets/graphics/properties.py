@@ -9,18 +9,29 @@ if TYPE_CHECKING:
 
 class PropertiesMixin:
     # class attributes
-    _PROPERTY_CLASS : type["Property"]
     _PROPERTY_SPECS : dict[str, "PropertySpec"]
 
     # instance attributes
     properties : dict[str, "Property"]
 
     def initProperties(self : Self, bare : bool = False) -> None:
+        from .property import Property
+        from .items.property_text import PropertyText
         self.properties = {}
         for name, spec in self._PROPERTY_SPECS.items():
-            self.properties[name] = self._PROPERTY_CLASS(
+            self.properties[name] = Property(
                 self, name, spec.type_name, spec.getter, spec.setter
             )
+            if spec.text is not None:
+                property_text = PropertyText(
+                    name,
+                    spec.text.anchor,
+                    spec.text.pos,
+                    spec.text.origin,
+                    spec.text.display
+                )
+                property_text.setParentItem(self.getHandle(spec.text.anchor))
+                self.properties[name].setText(property_text)
 
     def initProperty(self : Self, name : str, value : str) -> None:
         """
@@ -29,9 +40,7 @@ class PropertiesMixin:
         if name not in self.properties:
             type_name = self._PROPERTY_SPECS[name].type_name \
                 if name in self._PROPERTY_SPECS else "str"
-            self.properties[name] = self._PROPERTY_CLASS(
-                self, name, type_name, value, None
-            )
+            self.properties[name] = Property(self, name, type_name, value, None)
         else:
             self.properties[name].set(value)
 

@@ -6,6 +6,10 @@ from PyQt6.QtGui     import QPainter, QPainterPath
 
 from ...graphics.scenes.symbol import SymbolScene
 
+from ..properties import PropertiesMixin
+
+from .symbol_pin import SymbolPin
+
 from .mixin            import ItemMixin
 from .mixin.pos        import ItemPosMixin
 from .mixin.line       import ItemLineMixin
@@ -14,9 +18,6 @@ from .mixin.change     import ItemChangeMixin
 from .mixin.clone      import ItemCloneMixin
 from .mixin.xml        import ItemXmlMixin
 from .mixin.menu       import ItemMenuMixin
-from .mixin.properties import ItemPropertiesMixin
-
-from .symbol_pin import SymbolPin
 
 
 class Symbol(
@@ -28,7 +29,7 @@ class Symbol(
     ItemCloneMixin,
     ItemXmlMixin,
     ItemMenuMixin,
-    ItemPropertiesMixin,
+    PropertiesMixin,
     QGraphicsItem
 ):
     _source : SymbolScene

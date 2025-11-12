@@ -2,9 +2,14 @@ from typing import Self
 
 from PyQt6.QtCore    import QPointF
 
+from ..property   import PropertySpec
+from ..properties import PropertiesMixin
+
 from . import SignalDirection, VectorRange
 
 from .property_text import PropertyTextSpec
+from .handle        import Handle
+from .entry         import Entry
 
 from .mixin            import ItemMixin
 from .mixin.rotate     import ItemRotateMixin
@@ -14,11 +19,6 @@ from .mixin.change     import ItemChangeMixin
 from .mixin.clone      import ItemCloneMixin
 from .mixin.xml        import ItemXmlMixin
 from .mixin.menu       import ItemMenuMixin
-from .mixin.properties import ItemPropertiesMixin, ItemPropertySpec
-
-from .handle import Handle
-
-from .entry import Entry
 
 
 class PortPinMixin(
@@ -30,13 +30,13 @@ class PortPinMixin(
     ItemCloneMixin,
     ItemXmlMixin,
     ItemMenuMixin,
-    ItemPropertiesMixin
+    PropertiesMixin
 ):
     # class attributes
     _AP_NAME_OFFSET = 1.5
     _PROPERTY_SPECS_NAME = \
         {
-            "Name" : ItemPropertySpec(
+            "Name" : PropertySpec(
                 type_name = "str",
                 getter    = lambda self: self._name,
                 setter    = lambda self, value: setattr(self, '_name', value),
@@ -45,30 +45,30 @@ class PortPinMixin(
         }
     _PROPERTY_SPECS_PORT_PIN = \
         {
-            "Direction" : ItemPropertySpec(
+            "Direction" : PropertySpec(
                 type_name = "SignalDirection",
                 getter    = lambda self: self._direction,
                 setter    = lambda self, value: setattr(self, '_direction', value)
             ),
-            "Range Left" : ItemPropertySpec(
+            "Range Left" : PropertySpec(
                 type_name = "str",
                 valid     = lambda self: self._range is not None,
                 getter    = lambda self: self._range.left,
                 setter    = lambda self, value: setattr(self._range, 'left', value)
             ),
-            "Range Direction" : ItemPropertySpec(
+            "Range Direction" : PropertySpec(
                 type_name = "RangeDirection",
                 valid     = lambda self: self._range is not None,
                 getter    = lambda self: self._range.dir,
                 setter    = lambda self, value: setattr(self._range, 'dir', value)
             ),
-            "Range Right" : ItemPropertySpec(
+            "Range Right" : PropertySpec(
                 type_name = "str",
                 valid     = lambda self: self._range is not None,
                 getter    = lambda self: self._range.right,
                 setter    = lambda self, value: setattr(self._range, 'right', value)
             ),
-            "Comment" : ItemPropertySpec(
+            "Comment" : PropertySpec(
                 type_name = "str",
                 getter    = lambda self: self._comment,
                 setter    = lambda self, value: setattr(self, '_comment', value)

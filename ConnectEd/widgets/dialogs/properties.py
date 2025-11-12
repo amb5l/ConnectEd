@@ -31,7 +31,7 @@ from .components.delegate import DialogItemDelegate
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ..graphics.views.drawing import DrawingView
-    from ..graphics.items.mixin.properties import ItemPropertiesMixin
+    from ..graphics.properties import PropertiesMixin
 
 
 class DisplayChoice(Enum):
@@ -43,7 +43,7 @@ class DisplayChoice(Enum):
 
 
 @dataclass
-class ItemPropertyVariables:
+class PropertyVariables:
     name      : str              | None = None
     value     : Any              | None = None
     display   : DisplayChoice    | None = None
@@ -60,9 +60,9 @@ class ItemPropertyVariables:
 
 
 @dataclass
-class ItemPropertyChange:
-    before : ItemPropertyVariables | None = None
-    after  : ItemPropertyVariables | None = None
+class PropertyChange:
+    before : PropertyVariables | None = None
+    after  : PropertyVariables | None = None
 
 
 class ExistingItem(DialogItem):
@@ -87,8 +87,8 @@ class NewItem(DialogItem):
         super().__init__(None, value, type_name, default, editable)
 
 
-class ItemPropertiesDialog(QDialog):
-    _item           : "ItemPropertiesMixin | ItemHandlesMixin"
+class PropertiesDialog(QDialog):
+    _item           : "PropertiesMixin | ItemHandlesMixin"
     _dialog_layout  : QVBoxLayout
     _table_model    : DialogModel
     _table_view     : TableView
@@ -99,12 +99,12 @@ class ItemPropertiesDialog(QDialog):
     _delete_button  : QPushButton
     _ok_button      : QPushButton
     _cancel_button  : QPushButton
-    _before         : dict[str, ItemPropertyVariables]
-    _current        : dict[str, ItemPropertyVariables]
+    _before         : dict[str, PropertyVariables]
+    _current        : dict[str, PropertyVariables]
 
     def __init__(
         self : Self,
-        item : "ItemPropertiesMixin | ItemHandlesMixin",
+        item : "PropertiesMixin | ItemHandlesMixin",
         view : "DrawingView | None" = None
     ) -> None:
         # initialise
@@ -133,7 +133,7 @@ class ItemPropertiesDialog(QDialog):
         self._table_model.setHorizontalHeaderLabels(headers)
         self._before = {}
         for name, prop in item.properties.items():
-            vars       = ItemPropertyVariables()
+            vars       = PropertyVariables()
             static     = prop.isStatic()
             read_only  = prop.isReadOnly()
             type_name  = prop.typeName()
@@ -233,8 +233,8 @@ class ItemPropertiesDialog(QDialog):
     def getColumn(self : Self, header : str) -> int:
         return self._HEADER.index(header)
 
-    def getChanges(self : Self) -> dict[str, ItemPropertyChange]:
-        before_after : dict[str, ItemPropertyChange] = {}
+    def getChanges(self : Self) -> dict[str, PropertyChange]:
+        before_after : dict[str, PropertyChange] = {}
         name_rows : dict[str, int] = {}
         # check for and ignore duplicates
         for row_idx in range(self._table_model.rowCount()):
@@ -271,8 +271,8 @@ class ItemPropertiesDialog(QDialog):
             bold_item      : DialogItem = self._table_model.item(row_idx, 10)
             italic_item    : DialogItem = self._table_model.item(row_idx, 11)
             underline_item : DialogItem = self._table_model.item(row_idx, 12)
-            after = ItemPropertyVariables()
-            after = ItemPropertyVariables(
+            after = PropertyVariables()
+            after = PropertyVariables(
                 name      = after_name,
                 value     = value_item.getValue(),
                 display   = display_item.getValue()
@@ -288,8 +288,8 @@ class ItemPropertiesDialog(QDialog):
                 after.bold      = bold_item.getValue()
                 after.italic    = italic_item.getValue()
                 after.underline = underline_item.getValue()
-            before_after[before_name] = ItemPropertyChange(before, after)
-        changes : dict[str, ItemPropertyChange] = {}
+            before_after[before_name] = PropertyChange(before, after)
+        changes : dict[str, PropertyChange] = {}
         for change in before_after.values():
             if change.before != change.after:
                 name = change.after.name if change.before is None \

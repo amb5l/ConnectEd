@@ -2,8 +2,9 @@ from typing import Self, Any
 
 from PyQt6.QtWidgets import QGraphicsItem
 
+from ...properties import PropertiesMixin
+
 from .pos        import ItemPosMixin
-from .properties import ItemPropertiesMixin
 
 
 class ItemChangeMixin:
@@ -26,7 +27,7 @@ class ItemChangeMixin:
                 if hasattr(self, "onPositionChange"):
                     self.onPositionChange(value)
                     if isinstance(self, ItemPosMixin) \
-                    and isinstance(self, ItemPropertiesMixin):
+                    and isinstance(self, PropertiesMixin):
                         self.properties["Position X"].changed.emit(self.pos().x())
                         self.properties["Position Y"].changed.emit(self.pos().y())
             case self.GraphicsItemChange.ItemScenePositionHasChanged:

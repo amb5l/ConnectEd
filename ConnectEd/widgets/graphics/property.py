@@ -8,20 +8,22 @@ from ...app import logger
 
 from ...core.utils import str2val
 
-from .items import ItemType
-
-
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from .scenes.drawing import DrawingScene
+    from .items import ItemType
+    from .items.property_text import PropertyTextSpec, PropertyText
     PropertyOwner = ItemType | DrawingScene
 
 
 @dataclass
 class PropertySpec:
-    type_name : str                                           = "str"
-    getter    : Callable[["PropertyOwner"], Any] | str | None = None
-    setter    : Callable[["PropertyOwner", Any], None] | None = None
+    type_name : str                                            = "str"
+    getter    : Callable[["PropertyOwner"], Any] | str | None  = None
+    setter    : Callable[["PropertyOwner", Any], None] | None  = None
+    valid     : Callable[["PropertyOwner"], bool]      | None  = None
+    default   : Callable[["PropertyOwner"], Any]       | None  = None
+    text      : "PropertyTextSpec                      | None" = None
 
 
 class Property(QObject):
@@ -31,6 +33,9 @@ class Property(QObject):
     _type_name : str
     _getter    : Callable[["PropertyOwner"], Any] | str | None  # or static value
     _setter    : Callable[["PropertyOwner", Any], None] | None
+    _valid     : Callable[["PropertyOwner"], bool]      | None
+    _default   : Callable[["PropertyOwner"], Any]       | None
+    _text      : "PropertyText | None"
 
     # signals
     changed = pyqtSignal(object)
@@ -41,7 +46,10 @@ class Property(QObject):
         name      : str,
         type_name : str,
         getter    : Callable[["PropertyOwner"], Any] | str | None = None,
-        setter    : Callable[["PropertyOwner", Any], None] | None = None
+        setter    : Callable[["PropertyOwner", Any], None] | None = None,
+        valid     : Callable[["PropertyOwner"], bool] | None = None,
+        default   : Callable[["PropertyOwner"], Any] | None = None,
+        text      : "PropertyText | None" = None
     ) -> None:
         super().__init__()
         self._owner     = owner
@@ -49,6 +57,15 @@ class Property(QObject):
         self._type_name = type_name
         self._getter    = getter
         self._setter    = setter
+        self._valid     = valid
+        self._default   = default
+        self._text      = text
+
+    def isStatic(self: Self) -> bool:
+        return not isinstance(self._getter, Callable)
+
+    def isReadOnly(self: Self) -> bool:
+        return not self._setter
 
     def typeName(self: Self) -> str:
         return self._type_name
@@ -78,11 +95,19 @@ class Property(QObject):
         if old_value != new_value:
             self.changed.emit(new_value)  # Propagate change
 
-    def isStatic(self: Self) -> bool:
-        return not isinstance(self._getter, Callable)
+    def valid(self: Self) -> bool:
+        """Check if this property is valid for the given owner (e.g., for XML)."""
+        return self._valid(self._owner) if self._valid else True
 
-    def isReadOnly(self: Self) -> bool:
-        return not self._setter
+    def default(self: Self) -> Any:
+        """Get default value."""
+        return self._default(self._owner) if self._default else None
+
+    def getText(self : Self) -> "PropertyText | None":
+        return self._text
+
+    def setText(self : Self, text : "PropertyText | None") -> None:
+        self._text = text
 
     def _substitute(self: Self, value: str) -> str:
         """Parse {var_name} and resolve from local owner or scene."""

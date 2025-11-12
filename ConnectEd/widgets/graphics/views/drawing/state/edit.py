@@ -4,11 +4,11 @@ from PyQt6.QtCore import QPoint, QPointF
 
 from ......app import logger
 
-from .....dialogs.item_properties import ItemPropertiesDialog
-from .....dialogs.appearance      import AppearanceDialog
-from .....dialogs.text            import TextDialog
-from .....dialogs.property_text   import PropertyTextDialog
-from .....dialogs.port_pin        import PortPinDialog
+from .....dialogs.properties    import PropertiesDialog
+from .....dialogs.appearance    import AppearanceDialog
+from .....dialogs.text          import TextDialog
+from .....dialogs.property_text import PropertyTextDialog
+from .....dialogs.port_pin      import PortPinDialog
 
 from ....items               import ItemMixin
 from ....items.text          import Text
@@ -137,7 +137,7 @@ class DrawingViewStateEditItemProperties(DrawingViewStateBase):
     ) -> None:
         item = i[0] if i else self.view._selectedItem(ItemMixin)
         if item:
-            dialog = ItemPropertiesDialog(item, self.view)
+            dialog = PropertiesDialog(item, self.view)
             if dialog.exec():
                 self.scene.editProperties(item, dialog.getChanges(), undoable=True)
         else:
@@ -154,7 +154,7 @@ class DrawingViewStateEditDrawingProperties(DrawingViewStateBase):
         s    : QPointF,
         i    : list[ItemMixin] | None = None
     ) -> None:
-        dialog = ItemPropertiesDialog(self.scene, self.view)
+        dialog = PropertiesDialog(self.scene, self.view)
         if dialog.exec():
             self.scene.editProperties(self.scene, dialog.getChanges(), undoable=True)
         self.view.state.go(self.view.stateIdle)

@@ -5,6 +5,9 @@ from PyQt6.QtWidgets import QGraphicsTextItem, \
                             QWidget, QStyleOptionGraphicsItem, QStyle, QMenu
 from PyQt6.QtGui     import QColor, QPainter, QAction
 
+from ..property   import PropertySpec
+from ..properties import PropertiesMixin
+
 from .mixin            import ItemMixin
 from .mixin.pos        import ItemPosMixin
 from .mixin.handle     import ItemRectHandlesMixin
@@ -15,7 +18,6 @@ from .mixin.change     import ItemChangeMixin
 from .mixin.clone      import ItemCloneMixin
 from .mixin.xml        import ItemXmlMixin
 from .mixin.menu       import ItemMenuMixin
-from .mixin.properties import ItemPropertiesMixin, ItemPropertySpec
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -33,7 +35,7 @@ class BaseTextBlock(
     ItemCloneMixin,
     ItemXmlMixin,
     ItemMenuMixin,
-    ItemPropertiesMixin,
+    PropertiesMixin,
     QGraphicsTextItem
 ):
     # class attributes
@@ -42,7 +44,7 @@ class BaseTextBlock(
         ItemOriginMixin._PROPERTY_SPECS_ORIGIN | \
         ItemPosMixin._PROPERTY_SPECS_POS | \
         {
-            "Text" : ItemPropertySpec(
+            "Text" : PropertySpec(
                 type_name = "str",
                 getter    = lambda self: self.toPlainText(),
                 setter    = lambda self, value: self.setPlainText(value)

@@ -6,10 +6,11 @@ from PyQt6.QtGui  import QBrush, QColor
 
 from .....app import settings
 
+from ...property import PropertySpec
+
 from .. import Default, DEFAULT, NO_CHANGE, Appearance, FillPref, FillPrefChange
 
 from .           import ItemMixin
-from .properties import ItemPropertySpec
 
 
 class Fill:
@@ -78,14 +79,14 @@ class Fill:
 
 class ItemFillMixin:
     _PROPERTY_SPECS_FILL = {
-        "Fill Color" : ItemPropertySpec(
+        "Fill Color" : PropertySpec(
             type_name = "QColor",
             valid     = lambda self: self.a.fill is not None,
             getter    = lambda self: self.a.fill.getColor(),
             setter    = lambda self, value: self.a.fill.setColor(value),
             default   = lambda self: self.a.fill.getDefaults().color
         ),
-        "Fill Style" : ItemPropertySpec(
+        "Fill Style" : PropertySpec(
             type_name = "BrushStyle",
             valid     = lambda self: self.a.fill is not None,
             getter    = lambda self: self.a.fill.getStyle(),

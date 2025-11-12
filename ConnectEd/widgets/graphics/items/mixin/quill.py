@@ -6,10 +6,11 @@ from PyQt6.QtGui  import QColor, QFont, QPen, QBrush
 
 from .....app import settings
 
+from ...property import PropertySpec
+
 from .. import Default, DEFAULT, NO_CHANGE, Appearance, QuillPref, QuillPrefChange
 
 from .           import ItemMixin
-from .properties import ItemPropertySpec
 
 
 class Quill:
@@ -158,42 +159,42 @@ class Quill:
 
 class ItemQuillMixin:
     _PROPERTY_SPECS_QUILL = {
-        "Text Color" : ItemPropertySpec(
+        "Text Color" : PropertySpec(
             type_name = "QColor",
             valid     = lambda self: self.a.quill is not None,
             getter    = lambda self: self.a.quill.getColor(),
             setter    = lambda self, value: self.a.quill.setColor(value),
             default   = lambda self: self.a.quill.getDefaults().color
         ),
-        "Text Font" : ItemPropertySpec(
+        "Text Font" : PropertySpec(
             type_name = "FontFamily",  # a "subtype" of str - see str2val
             valid     = lambda self: self.a.quill is not None,
             getter    = lambda self: self.a.quill.getFamily(),
             setter    = lambda self, value: self.a.quill.setFamily(value),
             default   = lambda self: self.a.quill.getDefaults().family
         ),
-        "Text Size" : ItemPropertySpec(
+        "Text Size" : PropertySpec(
             type_name = "FontSize",  # a "subtype" of float - see str2val
             valid     = lambda self: self.a.quill is not None,
             getter    = lambda self: self.a.quill.getSize(),
             setter    = lambda self, value: self.a.quill.setSize(value),
             default   = lambda self: self.a.quill.getDefaults().size
         ),
-        "Text Bold" : ItemPropertySpec(
+        "Text Bold" : PropertySpec(
             type_name = "bool",
             valid     = lambda self: self.a.quill is not None,
             getter    = lambda self: self.a.quill.getBold(),
             setter    = lambda self, value: self.a.quill.setBold(value),
             default   = lambda self: self.a.quill.getDefaults().bold
         ),
-        "Text Italic" : ItemPropertySpec(
+        "Text Italic" : PropertySpec(
             type_name = "bool",
             valid     = lambda self: self.a.quill is not None,
             getter    = lambda self: self.a.quill.getItalic(),
             setter    = lambda self, value: self.a.quill.setItalic(value),
             default   = lambda self: self.a.quill.getDefaults().italic
         ),
-        "Text Underline" : ItemPropertySpec(
+        "Text Underline" : PropertySpec(
             type_name = "bool",
             valid     = lambda self: self.a.quill is not None,
             getter    = lambda self: self.a.quill.getUnderline(),

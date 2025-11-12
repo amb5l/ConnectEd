@@ -10,11 +10,13 @@ from PyQt6.QtGui     import QAction
 
 from ....app import settings, logger
 
+from ..property   import PropertySpec
+from ..properties import PropertiesMixin
+
 from .base_text import BaseText
 from .handle    import Handle
 
 from .mixin.handle     import ItemHandlesMixin
-from .mixin.properties import ItemPropertiesMixin, ItemPropertySpec
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -70,12 +72,12 @@ class PropertyText(BaseText):
     # class attributes
     _PROPERTY_SPECS_PROPERTY = \
         {
-            "Name" : ItemPropertySpec(
+            "Name" : PropertySpec(
                 type_name = "str",
                 getter    = lambda self: self.name(),
                 setter    = lambda self, value: self.setName(value)
             ),
-            "Display" : ItemPropertySpec(
+            "Display" : PropertySpec(
                 type_name = "PropertyDisplay",
                 getter    = lambda self: self.display(),
                 setter    = lambda self, value: self.setDisplay(value)
@@ -83,7 +85,7 @@ class PropertyText(BaseText):
         }
     _PROPERTY_SPECS = \
         {
-            "Cleat" : ItemPropertySpec(
+            "Cleat" : PropertySpec(
                 type_name = "str",
                 getter    = lambda self: self.getCleat(),
                 setter    = lambda self, value: self.setCleat(value)
@@ -236,7 +238,7 @@ class PropertyText(BaseText):
             view.action("Properties...", lambda: view.ui.editItemProperties(self))
         ]
 
-    def item(self : Self) -> "ItemPropertiesMixin | None":
+    def item(self : Self) -> "PropertiesMixin | None":
         h : "Handle" = self.parentItem()
         return None if h is None else h.parentItem()
 

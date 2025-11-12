@@ -4,6 +4,8 @@ from PyQt6.QtWidgets import QGraphicsItem, QGraphicsPathItem
 
 from ....core.defs import PITCH
 
+from ..property import PropertySpec
+
 from . import SignalDirection
 
 from .port_pin import PortPinMixin
@@ -13,7 +15,6 @@ from .mixin.paint      import ItemPaintMixin
 from .mixin.change     import ItemChangeMixin
 from .mixin.line       import ItemLineMixin
 from .mixin.fill       import ItemFillMixin
-from .mixin.properties import ItemPropertySpec
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -119,7 +120,7 @@ class BasePin(ItemPaintMixin, PortPinMixin, QGraphicsPathItem):
 class BasePinDotMixin:
     # class attributes
     _PROPERTY_SPECS_DOT = {
-        "Dot" : ItemPropertySpec(
+        "Dot" : PropertySpec(
             type_name = "bool",
             getter    = lambda self: self._dot,
             setter    = lambda self, value: setattr(self, '_dot', value)
@@ -142,7 +143,7 @@ class BasePinDotMixin:
 class BasePinClockMixin:
     # class attributes
     _PROPERTY_SPECS_CLOCK = {
-        "Clock" : ItemPropertySpec(
+        "Clock" : PropertySpec(
             type_name = "bool",
             getter    = lambda self: self._clock,
             setter    = lambda self, value: setattr(self, '_clock', value)

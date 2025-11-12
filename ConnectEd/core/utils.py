@@ -149,7 +149,7 @@ def str2val(s : str, t : str) -> Any:
     from ..widgets.graphics.items import \
         DEFAULT, Edge, EdgeLoc, SignalDirection, LinePref, FillPref, QuillPref
     from ..widgets.graphics.items.property_text import PropertyDisplay
-    from ..widgets.dialogs.item_properties import DisplayChoice
+    from ..widgets.dialogs.properties import DisplayChoice
     def strValuesToFloats(s : str) -> list[float]:
         return [float(p) for p in s.strip("()").split(",")]
     # handle None

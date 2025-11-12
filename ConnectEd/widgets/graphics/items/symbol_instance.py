@@ -7,6 +7,8 @@ from ....app import logger
 
 from ....core.utils import registerClass
 
+from ..property import PropertySpec
+
 from ..scenes.symbol import SymbolScene
 
 from .base_rect        import BaseRectangle
@@ -15,14 +17,13 @@ from .property_text    import PropertyTextSpec
 
 from .mixin.pos        import ItemPosMixin
 from .mixin.origin     import ItemOriginMixin
-from .mixin.properties import ItemPropertySpec
 
 
 class BaseSymbolInstance(ItemOriginMixin, BaseRectangle):
     # class attributes
     _PROPERTY_SPECS_NAME = \
         {
-            "Name" : ItemPropertySpec(
+            "Name" : PropertySpec(
                 type_name = "str",
                 getter    = lambda self: self._symbol.name(),
                 setter    = lambda self, value: self._symbol.setName(value),
@@ -85,7 +86,7 @@ class SymbolInstance(BaseSymbolInstance):
     # class attributes
     _PROPERTY_SPECS_LABEL = \
         {
-            "Label" : ItemPropertySpec(
+            "Label" : PropertySpec(
                 type_name = "str",
                 getter    = lambda self: self._label,
                 setter    = lambda self, value: setattr(self, '_label', value),

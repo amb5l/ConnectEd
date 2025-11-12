@@ -6,6 +6,8 @@ from PyQt6.QtGui     import QPainterPath, QPainterPathStroker
 
 from ....app import settings
 
+from ..property import PropertySpec
+
 from .handle import Handle
 
 from .mixin            import ItemMixin
@@ -17,7 +19,6 @@ from .mixin.change     import ItemChangeMixin
 from .mixin.clone      import ItemCloneMixin
 from .mixin.xml        import ItemXmlMixin
 from .mixin.menu       import ItemMenuMixin
-from .mixin.properties import ItemPropertySpec
 
 
 class Line(
@@ -35,22 +36,22 @@ class Line(
     # class attributes
     _PROPERTY_SPECS = \
         {
-            "X1" : ItemPropertySpec(
+            "X1" : PropertySpec(
                 type_name = "float",
                 getter    = lambda self: self.x1(),
                 setter    = lambda self, value: self.setX1(value)
             ),
-            "Y1" : ItemPropertySpec(
+            "Y1" : PropertySpec(
                 type_name = "float",
                 getter    = lambda self: self.y1(),
                 setter    = lambda self, value: self.setY1(value)
             ),
-            "X2" : ItemPropertySpec(
+            "X2" : PropertySpec(
                 type_name = "float",
                 getter    = lambda self: self.x2(),
                 setter    = lambda self, value: self.setX2(value)
             ),
-            "Y2" : ItemPropertySpec(
+            "Y2" : PropertySpec(
                 type_name = "float",
                 getter    = lambda self: self.y2(),
                 setter    = lambda self, value: self.setY2(value)

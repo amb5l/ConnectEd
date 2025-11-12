@@ -5,6 +5,9 @@ from PyQt6.QtCore    import QPointF
 from PyQt6.QtWidgets import QGraphicsPathItem, QMenu
 from PyQt6.QtGui     import QAction
 
+from ..property   import PropertySpec
+from ..properties import PropertiesMixin
+
 from ..painter_path import PainterPath
 
 from . import SignalDirection
@@ -21,7 +24,6 @@ from .mixin.change     import ItemChangeMixin
 from .mixin.clone      import ItemCloneMixin
 from .mixin.xml        import ItemXmlMixin
 from .mixin.menu       import ItemMenuMixin
-from .mixin.properties import ItemPropertiesMixin, ItemPropertySpec
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -47,12 +49,12 @@ class BaseGate(
     ItemCloneMixin,
     ItemXmlMixin,
     ItemMenuMixin,
-    ItemPropertiesMixin,
+    PropertiesMixin,
     QGraphicsPathItem
 ):
     # class attributes
     _PROPERTY_SPECS_LABEL = {
-        "Label" : ItemPropertySpec(
+        "Label" : PropertySpec(
             type_name = "str",
             getter    = lambda self: self._label,
             setter    = lambda self, value: setattr(self, '_label', value)
@@ -96,12 +98,12 @@ class BufGate(BaseGate):
 
     # class attributes
     _PROPERTY_SPECS_IO = {
-        "Output" : ItemPropertySpec(
+        "Output" : PropertySpec(
             type_name = "str",
             getter    = lambda self: self.output(),
             setter    = lambda self, value: self.setOutput(value)
         ),
-        "Input" : ItemPropertySpec(
+        "Input" : PropertySpec(
             type_name = "str",
             getter    = lambda self: self.input(),
             setter    = lambda self, value: self.setInput(value)
@@ -212,12 +214,12 @@ class Gate(BaseGate):
 
     # class attributes
     _PROPERTY_SPECS_IO = {
-        "Output" : ItemPropertySpec(
+        "Output" : PropertySpec(
             type_name = "str",
             getter    = lambda self: self.output(),
             setter    = lambda self, value: self.setOutput(value)
         ),
-        "Inputs" : ItemPropertySpec(
+        "Inputs" : PropertySpec(
             type_name = "str",
             getter    = lambda self: self.inputs(),
             setter    = lambda self, value: self.setInputs(value)

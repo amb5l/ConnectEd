@@ -25,6 +25,7 @@ class ItemMixin(ItemSettingsMixin):
     a     : "Appearance | None"
 
     def initItem(self : Self | QGraphicsItem, bare : bool = False) -> None:
+        from ...properties import PropertiesMixin
         from .loc        import ItemLocMixin
         from .origin     import ItemOriginMixin
         from .line       import ItemLineMixin
@@ -33,7 +34,6 @@ class ItemMixin(ItemSettingsMixin):
         from .outline    import ItemOutlineMixin
         from .change     import ItemChangeMixin
         from .handle     import ItemHandlesMixin
-        from .properties import ItemPropertiesMixin
         self.setZValue(self.Z)
         f = QGraphicsItem.GraphicsItemFlag
         self.setFlag( f.ItemIsSelectable              , True )
@@ -58,7 +58,7 @@ class ItemMixin(ItemSettingsMixin):
         if isinstance(self, ItemChangeMixin):
             self.onSettingsChange()
             settings().changed.connect(self.onSettingsChange)
-        if isinstance(self, ItemPropertiesMixin):
+        if isinstance(self, PropertiesMixin):
             self.initProperties(bare)
 
     def __hash__(self : Self | QGraphicsItem):
