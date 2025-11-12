@@ -4,6 +4,7 @@ from PyQt6.QtCore    import QPointF, QRectF
 from PyQt6.QtWidgets import QGraphicsPathItem
 from PyQt6.QtGui     import QPainterPath
 
+from .mixin        import ItemSettingsMixin
 from .mixin.paint  import ItemPaintMixin
 from .mixin.line   import ItemLineMixin
 from .mixin.fill   import ItemFillMixin
@@ -18,6 +19,7 @@ _ENTRY_SIZE = 3
 
 
 class Entry(
+    ItemSettingsMixin,
     ItemPaintMixin,
     ItemLineMixin,
     ItemFillMixin,

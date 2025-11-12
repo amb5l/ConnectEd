@@ -13,7 +13,12 @@ if TYPE_CHECKING:
     from .. import Appearance
 
 
-class ItemMixin:
+class ItemSettingsMixin:
+    def settingsName(self: Self | QGraphicsItem) -> str:
+        return self.__class__.__name__
+
+
+class ItemMixin(ItemSettingsMixin):
     Z = Z_DRAWING
 
     _uuid : str

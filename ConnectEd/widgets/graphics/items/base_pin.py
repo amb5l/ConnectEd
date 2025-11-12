@@ -11,6 +11,7 @@ from . import SignalDirection
 from .port_pin import PortPinMixin, PortPinText
 from .entry    import Entry
 
+from .mixin        import ItemSettingsMixin
 from .mixin.paint  import ItemPaintMixin
 from .mixin.change import ItemChangeMixin
 from .mixin.line   import ItemLineMixin
@@ -29,6 +30,7 @@ _INT_ARROW_SIZE = 6
 
 
 class BasePinArrow(
+    ItemSettingsMixin,
     ItemPaintMixin,
     ItemChangeMixin,
     ItemLineMixin,

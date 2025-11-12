@@ -59,7 +59,6 @@ class BaseGate(
             setter    = lambda self, value: setattr(self, '_label', value)
         )
     }
-    _SETTINGS_NAME = "Gate"
 
     # instance attributes
     _label  : str
@@ -69,6 +68,9 @@ class BaseGate(
         super().__init__()
         self.initItem(bare)
         self.initPath()
+
+    def settingsName(self : Self) -> str:
+        return "Gate"
 
     @property
     def label(self : Self) -> str | None:
@@ -361,9 +363,9 @@ class OrGate(Gate):
 
     def __init__(self : Self, width : int = 2) -> None:
         super().__init__(width)
-        if self._width % 2 == 1:  # odd width => center input
+        if len(self._inputs) % 2 == 1:  # odd width => center input
             # tweak position and length of center input
-            i = self._width // 2
+            i = len(self._inputs) // 2
             self._inputs[i].setPos(QPointF(-26, 0))
             self._inputs[i].setLength(14)
 

@@ -56,10 +56,7 @@ class Fill:
         self.onSettingsChange()
 
     def getDefaults(self : Self) -> SimpleNamespace:
-        settings_name = \
-            self._parent._SETTINGS_NAME if hasattr(self._parent, "_SETTINGS_NAME") \
-            else self._parent.__class__.__name__
-        return settings().get(f"theme/items/{settings_name}/fill")
+        return settings().get(f"theme/items/{self._parent.settingsName()}/fill")
 
     def onSettingsChange(self : Self) -> None:
         default = self.getDefaults()
