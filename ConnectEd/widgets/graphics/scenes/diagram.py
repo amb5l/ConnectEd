@@ -6,9 +6,9 @@ from PyQt6.QtGui  import QPainter, QPen, QBrush
 
 from ....app import settings
 
-from .drawing import DrawingScene
+from ..property   import PropertySpec
 
-from .drawing.properties import DrawingScenePropertySpec
+from .drawing import DrawingScene
 
 
 @dataclass
@@ -20,27 +20,27 @@ class DiagramSheet:
 class DiagramScene(DrawingScene):
     # class attributes
     _PROPERTY_SPECS = DrawingScene._PROPERTY_SPECS | {
-        "Sheet Name" : DrawingScenePropertySpec(
+        "Sheet Name" : PropertySpec(
             type_name = "str",
             getter    = lambda self: self.getSheetName(),
             setter    = lambda self, value: self.setSheetName(value)
         ),
-        "Sheet Width" : DrawingScenePropertySpec(
+        "Sheet Width" : PropertySpec(
             type_name = "float",
             getter    = lambda self: self.getSheetWidth(),
             setter    = lambda self, value: self.setSheetWidth(value)
         ),
-        "Sheet Height" : DrawingScenePropertySpec(
+        "Sheet Height" : PropertySpec(
             type_name = "float",
             getter    = lambda self: self.getSheetHeight(),
             setter    = lambda self, value: self.setSheetHeight(value)
         ),
-        "Margin" : DrawingScenePropertySpec(
+        "Margin" : PropertySpec(
             type_name = "float",
             getter    = lambda self: self.margin,
             setter    = lambda self, value: self.setMargin(value)
         ),
-        "Border" : DrawingScenePropertySpec(
+        "Border" : PropertySpec(
             type_name = "float",
             getter    = lambda self: self.border,
             setter    = lambda self, value: self.setBorder(value)

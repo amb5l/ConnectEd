@@ -11,7 +11,9 @@ from .....app import logger, settings
 
 from .....core.xml import toXmlAttrs, fromXmlAttrs
 
-from .properties import DrawingScenePropertiesMixin, DrawingScenePropertySpec
+from ...property   import PropertySpec
+from ...properties import PropertiesMixin
+
 from .api        import DrawingSceneApiMixin
 from .grips      import DrawingSceneGripsMixin
 from .paths      import DrawingScenePathsMixin
@@ -21,18 +23,18 @@ from .private    import DrawingSceneApiPrivateMixin
 
 
 class DrawingScene(
-    DrawingScenePropertiesMixin,
     DrawingSceneApiMixin,
     DrawingSceneGripsMixin,
     DrawingScenePathsMixin,
     DrawingSceneGuidesMixin,
     DrawingSceneNetlistMixin,
     DrawingSceneApiPrivateMixin,
+    PropertiesMixin,
     QGraphicsScene
 ):
     # class attributes
     _PROPERTY_SPECS = {
-        "Name" : DrawingScenePropertySpec(
+        "Name" : PropertySpec(
             type_name = "str",
             getter    = lambda self: self._name,
             setter    = lambda self, value : setattr(self, '_name', value)
