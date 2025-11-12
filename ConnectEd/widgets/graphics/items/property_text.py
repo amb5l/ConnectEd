@@ -53,10 +53,10 @@ class Tether(QGraphicsLineItem):
         self.setPen(self._item.outline.pen)
 
     def onPositionChange(self : Self, _ : QPointF) -> None:
-        if (cleat := self.cleat()) is None:
+        if self.cleat() is None:
             return
         line = self.line()
-        line.setP2(self.mapFromItem(cleat, QPointF(0, 0)))
+        line.setP2(self.mapFromItem(self.cleat(), QPointF(0, 0)))
         self.setLine(line)
 
     def cleat(self : Self) -> Handle | None:
@@ -111,13 +111,12 @@ class PropertyText(BaseText):
         bare     : bool = False
     ) -> None:
         self._name        = name
-        self._cleat       = None
+        self._cleat       = cleat
         self._cleat_shown = False
-        self._display     = PropertyDisplay.VALUE
+        self._display     = display
         self._tether      = None
         super().__init__(bare=bare)
         self._tether = Tether(self)
-
         if bare:
             return
         self.setCleat(cleat)
@@ -153,18 +152,12 @@ class PropertyText(BaseText):
         self._tether.onPositionChange(pos)
 
     def onSelectionChange(self : Self, selected : bool) -> None:
-        self._tether.setVisible(selected)
-        if selected:
-            if not self._tether.cleat().grip().isVisible():
-                self._cleat_shown = True
-                self._tether.cleat().grip().setVisible(True)
-        else:
-            if self._cleat_shown:
-                self._cleat_shown = False
-                self._tether.cleat().grip().setVisible(False)
+        self._tether.setVisible(selected and self._cleat)
+        self._cleat_shown = selected and self._cleat
+        self._tether.cleat().grip().setVisible(selected and self._cleat)
 
     def onSettingsChange(self : Self) -> None:
-        if self._tether is not None:
+        if self._cleat and self._tether:
             self._tether.onSettingsChange()
         super().onSettingsChange()
 
@@ -202,7 +195,7 @@ class PropertyText(BaseText):
                 return settings_name
         return super().settingsName()
 
-    def getCleat(self : Self) -> str:
+    def getCleat(self : Self) -> str | None:
         parent = self.parentItem()
         if parent is None:
             return self._cleat  # workaround for deserialization
@@ -210,10 +203,12 @@ class PropertyText(BaseText):
             return parent.name()
         else:
             logger().error(f"Parent is not a Handle: {type(parent).__name__}")
-            return "Undefined"
+            return None
 
-    def setCleat(self : Self, name : str) -> None:
+    def setCleat(self : Self, name : str | None) -> None:
         self._cleat = name
+        if name is None:
+            return
         parent = self.parentItem()
         if parent is None:  # handle deserialization
             return
