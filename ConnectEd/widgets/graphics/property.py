@@ -65,7 +65,7 @@ class Property(QObject):
         return not isinstance(self._getter, Callable)
 
     def isReadOnly(self: Self) -> bool:
-        return not self._setter
+        return self._setter is None and not isinstance(self._getter, str)
 
     def typeName(self: Self) -> str:
         return self._type_name
