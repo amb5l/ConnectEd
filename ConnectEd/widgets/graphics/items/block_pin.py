@@ -6,7 +6,7 @@ from PyQt6.QtWidgets import QMenu
 from .mixin.loc import ItemLocMixin
 
 from .port_pin import PortPinMixin
-from .base_pin import BasePinArrow, BasePinEntry, BasePin, _INT_ARROW_SIZE
+from .base_pin import BasePinArrow, BasePin, _INT_ARROW_SIZE
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -18,24 +18,13 @@ class BlockPinArrow(BasePinArrow):
     pass
 
 
-class BlockPinEntry(BasePinEntry):
-    pass
-
-
 class BlockPin(ItemLocMixin, BasePin):
     # class attributes
+    _ARROW_CLASS = BlockPinArrow
     _AP_NAME_OFFSET  = _INT_ARROW_SIZE + 1.5
     _PROPERTY_SPECS = \
         ItemLocMixin._PROPERTY_SPECS_LOC | \
         PortPinMixin._PROPERTY_SPECS
-
-    @classmethod
-    def _getArrowClass(cls) -> type[BlockPinArrow]:
-        return BlockPinArrow
-
-    @classmethod
-    def _getEntryClass(cls) -> type[BlockPinEntry]:
-        return BlockPinEntry
 
     def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
         return [

@@ -9,7 +9,6 @@ from ..properties import PropertySpec
 from . import SignalDirection
 
 from .port_pin import PortPinMixin
-from .entry    import Entry
 
 from .mixin        import ItemSettingsMixin
 from .mixin.paint  import ItemPaintMixin
@@ -75,18 +74,9 @@ class BasePinArrow(
             self.setPath(path)
 
 
-class BasePinEntry(Entry):
-    pass
-
-
 class BasePin(ItemPaintMixin, PortPinMixin, QGraphicsPathItem):
-    @classmethod
-    def _getArrowClass(cls) -> type[BasePinArrow]:
-        raise NotImplementedError("Subclasses must implement this method")
-
-    @classmethod
-    def _getEntryClass(cls) -> type[BasePinEntry]:
-        raise NotImplementedError("Subclasses must implement this method")
+    # class attributes
+    _ARROW_CLASS : type[BasePinArrow] | None = None
 
     # instance attributes
     _arrow : BasePinArrow
@@ -100,8 +90,10 @@ class BasePin(ItemPaintMixin, PortPinMixin, QGraphicsPathItem):
         self.initPortPin(bare)
         self._setPath()
         self._entry.setPos(-PITCH, 0)
-        arrow_class = self._getArrowClass()
-        self._arrow = None if arrow_class is None else arrow_class(self)
+        if self._ARROW_CLASS is not None:
+            self._arrow = self._ARROW_CLASS(self)
+        else:
+            self._arrow = None
 
     def setDirection(self : Self, value : SignalDirection) -> None:
         super(BasePin, BasePin).setDirection(value)
@@ -117,7 +109,8 @@ class BasePin(ItemPaintMixin, PortPinMixin, QGraphicsPathItem):
         self._setPath(scene)
 
     def onSelectionChange(self : Self, selected : bool) -> None:
-        self._arrow.setSelected(selected)
+        if self._arrow is not None:
+            self._arrow.setSelected(selected)
         self._entry.setSelected(selected)
 
     def _setPath(self : Self, scene : "DrawingScene | None" = None) -> None:

@@ -87,11 +87,6 @@ class PortPinMixin(
     _range     : VectorRange
     _entry     : Entry
 
-    @classmethod
-    def _getEntryClass(cls) -> type[Entry]:
-        """Return the entry class."""
-        raise NotImplementedError("Subclasses must implement this method")
-
     def initPortPin(self : Self, bare : bool = False) -> None:
         # Initialize attributes that properties will access
         self._name      = ""
@@ -101,7 +96,7 @@ class PortPinMixin(
         # Initialize the item (this sets up properties system)
         self.initItem(bare)
         # Initialize the entry
-        self._entry = self._getEntryClass()(self)
+        self._entry = Entry(self)
 
     def initHandles(self : Self) -> None:
         self._handles = {

@@ -9,9 +9,11 @@ from ....core.defs import PITCH
 from .mixin.pos  import ItemPosMixin
 from .mixin.line import ItemLineMixin
 
-from .port_pin import PortPinMixin
-from .base_pin import BasePin, BasePinDotMixin, BasePinClockMixin, _PIN_CLK_SIZE
-from .entry    import Entry
+from ..properties import PropertySpec
+
+from .port_pin      import PortPinMixin
+from .base_pin      import BasePin, BasePinDotMixin, BasePinClockMixin, \
+                           _PIN_CLK_SIZE
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -19,27 +21,21 @@ if TYPE_CHECKING:
     from ..scenes.drawing import DrawingScene
 
 
-class GatePinEntry(Entry):
-    pass
-
-
 class GatePin(ItemPosMixin, BasePinDotMixin, BasePinClockMixin, BasePin):
     # class attributes
     _PROPERTY_SPECS = \
         ItemPosMixin._PROPERTY_SPECS_POS | \
-        PortPinMixin._PROPERTY_SPECS_NAME | \
+        {
+            "Name" : PropertySpec(
+                type_name = "str",
+                getter    = lambda self: self._name,
+                setter    = lambda self, value: setattr(self, '_name', value)
+            )
+        } | \
         BasePinDotMixin._PROPERTY_SPECS_DOT | \
         BasePinClockMixin._PROPERTY_SPECS_CLOCK | \
         PortPinMixin._PROPERTY_SPECS_PORT_PIN | \
         ItemLineMixin._PROPERTY_SPECS_LINE
-
-    @classmethod
-    def _getArrowClass(cls) -> None:
-        return None
-
-    @classmethod
-    def _getEntryClass(cls) -> type[GatePinEntry]:
-        return GatePinEntry
 
     # instance attributes
     _length : float

@@ -12,7 +12,6 @@ from .port_pin import PortPinMixin
 from .base_pin import BasePinArrow, BasePin, \
                       BasePinDotMixin, BasePinClockMixin, \
                       _PIN_CLK_SIZE
-from .entry    import Entry
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -24,12 +23,9 @@ class SymbolPinArrow(BasePinArrow):
     pass
 
 
-class SymbolPinEntry(Entry):
-    pass
-
-
 class SymbolPin(ItemPosMixin, BasePinDotMixin, BasePinClockMixin, BasePin):
     # class attributes
+    _ARROW_CLASS = SymbolPinArrow
     _PROPERTY_SPECS = \
         ItemPosMixin._PROPERTY_SPECS_POS | \
         ItemRotateMixin._PROPERTY_SPECS_ROT | \
@@ -38,14 +34,6 @@ class SymbolPin(ItemPosMixin, BasePinDotMixin, BasePinClockMixin, BasePin):
         BasePinClockMixin._PROPERTY_SPECS_CLOCK | \
         PortPinMixin._PROPERTY_SPECS_PORT_PIN | \
         ItemLineMixin._PROPERTY_SPECS_LINE
-
-    @classmethod
-    def _getArrowClass(cls) -> type[SymbolPinArrow]:
-        return SymbolPinArrow
-
-    @classmethod
-    def _getEntryClass(cls) -> type[SymbolPinEntry]:
-        return SymbolPinEntry
 
     def __init__(
         self   : Self,

@@ -20,10 +20,6 @@ if TYPE_CHECKING:
     from . import SignalDirection
 
 
-class PortEntry(Entry):
-    pass
-
-
 class Port(
     ItemPosMixin,
     ItemPaintMixin,
@@ -38,10 +34,6 @@ class Port(
         ItemRotateMixin._PROPERTY_SPECS_ROT | \
         PortPinMixin._PROPERTY_SPECS | \
         ItemFillMixin._PROPERTY_SPECS_FILL
-
-    @classmethod
-    def _getEntryClass(cls) -> type[PortEntry]:
-        return PortEntry
 
     def __init__(
         self   : Self,

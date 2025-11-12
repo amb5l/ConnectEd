@@ -4,6 +4,8 @@ from PyQt6.QtCore    import QPointF, QRectF
 from PyQt6.QtWidgets import QGraphicsPathItem
 from PyQt6.QtGui     import QPainterPath
 
+from ....app import settings
+
 from .mixin        import ItemSettingsMixin
 from .mixin.paint  import ItemPaintMixin
 from .mixin.line   import ItemLineMixin
@@ -61,6 +63,9 @@ class Entry(
         parent = self.parentItem()
         if parent and parent.isSelected() != selected:
             parent.setSelected(selected)
+
+    def settingsName(self : Self) -> str:
+        return f"{self.parentItem().__class__.__name__}Entry"
 
     def moveBy(self : Self, delta : QPointF) -> None:
         parent : "PortPinMixin" = self.parentItem()
