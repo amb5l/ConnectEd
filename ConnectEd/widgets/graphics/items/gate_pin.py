@@ -9,11 +9,11 @@ from ....core.defs import PITCH
 from .mixin.pos  import ItemPosMixin
 from .mixin.line import ItemLineMixin
 
-from ..properties import PropertySpec
-
 from .port_pin      import PortPinMixin
 from .base_pin      import BasePin, BasePinDotMixin, BasePinClockMixin, \
                            _PIN_CLK_SIZE
+
+from .mixin.properties import ItemPropertySpec
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -26,7 +26,7 @@ class GatePin(ItemPosMixin, BasePinDotMixin, BasePinClockMixin, BasePin):
     _PROPERTY_SPECS = \
         ItemPosMixin._PROPERTY_SPECS_POS | \
         {
-            "Name" : PropertySpec(
+            "Name" : ItemPropertySpec(
                 type_name = "str",
                 getter    = lambda self: self._name,
                 setter    = lambda self, value: setattr(self, '_name', value)

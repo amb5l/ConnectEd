@@ -1,8 +1,10 @@
-anchorpoints: rename to handle, rename cleat to handle
-ap => h
-PropertiesDisplayDialog
+Properties change:
+https://grok.com/share/bGVnYWN5_537f1338-ac90-4e7d-aff7-cc2cee9b99d9
+
+move properties to items, have separate scene properties
 scene property system with signallers and subscriber management
 item property system: add support for property Variable Substitution
+
 property text: add tethered and free versions
 
 onGeometryChange review

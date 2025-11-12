@@ -8,15 +8,14 @@ from PyQt6.QtGui     import QAction
 
 from ....app import settings
 
-from ..properties  import PropertySpec
-
 from .base_text   import BaseText
 from .tether_text import TetherText
 from .handle      import Handle
 
+from .mixin.properties import ItemPropertiesMixin, ItemPropertySpec
+
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from ..properties     import PropertiesMixin
     from ..views.drawing  import DrawingView
     from ..scenes.drawing import DrawingScene
 
@@ -30,12 +29,12 @@ class PropertyText(TetherText):
     # class attributes
     _PROPERTY_SPECS_PROPERTY = \
         {
-            "Name" : PropertySpec(
+            "Name" : ItemPropertySpec(
                 type_name = "str",
                 getter    = lambda self: self.name(),
                 setter    = lambda self, value: self.setName(value)
             ),
-            "Display" : PropertySpec(
+            "Display" : ItemPropertySpec(
                 type_name = "PropertyDisplay",
                 getter    = lambda self: self.display(),
                 setter    = lambda self, value: self.setDisplay(value)
@@ -89,10 +88,10 @@ class PropertyText(TetherText):
             view.editPropertyText()
         super().mouseDoubleClickEvent(event)
 
-    def onSceneChange(self : Self, scene : "DrawingScene | None") -> None:
+    def onSceneChange(self : Self, _scene : "DrawingScene | None") -> None:
         self.onTextChange()
 
-    def onParentChange(self : Self, parent : QGraphicsItem) -> None:
+    def onParentChange(self : Self, _parent : QGraphicsItem) -> None:
         self.onSettingsChange()
 
     def onTextChange(self : Self) -> None:
@@ -125,7 +124,7 @@ class PropertyText(TetherText):
             view.action("Properties...", lambda: view.ui.editItemProperties(self))
         ]
 
-    def item(self : Self) -> "PropertiesMixin | None":
+    def item(self : Self) -> "ItemPropertiesMixin | None":
         h : "Handle" = self.parentItem()
         return None if h is None else h.parentItem()
 
@@ -137,10 +136,10 @@ class PropertyText(TetherText):
         self.onTextChange()
 
     def value(self : Self) -> str:
-        return str(self.item().getPropertyValue(self._name)) if self.item() else ""
+        return str(self.item().properties[self._name].get()) if self.item() else ""
 
     def setValue(self : Self, value : str) -> None:
-        self.item().setPropertyValue(self._name, value)
+        self.item().properties[self._name].set(value)
         self.onTextChange()
 
     def display(self : Self) -> PropertyDisplay:

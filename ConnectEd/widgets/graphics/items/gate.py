@@ -5,24 +5,23 @@ from PyQt6.QtCore    import QPointF
 from PyQt6.QtWidgets import QGraphicsPathItem, QMenu
 from PyQt6.QtGui     import QAction
 
-from ..properties import PropertySpec, PropertiesMixin
-
 from ..painter_path import PainterPath
 
 from . import SignalDirection
 
 from .gate_pin import GatePin
 
-from .mixin        import ItemMixin
-from .mixin.pos    import ItemPosMixin
-from .mixin.rotate import ItemRotateMixin
-from .mixin.paint  import ItemPaintMixin
-from .mixin.line   import ItemLineMixin
-from .mixin.fill   import ItemFillMixin
-from .mixin.change import ItemChangeMixin
-from .mixin.clone  import ItemCloneMixin
-from .mixin.xml    import ItemXmlMixin
-from .mixin.menu   import ItemMenuMixin
+from .mixin            import ItemMixin
+from .mixin.pos        import ItemPosMixin
+from .mixin.rotate     import ItemRotateMixin
+from .mixin.paint      import ItemPaintMixin
+from .mixin.line       import ItemLineMixin
+from .mixin.fill       import ItemFillMixin
+from .mixin.change     import ItemChangeMixin
+from .mixin.clone      import ItemCloneMixin
+from .mixin.xml        import ItemXmlMixin
+from .mixin.menu       import ItemMenuMixin
+from .mixin.properties import ItemPropertiesMixin, ItemPropertySpec
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -48,12 +47,12 @@ class BaseGate(
     ItemCloneMixin,
     ItemXmlMixin,
     ItemMenuMixin,
-    PropertiesMixin,
+    ItemPropertiesMixin,
     QGraphicsPathItem
 ):
     # class attributes
     _PROPERTY_SPECS_LABEL = {
-        "Label" : PropertySpec(
+        "Label" : ItemPropertySpec(
             type_name = "str",
             getter    = lambda self: self._label,
             setter    = lambda self, value: setattr(self, '_label', value)
@@ -97,12 +96,12 @@ class BufGate(BaseGate):
 
     # class attributes
     _PROPERTY_SPECS_IO = {
-        "Output" : PropertySpec(
+        "Output" : ItemPropertySpec(
             type_name = "str",
             getter    = lambda self: self.output(),
             setter    = lambda self, value: self.setOutput(value)
         ),
-        "Input" : PropertySpec(
+        "Input" : ItemPropertySpec(
             type_name = "str",
             getter    = lambda self: self.input(),
             setter    = lambda self, value: self.setInput(value)
@@ -213,12 +212,12 @@ class Gate(BaseGate):
 
     # class attributes
     _PROPERTY_SPECS_IO = {
-        "Output" : PropertySpec(
+        "Output" : ItemPropertySpec(
             type_name = "str",
             getter    = lambda self: self.output(),
             setter    = lambda self, value: self.setOutput(value)
         ),
-        "Inputs" : PropertySpec(
+        "Inputs" : ItemPropertySpec(
             type_name = "str",
             getter    = lambda self: self.inputs(),
             setter    = lambda self, value: self.setInputs(value)

@@ -5,9 +5,9 @@ from PyQt6.QtWidgets import QGraphicsItem
 
 from .....app import logger
 
-from ...properties import PropertySpec, PropertiesMixin
-
 from .. import EdgeLoc, Edge
+
+from .properties import ItemPropertySpec
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -20,12 +20,12 @@ class ItemLocMixin:
     _loc : EdgeLoc
 
     _PROPERTY_SPECS_LOC = {
-        "Edge" : PropertySpec(
+        "Edge" : ItemPropertySpec(
             type_name = "Edge",
             getter    = lambda self: self.loc().edge,
             setter    = lambda self, value: self.setLocEdge(value)
         ),
-        "Offset" : PropertySpec(
+        "Offset" : ItemPropertySpec(
             type_name = "float",
             getter    = lambda self: self.loc().offset,
             setter    = lambda self, value: self.setLocOffset(value)

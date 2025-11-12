@@ -4,7 +4,7 @@ from ......app import logger
 
 from ......core.xml import copy
 
-from .....dialogs.properties import PropertyChange
+from .....dialogs.item_properties import ItemPropertyChange
 
 from ....properties import PropertiesMixin
 
@@ -28,7 +28,7 @@ from ..cmd.edit      import CmdEditPortPin, \
                             CmdEditOrigin, \
                             CmdEditPolylineClosed, CmdEditPolySeg, \
                             CmdEditText, CmdEditPropertyText, \
-                            CmdEditProperties, CmdEditAppearance
+                            CmdEditItemProperties, CmdEditAppearance
 
 
 from typing import TYPE_CHECKING
@@ -215,8 +215,8 @@ class DrawingSceneApiEditMixin:
     def editProperties(
         self     : "DrawingScene",
         object   : PropertiesMixin,
-        changes  : dict[str, PropertyChange],
+        changes  : dict[str, ItemPropertyChange],
         undoable : bool = False
     ) -> None:
-        cmd = CmdEditProperties(object, changes)
+        cmd = CmdEditItemProperties(object, changes)
         cmdExec(self, cmd, undoable)

@@ -6,11 +6,10 @@ from PyQt6.QtGui  import QPen, QColor
 
 from .....app import settings
 
-from ...properties import PropertySpec
-
 from .. import Default, DEFAULT, NO_CHANGE, Appearance, LinePref, LinePrefChange
 
-from . import ItemMixin
+from .           import ItemMixin
+from .properties import ItemPropertySpec
 
 
 class Line:
@@ -101,23 +100,23 @@ class Line:
 
 class ItemLineMixin:
     _PROPERTY_SPECS_LINE = {
-        "Line Color" : PropertySpec(
+        "Line Color" : ItemPropertySpec(
             type_name = "QColor",
-            exists    = lambda self: self.a.line is not None,
+            valid     = lambda self: self.a.line is not None,
             getter    = lambda self: self.a.line.getColor(),
             setter    = lambda self, value: self.a.line.setColor(value),
             default   = lambda self: self.a.line.getDefaults().color
         ),
-        "Line Width" : PropertySpec(
+        "Line Width" : ItemPropertySpec(
             type_name = "LineWidth",  # a "subtype" of float - see str2val
-            exists    = lambda self: self.a.line is not None,
+            valid     = lambda self: self.a.line is not None,
             getter    = lambda self: self.a.line.getWidth(),
             setter    = lambda self, value: self.a.line.setWidth(value),
             default   = lambda self: self.a.line.getDefaults().width
         ),
-        "Line Style" : PropertySpec(
+        "Line Style" : ItemPropertySpec(
             type_name = "PenStyle",
-            exists    = lambda self: self.a.line is not None,
+            valid     = lambda self: self.a.line is not None,
             getter    = lambda self: self.a.line.getStyle(),
             setter    = lambda self, value: self.a.line.setStyle(value),
             default   = lambda self: self.a.line.getDefaults().style

@@ -9,23 +9,20 @@ from ....core.utils import registerClass
 
 from ..scenes.symbol import SymbolScene
 
-from ..properties import PropertySpec
-
 from .base_rect        import BaseRectangle
 from .symbol_container import SymbolContainer
-from .property_text    import PropertyTextSpec, PropertyText
+from .property_text    import PropertyTextSpec
 
-from .mixin.pos    import ItemPosMixin
-from .mixin.origin import ItemOriginMixin
-from .mixin.line   import ItemLineMixin
-from .mixin.fill   import ItemFillMixin
+from .mixin.pos        import ItemPosMixin
+from .mixin.origin     import ItemOriginMixin
+from .mixin.properties import ItemPropertySpec
 
 
 class BaseSymbolInstance(ItemOriginMixin, BaseRectangle):
     # class attributes
     _PROPERTY_SPECS_NAME = \
         {
-            "Name" : PropertySpec(
+            "Name" : ItemPropertySpec(
                 type_name = "str",
                 getter    = lambda self: self._symbol.name(),
                 setter    = lambda self, value: self._symbol.setName(value),
@@ -88,7 +85,7 @@ class SymbolInstance(BaseSymbolInstance):
     # class attributes
     _PROPERTY_SPECS_LABEL = \
         {
-            "Label" : PropertySpec(
+            "Label" : ItemPropertySpec(
                 type_name = "str",
                 getter    = lambda self: self._label,
                 setter    = lambda self, value: setattr(self, '_label', value),

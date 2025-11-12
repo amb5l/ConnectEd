@@ -4,11 +4,11 @@ from PyQt6.QtCore    import QPointF
 from PyQt6.QtWidgets import QMenu
 from PyQt6.QtGui     import QAction
 
-from ..properties import PropertySpec
-
 from .              import EdgeLoc, Edge
 from .base_rect     import BaseRectangle
 from .property_text import PropertyTextSpec, PropertyText
+
+from .mixin.properties import ItemPropertySpec
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -18,19 +18,19 @@ if TYPE_CHECKING:
 class Block(BaseRectangle):
     # class attributes
     _PROPERTY_SPECS = {
-        "Label" : PropertySpec(
+        "Label" : ItemPropertySpec(
             type_name = "str",
             getter    = lambda self: self._label,
             setter    = lambda self, value: setattr(self, '_label', value),
             text      = PropertyTextSpec("Top Left")
         ),
-        "Name" : PropertySpec(
+        "Name" : ItemPropertySpec(
             type_name = "str",
             getter    = lambda self: self._name,
             setter    = lambda self, value: setattr(self, '_name', value),
             text      = PropertyTextSpec("Bottom Left")
         ),
-        "Path" : PropertySpec(
+        "Path" : ItemPropertySpec(
             type_name = "str",
             getter    = lambda self: self._path,
             setter    = lambda self, value: setattr(self, '_path', value)

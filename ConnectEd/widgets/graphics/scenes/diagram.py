@@ -8,7 +8,7 @@ from ....app import settings
 
 from .drawing import DrawingScene
 
-from ..properties import PropertySpec
+from .drawing.properties import DrawingScenePropertySpec
 
 
 @dataclass
@@ -20,27 +20,27 @@ class DiagramSheet:
 class DiagramScene(DrawingScene):
     # class attributes
     _PROPERTY_SPECS = DrawingScene._PROPERTY_SPECS | {
-        "Sheet Name" : PropertySpec(
+        "Sheet Name" : DrawingScenePropertySpec(
             type_name = "str",
             getter    = lambda self: self.getSheetName(),
             setter    = lambda self, value: self.setSheetName(value)
         ),
-        "Sheet Width" : PropertySpec(
+        "Sheet Width" : DrawingScenePropertySpec(
             type_name = "float",
             getter    = lambda self: self.getSheetWidth(),
             setter    = lambda self, value: self.setSheetWidth(value)
         ),
-        "Sheet Height" : PropertySpec(
+        "Sheet Height" : DrawingScenePropertySpec(
             type_name = "float",
             getter    = lambda self: self.getSheetHeight(),
             setter    = lambda self, value: self.setSheetHeight(value)
         ),
-        "Margin" : PropertySpec(
+        "Margin" : DrawingScenePropertySpec(
             type_name = "float",
             getter    = lambda self: self.margin,
             setter    = lambda self, value: self.setMargin(value)
         ),
-        "Border" : PropertySpec(
+        "Border" : DrawingScenePropertySpec(
             type_name = "float",
             getter    = lambda self: self.border,
             setter    = lambda self, value: self.setBorder(value)

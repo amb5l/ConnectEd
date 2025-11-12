@@ -2,13 +2,13 @@ from typing import Self, override
 
 from PyQt6.QtWidgets import QGraphicsItem
 
-from ...properties import PropertySpec
+from .properties import ItemPropertySpec
 
 
 class ItemRotateMixin:
     """Mixin to support and propagate rotation changes."""
     _PROPERTY_SPECS_ROT = {
-        "Rotation" : PropertySpec(
+        "Rotation" : ItemPropertySpec(
             type_name = "float",
             getter    = lambda self: self.rotation(),
             setter    = lambda self, value: self.setRotation(value)

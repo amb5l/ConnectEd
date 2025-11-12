@@ -11,18 +11,17 @@ from .....app import logger, settings
 
 from .....core.xml import toXmlAttrs, fromXmlAttrs
 
-from ...properties import PropertySpec, PropertiesMixin
-
-from .api     import DrawingSceneApiMixin
-from .grips   import DrawingSceneGripsMixin
-from .paths   import DrawingScenePathsMixin
-from .guides  import DrawingSceneGuidesMixin
-from .netlist import DrawingSceneNetlistMixin
-from .private import DrawingSceneApiPrivateMixin
+from .properties import DrawingScenePropertiesMixin, DrawingScenePropertySpec
+from .api        import DrawingSceneApiMixin
+from .grips      import DrawingSceneGripsMixin
+from .paths      import DrawingScenePathsMixin
+from .guides     import DrawingSceneGuidesMixin
+from .netlist    import DrawingSceneNetlistMixin
+from .private    import DrawingSceneApiPrivateMixin
 
 
 class DrawingScene(
-    PropertiesMixin,
+    DrawingScenePropertiesMixin,
     DrawingSceneApiMixin,
     DrawingSceneGripsMixin,
     DrawingScenePathsMixin,
@@ -33,7 +32,7 @@ class DrawingScene(
 ):
     # class attributes
     _PROPERTY_SPECS = {
-        "Name" : PropertySpec(
+        "Name" : DrawingScenePropertySpec(
             type_name = "str",
             getter    = lambda self: self._name,
             setter    = lambda self, value : setattr(self, '_name', value)

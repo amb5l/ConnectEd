@@ -6,20 +6,19 @@ from PyQt6.QtGui     import QPainterPath, QPainterPathStroker, QAction
 
 from ....app import settings
 
-from ..properties import PropertySpec, PropertiesMixin
-
-from .mixin        import ItemMixin
-from .mixin.pos    import ItemPosMixin
-from .mixin.bound  import ItemBoundMixin
-from .mixin.shape  import ItemShapeMixin
-from .mixin.paint  import ItemPaintMixin
-from .mixin.handle import ItemRectHandlesMixin
-from .mixin.line   import ItemLineMixin
-from .mixin.fill   import ItemFillMixin
-from .mixin.change import ItemChangeMixin
-from .mixin.clone  import ItemCloneMixin
-from .mixin.xml    import ItemXmlMixin
-from .mixin.menu   import ItemMenuMixin
+from .mixin            import ItemMixin
+from .mixin.pos        import ItemPosMixin
+from .mixin.bound      import ItemBoundMixin
+from .mixin.shape      import ItemShapeMixin
+from .mixin.paint      import ItemPaintMixin
+from .mixin.handle     import ItemRectHandlesMixin
+from .mixin.line       import ItemLineMixin
+from .mixin.fill       import ItemFillMixin
+from .mixin.change     import ItemChangeMixin
+from .mixin.clone      import ItemCloneMixin
+from .mixin.xml        import ItemXmlMixin
+from .mixin.menu       import ItemMenuMixin
+from .mixin.properties import ItemPropertiesMixin, ItemPropertySpec
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -39,19 +38,19 @@ class BaseRectangleMixin(
     ItemCloneMixin,
     ItemXmlMixin,
     ItemMenuMixin,
-    PropertiesMixin
+    ItemPropertiesMixin
 ):
     """Base mixin class for rectangle-like items."""
 
     # class attributes
     _PROPERTY_SPECS_SIZE = \
         {
-            "Width" : PropertySpec(
+            "Width" : ItemPropertySpec(
                 type_name = "float",
                 getter    = lambda self: self.rect().width(),
                 setter    = lambda self, value: self.setWidth(value)
             ),
-            "Height" : PropertySpec(
+            "Height" : ItemPropertySpec(
                 type_name = "float",
                 getter    = lambda self: self.rect().height(),
                 setter    = lambda self, value: self.setHeight(value)

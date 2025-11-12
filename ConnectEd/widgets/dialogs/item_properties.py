@@ -15,7 +15,7 @@ from ..graphics.items import Default, DEFAULT
 
 from ..graphics.items.property_text import PropertyDisplay, PropertyText
 
-from ..graphics.items.mixin.handle import ItemHandlesMixin
+from ..graphics.items.mixin.handle     import ItemHandlesMixin
 
 from .components.model import DialogItem, DialogModel
 
@@ -30,8 +30,8 @@ from .components.delegate import DialogItemDelegate
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from ..graphics.properties import PropertiesMixin
     from ..graphics.views.drawing import DrawingView
+    from ..graphics.items.mixin.properties import ItemPropertiesMixin
 
 
 class DisplayChoice(Enum):
@@ -43,7 +43,7 @@ class DisplayChoice(Enum):
 
 
 @dataclass
-class PropertyVariables:
+class ItemPropertyVariables:
     name      : str              | None = None
     value     : Any              | None = None
     display   : DisplayChoice    | None = None
@@ -60,9 +60,9 @@ class PropertyVariables:
 
 
 @dataclass
-class PropertyChange:
-    before : PropertyVariables | None = None
-    after  : PropertyVariables | None = None
+class ItemPropertyChange:
+    before : ItemPropertyVariables | None = None
+    after  : ItemPropertyVariables | None = None
 
 
 class ExistingItem(DialogItem):
@@ -87,8 +87,8 @@ class NewItem(DialogItem):
         super().__init__(None, value, type_name, default, editable)
 
 
-class PropertiesDialog(QDialog):
-    _item           : "PropertiesMixin | ItemHandlesMixin"
+class ItemPropertiesDialog(QDialog):
+    _item           : "ItemPropertiesMixin | ItemHandlesMixin"
     _dialog_layout  : QVBoxLayout
     _table_model    : DialogModel
     _table_view     : TableView
@@ -99,12 +99,12 @@ class PropertiesDialog(QDialog):
     _delete_button  : QPushButton
     _ok_button      : QPushButton
     _cancel_button  : QPushButton
-    _before         : dict[str, PropertyVariables]
-    _current        : dict[str, PropertyVariables]
+    _before         : dict[str, ItemPropertyVariables]
+    _current        : dict[str, ItemPropertyVariables]
 
     def __init__(
         self : Self,
-        item : "PropertiesMixin | ItemHandlesMixin",
+        item : "ItemPropertiesMixin | ItemHandlesMixin",
         view : "DrawingView | None" = None
     ) -> None:
         # initialise
@@ -132,15 +132,15 @@ class PropertiesDialog(QDialog):
         ]
         self._table_model.setHorizontalHeaderLabels(headers)
         self._before = {}
-        for name in item.getPropertyNames():
-            vars       = PropertyVariables()
-            custom     = item.isPropertyCustom(name)
-            read_only  = item.isPropertyReadOnly(name)
-            type_name  = item.getPropertyTypeName(name)
-            default    = item.getPropertyDefault(name)
+        for name, prop in item.properties.items():
+            vars       = ItemPropertyVariables()
+            static     = prop.isStatic()
+            read_only  = prop.isReadOnly()
+            type_name  = prop.typeName()
+            default    = prop.default()
             vars.name  = name
-            vars.value = item.getPropertyValue(name)
-            pt         = item.getPropertyText(name)
+            vars.value = prop.get()
+            pt         = prop.getText()
             if pt is None:
                 vars.display  = DisplayChoice.NONE
                 # others left as None
@@ -149,18 +149,18 @@ class PropertiesDialog(QDialog):
                     vars.display = DisplayChoice(f"Hidden {pt.display().value}")
                 else:
                     vars.display = DisplayChoice(pt.display().value)
-                vars.cleat     = item.getPropertyText(name).getCleat()
-                vars.offset_x  = item.getPropertyText(name).pos().x()
-                vars.offset_y  = item.getPropertyText(name).pos().y()
-                vars.origin    = item.getPropertyText(name).getOrigin()
-                vars.color     = item.getPropertyText(name).a.quill.getColor()
-                vars.font      = item.getPropertyText(name).a.quill.getFamily()
-                vars.size      = item.getPropertyText(name).a.quill.getSize()
-                vars.bold      = item.getPropertyText(name).a.quill.getBold()
-                vars.italic    = item.getPropertyText(name).a.quill.getItalic()
-                vars.underline = item.getPropertyText(name).a.quill.getUnderline()
+                vars.cleat     = prop.getText().getCleat()
+                vars.offset_x  = prop.getText().pos().x()
+                vars.offset_y  = prop.getText().pos().y()
+                vars.origin    = prop.getText().getOrigin()
+                vars.color     = prop.getText().a.quill.getColor()
+                vars.font      = prop.getText().a.quill.getFamily()
+                vars.size      = prop.getText().a.quill.getSize()
+                vars.bold      = prop.getText().a.quill.getBold()
+                vars.italic    = prop.getText().a.quill.getItalic()
+                vars.underline = prop.getText().a.quill.getUnderline()
             row = [
-                ExistingItem(vars.name, editable=custom),
+                ExistingItem(vars.name, editable=static),
                 ExistingItem(vars.value, type_name, default, not read_only),
                 ExistingItem(vars.display   , "DisplayChoice"),
                 ExistingItem(vars.cleat     , "str"          ),
@@ -233,8 +233,8 @@ class PropertiesDialog(QDialog):
     def getColumn(self : Self, header : str) -> int:
         return self._HEADER.index(header)
 
-    def getChanges(self : Self) -> dict[str, PropertyChange]:
-        before_after : dict[str, PropertyChange] = {}
+    def getChanges(self : Self) -> dict[str, ItemPropertyChange]:
+        before_after : dict[str, ItemPropertyChange] = {}
         name_rows : dict[str, int] = {}
         # check for and ignore duplicates
         for row_idx in range(self._table_model.rowCount()):
@@ -271,8 +271,8 @@ class PropertiesDialog(QDialog):
             bold_item      : DialogItem = self._table_model.item(row_idx, 10)
             italic_item    : DialogItem = self._table_model.item(row_idx, 11)
             underline_item : DialogItem = self._table_model.item(row_idx, 12)
-            after = PropertyVariables()
-            after = PropertyVariables(
+            after = ItemPropertyVariables()
+            after = ItemPropertyVariables(
                 name      = after_name,
                 value     = value_item.getValue(),
                 display   = display_item.getValue()
@@ -288,8 +288,8 @@ class PropertiesDialog(QDialog):
                 after.bold      = bold_item.getValue()
                 after.italic    = italic_item.getValue()
                 after.underline = underline_item.getValue()
-            before_after[before_name] = PropertyChange(before, after)
-        changes : dict[str, PropertyChange] = {}
+            before_after[before_name] = ItemPropertyChange(before, after)
+        changes : dict[str, ItemPropertyChange] = {}
         for change in before_after.values():
             if change.before != change.after:
                 name = change.after.name if change.before is None \

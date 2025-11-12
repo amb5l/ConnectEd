@@ -5,12 +5,11 @@ from PyQt6.QtWidgets import QGraphicsLineItem, QGraphicsSceneMouseEvent
 
 from ....app import logger
 
-from ..properties import PropertySpec
-
 from .base_text import BaseText
 from .handle    import Handle
 
-from .mixin.handle import ItemHandlesMixin
+from .mixin.handle     import ItemHandlesMixin
+from .mixin.properties import ItemPropertySpec
 
 
 class Tether(QGraphicsLineItem):
@@ -55,7 +54,7 @@ class Tether(QGraphicsLineItem):
 class TetherText(BaseText):
     # class attributes
     _PROPERTY_SPECS_CLEAT = {
-        "Cleat" : PropertySpec(
+        "Cleat" : ItemPropertySpec(
             type_name = "str",
             getter    = lambda self: self.getCleat(),
             setter    = lambda self, value: self.setCleat(value)

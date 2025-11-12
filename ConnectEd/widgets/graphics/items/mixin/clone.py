@@ -1,13 +1,12 @@
 from typing import Self
 
-from ...properties import PropertiesMixin, PropertySpec
-
 from .. import ItemMixin
+from .properties import ItemPropertiesMixin, ItemPropertySpec
 
 from .handle import ItemHandlesMixin
 
 
-ItemType = ItemMixin | ItemHandlesMixin | PropertiesMixin
+ItemType = ItemMixin | ItemHandlesMixin | ItemPropertiesMixin
 
 
 class ItemCloneMixin:
@@ -19,12 +18,13 @@ class ItemCloneMixin:
         source : ItemType = original if original is not None else self
         clone : ItemType = self.__class__(bare=True)
         # clone properties
-        if hasattr(self, "_properties"):
+        if hasattr(self, "properties"):
+            shit
             clone._property_specs = self._properties.copy()
             for pn in clone._property_specs:
                 clone_ps = clone._property_specs[pn]
                 source_ps = source._property_specs[pn]
-                if isinstance(clone_ps, PropertySpec):
+                if isinstance(clone_ps, ItemPropertySpec):
                     if source_ps.exists(source):
                         clone_ps.setter(clone, source_ps.getter(source))
                 else:

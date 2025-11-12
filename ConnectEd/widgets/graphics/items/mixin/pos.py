@@ -3,7 +3,7 @@ from typing import Self
 from PyQt6.QtCore    import QPointF
 from PyQt6.QtWidgets import QGraphicsItem
 
-from ...properties import PropertySpec
+from .properties import ItemPropertySpec
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -12,12 +12,12 @@ if TYPE_CHECKING:
 
 class ItemPosMixin:
     _PROPERTY_SPECS_POS = {
-        "Position X" : PropertySpec(
+        "Position X" : ItemPropertySpec(
             type_name = "float",
             getter    = lambda self: self.pos().x(),
             setter    = lambda self, value: self.setPosX(value)
         ),
-        "Position Y" : PropertySpec(
+        "Position Y" : ItemPropertySpec(
             type_name = "float",
             getter    = lambda self: self.pos().y(),
             setter    = lambda self, value: self.setPosY(value)

@@ -30,11 +30,11 @@ def toXmlBegin(xw : QXmlStreamWriter) -> None:
     xw.writeStartElement(APP_NAME) # TODO: version
 
 def toXmlAttrs(instance : "PropertiesMixin", xw : QXmlStreamWriter) -> None:
-    for name, value in instance.getPropertyNamesAndValues().items():
+    for name, prop in instance.properties.items():
+        value = prop.get()
         if value == "default":  # skip serialising default values
             continue
-        xml_attr_name = proper2snake(name)
-        xw.writeAttribute(xml_attr_name, value)
+        xw.writeAttribute(proper2snake(name), val2str(value))
 
 def toXmlEnd(xw : QXmlStreamWriter) -> None:
     xw.writeEndDocument()
@@ -51,12 +51,7 @@ def fromXmlEnd(xr : QXmlStreamReader, element_name : str) -> None:
 def fromXmlAttrs(instance : "PropertiesMixin", xr : QXmlStreamReader) -> None:
     xml_attrs = xr.attributes()
     for xml_attr in xml_attrs:
-        xml_attr_name = xml_attr.name()
-        xml_attr_value_str = xml_attr.value()
-        name = snake2proper(xml_attr_name)
-        type_name = instance.getPropertyTypeName(name)
-        value = str2val(xml_attr_value_str, type_name)
-        instance.setPropertyValue(name, value)
+        instance.initProperty(snake2proper(xml_attr.name()), xml_attr.value())
     xr.readNext()
 
 def fromXmlItems(

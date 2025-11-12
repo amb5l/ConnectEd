@@ -2,7 +2,7 @@ from typing import Self
 
 from PyQt6.QtCore import QPointF
 
-from ...properties import PropertySpec
+from .properties import ItemPropertySpec
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -13,7 +13,7 @@ class ItemOriginMixin:
     # class attributes
     _ORIGIN_NAME : str  # subclass must specify
     _PROPERTY_SPECS_ORIGIN = {
-        "Origin" : PropertySpec(
+        "Origin" : ItemPropertySpec(
             type_name = "str",
             getter    = lambda self: self.getOrigin(),
             setter    = lambda self, value: self.setOrigin(value)

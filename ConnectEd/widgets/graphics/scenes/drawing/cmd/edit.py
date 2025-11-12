@@ -3,17 +3,17 @@ from dataclasses import dataclass
 
 from PyQt6.QtCore import QPointF
 
-from .....dialogs.properties import DisplayChoice, PropertyVariables, PropertyChange
-
-from ....properties import PropertiesMixin
+from .....dialogs.item_properties import DisplayChoice, ItemPropertyVariables, \
+                                         ItemPropertyChange
 
 from ....items import SignalDirection, VectorRange, \
                       QuillPref, QuillPrefChange, \
                       AppearancePref, AppearancePrefChange
 
-from ....items.mixin        import ItemMixin
-from ....items.mixin.origin import ItemOriginMixin
-from ....items.mixin.handle import ItemHandlesMixin
+from ....items.mixin            import ItemMixin
+from ....items.mixin.origin     import ItemOriginMixin
+from ....items.mixin.handle     import ItemHandlesMixin
+from ....items.mixin.properties import ItemPropertiesMixin
 
 from ....items.polyline      import Polyline, PolySeg
 from ....items.base_text     import BaseText
@@ -287,14 +287,14 @@ class CmdEditAppearance(CmdSceneItems):
             e.update()
 
 
-class CmdEditProperties(CmdBase):
-    _item    : PropertiesMixin | ItemHandlesMixin
-    _changes : dict[str, PropertyChange]
+class CmdEditItemProperties(CmdBase):
+    _item    : ItemPropertiesMixin | ItemHandlesMixin
+    _changes : dict[str, ItemPropertyChange]
 
     def __init__(
         self    : Self,
-        item  : PropertiesMixin,  # item or scene
-        changes : dict[str, PropertyChange]
+        item    : ItemPropertiesMixin,
+        changes : dict[str, ItemPropertyChange]
     ):
         self._item  = item
         self._changes = changes
@@ -308,44 +308,41 @@ class CmdEditProperties(CmdBase):
 
     def _do(self : Self, before_attr : str, after_attr : str) -> None:
         for _name, change in self._changes.items():
-            before : PropertyVariables | None = getattr(change, before_attr)
-            after  : PropertyVariables | None = getattr(change, after_attr)
+            before : ItemPropertyVariables | None = getattr(change, before_attr)
+            after  : ItemPropertyVariables | None = getattr(change, after_attr)
             if before is None:
                 # add property
-                self._item.addProperty(after.name, after.value)
+                self._item.initProperty(after.name, after.value)
                 if after.display != DisplayChoice.NONE:
                     self._addPropertyText(after)
             elif after is None:
                 # delete property
-                pt = self._item.getPropertyText(before.name)
-                if pt is not None:
-                    self._item.delPropertyText(before.name)
-                self._item.delProperty(before.name)
+                del self._item.properties[before.name]
             else:
                 # existing property
                 self._item.renProperty(before.name, after.name)
-                self._item.setPropertyValue(after.name, after.value)
-                pt = self._item.getPropertyText(before.name)
+                self._item.properties[after.name].set(after.value)
+                pt = self._item.properties[before.name].getText()
                 if pt is None:
                     if after.display != DisplayChoice.NONE:
                         self._addPropertyText(after)
                 else:
                     if after.display == DisplayChoice.NONE:
-                        self._item.delPropertyText(before.name)
+                        self._item.properties[before.name].delText()
                     else:
                         self._modifyPropertyText(pt, after)
 
-    def _addPropertyText(self : Self, vars : PropertyVariables) -> None:
+    def _addPropertyText(self : Self, vars : ItemPropertyVariables) -> None:
         pt = PropertyText()
         self._modifyPropertyText(pt, vars)
         pt.setParentItem(self._item.getHandle(vars.cleat))
-        self._item.addPropertyText(vars.name, pt)
+        self._item.properties[vars.name].setText(pt)
         pt.onTextChange()  # Refresh text after parenting
 
     def _modifyPropertyText(
         self : Self,
         pt   : PropertyText,
-        vars : PropertyVariables
+        vars : ItemPropertyVariables
     ) -> None:
         pt.setName(vars.name)
         match vars.display:

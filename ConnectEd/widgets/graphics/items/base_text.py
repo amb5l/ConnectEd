@@ -5,19 +5,18 @@ from PyQt6.QtWidgets import QGraphicsSimpleTextItem, \
                             QWidget, QStyleOptionGraphicsItem, QStyle, QMenu
 from PyQt6.QtGui     import QPainter, QAction
 
-from ..properties import PropertySpec, PropertiesMixin
-
-from .mixin         import ItemMixin
-from .mixin.pos     import ItemPosMixin
-from .mixin.rotate  import ItemRotateMixin
-from .mixin.handle  import ItemRectHandlesMixin
-from .mixin.origin  import ItemOriginMixin
-from .mixin.quill   import ItemQuillMixin
-from .mixin.outline import ItemOutlineMixin
-from .mixin.change  import ItemChangeMixin
-from .mixin.clone   import ItemCloneMixin
-from .mixin.xml     import ItemXmlMixin
-from .mixin.menu    import ItemMenuMixin
+from .mixin            import ItemMixin
+from .mixin.pos        import ItemPosMixin
+from .mixin.rotate     import ItemRotateMixin
+from .mixin.handle     import ItemRectHandlesMixin
+from .mixin.origin     import ItemOriginMixin
+from .mixin.quill      import ItemQuillMixin
+from .mixin.outline    import ItemOutlineMixin
+from .mixin.change     import ItemChangeMixin
+from .mixin.clone      import ItemCloneMixin
+from .mixin.xml        import ItemXmlMixin
+from .mixin.menu       import ItemMenuMixin
+from .mixin.properties import ItemPropertiesMixin, ItemPropertySpec
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -36,7 +35,7 @@ class BaseText(
     ItemCloneMixin,
     ItemXmlMixin,
     ItemMenuMixin,
-    PropertiesMixin,
+    ItemPropertiesMixin,
     QGraphicsSimpleTextItem
 ):
     # class attributes
@@ -46,7 +45,7 @@ class BaseText(
         ItemPosMixin._PROPERTY_SPECS_POS | \
         ItemRotateMixin._PROPERTY_SPECS_ROT
     _PROPERTY_SPECS_TEXT = {
-        "Text" : PropertySpec(
+        "Text" : ItemPropertySpec(
             type_name = "str",
             getter    = lambda self: self.text(),
             setter    = lambda self, value: self.setText(value)
