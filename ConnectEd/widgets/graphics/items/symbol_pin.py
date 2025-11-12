@@ -1,8 +1,10 @@
 from typing import Self
 
-from PyQt6.QtCore    import QPointF
+from PyQt6.QtCore    import QPointF, QRectF
 from PyQt6.QtWidgets import QGraphicsItem, QMenu
 from PyQt6.QtGui     import QAction
+
+from ....core.defs import PITCH
 
 from .mixin.pos    import ItemPosMixin
 from .mixin.rotate import ItemRotateMixin
@@ -45,6 +47,11 @@ class SymbolPin(ItemPosMixin, BasePinDotMixin, BasePinClockMixin, BasePin):
     def moveHandleBy(self : Self, _ : str, delta : QPointF) -> None:
         """Move the entire SymbolPin when any grip is dragged."""
         self.setPos(self.pos() + delta)
+
+    def sceneTightBoundingRect(self : Self) -> QRectF:
+        return QRectF(
+            self.mapToScene(QPointF(0, 0)), self.mapToScene(QPointF(-PITCH, 0))
+        )
 
     def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
         return [

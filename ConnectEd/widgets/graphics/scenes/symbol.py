@@ -5,9 +5,9 @@ from PyQt6.QtGui  import QPainter, QPen
 
 from ....app import settings
 
-from ....core.defs import PITCH
+from ....core.utils import registerClass
 
-from ..items.handle import Handle
+from ....core.defs import PITCH
 
 from .drawing import DrawingScene
 
@@ -24,16 +24,18 @@ class SymbolScene(DrawingScene):
         self.changed.connect(self.onChange)
 
     def onChange(self : Self) -> None:
-        from ..items.line            import Line
-        from ..items.base_rect       import BaseRectangleMixin  # rectangle, ellipse
-        from ..items.polyline        import Polyline
-        from ..items.base_text       import BaseText
-        from ..items.base_text_block import BaseTextBlock
+        classes = {}
+        pkg = "ConnectEd.widgets.graphics.items"
+        registerClass( classes , "SymbolPin" , pkg=pkg )
+        registerClass( classes , "Line"      , pkg=pkg )
+        registerClass( classes , "Rectangle" , pkg=pkg )
+        registerClass( classes , "Polyline"  , pkg=pkg )
+        registerClass( classes , "Text"      , pkg=pkg )
+        registerClass( classes , "TextBlock" , pkg=pkg )
         # get bounding rect of all items
         rect = QRectF()
         for item in self.items():
-            types = (Line, BaseRectangleMixin, Polyline, BaseText, BaseTextBlock)
-            if isinstance(item, types):
+            if isinstance(item, tuple(classes.values())):
                 rect = rect.united(item.sceneTightBoundingRect())
         # expand size if too small
         wa = PITCH - rect.size().width()
