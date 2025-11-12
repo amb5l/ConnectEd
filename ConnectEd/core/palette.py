@@ -26,7 +26,7 @@ class PaletteDark:
     BlockPinName     = QColor("#EBC88D")
     BlockPinComment  = QColor("#EBC88D")
     SymbolPin        = QColor("#A2A2A2")
-    SymbolPinArrow   = QColor("#A2A2A2")
+    SymbolPinArrow   = QColor("#EBC88D")
     SymbolPinEntry   = QColor("#A2A2A2")
     SymbolPinName    = QColor("#EBC88D")
     SymbolPinComment = QColor("#EBC88D")
