@@ -32,6 +32,7 @@ class PropertiesMixin:
     _property_texts    : dict[str, "PropertyText"]
 
     def initProperties(self : Self | "ItemHandlesMixin", bare : bool = False) -> None:
+        from .items.property_text import PropertyText
         self._custom_properties = {}
         self._property_texts = {}
         if bare:
@@ -40,14 +41,14 @@ class PropertiesMixin:
             if spec.value is not None:  # custom property
                 self.addProperty(name, spec.value)
             if spec.text is not None:
-                property_text = spec.text.cls(
+                property_text = PropertyText(
                     name,
-                    spec.text.handle,
+                    spec.text.anchor,
                     spec.text.pos,
                     spec.text.origin,
                     spec.text.display
                 )
-                property_text.setParentItem(self.getHandle(spec.text.handle))
+                property_text.setParentItem(self.getHandle(spec.text.anchor))
                 self._property_texts[name] = property_text
 
     def getPropertyNames(self : Self) -> list[str]:

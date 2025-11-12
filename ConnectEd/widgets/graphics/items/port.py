@@ -10,7 +10,7 @@ from .mixin.pos    import ItemPosMixin
 from .mixin.rotate import ItemRotateMixin
 from .mixin.fill   import ItemFillMixin
 
-from .port_pin import PortPinText, PortPinMixin
+from .port_pin import PortPinMixin
 from .entry    import Entry
 
 from typing import TYPE_CHECKING
@@ -21,14 +21,6 @@ if TYPE_CHECKING:
 
 
 class PortEntry(Entry):
-    pass
-
-
-class PortName(PortPinText):
-    pass
-
-
-class PortComment(PortPinText):
     pass
 
 
@@ -50,14 +42,6 @@ class Port(
     @classmethod
     def _getEntryClass(cls) -> type[PortEntry]:
         return PortEntry
-
-    @classmethod
-    def _getNameClass(cls) -> type[PortName]:
-        return PortName
-
-    @classmethod
-    def _getCommentClass(cls) -> type[PortComment]:
-        return PortComment
 
     def __init__(
         self   : Self,

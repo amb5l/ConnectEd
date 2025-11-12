@@ -8,7 +8,7 @@ from ..properties import PropertySpec
 
 from . import SignalDirection
 
-from .port_pin import PortPinMixin, PortPinText
+from .port_pin import PortPinMixin
 from .entry    import Entry
 
 from .mixin        import ItemSettingsMixin
@@ -79,14 +79,6 @@ class BasePinEntry(Entry):
     pass
 
 
-class BasePinName(PortPinText):
-    pass
-
-
-class BasePinComment(PortPinText):
-    pass
-
-
 class BasePin(ItemPaintMixin, PortPinMixin, QGraphicsPathItem):
     @classmethod
     def _getArrowClass(cls) -> type[BasePinArrow]:
@@ -94,14 +86,6 @@ class BasePin(ItemPaintMixin, PortPinMixin, QGraphicsPathItem):
 
     @classmethod
     def _getEntryClass(cls) -> type[BasePinEntry]:
-        raise NotImplementedError("Subclasses must implement this method")
-
-    @classmethod
-    def _getNameClass(cls) -> type[BasePinName]:
-        raise NotImplementedError("Subclasses must implement this method")
-
-    @classmethod
-    def _getCommentClass(cls) -> type[BasePinComment]:
         raise NotImplementedError("Subclasses must implement this method")
 
     # instance attributes

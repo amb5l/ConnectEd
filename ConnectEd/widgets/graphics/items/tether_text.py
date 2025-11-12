@@ -75,6 +75,7 @@ class TetherText(BaseText):
         self._tether = Tether(self)
 
     def onSettingsChange(self : Self) -> None:
+        super().onSettingsChange()
         if self._tether is not None:
             self._tether.onSettingsChange()
 

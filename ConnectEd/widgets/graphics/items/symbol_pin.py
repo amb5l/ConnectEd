@@ -8,7 +8,7 @@ from .mixin.pos    import ItemPosMixin
 from .mixin.rotate import ItemRotateMixin
 from .mixin.line   import ItemLineMixin
 
-from .port_pin import PortPinText, PortPinMixin
+from .port_pin import PortPinMixin
 from .base_pin import BasePinArrow, BasePin, \
                       BasePinDotMixin, BasePinClockMixin, \
                       _PIN_CLK_SIZE
@@ -25,14 +25,6 @@ class SymbolPinArrow(BasePinArrow):
 
 
 class SymbolPinEntry(Entry):
-    pass
-
-
-class SymbolPinName(PortPinText):
-    pass
-
-
-class SymbolPinComment(PortPinText):
     pass
 
 
@@ -54,14 +46,6 @@ class SymbolPin(ItemPosMixin, BasePinDotMixin, BasePinClockMixin, BasePin):
     @classmethod
     def _getEntryClass(cls) -> type[SymbolPinEntry]:
         return SymbolPinEntry
-
-    @classmethod
-    def _getNameClass(cls) -> type[SymbolPinName]:
-        return SymbolPinName
-
-    @classmethod
-    def _getCommentClass(cls) -> type[SymbolPinComment]:
-        return SymbolPinComment
 
     def __init__(
         self   : Self,

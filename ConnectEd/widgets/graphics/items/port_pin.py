@@ -6,6 +6,8 @@ from ..properties import PropertySpec, PropertiesMixin
 
 from . import SignalDirection, VectorRange
 
+from .property_text import PropertyTextSpec
+
 from .mixin        import ItemMixin
 from .mixin.rotate import ItemRotateMixin
 from .mixin.handle import ItemHandlesMixin
@@ -15,14 +17,9 @@ from .mixin.clone  import ItemCloneMixin
 from .mixin.xml    import ItemXmlMixin
 from .mixin.menu   import ItemMenuMixin
 
-from .handle        import Handle
-from .property_text import PropertyText
+from .handle import Handle
 
 from .entry import Entry
-
-
-class PortPinText(PropertyText):
-    pass
 
 
 class PortPinMixin(
@@ -43,7 +40,8 @@ class PortPinMixin(
             "Name" : PropertySpec(
                 type_name = "str",
                 getter    = lambda self: self._name,
-                setter    = lambda self, value: setattr(self, '_name', value)
+                setter    = lambda self, value: setattr(self, '_name', value),
+                text      = PropertyTextSpec("Name", origin="Center Left")
             )
         }
     _PROPERTY_SPECS_PORT_PIN = \
@@ -92,16 +90,6 @@ class PortPinMixin(
     @classmethod
     def _getEntryClass(cls) -> type[Entry]:
         """Return the entry class."""
-        raise NotImplementedError("Subclasses must implement this method")
-
-    @classmethod
-    def _getNameClass(cls) -> type[PortPinText]:
-        """Return the name text class."""
-        raise NotImplementedError("Subclasses must implement this method")
-
-    @classmethod
-    def _getCommentClass(cls) -> type[PortPinText]:
-        """Return the comment text class."""
         raise NotImplementedError("Subclasses must implement this method")
 
     def initPortPin(self : Self, bare : bool = False) -> None:

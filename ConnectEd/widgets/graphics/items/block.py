@@ -15,14 +15,6 @@ if TYPE_CHECKING:
     from ..views.drawing import DrawingView
 
 
-class BlockLabel(PropertyText):
-    pass
-
-
-class BlockName(PropertyText):
-    pass
-
-
 class Block(BaseRectangle):
     # class attributes
     _PROPERTY_SPECS = {
@@ -30,13 +22,13 @@ class Block(BaseRectangle):
             type_name = "str",
             getter    = lambda self: self._label,
             setter    = lambda self, value: setattr(self, '_label', value),
-            text      = PropertyTextSpec(BlockLabel, "Top Left")
+            text      = PropertyTextSpec("Top Left")
         ),
         "Name" : PropertySpec(
             type_name = "str",
             getter    = lambda self: self._name,
             setter    = lambda self, value: setattr(self, '_name', value),
-            text      = PropertyTextSpec(BlockName, "Bottom Left")
+            text      = PropertyTextSpec("Bottom Left")
         ),
         "Path" : PropertySpec(
             type_name = "str",

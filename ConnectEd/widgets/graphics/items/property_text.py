@@ -3,8 +3,10 @@ from enum   import Enum
 from dataclasses import dataclass
 
 from PyQt6.QtCore    import Qt, QPointF
-from PyQt6.QtWidgets import QGraphicsSceneMouseEvent, QMenu
+from PyQt6.QtWidgets import QGraphicsItem, QGraphicsSceneMouseEvent, QMenu
 from PyQt6.QtGui     import QAction
+
+from ....app import settings
 
 from ..properties  import PropertySpec
 
@@ -90,6 +92,9 @@ class PropertyText(TetherText):
     def onSceneChange(self : Self, scene : "DrawingScene | None") -> None:
         self.onTextChange()
 
+    def onParentChange(self : Self, parent : QGraphicsItem) -> None:
+        self.onSettingsChange()
+
     def onTextChange(self : Self) -> None:
         text_to_set = ""
         value = self.value()
@@ -101,6 +106,16 @@ class PropertyText(TetherText):
             text_to_set = f"<{self.name()}>" if value == "" else value
         super().setText(text_to_set)
         self.onGeometryChange()
+
+    def settingsName(self : Self) -> str:
+        item = self.item()
+        if item is not None:
+            item_name = item.__class__.__name__
+            settings_name = f"{item_name}{self._name}"
+            settings_items = settings().get("theme/items")
+            if settings_name in vars(settings_items).keys():
+                return settings_name
+        return super().settingsName()
 
     def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
         return [
@@ -138,8 +153,7 @@ class PropertyText(TetherText):
 
 @dataclass
 class PropertyTextSpec:
-    cls     : type[PropertyText]
-    handle  : str
+    anchor  : str
     pos     : QPointF | None = None
     origin  : str | None = None
     display : PropertyDisplay = PropertyDisplay.VALUE

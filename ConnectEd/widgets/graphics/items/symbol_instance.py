@@ -2,7 +2,6 @@ from typing import Self
 
 from PyQt6.QtCore    import QRectF
 from PyQt6.QtGui     import QPainterPath
-from PyQt6.QtWidgets import QGraphicsItem
 
 from ....app import logger
 
@@ -22,14 +21,6 @@ from .mixin.line   import ItemLineMixin
 from .mixin.fill   import ItemFillMixin
 
 
-class SymbolName(PropertyText):
-    pass
-
-
-class SymbolLabel(PropertyText):
-    pass
-
-
 class BaseSymbolInstance(ItemOriginMixin, BaseRectangle):
     # class attributes
     _PROPERTY_SPECS_NAME = \
@@ -38,7 +29,7 @@ class BaseSymbolInstance(ItemOriginMixin, BaseRectangle):
                 type_name = "str",
                 getter    = lambda self: self._symbol.name(),
                 setter    = lambda self, value: self._symbol.setName(value),
-                text      = PropertyTextSpec(SymbolName, "Bottom Left")
+                text      = PropertyTextSpec("Bottom Left")
             )
         }
 
@@ -101,7 +92,7 @@ class SymbolInstance(BaseSymbolInstance):
                 type_name = "str",
                 getter    = lambda self: self._label,
                 setter    = lambda self, value: setattr(self, '_label', value),
-                text      = PropertyTextSpec(SymbolLabel, "Top Left")
+                text      = PropertyTextSpec("Top Left")
             )
         }
     _PROPERTY_SPECS = \
