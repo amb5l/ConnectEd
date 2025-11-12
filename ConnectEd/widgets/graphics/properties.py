@@ -37,6 +37,7 @@ class PropertiesMixin:
         """
         Create or update a property. Useful for XML deserialisation.
         """
+        from .property import Property
         if name not in self.properties:
             type_name = self._PROPERTY_SPECS[name].type_name \
                 if name in self._PROPERTY_SPECS else "str"
