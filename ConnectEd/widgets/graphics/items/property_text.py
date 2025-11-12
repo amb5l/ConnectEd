@@ -154,9 +154,9 @@ class PropertyText(BaseText):
         self._tether.onPositionChange(pos)
 
     def onSelectionChange(self : Self, selected : bool) -> None:
-        self._tether.setVisible(selected and self._cleat)
-        self._cleat_shown = selected and self._cleat
-        self._tether.cleat().grip().setVisible(selected and self._cleat)
+        self._tether.setVisible(selected and self._cleat is not None)
+        self._cleat_shown = selected and self._cleat is not None
+        self._tether.cleat().grip().setVisible(selected and self._cleat is not None)
 
     def onSettingsChange(self : Self) -> None:
         if self._cleat and self._tether:
