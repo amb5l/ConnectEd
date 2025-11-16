@@ -335,7 +335,12 @@ class CmdEditProperties(CmdBase):
     def _addPropertyText(self : Self, vars : PropertyVariables) -> None:
         pt = PropertyText()
         self._modifyPropertyText(pt, vars)
-        pt.setParentItem(self._object.getHandle(vars.cleat))
+        parent =  self._object.getHandle(vars.cleat) if vars.cleat != "" else \
+            self._object if isinstance(self._object, ItemMixin) else \
+            None
+        pt.setParentItem(parent)
+        if parent is None:
+            self._object.addItem(pt)  # add to scene
         self._object.properties[vars.name].setText(pt)
         pt.onTextChange()  # Refresh text after parenting
 

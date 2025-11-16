@@ -98,7 +98,7 @@ class PropertyText(BaseText):
 
     # instance attributes
     _name        : str
-    _cleat       : str | None
+    _cleat       : str
     _cleat_shown : bool
     _display     : PropertyDisplay
     _tether      : Tether | None
@@ -147,19 +147,20 @@ class PropertyText(BaseText):
     def onSceneChange(self : Self, _scene : "DrawingScene | None") -> None:
         self.onTextChange()
 
-    def onParentChange(self : Self, _parent : QGraphicsItem) -> None:
+    def onParentChange(self : Self, _parent : QGraphicsItem | None) -> None:
         self.onSettingsChange()
 
     def onPositionChange(self : Self, pos : QPointF) -> None:
         self._tether.onPositionChange(pos)
 
     def onSelectionChange(self : Self, selected : bool) -> None:
-        self._tether.setVisible(selected and self._cleat is not None)
-        self._cleat_shown = selected and self._cleat is not None
-        self._tether.cleat().grip().setVisible(selected and self._cleat is not None)
+        cleat_valid = self._cleat is not None and self._cleat != ""
+        self._tether.setVisible(selected and cleat_valid)
+        self._cleat_shown = selected and cleat_valid
+        self._tether.cleat().grip().setVisible(selected and cleat_valid)
 
     def onSettingsChange(self : Self) -> None:
-        if self._cleat and self._tether:
+        if self._cleat is not None and self._cleat != "" and self._tether:
             self._tether.onSettingsChange()
         super().onSettingsChange()
 
@@ -198,31 +199,18 @@ class PropertyText(BaseText):
         return super().settingsName()
 
     def getCleat(self : Self) -> str | None:
+        return self._cleat
+
+    def setCleat(self : Self, name : str) -> None:
+        self._cleat = name
         parent = self.parentItem()
         if parent is None:
-            return self._cleat  # workaround for deserialization
-        elif isinstance(parent, Handle):
-            return parent.name()
-        else:
-            logger().error(f"Parent is not a Handle: {type(parent).__name__}")
-            return None
-
-    def setCleat(self : Self, name : str | None) -> None:
-        self._cleat = name
-        if name is None:
             return
-        parent = self.parentItem()
-        if parent is None:  # handle deserialization
-            return
-        if isinstance(parent, Handle):
-            grandparent = parent.parentItem()
-            if isinstance(grandparent, ItemHandlesMixin):
-                self.setParentItem(grandparent.getHandle(name))
-            else:
-                logger().error(f"Grandparent is not an ItemHandleMixin: {type(grandparent).__name__}")
-            parent.setName(name)
+        item = parent.parentItem() if isinstance(parent, ItemHandlesMixin) else parent
+        if name == "":
+            self.setParentItem(item)
         else:
-            logger().error(f"Parent is not a Handle: {type(parent).__name__}")
+            self.setParentItem(item.getHandle(name))
 
     def setOrigin(self : Self, name : str) -> None:
         """Override to update tether line."""

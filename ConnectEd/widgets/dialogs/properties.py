@@ -308,6 +308,7 @@ class PropertiesDialog(QDialog):
         _roles       : list[int]
     ) -> None:
         """Highlight changed cells. Handle display choices."""
+        from ..graphics.scenes.drawing import DrawingScene
         if settings().get("display/theme") == "dark":
             fg = Qt.GlobalColor.white
             bg_highlight = Qt.GlobalColor.darkYellow
@@ -337,7 +338,10 @@ class PropertiesDialog(QDialog):
                     italic_item    : DialogItem = self._table_model.item(row_idx, 11)
                     underline_item : DialogItem = self._table_model.item(row_idx, 12)
                     if cleat_item.getValue() is None:
-                        cleat_item.setInit(self._item.__class__.getHandleNames()[0])
+                        cleat_item.setInit(
+                            "" if isinstance(self._item, DrawingScene) \
+                            else self._item.__class__.getHandleNames()[0]
+                        )
                     if offset_x_item.getValue() is None:
                         offset_x_item.setInit(0.0)
                     if offset_y_item.getValue() is None:
