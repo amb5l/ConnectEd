@@ -205,8 +205,13 @@ class DrawingViewUiEditMixin:
     def editText(self : "DrawingViewUi") -> None:
         self._view.state.go(self._view.stateEditText)
 
-    def editPropertyText(self : "DrawingViewUi") -> None:
-        self._view.state.go(self._view.stateEditPropertyText)
+    def editPropertyText(
+        self : "DrawingViewUi",
+        item : "ItemMixin | None" = None
+    ) -> None:
+        self._view.state.go(
+            self._view.stateEditPropertyText, [item] if item else None
+        )
 
     def _editMove(
         self  : "DrawingViewUi",
