@@ -359,6 +359,12 @@ class Polyline(
         if hasattr(self, '_handles'):
             self.updateHandles()
         # update scene tight bounding rect
+        self.onPositionChange()
+
+    def onPositionChange(
+        self : Self | QGraphicsPathItem,
+        _ : QPointF | None = None
+    ) -> None:
         scene_polygon = self.mapToScene(self.path().controlPointRect())
         self._stbrect = scene_polygon.boundingRect().normalized()
 

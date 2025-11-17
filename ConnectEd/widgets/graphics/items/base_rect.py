@@ -108,8 +108,6 @@ class BaseRectangleMixin(
 
     def onGeometryChange(self : Self | QGraphicsRectItem) -> None:
         self.prepareGeometryChange()
-        scene_polygon = self.mapToScene(self.rect())
-        self._stbrect = scene_polygon.boundingRect().normalized()
         pen_width = self.a.line._pen.widthF()
         tolerance = settings().get("display/select/tolerance")
         stroke_width = pen_width + (2 * tolerance)
@@ -126,6 +124,14 @@ class BaseRectangleMixin(
         else:
             self._hshape = stroker_path
         self.updateHandles()
+        self.onPositionChange()
+
+    def onPositionChange(
+        self : Self | QGraphicsRectItem,
+        _ : QPointF | None = None
+    ) -> None:
+        scene_polygon = self.mapToScene(self.rect())
+        self._stbrect = scene_polygon.boundingRect().normalized()
 
     @overload
     def setRect(

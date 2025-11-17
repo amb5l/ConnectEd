@@ -80,10 +80,6 @@ class Line(
         if not hasattr(self, "_line"):
             self._hshape = QPainterPath()
             return
-        self._stbrect = QRectF(
-            self.mapToScene(self._line.p1()),
-            self.mapToScene(self._line.p2())
-        ).normalized()
         pen_width = self.pen().widthF()
         tolerance = settings().get("display/select/tolerance")
         stroke_width = pen_width + (2 * tolerance)
@@ -97,6 +93,16 @@ class Line(
         stroker_path = stroker.createStroke(line_path)
         self._hshape = stroker_path
         self.updateHandles()
+        self.onPositionChange()
+
+    def onPositionChange(
+        self : Self | QGraphicsLineItem,
+        _ : QPointF | None = None
+    ) -> None:
+        self._stbrect = QRectF(
+            self.mapToScene(self._line.p1()),
+            self.mapToScene(self._line.p2())
+        ).normalized()
 
     def initHandles(self : Self) -> None:
         self._handles = {

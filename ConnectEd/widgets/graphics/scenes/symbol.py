@@ -24,18 +24,18 @@ class SymbolScene(DrawingScene):
         self.changed.connect(self.onChange)
 
     def onChange(self : Self) -> None:
-        classes = {}
-        pkg = "ConnectEd.widgets.graphics.items"
-        registerClass( classes , "SymbolPin" , pkg=pkg )
-        registerClass( classes , "Line"      , pkg=pkg )
-        registerClass( classes , "Rectangle" , pkg=pkg )
-        registerClass( classes , "Polyline"  , pkg=pkg )
-        registerClass( classes , "Text"      , pkg=pkg )
-        registerClass( classes , "TextBlock" , pkg=pkg )
+        from ..items.symbol_pin    import SymbolPin
+        from ..items.property_text import PropertyText
+        from ..items.line          import Line
+        from ..items.rectangle     import Rectangle
+        from ..items.polyline      import Polyline
+        from ..items.text          import Text
+        from ..items.text_block    import TextBlock
+        classes = (SymbolPin, PropertyText, Line, Rectangle, Polyline, Text, TextBlock)
         # get bounding rect of all items
         rect = QRectF()
         for item in self.items():
-            if isinstance(item, tuple(classes.values())):
+            if isinstance(item, classes):
                 rect = rect.united(item.sceneTightBoundingRect())
         # expand size if too small
         wa = PITCH - rect.size().width()

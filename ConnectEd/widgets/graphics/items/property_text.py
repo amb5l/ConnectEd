@@ -54,7 +54,7 @@ class Tether(QGraphicsLineItem):
     def onSettingsChange(self : Self) -> None:
         self.setPen(self._item.outline.pen)
 
-    def onPositionChange(self : Self, _ : QPointF) -> None:
+    def onPositionChange(self : Self, _ : QPointF | None = None) -> None:
         if self.cleat() is None:
             return
         line = self.line()
@@ -150,8 +150,10 @@ class PropertyText(BaseText):
     def onParentChange(self : Self, _parent : QGraphicsItem | None) -> None:
         self.onSettingsChange()
 
-    def onPositionChange(self : Self, pos : QPointF) -> None:
-        self._tether.onPositionChange(pos)
+    def onPositionChange(self : Self, pos : QPointF | None = None) -> None:
+        super().onPositionChange(pos)
+        if self._tether is not None:
+            self._tether.onPositionChange(pos)
 
     def onSelectionChange(self : Self, selected : bool) -> None:
         if self._cleat is None or self._cleat == "":

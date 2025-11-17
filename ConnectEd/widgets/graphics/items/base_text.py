@@ -83,7 +83,12 @@ class BaseText(
         delta = old_origin_scene_pos - new_origin_scene_pos
         self._pos = self.pos() + delta
         self.updateOrigin()
-        # update scene tight bounding rect
+        self.onPositionChange()
+
+    def onPositionChange(
+        self : Self | QGraphicsSimpleTextItem,
+        _ : QPointF | None = None
+    ) -> None:
         scene_polygon = self.mapToScene(self.boundingRect())
         self._stbrect = scene_polygon.boundingRect().normalized()
 
