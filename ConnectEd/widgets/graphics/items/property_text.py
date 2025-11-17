@@ -154,6 +154,8 @@ class PropertyText(BaseText):
         self._tether.onPositionChange(pos)
 
     def onSelectionChange(self : Self, selected : bool) -> None:
+        if self._cleat is None or self._cleat == "":
+            return
         cleat_valid = self._cleat is not None and self._cleat != ""
         self._tether.setVisible(selected and cleat_valid)
         self._cleat_shown = selected and cleat_valid
@@ -218,14 +220,6 @@ class PropertyText(BaseText):
         self._tether.setParentItem(self._origin)
         self._tether.onPositionChange(self.pos())
 
-    def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
-        return [
-            view.action("Edit...", view.ui.editPropertyText),
-            view.separator(),
-            view.action("Appearance...", lambda: view.ui.editAppearance(self)),
-            view.action("Properties...", lambda: view.ui.editItemProperties(self))
-        ]
-
     def item(self : Self) -> "PropertiesMixin | None":
         h : "Handle" = self.parentItem()
         return None if h is None else h.parentItem()
@@ -238,10 +232,12 @@ class PropertyText(BaseText):
         self.onTextChange()
 
     def value(self : Self) -> str:
-        return str(self.item().properties[self._name].get()) if self.item() else ""
+        source = self.scene() if self.parentItem() is None else self.item()
+        return "" if source is None else str(source.properties[self._name].get())
 
     def setValue(self : Self, value : str) -> None:
-        self.item().properties[self._name].set(value)
+        source = self.scene() if self.parentItem() is None else self.item()
+        source.properties[self._name].set(value)
         self.onTextChange()
 
     def display(self : Self) -> PropertyDisplay:
@@ -251,6 +247,13 @@ class PropertyText(BaseText):
         self._display = value
         self.onTextChange()
 
+    def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
+        return [
+            view.action("Edit...", lambda: view.ui.editPropertyText(self)),
+            view.separator(),
+            view.action("Appearance...", lambda: view.ui.editAppearance(self)),
+            view.action("Properties...", lambda: view.ui.editItemProperties(self))
+        ]
 
 @dataclass
 class PropertyTextSpec:
