@@ -104,16 +104,7 @@ class BaseTextBlock(
         option  : QStyleOptionGraphicsItem,
         widget  : QWidget
     ) -> None:
-        # override selected appearance
-        c = None
         option.state &= ~QStyle.StateFlag.State_Selected
-        if option.state & QStyle.StateFlag.State_HasFocus:
-            rect = self.boundingRect()
-            painter.fillRect(rect, QColor(255, 255, 255, 192))
-            c = self.defaultTextColor()
-            self.setDefaultTextColor(QColor(255, 0, 255))
-        if c:
-            self.setDefaultTextColor(c)
         QGraphicsTextItem.paint(self, painter, option, widget)
         if self.isSelected():
             painter.setPen(self.outline.pen)
