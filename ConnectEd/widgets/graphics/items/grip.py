@@ -125,8 +125,8 @@ class MoveGrip(APGrip):
 
     def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
         entries = [
-            view.action("Slide", lambda: view.ui.editSlide()),
-            view.action("Move", lambda: view.ui.editMove())
+            view.action("Slide", lambda: view.ui.editSlide([self._item], self.scenePos())),
+            view.action("Move", lambda: view.ui.editMove([self._item], self.scenePos()))
         ]
         if isinstance(self._item, ItemOriginMixin):
             h : Handle = self.parentItem()
@@ -146,7 +146,7 @@ class ResizeGrip(MoveGrip):
 
     def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
         entries = [
-            view.action("Resize", lambda: view.ui.editResize(self)),
+            view.action("Resize", lambda: view.ui.editResize(self, self.scenePos())),
         ]
         entries.extend(MoveGrip.ctxMenuItems(self, view))
         return entries
