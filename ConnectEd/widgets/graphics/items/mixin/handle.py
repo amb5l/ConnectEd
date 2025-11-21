@@ -48,7 +48,7 @@ class ItemRectHandlesMixin(ItemHandlesMixin):
     def initHandles(self : Self) -> None:
         self._handles = {}
         for name in self._AP_RECT.keys():
-            resize = name in self._AP_RESIZE
+            resize = self._AP_RESIZE[name]
             handle = Handle(name=name, resize=resize, parent=self)
             self._handles[name] = handle
 
