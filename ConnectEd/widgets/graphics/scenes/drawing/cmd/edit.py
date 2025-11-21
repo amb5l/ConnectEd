@@ -12,12 +12,12 @@ from ....items import SignalDirection, VectorRange, \
                       QuillPref, QuillPrefChange, \
                       AppearancePref, AppearancePrefChange
 
-from ....items.mixin            import ItemMixin
-from ....items.mixin.origin     import ItemOriginMixin
+from ....items.mixin        import ItemMixin
+from ....items.mixin.origin import ItemOriginMixin
 
-from ....items.polyline      import Polyline, PolySeg
-from ....items.base_text     import BaseText
-from ....items.property_text import PropertyDisplay, PropertyText
+from ....items.polyline       import Polyline, PolySeg
+from ....items.base_text_line import BaseTextLine
+from ....items.property_text  import PropertyDisplay, PropertyText
 
 from . import CmdBase, CmdSceneItem, CmdSceneItems
 
@@ -178,14 +178,14 @@ class CmdEditText(CmdSceneItem):
         text       : str
         appearance : QuillPref
 
-    _item   : BaseText
+    _item   : BaseTextLine
     _before : TextState
     _after  : TextState
 
     def __init__(
         self       : Self,
         scene      : "DrawingScene",
-        item       : BaseText,
+        item       : BaseTextLine,
         text       : str,
         appearance : QuillPrefChange
     ):

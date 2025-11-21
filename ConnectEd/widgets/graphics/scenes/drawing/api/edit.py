@@ -12,14 +12,14 @@ from ....items               import ItemType, EdgeLoc, \
                                     SignalDirection, VectorRange, \
                                     QuillPrefChange, AppearancePrefChange
 
-from ....items.block         import Block
-from ....items.port_pin      import PortPinMixin
-from ....items.block_pin     import BlockPin
-from ....items.symbol_pin    import SymbolPin
-from ....items.polyline      import Polyline, PolySeg
-from ....items.base_text     import BaseText
-from ....items.property_text import PropertyDisplay, PropertyText
-from ....items.mixin         import ItemMixin
+from ....items.block          import Block
+from ....items.port_pin       import PortPinMixin
+from ....items.block_pin      import BlockPin
+from ....items.symbol_pin     import SymbolPin
+from ....items.polyline       import Polyline, PolySeg
+from ....items.base_text_line import BaseTextLine
+from ....items.property_text  import PropertyDisplay, PropertyText
+from ....items.mixin          import ItemMixin
 
 from ..cmd           import cmdExec, CmdDelete, CmdMove, CmdRotateCW, CmdRotateCCW
 from ..cmd.block_pin import CmdMoveBlockPins
@@ -184,7 +184,7 @@ class DrawingSceneApiEditMixin:
 
     def editText(
         self       : "DrawingScene",
-        item       : BaseText,
+        item       : BaseTextLine,
         text       : str,
         appearance : QuillPrefChange,
         undoable   : bool = False

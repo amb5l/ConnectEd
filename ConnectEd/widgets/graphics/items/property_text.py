@@ -13,8 +13,8 @@ from ....app import settings
 from ..property   import PropertySpec
 from ..properties import PropertiesMixin
 
-from .base_text import BaseText
-from .handle    import Handle
+from .base_text_line import BaseTextLine
+from .handle         import Handle
 
 from .mixin.handle     import ItemHandlesMixin
 
@@ -68,7 +68,7 @@ class Tether(QGraphicsLineItem):
         pass  # no need to serialise
 
 
-class PropertyText(BaseText):
+class PropertyText(BaseTextLine):
     # class attributes
     _PROPERTY_SPECS_PROPERTY = \
         {
@@ -91,10 +91,10 @@ class PropertyText(BaseText):
                 setter    = lambda self, value: self.setCleat(value)
             )
         } | \
-        BaseText._PROPERTY_SPECS_ORIGIN | \
-        BaseText._PROPERTY_SPECS_POS | \
+        BaseTextLine._PROPERTY_SPECS_ORIGIN | \
+        BaseTextLine._PROPERTY_SPECS_POS | \
         _PROPERTY_SPECS_PROPERTY | \
-        BaseText._PROPERTY_SPECS_APPEARANCE
+        BaseTextLine._PROPERTY_SPECS_APPEARANCE
 
     # instance attributes
     _name        : str

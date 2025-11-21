@@ -1,7 +1,7 @@
-from .base_text import BaseText
+from .base_text_line import BaseTextLine
 
 
-class Text(BaseText):
+class Text(BaseTextLine):
     pass
 
 

@@ -25,7 +25,7 @@ if TYPE_CHECKING:
     from ..views.drawing  import DrawingView
 
 
-class BaseText(
+class BaseTextLine(
     ItemMixin,
     ItemPosMixin,
     ItemRotateMixin,
