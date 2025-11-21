@@ -6,6 +6,8 @@ from PyQt6.QtGui     import QPainterPath, QPainterPathStroker, QAction
 
 from ....app import settings
 
+from ....core.defs import PITCH
+
 from ..property   import PropertySpec
 from ..properties import PropertiesMixin
 
@@ -206,13 +208,9 @@ class BaseRectangleMixin(
         else:
             x1 = p1_x1
             y1 = p2_y1
-        final_pos = QPointF(
-            x1 if x1 < x2 else x2,
-            y1 if y1 < y2 else y2,
-        )
-        self.setPos(final_pos)
-        w = max(abs(x2-x1), self._MIN_SIZE.width())
-        h = max(abs(y2-y1), self._MIN_SIZE.height())
+        self.setPos(QPointF(min(x1, x2), min(y1, y2)))
+        w = max(abs(x2-x1), PITCH)
+        h = max(abs(y2-y1), PITCH)
         rect = self.rect()
         rect.setSize(QSizeF(w, h))
         self.setRect(rect)
