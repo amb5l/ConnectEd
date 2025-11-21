@@ -66,24 +66,24 @@ class PropertyChange:
 
 class ExistingItem(DialogItem):
     def __init__(
-        self      : Self,
-        value     : Any,
-        type_name : str = "str",
-        default   : Any = None,
-        editable  : bool = True
+        self     : Self,
+        value    : Any,
+        kind     : str = "str",
+        default  : Any = None,
+        editable : bool = True
     ) -> None:
-        super().__init__(value, value, type_name, default, editable)
+        super().__init__(value, value, kind, default, editable)
 
 
 class NewItem(DialogItem):
     def __init__(
-        self      : Self,
-        value     : Any = "",
-        type_name : str = "str",
-        default   : Any = None,
-        editable  : bool = True
+        self     : Self,
+        value    : Any = "",
+        kind     : str = "str",
+        default  : Any = None,
+        editable : bool = True
     ) -> None:
-        super().__init__(None, value, type_name, default, editable)
+        super().__init__(None, value, kind, default, editable)
 
 
 class PropertiesDialog(QDialog):
@@ -136,7 +136,7 @@ class PropertiesDialog(QDialog):
             vars       = PropertyVariables()
             static     = prop.isStatic()
             read_only  = prop.isReadOnly()
-            type_name  = prop.typeName()
+            kind       = prop.kind()
             default    = prop.default()
             vars.name  = name
             vars.value = prop.get()
@@ -159,7 +159,7 @@ class PropertiesDialog(QDialog):
                 vars.underline = prop.getText().a.quill.getUnderline()
             row = [
                 ExistingItem(vars.name, editable=static),
-                ExistingItem(vars.value, type_name, default, not read_only),
+                ExistingItem(vars.value, kind, default, not read_only),
                 ExistingItem(vars.display, "DisplayChoice", editable=static),
                 ExistingItem(vars.visible   , "bool"         ),
                 ExistingItem(vars.cleat     , "str"          ),

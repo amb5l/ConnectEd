@@ -27,9 +27,8 @@ class GatePin(ItemPosMixin, BasePinDotMixin, BasePinClockMixin, BasePin):
         ItemPosMixin._PROPERTY_SPECS_POS | \
         {
             "Name" : PropertySpec(
-                type_name = "str",
-                getter    = lambda self: self._name,
-                setter    = lambda self, value: setattr(self, '_name', value)
+                getter = lambda self: self._name,
+                setter = lambda self, value: setattr(self, '_name', value)
             )
         } | \
         BasePinDotMixin._PROPERTY_SPECS_DOT | \

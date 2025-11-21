@@ -21,29 +21,28 @@ class DiagramScene(DrawingScene):
     # class attributes
     _PROPERTY_SPECS = DrawingScene._PROPERTY_SPECS | {
         "Sheet Name" : PropertySpec(
-            type_name = "str",
-            getter    = lambda self: self.getSheetName(),
-            setter    = lambda self, value: self.setSheetName(value)
+            getter = lambda self: self.getSheetName(),
+            setter = lambda self, value: self.setSheetName(value)
         ),
         "Sheet Width" : PropertySpec(
-            type_name = "float",
-            getter    = lambda self: self.getSheetWidth(),
-            setter    = lambda self, value: self.setSheetWidth(value)
+            kind   = "float",
+            getter = lambda self: self.getSheetWidth(),
+            setter = lambda self, value: self.setSheetWidth(value)
         ),
         "Sheet Height" : PropertySpec(
-            type_name = "float",
-            getter    = lambda self: self.getSheetHeight(),
-            setter    = lambda self, value: self.setSheetHeight(value)
+            kind   = "float",
+            getter = lambda self: self.getSheetHeight(),
+            setter = lambda self, value: self.setSheetHeight(value)
         ),
         "Margin" : PropertySpec(
-            type_name = "float",
-            getter    = lambda self: self.margin,
-            setter    = lambda self, value: self.setMargin(value)
+            kind   = "float",
+            getter = lambda self: self.margin,
+            setter = lambda self, value: self.setMargin(value)
         ),
         "Border" : PropertySpec(
-            type_name = "float",
-            getter    = lambda self: self.border,
-            setter    = lambda self, value: self.setBorder(value)
+            kind   = "float",
+            getter = lambda self: self.border,
+            setter = lambda self, value: self.setBorder(value)
         )
     }
 

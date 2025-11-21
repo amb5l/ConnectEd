@@ -20,7 +20,7 @@ class PropertiesMixin:
         self.properties = {}
         for name, spec in self._PROPERTY_SPECS.items():
             self.properties[name] = Property(
-                self, name, spec.type_name, spec.getter, spec.setter
+                self, name, spec.kind, spec.getter, spec.setter
             )
             if spec.text is not None:
                 property_text = PropertyText(
@@ -38,9 +38,9 @@ class PropertiesMixin:
         """
         from .property import Property
         if name not in self.properties:
-            type_name = self._PROPERTY_SPECS[name].type_name \
+            kind = self._PROPERTY_SPECS[name].kind \
                 if name in self._PROPERTY_SPECS else "str"
-            self.properties[name] = Property(self, name, type_name, value, None)
+            self.properties[name] = Property(self, name, kind, value, None)
         else:
             self.properties[name].set(value)
 

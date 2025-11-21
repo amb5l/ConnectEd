@@ -102,25 +102,25 @@ class Line:
 class ItemLineMixin:
     _PROPERTY_SPECS_LINE = {
         "Line Color" : PropertySpec(
-            type_name = "QColor",
-            valid     = lambda self: self.a.line is not None,
-            getter    = lambda self: self.a.line.getColor(),
-            setter    = lambda self, value: self.a.line.setColor(value),
-            default   = lambda self: self.a.line.getDefaults().color
+            kind    = "QColor",
+            valid   = lambda self: self.a.line is not None,
+            getter  = lambda self: self.a.line.getColor(),
+            setter  = lambda self, value: self.a.line.setColor(value),
+            default = lambda self: self.a.line.getDefaults().color
         ),
         "Line Width" : PropertySpec(
-            type_name = "LineWidth",  # a "subtype" of float - see str2val
-            valid     = lambda self: self.a.line is not None,
-            getter    = lambda self: self.a.line.getWidth(),
-            setter    = lambda self, value: self.a.line.setWidth(value),
-            default   = lambda self: self.a.line.getDefaults().width
+            kind    = "LineWidth",  # a "subtype" of float - see str2val
+            valid   = lambda self: self.a.line is not None,
+            getter  = lambda self: self.a.line.getWidth(),
+            setter  = lambda self, value: self.a.line.setWidth(value),
+            default = lambda self: self.a.line.getDefaults().width
         ),
         "Line Style" : PropertySpec(
-            type_name = "PenStyle",
-            valid     = lambda self: self.a.line is not None,
-            getter    = lambda self: self.a.line.getStyle(),
-            setter    = lambda self, value: self.a.line.setStyle(value),
-            default   = lambda self: self.a.line.getDefaults().style
+            kind    = "PenStyle",
+            valid   = lambda self: self.a.line is not None,
+            getter  = lambda self: self.a.line.getStyle(),
+            setter  = lambda self, value: self.a.line.setStyle(value),
+            default = lambda self: self.a.line.getDefaults().style
         )
     }
 

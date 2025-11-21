@@ -9,9 +9,9 @@ class ItemRotateMixin:
     """Mixin to support and propagate rotation changes."""
     _PROPERTY_SPECS_ROT = {
         "Rotation" : PropertySpec(
-            type_name = "float",
-            getter    = lambda self: self.rotation(),
-            setter    = lambda self, value: self.setRotation(value)
+            kind   = "float",
+            getter = lambda self: self.rotation(),
+            setter = lambda self, value: self.setRotation(value)
         )
     }
 

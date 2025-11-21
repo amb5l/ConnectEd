@@ -80,18 +80,18 @@ class Fill:
 class ItemFillMixin:
     _PROPERTY_SPECS_FILL = {
         "Fill Color" : PropertySpec(
-            type_name = "QColor",
-            valid     = lambda self: self.a.fill is not None,
-            getter    = lambda self: self.a.fill.getColor(),
-            setter    = lambda self, value: self.a.fill.setColor(value),
-            default   = lambda self: self.a.fill.getDefaults().color
+            kind    = "QColor",
+            valid   = lambda self: self.a.fill is not None,
+            getter  = lambda self: self.a.fill.getColor(),
+            setter  = lambda self, value: self.a.fill.setColor(value),
+            default = lambda self: self.a.fill.getDefaults().color
         ),
         "Fill Style" : PropertySpec(
-            type_name = "BrushStyle",
-            valid     = lambda self: self.a.fill is not None,
-            getter    = lambda self: self.a.fill.getStyle(),
-            setter    = lambda self, value: self.a.fill.setStyle(value),
-            default   = lambda self: self.a.fill.getDefaults().style
+            kind    = "BrushStyle",
+            valid   = lambda self: self.a.fill is not None,
+            getter  = lambda self: self.a.fill.getStyle(),
+            setter  = lambda self, value: self.a.fill.setStyle(value),
+            default = lambda self: self.a.fill.getDefaults().style
         )
     }
 

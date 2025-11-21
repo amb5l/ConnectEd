@@ -14,9 +14,8 @@ class ItemOriginMixin:
     _ORIGIN_NAME : str  # subclass must specify
     _PROPERTY_SPECS_ORIGIN = {
         "Origin" : PropertySpec(
-            type_name = "str",
-            getter    = lambda self: self.getOrigin(),
-            setter    = lambda self, value: self.setOrigin(value)
+            getter = lambda self: self.getOrigin(),
+            setter = lambda self, value: self.setOrigin(value)
         )
     }
 

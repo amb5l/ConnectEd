@@ -68,17 +68,15 @@ class PropertyText(BaseTextLine):
     _PROPERTY_SPECS_NAME = \
         {
             "Name" : PropertySpec(
-                type_name = "str",
-                getter    = lambda self: self.name(),
-                setter    = lambda self, value: self.setName(value)
+                getter = lambda self: self.name(),
+                setter = lambda self, value: self.setName(value)
             )
         }
     _PROPERTY_SPECS = \
         {
             "Cleat" : PropertySpec(
-                type_name = "str",
-                getter    = lambda self: self.getCleat(),
-                setter    = lambda self, value: self.setCleat(value)
+                getter = lambda self: self.getCleat(),
+                setter = lambda self, value: self.setCleat(value)
             )
         } | \
         BaseTextLine._PROPERTY_SPECS_ORIGIN | \

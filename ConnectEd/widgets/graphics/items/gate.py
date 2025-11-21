@@ -55,9 +55,8 @@ class BaseGate(
     # class attributes
     _PROPERTY_SPECS_LABEL = {
         "Label" : PropertySpec(
-            type_name = "str",
-            getter    = lambda self: self._label,
-            setter    = lambda self, value: setattr(self, '_label', value)
+            getter = lambda self: self._label,
+            setter = lambda self, value: setattr(self, '_label', value)
         )
     }
 
@@ -99,14 +98,12 @@ class BufGate(BaseGate):
     # class attributes
     _PROPERTY_SPECS_IO = {
         "Output" : PropertySpec(
-            type_name = "str",
-            getter    = lambda self: self.output(),
-            setter    = lambda self, value: self.setOutput(value)
+            getter = lambda self: self.output(),
+            setter = lambda self, value: self.setOutput(value)
         ),
         "Input" : PropertySpec(
-            type_name = "str",
-            getter    = lambda self: self.input(),
-            setter    = lambda self, value: self.setInput(value)
+            getter = lambda self: self.input(),
+            setter = lambda self, value: self.setInput(value)
         )
     }
     _PROPERTY_SPECS = \
@@ -215,14 +212,12 @@ class Gate(BaseGate):
     # class attributes
     _PROPERTY_SPECS_IO = {
         "Output" : PropertySpec(
-            type_name = "str",
-            getter    = lambda self: self.output(),
-            setter    = lambda self, value: self.setOutput(value)
+            getter = lambda self: self.output(),
+            setter = lambda self, value: self.setOutput(value)
         ),
         "Inputs" : PropertySpec(
-            type_name = "str",
-            getter    = lambda self: self.inputs(),
-            setter    = lambda self, value: self.setInputs(value)
+            getter = lambda self: self.inputs(),
+            setter = lambda self, value: self.setInputs(value)
         )
     }
     _PROPERTY_SPECS = \

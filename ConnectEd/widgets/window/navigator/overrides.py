@@ -1,7 +1,7 @@
 from PyQt6.QtCore import Qt, QPoint
 from PyQt6.QtGui  import QFocusEvent, QKeyEvent, QMouseEvent, QWheelEvent
 
-from ....app import model
+from ....app import model, logger
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -64,11 +64,11 @@ class NavigatorOverridesMixin:
         index = self.indexAt(pos)
         if index.isValid():
             self.node = model().itemFromIndex(index)
-            node_type_name = type(self.node).__name__
-            if node_type_name not in self.menus:
-                logger().error(f"Unknown node type: {node_type_name}")
+            node_kind = type(self.node).__name__
+            if node_kind not in self.menus:
+                logger().error(f"Unknown node type: {node_kind}")
                 return
-            menu = self.menus[node_type_name]
+            menu = self.menus[node_kind]
         else:
             menu = self.menus[None]
         menu.exec(self.viewport().mapToGlobal(pos))

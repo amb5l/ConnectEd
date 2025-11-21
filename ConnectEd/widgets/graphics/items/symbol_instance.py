@@ -24,10 +24,9 @@ class BaseSymbolInstance(ItemOriginMixin, BaseRectangle):
     _PROPERTY_SPECS_NAME = \
         {
             "Name" : PropertySpec(
-                type_name = "str",
-                getter    = lambda self: self._symbol.name(),
-                setter    = lambda self, value: self._symbol.setName(value),
-                text      = PropertyTextSpec("Bottom Left")
+                getter = lambda self: self._symbol.name(),
+                setter = lambda self, value: self._symbol.setName(value),
+                text   = PropertyTextSpec("Bottom Left")
             )
         }
 
@@ -87,10 +86,9 @@ class SymbolInstance(BaseSymbolInstance):
     _PROPERTY_SPECS_LABEL = \
         {
             "Label" : PropertySpec(
-                type_name = "str",
-                getter    = lambda self: self._label,
-                setter    = lambda self, value: setattr(self, '_label', value),
-                text      = PropertyTextSpec("Top Left")
+                getter = lambda self: self._label,
+                setter = lambda self, value: setattr(self, '_label', value),
+                text   = PropertyTextSpec("Top Left")
             )
         }
     _PROPERTY_SPECS = \

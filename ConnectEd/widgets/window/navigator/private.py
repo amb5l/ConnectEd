@@ -41,9 +41,9 @@ class NavigatorPrivateMixin:
             index = self.currentIndex()
             self.setExpanded(index, not self.isExpanded(index))
 
-    def _open(self : "Navigator", type_name : str | None = None) -> None:
+    def _open(self : "Navigator", kind : str | None = None) -> None:
         from ...dialogs.file import FileOpenDialog
-        dialog = FileOpenDialog(type_name)
+        dialog = FileOpenDialog(kind)
         result = dialog.exec()
         if result == dialog.DialogCode.Accepted:
             files = dialog.selectedFiles()
@@ -139,7 +139,7 @@ class NavigatorPrivateMixin:
 
     def _saveAs(self : "Navigator", node : "DbNode") -> None:
         from ...dialogs.file import FileSaveAsDialog
-        dialog = FileSaveAsDialog(node.dbTypeName())
+        dialog = FileSaveAsDialog(node.dbKind())
         result = dialog.exec()
         if result == dialog.DialogCode.Accepted:
             selected_files = dialog.selectedFiles()

@@ -8,21 +8,21 @@ from ....core.utils import val2str, str2val
 
 class DialogItem(QStandardItem):
     IDX_BEFORE    = 0
-    IDX_TYPE_NAME = 1
+    IDX_KIND = 1
     IDX_DEFAULT   = 2
 
     def __init__(
-        self      : Self,
-        before    : Any,
-        after     : Any = "",
-        type_name : str = "str",
-        default   : Any | None = None,
-        editable  : bool = True
+        self     : Self,
+        before   : Any,
+        after    : Any = "",
+        kind     : str = "str",
+        default  : Any | None = None,
+        editable : bool = True
     ) -> None:
         super().__init__(val2str(after))
         self.setBefore(before)
         self.setValue(after)
-        self.setTypeName(type_name)
+        self.setKind(kind)
         self.setDefault(default)
         self.setEditable(editable)
 
@@ -40,16 +40,16 @@ class DialogItem(QStandardItem):
         self.setText(val2str(value))
 
     def getValue(self : Self) -> Any:
-        return str2val(self.text(), self.getTypeName())
+        return str2val(self.text(), self.getKind())
 
     def changed(self : Self) -> bool:
         return self.getValue() != self.getBefore() and self.getBefore() is not None
 
-    def setTypeName(self : Self, type_name : str) -> None:
-        self.setData(type_name, Qt.ItemDataRole.UserRole + self.IDX_TYPE_NAME)
+    def setKind(self : Self, kind : str) -> None:
+        self.setData(kind, Qt.ItemDataRole.UserRole + self.IDX_KIND)
 
-    def getTypeName(self : Self) -> str:
-        return self.data(Qt.ItemDataRole.UserRole + self.IDX_TYPE_NAME)
+    def getKind(self : Self) -> str:
+        return self.data(Qt.ItemDataRole.UserRole + self.IDX_KIND)
 
     def setDefault(self : Self, default : Any) -> None:
         self.setData(default, Qt.ItemDataRole.UserRole + self.IDX_DEFAULT)

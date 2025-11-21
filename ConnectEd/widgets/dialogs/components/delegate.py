@@ -30,7 +30,7 @@ class DialogItemDelegate(QStyledItemDelegate):
         index  : QModelIndex
     ) -> QWidget | None:
         item : DialogItem = index.model().item(index.row(), index.column())
-        item_type = item.getTypeName()
+        item_type = item.getKind()
         item_value = item.getValue()
         item_default = item.getDefault()
         match item_type:
@@ -65,12 +65,12 @@ class DialogItemDelegate(QStyledItemDelegate):
         return editor
 
     def setEditorData(self : Self, editor : QWidget, index : QModelIndex) -> None:
-        item : QStandardItem = index.model().item(index.row(), index.column())
+        item : DialogItem = index.model().item(index.row(), index.column())
         text = item.text()
         if isinstance(editor, StringEdit):
             editor.setText(text)
         elif isinstance(editor, IntEdit | FloatEdit):
-            value = str2val(text, item.getTypeName())
+            value = str2val(text, item.getKind())
             editor.setValue(value)
         elif isinstance(editor, EdgeComboBox | DisplayChoiceComboBox | \
             ColorComboBox | LineWidthComboBox | LineStyleComboBox | \

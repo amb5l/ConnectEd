@@ -53,19 +53,18 @@ class BaseTextBlock(
         ItemPosMixin._PROPERTY_SPECS_POS | \
         {
             "Text" : PropertySpec(
-                type_name = "str",
-                getter    = lambda self: self.toPlainText(),
-                setter    = lambda self, value: self.setPlainText(value)
+                getter = lambda self: self.toPlainText(),
+                setter = lambda self, value: self.setPlainText(value)
             ),
             "Width" : PropertySpec(
-                type_name = "float",
-                getter    = lambda self: self._crect.width(),
-                setter    = lambda self, value: self._crect.setWidth(value)
+                kind   = "float",
+                getter = lambda self: self._crect.width(),
+                setter = lambda self, value: self._crect.setWidth(value)
             ),
             "Height" : PropertySpec(
-                type_name = "float",
-                getter    = lambda self: self._crect.height(),
-                setter    = lambda self, value: self._crect.setHeight(value)
+                kind   = "float",
+                getter = lambda self: self._crect.height(),
+                setter = lambda self, value: self._crect.setHeight(value)
             )
         } | \
         ItemQuillMixin._PROPERTY_SPECS_QUILL

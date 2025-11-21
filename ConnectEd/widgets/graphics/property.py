@@ -18,48 +18,48 @@ if TYPE_CHECKING:
 
 @dataclass
 class PropertySpec:
-    type_name : str                                            = "str"
-    getter    : Callable[["PropertyOwner"], Any] | str | None  = None
-    setter    : Callable[["PropertyOwner", Any], None] | None  = None
-    valid     : Callable[["PropertyOwner"], bool]      | None  = None
-    default   : Callable[["PropertyOwner"], Any]       | None  = None
-    text      : "PropertyTextSpec                      | None" = None
+    kind    : str                                            = "str"
+    getter  : Callable[["PropertyOwner"], Any] | str | None  = None
+    setter  : Callable[["PropertyOwner", Any], None] | None  = None
+    valid   : Callable[["PropertyOwner"], bool]      | None  = None
+    default : Callable[["PropertyOwner"], Any]       | None  = None
+    text    : "PropertyTextSpec                      | None" = None
 
 
 class Property(QObject):
     # instance attributes
-    _owner     : "PropertyOwner"
-    _name      : str
-    _type_name : str
-    _getter    : Callable[["PropertyOwner"], Any] | str | None  # or static value
-    _setter    : Callable[["PropertyOwner", Any], None] | None
-    _valid     : Callable[["PropertyOwner"], bool]      | None
-    _default   : Callable[["PropertyOwner"], Any]       | None
-    _text      : "PropertyText | None"
+    _owner   : "PropertyOwner"
+    _name    : str
+    _kind    : str
+    _getter  : Callable[["PropertyOwner"], Any] | str | None  # or static value
+    _setter  : Callable[["PropertyOwner", Any], None] | None
+    _valid   : Callable[["PropertyOwner"], bool]      | None
+    _default : Callable[["PropertyOwner"], Any]       | None
+    _text    : "PropertyText | None"
 
     # signals
     changed = pyqtSignal(object)
 
     def __init__(
-        self      : Self,
-        owner     : "PropertyOwner",
-        name      : str,
-        type_name : str,
-        getter    : Callable[["PropertyOwner"], Any] | str | None = None,
-        setter    : Callable[["PropertyOwner", Any], None] | None = None,
-        valid     : Callable[["PropertyOwner"], bool] | None = None,
-        default   : Callable[["PropertyOwner"], Any] | None = None,
-        text      : "PropertyText | None" = None
+        self    : Self,
+        owner   : "PropertyOwner",
+        name    : str,
+        kind    : str,
+        getter  : Callable[["PropertyOwner"], Any] | str | None = None,
+        setter  : Callable[["PropertyOwner", Any], None] | None = None,
+        valid   : Callable[["PropertyOwner"], bool] | None = None,
+        default : Callable[["PropertyOwner"], Any] | None = None,
+        text    : "PropertyText | None" = None
     ) -> None:
         super().__init__()
-        self._owner     = owner
-        self._name      = name
-        self._type_name = type_name
-        self._getter    = getter
-        self._setter    = setter
-        self._valid     = valid
-        self._default   = default
-        self._text      = text
+        self._owner   = owner
+        self._name    = name
+        self._kind    = kind
+        self._getter  = getter
+        self._setter  = setter
+        self._valid   = valid
+        self._default = default
+        self._text    = text
 
     def isStatic(self: Self) -> bool:
         return not isinstance(self._getter, Callable)
@@ -67,8 +67,8 @@ class Property(QObject):
     def isReadOnly(self: Self) -> bool:
         return self._setter is None and not isinstance(self._getter, str)
 
-    def typeName(self: Self) -> str:
-        return self._type_name
+    def kind(self: Self) -> str:
+        return self._kind
 
     def get(self: Self) -> Any:
         """Get value, applying substitution if needed."""
@@ -84,8 +84,8 @@ class Property(QObject):
         """Set value and notify subscribers."""
         old_value = self.get()
         if self._setter:
-            if isinstance(new_value, str) and self._type_name != "str":
-                new_value = str2val(new_value, self._type_name)
+            if isinstance(new_value, str) and self._kind != "str":
+                new_value = str2val(new_value, self._kind)
             self._setter(self._owner, new_value)
         elif isinstance(self._getter, str) or self._getter is None:
             self._getter = new_value

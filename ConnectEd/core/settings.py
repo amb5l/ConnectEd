@@ -407,9 +407,9 @@ FACTORY_SETTINGS = {
                         "style" : Qt.PenStyle.SolidLine
                     }
                 },
-                "Text" : {
+                "TextLine" : {
                     "text" : {
-                        "color"     : PaletteDark.Text,
+                        "color"     : PaletteDark.TextLine,
                         "family"    : "Liberation Sans",
                         "size"      : 7,
                         "bold"      : False,
@@ -744,9 +744,9 @@ FACTORY_SETTINGS = {
                         "style" : Qt.PenStyle.SolidLine
                     }
                 },
-                "Text" : {
+                "TextLine" : {
                     "text" : {
-                        "color"     : PaletteLightMono.Text,
+                        "color"     : PaletteLightMono.TextLine,
                         "family"    : "Liberation Sans",
                         "size"      : 7,
                         "bold"      : False,
@@ -822,7 +822,7 @@ class Settings(QObject):
 
     def set(self : Self, path : str, value : Any, emit : bool = True) -> None:
         tn = type(value).__name__
-        tnx = self._getSettingTypeName(path) # type name expected
+        tnx = self._getSettingKind(path) # type name expected
         if tn != tnx:
             logger().warning(
                 f"Bad type for setting {path} - expected {tnx} but got {tn}"
@@ -897,7 +897,7 @@ class Settings(QObject):
             current = current[part]
         current[path_parts[-1]] = value
 
-    def _getSettingTypeName(self : Self, path : str) -> str | None:
+    def _getSettingKind(self : Self, path : str) -> str | None:
         """Determine the expected type of a setting based on FACTORY_SETTINGS."""
         value = self._get(FACTORY_SETTINGS, path)
         return None if isinstance(value, dict) else type(value).__name__
@@ -918,10 +918,10 @@ class Settings(QObject):
             value = qsettings.value(key)
             if value is not None:
                 full_path = f"{path}/{key}"
-                type_name = self._getSettingTypeName(full_path)
-                if type_name is not None:
-                    logger().debug(f"Loading setting: {full_path} = {value} ({type_name})")
-                    settings[key] = str2val(value, type_name)
+                kind = self._getSettingKind(full_path)
+                if kind is not None:
+                    logger().debug(f"Loading setting: {full_path} = {value} ({kind})")
+                    settings[key] = str2val(value, kind)
                 else:
                     logger().warning(f"Unknown setting: {full_path}")
 

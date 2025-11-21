@@ -37,24 +37,24 @@ class Line(
     _PROPERTY_SPECS = \
         {
             "X1" : PropertySpec(
-                type_name = "float",
-                getter    = lambda self: self.x1(),
-                setter    = lambda self, value: self.setX1(value)
+                kind   = "float",
+                getter = lambda self: self.x1(),
+                setter = lambda self, value: self.setX1(value)
             ),
             "Y1" : PropertySpec(
-                type_name = "float",
-                getter    = lambda self: self.y1(),
-                setter    = lambda self, value: self.setY1(value)
+                kind   = "float",
+                getter = lambda self: self.y1(),
+                setter = lambda self, value: self.setY1(value)
             ),
             "X2" : PropertySpec(
-                type_name = "float",
-                getter    = lambda self: self.x2(),
-                setter    = lambda self, value: self.setX2(value)
+                kind   = "float",
+                getter = lambda self: self.x2(),
+                setter = lambda self, value: self.setX2(value)
             ),
             "Y2" : PropertySpec(
-                type_name = "float",
-                getter    = lambda self: self.y2(),
-                setter    = lambda self, value: self.setY2(value)
+                kind   = "float",
+                getter = lambda self: self.y2(),
+                setter = lambda self, value: self.setY2(value)
             )
         } | \
         ItemLineMixin._PROPERTY_SPECS_LINE

@@ -37,41 +37,37 @@ class PortPinMixin(
     _PROPERTY_SPECS_NAME = \
         {
             "Name" : PropertySpec(
-                type_name = "str",
-                getter    = lambda self: self._name,
-                setter    = lambda self, value: setattr(self, '_name', value),
-                text      = PropertyTextSpec("Name", origin="Center Left")
+                getter = lambda self: self._name,
+                setter = lambda self, value: setattr(self, '_name', value),
+                text   = PropertyTextSpec("Name", origin="Center Left")
             )
         }
     _PROPERTY_SPECS_PORT_PIN = \
         {
             "Direction" : PropertySpec(
-                type_name = "SignalDirection",
-                getter    = lambda self: self._direction,
-                setter    = lambda self, value: setattr(self, '_direction', value)
+                kind   = "SignalDirection",
+                getter = lambda self: self._direction,
+                setter = lambda self, value: setattr(self, '_direction', value)
             ),
             "Range Left" : PropertySpec(
-                type_name = "str",
-                valid     = lambda self: self._range is not None,
-                getter    = lambda self: self._range.left,
-                setter    = lambda self, value: setattr(self._range, 'left', value)
+                valid  = lambda self: self._range is not None,
+                getter = lambda self: self._range.left,
+                setter = lambda self, value: setattr(self._range, 'left', value)
             ),
             "Range Direction" : PropertySpec(
-                type_name = "RangeDirection",
-                valid     = lambda self: self._range is not None,
-                getter    = lambda self: self._range.dir,
-                setter    = lambda self, value: setattr(self._range, 'dir', value)
+                kind   = "RangeDirection",
+                valid  = lambda self: self._range is not None,
+                getter = lambda self: self._range.dir,
+                setter = lambda self, value: setattr(self._range, 'dir', value)
             ),
             "Range Right" : PropertySpec(
-                type_name = "str",
-                valid     = lambda self: self._range is not None,
-                getter    = lambda self: self._range.right,
-                setter    = lambda self, value: setattr(self._range, 'right', value)
+                valid  = lambda self: self._range is not None,
+                getter = lambda self: self._range.right,
+                setter = lambda self, value: setattr(self._range, 'right', value)
             ),
             "Comment" : PropertySpec(
-                type_name = "str",
-                getter    = lambda self: self._comment,
-                setter    = lambda self, value: setattr(self, '_comment', value)
+                getter = lambda self: self._comment,
+                setter = lambda self, value: setattr(self, '_comment', value)
             )
         }
     _PROPERTY_SPECS = \

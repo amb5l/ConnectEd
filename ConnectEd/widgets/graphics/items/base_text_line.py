@@ -48,9 +48,8 @@ class BaseTextLine(
         ItemRotateMixin._PROPERTY_SPECS_ROT
     _PROPERTY_SPECS_TEXT = {
         "Text" : PropertySpec(
-            type_name = "str",
-            getter    = lambda self: self.text(),
-            setter    = lambda self, value: self.setText(value)
+            getter = lambda self: self.text(),
+            setter = lambda self, value: self.setText(value)
         )
     }
     _PROPERTY_SPECS_APPEARANCE = \

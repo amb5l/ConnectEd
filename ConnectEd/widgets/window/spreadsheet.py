@@ -583,7 +583,7 @@ class SpreadsheetTabWidget(QTabWidget):
                     tab_attributes = e.getAttributes()
                     for a in tab_attributes:
                         self._tab_htypenames[tab_name][a] = \
-                            e.getAttributeTypeName(a)
+                            e.getAttributeKind(a)
                 else:
                     if tab_attributes != e.getAttributes():
                         logger().error("Inconsistent inherent properties")
@@ -657,27 +657,27 @@ class SpreadsheetTabWidget(QTabWidget):
 
     def _setupDelegates(self : Self) -> None:
         def _setupDelegate(
-            tab_name  : str,
-            idx       : int,
-            type_name : str,
-            delegate  : QStyledItemDelegate
+            tab_name : str,
+            idx      : int,
+            kind     : str,
+            delegate : QStyledItemDelegate
         ) -> None:
-            if type_name not in self._delegates:
-                self._delegates[type_name] = delegate()
-                self._delegates[type_name].destroyed.connect(
+            if kind not in self._delegates:
+                self._delegates[kind] = delegate()
+                self._delegates[kind].destroyed.connect(
                     lambda: self.onDelegateDestroyed()
                 )
             tab = self._tabs[tab_name]
-            tab._table_model.setItemDelegateForColumn(idx, self._delegates[type_name])
-            tab._table_proxy.setItemDelegateForRow(idx, self._delegates[type_name])
+            tab._table_model.setItemDelegateForColumn(idx, self._delegates[kind])
+            tab._table_proxy.setItemDelegateForRow(idx, self._delegates[kind])
 
         for tab_name, tab_htypenames in self._tab_htypenames.items():
             for idx, name in enumerate(self._tab_headings[tab_name].keys()):
-                type_name = tab_htypenames[name]
-                match type_name:
+                kind = tab_htypenames[name]
+                match kind:
                     case "APLoc":
                         _setupDelegate(
-                            tab_name, idx, type_name, SpreadsheetAPDelegate
+                            tab_name, idx, kind, SpreadsheetAPDelegate
                         )
                     case _:
                         pass

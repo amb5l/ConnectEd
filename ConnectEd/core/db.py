@@ -104,7 +104,7 @@ class DrawingNode(Node):
         if scene is None and not bare:
             scene_class = self.__class__.sceneClass()
             scene = scene_class()
-            scene.setName(name_counter.get(self.drawingTypeName()))
+            scene.setName(name_counter.get(self.drawingKind()))
         self._scene = scene
         super().__init__()
         if scene:
@@ -121,7 +121,7 @@ class DrawingNode(Node):
     def setScene(self : Self, scene : "DrawingScene") -> None:
         self._scene = scene
 
-    def drawingTypeName(self : Self) -> str:
+    def drawingKind(self : Self) -> str:
         return self.__class__.__name__.replace("Node", "")
 
     def toXml(self : Self, xw : QXmlStreamWriter) -> None:
@@ -158,14 +158,14 @@ class DbNode(Node):
     def __init__(self : Self, name : str | None = None) -> None:
         if name is None:
             name = name_counter.get(
-                "Untitled" + self.dbTypeName()
+                "Untitled" + self.dbKind()
             )
         super().__init__(name)
         self.setFlags(self.flags() | Qt.ItemFlag.ItemIsEditable)
         self._path = None
         self.setToolTip("(not yet saved)")
 
-    def dbTypeName(self) -> str:
+    def dbKind(self) -> str:
         cls = self if isinstance(self, type) else self.__class__
         return cls.__name__.replace("DbNode", "")
 
@@ -200,7 +200,7 @@ class DbNode(Node):
         )
 
     def toXmlBegin(self : Self, xw : QXmlStreamWriter) -> None:
-        xw.writeStartElement(self.dbTypeName())
+        xw.writeStartElement(self.dbKind())
         xw.writeAttribute("name", self.text())
 
     def toXmlEnd(self : Self, xw : QXmlStreamWriter) -> None:
@@ -218,7 +218,7 @@ class DbNode(Node):
 
     @classmethod
     def fromXmlBegin(cls : Self, xr : QXmlStreamReader) -> Self:
-        element_name = cls.dbTypeName(cls)
+        element_name = cls.dbKind(cls)
         if xr.name() == element_name and xr.isStartElement():
             pass  # Already at target element
         else:
@@ -236,7 +236,7 @@ class DbNode(Node):
         return db_node
 
     def fromXmlEnd(self : Self, xr : QXmlStreamReader) -> None:
-        while not (xr.isEndElement() and xr.name() == self.dbTypeName()):
+        while not (xr.isEndElement() and xr.name() == self.dbKind()):
             xr.readNext()
 
     @classmethod
@@ -298,9 +298,9 @@ class DesignDbNode(DbNode):
     def fromXml(cls : Self, xr : QXmlStreamReader) -> Self:
         from ..widgets.graphics.scenes.diagram import DiagramScene
         db_node : Self = cls.fromXmlBegin(xr)
-        while not (xr.isEndElement() and xr.name() == cls.dbTypeName(cls)):
+        while not (xr.isEndElement() and xr.name() == cls.dbKind(cls)):
             if xr.tokenType() == xr.TokenType.EndDocument:
-                logger().error(f"End of document before end of '{cls.dbTypeName(cls)}'")
+                logger().error(f"End of document before end of '{cls.dbKind(cls)}'")
                 break
             # process symbols
             if xr.name() == "Symbols" and xr.isStartElement():
@@ -343,9 +343,9 @@ class LibraryDbNode(DbNode):
     @classmethod
     def fromXml(cls : Self, xr : QXmlStreamReader) -> Self:
         db_node : Self = cls.fromXmlBegin(xr)
-        while not (xr.isEndElement() and xr.name() == cls.dbTypeName(cls)):
+        while not (xr.isEndElement() and xr.name() == cls.dbKind(cls)):
             if xr.tokenType() == xr.TokenType.EndDocument:
-                logger().error(f"End of document before end of '{cls.dbTypeName(cls)}'")
+                logger().error(f"End of document before end of '{cls.dbKind(cls)}'")
                 break
             # process symbols
             if xr.name() == "Symbol" and xr.isStartElement():
