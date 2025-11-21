@@ -219,6 +219,7 @@ class DrawingViewUiEditMixin:
         pos   : QPoint | QPointF | None = None,
         slide : bool = False
     ) -> None:
+        from ....items import ItemMixin
         if items is None:
             items = self._scene.selectedItems()
         pos = self._view.mapToScene(pos) if isinstance(pos, QPoint) else pos
