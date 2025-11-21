@@ -6,7 +6,7 @@ from ......app import logger
 
 from .....dialogs.properties    import PropertiesDialog
 from .....dialogs.appearance    import AppearanceDialog
-from .....dialogs.text          import TextDialog
+from .....dialogs.text_line     import TextLineDialog
 from .....dialogs.property_text import PropertyTextDialog
 from .....dialogs.port_pin      import PortPinDialog
 
@@ -222,7 +222,7 @@ class DrawingViewStateEditText(DrawingViewStateBase):
     ) -> None:
         item = i[0] if i else self.view._selectedItem(Text)
         if item and isinstance(item, Text):
-            dialog = TextDialog(item, self.view)
+            dialog = TextLineDialog(item, self.view)
             if dialog.exec():
                 text, appearance = dialog.getChoice()
                 self.scene.editText(item, text, appearance, undoable=True)
