@@ -8,7 +8,7 @@ from PyQt6.QtWidgets import QGraphicsItem, \
                             QGraphicsSceneMouseEvent, QMenu
 from PyQt6.QtGui     import QAction
 
-from ....app import settings, logger
+from ....app import settings
 
 from ..property   import PropertySpec
 from ..properties import PropertiesMixin
