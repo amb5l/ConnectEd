@@ -13,7 +13,7 @@ from .components.layout.text_appearance import TextAppearanceLayout
 from .components.layout.ok_cancel import okCancelLayout
 
 
-class TextBoxDialog(QDialog):
+class TextBlockDialog(QDialog):
     _dialog_layout     : QVBoxLayout
     _text_layout       : QVBoxLayout
     _text_label        : QLabel

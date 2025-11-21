@@ -5,10 +5,10 @@ from PyQt6.QtCore import QPoint, QPointF
 
 from ......app import logger
 
-from .....dialogs.port_pin  import PortPinDialog
-from .....dialogs.gate      import GateDialog
-from .....dialogs.text_line import TextLineDialog
-from .....dialogs.text_box  import TextBoxDialog
+from .....dialogs.port_pin   import PortPinDialog
+from .....dialogs.gate       import GateDialog
+from .....dialogs.text_line  import TextLineDialog
+from .....dialogs.text_block import TextBlockDialog
 
 from ....items            import SignalDirection, ItemMixin
 from ....items.port       import Port
@@ -259,7 +259,7 @@ class DrawingViewStatePlaceTextBlock(ClickMixin, DrawingViewStateBase):
         i    : list[ItemMixin] | None = None
     ) -> None:
         item = TextBlock(self._snap(s))
-        dialog = TextBoxDialog(item, self.view)
+        dialog = TextBlockDialog(item, self.view)
         if dialog.exec():
             text, appearance = dialog.getChoice()
             item.setPlainText(text)

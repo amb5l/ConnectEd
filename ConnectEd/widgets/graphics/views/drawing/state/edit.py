@@ -7,7 +7,7 @@ from ......app import logger
 from .....dialogs.properties    import PropertiesDialog
 from .....dialogs.appearance    import AppearanceDialog
 from .....dialogs.text_line     import TextLineDialog
-from .....dialogs.text_box      import TextBoxDialog
+from .....dialogs.text_block    import TextBlockDialog
 from .....dialogs.property_text import PropertyTextDialog
 from .....dialogs.port_pin      import PortPinDialog
 
@@ -244,7 +244,7 @@ class DrawingViewStateEditTextBlock(DrawingViewStateBase):
     ) -> None:
         item = i[0] if i else self.view._selectedItem(TextBlock)
         if item and isinstance(item, TextBlock):
-            dialog = TextBoxDialog(item, self.view)
+            dialog = TextBlockDialog(item, self.view)
             if dialog.exec():
                 text, appearance = dialog.getChoice()
                 item.setPlainText(text)
