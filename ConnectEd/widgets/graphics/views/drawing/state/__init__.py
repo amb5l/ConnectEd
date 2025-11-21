@@ -70,6 +70,7 @@ class DrawingViewStateMixin:
     stateEditPort              : DrawingViewStateEditPort
     stateEditBlockPin          : DrawingViewStateEditBlockPin
     stateEditText              : DrawingViewStateEditText
+    stateEditTextBlock         : DrawingViewStateEditTextBlock
     stateEditPropertyText      : DrawingViewStateEditPropertyText
     statePlacePort             : DrawingViewStatePlacePort
     statePlaceGate             : DrawingViewStatePlaceGate
@@ -110,6 +111,7 @@ class DrawingViewStateMixin:
         self.stateEditPort              = DrawingViewStateEditPort              (self)
         self.stateEditBlockPin          = DrawingViewStateEditBlockPin          (self)
         self.stateEditText              = DrawingViewStateEditText              (self)
+        self.stateEditTextBlock         = DrawingViewStateEditTextBlock         (self)
         self.stateEditPropertyText      = DrawingViewStateEditPropertyText      (self)
         self.statePlaceConn1            = DrawingViewStatePlaceConn1            (self)
         self.statePlaceConn2            = DrawingViewStatePlaceConn2            (self)

@@ -220,7 +220,7 @@ class BaseTextBlock(
         auto_width = self._crect.width() < 0
         auto_height = self._crect.height() < 0
         items = [
-            view.action("Edit...", view.ui.editText),
+            view.action("Edit...", view.ui.editTextBlock),
             view.separator(),
             view.action(
                 "Auto Width", lambda: self.setAutoWidth(not auto_width), auto_width

@@ -7,11 +7,13 @@ from ......app import logger
 from .....dialogs.properties    import PropertiesDialog
 from .....dialogs.appearance    import AppearanceDialog
 from .....dialogs.text_line     import TextLineDialog
+from .....dialogs.text_box      import TextBoxDialog
 from .....dialogs.property_text import PropertyTextDialog
 from .....dialogs.port_pin      import PortPinDialog
 
 from ....items               import ItemMixin
 from ....items.text          import Text
+from ....items.text_block    import TextBlock
 from ....items.property_text import PropertyText
 from ....items.port          import Port
 from ....items.block_pin     import BlockPin
@@ -228,6 +230,28 @@ class DrawingViewStateEditText(DrawingViewStateBase):
                 self.scene.editText(item, text, appearance, undoable=True)
         else:
             logger().warning("No text selected")
+        self.view.state.go(self.view.stateIdle)
+
+
+class DrawingViewStateEditTextBlock(DrawingViewStateBase):
+    STATUS = "Edit Text Block: specify changes"
+
+    def entry(
+        self : Self,
+        v    : QPoint,
+        s    : QPointF,
+        i    : list[ItemMixin] | None = None
+    ) -> None:
+        item = i[0] if i else self.view._selectedItem(TextBlock)
+        if item and isinstance(item, TextBlock):
+            dialog = TextBoxDialog(item, self.view)
+            if dialog.exec():
+                text, appearance = dialog.getChoice()
+                item.setPlainText(text)
+                item.a.quill.setPref(appearance)
+                self.scene.editTextBlock(item, text, appearance, undoable=True)
+        else:
+            logger().warning("No text block selected")
         self.view.state.go(self.view.stateIdle)
 
 
