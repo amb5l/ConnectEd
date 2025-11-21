@@ -24,11 +24,6 @@ if TYPE_CHECKING:
     from ..scenes.drawing import DrawingScene
 
 
-class PropertyDisplay(Enum):
-    VALUE      = "Value"
-    NAME_VALUE = "Name:Value"
-
-
 class Tether(QGraphicsLineItem):
     """Tether line between a PropertyText origin and its parent cleat."""
 
@@ -70,17 +65,12 @@ class Tether(QGraphicsLineItem):
 
 class PropertyText(BaseTextLine):
     # class attributes
-    _PROPERTY_SPECS_PROPERTY = \
+    _PROPERTY_SPECS_NAME = \
         {
             "Name" : PropertySpec(
                 type_name = "str",
                 getter    = lambda self: self.name(),
                 setter    = lambda self, value: self.setName(value)
-            ),
-            "Display" : PropertySpec(
-                type_name = "PropertyDisplay",
-                getter    = lambda self: self.display(),
-                setter    = lambda self, value: self.setDisplay(value)
             )
         }
     _PROPERTY_SPECS = \
@@ -93,14 +83,13 @@ class PropertyText(BaseTextLine):
         } | \
         BaseTextLine._PROPERTY_SPECS_ORIGIN | \
         BaseTextLine._PROPERTY_SPECS_POS | \
-        _PROPERTY_SPECS_PROPERTY | \
+        _PROPERTY_SPECS_NAME | \
         BaseTextLine._PROPERTY_SPECS_APPEARANCE
 
     # instance attributes
     _name        : str
     _cleat       : str
     _cleat_shown : bool
-    _display     : PropertyDisplay
     _tether      : Tether | None
 
     def __init__(
@@ -109,13 +98,11 @@ class PropertyText(BaseTextLine):
         cleat    : str | None = None,
         pos      : QPointF | None = None,
         origin   : str | None = None,
-        display  : PropertyDisplay = PropertyDisplay.VALUE,
         bare     : bool = False
     ) -> None:
         self._name        = name
         self._cleat       = cleat
         self._cleat_shown = False
-        self._display     = display
         self._tether      = None
         super().__init__(bare=bare)
         self._tether = Tether(self)
@@ -127,7 +114,6 @@ class PropertyText(BaseTextLine):
         self.setOrigin(origin)
         pos = QPointF(0, 0) if pos is None else pos
         self.setPos(pos)
-        self.setDisplay(display)
 
     def mouseDoubleClickEvent(self : Self, event : QGraphicsSceneMouseEvent) -> None:
         """Handle double-click events to open the edit dialog."""
@@ -181,15 +167,9 @@ class PropertyText(BaseTextLine):
                 QGraphicsSimpleTextItem.setRotation(h, (h.rotation() + 180) % 360)
 
     def onTextChange(self : Self) -> None:
-        text_to_set = ""
         value = self.value()
-        if not hasattr(self, "_display"):
-            return
-        if self._display == PropertyDisplay.NAME_VALUE:
-            text_to_set = f"{self.name()}: {value}"
-        else:
-            text_to_set = f"<{self.name()}>" if value == "" else value
-        super().setText(text_to_set)
+        text = f"<{self.name()}>" if value == "" else value
+        super().setText(text)
         self.onGeometryChange()
 
     def settingsName(self : Self) -> str:
@@ -207,14 +187,11 @@ class PropertyText(BaseTextLine):
 
     def setCleat(self : Self, name : str) -> None:
         self._cleat = name
-        parent = self.parentItem()
-        if parent is None:
+        handle = self.parentItem()
+        if handle is None:
             return
-        item = parent.parentItem() if isinstance(parent, ItemHandlesMixin) else parent
-        if name == "":
-            self.setParentItem(item)
-        else:
-            self.setParentItem(item.getHandle(name))
+        handler = handle.parentItem()  # item or scene with handles
+        self.setParentItem(handler.getHandle(name))
 
     def setOrigin(self : Self, name : str) -> None:
         """Override to update tether line."""
@@ -242,13 +219,6 @@ class PropertyText(BaseTextLine):
         source.properties[self._name].set(value)
         self.onTextChange()
 
-    def display(self : Self) -> PropertyDisplay:
-        return self._display
-
-    def setDisplay(self : Self, value : PropertyDisplay) -> None:
-        self._display = value
-        self.onTextChange()
-
     def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
         return [
             view.action("Edit...", lambda: view.ui.editPropertyText(self)),
@@ -262,4 +232,3 @@ class PropertyTextSpec:
     anchor  : str
     pos     : QPointF | None = None
     origin  : str | None = None
-    display : PropertyDisplay = PropertyDisplay.VALUE

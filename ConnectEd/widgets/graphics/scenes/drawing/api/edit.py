@@ -18,7 +18,7 @@ from ....items.block_pin      import BlockPin
 from ....items.symbol_pin     import SymbolPin
 from ....items.polyline       import Polyline, PolySeg
 from ....items.base_text_line import BaseTextLine
-from ....items.property_text  import PropertyDisplay, PropertyText
+from ....items.property_text  import PropertyText
 from ....items.mixin          import ItemMixin
 
 from ..cmd           import cmdExec, CmdDelete, CmdMove, CmdRotateCW, CmdRotateCCW
@@ -196,11 +196,10 @@ class DrawingSceneApiEditMixin:
         self       : "DrawingScene",
         item       : PropertyText,
         value      : str,
-        display    : PropertyDisplay,
         appearance : QuillPrefChange,
         undoable   : bool = False
     ) -> None:
-        cmd = CmdEditPropertyText(self, item, value, display, appearance)
+        cmd = CmdEditPropertyText(self, item, value, appearance)
         cmdExec(self, cmd, undoable)
 
     def editAppearance(

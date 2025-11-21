@@ -17,7 +17,7 @@ from ....items.mixin.origin import ItemOriginMixin
 
 from ....items.polyline       import Polyline, PolySeg
 from ....items.base_text_line import BaseTextLine
-from ....items.property_text  import PropertyDisplay, PropertyText
+from ....items.property_text  import PropertyText
 
 from . import CmdBase, CmdSceneItem, CmdSceneItems
 
@@ -209,7 +209,6 @@ class CmdEditPropertyText(CmdSceneItem):
     @dataclass
     class PropertyTextState:
         value      : str
-        display    : PropertyDisplay
         appearance : QuillPref
 
     _item   : PropertyText
@@ -221,25 +220,20 @@ class CmdEditPropertyText(CmdSceneItem):
         scene      : "DrawingScene",
         item       : PropertyText,
         value      : str,
-        display    : PropertyDisplay,
         appearance : QuillPrefChange
     ):
         super().__init__(scene, item)
         self._item           = item
-        self._before = self.PropertyTextState(
-            item.value(), item.display(), item.a.quill.getPref()
-        )
-        self._after  = self.PropertyTextState(value, display, appearance)
+        self._before = self.PropertyTextState(item.value(), item.a.quill.getPref())
+        self._after  = self.PropertyTextState(value, appearance)
 
     def redo(self : Self) -> None:
         self._item.setValue(self._after.value)
-        self._item.setDisplay(self._after.display)
         self._item.a.quill.setPref(self._after.appearance)
         self._item.update()
 
     def undo(self : Self) -> None:
         self._item.setValue(self._before.value)
-        self._item.setDisplay(self._before.display)
         self._item.a.quill.setPref(self._before.appearance)
         self._item.update()
 
@@ -333,7 +327,8 @@ class CmdEditProperties(CmdBase):
                         self._modifyPropertyText(pt, after)
 
     def _addPropertyText(self : Self, vars : PropertyVariables) -> None:
-        pt = PropertyText()
+        pt_class = PropertyText  # TODO make this depend on vars.display
+        pt = pt_class()
         self._modifyPropertyText(pt, vars)
         parent =  self._object.getHandle(vars.cleat) if vars.cleat != "" else \
             self._object if isinstance(self._object, ItemMixin) else \
@@ -350,21 +345,7 @@ class CmdEditProperties(CmdBase):
         vars : PropertyVariables
     ) -> None:
         pt.setName(vars.name)
-        match vars.display:
-            case DisplayChoice.VALUE:
-                display = PropertyDisplay.VALUE
-                visible = True
-            case DisplayChoice.NAME_VALUE:
-                display = PropertyDisplay.NAME_VALUE
-                visible = True
-            case DisplayChoice.HIDDEN_VALUE:
-                display = PropertyDisplay.VALUE
-                visible = False
-            case DisplayChoice.HIDDEN_NAME_VALUE:
-                display = PropertyDisplay.NAME_VALUE
-                visible = False
-        pt.setVisible(visible)
-        pt.setDisplay(display)
+        pt.setVisible(vars.visible)
         pt.setCleat(vars.cleat)
         pt.setPos(QPointF(vars.offset_x, vars.offset_y))
         pt.setOrigin(vars.origin)

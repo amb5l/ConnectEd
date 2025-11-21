@@ -27,8 +27,7 @@ class PropertiesMixin:
                     name,
                     spec.text.anchor,
                     spec.text.pos,
-                    spec.text.origin,
-                    spec.text.display
+                    spec.text.origin
                 )
                 property_text.setParentItem(self.getHandle(spec.text.anchor))
                 self.properties[name].setText(property_text)

@@ -13,7 +13,7 @@ from ...app import settings
 
 from ..graphics.items import Default, DEFAULT
 
-from ..graphics.items.property_text import PropertyDisplay, PropertyText
+from ..graphics.items.property_text import PropertyText
 
 from ..graphics.items.mixin.handle     import ItemHandlesMixin
 
@@ -35,11 +35,9 @@ if TYPE_CHECKING:
 
 
 class DisplayChoice(Enum):
-    NONE              = "<none>"
-    VALUE             = PropertyDisplay.VALUE.value
-    NAME_VALUE        = PropertyDisplay.NAME_VALUE.value
-    HIDDEN_VALUE      = f"Hidden ({PropertyDisplay.VALUE.value})"
-    HIDDEN_NAME_VALUE = f"Hidden ({PropertyDisplay.NAME_VALUE.value})"
+    NONE  = "<none>"
+    LINE  = "Line"
+    BLOCK = "Block"
 
 
 @dataclass
@@ -47,6 +45,7 @@ class PropertyVariables:
     name      : str              | None = None
     value     : Any              | None = None
     display   : DisplayChoice    | None = None
+    visible   : bool             | None = None
     cleat     : str              | None = None
     offset_x  : float            | None = None
     offset_y  : float            | None = None
@@ -119,6 +118,7 @@ class PropertiesDialog(QDialog):
             "Name",
             "Value",
             "Display",
+            "Visible",
             "Anchor",
             "Offset X",
             "Offset Y",
@@ -145,10 +145,8 @@ class PropertiesDialog(QDialog):
                 vars.display  = DisplayChoice.NONE
                 # others left as None
             else:
-                if not pt.isVisible():
-                    vars.display = DisplayChoice(f"Hidden {pt.display().value}")
-                else:
-                    vars.display = DisplayChoice(pt.display().value)
+                vars.display   = DisplayChoice.LINE  # TODO add BLOCK support
+                vars.visible   = prop.getText().isVisible()
                 vars.cleat     = prop.getText().getCleat()
                 vars.offset_x  = prop.getText().pos().x()
                 vars.offset_y  = prop.getText().pos().y()
@@ -162,7 +160,8 @@ class PropertiesDialog(QDialog):
             row = [
                 ExistingItem(vars.name, editable=static),
                 ExistingItem(vars.value, type_name, default, not read_only),
-                ExistingItem(vars.display   , "DisplayChoice"),
+                ExistingItem(vars.display, "DisplayChoice", editable=static),
+                ExistingItem(vars.visible   , "bool"         ),
                 ExistingItem(vars.cleat     , "str"          ),
                 ExistingItem(vars.offset_x  , "float"        ),
                 ExistingItem(vars.offset_y  , "float"        ),
@@ -261,16 +260,17 @@ class PropertiesDialog(QDialog):
                 before = None
             value_item     : DialogItem = self._table_model.item(row_idx, 1)
             display_item   : DialogItem = self._table_model.item(row_idx, 2)
-            cleat_item     : DialogItem = self._table_model.item(row_idx, 3)
-            offset_x_item  : DialogItem = self._table_model.item(row_idx, 4)
-            offset_y_item  : DialogItem = self._table_model.item(row_idx, 5)
-            origin_item    : DialogItem = self._table_model.item(row_idx, 6)
-            color_item     : DialogItem = self._table_model.item(row_idx, 7)
-            font_item      : DialogItem = self._table_model.item(row_idx, 8)
-            size_item      : DialogItem = self._table_model.item(row_idx, 9)
-            bold_item      : DialogItem = self._table_model.item(row_idx, 10)
-            italic_item    : DialogItem = self._table_model.item(row_idx, 11)
-            underline_item : DialogItem = self._table_model.item(row_idx, 12)
+            visible_item   : DialogItem = self._table_model.item(row_idx, 3)
+            cleat_item     : DialogItem = self._table_model.item(row_idx, 4)
+            offset_x_item  : DialogItem = self._table_model.item(row_idx, 5)
+            offset_y_item  : DialogItem = self._table_model.item(row_idx, 6)
+            origin_item    : DialogItem = self._table_model.item(row_idx, 7)
+            color_item     : DialogItem = self._table_model.item(row_idx, 8)
+            font_item      : DialogItem = self._table_model.item(row_idx, 9)
+            size_item      : DialogItem = self._table_model.item(row_idx, 10)
+            bold_item      : DialogItem = self._table_model.item(row_idx, 11)
+            italic_item    : DialogItem = self._table_model.item(row_idx, 12)
+            underline_item : DialogItem = self._table_model.item(row_idx, 13)
             after = PropertyVariables()
             after = PropertyVariables(
                 name      = after_name,
@@ -278,6 +278,7 @@ class PropertiesDialog(QDialog):
                 display   = display_item.getValue()
             )
             if after.display != DisplayChoice.NONE:
+                after.visible   = visible_item.getValue()
                 after.cleat     = cleat_item.getValue()
                 after.offset_x  = offset_x_item.getValue()
                 after.offset_y  = offset_y_item.getValue()
@@ -327,16 +328,19 @@ class PropertiesDialog(QDialog):
                 item : DialogItem = self._table_model.item(row_idx, col_idx)
                 if col_idx == 2 and item.getValue() != DisplayChoice.NONE:
                     # set defaults if needed
-                    cleat_item     : DialogItem = self._table_model.item(row_idx, 3)
-                    offset_x_item  : DialogItem = self._table_model.item(row_idx, 4)
-                    offset_y_item  : DialogItem = self._table_model.item(row_idx, 5)
-                    origin_item    : DialogItem = self._table_model.item(row_idx, 6)
-                    color_item     : DialogItem = self._table_model.item(row_idx, 7)
-                    font_item      : DialogItem = self._table_model.item(row_idx, 8)
-                    size_item      : DialogItem = self._table_model.item(row_idx, 9)
-                    bold_item      : DialogItem = self._table_model.item(row_idx, 10)
-                    italic_item    : DialogItem = self._table_model.item(row_idx, 11)
-                    underline_item : DialogItem = self._table_model.item(row_idx, 12)
+                    visible_item   : DialogItem = self._table_model.item(row_idx, 3)
+                    cleat_item     : DialogItem = self._table_model.item(row_idx, 4)
+                    offset_x_item  : DialogItem = self._table_model.item(row_idx, 5)
+                    offset_y_item  : DialogItem = self._table_model.item(row_idx, 6)
+                    origin_item    : DialogItem = self._table_model.item(row_idx, 7)
+                    color_item     : DialogItem = self._table_model.item(row_idx, 8)
+                    font_item      : DialogItem = self._table_model.item(row_idx, 9)
+                    size_item      : DialogItem = self._table_model.item(row_idx, 10)
+                    bold_item      : DialogItem = self._table_model.item(row_idx, 11)
+                    italic_item    : DialogItem = self._table_model.item(row_idx, 12)
+                    underline_item : DialogItem = self._table_model.item(row_idx, 13)
+                    if visible_item.getValue() is None:
+                        visible_item.setInit(True)
                     if cleat_item.getValue() is None:
                         cleat_item.setInit(
                             "" if isinstance(self._item, DrawingScene) \
@@ -380,6 +384,7 @@ class PropertiesDialog(QDialog):
             NewItem(),
             NewItem(),
             NewItem(DisplayChoice.NONE, "DisplayChoice"),
+            NewItem( None , "bool"       ),
             NewItem( None , "str"        ),
             NewItem( None , "float"      ),
             NewItem( None , "float"      ),

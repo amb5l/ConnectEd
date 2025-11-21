@@ -18,8 +18,6 @@ from ...core.icon import getCharIcon
 
 from ...widgets.graphics.items import ItemMixin
 
-from ...widgets.graphics.items.property_text import PropertyDisplay
-
 from ..menu import Menu
 
 from .sub_window import SubWindow
@@ -133,14 +131,6 @@ class SpreadsheetAPDelegate(SpreadsheetComboDelegate):
         "Bottom Left",
         "Bottom Center",
         "Bottom Right"
-    ]
-
-class SpreadsheetDisplayDelegate(SpreadsheetComboDelegate):
-    """Delegate for PropertyDisplay enum values."""
-    TOOLTIP = "Controls display of property texts"
-    ENTRIES = [
-        PropertyDisplay .VALUE      .value,
-        PropertyDisplay .NAME_VALUE .value
     ]
 
 class SpreadsheetHeader(QHeaderView):
@@ -688,14 +678,6 @@ class SpreadsheetTabWidget(QTabWidget):
                     case "APLoc":
                         _setupDelegate(
                             tab_name, idx, type_name, SpreadsheetAPDelegate
-                        )
-                    case "PropertyDisplay":
-                        _setupDelegate(
-                            tab_name, idx, type_name, SpreadsheetDisplayDelegate
-                        )
-                    case "PropertyDisplay":
-                        _setupDelegate(
-                            tab_name, idx, type_name, SpreadsheetDisplayDelegate
                         )
                     case _:
                         pass
