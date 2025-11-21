@@ -20,6 +20,7 @@ from .edit  import DrawingViewStateEditSelectArea1, \
                    DrawingViewStateEditPort, \
                    DrawingViewStateEditBlockPin, \
                    DrawingViewStateEditTextLine, \
+                   DrawingViewStateEditTextBlock, \
                    DrawingViewStateEditPropertyText
 from .place import DrawingViewStatePlaceConn1, \
                    DrawingViewStatePlaceConn2, \
