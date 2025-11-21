@@ -1,9 +1,9 @@
 from .base_text_line import BaseTextLine
 
 
-class Text(BaseTextLine):
+class TextLine(BaseTextLine):
     pass
 
 
-class SymbolText(Text):
+class SymbolTextLine(TextLine):
     pass

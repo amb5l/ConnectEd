@@ -120,7 +120,7 @@ class BaseTextLine(
 
     def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
         return [
-            view.action("Edit...", view.ui.editText),
+            view.action("Edit...", view.ui.editTextLine),
             view.separator(),
             view.action("Appearance...", lambda: view.ui.editAppearance(self)),
             view.action("Properties...", lambda: view.ui.editItemProperties(self))

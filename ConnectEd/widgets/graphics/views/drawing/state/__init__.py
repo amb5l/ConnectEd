@@ -1,5 +1,3 @@
-from PyQt6.QtCore import Qt
-
 from .base  import DrawingViewStateBase
 from .idle  import DrawingViewStateIdle
 from .view  import DrawingViewStateViewPan1, \
@@ -21,7 +19,7 @@ from .edit  import DrawingViewStateEditSelectArea1, \
                    DrawingViewStateEditQuery, \
                    DrawingViewStateEditPort, \
                    DrawingViewStateEditBlockPin, \
-                   DrawingViewStateEditText, \
+                   DrawingViewStateEditTextLine, \
                    DrawingViewStateEditPropertyText
 from .place import DrawingViewStatePlaceConn1, \
                    DrawingViewStatePlaceConn2, \
@@ -39,7 +37,7 @@ from .place import DrawingViewStatePlaceConn1, \
                    DrawingViewStatePlaceEllipse2, \
                    DrawingViewStatePlacePolyline1, \
                    DrawingViewStatePlacePolyline2, \
-                   DrawingViewStatePlaceText, \
+                   DrawingViewStatePlaceTextLine, \
                    DrawingViewStatePlaceTextBlock
 
 from typing import TYPE_CHECKING
@@ -69,7 +67,7 @@ class DrawingViewStateMixin:
     stateEditQuery             : DrawingViewStateEditQuery
     stateEditPort              : DrawingViewStateEditPort
     stateEditBlockPin          : DrawingViewStateEditBlockPin
-    stateEditText              : DrawingViewStateEditText
+    stateEditTextLine          : DrawingViewStateEditTextLine
     stateEditTextBlock         : DrawingViewStateEditTextBlock
     stateEditPropertyText      : DrawingViewStateEditPropertyText
     statePlacePort             : DrawingViewStatePlacePort
@@ -84,7 +82,7 @@ class DrawingViewStateMixin:
     statePlaceEllipse2         : DrawingViewStatePlaceEllipse2
     statePlacePolyline1        : DrawingViewStatePlacePolyline1
     statePlacePolyline2        : DrawingViewStatePlacePolyline2
-    statePlaceText             : DrawingViewStatePlaceText
+    statePlaceTextLine         : DrawingViewStatePlaceTextLine
     statePlaceTextBlock        : DrawingViewStatePlaceTextBlock
     statePlaceConn1            : DrawingViewStatePlaceConn1
     statePlaceConn2            : DrawingViewStatePlaceConn2
@@ -110,7 +108,7 @@ class DrawingViewStateMixin:
         self.stateEditQuery             = DrawingViewStateEditQuery             (self)
         self.stateEditPort              = DrawingViewStateEditPort              (self)
         self.stateEditBlockPin          = DrawingViewStateEditBlockPin          (self)
-        self.stateEditText              = DrawingViewStateEditText              (self)
+        self.stateEditTextLine          = DrawingViewStateEditTextLine          (self)
         self.stateEditTextBlock         = DrawingViewStateEditTextBlock         (self)
         self.stateEditPropertyText      = DrawingViewStateEditPropertyText      (self)
         self.statePlaceConn1            = DrawingViewStatePlaceConn1            (self)
@@ -129,5 +127,5 @@ class DrawingViewStateMixin:
         self.statePlaceEllipse2         = DrawingViewStatePlaceEllipse2         (self)
         self.statePlacePolyline1        = DrawingViewStatePlacePolyline1        (self)
         self.statePlacePolyline2        = DrawingViewStatePlacePolyline2        (self)
-        self.statePlaceText             = DrawingViewStatePlaceText             (self)
+        self.statePlaceTextLine         = DrawingViewStatePlaceTextLine         (self)
         self.statePlaceTextBlock        = DrawingViewStatePlaceTextBlock        (self)

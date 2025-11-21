@@ -172,7 +172,7 @@ class CmdEditPolySeg(CmdSceneItem):
         parent.updatePath()
 
 
-class CmdEditText(CmdSceneItem):
+class CmdEditTextLine(CmdSceneItem):
     @dataclass
     class TextState:
         text       : str

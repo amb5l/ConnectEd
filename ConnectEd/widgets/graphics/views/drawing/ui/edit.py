@@ -202,8 +202,8 @@ class DrawingViewUiEditMixin:
             return
         self._scene.editSymbolPinClock(item, enable, undoable=True)
 
-    def editText(self : "DrawingViewUi") -> None:
-        self._view.state.go(self._view.stateEditText)
+    def editTextLine(self : "DrawingViewUi") -> None:
+        self._view.state.go(self._view.stateEditTextLine)
 
     def editTextBlock(self : "DrawingViewUi") -> None:
         self._view.state.go(self._view.stateEditTextBlock)

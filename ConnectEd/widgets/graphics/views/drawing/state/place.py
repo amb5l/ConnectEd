@@ -16,7 +16,7 @@ from ....items.gate       import GateFunc, BufGate, AndGate, OrGate, XorGate
 from ....items.block      import Block
 from ....items.block_pin  import BlockPin
 from ....items.symbol_pin import SymbolPin
-from ....items.text       import Text
+from ....items.text_line  import TextLine
 from ....items.text_block import TextBlock
 
 from ..interaction.place import PlacePortInteraction, \
@@ -229,7 +229,7 @@ class DrawingViewStatePlacePolyline2(ClickMixin, DragMixin, DrawingViewStateBase
     STATUS = "Place Polyline: pick the next point"
 
 
-class DrawingViewStatePlaceText(ClickMixin, DrawingViewStateBase):
+class DrawingViewStatePlaceTextLine(ClickMixin, DrawingViewStateBase):
     STATUS = "Place Text: pick a position"
 
     def entry(
@@ -238,7 +238,7 @@ class DrawingViewStatePlaceText(ClickMixin, DrawingViewStateBase):
         s    : QPointF,
         i    : list[ItemMixin] | None = None
     ) -> None:
-        item = Text(self._snap(s))
+        item = TextLine(self._snap(s))
         dialog = TextLineDialog(item, self.view)
         if dialog.exec():
             text, appearance = dialog.getChoice()

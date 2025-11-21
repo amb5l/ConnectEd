@@ -29,9 +29,9 @@ class SymbolScene(DrawingScene):
         from ..items.line          import Line
         from ..items.rectangle     import Rectangle
         from ..items.polyline      import Polyline
-        from ..items.text          import Text
+        from ..items.text_line     import TextLine
         from ..items.text_block    import TextBlock
-        classes = (SymbolPin, PropertyText, Line, Rectangle, Polyline, Text, TextBlock)
+        classes = (SymbolPin, PropertyText, Line, Rectangle, Polyline, TextLine, TextBlock)
         # get bounding rect of all items
         rect = QRectF()
         for item in self.items():
