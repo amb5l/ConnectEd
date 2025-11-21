@@ -79,8 +79,8 @@ class Grip(
 class APGrip(Grip):
     """Grip for handles. Base class for move and resize grips."""
 
-    _PATH_NAME = "Circle"
-    _ORIGIN_PATH_NAME = "Square"
+    _PATH_NAME : str
+    _ORIGIN_PATH_NAME : str
 
     def __init__(
         self   : Self,
@@ -120,10 +120,13 @@ class APGrip(Grip):
 
 
 class MoveGrip(APGrip):
+    _PATH_NAME = "Circle"
+    _ORIGIN_PATH_NAME = "SquaredCircle"
+
     def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
         entries = [
-            view.action("Slide", view.ui.editSlide),
-            view.action("Move", view.ui.editMove)
+            view.action("Slide", lambda: view.ui.editSlide()),
+            view.action("Move", lambda: view.ui.editMove())
         ]
         if isinstance(self._item, ItemOriginMixin):
             h : Handle = self.parentItem()
@@ -138,6 +141,9 @@ class MoveGrip(APGrip):
 
 
 class ResizeGrip(MoveGrip):
+    _PATH_NAME = "Diamond"
+    _ORIGIN_PATH_NAME = "SquaredDiamond"
+
     def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
         entries = [
             view.action("Resize", lambda: view.ui.editResize(self)),

@@ -1,5 +1,5 @@
 from PyQt6.QtCore import QPointF, QRectF
-from PyQt6.QtGui  import QPainterPath, QPolygonF
+from PyQt6.QtGui  import QPainterPath, QPolygonF, QPainterPathStroker
 
 from .....app import settings
 
@@ -54,6 +54,13 @@ class DrawingScenePathsMixin:
 
     def _gripPaths(self : "DrawingScene", d : dict, size : float) -> None:
         d.clear()
+        # square outline for use below
+        square_rect = QRectF(-size/2, -size/2, size, size)
+        square_outline = QPainterPath()
+        square_outline.addRect(square_rect)
+        stroker = QPainterPathStroker()
+        stroker.setWidth(1.0)
+        stroked_square = stroker.createStroke(square_outline)
         # square
         path = QPainterPath()
         path.addRect(QRectF(-size/2, -size/2, size, size))
@@ -62,6 +69,9 @@ class DrawingScenePathsMixin:
         path = QPainterPath()
         path.addEllipse(QRectF(-size/2, -size/2, size, size))
         d["Circle"] = path
+        # squared circle
+        path = d["Circle"].united(stroked_square)
+        d["SquaredCircle"] = path
         # diamond
         path = QPainterPath()
         path.addPolygon(QPolygonF([
@@ -71,6 +81,9 @@ class DrawingScenePathsMixin:
                 QPointF(0, size/2)
         ]))
         d["Diamond"] = path
+        # squared diamond
+        path = d["Diamond"].united(stroked_square)
+        d["SquaredDiamond"] = path
         # arrow
         path = QPainterPath()
         path.addPolygon(QPolygonF([
