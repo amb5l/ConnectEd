@@ -76,7 +76,7 @@ class Actions:
         self.placeRectangle     = Action( window(), "Rectangle"     , "Place Rectangle"                     , "Ctrl+R"                     )  # noqa E501
         self.placeEllipse       = Action( window(), "Ellipse"       , "Place Ellipse"                       , "Ctrl+E"                     )  # noqa E501
         self.placePolyline      = Action( window(), "Polyline"      , "Place Polyline"                      , "Ctrl+M"                     )  # noqa E501
-        self.placeText          = Action( window(), "Text"          , "Place Text"                          , "Ctrl+T"                     )  # noqa E501
+        self.placeTextLine      = Action( window(), "Text Line"     , "Place Text Line"                     , "Ctrl+T"                     )  # noqa E501
         self.placeTextBlock     = Action( window(), "Text Block"    , "Place Text Block"                    , "Ctrl+K"                     )  # noqa E501
         self.windowNavigator    = Action( window(), "Navigator"     , "Show the navigator window"           , None                         )  # noqa E501
         self.windowMessages     = Action( window(), "Messages"      , "Show the messages window"            , None                         )  # noqa E501
@@ -136,8 +136,8 @@ class Actions:
         self.viewGridSnap    .setEnabled(en)
         self.placeBlock      .setEnabled(en)
         self.placeRectangle  .setEnabled(en)
+        self.placeTextLine   .setEnabled(en)
         self.placeTextBlock  .setEnabled(en)
-        self.placeText   .setEnabled(en)
         if en and self._scene is not None:
             # connect signals
             self._scene.selectionChanged.connect(self.onSelectionChanged)

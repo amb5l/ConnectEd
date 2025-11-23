@@ -34,7 +34,7 @@ class DrawingViewUiPlaceMixin:
     def placePolyline(self : "DrawingViewUi") -> None:
         self._view.state.go(self._view.statePlacePolyline1)
 
-    def placeText(self : "DrawingViewUi") -> None:
+    def placeTextLine(self : "DrawingViewUi") -> None:
         self._view.state.go(self._view.statePlaceTextLine)
 
     def placeTextBlock(self : "DrawingViewUi") -> None:
