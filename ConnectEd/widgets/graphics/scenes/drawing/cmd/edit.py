@@ -17,7 +17,8 @@ from ....items.mixin.origin import ItemOriginMixin
 
 from ....items.polyline       import Polyline, PolySeg
 from ....items.base_text_line import BaseTextLine
-from ....items.property_text  import PropertyText
+from ....items.property_text  import PropertyTextMixin, \
+                                     PropertyTextBlock, PropertyTextLine
 
 from . import CmdBase, CmdSceneItem, CmdSceneItems
 
@@ -211,14 +212,14 @@ class CmdEditPropertyText(CmdSceneItem):
         value      : str
         appearance : QuillPref
 
-    _item   : PropertyText
+    _item   : PropertyTextMixin
     _before : PropertyTextState
     _after  : PropertyTextState
 
     def __init__(
         self       : Self,
         scene      : "DrawingScene",
-        item       : PropertyText,
+        item       : PropertyTextMixin,
         value      : str,
         appearance : QuillPrefChange
     ):
@@ -327,7 +328,8 @@ class CmdEditProperties(CmdBase):
                         self._modifyPropertyText(pt, after)
 
     def _addPropertyText(self : Self, vars : PropertyVariables) -> None:
-        pt_class = PropertyText  # TODO make this depend on vars.display
+        pt_class = PropertyTextBlock if vars.display == DisplayChoice.BLOCK \
+            else PropertyTextLine
         pt = pt_class()
         self._modifyPropertyText(pt, vars)
         parent =  self._object.getHandle(vars.cleat) if vars.cleat != "" else \
@@ -341,7 +343,7 @@ class CmdEditProperties(CmdBase):
 
     def _modifyPropertyText(
         self : Self,
-        pt   : PropertyText,
+        pt   : PropertyTextMixin,
         vars : PropertyVariables
     ) -> None:
         pt.setName(vars.name)

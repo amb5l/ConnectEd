@@ -13,9 +13,9 @@ from ...app import settings
 
 from ..graphics.items import Default, DEFAULT
 
-from ..graphics.items.property_text import PropertyText
+from ..graphics.items.base_text_block import BaseTextBlock
 
-from ..graphics.items.mixin.handle     import ItemHandlesMixin
+from ..graphics.items.mixin.handle import ItemRectHandlesMixin
 
 from .components.model import DialogItem, DialogModel
 
@@ -87,7 +87,7 @@ class NewItem(DialogItem):
 
 
 class PropertiesDialog(QDialog):
-    _item           : "PropertiesMixin | ItemHandlesMixin"
+    _item           : "PropertiesMixin | ItemRectHandlesMixin"
     _dialog_layout  : QVBoxLayout
     _table_model    : DialogModel
     _table_view     : TableView
@@ -103,7 +103,7 @@ class PropertiesDialog(QDialog):
 
     def __init__(
         self : Self,
-        item : "PropertiesMixin | ItemHandlesMixin",
+        item : "PropertiesMixin | ItemRectHandlesMixin",
         view : "DrawingView | None" = None
     ) -> None:
         # initialise
@@ -145,7 +145,10 @@ class PropertiesDialog(QDialog):
                 vars.display  = DisplayChoice.NONE
                 # others left as None
             else:
-                vars.display   = DisplayChoice.LINE  # TODO add BLOCK support
+                if isinstance(prop.getText(), BaseTextBlock):
+                    vars.display = DisplayChoice.BLOCK
+                else:
+                    vars.display = DisplayChoice.LINE
                 vars.visible   = prop.getText().isVisible()
                 vars.cleat     = prop.getText().getCleat()
                 vars.offset_x  = prop.getText().pos().x()
@@ -160,18 +163,18 @@ class PropertiesDialog(QDialog):
             row = [
                 ExistingItem(vars.name, editable=static),
                 ExistingItem(vars.value, kind, default, not read_only),
-                ExistingItem(vars.display, "DisplayChoice", editable=static),
-                ExistingItem(vars.visible   , "bool"         ),
-                ExistingItem(vars.cleat     , "str"          ),
-                ExistingItem(vars.offset_x  , "float"        ),
-                ExistingItem(vars.offset_y  , "float"        ),
-                ExistingItem(vars.origin    , "str"          ),
-                ExistingItem(vars.color     , "QColor"       ),
-                ExistingItem(vars.font      , "FontFamily"   ),
-                ExistingItem(vars.size      , "FontSize"     ),
-                ExistingItem(vars.bold      , "bool"         ),
-                ExistingItem(vars.italic    , "bool"         ),
-                ExistingItem(vars.underline , "bool"         )
+                ExistingItem(vars.display   , "DisplayChoice" ),
+                ExistingItem(vars.visible   , "bool"          ),
+                ExistingItem(vars.cleat     , "str"           ),
+                ExistingItem(vars.offset_x  , "float"         ),
+                ExistingItem(vars.offset_y  , "float"         ),
+                ExistingItem(vars.origin    , "str"           ),
+                ExistingItem(vars.color     , "QColor"        ),
+                ExistingItem(vars.font      , "FontFamily"    ),
+                ExistingItem(vars.size      , "FontSize"      ),
+                ExistingItem(vars.bold      , "bool"          ),
+                ExistingItem(vars.italic    , "bool"          ),
+                ExistingItem(vars.underline , "bool"          )
             ]
             self._table_model.appendRow(row)
             self._before[name] = vars
@@ -351,7 +354,7 @@ class PropertiesDialog(QDialog):
                     if offset_y_item.getValue() is None:
                         offset_y_item.setInit(0.0)
                     if origin_item.getValue() is None:
-                        origin_item.setInit(PropertyText.getHandleNames()[0])
+                        origin_item.setInit(ItemRectHandlesMixin.getHandleNames()[0])
                     if color_item.getValue() is None:
                         color_item.setInit(DEFAULT)
                     if font_item.getValue() is None:

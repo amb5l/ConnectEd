@@ -8,7 +8,7 @@ from ..property import PropertySpec
 
 from .              import EdgeLoc, Edge
 from .base_rect     import BaseRectangle
-from .property_text import PropertyTextSpec, PropertyText
+from .property_text import PropertyTextSpec
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:

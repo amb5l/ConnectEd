@@ -64,12 +64,13 @@ class BaseTextLine(
 
     def __init__(
         self : Self,
-        pos  : QPointF = QPointF(),
+        pos  : QPointF | None = None,
         bare : bool = False
     ) -> None:
         QGraphicsSimpleTextItem.__init__(self, "")
-        self.initItem(bare=bare)
-        self.setPos(pos)
+        self.initItem(bare=bare)#
+        if pos is not None:
+            self.setPos(pos)
         self.onGeometryChange()
 
     def onGeometryChange(self : Self) -> None:

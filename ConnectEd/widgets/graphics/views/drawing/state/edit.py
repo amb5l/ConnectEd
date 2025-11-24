@@ -14,7 +14,7 @@ from .....dialogs.port_pin      import PortPinDialog
 from ....items               import ItemMixin
 from ....items.text_line     import TextLine
 from ....items.text_block    import TextBlock
-from ....items.property_text import PropertyText
+from ....items.property_text import PropertyTextMixin
 from ....items.port          import Port
 from ....items.block_pin     import BlockPin
 
@@ -264,8 +264,8 @@ class DrawingViewStateEditPropertyText(DrawingViewStateBase):
         s    : QPointF,
         i    : list[ItemMixin] | None = None
     ) -> None:
-        item = i[0] if i else self.view._selectedItem(PropertyText)
-        if item and isinstance(item, PropertyText):
+        item = i[0] if i else self.view._selectedItem(PropertyTextMixin)
+        if item and isinstance(item, PropertyTextMixin):
             dialog = PropertyTextDialog(item, self.view)
             if dialog.exec():
                 value = dialog.getValue()

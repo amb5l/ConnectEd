@@ -10,12 +10,12 @@ from .....core.utils import registerClass
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ..mixin.handle  import ItemHandlesMixin
-    from ..property_text import PropertyText
+    from ..property_text import PropertyTextMixin
 
 
 class ItemXmlMixin:
     def toXml(self : Self, xw : QXmlStreamWriter) -> None:
-        from ..property_text import PropertyText
+        from ..property_text import PropertyTextMixin
         from ..base_pin      import BasePin
         from ..handle        import Handle
         xw.writeStartElement(self.__class__.__name__)
@@ -25,7 +25,7 @@ class ItemXmlMixin:
                 child.toXml(xw)
             elif isinstance(child, Handle):
                 for handle_child in child.childItems():
-                    if isinstance(handle_child, PropertyText):
+                    if isinstance(handle_child, PropertyTextMixin):
                         handle_child.toXml(xw)
         xw.writeEndElement()
 
@@ -64,7 +64,7 @@ class ItemXmlMixin:
                     child.setParentItem(instance)
                 elif item_name in pt_classes:
                     child_cls = pt_classes[item_name]
-                    child : "PropertyText" = child_cls.fromXml(xr)
+                    child : "PropertyTextMixin" = child_cls.fromXml(xr)
                     child.setParentItem(instance.getHandle(child.getCleat()))
                     child.onGeometryChange()
                     # text rotation compensation

@@ -25,13 +25,16 @@ class SymbolScene(DrawingScene):
 
     def onChange(self : Self) -> None:
         from ..items.symbol_pin    import SymbolPin
-        from ..items.property_text import PropertyText
+        from ..items.property_text import PropertyTextMixin
         from ..items.line          import Line
         from ..items.rectangle     import Rectangle
         from ..items.polyline      import Polyline
         from ..items.text_line     import TextLine
         from ..items.text_block    import TextBlock
-        classes = (SymbolPin, PropertyText, Line, Rectangle, Polyline, TextLine, TextBlock)
+        classes = (
+            SymbolPin, PropertyTextMixin, \
+            Line, Rectangle, Polyline, TextLine, TextBlock
+        )
         # get bounding rect of all items
         rect = QRectF()
         for item in self.items():

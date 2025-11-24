@@ -12,7 +12,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from .scenes.drawing import DrawingScene
     from .items import ItemType
-    from .items.property_text import PropertyTextSpec, PropertyText
+    from .items.property_text import PropertyTextSpec, PropertyTextMixin
     PropertyOwner = ItemType | DrawingScene
 
 
@@ -35,7 +35,7 @@ class Property(QObject):
     _setter  : Callable[["PropertyOwner", Any], None] | None
     _valid   : Callable[["PropertyOwner"], bool]      | None
     _default : Callable[["PropertyOwner"], Any]       | None
-    _text    : "PropertyText | None"
+    _text    : "PropertyTextMixin | None"
 
     # signals
     changed = pyqtSignal(object)
@@ -49,7 +49,7 @@ class Property(QObject):
         setter  : Callable[["PropertyOwner", Any], None] | None = None,
         valid   : Callable[["PropertyOwner"], bool] | None = None,
         default : Callable[["PropertyOwner"], Any] | None = None,
-        text    : "PropertyText | None" = None
+        text    : "PropertyTextMixin | None" = None
     ) -> None:
         super().__init__()
         self._owner   = owner
@@ -103,10 +103,10 @@ class Property(QObject):
         """Get default value."""
         return self._default(self._owner) if self._default else None
 
-    def getText(self : Self) -> "PropertyText | None":
+    def getText(self : Self) -> "PropertyTextMixin | None":
         return self._text
 
-    def setText(self : Self, text : "PropertyText | None") -> None:
+    def setText(self : Self, text : "PropertyTextMixin | None") -> None:
         self._text = text
 
     def _substitute(self: Self, value: str) -> str:

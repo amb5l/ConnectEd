@@ -1,5 +1,4 @@
-from typing import Self
-from enum   import Enum
+from typing      import Self
 from dataclasses import dataclass
 
 from PyQt6.QtCore    import Qt, QPointF, QXmlStreamWriter
@@ -13,10 +12,9 @@ from ....app import settings
 from ..property   import PropertySpec
 from ..properties import PropertiesMixin
 
-from .base_text_line import BaseTextLine
-from .handle         import Handle
-
-from .mixin.handle     import ItemHandlesMixin
+from .base_text_line  import BaseTextLine
+from .base_text_block import BaseTextBlock
+from .handle          import Handle
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -27,9 +25,9 @@ if TYPE_CHECKING:
 class Tether(QGraphicsLineItem):
     """Tether line between a PropertyText origin and its parent cleat."""
 
-    _item  : "PropertyText"
+    _item  : "PropertyTextMixin"
 
-    def __init__(self : Self, item : "PropertyText", visible : bool = False):
+    def __init__(self : Self, item : "PropertyTextMixin", visible : bool = False):
         super().__init__(item)  # Parent it to the TetherText
         self._item = item
         self.setVisible(visible)
@@ -63,7 +61,7 @@ class Tether(QGraphicsLineItem):
         pass  # no need to serialise
 
 
-class PropertyText(BaseTextLine):
+class PropertyTextMixin:
     # class attributes
     _PROPERTY_SPECS_NAME = \
         {
@@ -91,7 +89,7 @@ class PropertyText(BaseTextLine):
     _tether      : Tether | None
 
     def __init__(
-        self     : Self,
+        self     : Self | BaseTextLine | BaseTextBlock,
         name     : str | None = None,
         cleat    : str | None = None,
         pos      : QPointF | None = None,
@@ -102,7 +100,7 @@ class PropertyText(BaseTextLine):
         self._cleat       = cleat
         self._cleat_shown = False
         self._tether      = None
-        super().__init__(bare=bare)
+        super().__init__(pos, bare=bare)
         self._tether = Tether(self)
         if bare:
             return
@@ -110,8 +108,6 @@ class PropertyText(BaseTextLine):
         if origin is None:
             origin = "Bottom Left" if cleat == "Top Left" else "Top Left"
         self.setOrigin(origin)
-        pos = QPointF(0, 0) if pos is None else pos
-        self.setPos(pos)
 
     def mouseDoubleClickEvent(self : Self, event : QGraphicsSceneMouseEvent) -> None:
         """Handle double-click events to open the edit dialog."""
@@ -178,7 +174,7 @@ class PropertyText(BaseTextLine):
             settings_items = settings().get("theme/items")
             if settings_name in vars(settings_items).keys():
                 return settings_name
-        return super().settingsName()
+        return "PropertyText"
 
     def getCleat(self : Self) -> str | None:
         return self._cleat
@@ -225,8 +221,18 @@ class PropertyText(BaseTextLine):
             view.action("Properties...", lambda: view.ui.editItemProperties(self))
         ]
 
+
+class PropertyTextLine(PropertyTextMixin, BaseTextLine):
+    pass
+
+
+class PropertyTextBlock(PropertyTextMixin, BaseTextBlock):
+    pass
+
+
 @dataclass
 class PropertyTextSpec:
     anchor  : str
     pos     : QPointF | None = None
     origin  : str | None = None
+    block   : bool = False

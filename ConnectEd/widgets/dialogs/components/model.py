@@ -7,9 +7,9 @@ from ....core.utils import val2str, str2val
 
 
 class DialogItem(QStandardItem):
-    IDX_BEFORE    = 0
-    IDX_KIND = 1
-    IDX_DEFAULT   = 2
+    IDX_BEFORE  = 0
+    IDX_KIND    = 1
+    IDX_DEFAULT = 2
 
     def __init__(
         self     : Self,

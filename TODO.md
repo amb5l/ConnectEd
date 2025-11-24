@@ -1,3 +1,7 @@
+unified base_text file with mixin
+
+cleat => anchor
+
 Properties change:
 https://grok.com/share/bGVnYWN5_537f1338-ac90-4e7d-aff7-cc2cee9b99d9
 

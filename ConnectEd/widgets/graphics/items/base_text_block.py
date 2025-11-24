@@ -73,11 +73,17 @@ class BaseTextBlock(
     _crect   : QRectF  # constraint rect: -1 (width and/or height) = auto (per Qt)
     _stbrect : QRectF  # tight bounding rect in scene coordinates
 
-    def __init__(self : Self, bare : bool = False) -> None:
+    def __init__(
+        self : Self,
+        pos  : QPointF | None = None,
+        bare : bool = False
+    ) -> None:
         self._crect = QRectF(0, 0, -1, -1)  # auto (fully unconstrained)
         QGraphicsTextItem.__init__(self)
         self.document().setDocumentMargin(0)  # minimize margin
         self.initItem(bare=bare)
+        if pos is not None:
+            self.setPos(pos)
         self.onGeometryChange()
 
     def onGeometryChange(self : Self) -> None:

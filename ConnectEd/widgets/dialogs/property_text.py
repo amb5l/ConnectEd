@@ -2,12 +2,12 @@ from typing import Self
 
 from PyQt6.QtWidgets import QWidget, QDialog, \
                             QVBoxLayout, QHBoxLayout, \
-                            QLabel, QLineEdit, QPushButton
+                            QLabel, QLineEdit, QTextEdit, QPushButton
 from PyQt6.QtGui     import QShowEvent
 
 from ..graphics.items import QuillPref, QuillPrefChange
 
-from ..graphics.items.property_text import PropertyText
+from ..graphics.items.property_text import PropertyTextMixin, PropertyTextBlock
 
 from .components.layout.text_appearance import TextAppearanceLayout
 
@@ -26,18 +26,25 @@ class PropertyTextDialog(QDialog):
 
     def __init__(
         self   : Self,
-        item   : PropertyText,
+        item   : PropertyTextMixin,
         parent : QWidget | None = None # not to be confused with _parent
     ) -> None:
         super().__init__(parent)
         self.setWindowTitle(f"Property Text: {item.name()}")
         self.setModal(True)
         self._dialog_layout = QVBoxLayout(self)
-        self._value_layout = QHBoxLayout()
-        self._value_label = QLabel("Value:")
-        self._value_layout.addWidget(self._value_label, 0, 0)
-        self._value_edit = QLineEdit(item.value())
-        self._value_layout.addWidget(self._value_edit, 0, 1)
+        if isinstance(item, PropertyTextBlock):
+            self._value_layout = QVBoxLayout()
+            self._value_label = QLabel("Value:")
+            self._value_layout.addWidget(self._value_label)
+            self._value_edit = QTextEdit(item.value())
+            self._value_layout.addWidget(self._value_edit)
+        else:
+            self._value_layout = QHBoxLayout()
+            self._value_label = QLabel("Value:")
+            self._value_layout.addWidget(self._value_label)
+            self._value_edit = QLineEdit(item.value())
+            self._value_layout.addWidget(self._value_edit)
         self._dialog_layout.addLayout(self._value_layout)
         initial = item.a.quill.getPref()
         defaults = item.a.quill.getDefaults()

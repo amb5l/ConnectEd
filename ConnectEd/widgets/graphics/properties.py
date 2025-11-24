@@ -16,14 +16,16 @@ class PropertiesMixin:
 
     def initProperties(self : Self, bare : bool = False) -> None:
         from .property import Property
-        from .items.property_text import PropertyText
+        from .items.property_text import PropertyTextBlock, PropertyTextLine
         self.properties = {}
         for name, spec in self._PROPERTY_SPECS.items():
             self.properties[name] = Property(
                 self, name, spec.kind, spec.getter, spec.setter
             )
             if spec.text is not None:
-                property_text = PropertyText(
+                property_text_cls = PropertyTextBlock if spec.text.block \
+                    else PropertyTextLine
+                property_text = property_text_cls(
                     name,
                     spec.text.anchor,
                     spec.text.pos,
