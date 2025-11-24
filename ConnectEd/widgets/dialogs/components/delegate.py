@@ -3,7 +3,7 @@ from typing import Self
 from PyQt6.QtCore    import Qt, QModelIndex
 from PyQt6.QtWidgets import QWidget, QStyledItemDelegate, QStyleOptionViewItem, \
                             QMessageBox
-from PyQt6.QtGui     import QStandardItem, QStandardItemModel
+from PyQt6.QtGui     import QStandardItemModel
 
 from ....app import logger
 
