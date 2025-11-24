@@ -36,6 +36,7 @@ class BaseTextMixin(
     ItemMixin,
     ItemPosMixin,
     ItemOriginMixin,
+    ItemRectHandlesMixin,
     ItemQuillMixin,
     ItemOutlineMixin,
     ItemChangeMixin,
@@ -99,12 +100,12 @@ class BaseTextMixin(
 class BaseTextLine(
     BaseTextMixin,
     ItemRotateMixin,
-    ItemRectHandlesMixin,
     QGraphicsSimpleTextItem
 ):
     """Single-line text item."""
 
     # class attributes
+    _AP_RESIZE = [] # no resizing handles
     _PROPERTY_SPECS = \
         BaseTextMixin._PROPERTY_SPECS_POS | \
         ItemRotateMixin._PROPERTY_SPECS_ROT | \
@@ -175,7 +176,6 @@ class BaseTextBlock(
     BaseTextMixin,
     ItemBoundMixin,
     ItemShapeMixin,
-    ItemRectHandlesMixin,
     QGraphicsTextItem
 ):
     """Multi-line text block with optional width/height constraints."""
