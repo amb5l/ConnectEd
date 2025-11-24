@@ -76,6 +76,7 @@ class BaseTextBlock(
     def __init__(self : Self, bare : bool = False) -> None:
         self._crect = QRectF(0, 0, -1, -1)  # auto (fully unconstrained)
         QGraphicsTextItem.__init__(self)
+        self.document().setDocumentMargin(0)  # minimize margin
         self.initItem(bare=bare)
         self.onGeometryChange()
 
