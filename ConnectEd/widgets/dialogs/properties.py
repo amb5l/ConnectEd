@@ -13,7 +13,7 @@ from ...app import settings
 
 from ..graphics.items import Default, DEFAULT
 
-from ..graphics.items.base_text_block import BaseTextBlock
+from ..graphics.items.base_text import BaseTextBlock
 
 from ..graphics.items.mixin.handle import ItemRectHandlesMixin
 

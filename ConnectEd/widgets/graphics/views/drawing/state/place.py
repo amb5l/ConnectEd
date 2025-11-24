@@ -7,8 +7,7 @@ from ......app import logger
 
 from .....dialogs.port_pin   import PortPinDialog
 from .....dialogs.gate       import GateDialog
-from .....dialogs.text_line  import TextLineDialog
-from .....dialogs.text_block import TextBlockDialog
+from .....dialogs.text       import TextLineDialog, TextBlockDialog
 
 from ....items            import SignalDirection, ItemMixin
 from ....items.port       import Port
@@ -16,8 +15,7 @@ from ....items.gate       import GateFunc, BufGate, AndGate, OrGate, XorGate
 from ....items.block      import Block
 from ....items.block_pin  import BlockPin
 from ....items.symbol_pin import SymbolPin
-from ....items.text_line  import TextLine
-from ....items.text_block import TextBlock
+from ....items.text       import TextLine, TextBlock
 
 from ..interaction.place import PlacePortInteraction, \
                                 PlaceGateInteraction, \

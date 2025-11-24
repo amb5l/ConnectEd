@@ -4,17 +4,17 @@ from dataclasses import dataclass
 from PyQt6.QtCore    import Qt, QPointF, QXmlStreamWriter
 from PyQt6.QtWidgets import QGraphicsItem, \
                             QGraphicsSimpleTextItem, QGraphicsLineItem, \
-                            QGraphicsSceneMouseEvent, QMenu
-from PyQt6.QtGui     import QAction
+                            QGraphicsSceneMouseEvent
 
 from ....app import settings
 
 from ..property   import PropertySpec
 from ..properties import PropertiesMixin
 
-from .base_text_line  import BaseTextLine
-from .base_text_block import BaseTextBlock
-from .handle          import Handle
+from .base_text import BaseTextMixin, BaseTextLine, BaseTextBlock
+from .handle    import Handle
+
+from .mixin.rotate import ItemRotateMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -70,17 +70,13 @@ class PropertyTextMixin:
                 setter = lambda self, value: self.setName(value)
             )
         }
-    _PROPERTY_SPECS = \
+    _PROPERTY_SPECS_CLEAT = \
         {
             "Cleat" : PropertySpec(
                 getter = lambda self: self.getCleat(),
                 setter = lambda self, value: self.setCleat(value)
             )
-        } | \
-        BaseTextLine._PROPERTY_SPECS_ORIGIN | \
-        BaseTextLine._PROPERTY_SPECS_POS | \
-        _PROPERTY_SPECS_NAME | \
-        BaseTextLine._PROPERTY_SPECS_APPEARANCE
+        }
 
     # instance attributes
     _name        : str
@@ -108,6 +104,7 @@ class PropertyTextMixin:
         if origin is None:
             origin = "Bottom Left" if cleat == "Top Left" else "Top Left"
         self.setOrigin(origin)
+        # onTextChange() will be called after parenting in initProperties
 
     def mouseDoubleClickEvent(self : Self, event : QGraphicsSceneMouseEvent) -> None:
         """Handle double-click events to open the edit dialog."""
@@ -206,7 +203,9 @@ class PropertyTextMixin:
 
     def value(self : Self) -> str:
         source = self.scene() if self.parentItem() is None else self.item()
-        return "" if source is None else str(source.properties[self._name].get())
+        if source is None:
+            return ""
+        return str(source.properties[self._name].get())
 
     def setValue(self : Self, value : str) -> None:
         source = self.scene() if self.parentItem() is None else self.item()
@@ -215,11 +214,38 @@ class PropertyTextMixin:
 
 
 class PropertyTextLine(PropertyTextMixin, BaseTextLine):
-    pass
+    """Property text as a single line with rotation support."""
+
+    # class attributes
+    _PROPERTY_SPECS = \
+        PropertyTextMixin._PROPERTY_SPECS_CLEAT | \
+        BaseTextMixin._PROPERTY_SPECS_POS | \
+        ItemRotateMixin._PROPERTY_SPECS_ROT | \
+        PropertyTextMixin._PROPERTY_SPECS_NAME | \
+        BaseTextMixin._PROPERTY_SPECS_APPEARANCE
 
 
 class PropertyTextBlock(PropertyTextMixin, BaseTextBlock):
-    pass
+    """Property text as a multi-line block without rotation."""
+
+    # class attributes
+    _PROPERTY_SPECS = \
+        PropertyTextMixin._PROPERTY_SPECS_CLEAT | \
+        BaseTextMixin._PROPERTY_SPECS_POS | \
+        PropertyTextMixin._PROPERTY_SPECS_NAME | \
+        BaseTextMixin._PROPERTY_SPECS_APPEARANCE | \
+        {
+            "Width" : PropertySpec(
+                kind   = "float",
+                getter = lambda self: self._crect.width(),
+                setter = lambda self, value: self._crect.setWidth(value)
+            ),
+            "Height" : PropertySpec(
+                kind   = "float",
+                getter = lambda self: self._crect.height(),
+                setter = lambda self, value: self._crect.setHeight(value)
+            )
+        }
 
 
 @dataclass

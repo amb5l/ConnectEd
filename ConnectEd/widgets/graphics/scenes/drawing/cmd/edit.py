@@ -15,10 +15,10 @@ from ....items import SignalDirection, VectorRange, \
 from ....items.mixin        import ItemMixin
 from ....items.mixin.origin import ItemOriginMixin
 
-from ....items.polyline       import Polyline, PolySeg
-from ....items.base_text_line import BaseTextLine
-from ....items.property_text  import PropertyTextMixin, \
-                                     PropertyTextBlock, PropertyTextLine
+from ....items.polyline      import Polyline, PolySeg
+from ....items.base_text     import BaseTextMixin
+from ....items.property_text import PropertyTextMixin, \
+                                    PropertyTextBlock, PropertyTextLine
 
 from . import CmdBase, CmdSceneItem, CmdSceneItems
 
@@ -173,25 +173,25 @@ class CmdEditPolySeg(CmdSceneItem):
         parent.updatePath()
 
 
-class CmdEditTextLine(CmdSceneItem):
+class CmdEditText(CmdSceneItem):
     @dataclass
     class TextState:
         text       : str
         appearance : QuillPref
 
-    _item   : BaseTextLine
+    _item   : BaseTextMixin
     _before : TextState
     _after  : TextState
 
     def __init__(
         self       : Self,
         scene      : "DrawingScene",
-        item       : BaseTextLine,
+        item       : BaseTextMixin,
         text       : str,
         appearance : QuillPrefChange
     ):
         super().__init__(scene, item)
-        self._item           = item
+        self._item   = item
         self._before = self.TextState(item.text(), item.a.quill.getPref())
         self._after  = self.TextState(text, appearance)
 

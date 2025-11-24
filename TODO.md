@@ -1,4 +1,6 @@
+width control of PropertiesDialog columns - new best Width method for delegates?
 unified base_text file with mixin
+look at ItemRotateMixin
 
 cleat => anchor
 

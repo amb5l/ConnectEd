@@ -6,14 +6,12 @@ from ......app import logger
 
 from .....dialogs.properties    import PropertiesDialog
 from .....dialogs.appearance    import AppearanceDialog
-from .....dialogs.text_line     import TextLineDialog
-from .....dialogs.text_block    import TextBlockDialog
+from .....dialogs.text          import TextLineDialog, TextBlockDialog
 from .....dialogs.property_text import PropertyTextDialog
 from .....dialogs.port_pin      import PortPinDialog
 
 from ....items               import ItemMixin
-from ....items.text_line     import TextLine
-from ....items.text_block    import TextBlock
+from ....items.text          import TextLine, TextBlock
 from ....items.property_text import PropertyTextMixin
 from ....items.port          import Port
 from ....items.block_pin     import BlockPin

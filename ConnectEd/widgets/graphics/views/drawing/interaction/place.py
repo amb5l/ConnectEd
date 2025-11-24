@@ -20,8 +20,7 @@ from ....items.line       import Line
 from ....items.rectangle  import Rectangle
 from ....items.ellipse    import Ellipse
 from ....items.polyline   import Polyline
-from ....items.text_line  import TextLine
-from ....items.text_block import TextBlock
+from ....items.text       import TextLine, TextBlock
 
 from . import Interaction,         \
               RotateItemMixin,     \

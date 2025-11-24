@@ -12,14 +12,14 @@ from ....items               import ItemType, EdgeLoc, \
                                     SignalDirection, VectorRange, \
                                     QuillPrefChange, AppearancePrefChange
 
-from ....items.block          import Block
-from ....items.port_pin       import PortPinMixin
-from ....items.block_pin      import BlockPin
-from ....items.symbol_pin     import SymbolPin
-from ....items.polyline       import Polyline, PolySeg
-from ....items.base_text_line import BaseTextLine
-from ....items.property_text  import PropertyTextMixin
-from ....items.mixin          import ItemMixin
+from ....items.block         import Block
+from ....items.port_pin      import PortPinMixin
+from ....items.block_pin     import BlockPin
+from ....items.symbol_pin    import SymbolPin
+from ....items.polyline      import Polyline, PolySeg
+from ....items.base_text     import BaseTextLine
+from ....items.property_text import PropertyTextMixin
+from ....items.mixin         import ItemMixin
 
 from ..cmd           import cmdExec, CmdDelete, CmdMove, CmdRotateCW, CmdRotateCCW
 from ..cmd.block_pin import CmdMoveBlockPins
@@ -27,7 +27,7 @@ from ..cmd.edit      import CmdEditPortPin, \
                             CmdEditSymbolPinDot, CmdEditSymbolPinClock, \
                             CmdEditOrigin, \
                             CmdEditPolylineClosed, CmdEditPolySeg, \
-                            CmdEditTextLine, CmdEditPropertyText, \
+                            CmdEditText, CmdEditPropertyText, \
                             CmdEditProperties, CmdEditAppearance
 
 
@@ -189,7 +189,7 @@ class DrawingSceneApiEditMixin:
         appearance : QuillPrefChange,
         undoable   : bool = False
     ) -> None:
-        cmd = CmdEditTextLine(self, item, text, appearance)
+        cmd = CmdEditText(self, item, text, appearance)
         cmdExec(self, cmd, undoable)
 
     def editPropertyText(

@@ -3,13 +3,18 @@ from typing import Self
 from PyQt6.QtWidgets import QLineEdit
 from PyQt6.QtGui     import QIntValidator, QDoubleValidator
 
-class StringEdit(QLineEdit):
+
+class LineEdit(QLineEdit):
+    pass
+
+
+class StringEdit(LineEdit):
     def __init__(self : Self, value : str, parent=None):
         super().__init__(parent)
         self.setText(value)
 
 
-class IntEdit(QLineEdit):
+class IntEdit(LineEdit):
     def __init__(self : Self, value : int, parent=None):
         super().__init__(parent)
         self.setValidator(QIntValidator())
@@ -25,7 +30,7 @@ class IntEdit(QLineEdit):
             return 0
 
 
-class FloatEdit(QLineEdit):
+class FloatEdit(LineEdit):
     def __init__(self : Self, value : float, parent=None):
         super().__init__(parent)
         self.setValidator(QDoubleValidator())
