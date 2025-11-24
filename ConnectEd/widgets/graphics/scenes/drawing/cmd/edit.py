@@ -3,8 +3,8 @@ from dataclasses import dataclass
 
 from PyQt6.QtCore import QPointF
 
-from .....dialogs.properties import DisplayChoice, PropertyVariables, \
-                                         PropertyChange
+from .....dialogs.properties import DisplayChoice, \
+                                    PropertyVariables, PropertyChange
 
 from ....properties import PropertiesMixin
 
@@ -328,7 +328,8 @@ class CmdEditProperties(CmdBase):
                         self._modifyPropertyText(pt, after)
 
     def _addPropertyText(self : Self, vars : PropertyVariables) -> None:
-        pt_class = PropertyTextBlock if vars.display == DisplayChoice.BLOCK \
+        block_classes = (DisplayChoice.BLOCK, DisplayChoice.BLOCK_HIDDEN)
+        pt_class = PropertyTextBlock if vars.display in block_classes \
             else PropertyTextLine
         pt = pt_class()
         self._modifyPropertyText(pt, vars)
@@ -347,7 +348,7 @@ class CmdEditProperties(CmdBase):
         vars : PropertyVariables
     ) -> None:
         pt.setName(vars.name)
-        pt.setVisible(vars.visible)
+        pt.setVisible(vars.display in (DisplayChoice.LINE, DisplayChoice.BLOCK))
         pt.setCleat(vars.cleat)
         pt.setPos(QPointF(vars.offset_x, vars.offset_y))
         pt.setOrigin(vars.origin)

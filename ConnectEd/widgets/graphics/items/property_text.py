@@ -213,14 +213,6 @@ class PropertyTextMixin:
         source.properties[self._name].set(value)
         self.onTextChange()
 
-    def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
-        return [
-            view.action("Edit...", lambda: view.ui.editPropertyText(self)),
-            view.separator(),
-            view.action("Appearance...", lambda: view.ui.editAppearance(self)),
-            view.action("Properties...", lambda: view.ui.editItemProperties(self))
-        ]
-
 
 class PropertyTextLine(PropertyTextMixin, BaseTextLine):
     pass
