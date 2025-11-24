@@ -1,7 +1,7 @@
-from typing import Self, overload
-from abc import abstractmethod
+from typing import Self
+from abc    import abstractmethod
 
-from PyQt6.QtCore    import QPointF, QRectF
+from PyQt6.QtCore    import Qt, QPointF, QRectF
 from PyQt6.QtWidgets import QGraphicsSimpleTextItem, QGraphicsTextItem, \
                             QWidget, QStyleOptionGraphicsItem, QStyle, QMenu
 from PyQt6.QtGui     import QPainter, QPainterPath, QAction
@@ -10,8 +10,6 @@ from ....core.defs import PITCH
 
 from ..property   import PropertySpec
 from ..properties import PropertiesMixin
-
-from .base_rect import BaseRectangleMixin
 
 from .mixin            import ItemMixin
 from .mixin.pos        import ItemPosMixin
@@ -199,7 +197,8 @@ class BaseTextBlock(
         BaseTextMixin._PROPERTY_SPECS_APPEARANCE
 
     # instance attributes
-    _crect   : QRectF  # constraint rect: -1 (width and/or height) = auto (per Qt)
+    _crect   : QRectF            # constrained rect: -1 (w/h) = auto (per Qt)
+    _align_v : Qt.AlignmentFlag  # vertical alignment
 
     def __init__(
         self : Self,
@@ -207,6 +206,7 @@ class BaseTextBlock(
         bare : bool = False
     ) -> None:
         self._crect = QRectF(0, 0, -1, -1)  # auto (fully unconstrained)
+        self._align_v = Qt.AlignmentFlag.AlignTop
         QGraphicsTextItem.__init__(self)
         self.document().setDocumentMargin(0)  # minimize margin
         self.initItem(bare=bare)
@@ -224,25 +224,63 @@ class BaseTextBlock(
             self.setTextWidth(self._crect.width())
         else:
             self.setTextWidth(-1)  # auto width
+        # calculate unconstrained rect (without margins)
+        doc = self.document()
+        root_frame = doc.rootFrame()
+        fmt = root_frame.frameFormat()
+        fmt.setMargin(0)  # temporarily remove margins
+        root_frame.setFrameFormat(fmt)
+        self._urect = QGraphicsTextItem.boundingRect(self)  # unconstrained rect
         # calculate and cache bounding rect, accounting for constraints
-        urect = QGraphicsTextItem.boundingRect(self)  # unconstrained rect
         self._brect = QRectF(self._crect)
         if self._crect.width() < 0:  # auto width
-            self._brect.setWidth(urect.width())
+            self._brect.setWidth(self._urect.width())
         if self._crect.height() < 0:  # auto height
-            self._brect.setHeight(urect.height())
+            self._brect.setHeight(self._urect.height())
+        # apply vertical alignment via document top margin
+        if self._crect.height() >= 0:
+            uh = self._urect.height()  # unconstrained height
+            ch = self._brect.height()  # constrained height
+            if self._align_v == Qt.AlignmentFlag.AlignBottom:
+                top_margin = ch - uh
+            elif self._align_v == Qt.AlignmentFlag.AlignVCenter:
+                top_margin = (ch - uh) / 2
+            else:  # Top
+                top_margin = 0
+            fmt.setTopMargin(top_margin)
+            root_frame.setFrameFormat(fmt)
         # calculate and cache shape
         self._hshape = QPainterPath()
         self._hshape.addRect(self._brect)
-        # update origin and position
-        old_origin_scene_pos = self.getOriginScenePos()
+        # update
         self.updateHandles()
-        new_origin_scene_pos = self.getOriginScenePos()
-        delta = old_origin_scene_pos - new_origin_scene_pos
-        self._pos = self.pos() + delta
-        self.updateOrigin()
         self.onPositionChange()
-        self.update()  # trigger repaint
+        self.update()
+
+    def setOrigin(self : Self, name : str) -> None:
+        """Override to handle text alignment."""
+        # set horizontal alignment via QTextOption
+        doc = self.document()
+        opt = doc.defaultTextOption()
+        if "Right" in name:
+            h_align = Qt.AlignmentFlag.AlignRight
+        elif "Center" in name:
+            h_align = Qt.AlignmentFlag.AlignHCenter
+        else:
+            h_align = Qt.AlignmentFlag.AlignLeft
+        opt.setAlignment(h_align)
+        doc.setDefaultTextOption(opt)
+        # save vertical alignment for use in onGeometryChange()
+        if "Bottom" in name:
+            self._align_v = Qt.AlignmentFlag.AlignBottom
+        elif "Middle" in name:
+            self._align_v = Qt.AlignmentFlag.AlignVCenter
+        else:
+            self._align_v = Qt.AlignmentFlag.AlignTop
+        # set origin handle
+        super().setOrigin(name)
+        # update margins based on new alignment
+        self.onGeometryChange()
 
     def setPlainText(self : Self, text : str) -> None:
         """Set plain text and update geometry."""
@@ -273,61 +311,12 @@ class BaseTextBlock(
         option  : QStyleOptionGraphicsItem,
         widget  : QWidget
     ) -> None:
-        """Paint the text block with optional clipping and selection outline."""
-        # clip to constrained dimensions
-        if self._crect.width() >= 0 or self._crect.height() >= 0:
-            painter.save()
-            painter.setClipRect(self._brect)
+        """Override selected appearance."""
         option.state &= ~QStyle.StateFlag.State_Selected
         QGraphicsTextItem.paint(self, painter, option, widget)
-        if self._crect.width() >= 0 or self._crect.height() >= 0:
-            painter.restore()
         if self.isSelected():
             painter.setPen(self.outline.pen)
             painter.drawRect(self._brect)
-
-    @overload
-    def setPoints(
-        self : Self,
-        p1   : QPointF,
-        p2   : QPointF
-    ) -> None:
-        ...
-
-    @overload
-    def setPoints(
-        self : Self,
-        x1   : float | int,
-        y1   : float | int,
-        x2   : float | int,
-        y2   : float | int
-    ) -> None:
-        ...
-
-    def setPoints(
-        self : Self,
-        p1_x1 : QPointF | float | int,
-        p2_y1 : QPointF | float | int,
-        x2    : float | int | None = None,
-        y2    : float | int | None = None
-    ) -> None:
-        """Update position and constraint rect from two corner points."""
-        if x2 is None or y2 is None:
-            x1 = p1_x1.x()
-            y1 = p1_x1.y()
-            x2 = p2_y1.x()
-            y2 = p2_y1.y()
-        else:
-            x1 = p1_x1
-            y1 = p2_y1
-        self.setPos(QPointF(min(x1, x2), min(y1, y2)))
-        w = max(abs(x2-x1), PITCH)
-        h = max(abs(y2-y1), PITCH)
-        if w != self._brect.width():  # width has changed
-            self._crect.setWidth(w)
-        if h != self._brect.height():  # height has changed
-            self._crect.setHeight(h)
-        self.onGeometryChange()
 
     def rect(self : Self) -> QRectF:
         """Return the bounding rect (for BaseRectangleMixin compatibility)."""
@@ -339,10 +328,30 @@ class BaseTextBlock(
 
     def moveHandleBy(self : Self, name : str, delta : QPointF) -> None:
         """Resize or move the text block based on which handle is dragged."""
-        if name == "Middle Center":  # move the entire item
-            self.setPos(self.pos() + delta)
-            return
-        BaseRectangleMixin.moveHandleBy(self, name, delta)
+        match name:
+            case "Top Left":
+                self.setPos(self.pos() + delta)
+                self._resizeBy(-delta.x(), -delta.y())
+            case "Top Center":
+                self.setPos(self.pos() + QPointF(0, delta.y()))
+                self._resizeBy(0, -delta.y())
+            case "Top Right":
+                self.setPos(self.pos() + QPointF(0, delta.y()))
+                self._resizeBy(delta.x(), -delta.y())
+            case "Middle Left":
+                self.setPos(self.pos() + QPointF(delta.x(), 0))
+                self._resizeBy(-delta.x(), 0)
+            case "Middle Center":
+                self.setPos(self.pos() + delta)
+            case "Middle Right":
+                self._resizeBy(delta.x(), 0)
+            case "Bottom Left":
+                self.setPos(self.pos() + QPointF(delta.x(), 0))
+                self._resizeBy(-delta.x(), delta.y())
+            case "Bottom Center":
+                self._resizeBy(0, delta.y())
+            case "Bottom Right":
+                self._resizeBy(delta.x(), delta.y())
 
     def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
         """Return context menu items for text block."""
@@ -362,3 +371,14 @@ class BaseTextBlock(
             view.action("Properties...", lambda: view.ui.editItemProperties(self))
         ]
         return items
+
+    def _resizeBy(self : Self, dw : float, dh : float) -> None:
+        """Resize the text block by the given deltas."""
+        new_w = max(self._brect.width() + dw, PITCH)
+        new_h = max(self._brect.height() + dh, PITCH)
+        if new_w != self._crect.width():
+            self._crect.setWidth(new_w)
+        if new_h != self._crect.height():
+            self._crect.setHeight(new_h)
+        if dw != 0 or dh != 0:
+            self.onGeometryChange()
