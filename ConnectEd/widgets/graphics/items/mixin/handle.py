@@ -39,7 +39,7 @@ class ItemRectHandlesMixin(ItemHandlesMixin):
         "Bottom Center" : ( 0.5 , 1.0 ),
         "Bottom Right"  : ( 1.0 , 1.0 )
     }
-    _AP_RESIZE = { k : k != "Center" for k in _AP_RECT.keys() }
+    _AP_RESIZE = [ k for k in _AP_RECT.keys() if k != "Center" ]
 
     @classmethod
     def getHandleNames(cls : type[Self]) -> list[str]:
@@ -48,7 +48,7 @@ class ItemRectHandlesMixin(ItemHandlesMixin):
     def initHandles(self : Self) -> None:
         self._handles = {}
         for name in self._AP_RECT.keys():
-            resize = self._AP_RESIZE[name]
+            resize = name in self._AP_RESIZE
             handle = Handle(name=name, resize=resize, parent=self)
             self._handles[name] = handle
 
