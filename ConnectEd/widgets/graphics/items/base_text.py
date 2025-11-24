@@ -339,7 +339,7 @@ class BaseTextBlock(
 
     def moveHandleBy(self : Self, name : str, delta : QPointF) -> None:
         """Resize or move the text block based on which handle is dragged."""
-        if name == "Center":  # move the entire item
+        if name == "Middle Center":  # move the entire item
             self.setPos(self.pos() + delta)
             return
         BaseRectangleMixin.moveHandleBy(self, name, delta)

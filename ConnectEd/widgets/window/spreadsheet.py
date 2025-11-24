@@ -125,9 +125,9 @@ class SpreadsheetAPDelegate(SpreadsheetComboDelegate):
         "Top Left",
         "Top Center",
         "Top Right",
-        "Center Left",
-        "Center",
-        "Center Right",
+        "Middle Left",
+        "Middle Center",
+        "Middle Right",
         "Bottom Left",
         "Bottom Center",
         "Bottom Right"

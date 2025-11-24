@@ -229,11 +229,11 @@ class BaseRectangleMixin(
                 self.setPoints(p1.x(), p1.y() + d.y(), p2.x(), p2.y())
             case "Top Right":
                 self.setPoints(p1.x(), p1.y() + d.y(), p2.x() + d.x(), p2.y())
-            case "Center Left":
+            case "Middle Left":
                 self.setPoints(p1.x() + d.x(), p1.y(), p2.x(), p2.y())
-            case "Center":
+            case "Middle Center":
                 self.setPos(self.pos() + d)
-            case "Center Right":
+            case "Middle Right":
                 self.setPoints(p1.x(), p1.y(), p2.x() + d.x(), p2.y())
             case "Bottom Left":
                 self.setPoints(p1.x() + d.x(), p1.y(), p2.x(), p2.y() + d.y())

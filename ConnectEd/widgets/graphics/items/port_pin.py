@@ -39,7 +39,7 @@ class PortPinMixin(
             "Name" : PropertySpec(
                 getter = lambda self: self._name,
                 setter = lambda self, value: setattr(self, '_name', value),
-                text   = PropertyTextSpec("Name", origin="Center Left")
+                text   = PropertyTextSpec("Name", origin="Middle Left")
             )
         }
     _PROPERTY_SPECS_PORT_PIN = \
