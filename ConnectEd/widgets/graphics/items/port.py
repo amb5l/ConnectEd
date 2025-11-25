@@ -11,7 +11,6 @@ from .mixin.rotate import ItemRotateMixin
 from .mixin.fill   import ItemFillMixin
 
 from .port_pin import PortPinMixin
-from .entry    import Entry
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
