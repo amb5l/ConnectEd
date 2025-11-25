@@ -187,13 +187,13 @@ def test(app : cs.ConnectEdApp):
         f"Got {rect.rect().width()}, expected {size.width()}"
     assert rect.rect().height() == size.height(), \
         f"Got {rect.rect().height()}, expected {size.height()}"
-    assert rect.line.getColor() == DEFAULT, \
+    assert rect.line.getColor() is DEFAULT, \
         f"Got {rect.line.getColor()}, expected {DEFAULT}"
-    assert rect.line.getWidth() == DEFAULT, \
+    assert rect.line.getWidth() is DEFAULT, \
         f"Got {rect.line.getWidth()}, expected {DEFAULT}"
-    assert rect.line.getStyle() == DEFAULT, \
+    assert rect.line.getStyle() is DEFAULT, \
         f"Got {rect.line.getStyle()}, expected {DEFAULT}"
-    assert rect.line.getStyle() == DEFAULT
+    assert rect.line.getStyle() is DEFAULT
      # verify selected and unselected appearance
     defaults = app.settings().get("theme/items/Rectangle")
     assert rect.isSelected(), \

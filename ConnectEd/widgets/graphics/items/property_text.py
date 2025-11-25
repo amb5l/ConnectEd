@@ -258,8 +258,8 @@ class PropertyTextBlock(PropertyTextMixin, BaseTextBlock):
         BaseTextMixin._PROPERTY_SPECS_APPEARANCE
 
     def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
-        auto_width = self._width == DEFAULT
-        auto_height = self._height == DEFAULT
+        auto_width = self._width is DEFAULT
+        auto_height = self._height is DEFAULT
         items = [
             view.action("Edit...", lambda: view.ui.editPropertyText(self)),
             view.separator(),

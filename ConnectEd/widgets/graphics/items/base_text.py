@@ -237,8 +237,8 @@ class BaseTextBlock(
         root_frame.setFrameFormat(fmt)
         self._urect = QGraphicsTextItem.boundingRect(self)  # unconstrained rect
         # calculate and cache bounding rect, accounting for constraints
-        w = self._urect.width() if self._width == DEFAULT else self._width
-        h = self._urect.height() if self._height == DEFAULT else self._height
+        w = self._urect.width() if self._width is DEFAULT else self._width
+        h = self._urect.height() if self._height is DEFAULT else self._height
         self._brect = QRectF(0, 0, w, h)
         # apply vertical alignment via document top margin
         if self._height != DEFAULT:
@@ -365,8 +365,8 @@ class BaseTextBlock(
 
     def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
         """Return context menu items for text block."""
-        auto_width = self._width == DEFAULT
-        auto_height = self._height == DEFAULT
+        auto_width = self._width is DEFAULT
+        auto_height = self._height is DEFAULT
         items = [
             view.action("Edit...", view.ui.editTextBlock),
             view.separator(),
