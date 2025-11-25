@@ -114,23 +114,31 @@ class PortPinMixin(
 
     def setName(self : Self, value : str) -> None:
         self._name = value
+        if hasattr(self, "properties") and "Name" in self.properties:
+            self.properties["Name"].changed.emit(value)
 
     def direction(self : Self) -> SignalDirection:
         return self._direction
 
     def setDirection(self : Self, value : SignalDirection) -> None:
         self._direction = value
+        if hasattr(self, "properties") and "Direction" in self.properties:
+            self.properties["Direction"].changed.emit(value)
 
     def range(self : Self) -> VectorRange:
         return self._range
 
     def setRange(self : Self, value : VectorRange) -> None:
         self._range = value
+        if hasattr(self, "properties") and "Range" in self.properties:
+            self.properties["Range"].changed.emit(value)
 
     def comment(self : Self) -> str:
         return self._comment
 
     def setComment(self : Self, value : str) -> None:
         self._comment = value
+        if hasattr(self, "properties") and "Comment" in self.properties:
+            self.properties["Comment"].changed.emit(value)
 
     ############################################################################
