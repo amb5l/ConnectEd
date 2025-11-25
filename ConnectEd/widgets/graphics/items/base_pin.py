@@ -100,9 +100,6 @@ class BasePin(ItemPaintMixin, PortPinMixin, QGraphicsPathItem):
         if self._arrow is not None:
             self._arrow.direction = value
 
-    def onGeometryChange(self : Self) -> None:
-        pass
-
     def onSceneChange(self : Self, scene : "DrawingScene") -> None:
         if self._arrow is not None:
             self._arrow.direction = self._direction
