@@ -2,8 +2,7 @@ from typing      import Self
 from dataclasses import dataclass
 
 from PyQt6.QtCore    import Qt, QPointF, QXmlStreamWriter
-from PyQt6.QtWidgets import QGraphicsItem, \
-                            QGraphicsSimpleTextItem, QGraphicsLineItem, \
+from PyQt6.QtWidgets import QGraphicsItem, QGraphicsLineItem, \
                             QGraphicsSceneMouseEvent, QMenu
 from PyQt6.QtGui     import QAction
 
@@ -161,11 +160,11 @@ class PropertyTextMixin:
         rect = self.boundingRect()
         self.setTransformOriginPoint(rect.center())
         if 135 < self.sceneRotation() <= 225:
-            super().setRotation(self, (self.rotation() + 180) % 360)
+            QGraphicsItem.setRotation(self, (self.rotation() + 180) % 360)
             # counter rotate handles
             for h in self._handles.values():
                 h.setTransformOriginPoint(self.mapToItem(h, rect.center()))
-                super().setRotation(h, (h.rotation() + 180) % 360)
+                QGraphicsItem.setRotation(h, (h.rotation() + 180) % 360)
 
     def onTextChange(self : Self) -> None:
         value = self.value()
