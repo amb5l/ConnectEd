@@ -59,7 +59,7 @@ class DrawingViewStateBase:
         interaction : Interaction,
         state       : "DrawingViewStateBase | None" = None
     ) -> None:
-        if interaction.valid:
+        if interaction.valid():
             self.view.interaction = interaction
             if state is not None:
                 self.go(state)

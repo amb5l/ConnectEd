@@ -20,17 +20,17 @@ class Block(BaseRectangle):
     _PROPERTY_SPECS = {
         "Label" : PropertySpec(
             getter = lambda self: self._label,
-            setter = lambda self, value: setattr(self, '_label', value),
+            setter = lambda self, value: setattr(self, "_label", value),
             text   = PropertyTextSpec("Top Left")
         ),
         "Name" : PropertySpec(
             getter = lambda self: self._name,
-            setter = lambda self, value: setattr(self, '_name', value),
+            setter = lambda self, value: setattr(self, "_name", value),
             text   = PropertyTextSpec("Bottom Left")
         ),
         "Path" : PropertySpec(
             getter = lambda self: self._path,
-            setter = lambda self, value: setattr(self, '_path', value)
+            setter = lambda self, value: setattr(self, "_path", value)
         )
     } | BaseRectangle._PROPERTY_SPECS
 

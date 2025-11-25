@@ -124,7 +124,6 @@ class EditMoveBlockPinsInteraction(Interaction):
         self._pins = pins
         self._storeLoc()
 
-    @property
     def valid(self : Self) -> bool:
         return \
             self._parent is not None and \

@@ -188,12 +188,12 @@ class BaseTextBlock(
             "Width" : PropertySpec(
                 kind   = "float",
                 getter = lambda self: self._width,
-                setter = lambda self, value: setattr(self, '_width', value)
+                setter = lambda self, value: setattr(self, "_width", value)
             ),
             "Height" : PropertySpec(
                 kind   = "float",
                 getter = lambda self: self._height,
-                setter = lambda self, value: setattr(self, '_height', value)
+                setter = lambda self, value: setattr(self, "_height", value)
             )
         }
     _PROPERTY_SPECS = \

@@ -87,7 +87,7 @@ class SymbolInstance(BaseSymbolInstance):
         {
             "Label" : PropertySpec(
                 getter = lambda self: self._label,
-                setter = lambda self, value: setattr(self, '_label', value),
+                setter = lambda self, value: setattr(self, "_label", value),
                 text   = PropertyTextSpec("Top Left")
             )
         }

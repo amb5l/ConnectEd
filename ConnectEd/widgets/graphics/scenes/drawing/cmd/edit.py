@@ -79,15 +79,15 @@ class CmdEditSymbolPinDot(CmdSceneItem):
         enable : bool
     ):
         super().__init__(scene, item)
-        self._before = item.dot
+        self._before = item.dot()
         self._after = enable
 
     def redo(self : Self) -> None:
-        self._item.dot = self._after
+        self._item.setDot(self._after)
         self._item.update()
 
     def undo(self : Self) -> None:
-        self._item.dot = self._before
+        self._item.setDot(self._before)
         self._item.update()
 
 
@@ -103,15 +103,15 @@ class CmdEditSymbolPinClock(CmdSceneItem):
         enable : bool
     ):
         super().__init__(scene, item)
-        self._before = item.clock
+        self._before = item.clock()
         self._after = enable
 
     def redo(self : Self) -> None:
-        self._item.clock = self._after
+        self._item.setClock(self._after)
         self._item.update()
 
     def undo(self : Self) -> None:
-        self._item.clock = self._before
+        self._item.setClock(self._before)
         self._item.update()
 
 

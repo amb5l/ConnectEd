@@ -28,7 +28,7 @@ class GatePin(ItemPosMixin, BasePinDotMixin, BasePinClockMixin, BasePin):
         {
             "Name" : PropertySpec(
                 getter = lambda self: self._name,
-                setter = lambda self, value: setattr(self, '_name', value)
+                setter = lambda self, value: setattr(self, "_name", value)
             )
         } | \
         BasePinDotMixin._PROPERTY_SPECS_DOT | \
@@ -47,12 +47,10 @@ class GatePin(ItemPosMixin, BasePinDotMixin, BasePinClockMixin, BasePin):
         self._length = PITCH
         super().__init__(parent)
 
-    @property
     def inverted(self : Self) -> bool:
         return self._dot
 
-    @inverted.setter
-    def inverted(self : Self, value : bool) -> None:
+    def setInverted(self : Self, value : bool) -> None:
         self._dot = value
         self._setPath()
 

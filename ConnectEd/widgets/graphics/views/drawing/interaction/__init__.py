@@ -27,7 +27,6 @@ class Interaction:
         self._view = view
         self._scene = view.scene()
 
-    @property
     def valid(self : Self) -> bool:
         raise NotImplementedError("Subclass must implement this method")
 
@@ -60,7 +59,6 @@ class ItemInteraction(Interaction):
         super().__init__(view)
         self._item = item
 
-    @property
     def valid(self : Self) -> bool:
         return self._item is not None
 
@@ -79,7 +77,6 @@ class ItemsInteraction(Interaction):
         super().__init__(view)
         self._items = items
 
-    @property
     def valid(self : Self) -> bool:
         return self._items is not None
 
@@ -109,7 +106,6 @@ class BlockPinInteraction(Interaction):
             self._parent = None
             self._pin = None
 
-    @property
     def valid(self : Self) -> bool:
         return \
             self._parent is not None and \

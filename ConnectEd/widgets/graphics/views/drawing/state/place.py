@@ -48,7 +48,7 @@ class DrawingViewStatePlacePort(ClickMixin, DrawingViewStateBase):
         dialog = PortPinDialog("Port", item, self.view)
         if dialog.exec():
             item.setName(dialog.getName())
-            item.direction = dialog.getDirection()
+            item.setDirection(dialog.getDirection())
             item.setRange(dialog.getRange())
             item.setRotation(
                 180 if dialog.getDirection() == SignalDirection.IN else 0
@@ -114,7 +114,7 @@ class DrawingViewStatePlaceBlockPin(DrawingViewStateBase):
             dialog = PortPinDialog("Block Pin", pin, self.view)
             if dialog.exec():
                 pin.setName(dialog.getName())
-                pin.direction = dialog.getDirection()
+                pin.setDirection(dialog.getDirection())
                 pin.setRange(dialog.getRange())
                 self.interact(PlaceBlockPinInteraction(
                     self.view, block, pin, self._snap(s),
@@ -152,7 +152,7 @@ class DrawingViewStatePlaceSymbolPin(ClickMixin, DrawingViewStateBase):
         dialog = PortPinDialog("Pin", pin, self.view)
         if dialog.exec():
             pin.setName(dialog.getName())
-            pin.direction = dialog.getDirection()
+            pin.setDirection(dialog.getDirection())
             pin.setRange(dialog.getRange())
             self.interact(PlaceSymbolPinInteraction(self.view, self._snap(s), pin))
         else:

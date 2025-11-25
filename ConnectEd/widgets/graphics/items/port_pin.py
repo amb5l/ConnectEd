@@ -38,7 +38,7 @@ class PortPinMixin(
         {
             "Name" : PropertySpec(
                 getter = lambda self: self._name,
-                setter = lambda self, value: setattr(self, '_name', value),
+                setter = lambda self, value: setattr(self, "_name", value),
                 text   = PropertyTextSpec("Name", origin="Middle Left")
             )
         }
@@ -47,27 +47,27 @@ class PortPinMixin(
             "Direction" : PropertySpec(
                 kind   = "SignalDirection",
                 getter = lambda self: self._direction,
-                setter = lambda self, value: setattr(self, '_direction', value)
+                setter = lambda self, value: setattr(self, "_direction", value)
             ),
             "Range Left" : PropertySpec(
                 valid  = lambda self: self._range is not None,
                 getter = lambda self: self._range.left,
-                setter = lambda self, value: setattr(self._range, 'left', value)
+                setter = lambda self, value: setattr(self._range, "left", value)
             ),
             "Range Direction" : PropertySpec(
                 kind   = "RangeDirection",
                 valid  = lambda self: self._range is not None,
                 getter = lambda self: self._range.dir,
-                setter = lambda self, value: setattr(self._range, 'dir', value)
+                setter = lambda self, value: setattr(self._range, "dir", value)
             ),
             "Range Right" : PropertySpec(
                 valid  = lambda self: self._range is not None,
                 getter = lambda self: self._range.right,
-                setter = lambda self, value: setattr(self._range, 'right', value)
+                setter = lambda self, value: setattr(self._range, "right", value)
             ),
             "Comment" : PropertySpec(
                 getter = lambda self: self._comment,
-                setter = lambda self, value: setattr(self, '_comment', value)
+                setter = lambda self, value: setattr(self, "_comment", value)
             )
         }
     _PROPERTY_SPECS = \

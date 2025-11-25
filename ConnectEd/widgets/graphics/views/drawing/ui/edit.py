@@ -189,7 +189,7 @@ class DrawingViewUiEditMixin:
         item   : "SymbolPin",
         enable : bool
     ):
-        if enable == item.dot:
+        if enable == item.dot():
             return
         self._scene.editSymbolPinDot(item, enable, undoable=True)
 
@@ -198,7 +198,7 @@ class DrawingViewUiEditMixin:
         item   : "SymbolPin",
         enable : bool
     ):
-        if enable == item.clock:
+        if enable == item.clock():
             return
         self._scene.editSymbolPinClock(item, enable, undoable=True)
 

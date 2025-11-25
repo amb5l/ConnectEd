@@ -54,12 +54,10 @@ class BasePinArrow(
         if parent and parent.isSelected() != selected:
             parent.setSelected(selected)
 
-    @property
     def direction(self : Self) -> SignalDirection:
         return self._direction
 
-    @direction.setter
-    def direction(self : Self, value : SignalDirection) -> None:
+    def setDirection(self : Self, value : SignalDirection) -> None:
         self._direction = value
         self._setPath()
 
@@ -98,11 +96,11 @@ class BasePin(ItemPaintMixin, PortPinMixin, QGraphicsPathItem):
     def setDirection(self : Self, value : SignalDirection) -> None:
         super(BasePin, BasePin).setDirection(value)
         if self._arrow is not None:
-            self._arrow.direction = value
+            self._arrow.setDirection(value)
 
     def onSceneChange(self : Self, scene : "DrawingScene") -> None:
         if self._arrow is not None:
-            self._arrow.direction = self._direction
+            self._arrow.setDirection(self._direction)
         self._setPath(scene)
 
     def onSelectionChange(self : Self, selected : bool) -> None:
@@ -120,19 +118,17 @@ class BasePinDotMixin:
         "Dot" : PropertySpec(
             kind   = "bool",
             getter = lambda self: self._dot,
-            setter = lambda self, value: setattr(self, '_dot', value)
+            setter = lambda self, value: setattr(self, "_dot", value)
         )
     }
 
     # instance attributes
     _dot : bool = False
 
-    @property
     def dot(self : Self) -> bool:
         return self._dot
 
-    @dot.setter
-    def dot(self : Self, value : bool) -> None:
+    def setDot(self : Self, value : bool) -> None:
         self._dot = value
         self._setPath()
 
@@ -143,18 +139,16 @@ class BasePinClockMixin:
         "Clock" : PropertySpec(
             kind   = "bool",
             getter = lambda self: self._clock,
-            setter = lambda self, value: setattr(self, '_clock', value)
+            setter = lambda self, value: setattr(self, "_clock", value)
         )
     }
 
     # instance attributes
     _clock : bool = False
 
-    @property
     def clock(self : Self) -> bool:
         return self._clock
 
-    @clock.setter
-    def clock(self : Self, value : bool) -> None:
+    def setClock(self : Self, value : bool) -> None:
         self._clock = value
         self._setPath()

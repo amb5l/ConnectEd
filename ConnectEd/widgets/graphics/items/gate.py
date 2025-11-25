@@ -56,7 +56,7 @@ class BaseGate(
     _PROPERTY_SPECS_LABEL = {
         "Label" : PropertySpec(
             getter = lambda self: self._label,
-            setter = lambda self, value: setattr(self, '_label', value)
+            setter = lambda self, value: setattr(self, "_label", value)
         )
     }
 
@@ -72,7 +72,6 @@ class BaseGate(
     def settingsName(self : Self) -> str:
         return "Gate"
 
-    @property
     def label(self : Self) -> str | None:
         return self._label
 
@@ -139,13 +138,13 @@ class BufGate(BaseGate):
         scene : "DrawingScene" = self.scene()
         s = ""
         # label (optional)
-        label = self.label
+        label = self.label()
         if label:
             s += f"{label}: "
         # output net
         s += f"{scene.getPinNetName(self._output)} <= "
         # inversion
-        if self._output.inverted != self._input.inverted:
+        if self._output.inverted() != self._input.inverted():
             s += "not "
         # input net
         s += scene.getPinNetName(self._input)
@@ -163,7 +162,7 @@ class BufGate(BaseGate):
         scene : "DrawingScene" = self.scene()
         s = ""
         # label (optional)
-        label = self.label
+        label = self.label()
         if label:
             s += f"{label}: "
         # always @(*) begin
@@ -171,7 +170,7 @@ class BufGate(BaseGate):
         # output net
         s += f"    {scene.getPinNetName(self._output)} = "
         # inversion
-        s += "~" if self._output.inverted != self._input.inverted else ""
+        s += "~" if self._output.inverted() != self._input.inverted() else ""
         # input net
         s += scene.getPinNetName(self._input)
         # semicolon
@@ -181,29 +180,29 @@ class BufGate(BaseGate):
         return s
 
     def output(self : Self) -> str:
-        return "L" if self._output.inverted else "H"
+        return "L" if self._output.inverted() else "H"
 
     def setOutput(self : Self, level: str = "H") -> None:
         if not hasattr(self, '_output'):
             self._output = GatePin(self)
-            self._output.direction = SignalDirection.OUT
+            self._output.setDirection(SignalDirection.OUT)
             self._output.setName("o")
             self._output.setPos(QPointF(-12, 0))
             self._output.setLength(12)
             self._output.setRotation(180)
-        self._output.inverted = level == "L"
+        self._output.setInverted(level == "L")
 
     def input(self : Self) -> str:
-        return "L" if self._input.inverted else "H"
+        return "L" if self._input.inverted() else "H"
 
     def setInput(self : Self, level : str = "H") -> None:
         if not hasattr(self, '_input'):
             self._input = GatePin(self)
-            self._input.direction = SignalDirection.IN
+            self._input.setDirection(SignalDirection.IN)
             self._input.setName("i")
             self._input.setPos(QPointF(-28, 0))
             self._input.setLength(12)
-        self._input.inverted = level == "L"
+        self._input.setInverted(level == "L")
 
 
 class Gate(BaseGate):
@@ -246,24 +245,24 @@ class Gate(BaseGate):
         scene : "DrawingScene" = self.scene()
         s = ""
         # label (optional)
-        label = self.label
+        label = self.label()
         if label:
             s += f"{label}: "
         # output net
         output_net_name = scene.getPinNetName(self._output)
         s += f"{output_net_name} <= "
         # output inversion - open parenthesis
-        if self._output.inverted:
+        if self._output.inverted():
             s += "not ("
         # 2 or more inputs
         for n, input_pin in enumerate(self._inputs):
             net_name = scene.getPinNetName(input_pin)
             s += f" {self._VHDL_OPERATOR} " if n > 0 else ""
-            s += f"{('not ' if input_pin.inverted else '')}{net_name}"
+            s += f"{('not ' if input_pin.inverted() else '')}{net_name}"
         # semicolon
         s += " ;"
         # output inversion - close parenthesis
-        if self._output.inverted:
+        if self._output.inverted():
             s += ")"
         return s
 
@@ -277,7 +276,7 @@ class Gate(BaseGate):
         scene : "DrawingScene" = self.scene()
         s = ""
         # label (optional)
-        label = self.label
+        label = self.label()
         if label:
             s += f"{label}: "
         # always @(*) begin
@@ -286,15 +285,15 @@ class Gate(BaseGate):
         output_net_name = scene.getPinNetName(self._output)
         s += f"    {output_net_name} = "
         # output inversion - open parenthesis
-        if self._output.inverted:
+        if self._output.inverted():
             s += "~("
         # 2 or more inputs
         for n, input_pin in enumerate(self._inputs):
             net_name = scene.getPinNetName(input_pin)
             s += f" {self._VLOG_OPERATOR} " if n > 0 else ""
-            s += f"{('~' if input_pin.inverted else '')}{net_name}"
+            s += f"{('~' if input_pin.inverted() else '')}{net_name}"
         # output inversion - close parenthesis
-        if self._output.inverted:
+        if self._output.inverted():
             s += ")"
         # semicolon
         s += ";\n"
@@ -303,19 +302,19 @@ class Gate(BaseGate):
         return s
 
     def output(self : Self) -> str:
-        return "L" if self._output.inverted else "H"
+        return "L" if self._output.inverted() else "H"
 
     def setOutput(self : Self, level: str = "H") -> None:
         if not hasattr(self, '_output'):
             self._output = GatePin(self)
-            self._output.direction = SignalDirection.OUT
+            self._output.setDirection(SignalDirection.OUT)
             self._output.setName("o")
             self._output.setPos(QPointF(-10, 0))
             self._output.setRotation(180)
-        self._output.inverted = level == "L"
+        self._output.setInverted(level == "L")
 
     def inputs(self : Self) -> str:
-        return "".join(["L" if pin.inverted else "H" for pin in self._inputs])
+        return "".join(["L" if pin.inverted() else "H" for pin in self._inputs])
 
     def setInputs(self : Self, levels : str) -> None:
         w = len(levels)
@@ -323,12 +322,12 @@ class Gate(BaseGate):
             self._inputs = []
             for i, level in enumerate(levels):
                 pin = GatePin(self)
-                pin.direction = SignalDirection.IN
+                pin.setDirection(SignalDirection.IN)
                 pin.setName(f"i{i+1}")
                 a = 0 if w % 2 == 1 or i < w // 2 else 1 # skip/don't center
                 y = 10 * (-(w // 2) + i + a)
                 pin.setPos(QPointF(-30, y))
-                pin.inverted = level == "L"
+                pin.setInverted(level == "L")
                 self._inputs.append(pin)
             if w > 3:
                 # widen gate input side
