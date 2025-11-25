@@ -4,7 +4,8 @@ from dataclasses import dataclass
 from PyQt6.QtCore    import Qt, QPointF, QXmlStreamWriter
 from PyQt6.QtWidgets import QGraphicsItem, \
                             QGraphicsSimpleTextItem, QGraphicsLineItem, \
-                            QGraphicsSceneMouseEvent
+                            QGraphicsSceneMouseEvent, QMenu
+from PyQt6.QtGui     import QAction
 
 from ....app import settings
 
@@ -224,6 +225,15 @@ class PropertyTextLine(PropertyTextMixin, BaseTextLine):
         PropertyTextMixin._PROPERTY_SPECS_NAME | \
         BaseTextMixin._PROPERTY_SPECS_APPEARANCE
 
+    def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
+        items = [
+            view.action("Edit...", lambda: view.ui.editPropertyText(self)),
+            view.separator(),
+            view.action("Appearance...", lambda: view.ui.editAppearance(self)),
+            view.action("Properties...", lambda: view.ui.editItemProperties(self))
+        ]
+        return items
+
 
 class PropertyTextBlock(PropertyTextMixin, BaseTextBlock):
     """Property text as a multi-line block without rotation."""
@@ -246,6 +256,24 @@ class PropertyTextBlock(PropertyTextMixin, BaseTextBlock):
                 setter = lambda self, value: self._crect.setHeight(value)
             )
         }
+
+    def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
+        auto_width = self._crect.width() < 0
+        auto_height = self._crect.height() < 0
+        items = [
+            view.action("Edit...", lambda: view.ui.editPropertyText(self)),
+            view.separator(),
+            view.action(
+                "Auto Width", lambda: self.setAutoWidth(not auto_width), auto_width
+            ),
+            view.action(
+                "Auto Height", lambda: self.setAutoHeight(not auto_height), auto_height
+            ),
+            view.separator(),
+            view.action("Appearance...", lambda: view.ui.editAppearance(self)),
+            view.action("Properties...", lambda: view.ui.editItemProperties(self))
+        ]
+        return items
 
 
 @dataclass

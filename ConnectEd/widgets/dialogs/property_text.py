@@ -1,24 +1,24 @@
 from typing import Self
 
 from PyQt6.QtWidgets import QWidget, QDialog, \
-                            QVBoxLayout, QHBoxLayout, \
-                            QLabel, QLineEdit, QTextEdit, QPushButton
+                            QVBoxLayout, QHBoxLayout, QLabel, QPushButton
 from PyQt6.QtGui     import QShowEvent
 
 from ..graphics.items import QuillPref, QuillPrefChange
 
 from ..graphics.items.property_text import PropertyTextMixin, PropertyTextBlock
 
+from .components.line_edit              import LineEdit
+from .components.text_edit              import TextEdit
 from .components.layout.text_appearance import TextAppearanceLayout
-
-from .components.layout.ok_cancel import okCancelLayout
+from .components.layout.ok_cancel       import okCancelLayout
 
 
 class PropertyTextDialog(QDialog):
     _dialog_layout     : QVBoxLayout
     _value_layout      : QHBoxLayout
     _value_label       : QLabel
-    _value_edit        : QLineEdit
+    _value_edit        : LineEdit | TextEdit
     _appearance_layout : TextAppearanceLayout
     _ok_cancel_layout  : QHBoxLayout
     _ok_button         : QPushButton
@@ -35,16 +35,13 @@ class PropertyTextDialog(QDialog):
         self._dialog_layout = QVBoxLayout(self)
         if isinstance(item, PropertyTextBlock):
             self._value_layout = QVBoxLayout()
-            self._value_label = QLabel("Value:")
-            self._value_layout.addWidget(self._value_label)
-            self._value_edit = QTextEdit(item.value())
-            self._value_layout.addWidget(self._value_edit)
+            self._value_edit = TextEdit(item.value())
         else:
             self._value_layout = QHBoxLayout()
-            self._value_label = QLabel("Value:")
-            self._value_layout.addWidget(self._value_label)
-            self._value_edit = QLineEdit(item.value())
-            self._value_layout.addWidget(self._value_edit)
+            self._value_edit = LineEdit(item.value())
+        self._value_label = QLabel("Value:")
+        self._value_layout.addWidget(self._value_label)
+        self._value_layout.addWidget(self._value_edit)
         self._dialog_layout.addLayout(self._value_layout)
         initial = item.a.quill.getPref()
         defaults = item.a.quill.getDefaults()
