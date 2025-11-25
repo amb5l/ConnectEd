@@ -23,7 +23,7 @@ class DrawingViewUiViewMixin:
         self._view._zoomRect(rect)
 
     def viewZoomArea(self : "DrawingViewUi") -> None:
-        self.state.go(self.stateViewZoomArea1)
+        self._view.state.go(self._view.stateViewZoomArea1)
 
     def viewZoomIn(self : "DrawingViewUi", n : int = 1) -> None:
         self._view._zoomRelMouse((1 + settings().get("display/zoom/step"))**n)
@@ -32,7 +32,7 @@ class DrawingViewUiViewMixin:
         self._view._zoomRelMouse((1 - settings().get("display/zoom/step"))**n)
 
     def viewPan(self : "DrawingViewUi", n : int = 1) -> None:
-        self.state.go(self.stateViewPan1)
+        self._view.state.go(self._view.stateViewPan1)
 
     def viewPanLeft(self : "DrawingViewUi", n : int = 1) -> None:
         self._view._pan(QPointF(settings().get("display/pan/step") * n, 0))
