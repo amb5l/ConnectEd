@@ -52,7 +52,7 @@ class Block(BaseRectangle):
 
     def onGeometryChange(self : Self) -> None:
         super().onGeometryChange()
-        # reposition pins
+        # TODO: reposition pins
         #for item in self.childItems():
         #    if isinstance(item, Pin):
         #        item.onPositionChange()
