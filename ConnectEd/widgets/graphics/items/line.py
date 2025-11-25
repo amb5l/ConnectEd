@@ -90,8 +90,8 @@ class Line(
         line_path.lineTo(self._line.p2())
         stroker = QPainterPathStroker()
         stroker.setWidth(stroke_width)
-        stroker.setCapStyle(Qt.PenCapStyle.SquareCap)
-        stroker.setJoinStyle(Qt.PenJoinStyle.MiterJoin)
+        stroker.setCapStyle(Qt.PenCapStyle.RoundCap)
+        stroker.setJoinStyle(Qt.PenJoinStyle.RoundJoin)
         stroker_path = stroker.createStroke(line_path)
         self._hshape = stroker_path
         self.updateHandles()
