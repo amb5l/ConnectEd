@@ -50,7 +50,7 @@ class Port(
         self._setPath(scene)
 
     def setDirection(self : Self, value : "SignalDirection") -> None:
-        super(Port, Port).setDirection(value)
+        PortPinMixin.setDirection(self, value)
         self._setPath()
 
     def _setPath(self : Self, scene : "DrawingScene | None" = None) -> None:
