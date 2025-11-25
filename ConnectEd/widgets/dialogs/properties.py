@@ -286,7 +286,8 @@ class PropertiesDialog(QDialog):
                 after.bold      = bold_item.getValue()
                 after.italic    = italic_item.getValue()
                 after.underline = underline_item.getValue()
-            before_after[before_name] = PropertyChange(before, after)
+            key = after_name if before_name is None else before_name
+            before_after[key] = PropertyChange(before, after)
         changes : dict[str, PropertyChange] = {}
         for change in before_after.values():
             if change.before != change.after:
