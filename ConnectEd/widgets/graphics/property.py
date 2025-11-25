@@ -125,12 +125,21 @@ class Property(QObject):
         return self._text
 
     def setText(self : Self, text : "PropertyTextMixin | None") -> None:
+        # Disconnect from old property text if exists
+        if self._text is not None:
+            try:
+                self.changed.disconnect(self._text.onTextChange)
+            except TypeError:
+                pass
         # If removing property text, delete it from scene
         if text is None and self._text is not None:
             scene = self._text.scene()
             if scene is not None:
                 scene.removeItem(self._text)
         self._text = text
+        # Connect to new property text if provided
+        if text is not None:
+            self.changed.connect(text.onTextChange)
 
     def _substituteAndSubscribe(
         self      : Self,
