@@ -75,13 +75,38 @@ class RangeDirection(Enum):
 
 class VectorRange:
     left  : str            # left value (may refer to parameter/generic)
-    dir   : RangeDirection # down or up
+    dir   : RangeDirection # none/down/up
     right : str            # right value (may refer to parameter/generic)
 
     def __init__(self : Self, left : str, dir : RangeDirection, right : str) -> None:
         self.left  = left
         self.dir   = dir
         self.right = right
+
+    def toStr(self : Self) -> str:
+        match self.dir:
+            case RangeDirection.DOWN:
+                dir_str = ":>:"
+            case RangeDirection.UP:
+                dir_str = ":<:"
+            case _:
+                dir_str = ":X:"
+        return f"{self.left}{dir_str}{self.right}"
+
+    @classmethod
+    def fromStr(cls, s : str) -> Self:
+        if s.count(":") == 1:
+            left, right = s.split(":")
+            return cls(left, RangeDirection.NONE, right)
+        elif s.count(":") == 2:
+            left, dir_str, right = s.split(":")
+            match dir_str:
+                case ">" : dir = RangeDirection.DOWN
+                case "<" : dir = RangeDirection.UP
+                case _   : dir = RangeDirection.NONE
+            return cls(left, dir, right)
+        else:
+            return None
 
 
 @dataclass
