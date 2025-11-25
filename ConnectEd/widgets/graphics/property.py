@@ -70,14 +70,19 @@ class Property(QObject):
     def kind(self: Self) -> str:
         return self._kind
 
-    def get(self: Self) -> Any:
+    def get(self: Self, recurse: int = 0) -> Any:
         """Get value, applying substitution if needed."""
+        if recurse > 10:  # prevent infinite recursion
+            logger().warning(
+                f"Property '{self._name}' recursion depth exceeded"
+            )
+            return f"{{RECURSION_ERROR:{self._name}}}"
         raw_value = \
             self._getter if isinstance(self._getter, str) else \
             self._getter(self._owner) if self._getter and callable(self._getter) else \
             None
         if isinstance(raw_value, str):
-            return self._substitute(raw_value)
+            return self._substitute(raw_value, recurse + 1)
         return raw_value
 
     def set(self: Self, new_value: Any) -> None:
@@ -109,7 +114,7 @@ class Property(QObject):
     def setText(self : Self, text : "PropertyTextMixin | None") -> None:
         self._text = text
 
-    def _substitute(self: Self, value: str) -> str:
+    def _substitute(self: Self, value: str, recurse: int) -> str:
         """Parse {var_name} and resolve from local owner or scene."""
         import re
         def repl(match: re.Match) -> str:
@@ -117,11 +122,11 @@ class Property(QObject):
             # Local item first
             if hasattr(self._owner, 'properties') \
             and var_name in self._owner.properties:
-                return str(self._owner.properties[var_name].get())
+                return str(self._owner.properties[var_name].get(recurse))
             # Fallback to parent scene
             scene = self._owner.scene() if hasattr(self._owner, 'scene') \
                 else self._owner  # For scene itself, _owner is scene
             if hasattr(scene, 'properties') and var_name in scene.properties:
-                return str(scene.properties[var_name].get())
+                return str(scene.properties[var_name].get(recurse))
             return match.group(0)  # Unresolved: leave as-is
         return re.sub(r'\{(\w+)\}', repl, value)
