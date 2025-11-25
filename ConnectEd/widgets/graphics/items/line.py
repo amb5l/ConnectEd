@@ -6,7 +6,8 @@ from PyQt6.QtGui     import QPainterPath, QPainterPathStroker
 
 from ....app import settings
 
-from ..property import PropertySpec
+from ..property   import PropertySpec
+from ..properties import PropertiesMixin
 
 from .handle import Handle
 
@@ -31,6 +32,7 @@ class Line(
     ItemCloneMixin,
     ItemXmlMixin,
     ItemMenuMixin,
+    PropertiesMixin,
     QGraphicsLineItem
 ):
     # class attributes
@@ -94,6 +96,11 @@ class Line(
         self._hshape = stroker_path
         self.updateHandles()
         self.onPositionChange()
+        if hasattr(self, "properties"):
+            self.properties["X1"].changed.emit(self.x1())
+            self.properties["Y1"].changed.emit(self.y1())
+            self.properties["X2"].changed.emit(self.x2())
+            self.properties["Y2"].changed.emit(self.y2())
 
     def onPositionChange(
         self : Self | QGraphicsLineItem,

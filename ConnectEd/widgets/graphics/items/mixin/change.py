@@ -4,8 +4,6 @@ from PyQt6.QtWidgets import QGraphicsItem
 
 from ...properties import PropertiesMixin
 
-from .pos        import ItemPosMixin
-
 
 class ItemChangeMixin:
     def itemChange(
@@ -23,13 +21,21 @@ class ItemChangeMixin:
             case self.GraphicsItemChange.ItemRotationHasChanged:
                 if hasattr(self, "onRotationChange"):
                     self.onRotationChange()
+                    if isinstance(self, PropertiesMixin) \
+                    and "Rotation" in self.properties:
+                        self.properties["Rotation"].changed.emit(self.rotation())
             case self.GraphicsItemChange.ItemPositionHasChanged:
                 if hasattr(self, "onPositionChange"):
                     self.onPositionChange(value)
-                    if isinstance(self, ItemPosMixin) \
-                    and isinstance(self, PropertiesMixin):
-                        self.properties["Position X"].changed.emit(self.pos().x())
-                        self.properties["Position Y"].changed.emit(self.pos().y())
+                    if isinstance(self, PropertiesMixin):
+                        if "Position X" in self.properties:
+                            self.properties["Position X"].changed.emit(
+                                self.pos().x()
+                            )
+                        if "Position Y" in self.properties:
+                            self.properties["Position Y"].changed.emit(
+                                self.pos().y()
+                            )
             case self.GraphicsItemChange.ItemScenePositionHasChanged:
                 if hasattr(self, "onScenePositionChange"):
                     self.onScenePositionChange(value)

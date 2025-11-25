@@ -127,6 +127,9 @@ class BaseRectangleMixin(
             self._hshape = stroker_path
         self.updateHandles()
         self.onPositionChange()
+        if hasattr(self, "properties"):
+            self.properties["Width"].changed.emit(self.rect().width())
+            self.properties["Height"].changed.emit(self.rect().height())
 
     def onPositionChange(
         self : Self | QGraphicsRectItem,

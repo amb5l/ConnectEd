@@ -36,6 +36,7 @@ class Property(QObject):
     _valid   : Callable[["PropertyOwner"], bool]      | None
     _default : Callable[["PropertyOwner"], Any]       | None
     _text    : "PropertyTextMixin | None"
+    _subs    : dict["Property", Callable]  # dep_property -> update_slot
 
     # signals
     changed = pyqtSignal(object)
@@ -60,6 +61,7 @@ class Property(QObject):
         self._valid   = valid
         self._default = default
         self._text    = text
+        self._subs    = {}
 
     def isStatic(self: Self) -> bool:
         return not isinstance(self._getter, Callable)
@@ -70,8 +72,8 @@ class Property(QObject):
     def kind(self: Self) -> str:
         return self._kind
 
-    def get(self: Self, recurse: int = 0) -> Any:
-        """Get value, applying substitution if needed."""
+    def get(self: Self, recurse: int = 0, subscribe: bool = True) -> Any:
+        """Get value, applying substitution and subscriptions if needed."""
         if recurse > 10:  # prevent infinite recursion
             logger().warning(
                 f"Property '{self._name}' recursion depth exceeded"
@@ -82,12 +84,14 @@ class Property(QObject):
             self._getter(self._owner) if self._getter and callable(self._getter) else \
             None
         if isinstance(raw_value, str):
-            return self._substitute(raw_value, recurse + 1)
+            return self._substituteAndSubscribe(
+                raw_value, recurse + 1, subscribe
+            )
         return raw_value
 
     def set(self: Self, new_value: Any) -> None:
         """Set value and notify subscribers."""
-        old_value = self.get()
+        old_value = self.get(subscribe=False)  # Don't resubscribe during get
         if self._setter:
             if isinstance(new_value, str) and self._kind != "str":
                 new_value = str2val(new_value, self._kind)
@@ -97,6 +101,9 @@ class Property(QObject):
         else:
             logger().error(f"Property '{self._name}' has no setter")
             return
+        # Clear subscriptions if new value doesn't need them
+        if not isinstance(new_value, str) and self._text is not None:
+            self._clearSubs()
         if old_value != new_value:
             self.changed.emit(new_value)  # Propagate change
 
@@ -114,19 +121,57 @@ class Property(QObject):
     def setText(self : Self, text : "PropertyTextMixin | None") -> None:
         self._text = text
 
-    def _substitute(self: Self, value: str, recurse: int) -> str:
-        """Parse {var_name} and resolve from local owner or scene."""
+    def _substituteAndSubscribe(
+        self      : Self,
+        value     : str,
+        recurse   : int,
+        subscribe : bool
+    ) -> str:
+        """Parse {var_name}, resolve, and subscribe to changes."""
         import re
+        # Clear old subscriptions when subscribing (each property manages its own)
+        if subscribe and self._subs:
+            self._clearSubs()
+        # Replace {var_name} with the value of the dependent property,
+        # subscribing to changes.
         def repl(match: re.Match) -> str:
             var_name = match.group(1)
-            # Local item first
+            prop_dep = None
+            # Look for local property first
             if hasattr(self._owner, 'properties') \
             and var_name in self._owner.properties:
-                return str(self._owner.properties[var_name].get(recurse))
-            # Fallback to parent scene
-            scene = self._owner.scene() if hasattr(self._owner, 'scene') \
-                else self._owner  # For scene itself, _owner is scene
-            if hasattr(scene, 'properties') and var_name in scene.properties:
-                return str(scene.properties[var_name].get(recurse))
-            return match.group(0)  # Unresolved: leave as-is
+                prop_dep = self._owner.properties[var_name]
+                # Nested deps subscribe independently
+                result = str(prop_dep.get(recurse, subscribe=subscribe))
+            # Fallback to scene
+            else:
+                scene = self._owner.scene() if hasattr(self._owner, 'scene') \
+                    else self._owner  # For scene itself, _owner is scene
+                if hasattr(scene, 'properties') \
+                and var_name in scene.properties:
+                    prop_dep = scene.properties[var_name]
+                    result = str(prop_dep.get(recurse, subscribe=subscribe))
+                else:
+                    return match.group(0)  # Unresolved: leave as-is
+            # Subscribe to this property's direct dependencies (once per property)
+            if subscribe and prop_dep not in self._subs:
+                # Create slot that updates text display and propagates signal
+                def update_slot(_value=None):
+                    # Update text display if present
+                    if self._text is not None:
+                        self._text.onTextChange()
+                    # Propagate change signal for chained dependencies
+                    self.changed.emit(self.get(subscribe=False))
+                prop_dep.changed.connect(update_slot)
+                self._subs[prop_dep] = update_slot
+            return result
         return re.sub(r'\{(\w+)\}', repl, value)
+
+    def _clearSubs(self : Self) -> None:
+        """Clear all subscriptions."""
+        for prop, slot in self._subs.items():
+            try:
+                prop.changed.disconnect(slot)
+            except TypeError:
+                pass
+        self._subs.clear()

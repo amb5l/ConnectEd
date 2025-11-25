@@ -137,6 +137,8 @@ class BaseTextLine(
     def setText(self : Self, text : str) -> None:
         """Set text and update geometry."""
         super().setText(text)
+        if hasattr(self, "properties") and "Text" in self.properties:
+            self.properties["Text"].changed.emit(self.text())
         self.onGeometryChange()
 
     def paint(
@@ -256,6 +258,11 @@ class BaseTextBlock(
         self.updateHandles()
         self.onPositionChange()
         self.update()
+        if hasattr(self, "properties"):
+            if "Width" in self.properties:
+                self.properties["Width"].changed.emit(self._crect.width())
+            if "Height" in self.properties:
+                self.properties["Height"].changed.emit(self._crect.height())
 
     def setOrigin(self : Self, name : str) -> None:
         """Override to handle text alignment."""
@@ -285,6 +292,8 @@ class BaseTextBlock(
     def setPlainText(self : Self, text : str) -> None:
         """Set plain text and update geometry."""
         QGraphicsTextItem.setPlainText(self, text)
+        if hasattr(self, "properties") and "Text" in self.properties:
+            self.properties["Text"].changed.emit(self.text())
         self.onGeometryChange()
 
     def text(self : Self) -> str:
