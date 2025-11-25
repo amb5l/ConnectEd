@@ -12,6 +12,8 @@ from ....app import settings
 from ..property   import PropertySpec
 from ..properties import PropertiesMixin
 
+from . import DEFAULT
+
 from .base_text import BaseTextMixin, BaseTextLine, BaseTextBlock
 from .handle    import Handle
 
@@ -74,6 +76,7 @@ class PropertyTextMixin:
     _PROPERTY_SPECS_VISIBLE = \
         {
             "Visible" : PropertySpec(
+                kind   = "bool",
                 getter = lambda self: self.isVisible(),
                 setter = lambda self, value: self.setVisible(value)
             )
@@ -158,12 +161,11 @@ class PropertyTextMixin:
         rect = self.boundingRect()
         self.setTransformOriginPoint(rect.center())
         if 135 < self.sceneRotation() <= 225:
-            # Use base class to prevent recursion
-            QGraphicsSimpleTextItem.setRotation(self, (self.rotation() + 180) % 360)
+            super().setRotation(self, (self.rotation() + 180) % 360)
             # counter rotate handles
             for h in self._handles.values():
                 h.setTransformOriginPoint(self.mapToItem(h, rect.center()))
-                QGraphicsSimpleTextItem.setRotation(h, (h.rotation() + 180) % 360)
+                super().setRotation(h, (h.rotation() + 180) % 360)
 
     def onTextChange(self : Self) -> None:
         value = self.value()
@@ -252,22 +254,12 @@ class PropertyTextBlock(PropertyTextMixin, BaseTextBlock):
         PropertyTextMixin._PROPERTY_SPECS_VISIBLE | \
         PropertyTextMixin._PROPERTY_SPECS_CLEAT | \
         BaseTextMixin._PROPERTY_SPECS_POS | \
-        {
-            "Width" : PropertySpec(
-                kind   = "float",
-                getter = lambda self: self._crect.width(),
-                setter = lambda self, value: self._crect.setWidth(value)
-            ),
-            "Height" : PropertySpec(
-                kind   = "float",
-                getter = lambda self: self._crect.height(),
-                setter = lambda self, value: self._crect.setHeight(value)
-            )
-        } | \
+        BaseTextBlock._PROPERTY_SPECS_SIZE | \
         BaseTextMixin._PROPERTY_SPECS_APPEARANCE
+
     def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
-        auto_width = self._crect.width() < 0
-        auto_height = self._crect.height() < 0
+        auto_width = self._width == DEFAULT
+        auto_height = self._height == DEFAULT
         items = [
             view.action("Edit...", lambda: view.ui.editPropertyText(self)),
             view.separator(),

@@ -11,13 +11,15 @@ from ....core.defs import PITCH
 from ..property   import PropertySpec
 from ..properties import PropertiesMixin
 
+from . import Default, DEFAULT
+
 from .mixin            import ItemMixin
+from .mixin.origin     import ItemOriginMixin
 from .mixin.pos        import ItemPosMixin
 from .mixin.rotate     import ItemRotateMixin
 from .mixin.bound      import ItemBoundMixin
 from .mixin.shape      import ItemShapeMixin
 from .mixin.handle     import ItemRectHandlesMixin
-from .mixin.origin     import ItemOriginMixin
 from .mixin.quill      import ItemQuillMixin
 from .mixin.outline    import ItemOutlineMixin
 from .mixin.change     import ItemChangeMixin
@@ -32,8 +34,9 @@ if TYPE_CHECKING:
 
 class BaseTextMixin(
     ItemMixin,
-    ItemPosMixin,
     ItemOriginMixin,
+    ItemPosMixin,
+    ItemRotateMixin,
     ItemRectHandlesMixin,
     ItemQuillMixin,
     ItemOutlineMixin,
@@ -49,7 +52,8 @@ class BaseTextMixin(
     _ORIGIN_NAME = "Top Left"
     _PROPERTY_SPECS_POS = \
         ItemOriginMixin._PROPERTY_SPECS_ORIGIN | \
-        ItemPosMixin._PROPERTY_SPECS_POS
+        ItemPosMixin._PROPERTY_SPECS_POS | \
+        ItemRotateMixin._PROPERTY_SPECS_ROT
     _PROPERTY_SPECS_TEXT = {
         "Text" : PropertySpec(
             getter = lambda self: self.text(),
@@ -97,7 +101,6 @@ class BaseTextMixin(
 
 class BaseTextLine(
     BaseTextMixin,
-    ItemRotateMixin,
     QGraphicsSimpleTextItem
 ):
     """Single-line text item."""
@@ -106,7 +109,6 @@ class BaseTextLine(
     _AP_RESIZE = [] # no resizing handles
     _PROPERTY_SPECS = \
         BaseTextMixin._PROPERTY_SPECS_POS | \
-        ItemRotateMixin._PROPERTY_SPECS_ROT | \
         BaseTextMixin._PROPERTY_SPECS_TEXT | \
         BaseTextMixin._PROPERTY_SPECS_APPEARANCE
 
@@ -181,25 +183,28 @@ class BaseTextBlock(
     """Multi-line text block with optional width/height constraints."""
 
     # class attributes
-    _PROPERTY_SPECS = \
-        BaseTextMixin._PROPERTY_SPECS_POS | \
-        BaseTextMixin._PROPERTY_SPECS_TEXT | \
+    _PROPERTY_SPECS_SIZE = \
         {
             "Width" : PropertySpec(
                 kind   = "float",
-                getter = lambda self: self._crect.width(),
-                setter = lambda self, value: self._crect.setWidth(value)
+                getter = lambda self: self._width,
+                setter = lambda self, value: setattr(self, '_width', value)
             ),
             "Height" : PropertySpec(
                 kind   = "float",
-                getter = lambda self: self._crect.height(),
-                setter = lambda self, value: self._crect.setHeight(value)
+                getter = lambda self: self._height,
+                setter = lambda self, value: setattr(self, '_height', value)
             )
-        } | \
+        }
+    _PROPERTY_SPECS = \
+        BaseTextMixin._PROPERTY_SPECS_POS | \
+        _PROPERTY_SPECS_SIZE | \
+        BaseTextMixin._PROPERTY_SPECS_TEXT | \
         BaseTextMixin._PROPERTY_SPECS_APPEARANCE
 
     # instance attributes
-    _crect   : QRectF            # constrained rect: -1 (w/h) = auto (per Qt)
+    _width   : float | Default   # width constraint
+    _height  : float | Default   # height constraint
     _align_v : Qt.AlignmentFlag  # vertical alignment
 
     def __init__(
@@ -207,7 +212,8 @@ class BaseTextBlock(
         pos  : QPointF | None = None,
         bare : bool = False
     ) -> None:
-        self._crect = QRectF(0, 0, -1, -1)  # auto (fully unconstrained)
+        self._width   = DEFAULT
+        self._height  = DEFAULT
         self._align_v = Qt.AlignmentFlag.AlignTop
         QGraphicsTextItem.__init__(self)
         self.document().setDocumentMargin(0)  # minimize margin
@@ -222,10 +228,7 @@ class BaseTextBlock(
             return
         self.prepareGeometryChange()
         # apply width constraint to enable text wrapping
-        if self._crect.width() >= 0:
-            self.setTextWidth(self._crect.width())
-        else:
-            self.setTextWidth(-1)  # auto width
+        self.setTextWidth(self._width if self._width != DEFAULT else -1)
         # calculate unconstrained rect (without margins)
         doc = self.document()
         root_frame = doc.rootFrame()
@@ -234,13 +237,11 @@ class BaseTextBlock(
         root_frame.setFrameFormat(fmt)
         self._urect = QGraphicsTextItem.boundingRect(self)  # unconstrained rect
         # calculate and cache bounding rect, accounting for constraints
-        self._brect = QRectF(self._crect)
-        if self._crect.width() < 0:  # auto width
-            self._brect.setWidth(self._urect.width())
-        if self._crect.height() < 0:  # auto height
-            self._brect.setHeight(self._urect.height())
+        w = self._urect.width() if self._width == DEFAULT else self._width
+        h = self._urect.height() if self._height == DEFAULT else self._height
+        self._brect = QRectF(0, 0, w, h)
         # apply vertical alignment via document top margin
-        if self._crect.height() >= 0:
+        if self._height != DEFAULT:
             uh = self._urect.height()  # unconstrained height
             ch = self._brect.height()  # constrained height
             if self._align_v == Qt.AlignmentFlag.AlignBottom:
@@ -260,9 +261,9 @@ class BaseTextBlock(
         self.update()
         if hasattr(self, "properties"):
             if "Width" in self.properties:
-                self.properties["Width"].changed.emit(self._crect.width())
+                self.properties["Width"].changed.emit(self._width)
             if "Height" in self.properties:
-                self.properties["Height"].changed.emit(self._crect.height())
+                self.properties["Height"].changed.emit(self._height)
 
     def setOrigin(self : Self, name : str) -> None:
         """Override to handle text alignment."""
@@ -306,12 +307,12 @@ class BaseTextBlock(
 
     def setAutoWidth(self : Self, auto : bool) -> None:
         """Set whether width should auto-adjust."""
-        self._crect.setWidth(-1 if auto else self.boundingRect().width())
+        self._width = DEFAULT if auto else self.boundingRect().width()
         self.onGeometryChange()
 
     def setAutoHeight(self : Self, auto : bool) -> None:
         """Set whether height should auto-adjust."""
-        self._crect.setHeight(-1 if auto else self.boundingRect().height())
+        self._height = DEFAULT if auto else self.boundingRect().height()
         self.onGeometryChange()
 
     def paint(
@@ -364,8 +365,8 @@ class BaseTextBlock(
 
     def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
         """Return context menu items for text block."""
-        auto_width = self._crect.width() < 0
-        auto_height = self._crect.height() < 0
+        auto_width = self._width == DEFAULT
+        auto_height = self._height == DEFAULT
         items = [
             view.action("Edit...", view.ui.editTextBlock),
             view.separator(),
@@ -383,11 +384,7 @@ class BaseTextBlock(
 
     def _resizeBy(self : Self, dw : float, dh : float) -> None:
         """Resize the text block by the given deltas."""
-        new_w = max(self._brect.width() + dw, PITCH)
-        new_h = max(self._brect.height() + dh, PITCH)
-        if new_w != self._crect.width():
-            self._crect.setWidth(new_w)
-        if new_h != self._crect.height():
-            self._crect.setHeight(new_h)
+        self._width = max(self._brect.width() + dw, PITCH)
+        self._height = max(self._brect.height() + dh, PITCH)
         if dw != 0 or dh != 0:
             self.onGeometryChange()
