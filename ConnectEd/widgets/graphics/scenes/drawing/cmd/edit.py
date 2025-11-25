@@ -317,13 +317,13 @@ class CmdEditProperties(CmdBase):
                 # existing property
                 self._object.renProperty(before.name, after.name)
                 self._object.properties[after.name].set(after.value)
-                pt = self._object.properties[before.name].getText()
+                pt = self._object.properties[after.name].getText()
                 if pt is None:
                     if after.display != DisplayChoice.NONE:
                         self._addPropertyText(after)
                 else:
                     if after.display == DisplayChoice.NONE:
-                        self._object.properties[before.name].setText(None)
+                        self._object.properties[after.name].setText(None)
                     else:
                         self._modifyPropertyText(pt, after)
 
