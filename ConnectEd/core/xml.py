@@ -30,9 +30,10 @@ def toXmlBegin(xw : QXmlStreamWriter) -> None:
     xw.writeStartElement(APP_NAME) # TODO: version
 
 def toXmlAttrs(instance : "PropertiesMixin", xw : QXmlStreamWriter) -> None:
+    from ..widgets.graphics.items import DEFAULT
     for name, prop in instance.properties.items():
         value = prop.get()
-        if value == "default":  # skip serialising default values
+        if value is DEFAULT:  # skip serialising default values
             continue
         xw.writeAttribute(proper2snake(name), val2str(value))
 
