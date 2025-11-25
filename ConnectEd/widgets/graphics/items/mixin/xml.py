@@ -39,21 +39,14 @@ class ItemXmlMixin:
         if xr.isEndElement() and xr.name() == cls.__name__:
             return instance
         # import and registerchild pin and property text items
-        pp = "ConnectEd.widgets.graphics.items"
+        pkg = "ConnectEd.widgets.graphics.items"
         pin_classes = {}
-        registerClass( pin_classes , "GatePin"   , pkg=pp )
-        registerClass( pin_classes , "BlockPin"  , pkg=pp )
-        registerClass( pin_classes , "SymbolPin" , pkg=pp )
+        registerClass( pin_classes , "GatePin"   , pkg=pkg )
+        registerClass( pin_classes , "BlockPin"  , pkg=pkg )
+        registerClass( pin_classes , "SymbolPin" , pkg=pkg )
         pt_classes = {}
-        registerClass( pt_classes , "PropertyText"                    , pkg=pp )
-        registerClass( pt_classes , "PortName"         , "port"       , pkg=pp )
-        registerClass( pt_classes , "PortComment"      , "port"       , pkg=pp )
-        registerClass( pt_classes , "BlockLabel"       , "block"      , pkg=pp )
-        registerClass( pt_classes , "BlockName"        , "block"      , pkg=pp )
-        registerClass( pt_classes , "BlockPinName"     , "block_pin"  , pkg=pp )
-        registerClass( pt_classes , "BlockPinComment"  , "block_pin"  , pkg=pp )
-        registerClass( pt_classes , "SymbolPinName"    , "symbol_pin" , pkg=pp )
-        registerClass( pt_classes , "SymbolPinComment" , "symbol_pin" , pkg=pp )
+        registerClass( pt_classes , "PropertyTextLine"  , "property_text" , pkg )
+        registerClass( pt_classes , "PropertyTextBlock" , "property_text" , pkg )
         # process child items
         while not (xr.isEndElement() and xr.name() == cls.__name__):
             if xr.isStartElement():
