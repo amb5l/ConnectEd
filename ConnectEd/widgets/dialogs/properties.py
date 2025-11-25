@@ -139,7 +139,7 @@ class PropertiesDialog(QDialog):
             kind       = prop.kind()
             default    = prop.default()
             vars.name  = name
-            vars.value = prop.get()
+            vars.value = prop.raw()
             pt         = prop.getText()
             if pt is None:
                 vars.display  = DisplayChoice.NONE

@@ -72,6 +72,15 @@ class Property(QObject):
     def kind(self: Self) -> str:
         return self._kind
 
+    def raw(self: Self) -> Any:
+        """Get raw value without substitution."""
+        if isinstance(self._getter, str):
+            return self._getter
+        elif self._getter and callable(self._getter):
+            return self._getter(self._owner)
+        else:
+            return None
+
     def get(self: Self, recurse: int = 0, subscribe: bool = True) -> Any:
         """Get value, applying substitution and subscriptions if needed."""
         if recurse > 10:  # prevent infinite recursion
@@ -79,10 +88,7 @@ class Property(QObject):
                 f"Property '{self._name}' recursion depth exceeded"
             )
             return f"{{RECURSION_ERROR:{self._name}}}"
-        raw_value = \
-            self._getter if isinstance(self._getter, str) else \
-            self._getter(self._owner) if self._getter and callable(self._getter) else \
-            None
+        raw_value = self.raw()
         if isinstance(raw_value, str):
             return self._substituteAndSubscribe(
                 raw_value, recurse + 1, subscribe
