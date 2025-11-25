@@ -71,6 +71,13 @@ class PropertyTextMixin:
                 setter = lambda self, value: self.setName(value)
             )
         }
+    _PROPERTY_SPECS_VISIBLE = \
+        {
+            "Visible" : PropertySpec(
+                getter = lambda self: self.isVisible(),
+                setter = lambda self, value: self.setVisible(value)
+            )
+        }
     _PROPERTY_SPECS_CLEAT = \
         {
             "Cleat" : PropertySpec(
@@ -219,10 +226,11 @@ class PropertyTextLine(PropertyTextMixin, BaseTextLine):
 
     # class attributes
     _PROPERTY_SPECS = \
+        PropertyTextMixin._PROPERTY_SPECS_NAME | \
+        PropertyTextMixin._PROPERTY_SPECS_VISIBLE | \
         PropertyTextMixin._PROPERTY_SPECS_CLEAT | \
         BaseTextMixin._PROPERTY_SPECS_POS | \
         ItemRotateMixin._PROPERTY_SPECS_ROT | \
-        PropertyTextMixin._PROPERTY_SPECS_NAME | \
         BaseTextMixin._PROPERTY_SPECS_APPEARANCE
 
     def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
@@ -240,10 +248,10 @@ class PropertyTextBlock(PropertyTextMixin, BaseTextBlock):
 
     # class attributes
     _PROPERTY_SPECS = \
+        PropertyTextMixin._PROPERTY_SPECS_NAME | \
+        PropertyTextMixin._PROPERTY_SPECS_VISIBLE | \
         PropertyTextMixin._PROPERTY_SPECS_CLEAT | \
         BaseTextMixin._PROPERTY_SPECS_POS | \
-        PropertyTextMixin._PROPERTY_SPECS_NAME | \
-        BaseTextMixin._PROPERTY_SPECS_APPEARANCE | \
         {
             "Width" : PropertySpec(
                 kind   = "float",
@@ -255,8 +263,8 @@ class PropertyTextBlock(PropertyTextMixin, BaseTextBlock):
                 getter = lambda self: self._crect.height(),
                 setter = lambda self, value: self._crect.setHeight(value)
             )
-        }
-
+        } | \
+        BaseTextMixin._PROPERTY_SPECS_APPEARANCE
     def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
         auto_width = self._crect.width() < 0
         auto_height = self._crect.height() < 0
