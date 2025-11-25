@@ -180,9 +180,7 @@ class DrawingViewUiEditMixin:
         self : "DrawingViewUi",
         item : "ItemMixin | None" = None
     ) -> None:
-        self._view.state.go(
-            self._view.stateEditBlockPin, [item] if item else None
-        )
+        self._view.state.go(self._view.stateEditBlockPin, [item] if item else None)
 
     def editSymbolPinDot(
         self   : "DrawingViewUi",
