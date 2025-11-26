@@ -91,7 +91,21 @@ class EditMoveInteraction(
         slide : bool = False
     ) -> None:
         items = items if isinstance(items, list) else [items]
-        super().__init__(view, items)
+        # Filter: keep only items that have no ancestor in the items list
+        orphan_items = []
+        item_set = set(items)
+        for item in items:
+            parent = item.parentItem()
+            has_ancestor = False
+            while parent is not None:
+                if parent in item_set:
+                    has_ancestor = True
+                    break
+                parent = parent.parentItem()
+            if not has_ancestor:
+                orphan_items.append(item)
+        # Start interaction
+        super().__init__(view, orphan_items)
         self._ipos     = pos
         self._cpos     = pos
         self._slide    = slide
