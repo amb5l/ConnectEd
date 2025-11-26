@@ -162,7 +162,7 @@ class BaseTextLine(
 
     def moveHandleBy(self : Self, _ : str, delta : QPointF) -> None:
         """Move the entire text when any keypoint is dragged."""
-        self.setPos(self.pos() + delta)
+        self.moveBy(delta)
 
     def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
         """Return context menu items for text line."""
