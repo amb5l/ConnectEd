@@ -43,6 +43,10 @@ class ItemOriginMixin:
         rotated_offset = transform.map(origin_offset)
         super().setPos(pos - rotated_offset)
 
+    def moveBy(self : Self, offset : QPointF) -> None:
+        self._pos = self._pos + offset
+        self.updateOrigin()
+
     def getOriginScenePos(self : Self) -> QPointF:
         return self._origin.scenePos() if hasattr(self, "_origin") else self.scenePos()
 
