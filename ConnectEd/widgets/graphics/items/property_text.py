@@ -67,9 +67,9 @@ class PropertyTextMixin:
     # class attributes
     _PROPERTY_SPECS_NAME = \
         {
-            "Name" : PropertySpec(
-                getter = lambda self: self.name(),
-                setter = lambda self, value: self.setName(value)
+            "Property" : PropertySpec(
+                getter = lambda self: self.property(),
+                setter = lambda self, value: self.setProperty(value)
             )
         }
     _PROPERTY_SPECS_VISIBLE = \
@@ -89,20 +89,20 @@ class PropertyTextMixin:
         }
 
     # instance attributes
-    _name        : str
+    _property    : str
     _cleat       : str
     _cleat_shown : bool
     _tether      : Tether | None
 
     def __init__(
         self     : Self | BaseTextLine | BaseTextBlock,
-        name     : str | None = None,
+        property : str | None = None,
         cleat    : str | None = None,
         pos      : QPointF | None = None,
         origin   : str | None = None,
         bare     : bool = False
     ) -> None:
-        self._name        = name
+        self._property    = property
         self._cleat       = cleat
         self._cleat_shown = False
         self._tether      = None
@@ -168,7 +168,7 @@ class PropertyTextMixin:
 
     def onTextChange(self : Self) -> None:
         value = self.value()
-        text = f"<{self.name()}>" if value == "" else value
+        text = f"<{self.property()}>" if value == "" else value
         super().setText(text)
         self.onGeometryChange()
 
@@ -176,7 +176,7 @@ class PropertyTextMixin:
         item = self.item()
         if item is not None:
             item_name = item.__class__.__name__
-            settings_name = f"{item_name}{self._name}"
+            settings_name = f"{item_name}{self._property}"
             settings_items = settings().get("theme/items")
             if settings_name in vars(settings_items).keys():
                 return settings_name
@@ -203,22 +203,22 @@ class PropertyTextMixin:
         h : "Handle" = self.parentItem()
         return None if h is None else h.parentItem()
 
-    def name(self : Self) -> str:
-        return self._name
+    def property(self : Self) -> str:
+        return self._property
 
-    def setName(self : Self, name : str) -> None:
-        self._name = name
+    def setProperty(self : Self, property : str) -> None:
+        self._property = property
         self.onTextChange()
 
     def value(self : Self) -> str:
         source = self.scene() if self.parentItem() is None else self.item()
         if source is None:
             return ""
-        return str(source.properties[self._name].get())
+        return str(source.properties[self._property].get())
 
     def setValue(self : Self, value : str) -> None:
         source = self.scene() if self.parentItem() is None else self.item()
-        source.properties[self._name].set(value)
+        source.properties[self._property].set(value)
         self.onTextChange()
 
 
