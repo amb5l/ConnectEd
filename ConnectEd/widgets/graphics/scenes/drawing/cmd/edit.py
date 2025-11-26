@@ -8,7 +8,7 @@ from .....dialogs.properties import DisplayChoice, \
 
 from ....properties import PropertiesMixin
 
-from ....items import SignalDirection, VectorRange, \
+from ....items import SignalDirection, \
                       QuillPref, QuillPrefChange, \
                       AppearancePref, AppearancePrefChange
 
@@ -34,7 +34,6 @@ class CmdEditPortPin(CmdSceneItem):
     class PortPinState:
         name      : str
         direction : SignalDirection
-        range     : VectorRange
 
     _item   : "PortPinMixin"
     _before : PortPinState
@@ -45,25 +44,20 @@ class CmdEditPortPin(CmdSceneItem):
         scene     : "DrawingScene",
         item      : "PortPinMixin",
         name      : str,
-        direction : SignalDirection,
-        range     : VectorRange
+        direction : SignalDirection
     ):
         super().__init__(scene, item)
-        self._before = self.PortPinState(
-            item.name(), item.direction(), item.range()
-        )
-        self._after  = self.PortPinState(name, direction, range)
+        self._before = self.PortPinState(item.name(), item.direction())
+        self._after  = self.PortPinState(name, direction)
 
     def redo(self : Self) -> None:
         self._item.setName(self._after.name)
         self._item.setDirection(self._after.direction)
-        self._item.setRange(self._after.range)
         self._item.update()
 
     def undo(self : Self) -> None:
         self._item.setName(self._before.name)
         self._item.setDirection(self._before.direction)
-        self._item.setRange(self._before.range)
         self._item.update()
 
 

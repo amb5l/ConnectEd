@@ -8,8 +8,7 @@ from .....dialogs.properties import PropertyChange
 
 from ....properties import PropertiesMixin
 
-from ....items               import ItemType, EdgeLoc, \
-                                    SignalDirection, VectorRange, \
+from ....items               import ItemType, EdgeLoc, SignalDirection, \
                                     QuillPrefChange, AppearancePrefChange
 
 from ....items.block         import Block
@@ -130,10 +129,9 @@ class DrawingSceneApiEditMixin:
         item      : PortPinMixin,
         name      : str,
         direction : SignalDirection,
-        range     : VectorRange,
         undoable  : bool = False
     ) -> None:
-        cmd = CmdEditPortPin(self, item, name, direction, range)
+        cmd = CmdEditPortPin(self, item, name, direction)
         cmdExec(self, cmd, undoable)
 
     def editSymbolPinDot(

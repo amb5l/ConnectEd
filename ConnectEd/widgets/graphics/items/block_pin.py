@@ -23,8 +23,9 @@ class BlockPin(ItemLocMixin, BasePin):
     _ARROW_CLASS = BlockPinArrow
     _AP_NAME_OFFSET  = _INT_ARROW_SIZE + 1.5
     _PROPERTY_SPECS = \
+        PortPinMixin._PROPERTY_SPECS_NAME_DIR | \
         ItemLocMixin._PROPERTY_SPECS_LOC | \
-        PortPinMixin._PROPERTY_SPECS
+        PortPinMixin._PROPERTY_SPECS_COMMENT
 
     def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
         return [

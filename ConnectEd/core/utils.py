@@ -145,7 +145,6 @@ def val2str(v : Any) -> str:
         case "Edge"            : s = v.value
         case "EdgeLoc"         : s = v.toStr()
         case "SignalDirection" : s = v.value
-        case "VectorRange"     : s = v.toStr()
         case _ :
             raise ValueError(f"Unsupported type: {t}")
     return s
@@ -158,8 +157,7 @@ def str2val(s : str, t : str) -> Any:
     table view delegates.
     """
     from ..widgets.graphics.items import \
-        DEFAULT, Edge, EdgeLoc, SignalDirection, VectorRange, \
-        LinePref, FillPref, QuillPref
+        DEFAULT, Edge, EdgeLoc, SignalDirection, LinePref, FillPref, QuillPref
     from ..widgets.dialogs.properties import DisplayChoice
     def strValuesToFloats(s : str) -> list[float]:
         return [float(p) for p in s.strip("()").split(",")]
@@ -194,7 +192,6 @@ def str2val(s : str, t : str) -> Any:
         case "Edge"            : return Edge(s)
         case "EdgeLoc"         : return EdgeLoc.fromStr(s)
         case "SignalDirection" : return SignalDirection(s)
-        case "VectorRange"     : return VectorRange.fromStr(s)
         case _:
             raise ValueError(f"Unsupported type: {t}")
 

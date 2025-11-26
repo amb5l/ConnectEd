@@ -8,8 +8,9 @@ from ....core.defs import PITCH
 
 from ..property import PropertySpec
 
-from .mixin.pos  import ItemPosMixin
-from .mixin.line import ItemLineMixin
+from .mixin.pos    import ItemPosMixin
+from .mixin.rotate import ItemRotateMixin
+from .mixin.line   import ItemLineMixin
 
 from .port_pin      import PortPinMixin
 from .base_pin      import BasePin, BasePinDotMixin, BasePinClockMixin, \
@@ -24,6 +25,9 @@ if TYPE_CHECKING:
 class GatePin(ItemPosMixin, BasePinDotMixin, BasePinClockMixin, BasePin):
     # class attributes
     _PROPERTY_SPECS = \
+        PortPinMixin._PROPERTY_SPECS_NAME_DIR | \
+        BasePinDotMixin._PROPERTY_SPECS_DOT | \
+        BasePinClockMixin._PROPERTY_SPECS_CLOCK | \
         ItemPosMixin._PROPERTY_SPECS_POS | \
         {
             "Name" : PropertySpec(
@@ -31,9 +35,8 @@ class GatePin(ItemPosMixin, BasePinDotMixin, BasePinClockMixin, BasePin):
                 setter = lambda self, value: setattr(self, "_name", value)
             )
         } | \
-        BasePinDotMixin._PROPERTY_SPECS_DOT | \
-        BasePinClockMixin._PROPERTY_SPECS_CLOCK | \
-        PortPinMixin._PROPERTY_SPECS_PORT_PIN | \
+        ItemRotateMixin._PROPERTY_SPECS_ROT | \
+        PortPinMixin._PROPERTY_SPECS_COMMENT | \
         ItemLineMixin._PROPERTY_SPECS_LINE
 
     # instance attributes

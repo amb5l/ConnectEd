@@ -49,7 +49,6 @@ class DrawingViewStatePlacePort(ClickMixin, DrawingViewStateBase):
         if dialog.exec():
             item.setName(dialog.getName())
             item.setDirection(dialog.getDirection())
-            item.setRange(dialog.getRange())
             item.setRotation(
                 180 if dialog.getDirection() == SignalDirection.IN else 0
             )
@@ -115,7 +114,6 @@ class DrawingViewStatePlaceBlockPin(DrawingViewStateBase):
             if dialog.exec():
                 pin.setName(dialog.getName())
                 pin.setDirection(dialog.getDirection())
-                pin.setRange(dialog.getRange())
                 self.interact(PlaceBlockPinInteraction(
                     self.view, block, pin, self._snap(s),
                     self.view.grid.pitch if self.view.grid.snap else None
@@ -153,7 +151,6 @@ class DrawingViewStatePlaceSymbolPin(ClickMixin, DrawingViewStateBase):
         if dialog.exec():
             pin.setName(dialog.getName())
             pin.setDirection(dialog.getDirection())
-            pin.setRange(dialog.getRange())
             self.interact(PlaceSymbolPinInteraction(self.view, self._snap(s), pin))
         else:
             self.view.state.go(self.view.stateIdle)

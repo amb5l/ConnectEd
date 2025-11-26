@@ -182,8 +182,7 @@ class DrawingViewStateEditPort(DrawingViewStateBase):
             if dialog.exec():
                 name = dialog.getName()
                 direction = dialog.getDirection()
-                range = dialog.getRange()
-                self.scene.editPortPin(item, name, direction, range, undoable=True)
+                self.scene.editPortPin(item, name, direction, undoable=True)
         else:
             logger().warning("No port selected")
         self.view.state.go(self.view.stateIdle)
@@ -204,8 +203,7 @@ class DrawingViewStateEditBlockPin(DrawingViewStateBase):
             if dialog.exec():
                 name = dialog.getName()
                 direction = dialog.getDirection()
-                range = dialog.getRange()
-                self.scene.editPortPin(item, name, direction, range, undoable=True)
+                self.scene.editPortPin(item, name, direction, undoable=True)
         else:
             logger().warning("No block pin selected")
         self.view.state.go(self.view.stateIdle)

@@ -29,12 +29,12 @@ class SymbolPin(ItemPosMixin, BasePinDotMixin, BasePinClockMixin, BasePin):
     # class attributes
     _ARROW_CLASS = SymbolPinArrow
     _PROPERTY_SPECS = \
-        ItemPosMixin._PROPERTY_SPECS_POS | \
-        ItemRotateMixin._PROPERTY_SPECS_ROT | \
-        PortPinMixin._PROPERTY_SPECS_NAME | \
+        PortPinMixin._PROPERTY_SPECS_NAME_DIR | \
         BasePinDotMixin._PROPERTY_SPECS_DOT | \
         BasePinClockMixin._PROPERTY_SPECS_CLOCK | \
-        PortPinMixin._PROPERTY_SPECS_PORT_PIN | \
+        ItemPosMixin._PROPERTY_SPECS_POS | \
+        ItemRotateMixin._PROPERTY_SPECS_ROT | \
+        PortPinMixin._PROPERTY_SPECS_COMMENT | \
         ItemLineMixin._PROPERTY_SPECS_LINE
 
     def __init__(

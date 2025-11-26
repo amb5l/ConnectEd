@@ -5,7 +5,7 @@ from PyQt6.QtCore    import QPointF
 from ..property   import PropertySpec
 from ..properties import PropertiesMixin
 
-from . import SignalDirection, VectorRange
+from . import SignalDirection
 
 from .property_text import PropertyTextSpec
 from .handle        import Handle
@@ -34,42 +34,31 @@ class PortPinMixin(
 ):
     # class attributes
     _AP_NAME_OFFSET = 1.5
-    _PROPERTY_SPECS_NAME = \
+    _PROPERTY_SPECS_NAME_DIR = \
         {
             "Name" : PropertySpec(
                 getter = lambda self: self._name,
                 setter = lambda self, value: setattr(self, "_name", value),
                 text   = PropertyTextSpec("Name", origin="Middle Left")
-            )
-        }
-    _PROPERTY_SPECS_PORT_PIN = \
-        {
+            ),
             "Direction" : PropertySpec(
                 kind   = "SignalDirection",
                 getter = lambda self: self._direction,
                 setter = lambda self, value: setattr(self, "_direction", value)
-            ),
-            "Range" : PropertySpec(
-                kind   = "VectorRange",
-                valid  = lambda self: self._range is not None,
-                getter = lambda self: self._range,
-                setter = lambda self, value: setattr(self, "_range", value)
-            ),
+            )
+        }
+    _PROPERTY_SPECS_COMMENT = \
+        {
             "Comment" : PropertySpec(
                 getter = lambda self: self._comment,
                 setter = lambda self, value: setattr(self, "_comment", value)
             )
         }
-    _PROPERTY_SPECS = \
-        _PROPERTY_SPECS_NAME | \
-        _PROPERTY_SPECS_PORT_PIN | \
-        ItemLineMixin._PROPERTY_SPECS_LINE
 
     # instance attributes
     _name      : str
-    _comment   : str
     _direction : SignalDirection
-    _range     : VectorRange
+    _comment   : str
     _entry     : Entry
 
     def initPortPin(self : Self, bare : bool = False) -> None:
@@ -114,14 +103,6 @@ class PortPinMixin(
         self._direction = value
         if hasattr(self, "properties") and "Direction" in self.properties:
             self.properties["Direction"].changed.emit(value)
-
-    def range(self : Self) -> VectorRange:
-        return self._range
-
-    def setRange(self : Self, value : VectorRange) -> None:
-        self._range = value
-        if hasattr(self, "properties") and "Range" in self.properties:
-            self.properties["Range"].changed.emit(value)
 
     def comment(self : Self) -> str:
         return self._comment

@@ -29,9 +29,10 @@ class Port(
     # class attributes
     _AP_NAME_OFFSET = 1.5
     _PROPERTY_SPECS = \
+        PortPinMixin._PROPERTY_SPECS_NAME_DIR | \
         ItemPosMixin._PROPERTY_SPECS_POS | \
         ItemRotateMixin._PROPERTY_SPECS_ROT | \
-        PortPinMixin._PROPERTY_SPECS | \
+        PortPinMixin._PROPERTY_SPECS_COMMENT | \
         ItemFillMixin._PROPERTY_SPECS_FILL
 
     def __init__(
