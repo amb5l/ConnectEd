@@ -9,7 +9,8 @@ from .....core.utils import registerClass
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from ..mixin.handle  import ItemHandlesMixin
+    from ...properties   import PropertiesMixin
+    from ..mixin         import ItemMixin
     from ..property_text import PropertyTextMixin
 
 
@@ -31,7 +32,7 @@ class ItemXmlMixin:
 
     @classmethod
     def fromXml(cls : Self, xr : QXmlStreamReader) -> Self:
-        instance : "ItemHandlesMixin" = cls(bare=True)
+        instance : "ItemMixin | PropertiesMixin" = cls(bare=True)
         fromXmlAttrs(instance, xr)
         if hasattr(instance, "onGeometryChange"):
             instance.onGeometryChange()
@@ -59,8 +60,10 @@ class ItemXmlMixin:
                     child_cls = pt_classes[item_name]
                     child : "PropertyTextMixin" = child_cls.fromXml(xr)
                     child.setParentItem(instance.getHandle(child.getCleat()))
+                    prop_name = child.property()
+                    if prop_name in instance.properties:
+                        instance.properties[prop_name].setText(child)
                     child.onGeometryChange()
-                    # text rotation compensation
                     if hasattr(child, 'onRotationChange'):
                         child.onRotationChange()
                 else:

@@ -22,7 +22,7 @@ class PropertiesMixin:
             self.properties[name] = Property(
                 self, name, spec.kind, spec.getter, spec.setter
             )
-            if spec.text is not None:
+            if not bare and spec.text is not None:
                 property_text_cls = PropertyTextBlock if spec.text.block \
                     else PropertyTextLine
                 property_text = property_text_cls(
