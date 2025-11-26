@@ -105,14 +105,14 @@ FACTORY_SETTINGS = {
                 "Port" : {
                     "line" : {
                         "color" : PaletteDark.PortLine,
-                        "width" : 1,
-                        "style" : Qt.PenStyle.SolidLine
+                        "width" : 0,
+                        "style" : Qt.PenStyle.NoPen
                     },
                     "fill" : {
                         "color" : PaletteDark.PortFill,
-                        "style" : Qt.BrushStyle.NoBrush
+                        "style" : Qt.BrushStyle.SolidPattern
                     },
-                    "size" : 8
+                    "size" : 6
                 },
                 "PortEntry" : {
                     "size" : 3,
