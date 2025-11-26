@@ -58,6 +58,16 @@ def itemsTypeDict(items : list[Any]) -> dict[type, list[Any]]:
     return dict(result)
 
 
+def space2underscore(s : str) -> str:
+    """Foo Bar -> Foo_Bar"""
+    return s.replace(" ", "_")
+
+
+def underscore2space(s : str) -> str:
+    """Foo_Bar -> Foo Bar"""
+    return s.replace("_", " ")
+
+
 def camel2proper(s : str) -> str:
     """fooBar -> Foo Bar"""
     r = []
@@ -69,6 +79,7 @@ def camel2proper(s : str) -> str:
                 r.append(" ")
             r.append(char)
     return "".join(r)
+
 
 def pascal2snake(s : str) -> str:
     """FooBar -> foo_bar"""

@@ -7,7 +7,7 @@ from PyQt6.QtWidgets import QApplication
 from ..app import logger
 
 from .defs  import APP_NAME, MIME_TYPE
-from .utils import val2str, str2val, proper2snake, snake2proper
+from .utils import val2str, str2val, space2underscore, underscore2space
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -32,10 +32,10 @@ def toXmlBegin(xw : QXmlStreamWriter) -> None:
 def toXmlAttrs(instance : "PropertiesMixin", xw : QXmlStreamWriter) -> None:
     from ..widgets.graphics.items import DEFAULT
     for name, prop in instance.properties.items():
-        value = prop.get()
+        value = prop.raw()
         if value is DEFAULT:  # skip serialising default values
             continue
-        xw.writeAttribute(proper2snake(name), val2str(value))
+        xw.writeAttribute(space2underscore(name), val2str(value))
 
 def toXmlEnd(xw : QXmlStreamWriter) -> None:
     xw.writeEndDocument()
@@ -52,7 +52,7 @@ def fromXmlEnd(xr : QXmlStreamReader, element_name : str) -> None:
 def fromXmlAttrs(instance : "PropertiesMixin", xr : QXmlStreamReader) -> None:
     xml_attrs = xr.attributes()
     for xml_attr in xml_attrs:
-        instance.initProperty(snake2proper(xml_attr.name()), xml_attr.value())
+        instance.initProperty(underscore2space(xml_attr.name()), xml_attr.value())
     xr.readNext()
 
 def fromXmlItems(
