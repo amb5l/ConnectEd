@@ -94,7 +94,7 @@ class BasePin(ItemPaintMixin, PortPinMixin, QGraphicsPathItem):
             self._arrow = None
 
     def setDirection(self : Self, value : SignalDirection) -> None:
-        super(BasePin, BasePin).setDirection(value)
+        super().setDirection(value)
         if self._arrow is not None:
             self._arrow.setDirection(value)
 
