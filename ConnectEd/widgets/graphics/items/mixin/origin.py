@@ -1,6 +1,8 @@
 from typing import Self
 
-from PyQt6.QtCore import QPointF
+from PyQt6.QtCore    import QPointF
+from PyQt6.QtWidgets import QGraphicsItem
+from PyQt6.QtGui     import QTransform
 
 from ...property import PropertySpec
 
@@ -32,30 +34,29 @@ class ItemOriginMixin:
         self.updateOrigin()
 
     def pos(self : Self) -> QPointF:
-        return super().pos() + self._origin.pos()
+        return self._pos
 
     def setPos(self : Self, pos : QPointF) -> None:
         self._pos = pos
-        super().setPos(pos - self._origin.pos())
+        origin_offset = self._origin.pos()
+        transform = QTransform().rotate(QGraphicsItem.rotation(self))
+        rotated_offset = transform.map(origin_offset)
+        super().setPos(pos - rotated_offset)
 
     def getOriginScenePos(self : Self) -> QPointF:
-        if hasattr(self, "_origin"):
-            return self._origin.scenePos()
-        else:
-            return self.scenePos()
+        return self._origin.scenePos() if hasattr(self, "_origin") else self.scenePos()
 
     def getOrigin(self : Self) -> str:
-        if hasattr(self, "_origin"):
-            return self._origin.name()
-        else:
-            return ""
+        return self._origin.name() if hasattr(self, "_origin") else ""
 
     def setOrigin(self : Self, name : str) -> None:
         self._origin = self._handles[name]
-        self.setPos(self.pos())
         for h in self._handles.values():
             h.onOriginChange()
+        self.updateOrigin()
 
     def updateOrigin(self : Self) -> None:
         """Reposition following possible movement of origin handle."""
+        if not hasattr(self, "_origin"):
+            return
         self.setPos(self._pos)

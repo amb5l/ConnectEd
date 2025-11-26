@@ -125,14 +125,7 @@ class BaseTextLine(
 
     def onGeometryChange(self : Self) -> None:
         """Handle geometry changes for text line."""
-        self.prepareGeometryChange()
-        if not hasattr(self, "_origin"):
-            return
-        old_origin_scene_pos = self.getOriginScenePos()
         self.updateHandles()
-        new_origin_scene_pos = self.getOriginScenePos()
-        delta = old_origin_scene_pos - new_origin_scene_pos
-        self._pos = self.pos() + delta
         self.updateOrigin()
         self.onPositionChange()
 

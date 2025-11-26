@@ -16,18 +16,22 @@ class ItemRotateMixin:
     }
 
     def onRotationChange(self : Self) -> None:
+        from ..handle import Handle
         for child in self.childItems():
             if hasattr(child, "onRotationChange"):
                 child.onRotationChange()
+            elif isinstance(child, Handle):
+                for grandchild in child.childItems():
+                    if hasattr(grandchild, "onRotationChange"):
+                        grandchild.onRotationChange()
 
-    @override
-    def setRotation(self : Self | QGraphicsItem, angle : float) -> None:
-        """Override to call onRotationChange."""
-        old = self.rotation()
+    def setRotation(self : Self, angle : float) -> None:
+        from ...properties import PropertiesMixin
         super().setRotation(angle)
-        if old != angle:
-            if hasattr(self, 'onRotationChange'):
-                self.onRotationChange()
+        self.onRotationChange()
+        if isinstance(self, PropertiesMixin) \
+        and "Rotation" in self.properties:
+            self.properties["Rotation"].changed.emit(self.rotation())
 
     def rotateCW(self : Self | QGraphicsItem) -> None:
         self.setRotation((self.rotation() + 90) % 360)

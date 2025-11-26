@@ -18,12 +18,6 @@ class ItemChangeMixin:
             case self.GraphicsItemChange.ItemSceneHasChanged:
                 if hasattr(self, "onSceneChange"):
                     self.onSceneChange(value)
-            case self.GraphicsItemChange.ItemRotationHasChanged:
-                if hasattr(self, "onRotationChange"):
-                    self.onRotationChange()
-                    if isinstance(self, PropertiesMixin) \
-                    and "Rotation" in self.properties:
-                        self.properties["Rotation"].changed.emit(self.rotation())
             case self.GraphicsItemChange.ItemPositionHasChanged:
                 if hasattr(self, "onPositionChange"):
                     self.onPositionChange(value)
