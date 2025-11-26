@@ -93,6 +93,8 @@ class PropertyTextMixin:
     _cleat       : str
     _cleat_shown : bool
     _tether      : Tether | None
+    _rotcomp     : bool  # whether rotation compensation is currently applied
+    _rotcomp_wip : bool  # whether rotation compensation is in progress
 
     def __init__(
         self     : Self | BaseTextLine | BaseTextBlock,
@@ -106,6 +108,8 @@ class PropertyTextMixin:
         self._cleat       = cleat
         self._cleat_shown = False
         self._tether      = None
+        self._rotcomp     = False
+        self._rotcomp_wip = False
         super().__init__(pos, bare=bare)
         self._tether = Tether(self)
         if bare:
@@ -155,16 +159,39 @@ class PropertyTextMixin:
             self._tether.onSettingsChange()
         super().onSettingsChange()
 
+    def rotation(self : Self) -> float:
+        """Return uncompensated rotation (for serialization)."""
+        rotcomp = getattr(self, '_rotcomp', False)
+        return (QGraphicsItem.rotation(self) + (180 if rotcomp else 0)) % 360
+
+    def sceneRotation(self : Self) -> float:
+        """Return scene rotation using uncompensated rotation."""
+        angle = self.rotation()  # Use uncompensated rotation
+        item = self.parentItem()
+        while item is not None:
+            angle += item.rotation()
+            item = item.parentItem()
+        return angle % 360
+
     def onRotationChange(self : Self) -> None:
         """Rotation compensation."""
-        rect = self.boundingRect()
-        self.setTransformOriginPoint(rect.center())
-        if 135 < self.sceneRotation() <= 225:
-            QGraphicsItem.setRotation(self, (self.rotation() + 180) % 360)
-            # counter rotate handles
+        if self._rotcomp_wip:
+            return
+        self._rotcomp_wip = True
+        center = self.boundingRect().center()
+        scene_rot = self.sceneRotation()
+        rotcomp = getattr(self, '_rotcomp', False)
+        should_compensate = (135 < scene_rot <= 315) and not rotcomp
+        should_remove = not (135 < scene_rot <= 315) and rotcomp
+        if should_compensate or should_remove:
+            self.setTransformOriginPoint(center)
+            QGraphicsItem.setRotation(self, (QGraphicsItem.rotation(self) + 180) % 360)
+            # Counter-rotate handles
             for h in self._handles.values():
-                h.setTransformOriginPoint(self.mapToItem(h, rect.center()))
-                QGraphicsItem.setRotation(h, (h.rotation() + 180) % 360)
+                h.setTransformOriginPoint(self.mapToItem(h, center))
+                QGraphicsItem.setRotation(h, (QGraphicsItem.rotation(h) + 180) % 360)
+            self._rotcomp = should_compensate
+        self._rotcomp_wip = False
 
     def onTextChange(self : Self) -> None:
         value = self.value()
