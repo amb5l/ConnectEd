@@ -10,7 +10,7 @@ including loading, saving, and accessing configuration values.
 # session settings for diagram and library
 
 from types  import SimpleNamespace
-from typing import Self, Any, Dict, List
+from typing import Self, Any
 
 from PyQt6.QtCore import Qt, QObject, pyqtSignal, QSettings, QPointF, QSizeF
 
@@ -861,11 +861,11 @@ class Settings(QObject):
 
     def dump(self : Self) -> str:
         """Return a formatted string representation of all settings."""
-        lines: List[str] = []
+        lines: list[str] = []
         self._dump("settings", self._settings, lines)
         return "\n".join(lines)
 
-    def _deepCopy(self : Self, d : Dict) -> Dict:
+    def _deepCopy(self : Self, d : dict) -> dict:
         """Create a deep copy of a settings dictionary."""
         result = {}
         for k, v in d.items():
@@ -875,7 +875,7 @@ class Settings(QObject):
                 result[k] = v
         return result
 
-    def _get(self : Self, d : Dict, path : str) -> Any:
+    def _get(self : Self, d : dict, path : str) -> Any:
         """Retrieve a nested value from a dictionary by path."""
         path_parts = path.strip("/").split("/")
         current = d
@@ -885,7 +885,7 @@ class Settings(QObject):
             current = current[part]
         return current
 
-    def _set(self : Self, d : Dict, path : str, value : Any) -> None:
+    def _set(self : Self, d : dict, path : str, value : Any) -> None:
         """Set a nested value in a dictionary by path."""
         path_parts = path.strip("/").split("/")
         current = d
@@ -904,7 +904,7 @@ class Settings(QObject):
 
     def _load(
         self      : Self,
-        settings  : Dict,
+        settings  : dict,
         qsettings : QSettings,
         path      : str
     ) -> None:
@@ -927,7 +927,7 @@ class Settings(QObject):
 
     def _save(
         self      : Self,
-        settings  : Dict,
+        settings  : dict,
         qsettings : QSettings,
         path      : str
     ) -> None:
@@ -942,7 +942,7 @@ class Settings(QObject):
                 logger().debug(f"Saving setting: {full_path} = {value}")
                 qsettings.setValue(key, val2str(value))
 
-    def _toNamespace(self : Self, d : Dict) -> SimpleNamespace:
+    def _toNamespace(self : Self, d : dict) -> SimpleNamespace:
         """Convert a dictionary to a SimpleNamespace."""
         ns = SimpleNamespace()
         for key, value in d.items():
@@ -956,7 +956,7 @@ class Settings(QObject):
         self   : Self,
         name   : str,
         x      : Any,
-        lines  : List[str],
+        lines  : list[str],
         indent : str = "  "
     ) -> None:
         """Recursively dump settings to a list of strings."""
