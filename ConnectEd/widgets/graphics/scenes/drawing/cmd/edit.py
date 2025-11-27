@@ -14,6 +14,7 @@ from ....items import SignalDirection, \
 
 from ....items.mixin        import ItemMixin
 from ....items.mixin.origin import ItemOriginMixin
+from ....items.mixin.handle import ItemHandlesMixin
 
 from ....items.polyline      import Polyline, PolySeg
 from ....items.base_text     import BaseTextMixin
@@ -355,14 +356,14 @@ class CmdEditProperties(CmdBase):
 
 
 class CmdEditOrigin(CmdSceneItem):
-    _item   : ItemOriginMixin
+    _item   : ItemOriginMixin | ItemHandlesMixin
     _before : str
     _after  : str
 
     def __init__(
         self    : Self,
         scene   : "DrawingScene",
-        item    : ItemOriginMixin,
+        item    : ItemOriginMixin | ItemHandlesMixin,
         ap_name : str
     ):
         super().__init__(scene, item)
@@ -370,7 +371,13 @@ class CmdEditOrigin(CmdSceneItem):
         self._after = ap_name
 
     def redo(self : Self) -> None:
+        pos_before = self._item.getHandle(self._before).pos()
+        pos_after = self._item.getHandle(self._after).pos()
         self._item.setOrigin(self._after)
+        self._item.moveBy(pos_before - pos_after)
 
     def undo(self : Self) -> None:
+        pos_before = self._item.getHandle(self._before).pos()
+        pos_after = self._item.getHandle(self._after).pos()
         self._item.setOrigin(self._before)
+        self._item.moveBy(pos_after - pos_before)
