@@ -25,15 +25,16 @@ class ItemPosMixin:
     }
 
     def moveBy(self : "Self | ItemMixin | QGraphicsItem", offset : QPointF) -> None:
-        x = offset.x()
-        y = offset.y()
-        r = self.parentSceneRotation()
-        match r:
-            case 0   : super().moveBy(x, y)
-            case 90  : super().moveBy(y, -x)
-            case 180 : super().moveBy(-x, -y)
-            case 270 : super().moveBy(-y, x)
-            case _   : raise ValueError(f"Invalid rotation: {r}")
+        a = self.parentSceneRotation()
+        match a:
+            case 0   : super().moveBy(offset.x(), offset.y())
+            case 90  : super().moveBy(offset.y(), -offset.x())
+            case 180 : super().moveBy(-offset.x(), -offset.y())
+            case 270 : super().moveBy(-offset.y(), offset.x())
+            case _   :
+                transform = QTransform().rotate(-a)
+                rotated_offset = transform.map(offset)
+                super().moveBy(rotated_offset.x(), rotated_offset.y())
 
     def setPos(self : "Self | ItemMixin | QGraphicsItem", pos : QPointF) -> None:
         """
