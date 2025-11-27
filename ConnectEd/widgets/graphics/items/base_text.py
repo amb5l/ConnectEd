@@ -319,10 +319,6 @@ class BaseTextBlock(
             painter.setPen(self.outline.pen)
             painter.drawRect(self._brect)
 
-    def rect(self : Self) -> QRectF:
-        """Return the bounding rect (for BaseRectangleMixin compatibility)."""
-        return self._brect
-
     def handleRect(self : Self) -> QRectF:
         """Return the rectangle used for handles."""
         return self._brect
