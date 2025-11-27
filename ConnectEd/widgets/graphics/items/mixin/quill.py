@@ -145,8 +145,6 @@ class Quill:
         )
         self._parent.setFont(self._font)
         self.onSelectionChange(self._parent.isSelected())
-        if hasattr(self._parent, 'onGeometryChange'):
-            self._parent.onGeometryChange()
 
     def onSelectionChange(self : Self, selected : bool) -> None:
         color = self._selected if selected else self._normal

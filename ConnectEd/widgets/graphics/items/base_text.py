@@ -121,7 +121,6 @@ class BaseTextLine(
         self.initItem(bare=bare)
         if pos is not None:
             self.setPos(pos)
-        self.onGeometryChange()
 
     def onGeometryChange(self : Self) -> None:
         """Handle geometry changes for text line."""
@@ -213,7 +212,6 @@ class BaseTextBlock(
         self.initItem(bare=bare)
         if pos is not None:
             self.setPos(pos)
-        self.onGeometryChange()
 
     def onGeometryChange(self : Self) -> None:
         """Handle geometry changes for text block."""

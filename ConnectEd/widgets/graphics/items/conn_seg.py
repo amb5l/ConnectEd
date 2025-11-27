@@ -42,7 +42,6 @@ class ConnSeg(
         self.initItem()
         self.setVtx1(vtx1)
         self.setVtx2(vtx2)
-        self.onGeometryChange()
 
     def onGeometryChange(self : Self) -> None:
         v1 = self._vtx1

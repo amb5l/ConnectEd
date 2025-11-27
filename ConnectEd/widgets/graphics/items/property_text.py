@@ -197,7 +197,6 @@ class PropertyTextMixin:
         value = self.value()
         text = f"<{self.property()}>" if value == "" else value
         super().setText(text)
-        self.onGeometryChange()
 
     def settingsName(self : Self) -> str:
         item = self.item()
@@ -246,7 +245,6 @@ class PropertyTextMixin:
     def setValue(self : Self, value : str) -> None:
         source = self.scene() if self.parentItem() is None else self.item()
         source.properties[self._property].set(value)
-        self.onTextChange()
 
 
 class PropertyTextLine(PropertyTextMixin, BaseTextLine):
