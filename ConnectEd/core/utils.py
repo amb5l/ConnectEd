@@ -25,6 +25,56 @@ def check(b : bool, s : str) -> bool:
     return b
 
 
+import inspect
+
+def trace(
+    depth  : int | None = None,
+    full   : bool = False,
+    module : bool = True,
+    indent : bool = False
+) -> None:
+    """
+    Print the call chain that led to this point.
+
+    Args:
+        depth:   Maximum number of frames to show (from caller upward). None = all.
+        full:    Show full module path instead of just the last component.
+        module:  Include the module name at all.
+        indent:  If True, print vertically with increasing indentation instead of " <- ".
+    """
+    stack = inspect.stack()
+    # Skip this function itself
+    frames = stack[1:depth + 1 if depth is not None else None]
+
+    calls = []
+    for frame in frames:                              # deepest call first
+        func_name = frame.function
+        mod = inspect.getmodule(frame.frame)
+        mod_name = mod.__name__ if mod else "<unknown>"
+
+        if not full:
+            mod_name = mod_name.split(".")[-1]
+
+        self_obj = frame.frame.f_locals.get("self")
+        if self_obj is not None:
+            cls_name = self_obj.__class__.__name__
+            func_part = f"{cls_name}.{func_name}"
+        # e.g. Processor.run
+        else:
+            func_part = func_name
+
+        if module:
+            calls.append(f"{mod_name}.{func_part}")
+        else:
+            calls.append(func_part)
+
+    if indent:
+        for i, call in enumerate(calls):
+            print(" " * i + call)
+    else:
+        print(" <- ".join(calls))
+
+
 def typeCheck(x : Any, t : type) -> None:
     # get name of calling function/method
     frame = inspect.currentframe().f_back
