@@ -16,6 +16,8 @@ from . import DEFAULT
 from .base_text import BaseTextMixin, BaseTextLine, BaseTextBlock
 from .handle    import Handle
 
+from .mixin.origin import ItemOriginMixin
+from .mixin.handle import ItemRectHandlesMixin
 from .mixin.rotate import ItemRotateMixin
 
 from typing import TYPE_CHECKING
@@ -94,7 +96,6 @@ class PropertyTextMixin:
     _cleat_shown : bool
     _tether      : Tether | None
     _rotcomp     : bool  # whether rotation compensation is currently applied
-    _rotcomp_wip : bool  # whether rotation compensation is in progress
 
     def __init__(
         self     : Self | BaseTextLine | BaseTextBlock,
@@ -104,21 +105,18 @@ class PropertyTextMixin:
         origin   : str | None = None,
         bare     : bool = False
     ) -> None:
-        self._property    = property
-        self._cleat       = cleat
-        self._cleat_shown = False
-        self._tether      = None
-        self._rotcomp     = False
-        self._rotcomp_wip = False
-        super().__init__(pos, bare=bare)
+        super().__init__(bare=bare)
         self._tether = Tether(self)
-        if bare:
-            return
+        self._property = property
         self.setCleat(cleat)
         if origin is None:
             origin = "Bottom Left" if cleat == "Top Left" else "Top Left"
         self.setOrigin(origin)
-        # onTextChange() will be called after parenting in initProperties
+        if pos is None:
+            pos = QPointF(0, 0)
+        self.setPos(pos)
+        self._cleat_shown = False
+        self._rotcomp     = False
 
     def mouseDoubleClickEvent(self : Self, event : QGraphicsSceneMouseEvent) -> None:
         """Handle double-click events to open the edit dialog."""
@@ -136,14 +134,14 @@ class PropertyTextMixin:
         super().mouseDoubleClickEvent(event)
 
     def onSceneChange(self : Self, _scene : "DrawingScene | None") -> None:
-        self.onTextChange()
+        self.onSettingsChange()
 
     def onParentChange(self : Self, _parent : QGraphicsItem | None) -> None:
-        self.onSettingsChange()
+        self.onTextChange()
 
     def onPositionChange(self : Self, pos : QPointF | None = None) -> None:
         super().onPositionChange(pos)
-        if self._tether is not None:
+        if hasattr(self, "_tether"):
             self._tether.onPositionChange(pos)
 
     def onSelectionChange(self : Self, selected : bool) -> None:
@@ -155,43 +153,26 @@ class PropertyTextMixin:
         self._tether.cleat().grip().setVisible(selected and cleat_valid)
 
     def onSettingsChange(self : Self) -> None:
-        if self._cleat is not None and self._cleat != "" and self._tether:
-            self._tether.onSettingsChange()
         super().onSettingsChange()
+        if hasattr(self, "_tether"):
+            self._tether.onSettingsChange()
 
     def rotation(self : Self) -> float:
-        """Return uncompensated rotation (for serialization)."""
+        """Return uncompensated rotation."""
         rotcomp = getattr(self, '_rotcomp', False)
         return (QGraphicsItem.rotation(self) + (180 if rotcomp else 0)) % 360
 
-    def sceneRotation(self : Self) -> float:
-        """Return scene rotation using uncompensated rotation."""
-        angle = self.rotation()  # Use uncompensated rotation
-        item = self.parentItem()
-        while item is not None:
-            angle += item.rotation()
-            item = item.parentItem()
-        return angle % 360
-
-    def onRotationChange(self : Self) -> None:
+    def onRotationChange(self : Self | ItemRectHandlesMixin | ItemOriginMixin) -> None:
         """Rotation compensation."""
-        if self._rotcomp_wip:
-            return
-        self._rotcomp_wip = True
-        center = self.boundingRect().center()
-        scene_rot = self.sceneRotation()
         rotcomp = getattr(self, '_rotcomp', False)
-        should_compensate = (135 < scene_rot <= 315) and not rotcomp
-        should_remove = not (135 < scene_rot <= 315) and rotcomp
+        scene_rot = self.sceneRotation()
+        should_compensate  = (135 < scene_rot <= 315) and not rotcomp
+        should_remove = rotcomp and not (135 < scene_rot <= 315)
         if should_compensate or should_remove:
-            self.setTransformOriginPoint(center)
+            self.setTransformOriginPoint(self.getHandle("Middle Center").pos())
             QGraphicsItem.setRotation(self, (QGraphicsItem.rotation(self) + 180) % 360)
-            # Counter-rotate handles
-            for h in self._handles.values():
-                h.setTransformOriginPoint(self.mapToItem(h, center))
-                QGraphicsItem.setRotation(h, (QGraphicsItem.rotation(h) + 180) % 360)
             self._rotcomp = should_compensate
-        self._rotcomp_wip = False
+            self.updateHandles()
 
     def onTextChange(self : Self) -> None:
         value = self.value()
@@ -219,11 +200,12 @@ class PropertyTextMixin:
         handler = handle.parentItem()  # item or scene with handles
         self.setParentItem(handler.getHandle(name))
 
-    def setOrigin(self : Self, name : str) -> None:
+    def setOrigin(self : Self | ItemRectHandlesMixin, name : str) -> None:
         """Override to update tether line."""
         super().setOrigin(name)
-        self._tether.setParentItem(self._origin)
-        self._tether.onPositionChange(self.pos())
+        if hasattr(self, "_tether"):
+            self._tether.setParentItem(self.getHandle(name))
+            self._tether.onPositionChange(self.pos())
 
     def item(self : Self) -> "PropertiesMixin | None":
         h : "Handle" = self.parentItem()

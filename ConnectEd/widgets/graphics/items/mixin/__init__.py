@@ -27,13 +27,13 @@ class ItemMixin(ItemSettingsMixin):
     def initItem(self : Self | QGraphicsItem, bare : bool = False) -> None:
         from ...properties import PropertiesMixin
         from .loc        import ItemLocMixin
+        from .handle     import ItemHandlesMixin
         from .origin     import ItemOriginMixin
         from .line       import ItemLineMixin
         from .fill       import ItemFillMixin
         from .quill      import ItemQuillMixin
         from .outline    import ItemOutlineMixin
         from .change     import ItemChangeMixin
-        from .handle     import ItemHandlesMixin
         self.setZValue(self.Z)
         f = QGraphicsItem.GraphicsItemFlag
         self.setFlag( f.ItemIsSelectable              , True )

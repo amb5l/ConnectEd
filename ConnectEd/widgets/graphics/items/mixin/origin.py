@@ -1,8 +1,7 @@
 from typing import Self
 
-from PyQt6.QtCore    import QPointF
+from PyQt6.QtCore import QPointF
 from PyQt6.QtWidgets import QGraphicsItem
-from PyQt6.QtGui     import QTransform
 
 from ...property import PropertySpec
 
@@ -22,45 +21,33 @@ class ItemOriginMixin:
     }
 
     # instance attributes
-    _pos    : QPointF   # position of origin w.r.t. scene/parent
-    _origin : "Handle"  # origin handle
+    _origin_name   : str      # name of origin handle
+    _origin_offset : QPointF  # offset of origin w.r.t. top left (Qt pos)
 
     # external instance attributes
     _handles : dict[str, "Handle"]
 
-    def initOrigin(self : Self) -> None:
-        self._pos = super().pos()
-        self._origin = self._handles[self._ORIGIN_NAME]
-        self.updateOrigin()
+    def initOrigin(self : Self | QGraphicsItem) -> None:
+        self._origin_offset = QPointF()
+        self.setOrigin(self._ORIGIN_NAME)
+        self.setPos(super().pos())
 
-    def pos(self : Self) -> QPointF:
-        return self._pos
+    def pos(self : Self | QGraphicsItem) -> QPointF:
+        return super().pos() + self._origin_offset
 
-    def setPos(self : Self, pos : QPointF) -> None:
-        self._pos = pos
-        origin_offset = self._origin.pos()
-        transform = QTransform().rotate(QGraphicsItem.rotation(self))
-        rotated_offset = transform.map(origin_offset)
-        super().setPos(pos - rotated_offset)
+    def setPos(self : Self | QGraphicsItem, pos : QPointF) -> None:
+        super().setPos(pos - self._origin_offset)
 
-    def moveBy(self : Self, offset : QPointF) -> None:
-        self._pos = self._pos + offset
-        self.updateOrigin()
+    def scenePos(self : Self | QGraphicsItem) -> QPointF:
+        return self.mapToScene(self._origin_offset)
 
-    def getOriginScenePos(self : Self) -> QPointF:
-        return self._origin.scenePos() if hasattr(self, "_origin") else self.scenePos()
+    def getOrigin(self : Self | QGraphicsItem) -> str:
+        return self._origin_name
 
-    def getOrigin(self : Self) -> str:
-        return self._origin.name() if hasattr(self, "_origin") else ""
-
-    def setOrigin(self : Self, name : str) -> None:
-        self._origin = self._handles[name]
+    def setOrigin(self : Self | QGraphicsItem, name : str) -> None:
+        pos = self.pos() if hasattr(self, "_origin_offset") else super().pos()
+        self._origin_name = name
         for h in self._handles.values():
             h.onOriginChange()
-        self.updateOrigin()
-
-    def updateOrigin(self : Self) -> None:
-        """Reposition following possible movement of origin handle."""
-        if not hasattr(self, "_origin"):
-            return
-        self.setPos(self._pos)
+        self.updateHandles()  # writes _origin_offset
+        self.setPos(pos)

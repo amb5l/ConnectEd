@@ -125,7 +125,6 @@ class BaseTextLine(
     def onGeometryChange(self : Self) -> None:
         """Handle geometry changes for text line."""
         self.updateHandles()
-        self.updateOrigin()
         self.onPositionChange()
 
     def setText(self : Self, text : str) -> None:
