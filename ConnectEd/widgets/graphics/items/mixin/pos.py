@@ -26,6 +26,7 @@ class ItemPosMixin:
     }
 
     def moveBy(self : "Self | ItemMixin | QGraphicsItem", offset : QPointF) -> None:
+        """Move item by offset, accounting for parent rotation."""
         a = self.parentSceneRotation()
         match a:
             case 0   : super().moveBy(offset.x(), offset.y())

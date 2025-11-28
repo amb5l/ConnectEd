@@ -95,7 +95,6 @@ class PropertyTextMixin:
     _cleat       : str
     _cleat_shown : bool
     _tether      : Tether | None
-    _rotcomp     : bool  # whether rotation compensation is currently applied
 
     def __init__(
         self     : Self | BaseTextLine | BaseTextBlock,
@@ -116,7 +115,6 @@ class PropertyTextMixin:
             pos = QPointF(0, 0)
         self.setPos(pos)
         self._cleat_shown = False
-        self._rotcomp     = False
 
     def mouseDoubleClickEvent(self : Self, event : QGraphicsSceneMouseEvent) -> None:
         """Handle double-click events to open the edit dialog."""
@@ -157,22 +155,9 @@ class PropertyTextMixin:
         if hasattr(self, "_tether"):
             self._tether.onSettingsChange()
 
-    def rotation(self : Self) -> float:
-        """Return uncompensated rotation."""
-        rotcomp = getattr(self, '_rotcomp', False)
-        return (QGraphicsItem.rotation(self) + (180 if rotcomp else 0)) % 360
-
     def onRotationChange(self : Self | ItemRectHandlesMixin | ItemOriginMixin) -> None:
-        """Rotation compensation."""
-        rotcomp = getattr(self, '_rotcomp', False)
-        scene_rot = self.sceneRotation()
-        should_compensate  = (135 < scene_rot <= 315) and not rotcomp
-        should_remove = rotcomp and not (135 < scene_rot <= 315)
-        if should_compensate or should_remove:
-            self.setTransformOriginPoint(self.getHandle("Middle Center").pos())
-            QGraphicsItem.setRotation(self, (QGraphicsItem.rotation(self) + 180) % 360)
-            self._rotcomp = should_compensate
-            self.updateHandles()
+        """Rotation compensation not currently supported."""
+        pass
 
     def onTextChange(self : Self) -> None:
         value = self.value()
@@ -227,6 +212,14 @@ class PropertyTextMixin:
     def setValue(self : Self, value : str) -> None:
         source = self.scene() if self.parentItem() is None else self.item()
         source.properties[self._property].set(value)
+
+    def paint(self, painter, option, widget) -> None:
+        from PyQt6.QtGui import QPen
+        super().paint(painter, option, widget)
+        painter.setPen(QPen(Qt.GlobalColor.yellow, 0))
+        painter.drawEllipse(QPointF(0, 0), 1, 1)
+        painter.drawLine(QPointF(-1,-1), QPointF(1,1))
+        painter.drawLine(QPointF(1,-1), QPointF(-1,1))
 
 
 class PropertyTextLine(PropertyTextMixin, BaseTextLine):

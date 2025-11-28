@@ -5,8 +5,8 @@ from PyQt6.QtCore import QPointF
 
 from ..handle import Handle
 
-from .grip import ItemGripMixin
-
+from .origin import ItemOriginMixin
+from .grip   import ItemGripMixin
 
 class ItemHandlesMixin(ItemGripMixin):
     @classmethod
@@ -39,17 +39,6 @@ class ItemRectHandlesMixin(ItemHandlesMixin):
         "Bottom Center" : ( 0.5 , 1.0 ),
         "Bottom Right"  : ( 1.0 , 1.0 )
     }
-    _AP_RECT_ROTCOMP = {
-        "Top Left"      : ( 1.0, 1.0 ),
-        "Top Center"    : ( 0.5, 1.0 ),
-        "Top Right"     : ( 0.0, 1.0 ),
-        "Middle Left"   : ( 1.0, 0.5 ),
-        "Middle Center" : ( 0.5, 0.5 ),
-        "Middle Right"  : ( 0.0, 0.5 ),
-        "Bottom Left"   : ( 1.0, 0.0 ),
-        "Bottom Center" : ( 0.5, 0.0 ),
-        "Bottom Right"  : ( 0.0, 0.0 )
-    }
     _AP_RESIZE = [ k for k in _AP_RECT.keys() if k != "Middle Center" ]
 
     @classmethod
@@ -78,12 +67,9 @@ class ItemRectHandlesMixin(ItemHandlesMixin):
         y0 = rect.topLeft().y()
         w = rect.width()
         h = rect.height()
-        ap_rect = self._AP_RECT_ROTCOMP if getattr(self, '_rotcomp', False) \
-            else self._AP_RECT
-        for name, (x, y) in ap_rect.items():
+        for name, (x, y) in self._AP_RECT.items():
             self._handles[name].setPos(QPointF(x0 + (x * w), y0 + (y * h)))
-        if hasattr(self, "_origin_offset"):
+        if isinstance(self, ItemOriginMixin):
             pos = self.pos()
-            x, y = self._AP_RECT[self._origin_name]
-            self._origin_offset = QPointF(x0 + (x * w), y0 + (y * h))
+            self.updateOrigin()
             self.setPos(pos)

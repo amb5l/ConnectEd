@@ -33,10 +33,12 @@ class ItemOriginMixin:
         self.setPos(super().pos())
 
     def pos(self : Self | QGraphicsItem) -> QPointF:
-        return super().pos() + self._origin_offset
+        offset = getattr(self, "_origin_offset", QPointF())
+        return super().pos() + offset
 
     def setPos(self : Self | QGraphicsItem, pos : QPointF) -> None:
-        super().setPos(pos - self._origin_offset)
+        offset = getattr(self, "_origin_offset", QPointF())
+        super().setPos(pos - offset)
 
     def scenePos(self : Self | QGraphicsItem) -> QPointF:
         return self.mapToScene(self._origin_offset)
@@ -45,9 +47,16 @@ class ItemOriginMixin:
         return self._origin_name
 
     def setOrigin(self : Self | QGraphicsItem, name : str) -> None:
-        pos = self.pos() if hasattr(self, "_origin_offset") else super().pos()
+        """Set origin handle and update position."""
+        pos = self.pos()
         self._origin_name = name
+        self.updateOrigin()
         for h in self._handles.values():
             h.onOriginChange()
-        self.updateHandles()  # writes _origin_offset
         self.setPos(pos)
+
+    def updateOrigin(self : Self | QGraphicsItem) -> None:
+        """Update origin offset and transform origin based on current handle position."""
+        if hasattr(self, "_origin_name") and hasattr(self, "_handles"):
+            self._origin_offset = self._handles[self._origin_name].pos()
+            self.setTransformOriginPoint(self._origin_offset)

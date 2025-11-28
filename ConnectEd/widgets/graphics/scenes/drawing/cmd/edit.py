@@ -371,13 +371,15 @@ class CmdEditOrigin(CmdSceneItem):
         self._after = ap_name
 
     def redo(self : Self) -> None:
-        pos_before = self._item.getHandle(self._before).pos()
-        pos_after = self._item.getHandle(self._after).pos()
+        """Change origin without changing scene position."""
+        pos_before = self._item.getHandle(self._before).scenePos()
+        pos_after = self._item.getHandle(self._after).scenePos()
         self._item.setOrigin(self._after)
         self._item.moveBy(pos_after - pos_before)
 
     def undo(self : Self) -> None:
-        pos_before = self._item.getHandle(self._before).pos()
-        pos_after = self._item.getHandle(self._after).pos()
+        """Change origin without changing scene position."""
+        pos_before = self._item.getHandle(self._before).scenePos()
+        pos_after = self._item.getHandle(self._after).scenePos()
         self._item.setOrigin(self._before)
         self._item.moveBy(pos_before - pos_after)
