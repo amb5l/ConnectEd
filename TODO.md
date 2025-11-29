@@ -1,20 +1,21 @@
+use of "or" to avoid if/else on None
+lose rotcomp_wip?
+
+editing Port name doesn't look right
+lots of calls to BaseTextLine.onGeometryChange to be traced
+
+auto position of property texts for pins/ports?
+editing port text when port is rotated
+ranges in ports - serialisation - does it work?
+
 width control of PropertiesDialog columns - new best Width method for delegates?
-unified base_text file with mixin
 look at ItemRotateMixin
-
 cleat => anchor
-
-Properties change:
-https://grok.com/share/bGVnYWN5_537f1338-ac90-4e7d-aff7-cc2cee9b99d9
-
-move properties to items, have separate scene properties
-scene property system with signallers and subscriber management
-item property system: add support for property Variable Substitution
 
 property text: add tethered and free versions
 
 onGeometryChange review
-@overload
+@override
 new _settings_name system for controlling PropertyText appearance
   - remove all subclasses
   - on parent change, get parent class
