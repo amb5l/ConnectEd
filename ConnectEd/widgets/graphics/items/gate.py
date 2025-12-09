@@ -180,7 +180,8 @@ class BufGate(BaseGate):
         return s
 
     def output(self : Self) -> str:
-        return "L" if self._output.inverted() else "H"
+        return "" if not hasattr(self, '_output') else \
+               "L" if self._output.inverted() else "H"
 
     def setOutput(self : Self, level: str = "H") -> None:
         if not hasattr(self, '_output'):
@@ -193,7 +194,8 @@ class BufGate(BaseGate):
         self._output.setInverted(level == "L")
 
     def input(self : Self) -> str:
-        return "L" if self._input.inverted() else "H"
+        return "" if not hasattr(self, '_input') else \
+               "L" if self._input.inverted() else "H"
 
     def setInput(self : Self, level : str = "H") -> None:
         if not hasattr(self, '_input'):
@@ -233,9 +235,10 @@ class Gate(BaseGate):
 
     def __init__(self : Self, width : int | None = None, bare : bool = False) -> None:
         super().__init__(bare)
-        if not bare and width is not None:
+        if not bare:
             self.setOutput()
-            self.setInputs("H" * width)
+            if width is not None:
+                self.setInputs("H" * width)
 
     def toVhdl(self : Self) -> str:
         """
@@ -302,7 +305,8 @@ class Gate(BaseGate):
         return s
 
     def output(self : Self) -> str:
-        return "L" if self._output.inverted() else "H"
+        return "" if not hasattr(self, '_output') else \
+               "L" if self._output.inverted() else "H"
 
     def setOutput(self : Self, level: str = "H") -> None:
         if not hasattr(self, '_output'):
@@ -314,7 +318,8 @@ class Gate(BaseGate):
         self._output.setInverted(level == "L")
 
     def inputs(self : Self) -> str:
-        return "".join(["L" if pin.inverted() else "H" for pin in self._inputs])
+        return "" if not hasattr(self, '_inputs') else \
+               "".join(["L" if pin.inverted() else "H" for pin in self._inputs])
 
     def setInputs(self : Self, levels : str) -> None:
         w = len(levels)
@@ -356,14 +361,6 @@ class AndGate(Gate):
 class OrGate(Gate):
     _VHDL_OPERATOR = "or"
 
-    def __init__(self : Self, width : int = 2) -> None:
-        super().__init__(width)
-        if len(self._inputs) % 2 == 1:  # odd width => center input
-            # tweak position and length of center input
-            i = len(self._inputs) // 2
-            self._inputs[i].setPos(QPointF(-26, 0))
-            self._inputs[i].setLength(14)
-
     def initPath(self : Self) -> None:
         path = PainterPath()
         path.moveTo(-30, -10)
@@ -374,6 +371,14 @@ class OrGate(Gate):
         path.arcSagittaTo(-30, -10, 4)
         path.closeSubpath()
         self.setPath(path)
+
+    def setInputs(self : Self, levels : str) -> None:
+        super().setInputs(levels)
+        if len(self._inputs) % 2 == 1:  # odd width => center input
+            # tweak position and length of center input
+            i = len(self._inputs) // 2
+            self._inputs[i].setPos(QPointF(-26, 0))
+            self._inputs[i].setLength(14)
 
 
 class XorGate(OrGate):
