@@ -11,15 +11,15 @@ from ..properties import PropertiesMixin
 
 from .handle import Handle
 
-from .mixin            import ItemMixin
-from .mixin.shape      import ItemShapeMixin
-from .mixin.paint      import ItemPaintMixin
-from .mixin.handle     import ItemHandlesMixin
-from .mixin.line       import ItemLineMixin
-from .mixin.change     import ItemChangeMixin
-from .mixin.clone      import ItemCloneMixin
-from .mixin.xml        import ItemXmlMixin
-from .mixin.menu       import ItemMenuMixin
+from .mixin        import ItemMixin
+from .mixin.shape  import ItemShapeMixin
+from .mixin.paint  import ItemPaintMixin
+from .mixin.handle import ItemHandlesMixin
+from .mixin.line   import ItemLineMixin
+from .mixin.change import ItemChangeMixin
+from .mixin.clone  import ItemCloneMixin
+from .mixin.xml    import ItemXmlMixin
+from .mixin.menu   import ItemMenuMixin
 
 
 class Line(
