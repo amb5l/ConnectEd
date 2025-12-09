@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ConnectEd>
+  <Design name="UntitledDesign1">
+    <Symbols/>
+    <Diagram Name="UntitledDesign1" Sheet_Name="A4 (landscape)" Sheet_Width="1169" Sheet_Height="827" Margin="10" Border="1">
+      <Line X1="40" Y1="120" X2="120" Y2="20"/>
+      <Ellipse Origin="Middle Center" X="80" Y="70" Width="60" Height="40"/>
+      <Port Name="B" Dir="out" X="260" Y="180">
+        <PropertyTextLine Property="Name" Cleat="Name" Origin="Middle Left"/>
+      </Port>
+      <ConnSeg X1="240" Y1="180" X2="240" Y2="130"/>
+      <ConnSeg X1="240" Y1="130" X2="140" Y2="130"/>
+      <ConnSeg X1="240" Y1="180" X2="260" Y2="180"/>
+      <XorGate Label="" Output="L" Inputs="LHHHHH" X="230" Y="180"/>
+      <ConnSeg X1="240" Y1="180" X2="230" Y2="180"/>
+      <ConnSeg X1="140" Y1="40" X2="170" Y2="40"/>
+      <ConnSeg X1="140" Y1="130" X2="140" Y2="40"/>
+      <ConnSeg X1="170" Y1="190" X2="190" Y2="190"/>
+      <Rectangle Origin="Middle Center" X="80" Y="70" Width="100" Height="80"/>
+      <TextLine Origin="Top Left" X="30" Y="130" Text="ABC"/>
+      <Block Origin="Middle Center" X="235" Y="70" Width="110" Height="80">
+        <PropertyTextLine Property="Label" Cleat="Top Left" Origin="Bottom Left"/>
+        <PropertyTextLine Property="Name" Cleat="Bottom Left" Origin="Top Left"/>
+        <BlockPin Name="A" Dir="in" Edge="Left" Offset="10">
+          <PropertyTextLine Property="Name" Cleat="Name" Origin="Middle Left"/>
+        </BlockPin>
+        <BlockPin Name="B" Dir="out" Edge="Left" Offset="30">
+          <PropertyTextLine Property="Name" Cleat="Name" Origin="Middle Left"/>
+        </BlockPin>
+        <BlockPin Name="C" Dir="bi" Edge="Left" Offset="50">
+          <PropertyTextLine Property="Name" Cleat="Name" Origin="Middle Left"/>
+        </BlockPin>
+      </Block>
+      <Port Name="A" Dir="in" X="170" Y="190" Rot="180">
+        <PropertyTextLine Property="Name" Cleat="Name" Origin="Middle Left"/>
+      </Port>
+    </Diagram>
+  </Design>
+</ConnectEd>

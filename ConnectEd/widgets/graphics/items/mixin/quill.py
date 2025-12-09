@@ -159,42 +159,42 @@ class ItemQuillMixin:
     _PROPERTY_SPECS_QUILL = {
         "Text Color" : PropertySpec(
             kind    = "QColor",
-            valid   = lambda self: self.a.quill is not None,
+            valid   = lambda self: self.a.quill is not None and self.a.quill.getColor() is not DEFAULT,
             getter  = lambda self: self.a.quill.getColor(),
             setter  = lambda self, value: self.a.quill.setColor(value),
             default = lambda self: self.a.quill.getDefaults().color
         ),
         "Text Font" : PropertySpec(
             kind    = "FontFamily",  # a "subtype" of str - see str2val
-            valid   = lambda self: self.a.quill is not None,
+            valid   = lambda self: self.a.quill is not None and self.a.quill.getFamily() is not DEFAULT,
             getter  = lambda self: self.a.quill.getFamily(),
             setter  = lambda self, value: self.a.quill.setFamily(value),
             default = lambda self: self.a.quill.getDefaults().family
         ),
         "Text Size" : PropertySpec(
             kind    = "FontSize",  # a "subtype" of float - see str2val
-            valid   = lambda self: self.a.quill is not None,
+            valid   = lambda self: self.a.quill is not None and self.a.quill.getSize() is not DEFAULT,
             getter  = lambda self: self.a.quill.getSize(),
             setter  = lambda self, value: self.a.quill.setSize(value),
             default = lambda self: self.a.quill.getDefaults().size
         ),
         "Text Bold" : PropertySpec(
             kind    = "bool",
-            valid   = lambda self: self.a.quill is not None,
+            valid   = lambda self: self.a.quill is not None and self.a.quill.getBold() is not DEFAULT,
             getter  = lambda self: self.a.quill.getBold(),
             setter  = lambda self, value: self.a.quill.setBold(value),
             default = lambda self: self.a.quill.getDefaults().bold
         ),
         "Text Italic" : PropertySpec(
             kind    = "bool",
-            valid   = lambda self: self.a.quill is not None,
+            valid   = lambda self: self.a.quill is not None and self.a.quill.getItalic() is not DEFAULT,
             getter  = lambda self: self.a.quill.getItalic(),
             setter  = lambda self, value: self.a.quill.setItalic(value),
             default = lambda self: self.a.quill.getDefaults().italic
         ),
         "Text Underline" : PropertySpec(
             kind    = "bool",
-            valid   = lambda self: self.a.quill is not None,
+            valid   = lambda self: self.a.quill is not None and self.a.quill.getUnderline() is not DEFAULT,
             getter  = lambda self: self.a.quill.getUnderline(),
             setter  = lambda self, value: self.a.quill.setUnderline(value),
             default = lambda self: self.a.quill.getDefaults().underline

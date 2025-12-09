@@ -103,21 +103,21 @@ class ItemLineMixin:
     _PROPERTY_SPECS_LINE = {
         "Line Color" : PropertySpec(
             kind    = "QColor",
-            valid   = lambda self: self.a.line is not None,
+            valid   = lambda self: self.a.line is not None and self.a.line.getColor() is not DEFAULT,
             getter  = lambda self: self.a.line.getColor(),
             setter  = lambda self, value: self.a.line.setColor(value),
             default = lambda self: self.a.line.getDefaults().color
         ),
         "Line Width" : PropertySpec(
             kind    = "LineWidth",  # a "subtype" of float - see str2val
-            valid   = lambda self: self.a.line is not None,
+            valid   = lambda self: self.a.line is not None and self.a.line.getWidth() is not DEFAULT,
             getter  = lambda self: self.a.line.getWidth(),
             setter  = lambda self, value: self.a.line.setWidth(value),
             default = lambda self: self.a.line.getDefaults().width
         ),
         "Line Style" : PropertySpec(
             kind    = "PenStyle",
-            valid   = lambda self: self.a.line is not None,
+            valid   = lambda self: self.a.line is not None and self.a.line.getStyle() is not DEFAULT,
             getter  = lambda self: self.a.line.getStyle(),
             setter  = lambda self, value: self.a.line.setStyle(value),
             default = lambda self: self.a.line.getDefaults().style
