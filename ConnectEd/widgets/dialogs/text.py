@@ -84,7 +84,7 @@ class TextLineDialog(TextDialogMixin, QDialog):
         self._dialog_layout.addLayout(self._text_layout)
 
 
-class TextBlockDialog(QDialog):
+class TextBlockDialog(TextDialogMixin, QDialog):
     _dialog_layout : QVBoxLayout
     _text_layout   : QVBoxLayout
     _text_label    : QLabel
