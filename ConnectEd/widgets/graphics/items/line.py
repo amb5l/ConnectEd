@@ -68,10 +68,11 @@ class Line(
     def __init__(
         self : Self,
         p1   : QPointF | None = None,
-        p2   : QPointF | None = None
+        p2   : QPointF | None = None,
+        bare : bool = False
     ) -> None:
         QGraphicsLineItem.__init__(self)
-        self.initItem()
+        self.initItem(bare=bare)
         p1 = QPointF() if p1 is None else p1
         p2 = p1 if p2 is None else p2
         self._line = QLineF()
@@ -155,7 +156,7 @@ class Line(
         self.setPoints(self.p1(), pos)
 
     def x2(self : Self) -> float:
-        return self._line.p2().x()
+        return self.p2().x()
 
     def setX2(self : Self, value : float) -> None:
         self.setP2(QPointF(value, self.p2().y()))
