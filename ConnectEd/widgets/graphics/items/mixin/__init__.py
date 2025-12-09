@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 
 
 class ItemSettingsMixin:
-    def settingsName(self: Self | QGraphicsItem) -> str:
+    def settingsName(self : Self | QGraphicsItem) -> str:
         return self.__class__.__name__
 
 
@@ -26,9 +26,9 @@ class ItemMixin(ItemSettingsMixin):
 
     def initItem(self : Self | QGraphicsItem, bare : bool = False) -> None:
         from ...properties import PropertiesMixin
-        from .loc        import ItemLocMixin
         from .handle     import ItemHandlesMixin
-        from .origin     import ItemOriginMixin
+        from .loc        import ItemLocMixin
+        from .pos_rot    import ItemPosRotMixin
         from .line       import ItemLineMixin
         from .fill       import ItemFillMixin
         from .quill      import ItemQuillMixin
@@ -41,12 +41,12 @@ class ItemMixin(ItemSettingsMixin):
         self.setFlag( f.ItemSendsScenePositionChanges , True )
         self.setCacheMode(QGraphicsItem.CacheMode.DeviceCoordinateCache)
         self._resetUuid()
-        if isinstance(self, ItemLocMixin):
-            self.initLoc()
         if isinstance(self, ItemHandlesMixin):
             self.initHandles()
-        if isinstance(self, ItemOriginMixin):
-            self.initOrigin()
+        if isinstance(self, ItemLocMixin):
+            self.initLoc()
+        if isinstance(self, ItemPosRotMixin):
+            self.initPosRot()
         if isinstance(self, ItemLineMixin):
             self.initLine()
         if isinstance(self, ItemFillMixin):
@@ -69,7 +69,7 @@ class ItemMixin(ItemSettingsMixin):
             return NotImplemented
         return self._uuid == other._uuid
 
-    def topParentItem(self: Self | QGraphicsItem) -> QGraphicsItem | None:
+    def topParentItem(self : Self | QGraphicsItem) -> QGraphicsItem | None:
         item = self.parentItem()
         if item is None:
             return None

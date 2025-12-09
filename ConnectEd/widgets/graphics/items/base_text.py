@@ -11,12 +11,8 @@ from ....core.defs import PITCH
 from ..property   import PropertySpec
 from ..properties import PropertiesMixin
 
-from . import Default, DEFAULT
-
 from .mixin            import ItemMixin
-from .mixin.origin     import ItemOriginMixin
-from .mixin.pos        import ItemPosMixin
-from .mixin.rotate     import ItemRotateMixin
+from .mixin.pos_rot    import ItemPosRotMixin
 from .mixin.bound      import ItemBoundMixin
 from .mixin.shape      import ItemShapeMixin
 from .mixin.handle     import ItemRectHandlesMixin
@@ -34,9 +30,7 @@ if TYPE_CHECKING:
 
 class BaseTextMixin(
     ItemMixin,
-    ItemOriginMixin,
-    ItemPosMixin,
-    ItemRotateMixin,
+    ItemPosRotMixin,
     ItemRectHandlesMixin,
     ItemQuillMixin,
     ItemOutlineMixin,
@@ -50,38 +44,17 @@ class BaseTextMixin(
 
     # class attributes
     _ORIGIN_NAME = "Top Left"
-    _PROPERTY_SPECS_POS = \
-        ItemOriginMixin._PROPERTY_SPECS_ORIGIN | \
-        ItemPosMixin._PROPERTY_SPECS_POS | \
-        ItemRotateMixin._PROPERTY_SPECS_ROT
     _PROPERTY_SPECS_TEXT = {
         "Text" : PropertySpec(
             getter = lambda self: self.text(),
             setter = lambda self, value: self.setText(value)
         )
     }
-    _PROPERTY_SPECS_APPEARANCE = \
-        ItemQuillMixin._PROPERTY_SPECS_QUILL
-
-    # instance attributes
-    _stbrect : QRectF  # tight bounding rect in scene coordinates
 
     @abstractmethod
     def onGeometryChange(self : Self) -> None:
         """Handle geometry changes. Must be implemented by subclasses."""
         ...
-
-    def onPositionChange(
-        self : Self,
-        _ : QPointF | None = None
-    ) -> None:
-        """Update scene tight bounding rect when position changes."""
-        scene_polygon = self.mapToScene(self.boundingRect())
-        self._stbrect = scene_polygon.boundingRect().normalized()
-
-    def sceneTightBoundingRect(self : Self) -> QRectF:
-        """Return the tight bounding rect in scene coordinates."""
-        return self._stbrect
 
     @abstractmethod
     def handleRect(self : Self) -> QRectF:
@@ -108,9 +81,9 @@ class BaseTextLine(
     # class attributes
     _AP_RESIZE = [] # no resizing handles
     _PROPERTY_SPECS = \
-        BaseTextMixin._PROPERTY_SPECS_POS | \
+        ItemPosRotMixin._PROPERTY_SPECS_POS_ROT | \
         BaseTextMixin._PROPERTY_SPECS_TEXT | \
-        BaseTextMixin._PROPERTY_SPECS_APPEARANCE
+        ItemQuillMixin._PROPERTY_SPECS_QUILL
 
     def __init__(
         self : Self,
@@ -125,7 +98,7 @@ class BaseTextLine(
     def onGeometryChange(self : Self) -> None:
         """Handle geometry changes for text line."""
         self.updateHandles()
-        self.onPositionChange()
+        self.onSceneBoundRectChange()
 
     def setText(self : Self, text : str) -> None:
         """Set text and update geometry."""
@@ -165,6 +138,8 @@ class BaseTextLine(
         ]
 
 
+qaf = Qt.AlignmentFlag
+
 class BaseTextBlock(
     BaseTextMixin,
     ItemBoundMixin,
@@ -178,35 +153,37 @@ class BaseTextBlock(
         {
             "Width" : PropertySpec(
                 kind   = "float",
+                valid  = lambda self: self._width is not None,
                 getter = lambda self: self._width,
                 setter = lambda self, value: setattr(self, "_width", value)
             ),
             "Height" : PropertySpec(
                 kind   = "float",
+                valid  = lambda self: self._height is not None,
                 getter = lambda self: self._height,
                 setter = lambda self, value: setattr(self, "_height", value)
             )
         }
     _PROPERTY_SPECS = \
-        BaseTextMixin._PROPERTY_SPECS_POS | \
+        ItemPosRotMixin._PROPERTY_SPECS_POS_ROT | \
         _PROPERTY_SPECS_SIZE | \
         BaseTextMixin._PROPERTY_SPECS_TEXT | \
-        BaseTextMixin._PROPERTY_SPECS_APPEARANCE
+        ItemQuillMixin._PROPERTY_SPECS_QUILL
 
     # instance attributes
-    _width   : float | Default   # width constraint
-    _height  : float | Default   # height constraint
-    _align_v : Qt.AlignmentFlag  # vertical alignment
+    _alignment : qaf           # alignment
+    _width     : float | None  # width constraint
+    _height    : float | None  # height constraint
 
     def __init__(
         self : Self,
         pos  : QPointF | None = None,
         bare : bool = False
     ) -> None:
-        self._width   = DEFAULT
-        self._height  = DEFAULT
-        self._align_v = Qt.AlignmentFlag.AlignTop
         QGraphicsTextItem.__init__(self)
+        self.setAlignment(qaf.AlignLeft | qaf.AlignTop)
+        self._width   = None
+        self._height  = None
         self.document().setDocumentMargin(0)  # minimize margin
         self.initItem(bare=bare)
         if pos is not None:
@@ -218,7 +195,7 @@ class BaseTextBlock(
             return
         self.prepareGeometryChange()
         # apply width constraint to enable text wrapping
-        self.setTextWidth(self._width if self._width != DEFAULT else -1)
+        self.setTextWidth(self._width if self._width else -1)
         # calculate unconstrained rect (without margins)
         doc = self.document()
         root_frame = doc.rootFrame()
@@ -227,19 +204,20 @@ class BaseTextBlock(
         root_frame.setFrameFormat(fmt)
         self._urect = QGraphicsTextItem.boundingRect(self)  # unconstrained rect
         # calculate and cache bounding rect, accounting for constraints
-        w = self._urect.width() if self._width is DEFAULT else self._width
-        h = self._urect.height() if self._height is DEFAULT else self._height
-        self._brect = QRectF(0, 0, w, h)
+        w = self._width  if self._width  else self._urect.width()
+        h = self._height if self._height else self._urect.height()
+        self._brect = QRectF(0.0, 0.0, w, h)
         # apply vertical alignment via document top margin
-        if self._height != DEFAULT:
+        if self._height:
             uh = self._urect.height()  # unconstrained height
             ch = self._brect.height()  # constrained height
-            if self._align_v == Qt.AlignmentFlag.AlignBottom:
-                top_margin = ch - uh
-            elif self._align_v == Qt.AlignmentFlag.AlignVCenter:
-                top_margin = (ch - uh) / 2
-            else:  # Top
-                top_margin = 0
+            match self._alignment & qaf.AlignVertical_Mask:
+                case qaf.AlignBottom:
+                    top_margin = ch - uh
+                case qaf.AlignVCenter:
+                    top_margin = (ch - uh) / 2
+                case _:  # Top
+                    top_margin = 0
             fmt.setTopMargin(top_margin)
             root_frame.setFrameFormat(fmt)
         # calculate and cache shape
@@ -247,7 +225,7 @@ class BaseTextBlock(
         self._hshape.addRect(self._brect)
         # update
         self.updateHandles()
-        self.onPositionChange()
+        self.onSceneBoundRectChange()
         self.update()
         if hasattr(self, "properties"):
             if "Width" in self.properties:
@@ -261,20 +239,20 @@ class BaseTextBlock(
         doc = self.document()
         opt = doc.defaultTextOption()
         if "Right" in name:
-            h_align = Qt.AlignmentFlag.AlignRight
+            h_align = qaf.AlignRight
         elif "Center" in name:
-            h_align = Qt.AlignmentFlag.AlignHCenter
+            h_align = qaf.AlignHCenter
         else:
-            h_align = Qt.AlignmentFlag.AlignLeft
+            h_align = qaf.AlignLeft
         opt.setAlignment(h_align)
         doc.setDefaultTextOption(opt)
         # save vertical alignment for use in onGeometryChange()
         if "Bottom" in name:
-            self._align_v = Qt.AlignmentFlag.AlignBottom
+            self._align_v = qaf.AlignBottom
         elif "Middle" in name:
-            self._align_v = Qt.AlignmentFlag.AlignVCenter
+            self._align_v = qaf.AlignVCenter
         else:
-            self._align_v = Qt.AlignmentFlag.AlignTop
+            self._align_v = qaf.AlignTop
         # set origin handle
         super().setOrigin(name)
         # update margins based on new alignment
@@ -297,13 +275,27 @@ class BaseTextBlock(
 
     def setAutoWidth(self : Self, auto : bool) -> None:
         """Set whether width should auto-adjust."""
-        self._width = DEFAULT if auto else self.boundingRect().width()
+        self._width = None if auto else self.boundingRect().width()
         self.onGeometryChange()
 
     def setAutoHeight(self : Self, auto : bool) -> None:
         """Set whether height should auto-adjust."""
-        self._height = DEFAULT if auto else self.boundingRect().height()
+        self._height = None if auto else self.boundingRect().height()
         self.onGeometryChange()
+
+    def alignment(self : Self) -> qaf:
+        """Return text alignment."""
+        return self._alignment
+
+    def setAlignment(self : Self, alignment : qaf) -> None:
+        """Set text alignment."""
+        self._alignment = alignment
+        # horizontal (applied in text renderer)
+        doc = self.document()
+        opt = doc.defaultTextOption()
+        opt.setAlignment(alignment & qaf.AlignHorizontal_Mask)
+        doc.setDefaultTextOption(opt)
+        # vertical is applied in onGeometryChange
 
     def paint(
         self    : Self,
@@ -351,8 +343,14 @@ class BaseTextBlock(
 
     def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
         """Return context menu items for text block."""
-        auto_width = self._width is DEFAULT
-        auto_height = self._height is DEFAULT
+        align_menu = QMenu("Align")
+        align_menu_items = [
+            view.action(
+                "Left", lambda: self.setAlignment(qaf.AlignLeft)),
+        ]
+        align_menu.addAction(view.action("Left", lambda: self.setAlignment(qaf.AlignLeft)))
+        auto_width = self._width is None
+        auto_height = self._height is None
         items = [
             view.action("Edit...", view.ui.editTextBlock),
             view.separator(),

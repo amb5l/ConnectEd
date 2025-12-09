@@ -1,6 +1,6 @@
 from typing import Self
 
-from PyQt6.QtCore    import QPointF
+from PyQt6.QtCore import QPointF
 
 from ..property   import PropertySpec
 from ..properties import PropertiesMixin
@@ -12,7 +12,6 @@ from .handle        import Handle
 from .entry         import Entry
 
 from .mixin            import ItemMixin
-from .mixin.rotate     import ItemRotateMixin
 from .mixin.handle     import ItemHandlesMixin
 from .mixin.line       import ItemLineMixin
 from .mixin.change     import ItemChangeMixin
@@ -23,7 +22,6 @@ from .mixin.menu       import ItemMenuMixin
 
 class PortPinMixin(
     ItemMixin,
-    ItemRotateMixin,
     ItemHandlesMixin,
     ItemLineMixin,
     ItemChangeMixin,
@@ -34,14 +32,17 @@ class PortPinMixin(
 ):
     # class attributes
     _AP_NAME_OFFSET = 1.5
-    _PROPERTY_SPECS_NAME_DIR = \
+    _PROPERTY_SPECS_NAME = \
         {
             "Name" : PropertySpec(
                 getter = lambda self: self._name,
                 setter = lambda self, value: setattr(self, "_name", value),
                 text   = PropertyTextSpec("Name", origin="Middle Left")
-            ),
-            "Direction" : PropertySpec(
+            )
+        }
+    _PROPERTY_SPECS_DIR = \
+        {
+            "Dir" : PropertySpec(
                 kind   = "SignalDirection",
                 getter = lambda self: self._direction,
                 setter = lambda self, value: setattr(self, "_direction", value)
@@ -50,6 +51,7 @@ class PortPinMixin(
     _PROPERTY_SPECS_COMMENT = \
         {
             "Comment" : PropertySpec(
+                valid  = lambda self: self._comment != "",
                 getter = lambda self: self._comment,
                 setter = lambda self, value: setattr(self, "_comment", value)
             )
@@ -102,7 +104,7 @@ class PortPinMixin(
     def setDirection(self : Self, value : SignalDirection) -> None:
         self._direction = value
         if hasattr(self, "properties") and "Direction" in self.properties:
-            self.properties["Direction"].changed.emit(value)
+            self.properties["Dir"].changed.emit(value)
 
     def comment(self : Self) -> str:
         return self._comment

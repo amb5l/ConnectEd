@@ -86,19 +86,20 @@ class ConnSeg(
         return False
 
     def toXml(self : Self, xw : QXmlStreamWriter) -> None:
-        def getVal(s : str) -> float:
+        def getVal(s : str) -> float | int:
             a = s[0]
             n = int(s[1:])
             attr_val = getattr(self, f"_vtx{n}")  # value of self._vtx{n}
             p = attr_val.scenePos() if isinstance(attr_val, ConnVtx) else \
                 attr_val if isinstance(attr_val, QPointF) else \
                 None
-            return None if p is None else getattr(p, a)()
+            v = getattr(p, a)()
+            return None if p is None else int(v) if v.is_integer() else v
         xw.writeStartElement(self.__class__.__name__)
-        xw.writeAttribute("x1", str(getVal("x1")))
-        xw.writeAttribute("y1", str(getVal("y1")))
-        xw.writeAttribute("x2", str(getVal("x2")))
-        xw.writeAttribute("y2", str(getVal("y2")))
+        xw.writeAttribute("X1", str(getVal("x1")))
+        xw.writeAttribute("Y1", str(getVal("y1")))
+        xw.writeAttribute("X2", str(getVal("x2")))
+        xw.writeAttribute("Y2", str(getVal("y2")))
         xw.writeEndElement()
 
     @classmethod
@@ -110,10 +111,10 @@ class ConnSeg(
                 value = float(xml_attrs[attr_name])
                 xml_attrs.pop(attr_name)
             return value
-        x1 = getVal("x1")
-        y1 = getVal("y1")
-        x2 = getVal("x2")
-        y2 = getVal("y2")
+        x1 = getVal("X1")
+        y1 = getVal("Y1")
+        x2 = getVal("X2")
+        y2 = getVal("Y2")
         if xml_attrs.keys():
             logger().warning(f"Unexpected attributes: {xml_attrs.keys()}")
         instance = cls(QPointF(x1, y1), QPointF(x2, y2))

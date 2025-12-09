@@ -15,8 +15,7 @@ from . import SignalDirection
 from .gate_pin import GatePin
 
 from .mixin            import ItemMixin
-from .mixin.pos        import ItemPosMixin
-from .mixin.rotate     import ItemRotateMixin
+from .mixin.pos_rot    import ItemPosRotMixin
 from .mixin.paint      import ItemPaintMixin
 from .mixin.line       import ItemLineMixin
 from .mixin.fill       import ItemFillMixin
@@ -40,8 +39,7 @@ class GateFunc(Enum):
 
 class BaseGate(
     ItemMixin,
-    ItemPosMixin,
-    ItemRotateMixin,
+    ItemPosRotMixin,
     ItemPaintMixin,
     ItemLineMixin,
     ItemFillMixin,
@@ -106,10 +104,9 @@ class BufGate(BaseGate):
         )
     }
     _PROPERTY_SPECS = \
-        ItemPosMixin._PROPERTY_SPECS_POS | \
-        ItemRotateMixin._PROPERTY_SPECS_ROT | \
         BaseGate._PROPERTY_SPECS_LABEL | \
         _PROPERTY_SPECS_IO | \
+        ItemPosRotMixin._PROPERTY_SPECS_POS_ROT | \
         ItemLineMixin._PROPERTY_SPECS_LINE | \
         ItemFillMixin._PROPERTY_SPECS_FILL
 
@@ -222,10 +219,9 @@ class Gate(BaseGate):
         )
     }
     _PROPERTY_SPECS = \
-        ItemPosMixin._PROPERTY_SPECS_POS | \
-        ItemRotateMixin._PROPERTY_SPECS_ROT | \
         BaseGate._PROPERTY_SPECS_LABEL | \
         _PROPERTY_SPECS_IO | \
+        ItemPosRotMixin._PROPERTY_SPECS_POS_ROT | \
         ItemLineMixin._PROPERTY_SPECS_LINE | \
         ItemFillMixin._PROPERTY_SPECS_FILL
 

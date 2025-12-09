@@ -6,9 +6,8 @@ from PyQt6.QtGui     import QAction
 
 from ....core.defs import PITCH
 
-from .mixin.pos    import ItemPosMixin
-from .mixin.rotate import ItemRotateMixin
-from .mixin.line   import ItemLineMixin
+from .mixin.pos_rot import ItemPosRotMixin
+from .mixin.line    import ItemLineMixin
 
 from .port_pin import PortPinMixin
 from .base_pin import BasePinArrow, BasePin, \
@@ -25,16 +24,16 @@ class SymbolPinArrow(BasePinArrow):
     pass
 
 
-class SymbolPin(ItemPosMixin, BasePinDotMixin, BasePinClockMixin, BasePin):
+class SymbolPin(ItemPosRotMixin, BasePinDotMixin, BasePinClockMixin, BasePin):
     # class attributes
     _ARROW_CLASS = SymbolPinArrow
     _PROPERTY_SPECS = \
-        PortPinMixin._PROPERTY_SPECS_NAME_DIR | \
+        PortPinMixin._PROPERTY_SPECS_NAME | \
+        PortPinMixin._PROPERTY_SPECS_DIR | \
+        PortPinMixin._PROPERTY_SPECS_COMMENT | \
         BasePinDotMixin._PROPERTY_SPECS_DOT | \
         BasePinClockMixin._PROPERTY_SPECS_CLOCK | \
-        ItemPosMixin._PROPERTY_SPECS_POS | \
-        ItemRotateMixin._PROPERTY_SPECS_ROT | \
-        PortPinMixin._PROPERTY_SPECS_COMMENT | \
+        ItemPosRotMixin._PROPERTY_SPECS_POS_ROT | \
         ItemLineMixin._PROPERTY_SPECS_LINE
 
     def __init__(
@@ -47,11 +46,6 @@ class SymbolPin(ItemPosMixin, BasePinDotMixin, BasePinClockMixin, BasePin):
     def moveHandleBy(self : Self, _ : str, delta : QPointF) -> None:
         """Move the entire SymbolPin when any grip is dragged."""
         self.setPos(self.pos() + delta)
-
-    def sceneTightBoundingRect(self : Self) -> QRectF:
-        return QRectF(
-            self.mapToScene(QPointF(0, 0)), self.mapToScene(QPointF(-PITCH, 0))
-        )
 
     def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
         return [

@@ -4,14 +4,13 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from . import DrawingScene
     from ...items.mixin.handle import ItemHandlesMixin
-    from ...items.mixin.origin import ItemOriginMixin
 
 
 class DrawingSceneGripsMixin:
     """Grip visibility."""
 
     # external instance attributes
-    _grip_items : list["ItemHandlesMixin | ItemOriginMixin"]
+    _grip_items : list["ItemHandlesMixin"]
 
     def initGrips(self : "DrawingScene") -> None:
         self._grip_items = []

@@ -10,19 +10,19 @@ from ..properties import PropertiesMixin
 
 from .symbol_pin import SymbolPin
 
-from .mixin            import ItemMixin
-from .mixin.pos        import ItemPosMixin
-from .mixin.line       import ItemLineMixin
-from .mixin.fill       import ItemFillMixin
-from .mixin.change     import ItemChangeMixin
-from .mixin.clone      import ItemCloneMixin
-from .mixin.xml        import ItemXmlMixin
-from .mixin.menu       import ItemMenuMixin
+from .mixin         import ItemMixin
+from .mixin.pos_rot import ItemPosRotMixin
+from .mixin.line    import ItemLineMixin
+from .mixin.fill    import ItemFillMixin
+from .mixin.change  import ItemChangeMixin
+from .mixin.clone   import ItemCloneMixin
+from .mixin.xml     import ItemXmlMixin
+from .mixin.menu    import ItemMenuMixin
 
 
 class Symbol(
     ItemMixin,
-    ItemPosMixin,
+    ItemPosRotMixin,
     ItemLineMixin,
     ItemFillMixin,
     ItemChangeMixin,

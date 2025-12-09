@@ -38,7 +38,7 @@ class SymbolScene(DrawingScene):
         rect = QRectF()
         for item in self.items():
             if isinstance(item, classes):
-                rect = rect.united(item.sceneTightBoundingRect())
+                rect = rect.united(item.sceneBoundingRect())
         # expand size if too small
         wa = PITCH - rect.size().width()
         ha = PITCH - rect.size().height()

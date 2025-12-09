@@ -5,10 +5,9 @@ from PyQt6.QtGui     import QAction
 
 from ....app import settings
 
-from .mixin.paint  import ItemPaintMixin
-from .mixin.pos    import ItemPosMixin
-from .mixin.rotate import ItemRotateMixin
-from .mixin.fill   import ItemFillMixin
+from .mixin.paint   import ItemPaintMixin
+from .mixin.pos_rot import ItemPosRotMixin
+from .mixin.fill    import ItemFillMixin
 
 from .port_pin import PortPinMixin
 
@@ -20,7 +19,7 @@ if TYPE_CHECKING:
 
 
 class Port(
-    ItemPosMixin,
+    ItemPosRotMixin,
     ItemPaintMixin,
     ItemFillMixin,
     PortPinMixin,
@@ -29,10 +28,10 @@ class Port(
     # class attributes
     _AP_NAME_OFFSET = 1.5
     _PROPERTY_SPECS = \
-        PortPinMixin._PROPERTY_SPECS_NAME_DIR | \
-        ItemPosMixin._PROPERTY_SPECS_POS | \
-        ItemRotateMixin._PROPERTY_SPECS_ROT | \
+        PortPinMixin._PROPERTY_SPECS_NAME | \
+        PortPinMixin._PROPERTY_SPECS_DIR | \
         PortPinMixin._PROPERTY_SPECS_COMMENT | \
+        ItemPosRotMixin._PROPERTY_SPECS_POS_ROT | \
         ItemFillMixin._PROPERTY_SPECS_FILL
 
     def __init__(

@@ -19,16 +19,19 @@ class Block(BaseRectangle):
     # class attributes
     _PROPERTY_SPECS = {
         "Label" : PropertySpec(
+            valid  = lambda self: self._label != "",
             getter = lambda self: self._label,
             setter = lambda self, value: setattr(self, "_label", value),
             text   = PropertyTextSpec("Top Left")
         ),
         "Name" : PropertySpec(
+            valid  = lambda self: self._name != "",
             getter = lambda self: self._name,
             setter = lambda self, value: setattr(self, "_name", value),
             text   = PropertyTextSpec("Bottom Left")
         ),
         "Path" : PropertySpec(
+            valid  = lambda self: self._path != "",
             getter = lambda self: self._path,
             setter = lambda self, value: setattr(self, "_path", value)
         )
@@ -69,8 +72,8 @@ class Block(BaseRectangle):
         rect = self.rect()
         w = rect.width()
         h = rect.height()
-        c = self.pos() + rect.center() # scene pos of rectangle center
-        r = pos - c                          # pos relative to rectangle center
+        c = c = self.mapToParent(rect.center())  # scene pos of rectangle center
+        r = pos - c  # pos relative to rectangle center
         hq = False if r.x() == 0 or abs(r.y()/r.x()) > abs(h/w) else True
         if hq:
             offset = min(max(r.y(), -h/2), h/2) + h/2

@@ -9,7 +9,6 @@ from ....app import logger, settings
 from ....core.defs  import Z_DRAWING
 
 from .mixin        import ItemMixin
-from .mixin.pos    import ItemPosMixin
 from .mixin.line   import ItemLineMixin
 from .mixin.fill   import ItemFillMixin
 from .mixin.change import ItemChangeMixin
@@ -27,7 +26,6 @@ if TYPE_CHECKING:
 
 class ConnVtx(
     ItemMixin,
-    ItemPosMixin,
     ItemLineMixin,
     ItemFillMixin,
     ItemChangeMixin,

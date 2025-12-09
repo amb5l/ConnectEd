@@ -12,14 +12,15 @@ from ....items import SignalDirection, \
                       QuillPref, QuillPrefChange, \
                       AppearancePref, AppearancePrefChange
 
-from ....items.mixin        import ItemMixin
-from ....items.mixin.origin import ItemOriginMixin
-from ....items.mixin.handle import ItemHandlesMixin
+from ....items.mixin         import ItemMixin
+from ....items.mixin.pos_rot import ItemPosRotMixin
+from ....items.mixin.handle  import ItemHandlesMixin
 
-from ....items.polyline      import Polyline, PolySeg
-from ....items.base_text     import BaseTextMixin
+from ....items.polyline  import Polyline, PolySeg
+from ....items.base_text import BaseTextMixin
+
 from ....items.property_text import PropertyTextMixin, \
-                                    PropertyTextBlock, PropertyTextLine
+                                    PropertyTextLine, PropertyTextBlock
 
 from . import CmdBase, CmdSceneItem, CmdSceneItems
 
@@ -344,7 +345,7 @@ class CmdEditProperties(CmdBase):
     ) -> None:
         pt.setName(vars.name)
         pt.setVisible(vars.display in (DisplayChoice.LINE, DisplayChoice.BLOCK))
-        pt.setCleat(vars.cleat)
+        pt.setAnchor(vars.cleat)
         pt.setPos(QPointF(vars.offset_x, vars.offset_y))
         pt.setOrigin(vars.origin)
         pt.a.quill.setFamily(vars.font)
@@ -356,14 +357,14 @@ class CmdEditProperties(CmdBase):
 
 
 class CmdEditOrigin(CmdSceneItem):
-    _item   : ItemOriginMixin | ItemHandlesMixin
+    _item   : "ItemPosRotMixin | ItemHandlesMixin"
     _before : str
     _after  : str
 
     def __init__(
         self    : Self,
         scene   : "DrawingScene",
-        item    : ItemOriginMixin | ItemHandlesMixin,
+        item    : "ItemPosRotMixin | ItemHandlesMixin",
         ap_name : str
     ):
         super().__init__(scene, item)

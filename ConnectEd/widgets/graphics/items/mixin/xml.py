@@ -76,8 +76,7 @@ class ItemXmlMixin:
                     if prop_name in instance.properties:
                         instance.properties[prop_name].setText(child)
                     child.onNameOrValueChange()
-                    if hasattr(child, 'onRotationChange'):
-                        child.onRotationChange()
+                    child.onSceneRotationChange()
                 else:
                     logger().warning(f"Unexpected child element: {item_name}")
             xr.readNext()

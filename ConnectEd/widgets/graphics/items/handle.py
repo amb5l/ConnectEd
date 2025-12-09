@@ -3,9 +3,8 @@ from typing import Self
 from PyQt6.QtCore import QPointF
 
 from .null_point import NullPoint
-from .grip       import APGrip, MoveGrip, ResizeGrip
+from .grip       import HandleGrip, MoveGrip, ResizeGrip
 
-from .mixin.rotate import ItemRotateMixin
 from .mixin.change import ItemChangeMixin
 
 from typing import TYPE_CHECKING
@@ -13,10 +12,10 @@ if TYPE_CHECKING:
     from .mixin.handle import ItemHandlesMixin
 
 
-class Handle(ItemRotateMixin, ItemChangeMixin, NullPoint):
+class Handle(ItemChangeMixin, NullPoint):
     # instance attributes
     _name : str
-    _grip : APGrip
+    _grip : HandleGrip
 
     def __init__(
         self   : Self,
@@ -42,5 +41,10 @@ class Handle(ItemRotateMixin, ItemChangeMixin, NullPoint):
     def onOriginChange(self : Self) -> None:
         self._grip.onOriginChange()
 
-    def grip(self : Self) -> APGrip:
+    def onSceneRotationChange(self : Self) -> None:
+        for child in self.childItems():
+            if hasattr(child, "onSceneRotationChange"):
+                child.onSceneRotationChange()
+
+    def grip(self : Self) -> HandleGrip:
         return self._grip

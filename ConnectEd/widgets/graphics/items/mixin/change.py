@@ -12,27 +12,21 @@ class ItemChangeMixin:
         value  : Any
     ) -> Any:
         match change:
-            case self.GraphicsItemChange.ItemParentHasChanged:
-                if hasattr(self, "onParentChange"):
-                    self.onParentChange(value)
             case self.GraphicsItemChange.ItemSceneHasChanged:
                 if hasattr(self, "onSceneChange"):
                     self.onSceneChange(value)
-            case self.GraphicsItemChange.ItemPositionHasChanged:
-                if hasattr(self, "onPositionChange"):
-                    self.onPositionChange(value)
-                    if isinstance(self, PropertiesMixin):
-                        if "Position X" in self.properties:
-                            self.properties["Position X"].changed.emit(
-                                self.pos().x()
-                            )
-                        if "Position Y" in self.properties:
-                            self.properties["Position Y"].changed.emit(
-                                self.pos().y()
-                            )
+            case self.GraphicsItemChange.ItemParentHasChanged:
+                if hasattr(self, "onParentChange"):
+                    self.onParentChange(value)
             case self.GraphicsItemChange.ItemScenePositionHasChanged:
                 if hasattr(self, "onScenePositionChange"):
                     self.onScenePositionChange(value)
+            case self.GraphicsItemChange.ItemPositionHasChanged:
+                if hasattr(self, "onPositionChange"):
+                    self.onPositionChange(value)
+            case self.GraphicsItemChange.ItemRotationHasChanged:
+                if hasattr(self, "onRotationChange"):
+                    self.onRotationChange(value)
             case self.GraphicsItemChange.ItemSelectedHasChanged:
                 if hasattr(self, "a"):
                     if self.a.line is not None:

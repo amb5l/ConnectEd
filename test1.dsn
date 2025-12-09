@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ConnectEd>
+  <Design name="UntitledDesign1">
+    <Symbols/>
+    <Diagram Name="UntitledDesign1" Sheet_Name="A4 (landscape)" Sheet_Width="1169" Sheet_Height="827" Margin="10" Border="1">
+      <ConnSeg x1="80.0" y1="100.0" x2="80.0" y2="150.0"/>
+      <Block Label="" Name="" Path="" Position_X="120" Position_Y="40" Width="80" Height="60" Line_Color="default" Line_Width="default" Line_Style="default" Fill_Color="default" Fill_Style="default">
+        <PropertyTextLine Property="Label" Visible="True" Cleat="Top Left" Origin="Bottom Left" Position_X="0" Position_Y="0" Rotation="0" Text_Color="default" Text_Font="default" Text_Size="default" Text_Bold="default" Text_Italic="default" Text_Underline="default"/>
+        <PropertyTextLine Property="Name" Visible="True" Cleat="Bottom Left" Origin="Top Left" Position_X="0" Position_Y="0" Rotation="0" Text_Color="default" Text_Font="default" Text_Size="default" Text_Bold="default" Text_Italic="default" Text_Underline="default"/>
+        <BlockPin Name="A" Direction="in" Edge="Left" Offset="10" Comment="">
+          <PropertyTextLine Property="Name" Visible="True" Cleat="Name" Origin="Middle Left" Position_X="0" Position_Y="0" Rotation="0" Text_Color="default" Text_Font="default" Text_Size="default" Text_Bold="default" Text_Italic="default" Text_Underline="default"/>
+        </BlockPin>
+        <BlockPin Name="B" Direction="out" Edge="Left" Offset="20" Comment="">
+          <PropertyTextLine Property="Name" Visible="True" Cleat="Name" Origin="Middle Left" Position_X="0" Position_Y="0" Rotation="0" Text_Color="default" Text_Font="default" Text_Size="default" Text_Bold="default" Text_Italic="default" Text_Underline="default"/>
+        </BlockPin>
+        <BlockPin Name="C" Direction="bi" Edge="Left" Offset="30" Comment="">
+          <PropertyTextLine Property="Name" Visible="True" Cleat="Name" Origin="Middle Left" Position_X="0" Position_Y="0" Rotation="0" Text_Color="default" Text_Font="default" Text_Size="default" Text_Bold="default" Text_Italic="default" Text_Underline="default"/>
+        </BlockPin>
+      </Block>
+      <Port Name="A" Direction="in" Position_X="30" Position_Y="20" Rotation="180" Comment="" Fill_Color="default" Fill_Style="default">
+        <PropertyTextLine Property="Name" Visible="True" Cleat="Name" Origin="Middle Left" Position_X="0" Position_Y="0" Rotation="0" Text_Color="default" Text_Font="default" Text_Size="default" Text_Bold="default" Text_Italic="default" Text_Underline="default"/>
+      </Port>
+      <Rectangle Position_X="230" Position_Y="50" Width="40" Height="60" Line_Color="default" Line_Width="default" Line_Style="default" Fill_Color="default" Fill_Style="default"/>
+      <ConnSeg x1="80.0" y1="150.0" x2="20.0" y2="150.0"/>
+      <ConnSeg x1="110.0" y1="70.0" x2="80.0" y2="70.0"/>
+      <ConnSeg x1="20.0" y1="80.0" x2="30.0" y2="80.0"/>
+      <Port Name="A" Direction="out" Position_X="20" Position_Y="40" Rotation="0" Comment="" Fill_Color="default" Fill_Style="default">
+        <PropertyTextLine Property="Name" Visible="True" Cleat="Name" Origin="Middle Left" Position_X="0" Position_Y="0" Rotation="0" Text_Color="default" Text_Font="default" Text_Size="default" Text_Bold="default" Text_Italic="default" Text_Underline="default"/>
+      </Port>
+      <ConnSeg x1="80.0" y1="100.0" x2="80.0" y2="70.0"/>
+      <ConnSeg x1="70.0" y1="100.0" x2="80.0" y2="100.0"/>
+      <Line X1="210" Y1="150" X2="290" Y2="20" Line_Color="default" Line_Width="default" Line_Style="default"/>
+      <ConnSeg x1="20.0" y1="150.0" x2="20.0" y2="80.0"/>
+      <Ellipse Position_X="210" Position_Y="30" Width="80" Height="100" Line_Color="default" Line_Width="default" Line_Style="default" Fill_Color="default" Fill_Style="default"/>
+      <TextLine Origin="Top Left" Position_X="130" Position_Y="120" Rotation="0" Text="ABC" Text_Color="default" Text_Font="default" Text_Size="default" Text_Bold="default" Text_Italic="default" Text_Underline="default"/>
+      <XorGate Position_X="70" Position_Y="100" Rotation="0" Label="" Output="L" Inputs="LHHHHH" Line_Color="default" Line_Width="default" Line_Style="default" Fill_Color="default" Fill_Style="default"/>
+    </Diagram>
+  </Design>
+</ConnectEd>

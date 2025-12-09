@@ -1,12 +1,12 @@
 from typing import Self
 
-from PyQt6.QtCore import QRectF
-from PyQt6.QtCore import QPointF
+from PyQt6.QtCore import QPointF, QRectF
 
 from ..handle import Handle
 
-from .origin import ItemOriginMixin
-from .grip   import ItemGripMixin
+from .pos_rot import ItemPosRotMixin
+from .grip    import ItemGripMixin
+
 
 class ItemHandlesMixin(ItemGripMixin):
     @classmethod
@@ -45,9 +45,6 @@ class ItemRectHandlesMixin(ItemHandlesMixin):
     def getHandleNames(cls : type[Self]) -> list[str]:
         return list(cls._AP_RECT.keys())
 
-    # instance attributes
-    _origin_name   : str
-    _origin_offset : QPointF
 
     def initHandles(self : Self) -> None:
         self._handles = {}
@@ -59,7 +56,7 @@ class ItemRectHandlesMixin(ItemHandlesMixin):
     def handleRect(self : Self) -> QRectF:
         raise NotImplementedError("Subclass must implement this method")
 
-    def updateHandles(self : Self) -> None:
+    def updateHandles(self : Self | ItemPosRotMixin) -> None:
         if not hasattr(self, "_handles"):
             return
         rect = self.handleRect()
@@ -69,7 +66,5 @@ class ItemRectHandlesMixin(ItemHandlesMixin):
         h = rect.height()
         for name, (x, y) in self._AP_RECT.items():
             self._handles[name].setPos(QPointF(x0 + (x * w), y0 + (y * h)))
-        if isinstance(self, ItemOriginMixin):
-            pos = self.pos()
+        if self.getOrigin() is not None:
             self.updateOrigin()
-            self.setPos(pos)

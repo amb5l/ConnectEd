@@ -6,7 +6,6 @@ from PyQt6.QtGui     import QAction, QPen, QBrush, QPainterPath
 
 from ....app import settings
 
-from .mixin.origin import ItemOriginMixin
 from .mixin.change import ItemChangeMixin
 from .mixin.menu   import ItemMenuMixin
 
@@ -15,6 +14,8 @@ if TYPE_CHECKING:
     from ..views.drawing  import DrawingView
     from ..scenes.drawing import DrawingScene
     from .handle          import Handle
+    from .mixin.pos_rot   import ItemPosRotMixin
+    from .mixin.handle    import ItemHandlesMixin
     from .mixin.grip      import ItemGripMixin
 
 
@@ -27,7 +28,6 @@ class Grip(
     _PATH_NAME = None  # subclass must set this e.g. "Circle"
 
     # instance attributes
-    _item      : "ItemGripMixin"  # parent item
     _path_name : str              # path name
     _path      : QPainterPath     # path
     _brush     : QBrush           # brush
@@ -43,7 +43,6 @@ class Grip(
         if pos is None:
             pos = QPointF()
         self.setPos(pos)
-        self._item = parent.parentItem()
         self._path_name = self._PATH_NAME
         self.setFlag( self.GraphicsItemFlag.ItemIgnoresTransformations , True  )
         self.setFlag( self.GraphicsItemFlag.ItemIsSelectable           , False )
@@ -76,7 +75,7 @@ class Grip(
         pass
 
 
-class APGrip(Grip):
+class HandleGrip(Grip):
     """Grip for handles. Base class for move and resize grips."""
 
     _PATH_NAME : str
@@ -99,14 +98,7 @@ class APGrip(Grip):
     def onOriginChange(self : Self | QGraphicsItem) -> None:
         h : "Handle" = self.parentItem()
         item = h.parentItem()
-        if not isinstance(item, ItemOriginMixin):
-            # Item doesn't have an origin point, just use regular path
-            self._path_name = self._PATH_NAME
-            scene : "DrawingScene" = self.scene()
-            if scene:
-                self.setPath(scene.paths["Grip"][self._path_name])
-            return
-        if item.getOrigin() == h.name():
+        if hasattr(item, "getOrigin") and item.getOrigin() == h.name():
             self._path_name = self._ORIGIN_PATH_NAME
         else:
             self._path_name = self._PATH_NAME
@@ -115,11 +107,12 @@ class APGrip(Grip):
             self.setPath(scene.paths["Grip"][self._path_name])
 
     def moveBy(self : Self, delta : QPointF) -> None:
-        parent : "Handle" = self.parentItem()
-        self._item.moveHandleBy(parent.name(), delta)
+        handle : "Handle" = self.parentItem()
+        item : "ItemHandlesMixin" = self.item()
+        item.moveHandleBy(handle.name(), delta)
 
 
-class MoveGrip(APGrip):
+class MoveGrip(HandleGrip):
     _PATH_NAME = "Circle"
     _ORIGIN_PATH_NAME = "SquaredCircle"
 
@@ -128,7 +121,8 @@ class MoveGrip(APGrip):
             view.action("Slide", lambda: view.ui.editSlide([self._item], self.scenePos())),
             view.action("Move", lambda: view.ui.editMove([self._item], self.scenePos()))
         ]
-        if isinstance(self._item, ItemOriginMixin):
+        item : "ItemPosRotMixin" = self.item()
+        if item.getOrigin() is not None:
             h : Handle = self.parentItem()
             entries.extend([
                 view.separator(),

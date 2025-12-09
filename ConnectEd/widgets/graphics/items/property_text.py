@@ -16,9 +16,9 @@ from . import DEFAULT
 from .base_text import BaseTextMixin, BaseTextLine, BaseTextBlock
 from .handle    import Handle
 
-from .mixin.origin import ItemOriginMixin
-from .mixin.handle import ItemRectHandlesMixin
-from .mixin.rotate import ItemRotateMixin
+from .mixin.pos_rot import ItemPosRotMixin
+from .mixin.handle  import ItemRectHandlesMixin
+from .mixin.quill   import ItemQuillMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -78,6 +78,7 @@ class PropertyTextMixin:
         {
             "Visible" : PropertySpec(
                 kind   = "bool",
+                valid  = lambda self: not self.isVisible(),
                 getter = lambda self: self.isVisible(),
                 setter = lambda self, value: self.setVisible(value)
             )
@@ -137,8 +138,11 @@ class PropertyTextMixin:
     def onParentChange(self : Self, _parent : QGraphicsItem | None) -> None:
         self.onNameOrValueChange()
 
-    def onPositionChange(self : Self, pos : QPointF | None = None) -> None:
-        super().onPositionChange(pos)
+    def onPositionChange(
+        self : Self,
+        pos  : QPointF | None = None
+    ) -> None:
+        ItemPosRotMixin.onPositionChange(self, pos)
         if hasattr(self, "_tether"):
             self._tether.onPositionChange(pos)
 
@@ -155,7 +159,7 @@ class PropertyTextMixin:
         if hasattr(self, "_tether"):
             self._tether.onSettingsChange()
 
-    def onRotationChange(self : Self | ItemRectHandlesMixin | ItemOriginMixin) -> None:
+    def onSceneRotationChange(self : Self) -> None:
         """Rotation compensation not currently supported."""
         pass
 
@@ -185,9 +189,9 @@ class PropertyTextMixin:
         handler = handle.parentItem()  # item or scene with handles
         self.setParentItem(handler.getHandle(name))
 
-    def setOrigin(self : Self | ItemRectHandlesMixin, name : str) -> None:
+    def setOrigin(self : Self, name : str) -> None:
         """Override to update tether line."""
-        super().setOrigin(name)
+        ItemPosRotMixin.setOrigin(self, name)
         if hasattr(self, "_tether"):
             self._tether.setParentItem(self.getHandle(name))
             self._tether.onPositionChange(self.pos())
@@ -230,9 +234,8 @@ class PropertyTextLine(PropertyTextMixin, BaseTextLine):
         PropertyTextMixin._PROPERTY_SPECS_NAME | \
         PropertyTextMixin._PROPERTY_SPECS_VISIBLE | \
         PropertyTextMixin._PROPERTY_SPECS_CLEAT | \
-        BaseTextMixin._PROPERTY_SPECS_POS | \
-        ItemRotateMixin._PROPERTY_SPECS_ROT | \
-        BaseTextMixin._PROPERTY_SPECS_APPEARANCE
+        ItemPosRotMixin._PROPERTY_SPECS_POS_ROT | \
+        ItemQuillMixin._PROPERTY_SPECS_QUILL
 
     def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
         items = [
@@ -252,9 +255,9 @@ class PropertyTextBlock(PropertyTextMixin, BaseTextBlock):
         PropertyTextMixin._PROPERTY_SPECS_NAME | \
         PropertyTextMixin._PROPERTY_SPECS_VISIBLE | \
         PropertyTextMixin._PROPERTY_SPECS_CLEAT | \
-        BaseTextMixin._PROPERTY_SPECS_POS | \
+        ItemPosRotMixin._PROPERTY_SPECS_POS_ROT | \
         BaseTextBlock._PROPERTY_SPECS_SIZE | \
-        BaseTextMixin._PROPERTY_SPECS_APPEARANCE
+        ItemQuillMixin._PROPERTY_SPECS_QUILL
 
     def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
         auto_width = self._width is DEFAULT

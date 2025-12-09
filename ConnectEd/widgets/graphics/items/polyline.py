@@ -1,32 +1,38 @@
 from typing import Self, overload
 
-from PyQt6.QtCore    import QPointF, QRectF
+from PyQt6.QtCore    import QPointF, QRectF, \
+                            QXmlStreamWriter, QXmlStreamReader
 from PyQt6.QtWidgets import QGraphicsPathItem, QMenu
 from PyQt6.QtGui     import QAction
 
 from ....app import logger
 
+from ....core.xml import fromXmlAttrs
+
 from ...dialogs.arc import ArcDialog
+
+from ..property   import PropertySpec
+from ..properties import PropertiesMixin
 
 from ..painter_path import PainterPath
 
 from .base_rect import BaseRectangleMixin
 from .grip      import Grip
 
-from .mixin        import ItemMixin
-from .mixin.pos    import ItemPosMixin
-from .mixin.paint  import ItemPaintMixin
-from .mixin.handle import ItemRectHandlesMixin
-from .mixin.line   import ItemLineMixin
-from .mixin.change import ItemChangeMixin
-from .mixin.clone  import ItemCloneMixin
-from .mixin.xml    import ItemXmlMixin
-from .mixin.menu   import ItemMenuMixin
+from .mixin         import ItemMixin
+from .mixin.pos_rot import ItemPosRotMixin
+from .mixin.paint   import ItemPaintMixin
+from .mixin.handle  import ItemRectHandlesMixin
+from .mixin.line    import ItemLineMixin
+from .mixin.change  import ItemChangeMixin
+from .mixin.clone   import ItemCloneMixin
+from .mixin.xml     import ItemXmlMixin
+from .mixin.menu    import ItemMenuMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ..scenes.drawing import DrawingScene
-    from ..views.drawing import DrawingView
+    from ..views.drawing  import DrawingView
 
 
 class PolyVtx(Grip):
@@ -61,6 +67,12 @@ class PolyVtx(Grip):
     def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
         items = []
         return items
+
+    def toXml(self : Self, xw : QXmlStreamWriter) -> None:
+        xw.writeStartElement(self.__class__.__name__)
+        xw.writeAttribute("X", str(self.pos().x()))
+        xw.writeAttribute("Y", str(self.pos().y()))
+        xw.writeEndElement()
 
 
 class PolySeg(Grip):
@@ -131,7 +143,7 @@ class PolySeg(Grip):
 
 class Polyline(
     ItemMixin,
-    ItemPosMixin,
+    ItemPosRotMixin,
     ItemPaintMixin,
     ItemRectHandlesMixin,
     ItemLineMixin,
@@ -139,29 +151,46 @@ class Polyline(
     ItemCloneMixin,
     ItemXmlMixin,
     ItemMenuMixin,
+    PropertiesMixin,
     QGraphicsPathItem
 ):
+    # class attributes
+    _PROPERTY_SPECS_CLOSED = \
+        {
+            "Closed" : PropertySpec(
+                kind   = "bool",
+                getter = lambda self: self.closed(),
+                setter = lambda self, value: self.setClosed(value)
+            )
+        }
+    _PROPERTY_SPECS = \
+        _PROPERTY_SPECS_CLOSED | \
+        ItemPosRotMixin._PROPERTY_SPECS_POS_ROT | \
+        ItemLineMixin._PROPERTY_SPECS_LINE
+
     # instance attributes
     _vertices : list[PolyVtx]  # list of vertex grips
     _segments : list[PolySeg]  # list of segment grips
     _closed   : bool           # whether the polyline is closed (a polygon)
     _sel_mode : int            # current selection mode (0 = outline, 1 = vtx/seg)
-    _stbrect  : QRectF         # tight bounding rect in scene coordinates
 
     def __init__(
         self     : Self,
-        vertices : QPointF | list[QPointF],
-        closed   : bool = False
+        pos      : QPointF | None = None,
+        vertices : list[QPointF] = [],
+        closed   : bool = False,
+        bare     : bool = False
     ) -> None:
-        if isinstance(vertices, QPointF):
-            vertices = [vertices]
         super().__init__()
-        self.initItem()
-        self.setPos(vertices[0])
+        self.initItem(bare=bare)
+        if pos is None:
+            pos = QPointF()
+        self.setPos(pos)
         # initialize vertices and segments
-        self._closed = False
         self._vertices = []
         self._segments = []
+        self._closed = closed
+        self.addVertex(pos)  # origin vertex
         for vertex in vertices:
             self.addVertex(vertex)
         self._buildSegments()
@@ -203,6 +232,7 @@ class Polyline(
     def addVertex(self : Self, pos : QPointF, sweep : float | None = None) -> PolyVtx:
         """Add a new vertex."""
         vtx = PolyVtx(self, len(self._vertices), pos - self.pos())
+        print("addVertex:", vtx._index, vtx.pos())
         self._vertices.append(vtx)
         if self.vertexCount() > 1:
             self._segments.append(PolySeg(self, self._vertices[-2], vtx, sweep))
@@ -305,9 +335,6 @@ class Polyline(
     def moveHandleBy(self : Self, name : str, delta : QPointF) -> None:
         BaseRectangleMixin.moveHandleBy(self, name, delta)
 
-    def sceneTightBoundingRect(self : Self) -> QRectF:
-        return self._stbrect
-
     def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
         items = []
         return items
@@ -359,14 +386,7 @@ class Polyline(
         if hasattr(self, '_handles'):
             self.updateHandles()
         # update scene tight bounding rect
-        self.onPositionChange()
-
-    def onPositionChange(
-        self : Self | QGraphicsPathItem,
-        _ : QPointF | None = None
-    ) -> None:
-        scene_polygon = self.mapToScene(self.path().controlPointRect())
-        self._stbrect = scene_polygon.boundingRect().normalized()
+        self.onSceneBoundRectChange()
 
     def _buildSegments(self : Self) -> None:
         """Build segments from vertices. Default to lines not arcs."""
@@ -380,6 +400,56 @@ class Polyline(
         if self._closed:
             self._segments.append(PolySeg(self, v2, self._vertices[0], None))
 
+    def toXml(self : Self, xw : QXmlStreamWriter) -> None:
+        self.toXmlBegin(xw)
+        self.toXmlAttrs(xw)
+        # serialise segments
+        for i, vtx in enumerate(self._vertices[1:]):
+            seg = self._segments[i-1]
+            xw.writeStartElement("Segment")
+            x = vtx.pos().x()
+            x = int(x) if x.is_integer() else x
+            xw.writeAttribute("X", str(x))
+            y = vtx.pos().y()
+            y = int(y) if y.is_integer() else y
+            xw.writeAttribute("Y", str(y))
+            sweep = seg.sweep()
+            if sweep is not None and sweep != 0:
+                sweep = int(sweep) if sweep.is_integer() else sweep
+                xw.writeAttribute("Sweep", str(sweep))
+            xw.writeEndElement()
+            pass
+        self.toXmlEnd(xw)
+
+    @classmethod
+    def fromXml(cls : Self, xr : QXmlStreamReader) -> Self:
+        instance : "Polyline" = cls(bare=True)
+        fromXmlAttrs(instance, xr)
+        # deserialise segments
+        while not (xr.isEndElement() and xr.name() == cls.__name__):
+            if xr.isStartElement():
+                item_name = xr.name()
+                if item_name == "Segment":
+                    xml_attrs = xr.attributes()
+                    x = None
+                    y = None
+                    sweep = None
+                    for xml_attr in xml_attrs:
+                        match xml_attr.name():
+                            case "X":
+                                x = float(xml_attr.value())
+                            case "Y":
+                                y = float(xml_attr.value())
+                            case "Sweep":
+                                sweep = float(xml_attr.value())
+                            case _:
+                                logger().warning(f"Unexpected attribute: {xml_attr.name()}")
+                    if x is not None and y is not None:
+                        instance.addVertex(QPointF(x, y), sweep)
+                else:
+                    logger().warning(f"Unexpected element: {item_name}")
+            xr.readNext()
+        return instance
 
 class SymbolPolyline(Polyline):
     pass

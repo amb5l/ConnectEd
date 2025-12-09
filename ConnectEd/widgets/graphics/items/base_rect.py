@@ -1,7 +1,7 @@
 from typing import Self, overload
 
 from PyQt6.QtCore    import Qt, QPointF, QRectF, QSizeF
-from PyQt6.QtWidgets import QGraphicsRectItem, QMenu
+from PyQt6.QtWidgets import QGraphicsRectItem, QGraphicsEllipseItem, QMenu
 from PyQt6.QtGui     import QPainterPath, QPainterPathStroker, QAction
 
 from ....app import settings
@@ -12,7 +12,7 @@ from ..property   import PropertySpec
 from ..properties import PropertiesMixin
 
 from .mixin            import ItemMixin
-from .mixin.pos        import ItemPosMixin
+from .mixin.pos_rot    import ItemPosRotMixin
 from .mixin.bound      import ItemBoundMixin
 from .mixin.shape      import ItemShapeMixin
 from .mixin.paint      import ItemPaintMixin
@@ -31,7 +31,7 @@ if TYPE_CHECKING:
 
 class BaseRectangleMixin(
     ItemMixin,
-    ItemPosMixin,
+    ItemPosRotMixin,
     ItemBoundMixin,
     ItemShapeMixin,
     ItemPaintMixin,
@@ -47,6 +47,7 @@ class BaseRectangleMixin(
     """Base mixin class for rectangle-like items."""
 
     # class attributes
+    _ORIGIN_NAME = "Middle Center"
     _PROPERTY_SPECS_SIZE = \
         {
             "Width" : PropertySpec(
@@ -61,14 +62,12 @@ class BaseRectangleMixin(
             )
         }
     _PROPERTY_SPECS = \
-        ItemPosMixin._PROPERTY_SPECS_POS | \
+        ItemPosRotMixin._PROPERTY_SPECS_POS_ROT | \
         _PROPERTY_SPECS_SIZE | \
         ItemLineMixin._PROPERTY_SPECS_LINE | \
         ItemFillMixin._PROPERTY_SPECS_FILL
     _MIN_SIZE = QSizeF(1.0, 1.0)
 
-    # instance attributes
-    _stbrect : QRectF
 
     @overload
     def __init__(
@@ -91,7 +90,7 @@ class BaseRectangleMixin(
     def __init__(
         self       : Self,
         p1_or_pos  : QPointF | None = None,
-        p2_or_size : QPointF | None = None,
+        p2_or_size : QPointF | QSizeF | None = None,
         bare       : bool = False
     ) -> None:
         super().__init__()
@@ -126,17 +125,7 @@ class BaseRectangleMixin(
         else:
             self._hshape = stroker_path
         self.updateHandles()
-        self.onPositionChange()
-        if hasattr(self, "properties"):
-            self.properties["Width"].changed.emit(self.rect().width())
-            self.properties["Height"].changed.emit(self.rect().height())
-
-    def onPositionChange(
-        self : Self | QGraphicsRectItem,
-        _ : QPointF | None = None
-    ) -> None:
-        scene_polygon = self.mapToScene(self.rect())
-        self._stbrect = scene_polygon.boundingRect().normalized()
+        self.onSceneBoundRectChange()
 
     @overload
     def setRect(
@@ -157,23 +146,24 @@ class BaseRectangleMixin(
 
     def setRect(
         self       : Self,
-        rect_or_ax : float | int,
+        rect_or_ax : float | int | QRectF,
         ay         : float | int = None,
         w          : float | int = None,
         h          : float | int = None
     ) -> None:
+        proxy : QGraphicsRectItem | QGraphicsEllipseItem = super()
         if isinstance(rect_or_ax, QRectF):
-            super().setRect(rect_or_ax)
+            proxy.setRect(rect_or_ax)
         else:
-            super().setRect(rect_or_ax, ay, w, h)
+            proxy.setRect(rect_or_ax, ay, w, h)
         self.onGeometryChange()
 
-    def setWidth(self : Self, width : float | int) -> None:
+    def setWidth(self : Self | QGraphicsRectItem, width : float | int) -> None:
         rect = self.rect()
         rect.setWidth(width)
         self.setRect(rect)
 
-    def setHeight(self : Self, height : float | int) -> None:
+    def setHeight(self : Self | QGraphicsRectItem, height : float | int) -> None:
         rect = self.rect()
         rect.setHeight(height)
         self.setRect(rect)
@@ -197,7 +187,7 @@ class BaseRectangleMixin(
         ...
 
     def setPoints(
-        self : Self,
+        self : Self | QGraphicsRectItem,
         p1_x1 : QPointF | float | int,
         p2_y1 : QPointF | float | int,
         x2    : float | int | None = None,
@@ -211,20 +201,25 @@ class BaseRectangleMixin(
         else:
             x1 = p1_x1
             y1 = p2_y1
-        self.setPos(QPointF(min(x1, x2), min(y1, y2)))
         w = max(abs(x2-x1), PITCH)
         h = max(abs(y2-y1), PITCH)
         rect = self.rect()
         rect.setSize(QSizeF(w, h))
         self.setRect(rect)
+        origin_offset = self.transformOriginPoint()
+        target_pos = QPointF(min(x1, x2), min(y1, y2)) + origin_offset
+        self.setPos(target_pos)
 
     def handleRect(self : Self) -> QRectF:
         return self.rect()
 
-    def moveHandleBy(self : Self, name : str, delta : QPointF) -> None:
-        p1 = self.pos()
+    def moveHandleBy(
+        self : Self | QGraphicsRectItem | QGraphicsEllipseItem,
+        name : str,
+        d    : QPointF
+    ) -> None:
+        p1 = self.pos() - self.transformOriginPoint()
         p2 = p1 + self.rect().bottomRight()
-        d = delta
         match name:
             case "Top Left":
                 self.setPoints(p1 + d, p2)
@@ -235,7 +230,7 @@ class BaseRectangleMixin(
             case "Middle Left":
                 self.setPoints(p1.x() + d.x(), p1.y(), p2.x(), p2.y())
             case "Middle Center":
-                self.setPos(self.pos() + d)
+                self.moveBy(d)
             case "Middle Right":
                 self.setPoints(p1.x(), p1.y(), p2.x() + d.x(), p2.y())
             case "Bottom Left":
@@ -246,9 +241,6 @@ class BaseRectangleMixin(
                 self.setPoints(p1, p2 + d)
             case _:
                 raise ValueError(f"Invalid handle: {name}")
-
-    def sceneTightBoundingRect(self : Self) -> QRectF:
-        return self._stbrect
 
     def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
         return [

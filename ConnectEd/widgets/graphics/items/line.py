@@ -63,7 +63,6 @@ class Line(
 
     # instance attributes
     _line    : QLineF
-    _stbrect : QRectF
 
     def __init__(
         self : Self,
@@ -96,18 +95,18 @@ class Line(
         stroker_path = stroker.createStroke(line_path)
         self._hshape = stroker_path
         self.updateHandles()
-        self.onPositionChange()
+        self.onScenePositionChange()
         if hasattr(self, "properties"):
             self.properties["X1"].changed.emit(self.x1())
             self.properties["Y1"].changed.emit(self.y1())
             self.properties["X2"].changed.emit(self.x2())
             self.properties["Y2"].changed.emit(self.y2())
 
-    def onPositionChange(
+    def onScenePositionChange(
         self : Self | QGraphicsLineItem,
-        _ : QPointF | None = None
+        _pos : QPointF | None = None
     ) -> None:
-        self._stbrect = QRectF(
+        self._sbrect = QRectF(
             self.mapToScene(self._line.p1()),
             self.mapToScene(self._line.p2())
         ).normalized()
@@ -185,8 +184,6 @@ class Line(
     def shape(self : Self) -> QPainterPath:
         return self._hshape
 
-    def sceneTightBoundingRect(self : Self) -> QRectF:
-        return self._stbrect
 
 class SymbolLine(Line):
     pass
