@@ -144,18 +144,9 @@ class BaseRectangleMixin(
     ) -> None:
         ...
 
-    def setRect(
-        self       : Self,
-        rect_or_ax : float | int | QRectF,
-        ay         : float | int = None,
-        w          : float | int = None,
-        h          : float | int = None
-    ) -> None:
+    def setRect(self, *args, **kwargs) -> None:
         proxy : QGraphicsRectItem | QGraphicsEllipseItem = super()
-        if isinstance(rect_or_ax, QRectF):
-            proxy.setRect(rect_or_ax)
-        else:
-            proxy.setRect(rect_or_ax, ay, w, h)
+        proxy.setRect(*args, **kwargs)
         self.onGeometryChange()
 
     def setWidth(self : Self | QGraphicsRectItem, width : float | int) -> None:
