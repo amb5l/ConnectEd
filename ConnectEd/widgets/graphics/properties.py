@@ -20,7 +20,13 @@ class PropertiesMixin:
         self.properties = {}
         for name, spec in self._PROPERTY_SPECS.items():
             self.properties[name] = Property(
-                self, name, spec.kind, spec.getter, spec.setter
+                self,
+                name,
+                spec.kind,
+                spec.valid,
+                spec.getter,
+                spec.setter,
+                spec.default
             )
             if not bare and spec.text is not None:
                 property_text_cls = PropertyTextBlock if spec.text.block \

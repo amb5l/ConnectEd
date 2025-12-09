@@ -19,9 +19,9 @@ if TYPE_CHECKING:
 @dataclass
 class PropertySpec:
     kind    : str                                            = "str"
+    valid   : Callable[["PropertyOwner"], bool]      | None  = None  # valid for inclusion in XML
     getter  : Callable[["PropertyOwner"], Any] | str | None  = None
     setter  : Callable[["PropertyOwner", Any], None] | None  = None
-    valid   : Callable[["PropertyOwner"], bool]      | None  = None
     default : Callable[["PropertyOwner"], Any]       | None  = None
     text    : "PropertyTextSpec                      | None" = None
 
@@ -31,9 +31,9 @@ class Property(QObject):
     _owner   : "PropertyOwner"
     _name    : str
     _kind    : str
+    _valid   : Callable[["PropertyOwner"], bool]      | None
     _getter  : Callable[["PropertyOwner"], Any] | str | None  # or static value
     _setter  : Callable[["PropertyOwner", Any], None] | None
-    _valid   : Callable[["PropertyOwner"], bool]      | None
     _default : Callable[["PropertyOwner"], Any]       | None
     _text    : "PropertyTextMixin | None"
     _subs    : dict["Property", Callable]  # dep_property -> update_slot
@@ -46,9 +46,9 @@ class Property(QObject):
         owner   : "PropertyOwner",
         name    : str,
         kind    : str,
+        valid   : Callable[["PropertyOwner"], bool] | None = None,
         getter  : Callable[["PropertyOwner"], Any] | str | None = None,
         setter  : Callable[["PropertyOwner", Any], None] | None = None,
-        valid   : Callable[["PropertyOwner"], bool] | None = None,
         default : Callable[["PropertyOwner"], Any] | None = None,
         text    : "PropertyTextMixin | None" = None
     ) -> None:
@@ -56,23 +56,27 @@ class Property(QObject):
         self._owner   = owner
         self._name    = name
         self._kind    = kind
+        self._valid   = valid
         self._getter  = getter
         self._setter  = setter
-        self._valid   = valid
         self._default = default
         self._text    = text
         self._subs    = {}
 
-    def isStatic(self: Self) -> bool:
+    def isStatic(self : Self) -> bool:
         return not isinstance(self._getter, Callable)
 
-    def isReadOnly(self: Self) -> bool:
+    def isReadOnly(self : Self) -> bool:
         return self._setter is None and not isinstance(self._getter, str)
 
-    def kind(self: Self) -> str:
+    def kind(self : Self) -> str:
         return self._kind
 
-    def raw(self: Self) -> Any:
+    def valid(self : Self) -> bool:
+        """Check if this property is valid for the given owner (e.g., for XML)."""
+        return self._valid(self._owner) if self._valid else True
+
+    def raw(self : Self) -> Any:
         """Get raw value without substitution."""
         if isinstance(self._getter, str):
             return self._getter
@@ -81,7 +85,7 @@ class Property(QObject):
         else:
             return None
 
-    def get(self: Self, recurse: int = 0, subscribe: bool = True) -> Any:
+    def get(self : Self, recurse: int = 0, subscribe : bool = True) -> Any:
         """Get value, applying substitution and subscriptions if needed."""
         if recurse > 10:  # prevent infinite recursion
             logger().warning(
@@ -95,29 +99,25 @@ class Property(QObject):
             )
         return raw_value
 
-    def set(self: Self, new_value: Any) -> None:
+    def set(self : Self, value : Any) -> None:
         """Set value and notify subscribers."""
         old_value = self.get(subscribe=False)  # Don't resubscribe during get
         if self._setter:
-            if isinstance(new_value, str) and self._kind != "str":
-                new_value = str2val(new_value, self._kind)
-            self._setter(self._owner, new_value)
+            if isinstance(value, str) and self._kind != "str":
+                value = str2val(value, self._kind)
+            self._setter(self._owner, value)
         elif isinstance(self._getter, str) or self._getter is None:
-            self._getter = new_value
+            self._getter = value
         else:
             logger().error(f"Property '{self._name}' has no setter")
             return
         # Clear subscriptions if new value doesn't need them
-        if not isinstance(new_value, str) and self._text is not None:
+        if not isinstance(value, str) and self._text is not None:
             self._clearSubs()
-        if old_value != new_value:
-            self.changed.emit(new_value)  # Propagate change
+        if old_value != value:
+            self.changed.emit(value)  # Propagate change
 
-    def valid(self: Self) -> bool:
-        """Check if this property is valid for the given owner (e.g., for XML)."""
-        return self._valid(self._owner) if self._valid else True
-
-    def default(self: Self) -> Any:
+    def default(self : Self) -> Any:
         """Get default value."""
         return self._default(self._owner) if self._default else None
 
