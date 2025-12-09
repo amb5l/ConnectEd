@@ -5,7 +5,7 @@ from PyQt6.QtCore import QRectF
 
 class ItemBoundMixin:
     # instance attributes
-    _brect  : QRectF       # bounding rect
+    _brect  : QRectF  # bounding rect
 
     def initBound(self : Self) -> None:
         self._brect  = QRectF()
