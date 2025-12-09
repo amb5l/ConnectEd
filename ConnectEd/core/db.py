@@ -372,7 +372,10 @@ class Model(QStandardItemModel):
         return self._diagrams
 
     def designDbNodes(self : Self) -> list[DesignDbNode]:
-        return [self._diagrams.child(i) for i in range(self._diagrams.rowCount())]
+        return [
+            self._diagrams.child(i) for i in range(self._diagrams.rowCount())
+                if self._diagrams.child(i) is not None
+        ]
 
     def newDesignDbNode(self : Self, name : str | None = None) -> DesignDbNode:
         node = DesignDbNode(name)
@@ -386,7 +389,10 @@ class Model(QStandardItemModel):
         return self._libraries
 
     def libraryDbNodes(self : Self) -> list[LibraryDbNode]:
-        return [self._libraries.child(i) for i in range(self._libraries.rowCount())]
+        return [
+            self._libraries.child(i) for i in range(self._libraries.rowCount())
+                if self._libraries.child(i) is not None
+        ]
 
     def newLibraryDbNode(self : Self, name : str | None = None) -> LibraryDbNode:
         node = LibraryDbNode(name)
