@@ -15,12 +15,16 @@ if TYPE_CHECKING:
 
 
 class ItemXmlMixin:
-    def toXml(self : Self, xw : QXmlStreamWriter) -> None:
+    def toXmlBegin(self : Self, xw : QXmlStreamWriter) -> None:
+        xw.writeStartElement(self.__class__.__name__)
+
+    def toXmlAttrs(self : Self, xw : QXmlStreamWriter) -> None:
+        toXmlAttrs(self, xw)
+
+    def toXmlChildren(self : Self, xw : QXmlStreamWriter) -> None:
         from ..property_text import PropertyTextMixin
         from ..base_pin      import BasePin
         from ..handle        import Handle
-        xw.writeStartElement(self.__class__.__name__)
-        toXmlAttrs(self, xw)
         for child in self.childItems():
             if isinstance(child, BasePin):
                 child.toXml(xw)
@@ -28,7 +32,15 @@ class ItemXmlMixin:
                 for handle_child in child.childItems():
                     if isinstance(handle_child, PropertyTextMixin):
                         handle_child.toXml(xw)
+
+    def toXmlEnd(self : Self, xw : QXmlStreamWriter) -> None:
         xw.writeEndElement()
+
+    def toXml(self : Self, xw : QXmlStreamWriter) -> None:
+        self.toXmlBegin(xw)
+        self.toXmlAttrs(xw)
+        self.toXmlChildren(xw)
+        self.toXmlEnd(xw)
 
     @classmethod
     def fromXml(cls : Self, xr : QXmlStreamReader) -> Self:
@@ -39,7 +51,7 @@ class ItemXmlMixin:
         # check if we're already at the end element (self-closing)
         if xr.isEndElement() and xr.name() == cls.__name__:
             return instance
-        # import and registerchild pin and property text items
+        # import and register child pin and property text items
         pkg = "ConnectEd.widgets.graphics.items"
         pin_classes = {}
         registerClass( pin_classes , "GatePin"   , pkg=pkg )
