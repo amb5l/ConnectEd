@@ -135,7 +135,7 @@ class PropertyTextMixin:
         self.onSettingsChange()
 
     def onParentChange(self : Self, _parent : QGraphicsItem | None) -> None:
-        self.onTextChange()
+        self.onNameOrValueChange()
 
     def onPositionChange(self : Self, pos : QPointF | None = None) -> None:
         super().onPositionChange(pos)
@@ -159,7 +159,7 @@ class PropertyTextMixin:
         """Rotation compensation not currently supported."""
         pass
 
-    def onTextChange(self : Self) -> None:
+    def onNameOrValueChange(self : Self) -> None:
         value = self.value()
         text = f"<{self.property()}>" if value == "" else value
         super().setText(text)
@@ -201,7 +201,7 @@ class PropertyTextMixin:
 
     def setProperty(self : Self, property : str) -> None:
         self._property = property
-        self.onTextChange()
+        self.onNameOrValueChange()
 
     def value(self : Self) -> str:
         source = self.scene() if self.parentItem() is None else self.item()

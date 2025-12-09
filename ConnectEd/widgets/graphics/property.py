@@ -128,7 +128,7 @@ class Property(QObject):
         # Disconnect from old property text if exists
         if self._text is not None:
             try:
-                self.changed.disconnect(self._text.onTextChange)
+                self.changed.disconnect(self._text.onNameOrValueChange)
             except TypeError:
                 pass
         # If removing property text, delete it from scene
@@ -139,7 +139,7 @@ class Property(QObject):
         self._text = text
         # Connect to new property text if provided
         if text is not None:
-            self.changed.connect(text.onTextChange)
+            self.changed.connect(text.onNameOrValueChange)
 
     def _substituteAndSubscribe(
         self      : Self,
@@ -179,7 +179,7 @@ class Property(QObject):
                 def update_slot(_value=None):
                     # Update text display if present
                     if self._text is not None:
-                        self._text.onTextChange()
+                        self._text.onNameOrValueChange()
                     # Propagate change signal for chained dependencies
                     self.changed.emit(self.get(subscribe=False))
                 prop_dep.changed.connect(update_slot)
