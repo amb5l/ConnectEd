@@ -8,7 +8,7 @@ from PyQt6.QtGui     import QColor
 
 from ....app import logger
 
-from ....core.utils import pascal2snake, registerClass
+from ....core.utils import registerClass
 
 from .mixin import ItemMixin
 
