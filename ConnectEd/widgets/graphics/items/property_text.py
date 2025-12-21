@@ -11,13 +11,10 @@ from ....app import settings
 from ..property   import PropertySpec
 from ..properties import PropertiesMixin
 
-from . import DEFAULT
-
-from .base_text import BaseTextMixin, BaseTextLine, BaseTextBlock
+from .base_text import BaseTextLine, BaseTextBlock
 from .handle    import Handle
 
 from .mixin.pos_rot import ItemPosRotMixin
-from .mixin.handle  import ItemRectHandlesMixin
 from .mixin.quill   import ItemQuillMixin
 
 from typing import TYPE_CHECKING
@@ -260,16 +257,22 @@ class PropertyTextBlock(PropertyTextMixin, BaseTextBlock):
         ItemQuillMixin._PROPERTY_SPECS_QUILL
 
     def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
-        auto_width = self._width is DEFAULT
-        auto_height = self._height is DEFAULT
         items = [
             view.action("Edit...", lambda: view.ui.editPropertyText(self)),
             view.separator(),
             view.action(
-                "Auto Width", lambda: self.setAutoWidth(not auto_width), auto_width
+                "Auto Width",
+                lambda: self.setWidth(
+                    self.boundingRect().width() if self._width is None else None
+                ),
+                self._width is None
             ),
             view.action(
-                "Auto Height", lambda: self.setAutoHeight(not auto_height), auto_height
+                "Auto Height",
+                lambda: self.setHeight(
+                    self.boundingRect().height() if self._height is None else None
+                ),
+                self._height is None
             ),
             view.separator(),
             view.action("Appearance...", lambda: view.ui.editAppearance(self)),

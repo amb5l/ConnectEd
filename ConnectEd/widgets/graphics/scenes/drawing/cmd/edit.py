@@ -1,7 +1,7 @@
 from typing import Self
 from dataclasses import dataclass
 
-from PyQt6.QtCore import QPointF
+from PyQt6.QtCore import Qt, QPointF
 
 from .....dialogs.properties import DisplayChoice, \
                                     PropertyVariables, PropertyChange
@@ -17,7 +17,7 @@ from ....items.mixin.pos_rot import ItemPosRotMixin
 from ....items.mixin.handle  import ItemHandlesMixin
 
 from ....items.polyline  import Polyline, PolySeg
-from ....items.base_text import BaseTextMixin
+from ....items.base_text import BaseTextLine, BaseTextBlock
 
 from ....items.property_text import PropertyTextMixin, \
                                     PropertyTextLine, PropertyTextBlock
@@ -171,34 +171,85 @@ class CmdEditPolySeg(CmdSceneItem):
 
 class CmdEditText(CmdSceneItem):
     @dataclass
-    class TextState:
-        text       : str
-        appearance : QuillPref
+    class ItemState:
+        text       : str       | None = None
+        appearance : QuillPref | None = None
 
-    _item   : BaseTextMixin
-    _before : TextState
-    _after  : TextState
+    _item   : BaseTextLine
+    _before : ItemState
+    _after  : ItemState
 
     def __init__(
         self       : Self,
         scene      : "DrawingScene",
-        item       : BaseTextMixin,
+        item       : BaseTextLine,
         text       : str,
         appearance : QuillPrefChange
     ):
         super().__init__(scene, item)
-        self._item   = item
-        self._before = self.TextState(item.text(), item.a.quill.getPref())
-        self._after  = self.TextState(text, appearance)
+        self._item = item
+        self._before = self.ItemState()
+        if text is not None:
+            self._before.text = item.text()
+        if appearance is not None:
+            self._before.appearance = item.a.quill.getPref()
+        self._after = self.ItemState(text, appearance)
 
     def redo(self : Self) -> None:
-        self._item.setText(self._after.text)
-        self._item.a.quill.setPref(self._after.appearance)
+        if self._after.text is not None:
+            self._item.setText(self._after.text)
+        if self._after.appearance is not None:
+            self._item.a.quill.setPref(self._after.appearance)
         self._item.update()
 
     def undo(self : Self) -> None:
-        self._item.setText(self._before.text)
-        self._item.a.quill.setPref(self._before.appearance)
+        if self._before.text is not None:
+            self._item.setText(self._before.text)
+        if self._before.appearance is not None:
+            self._item.a.quill.setPref(self._before.appearance)
+        self._item.update()
+
+
+class CmdEditTextBlock(CmdEditText):
+    @dataclass
+    class ItemState:
+        text       : str              | None = None
+        appearance : QuillPref        | None = None
+        width      : float            | None = None
+        height     : float            | None = None
+        alignment  : Qt.AlignmentFlag | None = None
+
+    _item   : BaseTextBlock
+
+    def __init__(
+        self       : Self,
+        scene      : "DrawingScene",
+        item       : BaseTextBlock,
+        text       : str              | None = None,
+        appearance : QuillPrefChange  | None = None,
+        width      : float            | None = None,
+        height     : float            | None = None,
+        alignment  : Qt.AlignmentFlag | None = None
+    ):
+        super().__init__(scene, item, text, appearance)
+        if width is not None:
+            self._before.width = item.width()
+        if height is not None:
+            self._before.height = item.height()
+        if alignment is not None:
+            self._before.alignment = item.alignment()
+        self._after.width     = width
+        self._after.height    = height
+        self._after.alignment = alignment
+
+    def redo(self : Self) -> None:
+        super().redo()
+        if self._after.width is not None:
+            self._item.setWidth(self._after.width)
+        if self._after.height is not None:
+            self._item.setHeight(self._after.height)
+        if self._after.alignment is not None:
+            self._item.setAlignment(self._after.alignment)
         self._item.update()
 
 

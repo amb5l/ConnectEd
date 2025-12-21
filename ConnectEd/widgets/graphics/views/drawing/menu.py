@@ -1,7 +1,7 @@
 from collections.abc import Callable
 
 from PyQt6.QtWidgets import QMenu
-from PyQt6.QtGui     import QContextMenuEvent, QAction, QKeySequence
+from PyQt6.QtGui     import QContextMenuEvent, QAction, QKeySequence, QIcon
 
 from .....core.xml import paste
 
@@ -104,8 +104,9 @@ class DrawingViewMenuMixin:
         self     : "DrawingView",
         text     : str,
         slot     : Callable,
-        checked  : bool | None = None,
-        shortcut : QKeySequence | str | None = None
+        checked  : bool               | None = None,
+        shortcut : QKeySequence | str | None = None,
+        icon     : QIcon              | None = None
     ):
         action = QAction(text, self)
         action.triggered.connect(slot)
@@ -114,6 +115,8 @@ class DrawingViewMenuMixin:
             action.setChecked(checked)
         if shortcut is not None:
             action.setShortcut(shortcut)
+        if icon is not None:
+            action.setIcon(icon)
         return action
 
     def separator(self : "DrawingView") -> QAction:

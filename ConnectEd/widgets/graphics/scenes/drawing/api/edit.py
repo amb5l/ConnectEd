@@ -1,4 +1,4 @@
-from PyQt6.QtCore import QPointF
+from PyQt6.QtCore import Qt, QPointF
 
 from ......app import logger
 
@@ -16,7 +16,7 @@ from ....items.port_pin      import PortPinMixin
 from ....items.block_pin     import BlockPin
 from ....items.symbol_pin    import SymbolPin
 from ....items.polyline      import Polyline, PolySeg
-from ....items.base_text     import BaseTextLine
+from ....items.text          import TextLine, TextBlock
 from ....items.property_text import PropertyTextMixin
 from ....items.mixin         import ItemMixin
 
@@ -26,7 +26,7 @@ from ..cmd.edit      import CmdEditPortPin, \
                             CmdEditSymbolPinDot, CmdEditSymbolPinClock, \
                             CmdEditOrigin, \
                             CmdEditPolylineClosed, CmdEditPolySeg, \
-                            CmdEditText, CmdEditPropertyText, \
+                            CmdEditText, CmdEditTextBlock, CmdEditPropertyText, \
                             CmdEditProperties, CmdEditAppearance
 
 
@@ -182,12 +182,27 @@ class DrawingSceneApiEditMixin:
 
     def editTextLine(
         self       : "DrawingScene",
-        item       : BaseTextLine,
-        text       : str,
-        appearance : QuillPrefChange,
+        item       : TextLine,
+        text       : str              | None = None,
+        appearance : QuillPrefChange  | None = None,
         undoable   : bool = False
     ) -> None:
         cmd = CmdEditText(self, item, text, appearance)
+        cmdExec(self, cmd, undoable)
+
+    def editTextBlock(
+        self       : "DrawingScene",
+        item       : TextBlock,
+        text       : str              | None = None,
+        appearance : QuillPrefChange  | None = None,
+        width      : float            | None = None,
+        height     : float            | None = None,
+        alignment  : Qt.AlignmentFlag | None = None,
+        undoable   : bool = False
+    ) -> None:
+        cmd = CmdEditTextBlock(
+            self, item, text, appearance, width, height, alignment
+        )
         cmdExec(self, cmd, undoable)
 
     def editPropertyText(

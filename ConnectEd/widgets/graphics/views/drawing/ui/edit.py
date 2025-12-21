@@ -1,4 +1,4 @@
-from PyQt6.QtCore    import QPoint, QPointF
+from PyQt6.QtCore    import Qt, QPoint, QPointF
 from PyQt6.QtWidgets import QApplication, QGraphicsItem
 from PyQt6.QtGui     import QCursor
 
@@ -9,10 +9,11 @@ from ..interaction.edit import EditMoveInteraction
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from ....items              import ItemMixin
-    from ....items.grip         import ResizeGrip
-    from ....items.symbol_pin   import SymbolPin
-    from .                      import DrawingViewUi
+    from ....items            import ItemMixin
+    from ....items.text       import TextBlock
+    from ....items.grip       import ResizeGrip
+    from ....items.symbol_pin import SymbolPin
+    from .                    import DrawingViewUi
 
 
 class DrawingViewUiEditMixin:
@@ -205,6 +206,13 @@ class DrawingViewUiEditMixin:
 
     def editTextBlock(self : "DrawingViewUi") -> None:
         self._view.state.go(self._view.stateEditTextBlock)
+
+    def editTextBlockAlign(
+        self      : "DrawingViewUi",
+        item      : "TextBlock",
+        alignment : Qt.AlignmentFlag
+    ) -> None:
+        self._scene.editTextBlock(item, alignment=alignment, undoable=True)
 
     def editPropertyText(
         self : "DrawingViewUi",

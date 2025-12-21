@@ -8,6 +8,13 @@ from PyQt6.QtGui     import QPainter, QPainterPath, QAction
 
 from ....core.defs import PITCH
 
+from ....resources.icons import TextAlignLeftIcon,   \
+                                TextAlignCenterIcon, \
+                                TextAlignRightIcon,  \
+                                TextAlignTopIcon,    \
+                                TextAlignMiddleIcon, \
+                                TextAlignBottomIcon
+
 from ..property   import PropertySpec
 from ..properties import PropertiesMixin
 
@@ -273,14 +280,14 @@ class BaseTextBlock(
         """Convenience method to align with BaseTextLine."""
         self.setPlainText(text)
 
-    def setAutoWidth(self : Self, auto : bool) -> None:
-        """Set whether width should auto-adjust."""
-        self._width = None if auto else self.boundingRect().width()
+    def setWidth(self : Self, width : float | None) -> None:
+        """Set width constraint (None = auto)."""
+        self._width = width
         self.onGeometryChange()
 
-    def setAutoHeight(self : Self, auto : bool) -> None:
-        """Set whether height should auto-adjust."""
-        self._height = None if auto else self.boundingRect().height()
+    def setHeight(self : Self, height : float | None) -> None:
+        """Set height constraint (None = auto)."""
+        self._height = height
         self.onGeometryChange()
 
     def alignment(self : Self) -> qaf:
@@ -288,14 +295,24 @@ class BaseTextBlock(
         return self._alignment
 
     def setAlignment(self : Self, alignment : qaf) -> None:
-        """Set text alignment."""
-        self._alignment = alignment
+        """Set text alignment. Preserves existing horizontal/vertical if not specified."""
+        # merge with existing alignment, preserving unspecified components
+        h_new = alignment & qaf.AlignHorizontal_Mask
+        v_new = alignment & qaf.AlignVertical_Mask
+        if hasattr(self, "_alignment"):
+            h_old = self._alignment & qaf.AlignHorizontal_Mask
+            v_old = self._alignment & qaf.AlignVertical_Mask
+        else:
+            h_old = qaf.AlignLeft
+            v_old = qaf.AlignTop
+        self._alignment = (h_new if h_new else h_old) | (v_new if v_new else v_old)
         # horizontal (applied in text renderer)
         doc = self.document()
         opt = doc.defaultTextOption()
-        opt.setAlignment(alignment & qaf.AlignHorizontal_Mask)
+        opt.setAlignment(self._alignment & qaf.AlignHorizontal_Mask)
         doc.setDefaultTextOption(opt)
         # vertical is applied in onGeometryChange
+        self.onGeometryChange()
 
     def paint(
         self    : Self,
@@ -343,22 +360,56 @@ class BaseTextBlock(
 
     def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
         """Return context menu items for text block."""
-        align_menu = QMenu("Align")
-        align_menu_items = [
+        align_menu = QMenu("Align", view)
+        align_menu.addActions([
             view.action(
-                "Left", lambda: self.setAlignment(qaf.AlignLeft)),
-        ]
-        align_menu.addAction(view.action("Left", lambda: self.setAlignment(qaf.AlignLeft)))
-        auto_width = self._width is None
-        auto_height = self._height is None
+                "Left",
+                lambda: view.ui.editTextBlockAlign(self, qaf.AlignLeft),
+                icon = TextAlignLeftIcon().get()
+            ),
+            view.action(
+                "Center",
+                lambda: view.ui.editTextBlockAlign(self, qaf.AlignHCenter),
+                icon = TextAlignCenterIcon().get()
+            ),
+            view.action(
+                "Right",
+                lambda: view.ui.editTextBlockAlign(self, qaf.AlignRight),
+                icon = TextAlignRightIcon().get()
+            ),
+            view.separator(),
+            view.action(
+                "Top",
+                lambda: view.ui.editTextBlockAlign(self, qaf.AlignTop),
+                icon = TextAlignTopIcon().get()
+            ),
+            view.action(
+                "Middle",
+                lambda: view.ui.editTextBlockAlign(self, qaf.AlignVCenter),
+                icon = TextAlignMiddleIcon().get()
+            ),
+            view.action(
+                "Bottom",
+                lambda: view.ui.editTextBlockAlign(self, qaf.AlignBottom),
+                icon = TextAlignBottomIcon().get()
+            )
+        ])
         items = [
             view.action("Edit...", view.ui.editTextBlock),
             view.separator(),
+            align_menu,
+            view.separator(),
             view.action(
-                "Auto Width", lambda: self.setAutoWidth(not auto_width), auto_width
+                "Auto Width", lambda: self.setWidth(
+                    self.boundingRect().width() if self._width is None else None
+                ),
+                self._width is None
             ),
             view.action(
-                "Auto Height", lambda: self.setAutoHeight(not auto_height), auto_height
+                "Auto Height", lambda: self.setHeight(
+                    self.boundingRect().height() if self._height is None else None
+                ),
+                self._height is None
             ),
             view.separator(),
             view.action("Appearance...", lambda: view.ui.editAppearance(self)),
