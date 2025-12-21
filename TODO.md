@@ -1,4 +1,8 @@
-context menu align actions need checkmarks
+eliminate QuillPrefChange
+Quill _pen attribute?
+Family => Font
+origin => anchor
+handle BaseTextBlock width/height = 0
 
 use of "or" to avoid if/else on None
 lose rotcomp_wip?

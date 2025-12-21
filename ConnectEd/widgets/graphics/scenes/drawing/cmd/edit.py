@@ -2,13 +2,14 @@ from typing import Self
 from dataclasses import dataclass
 
 from PyQt6.QtCore import Qt, QPointF
+from PyQt6.QtGui  import QColor
 
 from .....dialogs.properties import DisplayChoice, \
                                     PropertyVariables, PropertyChange
 
 from ....properties import PropertiesMixin
 
-from ....items import SignalDirection, \
+from ....items import Default, NoChange, NO_CHANGE, SignalDirection, \
                       QuillPref, QuillPrefChange, \
                       AppearancePref, AppearancePrefChange
 
@@ -18,7 +19,6 @@ from ....items.mixin.handle  import ItemHandlesMixin
 
 from ....items.polyline  import Polyline, PolySeg
 from ....items.base_text import BaseTextLine, BaseTextBlock
-
 from ....items.property_text import PropertyTextMixin, \
                                     PropertyTextLine, PropertyTextBlock
 
@@ -187,7 +187,6 @@ class CmdEditText(CmdSceneItem):
         appearance : QuillPrefChange
     ):
         super().__init__(scene, item)
-        self._item = item
         self._before = self.ItemState()
         if text is not None:
             self._before.text = item.text()
@@ -210,56 +209,115 @@ class CmdEditText(CmdSceneItem):
         self._item.update()
 
 
-class CmdEditTextBlock(CmdEditText):
+class CmdEditTextBlock(CmdSceneItem):
     @dataclass
     class ItemState:
-        text       : str              | None = None
-        appearance : QuillPref        | None = None
-        width      : float            | None = None
-        height     : float            | None = None
-        alignment  : Qt.AlignmentFlag | None = None
+        text       : str    | Default |  NoChange = NO_CHANGE,
+        color      : QColor | Default |  NoChange = NO_CHANGE,
+        font       : str    | Default |  NoChange = NO_CHANGE,
+        size       : float  | Default |  NoChange = NO_CHANGE,
+        bold       : bool   | Default |  NoChange = NO_CHANGE,
+        italic     : bool   | Default |  NoChange = NO_CHANGE,
+        underline  : bool   | Default |  NoChange = NO_CHANGE,
+        alignment  : Qt.AlignmentFlag | NoChange = NO_CHANGE,
+        width      : float | None     | NoChange = NO_CHANGE,
+        height     : float | None     | NoChange = NO_CHANGE,
+        anchor     : str              | NoChange = NO_CHANGE
 
     _item   : BaseTextBlock
+    _before : ItemState
+    _after  : ItemState
 
     def __init__(
         self       : Self,
         scene      : "DrawingScene",
         item       : BaseTextBlock,
-        text       : str              | None = None,
-        appearance : QuillPrefChange  | None = None,
-        width      : float            | None = None,
-        height     : float            | None = None,
-        alignment  : Qt.AlignmentFlag | None = None
+        text       : str    | Default | NoChange = NO_CHANGE,
+        color      : QColor | Default | NoChange = NO_CHANGE,
+        font       : str    | Default | NoChange = NO_CHANGE,
+        size       : float  | Default | NoChange = NO_CHANGE,
+        bold       : bool   | Default | NoChange = NO_CHANGE,
+        italic     : bool   | Default | NoChange = NO_CHANGE,
+        underline  : bool   | Default | NoChange = NO_CHANGE,
+        alignment  : Qt.AlignmentFlag | NoChange = NO_CHANGE,
+        width      : float | None     | NoChange = NO_CHANGE,
+        height     : float | None     | NoChange = NO_CHANGE,
+        anchor     : str              | NoChange = NO_CHANGE
     ):
-        super().__init__(scene, item, text, appearance)
-        if width is not None:
-            self._before.width = item.width()
-        if height is not None:
-            self._before.height = item.height()
-        if alignment is not None:
-            self._before.alignment = item.alignment()
-        self._after.width     = width
-        self._after.height    = height
-        self._after.alignment = alignment
+        super().__init__(scene, item)
+        self._before = self.ItemState(
+            item.text(),
+            item.a.quill.getColor(),
+            item.a.quill.getFamily(),
+            item.a.quill.getSize(),
+            item.a.quill.getBold(),
+            item.a.quill.getItalic(),
+            item.a.quill.getUnderline(),
+            item.alignment(),
+            item.width(),
+            item.height(),
+            item.getOrigin()
+        )
+        self._after = self.ItemState(
+            text, color, font, size, \
+            bold, italic, underline, \
+            alignment, width, height, anchor
+        )
 
     def redo(self : Self) -> None:
-        super().redo()
-        if self._after.width is not None:
-            self._item.setWidth(self._after.width)
-        if self._after.height is not None:
-            self._item.setHeight(self._after.height)
-        if self._after.alignment is not None:
+        if self._after.text is not NO_CHANGE:
+            self._item.setText(self._after.text)
+        if self._after.color is not NO_CHANGE:
+            self._item.a.quill.setColor(self._after.color)
+        if self._after.font is not NO_CHANGE:
+            self._item.a.quill.setFamily(self._after.font)
+        if self._after.size is not NO_CHANGE:
+            self._item.a.quill.setSize(self._after.size)
+        if self._after.bold is not NO_CHANGE:
+            self._item.a.quill.setBold(self._after.bold)
+        if self._after.italic is not NO_CHANGE:
+            self._item.a.quill.setItalic(self._after.italic)
+        if self._after.underline is not NO_CHANGE:
+            self._item.a.quill.setUnderline(self._after.underline)
+        if self._after.alignment is not NO_CHANGE:
             self._item.setAlignment(self._after.alignment)
+        if self._after.width is not NO_CHANGE:
+            self._item.setWidth(self._after.width)
+        if self._after.height is not NO_CHANGE:
+            self._item.setHeight(self._after.height)
+        if self._after.anchor is not NO_CHANGE:
+            # maintain scene position
+            pos = self._item.getHandle(self._after.anchor).scenePos()
+            self._item.setOrigin(self._after.anchor)
+            self._item.moveBy(pos - self._item.pos())
         self._item.update()
 
     def undo(self : Self) -> None:
-        super().undo()
-        if self._before.width is not None:
-            self._item.setWidth(self._before.width)
-        if self._before.height is not None:
-            self._item.setHeight(self._before.height)
-        if self._before.alignment is not None:
+        if self._before.text is not NO_CHANGE:
+            self._item.setText(self._before.text)
+        if self._before.color is not NO_CHANGE:
+            self._item.a.quill.setColor(self._before.color)
+        if self._before.font is not NO_CHANGE:
+            self._item.a.quill.setFamily(self._before.font)
+        if self._before.size is not NO_CHANGE:
+            self._item.a.quill.setSize(self._before.size)
+        if self._before.bold is not NO_CHANGE:
+            self._item.a.quill.setBold(self._before.bold)
+        if self._before.italic is not NO_CHANGE:
+            self._item.a.quill.setItalic(self._before.italic)
+        if self._before.underline is not NO_CHANGE:
+            self._item.a.quill.setUnderline(self._before.underline)
+        if self._before.alignment is not NO_CHANGE:
             self._item.setAlignment(self._before.alignment)
+        if self._before.width is not NO_CHANGE:
+            self._item.setWidth(self._before.width)
+        if self._before.height is not NO_CHANGE:
+            self._item.setHeight(self._before.height)
+        if self._before.anchor is not NO_CHANGE:
+            # maintain scene position
+            pos = self._item.getHandle(self._before.anchor).scenePos()
+            self._item.setOrigin(self._before.anchor)
+            self._item.moveBy(pos - self._item.pos())
         self._item.update()
 
 

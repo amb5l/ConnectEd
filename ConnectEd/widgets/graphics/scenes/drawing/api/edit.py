@@ -1,4 +1,5 @@
 from PyQt6.QtCore import Qt, QPointF
+from PyQt6.QtGui  import QColor
 
 from ......app import logger
 
@@ -8,9 +9,9 @@ from .....dialogs.properties import PropertyChange
 
 from ....properties import PropertiesMixin
 
-from ....items               import ItemType, EdgeLoc, SignalDirection, \
+from ....items               import ItemType, Default, NoChange, NO_CHANGE, \
+                                    EdgeLoc, SignalDirection, \
                                     QuillPrefChange, AppearancePrefChange
-
 from ....items.block         import Block
 from ....items.port_pin      import PortPinMixin
 from ....items.block_pin     import BlockPin
@@ -193,15 +194,23 @@ class DrawingSceneApiEditMixin:
     def editTextBlock(
         self       : "DrawingScene",
         item       : TextBlock,
-        text       : str              | None = None,
-        appearance : QuillPrefChange  | None = None,
-        width      : float            | None = None,
-        height     : float            | None = None,
-        alignment  : Qt.AlignmentFlag | None = None,
+        text       : str              | NoChange = NO_CHANGE,
+        color      : QColor | Default | NoChange = NO_CHANGE,
+        font       : str    | Default | NoChange = NO_CHANGE,
+        size       : float  | Default | NoChange = NO_CHANGE,
+        bold       : bool   | Default | NoChange = NO_CHANGE,
+        italic     : bool   | Default | NoChange = NO_CHANGE,
+        underline  : bool   | Default | NoChange = NO_CHANGE,
+        alignment  : Qt.AlignmentFlag | NoChange = NO_CHANGE,
+        width      : float | None     | NoChange = NO_CHANGE,
+        height     : float | None     | NoChange = NO_CHANGE,
+        anchor     : str              | NoChange = NO_CHANGE,
         undoable   : bool = False
     ) -> None:
         cmd = CmdEditTextBlock(
-            self, item, text, appearance, width, height, alignment
+            self, item, text, \
+            color, font, size, bold, italic, underline, \
+            alignment, width, height, anchor
         )
         cmdExec(self, cmd, undoable)
 

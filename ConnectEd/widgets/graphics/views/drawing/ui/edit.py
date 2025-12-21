@@ -7,6 +7,8 @@ from ....query import QueryWindow
 from ..interaction      import RotateItemMixin
 from ..interaction.edit import EditMoveInteraction
 
+from ....items import NoChange, NO_CHANGE
+
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ....items            import ItemMixin
@@ -204,15 +206,26 @@ class DrawingViewUiEditMixin:
     def editTextLine(self : "DrawingViewUi") -> None:
         self._view.state.go(self._view.stateEditTextLine)
 
-    def editTextBlock(self : "DrawingViewUi") -> None:
+    def editTextBlockDialog(self : "DrawingViewUi") -> None:
+        """Interactive text block editing (dialog box)."""
         self._view.state.go(self._view.stateEditTextBlock)
 
-    def editTextBlockAlign(
+    def editTextBlock(
         self      : "DrawingViewUi",
         item      : "TextBlock",
-        alignment : Qt.AlignmentFlag
+        alignment : Qt.AlignmentFlag | NoChange = NO_CHANGE,
+        width     : float | None     | NoChange = NO_CHANGE,
+        height    : float | None     | NoChange = NO_CHANGE,
+        anchor    : str              | NoChange = NO_CHANGE,
     ) -> None:
-        self._scene.editTextBlock(item, alignment=alignment, undoable=True)
+        self._scene.editTextBlock(
+            item,
+            alignment=alignment,
+            width=width,
+            height=height,
+            anchor=anchor,
+            undoable=True
+        )
 
     def editPropertyText(
         self : "DrawingViewUi",

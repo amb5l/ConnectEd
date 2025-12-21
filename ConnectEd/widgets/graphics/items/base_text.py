@@ -8,11 +8,20 @@ from PyQt6.QtGui     import QPainter, QPainterPath, QAction
 
 from ....core.defs import PITCH
 
-from ....resources.icons import TextAlignLeftIcon,   \
-                                TextAlignCenterIcon, \
-                                TextAlignRightIcon,  \
-                                TextAlignTopIcon,    \
-                                TextAlignMiddleIcon, \
+from ....resources.icons import AnchorTopLeftIcon,      \
+                                AnchorTopCenterIcon,    \
+                                AnchorTopRightIcon,     \
+                                AnchorMiddleLeftIcon,   \
+                                AnchorMiddleCenterIcon, \
+                                AnchorMiddleRightIcon,  \
+                                AnchorBottomLeftIcon,   \
+                                AnchorBottomCenterIcon, \
+                                AnchorBottomRightIcon,  \
+                                TextAlignLeftIcon,      \
+                                TextAlignCenterIcon,    \
+                                TextAlignRightIcon,     \
+                                TextAlignTopIcon,       \
+                                TextAlignMiddleIcon,    \
                                 TextAlignBottomIcon
 
 from ..property   import PropertySpec
@@ -200,8 +209,8 @@ class BaseTextBlock(
     ) -> None:
         QGraphicsTextItem.__init__(self)
         self._alignment = qaf.AlignLeft | qaf.AlignTop
-        self._width   = None
-        self._height  = None
+        self._width = None
+        self._height = None
         self.document().setDocumentMargin(0)  # minimize margin
         self.initItem(bare=bare)
         if pos is not None:
@@ -251,31 +260,6 @@ class BaseTextBlock(
                 self.properties["Width"].changed.emit(self._width)
             if "Height" in self.properties:
                 self.properties["Height"].changed.emit(self._height)
-
-    def setOrigin(self : Self, name : str) -> None:
-        """Override to handle text alignment."""
-        # set horizontal alignment via QTextOption
-        doc = self.document()
-        opt = doc.defaultTextOption()
-        if "Right" in name:
-            h_align = qaf.AlignRight
-        elif "Center" in name:
-            h_align = qaf.AlignHCenter
-        else:
-            h_align = qaf.AlignLeft
-        opt.setAlignment(h_align)
-        doc.setDefaultTextOption(opt)
-        # save vertical alignment for use in onGeometryChange()
-        if "Bottom" in name:
-            self._align_v = qaf.AlignBottom
-        elif "Middle" in name:
-            self._align_v = qaf.AlignVCenter
-        else:
-            self._align_v = qaf.AlignTop
-        # set origin handle
-        super().setOrigin(name)
-        # update margins based on new alignment
-        self.onGeometryChange()
 
     def setPlainText(self : Self, text : str) -> None:
         """Set plain text and update geometry."""
@@ -398,49 +382,107 @@ class BaseTextBlock(
         align_menu.addActions([
             view.action(
                 "Left",
-                lambda: view.ui.editTextBlockAlign(self, qaf.AlignLeft),
+                lambda: view.ui.editTextBlock(self, alignment=qaf.AlignLeft),
                 checked = self.horizontalAlignment() == qaf.AlignLeft,
                 icon = TextAlignLeftIcon().get()
             ),
             view.action(
                 "Center",
-                lambda: view.ui.editTextBlockAlign(self, qaf.AlignHCenter),
+                lambda: view.ui.editTextBlock(self, alignment=qaf.AlignHCenter),
                 checked = self.horizontalAlignment() == qaf.AlignHCenter,
                 icon = TextAlignCenterIcon().get()
             ),
             view.action(
                 "Right",
-                lambda: view.ui.editTextBlockAlign(self, qaf.AlignRight),
+                lambda: view.ui.editTextBlock(self, alignment=qaf.AlignRight),
                 checked = self.horizontalAlignment() == qaf.AlignRight,
                 icon = TextAlignRightIcon().get()
             ),
             view.separator(),
             view.action(
                 "Top",
-                lambda: view.ui.editTextBlockAlign(self, qaf.AlignTop),
+                lambda: view.ui.editTextBlock(self, alignment=qaf.AlignTop),
                 checked = self.verticalAlignment() == qaf.AlignTop,
                 icon = TextAlignTopIcon().get(),
                 enabled = self.height() is not None
             ),
             view.action(
                 "Middle",
-                lambda: view.ui.editTextBlockAlign(self, qaf.AlignVCenter),
+                lambda: view.ui.editTextBlock(self, alignment=qaf.AlignVCenter),
                 checked = self.verticalAlignment() == qaf.AlignVCenter,
                 icon = TextAlignMiddleIcon().get(),
                 enabled = self.height() is not None
             ),
             view.action(
                 "Bottom",
-                lambda: view.ui.editTextBlockAlign(self, qaf.AlignBottom),
+                lambda: view.ui.editTextBlock(self, alignment=qaf.AlignBottom),
                 checked = self.verticalAlignment() == qaf.AlignBottom,
                 icon = TextAlignBottomIcon().get(),
                 enabled = self.height() is not None
             )
         ])
+        anchor_menu = QMenu("Anchor", view)
+        anchor_menu.addActions([
+            view.action(
+                "Top Left",
+                lambda: view.ui.editTextBlock(self, anchor="Top Left"),
+                checked = self.getOrigin() == "Top Left",
+                icon = AnchorTopLeftIcon().get()
+            ),
+            view.action(
+                "Top Center",
+                lambda: view.ui.editTextBlock(self, anchor="Top Center"),
+                checked = self.getOrigin() == "Top Center",
+                icon = AnchorTopCenterIcon().get()
+            ),
+            view.action(
+                "Top Right",
+                lambda: view.ui.editTextBlock(self, anchor="Top Right"),
+                checked = self.getOrigin() == "Top Right",
+                icon = AnchorTopRightIcon().get()
+            ),
+            view.action(
+                "Middle Left",
+                lambda: view.ui.editTextBlock(self, anchor="Middle Left"),
+                checked = self.getOrigin() == "Middle Left",
+                icon = AnchorMiddleLeftIcon().get()
+            ),
+            view.action(
+                "Middle Center",
+                lambda: view.ui.editTextBlock(self, anchor="Middle Center"),
+                checked = self.getOrigin() == "Middle Center",
+                icon = AnchorMiddleCenterIcon().get()
+            ),
+            view.action(
+                "Middle Right",
+                lambda: view.ui.editTextBlock(self, anchor="Middle Right"),
+                checked = self.getOrigin() == "Middle Right",
+                icon = AnchorMiddleRightIcon().get()
+            ),
+            view.action(
+                "Bottom Left",
+                lambda: view.ui.editTextBlock(self, anchor="Bottom Left"),
+                checked = self.getOrigin() == "Bottom Left",
+                icon = AnchorBottomLeftIcon().get()
+            ),
+            view.action(
+                "Bottom Center",
+                lambda: view.ui.editTextBlock(self, anchor="Bottom Center"),
+                checked = self.getOrigin() == "Bottom Center",
+                icon = AnchorBottomCenterIcon().get()
+            ),
+            view.action(
+                "Bottom Right",
+                lambda: view.ui.editTextBlock(self, anchor="Bottom Right"),
+                checked = self.getOrigin() == "Bottom Right",
+                icon = AnchorBottomRightIcon().get()
+            )
+        ])
         items = [
-            view.action("Edit...", view.ui.editTextBlock),
+            view.action("Edit...", view.ui.editTextBlockDialog),
             view.separator(),
             align_menu,
+            anchor_menu,
             view.separator(),
             view.action(
                 "Auto Width", lambda: self.setWidth(
@@ -455,7 +497,6 @@ class BaseTextBlock(
                 self._height is None
             ),
             view.separator(),
-            view.action("Appearance...", lambda: view.ui.editAppearance(self)),
             view.action("Properties...", lambda: view.ui.editItemProperties(self))
         ]
         return items
