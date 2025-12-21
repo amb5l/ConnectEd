@@ -27,7 +27,7 @@ from ..cmd.edit      import CmdEditPortPin, \
                             CmdEditSymbolPinDot, CmdEditSymbolPinClock, \
                             CmdEditOrigin, \
                             CmdEditPolylineClosed, CmdEditPolySeg, \
-                            CmdEditText, CmdEditTextBlock, CmdEditPropertyText, \
+                            CmdEditTextLine, CmdEditTextBlock, CmdEditPropertyText, \
                             CmdEditProperties, CmdEditAppearance
 
 
@@ -184,11 +184,19 @@ class DrawingSceneApiEditMixin:
     def editTextLine(
         self       : "DrawingScene",
         item       : TextLine,
-        text       : str              | None = None,
-        appearance : QuillPrefChange  | None = None,
+        text       : str              | NoChange = NO_CHANGE,
+        color      : QColor | Default | NoChange = NO_CHANGE,
+        font       : str    | Default | NoChange = NO_CHANGE,
+        size       : float  | Default | NoChange = NO_CHANGE,
+        bold       : bool   | Default | NoChange = NO_CHANGE,
+        italic     : bool   | Default | NoChange = NO_CHANGE,
+        underline  : bool   | Default | NoChange = NO_CHANGE,
+        anchor     : str              | NoChange = NO_CHANGE,
         undoable   : bool = False
     ) -> None:
-        cmd = CmdEditText(self, item, text, appearance)
+        cmd = CmdEditTextLine(
+            self, item, text, color, font, size, bold, italic, underline, anchor
+        )
         cmdExec(self, cmd, undoable)
 
     def editTextBlock(

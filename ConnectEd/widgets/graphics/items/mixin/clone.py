@@ -15,28 +15,21 @@ class ItemCloneMixin:
         from ..property_text import PropertyTextMixin
         from ..base_pin      import BasePin
         source : "ItemType" = original if original is not None else self
-        clone : "ItemType" = self.__class__(bare=True)
+        clone_item : "ItemType" = self.__class__(bare=True)
         # clone properties
-        if hasattr(self, "properties"):
-            clone._property_specs = self._properties.copy()
-            for pn in clone._property_specs:
-                clone_ps = clone._property_specs[pn]
-                source_ps = source._property_specs[pn]
-                if isinstance(clone_ps, PropertySpec):
-                    if source_ps.exists(source):
-                        clone_ps.setter(clone, source_ps.getter(source))
-                else:
-                    clone_ps.value = source_ps.value
+        if hasattr(source, "properties"):
+            for name, source_prop in source.properties.items():
+                clone_item.properties[name] = source_prop.clone(clone_item)
         # clone property texts and pins
         for source_child in source.childItems():
             if isinstance(source_child, BasePin):
                 clone_pin = source_child.clone()
-                clone_pin.setParentItem(clone)
+                clone_pin.setParentItem(clone_item)
             elif isinstance(source_child, Handle):
                 for source_ap_child in source_child.childItems():
                     if isinstance(source_ap_child, PropertyTextMixin):
                         clone_ap_child = source_ap_child.clone()
                         clone_ap_child.setParentItem(
-                            clone._handles[source_child.name()]
+                            clone_item._handles[source_child.name()]
                         )
-        return clone
+        return clone_item

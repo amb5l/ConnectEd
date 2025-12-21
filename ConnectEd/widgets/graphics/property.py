@@ -141,6 +141,20 @@ class Property(QObject):
         if text is not None:
             self.changed.connect(text.onNameOrValueChange)
 
+    def clone(self : Self, new_owner : "PropertyOwner") -> "Property":
+        """Create a clone of this property with a new owner."""
+        clone = Property(
+            new_owner,
+            self._name,
+            self._kind,
+            self._valid,
+            self._getter,
+            self._setter,
+            self._default
+        )
+        clone.set(self.get())
+        return clone
+
     def _substituteAndSubscribe(
         self      : Self,
         value     : str,

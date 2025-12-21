@@ -67,8 +67,10 @@ class ItemPosRotMixin:
         _pos : QPointF | None = None
     ) -> None:
         if hasattr(self, "properties"):
-            self.properties["X"].changed.emit(self.pos().x())
-            self.properties["Y"].changed.emit(self.pos().y())
+            if "X" in self.properties:
+                self.properties["X"].changed.emit(self.pos().x())
+            if "Y" in self.properties:
+                self.properties["Y"].changed.emit(self.pos().y())
 
     def onRotationChange(self : Self, angle : float) -> None:
         # propagate change to enable rotation compensation
@@ -78,7 +80,8 @@ class ItemPosRotMixin:
                 if hasattr(child, "onSceneRotationChange"):
                     child.onSceneRotationChange()
         # signal property value change
-        self.properties["Rot"].changed.emit(self.rotation())
+        if hasattr(self, "properties") and "Rot" in self.properties:
+            self.properties["Rot"].changed.emit(self.rotation())
 
     def sceneBoundingRect(self : Self) -> QRectF:
         return self._sbrect

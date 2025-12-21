@@ -27,6 +27,8 @@ from ....resources.icons import AnchorTopLeftIcon,      \
 from ..property   import PropertySpec
 from ..properties import PropertiesMixin
 
+from . import AlignH, AlignV
+
 from .mixin            import ItemMixin
 from .mixin.pos_rot    import ItemPosRotMixin
 from .mixin.bound      import ItemBoundMixin
@@ -81,6 +83,66 @@ class BaseTextMixin(
     def moveHandleBy(self : Self, name : str, delta : QPointF) -> None:
         """Move or resize based on handle. Must be implemented by subclasses."""
         ...
+
+    def anchorMenu(self : Self, view : "DrawingView") -> QMenu:
+        menu = QMenu("Anchor", view)
+        menu.addActions([
+            view.action(
+                "Top Left",
+                lambda: view.ui.editTextBlock(self, anchor="Top Left"),
+                checked = self.getOrigin() == "Top Left",
+                icon = AnchorTopLeftIcon().get()
+            ),
+            view.action(
+                "Top Center",
+                lambda: view.ui.editTextBlock(self, anchor="Top Center"),
+                checked = self.getOrigin() == "Top Center",
+                icon = AnchorTopCenterIcon().get()
+            ),
+            view.action(
+                "Top Right",
+                lambda: view.ui.editTextBlock(self, anchor="Top Right"),
+                checked = self.getOrigin() == "Top Right",
+                icon = AnchorTopRightIcon().get()
+            ),
+            view.action(
+                "Middle Left",
+                lambda: view.ui.editTextBlock(self, anchor="Middle Left"),
+                checked = self.getOrigin() == "Middle Left",
+                icon = AnchorMiddleLeftIcon().get()
+            ),
+            view.action(
+                "Middle Center",
+                lambda: view.ui.editTextBlock(self, anchor="Middle Center"),
+                checked = self.getOrigin() == "Middle Center",
+                icon = AnchorMiddleCenterIcon().get()
+            ),
+            view.action(
+                "Middle Right",
+                lambda: view.ui.editTextBlock(self, anchor="Middle Right"),
+                checked = self.getOrigin() == "Middle Right",
+                icon = AnchorMiddleRightIcon().get()
+            ),
+            view.action(
+                "Bottom Left",
+                lambda: view.ui.editTextBlock(self, anchor="Bottom Left"),
+                checked = self.getOrigin() == "Bottom Left",
+                icon = AnchorBottomLeftIcon().get()
+            ),
+            view.action(
+                "Bottom Center",
+                lambda: view.ui.editTextBlock(self, anchor="Bottom Center"),
+                checked = self.getOrigin() == "Bottom Center",
+                icon = AnchorBottomCenterIcon().get()
+            ),
+            view.action(
+                "Bottom Right",
+                lambda: view.ui.editTextBlock(self, anchor="Bottom Right"),
+                checked = self.getOrigin() == "Bottom Right",
+                icon = AnchorBottomRightIcon().get()
+            )
+        ])
+        return menu
 
     @abstractmethod
     def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
@@ -147,9 +209,10 @@ class BaseTextLine(
     def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
         """Return context menu items for text line."""
         return [
-            view.action("Edit...", view.ui.editTextLine),
+            view.action("Edit...", view.ui.editTextLineDialog),
             view.separator(),
-            view.action("Appearance...", lambda: view.ui.editAppearance(self)),
+            self.anchorMenu(view),
+            view.separator(),
             view.action("Properties...", lambda: view.ui.editItemProperties(self))
         ]
 
@@ -167,26 +230,26 @@ class BaseTextBlock(
     # class attributes
     _PROPERTY_SPECS_SIZE = \
         {
-            "Horizontal Alignment" : PropertySpec(
-                kind   = "AlignmentFlag",
+            "AlignH" : PropertySpec(
+                kind   = "AlignH",
                 getter = lambda self: self.horizontalAlignment(),
                 setter = lambda self, value: self.setHorizontalAlignment(value)
             ),
-            "Vertical Alignment" : PropertySpec(
-                kind   = "AlignmentFlag",
+            "AlignV" : PropertySpec(
+                kind   = "AlignV",
                 valid = lambda self: self.height() is not None,
                 getter = lambda self: self.verticalAlignment(),
                 setter = lambda self, value: self.setVerticalAlignment(value)
             ),
             "Width" : PropertySpec(
                 kind   = "float",
-                valid  = lambda self: self._width is not None,
+                valid  = lambda self: self.width() is not None,
                 getter = lambda self: self.width(),
                 setter = lambda self, value: self.setWidth(value)
             ),
             "Height" : PropertySpec(
                 kind   = "float",
-                valid  = lambda self: self._height is not None,
+                valid  = lambda self: self.height() is not None,
                 getter = lambda self: self.height(),
                 setter = lambda self, value: self.setHeight(value)
             )
@@ -300,19 +363,29 @@ class BaseTextBlock(
         # vertical is applied in onGeometryChange
         self.onGeometryChange()
 
-    def horizontalAlignment(self : Self) -> qaf:
+    def horizontalAlignment(self : Self) -> AlignH:
         """Return horizontal alignment."""
-        return qaf(self._alignment & qaf.AlignHorizontal_Mask)
+        h = self._alignment & qaf.AlignHorizontal_Mask
+        for a in AlignH:
+            if a.value == h:
+                return a
+        return AlignH.LEFT
 
-    def setHorizontalAlignment(self : Self, alignment : qaf) -> None:
-        self.setAlignment(qaf(alignment & qaf.AlignHorizontal_Mask))
+    def setHorizontalAlignment(self : Self, alignment : AlignH | qaf) -> None:
+        flag = alignment.value if isinstance(alignment, AlignH) else alignment
+        self.setAlignment(flag & qaf.AlignHorizontal_Mask)
 
-    def verticalAlignment(self : Self) -> qaf:
+    def verticalAlignment(self : Self) -> AlignV:
         """Return vertical alignment."""
-        return qaf(self._alignment & qaf.AlignVertical_Mask)
+        v = self._alignment & qaf.AlignVertical_Mask
+        for a in AlignV:
+            if a.value == v:
+                return a
+        return AlignV.TOP
 
-    def setVerticalAlignment(self : Self, alignment : qaf) -> None:
-        self.setAlignment(alignment & qaf.AlignVertical_Mask)
+    def setVerticalAlignment(self : Self, alignment : AlignV | qaf) -> None:
+        flag = alignment.value if isinstance(alignment, AlignV) else alignment
+        self.setAlignment(flag & qaf.AlignVertical_Mask)
 
     def width(self : Self) -> float | None:
         """Return width constraint."""
@@ -376,10 +449,9 @@ class BaseTextBlock(
             case "Bottom Right":
                 self._resizeBy(delta.x(), delta.y())
 
-    def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
-        """Return context menu items for text block."""
-        align_menu = QMenu("Align", view)
-        align_menu.addActions([
+    def alignmentMenu(self : Self, view : "DrawingView") -> QMenu:
+        menu = QMenu("Alignment", view)
+        menu.addActions([
             view.action(
                 "Left",
                 lambda: view.ui.editTextBlock(self, alignment=qaf.AlignLeft),
@@ -421,68 +493,15 @@ class BaseTextBlock(
                 enabled = self.height() is not None
             )
         ])
-        anchor_menu = QMenu("Anchor", view)
-        anchor_menu.addActions([
-            view.action(
-                "Top Left",
-                lambda: view.ui.editTextBlock(self, anchor="Top Left"),
-                checked = self.getOrigin() == "Top Left",
-                icon = AnchorTopLeftIcon().get()
-            ),
-            view.action(
-                "Top Center",
-                lambda: view.ui.editTextBlock(self, anchor="Top Center"),
-                checked = self.getOrigin() == "Top Center",
-                icon = AnchorTopCenterIcon().get()
-            ),
-            view.action(
-                "Top Right",
-                lambda: view.ui.editTextBlock(self, anchor="Top Right"),
-                checked = self.getOrigin() == "Top Right",
-                icon = AnchorTopRightIcon().get()
-            ),
-            view.action(
-                "Middle Left",
-                lambda: view.ui.editTextBlock(self, anchor="Middle Left"),
-                checked = self.getOrigin() == "Middle Left",
-                icon = AnchorMiddleLeftIcon().get()
-            ),
-            view.action(
-                "Middle Center",
-                lambda: view.ui.editTextBlock(self, anchor="Middle Center"),
-                checked = self.getOrigin() == "Middle Center",
-                icon = AnchorMiddleCenterIcon().get()
-            ),
-            view.action(
-                "Middle Right",
-                lambda: view.ui.editTextBlock(self, anchor="Middle Right"),
-                checked = self.getOrigin() == "Middle Right",
-                icon = AnchorMiddleRightIcon().get()
-            ),
-            view.action(
-                "Bottom Left",
-                lambda: view.ui.editTextBlock(self, anchor="Bottom Left"),
-                checked = self.getOrigin() == "Bottom Left",
-                icon = AnchorBottomLeftIcon().get()
-            ),
-            view.action(
-                "Bottom Center",
-                lambda: view.ui.editTextBlock(self, anchor="Bottom Center"),
-                checked = self.getOrigin() == "Bottom Center",
-                icon = AnchorBottomCenterIcon().get()
-            ),
-            view.action(
-                "Bottom Right",
-                lambda: view.ui.editTextBlock(self, anchor="Bottom Right"),
-                checked = self.getOrigin() == "Bottom Right",
-                icon = AnchorBottomRightIcon().get()
-            )
-        ])
+        return menu
+
+    def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
+        """Return context menu items for text block."""
         items = [
             view.action("Edit...", view.ui.editTextBlockDialog),
             view.separator(),
-            align_menu,
-            anchor_menu,
+            self.alignmentMenu(view),
+            self.anchorMenu(view),
             view.separator(),
             view.action(
                 "Auto Width", lambda: self.setWidth(

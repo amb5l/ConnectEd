@@ -12,7 +12,7 @@ from ....items import NoChange, NO_CHANGE
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ....items            import ItemMixin
-    from ....items.text       import TextBlock
+    from ....items.text       import TextLine, TextBlock
     from ....items.grip       import ResizeGrip
     from ....items.symbol_pin import SymbolPin
     from .                    import DrawingViewUi
@@ -203,8 +203,15 @@ class DrawingViewUiEditMixin:
             return
         self._scene.editSymbolPinClock(item, enable, undoable=True)
 
-    def editTextLine(self : "DrawingViewUi") -> None:
+    def editTextLineDialog(self : "DrawingViewUi") -> None:
         self._view.state.go(self._view.stateEditTextLine)
+
+    def editTextLine(
+        self   : "DrawingViewUi",
+        item   : "TextLine",
+        anchor : str | NoChange = NO_CHANGE
+    ) -> None:
+        self._scene.editTextLine(item, anchor=anchor, undoable=True)
 
     def editTextBlockDialog(self : "DrawingViewUi") -> None:
         """Interactive text block editing (dialog box)."""

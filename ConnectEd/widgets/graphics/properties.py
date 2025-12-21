@@ -47,11 +47,16 @@ class PropertiesMixin:
         """
         from .property import Property
         if name not in self.properties:
-            kind = self._PROPERTY_SPECS[name].kind \
-                if name in self._PROPERTY_SPECS else "str"
-            self.properties[name] = Property(self, name, kind, value, None)
-        else:
-            self.properties[name].set(value)
+            if name in self._PROPERTY_SPECS:
+                # Use spec's getter/setter so value is applied to item
+                spec = self._PROPERTY_SPECS[name]
+                self.properties[name] = Property(
+                    self, name, spec.kind, spec.valid, spec.getter, spec.setter, spec.default
+                )
+            else:
+                # Dynamic property (no spec) - store as static value
+                self.properties[name] = Property(self, name, "str", None, value, None)
+        self.properties[name].set(value)
 
     def renProperty(self : Self, old_name : str, new_name : str) -> bool:
         if old_name not in self.properties:

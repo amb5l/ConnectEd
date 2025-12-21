@@ -66,8 +66,9 @@ class EditDuplicateInteraction(EditPasteInteraction):
         items : list[ItemType],  # items to duplicate
         pos   : QPointF          # duplication origin
     ) -> None:
-        if items:
-            super().__init__(view, clone(items))
+        clone_items = clone(items)
+        if clone_items:
+            ItemsInteraction.__init__(self, view, clone_items)
             self._ipos = pos
             self._cpos = pos
             self._storePos()
