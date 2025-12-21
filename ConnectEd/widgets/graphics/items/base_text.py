@@ -399,33 +399,42 @@ class BaseTextBlock(
             view.action(
                 "Left",
                 lambda: view.ui.editTextBlockAlign(self, qaf.AlignLeft),
+                checked = self.horizontalAlignment() == qaf.AlignLeft,
                 icon = TextAlignLeftIcon().get()
             ),
             view.action(
                 "Center",
                 lambda: view.ui.editTextBlockAlign(self, qaf.AlignHCenter),
+                checked = self.horizontalAlignment() == qaf.AlignHCenter,
                 icon = TextAlignCenterIcon().get()
             ),
             view.action(
                 "Right",
                 lambda: view.ui.editTextBlockAlign(self, qaf.AlignRight),
+                checked = self.horizontalAlignment() == qaf.AlignRight,
                 icon = TextAlignRightIcon().get()
             ),
             view.separator(),
             view.action(
                 "Top",
                 lambda: view.ui.editTextBlockAlign(self, qaf.AlignTop),
-                icon = TextAlignTopIcon().get()
+                checked = self.verticalAlignment() == qaf.AlignTop,
+                icon = TextAlignTopIcon().get(),
+                enabled = self.height() is not None
             ),
             view.action(
                 "Middle",
                 lambda: view.ui.editTextBlockAlign(self, qaf.AlignVCenter),
-                icon = TextAlignMiddleIcon().get()
+                checked = self.verticalAlignment() == qaf.AlignVCenter,
+                icon = TextAlignMiddleIcon().get(),
+                enabled = self.height() is not None
             ),
             view.action(
                 "Bottom",
                 lambda: view.ui.editTextBlockAlign(self, qaf.AlignBottom),
-                icon = TextAlignBottomIcon().get()
+                checked = self.verticalAlignment() == qaf.AlignBottom,
+                icon = TextAlignBottomIcon().get(),
+                enabled = self.height() is not None
             )
         ])
         items = [

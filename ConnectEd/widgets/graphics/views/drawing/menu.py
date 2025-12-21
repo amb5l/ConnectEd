@@ -106,7 +106,8 @@ class DrawingViewMenuMixin:
         slot     : Callable,
         checked  : bool               | None = None,
         shortcut : QKeySequence | str | None = None,
-        icon     : QIcon              | None = None
+        icon     : QIcon              | None = None,
+        enabled  : bool                      = True
     ):
         action = QAction(text, self)
         action.triggered.connect(slot)
@@ -117,6 +118,7 @@ class DrawingViewMenuMixin:
             action.setShortcut(shortcut)
         if icon is not None:
             action.setIcon(icon)
+        action.setEnabled(enabled)
         return action
 
     def separator(self : "DrawingView") -> QAction:
