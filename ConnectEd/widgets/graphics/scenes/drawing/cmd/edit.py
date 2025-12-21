@@ -252,6 +252,16 @@ class CmdEditTextBlock(CmdEditText):
             self._item.setAlignment(self._after.alignment)
         self._item.update()
 
+    def undo(self : Self) -> None:
+        super().undo()
+        if self._before.width is not None:
+            self._item.setWidth(self._before.width)
+        if self._before.height is not None:
+            self._item.setHeight(self._before.height)
+        if self._before.alignment is not None:
+            self._item.setAlignment(self._before.alignment)
+        self._item.update()
+
 
 class CmdEditPropertyText(CmdSceneItem):
     @dataclass
