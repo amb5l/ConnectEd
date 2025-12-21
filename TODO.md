@@ -1,3 +1,5 @@
+context menu align actions need checkmarks
+
 use of "or" to avoid if/else on None
 lose rotcomp_wip?
 

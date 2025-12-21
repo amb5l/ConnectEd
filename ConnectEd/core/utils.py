@@ -195,6 +195,7 @@ def val2str(v : Any) -> str:
         case "Edge"            : s = v.value
         case "EdgeLoc"         : s = v.toStr()
         case "SignalDirection" : s = v.value
+        case "AlignmentFlag"   : s = str(v).replace("AlignmentFlag.", "")
         case _ :
             raise ValueError(f"Unsupported type: {t}")
     return s
@@ -242,6 +243,11 @@ def str2val(s : str, t : str) -> Any:
         case "Edge"            : return Edge(s)
         case "EdgeLoc"         : return EdgeLoc.fromStr(s)
         case "SignalDirection" : return SignalDirection(s)
+        case "AlignmentFlag"   :
+            # Handle both numeric values (from masked operations) and names
+            if s.isdigit():
+                return Qt.AlignmentFlag(int(s))
+            return Qt.AlignmentFlag[s]
         case _:
             raise ValueError(f"Unsupported type: {t}")
 

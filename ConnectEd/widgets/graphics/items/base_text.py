@@ -158,17 +158,28 @@ class BaseTextBlock(
     # class attributes
     _PROPERTY_SPECS_SIZE = \
         {
+            "Horizontal Alignment" : PropertySpec(
+                kind   = "AlignmentFlag",
+                getter = lambda self: self.horizontalAlignment(),
+                setter = lambda self, value: self.setHorizontalAlignment(value)
+            ),
+            "Vertical Alignment" : PropertySpec(
+                kind   = "AlignmentFlag",
+                valid = lambda self: self.height() is not None,
+                getter = lambda self: self.verticalAlignment(),
+                setter = lambda self, value: self.setVerticalAlignment(value)
+            ),
             "Width" : PropertySpec(
                 kind   = "float",
                 valid  = lambda self: self._width is not None,
-                getter = lambda self: self._width,
-                setter = lambda self, value: setattr(self, "_width", value)
+                getter = lambda self: self.width(),
+                setter = lambda self, value: self.setWidth(value)
             ),
             "Height" : PropertySpec(
                 kind   = "float",
                 valid  = lambda self: self._height is not None,
-                getter = lambda self: self._height,
-                setter = lambda self, value: setattr(self, "_height", value)
+                getter = lambda self: self.height(),
+                setter = lambda self, value: self.setHeight(value)
             )
         }
     _PROPERTY_SPECS = \
@@ -188,13 +199,14 @@ class BaseTextBlock(
         bare : bool = False
     ) -> None:
         QGraphicsTextItem.__init__(self)
-        self.setAlignment(qaf.AlignLeft | qaf.AlignTop)
+        self._alignment = qaf.AlignLeft | qaf.AlignTop
         self._width   = None
         self._height  = None
         self.document().setDocumentMargin(0)  # minimize margin
         self.initItem(bare=bare)
         if pos is not None:
             self.setPos(pos)
+        self.onGeometryChange()
 
     def onGeometryChange(self : Self) -> None:
         """Handle geometry changes for text block."""
@@ -280,16 +292,6 @@ class BaseTextBlock(
         """Convenience method to align with BaseTextLine."""
         self.setPlainText(text)
 
-    def setWidth(self : Self, width : float | None) -> None:
-        """Set width constraint (None = auto)."""
-        self._width = width
-        self.onGeometryChange()
-
-    def setHeight(self : Self, height : float | None) -> None:
-        """Set height constraint (None = auto)."""
-        self._height = height
-        self.onGeometryChange()
-
     def alignment(self : Self) -> qaf:
         """Return text alignment."""
         return self._alignment
@@ -312,6 +314,38 @@ class BaseTextBlock(
         opt.setAlignment(self._alignment & qaf.AlignHorizontal_Mask)
         doc.setDefaultTextOption(opt)
         # vertical is applied in onGeometryChange
+        self.onGeometryChange()
+
+    def horizontalAlignment(self : Self) -> qaf:
+        """Return horizontal alignment."""
+        return qaf(self._alignment & qaf.AlignHorizontal_Mask)
+
+    def setHorizontalAlignment(self : Self, alignment : qaf) -> None:
+        self.setAlignment(qaf(alignment & qaf.AlignHorizontal_Mask))
+
+    def verticalAlignment(self : Self) -> qaf:
+        """Return vertical alignment."""
+        return qaf(self._alignment & qaf.AlignVertical_Mask)
+
+    def setVerticalAlignment(self : Self, alignment : qaf) -> None:
+        self.setAlignment(alignment & qaf.AlignVertical_Mask)
+
+    def width(self : Self) -> float | None:
+        """Return width constraint."""
+        return self._width
+
+    def setWidth(self : Self, width : float | None) -> None:
+        """Set width constraint (None = auto)."""
+        self._width = width
+        self.onGeometryChange()
+
+    def height(self : Self) -> float | None:
+        """Return height constraint."""
+        return self._height
+
+    def setHeight(self : Self, height : float | None) -> None:
+        """Set height constraint (None = auto)."""
+        self._height = height
         self.onGeometryChange()
 
     def paint(
