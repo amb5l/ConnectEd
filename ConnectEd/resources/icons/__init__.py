@@ -22,15 +22,15 @@ class AnchorTopRightIcon(SvgIcon16x16):
 
 
 class AnchorMiddleLeftIcon(SvgIcon16x16):
-    PATH = getIconPath("anchor_center_left.svg")
+    PATH = getIconPath("anchor_middle_left.svg")
 
 
 class AnchorMiddleCenterIcon(SvgIcon16x16):
-    PATH = getIconPath("anchor_center_center.svg")
+    PATH = getIconPath("anchor_middle_center.svg")
 
 
 class AnchorMiddleRightIcon(SvgIcon16x16):
-    PATH = getIconPath("anchor_center_right.svg")
+    PATH = getIconPath("anchor_middle_right.svg")
 
 
 class AnchorBottomLeftIcon(SvgIcon16x16):
