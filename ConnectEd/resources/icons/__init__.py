@@ -5,31 +5,65 @@ from ...core.icon import SvgIconSingleton
 from .. import getIconPath
 
 
-class TextAlignLeftIcon(SvgIconSingleton):
+class SvgIcon16x16(SvgIconSingleton):
+    SIZE = QSize(16, 16)
+
+
+class AnchorTopLeftIcon(SvgIcon16x16):
+    PATH = getIconPath("anchor_top_left.svg")
+
+
+class AnchorTopCenterIcon(SvgIcon16x16):
+    PATH = getIconPath("anchor_top_center.svg")
+
+
+class AnchorTopRightIcon(SvgIcon16x16):
+    PATH = getIconPath("anchor_top_right.svg")
+
+
+class AnchorMiddleLeftIcon(SvgIcon16x16):
+    PATH = getIconPath("anchor_center_left.svg")
+
+
+class AnchorMiddleCenterIcon(SvgIcon16x16):
+    PATH = getIconPath("anchor_center_center.svg")
+
+
+class AnchorMiddleRightIcon(SvgIcon16x16):
+    PATH = getIconPath("anchor_center_right.svg")
+
+
+class AnchorBottomLeftIcon(SvgIcon16x16):
+    PATH = getIconPath("anchor_bottom_left.svg")
+
+
+class AnchorBottomCenterIcon(SvgIcon16x16):
+    PATH = getIconPath("anchor_bottom_center.svg")
+
+
+class AnchorBottomRightIcon(SvgIcon16x16):
+    PATH = getIconPath("anchor_bottom_right.svg")
+
+
+class TextAlignLeftIcon(SvgIcon16x16):
     PATH = getIconPath("text_align_left.svg")
-    SIZE = QSize(16, 16)
 
 
-class TextAlignCenterIcon(SvgIconSingleton):
+class TextAlignCenterIcon(SvgIcon16x16):
     PATH = getIconPath("text_align_center.svg")
-    SIZE = QSize(16, 16)
 
 
-class TextAlignRightIcon(SvgIconSingleton):
+class TextAlignRightIcon(SvgIcon16x16):
     PATH = getIconPath("text_align_right.svg")
-    SIZE = QSize(16, 16)
 
 
-class TextAlignTopIcon(SvgIconSingleton):
+class TextAlignTopIcon(SvgIcon16x16):
     PATH = getIconPath("text_align_top.svg")
-    SIZE = QSize(16, 16)
 
 
-class TextAlignMiddleIcon(SvgIconSingleton):
+class TextAlignMiddleIcon(SvgIcon16x16):
     PATH = getIconPath("text_align_middle.svg")
-    SIZE = QSize(16, 16)
 
 
-class TextAlignBottomIcon(SvgIconSingleton):
+class TextAlignBottomIcon(SvgIcon16x16):
     PATH = getIconPath("text_align_bottom.svg")
-    SIZE = QSize(16, 16)
