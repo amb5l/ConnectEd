@@ -36,6 +36,27 @@ class NoChange:
 NO_CHANGE = NoChange()
 
 
+class AlignMixin:
+    def toStr(self : Self) -> str:
+        return self.name
+
+    @classmethod
+    def fromStr(cls, s : str) -> Self:
+        return cls[s]
+
+
+class AlignH(AlignMixin, Enum):
+    LEFT   = Qt.AlignmentFlag.AlignLeft
+    CENTER = Qt.AlignmentFlag.AlignHCenter
+    RIGHT  = Qt.AlignmentFlag.AlignRight
+
+
+class AlignV(AlignMixin,Enum):
+    TOP    = Qt.AlignmentFlag.AlignTop
+    MIDDLE = Qt.AlignmentFlag.AlignVCenter
+    BOTTOM = Qt.AlignmentFlag.AlignBottom
+
+
 class Edge(Enum):
     UNDEFINED = "Undefined"
     LEFT      = "Left"

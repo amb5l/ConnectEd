@@ -189,13 +189,14 @@ def val2str(v : Any) -> str:
         case "DisplayChoice"   : s = v.value
         case "PenStyle"        : s = str(v).replace("PenStyle.", "")
         case "BrushStyle"      : s = str(v).replace("BrushStyle.", "")
-        case "LinePref"        : s = v.toStr()
-        case "FillPref"        : s = v.toStr()
-        case "TextPref"        : s = v.toStr()
+        case "AlignH"          : s = v.toStr()
+        case "AlignV"          : s = v.toStr()
         case "Edge"            : s = v.value
         case "EdgeLoc"         : s = v.toStr()
         case "SignalDirection" : s = v.value
-        case "AlignmentFlag"   : s = str(v).replace("AlignmentFlag.", "")
+        case "LinePref"        : s = v.toStr()
+        case "FillPref"        : s = v.toStr()
+        case "TextPref"        : s = v.toStr()
         case _ :
             raise ValueError(f"Unsupported type: {t}")
     return s
@@ -208,7 +209,8 @@ def str2val(s : str, t : str) -> Any:
     table view delegates.
     """
     from ..widgets.graphics.items import \
-        DEFAULT, Edge, EdgeLoc, SignalDirection, LinePref, FillPref, QuillPref
+        DEFAULT, AlignH, AlignV, Edge, EdgeLoc, SignalDirection, \
+        LinePref, FillPref, QuillPref
     from ..widgets.dialogs.properties import DisplayChoice
     def strValuesToFloats(s : str) -> list[float]:
         return [float(p) for p in s.strip("()").split(",")]
@@ -237,17 +239,14 @@ def str2val(s : str, t : str) -> Any:
         case "DisplayChoice"   : return DisplayChoice(s)
         case "PenStyle"        : return Qt.PenStyle[s]
         case "BrushStyle"      : return Qt.BrushStyle[s]
-        case "TextPref"        : return QuillPref.fromStr(s)
-        case "LinePref"        : return LinePref.fromStr(s)
-        case "FillPref"        : return FillPref.fromStr(s)
+        case "AlignH"          : return AlignH.fromStr(s)
+        case "AlignV"          : return AlignV.fromStr(s)
         case "Edge"            : return Edge(s)
         case "EdgeLoc"         : return EdgeLoc.fromStr(s)
         case "SignalDirection" : return SignalDirection(s)
-        case "AlignmentFlag"   :
-            # Handle both numeric values (from masked operations) and names
-            if s.isdigit():
-                return Qt.AlignmentFlag(int(s))
-            return Qt.AlignmentFlag[s]
+        case "LinePref"        : return LinePref.fromStr(s)
+        case "FillPref"        : return FillPref.fromStr(s)
+        case "TextPref"        : return QuillPref.fromStr(s)
         case _:
             raise ValueError(f"Unsupported type: {t}")
 
