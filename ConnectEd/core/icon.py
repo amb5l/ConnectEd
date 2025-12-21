@@ -55,6 +55,9 @@ def getSvgIcon(path : str, size : QSize, margin : int = 0) -> QIcon:
 
 
 class SvgIconSingleton:
+    PATH : str
+    SIZE : QSize
+
     _instance = None
     _icon     = None
 
@@ -106,6 +109,11 @@ def getCharIcon(
 
 
 class CharIconSingleton:
+    FONT_FAMILY : str
+    CHAR        : str
+    SIZE        : QSize
+    MARGIN      : int
+
     _instance = None
     _icon     = None
 
