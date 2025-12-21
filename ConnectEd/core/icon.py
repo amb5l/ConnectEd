@@ -23,15 +23,15 @@ def getFgBgColors() -> tuple[QColor, QColor]:
         return Qt.GlobalColor.black, Qt.GlobalColor.white
 
 
-def getSvgIcon(path : str, size : QSize, margin : int = 1) -> QIcon:
-    fgColor, bgColor = getFgBgColors()
+def getSvgIcon(path : str, size : QSize, margin : int = 0) -> QIcon:
+    fg_color, _ = getFgBgColors()
     pixmap = QPixmap(size)
     pixmap.fill(Qt.GlobalColor.transparent)
     painter = QPainter(pixmap)
     painter.setRenderHint(QPainter.RenderHint.Antialiasing)
-    with open(path, 'r') as f:
+    with open(path) as f:
         svg_content = f.read()
-    svg_content = svg_content.replace('currentColor', QColor(fgColor).name())
+    svg_content = svg_content.replace('currentColor', QColor(fg_color).name())
     renderer = QSvgRenderer(svg_content.encode('utf-8'))
     if not renderer.isValid():
         logger().error("Invalid SVG file")
@@ -79,9 +79,9 @@ def getCharIcon(
     margin      : int = 1
 ) -> QIcon:
     char = char[0] if char else " "
-    fgColor, bgColor = getFgBgColors()
+    fg_color, bg_color = getFgBgColors()
     pixmap = QPixmap(size)
-    pixmap.fill(bgColor)
+    pixmap.fill(bg_color)
     painter = QPainter(pixmap)
     painter.setRenderHint(QPainter.RenderHint.Antialiasing)
     font = QFont(font_family)
@@ -98,7 +98,7 @@ def getCharIcon(
         font.setPixelSize(font_size)
         metrics = QFontMetrics(font)
     painter.setFont(font)
-    painter.setPen(fgColor)
+    painter.setPen(fg_color)
     text_rect = QRectF(margin, margin, w, h)
     painter.drawText(text_rect, Qt.AlignmentFlag.AlignCenter, char)
     painter.end()
