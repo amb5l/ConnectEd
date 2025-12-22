@@ -128,7 +128,7 @@ class Property(QObject):
         # Disconnect from old property text if exists
         if self._text is not None:
             try:
-                self.changed.disconnect(self._text.onNameOrValueChange)
+                self.changed.disconnect(self._text.onPropertyChange)
             except TypeError:
                 pass
         # If removing property text, delete it from scene
@@ -139,7 +139,7 @@ class Property(QObject):
         self._text = text
         # Connect to new property text if provided
         if text is not None:
-            self.changed.connect(text.onNameOrValueChange)
+            self.changed.connect(text.onPropertyChange)
 
     def clone(self : Self, new_owner : "PropertyOwner") -> "Property":
         """Create a clone of this property with a new owner."""
@@ -193,7 +193,7 @@ class Property(QObject):
                 def update_slot(_value=None):
                     # Update text display if present
                     if self._text is not None:
-                        self._text.onNameOrValueChange()
+                        self._text.onPropertyChange()
                     # Propagate change signal for chained dependencies
                     self.changed.emit(self.get(subscribe=False))
                 prop_dep.changed.connect(update_slot)
