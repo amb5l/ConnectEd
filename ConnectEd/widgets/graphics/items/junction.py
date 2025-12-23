@@ -7,7 +7,7 @@ from PyQt6.QtGui     import QBrush
 from ....app import settings
 
 from .mixin        import ItemSettingsMixin
-from .mixin.line   import ItemLineMixin
+from .mixin.pen    import ItemLineMixin
 from .mixin.fill   import ItemFillMixin
 from .mixin.change import ItemChangeMixin
 
@@ -18,9 +18,9 @@ if TYPE_CHECKING:
 
 class Junction(
     ItemSettingsMixin,
+    ItemChangeMixin,
     ItemLineMixin,
     ItemFillMixin,
-    ItemChangeMixin,
     QGraphicsEllipseItem
 ):
     # instance attributes
@@ -32,6 +32,7 @@ class Junction(
         self.setFlag(self.GraphicsItemFlag.ItemIsSelectable, True)
         self._rect = QRectF()
         self._brush = QBrush()
+        self.initChange()
         self.initLine()
         self.initFill()
         self.onSettingsChange()

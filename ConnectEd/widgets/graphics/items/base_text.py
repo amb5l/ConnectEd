@@ -27,7 +27,7 @@ from ....resources.icons import AnchorTopLeftIcon,      \
 from ..property   import PropertySpec
 from ..properties import PropertiesMixin
 
-from . import AlignH, AlignV
+from . import NoChange, NO_CHANGE, AlignH, AlignV
 
 from .mixin            import ItemMixin
 from .mixin.pos_rot    import ItemPosRotMixin
@@ -178,8 +178,10 @@ class BaseTextLine(
         self.updateHandles()
         self.onSceneBoundRectChange()
 
-    def setText(self : Self, text : str) -> None:
+    def setText(self : Self, text : str | NoChange) -> None:
         """Set text and update geometry."""
+        if text is NO_CHANGE:
+            return
         super().setText(text)
         if hasattr(self, "properties") and "Text" in self.properties:
             self.properties["Text"].changed.emit(self.text())
@@ -293,14 +295,14 @@ class BaseTextBlock(
         fmt = root_frame.frameFormat()
         fmt.setMargin(0)  # temporarily remove margins
         root_frame.setFrameFormat(fmt)
-        self._urect = QGraphicsTextItem.boundingRect(self)  # unconstrained rect
+        _urect = QGraphicsTextItem.boundingRect(self)  # unconstrained rect
         # calculate and cache bounding rect, accounting for constraints
-        w = self._width  if self._width  else self._urect.width()
-        h = self._height if self._height else self._urect.height()
+        w = self._width  if self._width  else _urect.width()
+        h = self._height if self._height else _urect.height()
         self._brect = QRectF(0.0, 0.0, w, h)
         # apply vertical alignment via document top margin
         if self._height:
-            uh = self._urect.height()  # unconstrained height
+            uh = _urect.height()  # unconstrained height
             ch = self._brect.height()  # constrained height
             match self._alignment & qaf.AlignVertical_Mask:
                 case qaf.AlignBottom:

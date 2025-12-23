@@ -5,7 +5,7 @@ from typing import Self
 from PyQt6.QtCore    import QPointF, QRectF, QSizeF, \
                             QXmlStreamWriter, QXmlStreamReader
 from PyQt6.QtWidgets import QGraphicsScene
-from PyQt6.QtGui     import QUndoStack
+from PyQt6.QtGui     import QUndoStack, QColor
 
 from .....app import logger, settings
 
@@ -43,6 +43,9 @@ class DrawingScene(
     # instance attributes
     _uuid      : str
     _name      : str | None
+    _sel_line  : QColor
+    _sel_fill  : QColor
+    _sel_text  : QColor
     undo_stack : QUndoStack | None
 
     def __init__(self : Self, extents : QSizeF | None = None) -> None:
@@ -55,6 +58,8 @@ class DrawingScene(
         self.initProperties()
         self.initPaths()
         self.initGrips()
+        self.onSettingsChange()
+        settings().changed.connect(self.onSettingsChange)
         self.selectionChanged.connect(self.onSelectionChanged)
 
     def __hash__(self : Self):
@@ -64,6 +69,11 @@ class DrawingScene(
         if not isinstance(other, DrawingScene):
             return NotImplemented
         return self._uuid == other._uuid
+
+    def onSettingsChange(self : Self) -> None:
+        self._sel_line   = settings().get("theme/selected/line")
+        self._sel_fill = settings().get("theme/selected/fill")
+        self._sel_text  = settings().get("theme/selected/text")
 
     def onSelectionChanged(self : Self) -> None:
         self.updateGrips()
@@ -97,6 +107,15 @@ class DrawingScene(
                 h * 3
             )
             self.setSceneRect(scene_rect)
+
+    def selectedLineColor(self : Self) -> QColor:
+        return self._sel_line
+
+    def selectedFillColor(self : Self) -> QColor:
+        return self._sel_fill
+
+    def selectedTextColor(self : Self) -> QColor:
+        return self._sel_text
 
     def toXml(self : Self, xw : QXmlStreamWriter) -> None:
         xw.writeStartElement(self.__class__.__name__.replace("Scene", ""))

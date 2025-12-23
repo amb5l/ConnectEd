@@ -37,13 +37,12 @@ class ColorComboBox(QComboBox):
         "White"        : QColor(Qt.GlobalColor.white)
     }
 
-    choice : NoChange | Default | QColor | None
+    choice : NoChange | Default | QColor
 
     def __init__(
         self      : Self,
         initial   : NoChange | Default | QColor,
         default   : Default | QColor,
-        no_change : NoChange | Default | QColor | None = None,
         parent    : QWidget | None = None
     ) -> None:
         super().__init__(parent)
@@ -52,8 +51,8 @@ class ColorComboBox(QComboBox):
             self.getIcon(default) if isinstance(default, QColor) else \
             DefaultIcon().get()
         no_change_icon = \
-            self.getIcon(no_change) if isinstance(no_change, QColor) else \
-            default_icon if no_change is DEFAULT else \
+            self.getIcon(initial) if isinstance(initial, QColor) else \
+            default_icon if initial is DEFAULT else \
             NoChangeIcon().get()
         custom = True
         custom_idx = None
@@ -62,8 +61,6 @@ class ColorComboBox(QComboBox):
             text = k
             match k:
                 case "<no change>":
-                    if no_change is None and initial is not NO_CHANGE:
-                        continue
                     icon = no_change_icon
                 case "<default>":
                     icon = default_icon
@@ -115,5 +112,5 @@ class ColorComboBox(QComboBox):
             painter.fillRect(0, 0, size.width(), size.height(), color)
         return QIcon(pixmap)
 
-    def getChoice(self : Self) -> NoChange | Default | QColor | None:
+    def getChoice(self : Self) -> QColor | Default | NoChange:
         return self.choice

@@ -4,6 +4,8 @@ from PyQt6.QtCore    import Qt
 from PyQt6.QtWidgets import QWidget, QComboBox
 from PyQt6.QtGui     import QIcon, QPixmap, QPainter, QPen
 
+from .....app import logger
+
 from .....core.icon import getFgBgColors
 
 from ....graphics.items import NoChange, Default, DEFAULT, NO_CHANGE
@@ -27,7 +29,6 @@ class LineWidthComboBox(QComboBox):
         self      : Self,
         initial   : NoChange | Default | float | int,
         default   : Default | float | int,
-        no_change : NoChange | Default | float | int | None = None,
         parent    : QWidget | None = None
     ) -> None:
         super().__init__(parent)
@@ -38,10 +39,10 @@ class LineWidthComboBox(QComboBox):
         else:
             default_icon = DefaultIcon().get()
             default_str = ""
-        if isinstance(no_change, float | int):
-            no_change_icon = self.getIcon(no_change)
-            no_change_str = f" = {no_change}"
-        elif no_change is DEFAULT:
+        if isinstance(initial, float | int):
+            no_change_icon = self.getIcon(initial)
+            no_change_str = f" = {initial}"
+        elif initial is DEFAULT:
             no_change_icon = default_icon
             no_change_str = f" = default{default_str}"
         else:
@@ -50,8 +51,6 @@ class LineWidthComboBox(QComboBox):
         for i, (k, v) in enumerate(self.WIDTHS.items()):
             match k:
                 case "<no change>":
-                    if no_change is None and initial is not NO_CHANGE:
-                        continue
                     icon = no_change_icon
                     text = f"<no change{no_change_str}>"
                 case "<default>":
@@ -97,7 +96,7 @@ class LineWidthComboBox(QComboBox):
             )
         return QIcon(pixmap)
 
-    def getChoice(self : Self) -> float | None | NoChange:
+    def getChoice(self : Self) -> NoChange | Default | float | int:
         text = self.currentText()
         if text.startswith("<no change"):
             r = NO_CHANGE
@@ -105,9 +104,10 @@ class LineWidthComboBox(QComboBox):
             r = DEFAULT
         else:
             try:
-                r = float(text)
-                if r < 0:
-                    r = None
+                r = max(0.0, float(text))
             except ValueError:
-                r = None
+                logger().warning(f"Invalid line width: {text}")
+                r = 0.0
+            if r.is_integer():
+                r = int(r)
         return r

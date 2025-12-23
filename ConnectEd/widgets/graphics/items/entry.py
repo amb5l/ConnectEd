@@ -4,11 +4,9 @@ from PyQt6.QtCore    import QPointF, QRectF
 from PyQt6.QtWidgets import QGraphicsPathItem
 from PyQt6.QtGui     import QPainterPath
 
-from ....app import settings
-
 from .mixin        import ItemSettingsMixin
 from .mixin.paint  import ItemPaintMixin
-from .mixin.line   import ItemLineMixin
+from .mixin.pen    import ItemLineMixin
 from .mixin.fill   import ItemFillMixin
 from .mixin.change import ItemChangeMixin
 
@@ -23,9 +21,9 @@ _ENTRY_SIZE = 3
 class Entry(
     ItemSettingsMixin,
     ItemPaintMixin,
+    ItemChangeMixin,
     ItemLineMixin,
     ItemFillMixin,
-    ItemChangeMixin,
     QGraphicsPathItem
 ):
     # instance attributes
@@ -40,6 +38,7 @@ class Entry(
         QGraphicsPathItem.__init__(self, parent)
         f = self.GraphicsItemFlag
         self.setFlag(f.ItemIsSelectable, True)
+        self.initChange()
         self.initLine()
         self.initFill()
         self._path_open = QPainterPath()

@@ -13,7 +13,7 @@ from .port_pin import PortPinMixin
 from .mixin            import ItemSettingsMixin
 from .mixin.paint      import ItemPaintMixin
 from .mixin.change     import ItemChangeMixin
-from .mixin.line       import ItemLineMixin
+from .mixin.pen        import ItemLineMixin
 from .mixin.fill       import ItemFillMixin
 
 from typing import TYPE_CHECKING
@@ -42,6 +42,7 @@ class BasePinArrow(
     def __init__(self : Self, parent : QGraphicsItem | None = None) -> None:
         QGraphicsPathItem.__init__(self, parent)
         self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsSelectable, True)
+        self.initChange()
         self.initLine()
         self.initFill()
         self._direction = SignalDirection.BI

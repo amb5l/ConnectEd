@@ -4,6 +4,8 @@ from PyQt6.QtCore    import Qt
 from PyQt6.QtWidgets import QWidget, QComboBox
 from PyQt6.QtGui     import QIcon, QPixmap, QPainter, QBrush
 
+from .....app import logger
+
 from .....core.icon import getFgBgColors
 
 from ....graphics.items import NoChange, Default, DEFAULT, NO_CHANGE
@@ -35,9 +37,8 @@ class FillStyleComboBox(QComboBox):
 
     def __init__(
         self      : Self,
-        initial   : NoChange | Default | Qt.BrushStyle,
-        default   : Default | Qt.BrushStyle,
-        no_change : NoChange | Default | Qt.BrushStyle | None = None,
+        initial   : Qt.BrushStyle | Default | NoChange,
+        default   : Qt.BrushStyle | Default,
         parent    : QWidget | None = None
     ) -> None:
         super().__init__(parent)
@@ -48,20 +49,15 @@ class FillStyleComboBox(QComboBox):
         else:
             default_icon = DefaultIcon().get()
             default_str = ""
-        if isinstance(no_change, Qt.BrushStyle):
-            no_change_icon = self.getIcon(no_change)
-            no_change_str = f" = {self.STYLES_REVERSE[no_change]}"
-        elif no_change is DEFAULT:
+        if isinstance(initial, Qt.BrushStyle):
+            no_change_icon = self.getIcon(initial)
+            no_change_str = f" = {self.STYLES_REVERSE[initial]}"
+        elif initial is DEFAULT:
             no_change_icon = default_icon
             no_change_str = f" = default{default_str}"
-        else:
-            no_change_icon = NoChangeIcon().get()
-            no_change_str = ""
         for i, (k, v) in enumerate(self.STYLES.items()):
             match k:
                 case "<no change>":
-                    if no_change is None and initial is not NO_CHANGE:
-                        continue
                     icon = no_change_icon
                     text = f"<no change{no_change_str}>"
                 case "<default>":
@@ -70,7 +66,7 @@ class FillStyleComboBox(QComboBox):
                 case _:
                     icon = self.getIcon(v)
                     text = f"{self.STYLES_REVERSE[v]}"
-            self.addItem(icon, text)
+            self.addItem(icon, text, v)
             if initial == v:
                 self.setCurrentIndex(i)
 
@@ -85,7 +81,7 @@ class FillStyleComboBox(QComboBox):
             painter.drawRect(0, 0, size.width(), size.height())
         return QIcon(pixmap)
 
-    def getChoice(self : Self) -> NoChange | Default | Qt.PenStyle | None:
+    def getChoice(self : Self) -> Qt.BrushStyle | Default | NoChange:
         text = self.currentText()
         if text.startswith("<no change"):
             return NO_CHANGE
@@ -93,4 +89,7 @@ class FillStyleComboBox(QComboBox):
             return DEFAULT
         else:
             keys = list(self.STYLES.keys())
-            return self.STYLES[text] if text in keys else None
+            if text in keys:
+                return self.STYLES[text]
+            logger().warning(f"Invalid fill style: {text}")
+            return Qt.BrushStyle.NoBrush

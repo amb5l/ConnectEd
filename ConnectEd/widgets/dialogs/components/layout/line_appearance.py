@@ -1,68 +1,58 @@
 from typing import Self
 
 from PyQt6.QtCore    import Qt
-from PyQt6.QtWidgets import QWidget, QGridLayout, QLabel
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel
+from PyQt6.QtGui     import QColor
 
-from ....graphics.items import LinePrefChange, LinePref, NO_CHANGE, DEFAULT
+from ....graphics.items import Default, DEFAULT, NoChange, NO_CHANGE
 
 from ..combo.color      import ColorComboBox
 from ..combo.line_width import LineWidthComboBox
 from ..combo.line_style import LineStyleComboBox
 
 
-class LineAppearanceLayout(QGridLayout):
-    color_label : QLabel
-    color_combo : ColorComboBox
-    width_label : QLabel
-    width_combo : LineWidthComboBox
-    style_label : QLabel
-    style_combo : LineStyleComboBox
+class LineAppearanceLayout(QVBoxLayout):
+    color_layout : QHBoxLayout
+    color_label  : QLabel
+    color_combo  : ColorComboBox
+    width_layout : QHBoxLayout
+    width_label  : QLabel
+    width_combo  : LineWidthComboBox
+    style_layout : QHBoxLayout
+    style_label  : QLabel
+    style_combo  : LineStyleComboBox
 
     def __init__(
         self      : Self,
-        initial   : LinePrefChange,
-        default   : LinePref,
-        no_change : LinePrefChange | None = None,
-        parent    : QWidget | None = None
+        initial_color : QColor      | Default | NoChange,
+        initial_width : float       | Default | NoChange,
+        initial_style : Qt.PenStyle | Default | NoChange,
+        default_color : QColor      | Default,
+        default_width : float       | Default,
+        default_style : Qt.PenStyle | Default,
+        parent        : QWidget | None = None
     ) -> None:
         super().__init__(parent)
-        self.choice    = initial
-        self.no_change = no_change
-        self.default   = default
-        row = 0
-        if initial.color is not None:
-            self.color_label = QLabel("Color:")
-            self.addWidget(self.color_label, row, 0)
-            self.color_combo = ColorComboBox(
-                initial.color,
-                default.color,
-                None if no_change is None else no_change.color,
-            )
-            self.addWidget(self.color_combo, row, 1)
-            row += 1
-        if initial.width is not None:
-            self.width_label = QLabel("Width:")
-            self.addWidget(self.width_label, row, 0)
-            self.width_combo = LineWidthComboBox(
-                initial.width,
-                default.width,
-                None if no_change is None else no_change.width,
-            )
-            self.addWidget(self.width_combo, row, 1)
-            row += 1
-        if initial.style is not None:
-            self.style_label = QLabel("Style:")
-            self.addWidget(self.style_label, row, 0)
-            self.style_combo = LineStyleComboBox(
-                initial.style,
-                default.style,
-                None if no_change is None else no_change.style,
-            )
-            self.addWidget(self.style_combo, row, 1)
-        if hasattr(self, 'color_combo') and hasattr(self, 'style_combo'):
-            self.color_combo.activated.connect(self._onColorChanged)
-        if hasattr(self, 'width_combo') and hasattr(self, 'style_combo'):
-            self.width_combo.activated.connect(self._onWidthChanged)
+        self.color_layout = QHBoxLayout()
+        self.color_label = QLabel("Color:")
+        self.color_layout.addWidget(self.color_label)
+        self.color_combo = ColorComboBox(initial_color, default_color)
+        self.color_layout.addWidget(self.color_combo)
+        self.addLayout(self.color_layout)
+        self.width_layout = QHBoxLayout()
+        self.width_label = QLabel("Width:")
+        self.width_layout.addWidget(self.width_label)
+        self.width_combo = LineWidthComboBox(initial_width, default_width)
+        self.width_layout.addWidget(self.width_combo)
+        self.addLayout(self.width_layout)
+        self.style_layout = QHBoxLayout()
+        self.style_label = QLabel("Style:")
+        self.style_layout.addWidget(self.style_label)
+        self.style_combo = LineStyleComboBox(initial_style, default_style)
+        self.style_layout.addWidget(self.style_combo)
+        self.addLayout(self.style_layout)
+        self.color_combo.activated.connect(self._onColorChanged)
+        self.width_combo.activated.connect(self._onWidthChanged)
 
     def _onColorChanged(self : Self) -> None:
         color = self.color_combo.getChoice()
@@ -82,12 +72,11 @@ class LineAppearanceLayout(QGridLayout):
                     self.style_combo.setCurrentIndex(i)
                     break
 
-    def getChoice(self : Self) -> LinePrefChange:
-        r = LinePrefChange()
-        if hasattr(self, "color_combo"):
-            r.color = self.color_combo.getChoice()
-        if hasattr(self, "width_combo"):
-            r.width = self.width_combo.getChoice()
-        if hasattr(self, "style_combo"):
-            r.style = self.style_combo.getChoice()
-        return r
+    def getColorChoice(self : Self) -> QColor | Default:
+        return self.color_combo.getChoice()
+
+    def getWidthChoice(self : Self) -> float | NoChange | Default:
+        return self.width_combo.getChoice()
+
+    def getStyleChoice(self : Self) -> Qt.PenStyle | NoChange | Default:
+        return self.style_combo.getChoice()

@@ -10,8 +10,7 @@ from .....dialogs.properties import PropertyChange
 from ....properties import PropertiesMixin
 
 from ....items               import ItemType, Default, NoChange, NO_CHANGE, \
-                                    EdgeLoc, SignalDirection, \
-                                    QuillPrefChange, AppearancePrefChange
+                                    EdgeLoc, SignalDirection
 from ....items.block         import Block
 from ....items.port_pin      import PortPinMixin
 from ....items.block_pin     import BlockPin
@@ -226,19 +225,48 @@ class DrawingSceneApiEditMixin:
         self       : "DrawingScene",
         item       : PropertyTextMixin,
         value      : str,
-        appearance : QuillPrefChange,
+        color      : QColor | Default | NoChange = NO_CHANGE,
+        font       : str    | Default | NoChange = NO_CHANGE,
+        size       : float  | Default | NoChange = NO_CHANGE,
+        bold       : bool   | Default | NoChange = NO_CHANGE,
+        italic     : bool   | Default | NoChange = NO_CHANGE,
+        underline  : bool   | Default | NoChange = NO_CHANGE,
         undoable   : bool = False
     ) -> None:
         cmd = CmdEditPropertyText(self, item, value, appearance)
         cmdExec(self, cmd, undoable)
 
     def editAppearance(
-        self     : "DrawingScene",
-        items    : list[ItemMixin],
-        changes  : AppearancePrefChange,
-        undoable : bool = False
+        self           : "DrawingScene",
+        items          : list[ItemMixin],
+        line_color     : QColor        | Default | NoChange = NO_CHANGE,
+        line_width     : float         | Default | NoChange = NO_CHANGE,
+        line_style     : Qt.PenStyle   | Default | NoChange = NO_CHANGE,
+        fill_color     : QColor        | Default | NoChange = NO_CHANGE,
+        fill_style     : Qt.BrushStyle | Default | NoChange = NO_CHANGE,
+        text_color     : QColor        | Default | NoChange = NO_CHANGE,
+        text_family    : str           | Default | NoChange = NO_CHANGE,
+        text_size      : float         | Default | NoChange = NO_CHANGE,
+        text_bold      : bool          | Default | NoChange = NO_CHANGE,
+        text_italic    : bool          | Default | NoChange = NO_CHANGE,
+        text_underline : bool          | Default | NoChange = NO_CHANGE,
+        undoable       : bool = False
     ) -> None:
-        cmd = CmdEditAppearance(self, items, changes)
+        cmd = CmdEditAppearance(
+            self,
+            items,
+            line_color,
+            line_width,
+            line_style,
+            fill_color,
+            fill_style,
+            text_color,
+            text_family,
+            text_size,
+            text_bold,
+            text_italic,
+            text_underline
+        )
         cmdExec(self, cmd, undoable)
 
     def editProperties(

@@ -12,7 +12,7 @@ from .symbol_pin import SymbolPin
 
 from .mixin         import ItemMixin
 from .mixin.pos_rot import ItemPosRotMixin
-from .mixin.line    import ItemLineMixin
+from .mixin.pen     import ItemLineMixin
 from .mixin.fill    import ItemFillMixin
 from .mixin.change  import ItemChangeMixin
 from .mixin.clone   import ItemCloneMixin

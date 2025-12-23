@@ -245,7 +245,17 @@ class DrawingViewStateEditTextBlock(DrawingViewStateBase):
                 text, appearance = dialog.getChoice()
                 item.setPlainText(text)
                 item.a.quill.setPref(appearance)
-                self.scene.editTextBlock(item, text, appearance, undoable=True)
+                self.scene.editTextBlock(
+                    item      = item,
+                    text      = dialog.getText(),
+                    color     = dialog.getColor(),
+                    font      = dialog.getFamily(),
+                    size      = dialog.getSize(),
+                    bold      = dialog.getBold(),
+                    italic    = dialog.getItalic(),
+                    underline = dialog.getUnderline(),
+                    undoable  = True
+                )
         else:
             logger().warning("No text block selected")
         self.view.state.go(self.view.stateIdle)

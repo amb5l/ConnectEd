@@ -7,7 +7,7 @@ from PyQt6.QtGui     import QAction
 from ....core.defs import PITCH
 
 from .mixin.pos_rot import ItemPosRotMixin
-from .mixin.line    import ItemLineMixin
+from .mixin.pen     import ItemLineMixin
 
 from .port_pin import PortPinMixin
 from .base_pin import BasePinArrow, BasePin, \

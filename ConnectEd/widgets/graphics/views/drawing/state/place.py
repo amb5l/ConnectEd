@@ -236,9 +236,13 @@ class DrawingViewStatePlaceTextLine(ClickMixin, DrawingViewStateBase):
         item = TextLine(self._snap(s))
         dialog = TextLineDialog(item, self.view)
         if dialog.exec():
-            text, appearance = dialog.getChoice()
-            item.setText(text)
-            item.a.quill.setPref(appearance)
+            item.setText(dialog.getText())
+            item.setQuillColor(dialog.getColor())
+            item.setQuillFamily(dialog.getFamily())
+            item.setQuillSize(dialog.getSize())
+            item.setQuillBold(dialog.getBold())
+            item.setQuillItalic(dialog.getItalic())
+            item.setQuillUnderline(dialog.getUnderline())
             self.interact(PlaceTextInteraction(self.view, self._snap(s), item))
         else:
             self.view.state.go(self.view.stateIdle)

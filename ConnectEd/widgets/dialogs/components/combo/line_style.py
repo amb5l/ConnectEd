@@ -4,6 +4,8 @@ from PyQt6.QtCore    import Qt
 from PyQt6.QtWidgets import QWidget, QComboBox
 from PyQt6.QtGui     import QIcon, QPixmap, QPainter, QPen
 
+from .....app import logger
+
 from .....core.icon import getFgBgColors
 
 from ....graphics.items import NoChange, Default, DEFAULT, NO_CHANGE
@@ -78,7 +80,7 @@ class LineStyleComboBox(QComboBox):
             )
         return QIcon(pixmap)
 
-    def getChoice(self : Self) -> NoChange | Default | Qt.PenStyle | None:
+    def getChoice(self : Self) -> Qt.PenStyle | Default | NoChange:
         text = self.currentText()
         if text.startswith("<no change"):
             return NO_CHANGE
@@ -86,4 +88,7 @@ class LineStyleComboBox(QComboBox):
             return DEFAULT
         else:
             keys = list(self.STYLES.keys())
-            return self.STYLES[text] if text in keys else None
+            if text in keys:
+                return self.STYLES[text]
+            logger().warning(f"Invalid line style: {text}")
+            return Qt.PenStyle.SolidLine

@@ -6,7 +6,7 @@ from PyQt6.QtWidgets import QGraphicsLineItem
 from ....app import logger
 
 from .mixin        import ItemMixin, ItemSettingsMixin
-from .mixin.line   import ItemLineMixin
+from .mixin.pen    import ItemLineMixin
 from .mixin.change import ItemChangeMixin
 from .mixin.clone  import ItemCloneMixin
 from .mixin.xml    import ItemXmlMixin
@@ -124,12 +124,13 @@ class ConnSeg(
 
 class ConnSegPreview(
     ItemSettingsMixin,
-    ItemLineMixin,
     ItemChangeMixin,
+    ItemLineMixin,
     QGraphicsLineItem
 ):
     def __init__(self : Self) -> None:
         QGraphicsLineItem.__init__(self)
+        self.initChange()
         self.initLine()
 
     def p1(self : Self) -> QPointF:

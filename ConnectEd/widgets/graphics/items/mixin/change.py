@@ -1,11 +1,18 @@
 from typing import Self, Any
 
+from collections.abc import Callable
+
 from PyQt6.QtWidgets import QGraphicsItem
 
-from ...properties import PropertiesMixin
+from .....app import settings
 
 
 class ItemChangeMixin:
+    _selection_handlers : list[Callable[[bool], None]]
+
+    def initChange(self : Self) -> None:
+        self._selection_handlers = []
+
     def itemChange(
         self   : QGraphicsItem,
         change : QGraphicsItem.GraphicsItemChange,
@@ -28,6 +35,8 @@ class ItemChangeMixin:
                 if hasattr(self, "onRotationChange"):
                     self.onRotationChange(value)
             case self.GraphicsItemChange.ItemSelectedHasChanged:
+                for handler in self._selection_handlers:
+                    handler(value)
                 if hasattr(self, "a"):
                     if self.a.line is not None:
                         self.a.line.onSelectionChange(value)
@@ -52,3 +61,6 @@ class ItemChangeMixin:
             self.outline.onSettingsChange()
         if hasattr(self, "onGeometryChange"):
             self.onGeometryChange()
+
+    def addSelectionHandler(self : Self, handler : Callable[[bool], None]) -> None:
+        self._selection_handlers.append(handler)

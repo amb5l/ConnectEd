@@ -11,7 +11,7 @@ from .layout.ok_cancel import okCancelLayout
 class CustomColorDialog(QColorDialog):
     def __init__(
         self   : Self,
-        color  : QColor,
+        color  : QColor  | None,
         parent : QWidget | None = None
     ) -> None:
         super().__init__(parent)

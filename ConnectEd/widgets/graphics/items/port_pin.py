@@ -11,13 +11,13 @@ from .property_text import PropertyTextSpec
 from .handle        import Handle
 from .entry         import Entry
 
-from .mixin            import ItemMixin
-from .mixin.handle     import ItemHandlesMixin
-from .mixin.line       import ItemLineMixin
-from .mixin.change     import ItemChangeMixin
-from .mixin.clone      import ItemCloneMixin
-from .mixin.xml        import ItemXmlMixin
-from .mixin.menu       import ItemMenuMixin
+from .mixin        import ItemMixin
+from .mixin.handle import ItemHandlesMixin
+from .mixin.pen    import ItemLineMixin
+from .mixin.change import ItemChangeMixin
+from .mixin.clone  import ItemCloneMixin
+from .mixin.xml    import ItemXmlMixin
+from .mixin.menu   import ItemMenuMixin
 
 
 class PortPinMixin(
