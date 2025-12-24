@@ -7,7 +7,7 @@ from PyQt6.QtGui     import QBrush
 from ....app import settings
 
 from .mixin        import ItemSettingsMixin
-from .mixin.pen    import ItemLineMixin
+from .mixin.line   import ItemLineMixin
 from .mixin.fill   import ItemFillMixin
 from .mixin.change import ItemChangeMixin
 

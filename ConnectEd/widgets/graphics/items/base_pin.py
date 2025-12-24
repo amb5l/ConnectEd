@@ -13,7 +13,7 @@ from .port_pin import PortPinMixin
 from .mixin            import ItemSettingsMixin
 from .mixin.paint      import ItemPaintMixin
 from .mixin.change     import ItemChangeMixin
-from .mixin.pen        import ItemLineMixin
+from .mixin.line       import ItemLineMixin
 from .mixin.fill       import ItemFillMixin
 
 from typing import TYPE_CHECKING

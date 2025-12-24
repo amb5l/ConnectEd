@@ -17,7 +17,7 @@ from .mixin.bound      import ItemBoundMixin
 from .mixin.shape      import ItemShapeMixin
 from .mixin.paint      import ItemPaintMixin
 from .mixin.handle     import ItemRectHandlesMixin
-from .mixin.pen        import ItemLineMixin
+from .mixin.line       import ItemLineMixin
 from .mixin.fill       import ItemFillMixin
 from .mixin.change     import ItemChangeMixin
 from .mixin.clone      import ItemCloneMixin

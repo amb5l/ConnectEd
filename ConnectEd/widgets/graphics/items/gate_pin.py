@@ -9,7 +9,7 @@ from ....core.defs import PITCH
 from ..property import PropertySpec
 
 from .mixin.pos_rot import ItemPosRotMixin
-from .mixin.pen     import ItemLineMixin
+from .mixin.line    import ItemLineMixin
 
 from .port_pin      import PortPinMixin
 from .base_pin      import BasePin, BasePinDotMixin, BasePinClockMixin, \

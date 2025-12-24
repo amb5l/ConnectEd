@@ -6,7 +6,7 @@ from PyQt6.QtWidgets import QGraphicsLineItem
 from ....app import logger
 
 from .mixin        import ItemMixin, ItemSettingsMixin
-from .mixin.pen    import ItemLineMixin
+from .mixin.line   import ItemLineMixin
 from .mixin.change import ItemChangeMixin
 from .mixin.clone  import ItemCloneMixin
 from .mixin.xml    import ItemXmlMixin

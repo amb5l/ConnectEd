@@ -13,7 +13,7 @@ from .entry         import Entry
 
 from .mixin        import ItemMixin
 from .mixin.handle import ItemHandlesMixin
-from .mixin.pen    import ItemLineMixin
+from .mixin.line   import ItemLineMixin
 from .mixin.change import ItemChangeMixin
 from .mixin.clone  import ItemCloneMixin
 from .mixin.xml    import ItemXmlMixin

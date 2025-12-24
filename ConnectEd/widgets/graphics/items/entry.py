@@ -6,7 +6,7 @@ from PyQt6.QtGui     import QPainterPath
 
 from .mixin        import ItemSettingsMixin
 from .mixin.paint  import ItemPaintMixin
-from .mixin.pen    import ItemLineMixin
+from .mixin.line   import ItemLineMixin
 from .mixin.fill   import ItemFillMixin
 from .mixin.change import ItemChangeMixin
 

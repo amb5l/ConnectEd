@@ -23,7 +23,7 @@ from .mixin         import ItemMixin
 from .mixin.pos_rot import ItemPosRotMixin
 from .mixin.paint   import ItemPaintMixin
 from .mixin.handle  import ItemRectHandlesMixin
-from .mixin.pen     import ItemLineMixin
+from .mixin.line    import ItemLineMixin
 from .mixin.change  import ItemChangeMixin
 from .mixin.clone   import ItemCloneMixin
 from .mixin.xml     import ItemXmlMixin
