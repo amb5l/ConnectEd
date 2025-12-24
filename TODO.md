@@ -1,3 +1,4 @@
+QStandardItem => Cell??? better name?
 combo box user data
 eliminate QuillPrefChange
 Quill _pen attribute?

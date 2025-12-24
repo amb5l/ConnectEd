@@ -341,11 +341,11 @@ class BaseTextBlock(
         """Convenience method to align with BaseTextLine."""
         self.setPlainText(text)
 
-    def alignment(self : Self) -> qaf:
+    def align(self : Self) -> qaf:
         """Return text alignment."""
         return self._alignment
 
-    def setAlignment(self : Self, alignment : qaf) -> None:
+    def setAlign(self : Self, alignment : qaf) -> None:
         """Set text alignment. Preserves existing horizontal/vertical if not specified."""
         # merge with existing alignment, preserving unspecified components
         h_new = alignment & qaf.AlignHorizontal_Mask
@@ -365,7 +365,7 @@ class BaseTextBlock(
         # vertical is applied in onGeometryChange
         self.onGeometryChange()
 
-    def horizontalAlignment(self : Self) -> AlignH:
+    def alignH(self : Self) -> AlignH:
         """Return horizontal alignment."""
         h = self._alignment & qaf.AlignHorizontal_Mask
         for a in AlignH:
@@ -373,11 +373,11 @@ class BaseTextBlock(
                 return a
         return AlignH.LEFT
 
-    def setHorizontalAlignment(self : Self, alignment : AlignH | qaf) -> None:
+    def setAlignH(self : Self, alignment : AlignH | qaf) -> None:
         flag = alignment.value if isinstance(alignment, AlignH) else alignment
-        self.setAlignment(flag & qaf.AlignHorizontal_Mask)
+        self.setAlign(flag & qaf.AlignHorizontal_Mask)
 
-    def verticalAlignment(self : Self) -> AlignV:
+    def alignV(self : Self) -> AlignV:
         """Return vertical alignment."""
         v = self._alignment & qaf.AlignVertical_Mask
         for a in AlignV:
@@ -385,9 +385,9 @@ class BaseTextBlock(
                 return a
         return AlignV.TOP
 
-    def setVerticalAlignment(self : Self, alignment : AlignV | qaf) -> None:
+    def setAlignV(self : Self, alignment : AlignV | qaf) -> None:
         flag = alignment.value if isinstance(alignment, AlignV) else alignment
-        self.setAlignment(flag & qaf.AlignVertical_Mask)
+        self.setAlign(flag & qaf.AlignVertical_Mask)
 
     def width(self : Self) -> float | None:
         """Return width constraint."""
@@ -457,40 +457,40 @@ class BaseTextBlock(
             view.action(
                 "Left",
                 lambda: view.ui.editTextBlock(self, alignment=qaf.AlignLeft),
-                checked = self.horizontalAlignment() == qaf.AlignLeft,
+                checked = self.alignH() == qaf.AlignLeft,
                 icon = TextAlignLeftIcon().get()
             ),
             view.action(
                 "Center",
                 lambda: view.ui.editTextBlock(self, alignment=qaf.AlignHCenter),
-                checked = self.horizontalAlignment() == qaf.AlignHCenter,
+                checked = self.alignH() == qaf.AlignHCenter,
                 icon = TextAlignCenterIcon().get()
             ),
             view.action(
                 "Right",
                 lambda: view.ui.editTextBlock(self, alignment=qaf.AlignRight),
-                checked = self.horizontalAlignment() == qaf.AlignRight,
+                checked = self.alignH() == qaf.AlignRight,
                 icon = TextAlignRightIcon().get()
             ),
             view.separator(),
             view.action(
                 "Top",
                 lambda: view.ui.editTextBlock(self, alignment=qaf.AlignTop),
-                checked = self.verticalAlignment() == qaf.AlignTop,
+                checked = self.alignV() == qaf.AlignTop,
                 icon = TextAlignTopIcon().get(),
                 enabled = self.height() is not None
             ),
             view.action(
                 "Middle",
                 lambda: view.ui.editTextBlock(self, alignment=qaf.AlignVCenter),
-                checked = self.verticalAlignment() == qaf.AlignVCenter,
+                checked = self.alignV() == qaf.AlignVCenter,
                 icon = TextAlignMiddleIcon().get(),
                 enabled = self.height() is not None
             ),
             view.action(
                 "Bottom",
                 lambda: view.ui.editTextBlock(self, alignment=qaf.AlignBottom),
-                checked = self.verticalAlignment() == qaf.AlignBottom,
+                checked = self.alignV() == qaf.AlignBottom,
                 icon = TextAlignBottomIcon().get(),
                 enabled = self.height() is not None
             )

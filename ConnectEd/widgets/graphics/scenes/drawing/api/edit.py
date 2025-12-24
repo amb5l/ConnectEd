@@ -1,3 +1,5 @@
+from typing import Any
+
 from PyQt6.QtCore import Qt, QPointF
 from PyQt6.QtGui  import QColor
 
@@ -5,12 +7,10 @@ from ......app import logger
 
 from ......core.xml import copy
 
-from .....dialogs.properties import PropertyChange
+from ....properties import PropertyEdit, PropertiesMixin
 
-from ....properties import PropertiesMixin
+from ....items import ItemType, Default, NoChange, NO_CHANGE, EdgeLoc, SignalDirection
 
-from ....items               import ItemType, Default, NoChange, NO_CHANGE, \
-                                    EdgeLoc, SignalDirection
 from ....items.block         import Block
 from ....items.port_pin      import PortPinMixin
 from ....items.block_pin     import BlockPin
@@ -20,15 +20,19 @@ from ....items.text          import TextLine, TextBlock
 from ....items.property_text import PropertyTextMixin
 from ....items.mixin         import ItemMixin
 
-from ..cmd           import cmdExec, CmdDelete, CmdMove, CmdRotateCW, CmdRotateCCW
-from ..cmd.block_pin import CmdMoveBlockPins
-from ..cmd.edit      import CmdEditPortPin, \
-                            CmdEditSymbolPinDot, CmdEditSymbolPinClock, \
-                            CmdEditOrigin, \
-                            CmdEditPolylineClosed, CmdEditPolySeg, \
-                            CmdEditTextLine, CmdEditTextBlock, CmdEditPropertyText, \
-                            CmdEditProperties, CmdEditAppearance
+from ..cmd import cmdExec, CmdDelete, CmdMove, CmdRotateCW, CmdRotateCCW
 
+from ..cmd.block_pin import CmdMoveBlockPins
+
+from ..cmd.edit.pin           import CmdEditPortPin, \
+                                     CmdEditSymbolPinDot, CmdEditSymbolPinClock
+from ..cmd.edit.origin        import CmdEditOrigin
+from ..cmd.edit.polyline      import CmdEditPolylineClosed, CmdEditPolySeg
+from ..cmd.edit.text_line     import CmdEditTextLine
+from ..cmd.edit.text_block    import CmdEditTextBlock
+from ..cmd.edit.property_text import CmdEditPropertyText
+from ..cmd.edit.appearance    import CmdEditAppearance
+from ..cmd.edit.properties    import CmdEditProperties
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -233,7 +237,9 @@ class DrawingSceneApiEditMixin:
         underline  : bool   | Default | NoChange = NO_CHANGE,
         undoable   : bool = False
     ) -> None:
-        cmd = CmdEditPropertyText(self, item, value, appearance)
+        cmd = CmdEditPropertyText(
+            self, item, value, color, font, size, bold, italic, underline
+        )
         cmdExec(self, cmd, undoable)
 
     def editAppearance(
@@ -272,7 +278,7 @@ class DrawingSceneApiEditMixin:
     def editProperties(
         self     : "DrawingScene",
         object   : PropertiesMixin,
-        changes  : dict[str, PropertyChange],
+        changes  : PropertyEdit,
         undoable : bool = False
     ) -> None:
         cmd = CmdEditProperties(object, changes)

@@ -7,7 +7,7 @@ from ......app import logger
 
 from .....dialogs.port_pin   import PortPinDialog
 from .....dialogs.gate       import GateDialog
-from .....dialogs.text       import TextLineDialog, TextBlockDialog
+from .....dialogs.text       import TextLineItemDialog, TextBlockItemDialog
 
 from ....items            import SignalDirection, ItemMixin
 from ....items.port       import Port
@@ -234,7 +234,7 @@ class DrawingViewStatePlaceTextLine(ClickMixin, DrawingViewStateBase):
         i    : list[ItemMixin] | None = None
     ) -> None:
         item = TextLine(self._snap(s))
-        dialog = TextLineDialog(item, self.view)
+        dialog = TextLineItemDialog(item, self.view)
         if dialog.exec():
             item.setText(dialog.getText())
             item.setQuillColor(dialog.getColor())
@@ -258,7 +258,7 @@ class DrawingViewStatePlaceTextBlock(ClickMixin, DrawingViewStateBase):
         i    : list[ItemMixin] | None = None
     ) -> None:
         item = TextBlock(self._snap(s))
-        dialog = TextBlockDialog(item, self.view)
+        dialog = TextBlockItemDialog(item, self.view)
         if dialog.exec():
             text, appearance = dialog.getChoice()
             item.setPlainText(text)

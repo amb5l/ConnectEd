@@ -2,39 +2,106 @@ from typing import Self
 
 from PyQt6.QtCore import QPointF
 
+from .......app import logger
+
+from .....property import PropertyTextLineState,  \
+                          PropertyTextLineEdit,   \
+                          PropertyTextBlockState, \
+                          PropertyTextBlockEdit
+
+from .....items import NO_CHANGE
+
 from .. import CmdBase
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from .....properties           import PropertiesMixin
-    from .....items                import ItemMixin
-    from .....items.mixin.quill    import ItemQuillMixin
-    from .....items.property_text  import PropertyTextMixin, PropertyTextLine, PropertyTextBlock
-    from ......dialogs.properties  import PropertyVariables, PropertyChange, DisplayChoice
+    from .....property            import PropertyState, PropertyEdit
+    from .....properties          import PropertiesMixin
+    from .....items               import ItemMixin
+    from .....items.property_text import PropertyTextMixin, \
+                                         PropertyTextLine, PropertyTextBlock
+    from ......dialogs.properties import DisplayChoice
 
 class CmdEditProperties(CmdBase):
     _object  : "PropertiesMixin"
-    _changes : dict[str, "PropertyChange"]
+    _before  : list["PropertyState"]
+    _changes : dict[str, "PropertyEdit | PropertyState"]
 
     def __init__(
         self    : Self,
         object  : "PropertiesMixin",
-        changes : dict[str, "PropertyChange"]
+        changes : dict[str, "PropertyEdit"]
     ):
         self._object  = object
+        self._before = {
+            name: prop.getState() for prop, name in object.properties.items()
+        }
         self._changes = changes
         super().__init__()
 
     def redo(self : Self) -> None:
-        self._do("before", "after")
+        for name, change in self._changes.items():
+            if name not in self._before:
+                # add property
+                if not isinstance(change, PropertyState):
+                    logger().error(f"Cannot edit new property '{name}'")
+                    continue
+                if name != change.name:
+                    logger.error(f"Cannot change name of new property '{name}'")
+                    continue
+            elif change is None:
+                # delete property
+                self._object.delProperty(name)
+            else:
+                # modify property
+                if not isinstance(change, PropertyEdit):
+                    logger().error(f"Bad change to existing property '{name}'")
+                    continue
+                if name != change.name:
+                    # rename property
+                    self._object.renProperty(name, change.name)
+                property = self._object.properties[name]
+                if change.value is not NO_CHANGE:
+                    property.set(change.value)
+                if change.display is NO_CHANGE:
+                    continue
+                if property.getText() is None:
+                    # add new property text
+                    if isinstance(change.display, PropertyTextLineState):
+                        logger().warning(f"Need to add PropertyTextLine to property '{name}'")
+                    elif isinstance(change.display, PropertyTextBlockState):
+                        logger().warning(f"Need to add PropertyTextBlock to property '{name}'")
+                    else:
+                        logger().error(f"Bad display change to property '{name}'")
+                        continue
+                elif change.display is None:
+                    # remove property text
+                    property.setText(None)
+                elif isinstance(property.getText(), PropertyTextLine):
+                    if isinstance(change.display, PropertyTextLineEdit):
+                        logger().warning(f"Need to edit PropertyTextLine for property '{name}'")
+                    elif isinstance(change.display, PropertyTextBlockState):
+                        logger().warning(f"Need to convert PropertyTextLine to PropertyTextBlock for property '{name}'")
+                    else:
+                        logger().error(f"Bad display change to property '{name}'")
+                elif isinstance(property.getText(), PropertyTextBlock):
+                    if isinstance(change.display, PropertyTextBlockEdit):
+                        logger().warning(f"Need to edit PropertyTextBlock for property '{name}'")
+                    elif isinstance(change.display, PropertyTextLineState):
+                        logger().warning(f"Need to convert PropertyTextBlock to PropertyTextLine for property '{name}'")
+                    else:
+                        logger().error(f"Bad display change to property '{name}'")
+                else:
+                    logger().error(f"Bad change to text of property '{name}'")
+                    continue
 
     def undo(self : Self) -> None:
-        self._do("after", "before")
+        self._do(self._changes, self._before)
 
     def _do(self : Self, before_attr : str, after_attr : str) -> None:
         for _name, change in self._changes.items():
-            before : "PropertyVariables | None" = getattr(change, before_attr)
-            after  : "PropertyVariables | None" = getattr(change, after_attr)
+            before : "PropertyState | None" = getattr(change, before_attr)
+            after  : "PropertyState | None" = getattr(change, after_attr)
             if before is None:
                 # add property
                 self._object.initProperty(after.name, after.value)
@@ -57,7 +124,7 @@ class CmdEditProperties(CmdBase):
                     else:
                         self._modifyPropertyText(pt, after)
 
-    def _addPropertyText(self : Self, vars : "PropertyVariables") -> None:
+    def _addPropertyText(self : Self, vars : "PropertyState") -> None:
         block_classes = (DisplayChoice.BLOCK, DisplayChoice.BLOCK_HIDDEN)
         pt_class = PropertyTextBlock if vars.display in block_classes \
             else PropertyTextLine
@@ -75,7 +142,7 @@ class CmdEditProperties(CmdBase):
     def _modifyPropertyText(
         self : Self,
         pt   : PropertyTextMixin,
-        vars : PropertyVariables
+        vars : PropertyState
     ) -> None:
         pt.setName(vars.name)
         pt.setVisible(vars.display in (DisplayChoice.LINE, DisplayChoice.BLOCK))
