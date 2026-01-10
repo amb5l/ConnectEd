@@ -11,7 +11,8 @@ from ..properties import PropertiesMixin
 from .symbol_pin import SymbolPin
 
 from .mixin         import ItemMixin
-from .mixin.pos_rot import ItemPosRotMixin
+from .mixin.pos     import ItemPosMixin
+from .mixin.rotate  import ItemRotateMixin
 from .mixin.line    import ItemLineMixin
 from .mixin.fill    import ItemFillMixin
 from .mixin.change  import ItemChangeMixin
@@ -22,7 +23,8 @@ from .mixin.menu    import ItemMenuMixin
 
 class Symbol(
     ItemMixin,
-    ItemPosRotMixin,
+    ItemPosMixin,
+    ItemRotateMixin,
     ItemLineMixin,
     ItemFillMixin,
     ItemChangeMixin,

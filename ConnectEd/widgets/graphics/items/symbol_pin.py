@@ -1,12 +1,11 @@
 from typing import Self
 
-from PyQt6.QtCore    import QPointF, QRectF
+from PyQt6.QtCore    import QPointF
 from PyQt6.QtWidgets import QGraphicsItem, QMenu
 from PyQt6.QtGui     import QAction
 
-from ....core.defs import PITCH
-
-from .mixin.pos_rot import ItemPosRotMixin
+from .mixin.pos     import ItemPosMixin
+from .mixin.rotate  import ItemRotateMixin
 from .mixin.line    import ItemLineMixin
 
 from .port_pin import PortPinMixin
@@ -24,7 +23,13 @@ class SymbolPinArrow(BasePinArrow):
     pass
 
 
-class SymbolPin(ItemPosRotMixin, BasePinDotMixin, BasePinClockMixin, BasePin):
+class SymbolPin(
+    ItemPosMixin,
+    ItemRotateMixin,
+    BasePinDotMixin,
+    BasePinClockMixin,
+    BasePin
+):
     # class attributes
     _ARROW_CLASS = SymbolPinArrow
     _PROPERTY_SPECS = \
@@ -33,7 +38,8 @@ class SymbolPin(ItemPosRotMixin, BasePinDotMixin, BasePinClockMixin, BasePin):
         PortPinMixin._PROPERTY_SPECS_COMMENT | \
         BasePinDotMixin._PROPERTY_SPECS_DOT | \
         BasePinClockMixin._PROPERTY_SPECS_CLOCK | \
-        ItemPosRotMixin._PROPERTY_SPECS_POS_ROT | \
+        ItemPosMixin._PROPERTY_SPECS_POS | \
+        ItemRotateMixin._PROPERTY_SPECS_ROTATE | \
         ItemLineMixin._PROPERTY_SPECS_LINE
 
     def __init__(

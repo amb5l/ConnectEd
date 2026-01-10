@@ -8,12 +8,12 @@ from ....core.defs import PITCH
 
 from ..property import PropertySpec
 
-from .mixin.pos_rot import ItemPosRotMixin
-from .mixin.line    import ItemLineMixin
+from .mixin.pos    import ItemPosMixin
+from .mixin.rotate import ItemRotateMixin
+from .mixin.line   import ItemLineMixin
 
-from .port_pin      import PortPinMixin
-from .base_pin      import BasePin, BasePinDotMixin, BasePinClockMixin, \
-                           _PIN_CLK_SIZE
+from .port_pin import PortPinMixin
+from .base_pin import BasePin, BasePinDotMixin, BasePinClockMixin, _PIN_CLK_SIZE
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -21,7 +21,13 @@ if TYPE_CHECKING:
     from ..scenes.drawing import DrawingScene
 
 
-class GatePin(ItemPosRotMixin, BasePinDotMixin, BasePinClockMixin, BasePin):
+class GatePin(
+    ItemPosMixin,
+    ItemRotateMixin,
+    BasePinDotMixin,
+    BasePinClockMixin,
+    BasePin
+):
     # class attributes
     _PROPERTY_SPECS = \
         {
@@ -33,7 +39,8 @@ class GatePin(ItemPosRotMixin, BasePinDotMixin, BasePinClockMixin, BasePin):
         PortPinMixin._PROPERTY_SPECS_DIR | \
         BasePinDotMixin._PROPERTY_SPECS_DOT | \
         BasePinClockMixin._PROPERTY_SPECS_CLOCK | \
-        ItemPosRotMixin._PROPERTY_SPECS_POS_ROT | \
+        ItemPosMixin._PROPERTY_SPECS_POS | \
+        ItemRotateMixin._PROPERTY_SPECS_ROTATE | \
         ItemLineMixin._PROPERTY_SPECS_LINE
 
     # instance attributes

@@ -6,6 +6,7 @@ from PyQt6.QtGui     import QAction, QPen, QBrush, QPainterPath
 
 from ....app import settings
 
+from .mixin.origin import ItemOriginMixin
 from .mixin.change import ItemChangeMixin
 from .mixin.menu   import ItemMenuMixin
 
@@ -14,7 +15,6 @@ if TYPE_CHECKING:
     from ..views.drawing  import DrawingView
     from ..scenes.drawing import DrawingScene
     from .handle          import Handle
-    from .mixin.pos_rot   import ItemPosRotMixin
     from .mixin.handle    import ItemHandlesMixin
     from .mixin.grip      import ItemGripMixin
 
@@ -121,7 +121,7 @@ class MoveGrip(HandleGrip):
             view.action("Slide", lambda: view.ui.editSlide([self._item], self.scenePos())),
             view.action("Move", lambda: view.ui.editMove([self._item], self.scenePos()))
         ]
-        item : "ItemPosRotMixin" = self.item()
+        item : "ItemOriginMixin" = self.item()
         if item.getOrigin() is not None:
             h : Handle = self.parentItem()
             entries.extend([

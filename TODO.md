@@ -1,3 +1,23 @@
+remove _sbrect, deal with in symbol scene
+  class DrawingScene(QGraphicsScene):
+      def __init__(self):
+          super().__init__()
+          self._bounds_dirty = True
+          self.changed.connect(lambda _: setattr(self, '_bounds_dirty', True))
+
+      def boundingRect(self) -> QRectF:
+          if self._bounds_dirty:
+              self._cached_bounds = self.itemsBoundingRect()
+              self._bounds_dirty = False
+          return self._cached_bounds
+
+separate origin, pos, rot
+create new Text class, with TextLine/TextBlock children
+  - pos, rotate handled by parent
+  - origin (translation) and rotation compensation handled by child
+
+
+
 QStandardItem => Cell??? better name?
 combo box user data
 eliminate QuillPrefChange

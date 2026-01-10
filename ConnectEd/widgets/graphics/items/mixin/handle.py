@@ -4,8 +4,7 @@ from PyQt6.QtCore import QPointF, QRectF
 
 from ..handle import Handle
 
-from .pos_rot import ItemPosRotMixin
-from .grip    import ItemGripMixin
+from .grip import ItemGripMixin
 
 
 class ItemHandlesMixin(ItemGripMixin):
@@ -56,7 +55,7 @@ class ItemRectHandlesMixin(ItemHandlesMixin):
     def handleRect(self : Self) -> QRectF:
         raise NotImplementedError("Subclass must implement this method")
 
-    def updateHandles(self : Self | ItemPosRotMixin) -> None:
+    def updateHandles(self : Self) -> None:
         if not hasattr(self, "_handles"):
             return
         rect = self.handleRect()

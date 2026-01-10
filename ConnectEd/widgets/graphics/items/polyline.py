@@ -19,15 +19,16 @@ from ..painter_path import PainterPath
 from .base_rect import BaseRectangleMixin
 from .grip      import Grip
 
-from .mixin         import ItemMixin
-from .mixin.pos_rot import ItemPosRotMixin
-from .mixin.paint   import ItemPaintMixin
-from .mixin.handle  import ItemRectHandlesMixin
-from .mixin.line    import ItemLineMixin
-from .mixin.change  import ItemChangeMixin
-from .mixin.clone   import ItemCloneMixin
-from .mixin.xml     import ItemXmlMixin
-from .mixin.menu    import ItemMenuMixin
+from .mixin        import ItemMixin
+from .mixin.pos    import ItemPosMixin
+from .mixin.rotate import ItemRotateMixin
+from .mixin.paint  import ItemPaintMixin
+from .mixin.handle import ItemRectHandlesMixin
+from .mixin.line   import ItemLineMixin
+from .mixin.change import ItemChangeMixin
+from .mixin.clone  import ItemCloneMixin
+from .mixin.xml    import ItemXmlMixin
+from .mixin.menu   import ItemMenuMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -141,9 +142,11 @@ class PolySeg(Grip):
             scene : "DrawingScene" = self.scene()
             scene.editPolySeg(self, dialog.getAngle(), undoable=True)
 
+
 class Polyline(
     ItemMixin,
-    ItemPosRotMixin,
+    ItemPosMixin,
+    ItemRotateMixin,
     ItemPaintMixin,
     ItemRectHandlesMixin,
     ItemLineMixin,
@@ -155,17 +158,16 @@ class Polyline(
     QGraphicsPathItem
 ):
     # class attributes
-    _PROPERTY_SPECS_CLOSED = \
+    _PROPERTY_SPECS = \
         {
             "Closed" : PropertySpec(
                 kind   = "bool",
                 getter = lambda self: self.closed(),
                 setter = lambda self, value: self.setClosed(value)
             )
-        }
-    _PROPERTY_SPECS = \
-        _PROPERTY_SPECS_CLOSED | \
-        ItemPosRotMixin._PROPERTY_SPECS_POS_ROT | \
+        } | \
+        ItemPosMixin._PROPERTY_SPECS_POS | \
+        ItemRotateMixin._PROPERTY_SPECS_ROTATE | \
         ItemLineMixin._PROPERTY_SPECS_LINE
 
     # instance attributes

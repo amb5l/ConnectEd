@@ -29,17 +29,19 @@ from ..properties import PropertiesMixin
 
 from . import NoChange, NO_CHANGE, AlignH, AlignV
 
-from .mixin            import ItemMixin
-from .mixin.pos_rot    import ItemPosRotMixin
-from .mixin.bound      import ItemBoundMixin
-from .mixin.shape      import ItemShapeMixin
-from .mixin.handle     import ItemRectHandlesMixin
-from .mixin.quill      import ItemQuillMixin
-from .mixin.outline    import ItemOutlineMixin
-from .mixin.change     import ItemChangeMixin
-from .mixin.clone      import ItemCloneMixin
-from .mixin.xml        import ItemXmlMixin
-from .mixin.menu       import ItemMenuMixin
+from .mixin         import ItemMixin
+from .mixin.origin  import ItemOriginMixin
+from .mixin.pos     import ItemPosMixin
+from .mixin.rotate  import ItemRotateMixin
+from .mixin.bound   import ItemBoundMixin
+from .mixin.shape   import ItemShapeMixin
+from .mixin.handle  import ItemRectHandlesMixin
+from .mixin.quill   import ItemQuillMixin
+from .mixin.outline import ItemOutlineMixin
+from .mixin.change  import ItemChangeMixin
+from .mixin.clone   import ItemCloneMixin
+from .mixin.xml     import ItemXmlMixin
+from .mixin.menu    import ItemMenuMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -48,7 +50,9 @@ if TYPE_CHECKING:
 
 class BaseTextMixin(
     ItemMixin,
-    ItemPosRotMixin,
+    ItemOriginMixin,
+    ItemPosMixin,
+    ItemRotateMixin,
     ItemRectHandlesMixin,
     ItemQuillMixin,
     ItemOutlineMixin,
@@ -159,7 +163,9 @@ class BaseTextLine(
     # class attributes
     _AP_RESIZE = [] # no resizing handles
     _PROPERTY_SPECS = \
-        ItemPosRotMixin._PROPERTY_SPECS_POS_ROT | \
+        ItemOriginMixin._PROPERTY_SPECS_ORIGIN | \
+        ItemPosMixin._PROPERTY_SPECS_POS | \
+        ItemRotateMixin._PROPERTY_SPECS_ROTATE | \
         BaseTextMixin._PROPERTY_SPECS_TEXT | \
         ItemQuillMixin._PROPERTY_SPECS_QUILL
 
@@ -257,7 +263,9 @@ class BaseTextBlock(
             )
         }
     _PROPERTY_SPECS = \
-        ItemPosRotMixin._PROPERTY_SPECS_POS_ROT | \
+        ItemOriginMixin._PROPERTY_SPECS_ORIGIN | \
+        ItemPosMixin._PROPERTY_SPECS_POS | \
+        ItemRotateMixin._PROPERTY_SPECS_ROTATE | \
         _PROPERTY_SPECS_SIZE | \
         BaseTextMixin._PROPERTY_SPECS_TEXT | \
         ItemQuillMixin._PROPERTY_SPECS_QUILL

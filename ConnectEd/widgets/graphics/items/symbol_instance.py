@@ -15,10 +15,11 @@ from .base_rect        import BaseRectangle
 from .symbol_container import SymbolContainer
 from .property_text    import PropertyTextSpec
 
-from .mixin.pos_rot    import ItemPosRotMixin
+from .mixin.pos        import ItemPosMixin
+from .mixin.rotate     import ItemRotateMixin
 
 
-class BaseSymbolInstance(ItemPosRotMixin, BaseRectangle):
+class BaseSymbolInstance(ItemPosMixin, ItemRotateMixin, BaseRectangle):
     # class attributes
     _PROPERTY_SPECS_NAME = \
         {
@@ -93,7 +94,8 @@ class SymbolInstance(BaseSymbolInstance):
     _PROPERTY_SPECS = \
         _PROPERTY_SPECS_LABEL | \
         BaseSymbolInstance._PROPERTY_SPECS_NAME | \
-        ItemPosMixin._PROPERTY_SPECS_POS
+        ItemPosMixin._PROPERTY_SPECS_POS | \
+        ItemRotateMixin._PROPERTY_SPECS_ROTATE
 
     # instance attributes
     _label  : str

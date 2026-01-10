@@ -26,7 +26,8 @@ class ItemMixin(ItemSettingsMixin):
         from ...properties import PropertiesMixin
         from .handle  import ItemHandlesMixin
         from .loc     import ItemLocMixin
-        from .pos_rot import ItemPosRotMixin
+        from .pos     import ItemPosMixin
+        from .rotate  import ItemRotateMixin
         from .change  import ItemChangeMixin
         from .line    import ItemLineMixin
         from .fill    import ItemFillMixin
@@ -43,8 +44,10 @@ class ItemMixin(ItemSettingsMixin):
             self.initHandles()
         if isinstance(self, ItemLocMixin):
             self.initLoc()
-        if isinstance(self, ItemPosRotMixin):
-            self.initPosRot()
+        if isinstance(self, ItemPosMixin):
+            self.initPos()
+        if isinstance(self, ItemRotateMixin):
+            self.initRotate()
         if isinstance(self, ItemChangeMixin):
             self.initChange()
         if isinstance(self, ItemLineMixin):

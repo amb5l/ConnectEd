@@ -1,28 +1,26 @@
 from typing import Self, overload
 
-from PyQt6.QtCore    import Qt, QPointF, QRectF, QSizeF
+from PyQt6.QtCore    import QPointF, QRectF, QSizeF
 from PyQt6.QtWidgets import QGraphicsRectItem, QGraphicsEllipseItem, QMenu
-from PyQt6.QtGui     import QPainterPath, QPainterPathStroker, QAction
-
-from ....app import settings
+from PyQt6.QtGui     import QAction
 
 from ....core.defs import PITCH
 
 from ..property   import PropertySpec
 from ..properties import PropertiesMixin
 
-from .mixin            import ItemMixin
-from .mixin.pos_rot    import ItemPosRotMixin
-from .mixin.bound      import ItemBoundMixin
-from .mixin.shape      import ItemShapeMixin
-from .mixin.paint      import ItemPaintMixin
-from .mixin.handle     import ItemRectHandlesMixin
-from .mixin.line       import ItemLineMixin
-from .mixin.fill       import ItemFillMixin
-from .mixin.change     import ItemChangeMixin
-from .mixin.clone      import ItemCloneMixin
-from .mixin.xml        import ItemXmlMixin
-from .mixin.menu       import ItemMenuMixin
+from .mixin        import ItemMixin
+from .mixin.origin import ItemOriginMixin
+from .mixin.pos    import ItemPosMixin
+from .mixin.rotate import ItemRotateMixin
+from .mixin.paint  import ItemPaintMixin
+from .mixin.handle import ItemRectHandlesMixin
+from .mixin.line   import ItemLineMixin
+from .mixin.fill   import ItemFillMixin
+from .mixin.change import ItemChangeMixin
+from .mixin.clone  import ItemCloneMixin
+from .mixin.xml    import ItemXmlMixin
+from .mixin.menu   import ItemMenuMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -31,9 +29,9 @@ if TYPE_CHECKING:
 
 class BaseRectangleMixin(
     ItemMixin,
-    ItemPosRotMixin,
-    #ItemBoundMixin,
-    #ItemShapeMixin,
+    ItemOriginMixin,
+    ItemPosMixin,
+    ItemRotateMixin,
     ItemPaintMixin,
     ItemRectHandlesMixin,
     ItemLineMixin,
@@ -48,7 +46,10 @@ class BaseRectangleMixin(
 
     # class attributes
     _ORIGIN_NAME = "Middle Center"
-    _PROPERTY_SPECS_SIZE = \
+    _PROPERTY_SPECS = \
+        ItemOriginMixin._PROPERTY_SPECS_ORIGIN | \
+        ItemPosMixin._PROPERTY_SPECS_POS | \
+        ItemRotateMixin._PROPERTY_SPECS_ROTATE | \
         {
             "Width" : PropertySpec(
                 kind   = "float",
@@ -60,14 +61,10 @@ class BaseRectangleMixin(
                 getter = lambda self: self.rect().height(),
                 setter = lambda self, value: self.setHeight(value)
             )
-        }
-    _PROPERTY_SPECS = \
-        ItemPosRotMixin._PROPERTY_SPECS_POS_ROT | \
-        _PROPERTY_SPECS_SIZE | \
+        } | \
         ItemLineMixin._PROPERTY_SPECS_LINE | \
         ItemFillMixin._PROPERTY_SPECS_FILL
     _MIN_SIZE = QSizeF(1.0, 1.0)
-
 
     @overload
     def __init__(

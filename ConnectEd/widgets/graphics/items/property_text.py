@@ -16,8 +16,10 @@ from . import NoChange, NO_CHANGE
 from .base_text import BaseTextLine, BaseTextBlock
 from .handle    import Handle
 
-from .mixin.pos_rot import ItemPosRotMixin
-from .mixin.quill   import ItemQuillMixin
+from .mixin.origin import ItemOriginMixin
+from .mixin.pos    import ItemPosMixin
+from .mixin.rotate import ItemRotateMixin
+from .mixin.quill  import ItemQuillMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -141,7 +143,7 @@ class PropertyTextMixin:
         self : Self,
         pos  : QPointF | None = None
     ) -> None:
-        ItemPosRotMixin.onPositionChange(self, pos)
+        ItemPosMixin.onPositionChange(self, pos)
         if hasattr(self, "_tether"):
             self._tether.onPositionChange(pos)
 
@@ -190,7 +192,7 @@ class PropertyTextMixin:
 
     def setOrigin(self : Self, name : str) -> None:
         """Override to update tether line."""
-        ItemPosRotMixin.setOrigin(self, name)
+        ItemOriginMixin.setOrigin(self, name)
         if hasattr(self, "_tether"):
             self._tether.setParentItem(self.getHandle(name))
             self._tether.onPositionChange(self.pos())
@@ -235,7 +237,8 @@ class PropertyTextLine(PropertyTextMixin, BaseTextLine):
         PropertyTextMixin._PROPERTY_SPECS_NAME | \
         PropertyTextMixin._PROPERTY_SPECS_VISIBLE | \
         PropertyTextMixin._PROPERTY_SPECS_CLEAT | \
-        ItemPosRotMixin._PROPERTY_SPECS_POS_ROT | \
+        ItemPosMixin._PROPERTY_SPECS_POS | \
+        ItemRotateMixin._PROPERTY_SPECS_ROTATE | \
         ItemQuillMixin._PROPERTY_SPECS_QUILL
 
     def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
@@ -256,7 +259,8 @@ class PropertyTextBlock(PropertyTextMixin, BaseTextBlock):
         PropertyTextMixin._PROPERTY_SPECS_NAME | \
         PropertyTextMixin._PROPERTY_SPECS_VISIBLE | \
         PropertyTextMixin._PROPERTY_SPECS_CLEAT | \
-        ItemPosRotMixin._PROPERTY_SPECS_POS_ROT | \
+        ItemPosMixin._PROPERTY_SPECS_POS | \
+        ItemRotateMixin._PROPERTY_SPECS_ROTATE | \
         BaseTextBlock._PROPERTY_SPECS_SIZE | \
         ItemQuillMixin._PROPERTY_SPECS_QUILL
 
