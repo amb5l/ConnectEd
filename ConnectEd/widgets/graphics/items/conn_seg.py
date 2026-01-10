@@ -124,12 +124,13 @@ class ConnSeg(
 
 class ConnSegPreview(
     ItemSettingsMixin,
-    ItemLineMixin,
     ItemChangeMixin,
+    ItemLineMixin,
     QGraphicsLineItem
 ):
     def __init__(self : Self) -> None:
         QGraphicsLineItem.__init__(self)
+        self.initChange()
         self.initLine()
 
     def p1(self : Self) -> QPointF:

@@ -2,9 +2,7 @@ from typing import Self
 
 from PyQt6.QtWidgets import QWidget, QDialog, \
                             QVBoxLayout, QHBoxLayout, QLabel, QPushButton
-from PyQt6.QtGui     import QShowEvent
-
-from ..graphics.items import QuillPref, QuillPrefChange
+from PyQt6.QtGui     import QShowEvent, QColor
 
 from ..graphics.items.property_text import PropertyTextMixin, PropertyTextBlock
 
@@ -43,17 +41,20 @@ class PropertyTextDialog(QDialog):
         self._value_layout.addWidget(self._value_label)
         self._value_layout.addWidget(self._value_edit)
         self._dialog_layout.addLayout(self._value_layout)
-        initial = item.a.quill.getPref()
-        defaults = item.a.quill.getDefaults()
-        default = QuillPref(
-            color     = defaults.color,
-            family    = defaults.family,
-            size      = defaults.size,
-            bold      = defaults.bold,
-            italic    = defaults.italic,
-            underline = defaults.underline
+        self._appearance_layout = TextAppearanceLayout(
+            item.quillColor(),
+            item.quillFamily(),
+            item.quillSize(),
+            item.quillBold(),
+            item.quillItalic(),
+            item.quillUnderline(),
+            item.defaultQuillColor(),
+            item.defaultQuillFamily(),
+            item.defaultQuillSize(),
+            item.defaultQuillBold(),
+            item.defaultQuillItalic(),
+            item.defaultQuillUnderline()
         )
-        self._appearance_layout = TextAppearanceLayout(initial, default)
         self._dialog_layout.addLayout(self._appearance_layout)
         okCancelLayout(self)
         self.setLayout(self._dialog_layout)
@@ -67,5 +68,20 @@ class PropertyTextDialog(QDialog):
     def getValue(self : Self) -> str:
         return self._value_edit.text()
 
-    def getAppearanceChange(self : Self) -> QuillPrefChange:
-        return self._appearance_layout.getChoice()
+    def getColor(self : Self) -> QColor:
+        return self._appearance_layout.getColor()
+
+    def getFamily(self : Self) -> str:
+        return self._appearance_layout.getFamily()
+
+    def getSize(self : Self) -> float:
+        return self._appearance_layout.getSize()
+
+    def getBold(self : Self) -> bool:
+        return self._appearance_layout.getBold()
+
+    def getItalic(self : Self) -> bool:
+        return self._appearance_layout.getItalic()
+
+    def getUnderline(self : Self) -> bool:
+        return self._appearance_layout.getUnderline()

@@ -3,11 +3,15 @@ from typing import Self
 from PyQt6.QtCore    import Qt, QModelIndex
 from PyQt6.QtWidgets import QWidget, QStyledItemDelegate, QStyleOptionViewItem, \
                             QMessageBox
-from PyQt6.QtGui     import QStandardItemModel
+from PyQt6.QtGui     import QStandardItemModel, QFontMetrics
 
 from ....app import logger
 
 from ....core.utils import str2val, val2str
+
+from ...graphics.properties import PropertiesMixin
+
+from ..text import TextDialog
 
 from .model                 import DialogItem
 from .line_edit             import StringEdit, IntEdit, FloatEdit
@@ -35,7 +39,18 @@ class DialogItemDelegate(QStyledItemDelegate):
         item_default = item.getDefault()
         match item_type:
             case "str":
-                editor = StringEdit(item_value, parent)
+                font_metrics = QFontMetrics(option.font)
+                text_width = font_metrics.horizontalAdvance(item_value)
+                cell_width = option.rect.width() - 10  # padding
+                if text_width > cell_width \
+                or "\n" in item_value \
+                or "\r" in item_value:
+                    dialog = TextDialog(item.getValue(), parent=self.parent())
+                    if dialog.exec():
+                        item.setText(dialog.getText())
+                    editor = None
+                else:
+                    editor = StringEdit(item_value, parent)
             case "int":
                 editor = IntEdit(item_value, parent)
             case "float":

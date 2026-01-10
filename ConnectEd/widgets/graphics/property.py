@@ -1,70 +1,152 @@
-from typing          import Self, Any
+from typing          import Self, Any, TypeAlias
 from collections.abc import Callable
 from dataclasses     import dataclass
 
 from PyQt6.QtCore import QObject, pyqtSignal
+from PyQt6.QtGui  import QColor
 
 from ...app import logger
 
 from ...core.utils import str2val
 
+from .items import Default, NoChange, NO_CHANGE, AlignH, AlignV
+
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from .scenes.drawing import DrawingScene
     from .items import ItemType
-    from .items.property_text import PropertyTextSpec, PropertyTextMixin
+    from .items.property_text import PropertyTextSpec, \
+                                     PropertyTextLine, PropertyTextBlock
     PropertyOwner = ItemType | DrawingScene
 
 
 @dataclass
 class PropertySpec:
     kind    : str                                            = "str"
-    valid   : Callable[["PropertyOwner"], bool]      | None  = None  # valid for inclusion in XML
+    valid   : Callable[["PropertyOwner"], bool]      | None  = None  # for XML
     getter  : Callable[["PropertyOwner"], Any] | str | None  = None
     setter  : Callable[["PropertyOwner", Any], None] | None  = None
     default : Callable[["PropertyOwner"], Any]       | None  = None
     text    : "PropertyTextSpec                      | None" = None
 
 
+@dataclass
+class PropertyTextLineState:
+    hidden    : bool
+    cleat     : str
+    offset_x  : float
+    offset_y  : float
+    origin    : str
+    color     : QColor | Default
+    font      : str    | Default
+    size      : float  | Default
+    bold      : bool   | Default
+    italic    : bool   | Default
+    underline : bool   | Default
+
+
+@dataclass
+class PropertyTextLineEdit:
+    hidden    : bool             | NoChange = NO_CHANGE
+    cleat     : str              | NoChange = NO_CHANGE
+    offset_x  : float            | NoChange = NO_CHANGE
+    offset_y  : float            | NoChange = NO_CHANGE
+    origin    : str              | NoChange = NO_CHANGE
+    color     : QColor | Default | NoChange = NO_CHANGE
+    font      : str    | Default | NoChange = NO_CHANGE
+    size      : float  | Default | NoChange = NO_CHANGE
+    bold      : bool   | Default | NoChange = NO_CHANGE
+    italic    : bool   | Default | NoChange = NO_CHANGE
+    underline : bool   | Default | NoChange = NO_CHANGE
+
+
+@dataclass
+class PropertyTextBlockState(PropertyTextLineState):
+    align_h : AlignH
+    align_v : AlignV
+    width   : float | None
+    height  : float | None
+
+
+@dataclass
+class PropertyTextBlockEdit(PropertyTextLineEdit):
+    align_h : AlignH       | NoChange = NO_CHANGE
+    align_v : AlignV       | NoChange = NO_CHANGE
+    width   : float | None | NoChange = NO_CHANGE
+    height  : float | None | NoChange = NO_CHANGE
+
+
+PropertyTextEdit : TypeAlias = (
+    NoChange               | # no change
+    PropertyTextLineEdit   | # edit existing line
+    PropertyTextBlockEdit  | # edit existing block
+    PropertyTextLineState  | # convert existing block to line
+    PropertyTextBlockState | # convert existing line to block
+    PropertyTextLineState  | # add new line
+    PropertyTextBlockState | # add new block
+    None                     # remove property text
+)
+
+
+@dataclass
+class PropertyState:
+    name    : str
+    value   : Any
+    display : None | PropertyTextLineState | PropertyTextBlockState
+
+
+@dataclass
+class PropertyEdit:
+    name    : str | NoChange
+    value   : Any | NoChange
+    display : PropertyTextEdit
+
+
 class Property(QObject):
     # instance attributes
-    _owner   : "PropertyOwner"
-    _name    : str
-    _kind    : str
-    _valid   : Callable[["PropertyOwner"], bool]      | None
-    _getter  : Callable[["PropertyOwner"], Any] | str | None  # or static value
-    _setter  : Callable[["PropertyOwner", Any], None] | None
-    _default : Callable[["PropertyOwner"], Any]       | None
-    _text    : "PropertyTextMixin | None"
-    _subs    : dict["Property", Callable]  # dep_property -> update_slot
+    _owner    : "PropertyOwner"
+    _name     : str
+    _kind     : str
+    _valid    : Callable[["PropertyOwner"], bool]      | None
+    _getter   : Callable[["PropertyOwner"], Any] | str | None  # or static value
+    _setter   : Callable[["PropertyOwner", Any], None] | None
+    _default  : Callable[["PropertyOwner"], Any]       | None
+    _text     : "PropertyTextLine | PropertyTextBlock | None"
+    _inherent : bool
+    _subs     : dict["Property", Callable]  # dep_property -> update_slot
 
     # signals
     changed = pyqtSignal(object)
 
     def __init__(
-        self    : Self,
-        owner   : "PropertyOwner",
-        name    : str,
-        kind    : str,
-        valid   : Callable[["PropertyOwner"], bool] | None = None,
-        getter  : Callable[["PropertyOwner"], Any] | str | None = None,
-        setter  : Callable[["PropertyOwner", Any], None] | None = None,
-        default : Callable[["PropertyOwner"], Any] | None = None,
-        text    : "PropertyTextMixin | None" = None
+        self     : Self,
+        owner    : "PropertyOwner",
+        name     : str,
+        kind     : str,
+        valid    : Callable[["PropertyOwner"], bool]      | None  = None,
+        getter   : Callable[["PropertyOwner"], Any] | str | None  = None,
+        setter   : Callable[["PropertyOwner", Any], None] | None  = None,
+        default  : Callable[["PropertyOwner"], Any]       | None  = None,
+        text     : "PropertyTextLine | PropertyTextBlock  | None" = None,
+        inherent : bool = False
     ) -> None:
         super().__init__()
-        self._owner   = owner
-        self._name    = name
-        self._kind    = kind
-        self._valid   = valid
-        self._getter  = getter
-        self._setter  = setter
-        self._default = default
-        self._text    = text
-        self._subs    = {}
+        self._owner    = owner
+        self._name     = name
+        self._kind     = kind
+        self._valid    = valid
+        self._getter   = getter
+        self._setter   = setter
+        self._default  = default
+        self._text     = text
+        self._inherent = inherent
+        self._subs     = {}
 
-    def isStatic(self : Self) -> bool:
-        return not isinstance(self._getter, Callable)
+    def name(self : Self) -> str:
+        return self._name
+
+    def inherent(self : Self) -> bool:
+        return self._inherent
 
     def isReadOnly(self : Self) -> bool:
         return self._setter is None and not isinstance(self._getter, str)
@@ -121,10 +203,13 @@ class Property(QObject):
         """Get default value."""
         return self._default(self._owner) if self._default else None
 
-    def getText(self : Self) -> "PropertyTextMixin | None":
+    def getText(self : Self) -> "PropertyTextLine | PropertyTextBlock | None":
         return self._text
 
-    def setText(self : Self, text : "PropertyTextMixin | None") -> None:
+    def setText(
+        self : Self,
+        text : "PropertyTextLine | PropertyTextBlock | None"
+    ) -> None:
         # Disconnect from old property text if exists
         if self._text is not None:
             try:
@@ -140,6 +225,33 @@ class Property(QObject):
         # Connect to new property text if provided
         if text is not None:
             self.changed.connect(text.onPropertyChange)
+
+    def getState(self : Self) -> "PropertyState":
+        pt_state_class = None
+        if isinstance(self._text, PropertyTextLine):
+            pt_state_class = PropertyTextLineState
+        elif isinstance(self._text, PropertyTextBlock):
+            pt_state_class = PropertyTextBlockState
+        args = {}
+        if pt_state_class is not None:
+            args[ "hidden"    ] = not self._text.isVisible(),
+            args[ "cleat"     ] = self._text.getCleat(),
+            args[ "offset_x"  ] = self._text.pos().x(),
+            args[ "offset_y"  ] = self._text.pos().y(),
+            args[ "origin"    ] = self._text.getOrigin(),
+            args[ "color"     ] = self._text.quillColor(),
+            args[ "font"      ] = self._text.quillFamily(),
+            args[ "size"      ] = self._text.quillSize(),
+            args[ "bold"      ] = self._text.quillBold(),
+            args[ "italic"    ] = self._text.quillItalic(),
+            args[ "underline" ] = self._text.quillUnderline()
+        if pt_state_class == PropertyTextBlockState:
+            args["align_h"    ] = self._text.alignH()
+            args["align_v"    ] = self._text.alignV()
+            args["width"      ] = self._text.width()
+            args["height"     ] = self._text.height()
+        pt_state = pt_state_class(**args) if args else None
+        return PropertyState(self.name(), self.raw(), pt_state)
 
     def clone(self : Self, new_owner : "PropertyOwner") -> "Property":
         """Create a clone of this property with a new owner."""

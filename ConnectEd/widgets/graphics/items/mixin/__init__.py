@@ -4,8 +4,6 @@ from typing import Self
 
 from PyQt6.QtWidgets import QGraphicsItem
 
-from .....app import settings
-
 from .....core.defs  import Z_DRAWING
 
 from typing import TYPE_CHECKING
@@ -26,14 +24,14 @@ class ItemMixin(ItemSettingsMixin):
 
     def initItem(self : Self | QGraphicsItem, bare : bool = False) -> None:
         from ...properties import PropertiesMixin
-        from .handle     import ItemHandlesMixin
-        from .loc        import ItemLocMixin
-        from .pos_rot    import ItemPosRotMixin
-        from .line       import ItemLineMixin
-        from .fill       import ItemFillMixin
-        from .quill      import ItemQuillMixin
-        from .outline    import ItemOutlineMixin
-        from .change     import ItemChangeMixin
+        from .handle  import ItemHandlesMixin
+        from .loc     import ItemLocMixin
+        from .pos_rot import ItemPosRotMixin
+        from .change  import ItemChangeMixin
+        from .line    import ItemLineMixin
+        from .fill    import ItemFillMixin
+        from .quill   import ItemQuillMixin
+        from .outline import ItemOutlineMixin
         self.setZValue(self.Z)
         f = QGraphicsItem.GraphicsItemFlag
         self.setFlag( f.ItemIsSelectable              , True )
@@ -47,6 +45,8 @@ class ItemMixin(ItemSettingsMixin):
             self.initLoc()
         if isinstance(self, ItemPosRotMixin):
             self.initPosRot()
+        if isinstance(self, ItemChangeMixin):
+            self.initChange()
         if isinstance(self, ItemLineMixin):
             self.initLine()
         if isinstance(self, ItemFillMixin):
@@ -55,9 +55,6 @@ class ItemMixin(ItemSettingsMixin):
             self.initQuill()
         if isinstance(self, ItemOutlineMixin):
             self.initOutline()
-        if isinstance(self, ItemChangeMixin):
-            self.onSettingsChange()
-            settings().changed.connect(self.onSettingsChange)
         if isinstance(self, PropertiesMixin):
             self.initProperties(bare)
 

@@ -42,6 +42,7 @@ class BasePinArrow(
     def __init__(self : Self, parent : QGraphicsItem | None = None) -> None:
         QGraphicsPathItem.__init__(self, parent)
         self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsSelectable, True)
+        self.initChange()
         self.initLine()
         self.initFill()
         self._direction = SignalDirection.BI

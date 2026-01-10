@@ -1,209 +1,198 @@
-from typing import Self
-from types  import SimpleNamespace
+from typing import Self, Protocol
 
-from PyQt6.QtCore import Qt
-from PyQt6.QtGui  import QColor, QFont, QPen, QBrush
+from collections.abc import Callable
 
-from .....app import settings
+from PyQt6.QtGui  import QFont, QBrush, QColor
+
+from .....app import logger, settings
 
 from ...property import PropertySpec
 
-from .. import Default, DEFAULT, NO_CHANGE, Appearance, QuillPref, QuillPrefChange
+from .. import Default, DEFAULT
 
-from .           import ItemMixin
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from ...scenes.drawing import DrawingScene
 
 
-class Quill:
-    _parent    : "ItemMixin"
-    _color     : Default | QColor
-    _family    : Default | str
-    _size      : Default | float
-    _bold      : Default | bool
-    _italic    : Default | bool
-    _underline : Default | bool
-    _normal    : QColor
-    _selected  : QColor
-    _pen       : QPen | None
-    _brush     : QBrush | None
-    _font      : QFont
-
-    def __init__(
-        self   : Self,
-        parent : "ItemMixin",
-        pref   : QuillPref = \
-                  QuillPref(DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT)
-    ) -> None:
-        self._parent    = parent
-        self._color     = pref.color
-        self._family    = pref.family
-        self._size      = pref.size
-        self._bold      = pref.bold
-        self._italic    = pref.italic
-        self._underline = pref.underline
-        self._normal = QColor()
-        self._selected = QColor()
-        self._font = QFont()
-        if not hasattr(self._parent, "setDefaultTextColor"):
-            self._pen = QPen()
-            self._pen.setStyle(Qt.PenStyle.NoPen)
-            self._brush = QBrush()
-            self._brush.setStyle(Qt.BrushStyle.SolidPattern)
-            self._parent.setPen(self._pen)
-            self._parent.setBrush(self._brush)
-        else:
-            self._pen = None
-            self._brush = None
-        self._parent.setFont(self._font)
-        self.onSettingsChange()
-
-    def getColor(self : Self) -> Default | QColor:
-        return self._color
-
-    def setColor(self : Self, color : Default | QColor) -> None:
-        self._color = color
-        self.onSettingsChange()
-
-    def getFamily(self : Self) -> Default | str:
-        return self._family
-
-    def setFamily(self : Self, family : Default | str) -> None:
-        self._family = family
-        self.onSettingsChange()
-
-    def getSize(self : Self) -> Default | float:
-        return self._size
-
-    def setSize(self : Self, size : Default | float) -> None:
-        self._size = size
-        self.onSettingsChange()
-
-    def getBold(self : Self) -> Default | bool:
-        return self._bold
-
-    def setBold(self : Self, bold : Default | bool) -> None:
-        self._bold = bold
-        self.onSettingsChange()
-
-    def getItalic(self : Self) -> Default | bool:
-        return self._italic
-
-    def setItalic(self : Self, italic : Default | bool) -> None:
-        self._italic = italic
-        self.onSettingsChange()
-
-    def getUnderline(self : Self) -> Default | bool:
-        return self._underline
-
-    def setUnderline(self : Self, underline : Default | bool) -> None:
-        self._underline = underline
-        self.onSettingsChange()
-
-    def getPref(self : Self) -> QuillPref:
-        return QuillPref(
-            self._color,
-            self._family,
-            self._size,
-            self._bold,
-            self._italic,
-            self._underline
-        )
-
-    def setPref(self : Self, c : QuillPref | QuillPrefChange) -> None:
-        if c.color     is not NO_CHANGE: self._color     = c.color
-        if c.family    is not NO_CHANGE: self._family    = c.family
-        if c.size      is not NO_CHANGE: self._size      = c.size
-        if c.bold      is not NO_CHANGE: self._bold      = c.bold
-        if c.italic    is not NO_CHANGE: self._italic    = c.italic
-        if c.underline is not NO_CHANGE: self._underline = c.underline
-        self.onSettingsChange()
-
-    def getDefaults(self : Self) -> SimpleNamespace:
-        return settings().get(f"theme/items/{self._parent.settingsName()}/text")
-
-    def onSettingsChange(self : Self) -> None:
-        default = self.getDefaults()
-        self._selected.setRgb(settings().get("theme/selected/text").rgb())
-        self._selected.setAlpha(settings().get("display/alpha"))
-        self._normal.setRgb(
-            default.color.rgb() if self._color is DEFAULT else self._color.rgb()
-        )
-        self._normal.setAlpha(settings().get("display/alpha"))
-        self._font.setFamily(
-            default.family if self._family is DEFAULT else self._family
-        )
-        self._font.setPointSizeF(
-            default.size if self._size is DEFAULT else self._size
-        )
-        self._font.setBold(
-            default.bold if self._bold is DEFAULT else self._bold
-        )
-        self._font.setItalic(
-            default.italic if self._italic is DEFAULT else self._italic
-        )
-        self._font.setUnderline(
-            default.underline if self._underline is DEFAULT else self._underline
-        )
-        self._parent.setFont(self._font)
-        self.onSelectionChange(self._parent.isSelected())
-
-    def onSelectionChange(self : Self, selected : bool) -> None:
-        color = self._selected if selected else self._normal
-        if hasattr(self._parent, "setDefaultTextColor"):
-            self._parent.setDefaultTextColor(color)
-        else:
-            self._brush.setColor(color)
-            self._parent.setBrush(self._brush)
+class ItemProtocol(Protocol):
+    def settingsName(self) -> str: ...
+    def addSelectionHandler(self, handler: Callable[[bool], None]) -> None: ...
+    def font(self) -> QFont: ...
+    def setFont(self, font: QFont) -> None: ...
+    def brush(self) -> QBrush: ...
+    def setBrush(self, brush: QBrush) -> None: ...
+    def scene(self) -> "DrawingScene": ...
 
 
 class ItemQuillMixin:
+    """Mixin for items that render text."""
+
     _PROPERTY_SPECS_QUILL = {
         "Text Color" : PropertySpec(
             kind    = "QColor",
-            valid   = lambda self: self.a.quill is not None and self.a.quill.getColor() is not DEFAULT,
-            getter  = lambda self: self.a.quill.getColor(),
-            setter  = lambda self, value: self.a.quill.setColor(value),
-            default = lambda self: self.a.quill.getDefaults().color
+            valid   = lambda self: self.quillColor() is not DEFAULT,
+            getter  = lambda self: self.quillColor(),
+            setter  = lambda self, value: self.setQuillColor(value),
+            default = lambda self: self.defaultQuillColor()
         ),
         "Text Font" : PropertySpec(
             kind    = "FontFamily",  # a "subtype" of str - see str2val
-            valid   = lambda self: self.a.quill is not None and self.a.quill.getFamily() is not DEFAULT,
-            getter  = lambda self: self.a.quill.getFamily(),
-            setter  = lambda self, value: self.a.quill.setFamily(value),
-            default = lambda self: self.a.quill.getDefaults().family
+            valid   = lambda self: self.quillFamily() is not DEFAULT,
+            getter  = lambda self: self.quillFamily(),
+            setter  = lambda self, value: self.setQuillFamily(value),
+            default = lambda self: self.defaultQuillFamily()
         ),
         "Text Size" : PropertySpec(
             kind    = "FontSize",  # a "subtype" of float - see str2val
-            valid   = lambda self: self.a.quill is not None and self.a.quill.getSize() is not DEFAULT,
-            getter  = lambda self: self.a.quill.getSize(),
-            setter  = lambda self, value: self.a.quill.setSize(value),
-            default = lambda self: self.a.quill.getDefaults().size
+            valid   = lambda self: self.quillSize() is not DEFAULT,
+            getter  = lambda self: self.quillSize(),
+            setter  = lambda self, value: self.setQuillSize(value),
+            default = lambda self: self.defaultQuillSize()
         ),
         "Text Bold" : PropertySpec(
             kind    = "bool",
-            valid   = lambda self: self.a.quill is not None and self.a.quill.getBold() is not DEFAULT,
-            getter  = lambda self: self.a.quill.getBold(),
-            setter  = lambda self, value: self.a.quill.setBold(value),
-            default = lambda self: self.a.quill.getDefaults().bold
+            valid   = lambda self: self.quillBold() is not DEFAULT,
+            getter  = lambda self: self.quillBold(),
+            setter  = lambda self, value: self.setQuillBold(value),
+            default = lambda self: self.defaultQuillBold()
         ),
         "Text Italic" : PropertySpec(
             kind    = "bool",
-            valid   = lambda self: self.a.quill is not None and self.a.quill.getItalic() is not DEFAULT,
-            getter  = lambda self: self.a.quill.getItalic(),
-            setter  = lambda self, value: self.a.quill.setItalic(value),
-            default = lambda self: self.a.quill.getDefaults().italic
+            valid   = lambda self: self.quillItalic() is not DEFAULT,
+            getter  = lambda self: self.quillItalic(),
+            setter  = lambda self, value: self.setQuillItalic(value),
+            default = lambda self: self.defaultQuillItalic()
         ),
         "Text Underline" : PropertySpec(
             kind    = "bool",
-            valid   = lambda self: self.a.quill is not None and self.a.quill.getUnderline() is not DEFAULT,
-            getter  = lambda self: self.a.quill.getUnderline(),
-            setter  = lambda self, value: self.a.quill.setUnderline(value),
-            default = lambda self: self.a.quill.getDefaults().underline
+            valid   = lambda self: self.quillUnderline() is not DEFAULT,
+            getter  = lambda self: self.quillUnderline(),
+            setter  = lambda self, value: self.setQuillUnderline(value),
+            default = lambda self: self.defaultQuillUnderline()
         )
     }
 
-    a : Appearance
+    # instance attributes
+    _quill_color     : QColor | Default
+    _quill_family    : str    | Default
+    _quill_size      : float  | Default
+    _quill_bold      : bool   | Default
+    _quill_italic    : bool   | Default
+    _quill_underline : bool   | Default
 
-    def initQuill(self : Self):
-        if not hasattr(self, "a"):
-            self.a = Appearance()
-        self.a.quill = Quill(self)
+    def initQuill(self : Self | ItemProtocol) -> None:
+        if not hasattr(self, "setFont"):
+            logger().error("This item does not support the setFont method")
+        self._quill_color     = DEFAULT
+        self._quill_family    = DEFAULT
+        self._quill_size      = DEFAULT
+        self._quill_bold      = DEFAULT
+        self._quill_italic    = DEFAULT
+        self._quill_underline = DEFAULT
+        self.quillSettingsChange()
+        settings().changed.connect(self.quillSettingsChange)
+        self.addSelectionHandler(self.quillSelectionChange)
+
+    def quillSettingsChange(self : Self | ItemProtocol) -> None:
+        """Refresh following possible changes to default pen settings."""
+        self.setQuillColor(self.quillColor())
+        self.setQuillFamily(self.quillFamily())
+        self.setQuillSize(self.quillSize())
+        self.setQuillBold(self.quillBold())
+        self.setQuillItalic(self.quillItalic())
+        self.setQuillUnderline(self.quillUnderline())
+
+    def quillSelectionChange(self : Self | ItemProtocol, selected : bool) -> None:
+        scene : "DrawingScene" = self.scene()
+        self.setQuillColor(scene.selectedQuillColor() if selected else self.quillColor())
+
+    def defaultQuillColor(self : Self | ItemProtocol) -> QColor | Default:
+        return settings().get(f"theme/items/{self.settingsName()}/text/color")
+
+    def quillColor(self : Self | ItemProtocol) -> QColor | Default:
+        return self._quill_color
+
+    def setQuillColor(
+        self  : Self | ItemProtocol,
+        color : QColor | Default
+    ) -> None:
+        if color is DEFAULT: color = self.defaultQuillColor()
+        brush = self.brush()
+        brush.setColor(color)
+        self.setBrush(brush)
+
+    def defaultQuillFamily(self : Self | ItemProtocol) -> str | Default:
+        return settings().get(f"theme/items/{self.settingsName()}/text/font")
+
+    def quillFamily(self : Self | ItemProtocol) -> str | Default:
+        return self._quill_family
+
+    def setQuillFamily(
+        self   : Self | ItemProtocol,
+        family : str | Default
+    ) -> None:
+        if family is DEFAULT: family = self.defaultQuillFamily()
+        font = self.font()
+        font.setFamily(family)
+        self.setFont(font)
+
+    def defaultQuillSize(self : Self | ItemProtocol) -> float | Default:
+        return settings().get(f"theme/items/{self.settingsName()}/text/size")
+
+    def quillSize(self : Self | ItemProtocol) -> float | Default:
+        return self._quill_size
+
+    def setQuillSize(
+        self : Self | ItemProtocol,
+        size : float | Default
+    ) -> None:
+        if size is DEFAULT: size = self.defaultQuillSize()
+        font = self.font()
+        font.setPointSizeF(size)
+        self.setFont(font)
+
+    def defaultQuillBold(self : Self | ItemProtocol) -> bool | Default:
+        return settings().get(f"theme/items/{self.settingsName()}/text/bold")
+
+    def quillBold(self : Self | ItemProtocol) -> bool | Default:
+        return self._quill_bold
+
+    def setQuillBold(
+        self : Self | ItemProtocol,
+        bold : bool | Default
+    ) -> None:
+        if bold is DEFAULT: bold = self.defaultQuillBold()
+        font = self.font()
+        font.setBold(bold)
+        self.setFont(font)
+
+    def defaultQuillItalic(self : Self | ItemProtocol) -> bool | Default:
+        return settings().get(f"theme/items/{self.settingsName()}/text/italic")
+
+    def quillItalic(self : Self | ItemProtocol) -> bool | Default:
+        return self._quill_italic
+
+    def setQuillItalic(
+        self   : Self | ItemProtocol,
+        italic : bool | Default
+    ) -> None:
+        if italic is DEFAULT: italic = self.defaultQuillItalic()
+        font = self.font()
+        font.setItalic(italic)
+        self.setFont(font)
+
+    def defaultQuillUnderline(self : Self | ItemProtocol) -> bool | Default:
+        return settings().get(f"theme/items/{self.settingsName()}/text/underline")
+
+    def quillUnderline(self : Self | ItemProtocol) -> bool | Default:
+        return self._quill_underline
+
+    def setQuillUnderline(
+        self      : Self | ItemProtocol,
+        underline : bool | Default
+    ) -> None:
+        if underline is DEFAULT: underline = self.defaultQuillUnderline()
+        font = self.font()
+        font.setUnderline(underline)
+        self.setFont(font)

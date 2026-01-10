@@ -17,9 +17,10 @@ class DialogItem(QStandardItem):
         after    : Any = "",
         kind     : str = "str",
         default  : Any | None = None,
-        editable : bool = True
+        editable : bool = True,
+        enabled  : bool = True
     ) -> None:
-        super().__init__(val2str(after))
+        super().__init__()
         self.setBefore(before)
         self.setValue(after)
         self.setKind(kind)

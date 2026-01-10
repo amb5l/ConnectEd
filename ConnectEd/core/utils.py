@@ -25,8 +25,6 @@ def check(b : bool, s : str) -> bool:
     return b
 
 
-import inspect
-
 def trace(
     depth  : int | None = None,
     full   : bool = False,
@@ -194,9 +192,6 @@ def val2str(v : Any) -> str:
         case "Edge"            : s = v.value
         case "EdgeLoc"         : s = v.toStr()
         case "SignalDirection" : s = v.value
-        case "LinePref"        : s = v.toStr()
-        case "FillPref"        : s = v.toStr()
-        case "TextPref"        : s = v.toStr()
         case _ :
             raise ValueError(f"Unsupported type: {t}")
     return s
@@ -209,8 +204,7 @@ def str2val(s : str, t : str) -> Any:
     table view delegates.
     """
     from ..widgets.graphics.items import \
-        DEFAULT, AlignH, AlignV, Edge, EdgeLoc, SignalDirection, \
-        LinePref, FillPref, QuillPref
+        DEFAULT, AlignH, AlignV, Edge, EdgeLoc, SignalDirection
     from ..widgets.dialogs.properties import DisplayChoice
     def strValuesToFloats(s : str) -> list[float]:
         return [float(p) for p in s.strip("()").split(",")]
@@ -244,9 +238,6 @@ def str2val(s : str, t : str) -> Any:
         case "Edge"            : return Edge(s)
         case "EdgeLoc"         : return EdgeLoc.fromStr(s)
         case "SignalDirection" : return SignalDirection(s)
-        case "LinePref"        : return LinePref.fromStr(s)
-        case "FillPref"        : return FillPref.fromStr(s)
-        case "TextPref"        : return QuillPref.fromStr(s)
         case _:
             raise ValueError(f"Unsupported type: {t}")
 

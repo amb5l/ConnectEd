@@ -6,7 +6,7 @@ from ......app import logger
 
 from .....dialogs.properties    import PropertiesDialog
 from .....dialogs.appearance    import AppearanceDialog
-from .....dialogs.text          import TextLineDialog, TextBlockDialog
+from .....dialogs.text          import TextLineItemDialog, TextBlockItemDialog
 from .....dialogs.property_text import PropertyTextDialog
 from .....dialogs.port_pin      import PortPinDialog
 
@@ -220,7 +220,7 @@ class DrawingViewStateEditTextLine(DrawingViewStateBase):
     ) -> None:
         item = i[0] if i else self.view._selectedItem(TextLine)
         if item and isinstance(item, TextLine):
-            dialog = TextLineDialog(item, self.view)
+            dialog = TextLineItemDialog(item, self.view)
             if dialog.exec():
                 text, appearance = dialog.getChoice()
                 self.scene.editTextLine(item, text, appearance, undoable=True)
@@ -240,12 +240,22 @@ class DrawingViewStateEditTextBlock(DrawingViewStateBase):
     ) -> None:
         item = i[0] if i else self.view._selectedItem(TextBlock)
         if item and isinstance(item, TextBlock):
-            dialog = TextBlockDialog(item, self.view)
+            dialog = TextBlockItemDialog(item, self.view)
             if dialog.exec():
                 text, appearance = dialog.getChoice()
                 item.setPlainText(text)
                 item.a.quill.setPref(appearance)
-                self.scene.editTextBlock(item, text, appearance, undoable=True)
+                self.scene.editTextBlock(
+                    item      = item,
+                    text      = dialog.getText(),
+                    color     = dialog.getColor(),
+                    font      = dialog.getFamily(),
+                    size      = dialog.getSize(),
+                    bold      = dialog.getBold(),
+                    italic    = dialog.getItalic(),
+                    underline = dialog.getUnderline(),
+                    undoable  = True
+                )
         else:
             logger().warning("No text block selected")
         self.view.state.go(self.view.stateIdle)

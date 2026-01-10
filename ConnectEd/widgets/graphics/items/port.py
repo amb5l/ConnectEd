@@ -41,6 +41,7 @@ class Port(
     ) -> None:
         QGraphicsPathItem.__init__(self, parent)
         self.initPortPin(bare)
+        self.onSettingsChange()
 
     def onSettingsChange(self : Self) -> None:
         size = settings().get("theme/items/Port/size")

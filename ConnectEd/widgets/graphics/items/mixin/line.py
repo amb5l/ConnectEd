@@ -1,132 +1,125 @@
-from typing import Self
-from types  import SimpleNamespace
+from typing import Self, Protocol
+
+from collections.abc import Callable
 
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui  import QPen, QColor
 
-from .....app import settings
+from .....app import logger, settings
 
 from ...property import PropertySpec
 
-from .. import Default, DEFAULT, NO_CHANGE, Appearance, LinePref, LinePrefChange
+from .. import Default, DEFAULT, NoChange, NO_CHANGE
 
-from .           import ItemMixin
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from ...scenes.drawing import DrawingScene
 
 
-class Line:
-    # class attributes
-    _CAP_STYLE  = Qt.PenCapStyle.RoundCap
-    _JOIN_STYLE = Qt.PenJoinStyle.RoundJoin
-
-    # instance attributes
-    _parent   : "ItemMixin"
-    _color    : Default | QColor
-    _width    : Default | float
-    _style    : Default | Qt.PenStyle
-    _normal   : QPen
-    _selected : QPen
-    _pen      : QPen
-
-    def __init__(
-        self   : Self,
-        parent : "ItemMixin",
-        pref   : LinePref = LinePref(DEFAULT, DEFAULT, DEFAULT)
-    ) -> None:
-        self._parent = parent
-        self._color  = pref.color
-        self._width  = pref.width
-        self._style  = pref.style
-        self._normal = QPen()
-        self._normal.setCapStyle(self._CAP_STYLE)
-        self._normal.setJoinStyle(self._JOIN_STYLE)
-        self._selected = QPen()
-        self._selected.setCapStyle(self._CAP_STYLE)
-        self._selected.setJoinStyle(self._JOIN_STYLE)
-        self.onSettingsChange()
-
-    def getColor(self : Self) -> Default | QColor:
-        return self._color
-
-    def setColor(self : Self, color : Default | QColor) -> None:
-        self._color = color
-        self.onSettingsChange()
-
-    def getWidth(self : Self) -> Default | float:
-        return self._width
-
-    def setWidth(self : Self, width : Default | float) -> None:
-        self._width = width
-        self.onSettingsChange()
-
-    def getStyle(self : Self) -> Default | Qt.PenStyle:
-        return self._style
-
-    def setStyle(self : Self, style : Default | Qt.PenStyle) -> None:
-        self._style = style
-        self.onSettingsChange()
-
-    def getPref(self : Self) -> LinePref:
-        return LinePref(self._color, self._width, self._style)
-
-    def setPref(self : Self, c : LinePref | LinePrefChange) -> None:
-        if c.color is not NO_CHANGE: self._color = c.color
-        if c.width is not NO_CHANGE: self._width = c.width
-        if c.style is not NO_CHANGE: self._style = c.style
-        self.onSettingsChange()
-
-    def getDefaults(self : Self) -> SimpleNamespace:
-        return settings().get(f"theme/items/{self._parent.settingsName()}/line")
-
-    def onSettingsChange(self : Self) -> None:
-        default = self.getDefaults()
-        color_normal = default.color if self._color is DEFAULT else self._color
-        color_normal.setAlpha(settings().get("display/alpha"))
-        color_selected = settings().get("theme/selected/line")
-        color_selected.setAlpha(settings().get("display/alpha"))
-        width = default.width if self._width is DEFAULT else self._width
-        style = default.style if self._style is DEFAULT else self._style
-        self._normal.setColor(color_normal)
-        self._normal.setWidthF(width)
-        self._normal.setStyle(style)
-        self._selected.setColor(color_selected)
-        self._selected.setWidthF(width)
-        self._selected.setStyle(style)
-        self.onSelectionChange(self._parent.isSelected())
-
-    def onSelectionChange(self : Self, selected : bool) -> None:
-        self._pen = self._selected if selected else self._normal
-        if hasattr(self._parent, "setPen"):
-            self._parent.setPen(self._pen)
+class ItemProtocol(Protocol):
+    def settingsName(self) -> str: ...
+    def addSelectionHandler(self, handler: Callable[[bool], None]) -> None: ...
+    def pen(self) -> QPen: ...
+    def setPen(self, pen: QPen) -> None: ...
+    def scene(self) -> "DrawingScene": ...
 
 
 class ItemLineMixin:
+    """
+    Mixin for items that use a pen.
+    """
+
+    # class attributes
     _PROPERTY_SPECS_LINE = {
         "Line Color" : PropertySpec(
             kind    = "QColor",
-            valid   = lambda self: self.a.line is not None and self.a.line.getColor() is not DEFAULT,
-            getter  = lambda self: self.a.line.getColor(),
-            setter  = lambda self, value: self.a.line.setColor(value),
-            default = lambda self: self.a.line.getDefaults().color
+            valid   = lambda self: self.lineColor() is not DEFAULT,
+            getter  = lambda self: self.lineColor(),
+            setter  = lambda self, value: self.setLineColor(value),
+            default = lambda self: self.defaultLineColor()
         ),
         "Line Width" : PropertySpec(
             kind    = "LineWidth",  # a "subtype" of float - see str2val
-            valid   = lambda self: self.a.line is not None and self.a.line.getWidth() is not DEFAULT,
-            getter  = lambda self: self.a.line.getWidth(),
-            setter  = lambda self, value: self.a.line.setWidth(value),
-            default = lambda self: self.a.line.getDefaults().width
+            valid   = lambda self: self.lineWidth() is not DEFAULT,
+            getter  = lambda self: self.lineWidth(),
+            setter  = lambda self, value: self.setLineWidth(value),
+            default = lambda self: self.defaultLineWidth()
         ),
         "Line Style" : PropertySpec(
             kind    = "PenStyle",
-            valid   = lambda self: self.a.line is not None and self.a.line.getStyle() is not DEFAULT,
-            getter  = lambda self: self.a.line.getStyle(),
-            setter  = lambda self, value: self.a.line.setStyle(value),
-            default = lambda self: self.a.line.getDefaults().style
+            valid   = lambda self: self.lineStyle() is not DEFAULT,
+            getter  = lambda self: self.lineStyle(),
+            setter  = lambda self, value: self.setLineStyle(value),
+            default = lambda self: self.defaultLineStyle()
         )
     }
 
-    a : Appearance
+    # instance attributes
+    _pen_color : QColor      | Default
+    _pen_width : float       | Default
+    _pen_style : Qt.PenStyle | Default
 
-    def initLine(self : Self):
-        if not hasattr(self, "a"):
-            self.a = Appearance()
-        self.a.line = Line(self)
+    def initLine(self : Self | ItemProtocol) -> None:
+        if not hasattr(self, "setPen"):
+            logger().error("This item does not support the setPen method")
+        self._pen_color = DEFAULT
+        self._pen_width = DEFAULT
+        self._pen_style = DEFAULT
+        self.lineSettingsChange()
+        settings().changed.connect(self.lineSettingsChange)
+        self.addSelectionHandler(self.lineSelectionChange)
+
+    def lineSettingsChange(self : Self | ItemProtocol) -> None:
+        """Refresh following possible changes to default pen settings."""
+        self.setLineColor(self.lineColor())
+        self.setLineWidth(self.lineWidth())
+        self.setLineStyle(self.lineStyle())
+
+    def lineSelectionChange(self : Self | ItemProtocol, selected : bool) -> None:
+        scene : "DrawingScene" = self.scene()
+        self.setLineColor(scene.selectedLineColor() if selected else self.lineColor())
+
+    def defaultLineColor(self : Self | ItemProtocol) -> QColor | Default:
+        return settings().get(f"theme/items/{self.settingsName()}/line/color")
+
+    def lineColor(self : Self | ItemProtocol) -> QColor | Default:
+        return self._pen_color
+
+    def setLineColor(
+        self : Self | ItemProtocol,
+        color : QColor | Default
+    ) -> None:
+        if color is DEFAULT: color = self.defaultLineColor()
+        pen = self.pen()
+        pen.setColor(color)
+        self.setPen(pen)
+
+    def defaultLineWidth(self : Self | ItemProtocol) -> float | Default:
+        return settings().get(f"theme/items/{self.settingsName()}/line/width")
+
+    def lineWidth(self : Self | ItemProtocol) -> float | Default:
+        return self._pen_width
+
+    def setLineWidth(
+        self  : Self | ItemProtocol,
+        width : float | Default
+    ) -> None:
+        if width is DEFAULT: width = self.defaultLineWidth()
+        pen = self.pen()
+        pen.setWidthF(width)
+        self.setPen(pen)
+
+    def defaultLineStyle(self : Self | ItemProtocol) -> Qt.PenStyle | Default:
+        return settings().get(f"theme/items/{self.settingsName()}/line/style")
+
+    def lineStyle(self : Self | ItemProtocol) -> Qt.PenStyle | Default:
+        return self._pen_style
+
+    def setLineStyle(
+        self  : Self | ItemProtocol,
+        style : Qt.PenStyle | Default
+    ) -> None:
+        if style is DEFAULT: style = self.defaultLineStyle()
+        pen = self.pen()
+        pen.setStyle(style)
+        self.setPen(pen)

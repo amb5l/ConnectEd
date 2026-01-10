@@ -11,6 +11,8 @@ from ....app import settings
 from ..property   import PropertySpec
 from ..properties import PropertiesMixin
 
+from . import NoChange, NO_CHANGE
+
 from .base_text import BaseTextLine, BaseTextBlock
 from .handle    import Handle
 
@@ -210,7 +212,9 @@ class PropertyTextMixin:
             return ""
         return str(source.properties[self._property].get())
 
-    def setValue(self : Self, value : str) -> None:
+    def setValue(self : Self, value : str | NoChange = NO_CHANGE) -> None:
+        if value is NO_CHANGE:
+            return
         source = self.scene() if self.parentItem() is None else self.item()
         source.properties[self._property].set(value)
 

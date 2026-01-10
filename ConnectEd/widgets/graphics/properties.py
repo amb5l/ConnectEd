@@ -1,6 +1,12 @@
-from typing import Self
+from typing      import Self, Any, TypeAlias
+from dataclasses import dataclass
+
+from PyQt6.QtCore import Qt
+from PyQt6.QtGui  import QColor
 
 from ...app import logger
+
+from .items import Default, NoChange, NO_CHANGE, AlignH, AlignV
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -26,7 +32,8 @@ class PropertiesMixin:
                 spec.valid,
                 spec.getter,
                 spec.setter,
-                spec.default
+                spec.default,
+                inherent = True
             )
             if not bare and spec.text is not None:
                 property_text_cls = PropertyTextBlock if spec.text.block \
@@ -49,9 +56,9 @@ class PropertiesMixin:
         if name not in self.properties:
             if name in self._PROPERTY_SPECS:
                 # Use spec's getter/setter so value is applied to item
-                spec = self._PROPERTY_SPECS[name]
+                s = self._PROPERTY_SPECS[name]
                 self.properties[name] = Property(
-                    self, name, spec.kind, spec.valid, spec.getter, spec.setter, spec.default
+                    self, name, s.kind, s.valid, s.getter, s.setter, s.default
                 )
             else:
                 # Dynamic property (no spec) - store as static value
@@ -59,6 +66,9 @@ class PropertiesMixin:
         self.properties[name].set(value)
 
     def renProperty(self : Self, old_name : str, new_name : str) -> bool:
+        """
+        Rename a property.
+        """
         if old_name not in self.properties:
             logger().error(f"Property '{old_name}' not found")
             return False
@@ -67,9 +77,21 @@ class PropertiesMixin:
         if new_name in self.properties:
             logger().error(f"Property '{new_name}' already exists")
             return False
-        if not self.properties[old_name].isStatic():
+        if not self.properties[old_name].inherent():
             logger().error(f"Inherent property '{old_name}' cannot be renamed")
             return False
         self.properties[new_name] = self.properties[old_name]
         del self.properties[old_name]
+        return True
+
+    def delProperty(self : Self, name : str) -> bool:
+        """
+        Delete a property.
+        """
+        if name not in self.properties:
+            logger().error(f"Property '{name}' not found")
+            return False
+        property = self.properties[name]
+        property.setText(None)
+        del self.properties[name]
         return True
