@@ -82,7 +82,7 @@ class ItemFillMixin:
         brush.setColor(color)
         self.setBrush(brush)
 
-    def defaultLineStyle(self : Self | ItemProtocol) -> Qt.PenStyle | Default:
+    def defaultFillStyle(self : Self | ItemProtocol) -> Qt.BrushStyle | Default:
         return settings().get(f"theme/items/{self.settingsName()}/fill/style")
 
     def fillStyle(self : Self | ItemProtocol) -> Qt.BrushStyle | Default:

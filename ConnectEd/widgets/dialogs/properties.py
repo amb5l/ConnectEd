@@ -10,14 +10,13 @@ from PyQt6.QtGui     import QBrush
 
 from ...app import settings
 
-from ..graphics.properties import PropertyState,         \
-                                  PropertyEdit,          \
-                                  PropertyTextLineState, \
-                                  PropertyTextBlockState
+from ..graphics.property import PropertyState,         \
+                                PropertyEdit,          \
+                                PropertyTextLineState, \
+                                PropertyTextBlockState
 
-from ..graphics.items import DEFAULT, AlignH, AlignV
+from ..graphics.items import DEFAULT
 
-from ..graphics.items.base_text import BaseTextBlock
 from ..graphics.items.property_text import PropertyTextLine, PropertyTextBlock
 
 from ..graphics.items.mixin.handle import ItemRectHandlesMixin
@@ -260,8 +259,8 @@ class PropertiesDialog(QDialog):
     def getColumn(self : Self, header : str) -> int:
         return self._HEADER.index(header)
 
-    def getChanges(self : Self) -> dict[str, PropertyChange]:
-        before_after : dict[str, PropertyChange] = {}
+    def getChanges(self : Self) -> dict[str, PropertyEdit]:
+        before_after : dict[str, PropertyEdit] = {}
         name_rows : dict[str, int] = {}
         # check for and ignore duplicates
         for row_idx in range(self._table_model.rowCount()):
@@ -322,8 +321,8 @@ class PropertiesDialog(QDialog):
                 after.italic    = italic_item.getValue()
                 after.underline = underline_item.getValue()
             key = after_name if before_name is None else before_name
-            before_after[key] = PropertyChange(before, after)
-        changes : dict[str, PropertyChange] = {}
+            before_after[key] = PropertyEdit(before, after)
+        changes : dict[str, PropertyEdit] = {}
         for change in before_after.values():
             if change.before != change.after:
                 name = change.after.name if change.before is None \

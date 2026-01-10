@@ -59,7 +59,7 @@ class CmdEditAppearance(CmdSceneItems):
         text_underline : bool          | Default | NoChange
 
     _items  : list[ItemType]
-    _before : dict[ItemMixin, ItemBefore]
+    _before : dict["ItemMixin", ItemBefore]
     _after  : ItemAfter
 
     def __init__(

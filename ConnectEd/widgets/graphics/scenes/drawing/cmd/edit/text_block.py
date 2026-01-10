@@ -1,14 +1,23 @@
+from typing import Self
+
+from PyQt6.QtCore import Qt
+from PyQt6.QtGui  import QColor
+
+from .....items import Default, NoChange, NO_CHANGE
+
+from .....items.base_text import BaseTextBlock
+
+from .text_line import CmdEditTextLine
+
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from ....drawing import DrawingScene
 
 
 class CmdEditTextBlock(CmdEditTextLine):
-    class ItemState(CmdEditTextLine.ItemState):
-        alignment : Qt.AlignmentFlag | NoChange = NO_CHANGE,
-        width     : float | None     | NoChange = NO_CHANGE,
-        height    : float | None     | NoChange = NO_CHANGE,
-
     _item   : BaseTextBlock
-    _before : ItemState
-    _after  : ItemState
+    _before : CmdEditTextLine.ItemBefore
+    _after  : CmdEditTextLine.ItemAfter
 
     def __init__(
         self      : Self,

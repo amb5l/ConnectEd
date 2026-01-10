@@ -77,7 +77,7 @@ class ItemLineMixin:
 
     def lineSelectionChange(self : Self | ItemProtocol, selected : bool) -> None:
         scene : "DrawingScene" = self.scene()
-        self.setLineColor(scene.selectedPenColor() if selected else self.lineColor())
+        self.setLineColor(scene.selectedLineColor() if selected else self.lineColor())
 
     def defaultLineColor(self : Self | ItemProtocol) -> QColor | Default:
         return settings().get(f"theme/items/{self.settingsName()}/line/color")

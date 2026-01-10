@@ -28,7 +28,7 @@ class ItemMixin(ItemSettingsMixin):
         from .loc     import ItemLocMixin
         from .pos_rot import ItemPosRotMixin
         from .change  import ItemChangeMixin
-        from .pen     import ItemLineMixin
+        from .line    import ItemLineMixin
         from .fill    import ItemFillMixin
         from .quill   import ItemQuillMixin
         from .outline import ItemOutlineMixin

@@ -141,8 +141,8 @@ class CmdEditProperties(CmdBase):
 
     def _modifyPropertyText(
         self : Self,
-        pt   : PropertyTextMixin,
-        vars : PropertyState
+        pt   : "PropertyTextMixin",
+        vars : "PropertyState"
     ) -> None:
         pt.setName(vars.name)
         pt.setVisible(vars.display in (DisplayChoice.LINE, DisplayChoice.BLOCK))

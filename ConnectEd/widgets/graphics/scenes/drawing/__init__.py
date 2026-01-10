@@ -71,9 +71,9 @@ class DrawingScene(
         return self._uuid == other._uuid
 
     def onSettingsChange(self : Self) -> None:
-        self._sel_line   = settings().get("theme/selected/line")
+        self._sel_line = settings().get("theme/selected/line")
         self._sel_fill = settings().get("theme/selected/fill")
-        self._sel_text  = settings().get("theme/selected/text")
+        self._sel_text = settings().get("theme/selected/text")
 
     def onSelectionChanged(self : Self) -> None:
         self.updateGrips()

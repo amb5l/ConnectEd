@@ -36,14 +36,14 @@ class CmdEditPropertyText(CmdSceneItem):
         italic     : bool   | Default | NoChange
         underline  : bool   | Default | NoChange
 
-    _item   : QGraphicsItem | PropertyTextMixin | ItemQuillMixin
+    _item   : "QGraphicsItem | PropertyTextMixin | ItemQuillMixin"
     _before : ItemBefore
     _after  : ItemAfter
 
     def __init__(
         self       : Self,
         scene      : "DrawingScene",
-        item       : PropertyTextMixin | ItemQuillMixin,
+        item       : "PropertyTextMixin | ItemQuillMixin",
         value      : str              | NoChange = NO_CHANGE,
         color      : QColor | Default | NoChange = NO_CHANGE,
         font       : str    | Default | NoChange = NO_CHANGE,

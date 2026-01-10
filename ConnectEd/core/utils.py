@@ -25,8 +25,6 @@ def check(b : bool, s : str) -> bool:
     return b
 
 
-import inspect
-
 def trace(
     depth  : int | None = None,
     full   : bool = False,
