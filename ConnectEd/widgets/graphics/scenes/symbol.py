@@ -15,7 +15,7 @@ from .drawing import DrawingScene
 class SymbolScene(DrawingScene):
 
     # instance attributes
-    _brect   : QRectF | None
+    _brect   : QRectF | None  # bounding rect of all items
 
     def __init__(self : Self) -> None:
         super().__init__()
@@ -35,19 +35,10 @@ class SymbolScene(DrawingScene):
             Line, Rectangle, Polyline, TextLine, TextBlock
         )
         # get bounding rect of all items
-        rect = QRectF()
-        for item in self.items():
-            if isinstance(item, classes):
-                rect = rect.united(item.sceneBoundingRect())
+        rect = self.itemsBoundingRect()
         # expand size if too small
-        wa = PITCH - rect.size().width()
-        ha = PITCH - rect.size().height()
-        if wa > 0:
-            rect.setX(rect.x() - (wa / 2))
-            rect.setWidth(PITCH)
-        if ha > 0:
-            rect.setY(rect.y() - (ha / 2))
-            rect.setHeight(PITCH)
+        rect.setWidth(min(rect.size().width(), PITCH))
+        rect.setHeight(min(rect.size().height(), PITCH))
         # store result
         self._brect = rect
 

@@ -95,21 +95,11 @@ class Line(
         stroker_path = stroker.createStroke(line_path)
         self._hshape = stroker_path
         self.updateHandles()
-        self.onScenePositionChange()
         if hasattr(self, "properties"):
             self.properties["X1"].changed.emit(self.x1())
             self.properties["Y1"].changed.emit(self.y1())
             self.properties["X2"].changed.emit(self.x2())
             self.properties["Y2"].changed.emit(self.y2())
-
-    def onScenePositionChange(
-        self : Self | QGraphicsLineItem,
-        _pos : QPointF | None = None
-    ) -> None:
-        self._sbrect = QRectF(
-            self.mapToScene(self._line.p1()),
-            self.mapToScene(self._line.p2())
-        ).normalized()
 
     def initHandles(self : Self) -> None:
         self._handles = {

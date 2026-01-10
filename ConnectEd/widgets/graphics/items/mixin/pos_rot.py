@@ -47,20 +47,12 @@ class ItemPosRotMixin:
 
     # instance attributes
     _origin : str | None     # name of origin handle
-    _sbrect : QRectF | None  # scene bounding rect (for symbols)
 
     def initPosRot(self : Self | QGraphicsItem) -> None:
         if hasattr(self, "_ORIGIN_NAME"):
             self.setOrigin(self._ORIGIN_NAME)
         else:
             self._origin = None
-        self._sbrect = None
-
-    def onSceneBoundRectChange(self : Self | QGraphicsItem) -> None:
-        from ...scenes.symbol import SymbolScene
-        if isinstance(self.scene(), SymbolScene):
-            scene_polygon = self.mapToScene(self.boundingRect())
-            self._sbrect = scene_polygon.boundingRect().normalized()
 
     def onPositionChange(
         self : Self | QGraphicsItem | PropertiesMixin,
@@ -82,9 +74,6 @@ class ItemPosRotMixin:
         # signal property value change
         if hasattr(self, "properties") and "Rot" in self.properties:
             self.properties["Rot"].changed.emit(self.rotation())
-
-    def sceneBoundingRect(self : Self) -> QRectF:
-        return self._sbrect
 
     def getOrigin(self : Self | QGraphicsItem) -> str:
         return self._origin
