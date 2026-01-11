@@ -26,6 +26,8 @@ class ItemOriginMixin:
     _origin : str  # name of origin handle
 
     def initOrigin(self : Self | QGraphicsItem) -> None:
+        if not isinstance(self, ItemHandlesMixin):
+            raise TypeError("ItemOriginMixin requires ItemHandlesMixin")
         self.setOrigin(self._ORIGIN_NAME)
 
     def getOrigin(self : Self | QGraphicsItem) -> str:
