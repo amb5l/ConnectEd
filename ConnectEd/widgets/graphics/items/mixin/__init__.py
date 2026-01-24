@@ -34,6 +34,8 @@ class ItemMixin(ItemSettingsMixin):
         from .fill    import ItemFillMixin
         from .quill   import ItemQuillMixin
         from .outline import ItemOutlineMixin
+        from .bound   import ItemBoundMixin
+        from .shape   import ItemShapeMixin
         self.setZValue(self.Z)
         f = QGraphicsItem.GraphicsItemFlag
         self.setFlag( f.ItemIsSelectable              , True )
@@ -61,6 +63,10 @@ class ItemMixin(ItemSettingsMixin):
             self.initQuill()
         if isinstance(self, ItemOutlineMixin):
             self.initOutline()
+        if isinstance(self, ItemBoundMixin):
+            self.initBound()
+        if isinstance(self, ItemShapeMixin):
+            self.initShape()
         if isinstance(self, PropertiesMixin):
             self.initProperties(bare)
 
