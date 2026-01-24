@@ -56,6 +56,7 @@ class TextItemDialog(QDialog):
     # instance variables
     _dialog_layout        : QVBoxLayout
     _value_layout         : TextValueLayout
+    _align_group_box      : QGroupBox
     _align_layout         : TextAlignLayout
     _appearance_group_box : QGroupBox
     _appearance_layout    : TextAppearancePreviewLayout
@@ -74,8 +75,10 @@ class TextItemDialog(QDialog):
         self._value_layout = TextValueLayout(item.text(), item.block())
         self._dialog_layout.addLayout(self._value_layout)
         # align section
+        self._align_group_box = QGroupBox("Alignment")
         self._align_layout = TextAlignLayout(item.alignH(), item.alignV())
-        self._dialog_layout.addLayout(self._align_layout)
+        self._align_group_box.setLayout(self._align_layout)
+        self._dialog_layout.addWidget(self._align_group_box)
         # appearance section
         self._appearance_group_box = QGroupBox("Appearance")
         self._appearance_layout = TextAppearancePreviewLayout(

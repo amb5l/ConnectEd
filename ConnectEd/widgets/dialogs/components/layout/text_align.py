@@ -1,7 +1,6 @@
 from typing import Self
 
-from PyQt6.QtWidgets import QGridLayout, QVBoxLayout, QHBoxLayout, QGroupBox, \
-                            QButtonGroup, QLabel
+from PyQt6.QtWidgets import QGridLayout, QHBoxLayout, QButtonGroup, QLabel
 
 from ....graphics.items import AlignH, AlignV
 
@@ -15,9 +14,7 @@ from .....resources.icons import TextAlignLeftIcon,   \
 from ..tool_button import ToolButton
 
 
-class TextAlignLayout(QVBoxLayout):
-    _group_box       : QGroupBox
-    _layout          : QGridLayout
+class TextAlignLayout(QGridLayout):
     _h_label         : QLabel
     _h_layout        : QHBoxLayout
     _h_button_group  : QButtonGroup
@@ -33,11 +30,9 @@ class TextAlignLayout(QVBoxLayout):
 
     def __init__(self : Self, align_h : AlignH, align_v : AlignV) -> None:
         super().__init__()
-        self._group_box = QGroupBox("Alignment")
-        self._layout = QGridLayout()
         # horizontal
         self._h_label = QLabel("Horizontal:")
-        self._layout.addWidget(self._h_label, 0, 0)
+        self.addWidget(self._h_label, 0, 0)
         self._h_layout = QHBoxLayout()
         self._h_button_group = QButtonGroup(self)
         self._h_left_button = ToolButton(TextAlignLeftIcon().get())
@@ -52,10 +47,10 @@ class TextAlignLayout(QVBoxLayout):
         self._h_right_button.setChecked(align_h == AlignH.RIGHT)
         self._h_button_group.addButton(self._h_right_button)
         self._h_layout.addWidget(self._h_right_button)
-        self._layout.addLayout(self._h_layout, 0, 1)
+        self.addLayout(self._h_layout, 0, 1)
         # vertical
         self._v_label = QLabel("Vertical:")
-        self._layout.addWidget(self._v_label, 1, 0)
+        self.addWidget(self._v_label, 1, 0)
         self._v_layout = QHBoxLayout()
         self._v_group = QButtonGroup(self)
         self._v_top_button = ToolButton(TextAlignTopIcon().get())
@@ -70,23 +65,21 @@ class TextAlignLayout(QVBoxLayout):
         self._v_bottom_button.setChecked(align_v == AlignV.BOTTOM)
         self._v_group.addButton(self._v_bottom_button)
         self._v_layout.addWidget(self._v_bottom_button)
-        self._layout.addLayout(self._v_layout, 1, 1)
-        # complete
-        self._group_box.setLayout(self._layout)
-        self.addWidget(self._group_box)
+        self.addLayout(self._v_layout, 1, 1)
+        # done
 
     def getAlignH(self : Self) -> AlignH:
-        if self._h_left_button.isChecked():
-            return AlignH.LEFT
+        if self._h_right_button.isChecked():
+            return AlignH.RIGHT
         elif self._h_center_button.isChecked():
             return AlignH.CENTER
-        else:
-            return AlignH.RIGHT
+        else: # self._h_left_button.isChecked()
+            return AlignH.LEFT
 
     def getAlignV(self : Self) -> AlignV:
-        if self._v_top_button.isChecked():
-            return AlignV.TOP
+        if self._v_bottom_button.isChecked():
+            return AlignV.BOTTOM
         elif self._v_middle_button.isChecked():
             return AlignV.MIDDLE
-        else:
-            return AlignV.BOTTOM
+        else: # self._v_top_button.isChecked()
+            return AlignV.TOP
