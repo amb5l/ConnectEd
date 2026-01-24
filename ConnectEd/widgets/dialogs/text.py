@@ -1,13 +1,14 @@
 from typing import Self
 
-from PyQt6.QtWidgets import QWidget, QDialog, QVBoxLayout
+from PyQt6.QtWidgets import QWidget, QDialog, QVBoxLayout, QGroupBox
 from PyQt6.QtGui     import QShowEvent, QColor
 
-from ..graphics.items import Default, NoChange
+from ..graphics.items import Default, NoChange, AlignH, AlignV
 
 from ..graphics.items.unitext import UniTextItem
 
 from .components.layout.text_value      import TextValueLayout
+from .components.layout.text_align      import TextAlignLayout
 from .components.layout.text_appearance import TextAppearancePreviewLayout
 from .components.layout.ok_cancel       import OkCancelLayout
 
@@ -53,10 +54,12 @@ class TextValueDialog(QDialog):
 
 class TextItemDialog(QDialog):
     # instance variables
-    _dialog_layout     : QVBoxLayout
-    _value_layout      : TextValueLayout
-    _appearance_layout : TextAppearancePreviewLayout
-    _ok_cancel_layout  : OkCancelLayout
+    _dialog_layout        : QVBoxLayout
+    _value_layout         : TextValueLayout
+    _align_layout         : TextAlignLayout
+    _appearance_group_box : QGroupBox
+    _appearance_layout    : TextAppearancePreviewLayout
+    _ok_cancel_layout     : OkCancelLayout
 
     def __init__(
         self   : Self,
@@ -70,6 +73,9 @@ class TextItemDialog(QDialog):
         # value section
         self._value_layout = TextValueLayout(item.text(), item.block())
         self._dialog_layout.addLayout(self._value_layout)
+        # align section
+        self._align_layout = TextAlignLayout(item.alignH(), item.alignV())
+        self._dialog_layout.addLayout(self._align_layout)
         # appearance section
         self._appearance_group_box = QGroupBox("Appearance")
         self._appearance_layout = TextAppearancePreviewLayout(
@@ -106,6 +112,12 @@ class TextItemDialog(QDialog):
 
     def getBlock(self : Self) -> bool:
         return self._value_layout.getBlock()
+
+    def getAlignH(self : Self) -> AlignH:
+        return self._align_layout.getAlignH()
+
+    def getAlignV(self : Self) -> AlignV:
+        return self._align_layout.getAlignV()
 
     def getColor(self : Self) -> QColor | Default | NoChange:
         return self._appearance_layout.getColor()

@@ -188,14 +188,14 @@ class UniTextItem(
             self.properties["Text"].changed.emit(text)
 
     def alignH(self : Self) -> AlignH:
-        return self._child.alignH()
+        return self._align_h
 
     def setAlignH(self : Self, align_h : AlignH) -> None:
         self._align_h = align_h
         self._child.onGeometryChange()
 
     def alignV(self : Self) -> AlignV:
-        return self._child.alignV()
+        return self._align_v
 
     def setAlignV(self : Self, align_v : AlignV) -> None:
         self._align_v = align_v
