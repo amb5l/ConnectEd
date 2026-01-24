@@ -38,8 +38,7 @@ class DrawingViewStateIdle(DrawingViewStateBase):
 
     def mouseLeftDragBegin(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
         raw_items_at = self.view._itemsAt(s)
-        grips_at = \
-            [item for item in raw_items_at if isinstance(item, GripItem)]
+        grips_at = [item for item in raw_items_at if isinstance(item, GripItem)]
         # grips
         if len(grips_at) == 1 and not (m & qkm.AltModifier):
             grip = grips_at[0]
