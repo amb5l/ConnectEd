@@ -160,8 +160,22 @@ class UniTextItem(
     def onSceneRotationChange(self : Self) -> None:
         self._child.onSceneRotationChange()
 
-    ############################################################################
-    # text item methods
+    def block(self : Self) -> bool:
+        return isinstance(self._child, UniTextBlockItem)
+
+    def setBlock(self : Self, block : bool) -> None:
+        if isinstance(self._child, UniTextLineItem)  and block     \
+        or isinstance(self._child, UniTextBlockItem) and not block:
+            new_child = UniTextBlockItem() if block else UniTextLineItem()
+            new_child.setRotation(self._child.rotation())
+            new_child.setText(self._child.text())
+            new_child.setColor(self._child.color())
+            new_child.setFont(self._child.font())
+            self._child.setParentItem(None)  # remove old child
+            self._child = new_child
+            self._child.setParentItem(self)
+            self._child.onGeometryChange()
+            self.updateHandlePositions()
 
     def text(self : Self) -> str:
         return self._child.text()
@@ -224,25 +238,6 @@ class UniTextItem(
         self._child.setFont(font)
         self._child.onGeometryChange()
         self.updateHandlePositions()
-
-    ############################################################################
-
-    def block(self : Self) -> bool:
-        return isinstance(self._child, UniTextBlockItem)
-
-    def setBlock(self : Self, block : bool) -> None:
-        if isinstance(self._child, UniTextLineItem)  and block     \
-        or isinstance(self._child, UniTextBlockItem) and not block:
-            new_child = UniTextBlockItem() if block else UniTextLineItem()
-            new_child.setRotation(self._child.rotation())
-            new_child.setText(self._child.text())
-            new_child.setColor(self._child.color())
-            new_child.setFont(self._child.font())
-            self._child.setParentItem(None)  # remove old child
-            self._child = new_child
-            self._child.setParentItem(self)
-            self._child.onGeometryChange()
-            self.updateHandlePositions()
 
     def handleRect(self : Self) -> QRectF:
         """Return the rectangle used for handles."""
