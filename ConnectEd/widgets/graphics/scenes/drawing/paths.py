@@ -71,6 +71,7 @@ class DrawingScenePathsMixin:
         ])
         diamond_path = QPainterPath()
         diamond_path.addPolygon(diamond_poly)
+        diamond_path.closeSubpath()
         stroked_diamond = stroker.createStroke(diamond_path)
         # circle building blocks
         circle_path = QPainterPath()
