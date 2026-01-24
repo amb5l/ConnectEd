@@ -9,6 +9,7 @@ from ..graphics.items.unitext import UniTextItem
 
 from .components.layout.text_value      import TextValueLayout
 from .components.layout.text_align      import TextAlignLayout
+from .components.layout.origin          import OriginLayout
 from .components.layout.text_appearance import TextAppearancePreviewLayout
 from .components.layout.ok_cancel       import OkCancelLayout
 
@@ -58,6 +59,8 @@ class TextItemDialog(QDialog):
     _value_layout         : TextValueLayout
     _align_group_box      : QGroupBox
     _align_layout         : TextAlignLayout
+    _origin_group_box     : QGroupBox
+    _origin_layout        : OriginLayout
     _appearance_group_box : QGroupBox
     _appearance_layout    : TextAppearancePreviewLayout
     _ok_cancel_layout     : OkCancelLayout
@@ -79,6 +82,11 @@ class TextItemDialog(QDialog):
         self._align_layout = TextAlignLayout(item.alignH(), item.alignV())
         self._align_group_box.setLayout(self._align_layout)
         self._dialog_layout.addWidget(self._align_group_box)
+        # origin section
+        self._origin_group_box = QGroupBox("Origin")
+        self._origin_layout = OriginLayout(item.getOrigin())
+        self._origin_group_box.setLayout(self._origin_layout)
+        self._dialog_layout.addWidget(self._origin_group_box)
         # appearance section
         self._appearance_group_box = QGroupBox("Appearance")
         self._appearance_layout = TextAppearancePreviewLayout(
@@ -121,6 +129,9 @@ class TextItemDialog(QDialog):
 
     def getAlignV(self : Self) -> AlignV:
         return self._align_layout.getAlignV()
+
+    def getOrigin(self : Self) -> str:
+        return self._origin_layout.getOrigin()
 
     def getColor(self : Self) -> QColor | Default | NoChange:
         return self._appearance_layout.getColor()
