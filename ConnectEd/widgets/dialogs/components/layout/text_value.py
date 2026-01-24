@@ -24,7 +24,7 @@ class TextValueLayout(QVBoxLayout):
         self._value_label = None
         self._value_edit = None
         self._onFormatChange(value, block)
-        self._format_group_box = QGroupBox("Text Format")
+        self._format_group_box = QGroupBox("Format")
         self._format_line_button = QRadioButton("Line")
         self._format_line_button.setChecked(not block)
         self._format_block_button = QRadioButton("Block")

@@ -71,6 +71,7 @@ class TextItemDialog(QDialog):
         self._value_layout = TextValueLayout(item.text(), item.block())
         self._dialog_layout.addLayout(self._value_layout)
         # appearance section
+        self._appearance_group_box = QGroupBox("Appearance")
         self._appearance_layout = TextAppearancePreviewLayout(
             item.quillColor(),
             item.quillFamily(),
@@ -85,7 +86,8 @@ class TextItemDialog(QDialog):
             item.defaultQuillItalic(),
             item.defaultQuillUnderline()
         )
-        self._dialog_layout.addLayout(self._appearance_layout)
+        self._appearance_group_box.setLayout(self._appearance_layout)
+        self._dialog_layout.addWidget(self._appearance_group_box)
         # ok/cancel section
         self._ok_cancel_layout = OkCancelLayout(self)
         self._dialog_layout.addLayout(self._ok_cancel_layout)
