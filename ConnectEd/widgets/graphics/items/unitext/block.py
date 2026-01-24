@@ -77,10 +77,10 @@ class UniTextBlockItem(
         doc = self.document()
         # apply horizontal alignment
         option = doc.defaultTextOption()
-        option.setAlignment(align_h)  #  AlignH is based on Qt.AlignmentFlag
+        option.setAlignment(align_h.value)
         doc.setDefaultTextOption(option)
         # apply width constraint
-        self.setTextWidth(self._width if self._width else -1)
+        self.setTextWidth(width if width else -1)
         # calculate unconstrained bounding rect (without margins)
         root_frame = doc.rootFrame()
         fmt = root_frame.frameFormat()
