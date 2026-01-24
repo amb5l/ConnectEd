@@ -1,9 +1,9 @@
-from typing import Self, overload
+from typing import Self, Any, overload
 
 from PyQt6.QtCore    import QPointF, QRectF
 from PyQt6.QtWidgets import QGraphicsItem, QGraphicsSimpleTextItem, \
                             QGraphicsSceneContextMenuEvent, \
-                            QStyleOptionGraphicsItem, QWidget
+                            QStyleOptionGraphicsItem, QStyle, QWidget
 from PyQt6.QtGui     import QColor, QPainterPath, QPainter
 
 from .. import AlignH, AlignV
@@ -43,8 +43,21 @@ class UniTextLineItem(
         else:
             super().__init__(parent=parent)
         self._clip_rect = None
+        self.setFlag(self.GraphicsItemFlag.ItemIsSelectable, True)
         self.initBound()  # initialize cached bounding rect
         self.initShape()  # initialize cached hit detect shape
+
+    def itemChange(
+        self   : Self,
+        change : QGraphicsItem.GraphicsItemChange,
+        value  : Any
+    ) -> Any:
+        """Propagate selection state to parent."""
+        match change:
+            case self.GraphicsItemChange.ItemSelectedHasChanged:
+                parent : UniTextItem = self.parentItem()
+                QGraphicsItem.setSelected(parent, value)
+        return super().itemChange(change, value)
 
     def onSceneRotationChange(self : Self) -> None:
         """Rotation compensation."""
@@ -65,11 +78,8 @@ class UniTextLineItem(
         # apply clipping if constraints are smaller than unconstrained rect
         if w < urect.width() or h < urect.height():
             self._clip_rect = self._brect
-            self.paint = self._paintClip
         else:
             self._clip_rect = None
-            if 'paint' in self.__dict__:
-                del self.paint  # use C++ QGraphicsSimpleTextItem.paint
         # position to apply alignment
         match align_h:
             case AlignH.LEFT:
@@ -102,16 +112,19 @@ class UniTextLineItem(
         brush.setColor(color)
         self.setBrush(brush)
 
-    def _paintClip(
+    def paint(
         self    : Self,
         painter : QPainter,
         option  : QStyleOptionGraphicsItem,
         widget  : QWidget
     ) -> None:
-        painter.save()
-        painter.setClipRect(self._clip_rect)
+        option.state &= ~QStyle.StateFlag.State_Selected
+        if self._clip_rect is not None:
+            painter.save()
+            painter.setClipRect(self._clip_rect)
         super().paint(painter, option, widget)
-        painter.restore()
+        if self._clip_rect is not None:
+            painter.restore()
 
     def contextMenuEvent(
         self  : Self,

@@ -6,7 +6,7 @@ from typing import Self, overload
 
 from PyQt6.QtCore    import QPointF, QRectF
 from PyQt6.QtWidgets import QGraphicsItem, QMenu
-from PyQt6.QtGui     import QColor, QFont, QAction
+from PyQt6.QtGui     import QColor, QFont, QAction, QPainterPath
 
 from .....resources.icons import AnchorTopLeftIcon,      \
                                  AnchorTopCenterIcon,    \
@@ -33,6 +33,7 @@ from ..mixin         import ItemMixin
 from ..mixin.origin  import ItemOriginMixin
 from ..mixin.pos     import ItemPosMixin
 from ..mixin.rotate  import ItemRotateMixin
+from ..mixin.paint   import ItemPaintMixin
 from ..mixin.handle  import ItemRectHandlesMixin
 from ..mixin.quill   import ItemQuillMixin
 from ..mixin.outline import ItemOutlineMixin
@@ -56,6 +57,7 @@ class UniTextItem(
     ItemOriginMixin,
     ItemPosMixin,
     ItemRotateMixin,
+    ItemPaintMixin,
     ItemRectHandlesMixin,
     ItemQuillMixin,
     ItemOutlineMixin,
@@ -160,6 +162,12 @@ class UniTextItem(
     def onSceneRotationChange(self : Self) -> None:
         self._child.onSceneRotationChange()
 
+    def isSelected(self : Self) -> bool:
+        return self._child.isSelected()
+
+    def setSelected(self : Self, selected : bool) -> None:
+        self._child.setSelected(selected)
+
     def block(self : Self) -> bool:
         return isinstance(self._child, UniTextBlockItem)
 
@@ -167,6 +175,7 @@ class UniTextItem(
         if isinstance(self._child, UniTextLineItem)  and block     \
         or isinstance(self._child, UniTextBlockItem) and not block:
             new_child = UniTextBlockItem() if block else UniTextLineItem()
+            new_child.setSelected(self._child.isSelected())
             new_child.setRotation(self._child.rotation())
             new_child.setText(self._child.text())
             new_child.setColor(self._child.color())
@@ -243,6 +252,14 @@ class UniTextItem(
         """Return the rectangle used for handles."""
         return self._child._brect
 
+    def boundingRect(self : Self) -> QRectF:
+        """Return the child's bounding rect for hit detection."""
+        return self._child._brect
+
+    def shape(self : Self) -> QPainterPath:
+        """Return the child's shape for hit detection."""
+        return self._child._hshape
+
     def moveHandleBy(self : Self, name : str, delta : QPointF) -> None:
         """Resize/move the text as appropriate."""
         match name:
@@ -292,6 +309,7 @@ class UniTextItem(
             self._height = max(rect.height() + dy, 0.0)
         self._child.onGeometryChange()
         self.updateHandlePositions()
+        self.updateHandlePaths()
 
     def originMenu(self : Self, view : "DrawingView") -> QMenu:
         menu = QMenu("Origin", view)

@@ -1,4 +1,4 @@
-from typing import Self, overload
+from typing import Self, Any, overload
 
 from PyQt6.QtCore    import QRectF
 from PyQt6.QtWidgets import QGraphicsItem, QGraphicsTextItem, \
@@ -10,6 +10,7 @@ from .. import AlignV
 from ..mixin.bound  import ItemBoundMixin
 from ..mixin.shape  import ItemShapeMixin
 from ..mixin.rotate import ItemRotateMixin
+from ..mixin.paint  import ItemPaintMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -19,6 +20,7 @@ if TYPE_CHECKING:
 class UniTextBlockItem(
     ItemBoundMixin,
     ItemShapeMixin,
+    ItemPaintMixin,
     QGraphicsTextItem
 ):
     @overload
@@ -38,8 +40,21 @@ class UniTextBlockItem(
             super().__init__(text_or_parent, parent)
         else:
             super().__init__(parent=parent)
+        self.setFlag(self.GraphicsItemFlag.ItemIsSelectable, True)
         self.initBound()  # initialize cached bounding rect
         self.initShape()  # initialize cached hit detect shape
+
+    def itemChange(
+        self   : Self,
+        change : QGraphicsItem.GraphicsItemChange,
+        value  : Any
+    ) -> Any:
+        """Propagate selection state to parent."""
+        match change:
+            case self.GraphicsItemChange.ItemSelectedHasChanged:
+                parent : UniTextItem = self.parentItem()
+                QGraphicsItem.setSelected(parent, value)
+        return super().itemChange(change, value)
 
     def onSceneRotationChange(self : Self) -> None:
         """Rotation compensation."""
