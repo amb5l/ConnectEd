@@ -8,6 +8,7 @@ from ....app import settings
 
 from .mixin.origin import ItemOriginMixin
 from .mixin.change import ItemChangeMixin
+from .mixin.shape  import ItemShapeMixin
 from .mixin.menu   import ItemMenuMixin
 
 from typing import TYPE_CHECKING
@@ -22,6 +23,7 @@ if TYPE_CHECKING:
 
 class GripItem(
     ItemChangeMixin,
+    ItemShapeMixin,
     ItemMenuMixin,
     QGraphicsPathItem
 ):
@@ -44,6 +46,7 @@ class GripItem(
         resize : bool = False
     ) -> None:
         super().__init__(parent)
+        self._hshape = QPainterPath()
         self.setPos(pos or QPointF(0, 0))
         self._path_name = self._PATH_NAME
         self.setFlag( self.GraphicsItemFlag.ItemIgnoresTransformations , True  )
@@ -71,6 +74,8 @@ class GripItem(
         if scene is None:
             return
         self.setPath(scene.paths["Grip"][self.fullPathName()])
+        self._hshape.clear()
+        self._hshape.addRect(self.boundingRect())
 
     def handle(self : Self) -> "HandleItem":
         return self.parentItem()
@@ -162,4 +167,4 @@ class TextGripItem(ResizeGripItem):
         c |= ("Top" in name or "Bottom" in name) and h is None
         # constrained if left or right, and width is not None
         c |= ("Left" in name or "Right" in name) and w is None
-        return "Filled" if c else "Unfilled"
+        return "Unfilled" if c else "Filled"
