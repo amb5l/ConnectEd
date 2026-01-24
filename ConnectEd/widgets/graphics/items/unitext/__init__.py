@@ -285,11 +285,13 @@ class UniTextItem(
     ) -> None:
         dx = dx_d.x() if isinstance(dx_d, QPointF) else dx_d
         dy = dx_d.y() if isinstance(dx_d, QPointF) else dy
+        rect = self.handleRect()
         if dx:
-            self._width = max(self._brect.width() + dx, 0.0)
+            self._width = max(rect.width() + dx, 0.0)
         if dy:
-            self._height = max(self._brect.height() + dy, 0.0)
+            self._height = max(rect.height() + dy, 0.0)
         self._child.onGeometryChange()
+        self.updateHandlePositions()
 
     def originMenu(self : Self, view : "DrawingView") -> QMenu:
         menu = QMenu("Origin", view)
