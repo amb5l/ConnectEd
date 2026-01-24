@@ -15,16 +15,16 @@ from .mixin.change import ItemChangeMixin
 from .mixin.clone  import ItemCloneMixin
 from .mixin.xml    import ItemXmlMixin
 
-from .junction import Junction
+from .junction import JunctionItem
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ..scenes.drawing import DrawingScene
-    from .conn_seg import ConnSeg
-    from .entry    import Entry
+    from .conn_seg import ConnSegItem
+    from .entry    import EntryItem
 
 
-class ConnVtx(
+class ConnVtxItem(
     ItemMixin,
     ItemLineMixin,
     ItemFillMixin,
@@ -42,20 +42,20 @@ class ConnVtx(
 
     # instance attributes
     _path        : QPainterPath
-    _junction    : Junction
-    _connections : list["ConnSeg"]
+    _junction    : JunctionItem
+    _connections : list["ConnSegItem"]
 
     def __init__(
         self   : Self,
         pos    : QPointF | None = None,
-        parent : "Entry | None" = None
+        parent : "EntryItem | None" = None
     ) -> None:
         QGraphicsPathItem.__init__(self, parent)
         if pos is not None:
             self.setPos(pos)
         self._connections = []
         self.initItem()
-        self._junction = Junction(self)
+        self._junction = JunctionItem(self)
 
     def onScenePositionChange(self : Self, _pos : QPointF) -> None:
         """Update all connected segments."""
@@ -82,19 +82,19 @@ class ConnVtx(
         # TODO: special case: parent is entry, segments are not colinear
         self._junction.setVisible((connections > 2))
 
-    def attach(self : Self, segment : "ConnSeg") -> None:
+    def attach(self : Self, segment : "ConnSegItem") -> None:
         if segment not in self._connections:
             self._connections.append(segment)
         self.updateJunction()
 
-    def detach(self : Self, segment : "ConnSeg") -> None:
+    def detach(self : Self, segment : "ConnSegItem") -> None:
         if segment not in self._connections:
             logger().warning(f"Segment {segment} not found in connections")
             return
         self._connections.remove(segment)
         self.updateJunction()
 
-    def connections(self : Self) -> list["ConnSeg"]:
+    def connections(self : Self) -> list["ConnSegItem"]:
         return self._connections
 
     def toXml(self : Self, xw : QXmlStreamWriter) -> None:

@@ -6,7 +6,7 @@ import ConnectEd.scripting as cs
 
 from PyQt6.QtCore import QPointF, QSizeF
 
-from ConnectEd.widgets.graphics.items.rectangle import Rectangle
+from ConnectEd.widgets.graphics.items.rectangle import RectangleItem
 
 from ConnectEd.core.db import DesignDbNode, DiagramNode
 from ConnectEd.widgets.graphics.scenes.diagram import DiagramScene
@@ -49,7 +49,7 @@ def test(app : cs.ConnectEdApp):
     # add rectangle to diagram
     pos = QPointF(100, 100)
     size = QSizeF(100, 100)
-    rect = Rectangle(pos, size)
+    rect = RectangleItem(pos, size)
     # verify basic properties
     assert rect.pos() == pos, \
         f"Got {rect.pos()}, expected {pos}"

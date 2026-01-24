@@ -8,19 +8,19 @@ from ......core.utils import sign
 
 from .....dialogs.arc import ArcDialog
 
-from ....items.port       import Port
-from ....items.gate       import Gate
-from ....items.block      import Block
-from ....items.block_pin  import BlockPin
-from ....items.symbol_pin import SymbolPin
-from ....items.entry      import Entry
-from ....items.conn_vtx   import ConnVtx
-from ....items.conn_seg   import ConnSeg, ConnSegPreview1, ConnSegPreview2
-from ....items.line       import Line
-from ....items.rectangle  import Rectangle
-from ....items.ellipse    import Ellipse
-from ....items.polyline   import Polyline
-from ....items.text       import Text
+from ....items.port       import PortItem
+from ....items.gate       import GateItem
+from ....items.block      import BlockItem
+from ....items.block_pin  import BlockPinItem
+from ....items.symbol_pin import SymbolPinItem
+from ....items.entry      import EntryItem
+from ....items.conn_vtx   import ConnVtxItem
+from ....items.conn_seg   import ConnSegItem, ConnSegPreview1Item, ConnSegPreview2Item
+from ....items.line       import LineItem
+from ....items.rectangle  import RectangleItem
+from ....items.ellipse    import EllipseItem
+from ....items.polyline   import PolylineItem
+from ....items.text       import TextItem
 
 from . import Interaction,         \
               RotateItemMixin,     \
@@ -101,23 +101,23 @@ class PlaceBase2PosInteraction(PlaceBase1PosInteraction):
 
 
 class PlacePortInteraction(RotateItemMixin, PlaceBase1PosInteraction):
-    _ITEM_TYPE = Port
+    _ITEM_TYPE = PortItem
 
 
 class PlaceGateInteraction(RotateItemMixin, PlaceBase1PosInteraction):
-    _ITEM_TYPE = Gate
+    _ITEM_TYPE = GateItem
 
 
 class PlaceBlockInteraction(PlaceBase2PosInteraction):
-    _ITEM_TYPE = Block
+    _ITEM_TYPE = BlockItem
 
 
 class PlaceBlockPinInteraction(BlockPinInteraction):
     def __init__(
         self   : Self,
         view   : "DrawingView",
-        parent : Block,
-        pin    : BlockPin,
+        parent : BlockItem,
+        pin    : BlockPinItem,
         pos    : QPointF,
         snap   : QPointF | None = None
     ) -> None:
@@ -136,25 +136,25 @@ class PlaceBlockPinInteraction(BlockPinInteraction):
 
 
 class PlaceSymbolPinInteraction(PlaceBase1PosInteraction):
-    _ITEM_TYPE = SymbolPin
+    _ITEM_TYPE = SymbolPinItem
 
 
 class PlaceLineInteraction(PlaceBase2PosInteraction):
-    _ITEM_TYPE = Line
+    _ITEM_TYPE = LineItem
 
 
 class PlaceRectangleInteraction(PlaceBase2PosInteraction):
-    _ITEM_TYPE = Rectangle
+    _ITEM_TYPE = RectangleItem
 
 
 class PlaceEllipseInteraction(PlaceBase2PosInteraction):
-    _ITEM_TYPE = Ellipse
+    _ITEM_TYPE = EllipseItem
 
 
 class PlacePolylineInteraction(PlaceBase1PosInteraction):
-    _ITEM_TYPE = Polyline
+    _ITEM_TYPE = PolylineItem
 
-    _item  : Polyline      # type hint for this interaction
+    _item  : PolylineItem      # type hint for this interaction
     _sweep : float | None  # sweep angle for last segment
 
     def __init__(
@@ -233,15 +233,15 @@ class PlacePolylineInteraction(PlaceBase1PosInteraction):
 
 
 class PlaceTextInteraction(PlaceBase1PosInteraction):
-    _ITEM_TYPE = Text
+    _ITEM_TYPE = TextItem
 
 
 class PlaceConnInteraction(Interaction):
     """Interactive wire placement involves two preview segments."""
 
     # instance attributes
-    _seg1  : ConnSegPreview1
-    _seg2  : ConnSegPreview2
+    _seg1  : ConnSegPreview1Item
+    _seg2  : ConnSegPreview2Item
 
     def __init__(
         self : Self,
@@ -249,8 +249,8 @@ class PlaceConnInteraction(Interaction):
         pos  : QPointF
     ) -> None:
         super().__init__(view)
-        self._seg1 = ConnSegPreview1()
-        self._seg2 = ConnSegPreview2()
+        self._seg1 = ConnSegPreview1Item()
+        self._seg2 = ConnSegPreview2Item()
         self._setP0(pos)
         self._setP1(pos)
         self._setP2(pos)
@@ -268,10 +268,10 @@ class PlaceConnInteraction(Interaction):
         # get scene content before changing it
         items_1 = self._scene.items(self._p1())
         connectables_1 = [item for item in items_1 \
-            if isinstance(item, ConnSeg | ConnVtx | Entry)]
+            if isinstance(item, ConnSegItem | ConnVtxItem | EntryItem)]
         items_2 = self._scene.items(self._p2())
         connectables_2 = [item for item in items_2 \
-            if isinstance(item, ConnSeg | ConnVtx | Entry)]
+            if isinstance(item, ConnSegItem | ConnVtxItem | EntryItem)]
         # create first segment
         self._scene.addConnSeg(self._p0(), self._p1(), undoable=True)
         if connectables_1:

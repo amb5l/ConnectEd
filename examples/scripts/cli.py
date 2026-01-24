@@ -2,7 +2,7 @@ import ConnectEd.scripting as cs
 
 from PyQt6.QtCore import QPointF, QSizeF
 
-from ConnectEd.widgets.graphics.items.rectangle import Rectangle
+from ConnectEd.widgets.graphics.items.rectangle import RectangleItem
 
 from ConnectEd.core.db import DesignDbNode, DiagramNode
 from ConnectEd.widgets.graphics.scenes.diagram import DiagramScene
@@ -28,7 +28,7 @@ def test(app : cs.ConnectEdApp):
     # create a rectangle
     pos = QPointF(100, 100)
     size = QSizeF(100, 100)
-    rect = Rectangle(pos, size)
+    rect = RectangleItem(pos, size)
     # add rectangle to diagram
     diagram.addItem(rect)
     # save the design

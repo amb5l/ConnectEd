@@ -13,13 +13,13 @@ from ....properties import PropertiesMixin
 from ....items import ItemType, Default, NoChange, NO_CHANGE, AlignH, AlignV, \
                       EdgeLoc, SignalDirection
 
-from ....items.block         import Block
+from ....items.block         import BlockItem
 from ....items.port_pin      import PortPinMixin
-from ....items.block_pin     import BlockPin
-from ....items.symbol_pin    import SymbolPin
-from ....items.polyline      import Polyline, PolySeg
-from ....items.text          import Text
-from ....items.property_text import PropertyText
+from ....items.block_pin     import BlockPinItem
+from ....items.symbol_pin    import SymbolPinItem
+from ....items.polyline      import PolylineItem, PolySegItem
+from ....items.text          import TextItem
+from ....items.property_text import PropertyTextItem
 from ....items.mixin         import ItemMixin
 
 from ..cmd import cmdExec, CmdDelete, CmdMove, CmdRotateCW, CmdRotateCCW
@@ -59,10 +59,10 @@ class DrawingSceneApiEditMixin:
 
     def editMoveBlockPins(
         self     : "DrawingScene",
-        parent   : Block,
-        pins     : list[BlockPin],
-        after    : dict[BlockPin, EdgeLoc],
-        before   : dict[BlockPin, EdgeLoc],
+        parent   : BlockItem,
+        pins     : list[BlockPinItem],
+        after    : dict[BlockPinItem, EdgeLoc],
+        before   : dict[BlockPinItem, EdgeLoc],
         undoable : bool = False
     ) -> None:
         cmd = CmdMoveBlockPins(parent, pins, after, before)
@@ -141,7 +141,7 @@ class DrawingSceneApiEditMixin:
 
     def editSymbolPinDot(
         self     : "DrawingScene",
-        item     : SymbolPin,
+        item     : SymbolPinItem,
         enable   : bool,
         undoable : bool = False
     ) -> None:
@@ -150,7 +150,7 @@ class DrawingSceneApiEditMixin:
 
     def editSymbolPinClock(
         self     : "DrawingScene",
-        item     : SymbolPin,
+        item     : SymbolPinItem,
         enable   : bool,
         undoable : bool = False
     ) -> None:
@@ -168,7 +168,7 @@ class DrawingSceneApiEditMixin:
 
     def editPolylineClosed(
         self     : "DrawingScene",
-        polyline : Polyline,
+        polyline : PolylineItem,
         closed   : bool,
         sweep    : float | None,
         undoable : bool = False
@@ -178,7 +178,7 @@ class DrawingSceneApiEditMixin:
 
     def editPolySeg(
         self     : "DrawingScene",
-        seg      : PolySeg,
+        seg      : PolySegItem,
         sweep    : float | None,
         undoable : bool = False
     ) -> None:
@@ -187,7 +187,7 @@ class DrawingSceneApiEditMixin:
 
     def editText(
         self       : "DrawingScene",
-        item       : Text,
+        item       : TextItem,
         text       : str              | NoChange = NO_CHANGE,
         color      : QColor | Default | NoChange = NO_CHANGE,
         font       : str    | Default | NoChange = NO_CHANGE,
@@ -211,7 +211,7 @@ class DrawingSceneApiEditMixin:
 
     def editPropertyText(
         self       : "DrawingScene",
-        item       : PropertyText,
+        item       : PropertyTextItem,
         value      : str,
         color      : QColor | Default | NoChange = NO_CHANGE,
         font       : str    | Default | NoChange = NO_CHANGE,

@@ -8,10 +8,10 @@ from .....app import settings, window
 
 from ....menu import Menu
 
-from ...items.block     import Block
-from ...items.block_pin import BlockPin
-from ...items.base_pin  import BasePinArrow
-from ...items.entry     import Entry
+from ...items.block     import BlockItem
+from ...items.block_pin import BlockPinItem
+from ...items.base_pin  import BasePinArrowItem
+from ...items.entry     import EntryItem
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -137,17 +137,17 @@ class DrawingViewPrivateMixin:
     def _siblingBlockPins(
         self  : "DrawingView",
         items : QGraphicsItem
-    ) -> list[BlockPin]:
+    ) -> list[BlockPinItem]:
         pins = []
-        parent : Block | None = None
+        parent : BlockItem | None = None
         for item in items:
-            if isinstance(item, BlockPin):
+            if isinstance(item, BlockPinItem):
                 if parent is None:
                     parent = item.parentItem()
                 elif item.parentItem() != parent:
                     return []
                 pins.append(item)
-            elif not isinstance(item, BasePinArrow | Entry):
+            elif not isinstance(item, BasePinArrowItem | EntryItem):
                 return []
         return [] if parent is None else pins
 

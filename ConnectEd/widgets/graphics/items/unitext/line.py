@@ -14,10 +14,10 @@ from ..mixin.rotate import ItemRotateMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from . import UniText
+    from . import UniTextItem
 
 
-class UniTextLine(
+class UniTextLineItem(
     ItemBoundMixin,
     ItemShapeMixin,
     QGraphicsSimpleTextItem
@@ -52,7 +52,7 @@ class UniTextLine(
         self.setRotation(180 if a > 135 and a <= 315 else 0)
 
     def onGeometryChange(self : Self) -> None:
-        parent : UniText = self.parentItem()
+        parent : UniTextItem = self.parentItem()
         align_h = parent._align_h
         align_v = parent._align_v
         width = parent._width
@@ -118,5 +118,5 @@ class UniTextLine(
         event : QGraphicsSceneContextMenuEvent
     ) -> None:
         """Bounce context menu event to parent."""
-        parent: "UniText" = self.parentItem()
+        parent: "UniTextItem" = self.parentItem()
         parent.contextMenuEvent(event)

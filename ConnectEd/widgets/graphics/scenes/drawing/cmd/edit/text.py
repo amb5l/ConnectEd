@@ -10,11 +10,11 @@ from .....items import Default, NoChange, NO_CHANGE, AlignH, AlignV
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from .....scenes.drawing import DrawingScene
-    from .....items.text     import Text
+    from .....items.text     import TextItem
 
 
 class CmdEditText(CmdSceneItem):
-    _item : "Text"
+    _item : "TextItem"
 
     @dataclass
     class ItemBefore:
@@ -44,14 +44,14 @@ class CmdEditText(CmdSceneItem):
         italic    : bool   | Default | NoChange = NO_CHANGE,
         underline : bool   | Default | NoChange = NO_CHANGE,
 
-    _item   : "Text"
+    _item   : "TextItem"
     _before : ItemBefore
     _after  : ItemAfter
 
     def __init__(
         self      : Self,
         scene     : "DrawingScene",
-        item      : "Text",
+        item      : "TextItem",
         text      : str    | Default | NoChange = NO_CHANGE,
         align_h   : AlignH           | NoChange = NO_CHANGE,
         align_v   : AlignV           | NoChange = NO_CHANGE,

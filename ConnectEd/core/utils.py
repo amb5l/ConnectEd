@@ -262,7 +262,7 @@ def registerClass(
 ) -> type[Any]:
     """Import a class from a module and register it in registry."""
     if mod_name is None:
-        mod_name = pascal2snake(cls_name)
+        mod_name = pascal2snake(cls_name).replace("_item", "")
     if pkg is None:
         caller_frame = inspect.stack()[1].frame
         pkg = caller_frame.f_globals.get('__name__')

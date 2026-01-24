@@ -12,9 +12,9 @@ from ....items import NoChange, NO_CHANGE, AlignH, AlignV
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ....items            import ItemMixin
-    from ....items.text       import Text
-    from ....items.grip       import ResizeGrip
-    from ....items.symbol_pin import SymbolPin
+    from ....items.text       import TextItem
+    from ....items.grip       import ResizeGripItem
+    from ....items.symbol_pin import SymbolPinItem
     from .                    import DrawingViewUi
 
 
@@ -74,7 +74,7 @@ class DrawingViewUiEditMixin:
 
     def editResize(
         self : "DrawingViewUi",
-        grip : "ResizeGrip",
+        grip : "ResizeGripItem",
         pos  : QPoint | QPointF | None = None
     ) -> None:
         pos = self._view.mapToScene(pos) if isinstance(pos, QPoint) else pos
@@ -187,7 +187,7 @@ class DrawingViewUiEditMixin:
 
     def editSymbolPinDot(
         self   : "DrawingViewUi",
-        item   : "SymbolPin",
+        item   : "SymbolPinItem",
         enable : bool
     ):
         if enable == item.dot():
@@ -196,7 +196,7 @@ class DrawingViewUiEditMixin:
 
     def editSymbolPinClock(
         self   : "DrawingViewUi",
-        item   : "SymbolPin",
+        item   : "SymbolPinItem",
         enable : bool
     ):
         if enable == item.clock():
@@ -208,7 +208,7 @@ class DrawingViewUiEditMixin:
 
     def editText(
         self      : "DrawingViewUi",
-        item      : "Text",
+        item      : "TextItem",
         align_h   : AlignH           | NoChange = NO_CHANGE,
         align_v   : AlignV           | NoChange = NO_CHANGE,
         width     : float | None     | NoChange = NO_CHANGE,

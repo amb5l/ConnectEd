@@ -4,8 +4,8 @@ from PyQt6.QtCore import Qt, QPoint, QPointF
 
 from ....items import ItemMixin
 
-from ....items.grip     import Grip, OriginGrip, ResizeGrip
-from ....items.polyline import PolySeg
+from ....items.grip     import GripItem, OriginGripItem, ResizeGripItem
+from ....items.polyline import PolySegItem
 
 from ..interaction.edit  import EditMoveInteraction,          \
                                 EditMoveBlockPinsInteraction, \
@@ -29,7 +29,7 @@ class DrawingViewStateIdle(DrawingViewStateBase):
     def mouseLeftClick(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
         items = self.view._itemsAt(s)
         for item in items:
-            if isinstance(item, Grip):
+            if isinstance(item, GripItem):
                 return
         if m == qkm.NoModifier:
             if not items or not items[0].isSelected():
@@ -39,19 +39,19 @@ class DrawingViewStateIdle(DrawingViewStateBase):
     def mouseLeftDragBegin(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
         raw_items_at = self.view._itemsAt(s)
         grips_at = \
-            [item for item in raw_items_at if isinstance(item, Grip)]
+            [item for item in raw_items_at if isinstance(item, GripItem)]
         # grips
         if len(grips_at) == 1 and not (m & qkm.AltModifier):
             grip = grips_at[0]
-            if isinstance(grip, OriginGrip):
+            if isinstance(grip, OriginGripItem):
                 # resize/move
                 self.interact(
                     EditMoveInteraction(self.view, grip, grip.scenePos()),
-                        self.view.stateEditResize if isinstance(grip, ResizeGrip) \
+                        self.view.stateEditResize if isinstance(grip, ResizeGripItem) \
                         else self.view.stateEditMove
                 )
                 return
-            elif isinstance(grip, PolySeg):
+            elif isinstance(grip, PolySegItem):
                 # adjust polyline segment/arc
                 self.interact(
                     EditAdjustPolySegInteraction(

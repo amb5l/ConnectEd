@@ -9,7 +9,7 @@ from ....app import settings
 from ..property   import PropertySpec
 from ..properties import PropertiesMixin
 
-from .handle import Handle
+from .handle import HandleItem
 
 from .mixin        import ItemMixin
 from .mixin.shape  import ItemShapeMixin
@@ -22,7 +22,7 @@ from .mixin.xml    import ItemXmlMixin
 from .mixin.menu   import ItemMenuMixin
 
 
-class Line(
+class LineItem(
     ItemMixin,
     ItemShapeMixin,
     ItemPaintMixin,
@@ -103,13 +103,13 @@ class Line(
 
     def initHandles(self : Self) -> None:
         self._handles = {
-            "P1" : Handle(
+            "P1" : HandleItem(
                 name   = "P1",
                 pos    = QPointF(0, 0),
                 kind   = "resize",
                 parent = self
             ),
-            "P2" : Handle(
+            "P2" : HandleItem(
                 name   = "P2",
                 pos    = QPointF(0, 0),
                 kind   = "resize",
@@ -175,5 +175,5 @@ class Line(
         return self._hshape
 
 
-class SymbolLine(Line):
+class SymbolLineItem(LineItem):
     pass

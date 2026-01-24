@@ -11,10 +11,10 @@ from .....dialogs.property_text import PropertyTextDialog
 from .....dialogs.port_pin      import PortPinDialog
 
 from ....items               import ItemMixin
-from ....items.text          import Text
-from ....items.property_text import PropertyText
-from ....items.port          import Port
-from ....items.block_pin     import BlockPin
+from ....items.text          import TextItem
+from ....items.property_text import PropertyTextItem
+from ....items.port          import PortItem
+from ....items.block_pin     import BlockPinItem
 
 from ..interaction.edit import EditPasteInteraction
 
@@ -176,7 +176,7 @@ class DrawingViewStateEditPort(DrawingViewStateBase):
         s    : QPointF,
         i    : list[ItemMixin] | None = None
     ) -> None:
-        item = i[0] if i else self.view._selectedItem(Port)
+        item = i[0] if i else self.view._selectedItem(PortItem)
         if item:
             dialog = PortPinDialog("Port", item, self.view)
             if dialog.exec():
@@ -197,8 +197,8 @@ class DrawingViewStateEditBlockPin(DrawingViewStateBase):
         s    : QPointF,
         i    : list[ItemMixin] | None = None
     ) -> None:
-        item = i[0] if i else self.view._selectedItem(BlockPin)
-        if item and isinstance(item, BlockPin):
+        item = i[0] if i else self.view._selectedItem(BlockPinItem)
+        if item and isinstance(item, BlockPinItem):
             dialog = PortPinDialog("Block Pin", item, self.view)
             if dialog.exec():
                 name = dialog.getName()
@@ -218,8 +218,8 @@ class DrawingViewStateEditText(DrawingViewStateBase):
         s    : QPointF,
         i    : list[ItemMixin] | None = None
     ) -> None:
-        item = i[0] if i else self.view._selectedItem(Text)
-        if item and isinstance(item, Text):
+        item = i[0] if i else self.view._selectedItem(TextItem)
+        if item and isinstance(item, TextItem):
             dialog = TextItemDialog(item, self.view)
             if dialog.exec():
                 text, appearance = dialog.getChoice()
@@ -250,8 +250,8 @@ class DrawingViewStateEditPropertyText(DrawingViewStateBase):
         s    : QPointF,
         i    : list[ItemMixin] | None = None
     ) -> None:
-        item = i[0] if i else self.view._selectedItem(PropertyText)
-        if item and isinstance(item, PropertyText):
+        item = i[0] if i else self.view._selectedItem(PropertyTextItem)
+        if item and isinstance(item, PropertyTextItem):
             dialog = PropertyTextDialog(item, self.view)
             if dialog.exec():
                 value = dialog.getValue()

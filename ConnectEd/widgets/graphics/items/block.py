@@ -7,7 +7,7 @@ from PyQt6.QtGui     import QAction
 from ..property import PropertySpec
 
 from .              import EdgeLoc, Edge
-from .base_rect     import BaseRectangle
+from .base_rect     import BaseRectangleItem
 from .property_text import PropertyTextSpec
 
 from typing import TYPE_CHECKING
@@ -15,7 +15,7 @@ if TYPE_CHECKING:
     from ..views.drawing import DrawingView
 
 
-class Block(BaseRectangle):
+class BlockItem(BaseRectangleItem):
     # class attributes
     _PROPERTY_SPECS = {
         "Label" : PropertySpec(
@@ -35,7 +35,7 @@ class Block(BaseRectangle):
             getter = lambda self: self._path,
             setter = lambda self, value: setattr(self, "_path", value)
         )
-    } | BaseRectangle._PROPERTY_SPECS
+    } | BaseRectangleItem._PROPERTY_SPECS
 
     # instance attributes
     _label : str

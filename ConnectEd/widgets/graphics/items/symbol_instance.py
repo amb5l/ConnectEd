@@ -11,7 +11,7 @@ from ..property import PropertySpec
 
 from ..scenes.symbol import SymbolScene
 
-from .base_rect        import BaseRectangle
+from .base_rect        import BaseRectangleItem
 from .symbol_container import SymbolContainer
 from .property_text    import PropertyTextSpec
 
@@ -19,7 +19,7 @@ from .mixin.pos        import ItemPosMixin
 from .mixin.rotate     import ItemRotateMixin
 
 
-class BaseSymbolInstance(ItemPosMixin, ItemRotateMixin, BaseRectangle):
+class BaseSymbolInstanceItem(ItemPosMixin, ItemRotateMixin, BaseRectangleItem):
     # class attributes
     _PROPERTY_SPECS_NAME = \
         {
@@ -81,7 +81,7 @@ class BaseSymbolInstance(ItemPosMixin, ItemRotateMixin, BaseRectangle):
         return self._hshape
 
 
-class SymbolInstance(BaseSymbolInstance):
+class SymbolInstanceItem(BaseSymbolInstanceItem):
     # class attributes
     _PROPERTY_SPECS_LABEL = \
         {
@@ -93,7 +93,7 @@ class SymbolInstance(BaseSymbolInstance):
         }
     _PROPERTY_SPECS = \
         _PROPERTY_SPECS_LABEL | \
-        BaseSymbolInstance._PROPERTY_SPECS_NAME | \
+        BaseSymbolInstanceItem._PROPERTY_SPECS_NAME | \
         ItemPosMixin._PROPERTY_SPECS_POS | \
         ItemRotateMixin._PROPERTY_SPECS_ROTATE
 

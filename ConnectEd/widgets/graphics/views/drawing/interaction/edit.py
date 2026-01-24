@@ -9,9 +9,9 @@ from ......core.xml import paste
 
 from ....items import EdgeLoc, clone
 
-from ....items.block     import Block
-from ....items.block_pin import BlockPin
-from ....items.polyline  import Polyline, PolySeg
+from ....items.block     import BlockItem
+from ....items.block_pin import BlockPinItem
+from ....items.polyline  import PolylineItem, PolySegItem
 
 from . import MoveItemsMixin,      \
               AddRemoveItemsMixin, \
@@ -124,15 +124,15 @@ class EditMoveInteraction(
 
 class EditMoveBlockPinsInteraction(Interaction):
     # instance attributes
-    _parent : Block
-    _pins   : list[BlockPin]           # first item is primary pin
+    _parent : BlockItem
+    _pins   : list[BlockPinItem]           # first item is primary pin
     _sloc   : dict[ItemType, EdgeLoc]  # stored locations of all pins
 
     def __init__(
         self   : Self,
         view   : "DrawingView",
-        parent : Block,
-        pins   : list[BlockPin]
+        parent : BlockItem,
+        pins   : list[BlockPinItem]
     ) -> None:
         super().__init__(view)
         self._parent = parent
@@ -185,8 +185,8 @@ class EditMoveBlockPinsInteraction(Interaction):
 
 class EditAdjustPolySegInteraction(Interaction):
     # instance attributes
-    _polyline : Polyline           # parent polyline
-    _seg      : PolySeg            # target segment
+    _polyline : PolylineItem           # parent polyline
+    _seg      : PolySegItem            # target segment
     _before   : float | None       # initial sweep angle
     _guide1   : QGraphicsLineItem  # inline guide
     _guide2   : QGraphicsLineItem  # perpendicular guide
@@ -194,8 +194,8 @@ class EditAdjustPolySegInteraction(Interaction):
     def __init__(
         self     : Self,
         view     : "DrawingView",
-        polyline : Polyline,
-        seg      : PolySeg,
+        polyline : PolylineItem,
+        seg      : PolySegItem,
         pos      : QPointF
     ) -> None:
         super().__init__(view)

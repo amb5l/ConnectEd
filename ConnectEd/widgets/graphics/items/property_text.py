@@ -13,8 +13,8 @@ from ..properties import PropertiesMixin
 
 from . import NoChange, NO_CHANGE
 
-from .unitext import UniText
-from .handle  import Handle
+from .unitext import UniTextItem
+from .handle  import HandleItem
 
 from .mixin.origin import ItemOriginMixin
 from .mixin.pos    import ItemPosMixin
@@ -27,12 +27,12 @@ if TYPE_CHECKING:
     from ..scenes.drawing import DrawingScene
 
 
-class Tether(QGraphicsLineItem):
+class TetherItem(QGraphicsLineItem):
     """Tether line between a PropertyText origin and its parent cleat."""
 
-    _item  : "PropertyText"
+    _item  : "PropertyTextItem"
 
-    def __init__(self : Self, item : "PropertyText", visible : bool = False):
+    def __init__(self : Self, item : "PropertyTextItem", visible : bool = False):
         super().__init__(item)  # Parent it to the TetherText
         self._item = item
         self.setVisible(visible)
@@ -59,14 +59,14 @@ class Tether(QGraphicsLineItem):
         line.setP2(self.mapFromItem(self.cleat(), QPointF(0, 0)))
         self.setLine(line)
 
-    def cleat(self : Self) -> Handle | None:
+    def cleat(self : Self) -> HandleItem | None:
         return self._item.parentItem()
 
     def toXml(self : Self, xw : QXmlStreamWriter) -> str:
         pass  # no need to serialise
 
 
-class PropertyText(UniText):
+class PropertyTextItem(UniTextItem):
     # class attributes
     _PROPERTY_SPECS = \
         {
@@ -88,14 +88,14 @@ class PropertyText(UniText):
         ItemOriginMixin._PROPERTY_SPECS_ORIGIN | \
         ItemPosMixin._PROPERTY_SPECS_POS | \
         ItemRotateMixin._PROPERTY_SPECS_ROTATE | \
-        UniText._PROPERTY_SPECS_SIZE_ALIGN | \
+        UniTextItem._PROPERTY_SPECS_SIZE_ALIGN | \
         ItemQuillMixin._PROPERTY_SPECS_QUILL
 
     # instance attributes
     _property    : str
     _cleat       : str
     _cleat_shown : bool
-    _tether      : Tether | None
+    _tether      : TetherItem | None
 
     def __init__(
         self     : Self,
@@ -106,7 +106,7 @@ class PropertyText(UniText):
         bare     : bool           = False
     ) -> None:
         super().__init__(bare=bare)
-        self._tether = Tether(self)
+        self._tether = TetherItem(self)
         self._property = property
         self.setCleat(cleat)
         if origin is None:
@@ -195,7 +195,7 @@ class PropertyText(UniText):
             self._tether.onPositionChange(self.pos())
 
     def item(self : Self) -> "PropertiesMixin | None":
-        h : "Handle" = self.parentItem()
+        h : "HandleItem" = self.parentItem()
         return None if h is None else h.parentItem()
 
     def property(self : Self) -> str:

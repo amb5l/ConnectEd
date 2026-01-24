@@ -3,9 +3,9 @@ from typing import Self
 
 class ItemGripMixin:
     def setGripsVisible(self : Self, visible : bool) -> None:
-        from ..polyline import Polyline
+        from ..polyline import PolylineItem
         from .handle    import ItemHandlesMixin
-        if isinstance(self, Polyline):
+        if isinstance(self, PolylineItem):
             # In vertex-edit mode (selMode==1), show vertices; otherwise hide them
             vtx_visible = visible and self.selMode() == 1
             for vertex in self._vertices:

@@ -11,9 +11,9 @@ if TYPE_CHECKING:
 class ItemCloneMixin:
     def clone(self : Self, original : Self | None = None) -> Self:
         """Create a clone of this or specified item with a new UUID."""
-        from ..handle        import Handle
+        from ..handle        import HandleItem
         from ..property_text import PropertyTextMixin
-        from ..base_pin      import BasePin
+        from ..base_pin      import BasePinItem
         source : "ItemType" = original if original is not None else self
         clone_item : "ItemType" = self.__class__(bare=True)
         # clone properties
@@ -22,10 +22,10 @@ class ItemCloneMixin:
                 clone_item.properties[name] = source_prop.clone(clone_item)
         # clone property texts and pins
         for source_child in source.childItems():
-            if isinstance(source_child, BasePin):
+            if isinstance(source_child, BasePinItem):
                 clone_pin = source_child.clone()
                 clone_pin.setParentItem(clone_item)
-            elif isinstance(source_child, Handle):
+            elif isinstance(source_child, HandleItem):
                 for source_ap_child in source_child.childItems():
                     if isinstance(source_ap_child, PropertyTextMixin):
                         clone_ap_child = source_ap_child.clone()

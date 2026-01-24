@@ -6,7 +6,7 @@ import ConnectEd.scripting as cs
 
 from ConnectEd.widgets.graphics.items import DEFAULT
 
-from ConnectEd.widgets.graphics.items.rectangle import Rectangle
+from ConnectEd.widgets.graphics.items.rectangle import RectangleItem
 
 
 def test(app : cs.ConnectEdApp):
@@ -179,8 +179,8 @@ def test(app : cs.ConnectEdApp):
     view.mouseLeftClick(QPointF(pos.x() + size.width(), pos.y() + size.height()))
     # verify existence and basic properties
     rect = view.scene().items()[0]
-    assert isinstance(rect, Rectangle), \
-        f"Got {type(rect)}, expected {Rectangle}"
+    assert isinstance(rect, RectangleItem), \
+        f"Got {type(rect)}, expected {RectangleItem}"
     assert rect.pos() == pos, \
         f"Got {rect.pos()}, expected {pos}"
     assert rect.rect().width() == size.width(), \

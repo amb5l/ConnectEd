@@ -234,6 +234,6 @@ class BaseRectangleMixin(
         ]
 
 
-class BaseRectangle(BaseRectangleMixin, QGraphicsRectItem):
+class BaseRectangleItem(BaseRectangleMixin, QGraphicsRectItem):
     """Base class for rectangle items."""
     pass

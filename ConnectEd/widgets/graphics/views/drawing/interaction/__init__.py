@@ -6,9 +6,9 @@ from PyQt6.QtGui     import QAction
 
 from ....items import ItemType
 
-from ....items.grip       import Grip
-from ....items.block      import Block
-from ....items.block_pin  import BlockPin
+from ....items.grip       import GripItem
+from ....items.block      import BlockItem
+from ....items.block_pin  import BlockPinItem
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -85,21 +85,21 @@ class BlockPinInteraction(Interaction):
     """Base for all interactions that operate on a block pin."""
 
     # instance attributes
-    _parent : Block
-    _pin    : BlockPin
+    _parent : BlockItem
+    _pin    : BlockPinItem
 
     def __init__(
         self   : Self,
         view   : "DrawingView",
-        parent : Block,
-        pin    : BlockPin | None,
+        parent : BlockItem,
+        pin    : BlockPinItem | None,
         pos    : QPointF,
         snap   : QPointF | None = None
     ) -> None:
         super().__init__(view)
-        if isinstance(parent, Block):
+        if isinstance(parent, BlockItem):
             self._parent = parent
-            self._pin = pin or BlockPin(parent)
+            self._pin = pin or BlockPinItem(parent)
             self._pin.setParentItem(parent)
             self.update(pos, snap)
         else:

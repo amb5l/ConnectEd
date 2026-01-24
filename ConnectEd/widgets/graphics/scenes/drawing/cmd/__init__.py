@@ -8,7 +8,7 @@ from ......core.utils import camel2proper
 
 from ....items import ItemMixin, ItemType
 
-from ....items.grip import Grip
+from ....items.grip import GripItem
 
 
 from typing import TYPE_CHECKING

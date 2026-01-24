@@ -41,17 +41,17 @@ from ..mixin.clone   import ItemCloneMixin
 from ..mixin.xml     import ItemXmlMixin
 from ..mixin.menu    import ItemMenuMixin
 
-from ..null_point import NullPoint
+from ..null import NullItem
 
-from .line  import UniTextLine
-from .block import UniTextBlock
+from .line  import UniTextLineItem
+from .block import UniTextBlockItem
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ...views.drawing import DrawingView
 
 
-class UniText(
+class UniTextItem(
     ItemMixin,
     ItemOriginMixin,
     ItemPosMixin,
@@ -64,7 +64,7 @@ class UniText(
     ItemXmlMixin,
     ItemMenuMixin,
     PropertiesMixin,
-    NullPoint
+    NullItem
 ):
     """
     Text item. Supports line or block text and rotation compensation.
@@ -114,7 +114,7 @@ class UniText(
         ItemQuillMixin._PROPERTY_SPECS_QUILL
 
     # instance attributes
-    _child   : UniTextLine | UniTextBlock  # text renderer
+    _child   : UniTextLineItem | UniTextBlockItem  # text renderer
     _align_h : AlignH                      # horizontal alignment
     _align_v : AlignV                      # vertical alignment
     _width   : float | None                # width constraint
@@ -139,7 +139,7 @@ class UniText(
         parent    : QGraphicsItem | None = None
     ) -> None:
         super().__init__()
-        self._child = UniTextBlock() if block else UniTextLine()
+        self._child = UniTextBlockItem() if block else UniTextLineItem()
         self._child.setParentItem(self)
         self._child.setText(text)
         self._align_h = align_h or AlignH.LEFT
@@ -228,12 +228,12 @@ class UniText(
     ############################################################################
 
     def block(self : Self) -> bool:
-        return isinstance(self._child, UniTextBlock)
+        return isinstance(self._child, UniTextBlockItem)
 
     def setBlock(self : Self, block : bool) -> None:
-        if isinstance(self._child, UniTextLine)  and block     \
-        or isinstance(self._child, UniTextBlock) and not block:
-            new_child = UniTextBlock() if block else UniTextLine()
+        if isinstance(self._child, UniTextLineItem)  and block     \
+        or isinstance(self._child, UniTextBlockItem) and not block:
+            new_child = UniTextBlockItem() if block else UniTextLineItem()
             new_child.setRotation(self._child.rotation())
             new_child.setText(self._child.text())
             new_child.setColor(self._child.color())

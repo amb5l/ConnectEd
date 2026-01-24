@@ -2,7 +2,7 @@ from typing import Self
 
 from PyQt6.QtCore import QPointF
 
-from ....items.polyline import Polyline, PolyVtx
+from ....items.polyline import PolylineItem, PolyVtxItem
 
 from . import CmdBase
 
@@ -11,12 +11,12 @@ class CmdPolyVtxBase(CmdBase):
     """Base class for all commands that work with a polyline vertex."""
 
     # instance attributes
-    _polyline : Polyline
-    _vtx      : PolyVtx | None
+    _polyline : PolylineItem
+    _vtx      : PolyVtxItem | None
 
     def __init__(
         self     : Self,
-        polyline : Polyline
+        polyline : PolylineItem
     ):
         super().__init__()
         self._polyline = polyline
@@ -32,7 +32,7 @@ class CmdAddPolyVtx(CmdPolyVtxBase):
 
     def __init__(
         self     : Self,
-        polyline : Polyline,
+        polyline : PolylineItem,
         pos      : QPointF,
         sweep    : float | None = None
     ):
@@ -47,5 +47,5 @@ class CmdAddPolyVtx(CmdPolyVtxBase):
         self._polyline.removeLastVertex()
         self._vtx = None
 
-    def vtx(self : Self) -> PolyVtx | None:
+    def vtx(self : Self) -> PolyVtxItem | None:
         return self._vtx

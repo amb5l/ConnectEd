@@ -13,7 +13,7 @@ from .mixin.rotate import ItemRotateMixin
 from .mixin.line   import ItemLineMixin
 
 from .port_pin import PortPinMixin
-from .base_pin import BasePin, BasePinDotMixin, BasePinClockMixin, _PIN_CLK_SIZE
+from .base_pin import BasePinItem, BasePinDotMixin, BasePinClockMixin, _PIN_CLK_SIZE
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -21,12 +21,12 @@ if TYPE_CHECKING:
     from ..scenes.drawing import DrawingScene
 
 
-class GatePin(
+class GatePinItem(
     ItemPosMixin,
     ItemRotateMixin,
     BasePinDotMixin,
     BasePinClockMixin,
-    BasePin
+    BasePinItem
 ):
     # class attributes
     _PROPERTY_SPECS = \

@@ -15,7 +15,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from .scenes.drawing import DrawingScene
     from .items import ItemType
-    from .items.property_text import PropertyText, PropertyTextSpec
+    from .items.property_text import PropertyTextItem, PropertyTextSpec
     PropertyOwner = ItemType | DrawingScene
 
 
@@ -90,7 +90,7 @@ class Property(QObject):
     _getter   : Callable[["PropertyOwner"], Any] | str | None  # or static value
     _setter   : Callable[["PropertyOwner", Any], None] | None
     _default  : Callable[["PropertyOwner"], Any]       | None
-    _text     : "PropertyText | None"
+    _text     : "PropertyTextItem | None"
     _inherent : bool
     _subs     : dict["Property", Callable]  # dep_property -> update_slot
 
@@ -106,7 +106,7 @@ class Property(QObject):
         getter   : Callable[["PropertyOwner"], Any] | str | None  = None,
         setter   : Callable[["PropertyOwner", Any], None] | None  = None,
         default  : Callable[["PropertyOwner"], Any]       | None  = None,
-        text     : "PropertyText                          | None" = None,
+        text     : "PropertyTextItem                          | None" = None,
         inherent : bool = False
     ) -> None:
         super().__init__()
@@ -182,12 +182,12 @@ class Property(QObject):
         """Get default value."""
         return self._default(self._owner) if self._default else None
 
-    def getText(self : Self) -> "PropertyText | None":
+    def getText(self : Self) -> "PropertyTextItem | None":
         return self._text
 
     def setText(
         self : Self,
-        text : "PropertyText | None"
+        text : "PropertyTextItem | None"
     ) -> None:
         # Disconnect from old property text if exists
         if self._text is not None:

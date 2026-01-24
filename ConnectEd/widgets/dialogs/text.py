@@ -5,7 +5,7 @@ from PyQt6.QtGui     import QShowEvent, QColor
 
 from ..graphics.items import Default, NoChange
 
-from ..graphics.items.unitext import UniText
+from ..graphics.items.unitext import UniTextItem
 
 from .components.layout.text_value      import TextValueLayout
 from .components.layout.text_appearance import TextAppearancePreviewLayout
@@ -60,7 +60,7 @@ class TextItemDialog(QDialog):
 
     def __init__(
         self   : Self,
-        item   : UniText,
+        item   : UniTextItem,
         parent : QWidget | None = None
     ):
         super().__init__(parent)

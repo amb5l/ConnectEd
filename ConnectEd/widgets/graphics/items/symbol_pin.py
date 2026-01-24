@@ -9,7 +9,7 @@ from .mixin.rotate  import ItemRotateMixin
 from .mixin.line    import ItemLineMixin
 
 from .port_pin import PortPinMixin
-from .base_pin import BasePinArrow, BasePin, \
+from .base_pin import BasePinArrowItem, BasePinItem, \
                       BasePinDotMixin, BasePinClockMixin, \
                       _PIN_CLK_SIZE
 
@@ -19,19 +19,19 @@ if TYPE_CHECKING:
     from ..scenes.drawing import DrawingScene
 
 
-class SymbolPinArrow(BasePinArrow):
+class SymbolPinArrowItem(BasePinArrowItem):
     pass
 
 
-class SymbolPin(
+class SymbolPinItem(
     ItemPosMixin,
     ItemRotateMixin,
     BasePinDotMixin,
     BasePinClockMixin,
-    BasePin
+    BasePinItem
 ):
     # class attributes
-    _ARROW_CLASS = SymbolPinArrow
+    _ARROW_CLASS = SymbolPinArrowItem
     _PROPERTY_SPECS = \
         PortPinMixin._PROPERTY_SPECS_NAME | \
         PortPinMixin._PROPERTY_SPECS_DIR | \

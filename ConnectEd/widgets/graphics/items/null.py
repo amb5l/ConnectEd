@@ -11,7 +11,7 @@ if TYPE_CHECKING:
     from . import ItemMixin
 
 
-class NullPoint(QGraphicsItem):
+class NullItem(QGraphicsItem):
     # instance attributes
     _brect  : QRectF        # bounding rect
     _hshape : QPainterPath  # shape for hit detection

@@ -16,7 +16,7 @@ from ..graphics.property import PropertyState,    \
 
 from ..graphics.items import DEFAULT
 
-from ..graphics.items.property_text import PropertyText
+from ..graphics.items.property_text import PropertyTextItem
 
 from ..graphics.items.mixin.handle import ItemRectHandlesMixin
 

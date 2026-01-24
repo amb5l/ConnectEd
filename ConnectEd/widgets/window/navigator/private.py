@@ -4,8 +4,8 @@ from ....app import logger, settings, model, window
 
 from ....core.utils import typeCheck
 
-from ....widgets.graphics.items.handle        import Handle
-from ....widgets.graphics.items.property_text import Tether
+from ....widgets.graphics.items.handle        import HandleItem
+from ....widgets.graphics.items.property_text import TetherItem
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -123,7 +123,7 @@ class NavigatorPrivateMixin:
                 return
         db_node = node.parent().parent()
         items = [e for e in scene.items() \
-                    if not isinstance(e, Handle | Tether)]
+                    if not isinstance(e, HandleItem | TetherItem)]
         subwindow = SpreadsheetSubWindow(scene, items)
         subwindow.setWindowTitle(f"{db_node.text()}:{node.text()}: Properties")
         window().mdi_area.addSubWindow(subwindow)

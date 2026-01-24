@@ -2,9 +2,9 @@ from PyQt6.QtCore import QPointF
 
 from ....items import ItemType
 
-from ....items.block     import Block
-from ....items.block_pin import BlockPin
-from ....items.polyline  import Polyline, PolyVtx
+from ....items.block     import BlockItem
+from ....items.block_pin import BlockPinItem
+from ....items.polyline  import PolylineItem, PolyVtxItem
 
 from ..cmd           import cmdExec, CmdAdd
 from ..cmd.block_pin import CmdAddBlockPin
@@ -30,10 +30,10 @@ class DrawingSceneApiAddMixin:
 
     def addBlockPin(
         self     : "DrawingScene",
-        parent   : Block,
-        pin      : BlockPin,
+        parent   : BlockItem,
+        pin      : BlockPinItem,
         undoable : bool = False
-    ) -> BlockPin:
+    ) -> BlockPinItem:
         """Add a block pin to the scene."""
         cmd = CmdAddBlockPin(parent, pin)
         cmdExec(self, cmd, undoable)
@@ -44,19 +44,19 @@ class DrawingSceneApiAddMixin:
         vertices : list[QPointF],
         closed   : bool = False,
         undoable : bool = False
-    ) -> Polyline:
+    ) -> PolylineItem:
         """Add a polyline to the scene."""
-        item = Polyline(vertices, closed)
+        item = PolylineItem(vertices, closed)
         self.addItems([item], undoable)
         return item
 
     def addPolyVtx(
         self     : "DrawingScene",
-        polyline : Polyline,
+        polyline : PolylineItem,
         pos      : QPointF,
         sweep    : float | None = None,
         undoable : bool = False
-    ) -> PolyVtx:
+    ) -> PolyVtxItem:
         """Add a vertex to a polyline."""
         cmd = CmdAddPolyVtx(polyline, pos, sweep)
         cmdExec(self, cmd, undoable)

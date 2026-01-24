@@ -11,7 +11,7 @@ from .. import EdgeLoc, Edge
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from ..block import Block
+    from ..block import BlockItem
 
 
 # TODO - merge into Block, which is the only item that uses it?
@@ -57,7 +57,7 @@ class ItemLocMixin:
                 logger().error(f"Invalid edge: {loc.edge}")
                 angle = 0
         self.setRotation(angle)
-        parent : "Block" = self.parentItem()
+        parent : "BlockItem" = self.parentItem()
         edge_pos = parent.loc2pos(loc) if parent else QPointF()
         super().setPos(edge_pos)
 

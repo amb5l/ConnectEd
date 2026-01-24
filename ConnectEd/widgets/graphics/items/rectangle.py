@@ -1,8 +1,8 @@
-from .base_rect import BaseRectangle
+from .base_rect import BaseRectangleItem
 
-class Rectangle(BaseRectangle):
+class RectangleItem(BaseRectangleItem):
     pass
 
 
-class SymbolRectangle(Rectangle):
+class SymbolRectangleItem(RectangleItem):
     pass

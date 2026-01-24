@@ -1,9 +1,9 @@
-from .unitext import UniText
+from .unitext import UniTextItem
 
 
-class Text(UniText):
+class TextItem(UniTextItem):
     pass
 
 
-class SymbolText(Text):
+class SymbolTextItem(TextItem):
     pass

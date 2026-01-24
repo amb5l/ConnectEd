@@ -8,8 +8,8 @@ from ..properties import PropertiesMixin
 from . import SignalDirection
 
 from .property_text import PropertyTextSpec
-from .handle        import Handle
-from .entry         import Entry
+from .handle        import HandleItem
+from .entry         import EntryItem
 
 from .mixin        import ItemMixin
 from .mixin.handle import ItemHandlesMixin
@@ -61,7 +61,7 @@ class PortPinMixin(
     _name      : str
     _direction : SignalDirection
     _comment   : str
-    _entry     : Entry
+    _entry     : EntryItem
 
     def initPortPin(self : Self, bare : bool = False) -> None:
         # Initialize attributes that properties will access
@@ -72,17 +72,17 @@ class PortPinMixin(
         # Initialize the item (this sets up properties system)
         self.initItem(bare)
         # Initialize the entry
-        self._entry = Entry(self)
+        self._entry = EntryItem(self)
 
     def initHandles(self : Self) -> None:
         self._handles = {
-            "Origin" : Handle(
+            "Origin" : HandleItem(
                 name   = "Origin",
                 pos    = QPointF(0, 0),
                 kind   = "move",
                 parent = self
             ),
-            "Name" : Handle(
+            "Name" : HandleItem(
                 name   = "Name",
                 pos    = QPointF(self._AP_NAME_OFFSET, 0),
                 kind   = "move",

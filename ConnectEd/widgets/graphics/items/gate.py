@@ -12,7 +12,7 @@ from ..painter_path import PainterPath
 
 from . import SignalDirection
 
-from .gate_pin import GatePin
+from .gate_pin import GatePinItem
 
 from .mixin        import ItemMixin
 from .mixin.pos    import ItemPosMixin
@@ -38,7 +38,7 @@ class GateFunc(Enum):
     XOR_XNOR = "XOR/XNOR"
 
 
-class BaseGate(
+class BaseGateItem(
     ItemMixin,
     ItemPosMixin,
     ItemRotateMixin,
@@ -91,7 +91,7 @@ class BaseGate(
         ]
 
 
-class BufGate(BaseGate):
+class BufGateItem(BaseGateItem):
     """Buffer/Inverter gate."""
 
     # class attributes
@@ -106,7 +106,7 @@ class BufGate(BaseGate):
         )
     }
     _PROPERTY_SPECS = \
-        BaseGate._PROPERTY_SPECS_LABEL | \
+        BaseGateItem._PROPERTY_SPECS_LABEL | \
         _PROPERTY_SPECS_IO | \
         ItemPosMixin._PROPERTY_SPECS_POS | \
         ItemRotateMixin._PROPERTY_SPECS_ROTATE | \
@@ -114,8 +114,8 @@ class BufGate(BaseGate):
         ItemFillMixin._PROPERTY_SPECS_FILL
 
     # instance attributes
-    _input  : GatePin
-    _output : GatePin
+    _input  : GatePinItem
+    _output : GatePinItem
 
     def __init__(self : Self, bare : bool = False) -> None:
         super().__init__(bare)
@@ -185,7 +185,7 @@ class BufGate(BaseGate):
 
     def setOutput(self : Self, level: str = "H") -> None:
         if not hasattr(self, '_output'):
-            self._output = GatePin(self)
+            self._output = GatePinItem(self)
             self._output.setDirection(SignalDirection.OUT)
             self._output.setName("o")
             self._output.setPos(QPointF(-12, 0))
@@ -199,7 +199,7 @@ class BufGate(BaseGate):
 
     def setInput(self : Self, level : str = "H") -> None:
         if not hasattr(self, '_input'):
-            self._input = GatePin(self)
+            self._input = GatePinItem(self)
             self._input.setDirection(SignalDirection.IN)
             self._input.setName("i")
             self._input.setPos(QPointF(-28, 0))
@@ -207,7 +207,7 @@ class BufGate(BaseGate):
         self._input.setInverted(level == "L")
 
 
-class Gate(BaseGate):
+class GateItem(BaseGateItem):
     """Base class for N:1 logic gates."""
 
     # class attributes
@@ -222,7 +222,7 @@ class Gate(BaseGate):
         )
     }
     _PROPERTY_SPECS = \
-        BaseGate._PROPERTY_SPECS_LABEL | \
+        BaseGateItem._PROPERTY_SPECS_LABEL | \
         _PROPERTY_SPECS_IO | \
         ItemPosMixin._PROPERTY_SPECS_POS | \
         ItemRotateMixin._PROPERTY_SPECS_ROTATE | \
@@ -230,8 +230,8 @@ class Gate(BaseGate):
         ItemFillMixin._PROPERTY_SPECS_FILL
 
     # instance attributes
-    _inputs : list[GatePin]
-    _output : GatePin
+    _inputs : list[GatePinItem]
+    _output : GatePinItem
 
     def __init__(self : Self, width : int | None = None, bare : bool = False) -> None:
         super().__init__(bare)
@@ -310,7 +310,7 @@ class Gate(BaseGate):
 
     def setOutput(self : Self, level: str = "H") -> None:
         if not hasattr(self, '_output'):
-            self._output = GatePin(self)
+            self._output = GatePinItem(self)
             self._output.setDirection(SignalDirection.OUT)
             self._output.setName("o")
             self._output.setPos(QPointF(-10, 0))
@@ -326,7 +326,7 @@ class Gate(BaseGate):
         if not hasattr(self, '_inputs'):
             self._inputs = []
             for i, level in enumerate(levels):
-                pin = GatePin(self)
+                pin = GatePinItem(self)
                 pin.setDirection(SignalDirection.IN)
                 pin.setName(f"i{i+1}")
                 a = 0 if w % 2 == 1 or i < w // 2 else 1 # skip/don't center
@@ -345,7 +345,7 @@ class Gate(BaseGate):
                 self.setPath(path)
 
 
-class AndGate(Gate):
+class AndGateItem(GateItem):
     _VHDL_OPERATOR = "and"
 
     def initPath(self : Self) -> None:
@@ -358,7 +358,7 @@ class AndGate(Gate):
         self.setPath(path)
 
 
-class OrGate(Gate):
+class OrGateItem(GateItem):
     _VHDL_OPERATOR = "or"
 
     def initPath(self : Self) -> None:
@@ -381,7 +381,7 @@ class OrGate(Gate):
             self._inputs[i].setLength(14)
 
 
-class XorGate(OrGate):
+class XorGateItem(OrGateItem):
     _VHDL_OPERATOR = "xor"
 
     def initPath(self : Self) -> None:

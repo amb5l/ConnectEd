@@ -8,7 +8,7 @@ if TYPE_CHECKING:
     from .....scenes.drawing   import DrawingScene
     from .....items            import SignalDirection
     from .....items.port_pin   import PortPinMixin
-    from .....items.symbol_pin import SymbolPin
+    from .....items.symbol_pin import SymbolPinItem
 
 
 class CmdEditPortPin(CmdSceneItem):
@@ -44,14 +44,14 @@ class CmdEditPortPin(CmdSceneItem):
 
 
 class CmdEditSymbolPinDot(CmdSceneItem):
-    _item   : "SymbolPin"
+    _item   : "SymbolPinItem"
     _before : bool
     _after  : bool
 
     def __init__(
         self   : Self,
         scene  : "DrawingScene",
-        item   : "SymbolPin",
+        item   : "SymbolPinItem",
         enable : bool
     ):
         super().__init__(scene, item)
@@ -68,14 +68,14 @@ class CmdEditSymbolPinDot(CmdSceneItem):
 
 
 class CmdEditSymbolPinClock(CmdSceneItem):
-    _item   : "SymbolPin"
+    _item   : "SymbolPinItem"
     _before : bool
     _after  : bool
 
     def __init__(
         self : Self,
         scene : "DrawingScene",
-        item : "SymbolPin",
+        item : "SymbolPinItem",
         enable : bool
     ):
         super().__init__(scene, item)

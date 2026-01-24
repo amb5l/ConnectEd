@@ -13,7 +13,7 @@ if TYPE_CHECKING:
 
 class ItemSettingsMixin:
     def settingsName(self : Self | QGraphicsItem) -> str:
-        return self.__class__.__name__
+        return self.__class__.__name__.replace("Item", "")
 
 
 class ItemMixin(ItemSettingsMixin):

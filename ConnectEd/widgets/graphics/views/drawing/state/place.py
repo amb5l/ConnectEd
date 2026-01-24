@@ -10,12 +10,12 @@ from .....dialogs.gate     import GateDialog
 from .....dialogs.text     import TextItemDialog
 
 from ....items            import SignalDirection, ItemMixin
-from ....items.port       import Port
-from ....items.gate       import GateFunc, BufGate, AndGate, OrGate, XorGate
-from ....items.block      import Block
-from ....items.block_pin  import BlockPin
-from ....items.symbol_pin import SymbolPin
-from ....items.text       import Text
+from ....items.port       import PortItem
+from ....items.gate       import GateFunc, BufGateItem, AndGateItem, OrGateItem, XorGateItem
+from ....items.block      import BlockItem
+from ....items.block_pin  import BlockPinItem
+from ....items.symbol_pin import SymbolPinItem
+from ....items.text       import TextItem
 
 from ..interaction.place import PlacePortInteraction, \
                                 PlaceGateInteraction, \
@@ -42,7 +42,7 @@ class DrawingViewStatePlacePort(ClickMixin, DrawingViewStateBase):
         s    : QPointF,
         i    : list[ItemMixin] | None = None
     ) -> None:
-        item = Port()
+        item = PortItem()
         item.setPos(self._snap(s))
         dialog = PortPinDialog("Port", item, self.view)
         if dialog.exec():
@@ -70,10 +70,10 @@ class DrawingViewStatePlaceGate(ClickMixin, DrawingViewStateBase):
         dialog = GateDialog(self.view)
         if dialog.exec():
             match dialog.getFunction():
-                case GateFunc.BUF_INV  : gate = BufGate()
-                case GateFunc.AND_NAND : gate = AndGate(dialog.getWidth())
-                case GateFunc.OR_NOR   : gate = OrGate(dialog.getWidth())
-                case GateFunc.XOR_XNOR : gate = XorGate(dialog.getWidth())
+                case GateFunc.BUF_INV  : gate = BufGateItem()
+                case GateFunc.AND_NAND : gate = AndGateItem(dialog.getWidth())
+                case GateFunc.OR_NOR   : gate = OrGateItem(dialog.getWidth())
+                case GateFunc.XOR_XNOR : gate = XorGateItem(dialog.getWidth())
             gate.setPos(self._snap(s))
             self.interact(PlaceGateInteraction(self.view, self._snap(s), gate))
         else:
@@ -106,9 +106,9 @@ class DrawingViewStatePlaceBlockPin(DrawingViewStateBase):
         s    : QPointF,
         i    : list[ItemMixin] | None = None
     ) -> None:
-        block = i[0] if i else self.view._selectedItem(Block)
-        if block and isinstance(block, Block):
-            pin = BlockPin() # don't parent to block yet
+        block = i[0] if i else self.view._selectedItem(BlockItem)
+        if block and isinstance(block, BlockItem):
+            pin = BlockPinItem() # don't parent to block yet
             dialog = PortPinDialog("Block Pin", pin, self.view)
             if dialog.exec():
                 pin.setName(dialog.getName())
@@ -144,7 +144,7 @@ class DrawingViewStatePlaceSymbolPin(ClickMixin, DrawingViewStateBase):
         s    : QPointF,
         i    : NoneType = None  # not used
     ) -> None:
-        pin = SymbolPin()
+        pin = SymbolPinItem()
         pin.setPos(self._snap(s))
         dialog = PortPinDialog("Pin", pin, self.view)
         if dialog.exec():
@@ -232,7 +232,7 @@ class DrawingViewStatePlaceText(ClickMixin, DrawingViewStateBase):
         s    : QPointF,
         i    : list[ItemMixin] | None = None
     ) -> None:
-        item = Text(self._snap(s))
+        item = TextItem(self._snap(s))
         dialog = TextItemDialog(item, self.view)
         if dialog.exec():
             item.setText(dialog.getText())

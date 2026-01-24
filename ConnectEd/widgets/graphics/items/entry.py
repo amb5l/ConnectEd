@@ -18,7 +18,7 @@ if TYPE_CHECKING:
 _ENTRY_SIZE = 3
 
 
-class Entry(
+class EntryItem(
     ItemSettingsMixin,
     ItemPaintMixin,
     ItemChangeMixin,

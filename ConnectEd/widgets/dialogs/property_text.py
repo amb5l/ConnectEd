@@ -5,7 +5,7 @@ from PyQt6.QtWidgets import QWidget, QDialog, \
                             QButtonGroup, QRadioButton
 from PyQt6.QtGui     import QShowEvent, QColor
 
-from ..graphics.items.property_text import PropertyText
+from ..graphics.items.property_text import PropertyTextItem
 
 from .components.layout.text_value      import TextValueLayout
 from .components.layout.text_appearance import TextAppearancePreviewLayout
@@ -20,7 +20,7 @@ class PropertyTextDialog(QDialog):
 
     def __init__(
         self   : Self,
-        item   : PropertyText,
+        item   : PropertyTextItem,
         parent : QWidget | None = None # not to be confused with _parent
     ) -> None:
         super().__init__(parent)

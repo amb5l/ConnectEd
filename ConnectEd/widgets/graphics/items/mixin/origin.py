@@ -8,7 +8,7 @@ from ...properties import PropertiesMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from ..handle import Handle
+    from ..handle import HandleItem
     from .handle  import ItemHandlesMixin
 
 
@@ -25,7 +25,7 @@ class ItemOriginMixin:
 
     # instance attributes
     _origin  : str                  # name of origin handle
-    _handles : dict[str, "Handle"]
+    _handles : dict[str, "HandleItem"]
 
     def initOrigin(self : Self) -> None:
         from .handle import ItemHandlesMixin

@@ -5,9 +5,9 @@ from PyQt6.QtCore import QPointF
 
 from ......app import logger
 
-from ....items.conn_vtx import ConnVtx
-from ....items.conn_seg import ConnSeg
-from ....items.entry    import Entry
+from ....items.conn_vtx import ConnVtxItem
+from ....items.conn_seg import ConnSegItem
+from ....items.entry    import EntryItem
 
 from . import CmdSceneBase
 
@@ -20,13 +20,13 @@ class CmdAddConnVtx(CmdSceneBase):
     """Create and add a new vertex to the scene."""
 
     # instance attributes
-    _vtx : ConnVtx
+    _vtx : ConnVtxItem
 
     def __init__(
         self  : Self,
         scene : "DrawingScene",
         pos   : QPointF,
-        cls   : type[ConnVtx] = ConnVtx
+        cls   : type[ConnVtxItem] = ConnVtxItem
     ) -> None:
         super().__init__(scene)
         self._vtx = cls(pos)
@@ -37,26 +37,26 @@ class CmdAddConnVtx(CmdSceneBase):
     def undo(self : Self) -> None:
         self._scene.removeItem(self._vtx)
 
-    def vtx(self : Self) -> ConnVtx:
+    def vtx(self : Self) -> ConnVtxItem:
         return self._vtx
 
 
 class CmdReparentConnVtx(CmdSceneBase):
     @dataclass
     class ConnVtxState:
-        parent : Entry   | None
+        parent : EntryItem   | None
         pos    : QPointF | None
 
     # instance attributes
-    _vtx    : ConnVtx
+    _vtx    : ConnVtxItem
     _before : ConnVtxState
     _after  : ConnVtxState
 
     def __init__(
         self   : Self,
         scene  : "DrawingScene",
-        vtx    : ConnVtx,
-        parent : Entry | None
+        vtx    : ConnVtxItem,
+        parent : EntryItem | None
     ) -> None:
         super().__init__(scene)
         self._vtx = vtx
@@ -81,12 +81,12 @@ class CmdRemoveConnVtx(CmdSceneBase):
     """Remove a specified vertex from the scene."""
 
     # instance attributes
-    _vtx : ConnVtx
+    _vtx : ConnVtxItem
 
     def __init__(
         self  : Self,
         scene : "DrawingScene",
-        vtx   : ConnVtx
+        vtx   : ConnVtxItem
     ) -> None:
         super().__init__(scene)
         self._vtx = vtx
@@ -102,16 +102,16 @@ class CmdAddConnSeg(CmdSceneBase):
     """Add a new segment to the scene between two specified vertices."""
 
     # instance attributes
-    _vtx1 : ConnVtx
-    _vtx2 : ConnVtx
-    _seg  : ConnSeg
+    _vtx1 : ConnVtxItem
+    _vtx2 : ConnVtxItem
+    _seg  : ConnSegItem
 
     def __init__(
         self : Self,
         scene : "DrawingScene",
-        vtx1 : ConnVtx,
-        vtx2 : ConnVtx,
-        cls  : type[ConnSeg] = ConnSeg
+        vtx1 : ConnVtxItem,
+        vtx2 : ConnVtxItem,
+        cls  : type[ConnSegItem] = ConnSegItem
     ) -> None:
         super().__init__(scene)
         self._vtx1 = vtx1
@@ -132,7 +132,7 @@ class CmdAddConnSeg(CmdSceneBase):
         # remove segment from scene
         self._scene.removeItem(self._seg)
 
-    def seg(self : Self) -> ConnSeg:
+    def seg(self : Self) -> ConnSegItem:
         return self._seg
 
 
@@ -140,16 +140,16 @@ class CmdReattachConnSeg(CmdSceneBase):
     """Detach a segment from one vertex and attach it to another."""
 
     # instance attributes
-    _seg     : ConnSeg
-    _vtx_old : ConnVtx
-    _vtx_new : ConnVtx
+    _seg     : ConnSegItem
+    _vtx_old : ConnVtxItem
+    _vtx_new : ConnVtxItem
 
     def __init__(
         self    : Self,
         scene   : "DrawingScene",
-        seg     : ConnSeg,
-        vtx_old : ConnVtx,
-        vtx_new : ConnVtx
+        seg     : ConnSegItem,
+        vtx_old : ConnVtxItem,
+        vtx_new : ConnVtxItem
     ) -> None:
         super().__init__(scene)
         self._seg = seg
@@ -169,14 +169,14 @@ class CmdRemoveConnSeg(CmdSceneBase):
     """Remove a specified segment from the scene."""
 
     # instance attributes
-    _vtx1 : ConnVtx
-    _vtx2 : ConnVtx
-    _seg  : ConnSeg
+    _vtx1 : ConnVtxItem
+    _vtx2 : ConnVtxItem
+    _seg  : ConnSegItem
 
     def __init__(
         self : Self,
         scene : "DrawingScene",
-        seg : ConnSeg
+        seg : ConnSegItem
     ) -> None:
         super().__init__(scene)
         self._vtx1 = seg.vtx1()

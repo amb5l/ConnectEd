@@ -13,10 +13,10 @@ from .mixin.change import ItemChangeMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from .conn_vtx import ConnVtx
+    from .conn_vtx import ConnVtxItem
 
 
-class Junction(
+class JunctionItem(
     ItemSettingsMixin,
     ItemChangeMixin,
     ItemLineMixin,
@@ -27,7 +27,7 @@ class Junction(
     _rect  : QRectF
     _brush : QBrush
 
-    def __init__(self : Self, parent : "ConnVtx") -> None:
+    def __init__(self : Self, parent : "ConnVtxItem") -> None:
         QGraphicsEllipseItem.__init__(self, parent)
         self.setFlag(self.GraphicsItemFlag.ItemIsSelectable, True)
         self._rect = QRectF()

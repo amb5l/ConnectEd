@@ -17,7 +17,7 @@ from ..properties import PropertiesMixin
 from ..painter_path import PainterPath
 
 from .base_rect import BaseRectangleMixin
-from .grip      import Grip
+from .grip      import GripItem
 
 from .mixin        import ItemMixin
 from .mixin.pos    import ItemPosMixin
@@ -36,7 +36,7 @@ if TYPE_CHECKING:
     from ..views.drawing  import DrawingView
 
 
-class PolyVtx(Grip):
+class PolyVtxItem(GripItem):
     _PATH_NAME = "Diamond"
     _ORIGIN_PATH_NAME = "Square"
 
@@ -45,7 +45,7 @@ class PolyVtx(Grip):
 
     def __init__(
         self   : Self,
-        parent : "Polyline",
+        parent : "PolylineItem",
         index  : int,
         pos    : QPointF | None = None
     ) -> None:
@@ -62,7 +62,7 @@ class PolyVtx(Grip):
 
     def moveBy(self : Self, delta : QPointF) -> None:
         self.setPos(self.pos() + delta)
-        parent : "Polyline" = self.parentItem()
+        parent : "PolylineItem" = self.parentItem()
         parent.updatePath()
 
     def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
@@ -76,19 +76,19 @@ class PolyVtx(Grip):
         xw.writeEndElement()
 
 
-class PolySeg(Grip):
+class PolySegItem(GripItem):
     _PATH_NAME = "Arrow"
 
     # instance attributes
-    _v1    : PolyVtx        # start vertex
-    _v2    : PolyVtx        # end vertex
+    _v1    : PolyVtxItem        # start vertex
+    _v2    : PolyVtxItem        # end vertex
     _sweep : float  | None  # arc sweep angle (-180..180), +ve = CCW/RHS, None for line
 
     def __init__(
         self   : Self,
-        parent : "Polyline",
-        v1     : PolyVtx,
-        v2     : PolyVtx,
+        parent : "PolylineItem",
+        v1     : PolyVtxItem,
+        v2     : PolyVtxItem,
         sweep  : float | None = None
     ) -> None:
         super().__init__(parent, QPointF(0, 0))
@@ -102,16 +102,16 @@ class PolySeg(Grip):
             self.setPath(scene.paths["Grip"][self._path_name])
             self.setVisible(True)
 
-    def v1(self : Self) -> PolyVtx:
+    def v1(self : Self) -> PolyVtxItem:
         return self._v1
 
-    def setV1(self : Self, v1 : PolyVtx) -> None:
+    def setV1(self : Self, v1 : PolyVtxItem) -> None:
         self._v1 = v1
 
-    def v2(self : Self) -> PolyVtx:
+    def v2(self : Self) -> PolyVtxItem:
         return self._v2
 
-    def setV2(self : Self, v2 : PolyVtx) -> None:
+    def setV2(self : Self, v2 : PolyVtxItem) -> None:
         self._v2 = v2
 
     def sweep(self : Self) -> float | None:
@@ -143,7 +143,7 @@ class PolySeg(Grip):
             scene.editPolySeg(self, dialog.getAngle(), undoable=True)
 
 
-class Polyline(
+class PolylineItem(
     ItemMixin,
     ItemPosMixin,
     ItemRotateMixin,
@@ -171,8 +171,8 @@ class Polyline(
         ItemLineMixin._PROPERTY_SPECS_LINE
 
     # instance attributes
-    _vertices : list[PolyVtx]  # list of vertex grips
-    _segments : list[PolySeg]  # list of segment grips
+    _vertices : list[PolyVtxItem]  # list of vertex grips
+    _segments : list[PolySegItem]  # list of segment grips
     _closed   : bool           # whether the polyline is closed (a polygon)
     _sel_mode : int            # current selection mode (0 = outline, 1 = vtx/seg)
 
@@ -226,16 +226,16 @@ class Polyline(
     def vertexCount(self : Self) -> int:
         return len(self._vertices)
 
-    def vertex(self : Self, index : int) -> PolyVtx:
+    def vertex(self : Self, index : int) -> PolyVtxItem:
         return self._vertices[index]
 
-    def addVertex(self : Self, pos : QPointF, sweep : float | None = None) -> PolyVtx:
+    def addVertex(self : Self, pos : QPointF, sweep : float | None = None) -> PolyVtxItem:
         """Add a new vertex."""
-        vtx = PolyVtx(self, len(self._vertices), pos - self.pos())
+        vtx = PolyVtxItem(self, len(self._vertices), pos - self.pos())
         print("addVertex:", vtx._index, vtx.pos())
         self._vertices.append(vtx)
         if self.vertexCount() > 1:
-            self._segments.append(PolySeg(self, self._vertices[-2], vtx, sweep))
+            self._segments.append(PolySegItem(self, self._vertices[-2], vtx, sweep))
         self.updatePath()
         return vtx
 
@@ -255,10 +255,10 @@ class Polyline(
         self._vertices[-1].setPos(pos - self.pos())
         self.updatePath()
 
-    def segment(self : Self, index : int) -> PolySeg:
+    def segment(self : Self, index : int) -> PolySegItem:
         return self._segments[index]
 
-    def lastSegment(self : Self) -> PolySeg:
+    def lastSegment(self : Self) -> PolySegItem:
         return self._segments[-1]
 
     def closed(self : Self) -> bool:
@@ -269,7 +269,7 @@ class Polyline(
         self.updatePath()
 
     def close(self : Self, sweep : float | None = None) -> None:
-        self._segments.append(PolySeg(
+        self._segments.append(PolySegItem(
             self, self._vertices[-1], self._vertices[0], sweep
         ))
         self.setClosed(True)
@@ -345,7 +345,7 @@ class Polyline(
         if len(self._segments) == len(self._vertices) - 1:
             if self._closed:
                 # Add closing segment from last vertex to first vertex
-                self._segments.append(PolySeg(
+                self._segments.append(PolySegItem(
                     self, self._vertices[-1], self._vertices[0], None
                 ))
         elif len(self._segments) == len(self._vertices):
@@ -394,9 +394,9 @@ class Polyline(
         for i in range(len(self._vertices) - 1):
             v1 = self._vertices[i]
             v2 = self._vertices[i+1]
-            self._segments.append(PolySeg(self, v1, v2, None))
+            self._segments.append(PolySegItem(self, v1, v2, None))
         if self._closed:
-            self._segments.append(PolySeg(self, v2, self._vertices[0], None))
+            self._segments.append(PolySegItem(self, v2, self._vertices[0], None))
 
     def toXml(self : Self, xw : QXmlStreamWriter) -> None:
         self.toXmlBegin(xw)
@@ -421,7 +421,7 @@ class Polyline(
 
     @classmethod
     def fromXml(cls : Self, xr : QXmlStreamReader) -> Self:
-        instance : "Polyline" = cls(bare=True)
+        instance : "PolylineItem" = cls(bare=True)
         fromXmlAttrs(instance, xr)
         # deserialise segments
         while not (xr.isEndElement() and xr.name() == cls.__name__):
@@ -449,5 +449,5 @@ class Polyline(
             xr.readNext()
         return instance
 
-class SymbolPolyline(Polyline):
+class SymbolPolylineItem(PolylineItem):
     pass

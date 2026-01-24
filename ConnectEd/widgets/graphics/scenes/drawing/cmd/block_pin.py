@@ -2,8 +2,8 @@ from typing import Self
 
 from ....items import EdgeLoc
 
-from ....items.block     import Block
-from ....items.block_pin import BlockPin
+from ....items.block     import BlockItem
+from ....items.block_pin import BlockPinItem
 
 from . import CmdBase
 
@@ -12,19 +12,19 @@ class CmdBlockPinBase(CmdBase):
     """Base class for all commands that work with a pin."""
 
     # instance attributes
-    _parent : Block
-    _pin    : BlockPin
+    _parent : BlockItem
+    _pin    : BlockPinItem
 
     def __init__(
         self : Self,
-        parent : Block,
-        pin    : BlockPin
+        parent : BlockItem,
+        pin    : BlockPinItem
     ):
         super().__init__()
         self._parent = parent
         self._pin = pin
 
-    def pin(self : Self) -> BlockPin:
+    def pin(self : Self) -> BlockPinItem:
         return self._pin
 
 
@@ -32,13 +32,13 @@ class CmdBlockPinsBase(CmdBase):
     """Base class for all commands that work with multiple block pins."""
 
     # instance attributes
-    _parent : Block
-    _pins   : list[BlockPin]
+    _parent : BlockItem
+    _pins   : list[BlockPinItem]
 
     def __init__(
         self : Self,
-        parent : Block,
-        pins   : list[BlockPin]
+        parent : BlockItem,
+        pins   : list[BlockPinItem]
     ):
         super().__init__()
         self._parent = parent
@@ -69,15 +69,15 @@ class CmdMoveBlockPins(CmdBlockPinsBase):
     """Command to move multiple pins by an offset."""
 
     # instance attributes
-    _after  : dict[BlockPin, EdgeLoc] # locations after
-    _before : dict[BlockPin, EdgeLoc] # locations before
+    _after  : dict[BlockPinItem, EdgeLoc] # locations after
+    _before : dict[BlockPinItem, EdgeLoc] # locations before
 
     def __init__(
         self   : Self,
-        parent : Block,
-        pins   : list[BlockPin],
-        after  : dict[BlockPin, EdgeLoc],
-        before : dict[BlockPin, EdgeLoc]
+        parent : BlockItem,
+        pins   : list[BlockPinItem],
+        after  : dict[BlockPinItem, EdgeLoc],
+        before : dict[BlockPinItem, EdgeLoc]
     ):
         super().__init__(parent, pins)
         self._after = after

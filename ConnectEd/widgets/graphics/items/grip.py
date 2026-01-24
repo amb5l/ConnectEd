@@ -14,13 +14,13 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ..views.drawing  import DrawingView
     from ..scenes.drawing import DrawingScene
-    from .handle          import Handle
-    from .unitext         import UniText
+    from .handle          import HandleItem
+    from .unitext         import UniTextItem
     from .mixin.handle    import ItemHandlesMixin
     from .mixin.grip      import ItemGripMixin
 
 
-class Grip(
+class GripItem(
     ItemChangeMixin,
     ItemMenuMixin,
     QGraphicsPathItem
@@ -38,7 +38,7 @@ class Grip(
 
     def __init__(
         self   : Self,
-        parent : "Handle",
+        parent : "HandleItem",
         pos    : QPointF | None = None,
         move   : bool = False,
         resize : bool = False
@@ -72,7 +72,7 @@ class Grip(
             return
         self.setPath(scene.paths["Grip"][self.fullPathName()])
 
-    def handle(self : Self) -> "Handle":
+    def handle(self : Self) -> "HandleItem":
         return self.parentItem()
 
     def item(self : Self) -> "ItemHandlesMixin | ItemGripMixin":
@@ -98,7 +98,7 @@ class Grip(
         pass
 
 
-class OriginGrip(Grip):
+class OriginGripItem(GripItem):
     """Grip for items with an origin."""
 
     _ORIGIN_PATH_NAME_SUFFIX = "Squared"
@@ -113,7 +113,7 @@ class OriginGrip(Grip):
         self.item().moveHandleBy(self.handle().name(), delta)
 
 
-class MoveGrip(OriginGrip):
+class MoveGripItem(OriginGripItem):
     """Grip for movable (non resizeable) items."""
 
     _PATH_NAME = "Circle"
@@ -125,7 +125,7 @@ class MoveGrip(OriginGrip):
         ]
         item : "ItemOriginMixin" = self.item()
         if item.getOrigin() is not None:
-            h : Handle = self.parentItem()
+            h : HandleItem = self.parentItem()
             entries.extend([
                 view.separator(),
                 view.action(
@@ -136,7 +136,7 @@ class MoveGrip(OriginGrip):
         return entries
 
 
-class ResizeGrip(MoveGrip):
+class ResizeGripItem(MoveGripItem):
     """Grip for resizeable items."""
 
     _PATH_NAME = "Diamond"
@@ -145,15 +145,15 @@ class ResizeGrip(MoveGrip):
         entries = [
             view.action("Resize", lambda: view.ui.editResize(self, self.scenePos())),
         ]
-        entries.extend(MoveGrip.ctxMenuItems(self, view))
+        entries.extend(MoveGripItem.ctxMenuItems(self, view))
         return entries
 
 
-class TextGrip(ResizeGrip):
+class TextGripItem(ResizeGripItem):
     """Grip for text items."""
 
     def pathNamePrefix(self : Self) -> str:
-        item : "UniText" = self.item()
+        item : "UniTextItem" = self.item()
         name = self.handle().name()
         w = item.width()
         h = item.height()

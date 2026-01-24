@@ -7,9 +7,9 @@ from ......app import logger
 
 from ......core.utils import itemsTypeDict
 
-from ....items.conn_vtx import ConnVtx
-from ....items.conn_seg import ConnSeg
-from ....items.entry    import Entry
+from ....items.conn_vtx import ConnVtxItem
+from ....items.conn_seg import ConnSegItem
+from ....items.entry    import EntryItem
 
 from ..cmd      import cmdExec
 from ..cmd.conn import CmdAddConnVtx,      \
@@ -169,7 +169,7 @@ def overlapping(line1 : QLineF, line2 : QLineF) -> bool:
 class DrawingSceneApiConnMixin:
     """Connection handling."""
 
-    def tidyConnVtx(self : "DrawingScene", vtx : ConnVtx, undoable : bool) -> None:
+    def tidyConnVtx(self : "DrawingScene", vtx : ConnVtxItem, undoable : bool) -> None:
         """
         Tidy up an existing vertex:
         - Merge existing vertices into one. Reattach existing segments.
@@ -186,7 +186,7 @@ class DrawingSceneApiConnMixin:
         pos = vtx.scenePos()
         # get existing vertices
         items = self.items(pos)
-        xvtxs = [item for item in items if isinstance(item, ConnVtx)]
+        xvtxs = [item for item in items if isinstance(item, ConnVtxItem)]
         # pick oldest existing vertex to be clean single vertex
         vtx1 = xvtxs[-1]
         # connect existing segments to single vertex, remove existing vertices
@@ -199,7 +199,7 @@ class DrawingSceneApiConnMixin:
             cmd = CmdRemoveConnVtx(self, xvtx)
             cmdExec(self, cmd, undoable)
         # (re)parent to entry if present
-        entries = [item for item in items if isinstance(item, Entry)]
+        entries = [item for item in items if isinstance(item, EntryItem)]
         if len(entries) > 1:
             logger().warning("Multiple entries found")
         if entries:
@@ -207,7 +207,7 @@ class DrawingSceneApiConnMixin:
                 cmd = CmdReparentConnVtx(self, vtx1, entries[0])
                 cmdExec(self, cmd, undoable)
         # split segments that cross the new vertex but are not attached to it
-        segs = [item for item in items if isinstance(item, ConnSeg)]
+        segs = [item for item in items if isinstance(item, ConnSegItem)]
         for seg in segs:
             # exclude segments attached to the clean vertex
             if seg.vtx1() is vtx1 or seg.vtx2() is vtx1:
@@ -254,7 +254,7 @@ class DrawingSceneApiConnMixin:
     def tidyConns(self : "DrawingScene", undoable : bool) -> None:
         """Tidy all connections in the scene."""
         items = self.items()
-        segs = [item for item in items if isinstance(item, ConnSeg)]
+        segs = [item for item in items if isinstance(item, ConnSegItem)]
         # tidy segments (replace QPointF with ConnVtx)
         for seg in segs:
             v1 = seg.vtx1()
@@ -271,7 +271,7 @@ class DrawingSceneApiConnMixin:
                 seg.setVtx2(self.addConnVtx(v2, undoable))
         # tidy vertices
         items = self.items()
-        vtxs = [item for item in items if isinstance(item, ConnVtx)]
+        vtxs = [item for item in items if isinstance(item, ConnVtxItem)]
         for vtx in vtxs:
             self.tidyConnVtx(vtx, undoable)
 
@@ -279,8 +279,8 @@ class DrawingSceneApiConnMixin:
         self     : "DrawingScene",
         pos      : QPointF,
         undoable : bool = False,
-        cls      : type[ConnVtx] = ConnVtx
-    ) -> ConnVtx:
+        cls      : type[ConnVtxItem] = ConnVtxItem
+    ) -> ConnVtxItem:
         """Add a vertex/junction."""
         # add vertex
         cmd = CmdAddConnVtx(self, pos, cls)
@@ -292,8 +292,8 @@ class DrawingSceneApiConnMixin:
         p1       : QPointF,
         p2       : QPointF,
         undoable : bool = False,
-        cls      : type[ConnSeg] = ConnSeg
-    ) -> ConnSeg | None:
+        cls      : type[ConnSegItem] = ConnSegItem
+    ) -> ConnSegItem | None:
         """
         Add a segment, add vertices at any entries between endpoints, tidy.
         """
@@ -307,10 +307,10 @@ class DrawingSceneApiConnMixin:
         items_dict_1 = itemsTypeDict(self.items(p1))
         items_dict_2 = itemsTypeDict(self.items(p2))
         # handle full overlap with an existing segment
-        if ConnSeg in items_dict_1:
-            if ConnSeg in items_dict_2:
-                for seg1 in items_dict_1[ConnSeg]:
-                    for seg2 in items_dict_2[ConnSeg]:
+        if ConnSegItem in items_dict_1:
+            if ConnSegItem in items_dict_2:
+                for seg1 in items_dict_1[ConnSegItem]:
+                    for seg2 in items_dict_2[ConnSegItem]:
                         if seg1 is seg2:
                             return None  # do nothing
         # add vertices at endpoint
@@ -330,20 +330,20 @@ class DrawingSceneApiConnMixin:
         # get items in rect
         items = self.items(rect)
         # get entries in rect
-        entries = [item for item in items if isinstance(item, Entry)]
+        entries = [item for item in items if isinstance(item, EntryItem)]
         # get entries that are on the line
         entries = [entry for entry in entries if pointOnLine(entry.scenePos(), line)]
         # add vertices to unconnected entries
         for entry in entries:
             children = entry.childItems()
-            child_vtxs = [item for item in children if isinstance(item, ConnVtx)]
+            child_vtxs = [item for item in children if isinstance(item, ConnVtxItem)]
             if len(child_vtxs) == 0:
                 cmd = CmdAddConnVtx(self, QPointF())  # pos is relative to entry
                 cmdExec(self, cmd, undoable)
                 vtx = cmd.vtx()
                 vtx.setParentItem(entry)
         # get all vertices in rect
-        vtxs = [item for item in items if isinstance(item, ConnVtx)]
+        vtxs = [item for item in items if isinstance(item, ConnVtxItem)]
         # get vertices that are on the line
         vtxs = [vtx for vtx in vtxs if pointOnLine(vtx.scenePos(), line)]
         # sort by distance from p1 (TODO: is this needed?)

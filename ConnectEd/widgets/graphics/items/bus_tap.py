@@ -1,5 +1,5 @@
 from PyQt6.QtWidgets import QGraphicsLineItem
 
 
-class BusTap(QGraphicsLineItem):
+class BusTapItem(QGraphicsLineItem):
     pass

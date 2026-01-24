@@ -23,12 +23,12 @@ class ItemXmlMixin:
 
     def toXmlChildren(self : Self, xw : QXmlStreamWriter) -> None:
         from ..property_text import PropertyTextMixin
-        from ..base_pin      import BasePin
-        from ..handle        import Handle
+        from ..base_pin      import BasePinItem
+        from ..handle        import HandleItem
         for child in self.childItems():
-            if isinstance(child, BasePin):
+            if isinstance(child, BasePinItem):
                 child.toXml(xw)
-            elif isinstance(child, Handle):
+            elif isinstance(child, HandleItem):
                 for handle_child in child.childItems():
                     if isinstance(handle_child, PropertyTextMixin):
                         handle_child.toXml(xw)

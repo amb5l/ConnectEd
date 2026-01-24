@@ -7,7 +7,7 @@ from .....core.xml import paste
 
 from ....menu import Menu
 
-from ...items.grip import Grip
+from ...items.grip import GripItem
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -33,7 +33,7 @@ class DrawingViewMenuMixin:
             items = self._itemsAt(spos)
             if items:
                 # preference: top grip, selection set, top item
-                grips = [item for item in items if isinstance(item, Grip)]
+                grips = [item for item in items if isinstance(item, GripItem)]
                 if grips:
                     items = [grips[0]] # top grip
                 elif any(item.isSelected() for item in items):

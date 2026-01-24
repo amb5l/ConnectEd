@@ -8,7 +8,7 @@ from ...graphics.scenes.symbol import SymbolScene
 
 from ..properties import PropertiesMixin
 
-from .symbol_pin import SymbolPin
+from .symbol_pin import SymbolPinItem
 
 from .mixin         import ItemMixin
 from .mixin.pos     import ItemPosMixin
@@ -21,7 +21,7 @@ from .mixin.xml     import ItemXmlMixin
 from .mixin.menu    import ItemMenuMixin
 
 
-class Symbol(
+class SymbolItem(
     ItemMixin,
     ItemPosMixin,
     ItemRotateMixin,
@@ -59,13 +59,13 @@ class Symbol(
         self._hshape.addRect(self._brect)
         # delete existing pins
         for item in self.childItems():
-            if not isinstance(item, SymbolPin):
+            if not isinstance(item, SymbolPinItem):
                 continue
             item.setParentItem(None)
             scene.removeItem(item)
         # add new pins
         for item in self._source.items():
-            if not isinstance(item, SymbolPin):
+            if not isinstance(item, SymbolPinItem):
                 continue
             pin = item.clone()
             pin.setParentItem(self)
@@ -86,6 +86,6 @@ class Symbol(
         widget  : QWidget
     ) -> None:
         for item in self._source.items():
-            if isinstance(item, SymbolPin):
+            if isinstance(item, SymbolPinItem):
                 continue
             item.paint(painter, option, widget)

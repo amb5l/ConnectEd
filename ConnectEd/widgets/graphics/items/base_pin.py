@@ -28,7 +28,7 @@ _EXT_ARROW_SIZE = 3
 _INT_ARROW_SIZE = 6
 
 
-class BasePinArrow(
+class BasePinArrowItem(
     ItemSettingsMixin,
     ItemPaintMixin,
     ItemChangeMixin,
@@ -73,12 +73,12 @@ class BasePinArrow(
             self.setPath(path)
 
 
-class BasePin(ItemPaintMixin, PortPinMixin, QGraphicsPathItem):
+class BasePinItem(ItemPaintMixin, PortPinMixin, QGraphicsPathItem):
     # class attributes
-    _ARROW_CLASS : type[BasePinArrow] | None = None
+    _ARROW_CLASS : type[BasePinArrowItem] | None = None
 
     # instance attributes
-    _arrow : BasePinArrow
+    _arrow : BasePinArrowItem
 
     def __init__(
         self   : Self,

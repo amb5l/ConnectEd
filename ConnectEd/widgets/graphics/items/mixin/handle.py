@@ -2,7 +2,7 @@ from typing import Self
 
 from PyQt6.QtCore import QPointF, QRectF
 
-from ..handle import Handle
+from ..handle import HandleItem
 
 from .grip import ItemGripMixin
 
@@ -13,12 +13,12 @@ class ItemHandlesMixin(ItemGripMixin):
         raise NotImplementedError("Subclass must implement this method")
 
     # instance attributes
-    _handles          : dict[str, "Handle"]
+    _handles          : dict[str, "HandleItem"]
 
     def initHandles(self : Self) -> None:
         raise NotImplementedError("Subclass must implement this method")
 
-    def getHandle(self : Self, name : str) -> "Handle":
+    def getHandle(self : Self, name : str) -> "HandleItem":
         return self._handles[name]
 
     def moveHandleBy(self : Self, name : str, delta : QPointF) -> None:
@@ -50,7 +50,7 @@ class ItemRectHandlesMixin(ItemHandlesMixin):
         self._handles = {}
         for name in self._AP_RECT.keys():
             kind = self._RESIZE_KIND if name in self._AP_RESIZE else "move"
-            handle = Handle(name=name, kind=kind, parent=self)
+            handle = HandleItem(name=name, kind=kind, parent=self)
             self._handles[name] = handle
 
     def handleRect(self : Self) -> QRectF:

@@ -15,7 +15,7 @@ if TYPE_CHECKING:
     from .....property            import PropertyState, PropertyEdit
     from .....properties          import PropertiesMixin
     from .....items               import ItemMixin
-    from .....items.property_text import PropertyText
+    from .....items.property_text import PropertyTextItem
     from ......dialogs.properties import DisplayChoice
 
 class CmdEditProperties(CmdBase):
@@ -100,7 +100,7 @@ class CmdEditProperties(CmdBase):
                         self._modifyPropertyText(pt, after)
 
     def _addPropertyText(self : Self, vars : "PropertyState") -> None:
-        pt = PropertyText()
+        pt = PropertyTextItem()
         self._modifyPropertyText(pt, vars)
         parent = self._object.getHandle(vars.cleat) if vars.cleat != "" else \
             self._object if isinstance(self._object, ItemMixin) else \
@@ -113,7 +113,7 @@ class CmdEditProperties(CmdBase):
 
     def _modifyPropertyText(
         self : Self,
-        pt   : "PropertyText",
+        pt   : "PropertyTextItem",
         vars : "PropertyState"
     ) -> None:
         pt.setName(vars.name)

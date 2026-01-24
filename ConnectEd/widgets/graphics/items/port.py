@@ -19,7 +19,7 @@ if TYPE_CHECKING:
     from . import SignalDirection
 
 
-class Port(
+class PortItem(
     ItemPosMixin,
     ItemRotateMixin,
     ItemPaintMixin,
