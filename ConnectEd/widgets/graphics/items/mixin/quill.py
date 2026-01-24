@@ -105,7 +105,7 @@ class ItemQuillMixin:
 
     def quillSelectionChange(self : Self | ItemProtocol, selected : bool) -> None:
         scene : "DrawingScene" = self.scene()
-        self.setQuillColor(scene.selectedQuillColor() if selected else self.quillColor())
+        self.setQuillColor(scene.selectedTextColor() if selected else self.quillColor())
 
     def defaultQuillColor(self : Self | ItemProtocol) -> QColor | Default:
         return settings().get(f"theme/items/{self.settingsName()}/text/color")
