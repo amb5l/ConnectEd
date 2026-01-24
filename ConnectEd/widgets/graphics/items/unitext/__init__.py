@@ -202,7 +202,7 @@ class UniTextItem(
         self._child.onGeometryChange()
 
     def width(self : Self) -> float | None:
-        return self._child.width()
+        return self._width
 
     def setWidth(self : Self, width : float | None) -> None:
         self._width = width
@@ -214,7 +214,7 @@ class UniTextItem(
             self.properties["Width"].changed.emit(self._width)
 
     def height(self : Self) -> float | None:
-        return self._child.height()
+        return self._height
 
     def setHeight(self : Self, height : float | None) -> None:
         self._height = height
@@ -245,33 +245,30 @@ class UniTextItem(
 
     def moveHandleBy(self : Self, name : str, delta : QPointF) -> None:
         """Resize/move the text as appropriate."""
-        if self.isLine():
-            self.moveBy(delta)
-        elif self.isBlock():
-            match name:
-                case "Top Left":
-                    self.moveBy(delta)
-                    self.resizeBy(-delta)
-                case "Top Center":
-                    self.setPos(self.pos() + QPointF(0, delta.y()))
-                    self.resizeBy(0, -delta.y())
-                case "Top Right":
-                    self.setPos(self.pos() + QPointF(0, delta.y()))
-                    self.resizeBy(delta.x(), -delta.y())
-                case "Middle Left":
-                    self.setPos(self.pos() + QPointF(delta.x(), 0))
-                    self.resizeBy(-delta.x(), 0)
-                case "Middle Center":
-                    self.moveBy(delta)
-                case "Middle Right":
-                    self.resizeBy(delta.x(), 0)
-                case "Bottom Left":
-                    self.setPos(self.pos() + QPointF(delta.x(), 0))
-                    self.resizeBy(-delta.x(), delta.y())
-                case "Bottom Center":
-                    self.resizeBy(0, delta.y())
-                case "Bottom Right":
-                    self.resizeBy(delta.x(), delta.y())
+        match name:
+            case "Top Left":
+                self.moveBy(delta)
+                self.resizeBy(-delta)
+            case "Top Center":
+                self.setPos(self.pos() + QPointF(0, delta.y()))
+                self.resizeBy(0, -delta.y())
+            case "Top Right":
+                self.setPos(self.pos() + QPointF(0, delta.y()))
+                self.resizeBy(delta.x(), -delta.y())
+            case "Middle Left":
+                self.setPos(self.pos() + QPointF(delta.x(), 0))
+                self.resizeBy(-delta.x(), 0)
+            case "Middle Center":
+                self.moveBy(delta)
+            case "Middle Right":
+                self.resizeBy(delta.x(), 0)
+            case "Bottom Left":
+                self.setPos(self.pos() + QPointF(delta.x(), 0))
+                self.resizeBy(-delta.x(), delta.y())
+            case "Bottom Center":
+                self.resizeBy(0, delta.y())
+            case "Bottom Right":
+                self.resizeBy(delta.x(), delta.y())
 
     @overload
     def resizeBy(self : Self, d : QPointF) -> None:
@@ -288,8 +285,10 @@ class UniTextItem(
     ) -> None:
         dx = dx_d.x() if isinstance(dx_d, QPointF) else dx_d
         dy = dx_d.y() if isinstance(dx_d, QPointF) else dy
-        self._width  = max(self._brect.width() + dx, 0.0)
-        self._height = max(self._brect.height() + dy, 0.0)
+        if dx:
+            self._width = max(self._brect.width() + dx, 0.0)
+        if dy:
+            self._height = max(self._brect.height() + dy, 0.0)
         self._child.onGeometryChange()
 
     def originMenu(self : Self, view : "DrawingView") -> QMenu:
