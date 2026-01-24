@@ -5,9 +5,9 @@ from PyQt6.QtCore import QPoint, QPointF
 
 from ......app import logger
 
-from .....dialogs.port_pin   import PortPinDialog
-from .....dialogs.gate       import GateDialog
-from .....dialogs.text       import TextLineItemDialog, TextBlockItemDialog
+from .....dialogs.port_pin import PortPinDialog
+from .....dialogs.gate     import GateDialog
+from .....dialogs.text     import TextItemDialog
 
 from ....items            import SignalDirection, ItemMixin
 from ....items.port       import Port
@@ -15,7 +15,7 @@ from ....items.gate       import GateFunc, BufGate, AndGate, OrGate, XorGate
 from ....items.block      import Block
 from ....items.block_pin  import BlockPin
 from ....items.symbol_pin import SymbolPin
-from ....items.text       import TextLine, TextBlock
+from ....items.text       import Text
 
 from ..interaction.place import PlacePortInteraction, \
                                 PlaceGateInteraction, \
@@ -27,7 +27,6 @@ from ..interaction.place import PlacePortInteraction, \
                                 PlaceEllipseInteraction, \
                                 PlacePolylineInteraction, \
                                 PlaceTextInteraction, \
-                                PlaceTextBlockInteraction, \
                                 PlaceConnInteraction
 
 from .base  import qkm, DrawingViewStateBase
@@ -224,7 +223,7 @@ class DrawingViewStatePlacePolyline2(ClickMixin, DragMixin, DrawingViewStateBase
     STATUS = "Place Polyline: pick the next point"
 
 
-class DrawingViewStatePlaceTextLine(ClickMixin, DrawingViewStateBase):
+class DrawingViewStatePlaceText(ClickMixin, DrawingViewStateBase):
     STATUS = "Place Text: pick a position"
 
     def entry(
@@ -233,10 +232,13 @@ class DrawingViewStatePlaceTextLine(ClickMixin, DrawingViewStateBase):
         s    : QPointF,
         i    : list[ItemMixin] | None = None
     ) -> None:
-        item = TextLine(self._snap(s))
-        dialog = TextLineItemDialog(item, self.view)
+        item = Text(self._snap(s))
+        dialog = TextItemDialog(item, self.view)
         if dialog.exec():
             item.setText(dialog.getText())
+            item.setBlock(dialog.getBlock())
+            item.setAlignH(dialog.getAlignH())
+            item.setAlignV(dialog.getAlignV())
             item.setQuillColor(dialog.getColor())
             item.setQuillFamily(dialog.getFamily())
             item.setQuillSize(dialog.getSize())
@@ -244,26 +246,6 @@ class DrawingViewStatePlaceTextLine(ClickMixin, DrawingViewStateBase):
             item.setQuillItalic(dialog.getItalic())
             item.setQuillUnderline(dialog.getUnderline())
             self.interact(PlaceTextInteraction(self.view, self._snap(s), item))
-        else:
-            self.view.state.go(self.view.stateIdle)
-
-
-class DrawingViewStatePlaceTextBlock(ClickMixin, DrawingViewStateBase):
-    STATUS = "Place Text Block: pick a position"
-
-    def entry(
-        self : Self,
-        v    : QPoint,
-        s    : QPointF,
-        i    : list[ItemMixin] | None = None
-    ) -> None:
-        item = TextBlock(self._snap(s))
-        dialog = TextBlockItemDialog(item, self.view)
-        if dialog.exec():
-            text, appearance = dialog.getChoice()
-            item.setPlainText(text)
-            item.a.quill.setPref(appearance)
-            self.interact(PlaceTextBlockInteraction(self.view, self._snap(s), item))
         else:
             self.view.state.go(self.view.stateIdle)
 

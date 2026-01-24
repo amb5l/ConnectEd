@@ -24,16 +24,6 @@ class SymbolScene(DrawingScene):
         self.changed.connect(self.onChange)
 
     def onChange(self : Self) -> None:
-        from ..items.symbol_pin    import SymbolPin
-        from ..items.property_text import PropertyTextMixin
-        from ..items.line          import Line
-        from ..items.rectangle     import Rectangle
-        from ..items.polyline      import Polyline
-        from ..items.text          import TextLine, TextBlock
-        classes = (
-            SymbolPin, PropertyTextMixin, \
-            Line, Rectangle, Polyline, TextLine, TextBlock
-        )
         # get bounding rect of all items
         rect = self.itemsBoundingRect()
         # expand size if too small

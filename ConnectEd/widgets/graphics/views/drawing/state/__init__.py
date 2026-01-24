@@ -19,8 +19,7 @@ from .edit  import DrawingViewStateEditSelectArea1, \
                    DrawingViewStateEditQuery, \
                    DrawingViewStateEditPort, \
                    DrawingViewStateEditBlockPin, \
-                   DrawingViewStateEditTextLine, \
-                   DrawingViewStateEditTextBlock, \
+                   DrawingViewStateEditText, \
                    DrawingViewStateEditPropertyText
 from .place import DrawingViewStatePlaceConn1, \
                    DrawingViewStatePlaceConn2, \
@@ -38,8 +37,7 @@ from .place import DrawingViewStatePlaceConn1, \
                    DrawingViewStatePlaceEllipse2, \
                    DrawingViewStatePlacePolyline1, \
                    DrawingViewStatePlacePolyline2, \
-                   DrawingViewStatePlaceTextLine, \
-                   DrawingViewStatePlaceTextBlock
+                   DrawingViewStatePlaceText
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -47,46 +45,44 @@ if TYPE_CHECKING:
 
 
 class DrawingViewStateMixin:
-    state                      : DrawingViewStateBase
-    stateIdle                  : DrawingViewStateIdle
-    stateViewPan1              : DrawingViewStateViewPan1
-    stateViewPan2              : DrawingViewStateViewPan2
-    stateViewZoomArea1         : DrawingViewStateViewZoomArea1
-    stateViewZoomArea2         : DrawingViewStateViewZoomArea2
-    stateEditSelectArea1       : DrawingViewStateEditSelectArea1
-    stateEditSelectArea2       : DrawingViewStateEditSelectArea2
-    stateEditPaste             : DrawingViewStateEditPaste
-    stateEditDuplicate         : DrawingViewStateEditDuplicate
-    stateEditSlide             : DrawingViewStateEditSlide
-    stateEditMove              : DrawingViewStateEditMove
-    stateEditResize            : DrawingViewStateEditResize
-    stateEditMovePins          : DrawingViewStateEditMovePins
-    stateEditAdjustPolySeg     : DrawingViewStateEditAdjustPolySeg
-    stateEditAppearance        : DrawingViewStateEditAppearance
-    stateEditItemProperties    : DrawingViewStateEditItemProperties
-    stateEditDrawingProperties : DrawingViewStateEditDrawingProperties
-    stateEditQuery             : DrawingViewStateEditQuery
-    stateEditPort              : DrawingViewStateEditPort
-    stateEditBlockPin          : DrawingViewStateEditBlockPin
-    stateEditTextLine          : DrawingViewStateEditTextLine
-    stateEditTextBlock         : DrawingViewStateEditTextBlock
-    stateEditPropertyText      : DrawingViewStateEditPropertyText
-    statePlacePort             : DrawingViewStatePlacePort
-    statePlaceGate             : DrawingViewStatePlaceGate
-    statePlaceBlock1           : DrawingViewStatePlaceBlock1
-    statePlaceBlock2           : DrawingViewStatePlaceBlock2
-    statePlaceBlockPin         : DrawingViewStatePlaceBlockPin
-    statePlaceSymbolPin        : DrawingViewStatePlaceSymbolPin
-    statePlaceRectangle1       : DrawingViewStatePlaceRectangle1
-    statePlaceRectangle2       : DrawingViewStatePlaceRectangle2
-    statePlaceEllipse1         : DrawingViewStatePlaceEllipse1
-    statePlaceEllipse2         : DrawingViewStatePlaceEllipse2
-    statePlacePolyline1        : DrawingViewStatePlacePolyline1
-    statePlacePolyline2        : DrawingViewStatePlacePolyline2
-    statePlaceTextLine         : DrawingViewStatePlaceTextLine
-    statePlaceTextBlock        : DrawingViewStatePlaceTextBlock
-    statePlaceConn1            : DrawingViewStatePlaceConn1
-    statePlaceConn2            : DrawingViewStatePlaceConn2
+    state                      : DrawingViewStateBase                   # noqa N815
+    stateIdle                  : DrawingViewStateIdle                   # noqa N815
+    stateViewPan1              : DrawingViewStateViewPan1               # noqa N815
+    stateViewPan2              : DrawingViewStateViewPan2               # noqa N815
+    stateViewZoomArea1         : DrawingViewStateViewZoomArea1          # noqa N815
+    stateViewZoomArea2         : DrawingViewStateViewZoomArea2          # noqa N815
+    stateEditSelectArea1       : DrawingViewStateEditSelectArea1        # noqa N815
+    stateEditSelectArea2       : DrawingViewStateEditSelectArea2        # noqa N815
+    stateEditPaste             : DrawingViewStateEditPaste              # noqa N815
+    stateEditDuplicate         : DrawingViewStateEditDuplicate          # noqa N815
+    stateEditSlide             : DrawingViewStateEditSlide              # noqa N815
+    stateEditMove              : DrawingViewStateEditMove               # noqa N815
+    stateEditResize            : DrawingViewStateEditResize             # noqa N815
+    stateEditMovePins          : DrawingViewStateEditMovePins           # noqa N815
+    stateEditAdjustPolySeg     : DrawingViewStateEditAdjustPolySeg      # noqa N815
+    stateEditAppearance        : DrawingViewStateEditAppearance         # noqa N815
+    stateEditItemProperties    : DrawingViewStateEditItemProperties     # noqa N815
+    stateEditDrawingProperties : DrawingViewStateEditDrawingProperties  # noqa N815
+    stateEditQuery             : DrawingViewStateEditQuery              # noqa N815
+    stateEditPort              : DrawingViewStateEditPort               # noqa N815
+    stateEditBlockPin          : DrawingViewStateEditBlockPin           # noqa N815
+    stateEditText              : DrawingViewStateEditText               # noqa N815
+    stateEditPropertyText      : DrawingViewStateEditPropertyText       # noqa N815
+    statePlacePort             : DrawingViewStatePlacePort              # noqa N815
+    statePlaceGate             : DrawingViewStatePlaceGate              # noqa N815
+    statePlaceBlock1           : DrawingViewStatePlaceBlock1            # noqa N815
+    statePlaceBlock2           : DrawingViewStatePlaceBlock2            # noqa N815
+    statePlaceBlockPin         : DrawingViewStatePlaceBlockPin          # noqa N815
+    statePlaceSymbolPin        : DrawingViewStatePlaceSymbolPin         # noqa N815
+    statePlaceRectangle1       : DrawingViewStatePlaceRectangle1        # noqa N815
+    statePlaceRectangle2       : DrawingViewStatePlaceRectangle2        # noqa N815
+    statePlaceEllipse1         : DrawingViewStatePlaceEllipse1          # noqa N815
+    statePlaceEllipse2         : DrawingViewStatePlaceEllipse2          # noqa N815
+    statePlacePolyline1        : DrawingViewStatePlacePolyline1         # noqa N815
+    statePlacePolyline2        : DrawingViewStatePlacePolyline2         # noqa N815
+    statePlaceText             : DrawingViewStatePlaceText              # noqa N815
+    statePlaceConn1            : DrawingViewStatePlaceConn1             # noqa N815
+    statePlaceConn2            : DrawingViewStatePlaceConn2             # noqa N815
 
     def initStates(self : "DrawingView") -> None:
         self.stateIdle                  = DrawingViewStateIdle                  (self)
@@ -109,8 +105,7 @@ class DrawingViewStateMixin:
         self.stateEditQuery             = DrawingViewStateEditQuery             (self)
         self.stateEditPort              = DrawingViewStateEditPort              (self)
         self.stateEditBlockPin          = DrawingViewStateEditBlockPin          (self)
-        self.stateEditTextLine          = DrawingViewStateEditTextLine          (self)
-        self.stateEditTextBlock         = DrawingViewStateEditTextBlock         (self)
+        self.stateEditText              = DrawingViewStateEditText              (self)
         self.stateEditPropertyText      = DrawingViewStateEditPropertyText      (self)
         self.statePlaceConn1            = DrawingViewStatePlaceConn1            (self)
         self.statePlaceConn2            = DrawingViewStatePlaceConn2            (self)
@@ -128,5 +123,4 @@ class DrawingViewStateMixin:
         self.statePlaceEllipse2         = DrawingViewStatePlaceEllipse2         (self)
         self.statePlacePolyline1        = DrawingViewStatePlacePolyline1        (self)
         self.statePlacePolyline2        = DrawingViewStatePlacePolyline2        (self)
-        self.statePlaceTextLine         = DrawingViewStatePlaceTextLine         (self)
-        self.statePlaceTextBlock        = DrawingViewStatePlaceTextBlock        (self)
+        self.statePlaceText             = DrawingViewStatePlaceText             (self)

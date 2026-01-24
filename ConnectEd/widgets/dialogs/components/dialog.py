@@ -5,7 +5,7 @@ from PyQt6.QtWidgets import QWidget, QDialog, QColorDialog, QLineEdit, \
                             QVBoxLayout, QHBoxLayout, QLabel
 from PyQt6.QtGui     import QColor
 
-from .layout.ok_cancel import okCancelLayout
+from .layout.ok_cancel import OkCancelLayout
 
 
 class CustomColorDialog(QColorDialog):
@@ -63,13 +63,17 @@ class CustomLineWidthDialog(QDialog):
         super().__init__(parent)
         self.setWindowTitle("Line Width")
         self.dialog_layout = QVBoxLayout()
+        # width section
         self.width_layout = QHBoxLayout()
         self.width_label = QLabel("Width:")
         self.width_layout.addWidget(self.width_label)
         self.width_input = QLineEdit("" if initial is None else str(initial))
         self.width_layout.addWidget(self.width_input)
         self.dialog_layout.addLayout(self.width_layout)
-        okCancelLayout(self)
+        # ok/cancel section
+        self._ok_cancel_layout = OkCancelLayout(self)
+        self.dialog_layout.addLayout(self._ok_cancel_layout)
+        # set layout
         self.setLayout(self.dialog_layout)
 
     def getChoice(self : Self) -> float | None:

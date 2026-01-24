@@ -185,9 +185,7 @@ class Polyline(
     ) -> None:
         super().__init__()
         self.initItem(bare=bare)
-        if pos is None:
-            pos = QPointF()
-        self.setPos(pos)
+        self.setPos(pos or QPointF())
         # initialize vertices and segments
         self._vertices = []
         self._segments = []
@@ -386,9 +384,7 @@ class Polyline(
         self.setPath(path)
         # update handles
         if hasattr(self, '_handles'):
-            self.updateHandles()
-        # update scene tight bounding rect
-        self.onSceneBoundRectChange()
+            self.updateHandlePositions()
 
     def _buildSegments(self : Self) -> None:
         """Build segments from vertices. Default to lines not arcs."""

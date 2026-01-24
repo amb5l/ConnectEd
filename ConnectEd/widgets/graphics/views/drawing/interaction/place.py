@@ -20,7 +20,7 @@ from ....items.line       import Line
 from ....items.rectangle  import Rectangle
 from ....items.ellipse    import Ellipse
 from ....items.polyline   import Polyline
-from ....items.text       import TextLine, TextBlock
+from ....items.text       import Text
 
 from . import Interaction,         \
               RotateItemMixin,     \
@@ -233,11 +233,7 @@ class PlacePolylineInteraction(PlaceBase1PosInteraction):
 
 
 class PlaceTextInteraction(PlaceBase1PosInteraction):
-    _ITEM_TYPE = TextLine
-
-
-class PlaceTextBlockInteraction(PlaceBase1PosInteraction):
-    _ITEM_TYPE = TextBlock
+    _ITEM_TYPE = Text
 
 
 class PlaceConnInteraction(Interaction):

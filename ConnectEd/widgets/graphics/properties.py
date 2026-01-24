@@ -1,12 +1,6 @@
-from typing      import Self, Any, TypeAlias
-from dataclasses import dataclass
-
-from PyQt6.QtCore import Qt
-from PyQt6.QtGui  import QColor
+from typing import Self
 
 from ...app import logger
-
-from .items import Default, NoChange, NO_CHANGE, AlignH, AlignV
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -22,7 +16,7 @@ class PropertiesMixin:
 
     def initProperties(self : Self, bare : bool = False) -> None:
         from .property import Property
-        from .items.property_text import PropertyTextBlock, PropertyTextLine
+        from .items.property_text import PropertyText
         self.properties = {}
         for name, spec in self._PROPERTY_SPECS.items():
             self.properties[name] = Property(
@@ -36,9 +30,7 @@ class PropertiesMixin:
                 inherent = True
             )
             if not bare and spec.text is not None:
-                property_text_cls = PropertyTextBlock if spec.text.block \
-                    else PropertyTextLine
-                property_text = property_text_cls(
+                property_text = PropertyText(
                     name,
                     spec.text.anchor,
                     spec.text.pos,

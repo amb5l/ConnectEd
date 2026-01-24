@@ -92,10 +92,8 @@ class BaseRectangleMixin(
     ) -> None:
         super().__init__()
         self.initItem(bare=bare)
-        if p1_or_pos is None:
-            p1_or_pos = QPointF()
-        if p2_or_size is None:
-            p2_or_size = QSizeF(0, 0)
+        p1_or_pos = p1_or_pos or QPointF()
+        p2_or_size = p2_or_size or QSizeF(0, 0)
         if isinstance(p2_or_size, QSizeF):
             p2_or_size = QPointF(
                 p1_or_pos.x() + p2_or_size.width(),
@@ -121,8 +119,7 @@ class BaseRectangleMixin(
         #    self._hshape = rect_path.united(stroker_path)
         #else:
         #    self._hshape = stroker_path
-        self.updateHandles()
-        self.onSceneBoundRectChange()
+        self.updateHandlePositions()
 
     @overload
     def setRect(

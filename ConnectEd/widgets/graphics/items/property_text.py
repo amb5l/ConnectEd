@@ -13,8 +13,8 @@ from ..properties import PropertiesMixin
 
 from . import NoChange, NO_CHANGE
 
-from .base_text import BaseTextLine, BaseTextBlock
-from .handle    import Handle
+from .unitext import UniText
+from .handle  import Handle
 
 from .mixin.origin import ItemOriginMixin
 from .mixin.pos    import ItemPosMixin
@@ -30,9 +30,9 @@ if TYPE_CHECKING:
 class Tether(QGraphicsLineItem):
     """Tether line between a PropertyText origin and its parent cleat."""
 
-    _item  : "PropertyTextMixin"
+    _item  : "PropertyText"
 
-    def __init__(self : Self, item : "PropertyTextMixin", visible : bool = False):
+    def __init__(self : Self, item : "PropertyText", visible : bool = False):
         super().__init__(item)  # Parent it to the TetherText
         self._item = item
         self.setVisible(visible)
@@ -66,31 +66,30 @@ class Tether(QGraphicsLineItem):
         pass  # no need to serialise
 
 
-class PropertyTextMixin:
+class PropertyText(UniText):
     # class attributes
-    _PROPERTY_SPECS_NAME = \
+    _PROPERTY_SPECS = \
         {
             "Property" : PropertySpec(
                 getter = lambda self: self.property(),
                 setter = lambda self, value: self.setProperty(value)
-            )
-        }
-    _PROPERTY_SPECS_VISIBLE = \
-        {
+            ),
             "Visible" : PropertySpec(
                 kind   = "bool",
                 valid  = lambda self: not self.isVisible(),
                 getter = lambda self: self.isVisible(),
                 setter = lambda self, value: self.setVisible(value)
-            )
-        }
-    _PROPERTY_SPECS_CLEAT = \
-        {
+            ),
             "Cleat" : PropertySpec(
                 getter = lambda self: self.getCleat(),
                 setter = lambda self, value: self.setCleat(value)
             )
-        }
+        } | \
+        ItemOriginMixin._PROPERTY_SPECS_ORIGIN | \
+        ItemPosMixin._PROPERTY_SPECS_POS | \
+        ItemRotateMixin._PROPERTY_SPECS_ROTATE | \
+        UniText._PROPERTY_SPECS_SIZE_ALIGN | \
+        ItemQuillMixin._PROPERTY_SPECS_QUILL
 
     # instance attributes
     _property    : str
@@ -99,12 +98,12 @@ class PropertyTextMixin:
     _tether      : Tether | None
 
     def __init__(
-        self     : Self | BaseTextLine | BaseTextBlock,
-        property : str | None = None,
-        cleat    : str | None = None,
+        self     : Self,
+        property : str | None     = None,
+        cleat    : str | None     = None,
         pos      : QPointF | None = None,
-        origin   : str | None = None,
-        bare     : bool = False
+        origin   : str | None     = None,
+        bare     : bool           = False
     ) -> None:
         super().__init__(bare=bare)
         self._tether = Tether(self)
@@ -113,9 +112,7 @@ class PropertyTextMixin:
         if origin is None:
             origin = "Bottom Left" if cleat == "Top Left" else "Top Left"
         self.setOrigin(origin)
-        if pos is None:
-            pos = QPointF(0, 0)
-        self.setPos(pos)
+        self.setPos(pos or QPointF(0, 0))
         self._cleat_shown = False
 
     def mouseDoubleClickEvent(self : Self, event : QGraphicsSceneMouseEvent) -> None:
@@ -228,45 +225,9 @@ class PropertyTextMixin:
         painter.drawLine(QPointF(-1,-1), QPointF(1,1))
         painter.drawLine(QPointF(1,-1), QPointF(-1,1))
 
-
-class PropertyTextLine(PropertyTextMixin, BaseTextLine):
-    """Property text as a single line with rotation support."""
-
-    # class attributes
-    _PROPERTY_SPECS = \
-        PropertyTextMixin._PROPERTY_SPECS_NAME | \
-        PropertyTextMixin._PROPERTY_SPECS_VISIBLE | \
-        PropertyTextMixin._PROPERTY_SPECS_CLEAT | \
-        ItemPosMixin._PROPERTY_SPECS_POS | \
-        ItemRotateMixin._PROPERTY_SPECS_ROTATE | \
-        ItemQuillMixin._PROPERTY_SPECS_QUILL
-
     def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
         items = [
-            view.action("Edit...", lambda: view.ui.editPropertyText(self)),
-            view.separator(),
-            view.action("Appearance...", lambda: view.ui.editAppearance(self)),
-            view.action("Properties...", lambda: view.ui.editItemProperties(self))
-        ]
-        return items
-
-
-class PropertyTextBlock(PropertyTextMixin, BaseTextBlock):
-    """Property text as a multi-line block without rotation."""
-
-    # class attributes
-    _PROPERTY_SPECS = \
-        PropertyTextMixin._PROPERTY_SPECS_NAME | \
-        PropertyTextMixin._PROPERTY_SPECS_VISIBLE | \
-        PropertyTextMixin._PROPERTY_SPECS_CLEAT | \
-        ItemPosMixin._PROPERTY_SPECS_POS | \
-        ItemRotateMixin._PROPERTY_SPECS_ROTATE | \
-        BaseTextBlock._PROPERTY_SPECS_SIZE | \
-        ItemQuillMixin._PROPERTY_SPECS_QUILL
-
-    def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
-        items = [
-            view.action("Edit...", lambda: view.ui.editPropertyText(self)),
+            view.action("Edit...", lambda: view.ui.editPropertyTextDialog(self)),
             view.separator(),
             view.action(
                 "Auto Width",

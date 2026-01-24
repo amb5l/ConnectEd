@@ -8,7 +8,8 @@ from ...properties import PropertiesMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from .handle import ItemHandlesMixin
+    from ..handle import Handle
+    from .handle  import ItemHandlesMixin
 
 
 class ItemOriginMixin:
@@ -23,14 +24,18 @@ class ItemOriginMixin:
     }
 
     # instance attributes
-    _origin : str  # name of origin handle
+    _origin  : str                  # name of origin handle
+    _handles : dict[str, "Handle"]
 
-    def initOrigin(self : Self | QGraphicsItem) -> None:
+    def initOrigin(self : Self) -> None:
+        from .handle import ItemHandlesMixin
         if not isinstance(self, ItemHandlesMixin):
             raise TypeError("ItemOriginMixin requires ItemHandlesMixin")
+        if not hasattr(self, "_ORIGIN_NAME"):
+            raise ValueError("ItemOriginMixin requires _ORIGIN_NAME")
         self.setOrigin(self._ORIGIN_NAME)
 
-    def getOrigin(self : Self | QGraphicsItem) -> str:
+    def getOrigin(self : Self) -> str:
         return self._origin
 
     def setOrigin(
@@ -62,5 +67,5 @@ class ItemOriginMixin:
             -origin_pos.y()
         ))
         # update grip appearance
-        for h in self._handles.values():
-            h.onOriginChange()
+        for handle in self._handles.values():
+            handle.grip().onPathChange()

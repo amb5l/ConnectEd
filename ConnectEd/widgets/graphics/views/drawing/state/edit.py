@@ -6,13 +6,13 @@ from ......app import logger
 
 from .....dialogs.properties    import PropertiesDialog
 from .....dialogs.appearance    import AppearanceDialog
-from .....dialogs.text          import TextLineItemDialog, TextBlockItemDialog
+from .....dialogs.text          import TextItemDialog
 from .....dialogs.property_text import PropertyTextDialog
 from .....dialogs.port_pin      import PortPinDialog
 
 from ....items               import ItemMixin
-from ....items.text          import TextLine, TextBlock
-from ....items.property_text import PropertyTextMixin
+from ....items.text          import Text
+from ....items.property_text import PropertyText
 from ....items.port          import Port
 from ....items.block_pin     import BlockPin
 
@@ -209,8 +209,8 @@ class DrawingViewStateEditBlockPin(DrawingViewStateBase):
         self.view.state.go(self.view.stateIdle)
 
 
-class DrawingViewStateEditTextLine(DrawingViewStateBase):
-    STATUS = "Edit Text Line: specify changes"
+class DrawingViewStateEditText(DrawingViewStateBase):
+    STATUS = "Edit Text: specify changes"
 
     def entry(
         self : Self,
@@ -218,32 +218,12 @@ class DrawingViewStateEditTextLine(DrawingViewStateBase):
         s    : QPointF,
         i    : list[ItemMixin] | None = None
     ) -> None:
-        item = i[0] if i else self.view._selectedItem(TextLine)
-        if item and isinstance(item, TextLine):
-            dialog = TextLineItemDialog(item, self.view)
+        item = i[0] if i else self.view._selectedItem(Text)
+        if item and isinstance(item, Text):
+            dialog = TextItemDialog(item, self.view)
             if dialog.exec():
                 text, appearance = dialog.getChoice()
-                self.scene.editTextLine(item, text, appearance, undoable=True)
-        else:
-            logger().warning("No text selected")
-        self.view.state.go(self.view.stateIdle)
-
-
-class DrawingViewStateEditTextBlock(DrawingViewStateBase):
-    STATUS = "Edit Text Block: specify changes"
-
-    def entry(
-        self : Self,
-        v    : QPoint,
-        s    : QPointF,
-        i    : list[ItemMixin] | None = None
-    ) -> None:
-        item = i[0] if i else self.view._selectedItem(TextBlock)
-        if item and isinstance(item, TextBlock):
-            dialog = TextBlockItemDialog(item, self.view)
-            if dialog.exec():
-                text, appearance = dialog.getChoice()
-                item.setPlainText(text)
+                item.setText(text)
                 item.a.quill.setPref(appearance)
                 self.scene.editTextBlock(
                     item      = item,
@@ -270,8 +250,8 @@ class DrawingViewStateEditPropertyText(DrawingViewStateBase):
         s    : QPointF,
         i    : list[ItemMixin] | None = None
     ) -> None:
-        item = i[0] if i else self.view._selectedItem(PropertyTextMixin)
-        if item and isinstance(item, PropertyTextMixin):
+        item = i[0] if i else self.view._selectedItem(PropertyText)
+        if item and isinstance(item, PropertyText):
             dialog = PropertyTextDialog(item, self.view)
             if dialog.exec():
                 value = dialog.getValue()

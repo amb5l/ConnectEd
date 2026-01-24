@@ -4,10 +4,7 @@ from PyQt6.QtCore import QPointF
 
 from .......app import logger
 
-from .....property import PropertyTextLineState,  \
-                          PropertyTextLineEdit,   \
-                          PropertyTextBlockState, \
-                          PropertyTextBlockEdit
+from .....property import PropertyTextState, PropertyTextEdit
 
 from .....items import NO_CHANGE
 
@@ -18,8 +15,7 @@ if TYPE_CHECKING:
     from .....property            import PropertyState, PropertyEdit
     from .....properties          import PropertiesMixin
     from .....items               import ItemMixin
-    from .....items.property_text import PropertyTextMixin, \
-                                         PropertyTextLine, PropertyTextBlock
+    from .....items.property_text import PropertyText
     from ......dialogs.properties import DisplayChoice
 
 class CmdEditProperties(CmdBase):
@@ -67,33 +63,12 @@ class CmdEditProperties(CmdBase):
                     continue
                 if property.getText() is None:
                     # add new property text
-                    if isinstance(change.display, PropertyTextLineState):
-                        logger().warning(f"Need to add PropertyTextLine to property '{name}'")
-                    elif isinstance(change.display, PropertyTextBlockState):
-                        logger().warning(f"Need to add PropertyTextBlock to property '{name}'")
-                    else:
-                        logger().error(f"Bad display change to property '{name}'")
-                        continue
-                elif change.display is None:
+                    logger().warning(f"Need to add PropertyText to property '{name}'")
+                elif change.display is DisplayChoice.NONE:
                     # remove property text
                     property.setText(None)
-                elif isinstance(property.getText(), PropertyTextLine):
-                    if isinstance(change.display, PropertyTextLineEdit):
-                        logger().warning(f"Need to edit PropertyTextLine for property '{name}'")
-                    elif isinstance(change.display, PropertyTextBlockState):
-                        logger().warning(f"Need to convert PropertyTextLine to PropertyTextBlock for property '{name}'")
-                    else:
-                        logger().error(f"Bad display change to property '{name}'")
-                elif isinstance(property.getText(), PropertyTextBlock):
-                    if isinstance(change.display, PropertyTextBlockEdit):
-                        logger().warning(f"Need to edit PropertyTextBlock for property '{name}'")
-                    elif isinstance(change.display, PropertyTextLineState):
-                        logger().warning(f"Need to convert PropertyTextBlock to PropertyTextLine for property '{name}'")
-                    else:
-                        logger().error(f"Bad display change to property '{name}'")
                 else:
-                    logger().error(f"Bad change to text of property '{name}'")
-                    continue
+                    logger().warning(f"Need to edit PropertyText for property '{name}'")
 
     def undo(self : Self) -> None:
         self._do(self._changes, self._before)
@@ -125,12 +100,9 @@ class CmdEditProperties(CmdBase):
                         self._modifyPropertyText(pt, after)
 
     def _addPropertyText(self : Self, vars : "PropertyState") -> None:
-        block_classes = (DisplayChoice.BLOCK, DisplayChoice.BLOCK_HIDDEN)
-        pt_class = PropertyTextBlock if vars.display in block_classes \
-            else PropertyTextLine
-        pt = pt_class()
+        pt = PropertyText()
         self._modifyPropertyText(pt, vars)
-        parent =  self._object.getHandle(vars.cleat) if vars.cleat != "" else \
+        parent = self._object.getHandle(vars.cleat) if vars.cleat != "" else \
             self._object if isinstance(self._object, ItemMixin) else \
             None
         pt.setParentItem(parent)
@@ -141,11 +113,11 @@ class CmdEditProperties(CmdBase):
 
     def _modifyPropertyText(
         self : Self,
-        pt   : "PropertyTextMixin",
+        pt   : "PropertyText",
         vars : "PropertyState"
     ) -> None:
         pt.setName(vars.name)
-        pt.setVisible(vars.display in (DisplayChoice.LINE, DisplayChoice.BLOCK))
+        pt.setVisible(vars.display is not DisplayChoice.HIDE)
         pt.setAnchor(vars.cleat)
         pt.setPos(QPointF(vars.offset_x, vars.offset_y))
         pt.setOrigin(vars.origin)

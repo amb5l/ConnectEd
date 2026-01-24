@@ -7,12 +7,12 @@ from ....query import QueryWindow
 from ..interaction      import RotateItemMixin
 from ..interaction.edit import EditMoveInteraction
 
-from ....items import NoChange, NO_CHANGE
+from ....items import NoChange, NO_CHANGE, AlignH, AlignV
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ....items            import ItemMixin
-    from ....items.text       import TextLine, TextBlock
+    from ....items.text       import Text
     from ....items.grip       import ResizeGrip
     from ....items.symbol_pin import SymbolPin
     from .                    import DrawingViewUi
@@ -203,38 +203,29 @@ class DrawingViewUiEditMixin:
             return
         self._scene.editSymbolPinClock(item, enable, undoable=True)
 
-    def editTextLineDialog(self : "DrawingViewUi") -> None:
-        self._view.state.go(self._view.stateEditTextLine)
+    def editTextDialog(self : "DrawingViewUi") -> None:
+        self._view.state.go(self._view.stateEditText)
 
-    def editTextLine(
-        self   : "DrawingViewUi",
-        item   : "TextLine",
-        anchor : str | NoChange = NO_CHANGE
-    ) -> None:
-        self._scene.editTextLine(item, anchor=anchor, undoable=True)
-
-    def editTextBlockDialog(self : "DrawingViewUi") -> None:
-        """Interactive text block editing (dialog box)."""
-        self._view.state.go(self._view.stateEditTextBlock)
-
-    def editTextBlock(
+    def editText(
         self      : "DrawingViewUi",
-        item      : "TextBlock",
-        alignment : Qt.AlignmentFlag | NoChange = NO_CHANGE,
+        item      : "Text",
+        align_h   : AlignH           | NoChange = NO_CHANGE,
+        align_v   : AlignV           | NoChange = NO_CHANGE,
         width     : float | None     | NoChange = NO_CHANGE,
         height    : float | None     | NoChange = NO_CHANGE,
         anchor    : str              | NoChange = NO_CHANGE,
     ) -> None:
         self._scene.editTextBlock(
             item,
-            alignment=alignment,
+            align_h=align_h,
+            align_v=align_v,
             width=width,
             height=height,
             anchor=anchor,
             undoable=True
         )
 
-    def editPropertyText(
+    def editPropertyTextDialog(
         self : "DrawingViewUi",
         item : "ItemMixin | None" = None
     ) -> None:

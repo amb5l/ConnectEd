@@ -25,28 +25,28 @@ class TextAppearanceLayout(QVBoxLayout):
     _default_bold      : bool   | Default
     _default_italic    : bool   | Default
     _default_underline : bool   | Default
-    options_layout     : QVBoxLayout
-    color_layout       : QHBoxLayout
-    color_label        : QLabel
-    color_combo        : ColorComboBox
-    family_layout      : QHBoxLayout
-    family_label       : QLabel
-    family_combo       : FontFamilyComboBox
-    size_layout        : QHBoxLayout
-    size_label         : QLabel
-    size_combo         : FontSizeComboBox
-    bold_layout        : QHBoxLayout
-    bold_label         : QLabel
-    bold_combo         : OnOffComboBox
-    italic_layout      : QHBoxLayout
-    italic_label       : QLabel
-    italic_combo       : OnOffComboBox
-    underline_layout   : QHBoxLayout
-    underline_label    : QLabel
-    underline_combo    : OnOffComboBox
-    preview            : QLabel
+    _options_layout     : QVBoxLayout
+    _color_layout       : QHBoxLayout
+    _color_label        : QLabel
+    _color_combo        : ColorComboBox
+    _family_layout      : QHBoxLayout
+    _family_label       : QLabel
+    _family_combo       : FontFamilyComboBox
+    _size_layout        : QHBoxLayout
+    _size_label         : QLabel
+    _size_combo         : FontSizeComboBox
+    _bold_layout        : QHBoxLayout
+    _bold_label         : QLabel
+    _bold_combo         : OnOffComboBox
+    _italic_layout      : QHBoxLayout
+    _italic_label       : QLabel
+    _italic_combo       : OnOffComboBox
+    _underline_layout   : QHBoxLayout
+    _underline_label    : QLabel
+    _underline_combo    : OnOffComboBox
 
-    def __init__(self : Self,
+    def __init__(
+        self              : Self,
         initial_color     : QColor | Default | NoChange,
         initial_family    : str    | Default | NoChange,
         initial_size      : float  | Default | NoChange,
@@ -74,69 +74,121 @@ class TextAppearanceLayout(QVBoxLayout):
         self._default_bold      = default_bold
         self._default_italic    = default_italic
         self._default_underline = default_underline
-        self.options_layout = QVBoxLayout()
-        self.color_layout = QHBoxLayout()
-        self.color_label = QLabel("Color:")
-        self.color_layout.addWidget(self.color_label)
-        self.color_combo = ColorComboBox(initial_color, default_color)
-        self.color_layout.addWidget(self.color_combo)
-        self.options_layout.addWidget(self.color_layout)
-        self.family_layout = QHBoxLayout()
-        self.family_label = QLabel("Family:")
-        self.family_layout.addWidget(self.family_label)
-        self.family_combo = FontFamilyComboBox(initial_family, default_family)
-        self.family_layout.addWidget(self.family_combo)
-        self.options_layout.addWidget(self.family_layout)
-        self.size_layout = QHBoxLayout()
-        self.size_label = QLabel("Size:")
-        self.size_layout.addWidget(self.size_label)
-        self.size_combo = FontSizeComboBox(initial_size, default_size)
-        self.size_layout.addWidget(self.size_combo)
-        self.options_layout.addWidget(self.size_layout)
-        self.bold_layout = QHBoxLayout()
-        self.bold_label = QLabel("Bold:")
-        self.bold_layout.addWidget(self.bold_label)
-        self.bold_combo = OnOffComboBox(initial_bold, default_bold)
-        self.bold_layout.addWidget(self.bold_combo)
-        self.options_layout.addWidget(self.bold_layout)
-        self.italic_layout = QHBoxLayout()
-        self.italic_label = QLabel("Italic:")
-        self.italic_layout.addWidget(self.italic_label)
-        self.italic_combo = OnOffComboBox(initial_italic, default_italic)
-        self.italic_layout.addWidget(self.italic_combo)
-        self.options_layout.addWidget(self.italic_layout)
-        self.underline_layout = QHBoxLayout()
-        self.underline_label = QLabel("Underline:")
-        self.underline_layout.addWidget(self.underline_label)
-        self.underline_combo = OnOffComboBox(initial_underline, default_underline)
-        self.underline_layout.addWidget(self.underline_combo)
-        self.options_layout.addWidget(self.underline_layout)
-        self.addLayout(self.options_layout)
-        self.preview = QLabel("Sample Text")
-        self.preview.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.preview.setMinimumHeight(40)
-        self.updatePreview()
-        self.addWidget(self.preview)
-        self.family_combo.activated.connect(self.updatePreview)
-        self.bold_combo.activated.connect(self.updatePreview)
-        self.italic_combo.activated.connect(self.updatePreview)
-        self.underline_combo.activated.connect(self.updatePreview)
+        self._color_layout = QHBoxLayout()
+        self._color_label = QLabel("Color:")
+        self._color_layout.addWidget(self._color_label)
+        self._color_combo = ColorComboBox(initial_color, default_color)
+        self._color_layout.addWidget(self._color_combo)
+        self.addLayout(self._color_layout)
+        self._family_layout = QHBoxLayout()
+        self._family_label = QLabel("Family:")
+        self._family_layout.addWidget(self._family_label)
+        self._family_combo = FontFamilyComboBox(initial_family, default_family)
+        self._family_layout.addWidget(self._family_combo)
+        self.addLayout(self._family_layout)
+        self._size_layout = QHBoxLayout()
+        self._size_label = QLabel("Size:")
+        self._size_layout.addWidget(self._size_label)
+        self._size_combo = FontSizeComboBox(initial_size, default_size)
+        self._size_layout.addWidget(self._size_combo)
+        self.addLayout(self._size_layout)
+        self._bold_layout = QHBoxLayout()
+        self._bold_label = QLabel("Bold:")
+        self._bold_layout.addWidget(self._bold_label)
+        self._bold_combo = OnOffComboBox(initial_bold, default_bold)
+        self._bold_layout.addWidget(self._bold_combo)
+        self.addLayout(self._bold_layout)
+        self._italic_layout = QHBoxLayout()
+        self._italic_label = QLabel("Italic:")
+        self._italic_layout.addWidget(self._italic_label)
+        self._italic_combo = OnOffComboBox(initial_italic, default_italic)
+        self._italic_layout.addWidget(self._italic_combo)
+        self.addLayout(self._italic_layout)
+        self._underline_layout = QHBoxLayout()
+        self._underline_label = QLabel("Underline:")
+        self._underline_layout.addWidget(self._underline_label)
+        self._underline_combo = OnOffComboBox(initial_underline, default_underline)
+        self._underline_layout.addWidget(self._underline_combo)
+        self.addLayout(self._underline_layout)
 
-    def updatePreview(self : Self):
-        family    = self.family_combo.getChoice()
+    def getColor(self : Self) -> QColor | Default | NoChange:
+        return self._color_combo.getChoice()
+
+    def getFamily(self : Self) -> str | Default | NoChange:
+        return self._family_combo.getChoice()
+
+    def getSize(self : Self) -> float | NoChange | Default:
+        return self._size_combo.getChoice()
+
+    def getBold(self : Self) -> bool | Default | NoChange:
+        return self._bold_combo.getChoice()
+
+    def getItalic(self : Self) -> bool | Default | NoChange:
+        return self._italic_combo.getChoice()
+
+    def getUnderline(self : Self) -> bool | Default | NoChange:
+        return self._underline_combo.getChoice()
+
+
+class TextAppearancePreviewLayout(TextAppearanceLayout):
+    _preview : QLabel
+
+    def __init__(
+        self              : Self,
+        initial_color     : QColor | Default | NoChange,
+        initial_family    : str    | Default | NoChange,
+        initial_size      : float  | Default | NoChange,
+        initial_bold      : bool   | Default | NoChange,
+        initial_italic    : bool   | Default | NoChange,
+        initial_underline : bool   | Default | NoChange,
+        default_color     : QColor | Default,
+        default_family    : str    | Default,
+        default_size      : float  | Default,
+        default_bold      : bool   | Default,
+        default_italic    : bool   | Default,
+        default_underline : bool   | Default,
+        parent            : QWidget | None = None
+    ) -> None:
+        super().__init__(
+            initial_color,
+            initial_family,
+            initial_size,
+            initial_bold,
+            initial_italic,
+            initial_underline,
+            default_color,
+            default_family,
+            default_size,
+            default_bold,
+            default_italic,
+            default_underline,
+            parent
+        )
+        self._preview = QLabel("Sample Text")
+        self._preview.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self._preview.setMinimumHeight(40)
+        self._updatePreview()
+        self.addWidget(self._preview)
+        self._family_combo.activated.connect(self._updatePreview)
+        self._bold_combo.activated.connect(self._updatePreview)
+        self._italic_combo.activated.connect(self._updatePreview)
+        self._underline_combo.activated.connect(self._updatePreview)
+
+    def _updatePreview(self : Self):
+        family    = self._family_combo.getChoice()
         family    = self._default_family if family is DEFAULT   else \
                     self._initial_family if family is NO_CHANGE else family
-        bold      = self.bold_combo.getChoice()
+        bold      = self._bold_combo.getChoice()
         bold      = self._default_bold if bold is DEFAULT   else \
                     self._initial_bold if bold is NO_CHANGE else bold
-        italic    = self.italic_combo.getChoice()
+        italic    = self._italic_combo.getChoice()
         italic    = self._default_italic if italic is DEFAULT   else \
                     self._initial_italic if italic is NO_CHANGE else italic
-        underline = self.underline_combo.getChoice()
+        underline = self._underline_combo.getChoice()
         underline = self._default_underline if underline is DEFAULT   else \
                     self._initial_underline if underline is NO_CHANGE else underline
         if any(x in (DEFAULT, NO_CHANGE) for x in (family, bold, italic, underline)):
-            self.preview.setText("") # options are ambiguous
+            self._preview.setText("") # options are ambiguous
             return
         font = QFont()
         font.setFamily(family)
@@ -144,23 +196,5 @@ class TextAppearanceLayout(QVBoxLayout):
         font.setBold(bold)
         font.setItalic(italic)
         font.setUnderline(underline)
-        self.preview.setFont(font)
-        self.preview.setText("Sample Text")
-
-    def getColor(self : Self) -> QColor | Default | NoChange:
-        return self.color_combo.getChoice()
-
-    def getFamily(self : Self) -> str | Default | NoChange:
-        return self.family_combo.getChoice()
-
-    def getSize(self : Self) -> float | NoChange | Default:
-        return self.size_combo.getChoice()
-
-    def getBold(self : Self) -> bool | Default | NoChange:
-        return self.bold_combo.getChoice()
-
-    def getItalic(self : Self) -> bool | Default | NoChange:
-        return self.italic_combo.getChoice()
-
-    def getUnderline(self : Self) -> bool | Default | NoChange:
-        return self.underline_combo.getChoice()
+        self._preview.setFont(font)
+        self._preview.setText("Sample Text")

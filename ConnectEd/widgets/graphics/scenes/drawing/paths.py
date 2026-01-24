@@ -54,44 +54,47 @@ class DrawingScenePathsMixin:
 
     def _gripPaths(self : "DrawingScene", d : dict, size : float) -> None:
         d.clear()
-        # square outline for use below
-        square_rect = QRectF(-size/2, -size/2, size, size)
-        square_outline = QPainterPath()
-        square_outline.addRect(square_rect)
+        # stroker for creating outlines
         stroker = QPainterPathStroker()
         stroker.setWidth(1.0)
-        stroked_square = stroker.createStroke(square_outline)
-        # square
-        path = QPainterPath()
-        path.addRect(QRectF(-size/2, -size/2, size, size))
-        d["Square"] = path
-        # circle
-        path = QPainterPath()
-        path.addEllipse(QRectF(-size/2, -size/2, size, size))
-        d["Circle"] = path
-        # squared circle
-        path = d["Circle"].united(stroked_square)
-        d["SquaredCircle"] = path
-        # diamond
-        path = QPainterPath()
-        path.addPolygon(QPolygonF([
+        # square building blocks
+        square_rect = QRectF(-size/2, -size/2, size, size)
+        square_path = QPainterPath()
+        square_path.addRect(square_rect)
+        stroked_square = stroker.createStroke(square_path)
+        # diamond building blocks
+        diamond_poly = QPolygonF([
                 QPointF(-size/2, 0),
                 QPointF(0, -size/2),
                 QPointF(size/2, 0),
                 QPointF(0, size/2)
-        ]))
-        d["Diamond"] = path
-        # squared diamond
-        path = d["Diamond"].united(stroked_square)
-        d["SquaredDiamond"] = path
-        # arrow
-        path = QPainterPath()
-        path.addPolygon(QPolygonF([
+        ])
+        diamond_path = QPainterPath()
+        diamond_path.addPolygon(diamond_poly)
+        stroked_diamond = stroker.createStroke(diamond_path)
+        # circle building blocks
+        circle_path = QPainterPath()
+        circle_path.addEllipse(square_rect)
+        stroked_circle = stroker.createStroke(circle_path)
+        # arrow building blocks
+        arrow_path = QPainterPath()
+        arrow_path.addPolygon(QPolygonF([
                 QPointF(-size/2, -size/2),
                 QPointF(size/2, 0),
                 QPointF(-size/2, size/2)
         ]))
-        d["Arrow"] = path
+        # paths
+        d["UnfilledSquare"] = stroked_square
+        d["FilledSquare"] = square_path
+        d["UnfilledDiamond"] = stroked_diamond
+        d["UnfilledDiamondSquared"] = stroked_diamond.united(stroked_square)
+        d["FilledDiamond"] = diamond_path
+        d["FilledDiamondSquared"] = diamond_path.united(stroked_square)
+        d["UnfilledCircle"] = stroked_circle
+        d["UnfilledCircleSquared"] = stroked_circle.united(stroked_square)
+        d["FilledCircle"] = circle_path
+        d["FilledCircleSquared"] = circle_path.united(stroked_square)
+        d["Arrow"] = arrow_path
 
     def _portInPath(
         self : "DrawingScene",

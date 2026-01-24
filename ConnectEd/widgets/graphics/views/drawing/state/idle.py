@@ -4,7 +4,7 @@ from PyQt6.QtCore import Qt, QPoint, QPointF
 
 from ....items import ItemMixin
 
-from ....items.grip     import Grip, HandleGrip, ResizeGrip
+from ....items.grip     import Grip, OriginGrip, ResizeGrip
 from ....items.polyline import PolySeg
 
 from ..interaction.edit  import EditMoveInteraction,          \
@@ -43,7 +43,7 @@ class DrawingViewStateIdle(DrawingViewStateBase):
         # grips
         if len(grips_at) == 1 and not (m & qkm.AltModifier):
             grip = grips_at[0]
-            if isinstance(grip, HandleGrip):
+            if isinstance(grip, OriginGrip):
                 # resize/move
                 self.interact(
                     EditMoveInteraction(self.view, grip, grip.scenePos()),

@@ -5,7 +5,7 @@ from PyQt6.QtWidgets import QWidget, QDialog, QVBoxLayout, QHBoxLayout, \
 
 from ..graphics.items import SignalDirection
 
-from .components.layout.ok_cancel import okCancelLayout
+from .components.layout.ok_cancel import OkCancelLayout
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -18,9 +18,7 @@ class PortPinDialog(QDialog):
     _signal_dir_label : QLabel
     _signal_dir_combo : QComboBox
     _name_dir_layout  : QHBoxLayout
-    _ok_button        : QPushButton
-    _cancel_button    : QPushButton
-    _ok_cancel_layout : QHBoxLayout
+    _ok_cancel_layout : OkCancelLayout
     _dialog_layout    : QVBoxLayout
 
     def __init__(
@@ -43,7 +41,8 @@ class PortPinDialog(QDialog):
         self._signal_dir_combo.addItems([e.value for e in SignalDirection])
         self._name_dir_layout.addWidget(self._signal_dir_combo)
         self._dialog_layout.addLayout(self._name_dir_layout)
-        okCancelLayout(self)
+        self._ok_cancel_layout = OkCancelLayout(self)
+        self._dialog_layout.addLayout(self._ok_cancel_layout)
         self.setLayout(self._dialog_layout)
         # default field values
         self._name_edit.setText("")

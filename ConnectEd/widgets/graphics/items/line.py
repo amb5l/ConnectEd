@@ -106,13 +106,13 @@ class Line(
             "P1" : Handle(
                 name   = "P1",
                 pos    = QPointF(0, 0),
-                resize = True,
+                kind   = "resize",
                 parent = self
             ),
             "P2" : Handle(
                 name   = "P2",
                 pos    = QPointF(0, 0),
-                resize = True,
+                kind   = "resize",
                 parent = self
             )
         }

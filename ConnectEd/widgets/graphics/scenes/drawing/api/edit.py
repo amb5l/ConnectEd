@@ -10,15 +10,16 @@ from ......core.xml import copy
 from ....property   import PropertyEdit
 from ....properties import PropertiesMixin
 
-from ....items import ItemType, Default, NoChange, NO_CHANGE, EdgeLoc, SignalDirection
+from ....items import ItemType, Default, NoChange, NO_CHANGE, AlignH, AlignV, \
+                      EdgeLoc, SignalDirection
 
 from ....items.block         import Block
 from ....items.port_pin      import PortPinMixin
 from ....items.block_pin     import BlockPin
 from ....items.symbol_pin    import SymbolPin
 from ....items.polyline      import Polyline, PolySeg
-from ....items.text          import TextLine, TextBlock
-from ....items.property_text import PropertyTextMixin
+from ....items.text          import Text
+from ....items.property_text import PropertyText
 from ....items.mixin         import ItemMixin
 
 from ..cmd import cmdExec, CmdDelete, CmdMove, CmdRotateCW, CmdRotateCCW
@@ -29,8 +30,7 @@ from ..cmd.edit.pin           import CmdEditPortPin, \
                                      CmdEditSymbolPinDot, CmdEditSymbolPinClock
 from ..cmd.edit.origin        import CmdEditOrigin
 from ..cmd.edit.polyline      import CmdEditPolylineClosed, CmdEditPolySeg
-from ..cmd.edit.text_line     import CmdEditTextLine
-from ..cmd.edit.text_block    import CmdEditTextBlock
+from ..cmd.edit.text          import CmdEditText
 from ..cmd.edit.property_text import CmdEditPropertyText
 from ..cmd.edit.appearance    import CmdEditAppearance
 from ..cmd.edit.properties    import CmdEditProperties
@@ -185,9 +185,9 @@ class DrawingSceneApiEditMixin:
         cmd = CmdEditPolySeg(self, seg, sweep)
         cmdExec(self, cmd, undoable)
 
-    def editTextLine(
+    def editText(
         self       : "DrawingScene",
-        item       : TextLine,
+        item       : Text,
         text       : str              | NoChange = NO_CHANGE,
         color      : QColor | Default | NoChange = NO_CHANGE,
         font       : str    | Default | NoChange = NO_CHANGE,
@@ -195,40 +195,23 @@ class DrawingSceneApiEditMixin:
         bold       : bool   | Default | NoChange = NO_CHANGE,
         italic     : bool   | Default | NoChange = NO_CHANGE,
         underline  : bool   | Default | NoChange = NO_CHANGE,
-        anchor     : str              | NoChange = NO_CHANGE,
-        undoable   : bool = False
-    ) -> None:
-        cmd = CmdEditTextLine(
-            self, item, text, color, font, size, bold, italic, underline, anchor
-        )
-        cmdExec(self, cmd, undoable)
-
-    def editTextBlock(
-        self       : "DrawingScene",
-        item       : TextBlock,
-        text       : str              | NoChange = NO_CHANGE,
-        color      : QColor | Default | NoChange = NO_CHANGE,
-        font       : str    | Default | NoChange = NO_CHANGE,
-        size       : float  | Default | NoChange = NO_CHANGE,
-        bold       : bool   | Default | NoChange = NO_CHANGE,
-        italic     : bool   | Default | NoChange = NO_CHANGE,
-        underline  : bool   | Default | NoChange = NO_CHANGE,
-        alignment  : Qt.AlignmentFlag | NoChange = NO_CHANGE,
+        align_h    : AlignH           | NoChange = NO_CHANGE,
+        align_v    : AlignV           | NoChange = NO_CHANGE,
         width      : float | None     | NoChange = NO_CHANGE,
         height     : float | None     | NoChange = NO_CHANGE,
         anchor     : str              | NoChange = NO_CHANGE,
         undoable   : bool = False
     ) -> None:
-        cmd = CmdEditTextBlock(
-            self, item, text, \
-            color, font, size, bold, italic, underline, \
-            alignment, width, height, anchor
+        cmd = CmdEditText(
+            self, item, text, align_h, align_v, width, height,
+            color, font, size, bold, italic, underline
+
         )
         cmdExec(self, cmd, undoable)
 
     def editPropertyText(
         self       : "DrawingScene",
-        item       : PropertyTextMixin,
+        item       : PropertyText,
         value      : str,
         color      : QColor | Default | NoChange = NO_CHANGE,
         font       : str    | Default | NoChange = NO_CHANGE,

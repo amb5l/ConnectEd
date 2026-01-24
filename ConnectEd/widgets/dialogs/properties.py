@@ -10,14 +10,13 @@ from PyQt6.QtGui     import QBrush
 
 from ...app import settings
 
-from ..graphics.property import PropertyState,         \
-                                PropertyEdit,          \
-                                PropertyTextLineState, \
-                                PropertyTextBlockState
+from ..graphics.property import PropertyState,    \
+                                PropertyEdit,     \
+                                PropertyTextState
 
 from ..graphics.items import DEFAULT
 
-from ..graphics.items.property_text import PropertyTextLine, PropertyTextBlock
+from ..graphics.items.property_text import PropertyText
 
 from ..graphics.items.mixin.handle import ItemRectHandlesMixin
 
@@ -39,9 +38,9 @@ if TYPE_CHECKING:
 
 
 class DisplayChoice(Enum):
-    NONE         = "<none>"
-    LINE         = "Line"
-    BLOCK        = "Block"
+    NONE = "<none>"
+    SHOW = "Line"
+    HIDE = "Block"
 
 
 class ExistingItem(DialogItem):
@@ -103,10 +102,10 @@ class PropertiesDialog(QDialog):
             "Value",
             "Display",
             "Hidden",
-            "Tether",
+            "Cleat",
             "Offset X",
             "Offset Y",
-            "Anchor",
+            "Origin",
             "Color",
             "Font",
             "Size",
@@ -122,32 +121,26 @@ class PropertiesDialog(QDialog):
         self._before = {}
         for name, prop in item.properties.items():
             pt = prop.getText()
-            if isinstance(pt, PropertyTextLine):
-                pt_state_class = PropertyTextLineState
-                display_choice = DisplayChoice.LINE
-            elif isinstance(pt, PropertyTextBlock):
-                pt_state_class = PropertyTextBlockState
-                display_choice = DisplayChoice.BLOCK
-            else:
-                display_choice = DisplayChoice.NONE
+            display_choice = DisplayChoice.NONE if pt is None else \
+                             DisplayChoice.SHOW if pt.isVisible() else \
+                             DisplayChoice.HIDE
             args = {}
-            if display_choice is not None:
+            if display_choice is not DisplayChoice.NONE:
                 args[ "hidden"    ] = not pt.isVisible(),
                 args[ "cleat"     ] = pt.getCleat(),
                 args[ "offset_x"  ] = pt.pos().x(),
                 args[ "offset_y"  ] = pt.pos().y(),
                 args[ "origin"    ] = pt.getOrigin(),
+                args[ "align_h"   ] = pt.alignH()
+                args[ "align_v"   ] = pt.alignV()
+                args[ "width"     ] = pt.width()
+                args[ "height"    ] = pt.height()
                 args[ "color"     ] = pt.quillColor(),
                 args[ "font"      ] = pt.quillFamily(),
                 args[ "size"      ] = pt.quillSize(),
                 args[ "bold"      ] = pt.quillBold(),
                 args[ "italic"    ] = pt.quillItalic(),
                 args[ "underline" ] = pt.quillUnderline()
-            if pt_state_class == PropertyTextBlockState:
-                args["align_h"    ] = pt.alignH()
-                args["align_v"    ] = pt.alignV()
-                args["width"      ] = pt.width()
-                args["height"     ] = pt.height()
             pt_state = pt_state_class(**args) if args else None
             state = PropertyState(name, prop.raw(), pt_state)
             inherent  = prop.inherent()

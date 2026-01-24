@@ -58,8 +58,7 @@ class ItemXmlMixin:
         registerClass( pin_classes , "BlockPin"  , pkg=pkg )
         registerClass( pin_classes , "SymbolPin" , pkg=pkg )
         pt_classes = {}
-        registerClass( pt_classes , "PropertyTextLine"  , "property_text" , pkg )
-        registerClass( pt_classes , "PropertyTextBlock" , "property_text" , pkg )
+        registerClass( pt_classes , "PropertyText" , pkg )
         # process child items
         while not (xr.isEndElement() and xr.name() == cls.__name__):
             if xr.isStartElement():

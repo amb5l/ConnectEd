@@ -16,7 +16,7 @@ class NullPoint(QGraphicsItem):
     _brect  : QRectF        # bounding rect
     _hshape : QPainterPath  # shape for hit detection
 
-    def __init__(self : Self, parent : "ItemMixin") -> None:
+    def __init__(self : Self, parent : "ItemMixin | None" = None) -> None:
         super().__init__(parent)
         self.setFlag( self.GraphicsItemFlag.ItemHasNoContents , True  )
         self.setFlag( self.GraphicsItemFlag.ItemIsMovable     , False )

@@ -1,3 +1,10 @@
+Text class (string + block bool)
+rename Rectangle to RectangleItem etc
+dialog components assume attribute names
+Family => Font
+rectangle context menu - set Origin
+hollow grips for text indicate unconstrained size
+
 create new Text class, with TextLine/TextBlock children
   - pos, rotate handled by parent
   - origin (translation) and rotation compensation handled by child

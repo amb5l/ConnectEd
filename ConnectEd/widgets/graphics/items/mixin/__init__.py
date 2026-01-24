@@ -24,6 +24,7 @@ class ItemMixin(ItemSettingsMixin):
 
     def initItem(self : Self | QGraphicsItem, bare : bool = False) -> None:
         from ...properties import PropertiesMixin
+        from .origin  import ItemOriginMixin
         from .handle  import ItemHandlesMixin
         from .loc     import ItemLocMixin
         from .pos     import ItemPosMixin
@@ -40,6 +41,8 @@ class ItemMixin(ItemSettingsMixin):
         self.setFlag( f.ItemSendsScenePositionChanges , True )
         self.setCacheMode(QGraphicsItem.CacheMode.DeviceCoordinateCache)
         self._resetUuid()
+        if isinstance(self, ItemOriginMixin):
+            self.initOrigin()
         if isinstance(self, ItemHandlesMixin):
             self.initHandles()
         if isinstance(self, ItemLocMixin):

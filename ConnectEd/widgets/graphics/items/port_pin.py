@@ -79,13 +79,13 @@ class PortPinMixin(
             "Origin" : Handle(
                 name   = "Origin",
                 pos    = QPointF(0, 0),
-                resize = False,
+                kind   = "move",
                 parent = self
             ),
             "Name" : Handle(
                 name   = "Name",
                 pos    = QPointF(self._AP_NAME_OFFSET, 0),
-                resize = False,
+                kind   = "move",
                 parent = self
             )
         }

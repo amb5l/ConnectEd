@@ -1,9 +1,14 @@
 from typing import Self, overload
 
+from PyQt6.QtCore    import QRectF
 from PyQt6.QtWidgets import QGraphicsItem, QGraphicsTextItem, \
                             QGraphicsSceneContextMenuEvent
-from PyQt6.QtGui     import QColor
+from PyQt6.QtGui     import QColor, QPainterPath
 
+from .. import AlignV
+
+from ..mixin.bound  import ItemBoundMixin
+from ..mixin.shape  import ItemShapeMixin
 from ..mixin.rotate import ItemRotateMixin
 
 from typing import TYPE_CHECKING
@@ -11,7 +16,11 @@ if TYPE_CHECKING:
     from . import UniText
 
 
-class UniTextBlock(QGraphicsTextItem):
+class UniTextBlock(
+    ItemBoundMixin,
+    ItemShapeMixin,
+    QGraphicsTextItem
+):
     @overload
     def __init__(self, parent: QGraphicsItem | None = None) -> None:
         ...
@@ -29,6 +38,8 @@ class UniTextBlock(QGraphicsTextItem):
             super().__init__(text_or_parent, parent)
         else:
             super().__init__(parent=parent)
+        self.initBound()  # initialize cached bounding rect
+        self.initShape()  # initialize cached hit detect shape
 
     def onSceneRotationChange(self : Self) -> None:
         """Rotation compensation."""
@@ -40,6 +51,47 @@ class UniTextBlock(QGraphicsTextItem):
 
     def setText(self : Self, text : str) -> None:
         self.setPlainText(text)
+
+    def onGeometryChange(self : Self) -> None:
+        parent : UniText = self.parentItem()
+        align_h = parent._align_h
+        align_v = parent._align_v
+        width = parent._width
+        height = parent._height
+        # get underlying document
+        doc = self.document()
+        # apply horizontal alignment
+        option = doc.defaultTextOption()
+        option.setAlignment(align_h)  #  AlignH is based on Qt.AlignmentFlag
+        doc.setDefaultTextOption(option)
+        # apply width constraint
+        self.setTextWidth(self._width if self._width else -1)
+        # calculate unconstrained bounding rect (without margins)
+        root_frame = doc.rootFrame()
+        fmt = root_frame.frameFormat()
+        fmt.setMargin(0)  # temporarily remove margins
+        root_frame.setFrameFormat(fmt)
+        urect = QGraphicsTextItem.boundingRect(self)  # unconstrained rect
+        # update cached bounding rect, accounting for constraints
+        w = width  if width  else urect.width()
+        h = height if height else urect.height()
+        self._brect = QRectF(0.0, 0.0, w, h)
+        # if height constrained: apply vertical alignment via document top margin
+        if height:
+            match align_v:
+                case AlignV.BOTTOM:
+                    top_margin = height - urect.height()
+                case AlignV.CENTER:
+                    top_margin = (height - urect.height()) / 2
+                case _:  # Top
+                    top_margin = 0
+            fmt.setTopMargin(top_margin)
+            root_frame.setFrameFormat(fmt)
+        # update cached hit detect shape
+        self._hshape = QPainterPath()
+        self._hshape.addRect(self._brect)
+        # update
+        self.update()
 
     def color(self : Self) -> QColor:
         return self.defaultTextColor()
@@ -53,7 +105,4 @@ class UniTextBlock(QGraphicsTextItem):
     ) -> None:
         """Bounce context menu event to parent."""
         parent: "UniText" = self.parentItem()
-        if parent is not None:
-            parent.contextMenuEvent(event)
-        else:
-            super().contextMenuEvent(event)
+        parent.contextMenuEvent(event)

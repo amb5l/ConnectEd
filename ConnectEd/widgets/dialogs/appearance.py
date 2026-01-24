@@ -1,8 +1,7 @@
 from typing import Self
 
 from PyQt6.QtCore    import Qt
-from PyQt6.QtWidgets import QWidget, QDialog, QPushButton, QGroupBox, \
-                            QVBoxLayout, QHBoxLayout
+from PyQt6.QtWidgets import QWidget, QDialog, QGroupBox, QVBoxLayout
 from PyQt6.QtGui     import QShowEvent, QColor
 
 from ..graphics.items import Default, NoChange
@@ -13,8 +12,8 @@ from ..graphics.items.mixin.quill import ItemQuillMixin
 
 from .components.layout.line_appearance import LineAppearanceLayout
 from .components.layout.fill_appearance import FillAppearanceLayout
-from .components.layout.text_appearance import TextAppearanceLayout
-from .components.layout.ok_cancel       import okCancelLayout
+from .components.layout.text_appearance import TextAppearancePreviewLayout
+from .components.layout.ok_cancel       import OkCancelLayout
 
 from .private import _combinedValue
 
@@ -26,10 +25,8 @@ class AppearanceDialog(QDialog):
     _fill_group_box   : QGroupBox | None
     _fill_layout      : FillAppearanceLayout | None
     _text_group_box   : QGroupBox | None
-    _text_layout      : TextAppearanceLayout | None
-    _ok_cancel_layout : QHBoxLayout
-    _ok_button        : QPushButton
-    _cancel_button    : QPushButton
+    _text_layout      : TextAppearancePreviewLayout | None
+    _ok_cancel_layout : OkCancelLayout
 
     def __init__(
         self   : Self,
@@ -85,7 +82,7 @@ class AppearanceDialog(QDialog):
             self._fill_layout    = None
         if category_counts["text"] > 0:
             self._text_group_box = QGroupBox("Text") if category_count > 1 else None
-            self._text_layout = TextAppearanceLayout(
+            self._text_layout = (
                 _combinedValue(items, "textColor"),
                 _combinedValue(items, "textFont"),
                 _combinedValue(items, "textSize"),
@@ -107,7 +104,8 @@ class AppearanceDialog(QDialog):
         else:
             self._text_group_box = None
             self._text_layout    = None
-        okCancelLayout(self)
+        self._ok_cancel_layout = OkCancelLayout(self)
+        self._dialog_layout.addLayout(self._ok_cancel_layout)
         self.setLayout(self._dialog_layout)
         if item_count > 1:
             title = "Appearance"

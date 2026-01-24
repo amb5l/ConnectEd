@@ -1,17 +1,9 @@
-from .base_text import BaseTextLine, BaseTextBlock
+from .unitext import UniText
 
 
-class TextLine(BaseTextLine):
+class Text(UniText):
     pass
 
 
-class TextBlock(BaseTextBlock):
-    pass
-
-
-class SymbolTextLine(TextLine):
-    pass
-
-
-class SymbolTextBlock(TextBlock):
+class SymbolText(Text):
     pass

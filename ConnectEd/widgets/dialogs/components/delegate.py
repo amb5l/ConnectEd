@@ -3,27 +3,23 @@ from typing import Self
 from PyQt6.QtCore    import Qt, QModelIndex
 from PyQt6.QtWidgets import QWidget, QStyledItemDelegate, QStyleOptionViewItem, \
                             QMessageBox
-from PyQt6.QtGui     import QStandardItemModel, QFontMetrics
+from PyQt6.QtGui     import QStandardItemModel
 
 from ....app import logger
 
 from ....core.utils import str2val, val2str
 
-from ...graphics.properties import PropertiesMixin
-
-from ..text import TextDialog
-
-from .model                 import DialogItem
-from .line_edit             import StringEdit, IntEdit, FloatEdit
-from .combo.color           import ColorComboBox
-from .combo.display_choice  import DisplayChoiceComboBox
-from .combo.line_width      import LineWidthComboBox
-from .combo.line_style      import LineStyleComboBox
-from .combo.fill_style      import FillStyleComboBox
-from .combo.font_family     import FontFamilyComboBox
-from .combo.font_size       import FontSizeComboBox
-from .combo.on_off          import OnOffComboBox
-from .combo.edge            import EdgeComboBox
+from .model                import DialogItem
+from .edit                 import TextLineEditor, IntEditor, FloatEditor, TextEditor
+from .combo.color          import ColorComboBox
+from .combo.display_choice import DisplayChoiceComboBox
+from .combo.line_width     import LineWidthComboBox
+from .combo.line_style     import LineStyleComboBox
+from .combo.fill_style     import FillStyleComboBox
+from .combo.font_family    import FontFamilyComboBox
+from .combo.font_size      import FontSizeComboBox
+from .combo.on_off         import OnOffComboBox
+from .combo.edge           import EdgeComboBox
 
 
 class DialogItemDelegate(QStyledItemDelegate):
@@ -33,28 +29,20 @@ class DialogItemDelegate(QStyledItemDelegate):
         option : QStyleOptionViewItem,
         index  : QModelIndex
     ) -> QWidget | None:
-        item : DialogItem = index.model().item(index.row(), index.column())
-        item_type = item.getKind()
+        model : QStandardItemModel = index.model()
+        item : DialogItem = model.item(index.row(), index.column())
+        item_kind = item.getKind()
         item_value = item.getValue()
         item_default = item.getDefault()
-        match item_type:
+        match item_kind:
+            case "text":
+                editor = TextEditor(item_value, parent)
             case "str":
-                font_metrics = QFontMetrics(option.font)
-                text_width = font_metrics.horizontalAdvance(item_value)
-                cell_width = option.rect.width() - 10  # padding
-                if text_width > cell_width \
-                or "\n" in item_value \
-                or "\r" in item_value:
-                    dialog = TextDialog(item.getValue(), parent=self.parent())
-                    if dialog.exec():
-                        item.setText(dialog.getText())
-                    editor = None
-                else:
-                    editor = StringEdit(item_value, parent)
+                editor = TextLineEditor(item_value, parent)
             case "int":
-                editor = IntEdit(item_value, parent)
+                editor = IntEditor(item_value, parent)
             case "float":
-                editor = FloatEdit(item_value, parent)
+                editor = FloatEditor(item_value, parent)
             case "bool":
                 editor = OnOffComboBox(item_value, item_default, None, parent)
             case "Edge":
@@ -75,16 +63,16 @@ class DialogItemDelegate(QStyledItemDelegate):
                 editor = FontSizeComboBox(item_value, item_default, None, parent)
             case _:
                 editor = None
-                logger().error(f"Invalid value type: {item_type}")
+                logger().error(f"Invalid value type: {item_kind}")
                 return super().createEditor(parent, option, index)
         return editor
 
     def setEditorData(self : Self, editor : QWidget, index : QModelIndex) -> None:
         item : DialogItem = index.model().item(index.row(), index.column())
         text = item.text()
-        if isinstance(editor, StringEdit):
+        if isinstance(editor, TextLineEditor):
             editor.setText(text)
-        elif isinstance(editor, IntEdit | FloatEdit):
+        elif isinstance(editor, IntEditor | FloatEditor):
             value = str2val(text, item.getKind())
             editor.setValue(value)
         elif isinstance(editor, EdgeComboBox | DisplayChoiceComboBox | \
@@ -101,9 +89,9 @@ class DialogItemDelegate(QStyledItemDelegate):
         model  : QStandardItemModel,
         index  : QModelIndex
     ) -> None:
-        if isinstance(editor, StringEdit):
+        if isinstance(editor, TextLineEditor):
             text = editor.text()
-        elif isinstance(editor, FloatEdit | IntEdit):
+        elif isinstance(editor, FloatEditor | IntEditor):
             text = val2str(editor.getValue())
         elif isinstance(editor, EdgeComboBox | DisplayChoiceComboBox |\
             ColorComboBox | LineWidthComboBox | LineStyleComboBox | \

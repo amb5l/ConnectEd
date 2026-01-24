@@ -13,7 +13,7 @@ from ..graphics.items.gate import GateFunc
 
 from .components.spin import CustomSpinBox
 
-from .components.layout.ok_cancel import okCancelLayout
+from .components.layout.ok_cancel import OkCancelLayout
 
 
 class BufIcon(SvgIconSingleton):
@@ -70,7 +70,8 @@ class GateDialog(QDialog):
         self._width_spinbox.setRange(2, 99)
         self._width_layout.addWidget(self._width_spinbox)
         self._dialog_layout.addLayout(self._width_layout)
-        okCancelLayout(self)
+        self._ok_cancel_layout = OkCancelLayout(self)
+        self._dialog_layout.addLayout(self._ok_cancel_layout)
         self._function_combo.currentIndexChanged.connect(self._onFunctionChanged)
         self._onFunctionChanged()
 

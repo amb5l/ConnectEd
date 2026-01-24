@@ -1,9 +1,15 @@
 from typing import Self, overload
 
+from PyQt6.QtCore    import QPointF, QRectF
 from PyQt6.QtWidgets import QGraphicsItem, QGraphicsSimpleTextItem, \
-                            QGraphicsSceneContextMenuEvent
-from PyQt6.QtGui     import QColor
+                            QGraphicsSceneContextMenuEvent, \
+                            QStyleOptionGraphicsItem, QWidget
+from PyQt6.QtGui     import QColor, QPainterPath, QPainter
 
+from .. import AlignH, AlignV
+
+from ..mixin.bound  import ItemBoundMixin
+from ..mixin.shape  import ItemShapeMixin
 from ..mixin.rotate import ItemRotateMixin
 
 from typing import TYPE_CHECKING
@@ -11,7 +17,14 @@ if TYPE_CHECKING:
     from . import UniText
 
 
-class UniTextLine(QGraphicsSimpleTextItem):
+class UniTextLine(
+    ItemBoundMixin,
+    ItemShapeMixin,
+    QGraphicsSimpleTextItem
+):
+    # instance attributes
+    _clip_rect : QRectF | None = None
+
     @overload
     def __init__(self, parent: QGraphicsItem | None = None) -> None:
         ...
@@ -29,11 +42,57 @@ class UniTextLine(QGraphicsSimpleTextItem):
             super().__init__(text_or_parent, parent)
         else:
             super().__init__(parent=parent)
+        self._clip_rect = None
+        self.initBound()  # initialize cached bounding rect
+        self.initShape()  # initialize cached hit detect shape
 
     def onSceneRotationChange(self : Self) -> None:
         """Rotation compensation."""
         a = ItemRotateMixin.sceneRotation(self)
         self.setRotation(180 if a > 135 and a <= 315 else 0)
+
+    def onGeometryChange(self : Self) -> None:
+        parent : UniText = self.parentItem()
+        align_h = parent._align_h
+        align_v = parent._align_v
+        width = parent._width
+        height = parent._height
+        # update cached bounding rect, accounting for constraints
+        urect = QGraphicsSimpleTextItem.boundingRect(self)  # unconstrained rect
+        w = width  if width  else urect.width()
+        h = height if height else urect.height()
+        self._brect = QRectF(0.0, 0.0, w, h)
+        # apply clipping if constraints are smaller than unconstrained rect
+        if w < urect.width() or h < urect.height():
+            self._clip_rect = self._brect
+            self.paint = self._paintClip
+        else:
+            self._clip_rect = None
+            if 'paint' in self.__dict__:
+                del self.paint  # use C++ QGraphicsSimpleTextItem.paint
+        # position to apply alignment
+        match align_h:
+            case AlignH.LEFT:
+                x = 0
+            case AlignH.CENTER:
+                x = (w - urect.width()) / 2
+            case AlignH.RIGHT:
+                x = w - urect.width()
+        match align_v:
+            case AlignV.TOP:
+                y = 0
+            case AlignV.CENTER:
+                y = (h - urect.height()) / 2
+            case AlignV.BOTTOM:
+                y = h - urect.height()
+        self.setPos(x, y)
+        # update transform origin
+        self.setTransformOriginPoint(QPointF(urect.width() / 2, urect.height() / 2))
+        # update cached hit detect shape
+        self._hshape = QPainterPath()
+        self._hshape.addRect(self._brect)
+        # update
+        self.update()
 
     def color(self : Self) -> QColor:
         return self.brush().color()
@@ -43,13 +102,21 @@ class UniTextLine(QGraphicsSimpleTextItem):
         brush.setColor(color)
         self.setBrush(brush)
 
+    def _paintClip(
+        self    : Self,
+        painter : QPainter,
+        option  : QStyleOptionGraphicsItem,
+        widget  : QWidget
+    ) -> None:
+        painter.save()
+        painter.setClipRect(self._clip_rect)
+        super().paint(painter, option, widget)
+        painter.restore()
+
     def contextMenuEvent(
         self  : Self,
         event : QGraphicsSceneContextMenuEvent
     ) -> None:
         """Bounce context menu event to parent."""
         parent: "UniText" = self.parentItem()
-        if parent is not None:
-            parent.contextMenuEvent(event)
-        else:
-            super().contextMenuEvent(event)
+        parent.contextMenuEvent(event)

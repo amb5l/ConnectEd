@@ -1,86 +1,109 @@
 from typing import Self
 
-from PyQt6.QtWidgets import QWidget, QDialog, QVBoxLayout, QHBoxLayout, \
-                            QLabel, QPushButton
+from PyQt6.QtWidgets import QWidget, QDialog, QVBoxLayout
 from PyQt6.QtGui     import QShowEvent, QColor
 
 from ..graphics.items import Default, NoChange
 
-from ..graphics.items.mixin.quill import ItemQuillMixin
+from ..graphics.items.unitext import UniText
 
-from .components.line_edit              import LineEdit
-from .components.text_edit              import TextEdit
-from .components.layout.text_appearance import TextAppearanceLayout
-from .components.layout.ok_cancel       import okCancelLayout
+from .components.layout.text_value      import TextValueLayout
+from .components.layout.text_appearance import TextAppearancePreviewLayout
+from .components.layout.ok_cancel       import OkCancelLayout
 
 
-class TextItemDialogBaseMixin:
+class TextValueDialog(QDialog):
     # instance variables
     _dialog_layout     : QVBoxLayout
-    _text_layout       : QVBoxLayout | QHBoxLayout
-    _text_label        : QLabel
-    _text_edit         : LineEdit | TextEdit
-    _appearance_layout : None
-    _ok_cancel_layout  : QHBoxLayout
-    _ok_button         : QPushButton
-    _cancel_button     : QPushButton
+    _value_layout      : TextValueLayout
+    _ok_cancel_layout  : OkCancelLayout
 
     def __init__(
         self   : Self,
-        input  : ItemQuillMixin | str,
+        text   : str,
+        block  : bool,
         parent : QWidget | None = None
     ):
         super().__init__(parent)
         self.setWindowTitle("Text")
         self.setModal(True)
         self._dialog_layout = QVBoxLayout(self)
-        self.initTextLayout()
-        self._text_label = QLabel("Text:")
-        self._text_layout.addWidget(self._text_label)
-        self._text_layout.addWidget(self._text_edit)
-        self._dialog_layout.addLayout(self._text_layout)
-        self.initAppearanceLayout()
-        okCancelLayout(self)
+        # value section
+        self._value_layout = TextValueLayout(text, block)
+        self._dialog_layout.addLayout(self._value_layout)
+        # ok/cancel section
+        self._ok_cancel_layout = OkCancelLayout(self)
+        self._dialog_layout.addLayout(self._ok_cancel_layout)
+        # set layout
         self.setLayout(self._dialog_layout)
-
-    def initTextLayout(self : Self) -> None:
-        raise NotImplementedError("initTextLayout must be implemented by subclass")
-
-    def initAppearanceLayout(self : Self) -> None:
-        self._appearance_layout = None
 
     def showEvent(self : Self, event : QShowEvent):
         """Override showEvent to select all text when dialog appears."""
         super().showEvent(event)
-        if self._text_edit.text() == "<text>":
-            self._text_edit.selectAll()
-            self._text_edit.setFocus()
+        if self._value_layout.getValue() == "<text>":
+            self._value_layout._value_edit.selectAll()
+            self._value_layout._value_edit.setFocus()
 
     def getText(self : Self) -> str:
-        return self._text_edit.text()
+        return self._value_layout.getValue()
+
+    def getBlock(self : Self) -> bool:
+        return self._value_layout.getBlock()
 
 
-class TextItemDialogAppearanceMixin:
+class TextItemDialog(QDialog):
     # instance variables
     _dialog_layout     : QVBoxLayout
-    _appearance_layout : TextAppearanceLayout
+    _value_layout      : TextValueLayout
+    _appearance_layout : TextAppearancePreviewLayout
+    _ok_cancel_layout  : OkCancelLayout
 
-    def initAppearance(self : Self) -> None:
-        self._appearance_layout = TextAppearanceLayout(
-            input.quillColor(),
-            input.quillFamily(),
-            input.quillSize(),
-            input.quillBold(),
-            input.quillItalic(),
-            input.quillUnderline(),
-            input.defaultQuillColor(),
-            input.defaultQuillFamily(),
-            input.defaultQuillSize(),
-            input.defaultQuillBold(),
-            input.defaultQuillItalic(),
-            input.defaultQuillUnderline()
+    def __init__(
+        self   : Self,
+        item   : UniText,
+        parent : QWidget | None = None
+    ):
+        super().__init__(parent)
+        self.setWindowTitle("Text")
+        self.setModal(True)
+        self._dialog_layout = QVBoxLayout(self)
+        # value section
+        self._value_layout = TextValueLayout(item.text(), item.block())
+        self._dialog_layout.addLayout(self._value_layout)
+        # appearance section
+        self._appearance_layout = TextAppearancePreviewLayout(
+            item.quillColor(),
+            item.quillFamily(),
+            item.quillSize(),
+            item.quillBold(),
+            item.quillItalic(),
+            item.quillUnderline(),
+            item.defaultQuillColor(),
+            item.defaultQuillFamily(),
+            item.defaultQuillSize(),
+            item.defaultQuillBold(),
+            item.defaultQuillItalic(),
+            item.defaultQuillUnderline()
         )
         self._dialog_layout.addLayout(self._appearance_layout)
+        # ok/cancel section
+        self._ok_cancel_layout = OkCancelLayout(self)
+        self._dialog_layout.addLayout(self._ok_cancel_layout)
+        # set layout
+        self.setLayout(self._dialog_layout)
+
+    def showEvent(self : Self, event : QShowEvent):
+        """Override showEvent to select all text when dialog appears."""
+        super().showEvent(event)
+        if self._value_layout.getValue() == "<text>":
+            self._value_layout._value_edit.selectAll()
+            self._value_layout._value_edit.setFocus()
+
+    def getText(self : Self) -> str:
+        return self._value_layout.getValue()
+
+    def getBlock(self : Self) -> bool:
+        return self._value_layout.getBlock()
 
     def getColor(self : Self) -> QColor | Default | NoChange:
         return self._appearance_layout.getColor()
@@ -99,59 +122,3 @@ class TextItemDialogAppearanceMixin:
 
     def getUnderline(self : Self) -> bool | Default | NoChange:
         return self._appearance_layout.getUnderline()
-
-
-class TextLineItemDialog(
-    TextItemDialogBaseMixin,
-    TextItemDialogAppearanceMixin,
-    QDialog
-):
-    _text_layout : QHBoxLayout
-    _text_edit   : LineEdit
-
-    def __init__(
-        self   : Self,
-        input  : ItemQuillMixin,
-        parent : QWidget | None = None
-    ):
-        super().__init__(input, parent)
-
-    def initTextLayout(self : Self) -> None:
-        self._text_layout = QVBoxLayout()
-        self._text_edit = TextEdit(input.text())
-
-
-class TextBlockItemDialog(
-    TextItemDialogBaseMixin,
-    TextItemDialogAppearanceMixin,
-    QDialog
-):
-    _text_layout : QVBoxLayout
-    _text_edit   : TextEdit
-
-    def __init__(
-        self   : Self,
-        input  : ItemQuillMixin,
-        parent : QWidget | None = None
-    ):
-        super().__init__(input, parent)
-
-    def initTextLayout(self : Self) -> None:
-        self._text_layout = QHBoxLayout()
-        self._text_edit = LineEdit(input.text())
-
-
-class TextDialog(TextItemDialogBaseMixin, QDialog):
-    _text_layout : QHBoxLayout
-    _text_edit   : LineEdit
-
-    def __init__(
-        self   : Self,
-        input  : str,
-        parent : QWidget | None = None
-    ):
-        super().__init__(input, parent)
-
-    def initTextLayout(self : Self) -> None:
-        self._text_layout = QHBoxLayout()
-        self._text_edit = LineEdit(input)

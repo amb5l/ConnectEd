@@ -15,8 +15,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from .scenes.drawing import DrawingScene
     from .items import ItemType
-    from .items.property_text import PropertyTextSpec, \
-                                     PropertyTextLine, PropertyTextBlock
+    from .items.property_text import PropertyText, PropertyTextSpec
     PropertyOwner = ItemType | DrawingScene
 
 
@@ -31,11 +30,15 @@ class PropertySpec:
 
 
 @dataclass
-class PropertyTextLineState:
+class PropertyTextState:
     hidden    : bool
     cleat     : str
     offset_x  : float
     offset_y  : float
+    align_h   : AlignH
+    align_v   : AlignV
+    width     : float | None
+    height    : float | None
     origin    : str
     color     : QColor | Default
     font      : str    | Default
@@ -46,12 +49,16 @@ class PropertyTextLineState:
 
 
 @dataclass
-class PropertyTextLineEdit:
+class PropertyTextEdit:
     hidden    : bool             | NoChange = NO_CHANGE
     cleat     : str              | NoChange = NO_CHANGE
     offset_x  : float            | NoChange = NO_CHANGE
     offset_y  : float            | NoChange = NO_CHANGE
     origin    : str              | NoChange = NO_CHANGE
+    align_h   : AlignH           | NoChange = NO_CHANGE
+    align_v   : AlignV           | NoChange = NO_CHANGE
+    width     : float | None     | NoChange = NO_CHANGE
+    height    : float | None     | NoChange = NO_CHANGE
     color     : QColor | Default | NoChange = NO_CHANGE
     font      : str    | Default | NoChange = NO_CHANGE
     size      : float  | Default | NoChange = NO_CHANGE
@@ -61,45 +68,17 @@ class PropertyTextLineEdit:
 
 
 @dataclass
-class PropertyTextBlockState(PropertyTextLineState):
-    align_h : AlignH
-    align_v : AlignV
-    width   : float | None
-    height  : float | None
-
-
-@dataclass
-class PropertyTextBlockEdit(PropertyTextLineEdit):
-    align_h : AlignH       | NoChange = NO_CHANGE
-    align_v : AlignV       | NoChange = NO_CHANGE
-    width   : float | None | NoChange = NO_CHANGE
-    height  : float | None | NoChange = NO_CHANGE
-
-
-PropertyTextEdit : TypeAlias = (
-    NoChange               | # no change
-    PropertyTextLineEdit   | # edit existing line
-    PropertyTextBlockEdit  | # edit existing block
-    PropertyTextLineState  | # convert existing block to line
-    PropertyTextBlockState | # convert existing line to block
-    PropertyTextLineState  | # add new line
-    PropertyTextBlockState | # add new block
-    None                     # remove property text
-)
-
-
-@dataclass
 class PropertyState:
     name    : str
     value   : Any
-    display : None | PropertyTextLineState | PropertyTextBlockState
+    display : None | PropertyTextState
 
 
 @dataclass
 class PropertyEdit:
     name    : str | NoChange
     value   : Any | NoChange
-    display : PropertyTextEdit
+    display : None | PropertyTextEdit
 
 
 class Property(QObject):
@@ -111,7 +90,7 @@ class Property(QObject):
     _getter   : Callable[["PropertyOwner"], Any] | str | None  # or static value
     _setter   : Callable[["PropertyOwner", Any], None] | None
     _default  : Callable[["PropertyOwner"], Any]       | None
-    _text     : "PropertyTextLine | PropertyTextBlock | None"
+    _text     : "PropertyText | None"
     _inherent : bool
     _subs     : dict["Property", Callable]  # dep_property -> update_slot
 
@@ -127,7 +106,7 @@ class Property(QObject):
         getter   : Callable[["PropertyOwner"], Any] | str | None  = None,
         setter   : Callable[["PropertyOwner", Any], None] | None  = None,
         default  : Callable[["PropertyOwner"], Any]       | None  = None,
-        text     : "PropertyTextLine | PropertyTextBlock  | None" = None,
+        text     : "PropertyText                          | None" = None,
         inherent : bool = False
     ) -> None:
         super().__init__()
@@ -203,12 +182,12 @@ class Property(QObject):
         """Get default value."""
         return self._default(self._owner) if self._default else None
 
-    def getText(self : Self) -> "PropertyTextLine | PropertyTextBlock | None":
+    def getText(self : Self) -> "PropertyText | None":
         return self._text
 
     def setText(
         self : Self,
-        text : "PropertyTextLine | PropertyTextBlock | None"
+        text : "PropertyText | None"
     ) -> None:
         # Disconnect from old property text if exists
         if self._text is not None:
@@ -227,30 +206,26 @@ class Property(QObject):
             self.changed.connect(text.onPropertyChange)
 
     def getState(self : Self) -> "PropertyState":
-        pt_state_class = None
-        if isinstance(self._text, PropertyTextLine):
-            pt_state_class = PropertyTextLineState
-        elif isinstance(self._text, PropertyTextBlock):
-            pt_state_class = PropertyTextBlockState
-        args = {}
-        if pt_state_class is not None:
-            args[ "hidden"    ] = not self._text.isVisible(),
-            args[ "cleat"     ] = self._text.getCleat(),
-            args[ "offset_x"  ] = self._text.pos().x(),
-            args[ "offset_y"  ] = self._text.pos().y(),
-            args[ "origin"    ] = self._text.getOrigin(),
-            args[ "color"     ] = self._text.quillColor(),
-            args[ "font"      ] = self._text.quillFamily(),
-            args[ "size"      ] = self._text.quillSize(),
-            args[ "bold"      ] = self._text.quillBold(),
-            args[ "italic"    ] = self._text.quillItalic(),
-            args[ "underline" ] = self._text.quillUnderline()
-        if pt_state_class == PropertyTextBlockState:
-            args["align_h"    ] = self._text.alignH()
-            args["align_v"    ] = self._text.alignV()
-            args["width"      ] = self._text.width()
-            args["height"     ] = self._text.height()
-        pt_state = pt_state_class(**args) if args else None
+        if self._text:
+            pt_state = PropertyTextState(
+                hidden    = not self._text.isVisible(),
+                cleat     = self._text.getCleat(),
+                offset_x  = self._text.pos().x(),
+                offset_y  = self._text.pos().y(),
+                align_h   = self._text.alignH(),
+                align_v   = self._text.alignV(),
+                width     = self._text.width(),
+                height    = self._text.height(),
+                origin    = self._text.getOrigin(),
+                color     = self._text.quillColor(),
+                font      = self._text.quillFamily(),
+                size      = self._text.quillSize(),
+                bold      = self._text.quillBold(),
+                italic    = self._text.quillItalic(),
+                underline = self._text.quillUnderline()
+            )
+        else:
+            pt_state = None
         return PropertyState(self.name(), self.raw(), pt_state)
 
     def clone(self : Self, new_owner : "PropertyOwner") -> "Property":

@@ -1,31 +1,34 @@
 from typing import Self
 
-from PyQt6.QtWidgets import QHBoxLayout, QPushButton
+from PyQt6.QtWidgets import QHBoxLayout, QPushButton, QDialog
 
 
-def okCancelLayoutStart(self : Self) -> None:
-    self._ok_cancel_layout = QHBoxLayout()
+class OkCancelLayout(QHBoxLayout):
+    _ok_button     : QPushButton
+    _cancel_button : QPushButton
+
+    def __init__(self : Self, dialog : QDialog) -> None:
+        super().__init__()
+        self.initOkCancelButtons(dialog)
+
+    def initOkCancelButtons(self : Self, dialog : QDialog) -> None:
+        self._ok_button = QPushButton("OK")
+        self._ok_button.clicked.connect(dialog.accept)
+        self.addWidget(self._ok_button)
+        self._cancel_button = QPushButton("Cancel")
+        self._cancel_button.clicked.connect(dialog.reject)
+        self.addWidget(self._cancel_button)
 
 
-def okCancelLayoutFinish(self : Self) -> None:
-    self._ok_button = QPushButton("OK")
-    self._ok_button.clicked.connect(self.accept)
-    self._ok_cancel_layout.addWidget(self._ok_button)
-    self._cancel_button = QPushButton("Cancel")
-    self._cancel_button.clicked.connect(self.reject)
-    self._dialog_layout.addLayout(self._ok_cancel_layout)
+class OkCancelNewLayout(OkCancelLayout):
+    _new_button : QPushButton
 
+    def __init__(self : Self, dialog : QDialog) -> None:
+        QHBoxLayout.__init__(self, dialog)
+        self.initNewButton(dialog)
+        self.initOkCancelButtons(dialog)
 
-def okCancelLayout(self : Self) -> None:
-    okCancelLayoutStart(self)
-    self._ok_cancel_layout.addStretch()
-    okCancelLayoutFinish(self)
-
-
-def okCancelNewLayout(self : Self) -> None:
-    okCancelLayoutStart(self)
-    self._new_button = QPushButton("New")
-    self._new_button.clicked.connect(self.new)
-    self._ok_cancel_layout.addWidget(self._new_button)
-    self._ok_cancel_layout.addStretch()
-    okCancelLayoutFinish(self)
+    def initNewButton(self : Self, dialog : QDialog) -> None:
+        self._new_button = QPushButton("New")
+        self._new_button.clicked.connect(dialog.new)
+        self.addWidget(self._new_button)

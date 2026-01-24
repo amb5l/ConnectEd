@@ -129,7 +129,7 @@ FACTORY_SETTINGS = {
                 "PortName" : {
                     "text" : {
                         "color"     : PaletteDark.PortName,
-                        "family"    : "Liberation Sans",
+                        "font"      : "Liberation Sans",
                         "size"      : 7,
                         "bold"      : False,
                         "italic"    : False,
@@ -139,7 +139,7 @@ FACTORY_SETTINGS = {
                 "PortComment" : {
                     "text" : {
                         "color"     : PaletteDark.PortComment,
-                        "family"    : "Liberation Sans",
+                        "font"      : "Liberation Sans",
                         "size"      : 7,
                         "bold"      : False,
                         "italic"    : False,
@@ -194,7 +194,7 @@ FACTORY_SETTINGS = {
                 "BlockLabel" : {
                     "text" : {
                         "color"     : PaletteDark.BlockLabel,
-                        "family"    : "Liberation Sans",
+                        "font"      : "Liberation Sans",
                         "size"      : 7,
                         "bold"      : False,
                         "italic"    : False,
@@ -204,7 +204,7 @@ FACTORY_SETTINGS = {
                 "BlockName" : {
                     "text" : {
                         "color"     : PaletteDark.BlockName,
-                        "family"    : "Liberation Sans",
+                        "font"      : "Liberation Sans",
                         "size"      : 7,
                         "bold"      : False,
                         "italic"    : False,
@@ -244,7 +244,7 @@ FACTORY_SETTINGS = {
                 "BlockPinName" : {
                     "text" : {
                         "color"     : PaletteDark.BlockPinName,
-                        "family"    : "Liberation Sans",
+                        "font"      : "Liberation Sans",
                         "size"      : 7,
                         "bold"      : False,
                         "italic"    : False,
@@ -254,7 +254,7 @@ FACTORY_SETTINGS = {
                 "BlockPinComment" : {
                     "text" : {
                         "color"     : PaletteDark.BlockPinComment,
-                        "family"    : "Liberation Sans",
+                        "font"      : "Liberation Sans",
                         "size"      : 7,
                         "bold"      : False,
                         "italic"    : False,
@@ -298,7 +298,7 @@ FACTORY_SETTINGS = {
                 "SymbolPinName" : {
                     "text" : {
                         "color"     : PaletteDark.SymbolPinName,
-                        "family"    : "Liberation Sans",
+                        "font"      : "Liberation Sans",
                         "size"      : 7,
                         "bold"      : False,
                         "italic"    : False,
@@ -308,7 +308,7 @@ FACTORY_SETTINGS = {
                 "SymbolPinComment" : {
                     "text" : {
                         "color"     : PaletteDark.SymbolPinComment,
-                        "family"    : "Liberation Sans",
+                        "font"      : "Liberation Sans",
                         "size"      : 7,
                         "bold"      : False,
                         "italic"    : False,
@@ -318,7 +318,7 @@ FACTORY_SETTINGS = {
                 "PropertyText" : {
                     "text" : {
                         "color"     : PaletteDark.PropertyText,
-                        "family"    : "Liberation Sans",
+                        "font"      : "Liberation Sans",
                         "size"      : 7,
                         "bold"      : False,
                         "italic"    : False,
@@ -407,20 +407,10 @@ FACTORY_SETTINGS = {
                         "style" : Qt.PenStyle.SolidLine
                     }
                 },
-                "TextLine" : {
+                "Text" : {
                     "text" : {
-                        "color"     : PaletteDark.TextLine,
-                        "family"    : "Liberation Sans",
-                        "size"      : 7,
-                        "bold"      : False,
-                        "italic"    : False,
-                        "underline" : False
-                    }
-                },
-                "TextBlock" : {
-                    "text" : {
-                        "color"     : PaletteDark.TextBlock,
-                        "family"    : "Liberation Sans",
+                        "color"     : PaletteDark.Text,
+                        "font"      : "Liberation Sans",
                         "size"      : 7,
                         "bold"      : False,
                         "italic"    : False,
@@ -476,7 +466,7 @@ FACTORY_SETTINGS = {
                 "PortName" : {
                     "text" : {
                         "color"     : PaletteLightMono.PortName,
-                        "family"    : "Liberation Sans",
+                        "font"      : "Liberation Sans",
                         "size"      : 7,
                         "bold"      : False,
                         "italic"    : False,
@@ -531,7 +521,7 @@ FACTORY_SETTINGS = {
                 "BlockLabel" : {
                     "text" : {
                         "color"     : PaletteLightMono.BlockLabel,
-                        "family"    : "Liberation Sans",
+                        "font"      : "Liberation Sans",
                         "size"      : 7,
                         "bold"      : False,
                         "italic"    : False,
@@ -541,7 +531,7 @@ FACTORY_SETTINGS = {
                 "BlockName" : {
                     "text" : {
                         "color"     : PaletteLightMono.BlockName,
-                        "family"    : "Liberation Sans",
+                        "font"      : "Liberation Sans",
                         "size"      : 7,
                         "bold"      : False,
                         "italic"    : False,
@@ -581,7 +571,7 @@ FACTORY_SETTINGS = {
                 "BlockPinName" : {
                     "text" : {
                         "color"     : PaletteLightMono.BlockPinName,
-                        "family"    : "Liberation Sans",
+                        "font"      : "Liberation Sans",
                         "size"      : 7,
                         "bold"      : False,
                         "italic"    : False,
@@ -591,7 +581,7 @@ FACTORY_SETTINGS = {
                 "BlockPinComment" : {
                     "text" : {
                         "color"     : PaletteLightMono.BlockPinComment,
-                        "family"    : "Liberation Sans",
+                        "font"      : "Liberation Sans",
                         "size"      : 7,
                         "bold"      : False,
                         "italic"    : False,
@@ -635,7 +625,7 @@ FACTORY_SETTINGS = {
                 "SymbolPinName" : {
                     "text" : {
                         "color"     : PaletteLightMono.SymbolPinName,
-                        "family"    : "Liberation Sans",
+                        "font"      : "Liberation Sans",
                         "size"      : 7,
                         "bold"      : False,
                         "italic"    : False,
@@ -645,7 +635,7 @@ FACTORY_SETTINGS = {
                 "SymbolPinComment" : {
                     "text" : {
                         "color"     : PaletteLightMono.SymbolPinComment,
-                        "family"    : "Liberation Sans",
+                        "font"      : "Liberation Sans",
                         "size"      : 7,
                         "bold"      : False,
                         "italic"    : False,
@@ -655,7 +645,7 @@ FACTORY_SETTINGS = {
                 "PropertyText" : {
                     "text" : {
                         "color"     : PaletteLightMono.PropertyText,
-                        "family"    : "Liberation Sans",
+                        "font"      : "Liberation Sans",
                         "size"      : 7,
                         "bold"      : False,
                         "italic"    : False,
@@ -744,20 +734,10 @@ FACTORY_SETTINGS = {
                         "style" : Qt.PenStyle.SolidLine
                     }
                 },
-                "TextLine" : {
+                "Text" : {
                     "text" : {
-                        "color"     : PaletteLightMono.TextLine,
-                        "family"    : "Liberation Sans",
-                        "size"      : 7,
-                        "bold"      : False,
-                        "italic"    : False,
-                        "underline" : False
-                    }
-                },
-                "TextBlock" : {
-                    "text" : {
-                        "color"     : PaletteLightMono.TextBlock,
-                        "family"    : "Liberation Sans",
+                        "color"     : PaletteLightMono.Text,
+                        "font"      : "Liberation Sans",
                         "size"      : 7,
                         "bold"      : False,
                         "italic"    : False,

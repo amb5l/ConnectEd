@@ -1,9 +1,9 @@
-from typing import Self
+from typing import Self, Text
 
 from PyQt6.QtCore import QPointF
 
 from .null_point import NullPoint
-from .grip       import HandleGrip, MoveGrip, ResizeGrip
+from .grip       import Grip, MoveGrip, ResizeGrip, TextGrip
 
 from .mixin.change import ItemChangeMixin
 
@@ -15,21 +15,21 @@ if TYPE_CHECKING:
 class Handle(ItemChangeMixin, NullPoint):
     # instance attributes
     _name : str
-    _grip : HandleGrip
+    _grip : Grip
 
     def __init__(
         self   : Self,
         name   : str,
         pos    : QPointF | None = None,
-        resize : bool = False,
+        kind   : str = "resize",
         parent : "ItemHandlesMixin" = None
     ) -> None:
         super().__init__(parent)
         self._name = name
-        if pos is None:
-            pos = QPointF()
-        self.setPos(pos)
-        grip_class = ResizeGrip if resize else MoveGrip
+        self.setPos(pos or QPointF())
+        grip_class = TextGrip   if kind == "text" else \
+                     ResizeGrip if kind == "resize" else \
+                     MoveGrip
         self._grip = grip_class(self)
 
     def name(self : Self) -> str:
@@ -46,5 +46,5 @@ class Handle(ItemChangeMixin, NullPoint):
             if hasattr(child, "onSceneRotationChange"):
                 child.onSceneRotationChange()
 
-    def grip(self : Self) -> HandleGrip:
+    def grip(self : Self) -> Grip:
         return self._grip

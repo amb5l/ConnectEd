@@ -1,7 +1,7 @@
 from typing import Self
 
 from PyQt6.QtCore    import Qt, QPointF, QXmlStreamWriter, QXmlStreamReader
-from PyQt6.QtWidgets import QMenu, QGraphicsItem, QGraphicsPathItem
+from PyQt6.QtWidgets import QMenu, QGraphicsPathItem
 from PyQt6.QtGui     import QAction, QPen, QBrush, QPainterPath
 
 from ....app import settings
@@ -15,6 +15,7 @@ if TYPE_CHECKING:
     from ..views.drawing  import DrawingView
     from ..scenes.drawing import DrawingScene
     from .handle          import Handle
+    from .unitext         import UniText
     from .mixin.handle    import ItemHandlesMixin
     from .mixin.grip      import ItemGripMixin
 
@@ -25,24 +26,25 @@ class Grip(
     QGraphicsPathItem
 ):
     # class attributes
-    _PATH_NAME = None  # subclass must set this e.g. "Circle"
+    _PATH_PREFIX = "Filled" # default path name prefix
+    _PATH_NAME : str  # subclass must set this e.g. "Circle"
 
     # instance attributes
-    _path_name : str              # path name
-    _path      : QPainterPath     # path
-    _brush     : QBrush           # brush
+    _path_name_prefix = "Filled"  # default path name prefix
+    _path_name_suffix = ""        # default path name suffix
+    _path_name   : str            # path name
+    _path        : QPainterPath   # path
+    _brush       : QBrush         # brush
 
     def __init__(
         self   : Self,
-        parent : QGraphicsItem,
+        parent : "Handle",
         pos    : QPointF | None = None,
         move   : bool = False,
         resize : bool = False
     ) -> None:
         super().__init__(parent)
-        if pos is None:
-            pos = QPointF()
-        self.setPos(pos)
+        self.setPos(pos or QPointF(0, 0))
         self._path_name = self._PATH_NAME
         self.setFlag( self.GraphicsItemFlag.ItemIgnoresTransformations , True  )
         self.setFlag( self.GraphicsItemFlag.ItemIsSelectable           , False )
@@ -55,7 +57,7 @@ class Grip(
 
     def onSceneChange(self : Self, scene : "DrawingScene | None") -> None:
         if scene is not None:
-            self.setPath(scene.paths["Grip"][self._path_name])
+            self.onPathChange(scene)
 
     def onSettingsChange(self : Self) -> None:
         self.prepareGeometryChange()
@@ -63,9 +65,30 @@ class Grip(
         self._brush.setColor(settings().get("theme/grip/color"))
         self.setBrush(self._brush)
 
-    def item(self : Self) -> "ItemGripMixin":
-        h : Handle = self.parentItem()
-        return h.parentItem()
+    def onPathChange(self : Self, scene : "DrawingScene | None" = None) -> None:
+        if scene is None:
+            scene : "DrawingScene | None" = self.scene()
+        if scene is None:
+            return
+        self.setPath(scene.paths["Grip"][self.fullPathName()])
+
+    def handle(self : Self) -> "Handle":
+        return self.parentItem()
+
+    def item(self : Self) -> "ItemHandlesMixin | ItemGripMixin":
+        return self.handle().parentItem()
+
+    def pathNamePrefix(self : Self) -> str:
+        return self._path_name_prefix
+
+    def pathName(self : Self) -> str:
+        return self._path_name
+
+    def pathNameSuffix(self : Self) -> str:
+        return self._path_name_suffix
+
+    def fullPathName(self : Self) -> str:
+        return self.pathNamePrefix() + self.pathName() + self.pathNameSuffix()
 
     def toXml(self : Self, _ : QXmlStreamWriter) -> None:
         pass
@@ -75,46 +98,25 @@ class Grip(
         pass
 
 
-class HandleGrip(Grip):
-    """Grip for handles. Base class for move and resize grips."""
+class OriginGrip(Grip):
+    """Grip for items with an origin."""
 
-    _PATH_NAME : str
-    _ORIGIN_PATH_NAME : str
+    _ORIGIN_PATH_NAME_SUFFIX = "Squared"
 
-    def __init__(
-        self   : Self,
-        parent : "Handle",
-        pos    : QPointF | None = None,
-        move   : bool = False,
-        resize : bool = False
-    ) -> None:
-        super().__init__(parent, pos, move, resize)
-
-    def onSceneChange(self : Self, scene : "DrawingScene | None") -> None:
-        """Override to update path based on origin status."""
-        if scene is not None:
-            self.onOriginChange()
-
-    def onOriginChange(self : Self | QGraphicsItem) -> None:
-        h : "Handle" = self.parentItem()
-        item = h.parentItem()
-        if hasattr(item, "getOrigin") and item.getOrigin() == h.name():
-            self._path_name = self._ORIGIN_PATH_NAME
-        else:
-            self._path_name = self._PATH_NAME
-        scene : "DrawingScene" = self.scene()
-        if scene:
-            self.setPath(scene.paths["Grip"][self._path_name])
+    def pathNameSuffix(self : Self) -> str:
+        item = self.item()
+        if hasattr(item, "getOrigin") and item.getOrigin() == self.handle().name():
+            return self._ORIGIN_PATH_NAME_SUFFIX
+        return ""
 
     def moveBy(self : Self, delta : QPointF) -> None:
-        handle : "Handle" = self.parentItem()
-        item : "ItemHandlesMixin" = self.item()
-        item.moveHandleBy(handle.name(), delta)
+        self.item().moveHandleBy(self.handle().name(), delta)
 
 
-class MoveGrip(HandleGrip):
+class MoveGrip(OriginGrip):
+    """Grip for movable (non resizeable) items."""
+
     _PATH_NAME = "Circle"
-    _ORIGIN_PATH_NAME = "SquaredCircle"
 
     def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
         entries = [
@@ -135,8 +137,9 @@ class MoveGrip(HandleGrip):
 
 
 class ResizeGrip(MoveGrip):
+    """Grip for resizeable items."""
+
     _PATH_NAME = "Diamond"
-    _ORIGIN_PATH_NAME = "SquaredDiamond"
 
     def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
         entries = [
@@ -144,3 +147,19 @@ class ResizeGrip(MoveGrip):
         ]
         entries.extend(MoveGrip.ctxMenuItems(self, view))
         return entries
+
+
+class TextGrip(ResizeGrip):
+    """Grip for text items."""
+
+    def pathNamePrefix(self : Self) -> str:
+        item : "UniText" = self.item()
+        name = self.handle().name()
+        w = item.width()
+        h = item.height()
+        c = False  # whether the item dimension(s) for this grip are constrained
+        # constrained if top or bottom, and height is not None
+        c |= ("Top" in name or "Bottom" in name) and h is None
+        # constrained if left or right, and width is not None
+        c |= ("Left" in name or "Right" in name) and w is None
+        return "Filled" if c else "Unfilled"
