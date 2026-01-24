@@ -19,6 +19,8 @@ class CmdEditText(CmdSceneItem):
     @dataclass
     class ItemBefore:
         text      : str
+        block     : bool
+        origin    : str
         align_h   : AlignH
         align_v   : AlignV
         width     : float | None
@@ -33,6 +35,8 @@ class CmdEditText(CmdSceneItem):
     @dataclass
     class ItemAfter:
         text      : str              | NoChange = NO_CHANGE,
+        block     : bool             | NoChange = NO_CHANGE,
+        origin    : str              | NoChange = NO_CHANGE,
         align_h   : AlignH           | NoChange = NO_CHANGE,
         align_v   : AlignV           | NoChange = NO_CHANGE,
         width     : float | None     | NoChange = NO_CHANGE,
@@ -53,6 +57,8 @@ class CmdEditText(CmdSceneItem):
         scene     : "DrawingScene",
         item      : "TextItem",
         text      : str    | Default | NoChange = NO_CHANGE,
+        block     : bool             | NoChange = NO_CHANGE,
+        origin    : str              | NoChange = NO_CHANGE,
         align_h   : AlignH           | NoChange = NO_CHANGE,
         align_v   : AlignV           | NoChange = NO_CHANGE,
         width     : float | None     | NoChange = NO_CHANGE,
@@ -67,6 +73,8 @@ class CmdEditText(CmdSceneItem):
         super().__init__(scene, item)
         self._before = self.ItemBefore(
             item.text(),
+            item.block(),
+            item.getOrigin(),
             item.alignH(),
             item.alignV(),
             item.width(),
@@ -76,15 +84,21 @@ class CmdEditText(CmdSceneItem):
             item.quillSize(),
             item.quillBold(),
             item.quillItalic(),
-            item.quillUnderline(),
-            item.getOrigin()
+            item.quillUnderline()
         )
         self._after = self.ItemAfter(
-            text, align_h, align_v, width, height, \
+            text, block, origin, align_h, align_v, width, height, \
             color, font, size, bold, italic, underline
         )
 
     def redo(self : Self) -> None:#
+        if self._after.block is not NO_CHANGE:
+            self._item.setBlock(self._after.block)
+        if self._after.origin is not NO_CHANGE:
+            # maintain scene position
+            pos = self._item.getHandle(self._after.anchor).scenePos()
+            self._item.setOrigin(self._after.anchor)
+            self._item.moveBy(pos - self._item.pos())
         if self._after.align_h is not NO_CHANGE:
             self._item.setAlignH(self._after.align_h)
         if self._after.align_v is not NO_CHANGE:
@@ -107,16 +121,18 @@ class CmdEditText(CmdSceneItem):
             self._item.setQuillItalic(self._after.italic)
         if self._after.underline is not NO_CHANGE:
             self._item.setQuillUnderline(self._after.underline)
-        if self._after.anchor is not NO_CHANGE:
-            # maintain scene position
-            pos = self._item.getHandle(self._after.anchor).scenePos()
-            self._item.setOrigin(self._after.anchor)
-            self._item.moveBy(pos - self._item.pos())
         self._item.update()
 
     def undo(self : Self) -> None:
         if self._after.text is not NO_CHANGE:
             self._item.setText(self._before.text)
+        if self._after.block is not NO_CHANGE:
+            self._item.setBlock(self._before.block)
+        if self._after.origin is not NO_CHANGE:
+            # maintain scene position
+            pos = self._item.getHandle(self._before.anchor).scenePos()
+            self._item.setOrigin(self._before.anchor)
+            self._item.moveBy(pos - self._item.pos())
         if self._after.align_h is not NO_CHANGE:
             self._item.setAlignH(self._before.align_h)
         if self._after.align_v is not NO_CHANGE:
@@ -137,9 +153,4 @@ class CmdEditText(CmdSceneItem):
             self._item.setQuillItalic(self._before.italic)
         if self._after.underline is not NO_CHANGE:
             self._item.setQuillUnderline(self._before.underline)
-        if self._after.anchor is not NO_CHANGE:
-            # maintain scene position
-            pos = self._item.getHandle(self._before.anchor).scenePos()
-            self._item.setOrigin(self._before.anchor)
-            self._item.moveBy(pos - self._item.pos())
         self._item.update()

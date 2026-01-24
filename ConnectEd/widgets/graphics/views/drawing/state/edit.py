@@ -222,12 +222,12 @@ class DrawingViewStateEditText(DrawingViewStateBase):
         if item and isinstance(item, TextItem):
             dialog = TextItemDialog(item, self.view)
             if dialog.exec():
-                text, appearance = dialog.getChoice()
-                item.setText(text)
-                item.a.quill.setPref(appearance)
-                self.scene.editTextBlock(
+                self.scene.editText(
                     item      = item,
                     text      = dialog.getText(),
+                    block     = dialog.getBlock(),
+                    align_h   = dialog.getAlignH(),
+                    align_v   = dialog.getAlignV(),
                     color     = dialog.getColor(),
                     font      = dialog.getFamily(),
                     size      = dialog.getSize(),

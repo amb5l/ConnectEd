@@ -52,8 +52,9 @@ class UniTextBlockItem(
         """Propagate selection state to parent."""
         match change:
             case self.GraphicsItemChange.ItemSelectedHasChanged:
-                parent : UniTextItem = self.parentItem()
-                QGraphicsItem.setSelected(parent, value)
+                parent : UniTextItem | None = self.parentItem()
+                if parent is not None:
+                    QGraphicsItem.setSelected(parent, value)
         return super().itemChange(change, value)
 
     def onSceneRotationChange(self : Self) -> None:

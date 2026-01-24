@@ -189,21 +189,23 @@ class DrawingSceneApiEditMixin:
         self       : "DrawingScene",
         item       : TextItem,
         text       : str              | NoChange = NO_CHANGE,
+        block      : bool             | NoChange = NO_CHANGE,
+        origin     : str              | NoChange = NO_CHANGE,
+        align_h    : AlignH           | NoChange = NO_CHANGE,
+        align_v    : AlignV           | NoChange = NO_CHANGE,
+        width      : float | None     | NoChange = NO_CHANGE,
+        height     : float | None     | NoChange = NO_CHANGE,
         color      : QColor | Default | NoChange = NO_CHANGE,
         font       : str    | Default | NoChange = NO_CHANGE,
         size       : float  | Default | NoChange = NO_CHANGE,
         bold       : bool   | Default | NoChange = NO_CHANGE,
         italic     : bool   | Default | NoChange = NO_CHANGE,
         underline  : bool   | Default | NoChange = NO_CHANGE,
-        align_h    : AlignH           | NoChange = NO_CHANGE,
-        align_v    : AlignV           | NoChange = NO_CHANGE,
-        width      : float | None     | NoChange = NO_CHANGE,
-        height     : float | None     | NoChange = NO_CHANGE,
         anchor     : str              | NoChange = NO_CHANGE,
         undoable   : bool = False
     ) -> None:
         cmd = CmdEditText(
-            self, item, text, align_h, align_v, width, height,
+            self, item, text, block, origin, align_h, align_v, width, height,
             color, font, size, bold, italic, underline
 
         )
