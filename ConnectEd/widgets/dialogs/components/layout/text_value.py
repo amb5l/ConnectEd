@@ -1,8 +1,7 @@
 from typing import Self
 
-from PyQt6.QtWidgets import QHBoxLayout, QVBoxLayout, \
-                            QGroupBox, QButtonGroup, \
-                            QLabel, QRadioButton
+from PyQt6.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, \
+                            QGroupBox, QButtonGroup, QRadioButton, QLabel
 from PyQt6.QtGui     import QShowEvent
 
 from ..edit import TextLineEditor, TextBlockEditor
@@ -75,3 +74,13 @@ class TextValueLayout(QVBoxLayout):
         self._value_edit = TextBlockEditor(value) if block else TextLineEditor(value)
         self._value_layout.addWidget(self._value_edit)
         self.insertLayout(0, self._value_layout)
+        # resize parent dialog if present
+        widget = self.parentWidget()
+        while widget is not None:
+            if isinstance(widget, QDialog):
+                widget.layout().invalidate()
+                widget.layout().activate()
+                widget.resize(widget.sizeHint())
+                break
+            widget = widget.parentWidget()
+
