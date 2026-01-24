@@ -16,8 +16,6 @@ from ..graphics.property import PropertyState,    \
 
 from ..graphics.items import DEFAULT
 
-from ..graphics.items.property_text import PropertyTextItem
-
 from ..graphics.items.mixin.handle import ItemRectHandlesMixin
 
 from .components.model import DialogItem, DialogModel
@@ -141,7 +139,7 @@ class PropertiesDialog(QDialog):
                 args[ "bold"      ] = pt.quillBold(),
                 args[ "italic"    ] = pt.quillItalic(),
                 args[ "underline" ] = pt.quillUnderline()
-            pt_state = pt_state_class(**args) if args else None
+            pt_state = PropertyTextState(**args) if args else None
             state = PropertyState(name, prop.raw(), pt_state)
             inherent  = prop.inherent()
             read_only = prop.isReadOnly()
