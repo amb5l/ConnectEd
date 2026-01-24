@@ -92,7 +92,7 @@ class UniTextLineItem(
         match align_v:
             case AlignV.TOP:
                 y = 0
-            case AlignV.CENTER:
+            case AlignV.MIDDLE:
                 y = (h - urect.height()) / 2
             case AlignV.BOTTOM:
                 y = h - urect.height()

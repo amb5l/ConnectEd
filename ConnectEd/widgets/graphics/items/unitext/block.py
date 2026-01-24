@@ -97,7 +97,7 @@ class UniTextBlockItem(
             match align_v:
                 case AlignV.BOTTOM:
                     top_margin = height - urect.height()
-                case AlignV.CENTER:
+                case AlignV.MIDDLE:
                     top_margin = (height - urect.height()) / 2
                 case _:  # Top
                     top_margin = 0
