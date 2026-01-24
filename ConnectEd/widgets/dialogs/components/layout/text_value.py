@@ -37,7 +37,7 @@ class TextValueLayout(QVBoxLayout):
         self._format_layout.addWidget(self._format_block_button)
         self._format_group_box.setLayout(self._format_layout)
         self.addWidget(self._format_group_box)
-        self._format_button_group.buttonClicked.connect(self._onFormatChange)
+        self._format_button_group.buttonClicked.connect(lambda _: self._onFormatChange())
 
     def showEvent(self : Self, event : QShowEvent) -> None:
         """Override showEvent to select all text when dialog appears."""
@@ -68,15 +68,10 @@ class TextValueLayout(QVBoxLayout):
             self._value_edit.deleteLater()
             self.removeItem(self._value_layout)
             self._value_layout.deleteLater()
-        self._value_layout = QHBoxLayout() if not block else QVBoxLayout()
         # create new layout
+        self._value_layout = QVBoxLayout() if block else QHBoxLayout()
         self._value_label = QLabel("Value:")
         self._value_layout.addWidget(self._value_label)
-        if block:
-            self._value_layout = QVBoxLayout()
-            self._value_edit = TextBlockEditor(value)
-        else:
-            self._value_layout = QHBoxLayout()
-            self._value_edit = TextLineEditor(value)
+        self._value_edit = TextBlockEditor(value) if block else TextLineEditor(value)
         self._value_layout.addWidget(self._value_edit)
         self.insertLayout(0, self._value_layout)
