@@ -32,7 +32,10 @@ class ItemRotateMixin:
                 self.properties["Y"].changed.emit(self.pos().y())
 
     def onRotationChange(self : Self, angle : float) -> None:
-        # propagate change to children for rotation compensation
+        # handle own rotation compensation
+        if hasattr(self, "onSceneRotationChange"):
+            self.onSceneRotationChange()
+        # propagate to children
         for child in self.childItems():
             if hasattr(child, "onSceneRotationChange"):
                 child.onSceneRotationChange()

@@ -117,16 +117,18 @@ class UniTextItem(
 
     # instance attributes
     _child   : UniTextLineItem | UniTextBlockItem  # text renderer
-    _align_h : AlignH                      # horizontal alignment
-    _align_v : AlignV                      # vertical alignment
-    _width   : float | None                # width constraint
-    _height  : float | None                # height constraint
+    _rotcomp : bool                                # rotation compensation
+    _align_h : AlignH                              # horizontal alignment
+    _align_v : AlignV                              # vertical alignment
+    _width   : float | None                        # width constraint
+    _height  : float | None                        # height constraint
 
     def __init__(
         self      : Self,
         pos       : QPointF | None       = None,
         text      : str                  = "",
         block     : bool                 = False,
+        rotcomp   : bool                 = True,
         origin    : str                  = "Top Left",
         align_h   : AlignH | None        = None,
         align_v   : AlignV | None        = None,
@@ -144,6 +146,7 @@ class UniTextItem(
         self._child = UniTextBlockItem() if block else UniTextLineItem()
         self._child.setParentItem(self)
         self._child.setText(text)
+        self._rotcomp = rotcomp
         self._align_h = align_h or AlignH.LEFT
         self._align_v = align_v or AlignV.TOP
         self._width   = width
@@ -158,9 +161,14 @@ class UniTextItem(
         if italic    : self.setQuillItalic(italic)
         if underline : self.setQuillUnderline(underline)
         self._child.onGeometryChange()
+        self.updateHandlePositions()
+        self.onSceneRotationChange()
 
     def onSceneRotationChange(self : Self) -> None:
-        self._child.onSceneRotationChange()
+        if not self._rotcomp:
+            return
+        a = self.sceneRotation()
+        self._child.setRotation(180 if a > 135 and a <= 315 else 0)
 
     def isSelected(self : Self) -> bool:
         return self._child.isSelected()
@@ -185,6 +193,16 @@ class UniTextItem(
             self._child.setParentItem(self)
             self._child.onGeometryChange()
             self.updateHandlePositions()
+
+    def rotcomp(self : Self) -> bool:
+        return self._rotcomp
+
+    def setRotcomp(self : Self, rotcomp : bool) -> None:
+        self._rotcomp = rotcomp
+        if rotcomp:
+            self._child.onSceneRotationChange()
+        else:
+            self._child.setRotation(0)
 
     def text(self : Self) -> str:
         return self._child.text()

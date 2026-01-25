@@ -10,7 +10,6 @@ from .. import AlignH, AlignV
 
 from ..mixin.bound  import ItemBoundMixin
 from ..mixin.shape  import ItemShapeMixin
-from ..mixin.rotate import ItemRotateMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -60,11 +59,6 @@ class UniTextLineItem(
                     QGraphicsItem.setSelected(parent, value)
         return super().itemChange(change, value)
 
-    def onSceneRotationChange(self : Self) -> None:
-        """Rotation compensation."""
-        a = ItemRotateMixin.sceneRotation(self)
-        self.setRotation(180 if a > 135 and a <= 315 else 0)
-
     def onGeometryChange(self : Self) -> None:
         parent : UniTextItem = self.parentItem()
         align_h = parent._align_h
@@ -102,6 +96,8 @@ class UniTextLineItem(
         # update cached hit detect shape
         self._hshape = QPainterPath()
         self._hshape.addRect(self._brect)
+        # update transform origin
+        self.setTransformOriginPoint(self._brect.center())
         # update
         self.update()
 
