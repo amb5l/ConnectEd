@@ -1,4 +1,4 @@
-from typing import Self
+from typing import Self, Protocol
 
 from PyQt6.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, \
                             QGroupBox, QButtonGroup, QRadioButton, QLabel
@@ -7,36 +7,61 @@ from PyQt6.QtGui     import QShowEvent
 from ..edit import TextLineEditor, TextBlockEditor
 
 
-class TextValueLayout(QVBoxLayout):
-    _value_layout        : QHBoxLayout | QVBoxLayout | None
-    _value_label         : QLabel | None
-    _value_edit          : TextLineEditor | TextBlockEditor | None
-    _format_group_box    : QGroupBox
-    _format_layout       : QHBoxLayout
-    _format_button_group : QButtonGroup
-    _format_line_button  : QRadioButton
-    _format_block_button : QRadioButton
+class ParentProtocol(Protocol):
+    _value_layout  : "TextValueLayout"
+    _format_layout : "TextFormatLayout"
 
-    def __init__(self : Self, value : str, block : bool) -> QVBoxLayout:
+
+class TextValueLayout(QVBoxLayout):
+    _layout : QHBoxLayout | QVBoxLayout | None
+    _label  : QLabel | None
+    _edit   : TextLineEditor | TextBlockEditor | None
+
+    def __init__(self : Self, value : str) -> QVBoxLayout:
         super().__init__()
-        self._value_layout = None
-        self._value_label = None
-        self._value_edit = None
-        self._onFormatChange(value, block)
-        self._format_group_box = QGroupBox("Format")
-        self._format_line_button = QRadioButton("Line")
-        self._format_line_button.setChecked(not block)
-        self._format_block_button = QRadioButton("Block")
-        self._format_block_button.setChecked(block)
-        self._format_button_group = QButtonGroup(self)
-        self._format_button_group.addButton(self._format_line_button)
-        self._format_button_group.addButton(self._format_block_button)
-        self._format_layout = QHBoxLayout()
-        self._format_layout.addWidget(self._format_line_button)
-        self._format_layout.addWidget(self._format_block_button)
-        self._format_group_box.setLayout(self._format_layout)
-        self.addWidget(self._format_group_box)
-        self._format_button_group.buttonClicked.connect(lambda _: self._onFormatChange())
+        self._layout = None
+        self._label = None
+        self._edit = None
+
+    def showEvent(self : Self, event : QShowEvent) -> None:
+        """Override showEvent to select all text when dialog appears."""
+        super().showEvent(event)
+        self._edit.selectAll()
+        self._edit.setFocus()
+
+    def getValue(self : Self) -> str:
+        return self._edit.text()
+
+
+class TextFormatLayout(QVBoxLayout):
+    _parent       : QDialog | ParentProtocol | None
+    _group_box    : QGroupBox
+    _layout       : QHBoxLayout
+    _button_group : QButtonGroup
+    _line_button  : QRadioButton
+    _block_button : QRadioButton
+
+    def __init__(
+        self   : Self,
+        block  : bool,
+        parent : QDialog | ParentProtocol | None = None
+    ) -> QVBoxLayout:
+        super().__init__()
+        self._parent = parent
+        self._group_box = QGroupBox("Format")
+        self._line_button = QRadioButton("Line")
+        self._line_button.setChecked(not block)
+        self._block_button = QRadioButton("Block")
+        self._block_button.setChecked(block)
+        self._button_group = QButtonGroup(self)
+        self._button_group.addButton(self._line_button)
+        self._button_group.addButton(self._block_button)
+        self._layout = QHBoxLayout()
+        self._layout.addWidget(self._line_button)
+        self._layout.addWidget(self._block_button)
+        self._group_box.setLayout(self._layout)
+        self.addWidget(self._group_box)
+        self._button_group.buttonClicked.connect(lambda _: self.onFormatChange())
 
     def showEvent(self : Self, event : QShowEvent) -> None:
         """Override showEvent to select all text when dialog appears."""
@@ -48,39 +73,29 @@ class TextValueLayout(QVBoxLayout):
         return self._value_edit.text()
 
     def getBlock(self : Self) -> bool:
-        return self._format_block_button.isChecked()
+        return self._block_button.isChecked()
 
-    def _onFormatChange(
-        self : Self,
-        value : str | None = None,
-        block : bool | None = None
-    ) -> None:
+    def onFormatChange(self : Self, block : bool | None = None) -> None:
         """Create or replace the value layout based on format."""
         # get parameters
-        if block is None:
-            block = self._format_block_button.isChecked()
-        if value is None:
-            value = self._value_edit.text()
+        block = block or self._block_button.isChecked()
+        value = self._parent._value_layout._edit.text() \
+            if self._parent._value_layout._edit else ""
         # remove existing layout if present
-        if self._value_layout is not None:
-            self._value_label.deleteLater()
-            self._value_edit.deleteLater()
-            self.removeItem(self._value_layout)
-            self._value_layout.deleteLater()
+        if self._parent._value_layout._layout is not None:
+            self._parent._value_layout._label.deleteLater()
+            self._parent._value_layout._edit.deleteLater()
+            self.removeItem(self._parent._value_layout._layout)
+            self._parent._value_layout._layout.deleteLater()
         # create new layout
-        self._value_layout = QVBoxLayout() if block else QHBoxLayout()
-        self._value_label = QLabel("Value:")
-        self._value_layout.addWidget(self._value_label)
-        self._value_edit = TextBlockEditor(value) if block else TextLineEditor(value)
-        self._value_layout.addWidget(self._value_edit)
-        self.insertLayout(0, self._value_layout)
-        # resize parent dialog if present
-        widget = self.parentWidget()
-        while widget is not None:
-            if isinstance(widget, QDialog):
-                widget.layout().invalidate()
-                widget.layout().activate()
-                widget.resize(widget.sizeHint())
-                break
-            widget = widget.parentWidget()
-
+        self._parent._value_layout._layout = QVBoxLayout() if block else QHBoxLayout()
+        self._parent._value_layout._label = QLabel("Value:")
+        self._parent._value_layout._edit = \
+            TextBlockEditor(value) if block else TextLineEditor(value)
+        self._parent._value_layout._layout.addWidget(self._parent._value_layout._label)
+        self._parent._value_layout._layout.addWidget(self._parent._value_layout._edit)
+        self._parent._value_layout.insertLayout(0, self._parent._value_layout._layout)
+        # resize
+        self._parent.layout().invalidate()
+        self._parent.layout().activate()
+        self._parent.resize(self._parent.sizeHint())

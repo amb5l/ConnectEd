@@ -36,8 +36,8 @@ class TextValueDialog(QDialog):
         """Override showEvent to select all text when dialog appears."""
         super().showEvent(event)
         if self._value_layout.getValue() == "<text>":
-            self._value_layout._value_edit.selectAll()
-            self._value_layout._value_edit.setFocus()
+            self._value_layout._edit.selectAll()
+            self._value_layout._edit.setFocus()
 
     def getText(self : Self) -> str:
         return self._value_layout.getValue()
