@@ -88,7 +88,8 @@ class PropertyTextItem(UniTextItem):
         ItemOriginMixin._PROPERTY_SPECS_ORIGIN | \
         ItemPosMixin._PROPERTY_SPECS_POS | \
         ItemRotateMixin._PROPERTY_SPECS_ROTATE | \
-        UniTextItem._PROPERTY_SPECS_SIZE_ALIGN | \
+        UniTextItem._PROPERTY_SPECS_ALIGN | \
+        UniTextItem._PROPERTY_SPECS_SIZE | \
         ItemQuillMixin._PROPERTY_SPECS_QUILL
 
     # instance attributes
