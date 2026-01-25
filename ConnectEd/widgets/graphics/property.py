@@ -139,12 +139,9 @@ class Property(QObject):
 
     def raw(self : Self) -> Any:
         """Get raw value without substitution."""
-        if isinstance(self._getter, str):
-            return self._getter
-        elif self._getter and callable(self._getter):
+        if self._getter and callable(self._getter):
             return self._getter(self._owner)
-        else:
-            return None
+        return self._getter
 
     def get(self : Self, recurse: int = 0, subscribe : bool = True) -> Any:
         """Get value, applying substitution and subscriptions if needed."""
