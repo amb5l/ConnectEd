@@ -57,8 +57,7 @@ class ItemXmlMixin:
         registerClass( pin_classes , "GatePin"   , pkg=pkg )
         registerClass( pin_classes , "BlockPin"  , pkg=pkg )
         registerClass( pin_classes , "SymbolPin" , pkg=pkg )
-        pt_classes = {}
-        registerClass( pt_classes , "PropertyText" , pkg )
+        from ..property_text import PropertyTextItem
         # process child items
         while not (xr.isEndElement() and xr.name() == cls.__name__):
             if xr.isStartElement():
@@ -67,9 +66,8 @@ class ItemXmlMixin:
                     child_cls = pin_classes[item_name]
                     child = child_cls.fromXml(xr)
                     child.setParentItem(instance)
-                elif item_name in pt_classes:
-                    child_cls = pt_classes[item_name]
-                    child : "PropertyTextMixin" = child_cls.fromXml(xr)
+                elif item_name == "PropertyText":
+                    child : "PropertyTextItem" = PropertyTextItem.fromXml(xr)
                     child.setParentItem(instance.getHandle(child.getCleat()))
                     prop_name = child.name()
                     if prop_name in instance.properties:
