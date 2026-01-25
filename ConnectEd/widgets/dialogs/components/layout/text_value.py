@@ -77,24 +77,25 @@ class TextFormatLayout(QVBoxLayout):
 
     def onFormatChange(self : Self, block : bool | None = None) -> None:
         """Create or replace the value layout based on format."""
+        vl = self._parent._value_layout
         # get parameters
         block = block or self._block_button.isChecked()
-        value = self._parent._value_layout._edit.text() \
-            if self._parent._value_layout._edit else ""
+        value = vl._edit.text() if vl._edit else ""
         # remove existing layout if present
-        if self._parent._value_layout._layout is not None:
-            self._parent._value_layout._label.deleteLater()
-            self._parent._value_layout._edit.deleteLater()
-            self.removeItem(self._parent._value_layout._layout)
-            self._parent._value_layout._layout.deleteLater()
+        if vl._layout is not None:
+            vl._label.hide()
+            vl._edit.hide()
+            vl._label.deleteLater()
+            vl._edit.deleteLater()
+            vl.removeItem(vl._layout)
+            vl._layout.deleteLater()
         # create new layout
-        self._parent._value_layout._layout = QVBoxLayout() if block else QHBoxLayout()
-        self._parent._value_layout._label = QLabel("Value:")
-        self._parent._value_layout._edit = \
-            TextBlockEditor(value) if block else TextLineEditor(value)
-        self._parent._value_layout._layout.addWidget(self._parent._value_layout._label)
-        self._parent._value_layout._layout.addWidget(self._parent._value_layout._edit)
-        self._parent._value_layout.insertLayout(0, self._parent._value_layout._layout)
+        vl._layout = QVBoxLayout() if block else QHBoxLayout()
+        vl._label = QLabel("Value:")
+        vl._edit = TextBlockEditor(value) if block else TextLineEditor(value)
+        vl._layout.addWidget(vl._label)
+        vl._layout.addWidget(vl._edit)
+        vl.insertLayout(0, vl._layout)
         # resize
         self._parent.layout().invalidate()
         self._parent.layout().activate()
