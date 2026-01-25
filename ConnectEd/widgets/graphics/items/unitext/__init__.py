@@ -75,20 +75,8 @@ class UniTextItem(
     # class attributes
     _ORIGIN_NAME = "Top Left"
     _RESIZE_KIND = "text"  # handle kind for text items
-    _PROPERTY_SPECS_SIZE_ALIGN = \
+    _PROPERTY_SPECS_ALIGN = \
         {
-            "Width" : PropertySpec(
-                kind   = "float",
-                valid  = lambda self: self.width() is not None,
-                getter = lambda self: self.width(),
-                setter = lambda self, value: self.setWidth(value)
-            ),
-            "Height" : PropertySpec(
-                kind   = "float",
-                valid  = lambda self: self.height() is not None,
-                getter = lambda self: self.height(),
-                setter = lambda self, value: self.setHeight(value)
-            ),
             "AlignH" : PropertySpec(
                 kind   = "AlignH",
                 getter = lambda self: self.horizontalAlignment(),
@@ -101,10 +89,22 @@ class UniTextItem(
                 setter = lambda self, value: self.setVerticalAlignment(value)
             )
         }
+    _PROPERTY_SPECS_SIZE = \
+        {
+            "Width" : PropertySpec(
+                kind   = "float",
+                valid  = lambda self: self.width() is not None,
+                getter = lambda self: self.width(),
+                setter = lambda self, value: self.setWidth(value)
+            ),
+            "Height" : PropertySpec(
+                kind   = "float",
+                valid  = lambda self: self.height() is not None,
+                getter = lambda self: self.height(),
+                setter = lambda self, value: self.setHeight(value)
+            )
+        }
     _PROPERTY_SPECS = \
-        ItemPosMixin._PROPERTY_SPECS_POS | \
-        ItemOriginMixin._PROPERTY_SPECS_ORIGIN | \
-        ItemRotateMixin._PROPERTY_SPECS_ROTATE | \
         {
             "Text" : PropertySpec(
                 getter = lambda self: self.text(),
@@ -112,7 +112,11 @@ class UniTextItem(
             ),
 
         } | \
-        _PROPERTY_SPECS_SIZE_ALIGN | \
+        ItemPosMixin._PROPERTY_SPECS_POS | \
+        ItemOriginMixin._PROPERTY_SPECS_ORIGIN | \
+        ItemRotateMixin._PROPERTY_SPECS_ROTATE | \
+        _PROPERTY_SPECS_ALIGN | \
+        _PROPERTY_SPECS_SIZE | \
         ItemQuillMixin._PROPERTY_SPECS_QUILL
 
     # instance attributes
