@@ -20,6 +20,7 @@ class CmdEditText(CmdSceneItem):
     class ItemBefore:
         text      : str
         block     : bool
+        rotcomp   : bool
         origin    : str
         align_h   : AlignH
         align_v   : AlignV
@@ -36,6 +37,7 @@ class CmdEditText(CmdSceneItem):
     class ItemAfter:
         text      : str              | NoChange = NO_CHANGE,
         block     : bool             | NoChange = NO_CHANGE,
+        rotcomp   : bool             | NoChange = NO_CHANGE,
         origin    : str              | NoChange = NO_CHANGE,
         align_h   : AlignH           | NoChange = NO_CHANGE,
         align_v   : AlignV           | NoChange = NO_CHANGE,
@@ -58,6 +60,7 @@ class CmdEditText(CmdSceneItem):
         item      : "TextItem",
         text      : str    | Default | NoChange = NO_CHANGE,
         block     : bool             | NoChange = NO_CHANGE,
+        rotcomp   : bool             | NoChange = NO_CHANGE,
         origin    : str              | NoChange = NO_CHANGE,
         align_h   : AlignH           | NoChange = NO_CHANGE,
         align_v   : AlignV           | NoChange = NO_CHANGE,
@@ -74,6 +77,7 @@ class CmdEditText(CmdSceneItem):
         self._before = self.ItemBefore(
             item.text(),
             item.block(),
+            item.rotcomp(),
             item.getOrigin(),
             item.alignH(),
             item.alignV(),
@@ -87,13 +91,15 @@ class CmdEditText(CmdSceneItem):
             item.quillUnderline()
         )
         self._after = self.ItemAfter(
-            text, block, origin, align_h, align_v, width, height, \
+            text, block, rotcomp, origin, align_h, align_v, width, height, \
             color, family, size, bold, italic, underline
         )
 
     def redo(self : Self) -> None:#
         if self._after.block is not NO_CHANGE:
             self._item.setBlock(self._after.block)
+        if self._after.rotcomp is not NO_CHANGE:
+            self._item.setRotcomp(self._after.rotcomp)
         if self._after.origin is not NO_CHANGE:
             # maintain scene position
             pos = self._item.getHandle(self._after.anchor).scenePos()
@@ -128,6 +134,8 @@ class CmdEditText(CmdSceneItem):
             self._item.setText(self._before.text)
         if self._after.block is not NO_CHANGE:
             self._item.setBlock(self._before.block)
+        if self._after.rotcomp is not NO_CHANGE:
+            self._item.setRotcomp(self._before.rotcomp)
         if self._after.origin is not NO_CHANGE:
             # maintain scene position
             pos = self._item.getHandle(self._before.anchor).scenePos()
