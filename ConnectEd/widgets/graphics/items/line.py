@@ -72,8 +72,8 @@ class LineItem(
     ) -> None:
         QGraphicsLineItem.__init__(self)
         self.initItem(bare=bare)
-        p1 = QPointF() if p1 is None else p1
-        p2 = p1 if p2 is None else p2
+        p1 = p1 or QPointF()
+        p2 = p2 or p1
         self._line = QLineF()
         self.setPoints(p1, p2)
 

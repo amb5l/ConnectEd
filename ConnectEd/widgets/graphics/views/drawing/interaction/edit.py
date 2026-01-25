@@ -68,8 +68,7 @@ class EditDuplicateInteraction(EditPasteInteraction):
         clone_items = clone(items)
         if clone_items:
             ItemsInteraction.__init__(self, view, clone_items)
-            self._ipos = pos
-            self._cpos = pos
+            self._cpos = self._ipos = pos
             self._moveSave()
             self._addToScene(select=True)
         else:
@@ -106,9 +105,8 @@ class EditMoveInteraction(
                 orphan_items.append(item)
         # Start interaction
         super().__init__(view, orphan_items)
-        self._ipos     = pos
-        self._cpos     = pos
-        self._slide    = slide
+        self._cpos  = self._ipos = pos
+        self._slide = slide
         self._moveSave()  # record initial positions
 
     def commit(self : Self, pos : QPointF) -> bool:
