@@ -1,19 +1,18 @@
 from typing import Self
 
 from PyQt6.QtCore    import QSize
-from PyQt6.QtWidgets import QWidget, QDialog, \
-                            QVBoxLayout, QHBoxLayout, \
+from PyQt6.QtWidgets import QWidget, QDialog, QVBoxLayout, QHBoxLayout, \
                             QLabel, QComboBox
 
-from ...resources import getIconPath
+from ....resources import getIconPath
 
-from ...core.icon import SvgIconSingleton
+from ....core.icon import SvgIconSingleton
 
-from ..graphics.items.gate import GateFunc
+from ...graphics.items.gate import GateFunc
 
-from .components.spin import CustomSpinBox
+from ..components.spin import CustomSpinBox
 
-from .components.layout.ok_cancel import OkCancelLayout
+from ..components.layout.ok_cancel import OkCancelLayout
 
 
 class BufIcon(SvgIconSingleton):
@@ -39,7 +38,7 @@ class XorIcon(SvgIconSingleton):
 _icons = [BufIcon(), AndIcon(), OrIcon(), XorIcon()]
 
 
-class GateDialog(QDialog):
+class GateItemDialog(QDialog):
     _dialog_layout   : QVBoxLayout
     _function_layout : QHBoxLayout
     _function_label  : QLabel

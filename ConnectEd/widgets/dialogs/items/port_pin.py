@@ -1,18 +1,18 @@
 
 from typing import Self
 from PyQt6.QtWidgets import QWidget, QDialog, QVBoxLayout, QHBoxLayout, \
-                            QLabel, QLineEdit, QComboBox, QPushButton
+                            QLabel, QLineEdit, QComboBox
 
-from ..graphics.items import SignalDirection
+from ...graphics.items import SignalDirection
 
-from .components.layout.ok_cancel import OkCancelLayout
+from ..components.layout.ok_cancel import OkCancelLayout
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from ..graphics.items.port_pin import PortPinMixin
+    from ...graphics.items.port_pin import PortPinMixin
 
 
-class PortPinDialog(QDialog):
+class PortPinItemDialog(QDialog):
     _name_label       : QLabel
     _name_edit        : QLineEdit
     _signal_dir_label : QLabel

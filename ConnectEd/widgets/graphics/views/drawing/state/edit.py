@@ -4,11 +4,11 @@ from PyQt6.QtCore import QPoint, QPointF
 
 from ......app import logger
 
-from .....dialogs.properties    import PropertiesDialog
-from .....dialogs.appearance    import AppearanceDialog
-from .....dialogs.text          import TextItemDialog
-from .....dialogs.property_text import PropertyTextDialog
-from .....dialogs.port_pin      import PortPinDialog
+from .....dialogs.properties     import PropertiesDialog
+from .....dialogs.appearance     import AppearanceDialog
+from .....dialogs.property_text  import PropertyTextDialog
+from .....dialogs.items.port_pin import PortPinItemDialog
+from .....dialogs.items.text     import TextItemDialog
 
 from ....items               import ItemMixin
 from ....items.text          import TextItem
@@ -178,7 +178,7 @@ class DrawingViewStateEditPort(DrawingViewStateBase):
     ) -> None:
         item = i[0] if i else self.view._selectedItem(PortItem)
         if item:
-            dialog = PortPinDialog("Port", item, self.view)
+            dialog = PortPinItemDialog("Port", item, self.view)
             if dialog.exec():
                 name = dialog.getName()
                 direction = dialog.getDirection()
@@ -199,7 +199,7 @@ class DrawingViewStateEditBlockPin(DrawingViewStateBase):
     ) -> None:
         item = i[0] if i else self.view._selectedItem(BlockPinItem)
         if item and isinstance(item, BlockPinItem):
-            dialog = PortPinDialog("Block Pin", item, self.view)
+            dialog = PortPinItemDialog("Block Pin", item, self.view)
             if dialog.exec():
                 name = dialog.getName()
                 direction = dialog.getDirection()

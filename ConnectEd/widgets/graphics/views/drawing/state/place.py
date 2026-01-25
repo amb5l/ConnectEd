@@ -5,9 +5,9 @@ from PyQt6.QtCore import QPoint, QPointF
 
 from ......app import logger
 
-from .....dialogs.port_pin import PortPinDialog
-from .....dialogs.gate     import GateDialog
-from .....dialogs.text     import TextItemDialog
+from .....dialogs.items.port_pin import PortPinItemDialog
+from .....dialogs.items.gate     import GateItemDialog
+from .....dialogs.items.text     import TextItemDialog
 
 from ....items            import SignalDirection, ItemMixin
 from ....items.port       import PortItem
@@ -44,7 +44,7 @@ class DrawingViewStatePlacePort(ClickMixin, DrawingViewStateBase):
     ) -> None:
         item = PortItem()
         item.setPos(self._snap(s))
-        dialog = PortPinDialog("Port", item, self.view)
+        dialog = PortPinItemDialog("Port", item, self.view)
         if dialog.exec():
             item.setName(dialog.getName())
             item.setDirection(dialog.getDirection())
@@ -67,7 +67,7 @@ class DrawingViewStatePlaceGate(ClickMixin, DrawingViewStateBase):
         s    : QPointF,
         i    : list[ItemMixin] | None = None
     ) -> None:
-        dialog = GateDialog(self.view)
+        dialog = GateItemDialog(self.view)
         if dialog.exec():
             match dialog.getFunction():
                 case GateFunc.BUF_INV  : gate = BufGateItem()
@@ -109,7 +109,7 @@ class DrawingViewStatePlaceBlockPin(DrawingViewStateBase):
         block = i[0] if i else self.view._selectedItem(BlockItem)
         if block and isinstance(block, BlockItem):
             pin = BlockPinItem() # don't parent to block yet
-            dialog = PortPinDialog("Block Pin", pin, self.view)
+            dialog = PortPinItemDialog("Block Pin", pin, self.view)
             if dialog.exec():
                 pin.setName(dialog.getName())
                 pin.setDirection(dialog.getDirection())
@@ -146,7 +146,7 @@ class DrawingViewStatePlaceSymbolPin(ClickMixin, DrawingViewStateBase):
     ) -> None:
         pin = SymbolPinItem()
         pin.setPos(self._snap(s))
-        dialog = PortPinDialog("Pin", pin, self.view)
+        dialog = PortPinItemDialog("Pin", pin, self.view)
         if dialog.exec():
             pin.setName(dialog.getName())
             pin.setDirection(dialog.getDirection())
