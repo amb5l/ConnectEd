@@ -25,7 +25,7 @@ if TYPE_CHECKING:
 
 
 class EditPasteInteraction(
-    MoveItemsMixin,       # update, _moveBy, _storePos, _restorePos
+    MoveItemsMixin,       # update, _moveBy, _moveSave, _moveRestore
     AddRemoveItemsMixin,  # _addToScene, _removeFromScene
     ItemsInteraction      # _view, _scene, _items, valid
 ):
@@ -37,18 +37,17 @@ class EditPasteInteraction(
         items, copy_pos = paste()
         if items:
             super().__init__(view, items)
-            self._ipos = pos if copy_pos is None else copy_pos
-            self._cpos = self._ipos
+            self._cpos = self._ipos = copy_pos or pos
             self._items = items
-            self._storePos()
+            self._moveSave()
             self._addToScene(select=True)
             self.update(pos)  # Move to initial position
         else:
             self._items = None
 
     def commit(self : Self, pos : QPointF) -> bool:
-        self._restorePos()  # restore initial positions
-        self.update(pos)    # apply final offset
+        self._moveRestore()  # restore initial positions
+        self.update(pos)     # apply final offset
         # add pasted items to scene
         self._scene.addItems(self._items, undoable=True)
         return True
@@ -71,14 +70,14 @@ class EditDuplicateInteraction(EditPasteInteraction):
             ItemsInteraction.__init__(self, view, clone_items)
             self._ipos = pos
             self._cpos = pos
-            self._storePos()
+            self._moveSave()
             self._addToScene(select=True)
         else:
             self._items = None
 
 
 class EditMoveInteraction(
-    MoveItemsMixin,    # update, _moveBy, _storePos, _restorePos
+    MoveItemsMixin,    # update, _moveBy, _moveSave, _moveRestore
     ItemsInteraction,  # _view, _scene, _items, valid
 ):
     # instance attributes
@@ -110,16 +109,16 @@ class EditMoveInteraction(
         self._ipos     = pos
         self._cpos     = pos
         self._slide    = slide
-        self._storePos()  # record initial positions
+        self._moveSave()  # record initial positions
 
     def commit(self : Self, pos : QPointF) -> bool:
-        self._restorePos()  # restore initial positions
+        self._moveRestore()  # restore initial positions
         # apply final offset
         self._scene.editMove(self._items, pos - self._ipos, self._slide, undoable=True)
         return True
 
     def cancel(self : Self) -> None:
-        self._restorePos()  # restore initial positions
+        self._moveRestore()  # restore initial positions
 
 
 class EditMoveBlockPinsInteraction(Interaction):

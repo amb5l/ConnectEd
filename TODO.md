@@ -1,5 +1,8 @@
-Text class (string + block bool)
-rename Rectangle to RectangleItem etc
+self._cpos = self._ipos = copy_pos or pos
+pos if copy_pos is None else copy_pos
+MoveItemsMixin - grips moveSave/moveRestore
+UniText class (string + block bool)
+text dialog : origin assignment
 dialog components assume attribute names
 Family => Font
 rectangle context menu - set Origin

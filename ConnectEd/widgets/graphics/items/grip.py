@@ -1,4 +1,4 @@
-from typing import Self
+from typing import Self, Any
 
 from PyQt6.QtCore    import Qt, QPointF, QXmlStreamWriter, QXmlStreamReader
 from PyQt6.QtWidgets import QMenu, QGraphicsPathItem
@@ -6,6 +6,7 @@ from PyQt6.QtGui     import QAction, QPen, QBrush, QPainterPath
 
 from ....app import settings
 
+from .mixin        import ItemMoveMixin
 from .mixin.origin import ItemOriginMixin
 from .mixin.change import ItemChangeMixin
 from .mixin.shape  import ItemShapeMixin
@@ -22,6 +23,7 @@ if TYPE_CHECKING:
 
 
 class GripItem(
+    ItemMoveMixin,
     ItemChangeMixin,
     ItemShapeMixin,
     ItemMenuMixin,
@@ -168,3 +170,17 @@ class TextGripItem(ResizeGripItem):
         # constrained if left or right, and width is not None
         c |= ("Left" in name or "Right" in name) and w is None
         return "Unfilled" if c else "Filled"
+
+    def moveSave(self : Self) -> QPointF:
+        item : "UniTextItem" = self.item()
+        return self.scenePos(), item.width(), item.height()
+
+    def moveRestore(
+        self  : Self,
+        state : tuple[QPointF, float | None, float | None]
+    ) -> None:
+        pos, width, height = state
+        item : "UniTextItem" = self.item()
+        self.moveBy(pos - self.scenePos())
+        item.setWidth(width)
+        item.setHeight(height)

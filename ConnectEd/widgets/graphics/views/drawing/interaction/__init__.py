@@ -140,7 +140,7 @@ class MoveItemsMixin:
     _items : list[ItemType]
     _ipos  : QPointF                  # initial position
     _cpos  : QPointF                  # current position
-    _spos  : dict[ItemType, QPointF]  # stored positions
+    _state : dict[ItemType, QPointF]  # pre-move states e.g. scene positions
 
     def update(self : Self, pos : QPointF):
         self._moveBy(pos - self._cpos)
@@ -150,12 +150,12 @@ class MoveItemsMixin:
         for e in self._items:
             e.moveBy(offset)
 
-    def _storePos(self : Self) -> None:
-        self._spos = {e: e.scenePos() for e in self._items}
+    def _moveSave(self : Self) -> None:
+        self._state = {i: i.moveSave() for i in self._items}
 
-    def _restorePos(self : Self) -> None:
-        for e, pos in self._spos.items():
-            e.moveBy(pos - e.scenePos())
+    def _moveRestore(self : Self) -> None:
+        for i, state in self._state.items():
+            i.moveRestore(state)
         self._cpos = self._ipos
 
 

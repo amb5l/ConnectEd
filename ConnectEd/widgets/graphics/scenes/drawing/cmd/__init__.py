@@ -119,26 +119,6 @@ class CmdAddRemoveMixin:
         self._scene.selectionChanged.emit()
 
 
-class CmdMoveMixin:
-    """Mixin for commands that move items by an offset."""
-    # TODO merge this into cmdMove?
-
-    # instance attributes
-    _items : list[ItemType]
-    _spos  : dict[ItemMixin, QPointF]  # initial scene positions
-
-    def _moveBy(self : Self, offset : QPointF) -> None:
-        for e in self._items:
-            e.moveBy(offset)
-
-    def _storePos(self : Self) -> None:
-        self._spos = {e: e.scenePos() for e in self._items}
-
-    def _restorePos(self : Self) -> None:
-        for e, pos in self._spos.items():
-            e.moveBy(pos - e.scenePos())
-
-
 class CmdAdd(
     CmdSceneItems,     # _scene, _items
     CmdAddRemoveMixin  # _addToScene, _removeFromScene
@@ -182,13 +162,13 @@ class CmdDelete(
 
 class CmdMove(
     CmdSceneItems,  # _scene, _items
-    CmdMoveMixin    # _moveBy, _storePos, _restorePos
 ):
     """Command to move scene items by an offset."""
 
     # instance attributes
     _offset : QPointF
-    _slide  : bool     # true => retain connections, false => break connections
+    _slide  : bool                      # true => retain connections
+    _state  : dict[ItemMixin, QPointF]  # pre-move state e.g. scene positions
 
     def __init__(
         self   : Self,
@@ -200,14 +180,16 @@ class CmdMove(
         super().__init__(scene, items)
         self._offset = offset
         self._slide = slide
-        self._storePos() # store initial positions
+        self._state = {e: e.moveSave() for e in self._items}
 
     def redo(self : Self) -> None:
-        self._moveBy(self._offset)
+        for e in self._items:
+            e.moveBy(self._offset)
         # TODO: add slide logic
 
     def undo(self : Self) -> None:
-        self._restorePos()
+        for e in self._items:
+            e.moveRestore(self._state[e])
         # TODO: add slide logic
 
 

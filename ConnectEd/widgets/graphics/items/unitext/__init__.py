@@ -265,48 +265,46 @@ class UniTextItem(
         match name:
             case "Top Left":
                 self.moveBy(delta)
-                self.resizeBy(-delta)
+                self.resize(-delta.x(), -delta.y())
             case "Top Center":
-                self.setPos(self.pos() + QPointF(0, delta.y()))
-                self.resizeBy(0, -delta.y())
+                self.setY(self.pos().y() + delta.y())
+                self.resizeV(-delta.y())
             case "Top Right":
-                self.setPos(self.pos() + QPointF(0, delta.y()))
-                self.resizeBy(delta.x(), -delta.y())
+                self.setY(self.pos().y() + delta.y())
+                self.resize(delta.x(), -delta.y())
             case "Middle Left":
-                self.setPos(self.pos() + QPointF(delta.x(), 0))
-                self.resizeBy(-delta.x(), 0)
+                self.setX(self.pos().x() + delta.x())
+                self.resizeH(-delta.x())
             case "Middle Center":
                 self.moveBy(delta)
             case "Middle Right":
-                self.resizeBy(delta.x(), 0)
+                self.resizeH(delta.x())
             case "Bottom Left":
-                self.setPos(self.pos() + QPointF(delta.x(), 0))
-                self.resizeBy(-delta.x(), delta.y())
+                self.setX(self.pos().x() + delta.x())
+                self.resize(-delta.x(), delta.y())
             case "Bottom Center":
-                self.resizeBy(0, delta.y())
+                self.resizeV(delta.y())
             case "Bottom Right":
-                self.resizeBy(delta.x(), delta.y())
+                self.resize(delta.x(), delta.y())
 
-    @overload
-    def resizeBy(self : Self, d : QPointF) -> None:
-        ...
+    def resizeH(self : Self, dx : float) -> None:
+        rect = self._child._brect
+        self._width = max((self._width or rect.width()) + dx, 0.0)
+        self._child.onGeometryChange()
+        self.updateHandlePositions()
+        self.updateHandlePaths()
 
-    @overload
-    def resizeBy(self : Self, dx : float, dy : float) -> None:
-        ...
+    def resizeV(self : Self, dy : float) -> None:
+        rect = self._child._brect
+        self._height = max((self._height or rect.height()) + dy, 0.0)
+        self._child.onGeometryChange()
+        self.updateHandlePositions()
+        self.updateHandlePaths()
 
-    def resizeBy(
-        self : Self,
-        dx_d : float | QPointF,
-        dy   : float | None = None
-    ) -> None:
-        dx = dx_d.x() if isinstance(dx_d, QPointF) else dx_d
-        dy = dx_d.y() if isinstance(dx_d, QPointF) else dy
-        rect = self.handleRect()
-        if dx:
-            self._width = max(rect.width() + dx, 0.0)
-        if dy:
-            self._height = max(rect.height() + dy, 0.0)
+    def resize(self : Self, dx : float, dy : float) -> None:
+        rect = self._child._brect
+        self._width  = max((self._width  or rect.width())  + dx, 0.0)
+        self._height = max((self._height or rect.height()) + dy, 0.0)
         self._child.onGeometryChange()
         self.updateHandlePositions()
         self.updateHandlePaths()

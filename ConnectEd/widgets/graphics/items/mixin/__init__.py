@@ -2,6 +2,7 @@ import uuid
 
 from typing import Self
 
+from PyQt6.QtCore    import QPointF
 from PyQt6.QtWidgets import QGraphicsItem
 
 from .....core.defs  import Z_DRAWING
@@ -16,7 +17,17 @@ class ItemSettingsMixin:
         return self.__class__.__name__.replace("Item", "")
 
 
-class ItemMixin(ItemSettingsMixin):
+class ItemMoveMixin:
+    """Methods to support moving items."""
+
+    def moveSave(self : Self | QGraphicsItem) -> QPointF:
+        return self.scenePos()
+
+    def moveRestore(self : Self | QGraphicsItem, pos : QPointF) -> None:
+        self.setPos(pos - self.scenePos())
+
+
+class ItemMixin(ItemSettingsMixin, ItemMoveMixin):
     Z = Z_DRAWING
 
     _uuid : str
@@ -77,6 +88,12 @@ class ItemMixin(ItemSettingsMixin):
         if not isinstance(other, ItemMixin):
             return NotImplemented
         return self._uuid == other._uuid
+
+    def savePos(self : Self | QGraphicsItem) -> QPointF:
+        return self.scenePos()
+
+    def restorePos(self : Self | QGraphicsItem, pos : QPointF) -> None:
+        self.setPos(pos - self.scenePos())
 
     def topParentItem(self : Self | QGraphicsItem) -> QGraphicsItem | None:
         item = self.parentItem()
