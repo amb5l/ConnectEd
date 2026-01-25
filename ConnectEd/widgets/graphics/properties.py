@@ -38,7 +38,7 @@ class PropertiesMixin:
                 )
                 property_text.setParentItem(self.getHandle(spec.text.anchor))
                 self.properties[name].setText(property_text)
-                property_text.onPropertyChange()  # set text after parenting
+                property_text.onNameChange()  # set text after parenting
 
     def initProperty(self : Self, name : str, value : str) -> None:
         """

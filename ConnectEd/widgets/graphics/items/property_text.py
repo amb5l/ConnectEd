@@ -70,9 +70,9 @@ class PropertyTextItem(UniTextItem):
     # class attributes
     _PROPERTY_SPECS = \
         {
-            "Property" : PropertySpec(
-                getter = lambda self: self.property(),
-                setter = lambda self, value: self.setProperty(value)
+            "Name" : PropertySpec(
+                getter = lambda self: self.name(),
+                setter = lambda self, value: self.setName(value)
             ),
             "Visible" : PropertySpec(
                 kind   = "bool",
@@ -92,22 +92,22 @@ class PropertyTextItem(UniTextItem):
         ItemQuillMixin._PROPERTY_SPECS_QUILL
 
     # instance attributes
-    _property    : str
+    _name        : str
     _cleat       : str
     _cleat_shown : bool
     _tether      : TetherItem | None
 
     def __init__(
-        self     : Self,
-        property : str | None     = None,
-        cleat    : str | None     = None,
-        pos      : QPointF | None = None,
-        origin   : str | None     = None,
-        bare     : bool           = False
+        self   : Self,
+        name   : str | None     = None,
+        cleat  : str | None     = None,
+        pos    : QPointF | None = None,
+        origin : str | None     = None,
+        bare   : bool           = False
     ) -> None:
         super().__init__(bare=bare)
         self._tether = TetherItem(self)
-        self._property = property
+        self._name = name
         self.setCleat(cleat)
         if origin is None:
             origin = "Bottom Left" if cleat == "Top Left" else "Top Left"
@@ -134,7 +134,7 @@ class PropertyTextItem(UniTextItem):
         self.onSettingsChange()
 
     def onParentChange(self : Self, _parent : QGraphicsItem | None) -> None:
-        self.onPropertyChange()
+        self.onNameChange()
 
     def onPositionChange(
         self : Self,
@@ -161,16 +161,16 @@ class PropertyTextItem(UniTextItem):
         """Rotation compensation not currently supported."""
         pass
 
-    def onPropertyChange(self : Self) -> None:
+    def onNameChange(self : Self) -> None:
         value = self.value()
-        text = f"<{self.property()}>" if value == "" else value
+        text = f"<{self.name()}>" if value == "" else value
         super().setText(text)
 
     def settingsName(self : Self) -> str:
         item = self.item()
         if item is not None:
             item_name = item.__class__.__name__
-            settings_name = f"{item_name}{self._property}"
+            settings_name = f"{item_name}{self._name}"
             settings_items = settings().get("theme/items")
             if settings_name in vars(settings_items).keys():
                 return settings_name
@@ -198,24 +198,24 @@ class PropertyTextItem(UniTextItem):
         h : "HandleItem" = self.parentItem()
         return None if h is None else h.parentItem()
 
-    def property(self : Self) -> str:
-        return self._property
+    def name(self : Self) -> str:
+        return self._name
 
-    def setProperty(self : Self, property : str) -> None:
-        self._property = property
-        self.onPropertyChange()
+    def setName(self : Self, name : str) -> None:
+        self._name = name
+        self.onNameChange()
 
     def value(self : Self) -> str:
         source = self.scene() if self.parentItem() is None else self.item()
         if source is None:
             return ""
-        return str(source.properties[self._property].get())
+        return str(source.properties[self._name].get())
 
     def setValue(self : Self, value : str | NoChange = NO_CHANGE) -> None:
         if value is NO_CHANGE:
             return
         source = self.scene() if self.parentItem() is None else self.item()
-        source.properties[self._property].set(value)
+        source.properties[self._name].set(value)
 
     def paint(self, painter, option, widget) -> None:
         from PyQt6.QtGui import QPen

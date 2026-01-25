@@ -24,7 +24,7 @@ class PropertyTextDialog(QDialog):
         parent : QWidget | None = None # not to be confused with _parent
     ) -> None:
         super().__init__(parent)
-        self.setWindowTitle(f"Property Text: {item.property()}")
+        self.setWindowTitle(f"Property Text: {item.name()}")
         self.setModal(True)
         self._dialog_layout = QVBoxLayout(self)
         # value section
