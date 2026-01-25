@@ -26,7 +26,7 @@ class CmdEditText(CmdSceneItem):
         width     : float | None
         height    : float | None
         color     : QColor | Default
-        font      : str    | Default
+        family    : str    | Default
         size      : float  | Default
         bold      : bool   | Default
         italic    : bool   | Default
@@ -42,7 +42,7 @@ class CmdEditText(CmdSceneItem):
         width     : float | None     | NoChange = NO_CHANGE,
         height    : float | None     | NoChange = NO_CHANGE,
         color     : QColor | Default | NoChange = NO_CHANGE,
-        font      : str    | Default | NoChange = NO_CHANGE,
+        family    : str    | Default | NoChange = NO_CHANGE,
         size      : float  | Default | NoChange = NO_CHANGE,
         bold      : bool   | Default | NoChange = NO_CHANGE,
         italic    : bool   | Default | NoChange = NO_CHANGE,
@@ -64,7 +64,7 @@ class CmdEditText(CmdSceneItem):
         width     : float | None     | NoChange = NO_CHANGE,
         height    : float | None     | NoChange = NO_CHANGE,
         color     : QColor | Default | NoChange = NO_CHANGE,
-        font      : str    | Default | NoChange = NO_CHANGE,
+        family    : str    | Default | NoChange = NO_CHANGE,
         size      : float  | Default | NoChange = NO_CHANGE,
         bold      : bool   | Default | NoChange = NO_CHANGE,
         italic    : bool   | Default | NoChange = NO_CHANGE,
@@ -88,7 +88,7 @@ class CmdEditText(CmdSceneItem):
         )
         self._after = self.ItemAfter(
             text, block, origin, align_h, align_v, width, height, \
-            color, font, size, bold, italic, underline
+            color, family, size, bold, italic, underline
         )
 
     def redo(self : Self) -> None:#
@@ -111,8 +111,8 @@ class CmdEditText(CmdSceneItem):
             self._item.setText(self._after.text)
         if self._after.color is not NO_CHANGE:
             self._item.setQuillColor(self._after.color)
-        if self._after.font is not NO_CHANGE:
-            self._item.setQuillFamily(self._after.font)
+        if self._after.family is not NO_CHANGE:
+            self._item.setQuillFamily(self._after.family)
         if self._after.size is not NO_CHANGE:
             self._item.setQuillSize(self._after.size)
         if self._after.bold is not NO_CHANGE:
@@ -143,8 +143,8 @@ class CmdEditText(CmdSceneItem):
             self._item.setHeight(self._before.height)
         if self._after.color is not NO_CHANGE:
             self._item.setQuillColor(self._before.color)
-        if self._after.font is not NO_CHANGE:
-            self._item.setQuillFamily(self._before.font)
+        if self._after.family is not NO_CHANGE:
+            self._item.setQuillFamily(self._before.family)
         if self._after.size is not NO_CHANGE:
             self._item.setQuillSize(self._before.size)
         if self._after.bold is not NO_CHANGE:

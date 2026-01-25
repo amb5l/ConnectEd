@@ -121,7 +121,7 @@ class CmdEditProperties(CmdBase):
         pt.setAnchor(vars.cleat)
         pt.setPos(QPointF(vars.offset_x, vars.offset_y))
         pt.setOrigin(vars.origin)
-        pt.a.quill.setFamily(vars.font)
+        pt.a.quill.setFamily(vars.family)
         pt.a.quill.setSize(vars.size)
         pt.a.quill.setBold(vars.bold)
         pt.a.quill.setItalic(vars.italic)

@@ -76,10 +76,10 @@ class SvgIconSingleton:
 
 
 def getCharIcon(
-    font_family : str,
-    char        : str,
-    size        : QSize,
-    margin      : int = 1
+    family : str,
+    char   : str,
+    size   : QSize,
+    margin : int = 1
 ) -> QIcon:
     char = char[0] if char else " "
     fg_color, bg_color = getFgBgColors()
@@ -87,7 +87,7 @@ def getCharIcon(
     pixmap.fill(bg_color)
     painter = QPainter(pixmap)
     painter.setRenderHint(QPainter.RenderHint.Antialiasing)
-    font = QFont(font_family)
+    font = QFont(family)
     w = size.width()  - (2 * margin)
     h = size.height() - (2 * margin)
     font_size = min(w, h)

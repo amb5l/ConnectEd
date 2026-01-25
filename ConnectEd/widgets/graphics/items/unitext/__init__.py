@@ -133,7 +133,7 @@ class UniTextItem(
         width     : float | None         = None,
         height    : float | None         = None,
         color     : QColor | Default     = DEFAULT,
-        font      : str    | Default     = DEFAULT,
+        family    : str    | Default     = DEFAULT,
         size      : float  | Default     = DEFAULT,
         bold      : bool   | Default     = DEFAULT,
         italic    : bool   | Default     = DEFAULT,
@@ -152,7 +152,7 @@ class UniTextItem(
         self.setPos(pos or QPointF(0, 0))
         self.setOrigin(origin)
         if color     : self.setQuillColor(color)
-        if font      : self.setQuillFamily(font)
+        if family    : self.setQuillFamily(family)
         if size      : self.setQuillSize(size)
         if bold      : self.setQuillBold(bold)
         if italic    : self.setQuillItalic(italic)

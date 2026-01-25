@@ -73,7 +73,7 @@ class TextAppearanceLayout(QVBoxLayout):
         self._options_layout.addWidget(self._color_label, 0, 0)
         self._color_combo = ColorComboBox(initial_color, default_color)
         self._options_layout.addWidget(self._color_combo, 0, 1)
-        self._family_label = QLabel("Family:")
+        self._family_label = QLabel("Font:")
         self._options_layout.addWidget(self._family_label, 1, 0)
         self._family_combo = FontFamilyComboBox(initial_family, default_family)
         self._options_layout.addWidget(self._family_combo, 1, 1)

@@ -229,7 +229,7 @@ class DrawingViewStateEditText(DrawingViewStateBase):
                     align_h   = dialog.getAlignH(),
                     align_v   = dialog.getAlignV(),
                     color     = dialog.getColor(),
-                    font      = dialog.getFamily(),
+                    family    = dialog.getFamily(),
                     size      = dialog.getSize(),
                     bold      = dialog.getBold(),
                     italic    = dialog.getItalic(),

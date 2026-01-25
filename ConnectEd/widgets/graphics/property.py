@@ -41,7 +41,7 @@ class PropertyTextState:
     height    : float | None
     origin    : str
     color     : QColor | Default
-    font      : str    | Default
+    family    : str    | Default
     size      : float  | Default
     bold      : bool   | Default
     italic    : bool   | Default
@@ -60,7 +60,7 @@ class PropertyTextEdit:
     width     : float | None     | NoChange = NO_CHANGE
     height    : float | None     | NoChange = NO_CHANGE
     color     : QColor | Default | NoChange = NO_CHANGE
-    font      : str    | Default | NoChange = NO_CHANGE
+    family    : str    | Default | NoChange = NO_CHANGE
     size      : float  | Default | NoChange = NO_CHANGE
     bold      : bool   | Default | NoChange = NO_CHANGE
     italic    : bool   | Default | NoChange = NO_CHANGE
@@ -218,7 +218,7 @@ class Property(QObject):
                 height    = self._text.height(),
                 origin    = self._text.getOrigin(),
                 color     = self._text.quillColor(),
-                font      = self._text.quillFamily(),
+                family    = self._text.quillFamily(),
                 size      = self._text.quillSize(),
                 bold      = self._text.quillBold(),
                 italic    = self._text.quillItalic(),

@@ -151,7 +151,7 @@ class PropertiesDialog(QDialog):
             display_offset_y  = None
             display_origin    = None
             display_color     = None
-            display_font      = None
+            display_family    = None
             display_size      = None
             display_bold      = None
             display_italic    = None
@@ -167,7 +167,7 @@ class PropertiesDialog(QDialog):
                 display_offset_y  = pt_state.offset_y
                 display_origin    = pt_state.origin
                 display_color     = pt_state.color
-                display_font      = pt_state.font
+                display_family    = pt_state.family
                 display_size      = pt_state.size
                 display_bold      = pt_state.bold
                 display_italic    = pt_state.italic
@@ -187,7 +187,7 @@ class PropertiesDialog(QDialog):
                 ExistingItem(display_offset_y  , "float"        ),
                 ExistingItem(display_origin    , "str"          ),
                 ExistingItem(display_color     , "QColor"       ),
-                ExistingItem(display_font      , "FontFamily"   ),
+                ExistingItem(display_family    , "FontFamily"   ),
                 ExistingItem(display_size      , "FontSize"     ),
                 ExistingItem(display_bold      , "bool"         ),
                 ExistingItem(display_italic    , "bool"         ),
@@ -284,7 +284,7 @@ class PropertiesDialog(QDialog):
             offset_y_item  : DialogItem = self._table_model.item(row_idx, 6)
             origin_item    : DialogItem = self._table_model.item(row_idx, 7)
             color_item     : DialogItem = self._table_model.item(row_idx, 8)
-            font_item      : DialogItem = self._table_model.item(row_idx, 9)
+            family_item    : DialogItem = self._table_model.item(row_idx, 9)
             size_item      : DialogItem = self._table_model.item(row_idx, 10)
             bold_item      : DialogItem = self._table_model.item(row_idx, 11)
             italic_item    : DialogItem = self._table_model.item(row_idx, 12)
@@ -306,7 +306,7 @@ class PropertiesDialog(QDialog):
                 after.offset_y  = offset_y_item.getValue()
                 after.origin    = origin_item.getValue()
                 after.color     = color_item.getValue()
-                after.font      = font_item.getValue()
+                after.family    = family_item.getValue()
                 after.size      = size_item.getValue()
                 after.bold      = bold_item.getValue()
                 after.italic    = italic_item.getValue()
@@ -358,7 +358,7 @@ class PropertiesDialog(QDialog):
                     offset_y_item  : DialogItem = self._table_model.item(row_idx, 5)
                     origin_item    : DialogItem = self._table_model.item(row_idx, 6)
                     color_item     : DialogItem = self._table_model.item(row_idx, 7)
-                    font_item      : DialogItem = self._table_model.item(row_idx, 8)
+                    family_item    : DialogItem = self._table_model.item(row_idx, 8)
                     size_item      : DialogItem = self._table_model.item(row_idx, 9)
                     bold_item      : DialogItem = self._table_model.item(row_idx, 10)
                     italic_item    : DialogItem = self._table_model.item(row_idx, 11)
@@ -376,8 +376,8 @@ class PropertiesDialog(QDialog):
                         origin_item.setInit(ItemRectHandlesMixin.getHandleNames()[0])
                     if color_item.getValue() is None:
                         color_item.setInit(DEFAULT)
-                    if font_item.getValue() is None:
-                        font_item.setInit(DEFAULT)
+                    if family_item.getValue() is None:
+                        family_item.setInit(DEFAULT)
                     if size_item.getValue() is None:
                         size_item.setInit(DEFAULT)
                     if bold_item.getValue() is None:
