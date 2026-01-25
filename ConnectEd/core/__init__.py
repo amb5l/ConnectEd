@@ -2,6 +2,15 @@ from dataclasses import dataclass
 
 
 @dataclass
-class UniText:
-    value : str
-    block : bool
+class Text:
+    value : str   # text string value
+    block : bool  # False = line, True = block
+
+@dataclass
+class TextLine(Text):
+    block : bool = False
+
+@dataclass
+class TextBlock(Text):
+    block : bool = True
+
