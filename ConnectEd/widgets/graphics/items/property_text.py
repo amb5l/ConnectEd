@@ -69,18 +69,18 @@ class PropertyTextItem(UniTextItem):
     _INHERENT_PROPERTIES = \
         {
             "Name" : PropertySpec(
-                getter = lambda self: self.name(),
-                setter = lambda self, value: self.setName(value)
+                getter    = lambda self: self.name(),
+                setter    = lambda self, value: self.setName(value)
             ),
             "Visible" : PropertySpec(
-                kind   = "bool",
-                valid  = lambda self: not self.isVisible(),
-                getter = lambda self: self.isVisible(),
-                setter = lambda self, value: self.setVisible(value)
+                type_name = "bool",
+                valid     = lambda self: not self.isVisible(),
+                getter    = lambda self: self.isVisible(),
+                setter    = lambda self, value: self.setVisible(value)
             ),
             "Cleat" : PropertySpec(
-                getter = lambda self: self.getCleat(),
-                setter = lambda self, value: self.setCleat(value)
+                getter    = lambda self: self.getCleat(),
+                setter    = lambda self, value: self.setCleat(value)
             )
         } | \
         ItemOriginMixin._INHERENT_PROPERTIES_ORIGIN | \

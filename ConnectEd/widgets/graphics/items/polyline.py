@@ -161,9 +161,9 @@ class PolylineItem(
     _INHERENT_PROPERTIES = \
         {
             "Closed" : PropertySpec(
-                kind   = "bool",
-                getter = lambda self: self.closed(),
-                setter = lambda self, value: self.setClosed(value)
+                type_name = "bool",
+                getter    = lambda self: self.closed(),
+                setter    = lambda self, value: self.setClosed(value)
             )
         } | \
         ItemPosMixin._INHERENT_PROPERTIES_POS | \

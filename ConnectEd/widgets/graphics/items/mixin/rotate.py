@@ -11,10 +11,10 @@ class ItemRotateMixin:
     # class attributes
     _INHERENT_PROPERTIES_ROTATE = {
         "Rotate" : PropertySpec(
-            kind   = "float",
-            valid  = lambda self: self.rotation() != 0,
-            getter = lambda self: self.rotation(),
-            setter = lambda self, value: self.setRotation(value)
+            type_name = "float",
+            valid     = lambda self: self.rotation() != 0,
+            getter    = lambda self: self.rotation(),
+            setter    = lambda self, value: self.setRotation(value)
         )
     }
 

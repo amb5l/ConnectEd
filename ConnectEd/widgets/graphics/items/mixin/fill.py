@@ -7,7 +7,7 @@ from PyQt6.QtGui  import QBrush, QColor
 
 from .....app import logger, settings
 
-from ...property import PropertySpec
+from ...properties import PropertySpec
 
 from .. import Default, DEFAULT
 
@@ -30,18 +30,18 @@ class ItemFillMixin:
     # class attributes
     _INHERENT_PROPERTIES_FILL = {
         "Fill Color" : PropertySpec(
-            kind    = "QColor",
-            valid   = lambda self: self.fillColor() is not DEFAULT,
-            getter  = lambda self: self.fillColor(),
-            setter  = lambda self, value: self.setFillColor(value),
-            default = lambda self: self.defaultFillColor()
+            type_name = "QColor",
+            valid     = lambda self: self.fillColor() is not DEFAULT,
+            getter    = lambda self: self.fillColor(),
+            setter    = lambda self, value: self.setFillColor(value),
+            default   = lambda self: self.defaultFillColor()
         ),
         "Fill Style" : PropertySpec(
-            kind    = "BrushStyle",
-            valid   = lambda self: self.fillStyle() is not DEFAULT,
-            getter  = lambda self: self.fillStyle(),
-            setter  = lambda self, value: self.setFillStyle(value),
-            default = lambda self: self.defaultFillStyle()
+            type_name = "BrushStyle",
+            valid     = lambda self: self.fillStyle() is not DEFAULT,
+            getter    = lambda self: self.fillStyle(),
+            setter    = lambda self, value: self.setFillStyle(value),
+            default   = lambda self: self.defaultFillStyle()
         )
     }
 

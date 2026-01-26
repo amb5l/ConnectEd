@@ -39,24 +39,24 @@ class LineItem(
     _INHERENT_PROPERTIES = \
         {
             "X1" : PropertySpec(
-                kind   = "float",
-                getter = lambda self: self.x1(),
-                setter = lambda self, value: self.setX1(value)
+                type_name = "float",
+                getter    = lambda self: self.x1(),
+                setter    = lambda self, value: self.setX1(value)
             ),
             "Y1" : PropertySpec(
-                kind   = "float",
-                getter = lambda self: self.y1(),
-                setter = lambda self, value: self.setY1(value)
+                type_name = "float",
+                getter    = lambda self: self.y1(),
+                setter    = lambda self, value: self.setY1(value)
             ),
             "X2" : PropertySpec(
-                kind   = "float",
-                getter = lambda self: self.x2(),
-                setter = lambda self, value: self.setX2(value)
+                type_name = "float",
+                getter    = lambda self: self.x2(),
+                setter    = lambda self, value: self.setX2(value)
             ),
             "Y2" : PropertySpec(
-                kind   = "float",
-                getter = lambda self: self.y2(),
-                setter = lambda self, value: self.setY2(value)
+                type_name = "float",
+                getter    = lambda self: self.y2(),
+                setter    = lambda self, value: self.setY2(value)
             )
         } | \
         ItemLineMixin._INHERENT_PROPERTIES_LINE

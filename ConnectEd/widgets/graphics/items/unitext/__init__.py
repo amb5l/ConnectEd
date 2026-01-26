@@ -78,37 +78,37 @@ class UniTextItem(
     _INHERENT_PROPERTIES_ALIGN = \
         {
             "AlignH" : PropertySpec(
-                kind   = "AlignH",
-                getter = lambda self: self.horizontalAlignment(),
-                setter = lambda self, value: self.setHorizontalAlignment(value)
+                type_name = "AlignH",
+                getter    = lambda self: self.horizontalAlignment(),
+                setter    = lambda self, value: self.setHorizontalAlignment(value)
             ),
             "AlignV" : PropertySpec(
-                kind   = "AlignV",
-                valid = lambda self: self.height() is not None,
-                getter = lambda self: self.verticalAlignment(),
-                setter = lambda self, value: self.setVerticalAlignment(value)
+                type_name = "AlignV",
+                valid     = lambda self: self.height() is not None,
+                getter    = lambda self: self.verticalAlignment(),
+                setter    = lambda self, value: self.setVerticalAlignment(value)
             )
         }
     _INHERENT_PROPERTIES_SIZE = \
         {
             "Width" : PropertySpec(
-                kind   = "float",
-                valid  = lambda self: self.width() is not None,
-                getter = lambda self: self.width(),
-                setter = lambda self, value: self.setWidth(value)
+                type_name = "float",
+                valid     = lambda self: self.width() is not None,
+                getter    = lambda self: self.width(),
+                setter    = lambda self, value: self.setWidth(value)
             ),
             "Height" : PropertySpec(
-                kind   = "float",
-                valid  = lambda self: self.height() is not None,
-                getter = lambda self: self.height(),
-                setter = lambda self, value: self.setHeight(value)
+                type_name = "float",
+                valid     = lambda self: self.height() is not None,
+                getter    = lambda self: self.height(),
+                setter    = lambda self, value: self.setHeight(value)
             )
         }
     _INHERENT_PROPERTIES = \
         {
             "Text" : PropertySpec(
-                getter = lambda self: self.text(),
-                setter = lambda self, value: self.setText(value)
+                getter    = lambda self: self.text(),
+                setter    = lambda self, value: self.setText(value)
             ),
 
         } | \

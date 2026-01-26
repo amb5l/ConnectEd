@@ -117,9 +117,9 @@ class BasePinDotMixin:
     # class attributes
     _INHERENT_PROPERTIES_DOT = {
         "Dot" : PropertySpec(
-            kind   = "bool",
-            getter = lambda self: self._dot,
-            setter = lambda self, value: setattr(self, "_dot", value)
+            type_name = "bool",
+            getter    = lambda self: self._dot,
+            setter    = lambda self, value: setattr(self, "_dot", value)
         )
     }
 
@@ -138,9 +138,9 @@ class BasePinClockMixin:
     # class attributes
     _INHERENT_PROPERTIES_CLOCK = {
         "Clock" : PropertySpec(
-            kind   = "bool",
-            getter = lambda self: self._clock,
-            setter = lambda self, value: setattr(self, "_clock", value)
+            type_name = "bool",
+            getter    = lambda self: self._clock,
+            setter    = lambda self, value: setattr(self, "_clock", value)
         )
     }
 

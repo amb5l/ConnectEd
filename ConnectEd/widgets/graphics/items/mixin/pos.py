@@ -11,16 +11,16 @@ class ItemPosMixin:
     # class attributes
     _INHERENT_PROPERTIES_POS = {
         "X" : PropertySpec(
-            kind   = "float",
-            valid  = lambda self: self.pos() != QPointF(0, 0),
-            getter = lambda self: self.pos().x(),
-            setter = lambda self, value: self.setX(value)
+            type_name = "float",
+            valid     = lambda self: self.pos() != QPointF(0, 0),
+            getter    = lambda self: self.pos().x(),
+            setter    = lambda self, value: self.setX(value)
         ),
         "Y" : PropertySpec(
-            kind   = "float",
-            valid  = lambda self: self.pos() != QPointF(0, 0),
-            getter = lambda self: self.pos().y(),
-            setter = lambda self, value: self.setY(value)
+            type_name = "float",
+            valid     = lambda self: self.pos() != QPointF(0, 0),
+            getter    = lambda self: self.pos().y(),
+            setter    = lambda self, value: self.setY(value)
         )
     }
 

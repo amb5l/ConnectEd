@@ -51,14 +51,14 @@ class BaseRectangleMixin(
         ItemRotateMixin._INHERENT_PROPERTIES_ROTATE | \
         {
             "Width" : PropertySpec(
-                kind   = "float",
-                getter = lambda self: self.rect().width(),
-                setter = lambda self, value: self.setWidth(value)
+                type_name = "float",
+                getter    = lambda self: self.rect().width(),
+                setter    = lambda self, value: self.setWidth(value)
             ),
             "Height" : PropertySpec(
-                kind   = "float",
-                getter = lambda self: self.rect().height(),
-                setter = lambda self, value: self.setHeight(value)
+                type_name = "float",
+                getter    = lambda self: self.rect().height(),
+                setter    = lambda self, value: self.setHeight(value)
             )
         } | \
         ItemLineMixin._INHERENT_PROPERTIES_LINE | \

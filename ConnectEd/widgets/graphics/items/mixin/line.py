@@ -7,9 +7,9 @@ from PyQt6.QtGui  import QPen, QColor
 
 from .....app import logger, settings
 
-from ...property import PropertySpec
+from ...properties import PropertySpec
 
-from .. import Default, DEFAULT, NoChange, NO_CHANGE
+from .. import Default, DEFAULT
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -32,25 +32,25 @@ class ItemLineMixin:
     # class attributes
     _INHERENT_PROPERTIES_LINE = {
         "Line Color" : PropertySpec(
-            kind    = "QColor",
-            valid   = lambda self: self.lineColor() is not DEFAULT,
-            getter  = lambda self: self.lineColor(),
-            setter  = lambda self, value: self.setLineColor(value),
-            default = lambda self: self.defaultLineColor()
+            type_name = "QColor",
+            valid     = lambda self: self.lineColor() is not DEFAULT,
+            getter    = lambda self: self.lineColor(),
+            setter    = lambda self, value: self.setLineColor(value),
+            default   = lambda self: self.defaultLineColor()
         ),
         "Line Width" : PropertySpec(
-            kind    = "LineWidth",  # a "subtype" of float - see str2val
-            valid   = lambda self: self.lineWidth() is not DEFAULT,
-            getter  = lambda self: self.lineWidth(),
-            setter  = lambda self, value: self.setLineWidth(value),
-            default = lambda self: self.defaultLineWidth()
+            type_name = "LineWidth",  # a "subtype" of float - see str2val
+            valid     = lambda self: self.lineWidth() is not DEFAULT,
+            getter    = lambda self: self.lineWidth(),
+            setter    = lambda self, value: self.setLineWidth(value),
+            default   = lambda self: self.defaultLineWidth()
         ),
         "Line Style" : PropertySpec(
-            kind    = "PenStyle",
-            valid   = lambda self: self.lineStyle() is not DEFAULT,
-            getter  = lambda self: self.lineStyle(),
-            setter  = lambda self, value: self.setLineStyle(value),
-            default = lambda self: self.defaultLineStyle()
+            type_name = "PenStyle",
+            valid     = lambda self: self.lineStyle() is not DEFAULT,
+            getter    = lambda self: self.lineStyle(),
+            setter    = lambda self, value: self.setLineStyle(value),
+            default   = lambda self: self.defaultLineStyle()
         )
     }
 

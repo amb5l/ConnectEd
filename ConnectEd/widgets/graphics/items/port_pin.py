@@ -35,25 +35,25 @@ class PortPinMixin(
     _INHERENT_PROPERTIES_NAME = \
         {
             "Name" : PropertySpec(
-                getter = lambda self: self._name,
-                setter = lambda self, value: setattr(self, "_name", value),
-                text   = PropertyTextSpec("Name", origin="Middle Left")
+                getter    = lambda self: self._name,
+                setter    = lambda self, value: setattr(self, "_name", value),
+                text      = PropertyTextSpec("Name", origin="Middle Left")
             )
         }
     _INHERENT_PROPERTIES_DIR = \
         {
             "Dir" : PropertySpec(
-                kind   = "SignalDirection",
-                getter = lambda self: self._direction,
-                setter = lambda self, value: setattr(self, "_direction", value)
+                type_name = "SignalDirection",
+                getter    = lambda self: self._direction,
+                setter    = lambda self, value: setattr(self, "_direction", value)
             )
         }
     _INHERENT_PROPERTIES_COMMENT = \
         {
             "Comment" : PropertySpec(
-                valid  = lambda self: self._comment != "",
-                getter = lambda self: self._comment,
-                setter = lambda self, value: setattr(self, "_comment", value)
+                valid     = lambda self: self._comment != "",
+                getter    = lambda self: self._comment,
+                setter    = lambda self, value: setattr(self, "_comment", value)
             )
         }
 
