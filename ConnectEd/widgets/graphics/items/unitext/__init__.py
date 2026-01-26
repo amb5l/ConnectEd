@@ -334,55 +334,55 @@ class UniTextItem(
             view.action(
                 "Top Left",
                 lambda: view.ui.editTextBlock(self, anchor="Top Left"),
-                checked = self.getOrigin() == "Top Left",
+                checked = self.origin() == "Top Left",
                 icon = AnchorTopLeftIcon().get()
             ),
             view.action(
                 "Top Center",
                 lambda: view.ui.editTextBlock(self, anchor="Top Center"),
-                checked = self.getOrigin() == "Top Center",
+                checked = self.origin() == "Top Center",
                 icon = AnchorTopCenterIcon().get()
             ),
             view.action(
                 "Top Right",
                 lambda: view.ui.editTextBlock(self, anchor="Top Right"),
-                checked = self.getOrigin() == "Top Right",
+                checked = self.origin() == "Top Right",
                 icon = AnchorTopRightIcon().get()
             ),
             view.action(
                 "Middle Left",
                 lambda: view.ui.editTextBlock(self, anchor="Middle Left"),
-                checked = self.getOrigin() == "Middle Left",
+                checked = self.origin() == "Middle Left",
                 icon = AnchorMiddleLeftIcon().get()
             ),
             view.action(
                 "Middle Center",
                 lambda: view.ui.editTextBlock(self, anchor="Middle Center"),
-                checked = self.getOrigin() == "Middle Center",
+                checked = self.origin() == "Middle Center",
                 icon = AnchorMiddleCenterIcon().get()
             ),
             view.action(
                 "Middle Right",
                 lambda: view.ui.editTextBlock(self, anchor="Middle Right"),
-                checked = self.getOrigin() == "Middle Right",
+                checked = self.origin() == "Middle Right",
                 icon = AnchorMiddleRightIcon().get()
             ),
             view.action(
                 "Bottom Left",
                 lambda: view.ui.editTextBlock(self, anchor="Bottom Left"),
-                checked = self.getOrigin() == "Bottom Left",
+                checked = self.origin() == "Bottom Left",
                 icon = AnchorBottomLeftIcon().get()
             ),
             view.action(
                 "Bottom Center",
                 lambda: view.ui.editTextBlock(self, anchor="Bottom Center"),
-                checked = self.getOrigin() == "Bottom Center",
+                checked = self.origin() == "Bottom Center",
                 icon = AnchorBottomCenterIcon().get()
             ),
             view.action(
                 "Bottom Right",
                 lambda: view.ui.editTextBlock(self, anchor="Bottom Right"),
-                checked = self.getOrigin() == "Bottom Right",
+                checked = self.origin() == "Bottom Right",
                 icon = AnchorBottomRightIcon().get()
             )
         ])

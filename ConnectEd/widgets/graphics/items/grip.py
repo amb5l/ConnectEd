@@ -131,7 +131,7 @@ class MoveGripItem(OriginGripItem):
             view.action("Move", lambda: view.ui.editMove([self._item], self.scenePos()))
         ]
         item : "ItemOriginMixin" = self.item()
-        if item.getOrigin() is not None:
+        if item.origin() is not None:
             h : HandleItem = self.parentItem()
             entries.extend([
                 view.separator(),

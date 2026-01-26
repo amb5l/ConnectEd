@@ -176,7 +176,7 @@ class PropertyTextItem(UniTextItem):
                 return settings_name
         return "PropertyText"
 
-    def getCleat(self : Self) -> str | None:
+    def cleat(self : Self) -> str | None:
         return self._cleat
 
     def setCleat(self : Self, name : str) -> None:

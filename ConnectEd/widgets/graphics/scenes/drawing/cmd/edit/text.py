@@ -78,7 +78,7 @@ class CmdEditText(CmdSceneItem):
             item.text(),
             item.block(),
             item.rotcomp(),
-            item.getOrigin(),
+            item.origin(),
             item.alignH(),
             item.alignV(),
             item.width(),

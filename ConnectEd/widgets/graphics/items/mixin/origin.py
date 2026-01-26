@@ -35,7 +35,7 @@ class ItemOriginMixin:
             raise ValueError("ItemOriginMixin requires _ORIGIN_NAME")
         self.setOrigin(self._ORIGIN_NAME)
 
-    def getOrigin(self : Self) -> str:
+    def origin(self : Self) -> str:
         return self._origin
 
     def setOrigin(

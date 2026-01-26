@@ -78,7 +78,7 @@ class TextItemDialog(QDialog):
         self._left_layout.addWidget(self._align_group_box)
         # origin section
         self._origin_group_box = QGroupBox("Origin")
-        self._origin_layout = OriginLayout(item.getOrigin())
+        self._origin_layout = OriginLayout(item.origin())
         self._origin_group_box.setLayout(self._origin_layout)
         # done
         self._left_layout.addWidget(self._origin_group_box)

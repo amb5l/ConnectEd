@@ -68,7 +68,7 @@ class ItemXmlMixin:
                     child.setParentItem(instance)
                 elif item_name == "PropertyText":
                     child : "PropertyTextItem" = PropertyTextItem.fromXml(xr)
-                    child.setParentItem(instance.getHandle(child.getCleat()))
+                    child.setParentItem(instance.getHandle(child.cleat()))
                     prop_name = child.name()
                     if prop_name in instance.properties:
                         instance.properties[prop_name].setText(child)

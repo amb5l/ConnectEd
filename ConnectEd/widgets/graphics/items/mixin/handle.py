@@ -67,7 +67,7 @@ class ItemRectHandlesMixin(ItemHandlesMixin):
         h = rect.height()
         for name, (x, y) in self._AP_RECT.items():
             self._handles[name].setPos(QPointF(x0 + (x * w), y0 + (y * h)))
-        if self.getOrigin() is not None:
+        if self.origin() is not None:
             self.updateOrigin()
 
     def updateHandlePaths(self : Self) -> None:

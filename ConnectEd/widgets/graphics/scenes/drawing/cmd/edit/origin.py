@@ -21,7 +21,7 @@ class CmdEditOrigin(CmdSceneItem):
         ap_name : str
     ):
         super().__init__(scene, item)
-        self._before = item.getOrigin()
+        self._before = item.origin()
         self._after = ap_name
 
     def redo(self : Self) -> None:
