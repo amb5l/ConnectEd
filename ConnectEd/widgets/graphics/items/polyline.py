@@ -181,10 +181,10 @@ class PolylineItem(
         pos      : QPointF | None = None,
         vertices : list[QPointF] = [],
         closed   : bool = False,
-        bare     : bool = False
+        fresh    : bool = True
     ) -> None:
         super().__init__()
-        self.initItem(bare=bare)
+        self.initItem(fresh)
         self.setPos(pos or QPointF())
         # initialize vertices and segments
         self._vertices = []
@@ -421,7 +421,7 @@ class PolylineItem(
 
     @classmethod
     def fromXml(cls : Self, xr : QXmlStreamReader) -> Self:
-        instance : "PolylineItem" = cls(bare=True)
+        instance : "PolylineItem" = cls(fresh=False)
         fromXmlAttrs(instance, xr)
         # deserialise segments
         while not (xr.isEndElement() and xr.name() == cls.__name__):

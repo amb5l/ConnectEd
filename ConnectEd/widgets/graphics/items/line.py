@@ -65,13 +65,13 @@ class LineItem(
     _line    : QLineF
 
     def __init__(
-        self : Self,
-        p1   : QPointF | None = None,
-        p2   : QPointF | None = None,
-        bare : bool = False
+        self  : Self,
+        p1    : QPointF | None = None,
+        p2    : QPointF | None = None,
+        fresh : bool = True
     ) -> None:
         QGraphicsLineItem.__init__(self)
-        self.initItem(bare=bare)
+        self.initItem(fresh)
         p1 = p1 or QPointF()
         p2 = p2 or p1
         self._line = QLineF()

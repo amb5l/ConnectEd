@@ -104,10 +104,10 @@ class PropertyTextItem(UniTextItem):
         cleat  : str | None           = None,
         pos    : QPointF | None       = None,
         origin : str | None           = None,
-        bare   : bool                 = False,
+        fresh  : bool                 = True,
         parent : QGraphicsItem | None = None
     ) -> None:
-        super().__init__(bare=bare, parent=parent)
+        super().__init__(fresh=fresh, parent=parent)
         self._tether = TetherItem(self)
         self._name = name
         self.setCleat(cleat)

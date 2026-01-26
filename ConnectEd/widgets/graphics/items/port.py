@@ -40,10 +40,10 @@ class PortItem(
     def __init__(
         self   : Self,
         parent : QGraphicsItem | None = None,
-        bare   : bool = False
+        fresh  : bool = True
     ) -> None:
         QGraphicsPathItem.__init__(self, parent)
-        self.initPortPin(bare)
+        self.initPortPin(fresh)
         self.onSettingsChange()
 
     def onSettingsChange(self : Self) -> None:

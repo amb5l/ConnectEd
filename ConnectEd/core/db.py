@@ -99,9 +99,9 @@ class DrawingNode(Node):
     def __init__(
         self  : Self,
         scene : "DrawingScene | None" = None,
-        bare  : bool = False
+        fresh : bool = True
     ) -> None:
-        if scene is None and not bare:
+        if fresh and scene is None:
             scene_class = self.__class__.sceneClass()
             scene = scene_class()
             scene.setName(name_counter.get(self.drawingKind()))
@@ -262,12 +262,12 @@ class DesignDbNode(DbNode):
     _scene   : "DiagramScene | None"
 
     def __init__(
-        self : Self,
-        name : str | None = None,
-        bare : bool = False
+        self  : Self,
+        name  : str | None = None,
+        fresh : bool = True
     ) -> None:
         from ..widgets.graphics.scenes.diagram import DiagramScene
-        self._scene = None if bare else DiagramScene()
+        self._scene = None if fresh else DiagramScene()
         super().__init__(name)
         self.setIcon(DiagramIcon().get())
 

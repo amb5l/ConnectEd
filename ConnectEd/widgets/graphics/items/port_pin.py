@@ -63,14 +63,14 @@ class PortPinMixin(
     _comment   : str
     _entry     : EntryItem
 
-    def initPortPin(self : Self, bare : bool = False) -> None:
+    def initPortPin(self : Self, fresh : bool) -> None:
         # Initialize attributes that properties will access
         self._name      = ""
         self._direction = SignalDirection.IN
         self._range     = None
         self._comment   = ""
         # Initialize the item (this sets up properties system)
-        self.initItem(bare)
+        self.initItem(fresh)
         # Initialize the entry
         self._entry = EntryItem(self)
 

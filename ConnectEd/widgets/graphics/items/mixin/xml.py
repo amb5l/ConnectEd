@@ -44,7 +44,7 @@ class ItemXmlMixin:
 
     @classmethod
     def fromXml(cls : Self, xr : QXmlStreamReader) -> Self:
-        instance : "ItemMixin | PropertiesMixin" = cls(bare=True)
+        instance : "ItemMixin | PropertiesMixin" = cls(fresh=False)
         fromXmlAttrs(instance, xr)
         if hasattr(instance, "onGeometryChange"):
             instance.onGeometryChange()

@@ -33,7 +33,7 @@ class ItemMixin(ItemSettingsMixin, ItemMoveMixin):
     _uuid : str
     a     : "Appearance | None"
 
-    def initItem(self : Self | QGraphicsItem, bare : bool = False) -> None:
+    def initItem(self : Self | QGraphicsItem, fresh : bool = True) -> None:
         from ...properties import PropertiesMixin
         from .origin  import ItemOriginMixin
         from .handle  import ItemHandlesMixin
@@ -79,7 +79,7 @@ class ItemMixin(ItemSettingsMixin, ItemMoveMixin):
         if isinstance(self, ItemShapeMixin):
             self.initShape()
         if isinstance(self, PropertiesMixin):
-            self.initProperties(bare)
+            self.initProperties(fresh)
 
     def __hash__(self : Self | QGraphicsItem):
         return hash(self._uuid)

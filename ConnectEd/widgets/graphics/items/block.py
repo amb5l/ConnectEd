@@ -43,15 +43,15 @@ class BlockItem(BaseRectangleItem):
     _path  : str
 
     def __init__(
-        self : Self,
-        p1   : QPointF | None = None,
-        p2   : QPointF | None = None,
-        bare : bool = False
+        self  : Self,
+        p1    : QPointF | None = None,
+        p2    : QPointF | None = None,
+        fresh : bool = True
     ) -> None:
         self._label = ""
         self._name = ""
         self._path = ""
-        super().__init__(p1, p2, bare)
+        super().__init__(p1, p2, fresh)
 
     def onGeometryChange(self : Self) -> None:
         super().onGeometryChange()

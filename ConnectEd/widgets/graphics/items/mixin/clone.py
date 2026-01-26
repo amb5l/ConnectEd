@@ -15,7 +15,7 @@ class ItemCloneMixin:
         from ..property_text import PropertyTextMixin
         from ..base_pin      import BasePinItem
         source : "ItemType" = original if original is not None else self
-        clone_item : "ItemType" = self.__class__(bare=True)
+        clone_item : "ItemType" = self.__class__(fresh=False)
         # clone properties
         if hasattr(source, "properties"):
             for name, source_prop in source.properties.items():

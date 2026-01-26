@@ -67,19 +67,19 @@ class BaseRectangleMixin(
 
     @overload
     def __init__(
-        self : Self,
-        p1   : QPointF | None = None,
-        p2   : QPointF | None = None,
-        bare : bool = False
+        self  : Self,
+        p1    : QPointF | None = None,
+        p2    : QPointF | None = None,
+        fresh : bool = True
     ) -> None:
         ...
 
     @overload
     def __init__(
-        self : Self,
-        pos  : QPointF | None = None,
-        size : QSizeF | None = None,
-        bare : bool = False
+        self  : Self,
+        pos   : QPointF | None = None,
+        size  : QSizeF | None = None,
+        fresh : bool = True
     ) -> None:
         ...
 
@@ -87,10 +87,10 @@ class BaseRectangleMixin(
         self       : Self,
         p1_or_pos  : QPointF | None = None,
         p2_or_size : QPointF | QSizeF | None = None,
-        bare       : bool = False
+        fresh      : bool = True
     ) -> None:
         super().__init__()
-        self.initItem(bare=bare)
+        self.initItem(fresh)
         p1_or_pos = p1_or_pos or QPointF()
         p2_or_size = p2_or_size or QSizeF(0, 0)
         if isinstance(p2_or_size, QSizeF):

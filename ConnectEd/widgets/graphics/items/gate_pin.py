@@ -47,9 +47,9 @@ class GatePinItem(
     _length : float
 
     def __init__(
-        self : Self,
+        self   : Self,
         parent : QGraphicsItem | None = None,
-        bare : bool = False  # unused
+        fresh  : bool = True  # unused
     ) -> None:
         self._length = PITCH
         super().__init__(parent)

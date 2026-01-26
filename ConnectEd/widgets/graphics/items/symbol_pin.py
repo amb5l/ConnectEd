@@ -45,9 +45,9 @@ class SymbolPinItem(
     def __init__(
         self   : Self,
         parent : QGraphicsItem | None = None,
-        bare   : bool = False
+        fresh  : bool = True
     ) -> None:
-        super().__init__(parent, bare)
+        super().__init__(parent, fresh)
 
     def moveHandleBy(self : Self, _ : str, delta : QPointF) -> None:
         """Move the entire SymbolPin when any grip is dragged."""

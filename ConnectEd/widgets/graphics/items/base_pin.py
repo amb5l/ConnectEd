@@ -83,10 +83,10 @@ class BasePinItem(ItemPaintMixin, PortPinMixin, QGraphicsPathItem):
     def __init__(
         self   : Self,
         parent : QGraphicsItem | None = None,
-        bare   : bool = False
+        fresh  : bool = True
     ) -> None:
         QGraphicsPathItem.__init__(self, parent)
-        self.initPortPin(bare)
+        self.initPortPin(fresh)
         self._setPath()
         self._entry.setPos(-PITCH, 0)
         if self._ARROW_CLASS is not None:

@@ -83,16 +83,16 @@ class PropertiesMixin:
     _custom_properties   : dict[str, Text]
     _property_signallers : dict[str, PropertySignaller]
 
-    def initProperties(self : Self, bare : bool = False) -> None:
+    def initProperties(self : Self, fresh : bool) -> None:
         """
         Initialize the properties system for this instance.
         """
         self._custom_properties   = {}
         self._property_signallers = {}
-        if bare:
+        if not fresh:
             return
         for name, spec in self._INHERENT_PROPERTIES.items():
-            if not bare and spec.display is not None:
+            if fresh and spec.display is not None:
                 property_text = PropertyTextItem(
                     name   = name,
                     cleat  = spec.display.anchor,

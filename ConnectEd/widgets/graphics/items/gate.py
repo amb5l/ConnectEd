@@ -63,10 +63,10 @@ class BaseGateItem(
     # instance attributes
     _label  : str
 
-    def __init__(self : Self, bare : bool = False) -> None:
+    def __init__(self : Self, fresh : bool = True) -> None:
         self._label = ""
         super().__init__()
-        self.initItem(bare)
+        self.initItem(fresh)
         self.initPath()
 
     def settingsName(self : Self) -> str:
@@ -117,8 +117,8 @@ class BufGateItem(BaseGateItem):
     _input  : GatePinItem
     _output : GatePinItem
 
-    def __init__(self : Self, bare : bool = False) -> None:
-        super().__init__(bare)
+    def __init__(self : Self, fresh : bool = True) -> None:
+        super().__init__(fresh)
         self.setOutput()
         self.setInput()
 
@@ -233,9 +233,9 @@ class GateItem(BaseGateItem):
     _inputs : list[GatePinItem]
     _output : GatePinItem
 
-    def __init__(self : Self, width : int | None = None, bare : bool = False) -> None:
-        super().__init__(bare)
-        if not bare:
+    def __init__(self : Self, width : int | None = None, fresh : bool = True) -> None:
+        super().__init__(fresh)
+        if fresh:
             self.setOutput()
             if width is not None:
                 self.setInputs("H" * width)
