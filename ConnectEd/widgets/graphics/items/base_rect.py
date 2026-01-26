@@ -6,8 +6,7 @@ from PyQt6.QtGui     import QAction
 
 from ....core.defs import PITCH
 
-from ..property   import PropertySpec
-from ..properties import PropertiesMixin
+from ..properties import PropertiesMixin, PropertySpec
 
 from .mixin        import ItemMixin
 from .mixin.origin import ItemOriginMixin

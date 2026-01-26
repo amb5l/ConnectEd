@@ -95,11 +95,7 @@ class LineItem(
         stroker_path = stroker.createStroke(line_path)
         self._hshape = stroker_path
         self.updateHandles()
-        if hasattr(self, "properties"):
-            self.properties["X1"].changed.emit(self.x1())
-            self.properties["Y1"].changed.emit(self.y1())
-            self.properties["X2"].changed.emit(self.x2())
-            self.properties["Y2"].changed.emit(self.y2())
+        self.updateProperties(["X1", "Y1", "X2", "Y2"])
 
     def initHandles(self : Self) -> None:
         self._handles = {

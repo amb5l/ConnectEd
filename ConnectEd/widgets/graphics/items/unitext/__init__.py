@@ -215,8 +215,7 @@ class UniTextItem(
         self._child.setText(text)
         self._child.onGeometryChange()
         self.updateHandlePositions()
-        if "Text" in self.properties:
-            self.properties["Text"].changed.emit(text)
+        self.updateProperties("Text")
 
     def alignH(self : Self) -> AlignH:
         return self._align_h
@@ -241,8 +240,7 @@ class UniTextItem(
             self._child.onGeometryChange()
         self.updateHandlePositions()
         self.updateHandlePaths()
-        if "Width" in self.properties:
-            self.properties["Width"].changed.emit(self._width)
+        self.updateProperties(["Width"])
 
     def height(self : Self) -> float | None:
         return self._height
@@ -253,8 +251,7 @@ class UniTextItem(
             self._child.onGeometryChange()
         self.updateHandlePositions()
         self.updateHandlePaths()
-        if "Height" in self.properties:
-            self.properties["Height"].changed.emit(self._height)
+        self.updateProperties(["Height"])
 
     def color(self : Self) -> QColor:
         return self._child.color()

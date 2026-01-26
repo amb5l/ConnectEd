@@ -16,17 +16,10 @@ if TYPE_CHECKING:
     from .scenes.drawing import DrawingScene
     from .items import ItemType
     from .items.property_text import PropertyTextItem, PropertyTextSpec
-    PropertyOwner = ItemType | DrawingScene
+    
 
 
-@dataclass
-class PropertySpec:
-    kind    : str                                            = "str"
-    valid   : Callable[["PropertyOwner"], bool]      | None  = None  # for XML
-    getter  : Callable[["PropertyOwner"], Any] | str | None  = None
-    setter  : Callable[["PropertyOwner", Any], None] | None  = None
-    default : Callable[["PropertyOwner"], Any]       | None  = None
-    text    : "PropertyTextSpec                      | None" = None
+
 
 
 @dataclass
@@ -189,7 +182,7 @@ class Property(QObject):
         # Disconnect from old property text if exists
         if self._text is not None:
             try:
-                self.changed.disconnect(self._text.onNameChange)
+                self.changed.disconnect(self._text.onTextChange)
             except TypeError:
                 pass
         # If removing property text, delete it from scene
@@ -200,7 +193,7 @@ class Property(QObject):
         self._text = text
         # Connect to new property text if provided
         if text is not None:
-            self.changed.connect(text.onNameChange)
+            self.changed.connect(text.onTextChange)
 
     def getState(self : Self) -> "PropertyState":
         if self._text:
@@ -277,7 +270,7 @@ class Property(QObject):
                 def update_slot(_value=None):
                     # Update text display if present
                     if self._text is not None:
-                        self._text.onNameChange()
+                        self._text.onTextChange()
                     # Propagate change signal for chained dependencies
                     self.changed.emit(self.get(subscribe=False))
                 prop_dep.changed.connect(update_slot)

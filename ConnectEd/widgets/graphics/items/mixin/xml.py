@@ -72,7 +72,7 @@ class ItemXmlMixin:
                     prop_name = child.name()
                     if prop_name in instance.properties:
                         instance.properties[prop_name].setText(child)
-                    child.onNameChange()
+                    child.onTextChange()
                     child.onSceneRotationChange()
                 else:
                     logger().warning(f"Unexpected child element: {item_name}")

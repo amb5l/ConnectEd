@@ -95,23 +95,20 @@ class PortPinMixin(
 
     def setName(self : Self, value : str) -> None:
         self._name = value
-        if hasattr(self, "properties") and "Name" in self.properties:
-            self.properties["Name"].changed.emit(value)
+        self.updateProperties("Name")
 
     def direction(self : Self) -> SignalDirection:
         return self._direction
 
     def setDirection(self : Self, value : SignalDirection) -> None:
         self._direction = value
-        if hasattr(self, "properties") and "Direction" in self.properties:
-            self.properties["Dir"].changed.emit(value)
+        self.updateProperties("Dir")
 
     def comment(self : Self) -> str:
         return self._comment
 
     def setComment(self : Self, value : str) -> None:
         self._comment = value
-        if hasattr(self, "properties") and "Comment" in self.properties:
-            self.properties["Comment"].changed.emit(value)
+        self.updateProperties("Comment")
 
     ############################################################################

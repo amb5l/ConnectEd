@@ -31,11 +31,7 @@ class ItemPosMixin:
         self : Self | QGraphicsItem | PropertiesMixin,
         _pos : QPointF | None = None
     ) -> None:
-        if hasattr(self, "properties"):
-            if "X" in self.properties:
-                self.properties["X"].changed.emit(self.pos().x())
-            if "Y" in self.properties:
-                self.properties["Y"].changed.emit(self.pos().y())
+        self.updateProperties(["X", "Y"])
 
     @overload
     def moveBy(self : Self | QGraphicsItem, dx : float, dy : float) -> None:

@@ -100,13 +100,14 @@ class PropertyTextItem(UniTextItem):
 
     def __init__(
         self   : Self,
-        name   : str | None     = None,
-        cleat  : str | None     = None,
-        pos    : QPointF | None = None,
-        origin : str | None     = None,
-        bare   : bool           = False
+        name   : str | None           = None,
+        cleat  : str | None           = None,
+        pos    : QPointF | None       = None,
+        origin : str | None           = None,
+        bare   : bool                 = False,
+        parent : QGraphicsItem | None = None
     ) -> None:
-        super().__init__(bare=bare)
+        super().__init__(bare=bare, parent=parent)
         self._tether = TetherItem(self)
         self._name = name
         self.setCleat(cleat)
@@ -135,7 +136,7 @@ class PropertyTextItem(UniTextItem):
         self.onSettingsChange()
 
     def onParentChange(self : Self, _parent : QGraphicsItem | None) -> None:
-        self.onNameChange()
+        self.onTextChange()
 
     def onPositionChange(
         self : Self,
@@ -162,7 +163,7 @@ class PropertyTextItem(UniTextItem):
         """Rotation compensation not currently supported."""
         pass
 
-    def onNameChange(self : Self) -> None:
+    def onTextChange(self : Self) -> None:
         value = self.value()
         text = f"<{self.name()}>" if value == "" else value
         super().setText(text)
@@ -204,7 +205,7 @@ class PropertyTextItem(UniTextItem):
 
     def setName(self : Self, name : str) -> None:
         self._name = name
-        self.onNameChange()
+        self.onTextChange()
 
     def value(self : Self) -> str:
         source = self.scene() if self.parentItem() is None else self.item()
@@ -217,6 +218,7 @@ class PropertyTextItem(UniTextItem):
             return
         source = self.scene() if self.parentItem() is None else self.item()
         source.properties[self._name].set(value)
+        shit
 
     def paint(self, painter, option, widget) -> None:
         from PyQt6.QtGui import QPen
@@ -249,11 +251,3 @@ class PropertyTextItem(UniTextItem):
             view.action("Properties...", lambda: view.ui.editItemProperties(self))
         ]
         return items
-
-
-@dataclass
-class PropertyTextSpec:
-    anchor  : str
-    pos     : QPointF | None = None
-    origin  : str | None = None
-    block   : bool = False

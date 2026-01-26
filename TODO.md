@@ -1,29 +1,32 @@
-self._cpos = self._ipos = copy_pos or pos
-pos if copy_pos is None else copy_pos
-MoveItemsMixin - grips moveSave/moveRestore
+implement new property text
+
+properties - add support for virtual/system properties
+ Path derived: PathFileBase, PathFileName, PathFileExt, PathDir
+ System: Date, Time
+
+
+
+
+
+check property and properties editing
+ratsnest?
+wire segment dragging
+connections/wires from ports touching
+appearance of zero length wires
+netlisting
+
 UniText class (string + block bool)
-text dialog : origin assignment
 dialog components assume attribute names
-Family => Font
 rectangle context menu - set Origin
-hollow grips for text indicate unconstrained size
-
-create new Text class, with TextLine/TextBlock children
-  - pos, rotate handled by parent
-  - origin (translation) and rotation compensation handled by child
 
 
 
-QStandardItem => Cell??? better name?
+
 combo box user data
 eliminate QuillPrefChange
 Quill _pen attribute?
-Family => Font
-origin => anchor
+origin => anchor NO anchor => origin
 handle BaseTextBlock width/height = 0
-
-use of "or" to avoid if/else on None
-lose rotcomp_wip?
 
 editing Port name doesn't look right
 lots of calls to BaseTextLine.onGeometryChange to be traced
