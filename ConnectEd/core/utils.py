@@ -83,21 +83,6 @@ def typeCheck(x : Any, t : type) -> None:
     return True
 
 
-T = TypeVar('T')
-
-def getItemOfType(
-    items : list[Any],
-    types : type[T] | tuple[type[T], ...]
-) -> T | None:
-    """Get the first item of the specified type."""
-    types = (types,) if isinstance(types, type) else types
-    for t in types:
-        item = next((item for item in items if isinstance(item, t)), None)
-        if item is not None:
-            return item
-    return None
-
-
 def itemsTypeDict(items : list[Any]) -> dict[type, list[Any]]:
     """Group items by their type."""
     result: defaultdict[type, list[Any]] = defaultdict(list)
