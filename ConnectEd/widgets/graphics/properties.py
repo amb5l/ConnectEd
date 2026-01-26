@@ -92,7 +92,7 @@ class PropertiesMixin:
         if not fresh:
             return
         for name, spec in self._INHERENT_PROPERTIES.items():
-            if fresh and spec.display is not None:
+            if spec.display is not None:
                 property_text = PropertyTextItem(
                     name   = name,
                     cleat  = spec.display.anchor,
