@@ -2,12 +2,10 @@ from typing import Self
 
 from PyQt6.QtCore import QPointF
 
-from ..property   import PropertySpec
-from ..properties import PropertiesMixin
+from ..properties import PropertyTextSpec, PropertySpec, PropertiesMixin
 
 from . import SignalDirection
 
-from .property_text import PropertyTextSpec
 from .handle        import HandleItem
 from .entry         import EntryItem
 

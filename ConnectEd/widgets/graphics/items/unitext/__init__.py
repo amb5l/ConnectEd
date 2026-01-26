@@ -2,7 +2,7 @@
 # parent handles origin, position, rotation
 # child handles rotation compensation
 
-from typing import Self, overload
+from typing import Self
 
 from PyQt6.QtCore    import QPointF, QRectF
 from PyQt6.QtWidgets import QGraphicsItem, QMenu
@@ -24,8 +24,7 @@ from .....resources.icons import AnchorTopLeftIcon,      \
                                  TextAlignMiddleIcon,    \
                                  TextAlignBottomIcon
 
-from ...property   import PropertySpec
-from ...properties import PropertiesMixin
+from ...properties import PropertySpec, PropertiesMixin
 
 from .. import Default, DEFAULT, AlignH, AlignV
 

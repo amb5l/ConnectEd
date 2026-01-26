@@ -3,8 +3,7 @@ from typing import Self
 from PyQt6.QtCore    import QPointF
 from PyQt6.QtWidgets import QGraphicsItem
 
-from ...property   import PropertySpec
-from ...properties import PropertiesMixin
+from ...properties import PropertySpec, PropertiesMixin
 
 
 class ItemRotateMixin:

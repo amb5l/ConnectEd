@@ -6,7 +6,7 @@ from PyQt6.QtGui     import QAction, QPainterPath
 
 from ....core.defs import PITCH
 
-from ..property import PropertySpec
+from ..properties import PropertySpec
 
 from .mixin.pos    import ItemPosMixin
 from .mixin.rotate import ItemRotateMixin

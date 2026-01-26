@@ -5,8 +5,7 @@ from PyQt6.QtCore    import QPointF
 from PyQt6.QtWidgets import QGraphicsPathItem, QMenu
 from PyQt6.QtGui     import QAction
 
-from ..property   import PropertySpec
-from ..properties import PropertiesMixin
+from ..properties import PropertySpec, PropertiesMixin
 
 from ..painter_path import PainterPath
 

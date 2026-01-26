@@ -11,8 +11,7 @@ from .....app import logger, settings
 
 from .....core.xml import toXmlAttrs, fromXmlAttrs
 
-from ...property   import PropertySpec
-from ...properties import PropertiesMixin
+from ...properties import PropertySpec, PropertiesMixin
 
 from .api        import DrawingSceneApiMixin
 from .grips      import DrawingSceneGripsMixin

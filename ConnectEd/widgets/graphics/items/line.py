@@ -6,8 +6,7 @@ from PyQt6.QtGui     import QPainterPath, QPainterPathStroker
 
 from ....app import settings
 
-from ..property   import PropertySpec
-from ..properties import PropertiesMixin
+from ..properties import PropertySpec, PropertiesMixin
 
 from .handle import HandleItem
 

@@ -4,8 +4,7 @@ from PyQt6.QtCore    import QPointF
 from PyQt6.QtWidgets import QGraphicsItem
 from PyQt6.QtGui     import QTransform
 
-from ...property   import PropertySpec
-from ...properties import PropertiesMixin
+from ...properties import PropertySpec, PropertiesMixin
 
 class ItemPosMixin:
     # class attributes

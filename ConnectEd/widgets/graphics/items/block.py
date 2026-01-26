@@ -4,7 +4,7 @@ from PyQt6.QtCore    import QPointF
 from PyQt6.QtWidgets import QMenu
 from PyQt6.QtGui     import QAction
 
-from ..property import PropertySpec
+from ..properties import PropertySpec
 
 from .              import EdgeLoc, Edge
 from .base_rect     import BaseRectangleItem

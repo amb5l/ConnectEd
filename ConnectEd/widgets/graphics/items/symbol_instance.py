@@ -7,13 +7,12 @@ from ....app import logger
 
 from ....core.utils import registerClass
 
-from ..property import PropertySpec
+from ..properties import PropertyTextSpec, PropertySpec
 
 from ..scenes.symbol import SymbolScene
 
 from .base_rect        import BaseRectangleItem
 from .symbol_container import SymbolContainer
-from .property_text    import PropertyTextSpec
 
 from .mixin.pos        import ItemPosMixin
 from .mixin.rotate     import ItemRotateMixin

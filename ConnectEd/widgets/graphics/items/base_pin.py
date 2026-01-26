@@ -4,7 +4,7 @@ from PyQt6.QtWidgets import QGraphicsItem, QGraphicsPathItem
 
 from ....core.defs import PITCH
 
-from ..property import PropertySpec
+from ..properties import PropertySpec
 
 from . import SignalDirection
 

@@ -42,14 +42,10 @@ from ...app        import logger
 from ...core       import Text
 from ...core.utils import str2val
 
-from .items.property_text import PropertyTextItem
-
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from .property import PropertySpec
     from .scenes.drawing import DrawingScene
     from .items import ItemType
-    from .items.property_text import PropertyTextItem
     Owner = ItemType | DrawingScene
 
 
@@ -87,6 +83,7 @@ class PropertiesMixin:
         """
         Initialize the properties system for this instance.
         """
+        from .items.property_text import PropertyTextItem
         self._custom_properties   = {}
         self._property_signallers = {}
         if not fresh:
