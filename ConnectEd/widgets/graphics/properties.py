@@ -6,7 +6,7 @@ The properties system provides access to important attributes of items and
 scenes, to facilitate...
 - serialization and deserialization (to/from XML);
 - tabular editing (dialogs and spreadsheets);
-- embedding custom values.
+- adding user defined values.
 
 Property values may be displayed by PropertyTextItem instances. Property value
 changes are propagated to PropertyTextItem instances by signals.
@@ -38,9 +38,9 @@ import re
 
 from PyQt6.QtCore import QPointF, QObject, pyqtSignal
 
-from ...app import logger
-
-from ...core import Text
+from ...app        import logger
+from ...core       import Text
+from ...core.utils import str2val
 
 from .items.property_text import PropertyTextItem
 
@@ -87,19 +87,18 @@ class PropertiesMixin:
         """
         Initialize the properties system for this instance.
         """
-        from .items.property_text import PropertyTextItem
         self._custom_properties   = {}
         self._property_signallers = {}
         if bare:
             return
         for name, spec in self._PROPERTY_SPECS.items():
-            if not bare and spec.text is not None:
+            if not bare and spec.display is not None:
                 property_text = PropertyTextItem(
                     name   = name,
-                    cleat  = spec.text.anchor,
-                    pos    = spec.text.pos,
-                    origin = spec.text.origin,
-                    parent = self.getHandle(spec.text.anchor)
+                    cleat  = spec.display.anchor,
+                    pos    = spec.display.pos,
+                    origin = spec.display.origin,
+                    parent = self.getHandle(spec.display.anchor)  # type: ignore
                 )
                 property_text.onTextChange()
 
@@ -113,36 +112,59 @@ class PropertiesMixin:
     def getPropertyValue(
         self  : Self,
         name  : str,
+        slot  : Callable | None = None,  # e.g. PropertyTextItem.onTextChange
         trail : list[str] | None = None  # substitution recursion trail
     ) -> Any | None:
         """
         Get the value of a property. Supports substitution of other properties.
+        If a slot is provided, ensures that a property signaller exists and is
+        connected to it.
         Returns the value of the property if found, otherwise None.
         """
-        trail = trail or []
-        if len(trail) > 10:
-            name = trail[0]
-            logger().warning(f"Property '{name}' substitution recursion depth exceeded")
+        # substitution recursion trail = list of property names
+        trail = (trail or []) + [name]
+        # detect recursion issues
+        if name in trail:
+            logger().warning(
+                f"Property '{name}' substitution recursion loop detected: {trail}"
+            )
             return None
+        if len(trail) > 10:
+            logger().warning(
+                f"Property substitution recursion depth exceeded: {trail}"
+            )
+            return None
+        # connect the slot to the property signaller
+        if slot is not None:
+            if name not in self._property_signallers:
+                self._property_signallers[name] = PropertySignaller(self)
+            property_signaller = self._property_signallers[name]
+            if not property_signaller.changed.isSignalConnected(slot):
+                property_signaller.changed.connect(slot)
+        # inherent properties
         if name in self._PROPERTY_SPECS:
             spec = self._PROPERTY_SPECS[name]
             if spec.getter and callable(spec.getter):
-                return spec._getter(self)  # callable
+                return spec.getter(self)
             else:
-                logger().warning(f"Property '{name}' has no getter")
+                logger().warning(f"Property '{name}' has no getter: {trail}")
                 return None
+        # custom properties
         elif name in self._custom_properties:
-            raw = self._custom_properties[name]
-            # substitute
+            raw = self._custom_properties[name].text
+            # substitution
             def repl(match: re.Match) -> str:
                 var_name = match.group(1)
-                return self.getPropertyValue(var_name, trail + [name])
+                value = self.getPropertyValue(var_name, slot, trail)
+                return str2val(value) if value is not None else ""
             return re.sub(r'\{(\w+)\}', repl, raw)
-        else:
-            scene : "DrawingScene" = self.scene()
+        # scene properties
+        elif hasattr(self, "scene"):
+            scene : "DrawingScene | None" = self.scene()
             if scene and scene.hasProperty(name):
-                return scene.getPropertyValue(name)
-        logger().warning(f"Property '{name}' not found")
+                return scene.getPropertyValue(name, slot, trail)
+        # not found
+        logger().warning(f"Property '{name}' not found: {trail}")
         return None
 
     def setPropertyValue(self : Self, name : str, value : Any) -> bool:
@@ -159,10 +181,11 @@ class PropertiesMixin:
                 logger().warning(f"Property '{name}' is read-only")
                 return False
             spec.setter(self, value)
-            return True
         else:
-            self._custom_properties[name] = value
-            return True
+            self._custom_properties[name].text = str(value)
+        if name in self._property_signallers:
+            self._property_signallers[name].changed.emit()
+        return True
 
     def initProperty(self : Self, name : str, value : Any) -> bool:
         """
@@ -171,26 +194,8 @@ class PropertiesMixin:
         Returns True if the property was initialized, False otherwise.
         """
         if name not in self._PROPERTY_SPECS:
-            self._custom_properties[name] = ""
+            self._custom_properties[name] = Text("")
         return self.setPropertyValue(name, value)
-
-    def getPropertyTextValue(
-        self : Self,
-        name : str,
-        pt   : PropertyTextItem
-    ) -> str | None:
-        """
-        Get the value of a property, for a property text;
-        ensure that a property signaller exists and is connected.
-        Returns the value of the property if found, otherwise None.
-        """
-        value = self.getPropertyValue(name)
-        if value:
-            if name not in self._property_signallers:
-                self._property_signallers[name] = PropertySignaller()
-            property_signaller = self._property_signallers[name]
-            property_signaller.changed.connect(pt.onTextChange)
-        return value
 
     def renProperty(self : Self, old_name : str, new_name : str) -> bool:
         """
