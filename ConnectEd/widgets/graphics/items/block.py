@@ -17,7 +17,7 @@ if TYPE_CHECKING:
 
 class BlockItem(BaseRectangleItem):
     # class attributes
-    _PROPERTY_SPECS = {
+    _INHERENT_PROPERTIES = {
         "Label" : PropertySpec(
             valid  = lambda self: self._label != "",
             getter = lambda self: self._label,
@@ -35,7 +35,7 @@ class BlockItem(BaseRectangleItem):
             getter = lambda self: self._path,
             setter = lambda self, value: setattr(self, "_path", value)
         )
-    } | BaseRectangleItem._PROPERTY_SPECS
+    } | BaseRectangleItem._INHERENT_PROPERTIES
 
     # instance attributes
     _label : str

@@ -32,7 +32,7 @@ class PortPinMixin(
 ):
     # class attributes
     _AP_NAME_OFFSET = 1.5
-    _PROPERTY_SPECS_NAME = \
+    _INHERENT_PROPERTIES_NAME = \
         {
             "Name" : PropertySpec(
                 getter = lambda self: self._name,
@@ -40,7 +40,7 @@ class PortPinMixin(
                 text   = PropertyTextSpec("Name", origin="Middle Left")
             )
         }
-    _PROPERTY_SPECS_DIR = \
+    _INHERENT_PROPERTIES_DIR = \
         {
             "Dir" : PropertySpec(
                 kind   = "SignalDirection",
@@ -48,7 +48,7 @@ class PortPinMixin(
                 setter = lambda self, value: setattr(self, "_direction", value)
             )
         }
-    _PROPERTY_SPECS_COMMENT = \
+    _INHERENT_PROPERTIES_COMMENT = \
         {
             "Comment" : PropertySpec(
                 valid  = lambda self: self._comment != "",

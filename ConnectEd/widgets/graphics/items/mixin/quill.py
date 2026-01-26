@@ -28,7 +28,7 @@ class ItemProtocol(Protocol):
 class ItemQuillMixin:
     """Mixin for items that render text."""
 
-    _PROPERTY_SPECS_QUILL = {
+    _INHERENT_PROPERTIES_QUILL = {
         "Text Color" : PropertySpec(
             kind    = "QColor",
             valid   = lambda self: self.quillColor() is not DEFAULT,

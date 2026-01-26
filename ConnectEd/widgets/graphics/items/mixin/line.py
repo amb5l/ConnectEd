@@ -30,7 +30,7 @@ class ItemLineMixin:
     """
 
     # class attributes
-    _PROPERTY_SPECS_LINE = {
+    _INHERENT_PROPERTIES_LINE = {
         "Line Color" : PropertySpec(
             kind    = "QColor",
             valid   = lambda self: self.lineColor() is not DEFAULT,

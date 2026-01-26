@@ -77,7 +77,7 @@ class PropertySignaller(QObject):
 
 class PropertiesMixin:
     # class attributes
-    _PROPERTY_SPECS : dict[str, "PropertySpec"]
+    _INHERENT_PROPERTIES : dict[str, "PropertySpec"]
 
     # instance attributes
     _custom_properties   : dict[str, Text]
@@ -91,7 +91,7 @@ class PropertiesMixin:
         self._property_signallers = {}
         if bare:
             return
-        for name, spec in self._PROPERTY_SPECS.items():
+        for name, spec in self._INHERENT_PROPERTIES.items():
             if not bare and spec.display is not None:
                 property_text = PropertyTextItem(
                     name   = name,
@@ -107,7 +107,7 @@ class PropertiesMixin:
         Test if a property exists in this instance.
         Returns True if the property exists, False otherwise.
         """
-        return name in self._PROPERTY_SPECS or name in self._custom_properties
+        return name in self._INHERENT_PROPERTIES or name in self._custom_properties
 
     def getPropertyValue(
         self  : Self,
@@ -142,8 +142,8 @@ class PropertiesMixin:
             if not property_signaller.changed.isSignalConnected(slot):
                 property_signaller.changed.connect(slot)
         # inherent properties
-        if name in self._PROPERTY_SPECS:
-            spec = self._PROPERTY_SPECS[name]
+        if name in self._INHERENT_PROPERTIES:
+            spec = self._INHERENT_PROPERTIES[name]
             if spec.getter and callable(spec.getter):
                 return spec.getter(self)
             else:
@@ -175,8 +175,8 @@ class PropertiesMixin:
         if not self.hasProperty(name):
             logger().warning(f"Property '{name}' not found")
             return False
-        if name in self._PROPERTY_SPECS:
-            spec = self._PROPERTY_SPECS[name]
+        if name in self._INHERENT_PROPERTIES:
+            spec = self._INHERENT_PROPERTIES[name]
             if not callable(spec.setter):
                 logger().warning(f"Property '{name}' is read-only")
                 return False
@@ -193,7 +193,7 @@ class PropertiesMixin:
         for use in deserialization, and for creating new custom properties.
         Returns True if the property was initialized, False otherwise.
         """
-        if name not in self._PROPERTY_SPECS:
+        if name not in self._INHERENT_PROPERTIES:
             self._custom_properties[name] = Text("")
         return self.setPropertyValue(name, value)
 
@@ -210,7 +210,7 @@ class PropertiesMixin:
         if self.hasProperty(new_name):
             logger().warning(f"Property '{new_name}' already exists")
             return False
-        if old_name in self._PROPERTY_SPECS:
+        if old_name in self._INHERENT_PROPERTIES:
             logger().warning(f"Inherent property '{old_name}' cannot be renamed")
             return False
         self._custom_properties[new_name] = self._custom_properties[old_name]
@@ -225,7 +225,7 @@ class PropertiesMixin:
         if not self.hasProperty(name):
             logger().warning(f"Property '{name}' not found")
             return False
-        if name in self._PROPERTY_SPECS:
+        if name in self._INHERENT_PROPERTIES:
             logger().warning(f"Inherent property '{name}' cannot be deleted")
             return False
         del self._custom_properties[name]

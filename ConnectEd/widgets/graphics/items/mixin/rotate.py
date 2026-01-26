@@ -9,7 +9,7 @@ from ...properties import PropertiesMixin
 
 class ItemRotateMixin:
     # class attributes
-    _PROPERTY_SPECS_ROTATE = {
+    _INHERENT_PROPERTIES_ROTATE = {
         "Rotate" : PropertySpec(
             kind   = "float",
             valid  = lambda self: self.rotation() != 0,

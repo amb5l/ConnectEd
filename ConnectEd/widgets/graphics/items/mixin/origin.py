@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 class ItemOriginMixin:
     # class attributes
     _ORIGIN_NAME : str
-    _PROPERTY_SPECS_ORIGIN = {
+    _INHERENT_PROPERTIES_ORIGIN = {
         "Origin" : PropertySpec(
             valid  = lambda self: self.getOrigin() is not None,
             getter = lambda self: self.getOrigin(),

@@ -29,19 +29,19 @@ class GatePinItem(
     BasePinItem
 ):
     # class attributes
-    _PROPERTY_SPECS = \
+    _INHERENT_PROPERTIES = \
         {
             "Name" : PropertySpec(
                 getter = lambda self: self._name,
                 setter = lambda self, value: setattr(self, "_name", value)
             )
         } | \
-        PortPinMixin._PROPERTY_SPECS_DIR | \
-        BasePinDotMixin._PROPERTY_SPECS_DOT | \
-        BasePinClockMixin._PROPERTY_SPECS_CLOCK | \
-        ItemPosMixin._PROPERTY_SPECS_POS | \
-        ItemRotateMixin._PROPERTY_SPECS_ROTATE | \
-        ItemLineMixin._PROPERTY_SPECS_LINE
+        PortPinMixin._INHERENT_PROPERTIES_DIR | \
+        BasePinDotMixin._INHERENT_PROPERTIES_DOT | \
+        BasePinClockMixin._INHERENT_PROPERTIES_CLOCK | \
+        ItemPosMixin._INHERENT_PROPERTIES_POS | \
+        ItemRotateMixin._INHERENT_PROPERTIES_ROTATE | \
+        ItemLineMixin._INHERENT_PROPERTIES_LINE
 
     # instance attributes
     _length : float

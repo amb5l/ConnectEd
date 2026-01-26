@@ -68,7 +68,7 @@ class TetherItem(QGraphicsLineItem):
 
 class PropertyTextItem(UniTextItem):
     # class attributes
-    _PROPERTY_SPECS = \
+    _INHERENT_PROPERTIES = \
         {
             "Name" : PropertySpec(
                 getter = lambda self: self.name(),
@@ -85,12 +85,12 @@ class PropertyTextItem(UniTextItem):
                 setter = lambda self, value: self.setCleat(value)
             )
         } | \
-        ItemOriginMixin._PROPERTY_SPECS_ORIGIN | \
-        ItemPosMixin._PROPERTY_SPECS_POS | \
-        ItemRotateMixin._PROPERTY_SPECS_ROTATE | \
-        UniTextItem._PROPERTY_SPECS_ALIGN | \
-        UniTextItem._PROPERTY_SPECS_SIZE | \
-        ItemQuillMixin._PROPERTY_SPECS_QUILL
+        ItemOriginMixin._INHERENT_PROPERTIES_ORIGIN | \
+        ItemPosMixin._INHERENT_PROPERTIES_POS | \
+        ItemRotateMixin._INHERENT_PROPERTIES_ROTATE | \
+        UniTextItem._INHERENT_PROPERTIES_ALIGN | \
+        UniTextItem._INHERENT_PROPERTIES_SIZE | \
+        ItemQuillMixin._INHERENT_PROPERTIES_QUILL
 
     # instance attributes
     _name        : str

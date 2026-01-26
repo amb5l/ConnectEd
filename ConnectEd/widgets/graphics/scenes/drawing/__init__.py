@@ -33,7 +33,7 @@ class DrawingScene(
     QGraphicsScene
 ):
     # class attributes
-    _PROPERTY_SPECS = {
+    _INHERENT_PROPERTIES = {
         "Name" : PropertySpec(
             getter = lambda self: self._name,
             setter = lambda self, value : setattr(self, "_name", value)

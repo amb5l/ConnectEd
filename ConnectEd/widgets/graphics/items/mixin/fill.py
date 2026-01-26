@@ -28,7 +28,7 @@ class ItemFillMixin:
     """Mixin for items that use a brush."""
 
     # class attributes
-    _PROPERTY_SPECS_FILL = {
+    _INHERENT_PROPERTIES_FILL = {
         "Fill Color" : PropertySpec(
             kind    = "QColor",
             valid   = lambda self: self.fillColor() is not DEFAULT,

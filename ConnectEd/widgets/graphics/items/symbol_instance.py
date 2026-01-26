@@ -21,7 +21,7 @@ from .mixin.rotate     import ItemRotateMixin
 
 class BaseSymbolInstanceItem(ItemPosMixin, ItemRotateMixin, BaseRectangleItem):
     # class attributes
-    _PROPERTY_SPECS_NAME = \
+    _INHERENT_PROPERTIES_NAME = \
         {
             "Name" : PropertySpec(
                 getter = lambda self: self._symbol.name(),
@@ -83,7 +83,7 @@ class BaseSymbolInstanceItem(ItemPosMixin, ItemRotateMixin, BaseRectangleItem):
 
 class SymbolInstanceItem(BaseSymbolInstanceItem):
     # class attributes
-    _PROPERTY_SPECS_LABEL = \
+    _INHERENT_PROPERTIES_LABEL = \
         {
             "Label" : PropertySpec(
                 getter = lambda self: self._label,
@@ -91,11 +91,11 @@ class SymbolInstanceItem(BaseSymbolInstanceItem):
                 text   = PropertyTextSpec("Top Left")
             )
         }
-    _PROPERTY_SPECS = \
-        _PROPERTY_SPECS_LABEL | \
-        BaseSymbolInstanceItem._PROPERTY_SPECS_NAME | \
-        ItemPosMixin._PROPERTY_SPECS_POS | \
-        ItemRotateMixin._PROPERTY_SPECS_ROTATE
+    _INHERENT_PROPERTIES = \
+        _INHERENT_PROPERTIES_LABEL | \
+        BaseSymbolInstanceItem._INHERENT_PROPERTIES_NAME | \
+        ItemPosMixin._INHERENT_PROPERTIES_POS | \
+        ItemRotateMixin._INHERENT_PROPERTIES_ROTATE
 
     # instance attributes
     _label  : str
