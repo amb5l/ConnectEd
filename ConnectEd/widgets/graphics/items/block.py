@@ -19,21 +19,21 @@ class BlockItem(BaseRectangleItem):
     # class attributes
     _INHERENT_PROPERTIES = {
         "Label" : PropertySpec(
-            valid  = lambda self: self._label != "",
-            getter = lambda self: self._label,
-            setter = lambda self, value: setattr(self, "_label", value),
-            text   = PropertyTextSpec("Top Left")
+            valid   = lambda self: self._label != "",
+            getter  = lambda self: self._label,
+            setter  = lambda self, value: setattr(self, "_label", value),
+            display = PropertyTextSpec("Top Left")
         ),
         "Name" : PropertySpec(
-            valid  = lambda self: self._name != "",
-            getter = lambda self: self._name,
-            setter = lambda self, value: setattr(self, "_name", value),
-            text   = PropertyTextSpec("Bottom Left")
+            valid   = lambda self: self._name != "",
+            getter  = lambda self: self._name,
+            setter  = lambda self, value: setattr(self, "_name", value),
+            display = PropertyTextSpec("Bottom Left")
         ),
         "Path" : PropertySpec(
-            valid  = lambda self: self._path != "",
-            getter = lambda self: self._path,
-            setter = lambda self, value: setattr(self, "_path", value)
+            valid   = lambda self: self._path != "",
+            getter  = lambda self: self._path,
+            setter  = lambda self, value: setattr(self, "_path", value)
         )
     } | BaseRectangleItem._INHERENT_PROPERTIES
 
