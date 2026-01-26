@@ -1,5 +1,4 @@
-from typing      import Self
-from dataclasses import dataclass
+from typing      import Self, Any
 
 from PyQt6.QtCore    import Qt, QPointF, QXmlStreamWriter
 from PyQt6.QtWidgets import QGraphicsItem, QGraphicsLineItem, \
@@ -8,10 +7,9 @@ from PyQt6.QtGui     import QAction
 
 from ....app import settings
 
-from ..property   import PropertySpec
-from ..properties import PropertiesMixin
+from ..properties import PropertySpec, PropertiesMixin
 
-from . import NoChange, NO_CHANGE
+from . import NO_CHANGE, ItemType
 
 from .unitext import UniTextItem
 from .handle  import HandleItem
@@ -164,7 +162,7 @@ class PropertyTextItem(UniTextItem):
         pass
 
     def onTextChange(self : Self) -> None:
-        value = self.value()
+        value = self.owner().getPropertyValue(self._name, self.onTextChange)
         text = f"<{self.name()}>" if value == "" else value
         super().setText(text)
 
@@ -196,9 +194,12 @@ class PropertyTextItem(UniTextItem):
             self._tether.setParentItem(self.getHandle(name))
             self._tether.onPositionChange(self.pos())
 
-    def item(self : Self) -> "PropertiesMixin | None":
+    def item(self : Self) -> "ItemType | None":
         h : "HandleItem" = self.parentItem()
         return None if h is None else h.parentItem()
+
+    def owner(self : Self) -> PropertiesMixin | None:
+        return self.scene() if self.parentItem() is None else self.item()
 
     def name(self : Self) -> str:
         return self._name
@@ -207,18 +208,15 @@ class PropertyTextItem(UniTextItem):
         self._name = name
         self.onTextChange()
 
-    def value(self : Self) -> str:
-        source = self.scene() if self.parentItem() is None else self.item()
-        if source is None:
+    def value(self : Self) -> Any:
+        if self.owner() is None:
             return ""
-        return str(source.properties[self._name].get())
+        return self.owner().getPropertyValue(self._name, self.onTextChange)
 
-    def setValue(self : Self, value : str | NoChange = NO_CHANGE) -> None:
+    def setValue(self : Self, value : Any) -> None:
         if value is NO_CHANGE:
             return
-        source = self.scene() if self.parentItem() is None else self.item()
-        source.properties[self._name].set(value)
-        shit
+        self.owner().setPropertyValue(self._name, value)
 
     def paint(self, painter, option, widget) -> None:
         from PyQt6.QtGui import QPen
