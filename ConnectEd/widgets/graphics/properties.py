@@ -102,12 +102,32 @@ class PropertiesMixin:
                 )
                 property_text.onTextChange()
 
+    def getPropertyNames(self : Self) -> list[str]:
+        return list(self._INHERENT_PROPERTIES.keys()) + \
+               list(self._custom_properties.keys())
+
     def hasProperty(self : Self, name : str) -> bool:
         """
         Test if a property exists in this instance.
         Returns True if the property exists, False otherwise.
         """
         return name in self._INHERENT_PROPERTIES or name in self._custom_properties
+
+    def getPropertyValid(self : Self, name : str) -> bool:
+        """
+        Test if a property is valid.
+        Returns True if the property is valid, False otherwise.
+        """
+        if name in self._INHERENT_PROPERTIES:
+            spec = self._INHERENT_PROPERTIES[name]
+            valid = spec.valid
+            if valid is True:
+                return True
+            elif callable(valid):
+                return valid(self)
+            else:
+                return False
+        return name in self._custom_properties
 
     def getPropertyValue(
         self  : Self,
