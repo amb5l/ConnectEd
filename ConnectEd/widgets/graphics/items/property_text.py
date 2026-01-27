@@ -162,9 +162,7 @@ class PropertyTextItem(UniTextItem):
         pass
 
     def onTextChange(self : Self) -> None:
-        value = self.owner().getPropertyValue(self._name, self.onTextChange)
-        text = f"<{self.name()}>" if value == "" else value
-        super().setText(text)
+        super().setText(self.value())
 
     def settingsName(self : Self) -> str:
         item = self.item()
@@ -208,9 +206,8 @@ class PropertyTextItem(UniTextItem):
         self.onTextChange()
 
     def value(self : Self) -> Any:
-        if self.owner() is None:
-            return ""
-        return self.owner().getPropertyValue(self._name, self.onTextChange)
+        return f"<{self.name()}>" if self.owner() is None else \
+            self.owner().getPropertyValue(self._name, self.onTextChange)
 
     def setValue(self : Self, value : Any) -> None:
         if value is NO_CHANGE:
