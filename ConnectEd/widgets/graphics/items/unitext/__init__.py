@@ -74,7 +74,7 @@ class UniTextItem(
     # class attributes
     _ORIGIN_NAME = "Top Left"
     _RESIZE_KIND = "text"  # handle kind for text items
-    _INHERENT_PROPERTIES_ALIGN = \
+    _PROPERTIES_ALIGN = \
         {
             "AlignH" : PropertySpec(
                 type_name = "AlignH",
@@ -88,7 +88,7 @@ class UniTextItem(
                 setter    = lambda self, value: self.setVerticalAlignment(value)
             )
         }
-    _INHERENT_PROPERTIES_SIZE = \
+    _PROPERTIES_SIZE = \
         {
             "Width" : PropertySpec(
                 type_name = "float",
@@ -103,7 +103,7 @@ class UniTextItem(
                 setter    = lambda self, value: self.setHeight(value)
             )
         }
-    _INHERENT_PROPERTIES = \
+    _PROPERTIES = \
         {
             "Text" : PropertySpec(
                 getter    = lambda self: self.text(),
@@ -111,12 +111,12 @@ class UniTextItem(
             ),
 
         } | \
-        ItemPosMixin._INHERENT_PROPERTIES_POS | \
-        ItemOriginMixin._INHERENT_PROPERTIES_ORIGIN | \
-        ItemRotateMixin._INHERENT_PROPERTIES_ROTATE | \
-        _INHERENT_PROPERTIES_ALIGN | \
-        _INHERENT_PROPERTIES_SIZE | \
-        ItemQuillMixin._INHERENT_PROPERTIES_QUILL
+        ItemPosMixin._PROPERTIES_POS | \
+        ItemOriginMixin._PROPERTIES_ORIGIN | \
+        ItemRotateMixin._PROPERTIES_ROTATE | \
+        _PROPERTIES_ALIGN | \
+        _PROPERTIES_SIZE | \
+        ItemQuillMixin._PROPERTIES_QUILL
 
     # instance attributes
     _child   : UniTextLineItem | UniTextBlockItem  # text renderer

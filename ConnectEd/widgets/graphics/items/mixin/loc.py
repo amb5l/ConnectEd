@@ -19,7 +19,7 @@ class ItemLocMixin:
     # instance attributes
     _loc : EdgeLoc
 
-    _INHERENT_PROPERTIES_LOC = {
+    _PROPERTIES_LOC = {
         "Edge" : PropertySpec(
             type_name = "Edge",
             getter    = lambda self: self.loc().edge,

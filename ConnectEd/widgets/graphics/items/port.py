@@ -29,13 +29,13 @@ class PortItem(
 ):
     # class attributes
     _AP_NAME_OFFSET = 1.5
-    _INHERENT_PROPERTIES = \
-        PortPinMixin._INHERENT_PROPERTIES_NAME | \
-        PortPinMixin._INHERENT_PROPERTIES_DIR | \
-        PortPinMixin._INHERENT_PROPERTIES_COMMENT | \
-        ItemPosMixin._INHERENT_PROPERTIES_POS | \
-        ItemRotateMixin._INHERENT_PROPERTIES_ROTATE | \
-        ItemFillMixin._INHERENT_PROPERTIES_FILL
+    _PROPERTIES = \
+        PortPinMixin._PROPERTIES_NAME | \
+        PortPinMixin._PROPERTIES_DIR | \
+        PortPinMixin._PROPERTIES_COMMENT | \
+        ItemPosMixin._PROPERTIES_POS | \
+        ItemRotateMixin._PROPERTIES_ROTATE | \
+        ItemFillMixin._PROPERTIES_FILL
 
     def __init__(
         self   : Self,

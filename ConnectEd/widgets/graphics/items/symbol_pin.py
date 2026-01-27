@@ -32,15 +32,15 @@ class SymbolPinItem(
 ):
     # class attributes
     _ARROW_CLASS = SymbolPinArrowItem
-    _INHERENT_PROPERTIES = \
-        PortPinMixin._INHERENT_PROPERTIES_NAME | \
-        PortPinMixin._INHERENT_PROPERTIES_DIR | \
-        PortPinMixin._INHERENT_PROPERTIES_COMMENT | \
-        BasePinDotMixin._INHERENT_PROPERTIES_DOT | \
-        BasePinClockMixin._INHERENT_PROPERTIES_CLOCK | \
-        ItemPosMixin._INHERENT_PROPERTIES_POS | \
-        ItemRotateMixin._INHERENT_PROPERTIES_ROTATE | \
-        ItemLineMixin._INHERENT_PROPERTIES_LINE
+    _PROPERTIES = \
+        PortPinMixin._PROPERTIES_NAME | \
+        PortPinMixin._PROPERTIES_DIR | \
+        PortPinMixin._PROPERTIES_COMMENT | \
+        BasePinDotMixin._PROPERTIES_DOT | \
+        BasePinClockMixin._PROPERTIES_CLOCK | \
+        ItemPosMixin._PROPERTIES_POS | \
+        ItemRotateMixin._PROPERTIES_ROTATE | \
+        ItemLineMixin._PROPERTIES_LINE
 
     def __init__(
         self   : Self,

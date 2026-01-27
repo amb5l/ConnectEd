@@ -45,10 +45,10 @@ class BaseRectangleMixin(
 
     # class attributes
     _ORIGIN_NAME = "Middle Center"
-    _INHERENT_PROPERTIES = \
-        ItemOriginMixin._INHERENT_PROPERTIES_ORIGIN | \
-        ItemPosMixin._INHERENT_PROPERTIES_POS | \
-        ItemRotateMixin._INHERENT_PROPERTIES_ROTATE | \
+    _PROPERTIES = \
+        ItemOriginMixin._PROPERTIES_ORIGIN | \
+        ItemPosMixin._PROPERTIES_POS | \
+        ItemRotateMixin._PROPERTIES_ROTATE | \
         {
             "Width" : PropertySpec(
                 type_name = "float",
@@ -61,8 +61,8 @@ class BaseRectangleMixin(
                 setter    = lambda self, value: self.setHeight(value)
             )
         } | \
-        ItemLineMixin._INHERENT_PROPERTIES_LINE | \
-        ItemFillMixin._INHERENT_PROPERTIES_FILL
+        ItemLineMixin._PROPERTIES_LINE | \
+        ItemFillMixin._PROPERTIES_FILL
     _MIN_SIZE = QSizeF(1.0, 1.0)
 
     @overload

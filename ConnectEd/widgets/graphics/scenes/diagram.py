@@ -19,7 +19,7 @@ class DiagramSheet:
 
 class DiagramScene(DrawingScene):
     # class attributes
-    _INHERENT_PROPERTIES = DrawingScene._INHERENT_PROPERTIES | {
+    _PROPERTIES = DrawingScene._PROPERTIES | {
         "Sheet Name" : PropertySpec(
             getter = lambda self: self.getSheetName(),
             setter = lambda self, value: self.setSheetName(value)

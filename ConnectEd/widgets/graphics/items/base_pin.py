@@ -115,7 +115,7 @@ class BasePinItem(ItemPaintMixin, PortPinMixin, QGraphicsPathItem):
 
 class BasePinDotMixin:
     # class attributes
-    _INHERENT_PROPERTIES_DOT = {
+    _PROPERTIES_DOT = {
         "Dot" : PropertySpec(
             type_name = "bool",
             getter    = lambda self: self._dot,
@@ -136,7 +136,7 @@ class BasePinDotMixin:
 
 class BasePinClockMixin:
     # class attributes
-    _INHERENT_PROPERTIES_CLOCK = {
+    _PROPERTIES_CLOCK = {
         "Clock" : PropertySpec(
             type_name = "bool",
             getter    = lambda self: self._clock,

@@ -157,7 +157,7 @@ class PolylineItem(
     QGraphicsPathItem
 ):
     # class attributes
-    _INHERENT_PROPERTIES = \
+    _PROPERTIES = \
         {
             "Closed" : PropertySpec(
                 type_name = "bool",
@@ -165,9 +165,9 @@ class PolylineItem(
                 setter    = lambda self, value: self.setClosed(value)
             )
         } | \
-        ItemPosMixin._INHERENT_PROPERTIES_POS | \
-        ItemRotateMixin._INHERENT_PROPERTIES_ROTATE | \
-        ItemLineMixin._INHERENT_PROPERTIES_LINE
+        ItemPosMixin._PROPERTIES_POS | \
+        ItemRotateMixin._PROPERTIES_ROTATE | \
+        ItemLineMixin._PROPERTIES_LINE
 
     # instance attributes
     _vertices : list[PolyVtxItem]  # list of vertex grips

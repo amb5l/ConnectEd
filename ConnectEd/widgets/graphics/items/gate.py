@@ -52,7 +52,7 @@ class BaseGateItem(
     QGraphicsPathItem
 ):
     # class attributes
-    _INHERENT_PROPERTIES_LABEL = {
+    _PROPERTIES_LABEL = {
         "Label" : PropertySpec(
             getter = lambda self: self._label,
             setter = lambda self, value: setattr(self, "_label", value)
@@ -94,7 +94,7 @@ class BufGateItem(BaseGateItem):
     """Buffer/Inverter gate."""
 
     # class attributes
-    _INHERENT_PROPERTIES_IO = {
+    _PROPERTIES_IO = {
         "Output" : PropertySpec(
             getter = lambda self: self.output(),
             setter = lambda self, value: self.setOutput(value)
@@ -104,13 +104,13 @@ class BufGateItem(BaseGateItem):
             setter = lambda self, value: self.setInput(value)
         )
     }
-    _INHERENT_PROPERTIES = \
-        BaseGateItem._INHERENT_PROPERTIES_LABEL | \
-        _INHERENT_PROPERTIES_IO | \
-        ItemPosMixin._INHERENT_PROPERTIES_POS | \
-        ItemRotateMixin._INHERENT_PROPERTIES_ROTATE | \
-        ItemLineMixin._INHERENT_PROPERTIES_LINE | \
-        ItemFillMixin._INHERENT_PROPERTIES_FILL
+    _PROPERTIES = \
+        BaseGateItem._PROPERTIES_LABEL | \
+        _PROPERTIES_IO | \
+        ItemPosMixin._PROPERTIES_POS | \
+        ItemRotateMixin._PROPERTIES_ROTATE | \
+        ItemLineMixin._PROPERTIES_LINE | \
+        ItemFillMixin._PROPERTIES_FILL
 
     # instance attributes
     _input  : GatePinItem
@@ -210,7 +210,7 @@ class GateItem(BaseGateItem):
     """Base class for N:1 logic gates."""
 
     # class attributes
-    _INHERENT_PROPERTIES_IO = {
+    _PROPERTIES_IO = {
         "Output" : PropertySpec(
             getter = lambda self: self.output(),
             setter = lambda self, value: self.setOutput(value)
@@ -220,13 +220,13 @@ class GateItem(BaseGateItem):
             setter = lambda self, value: self.setInputs(value)
         )
     }
-    _INHERENT_PROPERTIES = \
-        BaseGateItem._INHERENT_PROPERTIES_LABEL | \
-        _INHERENT_PROPERTIES_IO | \
-        ItemPosMixin._INHERENT_PROPERTIES_POS | \
-        ItemRotateMixin._INHERENT_PROPERTIES_ROTATE | \
-        ItemLineMixin._INHERENT_PROPERTIES_LINE | \
-        ItemFillMixin._INHERENT_PROPERTIES_FILL
+    _PROPERTIES = \
+        BaseGateItem._PROPERTIES_LABEL | \
+        _PROPERTIES_IO | \
+        ItemPosMixin._PROPERTIES_POS | \
+        ItemRotateMixin._PROPERTIES_ROTATE | \
+        ItemLineMixin._PROPERTIES_LINE | \
+        ItemFillMixin._PROPERTIES_FILL
 
     # instance attributes
     _inputs : list[GatePinItem]

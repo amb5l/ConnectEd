@@ -22,11 +22,11 @@ class BlockPinItem(ItemLocMixin, BasePinItem):
     # class attributes
     _ARROW_CLASS = BlockPinArrowItem
     _AP_NAME_OFFSET  = _INT_ARROW_SIZE + 1.5
-    _INHERENT_PROPERTIES = \
-        PortPinMixin._INHERENT_PROPERTIES_NAME | \
-        PortPinMixin._INHERENT_PROPERTIES_DIR | \
-        ItemLocMixin._INHERENT_PROPERTIES_LOC | \
-        PortPinMixin._INHERENT_PROPERTIES_COMMENT
+    _PROPERTIES = \
+        PortPinMixin._PROPERTIES_NAME | \
+        PortPinMixin._PROPERTIES_DIR | \
+        ItemLocMixin._PROPERTIES_LOC | \
+        PortPinMixin._PROPERTIES_COMMENT
 
     def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
         return [

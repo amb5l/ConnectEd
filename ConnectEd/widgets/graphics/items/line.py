@@ -35,7 +35,7 @@ class LineItem(
     QGraphicsLineItem
 ):
     # class attributes
-    _INHERENT_PROPERTIES = \
+    _PROPERTIES = \
         {
             "X1" : PropertySpec(
                 type_name = "float",
@@ -58,7 +58,7 @@ class LineItem(
                 setter    = lambda self, value: self.setY2(value)
             )
         } | \
-        ItemLineMixin._INHERENT_PROPERTIES_LINE
+        ItemLineMixin._PROPERTIES_LINE
 
     # instance attributes
     _line    : QLineF

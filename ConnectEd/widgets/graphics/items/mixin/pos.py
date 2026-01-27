@@ -8,7 +8,7 @@ from ...properties import PropertySpec, PropertiesMixin
 
 class ItemPosMixin:
     # class attributes
-    _INHERENT_PROPERTIES_POS = {
+    _PROPERTIES_POS = {
         "X" : PropertySpec(
             type_name = "float",
             valid     = lambda self: self.pos() != QPointF(0, 0),
