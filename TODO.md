@@ -1,3 +1,9 @@
+PropertySpec => InherentProperty
+CustomProperty subclass of Text
+PropertySignaller => PropertyNotifier
+_INHERENT_PROPERTIES => _PROPERTIES
+
+
 check property texts
 check property dialog and properties spreadsheet
   - line/block (Text class) editor (button with 3 dots to open dialog)

@@ -3,7 +3,7 @@ from typing import Self
 from PyQt6.QtWidgets import QGraphicsItem
 from PyQt6.QtGui     import QTransform
 
-from ...properties import PropertySpec, PropertiesMixin
+from ...properties import InherentProperty, PropertiesMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -15,7 +15,7 @@ class ItemOriginMixin:
     # class attributes
     _ORIGIN_NAME : str
     _PROPERTIES_ORIGIN = {
-        "Origin" : PropertySpec(
+        "Origin" : InherentProperty(
             valid  = lambda self: self.getOrigin() is not None,
             getter = lambda self: self.getOrigin(),
             setter = lambda self, value: self.setOrigin(value)

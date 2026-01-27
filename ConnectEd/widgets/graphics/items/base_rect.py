@@ -6,7 +6,7 @@ from PyQt6.QtGui     import QAction
 
 from ....core.defs import PITCH
 
-from ..properties import PropertiesMixin, PropertySpec
+from ..properties import PropertiesMixin, InherentProperty
 
 from .mixin        import ItemMixin
 from .mixin.origin import ItemOriginMixin
@@ -50,12 +50,12 @@ class BaseRectangleMixin(
         ItemPosMixin._PROPERTIES_POS | \
         ItemRotateMixin._PROPERTIES_ROTATE | \
         {
-            "Width" : PropertySpec(
+            "Width" : InherentProperty(
                 type_name = "float",
                 getter    = lambda self: self.rect().width(),
                 setter    = lambda self, value: self.setWidth(value)
             ),
-            "Height" : PropertySpec(
+            "Height" : InherentProperty(
                 type_name = "float",
                 getter    = lambda self: self.rect().height(),
                 setter    = lambda self, value: self.setHeight(value)

@@ -4,7 +4,7 @@ from PyQt6.QtCore    import QPointF
 from PyQt6.QtWidgets import QMenu
 from PyQt6.QtGui     import QAction
 
-from ..properties import PropertyTextSpec, PropertySpec
+from ..properties import PropertyTextSpec, InherentProperty
 
 from . import EdgeLoc, Edge
 
@@ -18,19 +18,19 @@ if TYPE_CHECKING:
 class BlockItem(BaseRectangleItem):
     # class attributes
     _PROPERTIES = {
-        "Label" : PropertySpec(
+        "Label" : InherentProperty(
             valid   = lambda self: self._label != "",
             getter  = lambda self: self._label,
             setter  = lambda self, value: setattr(self, "_label", value),
             display = PropertyTextSpec("Top Left")
         ),
-        "Name" : PropertySpec(
+        "Name" : InherentProperty(
             valid   = lambda self: self._name != "",
             getter  = lambda self: self._name,
             setter  = lambda self, value: setattr(self, "_name", value),
             display = PropertyTextSpec("Bottom Left")
         ),
-        "Path" : PropertySpec(
+        "Path" : InherentProperty(
             valid   = lambda self: self._path != "",
             getter  = lambda self: self._path,
             setter  = lambda self, value: setattr(self, "_path", value)

@@ -7,7 +7,7 @@ from PyQt6.QtGui  import QPen, QColor
 
 from .....app import logger, settings
 
-from ...properties import PropertySpec
+from ...properties import InherentProperty
 
 from .. import Default, DEFAULT
 
@@ -31,21 +31,21 @@ class ItemLineMixin:
 
     # class attributes
     _PROPERTIES_LINE = {
-        "Line Color" : PropertySpec(
+        "Line Color" : InherentProperty(
             type_name = "QColor",
             valid     = lambda self: self.lineColor() is not DEFAULT,
             getter    = lambda self: self.lineColor(),
             setter    = lambda self, value: self.setLineColor(value),
             default   = lambda self: self.defaultLineColor()
         ),
-        "Line Width" : PropertySpec(
+        "Line Width" : InherentProperty(
             type_name = "LineWidth",  # a "subtype" of float - see str2val
             valid     = lambda self: self.lineWidth() is not DEFAULT,
             getter    = lambda self: self.lineWidth(),
             setter    = lambda self, value: self.setLineWidth(value),
             default   = lambda self: self.defaultLineWidth()
         ),
-        "Line Style" : PropertySpec(
+        "Line Style" : InherentProperty(
             type_name = "PenStyle",
             valid     = lambda self: self.lineStyle() is not DEFAULT,
             getter    = lambda self: self.lineStyle(),

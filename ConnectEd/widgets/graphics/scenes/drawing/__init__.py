@@ -11,7 +11,7 @@ from .....app import logger, settings
 
 from .....core.xml import toXmlAttrs, fromXmlAttrs
 
-from ...properties import PropertySpec, PropertiesMixin
+from ...properties import InherentProperty, PropertiesMixin
 
 from .api        import DrawingSceneApiMixin
 from .grips      import DrawingSceneGripsMixin
@@ -33,7 +33,7 @@ class DrawingScene(
 ):
     # class attributes
     _PROPERTIES = {
-        "Name" : PropertySpec(
+        "Name" : InherentProperty(
             getter = lambda self: self._name,
             setter = lambda self, value : setattr(self, "_name", value)
         )

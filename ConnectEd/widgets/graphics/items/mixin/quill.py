@@ -6,7 +6,7 @@ from PyQt6.QtGui  import QFont, QColor
 
 from .....app import logger, settings
 
-from ...properties import PropertySpec
+from ...properties import InherentProperty
 
 from .. import Default, DEFAULT
 
@@ -29,42 +29,42 @@ class ItemQuillMixin:
     """Mixin for items that render text."""
 
     _PROPERTIES_QUILL = {
-        "Text Color" : PropertySpec(
+        "Text Color" : InherentProperty(
             type_name = "QColor",
             valid     = lambda self: self.quillColor() is not DEFAULT,
             getter    = lambda self: self.quillColor(),
             setter    = lambda self, value: self.setQuillColor(value),
             default   = lambda self: self.defaultQuillColor()
         ),
-        "Text Font" : PropertySpec(
+        "Text Font" : InherentProperty(
             type_name = "FontFamily",  # a "subtype" of str - see str2val
             valid     = lambda self: self.quillFamily() is not DEFAULT,
             getter    = lambda self: self.quillFamily(),
             setter    = lambda self, value: self.setQuillFamily(value),
             default   = lambda self: self.defaultQuillFamily()
         ),
-        "Text Size" : PropertySpec(
+        "Text Size" : InherentProperty(
             type_name = "FontSize",  # a "subtype" of float - see str2val
             valid     = lambda self: self.quillSize() is not DEFAULT,
             getter    = lambda self: self.quillSize(),
             setter    = lambda self, value: self.setQuillSize(value),
             default   = lambda self: self.defaultQuillSize()
         ),
-        "Text Bold" : PropertySpec(
+        "Text Bold" : InherentProperty(
             type_name = "bool",
             valid     = lambda self: self.quillBold() is not DEFAULT,
             getter    = lambda self: self.quillBold(),
             setter    = lambda self, value: self.setQuillBold(value),
             default   = lambda self: self.defaultQuillBold()
         ),
-        "Text Italic" : PropertySpec(
+        "Text Italic" : InherentProperty(
             type_name = "bool",
             valid     = lambda self: self.quillItalic() is not DEFAULT,
             getter    = lambda self: self.quillItalic(),
             setter    = lambda self, value: self.setQuillItalic(value),
             default   = lambda self: self.defaultQuillItalic()
         ),
-        "Text Underline" : PropertySpec(
+        "Text Underline" : InherentProperty(
             type_name = "bool",
             valid     = lambda self: self.quillUnderline() is not DEFAULT,
             getter    = lambda self: self.quillUnderline(),

@@ -4,18 +4,18 @@ from PyQt6.QtCore    import QPointF
 from PyQt6.QtWidgets import QGraphicsItem
 from PyQt6.QtGui     import QTransform
 
-from ...properties import PropertySpec, PropertiesMixin
+from ...properties import InherentProperty, PropertiesMixin
 
 class ItemPosMixin:
     # class attributes
     _PROPERTIES_POS = {
-        "X" : PropertySpec(
+        "X" : InherentProperty(
             type_name = "float",
             valid     = lambda self: self.pos() != QPointF(0, 0),
             getter    = lambda self: self.pos().x(),
             setter    = lambda self, value: self.setX(value)
         ),
-        "Y" : PropertySpec(
+        "Y" : InherentProperty(
             type_name = "float",
             valid     = lambda self: self.pos() != QPointF(0, 0),
             getter    = lambda self: self.pos().y(),

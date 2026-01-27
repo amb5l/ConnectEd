@@ -24,7 +24,7 @@ from .....resources.icons import AnchorTopLeftIcon,      \
                                  TextAlignMiddleIcon,    \
                                  TextAlignBottomIcon
 
-from ...properties import PropertySpec, PropertiesMixin
+from ...properties import InherentProperty, PropertiesMixin
 
 from .. import Default, DEFAULT, AlignH, AlignV
 
@@ -76,12 +76,12 @@ class UniTextItem(
     _RESIZE_KIND = "text"  # handle kind for text items
     _PROPERTIES_ALIGN = \
         {
-            "AlignH" : PropertySpec(
+            "AlignH" : InherentProperty(
                 type_name = "AlignH",
                 getter    = lambda self: self.horizontalAlignment(),
                 setter    = lambda self, value: self.setHorizontalAlignment(value)
             ),
-            "AlignV" : PropertySpec(
+            "AlignV" : InherentProperty(
                 type_name = "AlignV",
                 valid     = lambda self: self.height() is not None,
                 getter    = lambda self: self.verticalAlignment(),
@@ -90,13 +90,13 @@ class UniTextItem(
         }
     _PROPERTIES_SIZE = \
         {
-            "Width" : PropertySpec(
+            "Width" : InherentProperty(
                 type_name = "float",
                 valid     = lambda self: self.width() is not None,
                 getter    = lambda self: self.width(),
                 setter    = lambda self, value: self.setWidth(value)
             ),
-            "Height" : PropertySpec(
+            "Height" : InherentProperty(
                 type_name = "float",
                 valid     = lambda self: self.height() is not None,
                 getter    = lambda self: self.height(),
@@ -105,7 +105,7 @@ class UniTextItem(
         }
     _PROPERTIES = \
         {
-            "Text" : PropertySpec(
+            "Text" : InherentProperty(
                 getter    = lambda self: self.text(),
                 setter    = lambda self, value: self.setText(value)
             ),

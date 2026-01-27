@@ -4,7 +4,7 @@ from PyQt6.QtWidgets import QGraphicsItem, QGraphicsPathItem
 
 from ....core.defs import PITCH
 
-from ..properties import PropertySpec
+from ..properties import InherentProperty
 
 from . import SignalDirection
 
@@ -116,7 +116,7 @@ class BasePinItem(ItemPaintMixin, PortPinMixin, QGraphicsPathItem):
 class BasePinDotMixin:
     # class attributes
     _PROPERTIES_DOT = {
-        "Dot" : PropertySpec(
+        "Dot" : InherentProperty(
             type_name = "bool",
             getter    = lambda self: self._dot,
             setter    = lambda self, value: setattr(self, "_dot", value)
@@ -137,7 +137,7 @@ class BasePinDotMixin:
 class BasePinClockMixin:
     # class attributes
     _PROPERTIES_CLOCK = {
-        "Clock" : PropertySpec(
+        "Clock" : InherentProperty(
             type_name = "bool",
             getter    = lambda self: self._clock,
             setter    = lambda self, value: setattr(self, "_clock", value)

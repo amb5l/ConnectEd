@@ -7,7 +7,7 @@ from ....app import logger
 
 from ....core.utils import registerClass
 
-from ..properties import PropertyTextSpec, PropertySpec
+from ..properties import PropertyTextSpec, InherentProperty
 
 from ..scenes.symbol import SymbolScene
 
@@ -22,7 +22,7 @@ class BaseSymbolInstanceItem(ItemPosMixin, ItemRotateMixin, BaseRectangleItem):
     # class attributes
     _PROPERTIES_NAME = \
         {
-            "Name" : PropertySpec(
+            "Name" : InherentProperty(
                 getter  = lambda self: self._symbol.name(),
                 setter  = lambda self, value: self._symbol.setName(value),
                 display = PropertyTextSpec("Bottom Left")
@@ -84,7 +84,7 @@ class SymbolInstanceItem(BaseSymbolInstanceItem):
     # class attributes
     _PROPERTIES_LABEL = \
         {
-            "Label" : PropertySpec(
+            "Label" : InherentProperty(
                 getter  = lambda self: self._label,
                 setter  = lambda self, value: setattr(self, "_label", value),
                 display = PropertyTextSpec("Top Left")

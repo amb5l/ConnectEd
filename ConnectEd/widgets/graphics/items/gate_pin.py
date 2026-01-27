@@ -6,7 +6,7 @@ from PyQt6.QtGui     import QAction, QPainterPath
 
 from ....core.defs import PITCH
 
-from ..properties import PropertySpec
+from ..properties import InherentProperty
 
 from .mixin.pos    import ItemPosMixin
 from .mixin.rotate import ItemRotateMixin
@@ -31,7 +31,7 @@ class GatePinItem(
     # class attributes
     _PROPERTIES = \
         {
-            "Name" : PropertySpec(
+            "Name" : InherentProperty(
                 getter = lambda self: self._name,
                 setter = lambda self, value: setattr(self, "_name", value)
             )

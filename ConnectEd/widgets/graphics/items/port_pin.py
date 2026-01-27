@@ -2,7 +2,7 @@ from typing import Self
 
 from PyQt6.QtCore import QPointF
 
-from ..properties import PropertyTextSpec, PropertySpec, PropertiesMixin
+from ..properties import PropertyTextSpec, InherentProperty, PropertiesMixin
 
 from . import SignalDirection
 
@@ -32,7 +32,7 @@ class PortPinMixin(
     _AP_NAME_OFFSET = 1.5
     _PROPERTIES_NAME = \
         {
-            "Name" : PropertySpec(
+            "Name" : InherentProperty(
                 getter    = lambda self: self._name,
                 setter    = lambda self, value: setattr(self, "_name", value),
                 display   = PropertyTextSpec("Name", origin="Middle Left")
@@ -40,7 +40,7 @@ class PortPinMixin(
         }
     _PROPERTIES_DIR = \
         {
-            "Dir" : PropertySpec(
+            "Dir" : InherentProperty(
                 type_name = "SignalDirection",
                 getter    = lambda self: self._direction,
                 setter    = lambda self, value: setattr(self, "_direction", value)
@@ -48,7 +48,7 @@ class PortPinMixin(
         }
     _PROPERTIES_COMMENT = \
         {
-            "Comment" : PropertySpec(
+            "Comment" : InherentProperty(
                 valid     = lambda self: self._comment != "",
                 getter    = lambda self: self._comment,
                 setter    = lambda self, value: setattr(self, "_comment", value)

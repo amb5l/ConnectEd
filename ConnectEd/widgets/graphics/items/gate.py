@@ -5,7 +5,7 @@ from PyQt6.QtCore    import QPointF
 from PyQt6.QtWidgets import QGraphicsPathItem, QMenu
 from PyQt6.QtGui     import QAction
 
-from ..properties import PropertySpec, PropertiesMixin
+from ..properties import InherentProperty, PropertiesMixin
 
 from ..painter_path import PainterPath
 
@@ -53,7 +53,7 @@ class BaseGateItem(
 ):
     # class attributes
     _PROPERTIES_LABEL = {
-        "Label" : PropertySpec(
+        "Label" : InherentProperty(
             getter = lambda self: self._label,
             setter = lambda self, value: setattr(self, "_label", value)
         )
@@ -95,11 +95,11 @@ class BufGateItem(BaseGateItem):
 
     # class attributes
     _PROPERTIES_IO = {
-        "Output" : PropertySpec(
+        "Output" : InherentProperty(
             getter = lambda self: self.output(),
             setter = lambda self, value: self.setOutput(value)
         ),
-        "Input" : PropertySpec(
+        "Input" : InherentProperty(
             getter = lambda self: self.input(),
             setter = lambda self, value: self.setInput(value)
         )
@@ -211,11 +211,11 @@ class GateItem(BaseGateItem):
 
     # class attributes
     _PROPERTIES_IO = {
-        "Output" : PropertySpec(
+        "Output" : InherentProperty(
             getter = lambda self: self.output(),
             setter = lambda self, value: self.setOutput(value)
         ),
-        "Inputs" : PropertySpec(
+        "Inputs" : InherentProperty(
             getter = lambda self: self.inputs(),
             setter = lambda self, value: self.setInputs(value)
         )

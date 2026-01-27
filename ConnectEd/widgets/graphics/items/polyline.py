@@ -11,7 +11,7 @@ from ....core.xml import fromXmlAttrs
 
 from ...dialogs.arc import ArcDialog
 
-from ..properties import PropertySpec, PropertiesMixin
+from ..properties import InherentProperty, PropertiesMixin
 
 from ..painter_path import PainterPath
 
@@ -159,7 +159,7 @@ class PolylineItem(
     # class attributes
     _PROPERTIES = \
         {
-            "Closed" : PropertySpec(
+            "Closed" : InherentProperty(
                 type_name = "bool",
                 getter    = lambda self: self.closed(),
                 setter    = lambda self, value: self.setClosed(value)

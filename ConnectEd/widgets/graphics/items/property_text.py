@@ -7,7 +7,7 @@ from PyQt6.QtGui     import QAction
 
 from ....app import settings
 
-from ..properties import PropertySpec, PropertiesMixin
+from ..properties import InherentProperty, PropertiesMixin
 
 from . import NO_CHANGE, ItemType
 
@@ -68,17 +68,17 @@ class PropertyTextItem(UniTextItem):
     # class attributes
     _PROPERTIES = \
         {
-            "Name" : PropertySpec(
+            "Name" : InherentProperty(
                 getter    = lambda self: self.name(),
                 setter    = lambda self, value: self.setName(value)
             ),
-            "Visible" : PropertySpec(
+            "Visible" : InherentProperty(
                 type_name = "bool",
                 valid     = lambda self: not self.isVisible(),
                 getter    = lambda self: self.isVisible(),
                 setter    = lambda self, value: self.setVisible(value)
             ),
-            "Cleat" : PropertySpec(
+            "Cleat" : InherentProperty(
                 getter    = lambda self: self.getCleat(),
                 setter    = lambda self, value: self.setCleat(value)
             )
