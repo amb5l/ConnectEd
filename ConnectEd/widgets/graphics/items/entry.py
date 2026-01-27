@@ -12,6 +12,7 @@ from .mixin.change import ItemChangeMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
+    from . import ItemType
     from .port_pin import PortPinMixin
 
 
@@ -64,7 +65,8 @@ class EntryItem(
             parent.setSelected(selected)
 
     def settingsName(self : Self) -> str:
-        return f"{self.parentItem().__class__.__name__}Entry"
+        parent : "ItemType" = self.parentItem()
+        return f"{parent.settingsName()}Entry"
 
     def moveBy(self : Self, delta : QPointF) -> None:
         parent : "PortPinMixin" = self.parentItem()

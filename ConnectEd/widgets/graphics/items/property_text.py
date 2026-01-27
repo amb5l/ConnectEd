@@ -169,8 +169,7 @@ class PropertyTextItem(UniTextItem):
     def settingsName(self : Self) -> str:
         item = self.item()
         if item is not None:
-            item_name = item.__class__.__name__
-            settings_name = f"{item_name}{self._name}"
+            settings_name = f"{item.settingsName()}{self._name}"
             settings_items = settings().get("theme/items")
             if settings_name in vars(settings_items).keys():
                 return settings_name
