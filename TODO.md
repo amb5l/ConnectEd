@@ -1,21 +1,13 @@
-implement new property text
-
-properties - add support for virtual/system properties
- Path derived: PathFileBase, PathFileName, PathFileExt, PathDir
- System: Date, Time
-
-
-
-
-
-check property and properties editing
+check property texts
+check property dialog and properties spreadsheet
+  - line/block (Text class) editor (button with 3 dots to open dialog)
+create/save/load a new test diagram
 ratsnest?
 wire segment dragging
 connections/wires from ports touching
 appearance of zero length wires
 netlisting
 
-UniText class (string + block bool)
 dialog components assume attribute names
 rectangle context menu - set Origin
 

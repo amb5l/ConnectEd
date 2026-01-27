@@ -4,11 +4,11 @@ from PyQt6.QtCore    import QPointF
 from PyQt6.QtWidgets import QMenu
 from PyQt6.QtGui     import QAction
 
-from ..properties import PropertySpec
+from ..properties import PropertyTextSpec, PropertySpec
 
-from .              import EdgeLoc, Edge
-from .base_rect     import BaseRectangleItem
-from .property_text import PropertyTextSpec
+from . import EdgeLoc, Edge
+
+from .base_rect import BaseRectangleItem
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:

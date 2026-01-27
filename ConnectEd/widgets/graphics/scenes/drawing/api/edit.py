@@ -7,8 +7,7 @@ from ......app import logger
 
 from ......core.xml import copy
 
-from ....property   import PropertyEdit
-from ....properties import PropertiesMixin
+from ....properties import PropertyEdit, PropertiesMixin
 
 from ....items import ItemType, Default, NoChange, NO_CHANGE, AlignH, AlignV, \
                       EdgeLoc, SignalDirection
