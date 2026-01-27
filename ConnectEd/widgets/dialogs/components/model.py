@@ -16,7 +16,7 @@ class DialogItem(QStandardItem):
         before   : Any,
         after    : Any = "",
         kind     : str = "str",
-        default  : Any | None = None,
+        default  : Any = None,
         editable : bool = True,
         enabled  : bool = True
     ) -> None:

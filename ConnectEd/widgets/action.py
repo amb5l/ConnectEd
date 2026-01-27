@@ -15,7 +15,7 @@ class Action(QAction):
         shortcut  : QKeySequence | str | None = None,
         checkable : bool = False,
         checked   : bool = False,
-        data      : Any | None = None
+        data      : Any = None
     ) -> None:
         super().__init__(parent)
         self.setText(text)
