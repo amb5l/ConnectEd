@@ -9,17 +9,17 @@ from ....app import logger
 
 from ....core.utils import str2val, val2str
 
-from .model                import DialogItem
-from .edit                 import TextLineEditor, IntEditor, FloatEditor, TextEditor
-from .combo.color          import ColorComboBox
-from .combo.display_choice import DisplayChoiceComboBox
-from .combo.line_width     import LineWidthComboBox
-from .combo.line_style     import LineStyleComboBox
-from .combo.fill_style     import FillStyleComboBox
-from .combo.font_family    import FontFamilyComboBox
-from .combo.font_size      import FontSizeComboBox
-from .combo.on_off         import OnOffComboBox
-from .combo.edge           import EdgeComboBox
+from .model                  import BaseItem
+from .edit                   import TextLineEditor, IntEditor, FloatEditor, TextEditor
+from .combo.color            import ColorComboBox
+from .combo.property_display import PropertyDisplayComboBox
+from .combo.line_width       import LineWidthComboBox
+from .combo.line_style       import LineStyleComboBox
+from .combo.fill_style       import FillStyleComboBox
+from .combo.font_family      import FontFamilyComboBox
+from .combo.font_size        import FontSizeComboBox
+from .combo.on_off           import OnOffComboBox
+from .combo.edge             import EdgeComboBox
 
 
 class DialogItemDelegate(QStyledItemDelegate):
@@ -30,8 +30,8 @@ class DialogItemDelegate(QStyledItemDelegate):
         index  : QModelIndex
     ) -> QWidget | None:
         model : QStandardItemModel = index.model()
-        item : DialogItem = model.item(index.row(), index.column())
-        item_kind = item.getKind()
+        item : BaseItem = model.item(index.row(), index.column())
+        item_kind = item.getTypeName()
         item_value = item.getValue()
         item_default = item.getDefault()
         match item_kind:
@@ -49,8 +49,8 @@ class DialogItemDelegate(QStyledItemDelegate):
                 editor = EdgeComboBox(item_value, parent)
             case "QColor":
                 editor = ColorComboBox(item_value, item_default, None, parent)
-            case "DisplayChoice":
-                editor = DisplayChoiceComboBox(item_value, parent)
+            case "PropertyDisplay":
+                editor = PropertyDisplayComboBox(item_value, parent)
             case "FontFamily":
                 editor = FontFamilyComboBox(item_value, item_default, None, parent)
             case "LineWidth":
@@ -68,14 +68,14 @@ class DialogItemDelegate(QStyledItemDelegate):
         return editor
 
     def setEditorData(self : Self, editor : QWidget, index : QModelIndex) -> None:
-        item : DialogItem = index.model().item(index.row(), index.column())
+        item : BaseItem = index.model().item(index.row(), index.column())
         text = item.text()
         if isinstance(editor, TextLineEditor):
             editor.setText(text)
         elif isinstance(editor, IntEditor | FloatEditor):
-            value = str2val(text, item.getKind())
+            value = str2val(text, item.getTypeName())
             editor.setValue(value)
-        elif isinstance(editor, EdgeComboBox | DisplayChoiceComboBox | \
+        elif isinstance(editor, EdgeComboBox | PropertyDisplayComboBox | \
             ColorComboBox | LineWidthComboBox | LineStyleComboBox | \
             FillStyleComboBox | FontSizeComboBox | OnOffComboBox
         ):
@@ -93,7 +93,7 @@ class DialogItemDelegate(QStyledItemDelegate):
             text = editor.text()
         elif isinstance(editor, FloatEditor | IntEditor):
             text = val2str(editor.getValue())
-        elif isinstance(editor, EdgeComboBox | DisplayChoiceComboBox |\
+        elif isinstance(editor, EdgeComboBox | PropertyDisplayComboBox |\
             ColorComboBox | LineWidthComboBox | LineStyleComboBox | \
             FillStyleComboBox | FontSizeComboBox | OnOffComboBox
         ):

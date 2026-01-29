@@ -44,7 +44,7 @@ class CmdAddPolyVtx(CmdPolyVtxBase):
         self._vtx = self._polyline.addVertex(self._pos, self._sweep)
 
     def undo(self : Self) -> None:
-        self._polyline.removeLastVertex()
+        self._polyline.delLastVertex()
         self._vtx = None
 
     def vtx(self : Self) -> PolyVtxItem | None:

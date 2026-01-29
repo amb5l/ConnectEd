@@ -128,10 +128,10 @@ class UniTextItem(
 
     def __init__(
         self      : Self,
-        pos       : QPointF | None       = None,
         text      : str                  = "",
         block     : bool                 = False,
         rotcomp   : bool                 = True,
+        pos       : QPointF | None       = None,
         origin    : str                  = "Top Left",
         align_h   : AlignH | None        = None,
         align_v   : AlignV | None        = None,
@@ -157,12 +157,12 @@ class UniTextItem(
         self.initItem()
         self.setPos(pos or QPointF(0, 0))
         self.setOrigin(origin)
-        if color     : self.setQuillColor(color)
-        if family    : self.setQuillFamily(family)
-        if size      : self.setQuillSize(size)
-        if bold      : self.setQuillBold(bold)
-        if italic    : self.setQuillItalic(italic)
-        if underline : self.setQuillUnderline(underline)
+        self.setQuillColor(color)
+        self.setQuillFamily(family)
+        self.setQuillSize(size)
+        self.setQuillBold(bold)
+        self.setQuillItalic(italic)
+        self.setQuillUnderline(underline)
         self._child.onGeometryChange()
         self.updateHandlePositions()
         self.onSceneRotationChange()

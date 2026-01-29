@@ -3,13 +3,15 @@ from typing      import Self, Any
 from PyQt6.QtCore    import Qt, QPointF, QXmlStreamWriter
 from PyQt6.QtWidgets import QGraphicsItem, QGraphicsLineItem, \
                             QGraphicsSceneMouseEvent, QMenu
-from PyQt6.QtGui     import QAction
+from PyQt6.QtGui     import QAction, QColor
 
-from ....app import settings
+from ....app import settings, logger
+
+from ....core.utils import str2val
 
 from ..properties import InherentProperty, PropertiesMixin
 
-from . import NO_CHANGE, ItemType
+from . import Default, DEFAULT, NO_CHANGE, ItemType, AlignH, AlignV
 
 from .unitext import UniTextItem
 from .handle  import HandleItem
@@ -98,22 +100,50 @@ class PropertyTextItem(UniTextItem):
 
     def __init__(
         self   : Self,
-        name   : str | None           = None,
-        cleat  : str | None           = None,
-        pos    : QPointF | None       = None,
-        origin : str | None           = None,
+        name      : str | None           = None,
+        cleat     : str | None           = None,
+        pos       : QPointF | None       = None,
+        origin    : str | None           = None,
+        align_h   : AlignH | None        = None,
+        align_v   : AlignV | None        = None,
+        width     : float | None         = None,
+        height    : float | None         = None,
+        color     : QColor | Default     = DEFAULT,
+        family    : str    | Default     = DEFAULT,
+        size      : float  | Default     = DEFAULT,
+        bold      : bool   | Default     = DEFAULT,
+        italic    : bool   | Default     = DEFAULT,
+        underline : bool   | Default     = DEFAULT,
+
         fresh  : bool                 = True,
         parent : QGraphicsItem | None = None
     ) -> None:
-        super().__init__(fresh=fresh, parent=parent)
+        if origin is None:
+            origin = "Bottom Left" if cleat == "Top Left" else "Top Left"
+        super().__init__(
+            text      = "?",    # uninitialized value
+            block     = False,  # default
+            rotcomp   = True,   # always True for PropertyTextItem
+            pos       = pos,
+            origin    = origin,
+            align_h   = align_h,
+            align_v   = align_v,
+            width     = width,
+            height    = height,
+            color     = color,
+            family    = family,
+            size      = size,
+            bold      = bold,
+            italic    = italic,
+            underline = underline,
+            fresh  = fresh,
+            parent = parent
+        )
         self._tether = TetherItem(self)
         self._name = name
         self.setCleat(cleat)
-        if origin is None:
-            origin = "Bottom Left" if cleat == "Top Left" else "Top Left"
-        self.setOrigin(origin)
-        self.setPos(pos or QPointF(0, 0))
         self._cleat_shown = False
+        self.onTextChange()
 
     def mouseDoubleClickEvent(self : Self, event : QGraphicsSceneMouseEvent) -> None:
         """Handle double-click events to open the edit dialog."""
@@ -162,7 +192,7 @@ class PropertyTextItem(UniTextItem):
         pass
 
     def onTextChange(self : Self) -> None:
-        super().setText(self.value())
+        super().setText(str2val(self.value()))
 
     def settingsName(self : Self) -> str:
         item = self.item()
@@ -174,15 +204,29 @@ class PropertyTextItem(UniTextItem):
         return "PropertyText"
 
     def cleat(self : Self) -> str | None:
-        return self._cleat
+        parent = self.parentItem()
+        if parent is None:
+            return None
+        elif isinstance(parent, HandleItem):
+            return parent.name()
+        else:
+            logger().warning(f"Bad parent item ({parent.__class__.__name__})")
+            return "?"
 
     def setCleat(self : Self, name : str) -> None:
         self._cleat = name
-        handle = self.parentItem()
-        if handle is None:
-            return
-        handler = handle.parentItem()  # item or scene with handles
-        self.setParentItem(handler.getHandle(name))
+        parent = self.parentItem()
+        if parent is None:
+            logger().warning("No parent item")
+        elif isinstance(parent, ItemType):
+            for child in parent.childItems():
+                if isinstance(child, HandleItem) and child.name() == name:
+                    self.setParentItem(child)
+                    return
+            logger().warning("Cleat not found in parent item")
+        else:
+            logger().warning(f"Bad parent item ({parent.__class__.__name__})")
+        return
 
     def setOrigin(self : Self, name : str) -> None:
         """Override to update tether line."""

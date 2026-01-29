@@ -4,7 +4,8 @@ import inspect
 import importlib
 import re
 
-from typing import Any, TypeVar
+from typing import Any, NamedTuple
+from dataclasses import dataclass, fields
 
 from collections import defaultdict
 
@@ -169,7 +170,7 @@ def val2str(v : Any) -> str:
         case "QRectF"          : s = f"{v.x()},{v.y()},{v.width()},{v.height()}"
         case "QSizeF"          : s = f"{v.width()},{v.height()}"
         case "QColor"          : s = f"#{(v.rgb() & 0xFFFFFF):06X}"
-        case "DisplayChoice"   : s = v.value
+        case "PropertyDisplay" : s = v.value
         case "PenStyle"        : s = str(v).replace("PenStyle.", "")
         case "BrushStyle"      : s = str(v).replace("BrushStyle.", "")
         case "AlignH"          : s = v.toStr()
@@ -190,7 +191,7 @@ def str2val(s : str, t : str) -> Any:
     """
     from ..widgets.graphics.items import \
         DEFAULT, AlignH, AlignV, Edge, EdgeLoc, SignalDirection
-    from ..widgets.dialogs.properties import DisplayChoice
+    from ..widgets.graphics.properties import PropertyDisplay
     def strValuesToFloats(s : str) -> list[float]:
         return [float(p) for p in s.strip("()").split(",")]
     # handle None
@@ -215,7 +216,7 @@ def str2val(s : str, t : str) -> Any:
         case "QRectF"          : return QRectF(*strValuesToFloats(s))
         case "QSizeF"          : return QSizeF(*strValuesToFloats(s))
         case "QColor"          : return QColor.fromRgb(int(s[1:], 16) | 0xFF000000)
-        case "DisplayChoice"   : return DisplayChoice(s)
+        case "PropertyDisplay" : return PropertyDisplay(s)
         case "PenStyle"        : return Qt.PenStyle[s]
         case "BrushStyle"      : return Qt.BrushStyle[s]
         case "AlignH"          : return AlignH.fromStr(s)

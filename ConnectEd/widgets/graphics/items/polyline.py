@@ -238,8 +238,8 @@ class PolylineItem(
         self.updatePath()
         return vtx
 
-    def removeLastVertex(self : Self) -> None:
-        """Remove the last vertex."""
+    def delLastVertex(self : Self) -> None:
+        """Delete the last vertex."""
         seg = self._segments.pop()
         seg.setParentItem(None)
         vtx = self._vertices.pop()

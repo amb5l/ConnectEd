@@ -22,13 +22,13 @@ class BlockItem(BaseRectangleItem):
             valid   = lambda self: self._label != "",
             getter  = lambda self: self._label,
             setter  = lambda self, value: setattr(self, "_label", value),
-            display = PropertyTextSpec("Top Left")
+            text = PropertyTextSpec(cleat="Top Left", origin="Bottom Left")
         ),
         "Name" : InherentProperty(
             valid   = lambda self: self._name != "",
             getter  = lambda self: self._name,
             setter  = lambda self, value: setattr(self, "_name", value),
-            display = PropertyTextSpec("Bottom Left")
+            text = PropertyTextSpec(cleat="Bottom Left", origin="Top Left")
         ),
         "Path" : InherentProperty(
             valid   = lambda self: self._path != "",

@@ -1,7 +1,37 @@
-PropertySpec => InherentProperty
-CustomProperty subclass of Text
-PropertySignaller => PropertyNotifier
-_INHERENT_PROPERTIES => _PROPERTIES
+tidy up utils.py (redundant functions)
+argument default to QPointF(0,0) = change to None
+
+prepareGeometryChange / onGeometryChange batching
+
+class YourItem(QGraphicsItem):  # Or mixin
+    _deferred_geometry_change: bool = False
+
+    def itemChange(self: Self, change: QGraphicsItem.GraphicsItemChange, value: QVariant) -> QVariant:
+        if change in (QGraphicsItem.ItemPositionChange, QGraphicsItem.ItemTransformChange,
+                      QGraphicsItem.ItemScaleChange, QGraphicsItem.ItemRotationChange):
+            # Defer custom logic
+            if not self._deferred_geometry_change:
+                self._deferred_geometry_change = True
+                QTimer.singleShot(0, self._processDeferredGeometryChange)  # Async defer (batch multiple)
+        return super().itemChange(change, value)
+
+    def _processDeferredGeometryChange(self: Self) -> None:
+        self._deferred_geometry_change = False
+        self.onGeometryChange()  # Single call after batch
+
+    def onGeometryChange(self: Self) -> None:
+        # Your logic here (runs once post-batch)
+        print("Batched geometry change!")
+
+# Usage: No explicit begin/end needed—Qt changes auto-batch
+item.setPos(10, 20)
+item.setRotation(45)  # onGeometryChange called once, deferred
+
+================================================================================
+
+
+
+updateProperties => notifyUsers
 
 
 check property texts

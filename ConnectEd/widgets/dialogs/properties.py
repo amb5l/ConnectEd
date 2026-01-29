@@ -1,6 +1,7 @@
-from typing import Self, Any, TypeAlias
+from typing import Self, Any, TypeAlias, NamedTuple
 from enum   import Enum
-from copy   import deepcopy
+
+
 
 from PyQt6.QtCore    import Qt, QModelIndex
 from PyQt6.QtWidgets import QDialog, QMessageBox, \
@@ -10,15 +11,17 @@ from PyQt6.QtGui     import QBrush
 
 from ...app import settings
 
-from ..graphics.property import PropertyState,    \
-                                PropertyEdit,     \
-                                PropertyTextState
+from ...core.utils import snake2proper
 
-from ..graphics.items import DEFAULT
+from ..graphics.properties import PropertyDisplay, \
+                                  property_fields, verify_property_fields, \
+                                  PropertyState, PropertyChange
+
+from ..graphics.items import DEFAULT, AlignH, AlignV
 
 from ..graphics.items.mixin.handle import ItemRectHandlesMixin
 
-from .components.model import DialogItem, DialogModel
+from .components.model import BaseItem, BaseModel
 
 from .components.table_view import TableView
 
@@ -35,34 +38,54 @@ if TYPE_CHECKING:
     from ..graphics.views.drawing import DrawingView
 
 
-class DisplayChoice(Enum):
-    NONE = "<none>"
-    SHOW = "Line"
-    HIDE = "Block"
-
-
-class ExistingItem(DialogItem):
+class ExistingItem(BaseItem):
     def __init__(
-        self     : Self,
-        value    : Any,
-        kind     : str = "str",
-        default  : Any = None,
-        editable : bool = True,
-        enabled  : bool = True
+        self      : Self,
+        value     : Any,
+        type_name : str = "str",
+        default   : Any = None,
+        editable  : bool = True,
+        enabled   : bool = True
     ) -> None:
-        super().__init__(value, value, kind, default, editable, enabled)
+        super().__init__(value, value, type_name, default, editable, enabled)
 
 
-class NewItem(DialogItem):
+class NewItem():
     def __init__(
-        self     : Self,
-        value    : Any = "",
-        kind     : str = "str",
-        default  : Any = None,
-        editable : bool = True,
-        enabled  : bool = True
+        self      : Self,
+        value     : Any = "",
+        type_name : str = "str",
+        default   : Any = None,
+        editable  : bool = True,
+        enabled   : bool = True
     ) -> None:
-        super().__init__(None, value, kind, default, editable, enabled)
+        super().__init__(None, value, type_name, default, editable, enabled)
+
+
+class PropertyEdit(NamedTuple):
+    name : str
+    edit : PropertyChange | PropertyState | None
+
+
+@verify_property_fields
+class RowItems(NamedTuple):
+    name      : BaseItem
+    value     : BaseItem
+    display   : BaseItem
+    cleat     : BaseItem
+    x         : BaseItem
+    y         : BaseItem
+    origin    : BaseItem
+    align_h   : BaseItem
+    align_v   : BaseItem
+    width     : BaseItem
+    height    : BaseItem
+    color     : BaseItem
+    family    : BaseItem
+    size      : BaseItem
+    bold      : BaseItem
+    italic    : BaseItem
+    underline : BaseItem
 
 
 class PropertiesDialog(QDialog):
@@ -70,7 +93,7 @@ class PropertiesDialog(QDialog):
 
     _item           : ItemType
     _dialog_layout  : QVBoxLayout
-    _table_model    : DialogModel
+    _table_model    : BaseModel
     _table_view     : TableView
     _delegate       : DialogItemDelegate
     _button_layout  : QHBoxLayout
@@ -79,8 +102,7 @@ class PropertiesDialog(QDialog):
     _delete_button  : QPushButton
     _ok_button      : QPushButton
     _cancel_button  : QPushButton
-    _before         : dict[str, PropertyState]
-    _current        : dict[str, PropertyState]
+    _deletions      : list[str]                 # names of properties to delete
 
     def __init__(
         self : Self,
@@ -93,113 +115,37 @@ class PropertiesDialog(QDialog):
         self.setWindowTitle(f"{item.__class__.__name__} Properties")
         self.setModal(True)
         self._dialog_layout = QVBoxLayout(self)
-        # build model, record before state
-        self._table_model = DialogModel()
+        # build model, record initial state
+        self._table_model = BaseModel()
         headers = [
-            "Name",
-            "Value",
-            "Display",
-            "Hidden",
-            "Cleat",
-            "Offset X",
-            "Offset Y",
-            "Origin",
-            "Color",
-            "Font",
-            "Size",
-            "Bold",
-            "Italic",
-            "Underline",
-            "Align H",
-            "Align V",
-            "Width",
-            "Height"
+            snake2proper(field_name) for field_name in property_fields
         ]
         self._table_model.setHorizontalHeaderLabels(headers)
-        self._before = {}
-        for name, prop in item.properties.items():
-            pt = prop.getText()
-            display_choice = DisplayChoice.NONE if pt is None else \
-                             DisplayChoice.SHOW if pt.isVisible() else \
-                             DisplayChoice.HIDE
-            args = {}
-            if display_choice is not DisplayChoice.NONE:
-                args[ "hidden"    ] = not pt.isVisible(),
-                args[ "cleat"     ] = pt.getCleat(),
-                args[ "offset_x"  ] = pt.pos().x(),
-                args[ "offset_y"  ] = pt.pos().y(),
-                args[ "origin"    ] = pt.getOrigin(),
-                args[ "align_h"   ] = pt.alignH()
-                args[ "align_v"   ] = pt.alignV()
-                args[ "width"     ] = pt.width()
-                args[ "height"    ] = pt.height()
-                args[ "color"     ] = pt.quillColor(),
-                args[ "font"      ] = pt.quillFamily(),
-                args[ "size"      ] = pt.quillSize(),
-                args[ "bold"      ] = pt.quillBold(),
-                args[ "italic"    ] = pt.quillItalic(),
-                args[ "underline" ] = pt.quillUnderline()
-            pt_state = PropertyTextState(**args) if args else None
-            state = PropertyState(name, prop.raw(), pt_state)
-            inherent  = prop.inherent()
-            read_only = prop.isReadOnly()
-            kind      = prop.kind()
-            default   = prop.default()
-            display_hidden    = None
-            display_cleat     = None
-            display_offset_x  = None
-            display_offset_y  = None
-            display_origin    = None
-            display_color     = None
-            display_family    = None
-            display_size      = None
-            display_bold      = None
-            display_italic    = None
-            display_underline = None
-            display_align_h   = None
-            display_align_v   = None
-            display_width     = None
-            display_height    = None
-            if display_choice is not DisplayChoice.NONE:
-                display_hidden    = pt_state.hidden
-                display_cleat     = pt_state.cleat
-                display_offset_x  = pt_state.offset_x
-                display_offset_y  = pt_state.offset_y
-                display_origin    = pt_state.origin
-                display_color     = pt_state.color
-                display_family    = pt_state.family
-                display_size      = pt_state.size
-                display_bold      = pt_state.bold
-                display_italic    = pt_state.italic
-                display_underline = pt_state.underline
-            if display_choice is DisplayChoice.BLOCK:
-                display_align_h   = pt_state.align_h
-                display_align_v   = pt_state.align_v
-                display_width     = pt_state.width
-                display_height    = pt_state.height
+        for name in item.getPropertyNames():
+            state : PropertyState = PropertyState.fromProperty(item, name)
+            inherent  = item.isPropertyInherent(name)
+            type_name = item.getPropertyTypeName(name)
+            default   = item.getPropertyDefault(name)
+            read_only = item.isPropertyReadOnly(name)
             self._table_model.appendRow([
-                ExistingItem(state.name, editable=inherent),
-                ExistingItem(state.value, kind, default, not read_only),
-                ExistingItem(display_choice    , "DisplayChoice"),
-                ExistingItem(display_hidden    , "bool"         ),
-                ExistingItem(display_cleat     , "str"          ),
-                ExistingItem(display_offset_x  , "float"        ),
-                ExistingItem(display_offset_y  , "float"        ),
-                ExistingItem(display_origin    , "str"          ),
-                ExistingItem(display_color     , "QColor"       ),
-                ExistingItem(display_family    , "FontFamily"   ),
-                ExistingItem(display_size      , "FontSize"     ),
-                ExistingItem(display_bold      , "bool"         ),
-                ExistingItem(display_italic    , "bool"         ),
-                ExistingItem(display_underline , "bool"         ),
-                ExistingItem(display_align_h   , "AlignH"       ),
-                ExistingItem(display_align_v   , "AlignV"       ),
-                ExistingItem(display_width     , "float"        ),
-                ExistingItem(display_height    , "float"        )
+                ExistingItem(name, editable=inherent),
+                ExistingItem(state.value, type_name, default, not read_only),
+                ExistingItem(state.display   , "PropertyDisplay"),
+                ExistingItem(state.cleat     , "str"            ),
+                ExistingItem(state.x         , "float"          ),
+                ExistingItem(state.y         , "float"          ),
+                ExistingItem(state.origin    , "str"            ),
+                ExistingItem(state.align_h   , "QColor"         ),
+                ExistingItem(state.align_v   , "FontFamily"     ),
+                ExistingItem(state.width     , "FontSize"       ),
+                ExistingItem(state.height    , "bool"           ),
+                ExistingItem(state.color     , "bool"           ),
+                ExistingItem(state.family    , "bool"           ),
+                ExistingItem(state.size      , "AlignH"         ),
+                ExistingItem(state.bold      , "AlignV"         ),
+                ExistingItem(state.italic    , "float"          ),
+                ExistingItem(state.underline , "float"          )
             ])
-            self._before[name] = state
-        # initially, current = before
-        self._current = deepcopy(self._before)
         # create delegate
         self._delegate = DialogItemDelegate()
         self._delegate.destroyed.connect(
@@ -244,28 +190,37 @@ class PropertiesDialog(QDialog):
         self.setMinimumSize(min_width, min_height)
         self._table_model.dataChanged.connect(self._onDataChanged)
 
-    def parent(self : Self) -> "DrawingView | None":
-        return super().parent()
-
-    def getColumn(self : Self, header : str) -> int:
-        return self._HEADER.index(header)
-
-    def getChanges(self : Self) -> dict[str, PropertyEdit]:
-        before_after : dict[str, PropertyEdit] = {}
-        name_rows : dict[str, int] = {}
-        # check for and ignore duplicates
-        for row_idx in range(self._table_model.rowCount()):
-            name_item : DialogItem = self._table_model.item(row_idx, 0)
-            after_name = name_item.getValue()
-            if after_name in name_rows:
+    def getChanges(self : Self) -> list[PropertyEdit]:
+        changes : list[PropertyEdit] = []
+        # process deletions
+        for name in self._deletions:
+            changes.append((name, None))
+        # process additions and modifications
+        after_names : list[str] = []
+        # check for and ignore duplicates and anomalies
+        for row in range(self._table_model.rowCount()):
+            row_values_list = [
+                self._table_model.item(row, col).getValue() \
+                    for col in range(self._table_model.columnCount())
+            ]
+            row_values = PropertyChange(*row_values_list)
+            after_name = row_values.name
+            # check for and skip duplicates
+            if after_name in after_names:
                 QMessageBox.warning(
                     self,
                     "Property Name Duplicated",
-                    f"Property '{after_name}' appears multiple times"
+                    f"Property '{row_values.name}' appears multiple times"
                 )
                 continue  # skip duplicate
-            before_name = name_item.getBefore()
-            if before_name is not None:  # existing property
+            after_names.append(row_values.name)
+            # build changes; check for and ignore anomalies
+            before_name_item : BaseItem = self._table_model.item(row, 0)
+            before_name = before_name_item.getBefore()
+            if before_name is None:  # add new property
+                change = (after_name, PropertyState(*row_values_list))
+            else: # modify existing property
+                # check for and skip anomalies
                 if before_name not in self._before.keys():
                     QMessageBox.warning(
                         self,
@@ -273,52 +228,8 @@ class PropertiesDialog(QDialog):
                         f"Property '{before_name}' not seen during construction"
                     )
                     continue  # skip anomalous property
-                before = self._before[before_name]
-            else:
-                before = None
-            value_item     : DialogItem = self._table_model.item(row_idx, 1)
-            display_item   : DialogItem = self._table_model.item(row_idx, 2)
-            hidden_item    : DialogItem = self._table_model.item(row_idx, 3)
-            cleat_item     : DialogItem = self._table_model.item(row_idx, 4)
-            offset_x_item  : DialogItem = self._table_model.item(row_idx, 5)
-            offset_y_item  : DialogItem = self._table_model.item(row_idx, 6)
-            origin_item    : DialogItem = self._table_model.item(row_idx, 7)
-            color_item     : DialogItem = self._table_model.item(row_idx, 8)
-            family_item    : DialogItem = self._table_model.item(row_idx, 9)
-            size_item      : DialogItem = self._table_model.item(row_idx, 10)
-            bold_item      : DialogItem = self._table_model.item(row_idx, 11)
-            italic_item    : DialogItem = self._table_model.item(row_idx, 12)
-            underline_item : DialogItem = self._table_model.item(row_idx, 13)
-            align_h_item   : DialogItem = self._table_model.item(row_idx, 14)
-            align_v_item   : DialogItem = self._table_model.item(row_idx, 15)
-            width_item     : DialogItem = self._table_model.item(row_idx, 16)
-            height_item    : DialogItem = self._table_model.item(row_idx, 17)
-            after = PropertyState()
-            after = PropertyState(
-                name      = after_name,
-                value     = value_item.getValue(),
-                display   = display_item.getValue()
-            )
-            if after.display != DisplayChoice.NONE:
-                after.hidden    = hidden_item.getValue()
-                after.cleat     = cleat_item.getValue()
-                after.offset_x  = offset_x_item.getValue()
-                after.offset_y  = offset_y_item.getValue()
-                after.origin    = origin_item.getValue()
-                after.color     = color_item.getValue()
-                after.family    = family_item.getValue()
-                after.size      = size_item.getValue()
-                after.bold      = bold_item.getValue()
-                after.italic    = italic_item.getValue()
-                after.underline = underline_item.getValue()
-            key = before_name or after_name
-            before_after[key] = PropertyEdit(before, after)
-        changes : dict[str, PropertyEdit] = {}
-        for change in before_after.values():
-            if change.before != change.after:
-                name = change.after.name if change.before is None \
-                    else change.before.name
-                changes[name] = change
+                change = (before_name, PropertyChange(*row_values_list))
+            changes.append(change)
         return changes
 
     def _onDelegateDestroyed(self : Self, _ : str) -> None:
@@ -345,49 +256,61 @@ class PropertiesDialog(QDialog):
             right_column = bottom_right.column()
             if 2 in range(top_left.column(), bottom_right.column() + 1):
                 right_column = self._table_model.columnCount() - 1
-            display_item : DialogItem = self._table_model.item(row_idx, 2)
+            display_item : BaseItem = self._table_model.item(row_idx, 2)
             display = display_item.getValue()
             for col_idx in range(top_left.column(), right_column + 1):
-                item : DialogItem = self._table_model.item(row_idx, col_idx)
+                item : BaseItem = self._table_model.item(row_idx, col_idx)
                 if item is None:
                     continue
-                if col_idx == 2 and item.getValue() != DisplayChoice.NONE:
+                if col_idx == 2 and item.getValue() != PropertyDisplay.NONE:
                     # set defaults if needed
-                    cleat_item     : DialogItem = self._table_model.item(row_idx, 3)
-                    offset_x_item  : DialogItem = self._table_model.item(row_idx, 4)
-                    offset_y_item  : DialogItem = self._table_model.item(row_idx, 5)
-                    origin_item    : DialogItem = self._table_model.item(row_idx, 6)
-                    color_item     : DialogItem = self._table_model.item(row_idx, 7)
-                    family_item    : DialogItem = self._table_model.item(row_idx, 8)
-                    size_item      : DialogItem = self._table_model.item(row_idx, 9)
-                    bold_item      : DialogItem = self._table_model.item(row_idx, 10)
-                    italic_item    : DialogItem = self._table_model.item(row_idx, 11)
-                    underline_item : DialogItem = self._table_model.item(row_idx, 12)
+                    cleat_item     : BaseItem = self._table_model.item(row_idx, 4)
+                    offset_x_item  : BaseItem = self._table_model.item(row_idx, 5)
+                    offset_y_item  : BaseItem = self._table_model.item(row_idx, 6)
+                    origin_item    : BaseItem = self._table_model.item(row_idx, 7)
+                    align_h_item   : BaseItem = self._table_model.item(row_idx, 8)
+                    align_v_item   : BaseItem = self._table_model.item(row_idx, 9)
+                    width_item     : BaseItem = self._table_model.item(row_idx, 10)
+                    height_item    : BaseItem = self._table_model.item(row_idx, 11)
+                    color_item     : BaseItem = self._table_model.item(row_idx, 12)
+                    family_item    : BaseItem = self._table_model.item(row_idx, 13)
+                    size_item      : BaseItem = self._table_model.item(row_idx, 14)
+                    bold_item      : BaseItem = self._table_model.item(row_idx, 15)
+                    italic_item    : BaseItem = self._table_model.item(row_idx, 16)
+                    underline_item : BaseItem = self._table_model.item(row_idx, 17)
                     if cleat_item.getValue() is None:
-                        cleat_item.setInit(
+                        cleat_item.setInitXXX(
                             "" if isinstance(self._item, DrawingScene) \
                             else self._item.__class__.getHandleNames()[0]
                         )
                     if offset_x_item.getValue() is None:
-                        offset_x_item.setInit(0.0)
+                        offset_x_item.setValue(0.0)
                     if offset_y_item.getValue() is None:
-                        offset_y_item.setInit(0.0)
+                        offset_y_item.setValue(0.0)
                     if origin_item.getValue() is None:
-                        origin_item.setInit(ItemRectHandlesMixin.getHandleNames()[0])
+                        origin_item.setValue(ItemRectHandlesMixin.getHandleNames()[0])
+                    if align_h_item.getValue() is None:
+                        align_h_item.setValue(AlignH.LEFT)
+                    if align_v_item.getValue() is None:
+                        align_v_item.setValue(AlignV.TOP)
+                    if width_item.getValue() is None:
+                        width_item.setValue(None)
+                    if height_item.getValue() is None:
+                        height_item.setValue(None)
                     if color_item.getValue() is None:
-                        color_item.setInit(DEFAULT)
+                        color_item.setValue(DEFAULT)
                     if family_item.getValue() is None:
-                        family_item.setInit(DEFAULT)
+                        family_item.setValue(DEFAULT)
                     if size_item.getValue() is None:
-                        size_item.setInit(DEFAULT)
+                        size_item.setValue(DEFAULT)
                     if bold_item.getValue() is None:
-                        bold_item.setInit(DEFAULT)
+                        bold_item.setValue(DEFAULT)
                     if italic_item.getValue() is None:
-                        italic_item.setInit(DEFAULT)
+                        italic_item.setValue(DEFAULT)
                     if underline_item.getValue() is None:
-                        underline_item.setInit(DEFAULT)
+                        underline_item.setValue(DEFAULT)
                 if col_idx > 2:
-                    enabled = (display != DisplayChoice.NONE)
+                    enabled = (display != PropertyDisplay.NONE)
                     item.setEnabled(enabled)
                     item.setEditable(enabled)
                 if item.isEnabled():
@@ -403,20 +326,23 @@ class PropertiesDialog(QDialog):
     def _add(self : Self) -> None:
         row_idx = self._table_model.rowCount()
         self._table_model.appendRow([
-            NewItem(),                                     # name
-            NewItem(),                                     # value
-            NewItem(DisplayChoice.NONE, "DisplayChoice"),  # display
-            NewItem( False , "bool"       ),                # hidden
-            NewItem( None , "str"        ),                # anchor
-            NewItem( None , "float"      ),                # offset X
-            NewItem( None , "float"      ),                # offset Y
-            NewItem( None , "str"        ),                # origin
-            NewItem( None , "QColor"     ),                # color
-            NewItem( None , "FontFamily" ),                # font
-            NewItem( None , "FontSize"   ),                # size
-            NewItem( None , "bool"       ),                # bold
-            NewItem( None , "bool"       ),                # italic
-            NewItem( None , "bool"       )                 # underline
+            NewItem(),                                         # name
+            NewItem(),                                         # value
+            NewItem(PropertyDisplay.NONE, "PropertyDisplay"),  # display
+            NewItem( None , "str"        ),                    # anchor
+            NewItem( None , "float"      ),                    # offset X
+            NewItem( None , "float"      ),                    # offset Y
+            NewItem( None , "str"        ),                    # origin
+            NewItem( None , "AlignH"     ),                    # align H
+            NewItem( None , "AlignV"     ),                    # align V
+            NewItem( None , "float"      ),                    # width
+            NewItem( None , "float"      ),                    # height
+            NewItem( None , "QColor"     ),                    # color
+            NewItem( None , "FontFamily" ),                    # font
+            NewItem( None , "FontSize"   ),                    # size
+            NewItem( None , "bool"       ),                    # bold
+            NewItem( None , "bool"       ),                    # italic
+            NewItem( None , "bool"       )                     # underline
         ])
         self._refreshTable()
         self._table_view.setCurrentIndex(self._table_model.index(row_idx, 0))
@@ -428,8 +354,9 @@ class PropertiesDialog(QDialog):
         # delete rows
         failures = []
         for row in rows:
-            name_item : DialogItem = self._table_model.item(row, 0)
+            name_item : BaseItem = self._table_model.item(row, 0)
             if name_item.isEditable():
+                self._deletions.append(name_item.getValue())
                 self._table_model.removeRow(row)
             else:
                 failures.append(name_item.text())

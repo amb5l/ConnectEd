@@ -6,51 +6,47 @@ from PyQt6.QtGui  import QStandardItem, QStandardItemModel
 from ....core.utils import val2str, str2val
 
 
-class DialogItem(QStandardItem):
-    IDX_BEFORE  = 0
-    IDX_KIND    = 1
-    IDX_DEFAULT = 2
+class BaseItem(QStandardItem):
+    IDX_INITIAL   = 0
+    IDX_TYPE_NAME = 1
+    IDX_DEFAULT   = 2
 
     def __init__(
-        self     : Self,
-        before   : Any,
-        after    : Any = "",
-        kind     : str = "str",
-        default  : Any = None,
-        editable : bool = True,
-        enabled  : bool = True
+        self      : Self,
+        initial   : Any,
+        value     : Any = "",
+        type_name : str = "str",
+        default   : Any = None,
+        editable  : bool = True,
+        enabled   : bool = True
     ) -> None:
         super().__init__()
-        self.setBefore(before)
-        self.setValue(after)
-        self.setKind(kind)
+        self.setInitial(initial)
+        self.setValue(value)
+        self.setTypeName(type_name)
         self.setDefault(default)
         self.setEditable(editable)
 
-    def setInit(self : Self, value : Any) -> None:
-        self.setBefore(value)
-        self.setValue(value)
-
-    def setBefore(self : Self, value : Any) -> None:
-        self.setData(value, Qt.ItemDataRole.UserRole + self.IDX_BEFORE)
+    def setInitial(self : Self, value : Any) -> None:
+        self.setData(value, Qt.ItemDataRole.UserRole + self.IDX_INITIAL)
 
     def getBefore(self : Self) -> Any:
-        return self.data(Qt.ItemDataRole.UserRole + self.IDX_BEFORE)
+        return self.data(Qt.ItemDataRole.UserRole + self.IDX_INITIAL)
 
     def setValue(self : Self, value : Any) -> None:
         self.setText(val2str(value))
 
     def getValue(self : Self) -> Any:
-        return str2val(self.text(), self.getKind())
+        return str2val(self.text(), self.getTypeName())
 
     def changed(self : Self) -> bool:
         return self.getValue() != self.getBefore() and self.getBefore() is not None
 
-    def setKind(self : Self, kind : str) -> None:
-        self.setData(kind, Qt.ItemDataRole.UserRole + self.IDX_KIND)
+    def setTypeName(self : Self, kind : str) -> None:
+        self.setData(kind, Qt.ItemDataRole.UserRole + self.IDX_TYPE_NAME)
 
-    def getKind(self : Self) -> str:
-        return self.data(Qt.ItemDataRole.UserRole + self.IDX_KIND)
+    def getTypeName(self : Self) -> str:
+        return self.data(Qt.ItemDataRole.UserRole + self.IDX_TYPE_NAME)
 
     def setDefault(self : Self, default : Any) -> None:
         self.setData(default, Qt.ItemDataRole.UserRole + self.IDX_DEFAULT)
@@ -59,5 +55,5 @@ class DialogItem(QStandardItem):
         return self.data(Qt.ItemDataRole.UserRole + self.IDX_DEFAULT)
 
 
-class DialogModel(QStandardItemModel):
+class BaseModel(QStandardItemModel):
     pass

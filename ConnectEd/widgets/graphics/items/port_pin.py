@@ -33,9 +33,9 @@ class PortPinMixin(
     _PROPERTIES_NAME = \
         {
             "Name" : InherentProperty(
-                getter    = lambda self: self._name,
-                setter    = lambda self, value: setattr(self, "_name", value),
-                display   = PropertyTextSpec("Name", origin="Middle Left")
+                getter = lambda self: self._name,
+                setter = lambda self, value: setattr(self, "_name", value),
+                text   = PropertyTextSpec(cleat="Name", origin="Middle Left")
             )
         }
     _PROPERTIES_DIR = \

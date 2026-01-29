@@ -7,7 +7,7 @@ from ......app import logger
 
 from ......core.xml import copy
 
-from ....properties import PropertyEdit, PropertiesMixin
+from ....properties import PropertyDisplay, PropertiesMixin
 
 from ....items import ItemType, Default, NoChange, NO_CHANGE, AlignH, AlignV, \
                       EdgeLoc, SignalDirection
@@ -32,7 +32,7 @@ from ..cmd.edit.polyline      import CmdEditPolylineClosed, CmdEditPolySeg
 from ..cmd.edit.text          import CmdEditText
 from ..cmd.edit.property_text import CmdEditPropertyText
 from ..cmd.edit.appearance    import CmdEditAppearance
-from ..cmd.edit.properties    import CmdEditProperties
+from ..cmd.edit.properties    import CmdEditProperty
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -87,9 +87,10 @@ class DrawingSceneApiEditMixin:
 
     def editCut(
         self     : "DrawingScene",
-        pos      : QPointF = QPointF(0, 0),
+        pos      : QPointF | None = None,  # None => QPointF(0, 0)
         undoable : bool = False
     ) -> None:
+        pos = pos or QPointF(0, 0)
         items = \
             [item for item in self.selectedItems() \
                 if isinstance(item, ItemMixin) \
@@ -216,6 +217,10 @@ class DrawingSceneApiEditMixin:
         self      : "DrawingScene",
         item      : PropertyTextItem,
         value     : str,
+        align_h   : AlignH           | NoChange = NO_CHANGE,
+        align_v   : AlignV           | NoChange = NO_CHANGE,
+        width     : float | None     | NoChange = NO_CHANGE,
+        height    : float | None     | NoChange = NO_CHANGE,
         color     : QColor | Default | NoChange = NO_CHANGE,
         family    : str    | Default | NoChange = NO_CHANGE,
         size      : float  | Default | NoChange = NO_CHANGE,
@@ -225,7 +230,9 @@ class DrawingSceneApiEditMixin:
         undoable  : bool = False
     ) -> None:
         cmd = CmdEditPropertyText(
-            self, item, value, color, family, size, bold, italic, underline
+            self, item, value,
+            align_h, align_v, width, height,
+            color, family, size, bold, italic, underline
         )
         cmdExec(self, cmd, undoable)
 
@@ -262,11 +269,31 @@ class DrawingSceneApiEditMixin:
         )
         cmdExec(self, cmd, undoable)
 
-    def editProperties(
-        self     : "DrawingScene",
-        object   : PropertiesMixin,
-        changes  : PropertyEdit,
-        undoable : bool = False
+    def editProperty(
+        self      : "DrawingScene",
+        object    : PropertiesMixin,
+        name      : str,
+        value     : Any             | NoChange = NO_CHANGE,
+        display   : PropertyDisplay | NoChange = NO_CHANGE,
+        cleat     : str             | NoChange = NO_CHANGE,
+        x         : float           | NoChange = NO_CHANGE,
+        y         : float           | NoChange = NO_CHANGE,
+        origin    : str             | NoChange = NO_CHANGE,
+        align_h   : AlignH          | NoChange = NO_CHANGE,
+        align_v   : AlignV          | NoChange = NO_CHANGE,
+        width     : float | None    | NoChange = NO_CHANGE,
+        height    : float | None    | NoChange = NO_CHANGE,
+        color     : QColor          | NoChange = NO_CHANGE,
+        family    : str             | NoChange = NO_CHANGE,
+        size      : float           | NoChange = NO_CHANGE,
+        bold      : bool            | NoChange = NO_CHANGE,
+        italic    : bool            | NoChange = NO_CHANGE,
+        underline : bool            | NoChange = NO_CHANGE,
+        undoable  : bool                       = False
     ) -> None:
-        cmd = CmdEditProperties(object, changes)
+        cmd = CmdEditProperty(
+            object, name, value, display,
+            cleat, x, y, origin, align_h, align_v, width, height,
+            color, family, size, bold, italic, underline
+        )
         cmdExec(self, cmd, undoable)

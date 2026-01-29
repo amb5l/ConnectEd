@@ -3,11 +3,11 @@ from dataclasses import dataclass
 
 @dataclass
 class Text:
-    value : str   # text string value
-    block : bool  # False = line, True = block
+    string : str   # text string value
+    block  : bool  # False = line, True = block
 
     def __str__(self) -> str:
-        return self.value
+        return self.string
 
 
 @dataclass
@@ -19,3 +19,5 @@ class TextLine(Text):
 class TextBlock(Text):
     block : bool = True
 
+
+text_default = TextLine("")

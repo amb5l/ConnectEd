@@ -187,11 +187,11 @@ class PlacePolylineInteraction(PlaceBase1PosInteraction):
             return False  # continue interaction
         # Handle closing the polyline
         if pos == self._item.pos():
-            self._item.removeLastVertex()  # remove WIP vertex
+            self._item.delLastVertex()  # remove WIP vertex
             self._scene.editPolylineClosed(self._item, True, self._sweep, undoable=True)
             return True  # interaction completed
         # Add vertex to polyline when 3rd+ vertex is committed
-        self._item.removeLastVertex()  # remove WIP vertex
+        self._item.delLastVertex()  # remove WIP vertex
         self._scene.addPolyVtx(self._item, pos, self._sweep, undoable=True)
         self._item.addVertex(pos)  # add WIP vertex
         self._sweep = None
@@ -199,11 +199,11 @@ class PlacePolylineInteraction(PlaceBase1PosInteraction):
 
     def complete(self : Self, pos : QPointF) -> None:
         if not self.commit(pos):
-            self._item.removeLastVertex()  # remove WIP vertex
+            self._item.delLastVertex()  # remove WIP vertex
 
     def cancel(self : Self) -> None:
         """Escape works a bit differently here."""
-        self._item.removeLastVertex()  # remove WIP vertex
+        self._item.delLastVertex()  # remove WIP vertex
 
     def ctxMenuItems(self : Self, pos : QPointF) -> list[QAction | QMenu]:
         items = []

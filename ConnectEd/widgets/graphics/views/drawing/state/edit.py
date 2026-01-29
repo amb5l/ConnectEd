@@ -139,7 +139,43 @@ class DrawingViewStateEditItemProperties(DrawingViewStateBase):
         if item:
             dialog = PropertiesDialog(item, self.view)
             if dialog.exec():
-                self.scene.editProperties(item, dialog.getChanges(), undoable=True)
+                for name, change in dialog.getChanges():
+                    if change is None:
+                        # delete
+                        self.scene.delProperty(item, name, undoable=True)
+                    elif name == "":
+                        # add
+                        self.scene.addProperty(item, name, undoable=True)
+                    else:
+                        # modify
+                        self.scene.editProperty(
+                            object = item,
+                            name    = (name, change.name),
+                            value   = change.after.value,
+                            display = change.after.display,
+                            origin  = change.after.origin,
+                            align_h = change.after.align_h,
+                            align_v = change.after.align_v,
+                            width   = change.after.width,
+                            height  = change.after.height,
+                            color   = change.after.color,
+                            family  = change.after.family,
+                            size    = change.after.size,
+                            bold    = change.after.bold,
+                            italic  = change.after.italic,
+                            underline = change.after.underline,
+                            cleat   = change.after.cleat,
+                            x       = change.after.x,
+                            y       = change.after.y,
+                        )
+
+                    self.scene.editProperty(
+                        object = item,
+                        name   = (name, change.name),
+                        value  = change.after.value,
+                        shit
+
+                        undoable=True)
         else:
             logger().warning("No items selected")
         self.view.state.go(self.view.stateIdle)
