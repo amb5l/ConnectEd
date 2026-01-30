@@ -215,7 +215,7 @@ class DrawingViewUiEditMixin:
         height    : float | None     | NoChange = NO_CHANGE,
         anchor    : str              | NoChange = NO_CHANGE,
     ) -> None:
-        self._scene.editTextBlock(
+        self._scene.editText(
             item,
             align_h=align_h,
             align_v=align_v,
