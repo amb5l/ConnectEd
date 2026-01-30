@@ -193,7 +193,10 @@ class PropertyTextItem(UniTextItem):
         pass
 
     def onTextChange(self : Self) -> None:
-        super().setText(val2str(self.value()))
+        text = val2str(self.value())
+        if text == "":
+            text = f"<{self._name}>"
+        super().setText(text)
 
     def settingsName(self : Self) -> str:
         item = self.item()
@@ -210,6 +213,8 @@ class PropertyTextItem(UniTextItem):
     def setCleat(self : Self, name : str, parent : ItemType | None = None) -> bool:
         self._cleat = name
         item = parent or self.item()
+        if item is None:
+            return False
         for child in item.childItems():
             if isinstance(child, HandleItem) and child.name() == name:
                 self.setParentItem(child)
