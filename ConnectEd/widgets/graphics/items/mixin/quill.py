@@ -107,7 +107,7 @@ class ItemQuillMixin:
         scene : "DrawingScene" = self.scene()
         self.setQuillColor(scene.selectedTextColor() if selected else self.quillColor())
 
-    def defaultQuillColor(self : Self | ItemProtocol) -> QColor | Default:
+    def defaultQuillColor(self : Self | ItemProtocol) -> QColor:
         return settings().get(f"theme/items/{self.settingsName()}/text/color")
 
     def quillColor(self : Self | ItemProtocol) -> QColor | Default:
@@ -117,10 +117,11 @@ class ItemQuillMixin:
         self  : Self | ItemProtocol,
         color : QColor | Default
     ) -> None:
+        self._quill_color = color
         if color is DEFAULT: color = self.defaultQuillColor()
         self.setColor(color)
 
-    def defaultQuillFamily(self : Self | ItemProtocol) -> str | Default:
+    def defaultQuillFamily(self : Self | ItemProtocol) -> str:
         return settings().get(f"theme/items/{self.settingsName()}/text/font")
 
     def quillFamily(self : Self | ItemProtocol) -> str | Default:
@@ -130,12 +131,13 @@ class ItemQuillMixin:
         self   : Self | ItemProtocol,
         family : str | Default
     ) -> None:
+        self._quill_family = family
         if family is DEFAULT: family = self.defaultQuillFamily()
         font = self.font()
         font.setFamily(family)
         self.setFont(font)
 
-    def defaultQuillSize(self : Self | ItemProtocol) -> float | Default:
+    def defaultQuillSize(self : Self | ItemProtocol) -> float:
         return settings().get(f"theme/items/{self.settingsName()}/text/size")
 
     def quillSize(self : Self | ItemProtocol) -> float | Default:
@@ -145,12 +147,13 @@ class ItemQuillMixin:
         self : Self | ItemProtocol,
         size : float | Default
     ) -> None:
+        self._quill_size = size
         if size is DEFAULT: size = self.defaultQuillSize()
         font = self.font()
         font.setPointSizeF(size)
         self.setFont(font)
 
-    def defaultQuillBold(self : Self | ItemProtocol) -> bool | Default:
+    def defaultQuillBold(self : Self | ItemProtocol) -> bool:
         return settings().get(f"theme/items/{self.settingsName()}/text/bold")
 
     def quillBold(self : Self | ItemProtocol) -> bool | Default:
@@ -160,12 +163,13 @@ class ItemQuillMixin:
         self : Self | ItemProtocol,
         bold : bool | Default
     ) -> None:
+        self._quill_bold = bold
         if bold is DEFAULT: bold = self.defaultQuillBold()
         font = self.font()
         font.setBold(bold)
         self.setFont(font)
 
-    def defaultQuillItalic(self : Self | ItemProtocol) -> bool | Default:
+    def defaultQuillItalic(self : Self | ItemProtocol) -> bool:
         return settings().get(f"theme/items/{self.settingsName()}/text/italic")
 
     def quillItalic(self : Self | ItemProtocol) -> bool | Default:
@@ -175,12 +179,13 @@ class ItemQuillMixin:
         self   : Self | ItemProtocol,
         italic : bool | Default
     ) -> None:
+        self._quill_italic = italic
         if italic is DEFAULT: italic = self.defaultQuillItalic()
         font = self.font()
         font.setItalic(italic)
         self.setFont(font)
 
-    def defaultQuillUnderline(self : Self | ItemProtocol) -> bool | Default:
+    def defaultQuillUnderline(self : Self | ItemProtocol) -> bool:
         return settings().get(f"theme/items/{self.settingsName()}/text/underline")
 
     def quillUnderline(self : Self | ItemProtocol) -> bool | Default:
@@ -190,6 +195,7 @@ class ItemQuillMixin:
         self      : Self | ItemProtocol,
         underline : bool | Default
     ) -> None:
+        self._quill_underline = underline
         if underline is DEFAULT: underline = self.defaultQuillUnderline()
         font = self.font()
         font.setUnderline(underline)

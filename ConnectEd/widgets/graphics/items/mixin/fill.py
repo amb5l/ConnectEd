@@ -67,7 +67,7 @@ class ItemFillMixin:
         scene : "DrawingScene" = self.scene()
         self.setFillColor(scene.selectedFillColor() if selected else self.fillColor())
 
-    def defaultFillColor(self : Self | ItemProtocol) -> QColor | Default:
+    def defaultFillColor(self : Self | ItemProtocol) -> QColor:
         return settings().get(f"theme/items/{self.settingsName()}/fill/color")
 
     def fillColor(self : Self | ItemProtocol) -> QColor | Default:
@@ -77,12 +77,13 @@ class ItemFillMixin:
         self  : Self | ItemProtocol,
         color : QColor | Default
     ) -> None:
+        self._fill_color = color
         if color is DEFAULT: color = self.defaultFillColor()
         brush = self.brush()
         brush.setColor(color)
         self.setBrush(brush)
 
-    def defaultFillStyle(self : Self | ItemProtocol) -> Qt.BrushStyle | Default:
+    def defaultFillStyle(self : Self | ItemProtocol) -> Qt.BrushStyle:
         return settings().get(f"theme/items/{self.settingsName()}/fill/style")
 
     def fillStyle(self : Self | ItemProtocol) -> Qt.BrushStyle | Default:
@@ -92,6 +93,7 @@ class ItemFillMixin:
         self  : Self | ItemProtocol,
         style : Qt.BrushStyle | Default
     ) -> None:
+        self._fill_style = style
         if style is DEFAULT: style = self.defaultFillStyle()
         brush = self.brush()
         brush.setStyle(style)
