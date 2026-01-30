@@ -231,7 +231,6 @@ class PolylineItem(
     def addVertex(self : Self, pos : QPointF, sweep : float | None = None) -> PolyVtxItem:
         """Add a new vertex."""
         vtx = PolyVtxItem(self, len(self._vertices), pos - self.pos())
-        print("addVertex:", vtx._index, vtx.pos())
         self._vertices.append(vtx)
         if self.vertexCount() > 1:
             self._segments.append(PolySegItem(self, self._vertices[-2], vtx, sweep))
