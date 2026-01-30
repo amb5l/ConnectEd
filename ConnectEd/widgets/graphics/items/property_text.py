@@ -231,9 +231,10 @@ class PropertyTextItem(UniTextItem):
             return parent
         elif isinstance(parent, HandleItem):
             return parent.parentItem()
-        else:
+        elif parent is not None:
+            # Only warn for unexpected parent types, not during initialization
             logger().warning(f"Bad parent item ({parent.__class__.__name__})")
-            return None
+        return None
 
     def owner(self : Self) -> PropertiesMixin | None:
         return self.scene() if self.parentItem() is None else self.item()
