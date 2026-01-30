@@ -31,7 +31,7 @@ exists only for use via substitution in custom properties. For example,
 """
 
 from typing          import Self, Any, Literal, NamedTuple
-from dataclasses     import dataclass, astuple
+from dataclasses     import dataclass
 from collections.abc import Callable
 from enum            import Enum
 
@@ -70,6 +70,13 @@ class PropertyTextSpec:
     bold      : bool   | Default = DEFAULT
     italic    : bool   | Default = DEFAULT
     underline : bool   | Default = DEFAULT
+
+    def astuple(self : Self) -> tuple:
+        return (
+            self.visible, self.cleat, self.pos_x, self.pos_y, self.origin,
+            self.align_h, self.align_v, self.width, self.height,
+            self.color, self.family, self.size, self.bold, self.italic, self.underline
+        )
 
 
 class PropertyNotifier(QObject):
@@ -193,7 +200,7 @@ class PropertiesMixin:
         for name, property in self._properties.items():
             spec = property.text
             if isinstance(spec, PropertyTextSpec):
-                self.addPropertyText(name, *astuple(spec))
+                self.addPropertyText(name, *spec.astuple())
 
     def getPropertyNames(self : Self) -> list[str]:
         return list(self._properties.keys())
