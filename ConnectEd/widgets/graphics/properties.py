@@ -504,12 +504,10 @@ class PropertiesMixin:
         if isinstance(names, str):
             names = [names]
         for name in names:
-            if not self.hasProperty(name):
-                logger().warning(f"Property '{name}' not found")
-                continue
-            property = self._properties[name]
-            if property.notifier:
-                property.notifier.changed.emit()
+            if self.hasProperty(name):
+                property = self._properties[name]
+                if property.notifier:
+                    property.notifier.changed.emit()
 
     def getPropertyDisplay(self : Self, name : str) -> PropertyDisplay:
         from .items.property_text import PropertyTextItem
@@ -587,7 +585,7 @@ class PropertiesMixin:
                 if k in PropertyTextSpec.__dataclass_fields__.keys()
                     and k != "visible"
         }
-        property.text = PropertyTextItem(name, **pt_args)
+        property.text = PropertyTextItem(name, **pt_args, parent=self)
         return True
 
     def editPropertyText(
