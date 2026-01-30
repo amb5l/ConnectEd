@@ -24,16 +24,22 @@ qkm = Qt.KeyboardModifier
 
 class DrawingViewPrivateMixin:
     def _allItemsRect(self : "DrawingView") -> QRectF | None:
+        scene : "DrawingScene | None" = self.scene()
+        if scene is None:
+            return None
         items_rect = None
-        for item in self.scene().items():
+        for item in scene.items():
             item_rect = item.mapToScene(item.boundingRect()).boundingRect()
             items_rect = item_rect if items_rect is None else \
                 items_rect.united(item_rect)
         return items_rect
 
     def _selectedItemsRect(self : "DrawingView") -> QRectF | None:
+        scene : "DrawingScene | None" = self.scene()
+        if scene is None:
+            return None
         items_rect = None
-        for item in self.scene().selectedItems():
+        for item in scene.selectedItems():
             item_rect = item.mapToScene(item.boundingRect()).boundingRect()
             items_rect = item_rect if items_rect is None else \
                 items_rect.united(item_rect)
@@ -116,7 +122,10 @@ class DrawingViewPrivateMixin:
 
     def _setLayer(self : "DrawingView", layer : "DrawingView.Layer") -> None:
         self.layer = layer
-        for item in self.scene().items():
+        scene : "DrawingScene | None" = self.scene()
+        if scene is None:
+            return
+        for item in scene.items():
             item.setFlag(
                 QGraphicsItem.GraphicsItemFlag.ItemIsSelectable,
                 item.zValue() in layer.value
@@ -124,9 +133,12 @@ class DrawingViewPrivateMixin:
             item.setSelected(False)
 
     def _itemsAt(self : "DrawingView", pos : QPoint | QPointF) -> list[QGraphicsItem]:
+        scene : "DrawingScene | None" = self.scene()
+        if scene is None:
+            return []
         if isinstance(pos, QPoint):
             pos = self.mapToScene(pos)
-        items = self.scene().items(
+        items = scene.items(
             pos,
             Qt.ItemSelectionMode.IntersectsItemShape,
             Qt.SortOrder.DescendingOrder,
@@ -156,14 +168,16 @@ class DrawingViewPrivateMixin:
         rect      : QRectF,
         modifiers : Qt.KeyboardModifier
     ) -> None:
-        scene : "DrawingScene" = self.scene()
+        scene : "DrawingScene | None" = self.scene()
+        if scene is None:
+            return
         toggle = modifiers & (qkm.ControlModifier | qkm.ShiftModifier) \
             == qkm.ControlModifier
         path = QPainterPath()
         path.addRect(rect)
         scene.blockSignals(True)
         if toggle:
-            items = self.scene().items(
+            items = scene.items(
                 path,
                 Qt.ItemSelectionMode.IntersectsItemShape,
                 Qt.SortOrder.AscendingOrder,
@@ -172,7 +186,7 @@ class DrawingViewPrivateMixin:
             for item in items:
                 item.setSelected(not item.isSelected())
         else:
-            self.scene().setSelectionArea(
+            scene.setSelectionArea(
                 path,
                 Qt.ItemSelectionOperation.AddToSelection,
                 Qt.ItemSelectionMode.IntersectsItemShape,
@@ -239,7 +253,10 @@ class DrawingViewPrivateMixin:
         self  : "DrawingView",
         etype : type
     ) -> list[QGraphicsItem]:
-        return [i for i in self.scene().selectedItems() if isinstance(i, etype)]
+        scene : "DrawingScene | None" = self.scene()
+        if scene is None:
+            return []
+        return [i for i in scene.selectedItems() if isinstance(i, etype)]
 
     def _selectedItem(
         self  : "DrawingView",

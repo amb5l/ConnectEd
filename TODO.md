@@ -1,6 +1,8 @@
 tidy up utils.py (redundant functions)
+
 argument default to QPointF(0,0) = change to None
 
+================================================================================
 prepareGeometryChange / onGeometryChange batching
 
 class YourItem(QGraphicsItem):  # Or mixin
@@ -28,11 +30,6 @@ item.setPos(10, 20)
 item.setRotation(45)  # onGeometryChange called once, deferred
 
 ================================================================================
-
-
-
-updateProperties => notifyUsers
-
 
 check property texts
 check property dialog and properties spreadsheet

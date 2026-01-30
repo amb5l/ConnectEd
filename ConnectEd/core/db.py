@@ -267,7 +267,7 @@ class DesignDbNode(DbNode):
         fresh : bool = True
     ) -> None:
         from ..widgets.graphics.scenes.diagram import DiagramScene
-        self._scene = None if fresh else DiagramScene()
+        self._scene = DiagramScene() if fresh else None
         super().__init__(name)
         self.setIcon(DiagramIcon().get())
 

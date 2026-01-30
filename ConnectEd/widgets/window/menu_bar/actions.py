@@ -7,7 +7,7 @@ from ....app import window
 
 from ....core.defs import MIME_TYPE
 
-from ....widgets.graphics.views.drawing  import DrawingSubWindow
+from ....widgets.graphics.views.drawing  import DrawingView
 from ....widgets.graphics.scenes.drawing import DrawingScene
 
 from ...action  import Action
@@ -111,32 +111,34 @@ class Actions:
                 s.undo_stack.canRedoChanged.disconnect(self.onCanRedoChanged)
             except: # workaround for Qt cleanup
                 pass
-        en = subwindow is not None and isinstance(subwindow, DrawingSubWindow)
-        self._scene = subwindow.widget().scene() if en else None
-        self.onCanUndoChanged(en and self._scene.undo_stack.canUndo())
-        self.onCanRedoChanged(en and self._scene.undo_stack.canRedo())
+        self._scene = None
+        view : DrawingView | None = subwindow.widget() if subwindow else None
+        self._scene : DrawingScene | None = view.scene() \
+            if subwindow and view else None
+        self.onCanUndoChanged(bool(self._scene and self._scene.undo_stack.canUndo()))
+        self.onCanRedoChanged(bool(self._scene and self._scene.undo_stack.canRedo()))
         self.onSelectionChanged()
         self.onClipboardDataChanged()
-        self.fileSave        .setEnabled(en)
-        self.fileSaveAs      .setEnabled(en)
-        self.editDuplicate   .setEnabled(en)
-        self.editAppearance  .setEnabled(en)
-        self.viewZoomAll     .setEnabled(en)
-        self.viewZoomSheet   .setEnabled(en)
-        self.viewZoomArea    .setEnabled(en)
-        self.viewZoomIn      .setEnabled(en)
-        self.viewZoomOut     .setEnabled(en)
-        self.viewPan         .setEnabled(en)
-        self.viewPanUp       .setEnabled(en)
-        self.viewPanDown     .setEnabled(en)
-        self.viewPanLeft     .setEnabled(en)
-        self.viewPanRight    .setEnabled(en)
-        self.viewGridDisplay .setEnabled(en)
-        self.viewGridSnap    .setEnabled(en)
-        self.placeBlock      .setEnabled(en)
-        self.placeRectangle  .setEnabled(en)
-        self.placeText       .setEnabled(en)
-        if en and self._scene is not None:
+        self.fileSave        .setEnabled(bool(self._scene))
+        self.fileSaveAs      .setEnabled(bool(self._scene))
+        self.editDuplicate   .setEnabled(bool(self._scene))
+        self.editAppearance  .setEnabled(bool(self._scene))
+        self.viewZoomAll     .setEnabled(bool(self._scene))
+        self.viewZoomSheet   .setEnabled(bool(self._scene))
+        self.viewZoomArea    .setEnabled(bool(self._scene))
+        self.viewZoomIn      .setEnabled(bool(self._scene))
+        self.viewZoomOut     .setEnabled(bool(self._scene))
+        self.viewPan         .setEnabled(bool(self._scene))
+        self.viewPanUp       .setEnabled(bool(self._scene))
+        self.viewPanDown     .setEnabled(bool(self._scene))
+        self.viewPanLeft     .setEnabled(bool(self._scene))
+        self.viewPanRight    .setEnabled(bool(self._scene))
+        self.viewGridDisplay .setEnabled(bool(self._scene))
+        self.viewGridSnap    .setEnabled(bool(self._scene))
+        self.placeBlock      .setEnabled(bool(self._scene))
+        self.placeRectangle  .setEnabled(bool(self._scene))
+        self.placeText       .setEnabled(bool(self._scene))
+        if self._scene:
             # connect signals
             self._scene.selectionChanged.connect(self.onSelectionChanged)
             self._scene.undo_stack.canUndoChanged.connect(self.onCanUndoChanged)
@@ -157,13 +159,12 @@ class Actions:
             pass
 
     def onClipboardDataChanged(self : Self) -> None:
-        if not self._scene:
-            en = False
-        else:
-            clipboard = QApplication.clipboard()
-            mime_data = clipboard.mimeData()
-            en = mime_data is not None and mime_data.hasFormat(MIME_TYPE)
-        self.editPaste.setEnabled(en)
+        mime_data = QApplication.clipboard().mimeData()
+        self.editPaste.setEnabled(
+            self._scene is not None and \
+            mime_data is not None and \
+            mime_data.hasFormat(MIME_TYPE)
+        )
 
     def onCanUndoChanged(self : Self, canUndo : bool) -> None:
         self.editUndo.setEnabled(canUndo)

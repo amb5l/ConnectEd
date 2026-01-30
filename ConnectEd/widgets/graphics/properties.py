@@ -30,7 +30,7 @@ exists only for use via substitution in custom properties. For example,
 "ConnectEdVersion". Virtual properties will normally be provided by the scene.
 """
 
-from typing          import Self, Any, Literal
+from typing          import Self, Any, Literal, NamedTuple
 from dataclasses     import dataclass, astuple
 from collections.abc import Callable
 from enum            import Enum
@@ -51,6 +51,25 @@ if TYPE_CHECKING:
     from .scenes.drawing import DrawingScene
     from .items.property_text import PropertyTextSpec, PropertyTextItem
     Owner = ItemType | DrawingScene
+
+
+@dataclass
+class PropertyTextSpec:
+    visible   : bool             = True
+    cleat     : str | None       = None
+    pos_x     : float            = 0
+    pos_y     : float            = 0
+    origin    : str              = "Top Left"
+    align_h   : AlignH           = AlignH.LEFT
+    align_v   : AlignV           = AlignV.TOP
+    width     : float | None     = None
+    height    : float | None     = None
+    color     : QColor | Default = DEFAULT
+    family    : str    | Default = DEFAULT
+    size      : float  | Default = DEFAULT
+    bold      : bool   | Default = DEFAULT
+    italic    : bool   | Default = DEFAULT
+    underline : bool   | Default = DEFAULT
 
 
 class PropertyNotifier(QObject):
@@ -83,6 +102,78 @@ class PropertyDisplay(Enum):
     HIDE = "Block"
 
 
+@dataclass
+class PropertyState:
+    name      : str
+    value     : Any
+    display   : PropertyDisplay
+    cleat     : str    | None = None
+    x         : float  | None = None
+    y         : float  | None = None
+    origin    : str    | None = None
+    align_h   : AlignH | None = None
+    align_v   : AlignV | None = None
+    width     : float  | None = None
+    height    : float  | None = None
+    color     : QColor | None = None
+    family    : str    | None = None
+    size      : float  | None = None
+    bold      : bool   | None = None
+    italic    : bool   | None = None
+    underline : bool   | None = None
+
+    @classmethod
+    def fromProperty(cls : Self, object : "PropertiesMixin", name : str) -> Self:
+        inst = cls(
+            name      = name,
+            value     = object.getPropertyValue(name),
+            display   = object.getPropertyDisplay(name)
+        )
+        pt = object.getPropertyText(name)
+        if pt is not None:
+            inst.cleat     = pt.cleat(name),
+            inst.x         = pt.x(name),
+            inst.y         = pt.y(name),
+            inst.origin    = pt.origin(name),
+            inst.align_h   = pt.alignH(name),
+            inst.align_v   = pt.alignV(name),
+            inst.width     = pt.width(name),
+            inst.height    = pt.height(name),
+            inst.color     = pt.quillColor(name),
+            inst.family    = pt.quillFamily(name),
+            inst.size      = pt.quillSize(name),
+            inst.bold      = pt.quillBold(name),
+            inst.italic    = pt.quillItalic(name),
+            inst.underline = pt.quillUnderline(name)
+        return inst
+
+
+@dataclass
+class PropertyChange:
+    name      : str             | NoChange = NO_CHANGE
+    value     : Any             | NoChange = NO_CHANGE
+    display   : PropertyDisplay | NoChange = NO_CHANGE
+    cleat     : str             | NoChange = NO_CHANGE
+    x         : float           | NoChange = NO_CHANGE
+    y         : float           | NoChange = NO_CHANGE
+    origin    : str             | NoChange = NO_CHANGE
+    align_h   : AlignH          | NoChange = NO_CHANGE
+    align_v   : AlignV          | NoChange = NO_CHANGE
+    width     : float | None    | NoChange = NO_CHANGE
+    height    : float | None    | NoChange = NO_CHANGE
+    color     : QColor          | NoChange = NO_CHANGE
+    family    : str             | NoChange = NO_CHANGE
+    size      : float           | NoChange = NO_CHANGE
+    bold      : bool            | NoChange = NO_CHANGE
+    italic    : bool            | NoChange = NO_CHANGE
+    underline : bool            | NoChange = NO_CHANGE
+
+
+class PropertyEdit(NamedTuple):
+    name  : str | None                             # (old) name or None for new
+    after : PropertyChange | PropertyState | None  # change | add | delete
+
+
 class PropertiesMixin:
     # class attributes
     _PROPERTIES : dict[str, InherentProperty]
@@ -94,7 +185,6 @@ class PropertiesMixin:
         """
         Initialize the properties system for this instance.
         """
-        from .items.property_text import PropertyTextSpec
         # make shallow copy of _PROPERTIES
         self._properties = dict(self._PROPERTIES)
         if not fresh:
@@ -113,7 +203,7 @@ class PropertiesMixin:
         Test property existance.
         Returns True if the property exists, False otherwise.
         """
-        return name in self._properties
+        return hasattr(self, "_properties") and name in self._properties
 
     def isPropertyInherent(self : Self, name : str) -> bool | None:
         """
@@ -401,16 +491,18 @@ class PropertiesMixin:
         # done
         return True
 
-    def signalPropertyChanges(self : Self, names : list[str]) -> None:
+    def signalPropertyChanges(self : Self, names : str | list[str]) -> None:
+        if not hasattr(self, "_properties"):
+            return  # not yet initialized
+        if isinstance(names, str):
+            names = [names]
         for name in names:
             if not self.hasProperty(name):
                 logger().warning(f"Property '{name}' not found")
                 continue
             property = self._properties[name]
-            if property.notifier is None:
-                logger().warning(f"Property '{name}' has no notifier")
-                continue
-            property.notifier.changed.emit()
+            if property.notifier:
+                property.notifier.changed.emit()
 
     def getPropertyDisplay(self : Self, name : str) -> PropertyDisplay:
         from .items.property_text import PropertyTextItem

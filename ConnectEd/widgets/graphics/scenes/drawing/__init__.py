@@ -47,14 +47,14 @@ class DrawingScene(
     _sel_text  : QColor
     undo_stack : QUndoStack | None
 
-    def __init__(self : Self, extents : QSizeF | None = None) -> None:
+    def __init__(self : Self, extents : QSizeF | None = None, fresh : bool = True) -> None:
         super().__init__()
         self._uuid = str(uuid.uuid4())
         self._name = None
         self.updateSceneRect(extents)
         self.setItemIndexMethod(QGraphicsScene.ItemIndexMethod.NoIndex)
         self.undo_stack = QUndoStack(self)
-        self.initProperties()
+        self.initProperties(fresh)
         self.initPaths()
         self.initGrips()
         self.onSettingsChange()

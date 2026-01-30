@@ -1,4 +1,6 @@
-from typing import Self
+from typing      import Self
+from dataclasses import astuple
+
 
 from PyQt6.QtCore import QPoint, QPointF
 
@@ -139,43 +141,16 @@ class DrawingViewStateEditItemProperties(DrawingViewStateBase):
         if item:
             dialog = PropertiesDialog(item, self.view)
             if dialog.exec():
-                for name, change in dialog.getEdits():
-                    if change is None:
+                for edit in dialog.getEdits():
+                    if edit.after is None:
                         # delete
-                        self.scene.delProperty(item, name, undoable=True)
-                    elif name == "":
+                        self.scene.delProperty(item, edit.name, undoable=True)
+                    elif edit.name == "":
                         # add
-                        self.scene.addProperty(item, name, undoable=True)
+                        self.scene.addProperty(item, *astuple(edit.after), undoable=True)
                     else:
                         # modify
-                        self.scene.editProperty(
-                            object = item,
-                            name    = (name, change.name),
-                            value   = change.after.value,
-                            display = change.after.display,
-                            origin  = change.after.origin,
-                            align_h = change.after.align_h,
-                            align_v = change.after.align_v,
-                            width   = change.after.width,
-                            height  = change.after.height,
-                            color   = change.after.color,
-                            family  = change.after.family,
-                            size    = change.after.size,
-                            bold    = change.after.bold,
-                            italic  = change.after.italic,
-                            underline = change.after.underline,
-                            cleat   = change.after.cleat,
-                            x       = change.after.x,
-                            y       = change.after.y,
-                        )
-
-                    self.scene.editProperty(
-                        object = item,
-                        name   = (name, change.name),
-                        value  = change.after.value,
-                        shit
-
-                        undoable=True)
+                        self.scene.editProperty(item, *astuple(edit.after), undoable=True)
         else:
             logger().warning("No items selected")
         self.view.state.go(self.view.stateIdle)

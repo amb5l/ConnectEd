@@ -1,19 +1,19 @@
-from typing      import Self, Any, TypeAlias, NamedTuple
-from dataclasses import dataclass
+from typing      import Self, Any, TypeAlias
 
 from PyQt6.QtCore    import Qt, QModelIndex
 from PyQt6.QtWidgets import QDialog, QMessageBox, \
                             QVBoxLayout, QHBoxLayout, QPushButton, \
                             QAbstractItemView
-from PyQt6.QtGui     import QColor, QBrush
+from PyQt6.QtGui     import QBrush
 
 from ...app import settings
 
 from ...core.utils import snake2proper
 
-from ..graphics.properties import PropertyDisplay
+from ..graphics.properties import PropertyDisplay, \
+                                  PropertyState, PropertyChange, PropertyEdit
 
-from ..graphics.items import DEFAULT, NoChange, NO_CHANGE, AlignH, AlignV
+from ..graphics.items import DEFAULT, AlignH, AlignV
 
 from ..graphics.items.mixin.handle import ItemRectHandlesMixin
 
@@ -56,78 +56,6 @@ class NewItem():
         enabled   : bool = True
     ) -> None:
         super().__init__(None, value, type_name, default, editable, enabled)
-
-
-@dataclass
-class PropertyState:
-    name      : str
-    value     : Any
-    display   : PropertyDisplay
-    cleat     : str    | None = None
-    x         : float  | None = None
-    y         : float  | None = None
-    origin    : str    | None = None
-    align_h   : AlignH | None = None
-    align_v   : AlignV | None = None
-    width     : float  | None = None
-    height    : float  | None = None
-    color     : QColor | None = None
-    family    : str    | None = None
-    size      : float  | None = None
-    bold      : bool   | None = None
-    italic    : bool   | None = None
-    underline : bool   | None = None
-
-    @classmethod
-    def fromProperty(cls : Self, object : "PropertiesMixin", name : str) -> Self:
-        inst = cls(
-            name      = name,
-            value     = object.getPropertyValue(name),
-            display   = object.getPropertyDisplay(name)
-        )
-        pt = object.getPropertyText(name)
-        if pt is not None:
-            inst.cleat     = pt.cleat(name),
-            inst.x         = pt.x(name),
-            inst.y         = pt.y(name),
-            inst.origin    = pt.origin(name),
-            inst.align_h   = pt.alignH(name),
-            inst.align_v   = pt.alignV(name),
-            inst.width     = pt.width(name),
-            inst.height    = pt.height(name),
-            inst.color     = pt.quillColor(name),
-            inst.family    = pt.quillFamily(name),
-            inst.size      = pt.quillSize(name),
-            inst.bold      = pt.quillBold(name),
-            inst.italic    = pt.quillItalic(name),
-            inst.underline = pt.quillUnderline(name)
-        return inst
-
-
-@dataclass
-class PropertyChange:
-    name      : str             | NoChange = NO_CHANGE
-    value     : Any             | NoChange = NO_CHANGE
-    display   : PropertyDisplay | NoChange = NO_CHANGE
-    cleat     : str             | NoChange = NO_CHANGE
-    x         : float           | NoChange = NO_CHANGE
-    y         : float           | NoChange = NO_CHANGE
-    origin    : str             | NoChange = NO_CHANGE
-    align_h   : AlignH          | NoChange = NO_CHANGE
-    align_v   : AlignV          | NoChange = NO_CHANGE
-    width     : float | None    | NoChange = NO_CHANGE
-    height    : float | None    | NoChange = NO_CHANGE
-    color     : QColor          | NoChange = NO_CHANGE
-    family    : str             | NoChange = NO_CHANGE
-    size      : float           | NoChange = NO_CHANGE
-    bold      : bool            | NoChange = NO_CHANGE
-    italic    : bool            | NoChange = NO_CHANGE
-    underline : bool            | NoChange = NO_CHANGE
-
-
-class PropertyEdit(NamedTuple):
-    name : str | None                             # (old) name or None for new
-    edit : PropertyChange | PropertyState | None  # change | add | delete
 
 
 class PropertiesDialog(QDialog):

@@ -9,6 +9,8 @@ if TYPE_CHECKING:
 
 class DrawingViewUiViewMixin:
     def viewZoomAll(self : "DrawingViewUi") -> None:
+        if self._scene is None:
+            return
         self._scene.updateSceneRect()
         if self._scene.items():
             rect = self._view._allItemsRect()

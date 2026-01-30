@@ -17,8 +17,8 @@ class SymbolScene(DrawingScene):
     # instance attributes
     _brect   : QRectF | None  # bounding rect of all items
 
-    def __init__(self : Self) -> None:
-        super().__init__()
+    def __init__(self : Self, fresh : bool = True) -> None:
+        super().__init__(fresh=fresh)
         self._brect = None
         self.onChange()
         self.changed.connect(self.onChange)

@@ -11,7 +11,9 @@ if TYPE_CHECKING:
 
 class DiagramView(DrawingView):
     def viewZoomSheet(self : Self) -> None:
-        scene : "DiagramScene" = self.scene()
+        scene : "DiagramScene | None" = self.scene()
+        if scene is None:
+            return
         rect = scene.sheet.rect
         self._zoomRect(rect)
 

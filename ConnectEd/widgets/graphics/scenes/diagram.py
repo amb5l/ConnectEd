@@ -6,7 +6,7 @@ from PyQt6.QtGui  import QPainter, QPen, QBrush
 
 from ....app import settings
 
-from ..property   import PropertySpec
+from ..properties import InherentProperty
 
 from .drawing import DrawingScene
 
@@ -20,29 +20,29 @@ class DiagramSheet:
 class DiagramScene(DrawingScene):
     # class attributes
     _PROPERTIES = DrawingScene._PROPERTIES | {
-        "Sheet Name" : PropertySpec(
+        "Sheet Name" : InherentProperty(
             getter = lambda self: self.getSheetName(),
             setter = lambda self, value: self.setSheetName(value)
         ),
-        "Sheet Width" : PropertySpec(
-            kind   = "float",
-            getter = lambda self: self.getSheetWidth(),
-            setter = lambda self, value: self.setSheetWidth(value)
+        "Sheet Width" : InherentProperty(
+            type_name = "float",
+            getter    = lambda self: self.getSheetWidth(),
+            setter    = lambda self, value: self.setSheetWidth(value)
         ),
-        "Sheet Height" : PropertySpec(
-            kind   = "float",
-            getter = lambda self: self.getSheetHeight(),
-            setter = lambda self, value: self.setSheetHeight(value)
+        "Sheet Height" : InherentProperty(
+            type_name = "float",
+            getter    = lambda self: self.getSheetHeight(),
+            setter    = lambda self, value: self.setSheetHeight(value)
         ),
-        "Margin" : PropertySpec(
-            kind   = "float",
-            getter = lambda self: self.margin,
-            setter = lambda self, value: self.setMargin(value)
+        "Margin" : InherentProperty(
+            type_name = "float",
+            getter    = lambda self: self.margin,
+            setter    = lambda self, value: self.setMargin(value)
         ),
-        "Border" : PropertySpec(
-            kind   = "float",
-            getter = lambda self: self.border,
-            setter = lambda self, value: self.setBorder(value)
+        "Border" : InherentProperty(
+            type_name = "float",
+            getter    = lambda self: self.border,
+            setter    = lambda self, value: self.setBorder(value)
         )
     }
 
@@ -51,14 +51,14 @@ class DiagramScene(DrawingScene):
     margin : float         # distance from paper edge to border line
     border : float         # line width
 
-    def __init__(self : Self) -> None:
+    def __init__(self : Self, fresh : bool = True) -> None:
         sheet_name = settings().get("defaults/sheet/name")
         sheet_size = settings().get("defaults/sheet/size")
         sheet_rect = QRectF(QPointF(0, 0), sheet_size)
         self.sheet = DiagramSheet(sheet_name, sheet_rect)
         self.margin = settings().get("defaults/margin")
         self.border = settings().get("defaults/border")
-        super().__init__(sheet_size)
+        super().__init__(sheet_size, fresh)
 
     def updateSceneRect(self : Self, rect : QRectF | None = None) -> None:
         super().updateSceneRect(self.sheet.rect)  # sheet is minimum rect

@@ -285,22 +285,3 @@ class PropertyTextItem(UniTextItem):
             view.action("Properties...", lambda: view.ui.editItemProperties(self))
         ]
         return items
-
-
-@dataclass
-class PropertyTextSpec:
-    visible   : bool             = True
-    cleat     : str | None       = None
-    pos_x     : float            = 0
-    pos_y     : float            = 0
-    origin    : str              = "Top Left"
-    align_h   : AlignH           = AlignH.LEFT
-    align_v   : AlignV           = AlignV.TOP
-    width     : float | None     = None
-    height    : float | None     = None
-    color     : QColor | Default = DEFAULT
-    family    : str    | Default = DEFAULT
-    size      : float  | Default = DEFAULT
-    bold      : bool   | Default = DEFAULT
-    italic    : bool   | Default = DEFAULT
-    underline : bool   | Default = DEFAULT
