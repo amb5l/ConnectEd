@@ -143,6 +143,7 @@ class UniTextItem(
         bold      : bool   | Default     = DEFAULT,
         italic    : bool   | Default     = DEFAULT,
         underline : bool   | Default     = DEFAULT,
+        fresh     : bool                 = True,
         parent    : QGraphicsItem | None = None
     ) -> None:
         super().__init__()
@@ -154,7 +155,7 @@ class UniTextItem(
         self._align_v = align_v or AlignV.TOP
         self._width   = width
         self._height  = height
-        self.initItem()
+        self.initItem(fresh)
         self.setPos(pos or QPointF(0, 0))
         self.setOrigin(origin)
         self.setQuillColor(color)
