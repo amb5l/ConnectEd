@@ -1,4 +1,4 @@
-from typing import Self
+from typing import Self, Any
 
 from PyQt6.QtCore    import QPointF
 from PyQt6.QtWidgets import QMenu
@@ -138,9 +138,9 @@ class MoveItemsMixin:
 
     # instance attributes
     _items : list[ItemType]
-    _ipos  : QPointF                  # initial position
-    _cpos  : QPointF                  # current position
-    _state : dict[ItemType, QPointF]  # pre-move states e.g. scene positions
+    _ipos  : QPointF              # initial position
+    _cpos  : QPointF              # current position
+    _state : dict[ItemType, Any]  # pre-move states e.g. scene positions
 
     def update(self : Self, pos : QPointF):
         self._moveBy(pos - self._cpos)

@@ -24,7 +24,7 @@ class ItemMoveMixin:
         return self.scenePos()
 
     def moveRestore(self : Self | QGraphicsItem, pos : QPointF) -> None:
-        self.setPos(pos - self.scenePos())
+        self.moveBy(pos - self.scenePos())
 
 
 class ItemMixin(ItemSettingsMixin, ItemMoveMixin):
