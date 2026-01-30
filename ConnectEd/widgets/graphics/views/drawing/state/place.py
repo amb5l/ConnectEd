@@ -232,7 +232,7 @@ class DrawingViewStatePlaceText(ClickMixin, DrawingViewStateBase):
         s    : QPointF,
         i    : list[ItemMixin] | None = None
     ) -> None:
-        item = TextItem(self._snap(s))
+        item = TextItem(pos=self._snap(s))
         dialog = TextItemDialog(item, self.view)
         if dialog.exec():
             item.setText(dialog.getText())
