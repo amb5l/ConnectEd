@@ -134,7 +134,7 @@ class TextItemDialog(QDialog):
         return self._value_layout.getValue()
 
     def getBlock(self : Self) -> bool:
-        return self._value_layout.getBlock()
+        return self._format_layout.getBlock()
 
     def getAlignH(self : Self) -> AlignH:
         return self._align_layout.getAlignH()
