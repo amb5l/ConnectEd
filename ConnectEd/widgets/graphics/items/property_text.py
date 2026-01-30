@@ -1,5 +1,4 @@
 from typing      import Self, Any
-from dataclasses import dataclass
 
 from PyQt6.QtCore    import Qt, QPointF, QXmlStreamWriter
 from PyQt6.QtWidgets import QGraphicsItem, QGraphicsLineItem, \
@@ -8,7 +7,7 @@ from PyQt6.QtGui     import QAction, QColor
 
 from ....app import settings, logger
 
-from ....core.utils import str2val
+from ....core.utils import val2str
 
 from ..properties import InherentProperty, PropertiesMixin
 
@@ -138,12 +137,12 @@ class PropertyTextItem(UniTextItem):
             bold      = bold,
             italic    = italic,
             underline = underline,
-            fresh  = fresh,
-            parent = parent
+            fresh     = fresh,
+            parent    = parent
         )
         self._tether = TetherItem(self)
         self._name = name
-        self.setCleat(cleat)
+        self.setCleat(cleat, parent)
         self._cleat_shown = False
         self.onTextChange()
 
@@ -194,7 +193,7 @@ class PropertyTextItem(UniTextItem):
         pass
 
     def onTextChange(self : Self) -> None:
-        super().setText(str2val(self.value()))
+        super().setText(val2str(self.value()))
 
     def settingsName(self : Self) -> str:
         item = self.item()
@@ -208,9 +207,9 @@ class PropertyTextItem(UniTextItem):
     def cleat(self : Self) -> str | None:
         return self._cleat
 
-    def setCleat(self : Self, name : str) -> bool:
+    def setCleat(self : Self, name : str, parent : ItemType | None = None) -> bool:
         self._cleat = name
-        item = self.item()
+        item = parent or self.item()
         for child in item.childItems():
             if isinstance(child, HandleItem) and child.name() == name:
                 self.setParentItem(child)
@@ -227,10 +226,10 @@ class PropertyTextItem(UniTextItem):
 
     def item(self : Self) -> ItemType | None:
         parent = self.parentItem()
-        if isinstance(parent, ItemType):
-            return parent
-        elif isinstance(parent, HandleItem):
+        if isinstance(parent, HandleItem):
             return parent.parentItem()
+        elif isinstance(parent, ItemType):
+            return parent
         elif parent is not None:
             # Only warn for unexpected parent types, not during initialization
             logger().warning(f"Bad parent item ({parent.__class__.__name__})")
