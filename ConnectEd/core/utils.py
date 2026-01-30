@@ -30,7 +30,8 @@ def trace(
     depth  : int | None = None,
     full   : bool = False,
     module : bool = True,
-    indent : bool = False
+    indent : bool = False,
+    args   : bool = False
 ) -> None:
     """
     Print the call chain that led to this point.
@@ -40,6 +41,7 @@ def trace(
         full:    Show full module path instead of just the last component.
         module:  Include the module name at all.
         indent:  If True, print vertically with increasing indentation instead of " <- ".
+        args:    If True, show function arguments and their values.
     """
     stack = inspect.stack()
     # Skip this function itself
@@ -61,6 +63,25 @@ def trace(
         # e.g. Processor.run
         else:
             func_part = func_name
+
+        if args:
+            # Get function arguments (excluding 'self')
+            code = frame.frame.f_code
+            arg_names = code.co_varnames[:code.co_argcount]
+            arg_strs = []
+            for name in arg_names:
+                if name == "self":
+                    continue
+                if name in frame.frame.f_locals:
+                    val = frame.frame.f_locals[name]
+                    val_repr = repr(val)
+                    if len(val_repr) > 50:
+                        val_repr = val_repr[:47] + "..."
+                    arg_strs.append(f"{name}={val_repr}")
+            if arg_strs:
+                func_part += f"({', '.join(arg_strs)})"
+            else:
+                func_part += "()"
 
         if module:
             calls.append(f"{mod_name}.{func_part}")
