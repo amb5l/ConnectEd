@@ -30,8 +30,8 @@ exists only for use via substitution in custom properties. For example,
 "ConnectEdVersion". Virtual properties will normally be provided by the scene.
 """
 
-from typing          import Self, Any, Literal, TypeVar
-from dataclasses     import dataclass, fields
+from typing          import Self, Any, Literal
+from dataclasses     import dataclass, astuple
 from collections.abc import Callable
 from enum            import Enum
 
@@ -43,38 +43,18 @@ from PyQt6.QtGui  import QColor
 from ...app  import logger
 from ...core import Text
 
-from .items import Default, DEFAULT, NoChange, NO_CHANGE, AlignH, AlignV
+from .items import ItemType, Default, DEFAULT, NoChange, NO_CHANGE, AlignH, AlignV
 
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from .scenes.drawing import DrawingScene
-    from .items import ItemType
-    from .items.property_text import PropertyTextItem
+    from .items.property_text import PropertyTextSpec, PropertyTextItem
     Owner = ItemType | DrawingScene
 
 
 class PropertyNotifier(QObject):
     changed = pyqtSignal()
-
-
-@dataclass
-class PropertyTextSpec:
-    visible   : bool             = True
-    cleat     : str | None       = None
-    pos_x     : float            = 0
-    pos_y     : float            = 0
-    origin    : str              = "Top Left"
-    align_h   : AlignH           = AlignH.LEFT
-    align_v   : AlignV           = AlignV.TOP
-    width     : float | None     = None
-    height    : float | None     = None
-    color     : QColor | Default = DEFAULT
-    family    : str    | Default = DEFAULT
-    size      : float  | Default = DEFAULT
-    bold      : bool   | Default = DEFAULT
-    italic    : bool   | Default = DEFAULT
-    underline : bool   | Default = DEFAULT
 
 
 @dataclass
@@ -103,98 +83,6 @@ class PropertyDisplay(Enum):
     HIDE = "Block"
 
 
-property_fields = [
-    "name", "value", "display",
-    "cleat", "x", "y", "origin", "align_h", "align_v", "width", "height",
-    "color", "family", "size", "bold", "italic", "underline"
-]
-
-
-_T = TypeVar('_T')
-
-def verify_property_fields(cls: type[_T]) -> type[_T]:
-    """Decorator to verify that a class has the expected property fields."""
-    # Get field names based on class type
-    if hasattr(cls, '_fields'):  # NamedTuple
-        field_names = list(cls._fields)
-    elif hasattr(cls, '__dataclass_fields__'):  # dataclass
-        field_names = list(cls.__dataclass_fields__.keys())
-    else:
-        raise TypeError(f"{cls.__name__}: Cannot determine fields")  # type: ignore[union-attr]
-    if field_names != property_fields:
-        raise ValueError(f"{cls.__name__} fields mismatch: {field_names} != {property_fields}")
-    return cls
-
-
-@verify_property_fields
-@dataclass
-class PropertyState:
-    name      : str
-    value     : Any
-    display   : PropertyDisplay
-    cleat     : str
-    x         : float
-    y         : float
-    origin    : str
-    align_h   : AlignH
-    align_v   : AlignV
-    width     : float | None
-    height    : float | None
-    color     : QColor
-    family    : str
-    size      : float
-    bold      : bool
-    italic    : bool
-    underline : bool
-
-    @classmethod
-    def fromProperty(cls : Self, object : "PropertiesMixin", name : str) -> Self:
-        inst = cls(
-            name      = name,
-            value     = object.getPropertyValue(name),
-            display   = object.getPropertyDisplay(name)
-        )
-        pt = object.getPropertyText(name)
-        if pt is not None:
-            inst.cleat     = pt.cleat(name),
-            inst.x         = pt.x(name),
-            inst.y         = pt.y(name),
-            inst.origin    = pt.origin(name),
-            inst.align_h   = pt.alignH(name),
-            inst.align_v   = pt.alignV(name),
-            inst.width     = pt.width(name),
-            inst.height    = pt.height(name),
-            inst.color     = pt.quillColor(name),
-            inst.family    = pt.quillFamily(name),
-            inst.size      = pt.quillSize(name),
-            inst.bold      = pt.quillBold(name),
-            inst.italic    = pt.quillItalic(name),
-            inst.underline = pt.quillUnderline(name)
-        return inst
-
-
-@verify_property_fields
-@dataclass
-class PropertyChange:
-    name      : str             | NoChange = NO_CHANGE
-    value     : Any             | NoChange = NO_CHANGE
-    display   : PropertyDisplay | NoChange = NO_CHANGE
-    cleat     : str             | NoChange = NO_CHANGE
-    x         : float           | NoChange = NO_CHANGE
-    y         : float           | NoChange = NO_CHANGE
-    origin    : str             | NoChange = NO_CHANGE
-    align_h   : AlignH          | NoChange = NO_CHANGE
-    align_v   : AlignV          | NoChange = NO_CHANGE
-    width     : float | None    | NoChange = NO_CHANGE
-    height    : float | None    | NoChange = NO_CHANGE
-    color     : QColor          | NoChange = NO_CHANGE
-    family    : str             | NoChange = NO_CHANGE
-    size      : float           | NoChange = NO_CHANGE
-    bold      : bool            | NoChange = NO_CHANGE
-    italic    : bool            | NoChange = NO_CHANGE
-    underline : bool            | NoChange = NO_CHANGE
-
-
 class PropertiesMixin:
     # class attributes
     _PROPERTIES : dict[str, InherentProperty]
@@ -206,6 +94,7 @@ class PropertiesMixin:
         """
         Initialize the properties system for this instance.
         """
+        from .items.property_text import PropertyTextSpec
         # make shallow copy of _PROPERTIES
         self._properties = dict(self._PROPERTIES)
         if not fresh:
@@ -214,24 +103,7 @@ class PropertiesMixin:
         for name, property in self._properties.items():
             spec = property.text
             if isinstance(spec, PropertyTextSpec):
-                self.addPropertyText(
-                    name,
-                    visible   = spec.visible,
-                    cleat     = spec.cleat,
-                    pos_x     = spec.pos_x,
-                    pos_y     = spec.pos_y,
-                    origin    = spec.origin,
-                    align_h   = spec.align_h,
-                    align_v   = spec.align_v,
-                    width     = spec.width,
-                    height    = spec.height,
-                    color     = spec.color,
-                    family    = spec.family,
-                    size      = spec.size,
-                    bold      = spec.bold,
-                    italic    = spec.italic,
-                    underline = spec.underline,
-                )
+                self.addPropertyText(name, *astuple(spec))
 
     def getPropertyNames(self : Self) -> list[str]:
         return list(self._properties.keys())
@@ -337,12 +209,12 @@ class PropertiesMixin:
             return None
         # detect recursion issues
         if trail is not None:  # substitution is enabled
-            trail = trail + [name]
             if name in trail:
                 logger().warning(
                     f"Property '{name}' substitution recursion loop detected: {trail}"
                 )
                 return None
+            trail = trail + [name]
             if len(trail) > 10:
                 logger().warning(
                     f"Property substitution recursion depth exceeded: {trail}"
@@ -390,27 +262,30 @@ class PropertiesMixin:
         logger().warning(f"Property '{name}' has unknown type: {type(property)}")
         return None
 
-
     def setPropertyValue(self : Self, name : str, value : Any) -> bool:
         """
         Set the value of a property.
         Returns True if the property was set, False otherwise.
         """
+        # check property existence
         if not self.hasProperty(name):
             logger().warning(f"Property '{name}' not found")
             return False
         property = self._properties[name]
+        # inherent properties
         if isinstance(property, InherentProperty):
             if not callable(property.setter):
                 logger().warning(f"Property '{name}' is read-only")
                 return False
             property.setter(self, value)
+        # custom properties
         elif isinstance(property, CustomProperty):
             if isinstance(value, Text):
                 property.value = value
             else:
                 logger().warning(f"Bad property value type: {type(value)}")
                 return False
+        # unknown properties
         else:
             logger().warning(f"Bad property type: {type(property)}")
             return False
@@ -424,14 +299,15 @@ class PropertiesMixin:
         for use in deserialization, and for creating new custom properties.
         Returns True if the property was initialized, False otherwise.
         """
-        if name not in self._PROPERTIES:
-            self._properties[name] = CustomProperty(value=Text(""))
-        return self.setPropertyValue(name, value)
+        if self.hasProperty(name):
+            self.addProperty(name, value)
+        else:
+            return self.setPropertyValue(name, value)
 
     def addProperty(
         self      : Self,
         name      : str,
-        value     : Any,
+        value     : Text,
         display   : PropertyDisplay = PropertyDisplay.NONE,
         cleat     : str              | None = None,
         x         : float            | None = None,
@@ -456,43 +332,42 @@ class PropertiesMixin:
         if self.hasProperty(name):
             logger().warning(f"Property '{name}' already exists")
             return False
+        # create custom property
         self._properties[name] = CustomProperty(value=value)
-        self.addPropertyText(
-            name,
-            visible   = display == PropertyDisplay.SHOW,
-            cleat     = cleat,
-            pos_x     = x,
-            pos_y     = y,
-            origin    = origin,
-            align_h   = align_h,
-            align_v   = align_v,
-            width     = width,
-            height    = height,
-            color     = color,
-            family    = family,
-            size      = size,
-            bold      = bold,
-            italic    = italic,
-            underline = underline
-        )
+        # add property text if required
+        if display != PropertyDisplay.NONE:
+            visible = display == PropertyDisplay.SHOW
+            pt_args = {
+                k: v for k, v in locals().items() \
+                    if k in PropertyTextSpec.__dataclass_fields__.keys()
+                        and k != "visible"
+            }
+            self.addPropertyText(name, **pt_args)
+        return True
 
     def renProperty(self : Self, old_name : str, new_name : str) -> bool:
         """
         Rename a property.
         Returns True if the property was renamed, False otherwise.
         """
+        # check for existing property
         if not self.hasProperty(old_name):
             logger().warning(f"Property '{old_name}' not found")
             return False
-        if old_name == new_name:  # no change
+        # check for no change
+        if old_name == new_name:
             return False
+        # check for clash with existing property
         if self.hasProperty(new_name):
             logger().warning(f"Property '{new_name}' already exists")
             return False
+        # get property instance
         property = self._properties[old_name]
+        # check if inherent
         if isinstance(property, InherentProperty):
             logger().warning(f"Cannot rename inherent property '{old_name}'")
             return False
+        # rename
         self._properties[new_name] = property
         del self._properties[old_name]
         return True
@@ -502,35 +377,43 @@ class PropertiesMixin:
         Remove a property.
         Returns True if the property was removed, False otherwise.
         """
+        # check property existence
         if not self.hasProperty(name):
             logger().warning(f"Property '{name}' not found")
-        if y is not NO_CHANGE:
-            self.editPropertyText(name, y)
-        if align_h is not NO_CHANGE:
-            self.editPropertyText(name, align_h)
-        if align_v is not NO_CHANGE:
-            self.editPropertyText(name, align_v)
-        if width is not NO_CHANGE:
-            self.editPropertyText(name, width)
             return False
+        # get property instance
         property = self._properties[name]
+        # check if inherent
         if isinstance(property, InherentProperty):
             logger().warning(f"Inherent property '{name}' cannot be removed")
             return False
-        if property.notifier is not None:
-            del property.notifier
-        if property.text is not None:
-            del property.text
+        # remove text
+        property.text.setParentItem(None)
+        property.text.scene().removeItem(property.text)
+        property.text = None
+        # cache notifier reference
+        notifier = property.notifier
+        # remove property from dictionary
         del self._properties[name]
+        # notify property receivers
+        if notifier:
+            notifier.changed.emit()
+        # done
         return True
 
-    # TODO: rename to notifyUsers
-    def updateProperties(self : Self, names : list[str]) -> None:
+    def signalPropertyChanges(self : Self, names : list[str]) -> None:
         for name in names:
-            if name in self._property_signallers:
-                self._property_signallers[name].changed.emit()
+            if not self.hasProperty(name):
+                logger().warning(f"Property '{name}' not found")
+                continue
+            property = self._properties[name]
+            if property.notifier is None:
+                logger().warning(f"Property '{name}' has no notifier")
+                continue
+            property.notifier.changed.emit()
 
     def getPropertyDisplay(self : Self, name : str) -> PropertyDisplay:
+        from .items.property_text import PropertyTextItem
         # check property existence
         if not self.hasProperty(name):
             logger().warning(f"Property '{name}' not found")
@@ -551,14 +434,9 @@ class PropertiesMixin:
         # return PropertyTextItem instance
         return self._properties[name].text
 
-    def setPropertyText(
-        self : Self,
-        name : str,
-        text : "PropertyTextItem"
-    ) -> bool:
+    def setPropertyText(self : Self, name : str, text : "PropertyTextItem") -> bool:
         """
         Set a property text.
-        Returns True if the property text was set, False otherwise.
         """
         # check property existence
         if not self.hasProperty(name):
@@ -566,7 +444,7 @@ class PropertiesMixin:
             return False
         # get property instance
         property = self._properties[name]
-        # set PropertyTextItem
+        # set property text
         property.text = text
         return True
 
@@ -575,8 +453,8 @@ class PropertiesMixin:
         name      : str,
         visible   : bool             = True,
         cleat     : str              = "Bottom Left",
-        pos_x     : float            = 0,
-        pos_y     : float            = 0,
+        x         : float            = 0,
+        y         : float            = 0,
         origin    : str              = "Top Left",
         align_h   : AlignH           = AlignH.LEFT,
         align_v   : AlignV           = AlignV.TOP,
@@ -605,25 +483,12 @@ class PropertiesMixin:
             logger().warning(f"Property '{name}' already has text")
             return False
         # create new PropertyTextItem
-        property.text = PropertyTextItem(
-            name      = name,
-            cleat     = cleat,
-            pos_x     = pos_x,
-            pos_y     = pos_y,
-            origin    = origin,
-            align_h   = align_h,
-            align_v   = align_v,
-            width     = width,
-            height    = height,
-            color     = color,
-            family    = family,
-            size      = size,
-            bold      = bold,
-            italic    = italic,
-            underline = underline,
-            fresh     = True,
-            parent    = self  # will be overridden by setCleat
-        )
+        pt_args = {
+            k: v for k, v in locals().items() \
+                if k in PropertyTextSpec.__dataclass_fields__.keys()
+                    and k != "visible"
+        }
+        property.text = PropertyTextItem(name, **pt_args)
         return True
 
     def editPropertyText(
@@ -631,8 +496,8 @@ class PropertiesMixin:
         name      : str,
         visible   : bool         | NoChange = NO_CHANGE,
         cleat     : str          | NoChange = NO_CHANGE,
-        pos_x     : float        | NoChange = NO_CHANGE,
-        pos_y     : float        | NoChange = NO_CHANGE,
+        x         : float        | NoChange = NO_CHANGE,
+        y         : float        | NoChange = NO_CHANGE,
         origin    : str          | NoChange = NO_CHANGE,
         align_h   : AlignH       | NoChange = NO_CHANGE,
         align_v   : AlignV       | NoChange = NO_CHANGE,
@@ -649,6 +514,7 @@ class PropertiesMixin:
         Edit a property text.
         Returns True if the property text was edited, False otherwise.
         """
+        from .items.property_text import PropertyTextItem
         # check property existence
         if not self.hasProperty(name):
             logger().warning(f"Property '{name}' not found")
@@ -664,8 +530,8 @@ class PropertiesMixin:
         # edit PropertyTextItem
         if visible   is not NO_CHANGE: pt.setVisible(visible)
         if cleat     is not NO_CHANGE: pt.setCleat(cleat)
-        if pos_x     is not NO_CHANGE: pt.setX(pos_x)
-        if pos_y     is not NO_CHANGE: pt.setY(pos_y)
+        if x         is not NO_CHANGE: pt.setX(x)
+        if y         is not NO_CHANGE: pt.setY(y)
         if origin    is not NO_CHANGE: pt.setOrigin(origin)
         if align_h   is not NO_CHANGE: pt.setAlignH(align_h)
         if align_v   is not NO_CHANGE: pt.setAlignV(align_v)
@@ -684,6 +550,7 @@ class PropertiesMixin:
         Remove a property text.
         Returns True if the property text was removed, False otherwise.
         """
+        from .items.property_text import PropertyTextItem
         # check property existence
         if not self.hasProperty(name):
             logger().warning(f"Property '{name}' not found")

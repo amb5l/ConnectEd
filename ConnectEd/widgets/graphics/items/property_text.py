@@ -1,4 +1,5 @@
 from typing      import Self, Any
+from dataclasses import dataclass
 
 from PyQt6.QtCore    import Qt, QPointF, QXmlStreamWriter
 from PyQt6.QtWidgets import QGraphicsItem, QGraphicsLineItem, \
@@ -11,10 +12,11 @@ from ....core.utils import str2val
 
 from ..properties import InherentProperty, PropertiesMixin
 
-from . import Default, DEFAULT, NO_CHANGE, ItemType, AlignH, AlignV
+from . import ItemType, Default, DEFAULT, NO_CHANGE, AlignH, AlignV
 
 from .unitext import UniTextItem
 from .handle  import HandleItem
+
 
 from .mixin.origin import ItemOriginMixin
 from .mixin.pos    import ItemPosMixin
@@ -100,7 +102,7 @@ class PropertyTextItem(UniTextItem):
 
     def __init__(
         self   : Self,
-        name      : str | None           = None,
+        name      : str,
         cleat     : str | None           = None,
         pos       : QPointF | None       = None,
         origin    : str | None           = None,
@@ -114,10 +116,10 @@ class PropertyTextItem(UniTextItem):
         bold      : bool   | Default     = DEFAULT,
         italic    : bool   | Default     = DEFAULT,
         underline : bool   | Default     = DEFAULT,
-
-        fresh  : bool                 = True,
-        parent : QGraphicsItem | None = None
+        fresh     : bool                 = True,
+        parent    : QGraphicsItem | None = None
     ) -> None:
+
         if origin is None:
             origin = "Bottom Left" if cleat == "Top Left" else "Top Left"
         super().__init__(
@@ -204,29 +206,17 @@ class PropertyTextItem(UniTextItem):
         return "PropertyText"
 
     def cleat(self : Self) -> str | None:
-        parent = self.parentItem()
-        if parent is None:
-            return None
-        elif isinstance(parent, HandleItem):
-            return parent.name()
-        else:
-            logger().warning(f"Bad parent item ({parent.__class__.__name__})")
-            return "?"
+        return self._cleat
 
-    def setCleat(self : Self, name : str) -> None:
+    def setCleat(self : Self, name : str) -> bool:
         self._cleat = name
-        parent = self.parentItem()
-        if parent is None:
-            logger().warning("No parent item")
-        elif isinstance(parent, ItemType):
-            for child in parent.childItems():
-                if isinstance(child, HandleItem) and child.name() == name:
-                    self.setParentItem(child)
-                    return
-            logger().warning("Cleat not found in parent item")
-        else:
-            logger().warning(f"Bad parent item ({parent.__class__.__name__})")
-        return
+        item = self.item()
+        for child in item.childItems():
+            if isinstance(child, HandleItem) and child.name() == name:
+                self.setParentItem(child)
+                return True
+        logger().warning("Cleat not found in parent item")
+        return False
 
     def setOrigin(self : Self, name : str) -> None:
         """Override to update tether line."""
@@ -235,9 +225,15 @@ class PropertyTextItem(UniTextItem):
             self._tether.setParentItem(self.getHandle(name))
             self._tether.onPositionChange(self.pos())
 
-    def item(self : Self) -> "ItemType | None":
-        h : "HandleItem" = self.parentItem()
-        return None if h is None else h.parentItem()
+    def item(self : Self) -> ItemType | None:
+        parent = self.parentItem()
+        if isinstance(parent, ItemType):
+            return parent
+        elif isinstance(parent, HandleItem):
+            return parent.parentItem()
+        else:
+            logger().warning(f"Bad parent item ({parent.__class__.__name__})")
+            return None
 
     def owner(self : Self) -> PropertiesMixin | None:
         return self.scene() if self.parentItem() is None else self.item()
@@ -289,3 +285,22 @@ class PropertyTextItem(UniTextItem):
             view.action("Properties...", lambda: view.ui.editItemProperties(self))
         ]
         return items
+
+
+@dataclass
+class PropertyTextSpec:
+    visible   : bool             = True
+    cleat     : str | None       = None
+    pos_x     : float            = 0
+    pos_y     : float            = 0
+    origin    : str              = "Top Left"
+    align_h   : AlignH           = AlignH.LEFT
+    align_v   : AlignV           = AlignV.TOP
+    width     : float | None     = None
+    height    : float | None     = None
+    color     : QColor | Default = DEFAULT
+    family    : str    | Default = DEFAULT
+    size      : float  | Default = DEFAULT
+    bold      : bool   | Default = DEFAULT
+    italic    : bool   | Default = DEFAULT
+    underline : bool   | Default = DEFAULT

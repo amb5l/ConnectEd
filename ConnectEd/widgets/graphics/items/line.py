@@ -94,7 +94,7 @@ class LineItem(
         stroker_path = stroker.createStroke(line_path)
         self._hshape = stroker_path
         self.updateHandles()
-        self.updateProperties(["X1", "Y1", "X2", "Y2"])
+        self.signalPropertyChanges(["X1", "Y1", "X2", "Y2"])
 
     def initHandles(self : Self) -> None:
         self._handles = {

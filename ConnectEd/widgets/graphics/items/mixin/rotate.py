@@ -24,7 +24,7 @@ class ItemRotateMixin:
         self : Self | QGraphicsItem | PropertiesMixin,
         _pos : QPointF | None = None
     ) -> None:
-        self.updateProperties(["Rotate"])
+        self.signalPropertyChanges(["Rotate"])
 
     def onRotationChange(self : Self | PropertiesMixin, angle : float) -> None:
         # handle own rotation compensation
@@ -35,7 +35,7 @@ class ItemRotateMixin:
             if hasattr(child, "onSceneRotationChange"):
                 child.onSceneRotationChange()
         # broadcast change
-        self.updateProperties(["Rotate"])
+        self.signalPropertyChanges(["Rotate"])
 
     def rotateCW(self : Self | QGraphicsItem) -> None:
         self.setRotation((self.rotation() + 90.0) % 360.0)

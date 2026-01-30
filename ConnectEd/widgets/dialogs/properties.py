@@ -1,23 +1,19 @@
-from typing import Self, Any, TypeAlias, NamedTuple
-from enum   import Enum
-
-
+from typing      import Self, Any, TypeAlias, NamedTuple
+from dataclasses import dataclass
 
 from PyQt6.QtCore    import Qt, QModelIndex
 from PyQt6.QtWidgets import QDialog, QMessageBox, \
                             QVBoxLayout, QHBoxLayout, QPushButton, \
                             QAbstractItemView
-from PyQt6.QtGui     import QBrush
+from PyQt6.QtGui     import QColor, QBrush
 
 from ...app import settings
 
 from ...core.utils import snake2proper
 
-from ..graphics.properties import PropertyDisplay, \
-                                  property_fields, verify_property_fields, \
-                                  PropertyState, PropertyChange
+from ..graphics.properties import PropertyDisplay
 
-from ..graphics.items import DEFAULT, AlignH, AlignV
+from ..graphics.items import DEFAULT, NoChange, NO_CHANGE, AlignH, AlignV
 
 from ..graphics.items.mixin.handle import ItemRectHandlesMixin
 
@@ -62,30 +58,76 @@ class NewItem():
         super().__init__(None, value, type_name, default, editable, enabled)
 
 
+@dataclass
+class PropertyState:
+    name      : str
+    value     : Any
+    display   : PropertyDisplay
+    cleat     : str    | None = None
+    x         : float  | None = None
+    y         : float  | None = None
+    origin    : str    | None = None
+    align_h   : AlignH | None = None
+    align_v   : AlignV | None = None
+    width     : float  | None = None
+    height    : float  | None = None
+    color     : QColor | None = None
+    family    : str    | None = None
+    size      : float  | None = None
+    bold      : bool   | None = None
+    italic    : bool   | None = None
+    underline : bool   | None = None
+
+    @classmethod
+    def fromProperty(cls : Self, object : "PropertiesMixin", name : str) -> Self:
+        inst = cls(
+            name      = name,
+            value     = object.getPropertyValue(name),
+            display   = object.getPropertyDisplay(name)
+        )
+        pt = object.getPropertyText(name)
+        if pt is not None:
+            inst.cleat     = pt.cleat(name),
+            inst.x         = pt.x(name),
+            inst.y         = pt.y(name),
+            inst.origin    = pt.origin(name),
+            inst.align_h   = pt.alignH(name),
+            inst.align_v   = pt.alignV(name),
+            inst.width     = pt.width(name),
+            inst.height    = pt.height(name),
+            inst.color     = pt.quillColor(name),
+            inst.family    = pt.quillFamily(name),
+            inst.size      = pt.quillSize(name),
+            inst.bold      = pt.quillBold(name),
+            inst.italic    = pt.quillItalic(name),
+            inst.underline = pt.quillUnderline(name)
+        return inst
+
+
+@dataclass
+class PropertyChange:
+    name      : str             | NoChange = NO_CHANGE
+    value     : Any             | NoChange = NO_CHANGE
+    display   : PropertyDisplay | NoChange = NO_CHANGE
+    cleat     : str             | NoChange = NO_CHANGE
+    x         : float           | NoChange = NO_CHANGE
+    y         : float           | NoChange = NO_CHANGE
+    origin    : str             | NoChange = NO_CHANGE
+    align_h   : AlignH          | NoChange = NO_CHANGE
+    align_v   : AlignV          | NoChange = NO_CHANGE
+    width     : float | None    | NoChange = NO_CHANGE
+    height    : float | None    | NoChange = NO_CHANGE
+    color     : QColor          | NoChange = NO_CHANGE
+    family    : str             | NoChange = NO_CHANGE
+    size      : float           | NoChange = NO_CHANGE
+    bold      : bool            | NoChange = NO_CHANGE
+    italic    : bool            | NoChange = NO_CHANGE
+    underline : bool            | NoChange = NO_CHANGE
+
+
 class PropertyEdit(NamedTuple):
-    name : str
-    edit : PropertyChange | PropertyState | None
-
-
-@verify_property_fields
-class RowItems(NamedTuple):
-    name      : BaseItem
-    value     : BaseItem
-    display   : BaseItem
-    cleat     : BaseItem
-    x         : BaseItem
-    y         : BaseItem
-    origin    : BaseItem
-    align_h   : BaseItem
-    align_v   : BaseItem
-    width     : BaseItem
-    height    : BaseItem
-    color     : BaseItem
-    family    : BaseItem
-    size      : BaseItem
-    bold      : BaseItem
-    italic    : BaseItem
-    underline : BaseItem
+    name : str | None                             # (old) name or None for new
+    edit : PropertyChange | PropertyState | None  # change | add | delete
 
 
 class PropertiesDialog(QDialog):
@@ -118,7 +160,8 @@ class PropertiesDialog(QDialog):
         # build model, record initial state
         self._table_model = BaseModel()
         headers = [
-            snake2proper(field_name) for field_name in property_fields
+            snake2proper(field_name) \
+                for field_name in PropertyState.__dataclass_fields__.keys()
         ]
         self._table_model.setHorizontalHeaderLabels(headers)
         for name in item.getPropertyNames():
@@ -190,35 +233,34 @@ class PropertiesDialog(QDialog):
         self.setMinimumSize(min_width, min_height)
         self._table_model.dataChanged.connect(self._onDataChanged)
 
-    def getChanges(self : Self) -> list[PropertyEdit]:
-        changes : list[PropertyEdit] = []
+    def getEdits(self : Self) -> list[PropertyEdit]:
+        edits : list[PropertyEdit] = []
         # process deletions
         for name in self._deletions:
-            changes.append((name, None))
+            edits.append(PropertyEdit(name, None))
         # process additions and modifications
         after_names : list[str] = []
         # check for and ignore duplicates and anomalies
         for row in range(self._table_model.rowCount()):
-            row_values_list = [
+            row_values = [
                 self._table_model.item(row, col).getValue() \
                     for col in range(self._table_model.columnCount())
             ]
-            row_values = PropertyChange(*row_values_list)
-            after_name = row_values.name
+            after_name = row_values[0]
             # check for and skip duplicates
             if after_name in after_names:
                 QMessageBox.warning(
                     self,
                     "Property Name Duplicated",
-                    f"Property '{row_values.name}' appears multiple times"
+                    f"Property '{after_name}' appears multiple times"
                 )
                 continue  # skip duplicate
-            after_names.append(row_values.name)
+            after_names.append(after_name)
             # build changes; check for and ignore anomalies
             before_name_item : BaseItem = self._table_model.item(row, 0)
             before_name = before_name_item.getBefore()
             if before_name is None:  # add new property
-                change = (after_name, PropertyState(*row_values_list))
+                change = PropertyEdit(None, PropertyState(*row_values))
             else: # modify existing property
                 # check for and skip anomalies
                 if before_name not in self._before.keys():
@@ -228,9 +270,9 @@ class PropertiesDialog(QDialog):
                         f"Property '{before_name}' not seen during construction"
                     )
                     continue  # skip anomalous property
-                change = (before_name, PropertyChange(*row_values_list))
-            changes.append(change)
-        return changes
+                change = PropertyEdit(before_name, PropertyChange(*row_values))
+            edits.append(change)
+        return edits
 
     def _onDelegateDestroyed(self : Self, _ : str) -> None:
         """Workaround to fix delegate lifecycle issue (silent crash)."""
@@ -356,7 +398,9 @@ class PropertiesDialog(QDialog):
         for row in rows:
             name_item : BaseItem = self._table_model.item(row, 0)
             if name_item.isEditable():
-                self._deletions.append(name_item.getValue())
+                before_name = name_item.getBefore()
+                if before_name is not None:  # row existed from dialog constructio
+                    self._deletions.append(before_name)
                 self._table_model.removeRow(row)
             else:
                 failures.append(name_item.text())

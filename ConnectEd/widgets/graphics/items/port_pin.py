@@ -93,20 +93,20 @@ class PortPinMixin(
 
     def setName(self : Self, value : str) -> None:
         self._name = value
-        self.updateProperties("Name")
+        self.signalPropertyChanges("Name")
 
     def direction(self : Self) -> SignalDirection:
         return self._direction
 
     def setDirection(self : Self, value : SignalDirection) -> None:
         self._direction = value
-        self.updateProperties("Dir")
+        self.signalPropertyChanges("Dir")
 
     def comment(self : Self) -> str:
         return self._comment
 
     def setComment(self : Self, value : str) -> None:
         self._comment = value
-        self.updateProperties("Comment")
+        self.signalPropertyChanges("Comment")
 
     ############################################################################

@@ -139,7 +139,7 @@ class DrawingViewStateEditItemProperties(DrawingViewStateBase):
         if item:
             dialog = PropertiesDialog(item, self.view)
             if dialog.exec():
-                for name, change in dialog.getChanges():
+                for name, change in dialog.getEdits():
                     if change is None:
                         # delete
                         self.scene.delProperty(item, name, undoable=True)
@@ -192,7 +192,7 @@ class DrawingViewStateEditDrawingProperties(DrawingViewStateBase):
     ) -> None:
         dialog = PropertiesDialog(self.scene, self.view)
         if dialog.exec():
-            self.scene.editProperties(self.scene, dialog.getChanges(), undoable=True)
+            self.scene.editProperties(self.scene, dialog.getEdits(), undoable=True)
         self.view.state.go(self.view.stateIdle)
 
 class DrawingViewStateEditQuery(DrawingViewStateBase):

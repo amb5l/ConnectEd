@@ -4,19 +4,12 @@ from enum        import Enum
 
 from PyQt6.QtCore    import Qt
 from PyQt6.QtWidgets import QGraphicsItem
-from PyQt6.QtGui     import QColor
 
 from ....app import logger
 
 from ....core.utils import registerClass
 
 from .mixin import ItemMixin
-
-from typing import TYPE_CHECKING
-if TYPE_CHECKING:
-    from .mixin.line  import Line
-    from .mixin.fill  import Fill
-    from .mixin.quill import Quill
 
 
 ItemType = ItemMixin | QGraphicsItem

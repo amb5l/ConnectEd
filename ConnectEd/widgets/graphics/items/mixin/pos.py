@@ -30,7 +30,7 @@ class ItemPosMixin:
         self : Self | QGraphicsItem | PropertiesMixin,
         _pos : QPointF | None = None
     ) -> None:
-        self.updateProperties(["X", "Y"])
+        self.signalPropertyChanges(["X", "Y"])
 
     @overload
     def moveBy(self : Self | QGraphicsItem, dx : float, dy : float) -> None:
