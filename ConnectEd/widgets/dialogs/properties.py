@@ -160,6 +160,7 @@ class PropertiesDialog(QDialog):
         min_height = self._table_view.verticalHeader().length() + 50
         self.setMinimumSize(min_width, min_height)
         self._table_model.dataChanged.connect(self._onDataChanged)
+        self._deletions = []
 
     def getEdits(self : Self) -> list[PropertyEdit]:
         edits : list[PropertyEdit] = []
