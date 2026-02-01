@@ -449,6 +449,49 @@ class PropertiesMixin:
             self.addPropertyText(name, **pt_args)
         return True
 
+    def editProperty(
+        self      : Self,
+        name      : str | tuple[str, str],
+        value     : Text,
+        display   : PropertyDisplay = PropertyDisplay.NONE,
+        cleat     : str              | None = None,
+        x         : float            | None = None,
+        y         : float            | None = None,
+        align_h   : AlignH           | None = None,
+        align_v   : AlignV           | None = None,
+        width     : float            | None = None,
+        height    : float            | None = None,
+        color     : QColor | Default | None = None,
+        family    : str    | Default | None = None,
+        size      : float  | Default | None = None,
+        bold      : bool   | Default | None = None,
+        italic    : bool   | Default | None = None,
+        underline : bool   | Default | None = None,
+        origin : str = "Top Left",
+    ) -> bool:
+        if isinstance(name, tuple):
+            name, new_name = name
+        else:
+            new_name = NO_CHANGE
+        if new_name is not NO_CHANGE:
+            self.renProperty(name, new_name)
+            name = new_name
+        if value is not NO_CHANGE:
+            self.setPropertyValue(name, value)
+        if display is PropertyDisplay.NONE:
+            if self.getPropertyDisplay(name) != PropertyDisplay.NONE:
+                # delete property text
+                self.delPropertyText(name)
+        else:
+            f = self.addPropertyText \
+                if self.getPropertyDisplay(name) == PropertyDisplay.NONE \
+                    else self.editPropertyText
+            f(
+                name, display == PropertyDisplay.SHOW,
+                cleat, x, y, origin, align_h, align_v, width, height,
+                color, family, size, bold, italic, underline
+            )
+
     def renProperty(self : Self, old_name : str, new_name : str) -> bool:
         """
         Rename a property.
