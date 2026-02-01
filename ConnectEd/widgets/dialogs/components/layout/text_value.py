@@ -2,7 +2,6 @@ from typing import Self, Protocol
 
 from PyQt6.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, \
                             QGroupBox, QButtonGroup, QRadioButton, QLabel
-from PyQt6.QtGui     import QShowEvent
 
 from ..edit import TextLineEditor, TextBlockEditor
 
@@ -22,12 +21,6 @@ class TextValueLayout(QVBoxLayout):
         self._layout = None
         self._label = None
         self._edit = None
-
-    def showEvent(self : Self, event : QShowEvent) -> None:
-        """Override showEvent to select all text when dialog appears."""
-        super().showEvent(event)
-        self._edit.selectAll()
-        self._edit.setFocus()
 
     def getValue(self : Self) -> str:
         return self._edit.text()
@@ -62,12 +55,6 @@ class TextFormatLayout(QVBoxLayout):
         self._group_box.setLayout(self._layout)
         self.addWidget(self._group_box)
         self._button_group.buttonClicked.connect(lambda _: self.onFormatChange())
-
-    def showEvent(self : Self, event : QShowEvent) -> None:
-        """Override showEvent to select all text when dialog appears."""
-        super().showEvent(event)
-        self._value_edit.selectAll()
-        self._value_edit.setFocus()
 
     def getValue(self : Self) -> str:
         return self._value_edit.text()

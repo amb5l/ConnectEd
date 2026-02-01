@@ -1,5 +1,6 @@
 from typing import Self
 
+from PyQt6.QtCore    import Qt, QTimer
 from PyQt6.QtWidgets import QWidget, QDialog, QVBoxLayout, QHBoxLayout, \
                             QGroupBox, QCheckBox
 from PyQt6.QtGui     import QShowEvent, QColor
@@ -126,9 +127,10 @@ class TextItemDialog(QDialog):
     def showEvent(self : Self, event : QShowEvent):
         """Override showEvent to select all text when dialog appears."""
         super().showEvent(event)
-        if self._value_layout.getValue() == "<text>":
+        QTimer.singleShot(0, lambda: (
+            self._value_layout._edit.setFocus(Qt.FocusReason.PopupFocusReason),
             self._value_layout._edit.selectAll()
-            self._value_layout._edit.setFocus()
+        ))
 
     def getText(self : Self) -> str:
         return self._value_layout.getValue()
