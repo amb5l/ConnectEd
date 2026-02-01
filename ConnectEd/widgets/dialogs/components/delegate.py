@@ -44,23 +44,23 @@ class DialogItemDelegate(QStyledItemDelegate):
             case "float":
                 editor = FloatEditor(item_value, parent)
             case "bool":
-                editor = OnOffComboBox(item_value, item_default, None, parent)
+                editor = OnOffComboBox(item_value, item_default, parent)
             case "Edge":
                 editor = EdgeComboBox(item_value, parent)
             case "QColor":
-                editor = ColorComboBox(item_value, item_default, None, parent)
+                editor = ColorComboBox(item_value, item_default, parent)
             case "PropertyDisplay":
                 editor = PropertyDisplayComboBox(item_value, parent)
             case "FontFamily":
-                editor = FontFamilyComboBox(item_value, item_default, None, parent)
+                editor = FontFamilyComboBox(item_value, item_default, parent)
             case "LineWidth":
-                editor = LineWidthComboBox(item_value, item_default, None, parent)
+                editor = LineWidthComboBox(item_value, item_default, parent)
             case "PenStyle":
-                editor = LineStyleComboBox(item_value, item_default, None, parent)
+                editor = LineStyleComboBox(item_value, item_default, parent)
             case "BrushStyle":
-                editor = FillStyleComboBox(item_value, item_default, None, parent)
+                editor = FillStyleComboBox(item_value, item_default, parent)
             case "FontSize":
-                editor = FontSizeComboBox(item_value, item_default, None, parent)
+                editor = FontSizeComboBox(item_value, item_default, parent)
             case _:
                 editor = None
                 logger().error(f"Invalid value type: {item_kind}")

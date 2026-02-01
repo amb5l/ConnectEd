@@ -47,28 +47,41 @@ class ColorComboBox(QComboBox):
     ) -> None:
         super().__init__(parent)
         self.setIconSize(CUSTOM_ICON_SIZE)
-        default_icon = \
-            self.getIcon(default) if isinstance(default, QColor) else \
-            DefaultIcon().get()
-        no_change_icon = \
-            self.getIcon(initial) if isinstance(initial, QColor) else \
-            default_icon if initial is DEFAULT else \
-            NoChangeIcon().get()
+        # Determine default icon and string
+        if isinstance(default, QColor):
+            default_icon = self.getIcon(default)
+            default_str = f" = {val2str(default)}"
+        else:
+            default_icon = DefaultIcon().get()
+            default_str = ""
+        # Determine no_change icon and string from initial
+        if isinstance(initial, QColor):
+            no_change_icon = self.getIcon(initial)
+            no_change_str = f" = {val2str(initial)}"
+        elif initial is DEFAULT:
+            no_change_icon = default_icon
+            no_change_str = f" = default{default_str}"
+        else:  # NO_CHANGE
+            no_change_icon = NoChangeIcon().get()
+            no_change_str = ""
         custom = True
         custom_idx = None
         for k, v in self.COLORS.items():
             i = self.count()
-            text = k
             match k:
                 case "<no change>":
                     icon = no_change_icon
+                    text = f"<no change{no_change_str}>"
                 case "<default>":
                     icon = default_icon
+                    text = f"<default{default_str}>"
                 case "<custom>":
                     custom_idx = i
                     icon = QueryIcon().get()
+                    text = k
                 case _:
                     icon = self.getIcon(v)
+                    text = k
             self.addItem(icon, text)
             if initial == v:
                 self.setCurrentIndex(i)

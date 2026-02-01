@@ -14,37 +14,36 @@ class FontSizeComboBox(QComboBox):
         self      : Self,
         initial   : NoChange | Default | float | int,
         default   : Default | float | int,
-        no_change : NoChange | Default | float | int | None = None,
         parent    : QWidget | None = None
     ) -> None:
         super().__init__(parent)
+        # Determine default string
         default_str = \
             f" = {default}" if isinstance(default, float | int) else ""
-        default_idx = 1
-        no_change_str = \
-            f" = {no_change}" if isinstance(no_change, float | int) else \
-            f" = default{default_str}" if no_change is DEFAULT else \
-            ""
-        no_change_idx = 0
+        # Determine no_change string from initial
+        if isinstance(initial, float | int):
+            no_change_str = f" = {initial}"
+        elif initial is DEFAULT:
+            no_change_str = f" = default{default_str}"
+        else:  # NO_CHANGE
+            no_change_str = ""
+        # Build items list
         self.sizes = []
-        if no_change is not None or initial is NO_CHANGE:
-            self.sizes.append(f"<no change{no_change_str}>")
-        else:
-            no_change_idx = -1
-            default_idx   = 0
+        self.sizes.append(f"<no change{no_change_str}>")
         self.sizes.append(f"<default{default_str}>")
         self.sizes.extend([str(size) for size in self.SIZES])
         self.addItems(self.sizes)
+        # Set initial selection
         if initial is NO_CHANGE:
-            self.setCurrentIndex(no_change_idx)
+            self.setCurrentIndex(0)
         elif initial is DEFAULT:
-            self.setCurrentIndex(default_idx)
-        elif isinstance(initial, float | int) and initial in self.SIZES:
+            self.setCurrentIndex(1)
+        elif isinstance(initial, float | int):
             size_str = str(int(initial) if initial == int(initial) else initial)
             if size_str in self.sizes:
                 self.setCurrentIndex(self.sizes.index(size_str))
             else:
-                self.setCurrentIndex(default_idx)
+                self.setCurrentIndex(1)  # default
 
     def getChoice(self : Self) -> NoChange | Default | float | None:
         text = self.currentText()

@@ -341,10 +341,10 @@ class PropertiesDialog(QDialog):
     def _getValueColumnWidth(self : Self) -> int:
         max_width = 50  # minimum width
         test_editors = [
-            ColorComboBox     (DEFAULT, DEFAULT, DEFAULT, None),
-            LineWidthComboBox (DEFAULT, DEFAULT, DEFAULT, None),
-            LineStyleComboBox (DEFAULT, DEFAULT, DEFAULT, None),
-            FillStyleComboBox (DEFAULT, DEFAULT, DEFAULT, None)
+            ColorComboBox     (DEFAULT, DEFAULT, None),
+            LineWidthComboBox (DEFAULT, DEFAULT, None),
+            LineStyleComboBox (DEFAULT, DEFAULT, None),
+            FillStyleComboBox (DEFAULT, DEFAULT, None)
         ]
         for editor in test_editors:
             if editor:

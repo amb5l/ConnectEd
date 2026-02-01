@@ -55,6 +55,9 @@ class FillStyleComboBox(QComboBox):
         elif initial is DEFAULT:
             no_change_icon = default_icon
             no_change_str = f" = default{default_str}"
+        else:  # NO_CHANGE
+            no_change_icon = NoChangeIcon().get()
+            no_change_str = ""
         for i, (k, v) in enumerate(self.STYLES.items()):
             match k:
                 case "<no change>":
