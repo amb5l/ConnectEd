@@ -16,8 +16,8 @@ class ItemOriginMixin:
     _ORIGIN_NAME : str
     _PROPERTIES_ORIGIN = {
         "Origin" : InherentProperty(
-            valid  = lambda self: self.getOrigin() is not None,
-            getter = lambda self: self.getOrigin(),
+            valid  = lambda self: self.origin() is not None,
+            getter = lambda self: self.origin(),
             setter = lambda self, value: self.setOrigin(value)
         )
     }

@@ -112,7 +112,7 @@ class OriginGripItem(GripItem):
 
     def pathNameSuffix(self : Self) -> str:
         item = self.item()
-        if hasattr(item, "getOrigin") and item.getOrigin() == self.handle().name():
+        if hasattr(item, "origin") and item.origin() == self.handle().name():
             return self._ORIGIN_PATH_NAME_SUFFIX
         return ""
 
