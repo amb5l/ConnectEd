@@ -1,6 +1,4 @@
 from typing      import Self
-from dataclasses import astuple
-
 
 from PyQt6.QtCore import QPoint, QPointF
 
@@ -144,13 +142,19 @@ class DrawingViewStateEditItemProperties(DrawingViewStateBase):
                 for edit in dialog.getEdits():
                     if edit.after is None:
                         # delete
-                        self.scene.delProperty(item, edit.name, undoable=True)
+                        self.scene.delProperty(
+                            item, edit.name, undoable=True
+                        )
                     elif edit.name == "":
                         # add
-                        self.scene.addProperty(item, *astuple(edit.after), undoable=True)
+                        self.scene.addProperty(
+                            item, *edit.after.astuple(), undoable=True
+                            )
                     else:
                         # modify
-                        self.scene.editProperty(item, *astuple(edit.after), undoable=True)
+                        self.scene.editProperty(
+                            item, *edit.after.astuple(), undoable=True
+                        )
         else:
             logger().warning("No items selected")
         self.view.state.go(self.view.stateIdle)
