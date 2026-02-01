@@ -145,20 +145,20 @@ class PropertyState:
         )
         pt = object.getPropertyText(name)
         if pt is not None:
-            inst.cleat     = pt.cleat(name),
-            inst.x         = pt.x(name),
-            inst.y         = pt.y(name),
-            inst.origin    = pt.origin(name),
-            inst.align_h   = pt.alignH(name),
-            inst.align_v   = pt.alignV(name),
-            inst.width     = pt.width(name),
-            inst.height    = pt.height(name),
-            inst.color     = pt.quillColor(name),
-            inst.family    = pt.quillFamily(name),
-            inst.size      = pt.quillSize(name),
-            inst.bold      = pt.quillBold(name),
-            inst.italic    = pt.quillItalic(name),
-            inst.underline = pt.quillUnderline(name)
+            inst.cleat     = pt.cleat()
+            inst.x         = pt.x()
+            inst.y         = pt.y()
+            inst.origin    = pt.origin()
+            inst.align_h   = pt.alignH()
+            inst.align_v   = pt.alignV()
+            inst.width     = pt.width()
+            inst.height    = pt.height()
+            inst.color     = pt.quillColor()
+            inst.family    = pt.quillFamily()
+            inst.size      = pt.quillSize()
+            inst.bold      = pt.quillBold()
+            inst.italic    = pt.quillItalic()
+            inst.underline = pt.quillUnderline()
         return inst
 
 
