@@ -105,8 +105,8 @@ class CustomProperty(BaseProperty):
 
 class PropertyDisplay(Enum):
     NONE = "<none>"
-    SHOW = "Line"
-    HIDE = "Block"
+    SHOW = "Show"
+    HIDE = "Hide"
 
 
 @dataclass
