@@ -37,7 +37,7 @@ from enum            import Enum
 
 import re
 
-from PyQt6.QtCore import QObject, pyqtSignal
+from PyQt6.QtCore import QObject, pyqtSignal, QPointF
 from PyQt6.QtGui  import QColor
 
 from ...app  import logger
@@ -57,8 +57,8 @@ if TYPE_CHECKING:
 class PropertyTextSpec:
     visible   : bool             = True
     cleat     : str | None       = None
-    pos_x     : float            = 0
-    pos_y     : float            = 0
+    x         : float            = 0
+    y         : float            = 0
     origin    : str              = "Top Left"
     align_h   : AlignH           = AlignH.LEFT
     align_v   : AlignV           = AlignV.TOP
@@ -73,7 +73,7 @@ class PropertyTextSpec:
 
     def astuple(self : Self) -> tuple:
         return (
-            self.visible, self.cleat, self.pos_x, self.pos_y, self.origin,
+            self.visible, self.cleat, self.x, self.y, self.origin,
             self.align_h, self.align_v, self.width, self.height,
             self.color, self.family, self.size, self.bold, self.italic, self.underline
         )
@@ -129,6 +129,13 @@ class PropertyState:
     italic    : bool   | None = None
     underline : bool   | None = None
 
+    def astuple(self : Self) -> tuple:
+        return (
+            self.name, self.value, self.display, self.cleat, self.x, self.y,
+            self.origin, self.align_h, self.align_v, self.width, self.height,
+            self.color, self.family, self.size, self.bold, self.italic, self.underline
+        )
+
     @classmethod
     def fromProperty(cls : Self, object : "PropertiesMixin", name : str) -> Self:
         inst = cls(
@@ -156,7 +163,7 @@ class PropertyState:
 
 
 @dataclass
-class PropertyChange:
+class PropertyChange(PropertyState):
     name      : str             | NoChange = NO_CHANGE
     value     : Any             | NoChange = NO_CHANGE
     display   : PropertyDisplay | NoChange = NO_CHANGE
@@ -580,12 +587,23 @@ class PropertiesMixin:
             logger().warning(f"Property '{name}' already has text")
             return False
         # create new PropertyTextItem
-        pt_args = {
-            k: v for k, v in locals().items() \
-                if k in PropertyTextSpec.__dataclass_fields__.keys()
-                    and k != "visible"
-        }
-        property.text = PropertyTextItem(name, **pt_args, parent=self)
+        property.text = PropertyTextItem(
+            name      = name,
+            cleat     = cleat,
+            pos       = QPointF(x, y),
+            origin    = origin,
+            align_h   = align_h,
+            align_v   = align_v,
+            width     = width,
+            height    = height,
+            color     = color,
+            family    = family,
+            size      = size,
+            bold      = bold,
+            italic    = italic,
+            underline = underline,
+            parent    = self
+        )
         return True
 
     def editPropertyText(

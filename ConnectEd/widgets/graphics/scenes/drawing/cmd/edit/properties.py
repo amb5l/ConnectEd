@@ -1,5 +1,4 @@
 from typing      import Self, Any
-from dataclasses import astuple
 
 from PyQt6.QtGui  import QColor
 
@@ -60,7 +59,7 @@ class CmdAddProperty(CmdPropertyBase):
         self._state = PropertyState(**state_args)
 
     def redo(self : Self) -> None:
-        self._object.addProperty(*astuple(self._state))
+        self._object.addProperty(*self._state.astuple())
 
     def undo(self : Self) -> None:
         self._object.delProperty(self._state.name)
@@ -105,97 +104,7 @@ class CmdEditProperty(CmdPropertyBase):
         self._after = PropertyChange(**change_args)
 
     def redo(self : Self) -> None:
-        self._object.editProperty(astuple(self._after))
+        self._object.editProperty(*self._after.astuple())
 
     def undo(self : Self) -> None:
-        self._object.editProperty(astuple(self._before))
-
-
-
-        if self._after.value is not NO_CHANGE:
-            self._object.setPropertyValue(name, self._after.value)
-        if self._after.display is PropertyDisplay.NONE:
-            if self._before.text is not None:
-                # remove
-                self._object.delPropertyText(name)
-        else:
-            if self._before.text is None:
-                # add
-                self._object.addPropertyText(
-                    name      = name,
-                    visible   = self._after.display == PropertyDisplay.SHOW,
-                    cleat     = self._after.cleat,
-                    x     = self._after.x,
-                    y     = self._after.y,
-                    origin    = self._after.origin,
-                    align_h   = self._after.align_h,
-                    align_v   = self._after.align_v,
-                    width     = self._after.width,
-                    height    = self._after.height,
-                    color     = self._after.color,
-                    family    = self._after.family,
-                    size      = self._after.size,
-                    bold      = self._after.bold,
-                    italic    = self._after.italic,
-                    underline = self._after.underline
-                )
-            else:
-                # modify
-                self._object.editPropertyText(
-                    name      = name,
-                    visible   = self._after.display == PropertyDisplay.SHOW,
-                    cleat     = self._after.cleat,
-                    x     = self._after.x,
-                    y     = self._after.y,
-                    origin    = self._after.origin,
-                    align_h   = self._after.align_h,
-                    align_v   = self._after.align_v,
-                    width     = self._after.width,
-                    height    = self._after.height,
-                    color     = self._after.color,
-                    family    = self._after.family,
-                    size      = self._after.size,
-                    bold      = self._after.bold,
-                    italic    = self._after.italic,
-                    underline = self._after.underline
-                )
-
-    def undo(self : Self) -> None:
-        # undo name change
-        name = self._after.name
-        if self._after.name is not NO_CHANGE:
-            self._object.renProperty(self._after.name, self._before.name)
-            name = self._before.name
-        # undo value change
-        if self._after.value is not NO_CHANGE:
-            self._object.setPropertyValue(name, self._before.value)
-        # undo property text change
-        if self._before.text is None:
-            # undo add
-            self._object.delPropertyText(name)
-        else:
-            # undo remove or modify
-            if self._after.text is None:
-                # undo remove
-                self._object.setPropertyText(self._before.text)
-            else:
-                # undo modify
-                text : PropertyTextState = self._before.text
-                self._object.editPropertyText(
-                    name      = name,
-                    visible   = text.visible,
-                    cleat     = text.cleat,
-                    x     = text.pos_x,
-                    y     = text.pos_y,
-                    origin    = text.origin,
-                    align_h   = text.align_h,
-                    align_v   = text.align_v,
-                    width     = text.width,
-                    height    = text.height,
-                    color     = text.color,
-                    family    = text.family,
-                    size      = text.size,
-                    bold      = text.bold,
-                    italic    = text.italic,
-                    underline = text.underline
-                )
+        self._object.editProperty(*self._before.astuple())
