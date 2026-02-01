@@ -33,11 +33,10 @@ class TetherItem(QGraphicsLineItem):
 
     _item  : "PropertyTextItem"
 
-    def __init__(self : Self, item : "PropertyTextItem", visible : bool = False):
-        super().__init__(item)  # Parent it to the TetherText
+    def __init__(self : Self, item : "PropertyTextItem"):
         self._item = item
-        self.setVisible(visible)
-        self.setFlag( self.GraphicsItemFlag.ItemIgnoresTransformations , False )
+        super().__init__(item.getOriginHandle())
+        self.setVisible(item.isSelected())
         self.onSettingsChange()
         self.onPositionChange(self._item.pos())
 
@@ -225,8 +224,8 @@ class PropertyTextItem(UniTextItem):
     def setOrigin(self : Self, name : str) -> None:
         """Override to update tether line."""
         ItemOriginMixin.setOrigin(self, name)
-        if hasattr(self, "_tether"):
-            self._tether.setParentItem(self.getHandle(name))
+        if hasattr(self, "_tether"):  # guard against partial initialisation
+            self._tether.setParentItem(self.getOriginHandle())
             self._tether.onPositionChange(self.pos())
 
     def item(self : Self) -> ItemType | None:

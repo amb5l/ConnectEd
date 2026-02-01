@@ -49,6 +49,9 @@ class ItemOriginMixin:
         # broadcast change
         self.signalPropertyChanges("Origin")
 
+    def getOriginHandle(self : "Self | ItemHandlesMixin") -> "HandleItem":
+        return self.getHandle(self._origin)
+
     def updateOrigin(self : "Self | QGraphicsItem | ItemHandlesMixin") -> None:
         """Set transform origin to origin handle position."""
         if not hasattr(self, "_handles") \
