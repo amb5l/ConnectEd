@@ -46,7 +46,7 @@ class ExistingItem(BaseItem):
         super().__init__(value, value, type_name, default, editable, enabled)
 
 
-class NewItem():
+class NewItem(BaseItem):
     def __init__(
         self      : Self,
         value     : Any = "",
@@ -106,16 +106,16 @@ class PropertiesDialog(QDialog):
                 ExistingItem(state.x         , "float"          ),
                 ExistingItem(state.y         , "float"          ),
                 ExistingItem(state.origin    , "str"            ),
-                ExistingItem(state.align_h   , "QColor"         ),
-                ExistingItem(state.align_v   , "FontFamily"     ),
-                ExistingItem(state.width     , "FontSize"       ),
-                ExistingItem(state.height    , "bool"           ),
-                ExistingItem(state.color     , "bool"           ),
-                ExistingItem(state.family    , "bool"           ),
-                ExistingItem(state.size      , "AlignH"         ),
-                ExistingItem(state.bold      , "AlignV"         ),
-                ExistingItem(state.italic    , "float"          ),
-                ExistingItem(state.underline , "float"          )
+                ExistingItem(state.align_h   , "AlignH"         ),
+                ExistingItem(state.align_v   , "AlignV"         ),
+                ExistingItem(state.width     , "float"          ),
+                ExistingItem(state.height    , "float"          ),
+                ExistingItem(state.color     , "QColor"         ),
+                ExistingItem(state.family    , "FontFamily"     ),
+                ExistingItem(state.size      , "FontSize"       ),
+                ExistingItem(state.bold      , "bool"           ),
+                ExistingItem(state.italic    , "bool"           ),
+                ExistingItem(state.underline , "bool"           )
             ])
         # create delegate
         self._delegate = DialogItemDelegate()
@@ -234,20 +234,20 @@ class PropertiesDialog(QDialog):
                     continue
                 if col_idx == 2 and item.getValue() != PropertyDisplay.NONE:
                     # set defaults if needed
-                    cleat_item     : BaseItem = self._table_model.item(row_idx, 4)
-                    offset_x_item  : BaseItem = self._table_model.item(row_idx, 5)
-                    offset_y_item  : BaseItem = self._table_model.item(row_idx, 6)
-                    origin_item    : BaseItem = self._table_model.item(row_idx, 7)
-                    align_h_item   : BaseItem = self._table_model.item(row_idx, 8)
-                    align_v_item   : BaseItem = self._table_model.item(row_idx, 9)
-                    width_item     : BaseItem = self._table_model.item(row_idx, 10)
-                    height_item    : BaseItem = self._table_model.item(row_idx, 11)
-                    color_item     : BaseItem = self._table_model.item(row_idx, 12)
-                    family_item    : BaseItem = self._table_model.item(row_idx, 13)
-                    size_item      : BaseItem = self._table_model.item(row_idx, 14)
-                    bold_item      : BaseItem = self._table_model.item(row_idx, 15)
-                    italic_item    : BaseItem = self._table_model.item(row_idx, 16)
-                    underline_item : BaseItem = self._table_model.item(row_idx, 17)
+                    cleat_item     : BaseItem = self._table_model.item(row_idx, 3)
+                    offset_x_item  : BaseItem = self._table_model.item(row_idx, 4)
+                    offset_y_item  : BaseItem = self._table_model.item(row_idx, 5)
+                    origin_item    : BaseItem = self._table_model.item(row_idx, 6)
+                    align_h_item   : BaseItem = self._table_model.item(row_idx, 7)
+                    align_v_item   : BaseItem = self._table_model.item(row_idx, 8)
+                    width_item     : BaseItem = self._table_model.item(row_idx, 9)
+                    height_item    : BaseItem = self._table_model.item(row_idx, 10)
+                    color_item     : BaseItem = self._table_model.item(row_idx, 11)
+                    family_item    : BaseItem = self._table_model.item(row_idx, 12)
+                    size_item      : BaseItem = self._table_model.item(row_idx, 13)
+                    bold_item      : BaseItem = self._table_model.item(row_idx, 14)
+                    italic_item    : BaseItem = self._table_model.item(row_idx, 15)
+                    underline_item : BaseItem = self._table_model.item(row_idx, 16)
                     if cleat_item.getValue() is None:
                         cleat_item.setInitXXX(
                             "" if isinstance(self._item, DrawingScene) \
