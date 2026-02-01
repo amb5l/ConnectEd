@@ -281,39 +281,57 @@ class UniTextItem(
 
     def moveHandleBy(self : Self, name : str, delta : QPointF) -> None:
         """Resize/move the text as appropriate."""
+        origin = self.origin()
         match name:
             case "Top Left":
-                self.moveBy(delta)
-                self.resize(-delta.x(), -delta.y())
+                if "Left" in origin: self.moveByX(delta.x())
+                self.resizeX(-delta.x())
+                if "Top" in origin: self.moveByY(delta.y())
+                self.resizeY(-delta.y())
             case "Top Center":
-                self.setY(self.pos().y() + delta.y())
-                self.resizeV(-delta.y())
+                if "Top" in origin: self.moveByY(delta.y())
+                self.resizeY(-delta.y())
             case "Top Right":
-                self.setY(self.pos().y() + delta.y())
-                self.resize(delta.x(), -delta.y())
+                if "Right" in origin: self.moveByX(delta.x())
+                self.resizeX(delta.x())
+                if "Top" in origin: self.moveByY(delta.y())
+                self.resizeY(-delta.y())
             case "Middle Left":
-                self.setX(self.pos().x() + delta.x())
-                self.resizeH(-delta.x())
+                if "Left" in origin: self.moveByX(delta.x())
+                self.resizeX(-delta.x())
             case "Middle Center":
                 self.moveBy(delta)
             case "Middle Right":
-                self.resizeH(delta.x())
+                if "Right" in origin: self.moveByX(delta.x())
+                self.resizeX(delta.x())
             case "Bottom Left":
-                self.setX(self.pos().x() + delta.x())
-                self.resize(-delta.x(), delta.y())
+                if "Left" in origin: self.moveByX(delta.x())
+                self.resizeX(-delta.x())
+                if "Bottom" in origin: self.moveByY(delta.y())
+                self.resizeY(delta.y())
             case "Bottom Center":
-                self.resizeV(delta.y())
+                if "Bottom" in origin: self.moveByY(delta.y())
+                self.resizeY(delta.y())
             case "Bottom Right":
-                self.resize(delta.x(), delta.y())
+                if "Right" in origin: self.moveByX(delta.x())
+                self.resizeX(delta.x())
+                if "Bottom" in origin: self.moveByY(delta.y())
+                self.resizeY(delta.y())
 
-    def resizeH(self : Self, dx : float) -> None:
+    def moveByX(self : Self, dx : float) -> None:
+        self.setX(self.pos().x() + dx)
+
+    def moveByY(self : Self, dy : float) -> None:
+        self.setY(self.pos().y() + dy)
+
+    def resizeX(self : Self, dx : float) -> None:
         rect = self._child._brect
         self._width = max((self._width or rect.width()) + dx, 0.0)
         self._child.onGeometryChange()
         self.updateHandlePositions()
         self.updateHandlePaths()
 
-    def resizeV(self : Self, dy : float) -> None:
+    def resizeY(self : Self, dy : float) -> None:
         rect = self._child._brect
         self._height = max((self._height or rect.height()) + dy, 0.0)
         self._child.onGeometryChange()
