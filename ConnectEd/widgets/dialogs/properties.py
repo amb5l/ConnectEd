@@ -186,20 +186,10 @@ class PropertiesDialog(QDialog):
                 continue  # skip duplicate
             after_names.append(after_name)
             # build changes; check for and ignore anomalies
-            before_name_item : BaseItem = self._table_model.item(row, 0)
-            before_name = before_name_item.getBefore()
-            if before_name is None:  # add new property
-                change = PropertyEdit(None, PropertyState(*row_values))
-            else: # modify existing property
-                # check for and skip anomalies
-                if before_name not in self._before.keys():
-                    QMessageBox.warning(
-                        self,
-                        "Anomalous Property",
-                        f"Property '{before_name}' not seen during construction"
-                    )
-                    continue  # skip anomalous property
-                change = PropertyEdit(before_name, PropertyChange(*row_values))
+            name_item : BaseItem = self._table_model.item(row, 0)
+            before_name = name_item.getBefore()
+            change_cls = PropertyState if before_name is None else PropertyChange
+            change = PropertyEdit(before_name, change_cls(*row_values))
             edits.append(change)
         return edits
 
