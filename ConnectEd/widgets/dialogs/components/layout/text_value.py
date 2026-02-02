@@ -16,7 +16,7 @@ class TextValueLayout(QVBoxLayout):
     _label  : QLabel | None
     _edit   : TextLineEditor | TextBlockEditor | None
 
-    def __init__(self : Self, value : str) -> QVBoxLayout:
+    def __init__(self : Self) -> QVBoxLayout:
         super().__init__()
         self._layout = None
         self._label = None

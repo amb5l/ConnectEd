@@ -49,7 +49,7 @@ class TextItemDialog(QDialog):
         # value
         ########################################################################
         # value section
-        self._value_layout = TextValueLayout(item.text())
+        self._value_layout = TextValueLayout()
         self._dialog_layout.addLayout(self._value_layout)
         ########################################################################
         # format and rotation compensation
@@ -122,7 +122,8 @@ class TextItemDialog(QDialog):
         # finalise
         ########################################################################
         self.setLayout(self._dialog_layout)
-        self._format_layout.onFormatChange()  # initialise value
+        self._format_layout.onFormatChange()           # initialise format
+        self._value_layout._edit.setText(item.text())  # initialise value
 
     def showEvent(self : Self, event : QShowEvent):
         """Override showEvent to select all text when dialog appears."""
