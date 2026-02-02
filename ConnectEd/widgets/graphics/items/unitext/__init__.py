@@ -204,7 +204,7 @@ class UniTextItem(
     def setRotcomp(self : Self, rotcomp : bool) -> None:
         self._rotcomp = rotcomp
         if rotcomp:
-            self._child.onSceneRotationChange()
+            self.onSceneRotationChange()
         else:
             self._child.setRotation(0)
 

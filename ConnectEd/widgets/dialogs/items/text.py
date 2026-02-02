@@ -138,6 +138,9 @@ class TextItemDialog(QDialog):
     def getBlock(self : Self) -> bool:
         return self._format_layout.getBlock()
 
+    def getRotcomp(self : Self) -> bool:
+        return self._rotcomp_checkbox.isChecked()
+
     def getAlignH(self : Self) -> AlignH:
         return self._align_layout.getAlignH()
 
