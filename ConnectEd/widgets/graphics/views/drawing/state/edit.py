@@ -16,6 +16,8 @@ from ....items.property_text import PropertyTextItem
 from ....items.port          import PortItem
 from ....items.block_pin     import BlockPinItem
 
+from ....properties import PropertyAdd, PropertyEdit, PropertyDelete
+
 from ..interaction.edit import EditPasteInteraction
 
 from .base  import qkm, DrawingViewStateBase
@@ -140,21 +142,12 @@ class DrawingViewStateEditItemProperties(DrawingViewStateBase):
             dialog = PropertiesDialog(item, self.view)
             if dialog.exec():
                 for edit in dialog.getEdits():
-                    if edit.after is None:
-                        # delete
-                        self.scene.delProperty(
-                            item, edit.name, undoable=True
-                        )
-                    elif edit.name == "":
-                        # add
-                        self.scene.addProperty(
-                            item, *edit.after.astuple(), undoable=True
-                            )
-                    else:
-                        # modify
-                        self.scene.editProperty(
-                            item, *edit.after.astuple(), undoable=True
-                        )
+                    if isinstance(edit, PropertyAdd):
+                        self.scene.addProperty(item, *edit.astuple(), undoable=True)
+                    elif isinstance(edit, PropertyEdit):
+                        self.scene.editProperty(item, *edit.astuple(), undoable=True)
+                    elif isinstance(edit, PropertyDelete):
+                        self.scene.delProperty(item, edit.name, undoable=True)
         else:
             logger().warning("No items selected")
         self.view.state.go(self.view.stateIdle)

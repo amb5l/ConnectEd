@@ -136,6 +136,11 @@ class PropertyState:
             self.color, self.family, self.size, self.bold, self.italic, self.underline
         )
 
+    def asdict(self : Self) -> dict:
+        return {
+            k: getattr(self, k) for k in self.__dataclass_fields__.keys()
+        }
+
     @classmethod
     def fromProperty(cls : Self, object : "PropertiesMixin", name : str) -> Self:
         inst = cls(
@@ -163,29 +168,33 @@ class PropertyState:
 
 
 @dataclass
-class PropertyChange(PropertyState):
-    name      : str             | NoChange = NO_CHANGE
-    value     : Any             | NoChange = NO_CHANGE
-    display   : PropertyDisplay | NoChange = NO_CHANGE
-    cleat     : str             | NoChange = NO_CHANGE
-    x         : float           | NoChange = NO_CHANGE
-    y         : float           | NoChange = NO_CHANGE
-    origin    : str             | NoChange = NO_CHANGE
-    align_h   : AlignH          | NoChange = NO_CHANGE
-    align_v   : AlignV          | NoChange = NO_CHANGE
-    width     : float | None    | NoChange = NO_CHANGE
-    height    : float | None    | NoChange = NO_CHANGE
-    color     : QColor          | NoChange = NO_CHANGE
-    family    : str             | NoChange = NO_CHANGE
-    size      : float           | NoChange = NO_CHANGE
-    bold      : bool            | NoChange = NO_CHANGE
-    italic    : bool            | NoChange = NO_CHANGE
-    underline : bool            | NoChange = NO_CHANGE
+class PropertyEdit(PropertyState):
+    name      : str | tuple[str, str]
+    value     : Any                   | NoChange = NO_CHANGE
+    display   : PropertyDisplay       | NoChange = NO_CHANGE
+    cleat     : str    | None         | NoChange = NO_CHANGE
+    x         : float  | None         | NoChange = NO_CHANGE
+    y         : float  | None         | NoChange = NO_CHANGE
+    origin    : str    | None         | NoChange = NO_CHANGE
+    align_h   : AlignH | None         | NoChange = NO_CHANGE
+    align_v   : AlignV | None         | NoChange = NO_CHANGE
+    width     : float  | None         | NoChange = NO_CHANGE
+    height    : float  | None         | NoChange = NO_CHANGE
+    color     : QColor | None         | NoChange = NO_CHANGE
+    family    : str    | None         | NoChange = NO_CHANGE
+    size      : float  | None         | NoChange = NO_CHANGE
+    bold      : bool   | None         | NoChange = NO_CHANGE
+    italic    : bool   | None         | NoChange = NO_CHANGE
+    underline : bool   | None         | NoChange = NO_CHANGE
 
 
-class PropertyEdit(NamedTuple):
-    name  : str | None                             # (old) name or None for new
-    after : PropertyChange | PropertyState | None  # change | add | delete
+class PropertyAdd(PropertyState):
+    pass
+
+
+@dataclass
+class PropertyDelete:
+    name : str
 
 
 class PropertiesMixin:

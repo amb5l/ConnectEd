@@ -10,8 +10,8 @@ from ...app import settings
 
 from ...core.utils import snake2proper
 
-from ..graphics.properties import PropertyDisplay, \
-                                  PropertyState, PropertyChange, PropertyEdit
+from ..graphics.properties import PropertyDisplay, PropertyState, \
+                                  PropertyAdd, PropertyEdit, PropertyDelete
 
 from ..graphics.items import DEFAULT, AlignH, AlignV
 
@@ -162,21 +162,19 @@ class PropertiesDialog(QDialog):
         self._table_model.dataChanged.connect(self._onDataChanged)
         self._deletions = []
 
-    def getEdits(self : Self) -> list[PropertyEdit]:
-        edits : list[PropertyEdit] = []
+    def getEdits(self : Self) -> list[PropertyAdd | PropertyEdit | PropertyDelete]:
+        edits : list[PropertyAdd | PropertyEdit | PropertyDelete] = []
         # process deletions
         for name in self._deletions:
-            edits.append(PropertyEdit(name, None))
+            edits.append(PropertyDelete(name))
         # process additions and modifications
         after_names : list[str] = []
-        # check for and ignore duplicates and anomalies
         for row in range(self._table_model.rowCount()):
             row_values = [
                 self._table_model.item(row, col).getValue() \
                     for col in range(self._table_model.columnCount())
             ]
             after_name = row_values[0]
-            # check for and skip duplicates
             if after_name in after_names:
                 QMessageBox.warning(
                     self,
@@ -185,12 +183,15 @@ class PropertiesDialog(QDialog):
                 )
                 continue  # skip duplicate
             after_names.append(after_name)
-            # build changes; check for and ignore anomalies
             name_item : BaseItem = self._table_model.item(row, 0)
             before_name = name_item.getBefore()
-            change_cls = PropertyState if before_name is None else PropertyChange
-            change = PropertyEdit(before_name, change_cls(*row_values))
-            edits.append(change)
+            if before_name is None:
+                edit = PropertyAdd(*row_values)
+            else:
+                name = (before_name, after_name) if before_name != after_name \
+                    else before_name
+                edit = PropertyEdit(name, *row_values[1:])
+            edits.append(edit)
         return edits
 
     def _onDelegateDestroyed(self : Self, _ : str) -> None:

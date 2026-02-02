@@ -2,8 +2,7 @@ from typing      import Self, Any
 
 from PyQt6.QtGui  import QColor
 
-from .....properties import PropertyDisplay, \
-                            PropertyState, PropertyChange, \
+from .....properties import PropertyDisplay, PropertyState, PropertyEdit, \
                             PropertiesMixin
 
 from .......core import Text, TextLine
@@ -67,7 +66,7 @@ class CmdAddProperty(CmdPropertyBase):
 
 class CmdEditProperty(CmdPropertyBase):
     _before : PropertyState
-    _after  : PropertyChange
+    _after  : PropertyEdit
 
     def __init__(
         self      : Self,
@@ -91,20 +90,20 @@ class CmdEditProperty(CmdPropertyBase):
         underline : bool            | NoChange = NO_CHANGE,
     ):
         super().__init__(object)
-        if isinstance(name, tuple):
-            name, new_name = name
-        else:
-            new_name = NO_CHANGE
-        self._before = PropertyState.fromProperty(object, name)
-        name = new_name
+        old_name, new_name = name if isinstance(name, tuple) else name, NO_CHANGE
+        self._before = PropertyState.fromProperty(object, old_name)
         change_args = {
             k: v for k, v in locals().items() \
-                if k in PropertyChange.__dataclass_fields__.keys()
+                if k in PropertyEdit.__dataclass_fields__.keys() \
+                    and k != "name"
         }
-        self._after = PropertyChange(**change_args)
+        change_args["name"] = (name, new_name)
+        self._after = PropertyEdit(**change_args)
 
     def redo(self : Self) -> None:
-        self._object.editProperty(*self._after.astuple())
+        args = self._after.asdict()
+        args["name"] = self._before.name
+        self._object.editProperty(**args)
 
     def undo(self : Self) -> None:
         self._object.editProperty(*self._before.astuple())
