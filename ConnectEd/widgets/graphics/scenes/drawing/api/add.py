@@ -11,9 +11,10 @@ from ....items.block     import BlockItem
 from ....items.block_pin import BlockPinItem
 from ....items.polyline  import PolylineItem, PolyVtxItem
 
-from ..cmd           import cmdExec, CmdAdd
-from ..cmd.block_pin import CmdAddBlockPin
-from ..cmd.polyline  import CmdAddPolyVtx
+from ..cmd                 import cmdExec, CmdAdd
+from ..cmd.block_pin       import CmdAddBlockPin
+from ..cmd.polyline        import CmdAddPolyVtx
+from ..cmd.edit.properties import CmdAddProperty
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
