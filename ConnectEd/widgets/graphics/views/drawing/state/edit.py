@@ -234,6 +234,8 @@ class DrawingViewStateEditText(DrawingViewStateBase):
                     item      = item,
                     text      = dialog.getText(),
                     block     = dialog.getBlock(),
+                    rotcomp   = dialog.getRotcomp(),
+                    origin    = dialog.getOrigin(),
                     align_h   = dialog.getAlignH(),
                     align_v   = dialog.getAlignV(),
                     color     = dialog.getColor(),
