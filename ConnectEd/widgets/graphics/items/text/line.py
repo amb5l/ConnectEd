@@ -1,27 +1,29 @@
 from typing import Self, Any, overload
 
-from PyQt6.QtCore    import QRectF
-from PyQt6.QtWidgets import QGraphicsItem, QGraphicsTextItem, \
-                            QGraphicsSceneContextMenuEvent
-from PyQt6.QtGui     import QColor, QPainterPath
+from PyQt6.QtCore    import QPointF, QRectF
+from PyQt6.QtWidgets import QGraphicsItem, QGraphicsSimpleTextItem, \
+                            QGraphicsSceneContextMenuEvent, \
+                            QStyleOptionGraphicsItem, QStyle, QWidget
+from PyQt6.QtGui     import QColor, QPainterPath, QPainter
 
-from .. import AlignV
+from .. import AlignH, AlignV
 
 from ..mixin.bound  import ItemBoundMixin
 from ..mixin.shape  import ItemShapeMixin
-from ..mixin.paint  import ItemPaintMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from . import UniTextItem
+    from . import TextItem
 
 
-class UniTextBlockItem(
+class TextLineRenderer(
     ItemBoundMixin,
     ItemShapeMixin,
-    ItemPaintMixin,
-    QGraphicsTextItem
+    QGraphicsSimpleTextItem
 ):
+    # instance attributes
+    _clip_rect : QRectF | None = None
+
     @overload
     def __init__(self, parent: QGraphicsItem | None = None) -> None:
         ...
@@ -39,6 +41,7 @@ class UniTextBlockItem(
             super().__init__(text_or_parent, parent)
         else:
             super().__init__(parent=parent)
+        self._clip_rect = None
         self.setFlag(self.GraphicsItemFlag.ItemIsSelectable, True)
         self.initBound()  # initialize cached bounding rect
         self.initShape()  # initialize cached hit detect shape
@@ -51,52 +54,45 @@ class UniTextBlockItem(
         """Propagate selection state to parent."""
         match change:
             case self.GraphicsItemChange.ItemSelectedHasChanged:
-                parent : UniTextItem | None = self.parentItem()
+                parent : TextItem | None = self.parentItem()
                 if parent is not None:
                     QGraphicsItem.setSelected(parent, value)
         return super().itemChange(change, value)
 
-    def text(self : Self) -> str:
-        return self.toPlainText()
-
-    def setText(self : Self, text : str) -> None:
-        self.setPlainText(text)
-
     def onGeometryChange(self : Self) -> None:
-        parent : UniTextItem = self.parentItem()
+        parent : TextItem = self.parentItem()
         align_h = parent._align_h
         align_v = parent._align_v
         width = parent._width
         height = parent._height
-        # get underlying document
-        doc = self.document()
-        # apply horizontal alignment
-        option = doc.defaultTextOption()
-        option.setAlignment(align_h.value)
-        doc.setDefaultTextOption(option)
-        # apply width constraint
-        self.setTextWidth(width if width else -1)
-        # calculate unconstrained bounding rect (without margins)
-        root_frame = doc.rootFrame()
-        fmt = root_frame.frameFormat()
-        fmt.setMargin(0)  # temporarily remove margins
-        root_frame.setFrameFormat(fmt)
-        urect = QGraphicsTextItem.boundingRect(self)  # unconstrained rect
         # update cached bounding rect, accounting for constraints
+        urect = QGraphicsSimpleTextItem.boundingRect(self)  # unconstrained rect
         w = width  if width  else urect.width()
         h = height if height else urect.height()
         self._brect = QRectF(0.0, 0.0, w, h)
-        # if height constrained: apply vertical alignment via document top margin
-        if height:
-            match align_v:
-                case AlignV.BOTTOM:
-                    top_margin = height - urect.height()
-                case AlignV.MIDDLE:
-                    top_margin = (height - urect.height()) / 2
-                case _:  # Top
-                    top_margin = 0
-            fmt.setTopMargin(top_margin)
-            root_frame.setFrameFormat(fmt)
+        # apply clipping if constraints are smaller than unconstrained rect
+        if w < urect.width() or h < urect.height():
+            self._clip_rect = self._brect
+        else:
+            self._clip_rect = None
+        # position to apply alignment
+        match align_h:
+            case AlignH.LEFT:
+                x = 0
+            case AlignH.CENTER:
+                x = (w - urect.width()) / 2
+            case AlignH.RIGHT:
+                x = w - urect.width()
+        match align_v:
+            case AlignV.TOP:
+                y = 0
+            case AlignV.MIDDLE:
+                y = (h - urect.height()) / 2
+            case AlignV.BOTTOM:
+                y = h - urect.height()
+        self.setPos(x, y)
+        # update transform origin
+        self.setTransformOriginPoint(QPointF(urect.width() / 2, urect.height() / 2))
         # update cached hit detect shape
         self._hshape = QPainterPath()
         self._hshape.addRect(self._brect)
@@ -106,15 +102,31 @@ class UniTextBlockItem(
         self.update()
 
     def color(self : Self) -> QColor:
-        return self.defaultTextColor()
+        return self.brush().color()
 
     def setColor(self : Self, color : QColor) -> None:
-        self.setDefaultTextColor(color)
+        brush = self.brush()
+        brush.setColor(color)
+        self.setBrush(brush)
+
+    def paint(
+        self    : Self,
+        painter : QPainter,
+        option  : QStyleOptionGraphicsItem,
+        widget  : QWidget
+    ) -> None:
+        option.state &= ~QStyle.StateFlag.State_Selected
+        if self._clip_rect is not None:
+            painter.save()
+            painter.setClipRect(self._clip_rect)
+        super().paint(painter, option, widget)
+        if self._clip_rect is not None:
+            painter.restore()
 
     def contextMenuEvent(
         self  : Self,
         event : QGraphicsSceneContextMenuEvent
     ) -> None:
         """Bounce context menu event to parent."""
-        parent: "UniTextItem" = self.parentItem()
+        parent: "TextItem" = self.parentItem()
         parent.contextMenuEvent(event)

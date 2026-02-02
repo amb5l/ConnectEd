@@ -17,7 +17,7 @@ if TYPE_CHECKING:
     from ..views.drawing  import DrawingView
     from ..scenes.drawing import DrawingScene
     from .handle          import HandleItem
-    from .unitext         import UniTextItem
+    from .text            import TextItem
     from .mixin.handle    import ItemHandlesMixin
     from .mixin.grip      import ItemGripMixin
 
@@ -160,7 +160,7 @@ class TextGripItem(ResizeGripItem):
     """Grip for text items."""
 
     def pathNamePrefix(self : Self) -> str:
-        item : "UniTextItem" = self.item()
+        item : "TextItem" = self.item()
         name = self.handle().name()
         w = item.width()
         h = item.height()
@@ -172,7 +172,7 @@ class TextGripItem(ResizeGripItem):
         return "Unfilled" if c else "Filled"
 
     def moveSave(self : Self) -> QPointF:
-        item : "UniTextItem" = self.item()
+        item : "TextItem" = self.item()
         return self.scenePos(), item.width(), item.height()
 
     def moveRestore(
@@ -180,7 +180,7 @@ class TextGripItem(ResizeGripItem):
         state : tuple[QPointF, float | None, float | None]
     ) -> None:
         pos, width, height = state
-        item : "UniTextItem" = self.item()
+        item : "TextItem" = self.item()
         self.moveBy(pos - self.scenePos())
         item.setWidth(width)
         item.setHeight(height)

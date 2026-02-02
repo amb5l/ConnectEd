@@ -13,8 +13,8 @@ from ..properties import InherentProperty, PropertiesMixin
 
 from . import ItemType, Default, DEFAULT, NO_CHANGE, AlignH, AlignV
 
-from .unitext import UniTextItem
-from .handle  import HandleItem
+from .text   import TextItem
+from .handle import HandleItem
 
 
 from .mixin.origin import ItemOriginMixin
@@ -66,7 +66,7 @@ class TetherItem(QGraphicsLineItem):
         pass  # no need to serialise
 
 
-class PropertyTextItem(UniTextItem):
+class PropertyTextItem(TextItem):
     # class attributes
     _PROPERTIES = \
         {
@@ -88,8 +88,8 @@ class PropertyTextItem(UniTextItem):
         ItemOriginMixin._PROPERTIES_ORIGIN | \
         ItemPosMixin._PROPERTIES_POS | \
         ItemRotateMixin._PROPERTIES_ROTATE | \
-        UniTextItem._PROPERTIES_ALIGN | \
-        UniTextItem._PROPERTIES_SIZE | \
+        TextItem._PROPERTIES_ALIGN | \
+        TextItem._PROPERTIES_SIZE | \
         ItemQuillMixin._PROPERTIES_QUILL
 
     # instance attributes

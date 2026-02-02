@@ -43,15 +43,15 @@ from ..mixin.menu    import ItemMenuMixin
 
 from ..null import NullItem
 
-from .line  import UniTextLineItem
-from .block import UniTextBlockItem
+from .line  import TextLineRenderer
+from .block import TextBlockRenderer
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ...views.drawing import DrawingView
 
 
-class UniTextItem(
+class TextItem(
     ItemMixin,
     ItemOriginMixin,
     ItemPosMixin,
@@ -119,7 +119,7 @@ class UniTextItem(
         ItemQuillMixin._PROPERTIES_QUILL
 
     # instance attributes
-    _child   : UniTextLineItem | UniTextBlockItem  # text renderer
+    _child   : TextLineRenderer | TextBlockRenderer  # text renderer
     _rotcomp : bool                                # rotation compensation
     _align_h : AlignH                              # horizontal alignment
     _align_v : AlignV                              # vertical alignment
@@ -147,7 +147,7 @@ class UniTextItem(
         parent    : QGraphicsItem | None = None
     ) -> None:
         super().__init__()
-        self._child = UniTextBlockItem() if block else UniTextLineItem()
+        self._child = TextBlockRenderer() if block else TextLineRenderer()
         self._child.setParentItem(self)
         self._child.setText(text)
         self._rotcomp = rotcomp
@@ -181,12 +181,12 @@ class UniTextItem(
         self._child.setSelected(selected)
 
     def block(self : Self) -> bool:
-        return isinstance(self._child, UniTextBlockItem)
+        return isinstance(self._child, TextBlockRenderer)
 
     def setBlock(self : Self, block : bool) -> None:
-        if isinstance(self._child, UniTextLineItem)  and block     \
-        or isinstance(self._child, UniTextBlockItem) and not block:
-            new_child = UniTextBlockItem() if block else UniTextLineItem()
+        if isinstance(self._child, TextLineRenderer)  and block     \
+        or isinstance(self._child, TextBlockRenderer) and not block:
+            new_child = TextBlockRenderer() if block else TextLineRenderer()
             new_child.setSelected(self._child.isSelected())
             new_child.setRotation(self._child.rotation())
             new_child.setText(self._child.text())
@@ -453,7 +453,7 @@ class UniTextItem(
         return menu
 
     def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
-        """Return context menu items for UniText item."""
+        """Return context menu items for Text item."""
         items = [
             view.action("Edit...", view.ui.editTextDialog),
             view.separator(),
