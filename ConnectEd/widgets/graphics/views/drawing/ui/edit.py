@@ -209,20 +209,20 @@ class DrawingViewUiEditMixin:
     def editText(
         self      : "DrawingViewUi",
         item      : "TextItem",
-        align_h   : AlignH           | NoChange = NO_CHANGE,
-        align_v   : AlignV           | NoChange = NO_CHANGE,
-        width     : float | None     | NoChange = NO_CHANGE,
-        height    : float | None     | NoChange = NO_CHANGE,
-        anchor    : str              | NoChange = NO_CHANGE,
+        origin    : str          | NoChange = NO_CHANGE,
+        align_h   : AlignH       | NoChange = NO_CHANGE,
+        align_v   : AlignV       | NoChange = NO_CHANGE,
+        width     : float | None | NoChange = NO_CHANGE,
+        height    : float | None | NoChange = NO_CHANGE,
     ) -> None:
         self._scene.editText(
-            item,
-            align_h=align_h,
-            align_v=align_v,
-            width=width,
-            height=height,
-            anchor=anchor,
-            undoable=True
+            item     = item,
+            origin   = origin,
+            align_h  = align_h,
+            align_v  = align_v,
+            width    = width,
+            height   = height,
+            undoable = True
         )
 
     def editPropertyTextDialog(

@@ -202,7 +202,6 @@ class DrawingSceneApiEditMixin:
         bold      : bool   | Default | NoChange = NO_CHANGE,
         italic    : bool   | Default | NoChange = NO_CHANGE,
         underline : bool   | Default | NoChange = NO_CHANGE,
-        anchor    : str              | NoChange = NO_CHANGE,
         undoable  : bool = False
     ) -> None:
         cmd = CmdEditText(
