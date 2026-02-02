@@ -7,52 +7,17 @@ from .. import CmdSceneItem
 
 from .....items import Default, NoChange, NO_CHANGE, AlignH, AlignV
 
+from .....items.text import TextItem, TextState, TextChange
+
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from .....scenes.drawing import DrawingScene
-    from .....items.text     import TextItem
 
 
 class CmdEditText(CmdSceneItem):
-    _item : "TextItem"
-
-    @dataclass
-    class ItemBefore:
-        text      : str
-        block     : bool
-        rotcomp   : bool
-        origin    : str
-        align_h   : AlignH
-        align_v   : AlignV
-        width     : float | None
-        height    : float | None
-        color     : QColor | Default
-        family    : str    | Default
-        size      : float  | Default
-        bold      : bool   | Default
-        italic    : bool   | Default
-        underline : bool   | Default
-
-    @dataclass
-    class ItemAfter:
-        text      : str              | NoChange = NO_CHANGE,
-        block     : bool             | NoChange = NO_CHANGE,
-        rotcomp   : bool             | NoChange = NO_CHANGE,
-        origin    : str              | NoChange = NO_CHANGE,
-        align_h   : AlignH           | NoChange = NO_CHANGE,
-        align_v   : AlignV           | NoChange = NO_CHANGE,
-        width     : float | None     | NoChange = NO_CHANGE,
-        height    : float | None     | NoChange = NO_CHANGE,
-        color     : QColor | Default | NoChange = NO_CHANGE,
-        family    : str    | Default | NoChange = NO_CHANGE,
-        size      : float  | Default | NoChange = NO_CHANGE,
-        bold      : bool   | Default | NoChange = NO_CHANGE,
-        italic    : bool   | Default | NoChange = NO_CHANGE,
-        underline : bool   | Default | NoChange = NO_CHANGE,
-
     _item   : "TextItem"
-    _before : ItemBefore
-    _after  : ItemAfter
+    _before : TextState
+    _after  : TextChange
 
     def __init__(
         self      : Self,
@@ -74,26 +39,12 @@ class CmdEditText(CmdSceneItem):
         underline : bool   | Default | NoChange = NO_CHANGE
     ):
         super().__init__(scene, item)
-        self._before = self.ItemBefore(
-            item.text(),
-            item.block(),
-            item.rotcomp(),
-            item.origin(),
-            item.alignH(),
-            item.alignV(),
-            item.width(),
-            item.height(),
-            item.quillColor(),
-            item.quillFamily(),
-            item.quillSize(),
-            item.quillBold(),
-            item.quillItalic(),
-            item.quillUnderline()
-        )
-        self._after = self.ItemAfter(
-            text, block, rotcomp, origin, align_h, align_v, width, height, \
-            color, family, size, bold, italic, underline
-        )
+        self._before = TextState.fromItem(item)
+        change_args = {
+            k: v for k, v in locals().items() \
+                if k in TextChange.__dataclass_fields__.keys()
+        }
+        self._after = TextChange(**change_args)
 
     def redo(self : Self) -> None:#
         if self._after.block is not NO_CHANGE:

@@ -2,7 +2,8 @@
 # parent handles origin, position, rotation
 # child handles rotation compensation
 
-from typing import Self
+from typing      import Self
+from dataclasses import dataclass
 
 from PyQt6.QtCore    import QPointF, QRectF
 from PyQt6.QtWidgets import QGraphicsItem, QMenu
@@ -26,7 +27,7 @@ from .....resources.icons import AnchorTopLeftIcon,      \
 
 from ...properties import InherentProperty, PropertiesMixin
 
-from .. import Default, DEFAULT, AlignH, AlignV
+from .. import Default, DEFAULT, NoChange, NO_CHANGE, AlignH, AlignV
 
 from ..mixin         import ItemMixin
 from ..mixin.origin  import ItemOriginMixin
@@ -49,6 +50,61 @@ from .block import TextBlockRenderer
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ...views.drawing import DrawingView
+
+
+@dataclass
+class TextState:
+    text      : str
+    block     : bool
+    rotcomp   : bool
+    origin    : str
+    align_h   : AlignH
+    align_v   : AlignV
+    width     : float | None
+    height    : float | None
+    color     : QColor | Default
+    family    : str    | Default
+    size      : float  | Default
+    bold      : bool   | Default
+    italic    : bool   | Default
+    underline : bool   | Default
+
+    @classmethod
+    def fromItem(cls, item : "TextItem") -> Self:
+        return cls(
+            text      = item.text(),
+            block     = item.block(),
+            rotcomp   = item.rotcomp(),
+            origin    = item.origin(),
+            align_h   = item.alignH(),
+            align_v   = item.alignV(),
+            width     = item.width(),
+            height    = item.height(),
+            color     = item.quillColor(),
+            family    = item.quillFamily(),
+            size      = item.quillSize(),
+            bold      = item.quillBold(),
+            italic    = item.quillItalic(),
+            underline = item.quillUnderline()
+        )
+
+
+@dataclass
+class TextChange:
+    text      : str              | NoChange = NO_CHANGE
+    block     : bool             | NoChange = NO_CHANGE
+    rotcomp   : bool             | NoChange = NO_CHANGE
+    origin    : str              | NoChange = NO_CHANGE
+    align_h   : AlignH           | NoChange = NO_CHANGE
+    align_v   : AlignV           | NoChange = NO_CHANGE
+    width     : float | None     | NoChange = NO_CHANGE
+    height    : float | None     | NoChange = NO_CHANGE
+    color     : QColor | Default | NoChange = NO_CHANGE
+    family    : str    | Default | NoChange = NO_CHANGE
+    size      : float  | Default | NoChange = NO_CHANGE
+    bold      : bool   | Default | NoChange = NO_CHANGE
+    italic    : bool   | Default | NoChange = NO_CHANGE
+    underline : bool   | Default | NoChange = NO_CHANGE
 
 
 class TextItem(
