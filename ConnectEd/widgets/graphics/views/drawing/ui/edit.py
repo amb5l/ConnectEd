@@ -209,11 +209,11 @@ class DrawingViewUiEditMixin:
     def editText(
         self      : "DrawingViewUi",
         item      : "TextItem",
-        origin    : str          | NoChange = NO_CHANGE,
-        align_h   : AlignH       | NoChange = NO_CHANGE,
-        align_v   : AlignV       | NoChange = NO_CHANGE,
-        width     : float        | NoChange = NO_CHANGE,
-        height    : float        | NoChange = NO_CHANGE,
+        origin    : str    | NoChange = NO_CHANGE,
+        align_h   : AlignH | NoChange = NO_CHANGE,
+        align_v   : AlignV | NoChange = NO_CHANGE,
+        width     : float  | NoChange = NO_CHANGE,
+        height    : float  | NoChange = NO_CHANGE,
     ) -> None:
         self._scene.editText(
             item     = item,
