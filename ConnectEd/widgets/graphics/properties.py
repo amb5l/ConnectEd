@@ -30,7 +30,7 @@ exists only for use via substitution in custom properties. For example,
 "ConnectEdVersion". Virtual properties will normally be provided by the scene.
 """
 
-from typing          import Self, Any, Literal, NamedTuple
+from typing          import Self, Any, Literal
 from dataclasses     import dataclass
 from collections.abc import Callable
 from enum            import Enum
@@ -85,20 +85,18 @@ class PropertyNotifier(QObject):
 
 @dataclass
 class InherentProperty:
-    kind    : str | Callable[["Owner"], str]
-    valid   : Literal[True] | Callable[["Owner"], bool] | None = True
-    getter  : Callable[["Owner"], Any]                  | None = None
-    setter  : Callable[["Owner", Any], None]            | None = None
-    default : Callable[["Owner"], Any]                  | None = None
-    notifier : PropertyNotifier                         | None  = None
-    text     : "PropertyTextSpec | PropertyTextItem     | None" = None
+    kind     : str | Callable[["Owner"], str]
+    valid    : Literal[True] | Callable[["Owner"], bool] | None = True
+    getter   : Callable[["Owner"], Any]                  | None = None
+    setter   : Callable[["Owner", Any], None]            | None = None
+    default  : Callable[["Owner"], Any]                  | None = None
+    notifier : PropertyNotifier                          | None  = None
 
 
 @dataclass
 class CustomProperty:
-    value : Text | None = None
+    value    : Text | None = None
     notifier : PropertyNotifier                     | None  = None
-    text     : "PropertyTextSpec | PropertyTextItem | None" = None
 
 
 class PropertyDisplay(Enum):
@@ -212,8 +210,9 @@ class PropertiesMixin:
         if not fresh:
             return
         # convert PropertyTextSpec instances to PropertyTextItem instances
-        for name, spec in self._PROPERTY_TEXTS.items():
-            self.addPropertyText(name, *spec.astuple())
+        if hasattr(self, "_PROPERTY_TEXTS"):
+            for name, spec in self._PROPERTY_TEXTS.items():
+                self.addPropertyText(name, *spec.astuple())
 
     def getPropertyNames(self : Self) -> list[str]:
         return list(self._properties.keys())
