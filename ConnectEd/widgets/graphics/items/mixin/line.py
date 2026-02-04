@@ -39,14 +39,14 @@ class ItemLineMixin:
             default = lambda self: self.defaultLineColor()
         ),
         "Line Width" : InherentProperty(
-            kind    = "Float",
+            kind    = "LineWidth",  # a "subtype" of float - see str2val
             valid   = lambda self: self.lineWidth() is not DEFAULT,
             getter  = lambda self: self.lineWidth(),
             setter  = lambda self, value: self.setLineWidth(value),
             default = lambda self: self.defaultLineWidth()
         ),
         "Line Style" : InherentProperty(
-            kind    = "Style",
+            kind    = "PenStyle",
             valid   = lambda self: self.lineStyle() is not DEFAULT,
             getter  = lambda self: self.lineStyle(),
             setter  = lambda self, value: self.setLineStyle(value),

@@ -37,7 +37,7 @@ class ItemFillMixin:
             default = lambda self: self.defaultFillColor()
         ),
         "Fill Style" : InherentProperty(
-            kind    = "Style",
+            kind    = "BrushStyle",
             valid   = lambda self: self.fillStyle() is not DEFAULT,
             getter  = lambda self: self.fillStyle(),
             setter  = lambda self, value: self.setFillStyle(value),
