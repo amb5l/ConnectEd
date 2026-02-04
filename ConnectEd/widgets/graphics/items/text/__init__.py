@@ -60,8 +60,8 @@ class TextState:
     origin    : str
     align_h   : AlignH
     align_v   : AlignV
-    width     : float | None
-    height    : float | None
+    width     : float
+    height    : float
     color     : QColor | Default
     family    : str    | Default
     size      : float  | Default
@@ -97,8 +97,8 @@ class TextChange:
     origin    : str              | NoChange = NO_CHANGE
     align_h   : AlignH           | NoChange = NO_CHANGE
     align_v   : AlignV           | NoChange = NO_CHANGE
-    width     : float | None     | NoChange = NO_CHANGE
-    height    : float | None     | NoChange = NO_CHANGE
+    width     : float            | NoChange = NO_CHANGE
+    height    : float            | NoChange = NO_CHANGE
     color     : QColor | Default | NoChange = NO_CHANGE
     family    : str    | Default | NoChange = NO_CHANGE
     size      : float  | Default | NoChange = NO_CHANGE
@@ -139,7 +139,7 @@ class TextItem(
             ),
             "AlignV" : InherentProperty(
                 type_name = "AlignV",
-                valid     = lambda self: self.height() is not None,
+                valid     = lambda self: self.height() >= 0.0,
                 getter    = lambda self: self.verticalAlignment(),
                 setter    = lambda self, value: self.setVerticalAlignment(value)
             )
@@ -148,13 +148,13 @@ class TextItem(
         {
             "Width" : InherentProperty(
                 type_name = "float",
-                valid     = lambda self: self.width() is not None,
+                valid     = lambda self: self.width() >= 0.0,
                 getter    = lambda self: self.width(),
                 setter    = lambda self, value: self.setWidth(value)
             ),
             "Height" : InherentProperty(
                 type_name = "float",
-                valid     = lambda self: self.height() is not None,
+                valid     = lambda self: self.height() >= 0.0,
                 getter    = lambda self: self.height(),
                 setter    = lambda self, value: self.setHeight(value)
             )
@@ -176,11 +176,11 @@ class TextItem(
 
     # instance attributes
     _child   : TextLineRenderer | TextBlockRenderer  # text renderer
-    _rotcomp : bool                                # rotation compensation
-    _align_h : AlignH                              # horizontal alignment
-    _align_v : AlignV                              # vertical alignment
-    _width   : float | None                        # width constraint
-    _height  : float | None                        # height constraint
+    _rotcomp : bool                                  # rotation compensation
+    _align_h : AlignH                                # horizontal alignment
+    _align_v : AlignV                                # vertical alignment
+    _width   : float                                 # width constraint
+    _height  : float                                 # height constraint
 
     def __init__(
         self      : Self,
@@ -191,8 +191,8 @@ class TextItem(
         origin    : str                  = "Top Left",
         align_h   : AlignH | None        = None,
         align_v   : AlignV | None        = None,
-        width     : float | None         = None,
-        height    : float | None         = None,
+        width     : float                = -1.0,        # unconstrained
+        height    : float                = -1.0,        # unconstrained
         color     : QColor | Default     = DEFAULT,
         family    : str    | Default     = DEFAULT,
         size      : float  | Default     = DEFAULT,
@@ -287,10 +287,10 @@ class TextItem(
         self._align_v = align_v
         self._child.onGeometryChange()
 
-    def width(self : Self) -> float | None:
+    def width(self : Self) -> float:
         return self._width
 
-    def setWidth(self : Self, width : float | None) -> None:
+    def setWidth(self : Self, width : float) -> None:
         self._width = width
         if self._child is not None:
             self._child.onGeometryChange()
@@ -298,10 +298,10 @@ class TextItem(
         self.updateHandlePaths()
         self.signalPropertyChanges("Width")
 
-    def height(self : Self) -> float | None:
+    def height(self : Self) -> float:
         return self._height
 
-    def setHeight(self : Self, height : float | None) -> None:
+    def setHeight(self : Self, height : float) -> None:
         self._height = height
         if self._child is not None:
             self._child.onGeometryChange()
@@ -382,22 +382,26 @@ class TextItem(
 
     def resizeX(self : Self, dx : float) -> None:
         rect = self._child._brect
-        self._width = max((self._width or rect.width()) + dx, 0.0)
+        width = self._width if self._width >= 0.0 else rect.width()
+        self._width = max(width + dx, 0.0)
         self._child.onGeometryChange()
         self.updateHandlePositions()
         self.updateHandlePaths()
 
     def resizeY(self : Self, dy : float) -> None:
         rect = self._child._brect
-        self._height = max((self._height or rect.height()) + dy, 0.0)
+        height = self._height if self._height >= 0.0 else rect.height()
+        self._height = max(height + dy, 0.0)
         self._child.onGeometryChange()
         self.updateHandlePositions()
         self.updateHandlePaths()
 
     def resize(self : Self, dx : float, dy : float) -> None:
         rect = self._child._brect
-        self._width  = max((self._width  or rect.width())  + dx, 0.0)
-        self._height = max((self._height or rect.height()) + dy, 0.0)
+        width = self._width if self._width >= 0.0 else rect.width()
+        height = self._height if self._height >= 0.0 else rect.height()
+        self._width  = max(width  + dx, 0.0)
+        self._height = max(height + dy, 0.0)
         self._child.onGeometryChange()
         self.updateHandlePositions()
         self.updateHandlePaths()
@@ -489,21 +493,21 @@ class TextItem(
                 lambda: view.ui.editText(self, align_v=AlignV.TOP),
                 checked = self.alignV() == AlignV.TOP,
                 icon = TextAlignTopIcon().get(),
-                enabled = self.height() is not None
+                enabled = self.height() >= 0.0
             ),
             view.action(
                 "Middle",
                 lambda: view.ui.editText(self, align_v=AlignV.MIDDLE),
                 checked = self.alignV() == AlignV.MIDDLE,
                 icon = TextAlignMiddleIcon().get(),
-                enabled = self.height() is not None
+                enabled = self.height() >= 0.0
             ),
             view.action(
                 "Bottom",
                 lambda: view.ui.editText(self, align_v=AlignV.BOTTOM),
                 checked = self.alignV() == AlignV.BOTTOM,
                 icon = TextAlignBottomIcon().get(),
-                enabled = self.height() is not None
+                enabled = self.height() >= 0.0
             )
         ])
         return menu
@@ -518,15 +522,15 @@ class TextItem(
             view.separator(),
             view.action(
                 "Auto Width", lambda: self.setWidth(
-                    self.boundingRect().width() if self._width is None else None
+                    self.boundingRect().width() if self._width < 0.0 else -1.0
                 ),
-                self._width is None
+                self._width < 0.0
             ),
             view.action(
                 "Auto Height", lambda: self.setHeight(
-                    self.boundingRect().height() if self._height is None else None
+                    self.boundingRect().height() if self._height < 0.0 else -1.0
                 ),
-                self._height is None
+                self._height < 0.0
             ),
             view.separator(),
             view.action("Properties...", lambda: view.ui.editItemProperties(self))

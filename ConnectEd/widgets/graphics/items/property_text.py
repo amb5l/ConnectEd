@@ -106,8 +106,8 @@ class PropertyTextItem(TextItem):
         origin    : str | None           = None,
         align_h   : AlignH | None        = None,
         align_v   : AlignV | None        = None,
-        width     : float | None         = None,
-        height    : float | None         = None,
+        width     : float                = -1.0,
+        height    : float                = -1.0,
         color     : QColor | Default     = DEFAULT,
         family    : str    | Default     = DEFAULT,
         size      : float  | Default     = DEFAULT,
@@ -273,16 +273,16 @@ class PropertyTextItem(TextItem):
             view.action(
                 "Auto Width",
                 lambda: self.setWidth(
-                    self.boundingRect().width() if self._width is None else None
+                    self.boundingRect().width() if self._width < 0.0 else -1.0
                 ),
-                self._width is None
+                self._width < 0.0
             ),
             view.action(
                 "Auto Height",
                 lambda: self.setHeight(
-                    self.boundingRect().height() if self._height is None else None
+                    self.boundingRect().height() if self._height < 0.0 else -1.0
                 ),
-                self._height is None
+                self._height < 0.0
             ),
             view.separator(),
             view.action("Appearance...", lambda: view.ui.editAppearance(self)),

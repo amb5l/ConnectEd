@@ -63,12 +63,12 @@ class TextLineRenderer(
         parent : TextItem = self.parentItem()
         align_h = parent._align_h
         align_v = parent._align_v
-        width = parent._width
-        height = parent._height
+        width   = parent._width
+        height  = parent._height
         # update cached bounding rect, accounting for constraints
         urect = QGraphicsSimpleTextItem.boundingRect(self)  # unconstrained rect
-        w = width  if width  else urect.width()
-        h = height if height else urect.height()
+        w = width  if width  >= 0.0 else urect.width()
+        h = height if height >= 0.0 else urect.height()
         self._brect = QRectF(0.0, 0.0, w, h)
         # apply clipping if constraints are smaller than unconstrained rect
         if w < urect.width() or h < urect.height():

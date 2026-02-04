@@ -75,7 +75,7 @@ class TextBlockRenderer(
         option.setAlignment(align_h.value)
         doc.setDefaultTextOption(option)
         # apply width constraint
-        self.setTextWidth(width if width else -1)
+        self.setTextWidth(width)
         # calculate unconstrained bounding rect (without margins)
         root_frame = doc.rootFrame()
         fmt = root_frame.frameFormat()
@@ -83,11 +83,11 @@ class TextBlockRenderer(
         root_frame.setFrameFormat(fmt)
         urect = QGraphicsTextItem.boundingRect(self)  # unconstrained rect
         # update cached bounding rect, accounting for constraints
-        w = width  if width  else urect.width()
-        h = height if height else urect.height()
+        w = width  if width  >= 0.0 else urect.width()
+        h = height if height >= 0.0 else urect.height()
         self._brect = QRectF(0.0, 0.0, w, h)
         # if height constrained: apply vertical alignment via document top margin
-        if height:
+        if height >= 0.0:
             match align_v:
                 case AlignV.BOTTOM:
                     top_margin = height - urect.height()

@@ -165,11 +165,11 @@ class TextGripItem(ResizeGripItem):
         w = item.width()
         h = item.height()
         c = False  # whether the item dimension(s) for this grip are constrained
-        # constrained if top or bottom, and height is not None
-        c |= ("Top" in name or "Bottom" in name) and h is None
-        # constrained if left or right, and width is not None
-        c |= ("Left" in name or "Right" in name) and w is None
-        return "Unfilled" if c else "Filled"
+        # constrained if top or bottom, and height >= 0.0
+        c |= ("Top" in name or "Bottom" in name) and h >= 0.0
+        # constrained if left or right, and width >= 0.0
+        c |= ("Left" in name or "Right" in name) and w >= 0.0
+        return "Filled" if c else "Unfilled"
 
     def moveSave(self : Self) -> QPointF:
         item : "TextItem" = self.item()
