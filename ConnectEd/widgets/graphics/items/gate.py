@@ -54,6 +54,7 @@ class BaseGateItem(
     # class attributes
     _PROPERTIES_LABEL = {
         "Label" : InherentProperty(
+            kind   = "Str",
             getter = lambda self: self._label,
             setter = lambda self, value: setattr(self, "_label", value)
         )
@@ -96,10 +97,12 @@ class BufGateItem(BaseGateItem):
     # class attributes
     _PROPERTIES_IO = {
         "Output" : InherentProperty(
+            kind   = "Str",
             getter = lambda self: self.output(),
             setter = lambda self, value: self.setOutput(value)
         ),
         "Input" : InherentProperty(
+            kind   = "Str",
             getter = lambda self: self.input(),
             setter = lambda self, value: self.setInput(value)
         )
@@ -212,10 +215,12 @@ class GateItem(BaseGateItem):
     # class attributes
     _PROPERTIES_IO = {
         "Output" : InherentProperty(
+            kind   = "Str",
             getter = lambda self: self.output(),
             setter = lambda self, value: self.setOutput(value)
         ),
         "Inputs" : InherentProperty(
+            kind   = "Str",
             getter = lambda self: self.inputs(),
             setter = lambda self, value: self.setInputs(value)
         )

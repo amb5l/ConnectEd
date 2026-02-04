@@ -84,23 +84,21 @@ class PropertyNotifier(QObject):
 
 
 @dataclass
-class BaseProperty:
+class InherentProperty:
+    kind    : str | Callable[["Owner"], str]
+    valid   : Literal[True] | Callable[["Owner"], bool] | None = True
+    getter  : Callable[["Owner"], Any]                  | None = None
+    setter  : Callable[["Owner", Any], None]            | None = None
+    default : Callable[["Owner"], Any]                  | None = None
+    notifier : PropertyNotifier                         | None  = None
+    text     : "PropertyTextSpec | PropertyTextItem     | None" = None
+
+
+@dataclass
+class CustomProperty:
+    value : Text | None = None
     notifier : PropertyNotifier                     | None  = None
     text     : "PropertyTextSpec | PropertyTextItem | None" = None
-
-
-@dataclass
-class InherentProperty(BaseProperty):
-    type_name : str                                              = "str"
-    valid     : Literal[True] | Callable[["Owner"], bool] | None = True
-    getter    : Callable[["Owner"], Any]                  | None = None
-    setter    : Callable[["Owner", Any], None]            | None = None
-    default   : Callable[["Owner"], Any]                  | None = None
-
-
-@dataclass
-class CustomProperty(BaseProperty):
-    value : Text | None = None
 
 
 class PropertyDisplay(Enum):
@@ -199,7 +197,8 @@ class PropertyDelete:
 
 class PropertiesMixin:
     # class attributes
-    _PROPERTIES : dict[str, InherentProperty]
+    _PROPERTIES     : dict[str, InherentProperty]
+    _PROPERTY_TEXTS : dict[str, PropertyTextSpec]
 
     # instance attributes
     _properties : dict[str, InherentProperty | CustomProperty]
@@ -213,10 +212,8 @@ class PropertiesMixin:
         if not fresh:
             return
         # convert PropertyTextSpec instances to PropertyTextItem instances
-        for name, property in self._properties.items():
-            spec = property.text
-            if isinstance(spec, PropertyTextSpec):
-                self.addPropertyText(name, *spec.astuple())
+        for name, spec in self._PROPERTY_TEXTS.items():
+            self.addPropertyText(name, *spec.astuple())
 
     def getPropertyNames(self : Self) -> list[str]:
         return list(self._properties.keys())
@@ -256,15 +253,19 @@ class PropertiesMixin:
         # test if read-only
         return isinstance(property, InherentProperty) and not callable(property.setter)
 
-    def getPropertyTypeName(self : Self, name : str) -> str | None:
+    def getPropertyKind(self : Self, name : str) -> str | None:
         # check property existence
         if not self.hasProperty(name):
             logger().warning(f"Property '{name}' not found")
             return None
         # get property instance
         property = self._properties[name]
-        # return type name
-        return property.type_name if isinstance(property, InherentProperty) else "Text"
+        # return kind
+        if isinstance(property, InherentProperty):
+            return property.kind(self) if callable(property.kind) \
+                else property.kind
+        else:
+            return "Text"
 
     def getPropertyValid(self : Self, name : str) -> bool:
         """

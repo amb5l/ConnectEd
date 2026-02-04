@@ -32,25 +32,25 @@ class ItemLineMixin:
     # class attributes
     _PROPERTIES_LINE = {
         "Line Color" : InherentProperty(
-            type_name = "QColor",
-            valid     = lambda self: self.lineColor() is not DEFAULT,
-            getter    = lambda self: self.lineColor(),
-            setter    = lambda self, value: self.setLineColor(value),
-            default   = lambda self: self.defaultLineColor()
+            kind    = "Color",
+            valid   = lambda self: self.lineColor() is not DEFAULT,
+            getter  = lambda self: self.lineColor(),
+            setter  = lambda self, value: self.setLineColor(value),
+            default = lambda self: self.defaultLineColor()
         ),
         "Line Width" : InherentProperty(
-            type_name = "LineWidth",  # a "subtype" of float - see str2val
-            valid     = lambda self: self.lineWidth() is not DEFAULT,
-            getter    = lambda self: self.lineWidth(),
-            setter    = lambda self, value: self.setLineWidth(value),
-            default   = lambda self: self.defaultLineWidth()
+            kind    = "Float",
+            valid   = lambda self: self.lineWidth() is not DEFAULT,
+            getter  = lambda self: self.lineWidth(),
+            setter  = lambda self, value: self.setLineWidth(value),
+            default = lambda self: self.defaultLineWidth()
         ),
         "Line Style" : InherentProperty(
-            type_name = "PenStyle",
-            valid     = lambda self: self.lineStyle() is not DEFAULT,
-            getter    = lambda self: self.lineStyle(),
-            setter    = lambda self, value: self.setLineStyle(value),
-            default   = lambda self: self.defaultLineStyle()
+            kind    = "Style",
+            valid   = lambda self: self.lineStyle() is not DEFAULT,
+            getter  = lambda self: self.lineStyle(),
+            setter  = lambda self, value: self.setLineStyle(value),
+            default = lambda self: self.defaultLineStyle()
         )
     }
 

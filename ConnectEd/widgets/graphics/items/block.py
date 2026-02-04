@@ -19,23 +19,28 @@ class BlockItem(BaseRectangleItem):
     # class attributes
     _PROPERTIES = {
         "Label" : InherentProperty(
-            valid   = lambda self: self._label != "",
-            getter  = lambda self: self._label,
-            setter  = lambda self, value: setattr(self, "_label", value),
-            text = PropertyTextSpec(cleat="Top Left", origin="Bottom Left")
+            kind   = "Str",
+            valid  = lambda self: self._label != "",
+            getter = lambda self: self._label,
+            setter = lambda self, value: setattr(self, "_label", value)
         ),
         "Name" : InherentProperty(
-            valid   = lambda self: self._name != "",
-            getter  = lambda self: self._name,
-            setter  = lambda self, value: setattr(self, "_name", value),
-            text = PropertyTextSpec(cleat="Bottom Left", origin="Top Left")
+            kind   = "Str",
+            valid  = lambda self: self._name != "",
+            getter = lambda self: self._name,
+            setter = lambda self, value: setattr(self, "_name", value)
         ),
         "Path" : InherentProperty(
-            valid   = lambda self: self._path != "",
-            getter  = lambda self: self._path,
-            setter  = lambda self, value: setattr(self, "_path", value)
+            kind   = "Str",
+            valid  = lambda self: self._path != "",
+            getter = lambda self: self._path,
+            setter = lambda self, value: setattr(self, "_path", value)
         )
     } | BaseRectangleItem._PROPERTIES
+    _PROPERTY_TEXTS = {
+        "Label" : PropertyTextSpec(cleat="Top Left", origin="Bottom Left"),
+        "Name"  : PropertyTextSpec(cleat="Bottom Left", origin="Top Left")
+    }
 
     # instance attributes
     _label : str

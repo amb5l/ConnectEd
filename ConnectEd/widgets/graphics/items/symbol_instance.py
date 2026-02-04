@@ -23,9 +23,9 @@ class BaseSymbolInstanceItem(ItemPosMixin, ItemRotateMixin, BaseRectangleItem):
     _PROPERTIES_NAME = \
         {
             "Name" : InherentProperty(
-                getter  = lambda self: self._symbol.name(),
-                setter  = lambda self, value: self._symbol.setName(value),
-                text = PropertyTextSpec(cleat="Top Left", origin="Bottom Left")
+                kind   = "Str",
+                getter = lambda self: self._symbol.name(),
+                setter = lambda self, value: self._symbol.setName(value)
             )
         }
 
@@ -85,9 +85,9 @@ class SymbolInstanceItem(BaseSymbolInstanceItem):
     _PROPERTIES_LABEL = \
         {
             "Label" : InherentProperty(
-                getter  = lambda self: self._label,
-                setter  = lambda self, value: setattr(self, "_label", value),
-                text = PropertyTextSpec(cleat="Top Left", origin="Bottom Left")
+                kind   = "Str",
+                getter = lambda self: self._label,
+                setter = lambda self, value: setattr(self, "_label", value)
             )
         }
     _PROPERTIES = \
@@ -95,6 +95,10 @@ class SymbolInstanceItem(BaseSymbolInstanceItem):
         BaseSymbolInstanceItem._PROPERTIES_NAME | \
         ItemPosMixin._PROPERTIES_POS | \
         ItemRotateMixin._PROPERTIES_ROTATE
+    _PROPERTY_TEXTS = {
+        "Label" : PropertyTextSpec(cleat="Top Left", origin="Bottom Left"),
+        "Name"  : PropertyTextSpec(cleat="Bottom Left", origin="Top Left")
+    }
 
     # instance attributes
     _label  : str

@@ -21,14 +21,14 @@ class ItemLocMixin:
 
     _PROPERTIES_LOC = {
         "Edge" : InherentProperty(
-            type_name = "Edge",
-            getter    = lambda self: self.loc().edge,
-            setter    = lambda self, value: self.setLocEdge(value)
+            kind   = "Edge",
+            getter = lambda self: self.loc().edge,
+            setter = lambda self, value: self.setLocEdge(value)
         ),
         "Offset" : InherentProperty(
-            type_name = "float",
-            getter    = lambda self: self.loc().offset,
-            setter    = lambda self, value: self.setLocOffset(value)
+            kind   = "Float",
+            getter = lambda self: self.loc().offset,
+            setter = lambda self, value: self.setLocOffset(value)
         )
     }
 

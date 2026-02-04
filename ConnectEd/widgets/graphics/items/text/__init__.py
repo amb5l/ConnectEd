@@ -133,37 +133,38 @@ class TextItem(
     _PROPERTIES_ALIGN = \
         {
             "AlignH" : InherentProperty(
-                type_name = "AlignH",
-                getter    = lambda self: self.horizontalAlignment(),
-                setter    = lambda self, value: self.setHorizontalAlignment(value)
+                kind   = "AlignH",
+                getter = lambda self: self.horizontalAlignment(),
+                setter = lambda self, value: self.setHorizontalAlignment(value)
             ),
             "AlignV" : InherentProperty(
-                type_name = "AlignV",
-                valid     = lambda self: self.height() >= 0.0,
-                getter    = lambda self: self.verticalAlignment(),
-                setter    = lambda self, value: self.setVerticalAlignment(value)
+                kind   = "AlignV",
+                valid  = lambda self: self.height() is not None,
+                getter = lambda self: self.verticalAlignment(),
+                setter = lambda self, value: self.setVerticalAlignment(value)
             )
         }
     _PROPERTIES_SIZE = \
         {
             "Width" : InherentProperty(
-                type_name = "float",
-                valid     = lambda self: self.width() >= 0.0,
-                getter    = lambda self: self.width(),
-                setter    = lambda self, value: self.setWidth(value)
+                kind   = "Float",
+                valid  = lambda self: self.width() is not None,
+                getter = lambda self: self.width(),
+                setter = lambda self, value: self.setWidth(value)
             ),
             "Height" : InherentProperty(
-                type_name = "float",
-                valid     = lambda self: self.height() >= 0.0,
-                getter    = lambda self: self.height(),
-                setter    = lambda self, value: self.setHeight(value)
+                kind   = "Float",
+                valid  = lambda self: self.height() is not None,
+                getter = lambda self: self.height(),
+                setter = lambda self, value: self.setHeight(value)
             )
         }
     _PROPERTIES = \
         {
             "Text" : InherentProperty(
-                getter    = lambda self: self.text(),
-                setter    = lambda self, value: self.setText(value)
+                kind   = "Text",
+                getter = lambda self: self.text(),
+                setter = lambda self, value: self.setText(value)
             ),
 
         } | \

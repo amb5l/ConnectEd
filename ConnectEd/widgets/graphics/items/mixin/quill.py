@@ -30,46 +30,46 @@ class ItemQuillMixin:
 
     _PROPERTIES_QUILL = {
         "Text Color" : InherentProperty(
-            type_name = "QColor",
-            valid     = lambda self: self.quillColor() is not DEFAULT,
-            getter    = lambda self: self.quillColor(),
-            setter    = lambda self, value: self.setQuillColor(value),
-            default   = lambda self: self.defaultQuillColor()
+            kind    = "Color",
+            valid   = lambda self: self.quillColor() is not DEFAULT,
+            getter  = lambda self: self.quillColor(),
+            setter  = lambda self, value: self.setQuillColor(value),
+            default = lambda self: self.defaultQuillColor()
         ),
         "Text Font" : InherentProperty(
-            type_name = "FontFamily",  # a "subtype" of str - see str2val
-            valid     = lambda self: self.quillFamily() is not DEFAULT,
-            getter    = lambda self: self.quillFamily(),
-            setter    = lambda self, value: self.setQuillFamily(value),
-            default   = lambda self: self.defaultQuillFamily()
+            kind    = "FontFamily",  # a "subtype" of str - see str2val
+            valid   = lambda self: self.quillFamily() is not DEFAULT,
+            getter  = lambda self: self.quillFamily(),
+            setter  = lambda self, value: self.setQuillFamily(value),
+            default = lambda self: self.defaultQuillFamily()
         ),
         "Text Size" : InherentProperty(
-            type_name = "FontSize",  # a "subtype" of float - see str2val
-            valid     = lambda self: self.quillSize() is not DEFAULT,
-            getter    = lambda self: self.quillSize(),
-            setter    = lambda self, value: self.setQuillSize(value),
-            default   = lambda self: self.defaultQuillSize()
+            kind    = "FontSize",  # a "subtype" of float - see str2val
+            valid   = lambda self: self.quillSize() is not DEFAULT,
+            getter  = lambda self: self.quillSize(),
+            setter  = lambda self, value: self.setQuillSize(value),
+            default = lambda self: self.defaultQuillSize()
         ),
         "Text Bold" : InherentProperty(
-            type_name = "bool",
-            valid     = lambda self: self.quillBold() is not DEFAULT,
-            getter    = lambda self: self.quillBold(),
-            setter    = lambda self, value: self.setQuillBold(value),
-            default   = lambda self: self.defaultQuillBold()
+            kind    = "FontBool",
+            valid   = lambda self: self.quillBold() is not DEFAULT,
+            getter  = lambda self: self.quillBold(),
+            setter  = lambda self, value: self.setQuillBold(value),
+            default = lambda self: self.defaultQuillBold()
         ),
         "Text Italic" : InherentProperty(
-            type_name = "bool",
-            valid     = lambda self: self.quillItalic() is not DEFAULT,
-            getter    = lambda self: self.quillItalic(),
-            setter    = lambda self, value: self.setQuillItalic(value),
-            default   = lambda self: self.defaultQuillItalic()
+            kind    = "FontBool",
+            valid   = lambda self: self.quillItalic() is not DEFAULT,
+            getter  = lambda self: self.quillItalic(),
+            setter  = lambda self, value: self.setQuillItalic(value),
+            default = lambda self: self.defaultQuillItalic()
         ),
         "Text Underline" : InherentProperty(
-            type_name = "bool",
-            valid     = lambda self: self.quillUnderline() is not DEFAULT,
-            getter    = lambda self: self.quillUnderline(),
-            setter    = lambda self, value: self.setQuillUnderline(value),
-            default   = lambda self: self.defaultQuillUnderline()
+            kind    = "FontBool",
+            valid   = lambda self: self.quillUnderline() is not DEFAULT,
+            getter  = lambda self: self.quillUnderline(),
+            setter  = lambda self, value: self.setQuillUnderline(value),
+            default = lambda self: self.defaultQuillUnderline()
         )
     }
 

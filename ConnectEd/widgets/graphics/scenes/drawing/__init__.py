@@ -34,6 +34,7 @@ class DrawingScene(
     # class attributes
     _PROPERTIES = {
         "Name" : InherentProperty(
+            kind   = "Str",
             getter = lambda self: self._name,
             setter = lambda self, value : setattr(self, "_name", value)
         )

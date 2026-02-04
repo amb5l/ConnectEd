@@ -20,6 +20,7 @@ from .handle import HandleItem
 from .mixin.origin import ItemOriginMixin
 from .mixin.pos    import ItemPosMixin
 from .mixin.rotate import ItemRotateMixin
+from .mixin.handle import ItemHandlesMixin
 from .mixin.quill  import ItemQuillMixin
 
 from typing import TYPE_CHECKING
@@ -71,18 +72,20 @@ class PropertyTextItem(TextItem):
     _PROPERTIES = \
         {
             "Name" : InherentProperty(
-                getter    = lambda self: self.name(),
-                setter    = lambda self, value: self.setName(value)
+                kind   = "Str",
+                getter = lambda self: self.name(),
+                setter = lambda self, value: self.setName(value)
             ),
             "Visible" : InherentProperty(
-                type_name = "bool",
-                valid     = lambda self: not self.isVisible(),
-                getter    = lambda self: self.isVisible(),
-                setter    = lambda self, value: self.setVisible(value)
+                kind   = "Bool",
+                valid  = lambda self: not self.isVisible(),
+                getter = lambda self: self.isVisible(),
+                setter = lambda self, value: self.setVisible(value)
             ),
             "Cleat" : InherentProperty(
-                getter    = lambda self: self.getCleat(),
-                setter    = lambda self, value: self.setCleat(value)
+                kind   = lambda self: self.cleatEnumTypeName(),
+                getter = lambda self: self.getCleat(),
+                setter = lambda self, value: self.setCleat(value)
             )
         } | \
         ItemOriginMixin._PROPERTIES_ORIGIN | \
@@ -205,6 +208,10 @@ class PropertyTextItem(TextItem):
             if settings_name in vars(settings_items).keys():
                 return settings_name
         return "PropertyText"
+
+    def cleatEnumTypeName(self : Self) -> str:
+        item : ItemHandlesMixin = self.item()
+        return item._HANDLE_ENUM.__name__
 
     def cleat(self : Self) -> str | None:
         return self._cleat
