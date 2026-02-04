@@ -189,8 +189,8 @@ class TextItem(
         rotcomp   : bool                 = True,
         pos       : QPointF | None       = None,
         origin    : str                  = "Top Left",
-        align_h   : AlignH | None        = None,
-        align_v   : AlignV | None        = None,
+        align_h   : AlignH               = AlignH.LEFT,
+        align_v   : AlignV               = AlignV.TOP,
         width     : float                = -1.0,        # unconstrained
         height    : float                = -1.0,        # unconstrained
         color     : QColor | Default     = DEFAULT,
@@ -207,8 +207,8 @@ class TextItem(
         self._child.setParentItem(self)
         self._child.setText(text)
         self._rotcomp = rotcomp
-        self._align_h = align_h or AlignH.LEFT
-        self._align_v = align_v or AlignV.TOP
+        self._align_h = align_h
+        self._align_v = align_v
         self._width   = width
         self._height  = height
         self.initItem(fresh)
