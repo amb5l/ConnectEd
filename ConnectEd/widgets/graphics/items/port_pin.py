@@ -2,6 +2,8 @@ from typing import Self
 
 from PyQt6.QtCore import QPointF
 
+from ....core.types import BlockPinHandleId
+
 from ..properties import PropertyTextSpec, InherentProperty, PropertiesMixin
 
 from . import SignalDirection
@@ -56,7 +58,9 @@ class PortPinMixin(
             )
         }
     _PROPERTY_TEXTS = {
-        "Name" : PropertyTextSpec(cleat="Name", origin="Middle Left")
+        "Name" : PropertyTextSpec(
+            cleat=BlockPinHandleId.NAME, origin=BlockPinHandleId.ENTRY
+        )
     }
 
 
@@ -79,14 +83,14 @@ class PortPinMixin(
 
     def initHandles(self : Self) -> None:
         self._handles = {
-            "Origin" : HandleItem(
-                name   = "Origin",
+            BlockPinHandleId.ENTRY : HandleItem(
+                id     = BlockPinHandleId.ENTRY,
                 pos    = QPointF(0, 0),
                 kind   = "move",
                 parent = self
             ),
-            "Name" : HandleItem(
-                name   = "Name",
+            BlockPinHandleId.NAME : HandleItem(
+                id     = BlockPinHandleId.NAME,
                 pos    = QPointF(self._AP_NAME_OFFSET, 0),
                 kind   = "move",
                 parent = self

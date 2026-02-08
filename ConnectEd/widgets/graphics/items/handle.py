@@ -1,6 +1,8 @@
-from typing import Self, Text
+from typing import Self
 
 from PyQt6.QtCore import QPointF
+
+from ....core.types import HandleId
 
 from .null import NullItem
 from .grip import GripItem, MoveGripItem, ResizeGripItem, TextGripItem
@@ -14,29 +16,29 @@ if TYPE_CHECKING:
 
 class HandleItem(ItemChangeMixin, NullItem):
     # instance attributes
-    _name : str
+    _id   : HandleId
     _grip : GripItem
 
     def __init__(
         self   : Self,
-        name   : str,
+        id     : HandleId,
         pos    : QPointF | None = None,
         kind   : str = "resize",
         parent : "ItemHandlesMixin" = None
     ) -> None:
         super().__init__(parent)
-        self._name = name
+        self._id = id
         self.setPos(pos or QPointF())
         grip_class = TextGripItem   if kind == "text" else \
                      ResizeGripItem if kind == "resize" else \
                      MoveGripItem
         self._grip = grip_class(self)
 
-    def name(self : Self) -> str:
-        return self._name
+    def id(self : Self) -> HandleId:
+        return self._id
 
-    def setName(self : Self, value : str) -> None:
-        self._name = value
+    def setId(self : Self, id : HandleId) -> None:
+        self._id = id
 
     def onOriginChange(self : Self) -> None:
         self._grip.onOriginChange()

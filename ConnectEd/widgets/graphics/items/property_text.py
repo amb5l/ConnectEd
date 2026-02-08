@@ -7,6 +7,7 @@ from PyQt6.QtGui     import QAction, QColor
 
 from ....app import settings, logger
 
+from ....core.types import HandleId, RectHandleId
 from ....core.utils import val2str
 
 from ..properties import InherentProperty, PropertiesMixin
@@ -97,16 +98,16 @@ class PropertyTextItem(TextItem):
 
     # instance attributes
     _name        : str
-    _cleat       : str
+    _cleat       : HandleId
     _cleat_shown : bool
     _tether      : TetherItem | None
 
     def __init__(
         self   : Self,
         name      : str,
-        cleat     : str | None           = None,
+        cleat     : HandleId | None      = None,
         pos       : QPointF | None       = None,
-        origin    : str                  = "Top Left",
+        origin    : RectHandleId         = RectHandleId.TOP_LEFT,
         align_h   : AlignH               = AlignH.LEFT,
         align_v   : AlignV               = AlignV.TOP,
         width     : float                = -1.0,
@@ -120,9 +121,6 @@ class PropertyTextItem(TextItem):
         fresh     : bool                 = True,
         parent    : QGraphicsItem | None = None
     ) -> None:
-
-        if origin is None:
-            origin = "Bottom Left" if cleat == "Top Left" else "Top Left"
         super().__init__(
             text      = "?",    # uninitialized value
             block     = False,  # default
@@ -216,21 +214,25 @@ class PropertyTextItem(TextItem):
     def cleat(self : Self) -> str | None:
         return self._cleat
 
-    def setCleat(self : Self, name : str, parent : ItemType | None = None) -> bool:
-        self._cleat = name
+    def setCleat(
+        self   : Self,
+        id     : HandleId | None,
+        parent : "ItemHandlesMixin | None" = None
+    ) -> bool:
+        self._cleat = id
         item = parent or self.item()
         if item is None:
             return False
         for child in item.childItems():
-            if isinstance(child, HandleItem) and child.name() == name:
+            if isinstance(child, HandleItem) and child.id() == id:
                 self.setParentItem(child)
                 return True
         logger().warning("Cleat not found in parent item")
         return False
 
-    def setOrigin(self : Self, name : str) -> None:
+    def setOrigin(self : Self, id : RectHandleId) -> None:
         """Override to update tether line."""
-        ItemOriginMixin.setOrigin(self, name)
+        ItemOriginMixin.setOrigin(self,  id)
         if hasattr(self, "_tether"):  # guard against partial initialisation
             self._tether.setParentItem(self.getOriginHandle())
             self._tether.onPositionChange(self.pos())

@@ -4,7 +4,8 @@ from PyQt6.QtCore    import QPointF, QXmlStreamWriter
 from PyQt6.QtWidgets import QGraphicsItem, QMenu
 from PyQt6.QtGui     import QAction, QPainterPath
 
-from ....core.defs import PITCH
+from ....core.defs  import PITCH
+from ....core.types import BlockPinHandleId
 
 from ..properties import InherentProperty
 
@@ -88,7 +89,7 @@ class GatePinItem(
                 return
         key = (self._dot, self._clock)
         path = scene.paths["SymbolPin"][key]
-        self._handles["Name"].setPos(QPointF(
+        self._handles[BlockPinHandleId.NAME].setPos(QPointF(
             self._AP_NAME_OFFSET + (_PIN_CLK_SIZE if self._clock else 0), 0
         ))
         if self._length != PITCH:

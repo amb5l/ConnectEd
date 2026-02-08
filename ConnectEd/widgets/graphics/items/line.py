@@ -6,6 +6,8 @@ from PyQt6.QtGui     import QPainterPath, QPainterPathStroker
 
 from ....app import settings
 
+from ....core.types import LineHandleId
+
 from ..properties import InherentProperty, PropertiesMixin
 
 from .handle import HandleItem
@@ -98,14 +100,14 @@ class LineItem(
 
     def initHandles(self : Self) -> None:
         self._handles = {
-            "P1" : HandleItem(
-                name   = "P1",
+            LineHandleId.P1 : HandleItem(
+                id     = LineHandleId.P1,
                 pos    = QPointF(0, 0),
                 kind   = "resize",
                 parent = self
             ),
-            "P2" : HandleItem(
-                name   = "P2",
+            LineHandleId.P2 : HandleItem(
+                id     = LineHandleId.P2,
                 pos    = QPointF(0, 0),
                 kind   = "resize",
                 parent = self
@@ -113,7 +115,7 @@ class LineItem(
         }
 
     def updateHandles(self : Self) -> None:
-        self._handles["P2"].setPos(self._line.p2())
+        self._handles[LineHandleId.P2].setPos(self._line.p2())
 
     def p1(self : Self) -> QPointF:
         return self.pos()
@@ -157,14 +159,14 @@ class LineItem(
         self.setLine(self._line)
         self.onGeometryChange()
 
-    def moveHandleBy(self : Self, name : str, delta : QPointF) -> None:
-            match name:
-                case "P1":
-                    self.setP1(self.p1() + delta)
-                case "P2":
-                    self.setP2(self.p2() + delta)
-                case _:
-                    raise ValueError(f"Invalid handle: {name}")
+    def moveHandleBy(self : Self, id : LineHandleId, delta : QPointF) -> None:
+        match id:
+            case LineHandleId.P1:
+                self.setP1(self.p1() + delta)
+            case LineHandleId.P2:
+                self.setP2(self.p2() + delta)
+            case _:
+                raise ValueError(f"Invalid handle: {id}")
 
     def shape(self : Self) -> QPainterPath:
         return self._hshape

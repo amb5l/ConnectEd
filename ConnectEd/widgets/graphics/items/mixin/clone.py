@@ -30,6 +30,6 @@ class ItemCloneMixin:
                     if isinstance(source_ap_child, PropertyTextItem):
                         clone_ap_child = source_ap_child.clone()
                         clone_ap_child.setParentItem(
-                            clone_item._handles[source_child.name()]
+                            clone_item._handles[source_child.id()]
                         )
         return clone_item

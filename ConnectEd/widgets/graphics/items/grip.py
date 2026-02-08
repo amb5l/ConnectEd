@@ -111,13 +111,14 @@ class OriginGripItem(GripItem):
     _ORIGIN_PATH_NAME_SUFFIX = "Squared"
 
     def pathNameSuffix(self : Self) -> str:
-        item = self.item()
-        if hasattr(item, "origin") and item.origin() == self.handle().name():
+        item : "ItemOriginMixin" = self.item()
+        if hasattr(item, "origin") and item.origin() == self.handle().id():
             return self._ORIGIN_PATH_NAME_SUFFIX
         return ""
 
     def moveBy(self : Self, delta : QPointF) -> None:
-        self.item().moveHandleBy(self.handle().name(), delta)
+        item : "ItemHandlesMixin" = self.item()
+        item.moveHandleBy(self.handle().id(), delta)
 
 
 class MoveGripItem(OriginGripItem):
@@ -137,7 +138,7 @@ class MoveGripItem(OriginGripItem):
                 view.separator(),
                 view.action(
                     "Assign Origin",
-                    lambda: view.ui.editAssignOrigin(self.item(), h.name())
+                    lambda: view.ui.editAssignOrigin(self.item(), h.id())
                 )
             ])
         return entries
@@ -161,7 +162,7 @@ class TextGripItem(ResizeGripItem):
 
     def pathNamePrefix(self : Self) -> str:
         item : "TextItem" = self.item()
-        name = self.handle().name()
+        name = self.handle().id()
         w = item.width()
         h = item.height()
         c = False  # whether the item dimension(s) for this grip are constrained

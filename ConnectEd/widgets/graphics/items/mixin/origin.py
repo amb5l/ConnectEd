@@ -3,6 +3,8 @@ from typing import Self
 from PyQt6.QtWidgets import QGraphicsItem
 from PyQt6.QtGui     import QTransform
 
+from .....core.types import HandleId
+
 from ...properties import InherentProperty, PropertiesMixin
 
 from typing import TYPE_CHECKING
@@ -13,7 +15,7 @@ if TYPE_CHECKING:
 
 class ItemOriginMixin:
     # class attributes
-    _ORIGIN_NAME : str
+    _ORIGIN : HandleId
     _PROPERTIES_ORIGIN = {
         "Origin" : InherentProperty(
             kind   = "Str",
@@ -24,27 +26,27 @@ class ItemOriginMixin:
     }
 
     # instance attributes
-    _origin  : str                  # name of origin handle
+    _origin  : HandleId                 # id of origin handle
     _handles : dict[str, "HandleItem"]
 
     def initOrigin(self : Self) -> None:
         from .handle import ItemHandlesMixin
         if not isinstance(self, ItemHandlesMixin):
             raise TypeError("ItemOriginMixin requires ItemHandlesMixin")
-        if not hasattr(self, "_ORIGIN_NAME"):
-            raise ValueError("ItemOriginMixin requires _ORIGIN_NAME")
-        self.setOrigin(self._ORIGIN_NAME)
+        if not hasattr(self, "_ORIGIN"):
+            raise ValueError("ItemOriginMixin requires _ORIGIN")
+        self.setOrigin(self._ORIGIN)
 
-    def origin(self : Self) -> str:
+    def origin(self : Self) -> HandleId:
         return self._origin
 
     def setOrigin(
-        self   : Self | QGraphicsItem | PropertiesMixin,
-        origin : str
+        self : Self | QGraphicsItem | PropertiesMixin,
+        id   : HandleId
     ) -> None:
         """Set origin handle and update transform origin accordingly."""
         # record origin name
-        self._origin = origin
+        self._origin = id
         # update origin
         self.updateOrigin()
         # broadcast change

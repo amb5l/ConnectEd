@@ -9,6 +9,8 @@ from PyQt6.QtCore    import QPointF, QRectF
 from PyQt6.QtWidgets import QGraphicsItem, QMenu
 from PyQt6.QtGui     import QColor, QFont, QAction, QPainterPath
 
+from .....core.types import RectHandleId
+
 from .....resources.icons import AnchorTopLeftIcon,      \
                                  AnchorTopCenterIcon,    \
                                  AnchorTopRightIcon,     \
@@ -128,7 +130,7 @@ class TextItem(
     """
 
     # class attributes
-    _ORIGIN_NAME = "Top Left"
+    _ORIGIN = RectHandleId.TOP_LEFT
     _RESIZE_KIND = "text"  # handle kind for text items
     _PROPERTIES_ALIGN = \
         {
@@ -189,7 +191,7 @@ class TextItem(
         block     : bool                 = False,
         rotcomp   : bool                 = True,
         pos       : QPointF | None       = None,
-        origin    : str                  = "Top Left",
+        origin    : RectHandleId         = RectHandleId.TOP_LEFT,
         align_h   : AlignH               = AlignH.LEFT,
         align_v   : AlignV               = AlignV.TOP,
         width     : float                = -1.0,        # unconstrained
@@ -336,43 +338,43 @@ class TextItem(
         """Return the child's shape for hit detection."""
         return self._child._hshape
 
-    def moveHandleBy(self : Self, name : str, delta : QPointF) -> None:
+    def moveHandleBy(self : Self, id : RectHandleId, delta : QPointF) -> None:
         """Resize/move the text as appropriate."""
-        origin = self.origin()
-        match name:
-            case "Top Left":
-                if "Left" in origin: self.moveByX(delta.x())
+        origin_name = self.origin().value
+        match id:
+            case RectHandleId.TOP_LEFT:
+                if "Left" in origin_name: self.moveByX(delta.x())
                 self.resizeX(-delta.x())
-                if "Top" in origin: self.moveByY(delta.y())
+                if "Top" in origin_name: self.moveByY(delta.y())
                 self.resizeY(-delta.y())
-            case "Top Center":
-                if "Top" in origin: self.moveByY(delta.y())
+            case RectHandleId.TOP_CENTER:
+                if "Top" in origin_name: self.moveByY(delta.y())
                 self.resizeY(-delta.y())
-            case "Top Right":
-                if "Right" in origin: self.moveByX(delta.x())
+            case RectHandleId.TOP_RIGHT:
+                if "Right" in origin_name: self.moveByX(delta.x())
                 self.resizeX(delta.x())
-                if "Top" in origin: self.moveByY(delta.y())
+                if "Top" in origin_name: self.moveByY(delta.y())
                 self.resizeY(-delta.y())
-            case "Middle Left":
-                if "Left" in origin: self.moveByX(delta.x())
+            case RectHandleId.MIDDLE_LEFT:
+                if "Left" in origin_name: self.moveByX(delta.x())
                 self.resizeX(-delta.x())
-            case "Middle Center":
+            case RectHandleId.MIDDLE_CENTER:
                 self.moveBy(delta)
-            case "Middle Right":
-                if "Right" in origin: self.moveByX(delta.x())
+            case RectHandleId.MIDDLE_RIGHT:
+                if "Right" in origin_name: self.moveByX(delta.x())
                 self.resizeX(delta.x())
-            case "Bottom Left":
-                if "Left" in origin: self.moveByX(delta.x())
+            case RectHandleId.BOTTOM_LEFT:
+                if "Left" in origin_name: self.moveByX(delta.x())
                 self.resizeX(-delta.x())
-                if "Bottom" in origin: self.moveByY(delta.y())
+                if "Bottom" in origin_name: self.moveByY(delta.y())
                 self.resizeY(delta.y())
-            case "Bottom Center":
-                if "Bottom" in origin: self.moveByY(delta.y())
+            case RectHandleId.BOTTOM_CENTER:
+                if "Bottom" in origin_name: self.moveByY(delta.y())
                 self.resizeY(delta.y())
-            case "Bottom Right":
-                if "Right" in origin: self.moveByX(delta.x())
+            case RectHandleId.BOTTOM_RIGHT:
+                if "Right" in origin_name: self.moveByX(delta.x())
                 self.resizeX(delta.x())
-                if "Bottom" in origin: self.moveByY(delta.y())
+                if "Bottom" in origin_name: self.moveByY(delta.y())
                 self.resizeY(delta.y())
 
     def moveByX(self : Self, dx : float) -> None:

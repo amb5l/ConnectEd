@@ -4,7 +4,8 @@ from PyQt6.QtCore    import QPointF, QRectF, QSizeF
 from PyQt6.QtWidgets import QGraphicsRectItem, QGraphicsEllipseItem, QMenu
 from PyQt6.QtGui     import QAction
 
-from ....core.defs import PITCH
+from ....core.defs  import PITCH
+from ....core.types import RectHandleId
 
 from ..properties import PropertiesMixin, InherentProperty
 
@@ -44,7 +45,7 @@ class BaseRectangleMixin(
     """Base mixin class for rectangle-like items."""
 
     # class attributes
-    _ORIGIN_NAME = "Middle Center"
+    _ORIGIN = RectHandleId.MIDDLE_CENTER
     _PROPERTIES = \
         ItemOriginMixin._PROPERTIES_ORIGIN | \
         ItemPosMixin._PROPERTIES_POS | \
@@ -199,32 +200,32 @@ class BaseRectangleMixin(
 
     def moveHandleBy(
         self : Self | QGraphicsRectItem | QGraphicsEllipseItem,
-        name : str,
+        id   : RectHandleId,
         d    : QPointF
     ) -> None:
         p1 = self.pos() - self.transformOriginPoint()
         p2 = p1 + self.rect().bottomRight()
-        match name:
-            case "Top Left":
+        match id:
+            case RectHandleId.TOP_LEFT:
                 self.setPoints(p1 + d, p2)
-            case "Top Center":
+            case RectHandleId.TOP_CENTER:
                 self.setPoints(p1.x(), p1.y() + d.y(), p2.x(), p2.y())
-            case "Top Right":
+            case RectHandleId.TOP_RIGHT:
                 self.setPoints(p1.x(), p1.y() + d.y(), p2.x() + d.x(), p2.y())
-            case "Middle Left":
+            case RectHandleId.MIDDLE_LEFT:
                 self.setPoints(p1.x() + d.x(), p1.y(), p2.x(), p2.y())
-            case "Middle Center":
+            case RectHandleId.MIDDLE_CENTER:
                 self.moveBy(d)
-            case "Middle Right":
+            case RectHandleId.MIDDLE_RIGHT:
                 self.setPoints(p1.x(), p1.y(), p2.x() + d.x(), p2.y())
-            case "Bottom Left":
+            case RectHandleId.BOTTOM_LEFT:
                 self.setPoints(p1.x() + d.x(), p1.y(), p2.x(), p2.y() + d.y())
-            case "Bottom Center":
+            case RectHandleId.BOTTOM_CENTER:
                 self.setPoints(p1.x(), p1.y(), p2.x(), p2.y() + d.y())
-            case "Bottom Right":
+            case RectHandleId.BOTTOM_RIGHT:
                 self.setPoints(p1, p2 + d)
             case _:
-                raise ValueError(f"Invalid handle: {name}")
+                raise ValueError(f"Invalid handle: {id}")
 
     def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
         return [

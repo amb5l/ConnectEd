@@ -5,6 +5,7 @@ from PyQt6.QtGui     import QPainterPath
 
 from ....app import logger
 
+from ....core.types import RectHandleId
 from ....core.utils import registerClass
 
 from ..properties import PropertyTextSpec, InherentProperty
@@ -96,8 +97,12 @@ class SymbolInstanceItem(BaseSymbolInstanceItem):
         ItemPosMixin._PROPERTIES_POS | \
         ItemRotateMixin._PROPERTIES_ROTATE
     _PROPERTY_TEXTS = {
-        "Label" : PropertyTextSpec(cleat="Top Left", origin="Bottom Left"),
-        "Name"  : PropertyTextSpec(cleat="Bottom Left", origin="Top Left")
+        "Label" : PropertyTextSpec(
+            cleat=RectHandleId.TOP_LEFT, origin=RectHandleId.BOTTOM_LEFT
+        ),
+        "Name"  : PropertyTextSpec(
+            cleat=RectHandleId.BOTTOM_LEFT, origin=RectHandleId.TOP_LEFT
+        )
     }
 
     # instance attributes

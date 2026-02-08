@@ -2,6 +2,8 @@ from typing import Self
 
 from PyQt6.QtCore import QPointF, QRectF
 
+from .....core.types import HandleId, RectHandleId
+
 from ..handle import HandleItem
 
 from .origin import ItemOriginMixin
@@ -9,50 +11,23 @@ from .grip   import ItemGripMixin
 
 
 class ItemHandlesMixin(ItemGripMixin):
-    @classmethod
-    def getHandleNames(cls : type[Self]) -> list[str]:
-        raise NotImplementedError("Subclass must implement this method")
+    def getHandle(self : Self, id : HandleId) -> "HandleItem":
+        return self._handles[id]
 
-    # instance attributes
-    _handles          : dict[str, "HandleItem"]
-
-    def initHandles(self : Self) -> None:
-        raise NotImplementedError("Subclass must implement this method")
-
-    def getHandle(self : Self, name : str) -> "HandleItem":
-        return self._handles[name]
-
-    def moveHandleBy(self : Self, name : str, delta : QPointF) -> None:
+    def moveHandleBy(self : Self, id : HandleId, d : QPointF) -> None:
         raise NotImplementedError("Subclass must implement this method")
 
 
 class ItemRectHandlesMixin(ItemHandlesMixin):
-    # class attributes
-    _RESIZE_KIND = "resize"
-    _AP_RECT = {
-        "Top Left"      : ( 0.0 , 0.0 ),
-        "Top Center"    : ( 0.5 , 0.0 ),
-        "Top Right"     : ( 1.0 , 0.0 ),
-        "Middle Left"   : ( 0.0 , 0.5 ),
-        "Middle Center" : ( 0.5 , 0.5 ),
-        "Middle Right"  : ( 1.0 , 0.5 ),
-        "Bottom Left"   : ( 0.0 , 1.0 ),
-        "Bottom Center" : ( 0.5 , 1.0 ),
-        "Bottom Right"  : ( 1.0 , 1.0 )
-    }
-    _AP_RESIZE = [ k for k in _AP_RECT.keys() if k != "Middle Center" ]
-
-    @classmethod
-    def getHandleNames(cls : type[Self]) -> list[str]:
-        return list(cls._AP_RECT.keys())
-
+    # instance attributes
+    _handles : dict[RectHandleId, "HandleItem"]
 
     def initHandles(self : Self) -> None:
         self._handles = {}
-        for name in self._AP_RECT.keys():
-            kind = self._RESIZE_KIND if name in self._AP_RESIZE else "move"
-            handle = HandleItem(name=name, kind=kind, parent=self)
-            self._handles[name] = handle
+        for id in RectHandleId:
+            kind = "move" if id == RectHandleId.MIDDLE_CENTER else "resize"
+            handle = HandleItem(id=id, kind=kind, parent=self)
+            self._handles[id] = handle
 
     def handleRect(self : Self) -> QRectF:
         raise NotImplementedError("Subclass must implement this method")
@@ -65,8 +40,11 @@ class ItemRectHandlesMixin(ItemHandlesMixin):
         y0 = rect.topLeft().y()
         w = rect.width()
         h = rect.height()
-        for name, (x, y) in self._AP_RECT.items():
-            self._handles[name].setPos(QPointF(x0 + (x * w), y0 + (y * h)))
+        for id in RectHandleId:
+            name = id.value
+            x = 1.0 if "Right" in name else 0.5 if "Center" in name else 0.0
+            y = 1.0 if "Bottom" in name else 0.5 if "Middle" in name else 0.0
+            self._handles[id].setPos(QPointF(x0 + (x * w), y0 + (y * h)))
         if self.origin() is not None:
             self.updateOrigin()
 

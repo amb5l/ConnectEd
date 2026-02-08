@@ -4,6 +4,8 @@ from PyQt6.QtCore    import QPointF
 from PyQt6.QtWidgets import QMenu
 from PyQt6.QtGui     import QAction
 
+from ....core.types import RectHandleId
+
 from ..properties import PropertyTextSpec, InherentProperty
 
 from . import EdgeLoc, Edge
@@ -38,8 +40,12 @@ class BlockItem(BaseRectangleItem):
         )
     } | BaseRectangleItem._PROPERTIES
     _PROPERTY_TEXTS = {
-        "Label" : PropertyTextSpec(cleat="Top Left", origin="Bottom Left"),
-        "Name"  : PropertyTextSpec(cleat="Bottom Left", origin="Top Left")
+        "Label" : PropertyTextSpec(
+            cleat=RectHandleId.TOP_LEFT, origin=RectHandleId.BOTTOM_LEFT
+        ),
+        "Name"  : PropertyTextSpec(
+            cleat=RectHandleId.BOTTOM_LEFT, origin=RectHandleId.TOP_LEFT
+        )
     }
 
     # instance attributes

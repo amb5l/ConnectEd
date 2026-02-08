@@ -3,7 +3,9 @@ from typing import Self
 from PyQt6.QtWidgets import QGraphicsItem, QGraphicsPathItem, QMenu
 from PyQt6.QtGui     import QAction
 
-from ....app import settings
+from ....app         import settings
+
+from ....core.types import BlockPinHandleId
 
 from .mixin.paint  import ItemPaintMixin
 from .mixin.pos    import ItemPosMixin
@@ -48,7 +50,7 @@ class PortItem(
 
     def onSettingsChange(self : Self) -> None:
         size = settings().get("theme/items/Port/size")
-        self.getHandle("Name").setPos(size + self._AP_NAME_OFFSET, 0)
+        self.getHandle(BlockPinHandleId.NAME).setPos(size + self._AP_NAME_OFFSET, 0)
 
     def onSceneChange(self : Self, scene : "DrawingScene") -> None:
         self._setPath(scene)

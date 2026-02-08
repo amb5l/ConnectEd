@@ -7,7 +7,8 @@ from PyQt6.QtGui     import QAction
 
 from ....app import logger
 
-from ....core.xml import fromXmlAttrs
+from ....core.types import RectHandleId
+from ....core.xml   import fromXmlAttrs
 
 from ...dialogs.arc import ArcDialog
 
@@ -330,8 +331,8 @@ class PolylineItem(
             ))
         self.updatePath()
 
-    def moveHandleBy(self : Self, name : str, delta : QPointF) -> None:
-        BaseRectangleMixin.moveHandleBy(self, name, delta)
+    def moveHandleBy(self : Self, id : RectHandleId, delta : QPointF) -> None:
+        BaseRectangleMixin.moveHandleBy(self, id, delta)
 
     def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
         items = []
