@@ -2,7 +2,7 @@ from typing import Self
 
 from PyQt6.QtCore import QPointF
 
-from ....core.types import SignalDirection, BlockPinHandleId
+from ....core.types import Direction, BlockPinHandleId
 
 from ..properties import PropertyTextSpec, InherentProperty, PropertiesMixin
 
@@ -64,14 +64,14 @@ class PortPinMixin(
 
     # instance attributes
     _name      : str
-    _direction : SignalDirection
+    _direction : Direction
     _comment   : str
     _entry     : EntryItem
 
     def initPortPin(self : Self, fresh : bool) -> None:
         # Initialize attributes that properties will access
         self._name      = ""
-        self._direction = SignalDirection.IN
+        self._direction = Direction.IN
         self._range     = None
         self._comment   = ""
         # Initialize the item (this sets up properties system)
@@ -102,10 +102,10 @@ class PortPinMixin(
         self._name = value
         self.signalPropertyChanges("Name")
 
-    def direction(self : Self) -> SignalDirection:
+    def direction(self : Self) -> Direction:
         return self._direction
 
-    def setDirection(self : Self, value : SignalDirection) -> None:
+    def setDirection(self : Self, value : Direction) -> None:
         self._direction = value
         self.signalPropertyChanges("Dir")
 

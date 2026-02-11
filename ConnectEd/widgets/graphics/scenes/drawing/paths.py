@@ -4,7 +4,7 @@ from PyQt6.QtGui  import QPainterPath, QPolygonF, QPainterPathStroker
 from .....app import settings
 
 from .....core.defs  import WIDTH, PITCH
-from .....core.types import SignalDirection
+from .....core.types import Direction
 
 from ...items.base_pin import _PIN_DOT_SIZE, _PIN_CLK_SIZE, \
                               _EXT_ARROW_SIZE, _INT_ARROW_SIZE
@@ -188,7 +188,7 @@ class DrawingScenePathsMixin:
         path.lineTo(h , +h)
         path.lineTo(0 , +h)
         path.closeSubpath()
-        d[SignalDirection.IN.value] = path
+        d[Direction.IN.value] = path
         # out
         path = QPainterPath()
         path.moveTo(s , -h)
@@ -197,7 +197,7 @@ class DrawingScenePathsMixin:
         path.lineTo(h , +h)
         path.lineTo(s , +h)
         path.closeSubpath()
-        d[SignalDirection.OUT.value] = path
+        d[Direction.OUT.value] = path
         # bi
         path = QPainterPath()
         path.moveTo(0 ,  0)
@@ -205,7 +205,7 @@ class DrawingScenePathsMixin:
         path.lineTo(s ,  0)
         path.lineTo(h , +h)
         path.closeSubpath()
-        d[SignalDirection.BI.value] = path
+        d[Direction.BI.value] = path
 
     def _pinExtArrowPaths(self : "DrawingScene", d : dict) -> None:
         w = WIDTH
@@ -221,14 +221,14 @@ class DrawingScenePathsMixin:
         path.lineTo(c + sq ,   0)
         path.lineTo(c - sq , +sh)
         path.closeSubpath()
-        d[SignalDirection.IN.value] = path
+        d[Direction.IN.value] = path
         # out
         path = QPainterPath()
         path.moveTo(c + sq , -sh)
         path.lineTo(c - sq ,   0)
         path.lineTo(c + sq , +sh)
         path.closeSubpath()
-        d[SignalDirection.OUT.value] = path
+        d[Direction.OUT.value] = path
         # bi
         path = QPainterPath()
         path.moveTo(c - wh      , -sh)
@@ -239,7 +239,7 @@ class DrawingScenePathsMixin:
         path.lineTo(c + wh + sh ,   0)
         path.lineTo(c + wh      , +sh)
         path.closeSubpath()
-        d[SignalDirection.BI.value] = path
+        d[Direction.BI.value] = path
 
     def _connVtxPath(
         self : "DrawingScene",

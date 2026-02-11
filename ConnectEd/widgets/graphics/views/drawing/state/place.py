@@ -5,7 +5,7 @@ from PyQt6.QtCore import QPoint, QPointF
 
 from ......app import logger
 
-from ......core.types import SignalDirection
+from ......core.types import Direction
 
 from .....dialogs.items.port_pin import PortPinItemDialog
 from .....dialogs.items.gate     import GateItemDialog
@@ -51,7 +51,7 @@ class DrawingViewStatePlacePort(ClickMixin, DrawingViewStateBase):
             item.setName(dialog.getName())
             item.setDirection(dialog.getDirection())
             item.setRotation(
-                180 if dialog.getDirection() == SignalDirection.IN else 0
+                180 if dialog.getDirection() == Direction.IN else 0
             )
             self.interact(
                 PlacePortInteraction(self.view, self._snap(s), item)

@@ -3,7 +3,7 @@ from typing import Self
 from PyQt6.QtWidgets import QWidget, QDialog, QVBoxLayout, QHBoxLayout, \
                             QLabel, QLineEdit, QComboBox
 
-from ....core.types import SignalDirection
+from ....core.types import Direction
 
 from ..components.layout.ok_cancel import OkCancelLayout
 
@@ -38,7 +38,7 @@ class PortPinItemDialog(QDialog):
         self._signal_dir_label = QLabel("Direction:")
         self._name_dir_layout.addWidget(self._signal_dir_label)
         self._signal_dir_combo = QComboBox()
-        self._signal_dir_combo.addItems([e.value for e in SignalDirection])
+        self._signal_dir_combo.addItems([e.value for e in Direction])
         self._name_dir_layout.addWidget(self._signal_dir_combo)
         self._dialog_layout.addLayout(self._name_dir_layout)
         self._ok_cancel_layout = OkCancelLayout(self)
@@ -55,5 +55,5 @@ class PortPinItemDialog(QDialog):
     def getName(self : Self) -> str:
         return self._name_edit.text()
 
-    def getDirection(self : Self) -> SignalDirection:
-        return SignalDirection(self._signal_dir_combo.currentText())
+    def getDirection(self : Self) -> Direction:
+        return Direction(self._signal_dir_combo.currentText())

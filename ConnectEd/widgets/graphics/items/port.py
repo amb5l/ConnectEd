@@ -5,7 +5,7 @@ from PyQt6.QtGui     import QAction
 
 from ....app         import settings
 
-from ....core.types import SignalDirection, BlockPinHandleId
+from ....core.types import Direction, BlockPinHandleId
 
 from .mixin.paint  import ItemPaintMixin
 from .mixin.pos    import ItemPosMixin
@@ -54,7 +54,7 @@ class PortItem(
     def onSceneChange(self : Self, scene : "DrawingScene") -> None:
         self._setPath(scene)
 
-    def setDirection(self : Self, value : "SignalDirection") -> None:
+    def setDirection(self : Self, value : "Direction") -> None:
         PortPinMixin.setDirection(self, value)
         self._setPath()
 

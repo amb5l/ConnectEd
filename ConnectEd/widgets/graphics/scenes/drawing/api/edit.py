@@ -6,7 +6,7 @@ from PyQt6.QtGui  import QColor
 from ......app import logger
 
 from ......core.types import Default, NoChange, NO_CHANGE, AlignH, AlignV, \
-                             EdgeLoc, SignalDirection
+                             EdgeLoc, Direction
 from ......core.xml   import copy
 
 from ....properties import PropertyDisplay, PropertiesMixin
@@ -134,7 +134,7 @@ class DrawingSceneApiEditMixin:
         self      : "DrawingScene",
         item      : PortPinMixin,
         name      : str,
-        direction : SignalDirection,
+        direction : Direction,
         undoable  : bool = False
     ) -> None:
         cmd = CmdEditPortPin(self, item, name, direction)

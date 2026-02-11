@@ -210,7 +210,7 @@ def str2val(s : str, t : str) -> Any:
     Note: "subtypes" are substituted here; they exist to facilitate
     table view delegates.
     """
-    from ..core.types import DEFAULT, AlignH, AlignV, Edge, EdgeLoc, SignalDirection
+    from ..core.types import DEFAULT, AlignH, AlignV, Edge, EdgeLoc, Direction
     from ..widgets.graphics.properties import PropertyDisplay
     def strValuesToFloats(s : str) -> list[float]:
         return [float(p) for p in s.strip("()").split(",")]
@@ -243,7 +243,7 @@ def str2val(s : str, t : str) -> Any:
         case "AlignV"          : return AlignV.fromStr(s)
         case "Edge"            : return Edge(s)
         case "EdgeLoc"         : return EdgeLoc.fromStr(s)
-        case "SignalDirection" : return SignalDirection(s)
+        case "SignalDirection" : return Direction(s)
         case _:
             raise ValueError(f"Unsupported type: {t}")
 

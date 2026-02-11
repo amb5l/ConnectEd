@@ -3,7 +3,7 @@ from typing import Self
 from PyQt6.QtWidgets import QGraphicsItem, QGraphicsPathItem
 
 from ....core.defs  import PITCH
-from ....core.types import SignalDirection
+from ....core.types import Direction
 
 from ..properties import InherentProperty
 
@@ -36,7 +36,7 @@ class BasePinArrowItem(
     QGraphicsPathItem
 ):
     # instance attributes
-    _direction : SignalDirection
+    _direction : Direction
 
     def __init__(self : Self, parent : QGraphicsItem | None = None) -> None:
         QGraphicsPathItem.__init__(self, parent)
@@ -44,7 +44,7 @@ class BasePinArrowItem(
         self.initChange()
         self.initLine()
         self.initFill()
-        self._direction = SignalDirection.BI
+        self._direction = Direction.BI
 
     def onSceneChange(self : Self, scene : "DrawingScene") -> None:
         self._setPath(scene)
@@ -54,10 +54,10 @@ class BasePinArrowItem(
         if parent and parent.isSelected() != selected:
             parent.setSelected(selected)
 
-    def direction(self : Self) -> SignalDirection:
+    def direction(self : Self) -> Direction:
         return self._direction
 
-    def setDirection(self : Self, value : SignalDirection) -> None:
+    def setDirection(self : Self, value : Direction) -> None:
         self._direction = value
         self._setPath()
 
@@ -93,7 +93,7 @@ class BasePinItem(ItemPaintMixin, PortPinMixin, QGraphicsPathItem):
         else:
             self._arrow = None
 
-    def setDirection(self : Self, value : SignalDirection) -> None:
+    def setDirection(self : Self, value : Direction) -> None:
         super().setDirection(value)
         if self._arrow is not None:
             self._arrow.setDirection(value)

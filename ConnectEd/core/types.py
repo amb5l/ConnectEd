@@ -67,7 +67,7 @@ class EdgeLoc:
 
 
 # TODO: consider passive, 3-state etc for EE schematics
-class SignalDirection(Enum):
+class Direction(Enum):
     NONE = None
     IN   = "in"
     OUT  = "out"
