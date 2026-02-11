@@ -5,9 +5,8 @@ from PyQt6.QtGui  import QColor
 from .....properties import PropertyDisplay, PropertyState, PropertyEdit, \
                             PropertiesMixin
 
-from .......core import Text, TextLine
-
-from .......core.types import NoChange, NO_CHANGE, AlignH, AlignV
+from .......core.types import NoChange, NO_CHANGE, \
+                              AlignH, AlignV, Text
 
 from .. import CmdBase
 
@@ -50,7 +49,7 @@ class CmdAddProperty(CmdPropertyBase):
     ):
         super().__init__(object)
         if isinstance(value, str):
-            value = TextLine(value)
+            value = Text(value, False)
         state_args = {
             k: v for k, v in locals().items() \
                 if k in PropertyState.__dataclass_fields__.keys()

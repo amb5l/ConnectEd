@@ -41,9 +41,9 @@ from PyQt6.QtCore import QObject, pyqtSignal, QPointF
 from PyQt6.QtGui  import QColor
 
 from ...app  import logger
-from ...core import Text
 
-from ...core.types import Default, DEFAULT, NoChange, NO_CHANGE, AlignH, AlignV
+from ...core.types import Default, DEFAULT, NoChange, NO_CHANGE, \
+                          AlignH, AlignV, Text
 
 from .items import ItemType
 
