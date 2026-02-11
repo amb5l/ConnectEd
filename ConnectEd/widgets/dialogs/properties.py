@@ -13,7 +13,7 @@ from ...core.utils import snake2proper
 from ..graphics.properties import PropertyDisplay, PropertyState, \
                                   PropertyAdd, PropertyEdit, PropertyDelete
 
-from ..graphics.items import DEFAULT, AlignH, AlignV
+from ...core.types import DEFAULT, AlignH, AlignV
 
 from ..graphics.items.mixin.handle import ItemRectHandlesMixin
 

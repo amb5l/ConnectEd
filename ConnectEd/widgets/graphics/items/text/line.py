@@ -6,7 +6,7 @@ from PyQt6.QtWidgets import QGraphicsItem, QGraphicsSimpleTextItem, \
                             QStyleOptionGraphicsItem, QStyle, QWidget
 from PyQt6.QtGui     import QColor, QPainterPath, QPainter
 
-from .. import AlignH, AlignV
+from .....core.types import AlignH, AlignV
 
 from ..mixin.bound  import ItemBoundMixin
 from ..mixin.shape  import ItemShapeMixin

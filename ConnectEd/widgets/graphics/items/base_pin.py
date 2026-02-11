@@ -2,11 +2,10 @@ from typing import Self
 
 from PyQt6.QtWidgets import QGraphicsItem, QGraphicsPathItem
 
-from ....core.defs import PITCH
+from ....core.defs  import PITCH
+from ....core.types import SignalDirection
 
 from ..properties import InherentProperty
-
-from . import SignalDirection
 
 from .port_pin import PortPinMixin
 

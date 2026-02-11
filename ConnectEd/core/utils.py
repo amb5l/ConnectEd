@@ -210,8 +210,7 @@ def str2val(s : str, t : str) -> Any:
     Note: "subtypes" are substituted here; they exist to facilitate
     table view delegates.
     """
-    from ..widgets.graphics.items import \
-        DEFAULT, AlignH, AlignV, Edge, EdgeLoc, SignalDirection
+    from ..core.types import DEFAULT, AlignH, AlignV, Edge, EdgeLoc, SignalDirection
     from ..widgets.graphics.properties import PropertyDisplay
     def strValuesToFloats(s : str) -> list[float]:
         return [float(p) for p in s.strip("()").split(",")]

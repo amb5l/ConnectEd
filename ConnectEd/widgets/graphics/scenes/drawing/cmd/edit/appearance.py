@@ -5,7 +5,7 @@ from PyQt6.QtCore    import Qt
 from PyQt6.QtWidgets import QGraphicsItem
 from PyQt6.QtGui     import QColor
 
-from .....items import Default, NoChange, NO_CHANGE
+from .......core.types import Default, NoChange, NO_CHANGE
 
 from .. import CmdSceneItems
 

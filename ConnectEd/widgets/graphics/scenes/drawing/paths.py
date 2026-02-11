@@ -3,9 +3,8 @@ from PyQt6.QtGui  import QPainterPath, QPolygonF, QPainterPathStroker
 
 from .....app import settings
 
-from .....core.defs import WIDTH, PITCH
-
-from ...items import SignalDirection
+from .....core.defs  import WIDTH, PITCH
+from .....core.types import SignalDirection
 
 from ...items.base_pin import _PIN_DOT_SIZE, _PIN_CLK_SIZE, \
                               _EXT_ARROW_SIZE, _INT_ARROW_SIZE

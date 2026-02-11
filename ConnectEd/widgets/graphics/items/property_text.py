@@ -7,12 +7,13 @@ from PyQt6.QtGui     import QAction, QColor
 
 from ....app import settings, logger
 
-from ....core.types import HandleId, RectHandleId
+from ....core.types import Default, DEFAULT, NO_CHANGE, AlignH, AlignV, \
+                           HandleId, RectHandleId
 from ....core.utils import val2str
 
 from ..properties import InherentProperty, PropertiesMixin
 
-from . import ItemType, Default, DEFAULT, NO_CHANGE, AlignH, AlignV
+from . import ItemType
 
 from .text   import TextItem
 from .handle import HandleItem

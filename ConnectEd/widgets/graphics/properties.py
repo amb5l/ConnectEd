@@ -43,8 +43,9 @@ from PyQt6.QtGui  import QColor
 from ...app  import logger
 from ...core import Text
 
-from .items import ItemType, Default, DEFAULT, NoChange, NO_CHANGE, AlignH, AlignV
+from ...core.types import Default, DEFAULT, NoChange, NO_CHANGE, AlignH, AlignV
 
+from .items import ItemType
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:

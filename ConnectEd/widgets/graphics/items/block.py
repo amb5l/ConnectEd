@@ -4,11 +4,9 @@ from PyQt6.QtCore    import QPointF
 from PyQt6.QtWidgets import QMenu
 from PyQt6.QtGui     import QAction
 
-from ....core.types import RectHandleId
+from ....core.types import EdgeLoc, Edge, RectHandleId
 
 from ..properties import PropertyTextSpec, InherentProperty
-
-from . import EdgeLoc, Edge
 
 from .base_rect import BaseRectangleItem
 

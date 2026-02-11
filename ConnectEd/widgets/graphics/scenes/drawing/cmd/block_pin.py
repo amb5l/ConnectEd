@@ -1,6 +1,6 @@
 from typing import Self
 
-from ....items import EdgeLoc
+from ......core.types import EdgeLoc
 
 from ....items.block     import BlockItem
 from ....items.block_pin import BlockPinItem

@@ -4,7 +4,7 @@ from PyQt6.QtCore    import Qt
 from PyQt6.QtWidgets import QWidget, QDialog, QGroupBox, QVBoxLayout
 from PyQt6.QtGui     import QShowEvent, QColor
 
-from ..graphics.items import Default, NoChange
+from ...core.types import Default, NoChange
 
 from ..graphics.items.mixin.line  import ItemLineMixin
 from ..graphics.items.mixin.fill  import ItemFillMixin

@@ -5,11 +5,13 @@ from PyQt6.QtCore import QPoint, QPointF
 
 from ......app import logger
 
+from ......core.types import SignalDirection
+
 from .....dialogs.items.port_pin import PortPinItemDialog
 from .....dialogs.items.gate     import GateItemDialog
 from .....dialogs.items.text     import TextItemDialog
 
-from ....items            import SignalDirection, ItemMixin
+from ....items            import ItemMixin
 from ....items.port       import PortItem
 from ....items.gate       import GateFunc, BufGateItem, AndGateItem, OrGateItem, XorGateItem
 from ....items.block      import BlockItem

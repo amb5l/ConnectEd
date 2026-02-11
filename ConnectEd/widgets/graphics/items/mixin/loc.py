@@ -5,9 +5,9 @@ from PyQt6.QtWidgets import QGraphicsItem
 
 from .....app import logger
 
-from ...properties import InherentProperty
+from .....core.types import EdgeLoc, Edge
 
-from .. import EdgeLoc, Edge
+from ...properties import InherentProperty
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:

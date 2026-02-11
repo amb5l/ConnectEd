@@ -2,7 +2,7 @@ from typing import Self
 
 from PyQt6.QtWidgets import QWidget, QComboBox
 
-from ....graphics.items import NoChange, Default, DEFAULT, NO_CHANGE
+from .....core.types import Default, DEFAULT, NoChange, NO_CHANGE
 
 
 class OnOffComboBox(QComboBox):

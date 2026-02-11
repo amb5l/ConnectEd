@@ -6,7 +6,7 @@ from PyQt6.QtGui     import QColor
 
 from .....app import logger
 
-from ....graphics.items import Default, DEFAULT, NoChange
+from .....core.types import Default, DEFAULT, NoChange
 
 from ..combo.color      import ColorComboBox
 from ..combo.fill_style import FillStyleComboBox

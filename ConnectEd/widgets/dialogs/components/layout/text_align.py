@@ -2,7 +2,7 @@ from typing import Self
 
 from PyQt6.QtWidgets import QGridLayout, QHBoxLayout, QButtonGroup, QLabel
 
-from ....graphics.items import AlignH, AlignV
+from .....core.types import AlignH, AlignV
 
 from .....resources.icons import TextAlignLeftIcon,   \
                                  TextAlignCenterIcon, \

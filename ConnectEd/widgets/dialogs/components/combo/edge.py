@@ -2,7 +2,8 @@ from typing import Self
 
 from PyQt6.QtWidgets import QWidget, QComboBox
 
-from ....graphics.items import Edge
+from .....core.types import Edge
+
 
 class EdgeComboBox(QComboBox):
     def __init__(self : Self,

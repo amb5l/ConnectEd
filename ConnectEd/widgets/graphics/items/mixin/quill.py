@@ -6,9 +6,9 @@ from PyQt6.QtGui  import QFont, QColor
 
 from .....app import logger, settings
 
-from ...properties import InherentProperty
+from .....core.types import Default, DEFAULT
 
-from .. import Default, DEFAULT
+from ...properties import InherentProperty
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:

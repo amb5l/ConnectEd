@@ -1,13 +1,13 @@
 from typing import Self
 from math   import asin, degrees, copysign
 
-
 from PyQt6.QtCore    import QPointF, QLineF
 from PyQt6.QtWidgets import QGraphicsLineItem
 
-from ......core.xml import paste
+from ......core.types import EdgeLoc
+from ......core.xml   import paste
 
-from ....items import EdgeLoc, clone
+from ....items import clone
 
 from ....items.block     import BlockItem
 from ....items.block_pin import BlockPinItem

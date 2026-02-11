@@ -5,7 +5,7 @@ from PyQt6.QtWidgets import QGraphicsItem, QGraphicsTextItem, \
                             QGraphicsSceneContextMenuEvent
 from PyQt6.QtGui     import QColor, QPainterPath
 
-from .. import AlignV
+from .....core.types import AlignV
 
 from ..mixin.bound  import ItemBoundMixin
 from ..mixin.shape  import ItemShapeMixin

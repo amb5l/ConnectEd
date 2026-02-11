@@ -4,7 +4,7 @@ from PyQt6.QtCore    import Qt
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QGridLayout, QLabel
 from PyQt6.QtGui     import QFont, QColor
 
-from ....graphics.items import Default, DEFAULT, NoChange, NO_CHANGE
+from .....core.types import Default, DEFAULT, NoChange, NO_CHANGE
 
 from ..combo.color       import ColorComboBox
 from ..combo.font_family import FontFamilyComboBox

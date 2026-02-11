@@ -5,7 +5,7 @@ from PyQt6.QtGui     import QAction
 
 from ....app         import settings
 
-from ....core.types import BlockPinHandleId
+from ....core.types import SignalDirection, BlockPinHandleId
 
 from .mixin.paint  import ItemPaintMixin
 from .mixin.pos    import ItemPosMixin
@@ -18,7 +18,6 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ..views.drawing import DrawingView
     from ..scenes.drawing import DrawingScene
-    from . import SignalDirection
 
 
 class PortItem(

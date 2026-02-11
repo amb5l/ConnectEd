@@ -9,7 +9,8 @@ from PyQt6.QtCore    import QPointF, QRectF
 from PyQt6.QtWidgets import QGraphicsItem, QMenu
 from PyQt6.QtGui     import QColor, QFont, QAction, QPainterPath
 
-from .....core.types import RectHandleId
+from .....core.types import Default, DEFAULT, NoChange, NO_CHANGE, \
+                            AlignH, AlignV,RectHandleId
 
 from .....resources.icons import AnchorTopLeftIcon,      \
                                  AnchorTopCenterIcon,    \
@@ -28,8 +29,6 @@ from .....resources.icons import AnchorTopLeftIcon,      \
                                  TextAlignBottomIcon
 
 from ...properties import InherentProperty, PropertiesMixin
-
-from .. import Default, DEFAULT, NoChange, NO_CHANGE, AlignH, AlignV
 
 from ..mixin         import ItemMixin
 from ..mixin.origin  import ItemOriginMixin

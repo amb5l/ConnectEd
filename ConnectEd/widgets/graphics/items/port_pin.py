@@ -2,11 +2,9 @@ from typing import Self
 
 from PyQt6.QtCore import QPointF
 
-from ....core.types import BlockPinHandleId
+from ....core.types import SignalDirection, BlockPinHandleId
 
 from ..properties import PropertyTextSpec, InherentProperty, PropertiesMixin
-
-from . import SignalDirection
 
 from .handle        import HandleItem
 from .entry         import EntryItem

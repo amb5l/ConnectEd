@@ -5,12 +5,13 @@ from PyQt6.QtGui  import QColor
 
 from ......app import logger
 
-from ......core.xml import copy
+from ......core.types import Default, NoChange, NO_CHANGE, AlignH, AlignV, \
+                             EdgeLoc, SignalDirection
+from ......core.xml   import copy
 
 from ....properties import PropertyDisplay, PropertiesMixin
 
-from ....items import ItemType, Default, NoChange, NO_CHANGE, AlignH, AlignV, \
-                      EdgeLoc, SignalDirection
+from ....items import ItemType
 
 from ....items.block         import BlockItem
 from ....items.port_pin      import PortPinMixin

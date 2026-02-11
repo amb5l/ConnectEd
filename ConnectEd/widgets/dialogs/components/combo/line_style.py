@@ -8,7 +8,7 @@ from .....app import logger
 
 from .....core.icon import getFgBgColors
 
-from ....graphics.items import NoChange, Default, DEFAULT, NO_CHANGE
+from .....core.types import Default, DEFAULT, NoChange, NO_CHANGE
 
 from .. import CUSTOM_ICON_SIZE, NoChangeIcon, DefaultIcon
 

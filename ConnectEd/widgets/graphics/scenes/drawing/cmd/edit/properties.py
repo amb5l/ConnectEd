@@ -7,7 +7,7 @@ from .....properties import PropertyDisplay, PropertyState, PropertyEdit, \
 
 from .......core import Text, TextLine
 
-from .....items import NoChange, NO_CHANGE, AlignH, AlignV
+from .......core.types import NoChange, NO_CHANGE, AlignH, AlignV
 
 from .. import CmdBase
 

@@ -6,7 +6,7 @@ from PyQt6.QtGui     import QColor
 
 from .. import CmdSceneItem
 
-from .....items import Default, NoChange, NO_CHANGE
+from .......core.types import Default, NoChange, NO_CHANGE
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:

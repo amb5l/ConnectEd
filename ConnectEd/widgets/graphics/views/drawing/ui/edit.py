@@ -2,12 +2,12 @@ from PyQt6.QtCore    import Qt, QPoint, QPointF
 from PyQt6.QtWidgets import QApplication, QGraphicsItem
 from PyQt6.QtGui     import QCursor
 
+from ......core.types import NoChange, NO_CHANGE, AlignH, AlignV
+
 from ....query import QueryWindow
 
 from ..interaction      import RotateItemMixin
 from ..interaction.edit import EditMoveInteraction
-
-from ....items import NoChange, NO_CHANGE, AlignH, AlignV
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:

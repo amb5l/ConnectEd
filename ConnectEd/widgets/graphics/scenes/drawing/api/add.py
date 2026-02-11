@@ -3,9 +3,11 @@ from typing import Any
 from PyQt6.QtCore import QPointF
 from PyQt6.QtGui  import QColor
 
+from ......core.types import Default, AlignH, AlignV
+
 from ....properties import PropertyDisplay, PropertiesMixin
 
-from ....items import ItemType, Default, AlignH, AlignV
+from ....items import ItemType
 
 from ....items.block     import BlockItem
 from ....items.block_pin import BlockPinItem

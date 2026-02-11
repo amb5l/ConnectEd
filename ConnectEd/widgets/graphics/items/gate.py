@@ -5,11 +5,11 @@ from PyQt6.QtCore    import QPointF
 from PyQt6.QtWidgets import QGraphicsPathItem, QMenu
 from PyQt6.QtGui     import QAction
 
+from ....core.types import SignalDirection
+
 from ..properties import InherentProperty, PropertiesMixin
 
 from ..painter_path import PainterPath
-
-from . import SignalDirection
 
 from .gate_pin import GatePinItem
 

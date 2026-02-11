@@ -1,13 +1,12 @@
 from typing      import Self
-from dataclasses import dataclass
 
 from PyQt6.QtGui import QColor
 
-from .. import CmdSceneItem
-
-from .....items import Default, NoChange, NO_CHANGE, AlignH, AlignV
+from .......core.types import Default, NoChange, NO_CHANGE, AlignH, AlignV
 
 from .....items.text import TextItem, TextState, TextChange
+
+from .. import CmdSceneItem
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:

@@ -1,6 +1,6 @@
 from typing import Any
 
-from ..graphics.items import NO_CHANGE
+from ...core.types import NO_CHANGE
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:

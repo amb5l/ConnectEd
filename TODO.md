@@ -1,6 +1,18 @@
+various/no change in combos; _combinedValue
+global types
+handle/Enum
+combo consolidation
+new layout structure
+new editors
+new properties dialog
+	delegate change
+typeguard
+raise vs logger
+handle empty strings for Text (replace with space?)
 tidy up utils.py (redundant functions)
-
 argument default to QPointF(0,0) = change to None
+batch geometry changes
+test property editing
 
 ================================================================================
 prepareGeometryChange / onGeometryChange batching
