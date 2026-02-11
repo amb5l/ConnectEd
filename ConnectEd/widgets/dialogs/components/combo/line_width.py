@@ -8,6 +8,7 @@ from .....app import logger
 
 from .....core.types import Default, DEFAULT, NoChange, NO_CHANGE
 from .....core.icon  import getFgBgColors
+from .....core.utils import val2str
 
 from .. import CUSTOM_ICON_SIZE, NoChangeIcon, DefaultIcon, QueryIcon
 
@@ -15,74 +16,68 @@ from ...line_width import LineWidthDialog
 
 
 class LineWidthComboBox(QComboBox):
-    WIDTHS = {
-        "<no change>" : NO_CHANGE,
-        "<default>"   : DEFAULT,
-        "<custom>"    : "placeholder",
-        "1"           : 1,
-        "2"           : 2,
-        "3"           : 3
-    }
-
     def __init__(
         self      : Self,
-        initial   : NoChange | Default | float | int,
-        default   : Default | float | int,
+        initial   : float | int | Default | NoChange,
+        default   : float | int | NoChange,
         parent    : QWidget | None = None
     ) -> None:
         super().__init__(parent)
+        if isinstance(initial, int):
+            initial = float(initial)
+        if isinstance(default, int):
+            default = float(default)
         self.setIconSize(CUSTOM_ICON_SIZE)
-        if isinstance(default, float | int):
-            default_icon = self.getIcon(default)
-            default_str = f" = {default}"
-        else:
-            default_icon = DefaultIcon().get()
-            default_str = ""
-        if isinstance(initial, float | int):
-            no_change_icon = self.getIcon(initial)
-            no_change_str = f" = {initial}"
-        elif initial is DEFAULT:
-            no_change_icon = default_icon
-            no_change_str = f" = default{default_str}"
-        else:
-            no_change_icon = NoChangeIcon().get()
-            no_change_str = ""
-        for i, (k, v) in enumerate(self.WIDTHS.items()):
-            match k:
-                case "<no change>":
-                    icon = no_change_icon
-                    text = f"<no change{no_change_str}>"
-                case "<default>":
-                    icon = default_icon
-                    text = f"<default{default_str}>"
-                case "<custom>":
-                    icon = QueryIcon().get()
-                    text = k
-                case _:
-                    icon = self.getIcon(v)
-                    text = f"{v}"
-            self.addItem(icon, text)
-            if initial == v:
-                self.setCurrentIndex(i)
-        self.setInsertPolicy(QComboBox.InsertPolicy.NoInsert)
-        self.activated.connect(self.onActivated)
+        # add no change option if applicable
+        if initial is NO_CHANGE:
+            self.addItem(NoChangeIcon().get(), "<no change>", NO_CHANGE)
+            current_idx = 0
+        # add default option
+        if initial is DEFAULT:
+            current_idx = self.count()
+        default_icon = self._getIcon(default) if isinstance(default, float) \
+            else DefaultIcon().get()
+        default_str = f" = {val2str(default)}" if isinstance(default, float) \
+            else ""
+        default_value = default if isinstance(default, float) else NO_CHANGE
+        self.addItem(default_icon, f"<default{default_str}>", default_value)
+        # add custom option
+        if isinstance(initial, float):
+            current_idx = self.count()
+        custom_icon = self._getIcon(initial) if isinstance(initial, float) \
+            else default_icon if isinstance(default, float) \
+            else QueryIcon().get()
+        custom_str = f" = {val2str(initial)}" if isinstance(initial, float) \
+            else default_str if isinstance(default, float) \
+            else ""
+        custom_value = initial if isinstance(initial, float) \
+            else default if isinstance(default, float) \
+            else None
+        self.addItem(custom_icon, f"<custom{custom_str}>", custom_value)
+        # add standard widths
+        for i in range(1, 4):
+            if initial == i:
+                current_idx = self.count()
+            self.addItem(self._getIcon(i), str(i), float(i))
+        # set current index
+        self.setCurrentIndex(current_idx)
+        self._choice = initial
+        self.activated.connect(self._onActivated)
 
-    def onActivated(self : Self, index : int) -> None:
-        keys = list(self.WIDTHS.keys())
-        if keys[index].startswith("<custom"):
+    def getChoice(self : Self) -> NoChange | Default | float | int:
+        return self.itemData(self.currentIndex(), Qt.ItemDataRole.UserRole)
+
+    def _onActivated(self : Self, index : int) -> None:
+        if self.currentText().startswith("<custom"):
             dialog = LineWidthDialog(parent=self)
             if dialog.exec():
                 w = dialog.getChoice()
-                self.setItemText(
-                    index,
-                    f"<custom = {w}>" if w is not None else "<custom>"
-                )
-                self.setItemIcon(
-                    index,
-                    QueryIcon().get() if w is None else self.getIcon(w)
-                )
+                if w is not None:
+                    self.setItemText(index, f"<custom = {val2str(w)}>")
+                    self.setItemIcon(index, self._getIcon(w))
+                    self.setItemData(index, w, Qt.ItemDataRole.UserRole)
 
-    def getIcon(self : Self, width : float | int) -> QIcon:
+    def _getIcon(self : Self, width : float | int) -> QIcon:
         fg, bg = getFgBgColors()
         size = self.iconSize()
         pixmap = QPixmap(size.width(), size.height())
@@ -94,19 +89,3 @@ class LineWidthComboBox(QComboBox):
                 0, size.height() // 2, size.width() - 1, size.height() // 2
             )
         return QIcon(pixmap)
-
-    def getChoice(self : Self) -> NoChange | Default | float | int:
-        text = self.currentText()
-        if text.startswith("<no change"):
-            r = NO_CHANGE
-        elif text.startswith("<default"):
-            r = DEFAULT
-        else:
-            try:
-                r = max(0.0, float(text))
-            except ValueError:
-                logger().warning(f"Invalid line width: {text}")
-                r = 0.0
-            if r.is_integer():
-                r = int(r)
-        return r
