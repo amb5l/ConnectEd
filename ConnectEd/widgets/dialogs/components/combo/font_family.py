@@ -5,8 +5,6 @@ from PyQt6.QtGui     import QFontDatabase
 
 from .....core.types import Default, DEFAULT, NoChange, NO_CHANGE
 
-from .. import CUSTOM_ICON_SIZE, NoChangeIcon, DefaultIcon
-
 
 class FontFamilyComboBox(QComboBox):
     def __init__(
@@ -16,7 +14,6 @@ class FontFamilyComboBox(QComboBox):
         parent  : QWidget | None = None
     ) -> None:
         super().__init__(parent)
-        self.setIconSize(CUSTOM_ICON_SIZE)
         # build default string and value
         default_str = f" = {default}" if isinstance(default, str) else ""
         default_value = default if isinstance(default, str) else NO_CHANGE

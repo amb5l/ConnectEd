@@ -8,7 +8,7 @@ from .....core.icon import getFgBgColors
 
 from .....core.types import Default, DEFAULT, NoChange, NO_CHANGE
 
-from .. import CUSTOM_ICON_SIZE, NoChangeIcon, DefaultIcon, QueryIcon
+from .. import CUSTOM_ICON_SIZE, NoChangeIcon, DefaultIcon
 
 
 class LineStyleComboBox(QComboBox):
