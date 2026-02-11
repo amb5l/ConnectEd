@@ -45,9 +45,9 @@ class AppearanceDialog(QDialog):
             if category_count > 1:
                 line_group_title = f"Line ({category_counts['line']} item" \
                     "{'s' if category_counts['line'] > 1 else ''})"
-                self.line_group_box = QGroupBox(line_group_title)
+                self._line_group_box = QGroupBox(line_group_title)
             else:
-                self.line_group_box = None
+                self._line_group_box = None
             self._line_layout = LineAppearanceLayout(
                 _combinedValue(items, "lineColor"),
                 _combinedValue(items, "lineWidth"),
@@ -57,12 +57,12 @@ class AppearanceDialog(QDialog):
                 _combinedValue(items, "defaultLineStyle")
             )
             if category_count > 1:
-                self.line_group_box.setLayout(self._line_layout)
-                self._dialog_layout.addWidget(self.line_group_box)
+                self._line_group_box.setLayout(self._line_layout)
+                self._dialog_layout.addWidget(self._line_group_box)
             else:
                 self._dialog_layout.addLayout(self._line_layout)
         else:
-            self.line_group_box = None
+            self._line_group_box = None
             self._line_layout   = None
         if category_counts["fill"] > 0:
             self._fill_group_box = QGroupBox("Fill") if category_count > 1 else None
