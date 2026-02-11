@@ -14,9 +14,7 @@ from .. import CUSTOM_ICON_SIZE, NoChangeIcon, DefaultIcon
 
 
 class LineStyleComboBox(QComboBox):
-    STYLES = {
-        "<no change>"    : NO_CHANGE,
-        "<default>"      : DEFAULT,
+    _STYLES = {
         "No Line"      : Qt.PenStyle.NoPen,
         "Solid"        : Qt.PenStyle.SolidLine,
         "Dash"         : Qt.PenStyle.DashLine,
@@ -24,51 +22,41 @@ class LineStyleComboBox(QComboBox):
         "Dash Dot"     : Qt.PenStyle.DashDotLine,
         "Dash Dot Dot" : Qt.PenStyle.DashDotDotLine
     }
-    STYLES_REVERSE = {v: k for k, v in STYLES.items()}
+    _STYLES_REV = {v: k for k, v in _STYLES.items()}
 
     def __init__(
         self      : Self,
-        initial   : NoChange | Default | Qt.PenStyle,
-        default   : Default | Qt.PenStyle,
+        initial   : Qt.PenStyle | Default | NoChange,
+        default   : Qt.PenStyle | NoChange,
         parent    : QWidget | None = None
     ) -> None:
         super().__init__(parent)
         self.setIconSize(CUSTOM_ICON_SIZE)
-        # Determine default icon and string
-        if isinstance(default, Qt.PenStyle):
-            default_icon = self.getIcon(default)
-            default_str = f" = {self.STYLES_REVERSE[default]}"
-        else:
-            default_icon = DefaultIcon().get()
-            default_str = ""
-        # Determine no_change icon and string from initial
-        if isinstance(initial, Qt.PenStyle):
-            no_change_icon = self.getIcon(initial)
-            no_change_str = f" = {self.STYLES_REVERSE[initial]}"
-        elif initial is DEFAULT:
-            no_change_icon = default_icon
-            no_change_str = f" = default{default_str}"
-        else:  # NO_CHANGE
-            no_change_icon = NoChangeIcon().get()
-            no_change_str = ""
-        idx = 0
-        for k, v in self.STYLES.items():
-            match k:
-                case "<no change>":
-                    icon = no_change_icon
-                    text = f"<no change{no_change_str}>"
-                case "<default>":
-                    icon = default_icon
-                    text = f"<default{default_str}>"
-                case _:
-                    icon = self.getIcon(v)
-                    text = k
-            self.addItem(icon, text)
+        # add no change option if applicable
+        if initial is NO_CHANGE:
+            self.addItem(NoChangeIcon().get(), "<no change>", NO_CHANGE)
+            current_idx = 0
+        # add default option
+        if initial is DEFAULT:
+            current_idx = self.count()
+        default_icon = self._getIcon(default) \
+            if isinstance(default, Qt.PenStyle) else DefaultIcon().get()
+        default_str = f" = {self._STYLES_REV[default]}" \
+            if isinstance(default, Qt.PenStyle) else ""
+        default_value = default if isinstance(default, Qt.PenStyle) else NO_CHANGE
+        self.addItem(default_icon, f"<default{default_str}>", default_value)
+        # add standard styles
+        for k, v in self._STYLES.items():
             if initial == v:
-                self.setCurrentIndex(idx)
-            idx += 1
+                current_idx = self.count()
+            self.addItem(self._getIcon(v), k, v)
+        # set current index
+        self.setCurrentIndex(current_idx)
 
-    def getIcon(self : Self, style : Qt.PenStyle) -> QIcon:
+    def getChoice(self : Self) -> Qt.PenStyle | Default | NoChange:
+        return self.itemData(self.currentIndex(), Qt.ItemDataRole.UserRole)
+
+    def _getIcon(self : Self, style : Qt.PenStyle) -> QIcon:
         fg, bg = getFgBgColors()
         size = self.iconSize()
         pixmap = QPixmap(size.width(), size.height())
@@ -80,16 +68,3 @@ class LineStyleComboBox(QComboBox):
                 0, size.height() // 2, size.width() - 1, size.height() // 2
             )
         return QIcon(pixmap)
-
-    def getChoice(self : Self) -> Qt.PenStyle | Default | NoChange:
-        text = self.currentText()
-        if text.startswith("<no change"):
-            return NO_CHANGE
-        elif text.startswith("<default"):
-            return DEFAULT
-        else:
-            keys = list(self.STYLES.keys())
-            if text in keys:
-                return self.STYLES[text]
-            logger().warning(f"Invalid line style: {text}")
-            return Qt.PenStyle.SolidLine
