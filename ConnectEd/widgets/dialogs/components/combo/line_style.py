@@ -4,8 +4,6 @@ from PyQt6.QtCore    import Qt
 from PyQt6.QtWidgets import QWidget, QComboBox
 from PyQt6.QtGui     import QIcon, QPixmap, QPainter, QPen
 
-from .....app import logger
-
 from .....core.icon import getFgBgColors
 
 from .....core.types import Default, DEFAULT, NoChange, NO_CHANGE
