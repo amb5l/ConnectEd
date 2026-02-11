@@ -10,7 +10,7 @@ from .....core.types import Default, DEFAULT, NoChange, NO_CHANGE
 
 from .. import CUSTOM_ICON_SIZE, NoChangeIcon, DefaultIcon, QueryIcon
 
-from ..dialog import CustomColorDialog
+from ...color import ColorDialog
 
 
 class ColorComboBox(QComboBox):
@@ -86,7 +86,7 @@ class ColorComboBox(QComboBox):
         elif selected_text.startswith("<default"):
             self._choice = DEFAULT
         elif selected_text.startswith("<custom"):
-            dialog = CustomColorDialog(
+            dialog = ColorDialog(
                 self._choice if isinstance(self._choice, QColor) else None,
                 parent=self
             )

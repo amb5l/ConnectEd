@@ -11,7 +11,7 @@ from .....core.icon  import getFgBgColors
 
 from .. import CUSTOM_ICON_SIZE, NoChangeIcon, DefaultIcon, QueryIcon
 
-from ..dialog import CustomLineWidthDialog
+from ...line_width import LineWidthDialog
 
 
 class LineWidthComboBox(QComboBox):
@@ -70,7 +70,7 @@ class LineWidthComboBox(QComboBox):
     def onActivated(self : Self, index : int) -> None:
         keys = list(self.WIDTHS.keys())
         if keys[index].startswith("<custom"):
-            dialog = CustomLineWidthDialog(parent=self)
+            dialog = LineWidthDialog(parent=self)
             if dialog.exec():
                 w = dialog.getChoice()
                 self.setItemText(
