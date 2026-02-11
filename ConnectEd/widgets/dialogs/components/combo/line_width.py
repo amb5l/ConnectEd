@@ -4,15 +4,13 @@ from PyQt6.QtCore    import Qt
 from PyQt6.QtWidgets import QWidget, QComboBox
 from PyQt6.QtGui     import QIcon, QPixmap, QPainter, QPen
 
-from .....app import logger
-
 from .....core.types import Default, DEFAULT, NoChange, NO_CHANGE
 from .....core.icon  import getFgBgColors
 from .....core.utils import val2str
 
 from .. import CUSTOM_ICON_SIZE, NoChangeIcon, DefaultIcon, QueryIcon
 
-from ...line_width import LineWidthDialog
+from ...float import FloatDialog
 
 
 class LineWidthComboBox(QComboBox):
@@ -61,7 +59,6 @@ class LineWidthComboBox(QComboBox):
             self.addItem(self._getIcon(i), str(i), float(i))
         # set current index
         self.setCurrentIndex(current_idx)
-        self._choice = initial
         self.activated.connect(self._onActivated)
 
     def getChoice(self : Self) -> NoChange | Default | float | int:
@@ -69,7 +66,7 @@ class LineWidthComboBox(QComboBox):
 
     def _onActivated(self : Self, index : int) -> None:
         if self.currentText().startswith("<custom"):
-            dialog = LineWidthDialog(parent=self)
+            dialog = FloatDialog(title="Line Width", parent=self)
             if dialog.exec():
                 w = dialog.getChoice()
                 if w is not None:
