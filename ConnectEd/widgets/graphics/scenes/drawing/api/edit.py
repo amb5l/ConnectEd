@@ -105,9 +105,10 @@ class DrawingSceneApiEditMixin:
             logger().warning("No items selected to cut")
 
     def editCopy(
-        self     : "DrawingScene",
-        pos      : QPointF = QPointF(0, 0)
+        self : "DrawingScene",
+        pos  : QPointF | None = None
     ) -> None:
+        pos = pos or QPointF(0, 0)
         items = \
             [item for item in self.selectedItems() \
                 if hasattr(item, "toXml") \
