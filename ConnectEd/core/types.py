@@ -3,9 +3,7 @@ from dataclasses import dataclass
 from enum        import Enum, StrEnum
 
 from PyQt6.QtCore    import Qt
-from PyQt6.QtWidgets import QGraphicsItem
-
-from ..widgets.graphics.items import ItemMixin
+from PyQt6.QtGui     import QColor
 
 
 class Default:
@@ -115,6 +113,7 @@ class SymbolPinHandleId(HandleId):
     NAME   = "Name"    # set just in from placement origin
 
 
+Color = QColor | Default | NoChange
 LineWidth = float | Default
 PenStyle = Qt.PenStyle | Default
 BrushStyle = Qt.BrushStyle | Default
