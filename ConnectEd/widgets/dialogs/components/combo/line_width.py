@@ -26,39 +26,46 @@ class LineWidthComboBox(QComboBox):
         if isinstance(default, int):
             default = float(default)
         self.setIconSize(CUSTOM_ICON_SIZE)
-        # add no change option if applicable
-        if initial is NO_CHANGE:
-            self.addItem(NoChangeIcon().get(), "<no change>", NO_CHANGE)
-            current_idx = 0
-        # add default option
-        if initial is DEFAULT:
-            current_idx = self.count()
+        # build default icon, string and value
         default_icon = self._getIcon(default) if isinstance(default, float) \
             else DefaultIcon().get()
         default_str = f" = {val2str(default)}" if isinstance(default, float) \
             else ""
         default_value = default if isinstance(default, float) else NO_CHANGE
-        self.addItem(default_icon, f"<default{default_str}>", default_value)
-        # add custom option
-        if isinstance(initial, float):
-            current_idx = self.count()
-        custom_icon = self._getIcon(initial) if isinstance(initial, float) \
-            else default_icon if isinstance(default, float) \
+        # build no change icon, string and value
+        no_change_icon = self._getIcon(initial) if isinstance(initial, float) \
+            else default_icon if initial is DEFAULT \
+            else NoChangeIcon().get()
+        no_change_str = f" = {val2str(initial)}" if isinstance(initial, float) \
+            else " = default" if initial is DEFAULT \
+            else ""
+        no_change_value = initial if isinstance(initial, float) \
+            else default_value if initial is DEFAULT \
+            else NO_CHANGE
+        # build custom icon, string and value
+        custom_icon = no_change_icon if isinstance(initial, float) \
+            else default_icon if initial is DEFAULT and isinstance(default, float) \
             else QueryIcon().get()
-        custom_str = f" = {val2str(initial)}" if isinstance(initial, float) \
-            else default_str if isinstance(default, float) \
+        custom_str = no_change_str if isinstance(initial, float) \
+            else default_str if initial is DEFAULT and isinstance(default, float) \
             else ""
         custom_value = initial if isinstance(initial, float) \
-            else default if isinstance(default, float) \
+            else default_value if initial is DEFAULT and isinstance(default, float) \
             else None
+        # add no change, default and custom entries
+        if initial is NO_CHANGE:
+            self.addItem(no_change_icon, f"<no change{no_change_str}>", no_change_value)
+        self.addItem(default_icon, f"<default{default_str}>", default_value)
         self.addItem(custom_icon, f"<custom{custom_str}>", custom_value)
-        # add standard widths
+        # add standard entries, set current index
+        self.setCurrentIndex(0)
+        if initial is not NO_CHANGE and initial is not DEFAULT:
+            self.setCurrentIndex(1)
         for i in range(1, 4):
-            if initial == i:
-                current_idx = self.count()
             self.addItem(self._getIcon(i), str(i), float(i))
-        # set current index
-        self.setCurrentIndex(current_idx)
+            if initial == i:
+                self.setCurrentIndex(self.count() - 1)
+        # enable custom dialog
         self.activated.connect(self._onActivated)
 
     def getChoice(self : Self) -> NoChange | Default | float | int:

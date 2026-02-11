@@ -1,4 +1,4 @@
-from typing      import Self
+from typing import Self, Any
 
 from PyQt6.QtGui import QColor
 
@@ -77,7 +77,6 @@ class CmdEditText(CmdSceneItem):
             self._item.setQuillItalic(self._after.italic)
         if self._after.underline is not NO_CHANGE:
             self._item.setQuillUnderline(self._after.underline)
-        self._item.update()
 
     def undo(self : Self) -> None:
         if self._after.text is not NO_CHANGE:
@@ -111,4 +110,3 @@ class CmdEditText(CmdSceneItem):
             self._item.setQuillItalic(self._before.italic)
         if self._after.underline is not NO_CHANGE:
             self._item.setQuillUnderline(self._before.underline)
-        self._item.update()

@@ -77,7 +77,7 @@ class AppearanceDialog(QDialog):
             self._fill_layout    = None
         if category_counts["text"] > 0:
             self._text_group_box = QGroupBox("Text") if category_count > 1 else None
-            self._text_layout = (
+            self._text_layout = TextAppearancePreviewLayout(
                 _combinedValue(items, "textColor"),
                 _combinedValue(items, "textFont"),
                 _combinedValue(items, "textSize"),

@@ -15,10 +15,11 @@ def _combinedValue(
 ) -> Any:
     result = None
     for item in items:
-        method = getattr(item, method_name)
-        value = method()
-        result = \
-            value if result is None else \
-            result if result == value else \
-            NO_CHANGE
+        method = getattr(item, method_name, None)
+        if method is not None:
+            value = method()
+            result = \
+                value if result is None else \
+                result if result == value else \
+                NO_CHANGE
     return result

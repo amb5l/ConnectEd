@@ -4,9 +4,9 @@ from PyQt6.QtCore    import Qt
 from PyQt6.QtWidgets import QWidget, QComboBox
 from PyQt6.QtGui     import QColor, QIcon, QPixmap, QPainter
 
-from .....core.utils import val2str
-
-from .....core.types import Default, DEFAULT, NoChange, NO_CHANGE
+from .....core.checks import checked
+from .....core.types  import Default, DEFAULT, NoChange, NO_CHANGE
+from .....core.utils  import val2str
 
 from .. import CUSTOM_ICON_SIZE, NoChangeIcon, DefaultIcon, QueryIcon
 
@@ -34,8 +34,7 @@ class ColorComboBox(QComboBox):
         "White"        : QColor(Qt.GlobalColor.white)
     }
 
-    _choice  : QColor | Default | NoChange
-
+    @checked
     def __init__(
         self    : Self,
         initial : QColor | Default | NoChange,
@@ -44,58 +43,69 @@ class ColorComboBox(QComboBox):
     ) -> None:
         super().__init__(parent)
         self.setIconSize(CUSTOM_ICON_SIZE)
-        # add no change option if applicable
-        if initial is NO_CHANGE:
-            self.addItem(NoChangeIcon().get(), "<no change>")
-            current_idx = 0
-        # add default option
-        if initial is DEFAULT:
-            current_idx = self.count()
+        # build default icon, string and value
         default_icon = self._getIcon(default) if isinstance(default, QColor) \
             else DefaultIcon().get()
         default_str = f" = {val2str(default)}" if isinstance(default, QColor) \
             else ""
-        self.addItem(default_icon, f"<default{default_str}>")
-        # add custom option
-        if isinstance(initial, QColor):
-            current_idx = self.count()
-        custom_icon = self._getIcon(initial) if isinstance(initial, QColor) \
-            else default_icon if isinstance(default, QColor) \
-            else QueryIcon().get()
-        custom_str = f" = {val2str(initial)}" if isinstance(initial, QColor) \
-            else default_str if isinstance(default, QColor) \
+        default_value = default if isinstance(default, QColor) else NO_CHANGE
+        # build no change icon, string and value
+        no_change_icon = self._getIcon(initial) if isinstance(initial, QColor) \
+            else default_icon if initial is DEFAULT \
+            else NoChangeIcon().get()
+        no_change_str = f" = {val2str(initial)}" if isinstance(initial, QColor) \
+            else " = default" if initial is DEFAULT \
             else ""
-        self.addItem(custom_icon, f"<custom{custom_str}>")
-        # add standard colors
+        no_change_value = initial if isinstance(initial, QColor) \
+            else default_value if initial is DEFAULT \
+            else NO_CHANGE
+        # build custom icon, string and value
+        custom_icon = no_change_icon if isinstance(initial, QColor) \
+            else default_icon if initial is DEFAULT and isinstance(default, QColor) \
+            else QueryIcon().get()
+        custom_str = no_change_str if isinstance(initial, QColor) \
+            else default_str if initial is DEFAULT and isinstance(default, QColor) \
+            else ""
+        custom_value = initial if isinstance(initial, QColor) \
+            else default_value if initial is DEFAULT and isinstance(default, QColor) \
+            else None
+        # add no change, default and custom entries
+        if initial is NO_CHANGE:
+            self.addItem(no_change_icon, f"<no change{no_change_str}>", no_change_value)
+        default_idx = self.count()
+        self.addItem(default_icon, f"<default{default_str}>", default_value)
+        custom_idx = self.count()
+        self.addItem(custom_icon, f"<custom{custom_str}>", custom_value)
+        # add standard entries, set current index
+        self.setCurrentIndex(0)
+        if initial is not NO_CHANGE and initial is not DEFAULT:
+            self.setCurrentIndex(1)
         for k, v in self._COLORS.items():
+            self.addItem(self._getIcon(v), k, v)
             if initial == v:
-                current_idx = self.count()
-            self.addItem(self._getIcon(v), k)
-        # set current index
-        self.setCurrentIndex(current_idx)
-        self._choice = initial
+                self.setItemText(custom_idx, f"<custom = {k}>")
+                self.setCurrentIndex(self.count() - 1)
+            if default == v:
+                self.setItemText(default_idx, f"<default = {k}>")
+        # enable custom dialog
         self.activated.connect(self._onActivated)
 
+    @checked
     def getChoice(self : Self) -> QColor | Default | NoChange:
-        return self._choice
+        return self.itemData(self.currentIndex(), Qt.ItemDataRole.UserRole)
 
     def _onActivated(self : Self, index : int) -> None:
-        selected_text = self.currentText()
-        if selected_text.startswith("<no change"):
-            self._choice = NO_CHANGE
-        elif selected_text.startswith("<default"):
-            self._choice = DEFAULT
-        elif selected_text.startswith("<custom"):
+        if self.currentText().startswith("<custom"):
+            color = self.getChoice()
             dialog = ColorDialog(
-                self._choice if isinstance(self._choice, QColor) else None,
+                color if isinstance(color, QColor) else None,
                 parent=self
             )
             if dialog.exec():
-                self._choice = dialog.getChoice()
-                self.setItemIcon(index, self._getIcon(self._choice))
-                self.setItemText(index, f"<custom = {val2str(self._choice)}>")
-        else:
-            self._choice = self._COLORS[selected_text]
+                color = dialog.getChoice()
+                self.setItemIcon(index, self._getIcon(color))
+                self.setItemText(index, f"<custom = {val2str(color)}>")
+                self.setItemData(index, color, Qt.ItemDataRole.UserRole)
 
     def _getIcon(self : Self, color : QColor) -> QIcon:
         size = self.iconSize()

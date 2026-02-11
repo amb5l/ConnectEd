@@ -1,3 +1,5 @@
+*** checks ***
+
 AppearanceDialog attribute names
 combo consolidation
 new layout structure

@@ -5,7 +5,8 @@ from PyQt6.QtWidgets import QWidget, QDialog, QVBoxLayout, QHBoxLayout, \
                             QGroupBox, QCheckBox
 from PyQt6.QtGui     import QShowEvent, QColor
 
-from ....core.types import Default, NoChange, AlignH, AlignV
+from ....core.checks import checked
+from ....core.types  import Default, NoChange, AlignH, AlignV
 
 from ...graphics.items.text import TextItem
 
@@ -133,38 +134,50 @@ class TextItemDialog(QDialog):
             self._value_layout._edit.selectAll()
         ))
 
+    @checked
     def getText(self : Self) -> str:
         return self._value_layout.getValue()
 
+    @checked
     def getBlock(self : Self) -> bool:
         return self._format_layout.getBlock()
 
+    @checked
     def getRotcomp(self : Self) -> bool:
         return self._rotcomp_checkbox.isChecked()
 
+    @checked
     def getAlignH(self : Self) -> AlignH:
         return self._align_layout.getAlignH()
 
+    @checked
     def getAlignV(self : Self) -> AlignV:
         return self._align_layout.getAlignV()
 
+    @checked
     def getOrigin(self : Self) -> str:
         return self._origin_layout.getOrigin()
 
+    @checked
     def getColor(self : Self) -> QColor | Default | NoChange:
         return self._appearance_layout.getColor()
 
+    @checked
     def getFamily(self : Self) -> str | Default | NoChange:
         return self._appearance_layout.getFamily()
 
-    def getSize(self : Self) -> float | NoChange | Default:
+    @checked
+    def getSize(self : Self) -> float | Default | NoChange:
         return self._appearance_layout.getSize()
 
+    @checked
     def getBold(self : Self) -> bool | Default | NoChange:
         return self._appearance_layout.getBold()
 
+    @checked
     def getItalic(self : Self) -> bool | Default | NoChange:
         return self._appearance_layout.getItalic()
 
+    @checked
     def getUnderline(self : Self) -> bool | Default | NoChange:
         return self._appearance_layout.getUnderline()

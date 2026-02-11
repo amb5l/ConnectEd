@@ -5,9 +5,10 @@ from PyQt6.QtGui  import QColor
 
 from ......app import logger
 
-from ......core.types import Default, NoChange, NO_CHANGE, AlignH, AlignV, \
-                             EdgeLoc, Direction
-from ......core.xml   import copy
+from ......core.checks import checked
+from ......core.types  import Default, NoChange, NO_CHANGE, AlignH, AlignV, \
+                              EdgeLoc, Direction
+from ......core.xml    import copy
 
 from ....properties import PropertyDisplay, PropertiesMixin
 
@@ -186,6 +187,7 @@ class DrawingSceneApiEditMixin:
         cmd = CmdEditPolySeg(self, seg, sweep)
         cmdExec(self, cmd, undoable)
 
+    @checked
     def editText(
         self      : "DrawingScene",
         item      : TextItem,
@@ -209,7 +211,6 @@ class DrawingSceneApiEditMixin:
             self, item,
             text, block, rotcomp, origin, align_h, align_v, width, height,
             color, family, size, bold, italic, underline
-
         )
         cmdExec(self, cmd, undoable)
 

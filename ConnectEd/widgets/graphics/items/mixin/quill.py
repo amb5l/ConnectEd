@@ -6,7 +6,7 @@ from PyQt6.QtGui  import QFont, QColor
 
 from .....app import logger, settings
 
-from .....core.types import Default, DEFAULT
+from .....core.types import Default, DEFAULT, NoChange, NO_CHANGE
 
 from ...properties import InherentProperty
 
@@ -115,10 +115,12 @@ class ItemQuillMixin:
 
     def setQuillColor(
         self  : Self | ItemProtocol,
-        color : QColor | Default | None = None,
+        color : QColor | Default | NoChange | None = None,
         selected : bool | None = None
     ) -> None:
-        if color is not None:
+        if color is NO_CHANGE:
+            return
+        elif color is not None:
             self._quill_color = color
         else:
             color = self._quill_color
