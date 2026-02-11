@@ -3,9 +3,9 @@ from typing import Self
 from PyQt6.QtCore    import Qt
 from PyQt6.QtWidgets import QWidget, QComboBox
 
-from .....core.checks import checked
-from .....core.types  import Default, DEFAULT, NoChange, NO_CHANGE
-from .....core.utils  import val2str
+from .....core.check import checked
+from .....core.types import Default, DEFAULT, NoChange, NO_CHANGE
+from .....core.utils import val2str
 
 from ...float import FloatDialog
 

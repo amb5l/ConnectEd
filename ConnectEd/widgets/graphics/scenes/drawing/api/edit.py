@@ -5,8 +5,8 @@ from PyQt6.QtGui  import QColor
 
 from ......app import logger
 
-from ......core.checks import checked
-from ......core.types  import Default, NoChange, NO_CHANGE, \
+from ......core.check import checked
+from ......core.types import Default, NoChange, NO_CHANGE, \
                               AlignH, AlignV, EdgeLoc, Direction, RectHandleId
 from ......core.xml    import copy
 

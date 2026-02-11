@@ -3,8 +3,8 @@ from typing import Self
 from PyQt6.QtWidgets import QGraphicsItem
 from PyQt6.QtGui     import QTransform
 
-from .....core.checks import checked
-from .....core.types  import HandleId
+from .....core.check import checked
+from .....core.types import HandleId
 
 from ...properties import InherentProperty, PropertiesMixin
 

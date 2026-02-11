@@ -2,8 +2,8 @@ from typing import Self
 
 from PyQt6.QtGui import QColor
 
-from .......core.checks import checked
-from .......core.types  import Default, NoChange, NO_CHANGE, \
+from .......core.check import checked
+from .......core.types import Default, NoChange, NO_CHANGE, \
                                AlignH, AlignV, RectHandleId
 
 from .....items.text import TextItem, TextState, TextChange

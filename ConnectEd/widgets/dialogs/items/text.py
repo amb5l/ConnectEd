@@ -5,8 +5,8 @@ from PyQt6.QtWidgets import QWidget, QDialog, QVBoxLayout, QHBoxLayout, \
                             QGroupBox, QCheckBox
 from PyQt6.QtGui     import QShowEvent, QColor
 
-from ....core.checks import checked
-from ....core.types  import Default, NoChange, AlignH, AlignV
+from ....core.check import checked
+from ....core.types import Default, NoChange, AlignH, AlignV
 
 from ...graphics.items.text import TextItem
 
@@ -155,7 +155,7 @@ class TextItemDialog(QDialog):
         return self._align_layout.getAlignV()
 
     @checked
-    def getOrigin(self : Self) -> str:
+    def getOrigin(self : Self) -> RectHandleId:
         return self._origin_layout.getOrigin()
 
     @checked
