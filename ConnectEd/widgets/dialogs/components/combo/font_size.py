@@ -61,8 +61,6 @@ class FontSizeComboBox(QComboBox):
                 self.setCurrentIndex(self.count() - 1)
         # enable custom dialog
         self.activated.connect(self._onActivated)
-        # debug
-        print("current index:", self.currentIndex())
 
     @checked
     def getChoice(self : Self) -> float | Default | NoChange | None:
