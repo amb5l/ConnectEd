@@ -41,6 +41,7 @@ class AppearanceDialog(QDialog):
             "text" : sum(1 for i in items if isinstance(i, ItemQuillMixin)),
         }
         category_count = sum(1 for count in category_counts.values() if count > 0)
+        self._dialog_layout = QVBoxLayout(self)
         if category_counts["line"] > 0:
             if category_count > 1:
                 line_group_title = f"Line ({category_counts['line']} item" \
