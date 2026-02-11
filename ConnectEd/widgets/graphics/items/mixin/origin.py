@@ -3,7 +3,8 @@ from typing import Self
 from PyQt6.QtWidgets import QGraphicsItem
 from PyQt6.QtGui     import QTransform
 
-from .....core.types import HandleId
+from .....core.checks import checked
+from .....core.types  import HandleId
 
 from ...properties import InherentProperty, PropertiesMixin
 
@@ -37,9 +38,11 @@ class ItemOriginMixin:
             raise ValueError("ItemOriginMixin requires _ORIGIN")
         self.setOrigin(self._ORIGIN)
 
+    @checked
     def origin(self : Self) -> HandleId:
         return self._origin
 
+    @checked
     def setOrigin(
         self : Self | QGraphicsItem | PropertiesMixin,
         id   : HandleId

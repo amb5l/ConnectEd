@@ -2,8 +2,9 @@ from typing import Self
 
 from PyQt6.QtWidgets import QGridLayout, QButtonGroup
 
-from ..tool_button import ToolButton
+from .....core.types import RectHandleId
 
+from ..tool_button import ToolButton
 
 from .....resources.icons import AnchorTopLeftIcon,   \
                                  AnchorTopCenterIcon, \
@@ -14,6 +15,7 @@ from .....resources.icons import AnchorTopLeftIcon,   \
                                  AnchorBottomLeftIcon, \
                                  AnchorBottomCenterIcon, \
                                  AnchorBottomRightIcon
+
 
 class OriginLayout(QGridLayout):
     _button_group         : QButtonGroup
@@ -67,23 +69,23 @@ class OriginLayout(QGridLayout):
         self._button_group.addButton(self._bottom_right_button)
         self.addWidget(self._bottom_right_button, 2, 2)
 
-    def getOrigin(self : Self) -> str:
+    def getOrigin(self : Self) -> RectHandleId:
         if self._top_left_button.isChecked():
-            return "Top Left"
+            return RectHandleId.TOP_LEFT
         elif self._top_center_button.isChecked():
-            return "Top Center"
+            return RectHandleId.TOP_CENTER
         elif self._top_right_button.isChecked():
-            return "Top Right"
+            return RectHandleId.TOP_RIGHT
         elif self._middle_left_button.isChecked():
-            return "Middle Left"
+            return RectHandleId.MIDDLE_LEFT
         elif self._middle_center_button.isChecked():
-            return "Middle Center"
+            return RectHandleId.MIDDLE_CENTER
         elif self._middle_right_button.isChecked():
-            return "Middle Right"
+            return RectHandleId.MIDDLE_RIGHT
         elif self._bottom_left_button.isChecked():
-            return "Bottom Left"
+            return RectHandleId.BOTTOM_LEFT
         elif self._bottom_center_button.isChecked():
-            return "Bottom Center"
+            return RectHandleId.BOTTOM_CENTER
         else: # self._bottom_right_button.isChecked()
-            return "Bottom Right"
+            return RectHandleId.BOTTOM_RIGHT
         raise ValueError("Invalid origin")

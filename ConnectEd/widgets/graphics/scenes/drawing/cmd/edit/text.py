@@ -1,8 +1,10 @@
-from typing import Self, Any
+from typing import Self
 
 from PyQt6.QtGui import QColor
 
-from .......core.types import Default, NoChange, NO_CHANGE, AlignH, AlignV
+from .......core.checks import checked
+from .......core.types  import Default, NoChange, NO_CHANGE, \
+                               AlignH, AlignV, RectHandleId
 
 from .....items.text import TextItem, TextState, TextChange
 
@@ -18,14 +20,15 @@ class CmdEditText(CmdSceneItem):
     _before : TextState
     _after  : TextChange
 
+    @checked
     def __init__(
         self      : Self,
         scene     : "DrawingScene",
         item      : "TextItem",
-        text      : str    | Default | NoChange = NO_CHANGE,
+        text      : str              | NoChange = NO_CHANGE,
         block     : bool             | NoChange = NO_CHANGE,
         rotcomp   : bool             | NoChange = NO_CHANGE,
-        origin    : str              | NoChange = NO_CHANGE,
+        origin    : RectHandleId     | NoChange = NO_CHANGE,
         align_h   : AlignH           | NoChange = NO_CHANGE,
         align_v   : AlignV           | NoChange = NO_CHANGE,
         width     : float            | NoChange = NO_CHANGE,
@@ -45,6 +48,7 @@ class CmdEditText(CmdSceneItem):
         }
         self._after = TextChange(**change_args)
 
+    @checked
     def redo(self : Self) -> None:#
         if self._after.block is not NO_CHANGE:
             self._item.setBlock(self._after.block)
@@ -78,6 +82,7 @@ class CmdEditText(CmdSceneItem):
         if self._after.underline is not NO_CHANGE:
             self._item.setQuillUnderline(self._after.underline)
 
+    @checked
     def undo(self : Self) -> None:
         if self._after.text is not NO_CHANGE:
             self._item.setText(self._before.text)

@@ -6,8 +6,8 @@ from PyQt6.QtGui  import QColor
 from ......app import logger
 
 from ......core.checks import checked
-from ......core.types  import Default, NoChange, NO_CHANGE, AlignH, AlignV, \
-                              EdgeLoc, Direction
+from ......core.types  import Default, NoChange, NO_CHANGE, \
+                              AlignH, AlignV, EdgeLoc, Direction, RectHandleId
 from ......core.xml    import copy
 
 from ....properties import PropertyDisplay, PropertiesMixin
@@ -194,7 +194,7 @@ class DrawingSceneApiEditMixin:
         text      : str              | NoChange = NO_CHANGE,
         block     : bool             | NoChange = NO_CHANGE,
         rotcomp   : bool             | NoChange = NO_CHANGE,
-        origin    : str              | NoChange = NO_CHANGE,
+        origin    : RectHandleId     | NoChange = NO_CHANGE,
         align_h   : AlignH           | NoChange = NO_CHANGE,
         align_v   : AlignV           | NoChange = NO_CHANGE,
         width     : float            | NoChange = NO_CHANGE,
