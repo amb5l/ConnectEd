@@ -49,7 +49,15 @@ class DrawingViewMenuMixin:
                     _extendMenu(items[0].ctxMenuItems(self))
                 else:
                     # multiple items
-                    pass
+                    _extendMenu([
+                        self.action(
+                            "Appearance...", lambda: self.ui.editAppearance(items)
+                        ),
+                        self.action(
+                            "Properties...", lambda: self.ui.editItemProperties(items)
+                        ),
+                        self.separator()
+                    ])
                 # get top items (items with no parent)
                 top_items = [item for item in items if item.parentItem() is None]
                 f = f" ({len(top_items)}/{len(items)})" \

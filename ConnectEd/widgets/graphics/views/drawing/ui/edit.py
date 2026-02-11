@@ -119,16 +119,20 @@ class DrawingViewUiEditMixin:
         self._scene.editAssignOrigin(item, ap_name, undoable=True)
 
     def editAppearance(
-        self : "DrawingViewUi",
-        item : "ItemMixin | None" = None
+        self  : "DrawingViewUi",
+        items : "ItemMixin | list[ItemMixin] | None" = None
     ) -> None:
-        self._view.state.go(self._view.stateEditAppearance, [item] if item else None)
+        from ....items import ItemMixin
+        items = [items] if isinstance(items, ItemMixin) else items
+        self._view.state.go(self._view.stateEditAppearance, items)
 
     def editItemProperties(
-        self : "DrawingViewUi",
-        item : "ItemMixin | None" = None
+        self  : "DrawingViewUi",
+        items : "ItemMixin | list[ItemMixin] | None" = None
     ) -> None:
-        self._view.state.go(self._view.stateEditItemProperties, [item] if item else None)
+        from ....items import ItemMixin
+        items = [items] if isinstance(items, ItemMixin) else items
+        self._view.state.go(self._view.stateEditItemProperties, items)
 
     def editDrawingProperties(self : "DrawingViewUi") -> None:
         self._view.state.go(self._view.stateEditDrawingProperties)
