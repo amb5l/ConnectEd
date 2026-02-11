@@ -122,7 +122,21 @@ class DrawingViewStateEditAppearance(DrawingViewStateBase):
         if items:
             dialog = AppearanceDialog(items, self.view)
             if dialog.exec():
-                self.scene.editAppearance(items, dialog.getChoice(), undoable=True)
+                self.scene.editAppearance(
+                    items,
+                    dialog.getLineColorChoice(),
+                    dialog.getLineWidthChoice(),
+                    dialog.getLineStyleChoice(),
+                    dialog.getFillColorChoice(),
+                    dialog.getFillStyleChoice(),
+                    dialog.getTextColorChoice(),
+                    dialog.getTextFontChoice(),
+                    dialog.getTextSizeChoice(),
+                    dialog.getTextBoldChoice(),
+                    dialog.getTextItalicChoice(),
+                    dialog.getTextUnderlineChoice(),
+                    undoable=True
+                )
         else:
             logger().warning("No items selected")
         self.view.state.go(self.view.stateIdle)

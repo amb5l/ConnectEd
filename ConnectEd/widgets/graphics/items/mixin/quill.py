@@ -23,6 +23,7 @@ class ItemProtocol(Protocol):
     def font(self) -> QFont: ...
     def setFont(self, font: QFont) -> None: ...
     def scene(self) -> "DrawingScene": ...
+    def isSelected(self) -> bool: ...
 
 
 class ItemQuillMixin:
@@ -104,8 +105,7 @@ class ItemQuillMixin:
         self.setQuillUnderline(self.quillUnderline())
 
     def quillSelectionChange(self : Self | ItemProtocol, selected : bool) -> None:
-        scene : "DrawingScene" = self.scene()
-        self.setQuillColor(scene.selectedTextColor() if selected else self.quillColor())
+        self.setQuillColor(selected=selected)
 
     def defaultQuillColor(self : Self | ItemProtocol) -> QColor:
         return settings().get(f"theme/items/{self.settingsName()}/text/color")
@@ -115,10 +115,20 @@ class ItemQuillMixin:
 
     def setQuillColor(
         self  : Self | ItemProtocol,
-        color : QColor | Default
+        color : QColor | Default | None = None,
+        selected : bool | None = None
     ) -> None:
-        self._quill_color = color
-        if color is DEFAULT: color = self.defaultQuillColor()
+        if color is not None:
+            self._quill_color = color
+        else:
+            color = self._quill_color
+        if color is DEFAULT:
+            color = self.defaultQuillColor()
+        if selected is None:
+            selected = self.isSelected()
+        if selected:
+            scene : "DrawingScene" = self.scene()
+            color = scene.selectedTextColor()
         self.setColor(color)
 
     def defaultQuillFamily(self : Self | ItemProtocol) -> str:

@@ -46,14 +46,14 @@ class FillAppearanceLayout(QVBoxLayout):
         self.addLayout(self.style_layout)
         self.color_combo.activated.connect(self._onColorChanged)
 
-    def _onColorChanged(self : Self) -> None:
-        """Automatically set SolidFill when color is specified and style is NoBrush."""
+    def _onColorChanged(self : Self, _index : int = 0) -> None:
+        """Set style to ensure visibility when color is specified."""
         color = self.color_combo.getChoice()
         if not isinstance(color, QColor): return
         style = self.style_combo.getChoice()
         if style is DEFAULT: style = self._default_style
         if style != Qt.BrushStyle.NoBrush: return
-        auto_style = DEFAULT if DEFAULT != Qt.BrushStyle.NoBrush else \
+        auto_style = DEFAULT if self._default_style != Qt.BrushStyle.NoBrush else \
             Qt.BrushStyle.SolidPattern
         for i in range(self.style_combo.count()):
             if auto_style == self.style_combo.itemData(i, Qt.ItemDataRole.UserRole):

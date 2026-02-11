@@ -22,6 +22,7 @@ class ItemProtocol(Protocol):
     def pen(self) -> QPen: ...
     def setPen(self, pen: QPen) -> None: ...
     def scene(self) -> "DrawingScene": ...
+    def isSelected(self) -> bool: ...
 
 
 class ItemLineMixin:
@@ -55,16 +56,16 @@ class ItemLineMixin:
     }
 
     # instance attributes
-    _pen_color : QColor      | Default
-    _pen_width : float       | Default
-    _pen_style : Qt.PenStyle | Default
+    _line_color : QColor      | Default
+    _line_width : float       | Default
+    _line_style : Qt.PenStyle | Default
 
     def initLine(self : Self | ItemProtocol) -> None:
         if not hasattr(self, "setPen"):
             logger().error("This item does not support the setPen method")
-        self._pen_color = DEFAULT
-        self._pen_width = DEFAULT
-        self._pen_style = DEFAULT
+        self._line_color = DEFAULT
+        self._line_width = DEFAULT
+        self._line_style = DEFAULT
         self.lineSettingsChange()
         settings().changed.connect(self.lineSettingsChange)
         self.addSelectionHandler(self.lineSelectionChange)
@@ -76,21 +77,30 @@ class ItemLineMixin:
         self.setLineStyle(self.lineStyle())
 
     def lineSelectionChange(self : Self | ItemProtocol, selected : bool) -> None:
-        scene : "DrawingScene" = self.scene()
-        self.setLineColor(scene.selectedLineColor() if selected else self.lineColor())
+        self.setLineColor(selected=selected)
 
     def defaultLineColor(self : Self | ItemProtocol) -> QColor:
         return settings().get(f"theme/items/{self.settingsName()}/line/color")
 
     def lineColor(self : Self | ItemProtocol) -> QColor | Default:
-        return self._pen_color
+        return self._line_color
 
     def setLineColor(
         self : Self | ItemProtocol,
-        color : QColor | Default
+        color : QColor | Default | None = None,
+        selected : bool | None = None
     ) -> None:
-        self._pen_color = color
-        if color is DEFAULT: color = self.defaultLineColor()
+        if color is not None:
+            self._line_color = color
+        else:
+            color = self._line_color
+        if color is DEFAULT:
+            color = self.defaultLineColor()
+        if selected is None:
+            selected = self.isSelected()
+        if selected:
+            scene : "DrawingScene" = self.scene()
+            color = scene.selectedLineColor()
         pen = self.pen()
         pen.setColor(color)
         self.setPen(pen)
@@ -99,13 +109,13 @@ class ItemLineMixin:
         return settings().get(f"theme/items/{self.settingsName()}/line/width")
 
     def lineWidth(self : Self | ItemProtocol) -> float | Default:
-        return self._pen_width
+        return self._line_width
 
     def setLineWidth(
         self  : Self | ItemProtocol,
         width : float | Default
     ) -> None:
-        self._pen_width = width
+        self._line_width = width
         if width is DEFAULT: width = self.defaultLineWidth()
         pen = self.pen()
         pen.setWidthF(width)
@@ -115,13 +125,13 @@ class ItemLineMixin:
         return settings().get(f"theme/items/{self.settingsName()}/line/style")
 
     def lineStyle(self : Self | ItemProtocol) -> Qt.PenStyle | Default:
-        return self._pen_style
+        return self._line_style
 
     def setLineStyle(
         self  : Self | ItemProtocol,
         style : Qt.PenStyle | Default
     ) -> None:
-        self._pen_style = style
+        self._line_style = style
         if style is DEFAULT: style = self.defaultLineStyle()
         pen = self.pen()
         pen.setStyle(style)

@@ -22,6 +22,7 @@ class ItemProtocol(Protocol):
     def brush(self) -> QBrush: ...
     def setBrush(self, brush: QBrush) -> None: ...
     def scene(self) -> "DrawingScene": ...
+    def isSelected(self) -> bool: ...
 
 
 class ItemFillMixin:
@@ -64,8 +65,7 @@ class ItemFillMixin:
         self.setFillStyle(self.fillStyle())
 
     def fillSelectionChange(self : Self | ItemProtocol, selected : bool) -> None:
-        scene : "DrawingScene" = self.scene()
-        self.setFillColor(scene.selectedFillColor() if selected else self.fillColor())
+        self.setFillColor(selected=selected)
 
     def defaultFillColor(self : Self | ItemProtocol) -> QColor:
         return settings().get(f"theme/items/{self.settingsName()}/fill/color")
@@ -75,10 +75,20 @@ class ItemFillMixin:
 
     def setFillColor(
         self  : Self | ItemProtocol,
-        color : QColor | Default
+        color : QColor | Default | None = None,
+        selected : bool | None = None
     ) -> None:
-        self._fill_color = color
-        if color is DEFAULT: color = self.defaultFillColor()
+        if color is not None:
+            self._fill_color = color
+        else:
+            color = self._fill_color
+        if color is DEFAULT:
+            color = self.defaultFillColor()
+        if selected is None:
+            selected = self.isSelected()
+        if selected:
+            scene : "DrawingScene" = self.scene()
+            color = scene.selectedFillColor()
         brush = self.brush()
         brush.setColor(color)
         self.setBrush(brush)
