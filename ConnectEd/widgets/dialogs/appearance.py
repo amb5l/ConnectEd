@@ -42,12 +42,7 @@ class AppearanceDialog(QDialog):
         category_count = sum(1 for count in category_counts.values() if count > 0)
         self._dialog_layout = QVBoxLayout(self)
         if category_counts["line"] > 0:
-            if category_count > 1:
-                line_group_title = f"Line ({category_counts['line']} item" \
-                    "{'s' if category_counts['line'] > 1 else ''})"
-                self._line_group_box = QGroupBox(line_group_title)
-            else:
-                self._line_group_box = None
+            self._line_group_box = QGroupBox("Line") if category_count > 1 else None
             self._line_layout = LineAppearanceLayout(
                 _combinedValue(items, "lineColor"),
                 _combinedValue(items, "lineWidth"),
