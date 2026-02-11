@@ -34,7 +34,6 @@ class AppearanceDialog(QDialog):
         parent : QWidget | None = None
     ) -> None:
         super().__init__(parent)
-        item_count = len(items)
         category_counts = {
             "line" : sum(1 for i in items if isinstance(i, ItemLineMixin)),
             "fill" : sum(1 for i in items if isinstance(i, ItemFillMixin)),
@@ -108,12 +107,12 @@ class AppearanceDialog(QDialog):
         self._ok_cancel_layout = OkCancelLayout(self)
         self._dialog_layout.addLayout(self._ok_cancel_layout)
         self.setLayout(self._dialog_layout)
-        if item_count > 1:
-            title = "Appearance"
-        else:
-            title = "Line Appearance" if category_counts["line"] > 0 else \
-                    "Fill Appearance" if category_counts["fill"] > 0 else \
-                    "Text Appearance"
+        title = \
+            "Appearance" if category_count > 1 else \
+            "Line Appearance" if category_counts["line"] else \
+            "Fill Appearance" if category_counts["fill"] else \
+            "Text Appearance" if category_counts["text"] else \
+            "???"
         self.setWindowTitle(title)
 
     def _adjustComboBoxWidths(self : Self) -> None:
