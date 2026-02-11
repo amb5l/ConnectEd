@@ -6,7 +6,7 @@ from PyQt6.QtWidgets import QWidget, QDialog, QVBoxLayout, QHBoxLayout, \
 from PyQt6.QtGui     import QShowEvent, QColor
 
 from ....core.check import checked
-from ....core.types import Default, NoChange, AlignH, AlignV
+from ....core.types import Default, NoChange, AlignH, AlignV, RectHandleId
 
 from ...graphics.items.text import TextItem
 
