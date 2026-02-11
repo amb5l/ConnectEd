@@ -5,7 +5,7 @@ from PyQt6.QtGui     import QFontDatabase
 
 from .....core.types import Default, DEFAULT, NoChange, NO_CHANGE
 
-from .. import CUSTOM_ICON_SIZE, NoChangeIcon, DefaultIcon
+from .. import CUSTOM_ICON_SIZE
 
 
 class FontFamilyComboBox(QComboBox):

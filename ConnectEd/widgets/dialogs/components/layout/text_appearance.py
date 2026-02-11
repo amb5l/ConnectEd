@@ -1,7 +1,7 @@
 from typing import Self
 
 from PyQt6.QtCore    import Qt
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QGridLayout, QLabel
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QGridLayout, QLabel
 from PyQt6.QtGui     import QFont, QColor
 
 from .....core.types import Default, DEFAULT, NoChange, NO_CHANGE
