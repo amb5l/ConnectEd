@@ -5,7 +5,7 @@ from PyQt6.QtWidgets import QWidget, QComboBox
 from .....core.types import Default, DEFAULT, NoChange, NO_CHANGE
 
 
-class OnOffComboBox(QComboBox):
+class FontBoolComboBox(QComboBox):
     def __init__(
         self      : Self,
         initial   : NoChange | Default | bool,

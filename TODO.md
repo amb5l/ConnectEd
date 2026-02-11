@@ -1,6 +1,4 @@
-various/no change in combos; _combinedValue
-global types
-handle/Enum
+AppearanceDialog attribute names
 combo consolidation
 new layout structure
 new editors

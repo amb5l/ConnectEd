@@ -18,7 +18,7 @@ from .combo.line_style       import LineStyleComboBox
 from .combo.fill_style       import FillStyleComboBox
 from .combo.font_family      import FontFamilyComboBox
 from .combo.font_size        import FontSizeComboBox
-from .combo.on_off           import OnOffComboBox
+from .combo.font_bool        import FontBoolComboBox
 from .combo.edge             import EdgeComboBox
 
 
@@ -44,7 +44,7 @@ class DialogItemDelegate(QStyledItemDelegate):
             case "float":
                 editor = FloatEditor(item_value, parent)
             case "bool":
-                editor = OnOffComboBox(item_value, item_default, parent)
+                editor = FontBoolComboBox(item_value, item_default, parent)
             case "Edge":
                 editor = EdgeComboBox(item_value, parent)
             case "QColor":
@@ -77,7 +77,7 @@ class DialogItemDelegate(QStyledItemDelegate):
             editor.setValue(value)
         elif isinstance(editor, EdgeComboBox | PropertyDisplayComboBox | \
             ColorComboBox | LineWidthComboBox | LineStyleComboBox | \
-            FillStyleComboBox | FontSizeComboBox | OnOffComboBox
+            FillStyleComboBox | FontSizeComboBox | FontBoolComboBox
         ):
             pass
         else:
@@ -95,7 +95,7 @@ class DialogItemDelegate(QStyledItemDelegate):
             text = val2str(editor.getValue())
         elif isinstance(editor, EdgeComboBox | PropertyDisplayComboBox |\
             ColorComboBox | LineWidthComboBox | LineStyleComboBox | \
-            FillStyleComboBox | FontSizeComboBox | OnOffComboBox
+            FillStyleComboBox | FontSizeComboBox | FontBoolComboBox
         ):
             text = val2str(editor.getChoice())
         else:

@@ -9,7 +9,7 @@ from .....core.types import Default, DEFAULT, NoChange, NO_CHANGE
 from ..combo.color       import ColorComboBox
 from ..combo.font_family import FontFamilyComboBox
 from ..combo.font_size   import FontSizeComboBox
-from ..combo.on_off      import OnOffComboBox
+from ..combo.font_bool   import FontBoolComboBox
 
 
 class TextAppearanceLayout(QVBoxLayout):
@@ -33,11 +33,11 @@ class TextAppearanceLayout(QVBoxLayout):
     _size_label         : QLabel
     _size_combo         : FontSizeComboBox
     _bold_label         : QLabel
-    _bold_combo         : OnOffComboBox
+    _bold_combo         : FontBoolComboBox
     _italic_label       : QLabel
-    _italic_combo       : OnOffComboBox
+    _italic_combo       : FontBoolComboBox
     _underline_label    : QLabel
-    _underline_combo    : OnOffComboBox
+    _underline_combo    : FontBoolComboBox
 
     def __init__(
         self              : Self,
@@ -83,15 +83,15 @@ class TextAppearanceLayout(QVBoxLayout):
         self._options_layout.addWidget(self._size_combo, 2, 1)
         self._bold_label = QLabel("Bold:")
         self._options_layout.addWidget(self._bold_label, 3, 0)
-        self._bold_combo = OnOffComboBox(initial_bold, default_bold)
+        self._bold_combo = FontBoolComboBox(initial_bold, default_bold)
         self._options_layout.addWidget(self._bold_combo, 3, 1)
         self._italic_label = QLabel("Italic:")
         self._options_layout.addWidget(self._italic_label, 4, 0)
-        self._italic_combo = OnOffComboBox(initial_italic, default_italic)
+        self._italic_combo = FontBoolComboBox(initial_italic, default_italic)
         self._options_layout.addWidget(self._italic_combo, 4, 1)
         self._underline_label = QLabel("Underline:")
         self._options_layout.addWidget(self._underline_label, 5, 0)
-        self._underline_combo = OnOffComboBox(initial_underline, default_underline)
+        self._underline_combo = FontBoolComboBox(initial_underline, default_underline)
         self._options_layout.addWidget(self._underline_combo, 5, 1)
         self.addLayout(self._options_layout)
 
