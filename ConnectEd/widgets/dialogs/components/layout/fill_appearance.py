@@ -38,14 +38,13 @@ class FillAppearanceLayout(QVBoxLayout):
         self.color_combo = ColorComboBox(initial_color, default_color)
         self.color_layout.addWidget(self.color_combo)
         self.addLayout(self.color_layout)
-
+        self.style_layout = QHBoxLayout()
         self.style_label = QLabel("Style:")
         self.style_layout.addWidget(self.style_label)
         self.style_combo = FillStyleComboBox(initial_style, default_style)
         self.style_layout.addWidget(self.style_combo)
         self.addLayout(self.style_layout)
         self.color_combo.activated.connect(self._onColorChanged)
-        self.style_combo.activated.connect(self._onStyleChanged)
 
     def _onColorChanged(self : Self) -> None:
         """Automatically set SolidFill when color is specified and style is NoBrush."""
