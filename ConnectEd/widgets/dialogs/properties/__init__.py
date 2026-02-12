@@ -62,7 +62,7 @@ class PropertiesDialog(QDialog):
     _delete_button  : QPushButton
     _ok_button      : QPushButton
     _cancel_button  : QPushButton
-    _delegates      : dict[str, QStyledItemDelegate]
+    _delegates      : list[PropertiesDelegate]
     _deletions      : list[str]  # names of properties to delete
 
     def __init__(
@@ -85,10 +85,11 @@ class PropertiesDialog(QDialog):
             self._table_model.appendRow(self._buildRow(name))
         # create table view
         self._table_view = TableView(self._table_model)
-        # create and assign delegate
+        # create and assign delegates (must keep references to prevent GC)
+        self._delegates = []
         for col_idx in range(self._table_model.columnCount()):
             delegate = PropertiesDelegate()
-            delegate.destroyed.connect(self._onDelegateDestroyed)
+            self._delegates.append(delegate)
             self._table_view.setItemDelegateForColumn(col_idx, delegate)
         # set edit triggers
         self._table_view.setEditTriggers(
@@ -159,10 +160,6 @@ class PropertiesDialog(QDialog):
                 edit = PropertyEdit(name, *row_values[1:])
             edits.append(edit)
         return edits
-
-    def _onDelegateDestroyed(self : Self) -> None:
-        """Workaround to fix delegate lifecycle issue (silent crash)."""
-        pass
 
     def _onDataChanged(
         self         : Self,
@@ -350,10 +347,9 @@ class PropertiesDialog(QDialog):
             FontBoolComboBox  (DEFAULT, False, None)
         ]
         for editor in test_editors:
-            if editor:
-                hint = editor.sizeHint()
-                max_width = max(max_width, hint.width())
-                editor.deleteLater()  # Clean up
+            hint = editor.sizeHint()
+            max_width = max(max_width, hint.width())
+            editor.deleteLater()
         return max_width + 20  # padding
 
     def _selectedRows(self : Self) -> list[int]:
