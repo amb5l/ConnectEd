@@ -55,8 +55,8 @@ class LineAppearanceLayout(QVBoxLayout):
         self.width_combo.activated.connect(self._onWidthChanged)
 
     def _onColorChanged(self : Self) -> None:
-        color = self.color_combo.getChoice()
-        style = self.style_combo.getChoice()
+        color = self.color_combo.value()
+        style = self.style_combo.value()
         if color not in (NO_CHANGE, DEFAULT) and style in (DEFAULT, Qt.PenStyle.NoPen):
             for i in range(self.style_combo.count()):
                 if self.style_combo.itemText(i) == "Solid":
@@ -64,8 +64,8 @@ class LineAppearanceLayout(QVBoxLayout):
                     break
 
     def _onWidthChanged(self : Self) -> None:
-        width = self.width_combo.getChoice()
-        style = self.style_combo.getChoice()
+        width = self.width_combo.value()
+        style = self.style_combo.value()
         if width not in (NO_CHANGE, DEFAULT) and style in (DEFAULT, Qt.PenStyle.NoPen):
             for i in range(self.style_combo.count()):
                 if self.style_combo.itemText(i) == "Solid":
@@ -73,10 +73,10 @@ class LineAppearanceLayout(QVBoxLayout):
                     break
 
     def getColorChoice(self : Self) -> QColor | Default:
-        return self.color_combo.getChoice()
+        return self.color_combo.value()
 
     def getWidthChoice(self : Self) -> float | NoChange | Default:
-        return self.width_combo.getChoice()
+        return self.width_combo.value()
 
     def getStyleChoice(self : Self) -> Qt.PenStyle | NoChange | Default:
-        return self.style_combo.getChoice()
+        return self.style_combo.value()

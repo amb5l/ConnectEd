@@ -48,9 +48,9 @@ class FillAppearanceLayout(QVBoxLayout):
 
     def _onColorChanged(self : Self, _index : int = 0) -> None:
         """Set style to ensure visibility when color is specified."""
-        color = self.color_combo.getChoice()
+        color = self.color_combo.value()
         if not isinstance(color, QColor): return
-        style = self.style_combo.getChoice()
+        style = self.style_combo.value()
         if style is DEFAULT: style = self._default_style
         if style != Qt.BrushStyle.NoBrush: return
         auto_style = DEFAULT if self._default_style != Qt.BrushStyle.NoBrush else \
@@ -63,7 +63,7 @@ class FillAppearanceLayout(QVBoxLayout):
             logger().warning("Fill style not found")
 
     def getColorChoice(self : Self) -> QColor | Default | NoChange:
-        return self.color_combo.getChoice()
+        return self.color_combo.value()
 
     def getStyleChoice(self : Self) -> Qt.BrushStyle | Default | NoChange:
-        return self.style_combo.getChoice()
+        return self.style_combo.value()

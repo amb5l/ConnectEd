@@ -35,7 +35,7 @@ class FloatDialog(QDialog):
         # set layout
         self.setLayout(self._dialog_layout)
 
-    def getChoice(self : Self) -> float | None:
+    def value(self : Self) -> float | None:
         try:
             return float(self._value_input.text())
         except ValueError:

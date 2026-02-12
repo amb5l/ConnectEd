@@ -58,7 +58,7 @@ class LineStyleComboBox(QComboBox):
             if initial == v:
                 self.setCurrentIndex(self.count() - 1)
 
-    def getChoice(self : Self) -> Qt.PenStyle | Default | NoChange:
+    def value(self : Self) -> Qt.PenStyle | Default | NoChange:
         return self.itemData(self.currentIndex(), Qt.ItemDataRole.UserRole)
 
     def _getIcon(self : Self, style : Qt.PenStyle) -> QIcon:

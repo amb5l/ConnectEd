@@ -35,7 +35,7 @@ class FontFamilyComboBox(QComboBox):
             if initial == family:
                 self.setCurrentIndex(self.count() - 1)
 
-    def getChoice(self : Self) -> NoChange | Default | str:
+    def value(self : Self) -> NoChange | Default | str:
         text = self.currentText()
         if text.startswith("<no change"):
             return NO_CHANGE

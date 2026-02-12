@@ -99,27 +99,27 @@ class TextAppearanceLayout(QVBoxLayout):
 
     @checked
     def getColor(self : Self) -> QColor | Default | NoChange:
-        return self._color_combo.getChoice()
+        return self._color_combo.value()
 
     @checked
     def getFamily(self : Self) -> str | Default | NoChange:
-        return self._family_combo.getChoice()
+        return self._family_combo.value()
 
     @checked
     def getSize(self : Self) -> float | Default | NoChange:
-        return self._size_combo.getChoice()
+        return self._size_combo.value()
 
     @checked
     def getBold(self : Self) -> bool | Default | NoChange:
-        return self._bold_combo.getChoice()
+        return self._bold_combo.value()
 
     @checked
     def getItalic(self : Self) -> bool | Default | NoChange:
-        return self._italic_combo.getChoice()
+        return self._italic_combo.value()
 
     @checked
     def getUnderline(self : Self) -> bool | Default | NoChange:
-        return self._underline_combo.getChoice()
+        return self._underline_combo.value()
 
 
 class TextAppearancePreviewLayout(TextAppearanceLayout):
@@ -168,16 +168,16 @@ class TextAppearancePreviewLayout(TextAppearanceLayout):
         self._underline_combo.activated.connect(self._updatePreview)
 
     def _updatePreview(self : Self) -> None:
-        family    = self._family_combo.getChoice()
+        family    = self._family_combo.value()
         family    = self._default_family if family is DEFAULT   else \
                     self._initial_family if family is NO_CHANGE else family
-        bold      = self._bold_combo.getChoice()
+        bold      = self._bold_combo.value()
         bold      = self._default_bold if bold is DEFAULT   else \
                     self._initial_bold if bold is NO_CHANGE else bold
-        italic    = self._italic_combo.getChoice()
+        italic    = self._italic_combo.value()
         italic    = self._default_italic if italic is DEFAULT   else \
                     self._initial_italic if italic is NO_CHANGE else italic
-        underline = self._underline_combo.getChoice()
+        underline = self._underline_combo.value()
         underline = self._default_underline if underline is DEFAULT   else \
                     self._initial_underline if underline is NO_CHANGE else underline
         if any(x in (DEFAULT, NO_CHANGE) for x in (family, bold, italic, underline)):

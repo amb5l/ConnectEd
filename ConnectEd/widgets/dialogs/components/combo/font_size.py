@@ -63,14 +63,14 @@ class FontSizeComboBox(QComboBox):
         self.activated.connect(self._onActivated)
 
     @checked
-    def getChoice(self : Self) -> float | Default | NoChange | None:
+    def value(self : Self) -> float | Default | NoChange | None:
         return self.itemData(self.currentIndex(), Qt.ItemDataRole.UserRole)
 
     def _onActivated(self : Self, index : int) -> None:
         if self.currentText().startswith("<custom"):
             dialog = FloatDialog(title="Font Size", parent=self)
             if dialog.exec():
-                s = dialog.getChoice()
+                s = dialog.value()
                 if s is not None:
                     self.setItemText(index, f"<custom = {val2str(s)}>")
                     self.setItemData(index, s, Qt.ItemDataRole.UserRole)

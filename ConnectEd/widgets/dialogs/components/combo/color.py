@@ -91,18 +91,18 @@ class ColorComboBox(QComboBox):
         self.activated.connect(self._onActivated)
 
     @checked
-    def getChoice(self : Self) -> QColor | Default | NoChange:
+    def value(self : Self) -> QColor | Default | NoChange:
         return self.itemData(self.currentIndex(), Qt.ItemDataRole.UserRole)
 
     def _onActivated(self : Self, index : int) -> None:
         if self.currentText().startswith("<custom"):
-            color = self.getChoice()
+            color = self.value()
             dialog = ColorDialog(
                 color if isinstance(color, QColor) else None,
                 parent=self
             )
             if dialog.exec():
-                color = dialog.getChoice()
+                color = dialog.value()
                 self.setItemIcon(index, self._getIcon(color))
                 self.setItemText(index, f"<custom = {val2str(color)}>")
                 self.setItemData(index, color, Qt.ItemDataRole.UserRole)

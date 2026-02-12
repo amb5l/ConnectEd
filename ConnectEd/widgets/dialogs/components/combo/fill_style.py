@@ -69,7 +69,7 @@ class FillStyleComboBox(QComboBox):
             if initial == v:
                 self.setCurrentIndex(self.count() - 1)
 
-    def getChoice(self : Self) -> Qt.BrushStyle | Default | NoChange:
+    def value(self : Self) -> Qt.BrushStyle | Default | NoChange:
         text = self.currentText()
         if text.startswith("<no change"):
             return NO_CHANGE

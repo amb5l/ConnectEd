@@ -20,6 +20,9 @@ class ColorDialog(QColorDialog):
         self._find_html_box()
         self.currentColorChanged.connect(self._on_color_changed)
 
+    def value(self : Self) -> QColor | None:
+        return self.currentColor()
+
     def _find_html_box(self : Self) -> None:
         for line_edit in self.findChildren(QLineEdit):
             if line_edit.text().startswith("#"):
@@ -46,6 +49,3 @@ class ColorDialog(QColorDialog):
     def _on_html_text_changed(self : Self, text : str) -> None:
         if text.startswith("#") and text != text.upper():
             self._make_uppercase()
-
-    def getChoice(self : Self) -> QColor | None:
-        return self.currentColor()

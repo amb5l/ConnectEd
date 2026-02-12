@@ -40,7 +40,7 @@ class FontBoolComboBox(QComboBox):
             no_change_idx
         )
 
-    def getChoice(self : Self) -> NoChange | Default | bool | None:
+    def value(self : Self) -> NoChange | Default | bool | None:
         if self.currentIndex() < 0:
             return None
         if self.currentText().startswith("<no change"):
