@@ -1,6 +1,7 @@
 from typing import Self
 
-from PyQt6.QtWidgets import QLineEdit, QTextEdit, QHBoxLayout, QToolButton
+from PyQt6.QtWidgets import QLineEdit, QTextEdit, QCheckBox, QToolButton, \
+                            QHBoxLayout
 from PyQt6.QtGui     import QIntValidator, QDoubleValidator
 
 
@@ -40,6 +41,18 @@ class FloatEditor(QLineEdit):
             return float(self.text())
         except ValueError:
             return 0.0
+
+
+class BoolEditor(QCheckBox):
+    def __init__(self : Self, value : bool, parent=None):
+        super().__init__(parent)
+        self.setChecked(value)
+
+    def setValue(self : Self, value : bool) -> None:
+        self.setChecked(value)
+
+    def getValue(self : Self) -> bool:
+        return self.isChecked()
 
 
 class TextBlockEditor(QTextEdit):
