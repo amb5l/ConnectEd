@@ -4,9 +4,7 @@ import inspect
 import importlib
 import re
 
-from typing import Any, NamedTuple
-from dataclasses import dataclass, fields
-
+from typing      import Any
 from collections import defaultdict
 
 from PyQt6.QtCore import Qt, QPointF, QRectF, QSizeF
@@ -180,25 +178,29 @@ def val2str(v : Any) -> str:
     """Convert a Python value to a text representation."""
     t = type(v).__name__
     match t:
-        case "NoneType"        : s = "None"
-        case "Default"         : s = "default"
-        case "bytes"           : s = v.hex()
-        case "str"             : s = v # TODO escape special characters
-        case "int"             : s = str(v)
-        case "float"           : s = str(int(v)) if v.is_integer() else str(v)
-        case "bool"            : s = str(v)
-        case "QPointF"         : s = f"{v.x()},{v.y()}"
-        case "QRectF"          : s = f"{v.x()},{v.y()},{v.width()},{v.height()}"
-        case "QSizeF"          : s = f"{v.width()},{v.height()}"
-        case "QColor"          : s = f"#{(v.rgb() & 0xFFFFFF):06X}"
-        case "PropertyDisplay" : s = v.value
-        case "PenStyle"        : s = str(v).replace("PenStyle.", "")
-        case "BrushStyle"      : s = str(v).replace("BrushStyle.", "")
-        case "AlignH"          : s = v.toStr()
-        case "AlignV"          : s = v.toStr()
-        case "Edge"            : s = v.value
-        case "EdgeLoc"         : s = v.toStr()
-        case "SignalDirection" : s = v.value
+        case "NoneType"          : s = "None"
+        case "Default"           : s = "default"
+        case "bytes"             : s = v.hex()
+        case "str"               : s = v # TODO escape special characters
+        case "int"               : s = str(v)
+        case "float"             : s = str(int(v)) if v.is_integer() else str(v)
+        case "bool"              : s = str(v)
+        case "QPointF"           : s = f"{v.x()},{v.y()}"
+        case "QRectF"            : s = f"{v.x()},{v.y()},{v.width()},{v.height()}"
+        case "QSizeF"            : s = f"{v.width()},{v.height()}"
+        case "QColor"            : s = f"#{(v.rgb() & 0xFFFFFF):06X}"
+        case "PropertyDisplay"   : s = v.value
+        case "PenStyle"          : s = str(v).replace("PenStyle.", "")
+        case "BrushStyle"        : s = str(v).replace("BrushStyle.", "")
+        case "AlignH"            : s = v.toStr()
+        case "AlignV"            : s = v.toStr()
+        case "Edge"              : s = v.value
+        case "EdgeLoc"           : s = v.toStr()
+        case "SignalDirection"   : s = v.value
+        case "RectHandleId"      : s = v.value
+        case "LineHandleId"      : s = v.value
+        case "BlockPinHandleId"  : s = v.value
+        case "SymbolPinHandleId" : s = v.value
         case _ :
             raise ValueError(f"Unsupported type: {t}")
     return s
