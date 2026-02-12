@@ -5,11 +5,11 @@ from PyQt6.QtGui  import QColor, QStandardItem
 
 from ....app import logger
 
-
+from ....core.check import checked
 from ....core.types import Default, AlignH, AlignV, Edge, Direction, \
                            RectHandleId, LineHandleId, \
                            BlockPinHandleId, SymbolPinHandleId
-from ....core.utils  import val2str
+from ....core.utils import val2str, trace
 
 from ...graphics.properties import PropertyDisplay
 
@@ -48,6 +48,7 @@ class PropertiesItem(QStandardItem):
     _IDX_CURRENT = 3
     _IDX_DEFAULT = 4
 
+    @checked
     def __init__(
         self     : Self,
         kind     : str,
@@ -65,19 +66,22 @@ class PropertiesItem(QStandardItem):
         self.setEnabled(enabled)
         self.setEditable(editable)
 
+    @checked
     def setEnabled(self : Self, enabled : bool) -> None:
         super().setEnabled(enabled)
         self.setText(val2str(self.value()) if enabled else "")
 
+    @checked
     def kind(self : Self) -> str:
         return self.data(Qt.ItemDataRole.UserRole + self._IDX_KIND)
 
+    @checked
     def setKind(self : Self, kind : str) -> None:
         self.setData(kind, Qt.ItemDataRole.UserRole + self._IDX_KIND)
         # replace kinds with type hints
-        for kind, kind_hint in self._KIND_MAP.items():
-            if kind in kind:
-                kind = kind.replace(kind, kind_hint)
+        for map_kind, map_hint in self._KIND_MAP.items():
+            if map_kind in kind:
+                kind = kind.replace(map_kind, map_hint)
         # convert type hint string to list of types
         type_list = []
         for type_name in kind.replace(" ", "").split("|"):
@@ -88,21 +92,27 @@ class PropertiesItem(QStandardItem):
                 logger().error(f"Invalid type name: {type_name}")
         self.setData(tuple(type_list), Qt.ItemDataRole.UserRole + self._IDX_TYPES)
 
-    def types(self : Self) -> tuple[type]:
+    @checked
+    def types(self : Self) -> tuple[type, ...]:
         return self.data(Qt.ItemDataRole.UserRole + self._IDX_TYPES)
 
+    @checked
     def initial(self : Self) -> Any:
         return self.data(Qt.ItemDataRole.UserRole + self._IDX_INITIAL)
 
+    @checked
     def setInitial(self : Self, value : Any) -> None:
-        if not isinstance(value, self.types()):
+        if not isinstance(value, self.types() + (type(None),)):  # None is allowed
             logger().error(f"Initial value {value} has invalid type: {type(value)}")
+            trace(indent=True, args=True)
         else:
             self.setData(value, Qt.ItemDataRole.UserRole + self._IDX_INITIAL)
 
+    @checked
     def value(self : Self) -> Any:
         return self.data(Qt.ItemDataRole.UserRole + self._IDX_CURRENT)
 
+    @checked
     def setValue(self : Self, value : Any) -> None:
         if not isinstance(value, self.types()):
             logger().error(f"Value {value} has invalid type: {type(value)}")
@@ -110,11 +120,14 @@ class PropertiesItem(QStandardItem):
             self.setData(value, Qt.ItemDataRole.UserRole + self._IDX_CURRENT)
             self.setText(val2str(value))
 
+    @checked
     def default(self : Self) -> Any:
         return self.data(Qt.ItemDataRole.UserRole + self._IDX_DEFAULT)
 
+    @checked
     def setDefault(self : Self, value : Any) -> None:
         self.setData(value, Qt.ItemDataRole.UserRole + self._IDX_DEFAULT)
 
+    @checked
     def changed(self : Self) -> bool:
         return self.initial() != self.value()
