@@ -34,6 +34,7 @@ from typing          import Self, Any, Literal
 from dataclasses     import dataclass
 from collections.abc import Callable
 from enum            import Enum
+from copy            import copy
 
 import re
 
@@ -208,8 +209,8 @@ class PropertiesMixin:
         """
         Initialize the properties system for this instance.
         """
-        # make shallow copy of _PROPERTIES
-        self._properties = dict(self._PROPERTIES)
+        # copy each property so per-instance state (e.g. text) is independent
+        self._properties = {k: copy(v) for k, v in self._PROPERTIES.items()}
         if not fresh:
             return
         # convert PropertyTextSpec instances to PropertyTextItem instances
