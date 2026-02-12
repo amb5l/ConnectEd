@@ -99,7 +99,7 @@ class PropertyTextItem(TextItem):
 
     # instance attributes
     _name        : str
-    _cleat       : HandleId
+    _cleat       : HandleId | None
     _cleat_shown : bool
     _tether      : TetherItem | None
 
@@ -208,11 +208,7 @@ class PropertyTextItem(TextItem):
                 return settings_name
         return "PropertyText"
 
-    def cleatEnumTypeName(self : Self) -> str:
-        item : ItemHandlesMixin = self.item()
-        return item._HANDLE_ENUM.__name__
-
-    def cleat(self : Self) -> str | None:
+    def cleat(self : Self) -> HandleId | None:
         return self._cleat
 
     def setCleat(

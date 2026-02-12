@@ -1,4 +1,6 @@
-from typing import Self
+from typing import Self, TypeVar, Generic
+
+import typing
 
 from PyQt6.QtCore import QPointF, QRectF
 
@@ -10,7 +12,27 @@ from .origin import ItemOriginMixin
 from .grip   import ItemGripMixin
 
 
-class ItemHandlesMixin(ItemGripMixin):
+T = TypeVar("T", bound="HandleId")
+
+
+class ItemHandlesMixin(ItemGripMixin, Generic[T]):
+
+    @classmethod
+    def handleIdType(cls) -> type[HandleId]:
+        """Return the HandleId subclass used by this item."""
+        for base in cls.__orig_bases__:
+            origin = typing.get_origin(base)
+            if origin is ItemHandlesMixin or (
+                isinstance(origin, type) and issubclass(origin, ItemHandlesMixin)
+            ):
+                args = typing.get_args(base)
+                if args:
+                    return args[0]
+        raise TypeError(f"{cls.__name__} does not parameterize ItemHandlesMixin")
+
+    def handles(self : Self) -> dict[RectHandleId, "HandleItem"]:
+        return self._handles
+
     def getHandle(self : Self, id : HandleId) -> "HandleItem":
         return self._handles[id]
 
@@ -18,7 +40,7 @@ class ItemHandlesMixin(ItemGripMixin):
         raise NotImplementedError("Subclass must implement this method")
 
 
-class ItemRectHandlesMixin(ItemHandlesMixin):
+class ItemRectHandlesMixin(ItemHandlesMixin[RectHandleId]):
     # instance attributes
     _handles : dict[RectHandleId, "HandleItem"]
 
