@@ -74,7 +74,7 @@ class PropertyTextItem(TextItem):
     _PROPERTIES = \
         {
             "Name" : InherentProperty(
-                kind   = "Str",
+                kind   = "str",
                 getter = lambda self: self.name(),
                 setter = lambda self, value: self.setName(value)
             ),

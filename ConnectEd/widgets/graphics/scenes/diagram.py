@@ -21,27 +21,27 @@ class DiagramScene(DrawingScene):
     # class attributes
     _PROPERTIES = DrawingScene._PROPERTIES | {
         "Sheet Name" : InherentProperty(
-            kind   = "Str",
+            kind   = "str",
             getter = lambda self: self.getSheetName(),
             setter = lambda self, value: self.setSheetName(value)
         ),
         "Sheet Width" : InherentProperty(
-            kind   = "Float",
+            kind   = "float",
             getter = lambda self: self.getSheetWidth(),
             setter = lambda self, value: self.setSheetWidth(value)
         ),
         "Sheet Height" : InherentProperty(
-            kind   = "Float",
+            kind   = "float",
             getter = lambda self: self.getSheetHeight(),
             setter = lambda self, value: self.setSheetHeight(value)
         ),
         "Margin" : InherentProperty(
-            kind   = "Float",
+            kind   = "float",
             getter = lambda self: self.margin,
             setter = lambda self, value: self.setMargin(value)
         ),
         "Border" : InherentProperty(
-            kind   = "Float",
+            kind   = "float",
             getter = lambda self: self.border,
             setter = lambda self, value: self.setBorder(value)
         )

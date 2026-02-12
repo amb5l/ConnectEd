@@ -19,19 +19,19 @@ class BlockItem(BaseRectangleItem):
     # class attributes
     _PROPERTIES = {
         "Label" : InherentProperty(
-            kind   = "Str",
+            kind   = "str",
             valid  = lambda self: self._label != "",
             getter = lambda self: self._label,
             setter = lambda self, value: setattr(self, "_label", value)
         ),
         "Name" : InherentProperty(
-            kind   = "Str",
+            kind   = "str",
             valid  = lambda self: self._name != "",
             getter = lambda self: self._name,
             setter = lambda self, value: setattr(self, "_name", value)
         ),
         "Path" : InherentProperty(
-            kind   = "Str",
+            kind   = "str",
             valid  = lambda self: self._path != "",
             getter = lambda self: self._path,
             setter = lambda self, value: setattr(self, "_path", value)

@@ -26,7 +26,7 @@ class ItemLocMixin:
             setter = lambda self, value: self.setLocEdge(value)
         ),
         "Offset" : InherentProperty(
-            kind   = "Float",
+            kind   = "float",
             getter = lambda self: self.loc().offset,
             setter = lambda self, value: self.setLocOffset(value)
         )

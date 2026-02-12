@@ -148,13 +148,13 @@ class TextItem(
     _PROPERTIES_SIZE = \
         {
             "Width" : InherentProperty(
-                kind   = "Float",
+                kind   = "float",
                 valid  = lambda self: self.width() is not None,
                 getter = lambda self: self.width(),
                 setter = lambda self, value: self.setWidth(value)
             ),
             "Height" : InherentProperty(
-                kind   = "Float",
+                kind   = "float",
                 valid  = lambda self: self.height() is not None,
                 getter = lambda self: self.height(),
                 setter = lambda self, value: self.setHeight(value)

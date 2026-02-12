@@ -33,7 +33,7 @@ class PortPinMixin(
     _PROPERTIES_NAME = \
         {
             "Name" : InherentProperty(
-                kind   = "Str",
+                kind   = "str",
                 getter = lambda self: self._name,
                 setter = lambda self, value: setattr(self, "_name", value),
             )
@@ -49,7 +49,7 @@ class PortPinMixin(
     _PROPERTIES_COMMENT = \
         {
             "Comment" : InherentProperty(
-                kind   = "Str",
+                kind   = "str",
                 valid  = lambda self: self._comment != "",
                 getter = lambda self: self._comment,
                 setter = lambda self, value: setattr(self, "_comment", value)

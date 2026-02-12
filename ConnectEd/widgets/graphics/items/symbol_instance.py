@@ -24,7 +24,7 @@ class BaseSymbolInstanceItem(ItemPosMixin, ItemRotateMixin, BaseRectangleItem):
     _PROPERTIES_NAME = \
         {
             "Name" : InherentProperty(
-                kind   = "Str",
+                kind   = "str",
                 getter = lambda self: self._symbol.name(),
                 setter = lambda self, value: self._symbol.setName(value)
             )
@@ -86,7 +86,7 @@ class SymbolInstanceItem(BaseSymbolInstanceItem):
     _PROPERTIES_LABEL = \
         {
             "Label" : InherentProperty(
-                kind   = "Str",
+                kind   = "str",
                 getter = lambda self: self._label,
                 setter = lambda self, value: setattr(self, "_label", value)
             )
