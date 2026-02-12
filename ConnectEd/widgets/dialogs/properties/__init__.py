@@ -73,7 +73,8 @@ class PropertiesDialog(QDialog):
         # initialise
         self._item = item
         super().__init__(view)
-        self.setWindowTitle(f"{item.__class__.__name__} Properties")
+        item_name = item.__class__.__name__.replace("Item", "")
+        self.setWindowTitle(f"{item_name} Properties")
         self.setModal(True)
         self._dialog_layout = QVBoxLayout(self)
         # create model
