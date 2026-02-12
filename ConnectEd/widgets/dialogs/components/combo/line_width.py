@@ -68,7 +68,7 @@ class LineWidthComboBox(QComboBox):
         # enable custom dialog
         self.activated.connect(self._onActivated)
 
-    def value(self : Self) -> NoChange | Default | float | int:
+    def value(self : Self) -> float | int | Default | NoChange:
         return self.itemData(self.currentIndex(), Qt.ItemDataRole.UserRole)
 
     def _onActivated(self : Self, index : int) -> None:
