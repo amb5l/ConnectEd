@@ -1,12 +1,19 @@
 from typing import Self
 
-from PyQt6.QtGui     import QAction
+from PyQt6.QtCore    import QPointF
 from PyQt6.QtWidgets import QMenu
+from PyQt6.QtGui     import QAction
+
+from ....core.types import BlockPinHandleId, RectHandleId
+
+from ..properties import PropertyTextSpec
+
+from .base_pin import BasePinArrowItem, BasePinItem, _INT_ARROW_SIZE
+from .port_pin import PortPinMixin
+from .handle   import HandleItem
 
 from .mixin.loc import ItemLocMixin
 
-from .port_pin import PortPinMixin
-from .base_pin import BasePinArrowItem, BasePinItem, _INT_ARROW_SIZE
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -27,6 +34,27 @@ class BlockPinItem(ItemLocMixin, BasePinItem):
         PortPinMixin._PROPERTIES_DIR | \
         ItemLocMixin._PROPERTIES_LOC | \
         PortPinMixin._PROPERTIES_COMMENT
+    _PROPERTY_TEXTS = {
+            "Name" : PropertyTextSpec(
+                cleat=BlockPinHandleId.NAME, origin=RectHandleId.MIDDLE_LEFT
+            )
+        }
+
+    def initHandles(self : Self) -> None:
+        self._handles = {
+            BlockPinHandleId.ENTRY : HandleItem(
+                id     = BlockPinHandleId.ENTRY,
+                pos    = QPointF(0, 0),
+                kind   = "move",
+                parent = self
+            ),
+            BlockPinHandleId.NAME : HandleItem(
+                id     = BlockPinHandleId.NAME,
+                pos    = QPointF(self._AP_NAME_OFFSET, 0),
+                kind   = "move",
+                parent = self
+            )
+        }
 
     def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
         return [

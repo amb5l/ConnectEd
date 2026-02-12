@@ -4,7 +4,7 @@ from PyQt6.QtCore import QPointF
 
 from ....core.types import Direction, BlockPinHandleId
 
-from ..properties import PropertyTextSpec, InherentProperty, PropertiesMixin
+from ..properties import InherentProperty, PropertiesMixin
 
 from .handle        import HandleItem
 from .entry         import EntryItem
@@ -29,7 +29,7 @@ class PortPinMixin(
     PropertiesMixin
 ):
     # class attributes
-    _AP_NAME_OFFSET = 1.5
+    _PIN_NAME_OFFSET = 1.5
     _PROPERTIES_NAME = \
         {
             "Name" : InherentProperty(
@@ -55,12 +55,6 @@ class PortPinMixin(
                 setter = lambda self, value: setattr(self, "_comment", value)
             )
         }
-    _PROPERTY_TEXTS = {
-        "Name" : PropertyTextSpec(
-            cleat=BlockPinHandleId.NAME, origin=BlockPinHandleId.ENTRY
-        )
-    }
-
 
     # instance attributes
     _name      : str
@@ -80,20 +74,7 @@ class PortPinMixin(
         self._entry = EntryItem(self)
 
     def initHandles(self : Self) -> None:
-        self._handles = {
-            BlockPinHandleId.ENTRY : HandleItem(
-                id     = BlockPinHandleId.ENTRY,
-                pos    = QPointF(0, 0),
-                kind   = "move",
-                parent = self
-            ),
-            BlockPinHandleId.NAME : HandleItem(
-                id     = BlockPinHandleId.NAME,
-                pos    = QPointF(self._AP_NAME_OFFSET, 0),
-                kind   = "move",
-                parent = self
-            )
-        }
+        raise NotImplementedError("Subclass must implement this method")
 
     def name(self : Self) -> str:
         return self._name

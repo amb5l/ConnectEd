@@ -1,19 +1,23 @@
 from typing import Self
 
 from PyQt6.QtCore    import QPointF
-from PyQt6.QtWidgets import QGraphicsItem, QMenu
+from PyQt6.QtWidgets import QMenu
 from PyQt6.QtGui     import QAction
 
-from ....core.types import SymbolPinHandleId
+from ....core.defs  import PITCH
+from ....core.types import RectHandleId, SymbolPinHandleId
 
-from .mixin.pos     import ItemPosMixin
-from .mixin.rotate  import ItemRotateMixin
-from .mixin.line    import ItemLineMixin
+from ..properties import PropertyTextSpec
 
 from .port_pin import PortPinMixin
 from .base_pin import BasePinArrowItem, BasePinItem, \
                       BasePinDotMixin, BasePinClockMixin, \
                       _PIN_CLK_SIZE
+from .handle   import HandleItem
+
+from .mixin.pos     import ItemPosMixin
+from .mixin.rotate  import ItemRotateMixin
+from .mixin.line    import ItemLineMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -43,13 +47,33 @@ class SymbolPinItem(
         ItemPosMixin._PROPERTIES_POS | \
         ItemRotateMixin._PROPERTIES_ROTATE | \
         ItemLineMixin._PROPERTIES_LINE
+    _PROPERTY_TEXTS = {
+            "Name" : PropertyTextSpec(
+                cleat=SymbolPinHandleId.NAME, origin=RectHandleId.MIDDLE_LEFT
+            )
+        }
 
-    def __init__(
-        self   : Self,
-        parent : QGraphicsItem | None = None,
-        fresh  : bool = True
-    ) -> None:
-        super().__init__(parent, fresh)
+    def initHandles(self : Self) -> None:
+        self._handles = {
+            SymbolPinHandleId.ORIGIN : HandleItem(
+                id     = SymbolPinHandleId.ORIGIN,
+                pos    = QPointF(0, 0),
+                kind   = "move",
+                parent = self
+            ),
+            SymbolPinHandleId.ENTRY : HandleItem(
+                id     = SymbolPinHandleId.ENTRY,
+                pos    = QPointF(-PITCH, 0),
+                kind   = "move",
+                parent = self
+            ),
+            SymbolPinHandleId.NAME : HandleItem(
+                id     = SymbolPinHandleId.NAME,
+                pos    = QPointF(self._PIN_NAME_OFFSET, 0),
+                kind   = "move",
+                parent = self
+            )
+        }
 
     def moveHandleBy(self : Self, _, delta : QPointF) -> None:
         """Move the entire SymbolPin when any grip is dragged."""
@@ -76,5 +100,5 @@ class SymbolPinItem(
         key = (self._dot, self._clock)
         self.setPath(scene.paths["SymbolPin"][key])
         self._handles[SymbolPinHandleId.NAME].setPos(QPointF(
-            self._AP_NAME_OFFSET + (_PIN_CLK_SIZE if self._clock else 0), 0
+            self._PIN_NAME_OFFSET + (_PIN_CLK_SIZE if self._clock else 0), 0
         ))
