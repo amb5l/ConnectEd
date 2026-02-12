@@ -65,10 +65,11 @@ class BasePinArrowItem(
         if scene is None:
             if (scene := self.scene()) is None:
                 return
+        key = self.__class__.__name__.removesuffix("Item")
         if hasattr(scene, 'paths') \
-        and self.__class__.__name__ in scene.paths \
-        and self._direction.value in scene.paths[self.__class__.__name__]:
-            path = scene.paths[self.__class__.__name__][self._direction.value]
+        and key in scene.paths \
+        and self._direction.value in scene.paths[key]:
+            path = scene.paths[key][self._direction.value]
             self.setPath(path)
 
 
