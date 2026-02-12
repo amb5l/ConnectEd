@@ -3,6 +3,8 @@ from typing import Self
 from PyQt6.QtCore    import Qt
 from PyQt6.QtWidgets import QWidget, QComboBox
 
+from .....app import logger
+
 from .....core.check import checked
 from .....core.types import Default, DEFAULT, NoChange, NO_CHANGE
 from .....core.utils import val2str
@@ -14,6 +16,9 @@ from .. import CUSTOM_ICON_SIZE
 
 class FontSizeComboBox(QComboBox):
     _SIZES = [6, 7, 8, 9, 10, 12, 14, 16, 18, 24, 36, 48, 72]
+
+    _idx_default : int
+    _idx_custom  : int
 
     @checked
     def __init__(
@@ -49,7 +54,9 @@ class FontSizeComboBox(QComboBox):
         # add no change, default and custom entries
         if initial is NO_CHANGE:
             self.addItem(f"<no change{no_change_str}>", no_change_value)
+        self._idx_default = self.count()
         self.addItem(f"<default{default_str}>", default_value)
+        self._idx_custom = self.count()
         self.addItem(f"<custom{custom_str}>", custom_value)
         # add standard entries, set current index
         self.setCurrentIndex(0)
@@ -63,8 +70,20 @@ class FontSizeComboBox(QComboBox):
         self.activated.connect(self._onActivated)
 
     @checked
-    def value(self : Self) -> float | Default | NoChange | None:
+    def value(self : Self) -> float | Default | NoChange:
         return self.itemData(self.currentIndex(), Qt.ItemDataRole.UserRole)
+
+    @checked
+    def setValue(self : Self, value : float | Default) -> None:
+        if value is DEFAULT:
+            index = self._idx_default
+        else:
+            index = self.findData(value, Qt.ItemDataRole.UserRole)
+            if index < 0:
+                index = self._idx_custom
+                self.setItemText(index, f"<custom = {val2str(value)}>")
+                self.setItemData(index, value, Qt.ItemDataRole.UserRole)
+        self.setCurrentIndex(index)
 
     def _onActivated(self : Self, index : int) -> None:
         if self.currentText().startswith("<custom"):

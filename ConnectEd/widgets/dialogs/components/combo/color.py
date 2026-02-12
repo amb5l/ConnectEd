@@ -4,6 +4,8 @@ from PyQt6.QtCore    import Qt
 from PyQt6.QtWidgets import QWidget, QComboBox
 from PyQt6.QtGui     import QColor, QIcon, QPixmap, QPainter
 
+from .....app import logger
+
 from .....core.check import checked
 from .....core.types import Default, DEFAULT, NoChange, NO_CHANGE
 from .....core.utils import val2str
@@ -33,6 +35,9 @@ class ColorComboBox(QComboBox):
         "Light Gray"   : QColor(Qt.GlobalColor.lightGray),
         "White"        : QColor(Qt.GlobalColor.white)
     }
+
+    _idx_default : int
+    _idx_custom  : int
 
     @checked
     def __init__(
@@ -72,9 +77,9 @@ class ColorComboBox(QComboBox):
         # add no change, default and custom entries
         if initial is NO_CHANGE:
             self.addItem(no_change_icon, f"<no change{no_change_str}>", no_change_value)
-        default_idx = self.count()
+        self._idx_default = self.count()
         self.addItem(default_icon, f"<default{default_str}>", default_value)
-        custom_idx = self.count()
+        self._idx_custom = self.count()
         self.addItem(custom_icon, f"<custom{custom_str}>", custom_value)
         # add standard entries, set current index
         self.setCurrentIndex(0)
@@ -83,16 +88,28 @@ class ColorComboBox(QComboBox):
         for k, v in self._COLORS.items():
             self.addItem(self._getIcon(v), k, v)
             if initial == v:
-                self.setItemText(custom_idx, f"<custom = {k}>")
+                self.setItemText(self._idx_custom, f"<custom = {k}>")
                 self.setCurrentIndex(self.count() - 1)
             if default == v:
-                self.setItemText(default_idx, f"<default = {k}>")
+                self.setItemText(self._idx_default, f"<default = {k}>")
         # enable custom dialog
         self.activated.connect(self._onActivated)
 
     @checked
     def value(self : Self) -> QColor | Default | NoChange:
         return self.itemData(self.currentIndex(), Qt.ItemDataRole.UserRole)
+
+    @checked
+    def setValue(self : Self, value : QColor | Default) -> None:
+        if value is DEFAULT:
+            index = self._idx_default
+        else:
+            index = self.findData(value, Qt.ItemDataRole.UserRole)
+            if index < 0:
+                index = self._idx_custom
+                self.setItemText(index, f"<custom = {val2str(value)}>")
+                self.setItemData(index, value, Qt.ItemDataRole.UserRole)
+        self.setCurrentIndex(index)
 
     def _onActivated(self : Self, index : int) -> None:
         if self.currentText().startswith("<custom"):

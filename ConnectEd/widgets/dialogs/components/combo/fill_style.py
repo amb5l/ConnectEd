@@ -6,9 +6,9 @@ from PyQt6.QtGui     import QIcon, QPixmap, QPainter, QBrush
 
 from .....app import logger
 
-from .....core.icon import getFgBgColors
-
+from .....core.check import checked
 from .....core.types import Default, DEFAULT, NoChange, NO_CHANGE
+from .....core.icon import getFgBgColors
 
 from .. import CUSTOM_ICON_SIZE, NoChangeIcon, DefaultIcon
 
@@ -33,6 +33,9 @@ class FillStyleComboBox(QComboBox):
     }
     _STYLES_REV = {v: k for k, v in _STYLES.items()}
 
+    _idx_default : int
+
+    @checked
     def __init__(
         self      : Self,
         initial   : Qt.BrushStyle | Default | NoChange,
@@ -59,6 +62,7 @@ class FillStyleComboBox(QComboBox):
         # add no change and default entries
         if initial is NO_CHANGE:
             self.addItem(no_change_icon, f"<no change{no_change_str}>", no_change_value)
+        self._idx_default = self.count()
         self.addItem(default_icon, f"<default{default_str}>", default_value)
         # add standard entries, set current index
         self.setCurrentIndex(0)
@@ -69,18 +73,20 @@ class FillStyleComboBox(QComboBox):
             if initial == v:
                 self.setCurrentIndex(self.count() - 1)
 
+    @checked
     def value(self : Self) -> Qt.BrushStyle | Default | NoChange:
-        text = self.currentText()
-        if text.startswith("<no change"):
-            return NO_CHANGE
-        elif text.startswith("<default"):
-            return DEFAULT
+        return self.itemData(self.currentIndex(), Qt.ItemDataRole.UserRole)
+
+    @checked
+    def setValue(self : Self, value : Qt.BrushStyle | Default) -> None:
+        if value is DEFAULT:
+            index = self._idx_default
         else:
-            keys = list(self._STYLES.keys())
-            if text in keys:
-                return self._STYLES[text]
-            logger().warning(f"Invalid fill style: {text}")
-            return Qt.BrushStyle.NoBrush
+            index = self.findData(value, Qt.ItemDataRole.UserRole)
+            if index < 0:
+                logger().error(f"Invalid value: {value}")
+                return
+        self.setCurrentIndex(index)
 
     def _getIcon(self : Self, style : Qt.BrushStyle) -> QIcon:
         fg, bg = getFgBgColors()

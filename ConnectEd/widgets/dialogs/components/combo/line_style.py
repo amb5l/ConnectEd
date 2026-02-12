@@ -4,7 +4,10 @@ from PyQt6.QtCore    import Qt
 from PyQt6.QtWidgets import QWidget, QComboBox
 from PyQt6.QtGui     import QIcon, QPixmap, QPainter, QPen
 
-from .....core.icon import getFgBgColors
+from .....app import logger
+
+from .....core.check import checked
+from .....core.icon  import getFgBgColors
 
 from .....core.types import Default, DEFAULT, NoChange, NO_CHANGE
 
@@ -22,6 +25,9 @@ class LineStyleComboBox(QComboBox):
     }
     _STYLES_REV = {v: k for k, v in _STYLES.items()}
 
+    _idx_default : int
+
+    @checked
     def __init__(
         self      : Self,
         initial   : Qt.PenStyle | Default | NoChange,
@@ -48,6 +54,7 @@ class LineStyleComboBox(QComboBox):
         # add no change and default entries
         if initial is NO_CHANGE:
             self.addItem(no_change_icon, f"<no change{no_change_str}>", no_change_value)
+        self._idx_default = self.count()
         self.addItem(default_icon, f"<default{default_str}>", default_value)
         # add standard entries, set current index
         self.setCurrentIndex(0)
@@ -58,8 +65,20 @@ class LineStyleComboBox(QComboBox):
             if initial == v:
                 self.setCurrentIndex(self.count() - 1)
 
+    @checked
     def value(self : Self) -> Qt.PenStyle | Default | NoChange:
         return self.itemData(self.currentIndex(), Qt.ItemDataRole.UserRole)
+
+    @checked
+    def setValue(self : Self, value : Qt.PenStyle | Default) -> None:
+        if value is DEFAULT:
+            index = self._idx_default
+        else:
+            index = self.findData(value, Qt.ItemDataRole.UserRole)
+            if index < 0:
+                logger().error(f"Invalid value: {value}")
+                return
+        self.setCurrentIndex(index)
 
     def _getIcon(self : Self, style : Qt.PenStyle) -> QIcon:
         fg, bg = getFgBgColors()

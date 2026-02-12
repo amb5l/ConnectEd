@@ -4,9 +4,12 @@ from PyQt6.QtCore    import Qt
 from PyQt6.QtWidgets import QWidget, QComboBox
 from PyQt6.QtGui     import QIcon, QPixmap, QPainter, QPen
 
+from .....app import logger
+
+from .....core.check import checked
 from .....core.types import Default, DEFAULT, NoChange, NO_CHANGE
-from .....core.icon  import getFgBgColors
 from .....core.utils import val2str
+from .....core.icon  import getFgBgColors
 
 from .. import CUSTOM_ICON_SIZE, NoChangeIcon, DefaultIcon, QueryIcon
 
@@ -14,6 +17,10 @@ from ...float import FloatDialog
 
 
 class LineWidthComboBox(QComboBox):
+    _idx_default : int
+    _idx_custom  : int
+
+    @checked
     def __init__(
         self      : Self,
         initial   : float | int | Default | NoChange,
@@ -55,7 +62,9 @@ class LineWidthComboBox(QComboBox):
         # add no change, default and custom entries
         if initial is NO_CHANGE:
             self.addItem(no_change_icon, f"<no change{no_change_str}>", no_change_value)
+        self._idx_default = self.count()
         self.addItem(default_icon, f"<default{default_str}>", default_value)
+        self._idx_custom = self.count()
         self.addItem(custom_icon, f"<custom{custom_str}>", custom_value)
         # add standard entries, set current index
         self.setCurrentIndex(0)
@@ -68,8 +77,21 @@ class LineWidthComboBox(QComboBox):
         # enable custom dialog
         self.activated.connect(self._onActivated)
 
-    def value(self : Self) -> float | int | Default | NoChange:
+    @checked
+    def value(self : Self) -> float | Default | NoChange:
         return self.itemData(self.currentIndex(), Qt.ItemDataRole.UserRole)
+
+    @checked
+    def setValue(self : Self, value : float | Default) -> None:
+        if value is DEFAULT:
+            index = self._idx_default
+        else:
+            index = self.findData(value, Qt.ItemDataRole.UserRole)
+            if index < 0:
+                index = self._idx_custom
+                self.setItemText(index, f"<custom = {val2str(value)}>")
+                self.setItemData(index, value, Qt.ItemDataRole.UserRole)
+        self.setCurrentIndex(index)
 
     def _onActivated(self : Self, index : int) -> None:
         if self.currentText().startswith("<custom"):

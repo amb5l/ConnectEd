@@ -1,12 +1,19 @@
 from typing import Self
 
+from PyQt6.QtCore    import Qt
 from PyQt6.QtWidgets import QWidget, QComboBox
 from PyQt6.QtGui     import QFontDatabase
 
+from .....app import logger
+
+from .....core.check import checked
 from .....core.types import Default, DEFAULT, NoChange, NO_CHANGE
 
 
 class FontFamilyComboBox(QComboBox):
+    _idx_default : int
+
+    @checked
     def __init__(
         self    : Self,
         initial : str | Default | NoChange,
@@ -25,6 +32,7 @@ class FontFamilyComboBox(QComboBox):
         # add no change and default entries
         if initial is NO_CHANGE:
             self.addItem(f"<no change{no_change_str}>", no_change_value)
+        self._idx_default = self.count()
         self.addItem(f"<default{default_str}>", default_value)
         # add standard entries, set current index
         self.setCurrentIndex(0)
@@ -35,11 +43,17 @@ class FontFamilyComboBox(QComboBox):
             if initial == family:
                 self.setCurrentIndex(self.count() - 1)
 
-    def value(self : Self) -> NoChange | Default | str:
-        text = self.currentText()
-        if text.startswith("<no change"):
-            return NO_CHANGE
-        elif text.startswith("<default"):
-            return DEFAULT
+    @checked
+    def value(self : Self) -> str | Default | NoChange:
+        return self.itemData(self.currentIndex(), Qt.ItemDataRole.UserRole)
+
+    @checked
+    def setValue(self : Self, value : str | Default) -> None:
+        if value is DEFAULT:
+            index = self._idx_default
         else:
-            return text
+            index = self.findData(value, Qt.ItemDataRole.UserRole)
+            if index < 0:
+                logger().error(f"Invalid value: {value}")
+                return
+        self.setCurrentIndex(index)

@@ -1,51 +1,59 @@
 from typing import Self
 
+from PyQt6.QtCore    import Qt
 from PyQt6.QtWidgets import QWidget, QComboBox
 
+from .....app import logger
+
+from .....core.check import checked
 from .....core.types import Default, DEFAULT, NoChange, NO_CHANGE
 
 
 class FontBoolComboBox(QComboBox):
+    _idx_default : int
+
+    @checked
     def __init__(
         self      : Self,
-        initial   : NoChange | Default | bool,
-        default   : Default | bool,
-        no_change : NoChange | Default | bool | None = None,
+        initial   : bool | Default | NoChange,
+        default   : bool | NoChange,
         parent    : QWidget | None = None
     ) -> None:
         super().__init__(parent)
+        # build default string and value
         default_str = \
-            " = On"  if default is True else \
-            " = Off" if default is False else \
-            ""
-        default_idx = 1
+            "" if default is NO_CHANGE else " = On"  if default else " = Off"
+        default_value = default if isinstance(default, bool) else NO_CHANGE
+        # build no change string and value
         no_change_str = \
-            " = On"                    if no_change is True else \
-            " = Off"                   if no_change is False else \
-            f" = default{default_str}" if no_change is DEFAULT else \
-            ""
-        no_change_idx = 0
-        if no_change is not None or initial is NO_CHANGE:
-            self.addItem(f"<no change{no_change_str}>")
-        else:
-            no_change_idx = -1
-            default_idx   = 0
-        self.addItem(f"<default{default_str}>")
-        self.addItem("Off")
-        self.addItem("On")
-        self.setCurrentIndex(
-            default_idx + 2 if initial is True    else
-            default_idx + 1 if initial is False   else
-            default_idx     if initial is DEFAULT else
-            no_change_idx
-        )
+            "" if initial is NO_CHANGE else \
+            " = default" if initial is DEFAULT else \
+            " = On" if initial else " = Off"
+        no_change_value = initial if isinstance(initial, bool) \
+            else default_value if initial is DEFAULT else NO_CHANGE
+        # add no change and default entries
+        if initial is NO_CHANGE:
+            self.addItem(f"<no change{no_change_str}>", no_change_value)
+        self._idx_default = self.count()
+        self.addItem(f"<default{default_str}>", default_value)
+        # add standard entries, set current index
+        self.setCurrentIndex(0)
+        for text, value in {"On": True, "Off": False}.items():
+            self.addItem(text, value)
+            if initial == value:
+                self.setCurrentIndex(self.count() - 1)
 
-    def value(self : Self) -> bool | Default | NoChange | None:
-        if self.currentIndex() < 0:
-            return None
-        if self.currentText().startswith("<no change"):
-            return NO_CHANGE
-        elif self.currentText().startswith("<default"):
-            return DEFAULT
+    @checked
+    def value(self : Self) -> bool | Default | NoChange:
+        return self.itemData(self.currentIndex(), Qt.ItemDataRole.UserRole)
+
+    @checked
+    def setValue(self : Self, value : bool | Default | NoChange) -> None:
+        if value is DEFAULT:
+            index = self._idx_default
         else:
-            return self.currentText().lower() == "on"
+            index = self.findData(value, Qt.ItemDataRole.UserRole)
+            if index < 0:
+                logger().error(f"Invalid value: {value}")
+                return
+        self.setCurrentIndex(index)
