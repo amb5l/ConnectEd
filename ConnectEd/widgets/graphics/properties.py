@@ -91,13 +91,15 @@ class InherentProperty:
     getter   : Callable[["Owner"], Any]                  | None = None
     setter   : Callable[["Owner", Any], None]            | None = None
     default  : Callable[["Owner"], Any]                  | None = None
-    notifier : PropertyNotifier                          | None  = None
+    notifier : PropertyNotifier                          | None = None
+    text     : PropertyTextItem                          | None = None
 
 
 @dataclass
 class CustomProperty:
-    value    : Text | None = None
-    notifier : PropertyNotifier                     | None  = None
+    value    : Text | None             = None
+    notifier : PropertyNotifier | None = None
+    text     : PropertyTextItem | None = None
 
 
 class PropertyDisplay(Enum):
