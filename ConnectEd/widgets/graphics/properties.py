@@ -63,8 +63,8 @@ class PropertyTextSpec:
     origin    : str              = "Top Left"
     align_h   : AlignH           = AlignH.LEFT
     align_v   : AlignV           = AlignV.TOP
-    width     : float | None     = None
-    height    : float | None     = None
+    width     : float            = -1.0
+    height    : float            = -1.0
     color     : QColor | Default = DEFAULT
     family    : str    | Default = DEFAULT
     size      : float  | Default = DEFAULT
