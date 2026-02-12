@@ -140,7 +140,7 @@ class PropertiesDialog(QDialog):
                 self._table_model.item(row, col) \
                     for col in range(self._table_model.columnCount())
             ]
-            row_values : list[Any] = [item.initial() for item in row_items]
+            row_values : list[Any] = [item.value() for item in row_items]
             after_name = row_values[0]
             if after_name in after_names:
                 QMessageBox.warning(
