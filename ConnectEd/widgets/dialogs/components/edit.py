@@ -10,6 +10,12 @@ class TextLineEditor(QLineEdit):
         super().__init__(parent)
         self.setText(value)
 
+    def value(self : Self) -> str:
+        return self.text()
+
+    def setValue(self : Self, value : str) -> None:
+        self.setText(value)
+
 
 class IntEditor(QLineEdit):
     def __init__(self : Self, value : int, parent=None):
@@ -17,14 +23,14 @@ class IntEditor(QLineEdit):
         self.setValidator(QIntValidator())
         self.setText(str(value))
 
-    def setValue(self : Self, value : int) -> None:
-        self.setText(str(value))
-
-    def getValue(self : Self) -> int:
+    def value(self : Self) -> int:
         try:
             return int(self.text())
         except ValueError:
             return 0
+
+    def setValue(self : Self, value : int) -> None:
+        self.setText(str(value))
 
 
 class FloatEditor(QLineEdit):
@@ -33,14 +39,14 @@ class FloatEditor(QLineEdit):
         self.setValidator(QDoubleValidator())
         self.setValue(value)
 
-    def setValue(self : Self, value : float) -> None:
-        self.setText(str(value))
-
-    def getValue(self : Self) -> float:
+    def value(self : Self) -> float:
         try:
             return float(self.text())
         except ValueError:
             return 0.0
+
+    def setValue(self : Self, value : float) -> None:
+        self.setText(str(value))
 
 
 class BoolEditor(QCheckBox):
@@ -48,11 +54,11 @@ class BoolEditor(QCheckBox):
         super().__init__(parent)
         self.setChecked(value)
 
+    def value(self : Self) -> bool:
+        return self.isChecked()
+
     def setValue(self : Self, value : bool) -> None:
         self.setChecked(value)
-
-    def getValue(self : Self) -> bool:
-        return self.isChecked()
 
 
 class TextBlockEditor(QTextEdit):
@@ -60,8 +66,11 @@ class TextBlockEditor(QTextEdit):
         super().__init__(parent)
         self.setPlainText(value)
 
-    def text(self : Self) -> str:
+    def value(self : Self) -> str:
         return self.toPlainText()
+
+    def setValue(self : Self, value : str) -> None:
+        self.setPlainText(value)
 
 
 class TextEditor(QHBoxLayout):
@@ -77,8 +86,11 @@ class TextEditor(QHBoxLayout):
         self.addWidget(self._editor)
         self.addWidget(self._button)
 
-    def getText(self : Self) -> str:
+    def value(self : Self) -> str:
         return self._editor.text()
+
+    def setValue(self : Self, value : str) -> None:
+        self._editor.setText(value)
 
     def _onButtonClick(self : Self) -> None:
         # launch text editor dialog
