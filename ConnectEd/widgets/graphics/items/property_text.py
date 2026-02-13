@@ -189,10 +189,6 @@ class PropertyTextItem(TextItem):
         if hasattr(self, "_tether"):
             self._tether.onSettingsChange()
 
-    def onSceneRotationChange(self : Self) -> None:
-        """Rotation compensation not currently supported."""
-        pass
-
     def onTextChange(self : Self) -> None:
         text = val2str(self.value())
         if text == "":
