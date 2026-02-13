@@ -4,7 +4,7 @@ from PyQt6.QtCore    import QPointF
 from PyQt6.QtWidgets import QMenu
 from PyQt6.QtGui     import QAction
 
-from ......core.utils import sign
+from ......core.utils import sign, itemsTypeDict
 
 from .....dialogs.arc import ArcDialog
 
@@ -16,6 +16,7 @@ from ....items.symbol_pin import SymbolPinItem
 from ....items.entry      import EntryItem
 from ....items.conn_vtx   import ConnVtxItem
 from ....items.conn_seg   import ConnSegItem, ConnSegPreview1Item, ConnSegPreview2Item
+from ....items.junction   import JunctionItem
 from ....items.line       import LineItem
 from ....items.rectangle  import RectangleItem
 from ....items.ellipse    import EllipseItem
@@ -265,22 +266,21 @@ class PlaceConnInteraction(Interaction):
 
     def commit(self : Self, pos : QPointF, complete : bool = False) -> bool:
         self._updateVertices(pos)
-        # get scene content before changing it
-        items_1 = self._scene.items(self._p1())
-        connectables_1 = [item for item in items_1 \
-            if isinstance(item, ConnSegItem | ConnVtxItem | EntryItem)]
-        items_2 = self._scene.items(self._p2())
-        connectables_2 = [item for item in items_2 \
-            if isinstance(item, ConnSegItem | ConnVtxItem | EntryItem)]
         # create first segment
         self._scene.addConnSeg(self._p0(), self._p1(), undoable=True)
-        if connectables_1:
+        terminals_1 = [
+            i for i in self._scene.items(self._p1()) \
+                if isinstance(i, JunctionItem | EntryItem)
+        ]
+        if terminals_1:
             self._cleanup()
             return True  # interaction completed
-        # create second segment if...
-        # - complete is requested
-        # - mouse is over a connectable destination
-        if complete or connectables_2:
+        # create second segment if complete is requested or mouse is over a terminal
+        terminals_2 = [
+            i for i in self._scene.items(self._p2()) \
+                if isinstance(i, ConnSegItem | ConnVtxItem |JunctionItem | EntryItem)
+        ]
+        if complete or terminals_2:
             self._scene.addConnSeg(self._p1(), self._p2(), undoable=True)
             self._cleanup()
             return True  # interaction completed
@@ -343,4 +343,5 @@ class PlaceConnInteraction(Interaction):
 
     def _cleanup(self : Self) -> None:
         for item in [self._seg1, self._seg2]:
-            self._scene.removeItem(item)
+            if item.scene() is not None:
+                item.scene().removeItem(item)
