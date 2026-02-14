@@ -45,6 +45,7 @@ from ...app  import logger
 
 from ...core.types import Default, DEFAULT, NoChange, NO_CHANGE, \
                           AlignH, AlignV, Text
+from ...core.utils import str2val
 
 from .items import ItemType
 
@@ -394,6 +395,10 @@ class PropertiesMixin:
             if not callable(property.setter):
                 logger().warning(f"Property '{name}' is read-only")
                 return False
+            # convert from str to appropriate type if necessary
+            kind = self.getPropertyKind(name)
+            if isinstance(value, str) and kind != "str":
+                value = str2val(value, kind)
             property.setter(self, value)
         # custom properties
         elif isinstance(property, CustomProperty):
@@ -416,10 +421,8 @@ class PropertiesMixin:
         for use in deserialization, and for creating new custom properties.
         Returns True if the property was initialized, False otherwise.
         """
-        if self.hasProperty(name):
-            self.addProperty(name, value)
-        else:
-            return self.setPropertyValue(name, value)
+        f = self.setPropertyValue if self.hasProperty(name) else self.addProperty
+        return f(name, value)
 
     def addProperty(
         self      : Self,
