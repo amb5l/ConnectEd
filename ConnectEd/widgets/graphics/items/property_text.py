@@ -85,8 +85,8 @@ class PropertyTextItem(TextItem):
                 setter = lambda self, value: self.setVisible(value)
             ),
             "Cleat" : InherentProperty(
-                kind   = lambda self: self.cleatEnumTypeName(),
-                getter = lambda self: self.getCleat(),
+                kind   = lambda self: self.item().handleIdType().__name__,
+                getter = lambda self: self.cleat(),
                 setter = lambda self, value: self.setCleat(value)
             )
         } | \
@@ -105,7 +105,7 @@ class PropertyTextItem(TextItem):
 
     def __init__(
         self   : Self,
-        name      : str,
+        name      : str                  = "",
         cleat     : HandleId | None      = None,
         pos       : QPointF | None       = None,
         origin    : RectHandleId         = RectHandleId.TOP_LEFT,
@@ -197,7 +197,7 @@ class PropertyTextItem(TextItem):
 
     def settingsName(self : Self) -> str:
         item = self.item()
-        if item is not None:
+        if item is not None and hasattr(self, "_name"):
             settings_name = f"{item.settingsName()}{self._name}"
             settings_items = settings().get("theme/items")
             if settings_name in vars(settings_items).keys():
@@ -213,9 +213,12 @@ class PropertyTextItem(TextItem):
         parent : "ItemHandlesMixin | None" = None
     ) -> bool:
         self._cleat = id
+        if id is None:
+            return False
         item = parent or self.item()
         if item is None:
             return False
+        print("item: ", item, "id: ", id)
         for child in item.childItems():
             if isinstance(child, HandleItem) and child.id() == id:
                 self.setParentItem(child)
@@ -244,21 +247,26 @@ class PropertyTextItem(TextItem):
     def owner(self : Self) -> PropertiesMixin | None:
         return self.scene() if self.parentItem() is None else self.item()
 
-    def name(self : Self) -> str:
-        return self._name
+    def name(self : Self) -> str | None:
+        return self._name if hasattr(self, "_name") else None
 
     def setName(self : Self, name : str) -> None:
         self._name = name
         self.onTextChange()
 
     def value(self : Self) -> Any:
-        return f"<{self.name()}>" if self.owner() is None else \
-            self.owner().getPropertyValue(self._name, self.onTextChange)
+        if not self.name():  # name is None or ""
+            return None
+        if self.owner() is None:
+            return f"<{self.name()}>"
+        return self.owner().getPropertyValue(self.name(), self.onTextChange)
 
     def setValue(self : Self, value : Any) -> None:
+        if not self.name():  # name is None or ""
+            return
         if value is NO_CHANGE:
             return
-        self.owner().setPropertyValue(self._name, value)
+        self.owner().setPropertyValue(self.name(), value)
 
     def paint(self, painter, option, widget) -> None:
         from PyQt6.QtGui import QPen

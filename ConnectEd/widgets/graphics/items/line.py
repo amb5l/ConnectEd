@@ -27,7 +27,7 @@ class LineItem(
     ItemMixin,
     ItemShapeMixin,
     ItemPaintMixin,
-    ItemHandlesMixin,
+    ItemHandlesMixin[LineHandleId],
     ItemLineMixin,
     ItemChangeMixin,
     ItemCloneMixin,

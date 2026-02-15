@@ -135,14 +135,14 @@ class TextItem(
         {
             "AlignH" : InherentProperty(
                 kind   = "AlignH",
-                getter = lambda self: self.horizontalAlignment(),
-                setter = lambda self, value: self.setHorizontalAlignment(value)
+                getter = lambda self: self.alignH(),
+                setter = lambda self, value: self.setAlignH(value)
             ),
             "AlignV" : InherentProperty(
                 kind   = "AlignV",
                 valid  = lambda self: self.height() is not None,
-                getter = lambda self: self.verticalAlignment(),
-                setter = lambda self, value: self.setVerticalAlignment(value)
+                getter = lambda self: self.alignV(),
+                setter = lambda self, value: self.setAlignV(value)
             )
         }
     _PROPERTIES_SIZE = \
@@ -204,7 +204,7 @@ class TextItem(
         fresh     : bool                 = True,
         parent    : QGraphicsItem | None = None
     ) -> None:
-        super().__init__()
+        super().__init__(parent)
         self._child = TextBlockRenderer() if block else TextLineRenderer()
         self._child.setParentItem(self)
         self._child.setText(text)

@@ -5,8 +5,8 @@ from .. import CmdSceneItem
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
+    from .......core.types     import Direction
     from .....scenes.drawing   import DrawingScene
-    from .....items            import SignalDirection
     from .....items.port_pin   import PortPinMixin
     from .....items.symbol_pin import SymbolPinItem
 
@@ -15,7 +15,7 @@ class CmdEditPortPin(CmdSceneItem):
     @dataclass
     class PortPinState:
         name      : str
-        direction : "SignalDirection"
+        direction : Direction
 
     _item   : "PortPinMixin"
     _before : PortPinState
@@ -26,7 +26,7 @@ class CmdEditPortPin(CmdSceneItem):
         scene     : "DrawingScene",
         item      : "PortPinMixin",
         name      : str,
-        direction : "SignalDirection"
+        direction : "Direction"
     ):
         super().__init__(scene, item)
         self._before = self.PortPinState(item.name(), item.direction())

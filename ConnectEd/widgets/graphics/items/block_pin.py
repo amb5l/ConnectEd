@@ -12,7 +12,8 @@ from .base_pin import BasePinArrowItem, BasePinItem, _INT_ARROW_SIZE
 from .port_pin import PortPinMixin
 from .handle   import HandleItem
 
-from .mixin.loc import ItemLocMixin
+from .mixin.loc    import ItemLocMixin
+from .mixin.handle import ItemHandlesMixin
 
 
 from typing import TYPE_CHECKING
@@ -25,7 +26,7 @@ class BlockPinArrowItem(BasePinArrowItem):
     pass
 
 
-class BlockPinItem(ItemLocMixin, BasePinItem):
+class BlockPinItem(ItemLocMixin, ItemHandlesMixin[BlockPinHandleId], BasePinItem):
     # class attributes
     _ARROW_CLASS = BlockPinArrowItem
     _AP_NAME_OFFSET  = _INT_ARROW_SIZE + 1.5

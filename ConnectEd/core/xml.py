@@ -82,8 +82,9 @@ def fromXmlItems(
                     case "Symbol":
                         item = SymbolNode.fromXml(xr)
                     case _:  # Assume it's an Item
-                        if xr.name() in _item_classes:
-                            item_class = _item_classes[xr.name()]
+                        item_name = xr.name() + "Item"
+                        if item_name in _item_classes:
+                            item_class = _item_classes[item_name]
                             item = item_class.fromXml(xr)
                         else:
                             item = None

@@ -196,9 +196,10 @@ def val2str(v : Any) -> str:
         case "AlignV"            : s = v.toStr()
         case "Edge"              : s = v.value
         case "EdgeLoc"           : s = v.toStr()
-        case "SignalDirection"   : s = v.value
+        case "Direction"         : s = v.value
         case "RectHandleId"      : s = v.value
         case "LineHandleId"      : s = v.value
+        case "PortHandleId"      : s = v.value
         case "BlockPinHandleId"  : s = v.value
         case "SymbolPinHandleId" : s = v.value
         case _ :
@@ -212,7 +213,11 @@ def str2val(s : str, t : str) -> Any:
     Note: "subtypes" are substituted here; they exist to facilitate
     table view delegates.
     """
-    from ..core.types import DEFAULT, AlignH, AlignV, Edge, EdgeLoc, Direction
+    from ..core.types import (
+        DEFAULT, AlignH, AlignV, Edge, EdgeLoc, Direction,
+        RectHandleId, LineHandleId,
+        PortHandleId, BlockPinHandleId, SymbolPinHandleId
+    )
     from ..widgets.graphics.properties import PropertyDisplay
     def strValuesToFloats(s : str) -> list[float]:
         return [float(p) for p in s.strip("()").split(",")]
@@ -229,23 +234,28 @@ def str2val(s : str, t : str) -> Any:
         t = "float"
     # convert
     match t:
-        case "bytes"           : return bytes.fromhex(s)
-        case "str"             : return s # TODO unescape special characters
-        case "int"             : return int(s)
-        case "float"           : return float(s)
-        case "bool"            : return s == "True"
-        case "QPointF"         : return QPointF(*strValuesToFloats(s))
-        case "QRectF"          : return QRectF(*strValuesToFloats(s))
-        case "QSizeF"          : return QSizeF(*strValuesToFloats(s))
-        case "QColor"          : return QColor.fromRgb(int(s[1:], 16) | 0xFF000000)
-        case "PropertyDisplay" : return PropertyDisplay(s)
-        case "PenStyle"        : return Qt.PenStyle[s]
-        case "BrushStyle"      : return Qt.BrushStyle[s]
-        case "AlignH"          : return AlignH.fromStr(s)
-        case "AlignV"          : return AlignV.fromStr(s)
-        case "Edge"            : return Edge(s)
-        case "EdgeLoc"         : return EdgeLoc.fromStr(s)
-        case "SignalDirection" : return Direction(s)
+        case "bytes"             : return bytes.fromhex(s)
+        case "str"               : return s # TODO unescape special characters
+        case "int"               : return int(s)
+        case "float"             : return float(s)
+        case "bool"              : return s == "True"
+        case "QPointF"           : return QPointF(*strValuesToFloats(s))
+        case "QRectF"            : return QRectF(*strValuesToFloats(s))
+        case "QSizeF"            : return QSizeF(*strValuesToFloats(s))
+        case "QColor"            : return QColor.fromRgb(int(s[1:], 16) | 0xFF000000)
+        case "PropertyDisplay"   : return PropertyDisplay(s)
+        case "PenStyle"          : return Qt.PenStyle[s]
+        case "BrushStyle"        : return Qt.BrushStyle[s]
+        case "AlignH"            : return AlignH.fromStr(s)
+        case "AlignV"            : return AlignV.fromStr(s)
+        case "Edge"              : return Edge(s)
+        case "EdgeLoc"           : return EdgeLoc.fromStr(s)
+        case "Direction"         : return Direction(s)
+        case "RectHandleId"      : return RectHandleId(s)
+        case "LineHandleId"      : return LineHandleId(s)
+        case "PortHandleId"      : return PortHandleId(s)
+        case "BlockPinHandleId"  : return BlockPinHandleId(s)
+        case "SymbolPinHandleId" : return SymbolPinHandleId(s)
         case _:
             raise ValueError(f"Unsupported type: {t}")
 

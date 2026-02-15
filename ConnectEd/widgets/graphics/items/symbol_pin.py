@@ -17,6 +17,7 @@ from .handle   import HandleItem
 
 from .mixin.pos     import ItemPosMixin
 from .mixin.rotate  import ItemRotateMixin
+from .mixin.handle  import ItemHandlesMixin
 from .mixin.line    import ItemLineMixin
 
 from typing import TYPE_CHECKING
@@ -32,6 +33,7 @@ class SymbolPinArrowItem(BasePinArrowItem):
 class SymbolPinItem(
     ItemPosMixin,
     ItemRotateMixin,
+    ItemHandlesMixin[SymbolPinHandleId],
     BasePinDotMixin,
     BasePinClockMixin,
     BasePinItem

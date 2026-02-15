@@ -102,6 +102,11 @@ class LineHandleId(HandleId):
     P2 = "P2"
 
 
+class PortHandleId(HandleId):
+    ENTRY = "Entry"  # also placement origin
+    NAME  = "Name"   # set beside signal direction shape
+
+
 class BlockPinHandleId(HandleId):
     ENTRY = "Entry"  # also placement origin
     NAME  = "Name"   # set just in from signal direction shape

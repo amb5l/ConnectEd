@@ -20,7 +20,6 @@ from .mixin.menu   import ItemMenuMixin
 
 class PortPinMixin(
     ItemMixin,
-    ItemHandlesMixin,
     ItemLineMixin,
     ItemChangeMixin,
     ItemCloneMixin,
@@ -41,7 +40,7 @@ class PortPinMixin(
     _PROPERTIES_DIR = \
         {
             "Dir" : InherentProperty(
-                kind   = "SignalDirection",
+                kind   = "Direction",
                 getter = lambda self: self._direction,
                 setter = lambda self, value: setattr(self, "_direction", value)
             )

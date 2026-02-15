@@ -135,13 +135,17 @@ class DrawingScene(
         fromXmlAttrs(drawing_scene, xr)
         while not (xr.isEndElement() and xr.name() == top_element_name):
             if xr.tokenType() == QXmlStreamReader.TokenType.StartElement:
-                attr_name = xr.name()
-                if attr_name in _item_classes:
-                    item_cls = _item_classes[attr_name]
+                item_name = xr.name() + "Item"
+                if item_name in _item_classes:
+                    item_cls = _item_classes[item_name]
+                    print(f"fromXml: loading {item_name}")
                     item = item_cls.fromXml(xr)
                     drawing_scene.addItem(item)
+                    print(f"fromXml: loaded {item_name}")
                 else:
-                    logger().warning(f"Unexpected element: {attr_name}")
+                    logger().warning(f"Unexpected item: {item_name}")
             xr.readNext()
+        print("fromXml: all items loaded, running tidyConns")
         drawing_scene.tidyConns(undoable=False)
+        print("fromXml: tidyConns complete")
         return drawing_scene
