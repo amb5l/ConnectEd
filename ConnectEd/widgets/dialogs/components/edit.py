@@ -17,6 +17,18 @@ class TextLineEditor(QLineEdit):
         self.setText(value)
 
 
+class TextBlockEditor(QTextEdit):
+    def __init__(self : Self, value : str, parent=None):
+        super().__init__(parent)
+        self.setPlainText(value)
+
+    def value(self : Self) -> str:
+        return self.toPlainText()
+
+    def setValue(self : Self, value : str) -> None:
+        self.setPlainText(value)
+
+
 class IntEditor(QLineEdit):
     def __init__(self : Self, value : int, parent=None):
         super().__init__(parent)
@@ -59,18 +71,6 @@ class BoolEditor(QCheckBox):
 
     def setValue(self : Self, value : bool) -> None:
         self.setChecked(value)
-
-
-class TextBlockEditor(QTextEdit):
-    def __init__(self : Self, value : str, parent=None):
-        super().__init__(parent)
-        self.setPlainText(value)
-
-    def value(self : Self) -> str:
-        return self.toPlainText()
-
-    def setValue(self : Self, value : str) -> None:
-        self.setPlainText(value)
 
 
 class TextEditor(QHBoxLayout):
