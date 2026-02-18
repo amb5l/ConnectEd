@@ -9,6 +9,7 @@ class OkCancelLayout(QHBoxLayout):
 
     def __init__(self : Self, dialog : QDialog) -> None:
         super().__init__()
+        self.addStretch(1)
         self.initOkCancelButtons(dialog)
 
     def initOkCancelButtons(self : Self, dialog : QDialog) -> None:
@@ -25,6 +26,7 @@ class OkCancelNewLayout(OkCancelLayout):
 
     def __init__(self : Self, dialog : QDialog) -> None:
         QHBoxLayout.__init__(self, dialog)
+        self.addStretch(1)
         self.initNewButton(dialog)
         self.initOkCancelButtons(dialog)
 
