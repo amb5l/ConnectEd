@@ -67,7 +67,7 @@ class TextFormatLayout(QVBoxLayout):
         vl = self._parent._value_layout
         # get parameters
         block = block or self._block_button.isChecked()
-        value = vl._edit.text() if vl._edit else ""
+        value = vl._edit.value() if vl._edit else ""
         # remove existing layout if present
         if vl._layout is not None:
             vl._label.hide()

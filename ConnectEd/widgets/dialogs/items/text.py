@@ -10,11 +10,11 @@ from ....core.types import Default, NoChange, AlignH, AlignV, RectHandleId
 
 from ...graphics.items.text import TextItem
 
-from ..components.layout.text_value      import TextValueLayout, TextFormatLayout
-from ..components.layout.text_align      import TextAlignLayout
-from ..components.layout.origin          import OriginLayout
-from ..components.layout.text_appearance import TextAppearancePreviewLayout
-from ..components.layout.ok_cancel       import OkCancelLayout
+from ..components.layout.text_value         import TextValueLayout, TextFormatLayout
+from ..components.group_box.text_align      import TextAlignGroupBox
+from ..components.group_box.origin          import OriginGroupBox
+from ..components.group_box.text_appearance import TextAppearancePreviewGroupBox
+from ..components.layout.ok_cancel          import OkCancelLayout
 
 
 class TextItemDialog(QDialog):
@@ -27,14 +27,10 @@ class TextItemDialog(QDialog):
     _rotcomp_layout       : QVBoxLayout
     _rotcomp_checkbox     : QCheckBox
     _middle_layout        : QHBoxLayout
-    _left_layout          : QVBoxLayout
-    _align_group_box      : QGroupBox
-    _align_layout         : TextAlignLayout
-    _origin_group_box     : QGroupBox
-    _origin_layout        : OriginLayout
-    _right_layout         : QVBoxLayout
-    _appearance_group_box : QGroupBox
-    _appearance_layout    : TextAppearancePreviewLayout
+    _align_origin_layout  : QVBoxLayout
+    _align_group_box      : TextAlignGroupBox
+    _origin_group_box     : OriginGroupBox
+    _appearance_group_box : TextAppearancePreviewGroupBox
     _ok_cancel_layout     : OkCancelLayout
 
     def __init__(
@@ -70,27 +66,17 @@ class TextItemDialog(QDialog):
         # done
         self._dialog_layout.addLayout(self._fr_layout)
         ########################################################################
-        # middle left
+        # middle left - alignment and origin
         ########################################################################
-        self._left_layout = QVBoxLayout()
-        # align section
-        self._align_group_box = QGroupBox("Alignment")
-        self._align_layout = TextAlignLayout(item.alignH(), item.alignV())
-        self._align_group_box.setLayout(self._align_layout)
-        self._left_layout.addWidget(self._align_group_box)
-        # origin section
-        self._origin_group_box = QGroupBox("Origin")
-        self._origin_layout = OriginLayout(item.origin())
-        self._origin_group_box.setLayout(self._origin_layout)
-        # done
-        self._left_layout.addWidget(self._origin_group_box)
+        self._align_origin_layout = QVBoxLayout()
+        self._align_group_box = TextAlignGroupBox(item.alignH(), item.alignV())
+        self._align_origin_layout.addWidget(self._align_group_box)
+        self._origin_group_box = OriginGroupBox(item.origin())
+        self._align_origin_layout.addWidget(self._origin_group_box)
         ########################################################################
-        # middle right
+        # middle right - appearance
         ########################################################################
-        self._right_layout = QVBoxLayout()
-        # appearance section
-        self._appearance_group_box = QGroupBox("Appearance")
-        self._appearance_layout = TextAppearancePreviewLayout(
+        self._appearance_group_box = TextAppearancePreviewGroupBox(
             item.quillColor(),
             item.quillFamily(),
             item.quillSize(),
@@ -104,14 +90,12 @@ class TextItemDialog(QDialog):
             item.defaultQuillItalic(),
             item.defaultQuillUnderline()
         )
-        self._appearance_group_box.setLayout(self._appearance_layout)
-        self._right_layout.addWidget(self._appearance_group_box)
         ########################################################################
         # middle
         ########################################################################
         self._middle_layout = QHBoxLayout()
-        self._middle_layout.addLayout(self._left_layout)
-        self._middle_layout.addLayout(self._right_layout)
+        self._middle_layout.addLayout(self._align_origin_layout)
+        self._middle_layout.addWidget(self._appearance_group_box)
         self._dialog_layout.addLayout(self._middle_layout)
         ########################################################################
         # bottom
@@ -148,36 +132,36 @@ class TextItemDialog(QDialog):
 
     @checked
     def getAlignH(self : Self) -> AlignH:
-        return self._align_layout.getAlignH()
+        return self._align_group_box.getAlignH()
 
     @checked
     def getAlignV(self : Self) -> AlignV:
-        return self._align_layout.getAlignV()
+        return self._align_group_box.getAlignV()
 
     @checked
     def getOrigin(self : Self) -> RectHandleId:
-        return self._origin_layout.getOrigin()
+        return self._origin_group_box.getOrigin()
 
     @checked
     def getColor(self : Self) -> QColor | Default | NoChange:
-        return self._appearance_layout.getColor()
+        return self._appearance_group_box.getColor()
 
     @checked
     def getFamily(self : Self) -> str | Default | NoChange:
-        return self._appearance_layout.getFamily()
+        return self._appearance_group_box.getFamily()
 
     @checked
     def getSize(self : Self) -> float | Default | NoChange:
-        return self._appearance_layout.getSize()
+        return self._appearance_group_box.getSize()
 
     @checked
     def getBold(self : Self) -> bool | Default | NoChange:
-        return self._appearance_layout.getBold()
+        return self._appearance_group_box.getBold()
 
     @checked
     def getItalic(self : Self) -> bool | Default | NoChange:
-        return self._appearance_layout.getItalic()
+        return self._appearance_group_box.getItalic()
 
     @checked
     def getUnderline(self : Self) -> bool | Default | NoChange:
-        return self._appearance_layout.getUnderline()
+        return self._appearance_group_box.getUnderline()
