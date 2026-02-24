@@ -239,8 +239,11 @@ class DrawingViewStatePlaceText(ClickMixin, DrawingViewStateBase):
         if dialog.exec():
             item.setText(dialog.getText())
             item.setBlock(dialog.getBlock())
+            item.setRotation(dialog.getRotAngle())
+            item.setRotComp(dialog.getRotComp())
             item.setAlignH(dialog.getAlignH())
             item.setAlignV(dialog.getAlignV())
+            item.setOrigin(dialog.getOrigin())
             item.setQuillColor(dialog.getColor())
             item.setQuillFamily(dialog.getFamily())
             item.setQuillSize(dialog.getSize())

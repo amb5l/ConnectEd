@@ -11,6 +11,7 @@ from ....core.types import Default, NoChange, AlignH, AlignV, RectHandleId
 from ...graphics.items.text import TextItem
 
 from ..components.layout.text_value         import TextValueLayout, TextFormatLayout
+from ..components.group_box.rotation        import RotationGroupBox
 from ..components.group_box.text_align      import TextAlignGroupBox
 from ..components.group_box.origin          import OriginGroupBox
 from ..components.group_box.text_appearance import TextAppearancePreviewGroupBox
@@ -23,9 +24,7 @@ class TextItemDialog(QDialog):
     _value_layout         : TextValueLayout
     _fr_layout            : QHBoxLayout
     _format_layout        : TextFormatLayout
-    _rotcomp_group_box    : QGroupBox
-    _rotcomp_layout       : QVBoxLayout
-    _rotcomp_checkbox     : QCheckBox
+    _rotation_group_box   : RotationGroupBox
     _middle_layout        : QHBoxLayout
     _align_origin_layout  : QVBoxLayout
     _align_group_box      : TextAlignGroupBox
@@ -56,13 +55,8 @@ class TextItemDialog(QDialog):
         self._format_layout = TextFormatLayout(item.block(), self)
         self._fr_layout.addLayout(self._format_layout)
         # rotation compensation section
-        self._rotcomp_group_box = QGroupBox("Rotation Compensation")
-        self._rotcomp_layout = QVBoxLayout()
-        self._rotcomp_checkbox = QCheckBox("Enable")
-        self._rotcomp_checkbox.setChecked(item.rotcomp())
-        self._rotcomp_layout.addWidget(self._rotcomp_checkbox)
-        self._rotcomp_group_box.setLayout(self._rotcomp_layout)
-        self._fr_layout.addWidget(self._rotcomp_group_box)
+        self._rotation_group_box = RotationGroupBox(item.rotation(), item.rotComp())
+        self._fr_layout.addWidget(self._rotation_group_box)
         # done
         self._dialog_layout.addLayout(self._fr_layout)
         ########################################################################
@@ -127,8 +121,12 @@ class TextItemDialog(QDialog):
         return self._format_layout.getBlock()
 
     @checked
-    def getRotcomp(self : Self) -> bool:
-        return self._rotcomp_checkbox.isChecked()
+    def getRotAngle(self : Self) -> float:
+        return self._rotation_group_box.getRotAngle()
+
+    @checked
+    def getRotComp(self : Self) -> bool:
+        return self._rotation_group_box.getRotComp()
 
     @checked
     def getAlignH(self : Self) -> AlignH:

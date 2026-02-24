@@ -57,8 +57,9 @@ if TYPE_CHECKING:
 class TextState:
     text      : str
     block     : bool
-    rotcomp   : bool
-    origin    : str
+    rot_angle : float
+    rot_comp  : bool
+    origin    : RectHandleId
     align_h   : AlignH
     align_v   : AlignV
     width     : float
@@ -75,7 +76,8 @@ class TextState:
         return cls(
             text      = item.text(),
             block     = item.block(),
-            rotcomp   = item.rotcomp(),
+            rot_angle = item.rotation(),
+            rot_comp  = item.rotComp(),
             origin    = item.origin(),
             align_h   = item.alignH(),
             align_v   = item.alignV(),
@@ -94,7 +96,8 @@ class TextState:
 class TextChange:
     text      : str              | NoChange = NO_CHANGE
     block     : bool             | NoChange = NO_CHANGE
-    rotcomp   : bool             | NoChange = NO_CHANGE
+    rot_angle : float            | NoChange = NO_CHANGE
+    rot_comp  : bool             | NoChange = NO_CHANGE
     origin    : str              | NoChange = NO_CHANGE
     align_h   : AlignH           | NoChange = NO_CHANGE
     align_v   : AlignV           | NoChange = NO_CHANGE
@@ -177,19 +180,20 @@ class TextItem(
         ItemQuillMixin._PROPERTIES_QUILL
 
     # instance attributes
-    _child   : TextLineRenderer | TextBlockRenderer  # text renderer
-    _rotcomp : bool                                  # rotation compensation
-    _align_h : AlignH                                # horizontal alignment
-    _align_v : AlignV                                # vertical alignment
-    _width   : float                                 # width constraint
-    _height  : float                                 # height constraint
+    _child    : TextLineRenderer | TextBlockRenderer  # text renderer
+    _rot_comp : bool                                  # rotation compensation
+    _align_h  : AlignH                                # horizontal alignment
+    _align_v  : AlignV                                # vertical alignment
+    _width    : float                                 # width constraint
+    _height   : float                                 # height constraint
 
     def __init__(
         self      : Self,
         text      : str                  = "",
         block     : bool                 = False,
-        rotcomp   : bool                 = True,
         pos       : QPointF | None       = None,
+        rot_angle : float                = 0.0,
+        rot_comp  : bool                 = True,
         origin    : RectHandleId         = RectHandleId.TOP_LEFT,
         align_h   : AlignH               = AlignH.LEFT,
         align_v   : AlignV               = AlignV.TOP,
@@ -208,13 +212,14 @@ class TextItem(
         self._child = TextBlockRenderer() if block else TextLineRenderer()
         self._child.setParentItem(self)
         self._child.setText(text)
-        self._rotcomp = rotcomp
+        self._rot_comp = rot_comp
         self._align_h = align_h
         self._align_v = align_v
         self._width   = width
         self._height  = height
         self.initItem(fresh)
         self.setPos(pos or QPointF(0, 0))
+        self.setRotation(rot_angle)
         self.setOrigin(origin)
         self.setQuillColor(color)
         self.setQuillFamily(family)
@@ -227,7 +232,7 @@ class TextItem(
         self.onSceneRotationChange()
 
     def onSceneRotationChange(self : Self) -> None:
-        if not self._rotcomp:
+        if not self._rot_comp:
             return
         a = self.sceneRotation()
         self._child.setRotation(180 if a > 135 and a <= 315 else 0)
@@ -256,12 +261,12 @@ class TextItem(
             self._child.onGeometryChange()
             self.updateHandlePositions()
 
-    def rotcomp(self : Self) -> bool:
-        return self._rotcomp
+    def rotComp(self : Self) -> bool:
+        return self._rot_comp
 
-    def setRotcomp(self : Self, rotcomp : bool) -> None:
-        self._rotcomp = rotcomp
-        if rotcomp:
+    def setRotComp(self : Self, rot_comp : bool) -> None:
+        self._rot_comp = rot_comp
+        if rot_comp:
             self.onSceneRotationChange()
         else:
             self._child.setRotation(0)
