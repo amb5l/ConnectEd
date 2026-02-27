@@ -26,7 +26,6 @@ class AngleComboBox(QComboBox):
             self.addItem(text, value)
             if angle == value:
                 self.setCurrentIndex(self.count() - 1)
-        self.setEditable(False)
 
     @checked
     def getAngle(self : Self) -> float:

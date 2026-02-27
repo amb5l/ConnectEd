@@ -104,10 +104,12 @@ class PropertyTextItem(TextItem):
     _tether      : TetherItem | None
 
     def __init__(
-        self   : Self,
+        self      : Self,
         name      : str                  = "",
         cleat     : HandleId | None      = None,
         pos       : QPointF | None       = None,
+        rot_angle : float                = 0.0,
+        rot_comp  : bool                 = True,
         origin    : RectHandleId         = RectHandleId.TOP_LEFT,
         align_h   : AlignH               = AlignH.LEFT,
         align_v   : AlignV               = AlignV.TOP,
@@ -123,23 +125,24 @@ class PropertyTextItem(TextItem):
         parent    : QGraphicsItem | None = None
     ) -> None:
         super().__init__(
-            text      = "?",    # uninitialized value
-            block     = False,  # default
-            rotcomp   = True,   # always True for PropertyTextItem
-            pos       = pos,
-            origin    = origin,
-            align_h   = align_h,
-            align_v   = align_v,
-            width     = width,
-            height    = height,
-            color     = color,
-            family    = family,
-            size      = size,
-            bold      = bold,
-            italic    = italic,
-            underline = underline,
-            fresh     = fresh,
-            parent    = parent
+            text       = "?",    # uninitialized value
+            block      = False,  # default
+            rot_angle  = rot_angle,
+            rot_comp   = rot_comp,
+            pos        = pos,
+            origin     = origin,
+            align_h    = align_h,
+            align_v    = align_v,
+            width      = width,
+            height     = height,
+            color      = color,
+            family     = family,
+            size       = size,
+            bold       = bold,
+            italic     = italic,
+            underline  = underline,
+            fresh      = fresh,
+            parent     = parent
         )
         self._tether = TetherItem(self)
         self._name = name

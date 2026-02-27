@@ -143,6 +143,14 @@ def pascal2snake(s : str) -> str:
         r.append(char.lower())
     return "".join(r)
 
+def pascal2proper(s : str) -> str:
+    """FooBar -> Foo Bar"""
+    r = []
+    for i, char in enumerate(s):
+        if i > 0 and char.isupper():
+            r.append(" ")
+        r.append(char)
+    return "".join(r)
 
 def proper2snake(s : str) -> str:
     """Foo Bar -> foo_bar"""

@@ -6,6 +6,7 @@ from PyQt6.QtCore    import QPointF
 from PyQt6.QtWidgets import QGraphicsItem
 
 from .....core.defs  import Z_DRAWING
+from .....core.utils import pascal2proper
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:

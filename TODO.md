@@ -1,12 +1,11 @@
-*** checks ***
+look for OR gotchas
 
-AppearanceDialog attribute names
-combo consolidation
-new layout structure
-new editors
-new properties dialog
-	delegate change
-typeguard
+Connection Segment Dragging
+- create special purpose interaction
+- establish segment(s) and vertices that are involved
+
+add @checked throughout
+private attribute names e.g. AppearanceDialog
 raise vs logger
 handle empty strings for Text (replace with space?)
 tidy up utils.py (redundant functions)

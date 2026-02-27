@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ConnectEd>
+  <Design name="jarv_top">
+    <Symbols/>
+    <Diagram Name="jarv_top" Sheet_Name="A4 (landscape)" Sheet_Width="1169" Sheet_Height="827" Margin="10" Border="1">
+      <Port Name="clk" Dir="in" X="50" Y="70" Rotate="180">
+        <PropertyText Name="Name" Cleat="Name" Origin="Middle Left" AlignH="LEFT" AlignV="TOP" Width="-1" Height="-1"/>
+      </Port>
+    </Diagram>
+  </Design>
+</ConnectEd>

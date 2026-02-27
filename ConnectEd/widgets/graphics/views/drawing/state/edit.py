@@ -262,7 +262,7 @@ class DrawingViewStateEditText(DrawingViewStateBase):
                     undoable  = True
                 )
         else:
-            logger().warning("No text block selected")
+            logger().warning("No text selected")
         self.view.state.go(self.view.stateIdle)
 
 

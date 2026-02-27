@@ -210,6 +210,7 @@ class DrawingViewUiEditMixin:
     def editTextDialog(self : "DrawingViewUi") -> None:
         self._view.state.go(self._view.stateEditText)
 
+    # TODO remove this, use scene method, rename above method
     def editText(
         self      : "DrawingViewUi",
         item      : "TextItem",

@@ -3,20 +3,22 @@ from typing import Self
 from PyQt6.QtWidgets import QWidget, QDialog, QVBoxLayout
 from PyQt6.QtGui     import QShowEvent
 
+from ...core.types import Text
+
 from .components.layout.text_value import TextValueLayout
 from .components.layout.ok_cancel  import OkCancelLayout
 
 
-class TextValueDialog(QDialog):
+class TextDialog(QDialog):
     # instance variables
-    _dialog_layout     : QVBoxLayout
-    _value_layout      : TextValueLayout
-    _ok_cancel_layout  : OkCancelLayout
+    _dialog_layout    : QVBoxLayout
+    _value_layout     : TextValueLayout
+    _format_group_box : TextFormatGroupBox
+    _ok_cancel_layout : OkCancelLayout
 
     def __init__(
         self   : Self,
-        text   : str,
-        block  : bool,
+        text   : Text,
         parent : QWidget | None = None
     ):
         super().__init__(parent)

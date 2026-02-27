@@ -45,7 +45,7 @@ from ...app  import logger
 
 from ...core.types import Default, DEFAULT, NoChange, NO_CHANGE, \
                           AlignH, AlignV, Text
-from ...core.utils import str2val
+from ...core.utils import str2val, pascal2proper
 
 from .items import ItemType
 
@@ -742,3 +742,9 @@ class PropertiesMixin:
         # remove reference
         property.text = None
         return True
+
+    def description(self : Self) -> str:
+        class_name = self.__class__.__name__
+        class_name = class_name.removesuffix("Item")
+        class_name = class_name.removesuffix("Scene")
+        return pascal2proper(class_name)

@@ -7,7 +7,6 @@ from PyQt6.QtGui     import QShowEvent, QColor
 
 from ..graphics.items.property_text import PropertyTextItem
 
-from .components.layout.text_value      import TextValueLayout
 from .components.layout.text_appearance import TextAppearancePreviewLayout
 from .components.layout.ok_cancel       import OkCancelLayout
 

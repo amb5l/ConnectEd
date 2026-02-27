@@ -1,12 +1,14 @@
 from typing import Self
 
 from PyQt6.QtWidgets import QLineEdit, QTextEdit, QCheckBox, QToolButton, \
-                            QHBoxLayout
+                            QHBoxLayout, QWidget
 from PyQt6.QtGui     import QIntValidator, QDoubleValidator
+
+from ....core.types import Text
 
 
 class TextLineEditor(QLineEdit):
-    def __init__(self : Self, value : str, parent=None):
+    def __init__(self : Self, value : str, parent : QWidget | None = None):
         super().__init__(parent)
         self.setText(value)
 
@@ -18,7 +20,7 @@ class TextLineEditor(QLineEdit):
 
 
 class TextBlockEditor(QTextEdit):
-    def __init__(self : Self, value : str, parent=None):
+    def __init__(self : Self, value : str, parent : QWidget | None = None):
         super().__init__(parent)
         self.setPlainText(value)
 
@@ -30,7 +32,7 @@ class TextBlockEditor(QTextEdit):
 
 
 class IntEditor(QLineEdit):
-    def __init__(self : Self, value : int, parent=None):
+    def __init__(self : Self, value : int, parent : QWidget | None = None):
         super().__init__(parent)
         self.setValidator(QIntValidator())
         self.setText(str(value))
@@ -46,7 +48,7 @@ class IntEditor(QLineEdit):
 
 
 class FloatEditor(QLineEdit):
-    def __init__(self : Self, value : float, parent=None):
+    def __init__(self : Self, value : float, parent : QWidget | None = None):
         super().__init__(parent)
         self.setValidator(QDoubleValidator())
         self.setValue(value)
@@ -62,7 +64,7 @@ class FloatEditor(QLineEdit):
 
 
 class BoolEditor(QCheckBox):
-    def __init__(self : Self, value : bool, parent=None):
+    def __init__(self : Self, value : bool, parent : QWidget | None = None):
         super().__init__(parent)
         self.setChecked(value)
 
@@ -74,12 +76,13 @@ class BoolEditor(QCheckBox):
 
 
 class TextEditor(QHBoxLayout):
+    _block  : bool
     _editor : TextLineEditor
     _button : QToolButton
 
-    def __init__(self : Self, value : str, parent=None):
+    def __init__(self : Self, value : Text, parent : QWidget | None = None):
         super().__init__(parent)
-        self._editor = TextLineEditor(value, parent)
+        self._editor = TextLineEditor(value.string, parent)
         self._button = QToolButton(parent)
         self._button.setText("...")
         self._button.clicked.connect(self._onButtonClick)
@@ -87,10 +90,11 @@ class TextEditor(QHBoxLayout):
         self.addWidget(self._button)
 
     def value(self : Self) -> str:
-        return self._editor.text()
+        return Text(self._editor.text(), self._block)
 
-    def setValue(self : Self, value : str) -> None:
-        self._editor.setText(value)
+    def setValue(self : Self, value : Text) -> None:
+        self._editor.setText(value.string)
+        self._block = value.block
 
     def _onButtonClick(self : Self) -> None:
         # launch text editor dialog
