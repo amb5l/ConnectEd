@@ -271,14 +271,6 @@ class PropertyTextItemMixin:
             return
         self.owner().setPropertyValue(self.name(), value)
 
-    def paint(self, painter, option, widget) -> None:
-        from PyQt6.QtGui import QPen
-        super().paint(painter, option, widget)
-        painter.setPen(QPen(Qt.GlobalColor.yellow, 0))
-        painter.drawEllipse(QPointF(0, 0), 1, 1)
-        painter.drawLine(QPointF(-1,-1), QPointF(1,1))
-        painter.drawLine(QPointF(1,-1), QPointF(-1,1))
-
     def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
         items = [
             view.action("Edit...", lambda: view.ui.editPropertyTextDialog(self)),
