@@ -1,4 +1,5 @@
-from typing import Self
+from typing      import Self
+from dataclasses import replace
 
 from PyQt6.QtWidgets import QGraphicsItem
 from PyQt6.QtGui     import QTransform
@@ -17,22 +18,24 @@ if TYPE_CHECKING:
 class ItemOriginMixin:
     # class attributes
     _ORIGIN : HandleId
-    _PROPERTIES_ORIGIN = {
-        "Origin" : InherentProperty(
-            kind   = None,
-            valid  = lambda self: self.origin() is not None,
-            getter = lambda self: self.origin(),
-            setter = lambda self, value: self.setOrigin(value)
-        )
+    _PROPERTIES_ORIGIN = InherentProperty(
+        kind   = None,
+        valid  = lambda self: self.origin() is not None,
+        getter = lambda self: self.origin(),
+        setter = lambda self, value: self.setOrigin(value)
+    )
+    _PROPERTIES_RECT_ORIGIN = {
+        "Origin" : replace(_PROPERTIES_ORIGIN, kind=DataKind.RECT_HANDLE)
     }
-    _PROPERTIES_RECT_ORIGIN = _PROPERTIES_ORIGIN.copy()
-    _PROPERTIES_RECT_ORIGIN["Origin"].kind = DataKind.RECT_HANDLE
-    _PROPERTIES_LINE_ORIGIN = _PROPERTIES_ORIGIN.copy()
-    _PROPERTIES_LINE_ORIGIN["Origin"].kind = DataKind.LINE_HANDLE
-    _PROPERTIES_BLOCK_PIN_ORIGIN = _PROPERTIES_ORIGIN.copy()
-    _PROPERTIES_BLOCK_PIN_ORIGIN["Origin"].kind = DataKind.BLOCK_PIN_HANDLE
-    _PROPERTIES_SYMBOL_PIN_ORIGIN = _PROPERTIES_ORIGIN.copy()
-    _PROPERTIES_SYMBOL_PIN_ORIGIN["Origin"].kind = DataKind.SYMBOL_PIN_HANDLE
+    _PROPERTIES_LINE_ORIGIN = {
+        "Origin" : replace(_PROPERTIES_ORIGIN, kind=DataKind.LINE_HANDLE)
+    }
+    _PROPERTIES_BLOCK_PIN_ORIGIN = {
+        "Origin" : replace(_PROPERTIES_ORIGIN, kind=DataKind.BLOCK_PIN_HANDLE)
+    }
+    _PROPERTIES_SYMBOL_PIN_ORIGIN = {
+        "Origin" : replace(_PROPERTIES_ORIGIN, kind=DataKind.SYMBOL_PIN_HANDLE)
+    }
 
     # instance attributes
     _origin  : HandleId                 # id of origin handle
