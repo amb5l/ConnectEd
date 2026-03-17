@@ -22,14 +22,14 @@ class LineWidthComboBox(QComboBox):
 
     @checked
     def __init__(
-        self      : Self,
-        initial   : float | int | Default | NoChange,
-        default   : float | int | NoChange,
-        parent    : QWidget | None = None
+        self    : Self,
+        value   : float | int | Default | NoChange,
+        default : float | int | NoChange,
+        parent  : QWidget | None = None
     ) -> None:
         super().__init__(parent)
-        if isinstance(initial, int):
-            initial = float(initial)
+        if isinstance(value, int):
+            value = float(value)
         if isinstance(default, int):
             default = float(default)
         self.setIconSize(customIconSize())
@@ -40,27 +40,27 @@ class LineWidthComboBox(QComboBox):
             else ""
         default_value = default if isinstance(default, float) else NO_CHANGE
         # build no change icon, string and value
-        no_change_icon = self._getIcon(initial) if isinstance(initial, float) \
-            else default_icon if initial is DEFAULT \
+        no_change_icon = self._getIcon(value) if isinstance(value, float) \
+            else default_icon if value is DEFAULT \
             else NoChangeIcon().get()
-        no_change_str = f" = {val2str(initial)}" if isinstance(initial, float) \
-            else " = default" if initial is DEFAULT \
+        no_change_str = f" = {val2str(value)}" if isinstance(value, float) \
+            else " = default" if value is DEFAULT \
             else ""
-        no_change_value = initial if isinstance(initial, float) \
-            else default_value if initial is DEFAULT \
+        no_change_value = value if isinstance(value, float) \
+            else default_value if value is DEFAULT \
             else NO_CHANGE
         # build custom icon, string and value
-        custom_icon = no_change_icon if isinstance(initial, float) \
-            else default_icon if initial is DEFAULT and isinstance(default, float) \
+        custom_icon = no_change_icon if isinstance(value, float) \
+            else default_icon if value is DEFAULT and isinstance(default, float) \
             else QueryIcon().get()
-        custom_str = no_change_str if isinstance(initial, float) \
-            else default_str if initial is DEFAULT and isinstance(default, float) \
+        custom_str = no_change_str if isinstance(value, float) \
+            else default_str if value is DEFAULT and isinstance(default, float) \
             else ""
-        custom_value = initial if isinstance(initial, float) \
-            else default_value if initial is DEFAULT and isinstance(default, float) \
+        custom_value = value if isinstance(value, float) \
+            else default_value if value is DEFAULT and isinstance(default, float) \
             else None
         # add no change, default and custom entries
-        if initial is NO_CHANGE:
+        if value is NO_CHANGE:
             self.addItem(no_change_icon, f"<no change{no_change_str}>", no_change_value)
         self._idx_default = self.count()
         self.addItem(default_icon, f"<default{default_str}>", default_value)
@@ -68,11 +68,11 @@ class LineWidthComboBox(QComboBox):
         self.addItem(custom_icon, f"<custom{custom_str}>", custom_value)
         # add standard entries, set current index
         self.setCurrentIndex(0)
-        if initial is not NO_CHANGE and initial is not DEFAULT:
+        if value is not NO_CHANGE and value is not DEFAULT:
             self.setCurrentIndex(1)
         for i in range(1, 4):
             self.addItem(self._getIcon(i), str(i), float(i))
-            if initial == i:
+            if value == i:
                 self.setCurrentIndex(self.count() - 1)
         # enable custom dialog
         self.activated.connect(self._onActivated)

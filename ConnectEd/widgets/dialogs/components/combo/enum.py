@@ -17,18 +17,18 @@ class EnumComboBox(QComboBox, Generic[T]):
 
     @checked
     def __init__(
-        self    : Self,
-        initial : T,
-        subset  : tuple[T, ...] | None = None,
-        parent  : QWidget | None = None
+        self   : Self,
+        value  : T,
+        subset : tuple[T, ...] | None = None,
+        parent : QWidget | None = None
     ) -> None:
         super().__init__(parent)
-        self._type = type(initial)
+        self._type = type(value)
         for member in self._type:
             if subset is not None and member not in subset:
                 continue
             self.addItem(member.value, member)
-            if initial == member:
+            if value == member:
                 self.setCurrentIndex(self.count() - 1)
 
     @checked
