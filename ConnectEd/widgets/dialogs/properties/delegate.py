@@ -68,7 +68,8 @@ class PropertiesDelegate(QStyledItemDelegate):
             "default" : item.default(),
             "parent" : parent
         }
-        allowed = signature(editor).parameters.keys()
+        sig_target = getattr(editor, '__origin__', editor)
+        allowed = signature(sig_target).parameters.keys()
         args = {k: v for k, v in args.items() if k in allowed}
         return editor(**args)
 
