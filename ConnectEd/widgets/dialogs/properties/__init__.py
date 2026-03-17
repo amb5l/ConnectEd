@@ -113,6 +113,8 @@ class PropertiesDialog(QDialog):
         )
         # refresh entire table
         self._refreshTable()
+        # open persistent editors for bool cells (show checkboxes)
+        self._openPersistentEditors()
         # resize columns
         self._table_view.resizeColumnsToContents()
         self._table_view.setColumnWidth(1, self._getValueColumnWidth())
@@ -408,6 +410,17 @@ class PropertiesDialog(QDialog):
         rows.sort(reverse=True)
         # done
         return rows
+
+    def _openPersistentEditors(self : Self) -> None:
+        for row in range(self._table_model.rowCount()):
+            for col in range(self._table_model.columnCount()):
+                item : PropertiesItem | None = \
+                    self._table_model.item(row, col)
+                if item is not None \
+                and item.kind() == DataKind.BOOL:
+                    item.setText("")
+                    idx = self._table_model.index(row, col)
+                    self._table_view.openPersistentEditor(idx)
 
     def _refreshTable(self : Self) -> None:
         # refresh entire table
