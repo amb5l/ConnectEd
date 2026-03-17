@@ -161,7 +161,7 @@ def _populate_data_kind_maps() -> None:
         DataKind.BRUSH_STYLE       : (Qt.BrushStyle, Default),
         DataKind.FONT_FAMILY       : (str, Default),
         DataKind.FONT_SIZE         : (float, Default),
-        DataKind.FONT_BOOL         : (bool, Default),
+        DataKind.FONT_BOOL         : (bool, Default)
     })
     _DATA_KIND_EDITORS.update({
         DataKind.STR               : StrEditor,
@@ -185,7 +185,7 @@ def _populate_data_kind_maps() -> None:
         DataKind.BRUSH_STYLE       : FillStyleComboBox,
         DataKind.FONT_FAMILY       : FontFamilyComboBox,
         DataKind.FONT_SIZE         : FontSizeComboBox,
-        DataKind.FONT_BOOL         : FontBoolComboBox,
+        DataKind.FONT_BOOL         : FontBoolComboBox
     })
 
 
