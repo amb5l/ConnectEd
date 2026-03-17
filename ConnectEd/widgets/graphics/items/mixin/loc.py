@@ -5,7 +5,7 @@ from PyQt6.QtWidgets import QGraphicsItem
 
 from .....app import logger
 
-from .....core.types import EdgeLoc, Edge
+from .....core.types import DataKind, EdgeLoc, Edge
 
 from ...properties import InherentProperty
 
@@ -21,12 +21,12 @@ class ItemLocMixin:
 
     _PROPERTIES_LOC = {
         "Edge" : InherentProperty(
-            kind   = "Edge",
+            kind   = DataKind.EDGE,
             getter = lambda self: self.loc().edge,
             setter = lambda self, value: self.setLocEdge(value)
         ),
         "Offset" : InherentProperty(
-            kind   = "float",
+            kind   = DataKind.FLOAT,
             getter = lambda self: self.loc().offset,
             setter = lambda self, value: self.setLocOffset(value)
         )

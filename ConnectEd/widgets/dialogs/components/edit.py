@@ -1,13 +1,10 @@
 from typing import Self
 
-from PyQt6.QtWidgets import QLineEdit, QTextEdit, QCheckBox, QToolButton, \
-                            QHBoxLayout, QWidget
+from PyQt6.QtWidgets import QLineEdit, QTextEdit, QCheckBox, QWidget
 from PyQt6.QtGui     import QIntValidator, QDoubleValidator
 
-from ....core.types import Text
 
-
-class TextLineEditor(QLineEdit):
+class StrEditor(QLineEdit):
     def __init__(self : Self, value : str, parent : QWidget | None = None):
         super().__init__(parent)
         self.setText(value)
@@ -19,7 +16,7 @@ class TextLineEditor(QLineEdit):
         self.setText(value)
 
 
-class TextBlockEditor(QTextEdit):
+class TextEditor(QTextEdit):
     def __init__(self : Self, value : str, parent : QWidget | None = None):
         super().__init__(parent)
         self.setPlainText(value)
@@ -73,29 +70,3 @@ class BoolEditor(QCheckBox):
 
     def setValue(self : Self, value : bool) -> None:
         self.setChecked(value)
-
-
-class TextEditor(QHBoxLayout):
-    _block  : bool
-    _editor : TextLineEditor
-    _button : QToolButton
-
-    def __init__(self : Self, value : Text, parent : QWidget | None = None):
-        super().__init__(parent)
-        self._editor = TextLineEditor(value.string, parent)
-        self._button = QToolButton(parent)
-        self._button.setText("...")
-        self._button.clicked.connect(self._onButtonClick)
-        self.addWidget(self._editor)
-        self.addWidget(self._button)
-
-    def value(self : Self) -> str:
-        return Text(self._editor.text(), self._block)
-
-    def setValue(self : Self, value : Text) -> None:
-        self._editor.setText(value.string)
-        self._block = value.block
-
-    def _onButtonClick(self : Self) -> None:
-        # launch text editor dialog
-        pass

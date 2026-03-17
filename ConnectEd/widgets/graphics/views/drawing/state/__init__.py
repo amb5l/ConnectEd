@@ -19,7 +19,7 @@ from .edit  import DrawingViewStateEditSelectArea1, \
                    DrawingViewStateEditQuery, \
                    DrawingViewStateEditPort, \
                    DrawingViewStateEditBlockPin, \
-                   DrawingViewStateEditText, \
+                   DrawingViewStateEditTextLine, \
                    DrawingViewStateEditPropertyText
 from .place import DrawingViewStatePlaceConn1, \
                    DrawingViewStatePlaceConn2, \
@@ -37,7 +37,8 @@ from .place import DrawingViewStatePlaceConn1, \
                    DrawingViewStatePlaceEllipse2, \
                    DrawingViewStatePlacePolyline1, \
                    DrawingViewStatePlacePolyline2, \
-                   DrawingViewStatePlaceText
+                   DrawingViewStatePlaceTextLine, \
+                   DrawingViewStatePlaceTextBlock
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -66,7 +67,7 @@ class DrawingViewStateMixin:
     stateEditQuery             : DrawingViewStateEditQuery              # noqa N815
     stateEditPort              : DrawingViewStateEditPort               # noqa N815
     stateEditBlockPin          : DrawingViewStateEditBlockPin           # noqa N815
-    stateEditText              : DrawingViewStateEditText               # noqa N815
+    stateEditText              : DrawingViewStateEditTextLine               # noqa N815
     stateEditPropertyText      : DrawingViewStateEditPropertyText       # noqa N815
     statePlacePort             : DrawingViewStatePlacePort              # noqa N815
     statePlaceGate             : DrawingViewStatePlaceGate              # noqa N815
@@ -80,7 +81,8 @@ class DrawingViewStateMixin:
     statePlaceEllipse2         : DrawingViewStatePlaceEllipse2          # noqa N815
     statePlacePolyline1        : DrawingViewStatePlacePolyline1         # noqa N815
     statePlacePolyline2        : DrawingViewStatePlacePolyline2         # noqa N815
-    statePlaceText             : DrawingViewStatePlaceText              # noqa N815
+    statePlaceTextLine         : DrawingViewStatePlaceTextLine          # noqa N815
+    statePlaceTextBlock        : DrawingViewStatePlaceTextBlock         # noqa N815
     statePlaceConn1            : DrawingViewStatePlaceConn1             # noqa N815
     statePlaceConn2            : DrawingViewStatePlaceConn2             # noqa N815
 
@@ -105,7 +107,7 @@ class DrawingViewStateMixin:
         self.stateEditQuery             = DrawingViewStateEditQuery             (self)
         self.stateEditPort              = DrawingViewStateEditPort              (self)
         self.stateEditBlockPin          = DrawingViewStateEditBlockPin          (self)
-        self.stateEditText              = DrawingViewStateEditText              (self)
+        self.stateEditText              = DrawingViewStateEditTextLine              (self)
         self.stateEditPropertyText      = DrawingViewStateEditPropertyText      (self)
         self.statePlaceConn1            = DrawingViewStatePlaceConn1            (self)
         self.statePlaceConn2            = DrawingViewStatePlaceConn2            (self)
@@ -123,4 +125,5 @@ class DrawingViewStateMixin:
         self.statePlaceEllipse2         = DrawingViewStatePlaceEllipse2         (self)
         self.statePlacePolyline1        = DrawingViewStatePlacePolyline1        (self)
         self.statePlacePolyline2        = DrawingViewStatePlacePolyline2        (self)
-        self.statePlaceText             = DrawingViewStatePlaceText             (self)
+        self.statePlaceTextLine         = DrawingViewStatePlaceTextLine         (self)
+        self.statePlaceTextBlock        = DrawingViewStatePlaceTextBlock        (self)

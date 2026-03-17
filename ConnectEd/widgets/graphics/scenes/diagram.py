@@ -6,6 +6,8 @@ from PyQt6.QtGui  import QPainter, QPen, QBrush
 
 from ....app import settings
 
+from ....core.types import DataKind
+
 from ..properties import InherentProperty
 
 from .drawing import DrawingScene
@@ -21,27 +23,27 @@ class DiagramScene(DrawingScene):
     # class attributes
     _PROPERTIES = DrawingScene._PROPERTIES | {
         "Sheet Name" : InherentProperty(
-            kind   = "str",
+            kind   = DataKind.STR,
             getter = lambda self: self.getSheetName(),
             setter = lambda self, value: self.setSheetName(value)
         ),
         "Sheet Width" : InherentProperty(
-            kind   = "float",
+            kind   = DataKind.FLOAT,
             getter = lambda self: self.getSheetWidth(),
             setter = lambda self, value: self.setSheetWidth(value)
         ),
         "Sheet Height" : InherentProperty(
-            kind   = "float",
+            kind   = DataKind.FLOAT,
             getter = lambda self: self.getSheetHeight(),
             setter = lambda self, value: self.setSheetHeight(value)
         ),
         "Margin" : InherentProperty(
-            kind   = "float",
+            kind   = DataKind.FLOAT,
             getter = lambda self: self.margin,
             setter = lambda self, value: self.setMargin(value)
         ),
         "Border" : InherentProperty(
-            kind   = "float",
+            kind   = DataKind.FLOAT,
             getter = lambda self: self.border,
             setter = lambda self, value: self.setBorder(value)
         )

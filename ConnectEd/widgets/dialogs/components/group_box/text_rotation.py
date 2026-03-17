@@ -4,11 +4,11 @@ from PyQt6.QtWidgets import QGroupBox, QWidget
 
 from .....core.check import checked
 
-from ..layout.rotation import RotationLayout
+from ..layout.text_rotation import TextRotationLayout
 
 
-class RotationGroupBox(QGroupBox):
-    _layout : RotationLayout
+class TextRotationGroupBox(QGroupBox):
+    _layout : TextRotationLayout
 
     @checked
     def __init__(
@@ -19,7 +19,7 @@ class RotationGroupBox(QGroupBox):
         parent    : QWidget | None = None
     ) -> None:
         super().__init__(title, parent)
-        self._layout = RotationLayout(rot_angle, rot_comp)
+        self._layout = TextRotationLayout(rot_angle, rot_comp)
         self.setLayout(self._layout)
 
     @checked

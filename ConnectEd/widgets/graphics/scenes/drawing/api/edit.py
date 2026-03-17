@@ -19,8 +19,8 @@ from ....items.port_pin      import PortPinMixin
 from ....items.block_pin     import BlockPinItem
 from ....items.symbol_pin    import SymbolPinItem
 from ....items.polyline      import PolylineItem, PolySegItem
-from ....items.text          import TextItem
-from ....items.property_text import PropertyTextItem
+from ....items.text          import TextLineItem, TextBlockItem
+from ....items.property_text import PropertyTextLineItem, PropertyTextBlockItem
 from ....items.mixin         import ItemMixin
 
 from ..cmd import cmdExec, CmdDelete, CmdMove, CmdRotateCW, CmdRotateCCW
@@ -218,7 +218,7 @@ class DrawingSceneApiEditMixin:
 
     def editPropertyText(
         self      : "DrawingScene",
-        item      : PropertyTextItem,
+        item      : PropertyTextLineItem | PropertyTextBlockItem,
         value     : str,
         align_h   : AlignH           | NoChange = NO_CHANGE,
         align_v   : AlignV           | NoChange = NO_CHANGE,

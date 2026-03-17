@@ -7,7 +7,7 @@ from .....core.check import checked
 from ..combo.angle import AngleComboBox
 
 
-class RotationLayout(QHBoxLayout):
+class TextRotationLayout(QHBoxLayout):
     _angle_label         : QLabel
     _angle_combo         : AngleComboBox
     _compensate_checkbox : QCheckBox

@@ -7,7 +7,7 @@ from PyQt6.QtGui     import QAction
 
 from ....app import logger
 
-from ....core.types import RectHandleId
+from ....core.types import RectHandleId, DataKind
 from ....core.xml   import fromXmlAttrs
 
 from ...dialogs.arc import ArcDialog
@@ -161,7 +161,7 @@ class PolylineItem(
     _PROPERTIES = \
         {
             "Closed" : InherentProperty(
-                kind   = "Bool",
+                kind   = DataKind.BOOL,
                 getter = lambda self: self.closed(),
                 setter = lambda self, value: self.setClosed(value)
             )
@@ -330,9 +330,6 @@ class PolylineItem(
                 vertex.pos().x() * scale_x, vertex.pos().y() * scale_y
             ))
         self.updatePath()
-
-    def moveHandleBy(self : Self, id : RectHandleId, delta : QPointF) -> None:
-        BaseRectangleMixin.moveHandleBy(self, id, delta)
 
     def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
         items = []

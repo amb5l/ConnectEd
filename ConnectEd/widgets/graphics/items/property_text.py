@@ -8,14 +8,14 @@ from PyQt6.QtGui     import QAction, QColor
 from ....app import settings, logger
 
 from ....core.types import Default, DEFAULT, NO_CHANGE, AlignH, AlignV, \
-                           HandleId, RectHandleId
+                           HandleId, RectHandleId, DataKind
 from ....core.utils import val2str
 
 from ..properties import InherentProperty, PropertiesMixin
 
 from . import ItemType
 
-from .text   import TextItem
+from .text   import TextItemMixin, TextLineItem, TextBlockItem
 from .handle import HandleItem
 
 
@@ -34,9 +34,9 @@ if TYPE_CHECKING:
 class TetherItem(QGraphicsLineItem):
     """Tether line between a PropertyText origin and its parent cleat."""
 
-    _item  : "PropertyTextItem"
+    _item  : "QGraphicsItem | PropertyTextItemMixin"
 
-    def __init__(self : Self, item : "PropertyTextItem"):
+    def __init__(self : Self, item : "QGraphicsItem | PropertyTextItemMixin"):
         self._item = item
         super().__init__(item.getOriginHandle())
         self.setVisible(item.isSelected())
@@ -69,17 +69,17 @@ class TetherItem(QGraphicsLineItem):
         pass  # no need to serialise
 
 
-class PropertyTextItem(TextItem):
+class PropertyTextItemMixin:
     # class attributes
     _PROPERTIES = \
         {
             "Name" : InherentProperty(
-                kind   = "str",
+                kind   = DataKind.STR,
                 getter = lambda self: self.name(),
                 setter = lambda self, value: self.setName(value)
             ),
             "Visible" : InherentProperty(
-                kind   = "Bool",
+                kind   = DataKind.BOOL,
                 valid  = lambda self: not self.isVisible(),
                 getter = lambda self: self.isVisible(),
                 setter = lambda self, value: self.setVisible(value)
@@ -90,18 +90,17 @@ class PropertyTextItem(TextItem):
                 setter = lambda self, value: self.setCleat(value)
             )
         } | \
-        ItemOriginMixin._PROPERTIES_ORIGIN | \
         ItemPosMixin._PROPERTIES_POS | \
         ItemRotateMixin._PROPERTIES_ROTATE | \
-        TextItem._PROPERTIES_ALIGN | \
-        TextItem._PROPERTIES_SIZE | \
+        ItemOriginMixin._PROPERTIES_RECT_ORIGIN | \
+        TextItemMixin._PROPERTIES_ALIGN | \
+        TextItemMixin._PROPERTIES_SIZE | \
         ItemQuillMixin._PROPERTIES_QUILL
 
     # instance attributes
-    _name        : str
-    _cleat       : HandleId | None
-    _cleat_shown : bool
-    _tether      : TetherItem | None
+    _name   : str
+    _cleat  : HandleId | None
+    _tether : TetherItem | None
 
     def __init__(
         self      : Self,
@@ -125,29 +124,28 @@ class PropertyTextItem(TextItem):
         parent    : QGraphicsItem | None = None
     ) -> None:
         super().__init__(
-            text       = "?",    # uninitialized value
-            block      = False,  # default
-            rot_angle  = rot_angle,
-            rot_comp   = rot_comp,
-            pos        = pos,
-            origin     = origin,
-            align_h    = align_h,
-            align_v    = align_v,
-            width      = width,
-            height     = height,
-            color      = color,
-            family     = family,
-            size       = size,
-            bold       = bold,
-            italic     = italic,
-            underline  = underline,
-            fresh      = fresh,
-            parent     = parent
+            text      = "?",    # uninitialized value
+            block     = False,  # default
+            rot_angle = rot_angle,
+            rot_comp  = rot_comp,
+            pos       = pos,
+            origin    = origin,
+            align_h   = align_h,
+            align_v   = align_v,
+            width     = width,
+            height    = height,
+            color     = color,
+            family    = family,
+            size      = size,
+            bold      = bold,
+            italic    = italic,
+            underline = underline,
+            fresh     = fresh,
+            parent    = parent
         )
         self._tether = TetherItem(self)
         self._name = name
         self.setCleat(cleat, parent)
-        self._cleat_shown = False
         self.onTextChange()
 
     def mouseDoubleClickEvent(self : Self, event : QGraphicsSceneMouseEvent) -> None:
@@ -184,7 +182,6 @@ class PropertyTextItem(TextItem):
             return
         cleat_valid = self._cleat is not None and self._cleat != ""
         self._tether.setVisible(selected and cleat_valid)
-        self._cleat_shown = selected and cleat_valid
         self._tether.cleat().grip().setVisible(selected and cleat_valid)
 
     def onSettingsChange(self : Self) -> None:
@@ -235,6 +232,12 @@ class PropertyTextItem(TextItem):
         if hasattr(self, "_tether"):  # guard against partial initialisation
             self._tether.setParentItem(self.getOriginHandle())
             self._tether.onPositionChange(self.pos())
+
+    def text(self : Self) -> str:
+        raise NotImplementedError("PropertyTextItemMixin.text() is not implemented")
+
+    def setText(self : Self, text : str) -> None:
+        raise NotImplementedError("PropertyTextItemMixin.setText() is not implemented")
 
     def item(self : Self) -> ItemType | None:
         parent = self.parentItem()
@@ -302,3 +305,13 @@ class PropertyTextItem(TextItem):
             view.action("Properties...", lambda: view.ui.editItemProperties(self))
         ]
         return items
+
+
+class PropertyTextLineItem(PropertyTextItemMixin, TextLineItem):
+    pass
+
+
+class PropertyTextBlockItem(PropertyTextItemMixin, TextBlockItem):
+    pass
+
+PropertyTextItem = PropertyTextLineItem | PropertyTextBlockItem

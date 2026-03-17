@@ -3,8 +3,6 @@ from typing import Self
 from PyQt6.QtWidgets import QWidget, QDialog, QVBoxLayout
 from PyQt6.QtGui     import QShowEvent
 
-from ...core.types import Text
-
 from .components.layout.text_value import TextValueLayout
 from .components.layout.ok_cancel  import OkCancelLayout
 

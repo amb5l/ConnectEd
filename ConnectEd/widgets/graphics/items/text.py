@@ -1,18 +1,16 @@
-# unified text item (line or block text)
-# parent handles origin, position, rotation
-# child handles rotation compensation
-
-from typing      import Self
+from typing      import Self, TypeAlias
 from dataclasses import dataclass
 
 from PyQt6.QtCore    import QPointF, QRectF
-from PyQt6.QtWidgets import QGraphicsItem, QMenu
-from PyQt6.QtGui     import QColor, QFont, QAction, QPainterPath
+from PyQt6.QtWidgets import QGraphicsItem, QMenu, \
+                            QStyleOptionGraphicsItem, QStyle, QWidget, \
+                            QGraphicsSimpleTextItem, QGraphicsTextItem
+from PyQt6.QtGui     import QColor, QFont, QAction, QPainterPath, QPainter
 
-from .....core.types import Default, DEFAULT, NoChange, NO_CHANGE, \
-                            AlignH, AlignV,RectHandleId
+from ....core.types import Default, DEFAULT, NoChange, NO_CHANGE, \
+                            AlignH, AlignV, RectHandleId, DataKind
 
-from .....resources.icons import AnchorTopLeftIcon,      \
+from ....resources.icons import AnchorTopLeftIcon,      \
                                  AnchorTopCenterIcon,    \
                                  AnchorTopRightIcon,     \
                                  AnchorMiddleLeftIcon,   \
@@ -28,35 +26,31 @@ from .....resources.icons import AnchorTopLeftIcon,      \
                                  TextAlignMiddleIcon,    \
                                  TextAlignBottomIcon
 
-from ...properties import InherentProperty, PropertiesMixin
+from ..properties import InherentProperty, PropertiesMixin
 
-from ..mixin         import ItemMixin
-from ..mixin.origin  import ItemOriginMixin
-from ..mixin.pos     import ItemPosMixin
-from ..mixin.rotate  import ItemRotateMixin
-from ..mixin.paint   import ItemPaintMixin
-from ..mixin.handle  import ItemRectHandlesMixin
-from ..mixin.quill   import ItemQuillMixin
-from ..mixin.outline import ItemOutlineMixin
-from ..mixin.change  import ItemChangeMixin
-from ..mixin.clone   import ItemCloneMixin
-from ..mixin.xml     import ItemXmlMixin
-from ..mixin.menu    import ItemMenuMixin
-
-from ..null import NullItem
-
-from .line  import TextLineRenderer
-from .block import TextBlockRenderer
+from .mixin         import ItemMixin
+from .mixin.origin  import ItemOriginMixin
+from .mixin.pos     import ItemPosMixin
+from .mixin.rotate  import ItemRotateMixin
+from .mixin.paint   import ItemPaintMixin
+from .mixin.handle  import ItemRectHandlesMixin
+from .mixin.quill   import ItemQuillMixin
+from .mixin.outline import ItemOutlineMixin
+from .mixin.bound   import ItemBoundMixin
+from .mixin.shape   import ItemShapeMixin
+from .mixin.change  import ItemChangeMixin
+from .mixin.clone   import ItemCloneMixin
+from .mixin.xml     import ItemXmlMixin
+from .mixin.menu    import ItemMenuMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from ...views.drawing import DrawingView
+    from ..views.drawing import DrawingView
 
 
 @dataclass
 class TextState:
     text      : str
-    block     : bool
     rot_angle : float
     rot_comp  : bool
     origin    : RectHandleId
@@ -72,10 +66,9 @@ class TextState:
     underline : bool   | Default
 
     @classmethod
-    def fromItem(cls, item : "TextItem") -> Self:
+    def fromItem(cls, item : "TextItemMixin") -> Self:
         return cls(
             text      = item.text(),
-            block     = item.block(),
             rot_angle = item.rotation(),
             rot_comp  = item.rotComp(),
             origin    = item.origin(),
@@ -95,7 +88,6 @@ class TextState:
 @dataclass
 class TextChange:
     text      : str              | NoChange = NO_CHANGE
-    block     : bool             | NoChange = NO_CHANGE
     rot_angle : float            | NoChange = NO_CHANGE
     rot_comp  : bool             | NoChange = NO_CHANGE
     origin    : str              | NoChange = NO_CHANGE
@@ -111,7 +103,7 @@ class TextChange:
     underline : bool   | Default | NoChange = NO_CHANGE
 
 
-class TextItem(
+class TextItemMixin(
     ItemMixin,
     ItemOriginMixin,
     ItemPosMixin,
@@ -120,29 +112,26 @@ class TextItem(
     ItemRectHandlesMixin,
     ItemQuillMixin,
     ItemOutlineMixin,
+    ItemBoundMixin,
+    ItemShapeMixin,
     ItemChangeMixin,
     ItemCloneMixin,
     ItemXmlMixin,
     ItemMenuMixin,
-    PropertiesMixin,
-    NullItem
+    PropertiesMixin
 ):
-    """
-    Text item. Supports line or block text and rotation compensation.
-    """
-
     # class attributes
     _ORIGIN = RectHandleId.TOP_LEFT
     _RESIZE_KIND = "text"  # handle kind for text items
     _PROPERTIES_ALIGN = \
         {
             "AlignH" : InherentProperty(
-                kind   = "AlignH",
+                kind   = DataKind.ALIGN_H,
                 getter = lambda self: self.alignH(),
                 setter = lambda self, value: self.setAlignH(value)
             ),
             "AlignV" : InherentProperty(
-                kind   = "AlignV",
+                kind   = DataKind.ALIGN_V,
                 valid  = lambda self: self.height() is not None,
                 getter = lambda self: self.alignV(),
                 setter = lambda self, value: self.setAlignV(value)
@@ -151,46 +140,31 @@ class TextItem(
     _PROPERTIES_SIZE = \
         {
             "Width" : InherentProperty(
-                kind   = "float",
+                kind   = DataKind.FLOAT,
                 valid  = lambda self: self.width() is not None,
                 getter = lambda self: self.width(),
                 setter = lambda self, value: self.setWidth(value)
             ),
             "Height" : InherentProperty(
-                kind   = "float",
+                kind   = DataKind.FLOAT,
                 valid  = lambda self: self.height() is not None,
                 getter = lambda self: self.height(),
                 setter = lambda self, value: self.setHeight(value)
             )
         }
-    _PROPERTIES = \
-        {
-            "Text" : InherentProperty(
-                kind   = "Text",
-                getter = lambda self: self.text(),
-                setter = lambda self, value: self.setText(value)
-            ),
-
-        } | \
-        ItemPosMixin._PROPERTIES_POS | \
-        ItemOriginMixin._PROPERTIES_ORIGIN | \
-        ItemRotateMixin._PROPERTIES_ROTATE | \
-        _PROPERTIES_ALIGN | \
-        _PROPERTIES_SIZE | \
-        ItemQuillMixin._PROPERTIES_QUILL
 
     # instance attributes
-    _child    : TextLineRenderer | TextBlockRenderer  # text renderer
-    _rot_comp : bool                                  # rotation compensation
-    _align_h  : AlignH                                # horizontal alignment
-    _align_v  : AlignV                                # vertical alignment
-    _width    : float                                 # width constraint
-    _height   : float                                 # height constraint
+    _rot_comp  : bool    # rotation compensation enable
+    _rot_raw   : float   # raw (uncompensated) rotation
+    _rot_adj   : float   # adjustment applied by rotation compensation
+    _align_h   : AlignH  # horizontal alignment
+    _align_v   : AlignV  # vertical alignment
+    _width     : float   # width constraint
+    _height    : float   # height constraint
 
     def __init__(
-        self      : Self,
+        self      : "Self | TextLineItem | TextBlockItem",
         text      : str                  = "",
-        block     : bool                 = False,
         pos       : QPointF | None       = None,
         rot_angle : float                = 0.0,
         rot_comp  : bool                 = True,
@@ -209,14 +183,13 @@ class TextItem(
         parent    : QGraphicsItem | None = None
     ) -> None:
         super().__init__(parent)
-        self._child = TextBlockRenderer() if block else TextLineRenderer()
-        self._child.setParentItem(self)
-        self._child.setText(text)
-        self._rot_comp = rot_comp
-        self._align_h = align_h
-        self._align_v = align_v
-        self._width   = width
-        self._height  = height
+        self._rot_comp  = rot_comp
+        self._align_h   = align_h
+        self._align_v   = align_v
+        self._width     = width
+        self._height    = height
+        if isinstance(self, TextLineItem):
+            self._clip_rect = None
         self.initItem(fresh)
         self.setPos(pos or QPointF(0, 0))
         self.setRotation(rot_angle)
@@ -227,80 +200,51 @@ class TextItem(
         self.setQuillBold(bold)
         self.setQuillItalic(italic)
         self.setQuillUnderline(underline)
-        self._child.onGeometryChange()
-        self.updateHandlePositions()
+        self.setText(text)
         self.onSceneRotationChange()
 
+    def onSelectionChange(self : Self, selected : bool) -> None:
+        self._paint_override()
+
     def onSceneRotationChange(self : Self) -> None:
-        if not self._rot_comp:
-            return
-        a = self.sceneRotation()
-        self._child.setRotation(180 if a > 135 and a <= 315 else 0)
+        if self._rot_comp: self.setRotation()
 
-    def isSelected(self : Self) -> bool:
-        return self._child.isSelected()
+    def rotation(self : Self) -> float:
+        return self._rot_raw
 
-    def setSelected(self : Self, selected : bool) -> None:
-        self._child.setSelected(selected)
-
-    def block(self : Self) -> bool:
-        return isinstance(self._child, TextBlockRenderer)
-
-    def setBlock(self : Self, block : bool) -> None:
-        if isinstance(self._child, TextLineRenderer)  and block     \
-        or isinstance(self._child, TextBlockRenderer) and not block:
-            new_child = TextBlockRenderer() if block else TextLineRenderer()
-            new_child.setSelected(self._child.isSelected())
-            new_child.setRotation(self._child.rotation())
-            new_child.setText(self._child.text())
-            new_child.setColor(self._child.color())
-            new_child.setFont(self._child.font())
-            self._child.setParentItem(None)  # remove old child
-            self._child = new_child
-            self._child.setParentItem(self)
-            self._child.onGeometryChange()
-            self.updateHandlePositions()
+    def setRotation(self : Self, angle : float | None = None) -> None:
+        if angle is not None: self._rot_raw = angle
+        sa = (self.parentSceneRotation() + self._rot_raw) % 360.0
+        self._rot_adj = 180 if self._rot_comp and sa > 135 and sa <= 315 else 0
+        super().setRotation(self._rot_raw + self._rot_adj)
 
     def rotComp(self : Self) -> bool:
         return self._rot_comp
 
     def setRotComp(self : Self, rot_comp : bool) -> None:
         self._rot_comp = rot_comp
-        if rot_comp:
-            self.onSceneRotationChange()
-        else:
-            self._child.setRotation(0)
-
-    def text(self : Self) -> str:
-        return self._child.text()
-
-    def setText(self : Self, text : str) -> None:
-        self._child.setText(text)
-        self._child.onGeometryChange()
-        self.updateHandlePositions()
-        self.signalPropertyChanges("Text")
+        self.setRotation()
 
     def alignH(self : Self) -> AlignH:
         return self._align_h
 
     def setAlignH(self : Self, align_h : AlignH) -> None:
         self._align_h = align_h
-        self._child.onGeometryChange()
+        self.onGeometryChange()
 
     def alignV(self : Self) -> AlignV:
         return self._align_v
 
     def setAlignV(self : Self, align_v : AlignV) -> None:
         self._align_v = align_v
-        self._child.onGeometryChange()
+        self.onGeometryChange()
 
     def width(self : Self) -> float:
         return self._width
 
     def setWidth(self : Self, width : float) -> None:
         self._width = width
-        if self._child is not None:
-            self._child.onGeometryChange()
+        self.onGeometryChange()
         self.updateHandlePositions()
         self.updateHandlePaths()
         self.signalPropertyChanges("Width")
@@ -310,37 +254,19 @@ class TextItem(
 
     def setHeight(self : Self, height : float) -> None:
         self._height = height
-        if self._child is not None:
-            self._child.onGeometryChange()
+        self.onGeometryChange()
         self.updateHandlePositions()
         self.updateHandlePaths()
         self.signalPropertyChanges("Height")
 
-    def color(self : Self) -> QColor:
-        return self._child.color()
-
-    def setColor(self : Self, color : QColor) -> None:
-        self._child.setColor(color)
-
-    def font(self : Self) -> QFont:
-        return self._child.font()
-
     def setFont(self : Self, font : QFont) -> None:
-        self._child.setFont(font)
-        self._child.onGeometryChange()
+        super().setFont(font)
+        self.onGeometryChange()
         self.updateHandlePositions()
 
     def handleRect(self : Self) -> QRectF:
         """Return the rectangle used for handles."""
-        return self._child._brect
-
-    def boundingRect(self : Self) -> QRectF:
-        """Return the child's bounding rect for hit detection."""
-        return self._child._brect
-
-    def shape(self : Self) -> QPainterPath:
-        """Return the child's shape for hit detection."""
-        return self._child._hshape
+        return self._brect
 
     def moveHandleBy(self : Self, id : RectHandleId, delta : QPointF) -> None:
         """Resize/move the text as appropriate."""
@@ -348,38 +274,38 @@ class TextItem(
         match id:
             case RectHandleId.TOP_LEFT:
                 if "Left" in origin_name: self.moveByX(delta.x())
-                self.resizeX(-delta.x())
+                self.resize(dx=-delta.x())
                 if "Top" in origin_name: self.moveByY(delta.y())
-                self.resizeY(-delta.y())
+                self.resize(dy=-delta.y())
             case RectHandleId.TOP_CENTER:
                 if "Top" in origin_name: self.moveByY(delta.y())
-                self.resizeY(-delta.y())
+                self.resize(dy=-delta.y())
             case RectHandleId.TOP_RIGHT:
                 if "Right" in origin_name: self.moveByX(delta.x())
-                self.resizeX(delta.x())
+                self.resize(dx=delta.x())
                 if "Top" in origin_name: self.moveByY(delta.y())
-                self.resizeY(-delta.y())
+                self.resize(dy=-delta.y())
             case RectHandleId.MIDDLE_LEFT:
                 if "Left" in origin_name: self.moveByX(delta.x())
-                self.resizeX(-delta.x())
+                self.resize(dx=-delta.x())
             case RectHandleId.MIDDLE_CENTER:
                 self.moveBy(delta)
             case RectHandleId.MIDDLE_RIGHT:
                 if "Right" in origin_name: self.moveByX(delta.x())
-                self.resizeX(delta.x())
+                self.resize(dx=delta.x())
             case RectHandleId.BOTTOM_LEFT:
                 if "Left" in origin_name: self.moveByX(delta.x())
-                self.resizeX(-delta.x())
+                self.resize(dx=-delta.x())
                 if "Bottom" in origin_name: self.moveByY(delta.y())
-                self.resizeY(delta.y())
+                self.resize(dy=delta.y())
             case RectHandleId.BOTTOM_CENTER:
                 if "Bottom" in origin_name: self.moveByY(delta.y())
-                self.resizeY(delta.y())
+                self.resize(dy=delta.y())
             case RectHandleId.BOTTOM_RIGHT:
                 if "Right" in origin_name: self.moveByX(delta.x())
-                self.resizeX(delta.x())
+                self.resize(dx=delta.x())
                 if "Bottom" in origin_name: self.moveByY(delta.y())
-                self.resizeY(delta.y())
+                self.resize(dy=delta.y())
 
     def moveByX(self : Self, dx : float) -> None:
         self.setX(self.pos().x() + dx)
@@ -387,29 +313,13 @@ class TextItem(
     def moveByY(self : Self, dy : float) -> None:
         self.setY(self.pos().y() + dy)
 
-    def resizeX(self : Self, dx : float) -> None:
-        rect = self._child._brect
-        width = self._width if self._width >= 0.0 else rect.width()
-        self._width = max(width + dx, 0.0)
-        self._child.onGeometryChange()
-        self.updateHandlePositions()
-        self.updateHandlePaths()
-
-    def resizeY(self : Self, dy : float) -> None:
-        rect = self._child._brect
-        height = self._height if self._height >= 0.0 else rect.height()
-        self._height = max(height + dy, 0.0)
-        self._child.onGeometryChange()
-        self.updateHandlePositions()
-        self.updateHandlePaths()
-
-    def resize(self : Self, dx : float, dy : float) -> None:
-        rect = self._child._brect
+    def resize(self : Self, dx : float = 0.0, dy : float = 0.0) -> None:
+        rect = self._brect
         width = self._width if self._width >= 0.0 else rect.width()
         height = self._height if self._height >= 0.0 else rect.height()
         self._width  = max(width  + dx, 0.0)
         self._height = max(height + dy, 0.0)
-        self._child.onGeometryChange()
+        self.onGeometryChange()
         self.updateHandlePositions()
         self.updateHandlePaths()
 
@@ -543,3 +453,185 @@ class TextItem(
             view.action("Properties...", lambda: view.ui.editItemProperties(self))
         ]
         return items
+
+    def _paint_selected(
+        self    : Self,
+        painter : QPainter,
+        option  : QStyleOptionGraphicsItem,
+        widget  : QWidget
+    ) -> None:
+        option.state &= ~QStyle.StateFlag.State_Selected
+        super().paint(painter, option, widget)
+
+
+class TextLineItem(TextItemMixin, QGraphicsSimpleTextItem):
+    _PROPERTIES = \
+        {
+            "Text" : InherentProperty(
+                kind   = DataKind.STR,
+                getter = lambda self: self.text(),
+                setter = lambda self, value: self.setText(value)
+            ),
+
+        } | \
+        ItemPosMixin._PROPERTIES_POS | \
+        ItemRotateMixin._PROPERTIES_ROTATE | \
+        ItemOriginMixin._PROPERTIES_RECT_ORIGIN | \
+        TextItemMixin._PROPERTIES_ALIGN | \
+        TextItemMixin._PROPERTIES_SIZE | \
+        ItemQuillMixin._PROPERTIES_QUILL
+
+    _clip_rect : QRectF | None = None
+
+    def onGeometryChange(self : Self) -> None:
+        # update cached bounding rect, accounting for constraints
+        urect = QGraphicsSimpleTextItem.boundingRect(self)  # unconstrained rect
+        w = self._width  if self._width  >= 0.0 else urect.width()
+        h = self._height if self._height >= 0.0 else urect.height()
+        self._brect = QRectF(0.0, 0.0, w, h)
+        # apply clipping if constraints are smaller than unconstrained rect
+        if w < urect.width() or h < urect.height():
+            self._clip_rect = self._brect
+        else:
+            self._clip_rect = None
+        self._paint_override()
+        # position to apply alignment
+        match self._align_h:
+            case AlignH.LEFT:
+                x = 0
+            case AlignH.CENTER:
+                x = (w - urect.width()) / 2
+            case AlignH.RIGHT:
+                x = w - urect.width()
+        match self._align_v:
+            case AlignV.TOP:
+                y = 0
+            case AlignV.MIDDLE:
+                y = (h - urect.height()) / 2
+            case AlignV.BOTTOM:
+                y = h - urect.height()
+        self.setPos(x, y)
+        # update cached hit detect shape
+        self._hshape = QPainterPath()
+        self._hshape.addRect(self._brect)
+        # update transform origin
+        self.setTransformOriginPoint(self._brect.center())
+        # update
+        self.update()
+
+    def setText(self : Self, text : str) -> None:
+        super().setText(text)
+        self.onGeometryChange()
+        self.updateHandlePositions()
+        self.signalPropertyChanges("Text")
+
+    def color(self : Self) -> QColor:
+        return self.brush().color()
+
+    def setColor(self : Self, color : QColor) -> None:
+        brush = self.brush()
+        brush.setColor(color)
+        self.setBrush(brush)
+
+    def _paint_override(self : Self) -> None:
+        if self.isSelected():
+            if self._clip_rect is not None:
+                self.paint = self._paint_selected_clipped
+            else:
+                self.paint = self._paint_selected
+        else:
+            if "paint" in self.__dict__:
+                self.__dict__.pop("paint")
+
+    def _paint_selected_clipped(
+        self    : Self,
+        painter : QPainter,
+        option  : QStyleOptionGraphicsItem,
+        widget  : QWidget
+    ) -> None:
+        option.state &= ~QStyle.StateFlag.State_Selected
+        painter.save()
+        painter.setClipRect(self._clip_rect)
+        super().paint(painter, option, widget)
+        painter.restore()
+
+
+class TextBlockItem(TextItemMixin, QGraphicsTextItem):
+    _PROPERTIES = \
+        {
+            "Text" : InherentProperty(
+                kind   = DataKind.TEXT,
+                getter = lambda self: self.text(),
+                setter = lambda self, value: self.setText(value)
+            ),
+
+        } | \
+        ItemPosMixin._PROPERTIES_POS | \
+        ItemRotateMixin._PROPERTIES_ROTATE | \
+        ItemOriginMixin._PROPERTIES_RECT_ORIGIN | \
+        TextItemMixin._PROPERTIES_ALIGN | \
+        TextItemMixin._PROPERTIES_SIZE | \
+        ItemQuillMixin._PROPERTIES_QUILL
+
+    def onGeometryChange(self : Self) -> None:
+        # get underlying document
+        doc = self.document()
+        # apply horizontal alignment
+        option = doc.defaultTextOption()
+        option.setAlignment(self._align_h.value)
+        doc.setDefaultTextOption(option)
+        # apply width constraint
+        self.setTextWidth(self._width)
+        # calculate unconstrained bounding rect (without margins)
+        root_frame = doc.rootFrame()
+        fmt = root_frame.frameFormat()
+        fmt.setMargin(0)  # temporarily remove margins
+        root_frame.setFrameFormat(fmt)
+        urect = QGraphicsTextItem.boundingRect(self)  # unconstrained rect
+        # update cached bounding rect, accounting for constraints
+        w = self._width  if self._width  >= 0.0 else urect.width()
+        h = self._height if self._height >= 0.0 else urect.height()
+        self._brect = QRectF(0.0, 0.0, w, h)
+        # if height constrained: apply vertical alignment via document top margin
+        if self._height >= 0.0:
+            match self._align_v:
+                case AlignV.BOTTOM:
+                    top_margin = self._height - urect.height()
+                case AlignV.MIDDLE:
+                    top_margin = (self._height - urect.height()) / 2
+                case _:  # Top
+                    top_margin = 0
+            fmt.setTopMargin(top_margin)
+            root_frame.setFrameFormat(fmt)
+        # update cached hit detect shape
+        self._hshape = QPainterPath()
+        self._hshape.addRect(self._brect)
+        # update transform origin
+        self.setTransformOriginPoint(self._brect.center())
+        # update
+        self.update()
+
+    def text(self : Self) -> str:
+        return super().toPlainText()
+
+    def setText(self : Self, text : str) -> None:
+        super().setPlainText(text)
+        self.onGeometryChange()
+        self.updateHandlePositions()
+        self.signalPropertyChanges("Text")
+
+    def color(self : Self) -> QColor:
+        return self.defaultTextColor()
+
+    def setColor(self : Self, color : QColor) -> None:
+        self.setDefaultTextColor(color)
+
+    def _paint_override(self : Self) -> None:
+        if self.isSelected():
+            self.paint = self._paint_selected
+        else:
+            if "paint" in self.__dict__:
+                self.__dict__.pop("paint")
+
+
+TextBothItem : TypeAlias = TextLineItem | TextBlockItem

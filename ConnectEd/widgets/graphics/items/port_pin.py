@@ -2,7 +2,7 @@ from typing import Self
 
 from PyQt6.QtCore import QPointF
 
-from ....core.types import Direction, BlockPinHandleId
+from ....core.types import Direction, BlockPinHandleId, DataKind
 
 from ..properties import InherentProperty, PropertiesMixin
 
@@ -32,7 +32,7 @@ class PortPinMixin(
     _PROPERTIES_NAME = \
         {
             "Name" : InherentProperty(
-                kind   = "str",
+                kind   = DataKind.STR,
                 getter = lambda self: self._name,
                 setter = lambda self, value: setattr(self, "_name", value),
             )
@@ -40,7 +40,7 @@ class PortPinMixin(
     _PROPERTIES_DIR = \
         {
             "Dir" : InherentProperty(
-                kind   = "Direction",
+                kind   = DataKind.DIRECTION,
                 getter = lambda self: self._direction,
                 setter = lambda self, value: setattr(self, "_direction", value)
             )
@@ -48,7 +48,7 @@ class PortPinMixin(
     _PROPERTIES_COMMENT = \
         {
             "Comment" : InherentProperty(
-                kind   = "str",
+                kind   = DataKind.STR,
                 valid  = lambda self: self._comment != "",
                 getter = lambda self: self._comment,
                 setter = lambda self, value: setattr(self, "_comment", value)

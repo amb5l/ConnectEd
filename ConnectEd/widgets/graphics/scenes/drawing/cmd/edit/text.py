@@ -6,7 +6,7 @@ from .......core.check import checked
 from .......core.types import Default, NoChange, NO_CHANGE, \
                                AlignH, AlignV, RectHandleId
 
-from .....items.text import TextItem, TextState, TextChange
+from .....items.text import TextItemMixin, TextState, TextChange
 
 from .. import CmdSceneItem
 
@@ -16,7 +16,7 @@ if TYPE_CHECKING:
 
 
 class CmdEditText(CmdSceneItem):
-    _item   : "TextItem"
+    _item   : "TextItemMixin"
     _before : TextState
     _after  : TextChange
 
@@ -24,7 +24,7 @@ class CmdEditText(CmdSceneItem):
     def __init__(
         self      : Self,
         scene     : "DrawingScene",
-        item      : "TextItem",
+        item      : "TextItemMixin",
         text      : str              | NoChange = NO_CHANGE,
         block     : bool             | NoChange = NO_CHANGE,
         rot_angle : float            | NoChange = NO_CHANGE,

@@ -55,32 +55,6 @@ class SymbolPinItem(
             )
         }
 
-    def initHandles(self : Self) -> None:
-        self._handles = {
-            SymbolPinHandleId.ORIGIN : HandleItem(
-                id     = SymbolPinHandleId.ORIGIN,
-                pos    = QPointF(0, 0),
-                kind   = "move",
-                parent = self
-            ),
-            SymbolPinHandleId.ENTRY : HandleItem(
-                id     = SymbolPinHandleId.ENTRY,
-                pos    = QPointF(-PITCH, 0),
-                kind   = "move",
-                parent = self
-            ),
-            SymbolPinHandleId.NAME : HandleItem(
-                id     = SymbolPinHandleId.NAME,
-                pos    = QPointF(self._PIN_NAME_OFFSET, 0),
-                kind   = "move",
-                parent = self
-            )
-        }
-
-    def moveHandleBy(self : Self, _, delta : QPointF) -> None:
-        """Move the entire SymbolPin when any grip is dragged."""
-        self.setPos(self.pos() + delta)
-
     def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
         return [
             view.action(

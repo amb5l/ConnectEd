@@ -9,7 +9,8 @@ from PyQt6.QtGui     import QUndoStack, QColor
 
 from .....app import logger, settings
 
-from .....core.xml import toXmlAttrs, fromXmlAttrs
+from .....core.types import DataKind
+from .....core.xml   import toXmlAttrs, fromXmlAttrs
 
 from ...properties import InherentProperty, PropertiesMixin
 
@@ -34,7 +35,7 @@ class DrawingScene(
     # class attributes
     _PROPERTIES = {
         "Name" : InherentProperty(
-            kind   = "str",
+            kind   = DataKind.STR,
             getter = lambda self: self._name,
             setter = lambda self, value : setattr(self, "_name", value)
         )

@@ -4,17 +4,17 @@ from PyQt6.QtWidgets import QGroupBox, QHBoxLayout, QGridLayout, \
                             QLabel, QComboBox, QWidget
 
 from .....core.check import checked
-from .....core.types import Text
+from .....core.types import DataKind
 
 from ....graphics.properties import PropertiesMixin
 
 from ..combo.cleat         import CleatComboBox
 from ..combo.property_name import PropertyNameComboBox
 
-from ..edit import TextLineEditor, FloatEditor, BoolEditor, TextEditor
+from ..edit import StrEditor, FloatEditor, BoolEditor, TextEditor
 
 
-ValueWidgetType : TypeAlias = QComboBox | TextLineEditor | TextBlockEditor
+ValueWidgetType : TypeAlias = QComboBox | StrEditor | TextBlockEditor
 
 class PropertyGroupBox(QGroupBox):
     _layout       : QGridLayout
@@ -49,7 +49,7 @@ class PropertyGroupBox(QGroupBox):
         # type
         self._type_label = QLabel(type)
         self._layout.addWidget(self._type_label, 1, 0)
-        if kind == "Text" and isinstance(value, Text):
+        if kind == DataKind.TEXT and isinstance(value, Text):
             self._type_widget = QComboBox()
             self._type_widget.addItem("Text Line", False)
             self._type_widget.addItem("Text Block", True)
@@ -62,10 +62,10 @@ class PropertyGroupBox(QGroupBox):
         self._layout.addWidget(self._value_label, 2, 0)
         # value widget - depends on type/kind
         match kind:
-            case "str"   : w = TextLineEditor(value)
-            case "float" : w = FloatEditor(value)
-            case "bool"  : w = BoolEditor(value)
-            case "Text"  : w = TextEditor(value)
+            case DataKind.STR   : w = StrEditor(value)
+            case DataKind.FLOAT : w = FloatEditor(value)
+            case DataKind.BOOL  : w = BoolEditor(value)
+            case DataKind.TEXT  : w = TextEditor(value)
             case _       : w = QLabel(str(value))
         self._value_widget = w
         self._layout.addWidget(self._value_widget, 2, 1)

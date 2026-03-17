@@ -3,7 +3,7 @@ from typing import Self
 from PyQt6.QtWidgets import QGraphicsItem, QGraphicsPathItem
 
 from ....core.defs  import PITCH
-from ....core.types import Direction
+from ....core.types import Direction, DataKind
 
 from ..properties import InherentProperty
 
@@ -117,7 +117,7 @@ class BasePinDotMixin:
     # class attributes
     _PROPERTIES_DOT = {
         "Dot" : InherentProperty(
-            kind   = "Bool",
+            kind   = DataKind.BOOL,
             getter = lambda self: self._dot,
             setter = lambda self, value: setattr(self, "_dot", value)
         )
@@ -138,7 +138,7 @@ class BasePinClockMixin:
     # class attributes
     _PROPERTIES_CLOCK = {
         "Clock" : InherentProperty(
-            kind   = "Bool",
+            kind   = DataKind.BOOL,
             getter = lambda self: self._clock,
             setter = lambda self, value: setattr(self, "_clock", value)
         )

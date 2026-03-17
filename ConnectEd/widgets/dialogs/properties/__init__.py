@@ -3,12 +3,14 @@ from typing      import Self, Any, TypeAlias
 from PyQt6.QtCore    import Qt, QModelIndex
 from PyQt6.QtWidgets import QDialog, QMessageBox, \
                             QVBoxLayout, QHBoxLayout, QPushButton, \
-                            QAbstractItemView, QStyledItemDelegate, \
-                            QGraphicsItem
+                            QAbstractItemView, QGraphicsItem
 from PyQt6.QtGui     import QStandardItemModel, QColor, QFontDatabase
 
-from ....core.types import DEFAULT, AlignH, AlignV, Text, \
-                           HandleId, RectHandleId
+from ....core.types import (
+    DEFAULT, AlignH, AlignV,
+    RectHandleId, LineHandleId, BlockPinHandleId, SymbolPinHandleId,
+    DataKind
+)
 
 from ...graphics.properties import PropertyDisplay, \
                                    PropertyAdd, PropertyEdit, PropertyDelete
@@ -16,6 +18,8 @@ from ...graphics.properties import PropertyDisplay, \
 from ...graphics.items.mixin.handle import ItemHandlesMixin
 
 from ..components.table_view import TableView
+
+from ..new_property import NewPropertyDialog
 
 from .item import PropertiesItem
 
@@ -27,13 +31,14 @@ if TYPE_CHECKING:
     from ...graphics.views.drawing       import DrawingView
 
 
-_HEADERS = [
+_COLUMNS : list[str] = [
     "Name"      ,
     "Value"     ,
     "Display"   ,
     "Cleat"     ,
     "X"         ,
     "Y"         ,
+    "Rotation"  ,
     "Origin"    ,
     "AlignH"    ,
     "AlignV"    ,
@@ -47,10 +52,17 @@ _HEADERS = [
     "Underline"
 ]
 
+_HANDLE_KIND : dict[type, DataKind] = {
+    RectHandleId      : DataKind.RECT_HANDLE,
+    LineHandleId      : DataKind.LINE_HANDLE,
+    BlockPinHandleId  : DataKind.BLOCK_PIN_HANDLE,
+    SymbolPinHandleId : DataKind.SYMBOL_PIN_HANDLE
+}
+
 
 class PropertiesDialog(QDialog):
     ItemType : TypeAlias = \
-        "QGraphicsItem | ItemHandlesMixin[HandleId] | PropertiesMixin"
+        "QGraphicsItem | ItemHandlesMixin | PropertiesMixin"
 
     _item           : ItemType
     _dialog_layout  : QVBoxLayout
@@ -80,7 +92,7 @@ class PropertiesDialog(QDialog):
         # create model
         self._table_model = QStandardItemModel()
         # set headers
-        self._table_model.setHorizontalHeaderLabels(_HEADERS)
+        self._table_model.setHorizontalHeaderLabels(_COLUMNS)
         # add rows
         for name in item.getPropertyNames():
             self._table_model.appendRow(self._buildRow(name))
@@ -179,133 +191,154 @@ class PropertiesDialog(QDialog):
             display_item : PropertiesItem = self._table_model.item(row_idx, 2)
             display = display_item.value()
             for col_idx in range(top_left.column(), right_column + 1):
-                item : PropertiesItem = self._table_model.item(row_idx, col_idx)
+                item : PropertiesItem | None = self._table_model.item(row_idx, col_idx)
                 if item is None:
                     continue
                 if col_idx > 2:
                     item.setEnabled(display != PropertyDisplay.NONE)
 
-    def _buildRow(self : Self, name : str) -> list[PropertiesItem]:
+    def _buildRow(
+        self  : Self,
+        name  : str,
+        kind  : DataKind = DataKind.STR,
+        value : Any = ""
+    ) -> list[PropertiesItem]:
         item = self._item
         new = not item.hasProperty(name)
         pt = item.getPropertyText(name)
-        pt_new_enabled = { "new" : pt is None, "enabled" : pt is not None }
+        pt_args = {
+            "owner"   : item,
+            "new"     : new,
+            "enabled" : pt is not None
+        }
         row = [
             # Name
             PropertiesItem(
-                kind     = "str",
+                owner    = item,
+                kind     = DataKind.STR,
                 value    = name,
                 new      = new,
                 editable = new or not item.isPropertyInherent(name)
             ),
             # Value
             PropertiesItem(
-                kind     = "Text" if new else item.getPropertyKind(name),
-                value    = Text("", False) if new else item.getPropertyValue(name),
+                owner    = item,
+                kind     = DataKind.TEXT if new else item.getPropertyKind(name),
+                value    = value if new else item.getPropertyValue(name),
                 default  = None if new else item.getPropertyDefault(name),
                 new      = new,
                 editable = new or not item.isPropertyReadOnly(name)
             ),
             # Display
             PropertiesItem(
-                kind  = "Display",
+                owner = item,
+                kind  = DataKind.DISPLAY,
                 value = item.getPropertyDisplay(name),
                 new   = new
             ),
             # Cleat
             PropertiesItem(
-                kind  = item.handleIdType().__name__,
+                kind  = _HANDLE_KIND[item.handleIdType()],
                 value = list(item.handles().keys())[0] if pt is None else pt.cleat(),
-                **pt_new_enabled
+                **pt_args
             ),
             # X
             PropertiesItem(
-                kind  = "float",
+                kind  = DataKind.FLOAT,
                 value = 0.0 if pt is None else pt.x(),
-                **pt_new_enabled
+                **pt_args
             ),
             # Y
             PropertiesItem(
-                kind    = "float",
+                kind    = DataKind.FLOAT,
                 value   = 0.0 if pt is None else pt.y(),
-                **pt_new_enabled
+                **pt_args
             ),
             # Origin
             PropertiesItem(
-                kind  = "RectHandleId",
+                kind  = DataKind.ORIGIN,
                 value = RectHandleId.TOP_LEFT if pt is None else pt.origin(),
-                **pt_new_enabled
+                **pt_args
             ),
             # AlignH
             PropertiesItem(
-                kind  = "AlignH",
+                kind  = DataKind.ALIGN_H,
                 value = AlignH.LEFT if pt is None else pt.alignH(),
-                **pt_new_enabled
+                **pt_args
             ),
             # AlignV
             PropertiesItem(
-                kind  = "AlignV",
+                kind  = DataKind.ALIGN_V,
                 value = AlignV.TOP if pt is None else pt.alignV(),
-                **pt_new_enabled
+                **pt_args
             ),
             # Width
             PropertiesItem(
-                kind  = "float",
+                kind  = DataKind.FLOAT,
                 value = -1.0 if pt is None else pt.width(),
-                **pt_new_enabled
+                **pt_args
             ),
             # Height
             PropertiesItem(
-                kind  = "float",
+                kind  = DataKind.FLOAT,
                 value = -1.0 if pt is None else pt.height(),
-                **pt_new_enabled
+                **pt_args
             ),
             # Color
             PropertiesItem(
-                kind  = "Color",
+                kind  = DataKind.COLOR,
                 value = DEFAULT if pt is None else pt.color(),
-                **pt_new_enabled
+                **pt_args
             ),
             # Family
             PropertiesItem(
-                kind  = "FontFamily",
+                kind  = DataKind.FONT_FAMILY,
                 value = DEFAULT if pt is None else pt.quillFamily(),
-                **pt_new_enabled
+                **pt_args
             ),
             # Size
             PropertiesItem(
-                kind  = "FontSize",
+                kind  = DataKind.FONT_SIZE,
                 value = DEFAULT if pt is None else pt.quillSize(),
-                **pt_new_enabled
+                **pt_args
             ),
             # Bold
             PropertiesItem(
-                kind  = "FontBool",
+                kind  = DataKind.FONT_BOOL,
                 value = DEFAULT if pt is None else pt.quillBold(),
-                **pt_new_enabled
+                **pt_args
             ),
             # Italic
             PropertiesItem(
-                kind  = "FontBool",
+                kind  = DataKind.FONT_BOOL,
                 value = DEFAULT if pt is None else pt.quillItalic(),
-                **pt_new_enabled
+                **pt_args
             ),
             # Underline
             PropertiesItem(
-                kind  = "FontBool",
+                kind  = DataKind.FONT_BOOL,
                 value = DEFAULT if pt is None else pt.quillUnderline(),
-                **pt_new_enabled
+                **pt_args
             )
         ]
         return row
 
     def _addRow(self : Self) -> None:
         """Add a new property."""
-        row_idx = self._table_model.rowCount()
-        self._table_model.appendRow(self._buildRow(""))
-        self._refreshTable()
-        self._table_view.setCurrentIndex(self._table_model.index(row_idx, 0))
-        self._table_view.edit(self._table_model.index(row_idx, 0))
+        dialog = NewPropertyDialog(self)
+        if dialog.exec():
+            name = dialog.getName()
+            kind = dialog.getKind()
+            value = dialog.getValue()
+            row_idx = self._table_model.rowCount()
+            row = self._buildRow(name, kind, value)
+            self._table_model.appendRow(row)
+            self._refreshTable()  # why?
+            self._table_view.setCurrentIndex(self._table_model.index(row_idx, 0))
+            # finish up with value of new property being edited
+            self._table_view.edit(self._table_model.index(
+                row_idx, _COLUMNS.index("Value")
+            ))
 
     def _deleteRows(self : Self) -> None:
         # get all selected rows

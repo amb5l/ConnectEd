@@ -4,8 +4,6 @@ from PyQt6.QtCore    import Qt
 from PyQt6.QtWidgets import QWidget, QComboBox
 from PyQt6.QtGui     import QColor, QIcon, QPixmap, QPainter
 
-from .....app import logger
-
 from .....core.check import checked
 from .....core.types import Default, DEFAULT, NoChange, NO_CHANGE
 from .....core.utils import val2str

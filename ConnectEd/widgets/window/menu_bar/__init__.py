@@ -186,7 +186,8 @@ class MenuBar(QMenuBar):
             self.place_menu.addAction(a.placeRectangle)
             self.place_menu.addAction(a.placeEllipse)
             self.place_menu.addAction(a.placePolyline)
-            self.place_menu.addAction(a.placeText)
+            self.place_menu.addAction(a.placeTextLine)
+            self.place_menu.addAction(a.placeTextBlock)
             self.place_menu.setEnabled(True)
         elif isinstance(subwindow, SymbolSubWindow):
             # Symbol window - show symbol-appropriate actions
@@ -196,7 +197,8 @@ class MenuBar(QMenuBar):
             self.place_menu.addAction(a.placeRectangle)
             self.place_menu.addAction(a.placeEllipse)
             self.place_menu.addAction(a.placePolyline)
-            self.place_menu.addAction(a.placeText)
+            self.place_menu.addAction(a.placeTextLine)
+            self.place_menu.addAction(a.placeTextBlock)
             self.place_menu.setEnabled(True)
         elif isinstance(subwindow, SpreadsheetSubWindow):
             # Spreadsheet window - disable the menu

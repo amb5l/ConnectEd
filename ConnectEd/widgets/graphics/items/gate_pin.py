@@ -5,7 +5,7 @@ from PyQt6.QtWidgets import QGraphicsItem, QMenu
 from PyQt6.QtGui     import QAction, QPainterPath
 
 from ....core.defs  import PITCH
-from ....core.types import BlockPinHandleId
+from ....core.types import BlockPinHandleId, DataKind
 
 from ..properties import InherentProperty
 
@@ -33,7 +33,7 @@ class GatePinItem(
     _PROPERTIES = \
         {
             "Name" : InherentProperty(
-                kind   = "str",
+                kind   = DataKind.STR,
                 getter = lambda self: self._name,
                 setter = lambda self, value: setattr(self, "_name", value)
             )

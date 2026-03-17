@@ -5,7 +5,7 @@ from PyQt6.QtGui     import QPainterPath
 
 from ....app import logger
 
-from ....core.types import RectHandleId
+from ....core.types import DataKind, RectHandleId
 from ....core.utils import registerClass
 
 from ..properties import PropertyTextSpec, InherentProperty
@@ -24,7 +24,7 @@ class BaseSymbolInstanceItem(ItemPosMixin, ItemRotateMixin, BaseRectangleItem):
     _PROPERTIES_NAME = \
         {
             "Name" : InherentProperty(
-                kind   = "str",
+                kind   = DataKind.STR,
                 getter = lambda self: self._symbol.name(),
                 setter = lambda self, value: self._symbol.setName(value)
             )
@@ -86,7 +86,7 @@ class SymbolInstanceItem(BaseSymbolInstanceItem):
     _PROPERTIES_LABEL = \
         {
             "Label" : InherentProperty(
-                kind   = "str",
+                kind   = DataKind.STR,
                 getter = lambda self: self._label,
                 setter = lambda self, value: setattr(self, "_label", value)
             )

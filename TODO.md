@@ -1,3 +1,10 @@
+minimum dimensions during text resize e.g. 10 x 10 or 1x1
+line item origin
+review use of comment properties
+PropertiesItem.types
+kill spreadsheet window
+property kind enum
+
 look for OR gotchas
 
 Connection Segment Dragging

@@ -21,7 +21,7 @@ from ....items.line       import LineItem
 from ....items.rectangle  import RectangleItem
 from ....items.ellipse    import EllipseItem
 from ....items.polyline   import PolylineItem
-from ....items.text       import TextItem
+from ....items.text       import TextLineItem, TextBlockItem
 
 from . import Interaction,         \
               RotateItemMixin,     \
@@ -233,8 +233,12 @@ class PlacePolylineInteraction(PlaceBase1PosInteraction):
             self._item.lastSegment().setSweep(self._sweep)
 
 
-class PlaceTextInteraction(PlaceBase1PosInteraction):
-    _ITEM_TYPE = TextItem
+class PlaceTextLineInteraction(PlaceBase1PosInteraction):
+    _ITEM_TYPE = TextLineItem
+
+
+class PlaceTextBlockInteraction(PlaceBase1PosInteraction):
+    _ITEM_TYPE = TextBlockItem
 
 
 class PlaceConnInteraction(Interaction):

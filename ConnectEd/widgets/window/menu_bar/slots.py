@@ -290,8 +290,12 @@ class Slots:
         view.ui.placePolyline()
 
     @withCurrentWidget(DrawingView)
-    def placeText(self : Self, view : DrawingView) -> None:
-        view.ui.placeText()
+    def placeTextLine(self : Self, view : DrawingView) -> None:
+        view.ui.placeTextLine()
+
+    @withCurrentWidget(DrawingView)
+    def placeTextBlock(self : Self, view : DrawingView) -> None:
+        view.ui.placeTextBlock()
 
     def windowNavigator(self : Self) -> None:
         window().navigator_dock.show()

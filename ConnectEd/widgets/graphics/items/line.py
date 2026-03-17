@@ -6,7 +6,7 @@ from PyQt6.QtGui     import QPainterPath, QPainterPathStroker
 
 from ....app import settings
 
-from ....core.types import LineHandleId
+from ....core.types import DataKind, LineHandleId
 
 from ..properties import InherentProperty, PropertiesMixin
 
@@ -15,7 +15,7 @@ from .handle import HandleItem
 from .mixin        import ItemMixin
 from .mixin.shape  import ItemShapeMixin
 from .mixin.paint  import ItemPaintMixin
-from .mixin.handle import ItemHandlesMixin
+from .mixin.handle import ItemLineHandlesMixin
 from .mixin.line   import ItemLineMixin
 from .mixin.change import ItemChangeMixin
 from .mixin.clone  import ItemCloneMixin
@@ -27,7 +27,7 @@ class LineItem(
     ItemMixin,
     ItemShapeMixin,
     ItemPaintMixin,
-    ItemHandlesMixin[LineHandleId],
+    ItemLineHandlesMixin,
     ItemLineMixin,
     ItemChangeMixin,
     ItemCloneMixin,
@@ -40,22 +40,22 @@ class LineItem(
     _PROPERTIES = \
         {
             "X1" : InherentProperty(
-                kind   = "float",
+                kind   = DataKind.FLOAT,
                 getter = lambda self: self.x1(),
                 setter = lambda self, value: self.setX1(value)
             ),
             "Y1" : InherentProperty(
-                kind   = "float",
+                kind   = DataKind.FLOAT,
                 getter = lambda self: self.y1(),
                 setter = lambda self, value: self.setY1(value)
             ),
             "X2" : InherentProperty(
-                kind   = "float",
+                kind   = DataKind.FLOAT,
                 getter = lambda self: self.x2(),
                 setter = lambda self, value: self.setX2(value)
             ),
             "Y2" : InherentProperty(
-                kind   = "float",
+                kind   = DataKind.FLOAT,
                 getter = lambda self: self.y2(),
                 setter = lambda self, value: self.setY2(value)
             )
@@ -97,22 +97,6 @@ class LineItem(
         self._hshape = stroker_path
         self.updateHandles()
         self.signalPropertyChanges(["X1", "Y1", "X2", "Y2"])
-
-    def initHandles(self : Self) -> None:
-        self._handles = {
-            LineHandleId.P1 : HandleItem(
-                id     = LineHandleId.P1,
-                pos    = QPointF(0, 0),
-                kind   = "resize",
-                parent = self
-            ),
-            LineHandleId.P2 : HandleItem(
-                id     = LineHandleId.P2,
-                pos    = QPointF(0, 0),
-                kind   = "resize",
-                parent = self
-            )
-        }
 
     def updateHandles(self : Self) -> None:
         self._handles[LineHandleId.P2].setPos(self._line.p2())
@@ -159,14 +143,7 @@ class LineItem(
         self.setLine(self._line)
         self.onGeometryChange()
 
-    def moveHandleBy(self : Self, id : LineHandleId, delta : QPointF) -> None:
-        match id:
-            case LineHandleId.P1:
-                self.setP1(self.p1() + delta)
-            case LineHandleId.P2:
-                self.setP2(self.p2() + delta)
-            case _:
-                raise ValueError(f"Invalid handle: {id}")
+
 
     def shape(self : Self) -> QPainterPath:
         return self._hshape

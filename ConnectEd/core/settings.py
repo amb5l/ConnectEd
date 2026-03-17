@@ -407,9 +407,9 @@ FACTORY_SETTINGS = {
                         "style" : Qt.PenStyle.SolidLine
                     }
                 },
-                "Text" : {
+                "TextLine" : {
                     "text" : {
-                        "color"     : PaletteDark.Text,
+                        "color"     : PaletteDark.TextLine,
                         "font"      : "Liberation Sans",
                         "size"      : 7,
                         "bold"      : False,
@@ -417,6 +417,16 @@ FACTORY_SETTINGS = {
                         "underline" : False
                     }
                 },
+                "TextBlock" : {
+                    "text" : {
+                        "color"     : PaletteDark.TextBlock,
+                        "font"      : "Liberation Sans",
+                        "size"      : 7,
+                        "bold"      : False,
+                        "italic"    : False,
+                        "underline" : False
+                    }
+                }
             },
             "selected" : {
                 "line" : PaletteDark.SelectedLine,
@@ -734,9 +744,19 @@ FACTORY_SETTINGS = {
                         "style" : Qt.PenStyle.SolidLine
                     }
                 },
-                "Text" : {
+                "TextLine" : {
                     "text" : {
-                        "color"     : PaletteLightMono.Text,
+                        "color"     : PaletteLightMono.TextLine,
+                        "font"      : "Liberation Sans",
+                        "size"      : 7,
+                        "bold"      : False,
+                        "italic"    : False,
+                        "underline" : False
+                    }
+                },
+                "TextBlock" : {
+                    "text" : {
+                        "color"     : PaletteLightMono.TextBlock,
                         "font"      : "Liberation Sans",
                         "size"      : 7,
                         "bold"      : False,

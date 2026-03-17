@@ -13,7 +13,7 @@ from .port_pin import PortPinMixin
 from .handle   import HandleItem
 
 from .mixin.loc    import ItemLocMixin
-from .mixin.handle import ItemHandlesMixin
+from .mixin.handle import ItemBlockPinHandlesMixin
 
 
 from typing import TYPE_CHECKING
@@ -26,7 +26,7 @@ class BlockPinArrowItem(BasePinArrowItem):
     pass
 
 
-class BlockPinItem(ItemLocMixin, ItemHandlesMixin[BlockPinHandleId], BasePinItem):
+class BlockPinItem(ItemLocMixin, ItemBlockPinHandlesMixin, BasePinItem):
     # class attributes
     _ARROW_CLASS = BlockPinArrowItem
     _AP_NAME_OFFSET  = _INT_ARROW_SIZE + 1.5
@@ -38,22 +38,6 @@ class BlockPinItem(ItemLocMixin, ItemHandlesMixin[BlockPinHandleId], BasePinItem
     _PROPERTY_TEXTS = {
             "Name" : PropertyTextSpec(
                 cleat=BlockPinHandleId.NAME, origin=RectHandleId.MIDDLE_LEFT
-            )
-        }
-
-    def initHandles(self : Self) -> None:
-        self._handles = {
-            BlockPinHandleId.ENTRY : HandleItem(
-                id     = BlockPinHandleId.ENTRY,
-                pos    = QPointF(0, 0),
-                kind   = "move",
-                parent = self
-            ),
-            BlockPinHandleId.NAME : HandleItem(
-                id     = BlockPinHandleId.NAME,
-                pos    = QPointF(self._AP_NAME_OFFSET, 0),
-                kind   = "move",
-                parent = self
             )
         }
 

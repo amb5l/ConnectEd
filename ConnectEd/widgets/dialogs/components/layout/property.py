@@ -3,7 +3,7 @@ from typing import Self
 from PyQt6.QtWidgets import QWidget, QGridLayout, QLabel
 
 from .....core.check import checked
-from .....core.types import Text
+from .....core.types import DataKind
 
 from ....graphics.properties import PropertiesMixin
 
@@ -11,14 +11,14 @@ from ..combo.property_name import PropertyNameComboBox
 from ..combo.text_format   import TextFormatComboBox
 from ..combo.cleat         import CleatComboBox
 
-from ..edit import TextLineEditor, FloatEditor, BoolEditor, TextEditor
+from ..edit import StrEditor, FloatEditor, BoolEditor, TextEditor
 
 
 class PropertyLayout(QGridLayout):
     _name_label   : QLabel
     _name_combo   : PropertyNameComboBox
     _type_label   : QLabel
-    _type_widget  : QLabel | TextFormatComboBox
+    _type_desc    : QLabel
     _value_label  : QLabel
     _value_widget : QWidget
     _owner_label  : QLabel
@@ -46,20 +46,17 @@ class PropertyLayout(QGridLayout):
         # type
         self._type_label = QLabel(type)
         self.addWidget(self._type_label, 1, 0)
-        if kind == "Text" and isinstance(value, Text):
-            self._type_widget = TextFormatComboBox(value.block())
-        else:
-            self._type_widget = QLabel(kind)
-        self.addWidget(self._type_widget, 1, 1)
+        self._type_desc = QLabel(kind.description)
+        self.addWidget(self._type_desc, 1, 1)
         # value label
         self._value_label = QLabel("Value:")
         self.addWidget(self._value_label, 2, 0)
         # value widget - depends on type/kind
         match kind:
-            case "str"   : w = TextLineEditor(value)
-            case "float" : w = FloatEditor(value)
-            case "bool"  : w = BoolEditor(value)
-            case "Text"  : w = TextEditor(value)
+            case DataKind.STR   : w = StrEditor(value)
+            case DataKind.FLOAT : w = FloatEditor(value)
+            case DataKind.BOOL  : w = BoolEditor(value)
+            case DataKind.TEXT  : w = TextEditor(value)
             case _       : w = QLabel(str(value))
         self._value_widget = w
         self.addWidget(self._value_widget, 2, 1)

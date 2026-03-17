@@ -9,15 +9,16 @@ from ......core.types import Direction
 
 from .....dialogs.items.port_pin import PortPinItemDialog
 from .....dialogs.items.gate     import GateItemDialog
-from .....dialogs.items.text     import TextItemDialog
+from .....dialogs.items.text     import TextLineItemDialog, TextBlockItemDialog
 
 from ....items            import ItemMixin
 from ....items.port       import PortItem
-from ....items.gate       import GateFunc, BufGateItem, AndGateItem, OrGateItem, XorGateItem
+from ....items.gate       import GateFunc, BufGateItem, \
+                                 AndGateItem, OrGateItem, XorGateItem
 from ....items.block      import BlockItem
 from ....items.block_pin  import BlockPinItem
 from ....items.symbol_pin import SymbolPinItem
-from ....items.text       import TextItem
+from ....items.text       import TextLineItem, TextBlockItem
 
 from ..interaction.place import PlacePortInteraction, \
                                 PlaceGateInteraction, \
@@ -28,7 +29,8 @@ from ..interaction.place import PlacePortInteraction, \
                                 PlaceRectangleInteraction, \
                                 PlaceEllipseInteraction, \
                                 PlacePolylineInteraction, \
-                                PlaceTextInteraction, \
+                                PlaceTextLineInteraction, \
+                                PlaceTextBlockInteraction, \
                                 PlaceConnInteraction
 
 from .base  import qkm, DrawingViewStateBase
@@ -225,8 +227,10 @@ class DrawingViewStatePlacePolyline2(ClickMixin, DragMixin, DrawingViewStateBase
     STATUS = "Place Polyline: pick the next point"
 
 
-class DrawingViewStatePlaceText(ClickMixin, DrawingViewStateBase):
-    STATUS = "Place Text: pick a position"
+class DrawingViewStatePlaceTextBase(ClickMixin, DrawingViewStateBase):
+    _ITEM        : type[TextLineItem | TextBlockItem]
+    _DIALOG      : type[TextLineItemDialog | TextBlockItemDialog]
+    _INTERACTION : type[PlaceTextLineInteraction | PlaceTextBlockInteraction]
 
     def entry(
         self : Self,
@@ -234,11 +238,10 @@ class DrawingViewStatePlaceText(ClickMixin, DrawingViewStateBase):
         s    : QPointF,
         i    : list[ItemMixin] | None = None
     ) -> None:
-        item = TextItem(pos=self._snap(s))
-        dialog = TextItemDialog(item, self.view)
+        item = self._ITEM(pos=self._snap(s))
+        dialog = self._DIALOG(item, self.view)
         if dialog.exec():
             item.setText(dialog.getText())
-            item.setBlock(dialog.getBlock())
             item.setRotation(dialog.getRotAngle())
             item.setRotComp(dialog.getRotComp())
             item.setAlignH(dialog.getAlignH())
@@ -250,9 +253,23 @@ class DrawingViewStatePlaceText(ClickMixin, DrawingViewStateBase):
             item.setQuillBold(dialog.getBold())
             item.setQuillItalic(dialog.getItalic())
             item.setQuillUnderline(dialog.getUnderline())
-            self.interact(PlaceTextInteraction(self.view, self._snap(s), item))
+            self.interact(self._INTERACTION(self.view, self._snap(s), item))
         else:
             self.view.state.go(self.view.stateIdle)
+
+
+class DrawingViewStatePlaceTextLine(DrawingViewStatePlaceTextBase):
+    STATUS       = "Place Text Line: pick a position"
+    _ITEM        = TextLineItem
+    _DIALOG      = TextLineItemDialog
+    _INTERACTION = PlaceTextLineInteraction
+
+
+class DrawingViewStatePlaceTextBlock(DrawingViewStatePlaceTextBase):
+    STATUS       = "Place Text Block: pick a position"
+    _ITEM        = TextBlockItem
+    _DIALOG      = TextBlockItemDialog
+    _INTERACTION = PlaceTextBlockInteraction
 
 
 class DrawingViewStatePlaceConn1(ClickMixin, DrawingViewStateBase):

@@ -5,8 +5,7 @@ from PyQt6.QtGui  import QColor
 from .....properties import PropertyDisplay, PropertyState, PropertyEdit, \
                             PropertiesMixin
 
-from .......core.types import NoChange, NO_CHANGE, \
-                              AlignH, AlignV, Text
+from .......core.types import NoChange, NO_CHANGE, AlignH, AlignV
 
 from .. import CmdBase
 

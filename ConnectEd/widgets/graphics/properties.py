@@ -30,10 +30,9 @@ exists only for use via substitution in custom properties. For example,
 "ConnectEdVersion". Virtual properties will normally be provided by the scene.
 """
 
-from typing          import Self, Any, Literal
-from dataclasses     import dataclass
+from typing          import Self, Any, Literal, TypeAlias
 from collections.abc import Callable
-from enum            import Enum
+from dataclasses     import dataclass
 from copy            import copy
 
 import re
@@ -43,8 +42,8 @@ from PyQt6.QtGui  import QColor
 
 from ...app  import logger
 
-from ...core.types import Default, DEFAULT, NoChange, NO_CHANGE, \
-                          AlignH, AlignV, Text
+from ...core.types import Default, DEFAULT, NoChange, NO_CHANGE, AlignH, AlignV, \
+                          PropertyDisplay, DataKind
 from ...core.utils import str2val, pascal2proper
 
 from .items import ItemType
@@ -88,7 +87,7 @@ class PropertyNotifier(QObject):
 
 @dataclass
 class InherentProperty:
-    kind     : str | Callable[["Owner"], str]
+    kind     : DataKind | Callable[["Owner"], DataKind]
     valid    : Literal[True] | Callable[["Owner"], bool] | None = True
     getter   : Callable[["Owner"], Any]                  | None = None
     setter   : Callable[["Owner", Any], None]            | None = None
@@ -97,17 +96,20 @@ class InherentProperty:
     text     : PropertyTextItem                          | None = None
 
 
+_CUSTOM_PROPERTY_KINDS = (
+    DataKind.STR, DataKind.TEXT, DataKind.INT, DataKind.FLOAT, DataKind.BOOL
+)
+
+
+CustomPropertyType : TypeAlias = str | int | float | bool
+
+
 @dataclass
 class CustomProperty:
-    value    : Text | None             = None
-    notifier : PropertyNotifier | None = None
-    text     : PropertyTextItem | None = None
-
-
-class PropertyDisplay(Enum):
-    NONE = "<none>"
-    SHOW = "Show"
-    HIDE = "Hide"
+    kind     : DataKind
+    value    : CustomPropertyType | None = None
+    notifier : PropertyNotifier   | None = None
+    text     : PropertyTextItem   | None = None
 
 
 @dataclass
@@ -257,7 +259,7 @@ class PropertiesMixin:
         # test if read-only
         return isinstance(property, InherentProperty) and not callable(property.setter)
 
-    def getPropertyKind(self : Self, name : str) -> str | None:
+    def getPropertyKind(self : Self, name : str) -> DataKind | None:
         # check property existence
         if not self.hasProperty(name):
             logger().warning(f"Property '{name}' not found")
@@ -326,7 +328,7 @@ class PropertiesMixin:
             logger().warning(f"Property '{name}' not found: {trail}")
             return None
         # detect recursion issues
-        if trail is not None:  # substitution is enabled
+        if trail is not None:  # substitution in progress
             if name in trail:
                 logger().warning(
                     f"Property '{name}' substitution recursion loop detected: {trail}"
@@ -359,7 +361,8 @@ class PropertiesMixin:
                 return property.getter(self)
         # custom properties
         elif isinstance(property, CustomProperty):
-            if trail is None:  # substitution is disabled
+            kind = property.kind
+            if kind != DataKind.STR and kind != DataKind.TEXT:  # not a string
                 return property.value
              # substitution
             def repl(match: re.Match) -> str:
@@ -372,10 +375,7 @@ class PropertiesMixin:
                     if scene and scene.hasProperty(var_name):
                         return str(scene.getPropertyValue(var_name, slot, trail))
                 return f"{var_name}>"  # unresolved substitution
-            return Text(
-                re.sub(r'\{(\w+)\}', repl, property.value.string),
-                property.value.block
-            )
+            return re.sub(r'\{(\w+)\}', repl, property.value)
         # unknown properties
         logger().warning(f"Property '{name}' has unknown type: {type(property)}")
         return None
@@ -402,7 +402,7 @@ class PropertiesMixin:
             property.setter(self, value)
         # custom properties
         elif isinstance(property, CustomProperty):
-            if isinstance(value, Text):
+            if isinstance(value, _CUSTOM_PROPERTY_KINDS):
                 property.value = value
             else:
                 logger().warning(f"Bad property value type: {type(value)}")

@@ -3,6 +3,8 @@ from typing import Self
 from PyQt6.QtCore    import QPointF
 from PyQt6.QtWidgets import QGraphicsItem
 
+from .....core.types import DataKind
+
 from ...properties import InherentProperty, PropertiesMixin
 
 
@@ -10,7 +12,7 @@ class ItemRotateMixin:
     # class attributes
     _PROPERTIES_ROTATE = {
         "Rotate" : InherentProperty(
-            kind   = "float",
+            kind   = DataKind.FLOAT,
             valid  = lambda self: self.rotation() != 0,
             getter = lambda self: self.rotation(),
             setter = lambda self, value: self.setRotation(value)

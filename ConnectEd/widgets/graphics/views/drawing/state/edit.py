@@ -8,10 +8,10 @@ from .....dialogs.properties     import PropertiesDialog
 from .....dialogs.appearance     import AppearanceDialog
 from .....dialogs.property_text  import PropertyTextDialog
 from .....dialogs.items.port_pin import PortPinItemDialog
-from .....dialogs.items.text     import TextItemDialog
+from .....dialogs.items.text     import TextLineItemDialog, TextBlockItemDialog
 
 from ....items               import ItemMixin
-from ....items.text          import TextItem
+from ....items.text          import TextLineItem, TextBlockItem
 from ....items.property_text import PropertyTextItem
 from ....items.port          import PortItem
 from ....items.block_pin     import BlockPinItem
@@ -231,8 +231,9 @@ class DrawingViewStateEditBlockPin(DrawingViewStateBase):
         self.view.state.go(self.view.stateIdle)
 
 
-class DrawingViewStateEditText(DrawingViewStateBase):
-    STATUS = "Edit Text: specify changes"
+class DrawingViewStateEditTextBase(DrawingViewStateBase):
+    _ITEM   : type[TextLineItem | TextBlockItem]
+    _DIALOG : type[TextLineItemDialog | TextBlockItemDialog]
 
     def entry(
         self : Self,
@@ -240,14 +241,13 @@ class DrawingViewStateEditText(DrawingViewStateBase):
         s    : QPointF,
         i    : list[ItemMixin] | None = None
     ) -> None:
-        item = i[0] if i else self.view._selectedItem(TextItem)
-        if item and isinstance(item, TextItem):
-            dialog = TextItemDialog(item, self.view)
+        item = i[0] if i else self.view._selectedItem(self._ITEM)
+        if item and isinstance(item, self._ITEM):
+            dialog = self._DIALOG(item, self.view)
             if dialog.exec():
                 self.scene.editText(
                     item      = item,
                     text      = dialog.getText(),
-                    block     = dialog.getBlock(),
                     rot_angle = dialog.getRotAngle(),
                     rot_comp  = dialog.getRotComp(),
                     origin    = dialog.getOrigin(),
@@ -264,6 +264,18 @@ class DrawingViewStateEditText(DrawingViewStateBase):
         else:
             logger().warning("No text selected")
         self.view.state.go(self.view.stateIdle)
+
+
+class DrawingViewStateEditTextLine(DrawingViewStateEditTextBase):
+    STATUS  = "Edit Text Line: specify changes"
+    _ITEM   = TextLineItem
+    _DIALOG = TextLineItemDialog
+
+
+class DrawingViewStateEditTextBlock(DrawingViewStateEditTextBase):
+    STATUS = "Edit Text Block: specify changes"
+    _ITEM   = TextBlockItem
+    _DIALOG = TextBlockItemDialog
 
 
 class DrawingViewStateEditPropertyText(DrawingViewStateBase):

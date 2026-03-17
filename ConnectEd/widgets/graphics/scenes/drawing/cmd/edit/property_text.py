@@ -11,7 +11,7 @@ from .......core.types import Default, NoChange, NO_CHANGE
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from .....scenes.drawing      import DrawingScene
-    from .....items.property_text import PropertyTextMixin
+    from .....items.property_text import PropertyTextItemMixin
     from .....items.mixin.quill   import ItemQuillMixin
 
 
@@ -36,14 +36,14 @@ class CmdEditPropertyText(CmdSceneItem):
         italic    : bool   | Default | NoChange
         underline : bool   | Default | NoChange
 
-    _item   : "QGraphicsItem | PropertyTextMixin | ItemQuillMixin"
+    _item   : "QGraphicsItem | PropertyTextItemMixin | ItemQuillMixin"
     _before : ItemBefore
     _after  : ItemAfter
 
     def __init__(
         self      : Self,
         scene     : "DrawingScene",
-        item      : "PropertyTextMixin | ItemQuillMixin",
+        item      : "PropertyTextItemMixin | ItemQuillMixin",
         value     : str              | NoChange = NO_CHANGE,
         color     : QColor | Default | NoChange = NO_CHANGE,
         family    : str    | Default | NoChange = NO_CHANGE,

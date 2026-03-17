@@ -1,18 +1,19 @@
-from typing import Self, TypeAlias
+from typing  import Self, TypeAlias
+from inspect import signature
 
 from PyQt6.QtCore    import QModelIndex
 from PyQt6.QtWidgets import QWidget, QStyledItemDelegate, QStyleOptionViewItem
 from PyQt6.QtGui     import QStandardItemModel
 
-from ....app import logger
-
-from ....core.types import Edge, Direction, \
-                           RectHandleId, LineHandleId, \
+from ....core.types import DataKind, AlignH, AlignV, Edge, Direction, PropertyDisplay, \
+                           HandleId, RectHandleId, LineHandleId, \
                            BlockPinHandleId, SymbolPinHandleId
 
-from ...graphics.properties import PropertyDisplay
+from ...graphics.properties import PropertiesMixin
 
-from ..components.edit import TextLineEditor, FloatEditor, BoolEditor, TextEditor
+from ...graphics.items.mixin.handle import ItemHandlesMixin
+
+from ..components.edit import StrEditor, TextEditor, IntEditor, FloatEditor, BoolEditor
 
 from ..components.combo.enum        import EnumComboBox
 from ..components.combo.color       import ColorComboBox
@@ -27,24 +28,28 @@ from .item import PropertiesItem
 
 
 EditorType : TypeAlias = \
-    TextLineEditor                  | \
+    StrEditor                       | \
+    TextEditor                      | \
+    IntEditor                       | \
     FloatEditor                     | \
     BoolEditor                      | \
-    TextEditor                      | \
     EnumComboBox[PropertyDisplay]   | \
-    ColorComboBox                   | \
-    LineWidthComboBox               | \
-    LineStyleComboBox               | \
-    FillStyleComboBox               | \
-    FontFamilyComboBox              | \
-    FontSizeComboBox                | \
-    FontBoolComboBox                | \
-    EnumComboBox[Edge]              | \
-    EnumComboBox[Direction]         | \
+    EnumComboBox                    | \
     EnumComboBox[RectHandleId]      | \
     EnumComboBox[LineHandleId]      | \
     EnumComboBox[BlockPinHandleId]  | \
-    EnumComboBox[SymbolPinHandleId]
+    EnumComboBox[SymbolPinHandleId] | \
+    EnumComboBox[AlignH]            | \
+    EnumComboBox[AlignV]            | \
+    EnumComboBox[Edge]              | \
+    EnumComboBox[Direction]         | \
+    ColorComboBox                   | \
+    LineStyleComboBox               | \
+    LineWidthComboBox               | \
+    FillStyleComboBox               | \
+    FontFamilyComboBox              | \
+    FontSizeComboBox                | \
+    FontBoolComboBox
 
 
 class PropertiesDelegate(QStyledItemDelegate):
@@ -57,31 +62,15 @@ class PropertiesDelegate(QStyledItemDelegate):
         model : QStandardItemModel = index.model()
         item : PropertiesItem = model.itemFromIndex(index)
         kind = item.kind()
-        value = item.value()
-        default = item.default()
-        match kind:
-            case "str"               : e = TextLineEditor(value, parent)
-            case "float"             : e = FloatEditor(value, parent)
-            case "bool"              : e = BoolEditor(value, default, parent)
-            case "Text"              : e = TextEditor(value, parent)
-            case "Display"           : e = EnumComboBox[PropertyDisplay](value, parent)
-            case "Color"             : e = ColorComboBox(value, default, parent)
-            case "LineWidth"         : e = LineWidthComboBox(value, default, parent)
-            case "PenStyle"          : e = LineStyleComboBox(value, default, parent)
-            case "BrushStyle"        : e = FillStyleComboBox(value, default, parent)
-            case "FontFamily"        : e = FontFamilyComboBox(value, default, parent)
-            case "FontSize"          : e = FontSizeComboBox(value, default, parent)
-            case "FontBool"          : e = FontBoolComboBox(value, default, parent)
-            case "Edge"              : e = EnumComboBox[Edge](value, parent)
-            case "Direction"         : e = EnumComboBox[Direction](value, parent)
-            case "RectHandleId"      : e = EnumComboBox[RectHandleId](value, parent)
-            case "LineHandleId"      : e = EnumComboBox[LineHandleId](value, parent)
-            case "BlockPinHandleId"  : e = EnumComboBox[BlockPinHandleId](value, parent)
-            case "SymbolPinHandleId" : e = EnumComboBox[SymbolPinHandleId](value, parent)
-            case _:
-                logger().error(f"Invalid kind: {kind}")
-                return super().createEditor(parent, option, index)
-        return e
+        editor = kind.editor
+        args = {
+            "value"   : item.value(),
+            "default" : item.default(),
+            "parent" : parent
+        }
+        allowed = signature(editor).parameters.keys()
+        args = {k: v for k, v in args.items() if k in allowed}
+        return editor(**args)
 
     def setEditorData(self : Self, editor : EditorType, index : QModelIndex) -> None:
         item : PropertiesItem = index.model().item(index.row(), index.column())
