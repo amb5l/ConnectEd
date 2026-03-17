@@ -124,8 +124,6 @@ class PropertyTextItemMixin:
         parent    : QGraphicsItem | None = None
     ) -> None:
         super().__init__(
-            text      = "?",    # uninitialized value
-            block     = False,  # default
             rot_angle = rot_angle,
             rot_comp  = rot_comp,
             pos       = pos,
@@ -218,7 +216,6 @@ class PropertyTextItemMixin:
         item = parent or self.item()
         if item is None:
             return False
-        print("item: ", item, "id: ", id)
         for child in item.childItems():
             if isinstance(child, HandleItem) and child.id() == id:
                 self.setParentItem(child)

@@ -634,7 +634,8 @@ class PropertiesMixin:
         Add a property text.
         Returns True if the property text was added, False otherwise.
         """
-        from .items.property_text import PropertyTextItem
+        from .items.property_text import \
+            PropertyTextLineItem, PropertyTextBlockItem, PropertyTextItem
         # check property existence
         if not self.hasProperty(name):
             logger().warning(f"Property '{name}' not found")
@@ -645,8 +646,10 @@ class PropertiesMixin:
         if isinstance(property.text, PropertyTextItem):
             logger().warning(f"Property '{name}' already has text")
             return False
-        # create new PropertyTextItem
-        property.text = PropertyTextItem(
+        # create new property text item (line or block)
+        pt_cls = PropertyTextBlockItem if property.kind == DataKind.TEXT \
+            else PropertyTextLineItem
+        property.text = pt_cls(
             name      = name,
             cleat     = cleat,
             pos       = QPointF(x, y),

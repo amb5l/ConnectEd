@@ -164,7 +164,7 @@ class TextItemMixin(
 
     def __init__(
         self      : "Self | TextLineItem | TextBlockItem",
-        text      : str                  = "",
+        text      : str | None           = None,
         pos       : QPointF | None       = None,
         rot_angle : float                = 0.0,
         rot_comp  : bool                 = True,
@@ -200,7 +200,8 @@ class TextItemMixin(
         self.setQuillBold(bold)
         self.setQuillItalic(italic)
         self.setQuillUnderline(underline)
-        self.setText(text)
+        if text is not None:
+            self.setText(text)
         self.onSceneRotationChange()
 
     def onSelectionChange(self : Self, selected : bool) -> None:
