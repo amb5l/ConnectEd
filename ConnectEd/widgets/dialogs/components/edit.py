@@ -5,9 +5,9 @@ from PyQt6.QtGui     import QIntValidator, QDoubleValidator
 
 
 class StrEditor(QLineEdit):
-    def __init__(self : Self, value : str, parent : QWidget | None = None):
+    def __init__(self : Self, value : str | None = None, parent : QWidget | None = None):
         super().__init__(parent)
-        self.setText(value)
+        self.setText("" if value is None else value)
 
     def value(self : Self) -> str:
         return self.text()
@@ -17,9 +17,9 @@ class StrEditor(QLineEdit):
 
 
 class TextEditor(QTextEdit):
-    def __init__(self : Self, value : str, parent : QWidget | None = None):
+    def __init__(self : Self, value : str | None = None, parent : QWidget | None = None):
         super().__init__(parent)
-        self.setPlainText(value)
+        self.setPlainText("" if value is None else value)
 
     def value(self : Self) -> str:
         return self.toPlainText()
@@ -29,10 +29,10 @@ class TextEditor(QTextEdit):
 
 
 class IntEditor(QLineEdit):
-    def __init__(self : Self, value : int, parent : QWidget | None = None):
+    def __init__(self : Self, value : int | None = None, parent : QWidget | None = None):
         super().__init__(parent)
         self.setValidator(QIntValidator())
-        self.setText(str(value))
+        self.setText("" if value is None else str(value))
 
     def value(self : Self) -> int:
         try:
@@ -45,10 +45,10 @@ class IntEditor(QLineEdit):
 
 
 class FloatEditor(QLineEdit):
-    def __init__(self : Self, value : float, parent : QWidget | None = None):
+    def __init__(self : Self, value : float | None = None, parent : QWidget | None = None):
         super().__init__(parent)
         self.setValidator(QDoubleValidator())
-        self.setValue(value)
+        self.setText("" if value is None else str(value))
 
     def value(self : Self) -> float:
         try:
@@ -61,9 +61,9 @@ class FloatEditor(QLineEdit):
 
 
 class BoolEditor(QCheckBox):
-    def __init__(self : Self, value : bool, parent : QWidget | None = None):
+    def __init__(self : Self, value : bool | None = None, parent : QWidget | None = None):
         super().__init__(parent)
-        self.setChecked(value)
+        self.setChecked("" if value is None else value)
 
     def value(self : Self) -> bool:
         return self.isChecked()
