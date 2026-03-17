@@ -11,7 +11,7 @@ from .....core.types import Default, DEFAULT, NoChange, NO_CHANGE
 from .....core.utils import val2str
 from .....core.icon  import getFgBgColors
 
-from .. import CUSTOM_ICON_SIZE, NoChangeIcon, DefaultIcon, QueryIcon
+from .. import customIconSize, NoChangeIcon, DefaultIcon, QueryIcon
 
 from ...float import FloatDialog
 
@@ -32,7 +32,7 @@ class LineWidthComboBox(QComboBox):
             initial = float(initial)
         if isinstance(default, int):
             default = float(default)
-        self.setIconSize(CUSTOM_ICON_SIZE)
+        self.setIconSize(customIconSize())
         # build default icon, string and value
         default_icon = self._getIcon(default) if isinstance(default, float) \
             else DefaultIcon().get()

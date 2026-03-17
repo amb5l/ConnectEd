@@ -11,7 +11,7 @@ from .....core.icon  import getFgBgColors
 
 from .....core.types import Default, DEFAULT, NoChange, NO_CHANGE
 
-from .. import CUSTOM_ICON_SIZE, NoChangeIcon, DefaultIcon
+from .. import customIconSize, NoChangeIcon, DefaultIcon
 
 
 class LineStyleComboBox(QComboBox):
@@ -35,7 +35,7 @@ class LineStyleComboBox(QComboBox):
         parent    : QWidget | None = None
     ) -> None:
         super().__init__(parent)
-        self.setIconSize(CUSTOM_ICON_SIZE)
+        self.setIconSize(customIconSize())
         # build default icon, string and value
         default_icon = self._getIcon(default) \
             if isinstance(default, Qt.PenStyle) else DefaultIcon().get()

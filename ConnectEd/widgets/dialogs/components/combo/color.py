@@ -8,7 +8,7 @@ from .....core.check import checked
 from .....core.types import Default, DEFAULT, NoChange, NO_CHANGE
 from .....core.utils import val2str
 
-from .. import CUSTOM_ICON_SIZE, NoChangeIcon, DefaultIcon, QueryIcon
+from .. import customIconSize, NoChangeIcon, DefaultIcon, QueryIcon
 
 from ...color import ColorDialog
 
@@ -45,7 +45,7 @@ class ColorComboBox(QComboBox):
         parent  : QWidget | None = None
     ) -> None:
         super().__init__(parent)
-        self.setIconSize(CUSTOM_ICON_SIZE)
+        self.setIconSize(customIconSize())
         # build default icon, string and value
         default_icon = self._getIcon(default) if isinstance(default, QColor) \
             else DefaultIcon().get()

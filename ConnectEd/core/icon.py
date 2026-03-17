@@ -1,4 +1,3 @@
-import sys
 from typing import Self
 
 from PyQt6.QtCore    import Qt, QSize, QRectF
@@ -11,7 +10,7 @@ from ..app import logger, settings
 
 
 def getDefaultIconSize() -> int:
-    app = QApplication(sys.argv)
+    app = QApplication.instance()
     style = app.style()
     return style.pixelMetric(QStyle.PixelMetric.PM_SmallIconSize)
 

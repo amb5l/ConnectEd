@@ -11,7 +11,7 @@ from .....core.utils import val2str
 
 from ...float import FloatDialog
 
-from .. import CUSTOM_ICON_SIZE
+from .. import customIconSize
 
 
 class FontSizeComboBox(QComboBox):
@@ -32,7 +32,7 @@ class FontSizeComboBox(QComboBox):
             initial = float(initial)
         if isinstance(default, int):
             default = float(default)
-        self.setIconSize(CUSTOM_ICON_SIZE)
+        self.setIconSize(customIconSize())
         # build default string and value
         default_str = f" = {val2str(default)}" if isinstance(default, float) \
             else ""

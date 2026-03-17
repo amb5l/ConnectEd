@@ -5,20 +5,41 @@ from ....core.icon import getDefaultIconSize, SvgIconSingleton, CharIconSingleto
 from ....resources import getIconPath
 
 
-CUSTOM_ICON_SIZE = QSize(getDefaultIconSize() * 2, getDefaultIconSize())
+_custom_icon_size : QSize | None = None
+
+def customIconSize() -> QSize:
+    global _custom_icon_size
+    if _custom_icon_size is None:
+        s = getDefaultIconSize()
+        _custom_icon_size = QSize(s * 2, s)
+    return _custom_icon_size
 
 
-class NoChangeIcon(SvgIconSingleton):
+class BaseIcon(SvgIconSingleton):
+    @property
+    def SIZE(self) -> QSize:
+        return customIconSize()
+
+class NoChangeIcon(BaseIcon):
     PATH = getIconPath("no_change.svg")
-    SIZE = CUSTOM_ICON_SIZE
+
+    @property
+    def SIZE(self) -> QSize:
+        return customIconSize()
 
 
-class DefaultIcon(SvgIconSingleton):
+class DefaultIcon(BaseIcon):
     PATH = getIconPath("default.svg")
-    SIZE = CUSTOM_ICON_SIZE
+
+    @property
+    def SIZE(self) -> QSize:
+        return customIconSize()
 
 
-class QueryIcon(CharIconSingleton):
+class QueryIcon(BaseIcon):
     FONT_FAMILY = "Arial"
     CHAR = "?"
-    SIZE = CUSTOM_ICON_SIZE
+
+    @property
+    def SIZE(self) -> QSize:
+        return customIconSize()
