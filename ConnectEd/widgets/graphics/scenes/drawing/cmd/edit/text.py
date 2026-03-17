@@ -27,8 +27,8 @@ class CmdEditText(CmdSceneItem):
         item      : "TextItemMixin",
         text      : str              | NoChange = NO_CHANGE,
         block     : bool             | NoChange = NO_CHANGE,
-        rot_angle : float            | NoChange = NO_CHANGE,
-        rot_comp  : bool             | NoChange = NO_CHANGE,
+        rotation  : float            | NoChange = NO_CHANGE,
+        flip      : bool             | NoChange = NO_CHANGE,
         origin    : RectHandleId     | NoChange = NO_CHANGE,
         align_h   : AlignH           | NoChange = NO_CHANGE,
         align_v   : AlignV           | NoChange = NO_CHANGE,
@@ -53,10 +53,10 @@ class CmdEditText(CmdSceneItem):
     def redo(self : Self) -> None:#
         if self._after.block is not NO_CHANGE:
             self._item.setBlock(self._after.block)
-        if self._after.rot_angle is not NO_CHANGE:
-            self._item.setRotation(self._after.rot_angle)
-        if self._after.rot_comp is not NO_CHANGE:
-            self._item.setRotComp(self._after.rot_comp)
+        if self._after.rotation is not NO_CHANGE:
+            self._item.setRotation(self._after.rotation)
+        if self._after.flip is not NO_CHANGE:
+            self._item.setFlip(self._after.flip)
         if self._after.origin is not NO_CHANGE:
             # maintain scene position
             pos = self._item.getHandle(self._after.origin).scenePos()
@@ -91,10 +91,10 @@ class CmdEditText(CmdSceneItem):
             self._item.setText(self._before.text)
         if self._after.block is not NO_CHANGE:
             self._item.setBlock(self._before.block)
-        if self._after.rot_angle is not NO_CHANGE:
-            self._item.setRotation(self._before.rot_angle)
-        if self._after.rot_comp is not NO_CHANGE:
-            self._item.setRotComp(self._before.rot_comp)
+        if self._after.rotation is not NO_CHANGE:
+            self._item.setRotation(self._before.rotation)
+        if self._after.flip is not NO_CHANGE:
+            self._item.setFlip(self._before.flip)
         if self._after.origin is not NO_CHANGE:
             # maintain scene position
             pos = self._item.getHandle(self._before.origin).scenePos()

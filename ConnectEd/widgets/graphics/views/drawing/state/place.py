@@ -242,8 +242,8 @@ class DrawingViewStatePlaceTextBase(ClickMixin, DrawingViewStateBase):
         dialog = self._DIALOG(item, self.view)
         if dialog.exec():
             item.setText(dialog.getText())
-            item.setRotation(dialog.getRotAngle())
-            item.setRotComp(dialog.getRotComp())
+            item.setRotation(dialog.getRotation())
+            item.setFlip(dialog.getFlip())
             item.setAlignH(dialog.getAlignH())
             item.setAlignV(dialog.getAlignV())
             item.setOrigin(dialog.getOrigin())

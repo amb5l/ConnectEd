@@ -6,7 +6,7 @@ from PyQt6.QtWidgets import QWidget, QComboBox
 from .....core.check import checked
 
 
-class AngleComboBox(QComboBox):
+class RotationComboBox(QComboBox):
     _ANGLES = {
         "0"      : 0.0,
         "90 CW"  : 90.0,
@@ -28,5 +28,5 @@ class AngleComboBox(QComboBox):
                 self.setCurrentIndex(self.count() - 1)
 
     @checked
-    def getAngle(self : Self) -> float:
+    def getRotation(self : Self) -> float:
         return self.itemData(self.currentIndex(), Qt.ItemDataRole.UserRole)

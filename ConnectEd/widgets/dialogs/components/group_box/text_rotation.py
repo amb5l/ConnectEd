@@ -12,20 +12,20 @@ class TextRotationGroupBox(QGroupBox):
 
     @checked
     def __init__(
-        self      : Self,
-        rot_angle : float,
-        rot_comp  : bool,
-        title     : str = "Rotation",
-        parent    : QWidget | None = None
+        self     : Self,
+        rotation : float,
+        flip     : bool,
+        title    : str = "Rotation",
+        parent   : QWidget | None = None
     ) -> None:
         super().__init__(title, parent)
-        self._layout = TextRotationLayout(rot_angle, rot_comp)
+        self._layout = TextRotationLayout(rotation, flip)
         self.setLayout(self._layout)
 
     @checked
-    def getRotAngle(self : Self) -> float:
-        return self._layout.getRotAngle()
+    def getRotation(self : Self) -> float:
+        return self._layout.getRotation()
 
     @checked
-    def getRotComp(self : Self) -> bool:
-        return self._layout.getRotComp()
+    def getFlip(self : Self) -> bool:
+        return self._layout.getFlip()

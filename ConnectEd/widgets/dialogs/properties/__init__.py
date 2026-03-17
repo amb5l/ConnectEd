@@ -39,6 +39,7 @@ _COLUMNS : list[str] = [
     "X"         ,
     "Y"         ,
     "Rotation"  ,
+    "Flip"      ,
     "Origin"    ,
     "AlignH"    ,
     "AlignV"    ,
@@ -254,9 +255,21 @@ class PropertiesDialog(QDialog):
                 value   = 0.0 if pt is None else pt.y(),
                 **pt_args
             ),
+            # Rotation
+            PropertiesItem(
+                kind  = DataKind.ROTATION,
+                value = 0.0 if pt is None else pt.rotation(),
+                **pt_args
+            ),
+            # Flip
+            PropertiesItem(
+                kind  = DataKind.BOOL,
+                value = False if pt is None else pt.flip(),
+                **pt_args
+            ),
             # Origin
             PropertiesItem(
-                kind  = DataKind.ORIGIN,
+                kind  = DataKind.RECT_HANDLE,
                 value = RectHandleId.TOP_LEFT if pt is None else pt.origin(),
                 **pt_args
             ),

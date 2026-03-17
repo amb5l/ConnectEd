@@ -19,7 +19,7 @@ from ....items.port_pin      import PortPinMixin
 from ....items.block_pin     import BlockPinItem
 from ....items.symbol_pin    import SymbolPinItem
 from ....items.polyline      import PolylineItem, PolySegItem
-from ....items.text          import TextLineItem, TextBlockItem
+from ....items.text          import TextItemMixin
 from ....items.property_text import PropertyTextLineItem, PropertyTextBlockItem
 from ....items.mixin         import ItemMixin
 
@@ -191,11 +191,11 @@ class DrawingSceneApiEditMixin:
     @checked
     def editText(
         self      : "DrawingScene",
-        item      : TextItem,
+        item      : TextItemMixin,
         text      : str              | NoChange = NO_CHANGE,
         block     : bool             | NoChange = NO_CHANGE,
-        rot_angle : float            | NoChange = NO_CHANGE,
-        rot_comp  : bool             | NoChange = NO_CHANGE,
+        rotation  : float            | NoChange = NO_CHANGE,
+        flip      : bool             | NoChange = NO_CHANGE,
         origin    : RectHandleId     | NoChange = NO_CHANGE,
         align_h   : AlignH           | NoChange = NO_CHANGE,
         align_v   : AlignV           | NoChange = NO_CHANGE,
@@ -211,7 +211,7 @@ class DrawingSceneApiEditMixin:
     ) -> None:
         cmd = CmdEditText(
             self, item, text, block,
-            rot_angle, rot_comp, origin, align_h, align_v, width, height,
+            rotation, flip, origin, align_h, align_v, width, height,
             color, family, size, bold, italic, underline
         )
         cmdExec(self, cmd, undoable)

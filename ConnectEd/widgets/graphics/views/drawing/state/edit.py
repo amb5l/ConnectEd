@@ -248,8 +248,8 @@ class DrawingViewStateEditTextBase(DrawingViewStateBase):
                 self.scene.editText(
                     item      = item,
                     text      = dialog.getText(),
-                    rot_angle = dialog.getRotAngle(),
-                    rot_comp  = dialog.getRotComp(),
+                    rotation  = dialog.getRotation(),
+                    flip      = dialog.getFlip(),
                     origin    = dialog.getOrigin(),
                     align_h   = dialog.getAlignH(),
                     align_v   = dialog.getAlignV(),

@@ -51,8 +51,8 @@ if TYPE_CHECKING:
 @dataclass
 class TextState:
     text      : str
-    rot_angle : float
-    rot_comp  : bool
+    rotation  : float
+    flip      : bool
     origin    : RectHandleId
     align_h   : AlignH
     align_v   : AlignV
@@ -69,8 +69,8 @@ class TextState:
     def fromItem(cls, item : "TextItemMixin") -> Self:
         return cls(
             text      = item.text(),
-            rot_angle = item.rotation(),
-            rot_comp  = item.rotComp(),
+            rotation  = item.rotation(),
+            flip      = item.flip(),
             origin    = item.origin(),
             align_h   = item.alignH(),
             align_v   = item.alignV(),
@@ -88,8 +88,8 @@ class TextState:
 @dataclass
 class TextChange:
     text      : str              | NoChange = NO_CHANGE
-    rot_angle : float            | NoChange = NO_CHANGE
-    rot_comp  : bool             | NoChange = NO_CHANGE
+    rotation  : float            | NoChange = NO_CHANGE
+    flip      : bool             | NoChange = NO_CHANGE
     origin    : str              | NoChange = NO_CHANGE
     align_h   : AlignH           | NoChange = NO_CHANGE
     align_v   : AlignV           | NoChange = NO_CHANGE
@@ -154,20 +154,20 @@ class TextItemMixin(
         }
 
     # instance attributes
-    _rot_comp  : bool    # rotation compensation enable
-    _rot_raw   : float   # raw (uncompensated) rotation
-    _rot_adj   : float   # adjustment applied by rotation compensation
-    _align_h   : AlignH  # horizontal alignment
-    _align_v   : AlignV  # vertical alignment
-    _width     : float   # width constraint
-    _height    : float   # height constraint
+    _flip    : bool    # rotation compensation enable
+    _angle   : float   # raw (uncompensated) rotation
+    _rot_adj : float   # adjustment applied by rotation compensation
+    _align_h : AlignH  # horizontal alignment
+    _align_v : AlignV  # vertical alignment
+    _width   : float   # width constraint
+    _height  : float   # height constraint
 
     def __init__(
         self      : "Self | TextLineItem | TextBlockItem",
         text      : str | None           = None,
         pos       : QPointF | None       = None,
-        rot_angle : float                = 0.0,
-        rot_comp  : bool                 = True,
+        rotation  : float                = 0.0,
+        flip      : bool                 = True,
         origin    : RectHandleId         = RectHandleId.TOP_LEFT,
         align_h   : AlignH               = AlignH.LEFT,
         align_v   : AlignV               = AlignV.TOP,
@@ -183,16 +183,16 @@ class TextItemMixin(
         parent    : QGraphicsItem | None = None
     ) -> None:
         super().__init__(parent)
-        self._rot_comp  = rot_comp
-        self._align_h   = align_h
-        self._align_v   = align_v
-        self._width     = width
-        self._height    = height
+        self._flip    = flip
+        self._align_h = align_h
+        self._align_v = align_v
+        self._width   = width
+        self._height  = height
         if isinstance(self, TextLineItem):
             self._clip_rect = None
         self.initItem(fresh)
         self.setPos(pos or QPointF(0, 0))
-        self.setRotation(rot_angle)
+        self.setRotation(rotation)
         self.setOrigin(origin)
         self.setQuillColor(color)
         self.setQuillFamily(family)
@@ -208,22 +208,22 @@ class TextItemMixin(
         self._paint_override()
 
     def onSceneRotationChange(self : Self) -> None:
-        if self._rot_comp: self.setRotation()
+        if self._flip: self.setRotation()
 
     def rotation(self : Self) -> float:
-        return self._rot_raw
+        return self._angle
 
     def setRotation(self : Self, angle : float | None = None) -> None:
-        if angle is not None: self._rot_raw = angle
-        sa = (self.parentSceneRotation() + self._rot_raw) % 360.0
-        self._rot_adj = 180 if self._rot_comp and sa > 135 and sa <= 315 else 0
-        super().setRotation(self._rot_raw + self._rot_adj)
+        if angle is not None: self._angle = angle
+        sa = (self.parentSceneRotation() + self._angle) % 360.0
+        self._rot_adj = 180 if self._flip and sa > 135 and sa <= 315 else 0
+        super().setRotation(self._angle + self._rot_adj)
 
-    def rotComp(self : Self) -> bool:
-        return self._rot_comp
+    def flip(self : Self) -> bool:
+        return self._flip
 
-    def setRotComp(self : Self, rot_comp : bool) -> None:
-        self._rot_comp = rot_comp
+    def setFlip(self : Self, flip : bool) -> None:
+        self._flip = flip
         self.setRotation()
 
     def alignH(self : Self) -> AlignH:

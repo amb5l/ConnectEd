@@ -107,8 +107,8 @@ class PropertyTextItemMixin:
         name      : str                  = "",
         cleat     : HandleId | None      = None,
         pos       : QPointF | None       = None,
-        rot_angle : float                = 0.0,
-        rot_comp  : bool                 = True,
+        rotation  : float                = 0.0,
+        flip      : bool                 = True,
         origin    : RectHandleId         = RectHandleId.TOP_LEFT,
         align_h   : AlignH               = AlignH.LEFT,
         align_v   : AlignV               = AlignV.TOP,
@@ -124,9 +124,9 @@ class PropertyTextItemMixin:
         parent    : QGraphicsItem | None = None
     ) -> None:
         super().__init__(
-            rot_angle = rot_angle,
-            rot_comp  = rot_comp,
             pos       = pos,
+            rotation  = rotation,
+            flip      = flip,
             origin    = origin,
             align_h   = align_h,
             align_v   = align_v,

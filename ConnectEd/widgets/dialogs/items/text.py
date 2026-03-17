@@ -37,7 +37,7 @@ class TextItemDialogMixin:
         self._dialog_layout.addWidget(self._text_editor)
         # middle left - rotation, alignment and origin
         self._geometry_layout = QVBoxLayout()
-        self._rotation_group_box = TextRotationGroupBox(item.rotation(), item.rotComp())
+        self._rotation_group_box = TextRotationGroupBox(item.rotation(), item.flip())
         self._geometry_layout.addWidget(self._rotation_group_box)
         self._align_group_box = TextAlignGroupBox(item.alignH(), item.alignV())
         self._geometry_layout.addWidget(self._align_group_box)
@@ -82,12 +82,12 @@ class TextItemDialogMixin:
         return self._text_editor.value()
 
     @checked
-    def getRotAngle(self : Self) -> float:
-        return self._rotation_group_box.getRotAngle()
+    def getRotation(self : Self) -> float:
+        return self._rotation_group_box.getRotation()
 
     @checked
-    def getRotComp(self : Self) -> bool:
-        return self._rotation_group_box.getRotComp()
+    def getFlip(self : Self) -> bool:
+        return self._rotation_group_box.getFlip()
 
     @checked
     def getAlignH(self : Self) -> AlignH:

@@ -127,9 +127,10 @@ _DATA_KIND_EDITORS: dict["DataKind", type] = {}
 
 
 def _populate_data_kind_maps() -> None:
-    from ..widgets.dialogs.components.edit import StrEditor, TextEditor, \
-                                                IntEditor, FloatEditor, BoolEditor
+    from ..widgets.dialogs.components.edit import \
+        StrEditor, TextEditor, IntEditor, FloatEditor, BoolEditor
     from ..widgets.dialogs.components.combo.enum        import EnumComboBox
+    from ..widgets.dialogs.components.combo.rotation    import RotationComboBox
     from ..widgets.dialogs.components.combo.color       import ColorComboBox
     from ..widgets.dialogs.components.combo.line_width  import LineWidthComboBox
     from ..widgets.dialogs.components.combo.line_style  import LineStyleComboBox
@@ -149,6 +150,7 @@ def _populate_data_kind_maps() -> None:
         DataKind.LINE_HANDLE       : (LineHandleId,),
         DataKind.BLOCK_PIN_HANDLE  : (BlockPinHandleId,),
         DataKind.SYMBOL_PIN_HANDLE : (SymbolPinHandleId,),
+        DataKind.ROTATION          : (float,),
         DataKind.ALIGN_H           : (AlignH,),
         DataKind.ALIGN_V           : (AlignV,),
         DataKind.EDGE              : (Edge,),
@@ -172,6 +174,7 @@ def _populate_data_kind_maps() -> None:
         DataKind.LINE_HANDLE       : EnumComboBox[LineHandleId],
         DataKind.BLOCK_PIN_HANDLE  : EnumComboBox[BlockPinHandleId],
         DataKind.SYMBOL_PIN_HANDLE : EnumComboBox[SymbolPinHandleId],
+        DataKind.ROTATION          : RotationComboBox,
         DataKind.ALIGN_H           : EnumComboBox[AlignH],
         DataKind.ALIGN_V           : EnumComboBox[AlignV],
         DataKind.EDGE              : EnumComboBox[Edge],
@@ -197,6 +200,7 @@ class DataKind(StrEnum):
     LINE_HANDLE       = "Line Handle"
     BLOCK_PIN_HANDLE  = "Block Pin Handle"
     SYMBOL_PIN_HANDLE = "Symbol Pin Handle"
+    ROTATION          = "Rotation"
     ALIGN_H           = "Horizontal Alignment"
     ALIGN_V           = "Vertical Alignment"
     EDGE              = "Edge"
