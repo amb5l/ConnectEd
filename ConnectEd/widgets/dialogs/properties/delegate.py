@@ -62,7 +62,7 @@ class PropertiesDelegate(QStyledItemDelegate):
         model : QStandardItemModel = index.model()
         item : PropertiesItem = model.itemFromIndex(index)
         kind = item.kind()
-        editor = kind.editor
+        editor = kind.editor()
         args = {
             "value"   : item.value(),
             "default" : item.default(),

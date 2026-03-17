@@ -213,13 +213,11 @@ class DataKind(StrEnum):
     FONT_SIZE         = "Font Size"
     FONT_BOOL         = "Font Boolean"
 
-    @property
     def types(self : Self) -> tuple[type, ...]:
         if not _DATA_KIND_TYPES:
             _populate_data_kind_maps()
         return _DATA_KIND_TYPES[self]
 
-    @property
     def editor(self : Self) -> type:
         if not _DATA_KIND_EDITORS:
             _populate_data_kind_maps()

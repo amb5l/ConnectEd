@@ -390,19 +390,20 @@ class PropertiesMixin:
             logger().warning(f"Property '{name}' not found")
             return False
         property = self._properties[name]
+        # get kind
+        kind = property.kind
         # inherent properties
         if isinstance(property, InherentProperty):
             if not callable(property.setter):
                 logger().warning(f"Property '{name}' is read-only")
                 return False
             # convert from str to appropriate type if necessary
-            kind = self.getPropertyKind(name)
-            if isinstance(value, str) and kind != "str":
+            if isinstance(value, str) and kind != DataKind.STR:
                 value = str2val(value, kind)
             property.setter(self, value)
         # custom properties
         elif isinstance(property, CustomProperty):
-            if isinstance(value, _CUSTOM_PROPERTY_KINDS):
+            if isinstance(value, kind.types()):
                 property.value = value
             else:
                 logger().warning(f"Bad property value type: {type(value)}")
