@@ -1,7 +1,5 @@
 from typing import Self, TypeVar, Generic, Protocol, overload
 
-import typing
-
 from PyQt6.QtCore    import QPointF, QRectF
 from PyQt6.QtWidgets import QGraphicsItem
 
@@ -41,16 +39,7 @@ class ItemHandlesMixin(ItemGripMixin, Generic[T]):
 
     @classmethod
     def handleIdType(cls) -> type[T]:
-        """Return the HandleId subclass used by this item."""
-        for base in cls.__orig_bases__:
-            origin = typing.get_origin(base)
-            if origin is ItemHandlesMixin or (
-                isinstance(origin, type) and issubclass(origin, ItemHandlesMixin)
-            ):
-                args = typing.get_args(base)
-                if args:
-                    return args[0]
-        raise TypeError(f"{cls.__name__} does not parameterize ItemHandlesMixin")
+        raise NotImplementedError
 
     def handles(self : Self) -> dict[T, "HandleItem"]:
         return self._handles
@@ -63,6 +52,13 @@ class ItemHandlesMixin(ItemGripMixin, Generic[T]):
 
 
 class ItemRectHandlesMixin(ItemHandlesMixin[RectHandleId]):
+    @classmethod
+    def handleIdType(cls) -> type[RectHandleId]:
+        return RectHandleId
+
+    # instance attributes
+    _handles : dict[RectHandleId, "HandleItem"]
+
     # instance attributes
     _handles : dict[RectHandleId, "HandleItem"]
 
@@ -127,6 +123,10 @@ class ItemRectHandlesMixin(ItemHandlesMixin[RectHandleId]):
 
 
 class ItemLineHandlesMixin(ItemHandlesMixin[LineHandleId]):
+    @classmethod
+    def handleIdType(cls) -> type[LineHandleId]:
+        return LineHandleId
+
     # instance attributes
     _handles : dict[LineHandleId, "HandleItem"]
 
@@ -161,6 +161,10 @@ class ItemLineHandlesMixin(ItemHandlesMixin[LineHandleId]):
 
 
 class ItemBlockPinHandlesMixin(ItemHandlesMixin[BlockPinHandleId]):
+    @classmethod
+    def handleIdType(cls) -> type[BlockPinHandleId]:
+        return BlockPinHandleId
+
     # instance attributes
     _handles : dict[BlockPinHandleId, "HandleItem"]
 
@@ -182,6 +186,10 @@ class ItemBlockPinHandlesMixin(ItemHandlesMixin[BlockPinHandleId]):
 
 
 class ItemSymbolPinHandlesMixin(ItemHandlesMixin[SymbolPinHandleId]):
+    @classmethod
+    def handleIdType(cls) -> type[SymbolPinHandleId]:
+        return SymbolPinHandleId
+
     # instance attributes
     _handles : dict[SymbolPinHandleId, "HandleItem"]
 
