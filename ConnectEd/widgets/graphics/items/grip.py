@@ -36,9 +36,9 @@ class GripItem(
     # instance attributes
     _path_name_prefix = "Filled"  # default path name prefix
     _path_name_suffix = ""        # default path name suffix
-    _path_name   : str            # path name
-    _path        : QPainterPath   # path
-    _brush       : QBrush         # brush
+    _path_name : str              # path name
+    _path      : QPainterPath     # path
+    _brush     : QBrush           # brush
 
     def __init__(
         self   : Self,
