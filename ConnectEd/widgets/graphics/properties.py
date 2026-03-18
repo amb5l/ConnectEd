@@ -43,7 +43,7 @@ from PyQt6.QtGui  import QColor
 from ...app  import logger
 
 from ...core.types import Default, DEFAULT, NoChange, NO_CHANGE, AlignH, AlignV, \
-                          PropertyDisplay, DataKind
+                          HandleId, RectHandleId, PropertyDisplay, DataKind
 from ...core.utils import str2val, pascal2proper
 
 from .items import ItemType
@@ -273,6 +273,23 @@ class PropertiesMixin:
         else:
             return "Text"
 
+    def setPropertyKind(self : Self, name : str, kind : DataKind) -> bool:
+        """
+        Set the kind of a property - allowed for custom properties only.
+        Returns True if the property was set, False otherwise.
+        """
+        # check property existence
+        if not self.hasProperty(name):
+            logger().warning(f"Property '{name}' not found")
+            return False
+        # check property is custom
+        if not isinstance(property, CustomProperty):
+            logger().warning(f"Property '{name}' is not custom")
+            return False
+        # set kind
+        property.kind = kind
+        return True
+
     def getPropertyValid(self : Self, name : str) -> bool:
         """
         Test if a property is valid.
@@ -428,7 +445,8 @@ class PropertiesMixin:
     def addProperty(
         self      : Self,
         name      : str,
-        value     : Text,
+        kind      : DataKind,
+        value     : Any,
         display   : PropertyDisplay = PropertyDisplay.NONE,
         cleat     : str              | None = None,
         x         : float            | None = None,
@@ -453,8 +471,12 @@ class PropertiesMixin:
         if self.hasProperty(name):
             logger().warning(f"Property '{name}' already exists")
             return False
+        # check kind
+        if kind not in _CUSTOM_PROPERTY_KINDS:
+            logger().warning(f"Invalid property kind: {kind}")
+            return False
         # create custom property
-        self._properties[name] = CustomProperty(value=value)
+        self._properties[name] = CustomProperty(kind=kind, value=value)
         # add property text if required
         if display != PropertyDisplay.NONE:
             visible = display == PropertyDisplay.SHOW
@@ -469,22 +491,25 @@ class PropertiesMixin:
     def editProperty(
         self      : Self,
         name      : str | tuple[str, str],
-        value     : Text,
-        display   : PropertyDisplay = PropertyDisplay.NONE,
-        cleat     : str              | None = None,
-        x         : float            | None = None,
-        y         : float            | None = None,
-        align_h   : AlignH           | None = None,
-        align_v   : AlignV           | None = None,
-        width     : float            | None = None,
-        height    : float            | None = None,
-        color     : QColor | Default | None = None,
-        family    : str    | Default | None = None,
-        size      : float  | Default | None = None,
-        bold      : bool   | Default | None = None,
-        italic    : bool   | Default | None = None,
-        underline : bool   | Default | None = None,
-        origin : str = "Top Left",
+        kind      : DataKind                | NoChange = NO_CHANGE,
+        value     : Any                     | NoChange = NO_CHANGE,
+        display   : PropertyDisplay         | NoChange = NO_CHANGE,
+        cleat     : HandleId         | None | NoChange = NO_CHANGE,
+        x         : float            | None | NoChange = NO_CHANGE,
+        y         : float            | None | NoChange = NO_CHANGE,
+        rotation  : float            | None | NoChange = NO_CHANGE,
+        flip      : bool             | None | NoChange = NO_CHANGE,
+        origin    : RectHandleId     | None | NoChange = NO_CHANGE,
+        align_h   : AlignH           | None | NoChange = NO_CHANGE,
+        align_v   : AlignV           | None | NoChange = NO_CHANGE,
+        width     : float            | None | NoChange = NO_CHANGE,
+        height    : float            | None | NoChange = NO_CHANGE,
+        color     : QColor | Default | None | NoChange = NO_CHANGE,
+        family    : str    | Default | None | NoChange = NO_CHANGE,
+        size      : float  | Default | None | NoChange = NO_CHANGE,
+        bold      : bool   | Default | None | NoChange = NO_CHANGE,
+        italic    : bool   | Default | None | NoChange = NO_CHANGE,
+        underline : bool   | Default | None | NoChange = NO_CHANGE
     ) -> bool:
         if isinstance(name, tuple):
             name, new_name = name
@@ -493,6 +518,8 @@ class PropertiesMixin:
         if new_name is not NO_CHANGE:
             self.renProperty(name, new_name)
             name = new_name
+        if kind is not NO_CHANGE:
+            self.setPropertyKind(name, kind)
         if value is not NO_CHANGE:
             self.setPropertyValue(name, value)
         if display is PropertyDisplay.NONE:
@@ -508,6 +535,8 @@ class PropertiesMixin:
                 cleat, x, y, origin, align_h, align_v, width, height,
                 color, family, size, bold, italic, underline
             )
+        self.editPropertyText(
+            name, display == PropertyDisplay.SHOW, cleat, x, y, origin, align_h, align_v, width, height, color, family, size, bold, italic, underline)
 
     def renProperty(self : Self, old_name : str, new_name : str) -> bool:
         """
@@ -600,7 +629,7 @@ class PropertiesMixin:
 
     def setPropertyText(self : Self, name : str, text : "PropertyTextItem") -> bool:
         """
-        Set a property text.
+        Set a property text item.
         """
         # check property existence
         if not self.hasProperty(name):
