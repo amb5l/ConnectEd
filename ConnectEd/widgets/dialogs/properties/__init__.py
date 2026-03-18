@@ -226,7 +226,7 @@ class PropertiesDialog(QDialog):
             # Value
             PropertiesItem(
                 owner    = item,
-                kind     = DataKind.TEXT if new else item.getPropertyKind(name),
+                kind     = kind if new else item.getPropertyKind(name),
                 value    = value if new else item.getPropertyValue(name),
                 default  = None if new else item.getPropertyDefault(name),
                 new      = new,
