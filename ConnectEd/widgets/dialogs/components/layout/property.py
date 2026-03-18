@@ -68,7 +68,7 @@ class PropertyLayout(QGridLayout):
         # cleat
         self._cleat_label = QLabel("Cleat:")
         self.addWidget(self._cleat_label, 4, 0)
-        self._cleat_combo = CleatComboBox(owner, owner.getPropertyText(name).cleat())
+        self._cleat_combo = CleatComboBox(owner, owner.getPropertyTextItem(name).cleat())
         self.addWidget(self._cleat_combo, 4, 1)
 
     def getName(self : Self) -> str:

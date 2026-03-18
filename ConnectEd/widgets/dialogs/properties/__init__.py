@@ -208,7 +208,7 @@ class PropertiesDialog(QDialog):
     ) -> list[PropertiesItem]:
         item = self._item
         new = not item.hasProperty(name)
-        pt = item.getPropertyText(name)
+        pt = item.getPropertyTextItem(name)
         pt_args = {
             "owner"   : item,
             "new"     : new,

@@ -151,7 +151,7 @@ class PropertyState:
             value     = object.getPropertyValue(name),
             display   = object.getPropertyDisplay(name)
         )
-        pt = object.getPropertyText(name)
+        pt = object.getPropertyTextItem(name)
         if pt is not None:
             inst.cleat     = pt.cleat()
             inst.x         = pt.x()
@@ -219,7 +219,7 @@ class PropertiesMixin:
         # convert PropertyTextSpec instances to PropertyTextItem instances
         if hasattr(self, "_PROPERTY_TEXTS"):
             for name, spec in self._PROPERTY_TEXTS.items():
-                self.addPropertyText(name, *spec.astuple())
+                self.addPropertyTextItem(name, *spec.astuple())
 
     def getPropertyNames(self : Self) -> list[str]:
         return list(self._properties.keys())
@@ -485,7 +485,7 @@ class PropertiesMixin:
                     if k in PropertyTextSpec.__dataclass_fields__.keys()
                         and k != "visible"
             }
-            self.addPropertyText(name, **pt_args)
+            self.addPropertyTextItem(name, **pt_args)
         return True
 
     def editProperty(
@@ -525,17 +525,17 @@ class PropertiesMixin:
         if display is PropertyDisplay.NONE:
             if self.getPropertyDisplay(name) != PropertyDisplay.NONE:
                 # delete property text
-                self.delPropertyText(name)
+                self.delPropertyTextItem(name)
         else:
-            f = self.addPropertyText \
+            f = self.addPropertyTextItem \
                 if self.getPropertyDisplay(name) == PropertyDisplay.NONE \
-                    else self.editPropertyText
+                    else self.editPropertyTextItem
             f(
                 name, display == PropertyDisplay.SHOW,
                 cleat, x, y, origin, align_h, align_v, width, height,
                 color, family, size, bold, italic, underline
             )
-        self.editPropertyText(
+        self.editPropertyTextItem(
             name, display == PropertyDisplay.SHOW, cleat, x, y, origin, align_h, align_v, width, height, color, family, size, bold, italic, underline)
 
     def renProperty(self : Self, old_name : str, new_name : str) -> bool:
@@ -619,7 +619,11 @@ class PropertiesMixin:
             return PropertyDisplay.NONE
         return PropertyDisplay.SHOW if pt.isVisible() else PropertyDisplay.HIDE
 
-    def getPropertyText(self : Self, name : str) -> "PropertyTextItem | None":
+    def getPropertyTextItem(self : Self, name : str) -> "PropertyTextItem | None":
+        """
+        Get the property text item for a property.
+        Returns the property text item if it exists, None otherwise.
+        """
         # check property existence
         if not self.hasProperty(name):
             logger().warning(f"Property '{name}' not found")
@@ -627,9 +631,9 @@ class PropertiesMixin:
         # return PropertyTextItem instance
         return self._properties[name].text
 
-    def setPropertyText(self : Self, name : str, text : "PropertyTextItem") -> bool:
+    def setPropertyTextItem(self : Self, name : str, text : "PropertyTextItem") -> bool:
         """
-        Set a property text item.
+        Attach an existing property text item to a property.
         """
         # check property existence
         if not self.hasProperty(name):
@@ -641,7 +645,7 @@ class PropertiesMixin:
         property.text = text
         return True
 
-    def addPropertyText(
+    def addPropertyTextItem(
         self      : Self,
         name      : str,
         visible   : bool             = True,
@@ -661,7 +665,7 @@ class PropertiesMixin:
         underline : bool   | Default = DEFAULT
     ) -> bool:
         """
-        Add a property text.
+        Add a property text item. Replace any existing property text item.
         Returns True if the property text was added, False otherwise.
         """
         from .items.property_text import \
@@ -698,7 +702,7 @@ class PropertiesMixin:
         )
         return True
 
-    def editPropertyText(
+    def editPropertyTextItem(
         self : Self,
         name      : str,
         visible   : bool         | NoChange = NO_CHANGE,
@@ -718,8 +722,8 @@ class PropertiesMixin:
         underline : bool         | NoChange = NO_CHANGE
     ) -> bool:
         """
-        Edit a property text.
-        Returns True if the property text was edited, False otherwise.
+        Edit a property text item.
+        Returns True if the property text item was edited, False otherwise.
         """
         from .items.property_text import PropertyTextItem
         # check property existence
@@ -752,10 +756,10 @@ class PropertiesMixin:
         if underline is not NO_CHANGE: pt.setQuillUnderline(underline)
         return True
 
-    def delPropertyText(self : Self, name : str) -> bool:
+    def delPropertyTextItem(self : Self, name : str) -> bool:
         """
-        Remove a property text.
-        Returns True if the property text was removed, False otherwise.
+        Remove a property text item.
+        Returns True if the property text item was removed, False otherwise.
         """
         from .items.property_text import PropertyTextItem
         # check property existence

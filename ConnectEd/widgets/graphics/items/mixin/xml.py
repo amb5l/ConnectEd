@@ -77,7 +77,7 @@ class ItemXmlMixin:
                     )
                     prop_name = child.name()
                     if instance.hasProperty(prop_name):
-                        instance.setPropertyText(prop_name, child)
+                        instance.setPropertyTextItem(prop_name, child)
                     else:
                         logger().warning(f"Property '{prop_name}' not found")
                     child.onTextChange()
