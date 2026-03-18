@@ -15,10 +15,9 @@ from ...graphics.properties import PropertiesMixin
 class PropertiesItem(QStandardItem):
     _IDX_OWNER   = 0
     _IDX_KIND    = 1
-    _IDX_TYPES   = 2
-    _IDX_INITIAL = 3
-    _IDX_CURRENT = 4
-    _IDX_DEFAULT = 5
+    _IDX_INITIAL = 2
+    _IDX_CURRENT = 3
+    _IDX_DEFAULT = 4
 
     @checked
     def __init__(
@@ -59,11 +58,10 @@ class PropertiesItem(QStandardItem):
     @checked
     def setKind(self : Self, kind : DataKind) -> None:
         self.setData(kind, Qt.ItemDataRole.UserRole + self._IDX_KIND)
-        self.setData(kind.types, Qt.ItemDataRole.UserRole + self._IDX_TYPES)
 
     @checked
     def types(self : Self) -> tuple[type, ...]:
-        return self.data(Qt.ItemDataRole.UserRole + self._IDX_TYPES)
+        return self.kind().types()
 
     @checked
     def initial(self : Self) -> Any:
