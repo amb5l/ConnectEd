@@ -165,13 +165,6 @@ class PropertiesDialog(QDialog):
             if name_item.deleted():
                 name = name_item.value()
                 changes.append(PropertyChangeDelete(name))
-        # renames
-        for row_idx in range(self._table_model.rowCount()):
-            name_item : PropertiesItem = self._table_model.item(row_idx, 0)
-            if name_item.changed():
-                name = name_item.initial()
-                rename = name_item.value()
-                changes.append(PropertyChangeRename(name, rename))
         # additions
         for row_idx in range(self._table_model.rowCount()):
             name_item : PropertiesItem | None = self._table_model.item(row_idx, 0)
