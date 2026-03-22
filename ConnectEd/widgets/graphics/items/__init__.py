@@ -6,11 +6,11 @@ from ....core.utils import registerClass
 
 from .mixin import ItemMixin
 
-
+# Runtime union so isinstance(..., ItemType) works (e.g. property_text.item()).
 ItemType = ItemMixin | QGraphicsItem
 
 
-def clone(items : list[ItemMixin]) -> list[ItemMixin]:
+def clone(items : list["ItemMixin"]) -> list["ItemMixin"]:
     r = []
     for item in items:
         try:

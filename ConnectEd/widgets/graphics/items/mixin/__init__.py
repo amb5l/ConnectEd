@@ -8,10 +8,6 @@ from PyQt6.QtWidgets import QGraphicsItem
 from .....core.defs  import Z_DRAWING
 from .....core.utils import pascal2proper
 
-from typing import TYPE_CHECKING
-if TYPE_CHECKING:
-    from .. import Appearance
-
 
 class ItemSettingsMixin:
     def settingsName(self : Self | QGraphicsItem) -> str:
@@ -32,7 +28,6 @@ class ItemMixin(ItemSettingsMixin, ItemMoveMixin):
     Z = Z_DRAWING
 
     _uuid : str
-    a     : "Appearance | None"
 
     def initItem(self : Self | QGraphicsItem, fresh : bool = True) -> None:
         from ...properties import PropertiesMixin
@@ -103,6 +98,12 @@ class ItemMixin(ItemSettingsMixin, ItemMoveMixin):
         while item.parentItem() is not None:
             item = item.parentItem()
         return item
+
+    def description(self : Self) -> str:
+        class_name = self.__class__.__name__
+        class_name = class_name.removesuffix("Item")
+        class_name = class_name.removesuffix("Scene")
+        return pascal2proper(class_name)
 
     def _resetUuid(self : Self | QGraphicsItem) -> None:
         self._uuid = str(uuid.uuid4())

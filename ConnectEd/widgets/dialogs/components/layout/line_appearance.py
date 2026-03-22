@@ -4,7 +4,8 @@ from PyQt6.QtCore    import Qt
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel
 from PyQt6.QtGui     import QColor
 
-from .....core.types import Default, DEFAULT, NoChange, NO_CHANGE
+from .....core.types import Default, DEFAULT, NoChange, NO_CHANGE, \
+                            Color, PenWidth, PenStyle
 
 from ..combo.color      import ColorComboBox
 from ..combo.line_width import LineWidthComboBox
@@ -24,12 +25,12 @@ class LineAppearanceLayout(QVBoxLayout):
 
     def __init__(
         self      : Self,
-        initial_color : QColor      | Default | NoChange,
-        initial_width : float       | Default | NoChange,
-        initial_style : Qt.PenStyle | Default | NoChange,
-        default_color : QColor      | Default,
-        default_width : float       | Default,
-        default_style : Qt.PenStyle | Default,
+        initial_color : Color    | NoChange,
+        initial_width : PenWidth | NoChange,
+        initial_style : PenStyle | NoChange,
+        default_color : QColor,
+        default_width : float,
+        default_style : Qt.PenStyle,
         parent        : QWidget | None = None
     ) -> None:
         super().__init__(parent)
@@ -72,7 +73,7 @@ class LineAppearanceLayout(QVBoxLayout):
                     self.style_combo.setCurrentIndex(i)
                     break
 
-    def getColorChoice(self : Self) -> QColor | Default:
+    def getColorChoice(self : Self) -> Color | NoChange:
         return self.color_combo.value()
 
     def getWidthChoice(self : Self) -> float | NoChange | Default:

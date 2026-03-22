@@ -7,8 +7,9 @@ from PyQt6.QtWidgets import QGraphicsItem, QMenu, \
                             QGraphicsSimpleTextItem, QGraphicsTextItem
 from PyQt6.QtGui     import QColor, QFont, QAction, QPainterPath, QPainter
 
-from ....core.types import Default, DEFAULT, NoChange, NO_CHANGE, \
-                            AlignH, AlignV, RectHandleId, DataKind
+from ....core.types import DEFAULT, NoChange, NO_CHANGE, \
+                           AlignH, AlignV, RectHandleId, DataKind, \
+                           Color, FontFamily, FontSize, FontBool
 
 from ....resources.icons import AnchorTopLeftIcon,      \
                                  AnchorTopCenterIcon,    \
@@ -58,12 +59,12 @@ class TextState:
     align_v   : AlignV
     width     : float
     height    : float
-    color     : QColor | Default
-    family    : str    | Default
-    size      : float  | Default
-    bold      : bool   | Default
-    italic    : bool   | Default
-    underline : bool   | Default
+    color     : Color
+    family    : FontFamily
+    size      : FontSize
+    bold      : FontBool
+    italic    : FontBool
+    underline : FontBool
 
     @classmethod
     def fromItem(cls, item : "TextItemMixin") -> Self:
@@ -87,20 +88,20 @@ class TextState:
 
 @dataclass
 class TextChange:
-    text      : str              | NoChange = NO_CHANGE
-    rotation  : float            | NoChange = NO_CHANGE
-    flip      : bool             | NoChange = NO_CHANGE
-    origin    : str              | NoChange = NO_CHANGE
-    align_h   : AlignH           | NoChange = NO_CHANGE
-    align_v   : AlignV           | NoChange = NO_CHANGE
-    width     : float            | NoChange = NO_CHANGE
-    height    : float            | NoChange = NO_CHANGE
-    color     : QColor | Default | NoChange = NO_CHANGE
-    family    : str    | Default | NoChange = NO_CHANGE
-    size      : float  | Default | NoChange = NO_CHANGE
-    bold      : bool   | Default | NoChange = NO_CHANGE
-    italic    : bool   | Default | NoChange = NO_CHANGE
-    underline : bool   | Default | NoChange = NO_CHANGE
+    text      : str        | NoChange = NO_CHANGE
+    rotation  : float      | NoChange = NO_CHANGE
+    flip      : bool       | NoChange = NO_CHANGE
+    origin    : str        | NoChange = NO_CHANGE
+    align_h   : AlignH     | NoChange = NO_CHANGE
+    align_v   : AlignV     | NoChange = NO_CHANGE
+    width     : float      | NoChange = NO_CHANGE
+    height    : float      | NoChange = NO_CHANGE
+    color     : Color      | NoChange = NO_CHANGE
+    family    : FontFamily | NoChange = NO_CHANGE
+    size      : FontSize   | NoChange = NO_CHANGE
+    bold      : FontBool   | NoChange = NO_CHANGE
+    italic    : FontBool   | NoChange = NO_CHANGE
+    underline : FontBool   | NoChange = NO_CHANGE
 
 
 class TextItemMixin(
@@ -132,7 +133,7 @@ class TextItemMixin(
             ),
             "AlignV" : InherentProperty(
                 kind   = DataKind.ALIGN_V,
-                valid  = lambda self: self.height() is not None,
+                worthy  = lambda self: self.height() is not None,
                 getter = lambda self: self.alignV(),
                 setter = lambda self, value: self.setAlignV(value)
             )
@@ -141,13 +142,13 @@ class TextItemMixin(
         {
             "Width" : InherentProperty(
                 kind   = DataKind.FLOAT,
-                valid  = lambda self: self.width() is not None,
+                worthy  = lambda self: self.width() is not None,
                 getter = lambda self: self.width(),
                 setter = lambda self, value: self.setWidth(value)
             ),
             "Height" : InherentProperty(
                 kind   = DataKind.FLOAT,
-                valid  = lambda self: self.height() is not None,
+                worthy  = lambda self: self.height() is not None,
                 getter = lambda self: self.height(),
                 setter = lambda self, value: self.setHeight(value)
             )
@@ -173,12 +174,12 @@ class TextItemMixin(
         align_v   : AlignV               = AlignV.TOP,
         width     : float                = -1.0,        # unconstrained
         height    : float                = -1.0,        # unconstrained
-        color     : QColor | Default     = DEFAULT,
-        family    : str    | Default     = DEFAULT,
-        size      : float  | Default     = DEFAULT,
-        bold      : bool   | Default     = DEFAULT,
-        italic    : bool   | Default     = DEFAULT,
-        underline : bool   | Default     = DEFAULT,
+        color     : Color                = DEFAULT,
+        family    : FontFamily           = DEFAULT,
+        size      : FontSize             = DEFAULT,
+        bold      : FontBool             = DEFAULT,
+        italic    : FontBool             = DEFAULT,
+        underline : FontBool             = DEFAULT,
         fresh     : bool                 = True,
         parent    : QGraphicsItem | None = None
     ) -> None:

@@ -11,8 +11,8 @@ from ..interaction.edit import EditMoveInteraction
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from ....items            import ItemMixin
-    from ....items.text       import TextItem
+    from ....items.mixin      import ItemMixin
+    from ....items.text       import TextLineItem, TextBlockItem
     from ....items.grip       import ResizeGripItem
     from ....items.symbol_pin import SymbolPinItem
     from .                    import DrawingViewUi
@@ -122,7 +122,7 @@ class DrawingViewUiEditMixin:
         self  : "DrawingViewUi",
         items : "ItemMixin | list[ItemMixin] | None" = None
     ) -> None:
-        from ....items import ItemMixin
+        from ....items.mixin import ItemMixin
         items = [items] if isinstance(items, ItemMixin) else items
         self._view.state.go(self._view.stateEditAppearance, items)
 
@@ -130,7 +130,7 @@ class DrawingViewUiEditMixin:
         self  : "DrawingViewUi",
         items : "ItemMixin | list[ItemMixin] | None" = None
     ) -> None:
-        from ....items import ItemMixin
+        from ....items.mixin import ItemMixin
         items = [items] if isinstance(items, ItemMixin) else items
         self._view.state.go(self._view.stateEditItemProperties, items)
 
@@ -213,7 +213,7 @@ class DrawingViewUiEditMixin:
     # TODO remove this, use scene method, rename above method
     def editText(
         self      : "DrawingViewUi",
-        item      : "TextItem",
+        item      : "TextLineItem | TextBlockItem",
         origin    : str    | NoChange = NO_CHANGE,
         align_h   : AlignH | NoChange = NO_CHANGE,
         align_v   : AlignV | NoChange = NO_CHANGE,
@@ -244,7 +244,7 @@ class DrawingViewUiEditMixin:
         pos   : QPoint | QPointF | None = None,
         slide : bool = False
     ) -> None:
-        from ....items import ItemMixin
+        from ....items.mixin import ItemMixin
         if items is None:
             items = self._scene.selectedItems()
         pos = self._view.mapToScene(pos) if isinstance(pos, QPoint) else pos

@@ -11,7 +11,7 @@ from .....dialogs.items.port_pin import PortPinItemDialog
 from .....dialogs.items.gate     import GateItemDialog
 from .....dialogs.items.text     import TextLineItemDialog, TextBlockItemDialog
 
-from ....items            import ItemMixin
+from ....items.mixin      import ItemMixin
 from ....items.port       import PortItem
 from ....items.gate       import GateFunc, BufGateItem, \
                                  AndGateItem, OrGateItem, XorGateItem

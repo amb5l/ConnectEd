@@ -49,7 +49,7 @@ class PortPinMixin(
         {
             "Comment" : InherentProperty(
                 kind   = DataKind.STR,
-                valid  = lambda self: self._comment != "",
+                worthy  = lambda self: self._comment != "",
                 getter = lambda self: self._comment,
                 setter = lambda self, value: setattr(self, "_comment", value)
             )

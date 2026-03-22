@@ -1,4 +1,5 @@
 from typing      import Self
+from dataclasses import asdict
 
 from PyQt6.QtCore import QPoint, QPointF
 
@@ -10,13 +11,16 @@ from .....dialogs.property_text  import PropertyTextDialog
 from .....dialogs.items.port_pin import PortPinItemDialog
 from .....dialogs.items.text     import TextLineItemDialog, TextBlockItemDialog
 
-from ....items               import ItemMixin
+from ....items.mixin         import ItemMixin
 from ....items.text          import TextLineItem, TextBlockItem
 from ....items.property_text import PropertyTextItem
 from ....items.port          import PortItem
 from ....items.block_pin     import BlockPinItem
 
-from ....properties import PropertyAdd, PropertyEdit, PropertyDelete
+from .....dialogs.properties.types import (
+    PropertyChangeAdd, PropertyChangeModify, PropertyChangeDelete,
+    PropertyChangeTextAdd, PropertyChangeTextModify, PropertyChangeTextDelete
+)
 
 from ..interaction.edit import EditPasteInteraction
 
@@ -155,13 +159,20 @@ class DrawingViewStateEditItemProperties(DrawingViewStateBase):
         if item:
             dialog = PropertiesDialog(item, self.view)
             if dialog.exec():
-                for edit in dialog.getEdits():
-                    if isinstance(edit, PropertyAdd):
-                        self.scene.addProperty(item, *edit.astuple(), undoable=True)
-                    elif isinstance(edit, PropertyEdit):
-                        self.scene.editProperty(item, *edit.astuple(), undoable=True)
-                    elif isinstance(edit, PropertyDelete):
-                        self.scene.delProperty(item, edit.name, undoable=True)
+                for change in dialog.getChanges():
+                    args = asdict(change)
+                    if isinstance(change, PropertyChangeDelete):
+                        self.scene.delProperty(item, **args, undoable=True)
+                    elif isinstance(change, PropertyChangeAdd):
+                        self.scene.addProperty(item, **args, undoable=True)
+                    elif isinstance(change, PropertyChangeModify):
+                        self.scene.editProperty(item, **args, undoable=True)
+                    elif isinstance(change, PropertyChangeTextDelete):
+                        self.scene.delPropertyText(item, **args, undoable=True)
+                    elif isinstance(change, PropertyChangeTextAdd):
+                        self.scene.addPropertyText(item, **args, undoable=True)
+                    elif isinstance(change, PropertyChangeTextModify):
+                        self.scene.editPropertyText(item, **args, undoable=True)
         else:
             logger().warning("No items selected")
         self.view.state.go(self.view.stateIdle)
@@ -178,7 +189,7 @@ class DrawingViewStateEditDrawingProperties(DrawingViewStateBase):
     ) -> None:
         dialog = PropertiesDialog(self.scene, self.view)
         if dialog.exec():
-            self.scene.editProperties(self.scene, dialog.getEdits(), undoable=True)
+            self.scene.editProperties(self.scene, dialog.getChanges(), undoable=True)
         self.view.state.go(self.view.stateIdle)
 
 class DrawingViewStateEditQuery(DrawingViewStateBase):

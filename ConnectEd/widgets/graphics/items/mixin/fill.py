@@ -7,7 +7,7 @@ from PyQt6.QtGui  import QBrush, QColor
 
 from .....app import logger, settings
 
-from .....core.types import DataKind, Default, DEFAULT
+from .....core.types import DataKind, Default, DEFAULT, Color
 
 from ...properties import InherentProperty
 
@@ -32,14 +32,14 @@ class ItemFillMixin:
     _PROPERTIES_FILL = {
         "Fill Color" : InherentProperty(
             kind    = DataKind.COLOR,
-            valid   = lambda self: self.fillColor() is not DEFAULT,
+            worthy   = lambda self: self.fillColor() is not DEFAULT,
             getter  = lambda self: self.fillColor(),
             setter  = lambda self, value: self.setFillColor(value),
             default = lambda self: self.defaultFillColor()
         ),
         "Fill Style" : InherentProperty(
             kind    = DataKind.BRUSH_STYLE,
-            valid   = lambda self: self.fillStyle() is not DEFAULT,
+            worthy   = lambda self: self.fillStyle() is not DEFAULT,
             getter  = lambda self: self.fillStyle(),
             setter  = lambda self, value: self.setFillStyle(value),
             default = lambda self: self.defaultFillStyle()
@@ -70,13 +70,13 @@ class ItemFillMixin:
     def defaultFillColor(self : Self | ItemProtocol) -> QColor:
         return settings().get(f"theme/items/{self.settingsName()}/fill/color")
 
-    def fillColor(self : Self | ItemProtocol) -> QColor | Default:
+    def fillColor(self : Self | ItemProtocol) -> Color | Default:
         return self._fill_color
 
     def setFillColor(
-        self  : Self | ItemProtocol,
-        color : QColor | Default | None = None,
-        selected : bool | None = None
+        self     : Self | ItemProtocol,
+        color    : Color | None = None,
+        selected : bool  | None = None
     ) -> None:
         if color is not None:
             self._fill_color = color

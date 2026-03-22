@@ -5,13 +5,10 @@ from PyQt6.QtCore    import QModelIndex
 from PyQt6.QtWidgets import QWidget, QStyledItemDelegate, QStyleOptionViewItem
 from PyQt6.QtGui     import QStandardItemModel
 
-from ....core.types import DataKind, AlignH, AlignV, Edge, Direction, PropertyDisplay, \
-                           HandleId, RectHandleId, LineHandleId, \
+from ....core.types import AlignH, AlignV, Edge, Direction, Display, \
+                           RectHandleId, LineHandleId, \
                            BlockPinHandleId, SymbolPinHandleId
 
-from ...graphics.properties import PropertiesMixin
-
-from ...graphics.items.mixin.handle import ItemHandlesMixin
 
 from ..components.edit import StrEditor, TextEditor, IntEditor, FloatEditor, BoolEditor
 
@@ -26,30 +23,31 @@ from ..components.combo.font_bool   import FontBoolComboBox
 
 from .item import PropertiesItem
 
-
-EditorType : TypeAlias = \
-    StrEditor                       | \
-    TextEditor                      | \
-    IntEditor                       | \
-    FloatEditor                     | \
-    BoolEditor                      | \
-    EnumComboBox[PropertyDisplay]   | \
-    EnumComboBox                    | \
-    EnumComboBox[RectHandleId]      | \
-    EnumComboBox[LineHandleId]      | \
-    EnumComboBox[BlockPinHandleId]  | \
-    EnumComboBox[SymbolPinHandleId] | \
-    EnumComboBox[AlignH]            | \
-    EnumComboBox[AlignV]            | \
-    EnumComboBox[Edge]              | \
-    EnumComboBox[Direction]         | \
-    ColorComboBox                   | \
-    LineStyleComboBox               | \
-    LineWidthComboBox               | \
-    FillStyleComboBox               | \
-    FontFamilyComboBox              | \
-    FontSizeComboBox                | \
-    FontBoolComboBox
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    EditorType : TypeAlias = \
+        StrEditor                       | \
+        TextEditor                      | \
+        IntEditor                       | \
+        FloatEditor                     | \
+        BoolEditor                      | \
+        EnumComboBox[Display]           | \
+        EnumComboBox                    | \
+        EnumComboBox[RectHandleId]      | \
+        EnumComboBox[LineHandleId]      | \
+        EnumComboBox[BlockPinHandleId]  | \
+        EnumComboBox[SymbolPinHandleId] | \
+        EnumComboBox[AlignH]            | \
+        EnumComboBox[AlignV]            | \
+        EnumComboBox[Edge]              | \
+        EnumComboBox[Direction]         | \
+        ColorComboBox                   | \
+        LineStyleComboBox               | \
+        LineWidthComboBox               | \
+        FillStyleComboBox               | \
+        FontFamilyComboBox              | \
+        FontSizeComboBox                | \
+        FontBoolComboBox
 
 
 class PropertiesDelegate(QStyledItemDelegate):
@@ -79,7 +77,7 @@ class PropertiesDelegate(QStyledItemDelegate):
 
     def setModelData(
         self   : Self,
-        editor : EditorType,
+        editor : "EditorType",
         model  : QStandardItemModel,
         index  : QModelIndex
     ) -> None:

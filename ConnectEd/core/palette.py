@@ -47,6 +47,10 @@ class PaletteDark:
     SelectedFill     = QColor("#800080")
     SelectedText     = QColor("#A000A0")
     Grip             = QColor("#FF00FF")
+    PropertyDeleted  = QColor("#FF0000")
+    PropertyChanged  = QColor("#FFFF00")
+    PropertyAdded    = QColor("#00FF00")
+
 
 class PaletteLightMono:
     Background       = QColor("#202020")
@@ -94,3 +98,6 @@ class PaletteLightMono:
     SelectedFill     = QColor("#800080")
     SelectedText     = QColor("#C000C0")
     Grip             = QColor("#FF00FF")
+    PropertyDeleted  = QColor("#FF0000")
+    PropertyChanged  = QColor("#FFFF00")
+    PropertyAdded    = QColor("#00FF00")

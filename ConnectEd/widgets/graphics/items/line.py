@@ -78,7 +78,7 @@ class LineItem(
         self._line = QLineF()
         self.setPoints(p1, p2)
 
-    def onGeometryChange(self : Self) -> None:
+    def onGeometryChange(self : Self | PropertiesMixin) -> None:
         """Allow for tolerance."""
         if not hasattr(self, "_line"):
             self._hshape = QPainterPath()

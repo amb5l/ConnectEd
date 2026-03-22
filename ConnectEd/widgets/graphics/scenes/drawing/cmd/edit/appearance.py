@@ -7,7 +7,7 @@ from PyQt6.QtGui     import QColor
 
 from .......core.types import Default, NoChange, NO_CHANGE
 
-from .....items import ItemMixin
+from .....items.mixin import ItemMixin
 
 from .....items.mixin.line  import ItemLineMixin
 from .....items.mixin.fill  import ItemFillMixin

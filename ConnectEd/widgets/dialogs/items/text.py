@@ -2,10 +2,11 @@ from typing import Self
 
 from PyQt6.QtCore    import Qt, QTimer
 from PyQt6.QtWidgets import QWidget, QDialog, QVBoxLayout, QHBoxLayout
-from PyQt6.QtGui     import QShowEvent, QColor
+from PyQt6.QtGui     import QShowEvent
 
 from ....core.check import checked
-from ....core.types import Default, NoChange, AlignH, AlignV, RectHandleId
+from ....core.types import Default, NoChange, AlignH, AlignV, RectHandleId, \
+                           Color, FontFamily, FontSize, FontBool
 
 from ...graphics.items.text import TextLineItem, TextBlockItem, TextBothItem
 
@@ -102,27 +103,27 @@ class TextItemDialogMixin:
         return self._origin_group_box.getOrigin()
 
     @checked
-    def getColor(self : Self) -> QColor | Default | NoChange:
+    def getColor(self : Self) -> Color | NoChange:
         return self._appearance_group_box.getColor()
 
     @checked
-    def getFamily(self : Self) -> str | Default | NoChange:
+    def getFamily(self : Self) -> FontFamily | NoChange:
         return self._appearance_group_box.getFamily()
 
     @checked
-    def getSize(self : Self) -> float | Default | NoChange:
+    def getSize(self : Self) -> FontSize | NoChange:
         return self._appearance_group_box.getSize()
 
     @checked
-    def getBold(self : Self) -> bool | Default | NoChange:
+    def getBold(self : Self) -> FontBool | NoChange:
         return self._appearance_group_box.getBold()
 
     @checked
-    def getItalic(self : Self) -> bool | Default | NoChange:
+    def getItalic(self : Self) -> FontBool | NoChange:
         return self._appearance_group_box.getItalic()
 
     @checked
-    def getUnderline(self : Self) -> bool | Default | NoChange:
+    def getUnderline(self : Self) -> FontBool | NoChange:
         return self._appearance_group_box.getUnderline()
 
 

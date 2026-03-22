@@ -108,18 +108,19 @@ class SymbolPinHandleId(HandleId):
     ENTRY  = "Entry"   # tip of external pin shape
     NAME   = "Name"    # set just in from placement origin
 
-class PropertyDisplay(Enum):
+
+class Display(Enum):
     NONE = "<none>"
     SHOW = "Show"
     HIDE = "Hide"
 
-
-Color = QColor | Default | NoChange
-LineWidth = float | Default
-PenStyle = Qt.PenStyle | Default
+Color      = QColor        | Default
+PenWidth   = float         | Default
+PenStyle   = Qt.PenStyle   | Default
 BrushStyle = Qt.BrushStyle | Default
-FontFamily = str | Default
-FontSize = float | Default
+FontFamily = str           | Default
+FontSize   = float         | Default
+FontBool   = bool          | Default
 
 
 _DATA_KIND_TYPES: dict["DataKind", tuple[type, ...]] = {}
@@ -145,7 +146,7 @@ def _populate_data_kind_maps() -> None:
         DataKind.INT               : (int,),
         DataKind.FLOAT             : (float,),
         DataKind.BOOL              : (bool,),
-        DataKind.DISPLAY           : (PropertyDisplay,),
+        DataKind.DISPLAY           : (Display,),
         DataKind.RECT_HANDLE       : (RectHandleId,),
         DataKind.LINE_HANDLE       : (LineHandleId,),
         DataKind.BLOCK_PIN_HANDLE  : (BlockPinHandleId,),
@@ -169,7 +170,7 @@ def _populate_data_kind_maps() -> None:
         DataKind.INT               : IntEditor,
         DataKind.FLOAT             : FloatEditor,
         DataKind.BOOL              : BoolEditor,
-        DataKind.DISPLAY           : EnumComboBox[PropertyDisplay],
+        DataKind.DISPLAY           : EnumComboBox[Display],
         DataKind.RECT_HANDLE       : EnumComboBox[RectHandleId],
         DataKind.LINE_HANDLE       : EnumComboBox[LineHandleId],
         DataKind.BLOCK_PIN_HANDLE  : EnumComboBox[BlockPinHandleId],

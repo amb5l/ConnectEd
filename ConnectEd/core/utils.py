@@ -197,7 +197,7 @@ def val2str(v : Any) -> str:
         case "QRectF"            : s = f"{v.x()},{v.y()},{v.width()},{v.height()}"
         case "QSizeF"            : s = f"{v.width()},{v.height()}"
         case "QColor"            : s = f"#{(v.rgb() & 0xFFFFFF):06X}"
-        case "PropertyDisplay"   : s = v.value
+        case "Display"           : s = v.value
         case "PenStyle"          : s = str(v).replace("PenStyle.", "")
         case "BrushStyle"        : s = str(v).replace("BrushStyle.", "")
         case "AlignH"            : s = v.toStr()
@@ -222,11 +222,9 @@ def str2val(s : str, t : str) -> Any:
     table view delegates.
     """
     from ..core.types import (
-        DEFAULT, AlignH, AlignV, Edge, EdgeLoc, Direction,
-        RectHandleId, LineHandleId,
-        PortHandleId, BlockPinHandleId, SymbolPinHandleId
+        DEFAULT, AlignH, AlignV, Edge, EdgeLoc, Direction, Display,
+        RectHandleId, LineHandleId, PortHandleId, BlockPinHandleId, SymbolPinHandleId
     )
-    from ..widgets.graphics.properties import PropertyDisplay
     def strValuesToFloats(s : str) -> list[float]:
         return [float(p) for p in s.strip("()").split(",")]
     # handle None
@@ -251,7 +249,7 @@ def str2val(s : str, t : str) -> Any:
         case "QRectF"            : return QRectF(*strValuesToFloats(s))
         case "QSizeF"            : return QSizeF(*strValuesToFloats(s))
         case "QColor"            : return QColor.fromRgb(int(s[1:], 16) | 0xFF000000)
-        case "PropertyDisplay"   : return PropertyDisplay(s)
+        case "Display"           : return Display(s)
         case "PenStyle"          : return Qt.PenStyle[s]
         case "BrushStyle"        : return Qt.BrushStyle[s]
         case "AlignH"            : return AlignH.fromStr(s)

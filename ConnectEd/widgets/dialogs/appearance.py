@@ -1,10 +1,12 @@
 from typing import Self
 
-from PyQt6.QtCore    import Qt
 from PyQt6.QtWidgets import QWidget, QDialog, QGroupBox, QVBoxLayout
-from PyQt6.QtGui     import QShowEvent, QColor
+from PyQt6.QtGui     import QShowEvent
 
-from ...core.types import Default, NoChange, NO_CHANGE
+from ...core.types import (
+    NoChange, NO_CHANGE,
+    Color, PenWidth, PenStyle, BrushStyle, FontFamily, FontSize, FontBool
+)
 
 from ..graphics.items.mixin.line  import ItemLineMixin
 from ..graphics.items.mixin.fill  import ItemFillMixin
@@ -147,35 +149,35 @@ class AppearanceDialog(QDialog):
         from PyQt6.QtCore import QTimer
         QTimer.singleShot(0, self._adjustComboBoxWidths)
 
-    def getLineColorChoice(self : Self) -> QColor | Default | NoChange:
+    def getLineColorChoice(self : Self) -> Color | NoChange:
         return self._line_layout.getColorChoice() if self._line_layout else NO_CHANGE
 
-    def getLineWidthChoice(self : Self) -> float | NoChange | Default:
+    def getLineWidthChoice(self : Self) -> PenWidth | NoChange:
         return self._line_layout.getWidthChoice() if self._line_layout else NO_CHANGE
 
-    def getLineStyleChoice(self : Self) -> Qt.PenStyle | NoChange | Default:
+    def getLineStyleChoice(self : Self) -> PenStyle | NoChange:
         return self._line_layout.getStyleChoice() if self._line_layout else NO_CHANGE
 
-    def getFillColorChoice(self : Self) -> QColor | Default | NoChange:
+    def getFillColorChoice(self : Self) -> Color | NoChange:
         return self._fill_layout.getColorChoice() if self._fill_layout else NO_CHANGE
 
-    def getFillStyleChoice(self : Self) -> Qt.BrushStyle | NoChange | Default:
+    def getFillStyleChoice(self : Self) -> BrushStyle | NoChange:
         return self._fill_layout.getStyleChoice() if self._fill_layout else NO_CHANGE
 
-    def getTextColorChoice(self : Self) -> QColor | Default | NoChange:
+    def getTextColorChoice(self : Self) -> Color | NoChange:
         return self._text_layout.getColor() if self._text_layout else NO_CHANGE
 
-    def getTextFontChoice(self : Self) -> str | Default | NoChange:
+    def getTextFontChoice(self : Self) -> FontFamily | NoChange:
         return self._text_layout.getFamily() if self._text_layout else NO_CHANGE
 
-    def getTextSizeChoice(self : Self) -> float | NoChange | Default:
+    def getTextSizeChoice(self : Self) -> FontSize | NoChange:
         return self._text_layout.getSize() if self._text_layout else NO_CHANGE
 
-    def getTextBoldChoice(self : Self) -> bool | Default | NoChange:
+    def getTextBoldChoice(self : Self) -> FontBool | NoChange:
         return self._text_layout.getBold() if self._text_layout else NO_CHANGE
 
-    def getTextItalicChoice(self : Self) -> bool | Default | NoChange:
+    def getTextItalicChoice(self : Self) -> FontBool | NoChange:
         return self._text_layout.getItalic() if self._text_layout else NO_CHANGE
 
-    def getTextUnderlineChoice(self : Self) -> bool | Default | NoChange:
+    def getTextUnderlineChoice(self : Self) -> FontBool | NoChange:
         return self._text_layout.getUnderline() if self._text_layout else NO_CHANGE

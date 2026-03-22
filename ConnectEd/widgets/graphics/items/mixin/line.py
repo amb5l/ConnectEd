@@ -7,7 +7,7 @@ from PyQt6.QtGui  import QPen, QColor
 
 from .....app import logger, settings
 
-from .....core.types import DataKind, Default, DEFAULT
+from .....core.types import DataKind, Default, DEFAULT, Color
 
 from ...properties import InherentProperty
 
@@ -34,21 +34,21 @@ class ItemLineMixin:
     _PROPERTIES_LINE = {
         "Line Color" : InherentProperty(
             kind    = DataKind.COLOR,
-            valid   = lambda self: self.lineColor() is not DEFAULT,
+            worthy   = lambda self: self.lineColor() is not DEFAULT,
             getter  = lambda self: self.lineColor(),
             setter  = lambda self, value: self.setLineColor(value),
             default = lambda self: self.defaultLineColor()
         ),
         "Line Width" : InherentProperty(
             kind    = DataKind.PEN_WIDTH,
-            valid   = lambda self: self.lineWidth() is not DEFAULT,
+            worthy   = lambda self: self.lineWidth() is not DEFAULT,
             getter  = lambda self: self.lineWidth(),
             setter  = lambda self, value: self.setLineWidth(value),
             default = lambda self: self.defaultLineWidth()
         ),
         "Line Style" : InherentProperty(
             kind    = DataKind.PEN_STYLE,
-            valid   = lambda self: self.lineStyle() is not DEFAULT,
+            worthy   = lambda self: self.lineStyle() is not DEFAULT,
             getter  = lambda self: self.lineStyle(),
             setter  = lambda self, value: self.setLineStyle(value),
             default = lambda self: self.defaultLineStyle()
@@ -82,13 +82,13 @@ class ItemLineMixin:
     def defaultLineColor(self : Self | ItemProtocol) -> QColor:
         return settings().get(f"theme/items/{self.settingsName()}/line/color")
 
-    def lineColor(self : Self | ItemProtocol) -> QColor | Default:
+    def lineColor(self : Self | ItemProtocol) -> Color:
         return self._line_color
 
     def setLineColor(
-        self : Self | ItemProtocol,
-        color : QColor | Default | None = None,
-        selected : bool | None = None
+        self     : Self | ItemProtocol,
+        color    : Color | None = None,
+        selected : bool  | None = None
     ) -> None:
         if color is not None:
             self._line_color = color

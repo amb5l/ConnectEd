@@ -1,5 +1,11 @@
+improve fromXml type checking
+adding new property in dialog
+
+test property text creation, addition, removal via dialog
+test PT interactive deletion/undo
 minimum dimensions during text resize e.g. 10 x 10 or 1x1
 line item origin
+
 review use of comment properties
 PropertiesItem.types
 kill spreadsheet window

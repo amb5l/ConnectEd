@@ -2,7 +2,7 @@ from typing import Self
 
 from PyQt6.QtCore import Qt, QPoint, QPointF
 
-from ....items import ItemMixin
+from ....items.mixin import ItemMixin
 
 from ....items.grip     import GripItem, OriginGripItem, ResizeGripItem
 from ....items.polyline import PolySegItem

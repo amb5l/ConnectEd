@@ -439,6 +439,17 @@ FACTORY_SETTINGS = {
             },
             "grid" : {
                 "line" : PaletteDark.Grid
+            },
+            "properties" : {
+                "deleted" : {
+                    "color" : PaletteDark.PropertyDeleted
+                },
+                "changed" : {
+                    "color" : PaletteDark.PropertyChanged
+                },
+                "added" : {
+                    "color" : PaletteDark.PropertyAdded
+                }
             }
         },
         "light_mono" : {
@@ -776,6 +787,17 @@ FACTORY_SETTINGS = {
             },
             "grid" : {
                 "line" : PaletteLightMono.Grid
+            },
+            "properties" : {
+                "deleted" : {
+                    "color" : PaletteLightMono.PropertyDeleted
+                },
+                "changed" : {
+                    "color" : PaletteLightMono.PropertyChanged
+                },
+                "added" : {
+                    "color" : PaletteLightMono.PropertyAdded
+                }
             }
         }
     }

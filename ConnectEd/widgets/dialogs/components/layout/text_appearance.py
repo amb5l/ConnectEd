@@ -5,7 +5,8 @@ from PyQt6.QtWidgets import QWidget, QVBoxLayout, QGridLayout, QLabel
 from PyQt6.QtGui     import QFont, QColor
 
 from .....core.check import checked
-from .....core.types import Default, DEFAULT, NoChange, NO_CHANGE
+from .....core.types import Default, DEFAULT, NoChange, NO_CHANGE, \
+                            Color, FontFamily, FontSize, FontBool
 
 from ..combo.color       import ColorComboBox
 from ..combo.font_family import FontFamilyComboBox
@@ -14,18 +15,18 @@ from ..combo.font_bool   import FontBoolComboBox
 
 
 class TextAppearanceLayout(QVBoxLayout):
-    _initial_color     : QColor | Default | NoChange
-    _initial_family    : str    | Default | NoChange
-    _initial_size      : float  | Default | NoChange
-    _initial_bold      : bool   | Default | NoChange
-    _initial_italic    : bool   | Default | NoChange
-    _initial_underline : bool   | Default | NoChange
-    _default_color     : QColor | NoChange
-    _default_family    : str    | NoChange
-    _default_size      : float  | NoChange
-    _default_bold      : bool   | NoChange
-    _default_italic    : bool   | NoChange
-    _default_underline : bool   | NoChange
+    _initial_color     : Color      | NoChange
+    _initial_family    : FontFamily | NoChange
+    _initial_size      : FontSize   | NoChange
+    _initial_bold      : FontBool   | NoChange
+    _initial_italic    : FontBool   | NoChange
+    _initial_underline : FontBool   | NoChange
+    _default_color     : QColor
+    _default_family    : str
+    _default_size      : float
+    _default_bold      : bool
+    _default_italic    : bool
+    _default_underline : bool
     _options_layout     : QGridLayout
     _color_label        : QLabel
     _color_combo        : ColorComboBox
@@ -43,18 +44,18 @@ class TextAppearanceLayout(QVBoxLayout):
     @checked
     def __init__(
         self              : Self,
-        initial_color     : QColor | Default | NoChange,
-        initial_family    : str    | Default | NoChange,
-        initial_size      : float  | Default | NoChange,
-        initial_bold      : bool   | Default | NoChange,
-        initial_italic    : bool   | Default | NoChange,
-        initial_underline : bool   | Default | NoChange,
-        default_color     : QColor | NoChange,
-        default_family    : str    | NoChange,
-        default_size      : float  | NoChange,
-        default_bold      : bool   | NoChange,
-        default_italic    : bool   | NoChange,
-        default_underline : bool   | NoChange,
+        initial_color     : Color      | NoChange,
+        initial_family    : FontFamily | NoChange,
+        initial_size      : FontSize   | NoChange,
+        initial_bold      : FontBool   | NoChange,
+        initial_italic    : FontBool   | NoChange,
+        initial_underline : FontBool   | NoChange,
+        default_color     : QColor,
+        default_family    : str,
+        default_size      : float,
+        default_bold      : bool,
+        default_italic    : bool,
+        default_underline : bool,
         parent            : QWidget | None = None
     ) -> None:
         super().__init__(parent)
@@ -98,27 +99,27 @@ class TextAppearanceLayout(QVBoxLayout):
         self.addLayout(self._options_layout)
 
     @checked
-    def getColor(self : Self) -> QColor | Default | NoChange:
+    def getColor(self : Self) -> Color | NoChange:
         return self._color_combo.value()
 
     @checked
-    def getFamily(self : Self) -> str | Default | NoChange:
+    def getFamily(self : Self) -> FontFamily | NoChange:
         return self._family_combo.value()
 
     @checked
-    def getSize(self : Self) -> float | Default | NoChange:
+    def getSize(self : Self) -> FontSize | NoChange:
         return self._size_combo.value()
 
     @checked
-    def getBold(self : Self) -> bool | Default | NoChange:
+    def getBold(self : Self) -> FontBool | NoChange:
         return self._bold_combo.value()
 
     @checked
-    def getItalic(self : Self) -> bool | Default | NoChange:
+    def getItalic(self : Self) -> FontBool | NoChange:
         return self._italic_combo.value()
 
     @checked
-    def getUnderline(self : Self) -> bool | Default | NoChange:
+    def getUnderline(self : Self) -> FontBool | NoChange:
         return self._underline_combo.value()
 
 
@@ -128,18 +129,18 @@ class TextAppearancePreviewLayout(TextAppearanceLayout):
     @checked
     def __init__(
         self              : Self,
-        initial_color     : QColor | Default | NoChange,
-        initial_family    : str    | Default | NoChange,
-        initial_size      : float  | Default | NoChange,
-        initial_bold      : bool   | Default | NoChange,
-        initial_italic    : bool   | Default | NoChange,
-        initial_underline : bool   | Default | NoChange,
-        default_color     : QColor | NoChange,
-        default_family    : str    | NoChange,
-        default_size      : float  | NoChange,
-        default_bold      : bool   | NoChange,
-        default_italic    : bool   | NoChange,
-        default_underline : bool   | NoChange,
+        initial_color     : Color      | NoChange,
+        initial_family    : FontFamily | NoChange,
+        initial_size      : FontSize   | NoChange,
+        initial_bold      : FontBool   | NoChange,
+        initial_italic    : FontBool   | NoChange,
+        initial_underline : FontBool   | NoChange,
+        default_color     : QColor,
+        default_family    : str,
+        default_size      : float,
+        default_bold      : bool,
+        default_italic    : bool,
+        default_underline : bool,
         parent            : QWidget | None = None
     ) -> None:
         super().__init__(

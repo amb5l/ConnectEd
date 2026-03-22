@@ -4,7 +4,7 @@ from PyQt6.QtCore import Qt, QPoint, QPointF
 
 from ......app import window
 
-from ....items import ItemMixin
+from ....items.mixin import ItemMixin
 
 from ....scenes.drawing import DrawingScene
 

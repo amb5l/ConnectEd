@@ -16,8 +16,6 @@ from ...app import logger, settings, window
 
 from ...core.icon import getCharIcon
 
-from ...widgets.graphics.items import ItemMixin
-
 from ..menu import Menu
 
 from .sub_window import SubWindow
@@ -25,6 +23,7 @@ from .sub_window import SubWindow
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ..graphics.scenes.drawing import DrawingScene
+    from ..graphics.items.mixin import ItemMixin
 
 
 class SpreadsheetCell(QStandardItem):
@@ -535,7 +534,7 @@ class SpreadsheetWidget(QWidget):
         update()
 
 class SpreadsheetTabWidget(QTabWidget):
-    _tab_items      : dict[str, list[ItemMixin]]
+    _tab_items      : dict[str, list["ItemMixin"]]
     _tab_headings   : dict[str, dict[str, bool]]
     _tab_htypenames : dict[str, dict[str, str]]
     _tab_models     : dict[str, QStandardItemModel]
@@ -548,7 +547,7 @@ class SpreadsheetTabWidget(QTabWidget):
 
     def __init__(
         self   : Self,
-        items  : list[ItemMixin],
+        items  : list["ItemMixin"],
         parent : QWidget | None = None
     ) -> None:
         super().__init__(parent)
@@ -715,7 +714,7 @@ class SpreadsheetSubWindow(SubWindow):
     def __init__(
             self  : Self,
             scene : "DrawingScene",
-            items : list[ItemMixin]
+            items : list["ItemMixin"]
         ) -> None:
         super().__init__()
         self._scene = scene

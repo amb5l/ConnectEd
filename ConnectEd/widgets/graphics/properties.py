@@ -42,36 +42,35 @@ from PyQt6.QtGui  import QColor
 
 from ...app  import logger
 
-from ...core.types import Default, DEFAULT, NoChange, NO_CHANGE, AlignH, AlignV, \
-                          HandleId, RectHandleId, PropertyDisplay, DataKind
-from ...core.utils import str2val, pascal2proper
-
-from .items import ItemType
+from ...core.types import DEFAULT, NoChange, NO_CHANGE, AlignH, AlignV, \
+                          Color, FontFamily, FontSize, FontBool, DataKind
+from ...core.utils import str2val
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from .scenes.drawing import DrawingScene
+    from .items import ItemType
     from .items.property_text import PropertyTextSpec, PropertyTextItem
     Owner = ItemType | DrawingScene
 
 
 @dataclass
 class PropertyTextSpec:
-    visible   : bool             = True
-    cleat     : str | None       = None
-    x         : float            = 0
-    y         : float            = 0
-    origin    : str              = "Top Left"
-    align_h   : AlignH           = AlignH.LEFT
-    align_v   : AlignV           = AlignV.TOP
-    width     : float            = -1.0
-    height    : float            = -1.0
-    color     : QColor | Default = DEFAULT
-    family    : str    | Default = DEFAULT
-    size      : float  | Default = DEFAULT
-    bold      : bool   | Default = DEFAULT
-    italic    : bool   | Default = DEFAULT
-    underline : bool   | Default = DEFAULT
+    visible   : bool       = True
+    cleat     : str | None = None
+    x         : float      = 0
+    y         : float      = 0
+    origin    : str        = "Top Left"
+    align_h   : AlignH     = AlignH.LEFT
+    align_v   : AlignV     = AlignV.TOP
+    width     : float      = -1.0
+    height    : float      = -1.0
+    color     : Color      = DEFAULT
+    family    : FontFamily = DEFAULT
+    size      : FontSize   = DEFAULT
+    bold      : FontBool   = DEFAULT
+    italic    : FontBool   = DEFAULT
+    underline : FontBool   = DEFAULT
 
     def astuple(self : Self) -> tuple:
         return (
@@ -88,7 +87,7 @@ class PropertyNotifier(QObject):
 @dataclass
 class InherentProperty:
     kind     : DataKind | Callable[["Owner"], DataKind]
-    valid    : Literal[True] | Callable[["Owner"], bool] | None = True
+    worthy   : Literal[True] | Callable[["Owner"], bool] | None = True
     getter   : Callable[["Owner"], Any]                  | None = None
     setter   : Callable[["Owner", Any], None]            | None = None
     default  : Callable[["Owner"], Any]                  | None = None
@@ -112,176 +111,90 @@ class CustomProperty:
     text     : PropertyTextItem   | None = None
 
 
-@dataclass
-class PropertyState:
-    name      : str
-    value     : Any
-    display   : PropertyDisplay
-    cleat     : str    | None = None
-    x         : float  | None = None
-    y         : float  | None = None
-    origin    : str    | None = None
-    align_h   : AlignH | None = None
-    align_v   : AlignV | None = None
-    width     : float  | None = None
-    height    : float  | None = None
-    color     : QColor | None = None
-    family    : str    | None = None
-    size      : float  | None = None
-    bold      : bool   | None = None
-    italic    : bool   | None = None
-    underline : bool   | None = None
-
-    def astuple(self : Self) -> tuple:
-        return (
-            self.name, self.value, self.display, self.cleat, self.x, self.y,
-            self.origin, self.align_h, self.align_v, self.width, self.height,
-            self.color, self.family, self.size, self.bold, self.italic, self.underline
-        )
-
-    def asdict(self : Self) -> dict:
-        return {
-            k: getattr(self, k) for k in self.__dataclass_fields__.keys()
-        }
-
-    @classmethod
-    def fromProperty(cls : Self, object : "PropertiesMixin", name : str) -> Self:
-        inst = cls(
-            name      = name,
-            value     = object.getPropertyValue(name),
-            display   = object.getPropertyDisplay(name)
-        )
-        pt = object.getPropertyTextItem(name)
-        if pt is not None:
-            inst.cleat     = pt.cleat()
-            inst.x         = pt.x()
-            inst.y         = pt.y()
-            inst.origin    = pt.origin()
-            inst.align_h   = pt.alignH()
-            inst.align_v   = pt.alignV()
-            inst.width     = pt.width()
-            inst.height    = pt.height()
-            inst.color     = pt.quillColor()
-            inst.family    = pt.quillFamily()
-            inst.size      = pt.quillSize()
-            inst.bold      = pt.quillBold()
-            inst.italic    = pt.quillItalic()
-            inst.underline = pt.quillUnderline()
-        return inst
-
-
-@dataclass
-class PropertyEdit(PropertyState):
-    name      : str | tuple[str, str]
-    value     : Any                   | NoChange = NO_CHANGE
-    display   : PropertyDisplay       | NoChange = NO_CHANGE
-    cleat     : str    | None         | NoChange = NO_CHANGE
-    x         : float  | None         | NoChange = NO_CHANGE
-    y         : float  | None         | NoChange = NO_CHANGE
-    origin    : str    | None         | NoChange = NO_CHANGE
-    align_h   : AlignH | None         | NoChange = NO_CHANGE
-    align_v   : AlignV | None         | NoChange = NO_CHANGE
-    width     : float  | None         | NoChange = NO_CHANGE
-    height    : float  | None         | NoChange = NO_CHANGE
-    color     : QColor | None         | NoChange = NO_CHANGE
-    family    : str    | None         | NoChange = NO_CHANGE
-    size      : float  | None         | NoChange = NO_CHANGE
-    bold      : bool   | None         | NoChange = NO_CHANGE
-    italic    : bool   | None         | NoChange = NO_CHANGE
-    underline : bool   | None         | NoChange = NO_CHANGE
-
-
-class PropertyAdd(PropertyState):
-    pass
-
-
-@dataclass
-class PropertyDelete:
-    name : str
-
-
-class PropertiesMixin:
-    # class attributes
-    _PROPERTIES     : dict[str, InherentProperty]
-    _PROPERTY_TEXTS : dict[str, PropertyTextSpec]
-
+class PropertiesManager:
     # instance attributes
-    _properties : dict[str, InherentProperty | CustomProperty]
+    _owner : "PropertiesMixin"
+    _dict  : dict[str, InherentProperty | CustomProperty]
 
-    def initProperties(self : Self, fresh : bool) -> None:
+    def __init__(self : Self, owner : "PropertiesMixin", fresh : bool) -> None:
         """
         Initialize the properties system for this instance.
         """
+        self._owner = owner
         # copy each property so per-instance state (e.g. text) is independent
-        self._properties = {k: copy(v) for k, v in self._PROPERTIES.items()}
+        self._dict = {k: copy(v) for k, v in self._owner._PROPERTIES.items()}
+        # Bind before addText: PropertyText callbacks may run during construction
+        # and need owner.properties (initProperties assignment happens after __init__).
+        self._owner.properties = self
         if not fresh:
             return
         # convert PropertyTextSpec instances to PropertyTextItem instances
-        if hasattr(self, "_PROPERTY_TEXTS"):
-            for name, spec in self._PROPERTY_TEXTS.items():
-                self.addPropertyTextItem(name, *spec.astuple())
+        if hasattr(self._owner, "_PROPERTY_TEXTS"):
+            for name, spec in self._owner._PROPERTY_TEXTS.items():
+                self.addText(name, *spec.astuple())
 
-    def getPropertyNames(self : Self) -> list[str]:
-        return list(self._properties.keys())
+    def names(self : Self) -> list[str]:
+        return list(self._dict.keys())
 
-    def hasProperty(self : "Self | Owner", name : str) -> bool:
+    def has(self : Self, name : str) -> bool:
         """
         Test property existance.
         Returns True if the property exists, False otherwise.
         """
-        return hasattr(self, "_properties") and name in self._properties
+        return name in self._dict
 
-    def isPropertyInherent(self : Self, name : str) -> bool | None:
+    def inherent(self : Self, name : str) -> bool | None:
         """
         Test if a property is inherent.
         Returns True if the property is inherent, False otherwise.
         """
         # check property existence
-        if not self.hasProperty(name):
+        if not self.has(name):
             logger().warning(f"Property '{name}' not found")
             return None
         # get property instance
-        property = self._properties[name]
+        property = self._dict[name]
         # test if inherent
         return isinstance(property, InherentProperty)
 
-    def isPropertyReadOnly(self : Self, name : str) -> bool | None:
+    def writeable(self : Self, name : str) -> bool | None:
         """
-        Test if a property is read-only.
-        Returns True if the property is read-only, False otherwise.
+        Test if a property is writeable.
+        Returns True if the property is writeable, False otherwise.
         """
         # check property existence
-        if not self.hasProperty(name):
+        if not self.has(name):
             logger().warning(f"Property '{name}' not found")
             return None
         # get property instance
-        property = self._properties[name]
-        # test if read-only
-        return isinstance(property, InherentProperty) and not callable(property.setter)
+        property = self._dict[name]
+        # test if writeable
+        return isinstance(property, CustomProperty) or callable(property.setter)
 
-    def getPropertyKind(self : Self, name : str) -> DataKind | None:
+    def kind(self : Self, name : str) -> DataKind | None:
         # check property existence
-        if not self.hasProperty(name):
+        if not self.has(name):
             logger().warning(f"Property '{name}' not found")
             return None
         # get property instance
-        property = self._properties[name]
+        property = self._dict[name]
         # return kind
         if isinstance(property, InherentProperty):
-            return property.kind(self) if callable(property.kind) \
+            return property.kind(self._owner) if callable(property.kind) \
                 else property.kind
         else:
             return "Text"
 
-    def setPropertyKind(self : Self, name : str, kind : DataKind) -> bool:
+    def setKind(self : Self, name : str, kind : DataKind) -> bool:
         """
         Set the kind of a property - allowed for custom properties only.
         Returns True if the property was set, False otherwise.
         """
         # check property existence
-        if not self.hasProperty(name):
+        if not self.has(name):
             logger().warning(f"Property '{name}' not found")
             return False
+        property = self._dict[name]
         # check property is custom
         if not isinstance(property, CustomProperty):
             logger().warning(f"Property '{name}' is not custom")
@@ -290,44 +203,44 @@ class PropertiesMixin:
         property.kind = kind
         return True
 
-    def getPropertyValid(self : Self, name : str) -> bool:
+    def worthy(self : Self, name : str) -> bool:
         """
-        Test if a property is valid.
-        Returns True if the property is valid, False otherwise.
+        Test if a property is worthy of serialization.
+        Returns True if the property is worthy, False otherwise.
         """
         # check property existence
-        if not self.hasProperty(name):
+        if not self.has(name):
             logger().warning(f"Property '{name}' not found")
             return None
         # get validity
-        property = self._properties[name]
+        property = self._dict[name]
         if isinstance(property, InherentProperty):
-            return property.valid is True or \
-                (callable(property.valid) and property.valid(self))
+            return property.worthy is True or \
+                (callable(property.worthy) and property.worthy(self._owner))
         elif isinstance(property, CustomProperty):
             return True
         else:
             logger().warning(f"Bad property type: {type(property)}")
             return False
 
-    def getPropertyDefault(self : Self, name : str) -> Any:
+    def default(self : Self, name : str) -> Any:
         """
         Get the default value of a property.
         Returns the default value of the property if found, None otherwise.
         """
         # check property existence
-        if not self.hasProperty(name):
+        if not self.has(name):
             logger().warning(f"Property '{name}' not found")
             return None
         # get property instance
-        property = self._properties[name]
+        property = self._dict[name]
         # get default value
         if isinstance(property, InherentProperty) and callable(property.default):
-            return property.default(self)
+            return property.default(self._owner)
         # not found
         return None
 
-    def getPropertyValue(
+    def value(
         self   : Self,
         name   : str,
         slot   : Callable  | None = None,  # e.g. PropertyTextItem.onTextChange
@@ -341,7 +254,7 @@ class PropertiesMixin:
         Returns the value of the property if found, otherwise None.
         """
         # check property existence
-        if not self.hasProperty(name):
+        if not self.has(name):
             logger().warning(f"Property '{name}' not found: {trail}")
             return None
         # detect recursion issues
@@ -358,7 +271,7 @@ class PropertiesMixin:
                 )
                 return None
         # get property instance
-        property = self._properties[name]
+        property = self._dict[name]
         # if slot is specified, connect the notifier to it
         if slot:
             # ensure that a notifier exists
@@ -375,7 +288,7 @@ class PropertiesMixin:
                 logger().warning(f"Property '{name}' has no getter: {trail}")
                 return None
             else:
-                return property.getter(self)
+                return property.getter(self._owner)
         # custom properties
         elif isinstance(property, CustomProperty):
             kind = property.kind
@@ -385,28 +298,28 @@ class PropertiesMixin:
             def repl(match: re.Match) -> str:
                 var_name = match.group(1)
                 # look locally, then (for items) in the scene
-                if self.hasProperty(var_name):
-                    return str(self.getPropertyValue(var_name, slot, trail))
-                elif hasattr(self, "scene"):
-                    scene : "DrawingScene | None" = self.scene()
-                    if scene and scene.hasProperty(var_name):
-                        return str(scene.getPropertyValue(var_name, slot, trail))
+                if self.has(var_name):
+                    return str(self.value(var_name, slot, trail))
+                elif hasattr(self._owner, "scene"):
+                    scene : "DrawingScene | None" = self._owner.scene()
+                    if scene and scene.properties.has(var_name):
+                        return str(scene.properties.value(var_name, slot, trail))
                 return f"{var_name}>"  # unresolved substitution
             return re.sub(r'\{(\w+)\}', repl, property.value)
         # unknown properties
         logger().warning(f"Property '{name}' has unknown type: {type(property)}")
         return None
 
-    def setPropertyValue(self : Self, name : str, value : Any) -> bool:
+    def setValue(self : Self, name : str, value : Any) -> bool:
         """
         Set the value of a property.
         Returns True if the property was set, False otherwise.
         """
         # check property existence
-        if not self.hasProperty(name):
+        if not self.has(name):
             logger().warning(f"Property '{name}' not found")
             return False
-        property = self._properties[name]
+        property = self._dict[name]
         # get kind
         kind = property.kind
         # inherent properties
@@ -417,7 +330,7 @@ class PropertiesMixin:
             # convert from str to appropriate type if necessary
             if isinstance(value, str) and kind != DataKind.STR:
                 value = str2val(value, kind)
-            property.setter(self, value)
+            property.setter(self._owner, value)
         # custom properties
         elif isinstance(property, CustomProperty):
             if isinstance(value, kind.types()):
@@ -433,42 +346,27 @@ class PropertiesMixin:
             property.notifier.changed.emit()
         return True
 
-    def initProperty(self : Self, name : str, value : Any) -> bool:
+    def init(self : Self, name : str, value : Any) -> bool:
         """
         Initialize a property. Creates if required, and sets the value;
         for use in deserialization, and for creating new custom properties.
         Returns True if the property was initialized, False otherwise.
         """
-        f = self.setPropertyValue if self.hasProperty(name) else self.addProperty
+        f = self.setValue if self.has(name) else self.add
         return f(name, value)
 
-    def addProperty(
-        self      : Self,
-        name      : str,
-        kind      : DataKind,
-        value     : Any,
-        display   : PropertyDisplay = PropertyDisplay.NONE,
-        cleat     : str              | None = None,
-        x         : float            | None = None,
-        y         : float            | None = None,
-        align_h   : AlignH           | None = None,
-        align_v   : AlignV           | None = None,
-        width     : float            | None = None,
-        height    : float            | None = None,
-        color     : QColor | Default | None = None,
-        family    : str    | Default | None = None,
-        size      : float  | Default | None = None,
-        bold      : bool   | Default | None = None,
-        italic    : bool   | Default | None = None,
-        underline : bool   | Default | None = None,
-        origin : str = "Top Left",
+    def add(
+        self  : Self,
+        name  : str,
+        kind  : DataKind,
+        value : Any
     ) -> bool:
         """
         Add a property.
         Returns True if the property was added, False otherwise.
         """
         # check for existing property
-        if self.hasProperty(name):
+        if self.has(name):
             logger().warning(f"Property '{name}' already exists")
             return False
         # check kind
@@ -476,193 +374,119 @@ class PropertiesMixin:
             logger().warning(f"Invalid property kind: {kind}")
             return False
         # create custom property
-        self._properties[name] = CustomProperty(kind=kind, value=value)
-        # add property text if required
-        if display != PropertyDisplay.NONE:
-            visible = display == PropertyDisplay.SHOW
-            pt_args = {
-                k: v for k, v in locals().items() \
-                    if k in PropertyTextSpec.__dataclass_fields__.keys()
-                        and k != "visible"
-            }
-            self.addPropertyTextItem(name, **pt_args)
+        self._dict[name] = CustomProperty(kind=kind, value=value)
         return True
 
-    def editProperty(
-        self      : Self,
-        name      : str | tuple[str, str],
-        kind      : DataKind                | NoChange = NO_CHANGE,
-        value     : Any                     | NoChange = NO_CHANGE,
-        display   : PropertyDisplay         | NoChange = NO_CHANGE,
-        cleat     : HandleId         | None | NoChange = NO_CHANGE,
-        x         : float            | None | NoChange = NO_CHANGE,
-        y         : float            | None | NoChange = NO_CHANGE,
-        rotation  : float            | None | NoChange = NO_CHANGE,
-        flip      : bool             | None | NoChange = NO_CHANGE,
-        origin    : RectHandleId     | None | NoChange = NO_CHANGE,
-        align_h   : AlignH           | None | NoChange = NO_CHANGE,
-        align_v   : AlignV           | None | NoChange = NO_CHANGE,
-        width     : float            | None | NoChange = NO_CHANGE,
-        height    : float            | None | NoChange = NO_CHANGE,
-        color     : QColor | Default | None | NoChange = NO_CHANGE,
-        family    : str    | Default | None | NoChange = NO_CHANGE,
-        size      : float  | Default | None | NoChange = NO_CHANGE,
-        bold      : bool   | Default | None | NoChange = NO_CHANGE,
-        italic    : bool   | Default | None | NoChange = NO_CHANGE,
-        underline : bool   | Default | None | NoChange = NO_CHANGE
-    ) -> bool:
-        if isinstance(name, tuple):
-            name, new_name = name
-        else:
-            new_name = NO_CHANGE
-        if new_name is not NO_CHANGE:
-            self.renProperty(name, new_name)
-            name = new_name
-        if kind is not NO_CHANGE:
-            self.setPropertyKind(name, kind)
-        if value is not NO_CHANGE:
-            self.setPropertyValue(name, value)
-        if display is PropertyDisplay.NONE:
-            if self.getPropertyDisplay(name) != PropertyDisplay.NONE:
-                # delete property text
-                self.delPropertyTextItem(name)
-        else:
-            f = self.addPropertyTextItem \
-                if self.getPropertyDisplay(name) == PropertyDisplay.NONE \
-                    else self.editPropertyTextItem
-            f(
-                name, display == PropertyDisplay.SHOW,
-                cleat, x, y, origin, align_h, align_v, width, height,
-                color, family, size, bold, italic, underline
-            )
-        self.editPropertyTextItem(
-            name, display == PropertyDisplay.SHOW, cleat, x, y, origin, align_h, align_v, width, height, color, family, size, bold, italic, underline)
-
-    def renProperty(self : Self, old_name : str, new_name : str) -> bool:
+    def rename(self : Self, old_name : str, new_name : str) -> bool:
         """
         Rename a property.
         Returns True if the property was renamed, False otherwise.
         """
         # check for existing property
-        if not self.hasProperty(old_name):
+        if not self.has(old_name):
             logger().warning(f"Property '{old_name}' not found")
             return False
         # check for no change
         if old_name == new_name:
             return False
         # check for clash with existing property
-        if self.hasProperty(new_name):
+        if self.has(new_name):
             logger().warning(f"Property '{new_name}' already exists")
             return False
         # get property instance
-        property = self._properties[old_name]
+        property = self._dict[old_name]
         # check if inherent
         if isinstance(property, InherentProperty):
             logger().warning(f"Cannot rename inherent property '{old_name}'")
             return False
         # rename
-        self._properties[new_name] = property
-        del self._properties[old_name]
+        self._dict[new_name] = property
+        del self._dict[old_name]
         return True
 
-    def delProperty(self : Self, name : str) -> bool:
+    def delete(self : Self, name : str) -> bool:
         """
-        Remove a property.
+        Remove a property (and its associated property text item if applicable).
         Returns True if the property was removed, False otherwise.
         """
         # check property existence
-        if not self.hasProperty(name):
+        if not self.has(name):
             logger().warning(f"Property '{name}' not found")
             return False
         # get property instance
-        property = self._properties[name]
+        property = self._dict[name]
         # check if inherent
         if isinstance(property, InherentProperty):
             logger().warning(f"Inherent property '{name}' cannot be removed")
             return False
         # remove text
-        property.text.setParentItem(None)
-        property.text.scene().removeItem(property.text)
-        property.text = None
+        if property.text is not None:
+            property.text.setParentItem(None)
+            property.text.scene().removeItem(property.text)
+            property.text = None
         # cache notifier reference
         notifier = property.notifier
         # remove property from dictionary
-        del self._properties[name]
+        del self._dict[name]
         # notify property receivers
         if notifier:
             notifier.changed.emit()
         # done
         return True
 
-    def signalPropertyChanges(self : Self, names : str | list[str]) -> None:
-        if not hasattr(self, "_properties"):
-            return  # not yet initialized
+    def signalChanges(self : Self, names : str | list[str]) -> None:
         if isinstance(names, str):
             names = [names]
         for name in names:
-            if self.hasProperty(name):
-                property = self._properties[name]
+            if self.has(name):
+                property = self._dict[name]
                 if property.notifier:
                     property.notifier.changed.emit()
 
-    def getPropertyDisplay(self : Self, name : str) -> PropertyDisplay:
-        from .items.property_text import PropertyTextItem
-        # check property existence
-        if not self.hasProperty(name):
-            logger().warning(f"Property '{name}' not found")
-            return PropertyDisplay.NONE
-        # get property instance
-        property = self._properties[name]
-        # get text item
-        pt = property.text
-        if not isinstance(pt, PropertyTextItem):
-            return PropertyDisplay.NONE
-        return PropertyDisplay.SHOW if pt.isVisible() else PropertyDisplay.HIDE
-
-    def getPropertyTextItem(self : Self, name : str) -> "PropertyTextItem | None":
+    def text(self : Self, name : str) -> "PropertyTextItem | None":
         """
         Get the property text item for a property.
         Returns the property text item if it exists, None otherwise.
         """
         # check property existence
-        if not self.hasProperty(name):
+        if not self.has(name):
             logger().warning(f"Property '{name}' not found")
             return None
         # return PropertyTextItem instance
-        return self._properties[name].text
+        return self._dict[name].text
 
-    def setPropertyTextItem(self : Self, name : str, text : "PropertyTextItem") -> bool:
+    def setText(self : Self, name : str, text : "PropertyTextItem") -> bool:
         """
-        Attach an existing property text item to a property.
+        Assign an existing property text item to a property.
         """
         # check property existence
-        if not self.hasProperty(name):
+        if not self.has(name):
             logger().warning(f"Property '{name}' not found")
             return False
         # get property instance
-        property = self._properties[name]
+        property = self._dict[name]
         # set property text
         property.text = text
         return True
 
-    def addPropertyTextItem(
+    def addText(
         self      : Self,
         name      : str,
-        visible   : bool             = True,
-        cleat     : str              = "Bottom Left",
-        x         : float            = 0,
-        y         : float            = 0,
-        origin    : str              = "Top Left",
-        align_h   : AlignH           = AlignH.LEFT,
-        align_v   : AlignV           = AlignV.TOP,
-        width     : float | None     = None,
-        height    : float | None     = None,
-        color     : QColor | Default = DEFAULT,
-        family    : str    | Default = DEFAULT,
-        size      : float  | Default = DEFAULT,
-        bold      : bool   | Default = DEFAULT,
-        italic    : bool   | Default = DEFAULT,
-        underline : bool   | Default = DEFAULT
+        visible   : bool       = True,
+        cleat     : str        = "Bottom Left",
+        x         : float      = 0,
+        y         : float      = 0,
+        origin    : str        = "Top Left",
+        align_h   : AlignH     = AlignH.LEFT,
+        align_v   : AlignV     = AlignV.TOP,
+        width     : float      = -1.0,
+        height    : float      = -1.0,
+        color     : Color      = DEFAULT,
+        family    : FontFamily = DEFAULT,
+        size      : FontSize   = DEFAULT,
+        bold      : FontBool   = DEFAULT,
+        italic    : FontBool   = DEFAULT,
+        underline : FontBool   = DEFAULT
     ) -> bool:
         """
         Add a property text item. Replace any existing property text item.
@@ -671,11 +495,11 @@ class PropertiesMixin:
         from .items.property_text import \
             PropertyTextLineItem, PropertyTextBlockItem, PropertyTextItem
         # check property existence
-        if not self.hasProperty(name):
+        if not self.has(name):
             logger().warning(f"Property '{name}' not found")
             return False
         # get property instance
-        property = self._properties[name]
+        property = self._dict[name]
         # check for existing PropertyTextItem
         if isinstance(property.text, PropertyTextItem):
             logger().warning(f"Property '{name}' already has text")
@@ -698,28 +522,31 @@ class PropertiesMixin:
             bold      = bold,
             italic    = italic,
             underline = underline,
-            parent    = self
+            parent    = self._owner
         )
+        property.text.setVisible(visible)
         return True
 
-    def editPropertyTextItem(
+    def editText(
         self : Self,
         name      : str,
-        visible   : bool         | NoChange = NO_CHANGE,
-        cleat     : str          | NoChange = NO_CHANGE,
-        x         : float        | NoChange = NO_CHANGE,
-        y         : float        | NoChange = NO_CHANGE,
-        origin    : str          | NoChange = NO_CHANGE,
-        align_h   : AlignH       | NoChange = NO_CHANGE,
-        align_v   : AlignV       | NoChange = NO_CHANGE,
-        width     : float | None | NoChange = NO_CHANGE,
-        height    : float | None | NoChange = NO_CHANGE,
-        color     : QColor       | NoChange = NO_CHANGE,
-        family    : str          | NoChange = NO_CHANGE,
-        size      : float        | NoChange = NO_CHANGE,
-        bold      : bool         | NoChange = NO_CHANGE,
-        italic    : bool         | NoChange = NO_CHANGE,
-        underline : bool         | NoChange = NO_CHANGE
+        visible   : bool   | NoChange = NO_CHANGE,
+        cleat     : str    | NoChange = NO_CHANGE,
+        x         : float  | NoChange = NO_CHANGE,
+        y         : float  | NoChange = NO_CHANGE,
+        rotation  : float  | NoChange = NO_CHANGE,
+        flip      : bool   | NoChange = NO_CHANGE,
+        origin    : str    | NoChange = NO_CHANGE,
+        align_h   : AlignH | NoChange = NO_CHANGE,
+        align_v   : AlignV | NoChange = NO_CHANGE,
+        width     : float  | NoChange = NO_CHANGE,
+        height    : float  | NoChange = NO_CHANGE,
+        color     : QColor | NoChange = NO_CHANGE,
+        family    : str    | NoChange = NO_CHANGE,
+        size      : float  | NoChange = NO_CHANGE,
+        bold      : bool   | NoChange = NO_CHANGE,
+        italic    : bool   | NoChange = NO_CHANGE,
+        underline : bool   | NoChange = NO_CHANGE
     ) -> bool:
         """
         Edit a property text item.
@@ -727,11 +554,11 @@ class PropertiesMixin:
         """
         from .items.property_text import PropertyTextItem
         # check property existence
-        if not self.hasProperty(name):
+        if not self.has(name):
             logger().warning(f"Property '{name}' not found")
             return False
         # get property instance
-        property = self._properties[name]
+        property = self._dict[name]
         # check PropertyTextItem existence
         if not isinstance(property.text, PropertyTextItem):
             logger().warning(f"Property '{name}' does not have text")
@@ -743,6 +570,8 @@ class PropertiesMixin:
         if cleat     is not NO_CHANGE: pt.setCleat(cleat)
         if x         is not NO_CHANGE: pt.setX(x)
         if y         is not NO_CHANGE: pt.setY(y)
+        if rotation  is not NO_CHANGE: pt.setRotation(rotation)
+        if flip      is not NO_CHANGE: pt.setFlip(flip)
         if origin    is not NO_CHANGE: pt.setOrigin(origin)
         if align_h   is not NO_CHANGE: pt.setAlignH(align_h)
         if align_v   is not NO_CHANGE: pt.setAlignV(align_v)
@@ -756,18 +585,18 @@ class PropertiesMixin:
         if underline is not NO_CHANGE: pt.setQuillUnderline(underline)
         return True
 
-    def delPropertyTextItem(self : Self, name : str) -> bool:
+    def delText(self : Self, name : str) -> bool:
         """
-        Remove a property text item.
-        Returns True if the property text item was removed, False otherwise.
+        Delete a property text item.
+        Returns True if the property text item was deleted, False otherwise.
         """
         from .items.property_text import PropertyTextItem
         # check property existence
-        if not self.hasProperty(name):
+        if not self.has(name):
             logger().warning(f"Property '{name}' not found")
             return False
         # get property instance
-        property = self._properties[name]
+        property = self._dict[name]
         # check for existing PropertyTextItem
         if not isinstance(property.text, PropertyTextItem):
             logger().warning(f"Property '{name}' does not have text")
@@ -780,8 +609,18 @@ class PropertiesMixin:
         property.text = None
         return True
 
-    def description(self : Self) -> str:
-        class_name = self.__class__.__name__
-        class_name = class_name.removesuffix("Item")
-        class_name = class_name.removesuffix("Scene")
-        return pascal2proper(class_name)
+
+class PropertiesMixin:
+    # class attributes
+    _PROPERTIES     : dict[str, InherentProperty]
+    _PROPERTY_TEXTS : dict[str, PropertyTextSpec]
+
+    # instance attributes
+    properties : PropertiesManager
+
+    def initProperties(self : Self, fresh : bool) -> None:
+        self.properties = PropertiesManager(self, fresh)
+
+    def signalPropertyChanges(self : Self, names : str | list[str]) -> None:
+        if hasattr(self, "properties"):
+            self.properties.signalChanges(names)

@@ -6,13 +6,10 @@ from PyQt6.QtGui  import QUndoCommand
 
 from ......core.utils import camel2proper
 
-from ....items import ItemMixin, ItemType
-
-from ....items.grip import GripItem
-
-
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
+    from ....items import ItemType
+    from ....items.mixin import ItemMixin
     from .. import DrawingScene
 
 
@@ -66,12 +63,12 @@ class CmdSceneItem(CmdSceneBase):
     """Base class for all commands that work with an item."""
 
     # instance attributes
-    _item : ItemType
+    _item : "ItemType"
 
     def __init__(
         self  : Self,
         scene : "DrawingScene",
-        item  : ItemType
+        item  : "ItemType"
     ):
         super().__init__(scene)
         self._item = item
@@ -81,12 +78,12 @@ class CmdSceneItems(CmdSceneBase):
     """Base class for all commands that work with multiple items."""
 
     # instance attributes
-    _items : list[ItemType]
+    _items : list["ItemType"]
 
     def __init__(
         self  : Self,
         scene : "DrawingScene",
-        items : list[ItemType]
+        items : list["ItemType"]
     ):
         super().__init__(scene)
         self._items = items
@@ -97,7 +94,7 @@ class CmdAddRemoveMixin:
 
     # instance attributes
     _scene : "DrawingScene"
-    _items : list[ItemType]
+    _items : list["ItemType"]
 
     def _addToScene(self : Self, select : bool = True) -> None:
         self._scene.blockSignals(True)
@@ -128,7 +125,7 @@ class CmdAdd(
     def __init__(
         self      : Self,
         scene     : "DrawingScene",
-        items     : list[ItemType]
+        items     : list["ItemType"]
     ):
         super().__init__(scene, items)      # record scene, items
 
@@ -148,7 +145,7 @@ class CmdDelete(
     def __init__(
         self      : Self,
         scene     : "DrawingScene",
-        items     : list[ItemType]
+        items     : list["ItemType"]
     ):
         super().__init__(scene, items)      # record scene, items
 
@@ -168,12 +165,12 @@ class CmdMove(
     # instance attributes
     _offset : QPointF
     _slide  : bool                      # true => retain connections
-    _state  : dict[ItemMixin, QPointF]  # pre-move state e.g. scene positions
+    _state  : dict["ItemMixin", QPointF]  # pre-move state e.g. scene positions
 
     def __init__(
         self   : Self,
         scene  : "DrawingScene",
-        items  : list[ItemType],
+        items  : list["ItemType"],
         offset : QPointF,
         slide  : bool = False
     ):
@@ -195,19 +192,19 @@ class CmdMove(
 
 class CmdRotateBase(CmdSceneItems):
     # class attributes
-    _ROTATE   : Callable[[ItemType], None]
-    _UNROTATE : Callable[[ItemType], None]
+    _ROTATE   : Callable[["ItemType"], None]
+    _UNROTATE : Callable[["ItemType"], None]
     _SIGN_X   : float
     _SIGN_Y   : float
 
     # instance attributes
     _pos    : QPointF | None          # individual if None, group otherwise
-    _before : dict[ItemType, QPointF] # positions before
+    _before : dict["ItemType", QPointF] # positions before
 
     def __init__(
         self  : Self,
         scene : "DrawingScene",
-        items : list[ItemType],
+        items : list["ItemType"],
         pos   : QPointF | None = None
     ):
         super().__init__(scene, items)
@@ -239,10 +236,10 @@ class CmdRotateBase(CmdSceneItems):
 
 class CmdRotateCW(CmdRotateBase):
     @staticmethod
-    def _ROTATE(item):
+    def _ROTATE(item : "ItemType") -> None:
         item.rotateCW()
     @staticmethod
-    def _UNROTATE(item):
+    def _UNROTATE(item : "ItemType") -> None:
         item.rotateCCW()
     _SIGN_X   = -1
     _SIGN_Y   = +1
@@ -250,10 +247,10 @@ class CmdRotateCW(CmdRotateBase):
 
 class CmdRotateCCW(CmdRotateBase):
     @staticmethod
-    def _ROTATE(item):
+    def _ROTATE(item : "ItemType") -> None:
         item.rotateCCW()
     @staticmethod
-    def _UNROTATE(item):
+    def _UNROTATE(item : "ItemType") -> None:
         item.rotateCW()
     _SIGN_X   = +1
     _SIGN_Y   = -1

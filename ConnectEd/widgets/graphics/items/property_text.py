@@ -3,12 +3,13 @@ from typing      import Self, Any
 from PyQt6.QtCore    import Qt, QPointF, QXmlStreamWriter
 from PyQt6.QtWidgets import QGraphicsItem, QGraphicsLineItem, \
                             QGraphicsSceneMouseEvent, QMenu
-from PyQt6.QtGui     import QAction, QColor
+from PyQt6.QtGui     import QAction
 
 from ....app import settings, logger
 
-from ....core.types import Default, DEFAULT, NO_CHANGE, AlignH, AlignV, \
-                           HandleId, RectHandleId, DataKind
+from ....core.types import DEFAULT, NO_CHANGE, AlignH, AlignV, \
+                           HandleId, RectHandleId, DataKind, \
+                           Color, FontFamily, FontSize, FontBool
 from ....core.utils import val2str
 
 from ..properties import InherentProperty, PropertiesMixin
@@ -80,7 +81,7 @@ class PropertyTextItemMixin:
             ),
             "Visible" : InherentProperty(
                 kind   = DataKind.BOOL,
-                valid  = lambda self: not self.isVisible(),
+                worthy  = lambda self: not self.isVisible(),
                 getter = lambda self: self.isVisible(),
                 setter = lambda self, value: self.setVisible(value)
             ),
@@ -114,12 +115,12 @@ class PropertyTextItemMixin:
         align_v   : AlignV               = AlignV.TOP,
         width     : float                = -1.0,
         height    : float                = -1.0,
-        color     : QColor | Default     = DEFAULT,
-        family    : str    | Default     = DEFAULT,
-        size      : float  | Default     = DEFAULT,
-        bold      : bool   | Default     = DEFAULT,
-        italic    : bool   | Default     = DEFAULT,
-        underline : bool   | Default     = DEFAULT,
+        color     : Color                = DEFAULT,
+        family    : FontFamily           = DEFAULT,
+        size      : FontSize             = DEFAULT,
+        bold      : FontBool             = DEFAULT,
+        italic    : FontBool             = DEFAULT,
+        underline : FontBool             = DEFAULT,
         fresh     : bool                 = True,
         parent    : QGraphicsItem | None = None
     ) -> None:
@@ -262,7 +263,7 @@ class PropertyTextItemMixin:
             return None
         if self.owner() is None:
             return f"<{self.name()}>"
-        return self.owner().getPropertyValue(self.name(), self.onTextChange)
+        return self.owner().properties.value(self.name(), self.onTextChange)
 
     def setValue(self : Self, value : Any) -> None:
         if not self.name():  # name is None or ""

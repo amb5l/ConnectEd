@@ -5,7 +5,7 @@ from PyQt6.QtWidgets import QWidget, QComboBox
 from PyQt6.QtGui     import QColor, QIcon, QPixmap, QPainter
 
 from .....core.check import checked
-from .....core.types import Default, DEFAULT, NoChange, NO_CHANGE
+from .....core.types import Default, DEFAULT, NoChange, NO_CHANGE, Color
 from .....core.utils import val2str
 
 from .. import customIconSize, NoChangeIcon, DefaultIcon, QueryIcon
@@ -40,7 +40,7 @@ class ColorComboBox(QComboBox):
     @checked
     def __init__(
         self    : Self,
-        value   : QColor | Default | NoChange,
+        value   : Color  | NoChange,
         default : QColor | NoChange,
         parent  : QWidget | None = None
     ) -> None:
@@ -94,11 +94,11 @@ class ColorComboBox(QComboBox):
         self.activated.connect(self._onActivated)
 
     @checked
-    def value(self : Self) -> QColor | Default | NoChange:
+    def value(self : Self) -> Color | NoChange:
         return self.itemData(self.currentIndex(), Qt.ItemDataRole.UserRole)
 
     @checked
-    def setValue(self : Self, value : QColor | Default) -> None:
+    def setValue(self : Self, value : Color) -> None:
         if value is DEFAULT:
             index = self._idx_default
         else:

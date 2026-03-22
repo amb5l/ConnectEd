@@ -1,16 +1,14 @@
-from typing import Any
-
 from PyQt6.QtCore import Qt, QPointF
 from PyQt6.QtGui  import QColor
 
 from ......app import logger
 
 from ......core.check import checked
-from ......core.types import Default, NoChange, NO_CHANGE, \
-                              AlignH, AlignV, EdgeLoc, Direction, RectHandleId
+from ......core.types import NoChange, NO_CHANGE, \
+                             AlignH, AlignV, EdgeLoc, Direction, RectHandleId, \
+                             Color, PenWidth, PenStyle, BrushStyle, \
+                             FontFamily, FontSize, FontBool
 from ......core.xml    import copy
-
-from ....properties import PropertyDisplay, PropertiesMixin
 
 from ....items import ItemType
 
@@ -32,9 +30,8 @@ from ..cmd.edit.pin           import CmdEditPortPin, \
 from ..cmd.edit.origin        import CmdEditOrigin
 from ..cmd.edit.polyline      import CmdEditPolylineClosed, CmdEditPolySeg
 from ..cmd.edit.text          import CmdEditText
-from ..cmd.edit.property_text import CmdEditPropertyText
 from ..cmd.edit.appearance    import CmdEditAppearance
-from ..cmd.edit.properties    import CmdEditProperty
+from ..cmd.edit.properties    import CmdEditPropertyText
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -192,22 +189,22 @@ class DrawingSceneApiEditMixin:
     def editText(
         self      : "DrawingScene",
         item      : TextItemMixin,
-        text      : str              | NoChange = NO_CHANGE,
-        block     : bool             | NoChange = NO_CHANGE,
-        rotation  : float            | NoChange = NO_CHANGE,
-        flip      : bool             | NoChange = NO_CHANGE,
-        origin    : RectHandleId     | NoChange = NO_CHANGE,
-        align_h   : AlignH           | NoChange = NO_CHANGE,
-        align_v   : AlignV           | NoChange = NO_CHANGE,
-        width     : float            | NoChange = NO_CHANGE,
-        height    : float            | NoChange = NO_CHANGE,
-        color     : QColor | Default | NoChange = NO_CHANGE,
-        family    : str    | Default | NoChange = NO_CHANGE,
-        size      : float  | Default | NoChange = NO_CHANGE,
-        bold      : bool   | Default | NoChange = NO_CHANGE,
-        italic    : bool   | Default | NoChange = NO_CHANGE,
-        underline : bool   | Default | NoChange = NO_CHANGE,
-        undoable  : bool = False
+        text      : str          | NoChange = NO_CHANGE,
+        block     : bool         | NoChange = NO_CHANGE,
+        rotation  : float        | NoChange = NO_CHANGE,
+        flip      : bool         | NoChange = NO_CHANGE,
+        origin    : RectHandleId | NoChange = NO_CHANGE,
+        align_h   : AlignH       | NoChange = NO_CHANGE,
+        align_v   : AlignV       | NoChange = NO_CHANGE,
+        width     : float        | NoChange = NO_CHANGE,
+        height    : float        | NoChange = NO_CHANGE,
+        color     : Color        | NoChange = NO_CHANGE,
+        family    : FontFamily   | NoChange = NO_CHANGE,
+        size      : FontSize     | NoChange = NO_CHANGE,
+        bold      : FontBool     | NoChange = NO_CHANGE,
+        italic    : FontBool     | NoChange = NO_CHANGE,
+        underline : FontBool     | NoChange = NO_CHANGE,
+        undoable  : bool                    = False
     ) -> None:
         cmd = CmdEditText(
             self, item, text, block,
@@ -216,43 +213,20 @@ class DrawingSceneApiEditMixin:
         )
         cmdExec(self, cmd, undoable)
 
-    def editPropertyText(
-        self      : "DrawingScene",
-        item      : PropertyTextLineItem | PropertyTextBlockItem,
-        value     : str,
-        align_h   : AlignH           | NoChange = NO_CHANGE,
-        align_v   : AlignV           | NoChange = NO_CHANGE,
-        width     : float            | NoChange = NO_CHANGE,
-        height    : float            | NoChange = NO_CHANGE,
-        color     : QColor | Default | NoChange = NO_CHANGE,
-        family    : str    | Default | NoChange = NO_CHANGE,
-        size      : float  | Default | NoChange = NO_CHANGE,
-        bold      : bool   | Default | NoChange = NO_CHANGE,
-        italic    : bool   | Default | NoChange = NO_CHANGE,
-        underline : bool   | Default | NoChange = NO_CHANGE,
-        undoable  : bool = False
-    ) -> None:
-        cmd = CmdEditPropertyText(
-            self, item, value,
-            align_h, align_v, width, height,
-            color, family, size, bold, italic, underline
-        )
-        cmdExec(self, cmd, undoable)
-
     def editAppearance(
         self           : "DrawingScene",
         items          : list[ItemMixin],
-        line_color     : QColor        | Default | NoChange = NO_CHANGE,
-        line_width     : float         | Default | NoChange = NO_CHANGE,
-        line_style     : Qt.PenStyle   | Default | NoChange = NO_CHANGE,
-        fill_color     : QColor        | Default | NoChange = NO_CHANGE,
-        fill_style     : Qt.BrushStyle | Default | NoChange = NO_CHANGE,
-        text_color     : QColor        | Default | NoChange = NO_CHANGE,
-        text_family    : str           | Default | NoChange = NO_CHANGE,
-        text_size      : float         | Default | NoChange = NO_CHANGE,
-        text_bold      : bool          | Default | NoChange = NO_CHANGE,
-        text_italic    : bool          | Default | NoChange = NO_CHANGE,
-        text_underline : bool          | Default | NoChange = NO_CHANGE,
+        line_color     : Color      | NoChange = NO_CHANGE,
+        line_width     : PenWidth   | NoChange = NO_CHANGE,
+        line_style     : PenStyle   | NoChange = NO_CHANGE,
+        fill_color     : Color      | NoChange = NO_CHANGE,
+        fill_style     : BrushStyle | NoChange = NO_CHANGE,
+        text_color     : Color      | NoChange = NO_CHANGE,
+        text_family    : FontFamily | NoChange = NO_CHANGE,
+        text_size      : FontSize   | NoChange = NO_CHANGE,
+        text_bold      : FontBool   | NoChange = NO_CHANGE,
+        text_italic    : FontBool   | NoChange = NO_CHANGE,
+        text_underline : FontBool   | NoChange = NO_CHANGE,
         undoable       : bool = False
     ) -> None:
         cmd = CmdEditAppearance(
@@ -269,34 +243,5 @@ class DrawingSceneApiEditMixin:
             text_bold,
             text_italic,
             text_underline
-        )
-        cmdExec(self, cmd, undoable)
-
-    def editProperty(
-        self      : "DrawingScene",
-        object    : PropertiesMixin,
-        name      : str,
-        value     : Any             | NoChange = NO_CHANGE,
-        display   : PropertyDisplay | NoChange = NO_CHANGE,
-        cleat     : str             | NoChange = NO_CHANGE,
-        x         : float           | NoChange = NO_CHANGE,
-        y         : float           | NoChange = NO_CHANGE,
-        origin    : str             | NoChange = NO_CHANGE,
-        align_h   : AlignH          | NoChange = NO_CHANGE,
-        align_v   : AlignV          | NoChange = NO_CHANGE,
-        width     : float           | NoChange = NO_CHANGE,
-        height    : float           | NoChange = NO_CHANGE,
-        color     : QColor          | NoChange = NO_CHANGE,
-        family    : str             | NoChange = NO_CHANGE,
-        size      : float           | NoChange = NO_CHANGE,
-        bold      : bool            | NoChange = NO_CHANGE,
-        italic    : bool            | NoChange = NO_CHANGE,
-        underline : bool            | NoChange = NO_CHANGE,
-        undoable  : bool                       = False
-    ) -> None:
-        cmd = CmdEditProperty(
-            object, name, value, display,
-            cleat, x, y, origin, align_h, align_v, width, height,
-            color, family, size, bold, italic, underline
         )
         cmdExec(self, cmd, undoable)

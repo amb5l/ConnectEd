@@ -63,10 +63,10 @@ class FloatEditor(QLineEdit):
 class BoolEditor(QCheckBox):
     def __init__(self : Self, value : bool | None = None, parent : QWidget | None = None):
         super().__init__(parent)
-        self.setChecked("" if value is None else value)
+        self.setChecked(False if value is None else value)
 
     def value(self : Self) -> bool:
         return self.isChecked()
 
-    def setValue(self : Self, value : bool) -> None:
-        self.setChecked(value)
+    def setValue(self : Self, value : bool | None) -> None:
+        self.setChecked(False if value is None else value)
