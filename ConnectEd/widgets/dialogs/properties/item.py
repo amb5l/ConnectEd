@@ -131,10 +131,10 @@ class PropertiesItem(QStandardItem):
         font.setStrikeOut(self.deleted())
         self.setFont(font)
         if self.deleted():
-            self.setForeground(settings().get("theme/properties/deleted/color"))
+            self.setBackground(settings().get("theme/properties/deleted/color"))
         elif self.new():
-            self.setForeground(settings().get("theme/properties/added/color"))
+            self.setBackground(settings().get("theme/properties/added/color"))
         elif self.changed():
-            self.setForeground(settings().get("theme/properties/changed/color"))
+            self.setBackground(settings().get("theme/properties/changed/color"))
         else:
-            self.setData(None, Qt.ItemDataRole.ForegroundRole)
+            self.setData(None, Qt.ItemDataRole.BackgroundRole)
