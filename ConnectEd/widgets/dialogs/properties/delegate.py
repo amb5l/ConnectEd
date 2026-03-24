@@ -92,7 +92,11 @@ class PropertiesDelegate(QStyledItemDelegate):
         model  : QStandardItemModel,
         index  : QModelIndex
     ) -> None:
-        if isinstance(editor, QLineEdit) and not editor.hasAcceptableInput():
+        if isinstance(editor, QLineEdit) \
+                and not editor.hasAcceptableInput():
+            return
+        value = editor.value()
+        if value is None:
             return
         item: PropertiesItem = model.itemFromIndex(index)
-        item.setValue(editor.value())
+        item.setValue(value)

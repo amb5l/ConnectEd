@@ -32,8 +32,10 @@ class EnumComboBox(QComboBox, Generic[T]):
                 self.setCurrentIndex(self.count() - 1)
 
     @checked
-    def value(self : Self) -> T:
-        return self.itemData(self.currentIndex(), Qt.ItemDataRole.UserRole)
+    def value(self : Self) -> T | None:
+        return self.itemData(
+            self.currentIndex(), Qt.ItemDataRole.UserRole
+        )
 
     @checked
     def setValue(self : Self, value : T) -> None:
