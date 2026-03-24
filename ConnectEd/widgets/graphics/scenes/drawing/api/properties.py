@@ -132,7 +132,8 @@ class DrawingSceneApiPropertiesMixin:
     ) -> None:
         if len(changes) == 0:
             return
-        self.undo_stack.beginMacro("editProperties")
+        if undoable:
+            self.undo_stack.beginMacro("editProperties")
         for change in changes:
             args = vars(change)
             if isinstance(change, PropertyChangeDelete):
@@ -147,4 +148,5 @@ class DrawingSceneApiPropertiesMixin:
                 self.addPropertyText(object, **args, undoable=undoable)
             elif isinstance(change, PropertyChangeTextModify):
                 self.editPropertyText(object, **args, undoable=undoable)
-        self.undo_stack.endMacro()
+        if undoable:
+            self.undo_stack.endMacro()
