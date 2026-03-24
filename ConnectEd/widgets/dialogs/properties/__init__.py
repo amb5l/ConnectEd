@@ -206,7 +206,7 @@ class PropertiesDialog(QDialog):
                 changes.append(PropertyChangeAdd(name, kind, value))
                 # property text
                 if display != Display.NONE:
-                    pt_args = self._getPropertyTextArgs(row_idx)
+                    pt_args = {"name": name, **self._getPropertyTextArgs(row_idx)}
                     changes.append(PropertyChangeTextAdd(**pt_args))
             else:
                 # modification
