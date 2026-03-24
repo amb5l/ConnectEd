@@ -165,8 +165,8 @@ class PropertyTextItemMixin:
     def onSceneChange(self : Self, _scene : "DrawingScene | None") -> None:
         self.onSettingsChange()
 
-    def onParentChange(self : Self, _parent : QGraphicsItem | None) -> None:
-        if _parent is not None:
+    def onParentChange(self : Self, parent : QGraphicsItem | None) -> None:
+        if parent is not None:
             self.onTextChange()
 
     def onPositionChange(
