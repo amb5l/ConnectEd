@@ -47,9 +47,9 @@ class PaletteDark:
     SelectedFill     = QColor("#800080")
     SelectedText     = QColor("#A000A0")
     Grip             = QColor("#FF00FF")
-    PropertyDeleted  = QColor("#FF0000")
-    PropertyChanged  = QColor("#FFFF00")
-    PropertyAdded    = QColor("#00FF00")
+    PropertyDeleted  = QColor("#400000")
+    PropertyChanged  = QColor("#404000")
+    PropertyAdded    = QColor("#004000")
 
 
 class PaletteLightMono:

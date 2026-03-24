@@ -58,7 +58,7 @@ _PT_COLS : dict[str, DataKind] = {
 }
 
 
-_COLS : list[str] = ["Name", "Value", "Display"] + list(_PT_COLS.keys())
+_COLS : list[str] = ["Name", "Type", "Value", "Display"] + list(_PT_COLS.keys())
 
 
 _HANDLE_KIND : dict[type, DataKind] = {
@@ -67,6 +67,9 @@ _HANDLE_KIND : dict[type, DataKind] = {
     BlockPinHandleId  : DataKind.BLOCK_PIN_HANDLE,
     SymbolPinHandleId : DataKind.SYMBOL_PIN_HANDLE
 }
+
+
+Cell = PropertiesItem | None
 
 
 class PropertiesDialog(QDialog):
@@ -158,62 +161,51 @@ class PropertiesDialog(QDialog):
         """
         Returns a list of changes to be applied to the item.
         """
+        model = self._table_model
         changes : list[PropertyChangeType] = []
         # deletions
-        for row_idx in range(self._table_model.rowCount()):
-            name_item : PropertiesItem = self._table_model.item(row_idx, 0)
+        for row_idx in range(model.rowCount()):
+            name_item : PropertiesItem = model.item(row_idx, 0)
             if name_item.deleted():
                 name = name_item.value()
                 changes.append(PropertyChangeDelete(name))
-        # additions
-        for row_idx in range(self._table_model.rowCount()):
-            name_item : PropertiesItem | None = self._table_model.item(row_idx, 0)
+        # additions and modifications
+        for row_idx in range(model.rowCount()):
+            name_item    : Cell = model.item(row_idx, _COLS.index("Name"))
+            kind_item    : Cell = model.item(row_idx, _COLS.index("Type"))
+            value_item   : Cell = model.item(row_idx, _COLS.index("Value"))
+            display_item : Cell = model.item(row_idx, _COLS.index("Display"))
+            name    = name_item.value()
+            kind    = kind_item.value()
+            value   = value_item.value()
+            display = display_item.value()
             if name_item.new():
-                name = name_item.value()
-                value_item : PropertiesItem = self._table_model.item(
-                    row_idx, _COLS.index("Value")
-                )
-                kind = value_item.kind()
-                value = value_item.value()
+                # addition
                 changes.append(PropertyChangeAdd(name, kind, value))
-                # property text item
-                display_item : PropertiesItem | None = self._table_model.item(
-                    row_idx, _COLS.index("Display")
-                )
-                display = display_item.value()
+                # property text
                 if display != Display.NONE:
                     pt_args = self._getPropertyTextArgs(row_idx)
                     changes.append(PropertyChangeTextAdd(**pt_args))
-        # modifications
-        for row_idx in range(self._table_model.rowCount()):
-            # property
-            name_item : PropertiesItem | None = self._table_model.item(row_idx, 0)
-            name = name_item.value()
-            value_item : PropertiesItem = self._table_model.item(
-                row_idx, _COLS.index("Value")
-            )
-            if value_item.changed():
-                changes.append(PropertyChangeModify(
-                    name  = name,
-                    kind  = value_item.kind(),
-                    value = value_item.value()
-                ))
-            # property text item
-            display_item = self._table_model.item(row_idx, _COLS.index("Display"))
-            if not display_item.changed():
-                continue
-            display_old = display_item.initial()
-            display_new = display_item.value()
-            pt_args = {"name": name, **self._getPropertyTextArgs(row_idx)}
-            if display_new == Display.NONE:
-                pt_args = {"name": name}
-                property_change_cls = PropertyChangeTextDelete
-            elif display_old == Display.NONE:
-                property_change_cls = PropertyChangeTextAdd
             else:
-                pt_args["visible"] = display_new == Display.SHOW
-                property_change_cls = PropertyChangeTextModify
-            changes.append(property_change_cls(**pt_args))
+                # modification
+                if  not name_item.changed() \
+                and not kind_item.changed() \
+                and not value_item.changed():
+                    continue
+                changes.append(PropertyChangeModify(name, kind, value))
+                # property text
+                if not display_item.changed():
+                    continue
+                pt_args = {"name": name, **self._getPropertyTextArgs(row_idx)}
+                if display == Display.NONE:
+                    pt_args = {"name": name}
+                    property_change_cls = PropertyChangeTextDelete
+                elif display_item.initial() == Display.NONE:
+                    property_change_cls = PropertyChangeTextAdd
+                else:
+                    pt_args["visible"] = display == Display.SHOW
+                    property_change_cls = PropertyChangeTextModify
+                changes.append(property_change_cls(**pt_args))
         return changes
 
     def _onDataChanged(
@@ -230,10 +222,10 @@ class PropertiesDialog(QDialog):
             right_column = bottom_right.column()
             if 2 in range(top_left.column(), bottom_right.column() + 1):
                 right_column = self._table_model.columnCount() - 1
-            display_item : PropertiesItem = self._table_model.item(row_idx, 2)
+            display_item : Cell = self._table_model.item(row_idx, 2)
             display = display_item.value()
             for col_idx in range(top_left.column(), right_column + 1):
-                item : PropertiesItem | None = self._table_model.item(row_idx, col_idx)
+                item : Cell = self._table_model.item(row_idx, col_idx)
                 if item is None:
                     continue
                 if col_idx > 2:
@@ -247,6 +239,8 @@ class PropertiesDialog(QDialog):
     ) -> list[PropertiesItem]:
         item = self._item
         new = not item.properties.has(name)
+        custom = not item.properties.inherent(name)
+        str_or_text = kind == DataKind.STR or kind == DataKind.TEXT
         pt = item.properties.text(name)
         display = \
             Display.NONE if pt is None else \
@@ -264,7 +258,15 @@ class PropertiesDialog(QDialog):
                 kind     = DataKind.STR,
                 value    = name,
                 new      = new,
-                editable = new or not item.properties.inherent(name)
+                editable = custom
+            ),
+            # Type
+            PropertiesItem(
+                owner    = item,
+                kind     = DataKind.KIND,
+                value    = kind,
+                new      = new,
+                editable = custom and str_or_text
             ),
             # Value
             PropertiesItem(
@@ -273,7 +275,7 @@ class PropertiesDialog(QDialog):
                 value    = value if new else item.properties.value(name),
                 default  = None if new else item.properties.default(name),
                 new      = new,
-                editable = new or item.properties.writeable(name)
+                editable = item.properties.writeable(name)
             ),
             # Display
             PropertiesItem(
@@ -316,11 +318,11 @@ class PropertiesDialog(QDialog):
         # delete rows
         failures = []
         for row in rows:
-            name_item : PropertiesItem = self._table_model.item(row, 0)
+            name_item : Cell = self._table_model.item(row, 0)
             name = name_item.value()
             if not self._item.properties.inherent(name):
                 for col_idx in range(self._table_model.columnCount()):
-                    item : PropertiesItem | None = self._table_model.item(row, col_idx)
+                    item : Cell = self._table_model.item(row, col_idx)
                     if item is not None:
                         item.setDeleted(True)
             else:
@@ -371,7 +373,7 @@ class PropertiesDialog(QDialog):
         args = {}
         for col_name in _PT_COLS.keys():
             col_idx = _COLS.index(col_name)
-            item : PropertiesItem | None = self._table_model.item(row_idx, col_idx)
+            item : Cell = self._table_model.item(row_idx, col_idx)
             if item is not None and item.changed():
                 arg_name = pascal2snake(col_name)
                 args[arg_name] = item.value()
@@ -380,10 +382,11 @@ class PropertiesDialog(QDialog):
     def _openPersistentEditors(self : Self) -> None:
         for row in range(self._table_model.rowCount()):
             for col in range(self._table_model.columnCount()):
-                item : PropertiesItem | None = \
-                    self._table_model.item(row, col)
+                item : Cell = self._table_model.item(row, col)
                 if item is not None \
-                and item.kind() == DataKind.BOOL:
+                and item.isEnabled() \
+                and item.kind() == DataKind.BOOL \
+                and item.value() is not None:
                     item.clear()
                     idx = self._table_model.index(row, col)
                     self._table_view.openPersistentEditor(idx)
@@ -391,8 +394,8 @@ class PropertiesDialog(QDialog):
     def _refreshTable(self : Self) -> None:
         # refresh entire table
         if self._table_model.rowCount() > 0:
-            top_left = self._table_model.index(0, 0)
-            bottom_right = self._table_model.index(
+            top_left : Cell = self._table_model.index(0, 0)
+            bottom_right : Cell = self._table_model.index(
                 self._table_model.rowCount() - 1,
                 self._table_model.columnCount() - 1
             )

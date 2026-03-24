@@ -141,6 +141,7 @@ def _populate_data_kind_maps() -> None:
     from ..widgets.dialogs.components.combo.font_bool   import FontBoolComboBox
 
     _DATA_KIND_TYPES.update({
+        DataKind.KIND              : (DataKind,),
         DataKind.STR               : (str,),
         DataKind.TEXT              : (str,),
         DataKind.INT               : (int,),
@@ -165,6 +166,7 @@ def _populate_data_kind_maps() -> None:
         DataKind.FONT_BOOL         : (bool, Default)
     })
     _DATA_KIND_EDITORS.update({
+        DataKind.KIND              : EnumComboBox[DataKind],
         DataKind.STR               : StrEditor,
         DataKind.TEXT              : TextEditor,
         DataKind.INT               : IntEditor,
@@ -191,6 +193,7 @@ def _populate_data_kind_maps() -> None:
 
 
 class DataKind(StrEnum):
+    KIND              = "Kind"
     STR               = "String"
     TEXT              = "Text"
     INT               = "Integer"

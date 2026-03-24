@@ -1,3 +1,6 @@
+- column unique text value (name)
+- don't use dialog for new property row in PropertiesDialog
+
 improve fromXml type checking
 adding new property in dialog
 

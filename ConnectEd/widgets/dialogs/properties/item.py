@@ -34,11 +34,11 @@ class PropertiesItem(QStandardItem):
         super().__init__()
         self.setKind(kind)
         self.setInitial(None if new else value)
-        self.setValue(value)
         self.setDefault(default)
         self.setDeleted(False)
         self.setEnabled(enabled)
         self.setEditable(editable)
+        self.setValue(value)
 
     def setText(self : Self, text : str) -> None:
         raise NotImplementedError("PropertiesItem.setText() is not implemented")
@@ -49,7 +49,10 @@ class PropertiesItem(QStandardItem):
     @checked
     def setEnabled(self : Self, enabled : bool) -> None:
         super().setEnabled(enabled)
-        super().setText(val2str(self.value()) if enabled else "")
+        if not enabled or self.value() is None:
+            super().setText("")
+        else:
+            super().setText(val2str(self.value()))
 
     @checked
     def owner(self : Self) -> PropertiesMixin:
@@ -97,7 +100,7 @@ class PropertiesItem(QStandardItem):
             logger().error(f"Value {value} has invalid type: {type(value)}")
         else:
             self.setData(value, Qt.ItemDataRole.UserRole + self._IDX_CURRENT)
-            super().setText(val2str(value))
+            super().setText("" if value is None else val2str(value))
             self._updateAppearance()
 
     @checked
@@ -118,7 +121,7 @@ class PropertiesItem(QStandardItem):
 
     @checked
     def deleted(self : Self) -> bool:
-        return self.data(Qt.ItemDataRole.UserRole + self._IDX_DELETED) or False
+        return self.data(Qt.ItemDataRole.UserRole + self._IDX_DELETED)
 
     @checked
     def setDeleted(self : Self, deleted: bool) -> None:
@@ -130,7 +133,9 @@ class PropertiesItem(QStandardItem):
         font.setBold(self.changed())
         font.setStrikeOut(self.deleted())
         self.setFont(font)
-        if self.deleted():
+        if self.value() is None:
+            self.setData(None, Qt.ItemDataRole.BackgroundRole)
+        elif self.deleted():
             self.setBackground(settings().get("theme/properties/deleted/color"))
         elif self.new():
             self.setBackground(settings().get("theme/properties/added/color"))

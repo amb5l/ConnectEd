@@ -5,7 +5,7 @@ from PyQt6.QtCore    import QModelIndex
 from PyQt6.QtWidgets import QWidget, QStyledItemDelegate, QStyleOptionViewItem
 from PyQt6.QtGui     import QStandardItemModel
 
-from ....core.types import AlignH, AlignV, Edge, Direction, Display, \
+from ....core.types import AlignH, AlignV, Edge, Direction, Display, DataKind, \
                            RectHandleId, LineHandleId, \
                            BlockPinHandleId, SymbolPinHandleId
 
@@ -26,6 +26,7 @@ from .item import PropertiesItem
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     EditorType : TypeAlias = \
+        EnumComboBox[DataKind]          | \
         StrEditor                       | \
         TextEditor                      | \
         IntEditor                       | \
@@ -63,8 +64,9 @@ class PropertiesDelegate(QStyledItemDelegate):
         editor = kind.editor()
         args = {
             "value"   : item.value(),
+            "subset"  : (DataKind.STR, DataKind.TEXT),
             "default" : item.default(),
-            "parent" : parent
+            "parent"  : parent,
         }
         sig_target = getattr(editor, '__origin__', editor)
         allowed = signature(sig_target).parameters.keys()

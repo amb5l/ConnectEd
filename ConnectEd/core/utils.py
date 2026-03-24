@@ -210,6 +210,7 @@ def val2str(v : Any) -> str:
         case "PortHandleId"      : s = v.value
         case "BlockPinHandleId"  : s = v.value
         case "SymbolPinHandleId" : s = v.value
+        case "DataKind"          : s = v.value
         case _ :
             raise ValueError(f"Unsupported type: {t}")
     return s
@@ -222,7 +223,7 @@ def str2val(s : str, t : str) -> Any:
     table view delegates.
     """
     from ..core.types import (
-        DEFAULT, AlignH, AlignV, Edge, EdgeLoc, Direction, Display,
+        DEFAULT, AlignH, AlignV, Edge, EdgeLoc, Direction, Display, DataKind,
         RectHandleId, LineHandleId, PortHandleId, BlockPinHandleId, SymbolPinHandleId
     )
     def strValuesToFloats(s : str) -> list[float]:
@@ -262,6 +263,7 @@ def str2val(s : str, t : str) -> Any:
         case "PortHandleId"      : return PortHandleId(s)
         case "BlockPinHandleId"  : return BlockPinHandleId(s)
         case "SymbolPinHandleId" : return SymbolPinHandleId(s)
+        case "DataKind"          : return DataKind(s)
         case _:
             raise ValueError(f"Unsupported type: {t}")
 
