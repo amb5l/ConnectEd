@@ -101,18 +101,16 @@ class CmdEditProperty(CmdBase):
     def redo(self : Self) -> None:
         name = self._old.name
         if self._new.name is not NO_CHANGE:
-            self._object.properties.rename(name, self._new.name)
-            name = self._new.name
+            self._object.properties.rename(name, name := self._new.name)
         if self._new.kind is not NO_CHANGE:
             self._object.properties.setKind(name, self._new.kind)
         if self._new.value is not NO_CHANGE:
             self._object.properties.setValue(name, self._new.value)
 
     def undo(self : Self) -> None:
-        name = self._new.name
-        if name is not NO_CHANGE:
-            self._object.properties.rename(name, self._old.name)
-            name = self._old.name
+        if self._new.name is not NO_CHANGE:
+            self._object.properties.rename(self._new.name, self._old.name)
+        name = self._old.name
         if self._new.kind is not NO_CHANGE:
             self._object.properties.setKind(name, self._old.kind)
         if self._new.value is not NO_CHANGE:

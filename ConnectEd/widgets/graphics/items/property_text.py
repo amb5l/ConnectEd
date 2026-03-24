@@ -166,7 +166,8 @@ class PropertyTextItemMixin:
         self.onSettingsChange()
 
     def onParentChange(self : Self, _parent : QGraphicsItem | None) -> None:
-        self.onTextChange()
+        if _parent is not None:
+            self.onTextChange()
 
     def onPositionChange(
         self : Self,

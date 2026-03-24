@@ -605,6 +605,14 @@ class PropertiesManager:
         if not isinstance(property.text, PropertyTextItem):
             logger().warning(f"Property '{name}' does not have text")
             return False
+        # disconnect notifier
+        if property.notifier:
+            try:
+                property.notifier.changed.disconnect(
+                    property.text.onTextChange
+                )
+            except TypeError:
+                pass
         # unparent PropertyTextItem
         property.text.setParentItem(None)
         # remove from scene
