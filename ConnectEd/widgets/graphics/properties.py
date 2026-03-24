@@ -179,11 +179,8 @@ class PropertiesManager:
         # get property instance
         property = self._dict[name]
         # return kind
-        if isinstance(property, InherentProperty):
-            return property.kind(self._owner) if callable(property.kind) \
-                else property.kind
-        else:
-            return "Text"
+        return property.kind(self._owner) if callable(property.kind) \
+            else property.kind
 
     def setKind(self : Self, name : str, kind : DataKind) -> bool:
         """

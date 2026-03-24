@@ -2,7 +2,8 @@ from typing  import Self, TypeAlias
 from inspect import signature
 
 from PyQt6.QtCore    import QModelIndex
-from PyQt6.QtWidgets import QWidget, QStyledItemDelegate, QStyleOptionViewItem
+from PyQt6.QtWidgets import QWidget, QLineEdit, \
+                            QStyledItemDelegate, QStyleOptionViewItem
 from PyQt6.QtGui     import QStandardItemModel
 
 from ....core.types import AlignH, AlignV, Edge, Direction, Display, DataKind, \
@@ -10,7 +11,8 @@ from ....core.types import AlignH, AlignV, Edge, Direction, Display, DataKind, \
                            BlockPinHandleId, SymbolPinHandleId
 
 
-from ..components.edit import StrEditor, TextEditor, IntEditor, FloatEditor, BoolEditor
+from ..components.edit import StrEditor, NameStrEditor, TextEditor, \
+                            IntEditor, FloatEditor, BoolEditor
 
 from ..components.combo.enum        import EnumComboBox
 from ..components.combo.color       import ColorComboBox
@@ -28,6 +30,7 @@ if TYPE_CHECKING:
     EditorType : TypeAlias = \
         EnumComboBox[DataKind]          | \
         StrEditor                       | \
+        NameStrEditor                 | \
         TextEditor                      | \
         IntEditor                       | \
         FloatEditor                     | \
@@ -62,8 +65,13 @@ class PropertiesDelegate(QStyledItemDelegate):
         item : PropertiesItem = model.itemFromIndex(index)
         kind = item.kind()
         editor = kind.editor()
+        exclude = [
+            model.item(r, index.column()).value()
+            for r in range(model.rowCount()) if r != index.row()
+        ]
         args = {
             "value"   : item.value(),
+            "exclude" : exclude,
             "subset"  : (DataKind.STR, DataKind.TEXT),
             "default" : item.default(),
             "parent"  : parent,
@@ -75,7 +83,8 @@ class PropertiesDelegate(QStyledItemDelegate):
 
     def setEditorData(self : Self, editor : EditorType, index : QModelIndex) -> None:
         item : PropertiesItem = index.model().item(index.row(), index.column())
-        editor.setValue(item.initial())
+        if item.initial() is not None:
+            editor.setValue(item.initial())
 
     def setModelData(
         self   : Self,
@@ -83,5 +92,7 @@ class PropertiesDelegate(QStyledItemDelegate):
         model  : QStandardItemModel,
         index  : QModelIndex
     ) -> None:
+        if isinstance(editor, QLineEdit) and not editor.hasAcceptableInput():
+            return
         item: PropertiesItem = model.itemFromIndex(index)
         item.setValue(editor.value())

@@ -1,11 +1,46 @@
 from typing import Self
 
 from PyQt6.QtWidgets import QLineEdit, QTextEdit, QCheckBox, QWidget
-from PyQt6.QtGui     import QIntValidator, QDoubleValidator
+from PyQt6.QtGui     import QIntValidator, QDoubleValidator, QValidator
+
+
+class UniqueStrValidator(QValidator):
+    """Accepts text not present in an exclusion list."""
+
+    def __init__(
+        self    : Self,
+        exclude : list[str],
+        parent  : QWidget | None = None
+    ) -> None:
+        super().__init__(parent)
+        self._exclude = exclude
+
+    def validate(
+        self : Self, text : str, pos : int
+    ) -> tuple[QValidator.State, str, int]:
+        if text in self._exclude:
+            state = QValidator.State.Intermediate
+        else:
+            state = QValidator.State.Acceptable
+        return state, text, pos
+
+
+class NameStrValidator(UniqueStrValidator):
+    def validate(
+        self : Self, text : str, pos : int
+    ) -> tuple[QValidator.State, str, int]:
+        state, text, pos = super().validate(text, pos)
+        if text == "":
+            state = QValidator.State.Intermediate
+        return state, text, pos
 
 
 class StrEditor(QLineEdit):
-    def __init__(self : Self, value : str | None = None, parent : QWidget | None = None):
+    def __init__(
+        self    : Self,
+        value   : str | None = None,
+        parent  : QWidget | None = None
+    ) -> None:
         super().__init__(parent)
         self.setText("" if value is None else value)
 
@@ -14,6 +49,24 @@ class StrEditor(QLineEdit):
 
     def setValue(self : Self, value : str) -> None:
         self.setText(value)
+
+
+class NameStrEditor(StrEditor):
+    _STYLE_INVALID = "QLineEdit { border: 1px solid red; }"
+
+    def __init__(
+        self    : Self,
+        value   : str | None = None,
+        exclude : list[str] | None = None,
+        parent  : QWidget | None = None
+    ) -> None:
+        super().__init__(value, parent)
+        self.setValidator(NameStrValidator(exclude or [], self))
+        self.textChanged.connect(self._updateStyle)
+        self._updateStyle(self.text())
+
+    def _updateStyle(self : Self, _text : str) -> None:
+        self.setStyleSheet("" if self.hasAcceptableInput() else self._STYLE_INVALID)
 
 
 class TextEditor(QTextEdit):

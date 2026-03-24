@@ -1,5 +1,5 @@
-from typing      import Self, Any, TypeAlias
-from enum        import Enum
+from typing import Self, Any, TypeAlias
+
 
 from PyQt6.QtCore    import Qt, QModelIndex
 from PyQt6.QtWidgets import QDialog, QMessageBox, \
@@ -18,8 +18,6 @@ from ....core.utils import pascal2snake
 from ...graphics.items.mixin.handle import ItemHandlesMixin
 
 from ..components.table_view import TableView
-
-from ..new_property import NewPropertyDialog
 
 from .item import PropertiesItem
 
@@ -255,7 +253,7 @@ class PropertiesDialog(QDialog):
             # Name
             PropertiesItem(
                 owner    = item,
-                kind     = DataKind.STR,
+                kind     = DataKind.NAME,
                 value    = name,
                 new      = new,
                 editable = custom
@@ -275,7 +273,7 @@ class PropertiesDialog(QDialog):
                 value    = value if new else item.properties.value(name),
                 default  = None if new else item.properties.default(name),
                 new      = new,
-                editable = item.properties.writeable(name)
+                editable = new or item.properties.writeable(name)
             ),
             # Display
             PropertiesItem(
@@ -297,20 +295,12 @@ class PropertiesDialog(QDialog):
 
     def _addRow(self : Self) -> None:
         """Add a new property."""
-        dialog = NewPropertyDialog(self)
-        if dialog.exec():
-            name = dialog.getName()
-            kind = dialog.getKind()
-            value = dialog.getValue()
-            row_idx = self._table_model.rowCount()
-            row = self._buildRow(name, kind, value)
-            self._table_model.appendRow(row)
-            self._refreshTable()  # why?
-            self._table_view.setCurrentIndex(self._table_model.index(row_idx, 0))
-            # finish up with value of new property being edited
-            self._table_view.edit(self._table_model.index(
-                row_idx, _COLS.index("Value")
-            ))
+        row_idx = self._table_model.rowCount()
+        row = self._buildRow("", DataKind.STR, "")
+        self._table_model.appendRow(row)
+        self._refreshTable()
+        self._table_view.setCurrentIndex(self._table_model.index(row_idx, 0))
+        self._table_view.edit(self._table_model.index(row_idx, _COLS.index("Name")))
 
     def _deleteRows(self : Self) -> None:
         # get all selected rows
