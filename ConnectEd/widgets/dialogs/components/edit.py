@@ -7,6 +7,8 @@ from PyQt6.QtGui     import QIntValidator, QDoubleValidator, QValidator
 class UniqueStrValidator(QValidator):
     """Accepts text not present in an exclusion list."""
 
+    _exclude : list[str]
+
     def __init__(
         self    : Self,
         exclude : list[str],
