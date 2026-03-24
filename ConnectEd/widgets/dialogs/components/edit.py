@@ -4,37 +4,20 @@ from PyQt6.QtWidgets import QLineEdit, QTextEdit, QCheckBox, QWidget
 from PyQt6.QtGui     import QIntValidator, QDoubleValidator, QValidator
 
 
-class UniqueStrValidator(QValidator):
-    """Accepts text not present in an exclusion list."""
-
-    _exclude : list[str]
-
-    def __init__(
-        self    : Self,
-        exclude : list[str],
-        parent  : QWidget | None = None
-    ) -> None:
-        super().__init__(parent)
-        self._exclude = exclude
-
+class SizeValidator(QValidator):
     def validate(
         self : Self, text : str, pos : int
     ) -> tuple[QValidator.State, str, int]:
-        if text in self._exclude:
-            state = QValidator.State.Intermediate
-        else:
-            state = QValidator.State.Acceptable
-        return state, text, pos
-
-
-class NameStrValidator(UniqueStrValidator):
-    def validate(
-        self : Self, text : str, pos : int
-    ) -> tuple[QValidator.State, str, int]:
-        state, text, pos = super().validate(text, pos)
+        text = text.strip()
         if text == "":
-            state = QValidator.State.Intermediate
-        return state, text, pos
+            return QValidator.State.Acceptable, text, pos
+        try:
+            val = float(text)
+        except ValueError:
+            return QValidator.State.Invalid, text, pos
+        if val < 0:
+            return QValidator.State.Acceptable, "", 0
+        return QValidator.State.Acceptable, text, pos
 
 
 class StrEditor(QLineEdit):
@@ -51,24 +34,6 @@ class StrEditor(QLineEdit):
 
     def setValue(self : Self, value : str) -> None:
         self.setText(value)
-
-
-class NameStrEditor(StrEditor):
-    _STYLE_INVALID = "QLineEdit { border: 1px solid red; }"
-
-    def __init__(
-        self    : Self,
-        value   : str | None = None,
-        exclude : list[str] | None = None,
-        parent  : QWidget | None = None
-    ) -> None:
-        super().__init__(value, parent)
-        self.setValidator(NameStrValidator(exclude or [], self))
-        self.textChanged.connect(self._updateStyle)
-        self._updateStyle(self.text())
-
-    def _updateStyle(self : Self, _text : str) -> None:
-        self.setStyleSheet("" if self.hasAcceptableInput() else self._STYLE_INVALID)
 
 
 class TextEditor(QTextEdit):
@@ -113,6 +78,27 @@ class FloatEditor(QLineEdit):
 
     def setValue(self : Self, value : float) -> None:
         self.setText(str(value))
+
+
+class SizeEditor(QLineEdit):
+    def __init__(
+        self   : Self,
+        value  : float | None = None,
+        parent : QWidget | None = None
+    ) -> None:
+        super().__init__(parent)
+        self.setValidator(SizeValidator())
+        self.setText("" if value is None else str(value))
+
+    def value(self : Self) -> float | None:
+        text = self.text().strip()
+        try:
+            return float(text)
+        except ValueError:
+            return None
+
+    def setValue(self : Self, value : float | None) -> None:
+        self.setText("" if value is None else str(value))
 
 
 class BoolEditor(QCheckBox):

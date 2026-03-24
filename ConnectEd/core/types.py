@@ -1,4 +1,5 @@
 from typing      import Self
+from types       import NoneType
 from dataclasses import dataclass
 from enum        import Enum, StrEnum
 
@@ -129,7 +130,7 @@ _DATA_KIND_EDITORS: dict["DataKind", type] = {}
 
 def _populate_data_kind_maps() -> None:
     from ..widgets.dialogs.components.edit import \
-        StrEditor, NameStrEditor, TextEditor, IntEditor, FloatEditor, BoolEditor
+        StrEditor, TextEditor, IntEditor, FloatEditor, SizeEditor, BoolEditor
     from ..widgets.dialogs.components.combo.enum        import EnumComboBox
     from ..widgets.dialogs.components.combo.rotation    import RotationComboBox
     from ..widgets.dialogs.components.combo.color       import ColorComboBox
@@ -143,10 +144,10 @@ def _populate_data_kind_maps() -> None:
     _DATA_KIND_TYPES.update({
         DataKind.KIND              : (DataKind,),
         DataKind.STR               : (str,),
-        DataKind.NAME              : (str,),
         DataKind.TEXT              : (str,),
         DataKind.INT               : (int,),
         DataKind.FLOAT             : (float,),
+        DataKind.SIZE              : (float, NoneType),
         DataKind.BOOL              : (bool,),
         DataKind.DISPLAY           : (Display,),
         DataKind.RECT_HANDLE       : (RectHandleId,),
@@ -169,10 +170,10 @@ def _populate_data_kind_maps() -> None:
     _DATA_KIND_EDITORS.update({
         DataKind.KIND              : EnumComboBox[DataKind],
         DataKind.STR               : StrEditor,
-        DataKind.NAME              : NameStrEditor,
         DataKind.TEXT              : TextEditor,
         DataKind.INT               : IntEditor,
         DataKind.FLOAT             : FloatEditor,
+        DataKind.SIZE              : SizeEditor,
         DataKind.BOOL              : BoolEditor,
         DataKind.DISPLAY           : EnumComboBox[Display],
         DataKind.RECT_HANDLE       : EnumComboBox[RectHandleId],
@@ -197,10 +198,10 @@ def _populate_data_kind_maps() -> None:
 class DataKind(StrEnum):
     KIND              = "Kind"
     STR               = "String"
-    NAME              = "Name String"
     TEXT              = "Text"
     INT               = "Integer"
     FLOAT             = "Float"
+    SIZE              = "Size"
     BOOL              = "Boolean"
     DISPLAY           = "Display"
     RECT_HANDLE       = "Rectangle Handle"

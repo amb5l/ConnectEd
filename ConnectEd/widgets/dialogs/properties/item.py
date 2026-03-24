@@ -1,4 +1,5 @@
 from typing import Self, Any
+from types  import NoneType
 
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui  import QStandardItem, QBrush
@@ -82,7 +83,7 @@ class PropertiesItem(QStandardItem):
 
     @checked
     def setInitial(self : Self, value : Any) -> None:
-        if not isinstance(value, self.types() + (type(None),)):  # None is allowed
+        if not isinstance(value, self.types() + (NoneType,)):  # None is allowed
             logger().error(f"Initial value {value} has invalid type: {type(value)}")
             trace(indent=True, args=True)
         else:
@@ -130,12 +131,11 @@ class PropertiesItem(QStandardItem):
 
     def _updateAppearance(self : Self) -> None:
         font = self.font()
-        font.setBold(self.changed())
         font.setItalic(not self.isEditable())
         font.setStrikeOut(self.deleted())
         self.setFont(font)
         bg_args = []
-        if self.value() is not None:
+        if self.isEnabled():
             if self.deleted():
                 bg_args.append(settings().get("theme/properties/deleted/color"))
             elif self.new():

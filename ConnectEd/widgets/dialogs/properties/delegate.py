@@ -10,9 +10,8 @@ from ....core.types import AlignH, AlignV, Edge, Direction, Display, DataKind, \
                            RectHandleId, LineHandleId, \
                            BlockPinHandleId, SymbolPinHandleId
 
-
-from ..components.edit import StrEditor, NameStrEditor, TextEditor, \
-                            IntEditor, FloatEditor, BoolEditor
+from ..components.edit import \
+    StrEditor, TextEditor, IntEditor, FloatEditor, SizeEditor, BoolEditor
 
 from ..components.combo.enum        import EnumComboBox
 from ..components.combo.color       import ColorComboBox
@@ -27,13 +26,14 @@ from .item import PropertiesItem
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
+    from . import PropertiesDialog
     EditorType : TypeAlias = \
         EnumComboBox[DataKind]          | \
         StrEditor                       | \
-        NameStrEditor                 | \
         TextEditor                      | \
         IntEditor                       | \
         FloatEditor                     | \
+        SizeEditor                      | \
         BoolEditor                      | \
         EnumComboBox[Display]           | \
         EnumComboBox                    | \
@@ -55,6 +55,12 @@ if TYPE_CHECKING:
 
 
 class PropertiesDelegate(QStyledItemDelegate):
+    _dialog : "PropertiesDialog"
+
+    def __init__(self : Self, dialog : QWidget) -> None:
+        super().__init__(dialog)
+        self._dialog = dialog
+
     def createEditor(
         self   : Self,
         parent : QWidget,
@@ -72,17 +78,21 @@ class PropertiesDelegate(QStyledItemDelegate):
             "default" : item.default(),
             "parent"  : parent,
         }
-        if kind is DataKind.NAME:
-            args["exclude"] = [
-                model.item(r, index.column()).value()
-                for r in range(model.rowCount()) if r != index.row()
-            ]
         if kind is DataKind.KIND:
             args["subset"] = (DataKind.STR, DataKind.TEXT)
         sig_target = getattr(editor, '__origin__', editor)
         allowed = signature(sig_target).parameters.keys()
         args = {k: v for k, v in args.items() if k in allowed}
-        return editor(**args)
+        e = editor(**args)
+        if kind is DataKind.DISPLAY and isinstance(e, EnumComboBox):
+            row = index.row()
+            e.currentIndexChanged.connect(
+                lambda: self._dialog._onDisplayChanged(e.value(), row)
+            )
+            e.destroyed.connect(
+                lambda: self._dialog._refreshDisplay(row)
+            )
+        return e
 
     def setEditorData(self : Self, editor : EditorType, index : QModelIndex) -> None:
         item : PropertiesItem = index.model().item(index.row(), index.column())

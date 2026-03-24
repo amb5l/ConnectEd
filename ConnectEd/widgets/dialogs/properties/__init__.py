@@ -8,7 +8,7 @@ from PyQt6.QtWidgets import QDialog, QMessageBox, \
 from PyQt6.QtGui     import QStandardItemModel, QColor, QFontDatabase
 
 from ....core.types import (
-    DEFAULT,
+    DEFAULT, AlignH, AlignV,
     RectHandleId, LineHandleId, BlockPinHandleId, SymbolPinHandleId, \
     DataKind, Display
 )
@@ -36,23 +36,23 @@ if TYPE_CHECKING:
 
 
 _PT_COLS : dict[str, DataKind] = {
-#                   kind                   method name
-    "Cleat"     : ( None                 , "cleat"          ),
-    "X"         : ( DataKind.FLOAT       , "x"              ),
-    "Y"         : ( DataKind.FLOAT       , "y"              ),
-    "Rotation"  : ( DataKind.ROTATION    , "rotation"       ),
-    "Flip"      : ( DataKind.BOOL        , "flip"           ),
-    "Origin"    : ( DataKind.RECT_HANDLE , "origin"         ),
-    "AlignH"    : ( DataKind.ALIGN_H     , "alignH"         ),
-    "AlignV"    : ( DataKind.ALIGN_V     , "alignV"         ),
-    "Width"     : ( DataKind.FLOAT       , "width"          ),
-    "Height"    : ( DataKind.FLOAT       , "height"         ),
-    "Color"     : ( DataKind.COLOR       , "quillColor"     ),
-    "Family"    : ( DataKind.FONT_FAMILY , "quillFamily"    ),
-    "Size"      : ( DataKind.FONT_SIZE   , "quillSize"      ),
-    "Bold"      : ( DataKind.FONT_BOOL   , "quillBold"      ),
-    "Italic"    : ( DataKind.FONT_BOOL   , "quillItalic"    ),
-    "Underline" : ( DataKind.FONT_BOOL   , "quillUnderline" )
+#                   kind                   default value              method name
+    "Cleat"     : ( None                 , None                     , "cleat"          ), # noqa E501
+    "X"         : ( DataKind.FLOAT       , 0.0                      , "x"              ), # noqa E501
+    "Y"         : ( DataKind.FLOAT       , 0.0                      , "y"              ), # noqa E501
+    "Rotation"  : ( DataKind.ROTATION    , 0.0                      , "rotation"       ), # noqa E501
+    "Flip"      : ( DataKind.BOOL        , True                     , "flip"           ), # noqa E501
+    "Origin"    : ( DataKind.RECT_HANDLE , RectHandleId.BOTTOM_LEFT , "origin"         ), # noqa E501
+    "AlignH"    : ( DataKind.ALIGN_H     , AlignH.LEFT              , "alignH"         ), # noqa E501
+    "AlignV"    : ( DataKind.ALIGN_V     , AlignV.TOP               , "alignV"         ), # noqa E501
+    "Width"     : ( DataKind.SIZE        , None                     , "width"          ), # noqa E501
+    "Height"    : ( DataKind.SIZE        , None                     , "height"         ), # noqa E501
+    "Color"     : ( DataKind.COLOR       , DEFAULT                  , "quillColor"     ), # noqa E501
+    "Family"    : ( DataKind.FONT_FAMILY , DEFAULT                  , "quillFamily"    ), # noqa E501
+    "Size"      : ( DataKind.FONT_SIZE   , DEFAULT                  , "quillSize"      ), # noqa E501
+    "Bold"      : ( DataKind.FONT_BOOL   , DEFAULT                  , "quillBold"      ), # noqa E501
+    "Italic"    : ( DataKind.FONT_BOOL   , DEFAULT                  , "quillItalic"    ), # noqa E501
+    "Underline" : ( DataKind.FONT_BOOL   , DEFAULT                  , "quillUnderline" )  # noqa E501
 }
 
 
@@ -74,7 +74,7 @@ class PropertiesDialog(QDialog):
     ItemType : TypeAlias = \
         "QGraphicsItem | ItemHandlesMixin | PropertiesMixin"
 
-    _item           : PropertiesMixin
+    _item           : ItemType
     _dialog_layout  : QVBoxLayout
     _table_model    : QStandardItemModel
     _table_view     : TableView
@@ -114,7 +114,7 @@ class PropertiesDialog(QDialog):
         # create and assign delegates (must keep references to prevent GC)
         self._delegates = []
         for col_idx in range(self._table_model.columnCount()):
-            delegate = PropertiesDelegate()
+            delegate = PropertiesDelegate(self)
             self._delegates.append(delegate)
             self._table_view.setItemDelegateForColumn(col_idx, delegate)
         # set edit triggers
@@ -230,28 +230,55 @@ class PropertiesDialog(QDialog):
                 changes.append(property_change_cls(**pt_args))
         return changes
 
+    def _onDisplayChanged(
+        self    : Self,
+        display : Display,
+        row_idx : int
+    ) -> None:
+        item = self._item
+        pt_new = False
+        for col_name, (kind, value, _) in _PT_COLS.items():
+            col_idx = _COLS.index(col_name)
+            pt_item : Cell = self._table_model.item(row_idx, col_idx)
+            if pt_item is not None and col_name == "Cleat":
+                pt_new = pt_item.new()
+            if display != Display.NONE and pt_item is None:
+                if col_name == "Cleat":
+                    kind = _HANDLE_KIND[item.handleIdType()]
+                    value = list(item.handles().keys())[0]
+                pt_item = PropertiesItem(
+                    owner=item, kind=kind, value=value, new=True
+                )
+                self._table_model.setItem(row_idx, col_idx, pt_item)
+                pt_new = True
+            if pt_item is not None:
+                pt_item.setEnabled(display != Display.NONE or not pt_new)
+                pt_item.setEditable(display != Display.NONE)
+                pt_item.setDeleted(display == Display.NONE and not pt_new)
+
+    def _refreshDisplay(self : Self, row_idx : int) -> None:
+        """Refresh PT columns from the model's Display value."""
+        display_col = _COLS.index("Display")
+        display_item : Cell = self._table_model.item(row_idx, display_col)
+        self._onDisplayChanged(display_item.value(), row_idx)
+
     def _onDataChanged(
         self         : Self,
         top_left     : QModelIndex,
         bottom_right : QModelIndex,
         _roles       : list[int]
     ) -> None:
-        """Highlight changed cells. Handle display choices."""
-        # process rows
-        for row_idx in range(top_left.row(), bottom_right.row() + 1):
-            # ensure all columns to the right of the display column are
-            # processed if the display column is being changed
-            right_column = bottom_right.column()
-            if 2 in range(top_left.column(), bottom_right.column() + 1):
-                right_column = self._table_model.columnCount() - 1
-            display_item : Cell = self._table_model.item(row_idx, 2)
-            display = display_item.value()
-            for col_idx in range(top_left.column(), right_column + 1):
-                item : Cell = self._table_model.item(row_idx, col_idx)
-                if item is None:
-                    continue
-                if col_idx > 2:
-                    item.setEnabled(display != Display.NONE)
+        """Handle display changes."""
+        columns = range(
+            top_left.column(), bottom_right.column() + 1
+        )
+        display_col = _COLS.index("Display")
+        if display_col not in columns:
+            return
+        for row_idx in range(
+            top_left.row(), bottom_right.row() + 1
+        ):
+            self._refreshDisplay(row_idx)
 
     def _buildRow(
         self  : Self,
@@ -268,16 +295,11 @@ class PropertiesDialog(QDialog):
             Display.NONE if pt is None else \
             Display.SHOW if pt.isVisible() else \
             Display.HIDE
-        pt_args = {
-            "owner"   : item,
-            "new"     : new,
-            "enabled" : pt is not None
-        }
         row = [
             # Name
             PropertiesItem(
                 owner    = item,
-                kind     = DataKind.NAME,
+                kind     = DataKind.STR,
                 value    = name,
                 new      = new,
                 editable = custom
@@ -307,14 +329,14 @@ class PropertiesDialog(QDialog):
                 new   = new
             )
         ]
-        for col_name, (kind, method_name) in _PT_COLS.items():
-            if col_name == "Cleat":
-                kind = _HANDLE_KIND[item.handleIdType()]
-            row.append(PropertiesItem(
-                kind  = kind,
-                value = None if pt is None else getattr(pt, method_name)(),
-                **pt_args
-            ))
+        for col_name, (kind, _default, method_name) in _PT_COLS.items():
+            cell = None
+            if pt is not None:
+                if col_name == "Cleat":
+                    kind = _HANDLE_KIND[pt.handleIdType()]
+                value = getattr(pt, method_name)()
+                cell = PropertiesItem(owner=item, kind=kind, value=value)
+            row.append(cell)
         return row
 
     def _addRow(self : Self) -> None:
