@@ -129,7 +129,9 @@ class PropertiesDialog(QDialog):
         self._openPersistentEditors()
         # resize columns
         self._table_view.resizeColumnsToContents()
-        self._table_view.setColumnWidth(1, self._getValueColumnWidth())
+        self._table_view.setColumnWidth(
+            _COLS.index("Value"), self._getValueColumnWidth()
+        )
         # build button layout
         self._button_layout = QHBoxLayout()
         self._add_button = QPushButton("New")
