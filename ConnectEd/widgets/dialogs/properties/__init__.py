@@ -292,7 +292,7 @@ class PropertiesDialog(QDialog):
         new = not item.properties.has(name)
         custom = new or not item.properties.inherent(name)
         str_or_text = kind == DataKind.STR or kind == DataKind.TEXT
-        pt = item.properties.text(name)
+        pt = None if new else item.properties.text(name)
         display = \
             Display.NONE if pt is None else \
             Display.SHOW if pt.isVisible() else \
