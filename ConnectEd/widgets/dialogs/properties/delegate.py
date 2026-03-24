@@ -72,10 +72,11 @@ class PropertiesDelegate(QStyledItemDelegate):
         args = {
             "value"   : item.value(),
             "exclude" : exclude,
-            "subset"  : (DataKind.STR, DataKind.TEXT),
             "default" : item.default(),
             "parent"  : parent,
         }
+        if kind is DataKind.KIND:
+            args["subset"] = (DataKind.STR, DataKind.TEXT)
         sig_target = getattr(editor, '__origin__', editor)
         allowed = signature(sig_target).parameters.keys()
         args = {k: v for k, v in args.items() if k in allowed}
