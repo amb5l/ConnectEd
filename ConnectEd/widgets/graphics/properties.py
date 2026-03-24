@@ -43,7 +43,8 @@ from PyQt6.QtGui  import QColor
 from ...app  import logger
 
 from ...core.types import DEFAULT, NoChange, NO_CHANGE, AlignH, AlignV, \
-                          Color, FontFamily, FontSize, FontBool, DataKind
+                          Color, FontFamily, FontSize, FontBool, \
+                          HandleId, RectHandleId, DataKind
 from ...core.utils import str2val
 
 from typing import TYPE_CHECKING
@@ -56,26 +57,28 @@ if TYPE_CHECKING:
 
 @dataclass
 class PropertyTextSpec:
-    visible   : bool       = True
-    cleat     : str | None = None
-    x         : float      = 0
-    y         : float      = 0
-    origin    : str        = "Top Left"
-    align_h   : AlignH     = AlignH.LEFT
-    align_v   : AlignV     = AlignV.TOP
-    width     : float      = -1.0
-    height    : float      = -1.0
-    color     : Color      = DEFAULT
-    family    : FontFamily = DEFAULT
-    size      : FontSize   = DEFAULT
-    bold      : FontBool   = DEFAULT
-    italic    : FontBool   = DEFAULT
-    underline : FontBool   = DEFAULT
+    visible   : bool         = True
+    cleat     : HandleId | None = None
+    x         : float        = 0
+    y         : float        = 0
+    rotation  : float        = 0.0
+    flip      : bool         = True
+    origin    : RectHandleId = RectHandleId.TOP_LEFT
+    align_h   : AlignH       = AlignH.LEFT
+    align_v   : AlignV       = AlignV.TOP
+    width     : float        = -1.0
+    height    : float        = -1.0
+    color     : Color        = DEFAULT
+    family    : FontFamily   = DEFAULT
+    size      : FontSize     = DEFAULT
+    bold      : FontBool     = DEFAULT
+    italic    : FontBool     = DEFAULT
+    underline : FontBool     = DEFAULT
 
     def astuple(self : Self) -> tuple:
         return (
-            self.visible, self.cleat, self.x, self.y, self.origin,
-            self.align_h, self.align_v, self.width, self.height,
+            self.visible, self.cleat, self.x, self.y, self.rotation, self.flip,
+            self.origin, self.align_h, self.align_v, self.width, self.height,
             self.color, self.family, self.size, self.bold, self.italic, self.underline
         )
 
@@ -469,21 +472,23 @@ class PropertiesManager:
     def addText(
         self      : Self,
         name      : str,
-        visible   : bool       = True,
-        cleat     : str        = "Bottom Left",
-        x         : float      = 0,
-        y         : float      = 0,
-        origin    : str        = "Top Left",
-        align_h   : AlignH     = AlignH.LEFT,
-        align_v   : AlignV     = AlignV.TOP,
-        width     : float      = -1.0,
-        height    : float      = -1.0,
-        color     : Color      = DEFAULT,
-        family    : FontFamily = DEFAULT,
-        size      : FontSize   = DEFAULT,
-        bold      : FontBool   = DEFAULT,
-        italic    : FontBool   = DEFAULT,
-        underline : FontBool   = DEFAULT
+        visible   : bool         = True,
+        cleat     : HandleId     = RectHandleId.BOTTOM_LEFT,
+        x         : float        = 0,
+        y         : float        = 0,
+        rotation  : float        = 0.0,
+        flip      : bool         = True,
+        origin    : RectHandleId = RectHandleId.TOP_LEFT,
+        align_h   : AlignH       = AlignH.LEFT,
+        align_v   : AlignV       = AlignV.TOP,
+        width     : float        = -1.0,
+        height    : float        = -1.0,
+        color     : Color        = DEFAULT,
+        family    : FontFamily   = DEFAULT,
+        size      : FontSize     = DEFAULT,
+        bold      : FontBool     = DEFAULT,
+        italic    : FontBool     = DEFAULT,
+        underline : FontBool     = DEFAULT
     ) -> bool:
         """
         Add a property text item. Replace any existing property text item.
@@ -508,6 +513,8 @@ class PropertiesManager:
             name      = name,
             cleat     = cleat,
             pos       = QPointF(x, y),
+            rotation  = rotation,
+            flip      = flip,
             origin    = origin,
             align_h   = align_h,
             align_v   = align_v,

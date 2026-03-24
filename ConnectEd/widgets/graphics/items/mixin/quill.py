@@ -33,42 +33,42 @@ class ItemQuillMixin:
     _PROPERTIES_QUILL = {
         "Text Color" : InherentProperty(
             kind    = DataKind.COLOR,
-            worthy   = lambda self: self.quillColor() is not DEFAULT,
+            worthy  = lambda self: self.quillColor() != DEFAULT,
             getter  = lambda self: self.quillColor(),
             setter  = lambda self, value: self.setQuillColor(value),
             default = lambda self: self.defaultQuillColor()
         ),
         "Text Font" : InherentProperty(
             kind    = DataKind.FONT_FAMILY,
-            worthy   = lambda self: self.quillFamily() is not DEFAULT,
+            worthy  = lambda self: self.quillFamily() != DEFAULT,
             getter  = lambda self: self.quillFamily(),
             setter  = lambda self, value: self.setQuillFamily(value),
             default = lambda self: self.defaultQuillFamily()
         ),
         "Text Size" : InherentProperty(
             kind    = DataKind.FONT_SIZE,
-            worthy   = lambda self: self.quillSize() is not DEFAULT,
+            worthy  = lambda self: self.quillSize() != DEFAULT,
             getter  = lambda self: self.quillSize(),
             setter  = lambda self, value: self.setQuillSize(value),
             default = lambda self: self.defaultQuillSize()
         ),
         "Text Bold" : InherentProperty(
             kind    = DataKind.FONT_BOOL,
-            worthy   = lambda self: self.quillBold() is not DEFAULT,
+            worthy  = lambda self: self.quillBold() != DEFAULT,
             getter  = lambda self: self.quillBold(),
             setter  = lambda self, value: self.setQuillBold(value),
             default = lambda self: self.defaultQuillBold()
         ),
         "Text Italic" : InherentProperty(
             kind    = DataKind.FONT_BOOL,
-            worthy   = lambda self: self.quillItalic() is not DEFAULT,
+            worthy  = lambda self: self.quillItalic() != DEFAULT,
             getter  = lambda self: self.quillItalic(),
             setter  = lambda self, value: self.setQuillItalic(value),
             default = lambda self: self.defaultQuillItalic()
         ),
         "Text Underline" : InherentProperty(
             kind    = DataKind.FONT_BOOL,
-            worthy   = lambda self: self.quillUnderline() is not DEFAULT,
+            worthy  = lambda self: self.quillUnderline() != DEFAULT,
             getter  = lambda self: self.quillUnderline(),
             setter  = lambda self, value: self.setQuillUnderline(value),
             default = lambda self: self.defaultQuillUnderline()
@@ -125,7 +125,7 @@ class ItemQuillMixin:
             self._quill_color = color
         else:
             color = self._quill_color
-        if color is DEFAULT:
+        if color == DEFAULT:
             color = self.defaultQuillColor()
         if selected is None:
             selected = self.isSelected()
@@ -145,7 +145,7 @@ class ItemQuillMixin:
         family : str | Default
     ) -> None:
         self._quill_family = family
-        if family is DEFAULT: family = self.defaultQuillFamily()
+        if family == DEFAULT: family = self.defaultQuillFamily()
         font = self.font()
         font.setFamily(family)
         self.setFont(font)
@@ -161,7 +161,7 @@ class ItemQuillMixin:
         size : float | Default
     ) -> None:
         self._quill_size = size
-        if size is DEFAULT: size = self.defaultQuillSize()
+        if size == DEFAULT: size = self.defaultQuillSize()
         font = self.font()
         font.setPointSizeF(size)
         self.setFont(font)
@@ -177,7 +177,7 @@ class ItemQuillMixin:
         bold : bool | Default
     ) -> None:
         self._quill_bold = bold
-        if bold is DEFAULT: bold = self.defaultQuillBold()
+        if bold == DEFAULT: bold = self.defaultQuillBold()
         font = self.font()
         font.setBold(bold)
         self.setFont(font)
@@ -193,7 +193,7 @@ class ItemQuillMixin:
         italic : bool | Default
     ) -> None:
         self._quill_italic = italic
-        if italic is DEFAULT: italic = self.defaultQuillItalic()
+        if italic == DEFAULT: italic = self.defaultQuillItalic()
         font = self.font()
         font.setItalic(italic)
         self.setFont(font)
@@ -209,7 +209,7 @@ class ItemQuillMixin:
         underline : bool | Default
     ) -> None:
         self._quill_underline = underline
-        if underline is DEFAULT: underline = self.defaultQuillUnderline()
+        if underline == DEFAULT: underline = self.defaultQuillUnderline()
         font = self.font()
         font.setUnderline(underline)
         self.setFont(font)

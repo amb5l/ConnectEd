@@ -170,16 +170,16 @@ class TextAppearancePreviewLayout(TextAppearanceLayout):
 
     def _updatePreview(self : Self) -> None:
         family    = self._family_combo.value()
-        family    = self._default_family if family is DEFAULT   else \
+        family    = self._default_family if family == DEFAULT   else \
                     self._initial_family if family is NO_CHANGE else family
         bold      = self._bold_combo.value()
-        bold      = self._default_bold if bold is DEFAULT   else \
+        bold      = self._default_bold if bold == DEFAULT   else \
                     self._initial_bold if bold is NO_CHANGE else bold
         italic    = self._italic_combo.value()
-        italic    = self._default_italic if italic is DEFAULT   else \
+        italic    = self._default_italic if italic == DEFAULT   else \
                     self._initial_italic if italic is NO_CHANGE else italic
         underline = self._underline_combo.value()
-        underline = self._default_underline if underline is DEFAULT   else \
+        underline = self._default_underline if underline == DEFAULT   else \
                     self._initial_underline if underline is NO_CHANGE else underline
         if any(x in (DEFAULT, NO_CHANGE) for x in (family, bold, italic, underline)):
             self._preview.setText("") # options are ambiguous

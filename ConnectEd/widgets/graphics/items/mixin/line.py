@@ -34,21 +34,21 @@ class ItemLineMixin:
     _PROPERTIES_LINE = {
         "Line Color" : InherentProperty(
             kind    = DataKind.COLOR,
-            worthy   = lambda self: self.lineColor() is not DEFAULT,
+            worthy  = lambda self: self.lineColor() != DEFAULT,
             getter  = lambda self: self.lineColor(),
             setter  = lambda self, value: self.setLineColor(value),
             default = lambda self: self.defaultLineColor()
         ),
         "Line Width" : InherentProperty(
             kind    = DataKind.PEN_WIDTH,
-            worthy   = lambda self: self.lineWidth() is not DEFAULT,
+            worthy  = lambda self: self.lineWidth() != DEFAULT,
             getter  = lambda self: self.lineWidth(),
             setter  = lambda self, value: self.setLineWidth(value),
             default = lambda self: self.defaultLineWidth()
         ),
         "Line Style" : InherentProperty(
             kind    = DataKind.PEN_STYLE,
-            worthy   = lambda self: self.lineStyle() is not DEFAULT,
+            worthy  = lambda self: self.lineStyle() != DEFAULT,
             getter  = lambda self: self.lineStyle(),
             setter  = lambda self, value: self.setLineStyle(value),
             default = lambda self: self.defaultLineStyle()
@@ -94,7 +94,7 @@ class ItemLineMixin:
             self._line_color = color
         else:
             color = self._line_color
-        if color is DEFAULT:
+        if color == DEFAULT:
             color = self.defaultLineColor()
         if selected is None:
             selected = self.isSelected()
@@ -116,7 +116,7 @@ class ItemLineMixin:
         width : float | Default
     ) -> None:
         self._line_width = width
-        if width is DEFAULT: width = self.defaultLineWidth()
+        if width == DEFAULT: width = self.defaultLineWidth()
         pen = self.pen()
         pen.setWidthF(width)
         self.setPen(pen)
@@ -132,7 +132,7 @@ class ItemLineMixin:
         style : Qt.PenStyle | Default
     ) -> None:
         self._line_style = style
-        if style is DEFAULT: style = self.defaultLineStyle()
+        if style == DEFAULT: style = self.defaultLineStyle()
         pen = self.pen()
         pen.setStyle(style)
         self.setPen(pen)

@@ -27,10 +27,10 @@ class FontBoolComboBox(QComboBox):
         # build no change string and value
         no_change_str = \
             "" if value is NO_CHANGE else \
-            " = default" if value is DEFAULT else \
+            " = default" if value == DEFAULT else \
             " = On" if value else " = Off"
         no_change_value = value if isinstance(value, bool) \
-            else default_value if value is DEFAULT else NO_CHANGE
+            else default_value if value == DEFAULT else NO_CHANGE
         # add no change and default entries
         if value is NO_CHANGE:
             self.addItem(f"<no change{no_change_str}>", no_change_value)
@@ -49,7 +49,7 @@ class FontBoolComboBox(QComboBox):
 
     @checked
     def setValue(self : Self, value : bool | Default | NoChange) -> None:
-        if value is DEFAULT:
+        if value == DEFAULT:
             index = self._idx_default
         else:
             index = self.findData(value, Qt.ItemDataRole.UserRole)

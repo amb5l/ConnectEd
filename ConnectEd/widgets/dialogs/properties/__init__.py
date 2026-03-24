@@ -206,7 +206,9 @@ class PropertiesDialog(QDialog):
                 changes.append(PropertyChangeAdd(name, kind, value))
                 # property text
                 if display != Display.NONE:
-                    pt_args = {"name": name, **self._getPropertyTextArgs(row_idx)}
+                    pt_args = self._getPropertyTextArgs(row_idx, delta=False)
+                    pt_args["name"] = name
+                    pt_args["visible"] = display == Display.SHOW
                     changes.append(PropertyChangeTextAdd(**pt_args))
             else:
                 # modification
@@ -405,14 +407,20 @@ class PropertiesDialog(QDialog):
         # done
         return rows
 
-    def _getPropertyTextArgs(self : Self, row_idx : int) -> dict[str, Any]:
+    def _getPropertyTextArgs(
+        self    : Self,
+        row_idx : int,
+        delta   : bool = True
+    ) -> dict[str, Any]:
         args = {}
         for col_name in _PT_COLS.keys():
             col_idx = _COLS.index(col_name)
             item : Cell = self._table_model.item(row_idx, col_idx)
-            if item is not None and item.changed():
-                arg_name = pascal2snake(col_name)
-                args[arg_name] = item.value()
+            value = item.value()
+            if col_name == "Width" or col_name == "Height":
+                value = -1.0 if value is None else value
+            if item is not None and (item.changed() or not delta):
+                args[pascal2snake(col_name)] = value
         return args
 
     def _openPersistentEditors(self : Self) -> None:

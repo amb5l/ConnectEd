@@ -8,6 +8,9 @@ from PyQt6.QtGui     import QColor
 
 
 class Default:
+    def __eq__(self : Self, other : object) -> bool:
+        return isinstance(other, Default)
+    def __hash__(self : Self) -> int: return hash(Default)
     def __str__(self : Self) -> str: return "default"
     def __repr__(self : Self) -> str: return "<default>"
 

@@ -52,12 +52,12 @@ class FillStyleComboBox(QComboBox):
         default_value = default if isinstance(default, Qt.BrushStyle) else NO_CHANGE
         # build no change icon, string and value
         no_change_icon = self._getIcon(value) if isinstance(value, Qt.BrushStyle) \
-            else default_icon if value is DEFAULT \
+            else default_icon if value == DEFAULT \
             else NoChangeIcon().get()
         no_change_str = f" = {self._STYLES_REV[value]}" \
             if isinstance(value, Qt.BrushStyle) else ""
         no_change_value = value if isinstance(value, Qt.BrushStyle) \
-            else default_value if value is DEFAULT \
+            else default_value if value == DEFAULT \
             else NO_CHANGE
         # add no change and default entries
         if value is NO_CHANGE:
@@ -66,7 +66,7 @@ class FillStyleComboBox(QComboBox):
         self.addItem(default_icon, f"<default{default_str}>", default_value)
         # add standard entries, set current index
         self.setCurrentIndex(0)
-        if value is not NO_CHANGE and value is not DEFAULT:
+        if value is not NO_CHANGE and value != DEFAULT:
             self.setCurrentIndex(1)
         for k, v in self._STYLES.items():
             self.addItem(self._getIcon(v), k, v)
@@ -79,7 +79,7 @@ class FillStyleComboBox(QComboBox):
 
     @checked
     def setValue(self : Self, value : Qt.BrushStyle | Default) -> None:
-        if value is DEFAULT:
+        if value == DEFAULT:
             index = self._idx_default
         else:
             index = self.findData(value, Qt.ItemDataRole.UserRole)

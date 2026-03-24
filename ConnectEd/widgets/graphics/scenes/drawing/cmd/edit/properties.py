@@ -1,5 +1,5 @@
 from typing      import Self, Any
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass
 
 from PyQt6.QtGui  import QColor
 
@@ -191,26 +191,28 @@ class CmdAddPropertyText(CmdPropertyTextItemBase):
         underline : bool
     ):
         super().__init__(object, name)
-        self._state.visible   = visible
-        self._state.cleat     = cleat
-        self._state.x         = x
-        self._state.y         = y
-        self._state.rotation  = rotation
-        self._state.flip      = flip
-        self._state.origin    = origin
-        self._state.align_h   = align_h
-        self._state.align_v   = align_v
-        self._state.width     = width
-        self._state.height    = height
-        self._state.color     = color
-        self._state.family    = family
-        self._state.size      = size
-        self._state.bold      = bold
-        self._state.italic    = italic
-        self._state.underline = underline
+        self._state = self.PropertyTextItemState(
+            visible   = visible,
+            cleat     = cleat,
+            x         = x,
+            y         = y,
+            rotation  = rotation,
+            flip      = flip,
+            origin    = origin,
+            align_h   = align_h,
+            align_v   = align_v,
+            width     = width,
+            height    = height,
+            color     = color,
+            family    = family,
+            size      = size,
+            bold      = bold,
+            italic    = italic,
+            underline = underline,
+        )
 
     def redo(self : Self) -> None:
-        self._object.properties.addText(self._name, asdict(self._state))
+        self._object.properties.addText(self._name, **vars(self._state))
 
     def undo(self : Self) -> None:
         self._object.properties.delText(self._name)

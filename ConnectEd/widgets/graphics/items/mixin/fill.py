@@ -32,14 +32,14 @@ class ItemFillMixin:
     _PROPERTIES_FILL = {
         "Fill Color" : InherentProperty(
             kind    = DataKind.COLOR,
-            worthy   = lambda self: self.fillColor() is not DEFAULT,
+            worthy  = lambda self: self.fillColor() != DEFAULT,
             getter  = lambda self: self.fillColor(),
             setter  = lambda self, value: self.setFillColor(value),
             default = lambda self: self.defaultFillColor()
         ),
         "Fill Style" : InherentProperty(
             kind    = DataKind.BRUSH_STYLE,
-            worthy   = lambda self: self.fillStyle() is not DEFAULT,
+            worthy  = lambda self: self.fillStyle() != DEFAULT,
             getter  = lambda self: self.fillStyle(),
             setter  = lambda self, value: self.setFillStyle(value),
             default = lambda self: self.defaultFillStyle()
@@ -82,7 +82,7 @@ class ItemFillMixin:
             self._fill_color = color
         else:
             color = self._fill_color
-        if color is DEFAULT:
+        if color == DEFAULT:
             color = self.defaultFillColor()
         if selected is None:
             selected = self.isSelected()
@@ -104,7 +104,7 @@ class ItemFillMixin:
         style : Qt.BrushStyle | Default
     ) -> None:
         self._fill_style = style
-        if style is DEFAULT: style = self.defaultFillStyle()
+        if style == DEFAULT: style = self.defaultFillStyle()
         brush = self.brush()
         brush.setStyle(style)
         self.setBrush(brush)

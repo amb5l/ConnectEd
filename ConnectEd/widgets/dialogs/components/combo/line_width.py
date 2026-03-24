@@ -41,23 +41,23 @@ class LineWidthComboBox(QComboBox):
         default_value = default if isinstance(default, float) else NO_CHANGE
         # build no change icon, string and value
         no_change_icon = self._getIcon(value) if isinstance(value, float) \
-            else default_icon if value is DEFAULT \
+            else default_icon if value == DEFAULT \
             else NoChangeIcon().get()
         no_change_str = f" = {val2str(value)}" if isinstance(value, float) \
-            else " = default" if value is DEFAULT \
+            else " = default" if value == DEFAULT \
             else ""
         no_change_value = value if isinstance(value, float) \
-            else default_value if value is DEFAULT \
+            else default_value if value == DEFAULT \
             else NO_CHANGE
         # build custom icon, string and value
         custom_icon = no_change_icon if isinstance(value, float) \
-            else default_icon if value is DEFAULT and isinstance(default, float) \
+            else default_icon if value == DEFAULT and isinstance(default, float) \
             else QueryIcon().get()
         custom_str = no_change_str if isinstance(value, float) \
-            else default_str if value is DEFAULT and isinstance(default, float) \
+            else default_str if value == DEFAULT and isinstance(default, float) \
             else ""
         custom_value = value if isinstance(value, float) \
-            else default_value if value is DEFAULT and isinstance(default, float) \
+            else default_value if value == DEFAULT and isinstance(default, float) \
             else None
         # add no change, default and custom entries
         if value is NO_CHANGE:
@@ -68,7 +68,7 @@ class LineWidthComboBox(QComboBox):
         self.addItem(custom_icon, f"<custom{custom_str}>", custom_value)
         # add standard entries, set current index
         self.setCurrentIndex(0)
-        if value is not NO_CHANGE and value is not DEFAULT:
+        if value is not NO_CHANGE and value != DEFAULT:
             self.setCurrentIndex(1)
         for i in range(1, 4):
             self.addItem(self._getIcon(i), str(i), float(i))
@@ -83,7 +83,7 @@ class LineWidthComboBox(QComboBox):
 
     @checked
     def setValue(self : Self, value : float | Default) -> None:
-        if value is DEFAULT:
+        if value == DEFAULT:
             index = self._idx_default
         else:
             index = self.findData(value, Qt.ItemDataRole.UserRole)

@@ -27,7 +27,7 @@ class FontFamilyComboBox(QComboBox):
         # build no change string and value
         no_change_str = f" = {value}" if isinstance(value, str) else ""
         no_change_value = value if isinstance(value, str) \
-            else default_value if value is DEFAULT \
+            else default_value if value == DEFAULT \
             else NO_CHANGE
         # add no change and default entries
         if value is NO_CHANGE:
@@ -36,7 +36,7 @@ class FontFamilyComboBox(QComboBox):
         self.addItem(f"<default{default_str}>", default_value)
         # add standard entries, set current index
         self.setCurrentIndex(0)
-        if value is not NO_CHANGE and value is not DEFAULT:
+        if value is not NO_CHANGE and value != DEFAULT:
             self.setCurrentIndex(1)
         for family in sorted(QFontDatabase.families()):
             self.addItem(family, family)
@@ -49,7 +49,7 @@ class FontFamilyComboBox(QComboBox):
 
     @checked
     def setValue(self : Self, value : str | Default) -> None:
-        if value is DEFAULT:
+        if value == DEFAULT:
             index = self._idx_default
         else:
             index = self.findData(value, Qt.ItemDataRole.UserRole)

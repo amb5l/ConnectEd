@@ -9,20 +9,17 @@ from ....core.types import NoChange, NO_CHANGE, AlignH, AlignV, \
 class PropertyChangeBase:
     name : str
 
+
 @dataclass
-class PropertyChangeAddModify(PropertyChangeBase):
+class PropertyChangeAdd(PropertyChangeBase):
+    kind  : DataKind
+    value : Any
+
+
+@dataclass
+class PropertyChangeModify(PropertyChangeBase):
     kind  : DataKind | NoChange = NO_CHANGE
     value : Any      | NoChange = NO_CHANGE
-
-
-@dataclass
-class PropertyChangeAdd(PropertyChangeAddModify):
-    pass
-
-
-@dataclass
-class PropertyChangeModify(PropertyChangeAddModify):
-    pass
 
 
 @dataclass
@@ -31,7 +28,28 @@ class PropertyChangeDelete(PropertyChangeBase):
 
 
 @dataclass
-class PropertyChangeTextAddModify(PropertyChangeBase):
+class PropertyChangeTextAdd(PropertyChangeBase):
+    visible   : bool
+    cleat     : HandleId
+    x         : float
+    y         : float
+    rotation  : float
+    flip      : bool
+    origin    : RectHandleId
+    align_h   : AlignH
+    align_v   : AlignV
+    width     : float
+    height    : float
+    color     : QColor
+    family    : str
+    size      : float
+    bold      : bool
+    italic    : bool
+    underline : bool
+
+
+@dataclass
+class PropertyChangeTextModify(PropertyChangeBase):
     visible   : bool         | NoChange = NO_CHANGE
     cleat     : HandleId     | NoChange = NO_CHANGE
     x         : float        | NoChange = NO_CHANGE
@@ -49,16 +67,6 @@ class PropertyChangeTextAddModify(PropertyChangeBase):
     bold      : bool         | NoChange = NO_CHANGE
     italic    : bool         | NoChange = NO_CHANGE
     underline : bool         | NoChange = NO_CHANGE
-
-
-@dataclass
-class PropertyChangeTextAdd(PropertyChangeTextAddModify):
-    pass
-
-
-@dataclass
-class PropertyChangeTextModify(PropertyChangeTextAddModify):
-    pass
 
 
 @dataclass

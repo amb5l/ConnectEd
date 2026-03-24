@@ -51,7 +51,7 @@ class FillAppearanceLayout(QVBoxLayout):
         color = self.color_combo.value()
         if not isinstance(color, QColor): return
         style = self.style_combo.value()
-        if style is DEFAULT: style = self._default_style
+        if style == DEFAULT: style = self._default_style
         if style != Qt.BrushStyle.NoBrush: return
         auto_style = DEFAULT if self._default_style != Qt.BrushStyle.NoBrush else \
             Qt.BrushStyle.SolidPattern
