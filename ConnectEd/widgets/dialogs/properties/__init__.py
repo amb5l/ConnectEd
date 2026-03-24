@@ -290,7 +290,7 @@ class PropertiesDialog(QDialog):
     ) -> list[PropertiesItem]:
         item = self._item
         new = not item.properties.has(name)
-        custom = not item.properties.inherent(name)
+        custom = new or not item.properties.inherent(name)
         str_or_text = kind == DataKind.STR or kind == DataKind.TEXT
         pt = item.properties.text(name)
         display = \
@@ -358,7 +358,8 @@ class PropertiesDialog(QDialog):
         for row in rows:
             name_item : Cell = self._table_model.item(row, 0)
             name = name_item.value()
-            if not self._item.properties.inherent(name):
+            if not self._item.properties.has(name) \
+            or not self._item.properties.inherent(name):
                 for col_idx in range(self._table_model.columnCount()):
                     item : Cell = self._table_model.item(row, col_idx)
                     if item is not None:
