@@ -7,6 +7,7 @@ from PyQt6.QtWidgets import QComboBox, QWidget
 from .....app import logger
 
 from .....core.check import checked
+from .....core.utils import val2str
 
 
 T = TypeVar("T", bound=Enum)
@@ -27,7 +28,7 @@ class EnumComboBox(QComboBox, Generic[T]):
         for member in self._type:
             if subset is not None and member not in subset:
                 continue
-            self.addItem(member.value, member)
+            self.addItem(val2str(member), member)
             if value == member:
                 self.setCurrentIndex(self.count() - 1)
 
