@@ -63,18 +63,20 @@ class PropertiesDelegate(QStyledItemDelegate):
     ) -> QWidget | None:
         model : QStandardItemModel = index.model()
         item : PropertiesItem = model.itemFromIndex(index)
+        if item.value() is None:
+            return None
         kind = item.kind()
         editor = kind.editor()
-        exclude = [
-            model.item(r, index.column()).value()
-            for r in range(model.rowCount()) if r != index.row()
-        ]
         args = {
             "value"   : item.value(),
-            "exclude" : exclude,
             "default" : item.default(),
             "parent"  : parent,
         }
+        if kind is DataKind.NAME:
+            args["exclude"] = [
+                model.item(r, index.column()).value()
+                for r in range(model.rowCount()) if r != index.row()
+            ]
         if kind is DataKind.KIND:
             args["subset"] = (DataKind.STR, DataKind.TEXT)
         sig_target = getattr(editor, '__origin__', editor)
