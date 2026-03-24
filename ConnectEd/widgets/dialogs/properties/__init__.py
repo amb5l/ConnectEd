@@ -157,6 +157,28 @@ class PropertiesDialog(QDialog):
         self.setMinimumSize(min_width, min_height)
         self._table_model.dataChanged.connect(self._onDataChanged)
 
+    def accept(self : Self) -> None:
+        name_col = _COLS.index("Name")
+        names : list[str] = []
+        for row in range(self._table_model.rowCount()):
+            item : PropertiesItem = self._table_model.item(
+                row, name_col
+            )
+            if item.deleted():
+                continue
+            name = item.value()
+            if not name or name in names:
+                QMessageBox.warning(
+                    self, "Invalid Property",
+                    "Property names must be non-empty and unique."
+                )
+                index = self._table_model.index(row, name_col)
+                self._table_view.setCurrentIndex(index)
+                self._table_view.edit(index)
+                return
+            names.append(name)
+        super().accept()
+
     def getChanges(self : Self) -> list[PropertyChangeType]:
         """
         Returns a list of changes to be applied to the item.
