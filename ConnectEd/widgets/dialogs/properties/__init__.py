@@ -212,24 +212,25 @@ class PropertiesDialog(QDialog):
                     changes.append(PropertyChangeTextAdd(**pt_args))
             else:
                 # modification
-                if  not name_item.changed() \
-                and not kind_item.changed() \
-                and not value_item.changed():
-                    continue
-                changes.append(PropertyChangeModify(name, kind, value))
-                # property text
-                if not display_item.changed():
-                    continue
+                if  name_item.changed() \
+                or  kind_item.changed() \
+                or  value_item.changed():
+                    changes.append(PropertyChangeModify(name, kind, value))
+                # property text modification
                 pt_args = {"name": name, **self._getPropertyTextArgs(row_idx)}
-                if display == Display.NONE:
-                    pt_args = {"name": name}
-                    property_change_cls = PropertyChangeTextDelete
-                elif display_item.initial() == Display.NONE:
-                    property_change_cls = PropertyChangeTextAdd
-                else:
-                    pt_args["visible"] = display == Display.SHOW
-                    property_change_cls = PropertyChangeTextModify
-                changes.append(property_change_cls(**pt_args))
+                if display_item.changed():
+                    if display == Display.NONE:
+                        pt_args = {"name": name}
+                        property_change_cls = PropertyChangeTextDelete
+                    elif display_item.initial() == Display.NONE:
+                        property_change_cls = PropertyChangeTextAdd
+                        pt_args["visible"] = display == Display.SHOW
+                    else:
+                        property_change_cls = PropertyChangeTextModify
+                        pt_args["visible"] = display == Display.SHOW
+                    changes.append(property_change_cls(**pt_args))
+                elif len(pt_args) > 1:
+                    changes.append(PropertyChangeTextModify(**pt_args))
         return changes
 
     def _onDisplayChanged(
