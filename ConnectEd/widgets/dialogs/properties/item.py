@@ -1,7 +1,7 @@
 from typing import Self, Any
 
 from PyQt6.QtCore import Qt
-from PyQt6.QtGui  import QStandardItem
+from PyQt6.QtGui  import QStandardItem, QBrush
 
 from ....app import logger, settings
 
@@ -131,15 +131,18 @@ class PropertiesItem(QStandardItem):
     def _updateAppearance(self : Self) -> None:
         font = self.font()
         font.setBold(self.changed())
+        font.setItalic(not self.isEditable())
         font.setStrikeOut(self.deleted())
         self.setFont(font)
-        if self.value() is None:
-            self.setData(None, Qt.ItemDataRole.BackgroundRole)
-        elif self.deleted():
-            self.setBackground(settings().get("theme/properties/deleted/color"))
-        elif self.new():
-            self.setBackground(settings().get("theme/properties/added/color"))
-        elif self.changed():
-            self.setBackground(settings().get("theme/properties/changed/color"))
-        else:
-            self.setData(None, Qt.ItemDataRole.BackgroundRole)
+        bg_args = []
+        if self.value() is not None:
+            if self.deleted():
+                bg_args.append(settings().get("theme/properties/deleted/color"))
+            elif self.new():
+                bg_args.append(settings().get("theme/properties/added/color"))
+            elif self.changed():
+                bg_args.append(settings().get("theme/properties/changed/color"))
+            if not self.isEditable():
+                bg_args.append(Qt.BrushStyle.Dense5Pattern)
+        bg_brush = QBrush(*bg_args) if bg_args else None
+        self.setData(bg_brush, Qt.ItemDataRole.BackgroundRole)
