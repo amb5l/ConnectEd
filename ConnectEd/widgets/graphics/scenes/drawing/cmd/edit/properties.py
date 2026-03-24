@@ -226,10 +226,10 @@ class CmdEditPropertyText(CmdPropertyTextItemBase):
         name      : str,
         visible   : bool         | NoChange = NO_CHANGE,
         cleat     : HandleId     | NoChange = NO_CHANGE,
-        rotation  : float        | NoChange = NO_CHANGE,
-        flip      : bool         | NoChange = NO_CHANGE,
         x         : float        | NoChange = NO_CHANGE,
         y         : float        | NoChange = NO_CHANGE,
+        rotation  : float        | NoChange = NO_CHANGE,
+        flip      : bool         | NoChange = NO_CHANGE,
         origin    : RectHandleId | NoChange = NO_CHANGE,
         align_h   : AlignH       | NoChange = NO_CHANGE,
         align_v   : AlignV       | NoChange = NO_CHANGE,
@@ -249,88 +249,54 @@ class CmdEditPropertyText(CmdPropertyTextItemBase):
             self._new = None
             logger().warning(f"Property '{name}' does not have a text item")
             return
-        self._old.visible   = pt.isVisible()
-        self._old.cleat     = pt.cleat()
-        self._old.x         = pt.x()
-        self._old.y         = pt.y()
-        self._old.rotation  = pt.rotation()
-        self._old.flip      = pt.flip()
-        self._old.origin    = pt.origin()
-        self._old.align_h   = pt.alignH()
-        self._old.align_v   = pt.alignV()
-        self._old.width     = pt.width()
-        self._old.height    = pt.height()
-        self._old.color     = pt.quillColor()
-        self._old.family    = pt.quillFamily()
-        self._old.size      = pt.quillSize()
-        self._old.bold      = pt.quillBold()
-        self._old.italic    = pt.quillItalic()
-        self._old.underline = pt.quillUnderline()
-        self._new.visible   = visible
-        self._new.cleat     = cleat
-        self._new.x         = x
-        self._new.y         = y
-        self._new.rotation  = rotation
-        self._new.flip      = flip
-        self._new.origin    = origin
-        self._new.align_h   = align_h
-        self._new.align_v   = align_v
-        self._new.width     = width
-        self._new.height    = height
-        self._new.color     = color
-        self._new.family    = family
-        self._new.size      = size
-        self._new.bold      = bold
-        self._new.italic    = italic
-        self._new.underline = underline
+        self._old = self.PropertyTextItemState(
+            visible   = pt.isVisible(),
+            cleat     = pt.cleat(),
+            x         = pt.x(),
+            y         = pt.y(),
+            rotation  = pt.rotation(),
+            flip      = pt.flip(),
+            origin    = pt.origin(),
+            align_h   = pt.alignH(),
+            align_v   = pt.alignV(),
+            width     = pt.width(),
+            height    = pt.height(),
+            color     = pt.quillColor(),
+            family    = pt.quillFamily(),
+            size      = pt.quillSize(),
+            bold      = pt.quillBold(),
+            italic    = pt.quillItalic(),
+            underline = pt.quillUnderline(),
+        )
+        self._new = self.PropertyTextItemState(
+            visible   = visible,
+            cleat     = cleat,
+            x         = x,
+            y         = y,
+            rotation  = rotation,
+            flip      = flip,
+            origin    = origin,
+            align_h   = align_h,
+            align_v   = align_v,
+            width     = width,
+            height    = height,
+            color     = color,
+            family    = family,
+            size      = size,
+            bold      = bold,
+            italic    = italic,
+            underline = underline,
+        )
 
     def redo(self : Self) -> None:
         if self._new is None:
             return
-        self._object.editPropertyTextItem(
-            self._name,
-            self._new.visible,
-            self._new.cleat,
-            self._new.x,
-            self._new.y,
-            self._new.rotation,
-            self._new.flip,
-            self._new.origin,
-            self._new.align_h,
-            self._new.align_v,
-            self._new.width,
-            self._new.height,
-            self._new.color,
-            self._new.family,
-            self._new.size,
-            self._new.bold,
-            self._new.italic,
-            self._new.underline
-        )
+        self._object.properties.editText(self._name, **vars(self._new))
 
     def undo(self : Self) -> None:
         if self._old is None:
             return
-        self._object.editPropertyTextItem(
-            self._name,
-            self._old.visible,
-            self._old.cleat,
-            self._old.x,
-            self._old.y,
-            self._old.rotation,
-            self._old.flip,
-            self._old.origin,
-            self._old.align_h,
-            self._old.align_v,
-            self._old.width,
-            self._old.height,
-            self._old.color,
-            self._old.family,
-            self._old.size,
-            self._old.bold,
-            self._old.italic,
-            self._old.underline
-        )
+        self._object.properties.editText(self._name, **vars(self._old))
 
 class CmdDelPropertyText(CmdPropertyTextItemBase):
     _pt : PropertyTextItem | None
