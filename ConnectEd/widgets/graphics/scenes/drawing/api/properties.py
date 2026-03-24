@@ -5,6 +5,12 @@ from PyQt6.QtGui import QColor
 from ......core.types import NoChange, NO_CHANGE, AlignH, AlignV, \
                              HandleId, RectHandleId, DataKind
 
+from .....dialogs.properties.types import (
+    PropertyChangeBase,
+    PropertyChangeAdd, PropertyChangeModify, PropertyChangeDelete,
+    PropertyChangeTextAdd, PropertyChangeTextModify, PropertyChangeTextDelete
+)
+
 from ..cmd import cmdExec
 
 from ..cmd.edit.properties import (
@@ -117,3 +123,28 @@ class DrawingSceneApiPropertiesMixin:
     ) -> None:
         cmd = CmdDelPropertyText(object, name)
         cmdExec(self, cmd, undoable)
+
+    def editProperties(
+        self     : "DrawingScene",
+        object   : "PropertiesMixin",
+        changes  : list[PropertyChangeBase],
+        undoable : bool = False
+    ) -> None:
+        if len(changes) == 0:
+            return
+        self.undo_stack.beginMacro("editProperties")
+        for change in changes:
+            args = vars(change)
+            if isinstance(change, PropertyChangeDelete):
+                self.delProperty(object, **args, undoable=undoable)
+            elif isinstance(change, PropertyChangeAdd):
+                self.addProperty(object, **args, undoable=undoable)
+            elif isinstance(change, PropertyChangeModify):
+                self.editProperty(object, **args, undoable=undoable)
+            elif isinstance(change, PropertyChangeTextDelete):
+                self.delPropertyText(object, **args, undoable=undoable)
+            elif isinstance(change, PropertyChangeTextAdd):
+                self.addPropertyText(object, **args, undoable=undoable)
+            elif isinstance(change, PropertyChangeTextModify):
+                self.editPropertyText(object, **args, undoable=undoable)
+        self.undo_stack.endMacro()

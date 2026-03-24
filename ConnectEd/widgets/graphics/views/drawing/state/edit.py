@@ -1,6 +1,4 @@
 from typing      import Self
-from dataclasses import asdict
-
 from PyQt6.QtCore import QPoint, QPointF
 
 from ......app import logger
@@ -16,11 +14,6 @@ from ....items.text          import TextLineItem, TextBlockItem
 from ....items.property_text import PropertyTextItem
 from ....items.port          import PortItem
 from ....items.block_pin     import BlockPinItem
-
-from .....dialogs.properties.types import (
-    PropertyChangeAdd, PropertyChangeModify, PropertyChangeDelete,
-    PropertyChangeTextAdd, PropertyChangeTextModify, PropertyChangeTextDelete
-)
 
 from ..interaction.edit import EditPasteInteraction
 
@@ -159,20 +152,7 @@ class DrawingViewStateEditItemProperties(DrawingViewStateBase):
         if item:
             dialog = PropertiesDialog(item, self.view)
             if dialog.exec():
-                for change in dialog.getChanges():
-                    args = asdict(change)
-                    if isinstance(change, PropertyChangeDelete):
-                        self.scene.delProperty(item, **args, undoable=True)
-                    elif isinstance(change, PropertyChangeAdd):
-                        self.scene.addProperty(item, **args, undoable=True)
-                    elif isinstance(change, PropertyChangeModify):
-                        self.scene.editProperty(item, **args, undoable=True)
-                    elif isinstance(change, PropertyChangeTextDelete):
-                        self.scene.delPropertyText(item, **args, undoable=True)
-                    elif isinstance(change, PropertyChangeTextAdd):
-                        self.scene.addPropertyText(item, **args, undoable=True)
-                    elif isinstance(change, PropertyChangeTextModify):
-                        self.scene.editPropertyText(item, **args, undoable=True)
+                self.scene.editProperties(item, dialog.getChanges(), undoable=True)
         else:
             logger().warning("No items selected")
         self.view.state.go(self.view.stateIdle)
