@@ -606,6 +606,10 @@ class TextLineRenderer(TextRendererMixin, QGraphicsSimpleTextItem):
                     QGraphicsItem.setSelected(parent, value)
         return super().itemChange(change, value)
 
+    def setText(self : Self, text : str) -> None:
+        super().setText(text)
+        self.onGeometryChange()
+
     def onGeometryChange(self : Self) -> None:
         parent : TextItem = self.parentItem()
         if parent is None:
