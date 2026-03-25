@@ -20,7 +20,7 @@ class ItemOriginMixin:
     _ORIGIN : HandleId
     _PROPERTIES_ORIGIN = InherentProperty(
         kind   = None,
-        worthy  = lambda self: self.origin() is not None,
+        worthy = lambda self: self.origin() is not None,
         getter = lambda self: self.origin(),
         setter = lambda self, value: self.setOrigin(value)
     )

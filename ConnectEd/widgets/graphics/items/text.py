@@ -133,7 +133,7 @@ class TextItemMixin(
             ),
             "AlignV" : InherentProperty(
                 kind   = DataKind.ALIGN_V,
-                worthy  = lambda self: self.height() is not None,
+                worthy = lambda self: self.height() is not None,
                 getter = lambda self: self.alignV(),
                 setter = lambda self, value: self.setAlignV(value)
             )
@@ -142,13 +142,13 @@ class TextItemMixin(
         {
             "Width" : InherentProperty(
                 kind   = DataKind.FLOAT,
-                worthy  = lambda self: self.width() is not None,
+                worthy = lambda self: self.width() is not None,
                 getter = lambda self: self.width(),
                 setter = lambda self, value: self.setWidth(value)
             ),
             "Height" : InherentProperty(
                 kind   = DataKind.FLOAT,
-                worthy  = lambda self: self.height() is not None,
+                worthy = lambda self: self.height() is not None,
                 getter = lambda self: self.height(),
                 setter = lambda self, value: self.setHeight(value)
             )

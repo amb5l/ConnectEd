@@ -82,7 +82,7 @@ class PropertyTextItemMixin:
             ),
             "Visible" : InherentProperty(
                 kind   = DataKind.BOOL,
-                worthy  = lambda self: not self.isVisible(),
+                worthy = lambda self: not self.isVisible(),
                 getter = lambda self: self.isVisible(),
                 setter = lambda self, value: self.setVisible(value)
             ),
