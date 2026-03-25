@@ -407,19 +407,9 @@ FACTORY_SETTINGS = {
                         "style" : Qt.PenStyle.SolidLine
                     }
                 },
-                "TextLine" : {
+                "Text" : {
                     "text" : {
-                        "color"     : PaletteDark.TextLine,
-                        "font"      : "Liberation Sans",
-                        "size"      : 7,
-                        "bold"      : False,
-                        "italic"    : False,
-                        "underline" : False
-                    }
-                },
-                "TextBlock" : {
-                    "text" : {
-                        "color"     : PaletteDark.TextBlock,
+                        "color"     : PaletteDark.Text,
                         "font"      : "Liberation Sans",
                         "size"      : 7,
                         "bold"      : False,
@@ -755,19 +745,9 @@ FACTORY_SETTINGS = {
                         "style" : Qt.PenStyle.SolidLine
                     }
                 },
-                "TextLine" : {
+                "Text" : {
                     "text" : {
-                        "color"     : PaletteLightMono.TextLine,
-                        "font"      : "Liberation Sans",
-                        "size"      : 7,
-                        "bold"      : False,
-                        "italic"    : False,
-                        "underline" : False
-                    }
-                },
-                "TextBlock" : {
-                    "text" : {
-                        "color"     : PaletteLightMono.TextBlock,
+                        "color"     : PaletteLightMono.Text,
                         "font"      : "Liberation Sans",
                         "size"      : 7,
                         "bold"      : False,

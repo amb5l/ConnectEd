@@ -12,7 +12,7 @@ from ..interaction.edit import EditMoveInteraction
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ....items.mixin      import ItemMixin
-    from ....items.text       import TextLineItem, TextBlockItem
+    from ....items.text       import TextItem
     from ....items.grip       import ResizeGripItem
     from ....items.symbol_pin import SymbolPinItem
     from .                    import DrawingViewUi
@@ -213,7 +213,7 @@ class DrawingViewUiEditMixin:
     # TODO remove this, use scene method, rename above method
     def editText(
         self      : "DrawingViewUi",
-        item      : "TextLineItem | TextBlockItem",
+        item      : "TextItem",
         origin    : str    | NoChange = NO_CHANGE,
         align_h   : AlignH | NoChange = NO_CHANGE,
         align_v   : AlignV | NoChange = NO_CHANGE,

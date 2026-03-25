@@ -128,8 +128,8 @@ class MoveGripItem(OriginGripItem):
 
     def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
         entries = [
-            view.action("Slide", lambda: view.ui.editSlide([self._item], self.scenePos())),
-            view.action("Move", lambda: view.ui.editMove([self._item], self.scenePos()))
+            view.action("Slide", lambda: view.ui.editSlide([self.item()], self.scenePos())),
+            view.action("Move", lambda: view.ui.editMove([self.item()], self.scenePos()))
         ]
         item : "ItemOriginMixin" = self.item()
         if item.origin() is not None:

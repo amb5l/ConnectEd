@@ -17,8 +17,7 @@ from ....items.port_pin      import PortPinMixin
 from ....items.block_pin     import BlockPinItem
 from ....items.symbol_pin    import SymbolPinItem
 from ....items.polyline      import PolylineItem, PolySegItem
-from ....items.text          import TextItemMixin
-from ....items.property_text import PropertyTextLineItem, PropertyTextBlockItem
+from ....items.text          import TextItem
 from ....items.mixin         import ItemMixin
 
 from ..cmd import cmdExec, CmdDelete, CmdMove, CmdRotateCW, CmdRotateCCW
@@ -31,7 +30,6 @@ from ..cmd.edit.origin        import CmdEditOrigin
 from ..cmd.edit.polyline      import CmdEditPolylineClosed, CmdEditPolySeg
 from ..cmd.edit.text          import CmdEditText
 from ..cmd.edit.appearance    import CmdEditAppearance
-from ..cmd.edit.properties    import CmdEditPropertyText
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -188,7 +186,7 @@ class DrawingSceneApiEditMixin:
     @checked
     def editText(
         self      : "DrawingScene",
-        item      : TextItemMixin,
+        item      : TextItem,
         text      : str          | NoChange = NO_CHANGE,
         block     : bool         | NoChange = NO_CHANGE,
         rotation  : float        | NoChange = NO_CHANGE,
@@ -208,7 +206,7 @@ class DrawingSceneApiEditMixin:
     ) -> None:
         cmd = CmdEditText(
             self, item, text, block,
-            rotation, flip, origin, align_h, align_v, width, height,
+            rotation, flip,  origin, align_h, align_v, width, height,
             color, family, size, bold, italic, underline
         )
         cmdExec(self, cmd, undoable)

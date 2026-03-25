@@ -1,6 +1,6 @@
 from typing      import Self, Any
 
-from PyQt6.QtCore    import Qt, QPointF, QXmlStreamWriter, QXmlStreamReader
+from PyQt6.QtCore    import Qt, QPointF, QXmlStreamWriter
 from PyQt6.QtWidgets import QGraphicsItem, QGraphicsLineItem, \
                             QGraphicsSceneMouseEvent, QMenu
 from PyQt6.QtGui     import QAction
@@ -11,13 +11,12 @@ from ....core.types import DEFAULT, NO_CHANGE, AlignH, AlignV, \
                            HandleId, RectHandleId, DataKind, \
                            Color, FontFamily, FontSize, FontBool
 from ....core.utils import val2str
-from ....core.xml   import fromXmlAttrs, fromXmlEnd
 
 from ..properties import InherentProperty, PropertiesMixin
 
 from . import ItemType
 
-from .text   import TextItemMixin, TextLineItem, TextBlockItem
+from .text   import TextItem
 from .handle import HandleItem
 
 
@@ -36,9 +35,9 @@ if TYPE_CHECKING:
 class TetherItem(QGraphicsLineItem):
     """Tether line between a PropertyText origin and its parent cleat."""
 
-    _item  : "QGraphicsItem | PropertyTextItemMixin"
+    _item  : "PropertyTextItem"
 
-    def __init__(self : Self, item : "QGraphicsItem | PropertyTextItemMixin"):
+    def __init__(self : Self, item : "PropertyTextItem"):
         self._item = item
         super().__init__(item.getOriginHandle())
         self.setVisible(item.isSelected())
@@ -67,11 +66,11 @@ class TetherItem(QGraphicsLineItem):
     def cleat(self : Self) -> HandleItem | None:
         return self._item.parentItem()
 
-    def toXml(self : Self, xw : QXmlStreamWriter) -> str:
+    def toXml(self : Self, _xw : QXmlStreamWriter) -> str:
         pass  # no need to serialise
 
 
-class PropertyTextItemMixin:
+class PropertyTextItem(TextItem):
     # class attributes
     _PROPERTIES = \
         {
@@ -95,8 +94,8 @@ class PropertyTextItemMixin:
         ItemPosMixin._PROPERTIES_POS | \
         ItemRotateMixin._PROPERTIES_ROTATE | \
         ItemOriginMixin._PROPERTIES_RECT_ORIGIN | \
-        TextItemMixin._PROPERTIES_ALIGN | \
-        TextItemMixin._PROPERTIES_SIZE | \
+        TextItem._PROPERTIES_ALIGN | \
+        TextItem._PROPERTIES_SIZE | \
         ItemQuillMixin._PROPERTIES_QUILL
 
     # instance attributes
@@ -272,7 +271,7 @@ class PropertyTextItemMixin:
             return
         if value is NO_CHANGE:
             return
-        self.owner().setPropertyValue(self.name(), value)
+        self.owner().properties.setValue(self.name(), value)
 
     def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
         items = [
@@ -297,38 +296,3 @@ class PropertyTextItemMixin:
             view.action("Properties...", lambda: view.ui.editItemProperties(self))
         ]
         return items
-
-
-class PropertyTextLineItem(PropertyTextItemMixin, TextLineItem):
-    pass
-
-
-class PropertyTextBlockItem(PropertyTextItemMixin, TextBlockItem):
-    pass
-
-
-PropertyTextItem = PropertyTextLineItem | PropertyTextBlockItem
-
-
-class PropertyTextSeedItem:
-    @staticmethod
-    def fromXml(
-        xr     : QXmlStreamReader,
-        parent : PropertiesMixin
-    ) -> PropertyTextItem | None:
-        xml_attrs = xr.attributes()
-        name = None
-        for xml_attr in xml_attrs:
-            if xml_attr.name() == "Name":
-                name = xml_attr.value()
-        if name is None or not parent.properties.has(name):
-            fromXmlEnd(xr, "PropertyText")
-            return None
-        kind = parent.properties.kind(name)
-        is_block = kind == DataKind.TEXT
-        pt_cls = PropertyTextBlockItem if is_block else PropertyTextLineItem
-        instance = pt_cls(fresh=False, parent=parent)
-        fromXmlAttrs(instance, xr)
-        if hasattr(instance, "onGeometryChange"):
-            instance.onGeometryChange()
-        return instance

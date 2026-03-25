@@ -4,8 +4,6 @@ from collections.abc import Callable
 
 from PyQt6.QtWidgets import QGraphicsItem
 
-from .....app import settings
-
 
 class ItemChangeMixin:
     _selection_handlers : list[Callable[[bool], None]]

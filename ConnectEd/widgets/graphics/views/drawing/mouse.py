@@ -1,7 +1,8 @@
 import inspect
 
-from PyQt6.QtCore import Qt, QEvent, QPoint
-from PyQt6.QtGui  import QEnterEvent, QMouseEvent, QWheelEvent, QCursor
+from PyQt6.QtCore    import Qt, QEvent, QPoint
+from PyQt6.QtWidgets import QGraphicsItem
+from PyQt6.QtGui     import QEnterEvent, QMouseEvent, QWheelEvent, QCursor
 
 from .....app import logger, settings, window
 
@@ -90,15 +91,19 @@ class DrawingViewMouseMixin:
         if self.state == self.stateIdle \
         and (event.buttons() & qmb.LeftButton and m == qkm.NoModifier):
             items = self._itemsAt(l)
-            if items:
-                if not isinstance(items[0], GripItem):
-                    if not items[0].isSelected():
-                        self.scene().clearSelection()
-                        items[0].setSelected(True)
-                    elif isinstance(items[0], PolylineItem):
-                        items[0].cycleSelMode()
-            else:
+            selectable = QGraphicsItem.GraphicsItemFlag.ItemIsSelectable
+            top = next((i for i in items
+                        if isinstance(i, GripItem) or i.flags() & selectable),
+                       None)
+            if top is None:
                 self.scene().clearSelection()
+            elif isinstance(top, GripItem):
+                pass  # grips handled by drag
+            elif not top.isSelected():
+                self.scene().clearSelection()
+                top.setSelected(True)
+            elif isinstance(top, PolylineItem):
+                top.cycleSelMode()
         if event.buttons() & qmb.LeftButton:
             self.mouse.left.press.setPL(p, l)
             self.mouse.left.press.modifiers = m

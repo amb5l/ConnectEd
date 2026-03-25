@@ -1,6 +1,7 @@
 from typing import Self
 
-from PyQt6.QtCore import Qt, QPoint, QPointF
+from PyQt6.QtCore    import Qt, QPoint, QPointF
+from PyQt6.QtWidgets import QGraphicsItem
 
 from ....items.mixin import ItemMixin
 
@@ -28,11 +29,14 @@ class DrawingViewStateIdle(DrawingViewStateBase):
 
     def mouseLeftClick(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
         items = self.view._itemsAt(s)
+        selectable_items = []
         for item in items:
             if isinstance(item, GripItem):
                 return
+            if item.flags() & QGraphicsItem.GraphicsItemFlag.ItemIsSelectable:
+                selectable_items.append(item)
         if m == qkm.NoModifier:
-            if not items or not items[0].isSelected():
+            if not selectable_items or not selectable_items[0].isSelected():
                 self.scene.clearSelection()
         self.view._selectPoint(s, m)
 

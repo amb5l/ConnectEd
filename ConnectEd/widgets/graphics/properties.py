@@ -499,8 +499,7 @@ class PropertiesManager:
         Add a property text item. Replace any existing property text item.
         Returns True if the property text was added, False otherwise.
         """
-        from .items.property_text import \
-            PropertyTextLineItem, PropertyTextBlockItem, PropertyTextItem
+        from .items.property_text import PropertyTextItem
         # check property existence
         if not self.has(name):
             logger().warning(f"Property '{name}' not found")
@@ -511,10 +510,8 @@ class PropertiesManager:
         if isinstance(property.text, PropertyTextItem):
             logger().warning(f"Property '{name}' already has text")
             return False
-        # create new property text item (line or block)
-        pt_cls = PropertyTextBlockItem if property.kind == DataKind.TEXT \
-            else PropertyTextLineItem
-        property.text = pt_cls(
+        # create new property text item
+        property.text = PropertyTextItem(
             name      = name,
             cleat     = cleat,
             pos       = QPointF(x, y),

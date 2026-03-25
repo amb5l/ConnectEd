@@ -1,17 +1,18 @@
 from typing import Self
 
 from PyQt6.QtCore    import Qt, QTimer
-from PyQt6.QtWidgets import QWidget, QDialog, QVBoxLayout, QHBoxLayout
+from PyQt6.QtWidgets import QWidget, QDialog, QVBoxLayout, QHBoxLayout, QLabel
 from PyQt6.QtGui     import QShowEvent
 
 from ....core.check import checked
-from ....core.types import Default, NoChange, AlignH, AlignV, RectHandleId, \
+from ....core.types import NoChange, AlignH, AlignV, RectHandleId, \
                            Color, FontFamily, FontSize, FontBool
 
-from ...graphics.items.text import TextLineItem, TextBlockItem, TextBothItem
+from ...graphics.items.text import TextItem
 
 from ..components.edit import StrEditor, TextEditor
 
+from ..components.combo.text_format         import TextFormatComboBox
 from ..components.group_box.text_rotation   import TextRotationGroupBox
 from ..components.group_box.text_align      import TextAlignGroupBox
 from ..components.group_box.origin          import OriginGroupBox
@@ -19,10 +20,13 @@ from ..components.group_box.text_appearance import TextAppearancePreviewGroupBox
 from ..components.layout.ok_cancel          import OkCancelLayout
 
 
-class TextItemDialogMixin:
+class TextItemDialog(QDialog):
     # instance variables
     _dialog_layout        : QVBoxLayout
-    _text_layout          : QHBoxLayout | QVBoxLayout
+    _text_layout          : QVBoxLayout
+    _text_format_layout   : QHBoxLayout
+    _text_format_label    : QLabel
+    _text_format_combo    : TextFormatComboBox
     _text_editor          : StrEditor | TextEditor
     _middle_layout        : QHBoxLayout
     _geometry_layout      : QVBoxLayout
@@ -32,10 +36,29 @@ class TextItemDialogMixin:
     _appearance_group_box : TextAppearancePreviewGroupBox
     _ok_cancel_layout     : OkCancelLayout
 
-    def initCommon(self : Self | QDialog, item : TextBothItem) -> None:
+    def __init__(
+        self   : Self,
+        item   : TextItem,
+        parent : QWidget | None = None
+    ):
+        super().__init__(parent)
+        self.setWindowTitle("Text")
         self.setModal(True)
         self._dialog_layout = QVBoxLayout(self)
-        self._dialog_layout.addWidget(self._text_editor)
+        # top (text) section
+        self._text_layout = QVBoxLayout()
+        self._text_format_layout = QHBoxLayout()
+        self._text_format_label = QLabel("Format:")
+        self._text_format_layout.addWidget(self._text_format_label)
+        self._text_format_combo = TextFormatComboBox(item.block())
+        self._text_format_combo.activated.connect(self._onTextFormatChange)
+        self._text_format_layout.addWidget(self._text_format_combo)
+        self._text_format_layout.addStretch(1)
+        self._text_layout.addLayout(self._text_format_layout)
+        editor_cls = TextEditor if item.block() else StrEditor
+        self._text_editor = editor_cls(item.text())
+        self._text_layout.addWidget(self._text_editor)
+        self._dialog_layout.addLayout(self._text_layout)
         # middle left - rotation, alignment and origin
         self._geometry_layout = QVBoxLayout()
         self._rotation_group_box = TextRotationGroupBox(item.rotation(), item.flip())
@@ -71,12 +94,23 @@ class TextItemDialogMixin:
         self.setLayout(self._dialog_layout)
 
     def showEvent(self : Self, event : QShowEvent):
-        """Override showEvent to select all text when dialog appears."""
+        """Override showEvent to focus and select all text."""
         super().showEvent(event)
-        QTimer.singleShot(0, lambda: (
-            self._text_editor.setFocus(Qt.FocusReason.PopupFocusReason),
-            self._text_editor.selectAll()
-        ))
+        QTimer.singleShot(0, self._focusEditor)
+
+    def _focusEditor(self : Self) -> None:
+        self._text_editor.setFocus(Qt.FocusReason.OtherFocusReason)
+        self._text_editor.selectAll()
+
+    def _onTextFormatChange(self : Self) -> None:
+        text = self._text_editor.value()
+        block = self._text_format_combo.getBlock()
+        self._text_layout.removeWidget(self._text_editor)
+        self._text_editor.deleteLater()
+        editor_cls = TextEditor if block else StrEditor
+        self._text_editor = editor_cls(text)
+        self._text_layout.insertWidget(1, self._text_editor)
+        QTimer.singleShot(0, lambda: self.resize(self.sizeHint()))
 
     @checked
     def getText(self : Self) -> str:
@@ -125,33 +159,3 @@ class TextItemDialogMixin:
     @checked
     def getUnderline(self : Self) -> FontBool | NoChange:
         return self._appearance_group_box.getUnderline()
-
-
-class TextLineItemDialog(TextItemDialogMixin, QDialog):
-    # instance variables
-    _text_editor : StrEditor
-
-    def __init__(
-        self   : Self,
-        item   : TextLineItem,
-        parent : QWidget | None = None
-    ):
-        super().__init__(parent)
-        self.setWindowTitle("Text Line")
-        self._text_editor = StrEditor(item.text())
-        self.initCommon(item)
-
-
-class TextBlockItemDialog(TextItemDialogMixin, QDialog):
-    # instance variables
-    _text_editor : TextEditor
-
-    def __init__(
-        self   : Self,
-        item   : TextBlockItem,
-        parent : QWidget | None = None
-    ):
-        super().__init__(parent)
-        self.setWindowTitle("Text Block")
-        self._text_editor = TextEditor(item.text())
-        self.initCommon(item)

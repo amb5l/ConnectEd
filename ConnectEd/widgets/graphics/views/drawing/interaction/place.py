@@ -4,7 +4,7 @@ from PyQt6.QtCore    import QPointF
 from PyQt6.QtWidgets import QMenu
 from PyQt6.QtGui     import QAction
 
-from ......core.utils import sign, itemsTypeDict
+from ......core.utils import sign
 
 from .....dialogs.arc import ArcDialog
 
@@ -21,7 +21,7 @@ from ....items.line       import LineItem
 from ....items.rectangle  import RectangleItem
 from ....items.ellipse    import EllipseItem
 from ....items.polyline   import PolylineItem
-from ....items.text       import TextLineItem, TextBlockItem
+from ....items.text       import TextItem
 
 from . import Interaction,         \
               RotateItemMixin,     \
@@ -233,12 +233,8 @@ class PlacePolylineInteraction(PlaceBase1PosInteraction):
             self._item.lastSegment().setSweep(self._sweep)
 
 
-class PlaceTextLineInteraction(PlaceBase1PosInteraction):
-    _ITEM_TYPE = TextLineItem
-
-
-class PlaceTextBlockInteraction(PlaceBase1PosInteraction):
-    _ITEM_TYPE = TextBlockItem
+class PlaceTextInteraction(PlaceBase1PosInteraction):
+    _ITEM_TYPE = TextItem
 
 
 class PlaceConnInteraction(Interaction):

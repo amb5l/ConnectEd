@@ -132,7 +132,8 @@ class DrawingViewPrivateMixin:
             )
             item.setSelected(False)
 
-    def _itemsAt(self : "DrawingView", pos : QPoint | QPointF) -> list[QGraphicsItem]:
+    def _itemsAt(
+        self : "DrawingView", pos : QPoint | QPointF) -> list[QGraphicsItem]:
         scene : "DrawingScene | None" = self.scene()
         if scene is None:
             return []
@@ -201,6 +202,8 @@ class DrawingViewPrivateMixin:
         modifiers : Qt.KeyboardModifier
     ) -> None:
         items = self._itemsAt(point)
+        selectable = QGraphicsItem.GraphicsItemFlag.ItemIsSelectable
+        items = [i for i in items if i.flags() & selectable]
         toggle = modifiers & (qkm.ControlModifier | qkm.ShiftModifier) \
             == qkm.ControlModifier
         choice = modifiers & qkm.AltModifier
