@@ -30,10 +30,10 @@ def toXmlBegin(xw : QXmlStreamWriter) -> None:
     xw.writeStartElement(APP_NAME) # TODO: version
 
 def toXmlAttrs(instance : "PropertiesMixin", xw : QXmlStreamWriter) -> None:
-    for name in instance.getPropertyNames():
-        if not instance.getPropertyValid(name):
+    for name in instance.properties.names():
+        if not instance.properties.worthy(name):
             continue
-        value = instance.getPropertyValue(name)
+        value = instance.properties.value(name)
         xw.writeAttribute(space2underscore(name), val2str(value))
 
 def toXmlEnd(xw : QXmlStreamWriter) -> None:

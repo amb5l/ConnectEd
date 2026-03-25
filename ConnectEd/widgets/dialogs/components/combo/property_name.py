@@ -14,7 +14,7 @@ class PropertyNameComboBox(QComboBox):
         name  : str
     ) -> None:
         super().__init__()
-        names = owner.getPropertyNames()
+        names = owner.properties.names()
         self.addItems(names)
         if name in names:
             self.setCurrentText(name)

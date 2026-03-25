@@ -7,8 +7,10 @@ from PyQt6.QtWidgets import QDialog, QMessageBox, \
                             QAbstractItemView, QGraphicsItem
 from PyQt6.QtGui     import QStandardItemModel, QColor, QFontDatabase
 
+from ....app import logger
+
 from ....core.types import (
-    DEFAULT, AlignH, AlignV,
+    DEFAULT, Enable, AlignH, AlignV,
     RectHandleId, LineHandleId, BlockPinHandleId, SymbolPinHandleId, \
     DataKind, Display
 )
@@ -41,7 +43,7 @@ _PT_COLS : dict[str, DataKind] = {
     "X"         : ( DataKind.FLOAT       , 0.0                      , "x"              ), # noqa E501
     "Y"         : ( DataKind.FLOAT       , 0.0                      , "y"              ), # noqa E501
     "Rotation"  : ( DataKind.ROTATION    , 0.0                      , "rotation"       ), # noqa E501
-    "Flip"      : ( DataKind.BOOL        , True                     , "flip"           ), # noqa E501
+    "Flip"      : ( DataKind.EN_DIS      , Enable.ENABLE            , "flip"           ), # noqa E501
     "Origin"    : ( DataKind.RECT_HANDLE , RectHandleId.BOTTOM_LEFT , "origin"         ), # noqa E501
     "AlignH"    : ( DataKind.ALIGN_H     , AlignH.LEFT              , "alignH"         ), # noqa E501
     "AlignV"    : ( DataKind.ALIGN_V     , AlignV.TOP               , "alignV"         ), # noqa E501
@@ -125,8 +127,6 @@ class PropertiesDialog(QDialog):
         )
         # refresh entire table
         self._refreshTable()
-        # open persistent editors for bool cells (show checkboxes)
-        self._openPersistentEditors()
         # resize columns
         self._table_view.resizeColumnsToContents()
         self._table_view.setColumnWidth(
@@ -159,24 +159,46 @@ class PropertiesDialog(QDialog):
 
     def accept(self : Self) -> None:
         name_col = _COLS.index("Name")
+        kind_col = _COLS.index("Type")
+        value_col = _COLS.index("Value")
         names : list[str] = []
         for row in range(self._table_model.rowCount()):
-            item : PropertiesItem = self._table_model.item(
-                row, name_col
-            )
-            if item.deleted():
+            # check for invalid or duplicate names
+            name_item : PropertiesItem = self._table_model.item(row, name_col)
+            new = name_item.new()
+            if not name_item.deleted():
+                name = name_item.value()
+                if not name or name in names:
+                    QMessageBox.warning(
+                        self, "Invalid Property",
+                        "Property names must be non-empty and unique."
+                    )
+                    index = self._table_model.index(row, name_col)
+                    self._table_view.setCurrentIndex(index)
+                    self._table_view.edit(index)
+                    return
+                names.append(name)
+            # check for type/value mismatches on new properties
+            kind_item : PropertiesItem = self._table_model.item(row, kind_col)
+            if not kind_item.isEditable():
                 continue
-            name = item.value()
-            if not name or name in names:
+            kind = kind_item.value()
+            value_item : PropertiesItem = self._table_model.item(row, value_col)
+            print("kind:", kind, "value_item.kind():", value_item.kind())
+            if kind != value_item.kind():
+                print("type/value mismatch")
+                logger().warning(f"Type/value mismatch for property '{name}'")
+                value_item.setKind(kind)
+            value = value_item.value()
+            if not isinstance(value, kind.types()):
                 QMessageBox.warning(
                     self, "Invalid Property",
-                    "Property names must be non-empty and unique."
+                    f"Value of property '{name}' does not match type '{kind}'."
                 )
-                index = self._table_model.index(row, name_col)
+                index = self._table_model.index(row, value_col)
                 self._table_view.setCurrentIndex(index)
                 self._table_view.edit(index)
                 return
-            names.append(name)
         super().accept()
 
     def getChanges(self : Self) -> list[PropertyChangeType]:
@@ -232,6 +254,15 @@ class PropertiesDialog(QDialog):
                 elif len(pt_args) > 1:
                     changes.append(PropertyChangeTextModify(**pt_args))
         return changes
+
+    def _onKindChanged(
+        self    : Self,
+        kind    : DataKind,
+        row_idx : int
+    ) -> None:
+        value_col = _COLS.index("Value")
+        value_item : Cell = self._table_model.item(row_idx, value_col)
+        value_item.setKind(kind)
 
     def _onDisplayChanged(
         self    : Self,
@@ -313,7 +344,7 @@ class PropertiesDialog(QDialog):
                 kind     = DataKind.KIND,
                 value    = kind,
                 new      = new,
-                editable = custom and str_or_text
+                editable = custom
             ),
             # Value
             PropertiesItem(
@@ -322,7 +353,7 @@ class PropertiesDialog(QDialog):
                 value    = value if new else item.properties.value(name),
                 default  = None if new else item.properties.default(name),
                 new      = new,
-                editable = new or item.properties.writeable(name)
+                editable = custom or item.properties.writeable(name)
             ),
             # Display
             PropertiesItem(
@@ -338,6 +369,8 @@ class PropertiesDialog(QDialog):
                 if col_name == "Cleat":
                     kind = _HANDLE_KIND[pt.handleIdType()]
                 value = getattr(pt, method_name)()
+                if col_name == "Flip":
+                    value = Enable.ENABLE if value else Enable.DISABLE
                 cell = PropertiesItem(owner=item, kind=kind, value=value)
             row.append(cell)
         return row
@@ -418,24 +451,16 @@ class PropertiesDialog(QDialog):
         for col_name in _PT_COLS.keys():
             col_idx = _COLS.index(col_name)
             item : Cell = self._table_model.item(row_idx, col_idx)
+            if item is None:
+                continue
             value = item.value()
             if col_name == "Width" or col_name == "Height":
                 value = -1.0 if value is None else value
-            if item is not None and (item.changed() or not delta):
+            elif col_name == "Flip":
+                value = value == Enable.ENABLE
+            if item.changed() or not delta:
                 args[pascal2snake(col_name)] = value
         return args
-
-    def _openPersistentEditors(self : Self) -> None:
-        for row in range(self._table_model.rowCount()):
-            for col in range(self._table_model.columnCount()):
-                item : Cell = self._table_model.item(row, col)
-                if item is not None \
-                and item.isEnabled() \
-                and item.kind() == DataKind.BOOL \
-                and item.value() is not None:
-                    item.clear()
-                    idx = self._table_model.index(row, col)
-                    self._table_view.openPersistentEditor(idx)
 
     def _refreshTable(self : Self) -> None:
         # refresh entire table

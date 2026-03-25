@@ -1,4 +1,4 @@
-from typing  import Self, TypeAlias
+from typing  import Self, Text, TypeAlias
 from inspect import signature
 
 from PyQt6.QtCore    import QModelIndex
@@ -79,7 +79,9 @@ class PropertiesDelegate(QStyledItemDelegate):
             "parent"  : parent,
         }
         if kind is DataKind.KIND:
-            args["subset"] = (DataKind.STR, DataKind.TEXT)
+            args["subset"] = (
+                DataKind.STR, DataKind.TEXT, DataKind.INT, DataKind.FLOAT, DataKind.BOOL
+            )
         sig_target = getattr(editor, '__origin__', editor)
         allowed = signature(sig_target).parameters.keys()
         args = {k: v for k, v in args.items() if k in allowed}

@@ -193,6 +193,7 @@ def val2str(v : Any) -> str:
         case "int"               : s = str(v)
         case "float"             : s = str(int(v)) if v.is_integer() else str(v)
         case "bool"              : s = str(v)
+        case "Enable"            : s = v.value
         case "QPointF"           : s = f"{v.x()},{v.y()}"
         case "QRectF"            : s = f"{v.x()},{v.y()},{v.width()},{v.height()}"
         case "QSizeF"            : s = f"{v.width()},{v.height()}"

@@ -33,10 +33,10 @@ class PropertiesItem(QStandardItem):
         enabled  : bool = True
     ) -> None:
         super().__init__()
+        self.setDeleted(False)
         self.setKind(kind)
         self.setInitial(None if new else value)
         self.setDefault(default)
-        self.setDeleted(False)
         self.setEnabled(enabled)
         self.setEditable(editable)
         self.setValue(value)
@@ -64,14 +64,32 @@ class PropertiesItem(QStandardItem):
         self.setData(owner, Qt.ItemDataRole.UserRole + self._IDX_OWNER)
 
     @checked
-    def kind(self : Self) -> DataKind:
+    def kind(self : Self) -> DataKind | None:
         return self.data(Qt.ItemDataRole.UserRole + self._IDX_KIND)
 
     @checked
     def setKind(self : Self, kind : DataKind | NoChange) -> None:
         if kind is NO_CHANGE:
             return
+        kind_prev = self.kind()
         self.setData(kind, Qt.ItemDataRole.UserRole + self._IDX_KIND)
+        if kind_prev is not None:
+            print("kind = ", self.kind())
+            # kind is being changed: applies only to custom properties
+            try:
+                match kind:
+                    case DataKind.STR | DataKind.TEXT:
+                        self.setValue(str(self.value()))
+                    case DataKind.INT:
+                        self.setValue(int(self.value()))
+                    case DataKind.FLOAT:
+                        self.setValue(float(self.value()))
+                    case DataKind.BOOL:
+                        self.setValue(bool(self.value()))
+                    case _:
+                        logger().error(f"Invalid kind: {kind}")
+            except ValueError:
+                pass
 
     @checked
     def types(self : Self) -> tuple[type, ...]:
@@ -99,10 +117,20 @@ class PropertiesItem(QStandardItem):
             return
         if not isinstance(value, self.types()) and value is not None:
             logger().error(f"Value {value} has invalid type: {type(value)}")
-        else:
-            self.setData(value, Qt.ItemDataRole.UserRole + self._IDX_CURRENT)
-            super().setText("" if value is None else val2str(value))
-            self._updateAppearance()
+            return
+        self.setData(value, Qt.ItemDataRole.UserRole + self._IDX_CURRENT)
+        super().setText("" if value is None else val2str(value))
+        self._updateAppearance()
+        # special case: value of "Type" column => kind of "Value" column
+        from . import _COLS, Cell
+        if self.column() == _COLS.index("Type"):
+            model = self.model()
+            if model is None:
+                return
+            value_item : Cell = model.item(self.row(), _COLS.index("Value"))
+            if value_item is None:
+                return
+            value_item.setKind(value)
 
     @checked
     def default(self : Self) -> Any:

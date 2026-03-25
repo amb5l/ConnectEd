@@ -59,7 +59,7 @@ class BaseSymbolInstanceItem(ItemPosMixin, ItemRotateMixin, BaseRectangleItem):
         self._hshape.addRect(self._brect)
         # load custom properties
         for name in container.getCustomPropertyNames():
-            self.initProperty(name, container.getPropertyValue(name))
+            self.initProperty(name, container.properties.value(name))
         # load graphics: clone scene items as children here
         _allowed_classes = {}
         registerClass( _allowed_classes , "SymbolLine"      )

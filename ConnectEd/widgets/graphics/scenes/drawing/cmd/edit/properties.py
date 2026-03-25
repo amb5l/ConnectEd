@@ -128,9 +128,9 @@ class CmdDelProperty(CmdPropertyBase):
         name   : str
     ):
         super().__init__(object, name)
-        self._kind  = object.getPropertyKind(name)
-        self._value = object.getPropertyValue(name)
-        self._pt    = object.getPropertyTextItem(name)
+        self._kind  = object.properties.kind(name)
+        self._value = object.properties.value(name)
+        self._pt    = object.properties.text(name)
 
     def redo(self : Self) -> None:
         self._object.properties.delete(self._name)
@@ -243,7 +243,7 @@ class CmdEditPropertyText(CmdPropertyTextItemBase):
         underline : bool         | NoChange = NO_CHANGE,
     ):
         super().__init__(object, name)
-        pt = object.getPropertyTextItem(name)
+        pt = object.properties.text(name)
         if pt is None:
             self._old = None
             self._new = None
@@ -307,7 +307,7 @@ class CmdDelPropertyText(CmdPropertyTextItemBase):
         name   : str
     ):
         super().__init__(object, name)
-        self._pt = object.getPropertyTextItem(name)
+        self._pt = object.properties.text(name)
         if self._pt is None:
             logger().warning(f"Property '{name}' does not have a text item")
 
