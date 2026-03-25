@@ -24,9 +24,9 @@ class NoChange:
 NO_CHANGE = NoChange()
 
 
-class Enable(Enum):
-    ENABLE  = "Enable"
-    DISABLE = "Disable"
+class EnDis(Enum):
+    DISABLE = False
+    ENABLE  = True
 
 
 class AlignMixin:
@@ -157,7 +157,7 @@ def _populate_data_kind_maps() -> None:
         DataKind.FLOAT             : (float,),
         DataKind.SIZE              : (float, NoneType),
         DataKind.BOOL              : (bool,),
-        DataKind.EN_DIS            : (Enable,),
+        DataKind.EN_DIS            : (EnDis,),
         DataKind.DISPLAY           : (Display,),
         DataKind.RECT_HANDLE       : (RectHandleId,),
         DataKind.LINE_HANDLE       : (LineHandleId,),
@@ -184,7 +184,7 @@ def _populate_data_kind_maps() -> None:
         DataKind.FLOAT             : FloatEditor,
         DataKind.SIZE              : SizeEditor,
         DataKind.BOOL              : BoolEditor,
-        DataKind.EN_DIS            : EnumComboBox[Enable],
+        DataKind.EN_DIS            : EnumComboBox[EnDis],
         DataKind.DISPLAY           : EnumComboBox[Display],
         DataKind.RECT_HANDLE       : EnumComboBox[RectHandleId],
         DataKind.LINE_HANDLE       : EnumComboBox[LineHandleId],

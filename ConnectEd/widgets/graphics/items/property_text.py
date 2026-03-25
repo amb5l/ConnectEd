@@ -1,6 +1,6 @@
 from typing      import Self, Any
 
-from PyQt6.QtCore    import Qt, QPointF, QXmlStreamWriter
+from PyQt6.QtCore    import Qt, QPointF, QXmlStreamWriter, QXmlStreamReader
 from PyQt6.QtWidgets import QGraphicsItem, QGraphicsLineItem, \
                             QGraphicsSceneMouseEvent, QMenu
 from PyQt6.QtGui     import QAction
@@ -11,6 +11,7 @@ from ....core.types import DEFAULT, NO_CHANGE, AlignH, AlignV, \
                            HandleId, RectHandleId, DataKind, \
                            Color, FontFamily, FontSize, FontBool
 from ....core.utils import val2str
+from ....core.xml   import fromXmlAttrs, fromXmlEnd
 
 from ..properties import InherentProperty, PropertiesMixin
 
@@ -305,4 +306,29 @@ class PropertyTextLineItem(PropertyTextItemMixin, TextLineItem):
 class PropertyTextBlockItem(PropertyTextItemMixin, TextBlockItem):
     pass
 
+
 PropertyTextItem = PropertyTextLineItem | PropertyTextBlockItem
+
+
+class PropertyTextSeedItem:
+    @staticmethod
+    def fromXml(
+        xr     : QXmlStreamReader,
+        parent : PropertiesMixin
+    ) -> PropertyTextItem | None:
+        xml_attrs = xr.attributes()
+        name = None
+        for xml_attr in xml_attrs:
+            if xml_attr.name() == "Name":
+                name = xml_attr.value()
+        if name is None or not parent.properties.has(name):
+            fromXmlEnd(xr, "PropertyText")
+            return None
+        kind = parent.properties.kind(name)
+        is_block = kind == DataKind.TEXT
+        pt_cls = PropertyTextBlockItem if is_block else PropertyTextLineItem
+        instance = pt_cls(fresh=False, parent=parent)
+        fromXmlAttrs(instance, xr)
+        if hasattr(instance, "onGeometryChange"):
+            instance.onGeometryChange()
+        return instance

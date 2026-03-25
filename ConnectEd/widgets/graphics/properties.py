@@ -37,7 +37,7 @@ from copy            import copy
 
 import re
 
-from PyQt6.QtCore import QObject, pyqtSignal, QPointF
+from PyQt6.QtCore import QObject, pyqtSignal, QPointF, QXmlStreamReader
 from PyQt6.QtGui  import QColor
 
 from ...app  import logger
@@ -182,8 +182,12 @@ class PropertiesManager:
         # get property instance
         property = self._dict[name]
         # return kind
-        return property.kind(self._owner) if callable(property.kind) \
-            else property.kind
+        if callable(property.kind):
+            try:
+                return property.kind(self._owner)
+            except Exception:
+                return None
+        return property.kind
 
     def setKind(self : Self, name : str, kind : DataKind) -> bool:
         """
@@ -321,15 +325,16 @@ class PropertiesManager:
             return False
         property = self._dict[name]
         # get kind
-        kind = property.kind
+        kind = self.kind(name)
         # inherent properties
         if isinstance(property, InherentProperty):
             if not callable(property.setter):
                 logger().warning(f"Property '{name}' is read-only")
                 return False
             # convert from str to appropriate type if necessary
-            if isinstance(value, str) and kind != DataKind.STR:
-                value = str2val(value, kind)
+            if isinstance(value, str) and kind is not None \
+                    and kind != DataKind.STR:
+                value = str2val(value, kind.types()[0].__name__)
             property.setter(self._owner, value)
         # custom properties
         elif isinstance(property, CustomProperty):

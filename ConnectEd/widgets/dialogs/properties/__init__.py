@@ -10,9 +10,8 @@ from PyQt6.QtGui     import QStandardItemModel, QColor, QFontDatabase
 from ....app import logger
 
 from ....core.types import (
-    DEFAULT, Enable, AlignH, AlignV,
-    RectHandleId, LineHandleId, BlockPinHandleId, SymbolPinHandleId, \
-    DataKind, Display
+    DEFAULT, EnDis, AlignH, AlignV, Display, DataKind,
+    RectHandleId, LineHandleId, BlockPinHandleId, SymbolPinHandleId,
 )
 
 from ....core.utils import pascal2snake
@@ -43,7 +42,7 @@ _PT_COLS : dict[str, DataKind] = {
     "X"         : ( DataKind.FLOAT       , 0.0                      , "x"              ), # noqa E501
     "Y"         : ( DataKind.FLOAT       , 0.0                      , "y"              ), # noqa E501
     "Rotation"  : ( DataKind.ROTATION    , 0.0                      , "rotation"       ), # noqa E501
-    "Flip"      : ( DataKind.EN_DIS      , Enable.ENABLE            , "flip"           ), # noqa E501
+    "Flip"      : ( DataKind.EN_DIS      , EnDis.ENABLE             , "flip"           ), # noqa E501
     "Origin"    : ( DataKind.RECT_HANDLE , RectHandleId.BOTTOM_LEFT , "origin"         ), # noqa E501
     "AlignH"    : ( DataKind.ALIGN_H     , AlignH.LEFT              , "alignH"         ), # noqa E501
     "AlignV"    : ( DataKind.ALIGN_V     , AlignV.TOP               , "alignV"         ), # noqa E501
@@ -323,7 +322,6 @@ class PropertiesDialog(QDialog):
         item = self._item
         new = not item.properties.has(name)
         custom = new or not item.properties.inherent(name)
-        str_or_text = kind == DataKind.STR or kind == DataKind.TEXT
         pt = None if new else item.properties.text(name)
         display = \
             Display.NONE if pt is None else \
@@ -370,7 +368,7 @@ class PropertiesDialog(QDialog):
                     kind = _HANDLE_KIND[pt.handleIdType()]
                 value = getattr(pt, method_name)()
                 if col_name == "Flip":
-                    value = Enable.ENABLE if value else Enable.DISABLE
+                    value = EnDis.ENABLE if value else EnDis.DISABLE
                 cell = PropertiesItem(owner=item, kind=kind, value=value)
             row.append(cell)
         return row
@@ -457,7 +455,7 @@ class PropertiesDialog(QDialog):
             if col_name == "Width" or col_name == "Height":
                 value = -1.0 if value is None else value
             elif col_name == "Flip":
-                value = value == Enable.ENABLE
+                value = value == EnDis.ENABLE
             if item.changed() or not delta:
                 args[pascal2snake(col_name)] = value
         return args

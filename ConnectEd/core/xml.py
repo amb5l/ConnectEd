@@ -51,7 +51,7 @@ def fromXmlEnd(xr : QXmlStreamReader, element_name : str) -> None:
 def fromXmlAttrs(instance : "PropertiesMixin", xr : QXmlStreamReader) -> None:
     xml_attrs = xr.attributes()
     for xml_attr in xml_attrs:
-        instance.initProperty(underscore2space(xml_attr.name()), xml_attr.value())
+        instance.properties.init(underscore2space(xml_attr.name()), xml_attr.value())
     xr.readNext()
 
 def fromXmlItems(

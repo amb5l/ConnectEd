@@ -57,31 +57,32 @@ class ItemXmlMixin:
         # check if we're already at the end element (self-closing)
         if xr.isEndElement() and xr.name() == xml_item_name:
             return instance
-        # import and register child pin and property text items
-        pkg = "ConnectEd.widgets.graphics.items"
-        pin_classes = {}
-        registerClass( pin_classes , "GatePinItem"   , pkg=pkg )
-        registerClass( pin_classes , "BlockPinItem"  , pkg=pkg )
-        registerClass( pin_classes , "SymbolPinItem" , pkg=pkg )
-        from ..property_text import PropertyTextItem
         # process child items
+        from ...items.base_pin   import BasePinItem
+        from ...items.gate_pin   import GatePinItem
+        from ...items.block_pin  import BlockPinItem
+        from ...items.symbol_pin import SymbolPinItem
+        from ..property_text import PropertyTextSeedItem
+        pin_classes = {
+            "GatePinItem"   : GatePinItem,
+            "BlockPinItem"  : BlockPinItem,
+            "SymbolPinItem" : SymbolPinItem
+        }
         while not (xr.isEndElement() and xr.name() == xml_item_name):
             if xr.isStartElement():
                 item_name = xr.name() + "Item"
                 if item_name in pin_classes:
-                    child_cls = pin_classes[item_name]
+                    child_cls : BasePinItem = pin_classes[item_name]
                     child = child_cls.fromXml(xr, instance)
                 elif item_name == "PropertyTextItem":
-                    child : "PropertyTextItem" = PropertyTextItem.fromXml(
+                    child : PropertyTextItem = PropertyTextSeedItem.fromXml(
                         xr, instance
                     )
-                    prop_name = child.name()
-                    if instance.hasProperty(prop_name):
-                        instance.setPropertyTextItem(prop_name, child)
-                    else:
-                        logger().warning(f"Property '{prop_name}' not found")
-                    child.onTextChange()
-                    child.onSceneRotationChange()
+                    if child is not None:
+                        prop_name = child.name()
+                        instance.properties.setText(prop_name, child)
+                        child.onTextChange()
+                        child.onSceneRotationChange()
                 else:
                     logger().warning(f"Unexpected child item: {xr.name()}")
             xr.readNext()
