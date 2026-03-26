@@ -139,14 +139,10 @@ class DrawingScene(
                 item_name = xr.name() + "Item"
                 if item_name in _item_classes:
                     item_cls = _item_classes[item_name]
-                    print(f"fromXml: loading {item_name}")
                     item = item_cls.fromXml(xr)
                     drawing_scene.addItem(item)
-                    print(f"fromXml: loaded {item_name}")
                 else:
                     logger().warning(f"Unexpected item: {item_name}")
             xr.readNext()
-        print("fromXml: all items loaded, running tidyConns")
         drawing_scene.tidyConns(undoable=False)
-        print("fromXml: tidyConns complete")
         return drawing_scene

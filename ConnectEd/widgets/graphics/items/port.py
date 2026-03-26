@@ -6,7 +6,7 @@ from PyQt6.QtGui     import QAction
 
 from ....app         import settings
 
-from ....core.types import Direction, RectHandleId, PortHandleId
+from ....core.types import Direction, RectHandleId, PortHandleId, DataKind
 
 from ..properties import PropertyTextSpec
 
@@ -48,6 +48,14 @@ class PortItem(
                 cleat=PortHandleId.NAME, origin=RectHandleId.MIDDLE_LEFT
             )
         }
+
+    @classmethod
+    def handleIdType(cls) -> type[PortHandleId]:
+        return PortHandleId
+
+    @classmethod
+    def handleIdKind(cls) -> DataKind:
+        return DataKind.PORT_HANDLE
 
     def __init__(
         self   : Self,

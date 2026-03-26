@@ -4,8 +4,7 @@ from PyQt6.QtCore    import QPointF
 from PyQt6.QtWidgets import QMenu
 from PyQt6.QtGui     import QAction
 
-from ....core.defs  import PITCH
-from ....core.types import RectHandleId, SymbolPinHandleId
+from ....core.types import RectHandleId, SymbolPinHandleId, DataKind
 
 from ..properties import PropertyTextSpec
 
@@ -13,7 +12,6 @@ from .port_pin import PortPinMixin
 from .base_pin import BasePinArrowItem, BasePinItem, \
                       BasePinDotMixin, BasePinClockMixin, \
                       _PIN_CLK_SIZE
-from .handle   import HandleItem
 
 from .mixin.pos     import ItemPosMixin
 from .mixin.rotate  import ItemRotateMixin
@@ -54,6 +52,14 @@ class SymbolPinItem(
                 cleat=SymbolPinHandleId.NAME, origin=RectHandleId.MIDDLE_LEFT
             )
         }
+
+    @classmethod
+    def handleIdType(cls) -> type[SymbolPinHandleId]:
+        return SymbolPinHandleId
+
+    @classmethod
+    def handleIdKind(cls) -> DataKind:
+        return DataKind.SYMBOL_PIN_HANDLE
 
     def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
         return [
