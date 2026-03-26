@@ -37,8 +37,8 @@ if TYPE_CHECKING:
 
 
 class PolyVtxItem(GripItem):
-    _PATH_NAME = "Diamond"
-    _ORIGIN_PATH_NAME = "Square"
+    _PATH_NAME = "FilledCircle"
+    _ORIGIN_PATH_NAME = "FilledCircleSquared"
 
     # instance attributes
     _index : int  # index of vertex
