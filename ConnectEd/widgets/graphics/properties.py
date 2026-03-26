@@ -332,8 +332,7 @@ class PropertiesManager:
                 logger().warning(f"Property '{name}' is read-only")
                 return False
             # convert from str to appropriate type if necessary
-            if isinstance(value, str) and kind is not None \
-                    and kind != DataKind.STR:
+            if isinstance(value, str) and kind is not None and kind != DataKind.STR:
                 value = str2val(value, kind.types()[0].__name__)
             property.setter(self._owner, value)
         # custom properties

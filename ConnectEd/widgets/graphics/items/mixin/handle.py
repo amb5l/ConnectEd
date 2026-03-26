@@ -6,7 +6,7 @@ from PyQt6.QtWidgets import QGraphicsItem
 from .....core.defs import PITCH
 
 from .....core.types import HandleId, RectHandleId, LineHandleId, \
-                            BlockPinHandleId, SymbolPinHandleId
+                            BlockPinHandleId, SymbolPinHandleId, DataKind
 
 from ..handle import HandleItem
 
@@ -41,6 +41,10 @@ class ItemHandlesMixin(ItemGripMixin, Generic[T]):
     def handleIdType(cls) -> type[T]:
         raise NotImplementedError
 
+    @classmethod
+    def handleIdKind(cls) -> DataKind:
+        raise NotImplementedError
+
     def handles(self : Self) -> dict[T, "HandleItem"]:
         return self._handles
 
@@ -56,8 +60,9 @@ class ItemRectHandlesMixin(ItemHandlesMixin[RectHandleId]):
     def handleIdType(cls) -> type[RectHandleId]:
         return RectHandleId
 
-    # instance attributes
-    _handles : dict[RectHandleId, "HandleItem"]
+    @classmethod
+    def handleIdKind(cls) -> DataKind:
+        return DataKind.RECT_HANDLE
 
     # instance attributes
     _handles : dict[RectHandleId, "HandleItem"]
@@ -127,6 +132,10 @@ class ItemLineHandlesMixin(ItemHandlesMixin[LineHandleId]):
     def handleIdType(cls) -> type[LineHandleId]:
         return LineHandleId
 
+    @classmethod
+    def handleIdKind(cls) -> DataKind:
+        return DataKind.LINE_HANDLE
+
     # instance attributes
     _handles : dict[LineHandleId, "HandleItem"]
 
@@ -165,6 +174,10 @@ class ItemBlockPinHandlesMixin(ItemHandlesMixin[BlockPinHandleId]):
     def handleIdType(cls) -> type[BlockPinHandleId]:
         return BlockPinHandleId
 
+    @classmethod
+    def handleIdKind(cls) -> DataKind:
+        return DataKind.BLOCK_PIN_HANDLE
+
     # instance attributes
     _handles : dict[BlockPinHandleId, "HandleItem"]
 
@@ -189,6 +202,10 @@ class ItemSymbolPinHandlesMixin(ItemHandlesMixin[SymbolPinHandleId]):
     @classmethod
     def handleIdType(cls) -> type[SymbolPinHandleId]:
         return SymbolPinHandleId
+
+    @classmethod
+    def handleIdKind(cls) -> DataKind:
+        return DataKind.SYMBOL_PIN_HANDLE
 
     # instance attributes
     _handles : dict[SymbolPinHandleId, "HandleItem"]

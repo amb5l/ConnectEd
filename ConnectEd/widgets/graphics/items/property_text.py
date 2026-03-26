@@ -86,7 +86,7 @@ class PropertyTextItem(TextItem):
                 setter = lambda self, value: self.setVisible(value)
             ),
             "Cleat" : InherentProperty(
-                kind   = lambda self: self.item().handleIdType().__name__,
+                kind   = lambda self: self.item().handleIdKind(),
                 getter = lambda self: self.cleat(),
                 setter = lambda self, value: self.setCleat(value)
             )

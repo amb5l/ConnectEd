@@ -62,7 +62,7 @@ class ItemXmlMixin:
         from ...items.gate_pin   import GatePinItem
         from ...items.block_pin  import BlockPinItem
         from ...items.symbol_pin import SymbolPinItem
-        from ..property_text import PropertyTextSeedItem
+        from ..property_text import PropertyTextItem
         pin_classes = {
             "GatePinItem"   : GatePinItem,
             "BlockPinItem"  : BlockPinItem,
@@ -75,7 +75,7 @@ class ItemXmlMixin:
                     child_cls : BasePinItem = pin_classes[item_name]
                     child = child_cls.fromXml(xr, instance)
                 elif item_name == "PropertyTextItem":
-                    child : PropertyTextItem = PropertyTextSeedItem.fromXml(
+                    child : PropertyTextItem = PropertyTextItem.fromXml(
                         xr, instance
                     )
                     if child is not None:

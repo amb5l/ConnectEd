@@ -161,6 +161,7 @@ def _populate_data_kind_maps() -> None:
         DataKind.DISPLAY           : (Display,),
         DataKind.RECT_HANDLE       : (RectHandleId,),
         DataKind.LINE_HANDLE       : (LineHandleId,),
+        DataKind.PORT_HANDLE       : (PortHandleId,),
         DataKind.BLOCK_PIN_HANDLE  : (BlockPinHandleId,),
         DataKind.SYMBOL_PIN_HANDLE : (SymbolPinHandleId,),
         DataKind.ROTATION          : (float,),
@@ -188,6 +189,7 @@ def _populate_data_kind_maps() -> None:
         DataKind.DISPLAY           : EnumComboBox[Display],
         DataKind.RECT_HANDLE       : EnumComboBox[RectHandleId],
         DataKind.LINE_HANDLE       : EnumComboBox[LineHandleId],
+        DataKind.PORT_HANDLE       : EnumComboBox[PortHandleId],
         DataKind.BLOCK_PIN_HANDLE  : EnumComboBox[BlockPinHandleId],
         DataKind.SYMBOL_PIN_HANDLE : EnumComboBox[SymbolPinHandleId],
         DataKind.ROTATION          : RotationComboBox,
@@ -217,6 +219,7 @@ class DataKind(StrEnum):
     DISPLAY           = "Display"
     RECT_HANDLE       = "Rectangle Handle"
     LINE_HANDLE       = "Line Handle"
+    PORT_HANDLE       = "Port Handle"
     BLOCK_PIN_HANDLE  = "Block Pin Handle"
     SYMBOL_PIN_HANDLE = "Symbol Pin Handle"
     ROTATION          = "Rotation"
