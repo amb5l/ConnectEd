@@ -10,6 +10,8 @@ from ....core.types import AlignH, AlignV, Edge, Direction, Display, DataKind, \
                            RectHandleId, LineHandleId, \
                            BlockPinHandleId, SymbolPinHandleId
 
+from ...graphics.properties import _CUSTOM_PROPERTY_KINDS
+
 from ..components.edit import \
     StrEditor, TextEditor, IntEditor, FloatEditor, SizeEditor, BoolEditor
 
@@ -79,9 +81,7 @@ class PropertiesDelegate(QStyledItemDelegate):
             "parent"  : parent,
         }
         if kind is DataKind.KIND:
-            args["subset"] = (
-                DataKind.STR, DataKind.TEXT, DataKind.INT, DataKind.FLOAT, DataKind.BOOL
-            )
+            args["subset"] = _CUSTOM_PROPERTY_KINDS
         sig_target = getattr(editor, '__origin__', editor)
         allowed = signature(sig_target).parameters.keys()
         args = {k: v for k, v in args.items() if k in allowed}
