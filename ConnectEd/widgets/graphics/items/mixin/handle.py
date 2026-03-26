@@ -91,7 +91,7 @@ class ItemRectHandlesMixin(ItemHandlesMixin[RectHandleId]):
             x = 1.0 if "Right" in name else 0.5 if "Center" in name else 0.0
             y = 1.0 if "Bottom" in name else 0.5 if "Middle" in name else 0.0
             self._handles[id].setPos(QPointF(x0 + (x * w), y0 + (y * h)))
-        if self.origin() is not None:
+        if hasattr(self, "origin"):
             self.updateOrigin()
 
     def updateHandlePaths(self : Self) -> None:
