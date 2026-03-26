@@ -11,9 +11,9 @@ from .port_pin import PortPinMixin
 
 from .mixin            import ItemSettingsMixin
 from .mixin.paint      import ItemPaintMixin
-from .mixin.change     import ItemChangeMixin
 from .mixin.line       import ItemLineMixin
 from .mixin.fill       import ItemFillMixin
+from .mixin.change     import ItemChangeMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -30,9 +30,9 @@ _INT_ARROW_SIZE = 6
 class BasePinArrowItem(
     ItemSettingsMixin,
     ItemPaintMixin,
-    ItemChangeMixin,
     ItemLineMixin,
     ItemFillMixin,
+    ItemChangeMixin,
     QGraphicsPathItem
 ):
     # instance attributes
