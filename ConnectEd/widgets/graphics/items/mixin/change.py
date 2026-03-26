@@ -1,15 +1,11 @@
 from typing import Self, Any
 
-from collections.abc import Callable
-
 from PyQt6.QtWidgets import QGraphicsItem
 
 
 class ItemChangeMixin:
-    _selection_handlers : list[Callable[[bool], None]]
-
     def initChange(self : Self) -> None:
-        self._selection_handlers = []
+        pass
 
     def itemChange(
         self   : QGraphicsItem,
@@ -33,15 +29,12 @@ class ItemChangeMixin:
                 if hasattr(self, "onRotationChange"):
                     self.onRotationChange(value)
             case self.GraphicsItemChange.ItemSelectedHasChanged:
-                for handler in self._selection_handlers:
-                    handler(value)
-                if hasattr(self, "a"):
-                    if self.a.line is not None:
-                        self.a.line.onSelectionChange(value)
-                    if self.a.fill is not None:
-                        self.a.fill.onSelectionChange(value)
-                    if self.a.quill is not None:
-                        self.a.quill.onSelectionChange(value)
+                if hasattr(self, "lineSelectionChange"):
+                    self.lineSelectionChange(value)
+                if hasattr(self, "fillSelectionChange"):
+                    self.fillSelectionChange(value)
+                if hasattr(self, "quillSelectionChange"):
+                    self.quillSelectionChange(value)
                 if hasattr(self, "onSelectionChange"):
                     self.onSelectionChange(value)
         return super().itemChange(change, value)
@@ -59,6 +52,3 @@ class ItemChangeMixin:
             self.outline.onSettingsChange()
         if hasattr(self, "onGeometryChange"):
             self.onGeometryChange()
-
-    def addSelectionHandler(self : Self, handler : Callable[[bool], None]) -> None:
-        self._selection_handlers.append(handler)
