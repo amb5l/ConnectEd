@@ -1,16 +1,12 @@
 from typing import Self
 
-from PyQt6.QtCore import QPointF
-
-from ....core.types import Direction, BlockPinHandleId, DataKind
+from ....core.types import Direction, DataKind
 
 from ..properties import InherentProperty, PropertiesMixin
 
-from .handle        import HandleItem
 from .entry         import EntryItem
 
 from .mixin        import ItemMixin
-from .mixin.handle import ItemHandlesMixin
 from .mixin.line   import ItemLineMixin
 from .mixin.change import ItemChangeMixin
 from .mixin.clone  import ItemCloneMixin
