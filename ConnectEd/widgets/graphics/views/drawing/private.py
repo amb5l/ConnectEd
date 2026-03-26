@@ -2,7 +2,7 @@ from math import sqrt
 
 from PyQt6.QtCore    import Qt, QPointF, QRectF, QPoint
 from PyQt6.QtWidgets import QGraphicsItem
-from PyQt6.QtGui     import QMouseEvent, QPainterPath, QIcon, QAction, QCursor
+from PyQt6.QtGui     import QMouseEvent, QPainterPath, QAction, QCursor
 
 from .....app import settings, window
 
@@ -215,17 +215,20 @@ class DrawingViewPrivateMixin:
             init_sel = {item: item.isSelected() for item in items}
             menu = Menu(self)
             menu.setStyleSheet("""
-                Menu::item {
-                    padding: 2px 10px 2px 4px;  /* Reduce left padding */
+                QMenu::item {
+                    padding-left: 8px;
+                    padding-right: 8px;
+                    padding-top: 4px;
+                    padding-bottom: 4px;
                 }
-                Menu::icon {
-                    width: 0px;  /* Ensure no space for icons */
+                QMenu::item:selected {
+                    background: palette(highlight);
+                    color: palette(highlighted-text);
                 }
             """)
             for item in items:
-                text = f"{item.__class__.__name__}"
+                text = f"{item.__class__.__name__.replace('Item', '')}"
                 action = QAction(text, self)
-                action.setIcon(QIcon())
                 action.setData(item)
                 action.triggered.connect(
                     lambda checked, i=item, t=toggle, p=init_sel[item]:
