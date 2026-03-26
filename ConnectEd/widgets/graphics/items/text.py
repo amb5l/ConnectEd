@@ -556,6 +556,7 @@ class TextRendererMixin(ItemShapeMixin):
         self : "Self | TextLineRenderer | TextBlockRenderer",
         font : QFont
     ) -> None:
+        font.setHintingPreference(QFont.HintingPreference.PreferNoHinting)
         renderer : "TextLineRenderer | TextBlockRenderer" = super()
         renderer.setFont(font)
         self.onGeometryChange()
