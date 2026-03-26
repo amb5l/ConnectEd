@@ -1,7 +1,7 @@
 from typing import Self
 
 from PyQt6.QtCore    import Qt, QTimer
-from PyQt6.QtWidgets import QWidget, QDialog, QVBoxLayout, QHBoxLayout, QLabel
+from PyQt6.QtWidgets import QWidget, QDialog, QVBoxLayout, QHBoxLayout, QLayout
 from PyQt6.QtGui     import QShowEvent
 
 from ....core.check import checked
@@ -10,9 +10,7 @@ from ....core.types import NoChange, AlignH, AlignV, RectHandleId, \
 
 from ...graphics.items.text import TextItem
 
-from ..components.edit import StrEditor, TextEditor
-
-from ..components.combo.text_format         import TextFormatComboBox
+from ..components.layout.text_value         import TextValueLayout
 from ..components.group_box.text_rotation   import TextRotationGroupBox
 from ..components.group_box.text_align      import TextAlignGroupBox
 from ..components.group_box.origin          import OriginGroupBox
@@ -20,14 +18,11 @@ from ..components.group_box.text_appearance import TextAppearancePreviewGroupBox
 from ..components.layout.ok_cancel          import OkCancelLayout
 
 
-class TextItemDialog(QDialog):
+class BaseTextItemDialog(QDialog):
+    _TITLE : str
+
     # instance variables
-    _dialog_layout        : QVBoxLayout
-    _text_layout          : QVBoxLayout
-    _text_format_layout   : QHBoxLayout
-    _text_format_label    : QLabel
-    _text_format_combo    : TextFormatComboBox
-    _text_editor          : StrEditor | TextEditor
+    _layout               : QVBoxLayout
     _middle_layout        : QHBoxLayout
     _geometry_layout      : QVBoxLayout
     _rotation_group_box   : TextRotationGroupBox
@@ -36,29 +31,18 @@ class TextItemDialog(QDialog):
     _appearance_group_box : TextAppearancePreviewGroupBox
     _ok_cancel_layout     : OkCancelLayout
 
+    @checked
     def __init__(
         self   : Self,
         item   : TextItem,
         parent : QWidget | None = None
     ):
         super().__init__(parent)
-        self.setWindowTitle("Text")
+        self.setWindowTitle(self._TITLE)
         self.setModal(True)
-        self._dialog_layout = QVBoxLayout(self)
+        self._layout = QVBoxLayout(self)
         # top (text) section
-        self._text_layout = QVBoxLayout()
-        self._text_format_layout = QHBoxLayout()
-        self._text_format_label = QLabel("Format:")
-        self._text_format_layout.addWidget(self._text_format_label)
-        self._text_format_combo = TextFormatComboBox(item.block())
-        self._text_format_combo.activated.connect(self._onTextFormatChange)
-        self._text_format_layout.addWidget(self._text_format_combo)
-        self._text_format_layout.addStretch(1)
-        self._text_layout.addLayout(self._text_format_layout)
-        editor_cls = TextEditor if item.block() else StrEditor
-        self._text_editor = editor_cls(item.text())
-        self._text_layout.addWidget(self._text_editor)
-        self._dialog_layout.addLayout(self._text_layout)
+        self.initTopSection(item)
         # middle left - rotation, alignment and origin
         self._geometry_layout = QVBoxLayout()
         self._rotation_group_box = TextRotationGroupBox(item.rotation(), item.flip())
@@ -86,35 +70,21 @@ class TextItemDialog(QDialog):
         self._middle_layout = QHBoxLayout()
         self._middle_layout.addLayout(self._geometry_layout)
         self._middle_layout.addWidget(self._appearance_group_box)
-        self._dialog_layout.addLayout(self._middle_layout)
+        self._layout.addLayout(self._middle_layout)
         # ok/cancel section
         self._ok_cancel_layout = OkCancelLayout(self)
-        self._dialog_layout.addLayout(self._ok_cancel_layout)
+        self._layout.addLayout(self._ok_cancel_layout)
         # finalise
-        self.setLayout(self._dialog_layout)
+        self.setLayout(self._layout)
 
-    def showEvent(self : Self, event : QShowEvent):
+    def initTopSection(self : Self, item : TextItem) -> None:
+        raise NotImplementedError("subclass must implement initTopSection()")
+
+    @checked
+    def showEvent(self : Self, event : QShowEvent) -> None:
         """Override showEvent to focus and select all text."""
         super().showEvent(event)
         QTimer.singleShot(0, self._focusEditor)
-
-    def _focusEditor(self : Self) -> None:
-        self._text_editor.setFocus(Qt.FocusReason.OtherFocusReason)
-        self._text_editor.selectAll()
-
-    def _onTextFormatChange(self : Self) -> None:
-        text = self._text_editor.text()
-        block = self._text_format_combo.raw()
-        self._text_layout.removeWidget(self._text_editor)
-        self._text_editor.deleteLater()
-        editor_cls = TextEditor if block else StrEditor
-        self._text_editor = editor_cls(text)
-        self._text_layout.insertWidget(1, self._text_editor)
-        QTimer.singleShot(0, lambda: self.resize(self.sizeHint()))
-
-    @checked
-    def getText(self : Self) -> str | NoChange:
-        return self._text_editor.text()
 
     @checked
     def getRotation(self : Self) -> float | NoChange:
@@ -159,3 +129,22 @@ class TextItemDialog(QDialog):
     @checked
     def getUnderline(self : Self) -> FontBool | NoChange:
         return self._appearance_group_box.getUnderline()
+
+
+class TextItemDialog(BaseTextItemDialog):
+    _TITLE = "Text"
+
+    _top_section : TextValueLayout
+
+    def initTopSection(self : Self, item : TextItem) -> None:
+        self._top_section = TextValueLayout(item.text(), item.block(), self)
+        self._layout.addLayout(self._top_section)
+
+    @checked
+    def getText(self : Self) -> str | NoChange:
+        return self._top_section.getText()
+
+    @checked
+    def _focusEditor(self : Self) -> None:
+        self._top_section._text_editor.setFocus(Qt.FocusReason.OtherFocusReason)
+        self._top_section._text_editor.selectAll()

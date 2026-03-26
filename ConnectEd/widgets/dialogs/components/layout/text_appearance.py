@@ -169,18 +169,26 @@ class TextAppearancePreviewLayout(TextAppearanceLayout):
         self._underline_combo.activated.connect(self._updatePreview)
 
     def _updatePreview(self : Self) -> None:
-        family    = self._family_combo.value()
-        family    = self._default_family if family == DEFAULT   else \
-                    self._initial_family if family is NO_CHANGE else family
-        bold      = self._bold_combo.value()
-        bold      = self._default_bold if bold == DEFAULT   else \
-                    self._initial_bold if bold is NO_CHANGE else bold
-        italic    = self._italic_combo.value()
-        italic    = self._default_italic if italic == DEFAULT   else \
-                    self._initial_italic if italic is NO_CHANGE else italic
+        family = self._family_combo.value()
+        if family is NO_CHANGE:
+            family = self._initial_family
+        if family == DEFAULT:
+            family = self._default_family
+        bold = self._bold_combo.value()
+        if bold is NO_CHANGE:
+            bold = self._initial_bold
+        if bold == DEFAULT:
+            bold = self._default_bold
+        italic = self._italic_combo.value()
+        if italic is NO_CHANGE:
+            italic = self._initial_italic
+        if italic == DEFAULT:
+            italic = self._default_italic
         underline = self._underline_combo.value()
-        underline = self._default_underline if underline == DEFAULT   else \
-                    self._initial_underline if underline is NO_CHANGE else underline
+        if underline is NO_CHANGE:
+            underline = self._initial_underline
+        if underline == DEFAULT:
+            underline = self._default_underline
         if any(x in (DEFAULT, NO_CHANGE) for x in (family, bold, italic, underline)):
             self._preview.setText("") # options are ambiguous
             return

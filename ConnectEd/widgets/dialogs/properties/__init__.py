@@ -164,7 +164,6 @@ class PropertiesDialog(QDialog):
         for row in range(self._table_model.rowCount()):
             # check for invalid or duplicate names
             name_item : PropertiesItem = self._table_model.item(row, name_col)
-            new = name_item.new()
             if not name_item.deleted():
                 name = name_item.value()
                 if not name or name in names:
@@ -183,9 +182,7 @@ class PropertiesDialog(QDialog):
                 continue
             kind = kind_item.value()
             value_item : PropertiesItem = self._table_model.item(row, value_col)
-            print("kind:", kind, "value_item.kind():", value_item.kind())
             if kind != value_item.kind():
-                print("type/value mismatch")
                 logger().warning(f"Type/value mismatch for property '{name}'")
                 value_item.setKind(kind)
             value = value_item.value()
@@ -233,25 +230,30 @@ class PropertiesDialog(QDialog):
                     changes.append(PropertyChangeTextAdd(**pt_args))
             else:
                 # modification
-                if  name_item.changed() \
-                or  kind_item.changed() \
-                or  value_item.changed():
+                if name_item.changed() \
+                or kind_item.changed() \
+                or value_item.changed():
                     changes.append(PropertyChangeModify(name, kind, value))
                 # property text modification
-                pt_args = {"name": name, **self._getPropertyTextArgs(row_idx)}
                 if display_item.changed():
                     if display == Display.NONE:
                         pt_args = {"name": name}
                         property_change_cls = PropertyChangeTextDelete
                     elif display_item.initial() == Display.NONE:
+                        pt_args = {
+                            "name": name,
+                            "visible": display == Display.SHOW,
+                            **self._getPropertyTextArgs(row_idx, delta=False)
+                        }
                         property_change_cls = PropertyChangeTextAdd
-                        pt_args["visible"] = display == Display.SHOW
                     else:
+                        pt_args = {
+                            "name": name,
+                            "visible": display == Display.SHOW,
+                            **self._getPropertyTextArgs(row_idx, delta=True)
+                        }
                         property_change_cls = PropertyChangeTextModify
-                        pt_args["visible"] = display == Display.SHOW
                     changes.append(property_change_cls(**pt_args))
-                elif len(pt_args) > 1:
-                    changes.append(PropertyChangeTextModify(**pt_args))
         return changes
 
     def _onKindChanged(

@@ -5,7 +5,7 @@ from PyQt6.QtCore import QPoint, QPointF
 
 from ......app import logger
 
-from ......core.types import Direction
+from ......core.types import NO_CHANGE, Direction
 
 from .....dialogs.items.port_pin import PortPinItemDialog
 from .....dialogs.items.gate     import GateItemDialog
@@ -238,18 +238,30 @@ class DrawingViewStatePlaceText(ClickMixin, DrawingViewStateBase):
         item = TextItem(pos=self._snap(s))
         dialog = TextItemDialog(item, self.view)
         if dialog.exec():
-            item.setText(dialog.getText())
-            item.setRotation(dialog.getRotation())
-            item.setFlip(dialog.getFlip())
-            item.setAlignH(dialog.getAlignH())
-            item.setAlignV(dialog.getAlignV())
-            item.setOrigin(dialog.getOrigin())
-            item.setQuillColor(dialog.getColor())
-            item.setQuillFamily(dialog.getFamily())
-            item.setQuillSize(dialog.getSize())
-            item.setQuillBold(dialog.getBold())
-            item.setQuillItalic(dialog.getItalic())
-            item.setQuillUnderline(dialog.getUnderline())
+            text      = dialog.getText()
+            rotation  = dialog.getRotation()
+            flip      = dialog.getFlip()
+            align_h   = dialog.getAlignH()
+            align_v   = dialog.getAlignV()
+            origin    = dialog.getOrigin()
+            color     = dialog.getColor()
+            family    = dialog.getFamily()
+            size      = dialog.getSize()
+            bold      = dialog.getBold()
+            italic    = dialog.getItalic()
+            underline = dialog.getUnderline()
+            if text      is not NO_CHANGE: item.setText(text)
+            if rotation  is not NO_CHANGE: item.setRotation(rotation)
+            if flip      is not NO_CHANGE: item.setFlip(flip)
+            if align_h   is not NO_CHANGE: item.setAlignH(align_h)
+            if align_v   is not NO_CHANGE: item.setAlignV(align_v)
+            if origin    is not NO_CHANGE: item.setOrigin(origin)
+            if color     is not NO_CHANGE: item.setQuillColor(color)
+            if family    is not NO_CHANGE: item.setQuillFamily(family)
+            if size      is not NO_CHANGE: item.setQuillSize(size)
+            if bold      is not NO_CHANGE: item.setQuillBold(bold)
+            if italic    is not NO_CHANGE: item.setQuillItalic(italic)
+            if underline is not NO_CHANGE: item.setQuillUnderline(underline)
             self.interact(PlaceTextInteraction(self.view, self._snap(s), item))
         else:
             self.view.state.go(self.view.stateIdle)

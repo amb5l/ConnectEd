@@ -3,11 +3,13 @@ from PyQt6.QtCore import QPoint, QPointF
 
 from ......app import logger
 
-from .....dialogs.properties     import PropertiesDialog
-from .....dialogs.appearance     import AppearanceDialog
-from .....dialogs.property_text  import PropertyTextDialog
-from .....dialogs.items.port_pin import PortPinItemDialog
-from .....dialogs.items.text     import TextItemDialog
+from ......core.types import NO_CHANGE
+
+from .....dialogs.properties          import PropertiesDialog
+from .....dialogs.appearance          import AppearanceDialog
+from .....dialogs.items.port_pin      import PortPinItemDialog
+from .....dialogs.items.text          import TextItemDialog
+from .....dialogs.items.property_text import PropertyTextItemDialog
 
 from ....items.mixin         import ItemMixin
 from ....items.text          import TextItem
@@ -265,12 +267,35 @@ class DrawingViewStateEditPropertyText(DrawingViewStateBase):
     ) -> None:
         item = i[0] if i else self.view._selectedItem(PropertyTextItem)
         if item and isinstance(item, PropertyTextItem):
-            dialog = PropertyTextDialog(item, self.view)
+            dialog = PropertyTextItemDialog(item, self.view)
             if dialog.exec():
-                value = dialog.getValue()
-                appearance = dialog.getAppearanceChange()
+                old_name = item.name()
+                new_name = dialog.getName()
+                prop_name = old_name if new_name is NO_CHANGE else (old_name, new_name)
+                text_name = old_name if new_name is NO_CHANGE else new_name
+                self.scene.editProperty(
+                    object   = item.owner(),
+                    name     = prop_name,
+                    kind     = dialog.getKind(),
+                    value    = dialog.getValue(),
+                    undoable = True
+                )
                 self.scene.editPropertyText(
-                    item, value, appearance, undoable=True
+                    object    = item.owner(),
+                    name      = text_name,
+                    cleat     = dialog.getCleat(),
+                    rotation  = dialog.getRotation(),
+                    flip      = dialog.getFlip(),
+                    origin    = dialog.getOrigin(),
+                    align_h   = dialog.getAlignH(),
+                    align_v   = dialog.getAlignV(),
+                    color     = dialog.getColor(),
+                    family    = dialog.getFamily(),
+                    size      = dialog.getSize(),
+                    bold      = dialog.getBold(),
+                    italic    = dialog.getItalic(),
+                    underline = dialog.getUnderline(),
+                    undoable  = True
                 )
         else:
             logger().warning("No property text selected")

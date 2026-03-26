@@ -287,6 +287,15 @@ class CmdEditPropertyText(CmdPropertyTextItemBase):
             italic    = italic,
             underline = underline,
         )
+        # mark obsolete if new state is unchanged
+        changed = False
+        for field in self._new.__dataclass_fields__.keys():
+            new_value = getattr(self._new, field)
+            if new_value is not NO_CHANGE:
+                if new_value != getattr(self._old, field):
+                    changed = True
+                    break
+        self.setObsolete(not changed)
 
     def redo(self : Self) -> None:
         if self._new is None:

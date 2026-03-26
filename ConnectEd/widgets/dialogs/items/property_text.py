@@ -1,22 +1,48 @@
-from typing import Self
+from typing import Self, Any
 
-from PyQt6.QtWidgets import QDialog, QGridLayout, QLabel
+from PyQt6.QtCore    import Qt
+from PyQt6.QtWidgets import QLabel
 
-from .text import TextItemDialogMixin
+from ....core.check import checked
+from ....core.types import NoChange, HandleId, DataKind
+
+from ..components.group_box.property import PropertyGroupBox
+
+from ...graphics.items.property_text import PropertyTextItem
+
+from .text import BaseTextItemDialog
 
 
-class PropertyTextItemDialog(TextItemDialogMixin, QDialog):
-    _property_layout : QGridLayout
-    _name_label      : QLabel
+class PropertyTextItemDialog(BaseTextItemDialog):
+    _TITLE = "Property Text"
 
+    _top_section : PropertyGroupBox
 
     @checked
-    def getText(self : Self) -> str:
-        raise NotImplementedError("PropertyTextItemDialog.getText() is not implemented")
+    def initTopSection(self : Self, item : PropertyTextItem) -> None:
+        self._top_section = PropertyGroupBox(item, item.name())#
+        self._layout.addWidget(self._top_section)
 
     @checked
-    def getName(self : Self) -> str:
-        return self._name_input.text()
+    def getName(self : Self) -> str | NoChange:
+        return self._top_section.getName()
 
-    def _mainSection(self : Self) -> None:
-        self._value_layout = QGridLayout()
+    @checked
+    def getKind(self : Self) -> DataKind | NoChange:
+        return self._top_section.getKind()
+
+    @checked
+    def getValue(self : Self) -> Any | NoChange:
+        return self._top_section.getValue()
+
+    @checked
+    def getCleat(self : Self) -> HandleId | NoChange:
+        return self._top_section._layout._cleat_value.value()
+
+    @checked
+    def _focusEditor(self : Self) -> None:
+        value = self._top_section._layout._value_value
+        if isinstance(value, QLabel):
+            return
+        value.setFocus(Qt.FocusReason.OtherFocusReason)
+        value.selectAll()

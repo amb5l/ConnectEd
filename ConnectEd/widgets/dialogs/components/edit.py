@@ -60,7 +60,8 @@ class TextEditor(QTextEdit):
         self._initial = value
         self.setPlainText("" if value is None else value)
 
-    def text(self : Self) -> str | NoChange:
+    @checked
+    def text(self : Self) -> str:
         return self.toPlainText()
 
     @checked
