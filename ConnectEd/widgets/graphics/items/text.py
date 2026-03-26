@@ -646,10 +646,10 @@ class TextLineRenderer(TextRendererMixin, QGraphicsSimpleTextItem):
             case AlignV.BOTTOM:
                 y = h - urect.height()
         self.setPos(x, y)
+        # update transform origin before mapping (rotation uses it)
+        self.setTransformOriginPoint(rect.center())
         # update parent hit shape from native renderer shape, mapped to parent coords
         parent._hshape = self.mapToParent(QGraphicsSimpleTextItem.shape(self))
-        # maintain transform origin at center of bounding rect for flipping
-        self.setTransformOriginPoint(rect.center())
         # update
         self.update()
 
@@ -735,6 +735,8 @@ class TextBlockRenderer(TextRendererMixin, QGraphicsTextItem):
         h = height if height >= 0.0 else urect.height()
         rect = QRectF(0.0, 0.0, w, h)
         parent._brect = rect
+        # update transform origin before mapping (rotation uses it)
+        self.setTransformOriginPoint(rect.center())
         parent._hshape = self.mapToParent(QGraphicsTextItem.shape(self))
         # if height constrained: apply vertical alignment via document top margin
         if height >= 0.0:
@@ -747,8 +749,6 @@ class TextBlockRenderer(TextRendererMixin, QGraphicsTextItem):
                     top_margin = 0
             fmt.setTopMargin(top_margin)
             root_frame.setFrameFormat(fmt)
-        # update transform origin
-        self.setTransformOriginPoint(rect.center())
         # update
         self.update()
 
