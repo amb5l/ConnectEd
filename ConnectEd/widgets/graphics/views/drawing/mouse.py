@@ -134,7 +134,7 @@ class DrawingViewMouseMixin:
                     )
                     self.mouse.left.state = MouseButtonState.Idle
                 case _:
-                    logger().warning(f"Mouse left button released when idle")
+                    logger().warning("Mouse left button released when idle")
         if event.button() & qmb.MiddleButton:
             self.mouse.middle.release.setPL(p, l)
             self.mouse.middle.release.modifiers = m
@@ -154,7 +154,7 @@ class DrawingViewMouseMixin:
                     )
                     self.mouse.middle.state = MouseButtonState.Idle
                 case _:
-                    logger().warning(f"Mouse middle button released when idle")
+                    logger().warning("Mouse middle button released when idle")
 
     def mouseDoubleClickEvent(self : "DrawingView", event : QMouseEvent) -> None:
         p = event.pos(); l = self.mapToScene(p); m = self._getModifiers(event)
