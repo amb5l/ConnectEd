@@ -14,16 +14,18 @@ class DrawingSceneApiPrivateMixin:
 
     def _selectedTopItems(self : "DrawingScene") -> list["ItemMixin"]:
         """Returns selected items that are Items, and are not children."""
+        from ...items import ItemMixin
         return [
             item for item in self.selectedItems()
-            if isinstance(item, "ItemMixin") and not item.parentItem()
+            if isinstance(item, ItemMixin) and not item.parentItem()
         ]
 
     def _selectedItems(self : "DrawingScene") -> list["ItemMixin"]:
         """Returns selected items that are Items (includes children)."""
+        from ...items import ItemMixin
         return [
             item for item in self.selectedItems()
-            if isinstance(item, "ItemMixin")
+            if isinstance(item, ItemMixin)
         ]
 
     def _snap(self : "DrawingScene", pos : QPointF, snap : QPointF) -> QPointF:
