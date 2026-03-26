@@ -82,6 +82,9 @@ class PortItem(
             )
         }
 
+    def moveHandleBy(self : Self, _ : PortHandleId, d : QPointF) -> None:
+        self.setPos(self.pos() + d)
+
     def onSettingsChange(self : Self) -> None:
         size = settings().get("theme/items/Port/size")
         self.getHandle(PortHandleId.NAME).setPos(size + self._AP_NAME_OFFSET, 0)
