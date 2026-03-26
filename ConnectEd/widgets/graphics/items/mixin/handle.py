@@ -69,8 +69,9 @@ class ItemRectHandlesMixin(ItemHandlesMixin[RectHandleId]):
 
     def initHandles(self : Self) -> None:
         self._handles = {}
+        resize_kind = getattr(self, "_RESIZE_KIND", "resize")
         for id in RectHandleId:
-            kind = "move" if id == RectHandleId.MIDDLE_CENTER else "resize"
+            kind = "move" if id == RectHandleId.MIDDLE_CENTER else resize_kind
             handle = HandleItem(id=id, kind=kind, parent=self)
             self._handles[id] = handle
 
