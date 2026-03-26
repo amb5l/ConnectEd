@@ -1,7 +1,6 @@
 from typing import Self
 
 from PyQt6.QtCore    import Qt, QPoint, QPointF
-from PyQt6.QtWidgets import QGraphicsItem
 
 from ....items.mixin         import ItemMixin
 from ....items.text          import TextItem
@@ -30,17 +29,9 @@ class DrawingViewStateIdle(DrawingViewStateBase):
         self.view.interaction = None
 
     def mouseLeftClick(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
-        items = self.view._itemsAt(s)
-        selectable_items = []
-        for item in items:
-            if isinstance(item, GripItem):
-                return
-            if item.flags() & QGraphicsItem.GraphicsItemFlag.ItemIsSelectable:
-                selectable_items.append(item)
         if m == qkm.NoModifier:
-            if not selectable_items or not selectable_items[0].isSelected():
-                self.scene.clearSelection()
-        self.view._selectPoint(s, m)
+            self.scene.clearSelection()
+        self.view._selectClick(s, m)
 
     def mouseLeftDoubleClick(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
         items = self.view._itemsAt(s)
@@ -56,7 +47,13 @@ class DrawingViewStateIdle(DrawingViewStateBase):
 
     def mouseLeftDragBegin(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
         raw_items_at = self.view._itemsAt(s)
-        grips_at = [item for item in raw_items_at if isinstance(item, GripItem)]
+        grips_at = []
+        top_items_at = []
+        for item in raw_items_at:
+            if item.parentItem() is None:
+                top_items_at.append(item)
+            elif isinstance(item, GripItem):
+                grips_at.append(item)
         # grips
         if len(grips_at) == 1 and not (m & qkm.AltModifier):
             grip = grips_at[0]
@@ -99,7 +96,7 @@ class DrawingViewStateIdle(DrawingViewStateBase):
         and not (m & (qkm.ControlModifier | qkm.ShiftModifier)):
             self.scene.clearSelection()
             items = []
-        self.view._selectPoint(s, m)
+        self.view._selectDrag(s, m)
         items = self.scene.selectedItems()
         if items: # slide/move
             pins = self.view._siblingBlockPins(items)

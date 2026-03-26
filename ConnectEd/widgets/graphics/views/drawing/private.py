@@ -9,6 +9,7 @@ from .....app import settings, window
 from ....menu import Menu
 
 from ...items.block     import BlockItem
+from ...items.polyline  import PolylineItem
 from ...items.block_pin import BlockPinItem
 from ...items.base_pin  import BasePinArrowItem
 from ...items.entry     import EntryItem
@@ -200,12 +201,12 @@ class DrawingViewPrivateMixin:
         scene.blockSignals(False)
         scene.selectionChanged.emit()
 
-    def _selectPoint(
+    def _selectClick(
         self      : "DrawingView",
-        point     : QPointF,
+        pos       : QPointF,
         modifiers : Qt.KeyboardModifier
     ) -> None:
-        items = self._itemsAt(point)
+        items = self._itemsAt(pos)
         selectable = QGraphicsItem.GraphicsItemFlag.ItemIsSelectable
         items = [i for i in items if i.flags() & selectable]
         toggle = modifiers & (qkm.ControlModifier | qkm.ShiftModifier) \
@@ -244,8 +245,28 @@ class DrawingViewPrivateMixin:
             menu.hovered.connect(_onHover)
             menu.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
             menu.setFocus()
-            menu.exec(self.mapToGlobal(self.mapFromScene(point)))
+            menu.exec(self.mapToGlobal(self.mapFromScene(pos)))
         elif items: # single or top item case
+            item = items[0]
+            if toggle:
+                item.setSelected(not item.isSelected())
+            else:
+                if not item.isSelected():
+                    item.setSelected(True)
+                elif isinstance(item, PolylineItem):
+                    item.cycleSelMode()
+
+    def _selectDrag(
+        self      : "DrawingView",
+        pos       : QPointF,
+        modifiers : Qt.KeyboardModifier
+    ) -> None:
+        items = self._itemsAt(pos)
+        selectable = QGraphicsItem.GraphicsItemFlag.ItemIsSelectable
+        items = [i for i in items if i.flags() & selectable]
+        toggle = modifiers & (qkm.ControlModifier | qkm.ShiftModifier) \
+            == qkm.ControlModifier
+        if items: # single or top item case
             item = items[0]
             if toggle:
                 item.setSelected(not item.isSelected())

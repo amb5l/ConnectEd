@@ -1,13 +1,9 @@
 import inspect
 
 from PyQt6.QtCore    import Qt, QEvent, QPoint
-from PyQt6.QtWidgets import QGraphicsItem
 from PyQt6.QtGui     import QEnterEvent, QMouseEvent, QWheelEvent, QCursor
 
 from .....app import logger, settings, window
-
-from ...items.grip     import GripItem
-from ...items.polyline import PolylineItem
 
 from .defs import DrawingViewMouseButtonState as MouseButtonState
 
@@ -22,26 +18,28 @@ qkm = Qt.KeyboardModifier
 
 class DrawingViewMouseMixin:
     def enterEvent(self : "DrawingView", _event : QEnterEvent) -> None:
-        p = self.mapFromGlobal(QCursor.pos())
-        l = self.mapToScene(p)
-        self.mouse.current.setPL(p, l)
+        v = self.mapFromGlobal(QCursor.pos())
+        s = self.mapToScene(v)
+        self.mouse.current.setPL(v, s)
         window().status_bar.xy.setText(
-            str(int(round(l.x()))) + "," + str(int(round(l.y())))
+            str(int(round(s.x()))) + "," + str(int(round(s.y())))
         )
 
     def leaveEvent(self : "DrawingView", _ : QEvent) -> None:
         rect = self.viewport().rect()
-        p = QPoint(rect.width() // 2, rect.height() // 2)
-        l = self.mapToScene(p)
-        self.mouse.current.setPL(p, l)
+        v = QPoint(rect.width() // 2, rect.height() // 2)
+        s = self.mapToScene(v)
+        self.mouse.current.setPL(v, s)
         window().status_bar.xy.setText("-,-")
 
     def mouseMoveEvent(self : "DrawingView", event : QMouseEvent) -> None:
-        p = event.pos(); l = self.mapToScene(p); m = self._getModifiers(event)
-        self.mouse.current.setPL(p, l)
+        v = event.pos()
+        s = self.mapToScene(v)
+        m = self._getModifiers(event)
+        self.mouse.current.setPL(v, s)
         self.mouse.current.modifiers = m
         window().status_bar.xy.setText(
-            str(int(round(l.x()))) + "," + str(int(round(l.y())))
+            str(int(round(s.x()))) + "," + str(int(round(s.y())))
         )
         match self.mouse.left.state:
             case MouseButtonState.Pressed:
@@ -86,37 +84,24 @@ class DrawingViewMouseMixin:
         )
 
     def mousePressEvent(self : "DrawingView", event : QMouseEvent) -> None:
-        p = event.pos(); l = self.mapToScene(p); m = self._getModifiers(event)
-        # handle selection in idle state to avoid interfering with interactions
-        if self.state == self.stateIdle \
-        and (event.buttons() & qmb.LeftButton and m == qkm.NoModifier):
-            items = self._itemsAt(l)
-            selectable = QGraphicsItem.GraphicsItemFlag.ItemIsSelectable
-            top = next((i for i in items
-                        if isinstance(i, GripItem) or i.flags() & selectable),
-                       None)
-            if top is None:
-                self.scene().clearSelection()
-            elif isinstance(top, GripItem):
-                pass  # grips handled by drag
-            elif not top.isSelected():
-                self.scene().clearSelection()
-                top.setSelected(True)
-            elif isinstance(top, PolylineItem):
-                top.cycleSelMode()
+        v = event.pos()
+        s = self.mapToScene(v)
+        m = self._getModifiers(event)
         if event.buttons() & qmb.LeftButton:
-            self.mouse.left.press.setPL(p, l)
+            self.mouse.left.press.setPL(v, s)
             self.mouse.left.press.modifiers = m
             self.mouse.left.state = MouseButtonState.Pressed
         if event.buttons() & qmb.MiddleButton:
-            self.mouse.middle.press.setPL(p, l)
+            self.mouse.middle.press.setPL(v, s)
             self.mouse.middle.press.modifiers = m
             self.mouse.middle.state = MouseButtonState.Pressed
 
     def mouseReleaseEvent(self : "DrawingView", event : QMouseEvent) -> None:
-        p = event.pos(); l = self.mapToScene(p); m = self._getModifiers(event)
+        v = event.pos()
+        s = self.mapToScene(v)
+        m = self._getModifiers(event)
         if event.button() & qmb.LeftButton:
-            self.mouse.left.release.setPL(p, l)
+            self.mouse.left.release.setPL(v, s)
             self.mouse.left.release.modifiers = m
             match self.mouse.left.state:
                 case MouseButtonState.Pressed:
@@ -136,7 +121,7 @@ class DrawingViewMouseMixin:
                 case _:
                     logger().warning("Mouse left button released when idle")
         if event.button() & qmb.MiddleButton:
-            self.mouse.middle.release.setPL(p, l)
+            self.mouse.middle.release.setPL(v, s)
             self.mouse.middle.release.modifiers = m
             match self.mouse.middle.state:
                 case MouseButtonState.Pressed:
@@ -157,14 +142,17 @@ class DrawingViewMouseMixin:
                     logger().warning("Mouse middle button released when idle")
 
     def mouseDoubleClickEvent(self : "DrawingView", event : QMouseEvent) -> None:
-        p = event.pos(); l = self.mapToScene(p); m = self._getModifiers(event)
+        v = event.pos()
+        s = self.mapToScene(v)
+        m = self._getModifiers(event)
         if event.button() & qmb.LeftButton:
             self.mouse.left.state = MouseButtonState.Idle
-            self.state.mouseLeftDoubleClick(p, l, m)
+            self.state.mouseLeftDoubleClick(v, s, m)
 
     def wheelEvent(self : "DrawingView", event : QWheelEvent) -> None:
-        p = event.position().toPoint(); l = self.mapToScene(p)
-        self.mouse.current.setPL(p, l)
+        v = event.position().toPoint()
+        s = self.mapToScene(v)
+        self.mouse.current.setPL(v, s)
         self.mouse.current.modifiers = self._getModifiers(event)
         n = event.angleDelta().y() / settings().get("prefs/mouse/wheel")
         match self.mouse.current.modifiers:
@@ -174,91 +162,3 @@ class DrawingViewMouseMixin:
                 self.ui.viewPanLeft(n) if n >= 0 else self.ui.viewPanRight(-n)
             case qkm.ControlModifier: # zoom in/out
                 self.ui.viewZoomIn(n) if n >= 0 else self.ui.viewZoomOut(-n)
-
-    # shims to support scripting
-
-    def _vsCoords(self : "DrawingView", pos : QPoint, physical : bool):
-        """Helper to map coordinates based on physical parameter"""
-        if physical:
-            return pos, self.mapFromGlobal(pos)  # view, scene
-        else:
-            return self.mapFromGlobal(pos), pos  # view, scene
-
-    def _mouseMethod(self : "DrawingView", pos : QPoint, physical : bool, modifiers : qkm):
-        """Helper that automatically calls the corresponding state method"""
-        method_name = inspect.currentframe().f_back.f_code.co_name
-        view_pos, scene_pos = self._vsCoords(pos, physical)
-        state_method = getattr(self.state, method_name)
-        state_method(view_pos, scene_pos, modifiers)
-
-    def mouseLeftClick(
-        self      : "DrawingView",
-        pos       : QPoint,
-        physical  : bool = False,
-        modifiers : qkm = qkm.NoModifier
-    ) -> None:
-        self._mouseMethod(pos, physical, modifiers)
-
-    def mouseLeftDragBegin(
-        self      : "DrawingView",
-        pos       : QPoint,
-        physical  : bool = False,
-        modifiers : qkm = qkm.NoModifier
-    ) -> None:
-        self._mouseMethod(pos, physical, modifiers)
-
-    def mouseLeftDragCont(
-        self      : "DrawingView",
-        pos       : QPoint,
-        physical  : bool = False,
-        modifiers : qkm = qkm.NoModifier
-    ) -> None:
-        self._mouseMethod(pos, physical, modifiers)
-
-    def mouseLeftDragEnd(
-        self      : "DrawingView",
-        pos       : QPoint,
-        physical  : bool = False,
-        modifiers : qkm = qkm.NoModifier
-    ) -> None:
-        self._mouseMethod(pos, physical, modifiers)
-
-    def mouseMiddleClick(
-        self      : "DrawingView",
-        pos       : QPoint,
-        physical  : bool = False,
-        modifiers : qkm = qkm.NoModifier
-    ) -> None:
-        self._mouseMethod(pos, physical, modifiers)
-
-    def mouseMiddleDragBegin(
-        self      : "DrawingView",
-        pos       : QPoint,
-        physical  : bool = False,
-        modifiers : qkm = qkm.NoModifier
-    ) -> None:
-        self._mouseMethod(pos, physical, modifiers)
-
-    def mouseMiddleDragCont(
-        self      : "DrawingView",
-        pos       : QPoint,
-        physical  : bool = False,
-        modifiers : qkm = qkm.NoModifier
-    ) -> None:
-        self._mouseMethod(pos, physical, modifiers)
-
-    def mouseMiddleDragEnd(
-        self      : "DrawingView",
-        pos       : QPoint,
-        physical  : bool = False,
-        modifiers : qkm = qkm.NoModifier
-    ) -> None:
-        self._mouseMethod(pos, physical, modifiers)
-
-    def mouseMove(
-        self      : "DrawingView",
-        pos       : QPoint,
-        physical  : bool = False,
-        modifiers : qkm = qkm.NoModifier
-    ) -> None:
-        self._mouseMethod(pos, physical, modifiers)
