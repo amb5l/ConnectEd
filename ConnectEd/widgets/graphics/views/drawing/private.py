@@ -145,7 +145,11 @@ class DrawingViewPrivateMixin:
             Qt.SortOrder.DescendingOrder,
             self.viewportTransform()
         )
-        return [i for i in items if i.zValue() in self.layer.value]
+        nb = Qt.MouseButton.NoButton
+        return [
+            i for i in items
+            if i.zValue() in self.layer.value and i.acceptedMouseButtons() != nb
+        ]
 
     def _siblingBlockPins(
         self  : "DrawingView",
