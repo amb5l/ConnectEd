@@ -2,7 +2,7 @@ from typing import Self
 
 from PyQt6.QtWidgets import QGridLayout, QButtonGroup
 
-from .....core.types import RectHandleId
+from .....core.types import NoChange, NO_CHANGE, RectHandleId
 
 from ..tool_button import ToolButton
 
@@ -18,6 +18,7 @@ from .....resources.icons import AnchorTopLeftIcon,   \
 
 
 class OriginLayout(QGridLayout):
+    _initial              : RectHandleId
     _button_group         : QButtonGroup
     _top_left_button      : ToolButton
     _top_center_button    : ToolButton
@@ -31,6 +32,7 @@ class OriginLayout(QGridLayout):
 
     def __init__(self : Self, origin : RectHandleId) -> None:
         super().__init__()
+        self._initial = origin
         self._button_group = QButtonGroup(self)
         self._top_left_button = ToolButton(AnchorTopLeftIcon().get())
         self._top_left_button.setChecked(origin == RectHandleId.TOP_LEFT)
@@ -69,23 +71,25 @@ class OriginLayout(QGridLayout):
         self._button_group.addButton(self._bottom_right_button)
         self.addWidget(self._bottom_right_button, 2, 2)
 
-    def getOrigin(self : Self) -> RectHandleId:
+    def getOrigin(self : Self) -> RectHandleId | NoChange:
         if self._top_left_button.isChecked():
-            return RectHandleId.TOP_LEFT
+            r = RectHandleId.TOP_LEFT
         elif self._top_center_button.isChecked():
-            return RectHandleId.TOP_CENTER
+            r = RectHandleId.TOP_CENTER
         elif self._top_right_button.isChecked():
-            return RectHandleId.TOP_RIGHT
+            r = RectHandleId.TOP_RIGHT
         elif self._middle_left_button.isChecked():
-            return RectHandleId.MIDDLE_LEFT
+            r = RectHandleId.MIDDLE_LEFT
         elif self._middle_center_button.isChecked():
-            return RectHandleId.MIDDLE_CENTER
+            r = RectHandleId.MIDDLE_CENTER
         elif self._middle_right_button.isChecked():
-            return RectHandleId.MIDDLE_RIGHT
+            r = RectHandleId.MIDDLE_RIGHT
         elif self._bottom_left_button.isChecked():
-            return RectHandleId.BOTTOM_LEFT
+            r = RectHandleId.BOTTOM_LEFT
         elif self._bottom_center_button.isChecked():
-            return RectHandleId.BOTTOM_CENTER
-        else: # self._bottom_right_button.isChecked()
-            return RectHandleId.BOTTOM_RIGHT
-        raise ValueError("Invalid origin")
+            r = RectHandleId.BOTTOM_CENTER
+        elif self._bottom_right_button.isChecked():
+            r = RectHandleId.BOTTOM_RIGHT
+        else:
+            raise ValueError("Invalid origin")
+        return r if r != self._initial else NO_CHANGE

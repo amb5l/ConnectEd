@@ -5,7 +5,7 @@ from PyQt6.QtWidgets import QWidget, QComboBox
 from PyQt6.QtGui     import QColor, QIcon, QPixmap, QPainter
 
 from .....core.check import checked
-from .....core.types import Default, DEFAULT, NoChange, NO_CHANGE, Color
+from .....core.types import DEFAULT, NoChange, NO_CHANGE, Color
 from .....core.utils import val2str
 
 from .. import customIconSize, NoChangeIcon, DefaultIcon, QueryIcon
@@ -34,6 +34,7 @@ class ColorComboBox(QComboBox):
         "White"        : QColor(Qt.GlobalColor.white)
     }
 
+    _initial     : Color | NoChange
     _idx_default : int
     _idx_custom  : int
 
@@ -45,13 +46,13 @@ class ColorComboBox(QComboBox):
         parent  : QWidget | None = None
     ) -> None:
         super().__init__(parent)
+        self._initial = value
         self.setIconSize(customIconSize())
         # build default icon, string and value
         default_icon = self._getIcon(default) if isinstance(default, QColor) \
             else DefaultIcon().get()
         default_str = f" = {val2str(default)}" if isinstance(default, QColor) \
             else ""
-        default_value = default if isinstance(default, QColor) else NO_CHANGE
         # build no change icon, string and value
         no_change_icon = self._getIcon(value) if isinstance(value, QColor) \
             else default_icon if value == DEFAULT \
@@ -60,7 +61,7 @@ class ColorComboBox(QComboBox):
             else " = default" if value == DEFAULT \
             else ""
         no_change_value = value if isinstance(value, QColor) \
-            else default_value if value == DEFAULT \
+            else DEFAULT if value == DEFAULT \
             else NO_CHANGE
         # build custom icon, string and value
         custom_icon = no_change_icon if isinstance(value, QColor) \
@@ -70,13 +71,13 @@ class ColorComboBox(QComboBox):
             else default_str if value == DEFAULT and isinstance(default, QColor) \
             else ""
         custom_value = value if isinstance(value, QColor) \
-            else default_value if value == DEFAULT and isinstance(default, QColor) \
+            else DEFAULT if value == DEFAULT and isinstance(default, QColor) \
             else None
         # add no change, default and custom entries
         if value is NO_CHANGE:
             self.addItem(no_change_icon, f"<no change{no_change_str}>", no_change_value)
         self._idx_default = self.count()
-        self.addItem(default_icon, f"<default{default_str}>", default_value)
+        self.addItem(default_icon, f"<default{default_str}>", DEFAULT)
         self._idx_custom = self.count()
         self.addItem(custom_icon, f"<custom{custom_str}>", custom_value)
         # add standard entries, set current index
@@ -95,7 +96,8 @@ class ColorComboBox(QComboBox):
 
     @checked
     def value(self : Self) -> Color | NoChange:
-        return self.itemData(self.currentIndex(), Qt.ItemDataRole.UserRole)
+        r = self.itemData(self.currentIndex(), Qt.ItemDataRole.UserRole)
+        return r if r != self._initial else NO_CHANGE
 
     @checked
     def setValue(self : Self, value : Color) -> None:
@@ -109,6 +111,7 @@ class ColorComboBox(QComboBox):
                 self.setItemData(index, value, Qt.ItemDataRole.UserRole)
         self.setCurrentIndex(index)
 
+    @checked
     def _onActivated(self : Self, index : int) -> None:
         if self.currentText().startswith("<custom"):
             color = self.value()
@@ -122,6 +125,7 @@ class ColorComboBox(QComboBox):
                 self.setItemText(index, f"<custom = {val2str(color)}>")
                 self.setItemData(index, color, Qt.ItemDataRole.UserRole)
 
+    @checked
     def _getIcon(self : Self, color : QColor) -> QIcon:
         size = self.iconSize()
         pixmap = QPixmap(size.width(), size.height())

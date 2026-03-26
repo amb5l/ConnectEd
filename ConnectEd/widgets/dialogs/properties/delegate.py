@@ -89,7 +89,7 @@ class PropertiesDelegate(QStyledItemDelegate):
         if kind is DataKind.DISPLAY and isinstance(e, EnumComboBox):
             row = index.row()
             e.currentIndexChanged.connect(
-                lambda: self._dialog._onDisplayChanged(e.value(), row)
+                lambda: self._dialog._onDisplayChanged(e.raw(), row)
             )
             e.destroyed.connect(
                 lambda: self._dialog._refreshDisplay(row)

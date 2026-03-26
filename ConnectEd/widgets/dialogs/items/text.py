@@ -103,8 +103,8 @@ class TextItemDialog(QDialog):
         self._text_editor.selectAll()
 
     def _onTextFormatChange(self : Self) -> None:
-        text = self._text_editor.value()
-        block = self._text_format_combo.getBlock()
+        text = self._text_editor.text()
+        block = self._text_format_combo.raw()
         self._text_layout.removeWidget(self._text_editor)
         self._text_editor.deleteLater()
         editor_cls = TextEditor if block else StrEditor
@@ -113,27 +113,27 @@ class TextItemDialog(QDialog):
         QTimer.singleShot(0, lambda: self.resize(self.sizeHint()))
 
     @checked
-    def getText(self : Self) -> str:
-        return self._text_editor.value()
+    def getText(self : Self) -> str | NoChange:
+        return self._text_editor.text()
 
     @checked
-    def getRotation(self : Self) -> float:
+    def getRotation(self : Self) -> float | NoChange:
         return self._rotation_group_box.getRotation()
 
     @checked
-    def getFlip(self : Self) -> bool:
+    def getFlip(self : Self) -> bool | NoChange:
         return self._rotation_group_box.getFlip()
 
     @checked
-    def getAlignH(self : Self) -> AlignH:
+    def getAlignH(self : Self) -> AlignH | NoChange:
         return self._align_group_box.getAlignH()
 
     @checked
-    def getAlignV(self : Self) -> AlignV:
+    def getAlignV(self : Self) -> AlignV | NoChange:
         return self._align_group_box.getAlignV()
 
     @checked
-    def getOrigin(self : Self) -> RectHandleId:
+    def getOrigin(self : Self) -> RectHandleId | NoChange:
         return self._origin_group_box.getOrigin()
 
     @checked

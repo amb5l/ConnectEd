@@ -2,7 +2,7 @@ from typing import Self
 
 from PyQt6.QtWidgets import QGridLayout, QHBoxLayout, QButtonGroup, QLabel
 
-from .....core.types import AlignH, AlignV
+from .....core.types import NoChange, NO_CHANGE, AlignH, AlignV
 
 from .....resources.icons import TextAlignLeftIcon,   \
                                  TextAlignCenterIcon, \
@@ -15,6 +15,8 @@ from ..tool_button import ToolButton
 
 
 class TextAlignLayout(QGridLayout):
+    _initial_h       : AlignH
+    _initial_v       : AlignV
     _h_label         : QLabel
     _h_layout        : QHBoxLayout
     _h_button_group  : QButtonGroup
@@ -30,6 +32,8 @@ class TextAlignLayout(QGridLayout):
 
     def __init__(self : Self, align_h : AlignH, align_v : AlignV) -> None:
         super().__init__()
+        self._initial_h = align_h
+        self._initial_v = align_v
         # horizontal
         self._h_label = QLabel("Horizontal:")
         self.addWidget(self._h_label, 0, 0)
@@ -68,18 +72,24 @@ class TextAlignLayout(QGridLayout):
         self.addLayout(self._v_layout, 1, 1)
         # done
 
-    def getAlignH(self : Self) -> AlignH:
+    def getAlignH(self : Self) -> AlignH | NoChange:
         if self._h_right_button.isChecked():
-            return AlignH.RIGHT
+            r = AlignH.RIGHT
         elif self._h_center_button.isChecked():
-            return AlignH.CENTER
-        else: # self._h_left_button.isChecked()
-            return AlignH.LEFT
+            r = AlignH.CENTER
+        elif self._h_left_button.isChecked():
+            r = AlignH.LEFT
+        else:
+            raise ValueError("Invalid horizontal alignment")
+        return r if r != self._initial_h else NO_CHANGE
 
     def getAlignV(self : Self) -> AlignV:
         if self._v_bottom_button.isChecked():
-            return AlignV.BOTTOM
+            r = AlignV.BOTTOM
         elif self._v_middle_button.isChecked():
-            return AlignV.MIDDLE
-        else: # self._v_top_button.isChecked()
-            return AlignV.TOP
+            r = AlignV.MIDDLE
+        elif self._v_top_button.isChecked():
+            r = AlignV.TOP
+        else:
+            raise ValueError("Invalid vertical alignment")
+        return r if r != self._initial_v else NO_CHANGE

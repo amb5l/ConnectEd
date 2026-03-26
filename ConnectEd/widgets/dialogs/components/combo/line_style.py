@@ -9,7 +9,7 @@ from .....app import logger
 from .....core.check import checked
 from .....core.icon  import getFgBgColors
 
-from .....core.types import Default, DEFAULT, NoChange, NO_CHANGE
+from .....core.types import Default, DEFAULT, NoChange, NO_CHANGE, PenStyle
 
 from .. import customIconSize, NoChangeIcon, DefaultIcon
 
@@ -25,23 +25,24 @@ class LineStyleComboBox(QComboBox):
     }
     _STYLES_REV = {v: k for k, v in _STYLES.items()}
 
+    _initial     : PenStyle | NoChange
     _idx_default : int
 
     @checked
     def __init__(
         self    : Self,
-        value   : Qt.PenStyle | Default | NoChange,
+        value   : PenStyle | NoChange,
         default : Qt.PenStyle | NoChange,
         parent  : QWidget | None = None
     ) -> None:
         super().__init__(parent)
+        self._initial = value
         self.setIconSize(customIconSize())
         # build default icon, string and value
         default_icon = self._getIcon(default) \
             if isinstance(default, Qt.PenStyle) else DefaultIcon().get()
         default_str = f" = {self._STYLES_REV[default]}" \
             if isinstance(default, Qt.PenStyle) else ""
-        default_value = default if isinstance(default, Qt.PenStyle) else NO_CHANGE
         # build no change icon, string and value
         no_change_icon = self._getIcon(value) if isinstance(value, Qt.PenStyle) \
             else default_icon if value == DEFAULT \
@@ -49,13 +50,13 @@ class LineStyleComboBox(QComboBox):
         no_change_str = f" = {self._STYLES_REV[value]}" \
             if isinstance(value, Qt.PenStyle) else ""
         no_change_value = value if isinstance(value, Qt.PenStyle) \
-            else default_value if value == DEFAULT \
+            else DEFAULT if value == DEFAULT \
             else NO_CHANGE
         # add no change and default entries
         if value is NO_CHANGE:
             self.addItem(no_change_icon, f"<no change{no_change_str}>", no_change_value)
         self._idx_default = self.count()
-        self.addItem(default_icon, f"<default{default_str}>", default_value)
+        self.addItem(default_icon, f"<default{default_str}>", DEFAULT)
         # add standard entries, set current index
         self.setCurrentIndex(0)
         if value is not NO_CHANGE and value != DEFAULT:
@@ -66,11 +67,12 @@ class LineStyleComboBox(QComboBox):
                 self.setCurrentIndex(self.count() - 1)
 
     @checked
-    def value(self : Self) -> Qt.PenStyle | Default | NoChange:
-        return self.itemData(self.currentIndex(), Qt.ItemDataRole.UserRole)
+    def value(self : Self) -> PenStyle | NoChange:
+        r = self.itemData(self.currentIndex(), Qt.ItemDataRole.UserRole)
+        return r if r != self._initial else NO_CHANGE
 
     @checked
-    def setValue(self : Self, value : Qt.PenStyle | Default) -> None:
+    def setValue(self : Self, value : PenStyle) -> None:
         if value == DEFAULT:
             index = self._idx_default
         else:
@@ -80,6 +82,7 @@ class LineStyleComboBox(QComboBox):
                 return
         self.setCurrentIndex(index)
 
+    @checked
     def _getIcon(self : Self, style : Qt.PenStyle) -> QIcon:
         fg, bg = getFgBgColors()
         size = self.iconSize()

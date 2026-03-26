@@ -3,7 +3,7 @@ from typing import Self
 from PyQt6.QtWidgets import QGroupBox, QWidget
 
 from .....core.check import checked
-from .....core.types import RectHandleId
+from .....core.types import NoChange, RectHandleId
 
 from ..layout.origin import OriginLayout
 
@@ -22,5 +22,5 @@ class OriginGroupBox(QGroupBox):
         self.setLayout(self._layout)
 
     @checked
-    def getOrigin(self : Self) -> RectHandleId:
+    def getOrigin(self : Self) -> RectHandleId | NoChange:
         return self._layout.getOrigin()

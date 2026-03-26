@@ -3,8 +3,13 @@ from typing import Self
 from PyQt6.QtWidgets import QLineEdit, QTextEdit, QCheckBox, QWidget
 from PyQt6.QtGui     import QIntValidator, QDoubleValidator, QValidator
 
+from ....core.check import checked
+
+from ....core.types import NoChange, NO_CHANGE
+
 
 class SizeValidator(QValidator):
+    @checked
     def validate(
         self : Self, text : str, pos : int
     ) -> tuple[QValidator.State, str, int]:
@@ -21,93 +26,151 @@ class SizeValidator(QValidator):
 
 
 class StrEditor(QLineEdit):
+    _initial : str | None
+
+    @checked
     def __init__(
-        self    : Self,
-        value   : str | None = None,
-        parent  : QWidget | None = None
+        self   : Self,
+        value  : str | None = None,
+        parent : QWidget | None = None
     ) -> None:
         super().__init__(parent)
+        self._initial = value
         self.setText("" if value is None else value)
 
-    def value(self : Self) -> str:
-        return self.text()
+    @checked
+    def value(self : Self) -> str | NoChange:
+        return NO_CHANGE if self.text() == self._initial else self.text()
 
+    @checked
     def setValue(self : Self, value : str) -> None:
         self.setText(value)
 
 
 class TextEditor(QTextEdit):
-    def __init__(self : Self, value : str | None = None, parent : QWidget | None = None):
+    _initial : str | None
+
+    @checked
+    def __init__(
+        self   : Self,
+        value  : str | None = None,
+        parent : QWidget | None = None
+    ) -> None:
         super().__init__(parent)
+        self._initial = value
         self.setPlainText("" if value is None else value)
 
-    def value(self : Self) -> str:
+    def text(self : Self) -> str | NoChange:
         return self.toPlainText()
 
+    @checked
+    def value(self : Self) -> str | NoChange:
+        return NO_CHANGE if self.toPlainText() == self._initial else self.toPlainText()
+
+    @checked
     def setValue(self : Self, value : str) -> None:
         self.setPlainText(value)
 
 
 class IntEditor(QLineEdit):
-    def __init__(self : Self, value : int | None = None, parent : QWidget | None = None):
+    _initial : int | None
+
+    @checked
+    def __init__(
+        self   : Self,
+        value  : int | None = None,
+        parent : QWidget | None = None
+    ) -> None:
         super().__init__(parent)
+        self._initial = value
         self.setValidator(QIntValidator())
         self.setText("" if value is None else str(value))
 
-    def value(self : Self) -> int:
+    @checked
+    def value(self : Self) -> int | NoChange | None:
         try:
-            return int(self.text())
+            r = int(self.text())
         except ValueError:
-            return 0
+            r = None
+        return r if r != self._initial else NO_CHANGE
 
+    @checked
     def setValue(self : Self, value : int) -> None:
         self.setText(str(value))
 
 
 class FloatEditor(QLineEdit):
-    def __init__(self : Self, value : float | None = None, parent : QWidget | None = None):
-        super().__init__(parent)
-        self.setValidator(QDoubleValidator())
-        self.setText("" if value is None else str(value))
+    _initial : float | None
 
-    def value(self : Self) -> float:
-        try:
-            return float(self.text())
-        except ValueError:
-            return 0.0
-
-    def setValue(self : Self, value : float) -> None:
-        self.setText(str(value))
-
-
-class SizeEditor(QLineEdit):
+    @checked
     def __init__(
         self   : Self,
         value  : float | None = None,
         parent : QWidget | None = None
     ) -> None:
         super().__init__(parent)
+        self._initial = value
+        self.setValidator(QDoubleValidator())
+        self.setText("" if value is None else str(value))
+
+    @checked
+    def value(self : Self) -> float | NoChange | None:
+        try:
+            r = float(self.text())
+        except ValueError:
+            r = None
+        return r if r != self._initial else NO_CHANGE
+
+    @checked
+    def setValue(self : Self, value : float) -> None:
+        self.setText(str(value))
+
+
+class SizeEditor(QLineEdit):
+    _initial : float | None
+
+    @checked
+    def __init__(
+        self   : Self,
+        value  : float | None = None,
+        parent : QWidget | None = None
+    ) -> None:
+        super().__init__(parent)
+        self._initial = value
         self.setValidator(SizeValidator())
         self.setText("" if value is None else str(value))
 
-    def value(self : Self) -> float | None:
-        text = self.text().strip()
+    @checked
+    def value(self : Self) -> float | NoChange:
         try:
-            return float(text)
+            r = float(self.text())
         except ValueError:
-            return None
+            r = -1.0  # auto size
+        return r if r != self._initial else NO_CHANGE
 
-    def setValue(self : Self, value : float | None) -> None:
-        self.setText("" if value is None else str(value))
+    @checked
+    def setValue(self : Self, value : float) -> None:
+        self.setText(str(value))
 
 
 class BoolEditor(QCheckBox):
-    def __init__(self : Self, value : bool | None = None, parent : QWidget | None = None):
+    _initial : bool | None
+
+    @checked
+    def __init__(
+        self   : Self,
+        value  : bool | None = None,
+        parent : QWidget | None = None
+    ) -> None:
         super().__init__(parent)
-        self.setChecked(False if value is None else value)
+        self._initial = value
+        self.setChecked(value is True)
 
-    def value(self : Self) -> bool:
-        return self.isChecked()
+    @checked
+    def value(self : Self) -> bool | NoChange:
+        r = self.isChecked()
+        return r if r != self._initial else NO_CHANGE
 
-    def setValue(self : Self, value : bool | None) -> None:
-        self.setChecked(False if value is None else value)
+    @checked
+    def setValue(self : Self, value : bool) -> None:
+        self.setChecked(value is True)
