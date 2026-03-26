@@ -3,7 +3,9 @@ from typing import Self
 from PyQt6.QtCore    import Qt, QPoint, QPointF
 from PyQt6.QtWidgets import QGraphicsItem
 
-from ....items.mixin import ItemMixin
+from ....items.mixin         import ItemMixin
+from ....items.text          import TextItem
+from ....items.property_text import PropertyTextItem
 
 from ....items.grip     import GripItem, OriginGripItem, ResizeGripItem
 from ....items.polyline import PolySegItem
@@ -39,6 +41,18 @@ class DrawingViewStateIdle(DrawingViewStateBase):
             if not selectable_items or not selectable_items[0].isSelected():
                 self.scene.clearSelection()
         self.view._selectPoint(s, m)
+
+    def mouseLeftDoubleClick(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
+        items = self.view._itemsAt(s)
+        for item in items:
+            if isinstance(item, PropertyTextItem):
+                self.view.state.go(
+                    self.view.stateEditPropertyText, [item]
+                )
+                return
+            if isinstance(item, TextItem):
+                self.view.state.go(self.view.stateEditText, [item])
+                return
 
     def mouseLeftDragBegin(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
         raw_items_at = self.view._itemsAt(s)

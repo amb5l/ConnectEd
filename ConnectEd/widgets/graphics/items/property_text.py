@@ -147,21 +147,6 @@ class PropertyTextItem(TextItem):
         self.setCleat(cleat, parent)
         self.onTextChange()
 
-    def mouseDoubleClickEvent(self : Self, event : QGraphicsSceneMouseEvent) -> None:
-        """Handle double-click events to open the edit dialog."""
-        if event.button() == Qt.MouseButton.LeftButton:
-            from ..views.drawing import getView
-            view : "DrawingView" = getView(event.screenPos())
-            # workaround for Qt event routing bug
-            scene = self.scene()
-            if scene:
-                item_at_pos = scene.itemAt(event.scenePos(), view.transform())
-                if item_at_pos is not None and item_at_pos != self:
-                    item_at_pos.mouseDoubleClickEvent(event)
-                    return
-            view.editPropertyText()
-        super().mouseDoubleClickEvent(event)
-
     def onSceneChange(self : Self, _scene : "DrawingScene | None") -> None:
         self.onSettingsChange()
 
