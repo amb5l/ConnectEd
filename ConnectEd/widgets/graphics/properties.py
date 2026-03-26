@@ -37,7 +37,7 @@ from copy            import copy
 
 import re
 
-from PyQt6.QtCore import QObject, pyqtSignal, QPointF, QXmlStreamReader
+from PyQt6.QtCore import QObject, pyqtSignal, QPointF
 from PyQt6.QtGui  import QColor
 
 from ...app  import logger
@@ -45,7 +45,7 @@ from ...app  import logger
 from ...core.types import DEFAULT, NoChange, NO_CHANGE, AlignH, AlignV, \
                           Color, FontFamily, FontSize, FontBool, \
                           HandleId, RectHandleId, DataKind
-from ...core.utils import str2val
+from ...core.utils import str2val, pascal2proper
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -638,3 +638,9 @@ class PropertiesMixin:
     def signalPropertyChanges(self : Self, names : str | list[str]) -> None:
         if hasattr(self, "properties"):
             self.properties.signalChanges(names)
+
+    def description(self : Self) -> str:
+        class_name = self.__class__.__name__
+        class_name = class_name.removesuffix("Item")
+        class_name = class_name.removesuffix("Scene")
+        return pascal2proper(class_name)

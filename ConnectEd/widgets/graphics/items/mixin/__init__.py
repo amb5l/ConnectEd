@@ -6,7 +6,6 @@ from PyQt6.QtCore    import QPointF
 from PyQt6.QtWidgets import QGraphicsItem
 
 from .....core.defs  import Z_DRAWING
-from .....core.utils import pascal2proper
 
 
 class ItemSettingsMixin:
@@ -98,12 +97,6 @@ class ItemMixin(ItemSettingsMixin, ItemMoveMixin):
         while item.parentItem() is not None:
             item = item.parentItem()
         return item
-
-    def description(self : Self) -> str:
-        class_name = self.__class__.__name__
-        class_name = class_name.removesuffix("Item")
-        class_name = class_name.removesuffix("Scene")
-        return pascal2proper(class_name)
 
     def _resetUuid(self : Self | QGraphicsItem) -> None:
         self._uuid = str(uuid.uuid4())
