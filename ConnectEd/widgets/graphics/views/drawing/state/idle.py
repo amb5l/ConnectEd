@@ -7,7 +7,7 @@ from ....items.text          import TextItem
 from ....items.property_text import PropertyTextItem
 
 from ....items.grip     import GripItem, OriginGripItem, ResizeGripItem
-from ....items.polyline import PolySegItem
+from ....items.polyline import PolySegItem, PolyVtxItem
 
 from ..interaction.edit  import EditMoveInteraction,          \
                                 EditMoveBlockPinsInteraction, \
@@ -55,7 +55,7 @@ class DrawingViewStateIdle(DrawingViewStateBase):
         # grips
         if len(grips_at) == 1 and not (m & qkm.AltModifier):
             grip = grips_at[0]
-            if isinstance(grip, OriginGripItem):
+            if isinstance(grip, (OriginGripItem, PolyVtxItem)):
                 # resize/move
                 self.interact(
                     EditMoveInteraction(self.view, grip, grip.scenePos()),
