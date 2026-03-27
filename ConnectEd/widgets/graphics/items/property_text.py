@@ -153,6 +153,7 @@ class PropertyTextItem(TextItem):
     def onParentChange(self : Self, parent : QGraphicsItem | None) -> None:
         if parent is not None:
             self.onTextChange()
+            self.quillSettingsChange()
 
     def onPositionChange(
         self : Self,
