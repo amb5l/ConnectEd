@@ -135,21 +135,15 @@ class DrawingViewPrivateMixin:
 
     def _itemsAt(
         self : "DrawingView", pos : QPoint | QPointF) -> list[QGraphicsItem]:
-        scene : "DrawingScene | None" = self.scene()
-        if scene is None:
+        if self.scene() is None:
             return []
-        if isinstance(pos, QPoint):
-            pos = self.mapToScene(pos)
-        items = scene.items(
-            pos,
-            Qt.ItemSelectionMode.IntersectsItemShape,
-            Qt.SortOrder.DescendingOrder,
-            self.viewportTransform()
-        )
-        nb = Qt.MouseButton.NoButton
+        if isinstance(pos, QPointF):
+            pos = self.mapFromScene(pos)
+        items = self.items(pos)
         return [
             i for i in items
-            if i.zValue() in self.layer.value and i.acceptedMouseButtons() != nb
+            if i.zValue() in self.layer.value \
+                and i.acceptedMouseButtons() != Qt.MouseButton.NoButton
         ]
 
     def _siblingBlockPins(

@@ -30,7 +30,7 @@ class DrawingViewMenuMixin:
                 menu.addSeparator()
         if self.interaction is None:
             # menu for item/items
-            items = self._itemsAt(spos)
+            items = self._itemsAt(vpos)
             if items:
                 # preference: top grip, selection set, top item
                 grips = [item for item in items if isinstance(item, GripItem)]
