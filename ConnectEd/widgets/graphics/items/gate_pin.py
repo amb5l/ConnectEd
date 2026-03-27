@@ -89,9 +89,6 @@ class GatePinItem(
                 return
         key = (self._dot, self._clock)
         path = scene.paths["SymbolPin"][key]
-        self._handles[BlockPinHandleId.NAME].setPos(QPointF(
-            self._PIN_NAME_OFFSET + (_PIN_CLK_SIZE if self._clock else 0), 0
-        ))
         if self._length != PITCH:
             path = QPainterPath(path)  # copy shared path
             path.setElementPositionAt(0, -self._length, 0)
