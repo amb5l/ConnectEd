@@ -5,7 +5,7 @@ from PyQt6.QtCore import QPointF
 from ....core.types import HandleId
 
 from .null import NullItem
-from .grip import GripItem, MoveGripItem, ResizeGripItem, TextGripItem
+from .grip import GripItem, MoveGripItem, ResizeGripItem, PolylineGripItem, TextGripItem
 
 from .mixin.change import ItemChangeMixin
 
@@ -29,8 +29,9 @@ class HandleItem(ItemChangeMixin, NullItem):
         super().__init__(parent)
         self._id = id
         self.setPos(pos or QPointF())
-        grip_class = TextGripItem   if kind == "text" else \
-                     ResizeGripItem if kind == "resize" else \
+        grip_class = TextGripItem     if kind == "text"     else \
+                     PolylineGripItem if kind == "polyline" else \
+                     ResizeGripItem   if kind == "resize"   else \
                      MoveGripItem
         self._grip = grip_class(self)
 

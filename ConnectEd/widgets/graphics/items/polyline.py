@@ -7,7 +7,9 @@ from PyQt6.QtGui     import QAction
 
 from ....app import logger
 
-from ....core.types import DataKind
+from ....core.check import checked
+from ....core.defs  import PITCH
+from ....core.types import DataKind, RectHandleId
 from ....core.xml   import fromXmlAttrs
 
 from ...dialogs.arc import ArcDialog
@@ -42,6 +44,7 @@ class PolyVtxItem(GripItem):
     # instance attributes
     _index : int  # index of vertex
 
+    @checked
     def __init__(
         self   : Self,
         parent : "PolylineItem",
@@ -51,6 +54,7 @@ class PolyVtxItem(GripItem):
         self._index = index
         super().__init__(parent, pos)
 
+    @checked
     def onSceneChange(self : Self, scene : "DrawingScene | None") -> None:
         """Override to update path based on origin status."""
         if scene is not None:
@@ -61,15 +65,27 @@ class PolyVtxItem(GripItem):
             self._hshape.addRect(self.boundingRect())
             self.setVisible(True)
 
-    def moveBy(self : Self, delta : QPointF) -> None:
-        self.setPos(self.pos() + delta)
-        parent : "PolylineItem" = self.parentItem()
-        parent.updatePath()
+    @checked
+    def index(self : Self) -> int:
+        return self._index
 
+    @checked
+    def moveBy(self : Self, delta : QPointF) -> None:
+        parent : "PolylineItem" = self.parentItem()
+        if self.index() == 0:
+            # origin vertex
+            parent.setPos(parent.pos() + delta)
+        else:
+            # other vertices
+            self.setPos(self.pos() + delta)
+            parent.updatePath()
+
+    @checked
     def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
         items = []
         return items
 
+    @checked
     def toXml(self : Self, xw : QXmlStreamWriter) -> None:
         xw.writeStartElement(self.__class__.__name__)
         xw.writeAttribute("X", str(self.pos().x()))
@@ -85,6 +101,7 @@ class PolySegItem(GripItem):
     _v2    : PolyVtxItem        # end vertex
     _sweep : float  | None  # arc sweep angle (-180..180), +ve = CCW/RHS, None for line
 
+    @checked
     def __init__(
         self   : Self,
         parent : "PolylineItem",
@@ -97,6 +114,7 @@ class PolySegItem(GripItem):
         self._v2 = v2
         self._sweep = sweep
 
+    @checked
     def onSceneChange(self : Self, scene : "DrawingScene | None") -> None:
         """Override to set path and visibility."""
         if scene is not None:
@@ -105,24 +123,31 @@ class PolySegItem(GripItem):
             self._hshape.addRect(self.boundingRect())
             self.setVisible(True)
 
+    @checked
     def v1(self : Self) -> PolyVtxItem:
         return self._v1
 
+    @checked
     def setV1(self : Self, v1 : PolyVtxItem) -> None:
         self._v1 = v1
 
+    @checked
     def v2(self : Self) -> PolyVtxItem:
         return self._v2
 
+    @checked
     def setV2(self : Self, v2 : PolyVtxItem) -> None:
         self._v2 = v2
 
+    @checked
     def sweep(self : Self) -> float | None:
         return self._sweep
 
+    @checked
     def setSweep(self : Self, angle : float | None) -> None:
         self._sweep = angle
 
+    @checked
     def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
         items = []
         a = self.sweep()
@@ -133,12 +158,14 @@ class PolySegItem(GripItem):
         ))
         return items
 
+    @checked
     def _toLine(self : Self) -> None:
         if self.sweep() is None:
             return
         scene : "DrawingScene" = self.scene()
         scene.editPolySeg(self, None, undoable=True)
 
+    @checked
     def _toArc(self : Self, view : "DrawingView") -> None:
         dialog = ArcDialog(self.sweep(), view)
         if dialog.exec():
@@ -161,6 +188,7 @@ class PolylineItem(
     QGraphicsPathItem
 ):
     # class attributes
+    _RESIZE_KIND = "polyline"  # handle kind for polyline items
     _PROPERTIES = \
         {
             "Closed" : InherentProperty(
@@ -179,6 +207,7 @@ class PolylineItem(
     _closed   : bool           # whether the polyline is closed (a polygon)
     _sel_mode : int            # current selection mode (0 = outline, 1 = vtx/seg)
 
+    @checked
     def __init__(
         self     : Self,
         pos      : QPointF | None = None,
@@ -201,6 +230,7 @@ class PolylineItem(
         self.updatePath()
         self._sel_mode = 1  # Start in vertex-edit mode for interactive creation
 
+    @checked
     def onSceneChange(self : Self, scene : "DrawingScene | None") -> None:
         """Initialize vertices, segments, and APs on scene change."""
         for vtx in self._vertices:
@@ -211,27 +241,38 @@ class PolylineItem(
             for h in self._handles.values():
                 h._grip.onSceneChange(scene)
 
+    @checked
     def onSelectionChange(self : Self, selected : bool) -> None:
         if not selected:
             self._sel_mode = 0
 
+    @checked
     def selMode(self : Self) -> int:
         return self._sel_mode
 
+    @checked
     def setSelMode(self : Self, mode : int) -> None:
         self._sel_mode = mode
         scene : "DrawingScene" = self.scene()
         scene.updateGrips()
 
+    @checked
     def cycleSelMode(self : Self) -> None:
         self.setSelMode((self._sel_mode + 1) % 2)
 
+    @checked
+    def vertices(self : Self) -> list[PolyVtxItem]:
+        return self._vertices
+
+    @checked
     def vertexCount(self : Self) -> int:
         return len(self._vertices)
 
+    @checked
     def vertex(self : Self, index : int) -> PolyVtxItem:
         return self._vertices[index]
 
+    @checked
     def addVertex(
         self   : Self,
         pos   : QPointF | None = None,
@@ -245,6 +286,7 @@ class PolylineItem(
         self.updatePath()
         return vtx
 
+    @checked
     def delLastVertex(self : Self) -> None:
         """Delete the last vertex."""
         seg = self._segments.pop()
@@ -253,43 +295,53 @@ class PolylineItem(
         vtx.setParentItem(None)
         self.updatePath()
 
+    @checked
     def lastVertexPos(self : Self) -> QPointF:
         return self._vertices[-1].pos() + self.pos()
 
+    @checked
     def setLastVertexPos(self : Self, pos : QPointF) -> None:
         """Set position of last vertex."""
         self._vertices[-1].setPos(pos - self.pos())
         self.updatePath()
 
+    @checked
     def segment(self : Self, index : int) -> PolySegItem:
         return self._segments[index]
 
+    @checked
     def lastSegment(self : Self) -> PolySegItem:
         return self._segments[-1]
 
+    @checked
     def closed(self : Self) -> bool:
         return self._closed
 
+    @checked
     def setClosed(self : Self, closed : bool) -> None:
         self._closed = closed
         self.updatePath()
 
+    @checked
     def close(self : Self, sweep : float | None = None) -> None:
         self._segments.append(PolySegItem(
             self, self._vertices[-1], self._vertices[0], sweep
         ))
         self.setClosed(True)
 
+    @checked
     def open(self : Self) -> None:
         seg = self._segments.pop()
         seg.setParentItem(None)
         self.setClosed(False)
 
+    @checked
     def handleRect(self : Self) -> QRectF:
-        return self.path().controlPointRect()
+        return self.rect()
 
+    @checked
     def rect(self : Self) -> QRectF:
-        return self.boundingRect()
+        return self.path().controlPointRect()
 
     @overload
     def setPoints(
@@ -309,6 +361,7 @@ class PolylineItem(
     ) -> None:
         ...
 
+    @checked
     def setPoints(
         self : Self,
         p1_x1 : QPointF | float | int,
@@ -316,6 +369,7 @@ class PolylineItem(
         x2    : float | int | None = None,
         y2    : float | int | None = None
     ) -> None:
+        # normalise arguments
         if x2 is None or y2 is None:
             x1 = p1_x1.x()
             y1 = p1_x1.y()
@@ -324,24 +378,65 @@ class PolylineItem(
         else:
             x1 = p1_x1
             y1 = p2_y1
-        final_pos = QPointF(
-            x1 if x1 < x2 else x2,
-            y1 if y1 < y2 else y2,
-        )
-        self.setPos(final_pos)
-        # scale vertex grip positions
-        scale_x = abs(x2-x1) / self.rect().width()
-        scale_y = abs(y2-y1) / self.rect().height()
+        # x1,y1 = top left; x2,y2 = bottom right
+        x1, x2 = min(x1, x2), max(x1, x2)
+        y1, y2 = min(y1, y2), max(y1, y2)
+        # new width and height (minimum = PITCH)
+        new_w = max(x2 - x1, PITCH)
+        new_h = max(y2 - y1, PITCH)
+        # current rect in item coordinates
+        r = self.rect()
+        rx, ry = r.x(), r.y()
+        old_w = max(r.width(), PITCH)
+        old_h = max(r.height(), PITCH)
+        scale_x = new_w / old_w
+        scale_y = new_h / old_h
+        # offset vertices relative to rect top-left, then scale
         for vertex in self._vertices:
             vertex.setPos(QPointF(
-                vertex.pos().x() * scale_x, vertex.pos().y() * scale_y
+                (vertex.pos().x() - rx) * scale_x,
+                (vertex.pos().y() - ry) * scale_y
             ))
+        # re-base so vertex 0 is back at (0,0); adjust pos to compensate
+        v0 = QPointF(self._vertices[0].pos())
+        self.setPos(QPointF(x1 + v0.x(), y1 + v0.y()))
+        for vertex in self._vertices:
+            vertex.setPos(vertex.pos() - v0)
         self.updatePath()
 
+    @checked
+    def moveHandleBy(self : Self, id : RectHandleId, d : QPointF) -> None:
+        """Resize bbox from handles; mixin assumes rect top-left at item (0,0)."""
+        p1 = self.mapToParent(self.rect().topLeft())
+        p2 =self.mapToParent(self.rect().bottomRight())
+        match id:
+            case RectHandleId.TOP_LEFT:
+                self.setPoints(p1 + d, p2)
+            case RectHandleId.TOP_CENTER:
+                self.setPoints(p1.x(), p1.y() + d.y(), p2.x(), p2.y())
+            case RectHandleId.TOP_RIGHT:
+                self.setPoints(p1.x(), p1.y() + d.y(), p2.x() + d.x(), p2.y())
+            case RectHandleId.MIDDLE_LEFT:
+                self.setPoints(p1.x() + d.x(), p1.y(), p2.x(), p2.y())
+            case RectHandleId.MIDDLE_CENTER:
+                self.moveBy(d)
+            case RectHandleId.MIDDLE_RIGHT:
+                self.setPoints(p1.x(), p1.y(), p2.x() + d.x(), p2.y())
+            case RectHandleId.BOTTOM_LEFT:
+                self.setPoints(p1.x() + d.x(), p1.y(), p2.x(), p2.y() + d.y())
+            case RectHandleId.BOTTOM_CENTER:
+                self.setPoints(p1.x(), p1.y(), p2.x(), p2.y() + d.y())
+            case RectHandleId.BOTTOM_RIGHT:
+                self.setPoints(p1, p2 + d)
+            case _:
+                raise ValueError(f"Invalid handle: {id}")
+
+    @checked
     def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
         items = []
         return items
 
+    @checked
     def updatePath(self : Self) -> None:
         """Rebuild path from vertices."""
         # adjust number of segments as required
@@ -389,6 +484,7 @@ class PolylineItem(
         if hasattr(self, '_handles'):
             self.updateHandlePositions()
 
+    @checked
     def _buildSegments(self : Self) -> None:
         """Build segments from vertices. Default to lines not arcs."""
         self._segments = []
@@ -422,6 +518,7 @@ class PolylineItem(
             pass
         self.toXmlEnd(xw)
 
+    @checked
     @classmethod
     def fromXml(cls : Self, xr : QXmlStreamReader) -> Self:
         instance : "PolylineItem" = cls(fresh=False)

@@ -1,10 +1,12 @@
-from typing import Self, Any
+from typing import Self
 
 from PyQt6.QtCore    import Qt, QPointF, QXmlStreamWriter, QXmlStreamReader
 from PyQt6.QtWidgets import QMenu, QGraphicsPathItem
 from PyQt6.QtGui     import QAction, QPen, QBrush, QPainterPath
 
 from ....app import settings
+
+from ....core.check import checked
 
 from .mixin        import ItemMoveMixin
 from .mixin.origin import ItemOriginMixin
@@ -17,6 +19,7 @@ if TYPE_CHECKING:
     from ..views.drawing  import DrawingView
     from ..scenes.drawing import DrawingScene
     from .handle          import HandleItem
+    from .polyline        import PolylineItem
     from .text            import TextItem
     from .mixin.handle    import ItemHandlesMixin
     from .mixin.grip      import ItemGripMixin
@@ -40,6 +43,7 @@ class GripItem(
     _path      : QPainterPath     # path
     _brush     : QBrush           # brush
 
+    @checked
     def __init__(
         self   : Self,
         parent : "HandleItem",
@@ -60,16 +64,19 @@ class GripItem(
         self.onSettingsChange()
         settings().changed.connect(self.onSettingsChange)
 
+    @checked
     def onSceneChange(self : Self, scene : "DrawingScene | None") -> None:
         if scene is not None:
             self.onPathChange(scene)
 
+    @checked
     def onSettingsChange(self : Self) -> None:
         self.prepareGeometryChange()
         self.onSceneChange(self.scene())
         self._brush.setColor(settings().get("theme/grip/color"))
         self.setBrush(self._brush)
 
+    @checked
     def onPathChange(self : Self, scene : "DrawingScene | None" = None) -> None:
         if scene is None:
             scene : "DrawingScene | None" = self.scene()
@@ -79,27 +86,35 @@ class GripItem(
         self._hshape.clear()
         self._hshape.addRect(self.boundingRect())
 
+    @checked
     def handle(self : Self) -> "HandleItem":
         return self.parentItem()
 
+    @checked
     def item(self : Self) -> "ItemHandlesMixin | ItemGripMixin":
         return self.handle().parentItem()
 
+    @checked
     def pathNamePrefix(self : Self) -> str:
         return self._path_name_prefix
 
+    @checked
     def pathName(self : Self) -> str:
         return self._path_name
 
+    @checked
     def pathNameSuffix(self : Self) -> str:
         return self._path_name_suffix
 
+    @checked
     def fullPathName(self : Self) -> str:
         return self.pathNamePrefix() + self.pathName() + self.pathNameSuffix()
 
+    @checked
     def toXml(self : Self, _ : QXmlStreamWriter) -> None:
         pass
 
+    @checked
     @classmethod
     def fromXml(cls : Self, _ : QXmlStreamReader) -> Self:
         pass
@@ -110,12 +125,14 @@ class OriginGripItem(GripItem):
 
     _ORIGIN_PATH_NAME_SUFFIX = "Squared"
 
+    @checked
     def pathNameSuffix(self : Self) -> str:
-        item : "ItemOriginMixin" = self.item()
+        item = self.item()
         if hasattr(item, "origin") and item.origin() == self.handle().id():
             return self._ORIGIN_PATH_NAME_SUFFIX
         return ""
 
+    @checked
     def moveBy(self : Self, delta : QPointF) -> None:
         item : "ItemHandlesMixin" = self.item()
         item.moveHandleBy(self.handle().id(), delta)
@@ -126,6 +143,7 @@ class MoveGripItem(OriginGripItem):
 
     _PATH_NAME = "Circle"
 
+    @checked
     def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
         entries = [
             view.action("Slide", lambda: view.ui.editSlide([self.item()], self.scenePos())),
@@ -149,6 +167,7 @@ class ResizeGripItem(MoveGripItem):
 
     _PATH_NAME = "Diamond"
 
+    @checked
     def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
         entries = [
             view.action("Resize", lambda: view.ui.editResize(self, self.scenePos())),
@@ -157,9 +176,28 @@ class ResizeGripItem(MoveGripItem):
         return entries
 
 
+class PolylineGripItem(ResizeGripItem):
+    @checked
+    def moveSave(self : Self) -> tuple[QPointF, list[QPointF]]:
+        item : "PolylineItem" = self.item()
+        return self.scenePos(), [v.pos() for v in item.vertices()]
+
+    @checked
+    def moveRestore(
+        self  : Self,
+        state : tuple[QPointF, list[QPointF]]
+    ) -> None:
+        item : "PolylineItem" = self.item()
+        pos, vertices = state
+        self.moveBy(pos - self.scenePos())
+        for i, v in enumerate(item.vertices()):
+            v.setPos(vertices[i])
+
+
 class TextGripItem(ResizeGripItem):
     """Grip for text items."""
 
+    @checked
     def pathNamePrefix(self : Self) -> str:
         item : "TextItem" = self.item()
         name = self.handle().id()
@@ -172,10 +210,12 @@ class TextGripItem(ResizeGripItem):
         c |= ("Left" in name or "Right" in name) and w >= 0.0
         return "Filled" if c else "Unfilled"
 
-    def moveSave(self : Self) -> QPointF:
+    @checked
+    def moveSave(self : Self) -> tuple[QPointF, float | None, float | None]:
         item : "TextItem" = self.item()
         return self.scenePos(), item.width(), item.height()
 
+    @checked
     def moveRestore(
         self  : Self,
         state : tuple[QPointF, float | None, float | None]
