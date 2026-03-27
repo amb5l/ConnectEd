@@ -207,9 +207,10 @@ class PlacePolylineInteraction(PlaceBase1PosInteraction):
         self._item.delLastVertex()  # remove WIP vertex
 
     def ctxMenuItems(self : Self, pos : QPointF) -> list[QAction | QMenu]:
+        pos = self._view._snap(pos)
         items = []
         items.append(self._view.action("Add Vertex", lambda: self.commit(pos)))
-        items.append(self._view.action("Finish", self.cancel))
+        items.append(self._view.action("Finish", lambda: self._finish(pos)))
         items.append(self._view.separator())
         a = self._item.lastSegment().sweep()
         items.append(self._view.action("Line", self._toLine, a is None))
@@ -218,6 +219,10 @@ class PlacePolylineInteraction(PlaceBase1PosInteraction):
         items.append(self._view.separator())
         items.append(self._view.action("Closed", self._toggleClosed, self._item.closed()))
         return items
+
+    def _finish(self : Self, pos : QPointF) -> None:
+        self.complete(pos)
+        self._view.state.go(self._view.stateIdle)
 
     def _toggleClosed(self : Self) -> None:
         self._item.setClosed(not self._item.closed())
