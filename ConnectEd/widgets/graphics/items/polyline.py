@@ -72,11 +72,9 @@ class PolyVtxItem(GripItem):
     @checked
     def moveBy(self : Self, delta : QPointF) -> None:
         parent : "PolylineItem" = self.parentItem()
-        if self.index() == 0:
-            # origin vertex
+        if self.index() == 0 and parent.selMode() == 0:
             parent.setPos(parent.pos() + delta)
         else:
-            # other vertices
             self.setPos(self.pos() + delta)
             parent.updatePath()
 
@@ -408,7 +406,7 @@ class PolylineItem(
     def moveHandleBy(self : Self, id : RectHandleId, d : QPointF) -> None:
         """Resize bbox from handles; mixin assumes rect top-left at item (0,0)."""
         p1 = self.mapToParent(self.rect().topLeft())
-        p2 =self.mapToParent(self.rect().bottomRight())
+        p2 = self.mapToParent(self.rect().bottomRight())
         match id:
             case RectHandleId.TOP_LEFT:
                 self.setPoints(p1 + d, p2)
