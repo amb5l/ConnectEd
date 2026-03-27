@@ -226,11 +226,9 @@ class DrawingViewPrivateMixin:
         ) -> None:
             prev = prev or item.isSelected()
             if fresh:
-                print("selectClick: selected_items", selected_items)
                 if [item] != selected_items:
                     self.scene().clearSelection()
                 elif isinstance(item, PolylineItem) and item.isSelected():
-                    print("cycleSelMode")
                     item.cycleSelMode()
                     return
             item.setSelected(not prev if toggle else True)
