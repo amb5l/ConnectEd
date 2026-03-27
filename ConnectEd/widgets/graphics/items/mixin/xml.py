@@ -6,13 +6,11 @@ from PyQt6.QtWidgets import QGraphicsItem
 from .....app import logger
 
 from .....core.xml   import toXmlAttrs, fromXmlAttrs
-from .....core.utils import registerClass
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ...properties   import PropertiesMixin
     from ..mixin         import ItemMixin
-    from ..property_text import PropertyTextItem
 
 
 class ItemXmlMixin:
@@ -50,7 +48,10 @@ class ItemXmlMixin:
         parent : QGraphicsItem | None = None
     ) -> Self:
         xml_item_name = cls.__name__.removesuffix("Item")
-        instance : "ItemMixin | PropertiesMixin" = cls(fresh=False, parent=parent)
+        args = {"fresh": False}
+        if parent is not None:
+            args["parent"] = parent
+        instance : "ItemMixin | PropertiesMixin" = cls(**args)
         fromXmlAttrs(instance, xr)
         if hasattr(instance, "onGeometryChange"):
             instance.onGeometryChange()
