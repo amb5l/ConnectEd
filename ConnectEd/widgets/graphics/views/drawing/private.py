@@ -4,7 +4,7 @@ from PyQt6.QtCore    import Qt, QPointF, QRectF, QPoint
 from PyQt6.QtWidgets import QGraphicsItem
 from PyQt6.QtGui     import QMouseEvent, QPainterPath, QAction, QCursor
 
-from .....app import settings, window
+from .....app import settings, window, logger
 
 from ....menu import Menu
 
@@ -197,12 +197,11 @@ class DrawingViewPrivateMixin:
         pos       : QPointF,
         modifiers : Qt.KeyboardModifier
     ) -> None:
-        items = self._itemsAt(pos)
-        selected_items = self.scene().selectedItems()
         items = [
-            i for i in items if i.flags()
+            i for i in self._itemsAt(pos) if i.flags()
                 & QGraphicsItem.GraphicsItemFlag.ItemIsSelectable
         ]
+        selected_items = self.scene().selectedItems()
         # ctrl = toggle selection of (top) item
         # shift = add (top) item to selection set
         # alt = show a menu to choose between multiple items at point
@@ -262,26 +261,35 @@ class DrawingViewPrivateMixin:
             menu.exec(self.mapToGlobal(self.mapFromScene(pos)))
         elif items: # single or top item case
             _selectItem(items[0])
+        elif fresh:
+            self.scene().clearSelection()
 
     def _selectDrag(
         self      : "DrawingView",
         pos       : QPointF,
         modifiers : Qt.KeyboardModifier
     ) -> None:
-        items = self._itemsAt(pos)
+        """
+        Should only be called when there is an item at the given position.
+        Otherwise a marquee selection is happening.
+        """
         items = [
-            i for i in items if i.flags()
+            i for i in self._itemsAt(pos) if i.flags()
                 & QGraphicsItem.GraphicsItemFlag.ItemIsSelectable
         ]
-        toggle = modifiers & (qkm.ControlModifier | qkm.ShiftModifier) \
-            == qkm.ControlModifier
-        if items: # single or top item case
+        # shift = add (top) item to selection set
+        # (alt is used to change drag mode, ctrl is used for cloning)
+        fresh = modifiers & qkm.ShiftModifier == qkm.NoModifier
+        # perform selection
+        if items:
             item = items[0]
-            if toggle:
-                item.setSelected(not item.isSelected())
-            else:
-                if not item.isSelected():
-                    item.setSelected(True)
+            if fresh and not item.isSelected():
+                self.scene().clearSelection()
+            item.setSelected(True)
+        else:
+            # this should never happen
+            logger().warning("No items at position")
+            self.scene().clearSelection()
 
     def _selectedItems(
         self  : "DrawingView",
