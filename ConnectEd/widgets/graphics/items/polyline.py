@@ -85,7 +85,7 @@ class PolyVtxItem(GripItem):
 
     @checked
     def toXml(self : Self, xw : QXmlStreamWriter) -> None:
-        xw.writeStartElement(self.__class__.__name__)
+        xw.writeStartElement(self.__class__.__name__.removesuffix("Item"))
         xw.writeAttribute("X", str(self.pos().x()))
         xw.writeAttribute("Y", str(self.pos().y()))
         xw.writeEndElement()

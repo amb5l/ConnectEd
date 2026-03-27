@@ -95,7 +95,7 @@ class ConnSegItem(
                 None
             v = getattr(p, a)()
             return None if p is None else int(v) if v.is_integer() else v
-        xw.writeStartElement(self.__class__.__name__)
+        xw.writeStartElement(self.__class__.__name__.removesuffix("Item"))
         xw.writeAttribute("X1", str(getVal("x1")))
         xw.writeAttribute("Y1", str(getVal("y1")))
         xw.writeAttribute("X2", str(getVal("x2")))
