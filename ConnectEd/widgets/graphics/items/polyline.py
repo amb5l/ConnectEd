@@ -7,7 +7,7 @@ from PyQt6.QtGui     import QAction
 
 from ....app import logger
 
-from ....core.types import RectHandleId, DataKind
+from ....core.types import DataKind
 from ....core.xml   import fromXmlAttrs
 
 from ...dialogs.arc import ArcDialog
@@ -16,7 +16,6 @@ from ..properties import InherentProperty, PropertiesMixin
 
 from ..painter_path import PainterPath
 
-from .base_rect import BaseRectangleMixin
 from .grip      import GripItem
 
 from .mixin        import ItemMixin
@@ -183,7 +182,7 @@ class PolylineItem(
     def __init__(
         self     : Self,
         pos      : QPointF | None = None,
-        vertices : list[QPointF] = [],
+        vertices : list[QPointF] | None = None,
         closed   : bool = False,
         fresh    : bool = True
     ) -> None:
@@ -195,7 +194,7 @@ class PolylineItem(
         self._segments = []
         self._closed = closed
         self.addVertex(pos)  # origin vertex
-        for vertex in vertices:
+        for vertex in vertices or []:
             self.addVertex(vertex)
         self._buildSegments()
         # build path
@@ -233,7 +232,11 @@ class PolylineItem(
     def vertex(self : Self, index : int) -> PolyVtxItem:
         return self._vertices[index]
 
-    def addVertex(self : Self, pos : QPointF, sweep : float | None = None) -> PolyVtxItem:
+    def addVertex(
+        self   : Self,
+        pos   : QPointF | None = None,
+        sweep : float | None = None
+    ) -> PolyVtxItem:
         """Add a new vertex."""
         vtx = PolyVtxItem(self, len(self._vertices), pos - self.pos())
         self._vertices.append(vtx)
@@ -441,7 +444,9 @@ class PolylineItem(
                             case "Sweep":
                                 sweep = float(xml_attr.value())
                             case _:
-                                logger().warning(f"Unexpected attribute: {xml_attr.name()}")
+                                logger().warning(
+                                    f"Unexpected attribute: {xml_attr.name()}"
+                                )
                     if x is not None and y is not None:
                         instance.addVertex(QPointF(x, y), sweep)
                 else:

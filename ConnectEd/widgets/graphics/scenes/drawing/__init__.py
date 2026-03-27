@@ -49,7 +49,11 @@ class DrawingScene(
     _sel_text  : QColor
     undo_stack : QUndoStack | None
 
-    def __init__(self : Self, extents : QSizeF | None = None, fresh : bool = True) -> None:
+    def __init__(
+        self    : Self,
+        extents : QSizeF | None = None,
+        fresh   : bool = True
+    ) -> None:
         super().__init__()
         self._uuid = str(uuid.uuid4())
         self._name = None
@@ -96,7 +100,8 @@ class DrawingScene(
         scene_rect = QRectF(rect) if rect is not None else ext_rect
         for item in self.items():
             item_rect = item.mapToScene(item.boundingRect()).boundingRect()
-            scene_rect = item_rect if scene_rect is None else scene_rect.united(item_rect)
+            scene_rect = item_rect if scene_rect is None \
+                else scene_rect.united(item_rect)
         if scene_rect is not None:
             # triple size of calculated scene rect
             w = scene_rect.size().width()
