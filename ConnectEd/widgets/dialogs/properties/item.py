@@ -74,7 +74,6 @@ class PropertiesItem(QStandardItem):
         kind_prev = self.kind()
         self.setData(kind, Qt.ItemDataRole.UserRole + self._IDX_KIND)
         if kind_prev is not None:
-            print("kind = ", self.kind())
             # kind is being changed: applies only to custom properties
             try:
                 match kind:
