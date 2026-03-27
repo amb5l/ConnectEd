@@ -29,8 +29,6 @@ class DrawingViewStateIdle(DrawingViewStateBase):
         self.view.interaction = None
 
     def mouseLeftClick(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
-        if m == qkm.NoModifier:
-            self.scene.clearSelection()
         self.view._selectClick(s, m)
 
     def mouseLeftDoubleClick(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:

@@ -207,13 +207,38 @@ class DrawingViewPrivateMixin:
         modifiers : Qt.KeyboardModifier
     ) -> None:
         items = self._itemsAt(pos)
-        selectable = QGraphicsItem.GraphicsItemFlag.ItemIsSelectable
-        items = [i for i in items if i.flags() & selectable]
-        toggle = modifiers & (qkm.ControlModifier | qkm.ShiftModifier) \
-            == qkm.ControlModifier
+        selected_items = self.scene().selectedItems()
+        items = [
+            i for i in items if i.flags()
+                & QGraphicsItem.GraphicsItemFlag.ItemIsSelectable
+        ]
+        # ctrl = toggle selection of (top) item
+        # shift = add (top) item to selection set
+        # alt = show a menu to choose between multiple items at point
         choice = modifiers & qkm.AltModifier
+        modifiers = modifiers & (qkm.ControlModifier | qkm.ShiftModifier)
+        fresh = modifiers == qkm.NoModifier
+        toggle = modifiers == qkm.ControlModifier
+        # helper function
+        def _selectItem(
+            item : QGraphicsItem,
+            prev : bool | None = None  # initial selection state if known
+        ) -> None:
+            prev = prev or item.isSelected()
+            if fresh:
+                print("selectClick: selected_items", selected_items)
+                if [item] != selected_items:
+                    self.scene().clearSelection()
+                elif isinstance(item, PolylineItem) and item.isSelected():
+                    print("cycleSelMode")
+                    item.cycleSelMode()
+                    return
+            item.setSelected(not prev if toggle else True)
+        # perform selection
         if len(items) > 1 and choice: # multiple choice case
+            # record initial selection state
             init_sel = {item: item.isSelected() for item in items}
+            # build and display selection choices menu (top down item order)
             menu = Menu(self)
             menu.setStyleSheet("""
                 QMenu::item {
@@ -227,34 +252,27 @@ class DrawingViewPrivateMixin:
                     color: palette(highlighted-text);
                 }
             """)
-            for item in items:
-                text = f"{item.__class__.__name__.replace('Item', '')}"
-                action = QAction(text, self)
-                action.setData(item)
-                action.triggered.connect(
-                    lambda checked, i=item, t=toggle, p=init_sel[item]:
-                    self._selectItem(i, t, p)
-                )
-                menu.addAction(action)
             def _onHover(action):
                 for item in items:
                     item.setSelected(init_sel[item])
                 item = action.data() if action else None
                 if item:
-                    self._selectItem(item, toggle, init_sel[item])
+                    _selectItem(item, toggle, init_sel[item])
+            for item in items:
+                text = f"{item.__class__.__name__.replace('Item', '')}"
+                action = QAction(text, self)
+                action.setData(item)
+                action.triggered.connect(
+                    lambda checked, item, prev=init_sel[item]:
+                    _selectItem(item, prev)
+                )
+                menu.addAction(action)
             menu.hovered.connect(_onHover)
             menu.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
             menu.setFocus()
             menu.exec(self.mapToGlobal(self.mapFromScene(pos)))
         elif items: # single or top item case
-            item = items[0]
-            if toggle:
-                item.setSelected(not item.isSelected())
-            else:
-                if not item.isSelected():
-                    item.setSelected(True)
-                elif isinstance(item, PolylineItem):
-                    item.cycleSelMode()
+            _selectItem(items[0])
 
     def _selectDrag(
         self      : "DrawingView",
@@ -262,8 +280,10 @@ class DrawingViewPrivateMixin:
         modifiers : Qt.KeyboardModifier
     ) -> None:
         items = self._itemsAt(pos)
-        selectable = QGraphicsItem.GraphicsItemFlag.ItemIsSelectable
-        items = [i for i in items if i.flags() & selectable]
+        items = [
+            i for i in items if i.flags()
+                & QGraphicsItem.GraphicsItemFlag.ItemIsSelectable
+        ]
         toggle = modifiers & (qkm.ControlModifier | qkm.ShiftModifier) \
             == qkm.ControlModifier
         if items: # single or top item case
@@ -273,12 +293,6 @@ class DrawingViewPrivateMixin:
             else:
                 if not item.isSelected():
                     item.setSelected(True)
-
-    def _selectItem(self : "DrawingView", item, toggle, prev=None):
-        if prev is None:
-            item.setSelected(not item.isSelected() if toggle else True)
-        else:
-            item.setSelected(not prev if toggle else True)
 
     def _selectedItems(
         self  : "DrawingView",
