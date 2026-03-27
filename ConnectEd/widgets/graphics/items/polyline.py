@@ -58,6 +58,8 @@ class PolyVtxItem(GripItem):
             self._path_name = self._ORIGIN_PATH_NAME \
                 if self._index == 0 else self._PATH_NAME
             self.setPath(scene.paths["Grip"][self._path_name])
+            self._hshape.clear()
+            self._hshape.addRect(self.boundingRect())
             self.setVisible(True)
 
     def moveBy(self : Self, delta : QPointF) -> None:
@@ -100,6 +102,8 @@ class PolySegItem(GripItem):
         """Override to set path and visibility."""
         if scene is not None:
             self.setPath(scene.paths["Grip"][self._path_name])
+            self._hshape.clear()
+            self._hshape.addRect(self.boundingRect())
             self.setVisible(True)
 
     def v1(self : Self) -> PolyVtxItem:
