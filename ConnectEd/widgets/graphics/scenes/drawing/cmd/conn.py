@@ -25,11 +25,10 @@ class CmdAddConnVtx(CmdSceneBase):
     def __init__(
         self  : Self,
         scene : "DrawingScene",
-        pos   : QPointF,
-        cls   : type[ConnVtxItem] = ConnVtxItem
+        pos   : QPointF
     ) -> None:
         super().__init__(scene)
-        self._vtx = cls(pos)
+        self._vtx = ConnVtxItem(pos)
 
     def redo(self : Self) -> None:
         self._scene.addItem(self._vtx)
@@ -44,8 +43,8 @@ class CmdAddConnVtx(CmdSceneBase):
 class CmdReparentConnVtx(CmdSceneBase):
     @dataclass
     class ConnVtxState:
-        parent : EntryItem   | None
-        pos    : QPointF | None
+        parent : EntryItem | None
+        pos    : QPointF   | None
 
     # instance attributes
     _vtx    : ConnVtxItem
@@ -107,16 +106,15 @@ class CmdAddConnSeg(CmdSceneBase):
     _seg  : ConnSegItem
 
     def __init__(
-        self : Self,
+        self  : Self,
         scene : "DrawingScene",
-        vtx1 : ConnVtxItem,
-        vtx2 : ConnVtxItem,
-        cls  : type[ConnSegItem] = ConnSegItem
+        vtx1  : ConnVtxItem,
+        vtx2  : ConnVtxItem
     ) -> None:
         super().__init__(scene)
         self._vtx1 = vtx1
         self._vtx2 = vtx2
-        self._seg = cls()
+        self._seg = ConnSegItem()
 
     def redo(self : Self) -> None:
         # attach segment to vertices
@@ -137,7 +135,9 @@ class CmdAddConnSeg(CmdSceneBase):
 
 
 class CmdReattachConnSeg(CmdSceneBase):
-    """Detach a segment from one vertex and attach it to another."""
+    """
+    Detach a segment from one vertex and attach it to another.
+    """
 
     # instance attributes
     _seg     : ConnSegItem

@@ -1,7 +1,7 @@
 from collections.abc import Callable
 from math            import isclose
 
-from PyQt6.QtCore import QPointF, QLineF, QRectF
+from PyQt6.QtCore import QPointF, QLineF
 from PyQt6.QtGui  import QPainterPath, QPainterPathStroker
 
 from ......app import logger
@@ -279,8 +279,7 @@ class DrawingSceneApiConnMixin:
     def getConnVtx(
         self     : "DrawingScene",
         pos      : QPointF,
-        undoable : bool = False,
-        cls      : type[ConnVtxItem] = ConnVtxItem
+        undoable : bool = False
     ) -> ConnVtxItem:
         """Get a vertex if present, add if necessary."""
         items = itemsTypeDict(self.items(pos))
@@ -290,7 +289,7 @@ class DrawingSceneApiConnMixin:
             if len(vtxs) > 1:
                 self.tidyConnVtx(vtx, undoable)
         else:
-            cmd = CmdAddConnVtx(self, pos, cls)
+            cmd = CmdAddConnVtx(self, pos)
             cmdExec(self, cmd, undoable)
             vtx = cmd.vtx()
         return vtx
@@ -299,8 +298,7 @@ class DrawingSceneApiConnMixin:
         self     : "DrawingScene",
         p1       : QPointF,
         p2       : QPointF,
-        undoable : bool = False,
-        cls      : type[ConnSegItem] = ConnSegItem
+        undoable : bool = False
     ) -> None:
         """
         Add a segment, add vertices at any entries between endpoints, tidy.
@@ -315,7 +313,7 @@ class DrawingSceneApiConnMixin:
         v1 = self.getConnVtx(p1, undoable)
         v2 = self.getConnVtx(p2, undoable)
         # add segment
-        cmd = CmdAddConnSeg(self, v1, v2, cls)
+        cmd = CmdAddConnSeg(self, v1, v2)
         cmdExec(self, cmd, undoable)
         # get items along line, including endpoint vertices
         line_path = QPainterPath()

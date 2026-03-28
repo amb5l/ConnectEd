@@ -1,11 +1,11 @@
 from typing import Self
 
-from PyQt6.QtCore    import QPointF, QXmlStreamWriter
+from PyQt6.QtCore    import QXmlStreamWriter
 from PyQt6.QtWidgets import QGraphicsItem, QMenu
 from PyQt6.QtGui     import QAction, QPainterPath
 
 from ....core.defs  import PITCH
-from ....core.types import BlockPinHandleId, DataKind
+from ....core.types import DataKind
 
 from ..properties import InherentProperty
 
@@ -14,7 +14,7 @@ from .mixin.rotate import ItemRotateMixin
 from .mixin.line   import ItemLineMixin
 
 from .port_pin import PortPinMixin
-from .base_pin import BasePinItem, BasePinDotMixin, BasePinClockMixin, _PIN_CLK_SIZE
+from .base_pin import BasePinItem, BasePinDotMixin, BasePinClockMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
