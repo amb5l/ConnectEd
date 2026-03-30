@@ -38,17 +38,6 @@ class DrawingSceneApiAddMixin:
         cmdExec(self, cmd, undoable)
         return cmd.pin()
 
-    def addPolyline(
-        self     : "DrawingScene",
-        vertices : list[QPointF],
-        closed   : bool = False,
-        undoable : bool = False
-    ) -> PolylineItem:
-        """Add a polyline to the scene."""
-        item = PolylineItem(vertices, closed)
-        self.addItems([item], undoable)
-        return item
-
     def addPolyVtx(
         self     : "DrawingScene",
         polyline : PolylineItem,
