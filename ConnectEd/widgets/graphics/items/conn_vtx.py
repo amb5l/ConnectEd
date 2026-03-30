@@ -41,6 +41,7 @@ class ConnVtxItem(
     _PATH_NAME = "ConnVtx"
 
     # instance attributes
+    _id          : int | None
     _path        : QPainterPath
     _junction    : JunctionItem
     _connections : list["ConnSegItem"]
@@ -48,14 +49,19 @@ class ConnVtxItem(
     def __init__(
         self   : Self,
         pos    : QPointF | None = None,
+        id     : int | None = None,
         parent : "EntryItem | None" = None
     ) -> None:
         QGraphicsPathItem.__init__(self, parent)
         if pos is not None:
             self.setPos(pos)
+        self._id = id
         self._connections = []
         self.initItem()
         self._junction = JunctionItem(self)
+
+    def id(self : Self) -> int | None:
+        return self._id
 
     def onScenePositionChange(self : Self, _pos : QPointF) -> None:
         """Update all connected segments."""

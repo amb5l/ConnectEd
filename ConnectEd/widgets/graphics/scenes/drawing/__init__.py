@@ -14,11 +14,13 @@ from .....core.xml   import toXmlAttrs, fromXmlAttrs
 
 from ...properties import InherentProperty, PropertiesMixin
 
+from ...items.mixin.xml import ItemXmlMixin
+
 from .api        import DrawingSceneApiMixin
 from .grips      import DrawingSceneGripsMixin
 from .paths      import DrawingScenePathsMixin
 from .guides     import DrawingSceneGuidesMixin
-from .netlist    import DrawingSceneNetlistMixin
+from .netlist    import DrawingSceneNetlistMixin, Net
 from .private    import DrawingSceneApiPrivateMixin
 
 
@@ -63,6 +65,7 @@ class DrawingScene(
         self.initProperties(fresh)
         self.initPaths()
         self.initGrips()
+        self.initNetlist()
         self.onSettingsChange()
         settings().changed.connect(self.onSettingsChange)
         self.selectionChanged.connect(self.onSelectionChanged)
@@ -125,10 +128,15 @@ class DrawingScene(
 
     def toXml(self : Self, xw : QXmlStreamWriter) -> None:
         xw.writeStartElement(self.__class__.__name__.replace("Scene", ""))
+        # properties
         toXmlAttrs(self, xw)
+        # items
         for item in self.items():
             if item.parentItem() is None:  # top level items only
                 item.toXml(xw)
+        # nets
+        for net in self._nets.values():
+            net.toXml(xw)
         xw.writeEndElement()
 
     @classmethod
@@ -143,11 +151,14 @@ class DrawingScene(
             if xr.tokenType() == QXmlStreamReader.TokenType.StartElement:
                 item_name = xr.name() + "Item"
                 if item_name in _item_classes:
-                    item_cls = _item_classes[item_name]
+                    item_cls : "ItemXmlMixin" = _item_classes[item_name]
                     item = item_cls.fromXml(xr)
                     drawing_scene.addItem(item)
+                elif xr.name() == "Net":
+                    net = Net.fromXml(xr)
+                    drawing_scene.addNet(net)
                 else:
-                    logger().warning(f"Unexpected item: {item_name}")
+                    logger().warning(f"Unexpected element: {xr.name()}")
             xr.readNext()
         drawing_scene.tidyConns(undoable=False)
         return drawing_scene

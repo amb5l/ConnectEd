@@ -5,12 +5,12 @@ from PyQt6.QtWidgets import QGraphicsItem
 
 from .....app import logger
 
-from .....core.xml   import toXmlAttrs, fromXmlAttrs
+from .....core.xml import toXmlAttrs, fromXmlAttrs
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from ...properties   import PropertiesMixin
-    from ..mixin         import ItemMixin
+    from ...properties import PropertiesMixin
+    from ..mixin       import ItemMixin
 
 
 class ItemXmlMixin:
@@ -63,7 +63,7 @@ class ItemXmlMixin:
         from ...items.gate_pin   import GatePinItem
         from ...items.block_pin  import BlockPinItem
         from ...items.symbol_pin import SymbolPinItem
-        from ..property_text import PropertyTextItem
+        from ..property_text     import PropertyTextItem
         pin_classes = {
             "GatePinItem"   : GatePinItem,
             "BlockPinItem"  : BlockPinItem,
