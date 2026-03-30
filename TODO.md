@@ -1,16 +1,16 @@
-- column unique text value (name)
-- don't use dialog for new property row in PropertiesDialog
+better separation of Drawing and Diagram e.g. nets
+sheet instance attribute names aren't private
+typeguard means we don't need to get variables on the way into methods
+TypeAlias is deprecated as of 3.12.
+
+text resizing - minimum, mirroring etc
 
 improve fromXml type checking
-adding new property in dialog
 
 test property text creation, addition, removal via dialog
 test PT interactive deletion/undo
 minimum dimensions during text resize e.g. 10 x 10 or 1x1
 line item origin
-
-review use of comment properties
-PropertiesItem.types
 kill spreadsheet window
 property kind enum
 
