@@ -244,3 +244,12 @@ class DataKind(StrEnum):
         if not _DATA_KIND_EDITORS:
             _populate_data_kind_maps()
         return _DATA_KIND_EDITORS[self]
+
+
+class Counter:
+    def __init__(self : Self) -> None:
+        self._count = -1
+
+    def next(self : Self) -> int:
+        self._count += 1
+        return self._count
