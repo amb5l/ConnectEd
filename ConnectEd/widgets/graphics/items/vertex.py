@@ -1,15 +1,16 @@
 from typing import Self
 from enum   import StrEnum
 
-from PyQt6.QtCore    import QPointF
+from PyQt6.QtCore    import QPointF, QRectF
 from PyQt6.QtWidgets import QGraphicsPathItem
 
-from ....app import logger
+from ....app import logger, settings
 
 from ....core.defs  import Z_DRAWING
 
 from .mixin        import ItemMixin
 from .mixin.shape  import ItemShapeMixin
+from .mixin.paint  import ItemPaintMixin
 from .mixin.change import ItemChangeMixin
 
 from typing import TYPE_CHECKING
@@ -22,6 +23,7 @@ if TYPE_CHECKING:
 class VertexItem(
     ItemMixin,
     ItemShapeMixin,
+    ItemPaintMixin,
     ItemChangeMixin,
     QGraphicsPathItem
 ):
@@ -67,7 +69,7 @@ class VertexItem(
         state_str = self._state.value  # e.g. "unconnected"
         self.setPen(scene.resources[item_name][state_str]["pen"])
         self.setBrush(scene.resources[item_name][state_str]["brush"])
-        self.setPath(scene.resources[item_name][state_str]["path"])
+        self._updatePath(scene, item_name, state_str)
 
     def onScenePositionChange(self : Self, _pos : QPointF) -> None:
         """Update all connected segments."""
@@ -79,13 +81,11 @@ class VertexItem(
             if (scene := self.scene()) is None:
                 return
         n = len(self._connections)
-        self.state = \
+        self._state = \
             self.State.JUNCTION    if n >= self._JUNCTION_THRESHOLD else \
             self.State.CONNECTED   if n >= 1 else \
             self.State.UNCONNECTED
-        item_name = self.settingsName()
-        state_str = self._state.value
-        self.setPath(scene.resources[item_name][state_str]["path"])
+        self._updatePath(scene)
 
     def attach(self : Self, segment : "SegmentItem") -> None:
         if segment not in self._connections:
@@ -101,6 +101,25 @@ class VertexItem(
 
     def connections(self : Self) -> list["SegmentItem"]:
         return self._connections
+
+    def _updatePath(
+        self      : Self,
+        scene     : "DrawingScene | None" = None,
+        item_name : str | None = None,
+        state_str : str | None = None
+    ) -> None:
+        if scene is None:
+            if (scene := self.scene()) is None:
+                return
+        if item_name is None:
+            item_name = self.settingsName()
+        if state_str is None:
+            state_str = self._state.value
+        path = scene.resources[item_name][state_str]["path"]
+        self.setPath(path)
+        size = settings().get(f"theme/items/{item_name}/size")
+        self._hshape.clear()
+        self._hshape.addRect(QRectF(-size/2, -size/2, size, size))
 
 
 class EntryItem(VertexItem):
