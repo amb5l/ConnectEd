@@ -67,7 +67,6 @@ class PortPinMixin(
         # Initialize attributes that properties will access
         self._name      = ""
         self._direction = Direction.IN
-        self._range     = None
         self._comment   = ""
         # Initialize the item (this sets up properties system)
         self.initItem(fresh)
