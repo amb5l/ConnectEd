@@ -103,22 +103,6 @@ class BaseRectangleMixin(
         self.onGeometryChange()
 
     def onGeometryChange(self : Self | QGraphicsRectItem) -> None:
-        #self.prepareGeometryChange()
-        #pen_width = self.pen().widthF()
-        #tolerance = settings().get("display/select/tolerance")
-        #stroke_width = pen_width + (2 * tolerance)
-        #rect_path = QPainterPath()
-        #rect_path.addRect(self.rect())
-        #stroker = QPainterPathStroker()
-        #stroker.setWidth(stroke_width)
-        #stroker.setCapStyle(Qt.PenCapStyle.SquareCap)
-        #stroker.setJoinStyle(Qt.PenJoinStyle.MiterJoin)
-        #stroker_path = stroker.createStroke(rect_path)
-        #self._brect = stroker_path.boundingRect()
-        #if self.a.fill._brush.style() != Qt.BrushStyle.NoBrush:
-        #    self._hshape = rect_path.united(stroker_path)
-        #else:
-        #    self._hshape = stroker_path
         self.updateHandlePositions()
 
     @overload
