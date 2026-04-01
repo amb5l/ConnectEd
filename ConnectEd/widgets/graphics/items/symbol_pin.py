@@ -80,7 +80,7 @@ class SymbolPinItem(
             if (scene := self.scene()) is None:
                 return
         key = (self._dot, self._clock)
-        self.setPath(scene.paths["SymbolPin"][key])
+        self.setPath(scene.resources["SymbolPin"][key])
         self._handles[SymbolPinHandleId.NAME].setPos(QPointF(
             self._PIN_NAME_OFFSET + (_PIN_CLK_SIZE if self._clock else 0), 0
         ))

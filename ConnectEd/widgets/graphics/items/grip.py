@@ -40,8 +40,6 @@ class GripItem(
     _path_name_prefix = "Filled"  # default path name prefix
     _path_name_suffix = ""        # default path name suffix
     _path_name : str              # path name
-    _path      : QPainterPath     # path
-    _brush     : QBrush           # brush
 
     @checked
     def __init__(
@@ -59,30 +57,31 @@ class GripItem(
         self.setFlag( self.GraphicsItemFlag.ItemIsSelectable           , False )
         self.setFlag( self.GraphicsItemFlag.ItemIsMovable              , False )
         self.setPen(QPen(Qt.PenStyle.NoPen))
-        self._brush = QBrush(Qt.BrushStyle.SolidPattern)
         self.setVisible(False)
         self.onSettingsChange()
         settings().changed.connect(self.onSettingsChange)
 
     @checked
     def onSceneChange(self : Self, scene : "DrawingScene | None") -> None:
-        if scene is not None:
-            self.onPathChange(scene)
+        self.onSettingsChange(scene)
 
     @checked
-    def onSettingsChange(self : Self) -> None:
-        self.prepareGeometryChange()
-        self.onSceneChange(self.scene())
-        self._brush.setColor(settings().get("theme/grip/color"))
-        self.setBrush(self._brush)
-
-    @checked
-    def onPathChange(self : Self, scene : "DrawingScene | None" = None) -> None:
+    def onSettingsChange(self : Self, scene : "DrawingScene | None" = None) -> None:
         if scene is None:
             scene : "DrawingScene | None" = self.scene()
         if scene is None:
             return
-        self.setPath(scene.paths["Grip"][self.fullPathName()])
+        self.setBrush(scene.resources["Grip"]["brush"])
+        self.setPath(scene.resources["Grip"]["paths"][self.fullPathName()])
+        self._hshape.clear()
+        self._hshape.addRect(self.boundingRect())
+
+    @checked
+    def onPathChange(self : Self) -> None:
+        scene : "DrawingScene | None" = self.scene()
+        if scene is None:
+            return
+        self.setPath(scene.resources["Grip"]["paths"][self.fullPathName()])
         self._hshape.clear()
         self._hshape.addRect(self.boundingRect())
 

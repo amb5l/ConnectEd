@@ -94,10 +94,6 @@ class ItemRectHandlesMixin(ItemHandlesMixin[RectHandleId]):
         if hasattr(self, "origin"):
             self.updateOrigin()
 
-    def updateHandlePaths(self : Self) -> None:
-        for handle in self._handles.values():
-            handle.grip().onPathChange()
-
     def moveHandleBy(
         self : Self | QGraphicsItem | RectItemProtocol,
         id   : RectHandleId,

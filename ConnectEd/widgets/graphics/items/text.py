@@ -309,7 +309,7 @@ class TextItem(
         self._width = width
         self._child.onGeometryChange()
         self.updateHandlePositions()
-        self.updateHandlePaths()
+        self.updateGrips()
         self.signalPropertyChanges("Width")
 
     def height(self : Self) -> float:
@@ -319,7 +319,7 @@ class TextItem(
         self._height = height
         self._child.onGeometryChange()
         self.updateHandlePositions()
-        self.updateHandlePaths()
+        self.updateGrips()
         self.signalPropertyChanges("Height")
 
     def color(self : Self) -> QColor:
@@ -334,7 +334,6 @@ class TextItem(
     def setFont(self : Self, font : QFont) -> None:
         self._child.setFont(font)
         self.updateHandlePositions()
-        self.updateHandlePaths()
 
     def handleRect(self : Self) -> QRectF:
         """Return the rectangle used for handles."""
@@ -391,7 +390,7 @@ class TextItem(
         self._width = max(width + dx, 0.0)
         self._child.onGeometryChange()
         self.updateHandlePositions()
-        self.updateHandlePaths()
+        self.updateGrips()
 
     def resizeY(self : Self, dy : float) -> None:
         rect = self._brect
@@ -399,7 +398,7 @@ class TextItem(
         self._height = max(height + dy, 0.0)
         self._child.onGeometryChange()
         self.updateHandlePositions()
-        self.updateHandlePaths()
+        self.updateGrips()
 
     def resize(self : Self, dx : float, dy : float) -> None:
         rect = self._brect
@@ -409,7 +408,11 @@ class TextItem(
         self._height = max(height + dy, 0.0)
         self._child.onGeometryChange()
         self.updateHandlePositions()
-        self.updateHandlePaths()
+        self.updateGrips()
+
+    def updateGrips(self : Self) -> None:
+        for handle in self._handles.values():
+            handle.grip().onPathChange()
 
     def originMenu(self : Self, view : "DrawingView") -> QMenu:
         menu = QMenu("Origin", view)

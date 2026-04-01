@@ -53,4 +53,4 @@ class BlockPinItem(ItemLocMixin, ItemBlockPinHandlesMixin, BasePinItem):
         if scene is None:
             if (scene := self.scene()) is None:
                 return
-        self.setPath(scene.paths["BlockPin"])
+        self.setPath(scene.resources["BlockPin"])

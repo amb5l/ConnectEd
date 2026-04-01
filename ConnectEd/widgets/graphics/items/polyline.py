@@ -38,8 +38,8 @@ if TYPE_CHECKING:
 
 
 class PolyVtxItem(GripItem):
-    _PATH_NAME = "FilledCircle"
-    _ORIGIN_PATH_NAME = "FilledCircleSquared"
+    _PATH_NAME = "Circle"
+    _ORIGIN_PATH_NAME_SUFFIX = "Squared"
 
     # instance attributes
     _index : int  # index of vertex
@@ -55,19 +55,14 @@ class PolyVtxItem(GripItem):
         super().__init__(parent, pos)
 
     @checked
-    def onSceneChange(self : Self, scene : "DrawingScene | None") -> None:
-        """Override to update path based on origin status."""
-        if scene is not None:
-            self._path_name = self._ORIGIN_PATH_NAME \
-                if self._index == 0 else self._PATH_NAME
-            self.setPath(scene.paths["Grip"][self._path_name])
-            self._hshape.clear()
-            self._hshape.addRect(self.boundingRect())
-            self.setVisible(True)
-
-    @checked
     def index(self : Self) -> int:
         return self._index
+
+    @checked
+    def pathNameSuffix(self : Self) -> str:
+        if self._index == 0:
+            return self._ORIGIN_PATH_NAME_SUFFIX
+        return ""
 
     @checked
     def moveBy(self : Self, delta : QPointF) -> None:
@@ -111,15 +106,6 @@ class PolySegItem(GripItem):
         self._v1 = v1
         self._v2 = v2
         self._sweep = sweep
-
-    @checked
-    def onSceneChange(self : Self, scene : "DrawingScene | None") -> None:
-        """Override to set path and visibility."""
-        if scene is not None:
-            self.setPath(scene.paths["Grip"][self._path_name])
-            self._hshape.clear()
-            self._hshape.addRect(self.boundingRect())
-            self.setVisible(True)
 
     @checked
     def v1(self : Self) -> PolyVtxItem:

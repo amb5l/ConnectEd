@@ -70,7 +70,7 @@ class ConnVtxItem(
 
     def onSceneChange(self : Self, scene : "DrawingScene | None") -> None:
         if scene is not None:
-            self.setPath(scene.paths[self._PATH_NAME])
+            self.setPath(scene.resources[self._PATH_NAME])
 
     def onSettingsChange(self : Self) -> None:
         # update visibility

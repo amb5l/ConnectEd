@@ -1,3 +1,9 @@
+netlisting
+  settings paths for vertex/entry appearance: unconnected
+
+pin appearance set at block level? much less individual configurability?
+
+
 better separation of Drawing and Diagram e.g. nets
 sheet instance attribute names aren't private
 typeguard means we don't need to get variables on the way into methods

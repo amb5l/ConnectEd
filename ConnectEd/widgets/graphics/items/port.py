@@ -101,9 +101,9 @@ class PortItem(
             if (scene := self.scene()) is None:
                 return
         key = self.__class__.__name__.removesuffix("Item")
-        if  key in scene.paths \
-        and self._direction.value in scene.paths[key]:
-            path = scene.paths[key][self._direction.value]
+        if  key in scene.resources \
+        and self._direction.value in scene.resources[key]:
+            path = scene.resources[key][self._direction.value]
             self.setPath(path)
 
     def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:

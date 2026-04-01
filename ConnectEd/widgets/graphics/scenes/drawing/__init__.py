@@ -16,18 +16,18 @@ from ...properties import InherentProperty, PropertiesMixin
 
 from ...items.mixin.xml import ItemXmlMixin
 
-from .api        import DrawingSceneApiMixin
-from .grips      import DrawingSceneGripsMixin
-from .paths      import DrawingScenePathsMixin
-from .guides     import DrawingSceneGuidesMixin
-from .netlist    import DrawingSceneNetlistMixin, Net
-from .private    import DrawingSceneApiPrivateMixin
+from .api       import DrawingSceneApiMixin
+from .grips     import DrawingSceneGripsMixin
+from .resources import DrawingSceneResourcesMixin
+from .guides    import DrawingSceneGuidesMixin
+from .netlist   import DrawingSceneNetlistMixin, Net
+from .private   import DrawingSceneApiPrivateMixin
 
 
 class DrawingScene(
     DrawingSceneApiMixin,
     DrawingSceneGripsMixin,
-    DrawingScenePathsMixin,
+    DrawingSceneResourcesMixin,
     DrawingSceneGuidesMixin,
     DrawingSceneNetlistMixin,
     DrawingSceneApiPrivateMixin,
@@ -63,7 +63,7 @@ class DrawingScene(
         self.setItemIndexMethod(QGraphicsScene.ItemIndexMethod.NoIndex)
         self.undo_stack = QUndoStack(self)
         self.initProperties(fresh)
-        self.initPaths()
+        self.initResources()
         self.initGrips()
         self.initNetlist()
         self.onSettingsChange()

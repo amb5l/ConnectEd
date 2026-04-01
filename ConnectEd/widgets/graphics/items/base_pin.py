@@ -65,12 +65,8 @@ class BasePinArrowItem(
         if scene is None:
             if (scene := self.scene()) is None:
                 return
-        key = self.__class__.__name__.removesuffix("Item")
-        if hasattr(scene, 'paths') \
-        and key in scene.paths \
-        and self._direction.value in scene.paths[key]:
-            path = scene.paths[key][self._direction.value]
-            self.setPath(path)
+        item_name = self.__class__.__name__.removesuffix("Item")
+        self.setPath(scene.resources[item_name][self._direction.value])
 
 
 class BasePinItem(ItemPaintMixin, PortPinMixin, QGraphicsPathItem):
