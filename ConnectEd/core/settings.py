@@ -102,28 +102,108 @@ FACTORY_SETTINGS = {
             "sheet"      : PaletteDark.Sheet,
             "border"     : PaletteDark.Border,
             "items" : {
+                "Entry" : {
+                    "size" : 3,
+                    "unconnected" : {
+                        "line" : {
+                            "color" : PaletteDark.EntryUnconnected,
+                            "width" : 0,
+                            "style" : Qt.PenStyle.SolidLine
+                        },
+                        "fill" : {
+                            "color" : PaletteDark.EntryUnconnected,
+                            "style" : Qt.BrushStyle.NoBrush
+                        }
+                    },
+                    "connected" : {
+                        "line" : {
+                            "color" : PaletteDark.EntryConnected,
+                            "width" : 0,
+                            "style" : Qt.PenStyle.SolidLine
+                        },
+                        "fill" : {
+                            "color" : PaletteDark.EntryConnected,
+                            "style" : Qt.BrushStyle.NoBrush
+                        }
+                    },
+                    "junction" : {
+                        "line" : {
+                            "color" : PaletteDark.EntryJunction,
+                            "width" : 0,
+                            "style" : Qt.PenStyle.NoPen
+                        },
+                        "fill" : {
+                            "color" : PaletteDark.EntryJunction,
+                            "style" : Qt.BrushStyle.SolidPattern
+                        }
+                    }
+                },
+                "Vertex" : {
+                    "size" : 3,
+                    "unconnected" : {
+                        "line" : {
+                            "color" : PaletteDark.VertexUnconnected,
+                            "width" : 0,
+                            "style" : Qt.PenStyle.SolidLine
+                        },
+                        "fill" : {
+                            "color" : PaletteDark.VertexUnconnected,
+                            "style" : Qt.BrushStyle.NoBrush
+                        }
+                    },
+                    "connected" : {
+                        "line" : {
+                            "color" : PaletteDark.VertexConnected,
+                            "width" : 0,
+                            "style" : Qt.PenStyle.SolidLine
+                        },
+                        "fill" : {
+                            "color" : PaletteDark.VertexConnected,
+                            "style" : Qt.BrushStyle.NoBrush
+                        }
+                    },
+                    "junction" : {
+                        "line" : {
+                            "color" : PaletteDark.VertexJunction,
+                            "width" : 0,
+                            "style" : Qt.PenStyle.NoPen
+                        },
+                        "fill" : {
+                            "color" : PaletteDark.VertexJunction,
+                            "style" : Qt.BrushStyle.SolidPattern
+                        }
+                    }
+                },
+                "Segment" : {
+                    "line" : {
+                        "color" : PaletteDark.Segment,
+                        "width" : 1,
+                        "style" : Qt.PenStyle.SolidLine
+                    }
+                },
+                "SegmentPreview1" : {
+                    "line" : {
+                        "color" : PaletteDark.SegmentPreview1,
+                        "width" : 1,
+                        "style" : Qt.PenStyle.SolidLine
+                    }
+                },
+                "SegmentPreview2" : {
+                    "line" : {
+                        "color" : PaletteDark.SegmentPreview2,
+                        "width" : 1,
+                        "style" : Qt.PenStyle.DashDotDotLine
+                    }
+                },
                 "Port" : {
                     "line" : {
                         "color" : PaletteDark.PortLine,
-                        "width" : 0,
-                        "style" : Qt.PenStyle.NoPen
+                        "width" : 1,
+                        "style" : Qt.PenStyle.SolidLine
                     },
                     "fill" : {
                         "color" : PaletteDark.PortFill,
                         "style" : Qt.BrushStyle.SolidPattern
-                    },
-                    "size" : 6
-                },
-                "PortEntry" : {
-                    "size" : 3,
-                    "line" : {
-                        "color" : PaletteDark.PortEntry,
-                        "width" : 0,
-                        "style" : Qt.PenStyle.SolidLine
-                    },
-                    "fill" : {
-                        "color" : PaletteDark.PortEntry,
-                        "style" : Qt.BrushStyle.NoBrush
                     }
                 },
                 "PortName" : {
@@ -161,18 +241,6 @@ FACTORY_SETTINGS = {
                     "line" : {
                         "color" : PaletteDark.GatePin,
                         "width" : 1,
-                        "style" : Qt.PenStyle.SolidLine
-                    },
-                    "fill" : {
-                        "color" : PaletteDark.GatePin,
-                        "style" : Qt.BrushStyle.NoBrush
-                    }
-                },
-                "GatePinEntry" : {
-                    "size" : 3,
-                    "line" : {
-                        "color" : PaletteDark.GatePin,
-                        "width" : 0,
                         "style" : Qt.PenStyle.SolidLine
                     },
                     "fill" : {
@@ -229,18 +297,6 @@ FACTORY_SETTINGS = {
                         "style" : Qt.BrushStyle.SolidPattern
                     }
                 },
-                "BlockPinEntry" : {
-                    "size" : 3,
-                    "line" : {
-                        "color" : PaletteDark.BlockPin,
-                        "width" : 0,
-                        "style" : Qt.PenStyle.SolidLine
-                    },
-                    "fill" : {
-                        "color" : PaletteDark.BlockPin,
-                        "style" : Qt.BrushStyle.NoBrush
-                    }
-                },
                 "BlockPinName" : {
                     "text" : {
                         "color"     : PaletteDark.BlockPinName,
@@ -283,18 +339,6 @@ FACTORY_SETTINGS = {
                         "style" : Qt.BrushStyle.SolidPattern
                     }
                 },
-                "SymbolPinEntry" : {
-                    "size" : 3,
-                    "line" : {
-                        "color" : PaletteDark.SymbolPin,
-                        "width" : 0,
-                        "style" : Qt.PenStyle.SolidLine
-                    },
-                    "fill" : {
-                        "color" : PaletteDark.SymbolPin,
-                        "style" : Qt.BrushStyle.NoBrush
-                    }
-                },
                 "SymbolPinName" : {
                     "text" : {
                         "color"     : PaletteDark.SymbolPinName,
@@ -323,52 +367,6 @@ FACTORY_SETTINGS = {
                         "bold"      : False,
                         "italic"    : False,
                         "underline" : False
-                    }
-                },
-                "Junction" : {
-                    "size"  : 4,
-                    "line" : {
-                        "color" : PaletteDark.Junction,
-                        "width" : 0,
-                        "style" : Qt.PenStyle.NoPen
-                    },
-                    "fill" : {
-                        "color" : PaletteDark.Junction,
-                        "style" : Qt.BrushStyle.SolidPattern
-                    }
-                },
-                "ConnSegPreview1" : {
-                    "line" : {
-                        "color" : PaletteDark.ConnSegPreview1,
-                        "width" : 1,
-                        "style" : Qt.PenStyle.SolidLine
-                    }
-                },
-                "ConnSegPreview2" : {
-                    "line" : {
-                        "color" : PaletteDark.ConnSegPreview2,
-                        "width" : 1,
-                        "style" : Qt.PenStyle.DashDotDotLine
-                    }
-                },
-                "ConnVtx" : {
-                    "visible" : True,
-                    "size"    : 4,
-                    "line" : {
-                        "color" : PaletteDark.ConnVtx,
-                        "width" : 0,
-                        "style" : Qt.PenStyle.SolidLine
-                    },
-                    "fill"    : {
-                        "color" : PaletteDark.ConnVtx,
-                        "style" : Qt.BrushStyle.NoBrush
-                    },
-                },
-                "ConnSeg" : {
-                    "line" : {
-                        "color" : PaletteDark.ConnSeg,
-                        "width" : 1,
-                        "style" : Qt.PenStyle.SolidLine
                     }
                 },
                 "Line" : {
@@ -451,6 +449,99 @@ FACTORY_SETTINGS = {
             "sheet"      : PaletteLightMono.Sheet,
             "border"     : PaletteLightMono.Border,
             "items" : {
+                "Entry" : {
+                    "size" : 3,
+                    "unconnected" : {
+                        "line" : {
+                            "color" : PaletteLightMono.EntryUnconnected,
+                            "width" : 0,
+                            "style" : Qt.PenStyle.SolidLine
+                        },
+                        "fill" : {
+                            "color" : PaletteLightMono.EntryUnconnected,
+                            "style" : Qt.BrushStyle.NoBrush
+                        }
+                    },
+                    "connected" : {
+                        "line" : {
+                            "color" : PaletteLightMono.EntryConnected,
+                            "width" : 0,
+                            "style" : Qt.PenStyle.SolidLine
+                        },
+                        "fill" : {
+                            "color" : PaletteLightMono.EntryConnected,
+                            "style" : Qt.BrushStyle.NoBrush
+                        }
+                    },
+                    "junction" : {
+                        "line" : {
+                            "color" : PaletteLightMono.EntryJunction,
+                            "width" : 0,
+                            "style" : Qt.PenStyle.NoPen
+                        },
+                        "fill" : {
+                            "color" : PaletteLightMono.EntryJunction,
+                            "style" : Qt.BrushStyle.SolidPattern
+                        }
+                    }
+                },
+                "Vertex" : {
+                    "size" : 3,
+                    "unconnected" : {
+                        "line" : {
+                            "color" : PaletteLightMono.VertexUnconnected,
+                            "width" : 0,
+                            "style" : Qt.PenStyle.SolidLine
+                        },
+                        "fill" : {
+                            "color" : PaletteLightMono.VertexUnconnected,
+                            "style" : Qt.BrushStyle.NoBrush
+                        }
+                    },
+                    "connected" : {
+                        "line" : {
+                            "color" : PaletteLightMono.VertexConnected,
+                            "width" : 0,
+                            "style" : Qt.PenStyle.SolidLine
+                        },
+                        "fill" : {
+                            "color" : PaletteLightMono.VertexConnected,
+                            "style" : Qt.BrushStyle.NoBrush
+                        }
+                    },
+                    "junction" : {
+                        "line" : {
+                            "color" : PaletteLightMono.VertexJunction,
+                            "width" : 0,
+                            "style" : Qt.PenStyle.NoPen
+                        },
+                        "fill" : {
+                            "color" : PaletteLightMono.VertexJunction,
+                            "style" : Qt.BrushStyle.SolidPattern
+                        }
+                    }
+                },
+                "Segment" : {
+                    "line" : {
+                        "color" : PaletteLightMono.Segment,
+                        "width" : 1,
+                        "style" : Qt.PenStyle.SolidLine
+                    }
+                },
+                "SegmentPreview1" : {
+                    "line" : {
+                        "color" : PaletteLightMono.SegmentPreview1,
+                        "width" : 1,
+                        "style" : Qt.PenStyle.SolidLine
+                    }
+                },
+                "SegmentPreview2" : {
+                    "line" : {
+                        "color" : PaletteLightMono.SegmentPreview2,
+                        "width" : 1,
+                        "style" : Qt.PenStyle.DashDotDotLine
+                    }
+                },
                 "Port" : {
                     "line" : {
                         "color" : PaletteLightMono.PortLine,
@@ -459,24 +550,22 @@ FACTORY_SETTINGS = {
                     },
                     "fill" : {
                         "color" : PaletteLightMono.PortFill,
-                        "style" : Qt.BrushStyle.NoBrush
-                    }
-                },
-                "PortEntry" : {
-                    "size" : 3,
-                    "line" : {
-                        "color" : PaletteLightMono.PortLine,
-                        "width" : 0,
-                        "style" : Qt.PenStyle.SolidLine
-                    },
-                    "fill" : {
-                        "color" : PaletteLightMono.PortFill,
-                        "style" : Qt.BrushStyle.NoBrush
+                        "style" : Qt.BrushStyle.SolidPattern
                     }
                 },
                 "PortName" : {
                     "text" : {
                         "color"     : PaletteLightMono.PortName,
+                        "font"      : "Liberation Sans",
+                        "size"      : 7,
+                        "bold"      : False,
+                        "italic"    : False,
+                        "underline" : False
+                    }
+                },
+                "PortComment" : {
+                    "text" : {
+                        "color"     : PaletteLightMono.PortComment,
                         "font"      : "Liberation Sans",
                         "size"      : 7,
                         "bold"      : False,
@@ -499,18 +588,6 @@ FACTORY_SETTINGS = {
                     "line" : {
                         "color" : PaletteLightMono.GatePin,
                         "width" : 1,
-                        "style" : Qt.PenStyle.SolidLine
-                    },
-                    "fill" : {
-                        "color" : PaletteLightMono.GatePin,
-                        "style" : Qt.BrushStyle.NoBrush
-                    }
-                },
-                "GatePinEntry" : {
-                    "size" : 3,
-                    "line" : {
-                        "color" : PaletteLightMono.GatePin,
-                        "width" : 0,
                         "style" : Qt.PenStyle.SolidLine
                     },
                     "fill" : {
@@ -567,18 +644,6 @@ FACTORY_SETTINGS = {
                         "style" : Qt.BrushStyle.SolidPattern
                     }
                 },
-                "BlockPinEntry" : {
-                    "size" : 3,
-                    "line" : {
-                        "color" : PaletteLightMono.BlockPin,
-                        "width" : 0,
-                        "style" : Qt.PenStyle.SolidLine
-                    },
-                    "fill" : {
-                        "color" : PaletteLightMono.BlockPin,
-                        "style" : Qt.BrushStyle.NoBrush
-                    }
-                },
                 "BlockPinName" : {
                     "text" : {
                         "color"     : PaletteLightMono.BlockPinName,
@@ -621,18 +686,6 @@ FACTORY_SETTINGS = {
                         "style" : Qt.BrushStyle.SolidPattern
                     }
                 },
-                "SymbolPinEntry" : {
-                    "size" : 3,
-                    "line" : {
-                        "color" : PaletteLightMono.SymbolPin,
-                        "width" : 0,
-                        "style" : Qt.PenStyle.SolidLine
-                    },
-                    "fill" : {
-                        "color" : PaletteLightMono.SymbolPin,
-                        "style" : Qt.BrushStyle.NoBrush
-                    }
-                },
                 "SymbolPinName" : {
                     "text" : {
                         "color"     : PaletteLightMono.SymbolPinName,
@@ -661,52 +714,6 @@ FACTORY_SETTINGS = {
                         "bold"      : False,
                         "italic"    : False,
                         "underline" : False
-                    }
-                },
-                "Junction" : {
-                    "size"  : 4,
-                    "line" : {
-                        "color" : PaletteLightMono.Junction,
-                        "width" : 0,
-                        "style" : Qt.PenStyle.NoPen
-                    },
-                    "fill" : {
-                        "color" : PaletteLightMono.Junction,
-                        "style" : Qt.BrushStyle.SolidPattern
-                    }
-                },
-                "ConnSegPreview1" : {
-                    "line" : {
-                        "color" : PaletteLightMono.ConnSegPreview1,
-                        "width" : 1,
-                        "style" : Qt.PenStyle.SolidLine
-                    }
-                },
-                "ConnSegPreview2" : {
-                    "line" : {
-                        "color" : PaletteLightMono.ConnSegPreview2,
-                        "width" : 1,
-                        "style" : Qt.PenStyle.DashDotDotLine
-                    }
-                },
-                "ConnVtx" : {
-                    "visible" : True,
-                    "size"    : 4,
-                    "line" : {
-                        "color" : PaletteLightMono.ConnVtx,
-                        "width" : 0,
-                        "style" : Qt.PenStyle.SolidLine
-                    },
-                    "fill"    : {
-                        "color" : PaletteLightMono.ConnVtx,
-                        "style" : Qt.BrushStyle.NoBrush
-                    },
-                },
-                "ConnSeg" : {
-                    "line" : {
-                        "color" : PaletteLightMono.ConnSeg,
-                        "width" : 1,
-                        "style" : Qt.PenStyle.SolidLine
                     }
                 },
                 "Line" : {

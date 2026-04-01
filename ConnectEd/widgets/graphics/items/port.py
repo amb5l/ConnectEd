@@ -4,13 +4,13 @@ from PyQt6.QtCore    import QPointF
 from PyQt6.QtWidgets import QGraphicsItem, QGraphicsPathItem, QMenu
 from PyQt6.QtGui     import QAction
 
-from ....app         import settings
-
+from ....core.defs  import PITCH
 from ....core.types import Direction, RectHandleId, PortHandleId, DataKind
 
 from ..properties import PropertyTextSpec
 
 from .port_pin import PortPinMixin
+from .base_pin import _PIN_SIZE
 from .handle   import HandleItem
 
 from .mixin.paint  import ItemPaintMixin
@@ -25,6 +25,9 @@ if TYPE_CHECKING:
     from ..scenes.drawing import DrawingScene
 
 
+_PORT_SIZE = 6  # documentation - DO NOT CHANGE
+
+
 class PortItem(
     ItemPaintMixin,
     ItemPosMixin,
@@ -35,13 +38,13 @@ class PortItem(
     QGraphicsPathItem
 ):
     # class attributes
-    _AP_NAME_OFFSET = 1.5
     _PROPERTIES = \
-        PortPinMixin._PROPERTIES_NAME | \
-        PortPinMixin._PROPERTIES_DIR | \
-        PortPinMixin._PROPERTIES_COMMENT | \
-        ItemPosMixin._PROPERTIES_POS | \
+        PortPinMixin._PROPERTIES_NAME      | \
+        PortPinMixin._PROPERTIES_DIR       | \
+        PortPinMixin._PROPERTIES_COMMENT   | \
+        ItemPosMixin._PROPERTIES_POS       | \
         ItemRotateMixin._PROPERTIES_ROTATE | \
+        PortPinMixin._PROPERTIES_LINE      | \
         ItemFillMixin._PROPERTIES_FILL
     _PROPERTY_TEXTS = {
             "Name" : PropertyTextSpec(
@@ -64,7 +67,6 @@ class PortItem(
     ) -> None:
         QGraphicsPathItem.__init__(self, parent)
         self.initPortPin(fresh)
-        self.onSettingsChange()
 
     def initHandles(self : Self) -> None:
         self._handles = {
@@ -76,7 +78,7 @@ class PortItem(
             ),
             PortHandleId.NAME : HandleItem(
                 id     = PortHandleId.NAME,
-                pos    = QPointF(self._AP_NAME_OFFSET, 0),
+                pos    = QPointF(_PIN_SIZE + _PORT_SIZE + self._PIN_NAME_OFFSET, 0),
                 kind   = "move",
                 parent = self
             )
@@ -84,10 +86,6 @@ class PortItem(
 
     def moveHandleBy(self : Self, _ : PortHandleId, d : QPointF) -> None:
         self.setPos(self.pos() + d)
-
-    def onSettingsChange(self : Self) -> None:
-        size = settings().get("theme/items/Port/size")
-        self.getHandle(PortHandleId.NAME).setPos(size + self._AP_NAME_OFFSET, 0)
 
     def onSceneChange(self : Self, scene : "DrawingScene") -> None:
         self._setPath(scene)
@@ -100,11 +98,8 @@ class PortItem(
         if scene is None:
             if (scene := self.scene()) is None:
                 return
-        key = self.__class__.__name__.removesuffix("Item")
-        if  key in scene.resources \
-        and self._direction.value in scene.resources[key]:
-            path = scene.resources[key][self._direction.value]
-            self.setPath(path)
+        item_name = self.__class__.__name__.removesuffix("Item")
+        self.setPath(scene.resources[item_name][self._direction.value])
 
     def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
         return [

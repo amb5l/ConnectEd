@@ -53,6 +53,8 @@ class ItemLineMixin:
             default = lambda self: self.defaultLineStyle()
         )
     }
+    _PEN_CAP_STYLE = Qt.PenCapStyle.FlatCap
+    _PEN_JOIN_STYLE = Qt.PenJoinStyle.MiterJoin
 
     # instance attributes
     _line_color : QColor      | Default
@@ -73,6 +75,10 @@ class ItemLineMixin:
         self.setLineColor(self.lineColor())
         self.setLineWidth(self.lineWidth())
         self.setLineStyle(self.lineStyle())
+        pen = self.pen()
+        pen.setCapStyle(self._PEN_CAP_STYLE)
+        pen.setJoinStyle(self._PEN_JOIN_STYLE)
+        self.setPen(pen)
 
     def lineSelectionChange(self : Self | ItemProtocol, selected : bool) -> None:
         self.setLineColor(selected=selected)

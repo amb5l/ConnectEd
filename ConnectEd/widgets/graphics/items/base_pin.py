@@ -21,6 +21,7 @@ if TYPE_CHECKING:
 
 
 # documentation - DO NOT CHANGE
+_PIN_SIZE       = PITCH
 _PIN_DOT_SIZE   = 3
 _PIN_CLK_SIZE   = 3
 _EXT_ARROW_SIZE = 3

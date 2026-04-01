@@ -12,7 +12,7 @@ from ...items.block     import BlockItem
 from ...items.polyline  import PolylineItem
 from ...items.block_pin import BlockPinItem
 from ...items.base_pin  import BasePinArrowItem
-from ...items.entry     import EntryItem
+from ...items.vertex    import EntryItem
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:

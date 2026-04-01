@@ -1,20 +1,123 @@
-from copy import deepcopy
-
 from PyQt6.QtCore import QPointF, QRectF
-from PyQt6.QtGui  import QBrush, QPainterPath, QPolygonF, QPainterPathStroker
+from PyQt6.QtGui  import QPen, QBrush, QPainterPath, QPolygonF, QPainterPathStroker
 
 from .....app import settings
 
-from .....core.defs  import WIDTH, PITCH
+from .....core.defs  import WIDTH
 from .....core.types import Direction
 
-from ...items.base_pin import _PIN_DOT_SIZE, _PIN_CLK_SIZE, \
+from ...items.base_pin import _PIN_SIZE, _PIN_DOT_SIZE, _PIN_CLK_SIZE, \
                               _EXT_ARROW_SIZE, _INT_ARROW_SIZE
-from ...items.entry    import _ENTRY_SIZE
+from ...items.port import _PORT_SIZE
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from . import DrawingScene
+
+
+class DrawingSceneResourcesMixin:
+    """Shared resources."""
+
+    resources : dict
+
+    def initResources(self : "DrawingScene") -> None:
+        self.resources = \
+            {
+                "Grip" : {
+                    "brush" : QBrush(),
+                    "paths" : {
+                        "UnfilledSquare"         : QPainterPath(),
+                        "FilledSquare"           : QPainterPath(),
+                        "UnfilledDiamond"        : QPainterPath(),
+                        "UnfilledDiamondSquared" : QPainterPath(),
+                        "FilledDiamond"          : QPainterPath(),
+                        "FilledDiamondSquared"   : QPainterPath(),
+                        "UnfilledCircle"         : QPainterPath(),
+                        "UnfilledCircleSquared"  : QPainterPath(),
+                        "FilledCircle"           : QPainterPath(),
+                        "FilledCircleSquared"    : QPainterPath(),
+                        "FilledArrow"            : QPainterPath()
+                    }
+                },
+                "Port" : {
+                    "in"  : QPainterPath(),
+                    "out" : QPainterPath(),
+                    "bi"  : QPainterPath()
+                },
+                "BlockPin" : QPainterPath(),
+                "BlockPinArrow" : {
+                    "in"  : QPainterPath(),
+                    "out" : QPainterPath(),
+                    "bi"  : QPainterPath()
+                },
+                "SymbolPin" : {
+                    "dot"   : QPainterPath(),
+                    "clock" : QPainterPath()
+                },
+                "SymbolPinArrow" : {
+                    "in"  : QPainterPath(),
+                    "out" : QPainterPath(),
+                    "bi"  : QPainterPath()
+                },
+                "Entry" : {
+                    "unconnected" : {
+                        "pen"   : QPen(),
+                        "brush" : QBrush(),
+                        "path"  : QPainterPath()
+                    },
+                    "connected" : {
+                        "pen"   : QPen(),
+                        "brush" : QBrush(),
+                        "path"  : QPainterPath()
+                    },
+                    "junction" : {
+                        "pen"   : QPen(),
+                        "brush" : QBrush(),
+                        "path"  : QPainterPath()
+                    }
+                },
+                "Vertex" : {
+                    "unconnected" : {
+                        "pen"   : QPen(),
+                        "brush" : QBrush(),
+                        "path"  : QPainterPath()
+                    },
+                    "connected" :  {
+                        "pen"   : QPen(),
+                        "brush" : QBrush(),
+                        "path"  : QPainterPath()
+                    },
+                    "junction" : {
+                        "pen"   : QPen(),
+                        "brush" : QBrush(),
+                        "path"  : QPainterPath()
+                    }
+                }
+            }
+        _blockPinPath(self.resources["BlockPin"])
+        _symbolPinPaths(self.resources["SymbolPin"])
+        _pinIntArrowPaths(self.resources["BlockPinArrow"])
+        self.updateResources()
+        settings().changed.connect(self.updateResources)
+
+    def updateResources(self : "DrawingScene") -> None:
+        size = settings().get("theme/items/Entry/size")
+        _pinExtArrowPaths(self.resources["SymbolPinArrow"], size)
+        self.resources["Grip"]["brush"] = \
+            QBrush(settings().get("theme/grip/color"))
+        size = settings().get("theme/grip/size")
+        _gripPaths(self.resources["Grip"]["paths"], size)
+        _portInPath(self.resources["Port"]["in"])
+        _portOutPath(self.resources["Port"]["out"])
+        _portBiPath(self.resources["Port"]["bi"])
+        for node_type in ["Entry", "Vertex"]:
+            for state in ["unconnected", "connected", "junction"]:
+                self.resources[node_type][state]["pen"] = \
+                    _getPen(f"{node_type}/{state}")
+                self.resources[node_type][state]["brush"] = \
+                    _getBrush(f"{node_type}/{state}")
+                size = settings().get(f"theme/items/{node_type}/size")
+                _nodePath(self.resources[node_type], size)
 
 
 def _gripPaths(d : dict, size : float) -> None:
@@ -62,43 +165,50 @@ def _gripPaths(d : dict, size : float) -> None:
     d["FilledCircleSquared"] = circle_path.united(stroked_square)
     d["FilledArrow"] = arrow_path
 
-def _portInPath(path : QPainterPath, size : float) -> None:
-    s = size / 2
+def _portInPath(path : QPainterPath) -> None:
+    p = _PIN_SIZE
+    s = _PORT_SIZE / 2
     path.clear()
     path.moveTo(0, 0)
-    path.lineTo(s, -s)
-    path.lineTo(s*2, -s)
-    path.lineTo(s*2, s)
-    path.lineTo(s, s)
-    path.closeSubpath()
+    path.lineTo(p, 0)
+    path.lineTo(s+p, -s)
+    path.lineTo(s*2+p, -s)
+    path.lineTo(s*2+p, s)
+    path.lineTo(s+p, s)
+    path.lineTo(p, 0)
 
-def _portOutPath(path : QPainterPath, size : float) -> None:
-    s = size / 2
+def _portOutPath(path : QPainterPath) -> None:
+    p = _PIN_SIZE
+    s = _PORT_SIZE / 2
     path.clear()
-    path.moveTo(s*2, 0)
-    path.lineTo(s, -s)
-    path.lineTo(0, -s)
-    path.lineTo(0, s)
-    path.lineTo(s, s)
-    path.closeSubpath()
+    path.lineTo(p, 0)
+    path.moveTo(s*2+p, 0)
+    path.lineTo(s+p, -s)
+    path.lineTo(p, -s)
+    path.lineTo(p, s)
+    path.lineTo(s+p, s)
+    path.lineTo(p, 0)
 
-def _portBiPath(path : QPainterPath, size : float) -> None:
-    s = size / 2
+def _portBiPath(path : QPainterPath) -> None:
+    p = _PIN_SIZE
+    s = _PORT_SIZE / 2
     path.clear()
     path.moveTo(0, 0)
-    path.lineTo(s, -s)
-    path.lineTo(2*s, 0)
-    path.lineTo(s, s)
+    path.lineTo(p, 0)
+    path.lineTo(s+p, -s)
+    path.lineTo(2*s+p, 0)
+    path.lineTo(s+p, s)
+    path.lineTo(p, 0)
     path.closeSubpath()
 
 def _blockPinPath(path : QPainterPath) -> None:
     path.clear()
-    path.moveTo(-PITCH, 0)
+    path.moveTo(-_PIN_SIZE, 0)
     path.lineTo(0, 0)
 
 def _symbolPinPath(d : dict, dot : bool, clock : bool) -> None:
     path = QPainterPath()
-    path.moveTo(-PITCH, 0)
+    path.moveTo(-_PIN_SIZE, 0)
     if dot:
         path.lineTo(-(WIDTH + _PIN_DOT_SIZE), 0)
         path.arcTo(
@@ -156,11 +266,11 @@ def _pinIntArrowPaths(d : dict) -> None:
     path.closeSubpath()
     d[Direction.BI.value] = path
 
-def _pinExtArrowPaths(d : dict) -> None:
+def _pinExtArrowPaths(d : dict, size : float) -> None:
     w = WIDTH
     wh = WIDTH / 2
     x1 = wh + w + _PIN_DOT_SIZE
-    x2 = PITCH - (_ENTRY_SIZE / 2)
+    x2 = _PIN_SIZE - (size / 2)
     c = -((x1 + x2) / 2)  # center point
     sh = _EXT_ARROW_SIZE / 2
     sq = _EXT_ARROW_SIZE / 4
@@ -190,85 +300,44 @@ def _pinExtArrowPaths(d : dict) -> None:
     path.closeSubpath()
     d[Direction.BI.value] = path
 
-def _connVtxPath(path : QPainterPath, size : float) -> None:
-    s = size / 2
+def _nodePath(d : dict, size : float) -> None:
+    # unconnected = "X"
+    path = QPainterPath()
     path.clear()
-    path.moveTo(-s, 0)
-    path.lineTo(0, -s)
-    path.lineTo(s, 0)
-    path.lineTo(0, s)
+    path.moveTo(-size/2, -size/2)
+    path.lineTo(size/2, size/2)
+    path.moveTo(size/2, -size/2)
+    path.lineTo(-size/2, size/2)
     path.closeSubpath()
-
-def _polyVtxPath(path : QPainterPath, size : float) -> None:
-    s = size / 2
-    path.clear()
-    path.moveTo(-s, 0)
-    path.lineTo(0, -s)
-    path.lineTo(s, 0)
-    path.lineTo(0, s)
+    d["unconnected"]["path"] = path
+    # connected = diamond
+    path = QPainterPath()
+    path.moveTo(-size/2, 0)
+    path.lineTo(0, -size/2)
+    path.lineTo(size/2, 0)
+    path.lineTo(0, size/2)
     path.closeSubpath()
+    d["connected"]["path"] = path
+    # junction = circle
+    path = QPainterPath()
+    path.addEllipse(QRectF(-size/2, -size/2, size, size))
+    d["junction"]["path"] = path
 
+def _entryPath(d : dict, size : float) -> None:
+    _nodePath(d, size)
 
-class DrawingSceneResourcesMixin:
-    """Shared resources."""
+def _vertexPath(d : dict, size : float) -> None:
+    _nodePath(d, size)
 
-    resources : dict
+def _getPen(path : str) -> QPen:
+    return QPen(
+        settings().get(f"theme/items/{path}/line/color"),
+        settings().get(f"theme/items/{path}/line/width"),
+        settings().get(f"theme/items/{path}/line/style")
+    )
 
-    def initResources(self : "DrawingScene") -> None:
-        self.resources = \
-            {
-                "Grip" : {
-                    "brush" : QBrush(),
-                    "paths" : {
-                        "UnfilledSquare"         : QPainterPath(),
-                        "FilledSquare"           : QPainterPath(),
-                        "UnfilledDiamond"        : QPainterPath(),
-                        "UnfilledDiamondSquared" : QPainterPath(),
-                        "FilledDiamond"          : QPainterPath(),
-                        "FilledDiamondSquared"   : QPainterPath(),
-                        "UnfilledCircle"         : QPainterPath(),
-                        "UnfilledCircleSquared"  : QPainterPath(),
-                        "FilledCircle"           : QPainterPath(),
-                        "FilledCircleSquared"    : QPainterPath(),
-                        "FilledArrow"            : QPainterPath()
-                    }
-                },
-                "Port" : {
-                    "in"  : QPainterPath(),
-                    "out" : QPainterPath(),
-                    "bi"  : QPainterPath()
-                },
-                "BlockPin" : QPainterPath(),
-                "BlockPinArrow" : {
-                    "in"  : QPainterPath(),
-                    "out" : QPainterPath(),
-                    "bi"  : QPainterPath()
-                },
-                "SymbolPin" : {
-                    "dot"   : QPainterPath(),
-                    "clock" : QPainterPath()
-                },
-                "SymbolPinArrow" : {
-                    "in"  : QPainterPath(),
-                    "out" : QPainterPath(),
-                    "bi"  : QPainterPath()
-                },
-                "ConnVtx" : QPainterPath()
-            }
-        _blockPinPath(self.resources["BlockPin"])
-        _symbolPinPaths(self.resources["SymbolPin"])
-        _pinIntArrowPaths(self.resources["BlockPinArrow"])
-        _pinExtArrowPaths(self.resources["SymbolPinArrow"])
-        self.updateResources()
-        settings().changed.connect(self.updateResources)
-
-    def updateResources(self : "DrawingScene") -> None:
-        self.resources["Grip"]["brush"] = QBrush(settings().get("theme/grip/color"))
-        size = settings().get("theme/grip/size")
-        _gripPaths(self.resources["Grip"]["paths"], size)
-        size = settings().get("theme/items/Port/size")
-        _portInPath(self.resources["Port"]["in"], size)
-        _portOutPath(self.resources["Port"]["out"], size)
-        _portBiPath(self.resources["Port"]["bi"], size)
-        size = settings().get("theme/items/ConnVtx/size")
-        _connVtxPath(self.resources["ConnVtx"], size)
+def _getBrush(path : str) -> QBrush:
+    return QBrush(
+        settings().get(f"theme/items/{path}/fill/color"),
+        settings().get(f"theme/items/{path}/fill/style")
+    )

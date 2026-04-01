@@ -1,13 +1,17 @@
 from typing import Self
 
+from PyQt6.QtCore    import Qt
+from PyQt6.QtWidgets import QGraphicsPathItem
+
 from ....core.types import Direction, DataKind
 
 from ..properties import InherentProperty, PropertiesMixin
 
-from .entry         import EntryItem
+from .vertex import EntryItem
 
 from .mixin        import ItemMixin
 from .mixin.line   import ItemLineMixin
+from .mixin.fill   import ItemFillMixin
 from .mixin.change import ItemChangeMixin
 from .mixin.clone  import ItemCloneMixin
 from .mixin.xml    import ItemXmlMixin
@@ -50,6 +54,8 @@ class PortPinMixin(
                 setter = lambda self, value: setattr(self, "_comment", value)
             )
         }
+    _PEN_CAP_STYLE  = Qt.PenCapStyle.SquareCap
+    _PEN_JOIN_STYLE = Qt.PenJoinStyle.MiterJoin
 
     # instance attributes
     _name      : str
@@ -57,7 +63,7 @@ class PortPinMixin(
     _comment   : str
     _entry     : EntryItem
 
-    def initPortPin(self : Self, fresh : bool) -> None:
+    def initPortPin(self : Self | QGraphicsPathItem, fresh : bool) -> None:
         # Initialize attributes that properties will access
         self._name      = ""
         self._direction = Direction.IN
@@ -66,7 +72,7 @@ class PortPinMixin(
         # Initialize the item (this sets up properties system)
         self.initItem(fresh)
         # Initialize the entry
-        self._entry = EntryItem(self)
+        self._entry = EntryItem(parent=self)
 
     def initHandles(self : Self) -> None:
         raise NotImplementedError("Subclass must implement this method")

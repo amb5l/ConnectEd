@@ -29,7 +29,7 @@ class BlockPinArrowItem(BasePinArrowItem):
 class BlockPinItem(ItemLocMixin, ItemBlockPinHandlesMixin, BasePinItem):
     # class attributes
     _ARROW_CLASS = BlockPinArrowItem
-    _AP_NAME_OFFSET  = _INT_ARROW_SIZE + 1.5
+    _PIN_NAME_OFFSET  = _INT_ARROW_SIZE + 1.5
     _PROPERTIES = \
         PortPinMixin._PROPERTIES_NAME | \
         PortPinMixin._PROPERTIES_DIR | \

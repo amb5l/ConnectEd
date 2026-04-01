@@ -68,9 +68,8 @@ class GripItem(
     @checked
     def onSettingsChange(self : Self, scene : "DrawingScene | None" = None) -> None:
         if scene is None:
-            scene : "DrawingScene | None" = self.scene()
-        if scene is None:
-            return
+            if (scene := self.scene()) is None:
+                return
         self.setBrush(scene.resources["Grip"]["brush"])
         self.setPath(scene.resources["Grip"]["paths"][self.fullPathName()])
         self._hshape.clear()

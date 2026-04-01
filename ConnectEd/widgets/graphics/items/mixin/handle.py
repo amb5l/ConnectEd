@@ -8,6 +8,8 @@ from .....core.defs import PITCH
 from .....core.types import HandleId, RectHandleId, LineHandleId, \
                             BlockPinHandleId, SymbolPinHandleId, DataKind
 
+from ..port_pin import PortPinMixin
+
 from ..handle import HandleItem
 
 from .origin import ItemOriginMixin
@@ -166,48 +168,11 @@ class ItemLineHandlesMixin(ItemHandlesMixin[LineHandleId]):
                 raise ValueError(f"Invalid handle: {id}")
 
 
-class ItemBlockPinHandlesMixin(ItemHandlesMixin[BlockPinHandleId]):
-    @classmethod
-    def handleIdType(cls) -> type[BlockPinHandleId]:
-        return BlockPinHandleId
-
-    @classmethod
-    def handleIdKind(cls) -> DataKind:
-        return DataKind.BLOCK_PIN_HANDLE
-
-    # instance attributes
-    _handles : dict[BlockPinHandleId, "HandleItem"]
-
-    def initHandles(self : Self) -> None:
-        self._handles = {
-            BlockPinHandleId.ENTRY : HandleItem(
-                id     = BlockPinHandleId.ENTRY,
-                pos    = QPointF(0, 0),
-                kind   = "move",
-                parent = self
-            ),
-            BlockPinHandleId.NAME : HandleItem(
-                id     = BlockPinHandleId.NAME,
-                pos    = QPointF(self._AP_NAME_OFFSET, 0),
-                kind   = "move",
-                parent = self
-            )
-        }
-
-
-class ItemSymbolPinHandlesMixin(ItemHandlesMixin[SymbolPinHandleId]):
-    @classmethod
-    def handleIdType(cls) -> type[SymbolPinHandleId]:
-        return SymbolPinHandleId
-
-    @classmethod
-    def handleIdKind(cls) -> DataKind:
-        return DataKind.SYMBOL_PIN_HANDLE
-
+class ItemBasePinHandlesMixin:
     # instance attributes
     _handles : dict[SymbolPinHandleId, "HandleItem"]
 
-    def initHandles(self : Self) -> None:
+    def initHandles(self : Self | PortPinMixin) -> None:
         self._handles = {
             SymbolPinHandleId.ORIGIN : HandleItem(
                 id     = SymbolPinHandleId.ORIGIN,
@@ -228,6 +193,31 @@ class ItemSymbolPinHandlesMixin(ItemHandlesMixin[SymbolPinHandleId]):
                 parent = self
             )
         }
+
+class ItemBlockPinHandlesMixin(
+    ItemBasePinHandlesMixin,
+    ItemHandlesMixin[BlockPinHandleId]
+):
+    @classmethod
+    def handleIdType(cls) -> type[BlockPinHandleId]:
+        return BlockPinHandleId
+
+    @classmethod
+    def handleIdKind(cls) -> DataKind:
+        return DataKind.BLOCK_PIN_HANDLE
+
+
+class ItemSymbolPinHandlesMixin(
+    ItemBasePinHandlesMixin,
+    ItemHandlesMixin[SymbolPinHandleId]
+):
+    @classmethod
+    def handleIdType(cls) -> type[SymbolPinHandleId]:
+        return SymbolPinHandleId
+
+    @classmethod
+    def handleIdKind(cls) -> DataKind:
+        return DataKind.SYMBOL_PIN_HANDLE
 
     def moveHandleBy(self : Self | QGraphicsItem, _, d : QPointF) -> None:
         """Move the entire pin when any grip is dragged."""

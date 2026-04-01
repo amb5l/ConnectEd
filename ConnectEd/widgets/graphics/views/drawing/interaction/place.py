@@ -13,10 +13,8 @@ from ....items.gate       import GateItem
 from ....items.block      import BlockItem
 from ....items.block_pin  import BlockPinItem
 from ....items.symbol_pin import SymbolPinItem
-from ....items.entry      import EntryItem
-from ....items.conn_vtx   import ConnVtxItem
-from ....items.conn_seg   import ConnSegItem, ConnSegPreview1Item, ConnSegPreview2Item
-from ....items.junction   import JunctionItem
+from ....items.segment    import SegmentItem, SegmentPreview1Item, SegmentPreview2Item
+from ....items.vertex     import VertexItem
 from ....items.line       import LineItem
 from ....items.rectangle  import RectangleItem
 from ....items.ellipse    import EllipseItem
@@ -246,8 +244,8 @@ class PlaceConnInteraction(Interaction):
     """Interactive wire placement involves two preview segments."""
 
     # instance attributes
-    _seg1  : ConnSegPreview1Item
-    _seg2  : ConnSegPreview2Item
+    _seg1  : SegmentPreview1Item
+    _seg2  : SegmentPreview2Item
 
     def __init__(
         self : Self,
@@ -255,8 +253,8 @@ class PlaceConnInteraction(Interaction):
         pos  : QPointF
     ) -> None:
         super().__init__(view)
-        self._seg1 = ConnSegPreview1Item()
-        self._seg2 = ConnSegPreview2Item()
+        self._seg1 = SegmentPreview1Item()
+        self._seg2 = SegmentPreview2Item()
         self._setP0(pos)
         self._setP1(pos)
         self._setP2(pos)
@@ -272,10 +270,9 @@ class PlaceConnInteraction(Interaction):
     def commit(self : Self, pos : QPointF, complete : bool = False) -> bool:
         self._updateVertices(pos)
         # create first segment
-        self._scene.addConnSeg(self._p0(), self._p1(), undoable=True)
+        self._scene.addSegment(self._p0(), self._p1(), undoable=True)
         terminals_1 = [
-            i for i in self._scene.items(self._p1()) \
-                if isinstance(i, JunctionItem | EntryItem)
+            i for i in self._scene.items(self._p1()) if isinstance(i, VertexItem)
         ]
         if terminals_1:
             self._cleanup()
@@ -283,10 +280,10 @@ class PlaceConnInteraction(Interaction):
         # create second segment if complete is requested or mouse is over a terminal
         terminals_2 = [
             i for i in self._scene.items(self._p2()) \
-                if isinstance(i, ConnSegItem | ConnVtxItem |JunctionItem | EntryItem)
+                if isinstance(i, SegmentItem | VertexItem)
         ]
         if complete or terminals_2:
-            self._scene.addConnSeg(self._p1(), self._p2(), undoable=True)
+            self._scene.addSegment(self._p1(), self._p2(), undoable=True)
             self._cleanup()
             return True  # interaction completed
         self._restart(pos)

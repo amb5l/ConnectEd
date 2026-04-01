@@ -12,10 +12,10 @@ from .mixin.clone  import ItemCloneMixin
 from .mixin.xml    import ItemXmlMixin
 from .mixin.menu   import ItemMenuMixin
 
-from .conn_vtx import ConnVtxItem
+from .vertex import VertexItem
 
 
-class ConnSegItem(
+class SegmentItem(
     ItemMixin,
     ItemLineMixin,
     ItemChangeMixin,
@@ -24,16 +24,16 @@ class ConnSegItem(
     ItemMenuMixin,
     QGraphicsLineItem
 ):
-    """Runs between two ConnVtx instances."""
+    """Runs between two VertexItem instances."""
     # instance attributes
-    _vtx1 : ConnVtxItem | QPointF | None
-    _vtx2 : ConnVtxItem | QPointF | None
+    _vtx1 : VertexItem | QPointF | None
+    _vtx2 : VertexItem | QPointF | None
     _line : QLineF
 
     def __init__(
         self : Self,
-        vtx1 : ConnVtxItem | QPointF | None = None,
-        vtx2 : ConnVtxItem | QPointF | None = None
+        vtx1 : VertexItem | QPointF | None = None,
+        vtx2 : VertexItem | QPointF | None = None
     ) -> None:
         QGraphicsLineItem.__init__(self)
         self._line = QLineF()
@@ -48,35 +48,35 @@ class ConnSegItem(
         v2 = self._vtx2
         if v1 is None or v2 is None:
             return
-        p1 = v1.scenePos() if isinstance(v1, ConnVtxItem) else v1
-        p2 = v2.scenePos() if isinstance(v2, ConnVtxItem) else v2
+        p1 = v1.scenePos() if isinstance(v1, VertexItem) else v1
+        p2 = v2.scenePos() if isinstance(v2, VertexItem) else v2
         self.setPos(p1)
         self._line.setP2(p2-p1)
         self.setLine(self._line)
 
-    def vtx1(self : Self) -> ConnVtxItem | QPointF | None:
+    def vtx1(self : Self) -> VertexItem | QPointF | None:
         return self._vtx1
 
-    def setVtx1(self : Self, vtx : ConnVtxItem | QPointF | None) -> None:
-        if isinstance(self._vtx1, ConnVtxItem):
+    def setVtx1(self : Self, vtx : VertexItem | QPointF | None) -> None:
+        if isinstance(self._vtx1, VertexItem):
             self._vtx1.detach(self)
         self._vtx1 = vtx
-        if isinstance(vtx, ConnVtxItem):
+        if isinstance(vtx, VertexItem):
             vtx.attach(self)
         self.onGeometryChange()
 
-    def vtx2(self : Self) -> ConnVtxItem | QPointF | None:
+    def vtx2(self : Self) -> VertexItem | QPointF | None:
         return self._vtx2
 
-    def setVtx2(self : Self, vtx : ConnVtxItem | QPointF | None) -> None:
-        if isinstance(self._vtx2, ConnVtxItem):
+    def setVtx2(self : Self, vtx : VertexItem | QPointF | None) -> None:
+        if isinstance(self._vtx2, VertexItem):
             self._vtx2.detach(self)
         self._vtx2 = vtx
-        if isinstance(vtx, ConnVtxItem):
+        if isinstance(vtx, VertexItem):
             vtx.attach(self)
         self.onGeometryChange()
 
-    def reattach(self : Self, old : ConnVtxItem, new : ConnVtxItem) -> bool:
+    def reattach(self : Self, old : VertexItem, new : VertexItem) -> bool:
         if self._vtx1 is old:
             self.setVtx1(new)
             return True
@@ -90,7 +90,7 @@ class ConnSegItem(
             a = s[0]
             n = int(s[1:])
             attr_val = getattr(self, f"_vtx{n}")  # value of self._vtx{n}
-            p = attr_val.scenePos() if isinstance(attr_val, ConnVtxItem) else \
+            p = attr_val.scenePos() if isinstance(attr_val, VertexItem) else \
                 attr_val if isinstance(attr_val, QPointF) else \
                 None
             v = getattr(p, a)()
@@ -122,7 +122,7 @@ class ConnSegItem(
         return instance
 
 
-class ConnSegPreviewItem(
+class SegmentPreviewItem(
     ItemSettingsMixin,
     ItemChangeMixin,
     ItemLineMixin,
@@ -152,9 +152,9 @@ class ConnSegPreviewItem(
         self.setLine(line)
 
 
-class ConnSegPreview1Item(ConnSegPreviewItem):
+class SegmentPreview1Item(SegmentPreviewItem):
     pass
 
 
-class ConnSegPreview2Item(ConnSegPreviewItem):
+class SegmentPreview2Item(SegmentPreviewItem):
     pass

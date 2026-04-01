@@ -7,17 +7,15 @@ from ......app import logger
 
 from ......core.utils import itemsTypeDict
 
-from ....items.conn_vtx import ConnVtxItem
-from ....items.conn_seg import ConnSegItem
-from ....items.entry    import EntryItem
+from ....items.vertex  import VertexItem
+from ....items.segment import SegmentItem
 
 from ..cmd      import cmdExec
-from ..cmd.conn import CmdAddConnVtx,      \
-                       CmdReparentConnVtx, \
-                       CmdRemoveConnVtx,   \
-                       CmdAddConnSeg,      \
-                       CmdReattachConnSeg, \
-                       CmdRemoveConnSeg
+from ..cmd.conn import CmdAddVertex,      \
+                       CmdRemoveVertex,   \
+                       CmdAddSegment,      \
+                       CmdReattachSegment, \
+                       CmdRemoveSegment
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -69,11 +67,10 @@ def _colinear(line1 : QLineF, line2 : QLineF) -> bool:
 class DrawingSceneApiConnMixin:
     """Connection handling."""
 
-    def tidyConnVtx(self : "DrawingScene", vtx : ConnVtxItem, undoable : bool) -> None:
+    def tidyVertex(self : "DrawingScene", vtx : VertexItem, undoable : bool) -> None:
         """
         Tidy up an existing vertex:
         - Merge existing vertices into one. Reattach existing segments.
-        - Parent to entry if present.
         - Split and attach any segments that cross the vertex.
         - Remove duplicate segments.
         - Remove if the vertex breaks a simple straight line.
@@ -81,31 +78,23 @@ class DrawingSceneApiConnMixin:
         """
         # start macro
         if undoable:
-            self.undo_stack.beginMacro("tidyConnVtx")
+            self.undo_stack.beginMacro("tidyVertex")
         # get position
         pos = vtx.scenePos()
         # get existing vertices
         items = self.items(pos)
-        xvtxs = [item for item in items if isinstance(item, ConnVtxItem)]
+        xvtxs = [item for item in items if isinstance(item, VertexItem)]
         # connect existing segments to single vertex, remove existing vertices
         for xvtx in xvtxs:
             if xvtx is vtx:
                 continue
             for seg in xvtx.connections():
-                cmd = CmdReattachConnSeg(self, seg, xvtx, vtx)
+                cmd = CmdReattachSegment(self, seg, xvtx, vtx)
                 cmdExec(self, cmd, undoable)
-            cmd = CmdRemoveConnVtx(self, xvtx)
+            cmd = CmdRemoveVertex(self, xvtx)
             cmdExec(self, cmd, undoable)
-        # (re)parent to entry if present
-        entries = [item for item in items if isinstance(item, EntryItem)]
-        if len(entries) > 1:
-            logger().warning("Multiple entries found")
-        if entries:
-            if vtx.parentItem() is not entries[0]:
-                cmd = CmdReparentConnVtx(self, vtx, entries[0])
-                cmdExec(self, cmd, undoable)
         # split segments that cross the new vertex but are not attached to it
-        segs = [item for item in items if isinstance(item, ConnSegItem)]
+        segs = [item for item in items if isinstance(item, SegmentItem)]
         for seg in segs:
             # exclude segments attached to the clean vertex
             if seg.vtx1() is vtx or seg.vtx2() is vtx:
@@ -114,10 +103,10 @@ class DrawingSceneApiConnMixin:
             len1 = QLineF(seg.vtx1().scenePos(), vtx.scenePos()).length()
             len2 = QLineF(seg.vtx2().scenePos(), vtx.scenePos()).length()
             far = seg.vtx2() if len1 >= len2 else seg.vtx1()
-            cmd = CmdReattachConnSeg(self, seg, far, vtx)
+            cmd = CmdReattachSegment(self, seg, far, vtx)
             cmdExec(self, cmd, undoable)
             # add new segment from split
-            cmd = CmdAddConnSeg(self, vtx, far)
+            cmd = CmdAddSegment(self, vtx, far)
             cmdExec(self, cmd, undoable)
         # remove duplicate segments (that share the same vertices pair)
         segs = vtx.connections().copy()  # take copy because we're making changes
@@ -126,7 +115,7 @@ class DrawingSceneApiConnMixin:
                 for seg2 in segs[i+1:]:
                     if (seg1.vtx1() is seg2.vtx1() and seg1.vtx2() is seg2.vtx2()) \
                     or (seg1.vtx1() is seg2.vtx2() and seg1.vtx2() is seg2.vtx1()):
-                        cmd = CmdRemoveConnSeg(self, seg2)
+                        cmd = CmdRemoveSegment(self, seg2)
                         cmdExec(self, cmd, undoable)
         # remove if useless break in a straight line
         segs = vtx.connections().copy()  # take copy because we're making changes
@@ -138,14 +127,14 @@ class DrawingSceneApiConnMixin:
                 # get far end of 2nd segment
                 v2 = segs[1].vtx1() if segs[1].vtx2() is vtx else segs[1].vtx2()
                 # reattach 1st segment to far end of 2nd segment
-                cmd = CmdReattachConnSeg(self, segs[0], vtx, v2)
+                cmd = CmdReattachSegment(self, segs[0], vtx, v2)
                 cmdExec(self, cmd, undoable)
                 # remove 2nd segment
-                cmd = CmdRemoveConnSeg(self, segs[1])
+                cmd = CmdRemoveSegment(self, segs[1])
                 cmdExec(self, cmd, undoable)
         # remove if no connections
         if len(vtx.connections()) == 0:
-            cmd = CmdRemoveConnVtx(self, vtx)
+            cmd = CmdRemoveVertex(self, vtx)
             cmdExec(self, cmd, undoable)
         # end macro
         if undoable:
@@ -154,46 +143,46 @@ class DrawingSceneApiConnMixin:
     def tidyConns(self : "DrawingScene", undoable : bool) -> None:
         """Tidy all connections in the scene."""
         items = self.items()
-        segs = [item for item in items if isinstance(item, ConnSegItem)]
-        # tidy segments (replace QPointF with ConnVtx)
+        segs = [item for item in items if isinstance(item, SegmentItem)]
+        # tidy segments (replace QPointF with VertexItem)
         for seg in segs:
             v1 = seg.vtx1()
             if v1 is None:
                 logger().warning(f"Segment {seg} has no vertex 1")
                 seg.setVtx1(QPointF())
             if isinstance(v1, QPointF):
-                seg.setVtx1(self.getConnVtx(v1, undoable))
+                seg.setVtx1(self.getVertex(v1, undoable))
             v2 = seg.vtx2()
             if v2 is None:
                 logger().warning(f"Segment {seg} has no vertex 2")
                 seg.setVtx2(QPointF())
             if isinstance(v2, QPointF):
-                seg.setVtx2(self.getConnVtx(v2, undoable))
+                seg.setVtx2(self.getVertex(v2, undoable))
         # tidy vertices
         items = self.items()
-        vtxs = [item for item in items if isinstance(item, ConnVtxItem)]
+        vtxs = [item for item in items if isinstance(item, VertexItem)]
         for vtx in vtxs:
-            self.tidyConnVtx(vtx, undoable)
+            self.tidyVertex(vtx, undoable)
 
-    def getConnVtx(
+    def getVertex(
         self     : "DrawingScene",
         pos      : QPointF,
         undoable : bool = False
-    ) -> ConnVtxItem:
+    ) -> VertexItem:
         """Get a vertex if present, add if necessary."""
         items = itemsTypeDict(self.items(pos))
-        if ConnVtxItem in items:
-            vtxs = items[ConnVtxItem]
+        if VertexItem in items:
+            vtxs = items[VertexItem]
             vtx = vtxs[0]
             if len(vtxs) > 1:
-                self.tidyConnVtx(vtx, undoable)
+                self.tidyVertex(vtx, undoable)
         else:
-            cmd = CmdAddConnVtx(self, pos)
+            cmd = CmdAddVertex(self, pos)
             cmdExec(self, cmd, undoable)
             vtx = cmd.vtx()
         return vtx
 
-    def addConnSeg(
+    def addSegment(
         self     : "DrawingScene",
         p1       : QPointF,
         p2       : QPointF,
@@ -207,12 +196,12 @@ class DrawingSceneApiConnMixin:
             return  # do nothing
         # begin macro
         if undoable:
-            self.undo_stack.beginMacro("addConnSeg")
+            self.undo_stack.beginMacro("addSegment")
         # get/create endpoint vertices
-        v1 = self.getConnVtx(p1, undoable)
-        v2 = self.getConnVtx(p2, undoable)
+        v1 = self.getVertex(p1, undoable)
+        v2 = self.getVertex(p2, undoable)
         # add segment
-        cmd = CmdAddConnSeg(self, v1, v2)
+        cmd = CmdAddSegment(self, v1, v2)
         cmdExec(self, cmd, undoable)
         # get items along line, including endpoint vertices
         line_path = QPainterPath()
@@ -222,21 +211,14 @@ class DrawingSceneApiConnMixin:
         stroker.setWidth(1.0)  # hit tolerance in scene units
         hit_path = stroker.createStroke(line_path)
         hit_items = self.items(hit_path)
-        # ensure connectivity by adding vertices at every entry
-        vtxs = []
-        for item in hit_items:
-            if isinstance(item, EntryItem):
-                cmd = CmdAddConnVtx(self, item.scenePos())
-                cmdExec(self, cmd, undoable)
-                vtxs.append(cmd.vtx())
         # tidy vertices — repeat until done
-        vtxs = [item for item in hit_items if isinstance(item, ConnVtxItem)]
+        vtxs = [item for item in hit_items if isinstance(item, VertexItem)]
         done = False
         while not done:
             done = True
             for vtx in vtxs:
                 if vtx.scene() is not None:
-                    self.tidyConnVtx(vtx, undoable)
+                    self.tidyVertex(vtx, undoable)
                     if vtx.scene() is None:
                         done = False
         # end macro
