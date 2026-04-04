@@ -1,6 +1,6 @@
 from typing import Self
 
-from PyQt6.QtCore    import QLineF, QXmlStreamReader, QXmlStreamWriter
+from PyQt6.QtCore    import Qt, QPointF, QLineF, QXmlStreamReader, QXmlStreamWriter
 from PyQt6.QtWidgets import QGraphicsLineItem
 
 from ....app import logger
@@ -25,6 +25,9 @@ class SegmentItem(
     QGraphicsLineItem
 ):
     """Runs between two VertexItem instances."""
+    # class attributes
+    _PEN_CAP_STYLE = Qt.PenCapStyle.SquareCap
+
     # instance attributes
     _vtx1 : VertexItem | None
     _vtx2 : VertexItem | None
@@ -42,6 +45,8 @@ class SegmentItem(
         self.setVtx2(vtx2)
 
     def onGeometryChange(self : Self) -> None:
+        if not hasattr(self, "_vtx1") or not hasattr(self, "_vtx2"):
+            return
         v1 = self._vtx1
         v2 = self._vtx2
         if v1 is None or v2 is None:
@@ -56,32 +61,17 @@ class SegmentItem(
         return self._vtx1
 
     def setVtx1(self : Self, vtx : VertexItem | None) -> None:
-        if isinstance(self._vtx1, VertexItem):
-            self._vtx1.detach(self)
         self._vtx1 = vtx
-        if isinstance(vtx, VertexItem):
-            vtx.attach(self)
         self.onGeometryChange()
 
     def vtx2(self : Self) -> VertexItem | None:
         return self._vtx2
 
     def setVtx2(self : Self, vtx : VertexItem | None) -> None:
-        if isinstance(self._vtx2, VertexItem):
-            self._vtx2.detach(self)
         self._vtx2 = vtx
-        if isinstance(vtx, VertexItem):
-            vtx.attach(self)
         self.onGeometryChange()
 
-    def otherVtx(self : Self, vtx : VertexItem) -> VertexItem | None:
-        if self._vtx1 is vtx:
-            return self._vtx2
-        elif self._vtx2 is vtx:
-            return self._vtx1
-        return None
-
-    def reattach(self : Self, old : VertexItem, new : VertexItem) -> bool:
+    def changeVtx(self : Self, old : VertexItem, new : VertexItem) -> bool:
         if self._vtx1 is old:
             self.setVtx1(new)
             return True
@@ -89,6 +79,13 @@ class SegmentItem(
             self.setVtx2(new)
             return True
         return False
+
+    def otherVtx(self : Self, vtx : VertexItem) -> VertexItem | None:
+        if self._vtx1 is vtx:
+            return self._vtx2
+        elif self._vtx2 is vtx:
+            return self._vtx1
+        return None
 
     def toXml(self : Self, xw : QXmlStreamWriter) -> None:
         def getVal(s : str) -> float | int:

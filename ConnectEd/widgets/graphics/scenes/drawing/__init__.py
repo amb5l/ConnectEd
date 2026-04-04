@@ -1,4 +1,5 @@
 import uuid
+import networkx
 
 from typing import Self
 
@@ -20,7 +21,6 @@ from .api       import DrawingSceneApiMixin
 from .grips     import DrawingSceneGripsMixin
 from .resources import DrawingSceneResourcesMixin
 from .guides    import DrawingSceneGuidesMixin
-from .conn      import DrawingSceneConnMixin
 from .private   import DrawingSceneApiPrivateMixin
 
 
@@ -29,7 +29,6 @@ class DrawingScene(
     DrawingSceneGripsMixin,
     DrawingSceneResourcesMixin,
     DrawingSceneGuidesMixin,
-    DrawingSceneConnMixin,
     DrawingSceneApiPrivateMixin,
     PropertiesMixin,
     QGraphicsScene
@@ -49,6 +48,7 @@ class DrawingScene(
     _sel_line  : QColor
     _sel_fill  : QColor
     _sel_text  : QColor
+    _graph     : networkx.Graph
     undo_stack : QUndoStack | None
 
     def __init__(
@@ -59,13 +59,13 @@ class DrawingScene(
         super().__init__()
         self._uuid = str(uuid.uuid4())
         self._name = None
+        self._graph = networkx.Graph()
         self.updateSceneRect(extents)
         self.setItemIndexMethod(QGraphicsScene.ItemIndexMethod.NoIndex)
         self.undo_stack = QUndoStack(self)
         self.initProperties(fresh)
         self.initResources()
         self.initGrips()
-        self.initNetlist()
         self.onSettingsChange()
         settings().changed.connect(self.onSettingsChange)
         self.selectionChanged.connect(self.onSelectionChanged)

@@ -130,7 +130,7 @@ class PropertyTextItem(TextItem):
             return
         cleat_valid = self._cleat is not None and self._cleat != ""
         self._tether.setVisible(selected and cleat_valid)
-        self._tether.cleat().grip().setVisible(selected and cleat_valid)
+        self._tether.anchor().grip().setVisible(selected and cleat_valid)
 
     def onSettingsChange(self : Self) -> None:
         super().onSettingsChange()

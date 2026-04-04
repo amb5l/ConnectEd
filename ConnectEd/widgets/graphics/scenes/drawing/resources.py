@@ -323,12 +323,6 @@ def _nodePath(d : dict, size : float) -> None:
     path.addEllipse(QRectF(-size/2, -size/2, size, size))
     d["junction"]["path"] = path
 
-def _entryPath(d : dict, size : float) -> None:
-    _nodePath(d, size)
-
-def _vertexPath(d : dict, size : float) -> None:
-    _nodePath(d, size)
-
 def _getPen(path : str) -> QPen:
     return QPen(
         settings().get(f"theme/items/{path}/line/color"),

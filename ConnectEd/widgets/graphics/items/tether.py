@@ -4,11 +4,13 @@ from PyQt6.QtCore    import QPointF, QXmlStreamWriter
 from PyQt6.QtWidgets import QGraphicsLineItem, QGraphicsItem, \
                             QGraphicsSceneMouseEvent
 
-from .text              import TextItem
-from .property_text     import PropertyTextItem
-from .handle            import HandleItem
-from .net_property_text import NetPropertyTextItem
-from .vertex            import VertexItem
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from .text              import TextItem
+    from .property_text     import PropertyTextItem
+    from .net_property_text import NetPropertyTextItem
+    from .handle            import HandleItem
+    from .vertex            import VertexItem
 
 
 class TextTetherItem(QGraphicsLineItem):
@@ -58,16 +60,16 @@ class PropertyTextTetherItem(TextTetherItem):
 
     _text_item : "PropertyTextItem"
 
-    def anchor(self : Self) -> HandleItem | None:
+    def anchor(self : Self) -> "HandleItem | None":
         return self._text_item.parentItem()
 
 
-class NetPropertyTextTetherItem(PropertyTextTetherItem):
+class NetPropertyTextTetherItem(TextTetherItem):
     """
     Tether line from the origin of a NetPropertyTextItem to its parent vertex.
     """
 
     _text_item : "NetPropertyTextItem"
 
-    def anchor(self : Self) -> VertexItem | None:
+    def anchor(self : Self) -> "VertexItem | None":
         return self._text_item.parentItem()

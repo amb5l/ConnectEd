@@ -1,13 +1,9 @@
-from typing      import Self
+from typing import Self
 
 from PyQt6.QtCore import QPointF
 
-from ......app import logger
-
 from ....items.vertex  import VertexItem
 from ....items.segment import SegmentItem
-
-from ..conn import NetEdge
 
 from . import CmdSceneBase
 
@@ -19,7 +15,8 @@ if TYPE_CHECKING:
 class CmdAddVertex(CmdSceneBase):
     """
     Create and add a new vertex to the scene.
-    Split any crossing segment(s) and join their net(s).
+    Updates both graphics and graph.
+    Assumption: no existing vertices or segments at this point.
     """
 
     # instance attributes
@@ -31,12 +28,14 @@ class CmdAddVertex(CmdSceneBase):
         pos   : QPointF
     ) -> None:
         super().__init__(scene)
-        self._vtx = VertexItem(pos, scene._id_vtx.next())
+        self._vtx = VertexItem(pos)
 
     def redo(self : Self) -> None:
         self._scene.addItem(self._vtx)
+        self._scene._graph.add_node(self._vtx)
 
     def undo(self : Self) -> None:
+        self._scene._graph.remove_node(self._vtx)
         self._scene.removeItem(self._vtx)
 
     def vtx(self : Self) -> VertexItem:
@@ -44,7 +43,11 @@ class CmdAddVertex(CmdSceneBase):
 
 
 class CmdRemoveVertex(CmdSceneBase):
-    """Remove a specified vertex from the scene."""
+    """
+    Remove a specified vertex from the scene.
+    Updates both graphics and graph.
+    Assumption: vertex has no edges in the graph.
+    """
 
     # instance attributes
     _vtx : VertexItem
@@ -58,16 +61,19 @@ class CmdRemoveVertex(CmdSceneBase):
         self._vtx = vtx
 
     def redo(self : Self) -> None:
+        self._scene._graph.remove_node(self._vtx)
         self._scene.removeItem(self._vtx)
 
     def undo(self : Self) -> None:
         self._scene.addItem(self._vtx)
+        self._scene._graph.add_node(self._vtx)
 
 
 class CmdAddSegment(CmdSceneBase):
     """
-    Add a new segment to the scene between two specified vertices:
-    -
+    Add a new segment to the scene between two specified vertices.
+    Updates both graphics and graph.
+    Assumption: does not cross other vertices.
     """
 
     # instance attributes
@@ -87,56 +93,33 @@ class CmdAddSegment(CmdSceneBase):
         self._seg = SegmentItem()
 
     def redo(self : Self) -> None:
-        # attach segment to vertices
         self._seg.setVtx1(self._vtx1)
         self._seg.setVtx2(self._vtx2)
-        # add segment to scene
         self._scene.addItem(self._seg)
+        self._scene._graph.add_edge(
+            self._vtx1, self._vtx2, segment=self._seg)
+        self._vtx1.onConnectionChange()
+        self._vtx2.onConnectionChange()
 
     def undo(self : Self) -> None:
-        # detach segment from vertices
+        self._scene._graph.remove_edge(self._vtx1, self._vtx2)
+        self._vtx1.onConnectionChange()
+        self._vtx2.onConnectionChange()
         self._seg.setVtx1(None)
         self._seg.setVtx2(None)
-        # remove segment from scene
         self._scene.removeItem(self._seg)
 
     def seg(self : Self) -> SegmentItem:
         return self._seg
 
 
-class CmdReattachSegment(CmdSceneBase):
-    """
-    Detach a segment from one vertex and attach it to another.
-    """
-
-    # instance attributes
-    _seg     : SegmentItem
-    _vtx_old : VertexItem
-    _vtx_new : VertexItem
-
-    def __init__(
-        self    : Self,
-        scene   : "DrawingScene",
-        seg     : SegmentItem,
-        vtx_old : VertexItem,
-        vtx_new : VertexItem
-    ) -> None:
-        super().__init__(scene)
-        self._seg = seg
-        self._vtx_old = vtx_old
-        self._vtx_new = vtx_new
-
-    def redo(self : Self) -> None:
-        if not self._seg.reattach(self._vtx_old, self._vtx_new):
-            logger().warning(f"Failed to reattach segment {self._seg} to {self._vtx_new}")
-
-    def undo(self : Self) -> None:
-        if not self._seg.reattach(self._vtx_new, self._vtx_old):
-            logger().warning(f"Failed to reattach segment {self._seg} to {self._vtx_old}")
-
-
 class CmdRemoveSegment(CmdSceneBase):
-    """Remove a specified segment from the scene."""
+    """
+    Remove a specified segment from the scene.
+    Updates both graphics and graph.
+    Does not remove vertices; the API layer may follow with
+    CmdRemoveVertex for any orphaned vertices.
+    """
 
     # instance attributes
     _vtx1 : VertexItem
@@ -144,9 +127,9 @@ class CmdRemoveSegment(CmdSceneBase):
     _seg  : SegmentItem
 
     def __init__(
-        self : Self,
+        self  : Self,
         scene : "DrawingScene",
-        seg : SegmentItem
+        seg   : SegmentItem
     ) -> None:
         super().__init__(scene)
         self._vtx1 = seg.vtx1()
@@ -154,6 +137,9 @@ class CmdRemoveSegment(CmdSceneBase):
         self._seg = seg
 
     def redo(self : Self) -> None:
+        self._scene._graph.remove_edge(self._vtx1, self._vtx2)
+        self._vtx1.onConnectionChange()
+        self._vtx2.onConnectionChange()
         self._seg.setVtx1(None)
         self._seg.setVtx2(None)
         self._scene.removeItem(self._seg)
@@ -162,15 +148,20 @@ class CmdRemoveSegment(CmdSceneBase):
         self._seg.setVtx1(self._vtx1)
         self._seg.setVtx2(self._vtx2)
         self._scene.addItem(self._seg)
+        self._scene._graph.add_edge(self._vtx1, self._vtx2, segment=self._seg)
+        self._vtx1.onConnectionChange()
+        self._vtx2.onConnectionChange()
 
 
 class CmdSplitSegment(CmdSceneBase):
-    """Split a segment at a specified vertex."""
+    """Split a segment at a vertex. Updates both graphics and graph."""
 
     # instance attributes
-    _vtx  : VertexItem   # vertex at split point
-    _seg1 : SegmentItem  # existing segment
-    _seg2 : SegmentItem  # new segment
+    _vtx      : VertexItem   # vertex at split point
+    _vtx1     : VertexItem   # original near vertex of seg1
+    _vtx2     : VertexItem   # original far vertex of seg1
+    _seg1     : SegmentItem  # existing segment (shortened to vtx1--vtx)
+    _seg2     : SegmentItem  # new segment (vtx--vtx2)
 
     def __init__(
         self  : Self,
@@ -180,35 +171,52 @@ class CmdSplitSegment(CmdSceneBase):
     ) -> None:
         super().__init__(scene)
         self._vtx = vtx
+        self._vtx1 = seg.vtx1()
+        self._vtx2 = seg.vtx2()
         self._seg1 = seg
         self._seg2 = SegmentItem()
 
     def redo(self : Self) -> None:
+        # graph: remove original edge, add two new edges
+        self._scene._graph.remove_edge(self._vtx1, self._vtx2)
+        self._scene._graph.add_edge(self._vtx1, self._vtx, segment=self._seg1)
+        self._scene._graph.add_edge(self._vtx, self._vtx2, segment=self._seg2)
+        # graphics: shorten seg1, create seg2
         self._seg2.setVtx1(self._vtx)
-        self._seg2.setVtx2(self._seg1.vtx2())
+        self._seg2.setVtx2(self._vtx2)
         self._seg1.setVtx2(self._vtx)
         self._scene.addItem(self._seg2)
+        self._vtx.onConnectionChange()
+        self._vtx1.onConnectionChange()
+        self._vtx2.onConnectionChange()
 
     def undo(self : Self) -> None:
-        self._seg1.setVtx2(self._seg2.vtx2())
+        # graph: remove two edges, restore original edge
+        self._scene._graph.remove_edge(self._vtx1, self._vtx)
+        self._scene._graph.remove_edge(self._vtx, self._vtx2)
+        self._scene._graph.add_edge(self._vtx1, self._vtx2, segment=self._seg1)
+        # graphics: restore seg1, remove seg2
+        self._seg1.setVtx2(self._vtx2)
         self._seg2.setVtx1(None)
         self._seg2.setVtx2(None)
         self._scene.removeItem(self._seg2)
+        self._vtx.onConnectionChange()
+        self._vtx1.onConnectionChange()
+        self._vtx2.onConnectionChange()
 
 
 class CmdUnsplitSegment(CmdSceneBase):
     """
-    Unsplit a segment at a specified vertex.
-    Assumption: vertex has 2 connections.
+    Unsplit a segment at a specified vertex. Updates both graphics and
+    graph. Assumption: vertex has exactly 2 graph edges.
     """
 
     # instance attributes
-    _vtx  : VertexItem   # vertex at split point
-    _seg1 : SegmentItem  # 1st existing segment / unsplit segment
-    _seg2 : SegmentItem  # 2nd existing segment
-    _vtx2 : VertexItem   # far vertex of 2nd segment
-    _s2v1 : VertexItem   # segment 2 vertex 1
-    _s2v2 : VertexItem   # segment 2 vertex 2
+    _vtx  : VertexItem   # vertex being removed
+    _far1 : VertexItem   # far vertex of seg1
+    _far2 : VertexItem   # far vertex of seg2
+    _seg1 : SegmentItem  # surviving segment (far1--far2 after redo)
+    _seg2 : SegmentItem  # removed segment
 
     def __init__(
         self  : Self,
@@ -217,69 +225,40 @@ class CmdUnsplitSegment(CmdSceneBase):
     ) -> None:
         super().__init__(scene)
         self._vtx = vtx
-        self._seg1 = vtx.connections()[0]
-        self._seg2 = vtx.connections()[1]
-        self._vtx2 = self._seg2.otherVtx(vtx)
-        self._s2v1 = self._seg2.vtx1()
-        self._s2v2 = self._seg2.vtx2()
+        segs = vtx.segments()
+        self._seg1 = segs[0]
+        self._seg2 = segs[1]
+        self._far1 = self._seg1.otherVtx(vtx)
+        self._far2 = self._seg2.otherVtx(vtx)
 
     def redo(self : Self) -> None:
+        # graph: remove two edges and node, add merged edge
+        self._scene._graph.remove_edge(self._far1, self._vtx)
+        self._scene._graph.remove_edge(self._vtx, self._far2)
+        self._scene._graph.remove_node(self._vtx)
+        self._scene._graph.add_edge(
+            self._far1, self._far2, segment=self._seg1)
+        # graphics: extend seg1 to span far1--far2, remove seg2
+        self._seg1.changeVtx(self._vtx, self._far2)
         self._seg2.setVtx1(None)
         self._seg2.setVtx2(None)
         self._scene.removeItem(self._seg2)
-        self._seg1.setVtx(self._vtx, self._vtx2)
+        self._far1.onConnectionChange()
+        self._far2.onConnectionChange()
 
     def undo(self : Self) -> None:
-        self._seg1.setVtx(self._vtx2, self._vtx)
-        self._seg2.setVtx1(self._s2v1)
-        self._seg2.setVtx2(self._s2v2)
+        # graph: remove merged edge, restore node and two edges
+        self._scene._graph.remove_edge(self._far1, self._far2)
+        self._scene._graph.add_node(self._vtx)
+        self._scene._graph.add_edge(
+            self._far1, self._vtx, segment=self._seg1)
+        self._scene._graph.add_edge(
+            self._vtx, self._far2, segment=self._seg2)
+        # graphics: shorten seg1 back, restore seg2
+        self._seg1.changeVtx(self._far2, self._vtx)
+        self._seg2.setVtx1(self._vtx)
+        self._seg2.setVtx2(self._far2)
         self._scene.addItem(self._seg2)
-
-
-class CmdSplitNetEdge(CmdSceneBase):
-    """Split a net edge and insert a new vertex at the split point."""
-
-    # instance attributes
-    _edge_net_id : int
-    _vtx_net_id  : int | None
-
-    def __init__(
-        self   : Self,
-        scene  : "DrawingScene",
-        edge   : NetEdge,
-        vtx_id : int
-    ) -> None:
-        super().__init__(scene)
-        self._net_edge = edge
-        self._vtx_id = vtx_id
-
-    def redo(self : Self) -> None:
-        self._scene.mergeNetEdgeNode(self._net_edge, self._vtx_id)
-
-        edge_net_id = self._node_net[edge.node_id1]
-        edge_net = self._nets[edge_net_id]
-        adjacency = edge_net.adjacency()
-        if node in self._node_net:  # node already in a net so merge
-            # get node net
-            node_net_id = self._node_net[node]
-            node_net = self._nets[node_net_id]
-            # merge node adjacency into edge adjacency
-            adjacency |= node_net.adjacency()
-            edge_net.setAdjacency(adjacency)
-            # update node ID : net ID dict
-            for nodes in node_net.nodes():
-                self._node_net[nodes] = edge_net_id
-            # remove node net
-            del self._nets[node_net_id]
-            del node_net
-        edge_net.splitEdge(edge, node)
-        self._node_net[node] = edge_net_id
-
-
-
-
-
-
-
-    def undo(self : Self) -> None:
-        self._scene.unSplitNetEdge(self._net_edge, self._vtx_id)
+        self._far1.onConnectionChange()
+        self._far2.onConnectionChange()
+        self._vtx.onConnectionChange()

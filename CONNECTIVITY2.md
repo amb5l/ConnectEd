@@ -18,15 +18,16 @@ Two parallel representations maintained in sync:
 - `_graph : nx.Graph` -- the netlist. Nodes are `VertexItem` instances. Edges
   carry `SegmentItem` instances as data (`segment` attribute). Each connected
   component is a net.
-- `_id_vtx : Counter` -- monotonic vertex ID generator (for serialization).
 
-No `Net` class at runtime. No `_nets`, `_node_net`, or `_nodes` dicts.
+No `Net` class at runtime. No `_nets`, `_node_net`, or `_nodes` dicts. No
+runtime vertex ID counter -- IDs are assigned transiently during serialization.
 
 ## Items
 
-- **`VertexItem`** -- free-floating vertex. Has `_id: int` for serialization.
-  No longer manages a `_connections` list; connectivity is held by the graph.
-  Connection count for appearance is obtained via `self.scene()._graph.degree(self)`.
+- **`VertexItem`** -- free-floating vertex. No persistent ID; vertices are
+  identified by instance reference at runtime. No `_connections` list;
+  connectivity is held by the graph. Connection count for appearance is
+  obtained via `self.scene()._graph.degree(self)`.
   Appearance changes with connection state (unconnected / connected / junction).
 - **`EntryItem`** -- `VertexItem` subclass parented to a pin (`PortPinMixin`).
   Junction threshold of 2 (vs 3 for free vertices). `settingsName()` returns
@@ -243,27 +244,49 @@ inside a macro. The macro makes the whole operation atomic for undo/redo.
 
 ## Serialization
 
+Vertices have no persistent IDs. Transient `dict[int, VertexItem]` mappings
+are built on the fly during save and load, and discarded afterwards.
+
 ### Save (toXml)
 
-Iterate connected components. For each component, write a `<Net>` element:
+Enumerate all graph nodes and assign sequential integer IDs:
+
+```python
+vtx_to_id: dict[VertexItem, int] = {}
+for i, vtx in enumerate(self._graph.nodes):
+    vtx_to_id[vtx] = i
+    # write <Vertex Id="i" X="..." Y="..."/>
+```
+
+Then iterate connected components. For each component, write a `<Net>` element
+whose edges reference the transient IDs:
 
 ```python
 for component in nx.connected_components(self._graph):
     subgraph = self._graph.subgraph(component)
-    pairs = [f"{v1._id},{v2._id}" for v1, v2 in subgraph.edges()]
-    # write <Net Edges="1,2 3,4 ..." Name="CLK"/>
+    pairs = [f"{vtx_to_id[v1]},{vtx_to_id[v2]}"
+             for v1, v2 in subgraph.edges()]
+    # write <Net Edges="0,1 2,3 ..." Name="CLK"/>
 ```
 
 Segments do not need independent serialization -- they are fully determined by
 their endpoint vertices (which define position) and the graph edges (which
 define connectivity). On load, segments are recreated from the graph edges.
 
-Vertex IDs (`_id`) are used only here, as serialization keys.
-
 ### Load (fromXml)
 
-Deserialize vertices first (rebuilding `_id` to instance mapping transiently),
-then for each `<Net>` element, create segments and add edges to `_graph`:
+Build the reverse mapping as vertices are deserialized:
+
+```python
+id_to_vtx: dict[int, VertexItem] = {}
+# for each <Vertex> element:
+vtx = VertexItem(pos)
+id_to_vtx[vid] = vtx
+self.addItem(vtx)
+self._graph.add_node(vtx)
+```
+
+Then for each `<Net>` element, create segments and add edges to `_graph`:
 
 ```python
 for pair in edges_str.split(" "):
@@ -273,6 +296,8 @@ for pair in edges_str.split(" "):
     self.addItem(seg)
     self._graph.add_edge(vtx1, vtx2, segment=seg)
 ```
+
+Both dicts are local variables; nothing persists after serialization completes.
 
 ## Diagnostics
 
@@ -298,6 +323,8 @@ This is called after each macro during development (behind a debug flag).
 - `_node_net: dict[int, int]`
 - `_nodes: dict[int, VertexItem]`
 - `_id_net: Counter`
+- `_id_vtx: Counter` (IDs assigned transiently during serialization instead)
+- `VertexItem._id` (no persistent vertex ID)
 - `VertexItem._connections: list[SegmentItem]` (replaced by graph adjacency)
 - `VertexItem.attach()` / `VertexItem.detach()` (replaced by graph edge ops)
 - `mergeNetEdgeNode`, `unSplitNetEdge` and related scene methods
@@ -312,21 +339,30 @@ This is called after each macro during development (behind a debug flag).
 ### Unchanged
 
 - All graphics items (`VertexItem`, `EntryItem`, `SegmentItem`)
-- `_id_vtx: Counter` (for serialization)
 - API method structure (macros of atomic commands)
 - XML format (compatible)
 
 ## Implementation Plan
 
-1. Add `networkx` dependency.
-2. Add `_graph: nx.Graph` to `DrawingSceneConnMixin.initConn()`.
-3. Integrate graph operations into existing commands (`CmdAddVertex`,
-   `CmdRemoveVertex`, `CmdAddSegment`, `CmdRemoveSegment`,
-   `CmdSplitSegment`, `CmdUnsplitSegment`, `CmdReattachSegment`).
+1. ~~Add `networkx` dependency.~~ **done**
+2. ~~Add `_graph: nx.Graph` to `DrawingSceneConnMixin.initConn()`.~~ **done**
+3. ~~Integrate graph operations into existing commands.~~ **done** --
+   `CmdAddVertex`, `CmdRemoveVertex`, `CmdAddSegment`, `CmdRemoveSegment`,
+   `CmdSplitSegment`, `CmdUnsplitSegment` all updated. `CmdReattachSegment`
+   removed. Remaining: clean up stale references in `api/conn.py`
+   (`CmdReattachSegment` import, `CmdSplitNetEdge`, `CmdUnsplitNetEdge`,
+   `vtx.netId()`, `v1.id()`).
 4. Remove `VertexItem._connections`, `attach()`, `detach()`. Replace
-   connection count with `_graph.degree(vtx)`.
+   connection count with `_graph.degree(vtx)`. Update `onScenePositionChange`
+   and `onConnectionChange` in `vertex.py`. Remove `attach`/`detach` calls
+   from `segment.py` `setVtx1`/`setVtx2`.
 5. Remove `Net` class, `NetEdge`, old netlist commands, old scene dicts.
-6. Update `toXml` / `fromXml` to use `nx.connected_components` on save and
-   `_graph.add_edge` on load.
-7. Implement `validateConnectivity()` diagnostic.
-8. Handle net properties (name) via node attributes and `NetLabelItem`.
+   Partially done (imports cleaned from `cmd/conn.py`). Still referenced in
+   `api/conn.py`.
+6. Remove `VertexItem._id`, `VertexItem.id()`, and `_id_vtx: Counter`.
+   Update `CmdAddVertex` to not assign an ID. Serialization uses transient
+   dicts only.
+7. Update `toXml` / `fromXml` to use `nx.connected_components` on save and
+   `_graph.add_edge` on load, with transient ID mappings.
+8. Implement `validateConnectivity()` diagnostic.
+9. Handle net properties (name) via node attributes and `NetLabelItem`.

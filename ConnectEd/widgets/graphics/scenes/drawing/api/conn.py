@@ -1,75 +1,21 @@
-from typing      import Self
-from collections import defaultdict
 from math        import isclose
 
-from PyQt6.QtCore import Qt, QPointF, QLineF, QXmlStreamWriter, QXmlStreamReader
+from PyQt6.QtCore import Qt, QPointF, QLineF
 from PyQt6.QtGui  import QPainterPath, QPainterPathStroker
 
-from ......app import logger
-
-from ......core.types import Counter, DataKind
-from ......core.xml   import toXmlAttrs
-from ......core.utils import underscore2space
-
-from ....properties import PropertiesMixin, InherentProperty
-
-from ....items.vertex  import VertexItem, EntryItem
+from ....items.vertex  import VertexItem
 from ....items.segment import SegmentItem
 
 from ..cmd      import cmdExec
 from ..cmd.conn import CmdAddVertex,      \
-                       CmdRemoveVertex,   \
                        CmdAddSegment,      \
-                       CmdReattachSegment, \
-                       CmdRemoveSegment,   \
                        CmdSplitSegment,    \
-                       CmdUnsplitSegment,  \
-                       CmdSplitNetEdge,    \
-                       CmdUnsplitNetEdge
+                       CmdUnsplitSegment
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from .. import DrawingScene
 
-
-################################################################################
-# local functions
-################################################################################
-
-def _xp(point : QPointF, line : QLineF) -> float:
-    """Returns the cross product magnitude for colinearity (should be ~0)."""
-    if line.isNull():  # degenerate line (zero length)
-        return point == line.p1()
-    h = point - line.p1()  # vector from p1 to point (AP)
-    ab = line.p2() - line.p1()  # vector from p1 to p2 (AB)
-    # cross product magnitude for collinearity (should be ~0)
-    return h.x() * ab.y() - h.y() * ab.x()
-
-
-def _pointOnInfiniteLine(
-    point : QPointF,
-    line  : QLineF,
-    tol   : float = 1e-6
-) -> bool:
-    """Returns True if the point is on the infinite line."""
-    cross_product = _xp(point, line)
-    return isclose(cross_product, 0.0, abs_tol=tol)
-
-
-def _colinear(line1 : QLineF, line2 : QLineF) -> bool:
-    """
-    Returns True if the lines are colinear.
-    NOTE: they may or may not be touching or overlapping.
-    """
-    return \
-        _pointOnInfiniteLine(line1.p1(), line2) and \
-        _pointOnInfiniteLine(line1.p2(), line2) and \
-        _pointOnInfiniteLine(line2.p1(), line1) and \
-        _pointOnInfiniteLine(line2.p2(), line1)
-
-################################################################################
-# mixin
-################################################################################
 
 class DrawingSceneApiConnMixin:
     """Connectivity API."""
@@ -81,53 +27,19 @@ class DrawingSceneApiConnMixin:
     ) -> VertexItem:
         """
         Add a vertex to the scene.
-        Record it in ID:instance dict.
         Split any crossing segment(s) and join their net(s).
+        Assumption: no existing vertices at this point.
         """
         # create vertex
         cmd = CmdAddVertex(self, pos)
         cmdExec(self, cmd, undoable)
         vtx = cmd.vtx()
-        # record vertex
-        self._nodes[vtx._id] = vtx
-        # split segments at new vertex, joining nets as required
+        # split crossing segments at new vertex, joining nets as required
         items = self.items(pos)
-        for item in items:
-            if not isinstance(item, SegmentItem):
-                continue
-            seg : SegmentItem = item
-            net_edge = (seg.vtx1().id(), seg.vtx2().id())
-            # mutate graphics
+        for seg in [item for item in items if isinstance(item, SegmentItem)]:
             cmd = CmdSplitSegment(self, seg, vtx)
             cmdExec(self, cmd, undoable)
-            # mutate netlist
-            cmd = CmdSplitNetEdge(self, net_edge, vtx.id())
-            cmdExec(self, cmd, undoable)
-
-
-            v1 : VertexItem = seg.vtx1()
-            v2 : VertexItem = seg.vtx2()
-            net = self.getNet(v1.netId())
-            # connect new vertex net to segment net
-            if vtx.netId() is None:
-                # add new vertex to segment net
-                cmd = CmdSplitNetEdge(self, (v1.id(), v2.id()), vtx.id())
-                cmdExec(self, cmd, undoable)
-
-            else:
-                # join new vertex net to segment net
-            # get near and far vertices
-            l1 = QLineF(v1.scenePos(), pos).length()
-            l2 = QLineF(v2.scenePos(), pos).length()
-            v_near, v_far = v2, v1 if l2 < l1 else v1, v2
-            # reconnect segment near vertex to new vertex
-            cmd = CmdReattachSegment(self, seg, v_near, vtx)
-            # create new segment from new
-            # split net edge
-            # create new segment from new to near vertex
-
-
-            self.tidyVertex(vtx, undoable)
+        # done
         return vtx
 
     def getVertex(
@@ -151,26 +63,16 @@ class DrawingSceneApiConnMixin:
         """
         if vtx.parentItem() is not None \
         or len(vtx.childItems()) != 0 \
-        or len(vtx.connections()) != 2:
+        or vtx.degree() != 2:
             return False
-        seg1 = vtx.connections()[0]
-        seg2 = vtx.connections()[1]
+        seg1 = vtx.segments()[0]
+        seg2 = vtx.segments()[1]
         p1 = seg1.otherVtx(vtx).scenePos()
         p2 = seg2.otherVtx(vtx).scenePos()
         uv1 = QLineF(vtx.scenePos(), p1).unitVector()
         uv2 = QLineF(vtx.scenePos(), p2).unitVector()
         dot_product = uv1.dx() * uv2.dx() + uv1.dy() * uv2.dy()
         return isclose(dot_product, 1.0, abs_tol=1e-6)
-
-    def getSegment(
-        self : "DrawingScene",
-        v1   : VertexItem,
-        v2   : VertexItem
-    ) -> SegmentItem | None:
-        for seg in v1.connections():
-            if seg.otherVtx(v1) == v2:
-                return seg
-        return None
 
     def addSegment(
         self     : "DrawingScene",
@@ -207,33 +109,22 @@ class DrawingSceneApiConnMixin:
         vertices.sort(key=lambda v: QLineF(p1, v.scenePos()).length())
         # add segments between all vertices along path from v1 to v2
         # iterate over all consecutive pairs of vertices
-        for v1, v2 in zip(vertices[:-1], vertices[1:]):
+        for v1, v2 in zip(vertices[:-1], vertices[1:], strict=True):
             # check if v1 is redundant and remove if so
             if self.isRedundantVertex(v1):
-                self.unsplitSegment(v1, undoable)
+                cmd = CmdUnsplitSegment(self, v1)
+                cmdExec(self, cmd, undoable)
                 continue
             # check for existing segment between v1 and v2
-            if self.getSegment(v1, v2) is not None:
+            if self._graph.has_edge(v1, v2):
                 continue
             # add segment
             cmd = CmdAddSegment(self, v1, v2)
             cmdExec(self, cmd, undoable)
+            self._graph.add_edge(v1, v2, segment=cmd.seg())
         # check if last vertex is redundant and remove if so
         if self.isRedundantVertex(v2):
             self.delVertex(v2, undoable)
         # end macro
         if undoable:
             self.undo_stack.endMacro()
-
-    def unsplitSegment(
-        self     : "DrawingScene",
-        vtx      : VertexItem,
-        undoable : bool = False
-    ) -> None:
-        """Unsplit a segment at a specified vertex."""
-        # graphics
-        cmd = CmdUnsplitSegment(self, vtx)
-        cmdExec(self, cmd, undoable)
-        # netlist
-        cmd = CmdUnsplitNetEdge(self, vtx.id())
-        cmdExec(self, cmd, undoable)

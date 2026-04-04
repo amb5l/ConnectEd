@@ -36,26 +36,18 @@ class VertexItem(
     _JUNCTION_THRESHOLD = 3
 
     # instance attributes
-    _id          : int | None
-    _state       : State
-    _connections : list["SegmentItem"]
+    _state : State
 
     def __init__(
         self   : Self,
         pos    : QPointF | None = None,
-        id     : int | None = None,
         parent : "PortPinMixin | None" = None
     ) -> None:
         super().__init__(parent)
         if pos is not None:
             self.setPos(pos)
-        self._id = id
         self._state = self.State.UNCONNECTED
-        self._connections = []
         self.initItem()
-
-    def id(self : Self) -> int | None:
-        return self._id
 
     def onSceneChange(self : Self, scene : "DrawingScene | None") -> None:
         if scene is not None:
@@ -73,34 +65,33 @@ class VertexItem(
 
     def onScenePositionChange(self : Self, _pos : QPointF) -> None:
         """Update all connected segments."""
-        for segment in self._connections:
+        for segment in self.segments():
             segment.onGeometryChange()
 
     def onConnectionChange(self : Self, scene : "DrawingScene | None" = None) -> None:
         if scene is None:
             if (scene := self.scene()) is None:
                 return
-        n = len(self._connections)
+        n = self.degree()
         self._state = \
             self.State.JUNCTION    if n >= self._JUNCTION_THRESHOLD else \
             self.State.CONNECTED   if n >= 1 else \
             self.State.UNCONNECTED
-        self._updatePath(scene)
+        self.onSettingsChange(scene)
 
-    def attach(self : Self, segment : "SegmentItem") -> None:
-        if segment not in self._connections:
-            self._connections.append(segment)
-        self.onConnectionChange()
+    def degree(self : Self) -> int:
+        scene : "DrawingScene | None" = self.scene()
+        if scene is None or self not in scene._graph:
+            return 0
+        return scene._graph.degree(self)
 
-    def detach(self : Self, segment : "SegmentItem") -> None:
-        if segment not in self._connections:
-            logger().warning(f"Segment {segment} not found in connections")
-            return
-        self._connections.remove(segment)
-        self.onConnectionChange()
-
-    def connections(self : Self) -> list["SegmentItem"]:
-        return self._connections
+    def segments(self : Self) -> list["SegmentItem"]:
+        scene : "DrawingScene | None" = self.scene()
+        if scene is None or self not in scene._graph:
+            return []
+        return [
+            data["segment"] for _, _, data in scene._graph.edges(self, data=True)
+        ]
 
     def _updatePath(
         self      : Self,

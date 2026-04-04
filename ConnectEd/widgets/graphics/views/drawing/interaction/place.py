@@ -269,15 +269,17 @@ class PlaceConnInteraction(Interaction):
 
     def commit(self : Self, pos : QPointF, complete : bool = False) -> bool:
         self._updateVertices(pos)
-        # create first segment
-        self._scene.addSegment(self._p0(), self._p1(), undoable=True)
+        # get terminals at end of first preview segment
         terminals_1 = [
             i for i in self._scene.items(self._p1()) if isinstance(i, VertexItem)
         ]
+        # create first segment
+        self._scene.addSegment(self._p0(), self._p1(), undoable=True)
+        # stop if terminal reached
         if terminals_1:
             self._cleanup()
             return True  # interaction completed
-        # create second segment if complete is requested or mouse is over a terminal
+        # get terminals at end of second preview segment
         terminals_2 = [
             i for i in self._scene.items(self._p2()) \
                 if isinstance(i, SegmentItem | VertexItem)
