@@ -1,6 +1,6 @@
 from typing import Self
 
-from PyQt6.QtCore    import QPointF, QLineF, QXmlStreamReader, QXmlStreamWriter
+from PyQt6.QtCore    import QLineF, QXmlStreamReader, QXmlStreamWriter
 from PyQt6.QtWidgets import QGraphicsLineItem
 
 from ....app import logger
@@ -26,19 +26,17 @@ class SegmentItem(
 ):
     """Runs between two VertexItem instances."""
     # instance attributes
-    _vtx1 : VertexItem | QPointF | None
-    _vtx2 : VertexItem | QPointF | None
+    _vtx1 : VertexItem | None
+    _vtx2 : VertexItem | None
     _line : QLineF
 
     def __init__(
         self : Self,
-        vtx1 : VertexItem | QPointF | None = None,
-        vtx2 : VertexItem | QPointF | None = None
+        vtx1 : VertexItem | None = None,
+        vtx2 : VertexItem | None = None
     ) -> None:
         QGraphicsLineItem.__init__(self)
         self._line = QLineF()
-        self._vtx1 = None
-        self._vtx2 = None
         self.initItem()
         self.setVtx1(vtx1)
         self.setVtx2(vtx2)
@@ -54,10 +52,10 @@ class SegmentItem(
         self._line.setP2(p2-p1)
         self.setLine(self._line)
 
-    def vtx1(self : Self) -> VertexItem | QPointF | None:
+    def vtx1(self : Self) -> VertexItem | None:
         return self._vtx1
 
-    def setVtx1(self : Self, vtx : VertexItem | QPointF | None) -> None:
+    def setVtx1(self : Self, vtx : VertexItem | None) -> None:
         if isinstance(self._vtx1, VertexItem):
             self._vtx1.detach(self)
         self._vtx1 = vtx
@@ -65,16 +63,23 @@ class SegmentItem(
             vtx.attach(self)
         self.onGeometryChange()
 
-    def vtx2(self : Self) -> VertexItem | QPointF | None:
+    def vtx2(self : Self) -> VertexItem | None:
         return self._vtx2
 
-    def setVtx2(self : Self, vtx : VertexItem | QPointF | None) -> None:
+    def setVtx2(self : Self, vtx : VertexItem | None) -> None:
         if isinstance(self._vtx2, VertexItem):
             self._vtx2.detach(self)
         self._vtx2 = vtx
         if isinstance(vtx, VertexItem):
             vtx.attach(self)
         self.onGeometryChange()
+
+    def otherVtx(self : Self, vtx : VertexItem) -> VertexItem | None:
+        if self._vtx1 is vtx:
+            return self._vtx2
+        elif self._vtx2 is vtx:
+            return self._vtx1
+        return None
 
     def reattach(self : Self, old : VertexItem, new : VertexItem) -> bool:
         if self._vtx1 is old:
@@ -87,12 +92,10 @@ class SegmentItem(
 
     def toXml(self : Self, xw : QXmlStreamWriter) -> None:
         def getVal(s : str) -> float | int:
-            a = s[0]
-            n = int(s[1:])
+            a = s[0]  # "x" or "y"
+            n = int(s[1:])  # 1 or 2
             attr_val = getattr(self, f"_vtx{n}")  # value of self._vtx{n}
-            p = attr_val.scenePos() if isinstance(attr_val, VertexItem) else \
-                attr_val if isinstance(attr_val, QPointF) else \
-                None
+            p = attr_val.scenePos() if isinstance(attr_val, VertexItem) else None
             v = getattr(p, a)()
             return None if p is None else int(v) if v.is_integer() else v
         xw.writeStartElement(self.__class__.__name__.removesuffix("Item"))

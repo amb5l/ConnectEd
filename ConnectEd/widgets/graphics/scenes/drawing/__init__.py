@@ -20,7 +20,7 @@ from .api       import DrawingSceneApiMixin
 from .grips     import DrawingSceneGripsMixin
 from .resources import DrawingSceneResourcesMixin
 from .guides    import DrawingSceneGuidesMixin
-from .netlist   import DrawingSceneNetlistMixin, Net
+from .conn      import DrawingSceneConnMixin
 from .private   import DrawingSceneApiPrivateMixin
 
 
@@ -29,7 +29,7 @@ class DrawingScene(
     DrawingSceneGripsMixin,
     DrawingSceneResourcesMixin,
     DrawingSceneGuidesMixin,
-    DrawingSceneNetlistMixin,
+    DrawingSceneConnMixin,
     DrawingSceneApiPrivateMixin,
     PropertiesMixin,
     QGraphicsScene

@@ -7,6 +7,8 @@ from ......app import logger
 from ....items.vertex  import VertexItem
 from ....items.segment import SegmentItem
 
+from ..conn import NetEdge
+
 from . import CmdSceneBase
 
 from typing import TYPE_CHECKING
@@ -15,7 +17,10 @@ if TYPE_CHECKING:
 
 
 class CmdAddVertex(CmdSceneBase):
-    """Create and add a new vertex to the scene."""
+    """
+    Create and add a new vertex to the scene.
+    Split any crossing segment(s) and join their net(s).
+    """
 
     # instance attributes
     _vtx : VertexItem
@@ -60,7 +65,10 @@ class CmdRemoveVertex(CmdSceneBase):
 
 
 class CmdAddSegment(CmdSceneBase):
-    """Add a new segment to the scene between two specified vertices."""
+    """
+    Add a new segment to the scene between two specified vertices:
+    -
+    """
 
     # instance attributes
     _vtx1 : VertexItem
@@ -154,3 +162,124 @@ class CmdRemoveSegment(CmdSceneBase):
         self._seg.setVtx1(self._vtx1)
         self._seg.setVtx2(self._vtx2)
         self._scene.addItem(self._seg)
+
+
+class CmdSplitSegment(CmdSceneBase):
+    """Split a segment at a specified vertex."""
+
+    # instance attributes
+    _vtx  : VertexItem   # vertex at split point
+    _seg1 : SegmentItem  # existing segment
+    _seg2 : SegmentItem  # new segment
+
+    def __init__(
+        self  : Self,
+        scene : "DrawingScene",
+        seg   : SegmentItem,
+        vtx   : VertexItem
+    ) -> None:
+        super().__init__(scene)
+        self._vtx = vtx
+        self._seg1 = seg
+        self._seg2 = SegmentItem()
+
+    def redo(self : Self) -> None:
+        self._seg2.setVtx1(self._vtx)
+        self._seg2.setVtx2(self._seg1.vtx2())
+        self._seg1.setVtx2(self._vtx)
+        self._scene.addItem(self._seg2)
+
+    def undo(self : Self) -> None:
+        self._seg1.setVtx2(self._seg2.vtx2())
+        self._seg2.setVtx1(None)
+        self._seg2.setVtx2(None)
+        self._scene.removeItem(self._seg2)
+
+
+class CmdUnsplitSegment(CmdSceneBase):
+    """
+    Unsplit a segment at a specified vertex.
+    Assumption: vertex has 2 connections.
+    """
+
+    # instance attributes
+    _vtx  : VertexItem   # vertex at split point
+    _seg1 : SegmentItem  # 1st existing segment / unsplit segment
+    _seg2 : SegmentItem  # 2nd existing segment
+    _vtx2 : VertexItem   # far vertex of 2nd segment
+    _s2v1 : VertexItem   # segment 2 vertex 1
+    _s2v2 : VertexItem   # segment 2 vertex 2
+
+    def __init__(
+        self  : Self,
+        scene : "DrawingScene",
+        vtx   : VertexItem
+    ) -> None:
+        super().__init__(scene)
+        self._vtx = vtx
+        self._seg1 = vtx.connections()[0]
+        self._seg2 = vtx.connections()[1]
+        self._vtx2 = self._seg2.otherVtx(vtx)
+        self._s2v1 = self._seg2.vtx1()
+        self._s2v2 = self._seg2.vtx2()
+
+    def redo(self : Self) -> None:
+        self._seg2.setVtx1(None)
+        self._seg2.setVtx2(None)
+        self._scene.removeItem(self._seg2)
+        self._seg1.setVtx(self._vtx, self._vtx2)
+
+    def undo(self : Self) -> None:
+        self._seg1.setVtx(self._vtx2, self._vtx)
+        self._seg2.setVtx1(self._s2v1)
+        self._seg2.setVtx2(self._s2v2)
+        self._scene.addItem(self._seg2)
+
+
+class CmdSplitNetEdge(CmdSceneBase):
+    """Split a net edge and insert a new vertex at the split point."""
+
+    # instance attributes
+    _edge_net_id : int
+    _vtx_net_id  : int | None
+
+    def __init__(
+        self   : Self,
+        scene  : "DrawingScene",
+        edge   : NetEdge,
+        vtx_id : int
+    ) -> None:
+        super().__init__(scene)
+        self._net_edge = edge
+        self._vtx_id = vtx_id
+
+    def redo(self : Self) -> None:
+        self._scene.mergeNetEdgeNode(self._net_edge, self._vtx_id)
+
+        edge_net_id = self._node_net[edge.node_id1]
+        edge_net = self._nets[edge_net_id]
+        adjacency = edge_net.adjacency()
+        if node in self._node_net:  # node already in a net so merge
+            # get node net
+            node_net_id = self._node_net[node]
+            node_net = self._nets[node_net_id]
+            # merge node adjacency into edge adjacency
+            adjacency |= node_net.adjacency()
+            edge_net.setAdjacency(adjacency)
+            # update node ID : net ID dict
+            for nodes in node_net.nodes():
+                self._node_net[nodes] = edge_net_id
+            # remove node net
+            del self._nets[node_net_id]
+            del node_net
+        edge_net.splitEdge(edge, node)
+        self._node_net[node] = edge_net_id
+
+
+
+
+
+
+
+    def undo(self : Self) -> None:
+        self._scene.unSplitNetEdge(self._net_edge, self._vtx_id)

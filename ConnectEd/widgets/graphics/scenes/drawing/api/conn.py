@@ -1,13 +1,19 @@
-from math import isclose
+from typing      import Self
+from collections import defaultdict
+from math        import isclose
 
-from PyQt6.QtCore import QPointF, QLineF
+from PyQt6.QtCore import Qt, QPointF, QLineF, QXmlStreamWriter, QXmlStreamReader
 from PyQt6.QtGui  import QPainterPath, QPainterPathStroker
 
 from ......app import logger
 
-from ......core.utils import itemsTypeDict
+from ......core.types import Counter, DataKind
+from ......core.xml   import toXmlAttrs
+from ......core.utils import underscore2space
 
-from ....items.vertex  import VertexItem
+from ....properties import PropertiesMixin, InherentProperty
+
+from ....items.vertex  import VertexItem, EntryItem
 from ....items.segment import SegmentItem
 
 from ..cmd      import cmdExec
@@ -15,7 +21,11 @@ from ..cmd.conn import CmdAddVertex,      \
                        CmdRemoveVertex,   \
                        CmdAddSegment,      \
                        CmdReattachSegment, \
-                       CmdRemoveSegment
+                       CmdRemoveSegment,   \
+                       CmdSplitSegment,    \
+                       CmdUnsplitSegment,  \
+                       CmdSplitNetEdge,    \
+                       CmdUnsplitNetEdge
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -25,7 +35,6 @@ if TYPE_CHECKING:
 ################################################################################
 # local functions
 ################################################################################
-
 
 def _xp(point : QPointF, line : QLineF) -> float:
     """Returns the cross product magnitude for colinearity (should be ~0)."""
@@ -58,129 +67,110 @@ def _colinear(line1 : QLineF, line2 : QLineF) -> bool:
         _pointOnInfiniteLine(line2.p1(), line1) and \
         _pointOnInfiniteLine(line2.p2(), line1)
 
-
 ################################################################################
 # mixin
 ################################################################################
 
-
 class DrawingSceneApiConnMixin:
-    """Connection handling."""
+    """Connectivity API."""
 
-    def tidyVertex(self : "DrawingScene", vtx : VertexItem, undoable : bool) -> None:
-        """
-        Tidy up an existing vertex:
-        - Merge existing vertices into one. Reattach existing segments.
-        - Split and attach any segments that cross the vertex.
-        - Remove duplicate segments.
-        - Remove if the vertex breaks a simple straight line.
-        - Remove if no segments are attached.
-        """
-        # start macro
-        if undoable:
-            self.undo_stack.beginMacro("tidyVertex")
-        # get position
-        pos = vtx.scenePos()
-        # get existing vertices
-        items = self.items(pos)
-        xvtxs = [item for item in items if isinstance(item, VertexItem)]
-        # connect existing segments to single vertex, remove existing vertices
-        for xvtx in xvtxs:
-            if xvtx is vtx:
-                continue
-            for seg in xvtx.connections():
-                cmd = CmdReattachSegment(self, seg, xvtx, vtx)
-                cmdExec(self, cmd, undoable)
-            cmd = CmdRemoveVertex(self, xvtx)
-            cmdExec(self, cmd, undoable)
-        # split segments that cross the new vertex but are not attached to it
-        segs = [item for item in items if isinstance(item, SegmentItem)]
-        for seg in segs:
-            # exclude segments attached to the clean vertex
-            if seg.vtx1() is vtx or seg.vtx2() is vtx:
-                continue
-            # get far-end vertex (the one that will be detached)
-            len1 = QLineF(seg.vtx1().scenePos(), vtx.scenePos()).length()
-            len2 = QLineF(seg.vtx2().scenePos(), vtx.scenePos()).length()
-            far = seg.vtx2() if len1 >= len2 else seg.vtx1()
-            cmd = CmdReattachSegment(self, seg, far, vtx)
-            cmdExec(self, cmd, undoable)
-            # add new segment from split
-            cmd = CmdAddSegment(self, vtx, far)
-            cmdExec(self, cmd, undoable)
-        # remove duplicate segments (that share the same vertices pair)
-        segs = vtx.connections().copy()  # take copy because we're making changes
-        if len(segs) > 1:
-            for i, seg1 in enumerate(segs[:-1]):
-                for seg2 in segs[i+1:]:
-                    if (seg1.vtx1() is seg2.vtx1() and seg1.vtx2() is seg2.vtx2()) \
-                    or (seg1.vtx1() is seg2.vtx2() and seg1.vtx2() is seg2.vtx1()):
-                        cmd = CmdRemoveSegment(self, seg2)
-                        cmdExec(self, cmd, undoable)
-        # remove if useless break in a straight line
-        segs = vtx.connections().copy()  # take copy because we're making changes
-        if len(segs) == 2:
-            # use scene-coordinate lines (seg.line() is local to each segment)
-            sl0 = QLineF(segs[0].vtx1().scenePos(), segs[0].vtx2().scenePos())
-            sl1 = QLineF(segs[1].vtx1().scenePos(), segs[1].vtx2().scenePos())
-            if _colinear(sl0, sl1):
-                # get far end of 2nd segment
-                v2 = segs[1].vtx1() if segs[1].vtx2() is vtx else segs[1].vtx2()
-                # reattach 1st segment to far end of 2nd segment
-                cmd = CmdReattachSegment(self, segs[0], vtx, v2)
-                cmdExec(self, cmd, undoable)
-                # remove 2nd segment
-                cmd = CmdRemoveSegment(self, segs[1])
-                cmdExec(self, cmd, undoable)
-        # remove if no connections
-        if len(vtx.connections()) == 0:
-            cmd = CmdRemoveVertex(self, vtx)
-            cmdExec(self, cmd, undoable)
-        # end macro
-        if undoable:
-            self.undo_stack.endMacro()
-
-    def tidyConns(self : "DrawingScene", undoable : bool) -> None:
-        """Tidy all connections in the scene."""
-        items = self.items()
-        segs = [item for item in items if isinstance(item, SegmentItem)]
-        # tidy segments (replace QPointF with VertexItem)
-        for seg in segs:
-            v1 = seg.vtx1()
-            if v1 is None:
-                logger().warning(f"Segment {seg} has no vertex 1")
-                seg.setVtx1(QPointF())
-            if isinstance(v1, QPointF):
-                seg.setVtx1(self.getVertex(v1, undoable))
-            v2 = seg.vtx2()
-            if v2 is None:
-                logger().warning(f"Segment {seg} has no vertex 2")
-                seg.setVtx2(QPointF())
-            if isinstance(v2, QPointF):
-                seg.setVtx2(self.getVertex(v2, undoable))
-        # tidy vertices
-        items = self.items()
-        vtxs = [item for item in items if isinstance(item, VertexItem)]
-        for vtx in vtxs:
-            self.tidyVertex(vtx, undoable)
-
-    def getVertex(
+    def addVertex(
         self     : "DrawingScene",
         pos      : QPointF,
         undoable : bool = False
     ) -> VertexItem:
-        """Get a vertex if present, add if necessary."""
-        items = itemsTypeDict(self.items(pos))
-        if VertexItem in items:
-            vtxs = items[VertexItem]
-            vtx = vtxs[0]
-            if len(vtxs) > 1:
-                self.tidyVertex(vtx, undoable)
-        else:
-            cmd = CmdAddVertex(self, pos)
+        """
+        Add a vertex to the scene.
+        Record it in ID:instance dict.
+        Split any crossing segment(s) and join their net(s).
+        """
+        # create vertex
+        cmd = CmdAddVertex(self, pos)
+        cmdExec(self, cmd, undoable)
+        vtx = cmd.vtx()
+        # record vertex
+        self._nodes[vtx._id] = vtx
+        # split segments at new vertex, joining nets as required
+        items = self.items(pos)
+        for item in items:
+            if not isinstance(item, SegmentItem):
+                continue
+            seg : SegmentItem = item
+            net_edge = (seg.vtx1().id(), seg.vtx2().id())
+            # mutate graphics
+            cmd = CmdSplitSegment(self, seg, vtx)
             cmdExec(self, cmd, undoable)
-            vtx = cmd.vtx()
+            # mutate netlist
+            cmd = CmdSplitNetEdge(self, net_edge, vtx.id())
+            cmdExec(self, cmd, undoable)
+
+
+            v1 : VertexItem = seg.vtx1()
+            v2 : VertexItem = seg.vtx2()
+            net = self.getNet(v1.netId())
+            # connect new vertex net to segment net
+            if vtx.netId() is None:
+                # add new vertex to segment net
+                cmd = CmdSplitNetEdge(self, (v1.id(), v2.id()), vtx.id())
+                cmdExec(self, cmd, undoable)
+
+            else:
+                # join new vertex net to segment net
+            # get near and far vertices
+            l1 = QLineF(v1.scenePos(), pos).length()
+            l2 = QLineF(v2.scenePos(), pos).length()
+            v_near, v_far = v2, v1 if l2 < l1 else v1, v2
+            # reconnect segment near vertex to new vertex
+            cmd = CmdReattachSegment(self, seg, v_near, vtx)
+            # create new segment from new
+            # split net edge
+            # create new segment from new to near vertex
+
+
+            self.tidyVertex(vtx, undoable)
         return vtx
+
+    def getVertex(
+        self     : "DrawingScene",
+        pos      : QPointF,         # scene coordinates
+        undoable : bool = False
+    ) -> VertexItem:
+        """Get a vertex if present, add if necessary."""
+        items = self.items(pos)
+        for item in items:
+            if isinstance(item, VertexItem):
+                return item
+        return self.addVertex(pos, undoable)
+
+    def isRedundantVertex(self : "DrawingScene", vtx : VertexItem) -> bool:
+        """
+        Vertex is redundant if
+        - it is parentless (not an entry)
+        - it is childless (not parenting a property text)
+        - it breaks up a straight line.
+        """
+        if vtx.parentItem() is not None \
+        or len(vtx.childItems()) != 0 \
+        or len(vtx.connections()) != 2:
+            return False
+        seg1 = vtx.connections()[0]
+        seg2 = vtx.connections()[1]
+        p1 = seg1.otherVtx(vtx).scenePos()
+        p2 = seg2.otherVtx(vtx).scenePos()
+        uv1 = QLineF(vtx.scenePos(), p1).unitVector()
+        uv2 = QLineF(vtx.scenePos(), p2).unitVector()
+        dot_product = uv1.dx() * uv2.dx() + uv1.dy() * uv2.dy()
+        return isclose(dot_product, 1.0, abs_tol=1e-6)
+
+    def getSegment(
+        self : "DrawingScene",
+        v1   : VertexItem,
+        v2   : VertexItem
+    ) -> SegmentItem | None:
+        for seg in v1.connections():
+            if seg.otherVtx(v1) == v2:
+                return seg
+        return None
 
     def addSegment(
         self     : "DrawingScene",
@@ -189,7 +179,8 @@ class DrawingSceneApiConnMixin:
         undoable : bool = False
     ) -> None:
         """
-        Add a segment, add vertices at any entries between endpoints, tidy.
+        Create or find vertex at each endpoint.
+
         """
         # handle zero length - can happen on double click
         if p1 == p2:
@@ -197,30 +188,52 @@ class DrawingSceneApiConnMixin:
         # begin macro
         if undoable:
             self.undo_stack.beginMacro("addSegment")
-        # get/create endpoint vertices
+        # get/create endpoint vertices/entries
         v1 = self.getVertex(p1, undoable)
         v2 = self.getVertex(p2, undoable)
-        # add segment
-        cmd = CmdAddSegment(self, v1, v2)
-        cmdExec(self, cmd, undoable)
-        # get items along line, including endpoint vertices
+        # get vertices items along line from p1 to p2
         line_path = QPainterPath()
         line_path.moveTo(p1)
         line_path.lineTo(p2)
         stroker = QPainterPathStroker()
         stroker.setWidth(1.0)  # hit tolerance in scene units
-        hit_path = stroker.createStroke(line_path)
-        hit_items = self.items(hit_path)
-        # tidy vertices — repeat until done
-        vtxs = [item for item in hit_items if isinstance(item, VertexItem)]
-        done = False
-        while not done:
-            done = True
-            for vtx in vtxs:
-                if vtx.scene() is not None:
-                    self.tidyVertex(vtx, undoable)
-                    if vtx.scene() is None:
-                        done = False
+        stroker.setCapStyle(Qt.PenCapStyle.FlatCap)  # don't extend beyond endpoints
+        stroker_path = stroker.createStroke(line_path)
+        vertices = [
+            item for item in self.items(stroker_path) \
+                if isinstance(item, VertexItem)
+        ]
+        # sort by distance from p1
+        vertices.sort(key=lambda v: QLineF(p1, v.scenePos()).length())
+        # add segments between all vertices along path from v1 to v2
+        # iterate over all consecutive pairs of vertices
+        for v1, v2 in zip(vertices[:-1], vertices[1:]):
+            # check if v1 is redundant and remove if so
+            if self.isRedundantVertex(v1):
+                self.unsplitSegment(v1, undoable)
+                continue
+            # check for existing segment between v1 and v2
+            if self.getSegment(v1, v2) is not None:
+                continue
+            # add segment
+            cmd = CmdAddSegment(self, v1, v2)
+            cmdExec(self, cmd, undoable)
+        # check if last vertex is redundant and remove if so
+        if self.isRedundantVertex(v2):
+            self.delVertex(v2, undoable)
         # end macro
         if undoable:
             self.undo_stack.endMacro()
+
+    def unsplitSegment(
+        self     : "DrawingScene",
+        vtx      : VertexItem,
+        undoable : bool = False
+    ) -> None:
+        """Unsplit a segment at a specified vertex."""
+        # graphics
+        cmd = CmdUnsplitSegment(self, vtx)
+        cmdExec(self, cmd, undoable)
+        # netlist
+        cmd = CmdUnsplitNetEdge(self, vtx.id())
+        cmdExec(self, cmd, undoable)

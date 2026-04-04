@@ -23,7 +23,7 @@ class DrawingSceneApiAddMixin:
         items    : list[ItemType],
         undoable : bool = False
     ) -> None:
-        """Add an item to the scene."""
+        """Add an item to the scene. TODO support single item."""
         cmd = CmdAdd(self, items)
         cmdExec(self, cmd, undoable)
 

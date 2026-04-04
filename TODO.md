@@ -1,3 +1,7 @@
+ensure selected appearance of vertices makes them visible against segments
+_sel_line to shared resources
+
+
 netlisting
   settings paths for vertex/entry appearance: unconnected
 

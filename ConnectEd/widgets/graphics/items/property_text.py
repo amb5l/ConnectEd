@@ -1,8 +1,7 @@
-from typing      import Self, Any
+from typing import Self, Any
 
-from PyQt6.QtCore    import Qt, QPointF, QXmlStreamWriter
-from PyQt6.QtWidgets import QGraphicsItem, QGraphicsLineItem, \
-                            QGraphicsSceneMouseEvent, QMenu
+from PyQt6.QtCore    import QPointF
+from PyQt6.QtWidgets import QGraphicsItem, QMenu
 from PyQt6.QtGui     import QAction
 
 from ....app import settings, logger
@@ -18,6 +17,7 @@ from . import ItemType
 
 from .text   import TextItem
 from .handle import HandleItem
+from .tether import PropertyTextTetherItem
 
 
 from .mixin.origin import ItemOriginMixin
@@ -30,44 +30,6 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ..views.drawing  import DrawingView
     from ..scenes.drawing import DrawingScene
-
-
-class TetherItem(QGraphicsLineItem):
-    """Tether line between a PropertyText origin and its parent cleat."""
-
-    _item  : "PropertyTextItem"
-
-    def __init__(self : Self, item : "PropertyTextItem"):
-        self._item = item
-        super().__init__(item.getOriginHandle())
-        self.setVisible(item.isSelected())
-        self.onSettingsChange()
-        self.onPositionChange(self._item.pos())
-
-    def mousePressEvent(self : Self, event : QGraphicsSceneMouseEvent) -> None:
-        self._item.mousePressEvent(event)
-
-    def mouseReleaseEvent(self : Self, event : QGraphicsSceneMouseEvent) -> None:
-        self._item.mouseReleaseEvent(event)
-
-    def mouseDoubleClickEvent(self : Self, event : QGraphicsSceneMouseEvent) -> None:
-        self._item.mouseDoubleClickEvent(event)
-
-    def onSettingsChange(self : Self) -> None:
-        self.setPen(self._item.outline.pen)
-
-    def onPositionChange(self : Self, _ : QPointF | None = None) -> None:
-        if self.cleat() is None:
-            return
-        line = self.line()
-        line.setP2(self.mapFromItem(self.cleat(), QPointF(0, 0)))
-        self.setLine(line)
-
-    def cleat(self : Self) -> HandleItem | None:
-        return self._item.parentItem()
-
-    def toXml(self : Self, _xw : QXmlStreamWriter) -> str:
-        pass  # no need to serialise
 
 
 class PropertyTextItem(TextItem):
@@ -101,7 +63,7 @@ class PropertyTextItem(TextItem):
     # instance attributes
     _name   : str
     _cleat  : HandleId | None
-    _tether : TetherItem | None
+    _tether : PropertyTextTetherItem | None
 
     def __init__(
         self      : Self,
@@ -142,7 +104,7 @@ class PropertyTextItem(TextItem):
             fresh     = fresh,
             parent    = parent
         )
-        self._tether = TetherItem(self)
+        self._tether = PropertyTextTetherItem(self)
         self._name = name
         self.setCleat(cleat, parent)
         self.onTextChange()
