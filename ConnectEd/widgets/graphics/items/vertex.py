@@ -4,9 +4,7 @@ from enum   import StrEnum
 from PyQt6.QtCore    import QPointF, QRectF
 from PyQt6.QtWidgets import QGraphicsPathItem
 
-from ....app import logger, settings
-
-from ....core.defs  import Z_DRAWING
+from ....app import settings
 
 from .mixin        import ItemMixin
 from .mixin.shape  import ItemShapeMixin
@@ -32,7 +30,6 @@ class VertexItem(
         CONNECTED   = "connected"
         JUNCTION    = "junction"
 
-    Z = Z_DRAWING + 1
     _JUNCTION_THRESHOLD = 3
 
     # instance attributes

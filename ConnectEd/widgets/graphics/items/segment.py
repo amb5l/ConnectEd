@@ -5,6 +5,8 @@ from PyQt6.QtWidgets import QGraphicsLineItem
 
 from ....app import logger
 
+from ....core.defs import Z_DRAWING
+
 from .mixin        import ItemMixin, ItemSettingsMixin
 from .mixin.line   import ItemLineMixin
 from .mixin.change import ItemChangeMixin
@@ -26,6 +28,7 @@ class SegmentItem(
 ):
     """Runs between two VertexItem instances."""
     # class attributes
+    Z = Z_DRAWING - 1
     _PEN_CAP_STYLE = Qt.PenCapStyle.SquareCap
 
     # instance attributes
