@@ -56,3 +56,24 @@ class NetPropertyTextItem(TextItem):
         ItemQuillMixin._PROPERTIES_QUILL
 
     def __init__(
+        self      : Self,
+        name      : str                  = "",
+        value     : str                  = "",
+        pos       : QPointF | None       = None,
+        rotation  : float                = 0.0,
+        flip      : bool                 = True,
+        origin    : RectHandleId         = RectHandleId.TOP_LEFT,
+        align_h   : AlignH               = AlignH.LEFT,
+        align_v   : AlignV               = AlignV.TOP,
+        width     : float                = -1.0,
+        height    : float                = -1.0,
+        color     : Color                = DEFAULT,
+        family    : FontFamily           = DEFAULT,
+        size      : FontSize             = DEFAULT,
+        bold      : FontBool             = DEFAULT,
+        italic    : FontBool             = DEFAULT,
+        underline : FontBool             = DEFAULT,
+        fresh     : bool                 = True,
+        parent    : QGraphicsItem | None = None
+    ) -> None:
+        pass
