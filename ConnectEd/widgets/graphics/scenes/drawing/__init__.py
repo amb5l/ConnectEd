@@ -144,7 +144,7 @@ class DrawingScene(
                     item.toXml(xw)
                 else:
                     logger().warning(f"Unexpected item: {item.type()}")
-        # entries, vertices and NetPropertyTextItem instances
+        # entries, vertices and PropertyLabelItem instances
         raw_nodes : list[VertexItem] = list(self._graph.nodes())
         entries : list[EntryItem] = [
             node for node in raw_nodes \

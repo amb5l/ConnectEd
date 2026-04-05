@@ -32,7 +32,7 @@ if TYPE_CHECKING:
     from ..scenes.drawing import DrawingScene
 
 
-class NetPropertyTextItem(TextItem):
+class PropertyLabelItem(TextItem):
     # class attributes
     _PROPERTIES = \
         {

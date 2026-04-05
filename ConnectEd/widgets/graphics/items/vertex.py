@@ -6,7 +6,7 @@ from PyQt6.QtWidgets import QGraphicsPathItem
 
 from ....app import settings, logger
 
-from .net_property_text import NetPropertyTextItem
+from .property_label import PropertyLabelItem
 
 from .mixin        import ItemMixin
 from .mixin.shape  import ItemShapeMixin
@@ -97,9 +97,9 @@ class VertexItem(
         xw.writeAttribute("ID", str(id))
         xw.writeAttribute("X", str(self.scenePos().x()))
         xw.writeAttribute("Y", str(self.scenePos().y()))
-        # serialise child items (NetPropertyTextItem instances)
+        # serialise child items (PropertyLabelItem instances)
         for child in self.childItems():
-            if isinstance(child, NetPropertyTextItem):
+            if isinstance(child, PropertyLabelItem):
                 child.toXml(xw)
             else:
                 logger().warning(f"Unexpected child item: {child.type()}")
@@ -118,12 +118,12 @@ class VertexItem(
                     instance.setY(float(attr_value))
                 case _:
                     logger().warning(f"Unexpected attribute: {attr_name}={attr_value}")
-        # create child items (NetPropertyTextItem instances)
+        # create child items (PropertyLabelItem instances)
         while not (xr.isEndElement() and xr.name() == "Vertex"):
             if xr.isStartElement():
                 item_name = xr.name()
                 if item_name == "NetPropertyText":
-                    child = NetPropertyTextItem.fromXml(xr)
+                    child = PropertyLabelItem.fromXml(xr)
                     instance.setParentItem(child)
                 else:
                     logger().warning(f"Unexpected child item: {item_name}")

@@ -6,11 +6,11 @@ from PyQt6.QtWidgets import QGraphicsLineItem, QGraphicsItem, \
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from .text              import TextItem
-    from .property_text     import PropertyTextItem
-    from .net_property_text import NetPropertyTextItem
-    from .handle            import HandleItem
-    from .vertex            import VertexItem
+    from .text           import TextItem
+    from .property_text  import PropertyTextItem
+    from .property_label import PropertyLabelItem
+    from .handle         import HandleItem
+    from .vertex         import VertexItem
 
 
 class TextTetherItem(QGraphicsLineItem):
@@ -66,10 +66,10 @@ class PropertyTextTetherItem(TextTetherItem):
 
 class NetPropertyTextTetherItem(TextTetherItem):
     """
-    Tether line from the origin of a NetPropertyTextItem to its parent vertex.
+    Tether line from the origin of a PropertyLabelItem to its parent vertex.
     """
 
-    _text_item : "NetPropertyTextItem"
+    _text_item : "PropertyLabelItem"
 
     def anchor(self : Self) -> "VertexItem | None":
         return self._text_item.parentItem()
