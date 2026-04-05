@@ -8,12 +8,14 @@ from .....core.defs import PITCH
 from .....core.types import HandleId, RectHandleId, LineHandleId, \
                             BlockPinHandleId, SymbolPinHandleId, DataKind
 
-from ..port_pin import PortPinMixin
-
 from ..handle import HandleItem
 
 from .origin import ItemOriginMixin
 from .grip   import ItemGripMixin
+
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from ..port_pin import PortPinMixin
 
 
 class RectItemProtocol(Protocol):
@@ -172,7 +174,7 @@ class ItemBasePinHandlesMixin:
     # instance attributes
     _handles : dict[SymbolPinHandleId, "HandleItem"]
 
-    def initHandles(self : Self | PortPinMixin) -> None:
+    def initHandles(self : "Self | PortPinMixin") -> None:
         self._handles = {
             SymbolPinHandleId.ORIGIN : HandleItem(
                 id     = SymbolPinHandleId.ORIGIN,
