@@ -11,7 +11,6 @@ from .vertex import EntryItem
 
 from .mixin        import ItemMixin
 from .mixin.line   import ItemLineMixin
-from .mixin.fill   import ItemFillMixin
 from .mixin.change import ItemChangeMixin
 from .mixin.clone  import ItemCloneMixin
 from .mixin.xml    import ItemXmlMixin
