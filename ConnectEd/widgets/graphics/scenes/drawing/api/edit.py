@@ -110,7 +110,7 @@ class DrawingSceneApiEditMixin:
         else:
             logger().warning("No items selected to delete")
 
-    def xxxeditPortPin(
+    def editPortPin(
         self      : "DrawingScene",
         item      : PortPinMixin,
         name      : str,
