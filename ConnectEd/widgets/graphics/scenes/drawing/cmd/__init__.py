@@ -54,7 +54,7 @@ class CmdSceneBase(CmdBase):
     _scene : "DrawingScene"
 
     def __init__(self : Self, scene : "DrawingScene"):
-        text = camel2proper(self.__class__.__name__.replace("cmd", ""))
+        text = camel2proper(self.__class__.__name__.replace("Cmd", ""))
         super().__init__(text)
         self._scene = scene
 
@@ -157,9 +157,7 @@ class CmdDelete(
         self._addToScene(select=True)
 
 
-class CmdMove(
-    CmdSceneItems,  # _scene, _items
-):
+class CmdMove(CmdSceneItems):
     """Command to move scene items by an offset."""
 
     # instance attributes
