@@ -26,6 +26,8 @@ from .resources import DiagramSceneResourcesMixin
 
 from .cmd.conn import CmdAddSegment
 
+from .netlist import Netlist
+
 
 @dataclass
 class DiagramSheet:
@@ -68,10 +70,10 @@ class DiagramScene(
     }
 
     # instance attributes
-    sheet  : DiagramSheet
-    margin : float           # distance from paper edge to border line
-    border : float           # line width
-    _graph : networkx.Graph
+    sheet   : DiagramSheet
+    margin  : float           # distance from paper edge to border line
+    border  : float           # line width
+    netlist : Netlist
 
 
     def __init__(self : Self, fresh : bool = True) -> None:
@@ -82,7 +84,7 @@ class DiagramScene(
         self.margin = settings().get("defaults/margin")
         self.border = settings().get("defaults/border")
         super().__init__(sheet_size, fresh)
-        self._graph = networkx.Graph()
+        self.netlist = Netlist()
 
     def updateSceneRect(self : Self, rect : QRectF | None = None) -> None:
         super().updateSceneRect(self.sheet.rect)  # sheet is minimum rect
@@ -153,7 +155,7 @@ class DiagramScene(
                 else:
                     logger().warning(f"Unexpected item: {item.type()}")
         # entries, vertices and PropertyLabelItem instances
-        raw_nodes : list[VertexItem] = list(self._graph.nodes())
+        raw_nodes : list[VertexItem] = list(self.netlist.vertices())
         entries : list[EntryItem] = [
             node for node in raw_nodes \
                 if isinstance(node, EntryItem)

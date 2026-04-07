@@ -115,12 +115,11 @@ class DiagramSceneApiConnMixin:
                 cmdExec(self, cmd, undoable)
                 continue
             # check for existing segment between v1 and v2
-            if self._graph.has_edge(v1, v2):
+            if self.netlist.hasSegment(v1, v2):
                 continue
             # add segment
             cmd = CmdAddSegment(self, v1, v2)
             cmdExec(self, cmd, undoable)
-            self._graph.add_edge(v1, v2, segment=cmd.seg())
         # check if last vertex is redundant and remove if so
         if self.isRedundantVertex(v2):
             self.delVertex(v2, undoable)

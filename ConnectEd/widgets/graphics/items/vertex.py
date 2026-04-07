@@ -80,17 +80,15 @@ class VertexItem(
 
     def degree(self : Self) -> int:
         scene : "DiagramScene | None" = self.scene()
-        if scene is None or self not in scene._graph:
+        if scene is None or self not in scene.netlist.vertices():
             return 0
-        return scene._graph.degree(self)
+        return scene.netlist.degree(self)
 
     def segments(self : Self) -> list["SegmentItem"]:
         scene : "DiagramScene | None" = self.scene()
-        if scene is None or self not in scene._graph:
+        if scene is None or self not in scene.netlist.vertices():
             return []
-        return [
-            data["segment"] for _, _, data in scene._graph.edges(self, data=True)
-        ]
+        return scene.netlist.segments(self)
 
     def toXml(self : Self, xw : QXmlStreamWriter, id : int) -> None:
         xw.writeStartElement(self.settingsName())

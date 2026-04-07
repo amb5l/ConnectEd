@@ -12,7 +12,15 @@ if TYPE_CHECKING:
     from .. import DiagramScene
 
 
-class CmdAddVertex(CmdSceneBase):
+class CmdDiagramSceneBase(CmdSceneBase):
+    # instance attributes
+    _scene : "DiagramScene"
+
+    def __init__(self : Self, scene : "DiagramScene"):
+        super().__init__(scene)
+
+
+class CmdAddVertex(CmdDiagramSceneBase):
     """
     Create and add a new vertex to the scene.
     Updates both graphics and graph.
@@ -32,17 +40,17 @@ class CmdAddVertex(CmdSceneBase):
 
     def redo(self : Self) -> None:
         self._scene.addItem(self._vtx)
-        self._scene._graph.add_node(self._vtx)
+        self._scene.netlist.addVertex(self._vtx)
 
     def undo(self : Self) -> None:
-        self._scene._graph.remove_node(self._vtx)
+        self._scene.netlist.removeVertex(self._vtx)
         self._scene.removeItem(self._vtx)
 
     def vtx(self : Self) -> VertexItem:
         return self._vtx
 
 
-class CmdRemoveVertex(CmdSceneBase):
+class CmdRemoveVertex(CmdDiagramSceneBase):
     """
     Remove a specified vertex from the scene.
     Updates both graphics and graph.
@@ -61,15 +69,15 @@ class CmdRemoveVertex(CmdSceneBase):
         self._vtx = vtx
 
     def redo(self : Self) -> None:
-        self._scene._graph.remove_node(self._vtx)
+        self._scene.netlist.removeVertex(self._vtx)
         self._scene.removeItem(self._vtx)
 
     def undo(self : Self) -> None:
         self._scene.addItem(self._vtx)
-        self._scene._graph.add_node(self._vtx)
+        self._scene.netlist.addVertex(self._vtx)
 
 
-class CmdAddSegment(CmdSceneBase):
+class CmdAddSegment(CmdDiagramSceneBase):
     """
     Add a new segment to the scene between two specified vertices.
     Updates both graphics and graph.
@@ -96,13 +104,12 @@ class CmdAddSegment(CmdSceneBase):
         self._seg.setVtx1(self._vtx1)
         self._seg.setVtx2(self._vtx2)
         self._scene.addItem(self._seg)
-        self._scene._graph.add_edge(
-            self._vtx1, self._vtx2, segment=self._seg)
+        self._scene.netlist.addSegment(self._vtx1, self._vtx2, self._seg)
         self._vtx1.onConnectionChange()
         self._vtx2.onConnectionChange()
 
     def undo(self : Self) -> None:
-        self._scene._graph.remove_edge(self._vtx1, self._vtx2)
+        self._scene.netlist.removeSegment(self._vtx1, self._vtx2)
         self._vtx1.onConnectionChange()
         self._vtx2.onConnectionChange()
         self._seg.setVtx1(None)
@@ -113,7 +120,7 @@ class CmdAddSegment(CmdSceneBase):
         return self._seg
 
 
-class CmdRemoveSegment(CmdSceneBase):
+class CmdRemoveSegment(CmdDiagramSceneBase):
     """
     Remove a specified segment from the scene.
     Updates both graphics and graph.
@@ -137,7 +144,7 @@ class CmdRemoveSegment(CmdSceneBase):
         self._seg = seg
 
     def redo(self : Self) -> None:
-        self._scene._graph.remove_edge(self._vtx1, self._vtx2)
+        self._scene.netlist.removeSegment(self._vtx1, self._vtx2)
         self._vtx1.onConnectionChange()
         self._vtx2.onConnectionChange()
         self._seg.setVtx1(None)
@@ -148,12 +155,12 @@ class CmdRemoveSegment(CmdSceneBase):
         self._seg.setVtx1(self._vtx1)
         self._seg.setVtx2(self._vtx2)
         self._scene.addItem(self._seg)
-        self._scene._graph.add_edge(self._vtx1, self._vtx2, segment=self._seg)
+        self._scene.netlist.addSegment(self._vtx1, self._vtx2, self._seg)
         self._vtx1.onConnectionChange()
         self._vtx2.onConnectionChange()
 
 
-class CmdSplitSegment(CmdSceneBase):
+class CmdSplitSegment(CmdDiagramSceneBase):
     """Split a segment at a vertex. Updates both graphics and graph."""
 
     # instance attributes
@@ -178,9 +185,9 @@ class CmdSplitSegment(CmdSceneBase):
 
     def redo(self : Self) -> None:
         # graph: remove original edge, add two new edges
-        self._scene._graph.remove_edge(self._vtx1, self._vtx2)
-        self._scene._graph.add_edge(self._vtx1, self._vtx, segment=self._seg1)
-        self._scene._graph.add_edge(self._vtx, self._vtx2, segment=self._seg2)
+        self._scene.netlist.removeSegment(self._vtx1, self._vtx2)
+        self._scene.netlist.addSegment(self._vtx1, self._vtx, self._seg1)
+        self._scene.netlist.addSegment(self._vtx, self._vtx2, self._seg2)
         # graphics: shorten seg1, create seg2
         self._seg2.setVtx1(self._vtx)
         self._seg2.setVtx2(self._vtx2)
@@ -192,9 +199,9 @@ class CmdSplitSegment(CmdSceneBase):
 
     def undo(self : Self) -> None:
         # graph: remove two edges, restore original edge
-        self._scene._graph.remove_edge(self._vtx1, self._vtx)
-        self._scene._graph.remove_edge(self._vtx, self._vtx2)
-        self._scene._graph.add_edge(self._vtx1, self._vtx2, segment=self._seg1)
+        self._scene.netlist.removeSegment(self._vtx1, self._vtx)
+        self._scene.netlist.removeSegment(self._vtx, self._vtx2)
+        self._scene.netlist.addSegment(self._vtx1, self._vtx2, self._seg1)
         # graphics: restore seg1, remove seg2
         self._seg1.setVtx2(self._vtx2)
         self._seg2.setVtx1(None)
@@ -205,7 +212,7 @@ class CmdSplitSegment(CmdSceneBase):
         self._vtx2.onConnectionChange()
 
 
-class CmdUnsplitSegment(CmdSceneBase):
+class CmdUnsplitSegment(CmdDiagramSceneBase):
     """
     Unsplit a segment at a specified vertex. Updates both graphics and
     graph. Assumption: vertex has exactly 2 graph edges.
@@ -233,11 +240,10 @@ class CmdUnsplitSegment(CmdSceneBase):
 
     def redo(self : Self) -> None:
         # graph: remove two edges and node, add merged edge
-        self._scene._graph.remove_edge(self._far1, self._vtx)
-        self._scene._graph.remove_edge(self._vtx, self._far2)
-        self._scene._graph.remove_node(self._vtx)
-        self._scene._graph.add_edge(
-            self._far1, self._far2, segment=self._seg1)
+        self._scene.netlist.removeSegment(self._far1, self._vtx)
+        self._scene.netlist.removeSegment(self._vtx, self._far2)
+        self._scene.netlist.removeVertex(self._vtx)
+        self._scene.netlist.addSegment(self._far1, self._far2, self._seg1)
         # graphics: extend seg1 to span far1--far2, remove seg2
         self._seg1.changeVtx(self._vtx, self._far2)
         self._seg2.setVtx1(None)
@@ -248,12 +254,10 @@ class CmdUnsplitSegment(CmdSceneBase):
 
     def undo(self : Self) -> None:
         # graph: remove merged edge, restore node and two edges
-        self._scene._graph.remove_edge(self._far1, self._far2)
-        self._scene._graph.add_node(self._vtx)
-        self._scene._graph.add_edge(
-            self._far1, self._vtx, segment=self._seg1)
-        self._scene._graph.add_edge(
-            self._vtx, self._far2, segment=self._seg2)
+        self._scene.netlist.removeSegment(self._far1, self._far2)
+        self._scene.netlist.addVertex(self._vtx)
+        self._scene.netlist.addSegment(self._far1, self._vtx, self._seg1)
+        self._scene.netlist.addSegment(self._vtx, self._far2, self._seg2)
         # graphics: shorten seg1 back, restore seg2
         self._seg1.changeVtx(self._far2, self._vtx)
         self._seg2.setVtx1(self._vtx)
