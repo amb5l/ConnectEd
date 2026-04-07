@@ -6,22 +6,21 @@ from PyQt6.QtGui  import QPainterPath, QPainterPathStroker
 from ....items.vertex  import VertexItem
 from ....items.segment import SegmentItem
 
-from ..cmd      import cmdExec
-from ..cmd.conn import CmdAddVertex,      \
-                       CmdAddSegment,      \
-                       CmdSplitSegment,    \
-                       CmdUnsplitSegment
+from ...drawing.cmd import cmdExec
+
+from ..cmd.conn import CmdAddVertex, CmdAddSegment, \
+                       CmdSplitSegment, CmdUnsplitSegment
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from .. import DrawingScene
+    from .. import DiagramScene
 
 
-class DrawingSceneApiConnMixin:
+class DiagramSceneApiConnMixin:
     """Connectivity API."""
 
     def addVertex(
-        self     : "DrawingScene",
+        self     : "DiagramScene",
         pos      : QPointF,
         undoable : bool = False
     ) -> VertexItem:
@@ -43,7 +42,7 @@ class DrawingSceneApiConnMixin:
         return vtx
 
     def getVertex(
-        self     : "DrawingScene",
+        self     : "DiagramScene",
         pos      : QPointF,         # scene coordinates
         undoable : bool = False
     ) -> VertexItem:
@@ -54,7 +53,7 @@ class DrawingSceneApiConnMixin:
                 return item
         return self.addVertex(pos, undoable)
 
-    def isRedundantVertex(self : "DrawingScene", vtx : VertexItem) -> bool:
+    def isRedundantVertex(self : "DiagramScene", vtx : VertexItem) -> bool:
         """
         Vertex is redundant if
         - it is parentless (not an entry)
@@ -75,7 +74,7 @@ class DrawingSceneApiConnMixin:
         return isclose(dot_product, 1.0, abs_tol=1e-6)
 
     def addSegment(
-        self     : "DrawingScene",
+        self     : "DiagramScene",
         p1       : QPointF,
         p2       : QPointF,
         undoable : bool = False

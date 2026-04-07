@@ -182,48 +182,6 @@ class DrawingViewStateEditQuery(DrawingViewStateBase):
         self.view.editQuery()
 
 
-class DrawingViewStateEditPort(DrawingViewStateBase):
-    STATUS = "Edit Port: specify changes"
-
-    def entry(
-        self : Self,
-        v    : QPoint,
-        s    : QPointF,
-        i    : list[ItemMixin] | None = None
-    ) -> None:
-        item = i[0] if i else self.view._selectedItem(PortItem)
-        if item:
-            dialog = PortPinItemDialog("Port", item, self.view)
-            if dialog.exec():
-                name = dialog.getName()
-                direction = dialog.getDirection()
-                self.scene.editPortPin(item, name, direction, undoable=True)
-        else:
-            logger().warning("No port selected")
-        self.view.state.go(self.view.stateIdle)
-
-
-class DrawingViewStateEditBlockPin(DrawingViewStateBase):
-    STATUS = "Edit Block Pin: specify changes"
-
-    def entry(
-        self : Self,
-        v    : QPoint,
-        s    : QPointF,
-        i    : list[ItemMixin] | None = None
-    ) -> None:
-        item = i[0] if i else self.view._selectedItem(BlockPinItem)
-        if item and isinstance(item, BlockPinItem):
-            dialog = PortPinItemDialog("Block Pin", item, self.view)
-            if dialog.exec():
-                name = dialog.getName()
-                direction = dialog.getDirection()
-                self.scene.editPortPin(item, name, direction, undoable=True)
-        else:
-            logger().warning("No block pin selected")
-        self.view.state.go(self.view.stateIdle)
-
-
 class DrawingViewStateEditText(DrawingViewStateBase):
     def entry(
         self : Self,

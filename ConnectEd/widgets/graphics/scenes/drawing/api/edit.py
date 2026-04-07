@@ -1,28 +1,22 @@
-from PyQt6.QtCore import Qt, QPointF
-from PyQt6.QtGui  import QColor
+from PyQt6.QtCore import QPointF
 
 from ......app import logger
-
 from ......core.check import checked
 from ......core.types import NoChange, NO_CHANGE, \
-                             AlignH, AlignV, EdgeLoc, Direction, RectHandleId, \
+                             AlignH, AlignV, Direction, RectHandleId, \
                              Color, PenWidth, PenStyle, BrushStyle, \
                              FontFamily, FontSize, FontBool
 from ......core.xml    import copy
 
 from ....items import ItemType
 
-from ....items.block         import BlockItem
 from ....items.port_pin      import PortPinMixin
-from ....items.block_pin     import BlockPinItem
 from ....items.symbol_pin    import SymbolPinItem
 from ....items.polyline      import PolylineItem, PolySegItem
 from ....items.text          import TextItem
 from ....items.mixin         import ItemMixin
 
 from ..cmd import cmdExec, CmdDelete, CmdMove, CmdRotateCW, CmdRotateCCW
-
-from ..cmd.block_pin import CmdMoveBlockPins
 
 from ..cmd.edit.pin           import CmdEditPortPin, \
                                      CmdEditSymbolPinDot, CmdEditSymbolPinClock
@@ -51,17 +45,6 @@ class DrawingSceneApiEditMixin:
         undoable : bool = False
     ) -> None:
         cmd = CmdMove(self, items, offset, slide)
-        cmdExec(self, cmd, undoable)
-
-    def editMoveBlockPins(
-        self     : "DrawingScene",
-        parent   : BlockItem,
-        pins     : list[BlockPinItem],
-        after    : dict[BlockPinItem, EdgeLoc],
-        before   : dict[BlockPinItem, EdgeLoc],
-        undoable : bool = False
-    ) -> None:
-        cmd = CmdMoveBlockPins(parent, pins, after, before)
         cmdExec(self, cmd, undoable)
 
     def editRotateCW(
@@ -127,7 +110,7 @@ class DrawingSceneApiEditMixin:
         else:
             logger().warning("No items selected to delete")
 
-    def editPortPin(
+    def xxxeditPortPin(
         self      : "DrawingScene",
         item      : PortPinMixin,
         name      : str,

@@ -15,7 +15,7 @@ from .mixin.change import ItemChangeMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from ..scenes.drawing import DrawingScene
+    from ..scenes.diagram import DiagramScene
     from .segment  import SegmentItem
     from .port_pin import PortPinMixin
 
@@ -48,11 +48,11 @@ class VertexItem(
         self._state = self.State.UNCONNECTED
         self.initItem()
 
-    def onSceneChange(self : Self, scene : "DrawingScene | None") -> None:
+    def onSceneChange(self : Self, scene : "DiagramScene | None") -> None:
         if scene is not None:
             self.onSettingsChange(scene)
 
-    def onSettingsChange(self : Self, scene : "DrawingScene | None" = None) -> None:
+    def onSettingsChange(self : Self, scene : "DiagramScene | None" = None) -> None:
         if scene is None:
             if (scene := self.scene()) is None:
                 return
@@ -67,7 +67,7 @@ class VertexItem(
         for segment in self.segments():
             segment.onGeometryChange()
 
-    def onConnectionChange(self : Self, scene : "DrawingScene | None" = None) -> None:
+    def onConnectionChange(self : Self, scene : "DiagramScene | None" = None) -> None:
         if scene is None:
             if (scene := self.scene()) is None:
                 return
@@ -79,13 +79,13 @@ class VertexItem(
         self.onSettingsChange(scene)
 
     def degree(self : Self) -> int:
-        scene : "DrawingScene | None" = self.scene()
+        scene : "DiagramScene | None" = self.scene()
         if scene is None or self not in scene._graph:
             return 0
         return scene._graph.degree(self)
 
     def segments(self : Self) -> list["SegmentItem"]:
-        scene : "DrawingScene | None" = self.scene()
+        scene : "DiagramScene | None" = self.scene()
         if scene is None or self not in scene._graph:
             return []
         return [
@@ -132,7 +132,7 @@ class VertexItem(
 
     def _updatePath(
         self      : Self,
-        scene     : "DrawingScene | None" = None,
+        scene     : "DiagramScene | None" = None,
         item_name : str | None = None,
         state_str : str | None = None
     ) -> None:
@@ -164,7 +164,7 @@ class EntryItem(VertexItem):
     def fromXml(
         cls   : Self,
         xr    : QXmlStreamReader,
-        scene : "DrawingScene"
+        scene : "DiagramScene"
     ) -> Self | None:
         """
         Entries are created when pins/ports are deserialised,

@@ -5,11 +5,11 @@ from PyQt6.QtCore import QPointF
 from ....items.vertex  import VertexItem
 from ....items.segment import SegmentItem
 
-from . import CmdSceneBase
+from ...drawing.cmd import CmdSceneBase
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from .. import DrawingScene
+    from .. import DiagramScene
 
 
 class CmdAddVertex(CmdSceneBase):
@@ -24,7 +24,7 @@ class CmdAddVertex(CmdSceneBase):
 
     def __init__(
         self  : Self,
-        scene : "DrawingScene",
+        scene : "DiagramScene",
         pos   : QPointF
     ) -> None:
         super().__init__(scene)
@@ -54,7 +54,7 @@ class CmdRemoveVertex(CmdSceneBase):
 
     def __init__(
         self  : Self,
-        scene : "DrawingScene",
+        scene : "DiagramScene",
         vtx   : VertexItem
     ) -> None:
         super().__init__(scene)
@@ -83,7 +83,7 @@ class CmdAddSegment(CmdSceneBase):
 
     def __init__(
         self  : Self,
-        scene : "DrawingScene",
+        scene : "DiagramScene",
         vtx1  : VertexItem,
         vtx2  : VertexItem
     ) -> None:
@@ -128,7 +128,7 @@ class CmdRemoveSegment(CmdSceneBase):
 
     def __init__(
         self  : Self,
-        scene : "DrawingScene",
+        scene : "DiagramScene",
         seg   : SegmentItem
     ) -> None:
         super().__init__(scene)
@@ -165,7 +165,7 @@ class CmdSplitSegment(CmdSceneBase):
 
     def __init__(
         self  : Self,
-        scene : "DrawingScene",
+        scene : "DiagramScene",
         seg   : SegmentItem,
         vtx   : VertexItem
     ) -> None:
@@ -220,7 +220,7 @@ class CmdUnsplitSegment(CmdSceneBase):
 
     def __init__(
         self  : Self,
-        scene : "DrawingScene",
+        scene : "DiagramScene",
         vtx   : VertexItem
     ) -> None:
         super().__init__(scene)

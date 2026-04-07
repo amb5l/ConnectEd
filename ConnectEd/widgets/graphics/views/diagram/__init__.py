@@ -2,14 +2,16 @@ from typing import Self
 
 from PyQt6.QtCore import QEvent
 
-from .drawing import DrawingView, DrawingSubWindow
+from ..drawing import DrawingView, DrawingSubWindow
+
+from .state import DiagramViewStateMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from ..scenes.diagram import DiagramScene
+    from ...scenes.diagram import DiagramScene
 
 
-class DiagramView(DrawingView):
+class DiagramView(DiagramViewStateMixin, DrawingView):
     def viewZoomSheet(self : Self) -> None:
         scene : "DiagramScene | None" = self.scene()
         if scene is None:
