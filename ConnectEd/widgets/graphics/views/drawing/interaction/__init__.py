@@ -2,11 +2,10 @@ from typing import Self, Any
 
 from PyQt6.QtCore    import QPointF
 from PyQt6.QtWidgets import QMenu
-from PyQt6.QtGui     import QAction
+from PyQt6.QtGui     import QAction, QUndoStack, QUndoCommand
 
 from ....items import ItemType
 
-from ....items.grip       import GripItem
 from ....items.block      import BlockItem
 from ....items.block_pin  import BlockPinItem
 
@@ -133,14 +132,45 @@ class RotateItemMixin:
         ]
 
 
-class MoveItemsMixin:
+class PreviewStateMixin:
+    """Mixin for interactions that need to save/restore pre-preview state."""
+
+    # instance attributes
+    _preview_state : dict[Any, Any]
+
+    def _previewTargets(self : Self) -> list[Any]:
+        raise NotImplementedError("Subclass must define preview targets")
+
+    def _previewSaveTarget(self : Self, target : Any) -> Any:
+        raise NotImplementedError("Subclass must define target state save")
+
+    def _previewRestoreTarget(self : Self, target : Any, state : Any) -> None:
+        raise NotImplementedError("Subclass must define target state restore")
+
+    def _previewDidRestore(self : Self) -> None:
+        """Hook for interactions that need post-restore cleanup."""
+
+    def _previewSave(self : Self) -> None:
+        self._preview_state = {
+            target: self._previewSaveTarget(target)
+            for target in self._previewTargets()
+        }
+
+    def _previewRestore(self : Self) -> None:
+        if not hasattr(self, "_preview_state"):
+            return
+        for target, state in self._preview_state.items():
+            self._previewRestoreTarget(target, state)
+        self._previewDidRestore()
+
+
+class MoveItemsMixin(PreviewStateMixin):
     """Mixin for interactions that move items."""
 
     # instance attributes
     _items : list[ItemType]
-    _ipos  : QPointF              # initial position
-    _cpos  : QPointF              # current position
-    _state : dict[ItemType, Any]  # pre-move states e.g. scene positions
+    _ipos  : QPointF  # initial position
+    _cpos  : QPointF  # current position
 
     def update(self : Self, pos : QPointF):
         self._moveBy(pos - self._cpos)
@@ -150,12 +180,16 @@ class MoveItemsMixin:
         for e in self._items:
             e.moveBy(offset)
 
-    def _moveSave(self : Self) -> None:
-        self._state = {i: i.moveSave() for i in self._items}
+    def _previewTargets(self : Self) -> list[ItemType]:
+        return self._items
 
-    def _moveRestore(self : Self) -> None:
-        for i, state in self._state.items():
-            i.moveRestore(state)
+    def _previewSaveTarget(self : Self, target : ItemType) -> Any:
+        return target.moveSave()
+
+    def _previewRestoreTarget(self : Self, target : ItemType, state  : Any) -> None:
+        target.moveRestore(state)
+
+    def _previewDidRestore(self : Self) -> None:
         self._cpos = self._ipos
 
 
@@ -181,3 +215,16 @@ class AddRemoveItemsMixin:
         for item in self._items:
             if item.scene() == self._scene:
                 self._scene.removeItem(item)
+
+
+class PreviewJournalMixin:
+    """Mixin for interactions that need a preview journal (local undo stack)."""
+
+    # instance attributes
+    _preview_journal : QUndoStack
+
+    def _previewDo(self : Self, cmd : QUndoCommand) -> None:
+        self._preview_journal.push(cmd)
+
+    def _previewUndo(self : Self) -> None:
+        self._preview_journal.undo()

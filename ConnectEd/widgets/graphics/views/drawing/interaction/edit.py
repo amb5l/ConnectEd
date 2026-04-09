@@ -14,6 +14,7 @@ from ....items.block_pin import BlockPinItem
 from ....items.polyline  import PolylineItem, PolySegItem
 
 from . import MoveItemsMixin,      \
+              PreviewStateMixin,   \
               AddRemoveItemsMixin, \
               ItemsInteraction,    \
               Interaction,         \
@@ -25,7 +26,7 @@ if TYPE_CHECKING:
 
 
 class EditPasteInteraction(
-    MoveItemsMixin,       # update, _moveBy, _moveSave, _moveRestore
+    MoveItemsMixin,       # update, _moveBy, _previewSave, _previewRestore
     AddRemoveItemsMixin,  # _addToScene, _removeFromScene
     ItemsInteraction      # _view, _scene, _items, valid
 ):
@@ -39,14 +40,14 @@ class EditPasteInteraction(
             super().__init__(view, items)
             self._cpos = self._ipos = copy_pos or pos
             self._items = items
-            self._moveSave()
+            self._previewSave()
             self._addToScene(select=True)
             self.update(pos)  # Move to initial position
         else:
             self._items = None
 
     def commit(self : Self, pos : QPointF) -> bool:
-        self._moveRestore()  # restore initial positions
+        self._previewRestore()  # restore initial positions
         self.update(pos)     # apply final offset
         # add pasted items to scene
         self._scene.addItems(self._items, undoable=True)
@@ -69,14 +70,14 @@ class EditDuplicateInteraction(EditPasteInteraction):
         if clone_items:
             ItemsInteraction.__init__(self, view, clone_items)
             self._cpos = self._ipos = pos
-            self._moveSave()
+            self._previewSave()
             self._addToScene(select=True)
         else:
             self._items = None
 
 
 class EditMoveInteraction(
-    MoveItemsMixin,    # update, _moveBy, _moveSave, _moveRestore
+    MoveItemsMixin,    # update, _moveBy, _previewSave, _previewRestore
     ItemsInteraction,  # _view, _scene, _items, valid
 ):
     # instance attributes
@@ -107,23 +108,22 @@ class EditMoveInteraction(
         super().__init__(view, orphan_items)
         self._cpos  = self._ipos = pos
         self._slide = slide
-        self._moveSave()  # record initial positions
+        self._previewSave()  # record initial positions
 
     def commit(self : Self, pos : QPointF) -> bool:
-        self._moveRestore()  # restore initial positions
+        self._previewRestore()  # restore initial positions
         # apply final offset
         self._scene.editMove(self._items, pos - self._ipos, self._slide, undoable=True)
         return True
 
     def cancel(self : Self) -> None:
-        self._moveRestore()  # restore initial positions
+        self._previewRestore()  # restore initial positions
 
 
-class EditMoveBlockPinsInteraction(Interaction):
+class EditMoveBlockPinsInteraction(PreviewStateMixin, Interaction):
     # instance attributes
     _parent : BlockItem
-    _pins   : list[BlockPinItem]           # first item is primary pin
-    _sloc   : dict[ItemType, EdgeLoc]  # stored locations of all pins
+    _pins   : list[BlockPinItem]  # first item is primary pin
 
     def __init__(
         self   : Self,
@@ -134,7 +134,7 @@ class EditMoveBlockPinsInteraction(Interaction):
         super().__init__(view)
         self._parent = parent
         self._pins = pins
-        self._storeLoc()
+        self._previewSave()
 
     def valid(self : Self) -> bool:
         return \
@@ -156,35 +156,41 @@ class EditMoveBlockPinsInteraction(Interaction):
             pin.setLoc(self._parent.locOffset(pin.loc(), offset, corner))
 
     def commit(self : Self, pos : QPointF, snap : QPointF | None = None) -> bool:
-        self._restoreLoc()
+        self._previewRestore()
         self.update(pos, snap)
-        if all(p.loc() == self._sloc[p] for p in self._pins):
+        if all(p.loc() == self._preview_state[p] for p in self._pins):
             return True # no change so skip command push
         self._scene.editMoveBlockPins(
             self._parent,
             self._pins,
             {p: p.loc() for p in self._pins},
-            self._sloc,
+            {p: self._preview_state[p] for p in self._pins},
             undoable=True
         )
         return True
 
     def cancel(self : Self) -> None:
-        self._restoreLoc()
+        self._previewRestore()
 
-    def _storeLoc(self : Self) -> None:
-        self._sloc = {p: p.loc() for p in self._pins}
+    def _previewTargets(self : Self) -> list[BlockPinItem]:
+        return self._pins
 
-    def _restoreLoc(self : Self) -> None:
-        for p in self._pins:
-            p.setLoc(self._sloc[p])
+    def _previewSaveTarget(self : Self, target : BlockPinItem) -> EdgeLoc:
+        return target.loc()
 
 
-class EditAdjustPolySegInteraction(Interaction):
+    def _previewRestoreTarget(
+        self   : Self,
+        target : BlockPinItem,
+        state  : EdgeLoc
+    ) -> None:
+        target.setLoc(state)
+
+
+class EditAdjustPolySegInteraction(PreviewStateMixin, Interaction):
     # instance attributes
     _polyline : PolylineItem           # parent polyline
     _seg      : PolySegItem            # target segment
-    _before   : float | None       # initial sweep angle
     _guide1   : QGraphicsLineItem  # inline guide
     _guide2   : QGraphicsLineItem  # perpendicular guide
 
@@ -198,7 +204,7 @@ class EditAdjustPolySegInteraction(Interaction):
         super().__init__(view)
         self._polyline = polyline
         self._seg = seg
-        self._before = seg.sweep()
+        self._previewSave()
         self._showGuides()
         self.update(pos)
 
@@ -245,7 +251,7 @@ class EditAdjustPolySegInteraction(Interaction):
         self.update(pos)
         new_sweep = self._seg.sweep()
         # Restore original value before creating undo command
-        self._seg.setSweep(self._before)
+        self._previewRestore()
         # Now create command with before/after values
         self._scene.editPolySeg(self._seg, new_sweep, undoable=True)
         self._hideGuides()
@@ -255,9 +261,24 @@ class EditAdjustPolySegInteraction(Interaction):
         self.commit(pos)
 
     def cancel(self : Self) -> None:
-        self._seg.setSweep(self._before)
-        self._polyline.updatePath()
+        self._previewRestore()
         self._hideGuides()
+
+    def _previewTargets(self : Self) -> list[PolySegItem]:
+        return [self._seg]
+
+    def _previewSaveTarget(self : Self, target : PolySegItem) -> float | None:
+        return target.sweep()
+
+    def _previewRestoreTarget(
+        self   : Self,
+        target : PolySegItem,
+        state  : float | None
+    ) -> None:
+        target.setSweep(state)
+
+    def _previewDidRestore(self : Self) -> None:
+        self._polyline.updatePath()
 
     def _showGuides(self : Self) -> None:
         # inline fixed
