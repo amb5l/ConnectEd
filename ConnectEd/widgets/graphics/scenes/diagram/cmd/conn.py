@@ -8,6 +8,8 @@ from ....items.segment import SegmentItem
 
 from ...drawing.cmd import CmdSceneBase
 
+from ..netlist import Net
+
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from .. import DiagramScene
@@ -266,4 +268,30 @@ class CmdUnsplitSegment(CmdDiagramSceneBase):
         self._scene.addItem(self._seg2)
         self._far1.onConnectionChange()
         self._far2.onConnectionChange()
-        self._vtx.onConnectionChange()
+        self._node.onConnectionChange()
+
+
+class CmdSplitNet(CmdDiagramSceneBase):
+    """
+    Split a net at the specified vertex pair.
+    Assumption: the vertices are part of the same net.
+    """
+
+    # instance attributes
+    _node1 : NodeItem
+    _node2 : NodeItem
+    _net1  : Net | None  # post-split net on node 1 (or None if no net)
+    _net2  : Net | None  # post-split net on node 2 (or None if no net)
+
+    def __init__(
+        self  : Self,
+        scene : "DiagramScene",
+        node1 : NodeItem,
+        node2 : NodeItem
+    ) -> None:
+        super().__init__(scene)
+        self._node1 = node1
+        self._node2 = node2
+
+    def redo(self : Self) -> None:
+        self._scene.netlist.removeSegment(self._node1, self._node2)

@@ -101,7 +101,10 @@ class DrawingSceneApiEditMixin:
         items    : list[ItemType] | None = None,
         undoable : bool = False
     ) -> None:
-        """Delete selected items from the scene."""
+        """
+        Delete selected items from the scene.
+        TODO: make property texts invisible, otherwise skip items with parents.
+        """
         if items is None:
             items = self._selectedTopItems()
         if items:

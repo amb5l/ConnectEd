@@ -1,5 +1,3 @@
-import networkx
-
 from typing import Self
 from dataclasses import dataclass
 
@@ -158,30 +156,8 @@ class DiagramScene(
                     item.toXml(xw)
                 else:
                     logger().warning(f"Unexpected item: {item.type()}")
-        # entries, vertices and PropertyLabelItem instances
-        raw_nodes : list[VertexItem] = list(self.netlist.vertices())
-        entries : list[EntryItem] = [
-            node for node in raw_nodes \
-                if isinstance(node, EntryItem)
-        ]
-        vertices : list[VertexItem] = [
-            node for node in raw_nodes \
-                if isinstance(node, VertexItem) \
-                    and not isinstance(node, EntryItem)
-        ]
-        nodes = entries + vertices  # entries then vertices
-        for id, node in enumerate(raw_nodes):
-            node.toXml(xw, id)
-        # segments
-        for component in networkx.connected_components(self._graph):
-            subgraph = self._graph.subgraph(component)
-            pairs = [
-                f"{nodes.index(v1)},{nodes.index(v2)}"
-                     for v1, v2 in subgraph.edges()
-            ]
-            xw.writeStartElement("PhysicalNet")
-            xw.writeAttribute("Edges", " ".join(pairs))
-            xw.writeEndElement()
+        # netlist
+        self.netlist.toXml(xw)
         # done
         xw.writeEndElement()
 
@@ -198,7 +174,9 @@ class DiagramScene(
             if xr.tokenType() == QXmlStreamReader.TokenType.StartElement:
                 element_name = xr.name()
                 item_name = element_name + "Item"
-                if element_name in ["Entry", "Vertex"]:
+                if element_name == "Connectivity":
+                    scene.netlist.fromXml(xr)
+                elif element_name in ["Entry", "Vertex"]:
                     node_id = int(xr.attributes().value("ID"))
                     if element_name == "Entry":
                         node = EntryItem.fromXml(xr, scene)

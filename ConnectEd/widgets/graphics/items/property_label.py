@@ -41,6 +41,11 @@ class PropertyLabelItem(TextItem):
                 getter = lambda self: self.name(),
                 setter = lambda self, value: self.setName(value)
             ),
+            "Value" : InherentProperty(
+                kind   = DataKind.STR,
+                getter = lambda self: self.value(),
+                setter = lambda self, value: self.setValue(value)
+            ),
             "Visible" : InherentProperty(
                 kind   = DataKind.BOOL,
                 worthy = lambda self: not self.isVisible(),
@@ -54,6 +59,10 @@ class PropertyLabelItem(TextItem):
         TextItem._PROPERTIES_ALIGN | \
         TextItem._PROPERTIES_SIZE | \
         ItemQuillMixin._PROPERTIES_QUILL
+
+    # instance attributes
+    _name  : str
+    _value : str
 
     def __init__(
         self      : Self,
@@ -77,3 +86,49 @@ class PropertyLabelItem(TextItem):
         parent    : QGraphicsItem | None = None
     ) -> None:
         pass
+
+    def onSceneChange(self : Self, _scene : "DrawingScene | None") -> None:
+        self.onSettingsChange()
+
+    def onParentChange(self : Self, parent : QGraphicsItem | None) -> None:
+        if parent is not None:
+            self.onTextChange()
+            self.quillSettingsChange()
+
+    def onPositionChange(
+        self : Self,
+        pos  : QPointF | None = None
+    ) -> None:
+        ItemPosMixin.onPositionChange(self, pos)
+        if hasattr(self, "_tether"):
+            self._tether.onPositionChange(pos)
+
+    def onSelectionChange(self : Self, selected : bool) -> None:
+        if self._cleat is None or self._cleat == "":
+            return
+        cleat_valid = self._cleat is not None and self._cleat != ""
+        self._tether.setVisible(selected and cleat_valid)
+        self._tether.anchor().grip().setVisible(selected and cleat_valid)
+
+    def onSettingsChange(self : Self) -> None:
+        super().onSettingsChange()
+        if hasattr(self, "_tether"):
+            self._tether.onSettingsChange()
+
+    def onTextChange(self : Self) -> None:
+        text = val2str(self.value())
+        if text == "":
+            text = f"<{self._name}>"
+        super().setText(text)
+
+    def name(self : Self) -> str:
+        return self._name
+
+    def setName(self : Self, name : str) -> None:
+        self._name = name
+
+    def value(self : Self) -> str:
+        return self._value
+
+    def setValue(self : Self, value : str) -> None:
+        self._value = value
