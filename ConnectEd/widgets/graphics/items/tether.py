@@ -10,7 +10,7 @@ if TYPE_CHECKING:
     from .property_text  import PropertyTextItem
     from .property_label import PropertyLabelItem
     from .handle         import HandleItem
-    from .vertex         import VertexItem
+    from .node           import NodeItem
 
 
 class TextTetherItem(QGraphicsLineItem):
@@ -66,10 +66,10 @@ class PropertyTextTetherItem(TextTetherItem):
 
 class NetPropertyTextTetherItem(TextTetherItem):
     """
-    Tether line from the origin of a PropertyLabelItem to its parent vertex.
+    Tether line from the origin of a PropertyLabelItem to its parent node.
     """
 
     _text_item : "PropertyLabelItem"
 
-    def anchor(self : Self) -> "VertexItem | None":
+    def anchor(self : Self) -> "NodeItem | None":
         return self._text_item.parentItem()

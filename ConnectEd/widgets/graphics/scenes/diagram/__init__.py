@@ -13,7 +13,10 @@ from .....core.xml   import toXmlAttrs, fromXmlAttrs
 
 from ...properties import InherentProperty
 
-from ...items.vertex import VertexItem, EntryItem
+from ...items.node    import NodeItem
+from ...items.entry   import EntryItem
+from ...items.vertex  import VertexItem
+from ...items.segment import SegmentItem
 
 from ...items.mixin.xml import ItemXmlMixin
 
@@ -146,9 +149,10 @@ class DiagramScene(
         xw.writeStartElement(self.__class__.__name__.replace("Scene", ""))
         # properties
         toXmlAttrs(self, xw)
-        # items
-        # must be top level (unparented); exclude vertices and segments
+        # items: must be top level (unparented); exclude vertices and segments
         for item in self.items():
+            if isinstance(item, NodeItem | SegmentItem):
+                continue
             if item.parentItem() is None:
                 if isinstance(item, ItemXmlMixin):
                     item.toXml(xw)
@@ -184,7 +188,7 @@ class DiagramScene(
     @classmethod
     def fromXml(cls : Self, xr : QXmlStreamReader) -> Self:
         from ...items import _item_classes
-        nodes : list["VertexItem | None"] = []
+        nodes : list["NodeItem | None"] = []
         top_element_name = cls.__name__.replace("Scene", "")
         if xr.name() != top_element_name:
             raise ValueError(f"Expected {top_element_name} element, got {xr.name()}")

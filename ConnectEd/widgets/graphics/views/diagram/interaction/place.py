@@ -8,7 +8,7 @@ from ....items.gate       import GateItem
 from ....items.block      import BlockItem
 from ....items.block_pin  import BlockPinItem
 from ....items.segment    import SegmentItem, SegmentPreview1Item, SegmentPreview2Item
-from ....items.vertex     import VertexItem
+from ....items.node       import VertexItem
 
 from ...drawing.interaction import Interaction, RotateItemMixin
 

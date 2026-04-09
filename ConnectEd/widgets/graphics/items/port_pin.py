@@ -7,7 +7,7 @@ from ....core.types import Direction, DataKind
 
 from ..properties import InherentProperty, PropertiesMixin
 
-from .vertex import EntryItem
+from .entry import EntryItem
 
 from .mixin        import ItemMixin
 from .mixin.line   import ItemLineMixin

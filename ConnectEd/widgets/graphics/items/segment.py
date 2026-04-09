@@ -11,7 +11,7 @@ from .mixin.change import ItemChangeMixin
 from .mixin.clone  import ItemCloneMixin
 from .mixin.menu   import ItemMenuMixin
 
-from .vertex import VertexItem
+from .node import NodeItem
 
 
 class SegmentItem(
@@ -28,62 +28,62 @@ class SegmentItem(
     _PEN_CAP_STYLE = Qt.PenCapStyle.SquareCap
 
     # instance attributes
-    _vtx1 : VertexItem | None
-    _vtx2 : VertexItem | None
-    _line : QLineF
+    _node1 : NodeItem | None
+    _node2 : NodeItem | None
+    _line  : QLineF
 
     def __init__(
-        self : Self,
-        vtx1 : VertexItem | None = None,
-        vtx2 : VertexItem | None = None
+        self  : Self,
+        node1 : NodeItem | None = None,
+        node2 : NodeItem | None = None
     ) -> None:
         QGraphicsLineItem.__init__(self)
         self._line = QLineF()
         self.initItem()
-        self.setVtx1(vtx1)
-        self.setVtx2(vtx2)
+        self.setNode1(node1)
+        self.setNode2(node2)
 
     def onGeometryChange(self : Self) -> None:
         if not hasattr(self, "_vtx1") or not hasattr(self, "_vtx2"):
             return
-        v1 = self._vtx1
-        v2 = self._vtx2
+        v1 = self._node1
+        v2 = self._node2
         if v1 is None or v2 is None:
             return
-        p1 = v1.scenePos() if isinstance(v1, VertexItem) else v1
-        p2 = v2.scenePos() if isinstance(v2, VertexItem) else v2
+        p1 = v1.scenePos() if isinstance(v1, NodeItem) else v1
+        p2 = v2.scenePos() if isinstance(v2, NodeItem) else v2
         self.setPos(p1)
         self._line.setP2(p2-p1)
         self.setLine(self._line)
 
-    def vtx1(self : Self) -> VertexItem | None:
-        return self._vtx1
+    def node1(self : Self) -> NodeItem | None:
+        return self._node1
 
-    def setVtx1(self : Self, vtx : VertexItem | None) -> None:
-        self._vtx1 = vtx
+    def setNode1(self : Self, node1 : NodeItem | None) -> None:
+        self._node1 = node1
         self.onGeometryChange()
 
-    def vtx2(self : Self) -> VertexItem | None:
-        return self._vtx2
+    def node2(self : Self) -> NodeItem | None:
+        return self._node2
 
-    def setVtx2(self : Self, vtx : VertexItem | None) -> None:
-        self._vtx2 = vtx
+    def setNode2(self : Self, node2 : NodeItem | None) -> None:
+        self._node2 = node2
         self.onGeometryChange()
 
-    def changeVtx(self : Self, old : VertexItem, new : VertexItem) -> bool:
-        if self._vtx1 is old:
-            self.setVtx1(new)
+    def changeNode(self : Self, old : NodeItem, new : NodeItem) -> bool:
+        if self._node1 is old:
+            self.setNode1(new)
             return True
-        elif self._vtx2 is old:
-            self.setVtx2(new)
+        elif self._node2 is old:
+            self.setNode2(new)
             return True
         return False
 
-    def otherVtx(self : Self, vtx : VertexItem) -> VertexItem | None:
-        if self._vtx1 is vtx:
-            return self._vtx2
-        elif self._vtx2 is vtx:
-            return self._vtx1
+    def otherNode(self : Self, node : NodeItem) -> NodeItem | None:
+        if self._node1 is node:
+            return self._node2
+        elif self._node2 is node:
+            return self._node1
         return None
 
 
