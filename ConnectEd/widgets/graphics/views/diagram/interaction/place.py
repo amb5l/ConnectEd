@@ -8,8 +8,8 @@ from ....items.port      import PortItem
 from ....items.gate      import GateItem
 from ....items.block     import BlockItem
 from ....items.block_pin import BlockPinItem
+from ....items.node      import NodeItem
 from ....items.segment   import SegmentItem, SegmentPreview1Item, SegmentPreview2Item
-from ....items.vertex    import VertexItem
 
 from ...drawing.interaction import Interaction, RotateItemMixin
 
@@ -87,21 +87,22 @@ class PlaceConnInteraction(Interaction):
 
     def commit(self : Self, pos : QPointF, complete : bool = False) -> bool:
         self._updateVertices(pos)
-        # get terminals at end of first preview segment
+        # probe for terminals at both preview segment endpoints before changes
         terminals_1 = [
-            i for i in self._scene.items(self._p1()) if isinstance(i, VertexItem)
+            i for i in self._scene.items(self._p1()) \
+                if isinstance(i, SegmentItem | NodeItem)
+        ]
+        terminals_2 = [
+            i for i in self._scene.items(self._p2()) \
+                if isinstance(i, SegmentItem | NodeItem)
         ]
         # create first segment
         self._scene.addSegment(self._p0(), self._p1(), undoable=True)
-        # stop if terminal reached
+        # stop if terminal reached at end of first preview segment
         if terminals_1:
             self._cleanup()
             return True  # interaction completed
-        # get terminals at end of second preview segment
-        terminals_2 = [
-            i for i in self._scene.items(self._p2()) \
-                if isinstance(i, SegmentItem | VertexItem)
-        ]
+        # stop if complete or terminal reached at end of second preview segment
         if complete or terminals_2:
             self._scene.addSegment(self._p1(), self._p2(), undoable=True)
             self._cleanup()
