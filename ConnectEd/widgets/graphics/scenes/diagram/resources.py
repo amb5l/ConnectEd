@@ -2,7 +2,9 @@ from PyQt6.QtGui  import QPen, QBrush, QPainterPath
 
 from .....app import settings
 
-from ...items.base_pin import _PIN_SIZE
+from .....core.types import Direction
+
+from ...items.base_pin import _PIN_SIZE, _INT_ARROW_SIZE
 from ...items.port     import _PORT_SIZE
 
 from ..drawing.resources import DrawingSceneResourcesMixin, \
@@ -55,6 +57,7 @@ class DiagramSceneResourcesMixin(DrawingSceneResourcesMixin):
         _portInPath(self.resources["Port"]["in"])
         _portOutPath(self.resources["Port"]["out"])
         _portBiPath(self.resources["Port"]["bi"])
+        _blockPinArrowPaths(self.resources["BlockPinArrow"])
         for state in ["unconnected", "connected", "junction"]:
             self.resources["Vertex"][state]["pen"] = \
                 _getPen(f"Vertex/{state}")
@@ -104,3 +107,33 @@ def _blockPinPath(path : QPainterPath) -> None:
     path.clear()
     path.moveTo(-_PIN_SIZE, 0)
     path.lineTo(0, 0)
+
+def _blockPinArrowPaths(d : dict) -> None:
+    s = _INT_ARROW_SIZE
+    h = s / 2
+    # in
+    path = QPainterPath()
+    path.moveTo(0, -h)
+    path.lineTo(h, -h)
+    path.lineTo(s,  0)
+    path.lineTo(h, +h)
+    path.lineTo(0, +h)
+    path.closeSubpath()
+    d[Direction.IN.value] = path
+    # out
+    path = QPainterPath()
+    path.moveTo(s, -h)
+    path.lineTo(h, -h)
+    path.lineTo(0,  0)
+    path.lineTo(h, +h)
+    path.lineTo(s, +h)
+    path.closeSubpath()
+    d[Direction.OUT.value] = path
+    # bi
+    path = QPainterPath()
+    path.moveTo(0,  0)
+    path.lineTo(h, -h)
+    path.lineTo(s,  0)
+    path.lineTo(h, +h)
+    path.closeSubpath()
+    d[Direction.BI.value] = path
