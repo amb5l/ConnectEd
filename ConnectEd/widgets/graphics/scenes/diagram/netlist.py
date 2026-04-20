@@ -100,10 +100,10 @@ class Netlist:
         node2 : NodeItem,
         seg  : "SegmentItem"
     ) -> None:
-        net_id1 = self._node2net[node1]
-        net_id2 = self._node2net[node2]
-        net1 = self._nets[net_id1]
-        net2 = self._nets[net_id2]
+        net_id1 = self._node2net[node1] if node1 in self._node2net else None
+        net_id2 = self._node2net[node2] if node2 in self._node2net else None
+        net1 = self._nets[net_id1] if net_id1 is not None else None
+        net2 = self._nets[net_id2] if net_id2 is not None else None
         self._graph.add_edge(node1, node2, segment=seg)
         if net1 is None:
             if net2 is None:
@@ -173,16 +173,16 @@ class Netlist:
 
     def degree(self : Self, node : NodeItem) -> int:
         """Number of segments connected to the node."""
-        return self._graph.degree(vtx)
+        return self._graph.degree(node)
 
     def edges(self : Self, node : NodeItem) -> list["SegmentItem"]:
         """Edges connected to the node."""
-        iterator = self._graph.edges(vtx, data=True)
+        iterator = self._graph.edges(node, data=True)
         return [data["segment"] for _, _, data in iterator]
 
     def physicalNet(self : Self, node : NodeItem) -> set[NodeItem]:
         """Connected component containing the node."""
-        return set(networkx.node_connected_component(self._graph, vtx))
+        return set(networkx.node_connected_component(self._graph, node))
 
     def hasPath(self : Self, node1 : NodeItem, node2 : NodeItem) -> bool:
         return networkx.has_path(self._graph, node1, node2)
