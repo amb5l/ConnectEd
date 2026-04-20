@@ -9,15 +9,16 @@ from ....items.property_text import PropertyTextItem
 from ....items.grip     import GripItem, OriginGripItem, ResizeGripItem
 from ....items.polyline import PolySegItem, PolyVtxItem
 
-from ..interaction.edit  import EditMoveInteraction,          \
-                                EditMoveBlockPinsInteraction, \
-                                EditAdjustPolySegInteraction, \
-                                EditDuplicateInteraction
+from ...drawing.interaction.edit  import EditMoveInteraction,          \
+                                         EditAdjustPolySegInteraction, \
+                                         EditDuplicateInteraction
 
-from .base import qkm, DrawingViewStateBase
+from ...drawing.state.base import qkm, DrawingViewStateBase
+
+from ..interaction.edit import EditMoveBlockPinsInteraction
 
 
-class DrawingViewStateIdle(DrawingViewStateBase):
+class DiagramViewStateIdle(DrawingViewStateBase):
     STATUS = "Idle"
 
     def entry(

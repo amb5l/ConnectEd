@@ -1,5 +1,4 @@
 from .base  import DrawingViewStateBase
-from .idle  import DrawingViewStateIdle
 from .view  import DrawingViewStateViewPan1,              \
                    DrawingViewStateViewPan2,              \
                    DrawingViewStateViewZoomArea1,         \
@@ -37,7 +36,6 @@ if TYPE_CHECKING:
 
 class DrawingViewStateMixin:
     state                      : DrawingViewStateBase                   # noqa N815
-    stateIdle                  : DrawingViewStateIdle                   # noqa N815
     stateViewPan1              : DrawingViewStateViewPan1               # noqa N815
     stateViewPan2              : DrawingViewStateViewPan2               # noqa N815
     stateViewZoomArea1         : DrawingViewStateViewZoomArea1          # noqa N815
@@ -67,7 +65,6 @@ class DrawingViewStateMixin:
     statePlaceText             : DrawingViewStatePlaceText              # noqa N815
 
     def initStates(self : "DrawingView") -> None:
-        self.stateIdle                  = DrawingViewStateIdle                  (self)
         self.stateViewPan1              = DrawingViewStateViewPan1              (self)
         self.stateViewPan2              = DrawingViewStateViewPan2              (self)
         self.stateViewZoomArea1         = DrawingViewStateViewZoomArea1         (self)

@@ -3,12 +3,13 @@ from typing import Self
 from PyQt6.QtCore    import QPointF
 
 from ......core.utils import sign
-from ....items.port       import PortItem
-from ....items.gate       import GateItem
-from ....items.block      import BlockItem
-from ....items.block_pin  import BlockPinItem
-from ....items.segment    import SegmentItem, SegmentPreview1Item, SegmentPreview2Item
-from ....items.node       import VertexItem
+
+from ....items.port      import PortItem
+from ....items.gate      import GateItem
+from ....items.block     import BlockItem
+from ....items.block_pin import BlockPinItem
+from ....items.segment   import SegmentItem, SegmentPreview1Item, SegmentPreview2Item
+from ....items.vertex    import VertexItem
 
 from ...drawing.interaction import Interaction, RotateItemMixin
 

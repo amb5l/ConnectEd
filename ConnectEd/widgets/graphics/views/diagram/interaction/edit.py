@@ -7,29 +7,28 @@ from ......core.types import EdgeLoc
 from ....items.block     import BlockItem
 from ....items.block_pin import BlockPinItem
 
-from ...drawing.interaction import Interaction
+from ...drawing.interaction import PreviewStateMixin, Interaction
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from ...drawing import DrawingView
+    from ...diagram import DiagramView
 
 
-class EditMoveBlockPinsInteraction(Interaction):
+class EditMoveBlockPinsInteraction(PreviewStateMixin, Interaction):
     # instance attributes
     _parent : BlockItem
-    _pins   : list[BlockPinItem]           # first item is primary pin
-    _sloc   : dict[BlockPinItem, EdgeLoc]  # stored locations of all pins
+    _pins   : list[BlockPinItem]  # first item is primary pin
 
     def __init__(
         self   : Self,
-        view   : "DrawingView",
+        view   : "DiagramView",
         parent : BlockItem,
         pins   : list[BlockPinItem]
     ) -> None:
         super().__init__(view)
         self._parent = parent
         self._pins = pins
-        self._storeLoc()
+        self._previewSave()
 
     def valid(self : Self) -> bool:
         return \
@@ -51,25 +50,31 @@ class EditMoveBlockPinsInteraction(Interaction):
             pin.setLoc(self._parent.locOffset(pin.loc(), offset, corner))
 
     def commit(self : Self, pos : QPointF, snap : QPointF | None = None) -> bool:
-        self._restoreLoc()
+        self._previewRestore()
         self.update(pos, snap)
-        if all(p.loc() == self._sloc[p] for p in self._pins):
+        if all(p.loc() == self._preview_state[p] for p in self._pins):
             return True # no change so skip command push
         self._scene.editMoveBlockPins(
             self._parent,
             self._pins,
             {p: p.loc() for p in self._pins},
-            self._sloc,
+            {p: self._preview_state[p] for p in self._pins},
             undoable=True
         )
         return True
 
     def cancel(self : Self) -> None:
-        self._restoreLoc()
+        self._previewRestore()
 
-    def _storeLoc(self : Self) -> None:
-        self._sloc = {p: p.loc() for p in self._pins}
+    def _previewTargets(self : Self) -> list[BlockPinItem]:
+        return self._pins
 
-    def _restoreLoc(self : Self) -> None:
-        for p in self._pins:
-            p.setLoc(self._sloc[p])
+    def _previewSaveTarget(self : Self, target : BlockPinItem) -> EdgeLoc:
+        return target.loc()
+
+    def _previewRestoreTarget(
+        self   : Self,
+        target : BlockPinItem,
+        state  : EdgeLoc
+    ) -> None:
+        target.setLoc(state)

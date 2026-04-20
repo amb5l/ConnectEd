@@ -1,5 +1,7 @@
 from ...drawing.state import DrawingViewStateMixin
 
+from .idle  import DiagramViewStateIdle
+
 from .edit  import DiagramViewStateEditPort, \
                    DiagramViewStateEditBlockPin
 
@@ -29,6 +31,7 @@ class DiagramViewStateMixin(DrawingViewStateMixin):
 
     def initStates(self : "DiagramView") -> None:
         DrawingViewStateMixin.initStates(self)
+        self.stateIdle          = DiagramViewStateIdle          (self)
         self.stateEditPort      = DiagramViewStateEditPort      (self)
         self.stateEditBlockPin  = DiagramViewStateEditBlockPin  (self)
         self.statePlaceConn1    = DiagramViewStatePlaceConn1    (self)

@@ -7,15 +7,23 @@ from enum        import StrEnum
 
 from PyQt6.QtCore import QXmlStreamWriter, QXmlStreamReader
 
+from .....app import logger
+
+from .....core.expr import evaluate
+
 from ...items.node           import NodeItem
 from ...items.entry          import EntryItem
 from ...items.vertex         import VertexItem
 from ...items.port           import PortItem
+from ...items.block_pin      import BlockPinItem
+from ...items.symbol_pin     import SymbolPinItem
 from ...items.property_label import PropertyLabelItem
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from ...items.segment import SegmentItem
+    from ...scenes.diagram import DiagramScene
+    from ...items.segment  import SegmentItem
+
 
 class NetCategory(StrEnum):
     UNRESOLVED = "unresolved"
@@ -49,20 +57,15 @@ class Net:
         return self.children if self.isVector() else []
 
 
-shit
-two different nets exist
-they are labelled
-user changes a label => merges the nets
-
-detect conflicting ranges on bus name labels in the same physical net
-
 class Netlist:
-    _graph    : networkx.Graph
-    _nets     : dict[int, Net]                # net ID : net instance
+    _scene    : "DiagramScene"              # parent scene instance
+    _graph    : networkx.Graph              # physical nets
+    _nets     : dict[int, Net]              # net ID : net instance
     _node2net : dict[NodeItem, int | None]  # node instance : net ID
-    _id       : int                           # net ID counter
+    _id       : int                         # net ID counter
 
-    def __init__(self : Self) -> None:
+    def __init__(self : Self, scene : "DiagramScene") -> None:
+        self._scene = scene
         self._graph = networkx.Graph()
         self._nets = {}
         self._node2net = {}
@@ -266,42 +269,114 @@ class Netlist:
 
 
     def _resolveNet(self : Self, net : Net) -> None:
-        vertices = net.nodes
-        label_names = []
-        port_names = []
-        for vtx in vertices:
-            parent = vtx.parentItem()
-            if isinstance(vtx, EntryItem):  # entry
+        # gather resolved names (strip, expand range expressions, etc.)
+        label_names : list[tuple[str, str]] = []
+        port_names  : list[tuple[str, str]] = []
+        pin_names   : list[tuple[str, str]] = []
+        for node in net.nodes:
+            parent = node.parentItem()
+            if isinstance(node, EntryItem):  # entry
                 if isinstance(parent, PortItem):  # port entry
-                    port_names.append(parent.name())
-            elif isinstance(vtx, VertexItem):  # free vertex
-                for child in vtx.childItems():
+                    raw_name = parent.name()
+                    res_name = parent.resolvedName()
+                    if res_name is not None:
+                        port_names.append((raw_name,res_name))
+                elif isinstance(parent, BlockPinItem | SymbolPinItem):  # pin entry
+                    raw_name = parent.name()
+                    res_name = parent.resolvedName()
+                    if res_name is not None:
+                        pin_names.append((raw_name,res_name))
+            elif isinstance(node, VertexItem):  # free vertex
+                for child in node.childItems():
                     if isinstance(child, PropertyLabelItem): # label
                         if child.name() == "Name":  # name label
-                            label_names.append(child.value())
-        all_names = label_names + port_names
-        vector_names = []
-        member_names = []
-        scalar_names = []
-        category = NetCategory.UNRESOLVED
+                            raw_name = child.name()
+                            res_name = evaluate(
+                                child.value(), self._scene.parameters()
+                            )
+                            if res_name is not None:
+                                label_names.append((raw_name,res_name))
+        # separate names into categories: vectors, members and scalars
+        all_names = label_names + port_names + pin_names
+        vector_names : list[tuple[str, str]] = []
+        member_names : list[tuple[str, str]] = []
+        scalar_names : list[tuple[str, str]] = []
         name = None
-        for name in all_names:
-            if clean_name := self._cleanVectorName(name):
-                vector_names.append(clean_name)
-            elif clean_name := self._cleanMemberName(name):
-                member_names.append(clean_name)
-            elif clean_name := self._cleanScalarName(name):
-                scalar_names.append(clean_name)
+        for raw_name, res_name in all_names:
+            if ":" in res_name:
+                vector_names.append((raw_name, res_name))
+            elif "[" in res_name and res_name.endswith("]"):
+                member_names.append((raw_name, res_name))
+            else:
+                scalar_names.append((raw_name, res_name))
+        # determine category
+        if vector_names and not (member_names or scalar_names):
+            category = NetCategory.VECTOR
+            names = vector_names
+        elif member_names and not (vector_names or scalar_names):
+            category = NetCategory.MEMBER
+            names = member_names
+        elif scalar_names and not (vector_names or member_names):
+            category = NetCategory.SCALAR
+            names = scalar_names
+        else:
+            category = NetCategory.UNRESOLVED
+            return
+        # vector case
+        if category == NetCategory.VECTOR:
+            # determine range span
+            res_left_min = res_left_max = res_right_min = res_right_max = None
+            for raw_name, res_name in names:
+                raw_split = raw_name.split('[')
+                base = raw_split[0].strip()
+                raw_left, raw_right = raw_split[1].split(']')[0].split(':')
+                res_split = res_name.split('[')
+                res_left, res_right = res_split[1].split(']')[0].split(':')
+                res_left, res_right = int(res_left), int(res_right)
+                if res_left_min is None or res_left < res_left_min:
+                    res_left_min = res_left
+                    raw_left_min = raw_left
+                if res_left_max is None or res_left > res_left_max:
+                    res_left_max = res_left
+                    raw_left_max = raw_left
+                if res_right_min is None or res_right < res_right_min:
+                    res_right_min = res_right
+                    raw_right_min = raw_right
+                if res_right_max is None or res_right > res_right_max:
+                    res_right_max = res_right
+                    raw_right_max = raw_right
+            if res_left_min < res_right_min:
+                left, right = raw_left_min, raw_right_max
+            else:
+                left, right = raw_left_max, raw_right_min
+            res_name = f"{base}[{left}:{right}]"
+
+        # member case
+        if category == NetCategory.MEMBER:
+            # determine index
+            res_index = res_index_min = res_index_max = None
+            for raw_name, res_name in names:
+                raw_index = raw_name.split('[')[1].split(']')[0]
+                res_index = int(res_name.split('[')[1].split(']')[0])
+                if res_index_min is None or res_index < res_index_min:
+                    res_index_min = res_index
+
+
+
         if vector_names and not (member_names or scalar_names):
             # sort vector names from widest to narrowest range
             # don't bother if any alphas appear in the ranges
-            shit
-            resolved_name = vector_names[0]
+            res_left_min = res_left_max = res_right_min = res_right_max = None
+            for name in vector_names:
+                res_left, res_right = name.split('[')
+            res_name = vector_names[0]
         elif member_names and not (vector_names or scalar_names):
             shit look for inconsistent indices
-            resolved_name = member_names[0]
+            res_name = member_names[0]
         elif scalar_names and not (vector_names or member_names):
-            resolved_name = scalar_names[0]
+            res_name = scalar_names[0]
+        else:
+            raise ValueError("Cannot resolve net name")
 
 
         if len(label_names) > 0:
