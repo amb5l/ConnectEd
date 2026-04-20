@@ -99,7 +99,7 @@ class ItemRectHandlesMixin(ItemHandlesMixin[RectHandleId]):
             y = 1.0 if "Bottom" in name else 0.5 if "Middle" in name else 0.0
             self._handles[id].setPos(QPointF(x0 + (x * w), y0 + (y * h)))
         if hasattr(self, "origin"):
-            self.updateOrigin()
+            self.updateTransform()
 
     def moveHandleBy(
         self : Self | QGraphicsItem | RectItemProtocol,

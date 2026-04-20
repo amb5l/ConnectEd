@@ -112,8 +112,7 @@ class ItemTransformMixin:
     @checked
     def onMirrorChange(self : Self | PropertiesMixin) -> None:
         # rebuild local transform to include mirror scale
-        if hasattr(self, "updateOrigin"):
-            self.updateOrigin()
+        self.updateTransform()
         # process self scene mirror change
         if hasattr(self, "onSceneMirrorChange"):
             self.onSceneMirrorChange()
@@ -231,14 +230,20 @@ class ItemTransformMixin:
 
     @checked
     def setOrigin(
-        self : Self | QGraphicsItem | PropertiesMixin,
+        self : "Self | QGraphicsItem | ItemHandlesMixin | PropertiesMixin",
         id   : HandleId
     ) -> None:
         """Set origin handle and update transform origin accordingly."""
         # record origin name
         self._origin = id
-        # update origin
-        self.updateOrigin()
+        # rebuild local transform around the new origin handle
+        self.updateTransform()
+        # refresh grip appearance: OriginGripItem.pathNameSuffix depends on
+        # which handle is the origin, so every grip needs to recompute its
+        # rendered path
+        if hasattr(self, "_handles"):
+            for handle in self._handles.values():
+                handle.grip().onPathChange()
         # broadcast change
         self.signalPropertyChanges("Origin")
 
@@ -247,26 +252,36 @@ class ItemTransformMixin:
         return self.getHandle(self._origin)
 
     @checked
-    def updateOrigin(self : "Self | QGraphicsItem | ItemHandlesMixin") -> None:
-        """Set transform origin to origin handle position, applying any mirror."""
-        if not hasattr(self, "_ORIGIN"):
+    def updateTransform(self : "Self | QGraphicsItem | ItemHandlesMixin") -> None:
+        """
+        Rebuild the item's local transform so that rotation and mirroring
+        pivot around the same point:
+
+        - If the item declares an `_ORIGIN` handle, the pivot is that
+          handle's local position. The `setTransform` also shifts local
+          coords so the handle lands at the item's Qt `pos()`.
+        - Otherwise, the pivot is local (0, 0), matching Qt's default
+          `transformOriginPoint`. The shift collapses to a no-op, so
+          `setTransform` just carries the mirror scale.
+        """
+        # pick pivot: origin handle position (if any), else local (0, 0)
+        if getattr(self, "_ORIGIN", None) is not None \
+        and getattr(self, "_origin", None) is not None \
+        and hasattr(self, "_handles"):
+            pivot = self._handles[self._origin].pos()
+        elif hasattr(self, "_ORIGIN") and not hasattr(self, "_origin"):
+            # still initialising - setOrigin() will call us again
             return
-        if not hasattr(self, "_handles") \
-        or not hasattr(self, "_origin") \
-        or self._origin is None:
-            return  # initialising or has no named origin handle
-        # get origin handle position
-        origin_pos = self._handles[self._origin].pos()
-        # set transform origin = origin handle position (rotation pivot)
-        self.setTransformOriginPoint(origin_pos)
-        # mirror scales (reflect around origin handle in local coords)
+        else:
+            pivot = QPointF(0, 0)
+        # rotation / mirror pivot
+        self.setTransformOriginPoint(pivot)
+        # mirror scales, reflected around pivot in local coords
         sx = -1.0 if self.mirrorH() else 1.0
         sy = -1.0 if self.mirrorV() else 1.0
-        # T(p) = (sx*(p - O).x, sy*(p - O).y) => origin handle lands at Qt item pos
+        # T(p) = (sx*(p - pivot).x, sy*(p - pivot).y); translate is a no-op
+        # when pivot == (0, 0) - i.e. for origin-less items.
         transform = QTransform()
         transform.scale(sx, sy)
-        transform.translate(-origin_pos.x(), -origin_pos.y())
+        transform.translate(-pivot.x(), -pivot.y())
         self.setTransform(transform)
-        # update grip appearance
-        for handle in self._handles.values():
-            handle.grip().onPathChange()

@@ -34,8 +34,8 @@ class ItemMirrorMixin:
 
     def onMirrorChange(self : Self | PropertiesMixin) -> None:
         # rebuild local transform to include mirror scale
-        if hasattr(self, "updateOrigin"):
-            self.updateOrigin()
+        if hasattr(self, "updateTransform"):
+            self.updateTransform()
         # process self scene mirror change
         if hasattr(self, "onSceneMirrorChange"):
             self.onSceneMirrorChange()

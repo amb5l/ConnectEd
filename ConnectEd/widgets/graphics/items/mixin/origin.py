@@ -55,21 +55,27 @@ class ItemOriginMixin:
 
     @checked
     def setOrigin(
-        self : Self | QGraphicsItem | PropertiesMixin,
+        self : "Self | QGraphicsItem | ItemHandlesMixin | PropertiesMixin",
         id   : HandleId
     ) -> None:
         """Set origin handle and update transform origin accordingly."""
         # record origin name
         self._origin = id
-        # update origin
-        self.updateOrigin()
+        # rebuild local transform around the new origin handle
+        self.updateTransform()
+        # refresh grip appearance: OriginGripItem.pathNameSuffix depends on
+        # which handle is the origin, so every grip needs to recompute its
+        # rendered path
+        if hasattr(self, "_handles"):
+            for handle in self._handles.values():
+                handle.grip().onPathChange()
         # broadcast change
         self.signalPropertyChanges("Origin")
 
     def getOriginHandle(self : "Self | ItemHandlesMixin") -> "HandleItem":
         return self.getHandle(self._origin)
 
-    def updateOrigin(self : "Self | QGraphicsItem | ItemHandlesMixin") -> None:
+    def updateTransform(self : "Self | QGraphicsItem | ItemHandlesMixin") -> None:
         """Set transform origin to origin handle position, applying any mirror."""
         from .mirror import ItemMirrorMixin
         if not hasattr(self, "_handles") \
@@ -88,6 +94,3 @@ class ItemOriginMixin:
         transform.scale(sx, sy)
         transform.translate(-origin_pos.x(), -origin_pos.y())
         self.setTransform(transform)
-        # update grip appearance
-        for handle in self._handles.values():
-            handle.grip().onPathChange()
