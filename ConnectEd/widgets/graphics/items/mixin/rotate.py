@@ -1,6 +1,5 @@
 from typing import Self
 
-from PyQt6.QtCore    import QPointF
 from PyQt6.QtWidgets import QGraphicsItem
 
 from .....core.types import DataKind
@@ -22,14 +21,8 @@ class ItemRotateMixin:
     def initRotate(self : Self | QGraphicsItem) -> None:
         pass
 
-    def onPositionChange(
-        self : Self | QGraphicsItem | PropertiesMixin,
-        _pos : QPointF | None = None
-    ) -> None:
-        self.signalPropertyChanges("Rotate")
-
     def onRotationChange(self : Self | PropertiesMixin, angle : float) -> None:
-        # handle own rotation compensation
+        # process self scene rotation changes
         if hasattr(self, "onSceneRotationChange"):
             self.onSceneRotationChange()
         # propagate to children
