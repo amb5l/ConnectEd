@@ -41,6 +41,9 @@ T = TypeVar("T", bound="HandleId")
 
 class ItemHandlesMixin(ItemGripMixin, Generic[T]):
 
+    # instance attributes
+    _handles : dict[HandleId, "HandleItem"]
+
     @classmethod
     def handleIdType(cls) -> type[T]:
         raise NotImplementedError

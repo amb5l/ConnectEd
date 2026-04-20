@@ -30,19 +30,20 @@ class ItemMixin(ItemSettingsMixin, ItemMoveMixin):
 
     def initItem(self : Self | QGraphicsItem, fresh : bool = True) -> None:
         from ...properties import PropertiesMixin
-        from .origin  import ItemOriginMixin
-        from .handle  import ItemHandlesMixin
-        from .loc     import ItemLocMixin
-        from .pos     import ItemPosMixin
-        from .rotate  import ItemRotateMixin
-        from .mirror  import ItemMirrorMixin
-        from .change  import ItemChangeMixin
-        from .line    import ItemLineMixin
-        from .fill    import ItemFillMixin
-        from .quill   import ItemQuillMixin
-        from .outline import ItemOutlineMixin
-        from .bound   import ItemBoundMixin
-        from .shape   import ItemShapeMixin
+        from .origin    import ItemOriginMixin
+        from .handle    import ItemHandlesMixin
+        from .loc       import ItemLocMixin
+        from .transform import ItemTransformMixin
+        from .pos       import ItemPosMixin
+        from .rotate    import ItemRotateMixin
+        from .mirror    import ItemMirrorMixin
+        from .change    import ItemChangeMixin
+        from .line      import ItemLineMixin
+        from .fill      import ItemFillMixin
+        from .quill     import ItemQuillMixin
+        from .outline   import ItemOutlineMixin
+        from .bound     import ItemBoundMixin
+        from .shape     import ItemShapeMixin
         self.setZValue(self.Z)
         f = QGraphicsItem.GraphicsItemFlag
         self.setFlag( f.ItemIsSelectable              , True )
@@ -56,6 +57,8 @@ class ItemMixin(ItemSettingsMixin, ItemMoveMixin):
             self.initHandles()
         if isinstance(self, ItemLocMixin):
             self.initLoc()
+        if isinstance(self, ItemTransformMixin):
+            self.initTransform()
         if isinstance(self, ItemPosMixin):
             self.initPos()
         if isinstance(self, ItemRotateMixin):

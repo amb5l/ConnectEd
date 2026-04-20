@@ -1,7 +1,3 @@
-# unified text item (line or block text)
-# parent handles origin, position, rotation
-# child handles rotation compensation
-
 from typing      import Self, Any
 from dataclasses import dataclass
 
@@ -17,38 +13,35 @@ from ....core.types import Default, DEFAULT, NoChange, NO_CHANGE, \
                             AlignH, AlignV, RectHandleId, DataKind
 
 from ....resources.icons import AnchorTopLeftIcon,      \
-                                 AnchorTopCenterIcon,    \
-                                 AnchorTopRightIcon,     \
-                                 AnchorMiddleLeftIcon,   \
-                                 AnchorMiddleCenterIcon, \
-                                 AnchorMiddleRightIcon,  \
-                                 AnchorBottomLeftIcon,   \
-                                 AnchorBottomCenterIcon, \
-                                 AnchorBottomRightIcon,  \
-                                 TextAlignLeftIcon,      \
-                                 TextAlignCenterIcon,    \
-                                 TextAlignRightIcon,     \
-                                 TextAlignTopIcon,       \
-                                 TextAlignMiddleIcon,    \
-                                 TextAlignBottomIcon
+                                AnchorTopCenterIcon,    \
+                                AnchorTopRightIcon,     \
+                                AnchorMiddleLeftIcon,   \
+                                AnchorMiddleCenterIcon, \
+                                AnchorMiddleRightIcon,  \
+                                AnchorBottomLeftIcon,   \
+                                AnchorBottomCenterIcon, \
+                                AnchorBottomRightIcon,  \
+                                TextAlignLeftIcon,      \
+                                TextAlignCenterIcon,    \
+                                TextAlignRightIcon,     \
+                                TextAlignTopIcon,       \
+                                TextAlignMiddleIcon,    \
+                                TextAlignBottomIcon
 
 from ..properties import InherentProperty, PropertiesMixin
 
-from .mixin         import ItemMixin
-from .mixin.origin  import ItemOriginMixin
-from .mixin.pos     import ItemPosMixin
-from .mixin.rotate  import ItemRotateMixin
-from .mixin.mirror  import ItemMirrorMixin
-from .mixin.paint   import ItemPaintMixin
-from .mixin.handle  import ItemRectHandlesMixin
-from .mixin.quill   import ItemQuillMixin
-from .mixin.outline import ItemOutlineMixin
-from .mixin.bound   import ItemBoundMixin
-from .mixin.shape   import ItemShapeMixin
-from .mixin.change  import ItemChangeMixin
-from .mixin.clone   import ItemCloneMixin
-from .mixin.xml     import ItemXmlMixin
-from .mixin.menu    import ItemMenuMixin
+from .mixin           import ItemMixin
+from .mixin.transform import ItemTransformMixin
+from .mixin.handle    import ItemRectHandlesMixin
+from .mixin.paint     import ItemPaintMixin
+from .mixin.quill     import ItemQuillMixin
+from .mixin.outline   import ItemOutlineMixin
+from .mixin.bound     import ItemBoundMixin
+from .mixin.shape     import ItemShapeMixin
+from .mixin.change    import ItemChangeMixin
+from .mixin.clone     import ItemCloneMixin
+from .mixin.xml       import ItemXmlMixin
+from .mixin.menu      import ItemMenuMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -121,12 +114,9 @@ class TextChange:
 
 class TextItem(
     ItemMixin,
-    ItemOriginMixin,
-    ItemPosMixin,
-    ItemRotateMixin,
-    ItemMirrorMixin,
-    ItemPaintMixin,
+    ItemTransformMixin,
     ItemRectHandlesMixin,
+    ItemPaintMixin,
     ItemQuillMixin,
     ItemOutlineMixin,
     ItemBoundMixin,
@@ -193,12 +183,12 @@ class TextItem(
                 setter = lambda self, value: self.setAutoflip(value)
             )
         } | \
-        ItemPosMixin._PROPERTIES_POS | \
-        ItemRotateMixin._PROPERTIES_ROTATE | \
-        ItemMirrorMixin._PROPERTIES_MIRROR | \
-        ItemOriginMixin._PROPERTIES_RECT_ORIGIN | \
-        _PROPERTIES_ALIGN | \
-        _PROPERTIES_SIZE | \
+        ItemTransformMixin._PROPERTIES_POS         | \
+        ItemTransformMixin._PROPERTIES_ROTATE      | \
+        ItemTransformMixin._PROPERTIES_MIRROR      | \
+        ItemTransformMixin._PROPERTIES_RECT_ORIGIN | \
+        _PROPERTIES_ALIGN                          | \
+        _PROPERTIES_SIZE                           | \
         ItemQuillMixin._PROPERTIES_QUILL
 
     # instance attributes

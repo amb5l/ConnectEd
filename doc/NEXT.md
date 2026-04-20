@@ -1,6 +1,4 @@
-test text mirroring
-update _flip => _readable
-consolidate pos+rotate+mirror mixins => transform mixin
+use ItemTransformMixin everywhere
 
 # mirroring support
 
