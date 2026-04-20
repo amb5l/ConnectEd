@@ -85,7 +85,7 @@ class DiagramScene(
         self.margin = settings().get("defaults/margin")
         self.border = settings().get("defaults/border")
         super().__init__(sheet_size, fresh)
-        self.netlist = Netlist()
+        self.netlist = Netlist(self)
 
     def updateSceneRect(self : Self, rect : QRectF | None = None) -> None:
         super().updateSceneRect(self.sheet.rect)  # sheet is minimum rect
