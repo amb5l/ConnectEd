@@ -352,42 +352,12 @@ class Netlist:
             res_name = f"{base}[{left}:{right}]"
 
         # member case
-        if category == NetCategory.MEMBER:
-            # determine index
-            res_index = res_index_min = res_index_max = None
-            for raw_name, res_name in names:
-                raw_index = raw_name.split('[')[1].split(']')[0]
-                res_index = int(res_name.split('[')[1].split(']')[0])
-                if res_index_min is None or res_index < res_index_min:
-                    res_index_min = res_index
-
-
-
-        if vector_names and not (member_names or scalar_names):
-            # sort vector names from widest to narrowest range
-            # don't bother if any alphas appear in the ranges
-            res_left_min = res_left_max = res_right_min = res_right_max = None
-            for name in vector_names:
-                res_left, res_right = name.split('[')
-            res_name = vector_names[0]
-        elif member_names and not (vector_names or scalar_names):
-            shit look for inconsistent indices
-            res_name = member_names[0]
-        elif scalar_names and not (vector_names or member_names):
-            res_name = scalar_names[0]
-        else:
-            raise ValueError("Cannot resolve net name")
-
-
-        if len(label_names) > 0:
-            if len(label_names) == 1 \
-            or all(label == label_names[0] for label in label_names):
-                name = label_names[0]
-        elif len(port_names) > 0:
-            if len(port_names) == 1 \
-            or all(port == port_names[0] for port in port_names):
-                name = port_names[0]
-        net.name = name
+        elif category == NetCategory.MEMBER:
+            pass
+        # scalar case
+        elif category == NetCategory.SCALAR:
+            pass
+        raise ValueError("Cannot resolve net name")
 
     def _validBaseName(self, name: str) -> bool:
         """Check if base name follows the safe cross-HDL rule we defined earlier:
