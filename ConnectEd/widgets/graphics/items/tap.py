@@ -17,7 +17,7 @@ from typing import Self
 from enum   import StrEnum
 
 from PyQt6.QtCore    import QLineF
-from PyQt6.QtWidgets import QGraphicsLineItem, QGraphicsItem
+from PyQt6.QtWidgets import QGraphicsLineItem
 
 from ....app import logger
 
@@ -29,6 +29,8 @@ from .entry import EntryItem
 
 from .mixin import ItemMixin
 
+from .mixin.transform import ItemTransformMixin
+from .mixin.line      import ItemLineMixin
 
 
 
@@ -45,6 +47,7 @@ class TapDirection(StrEnum):
 
 class TapItem(
     ItemMixin,
+    ItemTransformMixin,
     ItemLineMixin,
     PropertiesMixin,
     QGraphicsLineItem
@@ -77,16 +80,20 @@ class TapItem(
 
 
     def setDirection(self : Self, value : TapDirection) -> None:
-        # determine self rotation and entry rotation
         match value:
-            case TapDirection.NORTH_WEST : r =
-            case TapDirection.NORTH_EAST :
-            case TapDirection.EAST_NORTH : r = (0, 0)
-            case TapDirection.EAST_SOUTH : r = (0, 0)
-            case TapDirection.SOUTH_EAST : r = (0, 90)
-            case TapDirection.SOUTH_WEST : r = (90, 0)
-            case TapDirection.WEST_SOUTH : r = (0, -)
-            case TapDirection.WEST_NORTH :
+            case TapDirection.NORTH_WEST : r = ( 180,  90, 1 )
+            case TapDirection.NORTH_EAST : r = ( 270,   0, 1 )
+            case TapDirection.EAST_NORTH : r = ( 270,  90, 0 )
+            case TapDirection.EAST_SOUTH : r = (   0,   0, 0 )
+            case TapDirection.SOUTH_EAST : r = (   0,  90, 0 )
+            case TapDirection.SOUTH_WEST : r = (  90,   0, 0 )
+            case TapDirection.WEST_SOUTH : r = (  90,  90, 1 )
+            case TapDirection.WEST_NORTH : r = ( 180,   0, 1 )
+        self_rotation, entry_rotation, v_flip = r
+        self.setRotation(self_rotation)
+        self._entry.setRotation(entry_rotation)
+        self._entry.setMirrorV(v_flip)
+        self._entry.setMirrorV(v_flip)
 
     def bits(self : Self) -> str:
         return self._bits

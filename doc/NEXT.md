@@ -1,16 +1,10 @@
+get TapItem working
+use ItemTransformMixin for BlockItem - test mirroring, pin movement
+USE MIRRORING FOR BLOCK PINS so anchored property positions stay sensible
+
+
 use ItemTransformMixin everywhere
-
-# mirroring support
-
-- Either (a) enhance and rename ItemRotateMixin to ItemRotateMirrorMixin, or (b) create new ItemMirrorMixin.
-- Add bool attributes (_mirror_h and _mirror_v), and methods to get and set these.
-
-
-
-
-# general purpose tether
-
-
+general purpose tether (for use with PropertyLabelItem)
 
 # Completing Netlist Support
 
