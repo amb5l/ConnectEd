@@ -15,9 +15,18 @@ Two parallel representations maintained in sync:
 
 ## Scene-Level State (`DrawingSceneConnMixin`)
 
-- `_graph : nx.Graph` -- the netlist. Nodes are `VertexItem` instances. Edges
-  carry `SegmentItem` instances as data (`segment` attribute). Each connected
-  component is a net.
+- `_graph : nx.Graph` -- the physical netlist. Nodes are `VertexItem` instances.
+  Edges carry `SegmentItem` instances as data (`segment` attribute). Each
+  connected component is a physical net.
+- `_net_types : dict[str, NetType]` -- scene-level type registry. Maps a
+  single-character code (e.g. `"u"`) to a `NetType` dataclass holding the full
+  HDL type name (e.g. `"std_ulogic"`) and display color. One entry is the
+  default type. Configured via a net types dialog; a key/legend can be shown on
+  the schematic.
+- `_net_names : dict[str, str]` -- maps net name to its type code. Only nets
+  with a non-default type have an entry. Entries persist across net merges and
+  splits so that a subsequent split can restore the original type assignment.
+  Absence means "use the default type."
 
 No `Net` class at runtime. No `_nets`, `_node_net`, or `_nodes` dicts. No
 runtime vertex ID counter -- IDs are assigned transiently during serialization.
@@ -115,59 +124,104 @@ nets = list(nx.connected_components(self._graph))
 same_net = nx.has_path(self._graph, vtx1, vtx2)
 ```
 
-## Net Properties (name, etc.)
+## Net Type System
 
-Net properties are stored as node attributes on a designated vertex in the
-component -- specifically, the vertex that parents a `NetLabelItem`:
+Nets have a **type** drawn from a scene-level palette. Each type has:
+
+- A single-character code (e.g. `"u"`, `"s"`, `"b"`).
+- A full HDL type name (e.g. `"std_ulogic"`, `"signed"`, `"bit"`).
+- A display color that drives wire and vertex appearance.
+
+One type is the **default**. Nets without an explicit type assignment in
+`_net_names` use it (e.g. `"u"` = `std_ulogic`).
+
+**Scalar vs vector** is not part of the type -- it is inferred from the net name
+suffix. `CLK` with type `"u"` = `std_ulogic`; `DATA(31:0)` with type `"u"` =
+`std_ulogic_vector(31 downto 0)`.
+
+```python
+@dataclass
+class NetType:
+    name  : str     # e.g. "std_ulogic"
+    color : QColor  # drives segment/vertex appearance
+```
+
+**Net naming**: a net acquires a name from a `NetLabelItem` (parented to a
+`VertexItem`) or from a port pin name when a port connects to the physical net.
+The name is stored as a node attribute on the label-bearing vertex:
 
 ```python
 self._graph.nodes[vtx]["net_name"] = "CLK"
 ```
 
-To get a net's name, find any node in the component that has a `"net_name"`
-attribute. Vertices without labels have no such attribute.
+**Type assignment**: initial type is set when a net is first named (via
+`PropertyLabelItem`). The mapping is stored in `_net_names`.
+
+**Visual indication**: the type's single-character code can be displayed as a
+compact legend on wires or integrated into port/pin arrows. A key/legend on the
+schematic shows the full code-to-type mapping. The type palette and default are
+configured via a net types dialog.
 
 ## Physical vs Logical Nets
 
 The graph represents **physical** connectivity -- what is wired together with
-segments. Each connected component is a physical net.
+segments. Each connected component is a physical net, computed on demand via
+`nx.connected_components()`. Caching can be added later behind the same API if
+performance demands it.
 
 **Logical** nets can span multiple physical components when they share the same
-net name. For example, two separate groups of wires both labelled "CLK" are
-physically disconnected but logically one net. This is the standard schematic
-convention for power rails, clocks, buses, etc.
+resolved net name. For example, two separate groups of wires both labelled "CLK"
+are physically disconnected but logically one net. This is the standard
+schematic convention for power rails, clocks, buses, etc.
 
 The graph does not add virtual edges for name-based equivalence. Every graph
-edge carries a `SegmentItem`; this invariant is preserved. Instead, the logical
-netlist is derived on demand by grouping physical components by name:
+edge carries a `SegmentItem`; this invariant is preserved.
+
+### Logical net expansion
+
+To get all vertices in a logical net by name, expand each label-bearing vertex
+to its physical component:
 
 ```python
-def logicalNets(self):
-    named = {}
-    unnamed = []
-    for component in nx.connected_components(self._graph):
-        name = self._componentNetName(component)
-        if name:
-            named.setdefault(name, set()).update(component)
-        else:
-            unnamed.append(component)
-    return list(named.values()) + unnamed
+def logicalNet(self, name: str) -> set[VertexItem]:
+    result = set()
+    for vtx in self._graph.nodes:
+        if self._graph.nodes[vtx].get("net_name") == name:
+            result |= nx.node_connected_component(self._graph, vtx)
+    return result
 ```
+
+### Merge (connecting two named physical nets)
+
+When a segment connects two physical nets with different names:
+
+1. The API method captures both physical components **before** adding the edge.
+2. `CmdAddSegment` merges them in the graph.
+3. Name resolution picks a winner (algorithm TBD).
+4. `CmdSetNetType` applies the winner's type to the combined net, recoloring
+   the loser's segments. The loser's entry in `_net_names` is preserved (not
+   deleted) so that a subsequent split can restore the original type.
+5. DRC warning emitted for name/type conflict.
+
+The user can undo the entire operation (macro) if the result is undesirable.
+
+### Split (disconnecting a physical net)
+
+When a segment is removed and a physical net splits into two components:
+
+1. Check for split via `nx.has_path()`.
+2. The side retaining the name label keeps its name and type.
+3. The orphaned side reclaims its own name and type from `_net_names` if it
+   has its own label, or reverts to default type appearance.
 
 ### When the logical view is needed
 
-- **Highlighting** (click a wire, highlight the whole logical net): computed on
-  demand by grouping components by name. Fast enough for interactive use.
+- **Highlighting** (click a wire, highlight the whole logical net): expand by
+  name on demand.
 - **Netlist export** (HDL generation): batch operation, computed once.
-- **DRC** (multiple drivers, floating nets, etc.): batch operation.
-- **Real-time editing**: almost always uses physical connectivity (which
-  segments and vertices are wired together). The graph answers this directly.
-
-### Conflict detection
-
-If the user assigns different names to two components and then connects them
-with a segment, the resulting physical component has two names. This is a DRC
-warning, not something the graph resolves automatically.
+- **DRC** (multiple drivers, floating nets, name conflicts, etc.): batch.
+- **Real-time editing**: almost always uses physical connectivity. The graph
+  answers this directly.
 
 ## Operations That Affect Connectivity
 
@@ -232,9 +286,16 @@ is tied to the segment lifecycle; they are the same operation.
 - **`CmdReattachSegment`**: updates graph edges and segment vertex references
   together.
 
-No separate netlist commands. No `CmdMergeNets` or `CmdSplitNets`. Merging and
-splitting are emergent from adding/removing edges. The invariant "graph edge
-exists iff segment exists" is enforced by construction.
+- **`CmdSetNetType`**: updates `_net_names` for a given net name (stores old
+  type code, applies new type code) and recolors all segments and vertices in
+  the affected physical components. Used by the API layer when a merge, split,
+  or explicit type change triggers an appearance update.
+
+No `CmdMergeNets` or `CmdSplitNets`. Merging and splitting of physical nets are
+emergent from adding/removing edges. The invariant "graph edge exists iff
+segment exists" is enforced by construction. Type propagation after a merge or
+split is handled by the API layer dispatching `CmdSetNetType` within the same
+macro.
 
 ### API methods (orchestrators)
 
@@ -334,6 +395,9 @@ This is called after each macro during development (behind a debug flag).
 
 - `networkx` dependency (pure Python, no numpy required for core operations)
 - `_graph: nx.Graph` on scene
+- `_net_types: dict[str, NetType]` -- scene-level type registry
+- `_net_names: dict[str, str]` -- net name to type code mapping
+- `CmdSetNetType` command
 - Graph operations integrated into existing commands (`CmdAddSegment`, etc.)
 
 ### Unchanged
@@ -365,4 +429,10 @@ This is called after each macro during development (behind a debug flag).
 7. Update `toXml` / `fromXml` to use `nx.connected_components` on save and
    `_graph.add_edge` on load, with transient ID mappings.
 8. Implement `validateConnectivity()` diagnostic.
-9. Handle net properties (name) via node attributes and `NetLabelItem`.
+9. Net type system:
+   a. `NetType` dataclass, `_net_types` registry with default, `_net_names` dict.
+   b. `CmdSetNetType` command (update `_net_names`, recolor affected items).
+   c. Net naming via `NetLabelItem` and port pin names (node attributes).
+   d. Merge/split type propagation in API methods (`addSegment`, etc.).
+   e. Visual type indicators on wires and port/pin arrows.
+   f. Net types dialog and key/legend display.

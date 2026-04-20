@@ -1,3 +1,9 @@
+complete diagram/drawing separation: state machine
+change scene type for BlockItem, Port etc
+PlaceBaseInteraction => Generic not _ITEM_TYPE
+
+NetPropertyLassoItem
+
 ensure selected appearance of vertices makes them visible against segments
 _sel_line to shared resources
 
