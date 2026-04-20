@@ -8,6 +8,11 @@ from .....core.types import DataKind
 
 from ...properties import InherentProperty, PropertiesMixin
 
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from .rotate import ItemRotateMixin
+
+
 class ItemPosMixin:
     # class attributes
     _PROPERTIES_POS = {
@@ -44,7 +49,7 @@ class ItemPosMixin:
 
     @override
     def moveBy(
-        self : Self | QGraphicsItem,
+        self : "Self | QGraphicsItem | ItemRotateMixin",
         dx_d : float | QPointF,
         dy   : float | None = None
     ) -> None:
