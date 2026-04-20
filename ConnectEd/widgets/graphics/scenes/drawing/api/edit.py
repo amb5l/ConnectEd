@@ -176,7 +176,9 @@ class DrawingSceneApiEditMixin:
         text      : str          | NoChange = NO_CHANGE,
         block     : bool         | NoChange = NO_CHANGE,
         rotation  : float        | NoChange = NO_CHANGE,
-        flip      : bool         | NoChange = NO_CHANGE,
+        autoflip  : bool         | NoChange = NO_CHANGE,
+        mirror_h  : bool         | NoChange = NO_CHANGE,
+        mirror_v  : bool         | NoChange = NO_CHANGE,
         origin    : RectHandleId | NoChange = NO_CHANGE,
         align_h   : AlignH       | NoChange = NO_CHANGE,
         align_v   : AlignV       | NoChange = NO_CHANGE,
@@ -192,7 +194,8 @@ class DrawingSceneApiEditMixin:
     ) -> None:
         cmd = CmdEditText(
             self, item, text, block,
-            rotation, flip,  origin, align_h, align_v, width, height,
+            rotation, mirror_h, mirror_v, autoflip,
+            origin, align_h, align_v, width, height,
             color, family, size, bold, italic, underline
         )
         cmdExec(self, cmd, undoable)

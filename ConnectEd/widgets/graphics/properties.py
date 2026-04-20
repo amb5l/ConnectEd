@@ -62,7 +62,9 @@ class PropertyTextSpec:
     x         : float        = 0
     y         : float        = 0
     rotation  : float        = 0.0
-    flip      : bool         = True
+    mirror_h  : bool         = False
+    mirror_v  : bool         = False
+    autoflip  : bool         = True
     origin    : RectHandleId = RectHandleId.TOP_LEFT
     align_h   : AlignH       = AlignH.LEFT
     align_v   : AlignV       = AlignV.TOP
@@ -77,7 +79,8 @@ class PropertyTextSpec:
 
     def astuple(self : Self) -> tuple:
         return (
-            self.visible, self.cleat, self.x, self.y, self.rotation, self.flip,
+            self.visible, self.cleat, self.x, self.y,
+            self.rotation, self.mirror_h, self.mirror_v, self.autoflip,
             self.origin, self.align_h, self.align_v, self.width, self.height,
             self.color, self.family, self.size, self.bold, self.italic, self.underline
         )
@@ -481,7 +484,9 @@ class PropertiesManager:
         x         : float        = 0,
         y         : float        = 0,
         rotation  : float        = 0.0,
-        flip      : bool         = True,
+        mirror_h  : bool         = False,
+        mirror_v  : bool         = False,
+        autoflip  : bool         = True,
         origin    : RectHandleId = RectHandleId.TOP_LEFT,
         align_h   : AlignH       = AlignH.LEFT,
         align_v   : AlignV       = AlignV.TOP,
@@ -515,7 +520,9 @@ class PropertiesManager:
             cleat     = cleat,
             pos       = QPointF(x, y),
             rotation  = rotation,
-            flip      = flip,
+            mirror_h  = mirror_h,
+            mirror_v  = mirror_v,
+            autoflip  = autoflip,
             origin    = origin,
             align_h   = align_h,
             align_v   = align_v,
@@ -540,7 +547,9 @@ class PropertiesManager:
         x         : float  | NoChange = NO_CHANGE,
         y         : float  | NoChange = NO_CHANGE,
         rotation  : float  | NoChange = NO_CHANGE,
-        flip      : bool   | NoChange = NO_CHANGE,
+        mirror_h  : bool   | NoChange = NO_CHANGE,
+        mirror_v  : bool   | NoChange = NO_CHANGE,
+        autoflip  : bool   | NoChange = NO_CHANGE,
         origin    : str    | NoChange = NO_CHANGE,
         align_h   : AlignH | NoChange = NO_CHANGE,
         align_v   : AlignV | NoChange = NO_CHANGE,
@@ -576,7 +585,9 @@ class PropertiesManager:
         if x         is not NO_CHANGE: pt.setX(x)
         if y         is not NO_CHANGE: pt.setY(y)
         if rotation  is not NO_CHANGE: pt.setRotation(rotation)
-        if flip      is not NO_CHANGE: pt.setFlip(flip)
+        if mirror_h  is not NO_CHANGE: pt.setMirrorH(mirror_h)
+        if mirror_v  is not NO_CHANGE: pt.setMirrorV(mirror_v)
+        if autoflip  is not NO_CHANGE: pt.setAutoflip(autoflip)
         if origin    is not NO_CHANGE: pt.setOrigin(origin)
         if align_h   is not NO_CHANGE: pt.setAlignH(align_h)
         if align_v   is not NO_CHANGE: pt.setAlignV(align_v)

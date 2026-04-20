@@ -42,10 +42,12 @@ _PT_COLS : dict[str, DataKind] = {
     "X"         : ( DataKind.FLOAT       , 0.0                      , "x"              ), # noqa E501
     "Y"         : ( DataKind.FLOAT       , 0.0                      , "y"              ), # noqa E501
     "Rotation"  : ( DataKind.ROTATION    , 0.0                      , "rotation"       ), # noqa E501
-    "Flip"      : ( DataKind.EN_DIS      , EnDis.ENABLE             , "flip"           ), # noqa E501
+    "Mirror H"  : ( DataKind.BOOL        , False                    , "mirrorH"        ), # noqa E501
+    "Mirror V"  : ( DataKind.BOOL        , False                    , "mirrorV"        ), # noqa E501
+    "Auto Flip" : ( DataKind.BOOL        , True                     , "autoflip"       ), # noqa E501
     "Origin"    : ( DataKind.RECT_HANDLE , RectHandleId.BOTTOM_LEFT , "origin"         ), # noqa E501
-    "AlignH"    : ( DataKind.ALIGN_H     , AlignH.LEFT              , "alignH"         ), # noqa E501
-    "AlignV"    : ( DataKind.ALIGN_V     , AlignV.TOP               , "alignV"         ), # noqa E501
+    "Align H"   : ( DataKind.ALIGN_H     , AlignH.LEFT              , "alignH"         ), # noqa E501
+    "Align V"   : ( DataKind.ALIGN_V     , AlignV.TOP               , "alignV"         ), # noqa E501
     "Width"     : ( DataKind.SIZE        , None                     , "width"          ), # noqa E501
     "Height"    : ( DataKind.SIZE        , None                     , "height"         ), # noqa E501
     "Color"     : ( DataKind.COLOR       , DEFAULT                  , "quillColor"     ), # noqa E501
@@ -369,7 +371,7 @@ class PropertiesDialog(QDialog):
                 if col_name == "Cleat":
                     kind = _HANDLE_KIND[pt.handleIdType()]
                 value = getattr(pt, method_name)()
-                if col_name == "Flip":
+                if col_name == "Auto Flip":
                     value = EnDis.ENABLE if value else EnDis.DISABLE
                 cell = PropertiesItem(owner=item, kind=kind, value=value)
             row.append(cell)
@@ -456,7 +458,7 @@ class PropertiesDialog(QDialog):
             value = item.value()
             if col_name == "Width" or col_name == "Height":
                 value = -1.0 if value is None else value
-            elif col_name == "Flip":
+            elif col_name == "Auto Flip":
                 value = value == EnDis.ENABLE
             if item.changed() or not delta:
                 args[pascal2snake(col_name)] = value

@@ -28,7 +28,9 @@ class CmdEditText(CmdSceneItem):
         text      : str              | NoChange = NO_CHANGE,
         block     : bool             | NoChange = NO_CHANGE,
         rotation  : float            | NoChange = NO_CHANGE,
-        flip      : bool             | NoChange = NO_CHANGE,
+        mirror_h  : bool             | NoChange = NO_CHANGE,
+        mirror_v  : bool             | NoChange = NO_CHANGE,
+        autoflip  : bool             | NoChange = NO_CHANGE,
         origin    : RectHandleId     | NoChange = NO_CHANGE,
         align_h   : AlignH           | NoChange = NO_CHANGE,
         align_v   : AlignV           | NoChange = NO_CHANGE,
@@ -50,13 +52,17 @@ class CmdEditText(CmdSceneItem):
         self._after = TextChange(**change_args)
 
     @checked
-    def redo(self : Self) -> None:#
+    def redo(self : Self) -> None:
         if self._after.block is not NO_CHANGE:
             self._item.setBlock(self._after.block)
         if self._after.rotation is not NO_CHANGE:
             self._item.setRotation(self._after.rotation)
-        if self._after.flip is not NO_CHANGE:
-            self._item.setFlip(self._after.flip)
+        if self._after.mirror_h is not NO_CHANGE:
+            self._item.setMirrorH(self._after.mirror_h)
+        if self._after.mirror_v is not NO_CHANGE:
+            self._item.setMirrorV(self._after.mirror_v)
+        if self._after.autoflip is not NO_CHANGE:
+            self._item.setAutoflip(self._after.autoflip)
         if self._after.origin is not NO_CHANGE:
             # maintain scene position
             pos = self._item.getHandle(self._after.origin).scenePos()
@@ -93,8 +99,12 @@ class CmdEditText(CmdSceneItem):
             self._item.setBlock(self._before.block)
         if self._after.rotation is not NO_CHANGE:
             self._item.setRotation(self._before.rotation)
-        if self._after.flip is not NO_CHANGE:
-            self._item.setFlip(self._before.flip)
+        if self._after.mirror_h is not NO_CHANGE:
+            self._item.setMirrorH(self._before.mirror_h)
+        if self._after.mirror_v is not NO_CHANGE:
+            self._item.setMirrorV(self._before.mirror_v)
+        if self._after.autoflip is not NO_CHANGE:
+            self._item.setAutoflip(self._before.autoflip)
         if self._after.origin is not NO_CHANGE:
             # maintain scene position
             pos = self._item.getHandle(self._before.origin).scenePos()

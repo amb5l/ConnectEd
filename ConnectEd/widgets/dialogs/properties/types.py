@@ -34,7 +34,9 @@ class PropertyChangeTextAdd(PropertyChangeBase):
     x         : float
     y         : float
     rotation  : float
-    flip      : bool
+    mirror_h  : bool
+    mirror_v  : bool
+    autoflip  : bool
     origin    : RectHandleId
     align_h   : AlignH
     align_v   : AlignV
@@ -55,7 +57,9 @@ class PropertyChangeTextModify(PropertyChangeBase):
     x         : float        | NoChange = NO_CHANGE
     y         : float        | NoChange = NO_CHANGE
     rotation  : float        | NoChange = NO_CHANGE
-    flip      : bool         | NoChange = NO_CHANGE
+    mirror_h  : bool         | NoChange = NO_CHANGE
+    mirror_v  : bool         | NoChange = NO_CHANGE
+    autoflip  : bool         | NoChange = NO_CHANGE
     origin    : RectHandleId | NoChange = NO_CHANGE
     align_h   : AlignH       | NoChange = NO_CHANGE
     align_v   : AlignV       | NoChange = NO_CHANGE

@@ -64,7 +64,9 @@ class DrawingSceneApiPropertiesMixin:
         x         : float,
         y         : float,
         rotation  : float,
-        flip      : bool,
+        mirror_h  : bool,
+        mirror_v  : bool,
+        autoflip  : bool,
         origin    : RectHandleId,
         align_h   : AlignH,
         align_v   : AlignV,
@@ -79,7 +81,8 @@ class DrawingSceneApiPropertiesMixin:
         undoable  : bool = False
     ) -> None:
         cmd = CmdAddPropertyText(
-            object, name, visible, cleat, x, y, rotation, flip,
+            object, name, visible, cleat, x, y,
+            rotation, mirror_h, mirror_v, autoflip,
             origin, align_h, align_v, width, height,
             color, family, size, bold, italic, underline
         )
@@ -94,7 +97,9 @@ class DrawingSceneApiPropertiesMixin:
         x         : float        | NoChange = NO_CHANGE,
         y         : float        | NoChange = NO_CHANGE,
         rotation  : float        | NoChange = NO_CHANGE,
-        flip      : bool         | NoChange = NO_CHANGE,
+        mirror_h  : bool         | NoChange = NO_CHANGE,
+        mirror_v  : bool         | NoChange = NO_CHANGE,
+        autoflip  : bool         | NoChange = NO_CHANGE,
         origin    : RectHandleId | NoChange = NO_CHANGE,
         align_h   : AlignH       | NoChange = NO_CHANGE,
         align_v   : AlignV       | NoChange = NO_CHANGE,
@@ -116,7 +121,9 @@ class DrawingSceneApiPropertiesMixin:
             x         = x,
             y         = y,
             rotation  = rotation,
-            flip      = flip,
+            mirror_h  = mirror_h,
+            mirror_v  = mirror_v,
+            autoflip  = autoflip,
             origin    = origin,
             align_h   = align_h,
             align_v   = align_v,

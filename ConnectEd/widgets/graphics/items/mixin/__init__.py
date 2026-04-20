@@ -35,6 +35,7 @@ class ItemMixin(ItemSettingsMixin, ItemMoveMixin):
         from .loc     import ItemLocMixin
         from .pos     import ItemPosMixin
         from .rotate  import ItemRotateMixin
+        from .mirror  import ItemMirrorMixin
         from .change  import ItemChangeMixin
         from .line    import ItemLineMixin
         from .fill    import ItemFillMixin
@@ -59,6 +60,8 @@ class ItemMixin(ItemSettingsMixin, ItemMoveMixin):
             self.initPos()
         if isinstance(self, ItemRotateMixin):
             self.initRotate()
+        if isinstance(self, ItemMirrorMixin):
+            self.initMirror()
         if isinstance(self, ItemChangeMixin):
             self.initChange()
         if isinstance(self, ItemLineMixin):

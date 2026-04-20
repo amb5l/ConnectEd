@@ -149,7 +149,9 @@ class CmdPropertyTextItemBase(CmdPropertyBase):
         x         : float
         y         : float
         rotation  : float
-        flip      : bool
+        mirror_h  : bool
+        mirror_v  : bool
+        autoflip  : bool
         origin    : RectHandleId
         align_h   : AlignH
         align_v   : AlignV
@@ -175,7 +177,9 @@ class CmdAddPropertyText(CmdPropertyTextItemBase):
         x         : float,
         y         : float,
         rotation  : float,
-        flip      : bool,
+        mirror_h  : bool,
+        mirror_v  : bool,
+        autoflip  : bool,
         origin    : RectHandleId,
         align_h   : AlignH,
         align_v   : AlignV,
@@ -195,7 +199,9 @@ class CmdAddPropertyText(CmdPropertyTextItemBase):
             x         = x,
             y         = y,
             rotation  = rotation,
-            flip      = flip,
+            mirror_h  = mirror_h,
+            mirror_v  = mirror_v,
+            autoflip  = autoflip,
             origin    = origin,
             align_h   = align_h,
             align_v   = align_v,
@@ -229,7 +235,9 @@ class CmdEditPropertyText(CmdPropertyTextItemBase):
         x         : float        | NoChange = NO_CHANGE,
         y         : float        | NoChange = NO_CHANGE,
         rotation  : float        | NoChange = NO_CHANGE,
-        flip      : bool         | NoChange = NO_CHANGE,
+        mirror_h  : bool         | NoChange = NO_CHANGE,
+        mirror_v  : bool         | NoChange = NO_CHANGE,
+        autoflip  : bool         | NoChange = NO_CHANGE,
         origin    : RectHandleId | NoChange = NO_CHANGE,
         align_h   : AlignH       | NoChange = NO_CHANGE,
         align_v   : AlignV       | NoChange = NO_CHANGE,
@@ -255,7 +263,9 @@ class CmdEditPropertyText(CmdPropertyTextItemBase):
             x         = pt.x(),
             y         = pt.y(),
             rotation  = pt.rotation(),
-            flip      = pt.flip(),
+            mirror_h  = pt.mirrorH(),
+            mirror_v  = pt.mirrorV(),
+            autoflip  = pt.autoflip(),
             origin    = pt.origin(),
             align_h   = pt.alignH(),
             align_v   = pt.alignV(),
@@ -274,7 +284,9 @@ class CmdEditPropertyText(CmdPropertyTextItemBase):
             x         = x,
             y         = y,
             rotation  = rotation,
-            flip      = flip,
+            mirror_h  = mirror_h,
+            mirror_v  = mirror_v,
+            autoflip  = autoflip,
             origin    = origin,
             align_h   = align_h,
             align_v   = align_v,

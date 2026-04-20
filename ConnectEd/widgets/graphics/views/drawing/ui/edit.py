@@ -214,6 +214,8 @@ class DrawingViewUiEditMixin:
     def editText(
         self      : "DrawingViewUi",
         item      : "TextItem",
+        mirror_h  : bool   | NoChange = NO_CHANGE,
+        mirror_v  : bool   | NoChange = NO_CHANGE,
         origin    : str    | NoChange = NO_CHANGE,
         align_h   : AlignH | NoChange = NO_CHANGE,
         align_v   : AlignV | NoChange = NO_CHANGE,
@@ -222,6 +224,8 @@ class DrawingViewUiEditMixin:
     ) -> None:
         self._scene.editText(
             item     = item,
+            mirror_h = mirror_h,
+            mirror_v = mirror_v,
             origin   = origin,
             align_h  = align_h,
             align_v  = align_v,

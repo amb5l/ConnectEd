@@ -10,7 +10,8 @@ from PyQt6.QtWidgets import QGraphicsItem, QMenu, \
                             QStyleOptionGraphicsItem, QStyle, QWidget, \
                             QGraphicsSceneContextMenuEvent, \
                             QGraphicsSimpleTextItem, QGraphicsTextItem
-from PyQt6.QtGui     import QColor, QFont, QAction, QPainter, QPainterPath
+from PyQt6.QtGui     import QColor, QFont, QAction, QPainter, QPainterPath, \
+                            QTransform
 
 from ....core.types import Default, DEFAULT, NoChange, NO_CHANGE, \
                             AlignH, AlignV, RectHandleId, DataKind
@@ -37,6 +38,7 @@ from .mixin         import ItemMixin
 from .mixin.origin  import ItemOriginMixin
 from .mixin.pos     import ItemPosMixin
 from .mixin.rotate  import ItemRotateMixin
+from .mixin.mirror  import ItemMirrorMixin
 from .mixin.paint   import ItemPaintMixin
 from .mixin.handle  import ItemRectHandlesMixin
 from .mixin.quill   import ItemQuillMixin
@@ -58,7 +60,9 @@ class TextState:
     text      : str
     block     : bool
     rotation  : float
-    flip      : bool
+    mirror_h  : bool
+    mirror_v  : bool
+    autoflip  : bool
     origin    : RectHandleId
     align_h   : AlignH
     align_v   : AlignV
@@ -77,7 +81,9 @@ class TextState:
             text      = item.text(),
             block     = item.block(),
             rotation  = item.rotation(),
-            flip      = item.flip(),
+            mirror_h  = item.mirrorH(),
+            mirror_v  = item.mirrorV(),
+            autoflip  = item.autoflip(),
             origin    = item.origin(),
             align_h   = item.alignH(),
             align_v   = item.alignV(),
@@ -97,7 +103,9 @@ class TextChange:
     text      : str              | NoChange = NO_CHANGE
     block     : bool             | NoChange = NO_CHANGE
     rotation  : float            | NoChange = NO_CHANGE
-    flip      : bool             | NoChange = NO_CHANGE
+    mirror_h  : bool             | NoChange = NO_CHANGE
+    mirror_v  : bool             | NoChange = NO_CHANGE
+    autoflip  : bool             | NoChange = NO_CHANGE
     origin    : str              | NoChange = NO_CHANGE
     align_h   : AlignH           | NoChange = NO_CHANGE
     align_v   : AlignV           | NoChange = NO_CHANGE
@@ -116,6 +124,7 @@ class TextItem(
     ItemOriginMixin,
     ItemPosMixin,
     ItemRotateMixin,
+    ItemMirrorMixin,
     ItemPaintMixin,
     ItemRectHandlesMixin,
     ItemQuillMixin,
@@ -173,29 +182,32 @@ class TextItem(
             ),
             "Block" : InherentProperty(
                 kind   = DataKind.BOOL,
+                worthy = lambda self: self.block(),
                 getter = lambda self: self.block(),
                 setter = lambda self, value: self.setBlock(value)
             ),
-            "Flip" : InherentProperty(
+            "AutoFlip" : InherentProperty(
                 kind   = DataKind.BOOL,
-                getter = lambda self: self.flip(),
-                setter = lambda self, value: self.setFlip(value)
+                worthy = lambda self: not self.autoflip(),
+                getter = lambda self: self.autoflip(),
+                setter = lambda self, value: self.setAutoflip(value)
             )
         } | \
         ItemPosMixin._PROPERTIES_POS | \
         ItemRotateMixin._PROPERTIES_ROTATE | \
+        ItemMirrorMixin._PROPERTIES_MIRROR | \
         ItemOriginMixin._PROPERTIES_RECT_ORIGIN | \
         _PROPERTIES_ALIGN | \
         _PROPERTIES_SIZE | \
         ItemQuillMixin._PROPERTIES_QUILL
 
     # instance attributes
-    _child   : "TextLineRenderer | TextBlockRenderer"  # text renderer
-    _flip    : bool                                    # rotation compensation
-    _align_h : AlignH                                  # horizontal alignment
-    _align_v : AlignV                                  # vertical alignment
-    _width   : float                                   # width constraint
-    _height  : float                                   # height constraint
+    _child    : "TextLineRenderer | TextBlockRenderer"  # text renderer
+    _autoflip : bool                                    # orientation compensation
+    _align_h  : AlignH                                  # horizontal alignment
+    _align_v  : AlignV                                  # vertical alignment
+    _width    : float                                   # width constraint
+    _height   : float                                   # height constraint
 
     def __init__(
         self      : Self,
@@ -203,7 +215,9 @@ class TextItem(
         block     : bool                 = False,
         pos       : QPointF | None       = None,
         rotation  : float                = 0.0,
-        flip      : bool                 = True,
+        mirror_h  : bool                 = False,
+        mirror_v  : bool                 = False,
+        autoflip  : bool                 = True,
         origin    : RectHandleId         = RectHandleId.TOP_LEFT,
         align_h   : AlignH               = AlignH.LEFT,
         align_v   : AlignV               = AlignV.TOP,
@@ -219,11 +233,11 @@ class TextItem(
         parent    : QGraphicsItem | None = None
     ) -> None:
         super().__init__(parent)
-        self._flip    = flip
-        self._align_h = align_h
-        self._align_v = align_v
-        self._width   = width
-        self._height  = height
+        self._autoflip = autoflip
+        self._align_h  = align_h
+        self._align_v  = align_v
+        self._width    = width
+        self._height   = height
         self._hshape = QPainterPath()
         self._child = TextBlockRenderer() if block else TextLineRenderer()
         self._child.setParentItem(self)
@@ -232,6 +246,8 @@ class TextItem(
         self.setFlag(self.GraphicsItemFlag.ItemHasNoContents, True)
         self.setPos(pos or QPointF(0, 0))
         self.setRotation(rotation)
+        self.setMirrorH(mirror_h)
+        self.setMirrorV(mirror_v)
         self.setOrigin(origin)
         self.setQuillColor(color)
         self.setQuillFamily(family)
@@ -244,10 +260,10 @@ class TextItem(
         self.onSceneRotationChange()
 
     def onSceneRotationChange(self : Self) -> None:
-        if not self._flip:
-            return
-        a = self.sceneRotation()
-        self._child.setRotation(180 if a > 135 and a <= 315 else 0)
+        self._adjustOrientation()
+
+    def onSceneMirrorChange(self : Self) -> None:
+        self._adjustOrientation()
 
     def block(self : Self) -> bool:
         return isinstance(self._child, TextBlockRenderer)
@@ -267,16 +283,13 @@ class TextItem(
             self.updateHandlePositions()
             self.signalPropertyChanges("Block")
 
-    def flip(self : Self) -> bool:
-        return self._flip
+    def autoflip(self : Self) -> bool:
+        return self._autoflip
 
-    def setFlip(self : Self, flip : bool) -> None:
-        self._flip = flip
-        if flip:
-            self.onSceneRotationChange()
-        else:
-            self._child.setRotation(0)
-        self.signalPropertyChanges("Flip")
+    def setAutoflip(self : Self, autoflip : bool) -> None:
+        self._autoflip = autoflip
+        self._adjustOrientation()
+        self.signalPropertyChanges("AutoFlip")
 
     def text(self : Self) -> str:
         return self._child.text()
@@ -340,43 +353,56 @@ class TextItem(
         return self._brect
 
     def moveHandleBy(self : Self, id : RectHandleId, delta : QPointF) -> None:
-        """Resize/move the text as appropriate."""
+        """
+        Resize/move the text as appropriate. `delta` is supplied in scene
+        coordinates; convert it to a parent-local delta (for repositioning
+        self, whose pos() lives in parent coordinates) and an item-local
+        delta (for width/height, which live in the item's own frame) so
+        that any mirror or rotation of self/parent is respected.
+        """
+        zero = QPointF(0, 0)
+        parent = self.parentItem()
+        if parent is None:
+            pd = delta
+        else:
+            pd = parent.mapFromScene(delta) - parent.mapFromScene(zero)
+        ld = self.mapFromScene(delta) - self.mapFromScene(zero)
         origin_name = self.origin().value
         match id:
             case RectHandleId.TOP_LEFT:
-                if "Left" in origin_name: self.moveByX(delta.x())
-                self.resizeX(-delta.x())
-                if "Top" in origin_name: self.moveByY(delta.y())
-                self.resizeY(-delta.y())
+                if "Left" in origin_name: self.moveByX(pd.x())
+                self.resizeX(-ld.x())
+                if "Top" in origin_name: self.moveByY(pd.y())
+                self.resizeY(-ld.y())
             case RectHandleId.TOP_CENTER:
-                if "Top" in origin_name: self.moveByY(delta.y())
-                self.resizeY(-delta.y())
+                if "Top" in origin_name: self.moveByY(pd.y())
+                self.resizeY(-ld.y())
             case RectHandleId.TOP_RIGHT:
-                if "Right" in origin_name: self.moveByX(delta.x())
-                self.resizeX(delta.x())
-                if "Top" in origin_name: self.moveByY(delta.y())
-                self.resizeY(-delta.y())
+                if "Right" in origin_name: self.moveByX(pd.x())
+                self.resizeX(ld.x())
+                if "Top" in origin_name: self.moveByY(pd.y())
+                self.resizeY(-ld.y())
             case RectHandleId.MIDDLE_LEFT:
-                if "Left" in origin_name: self.moveByX(delta.x())
-                self.resizeX(-delta.x())
+                if "Left" in origin_name: self.moveByX(pd.x())
+                self.resizeX(-ld.x())
             case RectHandleId.MIDDLE_CENTER:
-                self.moveBy(delta)
+                self.moveBy(pd)
             case RectHandleId.MIDDLE_RIGHT:
-                if "Right" in origin_name: self.moveByX(delta.x())
-                self.resizeX(delta.x())
+                if "Right" in origin_name: self.moveByX(pd.x())
+                self.resizeX(ld.x())
             case RectHandleId.BOTTOM_LEFT:
-                if "Left" in origin_name: self.moveByX(delta.x())
-                self.resizeX(-delta.x())
-                if "Bottom" in origin_name: self.moveByY(delta.y())
-                self.resizeY(delta.y())
+                if "Left" in origin_name: self.moveByX(pd.x())
+                self.resizeX(-ld.x())
+                if "Bottom" in origin_name: self.moveByY(pd.y())
+                self.resizeY(ld.y())
             case RectHandleId.BOTTOM_CENTER:
-                if "Bottom" in origin_name: self.moveByY(delta.y())
-                self.resizeY(delta.y())
+                if "Bottom" in origin_name: self.moveByY(pd.y())
+                self.resizeY(ld.y())
             case RectHandleId.BOTTOM_RIGHT:
-                if "Right" in origin_name: self.moveByX(delta.x())
-                self.resizeX(delta.x())
-                if "Bottom" in origin_name: self.moveByY(delta.y())
-                self.resizeY(delta.y())
+                if "Right" in origin_name: self.moveByX(pd.x())
+                self.resizeX(ld.x())
+                if "Bottom" in origin_name: self.moveByY(pd.y())
+                self.resizeY(ld.y())
 
     def moveByX(self : Self, dx : float) -> None:
         self.setX(self.pos().x() + dx)
@@ -529,6 +555,17 @@ class TextItem(
             self.alignmentMenu(view),
             view.separator(),
             view.action(
+                "Mirror Horizontal",
+                lambda: view.ui.editText(self, mirror_h=not self.mirrorH()),
+                checked = self.mirrorH()
+            ),
+            view.action(
+                "Mirror Vertical",
+                lambda: view.ui.editText(self, mirror_v=not self.mirrorV()),
+                checked = self.mirrorV()
+            ),
+            view.separator(),
+            view.action(
                 "Auto Width", lambda: self.setWidth(
                     self.boundingRect().width() if self._width < 0.0 else -1.0
                 ),
@@ -544,6 +581,33 @@ class TextItem(
             view.action("Properties...", lambda: view.ui.editItemProperties(self))
         ]
         return items
+
+    def _adjustOrientation(self : Self) -> None:
+        """
+        Counter-rotate and/or counter-mirror the renderer child so text remains
+        readable (left-right or up-down) given the item's effective scene
+        rotation and mirror state. Both the rotation and the mirror reflection
+        are anchored at the renderer's transform origin (rect centre) so the
+        text block sits on the mirrored side of the item's origin while still
+        reading forwards.
+        """
+        self._child.setRotation(0)
+        if not self._autoflip:
+            self._child.setTransform(QTransform())
+            return
+        a  = self.sceneRotation()
+        mh = self.sceneMirrorH()
+        mv = self.sceneMirrorV()
+        angle = 180.0 if 135 < a <= 315 else 0.0
+        sx = -1.0 if mh else 1.0
+        sy = -1.0 if mv else 1.0
+        pivot = self._child.transformOriginPoint()
+        transform = QTransform()
+        transform.translate(pivot.x(), pivot.y())
+        transform.rotate(angle)
+        transform.scale(sx, sy)
+        transform.translate(-pivot.x(), -pivot.y())
+        self._child.setTransform(transform)
 
 
 class TextRendererMixin(ItemShapeMixin):
@@ -650,10 +714,19 @@ class TextLineRenderer(TextRendererMixin, QGraphicsSimpleTextItem):
             case AlignV.BOTTOM:
                 y = h - urect.height()
         self.setPos(x, y)
-        # update transform origin before mapping (rotation uses it)
-        self.setTransformOriginPoint(rect.center())
-        # update parent hit shape from native renderer shape, mapped to parent coords
-        parent._hshape = self.mapToParent(QGraphicsSimpleTextItem.shape(self))
+        # Transform origin = centre of the (parent-local) constrained rect,
+        # re-expressed in this renderer's local coords. The renderer's own
+        # setPos(x, y) shifts the two frames apart for non-LEFT/non-TOP
+        # alignment, so naively using rect.center() would put the pivot
+        # outside the glyph block and break rotation / counter-mirroring.
+        self.setTransformOriginPoint(rect.center() - QPointF(x, y))
+        # Hit shape covers the full bounding rect (in the parent's local
+        # frame), matching every other item type. This keeps empty outlined
+        # padding clickable and, crucially, stays valid under mirror /
+        # rotation changes - those only retransform the child renderer,
+        # never _brect.
+        parent._hshape = QPainterPath()
+        parent._hshape.addRect(rect)
         # update
         self.update()
 
@@ -741,7 +814,13 @@ class TextBlockRenderer(TextRendererMixin, QGraphicsTextItem):
         parent._brect = rect
         # update transform origin before mapping (rotation uses it)
         self.setTransformOriginPoint(rect.center())
-        parent._hshape = self.mapToParent(QGraphicsTextItem.shape(self))
+        # Hit shape covers the full bounding rect (in the parent's local
+        # frame), matching every other item type. This keeps empty outlined
+        # padding clickable and, crucially, stays valid under mirror /
+        # rotation changes - those only retransform the child renderer,
+        # never _brect.
+        parent._hshape = QPainterPath()
+        parent._hshape.addRect(rect)
         # if height constrained: apply vertical alignment via document top margin
         if height >= 0.0:
             match align_v:

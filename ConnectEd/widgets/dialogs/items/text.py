@@ -1,7 +1,7 @@
 from typing import Self
 
 from PyQt6.QtCore    import Qt, QTimer
-from PyQt6.QtWidgets import QWidget, QDialog, QVBoxLayout, QHBoxLayout, QLayout
+from PyQt6.QtWidgets import QWidget, QDialog, QVBoxLayout, QHBoxLayout
 from PyQt6.QtGui     import QShowEvent
 
 from ....core.check import checked
@@ -10,26 +10,26 @@ from ....core.types import NoChange, AlignH, AlignV, RectHandleId, \
 
 from ...graphics.items.text import TextItem
 
-from ..components.layout.text_value         import TextValueLayout
-from ..components.group_box.text_rotation   import TextRotationGroupBox
-from ..components.group_box.text_align      import TextAlignGroupBox
-from ..components.group_box.origin          import OriginGroupBox
-from ..components.group_box.text_appearance import TextAppearancePreviewGroupBox
-from ..components.layout.ok_cancel          import OkCancelLayout
+from ..components.layout.text_value          import TextValueLayout
+from ..components.group_box.text_orientation import TextOrientationGroupBox
+from ..components.group_box.text_align       import TextAlignGroupBox
+from ..components.group_box.origin           import OriginGroupBox
+from ..components.group_box.text_appearance  import TextAppearancePreviewGroupBox
+from ..components.layout.ok_cancel           import OkCancelLayout
 
 
 class BaseTextItemDialog(QDialog):
     _TITLE : str
 
     # instance variables
-    _layout               : QVBoxLayout
-    _middle_layout        : QHBoxLayout
-    _geometry_layout      : QVBoxLayout
-    _rotation_group_box   : TextRotationGroupBox
-    _align_group_box      : TextAlignGroupBox
-    _origin_group_box     : OriginGroupBox
-    _appearance_group_box : TextAppearancePreviewGroupBox
-    _ok_cancel_layout     : OkCancelLayout
+    _layout                : QVBoxLayout
+    _middle_layout         : QHBoxLayout
+    _geometry_layout       : QVBoxLayout
+    _orientation_group_box : TextOrientationGroupBox
+    _align_group_box       : TextAlignGroupBox
+    _origin_group_box      : OriginGroupBox
+    _appearance_group_box  : TextAppearancePreviewGroupBox
+    _ok_cancel_layout      : OkCancelLayout
 
     @checked
     def __init__(
@@ -45,8 +45,10 @@ class BaseTextItemDialog(QDialog):
         self.initTopSection(item)
         # middle left - rotation, alignment and origin
         self._geometry_layout = QVBoxLayout()
-        self._rotation_group_box = TextRotationGroupBox(item.rotation(), item.flip())
-        self._geometry_layout.addWidget(self._rotation_group_box)
+        self._orientation_group_box = TextOrientationGroupBox(
+            item.rotation(), item.mirrorH(), item.mirrorV(), item.autoflip()
+        )
+        self._geometry_layout.addWidget(self._orientation_group_box)
         self._align_group_box = TextAlignGroupBox(item.alignH(), item.alignV())
         self._geometry_layout.addWidget(self._align_group_box)
         self._origin_group_box = OriginGroupBox(item.origin())
@@ -88,11 +90,19 @@ class BaseTextItemDialog(QDialog):
 
     @checked
     def getRotation(self : Self) -> float | NoChange:
-        return self._rotation_group_box.getRotation()
+        return self._orientation_group_box.getRotation()
 
     @checked
-    def getFlip(self : Self) -> bool | NoChange:
-        return self._rotation_group_box.getFlip()
+    def getMirrorH(self : Self) -> bool | NoChange:
+        return self._orientation_group_box.getMirrorH()
+
+    @checked
+    def getMirrorV(self : Self) -> bool | NoChange:
+        return self._orientation_group_box.getMirrorV()
+
+    @checked
+    def getAutoflip(self : Self) -> bool | NoChange:
+        return self._orientation_group_box.getAutoflip()
 
     @checked
     def getAlignH(self : Self) -> AlignH | NoChange:

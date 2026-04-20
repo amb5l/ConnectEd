@@ -1,3 +1,19 @@
+test text mirroring
+update _flip => _readable
+consolidate pos+rotate+mirror mixins => transform mixin
+
+# mirroring support
+
+- Either (a) enhance and rename ItemRotateMixin to ItemRotateMirrorMixin, or (b) create new ItemMirrorMixin.
+- Add bool attributes (_mirror_h and _mirror_v), and methods to get and set these.
+
+
+
+
+# general purpose tether
+
+
+
 # Completing Netlist Support
 
 Netlist support is WIP.
