@@ -44,7 +44,7 @@ class SegmentItem(
         self.setNode2(node2)
 
     def onGeometryChange(self : Self) -> None:
-        if not hasattr(self, "_vtx1") or not hasattr(self, "_vtx2"):
+        if not hasattr(self, "_node1") or not hasattr(self, "_node2"):
             return
         v1 = self._node1
         v2 = self._node2
