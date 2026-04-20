@@ -152,13 +152,13 @@ class Netlist:
         net1 = self._nets[net_id1]
         net2 = self.newNet()
         nodes2 : set[NodeItem] = set()
-        for vtx in net1.nodes:
+        for node in net1.nodes:
             if node is node2 or networkx.has_path(self._graph, node, node2):
                 nodes2.add(node)
         for node in nodes2:
-            net1.nodes.remove(vtx)
-            net2.nodes.add(vtx)
-            self._node2net[vtx] = net2.id
+            net1.nodes.remove(node)
+            net2.nodes.add(node)
+            self._node2net[node] = net2.id
         self._resolveNet(net1)
         self._resolveNet(net2)
 
