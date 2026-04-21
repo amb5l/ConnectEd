@@ -41,7 +41,6 @@ class ItemMixin(ItemSettingsMixin, ItemMoveMixin):
         from .line      import ItemLineMixin
         from .fill      import ItemFillMixin
         from .quill     import ItemQuillMixin
-        from .outline   import ItemOutlineMixin
         from .bound     import ItemBoundMixin
         from .shape     import ItemShapeMixin
         self.setZValue(self.Z)
@@ -73,8 +72,6 @@ class ItemMixin(ItemSettingsMixin, ItemMoveMixin):
             self.initFill()
         if isinstance(self, ItemQuillMixin):
             self.initQuill()
-        if isinstance(self, ItemOutlineMixin):
-            self.initOutline()
         if isinstance(self, ItemBoundMixin):
             self.initBound()
         if isinstance(self, ItemShapeMixin):

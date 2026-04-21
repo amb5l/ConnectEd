@@ -35,7 +35,6 @@ from .mixin.transform import ItemTransformMixin
 from .mixin.handle    import ItemRectHandlesMixin
 from .mixin.paint     import ItemPaintMixin
 from .mixin.quill     import ItemQuillMixin
-from .mixin.outline   import ItemOutlineMixin
 from .mixin.bound     import ItemBoundMixin
 from .mixin.shape     import ItemShapeMixin
 from .mixin.change    import ItemChangeMixin
@@ -118,7 +117,6 @@ class TextItem(
     ItemRectHandlesMixin,
     ItemPaintMixin,
     ItemQuillMixin,
-    ItemOutlineMixin,
     ItemBoundMixin,
     ItemShapeMixin,
     ItemChangeMixin,

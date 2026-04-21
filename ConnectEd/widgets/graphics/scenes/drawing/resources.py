@@ -23,6 +23,9 @@ class DrawingSceneResourcesMixin:
     def initResources(self : "DrawingScene") -> None:
         self.resources |= \
             {
+                "Outline" : {
+                    "pen" : QPen()
+                },
                 "Grip" : {
                     "brush" : QBrush(),
                     "paths" : {
@@ -71,8 +74,11 @@ class DrawingSceneResourcesMixin:
         settings().changed.connect(self.updateResources)
 
     def updateResources(self : "DrawingScene") -> None:
-        size = settings().get("theme/items/Entry/size")
-        _pinExtArrowPaths(self.resources["SymbolPinArrow"], size)
+        self.resources["Outline"]["pen"] = QPen(
+            settings().get("theme/selected/line"),
+            settings().get("display/select/outline/width"),
+            settings().get("display/select/outline/style")
+        )
         self.resources["Grip"]["brush"] = \
             QBrush(settings().get("theme/grip/color"))
         size = settings().get("theme/grip/size")

@@ -6,11 +6,12 @@ from PyQt6.QtWidgets import QGraphicsLineItem, QGraphicsItem, \
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from .text           import TextItem
-    from .property_text  import PropertyTextItem
-    from .property_label import PropertyLabelItem
-    from .handle         import HandleItem
-    from .node           import NodeItem
+    from ..scenes.drawing import DrawingScene
+    from .text            import TextItem
+    from .property_text   import PropertyTextItem
+    from .property_label  import PropertyLabelItem
+    from .handle          import HandleItem
+    from .node            import NodeItem
 
 
 class TextTetherItem(QGraphicsLineItem):
@@ -44,7 +45,8 @@ class TextTetherItem(QGraphicsLineItem):
         self.setLine(line)
 
     def onSettingsChange(self : Self) -> None:
-        self.setPen(self._text_item.outline.pen)
+        scene: "DrawingScene" = self.scene()
+        self.setPen(scene.resources["Outline"]["pen"])
 
     def anchor(self : Self) -> QGraphicsItem | None:
         return self._text_item.parentItem()

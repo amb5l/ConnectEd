@@ -39,17 +39,3 @@ class ItemChangeMixin:
                 if hasattr(self, "onSelectionChange"):
                     self.onSelectionChange(value)
         return super().itemChange(change, value)
-
-    def onSettingsChange(self : Self) -> None:
-        self.prepareGeometryChange()
-        if hasattr(self, "a"):
-            if self.a.line is not None:
-                self.a.line.onSettingsChange()
-            if self.a.fill is not None:
-                self.a.fill.onSettingsChange()
-            if self.a.quill is not None:
-                self.a.quill.onSettingsChange()
-        if hasattr(self, "outline"):
-            self.outline.onSettingsChange()
-        if hasattr(self, "onGeometryChange"):
-            self.onGeometryChange()
