@@ -1,6 +1,8 @@
 from typing import Self
 
 from PyQt6.QtCore    import QPointF
+from PyQt6.QtGui     import QAction
+from PyQt6.QtWidgets import QMenu
 
 from ......core.utils import sign
 
@@ -10,6 +12,7 @@ from ....items.block     import BlockItem
 from ....items.block_pin import BlockPinItem
 from ....items.node      import NodeItem
 from ....items.segment   import SegmentItem, SegmentPreview1Item, SegmentPreview2Item
+from ....items.tap       import TapItem
 
 from ...drawing.interaction import Interaction, RotateItemMixin
 
@@ -168,3 +171,22 @@ class PlaceConnInteraction(Interaction):
         for item in [self._seg1, self._seg2]:
             if item.scene() is not None:
                 item.scene().removeItem(item)
+
+
+class PlaceTapInteraction(PlaceBase1PosInteraction):
+    _ITEM_TYPE = TapItem
+
+    _item : TapItem
+
+    def rotateCW(self : Self) -> None:
+        self._item.reorientCW()
+
+    def rotateCCW(self : Self) -> None:
+        self._item.reorientCCW()
+
+    def ctxMenuItems(self : Self, pos : QPointF) -> list[QAction | QMenu]:
+        return super().ctxMenuItems(pos) + [
+            self._view.separator(),
+            self._view.action("Rotate CW", self.rotateCW, "]"),
+            self._view.action("Rotate CCW", self.rotateCCW, "["),
+        ]

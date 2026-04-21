@@ -274,6 +274,10 @@ class Slots:
         view.ui.placeConnection()
 
     @withCurrentWidget(DrawingView)
+    def placeTap(self : Self, view : DrawingView) -> None:
+        view.ui.placeTap()
+
+    @withCurrentWidget(DrawingView)
     def placeLine(self : Self, view : DrawingView) -> None:
         view.ui.placeLine()
 

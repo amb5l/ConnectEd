@@ -26,7 +26,8 @@ from ..interaction.place import PlacePortInteraction,     \
                                 PlaceGateInteraction,     \
                                 PlaceBlockInteraction,    \
                                 PlaceBlockPinInteraction, \
-                                PlaceConnInteraction
+                                PlaceConnInteraction,      \
+                                PlaceTapInteraction
 
 
 class DiagramViewStatePlacePort(ClickMixin, DrawingViewStateBase):
@@ -164,3 +165,22 @@ class DiagramViewStatePlaceConn2(ClickMixin, DrawingViewStateBase):
     def mouseLeftDragEnd(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
         if self.view.interaction.commit(self._snap(s)):
             self.view.state.go(self.view.statePlaceConn1)
+
+
+class DiagramViewStatePlaceTap(ClickMixin, DrawingViewStateBase):
+    STATUS = "Place Tap: pick a location"
+
+    def entry(
+        self : Self,
+        v    : QPoint,
+        s    : QPointF,
+        i    : list[ItemMixin] | None = None
+    ) -> None:
+        self._interact(s)
+
+    def mouseLeftClick(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
+        self._commit(s)
+        self._interact(s)
+
+    def _interact(self : Self, s : QPointF) -> None:
+        self.interact(PlaceTapInteraction(self.view, self._snap(s)))

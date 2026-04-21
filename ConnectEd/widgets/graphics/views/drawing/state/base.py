@@ -106,3 +106,18 @@ class DrawingViewStateBase:
 
     def _snap(self : Self, s : QPointF) -> QPointF:
         return self.view._snap(s)
+
+    def _update(self : Self, s : QPointF) -> None:
+        if self.view.interaction is not None:
+            self.view.interaction.update(self._snap(s))
+
+    def _commit(self : Self, s : QPointF) -> bool:
+        if self.view.interaction is not None:
+            return self.view.interaction.commit(self._snap(s))
+        return False
+
+    def _complete(self : Self, s : QPointF) -> bool:
+        if self.view.interaction is not None:
+            self.view.interaction.complete(self._snap(s))
+            return True
+        return False

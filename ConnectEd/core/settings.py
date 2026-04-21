@@ -231,6 +231,29 @@ FACTORY_SETTINGS = {
                         "style" : Qt.PenStyle.DashDotDotLine
                     }
                 },
+                "Tap" : {
+                    "unresolved" : {
+                        "line" : {
+                            "color" : PaletteDark.TapUnresolved,
+                            "width" : 1,
+                            "style" : Qt.PenStyle.SolidLine
+                        }
+                    },
+                    "scalar" : {
+                        "line" : {
+                            "color" : PaletteDark.TapScalar,
+                            "width" : 1,
+                            "style" : Qt.PenStyle.SolidLine
+                        }
+                    },
+                    "vector" : {
+                        "line" : {
+                            "color" : PaletteDark.TapVector,
+                            "width" : 3,
+                            "style" : Qt.PenStyle.SolidLine
+                        }
+                    }
+                },
                 "Port" : {
                     "size" : 6,
                     "line" : {
@@ -621,6 +644,29 @@ FACTORY_SETTINGS = {
                         "color" : PaletteLightMono.SegmentPreview2,
                         "width" : 1,
                         "style" : Qt.PenStyle.DashDotDotLine
+                    }
+                },
+                "Tap" : {
+                    "unresolved" : {
+                        "line" : {
+                            "color" : PaletteLightMono.TapUnresolved,
+                            "width" : 1,
+                            "style" : Qt.PenStyle.DotLine
+                        }
+                    },
+                    "scalar" : {
+                        "line" : {
+                            "color" : PaletteLightMono.TapScalar,
+                            "width" : 1,
+                            "style" : Qt.PenStyle.SolidLine
+                        }
+                    },
+                    "vector" : {
+                        "line" : {
+                            "color" : PaletteLightMono.TapVector,
+                            "width" : 3,
+                            "style" : Qt.PenStyle.SolidLine
+                        }
                     }
                 },
                 "Port" : {

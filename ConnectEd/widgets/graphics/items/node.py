@@ -19,7 +19,6 @@ if TYPE_CHECKING:
     from .segment  import SegmentItem
     from .port_pin import PortPinMixin
     from .tap      import TapItem
-    from .port     import PortItem
 
 
 class NodeItem(

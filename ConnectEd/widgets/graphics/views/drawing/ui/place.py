@@ -22,6 +22,9 @@ class DrawingViewUiPlaceMixin:
     def placeConnection(self : "DrawingViewUi") -> None:
         self._view.state.go(self._view.statePlaceConn1)
 
+    def placeTap(self : "DrawingViewUi") -> None:
+        self._view.state.go(self._view.statePlaceTap)
+
     def placeLine(self : "DrawingViewUi") -> None:
         self._view.state.go(self._view.statePlaceLine1)
 

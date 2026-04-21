@@ -40,6 +40,11 @@ class DiagramSceneResourcesMixin(SymbolSceneResourcesMixin):
                     ( True  , False ) : QPainterPath(),
                     ( True  , True  ) : QPainterPath()
                 },
+                "Tap" : {
+                    "unresolved" : QPen(),
+                    "scalar"     : QPen(),
+                    "vector"     : QPen()
+                },
                 "FreeNode" : {
                     "unconnected" : {
                         "pen"   : QPen(),
@@ -94,11 +99,19 @@ class DiagramSceneResourcesMixin(SymbolSceneResourcesMixin):
             }
 
     def updateResources(self : "Self | DiagramScene") -> None:
+        # drawing and symbol resources
         super().updateResources()
-        _blockPinPath(self.resources["BlockPin"])
+        # port
         _portPaths(self.resources["Port"])
+        # block pin
+        _blockPinPath(self.resources["BlockPin"])
         _blockPinArrowPaths(self.resources["BlockPinArrow"])
+        # gate pin
         _gatePinPaths(self.resources["GatePin"])
+        # tap
+        for state in ["unresolved", "scalar", "vector"]:
+            self.resources["Tap"][state] = _getPen(f"Tap/{state}")
+        # nodes
         for node_type in ["FreeNode", "PinNode", "TapNode"]:
             for state in ["unconnected", "connected", "junction"]:
                 self.resources[node_type][state]["pen"] = \
@@ -220,10 +233,16 @@ def _gatePinPaths(d : dict) -> None:
         for clock in [False, True]:
             _gatePinPath(d, dot, clock)
 
+def _tapPath(d : dict) -> None:
+    path = QPainterPath()
+    path.moveTo(0, 0)
+    path.lineTo(PITCH, PITCH)
+    path.lineTo(2*PITCH, PITCH)
+    d["path"] = path
+
 def _nodePath(d : dict, size : float) -> None:
     # unconnected = "X"
     path = QPainterPath()
-    path.clear()
     path.moveTo(-size/2, -size/2)
     path.lineTo(size/2, size/2)
     path.moveTo(size/2, -size/2)

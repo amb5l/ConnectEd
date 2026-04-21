@@ -1,8 +1,15 @@
-OutLineMixin review
-onGeometryChange review
-fix pin name handle positioning
-fix initResources for Diagram vs Drawing scene
+better tap graphic
+
+resources overhaul - much more sharing
+  - override fill for Block
+
+unresolved/scalar/vector resolution for segments, taps
+
+PlaceBaseInteraction._ITEM_TYPE => generic?
+remove item suffix
 get TapItem working
+onGeometryChange review
+DrawingViewUi review - diagram separation
 use ItemTransformMixin for BlockItem - test mirroring, pin movement
 USE MIRRORING FOR BLOCK PINS so anchored property positions stay sensible
 
