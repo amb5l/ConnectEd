@@ -1,6 +1,6 @@
 from typing import Self
 
-from PyQt6.QtCore import QRectF
+from PyQt6.QtCore import Qt, QRectF
 from PyQt6.QtGui  import QPen, QBrush, QPainterPath
 
 from .....app import settings
@@ -110,7 +110,9 @@ class DiagramSceneResourcesMixin(SymbolSceneResourcesMixin):
         _gatePinPaths(self.resources["GatePin"])
         # tap
         for state in ["unresolved", "scalar", "vector"]:
-            self.resources["Tap"][state] = _getPen(f"Tap/{state}")
+            pen = _getPen(f"Tap/{state}")
+            pen.setCapStyle(Qt.PenCapStyle.RoundCap)
+            self.resources["Tap"][state] = pen
         # nodes
         for node_type in ["FreeNode", "PinNode", "TapNode"]:
             for state in ["unconnected", "connected", "junction"]:
@@ -241,13 +243,9 @@ def _tapPath(d : dict) -> None:
     d["path"] = path
 
 def _nodePath(d : dict, size : float) -> None:
-    # unconnected = "X"
+    # unconnected = square
     path = QPainterPath()
-    path.moveTo(-size/2, -size/2)
-    path.lineTo(size/2, size/2)
-    path.moveTo(size/2, -size/2)
-    path.lineTo(-size/2, size/2)
-    path.closeSubpath()
+    path.addRect(QRectF(-size/2, -size/2, size, size))
     d["unconnected"]["path"] = path
     # connected = diamond
     path = QPainterPath()

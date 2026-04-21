@@ -25,7 +25,7 @@ class SegmentItem(
     """Runs between two NodeItem instances."""
     # class attributes
     Z = Z_DRAWING - 1
-    _PEN_CAP_STYLE = Qt.PenCapStyle.SquareCap
+    _PEN_CAP_STYLE = Qt.PenCapStyle.RoundCap
 
     # instance attributes
     _node1 : NodeItem | None

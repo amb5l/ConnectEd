@@ -1,5 +1,3 @@
-better tap graphic
-
 resources overhaul - much more sharing
   - override fill for Block
 
