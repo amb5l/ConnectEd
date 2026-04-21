@@ -16,7 +16,7 @@ if TYPE_CHECKING:
 
 class TextTetherItem(QGraphicsLineItem):
     """
-    Tether line from the origin of a text item to its parent (handle/vertex).
+    Tether line from the origin of a text item to its parent (handle/node).
     """
 
     _text_item  : "TextItem"  # text item instance
@@ -45,7 +45,9 @@ class TextTetherItem(QGraphicsLineItem):
         self.setLine(line)
 
     def onSettingsChange(self : Self) -> None:
-        scene: "DrawingScene" = self.scene()
+        scene: "DrawingScene | None" = self.scene()
+        if scene is None:
+            return
         self.setPen(scene.resources["Outline"]["pen"])
 
     def anchor(self : Self) -> QGraphicsItem | None:

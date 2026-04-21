@@ -185,15 +185,15 @@ class ItemBasePinHandlesMixin:
                 kind   = "move",
                 parent = self
             ),
-            SymbolPinHandleId.ENTRY : HandleItem(
-                id     = SymbolPinHandleId.ENTRY,
+            SymbolPinHandleId.NODE : HandleItem(
+                id     = SymbolPinHandleId.NODE,
                 pos    = QPointF(-PITCH, 0),
                 kind   = "move",
                 parent = self
             ),
             SymbolPinHandleId.NAME : HandleItem(
                 id     = SymbolPinHandleId.NAME,
-                pos    = QPointF(self._PIN_NAME_OFFSET, 0),
+                pos    = QPointF(0, 0),
                 kind   = "move",
                 parent = self
             )

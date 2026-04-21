@@ -137,7 +137,6 @@ class PropertyTextItem(TextItem):
         self._tether.anchor().grip().setVisible(selected and cleat_valid)
 
     def onSettingsChange(self : Self) -> None:
-        super().onSettingsChange()
         if hasattr(self, "_tether"):
             self._tether.onSettingsChange()
 

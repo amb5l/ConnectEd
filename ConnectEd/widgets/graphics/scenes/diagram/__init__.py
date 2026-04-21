@@ -11,9 +11,7 @@ from .....core.xml   import toXmlAttrs, fromXmlAttrs
 
 from ...properties import InherentProperty
 
-from ...items.node    import NodeItem
-from ...items.entry   import EntryItem
-from ...items.vertex  import VertexItem
+from ...items.node    import NodeItem, FreeNodeItem, PinNodeItem, TapNodeItem
 from ...items.segment import SegmentItem
 
 from ...items.mixin.xml import ItemXmlMixin
@@ -176,17 +174,19 @@ class DiagramScene(
                 item_name = element_name + "Item"
                 if element_name == "Connectivity":
                     scene.netlist.fromXml(xr)
-                elif element_name in ["Entry", "Vertex"]:
+                elif "Node" in element_name:
                     node_id = int(xr.attributes().value("ID"))
-                    if element_name == "Entry":
-                        node = EntryItem.fromXml(xr, scene)
-                    elif element_name == "Vertex":
-                        node = VertexItem.fromXml(xr)
+                    if element_name == "PinNode":
+                        node = PinNodeItem.fromXml(xr, scene)
+                    elif element_name == "TapNode":
+                        node = TapNodeItem.fromXml(xr, scene)
+                    elif element_name == "FreeNode":
+                        node = FreeNodeItem.fromXml(xr)
                         scene.addItem(node)
                         scene._graph.add_node(node)
                     if len(nodes) != node_id:
                         logger().warning(
-                            "Entry ID mismatch: "
+                            "Node ID mismatch: "
                             f"got {node_id}, expected {len(nodes)}"
                         )
                     nodes.append(node)

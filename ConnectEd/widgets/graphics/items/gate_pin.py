@@ -68,7 +68,7 @@ class GatePinItem(
 
     def setLength(self : Self, length : float) -> None:
         self._length = length
-        self._entry.setPos(-self._length, 0)  # move entry
+        self._node.setPos(-self._length, 0)  # move node
         self._setPath()  # adjust pin path
 
     def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
@@ -84,11 +84,14 @@ class GatePinItem(
         pass  # exclude from XML
 
     def _setPath(self : Self, scene : "DrawingScene | None" = None) -> None:
+        # ensure scene resources are available
         if scene is None:
             if (scene := self.scene()) is None:
                 return
+        item_name = self.settingsName()
+        # set path
         key = (self._dot, self._clock)
-        path = scene.resources["SymbolPin"][key]
+        path = scene.resources["SymbolPin"][key]  # TODO maintain separate resources
         if self._length != PITCH:
             path = QPainterPath(path)  # copy shared path
             path.setElementPositionAt(0, -self._length, 0)

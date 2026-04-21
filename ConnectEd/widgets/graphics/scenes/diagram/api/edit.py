@@ -8,7 +8,7 @@ from ....items.block          import BlockItem
 from ....items.block_pin      import BlockPinItem
 from ....items.property_text  import PropertyTextItem
 from ....items.property_label import PropertyLabelItem
-from ....items.node           import EntryItem
+from ....items.node           import PinNodeItem
 from ....items.segment        import SegmentItem
 
 from ...drawing.api import DrawingSceneApiEditMixin
@@ -63,15 +63,15 @@ class DiagramSceneApiEditMixin(DrawingSceneApiEditMixin):
                     if vtx is not None \
                     and vtx.parentItem() is None \
                     and vtx.degree() == 0:
-                        self.removeVertex(vtx, undoable)
+                        self.removeFreeNode(vtx, undoable)
         # gather entries
         entries = []
         for item in items:  # may include items with pins or entries
             for child in item.childItems():  # may include pins or entries
-                if isinstance(child, EntryItem):
+                if isinstance(child, PinNodeItem):
                     entries.append(child)
                 for grandchild in child.childItems():  # may include entries
-                    if isinstance(grandchild, EntryItem):
+                    if isinstance(grandchild, PinNodeItem):
                         entries.append(grandchild)
         # 
         # end macro

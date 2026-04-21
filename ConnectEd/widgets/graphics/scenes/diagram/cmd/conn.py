@@ -2,8 +2,7 @@ from typing import Self
 
 from PyQt6.QtCore import QPointF
 
-from ....items.node    import NodeItem
-from ....items.vertex  import VertexItem
+from ....items.node    import NodeItem, FreeNodeItem
 from ....items.segment import SegmentItem
 
 from ...drawing.cmd import CmdSceneBase
@@ -23,15 +22,15 @@ class CmdDiagramSceneBase(CmdSceneBase):
         super().__init__(scene)
 
 
-class CmdAddVertex(CmdDiagramSceneBase):
+class CmdAddFreeNode(CmdDiagramSceneBase):
     """
-    Create and add a new vertex to the scene.
+    Create and add a new free node to the scene.
     Updates both graphics and graph.
-    Assumption: no existing vertices or segments at this point.
+    Assumption: no existing nodes or segments at this point.
     """
 
     # instance attributes
-    _vtx : VertexItem
+    _node : FreeNodeItem
 
     def __init__(
         self  : Self,
@@ -39,45 +38,45 @@ class CmdAddVertex(CmdDiagramSceneBase):
         pos   : QPointF
     ) -> None:
         super().__init__(scene)
-        self._vtx = VertexItem(pos)
+        self._node = FreeNodeItem(pos)
 
     def redo(self : Self) -> None:
-        self._scene.addItem(self._vtx)
-        self._scene.netlist.addNode(self._vtx)
+        self._scene.addItem(self._node)
+        self._scene.netlist.addNode(self._node)
 
     def undo(self : Self) -> None:
-        self._scene.netlist.removeNode(self._vtx)
-        self._scene.removeItem(self._vtx)
+        self._scene.netlist.removeNode(self._node)
+        self._scene.removeItem(self._node)
 
-    def vtx(self : Self) -> VertexItem:
-        return self._vtx
+    def node(self : Self) -> FreeNodeItem:
+        return self._node
 
 
-class CmdRemoveVertex(CmdDiagramSceneBase):
+class CmdRemoveFreeNode(CmdDiagramSceneBase):
     """
-    Remove a specified vertex from the scene.
+    Remove a specified free node from the scene.
     Updates both graphics and graph.
-    Assumption: vertex has no edges in the graph.
+    Assumption: free node has no edges in the graph.
     """
 
     # instance attributes
-    _vtx : VertexItem
+    _node : FreeNodeItem
 
     def __init__(
         self  : Self,
         scene : "DiagramScene",
-        vtx   : VertexItem
+        node  : FreeNodeItem
     ) -> None:
         super().__init__(scene)
-        self._vtx = vtx
+        self._node = node
 
     def redo(self : Self) -> None:
-        self._scene.netlist.removeNode(self._vtx)
-        self._scene.removeItem(self._vtx)
+        self._scene.netlist.removeNode(self._node)
+        self._scene.removeItem(self._node)
 
     def undo(self : Self) -> None:
-        self._scene.addItem(self._vtx)
-        self._scene.netlist.addNode(self._vtx)
+        self._scene.addItem(self._node)
+        self._scene.netlist.addNode(self._node)
 
 
 class CmdAddSegment(CmdDiagramSceneBase):
@@ -88,33 +87,33 @@ class CmdAddSegment(CmdDiagramSceneBase):
     """
 
     # instance attributes
-    _vtx1 : VertexItem
-    _vtx2 : VertexItem
-    _seg  : SegmentItem
+    _node1 : NodeItem
+    _node2 : NodeItem
+    _seg   : SegmentItem
 
     def __init__(
         self  : Self,
         scene : "DiagramScene",
-        vtx1  : VertexItem,
-        vtx2  : VertexItem
+        node1 : NodeItem,
+        node2 : NodeItem
     ) -> None:
         super().__init__(scene)
-        self._vtx1 = vtx1
-        self._vtx2 = vtx2
+        self._node1 = node1
+        self._node2 = node2
         self._seg = SegmentItem()
 
     def redo(self : Self) -> None:
-        self._seg.setNode1(self._vtx1)
-        self._seg.setNode2(self._vtx2)
+        self._seg.setNode1(self._node1)
+        self._seg.setNode2(self._node2)
         self._scene.addItem(self._seg)
-        self._scene.netlist.addSegment(self._vtx1, self._vtx2, self._seg)
-        self._vtx1.onConnectionChange()
-        self._vtx2.onConnectionChange()
+        self._scene.netlist.addSegment(self._node1, self._node2, self._seg)
+        self._node1.onConnectionChange()
+        self._node2.onConnectionChange()
 
     def undo(self : Self) -> None:
-        self._scene.netlist.removeSegment(self._vtx1, self._vtx2)
-        self._vtx1.onConnectionChange()
-        self._vtx2.onConnectionChange()
+        self._scene.netlist.removeSegment(self._node1, self._node2)
+        self._node1.onConnectionChange()
+        self._node2.onConnectionChange()
         self._seg.setNode1(None)
         self._seg.setNode2(None)
         self._scene.removeItem(self._seg)
@@ -127,8 +126,8 @@ class CmdRemoveSegment(CmdDiagramSceneBase):
     """
     Remove a specified segment from the scene.
     Updates both graphics and graph.
-    Does not remove vertices; the API layer may follow with
-    CmdRemoveVertex for any orphaned vertices.
+    Does not remove free nodes; the API layer may follow with
+    CmdRemoveFreeNode for any orphaned free nodes.
     """
 
     # instance attributes
@@ -217,21 +216,21 @@ class CmdSplitSegment(CmdDiagramSceneBase):
 
 class CmdUnsplitSegment(CmdDiagramSceneBase):
     """
-    Unsplit a segment at a specified vertex. Updates both graphics and
-    graph. Assumption: vertex has exactly 2 graph edges.
+    Unsplit a segment at a specified free node. Updates both graphics and
+    graph. Assumption: free node has exactly 2 graph edges.
     """
 
     # instance attributes
-    _node : NodeItem   # vertex being removed
-    _far1 : NodeItem   # far vertex of seg1
-    _far2 : NodeItem   # far vertex of seg2
-    _seg1 : SegmentItem  # surviving segment (far1--far2 after redo)
-    _seg2 : SegmentItem  # removed segment
+    _node : FreeNodeItem  # free node being removed
+    _far1 : NodeItem      # far node of seg1
+    _far2 : NodeItem      # far node of seg2
+    _seg1 : SegmentItem   # surviving segment (far1--far2 after redo)
+    _seg2 : SegmentItem   # removed segment
 
     def __init__(
         self  : Self,
         scene : "DiagramScene",
-        node  : NodeItem
+        node  : FreeNodeItem
     ) -> None:
         super().__init__(scene)
         self._node = node
@@ -273,8 +272,8 @@ class CmdUnsplitSegment(CmdDiagramSceneBase):
 
 class CmdSplitNet(CmdDiagramSceneBase):
     """
-    Split a net at the specified vertex pair.
-    Assumption: the vertices are part of the same net.
+    Split a net at the specified node pair.
+    Assumption: the nodes are part of the same net.
     """
 
     # instance attributes

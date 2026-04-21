@@ -7,7 +7,7 @@ from ....core.types import Direction, DataKind
 
 from ..properties import InherentProperty, PropertiesMixin
 
-from .entry import EntryItem
+from .node import PinNodeItem
 
 from .mixin        import ItemMixin
 from .mixin.line   import ItemLineMixin
@@ -27,7 +27,6 @@ class PortPinMixin(
     PropertiesMixin
 ):
     # class attributes
-    _PIN_NAME_OFFSET = 1.5
     _PROPERTIES_NAME = \
         {
             "Name" : InherentProperty(
@@ -60,7 +59,7 @@ class PortPinMixin(
     _name      : str
     _direction : Direction
     _comment   : str
-    _entry     : EntryItem
+    _node     : PinNodeItem
 
     def initPortPin(self : Self | QGraphicsPathItem, fresh : bool) -> None:
         # Initialize attributes that properties will access
@@ -69,8 +68,8 @@ class PortPinMixin(
         self._comment   = ""
         # Initialize the item (this sets up properties system)
         self.initItem(fresh)
-        # Initialize the entry
-        self._entry = EntryItem(parent=self)
+        # Initialize the PinNode
+        self._node = PinNodeItem(parent=self)
 
     def initHandles(self : Self) -> None:
         raise NotImplementedError("Subclass must implement this method")

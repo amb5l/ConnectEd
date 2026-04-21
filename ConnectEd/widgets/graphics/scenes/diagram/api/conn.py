@@ -3,15 +3,15 @@ from math        import isclose
 from PyQt6.QtCore import Qt, QPointF, QLineF
 from PyQt6.QtGui  import QPainterPath, QPainterPathStroker
 
-from ....items.node           import NodeItem
-from ....items.vertex         import VertexItem
-from ....items.entry          import EntryItem
+from ......app import logger
+
+from ....items.node           import NodeItem, FreeNodeItem, PinNodeItem, TapNodeItem
 from ....items.segment        import SegmentItem
 from ....items.property_label import PropertyLabelItem
 
 from ...drawing.cmd import cmdExec, CmdDelete
 
-from ..cmd.conn import CmdAddVertex, \
+from ..cmd.conn import CmdAddFreeNode, \
                        CmdAddSegment, CmdSplitSegment, CmdUnsplitSegment, \
                        CmdSplitNet
 
@@ -23,39 +23,39 @@ if TYPE_CHECKING:
 class DiagramSceneApiConnMixin:
     """Connectivity API."""
 
-    def addVertex(
+    def addFreeNode(
         self     : "DiagramScene",
         pos      : QPointF,
         undoable : bool = False
-    ) -> VertexItem:
+    ) -> FreeNodeItem:
         """
-        Add a vertex to the scene.
+        Add a free node to the scene.
         Split any crossing segment(s) and merge their net(s).
-        Assumption: no existing vertices at this point.
+        Assumption: no existing nodes at this point.
         """
-        # create vertex
-        cmd = CmdAddVertex(self, pos)
+        # create free node
+        cmd = CmdAddFreeNode(self, pos)
         cmdExec(self, cmd, undoable)
-        vtx = cmd.vtx()
-        # split crossing segments at new vertex, joining nets as required
+        node = cmd.node()
+        # split crossing segments at new node, joining nets as required
         items = self.items(pos)
         for seg in [item for item in items if isinstance(item, SegmentItem)]:
-            cmd = CmdSplitSegment(self, seg, vtx)
+            cmd = CmdSplitSegment(self, seg, node)
             cmdExec(self, cmd, undoable)
         # done
-        return vtx
+        return node
 
-    def removeVertex(
+    def removeFreeNode(
         self     : "DiagramScene",
-        vtx      : VertexItem,
+        node     : FreeNodeItem,
         undoable : bool = False
     ) -> None:
         """
-        Remove a vertex from the scene.
+        Remove a free node from the scene.
         Unsplit any crossing segments.
         If label(s) are attached, they go with it.
         """
-        cmd = CmdDelete(self, [vtx])
+        cmd = CmdDelete(self, [node])
         cmdExec(self, cmd, undoable)
 
     def replaceNode(
@@ -65,7 +65,7 @@ class DiagramSceneApiConnMixin:
         undoable : bool = False
     ) -> None:
         """
-        Replace one vertex with another. Typically used for entry/vertex swaps.
+        Replace one node with another. Typically used for free/non swaps.
         """
         cmd = CmdReplaceNode(self, node1, node2)
         cmdExec(self, cmd, undoable)
@@ -74,35 +74,37 @@ class DiagramSceneApiConnMixin:
         self     : "DiagramScene",
         pos      : QPointF,         # scene coordinates
         undoable : bool = False
-    ) -> VertexItem:
+    ) -> FreeNodeItem:
         """
-        Get a node if present, add a vertex if necessary.
+        Get a node if present, add a free node if necessary.
         Useful for adding segments, placing labels etc.
         """
         items = self.items(pos)
         for item in items:
             if isinstance(item, NodeItem):
                 return item
-        return self.addVertex(pos, undoable)
+        return self.addFreeNode(pos, undoable)
 
-    def detachEntry(
-        self : "DiagramScene",
-        entry : EntryItem,
+    def detachNode(
+        self     : "DiagramScene",
+        node     : PinNodeItem | TapNodeItem,
         undoable : bool = False
     ) -> None:
         """
-        Detach an entry from existing connectivity.
-        Used in move (not slide) interaction for entries touching nodes
-        that will not move entries on unselected items, and unselected
-        segment endpoints (for which a replacement vertex will be added).
+        Detach a node from existing connectivity.
+        Used in move (not slide) interaction for nodes touching nodes
+        that will not move nodes on unselected items, and unselected
+        segment endpoints (for which a replacement node will be added).
         Remove orphan zero length segments.
         Melt redundant segment splits.
         """
+        cmd = CmdDetachNode(self, node)
+        cmdExec(self, cmd, undoable)
 
     def detachSegment(
-        self : "DiagramScene",
-        seg  : SegmentItem,
-        node : NodeItem,
+        self     : "DiagramScene",
+        seg      : SegmentItem,
+        node     : NodeItem,
         undoable : bool = False
     ) -> None:
         """
@@ -110,55 +112,57 @@ class DiagramSceneApiConnMixin:
         Used in move (not slide) interaction for segments touching nodes
         that will not move e.g. pins on unselected blocks, vertices on
         unselected segments.
-        If attached to an entry, add a new vertex at the segment endpoint and
-        leave the entry behind.
-        If attached to a vertex needed for other segments, ditto.
+        If attached to a pin or tap node, add a new free node at the segment
+        endpoint and leave the pin or tap node behind.
+        If attached to a free node needed for other segments, ditto.
         Melt redundant segment splits.
         """
 
     def dropSegmentNode(
-        self : "DiagramScene",
-        seg  : SegmentItem,
-        vtx  : VertexItem,
+        self     : "DiagramScene",
+        seg      : SegmentItem,
+        node     : FreeNodeItem,
         undoable : bool = False
     ) -> None:
         """
-        Drop a segment vertex back into the scene.
-        Replace vertex with an existing entry if present.
+        Drop a segment node back into the scene.
+        Replace node with an existing node if present.
         """
 
 
-    def addEntry(
+    def addNode(
         self     : "DiagramScene",
-        entry    : EntryItem,
+        node     : PinNodeItem | TapNodeItem,
         undoable : bool = False
-    ) -> EntryItem:
+    ) -> PinNodeItem | TapNodeItem:
         """
-        Process the addition of an entry to the scene, e.g. as the result
+        Process the addition of a node to the scene, e.g. as the result
         of a move, paste/duplicate or place operation.
         """
-        cmd = CmdAddEntry(self, pos)
+        cmd = CmdAddNode(self, node)
         cmdExec(self, cmd, undoable)
-        return cmd.entry()
+        return cmd.node()
 
 
-    def isRedundantVertex(self : "DiagramScene", vtx : VertexItem) -> bool:
+    def isRedundantNode(self : "DiagramScene", node : NodeItem) -> bool:
         """
-        Vertex is redundant if
-        - it is parentless (not an entry)
-        - it is childless (not parenting a property text)
-        - it breaks up a straight line.
+        Node is redundant if
+        - free
+        - parentless (should always be true for free nodes)
+        - childless (not parenting a property text)
+        - breaks up a straight line.
         """
-        if vtx.parentItem() is not None \
-        or len(vtx.childItems()) != 0 \
-        or vtx.degree() != 2:
+        if not isinstance(node, FreeNodeItem) \
+        or node.parentItem() is not None \
+        or len(node.childItems()) != 0 \
+        or node.degree() != 2:
             return False
-        seg1 = vtx.segments()[0]
-        seg2 = vtx.segments()[1]
-        p1 = seg1.otherNode(vtx).scenePos()
-        p2 = seg2.otherNode(vtx).scenePos()
-        uv1 = QLineF(vtx.scenePos(), p1).unitVector()
-        uv2 = QLineF(vtx.scenePos(), p2).unitVector()
+        seg1 = node.segments()[0]
+        seg2 = node.segments()[1]
+        p1 = seg1.otherNode(node).scenePos()
+        p2 = seg2.otherNode(node).scenePos()
+        uv1 = QLineF(node.scenePos(), p1).unitVector()
+        uv2 = QLineF(node.scenePos(), p2).unitVector()
         dot_product = uv1.dx() * uv2.dx() + uv1.dy() * uv2.dy()
         return isclose(dot_product, 1.0, abs_tol=1e-6)
 
@@ -169,7 +173,7 @@ class DiagramSceneApiConnMixin:
         undoable : bool = False
     ) -> None:
         """
-        Create or find vertex at each endpoint.
+        Create or find node at each endpoint.
 
         """
         # handle zero length - can happen on double click
@@ -189,17 +193,17 @@ class DiagramSceneApiConnMixin:
         stroker.setWidth(1.0)  # hit tolerance in scene units
         stroker.setCapStyle(Qt.PenCapStyle.FlatCap)  # don't extend beyond endpoints
         stroker_path = stroker.createStroke(line_path)
-        vertices = [
+        nodes = [
             item for item in self.items(stroker_path) \
-                if isinstance(item, VertexItem)
+                if isinstance(item, NodeItem)
         ]
         # sort by distance from p1
-        vertices.sort(key=lambda v: QLineF(p1, v.scenePos()).length())
+        nodes.sort(key=lambda v: QLineF(p1, v.scenePos()).length())
         # add segments between all vertices along path from v1 to v2
         # iterate over all consecutive pairs of vertices
-        for v1, v2 in zip(vertices[:-1], vertices[1:], strict=True):
+        for v1, v2 in zip(nodes[:-1], nodes[1:], strict=True):
             # check if v1 is redundant and remove if so
-            if self.isRedundantVertex(v1):
+            if self.isRedundantNode(v1):
                 cmd = CmdUnsplitSegment(self, v1)
                 cmdExec(self, cmd, undoable)
                 continue
@@ -209,9 +213,10 @@ class DiagramSceneApiConnMixin:
             # add segment
             cmd = CmdAddSegment(self, v1, v2)
             cmdExec(self, cmd, undoable)
-        # check if last vertex is redundant and remove if so
-        if self.isRedundantVertex(v2):
-            self.delVertex(v2, undoable)
+        # check if last node is redundant and remove if so
+        if self.isRedundantNode(v2):
+            cmd = CmdUnsplitSegment(self, v2)
+            cmdExec(self, cmd, undoable)
         # end macro
         if undoable:
             self.undo_stack.endMacro()
@@ -229,27 +234,30 @@ class DiagramSceneApiConnMixin:
         if undoable:
             self.undo_stack.beginMacro("removeSegment")
         # remove segment
-        vtx1 = seg.node1()
-        vtx2 = seg.node2()
+        node1 = seg.node1()
+        node2 = seg.node2()
         cmd = CmdDelete(self, [seg])
         cmdExec(self, cmd, undoable)
         # split net
-        cmd = CmdSplitNet(self, vtx1, vtx2)
+        cmd = CmdSplitNet(self, node1, node2)
         cmdExec(self, cmd, undoable)
         # remove labels and orphan free vertices
-        for vtx in [vtx1, vtx2]:
-            if vtx.parentItem() is not None:
-                continue  # is an entry so not a free vertex
-            if vtx.degree() > 0:
+        for node in [node1, node2]:
+            if not isinstance(node, FreeNodeItem):
+                continue  # not a free node
+            if node.parentItem() is not None:
+                logger().warning(f"FreeNode {node} has a parent")
+                continue  # free node with parent???
+            if node.degree() > 0:
                 continue  # is connected to other segments so not an orphan
             # orderly removal of labels
-            for child in vtx.childItems():
+            for child in node.childItems():
                 if isinstance(child, PropertyLabelItem):
                     cmd = CmdDelete(self, [child])
                     cmdExec(self, cmd, undoable)
-            if vtx.childItems() != []:
+            if node.childItems() != []:
                 continue  # is parenting a label so not an orphan
-            cmd = CmdDelete(self, [vtx])
+            cmd = CmdDelete(self, [node])
             cmdExec(self, cmd, undoable)
         # end macro
         if undoable:

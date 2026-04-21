@@ -1,17 +1,20 @@
 from typing import Self
 
-from PyQt6.QtCore    import QPointF
+from PyQt6.QtCore    import Qt, QPointF
 from PyQt6.QtWidgets import QMenu
 from PyQt6.QtGui     import QAction
 
+from ....app import settings
+
+from ....core.defs  import WIDTH
 from ....core.types import RectHandleId, SymbolPinHandleId, DataKind
+from ....core.check import checked
 
 from ..properties import PropertyTextSpec
 
 from .port_pin import PortPinMixin
 from .base_pin import BasePinArrowItem, BasePinItem, \
-                      BasePinDotMixin, BasePinClockMixin, \
-                      _PIN_CLK_SIZE
+                      BasePinDotMixin, BasePinClockMixin
 
 from .mixin.pos     import ItemPosMixin
 from .mixin.rotate  import ItemRotateMixin
@@ -61,6 +64,15 @@ class SymbolPinItem(
     def handleIdKind(cls) -> DataKind:
         return DataKind.SYMBOL_PIN_HANDLE
 
+    @checked
+    def onSceneChange(self : Self, scene : "DrawingScene | None") -> None:
+        self.onSettingsChange(scene)
+
+    @checked
+    def onSettingsChange(self : Self, scene : "DrawingScene | None" = None) -> None:
+        self._setPath(scene)
+
+    @checked
     def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
         return [
             view.action(
@@ -75,12 +87,29 @@ class SymbolPinItem(
             )
         ]
 
+    @checked
     def _setPath(self : Self, scene : "DrawingScene | None" = None) -> None:
+        # ensure scene resources are available
         if scene is None:
             if (scene := self.scene()) is None:
                 return
+        item_name = self.settingsName()
+        # set path
         key = (self._dot, self._clock)
-        self.setPath(scene.resources["SymbolPin"][key])
-        self._handles[SymbolPinHandleId.NAME].setPos(QPointF(
-            self._PIN_NAME_OFFSET + (_PIN_CLK_SIZE if self._clock else 0), 0
-        ))
+        self.setPath(scene.resources[item_name][key])
+        # update name handle position
+        pin_settings_path = f"theme/items/{item_name}"
+        # standard offset
+        name_offset = WIDTH
+        # allow for pen width
+        pen_style = settings().get(f"{pin_settings_path}/line/style")
+        if pen_style != Qt.PenStyle.NoPen:
+            pen_width = settings().get(f"{pin_settings_path}/line/width")
+            name_offset += (pen_width / 2)
+        # allow for clock
+        if self._clock:
+            clk_settings_path = f"{pin_settings_path}Clk"
+            clk_size = settings().get(f"{clk_settings_path}/size")
+            name_offset += clk_size
+        # finalize
+        self._handles[SymbolPinHandleId.NAME].setPos(QPointF(name_offset, 0))

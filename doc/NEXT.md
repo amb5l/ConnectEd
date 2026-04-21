@@ -1,3 +1,7 @@
+OutLineMixin review
+onGeometryChange review
+fix pin name handle positioning
+fix initResources for Diagram vs Drawing scene
 get TapItem working
 use ItemTransformMixin for BlockItem - test mirroring, pin movement
 USE MIRRORING FOR BLOCK PINS so anchored property positions stay sensible

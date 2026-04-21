@@ -22,7 +22,7 @@ class SegmentItem(
     ItemMenuMixin,
     QGraphicsLineItem
 ):
-    """Runs between two VertexItem instances."""
+    """Runs between two NodeItem instances."""
     # class attributes
     Z = Z_DRAWING - 1
     _PEN_CAP_STYLE = Qt.PenCapStyle.SquareCap

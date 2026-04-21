@@ -103,18 +103,18 @@ class LineHandleId(HandleId):
 
 
 class PortHandleId(HandleId):
-    ENTRY = "Entry"  # also placement origin
-    NAME  = "Name"   # set beside signal direction shape
+    NODE = "Node"  # also placement origin
+    NAME = "Name"  # set beside signal direction shape
 
 
 class BlockPinHandleId(HandleId):
-    ENTRY = "Entry"  # also placement origin
-    NAME  = "Name"   # set just in from signal direction shape
+    NODE = "Node"  # also placement origin
+    NAME = "Name"  # set just in from signal direction shape
 
 
 class SymbolPinHandleId(HandleId):
     ORIGIN = "Origin"  # placement origin
-    ENTRY  = "Entry"   # tip of external pin shape
+    NODE   = "Node"    # tip of external pin shape
     NAME   = "Name"    # set just in from placement origin
 
 

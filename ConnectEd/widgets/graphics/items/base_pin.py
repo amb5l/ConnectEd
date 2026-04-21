@@ -20,14 +20,6 @@ if TYPE_CHECKING:
     from ..scenes.drawing import DrawingScene
 
 
-# documentation - DO NOT CHANGE
-_PIN_SIZE       = PITCH
-_PIN_DOT_SIZE   = 3
-_PIN_CLK_SIZE   = 3
-_EXT_ARROW_SIZE = 3
-_INT_ARROW_SIZE = 6
-
-
 class BasePinArrowItem(
     ItemSettingsMixin,
     ItemPaintMixin,
@@ -62,10 +54,15 @@ class BasePinArrowItem(
         self._direction = value
         self._setPath()
 
-    def _setPath(self : Self, scene : "DrawingScene | None" = None) -> None:
+    def _setPath(
+        self      : Self,
+        scene     : "DrawingScene | None" = None,
+        direction : Direction | None = None
+    ) -> None:
         if scene is None:
             if (scene := self.scene()) is None:
                 return
+        direction = self._direction if direction is None else direction
         item_name = self.__class__.__name__.removesuffix("Item")
         self.setPath(scene.resources[item_name][self._direction.value])
 
@@ -85,7 +82,7 @@ class BasePinItem(ItemPaintMixin, PortPinMixin, QGraphicsPathItem):
         QGraphicsPathItem.__init__(self, parent)
         self.initPortPin(fresh)
         self._setPath()
-        self._entry.setPos(-PITCH, 0)
+        self._node.setPos(-PITCH, 0)
         if self._ARROW_CLASS is not None:
             self._arrow = self._ARROW_CLASS(self)
         else:
@@ -104,7 +101,7 @@ class BasePinItem(ItemPaintMixin, PortPinMixin, QGraphicsPathItem):
     def onSelectionChange(self : Self, selected : bool) -> None:
         if self._arrow is not None:
             self._arrow.setSelected(selected)
-        self._entry.setSelected(selected)
+        self._node.setSelected(selected)
 
     def _setPath(self : Self, scene : "DrawingScene | None" = None) -> None:
         raise NotImplementedError("Subclasses must implement this method")

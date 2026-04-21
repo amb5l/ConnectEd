@@ -11,9 +11,7 @@ from .....app import logger
 
 from .....core.expr import evaluate
 
-from ...items.node           import NodeItem
-from ...items.entry          import EntryItem
-from ...items.vertex         import VertexItem
+from ...items.node           import NodeItem, FreeNodeItem, PinNodeItem
 from ...items.port           import PortItem
 from ...items.block_pin      import BlockPinItem
 from ...items.symbol_pin     import SymbolPinItem
@@ -71,7 +69,7 @@ class Netlist:
         self._node2net = {}
         self._id = 0
 
-    # -- Graph: vertex operations ------------------------------------------
+    # -- Graph: node operations ------------------------------------------
 
     def addNode(self : Self, node : NodeItem) -> None:
         self._graph.add_node(node)
@@ -203,28 +201,28 @@ class Netlist:
         xw.writeStartElement("Connectivity")
         # nodes: entries, vertices and PropertyLabelItem instances
         raw_nodes : list[NodeItem] = self._node2net.keys()
-        entries : list[EntryItem] = [
-            node for node in raw_nodes if isinstance(node, EntryItem)
+        entries : list[PinNodeItem] = [
+            node for node in raw_nodes if isinstance(node, PinNodeItem)
         ]
-        vertices : list[VertexItem] = [
-            node for node in raw_nodes if isinstance(node, VertexItem)
+        vertices : list[FreeNodeItem] = [
+            node for node in raw_nodes if isinstance(node, FreeNodeItem)
         ]
         nodes = entries + vertices  # entries then vertices
         for id, node in enumerate(raw_nodes):
             node.toXml(xw, id)
         # physical nets (segment groups)
         groups : list[str] = []
-        vtx2gid : dict[VertexItem, int] = {}
+        vtx2gid : dict[FreeNodeItem, int] = {}
         for component in networkx.connected_components(self._graph):
             gid = len(groups)
             for vtx in component:
                 vtx2gid[vtx] = gid
             subgraph = self._graph.subgraph(component)
-            vertex_pairs = [
+            node_pairs = [
                 f"{nodes.index(v1)},{nodes.index(v2)}"
                      for v1, v2 in subgraph.edges()
             ]
-            groups.append(" ".join(vertex_pairs))
+            groups.append(" ".join(node_pairs))
         for id, segments in enumerate(groups):
             xw.writeStartElement("PhysicalNet")
             xw.writeAttribute("ID", str(id))
@@ -275,18 +273,18 @@ class Netlist:
         pin_names   : list[tuple[str, str]] = []
         for node in net.nodes:
             parent = node.parentItem()
-            if isinstance(node, EntryItem):  # entry
-                if isinstance(parent, PortItem):  # port entry
+            if isinstance(node, PinNodeItem):     # pin node
+                if isinstance(parent, PortItem):  # port pin node
                     raw_name = parent.name()
                     res_name = parent.resolvedName()
                     if res_name is not None:
                         port_names.append((raw_name,res_name))
-                elif isinstance(parent, BlockPinItem | SymbolPinItem):  # pin entry
+                elif isinstance(parent, BlockPinItem | SymbolPinItem):  # block/symbol pin node
                     raw_name = parent.name()
                     res_name = parent.resolvedName()
                     if res_name is not None:
                         pin_names.append((raw_name,res_name))
-            elif isinstance(node, VertexItem):  # free vertex
+            elif isinstance(node, FreeNodeItem):  # free node
                 for child in node.childItems():
                     if isinstance(child, PropertyLabelItem): # label
                         if child.name() == "Name":  # name label

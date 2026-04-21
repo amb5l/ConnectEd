@@ -3,16 +3,19 @@ from typing import Self
 from PyQt6.QtCore import Qt, QRectF
 from PyQt6.QtGui  import QPainter, QPen
 
-from ....app import settings
+from .....app import settings
 
-from ....core.utils import registerClass
+from .....core.defs import PITCH
 
-from ....core.defs import PITCH
+from ..drawing import DrawingScene
 
-from .drawing import DrawingScene
+from .resources import SymbolSceneResourcesMixin
 
 
-class SymbolScene(DrawingScene):
+class SymbolScene(
+    SymbolSceneResourcesMixin,
+    DrawingScene
+):
 
     # instance attributes
     _brect   : QRectF | None  # bounding rect of all items
