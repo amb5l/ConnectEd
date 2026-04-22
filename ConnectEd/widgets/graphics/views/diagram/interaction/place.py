@@ -52,12 +52,12 @@ class PlaceBlockPinInteraction(BlockPinInteraction):
     def update(self : Self, pos : QPointF, snap : QPointF | None = None) -> None:
         self._pin.setLoc(self._pin.locSnap(self._parent.pos2loc(pos), snap))
 
-    def commit(self : Self, pos : QPointF, snap : QPointF | None = None) -> bool:
+    def _commit(self : Self, pos : QPointF, snap : QPointF | None = None) -> bool:
         self.update(pos, snap)
         self._scene.addBlockPin(self._parent, self._pin, undoable=True)
         return True
 
-    def cancel(self : Self) -> None:
+    def _cancel(self : Self) -> None:
         self._pin.setParentItem(None)
 
 
@@ -88,7 +88,7 @@ class PlaceConnInteraction(Interaction):
     def update(self : Self, pos : QPointF) -> None:
         self._updateVertices(pos)
 
-    def commit(self : Self, pos : QPointF, complete : bool = False) -> bool:
+    def _commit(self : Self, pos : QPointF, complete : bool = False) -> bool:
         self._updateVertices(pos)
         # probe for terminals at both preview segment endpoints before changes
         terminals_1 = [
@@ -113,10 +113,10 @@ class PlaceConnInteraction(Interaction):
         self._restart(pos)
         return False  # continue interaction
 
-    def complete(self : Self, pos : QPointF) -> None:
+    def _complete(self : Self, pos : QPointF) -> None:
         self.commit(pos, complete=True)
 
-    def cancel(self : Self) -> None:
+    def _cancel(self : Self) -> None:
         self._cleanup()
 
     def _p0(self : Self) -> QPointF:

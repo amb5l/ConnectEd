@@ -16,29 +16,69 @@ if TYPE_CHECKING:
 
 
 class Interaction:
-    """Base for all interactions."""
+    """Base for all interactions.
+
+    ``commit``, ``complete`` and ``cancel`` are public entry points that
+    track a ``_done`` flag. Once an interaction is done (``commit`` returned
+    True, ``complete`` finished, or ``cancel`` ran), further calls to any
+    of them are no-ops. This makes it safe for state-machine code (e.g.
+    ``DrawingViewStateBase.go``) to cancel whatever interaction happens to
+    be live without worrying about whether it was already committed.
+
+    Subclasses implement the actual behaviour in ``_commit``, ``_complete``
+    and ``_cancel``.
+    """
 
     # instance attributes
     _view  : "DrawingView"
     _scene : "DrawingScene"
+    _done  : bool
 
     def __init__(self : Self, view : "DrawingView"):
         self._view = view
         self._scene = view.scene()
+        self._done = False
+
+    def done(self : Self) -> bool:
+        return self._done
+
+    # Public entry points ---------------------------------------------------
+
+    def commit(self : Self, *args : Any, **kwargs : Any) -> bool:
+        if self._done:
+            return False
+        result = self._commit(*args, **kwargs)
+        if result:
+            self._done = True
+        return result
+
+    def complete(self : Self, *args : Any, **kwargs : Any) -> None:
+        if self._done:
+            return
+        self._complete(*args, **kwargs)
+        self._done = True
+
+    def cancel(self : Self) -> None:
+        if self._done:
+            return
+        self._cancel()
+        self._done = True
+
+    # Subclass hooks --------------------------------------------------------
 
     def valid(self : Self) -> bool:
         raise NotImplementedError("Subclass must implement this method")
 
-    def update(self : Self, pos : QPointF) -> None:
+    def update(self : Self, *args : Any, **kwargs : Any) -> None:
         raise NotImplementedError("Subclass must implement this method")
 
-    def commit(self : Self, pos : QPointF) -> bool:
+    def _commit(self : Self, *args : Any, **kwargs : Any) -> bool:
         raise NotImplementedError("Subclass must implement this method")
 
-    def complete(self : Self, pos : QPointF) -> None:
+    def _complete(self : Self, *args : Any, **kwargs : Any) -> None:
         raise NotImplementedError("Subclass must implement this method")
 
-    def cancel(self : Self) -> None:
+    def _cancel(self : Self) -> None:
         raise NotImplementedError("Subclass must implement this method")
 
     def ctxMenuItems(self : Self, pos : QPointF) -> list[QAction | QMenu]:

@@ -43,7 +43,7 @@ class PlaceBaseInteraction(ItemInteraction):  # _view, _scene, _item, valid
             self._scene.addItem(self._item)
         self._item.setSelected(True)
 
-    def cancel(self : Self) -> None:
+    def _cancel(self : Self) -> None:
         self._scene.removeItem(self._item)
 
 
@@ -53,12 +53,12 @@ class PlaceBase1PosInteraction(PlaceBaseInteraction):
     def update(self : Self, pos : QPointF):
         self._item.setPos(pos)
 
-    def commit(self : Self, pos : QPointF) -> bool:
+    def _commit(self : Self, pos : QPointF) -> bool:
         self.update(pos)
         self._scene.addItems([self._item], undoable=True)
         return True
 
-    def complete(self : Self, pos : QPointF) -> None:
+    def _complete(self : Self, pos : QPointF) -> None:
         self.commit(pos)
 
     def ctxMenuItems(self : Self, pos : QPointF) -> list[QAction | QMenu]:
@@ -125,7 +125,7 @@ class PlacePolylineInteraction(PlaceBase1PosInteraction):
     def update(self : Self, pos : QPointF):
         self._item.setLastVertexPos(pos)  # local coordinates
 
-    def commit(self : Self, pos : QPointF) -> bool:
+    def _commit(self : Self, pos : QPointF) -> bool:
         # Ensure last vertex is at the click position
         self.update(pos)
         # Only proceed if the last vertex has moved from the previous one
@@ -151,11 +151,11 @@ class PlacePolylineInteraction(PlaceBase1PosInteraction):
         self._sweep = None
         return False  # continue interaction
 
-    def complete(self : Self, pos : QPointF) -> None:
+    def _complete(self : Self, pos : QPointF) -> None:
         if not self.commit(pos):
             self._item.delLastVertex()  # remove WIP vertex
 
-    def cancel(self : Self) -> None:
+    def _cancel(self : Self) -> None:
         """Escape works a bit differently here."""
         self._item.delLastVertex()  # remove WIP vertex
 

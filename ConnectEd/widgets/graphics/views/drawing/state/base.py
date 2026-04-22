@@ -31,12 +31,12 @@ class DrawingViewStateBase:
         self.scene = view.scene()
 
     def go(
-        self  : Self,
-        state : "DrawingViewStateBase",
-        items : list[ItemMixin] | None = None
+        self        : Self,
+        state       : "DrawingViewStateBase",
+        items       : list[ItemMixin] | None = None,
+        interaction : Interaction | None = None
     ) -> None:
-        if state == self.view.stateIdle:
-            self.view.interaction = None
+        self._setInteraction(interaction)
         self.view.state = state
         if window() is not None:
             status = state.STATUS
@@ -59,12 +59,28 @@ class DrawingViewStateBase:
         interaction : Interaction,
         state       : "DrawingViewStateBase | None" = None
     ) -> None:
-        if interaction.valid():
-            self.view.interaction = interaction
-            if state is not None:
-                self.go(state)
-        else:
+        if not interaction.valid():
             self.view.state.go(self.view.stateIdle)
+            return
+        if state is not None:
+            self.go(state, interaction=interaction)
+        else:
+            # No state transition; just swap the interaction in place.
+            self._setInteraction(interaction)
+
+    def _setInteraction(
+        self        : Self,
+        interaction : Interaction | None
+    ) -> None:
+        """Install ``interaction`` as the view's live interaction, cancelling
+        the previous one if there was a different one. ``cancel()`` is a no-op
+        on already-done interactions (see ``Interaction``), so this is safe to
+        call after a successful ``commit``/``complete`` too.
+        """
+        old = self.view.interaction
+        if old is not None and old is not interaction:
+            old.cancel()
+        self.view.interaction = interaction
 
     def entry(
         self : Self,

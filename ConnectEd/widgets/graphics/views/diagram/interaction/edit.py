@@ -49,7 +49,7 @@ class EditMoveBlockPinsInteraction(PreviewStateMixin, Interaction):
         for pin in self._pins[1:]:
             pin.setLoc(self._parent.locOffset(pin.loc(), offset, corner))
 
-    def commit(self : Self, pos : QPointF, snap : QPointF | None = None) -> bool:
+    def _commit(self : Self, pos : QPointF, snap : QPointF | None = None) -> bool:
         self._previewRestore()
         self.update(pos, snap)
         if all(p.loc() == self._preview_state[p] for p in self._pins):
@@ -63,7 +63,7 @@ class EditMoveBlockPinsInteraction(PreviewStateMixin, Interaction):
         )
         return True
 
-    def cancel(self : Self) -> None:
+    def _cancel(self : Self) -> None:
         self._previewRestore()
 
     def _previewTargets(self : Self) -> list[BlockPinItem]:

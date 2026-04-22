@@ -29,9 +29,6 @@ class DrawingViewUiEditMixin:
         raise NotImplementedError("editRepeat not implemented")
 
     def editCancel(self : "DrawingViewUi") -> None:
-        if self._view.interaction:
-            self._view.interaction.cancel()
-        self._view.interaction = None
         self._scene.clearSelection()
         self._view.state.go(self._view.stateIdle)
 
@@ -78,10 +75,10 @@ class DrawingViewUiEditMixin:
         pos  : QPoint | QPointF | None = None
     ) -> None:
         pos = self._view.mapToScene(pos) if isinstance(pos, QPoint) else pos
-        if self._view.interaction:
-            self._view.interaction.cancel()
-        self._view.interaction = EditMoveInteraction(self._view, [grip], pos)
-        self._view.state.go(self._view.stateEditResize)
+        self._view.state.interact(
+            EditMoveInteraction(self._view, [grip], pos),
+            self._view.stateEditResize
+        )
 
     def editRotateCW(
         self  : "DrawingViewUi",
@@ -258,9 +255,7 @@ class DrawingViewUiEditMixin:
             or item.topParentItem() in items:
                 items.remove(item)
         # slide/move
-        if self._view.interaction:
-            self._view.interaction.cancel()
-        self._view.interaction = EditMoveInteraction(self._view, items, pos, slide)
-        self._view.state.go(
+        self._view.state.interact(
+            EditMoveInteraction(self._view, items, pos, slide),
             self._view.stateEditSlide if slide else self._view.stateEditMove
         )

@@ -46,14 +46,14 @@ class EditPasteInteraction(
         else:
             self._items = None
 
-    def commit(self : Self, pos : QPointF) -> bool:
+    def _commit(self : Self, pos : QPointF) -> bool:
         self._previewRestore()  # restore initial positions
         self.update(pos)     # apply final offset
         # add pasted items to scene
         self._scene.addItems(self._items, undoable=True)
         return True
 
-    def cancel(self : Self) -> None:
+    def _cancel(self : Self) -> None:
         self._removeFromScene()   # remove preview items
 
 
@@ -110,13 +110,13 @@ class EditMoveInteraction(
         self._slide = slide
         self._previewSave()  # record initial positions
 
-    def commit(self : Self, pos : QPointF) -> bool:
+    def _commit(self : Self, pos : QPointF) -> bool:
         self._previewRestore()  # restore initial positions
         # apply final offset
         self._scene.editMove(self._items, pos - self._ipos, self._slide, undoable=True)
         return True
 
-    def cancel(self : Self) -> None:
+    def _cancel(self : Self) -> None:
         self._previewRestore()  # restore initial positions
 
 
@@ -180,7 +180,7 @@ class EditAdjustPolySegInteraction(PreviewStateMixin, Interaction):
         self._seg.setSweep(sweep)
         self._polyline.updatePath()
 
-    def commit(self : Self, pos : QPointF) -> bool:
+    def _commit(self : Self, pos : QPointF) -> bool:
         self.update(pos)
         new_sweep = self._seg.sweep()
         # Restore original value before creating undo command
@@ -190,10 +190,10 @@ class EditAdjustPolySegInteraction(PreviewStateMixin, Interaction):
         self._hideGuides()
         return True
 
-    def complete(self : Self, pos : QPointF) -> None:
+    def _complete(self : Self, pos : QPointF) -> None:
         self.commit(pos)
 
-    def cancel(self : Self) -> None:
+    def _cancel(self : Self) -> None:
         self._previewRestore()
         self._hideGuides()
 
