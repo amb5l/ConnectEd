@@ -13,7 +13,7 @@ if TYPE_CHECKING:
 
 
 class DiagramView(DiagramViewStateMixin, DrawingView):
-    UI_CLASS = DiagramViewUi
+    UI_CLS = DiagramViewUi
 
     ui : DiagramViewUi
 

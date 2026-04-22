@@ -41,7 +41,7 @@ class DrawingView(
     DrawingViewPrivateMixin,
     QGraphicsView
 ):
-    UI_CLASS : ClassVar[type["DrawingViewUi"]] = DrawingViewUi
+    UI_CLS : ClassVar[type["DrawingViewUi"]] = DrawingViewUi
 
     _shown      : bool = False
     _zoomed     : bool = False
@@ -72,7 +72,7 @@ class DrawingView(
         self.grid        = DrawingViewGrid()
         self.mouse       = DrawingViewMouse()
         self.interaction = None
-        self.ui          = self.UI_CLASS(self)
+        self.ui          = self.UI_CLS(self)
 
         self.setMouseTracking(True)
         self.setRenderHint(QPainter.RenderHint.Antialiasing)
