@@ -83,7 +83,7 @@ class NodeItem(
         scene : "DiagramScene | None" = self.scene()
         if scene is None or not scene.netlist.hasNode(self):
             return 0
-        return scene.netlist.degree(self)
+        return scene.netlist.nodeDegree(self)
 
     def segments(self : Self) -> list["SegmentItem"]:
         scene : "DiagramScene | None" = self.scene()

@@ -23,36 +23,25 @@ if TYPE_CHECKING:
     from ...items.segment  import SegmentItem
 
 
-class NetCategory(StrEnum):
-    UNRESOLVED = "unresolved"
-    SCALAR     = "scalar"
-    MEMBER     = "member"
-    VECTOR     = "vector"
-
-
 @dataclass(slots=True)
 class Net:
     id        : int
-    category  : NetCategory = NetCategory.UNRESOLVED
-    name      : str | None = None # resolved name or None
-    vector    : "Net | None" = None # member's vector
-    members   : list["Net"] = field(default_factory=list)  # vector's members
+    name      : str           = ""    # excluding index/range suffix
+    suffix    : str | None    = None  # empty = scalar, index = bus member, range = bus
+    parent    : "Net | None"  = None  # parent bus, for scalar members
     nodes     : set[NodeItem] = field(default_factory=set)
 
     def isUnresolved(self : Self) -> bool:
-        return self.category == NetCategory.UNRESOLVED
+        return self.suffix is None
 
     def isScalar(self : Self) -> bool:
-        return self.category == NetCategory.SCALAR
+        return self.suffix == ""
 
     def isMember(self : Self) -> bool:
-        return self.category == NetCategory.MEMBER
+        return self.suffix is not None and self.suffix != "" and ":" not in self.suffix
 
     def isVector(self : Self) -> bool:
-        return self.category == NetCategory.VECTOR
-
-    def memberNets(self : Self) -> list["Net"]:
-        return self.children if self.isVector() else []
+        return self.suffix is not None and ":" in self.suffix
 
 
 class Netlist:
@@ -69,7 +58,10 @@ class Netlist:
         self._node2net = {}
         self._id = 0
 
-    # -- Graph: node operations ------------------------------------------
+    # node methods
+
+    def nodes(self : Self) -> list[NodeItem]:
+        return self._node2net.keys()
 
     def addNode(self : Self, node : NodeItem) -> None:
         self._graph.add_node(node)
@@ -87,10 +79,16 @@ class Netlist:
     def hasNode(self : Self, node : NodeItem) -> bool:
         return node in self._node2net
 
-    def nodes(self : Self) -> list[NodeItem]:
-        return self._node2net.keys()
+    def nodeDegree(self : Self, node : NodeItem) -> int:
+        """Number of segments connected to the node."""
+        return self._graph.degree(node)
 
-    # -- Graph: segment (edge) operations ----------------------------------
+    def nodeSegments(self : Self, node : NodeItem) -> list["SegmentItem"]:
+        """Edges connected to the node."""
+        iterator = self._graph.edges(node, data=True)
+        return [data["segment"] for _, _, data in iterator]
+
+    # segment methods
 
     def addSegment(
         self : Self,
@@ -167,25 +165,7 @@ class Netlist:
     ) -> bool:
         return self._graph.has_edge(node1, node2)
 
-    # -- Graph: queries ----------------------------------------------------
-
-    def degree(self : Self, node : NodeItem) -> int:
-        """Number of segments connected to the node."""
-        return self._graph.degree(node)
-
-    def edges(self : Self, node : NodeItem) -> list["SegmentItem"]:
-        """Edges connected to the node."""
-        iterator = self._graph.edges(node, data=True)
-        return [data["segment"] for _, _, data in iterator]
-
-    def physicalNet(self : Self, node : NodeItem) -> set[NodeItem]:
-        """Connected component containing the node."""
-        return set(networkx.node_connected_component(self._graph, node))
-
-    def hasPath(self : Self, node1 : NodeItem, node2 : NodeItem) -> bool:
-        return networkx.has_path(self._graph, node1, node2)
-
-    # -- Logical netlist ---------------------------------------------------
+    # netlist methods
 
     def newNet(self : Self) -> Net:
         """Create a new net."""
@@ -194,7 +174,7 @@ class Netlist:
         self._nets[net.id] = net
         return net
 
-    # -- Serialisation -----------------------------------------------------
+    # serialisation/deserialisation
 
     def toXml(self : Self, xw : QXmlStreamWriter) -> None:
         # start
