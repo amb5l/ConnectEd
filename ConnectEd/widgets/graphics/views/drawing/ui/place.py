@@ -4,27 +4,6 @@ if TYPE_CHECKING:
 
 
 class DrawingViewUiPlaceMixin:
-    def placePort(self : "DrawingViewUi") -> None:
-        self._view.state.go(self._view.statePlacePort)
-
-    def placeGate(self : "DrawingViewUi") -> None:
-        self._view.state.go(self._view.statePlaceGate)
-
-    def placeBlock(self : "DrawingViewUi") -> None:
-        self._view.state.go(self._view.statePlaceBlock1)
-
-    def placeBlockPin(self : "DrawingViewUi") -> None:
-        self._view.state.go(self._view.statePlaceBlockPin)
-
-    def placeSymbolPin(self : "DrawingViewUi") -> None:
-        self._view.state.go(self._view.statePlaceSymbolPin)
-
-    def placeConnection(self : "DrawingViewUi") -> None:
-        self._view.state.go(self._view.statePlaceConn1)
-
-    def placeTap(self : "DrawingViewUi") -> None:
-        self._view.state.go(self._view.statePlaceTap)
-
     def placeLine(self : "DrawingViewUi") -> None:
         self._view.state.go(self._view.statePlaceLine1)
 

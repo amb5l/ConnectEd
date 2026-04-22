@@ -1,4 +1,4 @@
-from typing import Self
+from typing import Self, ClassVar
 from math   import ceil
 
 from PyQt6.QtCore    import Qt, QPoint, QPointF, QRectF, QEvent
@@ -41,6 +41,8 @@ class DrawingView(
     DrawingViewPrivateMixin,
     QGraphicsView
 ):
+    UI_CLASS : ClassVar[type["DrawingViewUi"]] = DrawingViewUi
+
     _shown      : bool = False
     _zoomed     : bool = False
     marquee     : Marquee
@@ -70,7 +72,7 @@ class DrawingView(
         self.grid        = DrawingViewGrid()
         self.mouse       = DrawingViewMouse()
         self.interaction = None
-        self.ui          = DrawingViewUi(self)
+        self.ui          = self.UI_CLASS(self)
 
         self.setMouseTracking(True)
         self.setRenderHint(QPainter.RenderHint.Antialiasing)
