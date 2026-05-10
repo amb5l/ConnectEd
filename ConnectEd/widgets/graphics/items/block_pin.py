@@ -14,6 +14,7 @@ from ..properties import PropertyTextSpec
 
 from .base_pin import BasePinArrowItem, BasePinItem
 from .port_pin import PortPinMixin
+from .node     import PinNodeItem
 
 from .mixin.loc    import ItemLocMixin
 from .mixin.handle import ItemBlockPinHandlesMixin
@@ -31,6 +32,7 @@ class BlockPinArrowItem(BasePinArrowItem):
 
 class BlockPinItem(ItemLocMixin, ItemBlockPinHandlesMixin, BasePinItem):
     # class attributes
+    NODE_CLS = PinNodeItem
     _ARROW_CLASS = BlockPinArrowItem
     _PROPERTIES = \
         PortPinMixin._PROPERTIES_NAME | \

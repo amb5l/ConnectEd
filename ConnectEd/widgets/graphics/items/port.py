@@ -13,6 +13,7 @@ from ....core.check import checked
 from ..properties import PropertyTextSpec
 
 from .port_pin import PortPinMixin
+from .node     import PortNodeItem
 from .handle   import HandleItem
 
 from .mixin.paint  import ItemPaintMixin
@@ -37,6 +38,7 @@ class PortItem(
     QGraphicsPathItem
 ):
     # class attributes
+    NODE_CLS = PortNodeItem
     _PROPERTIES = \
         PortPinMixin._PROPERTIES_NAME      | \
         PortPinMixin._PROPERTIES_DIR       | \

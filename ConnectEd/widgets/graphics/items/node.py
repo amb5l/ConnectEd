@@ -160,7 +160,7 @@ class FreeNodeItem(NodeItem):
         return instance
 
 
-class NonFreeNodeItemMixin:
+class NonFreeNodeItem(NodeItem):
     def toXml(self : Self, xw : QXmlStreamWriter, id : int) -> None:
         xw.writeStartElement(self.settingsName())
         xw.writeAttribute("ID", str(id))
@@ -184,7 +184,7 @@ class NonFreeNodeItemMixin:
         )
         items = scene.items(pos)
         for item in items:
-            if isinstance(item, NonFreeNodeItemMixin):
+            if isinstance(item, NonFreeNodeItem):
                 instance = item
                 break
         else:
@@ -194,26 +194,17 @@ class NonFreeNodeItemMixin:
         return instance
 
 
-class PinNodeItem(NonFreeNodeItemMixin, NodeItem):
+class PortPinNodeItem(NonFreeNodeItem):
     _JUNCTION_THRESHOLD = 2
 
-    def __init__(
-        self   : Self,
-        parent : "PortPinMixin | None" = None
-    ) -> None:
-        super().__init__(parent=parent)
 
-    def name(self : Self) -> str | None:
-        """Name of pin or port."""
-        parent : "PortPinMixin | None" = self.parentItem()
-        return parent.name() if isinstance(parent, PortPinMixin) else None
+class PortNodeItem(PortPinNodeItem):
+    pass
 
 
-class TapNodeItem(NonFreeNodeItemMixin, NodeItem):
+class PinNodeItem(PortPinNodeItem):
+    pass
+
+
+class TapNodeItem(NonFreeNodeItem):
     _JUNCTION_THRESHOLD = 3
-
-    def __init__(
-        self   : Self,
-        parent : "TapItem | None" = None
-    ) -> None:
-        super().__init__(parent=parent)
