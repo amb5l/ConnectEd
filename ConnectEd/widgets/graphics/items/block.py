@@ -4,52 +4,20 @@ from PyQt6.QtCore    import QPointF
 from PyQt6.QtWidgets import QMenu
 from PyQt6.QtGui     import QAction
 
-from ....core.types import EdgeLoc, Edge, RectHandleId, DataKind
-
-from ..properties import PropertyTextSpec, InherentProperty
+from ....core.types import EdgeLoc, Edge
 
 from .base_rect import BaseRectangleItem
+
+from .part import PartItemMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ..views.drawing import DrawingView
 
 
-class BlockItem(BaseRectangleItem):
+class BlockItem(PartItemMixin, BaseRectangleItem):
     # class attributes
-    _PROPERTIES = {
-        "Label" : InherentProperty(
-            kind   = DataKind.STR,
-            worthy = lambda self: self._label != "",
-            getter = lambda self: self._label,
-            setter = lambda self, value: setattr(self, "_label", value)
-        ),
-        "Name" : InherentProperty(
-            kind   = DataKind.STR,
-            worthy = lambda self: self._name != "",
-            getter = lambda self: self._name,
-            setter = lambda self, value: setattr(self, "_name", value)
-        ),
-        "Path" : InherentProperty(
-            kind   = DataKind.STR,
-            worthy = lambda self: self._path != "",
-            getter = lambda self: self._path,
-            setter = lambda self, value: setattr(self, "_path", value)
-        )
-    } | BaseRectangleItem._PROPERTIES
-    _PROPERTY_TEXTS = {
-        "Label" : PropertyTextSpec(
-            cleat=RectHandleId.TOP_LEFT, origin=RectHandleId.BOTTOM_LEFT
-        ),
-        "Name"  : PropertyTextSpec(
-            cleat=RectHandleId.BOTTOM_LEFT, origin=RectHandleId.TOP_LEFT
-        )
-    }
-
-    # instance attributes
-    _label : str
-    _name  : str
-    _path  : str
+    _PROPERTIES = PartItemMixin._PROPERTIES_PART | BaseRectangleItem._PROPERTIES
 
     def __init__(
         self  : Self,
@@ -57,9 +25,7 @@ class BlockItem(BaseRectangleItem):
         p2    : QPointF | None = None,
         fresh : bool = True
     ) -> None:
-        self._label = ""
-        self._name = ""
-        self._path = ""
+        self.initPart()
         super().__init__(p1, p2, fresh)
 
     def onGeometryChange(self : Self) -> None:
