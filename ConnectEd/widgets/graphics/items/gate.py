@@ -36,7 +36,29 @@ class GateFunc(Enum):
     XOR_XNOR = "XOR/XNOR"
 
 
+class GateLabelMixin:
+    # class attributes
+    _PROPERTIES_LABEL = {
+        "Label" : InherentProperty(
+            kind   = DataKind.STR,
+            worthy = lambda self: self.label() != "",
+            getter = lambda self: self.label(),
+            setter = lambda self, value: self.setLabel(value)
+        )
+    }
+
+    # instance attributes
+    _label : str = ""
+
+    def label(self : Self) -> str:
+        return self._label
+
+    def setLabel(self : Self, label : str) -> None:
+        self._label = label
+
+
 class BaseGateItem(
+    GateLabelMixin,
     ItemMixin,
     ItemTransformMixin,
     ItemPaintMixin,
@@ -49,21 +71,7 @@ class BaseGateItem(
     PropertiesMixin,
     QGraphicsPathItem
 ):
-    # class attributes
-    _PROPERTIES_LABEL = {
-        "Label" : InherentProperty(
-            kind   = DataKind.STR,
-            getter = lambda self: self._label,
-            setter = lambda self, value: setattr(self, "_label", value)
-        )
-    }
-    _PEN_JOIN_STYLE = Qt.PenJoinStyle.RoundJoin
-
-    # instance attributes
-    _label  : str
-
     def __init__(self : Self, fresh : bool = True) -> None:
-        self._label = ""
         super().__init__()
         self.initItem(fresh)
         self.initPath()
@@ -73,6 +81,9 @@ class BaseGateItem(
 
     def label(self : Self) -> str | None:
         return self._label
+
+    def setLabel(self : Self, label : str) -> None:
+        self._label = label
 
     def initPath(self : Self) -> None:
         raise NotImplementedError("Subclasses must implement this method")
@@ -231,6 +242,7 @@ class GateItem(BaseGateItem):
         ItemTransformMixin._PROPERTIES_ROTATE | \
         ItemLineMixin._PROPERTIES_LINE | \
         ItemFillMixin._PROPERTIES_FILL
+    _PEN_JOIN_STYLE = Qt.PenJoinStyle.RoundJoin
 
     # instance attributes
     _inputs : list[GatePinItem]
