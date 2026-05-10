@@ -9,7 +9,7 @@ from ...resources import getIconPath
 
 
 class TreeView(QTreeView):
-    currentFontSize : int
+    current_font_size : int
 
     def __init__(
         self   : Self,
@@ -21,7 +21,6 @@ class TreeView(QTreeView):
         self.setFontSize(settings().get("display/font_size"))
         self.customizeAppearance()
         self.expandAll()
-
         self.increaseFontShortcut = QShortcut(QKeySequence("Ctrl+="), self)
         self.increaseFontShortcut.activated.connect(self.increaseFontSize)
         self.decreaseFontShortcut = QShortcut(QKeySequence("Ctrl+-"), self)
