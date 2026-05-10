@@ -1,6 +1,6 @@
 from typing import Self
 
-from PyQt6.QtCore    import Qt, QPointF, QLineF, QRectF
+from PyQt6.QtCore    import Qt, QPointF, QLineF
 from PyQt6.QtWidgets import QGraphicsLineItem
 from PyQt6.QtGui     import QPainterPath, QPainterPathStroker
 
@@ -10,9 +10,9 @@ from ....core.types import DataKind, LineHandleId
 
 from ..properties import InherentProperty, PropertiesMixin
 
-from .handle import HandleItem
-
 from .mixin        import ItemMixin
+from .mixin.pos    import ItemMoveByMixin
+from .mixin.rotate import ItemRotateMixin
 from .mixin.shape  import ItemShapeMixin
 from .mixin.paint  import ItemPaintMixin
 from .mixin.handle import ItemLineHandlesMixin
@@ -25,6 +25,8 @@ from .mixin.menu   import ItemMenuMixin
 
 class LineItem(
     ItemMixin,
+    ItemMoveByMixin,
+    ItemRotateMixin,
     ItemShapeMixin,
     ItemPaintMixin,
     ItemLineHandlesMixin,
@@ -142,8 +144,6 @@ class LineItem(
         self._line.setP2(p2-p1)
         self.setLine(self._line)
         self.onGeometryChange()
-
-
 
     def shape(self : Self) -> QPainterPath:
         return self._hshape
