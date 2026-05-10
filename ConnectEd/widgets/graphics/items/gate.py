@@ -1,7 +1,7 @@
 from typing import Self
 from enum import Enum
 
-from PyQt6.QtCore    import QPointF
+from PyQt6.QtCore    import Qt, QPointF
 from PyQt6.QtWidgets import QGraphicsPathItem, QMenu
 from PyQt6.QtGui     import QAction
 
@@ -57,6 +57,7 @@ class BaseGateItem(
             setter = lambda self, value: setattr(self, "_label", value)
         )
     }
+    _PEN_JOIN_STYLE = Qt.PenJoinStyle.RoundJoin
 
     # instance attributes
     _label  : str

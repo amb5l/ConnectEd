@@ -14,6 +14,7 @@ from .mixin.line      import ItemLineMixin
 
 from .port_pin import PortPinMixin
 from .base_pin import BasePinItem, BasePinDotMixin, BasePinClockMixin
+from .node     import PinNodeItem
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -28,6 +29,7 @@ class GatePinItem(
     BasePinItem
 ):
     # class attributes
+    NODE_CLS = PinNodeItem
     _PROPERTIES = \
         {
             "Name" : InherentProperty(
