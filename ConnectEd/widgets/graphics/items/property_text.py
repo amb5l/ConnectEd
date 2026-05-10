@@ -20,11 +20,9 @@ from .handle import HandleItem
 from .tether import PropertyTextTetherItem
 
 
-from .mixin.origin import ItemOriginMixin
-from .mixin.pos    import ItemPosMixin
-from .mixin.rotate import ItemRotateMixin
-from .mixin.handle import ItemHandlesMixin
-from .mixin.quill  import ItemQuillMixin
+from .mixin.transform import ItemTransformMixin
+from .mixin.handle    import ItemHandlesMixin
+from .mixin.quill     import ItemQuillMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -53,9 +51,9 @@ class PropertyTextItem(TextItem):
                 setter = lambda self, value: self.setCleat(value)
             )
         } | \
-        ItemPosMixin._PROPERTIES_POS | \
-        ItemRotateMixin._PROPERTIES_ROTATE | \
-        ItemOriginMixin._PROPERTIES_RECT_ORIGIN | \
+        ItemTransformMixin._PROPERTIES_POS | \
+        ItemTransformMixin._PROPERTIES_ROTATE | \
+        ItemTransformMixin._PROPERTIES_RECT_ORIGIN | \
         TextItem._PROPERTIES_ALIGN | \
         TextItem._PROPERTIES_SIZE | \
         ItemQuillMixin._PROPERTIES_QUILL
@@ -125,7 +123,7 @@ class PropertyTextItem(TextItem):
         self : Self,
         pos  : QPointF | None = None
     ) -> None:
-        ItemPosMixin.onPositionChange(self, pos)
+        ItemTransformMixin.onPositionChange(self, pos)
         if hasattr(self, "_tether"):
             self._tether.onPositionChange(pos)
 
@@ -178,7 +176,7 @@ class PropertyTextItem(TextItem):
 
     def setOrigin(self : Self, id : RectHandleId) -> None:
         """Override to update tether line."""
-        ItemOriginMixin.setOrigin(self,  id)
+        ItemTransformMixin.setOrigin(self,  id)
         if hasattr(self, "_tether"):  # guard against partial initialisation
             self._tether.setParentItem(self.getOriginHandle())
             self._tether.onPositionChange(self.pos())

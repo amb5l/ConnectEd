@@ -8,11 +8,11 @@ from ....app import settings
 
 from ....core.check import checked
 
-from .mixin        import ItemMoveMixin
-from .mixin.origin import ItemOriginMixin
-from .mixin.change import ItemChangeMixin
-from .mixin.shape  import ItemShapeMixin
-from .mixin.menu   import ItemMenuMixin
+from .mixin           import ItemMoveMixin
+from .mixin.transform import ItemTransformMixin
+from .mixin.change    import ItemChangeMixin
+from .mixin.shape     import ItemShapeMixin
+from .mixin.menu      import ItemMenuMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -147,7 +147,7 @@ class MoveGripItem(OriginGripItem):
             view.action("Slide", lambda: view.ui.editSlide([self.item()], self.scenePos())),
             view.action("Move", lambda: view.ui.editMove([self.item()], self.scenePos()))
         ]
-        item : "ItemOriginMixin" = self.item()
+        item : "ItemTransformMixin" = self.item()
         if item.origin() is not None:
             h : HandleItem = self.parentItem()
             entries.extend([

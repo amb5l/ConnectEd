@@ -9,9 +9,8 @@ from ....core.types import DataKind
 
 from ..properties import InherentProperty
 
-from .mixin.pos    import ItemPosMixin
-from .mixin.rotate import ItemRotateMixin
-from .mixin.line   import ItemLineMixin
+from .mixin.transform import ItemTransformMixin
+from .mixin.line      import ItemLineMixin
 
 from .port_pin import PortPinMixin
 from .base_pin import BasePinItem, BasePinDotMixin, BasePinClockMixin
@@ -23,8 +22,7 @@ if TYPE_CHECKING:
 
 
 class GatePinItem(
-    ItemPosMixin,
-    ItemRotateMixin,
+    ItemTransformMixin,
     BasePinDotMixin,
     BasePinClockMixin,
     BasePinItem
@@ -41,8 +39,8 @@ class GatePinItem(
         PortPinMixin._PROPERTIES_DIR | \
         BasePinDotMixin._PROPERTIES_DOT | \
         BasePinClockMixin._PROPERTIES_CLOCK | \
-        ItemPosMixin._PROPERTIES_POS | \
-        ItemRotateMixin._PROPERTIES_ROTATE | \
+        ItemTransformMixin._PROPERTIES_POS | \
+        ItemTransformMixin._PROPERTIES_ROTATE | \
         ItemLineMixin._PROPERTIES_LINE
 
     # instance attributes

@@ -107,7 +107,7 @@ class ItemTransformMixin:
             if hasattr(child, "onSceneRotationChange"):
                 child.onSceneRotationChange()
         # broadcast change
-        self.signalPropertyChanges("Rotate")
+        self.signalPropertyChanges("Rotation")
 
     @checked
     def onMirrorChange(self : Self | PropertiesMixin) -> None:
@@ -225,8 +225,8 @@ class ItemTransformMixin:
         return self.parentSceneMirrorV() ^ self.mirrorV()
 
     @checked
-    def origin(self : Self) -> HandleId:
-        return self._origin
+    def origin(self : Self) -> HandleId | None:
+        return getattr(self, "_origin", None)
 
     @checked
     def setOrigin(

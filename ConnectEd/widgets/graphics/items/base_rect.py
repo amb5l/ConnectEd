@@ -9,18 +9,16 @@ from ....core.types import RectHandleId, DataKind
 
 from ..properties import PropertiesMixin, InherentProperty
 
-from .mixin        import ItemMixin
-from .mixin.origin import ItemOriginMixin
-from .mixin.pos    import ItemPosMixin
-from .mixin.rotate import ItemRotateMixin
-from .mixin.paint  import ItemPaintMixin
-from .mixin.handle import ItemRectHandlesMixin
-from .mixin.line   import ItemLineMixin
-from .mixin.fill   import ItemFillMixin
-from .mixin.change import ItemChangeMixin
-from .mixin.clone  import ItemCloneMixin
-from .mixin.xml    import ItemXmlMixin
-from .mixin.menu   import ItemMenuMixin
+from .mixin           import ItemMixin
+from .mixin.transform import ItemTransformMixin
+from .mixin.paint     import ItemPaintMixin
+from .mixin.handle    import ItemRectHandlesMixin
+from .mixin.line      import ItemLineMixin
+from .mixin.fill      import ItemFillMixin
+from .mixin.change    import ItemChangeMixin
+from .mixin.clone     import ItemCloneMixin
+from .mixin.xml       import ItemXmlMixin
+from .mixin.menu      import ItemMenuMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -29,9 +27,7 @@ if TYPE_CHECKING:
 
 class BaseRectangleMixin(
     ItemMixin,
-    ItemOriginMixin,
-    ItemPosMixin,
-    ItemRotateMixin,
+    ItemTransformMixin,
     ItemPaintMixin,
     ItemRectHandlesMixin,
     ItemLineMixin,
@@ -47,9 +43,9 @@ class BaseRectangleMixin(
     # class attributes
     _ORIGIN = RectHandleId.MIDDLE_CENTER
     _PROPERTIES = \
-        ItemOriginMixin._PROPERTIES_RECT_ORIGIN | \
-        ItemPosMixin._PROPERTIES_POS | \
-        ItemRotateMixin._PROPERTIES_ROTATE | \
+        ItemTransformMixin._PROPERTIES_RECT_ORIGIN | \
+        ItemTransformMixin._PROPERTIES_POS | \
+        ItemTransformMixin._PROPERTIES_ROTATE | \
         {
             "Width" : InherentProperty(
                 kind   = DataKind.FLOAT,

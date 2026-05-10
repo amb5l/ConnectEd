@@ -16,11 +16,10 @@ from .port_pin import PortPinMixin
 from .node     import PortNodeItem
 from .handle   import HandleItem
 
-from .mixin.paint  import ItemPaintMixin
-from .mixin.pos    import ItemPosMixin
-from .mixin.rotate import ItemRotateMixin
-from .mixin.handle import ItemHandlesMixin
-from .mixin.fill   import ItemFillMixin
+from .mixin.paint     import ItemPaintMixin
+from .mixin.transform import ItemTransformMixin
+from .mixin.handle    import ItemHandlesMixin
+from .mixin.fill      import ItemFillMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -30,8 +29,7 @@ if TYPE_CHECKING:
 
 class PortItem(
     ItemPaintMixin,
-    ItemPosMixin,
-    ItemRotateMixin,
+    ItemTransformMixin,
     ItemHandlesMixin[PortHandleId],
     ItemFillMixin,
     PortPinMixin,
@@ -40,12 +38,12 @@ class PortItem(
     # class attributes
     NODE_CLS = PortNodeItem
     _PROPERTIES = \
-        PortPinMixin._PROPERTIES_NAME      | \
-        PortPinMixin._PROPERTIES_DIR       | \
-        PortPinMixin._PROPERTIES_COMMENT   | \
-        ItemPosMixin._PROPERTIES_POS       | \
-        ItemRotateMixin._PROPERTIES_ROTATE | \
-        PortPinMixin._PROPERTIES_LINE      | \
+        PortPinMixin._PROPERTIES_NAME          | \
+        PortPinMixin._PROPERTIES_DIR           | \
+        PortPinMixin._PROPERTIES_COMMENT       | \
+        ItemTransformMixin._PROPERTIES_POS     | \
+        ItemTransformMixin._PROPERTIES_ROTATE  | \
+        PortPinMixin._PROPERTIES_LINE          | \
         ItemFillMixin._PROPERTIES_FILL
     _PROPERTY_TEXTS = {
             "Name" : PropertyTextSpec(

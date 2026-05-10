@@ -6,12 +6,13 @@ from PyQt6.QtWidgets import QGraphicsItem
 from .....core.defs import PITCH
 
 from .....core.types import HandleId, RectHandleId, LineHandleId, \
-                            BlockPinHandleId, SymbolPinHandleId, DataKind
+                            BlockPinHandleId, SymbolPinHandleId, TapHandleId, \
+                            DataKind
 
 from ..handle import HandleItem
 
-from .origin import ItemOriginMixin
-from .grip   import ItemGripMixin
+from .transform import ItemTransformMixin
+from .grip      import ItemGripMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -52,6 +53,9 @@ class ItemHandlesMixin(ItemGripMixin, Generic[T]):
     def handleIdKind(cls) -> DataKind:
         raise NotImplementedError
 
+    def initHandles(self : Self) -> None:
+        raise NotImplementedError("Subclass must implement this method")
+
     def handles(self : Self) -> dict[T, "HandleItem"]:
         return self._handles
 
@@ -85,7 +89,7 @@ class ItemRectHandlesMixin(ItemHandlesMixin[RectHandleId]):
     def handleRect(self : Self) -> QRectF:
         raise NotImplementedError("Subclass must implement this method")
 
-    def updateHandlePositions(self : Self | ItemOriginMixin) -> None:
+    def updateHandlePositions(self : Self | ItemTransformMixin) -> None:
         if not hasattr(self, "_handles"):
             return
         rect = self.handleRect()
@@ -226,4 +230,28 @@ class ItemSymbolPinHandlesMixin(
 
     def moveHandleBy(self : Self | QGraphicsItem, _, d : QPointF) -> None:
         """Move the entire pin when any grip is dragged."""
+        self.setPos(self.pos() + d)
+
+
+class ItemTapHandlesMixin(ItemHandlesMixin[TapHandleId]):
+    @classmethod
+    def handleIdType(cls) -> type[TapHandleId]:
+        return TapHandleId
+
+    @classmethod
+    def handleIdKind(cls) -> DataKind:
+        return DataKind.TAP_HANDLE
+
+    def initHandles(self : Self) -> None:
+        self._handles = {
+            TapHandleId.SUFFIX : HandleItem(
+                id     = TapHandleId.SUFFIX,
+                pos    = QPointF(0, 5),
+                kind   = "move",
+                parent = self
+            )
+        }
+
+    def moveHandleBy(self : Self | QGraphicsItem, _, d : QPointF) -> None:
+        """Move the entire tap when any grip is dragged."""
         self.setPos(self.pos() + d)

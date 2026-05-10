@@ -20,16 +20,15 @@ from ..painter_path import PainterPath
 
 from .grip      import GripItem
 
-from .mixin        import ItemMixin
-from .mixin.pos    import ItemPosMixin
-from .mixin.rotate import ItemRotateMixin
-from .mixin.paint  import ItemPaintMixin
-from .mixin.handle import ItemRectHandlesMixin
-from .mixin.line   import ItemLineMixin
-from .mixin.change import ItemChangeMixin
-from .mixin.clone  import ItemCloneMixin
-from .mixin.xml    import ItemXmlMixin
-from .mixin.menu   import ItemMenuMixin
+from .mixin           import ItemMixin
+from .mixin.transform import ItemTransformMixin
+from .mixin.paint     import ItemPaintMixin
+from .mixin.handle    import ItemRectHandlesMixin
+from .mixin.line      import ItemLineMixin
+from .mixin.change    import ItemChangeMixin
+from .mixin.clone     import ItemCloneMixin
+from .mixin.xml       import ItemXmlMixin
+from .mixin.menu      import ItemMenuMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -159,8 +158,7 @@ class PolySegItem(GripItem):
 
 class PolylineItem(
     ItemMixin,
-    ItemPosMixin,
-    ItemRotateMixin,
+    ItemTransformMixin,
     ItemPaintMixin,
     ItemRectHandlesMixin,
     ItemLineMixin,
@@ -181,8 +179,8 @@ class PolylineItem(
                 setter = lambda self, value: self.setClosed(value)
             )
         } | \
-        ItemPosMixin._PROPERTIES_POS | \
-        ItemRotateMixin._PROPERTIES_ROTATE | \
+        ItemTransformMixin._PROPERTIES_POS | \
+        ItemTransformMixin._PROPERTIES_ROTATE | \
         ItemLineMixin._PROPERTIES_LINE
 
     # instance attributes

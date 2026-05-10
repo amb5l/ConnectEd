@@ -20,11 +20,9 @@ from .text   import TextItem
 from .handle import HandleItem
 
 
-from .mixin.origin import ItemOriginMixin
-from .mixin.pos    import ItemPosMixin
-from .mixin.rotate import ItemRotateMixin
-from .mixin.handle import ItemHandlesMixin
-from .mixin.quill  import ItemQuillMixin
+from .mixin.transform import ItemTransformMixin
+from .mixin.handle    import ItemHandlesMixin
+from .mixin.quill     import ItemQuillMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -53,9 +51,9 @@ class PropertyLabelItem(TextItem):
                 setter = lambda self, value: self.setVisible(value)
             )
         } | \
-        ItemPosMixin._PROPERTIES_POS | \
-        ItemRotateMixin._PROPERTIES_ROTATE | \
-        ItemOriginMixin._PROPERTIES_RECT_ORIGIN | \
+        ItemTransformMixin._PROPERTIES_POS | \
+        ItemTransformMixin._PROPERTIES_ROTATE | \
+        ItemTransformMixin._PROPERTIES_RECT_ORIGIN | \
         TextItem._PROPERTIES_ALIGN | \
         TextItem._PROPERTIES_SIZE | \
         ItemQuillMixin._PROPERTIES_QUILL
@@ -101,7 +99,7 @@ class PropertyLabelItem(TextItem):
         self : Self,
         pos  : QPointF | None = None
     ) -> None:
-        ItemPosMixin.onPositionChange(self, pos)
+        ItemTransformMixin.onPositionChange(self, pos)
         if hasattr(self, "_tether"):
             self._tether.onPositionChange(pos)
 

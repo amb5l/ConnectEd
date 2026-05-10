@@ -13,16 +13,15 @@ from ..painter_path import PainterPath
 
 from .gate_pin import GatePinItem
 
-from .mixin        import ItemMixin
-from .mixin.pos    import ItemPosMixin
-from .mixin.rotate import ItemRotateMixin
-from .mixin.paint  import ItemPaintMixin
-from .mixin.line   import ItemLineMixin
-from .mixin.fill   import ItemFillMixin
-from .mixin.change import ItemChangeMixin
-from .mixin.clone  import ItemCloneMixin
-from .mixin.xml    import ItemXmlMixin
-from .mixin.menu   import ItemMenuMixin
+from .mixin           import ItemMixin
+from .mixin.transform import ItemTransformMixin
+from .mixin.paint     import ItemPaintMixin
+from .mixin.line      import ItemLineMixin
+from .mixin.fill      import ItemFillMixin
+from .mixin.change    import ItemChangeMixin
+from .mixin.clone     import ItemCloneMixin
+from .mixin.xml       import ItemXmlMixin
+from .mixin.menu      import ItemMenuMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -39,8 +38,7 @@ class GateFunc(Enum):
 
 class BaseGateItem(
     ItemMixin,
-    ItemPosMixin,
-    ItemRotateMixin,
+    ItemTransformMixin,
     ItemPaintMixin,
     ItemLineMixin,
     ItemFillMixin,
@@ -110,8 +108,8 @@ class BufGateItem(BaseGateItem):
     _PROPERTIES = \
         BaseGateItem._PROPERTIES_LABEL | \
         _PROPERTIES_IO | \
-        ItemPosMixin._PROPERTIES_POS | \
-        ItemRotateMixin._PROPERTIES_ROTATE | \
+        ItemTransformMixin._PROPERTIES_POS | \
+        ItemTransformMixin._PROPERTIES_ROTATE | \
         ItemLineMixin._PROPERTIES_LINE | \
         ItemFillMixin._PROPERTIES_FILL
 
@@ -228,8 +226,8 @@ class GateItem(BaseGateItem):
     _PROPERTIES = \
         BaseGateItem._PROPERTIES_LABEL | \
         _PROPERTIES_IO | \
-        ItemPosMixin._PROPERTIES_POS | \
-        ItemRotateMixin._PROPERTIES_ROTATE | \
+        ItemTransformMixin._PROPERTIES_POS | \
+        ItemTransformMixin._PROPERTIES_ROTATE | \
         ItemLineMixin._PROPERTIES_LINE | \
         ItemFillMixin._PROPERTIES_FILL
 

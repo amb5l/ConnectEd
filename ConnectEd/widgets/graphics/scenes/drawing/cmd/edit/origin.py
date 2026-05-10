@@ -4,20 +4,20 @@ from .. import CmdSceneItem
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from .....scenes.drawing     import DrawingScene
-    from .....items.mixin.origin import ItemOriginMixin
-    from .....items.mixin.handle import ItemHandlesMixin
+    from .....scenes.drawing        import DrawingScene
+    from .....items.mixin.transform import ItemTransformMixin
+    from .....items.mixin.handle    import ItemHandlesMixin
 
 
 class CmdEditOrigin(CmdSceneItem):
-    _item   : "ItemOriginMixin | ItemHandlesMixin"
+    _item   : "ItemTransformMixin | ItemHandlesMixin"
     _before : str
     _after  : str
 
     def __init__(
         self    : Self,
         scene   : "DrawingScene",
-        item    : "ItemOriginMixin | ItemHandlesMixin",
+        item    : "ItemTransformMixin | ItemHandlesMixin",
         ap_name : str
     ):
         super().__init__(scene, item)

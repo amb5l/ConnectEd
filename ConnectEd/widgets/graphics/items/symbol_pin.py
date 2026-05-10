@@ -17,10 +17,9 @@ from .base_pin import BasePinArrowItem, BasePinItem, \
                       BasePinDotMixin, BasePinClockMixin
 from .node     import PinNodeItem
 
-from .mixin.pos     import ItemPosMixin
-from .mixin.rotate  import ItemRotateMixin
-from .mixin.handle  import ItemHandlesMixin
-from .mixin.line    import ItemLineMixin
+from .mixin.transform import ItemTransformMixin
+from .mixin.handle    import ItemHandlesMixin
+from .mixin.line      import ItemLineMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -33,8 +32,7 @@ class SymbolPinArrowItem(BasePinArrowItem):
 
 
 class SymbolPinItem(
-    ItemPosMixin,
-    ItemRotateMixin,
+    ItemTransformMixin,
     ItemHandlesMixin[SymbolPinHandleId],
     BasePinDotMixin,
     BasePinClockMixin,
@@ -44,13 +42,13 @@ class SymbolPinItem(
     NODE_CLS = PinNodeItem
     _ARROW_CLASS = SymbolPinArrowItem
     _PROPERTIES = \
-        PortPinMixin._PROPERTIES_NAME | \
-        PortPinMixin._PROPERTIES_DIR | \
-        PortPinMixin._PROPERTIES_COMMENT | \
-        BasePinDotMixin._PROPERTIES_DOT | \
-        BasePinClockMixin._PROPERTIES_CLOCK | \
-        ItemPosMixin._PROPERTIES_POS | \
-        ItemRotateMixin._PROPERTIES_ROTATE | \
+        PortPinMixin._PROPERTIES_NAME         | \
+        PortPinMixin._PROPERTIES_DIR          | \
+        PortPinMixin._PROPERTIES_COMMENT      | \
+        BasePinDotMixin._PROPERTIES_DOT       | \
+        BasePinClockMixin._PROPERTIES_CLOCK   | \
+        ItemTransformMixin._PROPERTIES_POS    | \
+        ItemTransformMixin._PROPERTIES_ROTATE | \
         ItemLineMixin._PROPERTIES_LINE
     _PROPERTY_TEXTS = {
             "Name" : PropertyTextSpec(

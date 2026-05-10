@@ -10,23 +10,21 @@ from ....core.types import DataKind, LineHandleId
 
 from ..properties import InherentProperty, PropertiesMixin
 
-from .mixin        import ItemMixin
-from .mixin.pos    import ItemMoveByMixin
-from .mixin.rotate import ItemRotateMixin
-from .mixin.shape  import ItemShapeMixin
-from .mixin.paint  import ItemPaintMixin
-from .mixin.handle import ItemLineHandlesMixin
-from .mixin.line   import ItemLineMixin
-from .mixin.change import ItemChangeMixin
-from .mixin.clone  import ItemCloneMixin
-from .mixin.xml    import ItemXmlMixin
-from .mixin.menu   import ItemMenuMixin
+from .mixin           import ItemMixin
+from .mixin.transform import ItemTransformMixin
+from .mixin.shape     import ItemShapeMixin
+from .mixin.paint     import ItemPaintMixin
+from .mixin.handle    import ItemLineHandlesMixin
+from .mixin.line      import ItemLineMixin
+from .mixin.change    import ItemChangeMixin
+from .mixin.clone     import ItemCloneMixin
+from .mixin.xml       import ItemXmlMixin
+from .mixin.menu      import ItemMenuMixin
 
 
 class LineItem(
     ItemMixin,
-    ItemMoveByMixin,
-    ItemRotateMixin,
+    ItemTransformMixin,
     ItemShapeMixin,
     ItemPaintMixin,
     ItemLineHandlesMixin,

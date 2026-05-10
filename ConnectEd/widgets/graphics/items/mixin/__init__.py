@@ -30,13 +30,9 @@ class ItemMixin(ItemSettingsMixin, ItemMoveMixin):
 
     def initItem(self : Self | QGraphicsItem, fresh : bool = True) -> None:
         from ...properties import PropertiesMixin
-        from .origin    import ItemOriginMixin
         from .handle    import ItemHandlesMixin
         from .loc       import ItemLocMixin
         from .transform import ItemTransformMixin
-        from .pos       import ItemPosMixin
-        from .rotate    import ItemRotateMixin
-        from .mirror    import ItemMirrorMixin
         from .change    import ItemChangeMixin
         from .line      import ItemLineMixin
         from .fill      import ItemFillMixin
@@ -50,20 +46,12 @@ class ItemMixin(ItemSettingsMixin, ItemMoveMixin):
         self.setFlag( f.ItemSendsScenePositionChanges , True )
         self.setCacheMode(QGraphicsItem.CacheMode.DeviceCoordinateCache)
         self._resetUuid()
-        if isinstance(self, ItemOriginMixin):
-            self.initOrigin()
         if isinstance(self, ItemHandlesMixin):
             self.initHandles()
         if isinstance(self, ItemLocMixin):
             self.initLoc()
         if isinstance(self, ItemTransformMixin):
             self.initTransform()
-        if isinstance(self, ItemPosMixin):
-            self.initPos()
-        if isinstance(self, ItemRotateMixin):
-            self.initRotate()
-        if isinstance(self, ItemMirrorMixin):
-            self.initMirror()
         if isinstance(self, ItemChangeMixin):
             self.initChange()
         if isinstance(self, ItemLineMixin):
