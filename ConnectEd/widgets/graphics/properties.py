@@ -57,25 +57,25 @@ if TYPE_CHECKING:
 
 @dataclass
 class PropertyTextSpec:
-    visible   : bool         = True
+    visible   : bool            = True
     cleat     : HandleId | None = None
-    x         : float        = 0
-    y         : float        = 0
-    rotation  : float        = 0.0
-    mirror_h  : bool         = False
-    mirror_v  : bool         = False
-    autoflip  : bool         = True
-    origin    : RectHandleId = RectHandleId.TOP_LEFT
-    align_h   : AlignH       = AlignH.LEFT
-    align_v   : AlignV       = AlignV.TOP
-    width     : float        = -1.0
-    height    : float        = -1.0
-    color     : Color        = DEFAULT
-    family    : FontFamily   = DEFAULT
-    size      : FontSize     = DEFAULT
-    bold      : FontBool     = DEFAULT
-    italic    : FontBool     = DEFAULT
-    underline : FontBool     = DEFAULT
+    x         : float           = 0
+    y         : float           = 0
+    rotation  : float           = 0.0
+    mirror_h  : bool            = False
+    mirror_v  : bool            = False
+    autoflip  : bool            = True
+    origin    : RectHandleId    = RectHandleId.TOP_LEFT
+    align_h   : AlignH          = AlignH.LEFT
+    align_v   : AlignV          = AlignV.TOP
+    width     : float           = -1.0
+    height    : float           = -1.0
+    color     : Color           = DEFAULT
+    family    : FontFamily      = DEFAULT
+    size      : FontSize        = DEFAULT
+    bold      : FontBool        = DEFAULT
+    italic    : FontBool        = DEFAULT
+    underline : FontBool        = DEFAULT
 
     def astuple(self : Self) -> tuple:
         return (
