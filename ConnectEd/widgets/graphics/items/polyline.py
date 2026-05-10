@@ -204,7 +204,7 @@ class PolylineItem(
         self._vertices = []
         self._segments = []
         self._closed = closed
-        self.addVertex(pos)  # origin vertex
+        self.addVertex(self.pos())  # origin vertex (always at local (0,0))
         for vertex in vertices or []:
             self.addVertex(vertex)
         self._buildSegments()
@@ -503,10 +503,11 @@ class PolylineItem(
     @checked
     @classmethod
     def fromXml(cls : Self, xr : QXmlStreamReader) -> Self:
+        xml_item_name = cls.__name__.removesuffix("Item")
         instance : "PolylineItem" = cls(fresh=False)
         fromXmlAttrs(instance, xr)
         # deserialise segments
-        while not (xr.isEndElement() and xr.name() == cls.__name__):
+        while not (xr.isEndElement() and xr.name() == xml_item_name):
             if xr.isStartElement():
                 item_name = xr.name()
                 if item_name == "Segment":
@@ -527,7 +528,9 @@ class PolylineItem(
                                     f"Unexpected attribute: {xml_attr.name()}"
                                 )
                     if x is not None and y is not None:
-                        instance.addVertex(QPointF(x, y), sweep)
+                        # XML stores local coords (relative to polyline origin);
+                        # addVertex expects parent coords.
+                        instance.addVertex(QPointF(x, y) + instance.pos(), sweep)
                 else:
                     logger().warning(f"Unexpected element: {item_name}")
             xr.readNext()
