@@ -154,8 +154,6 @@ class DiagramScene(
                     item.toXml(xw)
                 else:
                     logger().warning(f"Unexpected item: {item.type()}")
-        # netlist
-        self.netlist.toXml(xw)
         # done
         xw.writeEndElement()
 
