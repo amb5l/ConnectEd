@@ -1,5 +1,6 @@
 from typing import Self
 
+from PyQt6.QtCore    import Qt
 from PyQt6.QtWidgets import QGraphicsItem, QGraphicsPathItem
 
 from ....core.defs  import PITCH
@@ -70,6 +71,7 @@ class BasePinArrowItem(
 class BasePinItem(ItemPaintMixin, PortPinMixin, QGraphicsPathItem):
     # class attributes
     _ARROW_CLASS : type[BasePinArrowItem] | None = None
+    _PEN_CAP_STYLE = Qt.PenCapStyle.FlatCap
 
     # instance attributes
     _arrow : BasePinArrowItem
