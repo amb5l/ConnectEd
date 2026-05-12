@@ -24,7 +24,7 @@ from . import BlockPinInteraction
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from .. import DiagramView
-
+    from ....scenes.diagram import DiagramScene
 
 class PlacePortInteraction(RotateItemMixin, PlaceBase1PosInteraction):
     _ITEM_TYPE = PortItem
@@ -65,6 +65,7 @@ class PlaceConnInteraction(Interaction):
     """Interactive wire placement involves two preview segments."""
 
     # instance attributes
+    _scene : "DiagramScene"
     _seg1  : SegmentPreview1Item
     _seg2  : SegmentPreview2Item
 
@@ -101,17 +102,20 @@ class PlaceConnInteraction(Interaction):
         ]
         # create first segment
         self._scene.addSegment(self._p0(), self._p1(), undoable=True)
-        # stop if terminal reached at end of first preview segment
+        completed = False
         if terminals_1:
+            # terminal reached at end of first preview segment
             self._cleanup()
-            return True  # interaction completed
-        # stop if complete or terminal reached at end of second preview segment
-        if complete or terminals_2:
+        elif complete or terminals_2:
+            # complete or terminal reached at end of second preview segment
             self._scene.addSegment(self._p1(), self._p2(), undoable=True)
             self._cleanup()
-            return True  # interaction completed
-        self._restart(pos)
-        return False  # continue interaction
+        else:
+            # continue interaction
+            self._restart(pos)
+            completed = False
+        self._scene.netlistChanged.emit()
+        return completed
 
     def _complete(self : Self, pos : QPointF) -> None:
         self.commit(pos, complete=True)

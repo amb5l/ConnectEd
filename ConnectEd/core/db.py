@@ -425,12 +425,12 @@ class Model(QStandardItemModel):
             logger().warning(f"Unsupported node: {node.text()} ({type(node)})")
             return False
         if isinstance(node, DesignDbNode):
-            window().mdi_area.closeScene(node.scene())
+            window()._mdi_area.closeScene(node.scene())
         elif isinstance(node, LibraryDbNode):
             for i in range(node.rowCount()):
                 symbol_node = node.child(i)
                 if isinstance(symbol_node, SymbolNode):
-                    window().mdi_area.closeScene(symbol_node.scene())
+                    window()._mdi_area.closeScene(symbol_node.scene())
         return self._removeNode(node)
 
     def copy(self : Self, item : Node) -> None:

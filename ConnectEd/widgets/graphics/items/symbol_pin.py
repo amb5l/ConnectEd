@@ -15,7 +15,6 @@ from ..properties import PropertyTextSpec
 from .port_pin import PortPinMixin
 from .base_pin import BasePinArrowItem, BasePinItem, \
                       BasePinDotMixin, BasePinClockMixin
-from .node     import PinNodeItem
 
 from .mixin.transform import ItemTransformMixin
 from .mixin.handle    import ItemHandlesMixin
@@ -39,7 +38,6 @@ class SymbolPinItem(
     BasePinItem
 ):
     # class attributes
-    NODE_CLS = PinNodeItem
     _ARROW_CLASS = SymbolPinArrowItem
     _PROPERTIES = \
         PortPinMixin._PROPERTIES_NAME         | \

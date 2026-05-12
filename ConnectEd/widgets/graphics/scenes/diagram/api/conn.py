@@ -5,13 +5,13 @@ from PyQt6.QtGui  import QPainterPath, QPainterPathStroker
 
 from ......app import logger
 
-from ....items.node           import NodeItem, FreeNodeItem, PinNodeItem, TapNodeItem
+from ....items.node           import NodeItem, FreeNodeItem, FixedNodeItem
 from ....items.segment        import SegmentItem
 from ....items.property_label import PropertyLabelItem
 
 from ...drawing.cmd import cmdExec, CmdDelete
 
-from ..cmd.conn import CmdAddFreeNode, \
+from ..cmd.conn import CmdAddFreeNode, CmdReplaceNode, \
                        CmdAddSegment, CmdSplitSegment, CmdUnsplitSegment, \
                        CmdSplitNet
 
@@ -87,7 +87,7 @@ class DiagramSceneApiConnMixin:
 
     def detachNode(
         self     : "DiagramScene",
-        node     : PinNodeItem | TapNodeItem,
+        node     : FixedNodeItem,
         undoable : bool = False
     ) -> None:
         """

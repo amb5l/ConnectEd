@@ -42,10 +42,10 @@ class CmdAddFreeNode(CmdDiagramSceneBase):
 
     def redo(self : Self) -> None:
         self._scene.addItem(self._node)
-        self._scene.netlist.addNode(self._node)
+        self._scene.netlist.adoptNode(self._node)
 
     def undo(self : Self) -> None:
-        self._scene.netlist.removeNode(self._node)
+        self._scene.netlist.removeNodes(self._node)
         self._scene.removeItem(self._node)
 
     def node(self : Self) -> FreeNodeItem:
@@ -71,12 +71,40 @@ class CmdRemoveFreeNode(CmdDiagramSceneBase):
         self._node = node
 
     def redo(self : Self) -> None:
-        self._scene.netlist.removeNode(self._node)
+        self._scene.netlist.removeNodes(self._node)
         self._scene.removeItem(self._node)
 
     def undo(self : Self) -> None:
         self._scene.addItem(self._node)
-        self._scene.netlist.addNode(self._node)
+        self._scene.netlist.adoptNode(self._node)
+
+
+class CmdReplaceNode(CmdDiagramSceneBase):
+    """
+    Replace one node with another. Typically used for free/non swaps.
+    Updates both graphics and graph.
+    """
+
+    _node1 : NodeItem
+    _node2 : NodeItem
+
+    def __init__(
+        self  : Self,
+        scene : "DiagramScene",
+        node1 : NodeItem,
+        node2 : NodeItem
+    ) -> None:
+        super().__init__(scene)
+        self._node1 = node1
+        self._node2 = node2
+
+    def redo(self : Self) -> None:
+        self._scene.netlist.replaceNode(self._node1, self._node2)
+        self._node2.onConnectionChange()
+
+    def undo(self : Self) -> None:
+        self._scene.netlist.replaceNode(self._node2, self._node1)
+        self._node1.onConnectionChange()
 
 
 class CmdAddSegment(CmdDiagramSceneBase):
@@ -106,7 +134,7 @@ class CmdAddSegment(CmdDiagramSceneBase):
         self._seg.setNode1(self._node1)
         self._seg.setNode2(self._node2)
         self._scene.addItem(self._seg)
-        self._scene.netlist.addSegment(self._node1, self._node2, self._seg)
+        self._scene.netlist.addSegment(self._seg)
         self._node1.onConnectionChange()
         self._node2.onConnectionChange()
 
@@ -157,7 +185,7 @@ class CmdRemoveSegment(CmdDiagramSceneBase):
         self._seg.setNode1(self._node1)
         self._seg.setNode2(self._node2)
         self._scene.addItem(self._seg)
-        self._scene.netlist.addSegment(self._node1, self._node2, self._seg)
+        self._scene.netlist.addSegment(self._seg)
         self._node1.onConnectionChange()
         self._node2.onConnectionChange()
 
@@ -244,7 +272,7 @@ class CmdUnsplitSegment(CmdDiagramSceneBase):
         # graph: remove two edges and node, add merged edge
         self._scene.netlist.removeSegment(self._far1, self._node)
         self._scene.netlist.removeSegment(self._node, self._far2)
-        self._scene.netlist.removeNode(self._node)
+        self._scene.netlist.removeNodes(self._node)
         self._scene.netlist.addSegment(self._far1, self._far2, self._seg1)
         # graphics: extend seg1 to span far1--far2, remove seg2
         self._seg1.changeNode(self._node, self._far2)
@@ -257,7 +285,7 @@ class CmdUnsplitSegment(CmdDiagramSceneBase):
     def undo(self : Self) -> None:
         # graph: remove merged edge, restore node and two edges
         self._scene.netlist.removeSegment(self._far1, self._far2)
-        self._scene.netlist.addNode(self._node)
+        self._scene.netlist.adoptNode(self._node)
         self._scene.netlist.addSegment(self._far1, self._node, self._seg1)
         self._scene.netlist.addSegment(self._node, self._far2, self._seg2)
         # graphics: shorten seg1 back, restore seg2

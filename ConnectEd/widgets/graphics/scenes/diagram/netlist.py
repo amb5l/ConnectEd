@@ -1,21 +1,23 @@
-import re
 import networkx
 
-from typing      import Any, Self
+from typing      import Self
 from dataclasses import dataclass, field
-from enum        import StrEnum
-
-from PyQt6.QtCore import QXmlStreamWriter, QXmlStreamReader
 
 from .....app import logger
 
-from .....core.expr import evaluate
+from .....core.types import Direction
+from .....core.expr  import evaluate
+from .....core.check import checked
 
-from ...items.node           import NodeItem, FreeNodeItem, PinNodeItem
+from ...items.node           import NodeItem, FreeNodeItem, FixedNodeItem, \
+                                    TapMajorNodeItem, TapMinorNodeItem
+from ...items.property_label import PropertyLabelItem
+from ...items.tap            import TapItem
 from ...items.port           import PortItem
 from ...items.block_pin      import BlockPinItem
 from ...items.symbol_pin     import SymbolPinItem
-from ...items.property_label import PropertyLabelItem
+from ...items.block          import BlockItem
+from ...items.symbol         import SymbolItem
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -24,390 +26,503 @@ if TYPE_CHECKING:
 
 
 @dataclass(slots=True)
+class Subnet:
+    """Corresponds to a connected component of the graph."""
+    id     : int
+    name   : str | None    = None  # None = unresolved
+    suffix : str | None    = None  # None = unresolved
+    nodes  : set[NodeItem] = field(default_factory=set)
+    net    : "Net | None"  = None  # back-reference to parent net
+
+
+@dataclass(slots=True)
 class Net:
-    id        : int
-    name      : str           = ""    # excluding index/range suffix
-    suffix    : str | None    = None  # empty = scalar, index = bus member, range = bus
-    parent    : "Net | None"  = None  # parent bus, for scalar members
-    nodes     : set[NodeItem] = field(default_factory=set)
-
-    def isUnresolved(self : Self) -> bool:
-        return self.suffix is None
-
-    def isScalar(self : Self) -> bool:
-        return self.suffix == ""
-
-    def isMember(self : Self) -> bool:
-        return self.suffix is not None and self.suffix != "" and ":" not in self.suffix
-
-    def isVector(self : Self) -> bool:
-        return self.suffix is not None and ":" in self.suffix
+    """
+    Either a single unresolved (unnamed) subnet,
+    or one or more subnets with the same name.
+    """
+    name    : str | None = None  # base name (e.g. "data"); None when unresolved
+    suffix  : str | None = None  # aggregate suffix across subnets
+    subnets : set[int]   = field(default_factory=set)  # subnet IDs
 
 
 class Netlist:
-    _scene    : "DiagramScene"              # parent scene instance
-    _graph    : networkx.Graph              # physical nets
-    _nets     : dict[int, Net]              # net ID : net instance
-    _node2net : dict[NodeItem, int | None]  # node instance : net ID
-    _id       : int                         # net ID counter
+    # _nets keying:
+    #   - resolved net  -> str key (the base name, e.g. _nets["data"])
+    #   - unresolved    -> int key (the sole subnet's id, e.g. _nets[42])
 
+    _scene       : "DiagramScene"
+    _graph       : networkx.Graph
+    _subnets     : dict[int, Subnet]
+    _node2subnet : dict[NodeItem, int]
+    _subnet_id   : int
+    _nets        : dict[str | int, Net]
+    _subnet2net  : dict[int, str | int]
+
+    @checked
     def __init__(self : Self, scene : "DiagramScene") -> None:
-        self._scene = scene
-        self._graph = networkx.Graph()
-        self._nets = {}
-        self._node2net = {}
-        self._id = 0
+        self._scene       = scene
+        self._graph       = networkx.Graph()
+        self._subnets     = {}
+        self._node2subnet = {}
+        self._subnet_id   = 0
+        self._nets        = {}
+        self._subnet2net  = {}
 
-    # node methods
+    # -- node methods ------------------------------------------------------
 
+    @checked
     def nodes(self : Self) -> list[NodeItem]:
-        return self._node2net.keys()
+        return list(self._node2subnet.keys())
 
-    def addNode(self : Self, node : NodeItem) -> None:
-        self._graph.add_node(node)
-        self._node2net[node] = None
-
-    def removeNode(self : Self, node : NodeItem) -> None:
-        self._graph.remove_node(node)
-        if node in self._node2net:
-            net_id = self._node2net[node]
-            if net_id is not None:
-                net = self._nets[net_id]
-                net.nodes.remove(node)
-            self._node2net.pop(node)
-
+    @checked
     def hasNode(self : Self, node : NodeItem) -> bool:
-        return node in self._node2net
+        return node in self._graph
 
+    @checked
     def nodeDegree(self : Self, node : NodeItem) -> int:
         """Number of segments connected to the node."""
         return self._graph.degree(node)
 
+    @checked
     def nodeSegments(self : Self, node : NodeItem) -> list["SegmentItem"]:
         """Edges connected to the node."""
         iterator = self._graph.edges(node, data=True)
         return [data["segment"] for _, _, data in iterator]
 
-    # segment methods
+    @checked
+    def nodeSubnet(self : Self, node : NodeItem) -> Subnet | None:
+        subnet_id = self._node2subnet.get(node, None)
+        return None if subnet_id is None else self._subnets[subnet_id]
 
-    def addSegment(
-        self : Self,
-        node1 : NodeItem,
-        node2 : NodeItem,
-        seg  : "SegmentItem"
-    ) -> None:
-        net_id1 = self._node2net[node1] if node1 in self._node2net else None
-        net_id2 = self._node2net[node2] if node2 in self._node2net else None
-        net1 = self._nets[net_id1] if net_id1 is not None else None
-        net2 = self._nets[net_id2] if net_id2 is not None else None
-        self._graph.add_edge(node1, node2, segment=seg)
-        if net1 is None:
-            if net2 is None:
-                # 2 new nodes => new net
-                net = self.newNet()
-                net.nodes.add(node1)
-                net.nodes.add(node2)
-                self._node2net[node1] = net.id
-                self._node2net[node2] = net.id
-                self._resolveNet(net)
-            else:
-                # node1 is new, node2 is part of a net => merge node1 into net2
-                net2.nodes.add(node1)
-                self._node2net[node1] = net2.id
-                self._resolveNet(net2)
-        else:
-            if net2 is None:
-                # node2 is new, node1 is part of a net => merge node2 into net1
-                net1.nodes.add(node2)
-                self._node2net[node2] = net1.id
-                self._resolveNet(net1)
-            else:
-                if net1 is not net2:
-                    # both vertices are part of different nets => merge nets
-                    net1.nodes |= net2.nodes
-                    for vtx in net2.nodes:
-                        self._node2net[vtx] = net1.id
-                    self._nets.pop(net2.id)
-                    self._resolveNet(net1)
+    @checked
+    def nodeNet(self : Self, node : NodeItem) -> Net | None:
+        subnet = self.nodeSubnet(node)
+        return None if subnet is None else subnet.net
+
+    @checked
+    def nodeNameSuffixType(self : Self, node : NodeItem) -> tuple[str, str, str]:
+        full_name = None
+        if isinstance(node, FreeNodeItem):
+            for child in node.childItems():
+                if isinstance(child, PropertyLabelItem):
+                    if child.name() == "Name":
+                        full_name = child.value()
+                        break
+        elif isinstance(node, FixedNodeItem):
+            node_parent = node.parentItem()
+            if isinstance(node_parent, PortItem):
+                full_name = node_parent.name()
+            elif isinstance(node_parent, BlockPinItem | SymbolPinItem):
+                pin_parent : BlockItem | SymbolItem | None = node_parent.parentItem()
+                label = pin_parent.label()
+                pin_name = node_parent.name()
+                full_name = f"{label}_{pin_name}"
+        if full_name is None:
+            return "", "", "?"
+        base_name, suffix = self._baseNameAndSuffix(full_name)
+        return base_name, suffix, "?"
+
+    @checked
+    def adoptNode(self : Self, node : NodeItem) -> None:
+        """
+        Ensure node is adopted by netlist and has clean subnet membership.
+        Defensive, probably slow.
+        """
+        subnet_ids = self._subnetsContainingNode(node)
+        if node not in self._graph:
+            self._graph.add_node(node)
+            if node in self._node2subnet:
+                logger().warning(f"Node {node} was not in the graph but has a subnet mapping.")
+            if subnet_ids:
+                logger().warning(f"Node {node} was not in the graph but exists in subnets {subnet_ids}.")
+        if node in self._node2subnet:
+            # node is already mapped to a subnet
+            subnet_id = self._node2subnet[node]
+            if subnet_ids != [subnet_id]:
+                # mapping does not match subnet(s)
+                subnet = self._subnets[subnet_id]
+                if len(subnet_ids) == 0:
+                    logger().warning(f"Node {node} mapped to subnet {subnet_id} which does not contain it.")
+                    self._addNodesToSubnet(subnet, node)
+                elif len(subnet_ids) == 1:
+                    logger().warning(f"Node {node} mapped to subnet {subnet_id} but contained by subnet {subnet_ids[0]}.")
+                    self._node2subnet[node] = subnet_ids[0]
+                elif subnet_id in subnet_ids:
+                    other_subnet_ids = subnet_ids.copy()
+                    other_subnet_ids.remove(subnet_id)
+                    logger().warning(f"Node {node} mapped to subnet {subnet_id} but also exists in subnets {other_subnet_ids}.")
+                    for other_subnet_id in other_subnet_ids:
+                        other_subnet = self._subnets[other_subnet_id]
+                        self._removeNodeFromSubnet(node, other_subnet)
                 else:
-                    # both vertices are part of the same net => do nothing
-                    pass
+                    logger().warning(f"Node {node} mapped to subnet {subnet_id} but exists in subnets {subnet_ids}.")
+                    # map to first subnet
+                    self._node2subnet[node] = subnet_ids[0]
+                    # remove from other subnets
+                    for other_subnet_id in subnet_ids[1:]:
+                        other_subnet = self._subnets[other_subnet_id]
+                        self._removeNodeFromSubnet(node, other_subnet)
+        else:
+            # node is not mapped to any subnet
+            if len(subnet_ids) == 0:
+                # create new subnet for node
+                self._newSubnet(node)
+            elif len(subnet_ids) == 1:
+                logger().warning(f"Node {node} has no subnet mapping but exists in subnet {subnet_ids[0]}.")
+                self._node2subnet[node] = subnet_ids[0]
+            else:
+                logger().warning(f"Node {node} has no subnet mapping but exists in {len(subnet_ids)} subnets.")
+                # map to first subnet
+                self._node2subnet[node] = subnet_ids[0]
+                # remove from other subnets
+                for other_subnet_id in subnet_ids[1:]:
+                    other_subnet = self._subnets[other_subnet_id]
+                    self._removeNodeFromSubnet(node, other_subnet)
 
-    def removeSegment(
-        self : Self,
-        node1 : NodeItem,
-        node2 : NodeItem
-    ) -> None:
-        # remove edge from graph
-        self._graph.remove_edge(node1, node2)
-        # check for net split
-        if networkx.has_path(self._graph, node1, node2):
-            return  # net has not been split
-        # split net
-        net_id1 = self._node2net[node1]
-        net1 = self._nets[net_id1]
-        net2 = self.newNet()
-        nodes2 : set[NodeItem] = set()
-        for node in net1.nodes:
-            if node is node2 or networkx.has_path(self._graph, node, node2):
-                nodes2.add(node)
-        for node in nodes2:
-            net1.nodes.remove(node)
-            net2.nodes.add(node)
-            self._node2net[node] = net2.id
-        self._resolveNet(net1)
-        self._resolveNet(net2)
+    @checked
+    def removeNodes(self : Self, nodes : NodeItem | list[NodeItem]) -> None:
+        if isinstance(nodes, NodeItem):
+            nodes = [nodes]
+        affected_subnets : set[Subnet] = set()
+        for node in nodes:
+            self._graph.remove_node(node)
+            subnet = self.nodeSubnet(node)
+            if subnet is not None:
+                self._node2subnet.pop(node, None)
+                subnet.nodes.discard(node)
+                if not subnet.nodes:
+                    self._removeSubnet(subnet)
+                else:
+                    affected_subnets.add(subnet)
+        self._resolveSubnets(affected_subnets)
 
-    def hasSegment(
-        self : Self,
-        node1 : NodeItem,
-        node2 : NodeItem
-    ) -> bool:
+    @checked
+    def replaceNode(self : Self, node1 : NodeItem, node2 : NodeItem) -> None:
+        if node1 not in self._graph:
+            logger().error(f"Node {node1} is not in the graph.")
+            return
+        if node2 in self._graph:
+            logger().error(f"Node {node2} is already in the graph.")
+            return
+        if node1 == node2:
+            logger().warning("Specified nodes are the same.")
+            return
+        networkx.relabel_nodes(self._graph, {node1: node2})
+        self._node2subnet[node2] = self._node2subnet[node1]
+        self._node2subnet.pop(node1, None)
+        self._resolveSubnet(self._subnets[self._node2subnet[node2]])
+
+    # -- node helpers ------------------------------------------------------
+
+    @checked
+    def _subnetsContainingNode(self : Self, node : NodeItem) -> list[int]:
+        """Returns list of subnets that contain the node."""
+        subnet_ids = []
+        for subnet in self._subnets.values():
+            if node in subnet.nodes:
+                subnet_ids.append(subnet.id)
+        return subnet_ids
+
+    # -- segment methods ---------------------------------------------------
+
+    @checked
+    def hasSegment(self : Self, node1 : NodeItem, node2 : NodeItem) -> bool:
         return self._graph.has_edge(node1, node2)
 
-    # netlist methods
-
-    def newNet(self : Self) -> Net:
-        """Create a new net."""
-        net = Net(id=self._id)
-        self._id += 1
-        self._nets[net.id] = net
-        return net
-
-    # serialisation/deserialisation
-
-    def toXml(self : Self, xw : QXmlStreamWriter) -> None:
-        # start
-        xw.writeStartElement("Connectivity")
-        # nodes: entries, vertices and PropertyLabelItem instances
-        raw_nodes : list[NodeItem] = self._node2net.keys()
-        entries : list[PinNodeItem] = [
-            node for node in raw_nodes if isinstance(node, PinNodeItem)
-        ]
-        vertices : list[FreeNodeItem] = [
-            node for node in raw_nodes if isinstance(node, FreeNodeItem)
-        ]
-        nodes = entries + vertices  # entries then vertices
-        for id, node in enumerate(raw_nodes):
-            node.toXml(xw, id)
-        # physical nets (segment groups)
-        groups : list[str] = []
-        vtx2gid : dict[FreeNodeItem, int] = {}
-        for component in networkx.connected_components(self._graph):
-            gid = len(groups)
-            for vtx in component:
-                vtx2gid[vtx] = gid
-            subgraph = self._graph.subgraph(component)
-            node_pairs = [
-                f"{nodes.index(v1)},{nodes.index(v2)}"
-                     for v1, v2 in subgraph.edges()
-            ]
-            groups.append(" ".join(node_pairs))
-        for id, segments in enumerate(groups):
-            xw.writeStartElement("PhysicalNet")
-            xw.writeAttribute("ID", str(id))
-            xw.writeAttribute("Segments", segments)
-            xw.writeEndElement()
-        # write logical nets
-        for net in self._nets.values():
-            tag = net.__class__.__name__
-            xw.writeStartElement(tag)
-            if net.name is not None:
-                xw.writeAttribute("Name", net.name)
-            if isinstance(net, VectorNet) or \
-               (isinstance(net, ScalarNet) and isinstance(net.data_type, str)):
-                if net.data_type:
-                    xw.writeAttribute("Type", net.data_type)
-            gids = sorted({vtx2gid[v] for v in net.nodes if v in vtx2gid})
-            xw.writeAttribute("PhysicalNets", " ".join(str(gid) for gid in gids))
-            if isinstance(net, VectorNet):
-                for idx, member in net.members.items():
-                    if not member.vertices:  # skip members with no vertices
-                        continue
-                    xw.writeStartElement("Member")
-                    xw.writeAttribute("Index", str(idx))
-                    mpids = sorted(
-                        {vtx2pnet[v] for v in member.vertices if v in vtx2pnet}
-                    )
-                    xw.writeAttribute(
-                        "PhysicalNets", " ".join(str(p) for p in mpids)
-                    )
-                    xw.writeEndElement()
-            xw.writeEndElement()
-        # end
-        xw.writeEndElement()
-
-    @classmethod
-    def fromXml(cls : Self, xr : QXmlStreamReader) -> Self:
-        # TODO: update _id to be greated than any net ID in the XML
-        instance = cls()
-        return instance
-
-    # -- Private helpers ---------------------------------------------------
-
-
-    def _resolveNet(self : Self, net : Net) -> None:
-        # gather resolved names (strip, expand range expressions, etc.)
-        label_names : list[tuple[str, str]] = []
-        port_names  : list[tuple[str, str]] = []
-        pin_names   : list[tuple[str, str]] = []
-        for node in net.nodes:
-            parent = node.parentItem()
-            if isinstance(node, PinNodeItem):     # pin node
-                if isinstance(parent, PortItem):  # port pin node
-                    raw_name = parent.name()
-                    res_name = parent.resolvedName()
-                    if res_name is not None:
-                        port_names.append((raw_name,res_name))
-                elif isinstance(parent, BlockPinItem | SymbolPinItem):  # block/symbol pin node
-                    raw_name = parent.name()
-                    res_name = parent.resolvedName()
-                    if res_name is not None:
-                        pin_names.append((raw_name,res_name))
-            elif isinstance(node, FreeNodeItem):  # free node
-                for child in node.childItems():
-                    if isinstance(child, PropertyLabelItem): # label
-                        if child.name() == "Name":  # name label
-                            raw_name = child.name()
-                            res_name = evaluate(
-                                child.value(), self._scene.parameters()
-                            )
-                            if res_name is not None:
-                                label_names.append((raw_name,res_name))
-        # separate names into categories: vectors, members and scalars
-        all_names = label_names + port_names + pin_names
-        vector_names : list[tuple[str, str]] = []
-        member_names : list[tuple[str, str]] = []
-        scalar_names : list[tuple[str, str]] = []
-        name = None
-        for raw_name, res_name in all_names:
-            if ":" in res_name:
-                vector_names.append((raw_name, res_name))
-            elif "[" in res_name and res_name.endswith("]"):
-                member_names.append((raw_name, res_name))
-            else:
-                scalar_names.append((raw_name, res_name))
-        # determine category
-        if vector_names and not (member_names or scalar_names):
-            category = NetCategory.VECTOR
-            names = vector_names
-        elif member_names and not (vector_names or scalar_names):
-            category = NetCategory.MEMBER
-            names = member_names
-        elif scalar_names and not (vector_names or member_names):
-            category = NetCategory.SCALAR
-            names = scalar_names
-        else:
-            category = NetCategory.UNRESOLVED
+    @checked
+    def addSegment(self : Self, seg : "SegmentItem") -> None:
+        node1 = seg.node1()
+        assert node1 is not None
+        self.adoptNode(node1)
+        node2 = seg.node2()
+        assert node2 is not None
+        self.adoptNode(node2)
+        self._graph.add_edge(node1, node2, segment=seg)
+        subnet1 = self.nodeSubnet(node1)
+        subnet2 = self.nodeSubnet(node2)
+        assert subnet1 is not None and subnet2 is not None
+        if subnet1 is subnet2:
+            # closing a loop within an existing subnet; nothing structural
             return
-        # vector case
-        if category == NetCategory.VECTOR:
-            # determine range span
-            res_left_min = res_left_max = res_right_min = res_right_max = None
-            for raw_name, res_name in names:
-                raw_split = raw_name.split('[')
-                base = raw_split[0].strip()
-                raw_left, raw_right = raw_split[1].split(']')[0].split(':')
-                res_split = res_name.split('[')
-                res_left, res_right = res_split[1].split(']')[0].split(':')
-                res_left, res_right = int(res_left), int(res_right)
-                if res_left_min is None or res_left < res_left_min:
-                    res_left_min = res_left
-                    raw_left_min = raw_left
-                if res_left_max is None or res_left > res_left_max:
-                    res_left_max = res_left
-                    raw_left_max = raw_left
-                if res_right_min is None or res_right < res_right_min:
-                    res_right_min = res_right
-                    raw_right_min = raw_right
-                if res_right_max is None or res_right > res_right_max:
-                    res_right_max = res_right
-                    raw_right_max = raw_right
-            if res_left_min < res_right_min:
-                left, right = raw_left_min, raw_right_max
+        # merge subnet2 into subnet1
+        subnet1.nodes |= subnet2.nodes
+        for node in subnet2.nodes:
+            self._node2subnet[node] = subnet1.id
+        self._detachSubnetFromNet(subnet2)
+        self._subnets.pop(subnet2.id, None)
+        self._resolveSubnet(subnet1)
+
+    @checked
+    def removeSegment(self : Self, node1 : NodeItem, node2 : NodeItem) -> None:
+        self._graph.remove_edge(node1, node2)
+        subnet1 = self.nodeSubnet(node1)
+        if subnet1 is None:
+            return
+        if networkx.has_path(self._graph, node1, node2):
+            # subnet not split
+            return
+        # split subnet1 into two new connected components; subnet1 keeps
+        # the larger side, a fresh subnet2 takes the smaller
+        nodes1 = networkx.node_connected_component(self._graph, node1)
+        nodes2 = networkx.node_connected_component(self._graph, node2)
+        if len(nodes1) < len(nodes2):
+            nodes1, nodes2 = nodes2, nodes1
+        subnet1.nodes = nodes1
+        subnet2 = self._newSubnet(nodes2)
+        self._resolveSubnet(subnet1)
+        self._resolveSubnet(subnet2)
+
+    # -- subnet methods ----------------------------------------------------
+
+    @checked
+    def subnets(self : Self) -> dict[int, Subnet]:
+        return self._subnets.copy()
+
+    # -- net methods -------------------------------------------------------
+
+    @checked
+    def nets(self : Self) -> dict[str | int, Net]:
+        return self._nets.copy()
+
+    # -- subnet helpers ----------------------------------------------------
+
+    @checked
+    def _newSubnet(
+        self  : Self,
+        nodes : NodeItem | set[NodeItem] | None = None
+    ) -> Subnet:
+        """Create new subnet, attached to a fresh unresolved net."""
+        if isinstance(nodes, NodeItem):
+            nodes = {nodes}
+        subnet = Subnet(id=self._subnet_id)
+        self._subnet_id += 1
+        self._subnets[subnet.id] = subnet
+        if nodes:
+            self._addNodesToSubnet(subnet, nodes)
+        # Every subnet must always belong to exactly one net. Start it off in
+        # its own unresolved net, keyed by subnet id; later resolution may
+        # migrate it into a named net.
+        net = Net(name=None, suffix=None)
+        self._nets[subnet.id] = net
+        self._attachSubnetToNet(subnet, net)
+        return subnet
+
+    @checked
+    def _removeSubnet(self : Self, subnet : Subnet) -> None:
+        """Drop a subnet entirely (detach from its net, drop from index)."""
+        self._detachSubnetFromNet(subnet)
+        self._subnets.pop(subnet.id, None)
+
+    @checked
+    def _addNodesToSubnet(
+        self : Self,
+        subnet : Subnet,
+        nodes : NodeItem | set[NodeItem]
+    ) -> None:
+        if isinstance(nodes, NodeItem):
+            nodes = {nodes}
+        subnet.nodes |= nodes
+        for node in nodes:
+            self._node2subnet[node] = subnet.id
+
+    def _removeNodeFromSubnet(self : Self, node : NodeItem, subnet : Subnet) -> None:
+        subnet.nodes.discard(node)
+        if not subnet.nodes:
+            self._removeSubnet(subnet)
+
+    @checked
+    def _resolveSubnets(
+        self    : Self,
+        subnets : Subnet | list[Subnet] | set[Subnet]
+    ) -> None:
+        if isinstance(subnets, Subnet):
+            subnets = [subnets]
+        for subnet in subnets:
+            self._resolveSubnet(subnet)
+
+    @checked
+    def _resolveSubnet(
+        self   : Self,
+        subnet : Subnet,
+        trail  : list[int] | None = None
+    ) -> None:
+        # process recursion trail
+        if trail is None:
+            trail = []
+        if subnet.id in trail:
+            return
+        trail.append(subnet.id)
+        tapped_subnets : set[int] = set()
+        # gather names from nodes
+        label_names   : list[str] = []
+        tap_names     : list[str] = []
+        i_port_names  : list[str] = []
+        io_port_names : list[str] = []
+        o_port_names  : list[str] = []
+        pin_names     : list[tuple[str, str] | str] = []
+        for node in subnet.nodes:
+            # labels
+            for child in node.childItems():
+                if isinstance(child, PropertyLabelItem):  # label
+                    if child.name() == "Name":  # this is a *Name* label
+                        label_names.append(child.value())
+            # taps (minor end)
+            if isinstance(node, TapMinorNodeItem):
+                tap : TapItem | None = node.parentItem()
+                tap_major_node = tap.majorNode()
+                if tap_major_node not in self._node2subnet:
+                    continue
+                tap_major_subnet_id = self._node2subnet[tap_major_node]
+                tap_major_subnet = self._subnets[tap_major_subnet_id]
+                tap_major_subnet_name = tap_major_subnet.name
+                if tap_major_subnet_name is None:
+                    continue
+                tap_major_subnet_suffix = tap_major_subnet.suffix
+                if tap_major_subnet_suffix is None:
+                    continue
+                tap_names.append(tap_major_subnet_name)
+            # taps (major end)
+            elif isinstance(node, TapMajorNodeItem):
+                tap : TapItem | None = node.parentItem()
+                tap_minor_node = tap.minorNode()
+                if tap_minor_node not in self._node2subnet:
+                    continue
+                tapped_subnets.add(self._node2subnet[tap_minor_node])
+            # ports and pins
+            elif isinstance(node, FixedNodeItem):
+                node_parent = node.parentItem()
+                if isinstance(node_parent, PortItem):
+                    port_name = node_parent.name()
+                    port_direction = node_parent.direction()
+                    if port_direction == Direction.INPUT:
+                        i_port_names.append(port_name)
+                    elif port_direction == Direction.BIDIR:
+                        io_port_names.append(port_name)
+                    elif port_direction == Direction.OUTPUT:
+                        o_port_names.append(port_name)
+                elif isinstance(node_parent, BlockPinItem | SymbolPinItem):
+                    pin_parent = node_parent.parentItem()
+                    if isinstance(pin_parent, BlockItem | SymbolItem):
+                        pin_names.append((pin_parent.label(), node_parent.name()))
+        # sort pin name tuples
+        if pin_names:
+            pin_names.sort(key=lambda x: (x[0], x[1]))
+        # convert pin name tuples to single strings
+        pin_names = \
+            [f"{label}_{name}" for label, name in pin_names]
+        # aggregate names
+        all_names = \
+            label_names + tap_names + \
+            i_port_names + io_port_names + o_port_names + \
+            pin_names
+        # resolve
+        resolved_name = None
+        resolved_suffix = None
+        if all_names:
+            name_parts : list[tuple[str, str]] = []
+            for name in all_names:
+                name_parts.append(self._baseNameAndSuffix(name))
+            scalar_count = 0
+            member_count = 0
+            vector_count = 0
+            for _, suffix in name_parts:
+                if   ":" in suffix : vector_count += 1
+                elif suffix != ""  : member_count += 1
+                else               : scalar_count += 1
+            if scalar_count and not (member_count or vector_count):
+                resolved_suffix = ""
+            elif member_count and not (scalar_count or vector_count):
+                # ensure all indices are the same (identical expression)
+                if all(s == name_parts[0][1] for _, s in name_parts):
+                    resolved_suffix = name_parts[0][1]
+            elif vector_count and not (scalar_count or member_count):
+                # ensure all ranges have the same width and direction
+                def _delta(range_l : int, range_r : int) -> int:
+                    return range_l - range_r
+                ranges : list[tuple[int, int]] = []
+                consistent = True
+                for _, suffix in name_parts:
+                    range_l_str, range_r_str = suffix.split(':')
+                    range_l = evaluate(range_l_str)
+                    range_r = evaluate(range_r_str)
+                    ranges.append((range_l, range_r))
+                    if len(ranges) > 1 \
+                    and _delta(*ranges[-1]) != _delta(*ranges[0]):
+                        consistent = False
+                        break
+                if consistent:
+                    resolved_suffix = name_parts[0][1]
+        # update subnet, recording previous name and suffix
+        old_name      = subnet.name
+        old_suffix    = subnet.suffix
+        subnet.name   = resolved_name
+        subnet.suffix = resolved_suffix
+        # propagate to net layer
+        if resolved_name != old_name:
+            # name change => migrate subnet to a different net
+            if resolved_name in self._nets:
+                new_net = self._nets[resolved_name]
             else:
-                left, right = raw_left_max, raw_right_min
-            res_name = f"{base}[{left}:{right}]"
+                new_net = Net(resolved_name, resolved_suffix)
+                net_key = subnet.id if resolved_name is None else resolved_name
+                self._nets[net_key] = new_net
+            self._detachSubnetFromNet(subnet)
+            self._attachSubnetToNet(subnet, new_net)
+            self._refreshNet(new_net)
+        elif old_suffix != resolved_suffix:
+            # no name change, suffix change => just refresh the current net
+            self._refreshNet(subnet.net)
+        # resolve tapped subnets
+        for subnet_id in tapped_subnets:
+            self._resolveSubnet(self._subnets[subnet_id], trail)
 
-        # member case
-        elif category == NetCategory.MEMBER:
-            pass
-        # scalar case
-        elif category == NetCategory.SCALAR:
-            pass
-        raise ValueError("Cannot resolve net name")
+    # -- net helpers -------------------------------------------------------
 
-    def _validBaseName(self, name: str) -> bool:
-        """Check if base name follows the safe cross-HDL rule we defined earlier:
-        starts with a letter, then letters/digits or single underscores only,
-        never two underscores in a row, never ends with an underscore.
+    @checked
+    def _attachSubnetToNet(self : Self, subnet : Subnet, net : Net) -> None:
+        subnet.net = net
+        net.subnets.add(subnet.id)
+        net_key = subnet.id if net.name is None else net.name
+        self._subnet2net[subnet.id] = net_key
+
+    @checked
+    def _detachSubnetFromNet(self : Self, subnet : Subnet) -> None:
+        """Remove `subnet` from its current net, deleting the net if empty."""
+        self._subnet2net.pop(subnet.id)
+        net = subnet.net
+        net.subnets.discard(subnet.id)
+        if not net.subnets:
+            # remove empty net
+            net_key = subnet.id if net.name is None else net.name
+            self._nets.pop(net_key)
+        subnet.net = None
+
+    @checked
+    def _refreshNet(self : Self, net : Net) -> None:
+        """Recompute `net.suffix` from its member subnets.
+
+        Vector wins (its span is the bus span); else members; else scalar.
+        Falls back to None if any member is unresolved.
         """
-        if not name:
-            return False
-        # This regex enforces the exact rule (no __, no trailing _)
-        return bool(re.match(r'^[a-zA-Z][a-zA-Z0-9]*(?:_[a-zA-Z0-9]+)*$', name))
+        suffixes = [self._subnets[sid].suffix for sid in net.subnets]
+        if not suffixes or any(s is None for s in suffixes):
+            net.suffix = None
+            return
+        vec = next((s for s in suffixes if s and ":" in s), None)
+        if vec is not None:
+            net.suffix = vec
+        elif all(s == "" for s in suffixes):
+            net.suffix = ""
+        else:
+            net.suffix = next((s for s in suffixes if s != ""), "")
 
-    def _validExpression(self, expr: str) -> bool:
-        """Simple but effective validation for index/range expressions.
-        Accepts integers or expressions using only the allowed operators
-        (+, -, *, /, **), parentheses, alphanumeric characters (for parameters
-        like WIDTH), underscores, and whitespace.
-        """
-        if not expr:
-            return False
-        # Remove ** first so consecutive * characters are valid
-        cleaned = expr.replace('**', '')
-        # Only allowed characters
-        if re.search(r'[^a-zA-Z0-9_+\-*/()\s]', cleaned):
-            return False
-        # Quick balanced-parentheses check (catches most obvious errors)
-        if cleaned.count('(') != cleaned.count(')'):
-            return False
-        return True
+    # -- misc helpers ------------------------------------------------------
 
-    def _vectorNameRange(self, name: str) -> tuple[str, str] | None:
-        name = name.strip()
-        if '[' not in name or not name.endswith(']'):
-            return None
-        bracket_start = name.rfind('[')
-        base = name[:bracket_start].strip()
-        if not self._validBaseName(base):
-            return None
-        range = name[bracket_start+1:-1].strip()
-        if range.count(':') != 1:
-            return None
-        left, right = [p.strip() for p in range.split(':', 1)]
-        if not self._validExpression(left) \
-        or not self._validExpression(right):
-            return None
-        return base, range
-
-    def _cleanVectorName(self, name: str) -> str | None:
-        """Returns clean vector name or None. """
-        base, range = self._vectorNameRange(name)
-        return f"{base}[{range}]"
-
-    def _memberNameIndex(self, name: str) -> tuple[str, str] | None:
-        name = name.strip()
-        if '[' not in name or not name.endswith(']'):
-            return None
-        bracket_start = name.rfind('[')
-        base = name[:bracket_start].strip()
-        if not self._validBaseName(base):
-            return None
-        index = name[bracket_start+1:-1].strip()
-        if ':' in index or not self._validExpression(index):
-            return None
-        return base, index
-
-    def _cleanMemberName(self, name: str) -> str | None:
-        """Returns clean member name or None."""
-        base, index = self._memberNameIndex(name)
-        return f"{base}[{index}]"
-
-    def _cleanScalarName(self, name: str) -> str | None:
-        """Returns clean scalar name or None. """
-        name = name.strip()
-        if self._validBaseName(name):
-            return name
-        return None
+    @checked
+    def _baseNameAndSuffix(self : Self, full_name : str) -> tuple[str, str]:
+        if "[" not in full_name:
+            return full_name.replace(" ", ""), ""
+        base_name = full_name.split('[')[0].replace(" ", "")
+        suffix = full_name.split('[')[1].split(']')[0]
+        return base_name, suffix

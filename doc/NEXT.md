@@ -1,3 +1,6 @@
+gate mirroring
+add signal types to netlist, derived from ports and pins
+
 resources overhaul - much more sharing
   - override fill for Block
 

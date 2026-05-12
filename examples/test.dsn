@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ConnectEd>
+  <Design name="UntitledDesign1">
+    <Symbols/>
+    <Diagram Name="UntitledDesign1" Sheet_Name="A4 (landscape)" Sheet_Width="1169" Sheet_Height="827" Margin="10" Border="1">
+      <Line X1="30" Y1="40" X2="100" Y2="70"/>
+      <Polyline Closed="False" X="400" Y="90">
+        <Segment X="70" Y="-60"/>
+        <Segment X="120" Y="20"/>
+        <Segment X="170" Y="-60"/>
+        <Segment X="220" Y="-20"/>
+        <Segment X="250" Y="-40"/>
+      </Polyline>
+      <Ellipse Origin="Middle Center" X="305" Y="60" Width="150" Height="80"/>
+      <Rectangle Origin="Middle Center" X="165" Y="60" Width="90" Height="60"/>
+      <Text Text="123" X="690" Y="70" Origin="Top Left" AlignH="LEFT" AlignV="TOP"/>
+      <Text Text="123&#10;456" X="740" Y="60" Origin="Top Left" AlignH="LEFT" AlignV="TOP"/>
+      <Block Origin="Middle Center" X="120" Y="155" Width="80" Height="50">
+        <PropertyText Name="Label" Cleat="Top Left" Origin="Bottom Left" AlignH="LEFT" AlignV="TOP"/>
+        <PropertyText Name="Name" Cleat="Bottom Left" Origin="Top Left" AlignH="LEFT" AlignV="TOP"/>
+        <BlockPin Name="A" Dir="in" Edge="Left" Offset="10">
+          <PropertyText Name="Name" Cleat="Name" Origin="Middle Left" AlignH="LEFT" AlignV="TOP"/>
+        </BlockPin>
+      </Block>
+      <XorGate Output="L" Inputs="LHHHH" X="280" Y="160"/>
+      <BufGate Output="L" Input="H" X="350" Y="160"/>
+      <AndGate Output="H" Inputs="HHH" X="410" Y="160"/>
+      <OrGate Output="H" Inputs="HHHHHHH" X="480" Y="160"/>
+    </Diagram>
+  </Design>
+</ConnectEd>

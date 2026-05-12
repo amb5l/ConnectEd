@@ -62,24 +62,7 @@ class DiagramSceneResourcesMixin(SymbolSceneResourcesMixin):
                         "path"  : QPainterPath()
                     }
                 },
-                "PinNode" : {
-                    "unconnected" : {
-                        "pen"   : QPen(),
-                        "brush" : QBrush(),
-                        "path"  : QPainterPath()
-                    },
-                    "connected" : {
-                        "pen"   : QPen(),
-                        "brush" : QBrush(),
-                        "path"  : QPainterPath()
-                    },
-                    "junction" : {
-                        "pen"   : QPen(),
-                        "brush" : QBrush(),
-                        "path"  : QPainterPath()
-                    }
-                },
-                "TapNode" : {
+                "FixedNode" : {
                     "unconnected" : {
                         "pen"   : QPen(),
                         "brush" : QBrush(),
@@ -114,7 +97,7 @@ class DiagramSceneResourcesMixin(SymbolSceneResourcesMixin):
             pen.setCapStyle(Qt.PenCapStyle.RoundCap)
             self.resources["Tap"][state] = pen
         # nodes
-        for node_type in ["FreeNode", "PinNode", "TapNode"]:
+        for node_type in ["FreeNode", "FixedNode"]:
             for state in ["unconnected", "connected", "junction"]:
                 self.resources[node_type][state]["pen"] = \
                     _getPen(f"{node_type}/{state}")

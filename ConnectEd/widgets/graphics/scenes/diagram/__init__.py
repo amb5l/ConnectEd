@@ -1,7 +1,9 @@
 from typing import Self
 from dataclasses import dataclass
 
-from PyQt6.QtCore import Qt, QPointF, QRectF, QXmlStreamWriter, QXmlStreamReader
+from PyQt6.QtCore import Qt, QPointF, QRectF, \
+                         QXmlStreamWriter, QXmlStreamReader, \
+                         pyqtSignal
 from PyQt6.QtGui  import QPainter, QPen, QBrush
 
 from .....app import settings, logger
@@ -11,7 +13,7 @@ from .....core.xml   import toXmlAttrs, fromXmlAttrs
 
 from ...properties import InherentProperty
 
-from ...items.node    import NodeItem, FreeNodeItem, PinNodeItem, TapNodeItem
+from ...items.node    import NodeItem, FreeNodeItem, FixedNodeItem
 from ...items.segment import SegmentItem
 
 from ...items.mixin.xml import ItemXmlMixin
@@ -74,6 +76,8 @@ class DiagramScene(
     border  : float           # line width
     netlist : Netlist
 
+    # signals
+    netlistChanged = pyqtSignal()  # noqa N815
 
     def __init__(self : Self, fresh : bool = True) -> None:
         sheet_name = settings().get("defaults/sheet/name")
@@ -174,10 +178,8 @@ class DiagramScene(
                     scene.netlist.fromXml(xr)
                 elif "Node" in element_name:
                     node_id = int(xr.attributes().value("ID"))
-                    if element_name == "PinNode":
-                        node = PinNodeItem.fromXml(xr, scene)
-                    elif element_name == "TapNode":
-                        node = TapNodeItem.fromXml(xr, scene)
+                    if element_name == "FixedNode":
+                        node = FixedNodeItem.fromXml(xr, scene)
                     elif element_name == "FreeNode":
                         node = FreeNodeItem.fromXml(xr)
                         scene.addItem(node)

@@ -124,6 +124,10 @@ class SymbolPinHandleId(HandleId):
     NAME   = "Name"    # set just in from placement origin
 
 
+class TapHandleId(HandleId):
+    SUFFIX = "Suffix"
+
+
 class Display(Enum):
     NONE = "<none>"
     SHOW = "Show"
@@ -228,6 +232,7 @@ class DataKind(StrEnum):
     PORT_HANDLE       = "Port Handle"
     BLOCK_PIN_HANDLE  = "Block Pin Handle"
     SYMBOL_PIN_HANDLE = "Symbol Pin Handle"
+    TAP_HANDLE        = "Tap Handle"
     ROTATION          = "Rotation"
     ALIGN_H           = "Horizontal Alignment"
     ALIGN_V           = "Vertical Alignment"

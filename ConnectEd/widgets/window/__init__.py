@@ -8,7 +8,7 @@ status bars, and the central MDI area for document management.
 from typing import Self
 
 from PyQt6.QtCore    import Qt, pyqtSignal
-from PyQt6.QtWidgets import QApplication, QMainWindow
+from PyQt6.QtWidgets import QApplication, QMainWindow, QMdiSubWindow
 from PyQt6.QtGui     import QIcon, QCloseEvent
 
 from ...app import app, settings
@@ -16,6 +16,8 @@ from ...app import app, settings
 from ...core.defs  import APP_NAME
 
 from ...resources import getIconPath
+
+from ..graphics.views.diagram import DiagramView
 
 from .menu_bar   import MenuBar
 from .status_bar import StatusBar
@@ -66,6 +68,7 @@ class Window(QMainWindow):
 
         # MDI area
         self._mdi_area = MdiArea()
+        self._mdi_area.subWindowActivated.connect(self._onSubWindowActivated)
 
         # menu bar
         self._menu_bar = MenuBar(self)
@@ -119,6 +122,9 @@ class Window(QMainWindow):
             self._mdi_area.subWindowActivated.disconnect(
                 self._menu_bar.updatePlaceMenu
             )
+            self._mdi_area.subWindowActivated.disconnect(
+                self._onSubWindowActivated
+            )
         except TypeError: # workaround for Qt cleanup
             pass
         try:
@@ -131,6 +137,14 @@ class Window(QMainWindow):
             pass
         settings().set("startup/geometry", self.saveGeometry().data())
         super().closeEvent(event)
+
+    def _onSubWindowActivated(
+        self      : Self,
+        subwindow : QMdiSubWindow | None
+    ) -> None:
+        view = subwindow.widget() if subwindow else None
+        diagram = view.scene() if isinstance(view, DiagramView) else None
+        self.netlist.setDiagram(diagram)
 
     # convenience properties
 

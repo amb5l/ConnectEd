@@ -17,8 +17,6 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ..scenes.diagram import DiagramScene
     from .segment  import SegmentItem
-    from .port_pin import PortPinMixin
-    from .tap      import TapItem
 
 
 class NodeItem(
@@ -51,7 +49,7 @@ class NodeItem(
         if scene is None:
             if (scene := self.scene()) is None:
                 return
-        item_name = self.settingsName()  # e.g. "PinNode" or "FreeNode"
+        item_name = self.settingsName()  # e.g. "FixedNode" or "FreeNode"
         state_str = self._state.value    # e.g. "unconnected"
         self.setPen(scene.resources[item_name][state_str]["pen"])
         self.setBrush(scene.resources[item_name][state_str]["brush"])
@@ -72,12 +70,6 @@ class NodeItem(
             self.State.CONNECTED   if n >= 1 else \
             self.State.UNCONNECTED
         self.onSettingsChange(scene)
-
-    def name(self : Self) -> str | None:
-        for child in self.childItems():
-            if isinstance(child, PropertyLabelItem):
-                return child.name()
-        return None
 
     def degree(self : Self) -> int:
         scene : "DiagramScene | None" = self.scene()
@@ -160,7 +152,9 @@ class FreeNodeItem(NodeItem):
         return instance
 
 
-class NonFreeNodeItem(NodeItem):
+class FixedNodeItem(NodeItem):
+    _JUNCTION_THRESHOLD = 2
+
     def toXml(self : Self, xw : QXmlStreamWriter, id : int) -> None:
         xw.writeStartElement(self.settingsName())
         xw.writeAttribute("ID", str(id))
@@ -184,27 +178,24 @@ class NonFreeNodeItem(NodeItem):
         )
         items = scene.items(pos)
         for item in items:
-            if isinstance(item, NonFreeNodeItem):
+            if isinstance(item, FixedNodeItem):
                 instance = item
                 break
         else:
-            logger().warning("No PinNode found at {pos.x()}, {pos.y()}")
+            logger().warning("No FixedNode found at {pos.x()}, {pos.y()}")
             instance = None
         xr.readNext()
         return instance
 
 
-class PortPinNodeItem(NonFreeNodeItem):
-    _JUNCTION_THRESHOLD = 2
+class TapNodeItem(FixedNodeItem):
+    def settingsName(self : Self) -> str:
+        return "FixedNode"
 
 
-class PortNodeItem(PortPinNodeItem):
+class TapMajorNodeItem(TapNodeItem):
     pass
 
 
-class PinNodeItem(PortPinNodeItem):
+class TapMinorNodeItem(TapNodeItem):
     pass
-
-
-class TapNodeItem(NonFreeNodeItem):
-    _JUNCTION_THRESHOLD = 3

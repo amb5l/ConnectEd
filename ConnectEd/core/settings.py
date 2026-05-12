@@ -102,78 +102,6 @@ FACTORY_SETTINGS = {
             "sheet"      : PaletteDark.Sheet,
             "border"     : PaletteDark.Border,
             "items" : {
-                "PinNode" : {
-                    "size" : 3,
-                    "unconnected" : {
-                        "line" : {
-                            "color" : PaletteDark.PinNodeUnconnected,
-                            "width" : 0,
-                            "style" : Qt.PenStyle.SolidLine
-                        },
-                        "fill" : {
-                            "color" : PaletteDark.PinNodeUnconnected,
-                            "style" : Qt.BrushStyle.NoBrush
-                        }
-                    },
-                    "connected" : {
-                        "line" : {
-                            "color" : PaletteDark.PinNodeConnected,
-                            "width" : 0,
-                            "style" : Qt.PenStyle.SolidLine
-                        },
-                        "fill" : {
-                            "color" : PaletteDark.PinNodeConnected,
-                            "style" : Qt.BrushStyle.NoBrush
-                        }
-                    },
-                    "junction" : {
-                        "line" : {
-                            "color" : PaletteDark.PinNodeJunction,
-                            "width" : 0,
-                            "style" : Qt.PenStyle.NoPen
-                        },
-                        "fill" : {
-                            "color" : PaletteDark.PinNodeJunction,
-                            "style" : Qt.BrushStyle.SolidPattern
-                        }
-                    }
-                },
-                "TapNode" : {
-                    "size" : 3,
-                    "unconnected" : {
-                        "line" : {
-                            "color" : PaletteDark.TapNodeUnconnected,
-                            "width" : 0,
-                            "style" : Qt.PenStyle.SolidLine
-                        },
-                        "fill" : {
-                            "color" : PaletteDark.TapNodeUnconnected,
-                            "style" : Qt.BrushStyle.NoBrush
-                        }
-                    },
-                    "connected" : {
-                        "line" : {
-                            "color" : PaletteDark.TapNodeConnected,
-                            "width" : 0,
-                            "style" : Qt.PenStyle.SolidLine
-                        },
-                        "fill" : {
-                            "color" : PaletteDark.TapNodeConnected,
-                            "style" : Qt.BrushStyle.NoBrush
-                        }
-                    },
-                    "junction" : {
-                        "line" : {
-                            "color" : PaletteDark.TapNodeJunction,
-                            "width" : 0,
-                            "style" : Qt.PenStyle.NoPen
-                        },
-                        "fill" : {
-                            "color" : PaletteDark.TapNodeJunction,
-                            "style" : Qt.BrushStyle.SolidPattern
-                        }
-                    }
-                },
                 "FreeNode" : {
                     "size" : 3,
                     "unconnected" : {
@@ -206,6 +134,42 @@ FACTORY_SETTINGS = {
                         },
                         "fill" : {
                             "color" : PaletteDark.FreeNodeJunction,
+                            "style" : Qt.BrushStyle.SolidPattern
+                        }
+                    }
+                },
+                "FixedNode" : {
+                    "size" : 3,
+                    "unconnected" : {
+                        "line" : {
+                            "color" : PaletteDark.FixedNodeUnconnected,
+                            "width" : 0,
+                            "style" : Qt.PenStyle.SolidLine
+                        },
+                        "fill" : {
+                            "color" : PaletteDark.FixedNodeUnconnected,
+                            "style" : Qt.BrushStyle.NoBrush
+                        }
+                    },
+                    "connected" : {
+                        "line" : {
+                            "color" : PaletteDark.FixedNodeConnected,
+                            "width" : 0,
+                            "style" : Qt.PenStyle.SolidLine
+                        },
+                        "fill" : {
+                            "color" : PaletteDark.FixedNodeConnected,
+                            "style" : Qt.BrushStyle.NoBrush
+                        }
+                    },
+                    "junction" : {
+                        "line" : {
+                            "color" : PaletteDark.FixedNodeJunction,
+                            "width" : 0,
+                            "style" : Qt.PenStyle.NoPen
+                        },
+                        "fill" : {
+                            "color" : PaletteDark.FixedNodeJunction,
                             "style" : Qt.BrushStyle.SolidPattern
                         }
                     }
@@ -553,74 +517,38 @@ FACTORY_SETTINGS = {
                         }
                     }
                 },
-                "PinNode" : {
+                "FixedNode" : {
                     "size" : 3,
                     "unconnected" : {
                         "line" : {
-                            "color" : PaletteLightMono.PinNodeUnconnected,
+                            "color" : PaletteLightMono.FixedNodeUnconnected,
                             "width" : 0,
                             "style" : Qt.PenStyle.SolidLine
                         },
                         "fill" : {
-                            "color" : PaletteLightMono.PinNodeUnconnected,
+                            "color" : PaletteLightMono.FixedNodeUnconnected,
                             "style" : Qt.BrushStyle.NoBrush
                         }
                     },
                     "connected" : {
                         "line" : {
-                            "color" : PaletteLightMono.PinNodeConnected,
+                            "color" : PaletteLightMono.FixedNodeConnected,
                             "width" : 0,
                             "style" : Qt.PenStyle.SolidLine
                         },
                         "fill" : {
-                            "color" : PaletteLightMono.PinNodeConnected,
+                            "color" : PaletteLightMono.FixedNodeConnected,
                             "style" : Qt.BrushStyle.NoBrush
                         }
                     },
                     "junction" : {
                         "line" : {
-                            "color" : PaletteLightMono.PinNodeJunction,
+                            "color" : PaletteLightMono.FixedNodeJunction,
                             "width" : 0,
                             "style" : Qt.PenStyle.NoPen
                         },
                         "fill" : {
-                            "color" : PaletteLightMono.PinNodeJunction,
-                            "style" : Qt.BrushStyle.SolidPattern
-                        }
-                    }
-                },
-                "TapNode" : {
-                    "size" : 3,
-                    "unconnected" : {
-                        "line" : {
-                            "color" : PaletteLightMono.TapNodeUnconnected,
-                            "width" : 0,
-                            "style" : Qt.PenStyle.SolidLine
-                        },
-                        "fill" : {
-                            "color" : PaletteLightMono.TapNodeUnconnected,
-                            "style" : Qt.BrushStyle.NoBrush
-                        }
-                    },
-                    "connected" : {
-                        "line" : {
-                            "color" : PaletteLightMono.TapNodeConnected,
-                            "width" : 0,
-                            "style" : Qt.PenStyle.SolidLine
-                        },
-                        "fill" : {
-                            "color" : PaletteLightMono.TapNodeConnected,
-                            "style" : Qt.BrushStyle.NoBrush
-                        }
-                    },
-                    "junction" : {
-                        "line" : {
-                            "color" : PaletteLightMono.TapNodeJunction,
-                            "width" : 0,
-                            "style" : Qt.PenStyle.NoPen
-                        },
-                        "fill" : {
-                            "color" : PaletteLightMono.TapNodeJunction,
+                            "color" : PaletteLightMono.FixedNodeJunction,
                             "style" : Qt.BrushStyle.SolidPattern
                         }
                     }
