@@ -423,6 +423,7 @@ class Netlist:
             name_parts : list[tuple[str, str]] = []
             for name in all_names:
                 name_parts.append(self._baseNameAndSuffix(name))
+            resolved_name = name_parts[0][0]
             scalar_count = 0
             member_count = 0
             vector_count = 0
