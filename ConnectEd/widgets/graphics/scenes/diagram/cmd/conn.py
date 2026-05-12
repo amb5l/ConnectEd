@@ -214,29 +214,32 @@ class CmdSplitSegment(CmdDiagramSceneBase):
         self._seg2 = SegmentItem()
 
     def redo(self : Self) -> None:
-        # graph: remove original edge, add two new edges
+        # graph: drop the original edge while seg1 still has its old endpoints
         self._scene.netlist.removeSegment(self._node1, self._node2)
-        self._scene.netlist.addSegment(self._node1, self._node, self._seg1)
-        self._scene.netlist.addSegment(self._node, self._node2, self._seg2)
-        # graphics: shorten seg1, create seg2
+        # graphics: shorten seg1, create seg2 (so each segment knows its
+        # endpoints before the corresponding addSegment(seg) call)
+        self._seg1.setNode2(self._node)
         self._seg2.setNode1(self._node)
         self._seg2.setNode2(self._node2)
-        self._seg1.setNode2(self._node)
         self._scene.addItem(self._seg2)
+        # graph: register the two new edges
+        self._scene.netlist.addSegment(self._seg1)
+        self._scene.netlist.addSegment(self._seg2)
         self._node.onConnectionChange()
         self._node1.onConnectionChange()
         self._node2.onConnectionChange()
 
     def undo(self : Self) -> None:
-        # graph: remove two edges, restore original edge
+        # graph: drop both halves while seg1/seg2 still have their split endpoints
         self._scene.netlist.removeSegment(self._node1, self._node)
         self._scene.netlist.removeSegment(self._node, self._node2)
-        self._scene.netlist.addSegment(self._node1, self._node2, self._seg1)
-        # graphics: restore seg1, remove seg2
+        # graphics: restore seg1, retire seg2
         self._seg1.setNode2(self._node2)
         self._seg2.setNode1(None)
         self._seg2.setNode2(None)
         self._scene.removeItem(self._seg2)
+        # graph: re-register the original edge
+        self._scene.netlist.addSegment(self._seg1)
         self._node.onConnectionChange()
         self._node1.onConnectionChange()
         self._node2.onConnectionChange()
@@ -269,30 +272,33 @@ class CmdUnsplitSegment(CmdDiagramSceneBase):
         self._far2 = self._seg2.otherNode(node)
 
     def redo(self : Self) -> None:
-        # graph: remove two edges and node, add merged edge
+        # graph: drop both edges and the middle node while geometry is still split
         self._scene.netlist.removeSegment(self._far1, self._node)
         self._scene.netlist.removeSegment(self._node, self._far2)
         self._scene.netlist.removeNodes(self._node)
-        self._scene.netlist.addSegment(self._far1, self._far2, self._seg1)
-        # graphics: extend seg1 to span far1--far2, remove seg2
+        # graphics: extend seg1 to span far1--far2, retire seg2 and middle node
         self._seg1.changeNode(self._node, self._far2)
         self._seg2.setNode1(None)
         self._seg2.setNode2(None)
         self._scene.removeItem(self._seg2)
+        self._scene.removeItem(self._node)
+        # graph: register the merged edge (seg1 now ends at far2)
+        self._scene.netlist.addSegment(self._seg1)
         self._far1.onConnectionChange()
         self._far2.onConnectionChange()
 
     def undo(self : Self) -> None:
-        # graph: remove merged edge, restore node and two edges
+        # graph: drop the merged edge while seg1 still spans far1--far2
         self._scene.netlist.removeSegment(self._far1, self._far2)
-        self._scene.netlist.adoptNode(self._node)
-        self._scene.netlist.addSegment(self._far1, self._node, self._seg1)
-        self._scene.netlist.addSegment(self._node, self._far2, self._seg2)
-        # graphics: shorten seg1 back, restore seg2
+        # graphics: re-insert middle node, shorten seg1 back, restore seg2
+        self._scene.addItem(self._node)
         self._seg1.changeNode(self._far2, self._node)
         self._seg2.setNode1(self._node)
         self._seg2.setNode2(self._far2)
         self._scene.addItem(self._seg2)
+        # graph: re-register the two split edges (addSegment re-adopts _node)
+        self._scene.netlist.addSegment(self._seg1)
+        self._scene.netlist.addSegment(self._seg2)
         self._far1.onConnectionChange()
         self._far2.onConnectionChange()
         self._node.onConnectionChange()

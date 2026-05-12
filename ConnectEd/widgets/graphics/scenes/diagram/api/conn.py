@@ -164,7 +164,7 @@ class DiagramSceneApiConnMixin:
         uv1 = QLineF(node.scenePos(), p1).unitVector()
         uv2 = QLineF(node.scenePos(), p2).unitVector()
         dot_product = uv1.dx() * uv2.dx() + uv1.dy() * uv2.dy()
-        return isclose(dot_product, 1.0, abs_tol=1e-6)
+        return isclose(dot_product, -1.0, abs_tol=1e-6)
 
     def addSegment(
         self     : "DiagramScene",
@@ -199,24 +199,19 @@ class DiagramSceneApiConnMixin:
         ]
         # sort by distance from p1
         nodes.sort(key=lambda v: QLineF(p1, v.scenePos()).length())
-        # add segments between all vertices along path from v1 to v2
-        # iterate over all consecutive pairs of vertices
+        # add segments between all consecutive pairs of vertices
         for v1, v2 in zip(nodes[:-1], nodes[1:], strict=True):
-            # check if v1 is redundant and remove if so
-            if self.isRedundantNode(v1):
-                cmd = CmdUnsplitSegment(self, v1)
-                cmdExec(self, cmd, undoable)
-                continue
-            # check for existing segment between v1 and v2
             if self.netlist.hasSegment(v1, v2):
                 continue
-            # add segment
             cmd = CmdAddSegment(self, v1, v2)
             cmdExec(self, cmd, undoable)
-        # check if last node is redundant and remove if so
-        if self.isRedundantNode(v2):
-            cmd = CmdUnsplitSegment(self, v2)
-            cmdExec(self, cmd, undoable)
+        # cull redundant nodes (free, childless, degree 2, colinear neighbours).
+        # Sweeping post-add catches both endpoints and any intermediate vertex
+        # picked up by the stroker hit-test.
+        for node in nodes:
+            if self.isRedundantNode(node):
+                cmd = CmdUnsplitSegment(self, node)
+                cmdExec(self, cmd, undoable)
         # end macro
         if undoable:
             self.undo_stack.endMacro()
