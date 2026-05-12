@@ -50,8 +50,8 @@ class NetlistBrowser(TreeView):
         subnets_by_id = self._diagram.netlist.subnets()
         for net_key in net_keys:
             net = nets_u[net_key]
-            net_label = "" if isinstance(net_key, int) else net_key
-            net_item = self._appendRow(self._model, net_label, net.suffix, "?")
+            net_name = str(net_key)
+            net_item = self._appendRow(self._model, net_name, net.suffix, "?")
             # subnet sorting:
             # ranges, then indices, then scalars
             # TODO
