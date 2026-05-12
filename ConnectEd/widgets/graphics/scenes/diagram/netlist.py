@@ -395,11 +395,11 @@ class Netlist:
                 if isinstance(node_parent, PortItem):
                     port_name = node_parent.name()
                     port_direction = node_parent.direction()
-                    if port_direction == Direction.INPUT:
+                    if port_direction == Direction.IN:
                         i_port_names.append(port_name)
-                    elif port_direction == Direction.BIDIR:
+                    elif port_direction == Direction.BI:
                         io_port_names.append(port_name)
-                    elif port_direction == Direction.OUTPUT:
+                    elif port_direction == Direction.OUT:
                         o_port_names.append(port_name)
                 elif isinstance(node_parent, BlockPinItem | SymbolPinItem):
                     pin_parent = node_parent.parentItem()
