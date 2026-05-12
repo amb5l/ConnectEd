@@ -242,6 +242,7 @@ class GateItem(BaseGateItem):
         ItemTransformMixin._PROPERTIES_ROTATE | \
         ItemLineMixin._PROPERTIES_LINE | \
         ItemFillMixin._PROPERTIES_FILL
+    _PEN_CAP_STYLE = Qt.PenCapStyle.RoundCap
     _PEN_JOIN_STYLE = Qt.PenJoinStyle.RoundJoin
 
     # instance attributes
