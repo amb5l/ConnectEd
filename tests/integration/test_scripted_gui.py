@@ -30,13 +30,13 @@ def test(app : cs.ConnectEdApp):
     navigator_dock = window.navigator_dock
     assert navigator_dock is not None
     assert navigator_dock.isHidden() == False
-    messages_viewer = window.messages_viewer
+    messages_viewer = window.messages_dock
     assert messages_viewer is not None
     assert messages_viewer.isHidden() == False
-    transcript_viewer = window.transcript_viewer
+    transcript_viewer = window.transcript_dock
     assert transcript_viewer is not None
     assert transcript_viewer.isHidden() == False
-    log_viewer = window.log_viewer
+    log_viewer = window.log_dock
     assert log_viewer is not None
     assert log_viewer.isHidden() == False
     mdi_area = window.mdi_area

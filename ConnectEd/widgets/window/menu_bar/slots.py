@@ -302,16 +302,16 @@ class Slots:
         window().navigator_dock.raise_()
 
     def windowMessages(self : Self) -> None:
-        window().messages_viewer.show()
-        window().messages_viewer.raise_()
+        window().messages_dock.show()
+        window().messages_dock.raise_()
 
     def windowTranscript(self : Self) -> None:
-        window().transcript_viewer.show()
-        window().transcript_viewer.raise_()
+        window().transcript_dock.show()
+        window().transcript_dock.raise_()
 
     def windowLog(self : Self) -> None:
-        window().log_viewer.show()
-        window().log_viewer.raise_()
+        window().log_dock.show()
+        window().log_dock.raise_()
 
     def windowNext(self : Self) -> None:
         window().mdi_area.nextSubWindow()
