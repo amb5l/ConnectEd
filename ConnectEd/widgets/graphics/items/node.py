@@ -81,7 +81,7 @@ class NodeItem(
         scene : "DiagramScene | None" = self.scene()
         if scene is None or not scene.netlist.hasNode(self):
             return []
-        return scene.netlist.segments(self)
+        return scene.netlist.nodeSegments(self)
 
     def toXml(self : Self, xw : QXmlStreamWriter, id : int) -> None:
         xw.writeStartElement(self.settingsName())
