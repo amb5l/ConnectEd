@@ -11,6 +11,8 @@ from ....core.check import checked
 
 from ..properties import PropertiesMixin, InherentProperty, PropertyTextSpec
 
+from ..scenes import withScene
+
 from .node          import TapMajorNodeItem, TapMinorNodeItem
 
 from .mixin import ItemMixin
@@ -90,11 +92,9 @@ class TapItem(
     def onSceneChange(self : Self, scene : "DiagramScene | None") -> None:
         self.onSettingsChange(scene)
 
+    @withScene
     @checked
     def onSettingsChange(self : Self, scene : "DiagramScene | None") -> None:
-        if scene is None:
-            if (scene := self.scene()) is None:
-                return
         self.setPen(scene.resources["Tap"][self._state.value])
 
     @checked

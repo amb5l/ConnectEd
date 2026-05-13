@@ -12,6 +12,8 @@ from ....core.check import checked
 
 from ..properties import PropertyTextSpec
 
+from ..scenes import withScene
+
 from .port_pin import PortPinMixin
 from .handle   import HandleItem
 
@@ -100,12 +102,10 @@ class PortItem(
         PortPinMixin.setDirection(self, value)
         self._setPath()
 
+    @withScene
     @checked
     def _setPath(self : Self, scene : "DrawingScene | None" = None) -> None:
         # ensure scene resources are available
-        if scene is None:
-            if (scene := self.scene()) is None:
-                return
         item_name = self.settingsName()
         # set path
         self.setPath(scene.resources[item_name][self._direction.value])

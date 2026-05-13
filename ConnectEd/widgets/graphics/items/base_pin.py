@@ -8,6 +8,8 @@ from ....core.types import Direction, DataKind
 
 from ..properties import InherentProperty
 
+from ..scenes import withScene
+
 from .port_pin import PortPinMixin
 
 from .mixin            import ItemSettingsMixin
@@ -55,14 +57,12 @@ class BasePinArrowItem(
         self._direction = value
         self._setPath()
 
+    @withScene
     def _setPath(
         self      : Self,
         scene     : "DrawingScene | None" = None,
         direction : Direction | None = None
     ) -> None:
-        if scene is None:
-            if (scene := self.scene()) is None:
-                return
         direction = self._direction if direction is None else direction
         item_name = self.__class__.__name__.removesuffix("Item")
         self.setPath(scene.resources[item_name][self._direction.value])

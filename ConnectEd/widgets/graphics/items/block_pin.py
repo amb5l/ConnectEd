@@ -12,6 +12,8 @@ from ....core.check import checked
 
 from ..properties import PropertyTextSpec
 
+from ..scenes import withScene
+
 from .base_pin import BasePinArrowItem, BasePinItem
 from .port_pin import PortPinMixin
 
@@ -60,12 +62,9 @@ class BlockPinItem(ItemLocMixin, ItemBlockPinHandlesMixin, BasePinItem):
             view.action("Properties...", lambda: view.ui.editItemProperties(self))
         ]
 
+    @withScene
     @checked
     def _setPath(self : Self, scene : "DrawingScene | None" = None) -> None:
-        # ensure scene resources are available
-        if scene is None:
-            if (scene := self.scene()) is None:
-                return
         item_name = self.settingsName()
         # set path
         self.setPath(scene.resources[item_name])

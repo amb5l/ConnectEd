@@ -12,6 +12,8 @@ from ....core.check import checked
 
 from ..properties import PropertyTextSpec
 
+from ..scenes import withScene
+
 from .port_pin import PortPinMixin
 from .base_pin import BasePinArrowItem, BasePinItem, \
                       BasePinDotMixin, BasePinClockMixin
@@ -85,12 +87,9 @@ class SymbolPinItem(
             )
         ]
 
+    @withScene
     @checked
     def _setPath(self : Self, scene : "DrawingScene | None" = None) -> None:
-        # ensure scene resources are available
-        if scene is None:
-            if (scene := self.scene()) is None:
-                return
         item_name = self.settingsName()
         # set path
         key = (self._dot, self._clock)

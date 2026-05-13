@@ -6,6 +6,8 @@ from PyQt6.QtWidgets import QGraphicsPathItem, QGraphicsItem
 
 from ....app import settings, logger
 
+from ..scenes import withScene
+
 from .property_label import PropertyLabelItem
 
 from .mixin        import ItemMixin
@@ -45,10 +47,8 @@ class NodeItem(
         if scene is not None:
             self.onSettingsChange(scene)
 
+    @withScene
     def onSettingsChange(self : Self, scene : "DiagramScene | None" = None) -> None:
-        if scene is None:
-            if (scene := self.scene()) is None:
-                return
         item_name = self.settingsName()  # e.g. "FixedNode" or "FreeNode"
         state_str = self._state.value    # e.g. "unconnected"
         self.setPen(scene.resources[item_name][state_str]["pen"])
@@ -60,10 +60,8 @@ class NodeItem(
         for segment in self.segments():
             segment.onGeometryChange()
 
+    @withScene
     def onConnectionChange(self : Self, scene : "DiagramScene | None" = None) -> None:
-        if scene is None:
-            if (scene := self.scene()) is None:
-                return
         n = self.degree()
         self._state = \
             self.State.JUNCTION    if n >= self._JUNCTION_THRESHOLD else \
@@ -96,16 +94,13 @@ class NodeItem(
                 logger().warning(f"Unexpected child item: {child.type()}")
         xw.writeEndElement()
 
+    @withScene
     def _setPath(
         self      : Self,
         scene     : "DiagramScene | None" = None,
         item_name : str | None = None,
         state_str : str | None = None
     ) -> None:
-        # ensure scene resources are available
-        if scene is None:
-            if (scene := self.scene()) is None:
-                return
         item_name = self.settingsName() if item_name is None else item_name
         state_str = self._state.value if state_str is None else state_str
         path = scene.resources[item_name][state_str]["path"]
