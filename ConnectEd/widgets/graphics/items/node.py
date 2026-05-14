@@ -21,6 +21,12 @@ if TYPE_CHECKING:
     from .segment  import SegmentItem
 
 
+class NodeState(StrEnum):
+    UNCONNECTED = "unconnected"
+    CONNECTED   = "connected"
+    JUNCTION    = "junction"
+
+
 class NodeItem(
     ItemMixin,
     ItemShapeMixin,
@@ -28,32 +34,28 @@ class NodeItem(
     ItemChangeMixin,
     QGraphicsPathItem
 ):
-    class State(StrEnum):
-        UNCONNECTED = "unconnected"
-        CONNECTED   = "connected"
-        JUNCTION    = "junction"
-
     _JUNCTION_THRESHOLD : int
 
     # instance attributes
-    _state : State
+    _state : NodeState
 
     def __init__(self : Self, parent : QGraphicsItem | None = None) -> None:
         super().__init__(parent)
-        self._state = self.State.UNCONNECTED
+        self._state = NodeState.UNCONNECTED
         self.initItem()
 
-    def onSceneChange(self : Self, scene : "DiagramScene | None") -> None:
-        if scene is not None:
-            self.onSettingsChange(scene)
+    def onSettingsChange(self : Self) -> None:
+        self.onSceneChange()
 
     @withScene
-    def onSettingsChange(self : Self, scene : "DiagramScene | None" = None) -> None:
-        item_name = self.settingsName()  # e.g. "FixedNode" or "FreeNode"
-        state_str = self._state.value    # e.g. "unconnected"
-        self.setPen(scene.resources[item_name][state_str]["pen"])
-        self.setBrush(scene.resources[item_name][state_str]["brush"])
-        self._setPath(scene, item_name, state_str)
+    def onSceneChange(self : Self, scene : "DiagramScene | None") -> None:
+        self._updatePenBrush(scene)
+        self.setPath(scene.rsrcman.path(self.__class__, self._state))
+        self._hshape.clear()
+        self._hshape.addRect(self.boundingRect())
+
+    def onSelectionChange(self : Self, selected : bool) -> None:
+        self._updatePenBrush(self.scene())
 
     def onScenePositionChange(self : Self, _pos : QPointF) -> None:
         """Update all connected segments."""
@@ -64,9 +66,9 @@ class NodeItem(
     def onConnectionChange(self : Self, scene : "DiagramScene | None" = None) -> None:
         n = self.degree()
         self._state = \
-            self.State.JUNCTION    if n >= self._JUNCTION_THRESHOLD else \
-            self.State.CONNECTED   if n >= 1 else \
-            self.State.UNCONNECTED
+            NodeState.JUNCTION    if n >= self._JUNCTION_THRESHOLD else \
+            NodeState.CONNECTED   if n >= 1 else \
+            NodeState.UNCONNECTED
         self.onSettingsChange(scene)
 
     def degree(self : Self) -> int:
@@ -94,20 +96,10 @@ class NodeItem(
                 logger().warning(f"Unexpected child item: {child.type()}")
         xw.writeEndElement()
 
-    @withScene
-    def _setPath(
-        self      : Self,
-        scene     : "DiagramScene | None" = None,
-        item_name : str | None = None,
-        state_str : str | None = None
-    ) -> None:
-        item_name = self.settingsName() if item_name is None else item_name
-        state_str = self._state.value if state_str is None else state_str
-        path = scene.resources[item_name][state_str]["path"]
-        self.setPath(path)
-        size = settings().get(f"theme/items/{item_name}/size")
-        self._hshape.clear()
-        self._hshape.addRect(QRectF(-size/2, -size/2, size, size))
+    def _updatePenBrush(self : Self, scene : "DiagramScene") -> None:
+        key = (self._state, self.isSelected())
+        self.setPen(scene.rsrcman.pen(self.__class__, key))
+        self.setBrush(scene.rsrcman.brush(self.__class__, key))
 
 
 class FreeNodeItem(NodeItem):
@@ -149,6 +141,12 @@ class FreeNodeItem(NodeItem):
 
 class FixedNodeItem(NodeItem):
     _JUNCTION_THRESHOLD = 2
+
+    def onSelectionChange(self : Self, selected : bool) -> None:
+        super().onSelectionChange(selected)
+        parent = self.parentItem()
+        if parent is not None:
+            parent.setSelected(selected)
 
     def toXml(self : Self, xw : QXmlStreamWriter, id : int) -> None:
         xw.writeStartElement(self.settingsName())

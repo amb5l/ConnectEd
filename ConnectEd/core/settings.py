@@ -105,34 +105,34 @@ FACTORY_SETTINGS = {
                 "FreeNode" : {
                     "size" : 3,
                     "unconnected" : {
-                        "line" : {
+                        "pen" : {
                             "color" : PaletteDark.FreeNodeUnconnected,
                             "width" : 0,
                             "style" : Qt.PenStyle.SolidLine
                         },
-                        "fill" : {
+                        "brush" : {
                             "color" : PaletteDark.FreeNodeUnconnected,
                             "style" : Qt.BrushStyle.NoBrush
                         }
                     },
                     "connected" : {
-                        "line" : {
+                        "pen" : {
                             "color" : PaletteDark.FreeNodeConnected,
                             "width" : 0,
                             "style" : Qt.PenStyle.SolidLine
                         },
-                        "fill" : {
+                        "brush" : {
                             "color" : PaletteDark.FreeNodeConnected,
                             "style" : Qt.BrushStyle.NoBrush
                         }
                     },
                     "junction" : {
-                        "line" : {
+                        "pen" : {
                             "color" : PaletteDark.FreeNodeJunction,
                             "width" : 0,
                             "style" : Qt.PenStyle.NoPen
                         },
-                        "fill" : {
+                        "brush" : {
                             "color" : PaletteDark.FreeNodeJunction,
                             "style" : Qt.BrushStyle.SolidPattern
                         }
@@ -141,34 +141,34 @@ FACTORY_SETTINGS = {
                 "FixedNode" : {
                     "size" : 3,
                     "unconnected" : {
-                        "line" : {
+                        "pen" : {
                             "color" : PaletteDark.FixedNodeUnconnected,
                             "width" : 0,
                             "style" : Qt.PenStyle.SolidLine
                         },
-                        "fill" : {
+                        "brush" : {
                             "color" : PaletteDark.FixedNodeUnconnected,
                             "style" : Qt.BrushStyle.NoBrush
                         }
                     },
                     "connected" : {
-                        "line" : {
+                        "pen" : {
                             "color" : PaletteDark.FixedNodeConnected,
                             "width" : 0,
                             "style" : Qt.PenStyle.SolidLine
                         },
-                        "fill" : {
+                        "brush" : {
                             "color" : PaletteDark.FixedNodeConnected,
                             "style" : Qt.BrushStyle.NoBrush
                         }
                     },
                     "junction" : {
-                        "line" : {
+                        "pen" : {
                             "color" : PaletteDark.FixedNodeJunction,
                             "width" : 0,
                             "style" : Qt.PenStyle.NoPen
                         },
-                        "fill" : {
+                        "brush" : {
                             "color" : PaletteDark.FixedNodeJunction,
                             "style" : Qt.BrushStyle.SolidPattern
                         }
@@ -219,15 +219,33 @@ FACTORY_SETTINGS = {
                     }
                 },
                 "Port" : {
-                    "size" : 6,
-                    "line" : {
-                        "color" : PaletteDark.PortLine,
-                        "width" : 1,
-                        "style" : Qt.PenStyle.SolidLine
+                    "pin" : {
+                        "wire" : {
+                            "pen" : {
+                                "color" : PaletteDark.PortPinWire,
+                                "width" : 1,
+                                "style" : Qt.PenStyle.SolidLine
+                            }
+                        },
+                        "bus" : {
+                            "pen" : {
+                                "color" : PaletteDark.PortPinBus,
+                                "width" : 2,
+                                "style" : Qt.PenStyle.SolidLine
+                            }
+                        }
                     },
-                    "fill" : {
-                        "color" : PaletteDark.PortFill,
-                        "style" : Qt.BrushStyle.SolidPattern
+                    "arrow" : {
+                        "size" : 6,
+                        "pen" : {
+                            "color" : PaletteDark.PortArrowLine,
+                            "width" : 1,
+                            "style" : Qt.PenStyle.SolidLine
+                        },
+                        "brush" : {
+                            "color" : PaletteDark.PortArrowFill,
+                            "style" : Qt.BrushStyle.SolidPattern
+                        }
                     }
                 },
                 "PortName" : {
@@ -484,29 +502,29 @@ FACTORY_SETTINGS = {
                 "FreeNode" : {
                     "size" : 3,
                     "unconnected" : {
-                        "line" : {
+                        "pen" : {
                             "color" : PaletteLightMono.FreeNodeUnconnected,
                             "width" : 0,
                             "style" : Qt.PenStyle.SolidLine
                         },
-                        "fill" : {
+                        "brush" : {
                             "color" : PaletteLightMono.FreeNodeUnconnected,
                             "style" : Qt.BrushStyle.NoBrush
                         }
                     },
                     "connected" : {
-                        "line" : {
+                        "pen" : {
                             "color" : PaletteLightMono.FreeNodeConnected,
                             "width" : 0,
                             "style" : Qt.PenStyle.SolidLine
                         },
-                        "fill" : {
+                        "brush" : {
                             "color" : PaletteLightMono.FreeNodeConnected,
                             "style" : Qt.BrushStyle.NoBrush
                         }
                     },
                     "junction" : {
-                        "line" : {
+                        "pen" : {
                             "color" : PaletteLightMono.FreeNodeJunction,
                             "width" : 0,
                             "style" : Qt.PenStyle.NoPen
@@ -520,29 +538,29 @@ FACTORY_SETTINGS = {
                 "FixedNode" : {
                     "size" : 3,
                     "unconnected" : {
-                        "line" : {
+                        "pen" : {
                             "color" : PaletteLightMono.FixedNodeUnconnected,
                             "width" : 0,
                             "style" : Qt.PenStyle.SolidLine
                         },
-                        "fill" : {
+                        "brush" : {
                             "color" : PaletteLightMono.FixedNodeUnconnected,
                             "style" : Qt.BrushStyle.NoBrush
                         }
                     },
                     "connected" : {
-                        "line" : {
+                        "pen" : {
                             "color" : PaletteLightMono.FixedNodeConnected,
                             "width" : 0,
                             "style" : Qt.PenStyle.SolidLine
                         },
-                        "fill" : {
+                        "brush" : {
                             "color" : PaletteLightMono.FixedNodeConnected,
                             "style" : Qt.BrushStyle.NoBrush
                         }
                     },
                     "junction" : {
-                        "line" : {
+                        "pen" : {
                             "color" : PaletteLightMono.FixedNodeJunction,
                             "width" : 0,
                             "style" : Qt.PenStyle.NoPen
@@ -598,15 +616,33 @@ FACTORY_SETTINGS = {
                     }
                 },
                 "Port" : {
-                    "size" : 6,
-                    "line" : {
-                        "color" : PaletteLightMono.PortLine,
-                        "width" : 1,
-                        "style" : Qt.PenStyle.SolidLine
+                    "pin" : {
+                        "wire" : {
+                            "pen" : {
+                                "color" : PaletteLightMono.PortPinWire,
+                                "width" : 1,
+                                "style" : Qt.PenStyle.SolidLine
+                            }
+                        },
+                        "bus" : {
+                            "pen" : {
+                                "color" : PaletteLightMono.PortPinBus,
+                                "width" : 2,
+                                "style" : Qt.PenStyle.SolidLine
+                            }
+                        }
                     },
-                    "fill" : {
-                        "color" : PaletteLightMono.PortFill,
-                        "style" : Qt.BrushStyle.SolidPattern
+                    "arrow" : {
+                        "size" : 6,
+                        "pen" : {
+                            "color" : PaletteLightMono.PortArrowLine,
+                            "width" : 1,
+                            "style" : Qt.PenStyle.SolidLine
+                        },
+                        "brush" : {
+                            "color" : PaletteLightMono.PortArrowFill,
+                            "style" : Qt.BrushStyle.SolidPattern
+                        }
                     }
                 },
                 "PortName" : {

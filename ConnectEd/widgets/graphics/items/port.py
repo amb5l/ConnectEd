@@ -1,50 +1,38 @@
 from typing import Self
 
-from PyQt6.QtCore    import Qt, QPointF
-from PyQt6.QtWidgets import QGraphicsItem, QGraphicsPathItem, QMenu
+from PyQt6.QtCore    import QPointF
+from PyQt6.QtWidgets import QMenu
 from PyQt6.QtGui     import QAction
 
-from ....app import settings
-
-from ....core.defs  import PITCH, WIDTH
-from ....core.types import Direction, RectHandleId, PortHandleId, DataKind
+from ....core.defs  import PITCH
+from ....core.types import RectHandleId, PortHandleId, DataKind
 from ....core.check import checked
 
 from ..properties import PropertyTextSpec
 
-from ..scenes import withScene
-
-from .port_pin import PortPinMixin
+from .port_pin import PortPinArrowItem, PortPinItem
 from .handle   import HandleItem
 
-from .mixin.paint     import ItemPaintMixin
 from .mixin.transform import ItemTransformMixin
 from .mixin.handle    import ItemHandlesMixin
-from .mixin.fill      import ItemFillMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ..views.drawing import DrawingView
-    from ..scenes.drawing import DrawingScene
 
 
-class PortItem(
-    ItemPaintMixin,
-    ItemTransformMixin,
-    ItemHandlesMixin[PortHandleId],
-    ItemFillMixin,
-    PortPinMixin,
-    QGraphicsPathItem
-):
+class PortArrowItem(PortPinArrowItem):
+    pass
+
+class PortItem(ItemTransformMixin, ItemHandlesMixin[PortHandleId], PortPinItem):
     # class attributes
+    _ARROW_CLS = PortArrowItem
+    _ARROW_POS = PITCH
+    _NODE_POS  = 0
     _PROPERTIES = \
-        PortPinMixin._PROPERTIES_NAME          | \
-        PortPinMixin._PROPERTIES_DIR           | \
-        PortPinMixin._PROPERTIES_COMMENT       | \
-        ItemTransformMixin._PROPERTIES_POS     | \
-        ItemTransformMixin._PROPERTIES_ROTATE  | \
-        PortPinMixin._PROPERTIES_LINE          | \
-        ItemFillMixin._PROPERTIES_FILL
+        PortPinItem._PROPERTIES               | \
+        ItemTransformMixin._PROPERTIES_POS    | \
+        ItemTransformMixin._PROPERTIES_ROTATE
     _PROPERTY_TEXTS = {
             "Name" : PropertyTextSpec(
                 cleat=PortHandleId.NAME, origin=RectHandleId.MIDDLE_LEFT
@@ -58,23 +46,6 @@ class PortItem(
     @classmethod
     def handleIdKind(cls) -> DataKind:
         return DataKind.PORT_HANDLE
-
-    @checked
-    def __init__(
-        self   : Self,
-        parent : QGraphicsItem | None = None,
-        fresh  : bool = True
-    ) -> None:
-        QGraphicsPathItem.__init__(self, parent)
-        self.initPortPin(fresh)
-
-    @checked
-    def onSceneChange(self : Self, scene : "DrawingScene | None") -> None:
-        self.onSettingsChange(scene)
-
-    @checked
-    def onSettingsChange(self : Self, scene : "DrawingScene | None" = None) -> None:
-        self._setPath(scene)
 
     @checked
     def initHandles(self : Self) -> None:
@@ -96,35 +67,6 @@ class PortItem(
     @checked
     def moveHandleBy(self : Self, _ : PortHandleId, d : QPointF) -> None:
         self.setPos(self.pos() + d)
-
-    @checked
-    def setDirection(self : Self, value : "Direction") -> None:
-        PortPinMixin.setDirection(self, value)
-        self._setPath()
-
-    @withScene
-    @checked
-    def _setPath(self : Self, scene : "DrawingScene | None" = None) -> None:
-        # ensure scene resources are available
-        item_name = self.settingsName()
-        # set path
-        self.setPath(scene.resources[item_name][self._direction.value])
-        # update name handle position
-        settings_path = f"theme/items/{item_name}"
-        # standard offset
-        name_offset = WIDTH
-        # allow for pin
-        name_offset += PITCH
-        # allow for port size
-        port_size = settings().get(f"{settings_path}/size")
-        name_offset += port_size
-        # allow for pen width
-        pen_style = settings().get(f"{settings_path}/line/style")
-        if pen_style != Qt.PenStyle.NoPen:
-            pen_width = settings().get(f"{settings_path}/line/width")
-            name_offset += (pen_width / 2)
-        # finalize
-        self._handles[PortHandleId.NAME].setPos(QPointF(name_offset, 0))
 
     @checked
     def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:

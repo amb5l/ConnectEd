@@ -23,7 +23,7 @@ from ..drawing import DrawingScene
 from ..drawing.cmd import cmdExec
 
 from .api       import DiagramSceneApiMixin
-from .resources import DiagramSceneResourcesMixin
+from .resources import DiagramSceneResources, DiagramSceneResourcesMixin
 
 from .cmd.conn import CmdAddSegment
 
@@ -42,6 +42,7 @@ class DiagramScene(
     DrawingScene
 ):
     # class attributes
+    _RSRCMAN_CLS = DiagramSceneResources
     _PROPERTIES = DrawingScene._PROPERTIES | {
         "Sheet Name" : InherentProperty(
             kind   = DataKind.STR,
@@ -74,18 +75,19 @@ class DiagramScene(
     sheet   : DiagramSheet
     margin  : float           # distance from paper edge to border line
     border  : float           # line width
+    rsrcman : DiagramSceneResources
     netlist : Netlist
 
     # signals
     netlistChanged = pyqtSignal()  # noqa N815
 
     def __init__(self : Self, fresh : bool = True) -> None:
-        sheet_name = settings().get("defaults/sheet/name")
-        sheet_size = settings().get("defaults/sheet/size")
-        sheet_rect = QRectF(QPointF(0, 0), sheet_size)
-        self.sheet = DiagramSheet(sheet_name, sheet_rect)
-        self.margin = settings().get("defaults/margin")
-        self.border = settings().get("defaults/border")
+        sheet_name   = settings().get("defaults/sheet/name")
+        sheet_size   = settings().get("defaults/sheet/size")
+        sheet_rect   = QRectF(QPointF(0, 0), sheet_size)
+        self.sheet   = DiagramSheet(sheet_name, sheet_rect)
+        self.margin  = settings().get("defaults/margin")
+        self.border  = settings().get("defaults/border")
         super().__init__(sheet_size, fresh)
         self.netlist = Netlist(self)
 

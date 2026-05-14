@@ -1,13 +1,41 @@
-from typing import Self
+from typing import Self, Any
 
-from PyQt6.QtCore import QPointF, QRectF
-from PyQt6.QtGui  import QPen, QBrush, QPainterPath, QPolygonF, QPainterPathStroker
+from PyQt6.QtCore import Qt, QPointF, QLineF, QRectF
+from PyQt6.QtGui  import QColor, QPen, QBrush, \
+                         QPolygonF, QPainterPath, QPainterPathStroker
 
 from .....app import settings
+
+from .....core.types import Direction
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from . import DrawingScene
+
+
+class DrawingSceneResources:
+    def update(self : Self) -> None:
+        pass
+
+    def line(self : Self, cls : type) -> QLineF:
+        match cls:
+            case _:
+                raise ValueError(f"No line defined for class {cls}")
+
+    def pen(self : Self, cls : type, key : bool | tuple) -> QPen:
+        match cls:
+            case _:
+                raise ValueError(f"No pen defined for class {cls}")
+
+    def brush(self : Self, cls : type, key : bool | tuple) -> QBrush:
+        match cls:
+            case _:
+                raise ValueError(f"No pen defined for class {cls}")
+
+    def path(self : Self, cls : type, key : Direction) -> QPainterPath:
+        match cls:
+            case _:
+                raise ValueError(f"No path defined for class {cls}")
 
 
 class DrawingSceneResourcesMixin:

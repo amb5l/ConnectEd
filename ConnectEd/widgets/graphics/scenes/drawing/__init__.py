@@ -14,7 +14,7 @@ from ...properties import InherentProperty, PropertiesMixin
 
 from .api       import DrawingSceneApiMixin
 from .grips     import DrawingSceneGripsMixin
-from .resources import DrawingSceneResourcesMixin
+from .resources import DrawingSceneResources, DrawingSceneResourcesMixin
 from .guides    import DrawingSceneGuidesMixin
 from .private   import DrawingSceneApiPrivateMixin
 
@@ -29,6 +29,7 @@ class DrawingScene(
     QGraphicsScene
 ):
     # class attributes
+    _RSRCMAN_CLS = DrawingSceneResources
     _PROPERTIES = {
         "Name" : InherentProperty(
             kind   = DataKind.STR,
@@ -40,9 +41,10 @@ class DrawingScene(
     # instance attributes
     _uuid      : str
     _name      : str | None
-    _sel_line  : QColor
+    _sel_line  : QColor  # TODO delete
     _sel_fill  : QColor
     _sel_text  : QColor
+    rsrcman    : DrawingSceneResources
     undo_stack : QUndoStack | None
 
     def __init__(
@@ -56,6 +58,7 @@ class DrawingScene(
         self.updateSceneRect(extents)
         self.setItemIndexMethod(QGraphicsScene.ItemIndexMethod.NoIndex)
         self.undo_stack = QUndoStack(self)
+        self.rsrcman = self._RSRCMAN_CLS()
         self.initProperties(fresh)
         self.initResources()
         self.initGrips()
