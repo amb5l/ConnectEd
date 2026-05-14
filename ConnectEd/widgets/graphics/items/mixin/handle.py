@@ -59,7 +59,9 @@ class ItemHandlesMixin(ItemGripMixin, Generic[T]):
     def handles(self : Self) -> dict[T, "HandleItem"]:
         return self._handles
 
-    def getHandle(self : Self, id : T) -> "HandleItem":
+    def getHandle(self : Self, id : T | str) -> "HandleItem":
+        if isinstance(id, str):
+            id = self.handleIdType()(id)
         return self._handles[id]
 
     def moveHandleBy(self : Self, id : T, d : QPointF) -> None:
