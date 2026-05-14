@@ -26,14 +26,15 @@ class PortArrowItem(PortPinArrowItem):
 
 class PortItem(ItemTransformMixin, ItemHandlesMixin[PortHandleId], PortPinItem):
     # class attributes
+    _NODE_POS  = 0
     _ARROW_CLS = PortArrowItem
     _ARROW_POS = PITCH
-    _NODE_POS  = 0
     _PROPERTIES = \
         PortPinItem._PROPERTIES               | \
         ItemTransformMixin._PROPERTIES_POS    | \
         ItemTransformMixin._PROPERTIES_ROTATE
-    _PROPERTY_TEXTS = {
+    _PROPERTY_TEXTS = \
+        {
             "Name" : PropertyTextSpec(
                 cleat=PortHandleId.NAME, origin=RectHandleId.MIDDLE_LEFT
             )

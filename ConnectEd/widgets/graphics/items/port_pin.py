@@ -2,10 +2,11 @@ from typing import Self
 
 from PyQt6.QtCore    import Qt
 from PyQt6.QtWidgets import QGraphicsPathItem, QGraphicsLineItem, QGraphicsItem
-from ....core.defs   import WIDTH
-from ....core.types  import Direction, DataKind
 
-from ..properties import InherentProperty, PropertiesMixin
+from ....core.defs   import WIDTH
+from ....core.types  import Direction, DataKind, HandleId, RectHandleId
+
+from ..properties import PropertiesMixin, InherentProperty, PropertyTextSpec
 
 from ..scenes import withScene
 
