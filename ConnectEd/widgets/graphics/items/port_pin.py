@@ -4,9 +4,9 @@ from PyQt6.QtCore    import Qt
 from PyQt6.QtWidgets import QGraphicsPathItem, QGraphicsLineItem, QGraphicsItem
 
 from ....core.defs   import WIDTH
-from ....core.types  import Direction, DataKind, HandleId, RectHandleId
+from ....core.types  import Direction, DataKind
 
-from ..properties import PropertiesMixin, InherentProperty, PropertyTextSpec
+from ..properties import PropertiesMixin, InherentProperty
 
 from ..scenes import withScene
 

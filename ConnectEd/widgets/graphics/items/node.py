@@ -1,10 +1,10 @@
 from typing import Self
 from enum   import StrEnum
 
-from PyQt6.QtCore    import QPointF, QRectF, QXmlStreamWriter, QXmlStreamReader
+from PyQt6.QtCore    import QPointF, QXmlStreamWriter, QXmlStreamReader
 from PyQt6.QtWidgets import QGraphicsPathItem, QGraphicsItem
 
-from ....app import settings, logger
+from ....app import logger
 
 from ..scenes import withScene
 

@@ -1,4 +1,4 @@
-from typing import Self, Any
+from typing import Self
 
 from PyQt6.QtCore import Qt, QLineF, QRectF
 from PyQt6.QtGui  import QPen, QBrush, QPainterPath
@@ -12,7 +12,7 @@ from ...items.node      import NodeState, FreeNodeItem, FixedNodeItem
 from ...items.port      import PortItem, PortArrowItem
 from ...items.block_pin import BlockPinItem, BlockPinArrowItem
 
-from ..drawing.resources import DrawingSceneResources, _getPen, _getBrush
+from ..drawing.resources import DrawingSceneResources, _getPen
 from ..symbol.resources  import SymbolSceneResourcesMixin
 
 from typing import TYPE_CHECKING

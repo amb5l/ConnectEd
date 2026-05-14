@@ -13,7 +13,7 @@ from ....items.segment        import SegmentItem
 
 from ...drawing.api import DrawingSceneApiEditMixin
 
-from ...drawing.cmd import cmdExec, CmdDelete
+from ...drawing.cmd import cmdExec
 
 from ..cmd.block_pin import CmdMoveBlockPins
 
