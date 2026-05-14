@@ -322,22 +322,33 @@ FACTORY_SETTINGS = {
                     }
                 },
                 "BlockPin" : {
-                    "line" : {
-                        "color" : PaletteDark.BlockPin,
-                        "width" : 1,
-                        "style" : Qt.PenStyle.SolidLine
-                    }
-                },
-                "BlockPinArrow" : {
-                    "size" : 6,
-                    "line" : {
-                        "color" : PaletteDark.BlockPinArrow,
-                        "width" : 0,
-                        "style" : Qt.PenStyle.NoPen
+                    "pin" : {
+                        "wire" : {
+                            "pen" : {
+                                "color" : PaletteDark.BlockPinWire,
+                                "width" : 1,
+                                "style" : Qt.PenStyle.SolidLine
+                            }
+                        },
+                        "bus" : {
+                            "pen" : {
+                                "color" : PaletteDark.BlockPinBus,
+                                "width" : 2,
+                                "style" : Qt.PenStyle.SolidLine
+                            }
+                        }
                     },
-                    "fill" : {
-                        "color" : PaletteDark.BlockPinArrow,
-                        "style" : Qt.BrushStyle.SolidPattern
+                    "arrow" : {
+                        "size" : 6,
+                        "pen" : {
+                            "color" : PaletteDark.BlockPinArrowLine,
+                            "width" : 1,
+                            "style" : Qt.PenStyle.SolidLine
+                        },
+                        "brush" : {
+                            "color" : PaletteDark.BlockPinArrowFill,
+                            "style" : Qt.BrushStyle.SolidPattern
+                        }
                     }
                 },
                 "BlockPinName" : {
@@ -719,22 +730,33 @@ FACTORY_SETTINGS = {
                     }
                 },
                 "BlockPin" : {
-                    "line" : {
-                        "color" : PaletteLightMono.BlockPin,
-                        "width" : 1,
-                        "style" : Qt.PenStyle.SolidLine
-                    }
-                },
-                "BlockPinArrow" : {
-                    "size" : 6,
-                    "line" : {
-                        "color" : PaletteLightMono.BlockPinArrow,
-                        "width" : 0,
-                        "style" : Qt.PenStyle.NoPen
+                    "pin" : {
+                        "wire" : {
+                            "pen" : {
+                                "color" : PaletteLightMono.BlockPinWire,
+                                "width" : 1,
+                                "style" : Qt.PenStyle.SolidLine
+                            }
+                        },
+                        "bus" : {
+                            "pen" : {
+                                "color" : PaletteLightMono.BlockPinBus,
+                                "width" : 2,
+                                "style" : Qt.PenStyle.SolidLine
+                            }
+                        }
                     },
-                    "fill" : {
-                        "color" : PaletteLightMono.BlockPinArrow,
-                        "style" : Qt.BrushStyle.SolidPattern
+                    "arrow" : {
+                        "size" : 6,
+                        "pen" : {
+                            "color" : PaletteLightMono.BlockPinArrowLine,
+                            "width" : 1,
+                            "style" : Qt.PenStyle.SolidLine
+                        },
+                        "brush" : {
+                            "color" : PaletteLightMono.BlockPinArrowFill,
+                            "style" : Qt.BrushStyle.SolidPattern
+                        }
                     }
                 },
                 "BlockPinName" : {

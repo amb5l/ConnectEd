@@ -8,8 +8,9 @@ from .....app import settings
 from .....core.defs  import PITCH, WIDTH
 from .....core.types import Direction
 
-from ...items.node import NodeState, FreeNodeItem, FixedNodeItem
-from ...items.port import PortItem, PortArrowItem
+from ...items.node      import NodeState, FreeNodeItem, FixedNodeItem
+from ...items.port      import PortItem, PortArrowItem
+from ...items.block_pin import BlockPinItem, BlockPinArrowItem
 
 from ..drawing.resources import DrawingSceneResources, _getPen, _getBrush
 from ..symbol.resources  import SymbolSceneResourcesMixin
@@ -58,36 +59,46 @@ class DiagramSceneResources(DrawingSceneResources):
                 brush_selected.setColor(settings().get("theme/selected/fill"))  # TODO change to fill/color
                 self._brushes[item_cls][(state, False)] = brush_normal
                 self._brushes[item_cls][(state, True)] = brush_selected
-        # port
-        self._lines[PortItem] = QLineF(0, 0, PITCH, 0)
-        self._pens[PortItem] = {}
-        for bus in [False, True]:
-            wire_bus = "bus" if bus else "wire"
-            pen_normal = QPen(
-                settings().get(f"theme/items/Port/pin/{wire_bus}/pen/color"),
-                settings().get(f"theme/items/Port/pin/{wire_bus}/pen/width"),
-                settings().get(f"theme/items/Port/pin/{wire_bus}/pen/style"),
-                Qt.PenCapStyle.SquareCap
-            )
-            pen_selected = QPen(pen_normal)
-            pen_selected.setColor(settings().get("theme/selected/line"))  # TODO change to pen/color
-            self._pens[PortItem][(bus, False)] = pen_normal
-            self._pens[PortItem][(bus, True)] = pen_selected
-        # port arrow: path
-        size = settings().get("theme/items/Port/arrow/size")
-        self._paths[PortArrowItem] = {}
-        for direction in Direction:
-            port_arrow_dir = {
-                Direction.NONE : "none",
-                Direction.IN   : "left",
-                Direction.OUT  : "right",
-                Direction.BI   : "both"
-            }
-            self._paths[PortArrowItem][direction] = \
-                self._arrowPath(size, port_arrow_dir[direction])
+        # port, block pin
+        for item_cls in [PortItem, BlockPinItem]:
+            port = item_cls is PortItem
+            item_name = item_cls.__name__.removesuffix("Item")
+            # pin line
+            self._lines[item_cls] = QLineF(0, 0, PITCH if port else -PITCH, 0)
+            # pens
+            self._pens[item_cls] = {}
+            for bus in [False, True]:
+                wire_bus = "bus" if bus else "wire"
+                pen_normal = QPen(
+                    settings().get(f"theme/items/{item_name}/pin/{wire_bus}/pen/color"),
+                    settings().get(f"theme/items/{item_name}/pin/{wire_bus}/pen/width"),
+                    settings().get(f"theme/items/{item_name}/pin/{wire_bus}/pen/style"),
+                    Qt.PenCapStyle.SquareCap
+                )
+                pen_selected = QPen(pen_normal)
+                pen_selected.setColor(settings().get("theme/selected/line"))  # TODO change to pen/color
+                self._pens[item_cls][(bus, False)] = pen_normal
+                self._pens[item_cls][(bus, True)] = pen_selected
+        # arrow path for port, block pin
+        for item_cls in [PortArrowItem, BlockPinArrowItem]:
+            port = item_cls is PortArrowItem
+            item_name = item_cls.__name__.removesuffix("Item")
+            parent_name = item_cls.__name__.removesuffix("ArrowItem")
+            size = settings().get(f"theme/items/{parent_name}/arrow/size")
+            self._paths[item_cls] = {}
+            for direction in Direction:
+                arrow_dir = {
+                    Direction.NONE : "none",
+                    Direction.IN   : "left" if port else "right",
+                    Direction.OUT  : "right" if port else "left",
+                    Direction.BI   : "both"
+                }
+                self._paths[item_cls][direction] = \
+                    self._arrowPath(size, arrow_dir[direction])
         # pens and brushes for items that are normal or selected
         for item_cls, settings_path in [
-            ( PortArrowItem , "Port/arrow" )
+            ( PortArrowItem     , "Port/arrow"     ),
+            ( BlockPinArrowItem , "BlockPin/arrow" )
         ]:
             pen_normal = QPen(
                 settings().get(f"theme/items/{settings_path}/pen/color"),
@@ -234,9 +245,6 @@ class DiagramSceneResourcesMixin(SymbolSceneResourcesMixin):
     def updateResources(self : "Self | DiagramScene") -> None:
         # drawing and symbol resources
         super().updateResources()
-        # block pin
-        _blockPinPath(self.resources["BlockPin"])
-        _blockPinArrowPaths(self.resources["BlockPinArrow"])
         # gate pin
         _gatePinPaths(self.resources["GatePin"])
         # tap
@@ -244,43 +252,6 @@ class DiagramSceneResourcesMixin(SymbolSceneResourcesMixin):
             pen = _getPen(f"Tap/{state}")
             pen.setCapStyle(Qt.PenCapStyle.RoundCap)
             self.resources["Tap"][state] = pen
-
-
-def _blockPinPath(path : QPainterPath) -> None:
-    pin_size = PITCH
-    path.clear()
-    path.moveTo(-pin_size, 0)
-    path.lineTo(0, 0)
-
-def _blockPinArrowPaths(d : dict) -> None:
-    s = settings().get("theme/items/BlockPinArrow/size")
-    h = s / 2
-    # in
-    path = QPainterPath()
-    path.moveTo(0, -h)
-    path.lineTo(h, -h)
-    path.lineTo(s,  0)
-    path.lineTo(h, +h)
-    path.lineTo(0, +h)
-    path.closeSubpath()
-    d[Direction.IN.value] = path
-    # out
-    path = QPainterPath()
-    path.moveTo(s, -h)
-    path.lineTo(h, -h)
-    path.lineTo(0,  0)
-    path.lineTo(h, +h)
-    path.lineTo(s, +h)
-    path.closeSubpath()
-    d[Direction.OUT.value] = path
-    # bi
-    path = QPainterPath()
-    path.moveTo(0,  0)
-    path.lineTo(h, -h)
-    path.lineTo(s,  0)
-    path.lineTo(h, +h)
-    path.closeSubpath()
-    d[Direction.BI.value] = path
 
 def _gatePinPath(d : dict, dot : bool, clock : bool) -> None:
     pin_size = PITCH

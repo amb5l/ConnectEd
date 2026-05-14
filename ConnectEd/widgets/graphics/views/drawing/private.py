@@ -10,8 +10,7 @@ from ....menu import Menu
 
 from ...items.block     import BlockItem
 from ...items.polyline  import PolylineItem
-from ...items.block_pin import BlockPinItem
-from ...items.base_pin  import BasePinArrowItem
+from ...items.block_pin import BlockPinItem, BlockPinArrowItem
 from ...items.node      import FixedNodeItem
 
 from typing import TYPE_CHECKING
@@ -156,7 +155,7 @@ class DrawingViewPrivateMixin:
                 elif item.parentItem() != parent:
                     return []
                 pins.append(item)
-            elif not isinstance(item, BasePinArrowItem | FixedNodeItem):
+            elif not isinstance(item, BlockPinArrowItem | FixedNodeItem):
                 return []
         return [] if parent is None else pins
 

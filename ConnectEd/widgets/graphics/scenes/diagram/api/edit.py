@@ -6,9 +6,9 @@ from ....items import ItemType
 
 from ....items.block          import BlockItem
 from ....items.block_pin      import BlockPinItem
+from ....items.node           import FixedNodeItem
 from ....items.property_text  import PropertyTextItem
 from ....items.property_label import PropertyLabelItem
-from ....items.node           import PinNodeItem
 from ....items.segment        import SegmentItem
 
 from ...drawing.api import DrawingSceneApiEditMixin
@@ -55,7 +55,7 @@ class DiagramSceneApiEditMixin(DrawingSceneApiEditMixin):
         # start macro
         if undoable:
             self.undo_stack.beginMacro("editDelete")
-        # remove segments and orphan free vertices
+        # remove segments and orphan free nodes
         for item in items:
             if isinstance(item, SegmentItem):
                 self.removeSegment(item, undoable)
@@ -64,16 +64,16 @@ class DiagramSceneApiEditMixin(DrawingSceneApiEditMixin):
                     and vtx.parentItem() is None \
                     and vtx.degree() == 0:
                         self.removeFreeNode(vtx, undoable)
-        # gather entries
-        entries = []
+        # gather fixed nodes
+        fixed_nodes = []
         for item in items:  # may include items with pins or entries
             for child in item.childItems():  # may include pins or entries
-                if isinstance(child, PinNodeItem):
-                    entries.append(child)
+                if isinstance(child, FixedNodeItem):
+                    fixed_nodes.append(child)
                 for grandchild in child.childItems():  # may include entries
-                    if isinstance(grandchild, PinNodeItem):
-                        entries.append(grandchild)
-        # 
+                    if isinstance(grandchild, FixedNodeItem):
+                        fixed_nodes.append(grandchild)
+        #
         # end macro
         if undoable:
             self.undo_stack.endMacro()
