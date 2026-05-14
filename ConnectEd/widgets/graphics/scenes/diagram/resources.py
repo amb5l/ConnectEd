@@ -47,7 +47,7 @@ class DiagramSceneResources(DrawingSceneResources):
                     settings().get(f"theme/items/{item_name}/{state_str}/pen/style")
                 )
                 pen_selected = QPen(pen_normal)
-                pen_selected.setColor(settings().get("theme/selected/line"))  # TODO change to pen/color
+                pen_selected.setColor(settings().get("theme/selected/line"))
                 self._pens[item_cls][(state, False)] = pen_normal
                 self._pens[item_cls][(state, True)] = pen_selected
                 self._paths[item_cls][state] = self._nodePath(state, size)
@@ -56,7 +56,7 @@ class DiagramSceneResources(DrawingSceneResources):
                     settings().get(f"theme/items/{item_name}/{state_str}/brush/style")
                 )
                 brush_selected = QBrush(brush_normal)
-                brush_selected.setColor(settings().get("theme/selected/fill"))  # TODO change to fill/color
+                brush_selected.setColor(settings().get("theme/selected/fill"))
                 self._brushes[item_cls][(state, False)] = brush_normal
                 self._brushes[item_cls][(state, True)] = brush_selected
         # port, block pin
@@ -76,7 +76,7 @@ class DiagramSceneResources(DrawingSceneResources):
                     Qt.PenCapStyle.SquareCap
                 )
                 pen_selected = QPen(pen_normal)
-                pen_selected.setColor(settings().get("theme/selected/line"))  # TODO change to pen/color
+                pen_selected.setColor(settings().get("theme/selected/line"))
                 self._pens[item_cls][(bus, False)] = pen_normal
                 self._pens[item_cls][(bus, True)] = pen_selected
         # arrow path for port, block pin
@@ -107,7 +107,7 @@ class DiagramSceneResources(DrawingSceneResources):
                 join=Qt.PenJoinStyle.MiterJoin
             )
             pen_selected = QPen(pen_normal)
-            pen_selected.setColor(settings().get("theme/selected/line"))  # TODO change to pen/color
+            pen_selected.setColor(settings().get("theme/selected/line"))
             self._pens[item_cls] = {}
             self._pens[item_cls][False] = pen_normal
             self._pens[item_cls][True] = pen_selected
@@ -116,7 +116,7 @@ class DiagramSceneResources(DrawingSceneResources):
                 settings().get(f"theme/items/{settings_path}/brush/style")
             )
             brush_selected = QBrush(brush_normal)
-            brush_selected.setColor(settings().get("theme/selected/fill"))  # TODO change to fill/color
+            brush_selected.setColor(settings().get("theme/selected/fill"))
             self._brushes[item_cls] = {}
             self._brushes[item_cls][False] = brush_normal
             self._brushes[item_cls][True] = brush_selected
