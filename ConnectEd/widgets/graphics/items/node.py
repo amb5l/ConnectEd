@@ -50,7 +50,7 @@ class NodeItem(
     @withScene
     def onSceneChange(self : Self, scene : "DiagramScene | None") -> None:
         self._updatePenBrush(scene)
-        self.setPath(scene.rsrcman.path(self.__class__, self._state))
+        self._updatePath(scene)
         self._hshape.clear()
         self._hshape.addRect(self.boundingRect())
 
@@ -69,7 +69,8 @@ class NodeItem(
             NodeState.JUNCTION    if n >= self._JUNCTION_THRESHOLD else \
             NodeState.CONNECTED   if n >= 1 else \
             NodeState.UNCONNECTED
-        self.onSettingsChange(scene)
+        self._updatePenBrush(scene)
+        self._updatePath(scene)
 
     def degree(self : Self) -> int:
         scene : "DiagramScene | None" = self.scene()
@@ -98,8 +99,11 @@ class NodeItem(
 
     def _updatePenBrush(self : Self, scene : "DiagramScene") -> None:
         key = (self._state, self.isSelected())
-        self.setPen(scene.rsrcman.pen(self.__class__, key))
-        self.setBrush(scene.rsrcman.brush(self.__class__, key))
+        self.setPen(scene.rsrcman.pen(self.resourcesName(), key))
+        self.setBrush(scene.rsrcman.brush(self.resourcesName(), key))
+
+    def _updatePath(self : Self, scene : "DiagramScene") -> None:
+        self.setPath(scene.rsrcman.path(self.resourcesName(), self._state))
 
 
 class FreeNodeItem(NodeItem):
@@ -181,14 +185,9 @@ class FixedNodeItem(NodeItem):
         return instance
 
 
-class TapNodeItem(FixedNodeItem):
-    def settingsName(self : Self) -> str:
-        return "FixedNode"
-
-
-class TapMajorNodeItem(TapNodeItem):
+class TapMajorNodeItem(FixedNodeItem):
     pass
 
 
-class TapMinorNodeItem(TapNodeItem):
+class TapMinorNodeItem(FixedNodeItem):
     pass

@@ -119,7 +119,7 @@ FACTORY_SETTINGS = {
                         "pen" : {
                             "color" : PaletteDark.FreeNodeConnected,
                             "width" : 0,
-                            "style" : Qt.PenStyle.SolidLine
+                            "style" : Qt.PenStyle.NoPen
                         },
                         "brush" : {
                             "color" : PaletteDark.FreeNodeConnected,
@@ -155,7 +155,7 @@ FACTORY_SETTINGS = {
                         "pen" : {
                             "color" : PaletteDark.FixedNodeConnected,
                             "width" : 0,
-                            "style" : Qt.PenStyle.SolidLine
+                            "style" : Qt.PenStyle.NoPen
                         },
                         "brush" : {
                             "color" : PaletteDark.FixedNodeConnected,
@@ -196,24 +196,20 @@ FACTORY_SETTINGS = {
                     }
                 },
                 "Tap" : {
-                    "unresolved" : {
-                        "line" : {
+                    "pen" : {
+                        "unresolved" : {
                             "color" : PaletteDark.TapUnresolved,
                             "width" : 1,
                             "style" : Qt.PenStyle.SolidLine
-                        }
-                    },
-                    "scalar" : {
-                        "line" : {
-                            "color" : PaletteDark.TapScalar,
+                        },
+                        "wire" : {
+                            "color" : PaletteDark.TapWire,
                             "width" : 1,
                             "style" : Qt.PenStyle.SolidLine
-                        }
-                    },
-                    "vector" : {
-                        "line" : {
-                            "color" : PaletteDark.TapVector,
-                            "width" : 3,
+                        },
+                        "bus" : {
+                            "color" : PaletteDark.TapBus,
+                            "width" : 2,
                             "style" : Qt.PenStyle.SolidLine
                         }
                     }
@@ -280,14 +276,39 @@ FACTORY_SETTINGS = {
                     }
                 },
                 "GatePin" : {
-                    "line" : {
-                        "color" : PaletteDark.GatePin,
-                        "width" : 1,
-                        "style" : Qt.PenStyle.SolidLine
+                    "pin" : {
+                        "wire" : {
+                            "pen" : {
+                                "color" : PaletteDark.GatePinWire,
+                                "width" : 1,
+                                "style" : Qt.PenStyle.SolidLine
+                            }
+                        },
+                        "bus" : {
+                            "pen" : {
+                                "color" : PaletteDark.GatePinBus,
+                                "width" : 2,
+                                "style" : Qt.PenStyle.SolidLine
+                            }
+                        },
+                        "dot" : {
+                            "size" : 2.5
+                        },
+                        "clock" : {
+                            "size" : 2.5
+                        }
                     },
-                    "fill" : {
-                        "color" : PaletteDark.GatePin,
-                        "style" : Qt.BrushStyle.NoBrush
+                    "arrow" : {
+                        "size" : 3,
+                        "pen" : {
+                            "color" : PaletteDark.GatePinArrowLine,
+                            "width" : 0.5,
+                            "style" : Qt.PenStyle.SolidLine
+                        },
+                        "brush" : {
+                            "color" : PaletteDark.GatePinArrowFill,
+                            "style" : Qt.BrushStyle.SolidPattern
+                        }
                     }
                 },
                 "Block" : {
@@ -372,32 +393,39 @@ FACTORY_SETTINGS = {
                     }
                 },
                 "SymbolPin" : {
-                    "line" : {
-                        "color" : PaletteDark.SymbolPin,
-                        "width" : 1,
-                        "style" : Qt.PenStyle.SolidLine
+                    "pin" : {
+                        "wire" : {
+                            "pen" : {
+                                "color" : PaletteDark.SymbolPinWire,
+                                "width" : 1,
+                                "style" : Qt.PenStyle.SolidLine
+                            }
+                        },
+                        "bus" : {
+                            "pen" : {
+                                "color" : PaletteDark.SymbolPinBus,
+                                "width" : 2,
+                                "style" : Qt.PenStyle.SolidLine
+                            }
+                        },
+                        "dot" : {
+                            "size" : 2.5
+                        },
+                        "clock" : {
+                            "size" : 2.5
+                        }
                     },
-                    "fill" : {
-                        "color" : PaletteDark.SymbolPin,
-                        "style" : Qt.BrushStyle.NoBrush
-                    }
-                },
-                "SymbolPinDot" : {
-                    "size" : 3
-                },
-                "SymbolPinClk" : {
-                    "size" : 3
-                },
-                "SymbolPinArrow" : {
-                    "size" : 3,
-                    "line" : {
-                        "color" : PaletteDark.SymbolPinArrow,
-                        "width" : 0,
-                        "style" : Qt.PenStyle.NoPen
-                    },
-                    "fill" : {
-                        "color" : PaletteDark.SymbolPinArrow,
-                        "style" : Qt.BrushStyle.SolidPattern
+                    "arrow" : {
+                        "size" : 3,
+                        "pen" : {
+                            "color" : PaletteDark.SymbolPinArrowLine,
+                            "width" : 0.5,
+                            "style" : Qt.PenStyle.SolidLine
+                        },
+                        "brush" : {
+                            "color" : PaletteDark.SymbolPinArrowFill,
+                            "style" : Qt.BrushStyle.SolidPattern
+                        }
                     }
                 },
                 "SymbolPinName" : {
@@ -604,24 +632,20 @@ FACTORY_SETTINGS = {
                     }
                 },
                 "Tap" : {
-                    "unresolved" : {
-                        "line" : {
-                            "color" : PaletteLightMono.TapUnresolved,
-                            "width" : 1,
-                            "style" : Qt.PenStyle.DotLine
-                        }
-                    },
-                    "scalar" : {
-                        "line" : {
-                            "color" : PaletteLightMono.TapScalar,
+                    "pen" : {
+                        "unresolved" : {
+                            "color" : PaletteDark.TapUnresolved,
                             "width" : 1,
                             "style" : Qt.PenStyle.SolidLine
-                        }
-                    },
-                    "vector" : {
-                        "line" : {
-                            "color" : PaletteLightMono.TapVector,
-                            "width" : 3,
+                        },
+                        "wire" : {
+                            "color" : PaletteDark.TapWire,
+                            "width" : 1,
+                            "style" : Qt.PenStyle.SolidLine
+                        },
+                        "bus" : {
+                            "color" : PaletteDark.TapBus,
+                            "width" : 2,
                             "style" : Qt.PenStyle.SolidLine
                         }
                     }
@@ -688,14 +712,39 @@ FACTORY_SETTINGS = {
                     }
                 },
                 "GatePin" : {
-                    "line" : {
-                        "color" : PaletteLightMono.GatePin,
-                        "width" : 1,
-                        "style" : Qt.PenStyle.SolidLine
+                    "pin" : {
+                        "wire" : {
+                            "pen" : {
+                                "color" : PaletteLightMono.GatePinWire,
+                                "width" : 1,
+                                "style" : Qt.PenStyle.SolidLine
+                            }
+                        },
+                        "bus" : {
+                            "pen" : {
+                                "color" : PaletteLightMono.GatePinBus,
+                                "width" : 2,
+                                "style" : Qt.PenStyle.SolidLine
+                            }
+                        },
+                        "dot" : {
+                            "size" : 2.5
+                        },
+                        "clock" : {
+                            "size" : 2.5
+                        }
                     },
-                    "fill" : {
-                        "color" : PaletteLightMono.GatePin,
-                        "style" : Qt.BrushStyle.NoBrush
+                    "arrow" : {
+                        "size" : 3,
+                        "pen" : {
+                            "color" : PaletteLightMono.GatePinArrowFill,
+                            "width" : 0.5,
+                            "style" : Qt.PenStyle.SolidLine
+                        },
+                        "brush" : {
+                            "color" : PaletteLightMono.GatePinArrowFill,
+                            "style" : Qt.BrushStyle.SolidPattern
+                        }
                     }
                 },
                 "Block" : {
@@ -780,32 +829,39 @@ FACTORY_SETTINGS = {
                     }
                 },
                 "SymbolPin" : {
-                    "line" : {
-                        "color" : PaletteLightMono.SymbolPin,
-                        "width" : 1,
-                        "style" : Qt.PenStyle.SolidLine
+                    "pin" : {
+                        "wire" : {
+                            "pen" : {
+                                "color" : PaletteLightMono.SymbolPinWire,
+                                "width" : 1,
+                                "style" : Qt.PenStyle.SolidLine
+                            }
+                        },
+                        "bus" : {
+                            "pen" : {
+                                "color" : PaletteLightMono.SymbolPinBus,
+                                "width" : 2,
+                                "style" : Qt.PenStyle.SolidLine
+                            }
+                        },
+                        "dot" : {
+                            "size" : 2.5
+                        },
+                        "clock" : {
+                            "size" : 2.5
+                        }
                     },
-                    "fill" : {
-                        "color" : PaletteLightMono.SymbolPin,
-                        "style" : Qt.BrushStyle.NoBrush
-                    }
-                },
-                "SymbolPinDot" : {
-                    "size" : 3
-                },
-                "SymbolPinClk" : {
-                    "size" : 3
-                },
-                "SymbolPinArrow" : {
-                    "size" : 3,
-                    "line" : {
-                        "color" : PaletteLightMono.SymbolPinArrow,
-                        "width" : 0,
-                        "style" : Qt.PenStyle.NoPen
-                    },
-                    "fill" : {
-                        "color" : PaletteLightMono.SymbolPinArrow,
-                        "style" : Qt.BrushStyle.SolidPattern
+                    "arrow" : {
+                        "size" : 3,
+                        "pen" : {
+                            "color" : PaletteLightMono.SymbolPinArrowLine,
+                            "width" : 0.5,
+                            "style" : Qt.PenStyle.SolidLine
+                        },
+                        "brush" : {
+                            "color" : PaletteLightMono.SymbolPinArrowFill,
+                            "style" : Qt.BrushStyle.SolidPattern
+                        }
                     }
                 },
                 "SymbolPinName" : {

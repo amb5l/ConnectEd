@@ -22,10 +22,10 @@ class ItemXmlMixin:
 
     def toXmlChildren(self : Self, xw : QXmlStreamWriter) -> None:
         from ..property_text import PropertyTextItem
-        from ..base_pin      import BasePinItem
+        from ..port_pin      import PortPinMixin
         from ..handle        import HandleItem
         for child in self.childItems():
-            if isinstance(child, BasePinItem):
+            if isinstance(child, PortPinMixin):
                 child.toXml(xw)
             elif isinstance(child, HandleItem):
                 for handle_child in child.childItems():
@@ -59,7 +59,7 @@ class ItemXmlMixin:
         if xr.isEndElement() and xr.name() == xml_item_name:
             return instance
         # process child items
-        from ...items.base_pin   import BasePinItem
+        from ...items.port_pin   import PortPinMixin
         from ...items.gate_pin   import GatePinItem
         from ...items.block_pin  import BlockPinItem
         from ...items.symbol_pin import SymbolPinItem
@@ -73,7 +73,7 @@ class ItemXmlMixin:
             if xr.isStartElement():
                 item_name = xr.name() + "Item"
                 if item_name in pin_classes:
-                    child_cls : BasePinItem = pin_classes[item_name]
+                    child_cls : PortPinMixin = pin_classes[item_name]
                     child = child_cls.fromXml(xr, instance)
                 elif item_name == "PropertyTextItem":
                     child : PropertyTextItem = PropertyTextItem.fromXml(

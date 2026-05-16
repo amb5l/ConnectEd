@@ -13,7 +13,7 @@ class ItemCloneMixin:
         """Create a clone of this or specified item with a new UUID."""
         from ..handle        import HandleItem
         from ..property_text import PropertyTextItem
-        from ..base_pin      import BasePinItem
+        from ..port_pin      import PortPinLineItem, PortPinPathItem
         source : "ItemType" = original if original is not None else self
         clone_item : "ItemType" = self.__class__(fresh=False)
         # clone properties
@@ -22,7 +22,7 @@ class ItemCloneMixin:
                 clone_item.properties[name] = source_prop.clone(clone_item)
         # clone property texts and pins
         for source_child in source.childItems():
-            if isinstance(source_child, BasePinItem):
+            if isinstance(source_child, PortPinLineItem | PortPinPathItem):
                 clone_pin = source_child.clone()
                 clone_pin.setParentItem(clone_item)
             elif isinstance(source_child, HandleItem):

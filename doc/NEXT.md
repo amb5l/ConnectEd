@@ -1,3 +1,18 @@
+YAML setting defaults
+
+get rid of None direction?
+(re)move RectItemHandleMixin etc
+remove base_pin etc cruft
+place port, drag name by handle => bug
+pen mixin
+
+more shared line/fill
+  pins, ports
+  _sel_line gone
+
+onPathChange
+
+pin width controlled by suffix
 gate mirroring
 add signal types to netlist, derived from ports and pins
 

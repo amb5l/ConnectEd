@@ -5,9 +5,12 @@ from PyQt6.QtWidgets import QGraphicsItem
 
 from .....core.defs import PITCH
 
-from .....core.types import HandleId, RectHandleId, LineHandleId, \
-                            BlockPinHandleId, SymbolPinHandleId, TapHandleId, \
-                            DataKind
+from .....core.types import (
+    HandleId, RectHandleId, LineHandleId,
+    GatePinHandleId, BlockPinHandleId, SymbolPinHandleId,
+    TapHandleId,
+    DataKind
+)
 
 from ..handle import HandleItem
 
@@ -204,6 +207,19 @@ class ItemBasePinHandlesMixin:
                 parent = self
             )
         }
+
+class ItemGatePinHandlesMixin(
+    ItemBasePinHandlesMixin,
+    ItemHandlesMixin[GatePinHandleId]
+):
+    @classmethod
+    def handleIdType(cls) -> type[GatePinHandleId]:
+        return GatePinHandleId
+
+    @classmethod
+    def handleIdKind(cls) -> DataKind:
+        return DataKind.GATE_PIN_HANDLE
+
 
 class ItemBlockPinHandlesMixin(
     ItemBasePinHandlesMixin,

@@ -8,8 +8,11 @@ from PyQt6.QtWidgets import QGraphicsItem
 from .....core.defs  import Z_DRAWING
 
 
-class ItemSettingsMixin:
+class ItemNamesMixin:
     def settingsName(self : Self | QGraphicsItem) -> str:
+        return self.__class__.__name__.removesuffix("Item")
+
+    def resourcesName(self : Self | QGraphicsItem) -> str:
         return self.__class__.__name__.removesuffix("Item")
 
 
@@ -23,7 +26,7 @@ class ItemMoveMixin:
         self.moveBy(pos - self.scenePos())
 
 
-class ItemMixin(ItemSettingsMixin, ItemMoveMixin):
+class ItemMixin(ItemNamesMixin, ItemMoveMixin):
     Z = Z_DRAWING
 
     _uuid : str

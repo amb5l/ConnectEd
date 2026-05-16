@@ -57,6 +57,8 @@ class ItemTransformMixin:
             setter = lambda self, value: self.setMirrorV(value)
         )
     }
+    _PROPERTIES_NO_ORIGIN = \
+        _PROPERTIES_POS | _PROPERTIES_ROTATE | _PROPERTIES_MIRROR
     _PROPERTIES_ORIGIN = InherentProperty(
         kind   = None,
         worthy = lambda self: self.origin() is not None,

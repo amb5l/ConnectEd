@@ -1,8 +1,9 @@
 from typing import Self
+from enum   import StrEnum
 
 from PyQt6.QtCore    import Qt, QPointF, QXmlStreamWriter, QXmlStreamReader
 from PyQt6.QtWidgets import QMenu, QGraphicsPathItem
-from PyQt6.QtGui     import QAction, QPen, QBrush, QPainterPath
+from PyQt6.QtGui     import QAction, QPen, QPainterPath
 
 from ....app import settings
 
@@ -23,6 +24,13 @@ if TYPE_CHECKING:
     from .text            import TextItem
     from .mixin.handle    import ItemHandlesMixin
     from .mixin.grip      import ItemGripMixin
+
+
+class GripShape(StrEnum):
+    SQUARE  = "Square"
+    DIAMOND = "Diamond"
+    CIRCLE  = "Circle"
+    ARROW   = "Arrow"
 
 
 class GripItem(

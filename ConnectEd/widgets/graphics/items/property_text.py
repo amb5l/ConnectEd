@@ -63,6 +63,15 @@ class PropertyTextItem(TextItem):
     _cleat  : HandleId | None
     _tether : PropertyTextTetherItem | None
 
+    def settingsName(self : Self) -> str:
+        item = self.item()
+        if item is not None and hasattr(self, "_name"):
+            settings_name = f"{item.settingsName()}{self._name}"
+            settings_items = settings().get("theme/items")
+            if settings_name in vars(settings_items).keys():
+                return settings_name
+        return "PropertyText"
+
     def __init__(
         self      : Self,
         name      : str                  = "",
@@ -143,15 +152,6 @@ class PropertyTextItem(TextItem):
         if text == "":
             text = f"<{self._name}>"
         super().setText(text)
-
-    def settingsName(self : Self) -> str:
-        item = self.item()
-        if item is not None and hasattr(self, "_name"):
-            settings_name = f"{item.settingsName()}{self._name}"
-            settings_items = settings().get("theme/items")
-            if settings_name in vars(settings_items).keys():
-                return settings_name
-        return "PropertyText"
 
     def cleat(self : Self) -> HandleId | None:
         return self._cleat

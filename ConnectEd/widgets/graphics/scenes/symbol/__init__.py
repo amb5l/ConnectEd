@@ -9,13 +9,9 @@ from .....core.defs import PITCH
 
 from ..drawing import DrawingScene
 
-from .resources import SymbolSceneResourcesMixin
 
-
-class SymbolScene(
-    SymbolSceneResourcesMixin,
-    DrawingScene
-):
+class SymbolScene(DrawingScene):
+    # TODO ensure existence of boundary ("fence") item
 
     # instance attributes
     _brect   : QRectF | None  # bounding rect of all items

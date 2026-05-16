@@ -9,7 +9,7 @@ from ....core.check import checked
 
 from ..properties import PropertyTextSpec
 
-from .port_pin import PortPinArrowItem, PortPinItem
+from .port_pin import PortPinArrowItem, PortPinLineItem
 
 from .mixin.loc    import ItemLocMixin
 from .mixin.handle import ItemBlockPinHandlesMixin
@@ -24,20 +24,21 @@ class BlockPinArrowItem(PortPinArrowItem):
     pass
 
 
-class BlockPinItem(ItemLocMixin, ItemBlockPinHandlesMixin, PortPinItem):
+class BlockPinItem(ItemLocMixin, ItemBlockPinHandlesMixin, PortPinLineItem):
     # class attributes
-    _NODE_POS  = -PITCH
-    _ARROW_CLS = BlockPinArrowItem
-    _ARROW_POS = 0
-    _PROPERTIES = \
-        PortPinItem._PROPERTIES               | \
-        ItemLocMixin._PROPERTIES_LOC
+    _NODE_POS   = -PITCH
+    _ARROW_CLS  = BlockPinArrowItem
+    _ARROW_POS  = 0
+    _PROPERTIES = PortPinLineItem._PROPERTIES | ItemLocMixin._PROPERTIES
     _PROPERTY_TEXTS = \
         {
             "Name" : PropertyTextSpec(
                 cleat=BlockPinHandleId.NAME, origin=RectHandleId.MIDDLE_LEFT
             )
         }
+
+    def resourcesName(self : Self) -> str:
+        return "BlockPin"
 
     @checked
     def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:

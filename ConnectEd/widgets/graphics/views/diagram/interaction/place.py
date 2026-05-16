@@ -7,7 +7,7 @@ from PyQt6.QtWidgets import QMenu
 from ......core.utils import sign
 
 from ....items.port      import PortItem
-from ....items.gate      import GateItem
+from ....items.gate      import LogicGateItem
 from ....items.block     import BlockItem
 from ....items.block_pin import BlockPinItem
 from ....items.node      import NodeItem
@@ -31,7 +31,7 @@ class PlacePortInteraction(RotateItemMixin, PlaceBase1PosInteraction):
 
 
 class PlaceGateInteraction(RotateItemMixin, PlaceBase1PosInteraction):
-    _ITEM_TYPE = GateItem
+    _ITEM_TYPE = LogicGateItem
 
 
 class PlaceBlockInteraction(PlaceBase2PosInteraction):

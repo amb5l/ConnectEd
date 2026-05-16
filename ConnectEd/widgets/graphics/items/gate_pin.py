@@ -2,49 +2,32 @@ from typing import Self
 
 from PyQt6.QtCore    import QXmlStreamWriter
 from PyQt6.QtWidgets import QGraphicsItem, QMenu
-from PyQt6.QtGui     import QAction, QPainterPath
+from PyQt6.QtGui     import QAction
 
 from ....core.defs  import PITCH
-from ....core.types import DataKind
-
-from ..properties import InherentProperty
 
 from .mixin.transform import ItemTransformMixin
-from .mixin.line      import ItemLineMixin
+from .mixin.handle    import ItemGatePinHandlesMixin
 
-from .port_pin import PortPinMixin
-from .base_pin import BasePinItem, BasePinDotMixin, BasePinClockMixin
+from .port_pin import PortPinArrowItem, PortPinPathItem
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from ..views.drawing import DrawingView
-    from ..scenes.drawing import DrawingScene
+    from ..views.diagram import DiagramView
 
 
-class GatePinItem(
-    ItemTransformMixin,
-    BasePinDotMixin,
-    BasePinClockMixin,
-    BasePinItem
-):
+class GatePinArrowItem(PortPinArrowItem):
+    pass
+
+
+class GatePinItem(ItemTransformMixin, ItemGatePinHandlesMixin, PortPinPathItem):
     # class attributes
-    _PROPERTIES = \
-        {
-            "Name" : InherentProperty(
-                kind   = DataKind.STR,
-                getter = lambda self: self._name,
-                setter = lambda self, value: setattr(self, "_name", value)
-            )
-        } | \
-        PortPinMixin._PROPERTIES_DIR | \
-        BasePinDotMixin._PROPERTIES_DOT | \
-        BasePinClockMixin._PROPERTIES_CLOCK | \
-        ItemTransformMixin._PROPERTIES_POS | \
-        ItemTransformMixin._PROPERTIES_ROTATE | \
-        ItemLineMixin._PROPERTIES_LINE
+    _NODE_POS  = -PITCH
+    _ARROW_CLS = GatePinArrowItem
+    _ARROW_POS = 0
 
-    # instance attributes
-    _length : float
+    def settingsName(self : Self) -> str:
+        return "GatePin"
 
     def __init__(
         self   : Self,
@@ -53,23 +36,16 @@ class GatePinItem(
     ) -> None:
         self._length = PITCH
         super().__init__(parent)
+        self._extension = 0
 
     def inverted(self : Self) -> bool:
         return self._dot
 
     def setInverted(self : Self, value : bool) -> None:
         self._dot = value
-        self._setPath()
+        self._updateGraphics()
 
-    def length(self : Self) -> float:
-        return self._length
-
-    def setLength(self : Self, length : float) -> None:
-        self._length = length
-        self._node.setPos(-self._length, 0)  # move node
-        self._setPath()  # adjust pin path
-
-    def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
+    def ctxMenuItems(self : Self, view : "DiagramView") -> list[QAction | QMenu]:
         return [
             view.action(
                 "Active Low",
@@ -81,16 +57,18 @@ class GatePinItem(
     def toXml(self : Self, xw : QXmlStreamWriter) -> None:
         pass  # exclude from XML
 
-    def _setPath(self : Self, scene : "DrawingScene | None" = None) -> None:
-        # ensure scene resources are available
-        if scene is None:
-            if (scene := self.scene()) is None:
-                return
-        item_name = self.settingsName()
-        # set path
-        key = (self._dot, self._clock)
-        path = scene.resources["SymbolPin"][key]  # TODO maintain separate resources
-        if self._length != PITCH:
-            path = QPainterPath(path)  # copy shared path
-            path.setElementPositionAt(0, -self._length, 0)
-        self.setPath(path)
+
+class BufGatePinItem(GatePinItem):
+    _NODE_POS  = -(PITCH + 2)
+    _ARROW_POS = -2
+
+    def settingsName(self : Self) -> str:
+        return "GatePin"
+
+
+class OrGatePinItem(GatePinItem):
+    _NODE_POS  = -(PITCH + 4)
+    _ARROW_POS = -4
+
+    def settingsName(self : Self) -> str:
+        return "GatePin"

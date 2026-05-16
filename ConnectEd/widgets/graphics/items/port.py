@@ -10,7 +10,7 @@ from ....core.check import checked
 
 from ..properties import PropertyTextSpec
 
-from .port_pin import PortPinArrowItem, PortPinItem
+from .port_pin import PortPinArrowItem, PortPinLineItem
 from .handle   import HandleItem
 
 from .mixin.transform import ItemTransformMixin
@@ -22,17 +22,20 @@ if TYPE_CHECKING:
 
 
 class PortArrowItem(PortPinArrowItem):
-    pass
+    def resourcesName(self : Self) -> str:
+        return "PortArrow"
 
-class PortItem(ItemTransformMixin, ItemHandlesMixin[PortHandleId], PortPinItem):
+class PortItem(
+    ItemTransformMixin,
+    ItemHandlesMixin[PortHandleId],
+    PortPinLineItem
+):
     # class attributes
     _NODE_POS  = 0
     _ARROW_CLS = PortArrowItem
     _ARROW_POS = PITCH
     _PROPERTIES = \
-        PortPinItem._PROPERTIES               | \
-        ItemTransformMixin._PROPERTIES_POS    | \
-        ItemTransformMixin._PROPERTIES_ROTATE
+        PortPinLineItem._PROPERTIES | ItemTransformMixin._PROPERTIES_NO_ORIGIN
     _PROPERTY_TEXTS = \
         {
             "Name" : PropertyTextSpec(

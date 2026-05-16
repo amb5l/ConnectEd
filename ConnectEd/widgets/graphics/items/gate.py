@@ -11,7 +11,7 @@ from ..properties import InherentProperty, PropertiesMixin
 
 from ..painter_path import PainterPath
 
-from .gate_pin import GatePinItem
+from .gate_pin import GatePinItem, BufGatePinItem, OrGatePinItem
 
 from .mixin           import ItemMixin
 from .mixin.transform import ItemTransformMixin
@@ -71,6 +71,9 @@ class BaseGateItem(
     PropertiesMixin,
     QGraphicsPathItem
 ):
+    # class attributes
+    _PIN_CLS = GatePinItem
+
     def __init__(self : Self, fresh : bool = True) -> None:
         super().__init__()
         self.initItem(fresh)
@@ -105,6 +108,7 @@ class BufGateItem(BaseGateItem):
     """Buffer/Inverter gate."""
 
     # class attributes
+    _PIN_CLS = BufGatePinItem
     _PROPERTIES_IO = {
         "Output" : InherentProperty(
             kind   = DataKind.STR,
@@ -135,6 +139,7 @@ class BufGateItem(BaseGateItem):
         self.setInput()
 
     def initPath(self : Self) -> None:
+        """Output pin node is at (0, 0)."""
         path = PainterPath()
         path.moveTo(-28, -8)
         path.lineTo(-12, 0)
@@ -197,11 +202,10 @@ class BufGateItem(BaseGateItem):
 
     def setOutput(self : Self, level: str = "H") -> None:
         if not hasattr(self, '_output'):
-            self._output = GatePinItem(self)
+            self._output = self._PIN_CLS(self)
             self._output.setDirection(Direction.OUT)
             self._output.setName("o")
             self._output.setPos(QPointF(-12, 0))
-            self._output.setLength(12)
             self._output.setRotation(180)
         self._output.setInverted(level == "L")
 
@@ -211,18 +215,18 @@ class BufGateItem(BaseGateItem):
 
     def setInput(self : Self, level : str = "H") -> None:
         if not hasattr(self, '_input'):
-            self._input = GatePinItem(self)
+            self._input = self._PIN_CLS(self)
             self._input.setDirection(Direction.IN)
             self._input.setName("i")
             self._input.setPos(QPointF(-28, 0))
-            self._input.setLength(12)
         self._input.setInverted(level == "L")
 
 
-class GateItem(BaseGateItem):
+class LogicGateItem(BaseGateItem):
     """Base class for N:1 logic gates."""
 
     # class attributes
+    _MID_PIN_CLS = GatePinItem  # for extended middle input pin
     _PROPERTIES_IO = {
         "Output" : InherentProperty(
             kind   = DataKind.STR,
@@ -326,7 +330,7 @@ class GateItem(BaseGateItem):
 
     def setOutput(self : Self, level: str = "H") -> None:
         if not hasattr(self, '_output'):
-            self._output = GatePinItem(self)
+            self._output = self._PIN_CLS(self)
             self._output.setDirection(Direction.OUT)
             self._output.setName("o")
             self._output.setPos(QPointF(-10, 0))
@@ -342,7 +346,10 @@ class GateItem(BaseGateItem):
         if not hasattr(self, '_inputs'):
             self._inputs = []
             for i, level in enumerate(levels):
-                pin = GatePinItem(self)
+                pin_cls = self._PIN_CLS
+                if (w % 2) and (i == w // 2):
+                    pin_cls = self._MID_PIN_CLS
+                pin = pin_cls(self)
                 pin.setDirection(Direction.IN)
                 pin.setName(f"i{i+1}")
                 a = 0 if w % 2 == 1 or i < w // 2 else 1 # skip/don't center
@@ -361,7 +368,7 @@ class GateItem(BaseGateItem):
                 self.setPath(path)
 
 
-class AndGateItem(GateItem):
+class AndGateItem(LogicGateItem):
     _VHDL_OPERATOR = "and"
 
     def initPath(self : Self) -> None:
@@ -374,7 +381,8 @@ class AndGateItem(GateItem):
         self.setPath(path)
 
 
-class OrGateItem(GateItem):
+class OrGateItem(LogicGateItem):
+    _MID_PIN_CLS = OrGatePinItem
     _VHDL_OPERATOR = "or"
 
     def initPath(self : Self) -> None:
@@ -391,10 +399,9 @@ class OrGateItem(GateItem):
     def setInputs(self : Self, levels : str) -> None:
         super().setInputs(levels)
         if len(self._inputs) % 2 == 1:  # odd width => center input
-            # tweak position and length of center input
+            # tweak position of center input
             i = len(self._inputs) // 2
             self._inputs[i].setPos(QPointF(-26, 0))
-            self._inputs[i].setLength(14)
 
 
 class XorGateItem(OrGateItem):

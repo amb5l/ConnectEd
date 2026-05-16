@@ -1,111 +1,38 @@
 from typing import Self
 
-from PyQt6.QtCore    import Qt
 from PyQt6.QtWidgets import QGraphicsPathItem, QGraphicsLineItem, QGraphicsItem
 
-from ....core.defs   import WIDTH
-from ....core.types  import Direction, DataKind
+from ....app import settings
+
+from ....core.defs  import WIDTH
+from ....core.types import Direction, DataKind
 
 from ..properties import PropertiesMixin, InherentProperty
 
 from ..scenes import withScene
 
-from .node import FixedNodeItem
+from .node   import FixedNodeItem
 
-from .mixin         import ItemMixin
-from .mixin.handle  import ItemHandlesMixin
-from .mixin.paint   import ItemPaintMixin
-from .mixin.line    import ItemLineMixin
-from .mixin.change  import ItemChangeMixin
-from .mixin.clone   import ItemCloneMixin
-from .mixin.xml     import ItemXmlMixin
-from .mixin.menu    import ItemMenuMixin
+from .mixin           import ItemMixin, ItemNamesMixin
+from .mixin.transform import ItemTransformMixin
+from .mixin.handle    import ItemHandlesMixin
+from .mixin.paint     import ItemPaintMixin
+from .mixin.change    import ItemChangeMixin
+from .mixin.clone     import ItemCloneMixin
+from .mixin.xml       import ItemXmlMixin
+from .mixin.menu      import ItemMenuMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ..scenes.drawing import DrawingScene
 
 
-class PortPinMixin(
-    ItemMixin,
-    ItemLineMixin,
+class PortPinArrowItem(
+    ItemNamesMixin,
+    ItemPaintMixin,
     ItemChangeMixin,
-    ItemCloneMixin,
-    ItemXmlMixin,
-    ItemMenuMixin,
-    PropertiesMixin
+    QGraphicsPathItem
 ):
-    # class attributes
-    _PROPERTIES_NAME = \
-        {
-            "Name" : InherentProperty(
-                kind   = DataKind.STR,
-                getter = lambda self: self._name,
-                setter = lambda self, value: setattr(self, "_name", value),
-            )
-        }
-    _PROPERTIES_DIR = \
-        {
-            "Dir" : InherentProperty(
-                kind   = DataKind.DIRECTION,
-                getter = lambda self: self._direction,
-                setter = lambda self, value: setattr(self, "_direction", value)
-            )
-        }
-    _PROPERTIES_COMMENT = \
-        {
-            "Comment" : InherentProperty(
-                kind   = DataKind.STR,
-                worthy = lambda self: self._comment != "",
-                getter = lambda self: self._comment,
-                setter = lambda self, value: setattr(self, "_comment", value)
-            )
-        }
-    _PEN_CAP_STYLE  = Qt.PenCapStyle.SquareCap
-    _PEN_JOIN_STYLE = Qt.PenJoinStyle.MiterJoin
-
-    # instance attributes
-    _name      : str
-    _direction : Direction
-    _comment   : str
-    _node      : FixedNodeItem
-
-    def initPortPin(self : Self | QGraphicsPathItem, fresh : bool) -> None:
-        # Initialize attributes that properties will access
-        self._name      = ""
-        self._direction = Direction.IN
-        self._comment   = ""
-        # Initialize the item (this sets up properties system)
-        self.initItem(fresh)
-        # Initialize the node
-        self._node = FixedNodeItem(parent=self)
-
-    def initHandles(self : Self) -> None:
-        raise NotImplementedError("Subclass must implement this method")
-
-    def name(self : Self) -> str:
-        return self._name
-
-    def setName(self : Self, value : str) -> None:
-        self._name = value
-        self.signalPropertyChanges("Name")
-
-    def direction(self : Self) -> Direction:
-        return self._direction
-
-    def setDirection(self : Self, value : Direction) -> None:
-        self._direction = value
-        self.signalPropertyChanges("Dir")
-
-    def comment(self : Self) -> str:
-        return self._comment
-
-    def setComment(self : Self, value : str) -> None:
-        self._comment = value
-        self.signalPropertyChanges("Comment")
-
-
-class PortPinArrowItem(ItemPaintMixin, ItemChangeMixin, QGraphicsPathItem):
     def __init__(self : Self, parent : QGraphicsItem | None = None) -> None:
         super().__init__(parent)
         self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsSelectable, True)
@@ -116,18 +43,17 @@ class PortPinArrowItem(ItemPaintMixin, ItemChangeMixin, QGraphicsPathItem):
             parent.setSelected(selected)
 
 
-class PortPinItem(
+class PortPinMixin(
     ItemMixin,
     ItemPaintMixin,
     ItemChangeMixin,
     ItemCloneMixin,
     ItemXmlMixin,
     ItemMenuMixin,
-    PropertiesMixin,
-    QGraphicsLineItem
+    PropertiesMixin
 ):
     """
-    Base class for ports and block/symbol pins.
+    Mixin for ports and gate/block/symbol pins.
     """
 
     # class attributes
@@ -167,7 +93,7 @@ class PortPinItem(
         parent : QGraphicsItem | None = None,
         fresh  : bool = True
     ) -> None:
-        QGraphicsLineItem.__init__(self, parent)
+        super().__init__(parent)
         # node
         self._node = FixedNodeItem(parent=self)
         self._node.setPos(self._NODE_POS, 0)
@@ -187,15 +113,17 @@ class PortPinItem(
 
     @withScene
     def onSceneChange(self : Self, scene : "DrawingScene") -> None:
-        self._updateLine(scene)
+        self._updateGraphics(scene)
         self._updatePen(scene)
         self._updateArrowPath(scene)
         self._updateArrowPenBrush(scene)
+        self._updateNameHandle()
 
     def onSelectionChange(self : Self, selected : bool) -> None:
         scene : "DrawingScene" = self.scene()
         self._updatePen(scene)
         self._updateArrowPenBrush(scene)
+        self._updateNameHandle()
         self._node.setSelected(selected)
         self._arrow.setSelected(selected)
 
@@ -228,23 +156,106 @@ class PortPinItem(
     def bus(self : Self) -> bool:
         return self._bus
 
-    def _updateLine(self : Self, scene : "DrawingScene") -> None:
-        self.setLine(scene.rsrcman.line(self.__class__))
+    def _updateGraphics(self : Self, scene : "DrawingScene") -> None:
+        raise NotImplementedError("Subclasses must implement this method")
 
-    def _updatePen(self : Self, scene : "DrawingScene") -> None:
+    def _updatePen(
+        self  : Self | QGraphicsLineItem | QGraphicsPathItem,
+        scene : "DrawingScene"
+    ) -> None:
         key = (self.bus(), self.isSelected())
-        self.setPen(scene.rsrcman.pen(self.__class__, key))
+        self.setPen(scene.rsrcman.pen(self.resourcesName(), key))
 
     def _updateArrowPath(self : Self, scene : "DrawingScene") -> None:
-        self._arrow.setPath(scene.rsrcman.path(self._ARROW_CLS, self._direction))
+        self._arrow.setPath(scene.rsrcman.path(
+            self._arrow.resourcesName(), self._direction
+        ))
 
     def _updateArrowPenBrush(
         self  : Self | ItemHandlesMixin,
         scene : "DrawingScene"
     ) -> None:
         key = self.isSelected()
-        self._arrow.setPen(scene.rsrcman.pen(self._ARROW_CLS, key))
-        self._arrow.setBrush(scene.rsrcman.brush(self._ARROW_CLS, key))
+        self._arrow.setPen(scene.rsrcman.pen(self._arrow.resourcesName(), key))
+        self._arrow.setBrush(scene.rsrcman.brush(self._arrow.resourcesName(), key))
+
+    def _updateNameHandle(self : Self) -> None:
+        raise NotImplementedError("Subclasses must implement this method")
+
+
+class PortPinLineItem(PortPinMixin, QGraphicsLineItem):
+    """
+    Base class for ports and block pins.
+    """
+
+    def _updateGraphics(self : Self, scene : "DrawingScene") -> None:
+        self.setLine(scene.rsrcman.line(self.resourcesName()))
+
+    def _updateNameHandle(self : Self) -> None:
+        """Place name handle beside arrow."""
         name_handle = self.getHandle("Name")
         x = self._arrow.pos().x() + self._arrow.boundingRect().right() + WIDTH
+        name_handle.setX(x)
+
+
+class PortPinPathItem(PortPinMixin, QGraphicsPathItem):
+    """
+    Base class for gate and symbol pins.
+    """
+
+    # class attributes
+    _PROPERTIES = \
+        PortPinMixin._PROPERTIES | \
+        {
+            "Dot" : InherentProperty(
+                kind   = DataKind.BOOL,
+                getter = lambda self: self._dot,
+                setter = lambda self, value: setattr(self, "_dot", value)
+            ),
+            "Clock" : InherentProperty(
+                kind   = DataKind.BOOL,
+                getter = lambda self: self._clock,
+                setter = lambda self, value: setattr(self, "_clock", value)
+            )
+        } | \
+        ItemTransformMixin._PROPERTIES_POS | \
+        ItemTransformMixin._PROPERTIES_ROTATE
+
+    # instance attributes
+    _dot   : bool = False
+    _clock : bool = False
+
+    def dot(self : Self) -> bool:
+        return self._dot
+
+    def setDot(self : Self, value : bool) -> None:
+        self._dot = value
+        self._updateGraphics()
+
+    def clock(self : Self) -> bool:
+        return self._clock
+
+    def setClock(self : Self, value : bool) -> None:
+        self._clock = value
+        self._updateGraphics()
+        self._updateNameHandle()
+
+    @withScene
+    def _updateGraphics(self : Self, scene : "DrawingScene") -> None:
+        key = (self._clock, self._dot)
+        self.setPath(scene.rsrcman.path(self.resourcesName(), key))
+
+    def _updateNameHandle(self : Self | ItemHandlesMixin) -> None:
+        """Allow for clock symbol."""
+        settings_path = f"theme/items/{self.settingsName()}/pin"
+        x = 0
+        # allow for clock symbol
+        if self._clock:
+            x += settings().get(f"{settings_path}/clock/size")
+        # allow for pen width
+        x += settings().get(f"{settings_path}/wire/pen/width") / 2
+        # standard offset
+        x += WIDTH
+        # apply to name handle
+        name_handle = self.getHandle("Name")
         name_handle.setX(x)

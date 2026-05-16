@@ -14,12 +14,13 @@ if TYPE_CHECKING:
     from ..block import BlockItem
 
 
-# TODO - merge into Block, which is the only item that uses it?
 class ItemLocMixin:
-    # instance attributes
-    _loc : EdgeLoc
+    """
+    Block and symbol pins use this mixin for edge location positioning.
+    """
 
-    _PROPERTIES_LOC = {
+    # class attributes
+    _PROPERTIES = {
         "Edge" : InherentProperty(
             kind   = DataKind.EDGE,
             getter = lambda self: self.loc().edge,
@@ -31,6 +32,9 @@ class ItemLocMixin:
             setter = lambda self, value: self.setLocOffset(value)
         )
     }
+
+    # instance attributes
+    _loc : EdgeLoc
 
     def initLoc(self : Self) -> None:
         self._loc = EdgeLoc(Edge.UNDEFINED, 0)

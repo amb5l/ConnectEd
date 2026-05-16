@@ -5,7 +5,7 @@ from PyQt6.QtWidgets import QGraphicsLineItem
 
 from ....core.defs import Z_DRAWING
 
-from .mixin        import ItemMixin, ItemSettingsMixin
+from .mixin        import ItemMixin, ItemNamesMixin
 from .mixin.line   import ItemLineMixin
 from .mixin.change import ItemChangeMixin
 from .mixin.clone  import ItemCloneMixin
@@ -87,8 +87,9 @@ class SegmentItem(
         return None
 
 
+# TODO link to settings/resources
 class SegmentPreviewItem(
-    ItemSettingsMixin,
+    ItemNamesMixin,
     ItemChangeMixin,
     ItemLineMixin,
     QGraphicsLineItem
