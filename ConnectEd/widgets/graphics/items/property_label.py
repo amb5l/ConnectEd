@@ -18,6 +18,7 @@ from . import ItemType
 
 from .text   import TextItem
 from .handle import HandleItem
+from .tether import TextTetherItem
 
 
 from .mixin.transform import ItemTransformMixin
@@ -28,6 +29,17 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ..views.drawing  import DrawingView
     from ..scenes.drawing import DrawingScene
+
+
+class PropertyTextTetherItem(TextTetherItem):
+    """
+    Tether line from the origin of a PropertyTextItem to its parent cleat.
+    """
+
+    _text_item : "PropertyLabelItem"
+
+    def anchor(self : Self) -> "HandleItem | None":
+        return self._text_item.parentItem()
 
 
 class PropertyLabelItem(TextItem):
@@ -59,8 +71,9 @@ class PropertyLabelItem(TextItem):
         ItemQuillMixin._PROPERTIES_QUILL
 
     # instance attributes
-    _name  : str
+    _name   : str
     _value : str
+    _tether : PropertyLabelTetherItem | None
 
     def __init__(
         self      : Self,
@@ -87,14 +100,6 @@ class PropertyLabelItem(TextItem):
     ) -> None:
         pass
 
-    def onSceneChanged(self : Self, _scene : "DrawingScene | None") -> None:
-        self.onSettingsChanged()
-
-    def onParentChanged(self : Self, parent : QGraphicsItem | None) -> None:
-        if parent is not None:
-            self.onTextChanged()
-            self.quillSettingsChange()
-
     def onPositionChanged(
         self : Self,
         pos  : QPointF | None = None
@@ -111,11 +116,6 @@ class PropertyLabelItem(TextItem):
         self._tether.anchor().grip().setVisible(selected and cleat_valid)
 
     def onTextChanged(self : Self) -> None:
-        super().onSettingsChanged()
-        if hasattr(self, "_tether"):
-            self._tether.onSettingsChanged()
-
-    def onTextChange(self : Self) -> None:
         text = val2str(self.value())
         if text == "":
             text = f"<{self._name}>"

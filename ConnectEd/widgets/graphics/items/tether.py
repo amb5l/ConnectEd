@@ -33,18 +33,21 @@ class TextTetherItem(QGraphicsLineItem):
     def mouseDoubleClickEvent(self : Self, event : QGraphicsSceneMouseEvent) -> None:
         self._text_item.mouseDoubleClickEvent(event)
 
+    def onSettingsChanged(self : Self) -> None:
+        if scene := self.scene() is not None:
+            self.onSceneChanged(scene)
+
+    def onSceneChanged(self : Self, scene : "DrawingScene | None") -> None:
+        if scene is None:
+            return
+        self.setPen(scene.resources.pen("Tether"))
+
     def onPositionChanged(self : Self, _ : QPointF | None = None) -> None:
         if self.anchor() is None:
             return
         line = self.line()
         line.setP2(self.mapFromItem(self.anchor(), QPointF(0, 0)))
         self.setLine(line)
-
-    def onSettingsChanged(self : Self) -> None:
-        scene: "DrawingScene | None" = self.scene()
-        if scene is None:
-            return
-        self.setPen(scene.resources.pen("Tether"))
 
     def anchor(self : Self) -> QGraphicsItem | None:
         return self._text_item.parentItem()

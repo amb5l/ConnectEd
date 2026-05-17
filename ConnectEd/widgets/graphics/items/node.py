@@ -45,22 +45,25 @@ class NodeItem(
         self.initItem()
 
     def onSettingsChanged(self : Self) -> None:
-        self.onSceneChanged()
+        if scene := self.scene() is not None:
+            self.onSceneChanged(scene)
 
-    @withScene
     def onSceneChanged(self : Self, scene : "DiagramScene | None") -> None:
+        if scene is None:
+            return
         self._updatePenBrush(scene)
         self._updatePath(scene)
         self._hshape.clear()
         self._hshape.addRect(self.boundingRect())
 
-    def onSelectionChanged(self : Self, selected : bool) -> None:
-        self._updatePenBrush(self.scene())
-
     def onScenePositionChanged(self : Self, _pos : QPointF) -> None:
         """Update all connected segments."""
         for segment in self.segments():
             segment.onGeometryChange()
+
+    def onSelectionChanged(self : Self, selected : bool) -> None:
+        self._updatePenBrush(self.scene())
+
 
     @withScene
     def onConnectionChange(self : Self, scene : "DiagramScene | None" = None) -> None:

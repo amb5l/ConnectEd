@@ -46,7 +46,8 @@ from .mixin.menu      import ItemMenuMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from ..views.drawing import DrawingView
+    from ..views.drawing  import DrawingView
+    from ..scenes.drawing import DrawingScene
 
 
 @dataclass
@@ -248,6 +249,13 @@ class TextItem(
         self._child.onGeometryChange()
         self.updateHandlePositions()
         self.onSceneRotationChange()
+
+    def onSettingsChanged(self : Self) -> None:
+        if scene := self.scene() is not None:
+            self.onSceneChanged(scene)
+
+    def onSceneChanged(self : Self, scene : "DrawingScene | None") -> None:
+        pass
 
     def onSceneRotationChange(self : Self) -> None:
         self._adjustOrientation()

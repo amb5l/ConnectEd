@@ -3,7 +3,7 @@ from enum   import StrEnum
 
 from PyQt6.QtCore    import Qt, QPointF, QXmlStreamWriter, QXmlStreamReader
 from PyQt6.QtWidgets import QMenu, QGraphicsPathItem
-from PyQt6.QtGui     import QAction, QPen, QPainterPath
+from PyQt6.QtGui     import QAction, QPen
 
 from ....app import settings
 
@@ -60,11 +60,13 @@ class GripItem(
 
     @checked
     def onSettingsChanged(self : Self) -> None:
-        self.onSceneChanged()
+        if scene := self.scene() is not None:
+            self.onSceneChanged(scene)
 
-    @withScene
     @checked
     def onSceneChanged(self : Self, scene : "DrawingScene | None") -> None:
+        if scene is None:
+            return
         self.setPen(scene.resources.pen("Grip"))
         self.setBrush(scene.resources.brush("Grip"))
         self.updatePath(scene)

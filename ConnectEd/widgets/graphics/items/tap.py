@@ -11,8 +11,6 @@ from ....core.check import checked
 
 from ..properties import PropertiesMixin, InherentProperty, PropertyTextSpec
 
-from ..scenes import withScene
-
 from .node          import TapMajorNodeItem, TapMinorNodeItem
 
 from .mixin import ItemMixin
@@ -89,12 +87,14 @@ class TapItem(
         self._range_width = -1.0  # auto width
 
     @checked
-    def onSceneChanged(self : Self, scene : "DiagramScene | None") -> None:
-        self.onSettingsChanged(scene)
+    def onSettingsChanged(self : Self) -> None:
+        if scene := self.scene() is not None:
+            self.onSceneChanged(scene)
 
-    @withScene
     @checked
-    def onSettingsChanged(self : Self, scene : "DiagramScene | None") -> None:
+    def onSceneChanged(self : Self, scene : "DiagramScene | None") -> None:
+        if scene is None:
+            return
         self.setPen(scene.resources["Tap"][self._state.value])
 
     @checked

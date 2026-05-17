@@ -109,10 +109,10 @@ class PortPinMixin(
         self.initItem(fresh)
 
     def onSettingsChanged(self : Self) -> None:
-        self.onSceneChanged()
+        if scene := self.scene() is not None:
+            self.onSceneChanged(scene)
 
-    @withScene
-    def onSceneChanged(self : Self, scene : "DrawingScene") -> None:
+    def onSceneChanged(self : Self, scene : "DrawingScene | None") -> None:
         self._updateGraphics(scene)
         self._updatePen(scene)
         self._updateArrowPath(scene)

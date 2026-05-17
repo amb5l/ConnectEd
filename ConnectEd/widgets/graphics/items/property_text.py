@@ -131,8 +131,12 @@ class PropertyTextItem(TextItem):
         self.setCleat(cleat, parent)
         self.onTextChanged()
 
-    def onSceneChanged(self : Self, _scene : "DrawingScene | None") -> None:
-        self.onSettingsChanged()
+    def onSettingsChanged(self : Self) -> None:
+        if scene := self.scene() is not None:
+            self.onSceneChanged(scene)
+
+    def onSceneChanged(self : Self, scene : "DrawingScene | None") -> None:
+        pass
 
     def onParentChanged(self : Self, parent : QGraphicsItem | None) -> None:
         if parent is not None:
@@ -153,10 +157,6 @@ class PropertyTextItem(TextItem):
         cleat_valid = self._cleat is not None and self._cleat != ""
         self._tether.setVisible(selected and cleat_valid)
         self._tether.anchor().grip().setVisible(selected and cleat_valid)
-
-    def onSettingsChanged(self : Self) -> None:
-        if hasattr(self, "_tether"):
-            self._tether.onSettingsChanged()
 
     def onTextChanged(self : Self) -> None:
         text = val2str(self.value())
