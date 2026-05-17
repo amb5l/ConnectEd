@@ -57,7 +57,7 @@ class NodeItem(
     def onSelectionChange(self : Self, selected : bool) -> None:
         self._updatePenBrush(self.scene())
 
-    def onScenePositionChange(self : Self, _pos : QPointF) -> None:
+    def onScenePositionChanged(self : Self, _pos : QPointF) -> None:
         """Update all connected segments."""
         for segment in self.segments():
             segment.onGeometryChange()
