@@ -147,7 +147,7 @@ class PropertyTextItem(TextItem):
         if hasattr(self, "_tether"):
             self._tether.onPositionChanged(pos)
 
-    def onSelectionChange(self : Self, selected : bool) -> None:
+    def onSelectionChanged(self : Self, selected : bool) -> None:
         if self._cleat is None or self._cleat == "":
             return
         cleat_valid = self._cleat is not None and self._cleat != ""

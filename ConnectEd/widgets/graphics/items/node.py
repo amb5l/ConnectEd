@@ -54,7 +54,7 @@ class NodeItem(
         self._hshape.clear()
         self._hshape.addRect(self.boundingRect())
 
-    def onSelectionChange(self : Self, selected : bool) -> None:
+    def onSelectionChanged(self : Self, selected : bool) -> None:
         self._updatePenBrush(self.scene())
 
     def onScenePositionChanged(self : Self, _pos : QPointF) -> None:
@@ -146,8 +146,8 @@ class FreeNodeItem(NodeItem):
 class FixedNodeItem(NodeItem):
     _JUNCTION_THRESHOLD = 2
 
-    def onSelectionChange(self : Self, selected : bool) -> None:
-        super().onSelectionChange(selected)
+    def onSelectionChanged(self : Self, selected : bool) -> None:
+        super().onSelectionChanged(selected)
         parent = self.parentItem()
         if parent is not None:
             parent.setSelected(selected)

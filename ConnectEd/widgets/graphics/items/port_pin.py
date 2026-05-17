@@ -37,7 +37,7 @@ class PortPinArrowItem(
         super().__init__(parent)
         self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsSelectable, True)
 
-    def onSelectionChange(self : Self, selected : bool) -> None:
+    def onSelectionChanged(self : Self, selected : bool) -> None:
         parent = self.parentItem()
         if parent is not None:
             parent.setSelected(selected)
@@ -119,7 +119,7 @@ class PortPinMixin(
         self._updateArrowPenBrush(scene)
         self._updateNameHandle()
 
-    def onSelectionChange(self : Self, selected : bool) -> None:
+    def onSelectionChanged(self : Self, selected : bool) -> None:
         scene : "DrawingScene" = self.scene()
         self._updatePen(scene)
         self._updateArrowPenBrush(scene)

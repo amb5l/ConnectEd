@@ -214,7 +214,7 @@ class PolylineItem(
                 h._grip.onSceneChanged(scene)
 
     @checked
-    def onSelectionChange(self : Self, selected : bool) -> None:
+    def onSelectionChanged(self : Self, selected : bool) -> None:
         if not selected:
             self._sel_mode = 0
 
