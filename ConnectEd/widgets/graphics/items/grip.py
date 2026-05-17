@@ -60,11 +60,11 @@ class GripItem(
 
     @checked
     def onSettingsChanged(self : Self) -> None:
-        self.onSceneChange()
+        self.onSceneChanged()
 
     @withScene
     @checked
-    def onSceneChange(self : Self, scene : "DrawingScene | None") -> None:
+    def onSceneChanged(self : Self, scene : "DrawingScene | None") -> None:
         self.setPen(scene.resources.pen("Grip"))
         self.setBrush(scene.resources.brush("Grip"))
         self.updatePath(scene)

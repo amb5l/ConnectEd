@@ -14,8 +14,8 @@ class ItemChangeMixin:
     ) -> Any:
         match change:
             case self.GraphicsItemChange.ItemSceneHasChanged:
-                if hasattr(self, "onSceneChange"):
-                    self.onSceneChange(value)
+                if hasattr(self, "onSceneChanged"):
+                    self.onSceneChanged(value)
             case self.GraphicsItemChange.ItemParentHasChanged:
                 if hasattr(self, "onParentChange"):
                     self.onParentChange(value)

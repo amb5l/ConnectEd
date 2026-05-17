@@ -87,7 +87,7 @@ class PropertyLabelItem(TextItem):
     ) -> None:
         pass
 
-    def onSceneChange(self : Self, _scene : "DrawingScene | None") -> None:
+    def onSceneChanged(self : Self, _scene : "DrawingScene | None") -> None:
         self.onSettingsChanged()
 
     def onParentChange(self : Self, parent : QGraphicsItem | None) -> None:

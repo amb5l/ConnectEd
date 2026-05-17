@@ -89,7 +89,7 @@ class TapItem(
         self._range_width = -1.0  # auto width
 
     @checked
-    def onSceneChange(self : Self, scene : "DiagramScene | None") -> None:
+    def onSceneChanged(self : Self, scene : "DiagramScene | None") -> None:
         self.onSettingsChanged(scene)
 
     @withScene

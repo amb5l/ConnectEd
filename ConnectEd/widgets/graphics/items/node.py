@@ -45,10 +45,10 @@ class NodeItem(
         self.initItem()
 
     def onSettingsChanged(self : Self) -> None:
-        self.onSceneChange()
+        self.onSceneChanged()
 
     @withScene
-    def onSceneChange(self : Self, scene : "DiagramScene | None") -> None:
+    def onSceneChanged(self : Self, scene : "DiagramScene | None") -> None:
         self._updatePenBrush(scene)
         self._updatePath(scene)
         self._hshape.clear()

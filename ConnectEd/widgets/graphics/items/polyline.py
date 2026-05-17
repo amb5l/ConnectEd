@@ -203,15 +203,15 @@ class PolylineItem(
         self._sel_mode = 1  # Start in vertex-edit mode for interactive creation
 
     @checked
-    def onSceneChange(self : Self, scene : "DrawingScene | None") -> None:
+    def onSceneChanged(self : Self, scene : "DrawingScene | None") -> None:
         """Initialize vertices, segments, and APs on scene change."""
         for vtx in self._vertices:
-            vtx.onSceneChange(scene)
+            vtx.onSceneChanged(scene)
         for seg in self._segments:
-            seg.onSceneChange(scene)
+            seg.onSceneChanged(scene)
         if hasattr(self, '_handles'):
             for h in self._handles.values():
-                h._grip.onSceneChange(scene)
+                h._grip.onSceneChanged(scene)
 
     @checked
     def onSelectionChange(self : Self, selected : bool) -> None:
