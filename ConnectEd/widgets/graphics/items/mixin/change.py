@@ -36,6 +36,6 @@ class ItemChangeMixin:
                     self.fillSelectionChange(value)
                 if hasattr(self, "quillSelectionChange"):
                     self.quillSelectionChange(value)
-                if hasattr(self, "onSelectionChange"):
+                if hasattr(self, "onSelectionChanged"):
                     self.onSelectionChanged(value)
         return super().itemChange(change, value)
