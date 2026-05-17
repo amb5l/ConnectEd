@@ -39,7 +39,7 @@ class ItemLocMixin:
     def initLoc(self : Self) -> None:
         self._loc = EdgeLoc(Edge.UNDEFINED, 0)
 
-    def onParentChange(self : Self, parent : QGraphicsItem | None) -> None:
+    def onParentChanged(self : Self, parent : QGraphicsItem | None) -> None:
         """Update position when parent changes."""
         if hasattr(self, '_loc') \
         and parent is not None \
