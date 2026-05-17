@@ -93,7 +93,7 @@ class ItemTransformMixin:
             self.setOrigin(self._ORIGIN)
 
     @checked
-    def onPositionChange(
+    def onPositionChanged(
         self : Self | QGraphicsItem | PropertiesMixin,
         _pos : QPointF | None = None
     ) -> None:

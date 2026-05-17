@@ -33,7 +33,7 @@ class BlockItem(PartItemMixin, BaseRectangleItem):
         # TODO: reposition pins
         #for item in self.childItems():
         #    if isinstance(item, Pin):
-        #        item.onPositionChange()
+        #        item.onPositionChanged()
 
     def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
         return [

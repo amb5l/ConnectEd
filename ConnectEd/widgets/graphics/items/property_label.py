@@ -95,13 +95,13 @@ class PropertyLabelItem(TextItem):
             self.onTextChange()
             self.quillSettingsChange()
 
-    def onPositionChange(
+    def onPositionChanged(
         self : Self,
         pos  : QPointF | None = None
     ) -> None:
-        ItemTransformMixin.onPositionChange(self, pos)
+        ItemTransformMixin.onPositionChanged(self, pos)
         if hasattr(self, "_tether"):
-            self._tether.onPositionChange(pos)
+            self._tether.onPositionChanged(pos)
 
     def onSelectionChange(self : Self, selected : bool) -> None:
         if self._cleat is None or self._cleat == "":

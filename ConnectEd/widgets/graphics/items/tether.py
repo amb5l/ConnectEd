@@ -26,7 +26,7 @@ class TextTetherItem(QGraphicsLineItem):
         super().__init__(text_item.getOriginHandle())
         self.setVisible(text_item.isSelected())
         self.onSettingsChanged()
-        self.onPositionChange(self._text_item.pos())
+        self.onPositionChanged(self._text_item.pos())
 
     def mousePressEvent(self : Self, event : QGraphicsSceneMouseEvent) -> None:
         self._text_item.mousePressEvent(event)
@@ -37,7 +37,7 @@ class TextTetherItem(QGraphicsLineItem):
     def mouseDoubleClickEvent(self : Self, event : QGraphicsSceneMouseEvent) -> None:
         self._text_item.mouseDoubleClickEvent(event)
 
-    def onPositionChange(self : Self, _ : QPointF | None = None) -> None:
+    def onPositionChanged(self : Self, _ : QPointF | None = None) -> None:
         if self.anchor() is None:
             return
         line = self.line()

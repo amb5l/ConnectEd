@@ -139,13 +139,13 @@ class PropertyTextItem(TextItem):
             self.onTextChange()
             self.quillSettingsChange()
 
-    def onPositionChange(
+    def onPositionChanged(
         self : Self,
         pos  : QPointF | None = None
     ) -> None:
-        ItemTransformMixin.onPositionChange(self, pos)
+        ItemTransformMixin.onPositionChanged(self, pos)
         if hasattr(self, "_tether"):
-            self._tether.onPositionChange(pos)
+            self._tether.onPositionChanged(pos)
 
     def onSelectionChange(self : Self, selected : bool) -> None:
         if self._cleat is None or self._cleat == "":
@@ -190,7 +190,7 @@ class PropertyTextItem(TextItem):
         ItemTransformMixin.setOrigin(self,  id)
         if hasattr(self, "_tether"):  # guard against partial initialisation
             self._tether.setParentItem(self.getOriginHandle())
-            self._tether.onPositionChange(self.pos())
+            self._tether.onPositionChanged(self.pos())
 
     def text(self : Self) -> str:
         raise NotImplementedError("PropertyTextItemMixin.text() is not implemented")
