@@ -8,7 +8,7 @@ from ....app import logger
 
 from ..scenes import withScene
 
-from .property_label import PropertyLabelItem
+from .net_label import NetLabelItem
 
 from .mixin        import ItemMixin
 from .mixin.shape  import ItemShapeMixin
@@ -92,9 +92,9 @@ class NodeItem(
         xw.writeAttribute("ID", str(id))
         xw.writeAttribute("X", str(self.scenePos().x()))
         xw.writeAttribute("Y", str(self.scenePos().y()))
-        # serialise child items (PropertyLabelItem instances)
+        # serialise child items (NetLabelItem instances)
         for child in self.childItems():
-            if isinstance(child, PropertyLabelItem):
+            if isinstance(child, NetLabelItem):
                 child.toXml(xw)
             else:
                 logger().warning(f"Unexpected child item: {child.type()}")
@@ -133,12 +133,12 @@ class FreeNodeItem(NodeItem):
                     instance.setY(float(attr_value))
                 case _:
                     logger().warning(f"Unexpected attribute: {attr_name}={attr_value}")
-        # create child items (PropertyLabelItem instances)
+        # create child items (NetLabelItem instances)
         while not (xr.isEndElement() and xr.name() == "FreeNode"):
             if xr.isStartElement():
                 item_name = xr.name()
-                if item_name == "NetPropertyText":
-                    child = PropertyLabelItem.fromXml(xr)
+                if item_name == "NetLabel":
+                    child = NetLabelItem.fromXml(xr)
                     instance.setParentItem(child)
                 else:
                     logger().warning(f"Unexpected child item: {item_name}")

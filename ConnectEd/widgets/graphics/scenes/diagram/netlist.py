@@ -9,15 +9,15 @@ from .....core.types import Direction
 from .....core.expr  import evaluate
 from .....core.check import checked
 
-from ...items.node           import NodeItem, FreeNodeItem, FixedNodeItem, \
-                                    TapMajorNodeItem, TapMinorNodeItem
-from ...items.property_label import PropertyLabelItem
-from ...items.tap            import TapItem
-from ...items.port           import PortItem
-from ...items.block_pin      import BlockPinItem
-from ...items.symbol_pin     import SymbolPinItem
-from ...items.block          import BlockItem
-from ...items.symbol         import SymbolItem
+from ...items.node       import NodeItem, FreeNodeItem, FixedNodeItem, \
+                                TapMajorNodeItem, TapMinorNodeItem
+from ...items.net_label  import NetLabelItem
+from ...items.tap        import TapItem
+from ...items.port       import PortItem
+from ...items.block_pin  import BlockPinItem
+from ...items.symbol_pin import SymbolPinItem
+from ...items.block      import BlockItem
+from ...items.symbol     import SymbolItem
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -105,7 +105,7 @@ class Netlist:
         full_name = None
         if isinstance(node, FreeNodeItem):
             for child in node.childItems():
-                if isinstance(child, PropertyLabelItem):
+                if isinstance(child, NetLabelItem):
                     if child.name() == "Name":
                         full_name = child.value()
                         break
@@ -364,7 +364,7 @@ class Netlist:
         for node in subnet.nodes:
             # labels
             for child in node.childItems():
-                if isinstance(child, PropertyLabelItem):  # label
+                if isinstance(child, NetLabelItem):  # label
                     if child.name() == "Name":  # this is a *Name* label
                         label_names.append(child.value())
             # taps (minor end)

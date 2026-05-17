@@ -18,18 +18,18 @@ from .mixin.transform import ItemTransformMixin
 from .mixin.quill     import ItemQuillMixin
 
 
-class PropertyLabelTetherItem(TextTetherItem):
+class NetLabelTetherItem(TextTetherItem):
     """
     Tether line from the origin of a PropertyTextItem to its parent cleat.
     """
 
-    _text_item : "PropertyLabelItem"
+    _text_item : "NetLabelItem"
 
     def anchor(self : Self) -> "HandleItem | None":
         return self._text_item.parentItem()
 
 
-class PropertyLabelItem(TextItem):
+class NetLabelItem(TextItem):
     # class attributes
     _PROPERTIES = \
         {
@@ -60,7 +60,7 @@ class PropertyLabelItem(TextItem):
     # instance attributes
     _name   : str
     _value : str
-    _tether : PropertyLabelTetherItem | None
+    _tether : NetLabelTetherItem | None
 
     def __init__(
         self      : Self,

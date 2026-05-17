@@ -4,12 +4,12 @@ from ......core.types import EdgeLoc
 
 from ....items import ItemType
 
-from ....items.block          import BlockItem
-from ....items.block_pin      import BlockPinItem
-from ....items.node           import FixedNodeItem
-from ....items.property_text  import PropertyTextItem
-from ....items.property_label import PropertyLabelItem
-from ....items.segment        import SegmentItem
+from ....items.block         import BlockItem
+from ....items.block_pin     import BlockPinItem
+from ....items.node          import FixedNodeItem
+from ....items.property_text import PropertyTextItem
+from ....items.net_label     import NetLabelItem
+from ....items.segment       import SegmentItem
 
 from ...drawing.api import DrawingSceneApiEditMixin
 
@@ -45,7 +45,7 @@ class DiagramSceneApiEditMixin(DrawingSceneApiEditMixin):
         # filter out items with parents apart from property texts/labels
         for item in items:
             if item.parentItem() is not None:
-                if isinstance(item, PropertyTextItem | PropertyLabelItem):
+                if isinstance(item, PropertyTextItem | NetLabelItem):
                     continue
                 items.remove(item)
         # check that there is something to do

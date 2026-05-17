@@ -5,9 +5,9 @@ from PyQt6.QtGui  import QPainterPath, QPainterPathStroker
 
 from ......app import logger
 
-from ....items.node           import NodeItem, FreeNodeItem, FixedNodeItem
-from ....items.segment        import SegmentItem
-from ....items.property_label import PropertyLabelItem
+from ....items.node      import NodeItem, FreeNodeItem, FixedNodeItem
+from ....items.segment   import SegmentItem
+from ....items.net_label import NetLabelItem
 
 from ...drawing.cmd import cmdExec, CmdDelete
 
@@ -247,7 +247,7 @@ class DiagramSceneApiConnMixin:
                 continue  # is connected to other segments so not an orphan
             # orderly removal of labels
             for child in node.childItems():
-                if isinstance(child, PropertyLabelItem):
+                if isinstance(child, NetLabelItem):
                     cmd = CmdDelete(self, [child])
                     cmdExec(self, cmd, undoable)
             if node.childItems() != []:
