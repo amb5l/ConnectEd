@@ -143,9 +143,6 @@ class LineItem(
         self.setLine(self._line)
         self.onGeometryChange()
 
-    def shape(self : Self) -> QPainterPath:
-        return self._hshape
-
 
 class SymbolLineItem(LineItem):
     pass
