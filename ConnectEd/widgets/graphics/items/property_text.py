@@ -17,7 +17,7 @@ from . import ItemType
 
 from .text   import TextItem
 from .handle import HandleItem
-from .tether import PropertyTextTetherItem
+from .tether import TextTetherItem
 
 
 from .mixin.transform import ItemTransformMixin
@@ -28,6 +28,17 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ..views.drawing  import DrawingView
     from ..scenes.drawing import DrawingScene
+
+
+class PropertyTextTetherItem(TextTetherItem):
+    """
+    Tether line from the origin of a PropertyTextItem to its parent cleat.
+    """
+
+    _text_item : "PropertyTextItem"
+
+    def anchor(self : Self) -> "HandleItem | None":
+        return self._text_item.parentItem()
 
 
 class PropertyTextItem(TextItem):

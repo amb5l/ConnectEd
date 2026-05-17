@@ -9,7 +9,7 @@ if TYPE_CHECKING:
     from ..scenes.drawing import DrawingScene
     from .text            import TextItem
     from .property_text   import PropertyTextItem
-    from .property_label  import PropertyLabelItem
+    from .property_label  import NetLabelItem
     from .handle          import HandleItem
     from .node            import NodeItem
 
@@ -55,25 +55,3 @@ class TextTetherItem(QGraphicsLineItem):
 
     def toXml(self : Self, _xw : QXmlStreamWriter) -> str:
         pass  # no need to serialise
-
-
-class PropertyTextTetherItem(TextTetherItem):
-    """
-    Tether line from the origin of a PropertyTextItem to its parent cleat.
-    """
-
-    _text_item : "PropertyTextItem"
-
-    def anchor(self : Self) -> "HandleItem | None":
-        return self._text_item.parentItem()
-
-
-class NetPropertyTextTetherItem(TextTetherItem):
-    """
-    Tether line from the origin of a PropertyLabelItem to its parent node.
-    """
-
-    _text_item : "PropertyLabelItem"
-
-    def anchor(self : Self) -> "NodeItem | None":
-        return self._text_item.parentItem()
