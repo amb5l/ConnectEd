@@ -8,10 +8,6 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ..scenes.drawing import DrawingScene
     from .text            import TextItem
-    from .property_text   import PropertyTextItem
-    from .property_label  import NetLabelItem
-    from .handle          import HandleItem
-    from .node            import NodeItem
 
 
 class TextTetherItem(QGraphicsLineItem):
