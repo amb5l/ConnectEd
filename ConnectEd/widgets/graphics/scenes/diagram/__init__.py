@@ -23,7 +23,7 @@ from ..drawing import DrawingScene
 from ..drawing.cmd import cmdExec
 
 from .api       import DiagramSceneApiMixin
-from .resources import DiagramSceneResources, DiagramSceneResourcesMixin
+from .resources import DiagramSceneResources
 
 from .cmd.conn import CmdAddSegment
 
@@ -36,13 +36,9 @@ class DiagramSheet:
     rect : QRectF
 
 
-class DiagramScene(
-    DiagramSceneResourcesMixin,
-    DiagramSceneApiMixin,
-    DrawingScene
-):
+class DiagramScene(DiagramSceneApiMixin, DrawingScene):
     # class attributes
-    _RSRCMAN_CLS = DiagramSceneResources
+    _RESOURCES_CLS = DiagramSceneResources
     _PROPERTIES = DrawingScene._PROPERTIES | {
         "Sheet Name" : InherentProperty(
             kind   = DataKind.STR,
@@ -72,11 +68,11 @@ class DiagramScene(
     }
 
     # instance attributes
-    sheet   : DiagramSheet
-    margin  : float           # distance from paper edge to border line
-    border  : float           # line width
-    rsrcman : DiagramSceneResources
-    netlist : Netlist
+    sheet     : DiagramSheet
+    margin    : float                  # distance from paper edge to border line
+    border    : float                  # line width
+    resources : DiagramSceneResources
+    netlist   : Netlist
 
     # signals
     netlistChanged = pyqtSignal()  # noqa N815

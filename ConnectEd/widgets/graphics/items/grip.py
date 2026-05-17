@@ -9,10 +9,11 @@ from ....app import settings
 
 from ....core.check import checked
 
+from ..scenes import withScene
+
 from .mixin           import ItemMoveMixin
 from .mixin.transform import ItemTransformMixin
 from .mixin.change    import ItemChangeMixin
-from .mixin.shape     import ItemShapeMixin
 from .mixin.menu      import ItemMenuMixin
 
 from typing import TYPE_CHECKING
@@ -27,28 +28,18 @@ if TYPE_CHECKING:
 
 
 class GripShape(StrEnum):
-    SQUARE  = "Square"
-    DIAMOND = "Diamond"
-    CIRCLE  = "Circle"
-    ARROW   = "Arrow"
+    SQUARE  = "Square"   # origin
+    CIRCLE  = "Circle"   # resize/move
+    DIAMOND = "Diamond"  # vertex
+    ARROW   = "Arrow"    # segment
 
 
 class GripItem(
     ItemMoveMixin,
     ItemChangeMixin,
-    ItemShapeMixin,
     ItemMenuMixin,
     QGraphicsPathItem
 ):
-    # class attributes
-    _PATH_PREFIX = "Filled" # default path name prefix
-    _PATH_NAME : str  # subclass must set this e.g. "Circle"
-
-    # instance attributes
-    _path_name_prefix = "Filled"  # default path name prefix
-    _path_name_suffix = ""        # default path name suffix
-    _path_name : str              # path name
-
     @checked
     def __init__(
         self   : Self,
@@ -58,9 +49,7 @@ class GripItem(
         resize : bool = False
     ) -> None:
         super().__init__(parent)
-        self._hshape = QPainterPath()
         self.setPos(pos or QPointF(0, 0))
-        self._path_name = self._PATH_NAME
         self.setFlag( self.GraphicsItemFlag.ItemIgnoresTransformations , True  )
         self.setFlag( self.GraphicsItemFlag.ItemIsSelectable           , False )
         self.setFlag( self.GraphicsItemFlag.ItemIsMovable              , False )
@@ -70,27 +59,20 @@ class GripItem(
         settings().changed.connect(self.onSettingsChange)
 
     @checked
+    def onSettingsChange(self : Self) -> None:
+        self.onSceneChange()
+
+    @withScene
+    @checked
     def onSceneChange(self : Self, scene : "DrawingScene | None") -> None:
-        self.onSettingsChange(scene)
+        self.setPen(scene.resources.pen("Grip"))
+        self.setBrush(scene.resources.brush("Grip"))
+        self.updatePath(scene)
 
+    @withScene
     @checked
-    def onSettingsChange(self : Self, scene : "DrawingScene | None" = None) -> None:
-        if scene is None:
-            if (scene := self.scene()) is None:
-                return
-        self.setBrush(scene.resources["Grip"]["brush"])
-        self.setPath(scene.resources["Grip"]["paths"][self.fullPathName()])
-        self._hshape.clear()
-        self._hshape.addRect(self.boundingRect())
-
-    @checked
-    def onPathChange(self : Self) -> None:
-        scene : "DrawingScene | None" = self.scene()
-        if scene is None:
-            return
-        self.setPath(scene.resources["Grip"]["paths"][self.fullPathName()])
-        self._hshape.clear()
-        self._hshape.addRect(self.boundingRect())
+    def updatePath(self : Self, scene : "DrawingScene | None" = None) -> None:
+        raise NotImplementedError("Subclasses must implement this method")
 
     @checked
     def handle(self : Self) -> "HandleItem":
@@ -101,20 +83,9 @@ class GripItem(
         return self.handle().parentItem()
 
     @checked
-    def pathNamePrefix(self : Self) -> str:
-        return self._path_name_prefix
-
-    @checked
-    def pathName(self : Self) -> str:
-        return self._path_name
-
-    @checked
-    def pathNameSuffix(self : Self) -> str:
-        return self._path_name_suffix
-
-    @checked
-    def fullPathName(self : Self) -> str:
-        return self.pathNamePrefix() + self.pathName() + self.pathNameSuffix()
+    def moveBy(self : Self, delta : QPointF) -> None:
+        item : "ItemHandlesMixin" = self.item()
+        item.moveHandleBy(self.handle().id(), delta)
 
     @checked
     def toXml(self : Self, _ : QXmlStreamWriter) -> None:
@@ -126,28 +97,38 @@ class GripItem(
         pass
 
 
-class OriginGripItem(GripItem):
-    """Grip for items with an origin."""
+class GripShapeMixin:
+    _SHAPE : GripShape
 
-    _ORIGIN_PATH_NAME_SUFFIX = "Squared"
-
+    @withScene
     @checked
-    def pathNameSuffix(self : Self) -> str:
-        item = self.item()
-        if hasattr(item, "origin") and item.origin() == self.handle().id():
-            return self._ORIGIN_PATH_NAME_SUFFIX
-        return ""
+    def updatePath(self : Self, scene : "DrawingScene | None" = None) -> None:
+        self.setPath(scene.resources.path("Grip", self._SHAPE))
 
+
+class OriginGripShapeMixin:
+    # class attributes
+    _NORMAL_SHAPE : GripShape
+    _ORIGIN_SHAPE = GripShape.SQUARE
+
+    @withScene
     @checked
-    def moveBy(self : Self, delta : QPointF) -> None:
-        item : "ItemHandlesMixin" = self.item()
-        item.moveHandleBy(self.handle().id(), delta)
+    def updatePath(
+        self  : Self | GripItem,
+        scene : "DrawingScene | None" = None
+    ) -> None:
+        is_origin = self.handle().isOrigin()
+        self.setPath(scene.resources.path(
+            "Grip",
+            self._ORIGIN_SHAPE if is_origin else self._NORMAL_SHAPE
+        ))
 
 
-class MoveGripItem(OriginGripItem):
-    """Grip for movable (non resizeable) items."""
+class MoveGripItem(OriginGripShapeMixin, GripItem):
+    """Grip for moving the item."""
 
-    _PATH_NAME = "Circle"
+    # class attributes
+    _NORMAL_SHAPE = GripShape.CIRCLE
 
     @checked
     def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
@@ -168,10 +149,11 @@ class MoveGripItem(OriginGripItem):
         return entries
 
 
-class ResizeGripItem(MoveGripItem):
-    """Grip for resizeable items."""
+class ResizeGripItem(OriginGripShapeMixin, GripItem):
+    """Grip for resizing the item."""
 
-    _PATH_NAME = "Diamond"
+    # class attributes
+    _NORMAL_SHAPE = GripShape.CIRCLE
 
     @checked
     def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
@@ -181,8 +163,29 @@ class ResizeGripItem(MoveGripItem):
         entries.extend(MoveGripItem.ctxMenuItems(self, view))
         return entries
 
+class TextResizeGripItem(ResizeGripItem):
+    """Grip for resizing text items."""
 
-class PolylineGripItem(ResizeGripItem):
+    @checked
+    def moveSave(self : Self) -> tuple[QPointF, float | None, float | None]:
+        item : "TextItem" = self.item()
+        return self.scenePos(), item.width(), item.height()
+
+    @checked
+    def moveRestore(
+        self  : Self,
+        state : tuple[QPointF, float | None, float | None]
+    ) -> None:
+        pos, width, height = state
+        item : "TextItem" = self.item()
+        self.moveBy(pos - self.scenePos())
+        item.setWidth(width)
+        item.setHeight(height)
+
+
+class PolylineResizeGripItem(ResizeGripItem):
+    """Grip for resizing Polyline items."""
+
     @checked
     def moveSave(self : Self) -> tuple[QPointF, list[QPointF]]:
         item : "PolylineItem" = self.item()
@@ -200,34 +203,15 @@ class PolylineGripItem(ResizeGripItem):
             v.setPos(vertices[i])
 
 
-class TextGripItem(ResizeGripItem):
-    """Grip for text items."""
+class VertexGripItem(GripShapeMixin, GripItem):
+    """Grip for item vertices."""
 
-    @checked
-    def pathNamePrefix(self : Self) -> str:
-        item : "TextItem" = self.item()
-        name = self.handle().id()
-        w = item.width()
-        h = item.height()
-        c = False  # whether the item dimension(s) for this grip are constrained
-        # constrained if top or bottom, and height >= 0.0
-        c |= ("Top" in name or "Bottom" in name) and h >= 0.0
-        # constrained if left or right, and width >= 0.0
-        c |= ("Left" in name or "Right" in name) and w >= 0.0
-        return "Filled" if c else "Unfilled"
+    # class attributes
+    _SHAPE = GripShape.DIAMOND
 
-    @checked
-    def moveSave(self : Self) -> tuple[QPointF, float | None, float | None]:
-        item : "TextItem" = self.item()
-        return self.scenePos(), item.width(), item.height()
 
-    @checked
-    def moveRestore(
-        self  : Self,
-        state : tuple[QPointF, float | None, float | None]
-    ) -> None:
-        pos, width, height = state
-        item : "TextItem" = self.item()
-        self.moveBy(pos - self.scenePos())
-        item.setWidth(width)
-        item.setHeight(height)
+class SegmentGripItem(GripShapeMixin, GripItem):
+    """Grip for item segments."""
+
+    # class attributes
+    _SHAPE = GripShape.ARROW

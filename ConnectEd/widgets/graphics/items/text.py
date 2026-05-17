@@ -30,6 +30,8 @@ from ....resources.icons import AnchorTopLeftIcon,      \
 
 from ..properties import InherentProperty, PropertiesMixin
 
+from .handle import HandleGripKind
+
 from .mixin           import ItemMixin
 from .mixin.transform import ItemTransformMixin
 from .mixin.handle    import ItemRectHandlesMixin
@@ -132,7 +134,7 @@ class TextItem(
 
     # class attributes
     _ORIGIN = RectHandleId.TOP_LEFT
-    _RESIZE_KIND = "text"  # handle kind for text items
+    _RESIZE_HANDLE_GRIP_KIND = HandleGripKind.TEXT
     _PROPERTIES_ALIGN = \
         {
             "AlignH" : InherentProperty(
@@ -426,7 +428,7 @@ class TextItem(
 
     def updateGrips(self : Self) -> None:
         for handle in self._handles.values():
-            handle.grip().onPathChange()
+            handle.grip().updatePath()
 
     def originMenu(self : Self, view : "DrawingView") -> QMenu:
         menu = QMenu("Origin", view)

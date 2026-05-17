@@ -240,12 +240,10 @@ class ItemTransformMixin:
         self._origin = id
         # rebuild local transform around the new origin handle
         self.updateTransform()
-        # refresh grip appearance: OriginGripItem.pathNameSuffix depends on
-        # which handle is the origin, so every grip needs to recompute its
-        # rendered path
+        # refresh grip appearance
         if hasattr(self, "_handles"):
             for handle in self._handles.values():
-                handle.grip().onPathChange()
+                handle.grip().updatePath()
         # broadcast change
         self.signalPropertyChanges("Origin")
 

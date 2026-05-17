@@ -18,7 +18,8 @@ from ..properties import InherentProperty, PropertiesMixin
 
 from ..painter_path import PainterPath
 
-from .grip      import GripItem
+from .handle import HandleGripKind
+from .grip   import VertexGripItem, SegmentGripItem
 
 from .mixin           import ItemMixin
 from .mixin.transform import ItemTransformMixin
@@ -36,10 +37,7 @@ if TYPE_CHECKING:
     from ..views.drawing  import DrawingView
 
 
-class PolyVtxItem(GripItem):
-    _PATH_NAME = "Circle"
-    _ORIGIN_PATH_NAME_SUFFIX = "Squared"
-
+class PolyVtxItem(VertexGripItem):
     # instance attributes
     _index : int  # index of vertex
 
@@ -56,12 +54,6 @@ class PolyVtxItem(GripItem):
     @checked
     def index(self : Self) -> int:
         return self._index
-
-    @checked
-    def pathNameSuffix(self : Self) -> str:
-        if self._index == 0:
-            return self._ORIGIN_PATH_NAME_SUFFIX
-        return ""
 
     @checked
     def moveBy(self : Self, delta : QPointF) -> None:
@@ -85,13 +77,11 @@ class PolyVtxItem(GripItem):
         xw.writeEndElement()
 
 
-class PolySegItem(GripItem):
-    _PATH_NAME = "Arrow"
-
+class PolySegItem(SegmentGripItem):
     # instance attributes
-    _v1    : PolyVtxItem        # start vertex
-    _v2    : PolyVtxItem        # end vertex
-    _sweep : float  | None  # arc sweep angle (-180..180), +ve = CCW/RHS, None for line
+    _v1    : PolyVtxItem   # start vertex
+    _v2    : PolyVtxItem   # end vertex
+    _sweep : float | None  # arc sweep angle (-180..180), +ve = CCW/RHS, None for line
 
     @checked
     def __init__(
@@ -170,7 +160,7 @@ class PolylineItem(
     QGraphicsPathItem
 ):
     # class attributes
-    _RESIZE_KIND = "polyline"  # handle kind for polyline items
+    _RESIZE_HANDLE_GRIP_KIND = HandleGripKind.POLYLINE
     _PROPERTIES = \
         {
             "Closed" : InherentProperty(
@@ -186,8 +176,8 @@ class PolylineItem(
     # instance attributes
     _vertices : list[PolyVtxItem]  # list of vertex grips
     _segments : list[PolySegItem]  # list of segment grips
-    _closed   : bool           # whether the polyline is closed (a polygon)
-    _sel_mode : int            # current selection mode (0 = outline, 1 = vtx/seg)
+    _closed   : bool               # whether the polyline is closed (a polygon)
+    _sel_mode : int                # current selection mode (0 = outline, 1 = vtx/seg)
 
     @checked
     def __init__(

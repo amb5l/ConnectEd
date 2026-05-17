@@ -99,11 +99,11 @@ class NodeItem(
 
     def _updatePenBrush(self : Self, scene : "DiagramScene") -> None:
         key = (self._state, self.isSelected())
-        self.setPen(scene.rsrcman.pen(self.resourcesName(), key))
-        self.setBrush(scene.rsrcman.brush(self.resourcesName(), key))
+        self.setPen(scene.resources.pen(self.resourcesName(), key))
+        self.setBrush(scene.resources.brush(self.resourcesName(), key))
 
     def _updatePath(self : Self, scene : "DiagramScene") -> None:
-        self.setPath(scene.rsrcman.path(self.resourcesName(), self._state))
+        self.setPath(scene.resources.path(self.resourcesName(), self._state))
 
 
 class FreeNodeItem(NodeItem):

@@ -9,6 +9,8 @@ from .....app import settings
 from .....core.defs  import PITCH, WIDTH
 from .....core.types import Direction
 
+from ...items.grip import GripShape
+
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from . import DrawingScene
@@ -21,12 +23,41 @@ class DrawingSceneResources:
     _PIN_ARROW_ITEMS = {"SymbolPinArrow" : (False, False)} # : int, in_left
 
     # instance attributes
-    _pens    : dict[str, dict[tuple[bool, ...], QPen]] = {}
-    _brushes : dict[str, dict[bool, QBrush]] = {}
+    _pens    : dict[str, QPen | dict[tuple[bool, ...], QPen]] = {}
+    _brushes : dict[str, QBrush | dict[bool, QBrush]] = {}
     _lines   : dict[str, QLineF] = {}
     _paths   : dict[str, dict[Direction, QPainterPath]] = {}
 
     def update(self : Self) -> None:
+        # grip pens, brushes and paths
+        self._pens["Grip"] = self._getPen("theme/grip/pen")
+        self._brushes["Grip"] = self._getBrush("theme/grip/brush")
+        self._paths["Grip"] = {}
+        size = settings().get("theme/grip/size")
+        rect = QRectF(-size/2, -size/2, size, size)
+        square = QPainterPath()
+        square.addRect(rect)
+        self._paths["Grip"][GripShape.SQUARE] = square
+        circle = QPainterPath()
+        circle.addEllipse(rect)
+        self._paths["Grip"][GripShape.CIRCLE] = circle
+        diamond = QPainterPath()
+        diamond.addPolygon(QPolygonF([
+            QPointF(-size/2, 0),
+            QPointF(0, -size/2),
+            QPointF(size/2, 0),
+            QPointF(0, size/2)
+        ]))
+        self._paths["Grip"][GripShape.DIAMOND] = diamond
+        arrow = QPainterPath()
+        arrow.addPolygon(QPolygonF([
+            QPointF(-size/2, -size/2),
+            QPointF(size/2, 0),
+            QPointF(-size/2, size/2)
+        ]))
+        self._paths["Grip"][GripShape.ARROW] = arrow
+        # tether pen
+        self._pens["Tether"] = self._getPen("theme/tether/pen")
         # pin pens
         pin_items = self._PIN_PATH_ITEMS + list(self._PIN_LINE_ITEMS.keys())
         for item_name in pin_items:
@@ -86,15 +117,25 @@ class DrawingSceneResources:
             self._brushes[item_name][False] = brush_normal
             self._brushes[item_name][True] = brush_selected
 
-    def pen(self : Self, item_name : str, key : bool | tuple) -> QPen:
+    def pen(
+        self      : Self,
+        item_name : str,
+        key       : bool | tuple | None = None
+    ) -> QPen:
         if item_name not in self._pens:
             raise ValueError(f"No pen defined for item {item_name}")
-        return self._pens[item_name][key]
+        return self._pens[item_name] if key is None \
+            else self._pens[item_name][key]
 
-    def brush(self : Self, item_name : str, key : bool | tuple) -> QBrush:
+    def brush(
+        self      : Self,
+        item_name : str,
+        key       : bool | tuple | None = None
+    ) -> QBrush:
         if item_name not in self._brushes:
             raise ValueError(f"No brush defined for item {item_name}")
-        return self._brushes[item_name][key]
+        return self._brushes[item_name] if key is None \
+            else self._brushes[item_name][key]
 
     def line(self : Self, item_name : str) -> QLineF:
         if item_name not in self._lines:
@@ -106,28 +147,39 @@ class DrawingSceneResources:
             raise ValueError(f"No path defined for item {item_name}")
         return self._paths[item_name][key]
 
+    def _getPen(
+        self          : Self,
+        settings_path : str,
+        cap_style     : Qt.PenCapStyle = Qt.PenCapStyle.FlatCap,
+        join_style    : Qt.PenJoinStyle = Qt.PenJoinStyle.MiterJoin
+    ) -> QPen:
+        return QPen(
+            settings().get(f"{settings_path}/color"),
+            settings().get(f"{settings_path}/width"),
+            settings().get(f"{settings_path}/style"),
+            cap_style,
+            join_style
+        )
+
     def _getPens(
         self          : Self,
         settings_path : str,
-        join_style    : Qt.PenJoinStyle = Qt.PenJoinStyle.MiterJoin,
-        cap_style     : Qt.PenCapStyle = Qt.PenCapStyle.FlatCap
+        cap_style     : Qt.PenCapStyle = Qt.PenCapStyle.FlatCap,
+        join_style    : Qt.PenJoinStyle = Qt.PenJoinStyle.MiterJoin
     ) -> tuple[QPen, QPen]:
-        pen_normal = QPen(
-            settings().get(f"{settings_path}/color"),
-            settings().get(f"{settings_path}/width"),
-            settings().get(f"{settings_path}/style")
-        )
-        pen_normal.setJoinStyle(join_style)
-        pen_normal.setCapStyle(cap_style)
+        pen_normal = self._getPen(settings_path, cap_style, join_style)
         pen_selected = QPen(pen_normal)
         pen_selected.setColor(settings().get("theme/selected/line"))
         return pen_normal, pen_selected
 
-    def _getBrushes(self : Self, settings_path : str) -> tuple[QBrush, QBrush]:
-        brush_normal = QBrush(
+    def _getBrush(self : Self, settings_path : str) -> QBrush:
+        return QBrush(
             settings().get(f"{settings_path}/color"),
             settings().get(f"{settings_path}/style")
         )
+
+    def _getBrushes(self : Self, settings_path : str) -> tuple[QBrush, QBrush]:
+        brush_normal = self._getBrush(settings_path)
         brush_selected = QBrush(brush_normal)
         brush_selected.setColor(settings().get("theme/selected/fill"))
         return brush_normal, brush_selected
@@ -216,110 +268,3 @@ class DrawingSceneResources:
             path.lineTo(h, h)
         path.closeSubpath()
         return path
-
-class DrawingSceneResourcesMixin:
-    """Shared resources."""
-
-    resources : dict
-
-    def initResources(self : "Self | DrawingScene") -> None:
-        self.initResourcesDict()
-        self.updateResources()
-        settings().changed.connect(self.updateResources)
-
-    def initResourcesDict(self : "Self | DrawingScene") -> None:
-        self.resources = \
-            {
-                "Outline" : {
-                    "pen" : QPen()
-                },
-                "Grip" : {
-                    "brush" : QBrush(),
-                    "paths" : {
-                        "UnfilledSquare"         : QPainterPath(),
-                        "FilledSquare"           : QPainterPath(),
-                        "UnfilledDiamond"        : QPainterPath(),
-                        "UnfilledDiamondSquared" : QPainterPath(),
-                        "FilledDiamond"          : QPainterPath(),
-                        "FilledDiamondSquared"   : QPainterPath(),
-                        "UnfilledCircle"         : QPainterPath(),
-                        "UnfilledCircleSquared"  : QPainterPath(),
-                        "FilledCircle"           : QPainterPath(),
-                        "FilledCircleSquared"    : QPainterPath(),
-                        "FilledArrow"            : QPainterPath()
-                    }
-                }
-            }
-
-    def updateResources(self : "Self | DrawingScene") -> None:
-        self.resources["Outline"]["pen"] = QPen(
-            settings().get("theme/selected/line"),
-            settings().get("display/select/outline/width"),
-            settings().get("display/select/outline/style")
-        )
-        self.resources["Grip"]["brush"] = \
-            QBrush(settings().get("theme/grip/color"))
-        _gripPaths(self.resources["Grip"]["paths"])
-
-
-def _gripPaths(d : dict) -> None:
-    size = settings().get("theme/grip/size")
-    d.clear()
-    # stroker for creating outlines
-    stroker = QPainterPathStroker()
-    stroker.setWidth(1.0)
-    # square building blocks
-    square_rect = QRectF(-size/2, -size/2, size, size)
-    square_path = QPainterPath()
-    square_path.addRect(square_rect)
-    stroked_square = stroker.createStroke(square_path)
-    # diamond building blocks
-    diamond_poly = QPolygonF([
-            QPointF(-size/2, 0),
-            QPointF(0, -size/2),
-            QPointF(size/2, 0),
-            QPointF(0, size/2)
-    ])
-    diamond_path = QPainterPath()
-    diamond_path.addPolygon(diamond_poly)
-    diamond_path.closeSubpath()
-    stroked_diamond = stroker.createStroke(diamond_path)
-    # circle building blocks
-    circle_path = QPainterPath()
-    circle_path.addEllipse(square_rect)
-    stroked_circle = stroker.createStroke(circle_path)
-    # arrow building blocks
-    arrow_path = QPainterPath()
-    arrow_path.addPolygon(QPolygonF([
-            QPointF(-size/2, -size/2),
-            QPointF(size/2, 0),
-            QPointF(-size/2, size/2)
-    ]))
-    # paths
-    d["UnfilledSquare"] = stroked_square
-    d["FilledSquare"] = square_path
-    d["UnfilledDiamond"] = stroked_diamond
-    d["UnfilledDiamondSquared"] = stroked_diamond.united(stroked_square)
-    d["FilledDiamond"] = diamond_path
-    d["FilledDiamondSquared"] = diamond_path.united(stroked_square)
-    d["UnfilledCircle"] = stroked_circle
-    d["UnfilledCircleSquared"] = stroked_circle.united(stroked_square)
-    d["FilledCircle"] = circle_path
-    d["FilledCircleSquared"] = circle_path.united(stroked_square)
-    d["FilledArrow"] = arrow_path
-
-
-def _getPen(path : str) -> QPen:
-    return QPen(
-        settings().get(f"theme/items/{path}/line/color"),
-        settings().get(f"theme/items/{path}/line/width"),
-        settings().get(f"theme/items/{path}/line/style")
-    )
-
-def _getBrush(path : str) -> QBrush:
-    return QBrush(
-        settings().get(f"theme/items/{path}/fill/color"),
-        settings().get(f"theme/items/{path}/fill/style")
-    )
-
-__all__ = ["_getPen", "_getBrush"]

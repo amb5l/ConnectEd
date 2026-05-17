@@ -1,4 +1,5 @@
 YAML setting defaults
+updatePath mixin?
 
 get rid of None direction?
 (re)move RectItemHandleMixin etc

@@ -6,7 +6,7 @@ from ....items.mixin         import ItemMixin
 from ....items.text          import TextItem
 from ....items.property_text import PropertyTextItem
 
-from ....items.grip     import GripItem, OriginGripItem, ResizeGripItem
+from ....items.grip     import GripItem, ResizeGripItem
 from ....items.polyline import PolySegItem, PolyVtxItem
 
 from ...drawing.interaction.edit  import EditMoveInteraction,          \
@@ -55,22 +55,23 @@ class DiagramViewStateIdle(DrawingViewStateBase):
                 grips_at.append(item)
         # grips
         if len(grips_at) == 1 and not (m & qkm.AltModifier):
+            # at least one grip
             grip = grips_at[0]
-            if isinstance(grip, (OriginGripItem, PolyVtxItem)):
-                # resize/move
-                self.interact(
-                    EditMoveInteraction(self.view, grip, grip.scenePos()),
-                        self.view.stateEditResize if isinstance(grip, ResizeGripItem) \
-                        else self.view.stateEditMove
-                )
-                return
-            elif isinstance(grip, PolySegItem):
+            if isinstance(grip, PolySegItem):
                 # adjust polyline segment/arc
                 self.interact(
                     EditAdjustPolySegInteraction(
                         self.view, grip.parentItem(), grip, grip.scenePos()
                     ),
                     self.view.stateEditAdjustPolySeg
+                )
+                return
+            else:
+                # resize/move
+                self.interact(
+                    EditMoveInteraction(self.view, grip, grip.scenePos()),
+                    self.view.stateEditResize if isinstance(grip, ResizeGripItem) \
+                        else self.view.stateEditMove
                 )
                 return
         # Check for CTRL+drag duplication when starting on an item

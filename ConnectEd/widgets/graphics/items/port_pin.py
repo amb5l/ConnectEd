@@ -164,10 +164,10 @@ class PortPinMixin(
         scene : "DrawingScene"
     ) -> None:
         key = (self.bus(), self.isSelected())
-        self.setPen(scene.rsrcman.pen(self.resourcesName(), key))
+        self.setPen(scene.resources.pen(self.resourcesName(), key))
 
     def _updateArrowPath(self : Self, scene : "DrawingScene") -> None:
-        self._arrow.setPath(scene.rsrcman.path(
+        self._arrow.setPath(scene.resources.path(
             self._arrow.resourcesName(), self._direction
         ))
 
@@ -176,8 +176,8 @@ class PortPinMixin(
         scene : "DrawingScene"
     ) -> None:
         key = self.isSelected()
-        self._arrow.setPen(scene.rsrcman.pen(self._arrow.resourcesName(), key))
-        self._arrow.setBrush(scene.rsrcman.brush(self._arrow.resourcesName(), key))
+        self._arrow.setPen(scene.resources.pen(self._arrow.resourcesName(), key))
+        self._arrow.setBrush(scene.resources.brush(self._arrow.resourcesName(), key))
 
     def _updateNameHandle(self : Self) -> None:
         raise NotImplementedError("Subclasses must implement this method")
@@ -189,7 +189,7 @@ class PortPinLineItem(PortPinMixin, QGraphicsLineItem):
     """
 
     def _updateGraphics(self : Self, scene : "DrawingScene") -> None:
-        self.setLine(scene.rsrcman.line(self.resourcesName()))
+        self.setLine(scene.resources.line(self.resourcesName()))
 
     def _updateNameHandle(self : Self) -> None:
         """Place name handle beside arrow."""
@@ -243,7 +243,7 @@ class PortPinPathItem(PortPinMixin, QGraphicsPathItem):
     @withScene
     def _updateGraphics(self : Self, scene : "DrawingScene") -> None:
         key = (self._clock, self._dot)
-        self.setPath(scene.rsrcman.path(self.resourcesName(), key))
+        self.setPath(scene.resources.path(self.resourcesName(), key))
 
     def _updateNameHandle(self : Self | ItemHandlesMixin) -> None:
         """Allow for clock symbol."""

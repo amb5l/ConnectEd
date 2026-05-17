@@ -48,7 +48,7 @@ class TextTetherItem(QGraphicsLineItem):
         scene: "DrawingScene | None" = self.scene()
         if scene is None:
             return
-        self.setPen(scene.resources["Outline"]["pen"])
+        self.setPen(scene.resources.pen("Tether"))
 
     def anchor(self : Self) -> QGraphicsItem | None:
         return self._text_item.parentItem()

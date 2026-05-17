@@ -9,7 +9,7 @@ from .....core.defs import PITCH
 
 from ...items.node import NodeState
 
-from ..drawing.resources import DrawingSceneResources, DrawingSceneResourcesMixin
+from ..drawing.resources import DrawingSceneResources
 
 
 class DiagramSceneResources(DrawingSceneResources):
@@ -91,7 +91,3 @@ class DiagramSceneResources(DrawingSceneResources):
             case _:
                 raise ValueError(f"Invalid node state: {state}")
         return path
-
-
-class DiagramSceneResourcesMixin(DrawingSceneResourcesMixin):
-    pass

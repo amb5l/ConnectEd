@@ -12,7 +12,7 @@ from .....core.types import (
     DataKind
 )
 
-from ..handle import HandleItem
+from ..handle import HandleGripKind, HandleItem
 
 from .transform import ItemTransformMixin
 from .grip      import ItemGripMixin
@@ -72,6 +72,9 @@ class ItemHandlesMixin(ItemGripMixin, Generic[T]):
 
 
 class ItemRectHandlesMixin(ItemHandlesMixin[RectHandleId]):
+    # class attributes
+    _RESIZE_HANDLE_GRIP_KIND = HandleGripKind.RESIZE
+
     @classmethod
     def handleIdType(cls) -> type[RectHandleId]:
         return RectHandleId
@@ -85,10 +88,10 @@ class ItemRectHandlesMixin(ItemHandlesMixin[RectHandleId]):
 
     def initHandles(self : Self) -> None:
         self._handles = {}
-        resize_kind = getattr(self, "_RESIZE_KIND", "resize")
         for id in RectHandleId:
-            kind = "move" if id == RectHandleId.MIDDLE_CENTER else resize_kind
-            handle = HandleItem(id=id, kind=kind, parent=self)
+            handle = HandleItem(
+                id=id, kind=self._RESIZE_HANDLE_GRIP_KIND, parent=self
+            )
             self._handles[id] = handle
 
     def handleRect(self : Self) -> QRectF:

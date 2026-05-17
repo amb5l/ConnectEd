@@ -512,7 +512,22 @@ FACTORY_SETTINGS = {
             },
             "grip" : {
                 "size"  : 12,
-                "color" : PaletteDark.Grip
+                "pen" : {
+                    "color" : PaletteDark.Grip,
+                    "width" : 0,
+                    "style" : Qt.PenStyle.NoPen
+                },
+                "brush" : {
+                    "color" : PaletteDark.Grip,
+                    "style" : Qt.BrushStyle.SolidPattern
+                }
+            },
+            "tether" : {
+                "pen" : {
+                    "color" : PaletteDark.SelectedLine,
+                    "width" : 0,
+                    "style" : Qt.PenStyle.DotLine
+                }
             },
             "grid" : {
                 "line" : PaletteDark.Grid
@@ -948,7 +963,22 @@ FACTORY_SETTINGS = {
             },
             "grip" : {
                 "size"  : 12,
-                "color" : PaletteLightMono.Grip
+                "pen" : {
+                    "color" : PaletteLightMono.Grip,
+                    "width" : 0,
+                    "style" : Qt.PenStyle.NoPen
+                },
+                "brush" : {
+                    "color" : PaletteLightMono.Grip,
+                    "style" : Qt.BrushStyle.SolidPattern
+                }
+            },
+            "tether" : {
+                "pen" : {
+                    "color" : PaletteLightMono.SelectedLine,
+                    "width" : 0,
+                    "style" : Qt.PenStyle.DotLine
+                }
             },
             "grid" : {
                 "line" : PaletteLightMono.Grid
