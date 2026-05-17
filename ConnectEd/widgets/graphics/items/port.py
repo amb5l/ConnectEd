@@ -12,6 +12,7 @@ from ..properties import PropertyTextSpec
 
 from .port_pin import PortPinArrowItem, PortPinLineItem
 from .handle   import HandleItem
+from .grip     import MoveGripItem
 
 from .mixin.transform import ItemTransformMixin
 from .mixin.handle    import ItemHandlesMixin
@@ -55,16 +56,16 @@ class PortItem(
     def initHandles(self : Self) -> None:
         self._handles = {
             PortHandleId.NODE : HandleItem(
-                id     = PortHandleId.NODE,
-                pos    = QPointF(0, 0),
-                kind   = "move",
-                parent = self
+                id       = PortHandleId.NODE,
+                pos      = QPointF(0, 0),
+                grip_cls = MoveGripItem,
+                parent   = self
             ),
             PortHandleId.NAME : HandleItem(
-                id     = PortHandleId.NAME,
-                pos    = QPointF(0, 0),  # set by _setPath()
-                kind   = "move",
-                parent = self
+                id       = PortHandleId.NAME,
+                pos      = QPointF(0, 0),  # set by _setPath()
+                grip_cls = MoveGripItem,
+                parent   = self
             )
         }
 

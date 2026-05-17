@@ -18,8 +18,7 @@ from ..properties import InherentProperty, PropertiesMixin
 
 from ..painter_path import PainterPath
 
-from .handle import HandleGripKind
-from .grip   import VertexGripItem, SegmentGripItem
+from .grip import VertexGripItem, SegmentGripItem, PolylineResizeGripItem
 
 from .mixin           import ItemMixin
 from .mixin.transform import ItemTransformMixin
@@ -160,7 +159,7 @@ class PolylineItem(
     QGraphicsPathItem
 ):
     # class attributes
-    _RESIZE_HANDLE_GRIP_KIND = HandleGripKind.POLYLINE
+    _RESIZE_GRIP_CLS = PolylineResizeGripItem
     _PROPERTIES = \
         {
             "Closed" : InherentProperty(

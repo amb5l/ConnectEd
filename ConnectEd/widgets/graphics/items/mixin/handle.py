@@ -12,7 +12,8 @@ from .....core.types import (
     DataKind
 )
 
-from ..handle import HandleGripKind, HandleItem
+from ..handle import HandleItem
+from ..grip   import MoveGripItem, ResizeGripItem
 
 from .transform import ItemTransformMixin
 from .grip      import ItemGripMixin
@@ -73,7 +74,7 @@ class ItemHandlesMixin(ItemGripMixin, Generic[T]):
 
 class ItemRectHandlesMixin(ItemHandlesMixin[RectHandleId]):
     # class attributes
-    _RESIZE_HANDLE_GRIP_KIND = HandleGripKind.RESIZE
+    _RESIZE_GRIP_CLS = ResizeGripItem
 
     @classmethod
     def handleIdType(cls) -> type[RectHandleId]:
@@ -89,9 +90,9 @@ class ItemRectHandlesMixin(ItemHandlesMixin[RectHandleId]):
     def initHandles(self : Self) -> None:
         self._handles = {}
         for id in RectHandleId:
-            handle = HandleItem(
-                id=id, kind=self._RESIZE_HANDLE_GRIP_KIND, parent=self
-            )
+            grip_cls = MoveGripItem if id == RectHandleId.MIDDLE_CENTER \
+                else self._RESIZE_GRIP_CLS
+            handle = HandleItem(id=id, grip_cls=grip_cls, parent=self)
             self._handles[id] = handle
 
     def handleRect(self : Self) -> QRectF:
@@ -158,16 +159,16 @@ class ItemLineHandlesMixin(ItemHandlesMixin[LineHandleId]):
     def initHandles(self : Self) -> None:
         self._handles = {
             LineHandleId.P1 : HandleItem(
-                id     = LineHandleId.P1,
-                pos    = QPointF(0, 0),
-                kind   = "resize",
-                parent = self
+                id       = LineHandleId.P1,
+                pos      = QPointF(0, 0),
+                grip_cls = ResizeGripItem,
+                parent   = self
             ),
             LineHandleId.P2 : HandleItem(
-                id     = LineHandleId.P2,
-                pos    = QPointF(0, 0),
-                kind   = "resize",
-                parent = self
+                id       = LineHandleId.P2,
+                pos      = QPointF(0, 0),
+                grip_cls = ResizeGripItem,
+                parent   = self
             )
         }
 
@@ -192,22 +193,22 @@ class ItemBasePinHandlesMixin:
     def initHandles(self : "Self | PortPinMixin") -> None:
         self._handles = {
             SymbolPinHandleId.ORIGIN : HandleItem(
-                id     = SymbolPinHandleId.ORIGIN,
-                pos    = QPointF(0, 0),
-                kind   = "move",
-                parent = self
+                id       = SymbolPinHandleId.ORIGIN,
+                pos      = QPointF(0, 0),
+                grip_cls = MoveGripItem,
+                parent   = self
             ),
             SymbolPinHandleId.NODE : HandleItem(
-                id     = SymbolPinHandleId.NODE,
-                pos    = QPointF(-PITCH, 0),
-                kind   = "move",
-                parent = self
+                id       = SymbolPinHandleId.NODE,
+                pos      = QPointF(-PITCH, 0),
+                grip_cls = MoveGripItem,
+                parent   = self
             ),
             SymbolPinHandleId.NAME : HandleItem(
-                id     = SymbolPinHandleId.NAME,
-                pos    = QPointF(0, 0),
-                kind   = "move",
-                parent = self
+                id       = SymbolPinHandleId.NAME,
+                pos      = QPointF(0, 0),
+                grip_cls = MoveGripItem,
+                parent   = self
             )
         }
 
@@ -266,10 +267,10 @@ class ItemTapHandlesMixin(ItemHandlesMixin[TapHandleId]):
     def initHandles(self : Self) -> None:
         self._handles = {
             TapHandleId.SUFFIX : HandleItem(
-                id     = TapHandleId.SUFFIX,
-                pos    = QPointF(0, 5),
-                kind   = "move",
-                parent = self
+                id       = TapHandleId.SUFFIX,
+                pos      = QPointF(0, 5),
+                grip_cls = MoveGripItem,
+                parent   = self
             )
         }
 

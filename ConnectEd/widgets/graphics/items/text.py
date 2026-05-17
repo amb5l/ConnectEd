@@ -30,7 +30,7 @@ from ....resources.icons import AnchorTopLeftIcon,      \
 
 from ..properties import InherentProperty, PropertiesMixin
 
-from .handle import HandleGripKind
+from .grip import TextResizeGripItem
 
 from .mixin           import ItemMixin
 from .mixin.transform import ItemTransformMixin
@@ -133,7 +133,7 @@ class TextItem(
 
     # class attributes
     _ORIGIN = RectHandleId.TOP_LEFT
-    _RESIZE_HANDLE_GRIP_KIND = HandleGripKind.TEXT
+    _RESIZE_GRIP_CLS = TextResizeGripItem
     _PROPERTIES_ALIGN = \
         {
             "AlignH" : InherentProperty(
