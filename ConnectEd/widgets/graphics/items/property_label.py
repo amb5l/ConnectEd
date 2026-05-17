@@ -1,37 +1,24 @@
-from typing import Self, Any
+from typing import Self
 
-from PyQt6.QtCore    import Qt, QPointF, QXmlStreamWriter
-from PyQt6.QtWidgets import QGraphicsItem, QGraphicsLineItem, \
-                            QGraphicsSceneMouseEvent, QMenu
-from PyQt6.QtGui     import QAction
+from PyQt6.QtCore    import QPointF
+from PyQt6.QtWidgets import QGraphicsItem
 
-from ....app import settings, logger
-
-from ....core.types import DEFAULT, NO_CHANGE, AlignH, AlignV, \
-                           HandleId, RectHandleId, DataKind, \
+from ....core.types import DEFAULT, AlignH, AlignV, \
+                           RectHandleId, DataKind, \
                            Color, FontFamily, FontSize, FontBool
 from ....core.utils import val2str
 
-from ..properties import InherentProperty, PropertiesMixin
-
-from . import ItemType
+from ..properties import InherentProperty
 
 from .text   import TextItem
 from .handle import HandleItem
 from .tether import TextTetherItem
 
-
 from .mixin.transform import ItemTransformMixin
-from .mixin.handle    import ItemHandlesMixin
 from .mixin.quill     import ItemQuillMixin
 
-from typing import TYPE_CHECKING
-if TYPE_CHECKING:
-    from ..views.drawing  import DrawingView
-    from ..scenes.drawing import DrawingScene
 
-
-class PropertyTextTetherItem(TextTetherItem):
+class PropertyLabelTetherItem(TextTetherItem):
     """
     Tether line from the origin of a PropertyTextItem to its parent cleat.
     """
