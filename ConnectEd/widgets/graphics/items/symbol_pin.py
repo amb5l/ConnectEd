@@ -1,5 +1,6 @@
 from typing import Self
 
+from PyQt6.QtCore    import QPointF
 from PyQt6.QtWidgets import QMenu
 from PyQt6.QtGui     import QAction
 
@@ -10,9 +11,11 @@ from ....core.check import checked
 from ..properties import PropertyTextSpec
 
 from .port_pin import PortPinArrowItem, PortPinPathItem
+from .handle   import HandleItem
+from .grip     import MoveGripItem
 
-from .mixin.loc       import ItemLocMixin
-from .mixin.handle    import ItemHandlesMixin
+from .mixin.loc    import ItemLocMixin
+from .mixin.handle import ItemHandlesMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -47,6 +50,15 @@ class SymbolPinItem(
     @classmethod
     def handleIdKind(cls) -> DataKind:
         return DataKind.SYMBOL_PIN_HANDLE
+
+    def initHandles(self : Self) -> None:
+        PortPinPathItem.initHandles(self)
+        self._handles[SymbolPinHandleId.ORIGIN] = HandleItem(
+            id       = SymbolPinHandleId.ORIGIN,
+            pos      = QPointF(0, 0),
+            grip_cls = MoveGripItem,
+            parent   = self
+        )
 
     @checked
     def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:

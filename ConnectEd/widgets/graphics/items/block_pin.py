@@ -4,7 +4,7 @@ from PyQt6.QtWidgets import QMenu
 from PyQt6.QtGui     import QAction
 
 from ....core.defs  import PITCH
-from ....core.types import BlockPinHandleId, RectHandleId
+from ....core.types import DataKind, BlockPinHandleId, RectHandleId
 from ....core.check import checked
 
 from ..properties import PropertyTextSpec
@@ -12,7 +12,7 @@ from ..properties import PropertyTextSpec
 from .port_pin import PortPinArrowItem, PortPinLineItem
 
 from .mixin.loc    import ItemLocMixin
-from .mixin.handle import ItemBlockPinHandlesMixin
+from .mixin.handle import ItemHandlesMixin
 
 
 from typing import TYPE_CHECKING
@@ -24,7 +24,11 @@ class BlockPinArrowItem(PortPinArrowItem):
     pass
 
 
-class BlockPinItem(ItemLocMixin, ItemBlockPinHandlesMixin, PortPinLineItem):
+class BlockPinItem(
+    ItemLocMixin,
+    ItemHandlesMixin[BlockPinHandleId],
+    PortPinLineItem
+):
     # class attributes
     _NODE_POS   = -PITCH
     _ARROW_CLS  = BlockPinArrowItem
@@ -36,6 +40,14 @@ class BlockPinItem(ItemLocMixin, ItemBlockPinHandlesMixin, PortPinLineItem):
                 cleat=BlockPinHandleId.NAME, origin=RectHandleId.MIDDLE_LEFT
             )
         }
+
+    @classmethod
+    def handleIdType(cls) -> type[BlockPinHandleId]:
+        return BlockPinHandleId
+
+    @classmethod
+    def handleIdKind(cls) -> DataKind:
+        return DataKind.BLOCK_PIN_HANDLE
 
     def resourcesName(self : Self) -> str:
         return "BlockPin"

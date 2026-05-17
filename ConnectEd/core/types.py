@@ -114,8 +114,9 @@ class PortHandleId(HandleId):
 
 
 class GatePinHandleId(HandleId):
-    NODE = "Node"  # tip of external pin shape
-    NAME = "Name"  # set beside signal direction shape
+    ORIGIN = "Origin"  # placement origin
+    NODE   = "Node"  # tip of external pin shape
+    NAME   = "Name"  # set beside signal direction shape
 
 
 class BlockPinHandleId(HandleId):

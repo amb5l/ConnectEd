@@ -11,7 +11,9 @@ from ....core.check import checked
 
 from ..properties import PropertiesMixin, InherentProperty, PropertyTextSpec
 
-from .node          import TapMajorNodeItem, TapMinorNodeItem
+from .node   import TapMajorNodeItem, TapMinorNodeItem
+from .handle import HandleItem
+from .grip   import MoveGripItem
 
 from .mixin import ItemMixin
 
@@ -59,6 +61,14 @@ class TapItem(
         )
     }
 
+    @classmethod
+    def handleIdType(cls) -> type[TapHandleId]:
+        return TapHandleId
+
+    @classmethod
+    def handleIdKind(cls) -> DataKind:
+        return DataKind.TAP_HANDLE
+
     # instance attributes
     _line        : QLineF
     _major_node  : TapMajorNodeItem
@@ -101,6 +111,20 @@ class TapItem(
     def onConnectivityChange(self : Self) -> None:
         # update self._state based on self._node1 and self._node2
         pass
+
+    @checked
+    def initHandles(self : Self) -> None:
+        self._handles = {
+            TapHandleId.SUFFIX : HandleItem(
+                id       = TapHandleId.SUFFIX,
+                pos      = QPointF(0, 5),
+                grip_cls = MoveGripItem,
+                parent   = self
+            )
+        }
+
+    def moveHandleBy(self : Self, _, d : QPointF) -> None:
+        self.setPos(self.pos() + d)
 
     @checked
     def majorNode(self : Self) -> TapMajorNodeItem:

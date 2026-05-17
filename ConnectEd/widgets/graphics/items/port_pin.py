@@ -1,5 +1,6 @@
 from typing import Self
 
+from PyQt6.QtCore    import QPointF
 from PyQt6.QtWidgets import QGraphicsPathItem, QGraphicsLineItem, QGraphicsItem
 
 from ....app import settings
@@ -11,6 +12,8 @@ from ..properties import PropertiesMixin, InherentProperty
 
 from ..scenes import withScene
 
+from .handle import HandleItem
+from .grip   import MoveGripItem
 from .node   import FixedNodeItem
 
 from .mixin           import ItemMixin, ItemNamesMixin
@@ -57,9 +60,9 @@ class PortPinMixin(
     """
 
     # class attributes
-    _NODE_POS  : int
-    _ARROW_CLS : type[PortPinArrowItem]
-    _ARROW_POS : int
+    _NODE_POS   : int
+    _ARROW_CLS  : type[PortPinArrowItem]
+    _ARROW_POS  : int
     _PROPERTIES = \
         {
             "Name" : InherentProperty(
@@ -126,6 +129,22 @@ class PortPinMixin(
         self._updateNameHandle()
         self._node.setSelected(selected)
         self._arrow.setSelected(selected)
+
+    def initHandles(self : Self | ItemHandlesMixin) -> None:
+        self._handles = {
+            self.handleIdType()("Name"): HandleItem(
+                id       = self.handleIdType()("Name"),
+                pos      = QPointF(0, 0),
+                grip_cls = MoveGripItem,
+                parent   = self
+            ),
+            self.handleIdType()("Node"): HandleItem(
+                id       = self.handleIdType()("Node"),
+                pos      = QPointF(0, 0),
+                grip_cls = MoveGripItem,
+                parent   = self
+            )
+        }
 
     def name(self : Self) -> str:
         return self._name

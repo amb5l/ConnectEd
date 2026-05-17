@@ -10,11 +10,14 @@ from ....core.types import DataKind, LineHandleId
 
 from ..properties import InherentProperty, PropertiesMixin
 
+from .handle import HandleItem
+from .grip   import ResizeGripItem
+
 from .mixin           import ItemMixin
 from .mixin.transform import ItemTransformMixin
 from .mixin.shape     import ItemShapeMixin
 from .mixin.paint     import ItemPaintMixin
-from .mixin.handle    import ItemLineHandlesMixin
+from .mixin.handle    import ItemHandlesMixin
 from .mixin.line      import ItemLineMixin
 from .mixin.change    import ItemChangeMixin
 from .mixin.clone     import ItemCloneMixin
@@ -27,7 +30,7 @@ class LineItem(
     ItemTransformMixin,
     ItemShapeMixin,
     ItemPaintMixin,
-    ItemLineHandlesMixin,
+    ItemHandlesMixin[LineHandleId],
     ItemLineMixin,
     ItemChangeMixin,
     ItemCloneMixin,
@@ -61,6 +64,14 @@ class LineItem(
             )
         } | \
         ItemLineMixin._PROPERTIES_LINE
+
+    @classmethod
+    def handleIdType(cls) -> type[LineHandleId]:
+        return LineHandleId
+
+    @classmethod
+    def handleIdKind(cls) -> DataKind:
+        return DataKind.LINE_HANDLE
 
     # instance attributes
     _line    : QLineF
@@ -97,6 +108,33 @@ class LineItem(
         self._hshape = stroker_path
         self.updateHandles()
         self.signalPropertyChanges(["X1", "Y1", "X2", "Y2"])
+
+    def initHandles(self : Self) -> None:
+        self._handles = {
+            LineHandleId.P1 : HandleItem(
+                id       = LineHandleId.P1,
+                pos      = QPointF(0, 0),
+                grip_cls = ResizeGripItem,
+                parent   = self
+            ),
+            LineHandleId.P2 : HandleItem(
+                id       = LineHandleId.P2,
+                pos      = QPointF(0, 0),
+                grip_cls = ResizeGripItem,
+                parent   = self
+            )
+        }
+
+    def moveHandleBy(
+        self : Self,
+        id   : LineHandleId,
+        d    : QPointF
+    ) -> None:
+        match id:
+            case LineHandleId.P1:
+                self.setP1(self.p1() + d)
+            case LineHandleId.P2:
+                self.setP2(self.p2() + d)
 
     def updateHandles(self : Self) -> None:
         self._handles[LineHandleId.P2].setPos(self._line.p2())

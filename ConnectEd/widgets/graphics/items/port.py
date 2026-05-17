@@ -53,23 +53,6 @@ class PortItem(
         return DataKind.PORT_HANDLE
 
     @checked
-    def initHandles(self : Self) -> None:
-        self._handles = {
-            PortHandleId.NODE : HandleItem(
-                id       = PortHandleId.NODE,
-                pos      = QPointF(0, 0),
-                grip_cls = MoveGripItem,
-                parent   = self
-            ),
-            PortHandleId.NAME : HandleItem(
-                id       = PortHandleId.NAME,
-                pos      = QPointF(0, 0),  # set by _setPath()
-                grip_cls = MoveGripItem,
-                parent   = self
-            )
-        }
-
-    @checked
     def moveHandleBy(self : Self, _ : PortHandleId, d : QPointF) -> None:
         self.setPos(self.pos() + d)
 

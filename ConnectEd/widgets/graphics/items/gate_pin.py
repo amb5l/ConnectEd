@@ -1,15 +1,18 @@
 from typing import Self
 
-from PyQt6.QtCore    import QXmlStreamWriter
+from PyQt6.QtCore    import QPointF, QXmlStreamWriter
 from PyQt6.QtWidgets import QGraphicsItem, QMenu
 from PyQt6.QtGui     import QAction
 
 from ....core.defs  import PITCH
-
-from .mixin.transform import ItemTransformMixin
-from .mixin.handle    import ItemGatePinHandlesMixin
+from ....core.types import GatePinHandleId, DataKind
 
 from .port_pin import PortPinArrowItem, PortPinPathItem
+from .handle   import HandleItem
+from .grip     import MoveGripItem
+
+from .mixin.transform import ItemTransformMixin
+from .mixin.handle    import ItemHandlesMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -20,11 +23,23 @@ class GatePinArrowItem(PortPinArrowItem):
     pass
 
 
-class GatePinItem(ItemTransformMixin, ItemGatePinHandlesMixin, PortPinPathItem):
+class GatePinItem(
+    ItemTransformMixin,
+    ItemHandlesMixin[GatePinHandleId],
+    PortPinPathItem
+):
     # class attributes
     _NODE_POS  = -PITCH
     _ARROW_CLS = GatePinArrowItem
     _ARROW_POS = 0
+
+    @classmethod
+    def handleIdType(cls) -> type[GatePinHandleId]:
+        return GatePinHandleId
+
+    @classmethod
+    def handleIdKind(cls) -> DataKind:
+        return DataKind.GATE_PIN_HANDLE
 
     def settingsName(self : Self) -> str:
         return "GatePin"
@@ -37,6 +52,18 @@ class GatePinItem(ItemTransformMixin, ItemGatePinHandlesMixin, PortPinPathItem):
         self._length = PITCH
         super().__init__(parent)
         self._extension = 0
+
+    def initHandles(self : Self) -> None:
+        PortPinPathItem.initHandles(self)
+        self._handles[GatePinHandleId.ORIGIN] = HandleItem(
+            id       = GatePinHandleId.ORIGIN,
+            pos      = QPointF(0, 0),
+            grip_cls = MoveGripItem,
+            parent   = self
+        )
+
+    def moveHandleBy(self : Self, _ : GatePinHandleId, d : QPointF) -> None:
+        self.setPos(self.pos() + d)
 
     def inverted(self : Self) -> bool:
         return self._dot

@@ -3,14 +3,7 @@ from typing import Self, TypeVar, Generic, Protocol, overload
 from PyQt6.QtCore    import QPointF, QRectF
 from PyQt6.QtWidgets import QGraphicsItem
 
-from .....core.defs import PITCH
-
-from .....core.types import (
-    HandleId, RectHandleId, LineHandleId,
-    GatePinHandleId, BlockPinHandleId, SymbolPinHandleId,
-    TapHandleId,
-    DataKind
-)
+from .....core.types import HandleId, RectHandleId, DataKind
 
 from ..handle import HandleItem
 from ..grip   import MoveGripItem, ResizeGripItem
@@ -18,9 +11,21 @@ from ..grip   import MoveGripItem, ResizeGripItem
 from .transform import ItemTransformMixin
 from .grip      import ItemGripMixin
 
-from typing import TYPE_CHECKING
-if TYPE_CHECKING:
-    from ..port_pin import PortPinMixin
+
+T = TypeVar("T", bound="HandleId")
+
+class ItemHandlesMixin(ItemGripMixin, Generic[T]):
+
+    # instance attributes
+    _handles : dict[T, "HandleItem"]
+
+    def handles(self : Self) -> dict[T, "HandleItem"]:
+        return self._handles
+
+    def getHandle(self : Self, id : T | str) -> "HandleItem":
+        if isinstance(id, str):
+            id = self.handleIdType()(id)
+        return self._handles[id]
 
 
 class RectItemProtocol(Protocol):
@@ -35,41 +40,6 @@ class RectItemProtocol(Protocol):
         x2 : float | int,
         y2 : float | int
     ) -> None: ...
-
-
-class LineItemProtocol(Protocol):
-    def setP1(self : Self, pos : QPointF) -> None: ...
-    def setP2(self : Self, pos : QPointF) -> None: ...
-
-
-T = TypeVar("T", bound="HandleId")
-
-class ItemHandlesMixin(ItemGripMixin, Generic[T]):
-
-    # instance attributes
-    _handles : dict[HandleId, "HandleItem"]
-
-    @classmethod
-    def handleIdType(cls) -> type[T]:
-        raise NotImplementedError
-
-    @classmethod
-    def handleIdKind(cls) -> DataKind:
-        raise NotImplementedError
-
-    def initHandles(self : Self) -> None:
-        raise NotImplementedError("Subclass must implement this method")
-
-    def handles(self : Self) -> dict[T, "HandleItem"]:
-        return self._handles
-
-    def getHandle(self : Self, id : T | str) -> "HandleItem":
-        if isinstance(id, str):
-            id = self.handleIdType()(id)
-        return self._handles[id]
-
-    def moveHandleBy(self : Self, id : T, d : QPointF) -> None:
-        raise NotImplementedError("Subclass must implement this method")
 
 
 class ItemRectHandlesMixin(ItemHandlesMixin[RectHandleId]):
@@ -142,138 +112,3 @@ class ItemRectHandlesMixin(ItemHandlesMixin[RectHandleId]):
                 self.setPoints(p1, p2 + d)
             case _:
                 raise ValueError(f"Invalid handle: {id}")
-
-
-class ItemLineHandlesMixin(ItemHandlesMixin[LineHandleId]):
-    @classmethod
-    def handleIdType(cls) -> type[LineHandleId]:
-        return LineHandleId
-
-    @classmethod
-    def handleIdKind(cls) -> DataKind:
-        return DataKind.LINE_HANDLE
-
-    # instance attributes
-    _handles : dict[LineHandleId, "HandleItem"]
-
-    def initHandles(self : Self) -> None:
-        self._handles = {
-            LineHandleId.P1 : HandleItem(
-                id       = LineHandleId.P1,
-                pos      = QPointF(0, 0),
-                grip_cls = ResizeGripItem,
-                parent   = self
-            ),
-            LineHandleId.P2 : HandleItem(
-                id       = LineHandleId.P2,
-                pos      = QPointF(0, 0),
-                grip_cls = ResizeGripItem,
-                parent   = self
-            )
-        }
-
-    def moveHandleBy(
-        self : Self | LineItemProtocol,
-        id   : LineHandleId,
-        d    : QPointF
-    ) -> None:
-        match id:
-            case LineHandleId.P1:
-                self.setP1(self.p1() + d)
-            case LineHandleId.P2:
-                self.setP2(self.p2() + d)
-            case _:
-                raise ValueError(f"Invalid handle: {id}")
-
-
-class ItemBasePinHandlesMixin:
-    # instance attributes
-    _handles : dict[SymbolPinHandleId, "HandleItem"]
-
-    def initHandles(self : "Self | PortPinMixin") -> None:
-        self._handles = {
-            SymbolPinHandleId.ORIGIN : HandleItem(
-                id       = SymbolPinHandleId.ORIGIN,
-                pos      = QPointF(0, 0),
-                grip_cls = MoveGripItem,
-                parent   = self
-            ),
-            SymbolPinHandleId.NODE : HandleItem(
-                id       = SymbolPinHandleId.NODE,
-                pos      = QPointF(-PITCH, 0),
-                grip_cls = MoveGripItem,
-                parent   = self
-            ),
-            SymbolPinHandleId.NAME : HandleItem(
-                id       = SymbolPinHandleId.NAME,
-                pos      = QPointF(0, 0),
-                grip_cls = MoveGripItem,
-                parent   = self
-            )
-        }
-
-class ItemGatePinHandlesMixin(
-    ItemBasePinHandlesMixin,
-    ItemHandlesMixin[GatePinHandleId]
-):
-    @classmethod
-    def handleIdType(cls) -> type[GatePinHandleId]:
-        return GatePinHandleId
-
-    @classmethod
-    def handleIdKind(cls) -> DataKind:
-        return DataKind.GATE_PIN_HANDLE
-
-
-class ItemBlockPinHandlesMixin(
-    ItemBasePinHandlesMixin,
-    ItemHandlesMixin[BlockPinHandleId]
-):
-    @classmethod
-    def handleIdType(cls) -> type[BlockPinHandleId]:
-        return BlockPinHandleId
-
-    @classmethod
-    def handleIdKind(cls) -> DataKind:
-        return DataKind.BLOCK_PIN_HANDLE
-
-
-class ItemSymbolPinHandlesMixin(
-    ItemBasePinHandlesMixin,
-    ItemHandlesMixin[SymbolPinHandleId]
-):
-    @classmethod
-    def handleIdType(cls) -> type[SymbolPinHandleId]:
-        return SymbolPinHandleId
-
-    @classmethod
-    def handleIdKind(cls) -> DataKind:
-        return DataKind.SYMBOL_PIN_HANDLE
-
-    def moveHandleBy(self : Self | QGraphicsItem, _, d : QPointF) -> None:
-        """Move the entire pin when any grip is dragged."""
-        self.setPos(self.pos() + d)
-
-
-class ItemTapHandlesMixin(ItemHandlesMixin[TapHandleId]):
-    @classmethod
-    def handleIdType(cls) -> type[TapHandleId]:
-        return TapHandleId
-
-    @classmethod
-    def handleIdKind(cls) -> DataKind:
-        return DataKind.TAP_HANDLE
-
-    def initHandles(self : Self) -> None:
-        self._handles = {
-            TapHandleId.SUFFIX : HandleItem(
-                id       = TapHandleId.SUFFIX,
-                pos      = QPointF(0, 5),
-                grip_cls = MoveGripItem,
-                parent   = self
-            )
-        }
-
-    def moveHandleBy(self : Self | QGraphicsItem, _, d : QPointF) -> None:
-        """Move the entire tap when any grip is dragged."""
-        self.setPos(self.pos() + d)
