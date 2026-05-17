@@ -26,8 +26,8 @@ class ItemChangeMixin:
                 if hasattr(self, "onPositionChanged"):
                     self.onPositionChanged(value)
             case self.GraphicsItemChange.ItemRotationHasChanged:
-                if hasattr(self, "onRotationChange"):
-                    self.onRotationChange(value)
+                if hasattr(self, "onRotationChanged"):
+                    self.onRotationChanged(value)
             case self.GraphicsItemChange.ItemSelectedHasChanged:
                 value = bool(value)
                 if hasattr(self, "lineSelectionChange"):

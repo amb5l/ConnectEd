@@ -100,7 +100,7 @@ class ItemTransformMixin:
         self.signalPropertyChanges(["X", "Y"])
 
     @checked
-    def onRotationChange(self : Self | PropertiesMixin, _angle : float) -> None:
+    def onRotationChanged(self : Self | PropertiesMixin, _angle : float) -> None:
         # process self scene rotation changes
         if hasattr(self, "onSceneRotationChange"):
             self.onSceneRotationChange()

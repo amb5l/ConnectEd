@@ -46,7 +46,7 @@ class ItemLocMixin:
         and self._loc.edge != Edge.UNDEFINED:
             self.setLoc(self._loc)
 
-    def onRotationChange(self : Self | QGraphicsItem, _angle : float) -> None:
+    def onRotationChanged(self : Self | QGraphicsItem, _angle : float) -> None:
         """Propagate rotation change to children for rotation compensation."""
         for child in self.childItems():
             if hasattr(child, "onSceneRotationChange"):
