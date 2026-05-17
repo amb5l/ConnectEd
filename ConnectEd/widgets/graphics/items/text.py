@@ -37,7 +37,6 @@ from .mixin.transform import ItemTransformMixin
 from .mixin.handle    import ItemRectHandlesMixin
 from .mixin.paint     import ItemPaintMixin
 from .mixin.quill     import ItemQuillMixin
-from .mixin.bound     import ItemBoundMixin
 from .mixin.shape     import ItemShapeMixin
 from .mixin.change    import ItemChangeMixin
 from .mixin.clone     import ItemCloneMixin
@@ -120,7 +119,6 @@ class TextItem(
     ItemRectHandlesMixin,
     ItemPaintMixin,
     ItemQuillMixin,
-    ItemBoundMixin,
     ItemShapeMixin,
     ItemChangeMixin,
     ItemCloneMixin,
@@ -199,6 +197,7 @@ class TextItem(
     _align_v  : AlignV                                  # vertical alignment
     _width    : float                                   # width constraint
     _height   : float                                   # height constraint
+    _brect    : QRectF                                  # bounding rect
 
     def __init__(
         self      : Self,
@@ -437,6 +436,9 @@ class TextItem(
     def updateGrips(self : Self) -> None:
         for handle in self._handles.values():
             handle.grip().updatePath()
+
+    def boundingRect(self : Self) -> QRectF:
+        return self._brect
 
     def originMenu(self : Self, view : "DrawingView") -> QMenu:
         menu = QMenu("Origin", view)
