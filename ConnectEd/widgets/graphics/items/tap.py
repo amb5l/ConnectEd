@@ -90,11 +90,11 @@ class TapItem(
 
     @checked
     def onSceneChange(self : Self, scene : "DiagramScene | None") -> None:
-        self.onSettingsChange(scene)
+        self.onSettingsChanged(scene)
 
     @withScene
     @checked
-    def onSettingsChange(self : Self, scene : "DiagramScene | None") -> None:
+    def onSettingsChanged(self : Self, scene : "DiagramScene | None") -> None:
         self.setPen(scene.resources["Tap"][self._state.value])
 
     @checked

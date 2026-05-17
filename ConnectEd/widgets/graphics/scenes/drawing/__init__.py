@@ -60,8 +60,8 @@ class DrawingScene(
         self.resources = self._RESOURCES_CLS()
         self.initProperties(fresh)
         self.initGrips()
-        self.onSettingsChange()
-        settings().changed.connect(self.onSettingsChange)
+        self.onSettingsChanged()
+        settings().changed.connect(self.onSettingsChanged)
         self.selectionChanged.connect(self.onSelectionChanged)
 
     def __hash__(self : Self):
@@ -72,7 +72,7 @@ class DrawingScene(
             return NotImplemented
         return self._uuid == other._uuid
 
-    def onSettingsChange(self : Self) -> None:
+    def onSettingsChanged(self : Self) -> None:
         self._sel_line = settings().get("theme/selected/line")
         self._sel_fill = settings().get("theme/selected/fill")
         self._sel_text = settings().get("theme/selected/text")

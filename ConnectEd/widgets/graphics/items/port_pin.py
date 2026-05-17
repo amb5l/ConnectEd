@@ -108,7 +108,7 @@ class PortPinMixin(
         # initialize the item
         self.initItem(fresh)
 
-    def onSettingsChange(self : Self) -> None:
+    def onSettingsChanged(self : Self) -> None:
         self.onSceneChange()
 
     @withScene

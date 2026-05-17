@@ -44,7 +44,7 @@ class NodeItem(
         self._state = NodeState.UNCONNECTED
         self.initItem()
 
-    def onSettingsChange(self : Self) -> None:
+    def onSettingsChanged(self : Self) -> None:
         self.onSceneChange()
 
     @withScene

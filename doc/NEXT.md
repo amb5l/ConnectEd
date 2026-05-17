@@ -1,9 +1,11 @@
+implement net labels
+test pin wire/bus width
+retire old appearance system
+
 YAML setting defaults
 updatePath mixin?
-
 get rid of None direction?
 (re)move RectItemHandleMixin etc
-remove base_pin etc cruft
 place port, drag name by handle => bug
 pen mixin
 

@@ -25,7 +25,7 @@ class TextTetherItem(QGraphicsLineItem):
         self._text_item = text_item
         super().__init__(text_item.getOriginHandle())
         self.setVisible(text_item.isSelected())
-        self.onSettingsChange()
+        self.onSettingsChanged()
         self.onPositionChange(self._text_item.pos())
 
     def mousePressEvent(self : Self, event : QGraphicsSceneMouseEvent) -> None:
@@ -44,7 +44,7 @@ class TextTetherItem(QGraphicsLineItem):
         line.setP2(self.mapFromItem(self.anchor(), QPointF(0, 0)))
         self.setLine(line)
 
-    def onSettingsChange(self : Self) -> None:
+    def onSettingsChanged(self : Self) -> None:
         scene: "DrawingScene | None" = self.scene()
         if scene is None:
             return

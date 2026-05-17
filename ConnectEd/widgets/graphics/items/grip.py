@@ -55,11 +55,11 @@ class GripItem(
         self.setFlag( self.GraphicsItemFlag.ItemIsMovable              , False )
         self.setPen(QPen(Qt.PenStyle.NoPen))
         self.setVisible(False)
-        self.onSettingsChange()
-        settings().changed.connect(self.onSettingsChange)
+        self.onSettingsChanged()
+        settings().changed.connect(self.onSettingsChanged)
 
     @checked
-    def onSettingsChange(self : Self) -> None:
+    def onSettingsChanged(self : Self) -> None:
         self.onSceneChange()
 
     @withScene

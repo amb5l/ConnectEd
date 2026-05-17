@@ -17,8 +17,8 @@ class SymbolView(DrawingView):
 
     def __init__(self : Self, scene : SymbolScene) -> None:
         super().__init__(scene)
-        self.onSettingsChange()
-        settings().changed.connect(self.onSettingsChange)
+        self.onSettingsChanged()
+        settings().changed.connect(self.onSettingsChanged)
 
     def showEvent(self : Self, event : QEvent) -> None:
         super().showEvent(event)
@@ -36,7 +36,7 @@ class SymbolView(DrawingView):
         painter.drawEllipse(origin, h, h)
         painter.restore()
 
-    def onSettingsChange(self : Self) -> None:
+    def onSettingsChanged(self : Self) -> None:
         pen_color : QColor = settings().get("theme/origin/color")
         pen_color.setAlpha(settings().get("display/alpha"))
         self._pen = QPen(pen_color, 1, Qt.PenStyle.SolidLine)

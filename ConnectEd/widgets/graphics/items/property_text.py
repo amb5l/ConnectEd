@@ -132,7 +132,7 @@ class PropertyTextItem(TextItem):
         self.onTextChange()
 
     def onSceneChange(self : Self, _scene : "DrawingScene | None") -> None:
-        self.onSettingsChange()
+        self.onSettingsChanged()
 
     def onParentChange(self : Self, parent : QGraphicsItem | None) -> None:
         if parent is not None:
@@ -154,9 +154,9 @@ class PropertyTextItem(TextItem):
         self._tether.setVisible(selected and cleat_valid)
         self._tether.anchor().grip().setVisible(selected and cleat_valid)
 
-    def onSettingsChange(self : Self) -> None:
+    def onSettingsChanged(self : Self) -> None:
         if hasattr(self, "_tether"):
-            self._tether.onSettingsChange()
+            self._tether.onSettingsChanged()
 
     def onTextChange(self : Self) -> None:
         text = val2str(self.value())
