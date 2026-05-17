@@ -250,7 +250,7 @@ class PropertiesManager:
     def value(
         self   : Self,
         name   : str,
-        slot   : Callable  | None = None,  # e.g. PropertyTextItem.onTextChange
+        slot   : Callable  | None = None,  # e.g. PropertyTextItem.onTextChanged
         trail  : list[str] | None = None   # substitution recursion trail
     ) -> Any:
         """
@@ -621,7 +621,7 @@ class PropertiesManager:
         if property.notifier:
             try:
                 property.notifier.changed.disconnect(
-                    property.text.onTextChange
+                    property.text.onTextChanged
                 )
             except TypeError:
                 pass

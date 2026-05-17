@@ -129,14 +129,14 @@ class PropertyTextItem(TextItem):
         self._tether = PropertyTextTetherItem(self)
         self._name = name
         self.setCleat(cleat, parent)
-        self.onTextChange()
+        self.onTextChanged()
 
     def onSceneChanged(self : Self, _scene : "DrawingScene | None") -> None:
         self.onSettingsChanged()
 
     def onParentChanged(self : Self, parent : QGraphicsItem | None) -> None:
         if parent is not None:
-            self.onTextChange()
+            self.onTextChanged()
             self.quillSettingsChange()
 
     def onPositionChanged(
@@ -158,7 +158,7 @@ class PropertyTextItem(TextItem):
         if hasattr(self, "_tether"):
             self._tether.onSettingsChanged()
 
-    def onTextChange(self : Self) -> None:
+    def onTextChanged(self : Self) -> None:
         text = val2str(self.value())
         if text == "":
             text = f"<{self._name}>"
@@ -217,14 +217,14 @@ class PropertyTextItem(TextItem):
 
     def setName(self : Self, name : str) -> None:
         self._name = name
-        self.onTextChange()
+        self.onTextChanged()
 
     def value(self : Self) -> Any:
         if not self.name():  # name is None or ""
             return None
         if self.owner() is None:
             return f"<{self.name()}>"
-        return self.owner().properties.value(self.name(), self.onTextChange)
+        return self.owner().properties.value(self.name(), self.onTextChanged)
 
     def setValue(self : Self, value : Any) -> None:
         if not self.name():  # name is None or ""

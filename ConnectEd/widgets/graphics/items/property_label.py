@@ -92,7 +92,7 @@ class PropertyLabelItem(TextItem):
 
     def onParentChanged(self : Self, parent : QGraphicsItem | None) -> None:
         if parent is not None:
-            self.onTextChange()
+            self.onTextChanged()
             self.quillSettingsChange()
 
     def onPositionChanged(
@@ -110,7 +110,7 @@ class PropertyLabelItem(TextItem):
         self._tether.setVisible(selected and cleat_valid)
         self._tether.anchor().grip().setVisible(selected and cleat_valid)
 
-    def onSettingsChanged(self : Self) -> None:
+    def onTextChanged(self : Self) -> None:
         super().onSettingsChanged()
         if hasattr(self, "_tether"):
             self._tether.onSettingsChanged()
