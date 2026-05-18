@@ -179,7 +179,7 @@ class PortPinMixin(
         raise NotImplementedError("Subclasses must implement this method")
 
     def _updatePen(
-        self  : Self | QGraphicsLineItem | QGraphicsPathItem,
+        self  : Self | QGraphicsItem | QGraphicsPathItem,
         scene : "DrawingScene"
     ) -> None:
         key = (self.bus(), self.isSelected())
@@ -191,7 +191,7 @@ class PortPinMixin(
         ))
 
     def _updateArrowPenBrush(
-        self  : Self | ItemHandlesMixin,
+        self  : Self | QGraphicsItem | QGraphicsPathItem,
         scene : "DrawingScene"
     ) -> None:
         key = self.isSelected()
