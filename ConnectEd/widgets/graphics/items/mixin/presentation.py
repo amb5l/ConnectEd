@@ -6,7 +6,7 @@ from PyQt6.QtGui     import QColor, QPen, QBrush
 
 from .....app import logger
 
-from .....core.types import DataKind
+from .....core.types import DataKind, NoChange, NO_CHANGE
 
 from ...scenes import withScene
 from ...quill  import Quill
@@ -27,7 +27,7 @@ class BrushItemProtocol(Protocol):
     def setBrush(self, brush: QBrush) -> None: ...
 
 
-class QuillItemProtocol(Protocol):
+class TextItemProtocol(Protocol):
     def setQuill(self, quill: Quill) -> None: ...
 
 
@@ -72,48 +72,48 @@ class ItemPresentationMixin:
             default = lambda self: self.defaultFillStyle()
         )
     }
-    _PROPERTIES_QUILL = {
+    _PROPERTIES_TEXT = {
         "Text Color" : InherentProperty(
             kind    = DataKind.COLOR,
-            worthy  = lambda self: self.quillColor() is not None,
-            getter  = lambda self: self.quillColor(),
-            setter  = lambda self, value: self.setQuillColor(value),
-            default = lambda self: self.defaultQuillColor()
+            worthy  = lambda self: self.textColor() is not None,
+            getter  = lambda self: self.textColor(),
+            setter  = lambda self, value: self.setTextColor(value),
+            default = lambda self: self.defaultTextColor()
         ),
         "Text Font" : InherentProperty(
             kind    = DataKind.FONT_FAMILY,
-            worthy  = lambda self: self.quillFont() is not None,
-            getter  = lambda self: self.quillFont(),
-            setter  = lambda self, value: self.setQuillFont(value),
-            default = lambda self: self.defaultQuillFont()
+            worthy  = lambda self: self.textFont() is not None,
+            getter  = lambda self: self.textFont(),
+            setter  = lambda self, value: self.setTextFont(value),
+            default = lambda self: self.defaultTextFont()
         ),
         "Text Size" : InherentProperty(
             kind    = DataKind.FONT_SIZE,
-            worthy  = lambda self: self.quillSize() is not None,
-            getter  = lambda self: self.quillSize(),
-            setter  = lambda self, value: self.setQuillSize(value),
-            default = lambda self: self.defaultQuillSize()
+            worthy  = lambda self: self.textSize() is not None,
+            getter  = lambda self: self.textSize(),
+            setter  = lambda self, value: self.setTextSize(value),
+            default = lambda self: self.defaultTextSize()
         ),
         "Text Bold" : InherentProperty(
             kind    = DataKind.FONT_BOOL,
-            worthy  = lambda self: self.quillBold() is not None,
-            getter  = lambda self: self.quillBold(),
-            setter  = lambda self, value: self.setQuillBold(value),
-            default = lambda self: self.defaultQuillBold()
+            worthy  = lambda self: self.textBold() is not None,
+            getter  = lambda self: self.textBold(),
+            setter  = lambda self, value: self.setTextBold(value),
+            default = lambda self: self.defaultTextBold()
         ),
         "Text Italic" : InherentProperty(
             kind    = DataKind.FONT_BOOL,
-            worthy  = lambda self: self.quillItalic() is not None,
-            getter  = lambda self: self.quillItalic(),
-            setter  = lambda self, value: self.setQuillItalic(value),
-            default = lambda self: self.defaultQuillItalic()
+            worthy  = lambda self: self.textItalic() is not None,
+            getter  = lambda self: self.textItalic(),
+            setter  = lambda self, value: self.setTextItalic(value),
+            default = lambda self: self.defaultTextItalic()
         ),
         "Text Underline" : InherentProperty(
             kind    = DataKind.FONT_BOOL,
-            worthy  = lambda self: self.quillUnderline() is not None,
-            getter  = lambda self: self.quillUnderline(),
-            setter  = lambda self, value: self.setQuillUnderline(value),
-            default = lambda self: self.defaultQuillUnderline()
+            worthy  = lambda self: self.textUnderline() is not None,
+            getter  = lambda self: self.textUnderline(),
+            setter  = lambda self, value: self.setTextUnderline(value),
+            default = lambda self: self.defaultTextUnderline()
         )
     }
 
@@ -172,6 +172,15 @@ class ItemPresentationMixin:
         if hasattr(self, "_updateGraphics"):
             self._updateGraphics(scene)
 
+
+    # line methods
+
+    def hasLine(self) -> bool:
+        return self.hasLineColor() or self.hasLineWidth() or self.hasLineStyle()
+
+    def hasLineColor(self) -> bool:
+        return hasattr(self, "_line_color")
+
     def lineColor(self) -> QColor | None:
         return self._line_color if hasattr(self, "_line_color") else None
 
@@ -181,12 +190,17 @@ class ItemPresentationMixin:
         pen = scene.resources.pen(self.resourcesName(), key)
         return pen.color()
 
-    def setLineColor(self, color: QColor | None) -> None:
+    def setLineColor(self, color: QColor | None | NoChange) -> None:
+        if color is NO_CHANGE:
+            return
         if not hasattr(self, "_line_color"):
             logger().error("This item does not support line color overrides.")
             return
         self._line_color = color
         self._updatePen()
+
+    def hasLineWidth(self) -> bool:
+        return hasattr(self, "_line_width")
 
     def lineWidth(self) -> float | None:
         return self._line_width if hasattr(self, "_line_width") else None
@@ -197,12 +211,17 @@ class ItemPresentationMixin:
         pen = scene.resources.pen(self.resourcesName(), key)
         return pen.widthF()
 
-    def setLineWidth(self, width: float | None) -> None:
+    def setLineWidth(self, width: float | None | NoChange) -> None:
+        if width is NO_CHANGE:
+            return
         if not hasattr(self, "_line_width"):
             logger().error("This item does not support line width overrides.")
             return
         self._line_width = width
         self._updatePen()
+
+    def hasLineStyle(self) -> bool:
+        return hasattr(self, "_line_style")
 
     def lineStyle(self) -> Qt.PenStyle | None:
         return self._line_style if hasattr(self, "_line_style") else None
@@ -213,12 +232,22 @@ class ItemPresentationMixin:
         pen = scene.resources.pen(self.resourcesName(), key)
         return pen.style()
 
-    def setLineStyle(self, style: Qt.PenStyle | None) -> None:
+    def setLineStyle(self, style: Qt.PenStyle | None | NoChange) -> None:
+        if style is NO_CHANGE:
+            return
         if not hasattr(self, "_line_style"):
             logger().error("This item does not support line style overrides.")
             return
         self._line_style = style
         self._updatePen()
+
+    # fill methods
+
+    def hasFill(self) -> bool:
+        return self.hasFillColor() or self.hasFillStyle()
+
+    def hasFillColor(self) -> bool:
+        return hasattr(self, "_fill_color")
 
     def fillColor(self) -> QColor | None:
         return self._fill_color if hasattr(self, "_fill_color") else None
@@ -229,12 +258,17 @@ class ItemPresentationMixin:
         brush = scene.resources.brush(self.resourcesName(), key)
         return brush.color()
 
-    def setFillColor(self, color: QColor | None) -> None:
+    def setFillColor(self, color: QColor | None | NoChange) -> None:
+        if color is NO_CHANGE:
+            return
         if not hasattr(self, "_fill_color"):
             logger().error("This item does not support fill color overrides.")
             return
         self._fill_color = color
         self._updateBrush()
+
+    def hasFillStyle(self) -> bool:
+        return hasattr(self, "_fill_style")
 
     def fillStyle(self) -> Qt.BrushStyle | None:
         return self._fill_style if hasattr(self, "_fill_style") else None
@@ -245,108 +279,154 @@ class ItemPresentationMixin:
         brush = scene.resources.brush(self.resourcesName(), key)
         return brush.style()
 
-    def setFillStyle(self, style: Qt.BrushStyle | None) -> None:
+    def setFillStyle(self, style: Qt.BrushStyle | None | NoChange) -> None:
+        if style is NO_CHANGE:
+            return
         if not hasattr(self, "_fill_style"):
             logger().error("This item does not support fill style overrides.")
             return
         self._fill_style = style
         self._updateBrush()
 
-    def quillColor(self) -> QColor | None:
+    # text methods
+
+    def hasText(self) -> bool:
+        return (
+               self.hasTextColor()
+            or self.hasTextFont()
+            or self.hasTextSize()
+            or self.hasTextBold()
+            or self.hasTextItalic()
+            or self.hasTextUnderline()
+        )
+
+    def hasTextColor(self) -> bool:
+        return hasattr(self, "_text_color")
+
+    def textColor(self) -> QColor | None:
         return self._text_color if hasattr(self, "_text_color") else None
 
-    def defaultQuillColor(self) -> QColor | None:
+    def defaultTextColor(self) -> QColor | None:
         if (scene := self.scene()) is None: return None
         key = self._quillKeyDefault()
         quill = scene.resources.quill(self.resourcesName(), key)
         return quill.color()
 
-    def setQuillColor(self, color: QColor | None) -> None:
+    def setTextColor(self, color: QColor | None | NoChange) -> None:
+        if color is NO_CHANGE:
+            return
         if not hasattr(self, "_text_color"):
             logger().error("This item does not support text color overrides.")
             return
         self._text_color = color
         self._updateQuill()
 
-    def quillFont(self) -> str | None:
+    def hasTextFont(self) -> bool:
+        return hasattr(self, "_text_font")
+
+    def textFont(self) -> str | None:
         return self._text_font if hasattr(self, "_text_font") else None
 
-    def defaultQuillFont(self) -> str | None:
+    def defaultTextFont(self) -> str | None:
         if (scene := self.scene()) is None: return None
         key = self._quillKeyDefault()
         quill = scene.resources.quill(self.resourcesName(), key)
         return quill.font()
 
-    def setQuillFont(self, font: str | None) -> None:
+    def setTextFont(self, font: str | None | NoChange) -> None:
+        if font is NO_CHANGE:
+            return
         if not hasattr(self, "_text_font"):
             logger().error("This item does not support text font overrides.")
             return
         self._text_font = font
         self._updateQuill()
 
-    def quillSize(self) -> float | None:
+    def hasTextSize(self) -> bool:
+        return hasattr(self, "_text_size")
+
+    def textSize(self) -> float | None:
         return self._text_size if hasattr(self, "_text_size") else None
 
-    def defaultQuillSize(self) -> float | None:
+    def defaultTextSize(self) -> float | None:
         if (scene := self.scene()) is None: return None
         key = self._quillKeyDefault()
         quill = scene.resources.quill(self.resourcesName(), key)
         return quill.size()
 
-    def setQuillSize(self, size: float | None) -> None:
+    def setTextSize(self, size: float | None | NoChange) -> None:
+        if size is NO_CHANGE:
+            return
         if not hasattr(self, "_text_size"):
             logger().error("This item does not support text size overrides.")
             return
         self._text_size = size
         self._updateQuill()
 
-    def quillBold(self) -> bool | None:
+    def hasTextBold(self) -> bool:
+        return hasattr(self, "_text_bold")
+
+    def textBold(self) -> bool | None:
         return self._text_bold if hasattr(self, "_text_bold") else None
 
-    def defaultQuillBold(self) -> bool | None:
+    def defaultTextBold(self) -> bool | None:
         if (scene := self.scene()) is None: return None
         key = self._quillKeyDefault()
         quill = scene.resources.quill(self.resourcesName(), key)
         return quill.bold()
 
-    def setQuillBold(self, bold: bool | None) -> None:
+    def setTextBold(self, bold: bool | None | NoChange) -> None:
+        if bold is NO_CHANGE:
+            return
         if not hasattr(self, "_text_bold"):
             logger().error("This item does not support text bold overrides.")
             return
         self._text_bold = bold
         self._updateQuill()
 
-    def quillItalic(self) -> bool | None:
+    def hasTextItalic(self) -> bool:
+        return hasattr(self, "_text_italic")
+
+    def textItalic(self) -> bool | None:
         return self._text_italic if hasattr(self, "_text_italic") else None
 
-    def defaultQuillItalic(self) -> bool | None:
+    def defaultTextItalic(self) -> bool | None:
         if (scene := self.scene()) is None: return None
         key = self._quillKeyDefault()
         quill = scene.resources.quill(self.resourcesName(), key)
         return quill.italic()
 
-    def setQuillItalic(self, italic: bool | None) -> None:
+    def setTextItalic(self, italic: bool | None | NoChange) -> None:
+        if italic is NO_CHANGE:
+            return
         if not hasattr(self, "_text_italic"):
             logger().error("This item does not support text italic overrides.")
             return
         self._text_italic = italic
         self._updateQuill()
 
-    def quillUnderline(self) -> bool | None:
+    def hasTextUnderline(self) -> bool:
+        return hasattr(self, "_text_underline")
+
+    def textUnderline(self) -> bool | None:
         return self._text_underline if hasattr(self, "_text_underline") else None
 
-    def defaultQuillUnderline(self) -> bool | None:
+    def defaultTextUnderline(self) -> bool | None:
         if (scene := self.scene()) is None: return None
         key = self._quillKeyDefault()
         quill = scene.resources.quill(self.resourcesName(), key)
         return quill.underline()
 
-    def setQuillUnderline(self, underline: bool | None) -> None:
+    def setTextUnderline(self, underline: bool | None | NoChange) -> None:
+        if underline is NO_CHANGE:
+            return
         if not hasattr(self, "_text_underline"):
             logger().error("This item does not support text underline overrides.")
             return
         self._text_underline = underline
         self._updateQuill()
+
+    # helpers
 
     def _penKey(self : Self | QGraphicsItem) -> bool:
         return self.isSelected()
@@ -425,12 +505,13 @@ class ItemPresentationMixin:
     def _quillKeyDefault(self : Self) -> bool:
         return False
 
+    @withScene
     def _updateQuill(self : Self, scene : "DrawingScene") -> None:
         raise NotImplementedError("Not wired!")
 
     @withScene
     def _updateQuillFast(
-        self : "Self | ItemNamesMixin | QuillItemProtocol",
+        self : "Self | ItemNamesMixin | TextItemProtocol",
         scene : "DrawingScene"
     ) -> None:
         quill = scene.resources.quill(self.resourcesName(), self._quillKey())
@@ -438,7 +519,7 @@ class ItemPresentationMixin:
 
     @withScene
     def _updateQuillSlow(
-        self : "Self | ItemNamesMixin | QuillItemProtocol",
+        self : "Self | ItemNamesMixin | TextItemProtocol",
         scene : "DrawingScene"
     ) -> None:
         quill = scene.resources.quill(self.resourcesName(), self._quillKey())
