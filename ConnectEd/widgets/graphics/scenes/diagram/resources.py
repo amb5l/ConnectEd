@@ -13,7 +13,7 @@ from ..drawing.resources import DrawingSceneResources
 
 
 class DiagramSceneResources(DrawingSceneResources):
-    _PEN_ITEMS = DrawingSceneResources._PEN_ITEMS + ["Gate"]
+    _PEN_ITEMS = DrawingSceneResources._PEN_ITEMS + ["Gate", "Segment"]
     _BRUSH_ITEMS = DrawingSceneResources._BRUSH_ITEMS + ["Gate"]
     _QUILL_ITEMS = DrawingSceneResources._QUILL_ITEMS + ["NetLabel"]
     _PIN_PATH_ITEMS = DrawingSceneResources._PIN_PATH_ITEMS + ["GatePin"]
@@ -80,6 +80,16 @@ class DiagramSceneResources(DrawingSceneResources):
         self._pens["Tap"][False] = self._getPens(f"{settings_path}/line/wire")
         self._pens["Tap"][True] = self._getPens(f"{settings_path}/line/bus")
         self._lines["Tap"] = QLineF(0, 0, PITCH, PITCH)
+        # Segment, SegmentPreview1 and SegmentPreview2
+        for selected in [False, True]:
+            pen = self._pens["Segment"][selected]
+            pen.setCapStyle(Qt.PenCapStyle.RoundCap)
+        self._pens["SegmentPreview1"] = self._getPen(
+            "theme/items/SegmentPreview1/line", Qt.PenCapStyle.RoundCap
+        )
+        self._pens["SegmentPreview2"] = self._getPen(
+            "theme/items/SegmentPreview2/line", Qt.PenCapStyle.RoundCap
+        )
 
     def _nodePath(self : Self, state : NodeState, size : float) -> QPainterPath:
         path = QPainterPath()

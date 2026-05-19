@@ -1,22 +1,32 @@
-from typing import Self
+from typing import Self, Any
 
-from PyQt6.QtCore    import Qt, QPointF, QLineF
-from PyQt6.QtWidgets import QGraphicsLineItem
+from PyQt6.QtCore    import QPointF, QLineF
+from PyQt6.QtWidgets import QGraphicsLineItem, QGraphicsItem
+
+from ....app import settings
 
 from ....core.defs import Z_DRAWING
 
-from .mixin        import ItemMixin, ItemNamesMixin
-from .mixin.line   import ItemLineMixin
-from .mixin.change import ItemChangeMixin
-from .mixin.clone  import ItemCloneMixin
-from .mixin.menu   import ItemMenuMixin
+from ..scenes import withScene
+
+from .mixin              import ItemMixin
+from .mixin.presentation import ItemPresentationMixin
+from .mixin.select       import ItemSelectMixin
+from .mixin.change       import ItemChangeMixin
+from .mixin.clone        import ItemCloneMixin
+from .mixin.menu         import ItemMenuMixin
 
 from .node import NodeItem
+
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from ..scenes.drawing import DrawingScene
 
 
 class SegmentItem(
     ItemMixin,
-    ItemLineMixin,
+    ItemPresentationMixin,
+    ItemSelectMixin,
     ItemChangeMixin,
     ItemCloneMixin,
     ItemMenuMixin,
@@ -25,7 +35,6 @@ class SegmentItem(
     """Runs between two NodeItem instances."""
     # class attributes
     Z = Z_DRAWING - 1
-    _PEN_CAP_STYLE = Qt.PenCapStyle.RoundCap
 
     # instance attributes
     _node1 : NodeItem | None
@@ -88,16 +97,27 @@ class SegmentItem(
 
 
 # TODO link to settings/resources
-class SegmentPreviewItem(
-    ItemNamesMixin,
-    ItemChangeMixin,
-    ItemLineMixin,
-    QGraphicsLineItem
-):
+class SegmentPreviewItem(QGraphicsLineItem):
+    # class attributes
+    _RESOURCE_NAME : str
+
     def __init__(self : Self) -> None:
         QGraphicsLineItem.__init__(self)
-        self.initChange()
-        self.initLine()
+        self.onSettingsChanged()
+        settings().changed.connect(self.onSettingsChanged)
+
+    def itemChange(
+        self : Self,
+        change : QGraphicsItem.GraphicsItemChange,
+        value : Any
+    ) -> Any:
+        if change == QGraphicsItem.GraphicsItemChange.ItemSceneHasChanged:
+            if value is not None:
+                self._updatePen(value)
+        return super().itemChange(change, value)
+
+    def onSettingsChanged(self : Self) -> None:
+        self._updatePen(self.scene())
 
     def p1(self : Self) -> QPointF:
         return self.pos()
@@ -117,10 +137,14 @@ class SegmentPreviewItem(
         line.setP2(p2-p1)
         self.setLine(line)
 
+    @withScene
+    def _updatePen(self : Self, scene : "DrawingScene") -> None:
+        self.setPen(scene.resources.pen(self._RESOURCE_NAME))
+
 
 class SegmentPreview1Item(SegmentPreviewItem):
-    pass
+    _RESOURCE_NAME = "SegmentPreview1"
 
 
 class SegmentPreview2Item(SegmentPreviewItem):
-    pass
+    _RESOURCE_NAME = "SegmentPreview2"
