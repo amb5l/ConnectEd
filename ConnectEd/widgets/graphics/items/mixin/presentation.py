@@ -348,10 +348,10 @@ class ItemPresentationMixin:
         self._text_underline = underline
         self._updateQuill()
 
-    def _penKey(self : Self | QGraphicsItem) -> bool | tuple[bool, ...]:
+    def _penKey(self : Self | QGraphicsItem) -> bool:
         return self.isSelected()
 
-    def _penKeyDefault(self : Self) -> bool | tuple[bool, ...]:
+    def _penKeyDefault(self : Self) -> bool:
         return False
 
     def _updatePen(self : Self, scene : "DrawingScene") -> None:
@@ -385,10 +385,10 @@ class ItemPresentationMixin:
             if override_style: pen.setStyle(self._line_style)
         self.setPen(pen)
 
-    def _brushKey(self : Self | QGraphicsItem) -> bool | tuple[bool, ...]:
+    def _brushKey(self : Self | QGraphicsItem) -> bool:
         return self.isSelected()
 
-    def _brushKeyDefault(self : Self) -> bool | tuple[bool, ...]:
+    def _brushKeyDefault(self : Self) -> bool:
         return False
 
     def _updateBrush(self : Self, scene : "DrawingScene") -> None:
@@ -419,10 +419,10 @@ class ItemPresentationMixin:
             if override_style: brush.setStyle(self._fill_style)
         self.setBrush(brush)
 
-    def _quillKey(self : Self | QGraphicsItem) -> bool | tuple[bool, ...]:
+    def _quillKey(self : Self | QGraphicsItem) -> bool:
         return self.isSelected()
 
-    def _quillKeyDefault(self : Self) -> bool | tuple[bool, ...]:
+    def _quillKeyDefault(self : Self) -> bool:
         return False
 
     def _updateQuill(self : Self, scene : "DrawingScene") -> None:
