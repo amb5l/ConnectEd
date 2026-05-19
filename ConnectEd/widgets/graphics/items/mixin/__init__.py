@@ -41,17 +41,18 @@ class ItemMixin(ItemNamesMixin, ItemMoveMixin):
     _uuid : str
 
     def initItem(self : Self | QGraphicsItem, fresh : bool = True) -> None:
-        from ...properties import PropertiesMixin
+        from ...properties  import PropertiesMixin
+        from .settings      import ItemSettingsMixin
         from .presentation  import ItemPresentationMixin
         from .select        import ItemSelectMixin
-        from .handle    import ItemHandlesMixin
-        from .loc       import ItemLocMixin
-        from .transform import ItemTransformMixin
-        from .change    import ItemChangeMixin
-        from .line      import ItemLineMixin
-        from .fill      import ItemFillMixin
-        from .quill     import ItemQuillMixin
-        from .shape     import ItemShapeMixin
+        from .handle        import ItemHandlesMixin
+        from .loc           import ItemLocMixin
+        from .transform     import ItemTransformMixin
+        from .change        import ItemChangeMixin
+        from .line          import ItemLineMixin
+        from .fill          import ItemFillMixin
+        from .quill         import ItemQuillMixin
+        from .shape         import ItemShapeMixin
         self.setZValue(self.Z)
         f = QGraphicsItem.GraphicsItemFlag
         self.setFlag( f.ItemIsSelectable              , True )
@@ -59,6 +60,8 @@ class ItemMixin(ItemNamesMixin, ItemMoveMixin):
         self.setFlag( f.ItemSendsScenePositionChanges , True )
         self.setCacheMode(QGraphicsItem.CacheMode.DeviceCoordinateCache)
         self._resetUuid()
+        if isinstance(self, ItemSettingsMixin):
+            self.initSettings()
         if isinstance(self, ItemPresentationMixin):
             self.initPresentation()
         if isinstance(self, ItemSelectMixin):
