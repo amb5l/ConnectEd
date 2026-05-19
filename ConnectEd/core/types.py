@@ -7,29 +7,6 @@ from PyQt6.QtCore    import Qt
 from PyQt6.QtGui     import QColor
 
 
-class Default:
-    def __eq__(self : Self, other : object) -> bool:
-        return isinstance(other, Default)
-
-    def __hash__(self : Self) -> int:
-        return hash(Default)
-
-    def __copy__(self : Self) -> "Default":
-        return DEFAULT
-
-    def __deepcopy__(self : Self, _memo : object) -> "Default":
-        return DEFAULT
-
-    def __str__(self : Self) -> str:
-        return "default"
-
-    def __repr__(self : Self) -> str:
-        return "<default>"
-
-
-DEFAULT = Default()
-
-
 class NoChange:
     def __eq__(self : Self, other : object) -> bool:
         return isinstance(other, NoChange)
@@ -168,14 +145,6 @@ class Display(Enum):
     SHOW = "Show"
     HIDE = "Hide"
 
-Color      = QColor        | Default
-PenWidth   = float         | Default
-PenStyle   = Qt.PenStyle   | Default
-BrushStyle = Qt.BrushStyle | Default
-FontFamily = str           | Default
-FontSize   = float         | Default
-FontBool   = bool          | Default
-
 
 _DATA_KIND_TYPES: dict["DataKind", tuple[type, ...]] = {}
 _DATA_KIND_EDITORS: dict["DataKind", type] = {}
@@ -214,13 +183,13 @@ def _populate_data_kind_maps() -> None:
         DataKind.ALIGN_V           : (AlignV,),
         DataKind.EDGE              : (Edge,),
         DataKind.DIRECTION         : (Direction,),
-        DataKind.COLOR             : (QColor, Default),
-        DataKind.PEN_STYLE         : (Qt.PenStyle, Default),
-        DataKind.PEN_WIDTH         : (float, Default),
-        DataKind.BRUSH_STYLE       : (Qt.BrushStyle, Default),
-        DataKind.FONT_FAMILY       : (str, Default),
-        DataKind.FONT_SIZE         : (float, Default),
-        DataKind.FONT_BOOL         : (bool, Default)
+        DataKind.COLOR             : (QColor, NoneType),
+        DataKind.PEN_STYLE         : (Qt.PenStyle, NoneType),
+        DataKind.PEN_WIDTH         : (float, NoneType),
+        DataKind.BRUSH_STYLE       : (Qt.BrushStyle, NoneType),
+        DataKind.FONT_FAMILY       : (str, NoneType),
+        DataKind.FONT_SIZE         : (float, NoneType),
+        DataKind.FONT_BOOL         : (bool, NoneType)
     })
     _DATA_KIND_EDITORS.update({
         DataKind.KIND              : EnumComboBox[DataKind],

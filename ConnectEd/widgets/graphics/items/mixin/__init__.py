@@ -49,9 +49,6 @@ class ItemMixin(ItemNamesMixin, ItemMoveMixin):
         from .loc           import ItemLocMixin
         from .transform     import ItemTransformMixin
         from .change        import ItemChangeMixin
-        from .line          import ItemLineMixin
-        from .fill          import ItemFillMixin
-        from .quill         import ItemQuillMixin
         from .shape         import ItemShapeMixin
         self.setZValue(self.Z)
         f = QGraphicsItem.GraphicsItemFlag
@@ -74,12 +71,6 @@ class ItemMixin(ItemNamesMixin, ItemMoveMixin):
             self.initTransform()
         if isinstance(self, ItemChangeMixin):
             self.initChange()
-        if isinstance(self, ItemLineMixin):
-            self.initLine()
-        if isinstance(self, ItemFillMixin):
-            self.initFill()
-        if isinstance(self, ItemQuillMixin):
-            self.initQuill()
         if isinstance(self, ItemShapeMixin):
             self.initShape()
         if isinstance(self, PropertiesMixin):

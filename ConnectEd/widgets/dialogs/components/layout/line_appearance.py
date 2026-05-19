@@ -4,8 +4,7 @@ from PyQt6.QtCore    import Qt
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel
 from PyQt6.QtGui     import QColor
 
-from .....core.types import Default, DEFAULT, NoChange, NO_CHANGE, \
-                            Color, PenWidth, PenStyle
+from .....core.types import NoChange, NO_CHANGE
 
 from ..combo.color      import ColorComboBox
 from ..combo.line_width import LineWidthComboBox
@@ -25,9 +24,9 @@ class LineAppearanceLayout(QVBoxLayout):
 
     def __init__(
         self      : Self,
-        initial_color : Color    | NoChange,
-        initial_width : PenWidth | NoChange,
-        initial_style : PenStyle | NoChange,
+        initial_color : QColor      | None | NoChange,
+        initial_width : float | int | None | NoChange,
+        initial_style : Qt.PenStyle | None | NoChange,
         default_color : QColor,
         default_width : float,
         default_style : Qt.PenStyle,
@@ -58,7 +57,7 @@ class LineAppearanceLayout(QVBoxLayout):
     def _onColorChanged(self : Self) -> None:
         color = self.color_combo.value()
         style = self.style_combo.value()
-        if color not in (NO_CHANGE, DEFAULT) and style in (DEFAULT, Qt.PenStyle.NoPen):
+        if color not in (NO_CHANGE, None) and style in (None, Qt.PenStyle.NoPen):
             for i in range(self.style_combo.count()):
                 if self.style_combo.itemText(i) == "Solid":
                     self.style_combo.setCurrentIndex(i)
@@ -67,17 +66,17 @@ class LineAppearanceLayout(QVBoxLayout):
     def _onWidthChanged(self : Self) -> None:
         width = self.width_combo.value()
         style = self.style_combo.value()
-        if width not in (NO_CHANGE, DEFAULT) and style in (DEFAULT, Qt.PenStyle.NoPen):
+        if width not in (NO_CHANGE, None) and style in (None, Qt.PenStyle.NoPen):
             for i in range(self.style_combo.count()):
                 if self.style_combo.itemText(i) == "Solid":
                     self.style_combo.setCurrentIndex(i)
                     break
 
-    def getColorChoice(self : Self) -> Color | NoChange:
+    def getColorChoice(self : Self) -> QColor | None | NoChange:
         return self.color_combo.value()
 
-    def getWidthChoice(self : Self) -> float | NoChange | Default:
+    def getWidthChoice(self : Self) -> float | None | NoChange:
         return self.width_combo.value()
 
-    def getStyleChoice(self : Self) -> Qt.PenStyle | NoChange | Default:
+    def getStyleChoice(self : Self) -> Qt.PenStyle | None | NoChange:
         return self.style_combo.value()

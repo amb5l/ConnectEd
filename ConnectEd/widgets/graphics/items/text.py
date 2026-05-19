@@ -9,8 +9,8 @@ from PyQt6.QtWidgets import QGraphicsItem, QMenu, \
 from PyQt6.QtGui     import QColor, QFont, QAction, QPainter, QPainterPath, \
                             QTransform
 
-from ....core.types import Default, DEFAULT, NoChange, NO_CHANGE, \
-                            AlignH, AlignV, RectHandleId, DataKind
+from ....core.types import NoChange, NO_CHANGE, \
+                           AlignH, AlignV, RectHandleId, DataKind
 
 from ....resources.icons import AnchorTopLeftIcon,      \
                                 AnchorTopCenterIcon,    \
@@ -28,20 +28,14 @@ from ....resources.icons import AnchorTopLeftIcon,      \
                                 TextAlignMiddleIcon,    \
                                 TextAlignBottomIcon
 
-from ..properties import InherentProperty, PropertiesMixin
+from ..properties import InherentProperty
 
 from .grip import TextResizeGripItem
 
-from .mixin           import ItemMixin
-from .mixin.transform import ItemTransformMixin
-from .mixin.handle    import ItemRectHandlesMixin
-from .mixin.paint     import ItemPaintMixin
-from .mixin.quill     import ItemQuillMixin
-from .mixin.shape     import ItemShapeMixin
-from .mixin.change    import ItemChangeMixin
-from .mixin.clone     import ItemCloneMixin
-from .mixin.xml       import ItemXmlMixin
-from .mixin.menu      import ItemMenuMixin
+from .mixin              import PrimaryItemMixin
+from .mixin.transform    import ItemTransformMixin
+from .mixin.handle       import ItemRectHandlesMixin
+from .mixin.shape        import ItemShapeMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -83,12 +77,12 @@ class TextState:
             align_v   = item.alignV(),
             width     = item.width(),
             height    = item.height(),
-            color     = item.quillColor(),
-            family    = item.quillFamily(),
-            size      = item.quillSize(),
-            bold      = item.quillBold(),
-            italic    = item.quillItalic(),
-            underline = item.quillUnderline()
+            color     = item.textColor(),
+            family    = item.textFont(),
+            size      = item.textSize(),
+            bold      = item.textBold(),
+            italic    = item.textItalic(),
+            underline = item.textUnderline()
         )
 
 
@@ -114,17 +108,10 @@ class TextChange:
 
 
 class TextItem(
-    ItemMixin,
     ItemTransformMixin,
     ItemRectHandlesMixin,
-    ItemPaintMixin,
-    ItemQuillMixin,
     ItemShapeMixin,
-    ItemChangeMixin,
-    ItemCloneMixin,
-    ItemXmlMixin,
-    ItemMenuMixin,
-    PropertiesMixin,
+    PrimaryItemMixin,
     QGraphicsItem
 ):
     """
@@ -188,7 +175,7 @@ class TextItem(
         ItemTransformMixin._PROPERTIES_RECT_ORIGIN | \
         _PROPERTIES_ALIGN                          | \
         _PROPERTIES_SIZE                           | \
-        ItemQuillMixin._PROPERTIES_QUILL
+        PrimaryItemMixin._PROPERTIES_TEXT
 
     # instance attributes
     _child    : "TextLineRenderer | TextBlockRenderer"  # text renderer
@@ -198,6 +185,13 @@ class TextItem(
     _width    : float                                   # width constraint
     _height   : float                                   # height constraint
     _brect    : QRectF                                  # bounding rect
+
+    _text_color     = None  # enable per-item appearance control
+    _text_font      = None  # enable per-item appearance control
+    _text_size      = None  # enable per-item appearance control
+    _text_bold      = None  # enable per-item appearance control
+    _text_italic    = None  # enable per-item appearance control
+    _text_underline = None  # enable per-item appearance control
 
     def __init__(
         self      : Self,
@@ -213,12 +207,12 @@ class TextItem(
         align_v   : AlignV               = AlignV.TOP,
         width     : float                = -1.0,        # unconstrained
         height    : float                = -1.0,        # unconstrained
-        color     : QColor | Default     = DEFAULT,
-        family    : str    | Default     = DEFAULT,
-        size      : float  | Default     = DEFAULT,
-        bold      : bool   | Default     = DEFAULT,
-        italic    : bool   | Default     = DEFAULT,
-        underline : bool   | Default     = DEFAULT,
+        color     : QColor | None        = None,
+        family    : str    | None        = None,
+        size      : float  | None        = None,
+        bold      : bool   | None        = None,
+        italic    : bool   | None        = None,
+        underline : bool   | None        = None,
         fresh     : bool                 = True,
         parent    : QGraphicsItem | None = None
     ) -> None:
@@ -239,12 +233,12 @@ class TextItem(
         self.setMirrorH(mirror_h)
         self.setMirrorV(mirror_v)
         self.setOrigin(origin)
-        self.setQuillColor(color)
-        self.setQuillFamily(family)
-        self.setQuillSize(size)
-        self.setQuillBold(bold)
-        self.setQuillItalic(italic)
-        self.setQuillUnderline(underline)
+        self.setTextColor(color)
+        self.setTextFont(family)
+        self.setTextSize(size)
+        self.setTextBold(bold)
+        self.setTextItalic(italic)
+        self.setTextUnderline(underline)
         self._child.onGeometryChange()
         self.updateHandlePositions()
         self.onSceneRotationChange()

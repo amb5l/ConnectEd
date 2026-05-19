@@ -12,8 +12,6 @@ from .symbol_pin import SymbolPinItem
 
 from .mixin           import ItemMixin
 from .mixin.transform import ItemTransformMixin
-from .mixin.line      import ItemLineMixin
-from .mixin.fill      import ItemFillMixin
 from .mixin.change    import ItemChangeMixin
 from .mixin.clone     import ItemCloneMixin
 from .mixin.xml       import ItemXmlMixin
@@ -23,8 +21,6 @@ from .mixin.menu      import ItemMenuMixin
 class SymbolItem(
     ItemMixin,
     ItemTransformMixin,
-    ItemLineMixin,
-    ItemFillMixin,
     ItemChangeMixin,
     ItemCloneMixin,
     ItemXmlMixin,

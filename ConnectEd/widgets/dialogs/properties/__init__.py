@@ -10,7 +10,7 @@ from PyQt6.QtGui     import QStandardItemModel, QColor, QFontDatabase
 from ....app import logger
 
 from ....core.types import (
-    DEFAULT, EnDis, AlignH, AlignV, Display, DataKind,
+    EnDis, AlignH, AlignV, Display, DataKind,
     RectHandleId, LineHandleId, BlockPinHandleId, SymbolPinHandleId,
 )
 
@@ -50,12 +50,12 @@ _PT_COLS : dict[str, DataKind] = {
     "Align V"   : ( DataKind.ALIGN_V     , AlignV.TOP               , "alignV"         ), # noqa E501
     "Width"     : ( DataKind.SIZE        , None                     , "width"          ), # noqa E501
     "Height"    : ( DataKind.SIZE        , None                     , "height"         ), # noqa E501
-    "Color"     : ( DataKind.COLOR       , DEFAULT                  , "quillColor"     ), # noqa E501
-    "Family"    : ( DataKind.FONT_FAMILY , DEFAULT                  , "quillFamily"    ), # noqa E501
-    "Size"      : ( DataKind.FONT_SIZE   , DEFAULT                  , "quillSize"      ), # noqa E501
-    "Bold"      : ( DataKind.FONT_BOOL   , DEFAULT                  , "quillBold"      ), # noqa E501
-    "Italic"    : ( DataKind.FONT_BOOL   , DEFAULT                  , "quillItalic"    ), # noqa E501
-    "Underline" : ( DataKind.FONT_BOOL   , DEFAULT                  , "quillUnderline" )  # noqa E501
+    "Color"     : ( DataKind.COLOR       , None                     , "quillColor"     ), # noqa E501
+    "Family"    : ( DataKind.FONT_FAMILY , None                     , "quillFamily"    ), # noqa E501
+    "Size"      : ( DataKind.FONT_SIZE   , None                     , "quillSize"      ), # noqa E501
+    "Bold"      : ( DataKind.FONT_BOOL   , None                     , "quillBold"      ), # noqa E501
+    "Italic"    : ( DataKind.FONT_BOOL   , None                     , "quillItalic"    ), # noqa E501
+    "Underline" : ( DataKind.FONT_BOOL   , None                     , "quillUnderline" )  # noqa E501
 }
 
 
@@ -420,13 +420,13 @@ class PropertiesDialog(QDialog):
         # get all font families, sorted by name length
         families = sorted(QFontDatabase.families(), key=len)
         test_editors = [
-            ColorComboBox     (DEFAULT, QColor("#FFFFFF"), None),
-            LineWidthComboBox (DEFAULT, 8.0, None),
-            LineStyleComboBox (DEFAULT, Qt.PenStyle.DashDotDotLine, None),
-            FillStyleComboBox (DEFAULT, Qt.BrushStyle.DiagCrossPattern, None),
-            FontFamilyComboBox(DEFAULT, families[-1], None),
-            FontSizeComboBox  (DEFAULT, 888.8, None),
-            FontBoolComboBox  (DEFAULT, False, None)
+            ColorComboBox     (None, QColor("#FFFFFF"), None),
+            LineWidthComboBox (None, 8.0, None),
+            LineStyleComboBox (None, Qt.PenStyle.DashDotDotLine, None),
+            FillStyleComboBox (None, Qt.BrushStyle.DiagCrossPattern, None),
+            FontFamilyComboBox(None, families[-1], None),
+            FontSizeComboBox  (None, 888.8, None),
+            FontBoolComboBox  (None, False, None)
         ]
         for editor in test_editors:
             hint = editor.sizeHint()

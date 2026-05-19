@@ -1,16 +1,12 @@
 from typing import Self
 
+from PyQt6.QtCore    import Qt
 from PyQt6.QtWidgets import QWidget, QDialog, QGroupBox, QVBoxLayout
-from PyQt6.QtGui     import QShowEvent
+from PyQt6.QtGui     import QShowEvent, QColor
 
-from ...core.types import (
-    NoChange, NO_CHANGE,
-    Color, PenWidth, PenStyle, BrushStyle, FontFamily, FontSize, FontBool
-)
+from ...core.types import NoChange, NO_CHANGE
 
-from ..graphics.items.mixin.line  import ItemLineMixin
-from ..graphics.items.mixin.fill  import ItemFillMixin
-from ..graphics.items.mixin.quill import ItemQuillMixin
+from ..graphics.items.mixin.presentation import ItemPresentationMixin
 
 from .components.layout.line_appearance import LineAppearanceLayout
 from .components.layout.fill_appearance import FillAppearanceLayout
@@ -32,18 +28,16 @@ class AppearanceDialog(QDialog):
 
     def __init__(
         self   : Self,
-        items  : list[ItemLineMixin | ItemFillMixin | ItemQuillMixin],
+        items  : list[ItemPresentationMixin],
         parent : QWidget | None = None
     ) -> None:
         super().__init__(parent)
-        category_counts = {
-            "line" : sum(1 for i in items if isinstance(i, ItemLineMixin)),
-            "fill" : sum(1 for i in items if isinstance(i, ItemFillMixin)),
-            "text" : sum(1 for i in items if isinstance(i, ItemQuillMixin)),
-        }
-        category_count = sum(1 for count in category_counts.values() if count > 0)
+        line_count = sum(1 for i in items if i.hasLine())
+        fill_count = sum(1 for i in items if i.hasFill())
+        text_count = sum(1 for i in items if i.hasText())
+        category_count = line_count + fill_count + text_count
         self._dialog_layout = QVBoxLayout(self)
-        if category_counts["line"] > 0:
+        if line_count > 0:
             self._line_group_box = QGroupBox("Line") if category_count > 1 else None
             self._line_layout = LineAppearanceLayout(
                 _combinedValue(items, "lineColor"),
@@ -61,7 +55,7 @@ class AppearanceDialog(QDialog):
         else:
             self._line_group_box = None
             self._line_layout   = None
-        if category_counts["fill"] > 0:
+        if fill_count > 0:
             self._fill_group_box = QGroupBox("Fill") if category_count > 1 else None
             self._fill_layout = FillAppearanceLayout(
                 _combinedValue(items, "fillColor"),
@@ -77,7 +71,7 @@ class AppearanceDialog(QDialog):
         else:
             self._fill_group_box = None
             self._fill_layout    = None
-        if category_counts["text"] > 0:
+        if text_count > 0:
             self._text_group_box = QGroupBox("Text") if category_count > 1 else None
             self._text_layout = TextAppearancePreviewLayout(
                 _combinedValue(items, "textColor"),
@@ -106,9 +100,9 @@ class AppearanceDialog(QDialog):
         self.setLayout(self._dialog_layout)
         title = \
             "Appearance" if category_count > 1 else \
-            "Line Appearance" if category_counts["line"] else \
-            "Fill Appearance" if category_counts["fill"] else \
-            "Text Appearance" if category_counts["text"] else \
+            "Line Appearance" if line_count > 0 else \
+            "Fill Appearance" if fill_count > 0 else \
+            "Text Appearance" if text_count > 0 else \
             "???"
         self.setWindowTitle(title)
 
@@ -149,35 +143,35 @@ class AppearanceDialog(QDialog):
         from PyQt6.QtCore import QTimer
         QTimer.singleShot(0, self._adjustComboBoxWidths)
 
-    def getLineColorChoice(self : Self) -> Color | NoChange:
+    def getLineColorChoice(self : Self) -> QColor | None | NoChange:
         return self._line_layout.getColorChoice() if self._line_layout else NO_CHANGE
 
-    def getLineWidthChoice(self : Self) -> PenWidth | NoChange:
+    def getLineWidthChoice(self : Self) -> float | None | NoChange:
         return self._line_layout.getWidthChoice() if self._line_layout else NO_CHANGE
 
-    def getLineStyleChoice(self : Self) -> PenStyle | NoChange:
+    def getLineStyleChoice(self : Self) -> Qt.PenStyle | None | NoChange:
         return self._line_layout.getStyleChoice() if self._line_layout else NO_CHANGE
 
-    def getFillColorChoice(self : Self) -> Color | NoChange:
+    def getFillColorChoice(self : Self) -> QColor | None | NoChange:
         return self._fill_layout.getColorChoice() if self._fill_layout else NO_CHANGE
 
-    def getFillStyleChoice(self : Self) -> BrushStyle | NoChange:
+    def getFillStyleChoice(self : Self) -> Qt.BrushStyle | None | NoChange:
         return self._fill_layout.getStyleChoice() if self._fill_layout else NO_CHANGE
 
-    def getTextColorChoice(self : Self) -> Color | NoChange:
+    def getTextColorChoice(self : Self) -> QColor | None | NoChange:
         return self._text_layout.getColor() if self._text_layout else NO_CHANGE
 
-    def getTextFontChoice(self : Self) -> FontFamily | NoChange:
+    def getTextFontChoice(self : Self) -> str | None | NoChange:
         return self._text_layout.getFamily() if self._text_layout else NO_CHANGE
 
-    def getTextSizeChoice(self : Self) -> FontSize | NoChange:
+    def getTextSizeChoice(self : Self) -> float | None | NoChange:
         return self._text_layout.getSize() if self._text_layout else NO_CHANGE
 
-    def getTextBoldChoice(self : Self) -> FontBool | NoChange:
+    def getTextBoldChoice(self : Self) -> bool | None | NoChange:
         return self._text_layout.getBold() if self._text_layout else NO_CHANGE
 
-    def getTextItalicChoice(self : Self) -> FontBool | NoChange:
+    def getTextItalicChoice(self : Self) -> bool | None | NoChange:
         return self._text_layout.getItalic() if self._text_layout else NO_CHANGE
 
-    def getTextUnderlineChoice(self : Self) -> FontBool | NoChange:
+    def getTextUnderlineChoice(self : Self) -> bool | None | NoChange:
         return self._text_layout.getUnderline() if self._text_layout else NO_CHANGE

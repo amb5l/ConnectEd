@@ -5,13 +5,11 @@ from PyQt6.QtCore    import Qt
 from PyQt6.QtWidgets import QGraphicsItem
 from PyQt6.QtGui     import QColor
 
-from .......core.types import Default, NoChange, NO_CHANGE
+from .......core.types import NoChange, NO_CHANGE
 
 from .....items.mixin import ItemMixin
 
-from .....items.mixin.line  import ItemLineMixin
-from .....items.mixin.fill  import ItemFillMixin
-from .....items.mixin.quill import ItemQuillMixin
+from .....items.mixin.presentation import ItemPresentationMixin
 
 from .. import CmdSceneItems
 
@@ -26,45 +24,42 @@ class CmdEditAppearance(CmdSceneItems):
     ItemType : TypeAlias = \
         QGraphicsItem            | \
         OnGeometryChangeProtocol | \
-        ItemLineMixin            | \
-        ItemFillMixin            | \
-        ItemQuillMixin
+        ItemPresentationMixin
 
     @dataclass
     class ItemBefore:
         """
         Snapshot of item properties before the change.
-        None means item does not have the property.
+        NO_CHANGE means item does not have the property.
         """
-        line_color     : QColor        | Default | None
-        line_width     : float         | Default | None
-        line_style     : Qt.PenStyle   | Default | None
-        fill_color     : QColor        | Default | None
-        fill_style     : Qt.BrushStyle | Default | None
-        text_color     : QColor        | Default | None
-        text_family    : str           | Default | None
-        text_size      : float         | Default | None
-        text_bold      : bool          | Default | None
-        text_italic    : bool          | Default | None
-        text_underline : bool          | Default | None
+        line_color     : QColor        | None | NoChange
+        line_width     : float         | None | NoChange
+        line_style     : Qt.PenStyle   | None | NoChange
+        fill_color     : QColor        | None | NoChange
+        fill_style     : Qt.BrushStyle | None | NoChange
+        text_color     : QColor        | None | NoChange
+        text_family    : str           | None | NoChange
+        text_size      : float         | None | NoChange
+        text_bold      : bool          | None | NoChange
+        text_italic    : bool          | None | NoChange
+        text_underline : bool          | None | NoChange
 
     @dataclass
     class ItemAfter:
         """
         New values for item properties after the change.
-        None means item does not have the property.
         """
-        line_color     : QColor        | Default | NoChange | None
-        line_width     : float         | Default | NoChange | None
-        line_style     : Qt.PenStyle   | Default | NoChange | None
-        fill_color     : QColor        | Default | NoChange | None
-        fill_style     : Qt.BrushStyle | Default | NoChange | None
-        text_color     : QColor        | Default | NoChange | None
-        text_family    : str           | Default | NoChange | None
-        text_size      : float         | Default | NoChange | None
-        text_bold      : bool          | Default | NoChange | None
-        text_italic    : bool          | Default | NoChange | None
-        text_underline : bool          | Default | NoChange | None
+        line_color     : QColor        | None | NoChange
+        line_width     : float         | None | NoChange
+        line_style     : Qt.PenStyle   | None | NoChange
+        fill_color     : QColor        | None | NoChange
+        fill_style     : Qt.BrushStyle | None | NoChange
+        text_color     : QColor        | None | NoChange
+        text_family    : str           | None | NoChange
+        text_size      : float         | None | NoChange
+        text_bold      : bool          | None | NoChange
+        text_italic    : bool          | None | NoChange
+        text_underline : bool          | None | NoChange
 
     _items  : list[ItemType]
     _before : dict[ItemMixin, ItemBefore]
@@ -74,36 +69,33 @@ class CmdEditAppearance(CmdSceneItems):
         self           : Self,
         scene          : "DrawingScene",
         items          : list[ItemType],
-        line_color     : QColor        | Default | NoChange | None,
-        line_width     : float         | Default | NoChange | None,
-        line_style     : Qt.PenStyle   | Default | NoChange | None,
-        fill_color     : QColor        | Default | NoChange | None,
-        fill_style     : Qt.BrushStyle | Default | NoChange | None,
-        text_color     : QColor        | Default | NoChange | None,
-        text_family    : str           | Default | NoChange | None,
-        text_size      : float         | Default | NoChange | None,
-        text_bold      : bool          | Default | NoChange | None,
-        text_italic    : bool          | Default | NoChange | None,
-        text_underline : bool          | Default | NoChange | None
+        line_color     : QColor        | None | NoChange = NO_CHANGE,
+        line_width     : float         | None | NoChange = NO_CHANGE,
+        line_style     : Qt.PenStyle   | None | NoChange = NO_CHANGE,
+        fill_color     : QColor        | None | NoChange = NO_CHANGE,
+        fill_style     : Qt.BrushStyle | None | NoChange = NO_CHANGE,
+        text_color     : QColor        | None | NoChange = NO_CHANGE,
+        text_family    : str           | None | NoChange = NO_CHANGE,
+        text_size      : float         | None | NoChange = NO_CHANGE,
+        text_bold      : bool          | None | NoChange = NO_CHANGE,
+        text_italic    : bool          | None | NoChange = NO_CHANGE,
+        text_underline : bool          | None | NoChange = NO_CHANGE
     ):
         super().__init__(scene, items)
         self._before = {}
         for item in items:
-            has_line = isinstance(item, ItemLineMixin)
-            has_fill = isinstance(item, ItemFillMixin)
-            has_text = isinstance(item, ItemQuillMixin)
             self._before[item] = self.ItemBefore(
-                item.lineColor()      if has_line else None,
-                item.lineWidth()      if has_line else None,
-                item.lineStyle()      if has_line else None,
-                item.fillColor()      if has_fill else None,
-                item.fillStyle()      if has_fill else None,
-                item.quillColor()     if has_text else None,
-                item.quillFamily()    if has_text else None,
-                item.quillSize()      if has_text else None,
-                item.quillBold()      if has_text else None,
-                item.quillItalic()    if has_text else None,
-                item.quillUnderline() if has_text else None
+                item.lineColor()      if item.hasLineColor()     else NO_CHANGE,
+                item.lineWidth()      if item.hasLineWidth()     else NO_CHANGE,
+                item.lineStyle()      if item.hasLineStyle()     else NO_CHANGE,
+                item.fillColor()      if item.hasFillColor()     else NO_CHANGE,
+                item.fillStyle()      if item.hasFillStyle()     else NO_CHANGE,
+                item.textColor()      if item.hasTextColor()     else NO_CHANGE,
+                item.textFont()       if item.hasTextFont()      else NO_CHANGE,
+                item.textSize()       if item.hasTextSize()      else NO_CHANGE,
+                item.textBold()       if item.hasTextBold()      else NO_CHANGE,
+                item.textItalic()     if item.hasTextItalic()    else NO_CHANGE,
+                item.textUnderline()  if item.hasTextUnderline() else NO_CHANGE
             )
         self._after = self.ItemAfter(
             line_color,
@@ -121,57 +113,54 @@ class CmdEditAppearance(CmdSceneItems):
 
     def redo(self : Self) -> None:
         for item in self._items:
-            if self._applicable(self._after.line_color):
+            if self._before[item].line_color is not NO_CHANGE:
                 item.setLineColor(self._after.line_color)
-            if self._applicable(self._after.line_width):
+            if self._before[item].line_width is not NO_CHANGE:
                 item.setLineWidth(self._after.line_width)
-            if self._applicable(self._after.line_style):
+            if self._before[item].line_style is not NO_CHANGE:
                 item.setLineStyle(self._after.line_style)
-            if self._applicable(self._after.fill_color):
+            if self._before[item].fill_color is not NO_CHANGE:
                 item.setFillColor(self._after.fill_color)
-            if self._applicable(self._after.fill_style):
+            if self._before[item].fill_style is not NO_CHANGE:
                 item.setFillStyle(self._after.fill_style)
-            if self._applicable(self._after.text_color):
+            if self._before[item].text_color is not NO_CHANGE:
                 item.setQuillColor(self._after.text_color)
-            if self._applicable(self._after.text_family):
+            if self._before[item].text_family is not NO_CHANGE:
                 item.setQuillFamily(self._after.text_family)
-            if self._applicable(self._after.text_size):
+            if self._before[item].text_size is not NO_CHANGE:
                 item.setQuillSize(self._after.text_size)
-            if self._applicable(self._after.text_bold):
+            if self._before[item].text_bold is not NO_CHANGE:
                 item.setQuillBold(self._after.text_bold)
-            if self._applicable(self._after.text_italic):
+            if self._before[item].text_italic is not NO_CHANGE:
                 item.setQuillItalic(self._after.text_italic)
-            if self._applicable(self._after.text_underline):
+            if self._before[item].text_underline is not NO_CHANGE:
                 item.setQuillUnderline(self._after.text_underline)
             item.onGeometryChange()
             item.update()
 
     def undo(self : Self) -> None:
         for item in self._items:
-            if self._applicable(self._after[item].line_color):
+            if self._before[item].line_color is not NO_CHANGE:
                 item.setLineColor(self._before[item].line_color)
-            if self._applicable(self._after[item].line_width):
+            if self._before[item].line_width is not NO_CHANGE:
                 item.setLineWidth(self._before[item].line_width)
-            if self._applicable(self._after[item].line_style):
+            if self._before[item].line_style is not NO_CHANGE:
                 item.setLineStyle(self._before[item].line_style)
-            if self._applicable(self._after[item].fill_color):
+            if self._before[item].fill_color is not NO_CHANGE:
                 item.setFillColor(self._before[item].fill_color)
-            if self._applicable(self._after[item].fill_style):
+            if self._before[item].fill_style is not NO_CHANGE:
                 item.setFillStyle(self._before[item].fill_style)
-            if self._applicable(self._after[item].text_color):
+            if self._before[item].text_color is not NO_CHANGE:
                 item.setQuillColor(self._before[item].text_color)
-            if self._applicable(self._after[item].text_family):
+            if self._before[item].text_family is not NO_CHANGE:
                 item.setQuillFamily(self._before[item].text_family)
-            if self._applicable(self._after[item].text_size):
+            if self._before[item].text_size is not NO_CHANGE:
                 item.setQuillSize(self._before[item].text_size)
-            if self._applicable(self._after[item].text_bold):
+            if self._before[item].text_bold is not NO_CHANGE:
                 item.setQuillBold(self._before[item].text_bold)
-            if self._applicable(self._after[item].text_italic):
+            if self._before[item].text_italic is not NO_CHANGE:
                 item.setQuillItalic(self._before[item].text_italic)
-            if self._applicable(self._after[item].text_underline):
+            if self._before[item].text_underline is not NO_CHANGE:
                 item.setQuillUnderline(self._before[item].text_underline)
             item.onGeometryChange()
             item.update()
-
-    def _applicable(self : Self, param : Any) -> bool:
-        return param is not None and param is not NO_CHANGE

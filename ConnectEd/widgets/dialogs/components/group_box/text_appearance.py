@@ -1,9 +1,10 @@
 from typing import Self
 
 from PyQt6.QtWidgets import QGroupBox, QWidget
+from PyQt6.QtGui     import QColor
 
 from .....core.check import checked
-from .....core.types import NoChange, Color, FontFamily, FontSize, FontBool
+from .....core.types import NoChange
 
 from ..layout.text_appearance import TextAppearancePreviewLayout
 
@@ -11,21 +12,21 @@ from ..layout.text_appearance import TextAppearancePreviewLayout
 class TextAppearancePreviewGroupBox(QGroupBox):
     _layout : TextAppearancePreviewLayout
 
-
+    @checked
     def __init__(
         self              : Self,
-        initial_color     : Color      | NoChange,
-        initial_family    : FontFamily | NoChange,
-        initial_size      : FontSize   | NoChange,
-        initial_bold      : FontBool   | NoChange,
-        initial_italic    : FontBool   | NoChange,
-        initial_underline : FontBool   | NoChange,
-        default_color     : Color      | NoChange,
-        default_family    : FontFamily | NoChange,
-        default_size      : FontSize   | NoChange,
-        default_bold      : FontBool   | NoChange,
-        default_italic    : FontBool   | NoChange,
-        default_underline : FontBool   | NoChange,
+        initial_color     : QColor | None | NoChange,
+        initial_family    : str    | None | NoChange,
+        initial_size      : float  | None | NoChange,
+        initial_bold      : bool   | None | NoChange,
+        initial_italic    : bool   | None | NoChange,
+        initial_underline : bool   | None | NoChange,
+        default_color     : QColor,
+        default_family    : str,
+        default_size      : float,
+        default_bold      : bool,
+        default_italic    : bool,
+        default_underline : bool,
         title             : str = "Appearance",
         parent            : QWidget | None = None
     ) -> None:
@@ -48,25 +49,25 @@ class TextAppearancePreviewGroupBox(QGroupBox):
         self.setLayout(self._layout)
 
     @checked
-    def getColor(self : Self) -> Color | NoChange:
+    def getColor(self : Self) -> QColor | None | NoChange:
         return self._layout.getColor()
 
     @checked
-    def getFamily(self : Self) -> FontFamily | NoChange:
+    def getFamily(self : Self) -> str | None | NoChange:
         return self._layout.getFamily()
 
     @checked
-    def getSize(self : Self) -> FontSize | NoChange:
+    def getSize(self : Self) -> float | None | NoChange:
         return self._layout.getSize()
 
     @checked
-    def getBold(self : Self) -> FontBool | NoChange:
+    def getBold(self : Self) -> bool | None | NoChange:
         return self._layout.getBold()
 
     @checked
-    def getItalic(self : Self) -> FontBool | NoChange:
+    def getItalic(self : Self) -> bool | None | NoChange:
         return self._layout.getItalic()
 
     @checked
-    def getUnderline(self : Self) -> FontBool | NoChange:
+    def getUnderline(self : Self) -> bool | None | NoChange:
         return self._layout.getUnderline()

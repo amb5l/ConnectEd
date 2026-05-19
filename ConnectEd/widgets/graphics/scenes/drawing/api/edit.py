@@ -1,11 +1,11 @@
+from PyQt6.QtCore import Qt
 from PyQt6.QtCore import QPointF
+from PyQt6.QtGui  import QColor
 
 from ......app import logger
 from ......core.check import checked
 from ......core.types import NoChange, NO_CHANGE, \
-                             AlignH, AlignV, Direction, RectHandleId, \
-                             Color, PenWidth, PenStyle, BrushStyle, \
-                             FontFamily, FontSize, FontBool
+                             AlignH, AlignV, Direction, RectHandleId
 from ......core.xml    import copy
 
 from ....items import ItemType
@@ -173,23 +173,23 @@ class DrawingSceneApiEditMixin:
     def editText(
         self      : "DrawingScene",
         item      : TextItem,
-        text      : str          | NoChange = NO_CHANGE,
-        block     : bool         | NoChange = NO_CHANGE,
-        rotation  : float        | NoChange = NO_CHANGE,
-        autoflip  : bool         | NoChange = NO_CHANGE,
-        mirror_h  : bool         | NoChange = NO_CHANGE,
-        mirror_v  : bool         | NoChange = NO_CHANGE,
-        origin    : RectHandleId | NoChange = NO_CHANGE,
-        align_h   : AlignH       | NoChange = NO_CHANGE,
-        align_v   : AlignV       | NoChange = NO_CHANGE,
-        width     : float        | NoChange = NO_CHANGE,
-        height    : float        | NoChange = NO_CHANGE,
-        color     : Color        | NoChange = NO_CHANGE,
-        family    : FontFamily   | NoChange = NO_CHANGE,
-        size      : FontSize     | NoChange = NO_CHANGE,
-        bold      : FontBool     | NoChange = NO_CHANGE,
-        italic    : FontBool     | NoChange = NO_CHANGE,
-        underline : FontBool     | NoChange = NO_CHANGE,
+        text      : str           | NoChange = NO_CHANGE,
+        block     : bool          | NoChange = NO_CHANGE,
+        rotation  : float         | NoChange = NO_CHANGE,
+        autoflip  : bool          | NoChange = NO_CHANGE,
+        mirror_h  : bool          | NoChange = NO_CHANGE,
+        mirror_v  : bool          | NoChange = NO_CHANGE,
+        origin    : RectHandleId  | NoChange = NO_CHANGE,
+        align_h   : AlignH        | NoChange = NO_CHANGE,
+        align_v   : AlignV        | NoChange = NO_CHANGE,
+        width     : float         | NoChange = NO_CHANGE,
+        height    : float         | NoChange = NO_CHANGE,
+        color     : QColor | None | NoChange = NO_CHANGE,
+        family    : str    | None | NoChange = NO_CHANGE,
+        size      : float  | None | NoChange = NO_CHANGE,
+        bold      : bool   | None | NoChange = NO_CHANGE,
+        italic    : bool   | None | NoChange = NO_CHANGE,
+        underline : bool   | None | NoChange = NO_CHANGE,
         undoable  : bool                    = False
     ) -> None:
         cmd = CmdEditText(
@@ -203,17 +203,17 @@ class DrawingSceneApiEditMixin:
     def editAppearance(
         self           : "DrawingScene",
         items          : list[ItemMixin],
-        line_color     : Color      | NoChange = NO_CHANGE,
-        line_width     : PenWidth   | NoChange = NO_CHANGE,
-        line_style     : PenStyle   | NoChange = NO_CHANGE,
-        fill_color     : Color      | NoChange = NO_CHANGE,
-        fill_style     : BrushStyle | NoChange = NO_CHANGE,
-        text_color     : Color      | NoChange = NO_CHANGE,
-        text_family    : FontFamily | NoChange = NO_CHANGE,
-        text_size      : FontSize   | NoChange = NO_CHANGE,
-        text_bold      : FontBool   | NoChange = NO_CHANGE,
-        text_italic    : FontBool   | NoChange = NO_CHANGE,
-        text_underline : FontBool   | NoChange = NO_CHANGE,
+        line_color     : QColor        | None | NoChange = NO_CHANGE,
+        line_width     : float         | None | NoChange = NO_CHANGE,
+        line_style     : Qt.PenStyle   | None | NoChange = NO_CHANGE,
+        fill_color     : QColor        | None | NoChange = NO_CHANGE,
+        fill_style     : Qt.BrushStyle | None | NoChange = NO_CHANGE,
+        text_color     : QColor        | None | NoChange = NO_CHANGE,
+        text_family    : str           | None | NoChange = NO_CHANGE,
+        text_size      : float         | None | NoChange = NO_CHANGE,
+        text_bold      : bool          | None | NoChange = NO_CHANGE,
+        text_italic    : bool          | None | NoChange = NO_CHANGE,
+        text_underline : bool          | None | NoChange = NO_CHANGE,
         undoable       : bool = False
     ) -> None:
         cmd = CmdEditAppearance(

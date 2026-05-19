@@ -2,13 +2,12 @@ from typing import Self, Any
 
 from PyQt6.QtCore    import QPointF
 from PyQt6.QtWidgets import QGraphicsItem, QMenu
-from PyQt6.QtGui     import QAction
+from PyQt6.QtGui     import QAction, QColor
 
 from ....app import settings, logger
 
-from ....core.types import DEFAULT, NO_CHANGE, AlignH, AlignV, \
-                           HandleId, RectHandleId, DataKind, \
-                           Color, FontFamily, FontSize, FontBool
+from ....core.types import NO_CHANGE, AlignH, AlignV, \
+                           HandleId, RectHandleId, DataKind
 from ....core.utils import val2str
 
 from ..properties import InherentProperty, PropertiesMixin
@@ -22,7 +21,6 @@ from .tether import TextTetherItem
 
 from .mixin.transform import ItemTransformMixin
 from .mixin.handle    import ItemHandlesMixin
-from .mixin.quill     import ItemQuillMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -67,7 +65,7 @@ class PropertyTextItem(TextItem):
         ItemTransformMixin._PROPERTIES_RECT_ORIGIN | \
         TextItem._PROPERTIES_ALIGN | \
         TextItem._PROPERTIES_SIZE | \
-        ItemQuillMixin._PROPERTIES_QUILL
+        TextItem._PROPERTIES_TEXT
 
     # instance attributes
     _name   : str
@@ -97,12 +95,12 @@ class PropertyTextItem(TextItem):
         align_v   : AlignV               = AlignV.TOP,
         width     : float                = -1.0,
         height    : float                = -1.0,
-        color     : Color                = DEFAULT,
-        family    : FontFamily           = DEFAULT,
-        size      : FontSize             = DEFAULT,
-        bold      : FontBool             = DEFAULT,
-        italic    : FontBool             = DEFAULT,
-        underline : FontBool             = DEFAULT,
+        color     : QColor | None        = None,
+        family    : str    | None        = None,
+        size      : float  | None        = None,
+        bold      : bool   | None        = None,
+        italic    : bool   | None        = None,
+        underline : bool   | None        = None,
         fresh     : bool                 = True,
         parent    : QGraphicsItem | None = None
     ) -> None:
@@ -141,7 +139,6 @@ class PropertyTextItem(TextItem):
     def onParentChanged(self : Self, parent : QGraphicsItem | None) -> None:
         if parent is not None:
             self.onTextChanged()
-            self.quillSettingsChange()
 
     def onPositionChanged(
         self : Self,

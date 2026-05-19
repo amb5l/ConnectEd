@@ -3,8 +3,8 @@ from typing import Self
 from PyQt6.QtGui import QColor
 
 from .......core.check import checked
-from .......core.types import Default, NoChange, NO_CHANGE, \
-                               AlignH, AlignV, RectHandleId
+from .......core.types import NoChange, NO_CHANGE, \
+                              AlignH, AlignV, RectHandleId
 
 from .....items.text import TextItem, TextState, TextChange
 
@@ -25,23 +25,23 @@ class CmdEditText(CmdSceneItem):
         self      : Self,
         scene     : "DrawingScene",
         item      : "TextItem",
-        text      : str              | NoChange = NO_CHANGE,
-        block     : bool             | NoChange = NO_CHANGE,
-        rotation  : float            | NoChange = NO_CHANGE,
-        mirror_h  : bool             | NoChange = NO_CHANGE,
-        mirror_v  : bool             | NoChange = NO_CHANGE,
-        autoflip  : bool             | NoChange = NO_CHANGE,
-        origin    : RectHandleId     | NoChange = NO_CHANGE,
-        align_h   : AlignH           | NoChange = NO_CHANGE,
-        align_v   : AlignV           | NoChange = NO_CHANGE,
-        width     : float            | NoChange = NO_CHANGE,
-        height    : float            | NoChange = NO_CHANGE,
-        color     : QColor | Default | NoChange = NO_CHANGE,
-        family    : str    | Default | NoChange = NO_CHANGE,
-        size      : float  | Default | NoChange = NO_CHANGE,
-        bold      : bool   | Default | NoChange = NO_CHANGE,
-        italic    : bool   | Default | NoChange = NO_CHANGE,
-        underline : bool   | Default | NoChange = NO_CHANGE
+        text      : str           | NoChange = NO_CHANGE,
+        block     : bool          | NoChange = NO_CHANGE,
+        rotation  : float         | NoChange = NO_CHANGE,
+        mirror_h  : bool          | NoChange = NO_CHANGE,
+        mirror_v  : bool          | NoChange = NO_CHANGE,
+        autoflip  : bool          | NoChange = NO_CHANGE,
+        origin    : RectHandleId  | NoChange = NO_CHANGE,
+        align_h   : AlignH        | NoChange = NO_CHANGE,
+        align_v   : AlignV        | NoChange = NO_CHANGE,
+        width     : float         | NoChange = NO_CHANGE,
+        height    : float         | NoChange = NO_CHANGE,
+        color     : QColor | None | NoChange = NO_CHANGE,
+        family    : str    | None | NoChange = NO_CHANGE,
+        size      : float  | None | NoChange = NO_CHANGE,
+        bold      : bool   | None | NoChange = NO_CHANGE,
+        italic    : bool   | None | NoChange = NO_CHANGE,
+        underline : bool   | None | NoChange = NO_CHANGE
     ):
         super().__init__(scene, item)
         self._before = TextState.fromItem(item)

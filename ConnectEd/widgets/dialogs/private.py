@@ -4,13 +4,11 @@ from ...core.types import NO_CHANGE
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from ..graphics.items.mixin.line  import ItemLineMixin
-    from ..graphics.items.mixin.fill  import ItemFillMixin
-    from ..graphics.items.mixin.quill import ItemQuillMixin
+    from ..graphics.items.mixin.presentation import ItemPresentationMixin
 
 
 def _combinedValue(
-    items       : list["ItemLineMixin | ItemFillMixin | ItemQuillMixin"],
+    items       : list[ItemPresentationMixin],
     method_name : str
 ) -> Any:
     result = None
@@ -23,3 +21,6 @@ def _combinedValue(
                 result if result == value else \
                 NO_CHANGE
     return result
+
+
+__all__ = ["_combinedValue"]

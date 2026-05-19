@@ -2,10 +2,9 @@ from typing import Self
 
 from PyQt6.QtCore    import QPointF
 from PyQt6.QtWidgets import QGraphicsItem
+from PyQt6.QtGui     import QColor
 
-from ....core.types import DEFAULT, AlignH, AlignV, \
-                           RectHandleId, DataKind, \
-                           Color, FontFamily, FontSize, FontBool
+from ....core.types import AlignH, AlignV, RectHandleId, DataKind
 from ....core.utils import val2str
 
 from ..properties import InherentProperty
@@ -13,9 +12,6 @@ from ..properties import InherentProperty
 from .text   import TextItem
 from .handle import HandleItem
 from .tether import TextTetherItem
-
-from .mixin.transform import ItemTransformMixin
-from .mixin.quill     import ItemQuillMixin
 
 
 class NetLabelTetherItem(TextTetherItem):
@@ -50,12 +46,12 @@ class NetLabelItem(TextItem):
                 setter = lambda self, value: self.setVisible(value)
             )
         } | \
-        ItemTransformMixin._PROPERTIES_POS | \
-        ItemTransformMixin._PROPERTIES_ROTATE | \
-        ItemTransformMixin._PROPERTIES_RECT_ORIGIN | \
-        TextItem._PROPERTIES_ALIGN | \
-        TextItem._PROPERTIES_SIZE | \
-        ItemQuillMixin._PROPERTIES_QUILL
+        TextItem._PROPERTIES_POS         | \
+        TextItem._PROPERTIES_ROTATE      | \
+        TextItem._PROPERTIES_RECT_ORIGIN | \
+        TextItem._PROPERTIES_ALIGN       | \
+        TextItem._PROPERTIES_SIZE        | \
+        TextItem._PROPERTIES_TEXT
 
     # instance attributes
     _name   : str
@@ -76,12 +72,12 @@ class NetLabelItem(TextItem):
         align_v   : AlignV               = AlignV.TOP,
         width     : float                = -1.0,
         height    : float                = -1.0,
-        color     : Color                = DEFAULT,
-        family    : FontFamily           = DEFAULT,
-        size      : FontSize             = DEFAULT,
-        bold      : FontBool             = DEFAULT,
-        italic    : FontBool             = DEFAULT,
-        underline : FontBool             = DEFAULT,
+        color     : QColor | None        = None,
+        family    : str    | None        = None,
+        size      : float  | None        = None,
+        bold      : bool   | None        = None,
+        italic    : bool   | None        = None,
+        underline : bool   | None        = None,
         fresh     : bool                 = True,
         parent    : QGraphicsItem | None = None
     ) -> None:

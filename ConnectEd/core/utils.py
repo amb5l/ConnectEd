@@ -224,7 +224,7 @@ def str2val(s : str, t : str) -> Any:
     table view delegates.
     """
     from ..core.types import (
-        DEFAULT, AlignH, AlignV, Edge, EdgeLoc, Direction, Display, DataKind,
+        AlignH, AlignV, Edge, EdgeLoc, Direction, Display, DataKind,
         RectHandleId, LineHandleId, PortHandleId, BlockPinHandleId, SymbolPinHandleId
     )
     def strValuesToFloats(s : str) -> list[float]:
@@ -232,9 +232,6 @@ def str2val(s : str, t : str) -> Any:
     # handle None
     if s == "None":
         return None
-    # handle default
-    elif s == "default":
-        return DEFAULT
     # convert
     match t:
         case "bytes"             : return bytes.fromhex(s)

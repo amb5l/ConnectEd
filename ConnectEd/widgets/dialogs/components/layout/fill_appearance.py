@@ -6,15 +6,15 @@ from PyQt6.QtGui     import QColor
 
 from .....app import logger
 
-from .....core.types import Default, DEFAULT, NoChange, Color, BrushStyle
+from .....core.types import NoChange
 
 from ..combo.color      import ColorComboBox
 from ..combo.fill_style import FillStyleComboBox
 
 
 class FillAppearanceLayout(QVBoxLayout):
-    _default_color : QColor        | Default
-    _default_style : Qt.BrushStyle | Default
+    _default_color : QColor
+    _default_style : Qt.BrushStyle
     color_layout   : QHBoxLayout
     color_label    : QLabel
     color_combo    : ColorComboBox
@@ -23,8 +23,8 @@ class FillAppearanceLayout(QVBoxLayout):
     style_combo    : FillStyleComboBox
 
     def __init__(self : Self,
-        initial_color : Color      | NoChange,
-        initial_style : BrushStyle | NoChange,
+        initial_color : QColor        | None | NoChange,
+        initial_style : Qt.BrushStyle | None | NoChange,
         default_color : QColor,
         default_style : Qt.BrushStyle,
         parent        : QWidget | None = None
@@ -51,9 +51,9 @@ class FillAppearanceLayout(QVBoxLayout):
         color = self.color_combo.value()
         if not isinstance(color, QColor): return
         style = self.style_combo.value()
-        if style == DEFAULT: style = self._default_style
+        if style is None: style = self._default_style
         if style != Qt.BrushStyle.NoBrush: return
-        auto_style = DEFAULT if self._default_style != Qt.BrushStyle.NoBrush else \
+        auto_style = None if self._default_style != Qt.BrushStyle.NoBrush else \
             Qt.BrushStyle.SolidPattern
         for i in range(self.style_combo.count()):
             if auto_style == self.style_combo.itemData(i, Qt.ItemDataRole.UserRole):
@@ -62,8 +62,8 @@ class FillAppearanceLayout(QVBoxLayout):
         else:
             logger().warning("Fill style not found")
 
-    def getColorChoice(self : Self) -> Color | NoChange:
+    def getColorChoice(self : Self) -> QColor | None | NoChange:
         return self.color_combo.value()
 
-    def getStyleChoice(self : Self) -> BrushStyle | NoChange:
+    def getStyleChoice(self : Self) -> Qt.BrushStyle | None | NoChange:
         return self.style_combo.value()

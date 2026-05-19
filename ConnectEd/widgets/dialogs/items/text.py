@@ -2,11 +2,10 @@ from typing import Self
 
 from PyQt6.QtCore    import Qt, QTimer
 from PyQt6.QtWidgets import QWidget, QDialog, QVBoxLayout, QHBoxLayout
-from PyQt6.QtGui     import QShowEvent
+from PyQt6.QtGui     import QShowEvent, QColor
 
 from ....core.check import checked
-from ....core.types import NoChange, AlignH, AlignV, RectHandleId, \
-                           Color, FontFamily, FontSize, FontBool
+from ....core.types import NoChange, AlignH, AlignV, RectHandleId
 
 from ...graphics.items.text import TextItem
 
@@ -55,18 +54,18 @@ class BaseTextItemDialog(QDialog):
         self._geometry_layout.addWidget(self._origin_group_box)
         # middle right - appearance
         self._appearance_group_box = TextAppearancePreviewGroupBox(
-            item.quillColor(),
-            item.quillFamily(),
-            item.quillSize(),
-            item.quillBold(),
-            item.quillItalic(),
-            item.quillUnderline(),
-            item.defaultQuillColor(),
-            item.defaultQuillFamily(),
-            item.defaultQuillSize(),
-            item.defaultQuillBold(),
-            item.defaultQuillItalic(),
-            item.defaultQuillUnderline()
+            item.textColor(),
+            item.textFont(),
+            item.textSize(),
+            item.textBold(),
+            item.textItalic(),
+            item.textUnderline(),
+            item.defaultTextColor(),
+            item.defaultTextFont(),
+            item.defaultTextSize(),
+            item.defaultTextBold(),
+            item.defaultTextItalic(),
+            item.defaultTextUnderline()
         )
         # middle left and right combined
         self._middle_layout = QHBoxLayout()
@@ -117,27 +116,27 @@ class BaseTextItemDialog(QDialog):
         return self._origin_group_box.getOrigin()
 
     @checked
-    def getColor(self : Self) -> Color | NoChange:
+    def getColor(self : Self) -> QColor | None |NoChange:
         return self._appearance_group_box.getColor()
 
     @checked
-    def getFamily(self : Self) -> FontFamily | NoChange:
+    def getFamily(self : Self) -> str | None | NoChange:
         return self._appearance_group_box.getFamily()
 
     @checked
-    def getSize(self : Self) -> FontSize | NoChange:
+    def getSize(self : Self) -> float | None | NoChange:
         return self._appearance_group_box.getSize()
 
     @checked
-    def getBold(self : Self) -> FontBool | NoChange:
+    def getBold(self : Self) -> bool | None | NoChange:
         return self._appearance_group_box.getBold()
 
     @checked
-    def getItalic(self : Self) -> FontBool | NoChange:
+    def getItalic(self : Self) -> bool | None | NoChange:
         return self._appearance_group_box.getItalic()
 
     @checked
-    def getUnderline(self : Self) -> FontBool | NoChange:
+    def getUnderline(self : Self) -> bool | None | NoChange:
         return self._appearance_group_box.getUnderline()
 
 
