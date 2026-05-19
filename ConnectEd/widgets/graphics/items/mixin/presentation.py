@@ -64,6 +64,13 @@ class ItemPresentationMixin:
             setter  = lambda self, value: self.setFillColor(value),
             default = lambda self: self.defaultFillColor()
         ),
+        "Fill Style" : InherentProperty(
+            kind    = DataKind.BRUSH_STYLE,
+            worthy  = lambda self: self.fillStyle() is not None,
+            getter  = lambda self: self.fillStyle(),
+            setter  = lambda self, value: self.setFillStyle(value),
+            default = lambda self: self.defaultFillStyle()
+        )
     }
     _PROPERTIES_QUILL = {
         "Text Color" : InherentProperty(
@@ -107,7 +114,7 @@ class ItemPresentationMixin:
             getter  = lambda self: self.quillUnderline(),
             setter  = lambda self, value: self.setQuillUnderline(value),
             default = lambda self: self.defaultQuillUnderline()
-        ),
+        )
     }
 
     # to enable item specific overrides,
