@@ -272,7 +272,7 @@ class PortPinPathItem(PortPinMixin, QGraphicsPathItem):
         if self._clock:
             x += settings().get(f"{settings_path}/clock/size")
         # allow for pen width
-        x += settings().get(f"{settings_path}/wire/pen/width") / 2
+        x += settings().get(f"{settings_path}/wire/line/width") / 2
         # standard offset
         x += WIDTH
         # apply to name handle

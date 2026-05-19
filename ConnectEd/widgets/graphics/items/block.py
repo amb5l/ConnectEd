@@ -19,6 +19,11 @@ class BlockItem(PartItemMixin, BaseRectangleItem):
     # class attributes
     _PROPERTIES = PartItemMixin._PROPERTIES_PART | BaseRectangleItem._PROPERTIES
 
+    # instance attributes
+    _line_color = None  # enable per-item appearance control
+    _fill_color = None  # enable per-item appearance control
+    _fill_style = None  # enable per-item appearance control
+
     def __init__(
         self  : Self,
         p1    : QPointF | None = None,

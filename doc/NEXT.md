@@ -1,6 +1,20 @@
+- new appearance system
+  - per item, specify what can be overridden, e.g:
+    - BlockItem: line and fill color only
+    - rectangle: anything
+- retire DEFAULT
+- centralize onSettingsChanged
+
+
+ItemSelectMixin, _paint_override for all classes
+mixin simplification e.g. PrimaryItemMixin
+moveHandle : test with all pin types
+proper interaction subclasses with individual __init__
 implement net labels
 test pin wire/bus width
-retire old appearance system
+
+app/local settings e.g. select color, grid color
+scene settings, corresponding to scene resources => save/load XML
 
 YAML setting defaults
 updatePath mixin?

@@ -616,7 +616,10 @@ class TextRendererMixin(ItemShapeMixin):
         self.setAcceptedMouseButtons(Qt.MouseButton.NoButton)
         self.initShape()  # empty hit detect shape
 
-    def onSelectionChanged(self : Self, _selected : bool) -> None:
+    def onSelectionChanged(
+        self : "Self | TextLineRenderer | TextBlockRenderer",
+        _selected : bool
+    ) -> None:
         self._paint_override()
 
     def setFont(

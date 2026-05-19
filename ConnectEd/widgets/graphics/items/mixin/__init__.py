@@ -7,6 +7,15 @@ from PyQt6.QtWidgets import QGraphicsItem
 
 from .....core.defs  import Z_DRAWING
 
+from ...properties import PropertiesMixin
+
+from .presentation import ItemPresentationMixin
+from .select       import ItemSelectMixin
+from .change       import ItemChangeMixin
+from .clone        import ItemCloneMixin
+from .xml          import ItemXmlMixin
+from .menu         import ItemMenuMixin
+
 
 class ItemNamesMixin:
     def settingsName(self : Self | QGraphicsItem) -> str:
@@ -33,6 +42,8 @@ class ItemMixin(ItemNamesMixin, ItemMoveMixin):
 
     def initItem(self : Self | QGraphicsItem, fresh : bool = True) -> None:
         from ...properties import PropertiesMixin
+        from .presentation  import ItemPresentationMixin
+        from .select        import ItemSelectMixin
         from .handle    import ItemHandlesMixin
         from .loc       import ItemLocMixin
         from .transform import ItemTransformMixin
@@ -48,6 +59,10 @@ class ItemMixin(ItemNamesMixin, ItemMoveMixin):
         self.setFlag( f.ItemSendsScenePositionChanges , True )
         self.setCacheMode(QGraphicsItem.CacheMode.DeviceCoordinateCache)
         self._resetUuid()
+        if isinstance(self, ItemPresentationMixin):
+            self.initPresentation()
+        if isinstance(self, ItemSelectMixin):
+            self.initSelect()
         if isinstance(self, ItemHandlesMixin):
             self.initHandles()
         if isinstance(self, ItemLocMixin):
@@ -91,3 +106,16 @@ class ItemMixin(ItemNamesMixin, ItemMoveMixin):
 
     def _resetUuid(self : Self | QGraphicsItem) -> None:
         self._uuid = str(uuid.uuid4())
+
+
+class PrimaryItemMixin(
+    ItemMixin,
+    ItemPresentationMixin,
+    ItemSelectMixin,
+    ItemChangeMixin,
+    ItemCloneMixin,
+    ItemXmlMixin,
+    ItemMenuMixin,
+    PropertiesMixin
+):
+    pass

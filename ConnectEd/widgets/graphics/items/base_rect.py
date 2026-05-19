@@ -7,18 +7,11 @@ from PyQt6.QtGui     import QAction
 from ....core.defs  import PITCH
 from ....core.types import RectHandleId, DataKind
 
-from ..properties import PropertiesMixin, InherentProperty
+from ..properties import InherentProperty
 
-from .mixin           import ItemMixin
-from .mixin.transform import ItemTransformMixin
-from .mixin.paint     import ItemPaintMixin
-from .mixin.handle    import ItemRectHandlesMixin
-from .mixin.line      import ItemLineMixin
-from .mixin.fill      import ItemFillMixin
-from .mixin.change    import ItemChangeMixin
-from .mixin.clone     import ItemCloneMixin
-from .mixin.xml       import ItemXmlMixin
-from .mixin.menu      import ItemMenuMixin
+from .mixin            import PrimaryItemMixin
+from .mixin.transform  import ItemTransformMixin
+from .mixin.handle     import ItemRectHandlesMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -26,17 +19,9 @@ if TYPE_CHECKING:
 
 
 class BaseRectangleMixin(
-    ItemMixin,
     ItemTransformMixin,
-    ItemPaintMixin,
     ItemRectHandlesMixin,
-    ItemLineMixin,
-    ItemFillMixin,
-    ItemChangeMixin,
-    ItemCloneMixin,
-    ItemXmlMixin,
-    ItemMenuMixin,
-    PropertiesMixin
+    PrimaryItemMixin
 ):
     """Base mixin class for rectangle-like items."""
 
@@ -58,8 +43,8 @@ class BaseRectangleMixin(
                 setter = lambda self, value: self.setHeight(value)
             )
         } | \
-        ItemLineMixin._PROPERTIES_LINE | \
-        ItemFillMixin._PROPERTIES_FILL
+        PrimaryItemMixin._PROPERTIES_LINE | \
+        PrimaryItemMixin._PROPERTIES_FILL
     _MIN_SIZE = QSizeF(1.0, 1.0)
 
     @overload

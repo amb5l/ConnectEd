@@ -7,21 +7,14 @@ from PyQt6.QtGui     import QAction
 
 from ....core.types import Direction, DataKind
 
-from ..properties import InherentProperty, PropertiesMixin
+from ..properties import InherentProperty
 
 from ..painter_path import PainterPath
 
 from .gate_pin import GatePinItem, BufGatePinItem, OrGatePinItem
 
-from .mixin           import ItemMixin
+from .mixin           import PrimaryItemMixin
 from .mixin.transform import ItemTransformMixin
-from .mixin.paint     import ItemPaintMixin
-from .mixin.line      import ItemLineMixin
-from .mixin.fill      import ItemFillMixin
-from .mixin.change    import ItemChangeMixin
-from .mixin.clone     import ItemCloneMixin
-from .mixin.xml       import ItemXmlMixin
-from .mixin.menu      import ItemMenuMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -59,16 +52,8 @@ class GateLabelMixin:
 
 class BaseGateItem(
     GateLabelMixin,
-    ItemMixin,
     ItemTransformMixin,
-    ItemPaintMixin,
-    ItemLineMixin,
-    ItemFillMixin,
-    ItemChangeMixin,
-    ItemCloneMixin,
-    ItemXmlMixin,
-    ItemMenuMixin,
-    PropertiesMixin,
+    PrimaryItemMixin,
     QGraphicsPathItem
 ):
     # class attributes
@@ -126,8 +111,11 @@ class BufGateItem(BaseGateItem):
         _PROPERTIES_IO | \
         ItemTransformMixin._PROPERTIES_POS | \
         ItemTransformMixin._PROPERTIES_ROTATE | \
-        ItemLineMixin._PROPERTIES_LINE | \
-        ItemFillMixin._PROPERTIES_FILL
+        PrimaryItemMixin._PROPERTIES_LINE | \
+        PrimaryItemMixin._PROPERTIES_FILL
+
+    def resourcesName(self : Self) -> str:
+        return "Gate"
 
     # instance attributes
     _input  : GatePinItem
@@ -244,10 +232,13 @@ class LogicGateItem(BaseGateItem):
         _PROPERTIES_IO | \
         ItemTransformMixin._PROPERTIES_POS | \
         ItemTransformMixin._PROPERTIES_ROTATE | \
-        ItemLineMixin._PROPERTIES_LINE | \
-        ItemFillMixin._PROPERTIES_FILL
+        PrimaryItemMixin._PROPERTIES_LINE | \
+        PrimaryItemMixin._PROPERTIES_FILL
     _PEN_CAP_STYLE = Qt.PenCapStyle.RoundCap
     _PEN_JOIN_STYLE = Qt.PenJoinStyle.RoundJoin
+
+    def resourcesName(self : Self) -> str:
+        return "GateRound"  # gate pen with round cap and round join
 
     # instance attributes
     _inputs : list[GatePinItem]

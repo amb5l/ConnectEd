@@ -1,42 +1,24 @@
 from typing import Self
 
-from PyQt6.QtCore    import Qt, QPointF, QLineF
+from PyQt6.QtCore    import QPointF, QLineF
 from PyQt6.QtWidgets import QGraphicsLineItem
-from PyQt6.QtGui     import QPainterPath, QPainterPathStroker
-
-from ....app import settings
 
 from ....core.types import DataKind, LineHandleId
 
-from ..properties import InherentProperty, PropertiesMixin
+from ..properties import InherentProperty
 
 from .handle import HandleItem
 from .grip   import ResizeGripItem
 
-from .mixin           import ItemMixin
+from .mixin           import PrimaryItemMixin
 from .mixin.transform import ItemTransformMixin
-from .mixin.shape     import ItemShapeMixin
-from .mixin.paint     import ItemPaintMixin
 from .mixin.handle    import ItemHandlesMixin
-from .mixin.line      import ItemLineMixin
-from .mixin.change    import ItemChangeMixin
-from .mixin.clone     import ItemCloneMixin
-from .mixin.xml       import ItemXmlMixin
-from .mixin.menu      import ItemMenuMixin
 
 
 class LineItem(
-    ItemMixin,
     ItemTransformMixin,
-    ItemShapeMixin,
-    ItemPaintMixin,
     ItemHandlesMixin[LineHandleId],
-    ItemLineMixin,
-    ItemChangeMixin,
-    ItemCloneMixin,
-    ItemXmlMixin,
-    ItemMenuMixin,
-    PropertiesMixin,
+    PrimaryItemMixin,
     QGraphicsLineItem
 ):
     # class attributes
@@ -63,7 +45,7 @@ class LineItem(
                 setter = lambda self, value: self.setY2(value)
             )
         } | \
-        ItemLineMixin._PROPERTIES_LINE
+        PrimaryItemMixin._PROPERTIES_LINE
 
     @classmethod
     def handleIdType(cls) -> type[LineHandleId]:
@@ -74,7 +56,11 @@ class LineItem(
         return DataKind.LINE_HANDLE
 
     # instance attributes
-    _line    : QLineF
+    _line : QLineF
+
+    _line_color = None  # enable per-item appearance control
+    _line_width = None  # enable per-item appearance control
+    _line_style = None  # enable per-item appearance control
 
     def __init__(
         self  : Self,
@@ -88,26 +74,6 @@ class LineItem(
         p2 = p2 or p1
         self._line = QLineF()
         self.setPoints(p1, p2)
-
-    def onGeometryChange(self : Self | PropertiesMixin) -> None:
-        """Allow for tolerance."""
-        if not hasattr(self, "_line"):
-            self._hshape = QPainterPath()
-            return
-        pen_width = self.pen().widthF()
-        tolerance = settings().get("display/select/tolerance")
-        stroke_width = pen_width + (2 * tolerance)
-        line_path = QPainterPath()
-        line_path.moveTo(self._line.p1())
-        line_path.lineTo(self._line.p2())
-        stroker = QPainterPathStroker()
-        stroker.setWidth(stroke_width)
-        stroker.setCapStyle(Qt.PenCapStyle.RoundCap)
-        stroker.setJoinStyle(Qt.PenJoinStyle.RoundJoin)
-        stroker_path = stroker.createStroke(line_path)
-        self._hshape = stroker_path
-        self.updateHandles()
-        self.signalPropertyChanges(["X1", "Y1", "X2", "Y2"])
 
     def initHandles(self : Self) -> None:
         self._handles = {
@@ -179,8 +145,4 @@ class LineItem(
         self.setPos(p1)
         self._line.setP2(p2-p1)
         self.setLine(self._line)
-        self.onGeometryChange()
-
-
-class SymbolLineItem(LineItem):
-    pass
+        self.updateHandles()

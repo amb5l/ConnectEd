@@ -9,15 +9,16 @@ from .....app import settings
 from .....core.defs  import PITCH, WIDTH
 from .....core.types import Direction
 
-from ...items.grip import GripShape
+from ...quill import Quill
 
-from typing import TYPE_CHECKING
-if TYPE_CHECKING:
-    from . import DrawingScene
+from ...items.grip import GripShape
 
 
 class DrawingSceneResources:
     # class attributes
+    _PEN_ITEMS = ["Rectangle", "Ellipse", "Block", "Line", "Polyline"]
+    _BRUSH_ITEMS = ["Rectangle", "Ellipse", "Block", "Polyline"]
+    _QUILL_ITEMS = ["Text", "PropertyText"]
     _PIN_PATH_ITEMS = ["SymbolPin"]
     _PIN_LINE_ITEMS = {}
     _PIN_ARROW_ITEMS = {"SymbolPinArrow" : (False, False)} # : int, in_left
@@ -25,13 +26,45 @@ class DrawingSceneResources:
     # instance attributes
     _pens    : dict[str, QPen | dict[tuple[bool, ...], QPen]] = {}
     _brushes : dict[str, QBrush | dict[bool, QBrush]] = {}
+    _quills  : dict[str, Quill | dict[bool, Quill]] = {}
     _lines   : dict[str, QLineF] = {}
     _paths   : dict[str, dict[Direction, QPainterPath]] = {}
 
+    def __init__(self : Self) -> None:
+        self.update()
+        settings().changed.connect(self.update)
+
     def update(self : Self) -> None:
+        # pens
+        for item_name in self._PEN_ITEMS:
+            pen_normal, pen_selected = self._getPens(
+                f"theme/items/{item_name}/line"
+            )
+            self._pens[item_name] = {
+                False : pen_normal,
+                True : pen_selected
+            }
+        # brushes
+        for item_name in self._BRUSH_ITEMS:
+            brush_normal, brush_selected = self._getBrushes(
+                f"theme/items/{item_name}/fill"
+            )
+            self._brushes[item_name] = {
+                False : brush_normal,
+                True : brush_selected
+            }
+        # quills
+        for item_name in self._QUILL_ITEMS:
+            quill_normal, quill_selected = self._getQuills(
+                f"theme/items/{item_name}/text"
+            )
+            self._quills[item_name] = {
+                False : quill_normal,
+                True  : quill_selected
+            }
         # grip pens, brushes and paths
-        self._pens["Grip"] = self._getPen("theme/grip/pen")
-        self._brushes["Grip"] = self._getBrush("theme/grip/brush")
+        self._pens["Grip"] = self._getPen("theme/grip/line")
+        self._brushes["Grip"] = self._getBrush("theme/grip/fill")
         self._paths["Grip"] = {}
         size = settings().get("theme/grip/size")
         rect = QRectF(-size/2, -size/2, size, size)
@@ -57,7 +90,7 @@ class DrawingSceneResources:
         ]))
         self._paths["Grip"][GripShape.ARROW] = arrow
         # tether pen
-        self._pens["Tether"] = self._getPen("theme/tether/pen")
+        self._pens["Tether"] = self._getPen("theme/tether/line")
         # pin pens
         pin_items = self._PIN_PATH_ITEMS + list(self._PIN_LINE_ITEMS.keys())
         for item_name in pin_items:
@@ -65,7 +98,7 @@ class DrawingSceneResources:
             for bus in [False, True]:
                 wire_bus = "bus" if bus else "wire"
                 pen_normal, pen_selected = self._getPens(
-                    f"theme/items/{item_name}/pin/{wire_bus}/pen"
+                    f"theme/items/{item_name}/pin/{wire_bus}/line"
                 )
                 self._pens[item_name][(bus, False)] = pen_normal
                 self._pens[item_name][(bus, True)] = pen_selected
@@ -103,19 +136,21 @@ class DrawingSceneResources:
                 self._paths[item_name][direction] = path
             pen_normal, pen_selected = \
                 self._getPens(
-                    f"{settings_path}/arrow/pen",
+                    f"{settings_path}/arrow/line",
                     cap_style=Qt.PenCapStyle.FlatCap
                 )
             pen_selected = QPen(pen_normal)
             pen_selected.setColor(settings().get("theme/selected/line"))
-            self._pens[item_name] = {}
-            self._pens[item_name][False] = pen_normal
-            self._pens[item_name][True] = pen_selected
+            self._pens[item_name] = {
+                False : pen_normal,
+                True  : pen_selected
+            }
             brush_normal, brush_selected = \
-                self._getBrushes(f"{settings_path}/arrow/brush")
-            self._brushes[item_name] = {}
-            self._brushes[item_name][False] = brush_normal
-            self._brushes[item_name][True] = brush_selected
+                self._getBrushes(f"{settings_path}/arrow/fill")
+            self._brushes[item_name] = {
+                False : brush_normal,
+                True : brush_selected
+            }
 
     def pen(
         self      : Self,
@@ -136,6 +171,16 @@ class DrawingSceneResources:
             raise ValueError(f"No brush defined for item {item_name}")
         return self._brushes[item_name] if key is None \
             else self._brushes[item_name][key]
+
+    def quill(
+        self      : Self,
+        item_name : str,
+        key       : bool | tuple | None = None
+    ) -> Quill:
+        if item_name not in self._quills:
+            raise ValueError(f"No quill defined for item {item_name}")
+        return self._quills[item_name] if key is None \
+            else self._quills[item_name][key]
 
     def line(self : Self, item_name : str) -> QLineF:
         if item_name not in self._lines:
@@ -183,6 +228,22 @@ class DrawingSceneResources:
         brush_selected = QBrush(brush_normal)
         brush_selected.setColor(settings().get("theme/selected/fill"))
         return brush_normal, brush_selected
+
+    def _getQuill(self : Self, settings_path : str) -> Quill:
+        return Quill(
+            settings().get(f"{settings_path}/color"),
+            settings().get(f"{settings_path}/font"),
+            settings().get(f"{settings_path}/size"),
+            settings().get(f"{settings_path}/bold"),
+            settings().get(f"{settings_path}/italic"),
+            settings().get(f"{settings_path}/underline")
+        )
+
+    def _getQuills(self : Self, settings_path : str) -> tuple[Quill, Quill]:
+        quill_normal = self._getQuill(settings_path)
+        quill_selected = Quill(quill_normal)
+        quill_selected.setColor(settings().get("theme/selected/text"))
+        return quill_normal, quill_selected
 
     def _extPinPath(
         self      : Self,

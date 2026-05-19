@@ -14,21 +14,15 @@ from ....core.xml   import fromXmlAttrs
 
 from ...dialogs.arc import ArcDialog
 
-from ..properties import InherentProperty, PropertiesMixin
+from ..properties import InherentProperty
 
 from ..painter_path import PainterPath
 
 from .grip import VertexGripItem, SegmentGripItem, PolylineResizeGripItem
 
-from .mixin           import ItemMixin
+from .mixin           import PrimaryItemMixin
 from .mixin.transform import ItemTransformMixin
-from .mixin.paint     import ItemPaintMixin
 from .mixin.handle    import ItemRectHandlesMixin
-from .mixin.line      import ItemLineMixin
-from .mixin.change    import ItemChangeMixin
-from .mixin.clone     import ItemCloneMixin
-from .mixin.xml       import ItemXmlMixin
-from .mixin.menu      import ItemMenuMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -146,16 +140,9 @@ class PolySegItem(SegmentGripItem):
 
 
 class PolylineItem(
-    ItemMixin,
     ItemTransformMixin,
-    ItemPaintMixin,
     ItemRectHandlesMixin,
-    ItemLineMixin,
-    ItemChangeMixin,
-    ItemCloneMixin,
-    ItemXmlMixin,
-    ItemMenuMixin,
-    PropertiesMixin,
+    PrimaryItemMixin,
     QGraphicsPathItem
 ):
     # class attributes
@@ -170,13 +157,19 @@ class PolylineItem(
         } | \
         ItemTransformMixin._PROPERTIES_POS | \
         ItemTransformMixin._PROPERTIES_ROTATE | \
-        ItemLineMixin._PROPERTIES_LINE
+        PrimaryItemMixin._PROPERTIES_LINE
 
     # instance attributes
     _vertices : list[PolyVtxItem]  # list of vertex grips
     _segments : list[PolySegItem]  # list of segment grips
     _closed   : bool               # whether the polyline is closed (a polygon)
     _sel_mode : int                # current selection mode (0 = outline, 1 = vtx/seg)
+
+    _line_color = None # enable per-item appearance control
+    _line_width = None # enable per-item appearance control
+    _line_style = None # enable per-item appearance control
+    _fill_color = None # enable per-item appearance control
+    _fill_style = None # enable per-item appearance control
 
     @checked
     def __init__(
@@ -204,6 +197,7 @@ class PolylineItem(
     @checked
     def onSceneChanged(self : Self, scene : "DrawingScene | None") -> None:
         """Initialize vertices, segments, and APs on scene change."""
+        super().onSceneChanged(scene)
         for vtx in self._vertices:
             vtx.onSceneChanged(scene)
         for seg in self._segments:
@@ -211,11 +205,6 @@ class PolylineItem(
         if hasattr(self, '_handles'):
             for h in self._handles.values():
                 h._grip.onSceneChanged(scene)
-
-    @checked
-    def onSelectionChanged(self : Self, selected : bool) -> None:
-        if not selected:
-            self._sel_mode = 0
 
     @checked
     def selMode(self : Self) -> int:

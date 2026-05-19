@@ -1,6 +1,6 @@
 from typing import Self
 
-from PyQt6.QtCore import QLineF, QRectF
+from PyQt6.QtCore import Qt, QLineF, QRectF
 from PyQt6.QtGui  import QPainterPath, QPen
 
 from .....app import settings
@@ -13,6 +13,9 @@ from ..drawing.resources import DrawingSceneResources
 
 
 class DiagramSceneResources(DrawingSceneResources):
+    _PEN_ITEMS = DrawingSceneResources._PEN_ITEMS + ["Gate"]
+    _BRUSH_ITEMS = DrawingSceneResources._BRUSH_ITEMS + ["Gate"]
+    _QUILL_ITEMS = DrawingSceneResources._QUILL_ITEMS + ["NetLabel"]
     _PIN_PATH_ITEMS = DrawingSceneResources._PIN_PATH_ITEMS + ["GatePin"]
     _PIN_LINE_ITEMS = {"Port" : PITCH, "BlockPin" : -PITCH}
     _PIN_ARROW_ITEMS = DrawingSceneResources._PIN_ARROW_ITEMS | \
@@ -23,14 +26,20 @@ class DiagramSceneResources(DrawingSceneResources):
         }
     _NODE_ITEMS = ["FreeNode", "FixedNode"]
 
-    def __init__(self : Self):
-        self.update()
-        settings().changed.connect(self.update)
-
     def update(self : Self):
         """Typically called after a settings change."""
         # DrawingSceneResources
         super().update()
+        # GateRound
+        self._pens["GateRound"] = {}
+        self._brushes["GateRound"] = {}
+        for selected in [False, True]:
+            pen = QPen(self._pens["Gate"][selected])
+            pen.setCapStyle(Qt.PenCapStyle.RoundCap)
+            pen.setJoinStyle(Qt.PenJoinStyle.RoundJoin)
+            self._pens["GateRound"][selected] = pen
+            brush = self._brushes["Gate"][selected]
+            self._brushes["GateRound"][selected] = brush
         # BufGatePinItem and OrGatePinItem
         for item_name in ["BufGatePin", "OrGatePin"]:
             self._pens[item_name] = {}
@@ -55,12 +64,12 @@ class DiagramSceneResources(DrawingSceneResources):
                 state_str = state.value
                 # pens
                 pen_normal, pen_selected = \
-                    self._getPens(f"{settings_path}/{state_str}/pen")
+                    self._getPens(f"{settings_path}/{state_str}/line")
                 self._pens[item_name][(state, False)] = pen_normal
                 self._pens[item_name][(state, True)] = pen_selected
                 # brushes
                 brush_normal, brush_selected = \
-                    self._getBrushes(f"{settings_path}/{state_str}/brush")
+                    self._getBrushes(f"{settings_path}/{state_str}/fill")
                 self._brushes[item_name][(state, False)] = brush_normal
                 self._brushes[item_name][(state, True)] = brush_selected
                 # paths
@@ -68,8 +77,8 @@ class DiagramSceneResources(DrawingSceneResources):
         # tap pen and line
         settings_path = "theme/items/Tap"
         self._pens["Tap"] = {}
-        self._pens["Tap"][False] = self._getPens(f"{settings_path}/pen/wire")
-        self._pens["Tap"][True] = self._getPens(f"{settings_path}/pen/bus")
+        self._pens["Tap"][False] = self._getPens(f"{settings_path}/line/wire")
+        self._pens["Tap"][True] = self._getPens(f"{settings_path}/line/bus")
         self._lines["Tap"] = QLineF(0, 0, PITCH, PITCH)
 
     def _nodePath(self : Self, state : NodeState, size : float) -> QPainterPath:
