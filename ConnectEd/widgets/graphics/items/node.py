@@ -1,19 +1,22 @@
 from typing import Self
 from enum   import StrEnum
 
-from PyQt6.QtCore    import QPointF, QXmlStreamWriter, QXmlStreamReader
+from PyQt6.QtCore    import QPointF, QRectF, QXmlStreamWriter, QXmlStreamReader
 from PyQt6.QtWidgets import QGraphicsPathItem, QGraphicsItem
+from PyQt6.QtGui     import QPainterPath
 
-from ....app import logger
+from ....app import logger, settings
 
 from ..scenes import withScene
 
 from .net_label import NetLabelItem
 
-from .mixin        import ItemMixin
-from .mixin.shape  import ItemShapeMixin
-from .mixin.paint  import ItemPaintMixin
-from .mixin.change import ItemChangeMixin
+from .mixin              import ItemMixin
+from .mixin.settings     import ItemSettingsMixin
+from .mixin.presentation import ItemPresentationMixin
+from .mixin.select       import ItemSelectMixin
+from .mixin.change       import ItemChangeMixin
+from .mixin.shape        import ItemShapeMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -29,8 +32,9 @@ class NodeState(StrEnum):
 
 class NodeItem(
     ItemMixin,
-    ItemShapeMixin,
-    ItemPaintMixin,
+    ItemSettingsMixin,
+    ItemPresentationMixin,
+    ItemSelectMixin,
     ItemChangeMixin,
     QGraphicsPathItem
 ):
@@ -43,27 +47,12 @@ class NodeItem(
         super().__init__(parent)
         self._state = NodeState.UNCONNECTED
         self.initItem()
-
-    def onSettingsChanged(self : Self) -> None:
-        if (scene := self.scene()) is not None:
-            self.onSceneChanged(scene)
-
-    def onSceneChanged(self : Self, scene : "DiagramScene | None") -> None:
-        if scene is None:
-            return
-        self._updatePenBrush(scene)
-        self._updatePath(scene)
-        self._hshape.clear()
-        self._hshape.addRect(self.boundingRect())
+        self.onSettingsChanged()
 
     def onScenePositionChanged(self : Self, _pos : QPointF) -> None:
         """Update all connected segments."""
         for segment in self.segments():
             segment.onGeometryChange()
-
-    def onSelectionChanged(self : Self, selected : bool) -> None:
-        self._updatePenBrush(self.scene())
-
 
     @withScene
     def onConnectionChange(self : Self, scene : "DiagramScene | None" = None) -> None:
@@ -72,8 +61,7 @@ class NodeItem(
             NodeState.JUNCTION    if n >= self._JUNCTION_THRESHOLD else \
             NodeState.CONNECTED   if n >= 1 else \
             NodeState.UNCONNECTED
-        self._updatePenBrush(scene)
-        self._updatePath(scene)
+        self.onSceneChanged()  # update pen, brush and graphics
 
     def degree(self : Self) -> int:
         scene : "DiagramScene | None" = self.scene()
@@ -100,12 +88,13 @@ class NodeItem(
                 logger().warning(f"Unexpected child item: {child.type()}")
         xw.writeEndElement()
 
-    def _updatePenBrush(self : Self, scene : "DiagramScene") -> None:
-        key = (self._state, self.isSelected())
-        self.setPen(scene.resources.pen(self.resourcesName(), key))
-        self.setBrush(scene.resources.brush(self.resourcesName(), key))
+    def _penKey(self : Self) -> tuple[NodeState, bool]:
+        return (self._state, self.isSelected())
 
-    def _updatePath(self : Self, scene : "DiagramScene") -> None:
+    def _brushKey(self : Self) -> tuple[NodeState, bool]:
+        return (self._state, self.isSelected())
+
+    def _updateGraphics(self : Self, scene : "DiagramScene") -> None:
         self.setPath(scene.resources.path(self.resourcesName(), self._state))
 
 
