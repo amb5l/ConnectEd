@@ -45,7 +45,7 @@ class NodeItem(
         self.initItem()
 
     def onSettingsChanged(self : Self) -> None:
-        if scene := self.scene() is not None:
+        if (scene := self.scene()) is not None:
             self.onSceneChanged(scene)
 
     def onSceneChanged(self : Self, scene : "DiagramScene | None") -> None:

@@ -60,7 +60,7 @@ class GripItem(
 
     @checked
     def onSettingsChanged(self : Self) -> None:
-        if scene := self.scene() is not None:
+        if (scene := self.scene()) is not None:
             self.onSceneChanged(scene)
 
     @checked
