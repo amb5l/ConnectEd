@@ -15,13 +15,13 @@ from ..combo.font_bool   import FontBoolComboBox
 
 class TextAppearanceLayout(QVBoxLayout):
     _initial_color     : QColor | None | NoChange
-    _initial_family    : str    | None | NoChange
+    _initial_font      : str    | None | NoChange
     _initial_size      : float  | None | NoChange
     _initial_bold      : bool   | None | NoChange
     _initial_italic    : bool   | None | NoChange
     _initial_underline : bool   | None | NoChange
     _default_color     : QColor
-    _default_family    : str
+    _default_font      : str
     _default_size      : float
     _default_bold      : bool
     _default_italic    : bool
@@ -29,8 +29,8 @@ class TextAppearanceLayout(QVBoxLayout):
     _options_layout    : QGridLayout
     _color_label       : QLabel
     _color_combo       : ColorComboBox
-    _family_label      : QLabel
-    _family_combo      : FontFamilyComboBox
+    _font_label        : QLabel
+    _font_combo        : FontFamilyComboBox
     _size_label        : QLabel
     _size_combo        : FontSizeComboBox
     _bold_label        : QLabel
@@ -44,13 +44,13 @@ class TextAppearanceLayout(QVBoxLayout):
     def __init__(
         self              : Self,
         initial_color     : QColor | None | NoChange,
-        initial_family    : str    | None | NoChange,
+        initial_font      : str    | None | NoChange,
         initial_size      : float  | None | NoChange,
         initial_bold      : bool   | None | NoChange,
         initial_italic    : bool   | None | NoChange,
         initial_underline : bool   | None | NoChange,
         default_color     : QColor,
-        default_family    : str,
+        default_font      : str,
         default_size      : float,
         default_bold      : bool,
         default_italic    : bool,
@@ -59,13 +59,13 @@ class TextAppearanceLayout(QVBoxLayout):
     ) -> None:
         super().__init__(parent)
         self._initial_color     = initial_color
-        self._initial_family    = initial_family
+        self._initial_font      = initial_font
         self._initial_size      = initial_size
         self._initial_bold      = initial_bold
         self._initial_italic    = initial_italic
         self._initial_underline = initial_underline
         self._default_color     = default_color
-        self._default_family    = default_family
+        self._default_font      = default_font
         self._default_size      = default_size
         self._default_bold      = default_bold
         self._default_italic    = default_italic
@@ -75,10 +75,10 @@ class TextAppearanceLayout(QVBoxLayout):
         self._options_layout.addWidget(self._color_label, 0, 0)
         self._color_combo = ColorComboBox(initial_color, default_color)
         self._options_layout.addWidget(self._color_combo, 0, 1)
-        self._family_label = QLabel("Font:")
-        self._options_layout.addWidget(self._family_label, 1, 0)
-        self._family_combo = FontFamilyComboBox(initial_family, default_family)
-        self._options_layout.addWidget(self._family_combo, 1, 1)
+        self._font_label = QLabel("Font:")
+        self._options_layout.addWidget(self._font_label, 1, 0)
+        self._font_combo = FontFamilyComboBox(initial_font, default_font)
+        self._options_layout.addWidget(self._font_combo, 1, 1)
         self._size_label = QLabel("Size:")
         self._options_layout.addWidget(self._size_label, 2, 0)
         self._size_combo = FontSizeComboBox(initial_size, default_size)
@@ -102,8 +102,8 @@ class TextAppearanceLayout(QVBoxLayout):
         return self._color_combo.value()
 
     @checked
-    def getFamily(self : Self) -> str | None | NoChange:
-        return self._family_combo.value()
+    def getFont(self : Self) -> str | None | NoChange:
+        return self._font_combo.value()
 
     @checked
     def getSize(self : Self) -> float | None | NoChange:
@@ -129,13 +129,13 @@ class TextAppearancePreviewLayout(TextAppearanceLayout):
     def __init__(
         self              : Self,
         initial_color     : QColor | None | NoChange,
-        initial_family    : str    | None | NoChange,
+        initial_font      : str    | None | NoChange,
         initial_size      : float  | None | NoChange,
         initial_bold      : bool   | None | NoChange,
         initial_italic    : bool   | None | NoChange,
         initial_underline : bool   | None | NoChange,
         default_color     : QColor,
-        default_family    : str,
+        default_font      : str,
         default_size      : float,
         default_bold      : bool,
         default_italic    : bool,
@@ -144,13 +144,13 @@ class TextAppearancePreviewLayout(TextAppearanceLayout):
     ) -> None:
         super().__init__(
             initial_color,
-            initial_family,
+            initial_font,
             initial_size,
             initial_bold,
             initial_italic,
             initial_underline,
             default_color,
-            default_family,
+            default_font,
             default_size,
             default_bold,
             default_italic,
@@ -162,17 +162,17 @@ class TextAppearancePreviewLayout(TextAppearanceLayout):
         self._preview.setMinimumHeight(40)
         self._updatePreview()
         self.addWidget(self._preview)
-        self._family_combo.activated.connect(self._updatePreview)
+        self._font_combo.activated.connect(self._updatePreview)
         self._bold_combo.activated.connect(self._updatePreview)
         self._italic_combo.activated.connect(self._updatePreview)
         self._underline_combo.activated.connect(self._updatePreview)
 
     def _updatePreview(self : Self) -> None:
-        family = self._family_combo.value()
-        if family is NO_CHANGE:
-            family = self._initial_family
-        if family == None:
-            family = self._default_family
+        font = self._font_combo.value()
+        if font is NO_CHANGE:
+            font = self._initial_font
+        if font == None:
+            font = self._default_font
         bold = self._bold_combo.value()
         if bold is NO_CHANGE:
             bold = self._initial_bold
@@ -188,14 +188,14 @@ class TextAppearancePreviewLayout(TextAppearanceLayout):
             underline = self._initial_underline
         if underline == None:
             underline = self._default_underline
-        if any(x in (None, NO_CHANGE) for x in (family, bold, italic, underline)):
+        if any(x in (None, NO_CHANGE) for x in (font, bold, italic, underline)):
             self._preview.setText("") # options are ambiguous
             return
-        font = QFont()
-        font.setFamily(family)
-        font.setPointSizeF(24.0) # TODO scale with dialog, or use settings?
-        font.setBold(bold)
-        font.setItalic(italic)
-        font.setUnderline(underline)
-        self._preview.setFont(font)
+        qfont = QFont()
+        qfont.setFamily(font)
+        qfont.setPointSizeF(24.0) # TODO scale with dialog, or use settings?
+        qfont.setBold(bold)
+        qfont.setItalic(italic)
+        qfont.setUnderline(underline)
+        self._preview.setFont(qfont)
         self._preview.setText("Sample Text")

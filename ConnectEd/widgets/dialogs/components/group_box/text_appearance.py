@@ -16,13 +16,13 @@ class TextAppearancePreviewGroupBox(QGroupBox):
     def __init__(
         self              : Self,
         initial_color     : QColor | None | NoChange,
-        initial_family    : str    | None | NoChange,
+        initial_font      : str    | None | NoChange,
         initial_size      : float  | None | NoChange,
         initial_bold      : bool   | None | NoChange,
         initial_italic    : bool   | None | NoChange,
         initial_underline : bool   | None | NoChange,
         default_color     : QColor,
-        default_family    : str,
+        default_font      : str,
         default_size      : float,
         default_bold      : bool,
         default_italic    : bool,
@@ -33,13 +33,13 @@ class TextAppearancePreviewGroupBox(QGroupBox):
         super().__init__(title, parent)
         self._layout = TextAppearancePreviewLayout(
             initial_color,
-            initial_family,
+            initial_font,
             initial_size,
             initial_bold,
             initial_italic,
             initial_underline,
             default_color,
-            default_family,
+            default_font,
             default_size,
             default_bold,
             default_italic,
@@ -53,8 +53,8 @@ class TextAppearancePreviewGroupBox(QGroupBox):
         return self._layout.getColor()
 
     @checked
-    def getFamily(self : Self) -> str | None | NoChange:
-        return self._layout.getFamily()
+    def getFont(self : Self) -> str | None | NoChange:
+        return self._layout.getFont()
 
     @checked
     def getSize(self : Self) -> float | None | NoChange:

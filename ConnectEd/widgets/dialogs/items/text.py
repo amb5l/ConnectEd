@@ -124,8 +124,8 @@ class BaseTextItemDialog(QDialog):
         return self._appearance_group_box.getColor()
 
     @checked
-    def getFamily(self : Self) -> str | None | NoChange:
-        return self._appearance_group_box.getFamily()
+    def getFont(self : Self) -> str | None | NoChange:
+        return self._appearance_group_box.getFont()
 
     @checked
     def getSize(self : Self) -> float | None | NoChange:

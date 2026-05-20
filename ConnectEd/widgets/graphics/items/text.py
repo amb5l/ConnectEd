@@ -57,7 +57,7 @@ class TextState:
     width     : float
     height    : float
     color     : QColor | Default
-    family    : str    | Default
+    font      : str    | Default
     size      : float  | Default
     bold      : bool   | Default
     italic    : bool   | Default
@@ -78,7 +78,7 @@ class TextState:
             width     = item.width(),
             height    = item.height(),
             color     = item.textColor(),
-            family    = item.textFont(),
+            font      = item.textFont(),
             size      = item.textSize(),
             bold      = item.textBold(),
             italic    = item.textItalic(),
@@ -100,7 +100,7 @@ class TextChange:
     width     : float            | NoChange = NO_CHANGE
     height    : float            | NoChange = NO_CHANGE
     color     : QColor | Default | NoChange = NO_CHANGE
-    family    : str    | Default | NoChange = NO_CHANGE
+    font      : str    | Default | NoChange = NO_CHANGE
     size      : float  | Default | NoChange = NO_CHANGE
     bold      : bool   | Default | NoChange = NO_CHANGE
     italic    : bool   | Default | NoChange = NO_CHANGE
@@ -208,7 +208,7 @@ class TextItem(
         width     : float                = -1.0,        # unconstrained
         height    : float                = -1.0,        # unconstrained
         color     : QColor | None        = None,
-        family    : str    | None        = None,
+        font      : str    | None        = None,
         size      : float  | None        = None,
         bold      : bool   | None        = None,
         italic    : bool   | None        = None,
@@ -234,7 +234,7 @@ class TextItem(
         self.setMirrorV(mirror_v)
         self.setOrigin(origin)
         self.setTextColor(color)
-        self.setTextFont(family)
+        self.setTextFont(font)
         self.setTextSize(size)
         self.setTextBold(bold)
         self.setTextItalic(italic)

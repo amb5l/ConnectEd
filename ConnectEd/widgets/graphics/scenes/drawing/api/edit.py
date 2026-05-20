@@ -185,7 +185,7 @@ class DrawingSceneApiEditMixin:
         width     : float         | NoChange = NO_CHANGE,
         height    : float         | NoChange = NO_CHANGE,
         color     : QColor | None | NoChange = NO_CHANGE,
-        family    : str    | None | NoChange = NO_CHANGE,
+        font      : str    | None | NoChange = NO_CHANGE,
         size      : float  | None | NoChange = NO_CHANGE,
         bold      : bool   | None | NoChange = NO_CHANGE,
         italic    : bool   | None | NoChange = NO_CHANGE,
@@ -196,7 +196,7 @@ class DrawingSceneApiEditMixin:
             self, item, text, block,
             rotation, mirror_h, mirror_v, autoflip,
             origin, align_h, align_v, width, height,
-            color, family, size, bold, italic, underline
+            color, font, size, bold, italic, underline
         )
         cmdExec(self, cmd, undoable)
 
@@ -209,7 +209,7 @@ class DrawingSceneApiEditMixin:
         fill_color     : QColor        | None | NoChange = NO_CHANGE,
         fill_style     : Qt.BrushStyle | None | NoChange = NO_CHANGE,
         text_color     : QColor        | None | NoChange = NO_CHANGE,
-        text_family    : str           | None | NoChange = NO_CHANGE,
+        text_font      : str           | None | NoChange = NO_CHANGE,
         text_size      : float         | None | NoChange = NO_CHANGE,
         text_bold      : bool          | None | NoChange = NO_CHANGE,
         text_italic    : bool          | None | NoChange = NO_CHANGE,
@@ -225,7 +225,7 @@ class DrawingSceneApiEditMixin:
             fill_color,
             fill_style,
             text_color,
-            text_family,
+            text_font,
             text_size,
             text_bold,
             text_italic,

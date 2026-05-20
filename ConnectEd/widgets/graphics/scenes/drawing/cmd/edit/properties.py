@@ -158,7 +158,7 @@ class CmdPropertyTextItemBase(CmdPropertyBase):
         width     : float
         height    : float
         color     : QColor
-        family    : str
+        font      : str
         size      : float
         bold      : bool
         italic    : bool
@@ -186,7 +186,7 @@ class CmdAddPropertyText(CmdPropertyTextItemBase):
         width     : float,
         height    : float,
         color     : QColor,
-        family    : str,
+        font      : str,
         size      : float,
         bold      : bool,
         italic    : bool,
@@ -208,7 +208,7 @@ class CmdAddPropertyText(CmdPropertyTextItemBase):
             width     = width,
             height    = height,
             color     = color,
-            family    = family,
+            font      = font,
             size      = size,
             bold      = bold,
             italic    = italic,
@@ -244,7 +244,7 @@ class CmdEditPropertyText(CmdPropertyTextItemBase):
         width     : float        | NoChange = NO_CHANGE,
         height    : float        | NoChange = NO_CHANGE,
         color     : QColor       | NoChange = NO_CHANGE,
-        family    : str          | NoChange = NO_CHANGE,
+        font      : str          | NoChange = NO_CHANGE,
         size      : float        | NoChange = NO_CHANGE,
         bold      : bool         | NoChange = NO_CHANGE,
         italic    : bool         | NoChange = NO_CHANGE,
@@ -272,7 +272,7 @@ class CmdEditPropertyText(CmdPropertyTextItemBase):
             width     = pt.width(),
             height    = pt.height(),
             color     = pt.textColor(),
-            family    = pt.textFamily(),
+            font      = pt.textFont(),
             size      = pt.textSize(),
             bold      = pt.textBold(),
             italic    = pt.textItalic(),
@@ -293,7 +293,7 @@ class CmdEditPropertyText(CmdPropertyTextItemBase):
             width     = width,
             height    = height,
             color     = color,
-            family    = family,
+            font      = font,
             size      = size,
             bold      = bold,
             italic    = italic,

@@ -73,7 +73,7 @@ class NetLabelItem(TextItem):
         width     : float                = -1.0,
         height    : float                = -1.0,
         color     : QColor | None        = None,
-        family    : str    | None        = None,
+        font      : str    | None        = None,
         size      : float  | None        = None,
         bold      : bool   | None        = None,
         italic    : bool   | None        = None,

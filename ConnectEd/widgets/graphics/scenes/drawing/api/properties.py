@@ -73,7 +73,7 @@ class DrawingSceneApiPropertiesMixin:
         width     : float,
         height    : float,
         color     : QColor,
-        family    : str,
+        font      : str,
         size      : float,
         bold      : bool,
         italic    : bool,
@@ -84,7 +84,7 @@ class DrawingSceneApiPropertiesMixin:
             object, name, visible, cleat, x, y,
             rotation, mirror_h, mirror_v, autoflip,
             origin, align_h, align_v, width, height,
-            color, family, size, bold, italic, underline
+            color, font, size, bold, italic, underline
         )
         cmdExec(self, cmd, undoable)
 
@@ -106,7 +106,7 @@ class DrawingSceneApiPropertiesMixin:
         width     : float        | NoChange = NO_CHANGE,
         height    : float        | NoChange = NO_CHANGE,
         color     : QColor       | NoChange = NO_CHANGE,
-        family    : str          | NoChange = NO_CHANGE,
+        font      : str          | NoChange = NO_CHANGE,
         size      : float        | NoChange = NO_CHANGE,
         bold      : bool         | NoChange = NO_CHANGE,
         italic    : bool         | NoChange = NO_CHANGE,
@@ -130,7 +130,7 @@ class DrawingSceneApiPropertiesMixin:
             width     = width,
             height    = height,
             color     = color,
-            family    = family,
+            font      = font,
             size      = size,
             bold      = bold,
             italic    = italic,

@@ -119,7 +119,7 @@ class AppearanceDialog(QDialog):
                 if hasattr(self._fill_layout, attr_name):
                     combo_boxes.append(getattr(self._fill_layout, attr_name))
         if self._text_layout is not None:
-            for attr_name in ['color_combo', 'family_combo', 'size_combo',
+            for attr_name in ['color_combo', 'font_combo', 'size_combo',
                             'bold_combo', 'italic_combo', 'underline_combo']:
                 if hasattr(self._text_layout, attr_name):
                     combo_boxes.append(getattr(self._text_layout, attr_name))
@@ -162,7 +162,7 @@ class AppearanceDialog(QDialog):
         return self._text_layout.getColor() if self._text_layout else NO_CHANGE
 
     def getTextFontChoice(self : Self) -> str | None | NoChange:
-        return self._text_layout.getFamily() if self._text_layout else NO_CHANGE
+        return self._text_layout.getFont() if self._text_layout else NO_CHANGE
 
     def getTextSizeChoice(self : Self) -> float | None | NoChange:
         return self._text_layout.getSize() if self._text_layout else NO_CHANGE

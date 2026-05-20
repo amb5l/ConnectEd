@@ -38,7 +38,7 @@ class CmdEditAppearance(CmdSceneItems):
         fill_color     : QColor        | None | NoChange
         fill_style     : Qt.BrushStyle | None | NoChange
         text_color     : QColor        | None | NoChange
-        text_family    : str           | None | NoChange
+        text_font      : str           | None | NoChange
         text_size      : float         | None | NoChange
         text_bold      : bool          | None | NoChange
         text_italic    : bool          | None | NoChange
@@ -55,7 +55,7 @@ class CmdEditAppearance(CmdSceneItems):
         fill_color     : QColor        | None | NoChange
         fill_style     : Qt.BrushStyle | None | NoChange
         text_color     : QColor        | None | NoChange
-        text_family    : str           | None | NoChange
+        text_font      : str           | None | NoChange
         text_size      : float         | None | NoChange
         text_bold      : bool          | None | NoChange
         text_italic    : bool          | None | NoChange
@@ -75,7 +75,7 @@ class CmdEditAppearance(CmdSceneItems):
         fill_color     : QColor        | None | NoChange = NO_CHANGE,
         fill_style     : Qt.BrushStyle | None | NoChange = NO_CHANGE,
         text_color     : QColor        | None | NoChange = NO_CHANGE,
-        text_family    : str           | None | NoChange = NO_CHANGE,
+        text_font      : str           | None | NoChange = NO_CHANGE,
         text_size      : float         | None | NoChange = NO_CHANGE,
         text_bold      : bool          | None | NoChange = NO_CHANGE,
         text_italic    : bool          | None | NoChange = NO_CHANGE,
@@ -104,7 +104,7 @@ class CmdEditAppearance(CmdSceneItems):
             fill_color,
             fill_style,
             text_color,
-            text_family,
+            text_font,
             text_size,
             text_bold,
             text_italic,
@@ -124,17 +124,17 @@ class CmdEditAppearance(CmdSceneItems):
             if self._before[item].fill_style is not NO_CHANGE:
                 item.setFillStyle(self._after.fill_style)
             if self._before[item].text_color is not NO_CHANGE:
-                item.setQuillColor(self._after.text_color)
-            if self._before[item].text_family is not NO_CHANGE:
-                item.setQuillFamily(self._after.text_family)
+                item.setTextColor(self._after.text_color)
+            if self._before[item].text_font is not NO_CHANGE:
+                item.setTextFont(self._after.text_font)
             if self._before[item].text_size is not NO_CHANGE:
-                item.setQuillSize(self._after.text_size)
+                item.setTextSize(self._after.text_size)
             if self._before[item].text_bold is not NO_CHANGE:
-                item.setQuillBold(self._after.text_bold)
+                item.setTextBold(self._after.text_bold)
             if self._before[item].text_italic is not NO_CHANGE:
-                item.setQuillItalic(self._after.text_italic)
+                item.setTextItalic(self._after.text_italic)
             if self._before[item].text_underline is not NO_CHANGE:
-                item.setQuillUnderline(self._after.text_underline)
+                item.setTextUnderline(self._after.text_underline)
             item.onGeometryChange()
             item.update()
 
@@ -151,16 +151,16 @@ class CmdEditAppearance(CmdSceneItems):
             if self._before[item].fill_style is not NO_CHANGE:
                 item.setFillStyle(self._before[item].fill_style)
             if self._before[item].text_color is not NO_CHANGE:
-                item.setQuillColor(self._before[item].text_color)
-            if self._before[item].text_family is not NO_CHANGE:
-                item.setQuillFamily(self._before[item].text_family)
+                item.setTextColor(self._before[item].text_color)
+            if self._before[item].text_font is not NO_CHANGE:
+                item.setTextFont(self._before[item].text_font)
             if self._before[item].text_size is not NO_CHANGE:
-                item.setQuillSize(self._before[item].text_size)
+                item.setTextSize(self._before[item].text_size)
             if self._before[item].text_bold is not NO_CHANGE:
-                item.setQuillBold(self._before[item].text_bold)
+                item.setTextBold(self._before[item].text_bold)
             if self._before[item].text_italic is not NO_CHANGE:
-                item.setQuillItalic(self._before[item].text_italic)
+                item.setTextItalic(self._before[item].text_italic)
             if self._before[item].text_underline is not NO_CHANGE:
-                item.setQuillUnderline(self._before[item].text_underline)
+                item.setTextUnderline(self._before[item].text_underline)
             item.onGeometryChange()
             item.update()

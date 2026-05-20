@@ -51,7 +51,7 @@ _PT_COLS : dict[str, DataKind] = {
     "Width"     : ( DataKind.SIZE        , None                     , "width"         ), # noqa E501
     "Height"    : ( DataKind.SIZE        , None                     , "height"        ), # noqa E501
     "Color"     : ( DataKind.COLOR       , None                     , "textColor"     ), # noqa E501
-    "Family"    : ( DataKind.FONT_FAMILY , None                     , "textFamily"    ), # noqa E501
+    "Font"      : ( DataKind.FONT_FAMILY , None                     , "textFont"      ), # noqa E501
     "Size"      : ( DataKind.FONT_SIZE   , None                     , "textSize"      ), # noqa E501
     "Bold"      : ( DataKind.FONT_BOOL   , None                     , "textBold"      ), # noqa E501
     "Italic"    : ( DataKind.FONT_BOOL   , None                     , "textItalic"    ), # noqa E501

@@ -43,7 +43,7 @@ class PropertyChangeTextAdd(PropertyChangeBase):
     width     : float
     height    : float
     color     : QColor
-    family    : str
+    font      : str
     size      : float
     bold      : bool
     italic    : bool
@@ -66,7 +66,7 @@ class PropertyChangeTextModify(PropertyChangeBase):
     width     : float        | NoChange = NO_CHANGE
     height    : float        | NoChange = NO_CHANGE
     color     : QColor       | NoChange = NO_CHANGE
-    family    : str          | NoChange = NO_CHANGE
+    font      : str          | NoChange = NO_CHANGE
     size      : float        | NoChange = NO_CHANGE
     bold      : bool         | NoChange = NO_CHANGE
     italic    : bool         | NoChange = NO_CHANGE

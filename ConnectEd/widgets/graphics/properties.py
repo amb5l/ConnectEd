@@ -70,7 +70,7 @@ class PropertyTextSpec:
     width     : float           = -1.0
     height    : float           = -1.0
     color     : QColor | None   = None
-    family    : str    | None   = None
+    font      : str    | None   = None
     size      : float  | None   = None
     bold      : bool   | None   = False
     italic    : bool   | None   = False
@@ -81,7 +81,7 @@ class PropertyTextSpec:
             self.visible, self.cleat, self.x, self.y,
             self.rotation, self.mirror_h, self.mirror_v, self.autoflip,
             self.origin, self.align_h, self.align_v, self.width, self.height,
-            self.color, self.family, self.size, self.bold, self.italic, self.underline
+            self.color, self.font, self.size, self.bold, self.italic, self.underline
         )
 
 
@@ -492,7 +492,7 @@ class PropertiesManager:
         width     : float         = -1.0,
         height    : float         = -1.0,
         color     : QColor | None = None,
-        family    : str    | None = None,
+        font      : str    | None = None,
         size      : float  | None = None,
         bold      : bool   | None = False,
         italic    : bool   | None = False,
@@ -528,7 +528,7 @@ class PropertiesManager:
             width     = width,
             height    = height,
             color     = color,
-            family    = family,
+            font      = font,
             size      = size,
             bold      = bold,
             italic    = italic,
@@ -555,7 +555,7 @@ class PropertiesManager:
         width     : float  | NoChange = NO_CHANGE,
         height    : float  | NoChange = NO_CHANGE,
         color     : QColor | NoChange = NO_CHANGE,
-        family    : str    | NoChange = NO_CHANGE,
+        font      : str    | NoChange = NO_CHANGE,
         size      : float  | NoChange = NO_CHANGE,
         bold      : bool   | NoChange = NO_CHANGE,
         italic    : bool   | NoChange = NO_CHANGE,
@@ -592,12 +592,12 @@ class PropertiesManager:
         if align_v   is not NO_CHANGE: pt.setAlignV(align_v)
         if width     is not NO_CHANGE: pt.setWidth(width)
         if height    is not NO_CHANGE: pt.setHeight(height)
-        if color     is not NO_CHANGE: pt.setQuillColor(color)
-        if family    is not NO_CHANGE: pt.setQuillFamily(family)
-        if size      is not NO_CHANGE: pt.setQuillSize(size)
-        if bold      is not NO_CHANGE: pt.setQuillBold(bold)
-        if italic    is not NO_CHANGE: pt.setQuillItalic(italic)
-        if underline is not NO_CHANGE: pt.setQuillUnderline(underline)
+        if color     is not NO_CHANGE: pt.setTextColor(color)
+        if font      is not NO_CHANGE: pt.setTextFont(font)
+        if size      is not NO_CHANGE: pt.setTextSize(size)
+        if bold      is not NO_CHANGE: pt.setTextBold(bold)
+        if italic    is not NO_CHANGE: pt.setTextItalic(italic)
+        if underline is not NO_CHANGE: pt.setTextUnderline(underline)
         return True
 
     def delText(self : Self, name : str) -> bool:
