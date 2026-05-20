@@ -18,7 +18,7 @@ from ..properties import InherentProperty
 
 from ..painter_path import PainterPath
 
-from .grip import VertexGripItem, SegmentGripItem, PolylineResizeGripItem
+from .grip import VertexGripItem, SegmentGripItem, ResizeGripItem
 
 from .mixin           import PrimaryItemMixin
 from .mixin.transform import ItemTransformMixin
@@ -137,6 +137,26 @@ class PolySegItem(SegmentGripItem):
         if dialog.exec():
             scene : "DrawingScene" = self.scene()
             scene.editPolySeg(self, dialog.getAngle(), undoable=True)
+
+
+class PolylineResizeGripItem(ResizeGripItem):
+    """Grip for resizing polyline items."""
+
+    @checked
+    def moveSave(self : Self) -> tuple[QPointF, list[QPointF]]:
+        item : "PolylineItem" = self.item()
+        return self.scenePos(), [v.pos() for v in item.vertices()]
+
+    @checked
+    def moveRestore(
+        self  : Self,
+        state : tuple[QPointF, list[QPointF]]
+    ) -> None:
+        item : "PolylineItem" = self.item()
+        pos, vertices = state
+        self.moveBy(pos - self.scenePos())
+        for i, v in enumerate(item.vertices()):
+            v.setPos(vertices[i])
 
 
 class PolylineItem(

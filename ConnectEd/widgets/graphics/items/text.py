@@ -28,10 +28,12 @@ from ....resources.icons import AnchorTopLeftIcon,      \
                                 TextAlignMiddleIcon,    \
                                 TextAlignBottomIcon
 
+from ....core.check import checked
+
 from ..properties import InherentProperty
 from ..quill      import Quill
 
-from .grip import TextResizeGripItem
+from .grip import ResizeGripItem
 
 from .mixin              import PrimaryItemMixin
 from .mixin.transform    import ItemTransformMixin
@@ -105,6 +107,26 @@ class TextChange:
     bold      : bool   | Default | NoChange = NO_CHANGE
     italic    : bool   | Default | NoChange = NO_CHANGE
     underline : bool   | Default | NoChange = NO_CHANGE
+
+
+class TextResizeGripItem(ResizeGripItem):
+    """Grip for resizing text items."""
+
+    @checked
+    def moveSave(self : Self) -> tuple[QPointF, float | None, float | None]:
+        item : "TextItem" = self.item()
+        return self.scenePos(), item.width(), item.height()
+
+    @checked
+    def moveRestore(
+        self  : Self,
+        state : tuple[QPointF, float | None, float | None]
+    ) -> None:
+        pos, width, height = state
+        item : "TextItem" = self.item()
+        self.moveBy(pos - self.scenePos())
+        item.setWidth(width)
+        item.setHeight(height)
 
 
 class TextItem(
