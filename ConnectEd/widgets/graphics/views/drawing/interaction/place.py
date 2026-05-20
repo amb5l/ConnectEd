@@ -53,7 +53,7 @@ class PlaceBaseInteraction(ItemInteraction):  # _view, _scene, _item, valid
 class PlaceBase1PosInteraction(PlaceBaseInteraction):
     """Base for all interactions that place a single item using 1 position."""
 
-    def update(self : Self, pos : QPointF):
+    def update(self : Self, pos : QPointF) -> None:
         self._item.setPos(pos)
 
     def _commit(self : Self, pos : QPointF) -> bool:
@@ -89,7 +89,7 @@ class PlaceBase2PosInteraction(PlaceBase1PosInteraction):
         super().__init__(view, pos, item)
         self._p1 = pos
 
-    def update(self : Self, pos : QPointF):
+    def update(self : Self, pos : QPointF) -> None:
         self._item.setPoints(self._p1, pos)
 
 
@@ -127,7 +127,7 @@ class PlacePolylineInteraction(PlaceBase1PosInteraction):
         self._item.setSelMode(1)
         self._sweep = None
 
-    def update(self : Self, pos : QPointF):
+    def update(self : Self, pos : QPointF) -> None:
         self._item.setLastVertexPos(pos)  # local coordinates
 
     def _commit(self : Self, pos : QPointF) -> bool:

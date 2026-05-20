@@ -18,7 +18,7 @@ class CmdDiagramSceneBase(CmdSceneBase):
     # instance attributes
     _scene : "DiagramScene"
 
-    def __init__(self : Self, scene : "DiagramScene"):
+    def __init__(self : Self, scene : "DiagramScene") -> None:
         super().__init__(scene)
 
 

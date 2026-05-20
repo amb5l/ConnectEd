@@ -27,7 +27,7 @@ class CmdEditPortPin(CmdSceneItem):
         item      : "PortPinMixin",
         name      : str,
         direction : "Direction"
-    ):
+    ) -> None:
         super().__init__(scene, item)
         self._before = self.PortPinState(item.name(), item.direction())
         self._after  = self.PortPinState(name, direction)
@@ -53,7 +53,7 @@ class CmdEditSymbolPinDot(CmdSceneItem):
         scene  : "DrawingScene",
         item   : "SymbolPinItem",
         enable : bool
-    ):
+    ) -> None:
         super().__init__(scene, item)
         self._before = item.dot()
         self._after = enable
@@ -73,11 +73,11 @@ class CmdEditSymbolPinClock(CmdSceneItem):
     _after  : bool
 
     def __init__(
-        self : Self,
-        scene : "DrawingScene",
-        item : "SymbolPinItem",
+        self   : Self,
+        scene  : "DrawingScene",
+        item   : "SymbolPinItem",
         enable : bool
-    ):
+    ) -> None:
         super().__init__(scene, item)
         self._before = item.clock()
         self._after = enable

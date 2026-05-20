@@ -18,8 +18,8 @@ class BlockPinInteraction(Interaction):
     """Base for all interactions that operate on a block pin."""
 
     # instance attributes
-    _parent : BlockItem
-    _pin    : BlockPinItem
+    _parent : BlockItem | None
+    _pin    : BlockPinItem | None
 
     @checked
     def __init__(

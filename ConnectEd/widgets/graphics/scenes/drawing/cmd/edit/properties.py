@@ -23,7 +23,7 @@ class CmdPropertyBase(CmdBase):
         self   : Self,
         object : PropertiesMixin,
         name   : str
-    ):
+    ) -> None:
         super().__init__()
         self._object = object
         self._name = name
@@ -40,7 +40,7 @@ class CmdAddProperty(CmdPropertyBase):
         name   : str,
         kind   : DataKind,
         value  : Any
-    ):
+    ) -> None:
         super().__init__(object, name)
         self._kind  = kind
         self._value = value
@@ -126,7 +126,7 @@ class CmdDelProperty(CmdPropertyBase):
         self   : Self,
         object : PropertiesMixin,
         name   : str
-    ):
+    ) -> None:
         super().__init__(object, name)
         self._kind  = object.properties.kind(name)
         self._value = object.properties.value(name)
@@ -191,7 +191,7 @@ class CmdAddPropertyText(CmdPropertyTextItemBase):
         bold      : bool,
         italic    : bool,
         underline : bool
-    ):
+    ) -> None:
         super().__init__(object, name)
         self._state = self.PropertyTextItemState(
             visible   = visible,
@@ -249,7 +249,7 @@ class CmdEditPropertyText(CmdPropertyTextItemBase):
         bold      : bool         | NoChange = NO_CHANGE,
         italic    : bool         | NoChange = NO_CHANGE,
         underline : bool         | NoChange = NO_CHANGE,
-    ):
+    ) -> None:
         super().__init__(object, name)
         pt = object.properties.text(name)
         if pt is None:
@@ -326,7 +326,7 @@ class CmdDelPropertyText(CmdPropertyTextItemBase):
         self   : Self,
         object : PropertiesMixin,
         name   : str
-    ):
+    ) -> None:
         super().__init__(object, name)
         self._pt = object.properties.text(name)
         if self._pt is None:

@@ -110,7 +110,7 @@ class ItemsInteraction(Interaction):
     """Base for all interactions that operate on one or more scene items."""
 
     # instance attributes
-    _items : list[ItemType]
+    _items : list[ItemType] | None
 
     @checked
     def __init__(
@@ -129,8 +129,8 @@ class BlockPinInteraction(Interaction):
     """Base for all interactions that operate on a block pin."""
 
     # instance attributes
-    _parent : BlockItem
-    _pin    : BlockPinItem
+    _parent : BlockItem | None
+    _pin    : BlockPinItem | None
 
     @checked
     def __init__(
@@ -218,7 +218,7 @@ class MoveItemsMixin(PreviewStateMixin):
     _ipos  : QPointF  # initial position
     _cpos  : QPointF  # current position
 
-    def update(self : Self, pos : QPointF):
+    def update(self : Self, pos : QPointF) -> None:
         self._moveBy(pos - self._cpos)
         self._cpos = pos
 

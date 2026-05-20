@@ -19,7 +19,7 @@ class CmdEditOrigin(CmdSceneItem):
         scene   : "DrawingScene",
         item    : "ItemTransformMixin | ItemHandlesMixin",
         ap_name : str
-    ):
+    ) -> None:
         super().__init__(scene, item)
         self._before = item.origin()
         self._after = ap_name

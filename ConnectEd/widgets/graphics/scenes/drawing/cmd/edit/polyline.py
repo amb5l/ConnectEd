@@ -20,7 +20,7 @@ class CmdEditPolylineClosed(CmdSceneItem):
         item   : "PolylineItem",
         closed : bool,
         sweep  : float | None
-    ):
+    ) -> None:
         super().__init__(scene, item)
         self._item = item
         self._before = item.closed()
@@ -50,7 +50,7 @@ class CmdEditPolySeg(CmdSceneItem):
         scene : "DrawingScene",
         seg   : "PolySegItem",
         sweep : float | None
-    ):
+    ) -> None:
         super().__init__(scene, seg)
         self._before = seg.sweep()
         self._after = sweep

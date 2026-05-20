@@ -1,5 +1,4 @@
-from typing          import Self
-from collections.abc import Callable
+from typing import Self
 
 from PyQt6.QtCore import QPointF
 from PyQt6.QtGui  import QUndoCommand
@@ -40,7 +39,7 @@ def cmdExec(
     scene    : "DrawingScene",
     cmd      : CmdBase,
     undoable : bool
-) -> Callable[[CmdBase], None]:
+) -> None:
     if undoable:
         scene.undo_stack.push(cmd)
     else:
@@ -53,7 +52,7 @@ class CmdSceneBase(CmdBase):
     # instance attributes
     _scene : "DrawingScene"
 
-    def __init__(self : Self, scene : "DrawingScene"):
+    def __init__(self : Self, scene : "DrawingScene") -> None:
         text = camel2proper(self.__class__.__name__.replace("Cmd", ""))
         super().__init__(text)
         self._scene = scene
@@ -69,7 +68,7 @@ class CmdSceneItem(CmdSceneBase):
         self  : Self,
         scene : "DrawingScene",
         item  : "ItemType"
-    ):
+    ) -> None:
         super().__init__(scene)
         self._item = item
 
@@ -84,7 +83,7 @@ class CmdSceneItems(CmdSceneBase):
         self  : Self,
         scene : "DrawingScene",
         items : list["ItemType"]
-    ):
+    ) -> None:
         super().__init__(scene)
         self._items = items
 
@@ -126,7 +125,7 @@ class CmdAdd(
         self      : Self,
         scene     : "DrawingScene",
         items     : list["ItemType"]
-    ):
+    ) -> None:
         super().__init__(scene, items)      # record scene, items
 
     def redo(self : Self) -> None:
@@ -146,7 +145,7 @@ class CmdDelete(
         self      : Self,
         scene     : "DrawingScene",
         items     : list["ItemType"]
-    ):
+    ) -> None:
         super().__init__(scene, items)      # record scene, items
 
     def redo(self : Self) -> None:
@@ -171,7 +170,7 @@ class CmdMove(CmdSceneItems):
         items  : list["ItemType"],
         offset : QPointF,
         slide  : bool = False
-    ):
+    ) -> None:
         super().__init__(scene, items)
         self._offset = offset
         self._slide = slide
@@ -204,7 +203,7 @@ class CmdRotateBase(CmdSceneItems):
         scene : "DrawingScene",
         items : list["ItemType"],
         pos   : QPointF | None = None
-    ):
+    ) -> None:
         super().__init__(scene, items)
         self._pos = pos
         if pos is not None:

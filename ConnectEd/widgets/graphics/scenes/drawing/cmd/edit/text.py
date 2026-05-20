@@ -42,7 +42,7 @@ class CmdEditText(CmdSceneItem):
         bold      : bool   | None | NoChange = NO_CHANGE,
         italic    : bool   | None | NoChange = NO_CHANGE,
         underline : bool   | None | NoChange = NO_CHANGE
-    ):
+    ) -> None:
         super().__init__(scene, item)
         self._before = TextState.fromItem(item)
         change_args = {

@@ -17,7 +17,7 @@ class CmdPolyVtxBase(CmdBase):
     def __init__(
         self     : Self,
         polyline : PolylineItem
-    ):
+    ) -> None:
         super().__init__()
         self._polyline = polyline
         self._vtx = None
@@ -35,7 +35,7 @@ class CmdAddPolyVtx(CmdPolyVtxBase):
         polyline : PolylineItem,
         pos      : QPointF,
         sweep    : float | None = None
-    ):
+    ) -> None:
         super().__init__(polyline)
         self._pos = pos
         self._sweep = sweep

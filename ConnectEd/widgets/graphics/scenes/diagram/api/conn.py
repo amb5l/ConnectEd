@@ -5,7 +5,8 @@ from PyQt6.QtGui  import QPainterPath, QPainterPathStroker
 
 from ......app import logger
 
-from ....items.node      import NodeItem, FreeNodeItem, FixedNodeItem
+from ....items.node      import NodeItem, FreeNodeItem, FixedNodeItem, \
+                                PinNodeItem, TapNodeItem
 from ....items.segment   import SegmentItem
 from ....items.net_label import NetLabelItem
 
@@ -74,7 +75,7 @@ class DiagramSceneApiConnMixin:
         self     : "DiagramScene",
         pos      : QPointF,         # scene coordinates
         undoable : bool = False
-    ) -> FreeNodeItem:
+    ) -> NodeItem:
         """
         Get a node if present, add a free node if necessary.
         Useful for adding segments, placing labels etc.

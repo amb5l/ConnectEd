@@ -19,7 +19,7 @@ class CmdBlockPinBase(CmdBase):
         self : Self,
         parent : BlockItem,
         pin    : BlockPinItem
-    ):
+    ) -> None:
         super().__init__()
         self._parent = parent
         self._pin = pin
@@ -39,7 +39,7 @@ class CmdBlockPinsBase(CmdBase):
         self : Self,
         parent : BlockItem,
         pins   : list[BlockPinItem]
-    ):
+    ) -> None:
         super().__init__()
         self._parent = parent
         self._pins = pins
@@ -78,7 +78,7 @@ class CmdMoveBlockPins(CmdBlockPinsBase):
         pins   : list[BlockPinItem],
         after  : dict[BlockPinItem, EdgeLoc],
         before : dict[BlockPinItem, EdgeLoc]
-    ):
+    ) -> None:
         super().__init__(parent, pins)
         self._after = after
         self._before = before

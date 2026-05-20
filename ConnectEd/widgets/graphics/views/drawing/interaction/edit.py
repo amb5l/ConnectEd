@@ -124,10 +124,11 @@ class EditMoveInteraction(
 
 class EditAdjustPolySegInteraction(PreviewStateMixin, Interaction):
     # instance attributes
-    _polyline : PolylineItem           # parent polyline
-    _seg      : PolySegItem            # target segment
+    _polyline : PolylineItem       # parent polyline
+    _seg      : PolySegItem        # target segment
     _guide1   : QGraphicsLineItem  # inline guide
     _guide2   : QGraphicsLineItem  # perpendicular guide
+    _guide3   : QGraphicsLineItem  # chord-direction guide
 
     @checked
     def __init__(

@@ -39,11 +39,13 @@ class DrawingSceneApiEditMixin:
 
     def editMove(
         self     : "DrawingScene",
-        items    : list[ItemType],
+        items    : ItemType | list[ItemType],
         offset   : QPointF,
         slide    : bool = False,
         undoable : bool = False
     ) -> None:
+        if not isinstance(items, list):
+            items = [items]
         cmd = CmdMove(self, items, offset, slide)
         cmdExec(self, cmd, undoable)
 

@@ -80,7 +80,7 @@ class CmdEditAppearance(CmdSceneItems):
         text_bold      : bool          | None | NoChange = NO_CHANGE,
         text_italic    : bool          | None | NoChange = NO_CHANGE,
         text_underline : bool          | None | NoChange = NO_CHANGE
-    ):
+    ) -> None:
         super().__init__(scene, items)
         self._before = {}
         for item in items:

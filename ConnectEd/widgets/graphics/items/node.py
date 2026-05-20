@@ -100,8 +100,9 @@ class FreeNodeItem(NodeItem):
     _JUNCTION_THRESHOLD = 3
 
     def __init__(
-        self : Self,
-        pos  : QPointF | None = None
+        self  : Self,
+        pos   : QPointF | None = None,
+        fresh : bool = True
     ) -> None:
         super().__init__()
         if pos is not None:
@@ -181,3 +182,9 @@ class TapMajorNodeItem(FixedNodeItem):
 
 class TapMinorNodeItem(FixedNodeItem):
     pass
+
+
+# Pin/tap attachment nodes used by diagram connectivity APIs (not free vertices).
+PinNodeItem = FixedNodeItem
+TapNodeItem = TapMajorNodeItem | TapMinorNodeItem
+AttachedNodeItem = FixedNodeItem | TapMajorNodeItem | TapMinorNodeItem
