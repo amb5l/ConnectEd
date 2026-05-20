@@ -2,6 +2,7 @@ from typing import Self
 
 from PyQt6.QtCore import QPointF
 
+from ......core.check import checked
 from ......core.types import EdgeLoc
 
 from ....items.block     import BlockItem
@@ -19,6 +20,7 @@ class EditMoveBlockPinsInteraction(PreviewStateMixin, Interaction):
     _parent : BlockItem
     _pins   : list[BlockPinItem]  # first item is primary pin
 
+    @checked
     def __init__(
         self   : Self,
         view   : "DiagramView",

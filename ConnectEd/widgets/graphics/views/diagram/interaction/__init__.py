@@ -2,6 +2,8 @@ from typing import Self
 
 from PyQt6.QtCore import QPointF
 
+from ......core.check import checked
+
 from ....items.block     import BlockItem
 from ....items.block_pin import BlockPinItem
 
@@ -19,6 +21,7 @@ class BlockPinInteraction(Interaction):
     _parent : BlockItem
     _pin    : BlockPinItem
 
+    @checked
     def __init__(
         self   : Self,
         view   : "DiagramView",

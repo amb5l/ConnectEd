@@ -4,6 +4,7 @@ from PyQt6.QtCore    import QPointF
 from PyQt6.QtGui     import QAction
 from PyQt6.QtWidgets import QMenu
 
+from ......core.check import checked
 from ......core.utils import sign
 
 from ....items.port      import PortItem
@@ -39,6 +40,7 @@ class PlaceBlockInteraction(PlaceBase2PosInteraction):
 
 
 class PlaceBlockPinInteraction(BlockPinInteraction):
+    @checked
     def __init__(
         self   : Self,
         view   : "DiagramView",
@@ -69,6 +71,7 @@ class PlaceConnInteraction(Interaction):
     _seg1  : SegmentPreview1Item
     _seg2  : SegmentPreview2Item
 
+    @checked
     def __init__(
         self : Self,
         view : "DiagramView",

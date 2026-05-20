@@ -4,6 +4,8 @@ from PyQt6.QtCore    import QPointF
 from PyQt6.QtWidgets import QMenu
 from PyQt6.QtGui     import QAction
 
+from ......core.check import checked
+
 from .....dialogs.arc import ArcDialog
 
 from ....items import ItemType
@@ -28,6 +30,7 @@ class PlaceBaseInteraction(ItemInteraction):  # _view, _scene, _item, valid
     # class attributes
     _ITEM_TYPE : ItemType  # subclass to override with item class
 
+    @checked
     def __init__(
         self : Self,
         view : "DrawingView",
@@ -76,6 +79,7 @@ class PlaceBase2PosInteraction(PlaceBase1PosInteraction):
     _item : ItemType  # type hint for this interaction
     _p1   : QPointF   # first position
 
+    @checked
     def __init__(
         self : Self,
         view : "DrawingView",
@@ -111,6 +115,7 @@ class PlacePolylineInteraction(PlaceBase1PosInteraction):
     _item  : PolylineItem      # type hint for this interaction
     _sweep : float | None  # sweep angle for last segment
 
+    @checked
     def __init__(
         self : Self,
         view : "DrawingView",

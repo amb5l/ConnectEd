@@ -4,6 +4,7 @@ from math   import asin, degrees, copysign
 from PyQt6.QtCore    import QPointF, QLineF
 from PyQt6.QtWidgets import QGraphicsLineItem
 
+from ......core.check import checked
 from ......core.xml   import paste
 
 from ....items import clone
@@ -27,6 +28,7 @@ class EditPasteInteraction(
     AddRemoveItemsMixin,  # _addToScene, _removeFromScene
     ItemsInteraction      # _view, _scene, _items, valid
 ):
+    @checked
     def __init__(
         self : Self,
         view : "DrawingView",
@@ -57,6 +59,7 @@ class EditPasteInteraction(
 class EditDuplicateInteraction(EditPasteInteraction):
     """Very similar to paste, but items come from cloning."""
 
+    @checked
     def __init__(
         self  : Self,
         view  : "DrawingView",
@@ -80,14 +83,16 @@ class EditMoveInteraction(
     # instance attributes
     _slide  : bool  # true => retain connections, false => break connections
 
+    @checked
     def __init__(
         self  : Self,
         view  : "DrawingView",
-        items : list[ItemType],
+        items : ItemType | list[ItemType],
         pos   : QPointF,
         slide : bool = False
     ) -> None:
-        items = items if isinstance(items, list) else [items]
+        if not isinstance(items, list):
+            items = [items]
         # Filter: keep only items that have no ancestor in the items list
         orphan_items = []
         item_set = set(items)
@@ -124,6 +129,7 @@ class EditAdjustPolySegInteraction(PreviewStateMixin, Interaction):
     _guide1   : QGraphicsLineItem  # inline guide
     _guide2   : QGraphicsLineItem  # perpendicular guide
 
+    @checked
     def __init__(
         self     : Self,
         view     : "DrawingView",

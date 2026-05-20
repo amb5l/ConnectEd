@@ -4,6 +4,8 @@ from PyQt6.QtCore    import QPointF
 from PyQt6.QtWidgets import QMenu
 from PyQt6.QtGui     import QAction, QUndoStack, QUndoCommand
 
+from ......core.check import checked
+
 from ....items import ItemType
 
 from ....items.block      import BlockItem
@@ -34,7 +36,8 @@ class Interaction:
     _scene : "DrawingScene"
     _done  : bool
 
-    def __init__(self : Self, view : "DrawingView"):
+    @checked
+    def __init__(self : Self, view : "DrawingView") -> None:
         self._view = view
         self._scene = view.scene()
         self._done = False
@@ -90,6 +93,7 @@ class ItemInteraction(Interaction):
     # instance attributes
     _item : ItemType
 
+    @checked
     def __init__(
         self : Self,
         view : "DrawingView",
@@ -108,6 +112,7 @@ class ItemsInteraction(Interaction):
     # instance attributes
     _items : list[ItemType]
 
+    @checked
     def __init__(
         self  : Self,
         view  : "DrawingView",
@@ -127,6 +132,7 @@ class BlockPinInteraction(Interaction):
     _parent : BlockItem
     _pin    : BlockPinItem
 
+    @checked
     def __init__(
         self   : Self,
         view   : "DrawingView",
