@@ -1,4 +1,4 @@
-from PyQt6.QtCore    import Qt, QPoint, QPointF
+from PyQt6.QtCore    import QPoint, QPointF
 from PyQt6.QtWidgets import QApplication, QGraphicsItem
 from PyQt6.QtGui     import QCursor
 

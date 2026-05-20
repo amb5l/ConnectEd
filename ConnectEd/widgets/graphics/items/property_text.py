@@ -25,7 +25,6 @@ from .mixin.handle    import ItemHandlesMixin
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ..views.drawing  import DrawingView
-    from ..scenes.drawing import DrawingScene
 
 
 class PropertyTextTetherItem(TextTetherItem):

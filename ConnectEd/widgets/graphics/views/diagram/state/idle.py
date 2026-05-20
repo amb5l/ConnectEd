@@ -7,7 +7,7 @@ from ....items.text          import TextItem
 from ....items.property_text import PropertyTextItem
 
 from ....items.grip     import GripItem, ResizeGripItem
-from ....items.polyline import PolySegItem, PolyVtxItem
+from ....items.polyline import PolySegItem
 
 from ...drawing.interaction.edit  import EditMoveInteraction,          \
                                          EditAdjustPolySegInteraction, \

@@ -11,8 +11,6 @@ from ....core.check import checked
 from ..properties import PropertyTextSpec
 
 from .port_pin import PortPinArrowItem, PortPinLineItem
-from .handle   import HandleItem
-from .grip     import MoveGripItem
 
 from .mixin.transform import ItemTransformMixin
 from .mixin.handle    import ItemHandlesMixin

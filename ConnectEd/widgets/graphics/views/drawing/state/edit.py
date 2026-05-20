@@ -1,4 +1,5 @@
-from typing      import Self
+from typing import Self
+
 from PyQt6.QtCore import QPoint, QPointF
 
 from ......app import logger
@@ -7,15 +8,12 @@ from ......core.types import NO_CHANGE
 
 from .....dialogs.properties          import PropertiesDialog
 from .....dialogs.appearance          import AppearanceDialog
-from .....dialogs.items.port_pin      import PortPinItemDialog
 from .....dialogs.items.text          import TextItemDialog
 from .....dialogs.items.property_text import PropertyTextItemDialog
 
 from ....items.mixin         import ItemMixin
 from ....items.text          import TextItem
 from ....items.property_text import PropertyTextItem
-from ....items.port          import PortItem
-from ....items.block_pin     import BlockPinItem
 
 from ..interaction.edit import EditPasteInteraction
 

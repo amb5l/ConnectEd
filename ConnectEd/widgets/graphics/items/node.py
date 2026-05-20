@@ -1,11 +1,10 @@
 from typing import Self
 from enum   import StrEnum
 
-from PyQt6.QtCore    import QPointF, QRectF, QXmlStreamWriter, QXmlStreamReader
+from PyQt6.QtCore    import QPointF, QXmlStreamWriter, QXmlStreamReader
 from PyQt6.QtWidgets import QGraphicsPathItem, QGraphicsItem
-from PyQt6.QtGui     import QPainterPath
 
-from ....app import logger, settings
+from ....app import logger
 
 from ..scenes import withScene
 
@@ -16,7 +15,6 @@ from .mixin.settings     import ItemSettingsMixin
 from .mixin.presentation import ItemPresentationMixin
 from .mixin.select       import ItemSelectMixin
 from .mixin.change       import ItemChangeMixin
-from .mixin.shape        import ItemShapeMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:

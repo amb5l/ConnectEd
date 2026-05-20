@@ -1,6 +1,6 @@
 from typing import Self
 
-from PyQt6.QtWidgets import QWidget, QGraphicsView
+from PyQt6.QtWidgets import QGraphicsView
 from PyQt6.QtGui     import QColor
 
 from ......app import logger

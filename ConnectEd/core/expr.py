@@ -27,7 +27,6 @@ Example:
 """
 
 import ast
-from typing import Any
 
 
 class SafeExpressionEvaluator:

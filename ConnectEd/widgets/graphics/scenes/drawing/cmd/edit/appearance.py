@@ -1,4 +1,4 @@
-from typing      import Self, Any, Protocol, TypeAlias
+from typing      import Self, Protocol, TypeAlias
 from dataclasses import dataclass
 
 from PyQt6.QtCore    import Qt

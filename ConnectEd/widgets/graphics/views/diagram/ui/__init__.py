@@ -1,7 +1,3 @@
-from typing import Self
-
-from PyQt6.QtCore import QPointF
-
 from ...drawing.ui import DrawingViewUi
 
 from .place import DiagramViewUiPlaceMixin

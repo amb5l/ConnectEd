@@ -5,7 +5,7 @@ from collections.abc import Callable
 
 from PyQt6.QtWidgets import QMessageBox
 
-from ....app import settings, model, window
+from ....app import settings, window
 
 from ....core.defs import APP_NAME
 

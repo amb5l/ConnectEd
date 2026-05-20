@@ -2,7 +2,7 @@ from typing import Self
 
 from PyQt6.QtCore import Qt, QPointF, QLineF, QRectF
 from PyQt6.QtGui  import QPen, QBrush, \
-                         QPolygonF, QPainterPath, QPainterPathStroker
+                         QPolygonF, QPainterPath
 
 from .....app import settings
 

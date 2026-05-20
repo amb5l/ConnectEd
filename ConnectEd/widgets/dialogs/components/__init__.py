@@ -1,6 +1,6 @@
 from PyQt6.QtCore import QSize
 
-from ....core.icon import getDefaultIconSize, SvgIconSingleton, CharIconSingleton
+from ....core.icon import getDefaultIconSize, SvgIconSingleton
 
 from ....resources import getIconPath
 

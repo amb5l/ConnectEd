@@ -1,4 +1,4 @@
-from typing  import Self, Text, TypeAlias
+from typing  import Self, TypeAlias
 from inspect import signature
 
 from PyQt6.QtCore    import QModelIndex
