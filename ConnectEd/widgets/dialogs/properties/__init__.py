@@ -38,24 +38,24 @@ if TYPE_CHECKING:
 
 _PT_COLS : dict[str, DataKind] = {
 #                   kind                   default value              method name
-    "Cleat"     : ( None                 , None                     , "cleat"          ), # noqa E501
-    "X"         : ( DataKind.FLOAT       , 0.0                      , "x"              ), # noqa E501
-    "Y"         : ( DataKind.FLOAT       , 0.0                      , "y"              ), # noqa E501
-    "Rotation"  : ( DataKind.ROTATION    , 0.0                      , "rotation"       ), # noqa E501
-    "Mirror H"  : ( DataKind.BOOL        , False                    , "mirrorH"        ), # noqa E501
-    "Mirror V"  : ( DataKind.BOOL        , False                    , "mirrorV"        ), # noqa E501
-    "Auto Flip" : ( DataKind.BOOL        , True                     , "autoflip"       ), # noqa E501
-    "Origin"    : ( DataKind.RECT_HANDLE , RectHandleId.BOTTOM_LEFT , "origin"         ), # noqa E501
-    "Align H"   : ( DataKind.ALIGN_H     , AlignH.LEFT              , "alignH"         ), # noqa E501
-    "Align V"   : ( DataKind.ALIGN_V     , AlignV.TOP               , "alignV"         ), # noqa E501
-    "Width"     : ( DataKind.SIZE        , None                     , "width"          ), # noqa E501
-    "Height"    : ( DataKind.SIZE        , None                     , "height"         ), # noqa E501
-    "Color"     : ( DataKind.COLOR       , None                     , "quillColor"     ), # noqa E501
-    "Family"    : ( DataKind.FONT_FAMILY , None                     , "quillFamily"    ), # noqa E501
-    "Size"      : ( DataKind.FONT_SIZE   , None                     , "quillSize"      ), # noqa E501
-    "Bold"      : ( DataKind.FONT_BOOL   , None                     , "quillBold"      ), # noqa E501
-    "Italic"    : ( DataKind.FONT_BOOL   , None                     , "quillItalic"    ), # noqa E501
-    "Underline" : ( DataKind.FONT_BOOL   , None                     , "quillUnderline" )  # noqa E501
+    "Cleat"     : ( None                 , None                     , "cleat"         ), # noqa E501
+    "X"         : ( DataKind.FLOAT       , 0.0                      , "x"             ), # noqa E501
+    "Y"         : ( DataKind.FLOAT       , 0.0                      , "y"             ), # noqa E501
+    "Rotation"  : ( DataKind.ROTATION    , 0.0                      , "rotation"      ), # noqa E501
+    "Mirror H"  : ( DataKind.BOOL        , False                    , "mirrorH"       ), # noqa E501
+    "Mirror V"  : ( DataKind.BOOL        , False                    , "mirrorV"       ), # noqa E501
+    "Auto Flip" : ( DataKind.BOOL        , True                     , "autoflip"      ), # noqa E501
+    "Origin"    : ( DataKind.RECT_HANDLE , RectHandleId.BOTTOM_LEFT , "origin"        ), # noqa E501
+    "Align H"   : ( DataKind.ALIGN_H     , AlignH.LEFT              , "alignH"        ), # noqa E501
+    "Align V"   : ( DataKind.ALIGN_V     , AlignV.TOP               , "alignV"        ), # noqa E501
+    "Width"     : ( DataKind.SIZE        , None                     , "width"         ), # noqa E501
+    "Height"    : ( DataKind.SIZE        , None                     , "height"        ), # noqa E501
+    "Color"     : ( DataKind.COLOR       , None                     , "textColor"     ), # noqa E501
+    "Family"    : ( DataKind.FONT_FAMILY , None                     , "textFamily"    ), # noqa E501
+    "Size"      : ( DataKind.FONT_SIZE   , None                     , "textSize"      ), # noqa E501
+    "Bold"      : ( DataKind.FONT_BOOL   , None                     , "textBold"      ), # noqa E501
+    "Italic"    : ( DataKind.FONT_BOOL   , None                     , "textItalic"    ), # noqa E501
+    "Underline" : ( DataKind.FONT_BOOL   , None                     , "textUnderline" )  # noqa E501
 }
 
 

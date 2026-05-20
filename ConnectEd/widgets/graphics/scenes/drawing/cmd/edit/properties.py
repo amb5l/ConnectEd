@@ -271,12 +271,12 @@ class CmdEditPropertyText(CmdPropertyTextItemBase):
             align_v   = pt.alignV(),
             width     = pt.width(),
             height    = pt.height(),
-            color     = pt.quillColor(),
-            family    = pt.quillFamily(),
-            size      = pt.quillSize(),
-            bold      = pt.quillBold(),
-            italic    = pt.quillItalic(),
-            underline = pt.quillUnderline(),
+            color     = pt.textColor(),
+            family    = pt.textFamily(),
+            size      = pt.textSize(),
+            bold      = pt.textBold(),
+            italic    = pt.textItalic(),
+            underline = pt.textUnderline(),
         )
         self._new = self.PropertyTextItemState(
             visible   = visible,
