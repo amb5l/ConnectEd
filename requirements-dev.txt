@@ -11,6 +11,7 @@ pytest-cov>=4.0.0
 # Code quality (essential for PyPI)
 flake8>=3.8
 mypy>=0.910
+ruff>=0.15.0
 
 # Building & publishing (essential for PyPI)
 build>=0.8.0

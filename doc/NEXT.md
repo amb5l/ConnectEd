@@ -1,13 +1,5 @@
-- new appearance system
-  - per item, specify what can be overridden, e.g:
-    - BlockItem: line and fill color only
-    - rectangle: anything
-- retire DEFAULT
-- centralize onSettingsChanged
+Ruff
 
-
-ItemSelectMixin, _paint_override for all classes
-mixin simplification e.g. PrimaryItemMixin
 moveHandle : test with all pin types
 proper interaction subclasses with individual __init__
 implement net labels
