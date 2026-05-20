@@ -183,6 +183,8 @@ class DrawingViewStateEditQuery(DrawingViewStateBase):
 
 
 class DrawingViewStateEditText(DrawingViewStateBase):
+    STATUS = "Edit Text: specify changes"
+
     def entry(
         self : Self,
         v    : QPoint,
