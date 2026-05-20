@@ -2,6 +2,8 @@ from typing import Self
 
 from PyQt6.QtCore import QPointF
 
+from ......core.check import checked
+
 from ....items.polyline import PolylineItem, PolyVtxItem
 
 from . import CmdBase
@@ -14,6 +16,7 @@ class CmdPolyVtxBase(CmdBase):
     _polyline : PolylineItem
     _vtx      : PolyVtxItem | None
 
+    @checked
     def __init__(
         self     : Self,
         polyline : PolylineItem
@@ -30,6 +33,7 @@ class CmdAddPolyVtx(CmdPolyVtxBase):
     _pos   : QPointF
     _sweep : float | None
 
+    @checked
     def __init__(
         self     : Self,
         polyline : PolylineItem,
@@ -40,12 +44,15 @@ class CmdAddPolyVtx(CmdPolyVtxBase):
         self._pos = pos
         self._sweep = sweep
 
+    @checked
     def redo(self : Self) -> None:
         self._vtx = self._polyline.addVertex(self._pos, self._sweep)
 
+    @checked
     def undo(self : Self) -> None:
         self._polyline.delLastVertex()
         self._vtx = None
 
+    @checked
     def vtx(self : Self) -> PolyVtxItem | None:
         return self._vtx

@@ -2,6 +2,8 @@ from PyQt6.QtWidgets import QStatusBar, QLabel
 
 from typing import Self
 
+from ...core.check import checked
+
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from . import Window
@@ -13,6 +15,7 @@ class StatusBar(QStatusBar):
     zoom   : QLabel
     select : QLabel
 
+    @checked
     def __init__(self : Self, parent : "Window") -> None:
         super().__init__(parent)
         self.status = QLabel("Initializing...")

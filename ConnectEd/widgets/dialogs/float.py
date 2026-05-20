@@ -3,6 +3,8 @@ from typing import Self
 from PyQt6.QtWidgets import QWidget, QDialog, QLineEdit, \
                             QVBoxLayout, QHBoxLayout, QLabel
 
+from ...core.check import checked
+
 from .components.layout.ok_cancel import OkCancelLayout
 
 
@@ -13,6 +15,7 @@ class FloatDialog(QDialog):
     _value_input      : QLineEdit
     _ok_cancel_layout : OkCancelLayout
 
+    @checked
     def __init__(
         self    : Self,
         initial : float | int | None = None,
@@ -35,6 +38,7 @@ class FloatDialog(QDialog):
         # set layout
         self.setLayout(self._dialog_layout)
 
+    @checked
     def value(self : Self) -> float | None:
         try:
             return float(self._value_input.text())

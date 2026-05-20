@@ -3,6 +3,7 @@ from typing import Self
 from PyQt6.QtCore    import QPointF, QLineF
 from PyQt6.QtWidgets import QGraphicsLineItem
 
+from ....core.check import checked
 from ....core.types import DataKind, LineHandleId
 
 from ..properties import InherentProperty
@@ -62,6 +63,7 @@ class LineItem(
     _line_width = None  # enable per-item appearance control
     _line_style = None  # enable per-item appearance control
 
+    @checked
     def __init__(
         self  : Self,
         p1    : QPointF | None = None,
@@ -75,6 +77,7 @@ class LineItem(
         self._line = QLineF()
         self.setPoints(p1, p2)
 
+    @checked
     def initHandles(self : Self) -> None:
         self._handles = {
             LineHandleId.P1 : HandleItem(
@@ -91,6 +94,7 @@ class LineItem(
             )
         }
 
+    @checked
     def moveHandleBy(
         self : Self,
         id   : LineHandleId,
@@ -108,39 +112,46 @@ class LineItem(
     def p1(self : Self) -> QPointF:
         return self.pos()
 
+    @checked
     def setP1(self : Self, pos : QPointF) -> None:
         self.setPoints(pos, self.p2())
 
     def x1(self : Self) -> float:
         return self.p1().x()
 
+    @checked
     def setX1(self : Self, value : float) -> None:
         self.setP1(QPointF(value, self.p1().y()))
 
     def y1(self : Self) -> float:
         return self.p1().y()
 
+    @checked
     def setY1(self : Self, value : float) -> None:
         self.setP1(QPointF(self.p1().x(), value))
 
     def p2(self : Self) -> QPointF:
         return self.pos() + self.line().p2()
 
+    @checked
     def setP2(self : Self, pos : QPointF) -> None:
         self.setPoints(self.p1(), pos)
 
     def x2(self : Self) -> float:
         return self.p2().x()
 
+    @checked
     def setX2(self : Self, value : float) -> None:
         self.setP2(QPointF(value, self.p2().y()))
 
     def y2(self : Self) -> float:
         return self.p2().y()
 
+    @checked
     def setY2(self : Self, value : float) -> None:
         self.setP2(QPointF(self.p2().x(), value))
 
+    @checked
     def setPoints(self : Self, p1 : QPointF, p2 : QPointF) -> None:
         self.setPos(p1)
         self._line.setP2(p2-p1)

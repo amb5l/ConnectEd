@@ -5,6 +5,7 @@ from PyQt6.QtCore    import Qt, QPointF
 from PyQt6.QtWidgets import QGraphicsPathItem, QMenu
 from PyQt6.QtGui     import QAction
 
+from ....core.check import checked
 from ....core.types import Direction, DataKind
 
 from ..properties import InherentProperty
@@ -46,6 +47,7 @@ class GateLabelMixin:
     def label(self : Self) -> str:
         return self._label
 
+    @checked
     def setLabel(self : Self, label : str) -> None:
         self._label = label
 
@@ -59,6 +61,7 @@ class BaseGateItem(
     # class attributes
     _PIN_CLS = GatePinItem
 
+    @checked
     def __init__(self : Self, fresh : bool = True) -> None:
         super().__init__()
         self.initItem(fresh)
@@ -70,12 +73,14 @@ class BaseGateItem(
     def label(self : Self) -> str | None:
         return self._label
 
+    @checked
     def setLabel(self : Self, label : str) -> None:
         self._label = label
 
     def initPath(self : Self) -> None:
         raise NotImplementedError("Subclasses must implement this method")
 
+    @checked
     def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
         return [
             view.action(
@@ -121,6 +126,7 @@ class BufGateItem(BaseGateItem):
     _input  : GatePinItem
     _output : GatePinItem
 
+    @checked
     def __init__(self : Self, fresh : bool = True) -> None:
         super().__init__(fresh)
         self.setOutput()
@@ -188,6 +194,7 @@ class BufGateItem(BaseGateItem):
         return "" if not hasattr(self, '_output') else \
                "L" if self._output.inverted() else "H"
 
+    @checked
     def setOutput(self : Self, level: str = "H") -> None:
         if not hasattr(self, '_output'):
             self._output = self._PIN_CLS(self)
@@ -201,6 +208,7 @@ class BufGateItem(BaseGateItem):
         return "" if not hasattr(self, '_input') else \
                "L" if self._input.inverted() else "H"
 
+    @checked
     def setInput(self : Self, level : str = "H") -> None:
         if not hasattr(self, '_input'):
             self._input = self._PIN_CLS(self)
@@ -244,6 +252,7 @@ class LogicGateItem(BaseGateItem):
     _inputs : list[GatePinItem]
     _output : GatePinItem
 
+    @checked
     def __init__(self : Self, width : int | None = None, fresh : bool = True) -> None:
         super().__init__(fresh)
         if fresh:
@@ -319,6 +328,7 @@ class LogicGateItem(BaseGateItem):
         return "" if not hasattr(self, '_output') else \
                "L" if self._output.inverted() else "H"
 
+    @checked
     def setOutput(self : Self, level: str = "H") -> None:
         if not hasattr(self, '_output'):
             self._output = self._PIN_CLS(self)
@@ -332,6 +342,7 @@ class LogicGateItem(BaseGateItem):
         return "" if not hasattr(self, '_inputs') else \
                "".join(["L" if pin.inverted() else "H" for pin in self._inputs])
 
+    @checked
     def setInputs(self : Self, levels : str) -> None:
         w = len(levels)
         if not hasattr(self, '_inputs'):
@@ -387,6 +398,7 @@ class OrGateItem(LogicGateItem):
         path.closeSubpath()
         self.setPath(path)
 
+    @checked
     def setInputs(self : Self, levels : str) -> None:
         super().setInputs(levels)
         if len(self._inputs) % 2 == 1:  # odd width => center input

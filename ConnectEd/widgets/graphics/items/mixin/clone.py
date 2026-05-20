@@ -1,5 +1,7 @@
 from typing import Self
 
+from .....core.check import checked
+
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ...properties import PropertiesMixin
@@ -9,6 +11,7 @@ if TYPE_CHECKING:
 
 
 class ItemCloneMixin:
+    @checked
     def clone(self : Self, original : Self | None = None) -> Self:
         """Create a clone of this or specified item with a new UUID."""
         from ..handle        import HandleItem

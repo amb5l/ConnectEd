@@ -1,5 +1,6 @@
 from ....app import logger, model
 
+from ....core.check import checked
 from ....core.utils import typeCheck
 
 from typing import TYPE_CHECKING
@@ -31,9 +32,11 @@ class NavigatorApiMixin:
     def openLibrary(self : "Navigator") -> None:
         self._open("Library")
 
+    @checked
     def load(self : "Navigator", path : str) -> None:
         self._load(path)
 
+    @checked
     def save(
         self : "Navigator",
         x    : "DesignDbNode | LibraryDbNode | SymbolNode | DrawingScene"
@@ -52,6 +55,7 @@ class NavigatorApiMixin:
             logger().warning(f"Unsupported node: {x.text()} ({type(x)})")
             return
 
+    @checked
     def saveAs(
         self : "Navigator",
         x    : "DesignDbNode | LibraryDbNode | SymbolNode | DrawingScene"
@@ -68,6 +72,7 @@ class NavigatorApiMixin:
             logger().warning(f"Unsupported node: {x.text()} ({type(x)})")
             return
 
+    @checked
     def close(
         self : "Navigator",
         x    : "DesignDbNode | LibraryDbNode | SymbolNode | DrawingScene"
@@ -87,6 +92,7 @@ class NavigatorApiMixin:
     ############################################################################
     # drawing methods
 
+    @checked
     def newSymbol(
         self : "Navigator",
         node : "DesignDbNode | LibraryDbNode | SymbolNode"
@@ -100,21 +106,25 @@ class NavigatorApiMixin:
         self.expand(model().indexFromItem(node))
         self._editDrawing(symbol_node)
 
+    @checked
     def editDrawing(
         self : "Navigator",
         node : "DesignDbNode | SymbolNode"
     ) -> None:
         self._editDrawing(node)
 
+    @checked
     def newDrawingWindow(self : "Navigator", node : "DesignDbNode") -> None:
         self._newDrawingWindow(node)
 
+    @checked
     def editProperties(self : "Navigator", node : "DesignDbNode") -> None:
         from ....core.db import DesignDbNode
         if not typeCheck(node, DesignDbNode):
             return
         self._spreadsheet(node)
 
+    @checked
     def setRoot(self : "Navigator", node : "DesignDbNode") -> None:
         from ....core.db import DesignDbNode
         if not typeCheck(node, DesignDbNode):
@@ -124,12 +134,15 @@ class NavigatorApiMixin:
     ############################################################################
     # misc
 
+    @checked
     def rename(self : "Navigator", node : "Node") -> None:
         self.edit(self.currentIndex())
 
+    @checked
     def copy(self : "Navigator", node : "Node") -> None:
         model().copy(node)
 
+    @checked
     def paste(self : "Navigator", node : "Node") -> None:
         model().paste(node)
 

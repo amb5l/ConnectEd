@@ -1,5 +1,6 @@
 from ......app import logger
 
+from ......core.check import checked
 from ......core.types import EdgeLoc
 
 from ....items import ItemType
@@ -23,6 +24,7 @@ if TYPE_CHECKING:
 
 
 class DiagramSceneApiEditMixin(DrawingSceneApiEditMixin):
+    @checked
     def editMoveBlockPins(
         self     : "DiagramScene",
         parent   : BlockItem,
@@ -34,6 +36,7 @@ class DiagramSceneApiEditMixin(DrawingSceneApiEditMixin):
         cmd = CmdMoveBlockPins(parent, pins, after, before)
         cmdExec(self, cmd, undoable)
 
+    @checked
     def editDelete(
         self     : "DiagramScene",
         items    : list[ItemType] | None = None,

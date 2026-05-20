@@ -5,6 +5,7 @@ from PyQt6.QtGui  import QColor
 
 from .......app import logger
 
+from .......core.check import checked
 from .......core.types import NoChange, NO_CHANGE, AlignH, AlignV, DataKind, \
                               HandleId, RectHandleId
 
@@ -19,6 +20,7 @@ class CmdPropertyBase(CmdBase):
     _object : PropertiesMixin
     _name   : str
 
+    @checked
     def __init__(
         self   : Self,
         object : PropertiesMixin,
@@ -34,6 +36,7 @@ class CmdAddProperty(CmdPropertyBase):
     _kind  : DataKind
     _value : Any
 
+    @checked
     def __init__(
         self   : Self,
         object : PropertiesMixin,
@@ -45,9 +48,11 @@ class CmdAddProperty(CmdPropertyBase):
         self._kind  = kind
         self._value = value
 
+    @checked
     def redo(self : Self) -> None:
         self._object.properties.add(self._name, self._kind, self._value)
 
+    @checked
     def undo(self : Self) -> None:
         self._object.properties.delete(self._name)
 
@@ -63,6 +68,7 @@ class CmdEditProperty(CmdBase):
     _old    : State
     _new    : State
 
+    @checked
     def __init__(
         self   : Self,
         object : PropertiesMixin,
@@ -98,6 +104,7 @@ class CmdEditProperty(CmdBase):
         # done
         return
 
+    @checked
     def redo(self : Self) -> None:
         name = self._old.name
         if self._new.name is not NO_CHANGE:
@@ -107,6 +114,7 @@ class CmdEditProperty(CmdBase):
         if self._new.value is not NO_CHANGE:
             self._object.properties.setValue(name, self._new.value)
 
+    @checked
     def undo(self : Self) -> None:
         if self._new.name is not NO_CHANGE:
             self._object.properties.rename(self._new.name, self._old.name)
@@ -122,6 +130,7 @@ class CmdDelProperty(CmdPropertyBase):
     _value : Any
     _pt    : PropertyTextItem
 
+    @checked
     def __init__(
         self   : Self,
         object : PropertiesMixin,
@@ -132,9 +141,11 @@ class CmdDelProperty(CmdPropertyBase):
         self._value = object.properties.value(name)
         self._pt    = object.properties.text(name)
 
+    @checked
     def redo(self : Self) -> None:
         self._object.properties.delete(self._name)
 
+    @checked
     def undo(self : Self) -> None:
         self._object.properties.add(self._name, self._kind, self._value)
         if self._pt:
@@ -168,6 +179,7 @@ class CmdPropertyTextItemBase(CmdPropertyBase):
 class CmdAddPropertyText(CmdPropertyTextItemBase):
     _state : CmdPropertyTextItemBase.PropertyTextItemState
 
+    @checked
     def __init__(
         self      : Self,
         object    : PropertiesMixin,
@@ -215,9 +227,11 @@ class CmdAddPropertyText(CmdPropertyTextItemBase):
             underline = underline,
         )
 
+    @checked
     def redo(self : Self) -> None:
         self._object.properties.addText(self._name, **vars(self._state))
 
+    @checked
     def undo(self : Self) -> None:
         self._object.properties.delText(self._name)
 
@@ -226,6 +240,7 @@ class CmdEditPropertyText(CmdPropertyTextItemBase):
     _old : CmdPropertyTextItemBase.PropertyTextItemState | None
     _new : CmdPropertyTextItemBase.PropertyTextItemState | None
 
+    @checked
     def __init__(
         self      : Self,
         object    : PropertiesMixin,
@@ -309,11 +324,13 @@ class CmdEditPropertyText(CmdPropertyTextItemBase):
                     break
         self.setObsolete(not changed)
 
+    @checked
     def redo(self : Self) -> None:
         if self._new is None:
             return
         self._object.properties.editText(self._name, **vars(self._new))
 
+    @checked
     def undo(self : Self) -> None:
         if self._old is None:
             return
@@ -322,6 +339,7 @@ class CmdEditPropertyText(CmdPropertyTextItemBase):
 class CmdDelPropertyText(CmdPropertyTextItemBase):
     _pt : PropertyTextItem | None
 
+    @checked
     def __init__(
         self   : Self,
         object : PropertiesMixin,
@@ -332,8 +350,10 @@ class CmdDelPropertyText(CmdPropertyTextItemBase):
         if self._pt is None:
             logger().warning(f"Property '{name}' does not have a text item")
 
+    @checked
     def redo(self : Self) -> None:
         self._object.delPropertyTextItem(self._name)
 
+    @checked
     def undo(self : Self) -> None:
         self._object.setPropertyTextItem(self._name, self._pt)

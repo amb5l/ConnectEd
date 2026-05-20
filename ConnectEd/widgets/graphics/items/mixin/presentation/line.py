@@ -6,14 +6,17 @@ from PyQt6.QtGui     import QPen, QColor
 
 from ......app import logger
 
+from ......core.check import checked
 from ......core.types import NoChange, NO_CHANGE
 
 from ....scenes import withScene
 
 from typing import TYPE_CHECKING
+
 if TYPE_CHECKING:
     from ....scenes.drawing import DrawingScene
-    from . import MixinType as ItemType
+
+from . import ItemType
 
 
 class ItemPresentationLineMixin:
@@ -38,6 +41,7 @@ class ItemPresentationLineMixin:
     def lineColor(self : "Self | ItemType") -> QColor | None:
         return self._line_color if hasattr(self, "_line_color") else None
 
+    @checked
     def setLineColor(self : "Self | ItemType", color: QColor | None | NoChange) -> None:
         if color is NO_CHANGE:
             return
@@ -62,6 +66,7 @@ class ItemPresentationLineMixin:
         pen = scene.resources.pen(self.resourcesName(), key)
         return pen.widthF()
 
+    @checked
     def setLineWidth(self : "Self | ItemType", width: float | None | NoChange) -> None:
         if width is NO_CHANGE:
             return
@@ -86,6 +91,7 @@ class ItemPresentationLineMixin:
         pen = scene.resources.pen(self.resourcesName(), key)
         return pen.style()
 
+    @checked
     def setLineStyle(self : "Self | ItemType", style: Qt.PenStyle | None | NoChange) -> None:
         if style is NO_CHANGE:
             return

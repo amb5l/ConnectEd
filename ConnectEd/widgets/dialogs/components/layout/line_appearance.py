@@ -4,6 +4,7 @@ from PyQt6.QtCore    import Qt
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel
 from PyQt6.QtGui     import QColor
 
+from .....core.check import checked
 from .....core.types import NoChange, NO_CHANGE
 
 from ..combo.color      import ColorComboBox
@@ -22,6 +23,7 @@ class LineAppearanceLayout(QVBoxLayout):
     style_label  : QLabel
     style_combo  : LineStyleComboBox
 
+    @checked
     def __init__(
         self      : Self,
         initial_color : QColor      | None | NoChange,
@@ -72,11 +74,14 @@ class LineAppearanceLayout(QVBoxLayout):
                     self.style_combo.setCurrentIndex(i)
                     break
 
+    @checked
     def getColorChoice(self : Self) -> QColor | None | NoChange:
         return self.color_combo.value()
 
+    @checked
     def getWidthChoice(self : Self) -> float | None | NoChange:
         return self.width_combo.value()
 
+    @checked
     def getStyleChoice(self : Self) -> Qt.PenStyle | None | NoChange:
         return self.style_combo.value()

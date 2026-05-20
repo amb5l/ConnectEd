@@ -1,5 +1,7 @@
 from typing import Self
 
+from .......core.check import checked
+
 from .. import CmdSceneItem
 
 from typing import TYPE_CHECKING
@@ -14,6 +16,7 @@ class CmdEditPolylineClosed(CmdSceneItem):
     _after  : bool
     _sweep  : float | None
 
+    @checked
     def __init__(
         self   : Self,
         scene  : "DrawingScene",
@@ -27,12 +30,14 @@ class CmdEditPolylineClosed(CmdSceneItem):
         self._after = closed
         self._sweep = sweep
 
+    @checked
     def redo(self : Self) -> None:
         if self._after:
             self._item.close(self._sweep)
         else:
             self._item.open()
 
+    @checked
     def undo(self : Self) -> None:
         if self._before:
             self._item.close(self._sweep)
@@ -45,6 +50,7 @@ class CmdEditPolySeg(CmdSceneItem):
     _before : float | None
     _after  : float | None
 
+    @checked
     def __init__(
         self  : Self,
         scene : "DrawingScene",
@@ -55,11 +61,13 @@ class CmdEditPolySeg(CmdSceneItem):
         self._before = seg.sweep()
         self._after = sweep
 
+    @checked
     def redo(self : Self) -> None:
         self._item.setSweep(self._after)
         parent : "PolylineItem" = self._item.parentItem()
         parent.updatePath()
 
+    @checked
     def undo(self : Self) -> None:
         self._item.setSweep(self._before)
         parent : "PolylineItem" = self._item.parentItem()

@@ -4,6 +4,7 @@ from PyQt6.QtCore    import Qt
 from PyQt6.QtWidgets import QWidget, QDialog, QGroupBox, QVBoxLayout
 from PyQt6.QtGui     import QShowEvent, QColor
 
+from ...core.check import checked
 from ...core.types import NoChange, NO_CHANGE
 
 from ..graphics.items.mixin.presentation import ItemPresentationMixin
@@ -26,6 +27,7 @@ class AppearanceDialog(QDialog):
     _text_layout      : TextAppearancePreviewLayout | None
     _ok_cancel_layout : OkCancelLayout
 
+    @checked
     def __init__(
         self   : Self,
         items  : list[ItemPresentationMixin],
@@ -143,35 +145,46 @@ class AppearanceDialog(QDialog):
         from PyQt6.QtCore import QTimer
         QTimer.singleShot(0, self._adjustComboBoxWidths)
 
+    @checked
     def getLineColorChoice(self : Self) -> QColor | None | NoChange:
         return self._line_layout.getColorChoice() if self._line_layout else NO_CHANGE
 
+    @checked
     def getLineWidthChoice(self : Self) -> float | None | NoChange:
         return self._line_layout.getWidthChoice() if self._line_layout else NO_CHANGE
 
+    @checked
     def getLineStyleChoice(self : Self) -> Qt.PenStyle | None | NoChange:
         return self._line_layout.getStyleChoice() if self._line_layout else NO_CHANGE
 
+    @checked
     def getFillColorChoice(self : Self) -> QColor | None | NoChange:
         return self._fill_layout.getColorChoice() if self._fill_layout else NO_CHANGE
 
+    @checked
     def getFillStyleChoice(self : Self) -> Qt.BrushStyle | None | NoChange:
         return self._fill_layout.getStyleChoice() if self._fill_layout else NO_CHANGE
 
+    @checked
     def getTextColorChoice(self : Self) -> QColor | None | NoChange:
         return self._text_layout.getColor() if self._text_layout else NO_CHANGE
 
+    @checked
     def getTextFontChoice(self : Self) -> str | None | NoChange:
         return self._text_layout.getFont() if self._text_layout else NO_CHANGE
 
+    @checked
     def getTextSizeChoice(self : Self) -> float | None | NoChange:
         return self._text_layout.getSize() if self._text_layout else NO_CHANGE
 
+    @checked
     def getTextBoldChoice(self : Self) -> bool | None | NoChange:
         return self._text_layout.getBold() if self._text_layout else NO_CHANGE
 
+    @checked
     def getTextItalicChoice(self : Self) -> bool | None | NoChange:
         return self._text_layout.getItalic() if self._text_layout else NO_CHANGE
 
+    @checked
     def getTextUnderlineChoice(self : Self) -> bool | None | NoChange:
         return self._text_layout.getUnderline() if self._text_layout else NO_CHANGE

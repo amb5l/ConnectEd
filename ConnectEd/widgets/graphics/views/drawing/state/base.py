@@ -4,6 +4,8 @@ from PyQt6.QtCore import Qt, QPoint, QPointF
 
 from ......app import window
 
+from ......core.check import checked
+
 from ....items.mixin import ItemMixin
 
 from ....scenes.drawing import DrawingScene
@@ -26,10 +28,12 @@ class DrawingViewStateBase:
     view   : "DrawingView"
     scene  : "DrawingScene"
 
+    @checked
     def __init__(self : Self, view : "DrawingView") -> None:
         self.view = view
         self.scene = view.scene()
 
+    @checked
     def go(
         self        : Self,
         state       : "DrawingViewStateBase",
@@ -54,6 +58,7 @@ class DrawingViewStateBase:
             items
         )
 
+    @checked
     def interact(
         self        : Self,
         interaction : Interaction,
@@ -68,6 +73,7 @@ class DrawingViewStateBase:
             # No state transition; just swap the interaction in place.
             self._setInteraction(interaction)
 
+    @checked
     def _setInteraction(
         self        : Self,
         interaction : Interaction | None
@@ -82,10 +88,11 @@ class DrawingViewStateBase:
             old.cancel()
         self.view.interaction = interaction
 
+    @checked
     def entry(
         self : Self,
-        v    : QPoint,
-        s    : QPointF,
+        v    : QPoint | None,
+        s    : QPointF | None,
         i    : list[ItemMixin] | None = None
     ) -> None:
         pass

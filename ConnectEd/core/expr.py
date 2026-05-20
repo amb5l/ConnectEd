@@ -28,6 +28,8 @@ Example:
 
 import ast
 
+from .check import checked
+
 
 class SafeExpressionEvaluator:
     """
@@ -37,6 +39,7 @@ class SafeExpressionEvaluator:
     Designed specifically for HDL-style expressions in graphical diagrams.
     """
 
+    @checked
     def __init__(
         self,
         variables: dict[str, int | float] | None = None,
@@ -52,10 +55,12 @@ class SafeExpressionEvaluator:
         self.max_power_exponent = max_power_exponent
         self.case_sensitive = case_sensitive
 
+    @checked
     def set_variable(self, name: str, value: int | float) -> None:
         """Add or update a parameter value (triggers re-evaluation elsewhere)."""
         self.variables[name] = value
 
+    @checked
     def evaluate(self, expr: str) -> int:
         """
         Evaluate the expression string and return an integer.
@@ -153,6 +158,7 @@ class SafeExpressionEvaluator:
 # ---------------------------------------------------------------------- #
 # One-shot convenience function
 # ---------------------------------------------------------------------- #
+@checked
 def evaluate(expr: str, variables: dict[str, int | float] | None = None) -> int:
     """Quick one-line evaluation (creates a fresh evaluator)."""
     return SafeExpressionEvaluator(variables).evaluate(expr)

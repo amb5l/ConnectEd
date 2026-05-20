@@ -215,6 +215,7 @@ class TextItem(
     _text_italic    = None  # enable per-item appearance control
     _text_underline = None  # enable per-item appearance control
 
+    @checked
     def __init__(
         self      : Self,
         text      : str                  = "",
@@ -274,6 +275,7 @@ class TextItem(
     def block(self : Self) -> bool:
         return isinstance(self._child, TextBlockRenderer)
 
+    @checked
     def setBlock(self : Self, block : bool) -> None:
         if isinstance(self._child, TextLineRenderer)  and block     \
         or isinstance(self._child, TextBlockRenderer) and not block:
@@ -292,6 +294,7 @@ class TextItem(
     def autoflip(self : Self) -> bool:
         return self._autoflip
 
+    @checked
     def setAutoflip(self : Self, autoflip : bool) -> None:
         self._autoflip = autoflip
         self._adjustOrientation()
@@ -300,6 +303,7 @@ class TextItem(
     def text(self : Self) -> str:
         return self._child.text()
 
+    @checked
     def setText(self : Self, text : str) -> None:
         self._child.setText(text)
         self.updateHandlePositions()
@@ -308,6 +312,7 @@ class TextItem(
     def alignH(self : Self) -> AlignH:
         return self._align_h
 
+    @checked
     def setAlignH(self : Self, align_h : AlignH) -> None:
         self._align_h = align_h
         self._child.onGeometryChange()
@@ -316,6 +321,7 @@ class TextItem(
     def alignV(self : Self) -> AlignV:
         return self._align_v
 
+    @checked
     def setAlignV(self : Self, align_v : AlignV) -> None:
         self._align_v = align_v
         self._child.onGeometryChange()
@@ -324,6 +330,7 @@ class TextItem(
     def width(self : Self) -> float:
         return self._width
 
+    @checked
     def setWidth(self : Self, width : float) -> None:
         self._width = width
         self._child.onGeometryChange()
@@ -334,6 +341,7 @@ class TextItem(
     def height(self : Self) -> float:
         return self._height
 
+    @checked
     def setHeight(self : Self, height : float) -> None:
         self._height = height
         self._child.onGeometryChange()
@@ -344,12 +352,14 @@ class TextItem(
     def color(self : Self) -> QColor:
         return self._child.color()
 
+    @checked
     def setColor(self : Self, color : QColor) -> None:
         self._child.setColor(color)
 
     def font(self : Self) -> QFont:
         return self._child.font()
 
+    @checked
     def setFont(self : Self, font : QFont) -> None:
         self._child.setFont(font)
         self.updateHandlePositions()
@@ -365,6 +375,7 @@ class TextItem(
             qfont.underline()
         )
 
+    @checked
     def setQuill(self : Self, quill : Quill) -> None:
         self._child.setColor(quill.color())
         self.setFont(quill.qFont())
@@ -373,6 +384,7 @@ class TextItem(
         """Return the rectangle used for handles."""
         return self._brect
 
+    @checked
     def moveHandleBy(self : Self, id : RectHandleId, delta : QPointF) -> None:
         """
         Resize/move the text as appropriate. `delta` is supplied in scene
@@ -570,6 +582,7 @@ class TextItem(
         ])
         return menu
 
+    @checked
     def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
         """Return context menu items for Text item."""
         items = [
@@ -646,13 +659,13 @@ class TextRendererMixin(ItemShapeMixin):
     ) -> None:
         self._paint_override()
 
+    @checked
     def setFont(
         self : "Self | TextLineRenderer | TextBlockRenderer",
         font : QFont
     ) -> None:
         font.setHintingPreference(QFont.HintingPreference.PreferNoHinting)
-        renderer : "TextLineRenderer | TextBlockRenderer" = super()
-        renderer.setFont(font)
+        super().setFont(font)
         self.onGeometryChange()
 
     def contextMenuEvent(self : Self,  event : QGraphicsSceneContextMenuEvent) -> None:
@@ -680,6 +693,7 @@ class TextLineRenderer(TextRendererMixin, QGraphicsSimpleTextItem):
     # instance attributes
     _clip_rect : QRectF | None = None
 
+    @checked
     def __init__(
         self   : Self,
         parent : QGraphicsItem | None = None
@@ -701,6 +715,7 @@ class TextLineRenderer(TextRendererMixin, QGraphicsSimpleTextItem):
                     QGraphicsItem.setSelected(parent, value)
         return super().itemChange(change, value)
 
+    @checked
     def setText(self : Self, text : str) -> None:
         super().setText(text)
         self.onGeometryChange()
@@ -760,6 +775,7 @@ class TextLineRenderer(TextRendererMixin, QGraphicsSimpleTextItem):
     def color(self : Self) -> QColor:
         return self.brush().color()
 
+    @checked
     def setColor(self : Self, color : QColor) -> None:
         brush = self.brush()
         brush.setColor(color)
@@ -800,6 +816,7 @@ class TextLineRenderer(TextRendererMixin, QGraphicsSimpleTextItem):
 
 
 class TextBlockRenderer(TextRendererMixin, QGraphicsTextItem):
+    @checked
     def __init__(
         self   : Self,
         parent : QGraphicsItem | None = None
@@ -810,6 +827,7 @@ class TextBlockRenderer(TextRendererMixin, QGraphicsTextItem):
     def text(self : Self) -> str:
         return self.toPlainText()
 
+    @checked
     def setText(self : Self, text : str) -> None:
         self.setPlainText(text)
         self.onGeometryChange()
@@ -865,6 +883,7 @@ class TextBlockRenderer(TextRendererMixin, QGraphicsTextItem):
     def color(self : Self) -> QColor:
         return self.defaultTextColor()
 
+    @checked
     def setColor(self : Self, color : QColor) -> None:
         self.setDefaultTextColor(color)
 

@@ -1,6 +1,8 @@
 from typing import Self
 
 from PyQt6.QtCore    import QPointF, QXmlStreamWriter
+
+from ....core.check import checked
 from PyQt6.QtWidgets import QGraphicsLineItem, QGraphicsItem, \
                             QGraphicsSceneMouseEvent
 
@@ -17,7 +19,8 @@ class TextTetherItem(QGraphicsLineItem):
 
     _text_item  : "TextItem"  # text item instance
 
-    def __init__(self : Self, text_item : "TextItem"):
+    @checked
+    def __init__(self : Self, text_item : "TextItem") -> None:
         self._text_item = text_item
         super().__init__(text_item.getOriginHandle())
         self.setVisible(text_item.isSelected())
@@ -37,11 +40,13 @@ class TextTetherItem(QGraphicsLineItem):
         if (scene := self.scene()) is not None:
             self.onSceneChanged(scene)
 
+    @checked
     def onSceneChanged(self : Self, scene : "DrawingScene | None") -> None:
         if scene is None:
             return
         self.setPen(scene.resources.pen("Tether"))
 
+    @checked
     def onPositionChanged(self : Self, _ : QPointF | None = None) -> None:
         if self.anchor() is None:
             return

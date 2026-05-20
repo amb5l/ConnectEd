@@ -5,6 +5,7 @@ from typing import Self
 from PyQt6.QtCore    import QPointF
 from PyQt6.QtWidgets import QGraphicsItem
 
+from .....core.check import checked
 from .....core.defs  import Z_DRAWING
 
 from ...properties import PropertiesMixin
@@ -31,6 +32,7 @@ class ItemMoveMixin:
     def moveSave(self : Self | QGraphicsItem) -> QPointF:
         return self.scenePos()
 
+    @checked
     def moveRestore(self : Self | QGraphicsItem, pos : QPointF) -> None:
         self.moveBy(pos - self.scenePos())
 
@@ -40,6 +42,7 @@ class ItemMixin(ItemNamesMixin, ItemMoveMixin):
 
     _uuid : str
 
+    @checked
     def initItem(self : Self | QGraphicsItem, fresh : bool = True) -> None:
         from ...properties  import PropertiesMixin
         from .settings      import ItemSettingsMixin
@@ -87,6 +90,7 @@ class ItemMixin(ItemNamesMixin, ItemMoveMixin):
     def savePos(self : Self | QGraphicsItem) -> QPointF:
         return self.scenePos()
 
+    @checked
     def restorePos(self : Self | QGraphicsItem, pos : QPointF) -> None:
         self.setPos(pos - self.scenePos())
 

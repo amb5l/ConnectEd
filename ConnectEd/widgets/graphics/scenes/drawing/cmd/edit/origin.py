@@ -1,5 +1,7 @@
 from typing import Self
 
+from .......core.check import checked
+
 from .. import CmdSceneItem
 
 from typing import TYPE_CHECKING
@@ -14,6 +16,7 @@ class CmdEditOrigin(CmdSceneItem):
     _before : str
     _after  : str
 
+    @checked
     def __init__(
         self    : Self,
         scene   : "DrawingScene",
@@ -24,6 +27,7 @@ class CmdEditOrigin(CmdSceneItem):
         self._before = item.origin()
         self._after = ap_name
 
+    @checked
     def redo(self : Self) -> None:
         """Change origin without changing scene position."""
         pos_before = self._item.getHandle(self._before).scenePos()
@@ -31,6 +35,7 @@ class CmdEditOrigin(CmdSceneItem):
         self._item.setOrigin(self._after)
         self._item.moveBy(pos_after - pos_before)
 
+    @checked
     def undo(self : Self) -> None:
         """Change origin without changing scene position."""
         pos_before = self._item.getHandle(self._before).scenePos()

@@ -1,5 +1,6 @@
 from typing import Any
 
+from ...core.check import checked
 from ...core.types import NO_CHANGE
 
 from typing import TYPE_CHECKING
@@ -7,8 +8,9 @@ if TYPE_CHECKING:
     from ..graphics.items.mixin.presentation import ItemPresentationMixin
 
 
+@checked
 def _combinedValue(
-    items       : list[ItemPresentationMixin],
+    items       : list["ItemPresentationMixin"],
     method_name : str
 ) -> Any:
     result = None

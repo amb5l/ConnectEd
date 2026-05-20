@@ -3,6 +3,7 @@ from typing import Self, TypeVar, Generic, Protocol, overload
 from PyQt6.QtCore    import QPointF, QRectF
 from PyQt6.QtWidgets import QGraphicsItem
 
+from .....core.check import checked
 from .....core.types import HandleId, RectHandleId, DataKind
 
 from ..handle import HandleItem
@@ -22,6 +23,7 @@ class ItemHandlesMixin(ItemGripMixin, Generic[T]):
     def handles(self : Self) -> dict[T, "HandleItem"]:
         return self._handles
 
+    @checked
     def getHandle(self : Self, id : T | str) -> "HandleItem":
         if isinstance(id, str):
             id = self.handleIdType()(id)
@@ -57,6 +59,7 @@ class ItemRectHandlesMixin(ItemHandlesMixin[RectHandleId]):
     # instance attributes
     _handles : dict[RectHandleId, "HandleItem"]
 
+    @checked
     def initHandles(self : Self) -> None:
         self._handles = {}
         for id in RectHandleId:
@@ -84,6 +87,7 @@ class ItemRectHandlesMixin(ItemHandlesMixin[RectHandleId]):
         if hasattr(self, "origin"):
             self.updateTransform()
 
+    @checked
     def moveHandleBy(
         self : Self | QGraphicsItem | RectItemProtocol,
         id   : RectHandleId,

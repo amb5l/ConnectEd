@@ -11,6 +11,7 @@ from ..resources import getIconPath
 
 from ..core.icon import SvgIconSingleton
 
+from .check import checked
 from .defs import LIB_EXT, DSN_EXT
 from .xml  import copy, paste, fromXmlBegin, loadItems, saveBegin, saveEnd
 
@@ -24,9 +25,11 @@ if TYPE_CHECKING:
 class NameCounter:
     counts : dict[str, int]
 
+    @checked
     def __init__(self : Self) -> None:
         self.counts = {}
 
+    @checked
     def get(self : Self, name : str) -> str:
         if name not in self.counts:
             self.counts[name] = 0
@@ -70,6 +73,7 @@ class Container(Node):
     BOLD   = False
     ITALIC = False
 
+    @checked
     def __init__(self : Self) -> None:
         super().__init__(self.NAME)
         font = self.font()
@@ -96,6 +100,7 @@ class DrawingNode(Node):
 
     _scene : "DrawingScene | None"
 
+    @checked
     def __init__(
         self  : Self,
         scene : "DrawingScene | None" = None,
@@ -111,23 +116,29 @@ class DrawingNode(Node):
             super().setText(scene.name())
         self.setFlags(self.flags() | Qt.ItemFlag.ItemIsEditable)
 
+    @checked
     def setText(self : Self, text : str) -> None:
         super().setText(text)
         self._scene.setName(text)
 
+    @checked
     def scene(self : Self) -> "DrawingScene":
         return self._scene
 
+    @checked
     def setScene(self : Self, scene : "DrawingScene") -> None:
         self._scene = scene
 
+    @checked
     def drawingKind(self : Self) -> str:
         return self.__class__.__name__.replace("Node", "")
 
+    @checked
     def toXml(self : Self, xw : QXmlStreamWriter) -> None:
         self._scene.toXml(xw)
 
     @classmethod
+    @checked
     def fromXml(cls : Self, xr : QXmlStreamReader) -> Self:
         scene : "DrawingScene" = cls.sceneClass().fromXml(xr)
         item : "DrawingNode" = cls(scene)
@@ -144,10 +155,12 @@ class SymbolNode(DrawingNode):
 
     _scene : "SymbolScene | None"
 
+    @checked
     def __init__(self : Self, name : str | None = None) -> None:
         super().__init__(name)
         self.setIcon(SymbolIcon().get())
 
+    @checked
     def dbNode(self : Self) -> "DesignDbNode | LibraryDbNode":
         return self.parent()
 
@@ -155,6 +168,7 @@ class SymbolNode(DrawingNode):
 class DbNode(Node):
     _path : str | None
 
+    @checked
     def __init__(self : Self, name : str | None = None) -> None:
         if name is None:
             name = name_counter.get(
@@ -169,13 +183,16 @@ class DbNode(Node):
         cls = self if isinstance(self, type) else self.__class__
         return cls.__name__.replace("DbNode", "")
 
+    @checked
     def path(self : Self) -> str:
         return self._path
 
+    @checked
     def setPath(self : Self, path : str) -> None:
         self._path = path
         self.setToolTip(path)
 
+    @checked
     def symbolNodes(self : Self) -> list[SymbolNode]:
         r = []
         for i in range(self.rowCount()):
@@ -186,11 +203,13 @@ class DbNode(Node):
                 logger().warning(f"Unexpected node: {node.text()} ({type(node)})")
         return r
 
+    @checked
     def newSymbolNode(self : Self) -> SymbolNode:
         item = SymbolNode()
         self.addSymbolNode(item)
         return item
 
+    @checked
     def addSymbolNode(self : Self, node : SymbolNode) -> None:
         self.appendRow(node)
 
@@ -199,13 +218,16 @@ class DbNode(Node):
             f"Subclass {self.__class__.__name__} must implement toXml"
         )
 
+    @checked
     def toXmlBegin(self : Self, xw : QXmlStreamWriter) -> None:
         xw.writeStartElement(self.dbKind())
         xw.writeAttribute("name", self.text())
 
+    @checked
     def toXmlEnd(self : Self, xw : QXmlStreamWriter) -> None:
         xw.writeEndElement()
 
+    @checked
     def save(self : Self, path : str | None = None) -> None:
         if path is None:
             path = self.path()
@@ -217,6 +239,7 @@ class DbNode(Node):
         saveEnd(xw, file)
 
     @classmethod
+    @checked
     def fromXmlBegin(cls : Self, xr : QXmlStreamReader) -> Self:
         element_name = cls.dbKind(cls)
         if xr.name() == element_name and xr.isStartElement():
@@ -235,11 +258,13 @@ class DbNode(Node):
         xr.readNext()
         return db_node
 
+    @checked
     def fromXmlEnd(self : Self, xr : QXmlStreamReader) -> None:
         while not (xr.isEndElement() and xr.name() == self.dbKind()):
             xr.readNext()
 
     @classmethod
+    @checked
     def load(cls : Self, path : str) -> Self:
         if not os.path.exists(path):
             logger().warning(f"{path} not found")
@@ -261,6 +286,7 @@ class DesignDbNode(DbNode):
 
     _scene   : "DiagramScene | None"
 
+    @checked
     def __init__(
         self  : Self,
         name  : str | None = None,
@@ -271,18 +297,22 @@ class DesignDbNode(DbNode):
         super().__init__(name)
         self.setIcon(DiagramIcon().get())
 
+    @checked
     def setText(self : Self, text : str) -> None:
         super().setText(text)
         if self._scene is not None:
             self._scene.setName(text)
 
+    @checked
     def scene(self : Self) -> "DiagramScene":
         return self._scene
 
+    @checked
     def setScene(self : Self, scene : "DiagramScene") -> None:
         self._scene = scene
         super().setText(scene.name())
 
+    @checked
     def toXml(self : Self, xw : QXmlStreamWriter) -> None:
         self.toXmlBegin(xw)
         xw.writeStartElement("Symbols")
@@ -295,6 +325,7 @@ class DesignDbNode(DbNode):
         self.toXmlEnd(xw)
 
     @classmethod
+    @checked
     def fromXml(cls : Self, xr : QXmlStreamReader) -> Self:
         from ..widgets.graphics.scenes.diagram import DiagramScene
         db_node : Self = cls.fromXmlBegin(xr)
@@ -326,10 +357,12 @@ class DesignDbNode(DbNode):
 class LibraryDbNode(DbNode):
     FILE_EXT = LIB_EXT
 
+    @checked
     def __init__(self : Self, name : str | None = None) -> None:
         super().__init__(name)
         self.setIcon(LibraryIcon().get())
 
+    @checked
     def toXml(self : Self, xw : QXmlStreamWriter) -> None:
         self.toXmlBegin(xw)
         for i in range(self.rowCount()):
@@ -341,6 +374,7 @@ class LibraryDbNode(DbNode):
         self.toXmlEnd(xw)
 
     @classmethod
+    @checked
     def fromXml(cls : Self, xr : QXmlStreamReader) -> Self:
         db_node : Self = cls.fromXmlBegin(xr)
         while not (xr.isEndElement() and xr.name() == cls.dbKind(cls)):
@@ -360,6 +394,7 @@ class Model(QStandardItemModel):
     _diagrams  : DesignDbContainer
     _libraries : LibraryDbContainer
 
+    @checked
     def __init__(self : Self) -> None:
         super().__init__()
         self.setHorizontalHeaderLabels(["Database Hierarchy"])
@@ -368,40 +403,49 @@ class Model(QStandardItemModel):
         self._libraries = LibraryDbContainer()
         self.appendRow(self._libraries)
 
+    @checked
     def designDbContainer(self : Self) -> DesignDbContainer:
         return self._diagrams
 
+    @checked
     def designDbNodes(self : Self) -> list[DesignDbNode]:
         return [
             self._diagrams.child(i) for i in range(self._diagrams.rowCount())
                 if self._diagrams.child(i) is not None
         ]
 
+    @checked
     def newDesignDbNode(self : Self, name : str | None = None) -> DesignDbNode:
         node = DesignDbNode(name)
         self.addDesignDbNode(node)
         return node
 
+    @checked
     def addDesignDbNode(self : Self, node : DesignDbNode) -> None:
         self.designDbContainer().appendRow(node)
 
+    @checked
     def libraryDbContainer(self : Self) -> LibraryDbContainer:
         return self._libraries
 
+    @checked
     def libraryDbNodes(self : Self) -> list[LibraryDbNode]:
         return [
             self._libraries.child(i) for i in range(self._libraries.rowCount())
                 if self._libraries.child(i) is not None
         ]
 
+    @checked
     def newLibraryDbNode(self : Self, name : str | None = None) -> LibraryDbNode:
         node = LibraryDbNode(name)
         self.addLibraryDbNode(node)
         return node
 
+    @checked
     def addLibraryDbNode(self : Self, node : LibraryDbNode) -> None:
         self.libraryDbContainer().appendRow(node)
 
+    @checked
     def load(self : Self, path : str) -> DesignDbNode | LibraryDbNode | None:
         if self._alreadyLoaded(path):
             return None
@@ -416,6 +460,7 @@ class Model(QStandardItemModel):
             logger().warning(f"Unsupported file extension: {path}")
         return db_node
 
+    @checked
     def close(self : Self, node : DesignDbNode | LibraryDbNode) -> bool:
         """Close a database and remove it from the model."""
         if not node.model() or node.model() != self:
@@ -433,9 +478,11 @@ class Model(QStandardItemModel):
                     window()._mdi_area.closeScene(symbol_node.scene())
         return self._removeNode(node)
 
+    @checked
     def copy(self : Self, item : Node) -> None:
         copy(item)
 
+    @checked
     def paste(self : Self, node : Node) -> None:
         paste_items, _ = paste()
         if paste_items:
@@ -470,6 +517,7 @@ class Model(QStandardItemModel):
                 s = ", ".join(invalid_item_types)
                 raise ValueError(f"{n} invalid items for paste operation: {s}")
 
+    @checked
     def getDbNodeFromScene(self : Self, scene : "DrawingScene") -> DbNode:
         for diagram_db_node in self.designDbNodes():
             if scene == diagram_db_node.scene():

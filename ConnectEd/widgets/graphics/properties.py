@@ -42,6 +42,8 @@ from PyQt6.QtGui  import QColor
 
 from ...app  import logger
 
+from ...core.check import checked
+
 from ...core.types import NoChange, NO_CHANGE, AlignH, AlignV, \
                           HandleId, RectHandleId, DataKind
 from ...core.utils import str2val, pascal2proper
@@ -121,6 +123,7 @@ class PropertiesManager:
     _owner : "PropertiesMixin"
     _dict  : dict[str, InherentProperty | CustomProperty]
 
+    @checked
     def __init__(self : Self, owner : "PropertiesMixin", fresh : bool) -> None:
         """
         Initialize the properties system for this instance.
@@ -138,9 +141,11 @@ class PropertiesManager:
             for name, spec in self._owner._PROPERTY_TEXTS.items():
                 self.addText(name, *spec.astuple())
 
+    @checked
     def names(self : Self) -> list[str]:
         return list(self._dict.keys())
 
+    @checked
     def has(self : Self, name : str) -> bool:
         """
         Test property existance.
@@ -148,6 +153,7 @@ class PropertiesManager:
         """
         return name in self._dict
 
+    @checked
     def inherent(self : Self, name : str) -> bool | None:
         """
         Test if a property is inherent.
@@ -162,6 +168,7 @@ class PropertiesManager:
         # test if inherent
         return isinstance(property, InherentProperty)
 
+    @checked
     def writeable(self : Self, name : str) -> bool | None:
         """
         Test if a property is writeable.
@@ -176,6 +183,7 @@ class PropertiesManager:
         # test if writeable
         return isinstance(property, CustomProperty) or callable(property.setter)
 
+    @checked
     def kind(self : Self, name : str) -> DataKind | None:
         # check property existence
         if not self.has(name):
@@ -191,6 +199,7 @@ class PropertiesManager:
                 return None
         return property.kind
 
+    @checked
     def setKind(self : Self, name : str, kind : DataKind) -> bool:
         """
         Set the kind of a property - allowed for custom properties only.
@@ -209,6 +218,7 @@ class PropertiesManager:
         property.kind = kind
         return True
 
+    @checked
     def worthy(self : Self, name : str) -> bool:
         """
         Test if a property is worthy of serialization.
@@ -229,6 +239,7 @@ class PropertiesManager:
             logger().warning(f"Bad property type: {type(property)}")
             return False
 
+    @checked
     def default(self : Self, name : str) -> Any:
         """
         Get the default value of a property.
@@ -246,6 +257,7 @@ class PropertiesManager:
         # not found
         return None
 
+    @checked
     def value(
         self   : Self,
         name   : str,
@@ -316,6 +328,7 @@ class PropertiesManager:
         logger().warning(f"Property '{name}' has unknown type: {type(property)}")
         return None
 
+    @checked
     def setValue(self : Self, name : str, value : Any) -> bool:
         """
         Set the value of a property.
@@ -352,6 +365,7 @@ class PropertiesManager:
             property.notifier.changed.emit()
         return True
 
+    @checked
     def init(self : Self, name : str, value : Any) -> bool:
         """
         Initialize a property. Creates if required, and sets the value;
@@ -361,6 +375,7 @@ class PropertiesManager:
         f = self.setValue if self.has(name) else self.add
         return f(name, value)
 
+    @checked
     def add(
         self  : Self,
         name  : str,
@@ -383,6 +398,7 @@ class PropertiesManager:
         self._dict[name] = CustomProperty(kind=kind, value=value)
         return True
 
+    @checked
     def rename(self : Self, old_name : str, new_name : str) -> bool:
         """
         Rename a property.
@@ -410,6 +426,7 @@ class PropertiesManager:
         del self._dict[old_name]
         return True
 
+    @checked
     def delete(self : Self, name : str) -> bool:
         """
         Remove a property (and its associated property text item if applicable).
@@ -440,6 +457,7 @@ class PropertiesManager:
         # done
         return True
 
+    @checked
     def signalChanges(self : Self, names : str | list[str]) -> None:
         if isinstance(names, str):
             names = [names]
@@ -449,6 +467,7 @@ class PropertiesManager:
                 if property.notifier:
                     property.notifier.changed.emit()
 
+    @checked
     def text(self : Self, name : str) -> "PropertyTextItem | None":
         """
         Get the property text item for a property.
@@ -461,6 +480,7 @@ class PropertiesManager:
         # return PropertyTextItem instance
         return self._dict[name].text
 
+    @checked
     def setText(self : Self, name : str, text : "PropertyTextItem") -> bool:
         """
         Assign an existing property text item to a property.
@@ -475,6 +495,7 @@ class PropertiesManager:
         property.text = text
         return True
 
+    @checked
     def addText(
         self      : Self,
         name      : str,
@@ -538,6 +559,7 @@ class PropertiesManager:
         property.text.setVisible(visible)
         return True
 
+    @checked
     def editText(
         self : Self,
         name      : str,
@@ -600,6 +622,7 @@ class PropertiesManager:
         if underline is not NO_CHANGE: pt.setTextUnderline(underline)
         return True
 
+    @checked
     def delText(self : Self, name : str) -> bool:
         """
         Delete a property text item.
@@ -641,13 +664,16 @@ class PropertiesMixin:
     # instance attributes
     properties : PropertiesManager
 
+    @checked
     def initProperties(self : Self, fresh : bool) -> None:
         self.properties = PropertiesManager(self, fresh)
 
+    @checked
     def signalPropertyChanges(self : Self, names : str | list[str]) -> None:
         if hasattr(self, "properties"):
             self.properties.signalChanges(names)
 
+    @checked
     def description(self : Self) -> str:
         class_name = self.__class__.__name__
         class_name = class_name.removesuffix("Item")

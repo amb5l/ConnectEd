@@ -6,12 +6,15 @@ from PyQt6.QtGui     import QPainter, QPainterPath
 
 from ....app import logger
 
+from ....core.check import checked
+
 
 class NullItem(QGraphicsItem):
     # instance attributes
     _brect  : QRectF        # bounding rect
     _hshape : QPainterPath  # shape for hit detection
 
+    @checked
     def __init__(self : Self, parent : QGraphicsItem | None = None) -> None:
         super().__init__(parent)
         self.setFlag( self.GraphicsItemFlag.ItemHasNoContents , True  )

@@ -2,6 +2,7 @@ from typing import Self
 
 from PyQt6.QtWidgets import QGridLayout, QButtonGroup
 
+from .....core.check import checked
 from .....core.types import NoChange, NO_CHANGE, RectHandleId
 
 from ..tool_button import ToolButton
@@ -30,6 +31,7 @@ class OriginLayout(QGridLayout):
     _bottom_center_button : ToolButton
     _bottom_right_button  : ToolButton
 
+    @checked
     def __init__(self : Self, origin : RectHandleId) -> None:
         super().__init__()
         self._initial = origin
@@ -71,6 +73,7 @@ class OriginLayout(QGridLayout):
         self._button_group.addButton(self._bottom_right_button)
         self.addWidget(self._bottom_right_button, 2, 2)
 
+    @checked
     def getOrigin(self : Self) -> RectHandleId | NoChange:
         if self._top_left_button.isChecked():
             r = RectHandleId.TOP_LEFT

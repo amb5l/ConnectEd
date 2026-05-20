@@ -4,6 +4,7 @@ from PyQt6.QtCore    import QPointF
 from PyQt6.QtWidgets import QGraphicsItem
 from PyQt6.QtGui     import QColor
 
+from ....core.check import checked
 from ....core.types import AlignH, AlignV, RectHandleId, DataKind
 from ....core.utils import val2str
 
@@ -58,6 +59,7 @@ class NetLabelItem(TextItem):
     _value : str
     _tether : NetLabelTetherItem | None
 
+    @checked
     def __init__(
         self      : Self,
         name      : str                  = "",
@@ -107,11 +109,13 @@ class NetLabelItem(TextItem):
     def name(self : Self) -> str:
         return self._name
 
+    @checked
     def setName(self : Self, name : str) -> None:
         self._name = name
 
     def value(self : Self) -> str:
         return self._value
 
+    @checked
     def setValue(self : Self, value : str) -> None:
         self._value = value

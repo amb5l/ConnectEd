@@ -5,6 +5,7 @@ from PyQt6.QtCore    import Qt
 from PyQt6.QtWidgets import QGraphicsItem
 from PyQt6.QtGui     import QColor
 
+from .......core.check import checked
 from .......core.types import NoChange, NO_CHANGE
 
 from .....items.mixin import ItemMixin
@@ -65,6 +66,7 @@ class CmdEditAppearance(CmdSceneItems):
     _before : dict[ItemMixin, ItemBefore]
     _after  : ItemAfter
 
+    @checked
     def __init__(
         self           : Self,
         scene          : "DrawingScene",
@@ -111,6 +113,7 @@ class CmdEditAppearance(CmdSceneItems):
             text_underline
         )
 
+    @checked
     def redo(self : Self) -> None:
         for item in self._items:
             if self._before[item].line_color is not NO_CHANGE:
@@ -138,6 +141,7 @@ class CmdEditAppearance(CmdSceneItems):
             item.onGeometryChange()
             item.update()
 
+    @checked
     def undo(self : Self) -> None:
         for item in self._items:
             if self._before[item].line_color is not NO_CHANGE:

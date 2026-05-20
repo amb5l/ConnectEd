@@ -2,6 +2,7 @@ from typing import Any
 
 from PyQt6.QtGui import QColor
 
+from ......core.check import checked
 from ......core.types import NoChange, NO_CHANGE, AlignH, AlignV, \
                              HandleId, RectHandleId, DataKind
 
@@ -24,6 +25,7 @@ if TYPE_CHECKING:
     from .. import DrawingScene
 
 class DrawingSceneApiPropertiesMixin:
+    @checked
     def addProperty(
         self     : "DrawingScene",
         object   : "PropertiesMixin",
@@ -35,6 +37,7 @@ class DrawingSceneApiPropertiesMixin:
         cmd = CmdAddProperty(object, name, kind, value)
         cmdExec(self, cmd, undoable)
 
+    @checked
     def editProperty(
         self     : "DrawingScene",
         object   : "PropertiesMixin",
@@ -46,6 +49,7 @@ class DrawingSceneApiPropertiesMixin:
         cmd = CmdEditProperty(object, name, kind, value)
         cmdExec(self, cmd, undoable)
 
+    @checked
     def delProperty(
         self     : "DrawingScene",
         object   : "PropertiesMixin",
@@ -55,6 +59,7 @@ class DrawingSceneApiPropertiesMixin:
         cmd = CmdDelProperty(object, name)
         cmdExec(self, cmd, undoable)
 
+    @checked
     def addPropertyText(
         self     : "DrawingScene",
         object   : "PropertiesMixin",
@@ -88,6 +93,7 @@ class DrawingSceneApiPropertiesMixin:
         )
         cmdExec(self, cmd, undoable)
 
+    @checked
     def editPropertyText(
         self      : "DrawingScene",
         object    : "PropertiesMixin",
@@ -138,6 +144,7 @@ class DrawingSceneApiPropertiesMixin:
         )
         cmdExec(self, cmd, undoable)
 
+    @checked
     def delPropertyText(
         self     : "DrawingScene",
         object   : "PropertiesMixin",
@@ -147,6 +154,7 @@ class DrawingSceneApiPropertiesMixin:
         cmd = CmdDelPropertyText(object, name)
         cmdExec(self, cmd, undoable)
 
+    @checked
     def editProperties(
         self     : "DrawingScene",
         object   : "PropertiesMixin",

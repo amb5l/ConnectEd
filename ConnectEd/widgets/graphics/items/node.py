@@ -6,6 +6,8 @@ from PyQt6.QtWidgets import QGraphicsPathItem, QGraphicsItem
 
 from ....app import logger
 
+from ....core.check import checked
+
 from ..scenes import withScene
 
 from .net_label import NetLabelItem
@@ -41,6 +43,7 @@ class NodeItem(
     # instance attributes
     _state : NodeState
 
+    @checked
     def __init__(self : Self, parent : QGraphicsItem | None = None) -> None:
         super().__init__(parent)
         self._state = NodeState.UNCONNECTED
@@ -73,6 +76,7 @@ class NodeItem(
             return []
         return scene.netlist.nodeSegments(self)
 
+    @checked
     def toXml(self : Self, xw : QXmlStreamWriter, id : int) -> None:
         xw.writeStartElement(self.settingsName())
         xw.writeAttribute("ID", str(id))
@@ -99,6 +103,7 @@ class NodeItem(
 class FreeNodeItem(NodeItem):
     _JUNCTION_THRESHOLD = 3
 
+    @checked
     def __init__(
         self : Self,
         pos  : QPointF | None = None
@@ -108,6 +113,7 @@ class FreeNodeItem(NodeItem):
             self.setPos(pos)
 
     @classmethod
+    @checked
     def fromXml(cls : Self, xr : QXmlStreamReader) -> Self:
         instance : "FreeNodeItem" = cls()
         for attr_name, attr_value in xr.attributes():
@@ -136,12 +142,14 @@ class FreeNodeItem(NodeItem):
 class FixedNodeItem(NodeItem):
     _JUNCTION_THRESHOLD = 2
 
+    @checked
     def onSelectionChanged(self : Self, selected : bool) -> None:
         super().onSelectionChanged(selected)
         parent = self.parentItem()
         if parent is not None:
             parent.setSelected(selected)
 
+    @checked
     def toXml(self : Self, xw : QXmlStreamWriter, id : int) -> None:
         xw.writeStartElement(self.settingsName())
         xw.writeAttribute("ID", str(id))
@@ -150,6 +158,7 @@ class FixedNodeItem(NodeItem):
         xw.writeEndElement()
 
     @classmethod
+    @checked
     def fromXml(
         cls   : Self,
         xr    : QXmlStreamReader,

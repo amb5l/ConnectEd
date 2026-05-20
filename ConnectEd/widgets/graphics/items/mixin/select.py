@@ -3,6 +3,8 @@ from typing import Self
 from PyQt6.QtGui     import QPainter
 from PyQt6.QtWidgets import QStyleOptionGraphicsItem, QWidget, QStyle
 
+from .....core.check import checked
+
 from .presentation import ItemPresentationMixin
 
 
@@ -17,6 +19,7 @@ class ItemSelectMixin:
         if not isinstance(self, ItemPresentationMixin):
             raise TypeError("This item does not support the ItemPresentationMixin")
 
+    @checked
     def onSelectionChanged(
         self : Self | ItemPresentationMixin,
         selected : bool

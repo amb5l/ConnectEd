@@ -16,6 +16,7 @@ from PyQt6.QtCore import Qt, QObject, pyqtSignal, QSettings, QPointF, QSizeF
 
 from ..app import logger
 
+from .check   import checked
 from .defs    import ORG_NAME, APP_NAME, DEFS
 from .utils   import getDefaultPath, val2str, str2val
 from .palette import PaletteDark, PaletteLightMono
@@ -1035,16 +1036,19 @@ class Settings(QObject):
     changed = pyqtSignal()
     mruChanged = pyqtSignal()
 
+    @checked
     def __init__(self : Self) -> None:
         super().__init__()
         self._settings = self._deepCopy(FACTORY_SETTINGS)
 
+    @checked
     def get(self : Self, path : str) -> Any:
         theme = self._get(self._settings, "display/theme")
         path = f"/{path}".replace("/theme/", f"/themes/{theme}/").strip("/")
         value = self._get(self._settings, path)
         return self._toNamespace(value) if isinstance(value, dict) else value
 
+    @checked
     def getMRU(self : Self) -> list[str]:
         r = []
         for i in range(1, 10):
@@ -1053,6 +1057,7 @@ class Settings(QObject):
                 r.append(mru)
         return r
 
+    @checked
     def addMRU(self : Self, file_name : str) -> None:
         old_mru = self.getMRU()  # existing list
         new_mru = [file_name]
@@ -1066,6 +1071,7 @@ class Settings(QObject):
                 self.set(f"mru/{i}", "", emit=False)
         self.mruChanged.emit()
 
+    @checked
     def set(self : Self, path : str, value : Any, emit : bool = True) -> None:
         tn = type(value).__name__
         tnx = self._getSettingKind(path) # type name expected
@@ -1078,6 +1084,7 @@ class Settings(QObject):
         if emit:
             self.changed.emit()
 
+    @checked
     def reset(self : Self) -> None:
         """Clear all saved settings from QSettings."""
         logger().info("Clearing all persistent settings")
@@ -1086,6 +1093,7 @@ class Settings(QObject):
         self._settings = self._deepCopy(FACTORY_SETTINGS)
         self.changed.emit()
 
+    @checked
     def load(self : Self) -> None:
         """Load settings from QSettings into the settings store."""
         logger().debug("Loading settings")
@@ -1096,6 +1104,7 @@ class Settings(QObject):
             qsettings.endGroup()
         self.changed.emit()
 
+    @checked
     def save(self : Self) -> None:
         """Save settings to QSettings storage."""
         logger().debug("Saving settings")
@@ -1105,6 +1114,7 @@ class Settings(QObject):
             self._save(value, qsettings, group)
             qsettings.endGroup()
 
+    @checked
     def dump(self : Self) -> str:
         """Return a formatted string representation of all settings."""
         lines: list[str] = []

@@ -5,6 +5,7 @@ from PyQt6.QtGui     import QPainterPath
 
 from ....app import logger
 
+from ....core.check import checked
 from ....core.types import DataKind, RectHandleId
 from ....core.utils import registerClass
 
@@ -34,6 +35,7 @@ class BaseSymbolInstanceItem(BaseRectangleItem):
     _brect  : QRectF
     _hshape : QPainterPath
 
+    @checked
     def __init__(self : Self, symbol : SymbolScene) -> None:
         super().__init__()
         self._symbol = symbol

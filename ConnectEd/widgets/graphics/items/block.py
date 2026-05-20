@@ -4,6 +4,7 @@ from PyQt6.QtCore    import QPointF
 from PyQt6.QtWidgets import QMenu
 from PyQt6.QtGui     import QAction
 
+from ....core.check import checked
 from ....core.types import EdgeLoc, Edge
 
 from .base_rect import BaseRectangleItem
@@ -24,6 +25,7 @@ class BlockItem(PartItemMixin, BaseRectangleItem):
     _fill_color = None  # enable per-item appearance control
     _fill_style = None  # enable per-item appearance control
 
+    @checked
     def __init__(
         self  : Self,
         p1    : QPointF | None = None,
@@ -40,6 +42,7 @@ class BlockItem(PartItemMixin, BaseRectangleItem):
         #    if isinstance(item, Pin):
         #        item.onPositionChanged()
 
+    @checked
     def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
         return [
             view.action("Add Pin...", view.ui.placeBlockPin),
@@ -48,6 +51,7 @@ class BlockItem(PartItemMixin, BaseRectangleItem):
             view.action("Properties...", lambda: view.ui.editItemProperties(self))
         ]
 
+    @checked
     def pos2loc(self : Self, pos : QPointF) -> EdgeLoc:
         rect = self.rect()
         w = rect.width()
@@ -63,6 +67,7 @@ class BlockItem(PartItemMixin, BaseRectangleItem):
             edge = Edge.TOP if r.y() <= 0 else Edge.BOTTOM
         return EdgeLoc(edge, offset)
 
+    @checked
     def loc2pos(self : Self, loc : EdgeLoc) -> QPointF:
         match loc.edge:
             case Edge.LEFT:
@@ -76,6 +81,7 @@ class BlockItem(PartItemMixin, BaseRectangleItem):
             case _:
                 raise ValueError(f"Invalid edge: {loc.edge}")
 
+    @checked
     def loc2peri(self : Self, loc : EdgeLoc) -> float:
         rect = self.rect()
         w = rect.width()
@@ -92,6 +98,7 @@ class BlockItem(PartItemMixin, BaseRectangleItem):
         else:
             raise ValueError(f"Invalid edge: {loc.edge}")
 
+    @checked
     def peri2loc(self : Self, peri : float) -> EdgeLoc:
         rect = self.rect()
         w = rect.width()
@@ -107,6 +114,7 @@ class BlockItem(PartItemMixin, BaseRectangleItem):
         else:
             return EdgeLoc(Edge.TOP, w - (peri - h - w - h))
 
+    @checked
     def locDelta(self : Self, loc1 : EdgeLoc, loc2 : EdgeLoc) -> float:
         rect = self.rect()
         w = rect.width()
@@ -121,6 +129,7 @@ class BlockItem(PartItemMixin, BaseRectangleItem):
             ccw_d = p - cw_d
         return -cw_d if cw_d < ccw_d else ccw_d
 
+    @checked
     def locOffset(
         self   : Self,
         loc    : EdgeLoc,

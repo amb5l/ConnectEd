@@ -9,6 +9,7 @@ from PyQt6.QtGui     import QStandardItemModel, QColor, QFontDatabase
 
 from ....app import logger
 
+from ....core.check import checked
 from ....core.types import (
     EnDis, AlignH, AlignV, Display, DataKind,
     RectHandleId, LineHandleId, BlockPinHandleId, SymbolPinHandleId,
@@ -89,6 +90,7 @@ class PropertiesDialog(QDialog):
     _cancel_button  : QPushButton
     _delegates      : list[PropertiesDelegate]
 
+    @checked
     def __init__(
         self : Self,
         item : ItemType,
@@ -199,6 +201,7 @@ class PropertiesDialog(QDialog):
                 return
         super().accept()
 
+    @checked
     def getChanges(self : Self) -> list[PropertyChangeType]:
         """
         Returns a list of changes to be applied to the item.

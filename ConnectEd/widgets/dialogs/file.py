@@ -1,11 +1,15 @@
+from typing import Self
+
 from PyQt6.QtWidgets import QFileDialog, QWidget
 
+from ...core.check import checked
 from ...core.defs import LIB_EXT, DSN_EXT
 
 
 class FileOpenDialog(QFileDialog):
+    @checked
     def __init__(
-        self   : "FileOpenDialog",
+        self   : Self,
         kind   : str | None = None,
         parent : QWidget | None = None
     ) -> None:
@@ -25,8 +29,9 @@ class FileOpenDialog(QFileDialog):
 
 
 class FileSaveAsDialog(QFileDialog):
+    @checked
     def __init__(
-        self   : "FileSaveAsDialog",
+        self   : Self,
         kind   : str,
         parent : QWidget | None = None
     ) -> None:

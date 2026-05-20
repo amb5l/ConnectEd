@@ -8,6 +8,8 @@ from PyQt6.QtGui     import QPainter, QPen, \
 
 from .....app import settings
 
+from .....core.check import checked
+
 from ....marquee import Marquee
 
 from ....window.mdi_area   import MdiArea
@@ -55,6 +57,7 @@ class DrawingView(
     interaction : Interaction | None
     ui          : DrawingViewUi
 
+    @checked
     def __init__(self : Self, scene : DrawingScene) -> None:
         super().__init__(scene)
         self.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
@@ -156,6 +159,7 @@ class DrawingView(
 
 
 class DrawingSubWindow(SubWindow):
+    @checked
     def __init__(
         self   : Self,
         parent : MdiArea | None = None

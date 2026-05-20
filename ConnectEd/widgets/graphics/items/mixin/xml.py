@@ -5,6 +5,7 @@ from PyQt6.QtWidgets import QGraphicsItem
 
 from .....app import logger
 
+from .....core.check import checked
 from .....core.xml import toXmlAttrs, fromXmlAttrs
 
 from typing import TYPE_CHECKING
@@ -35,6 +36,7 @@ class ItemXmlMixin:
     def toXmlEnd(self : Self, xw : QXmlStreamWriter) -> None:
         xw.writeEndElement()
 
+    @checked
     def toXml(self : Self, xw : QXmlStreamWriter) -> None:
         self.toXmlBegin(xw)
         self.toXmlAttrs(xw)
@@ -42,6 +44,7 @@ class ItemXmlMixin:
         self.toXmlEnd(xw)
 
     @classmethod
+    @checked
     def fromXml(
         cls    : Self,
         xr     : QXmlStreamReader,
@@ -73,7 +76,7 @@ class ItemXmlMixin:
             if xr.isStartElement():
                 item_name = xr.name() + "Item"
                 if item_name in pin_classes:
-                    child_cls : PortPinMixin = pin_classes[item_name]
+                    child_cls : type[PortPinMixin] = pin_classes[item_name]
                     child = child_cls.fromXml(xr, instance)
                 elif item_name == "PropertyTextItem":
                     child : PropertyTextItem = PropertyTextItem.fromXml(

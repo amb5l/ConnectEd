@@ -6,14 +6,17 @@ from PyQt6.QtGui     import QColor, QBrush
 
 from ......app import logger
 
+from ......core.check import checked
 from ......core.types import NoChange, NO_CHANGE
 
 from ....scenes import withScene
 
 from typing import TYPE_CHECKING
+
 if TYPE_CHECKING:
     from ....scenes.drawing import DrawingScene
-    from . import MixinType as ItemType
+
+from . import ItemType
 
 
 class ItemPresentationFillMixin:
@@ -38,6 +41,7 @@ class ItemPresentationFillMixin:
         brush = scene.resources.brush(self.resourcesName(), key)
         return brush.color()
 
+    @checked
     def setFillColor(self : "Self | ItemType", color: QColor | None | NoChange) -> None:
         if color is NO_CHANGE:
             return
@@ -62,6 +66,7 @@ class ItemPresentationFillMixin:
         brush = scene.resources.brush(self.resourcesName(), key)
         return brush.style()
 
+    @checked
     def setFillStyle(self : "Self | ItemType", style: Qt.BrushStyle | None | NoChange) -> None:
         if style is NO_CHANGE:
             return

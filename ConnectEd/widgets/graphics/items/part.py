@@ -1,5 +1,6 @@
 from typing import Self
 
+from ....core.check import checked
 from ....core.types import RectHandleId, DataKind
 
 from ..properties import PropertyTextSpec, InherentProperty
@@ -40,6 +41,7 @@ class PartItemMixin:
     _name  : str
     _path  : str
 
+    @checked
     def initPart(self : Self) -> None:
         self._label = ""
         self._name = ""
@@ -54,11 +56,13 @@ class PartItemMixin:
     def name(self : Self) -> str:
         return self._name
 
+    @checked
     def setName(self : Self, name : str) -> None:
         self._name = name
 
     def path(self : Self) -> str:
         return self._path
 
+    @checked
     def setPath(self : Self, path : str) -> None:
         self._path = path

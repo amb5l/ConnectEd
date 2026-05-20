@@ -4,6 +4,7 @@ from PyQt6.QtCore    import QPointF, QRectF, QSizeF
 from PyQt6.QtWidgets import QGraphicsRectItem, QGraphicsEllipseItem, QMenu
 from PyQt6.QtGui     import QAction
 
+from ....core.check import checked
 from ....core.defs  import PITCH
 from ....core.types import RectHandleId, DataKind
 
@@ -65,6 +66,7 @@ class BaseRectangleMixin(
     ) -> None:
         ...
 
+    @checked
     def __init__(
         self       : Self,
         p1_or_pos  : QPointF | None = None,
@@ -108,11 +110,13 @@ class BaseRectangleMixin(
         proxy.setRect(*args, **kwargs)
         self.onGeometryChange()
 
+    @checked
     def setWidth(self : Self | QGraphicsRectItem, width : float | int) -> None:
         rect = self.rect()
         rect.setWidth(width)
         self.setRect(rect)
 
+    @checked
     def setHeight(self : Self | QGraphicsRectItem, height : float | int) -> None:
         rect = self.rect()
         rect.setHeight(height)
@@ -136,6 +140,7 @@ class BaseRectangleMixin(
     ) -> None:
         ...
 
+    @checked
     def setPoints(
         self : Self | QGraphicsRectItem,
         p1_x1 : QPointF | float | int,
@@ -163,6 +168,7 @@ class BaseRectangleMixin(
     def handleRect(self : Self | QGraphicsRectItem | QGraphicsEllipseItem) -> QRectF:
         return self.rect()
 
+    @checked
     def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
         return [
             view.action("Appearance...", lambda: view.ui.editAppearance(self)),

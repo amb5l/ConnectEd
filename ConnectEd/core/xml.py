@@ -6,6 +6,7 @@ from PyQt6.QtWidgets import QApplication
 
 from ..app import logger
 
+from .check import checked
 from .defs  import APP_NAME, MIME_TYPE
 from .utils import val2str, str2val, space2underscore, underscore2space
 
@@ -23,12 +24,14 @@ XmlItemTypes: TypeAlias = Union[
     "ItemMixin"
 ]
 
+@checked
 def toXmlBegin(xw : QXmlStreamWriter) -> None:
     xw.setAutoFormatting(True)
     xw.setAutoFormattingIndent(2)
     xw.writeStartDocument()
     xw.writeStartElement(APP_NAME) # TODO: version
 
+@checked
 def toXmlAttrs(instance : "PropertiesMixin", xw : QXmlStreamWriter) -> None:
     for name in instance.properties.names():
         if not instance.properties.worthy(name):
@@ -36,27 +39,32 @@ def toXmlAttrs(instance : "PropertiesMixin", xw : QXmlStreamWriter) -> None:
         value = instance.properties.value(name)
         xw.writeAttribute(space2underscore(name), val2str(value))
 
+@checked
 def toXmlEnd(xw : QXmlStreamWriter) -> None:
     xw.writeEndDocument()
 
+@checked
 def fromXmlBegin(xr : QXmlStreamReader, element_name : str) -> None:
     xr.readNext()
     while not (xr.isStartElement() and xr.name() == element_name):
         xr.readNext()
 
+@checked
 def fromXmlEnd(xr : QXmlStreamReader, element_name : str) -> None:
     while not (xr.isEndElement() and xr.name() == element_name):
         xr.readNext()
 
+@checked
 def fromXmlAttrs(instance : "PropertiesMixin", xr : QXmlStreamReader) -> None:
     xml_attrs = xr.attributes()
     for xml_attr in xml_attrs:
         instance.properties.init(underscore2space(xml_attr.name()), xml_attr.value())
     xr.readNext()
 
+@checked
 def fromXmlItems(
     xr : QXmlStreamReader
-) -> tuple[list[XmlItemTypes], QPointF | None]:
+) -> tuple[list[Any], QPointF | None]:
     from .db import DesignDbNode, LibraryDbNode, SymbolNode
     from ..widgets.graphics.items import _item_classes
     pos = None
@@ -102,6 +110,7 @@ def saveBegin(path : str) -> tuple[QXmlStreamWriter, QFile]:
         toXmlBegin(xw)
         return xw, file
 
+@checked
 def saveEnd(xw : QXmlStreamWriter, file : QFile) -> None:
     xw.writeEndElement() # ConnectEd
     toXmlEnd(xw)
@@ -112,7 +121,8 @@ def save(instance : Any, path : str) -> None:
     instance.toXml(xw)
     saveEnd(xw, file)
 
-def loadItems(path : str) -> list[XmlItemTypes]:
+@checked
+def loadItems(path : str) -> list[Any]:
     # TODO: handle file open error
     file = QFile(path)
     if file.open(QIODevice.OpenModeFlag.ReadOnly | QIODevice.OpenModeFlag.Text):
@@ -123,6 +133,7 @@ def loadItems(path : str) -> list[XmlItemTypes]:
         items = []
     return items
 
+@checked
 def copy(instances : Any | list[Any], pos : QPointF = QPointF(0, 0)) -> None:
     if not isinstance(instances, list):
         instances = [instances]
@@ -141,7 +152,8 @@ def copy(instances : Any | list[Any], pos : QPointF = QPointF(0, 0)) -> None:
     clipboard = QApplication.clipboard()
     clipboard.setMimeData(mime_data)
 
-def paste() -> tuple[list[XmlItemTypes], QPointF | None]:
+@checked
+def paste() -> tuple[list[Any], QPointF | None]:
     clipboard = QApplication.clipboard()
     mime_data = clipboard.mimeData()
     if mime_data and mime_data.hasFormat(MIME_TYPE):

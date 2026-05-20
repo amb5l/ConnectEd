@@ -12,18 +12,22 @@ from PyQt6.QtGui  import QColor
 
 from ..app import logger
 
+from .check import checked
+
 
 def sign(x):
     """Return -1, 0, or 1 based on sign of x."""
     return -1 if x < 0 else (1 if x > 0 else 0)
 
 
+@checked
 def check(b : bool, s : str) -> bool:
     if not b:
         print(s)
     return b
 
 
+@checked
 def trace(
     depth  : int | None = None,
     full   : bool = False,
@@ -103,6 +107,7 @@ def typeCheck(x : Any, t : type) -> None:
     return True
 
 
+@checked
 def itemsTypeDict(items : list[Any]) -> dict[type, list[Any]]:
     """Group items by their type."""
     result: defaultdict[type, list[Any]] = defaultdict(list)
@@ -111,16 +116,19 @@ def itemsTypeDict(items : list[Any]) -> dict[type, list[Any]]:
     return dict(result)
 
 
+@checked
 def space2underscore(s : str) -> str:
     """Foo Bar -> Foo_Bar"""
     return s.replace(" ", "_")
 
 
+@checked
 def underscore2space(s : str) -> str:
     """Foo_Bar -> Foo Bar"""
     return s.replace("_", " ")
 
 
+@checked
 def camel2proper(s : str) -> str:
     """fooBar -> Foo Bar"""
     r = []
@@ -134,6 +142,7 @@ def camel2proper(s : str) -> str:
     return "".join(r)
 
 
+@checked
 def pascal2snake(s : str) -> str:
     """FooBar -> foo_bar"""
     r = []
@@ -143,6 +152,7 @@ def pascal2snake(s : str) -> str:
         r.append(char.lower())
     return "".join(r)
 
+@checked
 def pascal2proper(s : str) -> str:
     """FooBar -> Foo Bar"""
     r = []
@@ -152,16 +162,19 @@ def pascal2proper(s : str) -> str:
         r.append(char)
     return "".join(r)
 
+@checked
 def proper2snake(s : str) -> str:
     """Foo Bar -> foo_bar"""
     return s.replace(" ", "_").lower()
 
 
+@checked
 def snake2proper(s : str) -> str:
     """foo_bar -> Foo Bar"""
     return s.replace("_", " ").title()
 
 
+@checked
 def getDefaultPath() -> str:
     if platform.system() == "Windows":
         if "WORK" in os.environ:
@@ -182,6 +195,7 @@ def getDefaultPath() -> str:
     return r
 
 
+@checked
 def val2str(v : Any) -> str:
     """Convert a Python value to a text representation."""
     t = type(v).__name__
@@ -217,6 +231,7 @@ def val2str(v : Any) -> str:
     return s
 
 
+@checked
 def str2val(s : str, t : str) -> Any:
     """
     Convert a text representation of a Python value to a Python value.
@@ -261,6 +276,7 @@ def str2val(s : str, t : str) -> Any:
             raise ValueError(f"Unsupported type: {t}")
 
 
+@checked
 def getCurlyBraceVariables(s : str) -> list[str]:
     """
     Get the substitution variables (names in curly braces) from a string.
@@ -273,6 +289,7 @@ def getCurlyBraceVariables(s : str) -> list[str]:
     return matches
 
 
+@checked
 def registerClass(
     registry : dict[str, type[Any]],
     cls_name : str,
@@ -288,3 +305,4 @@ def registerClass(
     module = importlib.import_module(f".{mod_name}", package=pkg)
     cls = getattr(module, cls_name)
     registry[cls_name] = cls
+    return cls

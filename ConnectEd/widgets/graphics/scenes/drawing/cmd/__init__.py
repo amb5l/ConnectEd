@@ -1,8 +1,9 @@
-from typing import Self
+from typing import Self, Callable
 
 from PyQt6.QtCore import QPointF
 from PyQt6.QtGui  import QUndoCommand
 
+from ......core.check import checked
 from ......core.utils import camel2proper
 
 from typing import TYPE_CHECKING
@@ -52,6 +53,7 @@ class CmdSceneBase(CmdBase):
     # instance attributes
     _scene : "DrawingScene"
 
+    @checked
     def __init__(self : Self, scene : "DrawingScene") -> None:
         text = camel2proper(self.__class__.__name__.replace("Cmd", ""))
         super().__init__(text)
@@ -64,6 +66,7 @@ class CmdSceneItem(CmdSceneBase):
     # instance attributes
     _item : "ItemType"
 
+    @checked
     def __init__(
         self  : Self,
         scene : "DrawingScene",
@@ -79,6 +82,7 @@ class CmdSceneItems(CmdSceneBase):
     # instance attributes
     _items : list["ItemType"]
 
+    @checked
     def __init__(
         self  : Self,
         scene : "DrawingScene",
@@ -121,6 +125,7 @@ class CmdAdd(
 ):
     """Command to add scene items (paste, duplicate, etc.)."""
 
+    @checked
     def __init__(
         self      : Self,
         scene     : "DrawingScene",
@@ -128,9 +133,11 @@ class CmdAdd(
     ) -> None:
         super().__init__(scene, items)      # record scene, items
 
+    @checked
     def redo(self : Self) -> None:
         self._addToScene(select=True)
 
+    @checked
     def undo(self : Self) -> None:
         self._removeFromScene()
 
@@ -141,6 +148,7 @@ class CmdDelete(
 ):
     """Command to delete scene items (cut, delete)."""
 
+    @checked
     def __init__(
         self      : Self,
         scene     : "DrawingScene",
@@ -148,10 +156,12 @@ class CmdDelete(
     ) -> None:
         super().__init__(scene, items)      # record scene, items
 
+    @checked
     def redo(self : Self) -> None:
         """Delete the items from the scene."""
         self._removeFromScene()
 
+    @checked
     def undo(self : Self) -> None:
         self._addToScene(select=True)
 
@@ -164,6 +174,7 @@ class CmdMove(CmdSceneItems):
     _slide  : bool                      # true => retain connections
     _state  : dict["ItemMixin", QPointF]  # pre-move state e.g. scene positions
 
+    @checked
     def __init__(
         self   : Self,
         scene  : "DrawingScene",
@@ -176,11 +187,13 @@ class CmdMove(CmdSceneItems):
         self._slide = slide
         self._state = {e: e.moveSave() for e in self._items}
 
+    @checked
     def redo(self : Self) -> None:
         for e in self._items:
             e.moveBy(self._offset)
         # TODO: add slide logic
 
+    @checked
     def undo(self : Self) -> None:
         for e in self._items:
             e.moveRestore(self._state[e])
@@ -198,6 +211,7 @@ class CmdRotateBase(CmdSceneItems):
     _pos    : QPointF | None          # individual if None, group otherwise
     _before : dict["ItemType", QPointF] # positions before
 
+    @checked
     def __init__(
         self  : Self,
         scene : "DrawingScene",
@@ -209,6 +223,7 @@ class CmdRotateBase(CmdSceneItems):
         if pos is not None:
             self._before = {item: item.pos() for item in self._items}
 
+    @checked
     def redo(self : Self) -> None:
         if self._pos is None:  # individual rotation
             for item in self._items:
@@ -224,6 +239,7 @@ class CmdRotateBase(CmdSceneItems):
                 new_pos = self._pos + offset_cw
                 item.setPos(new_pos)
 
+    @checked
     def undo(self : Self) -> None:
         for item in self._items:
             self._UNROTATE(item)

@@ -6,6 +6,7 @@ from PyQt6.QtGui     import QAction, QColor
 
 from ....app import settings, logger
 
+from ....core.check import checked
 from ....core.types import NO_CHANGE, AlignH, AlignV, \
                            HandleId, RectHandleId, DataKind
 from ....core.utils import val2str
@@ -80,6 +81,7 @@ class PropertyTextItem(TextItem):
                 return settings_name
         return "PropertyText"
 
+    @checked
     def __init__(
         self      : Self,
         name      : str                  = "",
@@ -156,6 +158,7 @@ class PropertyTextItem(TextItem):
     def cleat(self : Self) -> HandleId | None:
         return self._cleat
 
+    @checked
     def setCleat(
         self   : Self,
         id     : HandleId | None,
@@ -174,6 +177,7 @@ class PropertyTextItem(TextItem):
         logger().warning("Cleat not found in parent item")
         return False
 
+    @checked
     def setOrigin(self : Self, id : RectHandleId) -> None:
         """Override to update tether line."""
         ItemTransformMixin.setOrigin(self,  id)
@@ -204,6 +208,7 @@ class PropertyTextItem(TextItem):
     def name(self : Self) -> str | None:
         return self._name if hasattr(self, "_name") else None
 
+    @checked
     def setName(self : Self, name : str) -> None:
         self._name = name
         self.onTextChanged()
@@ -215,6 +220,7 @@ class PropertyTextItem(TextItem):
             return f"<{self.name()}>"
         return self.owner().properties.value(self.name(), self.onTextChanged)
 
+    @checked
     def setValue(self : Self, value : Any) -> None:
         if not self.name():  # name is None or ""
             return
@@ -222,6 +228,7 @@ class PropertyTextItem(TextItem):
             return
         self.owner().properties.setValue(self.name(), value)
 
+    @checked
     def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
         items = [
             view.action("Edit...", lambda: view.ui.editPropertyTextDialog(self)),

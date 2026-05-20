@@ -6,6 +6,7 @@ from PyQt6.QtGui     import QColor
 
 from .....app import logger
 
+from .....core.check import checked
 from .....core.types import NoChange
 
 from ..combo.color      import ColorComboBox
@@ -22,6 +23,7 @@ class FillAppearanceLayout(QVBoxLayout):
     style_label    : QLabel
     style_combo    : FillStyleComboBox
 
+    @checked
     def __init__(self : Self,
         initial_color : QColor        | None | NoChange,
         initial_style : Qt.BrushStyle | None | NoChange,
@@ -62,8 +64,10 @@ class FillAppearanceLayout(QVBoxLayout):
         else:
             logger().warning("Fill style not found")
 
+    @checked
     def getColorChoice(self : Self) -> QColor | None | NoChange:
         return self.color_combo.value()
 
+    @checked
     def getStyleChoice(self : Self) -> Qt.BrushStyle | None | NoChange:
         return self.style_combo.value()

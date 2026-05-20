@@ -6,6 +6,8 @@ from PyQt6.QtGui     import QColor, QPainter, QPen
 
 from ....app import settings
 
+from ....core.check import checked
+
 from ..scenes.symbol import SymbolScene
 
 from .drawing import DrawingView, DrawingSubWindow
@@ -15,6 +17,7 @@ class SymbolView(DrawingView):
     # instance attributes
     _pen : QPen
 
+    @checked
     def __init__(self : Self, scene : SymbolScene) -> None:
         super().__init__(scene)
         self.onSettingsChanged()
@@ -43,6 +46,7 @@ class SymbolView(DrawingView):
 
 
 class SymbolSubWindow(DrawingSubWindow):
+    @checked
     def __init__(
         self   : Self,
         parent : QMdiArea | None = None

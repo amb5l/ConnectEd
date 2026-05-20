@@ -8,20 +8,25 @@ from PyQt6.QtSvg     import QSvgRenderer
 
 from ..app import logger, settings
 
+from .check import checked
 
+
+@checked
 def getDefaultIconSize() -> int:
     app = QApplication.instance()
     style = app.style()
     return style.pixelMetric(QStyle.PixelMetric.PM_SmallIconSize)
 
 
+@checked
 def getFgBgColors() -> tuple[QColor, QColor]:
     if settings().get("display/theme") == "dark":
-        return Qt.GlobalColor.white, Qt.GlobalColor.black
+        return QColor(Qt.GlobalColor.white), QColor(Qt.GlobalColor.black)
     else:
-        return Qt.GlobalColor.black, Qt.GlobalColor.white
+        return QColor(Qt.GlobalColor.black), QColor(Qt.GlobalColor.white)
 
 
+@checked
 def getSvgIcon(path : str, size : QSize, margin : int = 0) -> QIcon:
     fg_color, _ = getFgBgColors()
     pixmap = QPixmap(size)
@@ -68,12 +73,14 @@ class SvgIconSingleton:
     def __init__(self : Self) -> None:
         pass
 
+    @checked
     def get(self : Self) -> QIcon:
         if self._icon is None:
             self._icon = getSvgIcon(self.PATH, self.SIZE)
         return self._icon
 
 
+@checked
 def getCharIcon(
     family : str,
     char   : str,
@@ -126,6 +133,7 @@ class CharIconSingleton:
     def __init__(self : Self) -> None:
         pass
 
+    @checked
     def get(self : Self) -> QIcon:
         if self._icon is None:
             self._icon = getCharIcon(

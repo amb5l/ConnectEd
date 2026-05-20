@@ -31,12 +31,15 @@ if TYPE_CHECKING:
 
 
 class DrawingSceneApiEditMixin:
+    @checked
     def editSelectArea(self : "DrawingScene") -> None:
         raise NotImplementedError("Not implemented yet")
 
+    @checked
     def editSelectAll(self : "DrawingScene") -> None:
         raise NotImplementedError("Not implemented yet")
 
+    @checked
     def editMove(
         self     : "DrawingScene",
         items    : ItemType | list[ItemType],
@@ -49,6 +52,7 @@ class DrawingSceneApiEditMixin:
         cmd = CmdMove(self, items, offset, slide)
         cmdExec(self, cmd, undoable)
 
+    @checked
     def editRotateCW(
         self     : "DrawingScene",
         items    : list[ItemType],
@@ -58,6 +62,7 @@ class DrawingSceneApiEditMixin:
         cmd = CmdRotateCW(self, items, pos)
         cmdExec(self, cmd, undoable)
 
+    @checked
     def editRotateCCW(
         self     : "DrawingScene",
         items    : list[ItemType],
@@ -67,6 +72,7 @@ class DrawingSceneApiEditMixin:
         cmd = CmdRotateCCW(self, items, pos)
         cmdExec(self, cmd, undoable)
 
+    @checked
     def editCut(
         self     : "DrawingScene",
         pos      : QPointF | None = None,  # None => QPointF(0, 0)
@@ -84,6 +90,7 @@ class DrawingSceneApiEditMixin:
         else:
             logger().warning("No items selected to cut")
 
+    @checked
     def editCopy(
         self : "DrawingScene",
         pos  : QPointF | None = None
@@ -98,6 +105,7 @@ class DrawingSceneApiEditMixin:
         else:
             logger().warning("No items selected to copy")
 
+    @checked
     def editDelete(
         self     : "DrawingScene",
         items    : list[ItemType] | None = None,
@@ -115,6 +123,7 @@ class DrawingSceneApiEditMixin:
         else:
             logger().warning("No items selected to delete")
 
+    @checked
     def editPortPin(
         self      : "DrawingScene",
         item      : PortPinMixin,
@@ -125,6 +134,7 @@ class DrawingSceneApiEditMixin:
         cmd = CmdEditPortPin(self, item, name, direction)
         cmdExec(self, cmd, undoable)
 
+    @checked
     def editSymbolPinDot(
         self     : "DrawingScene",
         item     : SymbolPinItem,
@@ -134,6 +144,7 @@ class DrawingSceneApiEditMixin:
         cmd = CmdEditSymbolPinDot(self, item, enable)
         cmdExec(self, cmd, undoable)
 
+    @checked
     def editSymbolPinClock(
         self     : "DrawingScene",
         item     : SymbolPinItem,
@@ -143,6 +154,7 @@ class DrawingSceneApiEditMixin:
         cmd = CmdEditSymbolPinClock(self, item, enable)
         cmdExec(self, cmd, undoable)
 
+    @checked
     def editAssignOrigin(
         self     : "DrawingScene",
         item     : "ItemMixin",
@@ -152,6 +164,7 @@ class DrawingSceneApiEditMixin:
         cmd = CmdEditOrigin(self, item, ap_name)
         cmdExec(self, cmd, undoable)
 
+    @checked
     def editPolylineClosed(
         self     : "DrawingScene",
         polyline : PolylineItem,
@@ -162,6 +175,7 @@ class DrawingSceneApiEditMixin:
         cmd = CmdEditPolylineClosed(self, polyline, closed, sweep)
         cmdExec(self, cmd, undoable)
 
+    @checked
     def editPolySeg(
         self     : "DrawingScene",
         seg      : PolySegItem,
@@ -202,6 +216,7 @@ class DrawingSceneApiEditMixin:
         )
         cmdExec(self, cmd, undoable)
 
+    @checked
     def editAppearance(
         self           : "DrawingScene",
         items          : list[ItemMixin],

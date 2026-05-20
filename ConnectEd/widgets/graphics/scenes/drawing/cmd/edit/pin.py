@@ -1,6 +1,8 @@
 from typing      import Self
 from dataclasses import dataclass
 
+from .......core.check import checked
+
 from .. import CmdSceneItem
 
 from typing import TYPE_CHECKING
@@ -21,6 +23,7 @@ class CmdEditPortPin(CmdSceneItem):
     _before : PortPinState
     _after  : PortPinState
 
+    @checked
     def __init__(
         self      : Self,
         scene     : "DrawingScene",
@@ -32,11 +35,13 @@ class CmdEditPortPin(CmdSceneItem):
         self._before = self.PortPinState(item.name(), item.direction())
         self._after  = self.PortPinState(name, direction)
 
+    @checked
     def redo(self : Self) -> None:
         self._item.setName(self._after.name)
         self._item.setDirection(self._after.direction)
         self._item.update()
 
+    @checked
     def undo(self : Self) -> None:
         self._item.setName(self._before.name)
         self._item.setDirection(self._before.direction)
@@ -48,6 +53,7 @@ class CmdEditSymbolPinDot(CmdSceneItem):
     _before : bool
     _after  : bool
 
+    @checked
     def __init__(
         self   : Self,
         scene  : "DrawingScene",
@@ -58,10 +64,12 @@ class CmdEditSymbolPinDot(CmdSceneItem):
         self._before = item.dot()
         self._after = enable
 
+    @checked
     def redo(self : Self) -> None:
         self._item.setDot(self._after)
         self._item.update()
 
+    @checked
     def undo(self : Self) -> None:
         self._item.setDot(self._before)
         self._item.update()
@@ -72,6 +80,7 @@ class CmdEditSymbolPinClock(CmdSceneItem):
     _before : bool
     _after  : bool
 
+    @checked
     def __init__(
         self   : Self,
         scene  : "DrawingScene",
@@ -82,10 +91,12 @@ class CmdEditSymbolPinClock(CmdSceneItem):
         self._before = item.clock()
         self._after = enable
 
+    @checked
     def redo(self : Self) -> None:
         self._item.setClock(self._after)
         self._item.update()
 
+    @checked
     def undo(self : Self) -> None:
         self._item.setClock(self._before)
         self._item.update()

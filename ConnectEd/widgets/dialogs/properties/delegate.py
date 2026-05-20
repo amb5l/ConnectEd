@@ -6,6 +6,7 @@ from PyQt6.QtWidgets import QWidget, QLineEdit, \
                             QStyledItemDelegate, QStyleOptionViewItem
 from PyQt6.QtGui     import QStandardItemModel
 
+from ....core.check import checked
 from ....core.types import AlignH, AlignV, Edge, Direction, Display, DataKind, \
                            RectHandleId, LineHandleId, \
                            BlockPinHandleId, SymbolPinHandleId
@@ -59,6 +60,7 @@ if TYPE_CHECKING:
 class PropertiesDelegate(QStyledItemDelegate):
     _dialog : "PropertiesDialog"
 
+    @checked
     def __init__(self : Self, dialog : QWidget) -> None:
         super().__init__(dialog)
         self._dialog = dialog
@@ -96,11 +98,13 @@ class PropertiesDelegate(QStyledItemDelegate):
             )
         return e
 
+    @checked
     def setEditorData(self : Self, editor : EditorType, index : QModelIndex) -> None:
         item : PropertiesItem = index.model().item(index.row(), index.column())
         if item.initial() is not None:
             editor.setValue(item.initial())
 
+    @checked
     def setModelData(
         self   : Self,
         editor : "EditorType",

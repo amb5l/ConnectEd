@@ -2,6 +2,8 @@ from typing import Self
 
 from PyQt6.QtCore import QPoint, QPointF
 
+from ......core.check import checked
+
 from ......app import logger
 
 from ......core.types import Direction
@@ -33,10 +35,11 @@ from ..interaction.place import PlacePortInteraction,     \
 class DiagramViewStatePlacePort(ClickMixin, DrawingViewStateBase):
     STATUS = "Place Port: pick a location"
 
+    @checked
     def entry(
         self : Self,
-        v    : QPoint,
-        s    : QPointF,
+        v    : QPoint | None,
+        s    : QPointF | None,
         i    : list[ItemMixin] | None = None
     ) -> None:
         item = PortItem()
@@ -58,10 +61,11 @@ class DiagramViewStatePlacePort(ClickMixin, DrawingViewStateBase):
 class DiagramViewStatePlaceGate(ClickMixin, DrawingViewStateBase):
     STATUS = "Place Gate: pick a location"
 
+    @checked
     def entry(
         self : Self,
-        v    : QPoint,
-        s    : QPointF,
+        v    : QPoint | None,
+        s    : QPointF | None,
         i    : list[ItemMixin] | None = None
     ) -> None:
         dialog = GateItemDialog(self.view)
@@ -97,10 +101,11 @@ class DiagramViewStatePlaceBlock2(ClickMixin, DragMixin, DrawingViewStateBase):
 class DiagramViewStatePlaceBlockPin(DrawingViewStateBase):
     STATUS = "Place Block Pin: pick a location"
 
+    @checked
     def entry(
         self : Self,
-        v    : QPoint,
-        s    : QPointF,
+        v    : QPoint | None,
+        s    : QPointF | None,
         i    : list[ItemMixin] | None = None
     ) -> None:
         block = i[0] if i else self.view._selectedItem(BlockItem)
@@ -170,10 +175,11 @@ class DiagramViewStatePlaceConn2(ClickMixin, DrawingViewStateBase):
 class DiagramViewStatePlaceTap(ClickMixin, DrawingViewStateBase):
     STATUS = "Place Tap: pick a location"
 
+    @checked
     def entry(
         self : Self,
-        v    : QPoint,
-        s    : QPointF,
+        v    : QPoint | None,
+        s    : QPointF | None,
         i    : list[ItemMixin] | None = None
     ) -> None:
         self._interact(s)

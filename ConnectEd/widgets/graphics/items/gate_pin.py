@@ -4,6 +4,7 @@ from PyQt6.QtCore    import QPointF, QXmlStreamWriter
 from PyQt6.QtWidgets import QGraphicsItem, QMenu
 from PyQt6.QtGui     import QAction
 
+from ....core.check import checked
 from ....core.defs  import PITCH
 from ....core.types import GatePinHandleId, DataKind
 
@@ -44,6 +45,7 @@ class GatePinItem(
     def settingsName(self : Self) -> str:
         return "GatePin"
 
+    @checked
     def __init__(
         self   : Self,
         parent : QGraphicsItem | None = None,
@@ -53,6 +55,7 @@ class GatePinItem(
         super().__init__(parent)
         self._extension = 0
 
+    @checked
     def initHandles(self : Self) -> None:
         PortPinPathItem.initHandles(self)
         self._handles[GatePinHandleId.ORIGIN] = HandleItem(
@@ -62,16 +65,19 @@ class GatePinItem(
             parent   = self
         )
 
+    @checked
     def moveHandleBy(self : Self, _ : GatePinHandleId, d : QPointF) -> None:
         self.setPos(self.pos() + d)
 
     def inverted(self : Self) -> bool:
         return self._dot
 
+    @checked
     def setInverted(self : Self, value : bool) -> None:
         self._dot = value
         self._updateGraphics()
 
+    @checked
     def ctxMenuItems(self : Self, view : "DiagramView") -> list[QAction | QMenu]:
         return [
             view.action(

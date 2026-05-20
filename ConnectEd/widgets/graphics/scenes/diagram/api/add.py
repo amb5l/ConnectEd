@@ -1,3 +1,5 @@
+from ......core.check import checked
+
 from ....items.block     import BlockItem
 from ....items.block_pin import BlockPinItem
 
@@ -14,6 +16,7 @@ if TYPE_CHECKING:
 
 
 class DiagramSceneApiAddMixin(DrawingSceneApiAddMixin):
+    @checked
     def addBlockPin(
         self     : "DiagramScene",
         parent   : BlockItem,

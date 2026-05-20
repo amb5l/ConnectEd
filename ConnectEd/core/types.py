@@ -6,6 +6,8 @@ from enum        import Enum, StrEnum
 from PyQt6.QtCore    import Qt
 from PyQt6.QtGui     import QColor
 
+from .check import checked
+
 
 class NoChange:
     def __eq__(self : Self, other : object) -> bool:
@@ -262,9 +264,11 @@ class DataKind(StrEnum):
 
 
 class Counter:
+    @checked
     def __init__(self : Self) -> None:
         self._count = -1
 
+    @checked
     def next(self : Self) -> int:
         self._count += 1
         return self._count

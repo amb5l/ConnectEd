@@ -1,5 +1,6 @@
 from typing import Self
 
+from ......core.check import checked
 from ......core.types import EdgeLoc
 
 from ....items.block     import BlockItem
@@ -15,6 +16,7 @@ class CmdBlockPinBase(CmdBase):
     _parent : BlockItem
     _pin    : BlockPinItem
 
+    @checked
     def __init__(
         self : Self,
         parent : BlockItem,
@@ -24,6 +26,7 @@ class CmdBlockPinBase(CmdBase):
         self._parent = parent
         self._pin = pin
 
+    @checked
     def pin(self : Self) -> BlockPinItem:
         return self._pin
 
@@ -35,6 +38,7 @@ class CmdBlockPinsBase(CmdBase):
     _parent : BlockItem
     _pins   : list[BlockPinItem]
 
+    @checked
     def __init__(
         self : Self,
         parent : BlockItem,
@@ -48,9 +52,11 @@ class CmdBlockPinsBase(CmdBase):
 class CmdAddBlockPin(CmdBlockPinBase):
     """Command to add a pin to a pin rect."""
 
+    @checked
     def redo(self : Self) -> None:
         self._pin.setParentItem(self._parent)
 
+    @checked
     def undo(self : Self) -> None:
         self._pin.setParentItem(None)
 
@@ -58,9 +64,11 @@ class CmdAddBlockPin(CmdBlockPinBase):
 class CmdDeleteBlockPin(CmdBlockPinBase):
     """Command to delete a pin from a pin rect."""
 
+    @checked
     def redo(self : Self) -> None:
         self._pin.setParentItem(None)
 
+    @checked
     def undo(self : Self) -> None:
         self._pin.setParentItem(self._parent)
 
@@ -72,6 +80,7 @@ class CmdMoveBlockPins(CmdBlockPinsBase):
     _after  : dict[BlockPinItem, EdgeLoc] # locations after
     _before : dict[BlockPinItem, EdgeLoc] # locations before
 
+    @checked
     def __init__(
         self   : Self,
         parent : BlockItem,
@@ -83,10 +92,12 @@ class CmdMoveBlockPins(CmdBlockPinsBase):
         self._after = after
         self._before = before
 
+    @checked
     def redo(self : Self) -> None:
         for pin in self._pins:
             pin.setLoc(self._after[pin])
 
+    @checked
     def undo(self : Self) -> None:
         for pin in self._pins:
             pin.setLoc(self._before[pin])

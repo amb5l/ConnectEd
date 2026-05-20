@@ -4,6 +4,8 @@ from PyQt6.QtCore    import QSize
 from PyQt6.QtWidgets import QWidget, QDialog, QVBoxLayout, QHBoxLayout, \
                             QLabel, QComboBox
 
+from ....core.check import checked
+
 from ....resources import getIconPath
 
 from ....core.icon import SvgIconSingleton
@@ -47,6 +49,7 @@ class GateItemDialog(QDialog):
     _width_label     : QLabel
     _width_spinbox   : CustomSpinBox
 
+    @checked
     def __init__(
         self   : Self,
         parent : QWidget | None = None
@@ -74,9 +77,11 @@ class GateItemDialog(QDialog):
         self._function_combo.currentIndexChanged.connect(self._onFunctionChanged)
         self._onFunctionChanged()
 
+    @checked
     def getFunction(self : Self) -> GateFunc:
         return GateFunc(self._function_combo.currentText())
 
+    @checked
     def getWidth(self : Self) -> int:
         if self.getFunction() == GateFunc.BUF_INV:
             return 1

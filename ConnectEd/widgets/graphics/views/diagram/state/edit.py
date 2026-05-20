@@ -2,6 +2,8 @@ from typing import Self
 
 from PyQt6.QtCore import QPoint, QPointF
 
+from ......core.check import checked
+
 from ......app import logger
 
 from .....dialogs.items.port_pin import PortPinItemDialog
@@ -17,10 +19,11 @@ from ...drawing.state.base import DrawingViewStateBase
 class DiagramViewStateEditPort(DrawingViewStateBase):
     STATUS = "Edit Port: specify changes"
 
+    @checked
     def entry(
         self : Self,
-        v    : QPoint,
-        s    : QPointF,
+        v    : QPoint | None,
+        s    : QPointF | None,
         i    : list[ItemMixin] | None = None
     ) -> None:
         item = i[0] if i else self.view._selectedItem(PortItem)
@@ -38,10 +41,11 @@ class DiagramViewStateEditPort(DrawingViewStateBase):
 class DiagramViewStateEditBlockPin(DrawingViewStateBase):
     STATUS = "Edit Block Pin: specify changes"
 
+    @checked
     def entry(
         self : Self,
-        v    : QPoint,
-        s    : QPointF,
+        v    : QPoint | None,
+        s    : QPointF | None,
         i    : list[ItemMixin] | None = None
     ) -> None:
         item = i[0] if i else self.view._selectedItem(BlockPinItem)

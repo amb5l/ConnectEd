@@ -2,6 +2,8 @@ from typing import Self
 
 from PyQt6.QtCore    import Qt, QPoint, QPointF
 
+from ......core.check import checked
+
 from ....items.mixin         import ItemMixin
 from ....items.text          import TextItem
 from ....items.property_text import PropertyTextItem
@@ -21,10 +23,11 @@ from ..interaction.edit import EditMoveBlockPinsInteraction
 class DiagramViewStateIdle(DrawingViewStateBase):
     STATUS = "Idle"
 
+    @checked
     def entry(
         self : Self,
-        v    : QPoint,
-        s    : QPointF,
+        v    : QPoint | None,
+        s    : QPointF | None,
         i    : list[ItemMixin] | None = None
     ) -> None:
         self.view.interaction = None

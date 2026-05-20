@@ -1,7 +1,4 @@
-Ruff
-
 moveHandle : test with all pin types
-proper interaction subclasses with individual __init__
 implement net labels
 test pin wire/bus width
 
@@ -24,9 +21,6 @@ onPathChange
 pin width controlled by suffix
 gate mirroring
 add signal types to netlist, derived from ports and pins
-
-resources overhaul - much more sharing
-  - override fill for Block
 
 unresolved/scalar/vector resolution for segments, taps
 

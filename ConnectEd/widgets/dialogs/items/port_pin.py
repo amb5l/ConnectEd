@@ -3,6 +3,7 @@ from typing import Self
 from PyQt6.QtWidgets import QWidget, QDialog, QVBoxLayout, QHBoxLayout, \
                             QLabel, QLineEdit, QComboBox
 
+from ....core.check import checked
 from ....core.types import Direction
 
 from ..components.layout.ok_cancel import OkCancelLayout
@@ -21,6 +22,7 @@ class PortPinItemDialog(QDialog):
     _ok_cancel_layout : OkCancelLayout
     _dialog_layout    : QVBoxLayout
 
+    @checked
     def __init__(
         self   : Self,
         title  : str,
@@ -52,8 +54,10 @@ class PortPinItemDialog(QDialog):
             self._name_edit.setText(item.name())
             self._signal_dir_combo.setCurrentText(item.direction().value)
 
+    @checked
     def getName(self : Self) -> str:
         return self._name_edit.text()
 
+    @checked
     def getDirection(self : Self) -> Direction:
         return Direction(self._signal_dir_combo.currentText())

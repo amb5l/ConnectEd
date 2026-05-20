@@ -2,6 +2,8 @@ from typing import Self
 
 from PyQt6.QtCore import QPointF
 
+from ......core.check import checked
+
 from ....items.node    import NodeItem, FreeNodeItem
 from ....items.segment import SegmentItem
 
@@ -18,6 +20,7 @@ class CmdDiagramSceneBase(CmdSceneBase):
     # instance attributes
     _scene : "DiagramScene"
 
+    @checked
     def __init__(self : Self, scene : "DiagramScene") -> None:
         super().__init__(scene)
 
@@ -32,6 +35,7 @@ class CmdAddFreeNode(CmdDiagramSceneBase):
     # instance attributes
     _node : FreeNodeItem
 
+    @checked
     def __init__(
         self  : Self,
         scene : "DiagramScene",
@@ -40,14 +44,17 @@ class CmdAddFreeNode(CmdDiagramSceneBase):
         super().__init__(scene)
         self._node = FreeNodeItem(pos)
 
+    @checked
     def redo(self : Self) -> None:
         self._scene.addItem(self._node)
         self._scene.netlist.adoptNode(self._node)
 
+    @checked
     def undo(self : Self) -> None:
         self._scene.netlist.removeNodes(self._node)
         self._scene.removeItem(self._node)
 
+    @checked
     def node(self : Self) -> FreeNodeItem:
         return self._node
 
@@ -62,6 +69,7 @@ class CmdRemoveFreeNode(CmdDiagramSceneBase):
     # instance attributes
     _node : FreeNodeItem
 
+    @checked
     def __init__(
         self  : Self,
         scene : "DiagramScene",
@@ -70,10 +78,12 @@ class CmdRemoveFreeNode(CmdDiagramSceneBase):
         super().__init__(scene)
         self._node = node
 
+    @checked
     def redo(self : Self) -> None:
         self._scene.netlist.removeNodes(self._node)
         self._scene.removeItem(self._node)
 
+    @checked
     def undo(self : Self) -> None:
         self._scene.addItem(self._node)
         self._scene.netlist.adoptNode(self._node)
@@ -88,6 +98,7 @@ class CmdReplaceNode(CmdDiagramSceneBase):
     _node1 : NodeItem
     _node2 : NodeItem
 
+    @checked
     def __init__(
         self  : Self,
         scene : "DiagramScene",
@@ -98,10 +109,12 @@ class CmdReplaceNode(CmdDiagramSceneBase):
         self._node1 = node1
         self._node2 = node2
 
+    @checked
     def redo(self : Self) -> None:
         self._scene.netlist.replaceNode(self._node1, self._node2)
         self._node2.onConnectionChange()
 
+    @checked
     def undo(self : Self) -> None:
         self._scene.netlist.replaceNode(self._node2, self._node1)
         self._node1.onConnectionChange()
@@ -119,6 +132,7 @@ class CmdAddSegment(CmdDiagramSceneBase):
     _node2 : NodeItem
     _seg   : SegmentItem
 
+    @checked
     def __init__(
         self  : Self,
         scene : "DiagramScene",
@@ -130,6 +144,7 @@ class CmdAddSegment(CmdDiagramSceneBase):
         self._node2 = node2
         self._seg = SegmentItem()
 
+    @checked
     def redo(self : Self) -> None:
         self._seg.setNode1(self._node1)
         self._seg.setNode2(self._node2)
@@ -138,6 +153,7 @@ class CmdAddSegment(CmdDiagramSceneBase):
         self._node1.onConnectionChange()
         self._node2.onConnectionChange()
 
+    @checked
     def undo(self : Self) -> None:
         self._scene.netlist.removeSegment(self._node1, self._node2)
         self._node1.onConnectionChange()
@@ -146,6 +162,7 @@ class CmdAddSegment(CmdDiagramSceneBase):
         self._seg.setNode2(None)
         self._scene.removeItem(self._seg)
 
+    @checked
     def seg(self : Self) -> SegmentItem:
         return self._seg
 
@@ -163,6 +180,7 @@ class CmdRemoveSegment(CmdDiagramSceneBase):
     _node2 : NodeItem
     _seg   : SegmentItem
 
+    @checked
     def __init__(
         self  : Self,
         scene : "DiagramScene",
@@ -173,6 +191,7 @@ class CmdRemoveSegment(CmdDiagramSceneBase):
         self._node2 = seg.node2()
         self._seg = seg
 
+    @checked
     def redo(self : Self) -> None:
         self._scene.netlist.removeSegment(self._node1, self._node2)
         self._node1.onConnectionChange()
@@ -181,6 +200,7 @@ class CmdRemoveSegment(CmdDiagramSceneBase):
         self._seg.setNode2(None)
         self._scene.removeItem(self._seg)
 
+    @checked
     def undo(self : Self) -> None:
         self._seg.setNode1(self._node1)
         self._seg.setNode2(self._node2)
@@ -200,6 +220,7 @@ class CmdSplitSegment(CmdDiagramSceneBase):
     _seg1  : SegmentItem  # existing segment (shortened to node1--node)
     _seg2  : SegmentItem  # new segment (node--node2)
 
+    @checked
     def __init__(
         self  : Self,
         scene : "DiagramScene",
@@ -213,6 +234,7 @@ class CmdSplitSegment(CmdDiagramSceneBase):
         self._seg1 = seg
         self._seg2 = SegmentItem()
 
+    @checked
     def redo(self : Self) -> None:
         # graph: drop the original edge while seg1 still has its old endpoints
         self._scene.netlist.removeSegment(self._node1, self._node2)
@@ -229,6 +251,7 @@ class CmdSplitSegment(CmdDiagramSceneBase):
         self._node1.onConnectionChange()
         self._node2.onConnectionChange()
 
+    @checked
     def undo(self : Self) -> None:
         # graph: drop both halves while seg1/seg2 still have their split endpoints
         self._scene.netlist.removeSegment(self._node1, self._node)
@@ -258,6 +281,7 @@ class CmdUnsplitSegment(CmdDiagramSceneBase):
     _seg1 : SegmentItem   # surviving segment (far1--far2 after redo)
     _seg2 : SegmentItem   # removed segment
 
+    @checked
     def __init__(
         self  : Self,
         scene : "DiagramScene",
@@ -271,6 +295,7 @@ class CmdUnsplitSegment(CmdDiagramSceneBase):
         self._far1 = self._seg1.otherNode(node)
         self._far2 = self._seg2.otherNode(node)
 
+    @checked
     def redo(self : Self) -> None:
         # graph: drop both edges and the middle node while geometry is still split
         self._scene.netlist.removeSegment(self._far1, self._node)
@@ -287,6 +312,7 @@ class CmdUnsplitSegment(CmdDiagramSceneBase):
         self._far1.onConnectionChange()
         self._far2.onConnectionChange()
 
+    @checked
     def undo(self : Self) -> None:
         # graph: drop the merged edge while seg1 still spans far1--far2
         self._scene.netlist.removeSegment(self._far1, self._far2)
@@ -316,6 +342,7 @@ class CmdSplitNet(CmdDiagramSceneBase):
     _net1  : Net | None  # post-split net on node 1 (or None if no net)
     _net2  : Net | None  # post-split net on node 2 (or None if no net)
 
+    @checked
     def __init__(
         self  : Self,
         scene : "DiagramScene",
@@ -326,5 +353,6 @@ class CmdSplitNet(CmdDiagramSceneBase):
         self._node1 = node1
         self._node2 = node2
 
+    @checked
     def redo(self : Self) -> None:
         self._scene.netlist.removeSegment(self._node1, self._node2)

@@ -5,6 +5,7 @@ from PyQt6.QtWidgets import QGraphicsLineItem, QGraphicsItem
 
 from ....app import settings
 
+from ....core.check import checked
 from ....core.defs import Z_DRAWING
 
 from ..scenes import withScene
@@ -41,6 +42,7 @@ class SegmentItem(
     _node2 : NodeItem | None
     _line  : QLineF
 
+    @checked
     def __init__(
         self  : Self,
         node1 : NodeItem | None = None,
@@ -68,6 +70,7 @@ class SegmentItem(
     def node1(self : Self) -> NodeItem | None:
         return self._node1
 
+    @checked
     def setNode1(self : Self, node1 : NodeItem | None) -> None:
         self._node1 = node1
         self.onGeometryChange()
@@ -75,10 +78,12 @@ class SegmentItem(
     def node2(self : Self) -> NodeItem | None:
         return self._node2
 
+    @checked
     def setNode2(self : Self, node2 : NodeItem | None) -> None:
         self._node2 = node2
         self.onGeometryChange()
 
+    @checked
     def changeNode(self : Self, old : NodeItem, new : NodeItem) -> bool:
         if self._node1 is old:
             self.setNode1(new)
@@ -101,6 +106,7 @@ class SegmentPreviewItem(QGraphicsLineItem):
     # class attributes
     _RESOURCE_NAME : str
 
+    @checked
     def __init__(self : Self) -> None:
         QGraphicsLineItem.__init__(self)
         self.onSettingsChanged()
@@ -122,15 +128,18 @@ class SegmentPreviewItem(QGraphicsLineItem):
     def p1(self : Self) -> QPointF:
         return self.pos()
 
+    @checked
     def setP1(self : Self, pos : QPointF) -> None:
         self.setP1P2(pos, self.p2())
 
     def p2(self : Self) -> QPointF:
         return self.pos() + self.line().p2()
 
+    @checked
     def setP2(self : Self, pos : QPointF) -> None:
         self.setP1P2(self.pos(), pos)
 
+    @checked
     def setP1P2(self : Self, p1 : QPointF, p2 : QPointF) -> None:
         self.setPos(p1)
         line = self.line()

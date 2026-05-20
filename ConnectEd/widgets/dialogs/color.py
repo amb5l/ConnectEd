@@ -4,8 +4,11 @@ from PyQt6.QtCore    import QTimer
 from PyQt6.QtWidgets import QWidget, QColorDialog, QLineEdit
 from PyQt6.QtGui     import QColor
 
+from ...core.check import checked
+
 
 class ColorDialog(QColorDialog):
+    @checked
     def __init__(
         self   : Self,
         color  : QColor  | None,
@@ -20,6 +23,7 @@ class ColorDialog(QColorDialog):
         self._find_html_box()
         self.currentColorChanged.connect(self._on_color_changed)
 
+    @checked
     def value(self : Self) -> QColor | None:
         return self.currentColor()
 

@@ -5,6 +5,7 @@ from PyQt6.QtWidgets import QGraphicsItem
 
 from .....app import logger
 
+from .....core.check import checked
 from .....core.types import DataKind, EdgeLoc, Edge
 
 from ...properties import InherentProperty
@@ -36,9 +37,11 @@ class ItemLocMixin:
     # instance attributes
     _loc : EdgeLoc
 
+    @checked
     def initLoc(self : Self) -> None:
         self._loc = EdgeLoc(Edge.UNDEFINED, 0)
 
+    @checked
     def onParentChanged(self : Self, parent : QGraphicsItem | None) -> None:
         """Update position when parent changes."""
         if hasattr(self, '_loc') \
@@ -55,6 +58,7 @@ class ItemLocMixin:
     def loc(self : Self) -> EdgeLoc:
         return self._loc
 
+    @checked
     def setLoc(self : Self, loc : EdgeLoc) -> None:
         self._loc = loc
         self.prepareGeometryChange()
@@ -71,12 +75,15 @@ class ItemLocMixin:
         edge_pos = parent.loc2pos(loc) if parent else QPointF()
         super().setPos(edge_pos)
 
+    @checked
     def setLocEdge(self : Self, edge : Edge) -> None:
         self.setLoc(EdgeLoc(Edge(edge), self._loc.offset))
 
+    @checked
     def setLocOffset(self : Self, offset : float) -> None:
         self.setLoc(EdgeLoc(self._loc.edge, offset))
 
+    @checked
     def locSnap(self : Self, loc : EdgeLoc, snap : QPointF | None = None) -> EdgeLoc:
         e = loc.edge
         if snap is None:

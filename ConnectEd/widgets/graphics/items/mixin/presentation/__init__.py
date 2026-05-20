@@ -1,9 +1,10 @@
-from typing import Self, Protocol, TypeAlias
+from typing import Self, Protocol, TypeAlias, TYPE_CHECKING
 
 from PyQt6.QtCore    import Qt
 from PyQt6.QtWidgets import QGraphicsItem
 from PyQt6.QtGui     import QColor, QPen, QBrush
 
+from ......core.check import checked
 from ......core.types import DataKind
 
 from ....properties import InherentProperty
@@ -11,16 +12,6 @@ from ....properties import InherentProperty
 from ....scenes import withScene
 
 from ....quill  import Quill
-
-from .line   import ItemPresentationLineMixin
-from .fill   import ItemPresentationFillMixin
-from .text   import ItemPresentationTextMixin
-
-from typing import TYPE_CHECKING
-if TYPE_CHECKING:
-    from ....views.drawing import DrawingView
-    from ....scenes.drawing import DrawingScene
-    from .. import ItemNamesMixin
 
 
 class PenItemProtocol(Protocol):
@@ -35,11 +26,17 @@ class TextItemProtocol(Protocol):
     def setQuill(self, quill: Quill) -> None: ...
 
 
+ItemType = (
+    PenItemProtocol | BrushItemProtocol | TextItemProtocol | QGraphicsItem
+)
+
+from .line   import ItemPresentationLineMixin
+from .fill   import ItemPresentationFillMixin
+from .text   import ItemPresentationTextMixin
+
 if TYPE_CHECKING:
-    ItemType : TypeAlias = (
-        PenItemProtocol | BrushItemProtocol | TextItemProtocol |
-        ItemNamesMixin | QGraphicsItem
-    )
+    from ....views.drawing import DrawingView
+    from ....scenes.drawing import DrawingScene
 
 
 class ItemPresentationMixin(
@@ -147,6 +144,7 @@ class ItemPresentationMixin(
     _text_italic    : bool          | None
     _text_underline : bool          | None
 
+    @checked
     def initPresentation(self : "Self | ItemType") -> None:
         from ..select import ItemSelectMixin
         if not isinstance(self, ItemSelectMixin):
@@ -197,4 +195,9 @@ class ItemPresentationMixin(
         return scene
 
 if TYPE_CHECKING:
-    MixinType : TypeAlias = ItemPresentationMixin | ItemType
+    from .. import ItemNamesMixin
+
+    MixinType : TypeAlias = (
+        ItemPresentationMixin | PenItemProtocol | BrushItemProtocol |
+        TextItemProtocol | ItemNamesMixin | QGraphicsItem
+    )

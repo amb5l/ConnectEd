@@ -13,6 +13,7 @@ from PyQt6.QtGui     import QIcon, QCloseEvent
 
 from ...app import app, settings
 
+from ...core.check import checked
 from ...core.defs  import APP_NAME
 
 from ...resources import getIconPath
@@ -45,6 +46,7 @@ class Window(QMainWindow):
     # signals
     ready = pyqtSignal()
 
+    @checked
     def __init__(self : Self) -> None:
         super().__init__()
         app().setWindow(self)

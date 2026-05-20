@@ -1,7 +1,10 @@
 from typing import Self
 
+from .....core.check import checked
+
 
 class ItemGripMixin:
+    @checked
     def setGripsVisible(self : Self, visible : bool) -> None:
         from ..polyline import PolylineItem
         from .handle    import ItemHandlesMixin

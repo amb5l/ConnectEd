@@ -5,6 +5,7 @@ from PyQt6.QtGui     import QColor
 
 from ......app import logger
 
+from ......core.check import checked
 from ......core.types import NoChange, NO_CHANGE
 
 from ....quill  import Quill
@@ -12,9 +13,11 @@ from ....quill  import Quill
 from ....scenes import withScene
 
 from typing import TYPE_CHECKING
+
 if TYPE_CHECKING:
     from ....scenes.drawing import DrawingScene
-    from . import MixinType as ItemType
+
+from . import ItemType
 
 
 class ItemPresentationTextMixin:
@@ -46,6 +49,7 @@ class ItemPresentationTextMixin:
         quill = scene.resources.quill(self.resourcesName(), key)
         return quill.color()
 
+    @checked
     def setTextColor(self : "Self | ItemType", color: QColor | None | NoChange) -> None:
         if color is NO_CHANGE:
             return
@@ -70,6 +74,7 @@ class ItemPresentationTextMixin:
         quill = scene.resources.quill(self.resourcesName(), key)
         return quill.font()
 
+    @checked
     def setTextFont(self : "Self | ItemType", font: str | None | NoChange) -> None:
         if font is NO_CHANGE:
             return
@@ -94,6 +99,7 @@ class ItemPresentationTextMixin:
         quill = scene.resources.quill(self.resourcesName(), key)
         return quill.size()
 
+    @checked
     def setTextSize(self : "Self | ItemType", size: float | None | NoChange) -> None:
         if size is NO_CHANGE:
             return
@@ -118,6 +124,7 @@ class ItemPresentationTextMixin:
         quill = scene.resources.quill(self.resourcesName(), key)
         return quill.bold()
 
+    @checked
     def setTextBold(self : "Self | ItemType", bold: bool | None | NoChange) -> None:
         if bold is NO_CHANGE:
             return
@@ -142,6 +149,7 @@ class ItemPresentationTextMixin:
         quill = scene.resources.quill(self.resourcesName(), key)
         return quill.italic()
 
+    @checked
     def setTextItalic(self : "Self | ItemType", italic: bool | None | NoChange) -> None:
         if italic is NO_CHANGE:
             return
@@ -166,6 +174,7 @@ class ItemPresentationTextMixin:
         quill = scene.resources.quill(self.resourcesName(), key)
         return quill.underline()
 
+    @checked
     def setTextUnderline(self : "Self | ItemType", underline: bool | None | NoChange) -> None:
         if underline is NO_CHANGE:
             return

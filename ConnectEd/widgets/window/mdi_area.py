@@ -6,6 +6,8 @@ from PyQt6.QtGui     import QAction
 
 from ...app import logger,model, window
 
+from ...core.check import checked
+
 from ..action import Action
 
 from .sub_window  import SubWindow
@@ -19,10 +21,12 @@ if TYPE_CHECKING:
 class MdiArea(QMdiArea):
     _scene_subwindow_actions : dict["DrawingScene", list[Action]]
 
+    @checked
     def __init__(self : Self) -> None:
         super().__init__()
         self._scene_subwindow_actions = {}
 
+    @checked
     def addSubWindow(
         self      : Self,
         subwindow : QWidget,
@@ -44,12 +48,14 @@ class MdiArea(QMdiArea):
         self._updateSubWindows()
         window().menu_bar.updateWindowMenu()
 
+    @checked
     def activateSubWindow(self : Self, subwindow : SubWindow) -> None:
         super().setActiveSubWindow(subwindow)
         subwindow.show()
         subwindow.raise_()
         subwindow.setFocus()
 
+    @checked
     def sceneSubWindows(self : Self, scene : "DrawingScene") -> list[SubWindow]:
         """Return all scene subwindows in top down Z order."""
         r = []
@@ -61,6 +67,7 @@ class MdiArea(QMdiArea):
     def scenesActions(self : Self) -> dict["DrawingScene", list[Action]]:
         return self._scene_subwindow_actions
 
+    @checked
     def closeScene(self : Self, scene : "DrawingScene") -> None:
         """Close all subwindows related to the specified scene."""
         for w in self.subWindowList():

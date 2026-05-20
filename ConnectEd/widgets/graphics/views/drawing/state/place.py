@@ -3,6 +3,8 @@ from types  import NoneType
 
 from PyQt6.QtCore import QPoint, QPointF
 
+from ......core.check import checked
+
 from ......core.types import NO_CHANGE
 
 from .....dialogs.items.port_pin import PortPinItemDialog
@@ -26,10 +28,11 @@ from .mixin import ClickMixin, DragMixin
 class DrawingViewStatePlaceSymbolPin(ClickMixin, DrawingViewStateBase):
     STATUS = "Place Symbol Pin: pick a location"
 
+    @checked
     def entry(
         self : Self,
-        v    : QPoint,
-        s    : QPointF,
+        v    : QPoint | None,
+        s    : QPointF | None,
         i    : NoneType = None  # not used
     ) -> None:
         pin = SymbolPinItem()
@@ -114,10 +117,11 @@ class DrawingViewStatePlacePolyline2(ClickMixin, DragMixin, DrawingViewStateBase
 class DrawingViewStatePlaceText(ClickMixin, DrawingViewStateBase):
     STATUS = "Place Text: pick a position"
 
+    @checked
     def entry(
         self : Self,
-        v    : QPoint,
-        s    : QPointF,
+        v    : QPoint | None,
+        s    : QPointF | None,
         i    : list[ItemMixin] | None = None
     ) -> None:
         item = TextItem(pos=self._snap(s))

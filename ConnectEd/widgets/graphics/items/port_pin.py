@@ -5,6 +5,7 @@ from PyQt6.QtWidgets import QGraphicsPathItem, QGraphicsLineItem, QGraphicsItem
 
 from ....app import settings
 
+from ....core.check import checked
 from ....core.defs  import WIDTH
 from ....core.types import Direction, DataKind
 
@@ -36,6 +37,7 @@ class PortPinArrowItem(
     ItemChangeMixin,
     QGraphicsPathItem
 ):
+    @checked
     def __init__(self : Self, parent : QGraphicsItem | None = None) -> None:
         super().__init__(parent)
         self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsSelectable, True)
@@ -91,6 +93,7 @@ class PortPinMixin(
     _comment   : str
     _bus       : bool
 
+    @checked
     def __init__(
         self   : Self,
         parent : QGraphicsItem | None = None,
@@ -115,6 +118,7 @@ class PortPinMixin(
         if (scene := self.scene()) is not None:
             self.onSceneChanged(scene)
 
+    @checked
     def onSceneChanged(self : Self, scene : "DrawingScene | None") -> None:
         self._updateGraphics(scene)
         self._updatePen(scene)
@@ -122,6 +126,7 @@ class PortPinMixin(
         self._updateArrowPenBrush(scene)
         self._updateNameHandle()
 
+    @checked
     def onSelectionChanged(self : Self, selected : bool) -> None:
         scene : "DrawingScene" = self.scene()
         self._updatePen(scene)
@@ -130,6 +135,7 @@ class PortPinMixin(
         self._node.setSelected(selected)
         self._arrow.setSelected(selected)
 
+    @checked
     def initHandles(self : Self | ItemHandlesMixin) -> None:
         self._handles = {
             self.handleIdType()("Name"): HandleItem(
@@ -149,6 +155,7 @@ class PortPinMixin(
     def name(self : Self) -> str:
         return self._name
 
+    @checked
     def setName(self : Self, value : str) -> None:
         self._name = value
         self._bus = ":" in value
@@ -159,6 +166,7 @@ class PortPinMixin(
     def direction(self : Self) -> Direction:
         return self._direction
 
+    @checked
     def setDirection(self : Self, value : Direction) -> None:
         self._direction = value
         self.signalPropertyChanges("Dir")
@@ -168,6 +176,7 @@ class PortPinMixin(
     def comment(self : Self) -> str:
         return self._comment
 
+    @checked
     def setComment(self : Self, value : str) -> None:
         self._comment = value
         self.signalPropertyChanges("Comment")
@@ -247,6 +256,7 @@ class PortPinPathItem(PortPinMixin, QGraphicsPathItem):
     def dot(self : Self) -> bool:
         return self._dot
 
+    @checked
     def setDot(self : Self, value : bool) -> None:
         self._dot = value
         self._updateGraphics()
@@ -254,6 +264,7 @@ class PortPinPathItem(PortPinMixin, QGraphicsPathItem):
     def clock(self : Self) -> bool:
         return self._clock
 
+    @checked
     def setClock(self : Self, value : bool) -> None:
         self._clock = value
         self._updateGraphics()

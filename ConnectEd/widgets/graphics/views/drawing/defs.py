@@ -7,6 +7,8 @@ from .....core.defs import LAYER_SHEET, LAYER_DRAWING
 
 from .....app import settings
 
+from .....core.check import checked
+
 
 class DrawingViewLayer(Enum):
     Sheet   = LAYER_SHEET
@@ -20,6 +22,7 @@ class DrawingViewGrid:
     alpha      : int
     min_pixels : int
 
+    @checked
     def __init__(self : Self) -> None:
         s = settings().get("defaults/grid")
         self.display    = s.display
@@ -33,6 +36,7 @@ class DrawingViewPLPos:
     physical : QPoint  | None = None
     logical  : QPointF | None = None
 
+    @checked
     def __init__(
         self     : Self,
         physical : QPoint  | None = None,
@@ -41,6 +45,7 @@ class DrawingViewPLPos:
         self.physical = physical
         self.logical  = logical
 
+    @checked
     def setPL(self : Self, physical : QPoint, logical : QPointF) -> None:
         self.physical = physical
         self.logical  = logical
@@ -48,6 +53,7 @@ class DrawingViewPLPos:
 class DrawingViewMouseCurrent(DrawingViewPLPos):
     modifiers : Qt.KeyboardModifier = Qt.KeyboardModifier.NoModifier
 
+    @checked
     def __init__(
         self      : Self,
         physical  : QPoint  | None = None,
@@ -60,6 +66,7 @@ class DrawingViewMouseCurrent(DrawingViewPLPos):
 class DrawingViewMousePress(DrawingViewPLPos):
     modifiers : Qt.KeyboardModifier = Qt.KeyboardModifier.NoModifier
 
+    @checked
     def __init__(
         self      : Self,
         physical  : QPoint  | None = None,
@@ -83,6 +90,7 @@ class DrawingViewMouseButton:
     double  : DrawingViewMousePress
     state   : DrawingViewMouseButtonState
 
+    @checked
     def __init__(self : Self) -> None:
         self.press   = DrawingViewMousePress()
         self.release = DrawingViewMouseRelease()
@@ -94,6 +102,7 @@ class DrawingViewMouse:
     left    : DrawingViewMouseButton
     middle  : DrawingViewMouseButton
 
+    @checked
     def __init__(self : Self) -> None:
         self.current = DrawingViewPLPos()
         self.left    = DrawingViewMouseButton()

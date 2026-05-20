@@ -4,6 +4,8 @@ from PyQt6.QtCore    import QRectF
 from PyQt6.QtWidgets import QGraphicsItem, QStyleOptionGraphicsItem, QWidget
 from PyQt6.QtGui     import QPainter, QPainterPath
 
+from ....core.check import checked
+
 from ...graphics.scenes.symbol import SymbolScene
 
 from ..properties import PropertiesMixin
@@ -32,6 +34,7 @@ class SymbolItem(
     _brect  : QRectF
     _hshape : QPainterPath
 
+    @checked
     def __init__(
         self   : Self,
         source : SymbolScene

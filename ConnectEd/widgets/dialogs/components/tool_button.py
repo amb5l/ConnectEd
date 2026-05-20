@@ -3,6 +3,8 @@ from typing import Self
 from PyQt6.QtGui     import QIcon
 from PyQt6.QtWidgets import QToolButton, QWidget
 
+from ....core.check import checked
+
 
 class ToolButton(QToolButton):
     """QToolButton with visible checked state styling."""
@@ -19,6 +21,7 @@ class ToolButton(QToolButton):
         }
     """
 
+    @checked
     def __init__(
         self   : Self,
         icon   : QIcon | None   = None,

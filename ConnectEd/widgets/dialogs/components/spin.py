@@ -2,6 +2,8 @@ from typing import Self
 
 from PyQt6.QtWidgets import QWidget, QSpinBox
 
+from ....core.check import checked
+
 
 class CustomSpinBox(QSpinBox):
     """
@@ -13,6 +15,7 @@ class CustomSpinBox(QSpinBox):
     # instance attributes
     _value   : int | None
 
+    @checked
     def __init__(
         self   : Self,
         value  : int | None = None,
@@ -21,6 +24,7 @@ class CustomSpinBox(QSpinBox):
         super().__init__(parent)
         self._value = self.value()
 
+    @checked
     def setEnabled(self : Self, enabled : bool) -> None:
         if enabled and not self.isEnabled():
             super().setEnabled(enabled)

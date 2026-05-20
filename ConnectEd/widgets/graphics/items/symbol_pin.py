@@ -51,6 +51,7 @@ class SymbolPinItem(
     def handleIdKind(cls) -> DataKind:
         return DataKind.SYMBOL_PIN_HANDLE
 
+    @checked
     def initHandles(self : Self) -> None:
         PortPinPathItem.initHandles(self)
         self._handles[SymbolPinHandleId.ORIGIN] = HandleItem(

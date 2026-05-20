@@ -4,6 +4,8 @@ from PyQt6.QtCore import QPoint, QPointF
 
 from ......app import logger
 
+from ......core.check import checked
+
 from ......core.types import NO_CHANGE
 
 from .....dialogs.properties          import PropertiesDialog
@@ -53,10 +55,11 @@ class DrawingViewStateEditSelectArea2(DrawingViewStateBase):
 class DrawingViewStateEditPaste(ClickMixin, DrawingViewStateBase):
     STATUS = "Paste: select the paste position"
 
+    @checked
     def entry(
         self : Self,
-        v    : QPoint,
-        s    : QPointF,
+        v    : QPoint | None,
+        s    : QPointF | None,
         i    : list[ItemMixin] | None = None
     ) -> None:
         self.view.state.interact(EditPasteInteraction(self.view, self._snap(s)))
@@ -109,10 +112,11 @@ class DrawingViewStateEditAdjustPolySeg(DragMixin, DrawingViewStateBase):
 class DrawingViewStateEditAppearance(DrawingViewStateBase):
     STATUS = "Appearance: specify changes"
 
+    @checked
     def entry(
         self : Self,
-        v    : QPoint,
-        s    : QPointF,
+        v    : QPoint | None,
+        s    : QPointF | None,
         i    : list[ItemMixin] | None = None
     ) -> None:
         items = i or self.view._selectedItems(ItemMixin)
@@ -142,10 +146,11 @@ class DrawingViewStateEditAppearance(DrawingViewStateBase):
 class DrawingViewStateEditItemProperties(DrawingViewStateBase):
     STATUS = "{Item} Properties: specify changes"
 
+    @checked
     def entry(
         self : Self,
-        v    : QPoint,
-        s    : QPointF,
+        v    : QPoint | None,
+        s    : QPointF | None,
         i    : list[ItemMixin] | None = None
     ) -> None:
         item = i[0] if i else self.view._selectedItem(ItemMixin)
@@ -161,10 +166,11 @@ class DrawingViewStateEditItemProperties(DrawingViewStateBase):
 class DrawingViewStateEditDrawingProperties(DrawingViewStateBase):
     STATUS = "{Drawing} Properties: specify changes"
 
+    @checked
     def entry(
         self : Self,
-        v    : QPoint,
-        s    : QPointF,
+        v    : QPoint | None,
+        s    : QPointF | None,
         i    : list[ItemMixin] | None = None
     ) -> None:
         dialog = PropertiesDialog(self.scene, self.view)
@@ -183,10 +189,11 @@ class DrawingViewStateEditQuery(DrawingViewStateBase):
 class DrawingViewStateEditText(DrawingViewStateBase):
     STATUS = "Edit Text: specify changes"
 
+    @checked
     def entry(
         self : Self,
-        v    : QPoint,
-        s    : QPointF,
+        v    : QPoint | None,
+        s    : QPointF | None,
         i    : list[ItemMixin] | None = None
     ) -> None:
         item = i[0] if i else self.view._selectedItem(TextItem)
@@ -219,10 +226,11 @@ class DrawingViewStateEditText(DrawingViewStateBase):
 class DrawingViewStateEditPropertyText(DrawingViewStateBase):
     STATUS = "Edit Property Text: specify changes"
 
+    @checked
     def entry(
         self : Self,
-        v    : QPoint,
-        s    : QPointF,
+        v    : QPoint | None,
+        s    : QPointF | None,
         i    : list[ItemMixin] | None = None
     ) -> None:
         item = i[0] if i else self.view._selectedItem(PropertyTextItem)

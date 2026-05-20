@@ -2,6 +2,7 @@ from typing import Self
 
 from PyQt6.QtCore import QPointF
 
+from ....core.check import checked
 from ....core.types import HandleId
 
 from .null import NullItem
@@ -35,6 +36,7 @@ class HandleItem(ItemChangeMixin, NullItem):
     def id(self : Self) -> HandleId:
         return self._id
 
+    @checked
     def setId(self : Self, id : HandleId) -> None:
         self._id = id
 

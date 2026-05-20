@@ -4,6 +4,8 @@ from PyQt6.QtWidgets import QWidget, QDialog, \
                             QVBoxLayout, QHBoxLayout, QGroupBox, \
                             QLabel, QComboBox, QRadioButton
 
+from ...core.check import checked
+
 from .components.layout.ok_cancel import OkCancelLayout
 
 
@@ -23,6 +25,7 @@ class ArcDialog(QDialog):
     _ccw_radio        : QRadioButton
     _ok_cancel_layout : OkCancelLayout
 
+    @checked
     def __init__(self : Self, angle : float, parent : QWidget | None = None) -> None:
         super().__init__(parent)
         self.setWindowTitle("Arc")
@@ -50,6 +53,7 @@ class ArcDialog(QDialog):
         self._dialog_layout.addLayout(self._ok_cancel_layout)
         self.setLayout(self._dialog_layout)
 
+    @checked
     def getAngle(self : Self) -> float:
         try:
             abs_angle = abs(float(self._angle_combo.currentText()))

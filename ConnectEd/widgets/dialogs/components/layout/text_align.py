@@ -2,6 +2,7 @@ from typing import Self
 
 from PyQt6.QtWidgets import QGridLayout, QHBoxLayout, QButtonGroup, QLabel
 
+from .....core.check import checked
 from .....core.types import NoChange, NO_CHANGE, AlignH, AlignV
 
 from .....resources.icons import TextAlignLeftIcon,   \
@@ -30,6 +31,7 @@ class TextAlignLayout(QGridLayout):
     _v_middle_button : ToolButton
     _v_bottom_button : ToolButton
 
+    @checked
     def __init__(self : Self, align_h : AlignH, align_v : AlignV) -> None:
         super().__init__()
         self._initial_h = align_h
@@ -72,6 +74,7 @@ class TextAlignLayout(QGridLayout):
         self.addLayout(self._v_layout, 1, 1)
         # done
 
+    @checked
     def getAlignH(self : Self) -> AlignH | NoChange:
         if self._h_right_button.isChecked():
             r = AlignH.RIGHT
@@ -83,7 +86,8 @@ class TextAlignLayout(QGridLayout):
             raise ValueError("Invalid horizontal alignment")
         return r if r != self._initial_h else NO_CHANGE
 
-    def getAlignV(self : Self) -> AlignV:
+    @checked
+    def getAlignV(self : Self) -> AlignV | NoChange:
         if self._v_bottom_button.isChecked():
             r = AlignV.BOTTOM
         elif self._v_middle_button.isChecked():

@@ -5,6 +5,8 @@ from PyQt6.QtGui  import QPainterPath, QPainterPathStroker
 
 from ......app import logger
 
+from ......core.check import checked
+
 from ....items.node      import NodeItem, FreeNodeItem, FixedNodeItem, \
                                 PinNodeItem, TapNodeItem
 from ....items.segment   import SegmentItem
@@ -24,6 +26,7 @@ if TYPE_CHECKING:
 class DiagramSceneApiConnMixin:
     """Connectivity API."""
 
+    @checked
     def addFreeNode(
         self     : "DiagramScene",
         pos      : QPointF,
@@ -46,6 +49,7 @@ class DiagramSceneApiConnMixin:
         # done
         return node
 
+    @checked
     def removeFreeNode(
         self     : "DiagramScene",
         node     : FreeNodeItem,
@@ -59,6 +63,7 @@ class DiagramSceneApiConnMixin:
         cmd = CmdDelete(self, [node])
         cmdExec(self, cmd, undoable)
 
+    @checked
     def replaceNode(
         self     : "DiagramScene",
         node1    : NodeItem,
@@ -71,6 +76,7 @@ class DiagramSceneApiConnMixin:
         cmd = CmdReplaceNode(self, node1, node2)
         cmdExec(self, cmd, undoable)
 
+    @checked
     def getNode(
         self     : "DiagramScene",
         pos      : QPointF,         # scene coordinates
@@ -86,6 +92,7 @@ class DiagramSceneApiConnMixin:
                 return item
         return self.addFreeNode(pos, undoable)
 
+    @checked
     def detachNode(
         self     : "DiagramScene",
         node     : FixedNodeItem,
@@ -102,6 +109,7 @@ class DiagramSceneApiConnMixin:
         cmd = CmdDetachNode(self, node)
         cmdExec(self, cmd, undoable)
 
+    @checked
     def detachSegment(
         self     : "DiagramScene",
         seg      : SegmentItem,
@@ -119,6 +127,7 @@ class DiagramSceneApiConnMixin:
         Melt redundant segment splits.
         """
 
+    @checked
     def dropSegmentNode(
         self     : "DiagramScene",
         seg      : SegmentItem,
@@ -130,7 +139,7 @@ class DiagramSceneApiConnMixin:
         Replace node with an existing node if present.
         """
 
-
+    @checked
     def addNode(
         self     : "DiagramScene",
         node     : PinNodeItem | TapNodeItem,
@@ -144,7 +153,7 @@ class DiagramSceneApiConnMixin:
         cmdExec(self, cmd, undoable)
         return cmd.node()
 
-
+    @checked
     def isRedundantNode(self : "DiagramScene", node : NodeItem) -> bool:
         """
         Node is redundant if
@@ -167,6 +176,7 @@ class DiagramSceneApiConnMixin:
         dot_product = uv1.dx() * uv2.dx() + uv1.dy() * uv2.dy()
         return isclose(dot_product, -1.0, abs_tol=1e-6)
 
+    @checked
     def addSegment(
         self     : "DiagramScene",
         p1       : QPointF,
@@ -217,6 +227,7 @@ class DiagramSceneApiConnMixin:
         if undoable:
             self.undo_stack.endMacro()
 
+    @checked
     def removeSegment(
         self     : "DiagramScene",
         seg      : SegmentItem,

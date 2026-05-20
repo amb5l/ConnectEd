@@ -1,5 +1,7 @@
 from PyQt6.QtCore import QPointF
 
+from ......core.check import checked
+
 from ....items import ItemType
 
 from ....items.polyline  import PolylineItem, PolyVtxItem
@@ -15,6 +17,7 @@ if TYPE_CHECKING:
 class DrawingSceneApiAddMixin:
     """Methods to add items to the scene."""
 
+    @checked
     def addItems(
         self     : "DrawingScene",
         items    : list[ItemType],
@@ -24,6 +27,7 @@ class DrawingSceneApiAddMixin:
         cmd = CmdAdd(self, items)
         cmdExec(self, cmd, undoable)
 
+    @checked
     def addPolyVtx(
         self     : "DrawingScene",
         polyline : PolylineItem,

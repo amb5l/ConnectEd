@@ -1,5 +1,6 @@
 from PyQt6.QtCore import QSize
 
+from ....core.check import checked
 from ....core.icon import getDefaultIconSize, SvgIconSingleton
 
 from ....resources import getIconPath
@@ -7,6 +8,7 @@ from ....resources import getIconPath
 
 _custom_icon_size : QSize | None = None
 
+@checked
 def customIconSize() -> QSize:
     global _custom_icon_size
     if _custom_icon_size is None:
