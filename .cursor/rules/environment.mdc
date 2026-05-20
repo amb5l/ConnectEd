@@ -1,0 +1,50 @@
+---
+description: Python virtual environment and shell commands for ConnectEd
+alwaysApply: true
+---
+
+# ConnectEd development environment
+
+## Python / venv
+
+- **Python**: 3.11+ (`pyproject.toml`)
+- **Virtual env**: `.venv` at the repository root (not committed)
+- **IDE interpreter**: `.venv/Scripts/python.exe` (see `.vscode/settings.json`)
+
+Do **not** assume `python` or `py` is on PATH. When running terminal commands, use the venv explicitly from the repo root:
+
+```powershell
+# Windows (preferred — works without activating)
+.venv\Scripts\python.exe -m pytest tests/unit/
+.venv\Scripts\python.exe tests/run_tests.py
+```
+
+```bash
+# Linux/macOS
+.venv/bin/python -m pytest tests/unit/
+```
+
+Alternatively activate first: `.venv\Scripts\activate` (Windows) or `source .venv/bin/activate` (Unix).
+
+## Setup (if venv missing)
+
+```powershell
+python -m venv .venv
+.venv\Scripts\python.exe -m pip install -e ".[dev]"
+```
+
+## Tests
+
+Run from repository root. See `tests/README.md` for details.
+
+```powershell
+.venv\Scripts\python.exe tests/run_tests.py
+.venv\Scripts\python.exe -m pytest tests/integration/
+.venv\Scripts\python.exe -m pytest tests/unit/
+```
+
+## Shell commands
+
+- Set `working_directory` to the repo root (`ConnectEd` workspace root).
+- Prefer `.venv\Scripts\python.exe` over bare `python` on Windows.
+- Use `;` as the statement separator in PowerShell, not `&&`.
