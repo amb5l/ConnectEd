@@ -100,9 +100,8 @@ class FreeNodeItem(NodeItem):
     _JUNCTION_THRESHOLD = 3
 
     def __init__(
-        self  : Self,
-        pos   : QPointF | None = None,
-        fresh : bool = True
+        self : Self,
+        pos  : QPointF | None = None
     ) -> None:
         super().__init__()
         if pos is not None:
@@ -110,7 +109,7 @@ class FreeNodeItem(NodeItem):
 
     @classmethod
     def fromXml(cls : Self, xr : QXmlStreamReader) -> Self:
-        instance : "FreeNodeItem" = cls(fresh=False)
+        instance : "FreeNodeItem" = cls()
         for attr_name, attr_value in xr.attributes():
             match attr_name:
                 case "ID":
