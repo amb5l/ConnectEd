@@ -1,7 +1,7 @@
 from typing import Self
 
 from PyQt6.QtCore    import Qt, QTimer
-from PyQt6.QtWidgets import QWidget, QDialog, QVBoxLayout, QHBoxLayout
+from PyQt6.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout
 from PyQt6.QtGui     import QShowEvent, QColor
 
 from ....core.check import checked
@@ -15,6 +15,10 @@ from ..components.group_box.text_align       import TextAlignGroupBox
 from ..components.group_box.origin           import OriginGroupBox
 from ..components.group_box.text_appearance  import TextAppearancePreviewGroupBox
 from ..components.layout.ok_cancel           import OkCancelLayout
+
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from ...graphics.views.drawing import DrawingView
 
 
 class BaseTextItemDialog(QDialog):
@@ -34,7 +38,7 @@ class BaseTextItemDialog(QDialog):
     def __init__(
         self   : Self,
         item   : TextItem,
-        parent : QWidget | None = None
+        parent : "DrawingView | None"
     ):
         super().__init__(parent)
         self.setWindowTitle(self._TITLE)
@@ -60,12 +64,12 @@ class BaseTextItemDialog(QDialog):
             item.textBold(),
             item.textItalic(),
             item.textUnderline(),
-            item.defaultTextColor(),
-            item.defaultTextFont(),
-            item.defaultTextSize(),
-            item.defaultTextBold(),
-            item.defaultTextItalic(),
-            item.defaultTextUnderline()
+            item.defaultTextColor(parent),
+            item.defaultTextFont(parent),
+            item.defaultTextSize(parent),
+            item.defaultTextBold(parent),
+            item.defaultTextItalic(parent),
+            item.defaultTextUnderline(parent)
         )
         # middle left and right combined
         self._middle_layout = QHBoxLayout()
@@ -78,7 +82,7 @@ class BaseTextItemDialog(QDialog):
         # finalise
         self.setLayout(self._layout)
 
-    def initTopSection(self : Self, item : TextItem) -> None:
+    def initTopSection(self : Self, _item : TextItem) -> None:
         raise NotImplementedError("subclass must implement initTopSection()")
 
     @checked
