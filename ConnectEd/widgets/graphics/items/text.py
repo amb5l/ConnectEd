@@ -29,6 +29,7 @@ from ....resources.icons import AnchorTopLeftIcon,      \
                                 TextAlignBottomIcon
 
 from ..properties import InherentProperty
+from ..quill      import Quill
 
 from .grip import TextResizeGripItem
 
@@ -243,13 +244,6 @@ class TextItem(
         self.updateHandlePositions()
         self.onSceneRotationChange()
 
-    def onSettingsChanged(self : Self) -> None:
-        if (scene := self.scene()) is not None:
-            self.onSceneChanged(scene)
-
-    def onSceneChanged(self : Self, scene : "DrawingScene | None") -> None:
-        pass
-
     def onSceneRotationChange(self : Self) -> None:
         self._adjustOrientation()
 
@@ -338,6 +332,21 @@ class TextItem(
     def setFont(self : Self, font : QFont) -> None:
         self._child.setFont(font)
         self.updateHandlePositions()
+
+    def quill(self : Self) -> Quill:
+        qfont = self.font()
+        return Quill(
+            self.color(),
+            qfont.family(),
+            qfont.pointSizeF(),
+            qfont.bold(),
+            qfont.italic(),
+            qfont.underline()
+        )
+
+    def setQuill(self : Self, quill : Quill) -> None:
+        self._child.setColor(quill.color())
+        self.setFont(quill.qFont())
 
     def handleRect(self : Self) -> QRectF:
         """Return the rectangle used for handles."""

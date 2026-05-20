@@ -129,13 +129,6 @@ class PropertyTextItem(TextItem):
         self.setCleat(cleat, parent)
         self.onTextChanged()
 
-    def onSettingsChanged(self : Self) -> None:
-        if (scene := self.scene()) is not None:
-            self.onSceneChanged(scene)
-
-    def onSceneChanged(self : Self, scene : "DrawingScene | None") -> None:
-        pass
-
     def onParentChanged(self : Self, parent : QGraphicsItem | None) -> None:
         if parent is not None:
             self.onTextChanged()
