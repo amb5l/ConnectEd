@@ -110,7 +110,9 @@ class Window(QMainWindow):
             self.raise_()
             self.activateWindow()
             app().processEvents()
-        self.messages.appendPlainText("ConnectEd ready!")
+        messages = self.messages()
+        if messages:
+            messages.appendPlainText("ConnectEd ready!")
         app().ready.window.emit()
 
     def closeEvent(self : Self, event : QCloseEvent) -> None:
@@ -146,54 +148,84 @@ class Window(QMainWindow):
     ) -> None:
         view = subwindow.widget() if subwindow else None
         diagram = view.scene() if isinstance(view, DiagramView) else None
-        self.netlist.setDiagram(diagram)
+        netlist = self.netlist()
+        if netlist:
+            netlist.setDiagram(diagram)
 
-    # convenience properties
+    # convenience methods
 
-    @property
-    def menu_bar(self : Self) -> MenuBar:
+    @checked
+    def menuBar(self : Self) -> MenuBar | None:
+        if not hasattr(self, "_menu_bar"):
+            return None
         return self._menu_bar
 
-    @property
-    def status_bar(self : Self) -> StatusBar:
+    @checked
+    def statusBar(self : Self) -> StatusBar | None:
+        if not hasattr(self, "_status_bar"):
+            return None
         return self._status_bar
 
-    @property
-    def navigator_dock(self : Self) -> NavigatorDock:
+    @checked
+    def navigatorDock(self : Self) -> NavigatorDock | None:
+        if not hasattr(self, "_navigator_dock"):
+            return None
         return self._navigator_dock
 
-    @property
-    def navigator(self : Self) -> Navigator:
-        return self._navigator_dock.widget()
+    @checked
+    def navigator(self : Self) -> Navigator | None:
+        dock = self.navigatorDock()
+        if dock is None:
+            return None
+        return dock.widget()
 
-    @property
-    def netlist(self : Self) -> NetlistBrowser:
+    @checked
+    def netlist(self : Self) -> NetlistBrowser | None:
+        if not hasattr(self, "_netlist_dock"):
+            return None
         return self._netlist_dock.widget()
 
-    @property
-    def messages_dock(self : Self) -> MessagesViewDock:
+    @checked
+    def messagesDock(self : Self) -> MessagesViewDock | None:
+        if not hasattr(self, "_messages_dock"):
+            return None
         return self._messages_dock
 
-    @property
-    def messages(self : Self) -> TextView:
-        return self._messages_dock.text_view
+    @checked
+    def messages(self : Self) -> TextView | None:
+        dock = self.messagesDock()
+        if dock is None:
+            return None
+        return dock.text_view
 
-    @property
-    def transcript_dock(self : Self) -> TranscriptViewDock:
+    @checked
+    def transcriptDock(self : Self) -> TranscriptViewDock | None:
+        if not hasattr(self, "_transcript_dock"):
+            return None
         return self._transcript_dock
 
-    @property
-    def transcript(self : Self) -> TextView:
-        return self._transcript_dock.text_view
+    @checked
+    def transcript(self : Self) -> TextView | None:
+        dock = self.transcriptDock()
+        if dock is None:
+            return None
+        return dock.text_view
 
-    @property
-    def log_dock(self : Self) -> LogViewDock:
+    @checked
+    def logDock(self : Self) -> LogViewDock | None:
+        if not hasattr(self, "_log_dock"):
+            return None
         return self._log_dock
 
-    @property
-    def log(self : Self) -> TextView:
-        return self._log_dock.text_view
+    @checked
+    def log(self : Self) -> TextView | None:
+        dock = self.logDock()
+        if dock is None:
+            return None
+        return dock.text_view
 
-    @property
-    def mdi_area(self : Self) -> MdiArea:
+    @checked
+    def mdiArea(self : Self) -> MdiArea | None:
+        if not hasattr(self, "_mdi_area"):
+            return None
         return self._mdi_area

@@ -91,7 +91,7 @@ class Actions:
         self.editRotateCCW      = Action( window(), "Rotate CCW"   , "Rotate counterclockwise"              , "["                          )  # noqa E501
 
         self.onSubWindowActivated(None)
-        window().mdi_area.subWindowActivated.connect(self.onSubWindowActivated)
+        window().mdiArea().subWindowActivated.connect(self.onSubWindowActivated)
         clipboard = QApplication.clipboard()
         clipboard.dataChanged.connect(self.onClipboardDataChanged)
 

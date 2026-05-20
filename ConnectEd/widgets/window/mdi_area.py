@@ -46,7 +46,7 @@ class MdiArea(QMdiArea):
 
     def update(self : Self) -> None:
         self._updateSubWindows()
-        window().menu_bar.updateWindowMenu()
+        window().menuBar().updateWindowMenu()
 
     @checked
     def activateSubWindow(self : Self, subwindow : SubWindow) -> None:

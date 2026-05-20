@@ -51,7 +51,7 @@ class DrawingViewStateBase:
             status.replace(
                 "{Drawing}", self.scene.__class__.__name__.replace("Scene", "")
             )
-            window().status_bar.status.setText(state.STATUS)
+            window().statusBar().status.setText(state.STATUS)
         state.entry(
             self.view.mouse.current.physical,
             self.view.mouse.current.logical,

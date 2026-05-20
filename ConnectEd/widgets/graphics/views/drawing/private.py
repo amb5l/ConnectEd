@@ -67,7 +67,7 @@ class DrawingViewPrivateMixin:
         self.zoom = abs
         self.resetTransform()
         self.scale(self.zoom, self.zoom)
-        window().status_bar.zoom.setText(f"{self.zoom * 100:.2f}%")
+        window().statusBar().zoom.setText(f"{self.zoom * 100:.2f}%")
 
     def _zoomRel(self : "DrawingView", rel : float) -> None:
         self._zoomAbs(self.zoom * rel)

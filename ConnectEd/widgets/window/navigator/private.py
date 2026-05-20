@@ -77,10 +77,10 @@ class NavigatorPrivateMixin:
             return
         scene = node.scene()
         # get existing subwindows in top down Z order
-        subwindows = window().mdi_area.sceneSubWindows(scene)
+        subwindows = window().mdiArea().sceneSubWindows(scene)
         if subwindows:
             # bring existing window to front
-            window().mdi_area.activateSubWindow(subwindows[0])
+            window().mdiArea().activateSubWindow(subwindows[0])
         else:
             # create a new window
             self._newDrawingWindow(node)
@@ -97,15 +97,15 @@ class NavigatorPrivateMixin:
         scene = node.scene()
         if isinstance(node, DesignDbNode):
             view = DiagramView(scene)
-            subwindow = DiagramSubWindow(window().mdi_area)
+            subwindow = DiagramSubWindow(window().mdiArea())
         elif isinstance(node, SymbolNode):
             view = SymbolView(scene)
-            subwindow = SymbolSubWindow(window().mdi_area)
+            subwindow = SymbolSubWindow(window().mdiArea())
         subwindow.setWidget(view)
-        window().mdi_area.addSubWindow(subwindow)
+        window().mdiArea().addSubWindow(subwindow)
         subwindow.showMaximized()
-        window().mdi_area.activateSubWindow(subwindow)
-        window().mdi_area.update()
+        window().mdiArea().activateSubWindow(subwindow)
+        window().mdiArea().update()
 
     def _spreadsheet(self : "Navigator", node : "DrawingNode") -> None:
         from ....core.db import DrawingNode
@@ -114,9 +114,9 @@ class NavigatorPrivateMixin:
             logger().warning(f"Unsupported node: {node.text()} ({type(node)})")
             return
         scene = node.scene()
-        for subwindow in window().mdi_area.subWindowList():
+        for subwindow in window().mdiArea().subWindowList():
             if isinstance(subwindow, SpreadsheetSubWindow) and subwindow.scene() == scene:
-                window().mdi_area.setActiveSubWindow(subwindow)
+                window().mdiArea().setActiveSubWindow(subwindow)
                 subwindow.show()
                 subwindow.raise_()
                 subwindow.setFocus()
@@ -126,9 +126,9 @@ class NavigatorPrivateMixin:
                     if not isinstance(e, HandleItem | TextTetherItem)]
         subwindow = SpreadsheetSubWindow(scene, items)
         subwindow.setWindowTitle(f"{db_node.text()}:{node.text()}: Properties")
-        window().mdi_area.addSubWindow(subwindow)
+        window().mdiArea().addSubWindow(subwindow)
         subwindow.showMaximized()
-        window().menu_bar.updateWindowMenu()
+        window().menuBar().updateWindowMenu()
 
     def _save(self : "Navigator", node : "DbNode") -> None:
         # TODO handle overwrite

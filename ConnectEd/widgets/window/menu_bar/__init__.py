@@ -20,9 +20,9 @@ if TYPE_CHECKING:
 
 
 class MenuBar(QMenuBar):
-    _actions    : Actions
-    _slots      : Slots
-    _menus_dict : dict[str, Menu]
+    _actions : Actions
+    _slots   : Slots
+    _menus   : dict[str, Menu]
 
     def __init__(
         self   : Self,
@@ -33,7 +33,7 @@ class MenuBar(QMenuBar):
         self._actions = Actions()
         self._connectActionsToSlots(self._actions, self._slots)
 
-        self._menus_dict = {}
+        self._menus = {}
         a = self._actions
 
         self.file_menu = Menu("&File")
@@ -113,15 +113,15 @@ class MenuBar(QMenuBar):
         window().addAction(a.editRotateCCW)
 
         settings().mruChanged.connect(lambda: self.updateFileMenu())
-        window().mdi_area.subWindowActivated.connect(self.updateWindowMenu)
-        window().mdi_area.subWindowActivated.connect(self.updatePlaceMenu)
+        window().mdiArea().subWindowActivated.connect(self.updateWindowMenu)
+        window().mdiArea().subWindowActivated.connect(self.updatePlaceMenu)
 
     def addMenu(self : Self, menu : Menu) -> None:
         super().addMenu(menu)
-        self._menus_dict[menu.title().replace("&", "")] = menu
+        self._menus[menu.title().replace("&", "")] = menu
 
-    def menusDict(self : Self) -> dict[str, Menu]:
-        return self._menus_dict
+    def getMenus(self : Self) -> dict[str, Menu]:
+        return self._menus
 
     def updateFileMenu(self : Self) -> None:
         a = self._actions
@@ -144,7 +144,10 @@ class MenuBar(QMenuBar):
         self.file_menu.addAction(a.fileExit)
 
     def updateViewMenu(self : Self) -> None:
-        subwindow = window().mdi_area.activeSubWindow()
+        mdi_area = window().mdiArea()
+        if mdi_area is None:
+            return
+        subwindow = mdi_area.activeSubWindow()
         view : "DrawingView" = None if subwindow is None else subwindow.widget()
         ok = subwindow is not None and view is not None
         a = self._actions
@@ -167,13 +170,14 @@ class MenuBar(QMenuBar):
         from ..spreadsheet import SpreadsheetSubWindow
         window : "Window" = self.parent()
         a = self._actions
-        if not hasattr(window, "mdi_area"):
+        mdi_area = window.mdiArea()
+        if mdi_area is None:
             return
-        subwindow = window.mdi_area.activeSubWindow()
+        subwindow = mdi_area.activeSubWindow()
         if subwindow.__class__ == self.place_menu.subwindow_class:
             return  # no change
         self.place_menu.clear()
-        if isinstance(window.mdi_area.activeSubWindow(), DiagramSubWindow):
+        if isinstance(mdi_area.activeSubWindow(), DiagramSubWindow):
             # Diagram window - show diagram-appropriate actions
             self.place_menu.addAction(a.placePort)
             self.place_menu.addAction(a.placeGate)
@@ -219,12 +223,13 @@ class MenuBar(QMenuBar):
         self.window_menu.addAction(a.windowMessages)
         self.window_menu.addAction(a.windowTranscript)
         self.window_menu.addAction(a.windowLog)
-        if not hasattr(window, "mdi_area"):
+        mdi_area = window.mdiArea()
+        if mdi_area is None:
             return
 
-        for scene in window.mdi_area.scenesActions().keys():
+        for scene in mdi_area.scenesActions().keys():
             self.window_menu.addSeparator()
-            for action in window.mdi_area.scenesActions()[scene]:
+            for action in mdi_area.scenesActions()[scene]:
                 self.window_menu.addAction(action)
 
     def _connectActionsToSlots(

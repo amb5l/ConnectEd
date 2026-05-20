@@ -31,7 +31,7 @@ def withCurrentWidget(widget_type: type[T]) -> Callable[[Callable[["Slots", T], 
     def decorator(func: Callable[["Slots", T], None]) -> Callable[["Slots"], None]:
         @functools.wraps(func)
         def wrapper(self : "Slots") -> None:
-            current_subwindow = window().mdi_area.currentSubWindow()
+            current_subwindow = window().mdiArea().currentSubWindow()
             if current_subwindow is None:
                 return
             current_widget = current_subwindow.widget()
@@ -63,7 +63,7 @@ def withCurrentWidgetCheckable(
     def decorator(func: Callable[["Slots", T, bool], None]) -> Callable[["Slots"], None]:
         @functools.wraps(func)
         def wrapper(self : "Slots") -> None:
-            current_subwindow = window().mdi_area.currentSubWindow()
+            current_subwindow = window().mdiArea().currentSubWindow()
             if current_subwindow is None:
                 return
             current_widget = current_subwindow.widget()
@@ -81,52 +81,52 @@ class Slots:
         pass
 
     def fileNewDesign(self : Self) -> None:
-        window().navigator.newDiagram()
+        window().navigator().newDiagram()
 
     def fileNewLibrary(self : Self) -> None:
-        window().navigator.newLibrary()
+        window().navigator().newLibrary()
 
     def fileOpen(self : Self) -> None:
-        window().navigator.open()
+        window().navigator().open()
 
     @withCurrentWidget(DrawingView)
     def fileSave(self : Self, view : DrawingView) -> None:
-        window().navigator.save(view.scene())
+        window().navigator().save(view.scene())
 
     @withCurrentWidget(DrawingView)
     def fileSaveAs(self : Self, view : DrawingView) -> None:
-        window().navigator.saveAs(view.scene())
+        window().navigator().saveAs(view.scene())
 
     @withCurrentWidget(DrawingView)
     def fileClose(self : Self, view : DrawingView) -> None:
-        window().navigator.close(view.scene())
+        window().navigator().close(view.scene())
 
     def fileOpenMRU1(self : Self) -> None:
-        window().navigator.load(settings().getMRU()[0])
+        window().navigator().load(settings().getMRU()[0])
 
     def fileOpenMRU2(self : Self) -> None:
-        window().navigator.load(settings().getMRU()[1])
+        window().navigator().load(settings().getMRU()[1])
 
     def fileOpenMRU3(self : Self) -> None:
-        window().navigator.load(settings().getMRU()[2])
+        window().navigator().load(settings().getMRU()[2])
 
     def fileOpenMRU4(self : Self) -> None:
-        window().navigator.load(settings().getMRU()[3])
+        window().navigator().load(settings().getMRU()[3])
 
     def fileOpenMRU5(self : Self) -> None:
-        window().navigator.load(settings().getMRU()[4])
+        window().navigator().load(settings().getMRU()[4])
 
     def fileOpenMRU6(self : Self) -> None:
-        window().navigator.load(settings().getMRU()[5])
+        window().navigator().load(settings().getMRU()[5])
 
     def fileOpenMRU7(self : Self) -> None:
-        window().navigator.load(settings().getMRU()[6])
+        window().navigator().load(settings().getMRU()[6])
 
     def fileOpenMRU8(self : Self) -> None:
-        window().navigator.load(settings().getMRU()[7])
+        window().navigator().load(settings().getMRU()[7])
 
     def fileOpenMRU9(self : Self) -> None:
-        window().navigator.load(settings().getMRU()[8])
+        window().navigator().load(settings().getMRU()[8])
 
     def fileExit(self : Self) -> None:
         window().close()
@@ -298,26 +298,26 @@ class Slots:
         view.ui.placeText()
 
     def windowNavigator(self : Self) -> None:
-        window().navigator_dock.show()
-        window().navigator_dock.raise_()
+        window().navigatorDock().show()
+        window().navigatorDock().raise_()
 
     def windowMessages(self : Self) -> None:
-        window().messages_dock.show()
-        window().messages_dock.raise_()
+        window().messagesDock().show()
+        window().messagesDock().raise_()
 
     def windowTranscript(self : Self) -> None:
-        window().transcript_dock.show()
-        window().transcript_dock.raise_()
+        window().transcriptDock().show()
+        window().transcriptDock().raise_()
 
     def windowLog(self : Self) -> None:
-        window().log_dock.show()
-        window().log_dock.raise_()
+        window().logDock().show()
+        window().logDock().raise_()
 
     def windowNext(self : Self) -> None:
-        window().mdi_area.nextSubWindow()
+        window().mdiArea().nextSubWindow()
 
     def windowPrevious(self : Self) -> None:
-        window().mdi_area.previousSubWindow()
+        window().mdiArea().previousSubWindow()
 
     def helpAbout(self : Self) -> None:
         QMessageBox.about(window(), "About", APP_NAME)

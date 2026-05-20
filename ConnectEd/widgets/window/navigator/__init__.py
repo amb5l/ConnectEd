@@ -42,7 +42,7 @@ class Navigator(
         scene = node.scene() if hasattr(node, "scene") else None
         if scene:
             scene.setName(node.text())
-        window().mdi_area.update()
+        window().mdiArea().update()
 
 
 class NavigatorDock(TreeViewDock):

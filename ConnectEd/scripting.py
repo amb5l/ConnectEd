@@ -2,15 +2,17 @@ import sys
 
 from collections.abc import Callable
 
-from .app  import ConnectEdApp, app
+from .app import ConnectEdApp as App, app
+
+from .widgets.window import Window
 
 
 def run(
-    func : Callable[["ConnectEdApp"], None],
+    func : Callable[["App"], None],
     argv : list[str] = []
 ) -> None:
     try:
-        if app() is None:
+        if App.instance() is None:
             sys.argv = [sys.argv[0]] + argv + sys.argv[1:]
             from .main import main
             main(func)
@@ -21,3 +23,6 @@ def run(
     except Exception as e:
         print(f"Script error: {e}")
         raise
+
+
+__all__ = ["run", "App", "Window"]

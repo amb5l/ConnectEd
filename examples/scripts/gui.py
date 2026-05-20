@@ -12,7 +12,7 @@ def test(app : cs.ConnectEdApp):
     # get window (so we can drive the GUI)
     window = app.window()
     # get menu bar
-    menu_bar = window.menu_bar
+    menu_bar = window.menuBar()
     # get menus
     menus = menu_bar.menusDict()
     # get file menu
