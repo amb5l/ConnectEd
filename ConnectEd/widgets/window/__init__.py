@@ -30,6 +30,7 @@ from .text_view       import TextView
 from .messages_view   import MessagesViewDock
 from .transcript_view import TranscriptViewDock
 from .log_view        import LogViewDock
+from .ai_chat         import AiChatDock
 
 
 class Window(QMainWindow):
@@ -41,6 +42,7 @@ class Window(QMainWindow):
     _messages_dock   : MessagesViewDock
     _transcript_dock : TranscriptViewDock
     _log_dock        : LogViewDock
+    _ai_chat_dock    : AiChatDock
     _mdi_area        : MdiArea
 
     # signals
@@ -80,10 +82,17 @@ class Window(QMainWindow):
         self._status_bar = StatusBar(self)
         self.setStatusBar(self._status_bar)
 
-        # dock widgets
+        # dock widgets — bottom: Messages/Transcript/Log (left tabs) | AI Chat (right)
         qd = Qt.DockWidgetArea
         self._messages_dock = MessagesViewDock(self)
         self.addDockWidget(qd.BottomDockWidgetArea, self._messages_dock)
+        self._ai_chat_dock = AiChatDock(self)
+        self.addDockWidget(qd.BottomDockWidgetArea, self._ai_chat_dock)
+        self.splitDockWidget(
+            self._messages_dock,
+            self._ai_chat_dock,
+            Qt.Orientation.Horizontal,
+        )
         self._transcript_dock = TranscriptViewDock(self)
         self.addDockWidget(qd.BottomDockWidgetArea, self._transcript_dock)
         self._log_dock = LogViewDock(self)
@@ -230,6 +239,12 @@ class Window(QMainWindow):
         if dock is None:
             return None
         return dock.text_view
+
+    @checked
+    def aiChatDock(self : Self) -> AiChatDock | None:
+        if not hasattr(self, "_ai_chat_dock"):
+            return None
+        return self._ai_chat_dock
 
     @checked
     def mdiArea(self : Self) -> MdiArea | None:

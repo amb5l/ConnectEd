@@ -4,6 +4,7 @@ from collections.abc import Callable
 from typing import Any
 
 from ConnectEd.scripting import (
+    AiChatDock,
     LogViewDock,
     MdiArea,
     MenuBar,
@@ -61,6 +62,7 @@ MENUS_BASE : dict[str, list] = {
         "Messages",
         "Transcript",
         "Log",
+        "AI Chat",
     ],
     "Help" : [
         "About",
@@ -93,5 +95,6 @@ MAIN_WIDGETS : dict[str, tuple[type, Callable[[Window], Any]]] = {
     "Netlist"    : ( NetlistBrowserDock , lambda win : win.netlistDock()    ),
     "Messages"   : ( MessagesViewDock   , lambda win : win.messagesDock()   ),
     "Transcript" : ( TranscriptViewDock , lambda win : win.transcriptDock() ),
-    "Log"        : ( LogViewDock        , lambda win : win.logDock()        )
+    "Log"        : ( LogViewDock        , lambda win : win.logDock()        ),
+    "AI Chat"    : ( AiChatDock         , lambda win : win.aiChatDock()     ),
 }

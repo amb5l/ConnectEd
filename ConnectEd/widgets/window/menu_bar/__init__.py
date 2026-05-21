@@ -223,6 +223,7 @@ class MenuBar(QMenuBar):
         self.window_menu.addAction(a.windowMessages)
         self.window_menu.addAction(a.windowTranscript)
         self.window_menu.addAction(a.windowLog)
+        self.window_menu.addAction(a.windowAiChat)
         mdi_area = window.mdiArea()
         if mdi_area is None:
             return

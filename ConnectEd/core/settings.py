@@ -93,6 +93,15 @@ FACTORY_SETTINGS = {
             "wheel" : 120
         }
     },
+    "ai" : {
+        "provider"            : "dummy",
+        "api_key"             : "",
+        "model"               : "",
+        "base_url"            : "",
+        "system_prompt_extra" : "",
+        "confirm_destructive" : True,
+        "max_tool_rounds"     : 10,
+    },
     "themes" : {
         "dark" : {
             "background" : PaletteDark.Background,

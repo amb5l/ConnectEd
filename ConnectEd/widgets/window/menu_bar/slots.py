@@ -313,6 +313,10 @@ class Slots:
         window().logDock().show()
         window().logDock().raise_()
 
+    def windowAiChat(self : Self) -> None:
+        window().aiChatDock().show()
+        window().aiChatDock().raise_()
+
     def windowNext(self : Self) -> None:
         window().mdiArea().nextSubWindow()
 
