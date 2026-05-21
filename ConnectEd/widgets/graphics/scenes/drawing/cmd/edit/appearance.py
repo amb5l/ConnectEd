@@ -1,32 +1,22 @@
-from typing      import Self, Protocol, TypeAlias
+from typing      import Self
 from dataclasses import dataclass
 
-from PyQt6.QtCore    import Qt
-from PyQt6.QtWidgets import QGraphicsItem
-from PyQt6.QtGui     import QColor
+from PyQt6.QtCore import Qt
+from PyQt6.QtGui  import QColor
 
 from .......core.check import checked
 from .......core.types import NoChange, NO_CHANGE
 
 from .....items.mixin import ItemMixin
 
-from .....items.mixin.presentation import ItemPresentationMixin
-
 from .. import CmdSceneItems
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from .....scenes.drawing    import DrawingScene
+    from .....items           import ItemType
+    from .....scenes.drawing  import DrawingScene
 
 class CmdEditAppearance(CmdSceneItems):
-    class OnGeometryChangeProtocol(Protocol):
-        def onGeometryChange(self : Self) -> None: ...
-
-    ItemType : TypeAlias = \
-        QGraphicsItem            | \
-        OnGeometryChangeProtocol | \
-        ItemPresentationMixin
-
     @dataclass
     class ItemBefore:
         """
@@ -62,7 +52,7 @@ class CmdEditAppearance(CmdSceneItems):
         text_italic    : bool          | None | NoChange
         text_underline : bool          | None | NoChange
 
-    _items  : list[ItemType]
+    _items  : list["ItemType"]
     _before : dict[ItemMixin, ItemBefore]
     _after  : ItemAfter
 
@@ -70,7 +60,7 @@ class CmdEditAppearance(CmdSceneItems):
     def __init__(
         self           : Self,
         scene          : "DrawingScene",
-        items          : list[ItemType],
+        items          : list["ItemType"],
         line_color     : QColor        | None | NoChange = NO_CHANGE,
         line_width     : float         | None | NoChange = NO_CHANGE,
         line_style     : Qt.PenStyle   | None | NoChange = NO_CHANGE,
@@ -138,7 +128,8 @@ class CmdEditAppearance(CmdSceneItems):
                 item.setTextItalic(self._after.text_italic)
             if self._before[item].text_underline is not NO_CHANGE:
                 item.setTextUnderline(self._after.text_underline)
-            item.onGeometryChange()
+            if hasattr(item, "onGeometryChange"):
+                item.onGeometryChange()
             item.update()
 
     @checked
@@ -166,5 +157,6 @@ class CmdEditAppearance(CmdSceneItems):
                 item.setTextItalic(self._before[item].text_italic)
             if self._before[item].text_underline is not NO_CHANGE:
                 item.setTextUnderline(self._before[item].text_underline)
-            item.onGeometryChange()
+            if hasattr(item, "onGeometryChange"):
+                item.onGeometryChange()
             item.update()
