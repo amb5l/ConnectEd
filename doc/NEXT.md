@@ -1,3 +1,5 @@
+properties vs methods in dock widgets etc
+
 moveHandle : test with all pin types
 implement net labels
 test pin wire/bus width

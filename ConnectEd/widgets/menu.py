@@ -18,6 +18,10 @@ class Menu(QMenu):
         return {a.text().replace("&", "").replace("...", "") : a \
             for a in self.actions() if a.menu() is None}
 
+    def getAction(self : Self, name : str) -> Action | None:
+        actions = self.getActions()
+        return actions[name] if name in actions else None
+
 
 class PlaceMenu(Menu):
     subwindow_class : type["SubWindow"] | None = None

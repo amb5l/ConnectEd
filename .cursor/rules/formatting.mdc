@@ -1,0 +1,52 @@
+---
+description: Vertical alignment of colons and related layout in source
+alwaysApply: true
+---
+
+# Source formatting — vertical alignment
+
+When editing or adding code in this repo, **vertically align** punctuation within a visual block where it is practical and does not fight an auto-formatter.
+
+## Align these (when possible)
+
+- **Dict literals** — pad keys so `:` line up in the same dict (see `MAIN_WIDGETS` in `tests/integration/gui/specs.py`).
+- **Grouped assignments** — consecutive related `name : value` or `name = value` lines in specs, constants, or small tables.
+- **Multi-line calls** — keyword arguments, especially in validators and scripting; align `=` or `:` if the project uses typed kwargs.
+- **Multi-line signatures** — pad parameter names so `:` align on wrapped `def` lines (see `withModal` in `ConnectEd/scripting/qt/modal.py`).
+
+## Do not force it when
+
+- A block is huge or deeply nested (e.g. large menu trees) — alignment adds noise without clarity.
+- A formatter (Ruff, Black) would immediately undo the change — prefer project formatter settings if we adopt one for alignment later.
+- It would require very wide spacing or harm diff readability.
+
+## Example (dict keys → types)
+
+```python
+MAIN_WIDGETS : dict[str, type] = {
+    "menuBar"    : MenuBar,
+    "statusBar"  : StatusBar,
+    "central"    : MdiArea,
+    "Navigator"  : NavigatorDock,
+    "Messages"   : MessagesViewDock,
+    "Transcript" : TranscriptViewDock,
+    "Log"        : LogViewDock,
+}
+```
+
+Keep existing project spacing around `:` in annotations (e.g. `def foo(x : int) -> None`).
+
+## Example (multi-line `def`)
+
+```python
+def withModal(
+    self    : Self,
+    opener  : Callable[[], None],
+    onModal : Callable[[], None],
+) -> None:
+    ...
+```
+
+## Snake_case locals for ConnectEd types
+
+Use `connected_` in snake_case and `connected` in camelCase for ConnectEd type locals (not `connect_ed_` / `connectEd`), e.g. `connected_bar`, `connected_menu`. GUI driver uses `driver.window()` → `Window`. Third-party names (`MenuBar`, `QMenuBar`) stay as defined.

@@ -180,10 +180,17 @@ class Window(QMainWindow):
         return dock.widget()
 
     @checked
-    def netlist(self : Self) -> NetlistBrowser | None:
+    def netlistDock(self : Self) -> NetlistBrowserDock | None:
         if not hasattr(self, "_netlist_dock"):
             return None
-        return self._netlist_dock.widget()
+        return self._netlist_dock
+
+    @checked
+    def netlist(self : Self) -> NetlistBrowser | None:
+        dock = self.netlistDock()
+        if dock is None:
+            return None
+        return dock.widget()
 
     @checked
     def messagesDock(self : Self) -> MessagesViewDock | None:

@@ -23,10 +23,14 @@ from .widgets.window import Window
 
 def main(func : Callable | None = None) -> int:
     def _func():
-        func(app)
-        if not known_args.noexit:
-            app.window().close()
-            QTimer.singleShot(100, app.quit)
+        try:
+            func(app)
+        finally:
+            if not known_args.noexit:
+                w = app.window()
+                if w is not None:
+                    w.close()
+                QTimer.singleShot(100, app.quit)
 
     logger.info("started")
     app = ConnectEdApp(known_args.cli)
