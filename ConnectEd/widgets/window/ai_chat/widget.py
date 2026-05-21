@@ -45,6 +45,10 @@ class AiChatWidget(QWidget):
         self._assistant_line_open = False
         self._assistant_stream_plain = False
 
+        edit_lock = window.aiEditLock()
+        if edit_lock is not None:
+            edit_lock.lockChanged.connect(self.refreshSendState)
+
         self._history = QTextBrowser(self)
         self._history.setReadOnly(True)
         self._history.setOpenExternalLinks(False)
@@ -69,6 +73,37 @@ class AiChatWidget(QWidget):
         layout.addLayout(input_row)
 
         self._appendRichBlock("Assistant", welcomeHtml())
+        self.refreshSendState()
+
+    def session(self : Self) -> AiChatSession:
+        return self._session
+
+    def releaseEditLock(self : Self) -> None:
+        self._session.releaseEditLock()
+
+    def refreshSendState(self : Self) -> None:
+        can_send = self._canSend()
+        self._send.setEnabled(can_send)
+        if can_send:
+            self._send.setToolTip("")
+            return
+        edit_lock = self._window.aiEditLock()
+        if (
+            edit_lock is not None
+            and edit_lock.isLocked()
+            and edit_lock.holder() is not self._session
+        ):
+            self._send.setToolTip("Another AI chat is editing the diagram.")
+        else:
+            self._send.setToolTip("")
+
+    def _canSend(self : Self) -> bool:
+        if self._session.isBusy():
+            return False
+        edit_lock = self._window.aiEditLock()
+        if edit_lock is None or not edit_lock.isLocked():
+            return True
+        return edit_lock.holder() is self._session
 
     def _scrollHistory(self : Self) -> None:
         bar = self._history.verticalScrollBar()
@@ -105,7 +140,7 @@ class AiChatWidget(QWidget):
 
     def _sendMessage(self : Self) -> None:
         text = self._input.text()
-        if not text.strip() or self._session.isBusy():
+        if not text.strip() or not self._canSend():
             return
         self._input.clear()
         self._assistant_line_open = False
@@ -150,5 +185,5 @@ class AiChatWidget(QWidget):
             cursor.insertHtml("</p>")
         self._assistant_line_open = False
         self._assistant_stream_plain = False
-        self._send.setEnabled(True)
+        self.refreshSendState()
         self._input.setFocus(Qt.FocusReason.OtherFocusReason)

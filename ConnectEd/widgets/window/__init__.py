@@ -18,6 +18,8 @@ from ...core.defs  import APP_NAME
 
 from ...resources import getIconPath
 
+from ...ai.lock import AiEditLock
+
 from ..graphics.views.diagram import DiagramView
 
 from .menu_bar   import MenuBar
@@ -43,6 +45,7 @@ class Window(QMainWindow):
     _transcript_dock : TranscriptViewDock
     _log_dock         : LogViewDock
     _ai_chat_manager  : AiChatManager
+    _ai_edit_lock     : AiEditLock
     _mdi_area         : MdiArea
 
     # signals
@@ -81,6 +84,8 @@ class Window(QMainWindow):
         # status bar
         self._status_bar = StatusBar(self)
         self.setStatusBar(self._status_bar)
+
+        self._ai_edit_lock = AiEditLock(self)
 
         # dock widgets — bottom: Messages/Transcript/Log (left tabs) | AI Chat (right)
         qd = Qt.DockWidgetArea
@@ -236,6 +241,12 @@ class Window(QMainWindow):
         if dock is None:
             return None
         return dock.text_view
+
+    @checked
+    def aiEditLock(self : Self) -> AiEditLock | None:
+        if not hasattr(self, "_ai_edit_lock"):
+            return None
+        return self._ai_edit_lock
 
     @checked
     def aiChatManager(self : Self) -> AiChatManager | None:

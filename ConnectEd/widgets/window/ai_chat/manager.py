@@ -47,6 +47,9 @@ class AiChatManager(QObject):
         self._messages_dock = messages_dock
         self._chats = []
         self._next_chat_id = 1
+        edit_lock = window.aiEditLock()
+        if edit_lock is not None:
+            edit_lock.lockChanged.connect(self._onEditLockChanged)
 
     @checked
     def chats(self : Self) -> list[AiChatDock]:
@@ -91,9 +94,22 @@ class AiChatManager(QObject):
 
     @checked
     def refreshChatTitles(self : Self) -> None:
+        edit_lock = self._window.aiEditLock()
+        holder = edit_lock.holder() if edit_lock is not None else None
         labels = chatTitles([dock.providerLabel() for dock in self._chats])
         for dock, title in zip(self._chats, labels, strict=True):
+            if holder is dock.chat_widget.session():
+                title = f"{title} — Editing…"
             dock.setWindowTitle(title)
+
+    @checked
+    def refreshChatWidgets(self : Self) -> None:
+        for dock in self._chats:
+            dock.chat_widget.refreshSendState()
+
+    def _onEditLockChanged(self : Self) -> None:
+        self.refreshChatTitles()
+        self.refreshChatWidgets()
 
     @checked
     def focusChat(self : Self, dock : AiChatDock) -> None:
@@ -103,6 +119,7 @@ class AiChatManager(QObject):
     def _onChatClosed(self : Self, dock : AiChatDock) -> None:
         if dock not in self._chats:
             return
+        dock.chat_widget.releaseEditLock()
         self._chats.remove(dock)
         dock.setParent(None)
         dock.deleteLater()

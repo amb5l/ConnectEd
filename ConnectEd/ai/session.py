@@ -8,6 +8,7 @@ from ..app import settings
 from ..core.check import checked
 
 from .driver import AiDriver
+from .lock import AiEditLock
 from .providers import create_provider
 from .types import ChatEventType, ChatMessage
 
@@ -56,6 +57,13 @@ class AiChatSession(QObject):
         text = text.strip()
         if not text or self._busy:
             return
+
+        edit_lock = self._editLock()
+        if edit_lock is not None and not edit_lock.acquire(self):
+            self.error.emit("Another AI chat is editing the diagram.")
+            self.finished.emit()
+            return
+
         self._busy = True
         try:
             self._provider = create_provider(self._provider_name)
@@ -69,7 +77,20 @@ class AiChatSession(QObject):
             self.error.emit(str(exc))
         finally:
             self._busy = False
+            if edit_lock is not None:
+                edit_lock.release(self)
             self.finished.emit()
+
+    @checked
+    def releaseEditLock(self : Self) -> None:
+        edit_lock = self._editLock()
+        if edit_lock is not None:
+            edit_lock.release(self)
+
+    def _editLock(self : Self) -> AiEditLock | None:
+        if not hasattr(self._window, "_ai_edit_lock"):
+            return None
+        return self._window.aiEditLock()
 
     def _runProviderTurn(self : Self) -> bool:
         tool_calls : list = []
@@ -98,7 +119,11 @@ class AiChatSession(QObject):
             return False
 
         for tool_call in tool_calls:
-            result = self._driver.call(tool_call.name, tool_call.arguments)
+            result = self._driver.call(
+                tool_call.name,
+                tool_call.arguments,
+                session = self,
+            )
             self._messages.append(
                 ChatMessage(
                     "tool",

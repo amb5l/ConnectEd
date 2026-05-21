@@ -58,7 +58,6 @@ scene APIs.
 
 - Real HTTP providers, `ContextBuilder`, read/write tools beyond `nobodyHome()`.
 - **`AiEditLock`** — exclusive lease + partial UI lock for multi-chat safety.
-- Optional `[ai]` deps in `pyproject.toml`.
 
 **Existing infrastructure to build on:**
 
@@ -692,11 +691,11 @@ Work in order unless noted.
 
 ### 3.5 Agent editing lease
 
-- [ ] `ConnectEd/ai/lock.py` — `AiEditLock` on `Window` (`holder`, `acquire`, `release`, `lockChanged`).
-- [ ] `AiChatSession.send()` — acquire at start, `release` in `finally`; reject second session if busy.
-- [ ] `AiChatWidget` — disable **Send** on non-holders when locked; optional `Editing…` title suffix.
-- [ ] `AiDriver.call()` — stub check: write tools list empty for now; hook ready for §6.
-- [ ] Unit test: acquire/release, second session rejected, release on session destroy.
+- [x] `ConnectEd/ai/lock.py` — `AiEditLock` on `Window` (`holder`, `acquire`, `release`, `lockChanged`).
+- [x] `AiChatSession.send()` — acquire at start, `release` in `finally`; reject second session if busy.
+- [x] `AiChatWidget` — disable **Send** on non-holders when locked; `Editing…` title suffix.
+- [x] `AiDriver.call()` — write-tool check stub (`_WRITE_TOOLS` empty until §6).
+- [x] Unit tests: acquire/release, second session rejected, release on dock close.
 
 ### 4. Provider layer + settings UI
 
@@ -749,7 +748,7 @@ Work in order unless noted.
 1. §1 Scaffolding — **done** (dummy provider, session, settings).
 2. §2 Single chat dock — **done** (bottom-right split).
 3. §3 Multi-chat + AI menu — **done**.
-4. **§3.5 Agent editing lease** — next (before write tools).
+4. **§3.5 Agent editing lease** — **done**.
 5. §4 Real providers + Settings dialog.
 6. §5 Read-only agent (context + tools + streaming).
 7. §6 Write tools, catalog, safety (**lease enforced**).
