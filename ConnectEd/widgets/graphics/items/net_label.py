@@ -1,33 +1,29 @@
 from typing import Self
 
 from PyQt6.QtCore    import QPointF
-from PyQt6.QtWidgets import QGraphicsItem
-from PyQt6.QtGui     import QColor
+from PyQt6.QtWidgets import QGraphicsItem, QMenu
+from PyQt6.QtGui     import QAction, QColor
 
+from ....core.defs  import PITCH, WIDTH
 from ....core.check import checked
 from ....core.types import AlignH, AlignV, RectHandleId, DataKind
 from ....core.utils import val2str
 
 from ..properties import InherentProperty
 
-from .text   import TextItem
-from .handle import HandleItem
-from .tether import TextTetherItem
+from .text import TextItem
+from .grip import GripShape
 
+from .mixin.transform import ItemTransformMixin
 
-class NetLabelTetherItem(TextTetherItem):
-    """
-    Tether line from the origin of a PropertyTextItem to its parent cleat.
-    """
-
-    _text_item : "NetLabelItem"
-
-    def anchor(self : Self) -> "HandleItem | None":
-        return self._text_item.parentItem()
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from ..views.drawing import DrawingView
 
 
 class NetLabelItem(TextItem):
     # class attributes
+    _ORIGIN_GRIP_SHAPE = GripShape.STAR
     _PROPERTIES = \
         {
             "Name" : InherentProperty(
@@ -39,12 +35,6 @@ class NetLabelItem(TextItem):
                 kind   = DataKind.STR,
                 getter = lambda self: self.value(),
                 setter = lambda self, value: self.setValue(value)
-            ),
-            "Visible" : InherentProperty(
-                kind   = DataKind.BOOL,
-                worthy = lambda self: not self.isVisible(),
-                getter = lambda self: self.isVisible(),
-                setter = lambda self, value: self.setVisible(value)
             )
         } | \
         TextItem._PROPERTIES_POS         | \
@@ -52,53 +42,68 @@ class NetLabelItem(TextItem):
         TextItem._PROPERTIES_RECT_ORIGIN | \
         TextItem._PROPERTIES_ALIGN       | \
         TextItem._PROPERTIES_SIZE        | \
+        TextItem._PROPERTIES_PADDING     | \
         TextItem._PROPERTIES_TEXT
 
     # instance attributes
-    _name   : str
+    _name  : str
     _value : str
-    _tether : NetLabelTetherItem | None
 
     @checked
     def __init__(
-        self      : Self,
-        name      : str                  = "",
-        value     : str                  = "",
-        pos       : QPointF | None       = None,
-        rotation  : float                = 0.0,
-        mirror_h  : bool                 = False,
-        mirror_v  : bool                 = False,
-        autoflip  : bool                 = True,
-        origin    : RectHandleId         = RectHandleId.TOP_LEFT,
-        align_h   : AlignH               = AlignH.LEFT,
-        align_v   : AlignV               = AlignV.TOP,
-        width     : float                = -1.0,
-        height    : float                = -1.0,
-        color     : QColor | None        = None,
-        font      : str    | None        = None,
-        size      : float  | None        = None,
-        bold      : bool   | None        = None,
-        italic    : bool   | None        = None,
-        underline : bool   | None        = None,
-        fresh     : bool                 = True,
-        parent    : QGraphicsItem | None = None
+        self       : Self,
+        name       : str                  = "",
+        value      : str                  = "",
+        pos        : QPointF       | None = None,
+        rotation   : float                = 0.0,
+        mirror_h   : bool                 = False,
+        mirror_v   : bool                 = False,
+        autoflip   : bool                 = True,
+        origin     : RectHandleId         = RectHandleId.TOP_LEFT,
+        align_h    : AlignH               = AlignH.LEFT,
+        align_v    : AlignV               = AlignV.TOP,
+        width      : float                = -1.0,
+        height     : float                = PITCH,
+        pad_left   : float                = 2 * WIDTH,
+        pad_right  : float                = 2 * WIDTH,
+        pad_top    : float                = 2 * WIDTH,
+        pad_bottom : float                = 2 * WIDTH,
+        color      : QColor        | None = None,
+        font       : str           | None = None,
+        size       : float         | None = None,
+        bold       : bool          | None = None,
+        italic     : bool          | None = None,
+        underline  : bool          | None = None,
+        fresh      : bool                 = True,
+        parent     : QGraphicsItem | None = None
     ) -> None:
-        pass
-
-    def onPositionChanged(
-        self : Self,
-        pos  : QPointF | None = None
-    ) -> None:
-        ItemTransformMixin.onPositionChanged(self, pos)
-        if hasattr(self, "_tether"):
-            self._tether.onPositionChanged(pos)
-
-    def onSelectionChanged(self : Self, selected : bool) -> None:
-        if self._cleat is None or self._cleat == "":
-            return
-        cleat_valid = self._cleat is not None and self._cleat != ""
-        self._tether.setVisible(selected and cleat_valid)
-        self._tether.anchor().grip().setVisible(selected and cleat_valid)
+        super().__init__(
+            pos        = pos,
+            rotation   = rotation,
+            mirror_h   = mirror_h,
+            mirror_v   = mirror_v,
+            autoflip   = autoflip,
+            origin     = origin,
+            align_h    = align_h,
+            align_v    = align_v,
+            width      = width,
+            height     = height,
+            pad_left   = pad_left,
+            pad_right  = pad_right,
+            pad_top    = pad_top,
+            pad_bottom = pad_bottom,
+            color      = color,
+            font       = font,
+            size       = size,
+            bold       = bold,
+            italic     = italic,
+            underline  = underline,
+            fresh      = fresh,
+            parent     = parent
+        )
+        self._name  = name
+        self._value = value
+        self.onTextChanged()
 
     def onTextChanged(self : Self) -> None:
         text = val2str(self.value())
@@ -106,12 +111,21 @@ class NetLabelItem(TextItem):
             text = f"<{self._name}>"
         super().setText(text)
 
+    def text(self : Self) -> str:
+        raise NotImplementedError("NetLabelItem.text() is not implemented")
+
+    @checked
+    def setText(self : Self, text : str) -> None:
+        raise NotImplementedError("NetLabelItem.setText() is not implemented")
+
     def name(self : Self) -> str:
         return self._name
 
     @checked
     def setName(self : Self, name : str) -> None:
         self._name = name
+        self.onTextChanged()
+        self._notifyNetlist()
 
     def value(self : Self) -> str:
         return self._value
@@ -119,3 +133,50 @@ class NetLabelItem(TextItem):
     @checked
     def setValue(self : Self, value : str) -> None:
         self._value = value
+        self.onTextChanged()
+        self._notifyNetlist()
+
+    def onPositionChanged(
+        self : Self,
+        pos  : QPointF | None = None
+    ) -> None:
+        ItemTransformMixin.onPositionChanged(self, pos)
+        self._notifyNetlist()
+
+    @checked
+    def setOrigin(self : Self, id : RectHandleId) -> None:
+        ItemTransformMixin.setOrigin(self, id)
+        self._notifyNetlist()
+
+    def _notifyNetlist(self : Self) -> None:
+        scene = self.scene()
+        if scene is None:
+            return
+        from ..scenes.diagram import DiagramScene
+        if not isinstance(scene, DiagramScene):
+            return
+        netlist = scene.netlist
+        if hasattr(netlist, "onNetLabelChanged"):
+            netlist.onNetLabelChanged(self)
+
+    @checked
+    def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
+        return [
+            view.action(
+                "Auto Width",
+                lambda: self.setWidth(
+                    self.boundingRect().width() if self._width < 0.0 else -1.0
+                ),
+                self._width < 0.0
+            ),
+            view.action(
+                "Auto Height",
+                lambda: self.setHeight(
+                    self.boundingRect().height() if self._height < 0.0 else -1.0
+                ),
+                self._height < 0.0
+            ),
+            view.separator(),
+            view.action("Appearance...", lambda: view.ui.editAppearance(self)),
+            view.action("Properties...", lambda: view.ui.editItemProperties(self))
+        ]
