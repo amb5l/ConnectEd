@@ -187,31 +187,36 @@ class DrawingSceneApiEditMixin:
 
     @checked
     def editText(
-        self      : "DrawingScene",
-        item      : TextItem,
-        text      : str           | NoChange = NO_CHANGE,
-        block     : bool          | NoChange = NO_CHANGE,
-        rotation  : float         | NoChange = NO_CHANGE,
-        autoflip  : bool          | NoChange = NO_CHANGE,
-        mirror_h  : bool          | NoChange = NO_CHANGE,
-        mirror_v  : bool          | NoChange = NO_CHANGE,
-        origin    : RectHandleId  | NoChange = NO_CHANGE,
-        align_h   : AlignH        | NoChange = NO_CHANGE,
-        align_v   : AlignV        | NoChange = NO_CHANGE,
-        width     : float         | NoChange = NO_CHANGE,
-        height    : float         | NoChange = NO_CHANGE,
-        color     : QColor | None | NoChange = NO_CHANGE,
-        font      : str    | None | NoChange = NO_CHANGE,
-        size      : float  | None | NoChange = NO_CHANGE,
-        bold      : bool   | None | NoChange = NO_CHANGE,
-        italic    : bool   | None | NoChange = NO_CHANGE,
-        underline : bool   | None | NoChange = NO_CHANGE,
-        undoable  : bool                    = False
+        self       : "DrawingScene",
+        item       : TextItem,
+        text       : str          | NoChange = NO_CHANGE,
+        block      : bool         | NoChange = NO_CHANGE,
+        rotation   : float        | NoChange = NO_CHANGE,
+        autoflip   : bool         | NoChange = NO_CHANGE,
+        mirror_h   : bool         | NoChange = NO_CHANGE,
+        mirror_v   : bool         | NoChange = NO_CHANGE,
+        origin     : RectHandleId | NoChange = NO_CHANGE,
+        align_h    : AlignH       | NoChange = NO_CHANGE,
+        align_v    : AlignV       | NoChange = NO_CHANGE,
+        width      : float        | NoChange = NO_CHANGE,
+        height     : float        | NoChange = NO_CHANGE,
+        pad_left   : float        | NoChange = NO_CHANGE,
+        pad_right  : float        | NoChange = NO_CHANGE,
+        pad_top    : float        | NoChange = NO_CHANGE,
+        pad_bottom : float        | NoChange = NO_CHANGE,
+        color      : QColor       | None | NoChange = NO_CHANGE,
+        font       : str          | None | NoChange = NO_CHANGE,
+        size       : float        | None | NoChange = NO_CHANGE,
+        bold       : bool         | None | NoChange = NO_CHANGE,
+        italic     : bool         | None | NoChange = NO_CHANGE,
+        underline  : bool         | None | NoChange = NO_CHANGE,
+        undoable   : bool                    = False
     ) -> None:
         cmd = CmdEditText(
             self, item, text, block,
             rotation, mirror_h, mirror_v, autoflip,
             origin, align_h, align_v, width, height,
+            pad_left, pad_right, pad_top, pad_bottom,
             color, font, size, bold, italic, underline
         )
         cmdExec(self, cmd, undoable)

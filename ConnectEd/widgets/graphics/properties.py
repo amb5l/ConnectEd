@@ -58,31 +58,36 @@ if TYPE_CHECKING:
 
 @dataclass
 class PropertyTextSpec:
-    visible   : bool            = True
-    cleat     : HandleId | None = None
-    x         : float           = 0
-    y         : float           = 0
-    rotation  : float           = 0.0
-    mirror_h  : bool            = False
-    mirror_v  : bool            = False
-    autoflip  : bool            = True
-    origin    : RectHandleId    = RectHandleId.TOP_LEFT
-    align_h   : AlignH          = AlignH.LEFT
-    align_v   : AlignV          = AlignV.TOP
-    width     : float           = -1.0
-    height    : float           = -1.0
-    color     : QColor | None   = None
-    font      : str    | None   = None
-    size      : float  | None   = None
-    bold      : bool   | None   = False
-    italic    : bool   | None   = False
-    underline : bool   | None   = False
+    visible    : bool            = True
+    cleat      : HandleId | None = None
+    x          : float           = 0
+    y          : float           = 0
+    rotation   : float           = 0.0
+    mirror_h   : bool            = False
+    mirror_v   : bool            = False
+    autoflip   : bool            = True
+    origin     : RectHandleId    = RectHandleId.TOP_LEFT
+    align_h    : AlignH          = AlignH.LEFT
+    align_v    : AlignV          = AlignV.TOP
+    width      : float           = -1.0
+    height     : float           = -1.0
+    pad_left   : float           = 0.0
+    pad_right  : float           = 0.0
+    pad_top    : float           = 0.0
+    pad_bottom : float           = 0.0
+    color      : QColor   | None = None
+    font       : str      | None = None
+    size       : float    | None = None
+    bold       : bool     | None = False
+    italic     : bool     | None = False
+    underline  : bool     | None = False
 
     def astuple(self : Self) -> tuple:
         return (
             self.visible, self.cleat, self.x, self.y,
             self.rotation, self.mirror_h, self.mirror_v, self.autoflip,
             self.origin, self.align_h, self.align_v, self.width, self.height,
+            self.pad_left, self.pad_right, self.pad_top, self.pad_bottom,
             self.color, self.font, self.size, self.bold, self.italic, self.underline
         )
 
@@ -497,27 +502,31 @@ class PropertiesManager:
 
     @checked
     def addText(
-        self      : Self,
-        name      : str,
-        visible   : bool          = True,
-        cleat     : HandleId      = RectHandleId.BOTTOM_LEFT,
-        x         : float         = 0,
-        y         : float         = 0,
-        rotation  : float         = 0.0,
-        mirror_h  : bool          = False,
-        mirror_v  : bool          = False,
-        autoflip  : bool          = True,
-        origin    : RectHandleId  = RectHandleId.TOP_LEFT,
-        align_h   : AlignH        = AlignH.LEFT,
-        align_v   : AlignV        = AlignV.TOP,
-        width     : float         = -1.0,
-        height    : float         = -1.0,
-        color     : QColor | None = None,
-        font      : str    | None = None,
-        size      : float  | None = None,
-        bold      : bool   | None = False,
-        italic    : bool   | None = False,
-        underline : bool   | None = False
+        self       : Self,
+        name       : str,
+        visible    : bool         = True,
+        cleat      : HandleId     = RectHandleId.BOTTOM_LEFT,
+        x          : float        = 0,
+        y          : float        = 0,
+        rotation   : float        = 0.0,
+        mirror_h   : bool         = False,
+        mirror_v   : bool         = False,
+        autoflip   : bool         = True,
+        origin     : RectHandleId = RectHandleId.TOP_LEFT,
+        align_h    : AlignH       = AlignH.LEFT,
+        align_v    : AlignV       = AlignV.TOP,
+        width      : float        = -1.0,
+        height     : float        = -1.0,
+        pad_left   : float        = 0.0,
+        pad_right  : float        = 0.0,
+        pad_top    : float        = 0.0,
+        pad_bottom : float        = 0.0,
+        color      : QColor | None = None,
+        font       : str    | None = None,
+        size       : float  | None = None,
+        bold       : bool   | None = False,
+        italic     : bool   | None = False,
+        underline  : bool   | None = False
     ) -> bool:
         """
         Add a property text item. Replace any existing property text item.
@@ -536,52 +545,60 @@ class PropertiesManager:
             return False
         # create new property text item
         property.text = PropertyTextItem(
-            name      = name,
-            cleat     = cleat,
-            pos       = QPointF(x, y),
-            rotation  = rotation,
-            mirror_h  = mirror_h,
-            mirror_v  = mirror_v,
-            autoflip  = autoflip,
-            origin    = origin,
-            align_h   = align_h,
-            align_v   = align_v,
-            width     = width,
-            height    = height,
-            color     = color,
-            font      = font,
-            size      = size,
-            bold      = bold,
-            italic    = italic,
-            underline = underline,
-            parent    = self._owner
+            name       = name,
+            cleat      = cleat,
+            pos        = QPointF(x, y),
+            rotation   = rotation,
+            mirror_h   = mirror_h,
+            mirror_v   = mirror_v,
+            autoflip   = autoflip,
+            origin     = origin,
+            align_h    = align_h,
+            align_v    = align_v,
+            width      = width,
+            height     = height,
+            pad_left   = pad_left,
+            pad_right  = pad_right,
+            pad_top    = pad_top,
+            pad_bottom = pad_bottom,
+            color      = color,
+            font       = font,
+            size       = size,
+            bold       = bold,
+            italic     = italic,
+            underline  = underline,
+            parent     = self._owner
         )
         property.text.setVisible(visible)
         return True
 
     @checked
     def editText(
-        self : Self,
-        name      : str,
-        visible   : bool   | NoChange = NO_CHANGE,
-        cleat     : str    | NoChange = NO_CHANGE,
-        x         : float  | NoChange = NO_CHANGE,
-        y         : float  | NoChange = NO_CHANGE,
-        rotation  : float  | NoChange = NO_CHANGE,
-        mirror_h  : bool   | NoChange = NO_CHANGE,
-        mirror_v  : bool   | NoChange = NO_CHANGE,
-        autoflip  : bool   | NoChange = NO_CHANGE,
-        origin    : str    | NoChange = NO_CHANGE,
-        align_h   : AlignH | NoChange = NO_CHANGE,
-        align_v   : AlignV | NoChange = NO_CHANGE,
-        width     : float  | NoChange = NO_CHANGE,
-        height    : float  | NoChange = NO_CHANGE,
-        color     : QColor | NoChange = NO_CHANGE,
-        font      : str    | NoChange = NO_CHANGE,
-        size      : float  | NoChange = NO_CHANGE,
-        bold      : bool   | NoChange = NO_CHANGE,
-        italic    : bool   | NoChange = NO_CHANGE,
-        underline : bool   | NoChange = NO_CHANGE
+        self       : Self,
+        name       : str,
+        visible    : bool   | NoChange = NO_CHANGE,
+        cleat      : str    | NoChange = NO_CHANGE,
+        x          : float  | NoChange = NO_CHANGE,
+        y          : float  | NoChange = NO_CHANGE,
+        rotation   : float  | NoChange = NO_CHANGE,
+        mirror_h   : bool   | NoChange = NO_CHANGE,
+        mirror_v   : bool   | NoChange = NO_CHANGE,
+        autoflip   : bool   | NoChange = NO_CHANGE,
+        origin     : str    | NoChange = NO_CHANGE,
+        align_h    : AlignH | NoChange = NO_CHANGE,
+        align_v    : AlignV | NoChange = NO_CHANGE,
+        width      : float  | NoChange = NO_CHANGE,
+        height     : float  | NoChange = NO_CHANGE,
+        pad_left   : float  | NoChange = NO_CHANGE,
+        pad_right  : float  | NoChange = NO_CHANGE,
+        pad_top    : float  | NoChange = NO_CHANGE,
+        pad_bottom : float  | NoChange = NO_CHANGE,
+        color      : QColor | NoChange = NO_CHANGE,
+        font       : str    | NoChange = NO_CHANGE,
+        size       : float  | NoChange = NO_CHANGE,
+        bold       : bool   | NoChange = NO_CHANGE,
+        italic     : bool   | NoChange = NO_CHANGE,
+        underline  : bool   | NoChange = NO_CHANGE
     ) -> bool:
         """
         Edit a property text item.
@@ -601,25 +618,29 @@ class PropertiesManager:
         # get PropertyTextItem instance
         pt = property.text
         # edit PropertyTextItem
-        if visible   is not NO_CHANGE: pt.setVisible(visible)
-        if cleat     is not NO_CHANGE: pt.setCleat(cleat)
-        if x         is not NO_CHANGE: pt.setX(x)
-        if y         is not NO_CHANGE: pt.setY(y)
-        if rotation  is not NO_CHANGE: pt.setRotation(rotation)
-        if mirror_h  is not NO_CHANGE: pt.setMirrorH(mirror_h)
-        if mirror_v  is not NO_CHANGE: pt.setMirrorV(mirror_v)
-        if autoflip  is not NO_CHANGE: pt.setAutoflip(autoflip)
-        if origin    is not NO_CHANGE: pt.setOrigin(origin)
-        if align_h   is not NO_CHANGE: pt.setAlignH(align_h)
-        if align_v   is not NO_CHANGE: pt.setAlignV(align_v)
-        if width     is not NO_CHANGE: pt.setWidth(width)
-        if height    is not NO_CHANGE: pt.setHeight(height)
-        if color     is not NO_CHANGE: pt.setTextColor(color)
-        if font      is not NO_CHANGE: pt.setTextFont(font)
-        if size      is not NO_CHANGE: pt.setTextSize(size)
-        if bold      is not NO_CHANGE: pt.setTextBold(bold)
-        if italic    is not NO_CHANGE: pt.setTextItalic(italic)
-        if underline is not NO_CHANGE: pt.setTextUnderline(underline)
+        if visible    is not NO_CHANGE: pt.setVisible(visible)
+        if cleat      is not NO_CHANGE: pt.setCleat(cleat)
+        if x          is not NO_CHANGE: pt.setX(x)
+        if y          is not NO_CHANGE: pt.setY(y)
+        if rotation   is not NO_CHANGE: pt.setRotation(rotation)
+        if mirror_h   is not NO_CHANGE: pt.setMirrorH(mirror_h)
+        if mirror_v   is not NO_CHANGE: pt.setMirrorV(mirror_v)
+        if autoflip   is not NO_CHANGE: pt.setAutoflip(autoflip)
+        if origin     is not NO_CHANGE: pt.setOrigin(origin)
+        if align_h    is not NO_CHANGE: pt.setAlignH(align_h)
+        if align_v    is not NO_CHANGE: pt.setAlignV(align_v)
+        if width      is not NO_CHANGE: pt.setWidth(width)
+        if height     is not NO_CHANGE: pt.setHeight(height)
+        if pad_left   is not NO_CHANGE: pt.setPadLeft(pad_left)
+        if pad_right  is not NO_CHANGE: pt.setPadRight(pad_right)
+        if pad_top    is not NO_CHANGE: pt.setPadTop(pad_top)
+        if pad_bottom is not NO_CHANGE: pt.setPadBottom(pad_bottom)
+        if color      is not NO_CHANGE: pt.setTextColor(color)
+        if font       is not NO_CHANGE: pt.setTextFont(font)
+        if size       is not NO_CHANGE: pt.setTextSize(size)
+        if bold       is not NO_CHANGE: pt.setTextBold(bold)
+        if italic     is not NO_CHANGE: pt.setTextItalic(italic)
+        if underline  is not NO_CHANGE: pt.setTextUnderline(underline)
         return True
 
     @checked

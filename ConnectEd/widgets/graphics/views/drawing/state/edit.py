@@ -201,22 +201,26 @@ class DrawingViewStateEditText(DrawingViewStateBase):
             dialog = TextItemDialog(item, self.view)
             if dialog.exec():
                 self.scene.editText(
-                    item      = item,
-                    text      = dialog.getText(),
-                    rotation  = dialog.getRotation(),
-                    mirror_h  = dialog.getMirrorH(),
-                    mirror_v  = dialog.getMirrorV(),
-                    autoflip  = dialog.getAutoflip(),
-                    origin    = dialog.getOrigin(),
-                    align_h   = dialog.getAlignH(),
-                    align_v   = dialog.getAlignV(),
-                    color     = dialog.getColor(),
-                    font      = dialog.getFont(),
-                    size      = dialog.getSize(),
-                    bold      = dialog.getBold(),
-                    italic    = dialog.getItalic(),
-                    underline = dialog.getUnderline(),
-                    undoable  = True
+                    item       = item,
+                    text       = dialog.getText(),
+                    rotation   = dialog.getRotation(),
+                    mirror_h   = dialog.getMirrorH(),
+                    mirror_v   = dialog.getMirrorV(),
+                    autoflip   = dialog.getAutoflip(),
+                    origin     = dialog.getOrigin(),
+                    align_h    = dialog.getAlignH(),
+                    align_v    = dialog.getAlignV(),
+                    pad_left   = dialog.getPadLeft(),
+                    pad_right  = dialog.getPadRight(),
+                    pad_top    = dialog.getPadTop(),
+                    pad_bottom = dialog.getPadBottom(),
+                    color      = dialog.getColor(),
+                    font       = dialog.getFont(),
+                    size       = dialog.getSize(),
+                    bold       = dialog.getBold(),
+                    italic     = dialog.getItalic(),
+                    underline  = dialog.getUnderline(),
+                    undoable   = True
                 )
         else:
             logger().warning("No text selected")

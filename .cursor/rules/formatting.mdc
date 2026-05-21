@@ -10,9 +10,16 @@ When editing or adding code in this repo, **vertically align** punctuation withi
 ## Align these (when possible)
 
 - **Dict literals** — pad keys so `:` line up in the same dict (see `MAIN_WIDGETS` in `tests/integration/gui/specs.py`).
+- **Dataclass / state fields** — pad field names so `:` align; on rows with unions, pad type names so each `|` (`| None`, `| NoChange`, …) stays in a fixed column with single spaces around it (see `TextChange` in `ConnectEd/widgets/graphics/items/text.py`, `ItemBefore` in `ConnectEd/widgets/graphics/scenes/drawing/cmd/edit/appearance.py`).
 - **Grouped assignments** — consecutive related `name : value` or `name = value` lines in specs, constants, or small tables.
 - **Multi-line calls** — keyword arguments, especially in validators and scripting; align `=` or `:` if the project uses typed kwargs.
-- **Multi-line signatures** — pad parameter names so `:` align on wrapped `def` lines (see `withModal` in `ConnectEd/scripting/qt/modal.py`).
+- **Multi-line signatures** — pad parameter names so `:` align on wrapped `def` lines (see `withModal` in `ConnectEd/scripting/qt/modal.py`). When some parameters use union types, find the row whose type name is longest before the first `|` (no wriggle room); pad shorter type names to that width so every `|` in the block shares the same column — do not pad after `None` or other union members instead.
+
+## When extending an aligned block
+
+If a new name is longer than existing rows, **re-align the whole block** to the new longest name. Do not leave a mix of old and new column widths — that breaks vertical alignment of `:`, `=`, and `|`.
+
+When a block mixes `T | NoChange` and `T | None | NoChange`, pad type names so `| None` and `| NoChange` each stay in fixed columns; use single spaces around every `|` (see `ItemBefore` in `ConnectEd/widgets/graphics/scenes/drawing/cmd/edit/appearance.py`). The longest type name before the first `|` sets the column — pad shorter names, not trailing union members.
 
 ## Do not force it when
 
@@ -45,6 +52,48 @@ def withModal(
     onModal : Callable[[], None],
 ) -> None:
     ...
+```
+
+## Example (multi-line signature — union `|` anchored to longest type)
+
+`parent` fixes the column; shorter types pad before `|`, not after `None`:
+
+```python
+def __init__(
+    self       : Self,
+    pos        : QPointF       | None = None,
+    color      : QColor        | None = None,
+    font       : str           | None = None,
+    parent     : QGraphicsItem | None = None,
+) -> None:
+    ...
+```
+
+## Example (dataclass fields)
+
+```python
+@dataclass
+class TextState:
+    align_h    : AlignH
+    align_v    : AlignV
+    width      : float
+    pad_bottom : float   # longest name sets column width for whole block
+    pad_left   : float
+    color      : QColor | None
+    font       : str    | None
+```
+
+## Example (union types with `| NoChange`)
+
+When some rows omit `| None`, pad bare types to the same width so `| NoChange` still lines up:
+
+```python
+@dataclass
+class TextChange:
+    width      : float          | NoChange = NO_CHANGE
+    pad_bottom : float          | NoChange = NO_CHANGE
+    color      : QColor | None | NoChange = NO_CHANGE
+    font       : str    | None | NoChange = NO_CHANGE
 ```
 
 ## Snake_case locals for ConnectEd types

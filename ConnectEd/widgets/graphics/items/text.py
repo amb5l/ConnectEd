@@ -47,66 +47,78 @@ if TYPE_CHECKING:
 
 @dataclass
 class TextState:
-    text      : str
-    block     : bool
-    rotation  : float
-    mirror_h  : bool
-    mirror_v  : bool
-    autoflip  : bool
-    origin    : RectHandleId
-    align_h   : AlignH
-    align_v   : AlignV
-    width     : float
-    height    : float
-    color     : QColor | Default
-    font      : str    | Default
-    size      : float  | Default
-    bold      : bool   | Default
-    italic    : bool   | Default
-    underline : bool   | Default
+    text       : str
+    block      : bool
+    rotation   : float
+    mirror_h   : bool
+    mirror_v   : bool
+    autoflip   : bool
+    origin     : RectHandleId
+    align_h    : AlignH
+    align_v    : AlignV
+    width      : float
+    height     : float
+    pad_left   : float
+    pad_right  : float
+    pad_top    : float
+    pad_bottom : float
+    color      : QColor | None
+    font       : str    | None
+    size       : float  | None
+    bold       : bool   | None
+    italic     : bool   | None
+    underline  : bool   | None
 
     @classmethod
     def fromItem(cls, item : "TextItem") -> Self:
         return cls(
-            text      = item.text(),
-            block     = item.block(),
-            rotation  = item.rotation(),
-            mirror_h  = item.mirrorH(),
-            mirror_v  = item.mirrorV(),
-            autoflip  = item.autoflip(),
-            origin    = item.origin(),
-            align_h   = item.alignH(),
-            align_v   = item.alignV(),
-            width     = item.width(),
-            height    = item.height(),
-            color     = item.textColor(),
-            font      = item.textFont(),
-            size      = item.textSize(),
-            bold      = item.textBold(),
-            italic    = item.textItalic(),
-            underline = item.textUnderline()
+            text       = item.text(),
+            block      = item.block(),
+            rotation   = item.rotation(),
+            mirror_h   = item.mirrorH(),
+            mirror_v   = item.mirrorV(),
+            autoflip   = item.autoflip(),
+            origin     = item.origin(),
+            align_h    = item.alignH(),
+            align_v    = item.alignV(),
+            width      = item.width(),
+            height     = item.height(),
+            pad_left   = item.padLeft(),
+            pad_right  = item.padRight(),
+            pad_top    = item.padTop(),
+            pad_bottom = item.padBottom(),
+            color      = item.textColor(),
+            font       = item.textFont(),
+            size       = item.textSize(),
+            bold       = item.textBold(),
+            italic     = item.textItalic(),
+            underline  = item.textUnderline()
         )
 
 
 @dataclass
 class TextChange:
-    text      : str              | NoChange = NO_CHANGE
-    block     : bool             | NoChange = NO_CHANGE
-    rotation  : float            | NoChange = NO_CHANGE
-    mirror_h  : bool             | NoChange = NO_CHANGE
-    mirror_v  : bool             | NoChange = NO_CHANGE
-    autoflip  : bool             | NoChange = NO_CHANGE
-    origin    : str              | NoChange = NO_CHANGE
-    align_h   : AlignH           | NoChange = NO_CHANGE
-    align_v   : AlignV           | NoChange = NO_CHANGE
-    width     : float            | NoChange = NO_CHANGE
-    height    : float            | NoChange = NO_CHANGE
-    color     : QColor | Default | NoChange = NO_CHANGE
-    font      : str    | Default | NoChange = NO_CHANGE
-    size      : float  | Default | NoChange = NO_CHANGE
-    bold      : bool   | Default | NoChange = NO_CHANGE
-    italic    : bool   | Default | NoChange = NO_CHANGE
-    underline : bool   | Default | NoChange = NO_CHANGE
+    text       : str           | NoChange = NO_CHANGE
+    block      : bool          | NoChange = NO_CHANGE
+    rotation   : float         | NoChange = NO_CHANGE
+    mirror_h   : bool          | NoChange = NO_CHANGE
+    mirror_v   : bool          | NoChange = NO_CHANGE
+    autoflip   : bool          | NoChange = NO_CHANGE
+    origin     : str           | NoChange = NO_CHANGE
+    align_h    : AlignH        | NoChange = NO_CHANGE
+    align_v    : AlignV        | NoChange = NO_CHANGE
+    width      : float         | NoChange = NO_CHANGE
+    height     : float         | NoChange = NO_CHANGE
+    pad_left   : float         | NoChange = NO_CHANGE
+    pad_right  : float         | NoChange = NO_CHANGE
+    pad_top    : float         | NoChange = NO_CHANGE
+    pad_bottom : float         | NoChange = NO_CHANGE
+    color      : QColor | None | NoChange = NO_CHANGE
+    font       : str    | None | NoChange = NO_CHANGE
+    size       : float  | None | NoChange = NO_CHANGE
+    bold       : bool   | None | NoChange = NO_CHANGE
+    italic     : bool   | None | NoChange = NO_CHANGE
+    underline  : bool   | None | NoChange = NO_CHANGE
 
 
 class TextResizeGripItem(ResizeGripItem):
@@ -171,6 +183,33 @@ class TextItem(
                 setter = lambda self, value: self.setHeight(value)
             )
         }
+    _PROPERTIES_PADDING = \
+        {
+            "Pad Left" : InherentProperty(
+                kind   = DataKind.FLOAT,
+                worthy = lambda self: self.padLeft() != 0.0,
+                getter = lambda self: self.padLeft(),
+                setter = lambda self, value: self.setPadLeft(value)
+            ),
+            "Pad Right" : InherentProperty(
+                kind   = DataKind.FLOAT,
+                worthy = lambda self: self.padRight() != 0.0,
+                getter = lambda self: self.padRight(),
+                setter = lambda self, value: self.setPadRight(value)
+            ),
+            "Pad Top" : InherentProperty(
+                kind   = DataKind.FLOAT,
+                worthy = lambda self: self.padTop() != 0.0,
+                getter = lambda self: self.padTop(),
+                setter = lambda self, value: self.setPadTop(value)
+            ),
+            "Pad Bottom" : InherentProperty(
+                kind   = DataKind.FLOAT,
+                worthy = lambda self: self.padBottom() != 0.0,
+                getter = lambda self: self.padBottom(),
+                setter = lambda self, value: self.setPadBottom(value)
+            )
+        }
     _PROPERTIES = \
         {
             "Text" : InherentProperty(
@@ -197,16 +236,21 @@ class TextItem(
         ItemTransformMixin._PROPERTIES_RECT_ORIGIN | \
         _PROPERTIES_ALIGN                          | \
         _PROPERTIES_SIZE                           | \
+        _PROPERTIES_PADDING                        | \
         PrimaryItemMixin._PROPERTIES_TEXT
 
     # instance attributes
-    _child    : "TextLineRenderer | TextBlockRenderer"  # text renderer
-    _autoflip : bool                                    # orientation compensation
-    _align_h  : AlignH                                  # horizontal alignment
-    _align_v  : AlignV                                  # vertical alignment
-    _width    : float                                   # width constraint
-    _height   : float                                   # height constraint
-    _brect    : QRectF                                  # bounding rect
+    _child      : "TextLineRenderer | TextBlockRenderer"  # text renderer
+    _autoflip   : bool                                    # orientation compensation
+    _align_h    : AlignH                                  # horizontal alignment
+    _align_v    : AlignV                                  # vertical alignment
+    _width      : float                                   # width constraint
+    _height     : float                                   # height constraint
+    _pad_left   : float                                   # left padding
+    _pad_right  : float                                   # right padding
+    _pad_top    : float                                   # top padding
+    _pad_bottom : float                                   # bottom padding
+    _brect      : QRectF                                  # bounding rect
 
     _text_color     = None  # enable per-item appearance control
     _text_font      = None  # enable per-item appearance control
@@ -217,34 +261,42 @@ class TextItem(
 
     @checked
     def __init__(
-        self      : Self,
-        text      : str                  = "",
-        block     : bool                 = False,
-        pos       : QPointF | None       = None,
-        rotation  : float                = 0.0,
-        mirror_h  : bool                 = False,
-        mirror_v  : bool                 = False,
-        autoflip  : bool                 = True,
-        origin    : RectHandleId         = RectHandleId.TOP_LEFT,
-        align_h   : AlignH               = AlignH.LEFT,
-        align_v   : AlignV               = AlignV.TOP,
-        width     : float                = -1.0,        # unconstrained
-        height    : float                = -1.0,        # unconstrained
-        color     : QColor | None        = None,
-        font      : str    | None        = None,
-        size      : float  | None        = None,
-        bold      : bool   | None        = None,
-        italic    : bool   | None        = None,
-        underline : bool   | None        = None,
-        fresh     : bool                 = True,
-        parent    : QGraphicsItem | None = None
+        self       : Self,
+        text       : str                  = "",
+        block      : bool                 = False,
+        pos        : QPointF       | None = None,
+        rotation   : float                = 0.0,
+        mirror_h   : bool                 = False,
+        mirror_v   : bool                 = False,
+        autoflip   : bool                 = True,
+        origin     : RectHandleId         = RectHandleId.TOP_LEFT,
+        align_h    : AlignH               = AlignH.LEFT,
+        align_v    : AlignV               = AlignV.TOP,
+        width      : float                = -1.0,        # unconstrained
+        height     : float                = -1.0,        # unconstrained
+        pad_left   : float                = 0.0,
+        pad_right  : float                = 0.0,
+        pad_top    : float                = 0.0,
+        pad_bottom : float                = 0.0,
+        color      : QColor        | None = None,
+        font       : str           | None = None,
+        size       : float         | None = None,
+        bold       : bool          | None = None,
+        italic     : bool          | None = None,
+        underline  : bool          | None = None,
+        fresh      : bool                 = True,
+        parent     : QGraphicsItem | None = None
     ) -> None:
         super().__init__(parent)
-        self._autoflip = autoflip
-        self._align_h  = align_h
-        self._align_v  = align_v
-        self._width    = width
-        self._height   = height
+        self._autoflip   = autoflip
+        self._align_h    = align_h
+        self._align_v    = align_v
+        self._width      = width
+        self._height     = height
+        self._pad_left   = pad_left
+        self._pad_right  = pad_right
+        self._pad_top    = pad_top
+        self._pad_bottom = pad_bottom
         self._hshape = QPainterPath()
         self._child = TextBlockRenderer() if block else TextLineRenderer()
         self._child.setParentItem(self)
@@ -348,6 +400,50 @@ class TextItem(
         self.updateHandlePositions()
         self.updateGrips()
         self.signalPropertyChanges("Height")
+
+    def padLeft(self : Self) -> float:
+        return self._pad_left
+
+    @checked
+    def setPadLeft(self : Self, pad_left : float) -> None:
+        self._pad_left = max(pad_left, 0.0)
+        self._child.onGeometryChange()
+        self.updateHandlePositions()
+        self.updateGrips()
+        self.signalPropertyChanges("Pad Left")
+
+    def padRight(self : Self) -> float:
+        return self._pad_right
+
+    @checked
+    def setPadRight(self : Self, pad_right : float) -> None:
+        self._pad_right = max(pad_right, 0.0)
+        self._child.onGeometryChange()
+        self.updateHandlePositions()
+        self.updateGrips()
+        self.signalPropertyChanges("Pad Right")
+
+    def padTop(self : Self) -> float:
+        return self._pad_top
+
+    @checked
+    def setPadTop(self : Self, pad_top : float) -> None:
+        self._pad_top = max(pad_top, 0.0)
+        self._child.onGeometryChange()
+        self.updateHandlePositions()
+        self.updateGrips()
+        self.signalPropertyChanges("Pad Top")
+
+    def padBottom(self : Self) -> float:
+        return self._pad_bottom
+
+    @checked
+    def setPadBottom(self : Self, pad_bottom : float) -> None:
+        self._pad_bottom = max(pad_bottom, 0.0)
+        self._child.onGeometryChange()
+        self.updateHandlePositions()
+        self.updateGrips()
+        self.signalPropertyChanges("Pad Bottom")
 
     def color(self : Self) -> QColor:
         return self._child.color()
@@ -619,6 +715,9 @@ class TextItem(
         ]
         return items
 
+    def _padding(self : Self) -> tuple[float, float, float, float]:
+        return (self._pad_left, self._pad_right, self._pad_top, self._pad_bottom)
+
     def _adjustOrientation(self : Self) -> None:
         """
         Counter-rotate and/or counter-mirror the renderer child so text remains
@@ -728,33 +827,36 @@ class TextLineRenderer(TextRendererMixin, QGraphicsSimpleTextItem):
         align_v = parent._align_v
         width   = parent._width
         height  = parent._height
+        pad_l, pad_r, pad_t, pad_b = parent._padding()
         # update cached bounding rect, accounting for constraints
         urect = QGraphicsSimpleTextItem.boundingRect(self)  # unconstrained rect
-        w = width  if width  >= 0.0 else urect.width()
-        h = height if height >= 0.0 else urect.height()
+        w = (width  if width  >= 0.0 else urect.width())  + pad_l + pad_r
+        h = (height if height >= 0.0 else urect.height()) + pad_t + pad_b
+        cw = max(w - pad_l - pad_r, 0.0)
+        ch = max(h - pad_t - pad_b, 0.0)
         rect = QRectF(0.0, 0.0, w, h)
         parent._brect = rect
-        # apply clipping if constraints are smaller than unconstrained rect
-        if w < urect.width() or h < urect.height():
+        # apply clipping if content area is smaller than unconstrained rect
+        if cw < urect.width() or ch < urect.height():
             self._clip_rect = rect
         else:
             self._clip_rect = None
         self._paint_override()
-        # position to apply alignment
+        # position to apply alignment within content area
         match align_h:
             case AlignH.LEFT:
-                x = 0
+                x = pad_l
             case AlignH.CENTER:
-                x = (w - urect.width()) / 2
+                x = pad_l + (cw - urect.width()) / 2
             case AlignH.RIGHT:
-                x = w - urect.width()
+                x = pad_l + cw - urect.width()
         match align_v:
             case AlignV.TOP:
-                y = 0
+                y = pad_t
             case AlignV.MIDDLE:
-                y = (h - urect.height()) / 2
+                y = pad_t + (ch - urect.height()) / 2
             case AlignV.BOTTOM:
-                y = h - urect.height()
+                y = pad_t + ch - urect.height()
         self.setPos(x, y)
         # Transform origin = centre of the (parent-local) constrained rect,
         # re-expressed in this renderer's local coords. The renderer's own
@@ -836,25 +938,30 @@ class TextBlockRenderer(TextRendererMixin, QGraphicsTextItem):
         parent : TextItem = self.parentItem()
         align_h = parent._align_h
         align_v = parent._align_v
-        width = parent._width
-        height = parent._height
+        width   = parent._width
+        height  = parent._height
+        pad_l, pad_r, pad_t, pad_b = parent._padding()
         # get underlying document
         doc = self.document()
         # apply horizontal alignment
         option = doc.defaultTextOption()
         option.setAlignment(align_h.value)
         doc.setDefaultTextOption(option)
-        # apply width constraint
-        self.setTextWidth(width)
+        # apply width constraint inside horizontal padding
+        if width >= 0.0:
+            self.setTextWidth(max(width - pad_l - pad_r, 0.0))
+        else:
+            self.setTextWidth(width)
         # calculate unconstrained bounding rect (without margins)
         root_frame = doc.rootFrame()
         fmt = root_frame.frameFormat()
         fmt.setMargin(0)  # temporarily remove margins
         root_frame.setFrameFormat(fmt)
         urect = QGraphicsTextItem.boundingRect(self)  # unconstrained rect
-        # update cached bounding rect, accounting for constraints
-        w = width  if width  >= 0.0 else urect.width()
-        h = height if height >= 0.0 else urect.height()
+        # update cached bounding rect, accounting for constraints and padding
+        w = (width  if width  >= 0.0 else urect.width())  + pad_l + pad_r
+        h = (height if height >= 0.0 else urect.height()) + pad_t + pad_b
+        ch = max(h - pad_t - pad_b, 0.0)
         rect = QRectF(0.0, 0.0, w, h)
         parent._brect = rect
         # update transform origin before mapping (rotation uses it)
@@ -866,17 +973,22 @@ class TextBlockRenderer(TextRendererMixin, QGraphicsTextItem):
         # never _brect.
         parent._hshape = QPainterPath()
         parent._hshape.addRect(rect)
-        # if height constrained: apply vertical alignment via document top margin
+        fmt.setLeftMargin(pad_l)
+        fmt.setRightMargin(pad_r)
+        fmt.setBottomMargin(pad_b)
+        # vertical alignment and top padding via document frame margins
         if height >= 0.0:
             match align_v:
                 case AlignV.BOTTOM:
-                    top_margin = height - urect.height()
+                    align_off = ch - urect.height()
                 case AlignV.MIDDLE:
-                    top_margin = (height - urect.height()) / 2
+                    align_off = (ch - urect.height()) / 2
                 case _:  # Top
-                    top_margin = 0
-            fmt.setTopMargin(top_margin)
-            root_frame.setFrameFormat(fmt)
+                    align_off = 0.0
+            fmt.setTopMargin(pad_t + align_off)
+        else:
+            fmt.setTopMargin(pad_t)
+        root_frame.setFrameFormat(fmt)
         # update
         self.update()
 

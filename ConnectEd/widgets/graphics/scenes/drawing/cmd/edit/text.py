@@ -22,26 +22,30 @@ class CmdEditText(CmdSceneItem):
 
     @checked
     def __init__(
-        self      : Self,
-        scene     : "DrawingScene",
-        item      : "TextItem",
-        text      : str           | NoChange = NO_CHANGE,
-        block     : bool          | NoChange = NO_CHANGE,
-        rotation  : float         | NoChange = NO_CHANGE,
-        mirror_h  : bool          | NoChange = NO_CHANGE,
-        mirror_v  : bool          | NoChange = NO_CHANGE,
-        autoflip  : bool          | NoChange = NO_CHANGE,
-        origin    : RectHandleId  | NoChange = NO_CHANGE,
-        align_h   : AlignH        | NoChange = NO_CHANGE,
-        align_v   : AlignV        | NoChange = NO_CHANGE,
-        width     : float         | NoChange = NO_CHANGE,
-        height    : float         | NoChange = NO_CHANGE,
-        color     : QColor | None | NoChange = NO_CHANGE,
-        font      : str    | None | NoChange = NO_CHANGE,
-        size      : float  | None | NoChange = NO_CHANGE,
-        bold      : bool   | None | NoChange = NO_CHANGE,
-        italic    : bool   | None | NoChange = NO_CHANGE,
-        underline : bool   | None | NoChange = NO_CHANGE
+        self       : Self,
+        scene      : "DrawingScene",
+        item       : "TextItem",
+        text       : str           | NoChange = NO_CHANGE,
+        block      : bool          | NoChange = NO_CHANGE,
+        rotation   : float         | NoChange = NO_CHANGE,
+        mirror_h   : bool          | NoChange = NO_CHANGE,
+        mirror_v   : bool          | NoChange = NO_CHANGE,
+        autoflip   : bool          | NoChange = NO_CHANGE,
+        origin     : RectHandleId  | NoChange = NO_CHANGE,
+        align_h    : AlignH        | NoChange = NO_CHANGE,
+        align_v    : AlignV        | NoChange = NO_CHANGE,
+        width      : float         | NoChange = NO_CHANGE,
+        height     : float         | NoChange = NO_CHANGE,
+        pad_left   : float         | NoChange = NO_CHANGE,
+        pad_right  : float         | NoChange = NO_CHANGE,
+        pad_top    : float         | NoChange = NO_CHANGE,
+        pad_bottom : float         | NoChange = NO_CHANGE,
+        color      : QColor | None | NoChange = NO_CHANGE,
+        font       : str    | None | NoChange = NO_CHANGE,
+        size       : float  | None | NoChange = NO_CHANGE,
+        bold       : bool   | None | NoChange = NO_CHANGE,
+        italic     : bool   | None | NoChange = NO_CHANGE,
+        underline  : bool   | None | NoChange = NO_CHANGE
     ) -> None:
         super().__init__(scene, item)
         self._before = TextState.fromItem(item)
@@ -76,6 +80,14 @@ class CmdEditText(CmdSceneItem):
             self._item.setWidth(self._after.width)
         if self._after.height is not NO_CHANGE:
             self._item.setHeight(self._after.height)
+        if self._after.pad_left is not NO_CHANGE:
+            self._item.setPadLeft(self._after.pad_left)
+        if self._after.pad_right is not NO_CHANGE:
+            self._item.setPadRight(self._after.pad_right)
+        if self._after.pad_top is not NO_CHANGE:
+            self._item.setPadTop(self._after.pad_top)
+        if self._after.pad_bottom is not NO_CHANGE:
+            self._item.setPadBottom(self._after.pad_bottom)
         if self._after.text is not NO_CHANGE:
             self._item.setText(self._after.text)
         if self._after.color is not NO_CHANGE:
@@ -118,6 +130,14 @@ class CmdEditText(CmdSceneItem):
             self._item.setWidth(self._before.width)
         if self._after.height is not NO_CHANGE:
             self._item.setHeight(self._before.height)
+        if self._after.pad_left is not NO_CHANGE:
+            self._item.setPadLeft(self._before.pad_left)
+        if self._after.pad_right is not NO_CHANGE:
+            self._item.setPadRight(self._before.pad_right)
+        if self._after.pad_top is not NO_CHANGE:
+            self._item.setPadTop(self._before.pad_top)
+        if self._after.pad_bottom is not NO_CHANGE:
+            self._item.setPadBottom(self._before.pad_bottom)
         if self._after.color is not NO_CHANGE:
             self._item.setTextColor(self._before.color)
         if self._after.font is not NO_CHANGE:

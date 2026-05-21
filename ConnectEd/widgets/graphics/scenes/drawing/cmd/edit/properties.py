@@ -155,25 +155,29 @@ class CmdDelProperty(CmdPropertyBase):
 class CmdPropertyTextItemBase(CmdPropertyBase):
     @dataclass
     class PropertyTextItemState:
-        visible   : bool
-        cleat     : HandleId
-        x         : float
-        y         : float
-        rotation  : float
-        mirror_h  : bool
-        mirror_v  : bool
-        autoflip  : bool
-        origin    : RectHandleId
-        align_h   : AlignH
-        align_v   : AlignV
-        width     : float
-        height    : float
-        color     : QColor
-        font      : str
-        size      : float
-        bold      : bool
-        italic    : bool
-        underline : bool
+        visible    : bool
+        cleat      : HandleId
+        x          : float
+        y          : float
+        rotation   : float
+        mirror_h   : bool
+        mirror_v   : bool
+        autoflip   : bool
+        origin     : RectHandleId
+        align_h    : AlignH
+        align_v    : AlignV
+        width      : float
+        height     : float
+        pad_left   : float
+        pad_right  : float
+        pad_top    : float
+        pad_bottom : float
+        color      : QColor
+        font       : str
+        size       : float
+        bold       : bool
+        italic     : bool
+        underline  : bool
 
 
 class CmdAddPropertyText(CmdPropertyTextItemBase):
@@ -181,45 +185,53 @@ class CmdAddPropertyText(CmdPropertyTextItemBase):
 
     @checked
     def __init__(
-        self      : Self,
-        object    : PropertiesMixin,
-        name      : str,
-        visible   : bool,
-        cleat     : HandleId,
-        x         : float,
-        y         : float,
-        rotation  : float,
-        mirror_h  : bool,
-        mirror_v  : bool,
-        autoflip  : bool,
-        origin    : RectHandleId,
-        align_h   : AlignH,
-        align_v   : AlignV,
-        width     : float,
-        height    : float,
-        color     : QColor,
-        font      : str,
-        size      : float,
-        bold      : bool,
-        italic    : bool,
-        underline : bool
+        self       : Self,
+        object     : PropertiesMixin,
+        name       : str,
+        visible    : bool,
+        cleat      : HandleId,
+        x          : float,
+        y          : float,
+        rotation   : float,
+        mirror_h   : bool,
+        mirror_v   : bool,
+        autoflip   : bool,
+        origin     : RectHandleId,
+        align_h    : AlignH,
+        align_v    : AlignV,
+        width      : float,
+        height     : float,
+        pad_left   : float,
+        pad_right  : float,
+        pad_top    : float,
+        pad_bottom : float,
+        color      : QColor,
+        font       : str,
+        size       : float,
+        bold       : bool,
+        italic     : bool,
+        underline  : bool
     ) -> None:
         super().__init__(object, name)
         self._state = self.PropertyTextItemState(
-            visible   = visible,
-            cleat     = cleat,
-            x         = x,
-            y         = y,
-            rotation  = rotation,
-            mirror_h  = mirror_h,
-            mirror_v  = mirror_v,
-            autoflip  = autoflip,
-            origin    = origin,
-            align_h   = align_h,
-            align_v   = align_v,
-            width     = width,
-            height    = height,
-            color     = color,
+            visible    = visible,
+            cleat      = cleat,
+            x          = x,
+            y          = y,
+            rotation   = rotation,
+            mirror_h   = mirror_h,
+            mirror_v   = mirror_v,
+            autoflip   = autoflip,
+            origin     = origin,
+            align_h    = align_h,
+            align_v    = align_v,
+            width      = width,
+            height     = height,
+            pad_left   = pad_left,
+            pad_right  = pad_right,
+            pad_top    = pad_top,
+            pad_bottom = pad_bottom,
+            color      = color,
             font      = font,
             size      = size,
             bold      = bold,
@@ -242,28 +254,32 @@ class CmdEditPropertyText(CmdPropertyTextItemBase):
 
     @checked
     def __init__(
-        self      : Self,
-        object    : PropertiesMixin,
-        name      : str,
-        visible   : bool         | NoChange = NO_CHANGE,
-        cleat     : HandleId     | NoChange = NO_CHANGE,
-        x         : float        | NoChange = NO_CHANGE,
-        y         : float        | NoChange = NO_CHANGE,
-        rotation  : float        | NoChange = NO_CHANGE,
-        mirror_h  : bool         | NoChange = NO_CHANGE,
-        mirror_v  : bool         | NoChange = NO_CHANGE,
-        autoflip  : bool         | NoChange = NO_CHANGE,
-        origin    : RectHandleId | NoChange = NO_CHANGE,
-        align_h   : AlignH       | NoChange = NO_CHANGE,
-        align_v   : AlignV       | NoChange = NO_CHANGE,
-        width     : float        | NoChange = NO_CHANGE,
-        height    : float        | NoChange = NO_CHANGE,
-        color     : QColor       | NoChange = NO_CHANGE,
-        font      : str          | NoChange = NO_CHANGE,
-        size      : float        | NoChange = NO_CHANGE,
-        bold      : bool         | NoChange = NO_CHANGE,
-        italic    : bool         | NoChange = NO_CHANGE,
-        underline : bool         | NoChange = NO_CHANGE,
+        self       : Self,
+        object     : PropertiesMixin,
+        name       : str,
+        visible    : bool         | NoChange = NO_CHANGE,
+        cleat      : HandleId     | NoChange = NO_CHANGE,
+        x          : float        | NoChange = NO_CHANGE,
+        y          : float        | NoChange = NO_CHANGE,
+        rotation   : float        | NoChange = NO_CHANGE,
+        mirror_h   : bool         | NoChange = NO_CHANGE,
+        mirror_v   : bool         | NoChange = NO_CHANGE,
+        autoflip   : bool         | NoChange = NO_CHANGE,
+        origin     : RectHandleId | NoChange = NO_CHANGE,
+        align_h    : AlignH       | NoChange = NO_CHANGE,
+        align_v    : AlignV       | NoChange = NO_CHANGE,
+        width      : float        | NoChange = NO_CHANGE,
+        height     : float        | NoChange = NO_CHANGE,
+        pad_left   : float        | NoChange = NO_CHANGE,
+        pad_right  : float        | NoChange = NO_CHANGE,
+        pad_top    : float        | NoChange = NO_CHANGE,
+        pad_bottom : float        | NoChange = NO_CHANGE,
+        color      : QColor       | NoChange = NO_CHANGE,
+        font       : str          | NoChange = NO_CHANGE,
+        size       : float        | NoChange = NO_CHANGE,
+        bold       : bool         | NoChange = NO_CHANGE,
+        italic     : bool         | NoChange = NO_CHANGE,
+        underline  : bool         | NoChange = NO_CHANGE,
     ) -> None:
         super().__init__(object, name)
         pt = object.properties.text(name)
@@ -273,46 +289,54 @@ class CmdEditPropertyText(CmdPropertyTextItemBase):
             logger().warning(f"Property '{name}' does not have a text item")
             return
         self._old = self.PropertyTextItemState(
-            visible   = pt.isVisible(),
-            cleat     = pt.cleat(),
-            x         = pt.x(),
-            y         = pt.y(),
-            rotation  = pt.rotation(),
-            mirror_h  = pt.mirrorH(),
-            mirror_v  = pt.mirrorV(),
-            autoflip  = pt.autoflip(),
-            origin    = pt.origin(),
-            align_h   = pt.alignH(),
-            align_v   = pt.alignV(),
-            width     = pt.width(),
-            height    = pt.height(),
-            color     = pt.textColor(),
-            font      = pt.textFont(),
-            size      = pt.textSize(),
-            bold      = pt.textBold(),
-            italic    = pt.textItalic(),
-            underline = pt.textUnderline(),
+            visible    = pt.isVisible(),
+            cleat      = pt.cleat(),
+            x          = pt.x(),
+            y          = pt.y(),
+            rotation   = pt.rotation(),
+            mirror_h   = pt.mirrorH(),
+            mirror_v   = pt.mirrorV(),
+            autoflip   = pt.autoflip(),
+            origin     = pt.origin(),
+            align_h    = pt.alignH(),
+            align_v    = pt.alignV(),
+            width      = pt.width(),
+            height     = pt.height(),
+            pad_left   = pt.padLeft(),
+            pad_right  = pt.padRight(),
+            pad_top    = pt.padTop(),
+            pad_bottom = pt.padBottom(),
+            color      = pt.textColor(),
+            font       = pt.textFont(),
+            size       = pt.textSize(),
+            bold       = pt.textBold(),
+            italic     = pt.textItalic(),
+            underline  = pt.textUnderline(),
         )
         self._new = self.PropertyTextItemState(
-            visible   = visible,
-            cleat     = cleat,
-            x         = x,
-            y         = y,
-            rotation  = rotation,
-            mirror_h  = mirror_h,
-            mirror_v  = mirror_v,
-            autoflip  = autoflip,
-            origin    = origin,
-            align_h   = align_h,
-            align_v   = align_v,
-            width     = width,
-            height    = height,
-            color     = color,
-            font      = font,
-            size      = size,
-            bold      = bold,
-            italic    = italic,
-            underline = underline,
+            visible    = visible,
+            cleat      = cleat,
+            x          = x,
+            y          = y,
+            rotation   = rotation,
+            mirror_h   = mirror_h,
+            mirror_v   = mirror_v,
+            autoflip   = autoflip,
+            origin     = origin,
+            align_h    = align_h,
+            align_v    = align_v,
+            width      = width,
+            height     = height,
+            pad_left   = pad_left,
+            pad_right  = pad_right,
+            pad_top    = pad_top,
+            pad_bottom = pad_bottom,
+            color      = color,
+            font       = font,
+            size       = size,
+            bold       = bold,
+            italic     = italic,
+            underline  = underline,
         )
         # mark obsolete if new state is unchanged
         changed = False
