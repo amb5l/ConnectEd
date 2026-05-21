@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ConnectEd>
+  <Design name="UntitledDesign1">
+    <Symbols/>
+    <Diagram Name="UntitledDesign1" Sheet_Name="A4 (landscape)" Sheet_Width="1169" Sheet_Height="827" Margin="10" Border="1">
+      <Rectangle Origin="Middle Center" X="175" Y="175" Width="150" Height="150"/>
+    </Diagram>
+  </Design>
+</ConnectEd>
