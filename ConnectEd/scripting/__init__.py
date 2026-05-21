@@ -38,7 +38,7 @@ from ..widgets.window.transcript_view import TranscriptViewDock
 
 from ..widgets.window.log_view import LogViewDock
 
-from ..widgets.window.ai_chat import AiChatDock
+from ..widgets.window.ai_chat import AiChatDock, AiChatManager
 
 from ..widgets.window.netlist import NetlistBrowserDock
 
@@ -135,6 +135,8 @@ __all__ = [
     "LogViewDock",
 
     "AiChatDock",
+
+    "AiChatManager",
 
     "NetlistBrowserDock",
 

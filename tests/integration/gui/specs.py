@@ -62,7 +62,10 @@ MENUS_BASE : dict[str, list] = {
         "Messages",
         "Transcript",
         "Log",
-        "AI Chat",
+    ],
+    "AI" : [
+        {"New Chat" : ["no provider"]},
+        "Settings",
     ],
     "Help" : [
         "About",
@@ -96,5 +99,5 @@ MAIN_WIDGETS : dict[str, tuple[type, Callable[[Window], Any]]] = {
     "Messages"   : ( MessagesViewDock   , lambda win : win.messagesDock()   ),
     "Transcript" : ( TranscriptViewDock , lambda win : win.transcriptDock() ),
     "Log"        : ( LogViewDock        , lambda win : win.logDock()        ),
-    "AI Chat"    : ( AiChatDock         , lambda win : win.aiChatDock()     ),
+    "AI Chat"    : ( AiChatDock         , lambda win : win.aiChatManager().chats()[0] ),
 }

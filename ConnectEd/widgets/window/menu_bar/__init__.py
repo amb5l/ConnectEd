@@ -8,6 +8,10 @@ from ....core.utils import check
 
 from ...menu import Menu, PlaceMenu
 
+from ....ai.providers import list_providers, providerDisplayLabel
+
+from ...action import Action
+
 from ...graphics.views.diagram import DiagramSubWindow
 
 from .actions import Actions
@@ -95,6 +99,10 @@ class MenuBar(QMenuBar):
         self.place_menu = PlaceMenu("&Place")
         self.updatePlaceMenu()
 
+        self.ai_menu = Menu("&AI")
+        self.ai_new_chat_menu = Menu("&New Chat")
+        self.updateAiMenu()
+
         self.window_menu = Menu("&Window")
         self.updateWindowMenu()
 
@@ -105,6 +113,7 @@ class MenuBar(QMenuBar):
         self.addMenu(self.edit_menu)
         self.addMenu(self.view_menu)
         self.addMenu(self.place_menu)
+        self.addMenu(self.ai_menu)
         self.addMenu(self.window_menu)
         self.addMenu(self.help_menu)
 
@@ -212,6 +221,44 @@ class MenuBar(QMenuBar):
         # Remember the current subwindow class
         self.place_menu.subwindow_class = subwindow.__class__
 
+    def updateAiMenu(self : Self) -> None:
+        window : "Window" = self.parent()
+        a = self._actions
+        self.ai_menu.clear()
+        self.ai_new_chat_menu.clear()
+        manager = window.aiChatManager()
+        for provider_key in sorted(list_providers()):
+            label = providerDisplayLabel(provider_key)
+            action = Action(
+                window,
+                label,
+                f"New chat using {label}",
+                data = provider_key,
+            )
+            if manager is not None:
+                action.triggered.connect(
+                    lambda checked=False, p=provider_key : manager.newChat(provider=p)
+                )
+            self.ai_new_chat_menu.addAction(action)
+        self.ai_menu.addMenu(self.ai_new_chat_menu)
+        if manager is not None:
+            chats = manager.chats()
+            if chats:
+                self.ai_menu.addSeparator()
+                for dock in chats:
+                    title = dock.windowTitle()
+                    action = Action(
+                        window,
+                        title,
+                        f"Show {title}",
+                    )
+                    action.triggered.connect(
+                        lambda checked=False, d=dock : manager.focusChat(d)
+                    )
+                    self.ai_menu.addAction(action)
+        self.ai_menu.addSeparator()
+        self.ai_menu.addAction(a.aiSettings)
+
     def updateWindowMenu(self : Self) -> None:
         window : "Window" = self.parent()
         a = self._actions
@@ -223,7 +270,6 @@ class MenuBar(QMenuBar):
         self.window_menu.addAction(a.windowMessages)
         self.window_menu.addAction(a.windowTranscript)
         self.window_menu.addAction(a.windowLog)
-        self.window_menu.addAction(a.windowAiChat)
         mdi_area = window.mdiArea()
         if mdi_area is None:
             return

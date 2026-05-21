@@ -19,7 +19,7 @@ from ....widgets.dialogs.ai_settings import AiSettingsDialog
 if TYPE_CHECKING:
     from .. import Window
 
-    from . import AiChatDock
+    from .dock import AiChatDock
 
 
 class AiChatWidget(QWidget):
@@ -36,7 +36,7 @@ class AiChatWidget(QWidget):
         super().__init__(window)
         self._window = window
         self._dock = dock
-        self._session = AiChatSession(window)
+        self._session = AiChatSession(window, dock.providerKey())
         self._session.userMessage.connect(self._onUserMessage)
         self._session.assistantToken.connect(self._onAssistantToken)
         self._session.toolResult.connect(self._onToolResult)
@@ -70,9 +70,6 @@ class AiChatWidget(QWidget):
 
         self._appendRichBlock("Assistant", welcomeHtml())
 
-    def _refreshTitle(self : Self) -> None:
-        self._dock.refreshTitle()
-
     def _scrollHistory(self : Self) -> None:
         bar = self._history.verticalScrollBar()
         bar.setValue(bar.maximum())
@@ -99,8 +96,12 @@ class AiChatWidget(QWidget):
 
     def _openAiSettings(self : Self) -> None:
         dialog = AiSettingsDialog(self._window)
-        if dialog.exec():
-            self._refreshTitle()
+        if not dialog.exec():
+            return
+        manager = self._window.aiChatManager()
+        if manager is None:
+            return
+        manager.refreshChatTitles()
 
     def _sendMessage(self : Self) -> None:
         text = self._input.text()

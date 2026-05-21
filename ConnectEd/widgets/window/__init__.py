@@ -30,7 +30,7 @@ from .text_view       import TextView
 from .messages_view   import MessagesViewDock
 from .transcript_view import TranscriptViewDock
 from .log_view        import LogViewDock
-from .ai_chat         import AiChatDock
+from .ai_chat         import AiChatDock, AiChatManager
 
 
 class Window(QMainWindow):
@@ -41,9 +41,9 @@ class Window(QMainWindow):
     _netlist_dock    : NetlistBrowserDock
     _messages_dock   : MessagesViewDock
     _transcript_dock : TranscriptViewDock
-    _log_dock        : LogViewDock
-    _ai_chat_dock    : AiChatDock
-    _mdi_area        : MdiArea
+    _log_dock         : LogViewDock
+    _ai_chat_manager  : AiChatManager
+    _mdi_area         : MdiArea
 
     # signals
     ready = pyqtSignal()
@@ -86,13 +86,9 @@ class Window(QMainWindow):
         qd = Qt.DockWidgetArea
         self._messages_dock = MessagesViewDock(self)
         self.addDockWidget(qd.BottomDockWidgetArea, self._messages_dock)
-        self._ai_chat_dock = AiChatDock(self)
-        self.addDockWidget(qd.BottomDockWidgetArea, self._ai_chat_dock)
-        self.splitDockWidget(
-            self._messages_dock,
-            self._ai_chat_dock,
-            Qt.Orientation.Horizontal,
-        )
+        self._ai_chat_manager = AiChatManager(self, self._messages_dock)
+        self._ai_chat_manager.chatsChanged.connect(self._menu_bar.updateAiMenu)
+        self._ai_chat_manager.newChat()
         self._transcript_dock = TranscriptViewDock(self)
         self.addDockWidget(qd.BottomDockWidgetArea, self._transcript_dock)
         self._log_dock = LogViewDock(self)
@@ -100,6 +96,7 @@ class Window(QMainWindow):
         self.tabifyDockWidget(self._messages_dock, self._transcript_dock)
         self.tabifyDockWidget(self._messages_dock, self._log_dock)
         self._messages_dock.raise_()
+        self._menu_bar.updateAiMenu()
         self._navigator_dock = NavigatorDock(self)
         self.addDockWidget(qd.LeftDockWidgetArea, self._navigator_dock)
         self._netlist_dock = NetlistBrowserDock(self)
@@ -241,10 +238,20 @@ class Window(QMainWindow):
         return dock.text_view
 
     @checked
-    def aiChatDock(self : Self) -> AiChatDock | None:
-        if not hasattr(self, "_ai_chat_dock"):
+    def aiChatManager(self : Self) -> AiChatManager | None:
+        if not hasattr(self, "_ai_chat_manager"):
             return None
-        return self._ai_chat_dock
+        return self._ai_chat_manager
+
+    @checked
+    def aiChatDock(self : Self) -> AiChatDock | None:
+        manager = self.aiChatManager()
+        if manager is None:
+            return None
+        chats = manager.chats()
+        if not chats:
+            return None
+        return chats[0]
 
     @checked
     def mdiArea(self : Self) -> MdiArea | None:

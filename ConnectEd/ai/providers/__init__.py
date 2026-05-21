@@ -13,6 +13,12 @@ def list_providers() -> list[str]:
     return list(_providers.keys())
 
 
+def providerDisplayLabel(provider_key : str) -> str:
+    if provider_key and provider_key != "dummy":
+        return provider_key
+    return "no provider"
+
+
 def create_provider(name : str, **kwargs : Any):
     if name not in _providers:
         raise KeyError(f"Unknown AI provider: {name!r}")

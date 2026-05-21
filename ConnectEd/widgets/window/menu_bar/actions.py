@@ -82,7 +82,7 @@ class Actions:
         self.windowMessages     = Action( window(), "Messages"      , "Show the messages window"            , None                         )  # noqa E501
         self.windowTranscript   = Action( window(), "Transcript"    , "Show the transcript window"          , None                         )  # noqa E501
         self.windowLog          = Action( window(), "Log"           , "Show the log window"                 , None                         )  # noqa E501
-        self.windowAiChat       = Action( window(), "AI Chat"       , "Show the AI chat window"             , None                         )  # noqa E501
+        self.aiSettings         = Action( window(), "Settings"      , "Configure AI providers"              , None                         )  # noqa E501
         self.windowNext         = Action( window(), "Next"          , "Next"                                , "Ctrl+F6"                    )  # noqa E501
         self.windowPrevious     = Action( window(), "Previous"      , "Previous"                            , "Ctrl+Shift+F6"              )  # noqa E501
         self.helpAbout          = Action( window(), "About"         , ""                                    , "Ctrl+Shift+T"               )  # noqa E501

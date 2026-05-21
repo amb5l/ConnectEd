@@ -17,6 +17,8 @@ scene APIs.
 - **Configurable providers** — model, API key, base URL; swappable backends.
 - **AI driver** — tool catalog the model can call; implementations delegate to
   [`ConnectEd/scripting/`](../ConnectEd/scripting/) and scene/view APIs with undo.
+- **Exclusive editing lease** — only one AI chat may run write tools (or hold the
+  scene for an agent loop) at a time; see [Agent editing lease](#agent-editing-lease).
 - **Terse command catalog** in the system prompt so the model knows what ConnectEd
   can do (Place, Edit, View, scene operations).
 
@@ -32,6 +34,8 @@ scene APIs.
   automation against vendor websites; use **official APIs** or **local** models
   (e.g. Ollama) only.
 - **Recorded UI macros** — Recipes are curated prompts + context, not QTest replay.
+- **Full-window modal freeze** during every agent reply — use a **partial** edit lock
+  instead (see [Agent editing lease](#agent-editing-lease)); optional strict mode later.
 
 ## Current state
 
@@ -45,16 +49,15 @@ scene APIs.
   **AI Settings** stub dialog + `connected://ai/settings` link.
 - **Settings** — `ai/` section in [`FACTORY_SETTINGS`](../ConnectEd/core/settings.py);
   default provider `"dummy"`.
-- **Window** — single `AiChatDock` on startup; bottom split (see [Dock layout](#dock-layout)).
-- **Window menu** — `windowAiChat` show/raise (to be **removed** when AI menu lands).
+- **Window** — `AiChatManager`; one default chat on startup; bottom split (log tabs left, AI right).
+- **AI menu** — New Chat, dynamic open-chat list, Settings; `windowAiChat` removed.
 - **Tests** — unit tests for dummy provider; `MAIN_WIDGETS["AI Chat"]` in
   [`specs.py`](../tests/integration/gui/specs.py).
 
 **Not yet implemented:**
 
-- Multiple concurrent chat docks (`AiChatManager`).
-- Top-level **AI** menu (New Chat, open-chat list, Settings, Recipes).
 - Real HTTP providers, `ContextBuilder`, read/write tools beyond `nobodyHome()`.
+- **`AiEditLock`** — exclusive lease + partial UI lock for multi-chat safety.
 - Optional `[ai]` deps in `pyproject.toml`.
 
 **Existing infrastructure to build on:**
@@ -75,6 +78,7 @@ flowchart TB
   Manager[AiChatManager]
   ChatDock[AiChatDock]
   Session[AiChatSession]
+  Lock[AiEditLock]
   Provider[AiProvider adapter]
   Driver[AiDriver tools]
   App[Window / view.ui / scene API]
@@ -82,8 +86,11 @@ flowchart TB
   AiMenu -->|New Chat / focus| Manager
   Manager --> ChatDock
   User --> ChatDock --> Session
+  Session -->|acquire / release| Lock
+  Lock -->|blocks other sessions + edits| Session
   Session --> Provider
   Session --> Driver
+  Lock --> Driver
   Driver --> App
   Driver --> Session
   Provider --> Session
@@ -96,6 +103,7 @@ flowchart TB
 | **AiChatManager** | Owns open `AiChatDock` instances; create, focus, title, menu list |
 | **AiChatDock** | Qt UI shell: history, input, send/stop, provider/model indicator, errors |
 | **AiChatSession** | Per-dock message list, system prompt, tool-call loop, streaming |
+| **AiEditLock** | Exclusive editing lease; partial UI lock while a session runs write-capable agent loop |
 | **AiProvider** | HTTP/SDK to OpenAI, Anthropic, Ollama, etc.; tools + streaming |
 | **ContextBuilder** | Active document, selection, scene/net summary for prompts |
 | **AiDriver** | Registered tools; maps tool calls → scripting/scene/view calls |
@@ -177,6 +185,89 @@ Setup order in [`Window`](../ConnectEd/widgets/window/__init__.py) matters for Q
 
 Saved window geometry (`startup/geometry`) can restore an old tab arrangement;
 users may need to reset layout once after dock changes.
+
+## Agent editing lease
+
+With **multiple chat docks**, each `AiChatSession` has its own history, but
+**`AiDriver` shares one window** — one active MDI view, one scene, one undo stack.
+Without coordination, two agent loops (or user edits interleaved with AI tools)
+can corrupt state.
+
+### Exclusive lease (lock / unlock)
+
+Introduce **`AiEditLock`** (on [`Window`](../ConnectEd/widgets/window/__init__.py)
+or owned by `AiChatManager`):
+
+```python
+class AiEditLock(QObject):
+    lockChanged = pyqtSignal()
+
+    def holder(self) -> AiChatSession | None: ...
+    def isLocked(self) -> bool: ...
+    def acquire(self, session : AiChatSession) -> bool: ...
+    def release(self, session : AiChatSession) -> None: ...
+```
+
+**Bracket** each agent run that may mutate the diagram:
+
+```
+send() → acquire(session) → tool loop → release(session)   # always in finally
+```
+
+| Rule | Behaviour |
+|------|-----------|
+| **Holder** | Only the session that acquired the lease may invoke **write** tools |
+| **Other chats** | **Send** disabled or rejected with “Chat N is editing…”; read-only tools optional |
+| **User manual edits** | Blocked on the active scene while lease held (partial UI lock) |
+| **Stop / Cancel** | Aborts provider + **releases** lease in `finally` |
+| **Close chat dock** | If holder, **release** on destroy |
+| **Failure** | `release` in `finally` — never leave the app locked |
+
+Read-only tools (`get_selection_summary`, `list_commands`, …) may run **without**
+the lease, or concurrently while another chat holds it — default: **read-only without
+lease**, **write requires lease**.
+
+Write tools (`edit_delete`, `scene_add_items`, `run_menu_action`, …) **must**
+check `AiEditLock` before executing (defence in depth).
+
+### Partial UI lock (not a full modal)
+
+Do **not** freeze the entire application for every assistant reply. While the lease
+is held:
+
+| Block | Allow |
+|-------|--------|
+| Scene mouse edits, Edit menu mutations, Place menu | View pan / zoom |
+| Other chats’ **Send** (and write agent loops) | **Stop** on the holding chat |
+| Destructive menu actions on the active design | Messages, Navigator browse, log docks |
+| | Typing in other chat inputs (Send still blocked) |
+
+Optional later setting **`ai/strict_agent_lock`** — also disable pan/zoom during
+write loops (off by default).
+
+### User-visible state
+
+- Holding dock title or banner: **`Editing…`** (in addition to `[provider]` suffix).
+- Other docks: grey **Send**, tooltip explaining which chat holds the lease.
+- Optional status bar: `AI: Chat 2 editing`.
+
+Connect `AiEditLock.lockChanged` → refresh all `AiChatWidget` send buttons and
+menu sensitivity.
+
+### Phasing
+
+| Stage | Lease scope |
+|-------|-------------|
+| **§3.5 skeleton** | `AiEditLock` type, acquire/release in `AiChatSession.send()`; UI hints optional |
+| **§5 read-only agent** | Lease bracketing validated; read tools run without blocking other chats |
+| **§6 write tools** | **Required** — write tools refuse without lease; partial UI lock enforced |
+| **§8 polish** | Stop/cancel releases lease; integration test: Chat A blocks Chat B **Send** |
+
+### Rejected alternatives
+
+- **No lock** — unsafe once write tools exist.
+- **Global tool queue** — Chat B silently waits; confusing UX.
+- **Single “active agent chat”** — defeats multi-chat for parallel Q&A (read-only).
 
 ## Recipes
 
@@ -315,8 +406,9 @@ actions. This plan **splits** them deliberately:
 |------|------|----------------|
 | **`AiProvider`** | HTTP/SDK to the LLM; streaming; native **tool/function calling** | `GrokDriver.chat()` |
 | **`AiDriver`** | Executes ConnectEd **tools** on the GUI thread (`scene`, `view.ui`, menus) | `_execute_actions()` |
-| **`AiChatSession`** | Message history, agent loop, connects provider ↔ driver | `send_message()` orchestration |
+| **`AiChatSession`** | Message history, agent loop, connects provider ↔ driver; acquires/releases lease | `send_message()` orchestration |
 | **`AiChatManager`** | Multiple docks, menu list, focus/new/close | — |
+| **`AiEditLock`** | Exclusive editing lease; partial UI lock while write agent runs | — |
 | **`ContextBuilder`** | Terse diagram snapshot for prompts | `_build_context()` |
 
 Grok’s `AIResponse` with `text` + `actions: list[dict]` is a valid **fallback**
@@ -375,10 +467,11 @@ Independent review of a Grok-generated outline. **Adopt** what fits ConnectEd;
 ConnectEd/ai/
   __init__.py          # types, public exports
   types.py             # ChatMessage, ToolDefinition, ChatEvent, …
-  session.py           # AiChatSession
+  session.py           # AiChatSession (acquire/release lease around send)
+  lock.py              # AiEditLock — exclusive editing lease + lockChanged
   context.py           # ContextBuilder
-  catalog.py           # command / tool descriptions
-  driver.py            # AiDriver tool implementations (GUI thread)
+  catalog.py           # command / tool descriptions (+ read vs write tool metadata)
+  driver.py            # AiDriver tool implementations (GUI thread; checks lease for writes)
   recipes.py           # recipe registry + handlers (later)
   providers/
     __init__.py        # register_provider, create_provider
@@ -388,8 +481,9 @@ ConnectEd/ai/
     xai.py
     ollama.py
 ConnectEd/widgets/window/ai_chat/
-  __init__.py          # AiChatDock
-  widget.py            # AiChatWidget
+  __init__.py          # exports
+  dock.py              # AiChatDock
+  widget.py            # AiChatWidget (Send enabled from AiEditLock)
   manager.py           # AiChatManager (multi-dock)
 ```
 
@@ -408,6 +502,7 @@ Extend [`FACTORY_SETTINGS`](../ConnectEd/core/settings.py):
     "system_prompt_extra" : "",                  # str — user appendix
     "confirm_destructive" : True,                # bool — delete etc.
     "max_tool_rounds"     : 10,                  # int — agent loop cap
+    "strict_agent_lock"   : False,                # bool — also block pan/zoom during write loop
 }
 ```
 
@@ -429,7 +524,9 @@ New package [`ConnectEd/ai/`](../ConnectEd/ai/) — see [module layout](#module-
 |------|---------|
 | `nobodyHome` | `{"ok": true, "message": "Nobody home."}` — scaffolding only |
 
-### Context tools (read-only) — stage 4
+### Context tools (read-only) — stage 5
+
+No **`AiEditLock`** required (may run while another chat holds the lease).
 
 | Tool | Returns |
 |------|---------|
@@ -439,7 +536,9 @@ New package [`ConnectEd/ai/`](../ConnectEd/ai/) — see [module layout](#module-
 | `get_netlist_summary` | Named nets / subnets (when netlist available) |
 | `list_commands` | Subset of command catalog (filter by prefix) |
 
-### Action tools (write) — stage 5+
+### Action tools (write) — stage 6+
+
+**Require** holder of **`AiEditLock`**; return structured error JSON if called without lease.
 
 | Tool | Delegates to |
 |------|----------------|
@@ -552,6 +651,8 @@ REST.
 - Tool execution **on GUI thread** (Qt widgets, scene mutations).
 - Session orchestrates: await provider chunk → on tool_call →
   `QMetaObject.invokeMethod` / signal to main thread → post tool result → continue.
+- **`AiEditLock`** is main-thread only; `acquire` / `release` in `AiChatSession.send()`
+  `try` / `finally` around the full tool loop (including provider streaming waits).
 
 ## TODO checklist
 
@@ -572,22 +673,30 @@ Work in order unless noted.
 - [x] `AiChatWidget` — message list, input, Send.
 - [x] `AiChatDock` — `WINDOW_TITLE = "AI Chat"`.
 - [x] Wire in `Window`: dock, bottom split (log tabs left, AI right).
-- [x] `windowAiChat` action + Window menu entry (temporary).
+- [x] `windowAiChat` action + Window menu entry (temporary; **removed** in §3).
 - [x] `MAIN_WIDGETS["AI Chat"]` in `specs.py`.
 - [x] Dummy backend: user message → `nobodyHome()` → assistant reply (dev demo).
 - [x] Getting-started **welcome** on new chat (`welcome.py`).
 - [x] Rich history pane + hyperlink handling (`QTextBrowser`, `connected://ai/settings`, https).
-- [ ] **AI → Settings…** menu entry (stub dialog exists; menu wiring in §3).
+- [ ] **AI → Settings…** menu entry (stub dialog exists; menu wiring in §3). — **done** in §3 (`aiSettings` action).
 
 ### 3. Multi-chat + AI menu
 
-- [ ] `AiChatManager` on `Window` — `newChat()`, `chats()`, focus, close handling.
-- [ ] Tabify multiple AI docks together (never with Messages/Transcript/Log).
-- [ ] Top-level **AI** menu: New Chat, dynamic open-chat list, Settings… (stub).
-- [ ] `updateAiMenu()` — rebuild open-chat section (mirror `updateWindowMenu()`).
-- [ ] Remove `windowAiChat` from Window menu and actions/slots.
-- [ ] Update `MENUS_*` / `MAIN_WIDGETS` in `specs.py` for AI menu + multi-dock.
-- [ ] One default chat on startup (current behaviour) or empty until New Chat (product choice).
+- [x] `AiChatManager` on `Window` — `newChat()`, `chats()`, focus, close handling.
+- [x] Tabify multiple AI docks together (never with Messages/Transcript/Log).
+- [x] Top-level **AI** menu: New Chat, dynamic open-chat list, Settings… (stub).
+- [x] `updateAiMenu()` — rebuild open-chat section (mirror `updateWindowMenu()`).
+- [x] Remove `windowAiChat` from Window menu and actions/slots.
+- [x] Update `MENUS_*` / `MAIN_WIDGETS` in `specs.py` for AI menu + multi-dock.
+- [x] One default chat on startup (current behaviour).
+
+### 3.5 Agent editing lease
+
+- [ ] `ConnectEd/ai/lock.py` — `AiEditLock` on `Window` (`holder`, `acquire`, `release`, `lockChanged`).
+- [ ] `AiChatSession.send()` — acquire at start, `release` in `finally`; reject second session if busy.
+- [ ] `AiChatWidget` — disable **Send** on non-holders when locked; optional `Editing…` title suffix.
+- [ ] `AiDriver.call()` — stub check: write tools list empty for now; hook ready for §6.
+- [ ] Unit test: acquire/release, second session rejected, release on session destroy.
 
 ### 4. Provider layer + settings UI
 
@@ -596,7 +705,7 @@ Work in order unless noted.
 - [ ] `AnthropicProvider` (optional in same stage or next).
 - [ ] `OllamaProvider` as thin `openai_compatible` preset (`base_url`, no key).
 - [ ] `NotConfiguredProvider` when key/model missing.
-- [ ] **AI → Settings…** menu entry (dialog stub in [`ai_settings.py`](../ConnectEd/widgets/dialogs/ai_settings.py); wire in §3).
+- [ ] **AI → Settings…** menu entry — **done** in §3; extend dialog in §4.
 - [ ] In-app link `connected://ai/settings` from welcome message — **done** in widget.
 - [ ] Read `ai/*` before send; user-visible errors in dock.
 
@@ -605,11 +714,13 @@ Work in order unless noted.
 - [ ] `ContextBuilder` — active MDI widget, selection, scene summary.
 - [ ] Register read-only tools; extend session system prompt assembly.
 - [ ] Streaming assistant text into dock.
+- [ ] Lease acquired during send but read-only tools do not require exclusive write access.
 - [ ] Manual test: “what is selected?”, “how many rectangles?” without mutating scene.
 
 ### 6. Write tools + safety
 
 - [ ] Expand `AiDriver` — `cs.gui(window)` + active `view.ui` / `scene`.
+- [ ] **Enforce `AiEditLock`** on all write tools; partial UI lock (block Edit/Place/scene input).
 - [ ] Low-risk write tools: `edit_undo`, `edit_redo`, `view_zoom_all`.
 - [ ] Placement tools via scene API where possible before mouse.
 - [ ] `run_menu_action` for catalogued paths; `withModal` wrapper.
@@ -625,10 +736,11 @@ Work in order unless noted.
 
 ### 8. Polish and docs
 
-- [ ] Stop/cancel in-flight requests.
+- [ ] Stop/cancel in-flight requests; **must release `AiEditLock`**.
 - [ ] Transcript export (optional).
 - [ ] Unit tests for catalog, context builder, provider request shaping (mock HTTP).
 - [ ] Integration test: scripted provider mock → tool call → scene change.
+- [ ] Integration test: Chat A holds lease → Chat B **Send** blocked until release.
 - [ ] Update [`SCRIPTING.md`](SCRIPTING.md) — “AI agent tools” cross-link.
 - [ ] User-facing note: supported providers, no Composer API, API key storage.
 
@@ -636,16 +748,19 @@ Work in order unless noted.
 
 1. §1 Scaffolding — **done** (dummy provider, session, settings).
 2. §2 Single chat dock — **done** (bottom-right split).
-3. §3 **Multi-chat + AI menu** — next.
-4. §4 Real providers + Settings dialog.
-5. §5 Read-only agent (context + tools + streaming).
-6. §6 Write tools, catalog, safety.
-7. §7 Recipes.
-8. §8 Polish, tests, docs.
+3. §3 Multi-chat + AI menu — **done**.
+4. **§3.5 Agent editing lease** — next (before write tools).
+5. §4 Real providers + Settings dialog.
+6. §5 Read-only agent (context + tools + streaming).
+7. §6 Write tools, catalog, safety (**lease enforced**).
+8. §7 Recipes.
+9. §8 Polish, tests, docs.
 
 ## Open questions
 
-- **Default on startup:** one empty chat dock vs none until **New Chat**?
+- **Default on startup:** one empty chat dock vs none until **New Chat**? — **one chat** (§3 done).
+- **Multi-chat contention:** exclusive **`AiEditLock`** + partial UI lock (see [Agent editing lease](#agent-editing-lease)).
+- **Strict agent lock:** block pan/zoom during write loops (`ai/strict_agent_lock`)?
 - **First production default provider:** Ollama (local, no key) vs OpenAI-compatible cloud?
 - **Approval UX:** inline chat “Allow delete?” vs modal?
 - **Diagram-only tools:** refuse or no-op when active subwindow is spreadsheet/symbol?

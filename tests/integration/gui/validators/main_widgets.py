@@ -6,9 +6,7 @@ from typing import Any
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QDockWidget, QMenuBar, QMdiArea, QStatusBar, QWidget
 
-from ConnectEd.scripting import Window
-
-ChromeTypes = QMenuBar | QStatusBar | QMdiArea | QDockWidget
+from ConnectEd.scripting import AiChatDock, Window
 
 
 def _findChromeWidgets(window : Window) -> list[QWidget]:
@@ -36,17 +34,23 @@ def validateMainWidgets(
         expected.append(widget)
 
     found = _findChromeWidgets(window)
-    for dock in found:
+    ai_chat_docks = [w for w in found if isinstance(w, AiChatDock)]
+    fixed_found = [w for w in found if not isinstance(w, AiChatDock)]
+    fixed_expected = [w for w in expected if not isinstance(w, AiChatDock)]
+
+    for dock in fixed_found:
         if isinstance(dock, QDockWidget) and dock.isVisible():
             assert dock.windowTitle() in spec, (
                 f"unexpected dock {dock.windowTitle()!r}"
             )
 
-    assert len(found) == len(expected), (
-        f"chrome count: expected {len(expected)}, found {len(found)}"
+    assert len(ai_chat_docks) >= 1, "expected at least one AI chat dock"
+    assert len(fixed_found) == len(fixed_expected), (
+        f"chrome count: expected {len(fixed_expected)} fixed widgets, "
+        f"found {len(fixed_found)}"
     )
-    expected_ids = {id(w) for w in expected}
-    found_ids = {id(w) for w in found}
-    assert expected_ids == found_ids, (
-        f"chrome identity mismatch: expected {len(expected_ids)}, found {len(found_ids)}"
+    assert {id(w) for w in fixed_expected} == {id(w) for w in fixed_found}, (
+        "fixed chrome identity mismatch"
     )
+    ai_chat_widget = spec["AI Chat"][1](window)
+    assert ai_chat_widget in ai_chat_docks, "AI Chat accessor not in visible docks"

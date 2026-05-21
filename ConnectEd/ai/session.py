@@ -22,19 +22,24 @@ class AiChatSession(QObject):
     error          = pyqtSignal(str)
     finished       = pyqtSignal()
 
-    _window   : "Window"
-    _driver   : AiDriver
-    _provider : object
-    _messages : list[ChatMessage]
-    _busy     : bool
+    _window        : "Window"
+    _driver        : AiDriver
+    _provider_name : str
+    _provider      : object
+    _messages      : list[ChatMessage]
+    _busy          : bool
 
     @checked
-    def __init__(self : Self, window : "Window") -> None:
+    def __init__(
+        self           : Self,
+        window         : "Window",
+        provider_name  : str | None = None,
+    ) -> None:
         super().__init__()
         self._window = window
         self._driver = AiDriver(window)
-        provider_name = settings().get("ai/provider")
-        self._provider = create_provider(provider_name)
+        self._provider_name = provider_name or settings().get("ai/provider")
+        self._provider = create_provider(self._provider_name)
         self._messages = []
         self._busy = False
 
@@ -53,8 +58,7 @@ class AiChatSession(QObject):
             return
         self._busy = True
         try:
-            provider_name = settings().get("ai/provider")
-            self._provider = create_provider(provider_name)
+            self._provider = create_provider(self._provider_name)
             self._messages.append(ChatMessage("user", text))
             self.userMessage.emit(text)
             max_rounds = settings().get("ai/max_tool_rounds")
