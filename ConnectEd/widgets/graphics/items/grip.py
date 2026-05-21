@@ -30,6 +30,7 @@ class GripShape(StrEnum):
     CIRCLE  = "Circle"   # resize/move
     DIAMOND = "Diamond"  # vertex
     ARROW   = "Arrow"    # segment
+    STAR    = "Star"     # hotspot
 
 
 class GripItem(
@@ -109,7 +110,7 @@ class GripShapeMixin:
 class OriginGripShapeMixin:
     # class attributes
     _NORMAL_SHAPE : GripShape
-    _ORIGIN_SHAPE = GripShape.SQUARE
+    _ORIGIN_SHAPE : GripShape
 
     @withScene
     @checked
@@ -117,11 +118,11 @@ class OriginGripShapeMixin:
         self  : Self | GripItem,
         scene : "DrawingScene | None" = None
     ) -> None:
-        is_origin = self.handle().isOrigin()
-        self.setPath(scene.resources.path(
-            "Grip",
-            self._ORIGIN_SHAPE if is_origin else self._NORMAL_SHAPE
-        ))
+        item          = self.item()
+        normal_shape  = getattr(item, "_NORMAL_GRIP_SHAPE", self._NORMAL_SHAPE)
+        origin_shape  = getattr(item, "_ORIGIN_GRIP_SHAPE", self._ORIGIN_SHAPE)
+        shape = origin_shape if self.handle().isOrigin() else normal_shape
+        self.setPath(scene.resources.path("Grip", shape))
 
 
 class MoveGripItem(OriginGripShapeMixin, GripItem):
@@ -129,6 +130,7 @@ class MoveGripItem(OriginGripShapeMixin, GripItem):
 
     # class attributes
     _NORMAL_SHAPE = GripShape.CIRCLE
+    _ORIGIN_SHAPE = GripShape.SQUARE
 
     @checked
     def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
@@ -154,6 +156,7 @@ class ResizeGripItem(OriginGripShapeMixin, GripItem):
 
     # class attributes
     _NORMAL_SHAPE = GripShape.CIRCLE
+    _ORIGIN_SHAPE = GripShape.SQUARE
 
     @checked
     def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:

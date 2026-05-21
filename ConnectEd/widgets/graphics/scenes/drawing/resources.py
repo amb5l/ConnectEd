@@ -1,7 +1,7 @@
 from typing import Self
 
 from PyQt6.QtCore import Qt, QPointF, QLineF, QRectF
-from PyQt6.QtGui  import QPen, QBrush, \
+from PyQt6.QtGui  import QPen, QBrush, QTransform, \
                          QPolygonF, QPainterPath
 
 from .....app import settings
@@ -89,6 +89,13 @@ class DrawingSceneResources:
             QPointF(-size/2, size/2)
         ]))
         self._paths["Grip"][GripShape.ARROW] = arrow
+        star = QPainterPath()
+        star.addRect(rect)
+        rotated = QPainterPath()
+        rotated.addRect(rect)
+        rotated = QTransform().rotate(45).map(rotated)
+        star = star.united(rotated)
+        self._paths["Grip"][GripShape.STAR] = star
         # tether pen
         self._pens["Tether"] = self._getPen("theme/tether/line")
         # pin pens
