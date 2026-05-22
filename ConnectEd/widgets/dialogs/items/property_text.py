@@ -20,7 +20,7 @@ class PropertyTextItemDialog(BaseTextItemDialog):
 
     @checked
     def initTopSection(self : Self, item : PropertyTextItem) -> None:
-        self._top_section = PropertyGroupBox(item, item.name())#
+        self._top_section = PropertyGroupBox(item, item.name())
         self._layout.addWidget(self._top_section)
 
     @checked
