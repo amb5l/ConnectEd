@@ -38,7 +38,8 @@ class DrawingViewStateBase:
         self        : Self,
         state       : "DrawingViewStateBase",
         items       : list[ItemMixin] | None = None,
-        interaction : Interaction | None = None
+        interaction : Interaction | None = None,
+        spos        : QPointF | None = None
     ) -> None:
         self._setInteraction(interaction)
         self.view.state = state
@@ -52,11 +53,13 @@ class DrawingViewStateBase:
                 "{Drawing}", self.scene.__class__.__name__.replace("Scene", "")
             )
             window().statusBar().status.setText(state.STATUS)
-        state.entry(
-            self.view.mouse.current.physical,
-            self.view.mouse.current.logical,
-            items
-        )
+        if spos is not None:
+            v = self.view.mapFromScene(spos)
+            s = spos
+        else:
+            v = self.view.mouse.current.physical
+            s = self.view.mouse.current.logical
+        state.entry(v, s, items)
 
     @checked
     def interact(

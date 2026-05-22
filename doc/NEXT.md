@@ -1,3 +1,6 @@
+applyDialog method
+argument names : pos for local pos, spos for scene pos
+rename second defs.py
 full set of scene methods e.g. addPort; structure?
 CmdAddNetLabel.redo/undo are richer/better - roll out to others?
 use of \ to break up import lists - use ()

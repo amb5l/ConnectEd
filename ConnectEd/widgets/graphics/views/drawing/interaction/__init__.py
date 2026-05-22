@@ -85,7 +85,7 @@ class Interaction:
         raise NotImplementedError("Subclass must implement this method")
 
     def ctxMenuItems(self : Self, pos : QPointF) -> list[QAction | QMenu]:
-        raise NotImplementedError("Subclass must implement this method")
+        return []
 
 
 class ItemInteraction(Interaction):

@@ -1,6 +1,9 @@
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from . import DiagramViewUi
+    from ....items.segment import SegmentItem
+
+from PyQt6.QtCore import QPointF
 
 
 class DiagramViewUiPlaceMixin:
@@ -27,3 +30,16 @@ class DiagramViewUiPlaceMixin:
 
     def placeNetLabel(self : "DiagramViewUi") -> None:
         self._view.state.go(self._view.statePlaceNetLabel)
+
+    def placeNetLabelOnSegment(
+        self     : "DiagramViewUi",
+        segment  : "SegmentItem",
+        spos     : QPointF | None = None
+    ) -> None:
+        if spos is None:
+            spos = segment.sceneMidpoint()
+        self._view.state.go(
+            self._view.statePlaceNetLabelOnSegment,
+            [segment],
+            spos=spos
+        )

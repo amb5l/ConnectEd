@@ -1,7 +1,8 @@
 from typing import Self, Any
 
 from PyQt6.QtCore    import QPointF, QLineF
-from PyQt6.QtWidgets import QGraphicsLineItem, QGraphicsItem
+from PyQt6.QtWidgets import QGraphicsLineItem, QGraphicsItem, QMenu
+from PyQt6.QtGui     import QAction
 
 from ....app import settings
 
@@ -22,6 +23,7 @@ from .node import NodeItem
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ..scenes.drawing import DrawingScene
+    from ..views.diagram  import DiagramView
 
 
 class SegmentItem(
@@ -99,6 +101,41 @@ class SegmentItem(
         elif self._node2 is node:
             return self._node1
         return None
+
+    def sceneMidpoint(self : Self) -> QPointF:
+        return self.scenePos() + self.line().p2() / 2
+
+    def sceneLine(self : Self) -> QLineF:
+        return QLineF(self.scenePos(), self.mapToScene(self.line().p2()))
+
+    def perpendicularIntersection(self : Self, spos : QPointF) -> QPointF:
+        """Perpendicular foot of *spos* on this segment (clamp to endpoints)."""
+        p1   = self.sceneLine().p1()
+        p2   = self.sceneLine().p2()
+        dx   = p2.x() - p1.x()
+        dy   = p2.y() - p1.y()
+        len2 = dx * dx + dy * dy
+        if len2 == 0.0:
+            return p1
+        t = ((spos.x() - p1.x()) * dx + (spos.y() - p1.y()) * dy) / len2
+        if t <= 0.0:
+            return p1
+        if t >= 1.0:
+            return p2
+        return QPointF(p1.x() + t * dx, p1.y() + t * dy)
+
+    @checked
+    def ctxMenuItems(
+        self  : Self,
+        view  : "DiagramView",
+        spos  : QPointF
+    ) -> list[QAction | QMenu]:
+        return [
+            view.action(
+                "Add Net Label",
+                lambda: view.ui.placeNetLabelOnSegment(self, spos)
+            )
+        ]
 
 
 # TODO link to settings/resources

@@ -6,7 +6,7 @@ from PyQt6.QtGui     import QAction, QColor
 
 from ....core.defs  import PITCH, WIDTH
 from ....core.check import checked
-from ....core.types import AlignH, AlignV, RectHandleId, DataKind
+from ....core.types import AlignH, AlignV, RectHandleId, DataKind, NO_CHANGE
 from ....core.utils import val2str
 
 from ..properties import InherentProperty
@@ -18,6 +18,7 @@ from .mixin.transform import ItemTransformMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
+    from ...dialogs.items.net_label import NetLabelItemDialog
     from ..views.drawing import DrawingView
 
 
@@ -106,6 +107,18 @@ class NetLabelItem(TextItem):
         self._value = value
         self.onTextChanged()
 
+    def onPositionChanged(
+        self : Self,
+        pos  : QPointF | None = None
+    ) -> None:
+        ItemTransformMixin.onPositionChanged(self, pos)
+        self._notifyNetlist()
+
+    @checked
+    def setOrigin(self : Self, id : RectHandleId) -> None:
+        ItemTransformMixin.setOrigin(self, id)
+        self._notifyNetlist()
+
     def onTextChanged(self : Self) -> None:
         text = val2str(self.value())
         if text == "":
@@ -137,28 +150,46 @@ class NetLabelItem(TextItem):
         self.onTextChanged()
         self._notifyNetlist()
 
-    def onPositionChanged(
-        self : Self,
-        pos  : QPointF | None = None
-    ) -> None:
-        ItemTransformMixin.onPositionChanged(self, pos)
-        self._notifyNetlist()
-
     @checked
-    def setOrigin(self : Self, id : RectHandleId) -> None:
-        ItemTransformMixin.setOrigin(self, id)
-        self._notifyNetlist()
-
-    def _notifyNetlist(self : Self) -> None:
-        scene = self.scene()
-        if scene is None:
-            return
-        from ..scenes.diagram import DiagramScene
-        if not isinstance(scene, DiagramScene):
-            return
-        netlist = scene.netlist
-        if hasattr(netlist, "onNetLabelChanged"):
-            netlist.onNetLabelChanged(self)
+    def applyDialog(self : Self, dialog : "NetLabelItemDialog") -> None:
+        name       = dialog.getName()
+        value      = dialog.getValue()
+        rotation   = dialog.getRotation()
+        autoflip   = dialog.getAutoflip()
+        mirror_h   = dialog.getMirrorH()
+        mirror_v   = dialog.getMirrorV()
+        align_h    = dialog.getAlignH()
+        align_v    = dialog.getAlignV()
+        origin     = dialog.getOrigin()
+        pad_left   = dialog.getPadLeft()
+        pad_right  = dialog.getPadRight()
+        pad_top    = dialog.getPadTop()
+        pad_bottom = dialog.getPadBottom()
+        color      = dialog.getColor()
+        font       = dialog.getFont()
+        size       = dialog.getSize()
+        bold       = dialog.getBold()
+        italic     = dialog.getItalic()
+        underline  = dialog.getUnderline()
+        if name       is not NO_CHANGE: self.setName(name)
+        if value      is not NO_CHANGE: self.setValue(value)
+        if rotation   is not NO_CHANGE: self.setRotation(rotation)
+        if mirror_h   is not NO_CHANGE: self.setMirrorH(mirror_h)
+        if mirror_v   is not NO_CHANGE: self.setMirrorV(mirror_v)
+        if autoflip   is not NO_CHANGE: self.setAutoflip(autoflip)
+        if align_h    is not NO_CHANGE: self.setAlignH(align_h)
+        if align_v    is not NO_CHANGE: self.setAlignV(align_v)
+        if origin     is not NO_CHANGE: self.setOrigin(origin)
+        if pad_left   is not NO_CHANGE: self.setPadLeft(pad_left)
+        if pad_right  is not NO_CHANGE: self.setPadRight(pad_right)
+        if pad_top    is not NO_CHANGE: self.setPadTop(pad_top)
+        if pad_bottom is not NO_CHANGE: self.setPadBottom(pad_bottom)
+        if color      is not NO_CHANGE: self.setTextColor(color)
+        if font       is not NO_CHANGE: self.setTextFont(font)
+        if size       is not NO_CHANGE: self.setTextSize(size)
+        if bold       is not NO_CHANGE: self.setTextBold(bold)
+        if italic     is not NO_CHANGE: self.setTextItalic(italic)
+        if underline  is not NO_CHANGE: self.setTextUnderline(underline)
 
     @checked
     def ctxMenuItems(self : Self, view : "DrawingView", _spos : QPointF) -> list[QAction | QMenu]:
@@ -181,3 +212,14 @@ class NetLabelItem(TextItem):
             view.action("Appearance...", lambda: view.ui.editAppearance(self)),
             view.action("Properties...", lambda: view.ui.editItemProperties(self))
         ]
+
+    def _notifyNetlist(self : Self) -> None:
+        scene = self.scene()
+        if scene is None:
+            return
+        from ..scenes.diagram import DiagramScene
+        if not isinstance(scene, DiagramScene):
+            return
+        netlist = scene.netlist
+        if hasattr(netlist, "onNetLabelChanged"):
+            netlist.onNetLabelChanged(self)

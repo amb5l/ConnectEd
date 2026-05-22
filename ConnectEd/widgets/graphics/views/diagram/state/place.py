@@ -18,6 +18,7 @@ from ....items.gate       import GateFunc, BufGateItem, \
                                  AndGateItem, OrGateItem, XorGateItem
 from ....items.block      import BlockItem
 from ....items.block_pin  import BlockPinItem
+from ....items.segment    import SegmentItem
 from ....items.net_label  import NetLabelItem
 
 from ...drawing.state import DrawingViewStateBase
@@ -205,49 +206,39 @@ class DiagramViewStatePlaceNetLabel(ClickMixin, DrawingViewStateBase):
         s    : QPointF | None,
         i    : list[ItemMixin] | None = None
     ) -> None:
-        item = NetLabelItem(name="Name", pos=self._snap(s))
+        pos  = self._snap(s)
+        item = NetLabelItem(name="Name", pos=pos)
         dialog = NetLabelItemDialog(item, self.view)
         if dialog.exec():
-            name       = dialog.getName()
-            value      = dialog.getValue()
-            rotation   = dialog.getRotation()
-            autoflip   = dialog.getAutoflip()
-            mirror_h   = dialog.getMirrorH()
-            mirror_v   = dialog.getMirrorV()
-            align_h    = dialog.getAlignH()
-            align_v    = dialog.getAlignV()
-            origin     = dialog.getOrigin()
-            pad_left   = dialog.getPadLeft()
-            pad_right  = dialog.getPadRight()
-            pad_top    = dialog.getPadTop()
-            pad_bottom = dialog.getPadBottom()
-            color      = dialog.getColor()
-            font       = dialog.getFont()
-            size       = dialog.getSize()
-            bold       = dialog.getBold()
-            italic     = dialog.getItalic()
-            underline  = dialog.getUnderline()
-            if name       is not NO_CHANGE: item.setName(name)
-            if value      is not NO_CHANGE: item.setValue(value)
-            if rotation   is not NO_CHANGE: item.setRotation(rotation)
-            if mirror_h   is not NO_CHANGE: item.setMirrorH(mirror_h)
-            if mirror_v   is not NO_CHANGE: item.setMirrorV(mirror_v)
-            if autoflip   is not NO_CHANGE: item.setAutoflip(autoflip)
-            if align_h    is not NO_CHANGE: item.setAlignH(align_h)
-            if align_v    is not NO_CHANGE: item.setAlignV(align_v)
-            if origin     is not NO_CHANGE: item.setOrigin(origin)
-            if pad_left   is not NO_CHANGE: item.setPadLeft(pad_left)
-            if pad_right  is not NO_CHANGE: item.setPadRight(pad_right)
-            if pad_top    is not NO_CHANGE: item.setPadTop(pad_top)
-            if pad_bottom is not NO_CHANGE: item.setPadBottom(pad_bottom)
-            if color      is not NO_CHANGE: item.setTextColor(color)
-            if font       is not NO_CHANGE: item.setTextFont(font)
-            if size       is not NO_CHANGE: item.setTextSize(size)
-            if bold       is not NO_CHANGE: item.setTextBold(bold)
-            if italic     is not NO_CHANGE: item.setTextItalic(italic)
-            if underline  is not NO_CHANGE: item.setTextUnderline(underline)
+            item.applyDialog(dialog)
             self.interact(
-                PlaceNetLabelInteraction(self.view, self._snap(s), item)
+                PlaceNetLabelInteraction(self.view, pos, item)
             )
         else:
             self.view.state.go(self.view.stateIdle)
+
+
+class DiagramViewStatePlaceNetLabelOnSegment(ClickMixin, DrawingViewStateBase):
+    STATUS = "Place Net Label: edit details"
+
+    @checked
+    def entry(
+        self : Self,
+        v    : QPoint | None,
+        s    : QPointF | None,
+        i    : list[ItemMixin] | None = None
+    ) -> None:
+        segment = i[0] if i else self.view._selectedItem(SegmentItem)
+        if segment and isinstance(segment, SegmentItem):
+            snap   = self._snap(s) if s is not None else segment.sceneMidpoint()
+            item   = NetLabelItem(name="Name")
+            dialog = NetLabelItemDialog(item, self.view)
+            if not dialog.exec():
+                self.view.state.go(self.view.stateIdle)
+                return
+            item.applyDialog(dialog)
+            self.scene.addItems([item], undoable=True)
+            item.setPos(segment.perpendicularIntersection(snap))
+        else:
+            logger().warning("No segment selected")
+        self.view.state.go(self.view.stateIdle)

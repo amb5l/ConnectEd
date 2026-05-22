@@ -250,12 +250,9 @@ Wire touch geometry on `Netlist` is **not** required for stage 2.
 
 ## Segment context menu (secondary, stage 2)
 
-[`SegmentItem`](../ConnectEd/widgets/graphics/items/segment.py) currently mixes in
-`ItemMenuMixin` but does not implement `ctxMenuItems` (right-click on segments
-is broken). Implement `ctxMenuItems` for diagram scenes:
+[`SegmentItem`](../ConnectEd/widgets/graphics/items/segment.py) — `ctxMenuItems` for diagram scenes:
 
-- **Add Net Label** — same placement flow as Place menu (dialog + interaction); TBD
-  segment midpoint shortcut.
+- **Add Net Label** — dialog then immediate drop (no placement interaction). Snap the context-menu point; locate the wire attach with `perpendicularIntersection` — perpendicular projection onto the segment, clamped to the nearer endpoint when the foot lies beyond either end (H/V and diagonal segments).
 
 ## `NetLabelItem` UI on existing item
 
@@ -323,8 +320,8 @@ Goal: place, edit, save, and reload labels on wires. **No net naming yet**
 
 **Segment context menu — `items/segment.py`:**
 
-- [ ] Implement `ctxMenuItems(view)` for diagram scenes.
-- [ ] Action **Add Net Label** — same dialog + placement flow as Place menu.
+- [x] Implement `ctxMenuItems(view)` for diagram scenes.
+- [x] Action **Add Net Label** — dialog + direct drop; origin at perpendicular foot of snapped menu point on segment.
 
 **Stage 2 verification:**
 
@@ -333,7 +330,7 @@ Goal: place, edit, save, and reload labels on wires. **No net naming yet**
 - [x] Undo/redo add/remove label.
 - [x] Delete selected top-level label (via `editDelete` → `CmdDelete`).
 - [ ] Save/load preserves top-level `<NetLabel>` elements (manual app test).
-- [ ] Segment context menu **Add Net Label** works.
+- [x] Segment context menu **Add Net Label** works.
 - [x] Right-click existing label: Properties / Appearance.
 
 ### 3. Netlist resolution — `scenes/diagram/netlist.py`
