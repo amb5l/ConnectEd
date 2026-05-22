@@ -28,7 +28,11 @@ class DrawingViewMenuMixin:
                     elif isinstance(menu_item, QMenu):
                         menu.addMenu(menu_item)
                 menu.addSeparator()
-        if self.interaction is None:
+        if self.interaction is not None:
+            _extendMenu(self.interaction.ctxMenuItems(spos))
+        elif (state_items := self.state.ctxMenuItems(spos)):
+            _extendMenu(state_items)
+        else:
             # menu for item/items
             items_at = self._itemsAt(vpos)
             if items_at:
@@ -86,9 +90,6 @@ class DrawingViewMenuMixin:
                     menu.addAction(f"Delete{f}", lambda: self.ui.editDelete())
                     menu.addAction(f"Duplicate{f}", lambda: self.ui.editDuplicate())
                     menu.addSeparator()
-        else:
-            # menu for interaction
-            _extendMenu(self.interaction.ctxMenuItems(spos))
         # scene properties
         menu.addAction(
             f"{self.__class__.__name__.replace('View', '')} Properties...",

@@ -1,6 +1,8 @@
 from typing import Self
 
-from PyQt6.QtCore import Qt, QPoint, QPointF
+from PyQt6.QtCore    import Qt, QPoint, QPointF
+from PyQt6.QtWidgets import QMenu
+from PyQt6.QtGui     import QAction
 
 from ......app import window
 
@@ -129,6 +131,9 @@ class DrawingViewStateBase:
 
     def mouseMove(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
         pass
+
+    def ctxMenuItems(self : Self, spos : QPointF) -> list[QAction | QMenu]:
+        return []
 
     def _snap(self : Self, s : QPointF) -> QPointF:
         return self.view._snap(s)

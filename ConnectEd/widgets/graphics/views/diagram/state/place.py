@@ -23,7 +23,7 @@ from ....items.net_label  import NetLabelItem
 
 from ...drawing.state.base import qkm
 
-from ...drawing.state.mixin import ClickMixin, DragMixin
+from ...drawing.state.mixin import StartMixin, ClickMixin, DragMixin
 
 from ..interaction.place import PlacePortInteraction,     \
                                 PlaceGateInteraction,     \
@@ -88,11 +88,13 @@ class DiagramViewStatePlaceGate(ClickMixin, DiagramViewStateBase):
 class DiagramViewStatePlaceBlock1(StartMixin, DiagramViewStateBase):
     STATUS = "Place Block: pick the first point"
 
+    _INTERACTION_CLS = PlaceBlockInteraction
+
+    def _nextState(self : Self) -> DiagramViewStateBase:
+        return self.view.statePlaceBlock2
+
     def mouseLeftClick(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
-        self.interact(
-            PlaceBlockInteraction(self.view, self._snap(s)),
-            self.view.statePlaceBlock2
-        )
+        self._start(self._snap(s))
 
     def mouseLeftDragBegin(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
         self.mouseLeftClick(v, s, m)
@@ -143,11 +145,13 @@ class DiagramViewStatePlaceBlockPin(DiagramViewStateBase):
 class DiagramViewStatePlaceConn1(StartMixin, ClickMixin, DiagramViewStateBase):
     STATUS = "Place Connection: pick a starting position"
 
+    _INTERACTION_CLS = PlaceConnInteraction
+
+    def _nextState(self : Self) -> DiagramViewStateBase:
+        return self.view.statePlaceConn2
+
     def mouseLeftClick(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
-        self.interact(
-            PlaceConnInteraction(self.view, self._snap(s)),
-            self.view.statePlaceConn2
-        )
+        self._start(self._snap(s))
 
     def mouseLeftDragBegin(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
         self.mouseLeftClick(v, s, m)

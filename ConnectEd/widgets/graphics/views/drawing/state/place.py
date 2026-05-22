@@ -22,7 +22,7 @@ from ..interaction.place import PlaceSymbolPinInteraction, \
                                 PlaceTextInteraction       \
 
 from .base  import qkm, DrawingViewStateBase
-from .mixin import ClickMixin, DragMixin
+from .mixin import ClickMixin, DragMixin, StartMixin
 
 
 class DrawingViewStatePlaceSymbolPin(ClickMixin, DrawingViewStateBase):
@@ -46,14 +46,16 @@ class DrawingViewStatePlaceSymbolPin(ClickMixin, DrawingViewStateBase):
             self.view.state.go(self.view.stateIdle)
 
 
-class DrawingViewStatePlaceLine1(ClickMixin, DrawingViewStateBase):
+class DrawingViewStatePlaceLine1(StartMixin, ClickMixin, DrawingViewStateBase):
     STATUS = "Place Line: pick the first point"
 
+    _INTERACTION_CLS = PlaceLineInteraction
+
+    def _nextState(self : Self) -> DrawingViewStateBase:
+        return self.view.statePlaceLine2
+
     def mouseLeftClick(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
-        self.interact(
-            PlaceLineInteraction(self.view, self._snap(s)),
-            self.view.statePlaceLine2
-        )
+        self._start(self._snap(s))
 
     def mouseLeftDragBegin(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
         self.mouseLeftClick(v, s, m)
@@ -63,14 +65,16 @@ class DrawingViewStatePlaceLine2(ClickMixin, DragMixin, DrawingViewStateBase):
     STATUS = "Place Line: pick the second point"
 
 
-class DrawingViewStatePlaceRectangle1(DrawingViewStateBase):
+class DrawingViewStatePlaceRectangle1(StartMixin, DrawingViewStateBase):
     STATUS = "Place Rectangle: pick the first point"
 
+    _INTERACTION_CLS = PlaceRectangleInteraction
+
+    def _nextState(self : Self) -> DrawingViewStateBase:
+        return self.view.statePlaceRectangle2
+
     def mouseLeftClick(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
-        self.interact(
-            PlaceRectangleInteraction(self.view, self._snap(s)),
-            self.view.statePlaceRectangle2
-        )
+        self._start(self._snap(s))
 
     def mouseLeftDragBegin(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
         self.mouseLeftClick(v, s, m)
@@ -80,14 +84,16 @@ class DrawingViewStatePlaceRectangle2(ClickMixin, DragMixin, DrawingViewStateBas
     STATUS = "Place Rectangle: pick the second point"
 
 
-class DrawingViewStatePlaceEllipse1(DrawingViewStateBase):
+class DrawingViewStatePlaceEllipse1(StartMixin, DrawingViewStateBase):
     STATUS = "Place Ellipse: pick the first point"
 
+    _INTERACTION_CLS = PlaceEllipseInteraction
+
+    def _nextState(self : Self) -> DrawingViewStateBase:
+        return self.view.statePlaceEllipse2
+
     def mouseLeftClick(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
-        self.interact(
-            PlaceEllipseInteraction(self.view, self._snap(s)),
-            self.view.statePlaceEllipse2
-        )
+        self._start(self._snap(s))
 
     def mouseLeftDragBegin(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
         self.mouseLeftClick(v, s, m)
@@ -97,14 +103,16 @@ class DrawingViewStatePlaceEllipse2(ClickMixin, DragMixin, DrawingViewStateBase)
     STATUS = "Place Ellipse: pick the second point"
 
 
-class DrawingViewStatePlacePolyline1(DrawingViewStateBase):
+class DrawingViewStatePlacePolyline1(StartMixin, DrawingViewStateBase):
     STATUS = "Place Polyline: pick the first point"
 
+    _INTERACTION_CLS = PlacePolylineInteraction
+
+    def _nextState(self : Self) -> DrawingViewStateBase:
+        return self.view.statePlacePolyline2
+
     def mouseLeftClick(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
-        self.interact(
-            PlacePolylineInteraction(self.view, self._snap(s)),
-            self.view.statePlacePolyline2
-        )
+        self._start(self._snap(s))
 
     def mouseLeftDragBegin(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
         self.mouseLeftClick(v, s, m)

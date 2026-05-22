@@ -85,7 +85,9 @@ class Interaction:
         raise NotImplementedError("Subclass must implement this method")
 
     def ctxMenuItems(self : Self, pos : QPointF) -> list[QAction | QMenu]:
-        return []
+        return [
+            self._view.action("Cancel", self.cancel)
+        ]
 
 
 class ItemInteraction(Interaction):
@@ -170,12 +172,12 @@ class RotateItemMixin:
     def rotateCCW(self : Self) -> None:
         self._item.setRotation((self._item.rotation() - 90) % 360)
 
-    def ctxMenuItems(self : Self, pos : QPointF) -> list[QAction | QMenu]:
-        return super().ctxMenuItems(pos) + [
-            self._view.separator(),
-            self._view.action("Rotate CW", self.rotateCW, "]"),
+    def ctxMenuItems(self : Self | Interaction, pos : QPointF) -> list[QAction | QMenu]:
+        return [
+            self._view.action("Rotate CW",  self.rotateCW,  "]"),
             self._view.action("Rotate CCW", self.rotateCCW, "["),
-        ]
+            self._view.separator(),
+        ] + super().ctxMenuItems(pos)
 
 
 class PreviewStateMixin:

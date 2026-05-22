@@ -193,11 +193,11 @@ class PlaceTapInteraction(PlaceBase1PosInteraction):
         self._item.reorientCCW()
 
     def ctxMenuItems(self : Self, pos : QPointF) -> list[QAction | QMenu]:
-        return super().ctxMenuItems(pos) + [
-            self._view.separator(),
-            self._view.action("Rotate CW", self.rotateCW, "]"),
+        return [
+            self._view.action("Rotate CW",  self.rotateCW,  "]"),
             self._view.action("Rotate CCW", self.rotateCCW, "["),
-        ]
+            self._view.separator()
+        ] + super().ctxMenuItems(pos)
 
 
 class PlaceNetLabelInteraction(PlaceBase1PosInteraction):

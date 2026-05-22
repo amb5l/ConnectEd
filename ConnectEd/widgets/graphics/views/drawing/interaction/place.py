@@ -1,6 +1,6 @@
 from typing import Self
 
-from PyQt6.QtCore    import QPointF
+from PyQt6.QtCore    import Qt, QPointF
 from PyQt6.QtWidgets import QMenu
 from PyQt6.QtGui     import QAction
 
@@ -59,18 +59,22 @@ class PlaceBase1PosInteraction(PlaceBaseInteraction):
 
     def _commit(self : Self, pos : QPointF) -> bool:
         self.update(pos)
+        self._item.setAcceptedMouseButtons(Qt.MouseButton.AllButtons)
         self._scene.addItems([self._item], undoable=True)
         return True
 
     def _complete(self : Self, pos : QPointF) -> None:
         self.commit(pos)
 
+    def _finish(self : Self, pos : QPointF) -> None:
+        if self.commit(pos):
+            self._view.state.go(self._view.stateIdle)
+
     def ctxMenuItems(self : Self, pos : QPointF) -> list[QAction | QMenu]:
-        complete_action = QAction("Complete")
-        complete_action.triggered.connect(lambda: self.commit(pos))
-        cancel_action = QAction("Cancel")
-        cancel_action.triggered.connect(self.cancel)
-        return [complete_action, cancel_action]
+        pos = self._view._snap(pos)
+        return [
+            self._view.action("Finish", lambda: self._finish(pos)),
+        ] + super().ctxMenuItems(pos)
 
 
 class PlaceBase2PosInteraction(PlaceBase1PosInteraction):
@@ -168,8 +172,9 @@ class PlacePolylineInteraction(PlaceBase1PosInteraction):
     def ctxMenuItems(self : Self, pos : QPointF) -> list[QAction | QMenu]:
         pos = self._view._snap(pos)
         items = []
-        items.append(self._view.action("Add Vertex", lambda: self.commit(pos)))
+        items.append(self._view.action("Continue", lambda: self.commit(pos)))
         items.append(self._view.action("Finish", lambda: self._finish(pos)))
+        items.extend(super().ctxMenuItems(pos))
         items.append(self._view.separator())
         a = self._item.lastSegment().sweep()
         items.append(self._view.action("Line", self._toLine, a is None))

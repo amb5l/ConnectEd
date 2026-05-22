@@ -1,8 +1,39 @@
-from typing import Self
+from typing import Self, TYPE_CHECKING
 
-from PyQt6.QtCore import QPoint, QPointF
+from PyQt6.QtCore    import QPoint, QPointF
+from PyQt6.QtWidgets import QMenu
+from PyQt6.QtGui     import QAction
 
 from .base import qkm
+
+if TYPE_CHECKING:
+    from ..interaction import Interaction
+    from .base         import DrawingViewStateBase
+
+
+class StartMixin:
+    """
+    For states that need a click (or context-menu Start) to create an
+    interaction and advance to the next state.
+    """
+
+    _INTERACTION_CLS : type["Interaction"]
+
+    def _nextState(self : Self) -> "DrawingViewStateBase":
+        raise NotImplementedError
+
+    def _start(self : Self, spos : QPointF) -> None:
+        self.interact(
+            self._INTERACTION_CLS(self.view, spos),
+            self._nextState()
+        )
+
+    def ctxMenuItems(self : Self, spos : QPointF) -> list[QAction | QMenu]:
+        spos = self._snap(spos)
+        return [
+            self.view.action("Start", lambda: self._start(spos)),
+            self.view.action("Cancel", lambda: self.view.state.go(self.view.stateIdle)),
+        ]
 
 
 class ClickMixin:
