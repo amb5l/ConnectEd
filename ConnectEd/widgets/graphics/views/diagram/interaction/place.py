@@ -14,6 +14,7 @@ from ....items.block_pin import BlockPinItem
 from ....items.node      import NodeItem
 from ....items.segment   import SegmentItem, SegmentPreview1Item, SegmentPreview2Item
 from ....items.tap       import TapItem
+from ....items.net_label import NetLabelItem
 
 from ...drawing.interaction import Interaction, RotateItemMixin
 
@@ -197,3 +198,7 @@ class PlaceTapInteraction(PlaceBase1PosInteraction):
             self._view.action("Rotate CW", self.rotateCW, "]"),
             self._view.action("Rotate CCW", self.rotateCCW, "["),
         ]
+
+
+class PlaceNetLabelInteraction(PlaceBase1PosInteraction):
+    _ITEM_TYPE = NetLabelItem

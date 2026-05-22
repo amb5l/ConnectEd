@@ -73,6 +73,7 @@ class Actions:
         self.placeSymbolPin     = Action( window(), "Pin"           , "Place Symbol Pin"                    , "Ctrl+P"                     )  # noqa E501
         self.placeConnection    = Action( window(), "Connection"    , "Place Connection"                    , "C"                          )  # noqa E501
         self.placeTap           = Action( window(), "Tap"           , "Place Tap"                           , "T"                          )  # noqa E501
+        self.placeNetLabel      = Action( window(), "Net Label"     , "Place Net Label"                     , "N"                          )  # noqa E501
         self.placeLine          = Action( window(), "Line"          , "Place Line"                          , "Ctrl+L"                     )  # noqa E501
         self.placeRectangle     = Action( window(), "Rectangle"     , "Place Rectangle"                     , "Ctrl+R"                     )  # noqa E501
         self.placeEllipse       = Action( window(), "Ellipse"       , "Place Ellipse"                       , "Ctrl+E"                     )  # noqa E501

@@ -1,3 +1,7 @@
+full set of scene methods e.g. addPort; structure?
+CmdAddNetLabel.redo/undo are richer/better - roll out to others?
+use of \ to break up import lists - use ()
+DiagramViewStatePlaceTap.entry accepts list of items?
 properties vs methods in dock widgets etc
 
 moveHandle : test with all pin types

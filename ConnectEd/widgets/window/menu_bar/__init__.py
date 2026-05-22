@@ -195,6 +195,7 @@ class MenuBar(QMenuBar):
             self.place_menu.addSeparator()
             self.place_menu.addAction(a.placeConnection)
             self.place_menu.addAction(a.placeTap)
+            self.place_menu.addAction(a.placeNetLabel)
             self.place_menu.addSeparator()
             self.place_menu.addAction(a.placeLine)
             self.place_menu.addAction(a.placeRectangle)

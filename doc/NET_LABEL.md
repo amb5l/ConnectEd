@@ -101,10 +101,11 @@ renderer; the origin grip marks the hotspot when the item is selected.
 Touch helpers live on [`Netlist`](../ConnectEd/widgets/graphics/scenes/diagram/netlist.py),
 not in a separate items module. Views and items call `scene.netlist.*`.
 
-**Staged rollout:** stage **2** adds only **placement snap** on `Netlist` (geometry
-primitives + `snapToSegment`). Stage **3+** adds resolution, change handlers,
-and the rest of the public API. `_notifyNetlist()` on `NetLabelItem` stays a
-no-op until `onNetLabelChanged` lands in stage 3.
+**Staged rollout:** stage **2** adds placement only (Place menu, interaction,
+`addNetLabel`, XML) using the **existing view snap** (`DrawingView._snap`) —
+no wire-specific snap on `Netlist`. Stage **3+** adds touch geometry, resolution,
+change handlers, and the rest of the public API. `_notifyNetlist()` on
+`NetLabelItem` stays a no-op until `onNetLabelChanged` lands in stage 3.
 
 **Why not `items/net_label_touch.py`:** avoids a freestanding geometry module
 that would pull `Netlist` / `DiagramScene` and segment graph concerns into
@@ -126,17 +127,10 @@ def _segmentTouchesOrigin(seg, origin, eps=_TOUCH_EPS) -> bool
 
 - Segment in scene coords: `seg.scenePos()` → `seg.mapToScene(seg.line().p2())`.
 - Project origin onto segment; require parameter `t ∈ [0, 1]` and distance ≤ `eps`.
-- **Stage 2:** implement primitives + `snapToSegment` only.
-- **Stage 3+:** `_originScenePos` and `_segmentTouchesOrigin` also drive resolution
+- **Stage 3+:** implement primitives and public methods below; drive resolution
   and selection.
 
 ### Public `Netlist` methods
-
-**Stage 2 (placement snap only):**
-
-```python
-def snapToSegment(self, scene_pos: QPointF) -> tuple[SegmentItem, QPointF] | None
-```
 
 **Stage 3+ (resolution and selection):**
 
@@ -150,7 +144,6 @@ def onNetLabelChanged(self, label: NetLabelItem) -> None
 def onSegmentGeometryChanged(self, seg: SegmentItem) -> None
 ```
 
-- `snapToSegment` — nearest segment + closest on-segment point within tolerance.
 - `onNetLabelChanged` / `onSegmentGeometryChanged` — `_resolveSubnets(affected)`,
   then `self._scene.netlistChanged.emit()` (**stage 3+**).
 
@@ -272,30 +265,27 @@ def placeNetLabel(self) -> None:
 
 [`views/diagram/state/place.py`](../ConnectEd/widgets/graphics/views/diagram/state/place.py):
 
-- `DiagramViewStatePlaceNetLabel` — status e.g. `"Place Net Label: pick a point on a wire"`.
-- On click: `scene.netlist.snapToSegment(...)`; if hit, start
-  `PlaceNetLabelInteraction`.
-- If no segment at click, ignore or show status hint (no placement).
+- `DiagramViewStatePlaceNetLabel` — status e.g. `"Place Net Label: pick a position"`.
+- On **entry:** open [`NetLabelItemDialog`](../ConnectEd/widgets/dialogs/items/net_label.py)
+  (mirror `DrawingViewStatePlaceText` + `TextItemDialog`); **Value** has focus.
+- On dialog OK: apply name/value and layout fields to preview item; start
+  `PlaceNetLabelInteraction` at `_snap` position.
+- On dialog Cancel: return to idle.
 
 ### Placement interaction
 
 New [`PlaceNetLabelInteraction`](../ConnectEd/widgets/graphics/views/diagram/interaction/place.py)
 (subclass `PlaceBase1PosInteraction` or `Interaction`):
 
-- Preview `NetLabelItem` following cursor, snapped to wire under cursor.
-- Hotspot (origin) stays on the segment; item `pos` derived from origin handle
-  geometry (default origin `CENTER` or corner as chosen).
-- **Commit:** `scene.addNetLabel(snap_pos, undoable=True)` — do not call
-  `addItems` directly (netlist must refresh).
+- Preview `NetLabelItem` following cursor at `view._snap(pos)` (existing grid snap).
+- **Commit:** `scene.addNetLabel(pos, ..., undoable=True)` — do not call
+  `addItems` directly.
 - **Cancel:** remove preview.
-- Optional: open properties dialog for **Value** before or after first click
-  (mirror `DrawingViewStatePlaceText` + `TextItemDialog` pattern; may use
-  item properties dialog instead for MVP).
 
 ### Snap
 
-Placement uses `scene.netlist.snapToSegment(scene_pos)` (same primitives as
-resolution touch tests).
+Placement uses the **existing view snap** (`DrawingView._snap`), same as Place Text.
+Wire touch geometry on `Netlist` is **not** required for stage 2.
 
 ## Segment context menu (secondary, stage 2)
 
@@ -303,8 +293,9 @@ resolution touch tests).
 `ItemMenuMixin` but does not implement `ctxMenuItems` (right-click on segments
 is broken). Implement `ctxMenuItems` for diagram scenes:
 
-- **Add Net Label** — place at segment midpoint via `_segmentSceneLine` (or
-  `snapToSegment` if menu gains click position later); calls `scene.addNetLabel(...)`.
+- **Add Net Label** — open `NetLabelItemDialog`, then place at segment midpoint
+  via `_segmentSceneLine(...).pointAt(0.5)` (stage 3+ touch helpers); calls
+  `scene.addNetLabel(...)`.
 
 ## `NetLabelItem` UI on existing item
 
@@ -344,12 +335,10 @@ Do this first. Item should be constructable before placement lands in §2.
 Goal: place, edit, save, and reload labels on wires. **No net naming yet**
 (`_notifyNetlist` remains a no-op).
 
-**Snap geometry on `Netlist` (placement subset only):**
+**Placement dialog — `widgets/dialogs/`:**
 
-- [ ] `_TOUCH_EPS = PITCH / 2`.
-- [ ] `_segmentSceneLine(seg)` — scene-space finite segment from `scenePos()` + `line().p2()`.
-- [ ] `_segmentTouchesOrigin(seg, origin, eps)` — project onto segment; require `t ∈ [0, 1]` and distance ≤ `eps` (needed by `snapToSegment`).
-- [ ] `snapToSegment(scene_pos)` — nearest segment + closest on-segment point within tolerance.
+- [x] [`items/net_label.py`](../ConnectEd/widgets/dialogs/items/net_label.py) — `NetLabelItemDialog` (extends `BaseTextItemDialog`).
+- [x] `NetLabelItemGroupBox` + `NetLabelItemLayout` — Name (editable combo: Name, Type; Name default) and Value (**focus on open**).
 
 **Scene API and undo — `scenes/diagram/`:**
 
@@ -377,18 +366,16 @@ Goal: place, edit, save, and reload labels on wires. **No net naming yet**
 - [ ] `views/diagram/state/__init__.py` — declare and construct `statePlaceNetLabel`.
 - [ ] `views/diagram/state/place.py` — `DiagramViewStatePlaceNetLabel`:
 - [ ]   Status string for status bar.
-- [ ]   On click: `scene.netlist.snapToSegment(...)`; if none, stay in state (optional status hint).
-- [ ]   On hit: start `PlaceNetLabelInteraction` at snapped point.
+- [ ]   On entry: `NetLabelItemDialog`; apply fields; start `PlaceNetLabelInteraction` at `_snap` on OK.
 
 **Place interaction — `views/diagram/interaction/place.py`:**
 
 - [ ] Add `PlaceNetLabelInteraction`:
-- [ ]   Create preview `NetLabelItem` (not yet on undo stack).
-- [ ]   `update(pos)` — `scene.netlist.snapToSegment(pos)`; move item so origin stays on segment.
-- [ ]   `_commit` — `scene.addNetLabel(snap_pos, ..., undoable=True)`; remove preview if separate.
+- [ ]   Preview `NetLabelItem` (not yet on undo stack).
+- [ ]   `update(pos)` — move item to `view._snap(pos)`.
+- [ ]   `_commit` — `scene.addNetLabel(pos, ..., undoable=True)`; remove preview if separate.
 - [ ]   `_cancel` — remove preview from scene.
 - [ ]   `ctxMenuItems` — Complete / Cancel (match other place interactions).
-- [ ] (Optional) Open properties dialog for **Value** before interact (like Place Text).
 
 **Segment context menu — `items/segment.py`:**
 
@@ -398,7 +385,7 @@ Goal: place, edit, save, and reload labels on wires. **No net naming yet**
 
 **Stage 2 verification:**
 
-- [ ] Place → Net Label on a wire; label appears with origin on segment.
+- [ ] Place → Net Label; label appears at snapped grid position.
 - [ ] Set **Value** via Properties; displayed text updates (netlist unchanged).
 - [ ] Undo/redo add/remove label.
 - [ ] Save/load preserves top-level `<NetLabel>` elements.
@@ -407,8 +394,11 @@ Goal: place, edit, save, and reload labels on wires. **No net naming yet**
 
 ### 3. Netlist resolution — `scenes/diagram/netlist.py`
 
-**Remaining touch / public API:**
+**Touch geometry and public API:**
 
+- [ ] `_TOUCH_EPS = PITCH / 2`.
+- [ ] `_segmentSceneLine(seg)` — scene-space finite segment from `scenePos()` + `line().p2()`.
+- [ ] `_segmentTouchesOrigin(seg, origin, eps)` — project onto segment; require `t ∈ [0, 1]` and distance ≤ `eps`.
 - [ ] `_originScenePos(label)` — `label.getOriginHandle().scenePos()`.
 - [ ] `netLabels()` — all top-level `NetLabelItem` in `self._scene`.
 - [ ] `labelsTouchingSegment(seg)` — filter `netLabels()` by `_segmentTouchesOrigin`.
@@ -430,7 +420,7 @@ Goal: place, edit, save, and reload labels on wires. **No net naming yet**
 - [ ] `CmdAddNetLabel` redo/undo — call `onNetLabelChanged` (or equivalent refresh).
 - [ ] Confirm `_notifyNetlist()` on `NetLabelItem` now drives resolution.
 
-- [ ] (Optional) Unit tests for `_segmentTouchesOrigin` / `snapToSegment` edge cases.
+- [ ] (Optional) Unit tests for `_segmentTouchesOrigin` edge cases.
 
 ### 4. Segment geometry hook — `items/segment.py`
 
@@ -466,7 +456,7 @@ Goal: place, edit, save, and reload labels on wires. **No net naming yet**
 ## Implementation order (summary)
 
 1. §1 `NetLabelItem` — done.
-2. §2 **Place net labels** — snap on `Netlist`, `addNetLabel`, XML, Place menu, interaction, segment menu; verify placement without net naming.
+2. §2 **Place net labels** — dialog, `addNetLabel`, XML, Place menu, interaction, segment menu; verify placement without net naming (existing grid snap only).
 3. §3 **Netlist resolution** — remaining touch API, `_resolveSubnet`, wire `onNetLabelChanged` into item and commands.
 4. §4 Segment geometry hook.
 5. §5 Legacy removal (FreeNode child XML, conn cleanup).

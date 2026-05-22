@@ -278,6 +278,10 @@ class Slots:
         view.ui.placeTap()
 
     @withCurrentWidget(DrawingView)
+    def placeNetLabel(self : Self, view : DrawingView) -> None:
+        view.ui.placeNetLabel()
+
+    @withCurrentWidget(DrawingView)
     def placeLine(self : Self, view : DrawingView) -> None:
         view.ui.placeLine()
 

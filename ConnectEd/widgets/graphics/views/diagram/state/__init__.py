@@ -8,6 +8,7 @@ from .edit  import DiagramViewStateEditPort, \
 from .place import DiagramViewStatePlaceConn1, \
                    DiagramViewStatePlaceConn2, \
                    DiagramViewStatePlaceTap, \
+                   DiagramViewStatePlaceNetLabel, \
                    DiagramViewStatePlacePort, \
                    DiagramViewStatePlaceGate, \
                    DiagramViewStatePlaceBlock1, \
@@ -25,6 +26,7 @@ class DiagramViewStateMixin(DrawingViewStateMixin):
     statePlaceConn1    : DiagramViewStatePlaceConn1     # noqa N815
     statePlaceConn2    : DiagramViewStatePlaceConn2     # noqa N815
     statePlaceTap      : DiagramViewStatePlaceTap       # noqa N815
+    statePlaceNetLabel : DiagramViewStatePlaceNetLabel  # noqa N815
     statePlacePort     : DiagramViewStatePlacePort      # noqa N815
     statePlaceGate     : DiagramViewStatePlaceGate      # noqa N815
     statePlaceBlock1   : DiagramViewStatePlaceBlock1    # noqa N815
@@ -39,6 +41,7 @@ class DiagramViewStateMixin(DrawingViewStateMixin):
         self.statePlaceConn1    = DiagramViewStatePlaceConn1    (self)
         self.statePlaceConn2    = DiagramViewStatePlaceConn2    (self)
         self.statePlaceTap      = DiagramViewStatePlaceTap      (self)
+        self.statePlaceNetLabel = DiagramViewStatePlaceNetLabel (self)
         self.statePlacePort     = DiagramViewStatePlacePort     (self)
         self.statePlaceGate     = DiagramViewStatePlaceGate     (self)
         self.statePlaceBlock1   = DiagramViewStatePlaceBlock1   (self)

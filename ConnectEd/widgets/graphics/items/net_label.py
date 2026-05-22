@@ -23,6 +23,7 @@ if TYPE_CHECKING:
 
 class NetLabelItem(TextItem):
     # class attributes
+    _ORIGIN = RectHandleId.BOTTOM_LEFT
     _ORIGIN_GRIP_SHAPE = GripShape.STAR
     _PROPERTIES = \
         {
@@ -59,15 +60,15 @@ class NetLabelItem(TextItem):
         mirror_h   : bool                 = False,
         mirror_v   : bool                 = False,
         autoflip   : bool                 = True,
-        origin     : RectHandleId         = RectHandleId.TOP_LEFT,
+        origin     : RectHandleId         = RectHandleId.BOTTOM_LEFT,
         align_h    : AlignH               = AlignH.LEFT,
         align_v    : AlignV               = AlignV.TOP,
         width      : float                = -1.0,
         height     : float                = PITCH,
         pad_left   : float                = 2 * WIDTH,
         pad_right  : float                = 2 * WIDTH,
-        pad_top    : float                = 2 * WIDTH,
-        pad_bottom : float                = 2 * WIDTH,
+        pad_top    : float                = 0.0,
+        pad_bottom : float                = 0.0,
         color      : QColor        | None = None,
         font       : str           | None = None,
         size       : float         | None = None,

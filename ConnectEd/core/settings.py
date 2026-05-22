@@ -224,6 +224,16 @@ FACTORY_SETTINGS = {
                         }
                     }
                 },
+                "NetLabel" : {
+                    "text" : {
+                        "color"     : PaletteDark.NetLabel,
+                        "font"      : "Liberation Sans",
+                        "size"      : 5,
+                        "bold"      : False,
+                        "italic"    : False,
+                        "underline" : False
+                    }
+                },
                 "Port" : {
                     "pin" : {
                         "wire" : {
@@ -688,6 +698,16 @@ FACTORY_SETTINGS = {
                             "width" : 2,
                             "style" : Qt.PenStyle.SolidLine
                         }
+                    }
+                },
+                "NetLabel" : {
+                    "text" : {
+                        "color"     : PaletteLightMono.NetLabel,
+                        "font"      : "Liberation Sans",
+                        "size"      : 5,
+                        "bold"      : False,
+                        "italic"    : False,
+                        "underline" : False
                     }
                 },
                 "Port" : {

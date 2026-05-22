@@ -24,3 +24,6 @@ class DiagramViewUiPlaceMixin:
 
     def placeTap(self : "DiagramViewUi") -> None:
         self._view.state.go(self._view.statePlaceTap)
+
+    def placeNetLabel(self : "DiagramViewUi") -> None:
+        self._view.state.go(self._view.statePlaceNetLabel)
