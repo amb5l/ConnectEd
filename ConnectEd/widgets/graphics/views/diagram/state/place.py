@@ -219,7 +219,7 @@ class DiagramViewStatePlaceNetLabel(ClickMixin, DrawingViewStateBase):
 
 
 class DiagramViewStatePlaceNetLabelOnSegment(ClickMixin, DrawingViewStateBase):
-    STATUS = "Place Net Label: edit details"
+    STATUS = "Place Net Label on Connection: edit details"
 
     @checked
     def entry(
