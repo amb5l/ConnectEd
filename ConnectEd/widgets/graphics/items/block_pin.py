@@ -1,5 +1,6 @@
 from typing import Self
 
+from PyQt6.QtCore    import QPointF
 from PyQt6.QtWidgets import QMenu
 from PyQt6.QtGui     import QAction
 
@@ -53,7 +54,7 @@ class BlockPinItem(
         return "BlockPin"
 
     @checked
-    def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
+    def ctxMenuItems(self : Self, view : "DrawingView", _spos : QPointF) -> list[QAction | QMenu]:
         return [
             view.action("Edit...", view.ui.editBlockPin),
             view.separator(),

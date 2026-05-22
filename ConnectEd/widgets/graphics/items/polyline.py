@@ -58,7 +58,7 @@ class PolyVtxItem(VertexGripItem):
             parent.updatePath()
 
     @checked
-    def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
+    def ctxMenuItems(self : Self, view : "DrawingView", _spos : QPointF) -> list[QAction | QMenu]:
         items = []
         return items
 
@@ -114,7 +114,7 @@ class PolySegItem(SegmentGripItem):
         self._sweep = angle
 
     @checked
-    def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
+    def ctxMenuItems(self : Self, view : "DrawingView", _spos : QPointF) -> list[QAction | QMenu]:
         items = []
         a = self.sweep()
         items.append(view.action("Line", self._toLine, a is None))
@@ -412,7 +412,7 @@ class PolylineItem(
                 raise ValueError(f"Invalid handle: {id}")
 
     @checked
-    def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
+    def ctxMenuItems(self : Self, view : "DrawingView", _spos : QPointF) -> list[QAction | QMenu]:
         items = []
         return items
 

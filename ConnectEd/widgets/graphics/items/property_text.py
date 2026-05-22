@@ -237,7 +237,7 @@ class PropertyTextItem(TextItem):
         self.owner().properties.setValue(self.name(), value)
 
     @checked
-    def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
+    def ctxMenuItems(self : Self, view : "DrawingView", _spos : QPointF) -> list[QAction | QMenu]:
         items = [
             view.action("Edit...", lambda: view.ui.editPropertyTextDialog(self)),
             view.separator(),

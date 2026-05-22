@@ -78,7 +78,7 @@ class GatePinItem(
         self._updateGraphics()
 
     @checked
-    def ctxMenuItems(self : Self, view : "DiagramView") -> list[QAction | QMenu]:
+    def ctxMenuItems(self : Self, view : "DiagramView", _spos : QPointF) -> list[QAction | QMenu]:
         return [
             view.action(
                 "Active Low",

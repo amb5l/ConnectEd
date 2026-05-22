@@ -62,7 +62,7 @@ class SymbolPinItem(
         )
 
     @checked
-    def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
+    def ctxMenuItems(self : Self, view : "DrawingView", _spos : QPointF) -> list[QAction | QMenu]:
         if isinstance(view, SymbolView):
             return [
                 view.action(

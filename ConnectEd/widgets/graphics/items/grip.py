@@ -133,7 +133,7 @@ class MoveGripItem(OriginGripShapeMixin, GripItem):
     _ORIGIN_SHAPE = GripShape.SQUARE
 
     @checked
-    def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
+    def ctxMenuItems(self : Self, view : "DrawingView", _spos : QPointF) -> list[QAction | QMenu]:
         entries = [
             view.action("Slide", lambda: view.ui.editSlide([self.item()], self.scenePos())),
             view.action("Move", lambda: view.ui.editMove([self.item()], self.scenePos()))
@@ -159,11 +159,11 @@ class ResizeGripItem(OriginGripShapeMixin, GripItem):
     _ORIGIN_SHAPE = GripShape.SQUARE
 
     @checked
-    def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
+    def ctxMenuItems(self : Self, view : "DrawingView", _spos : QPointF) -> list[QAction | QMenu]:
         entries = [
             view.action("Resize", lambda: view.ui.editResize(self, self.scenePos())),
         ]
-        entries.extend(MoveGripItem.ctxMenuItems(self, view))
+        entries.extend(MoveGripItem.ctxMenuItems(self, view, _spos))
         return entries
 
 

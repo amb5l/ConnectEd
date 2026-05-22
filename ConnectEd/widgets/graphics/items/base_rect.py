@@ -169,7 +169,7 @@ class BaseRectangleMixin(
         return self.rect()
 
     @checked
-    def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
+    def ctxMenuItems(self : Self, view : "DrawingView", _spos : QPointF) -> list[QAction | QMenu]:
         return [
             view.action("Appearance...", lambda: view.ui.editAppearance(self)),
             view.action("Properties...", lambda: view.ui.editItemProperties(self))

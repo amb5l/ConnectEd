@@ -81,7 +81,7 @@ class BaseGateItem(
         raise NotImplementedError("Subclasses must implement this method")
 
     @checked
-    def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
+    def ctxMenuItems(self : Self, view : "DrawingView", _spos : QPointF) -> list[QAction | QMenu]:
         return [
             view.action(
                 "Rotate CW", lambda: view.ui.editRotateCW([self]), shortcut="]"

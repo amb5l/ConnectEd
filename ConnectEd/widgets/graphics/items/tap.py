@@ -157,7 +157,7 @@ class TapItem(
 
 
     @checked
-    def ctxMenuItems(self : Self, view : "DiagramView") -> list[QAction | QMenu]:
+    def ctxMenuItems(self : Self, view : "DiagramView", _spos : QPointF) -> list[QAction | QMenu]:
         return [
             view.action("Rotate CW",  lambda: self.rotateCW(),  shortcut="]"),
             view.action("Rotate CCW", lambda: self.rotateCCW(), shortcut="["),

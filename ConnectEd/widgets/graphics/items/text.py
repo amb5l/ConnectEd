@@ -679,7 +679,7 @@ class TextItem(
         return menu
 
     @checked
-    def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
+    def ctxMenuItems(self : Self, view : "DrawingView", _spos : QPointF) -> list[QAction | QMenu]:
         """Return context menu items for Text item."""
         items = [
             view.action("Edit...", view.ui.editTextDialog),

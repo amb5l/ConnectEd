@@ -49,7 +49,7 @@ class DrawingViewMenuMixin:
                     return
                 if len(items) == 1:
                     # item specific actions/submenus
-                    _extendMenu(items[0].ctxMenuItems(self))
+                    _extendMenu(items[0].ctxMenuItems(self, spos))
                 else:
                     # multiple items
                     _extendMenu([

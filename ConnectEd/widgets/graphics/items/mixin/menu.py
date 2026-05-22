@@ -1,5 +1,6 @@
 from typing import Self
 
+from PyQt6.QtCore    import QPointF
 from PyQt6.QtGui     import QAction
 from PyQt6.QtWidgets import QMenu
 
@@ -9,5 +10,9 @@ if TYPE_CHECKING:
 
 
 class ItemMenuMixin:
-    def ctxMenuItems(self : Self, view : "DrawingView") -> list[QAction | QMenu]:
+    def ctxMenuItems(
+        self : Self,
+        view : "DrawingView",
+        spos : QPointF
+    ) -> list[QAction | QMenu]:
         raise NotImplementedError("Subclass must implement this method")
