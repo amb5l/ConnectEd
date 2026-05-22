@@ -14,6 +14,7 @@ class DrawingViewLayer(Enum):
     Sheet   = LAYERS_SHEET
     Drawing = LAYERS_DRAWING
 
+
 class DrawingViewGrid:
     display    : bool
     snap       : bool
@@ -31,6 +32,7 @@ class DrawingViewGrid:
         self.dots       = s.dots
         self.alpha      = s.alpha
         self.min_pixels = s.min_pixels
+
 
 class DrawingViewPLPos:
     physical : QPoint  | None = None
@@ -50,6 +52,7 @@ class DrawingViewPLPos:
         self.physical = physical
         self.logical  = logical
 
+
 class DrawingViewMouseCurrent(DrawingViewPLPos):
     modifiers : Qt.KeyboardModifier = Qt.KeyboardModifier.NoModifier
 
@@ -62,6 +65,7 @@ class DrawingViewMouseCurrent(DrawingViewPLPos):
     ) -> None:
         super().__init__(physical, logical)
         self.modifiers = modifiers
+
 
 class DrawingViewMousePress(DrawingViewPLPos):
     modifiers : Qt.KeyboardModifier = Qt.KeyboardModifier.NoModifier
@@ -76,13 +80,16 @@ class DrawingViewMousePress(DrawingViewPLPos):
         super().__init__(physical, logical)
         self.modifiers = modifiers
 
+
 class DrawingViewMouseRelease(DrawingViewMousePress):
     pass
+
 
 class DrawingViewMouseButtonState(Enum):
     Idle     = auto()
     Pressed  = auto()
     Dragging = auto()
+
 
 class DrawingViewMouseButton:
     press   : DrawingViewMousePress
@@ -96,6 +103,7 @@ class DrawingViewMouseButton:
         self.release = DrawingViewMouseRelease()
         self.double  = DrawingViewMousePress()
         self.state   = DrawingViewMouseButtonState.Idle
+
 
 class DrawingViewMouse:
     current : DrawingViewMouseCurrent
