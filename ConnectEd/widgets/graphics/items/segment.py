@@ -6,7 +6,7 @@ from PyQt6.QtWidgets import QGraphicsLineItem, QGraphicsItem
 from ....app import settings
 
 from ....core.check import checked
-from ....core.defs import Z_DRAWING
+from ....core.defs import Z_SEGMENT
 
 from ..scenes import withScene
 
@@ -35,7 +35,7 @@ class SegmentItem(
 ):
     """Runs between two NodeItem instances."""
     # class attributes
-    Z = Z_DRAWING - 1
+    Z = Z_SEGMENT
 
     # instance attributes
     _node1 : NodeItem | None

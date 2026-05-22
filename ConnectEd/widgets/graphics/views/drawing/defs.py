@@ -3,7 +3,7 @@ from enum import Enum, auto
 
 from PyQt6.QtCore    import Qt, QPoint, QPointF
 
-from .....core.defs import LAYER_SHEET, LAYER_DRAWING
+from .....core.defs import LAYERS_SHEET, LAYERS_DRAWING
 
 from .....app import settings
 
@@ -11,8 +11,8 @@ from .....core.check import checked
 
 
 class DrawingViewLayer(Enum):
-    Sheet   = LAYER_SHEET
-    Drawing = LAYER_DRAWING
+    Sheet   = LAYERS_SHEET
+    Drawing = LAYERS_DRAWING
 
 class DrawingViewGrid:
     display    : bool

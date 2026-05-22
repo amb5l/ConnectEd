@@ -11,10 +11,11 @@ LOG_FILENAME = f"{APP_NAME}.log"
 
 Z_TEMPLATE      = -100
 Z_DRAWING       = 0    # drawing layer
+Z_SEGMENT       = Z_DRAWING - 1
 Z_TOP           = +100 # select box / WIP
 
-LAYER_SHEET   = (Z_TEMPLATE,)
-LAYER_DRAWING = (Z_DRAWING,)
+LAYERS_SHEET   = (Z_TEMPLATE,)
+LAYERS_DRAWING = (Z_SEGMENT, Z_DRAWING)
 
 WIDTH = 1  # standard line width
 PITCH = 10 # standard item pitch

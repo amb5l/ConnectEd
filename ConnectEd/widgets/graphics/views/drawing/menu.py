@@ -30,16 +30,19 @@ class DrawingViewMenuMixin:
                 menu.addSeparator()
         if self.interaction is None:
             # menu for item/items
-            items = self._itemsAt(vpos)
-            if items:
-                # preference: top grip, selection set, top item
-                grips = [item for item in items if isinstance(item, GripItem)]
+            items_at = self._itemsAt(vpos)
+            if items_at:
+                # preference: top grip, selection set, top menu-capable item
+                grips = [item for item in items_at if isinstance(item, GripItem)]
                 if grips:
                     items = [grips[0]] # top grip
-                elif any(item.isSelected() for item in items):
+                elif any(item.isSelected() for item in items_at):
                     items = self.scene().selectedItems()  # selection set
                 else:
-                    items = [items[0]] # top item
+                    menu_capable = [
+                        item for item in items_at if isinstance(item, ItemMenuMixin)
+                    ]
+                    items = [menu_capable[0]] if menu_capable else [items_at[0]]
                 # narrow down to items that support context menus
                 items = [item for item in items if isinstance(item, ItemMenuMixin)]
                 if len(items) == 0:
