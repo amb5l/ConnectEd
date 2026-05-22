@@ -43,6 +43,13 @@ class ItemXmlMixin:
         self.toXmlChildren(xw)
         self.toXmlEnd(xw)
 
+    @staticmethod
+    def _fromXmlRefresh(instance : "ItemMixin | PropertiesMixin") -> None:
+        if hasattr(instance, "onTextChanged"):
+            instance.onTextChanged()
+        if hasattr(instance, "onSceneRotationChange"):
+            instance.onSceneRotationChange()
+
     @classmethod
     @checked
     def fromXml(
@@ -58,36 +65,34 @@ class ItemXmlMixin:
         fromXmlAttrs(instance, xr)
         if hasattr(instance, "onGeometryChange"):
             instance.onGeometryChange()
-        # check if we're already at the end element (self-closing)
-        if xr.isEndElement() and xr.name() == xml_item_name:
-            return instance
-        # process child items
-        from ...items.port_pin   import PortPinMixin
-        from ...items.gate_pin   import GatePinItem
-        from ...items.block_pin  import BlockPinItem
-        from ...items.symbol_pin import SymbolPinItem
-        from ..property_text     import PropertyTextItem
-        pin_classes = {
-            "GatePinItem"   : GatePinItem,
-            "BlockPinItem"  : BlockPinItem,
-            "SymbolPinItem" : SymbolPinItem
-        }
-        while not (xr.isEndElement() and xr.name() == xml_item_name):
-            if xr.isStartElement():
-                item_name = xr.name() + "Item"
-                if item_name in pin_classes:
-                    child_cls : type[PortPinMixin] = pin_classes[item_name]
-                    child = child_cls.fromXml(xr, instance)
-                elif item_name == "PropertyTextItem":
-                    child : PropertyTextItem = PropertyTextItem.fromXml(
-                        xr, instance
-                    )
-                    if child is not None:
-                        prop_name = child.name()
-                        instance.properties.setText(prop_name, child)
-                        child.onTextChanged()
-                        child.onSceneRotationChange()
-                else:
-                    logger().warning(f"Unexpected child item: {xr.name()}")
-            xr.readNext()
+        if not (xr.isEndElement() and xr.name() == xml_item_name):
+            # process child items
+            from ...items.port_pin   import PortPinMixin
+            from ...items.gate_pin   import GatePinItem
+            from ...items.block_pin  import BlockPinItem
+            from ...items.symbol_pin import SymbolPinItem
+            from ..property_text     import PropertyTextItem
+            pin_classes = {
+                "GatePinItem"   : GatePinItem,
+                "BlockPinItem"  : BlockPinItem,
+                "SymbolPinItem" : SymbolPinItem
+            }
+            while not (xr.isEndElement() and xr.name() == xml_item_name):
+                if xr.isStartElement():
+                    item_name = xr.name() + "Item"
+                    if item_name in pin_classes:
+                        child_cls : type[PortPinMixin] = pin_classes[item_name]
+                        child = child_cls.fromXml(xr, instance)
+                    elif item_name == "PropertyTextItem":
+                        child : PropertyTextItem = PropertyTextItem.fromXml(
+                            xr, instance
+                        )
+                        if child is not None:
+                            prop_name = child.name()
+                            instance.properties.setText(prop_name, child)
+                            ItemXmlMixin._fromXmlRefresh(child)
+                    else:
+                        logger().warning(f"Unexpected child item: {xr.name()}")
+                xr.readNext()
+        ItemXmlMixin._fromXmlRefresh(instance)
         return instance

@@ -7,9 +7,7 @@ from ....items import ItemType
 
 from ....items.block         import BlockItem
 from ....items.block_pin     import BlockPinItem
-from ....items.node          import FixedNodeItem
 from ....items.property_text import PropertyTextItem
-from ....items.net_label     import NetLabelItem
 from ....items.segment       import SegmentItem
 
 from ...drawing.api import DrawingSceneApiEditMixin
@@ -45,10 +43,10 @@ class DiagramSceneApiEditMixin(DrawingSceneApiEditMixin):
         """Delete selected items from the scene; netlist aware."""
         if items is None:
             items = self._selectedTopItems()
-        # filter out items with parents apart from property texts/labels
+        # filter out items with parents apart from property texts
         for item in items:
             if item.parentItem() is not None:
-                if isinstance(item, PropertyTextItem | NetLabelItem):
+                if isinstance(item, PropertyTextItem):
                     continue
                 items.remove(item)
         # check that there is something to do
@@ -58,25 +56,14 @@ class DiagramSceneApiEditMixin(DrawingSceneApiEditMixin):
         # start macro
         if undoable:
             self.undo_stack.beginMacro("editDelete")
-        # remove segments and orphan free nodes
-        for item in items:
+        # remove segments (netlist aware)
+        for item in items[:]:
             if isinstance(item, SegmentItem):
                 self.removeSegment(item, undoable)
-                for vtx in [item.node1(), item.node2()]:
-                    if vtx is not None \
-                    and vtx.parentItem() is None \
-                    and vtx.degree() == 0:
-                        self.removeFreeNode(vtx, undoable)
-        # gather fixed nodes
-        fixed_nodes = []
-        for item in items:  # may include items with pins or entries
-            for child in item.childItems():  # may include pins or entries
-                if isinstance(child, FixedNodeItem):
-                    fixed_nodes.append(child)
-                for grandchild in child.childItems():  # may include entries
-                    if isinstance(grandchild, FixedNodeItem):
-                        fixed_nodes.append(grandchild)
-        #
+                items.remove(item)
+        # delete remaining items
+        if items:
+            super().editDelete(items, undoable)
         # end macro
         if undoable:
             self.undo_stack.endMacro()

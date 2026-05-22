@@ -45,22 +45,13 @@ flowchart TB
 
 ## Current state
 
-- [`ConnectEd/widgets/graphics/items/net_label.py`](../ConnectEd/widgets/graphics/items/net_label.py) —
-  stub `TextItem` subclass; `__init__` body is `pass` (broken).
-- Legacy labels under [`FreeNodeItem`](../ConnectEd/widgets/graphics/items/node.py);
-  netlist scans `node.childItems()` in
-  [`netlist.py`](../ConnectEd/widgets/graphics/scenes/diagram/netlist.py) (lines
-  ~107–110, ~367–369).
-- Orphan free-node cleanup deletes child labels in
-  [`conn.py`](../ConnectEd/widgets/graphics/scenes/diagram/api/conn.py).
-- `editDelete` treats `NetLabelItem` like a property-text child (parent exception)
-  in [`edit.py`](../ConnectEd/widgets/graphics/scenes/diagram/api/edit.py).
-- `FreeNodeItem.fromXml` has a parent/child bug:
-  `instance.setParentItem(child)` should be `child.setParentItem(instance)`.
-- Theme: `NetLabel` quill already in diagram resources/settings.
-- `NetLabelItem` is **not** registered in
-  [`items/__init__.py`](../ConnectEd/widgets/graphics/items/__init__.py)
-  `_item_classes` (top-level XML load/save will not work until registered).
+- [`net_label.py`](../ConnectEd/widgets/graphics/items/net_label.py) — floating `TextItem` subclass with Name/Value, origin hotspot, context menu, `_notifyNetlist()` (guarded until §3).
+- [`NetLabelItemDialog`](../ConnectEd/widgets/dialogs/items/net_label.py) + placement flow — Place menu working; commit via `addItems` / `CmdAdd`.
+- Top-level `<NetLabel>` save/load — registered in [`items/__init__.py`](../ConnectEd/widgets/graphics/items/__init__.py); post-load refresh in [`ItemXmlMixin.fromXml`](../ConnectEd/widgets/graphics/items/mixin/xml.py).
+- [`editDelete`](../ConnectEd/widgets/graphics/scenes/diagram/api/edit.py) — top-level labels delete via `super().editDelete()` (was blocked by property-text exception; diagram path also never called super for other items).
+- Legacy labels under [`FreeNodeItem`](../ConnectEd/widgets/graphics/items/node.py); netlist still scans `node.childItems()` in [`netlist.py`](../ConnectEd/widgets/graphics/scenes/diagram/netlist.py).
+- Orphan free-node cleanup still deletes child labels in [`conn.py`](../ConnectEd/widgets/graphics/scenes/diagram/api/conn.py).
+- `FreeNodeItem.fromXml` parent/child bug: `instance.setParentItem(child)` should be `child.setParentItem(instance)`.
 
 ## Target: `NetLabelItem`
 
@@ -101,11 +92,11 @@ renderer; the origin grip marks the hotspot when the item is selected.
 Touch helpers live on [`Netlist`](../ConnectEd/widgets/graphics/scenes/diagram/netlist.py),
 not in a separate items module. Views and items call `scene.netlist.*`.
 
-**Staged rollout:** stage **2** adds placement only (Place menu, interaction,
-`addNetLabel`, XML) using the **existing view snap** (`DrawingView._snap`) —
-no wire-specific snap on `Netlist`. Stage **3+** adds touch geometry, resolution,
-change handlers, and the rest of the public API. `_notifyNetlist()` on
-`NetLabelItem` stays a no-op until `onNetLabelChanged` lands in stage 3.
+**Staged rollout:** stage **2** adds placement (Place menu, interaction, XML) using the
+**existing view snap** (`DrawingView._snap`) — no wire-specific snap on `Netlist`.
+Stage **3+** adds touch geometry, resolution, change handlers, and the rest of the
+public API. `_notifyNetlist()` on `NetLabelItem` stays a no-op until `onNetLabelChanged`
+lands in stage 3.
 
 **Why not `items/net_label_touch.py`:** avoids a freestanding geometry module
 that would pull `Netlist` / `DiagramScene` and segment graph concerns into
@@ -174,49 +165,20 @@ after selecting a `SegmentItem`:
 **Move/slide (MVP):** segment move does **not** move touching labels (no
 structural bind). Optional later: move touching labels with selected segment.
 
-## Scene API and commands (stage 2 add; stage 3 netlist hook)
+## Placement undo (stage 2 — done)
 
-### `DiagramScene.addNetLabel`
+Placement uses the same path as Place Text:
 
-Add to [`diagram/api/add.py`](../ConnectEd/widgets/graphics/scenes/diagram/api/add.py):
+- [`PlaceNetLabelInteraction`](../ConnectEd/widgets/graphics/views/diagram/interaction/place.py) — empty subclass of `PlaceBase1PosInteraction`.
+- **Commit:** `scene.addItems([item], undoable=True)` → [`CmdAdd`](../ConnectEd/widgets/graphics/scenes/drawing/cmd/__init__.py).
 
-```python
-def addNetLabel(
-    self,
-    pos        : QPointF,
-    name       : str = "Name",
-    value      : str = "",
-    origin     : RectHandleId = RectHandleId.CENTER,  # hotspot at placement point
-    ...        # text layout kwargs aligned with NetLabelItem.__init__
-    undoable   : bool = True,
-) -> NetLabelItem
-```
-
-Behaviour:
-
-1. Construct `NetLabelItem` with origin positioned so the hotspot lands on `pos`
-   (placement interaction computes item `pos` from origin + align/pad).
-2. Add via undo command (see below).
-3. **Stage 2:** no netlist refresh on add/delete.
-4. **Stage 3+:** call `netlist.onNetLabelChanged(label)` after add; symmetric refresh on undo.
-
-### Undo command
-
-Prefer a dedicated command in e.g.
-[`diagram/cmd/net_label.py`](../ConnectEd/widgets/graphics/scenes/diagram/cmd/net_label.py)
-(subclass `CmdDiagramSceneBase` or compose `CmdAdd`):
-
-- **redo:** add item to scene, select it (**stage 3+:** `netlist.onNetLabelChanged`).
-- **undo:** remove item (**stage 3+:** refresh netlist for formerly touched subnets).
-
-Alternatively wrap `CmdAdd` and invoke netlist refresh in `addNetLabel` after
-`cmdExec`; dedicated command keeps netlist side effects symmetric on undo.
+No dedicated scene API (`addNetLabel`, etc.) — deferred.
 
 ### `editDelete`
 
 In [`diagram/api/edit.py`](../ConnectEd/widgets/graphics/scenes/diagram/api/edit.py),
-remove `NetLabelItem` from the property-text parent exception — treat as a normal
-top-level item.
+remove `NetLabelItem` from the property-text parent exception — top-level labels
+delete via `super().editDelete()` like other unparented items.
 
 ## XML (new format only, stage 2)
 
@@ -278,8 +240,7 @@ New [`PlaceNetLabelInteraction`](../ConnectEd/widgets/graphics/views/diagram/int
 (subclass `PlaceBase1PosInteraction` or `Interaction`):
 
 - Preview `NetLabelItem` following cursor at `view._snap(pos)` (existing grid snap).
-- **Commit:** `scene.addNetLabel(pos, ..., undoable=True)` — do not call
-  `addItems` directly.
+- **Commit:** `scene.addItems([item], undoable=True)`.
 - **Cancel:** remove preview.
 
 ### Snap
@@ -293,9 +254,8 @@ Wire touch geometry on `Netlist` is **not** required for stage 2.
 `ItemMenuMixin` but does not implement `ctxMenuItems` (right-click on segments
 is broken). Implement `ctxMenuItems` for diagram scenes:
 
-- **Add Net Label** — open `NetLabelItemDialog`, then place at segment midpoint
-  via `_segmentSceneLine(...).pointAt(0.5)` (stage 3+ touch helpers); calls
-  `scene.addNetLabel(...)`.
+- **Add Net Label** — same placement flow as Place menu (dialog + interaction); TBD
+  segment midpoint shortcut.
 
 ## `NetLabelItem` UI on existing item
 
@@ -340,57 +300,41 @@ Goal: place, edit, save, and reload labels on wires. **No net naming yet**
 - [x] [`items/net_label.py`](../ConnectEd/widgets/dialogs/items/net_label.py) — `NetLabelItemDialog` (extends `BaseTextItemDialog`).
 - [x] `NetLabelItemGroupBox` + `NetLabelItemLayout` — Name (editable combo: Name, Type; Name default) and Value (**focus on open**).
 
-**Scene API and undo — `scenes/diagram/`:**
-
-- [ ] Add `diagram/cmd/net_label.py` with `CmdAddNetLabel` (or equivalent):
-- [ ]   **redo:** add item, select (no netlist call yet).
-- [ ]   **undo:** remove item.
-- [ ] Add `DiagramSceneApiAddMixin.addNetLabel(...)` in `api/add.py`:
-- [ ]   Build `NetLabelItem` kwargs (default `name="Name"`, `value=""`).
-- [ ]   Position item so origin hotspot lands on `pos` (document chosen origin default).
-- [ ]   `cmdExec` with `CmdAddNetLabel`.
-- [ ] Export command from `cmd/` package if needed.
-
 **Delete and XML:**
 
-- [ ] `scenes/diagram/api/edit.py` — remove `NetLabelItem` from property-text parent delete exception.
-- [ ] `items/__init__.py` — `registerClass(_item_classes, "NetLabelItem")`.
-- [ ] Manual round-trip: save diagram with label, reload, verify `<NetLabel>` attrs.
+- [x] `scenes/diagram/api/edit.py` — remove `NetLabelItem` from property-text parent delete exception; `super().editDelete()` for non-segment items.
+- [x] `items/__init__.py` — `registerClass(_item_classes, "NetLabelItem")`.
+- [x] `items/mixin/xml.py` — `_fromXmlRefresh()` after attrs/children (`onTextChanged`, `onSceneRotationChange`).
+- [x] Programmatic round-trip: top-level `<NetLabel Name=… Value=…>` save/load; delete via `editDelete`.
+- [ ] Manual round-trip: save design with label, reload in app, verify attrs.
 
 **Place menu — window / view wiring:**
 
-- [ ] `menu_bar/actions.py` — `placeNetLabel` action (label, tooltip, shortcut TBD).
-- [ ] `menu_bar/slots.py` — `placeNetLabel(view)` → `view.ui.placeNetLabel()`.
-- [ ] `menu_bar/__init__.py` — add to diagram branch of `updatePlaceMenu` (after `placeTap`).
-- [ ] `views/diagram/ui/place.py` — `placeNetLabel()` → `state.go(statePlaceNetLabel)`.
-- [ ] `views/diagram/state/__init__.py` — declare and construct `statePlaceNetLabel`.
-- [ ] `views/diagram/state/place.py` — `DiagramViewStatePlaceNetLabel`:
-- [ ]   Status string for status bar.
-- [ ]   On entry: `NetLabelItemDialog`; apply fields; start `PlaceNetLabelInteraction` at `_snap` on OK.
+- [x] `menu_bar/actions.py` — `placeNetLabel` action.
+- [x] `menu_bar/slots.py` — `placeNetLabel(view)` → `view.ui.placeNetLabel()`.
+- [x] `menu_bar/__init__.py` — add to diagram branch of `updatePlaceMenu` (after `placeTap`).
+- [x] `views/diagram/ui/place.py` — `placeNetLabel()` → `state.go(statePlaceNetLabel)`.
+- [x] `views/diagram/state/__init__.py` — declare and construct `statePlaceNetLabel`.
+- [x] `views/diagram/state/place.py` — `DiagramViewStatePlaceNetLabel` (dialog on entry, interaction on OK).
 
 **Place interaction — `views/diagram/interaction/place.py`:**
 
-- [ ] Add `PlaceNetLabelInteraction`:
-- [ ]   Preview `NetLabelItem` (not yet on undo stack).
-- [ ]   `update(pos)` — move item to `view._snap(pos)`.
-- [ ]   `_commit` — `scene.addNetLabel(pos, ..., undoable=True)`; remove preview if separate.
-- [ ]   `_cancel` — remove preview from scene.
-- [ ]   `ctxMenuItems` — Complete / Cancel (match other place interactions).
+- [x] `PlaceNetLabelInteraction` — `PlaceBase1PosInteraction` subclass; commit via `addItems`.
 
 **Segment context menu — `items/segment.py`:**
 
 - [ ] Implement `ctxMenuItems(view)` for diagram scenes.
-- [ ] Action **Add Net Label** — `scene.addNetLabel(midpoint)` via `_segmentSceneLine(...).pointAt(0.5)`.
-- [ ] Guard: only when `isinstance(scene, DiagramScene)`.
+- [ ] Action **Add Net Label** — same dialog + placement flow as Place menu.
 
 **Stage 2 verification:**
 
-- [ ] Place → Net Label; label appears at snapped grid position.
+- [x] Place → Net Label; label appears at snapped grid position.
 - [ ] Set **Value** via Properties; displayed text updates (netlist unchanged).
-- [ ] Undo/redo add/remove label.
-- [ ] Save/load preserves top-level `<NetLabel>` elements.
+- [x] Undo/redo add/remove label.
+- [x] Delete selected top-level label (via `editDelete` → `CmdDelete`).
+- [ ] Save/load preserves top-level `<NetLabel>` elements (manual app test).
 - [ ] Segment context menu **Add Net Label** works.
-- [ ] Right-click existing label: Properties / Appearance.
+- [x] Right-click existing label: Properties / Appearance.
 
 ### 3. Netlist resolution — `scenes/diagram/netlist.py`
 
@@ -417,8 +361,8 @@ Goal: place, edit, save, and reload labels on wires. **No net naming yet**
 
 **Wire commands and item notifications:**
 
-- [ ] `CmdAddNetLabel` redo/undo — call `onNetLabelChanged` (or equivalent refresh).
-- [ ] Confirm `_notifyNetlist()` on `NetLabelItem` now drives resolution.
+- [ ] Hook netlist refresh into add/delete undo (§3+; may extend `CmdAdd` / `CmdDelete` or add wrapper).
+- [ ] Confirm `_notifyNetlist()` on `NetLabelItem` drives resolution.
 
 - [ ] (Optional) Unit tests for `_segmentTouchesOrigin` edge cases.
 
@@ -456,8 +400,8 @@ Goal: place, edit, save, and reload labels on wires. **No net naming yet**
 ## Implementation order (summary)
 
 1. §1 `NetLabelItem` — done.
-2. §2 **Place net labels** — dialog, `addNetLabel`, XML, Place menu, interaction, segment menu; verify placement without net naming (existing grid snap only).
-3. §3 **Netlist resolution** — remaining touch API, `_resolveSubnet`, wire `onNetLabelChanged` into item and commands.
+2. §2 **Place net labels** — placement + delete/XML done; segment menu + manual save/load verify remain.
+3. §3 **Netlist resolution** — touch API, `_resolveSubnet`, wire `onNetLabelChanged`.
 4. §4 Segment geometry hook.
 5. §5 Legacy removal (FreeNode child XML, conn cleanup).
 6. §6 Selection propagation.
