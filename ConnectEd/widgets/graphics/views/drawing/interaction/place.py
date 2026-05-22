@@ -44,6 +44,7 @@ class PlaceBaseInteraction(ItemInteraction):  # _view, _scene, _item, valid
         super().__init__(view, item)
         if self._item.scene() != self._scene:
             self._scene.addItem(self._item)
+        self._item.setAcceptedMouseButtons(Qt.MouseButton.NoButton)
         self._item.setSelected(True)
 
     def _cancel(self : Self) -> None:
