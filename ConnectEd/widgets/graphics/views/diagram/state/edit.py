@@ -13,10 +13,10 @@ from ....items.mixin import ItemMixin
 from ....items.port      import  PortItem
 from ....items.block_pin import BlockPinItem
 
-from ...drawing.state.base import DrawingViewStateBase
+from .base import DiagramViewStateBase
 
 
-class DiagramViewStateEditPort(DrawingViewStateBase):
+class DiagramViewStateEditPort(DiagramViewStateBase):
     STATUS = "Edit Port: specify changes"
 
     @checked
@@ -38,7 +38,7 @@ class DiagramViewStateEditPort(DrawingViewStateBase):
         self.view.state.go(self.view.stateIdle)
 
 
-class DiagramViewStateEditBlockPin(DrawingViewStateBase):
+class DiagramViewStateEditBlockPin(DiagramViewStateBase):
     STATUS = "Edit Block Pin: specify changes"
 
     @checked

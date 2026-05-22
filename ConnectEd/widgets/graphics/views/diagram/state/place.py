@@ -21,8 +21,6 @@ from ....items.block_pin  import BlockPinItem
 from ....items.segment    import SegmentItem
 from ....items.net_label  import NetLabelItem
 
-from ...drawing.state import DrawingViewStateBase
-
 from ...drawing.state.base import qkm
 
 from ...drawing.state.mixin import ClickMixin, DragMixin
@@ -35,8 +33,10 @@ from ..interaction.place import PlacePortInteraction,     \
                                 PlaceTapInteraction,       \
                                 PlaceNetLabelInteraction
 
+from .base import DiagramViewStateBase
 
-class DiagramViewStatePlacePort(ClickMixin, DrawingViewStateBase):
+
+class DiagramViewStatePlacePort(ClickMixin, DiagramViewStateBase):
     STATUS = "Place Port: pick a location"
 
     @checked
@@ -62,7 +62,7 @@ class DiagramViewStatePlacePort(ClickMixin, DrawingViewStateBase):
             self.view.state.go(self.view.stateIdle)
 
 
-class DiagramViewStatePlaceGate(ClickMixin, DrawingViewStateBase):
+class DiagramViewStatePlaceGate(ClickMixin, DiagramViewStateBase):
     STATUS = "Place Gate: pick a location"
 
     @checked
@@ -85,7 +85,7 @@ class DiagramViewStatePlaceGate(ClickMixin, DrawingViewStateBase):
             self.view.state.go(self.view.stateIdle)
 
 
-class DiagramViewStatePlaceBlock1(DrawingViewStateBase):
+class DiagramViewStatePlaceBlock1(StartMixin, DiagramViewStateBase):
     STATUS = "Place Block: pick the first point"
 
     def mouseLeftClick(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
@@ -98,11 +98,11 @@ class DiagramViewStatePlaceBlock1(DrawingViewStateBase):
         self.mouseLeftClick(v, s, m)
 
 
-class DiagramViewStatePlaceBlock2(ClickMixin, DragMixin, DrawingViewStateBase):
+class DiagramViewStatePlaceBlock2(ClickMixin, DragMixin, DiagramViewStateBase):
     STATUS = "Place Block: pick the second point"
 
 
-class DiagramViewStatePlaceBlockPin(DrawingViewStateBase):
+class DiagramViewStatePlaceBlockPin(DiagramViewStateBase):
     STATUS = "Place Block Pin: pick a location"
 
     @checked
@@ -140,7 +140,7 @@ class DiagramViewStatePlaceBlockPin(DrawingViewStateBase):
             self.view.grid.pitch if self.view.grid.snap else None
         )
 
-class DiagramViewStatePlaceConn1(ClickMixin, DrawingViewStateBase):
+class DiagramViewStatePlaceConn1(StartMixin, ClickMixin, DiagramViewStateBase):
     STATUS = "Place Connection: pick a starting position"
 
     def mouseLeftClick(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
@@ -153,7 +153,7 @@ class DiagramViewStatePlaceConn1(ClickMixin, DrawingViewStateBase):
         self.mouseLeftClick(v, s, m)
 
 
-class DiagramViewStatePlaceConn2(ClickMixin, DrawingViewStateBase):
+class DiagramViewStatePlaceConn2(ClickMixin, DiagramViewStateBase):
     STATUS = "Place Connection: place a mid- or end-point"
 
     def mouseLeftDoubleClick(self : Self, v : QPoint, s : QPointF, m : qkm) -> None:
@@ -176,7 +176,7 @@ class DiagramViewStatePlaceConn2(ClickMixin, DrawingViewStateBase):
             self.view.state.go(self.view.statePlaceConn1)
 
 
-class DiagramViewStatePlaceTap(ClickMixin, DrawingViewStateBase):
+class DiagramViewStatePlaceTap(ClickMixin, DiagramViewStateBase):
     STATUS = "Place Tap: pick a location"
 
     @checked
@@ -196,7 +196,7 @@ class DiagramViewStatePlaceTap(ClickMixin, DrawingViewStateBase):
         self.interact(PlaceTapInteraction(self.view, self._snap(s)))
 
 
-class DiagramViewStatePlaceNetLabel(ClickMixin, DrawingViewStateBase):
+class DiagramViewStatePlaceNetLabel(ClickMixin, DiagramViewStateBase):
     STATUS = "Place Net Label: pick a position"
 
     @checked
@@ -218,7 +218,7 @@ class DiagramViewStatePlaceNetLabel(ClickMixin, DrawingViewStateBase):
             self.view.state.go(self.view.stateIdle)
 
 
-class DiagramViewStatePlaceNetLabelOnSegment(ClickMixin, DrawingViewStateBase):
+class DiagramViewStatePlaceNetLabelOnSegment(ClickMixin, DiagramViewStateBase):
     STATUS = "Place Net Label on Connection: edit details"
 
     @checked

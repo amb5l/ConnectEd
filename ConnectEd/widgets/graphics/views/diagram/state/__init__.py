@@ -19,9 +19,11 @@ from .place import DiagramViewStatePlaceConn1, \
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from .. import DiagramView
+    from .base import DiagramViewStateBase
 
 
 class DiagramViewStateMixin(DrawingViewStateMixin):
+    state                       : DiagramViewStateBase                   # noqa N815
     stateEditPort               : DiagramViewStateEditPort                # noqa N815
     stateEditBlockPin           : DiagramViewStateEditBlockPin            # noqa N815
     statePlaceConn1             : DiagramViewStatePlaceConn1              # noqa N815

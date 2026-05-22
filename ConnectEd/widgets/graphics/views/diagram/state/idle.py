@@ -15,12 +15,12 @@ from ...drawing.interaction.edit  import EditMoveInteraction,          \
                                          EditAdjustPolySegInteraction, \
                                          EditDuplicateInteraction
 
-from ...drawing.state.base import qkm, DrawingViewStateBase
+from .base import DiagramViewStateBase, qkm
 
 from ..interaction.edit import EditMoveBlockPinsInteraction
 
 
-class DiagramViewStateIdle(DrawingViewStateBase):
+class DiagramViewStateIdle(DiagramViewStateBase):
     STATUS = "Idle"
 
     @checked
