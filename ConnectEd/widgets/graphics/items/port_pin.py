@@ -120,6 +120,8 @@ class PortPinMixin(
 
     @checked
     def onSceneChanged(self : Self, scene : "DrawingScene | None") -> None:
+        if scene is None:
+            return
         self._updateGraphics(scene)
         self._updatePen(scene)
         self._updateArrowPath(scene)
@@ -129,6 +131,8 @@ class PortPinMixin(
     @checked
     def onSelectionChanged(self : Self, selected : bool) -> None:
         scene : "DrawingScene" = self.scene()
+        if scene is None:
+            return
         self._updatePen(scene)
         self._updateArrowPenBrush(scene)
         self._updateNameHandle()
