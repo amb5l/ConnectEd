@@ -97,7 +97,7 @@ class ItemTransformMixin:
         self : Self | QGraphicsItem | PropertiesMixin,
         _pos : QPointF | None = None
     ) -> None:
-        self.signalPropertyChanges(["X", "Y"])
+        self.properties.signalChanges(["X", "Y"])
 
     @checked
     def onRotationChanged(self : Self | PropertiesMixin, _angle : float) -> None:
@@ -109,7 +109,7 @@ class ItemTransformMixin:
             if hasattr(child, "onSceneRotationChange"):
                 child.onSceneRotationChange()
         # broadcast change
-        self.signalPropertyChanges("Rotation")
+        self.properties.signalChanges("Rotation")
 
     @checked
     def onMirrorChange(self : Self | PropertiesMixin) -> None:
@@ -123,7 +123,7 @@ class ItemTransformMixin:
             if hasattr(child, "onSceneMirrorChange"):
                 child.onSceneMirrorChange()
         # broadcast changes
-        self.signalPropertyChanges(["MirrorH", "MirrorV"])
+        self.properties.signalChanges(["MirrorH", "MirrorV"])
 
     @overload
     def moveBy(self : Self | QGraphicsItem, dx : float, dy : float) -> None:
@@ -245,7 +245,7 @@ class ItemTransformMixin:
             for handle in self._handles.values():
                 handle.grip().updatePath()
         # broadcast change
-        self.signalPropertyChanges("Origin")
+        self.properties.signalChanges("Origin")
 
     @checked
     def getOriginHandle(self : "Self | ItemHandlesMixin") -> "HandleItem":

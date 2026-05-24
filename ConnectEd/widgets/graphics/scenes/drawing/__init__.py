@@ -63,6 +63,7 @@ class DrawingScene(
         self.onSettingsChanged()
         settings().changed.connect(self.onSettingsChanged)
         self.selectionChanged.connect(self.onSelectionChanged)
+        self.properties.setNotify(fresh)
 
     def __hash__(self : Self):
         return hash(self._uuid)

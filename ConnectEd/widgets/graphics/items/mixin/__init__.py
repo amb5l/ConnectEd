@@ -60,6 +60,8 @@ class ItemMixin(ItemNamesMixin, ItemMoveMixin):
         self.setFlag( f.ItemSendsScenePositionChanges , True )
         self.setCacheMode(QGraphicsItem.CacheMode.DeviceCoordinateCache)
         self._resetUuid()
+        if isinstance(self, PropertiesMixin):
+            self.initProperties(fresh)
         if isinstance(self, ItemSettingsMixin):
             self.initSettings()
         if isinstance(self, ItemPresentationMixin):
@@ -77,7 +79,7 @@ class ItemMixin(ItemNamesMixin, ItemMoveMixin):
         if isinstance(self, ItemShapeMixin):
             self.initShape()
         if isinstance(self, PropertiesMixin):
-            self.initProperties(fresh)
+            self.properties.setNotify(fresh)
 
     def __hash__(self : Self | QGraphicsItem):
         return hash(self._uuid)

@@ -35,4 +35,6 @@ class ItemCloneMixin:
                         clone_ap_child.setParentItem(
                             clone_item._handles[source_child.id()]
                         )
+        if hasattr(clone_item, "properties"):
+            clone_item.properties.setNotify(True)  # enable property change signalling
         return clone_item

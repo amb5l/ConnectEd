@@ -165,7 +165,7 @@ class PortPinMixin(
         self._bus = ":" in value
         if scene := self.scene():
             self._updatePen(scene)  # because name => bus => pin width
-        self.signalPropertyChanges("Name")
+        self.properties.signalChanges("Name")
 
     def direction(self : Self) -> Direction:
         return self._direction
@@ -173,7 +173,7 @@ class PortPinMixin(
     @checked
     def setDirection(self : Self, value : Direction) -> None:
         self._direction = value
-        self.signalPropertyChanges("Dir")
+        self.properties.signalChanges("Dir")
         if scene := self.scene():
             self._updateArrowPath(scene)
 
@@ -183,7 +183,7 @@ class PortPinMixin(
     @checked
     def setComment(self : Self, value : str) -> None:
         self._comment = value
-        self.signalPropertyChanges("Comment")
+        self.properties.signalChanges("Comment")
 
     def bus(self : Self) -> bool:
         return self._bus

@@ -166,7 +166,7 @@ class DiagramScene(DiagramSceneApiMixin, DrawingScene):
         top_element_name = cls.__name__.replace("Scene", "")
         if xr.name() != top_element_name:
             raise ValueError(f"Expected {top_element_name} element, got {xr.name()}")
-        scene : DrawingScene = cls()
+        scene : DrawingScene = cls(fresh=False)
         fromXmlAttrs(scene, xr)
         while not (xr.isEndElement() and xr.name() == top_element_name):
             if xr.tokenType() == QXmlStreamReader.TokenType.StartElement:
@@ -203,4 +203,5 @@ class DiagramScene(DiagramSceneApiMixin, DrawingScene):
                 else:
                     logger().warning(f"Unexpected element: {element_name}")
             xr.readNext()
+        scene.properties.setNotify(True)  # enable property change signalling
         return scene

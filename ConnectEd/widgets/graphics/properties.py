@@ -125,15 +125,17 @@ class CustomProperty:
 
 class PropertiesManager:
     # instance attributes
-    _owner : "PropertiesMixin"
-    _dict  : dict[str, InherentProperty | CustomProperty]
+    _owner  : "PropertiesMixin"
+    _dict   : dict[str, InherentProperty | CustomProperty]
+    _notify : bool
 
     @checked
     def __init__(self : Self, owner : "PropertiesMixin", fresh : bool) -> None:
         """
         Initialize the properties system for this instance.
         """
-        self._owner = owner
+        self._owner  = owner
+        self._notify = False
         # copy each property so per-instance state (e.g. text) is independent
         self._dict = {k: copy(v) for k, v in self._owner._PROPERTIES.items()}
         # Bind before addText: PropertyText callbacks may run during construction
@@ -221,6 +223,7 @@ class PropertiesManager:
             return False
         # set kind
         property.kind = kind
+        self.signalChanges(name)
         return True
 
     @checked
@@ -355,6 +358,7 @@ class PropertiesManager:
             if isinstance(value, str) and kind is not None and kind != DataKind.STR:
                 value = str2val(value, kind.types()[0].__name__)
             property.setter(self._owner, value)
+            return True
         # custom properties
         elif isinstance(property, CustomProperty):
             if isinstance(value, kind.types()):
@@ -362,13 +366,11 @@ class PropertiesManager:
             else:
                 logger().warning(f"Bad property value type: {type(value)}")
                 return False
+            self.signalChanges(name)
+            return True
         # unknown properties
-        else:
-            logger().warning(f"Bad property type: {type(property)}")
-            return False
-        if property.notifier:
-            property.notifier.changed.emit()
-        return True
+        logger().warning(f"Bad property type: {type(property)}")
+        return False
 
     @checked
     def init(self : Self, name : str, value : Any) -> bool:
@@ -429,6 +431,7 @@ class PropertiesManager:
         # rename
         self._dict[new_name] = property
         del self._dict[old_name]
+        self.signalChanges(new_name)
         return True
 
     @checked
@@ -452,18 +455,21 @@ class PropertiesManager:
             property.text.setParentItem(None)
             property.text.scene().removeItem(property.text)
             property.text = None
-        # cache notifier reference
-        notifier = property.notifier
+        # notify property receivers
+        self.signalChanges(name)
         # remove property from dictionary
         del self._dict[name]
-        # notify property receivers
-        if notifier:
-            notifier.changed.emit()
         # done
         return True
 
     @checked
+    def setNotify(self : Self, notify : bool) -> None:
+        self._notify = notify
+
+    @checked
     def signalChanges(self : Self, names : str | list[str]) -> None:
+        if not self._notify:
+            return
         if isinstance(names, str):
             names = [names]
         for name in names:
@@ -688,11 +694,6 @@ class PropertiesMixin:
     @checked
     def initProperties(self : Self, fresh : bool) -> None:
         self.properties = PropertiesManager(self, fresh)
-
-    @checked
-    def signalPropertyChanges(self : Self, names : str | list[str]) -> None:
-        if hasattr(self, "properties"):
-            self.properties.signalChanges(names)
 
     @checked
     def description(self : Self) -> str:

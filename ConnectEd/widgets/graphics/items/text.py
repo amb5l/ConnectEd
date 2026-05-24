@@ -342,7 +342,7 @@ class TextItem(
             self._child.setParentItem(self)
             self._child.onGeometryChange()
             self.updateHandlePositions()
-            self.signalPropertyChanges("Block")
+            self.properties.signalChanges("Block")
 
     def autoflip(self : Self) -> bool:
         return self._autoflip
@@ -351,7 +351,7 @@ class TextItem(
     def setAutoflip(self : Self, autoflip : bool) -> None:
         self._autoflip = autoflip
         self._adjustOrientation()
-        self.signalPropertyChanges("AutoFlip")
+        self.properties.signalChanges("AutoFlip")
 
     def text(self : Self) -> str:
         return self._child.text()
@@ -360,7 +360,7 @@ class TextItem(
     def setText(self : Self, text : str) -> None:
         self._child.setText(text)
         self.updateHandlePositions()
-        self.signalPropertyChanges("Text")
+        self.properties.signalChanges("Text")
 
     def alignH(self : Self) -> AlignH:
         return self._align_h
@@ -369,7 +369,7 @@ class TextItem(
     def setAlignH(self : Self, align_h : AlignH) -> None:
         self._align_h = align_h
         self._child.onGeometryChange()
-        self.signalPropertyChanges("AlignH")
+        self.properties.signalChanges("AlignH")
 
     def alignV(self : Self) -> AlignV:
         return self._align_v
@@ -378,7 +378,7 @@ class TextItem(
     def setAlignV(self : Self, align_v : AlignV) -> None:
         self._align_v = align_v
         self._child.onGeometryChange()
-        self.signalPropertyChanges("AlignV")
+        self.properties.signalChanges("AlignV")
 
     def width(self : Self) -> float:
         return self._width
@@ -389,7 +389,7 @@ class TextItem(
         self._child.onGeometryChange()
         self.updateHandlePositions()
         self.updateGrips()
-        self.signalPropertyChanges("Width")
+        self.properties.signalChanges("Width")
 
     def height(self : Self) -> float:
         return self._height
@@ -400,7 +400,7 @@ class TextItem(
         self._child.onGeometryChange()
         self.updateHandlePositions()
         self.updateGrips()
-        self.signalPropertyChanges("Height")
+        self.properties.signalChanges("Height")
 
     def padLeft(self : Self) -> float:
         return self._pad_left
@@ -411,7 +411,7 @@ class TextItem(
         self._child.onGeometryChange()
         self.updateHandlePositions()
         self.updateGrips()
-        self.signalPropertyChanges("Pad Left")
+        self.properties.signalChanges("Pad Left")
 
     def padRight(self : Self) -> float:
         return self._pad_right
@@ -422,7 +422,7 @@ class TextItem(
         self._child.onGeometryChange()
         self.updateHandlePositions()
         self.updateGrips()
-        self.signalPropertyChanges("Pad Right")
+        self.properties.signalChanges("Pad Right")
 
     def padTop(self : Self) -> float:
         return self._pad_top
@@ -433,7 +433,7 @@ class TextItem(
         self._child.onGeometryChange()
         self.updateHandlePositions()
         self.updateGrips()
-        self.signalPropertyChanges("Pad Top")
+        self.properties.signalChanges("Pad Top")
 
     def padBottom(self : Self) -> float:
         return self._pad_bottom
@@ -444,7 +444,7 @@ class TextItem(
         self._child.onGeometryChange()
         self.updateHandlePositions()
         self.updateGrips()
-        self.signalPropertyChanges("Pad Bottom")
+        self.properties.signalChanges("Pad Bottom")
 
     def color(self : Self) -> QColor:
         return self._child.color()

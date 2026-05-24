@@ -532,6 +532,7 @@ class PolylineItem(
                 else:
                     logger().warning(f"Unexpected element: {item_name}")
             xr.readNext()
+        instance.properties.setNotify(True)  # enable property change signalling
         return instance
 
 class SymbolPolylineItem(PolylineItem):

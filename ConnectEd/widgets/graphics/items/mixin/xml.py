@@ -95,4 +95,6 @@ class ItemXmlMixin:
                         logger().warning(f"Unexpected child item: {xr.name()}")
                 xr.readNext()
         ItemXmlMixin._fromXmlRefresh(instance)
+        if hasattr(instance, "properties"):
+            instance.properties.setNotify(True)  # enable property change signalling
         return instance
