@@ -126,11 +126,18 @@ class NetLabelItem(TextItem):
         super().setText(text)
 
     def text(self : Self) -> str:
-        raise NotImplementedError("NetLabelItem.text() is not implemented")
+        raise NotImplementedError("text() is not implemented")
 
     @checked
     def setText(self : Self, text : str) -> None:
-        raise NotImplementedError("NetLabelItem.setText() is not implemented")
+        raise NotImplementedError("setText() is not implemented")
+
+    def block(self : Self) -> bool:
+        raise NotImplementedError("block() is not implemented")
+
+    @checked
+    def setBlock(self : Self, _block : bool) -> None:
+        raise NotImplementedError("setBlock() is not implemented")
 
     def name(self : Self) -> str:
         return self._name
@@ -152,44 +159,11 @@ class NetLabelItem(TextItem):
 
     @checked
     def applyDialog(self : Self, dialog : "NetLabelItemDialog") -> None:
-        name       = dialog.getName()
-        value      = dialog.getValue()
-        rotation   = dialog.getRotation()
-        autoflip   = dialog.getAutoflip()
-        mirror_h   = dialog.getMirrorH()
-        mirror_v   = dialog.getMirrorV()
-        align_h    = dialog.getAlignH()
-        align_v    = dialog.getAlignV()
-        origin     = dialog.getOrigin()
-        pad_left   = dialog.getPadLeft()
-        pad_right  = dialog.getPadRight()
-        pad_top    = dialog.getPadTop()
-        pad_bottom = dialog.getPadBottom()
-        color      = dialog.getColor()
-        font       = dialog.getFont()
-        size       = dialog.getSize()
-        bold       = dialog.getBold()
-        italic     = dialog.getItalic()
-        underline  = dialog.getUnderline()
-        if name       is not NO_CHANGE: self.setName(name)
-        if value      is not NO_CHANGE: self.setValue(value)
-        if rotation   is not NO_CHANGE: self.setRotation(rotation)
-        if mirror_h   is not NO_CHANGE: self.setMirrorH(mirror_h)
-        if mirror_v   is not NO_CHANGE: self.setMirrorV(mirror_v)
-        if autoflip   is not NO_CHANGE: self.setAutoflip(autoflip)
-        if align_h    is not NO_CHANGE: self.setAlignH(align_h)
-        if align_v    is not NO_CHANGE: self.setAlignV(align_v)
-        if origin     is not NO_CHANGE: self.setOrigin(origin)
-        if pad_left   is not NO_CHANGE: self.setPadLeft(pad_left)
-        if pad_right  is not NO_CHANGE: self.setPadRight(pad_right)
-        if pad_top    is not NO_CHANGE: self.setPadTop(pad_top)
-        if pad_bottom is not NO_CHANGE: self.setPadBottom(pad_bottom)
-        if color      is not NO_CHANGE: self.setTextColor(color)
-        if font       is not NO_CHANGE: self.setTextFont(font)
-        if size       is not NO_CHANGE: self.setTextSize(size)
-        if bold       is not NO_CHANGE: self.setTextBold(bold)
-        if italic     is not NO_CHANGE: self.setTextItalic(italic)
-        if underline  is not NO_CHANGE: self.setTextUnderline(underline)
+        self._applyDialogCommon(dialog)
+        name  = dialog.getName()
+        value = dialog.getValue()
+        if name  is not NO_CHANGE: self.setName(name)
+        if value is not NO_CHANGE: self.setValue(value)
 
     @checked
     def ctxMenuItems(self : Self, view : "DrawingView", _spos : QPointF) -> list[QAction | QMenu]:

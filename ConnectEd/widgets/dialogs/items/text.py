@@ -183,6 +183,10 @@ class TextItemDialog(BaseTextItemDialog):
         return self._top_section.getText()
 
     @checked
+    def getBlock(self : Self) -> bool | NoChange:
+        return self._top_section.getBlock()
+
+    @checked
     def _focusEditor(self : Self) -> None:
         self._top_section._text_editor.setFocus(Qt.FocusReason.OtherFocusReason)
         self._top_section._text_editor.selectAll()

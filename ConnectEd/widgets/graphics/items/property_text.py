@@ -26,6 +26,7 @@ from .mixin.handle    import ItemHandlesMixin
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ..views.drawing  import DrawingView
+    from ...dialogs.items.property_text import PropertyTextItemDialog
 
 
 class PropertyTextTetherItem(TextTetherItem):
@@ -194,10 +195,17 @@ class PropertyTextItem(TextItem):
             self._tether.onPositionChanged(self.pos())
 
     def text(self : Self) -> str:
-        raise NotImplementedError("PropertyTextItemMixin.text() is not implemented")
+        raise NotImplementedError("text() is not implemented")
 
     def setText(self : Self, text : str) -> None:
-        raise NotImplementedError("PropertyTextItemMixin.setText() is not implemented")
+        raise NotImplementedError("setText() is not implemented")
+
+    def block(self : Self) -> bool:
+        raise NotImplementedError("block() is not implemented")
+
+    @checked
+    def setBlock(self : Self, _block : bool) -> None:
+        raise NotImplementedError("setBlock() is not implemented")
 
     def item(self : Self) -> ItemType | None:
         parent = self.parentItem()
@@ -235,6 +243,28 @@ class PropertyTextItem(TextItem):
         if value is NO_CHANGE:
             return
         self.owner().properties.setValue(self.name(), value)
+
+    @checked
+    def applyDialog(self : Self, dialog : "PropertyTextItemDialog") -> None:
+        self._applyDialogCommon(dialog)
+        name     = dialog.getName()
+        kind     = dialog.getKind()
+        value    = dialog.getValue()
+        cleat    = dialog.getCleat()
+        owner    = self.owner()
+        old_name = self.name()
+        if name is not NO_CHANGE and name != old_name:
+            if owner is not None and old_name:
+                owner.properties.rename(old_name, name)
+            self.setName(name)
+        name = self.name()
+        if owner is not None and name:
+            if kind is not NO_CHANGE:
+                owner.properties.setKind(name, kind)
+            if value is not NO_CHANGE:
+                owner.properties.setValue(name, value)
+        if cleat is not NO_CHANGE:
+            self.setCleat(cleat)
 
     @checked
     def ctxMenuItems(self : Self, view : "DrawingView", _spos : QPointF) -> list[QAction | QMenu]:
