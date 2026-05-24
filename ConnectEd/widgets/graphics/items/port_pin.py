@@ -69,19 +69,19 @@ class PortPinMixin(
         {
             "Name" : InherentProperty(
                 kind   = DataKind.STR,
-                getter = lambda self: self._name,
-                setter = lambda self, value: setattr(self, "_name", value),
+                getter = lambda self: self.name(),
+                setter = lambda self, value: self.setName(value),
             ),
             "Dir" : InherentProperty(
                 kind   = DataKind.DIRECTION,
-                getter = lambda self: self._direction,
-                setter = lambda self, value: setattr(self, "_direction", value)
+                getter = lambda self: self.direction(),
+                setter = lambda self, value: self.setDirection(value)
             ),
             "Comment" : InherentProperty(
                 kind   = DataKind.STR,
-                worthy = lambda self: self._comment != "",
-                getter = lambda self: self._comment,
-                setter = lambda self, value: setattr(self, "_comment", value)
+                worthy = lambda self: self.comment() != "",
+                getter = lambda self: self.comment(),
+                setter = lambda self, value: self.setComment(value)
             )
         }
 
@@ -241,13 +241,13 @@ class PortPinPathItem(PortPinMixin, QGraphicsPathItem):
         {
             "Dot" : InherentProperty(
                 kind   = DataKind.BOOL,
-                getter = lambda self: self._dot,
-                setter = lambda self, value: setattr(self, "_dot", value)
+                getter = lambda self: self.dot(),
+                setter = lambda self, value: self.setDot(value)
             ),
             "Clock" : InherentProperty(
                 kind   = DataKind.BOOL,
-                getter = lambda self: self._clock,
-                setter = lambda self, value: setattr(self, "_clock", value)
+                getter = lambda self: self.clock(),
+                setter = lambda self, value: self.setClock(value)
             )
         } | \
         ItemTransformMixin._PROPERTIES_POS | \

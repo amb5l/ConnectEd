@@ -32,8 +32,8 @@ class DrawingScene(
     _PROPERTIES = {
         "Name" : InherentProperty(
             kind   = DataKind.STR,
-            getter = lambda self: self._name,
-            setter = lambda self, value : setattr(self, "_name", value)
+            getter = lambda self: self.name(),
+            setter = lambda self, value: self.setName(value)
         )
     }
 

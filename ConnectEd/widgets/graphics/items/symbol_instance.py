@@ -88,8 +88,8 @@ class SymbolInstanceItem(BaseSymbolInstanceItem):
         {
             "Label" : InherentProperty(
                 kind   = DataKind.STR,
-                getter = lambda self: self._label,
-                setter = lambda self, value: setattr(self, "_label", value)
+                getter = lambda self: self.label(),
+                setter = lambda self, value: self.setLabel(value)
             )
         }
     _PROPERTIES = \
@@ -108,3 +108,10 @@ class SymbolInstanceItem(BaseSymbolInstanceItem):
 
     # instance attributes
     _label  : str
+
+    def label(self : Self) -> str:
+        return self._label
+
+    @checked
+    def setLabel(self : Self, label : str) -> None:
+        self._label = label
