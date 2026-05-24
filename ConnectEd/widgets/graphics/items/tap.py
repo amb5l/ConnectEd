@@ -142,18 +142,20 @@ class TapItem(
     def setSuffix(self : Self | PropertiesMixin, suffix : str) -> None:
         self._suffix = suffix
         pt = self.properties.text("Suffix")
-        if ":" in suffix:
-            # range
-            pt.setOrigin(RectHandleId.MIDDLE_LEFT)
-            pt.setWidth(-1.0)  # auto width
-            pt.setAlignH(AlignH.LEFT)
-            pt.setAlignV(AlignV.MIDDLE)
-        else:
-            # index
-            pt.setOrigin(RectHandleId.MIDDLE_RIGHT)
-            pt.setWidth(-1.0)  # auto width
-            pt.setAlignH(AlignH.RIGHT)
-            pt.setAlignV(AlignV.MIDDLE)
+        if pt is not None:
+            if ":" in suffix:
+                # range
+                pt.setOrigin(RectHandleId.MIDDLE_LEFT)
+                pt.setWidth(-1.0)  # auto width
+                pt.setAlignH(AlignH.LEFT)
+                pt.setAlignV(AlignV.MIDDLE)
+            else:
+                # index
+                pt.setOrigin(RectHandleId.MIDDLE_RIGHT)
+                pt.setWidth(-1.0)  # auto width
+                pt.setAlignH(AlignH.RIGHT)
+                pt.setAlignV(AlignV.MIDDLE)
+        self.properties.signalChanges("Suffix")
 
 
     @checked

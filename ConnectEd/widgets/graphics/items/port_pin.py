@@ -264,6 +264,7 @@ class PortPinPathItem(PortPinMixin, QGraphicsPathItem):
     def setDot(self : Self, value : bool) -> None:
         self._dot = value
         self._updateGraphics()
+        self.properties.signalChanges("Dot")
 
     def clock(self : Self) -> bool:
         return self._clock
@@ -273,6 +274,7 @@ class PortPinPathItem(PortPinMixin, QGraphicsPathItem):
         self._clock = value
         self._updateGraphics()
         self._updateNameHandle()
+        self.properties.signalChanges("Clock")
 
     @withScene
     def _updateGraphics(self : Self, scene : "DrawingScene") -> None:

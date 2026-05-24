@@ -168,23 +168,32 @@ class PropertyTextItem(TextItem):
         return self._cleat
 
     @checked
+    def setVisible(self : Self, visible : bool) -> None:
+        super().setVisible(visible)
+        if hasattr(self, "properties"):
+            self.properties.signalChanges("Visible")
+
+    @checked
     def setCleat(
         self   : Self,
         id     : HandleId | None,
         parent : "ItemHandlesMixin | None" = None
     ) -> bool:
         self._cleat = id
-        if id is None:
-            return False
-        item = parent or self.item()
-        if item is None:
-            return False
-        for child in item.childItems():
-            if isinstance(child, HandleItem) and child.id() == id:
-                self.setParentItem(child)
-                return True
-        logger().warning("Cleat not found in parent item")
-        return False
+        ok = False
+        if id is not None:
+            item = parent or self.item()
+            if item is not None:
+                for child in item.childItems():
+                    if isinstance(child, HandleItem) and child.id() == id:
+                        self.setParentItem(child)
+                        ok = True
+                        break
+                if not ok:
+                    logger().warning("Cleat not found in parent item")
+        if hasattr(self, "properties"):
+            self.properties.signalChanges("Cleat")
+        return ok
 
     @checked
     def setOrigin(self : Self, id : RectHandleId) -> None:
@@ -228,6 +237,8 @@ class PropertyTextItem(TextItem):
     def setName(self : Self, name : str) -> None:
         self._name = name
         self.onTextChanged()
+        if hasattr(self, "properties"):
+            self.properties.signalChanges("Name")
 
     def value(self : Self) -> Any:
         if not self.name():  # name is None or ""

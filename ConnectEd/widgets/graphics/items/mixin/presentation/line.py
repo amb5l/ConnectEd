@@ -50,6 +50,8 @@ class ItemPresentationLineMixin:
             return
         self._line_color = color
         self._updatePen()
+        if hasattr(self, "properties"):
+            self.properties.signalChanges("Line Color")
 
     def hasLineWidth(self : "Self | ItemType") -> bool:
         return hasattr(self, "_line_width")
@@ -75,6 +77,8 @@ class ItemPresentationLineMixin:
             return
         self._line_width = width
         self._updatePen()
+        if hasattr(self, "properties"):
+            self.properties.signalChanges("Line Width")
 
     def hasLineStyle(self : "Self | ItemType") -> bool:
         return hasattr(self, "_line_style")
@@ -100,6 +104,8 @@ class ItemPresentationLineMixin:
             return
         self._line_style = style
         self._updatePen()
+        if hasattr(self, "properties"):
+            self.properties.signalChanges("Line Style")
 
     # helpers
     def _penKey(self : "Self | ItemType") -> bool:

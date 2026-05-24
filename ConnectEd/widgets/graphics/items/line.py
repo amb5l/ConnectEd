@@ -127,6 +127,7 @@ class LineItem(
     @checked
     def setX1(self : Self, value : float) -> None:
         self.setP1(QPointF(value, self.p1().y()))
+        self.properties.signalChanges("X1")
 
     def y1(self : Self) -> float:
         return self.p1().y()
@@ -134,6 +135,7 @@ class LineItem(
     @checked
     def setY1(self : Self, value : float) -> None:
         self.setP1(QPointF(self.p1().x(), value))
+        self.properties.signalChanges("Y1")
 
     def p2(self : Self) -> QPointF:
         return self.pos() + self.line().p2()
@@ -148,6 +150,7 @@ class LineItem(
     @checked
     def setX2(self : Self, value : float) -> None:
         self.setP2(QPointF(value, self.p2().y()))
+        self.properties.signalChanges("X2")
 
     def y2(self : Self) -> float:
         return self.p2().y()
@@ -155,6 +158,7 @@ class LineItem(
     @checked
     def setY2(self : Self, value : float) -> None:
         self.setP2(QPointF(self.p2().x(), value))
+        self.properties.signalChanges("Y2")
 
     @checked
     def setPoints(self : Self, p1 : QPointF, p2 : QPointF) -> None:

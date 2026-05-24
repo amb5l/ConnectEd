@@ -50,6 +50,8 @@ class GateLabelMixin:
     @checked
     def setLabel(self : Self, label : str) -> None:
         self._label = label
+        if hasattr(self, "properties"):
+            self.properties.signalChanges("Label")
 
 
 class BaseGateItem(
@@ -76,6 +78,8 @@ class BaseGateItem(
     @checked
     def setLabel(self : Self, label : str) -> None:
         self._label = label
+        if hasattr(self, "properties"):
+            self.properties.signalChanges("Label")
 
     def initPath(self : Self) -> None:
         raise NotImplementedError("Subclasses must implement this method")
@@ -203,6 +207,7 @@ class BufGateItem(BaseGateItem):
             self._output.setPos(QPointF(-12, 0))
             self._output.setRotation(180)
         self._output.setInverted(level == "L")
+        self.properties.signalChanges("Output")
 
     def input(self : Self) -> str:
         return "" if not hasattr(self, '_input') else \
@@ -216,6 +221,7 @@ class BufGateItem(BaseGateItem):
             self._input.setName("i")
             self._input.setPos(QPointF(-28, 0))
         self._input.setInverted(level == "L")
+        self.properties.signalChanges("Input")
 
 
 class LogicGateItem(BaseGateItem):
@@ -337,6 +343,7 @@ class LogicGateItem(BaseGateItem):
             self._output.setPos(QPointF(-10, 0))
             self._output.setRotation(180)
         self._output.setInverted(level == "L")
+        self.properties.signalChanges("Output")
 
     def inputs(self : Self) -> str:
         return "" if not hasattr(self, '_inputs') else \
@@ -368,6 +375,7 @@ class LogicGateItem(BaseGateItem):
                 path.moveTo(-30, y)
                 path.lineTo(-30, 10)
                 self.setPath(path)
+        self.properties.signalChanges("Inputs")
 
 
 class AndGateItem(LogicGateItem):

@@ -111,6 +111,7 @@ class DiagramScene(DiagramSceneApiMixin, DrawingScene):
 
     def setSheetName(self : Self, name : str) -> None:
         self.sheet.name = name
+        self.properties.signalChanges("Sheet Name")
 
     def getSheetWidth(self : Self) -> float:
         return self.sheet.rect.width()
@@ -119,6 +120,7 @@ class DiagramScene(DiagramSceneApiMixin, DrawingScene):
         self.sheet.rect.setWidth(width)
         self.updateSceneRect()
         self.update()
+        self.properties.signalChanges("Sheet Width")
 
     def getSheetHeight(self : Self) -> float:
         return self.sheet.rect.height()
@@ -127,6 +129,7 @@ class DiagramScene(DiagramSceneApiMixin, DrawingScene):
         self.sheet.rect.setHeight(height)
         self.updateSceneRect()
         self.update()
+        self.properties.signalChanges("Sheet Height")
 
     def getMargin(self : Self) -> float:
         return self.margin
@@ -134,6 +137,7 @@ class DiagramScene(DiagramSceneApiMixin, DrawingScene):
     def setMargin(self : Self, margin : float) -> None:
         self.margin = margin
         self.update()
+        self.properties.signalChanges("Margin")
 
     def getBorder(self : Self) -> float:
         return self.border
@@ -141,6 +145,7 @@ class DiagramScene(DiagramSceneApiMixin, DrawingScene):
     def setBorder(self : Self, border : float) -> None:
         self.border = border
         self.update()
+        self.properties.signalChanges("Border")
 
     def toXml(self : Self, xw : QXmlStreamWriter) -> None:
         # start

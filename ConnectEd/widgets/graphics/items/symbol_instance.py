@@ -115,3 +115,4 @@ class SymbolInstanceItem(BaseSymbolInstanceItem):
     @checked
     def setLabel(self : Self, label : str) -> None:
         self._label = label
+        self.properties.signalChanges("Label")

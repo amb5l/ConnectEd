@@ -78,10 +78,12 @@ class ItemLocMixin:
     @checked
     def setLocEdge(self : Self, edge : Edge) -> None:
         self.setLoc(EdgeLoc(Edge(edge), self._loc.offset))
+        self.properties.signalChanges("Edge")
 
     @checked
     def setLocOffset(self : Self, offset : float) -> None:
         self.setLoc(EdgeLoc(self._loc.edge, offset))
+        self.properties.signalChanges("Offset")
 
     @checked
     def locSnap(self : Self, loc : EdgeLoc, snap : QPointF | None = None) -> EdgeLoc:

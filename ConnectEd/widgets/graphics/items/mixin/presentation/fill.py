@@ -50,6 +50,8 @@ class ItemPresentationFillMixin:
             return
         self._fill_color = color
         self._updateBrush()
+        if hasattr(self, "properties"):
+            self.properties.signalChanges("Fill Color")
 
     def hasFillStyle(self : "Self | ItemType") -> bool:
         return hasattr(self, "_fill_style")
@@ -75,6 +77,8 @@ class ItemPresentationFillMixin:
             return
         self._fill_style = style
         self._updateBrush()
+        if hasattr(self, "properties"):
+            self.properties.signalChanges("Fill Style")
 
     # helpers
 

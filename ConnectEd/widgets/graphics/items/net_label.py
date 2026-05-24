@@ -147,6 +147,7 @@ class NetLabelItem(TextItem):
         self._name = name
         self.onTextChanged()
         self._notifyNetlist()
+        self.properties.signalChanges("Name")
 
     def value(self : Self) -> str:
         return self._value
@@ -156,6 +157,7 @@ class NetLabelItem(TextItem):
         self._value = value
         self.onTextChanged()
         self._notifyNetlist()
+        self.properties.signalChanges("Value")
 
     @checked
     def applyDialog(self : Self, dialog : "NetLabelItemDialog") -> None:

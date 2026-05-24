@@ -58,6 +58,8 @@ class ItemPresentationTextMixin:
             return
         self._text_color = color
         self._updateQuill()
+        if hasattr(self, "properties"):
+            self.properties.signalChanges("Text Color")
 
     def hasTextFont(self : "Self | ItemType") -> bool:
         return hasattr(self, "_text_font")
@@ -83,6 +85,8 @@ class ItemPresentationTextMixin:
             return
         self._text_font = font
         self._updateQuill()
+        if hasattr(self, "properties"):
+            self.properties.signalChanges("Text Font")
 
     def hasTextSize(self : "Self | ItemType") -> bool:
         return hasattr(self, "_text_size")
@@ -108,6 +112,8 @@ class ItemPresentationTextMixin:
             return
         self._text_size = size
         self._updateQuill()
+        if hasattr(self, "properties"):
+            self.properties.signalChanges("Text Size")
 
     def hasTextBold(self : "Self | ItemType") -> bool:
         return hasattr(self, "_text_bold")
@@ -133,6 +139,8 @@ class ItemPresentationTextMixin:
             return
         self._text_bold = bold
         self._updateQuill()
+        if hasattr(self, "properties"):
+            self.properties.signalChanges("Text Bold")
 
     def hasTextItalic(self : "Self | ItemType") -> bool:
         return hasattr(self, "_text_italic")
@@ -158,6 +166,8 @@ class ItemPresentationTextMixin:
             return
         self._text_italic = italic
         self._updateQuill()
+        if hasattr(self, "properties"):
+            self.properties.signalChanges("Text Italic")
 
     def hasTextUnderline(self : "Self | ItemType") -> bool:
         return hasattr(self, "_text_underline")
@@ -183,6 +193,8 @@ class ItemPresentationTextMixin:
             return
         self._text_underline = underline
         self._updateQuill()
+        if hasattr(self, "properties"):
+            self.properties.signalChanges("Text Underline")
 
     # helpers
 

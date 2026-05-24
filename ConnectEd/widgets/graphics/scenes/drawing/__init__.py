@@ -86,6 +86,7 @@ class DrawingScene(
 
     def setName(self : Self, name : str | None) -> None:
         self._name = name
+        self.properties.signalChanges("Name")
 
     def undo(self : Self) -> None:
         self.undo_stack.undo()

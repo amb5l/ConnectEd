@@ -301,6 +301,7 @@ class PolylineItem(
     def setClosed(self : Self, closed : bool) -> None:
         self._closed = closed
         self.updatePath()
+        self.properties.signalChanges("Closed")
 
     @checked
     def close(self : Self, sweep : float | None = None) -> None:

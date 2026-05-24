@@ -52,6 +52,7 @@ class PartItemMixin:
 
     def setLabel(self : Self, label : str) -> None:
         self._label = label
+        self.properties.signalChanges("Label")
 
     def name(self : Self) -> str:
         return self._name
@@ -59,6 +60,7 @@ class PartItemMixin:
     @checked
     def setName(self : Self, name : str) -> None:
         self._name = name
+        self.properties.signalChanges("Name")
 
     def path(self : Self) -> str:
         return self._path
@@ -66,3 +68,4 @@ class PartItemMixin:
     @checked
     def setPath(self : Self, path : str) -> None:
         self._path = path
+        self.properties.signalChanges("Path")
