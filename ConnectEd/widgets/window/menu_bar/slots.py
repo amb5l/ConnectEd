@@ -318,14 +318,15 @@ class Slots:
         window().logDock().raise_()
 
     def aiSettings(self : Self) -> None:
-        from ....widgets.dialogs.ai_settings import AiSettingsDialog
-        dialog = AiSettingsDialog(window())
+        from ....widgets.dialogs.ai_profiles import AiProfilesDialog
+        dialog = AiProfilesDialog(window())
         if not dialog.exec():
             return
         manager = window().aiChatManager()
-        if manager is None:
-            return
-        manager.refreshChatTitles()
+        if manager is not None:
+            manager.refreshChatTitles()
+            manager.refreshChatWidgets()
+        window().menuBar().updateAiMenu()
 
     def windowNext(self : Self) -> None:
         window().mdiArea().nextSubWindow()

@@ -6,13 +6,14 @@ from typing import TYPE_CHECKING, Self
 from PyQt6.QtCore import QObject, pyqtSignal, Qt
 from PyQt6.QtWidgets import QDockWidget
 
-from ....core.check import checked
+from .....ai.lock import AiEditLock
+from .....core.check import checked
 
 from .dock import AiChatDock
 
 if TYPE_CHECKING:
-    from .. import Window
-    from ..messages_view import MessagesViewDock
+    from ... import Window
+    from ...messages_view import MessagesViewDock
 
 
 def chatTitle(provider_label : str, index : int | None = None) -> str:
@@ -40,23 +41,24 @@ class AiChatManager(QObject):
 
     _window        : "Window"
     _messages_dock : "MessagesViewDock"
+    _edit_lock     : AiEditLock
     _chats         : list[AiChatDock]
     _next_chat_id  : int
 
     @checked
     def __init__(
-        self       : Self,
-        window     : "Window",
+        self          : Self,
+        window        : "Window",
         messages_dock : "MessagesViewDock",
+        edit_lock     : AiEditLock,
     ) -> None:
         super().__init__(window)
         self._window = window
         self._messages_dock = messages_dock
+        self._edit_lock = edit_lock
         self._chats = []
         self._next_chat_id = 1
-        edit_lock = window.aiEditLock()
-        if edit_lock is not None:
-            edit_lock.lockChanged.connect(self._onEditLockChanged)
+        self._edit_lock.lockChanged.connect(self._onEditLockChanged)
 
     @checked
     def chats(self : Self) -> list[AiChatDock]:
@@ -64,16 +66,29 @@ class AiChatManager(QObject):
 
     @checked
     def newChat(
-        self      : Self,
-        provider  : str | None = None,
-        focus     : bool = True,
+        self       : Self,
+        profile_id : str | None = None,
+        model      : str = "",
+        focus      : bool = True,
     ) -> AiChatDock:
-        from ....app import settings
+        from .....ai.chat_mru import recordChatConnection
+        from .....ai.profiles import getProfile
 
         chat_id = self._next_chat_id
         self._next_chat_id += 1
-        provider_key = provider or settings().get("ai/provider")
-        dock = AiChatDock(self._window, chat_id, provider_key)
+        profile = getProfile(profile_id) if profile_id is not None else None
+        if profile is not None and model.strip():
+            model = model.strip()
+            dock = AiChatDock(
+                self._window,
+                chat_id,
+                profile_id = profile.id,
+                provider   = profile.provider,
+                model      = model,
+            )
+            recordChatConnection(profile.id, model)
+        else:
+            dock = AiChatDock(self._window, chat_id)
         dock.setFeatures(
             QDockWidget.DockWidgetFeature.DockWidgetClosable
             | QDockWidget.DockWidgetFeature.DockWidgetMovable
@@ -101,8 +116,7 @@ class AiChatManager(QObject):
 
     @checked
     def refreshChatTitles(self : Self) -> None:
-        edit_lock = self._window.aiEditLock()
-        holder = edit_lock.holder() if edit_lock is not None else None
+        holder = self._edit_lock.holder()
         labels = chatTitles([dock.providerLabel() for dock in self._chats])
         for dock, title in zip(self._chats, labels, strict=True):
             if holder is dock.chat_widget.session():
@@ -112,7 +126,8 @@ class AiChatManager(QObject):
     @checked
     def refreshChatWidgets(self : Self) -> None:
         for dock in self._chats:
-            dock.chat_widget.refreshSendState()
+            dock.chat_widget.refreshWelcomeIfIdle()
+            dock.chat_widget.refreshInputState()
 
     def _onEditLockChanged(self : Self) -> None:
         self.refreshChatTitles()

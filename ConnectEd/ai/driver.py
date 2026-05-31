@@ -11,6 +11,8 @@ if TYPE_CHECKING:
     from ..widgets.window import Window
     from .session import AiChatSession
 
+_PING_MESSAGE = "ConnectEd AI chat client"
+
 
 class AiDriver:
     _WRITE_TOOLS : frozenset[str] = frozenset()
@@ -29,8 +31,10 @@ class AiDriver:
     def tools(self : Self) -> list[ToolDefinition]:
         return [
             ToolDefinition(
-                name        = "nobodyHome",
-                description = "Stub tool for scaffolding; returns a fixed JSON payload.",
+                name        = "ping",
+                description = (
+                    "Health check; returns the ConnectEd AI chat client identity."
+                ),
                 parameters  = {
                     "type"       : "object",
                     "properties" : {},
@@ -53,18 +57,16 @@ class AiDriver:
                     "error" : "Edit lock not held by this chat",
                 })
 
-        if name == "nobodyHome":
-            return json.dumps(self.nobodyHome())
+        if name == "ping":
+            return self.ping()
         raise ValueError(f"Unknown AI tool: {name}")
 
     @checked
-    def nobodyHome(self : Self) -> dict[str, Any]:
-        return {
-            "ok"      : True,
-            "message" : "Nobody home.",
-        }
+    def ping(self : Self) -> str:
+        return _PING_MESSAGE
 
     def _editLock(self : Self):
-        if not hasattr(self._window, "_ai_edit_lock"):
+        manager = self._window.aiManager()
+        if manager is None:
             return None
-        return self._window.aiEditLock()
+        return manager.editLock()

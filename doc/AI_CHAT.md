@@ -39,25 +39,38 @@ scene APIs.
 
 ## Current state
 
-**Implemented (scaffolding):**
+**Implemented:**
 
-- [`ConnectEd/ai/`](../ConnectEd/ai/) — `types`, `AiDriver`, `AiChatSession`,
-  `register_provider` / `create_provider`, `DummyProvider` (`nobodyHome()` tool).
-- [`ConnectEd/widgets/window/ai_chat/`](../ConnectEd/widgets/window/ai_chat/) —
-  `AiChatDock`, `AiChatWidget` (`QTextBrowser` history with links, input, Send).
-- **Welcome** — [`ConnectEd/ai/welcome.py`](../ConnectEd/ai/welcome.py) on new chat;
-  **AI Settings** stub dialog + `connected://ai/settings` link.
-- **Settings** — `ai/` section in [`FACTORY_SETTINGS`](../ConnectEd/core/settings.py);
-  default provider `"dummy"`.
-- **Window** — `AiChatManager`; one default chat on startup; bottom split (log tabs left, AI right).
-- **AI menu** — New Chat, dynamic open-chat list, Settings; `windowAiChat` removed.
-- **Tests** — unit tests for dummy provider; `MAIN_WIDGETS["AI Chat"]` in
-  [`specs.py`](../tests/integration/gui/specs.py).
+- [`ConnectEd/ai/`](../ConnectEd/ai/) — `types`, `AiDriver`, `AiChatSession`, `AiEditLock`,
+  `profiles`, `profile_models`, `chat_mru`, `welcome`, provider registry
+  (`registerProvider` / `createProvider` / `createProviderForProfile`).
+- **Real providers** — `xai`, `openai`, `anthropic`, `ollama`, `openai_compatible`
+  (`openai`, `anthropic` in [`pyproject.toml`](../pyproject.toml) core dependencies).
+- [`ConnectEd/widgets/window/ai/`](../ConnectEd/widgets/window/ai/) —
+  `AiChatManager`, `AiChatDock`, `AiChatWidget` (`QTextBrowser` history with links,
+  input, Send).
+- **Disconnected / connected** — new chats start **disconnected** (no profile/model bound);
+  input shows dim italic `disconnected` and is disabled until the user picks a model.
+  Connected chats bind `profile_id` + `model` and create a real provider on send.
+- **Welcome** — [`ConnectEd/ai/welcome.py`](../ConnectEd/ai/welcome.py): settings link
+  (no profiles), or **Recent** MRU (up to 10, persisted in `ai/chat_mru`) plus full
+  `provider:key:model` list; `connected://ai/settings` and `connected://ai/chat?…` links.
+- **AI Profiles** — [`AiProfilesDialog`](../ConnectEd/widgets/dialogs/ai_profiles.py);
+  multi-profile credentials; model lists cached per profile (`profile_models.py`).
+- **Settings** — `ai/` section in [`FACTORY_SETTINGS`](../ConnectEd/core/settings.py)
+  (`profiles_data`, `chat_mru`).
+- **Window** — [`AiManager`](../ConnectEd/widgets/window/ai/manager.py) (edit lock, profile
+  refresh, chat docks); one default chat on startup; bottom split (log tabs left, AI right).
+- **AI menu** — New Chat → profile → model submenu, dynamic open-chat list, Settings…
+- **Tests** — unit tests for providers, profiles, MRU, welcome, edit lock, unbound chat;
+  `MAIN_WIDGETS["AI Chat"]` in [`specs.py`](../tests/integration/gui/specs.py).
 
 **Not yet implemented:**
 
-- Real HTTP providers, `ContextBuilder`, read/write tools beyond `nobodyHome()`.
-- **`AiEditLock`** — exclusive lease + partial UI lock for multi-chat safety.
+- `ContextBuilder`, read/write tools beyond scaffolding `nobodyHome` on `AiDriver`.
+- **Recipes** submenu (placeholder only).
+- Dock titles using `AI Chat - [disconnected]` / `AI Chat - [provider:key:model]` format
+  (today: `AI Chat [no provider]` or `AI Chat [profile/model]`).
 
 **Existing infrastructure to build on:**
 
@@ -154,7 +167,7 @@ with an `"AI"` menu tree; adjust `MAIN_WIDGETS` for multi-dock (see below).
 ## Multiple chat docks
 
 Today `Window` holds a single `_ai_chat_dock`. Refactor to **`AiChatManager`**
-(owned by `Window` or co-located under `widgets/window/ai_chat/`):
+(owned by `Window` or co-located under `widgets/window/ai/`):
 
 - **`newChat() -> AiChatDock`** — allocate id, default title (`"AI Chat"`,
   `"AI Chat 2"`, …), create session, add dock to bottom-right pane.
@@ -286,7 +299,7 @@ Example entries (later):
 | **Document netlist** | `get_netlist_summary` + narrative |
 
 Implement in [`ConnectEd/ai/recipes.py`](../ConnectEd/ai/recipes.py); menu
-built from a registry (similar to `register_provider`).
+built from a registry (similar to `registerProvider`).
 
 ## Providers
 
@@ -308,22 +321,24 @@ format (OpenAI `tools`, Anthropic `tool_use`, etc.).
 
 | Provider key | Notes |
 |--------------|--------|
-| `dummy` | Default for new installs; **getting-started welcome** (no API key); optional `nobodyHome()` demo on user send (see [Dummy provider](#dummy-provider-getting-started)) |
+| `xai` | xAI Grok API |
+| `openai` | Official OpenAI API |
+| `anthropic` | Claude API |
+| `ollama` | Local Ollama (`http://localhost:11434/v1`) |
+| `openai_compatible` | Generic OpenAI-compatible endpoint; user-supplied URL |
+
+Profiles (not a global `ai/provider` default) select the backend per chat session.
+Model is chosen when connecting (welcome link, **New Chat** submenu, or MRU) — not
+stored on the profile row.
 
 ### Planned adapters
 
 | Provider key | Notes |
 |--------------|--------|
-| `openai` | Official OpenAI API |
-| `openai_compatible` | Ollama, LM Studio, Azure-style; `base_url` + `api_key` optional |
-| `anthropic` | Claude API |
-| `xai` | xAI Grok API (official REST; models e.g. `grok-3`, `grok-2`) |
-| `ollama` | Convenience wrapper defaulting to `http://localhost:11434` |
-| `not_configured` | User-facing message when provider/key missing |
+| `not_configured` | User-facing message when key/model missing (optional helper) |
 
 Add others (Gemini, etc.) behind the same interface. Optional later: [LiteLLM](https://github.com/BerriAI/litellm)
-as a single backend for many providers — weigh dependency cost vs thin `httpx`
-adapters per vendor.
+as a single backend for many providers — weigh dependency cost vs thin adapters per vendor.
 
 ### Composer 2.5
 
@@ -345,56 +360,41 @@ Grok’s `register_driver` / `get_driver` pattern applies to **LLM backends only
 
 ```python
 # ConnectEd/ai/providers/__init__.py
-_providers : dict[str, type[AiProvider]] = {}
+_providers : dict[str, type] = {}
 
-def register_provider(name: str, cls: type[AiProvider]) -> None:
+def registerProvider(name: str, cls: type) -> None:
     _providers[name] = cls
 
-def create_provider(name: str, **kwargs) -> AiProvider: ...
+def createProvider(name: str, **kwargs): ...
+def createProviderForProfile(profile, model: str = ""): ...
 ```
 
-Each module (`dummy.py`, `openai.py`, `xai.py`, …) calls `register_provider` at
-import time. Settings `ai/provider` selects the implementation. **Do not** conflate
-this with GUI tool execution (see [Naming](#naming-ai-provider-vs-ai-driver)).
+Each module (`xai.py`, `openai_api.py`, `anthropic.py`, …) calls `registerProvider` at
+import time. **`AiProfile.provider`** on the active chat selects the implementation.
+**Do not** conflate this with GUI tool execution (see [Naming](#naming-ai-provider-vs-ai-driver)).
 
-### Dummy provider (getting started)
+### Disconnected and connected chat
 
-Keep **`dummy`** as the factory default in settings so ConnectEd works out of the
-box without API keys. It is not a stand-in for a real model — it orients the user
-toward configuration and evaluation options.
+There is **no placeholder LLM backend**. A chat dock is either:
 
-**On new chat** (first paint, before the user sends anything), show a static
-**welcome** assistant message. Suggested content:
+| State | Session | Input | Welcome / history |
+|-------|---------|-------|-------------------|
+| **Disconnected** | `_provider` is `None`; no `profile_id` / `model` | Disabled; placeholder `disconnected` (dim, italic) | Welcome HTML: settings link or MRU + model list |
+| **Connected** | Real `AiProvider` for profile + model | Enabled; placeholder `Message…` | Ready line, then user/assistant turns |
 
-- ConnectEd AI is not configured yet; choose a provider under **AI → Settings…**
-- **Local, no key:** [Ollama](https://ollama.com/) — install, pull a model, set
-  `ai/provider` to `ollama` and `base_url` to `http://localhost:11434`
-- **Cloud (official APIs only):** sign up and create an API key — e.g.
-  [OpenAI](https://platform.openai.com/),
-  [Anthropic](https://console.anthropic.com/),
-  [xAI](https://console.x.ai/) — then set provider, model, and key in Settings
-- **Eval / free tier:** note vendor trial credits where they exist (wording kept
-  generic; link to vendor docs — tiers change often)
-- Link to this plan or in-app help when available
+**Connect** by clicking a welcome/MRU link (`connected://ai/chat?profile=…&model=…`) or
+**AI → New Chat → profile → model**. MRU is updated on connect and on each send (cap 10,
+stored in `ai/chat_mru`).
 
-Implementation options (pick one in code):
+**On new chat** (disconnected, first paint), [`welcome.py`](../ConnectEd/ai/welcome.py)
+renders:
 
-| Approach | Pros |
-|----------|------|
-| **`ConnectEd/ai/welcome.py`** template rendered into chat on `newChat()` | Single source of truth; easy to localize later |
-| **`DummyProvider.welcome()`** static text/HTML returned to widget | Keeps “dummy” self-contained |
+- **No profiles:** link to **AI Profiles** (`connected://ai/settings`); Ollama/cloud vendor links.
+- **Profiles configured:** optional **Recent** section (MRU), then full list of
+  `provider:key:model` links; footer link to manage credentials in **AI Profiles**.
 
-After welcome, **user messages** while still on `dummy`:
-
-- **Option A (friendly):** reply with short “configure Settings” text; no tool call.
-- **Option B (dev demo):** keep current `nobodyHome()` tool loop to exercise the agent stack.
-
-Product default: **welcome + Option A**; retain Option B behind a dev flag or first
-user message containing `"demo"` if we still want a smoke test.
-
-When the user switches to a real provider in Settings, new sessions use that
-provider; existing chat history stays on whatever provider created it (or show a
-read-only banner if provider changed mid-chat — defer).
+When the user switches profiles or models, existing chat history stays in that dock;
+start **New Chat** for a fresh disconnected pane.
 
 ## Naming: `AiProvider` vs `AiDriver`
 
@@ -439,7 +439,7 @@ Independent review of a Grok-generated outline. **Adopt** what fits ConnectEd;
 - **Security** — never log API keys; optional local models.
 - **Streaming** responses where the API supports it.
 - **Reuse scripting** — `cs.gui(window)`, `view.ui.*`, scene API for tool implementations.
-- **Project style** — PyQt6, `@checked`, `| None`, mixins; optional `[ai]` deps in `pyproject.toml`.
+- **Project style** — PyQt6, `@checked`, `| None`, mixins; `openai` / `anthropic` in core deps.
 
 ### Corrected (Grok sample code issues)
 
@@ -450,7 +450,7 @@ Independent review of a Grok-generated outline. **Adopt** what fits ConnectEd;
 | Single `AIDriver.chat(prompt, context)` | **`AiChatSession`** + **`AiProvider`** tool loop + **`AiDriver`** per tool |
 | AI under Window menu | **Top-level AI menu**; Window lists MDI docs + log docks only |
 | Single chat instance | **`AiChatManager`** — multiple docks, dynamic menu list |
-| `requests` in driver | Prefer **`httpx`** (async-friendly) in optional `[ai]` extra |
+| `requests` in driver | Prefer **`httpx`** (async-friendly) if added later |
 | Broad `except Exception` in UI | Log via `logger()`; show user-safe message in chat |
 | Config-only in dock | Persist **`ai/*` in settings**; **Settings…** on AI menu (dock may show read-only provider label) |
 | “All on dev branch” | Branch policy is team choice; plan is branch-agnostic |
@@ -468,22 +468,31 @@ ConnectEd/ai/
   types.py             # ChatMessage, ToolDefinition, ChatEvent, …
   session.py           # AiChatSession (acquire/release lease around send)
   lock.py              # AiEditLock — exclusive editing lease + lockChanged
-  context.py           # ContextBuilder
+  profiles.py          # AiProfile, presets, load/save profiles
+  profile_models.py    # refresh cached model lists per profile
+  chat_mru.py          # recent profile+model connections (cap 10)
+  welcome.py           # disconnected-state welcome HTML + connected:// links
+  html.py              # escape, linkify helpers
+  context.py           # ContextBuilder (later)
   catalog.py           # command / tool descriptions (+ read vs write tool metadata)
   driver.py            # AiDriver tool implementations (GUI thread; checks lease for writes)
   recipes.py           # recipe registry + handlers (later)
   providers/
-    __init__.py        # register_provider, create_provider
-    dummy.py           # scaffolding provider
+    __init__.py        # registerProvider, createProvider, createProviderForProfile
     openai_compatible.py
+    openai_api.py
     anthropic.py
     xai.py
     ollama.py
-ConnectEd/widgets/window/ai_chat/
-  __init__.py          # exports
-  dock.py              # AiChatDock
-  widget.py            # AiChatWidget (Send enabled from AiEditLock)
-  manager.py           # AiChatManager (multi-dock)
+ConnectEd/widgets/dialogs/
+  ai_profiles.py       # AI Profiles settings UI
+ConnectEd/widgets/window/ai/
+  __init__.py          # AiManager, chat exports
+  manager.py           # AiManager (edit lock, profile refresh, chat manager)
+  chat/
+    dock.py            # AiChatDock (isConnected, profile/model binding)
+    widget.py          # AiChatWidget (Send enabled from connection + AiEditLock)
+    manager.py         # AiChatManager (multi-dock)
 ```
 
 When implementation starts, add to [`TODO.md`](../TODO.md): “AI chat — see [`doc/AI_CHAT.md`](AI_CHAT.md)”.
@@ -494,18 +503,17 @@ Extend [`FACTORY_SETTINGS`](../ConnectEd/core/settings.py):
 
 ```python
 "ai" : {
-    "provider"            : "dummy",             # str — dev default; production: openai_compatible / ollama
-    "api_key"             : "",                  # str — never log in debug
-    "model"               : "",                  # str
-    "base_url"            : "",                  # str — Ollama / proxy
-    "system_prompt_extra" : "",                  # str — user appendix
+    "profiles_data"       : "[]",              # str — JSON list of AiProfile
+    "chat_mru"            : "[]",              # str — JSON list of {profile_id, model}
+    "default_profile"     : "",                # str — optional default profile id
+    "system_prompt_extra" : "",                # str — user appendix
     "confirm_destructive" : True,                # bool — delete etc.
     "max_tool_rounds"     : 10,                  # int — agent loop cap
-    "strict_agent_lock"   : False,                # bool — also block pan/zoom during write loop
+    "strict_agent_lock"   : False,               # bool — also block pan/zoom during write loop
 }
 ```
 
-Access: `settings().get("ai/provider")`, `settings().set("ai/api_key", ...)`.
+Access: `settings().get("ai/profiles_data")`, `loadProfiles()` / `saveProfiles()`.
 
 **Security:** QSettings is user-scoped, not encrypted by default; document that
 users should use env-specific keys and local-only providers when possible.
@@ -521,7 +529,7 @@ New package [`ConnectEd/ai/`](../ConnectEd/ai/) — see [module layout](#module-
 
 | Tool | Returns |
 |------|---------|
-| `nobodyHome` | `{"ok": true, "message": "Nobody home."}` — scaffolding only |
+| `nobodyHome` | `{"ok": true, "message": "Nobody home."}` — scaffolding stub on `AiDriver`; real LLMs may call it once write tools grow |
 
 ### Context tools (read-only) — stage 5
 
@@ -588,7 +596,7 @@ Follow existing dock pattern ([`widgets/window/__init__.py`](../ConnectEd/widget
 
 | Piece | Approach |
 |-------|----------|
-| Widget | `AiChatWidget` in [`widgets/window/ai_chat/`](../ConnectEd/widgets/window/ai_chat/) |
+| Widget | `AiChatWidget` in [`widgets/window/ai/`](../ConnectEd/widgets/window/ai/) |
 | Dock | `AiChatDock(QDockWidget)`; title `"AI Chat"`, `"AI Chat 2"`, … |
 | Manager | `AiChatManager` — create/focus/close; feeds **AI** menu |
 | Placement | Bottom **right**; split from Messages/Transcript/Log on bottom **left** |
@@ -608,41 +616,28 @@ label until prefs exist.
 
 ### Hyperlinks and rich text
 
-**Today:** the chat history uses `QPlainTextEdit` — **plain text only**; URLs are
-not clickable.
-
-**Planned:** migrate the history pane to **`QTextBrowser`** (or read-only
-`QTextEdit`) with a constrained rich-text subset:
+The chat history uses **`QTextBrowser`** with a constrained rich-text subset:
 
 | Link type | Example | Action |
 |-----------|---------|--------|
-| **External** | `https://ollama.com/` | `QDesktopServices.openUrl` in the system browser; **https** (and optionally `http`) only |
-| **In-app** | `connected://ai/settings` | Open **AI → Settings…** dialog (custom URL scheme handled in `anchorClicked`) |
+| **External** | `https://ollama.com/` | `QDesktopServices.openUrl` in the system browser; **https** (and `http`) only |
+| **In-app settings** | `connected://ai/settings` | Open **AI Profiles** dialog |
+| **In-app connect** | `connected://ai/chat?profile=…&model=…` | Bind current dock to profile + model |
 
 Rendering rules:
 
-- **Welcome / system messages:** authored HTML or Markdown → HTML from templates
-  (`welcome.py`); may include links freely.
-- **Assistant streaming:** prefer **Markdown → HTML** with a safe subset (links,
-  `**bold**`, `` `code` ``, fenced blocks); do not inject raw model HTML until
-  sanitization exists.
-- **User messages:** plain text escaped; optional auto-linkify of pasted `https://`
-  URLs.
-- **Tool / error blocks:** monospace plain text or `<pre>`; no clickable links unless
-  explicitly generated by ConnectEd.
+- **Welcome / system messages:** HTML from [`welcome.py`](../ConnectEd/ai/welcome.py); may include links freely.
+- **Assistant streaming:** plain text in `<p>` blocks (Markdown rendering optional later).
+- **User messages:** plain text escaped; optional auto-linkify of pasted `https://` URLs.
+- **Tool / error blocks:** monospace plain text or `<pre>`.
 
 Security: never load remote images or scripts; block `javascript:` and non-http(s)
 schemes except `connected://`. Log opened external URLs at debug level only.
 
-Optional later: copy-as-Markdown, export transcript with links preserved.
-
 ## Dependencies
 
-Add optional dependency group in [`pyproject.toml`](../pyproject.toml), e.g.
-`[project.optional-dependencies] ai = ["httpx", ...]` so core install stays lean.
-
-Avoid heavy SDKs if `httpx` + JSON suffices for OpenAI-compatible and Anthropic
-REST.
+Core [`pyproject.toml`](../pyproject.toml) dependencies include `openai` and
+`anthropic` for AI chat providers.
 
 ## Threading / Qt
 
@@ -660,24 +655,23 @@ Work in order unless noted.
 ### 1. Plan and scaffolding
 
 - [x] Create `ConnectEd/ai/` package (`types`, `ChatMessage`, `ToolDefinition`, `ChatEvent`).
-- [x] `register_provider` / `create_provider` registry in `ai/providers/`.
-- [x] `DummyProvider` + `nobodyHome()` tool on `AiDriver`.
+- [x] `registerProvider` / `createProvider` registry in `ai/providers/`.
+- [x] `nobodyHome()` scaffolding tool on `AiDriver`.
 - [x] `AiChatSession` minimal tool loop.
-- [x] Add `ai/` section to `FACTORY_SETTINGS` (default provider `dummy`).
-- [ ] Add optional `[ai]` deps to `pyproject.toml`; document in README or dev notes.
-- [ ] Stub `AiProvider` protocol + `NotConfiguredProvider` that explains missing key.
+- [x] Add `ai/` section to `FACTORY_SETTINGS`.
+- [x] Add `openai` / `anthropic` to core `pyproject.toml` dependencies.
+- [ ] Stub `NotConfiguredProvider` helper for missing key (optional).
 
 ### 2. Chat dock (single instance — done)
 
 - [x] `AiChatWidget` — message list, input, Send.
-- [x] `AiChatDock` — `WINDOW_TITLE = "AI Chat"`.
+- [x] `AiChatDock` — provider/model binding, `isConnected()`.
 - [x] Wire in `Window`: dock, bottom split (log tabs left, AI right).
-- [x] `windowAiChat` action + Window menu entry (temporary; **removed** in §3).
 - [x] `MAIN_WIDGETS["AI Chat"]` in `specs.py`.
-- [x] Dummy backend: user message → `nobodyHome()` → assistant reply (dev demo).
-- [x] Getting-started **welcome** on new chat (`welcome.py`).
-- [x] Rich history pane + hyperlink handling (`QTextBrowser`, `connected://ai/settings`, https).
-- [ ] **AI → Settings…** menu entry (stub dialog exists; menu wiring in §3). — **done** in §3 (`aiSettings` action).
+- [x] Getting-started **welcome** on new chat (`welcome.py`); MRU + model links.
+- [x] Rich history pane + hyperlink handling (`QTextBrowser`, `connected://…`, https).
+- [x] Disconnected input state (`disconnected` placeholder, send inhibited).
+- [x] **AI → Settings…** / **AI Profiles** dialog.
 
 ### 3. Multi-chat + AI menu
 
@@ -699,14 +693,13 @@ Work in order unless noted.
 
 ### 4. Provider layer + settings UI
 
-- [ ] `OpenAiCompatibleProvider` — chat completions + tools via `httpx`, streaming.
-- [ ] `XaiProvider` — xAI Grok API (`ai/provider` = `xai`).
-- [ ] `AnthropicProvider` (optional in same stage or next).
-- [ ] `OllamaProvider` as thin `openai_compatible` preset (`base_url`, no key).
-- [ ] `NotConfiguredProvider` when key/model missing.
-- [ ] **AI → Settings…** menu entry — **done** in §3; extend dialog in §4.
-- [ ] In-app link `connected://ai/settings` from welcome message — **done** in widget.
-- [ ] Read `ai/*` before send; user-visible errors in dock.
+- [x] `OpenAiCompatibleProvider` + thin presets (`openai_api`, `ollama`, `xai`, …).
+- [x] `XaiProvider`, `AnthropicProvider`, `OpenAiProvider`, `OllamaProvider`.
+- [x] **AI Profiles** dialog — multi-profile credentials; model cache refresh.
+- [x] **New Chat** submenu — profile → cached models.
+- [x] In-app links `connected://ai/settings`, `connected://ai/chat?…`.
+- [x] Read profile/model before send; user-visible errors in dock.
+- [ ] Per-chat title format `AI Chat - [disconnected]` / `AI Chat - [provider:key:model] (n)`.
 
 ### 5. Session + read-only agent
 
@@ -745,11 +738,11 @@ Work in order unless noted.
 
 ## Implementation order (summary)
 
-1. §1 Scaffolding — **done** (dummy provider, session, settings).
-2. §2 Single chat dock — **done** (bottom-right split).
+1. §1 Scaffolding — **done** (session, settings, driver stub tool).
+2. §2 Single chat dock — **done** (bottom-right split, welcome, disconnected state).
 3. §3 Multi-chat + AI menu — **done**.
 4. **§3.5 Agent editing lease** — **done**.
-5. §4 Real providers + Settings dialog.
+5. §4 Real providers + AI Profiles — **mostly done** (title format pending).
 6. §5 Read-only agent (context + tools + streaming).
 7. §6 Write tools, catalog, safety (**lease enforced**).
 8. §7 Recipes.
@@ -764,9 +757,9 @@ Work in order unless noted.
 - **Approval UX:** inline chat “Allow delete?” vs modal?
 - **Diagram-only tools:** refuse or no-op when active subwindow is spreadsheet/symbol?
 - **Catalog maintenance:** hand-written vs generated from specs in CI?
-- **Chat titles:** numeric only vs first-message snippet vs explicit rename?
+- **Chat titles:** numeric / `no provider` today; planned `AI Chat - [disconnected]` and
+  `AI Chat - [provider:key:model] (n)` — see §4 checklist.
 - **Persist chat history** across app restarts (currently out of scope)?
-- **Dummy user replies:** drop `nobodyHome()` demo entirely vs keep behind dev flag?
 
 ## Related docs
 

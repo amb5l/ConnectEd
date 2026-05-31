@@ -94,13 +94,12 @@ FACTORY_SETTINGS = {
         }
     },
     "ai" : {
-        "provider"            : "dummy",
-        "api_key"             : "",
-        "model"               : "",
-        "base_url"            : "",
+        "profiles_data"       : "[]",
+        "default_profile"     : "",
         "system_prompt_extra" : "",
         "confirm_destructive" : True,
         "max_tool_rounds"     : 10,
+        "chat_mru"            : "[]",
     },
     "themes" : {
         "dark" : {

@@ -1,4 +1,12 @@
-applyDialog method
+AiEditLock => general edit lock?
+
+Dialog title truncation
+
+Inherent properties changed outside properties.setValue
+
+Short answer: value changes propagate reliably through the notifier when you use properties.setValue (or something that emits via signalPropertyChanges). Kind changes do not propagate. Name changes propagate only when code explicitly updates the text item (setName / onTextChanged); rename() alone does not notify subscribers, and the edit-dialog undo path may not sync _name on the text item.
+
+
 argument names : pos for local pos, spos for scene pos
 rename second defs.py
 full set of scene methods e.g. addPort; structure?

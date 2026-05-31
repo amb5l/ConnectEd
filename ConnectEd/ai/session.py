@@ -9,11 +9,14 @@ from ..core.check import checked
 
 from .driver import AiDriver
 from .lock import AiEditLock
-from .providers import create_provider
+from .profiles import getProfile
+from .prompt import buildSystemPrompt, diagramSummaryStub
+from .providers import createProviderForProfile
 from .types import ChatEventType, ChatMessage
 
 if TYPE_CHECKING:
     from ..widgets.window import Window
+    from ..widgets.window.ai.chat.dock import AiChatDock
 
 
 class AiChatSession(QObject):
@@ -25,24 +28,63 @@ class AiChatSession(QObject):
 
     _window        : "Window"
     _driver        : AiDriver
+    _profile_id    : str
+    _model         : str
     _provider_name : str
-    _provider      : object
+    _provider      : object | None
     _messages      : list[ChatMessage]
     _busy          : bool
 
     @checked
     def __init__(
-        self           : Self,
-        window         : "Window",
-        provider_name  : str | None = None,
+        self   : Self,
+        window : "Window",
+        dock   : "AiChatDock",
     ) -> None:
         super().__init__()
         self._window = window
         self._driver = AiDriver(window)
-        self._provider_name = provider_name or settings().get("ai/provider")
-        self._provider = create_provider(self._provider_name)
+        self._profile_id = dock.profileId()
+        self._model = dock.model()
+        profile = getProfile(self._profile_id) if self._profile_id else None
+        self._provider_name = profile.provider if profile else dock.providerKey()
+        self._provider = None
+        if self._profile_id and self._model.strip():
+            self._provider = self._createProvider()
         self._messages = []
         self._busy = False
+        if self._provider is not None:
+            self._seedSystemPrompt()
+
+    def _seedSystemPrompt(self : Self) -> None:
+        self._messages.append(
+            ChatMessage(
+                "system",
+                buildSystemPrompt(
+                    self._driver.tools(),
+                    diagramSummaryStub(),
+                ),
+            )
+        )
+
+    def _createProvider(self : Self) -> object:
+        profile = getProfile(self._profile_id) if self._profile_id else None
+        if profile is None or not self._model.strip():
+            raise ValueError("AI chat is not connected to a model.")
+        return createProviderForProfile(profile, model = self._model)
+
+    @checked
+    def bindFromDock(self : Self, dock : "AiChatDock") -> None:
+        if self._busy:
+            return
+        self.releaseEditLock()
+        self._profile_id = dock.profileId()
+        self._model = dock.model()
+        profile = getProfile(self._profile_id) if self._profile_id else None
+        self._provider_name = profile.provider if profile else dock.providerKey()
+        self._provider = self._createProvider()
+        self._messages.clear()
+        self._seedSystemPrompt()
 
     @checked
     def isBusy(self : Self) -> bool:
@@ -51,6 +93,8 @@ class AiChatSession(QObject):
     @checked
     def clearHistory(self : Self) -> None:
         self._messages.clear()
+        if self._provider is not None:
+            self._seedSystemPrompt()
 
     @checked
     def send(self : Self, text : str) -> None:
@@ -66,7 +110,7 @@ class AiChatSession(QObject):
 
         self._busy = True
         try:
-            self._provider = create_provider(self._provider_name)
+            self._provider = self._createProvider()
             self._messages.append(ChatMessage("user", text))
             self.userMessage.emit(text)
             max_rounds = settings().get("ai/max_tool_rounds")
@@ -88,11 +132,14 @@ class AiChatSession(QObject):
             edit_lock.release(self)
 
     def _editLock(self : Self) -> AiEditLock | None:
-        if not hasattr(self._window, "_ai_edit_lock"):
+        manager = self._window.aiManager()
+        if manager is None:
             return None
-        return self._window.aiEditLock()
+        return manager.editLock()
 
     def _runProviderTurn(self : Self) -> bool:
+        if self._provider is None:
+            raise ValueError("AI chat is not connected to a model.")
         tool_calls : list = []
         assistant_parts : list[str] = []
 
@@ -110,9 +157,13 @@ class AiChatSession(QObject):
             elif event.type == ChatEventType.DONE:
                 break
 
-        if assistant_parts:
+        if assistant_parts or tool_calls:
             self._messages.append(
-                ChatMessage("assistant", "".join(assistant_parts))
+                ChatMessage(
+                    "assistant",
+                    "".join(assistant_parts),
+                    tool_calls = tool_calls or None,
+                )
             )
 
         if not tool_calls:

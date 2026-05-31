@@ -32,7 +32,7 @@ from .text_view       import TextView
 from .messages_view   import MessagesViewDock
 from .transcript_view import TranscriptViewDock
 from .log_view        import LogViewDock
-from .ai_chat         import AiChatDock, AiChatManager
+from .ai              import AiChatDock, AiChatManager, AiManager
 
 
 class Window(QMainWindow):
@@ -43,10 +43,9 @@ class Window(QMainWindow):
     _netlist_dock    : NetlistBrowserDock
     _messages_dock   : MessagesViewDock
     _transcript_dock : TranscriptViewDock
-    _log_dock         : LogViewDock
-    _ai_chat_manager  : AiChatManager
-    _ai_edit_lock     : AiEditLock
-    _mdi_area         : MdiArea
+    _log_dock        : LogViewDock
+    _ai_manager      : AiManager
+    _mdi_area        : MdiArea
 
     # signals
     ready = pyqtSignal()
@@ -85,15 +84,12 @@ class Window(QMainWindow):
         self._status_bar = StatusBar(self)
         self.setStatusBar(self._status_bar)
 
-        self._ai_edit_lock = AiEditLock(self)
-
         # dock widgets — bottom: Messages/Transcript/Log (left tabs) | AI Chat (right)
         qd = Qt.DockWidgetArea
         self._messages_dock = MessagesViewDock(self)
         self.addDockWidget(qd.BottomDockWidgetArea, self._messages_dock)
-        self._ai_chat_manager = AiChatManager(self, self._messages_dock)
-        self._ai_chat_manager.chatsChanged.connect(self._menu_bar.updateAiMenu)
-        self._ai_chat_manager.newChat()
+        self._ai_manager = AiManager(self, self._messages_dock)
+        self._ai_manager.chatManager().newChat()
         self._transcript_dock = TranscriptViewDock(self)
         self.addDockWidget(qd.BottomDockWidgetArea, self._transcript_dock)
         self._log_dock = LogViewDock(self)
@@ -102,6 +98,7 @@ class Window(QMainWindow):
         self.tabifyDockWidget(self._messages_dock, self._log_dock)
         self._messages_dock.raise_()
         self._menu_bar.updateAiMenu()
+        self._ai_manager.scheduleStartup()
         self._navigator_dock = NavigatorDock(self)
         self.addDockWidget(qd.LeftDockWidgetArea, self._navigator_dock)
         self._netlist_dock = NetlistBrowserDock(self)
@@ -243,16 +240,24 @@ class Window(QMainWindow):
         return dock.text_view
 
     @checked
-    def aiEditLock(self : Self) -> AiEditLock | None:
-        if not hasattr(self, "_ai_edit_lock"):
+    def aiManager(self : Self) -> AiManager | None:
+        if not hasattr(self, "_ai_manager"):
             return None
-        return self._ai_edit_lock
+        return self._ai_manager
+
+    @checked
+    def aiEditLock(self : Self) -> AiEditLock | None:
+        manager = self.aiManager()
+        if manager is None:
+            return None
+        return manager.editLock()
 
     @checked
     def aiChatManager(self : Self) -> AiChatManager | None:
-        if not hasattr(self, "_ai_chat_manager"):
+        manager = self.aiManager()
+        if manager is None:
             return None
-        return self._ai_chat_manager
+        return manager.chatManager()
 
     @checked
     def aiChatDock(self : Self) -> AiChatDock | None:

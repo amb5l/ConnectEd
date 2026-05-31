@@ -8,7 +8,7 @@ from ....core.utils import check
 
 from ...menu import Menu, PlaceMenu
 
-from ....ai.providers import list_providers, providerDisplayLabel
+from ....ai.profiles import loadProfiles, profileMenuLabel
 
 from ...action import Action
 
@@ -228,18 +228,46 @@ class MenuBar(QMenuBar):
         self.ai_menu.clear()
         self.ai_new_chat_menu.clear()
         manager = window.aiChatManager()
-        for provider_key in sorted(list_providers()):
-            label = providerDisplayLabel(provider_key)
+        profiles = loadProfiles()
+        if profiles:
+            for profile in profiles:
+                label = profileMenuLabel(profile)
+                models_menu = Menu(label)
+                models = profile.cached_models
+                if models:
+                    for model in models:
+                        action = Action(
+                            window,
+                            model,
+                            f"New chat using {label} with {model}",
+                            data = (profile.id, model),
+                        )
+                        if manager is not None:
+                            action.triggered.connect(
+                                lambda checked=False,
+                                pid=profile.id,
+                                m=model : manager.newChat(
+                                    profile_id = pid,
+                                    model      = m,
+                                )
+                            )
+                        models_menu.addAction(action)
+                else:
+                    action = Action(
+                        window,
+                        "(no models)",
+                        f"No models cached for {label}",
+                    )
+                    action.setEnabled(False)
+                    models_menu.addAction(action)
+                self.ai_new_chat_menu.addMenu(models_menu)
+        else:
             action = Action(
                 window,
-                label,
-                f"New chat using {label}",
-                data = provider_key,
+                "(add an AI profile)",
+                "Add an AI profile in AI → Settings…",
             )
-            if manager is not None:
-                action.triggered.connect(
-                    lambda checked=False, p=provider_key : manager.newChat(provider=p)
-                )
+            action.setEnabled(False)
             self.ai_new_chat_menu.addAction(action)
         self.ai_menu.addMenu(self.ai_new_chat_menu)
         if manager is not None:
