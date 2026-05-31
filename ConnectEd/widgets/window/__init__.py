@@ -57,11 +57,11 @@ class Window(QMainWindow):
         app().setWindow(self)
         # default position
         screen = self.screen()
-        screenSize = screen.size()
-        self.resize(screenSize.width() // 2, screenSize.height() // 2)
+        screen_size = screen.size()
+        self.resize(screen_size.width() // 2, screen_size.height() // 2)
         frame_geometry = self.frameGeometry()
-        centerPoint = screen.availableGeometry().center()
-        frame_geometry.moveCenter(centerPoint)
+        center_point = screen.availableGeometry().center()
+        frame_geometry.moveCenter(center_point)
         self.move(frame_geometry.topLeft())
 
         # saved position
