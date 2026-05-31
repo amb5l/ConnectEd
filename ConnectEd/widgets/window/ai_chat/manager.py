@@ -15,6 +15,13 @@ if TYPE_CHECKING:
     from ..messages_view import MessagesViewDock
 
 
+def chatTitle(provider_label : str, index : int | None = None) -> str:
+    title = f"AI Chat [{provider_label}]"
+    if index is not None:
+        title = f"{title} ({index})"
+    return title
+
+
 def chatTitles(provider_labels : list[str]) -> list[str]:
     counts = Counter(provider_labels)
     indices : Counter[str] = Counter()
@@ -22,9 +29,9 @@ def chatTitles(provider_labels : list[str]) -> list[str]:
     for label in provider_labels:
         indices[label] += 1
         if counts[label] > 1:
-            titles.append(f"{label} ({indices[label]})")
+            titles.append(chatTitle(label, indices[label]))
         else:
-            titles.append(label)
+            titles.append(chatTitle(label))
     return titles
 
 

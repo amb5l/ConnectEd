@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING, Self
 
-from PyQt6.QtCore    import Qt, QUrl
+from PyQt6.QtCore    import Qt, QTimer, QUrl
 from PyQt6.QtGui     import QDesktopServices
 from PyQt6.QtWidgets import (
     QHBoxLayout,
@@ -31,6 +31,7 @@ class AiChatWidget(QWidget):
     _send                   : QPushButton
     _assistant_line_open    : bool
     _assistant_stream_plain : bool
+    _pin_welcome_top        : bool
 
     def __init__(self : Self, window : "Window", dock : "AiChatDock") -> None:
         super().__init__(window)
@@ -44,6 +45,7 @@ class AiChatWidget(QWidget):
         self._session.finished.connect(self._onFinished)
         self._assistant_line_open = False
         self._assistant_stream_plain = False
+        self._pin_welcome_top = True
 
         edit_lock = window.aiEditLock()
         if edit_lock is not None:
@@ -72,8 +74,13 @@ class AiChatWidget(QWidget):
         layout.addWidget(self._history, 1)
         layout.addLayout(input_row)
 
-        self._appendRichBlock("Assistant", welcomeHtml())
+        self._showWelcome()
         self.refreshSendState()
+
+    def showEvent(self : Self, event) -> None:
+        super().showEvent(event)
+        if self._pin_welcome_top:
+            self._scheduleScrollToTop()
 
     def session(self : Self) -> AiChatSession:
         return self._session
@@ -105,15 +112,39 @@ class AiChatWidget(QWidget):
             return True
         return edit_lock.holder() is self._session
 
-    def _scrollHistory(self : Self) -> None:
+    def _scrollHistory(self : Self, *, top : bool = False) -> None:
+        if top:
+            self._scheduleScrollToTop()
+            return
         bar = self._history.verticalScrollBar()
         bar.setValue(bar.maximum())
 
-    def _appendRichBlock(self : Self, role : str, html_body : str) -> None:
+    def _scrollToTop(self : Self) -> None:
+        cursor = self._history.textCursor()
+        cursor.movePosition(cursor.MoveOperation.Start)
+        self._history.setTextCursor(cursor)
+        self._history.verticalScrollBar().setValue(0)
+
+    def _scheduleScrollToTop(self : Self) -> None:
+        self._scrollToTop()
+        QTimer.singleShot(0, self._scrollToTop)
+
+    def _showWelcome(self : Self) -> None:
+        html = f"<p><b>{escape('Assistant')}</b></p>{welcomeHtml()}"
+        self._history.setHtml(html)
+        self._scheduleScrollToTop()
+
+    def _appendRichBlock(
+        self   : Self,
+        role   : str,
+        html_body : str,
+        *,
+        scroll_top : bool = False,
+    ) -> None:
         cursor = self._history.textCursor()
         cursor.movePosition(cursor.MoveOperation.End)
         cursor.insertHtml(f"<p><b>{escape(role)}</b></p>{html_body}")
-        self._scrollHistory()
+        self._scrollHistory(top=scroll_top)
 
     def _appendPlainBlock(self : Self, role : str, text : str) -> None:
         cursor = self._history.textCursor()
@@ -142,6 +173,7 @@ class AiChatWidget(QWidget):
         text = self._input.text()
         if not text.strip() or not self._canSend():
             return
+        self._pin_welcome_top = False
         self._input.clear()
         self._assistant_line_open = False
         self._assistant_stream_plain = False
