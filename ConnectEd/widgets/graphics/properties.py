@@ -417,6 +417,7 @@ class PropertiesManager:
             return False
         # check for no change
         if old_name == new_name:
+            logger().info(f"Old and new names are the same: {old_name}")
             return False
         # check for clash with existing property
         if self.has(new_name):
@@ -431,7 +432,30 @@ class PropertiesManager:
         # rename
         self._dict[new_name] = property
         del self._dict[old_name]
+        if property.text is not None:
+            property.text.bind(new_name)
+        # notify subscribers
         self.signalChanges(new_name)
+        # rename substitutions
+        pattern = r'(?<!\\)\{' + re.escape(old_name) + r'\}'
+        repl = '{' + new_name + '}'
+        subst_changed : list[str] = []
+        for name, prop in self._dict.items():
+            if name == new_name or not isinstance(prop, CustomProperty):
+                continue
+            if prop.kind not in (DataKind.STR, DataKind.TEXT):
+                continue
+            if not isinstance(prop.value, str):
+                logger().warning(f"Property '{name}' has non-string value")
+                continue
+            if old_name in prop.value:
+                new_value = re.sub(pattern, repl, prop.value)
+                prop.value = new_value
+                subst_changed.append(name)
+        # notify substitution subscribers
+        if subst_changed:
+            self.signalChanges(subst_changed)
+        # done
         return True
 
     @checked
@@ -504,6 +528,7 @@ class PropertiesManager:
         property = self._dict[name]
         # set property text
         property.text = text
+        text.onTextChanged()
         return True
 
     @checked
@@ -546,7 +571,7 @@ class PropertiesManager:
         # get property instance
         property = self._dict[name]
         # check for existing PropertyTextItem
-        if isinstance(property.text, PropertyTextItem):
+        if property.text is not None:
             logger().warning(f"Property '{name}' already has text")
             return False
         # create new property text item
@@ -610,7 +635,6 @@ class PropertiesManager:
         Edit a property text item.
         Returns True if the property text item was edited, False otherwise.
         """
-        from .items.property_text import PropertyTextItem
         # check property existence
         if not self.has(name):
             logger().warning(f"Property '{name}' not found")
@@ -618,7 +642,7 @@ class PropertiesManager:
         # get property instance
         property = self._dict[name]
         # check PropertyTextItem existence
-        if not isinstance(property.text, PropertyTextItem):
+        if property.text is None:
             logger().warning(f"Property '{name}' does not have text")
             return False
         # get PropertyTextItem instance
@@ -655,7 +679,6 @@ class PropertiesManager:
         Delete a property text item.
         Returns True if the property text item was deleted, False otherwise.
         """
-        from .items.property_text import PropertyTextItem
         # check property existence
         if not self.has(name):
             logger().warning(f"Property '{name}' not found")
@@ -663,7 +686,7 @@ class PropertiesManager:
         # get property instance
         property = self._dict[name]
         # check for existing PropertyTextItem
-        if not isinstance(property.text, PropertyTextItem):
+        if property.text is None:
             logger().warning(f"Property '{name}' does not have text")
             return False
         # disconnect notifier

@@ -159,6 +159,11 @@ class PropertyTextItem(TextItem):
         self._tether.anchor().grip().setVisible(selected and cleat_valid)
 
     def onTextChanged(self : Self) -> None:
+        owner = self.owner()
+        if owner is not None and self.name():
+            kind = owner.properties.kind(self.name())
+            if kind in (DataKind.STR, DataKind.TEXT):
+                super().setBlock(kind == DataKind.TEXT)
         text = val2str(self.value())
         if text == "":
             text = f"<{self._name}>"
@@ -170,8 +175,7 @@ class PropertyTextItem(TextItem):
     @checked
     def setVisible(self : Self, visible : bool) -> None:
         super().setVisible(visible)
-        if hasattr(self, "properties"):
-            self.properties.signalChanges("Visible")
+        self.properties.signalChanges("Visible")
 
     @checked
     def setCleat(
@@ -191,8 +195,7 @@ class PropertyTextItem(TextItem):
                         break
                 if not ok:
                     logger().warning("Cleat not found in parent item")
-        if hasattr(self, "properties"):
-            self.properties.signalChanges("Cleat")
+        self.properties.signalChanges("Cleat")
         return ok
 
     @checked
@@ -230,15 +233,19 @@ class PropertyTextItem(TextItem):
     def owner(self : Self) -> PropertiesMixin | None:
         return self.scene() if self.parentItem() is None else self.item()
 
+    @checked
+    def bind(self : Self, name : str) -> None:
+        """Rebind to an owner property (does not signal this item's Name)."""
+        self._name = name
+        self.onTextChanged()
+
     def name(self : Self) -> str | None:
         return self._name if hasattr(self, "_name") else None
 
     @checked
     def setName(self : Self, name : str) -> None:
-        self._name = name
-        self.onTextChanged()
-        if hasattr(self, "properties"):
-            self.properties.signalChanges("Name")
+        self.bind(name)
+        self.properties.signalChanges("Name")
 
     def value(self : Self) -> Any:
         if not self.name():  # name is None or ""
@@ -267,7 +274,8 @@ class PropertyTextItem(TextItem):
         if name is not NO_CHANGE and name != old_name:
             if owner is not None and old_name:
                 owner.properties.rename(old_name, name)
-            self.setName(name)
+            else:
+                self.setName(name)
         name = self.name()
         if owner is not None and name:
             if kind is not NO_CHANGE:

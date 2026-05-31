@@ -342,7 +342,9 @@ class TextItem(
             self._child.setParentItem(self)
             self._child.onGeometryChange()
             self.updateHandlePositions()
-            self.properties.signalChanges("Block")
+            # subclasses may not expose the block property:
+            if self.properties.has("Block"):
+                self.properties.signalChanges("Block")
 
     def autoflip(self : Self) -> bool:
         return self._autoflip
