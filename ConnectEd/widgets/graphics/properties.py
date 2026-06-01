@@ -130,12 +130,7 @@ class PropertiesManager:
     _notify : bool
 
     @checked
-    def __init__(
-        self        : Self,
-        owner       : "PropertiesMixin",
-        fresh       : bool,
-        defer_texts : bool = False,
-    ) -> None:
+    def __init__(self : Self, owner : "PropertiesMixin", fresh : bool) -> None:
         """
         Initialize the properties system for this instance.
         """
@@ -146,16 +141,12 @@ class PropertiesManager:
         # Bind before addText: PropertyText callbacks may run during construction
         # and need owner.properties (initProperties assignment happens after __init__).
         self._owner.properties = self
-        if fresh and not defer_texts:
-            self.attachPropertyTexts()
-
-    @checked
-    def attachPropertyTexts(self : Self) -> None:
-        """Create PropertyTextItem children from ``_PROPERTY_TEXTS`` specs."""
-        if not hasattr(self._owner, "_PROPERTY_TEXTS"):
+        if not fresh:
             return
-        for name, spec in self._owner._PROPERTY_TEXTS.items():
-            self.addText(name, *spec.astuple())
+        # convert PropertyTextSpec instances to PropertyTextItem instances
+        if hasattr(self._owner, "_PROPERTY_TEXTS"):
+            for name, spec in self._owner._PROPERTY_TEXTS.items():
+                self.addText(name, *spec.astuple())
 
     @checked
     def names(self : Self) -> list[str]:
@@ -724,12 +715,8 @@ class PropertiesMixin:
     properties : PropertiesManager
 
     @checked
-    def initProperties(self : Self, fresh : bool, defer_texts : bool = False) -> None:
-        self.properties = PropertiesManager(self, fresh, defer_texts=defer_texts)
-
-    @checked
-    def attachPropertyTexts(self : Self) -> None:
-        self.properties.attachPropertyTexts()
+    def initProperties(self : Self, fresh : bool) -> None:
+        self.properties = PropertiesManager(self, fresh)
 
     @checked
     def description(self : Self) -> str:

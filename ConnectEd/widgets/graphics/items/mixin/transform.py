@@ -178,7 +178,7 @@ class ItemTransformMixin:
 
     @checked
     def mirrorH(self : Self) -> bool:
-        return self._mirror_h
+        return getattr(self, "_mirror_h", False)
 
     @checked
     def setMirrorH(self : Self, mirror_h : bool) -> None:
@@ -203,7 +203,7 @@ class ItemTransformMixin:
 
     @checked
     def mirrorV(self : Self) -> bool:
-        return self._mirror_v
+        return getattr(self, "_mirror_v", False)
 
     @checked
     def setMirrorV(self : Self, mirror_v : bool) -> None:

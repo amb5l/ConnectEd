@@ -69,13 +69,11 @@ class ItemMixin(ItemNamesMixin, ItemMoveMixin):
         if isinstance(self, ItemHandlesMixin):
             self.initHandles()
         if isinstance(self, PropertiesMixin):
-            self.initProperties(fresh, defer_texts=fresh)
-        if isinstance(self, ItemTransformMixin):
-            self.initTransform()
+            self.initProperties(fresh)
         if isinstance(self, ItemLocMixin):
             self.initLoc()
-        if isinstance(self, PropertiesMixin) and fresh:
-            self.attachPropertyTexts()
+        if isinstance(self, ItemTransformMixin):
+            self.initTransform()
         if isinstance(self, ItemChangeMixin):
             self.initChange()
         if isinstance(self, ItemShapeMixin):
