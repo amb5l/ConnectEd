@@ -6,6 +6,12 @@ from ..app import settings
 
 from .types import ToolSpec
 
+CONNECTION_HANDSHAKE_USER = (
+    "[ConnectEd connected] Acknowledge that you received the system prompt "
+    "and the tool list. Tell the user you are ready to help them work with "
+    "ConnectEd. Do not call any tools."
+)
+
 _SYSTEM_TEMPLATE = """\
 You are an AI assistant embedded in **ConnectEd**, a Qt 6 application for \
 diagram driven HDL design, with both VHDL and Verilog export support.
@@ -41,11 +47,21 @@ this will improve the clarity of HDL source code.
 
 
 
-### Tools
+### Available tools
+Use only these tools. **Read** tools query the diagram; **write** tools change \
+it (require this chat to hold the edit lock).
+
 {tool_lines}
 
 Full parameter schemas are supplied via the tool API — call tools rather \
 than describing hypothetical actions.
+
+### Connection handshake
+When the user message is exactly:
+`{handshake_user}`
+respond in plain language only: confirm you received these instructions and \
+the tool list, then tell the user you are ready to help them work with ConnectEd. \
+Do not call tools for this message.
 
 ### VHDL entity → block (milestone workflow)
 When the user pastes a VHDL `entity` and asks for a matching block:
@@ -65,11 +81,16 @@ When the user pastes a VHDL `entity` and asks for a matching block:
 {diagram_summary}"""
 
 
-def formatToolsForPrompt(tools : list[ToolSpec]) -> str:
+def formatToolsForPrompt(
+    tools           : list[ToolSpec],
+    write_tool_names: frozenset[str] | None = None,
+) -> str:
     if not tools:
         return "- (none)"
+    write_tool_names = write_tool_names or frozenset()
     return "\n".join(
-        f"- **{tool.name}** — {tool.description}"
+        f"- **{tool.name}** ({'write' if tool.name in write_tool_names else 'read'})"
+        f" — {tool.description}"
         for tool in tools
     )
 
@@ -79,11 +100,13 @@ def diagramSummaryStub() -> str:
 
 
 def buildSystemPrompt(
-    tools           : list[ToolSpec],
-    diagram_summary : str | None = None,
+    tools            : list[ToolSpec],
+    diagram_summary  : str | None = None,
+    write_tool_names : frozenset[str] | None = None,
 ) -> str:
     body = _SYSTEM_TEMPLATE.format(
-        tool_lines        = formatToolsForPrompt(tools),
+        tool_lines        = formatToolsForPrompt(tools, write_tool_names),
+        handshake_user    = CONNECTION_HANDSHAKE_USER,
         diagram_summary   = diagram_summary or diagramSummaryStub(),
     )
     extra = (settings().get("ai/system_prompt_extra") or "").strip()

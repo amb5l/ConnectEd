@@ -180,8 +180,8 @@ def add_block_pins(
 ################################################################################
 
 def _edgeFromTool(edge : str) -> Edge | None:
-    edge = edge.strip().title()
-    return Edge[edge] if edge in Edge.__members__ else None
+    key = edge.strip().upper()
+    return Edge[key] if key in Edge.__members__ else None
 
 
 def _directionFromTool(direction : str) -> Direction | None:

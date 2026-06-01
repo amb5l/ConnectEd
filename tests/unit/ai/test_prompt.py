@@ -39,6 +39,8 @@ def test_build_system_prompt_includes_connect_ed_and_tools(
     assert "**ping**" in prompt
     assert "Empty canvas" in prompt
     assert "Do not invent tools" in prompt
+    assert "Connection handshake" in prompt
+    assert "(read)" in prompt
 
 
 def test_build_system_prompt_appends_user_extra(

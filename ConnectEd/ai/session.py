@@ -10,7 +10,7 @@ from ..core.check import checked
 from .driver import AiDriver
 from .lock import AiEditLock
 from .profiles import getProfile
-from .prompt import buildSystemPrompt, diagramSummaryStub
+from .prompt import CONNECTION_HANDSHAKE_USER, buildSystemPrompt, diagramSummaryStub
 from .providers import createProviderForProfile
 from .types import ChatEventType, ChatMessage
 
@@ -63,6 +63,7 @@ class AiChatSession(QObject):
                 buildSystemPrompt(
                     self._driver.tools(),
                     diagramSummaryStub(),
+                    write_tool_names = self._driver.writeToolNames(),
                 ),
             )
         )
@@ -95,6 +96,41 @@ class AiChatSession(QObject):
         self._messages.clear()
         if self._provider is not None:
             self._seedSystemPrompt()
+
+    @checked
+    def runHandshake(self : Self) -> None:
+        """Deliver the system prompt to the model and show a ready greeting."""
+        if self._busy or self._provider is None:
+            return
+        self._busy = True
+        try:
+            self._provider = self._createProvider()
+            self._messages.append(
+                ChatMessage("user", CONNECTION_HANDSHAKE_USER),
+            )
+            assistant_parts : list[str] = []
+            for event in self._provider.chat(self._messages, []):
+                if event.type == ChatEventType.TOKEN:
+                    assistant_parts.append(event.content)
+                    self.assistantToken.emit(event.content)
+                elif event.type == ChatEventType.TOOL_CALL:
+                    pass
+                elif event.type == ChatEventType.ERROR:
+                    message = event.error or event.content or "Unknown provider error"
+                    self.error.emit(message)
+                    return
+                elif event.type == ChatEventType.DONE:
+                    break
+            text = "".join(assistant_parts).strip()
+            if not text:
+                self.error.emit("No response from model on connect.")
+                return
+            self._messages.append(ChatMessage("assistant", text))
+        except Exception as exc:
+            self.error.emit(str(exc))
+        finally:
+            self._busy = False
+            self.finished.emit()
 
     @checked
     def send(self : Self, text : str) -> None:

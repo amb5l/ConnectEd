@@ -175,12 +175,10 @@ class AiChatWidget(QWidget):
         self._pin_welcome_top = False
         self._assistant_line_open = False
         self._assistant_stream_plain = False
-        label = self._dock.providerLabel()
         self._history.clear()
-        self._appendHtmlAtEnd(
-            f"<p>Ready — {escape(label)}. Type a message below.</p>",
-        )
         recordChatConnection(profile_id, model)
+        self._send.setEnabled(False)
+        self._session.runHandshake()
         manager = self._window.aiChatManager()
         if manager is not None:
             manager.refreshChatTitles()
