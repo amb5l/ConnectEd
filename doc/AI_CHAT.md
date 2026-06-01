@@ -310,7 +310,7 @@ class AiProvider(Protocol):
     def chat(
         self,
         messages : list[ChatMessage],
-        tools    : list[ToolDefinition],
+        tools    : list[ToolSpec],
     ) -> Iterator[ChatEvent]: ...  # tokens, tool_calls, done, error
 ```
 
@@ -465,7 +465,7 @@ Independent review of a Grok-generated outline. **Adopt** what fits ConnectEd;
 ```
 ConnectEd/ai/
   __init__.py          # types, public exports
-  types.py             # ChatMessage, ToolDefinition, ChatEvent, …
+  types.py             # ChatMessage, ToolSpec, ChatEvent, …
   session.py           # AiChatSession (acquire/release lease around send)
   lock.py              # AiEditLock — exclusive editing lease + lockChanged
   profiles.py          # AiProfile, presets, load/save profiles
@@ -654,7 +654,7 @@ Work in order unless noted.
 
 ### 1. Plan and scaffolding
 
-- [x] Create `ConnectEd/ai/` package (`types`, `ChatMessage`, `ToolDefinition`, `ChatEvent`).
+- [x] Create `ConnectEd/ai/` package (`types`, `ChatMessage`, `ToolSpec`, `ChatEvent`).
 - [x] `registerProvider` / `createProvider` registry in `ai/providers/`.
 - [x] `nobodyHome()` scaffolding tool on `AiDriver`.
 - [x] `AiChatSession` minimal tool loop.

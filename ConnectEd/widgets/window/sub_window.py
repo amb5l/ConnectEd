@@ -12,6 +12,6 @@ if TYPE_CHECKING:
 
 class SubWindow(QMdiSubWindow):
     @checked
-    def scene(self : Self) -> "DrawingScene | None":
+    def scene(self : Self) -> "DrawingScene | None":  # TODO: other types?
         view : "DrawingView | None" = self.widget()
         return view.scene() if view else None

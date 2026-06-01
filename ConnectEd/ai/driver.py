@@ -5,7 +5,9 @@ from typing import TYPE_CHECKING, Any, Self
 
 from ..core.check import checked
 
-from .types import ToolDefinition
+from .refs  import RefRegistry
+from .tools import allToolSpecs, callTool, writeToolNames
+from .types import ToolSpec
 
 if TYPE_CHECKING:
     from ..widgets.window import Window
@@ -15,22 +17,23 @@ _PING_MESSAGE = "ConnectEd AI chat client"
 
 
 class AiDriver:
-    _WRITE_TOOLS : frozenset[str] = frozenset()
-
-    _window : "Window"
+    _window   : "Window"
+    _registry : RefRegistry
 
     @checked
     def __init__(self : Self, window : "Window") -> None:
-        self._window = window
+        self._window   = window
+        self._registry = RefRegistry()
 
     @checked
     def writeToolNames(self : Self) -> frozenset[str]:
-        return self._WRITE_TOOLS
+        return writeToolNames()
 
     @checked
-    def tools(self : Self) -> list[ToolDefinition]:
-        return [
-            ToolDefinition(
+    def tools(self : Self) -> list[ToolSpec]:
+        specs = list(allToolSpecs())
+        specs.append(
+            ToolSpec(
                 name        = "ping",
                 description = (
                     "Health check; returns the ConnectEd AI chat client identity."
@@ -40,7 +43,8 @@ class AiDriver:
                     "properties" : {},
                 },
             ),
-        ]
+        )
+        return specs
 
     @checked
     def call(
@@ -49,7 +53,7 @@ class AiDriver:
         arguments  : dict[str, Any],
         session    : "AiChatSession | None" = None,
     ) -> str:
-        if name in self._WRITE_TOOLS:
+        if name in self.writeToolNames():
             edit_lock = self._editLock()
             if edit_lock is None or edit_lock.holder() is not session:
                 return json.dumps({
@@ -59,7 +63,7 @@ class AiDriver:
 
         if name == "ping":
             return self.ping()
-        raise ValueError(f"Unknown AI tool: {name}")
+        return callTool(name, self._window, self._registry, arguments)
 
     @checked
     def ping(self : Self) -> str:

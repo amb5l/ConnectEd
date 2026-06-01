@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from ..app import settings
 
-from .types import ToolDefinition
+from .types import ToolSpec
 
 _SYSTEM_TEMPLATE = """\
 You are an AI assistant embedded in **ConnectEd**, a Qt 6 application for \
@@ -47,6 +47,15 @@ this will improve the clarity of HDL source code.
 Full parameter schemas are supplied via the tool API — call tools rather \
 than describing hypothetical actions.
 
+### VHDL entity → block (milestone workflow)
+When the user pastes a VHDL `entity` and asks for a matching block:
+1. Call `get_active_view` for `view`.
+2. Call `add_block` with instance `label`, entity `name`, size, and position.
+3. Call `add_block_pins` once with all ports: `name` (use `sig[7:0]` for vectors), \
+`direction` (`in` / `out` / `bi` for `inout`), `edge` (`left`/`right`/`top`/`bottom`), \
+`offset` spaced along each edge (≥ 10 scene units). Typical layout: `in` on left, \
+`out` on right.
+
 ### Rules
 - Be concise and actionable.
 - Ask for clarification when the request is ambiguous.
@@ -56,7 +65,7 @@ than describing hypothetical actions.
 {diagram_summary}"""
 
 
-def formatToolsForPrompt(tools : list[ToolDefinition]) -> str:
+def formatToolsForPrompt(tools : list[ToolSpec]) -> str:
     if not tools:
         return "- (none)"
     return "\n".join(
@@ -70,7 +79,7 @@ def diagramSummaryStub() -> str:
 
 
 def buildSystemPrompt(
-    tools           : list[ToolDefinition],
+    tools           : list[ToolSpec],
     diagram_summary : str | None = None,
 ) -> str:
     body = _SYSTEM_TEMPLATE.format(

@@ -1,8 +1,9 @@
 """Shared types for the AI chat agent loop."""
 
-from dataclasses import dataclass, field
-from enum import Enum
-from typing import Any
+from typing          import Any
+from collections.abc import Callable
+from dataclasses     import dataclass, field
+from enum            import Enum
 
 
 class ChatEventType(Enum):
@@ -13,19 +14,17 @@ class ChatEventType(Enum):
 
 
 @dataclass
-class ChatMessage:
-    role         : str
-    content      : str
-    tool_call_id : str | None = None
-    tool_name    : str | None = None
-    tool_calls   : list[ToolCall] | None = None
-
-
-@dataclass
-class ToolDefinition:
+class ToolSpec:
     name        : str
     description : str
     parameters  : dict[str, Any] = field(default_factory=dict)
+
+
+@dataclass
+class ToolEntry:
+    spec  : ToolSpec
+    fn    : Callable
+    write : bool
 
 
 @dataclass
@@ -36,8 +35,17 @@ class ToolCall:
 
 
 @dataclass
+class ChatMessage:
+    role         : str
+    content      : str
+    tool_call_id : str | None            = None
+    tool_name    : str | None            = None
+    tool_calls   : list[ToolCall] | None = None
+
+
+@dataclass
 class ChatEvent:
     type      : ChatEventType
-    content   : str            = ""
+    content   : str             = ""
     tool_call : ToolCall | None = None
-    error     : str | None     = None
+    error     : str | None      = None

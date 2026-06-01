@@ -8,7 +8,7 @@ from .types   import (
     ChatEventType,
     ChatMessage,
     ToolCall,
-    ToolDefinition,
+    ToolSpec,
 )
 
 __all__ = [
@@ -19,5 +19,5 @@ __all__ = [
     "ChatEventType",
     "ChatMessage",
     "ToolCall",
-    "ToolDefinition",
+    "ToolSpec",
 ]

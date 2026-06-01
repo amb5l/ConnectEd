@@ -3,12 +3,12 @@
 import pytest
 
 from ConnectEd.ai.prompt import buildSystemPrompt, formatToolsForPrompt
-from ConnectEd.ai.types import ToolDefinition
+from ConnectEd.ai.types import ToolSpec
 
 
 def test_format_tools_for_prompt_lists_names() -> None:
     tools = [
-        ToolDefinition(
+        ToolSpec(
             name        = "ping",
             description = "Health check.",
             parameters  = {"type": "object", "properties": {}},
@@ -28,7 +28,7 @@ def test_build_system_prompt_includes_connect_ed_and_tools(
 
     monkeypatch.setattr("ConnectEd.ai.prompt.settings", lambda: _FakeSettings())
     tools = [
-        ToolDefinition(
+        ToolSpec(
             name        = "ping",
             description = "Health check.",
             parameters  = {"type": "object", "properties": {}},

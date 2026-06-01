@@ -8,7 +8,7 @@ from typing import Any
 
 from openai import OpenAI
 
-from ..types import ChatEvent, ChatEventType, ChatMessage, ToolCall, ToolDefinition
+from ..types import ChatEvent, ChatEventType, ChatMessage, ToolCall, ToolSpec
 
 
 def listModels(api_key : str, base_url : str) -> list[str]:
@@ -27,7 +27,7 @@ def listModels(api_key : str, base_url : str) -> list[str]:
     return [model.id for model in models]
 
 
-def _toolDefinitions(tools : list[ToolDefinition]) -> list[dict[str, Any]] | None:
+def _toolDefinitions(tools : list[ToolSpec]) -> list[dict[str, Any]] | None:
     if not tools:
         return None
     return [
@@ -116,7 +116,7 @@ class OpenAiCompatibleProvider:
     def chat(
         self,
         messages : list[ChatMessage],
-        tools    : list[ToolDefinition],
+        tools    : list[ToolSpec],
     ) -> Iterator[ChatEvent]:
         if not messages:
             yield ChatEvent(ChatEventType.DONE)
