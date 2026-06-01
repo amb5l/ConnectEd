@@ -234,10 +234,10 @@ def _placeBlockPin(
     spec  : dict[str, Any],
 ) -> tuple[Any | None, str | None]:
     from ...widgets.graphics.items.block_pin import BlockPinItem
-    pin = BlockPinItem()
-    pin.setName(spec["name"])
+    pin = BlockPinItem(block)
     pin.setDirection(spec["direction"])
     pin.setLocEdge(spec["edge"])
     pin.setLocOffset(spec["offset"])
+    pin.setName(spec["name"])
     scene.addBlockPin(block, pin, undoable=True)
     return pin, None

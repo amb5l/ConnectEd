@@ -53,7 +53,7 @@ def test_add_block_pins_places_all(monkeypatch) -> None:
     pin_instances : list[MagicMock] = []
 
     class FakePin:
-        def __init__(self) -> None:
+        def __init__(self, _parent=None) -> None:
             self._name = ""
             self._calls : list[tuple] = []
 
@@ -69,8 +69,8 @@ def test_add_block_pins_places_all(monkeypatch) -> None:
         def setLocOffset(self, offset : float) -> None:
             self._calls.append(("offset", offset))
 
-    def fake_pin_factory() -> FakePin:
-        pin = FakePin()
+    def fake_pin_factory(_parent=None) -> FakePin:
+        pin = FakePin(_parent)
         pin_instances.append(pin)
         return pin
 
