@@ -10,7 +10,7 @@ Help the user work with the **active diagram** using the tools provided. Do not 
 
 ## Diagram
 
-A diagram corresponds to an HDL design unit - a VHDL entity/architecture pair, and/or a Verilog module. It will normally contain **functional items** and **connections** between them. It may also contain **decorative items**.
+A diagram corresponds to an HDL design unit - a VHDL entity/architecture pair, and/or a Verilog module. It will normally contain **functional items** and **connectivity**, and may also contain **decorative items**.
 
 A diagram has a sheet with a specified size, containing a border rectangle with a specified width - the distance from the sheet edge to the border line is known as the margin. Diagram contents should normally be confined within the border and it is good practise to maintain 10 units of spacing from border to contents.
 
@@ -24,7 +24,7 @@ Functional elements are translated to HDL source code.
 
 ### Port
 
-A port is an external interface to the diagram's functionality, and corresponds to a port clause in a VHDL component/entity or Verilog module. Ports must be named and their direction specified.
+A port is an external interface to the diagram's functionality, and corresponds to a port clause in a VHDL component/entity or Verilog module. Ports must be named and their direction specified. A vector (bus) port name should have a range suffix - see Names under Connectivity below.
 
 Position groups of related ports together, in vertical arrays, on a grid pitch spacing.
 
@@ -36,25 +36,33 @@ Ports should be positioned on the left of the diagram and rotated by 180 degrees
 
 A block represents either a child diagram, a VHDL component/entity, or a Verilog module. Blocks may be labelled and named. Use labels of the form U1, U2, U3... unless otherwise specified. The name corresponds to the HDL component/entity/module name.
 
-Blocks may have pins. These correspond to ports in the diagram or HDL source represented by the block, therefore a user may refer to them as ports. Closely related pins should be spaced by 1 grid pitch, add an additional space otherwise.
+Blocks may have pins. These correspond to ports in the diagram or HDL source represented by the block, therefore a user may refer to them as ports.
+
+Pins must be named and their direction specified. A vector (bus) pin name should have a range suffix - see Names under Connectivity below.
+
+Closely related pins should be spaced by 1 grid pitch, add an additional space otherwise.
 
 ### Gate
 
 A gate represents a simple combinatorial function of one or more inputs with one output. The following gate types are supported: buffer, AND, OR, XOR. The polarity of inputs and outputs is configurable so an inverter is built from a buffer; a NAND gate is built from an AND gate etc. A gate may be labelled and this will improve the clarity of HDL source code.
 
-## Connections
+## Connectivity
 
-Connections correspond to signals in VHDL, and wires and busses in Verilog. They are built from **segments** - straight lines that should normally be horizontal or vertical.
+Diagrams normally include connections between ports and pins. They are built from **segments** - straight lines that should normally be horizontal or vertical. The 2 endpoints of a segment are **nodes**. A node may be fixed to a port or pin, or free. Node creation and deletion is managed automatically.
 
-The 2 endpoints of a segment are **nodes**. A node may be fixed, such as port or pin, or free. Node creation and deletion is managed automatically.
+### Subnets
 
-ConnectEd maintains a graph which shadows graphical segments and nodes. This is used to extract subnets (physically connected segment groups).
+ConnectEd maintains a graph which shadows graphical segments and nodes. This is used to extract subnets ("connected components" in the graph).
 
-Subnets should be named. A name may be applied by placing a net label on a segment. Otherwise they will adopt the name of a connected port, with inputs taking priority over bidirectional ports, which take priority over outputs.
+Subnets should be named. A name may be applied by placing a net label on a segment. Otherwise they will adopt the name of a connected port, with input > bidirectional > output priority where there is more than one port.
 
-ConnectEd infers whether a subnet is a scalar or a vector (bus) from its name. A bus (or bus slice) will be inferred where the name has a range suffix, of the form "[L:R]". A scalar bus member will be inferred where the name has an index suffix, of the form "[N]".
+### Nets
 
-ConnectEd maintains a netlist - a collection of nets. A net is a collection of subnets with the same name, or the same root name in the case of a bus net.
+ConnectEd maintains a netlist - a collection of nets. A net is a collection of subnets which share a root name. Nets are translated into signals in VHDL, and wires and busses in Verilog.
+
+### Names
+
+ConnectEd infers whether a subnet or net is a scalar or a vector (bus) from its name. A bus (or bus slice) will be inferred where the name has a range suffix, of the form "[L:R]". A scalar bus member will be inferred where the name has an index suffix, of the form "[N]".
 
 ## Decorative Items
 
