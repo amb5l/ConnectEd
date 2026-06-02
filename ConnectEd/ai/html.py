@@ -26,7 +26,7 @@ pre, code { font-family: monospace; font-size: 0.9em; }
 
 def userMessageHtml(text : str, bubble_bg : str) -> str:
     """User turn as a right-aligned rounded bubble."""
-    inner   = linkify(text)
+    inner   = linkify(text).replace("\n", "<br>")
     padding = "8px 12px"
     radius  = "10px"
     style   = (

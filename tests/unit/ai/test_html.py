@@ -20,6 +20,11 @@ def test_user_message_html_escapes_markup() -> None:
     assert "&lt;tag&gt;" in html_block
 
 
+def test_user_message_html_preserves_line_breaks() -> None:
+    html_block = userMessageHtml("line one\nline two", "#222222")
+    assert "line one<br>line two" in html_block
+
+
 def test_linkify_wraps_https_urls() -> None:
     result = linkify("See https://ollama.com/ for details.")
     assert '<a href="https://ollama.com/">https://ollama.com/</a>' in result

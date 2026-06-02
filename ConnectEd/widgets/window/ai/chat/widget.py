@@ -4,6 +4,7 @@ from PyQt6.QtCore    import QEvent, QObject, Qt, QTimer, QUrl
 from PyQt6.QtGui     import (
     QDesktopServices,
     QFont,
+    QKeyEvent,
     QKeySequence,
     QPalette,
     QShortcut,
@@ -13,7 +14,7 @@ from PyQt6.QtGui     import (
 )
 from PyQt6.QtWidgets import (
     QHBoxLayout,
-    QLineEdit,
+    QPlainTextEdit,
     QPushButton,
     QTextBrowser,
     QVBoxLayout,
@@ -37,9 +38,10 @@ if TYPE_CHECKING:
 _CONNECTED_PLACEHOLDER    = "Message…"
 _DISCONNECTED_PLACEHOLDER = "disconnected"
 _INPUT_DISCONNECTED_STYLE = (
-    "QLineEdit:disabled { font-style: italic; }"
-    "QLineEdit:disabled::placeholder { font-style: italic; }"
+    "QPlainTextEdit:disabled { font-style: italic; }"
+    "QPlainTextEdit:disabled::placeholder { font-style: italic; }"
 )
+_INPUT_MAX_LINES = 5
 _USER_BUBBLE_LIGHTER = 115
 _CHAT_FONT_SIZE_MIN  = 6
 _CHAT_FONT_SIZE_MAX  = 24
@@ -68,7 +70,12 @@ class _AiChatFontZoomHost:
         self._history.setFont(font)
         self._history.document().setDefaultFont(font)
         self._input.setFont(font)
+        self._updateInputMaxHeight()
         self._rescaleHistoryDocumentFont()
+
+    def _updateInputMaxHeight(self : Self) -> None:
+        fm = self._input.fontMetrics()
+        self._input.setMaximumHeight(fm.lineSpacing() * _INPUT_MAX_LINES + 12)
 
     def _rescaleHistoryDocumentFont(self : Self) -> None:
         cursor = QTextCursor(self._history.document())
@@ -123,16 +130,35 @@ class AiChatHistoryBrowser(QTextBrowser):
         super().wheelEvent(event)
 
 
-class AiChatLineEdit(QLineEdit):
-    _zoom_host : _AiChatFontZoomHost
+class AiChatMessageEdit(QPlainTextEdit):
+    _zoom_host    : _AiChatFontZoomHost
+    _chat_widget  : "AiChatWidget | None"
 
     def __init__(
-        self   : Self,
-        host   : _AiChatFontZoomHost,
-        parent : QWidget | None = None,
+        self         : Self,
+        host         : _AiChatFontZoomHost,
+        chat_widget  : "AiChatWidget",
+        parent       : QWidget | None = None,
     ) -> None:
         super().__init__(parent)
-        self._zoom_host = host
+        self._zoom_host   = host
+        self._chat_widget = chat_widget
+        self.setLineWrapMode(QPlainTextEdit.LineWrapMode.WidgetWidth)
+        self.setTabChangesFocus(False)
+
+    def keyPressEvent(self : Self, event : QKeyEvent) -> None:
+        if event.key() in (Qt.Key.Key_Return, Qt.Key.Key_Enter):
+            if event.modifiers() & Qt.KeyboardModifier.ControlModifier:
+                cursor = self.textCursor()
+                cursor.insertText("\n")
+                self.setTextCursor(cursor)
+                event.accept()
+                return
+            if self._chat_widget is not None:
+                self._chat_widget._sendMessage()
+            event.accept()
+            return
+        super().keyPressEvent(event)
 
     def wheelEvent(self : Self, event : QWheelEvent) -> None:
         if event.modifiers() & Qt.KeyboardModifier.ControlModifier:
@@ -151,7 +177,7 @@ class AiChatWidget(QWidget, _AiChatFontZoomHost):
     _dock                   : "AiChatDock"
     _session                : AiChatSession
     _history                : QTextBrowser
-    _input                  : QLineEdit
+    _input                  : QPlainTextEdit
     _send                   : QPushButton
     _stop                   : QPushButton
     _assistant_line_open    : bool
@@ -185,9 +211,8 @@ class AiChatWidget(QWidget, _AiChatFontZoomHost):
         self._history.anchorClicked.connect(self._onAnchorClicked)
         self._history.setPlaceholderText("AI chat history")
 
-        self._input = AiChatLineEdit(self, self)
+        self._input = AiChatMessageEdit(self, self, self)
         self._input.setPlaceholderText(_CONNECTED_PLACEHOLDER)
-        self._input.returnPressed.connect(self._sendMessage)
         palette = self._input.palette()
         palette.setColor(
             QPalette.ColorGroup.Disabled,
@@ -414,7 +439,7 @@ class AiChatWidget(QWidget, _AiChatFontZoomHost):
         self._session.cancel()
 
     def _sendMessage(self : Self) -> None:
-        text = self._input.text()
+        text = self._input.toPlainText().strip()
         if not text.strip() or not self._canSend():
             return
         if self._dock.isConnected():
