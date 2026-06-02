@@ -17,7 +17,7 @@ from ...drawing.interaction.edit  import EditMoveInteraction,          \
 
 from .base import DiagramViewStateBase, qkm
 
-from ..interaction.edit import EditMoveBlockPinsInteraction
+from ..interaction.edit import DiagramEditMoveBlockPinsInteraction
 
 
 class DiagramViewStateIdle(DiagramViewStateBase):
@@ -106,7 +106,7 @@ class DiagramViewStateIdle(DiagramViewStateBase):
             if pins:
                 # move pins
                 self.interact(
-                    EditMoveBlockPinsInteraction(self.view, pins[0].parentItem(), pins),
+                    DiagramEditMoveBlockPinsInteraction(self.view, pins[0].parentItem(), pins),
                     self.view.stateEditMovePins
                 )
             else:

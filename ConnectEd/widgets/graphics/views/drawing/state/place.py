@@ -12,12 +12,12 @@ from ....items.mixin      import ItemMixin
 from ....items.symbol_pin import SymbolPinItem
 from ....items.text       import TextItem
 
-from ..interaction.place import PlaceSymbolPinInteraction, \
-                                PlaceLineInteraction,      \
-                                PlaceRectangleInteraction, \
-                                PlaceEllipseInteraction,   \
-                                PlacePolylineInteraction,  \
-                                PlaceTextInteraction       \
+from ..interaction.place import DrawingPlaceSymbolPinInteraction, \
+                                DrawingPlaceLineInteraction,      \
+                                DrawingPlaceRectangleInteraction, \
+                                DrawingPlaceEllipseInteraction,   \
+                                DrawingPlacePolylineInteraction,  \
+                                DrawingPlaceTextInteraction       \
 
 from .base  import qkm, DrawingViewStateBase
 from .mixin import ClickMixin, DragMixin, StartMixin
@@ -39,7 +39,7 @@ class DrawingViewStatePlaceSymbolPin(ClickMixin, DrawingViewStateBase):
         if dialog.exec():
             pin.setName(dialog.getName())
             pin.setDirection(dialog.getDirection())
-            self.interact(PlaceSymbolPinInteraction(self.view, self._snap(s), pin))
+            self.interact(DrawingPlaceSymbolPinInteraction(self.view, self._snap(s), pin))
         else:
             self.view.state.go(self.view.stateIdle)
 
@@ -47,7 +47,7 @@ class DrawingViewStatePlaceSymbolPin(ClickMixin, DrawingViewStateBase):
 class DrawingViewStatePlaceLine1(StartMixin, ClickMixin, DrawingViewStateBase):
     STATUS = "Place Line: pick the first point"
 
-    _INTERACTION_CLS = PlaceLineInteraction
+    _INTERACTION_CLS = DrawingPlaceLineInteraction
 
     def _nextState(self : Self) -> DrawingViewStateBase:
         return self.view.statePlaceLine2
@@ -66,7 +66,7 @@ class DrawingViewStatePlaceLine2(ClickMixin, DragMixin, DrawingViewStateBase):
 class DrawingViewStatePlaceRectangle1(StartMixin, DrawingViewStateBase):
     STATUS = "Place Rectangle: pick the first point"
 
-    _INTERACTION_CLS = PlaceRectangleInteraction
+    _INTERACTION_CLS = DrawingPlaceRectangleInteraction
 
     def _nextState(self : Self) -> DrawingViewStateBase:
         return self.view.statePlaceRectangle2
@@ -85,7 +85,7 @@ class DrawingViewStatePlaceRectangle2(ClickMixin, DragMixin, DrawingViewStateBas
 class DrawingViewStatePlaceEllipse1(StartMixin, DrawingViewStateBase):
     STATUS = "Place Ellipse: pick the first point"
 
-    _INTERACTION_CLS = PlaceEllipseInteraction
+    _INTERACTION_CLS = DrawingPlaceEllipseInteraction
 
     def _nextState(self : Self) -> DrawingViewStateBase:
         return self.view.statePlaceEllipse2
@@ -104,7 +104,7 @@ class DrawingViewStatePlaceEllipse2(ClickMixin, DragMixin, DrawingViewStateBase)
 class DrawingViewStatePlacePolyline1(StartMixin, DrawingViewStateBase):
     STATUS = "Place Polyline: pick the first point"
 
-    _INTERACTION_CLS = PlacePolylineInteraction
+    _INTERACTION_CLS = DrawingPlacePolylineInteraction
 
     def _nextState(self : Self) -> DrawingViewStateBase:
         return self.view.statePlacePolyline2
@@ -134,6 +134,6 @@ class DrawingViewStatePlaceText(ClickMixin, DrawingViewStateBase):
         dialog = TextItemDialog(item, self.view)
         if dialog.exec():
             item.applyDialog(dialog)
-            self.interact(PlaceTextInteraction(self.view, self._snap(s), item))
+            self.interact(DrawingPlaceTextInteraction(self.view, self._snap(s), item))
         else:
             self.view.state.go(self.view.stateIdle)

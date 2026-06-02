@@ -7,7 +7,7 @@ from PyQt6.QtGui     import QAction
 from .base import qkm
 
 if TYPE_CHECKING:
-    from ..interaction import Interaction
+    from ..interaction import DrawingInteraction
     from .base         import DrawingViewStateBase
 
 
@@ -17,7 +17,7 @@ class StartMixin:
     interaction and advance to the next state.
     """
 
-    _INTERACTION_CLS : type["Interaction"]
+    _INTERACTION_CLS : type["DrawingInteraction"]
 
     def _nextState(self : Self) -> "DrawingViewStateBase":
         raise NotImplementedError

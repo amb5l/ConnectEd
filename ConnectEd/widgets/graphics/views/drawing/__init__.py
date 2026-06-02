@@ -17,7 +17,7 @@ from ....window.sub_window import SubWindow
 
 from ...scenes.drawing import DrawingScene
 
-from ...views.drawing.interaction import Interaction
+from ...views.drawing.interaction import DrawingInteraction
 
 from .mouse   import DrawingViewMouseMixin
 from .private import DrawingViewPrivateMixin
@@ -54,7 +54,7 @@ class DrawingView(
     grid        : DrawingViewGrid
     mouse       : DrawingViewMouse
     state       : DrawingViewStateBase
-    interaction : Interaction | None
+    interaction : DrawingInteraction | None
     ui          : DrawingViewUi
 
     @checked

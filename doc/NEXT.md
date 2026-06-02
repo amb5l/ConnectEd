@@ -1,3 +1,6 @@
+
+PlaceBlockPinInteraction _scene type
+
 AiEditLock => general edit lock?
 
 Dialog title truncation

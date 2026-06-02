@@ -12,7 +12,7 @@ from ....items.mixin import ItemMixin
 
 from ....scenes.drawing import DrawingScene
 
-from ..interaction import Interaction
+from ..interaction import DrawingInteraction
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -40,7 +40,7 @@ class DrawingViewStateBase:
         self        : Self,
         state       : "DrawingViewStateBase",
         items       : list[ItemMixin] | None = None,
-        interaction : Interaction | None = None,
+        interaction : DrawingInteraction | None = None,
         spos        : QPointF | None = None
     ) -> None:
         self._setInteraction(interaction)
@@ -66,7 +66,7 @@ class DrawingViewStateBase:
     @checked
     def interact(
         self        : Self,
-        interaction : Interaction,
+        interaction : DrawingInteraction,
         state       : "DrawingViewStateBase | None" = None
     ) -> None:
         if not interaction.valid():
@@ -81,7 +81,7 @@ class DrawingViewStateBase:
     @checked
     def _setInteraction(
         self        : Self,
-        interaction : Interaction | None
+        interaction : DrawingInteraction | None
     ) -> None:
         """Install ``interaction`` as the view's live interaction, cancelling
         the previous one if there was a different one. ``cancel()`` is a no-op

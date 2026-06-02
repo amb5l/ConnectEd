@@ -17,14 +17,14 @@ from ....items.ellipse    import EllipseItem
 from ....items.polyline   import PolylineItem
 from ....items.text       import TextItem
 
-from . import ItemInteraction
+from . import DrawingItemInteraction
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from .. import DrawingView
 
 
-class PlaceBaseInteraction(ItemInteraction):  # _view, _scene, _item, valid
+class DrawingPlaceBaseInteraction(DrawingItemInteraction):  # _view, _scene, _item, valid
     """Base for all interactions that place a single item."""
 
     # class attributes
@@ -51,7 +51,7 @@ class PlaceBaseInteraction(ItemInteraction):  # _view, _scene, _item, valid
         self._scene.removeItem(self._item)
 
 
-class PlaceBase1PosInteraction(PlaceBaseInteraction):
+class DrawingPlaceBase1PosInteraction(DrawingPlaceBaseInteraction):
     """Base for all interactions that place a single item using 1 position."""
 
     def update(self : Self, pos : QPointF) -> None:
@@ -77,7 +77,7 @@ class PlaceBase1PosInteraction(PlaceBaseInteraction):
         ] + super().ctxMenuItems(pos)
 
 
-class PlaceBase2PosInteraction(PlaceBase1PosInteraction):
+class DrawingPlaceBase2PosInteraction(DrawingPlaceBase1PosInteraction):
     """Base for all interactions that place a single item using 2 positions."""
 
     # instance attributes
@@ -98,23 +98,23 @@ class PlaceBase2PosInteraction(PlaceBase1PosInteraction):
         self._item.setPoints(self._p1, pos)
 
 
-class PlaceSymbolPinInteraction(PlaceBase1PosInteraction):
+class DrawingPlaceSymbolPinInteraction(DrawingPlaceBase1PosInteraction):
     _ITEM_TYPE = SymbolPinItem
 
 
-class PlaceLineInteraction(PlaceBase2PosInteraction):
+class DrawingPlaceLineInteraction(DrawingPlaceBase2PosInteraction):
     _ITEM_TYPE = LineItem
 
 
-class PlaceRectangleInteraction(PlaceBase2PosInteraction):
+class DrawingPlaceRectangleInteraction(DrawingPlaceBase2PosInteraction):
     _ITEM_TYPE = RectangleItem
 
 
-class PlaceEllipseInteraction(PlaceBase2PosInteraction):
+class DrawingPlaceEllipseInteraction(DrawingPlaceBase2PosInteraction):
     _ITEM_TYPE = EllipseItem
 
 
-class PlacePolylineInteraction(PlaceBase1PosInteraction):
+class DrawingPlacePolylineInteraction(DrawingPlaceBase1PosInteraction):
     _ITEM_TYPE = PolylineItem
 
     _item  : PolylineItem      # type hint for this interaction
@@ -202,5 +202,5 @@ class PlacePolylineInteraction(PlaceBase1PosInteraction):
             self._item.lastSegment().setSweep(self._sweep)
 
 
-class PlaceTextInteraction(PlaceBase1PosInteraction):
+class DrawingPlaceTextInteraction(DrawingPlaceBase1PosInteraction):
     _ITEM_TYPE = TextItem

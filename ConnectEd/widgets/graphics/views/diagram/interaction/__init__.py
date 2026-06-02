@@ -7,14 +7,30 @@ from ......core.check import checked
 from ....items.block     import BlockItem
 from ....items.block_pin import BlockPinItem
 
-from ...drawing.interaction import Interaction
+from ...drawing.interaction import (
+    DrawingInteraction, DrawingItemInteraction, DrawingItemsInteraction
+)
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from .. import DiagramView
+    from ....scenes.diagram import DiagramScene
 
 
-class BlockPinInteraction(Interaction):
+class DiagramInteraction(DrawingInteraction):
+    _view  : "DiagramView"
+    _scene : "DiagramScene"
+
+
+class DiagramItemInteraction(DrawingItemInteraction, DiagramInteraction):
+    pass
+
+
+class DiagramItemsInteraction(DrawingItemsInteraction, DiagramInteraction):
+    pass
+
+
+class DiagramBlockPinInteraction(DiagramInteraction):
     """Base for all interactions that operate on a block pin."""
 
     # instance attributes

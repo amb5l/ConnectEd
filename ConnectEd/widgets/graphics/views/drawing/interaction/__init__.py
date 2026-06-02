@@ -17,7 +17,7 @@ if TYPE_CHECKING:
     from ....scenes.drawing import DrawingScene
 
 
-class Interaction:
+class DrawingInteraction:
     """Base for all interactions.
 
     ``commit``, ``complete`` and ``cancel`` are public entry points that
@@ -90,7 +90,7 @@ class Interaction:
         ]
 
 
-class ItemInteraction(Interaction):
+class DrawingItemInteraction(DrawingInteraction):
     """Base for all interactions that operate on a single scene item."""
     # instance attributes
     _item : ItemType
@@ -108,7 +108,7 @@ class ItemInteraction(Interaction):
         return self._item is not None
 
 
-class ItemsInteraction(Interaction):
+class DrawingItemsInteraction(DrawingInteraction):
     """Base for all interactions that operate on one or more scene items."""
 
     # instance attributes
@@ -127,39 +127,6 @@ class ItemsInteraction(Interaction):
         return self._items is not None
 
 
-class BlockPinInteraction(Interaction):
-    """Base for all interactions that operate on a block pin."""
-
-    # instance attributes
-    _parent : BlockItem | None
-    _pin    : BlockPinItem | None
-
-    @checked
-    def __init__(
-        self   : Self,
-        view   : "DrawingView",
-        parent : BlockItem,
-        pin    : BlockPinItem | None,
-        pos    : QPointF,
-        snap   : QPointF | None = None
-    ) -> None:
-        super().__init__(view)
-        if isinstance(parent, BlockItem):
-            self._parent = parent
-            self._pin = pin or BlockPinItem(parent)
-            self._pin.setParentItem(parent)
-            self.update(pos, snap)
-        else:
-            self._parent = None
-            self._pin = None
-
-    def valid(self : Self) -> bool:
-        return \
-            self._parent is not None and \
-            hasattr(self, "_pin") and \
-            self._pin is not None
-
-
 class RotateItemMixin:
     """Mixin for interactions that rotate items."""
 
@@ -172,7 +139,7 @@ class RotateItemMixin:
     def rotateCCW(self : Self) -> None:
         self._item.setRotation((self._item.rotation() - 90) % 360)
 
-    def ctxMenuItems(self : Self | Interaction, pos : QPointF) -> list[QAction | QMenu]:
+    def ctxMenuItems(self : Self | DrawingInteraction, pos : QPointF) -> list[QAction | QMenu]:
         return [
             self._view.action("Rotate CW",  self.rotateCW,  "]"),
             self._view.action("Rotate CCW", self.rotateCCW, "["),

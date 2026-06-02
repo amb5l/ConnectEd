@@ -8,14 +8,16 @@ from ......core.types import EdgeLoc
 from ....items.block     import BlockItem
 from ....items.block_pin import BlockPinItem
 
-from ...drawing.interaction import PreviewStateMixin, Interaction
+from ...drawing.interaction import PreviewStateMixin
+
+from . import DiagramInteraction
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ...diagram import DiagramView
 
 
-class EditMoveBlockPinsInteraction(PreviewStateMixin, Interaction):
+class DiagramEditMoveBlockPinsInteraction(PreviewStateMixin, DiagramInteraction):
     # instance attributes
     _parent : BlockItem
     _pins   : list[BlockPinItem]  # first item is primary pin

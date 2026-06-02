@@ -16,31 +16,56 @@ from ....items.segment   import SegmentItem, SegmentPreview1Item, SegmentPreview
 from ....items.tap       import TapItem
 from ....items.net_label import NetLabelItem
 
-from ...drawing.interaction import Interaction, RotateItemMixin
+from ...drawing.interaction import RotateItemMixin
 
-from ...drawing.interaction.place import PlaceBase1PosInteraction, \
-                                         PlaceBase2PosInteraction
+from ...drawing.interaction.place import (
+    DrawingPlaceBaseInteraction,
+    DrawingPlaceBase1PosInteraction,
+    DrawingPlaceBase2PosInteraction
+)
 
-from . import BlockPinInteraction
+from . import DiagramInteraction, DiagramBlockPinInteraction
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from .. import DiagramView
-    from ....scenes.diagram import DiagramScene
 
-class PlacePortInteraction(RotateItemMixin, PlaceBase1PosInteraction):
+
+class DiagramPlaceBaseInteraction(
+    DrawingPlaceBaseInteraction, DiagramInteraction
+):
+    pass
+
+
+class DiagramPlaceBase1PosInteraction(
+    DrawingPlaceBase1PosInteraction, DiagramInteraction
+):
+    pass
+
+
+class DiagramPlaceBase2PosInteraction(
+    DrawingPlaceBase2PosInteraction, DiagramInteraction
+):
+    pass
+
+
+class DiagramPlacePortInteraction(
+    RotateItemMixin, DiagramPlaceBase1PosInteraction
+):
     _ITEM_TYPE = PortItem
 
 
-class PlaceGateInteraction(RotateItemMixin, PlaceBase1PosInteraction):
+class DiagramPlaceGateInteraction(
+    RotateItemMixin, DiagramPlaceBase1PosInteraction
+):
     _ITEM_TYPE = LogicGateItem
 
 
-class PlaceBlockInteraction(PlaceBase2PosInteraction):
+class DiagramPlaceBlockInteraction(DiagramPlaceBase2PosInteraction):
     _ITEM_TYPE = BlockItem
 
 
-class PlaceBlockPinInteraction(BlockPinInteraction):
+class DiagramPlaceBlockPinInteraction(DiagramBlockPinInteraction):
     @checked
     def __init__(
         self   : Self,
@@ -64,11 +89,10 @@ class PlaceBlockPinInteraction(BlockPinInteraction):
         self._pin.setParentItem(None)
 
 
-class PlaceConnInteraction(Interaction):
+class DiagramPlaceConnInteraction(DiagramInteraction):
     """Interactive wire placement involves two preview segments."""
 
     # instance attributes
-    _scene : "DiagramScene"
     _seg1  : SegmentPreview1Item
     _seg2  : SegmentPreview2Item
 
@@ -181,7 +205,7 @@ class PlaceConnInteraction(Interaction):
                 item.scene().removeItem(item)
 
 
-class PlaceTapInteraction(PlaceBase1PosInteraction):
+class DiagramPlaceTapInteraction(DiagramPlaceBase1PosInteraction):
     _ITEM_TYPE = TapItem
 
     _item : TapItem
@@ -200,5 +224,5 @@ class PlaceTapInteraction(PlaceBase1PosInteraction):
         ] + super().ctxMenuItems(pos)
 
 
-class PlaceNetLabelInteraction(PlaceBase1PosInteraction):
+class DiagramPlaceNetLabelInteraction(DiagramPlaceBase1PosInteraction):
     _ITEM_TYPE = NetLabelItem

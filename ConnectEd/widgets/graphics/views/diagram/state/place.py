@@ -25,13 +25,13 @@ from ...drawing.state.base import qkm
 
 from ...drawing.state.mixin import StartMixin, ClickMixin, DragMixin
 
-from ..interaction.place import PlacePortInteraction,     \
-                                PlaceGateInteraction,     \
-                                PlaceBlockInteraction,    \
-                                PlaceBlockPinInteraction, \
-                                PlaceConnInteraction,      \
-                                PlaceTapInteraction,       \
-                                PlaceNetLabelInteraction
+from ..interaction.place import DiagramPlacePortInteraction,     \
+                                DiagramPlaceGateInteraction,     \
+                                DiagramPlaceBlockInteraction,    \
+                                DiagramPlaceBlockPinInteraction, \
+                                DiagramPlaceConnInteraction,      \
+                                DiagramPlaceTapInteraction,       \
+                                DiagramPlaceNetLabelInteraction
 
 from .base import DiagramViewStateBase
 
@@ -56,7 +56,7 @@ class DiagramViewStatePlacePort(ClickMixin, DiagramViewStateBase):
                 180 if dialog.getDirection() == Direction.IN else 0
             )
             self.interact(
-                PlacePortInteraction(self.view, self._snap(s), item)
+                DiagramPlacePortInteraction(self.view, self._snap(s), item)
             )
         else:
             self.view.state.go(self.view.stateIdle)
@@ -80,7 +80,7 @@ class DiagramViewStatePlaceGate(ClickMixin, DiagramViewStateBase):
                 case GateFunc.OR_NOR   : gate = OrGateItem(dialog.getWidth())
                 case GateFunc.XOR_XNOR : gate = XorGateItem(dialog.getWidth())
             gate.setPos(self._snap(s))
-            self.interact(PlaceGateInteraction(self.view, self._snap(s), gate))
+            self.interact(DiagramPlaceGateInteraction(self.view, self._snap(s), gate))
         else:
             self.view.state.go(self.view.stateIdle)
 
@@ -88,7 +88,7 @@ class DiagramViewStatePlaceGate(ClickMixin, DiagramViewStateBase):
 class DiagramViewStatePlaceBlock1(StartMixin, DiagramViewStateBase):
     STATUS = "Place Block: pick the first point"
 
-    _INTERACTION_CLS = PlaceBlockInteraction
+    _INTERACTION_CLS = DiagramPlaceBlockInteraction
 
     def _nextState(self : Self) -> DiagramViewStateBase:
         return self.view.statePlaceBlock2
@@ -121,7 +121,7 @@ class DiagramViewStatePlaceBlockPin(DiagramViewStateBase):
             if dialog.exec():
                 pin.setName(dialog.getName())
                 pin.setDirection(dialog.getDirection())
-                self.interact(PlaceBlockPinInteraction(
+                self.interact(DiagramPlaceBlockPinInteraction(
                     self.view, block, pin, self._snap(s),
                     self.view.grid.pitch if self.view.grid.snap else None
                 ))
@@ -145,7 +145,7 @@ class DiagramViewStatePlaceBlockPin(DiagramViewStateBase):
 class DiagramViewStatePlaceConn1(StartMixin, ClickMixin, DiagramViewStateBase):
     STATUS = "Place Connection: pick a starting position"
 
-    _INTERACTION_CLS = PlaceConnInteraction
+    _INTERACTION_CLS = DiagramPlaceConnInteraction
 
     def _nextState(self : Self) -> DiagramViewStateBase:
         return self.view.statePlaceConn2
@@ -197,7 +197,7 @@ class DiagramViewStatePlaceTap(ClickMixin, DiagramViewStateBase):
         self._interact(s)
 
     def _interact(self : Self, s : QPointF) -> None:
-        self.interact(PlaceTapInteraction(self.view, self._snap(s)))
+        self.interact(DiagramPlaceTapInteraction(self.view, self._snap(s)))
 
 
 class DiagramViewStatePlaceNetLabel(ClickMixin, DiagramViewStateBase):
@@ -216,7 +216,7 @@ class DiagramViewStatePlaceNetLabel(ClickMixin, DiagramViewStateBase):
         if dialog.exec():
             item.applyDialog(dialog)
             self.interact(
-                PlaceNetLabelInteraction(self.view, pos, item)
+                DiagramPlaceNetLabelInteraction(self.view, pos, item)
             )
         else:
             self.view.state.go(self.view.stateIdle)

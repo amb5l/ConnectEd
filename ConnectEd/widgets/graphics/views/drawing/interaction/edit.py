@@ -14,8 +14,8 @@ from ....items.polyline  import PolylineItem, PolySegItem
 from . import MoveItemsMixin,      \
               PreviewStateMixin,   \
               AddRemoveItemsMixin, \
-              ItemsInteraction,    \
-              Interaction,         \
+              DrawingItemsInteraction,    \
+              DrawingInteraction,         \
               ItemType
 
 from typing import TYPE_CHECKING
@@ -26,7 +26,7 @@ if TYPE_CHECKING:
 class EditPasteInteraction(
     MoveItemsMixin,       # update, _moveBy, _previewSave, _previewRestore
     AddRemoveItemsMixin,  # _addToScene, _removeFromScene
-    ItemsInteraction      # _view, _scene, _items, valid
+    DrawingItemsInteraction      # _view, _scene, _items, valid
 ):
     @checked
     def __init__(
@@ -68,7 +68,7 @@ class EditDuplicateInteraction(EditPasteInteraction):
     ) -> None:
         clone_items = clone(items)
         if clone_items:
-            ItemsInteraction.__init__(self, view, clone_items)
+            DrawingItemsInteraction.__init__(self, view, clone_items)
             self._cpos = self._ipos = pos
             self._previewSave()
             self._addToScene(select=True)
@@ -78,7 +78,7 @@ class EditDuplicateInteraction(EditPasteInteraction):
 
 class EditMoveInteraction(
     MoveItemsMixin,    # update, _moveBy, _previewSave, _previewRestore
-    ItemsInteraction,  # _view, _scene, _items, valid
+    DrawingItemsInteraction,  # _view, _scene, _items, valid
 ):
     # instance attributes
     _slide  : bool  # true => retain connections, false => break connections
@@ -122,7 +122,7 @@ class EditMoveInteraction(
         self._previewRestore()  # restore initial positions
 
 
-class EditAdjustPolySegInteraction(PreviewStateMixin, Interaction):
+class EditAdjustPolySegInteraction(PreviewStateMixin, DrawingInteraction):
     # instance attributes
     _polyline : PolylineItem       # parent polyline
     _seg      : PolySegItem        # target segment
