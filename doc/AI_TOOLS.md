@@ -12,6 +12,7 @@ Tools available to LLMs.
 
 | Tool | Description |
 |------|-------------|
+| `set_sheet` | Sheet `width` and `height` (scene units) for a `view` |
 | `add_block` | Block with `label`, HDL `name`, `left`/`top`/`width`/`height`; returns `item` ref |
 | `add_block_pin` | One pin on a block (`item` ref): `name`, `direction`, `edge`, `offset` |
 | `add_block_pins` | All pins in one call: `pins` array of pin objects |

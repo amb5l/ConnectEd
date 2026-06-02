@@ -4,10 +4,9 @@ import pytest
 
 from PyQt6.QtWidgets import QApplication
 
-from ConnectEd.ai.prompt import CONNECTION_HANDSHAKE_USER
+from ConnectEd.ai.prompt import connectionReadyMessage
 from ConnectEd.ai.profiles import AiProfile
 from ConnectEd.ai.session import AiChatSession
-from ConnectEd.ai.types import ChatEvent, ChatEventType
 
 
 @pytest.fixture
@@ -18,7 +17,12 @@ def qapp():
     yield app
 
 
-def test_run_handshake_delivers_system_prompt_and_greeting(
+def test_connection_ready_message_uses_model_name() -> None:
+    assert connectionReadyMessage("grok-3") == "grok-3 is ready."
+    assert connectionReadyMessage("  ") == "AI is ready."
+
+
+def test_run_handshake_shows_ready_without_provider_call(
     qapp,
     monkeypatch : pytest.MonkeyPatch,
 ) -> None:
@@ -30,16 +34,13 @@ def test_run_handshake_delivers_system_prompt_and_greeting(
         url           = "",
     )
     tokens : list[str] = []
+    provider_called = False
 
     class FakeProvider:
         def chat(self, messages, tools):
-            assert tools == []
-            assert messages[0].role == "system"
-            assert "Available tools" in messages[0].content
-            assert messages[-1].role == "user"
-            assert messages[-1].content == CONNECTION_HANDSHAKE_USER
-            yield ChatEvent(ChatEventType.TOKEN, content="I am ready to help with ConnectEd.")
-            yield ChatEvent(ChatEventType.DONE)
+            nonlocal provider_called
+            provider_called = True
+            yield from ()
 
     monkeypatch.setattr(
         "ConnectEd.ai.session.getProfile",
@@ -74,6 +75,7 @@ def test_run_handshake_delivers_system_prompt_and_greeting(
     session = AiChatSession(FakeWindow(), FakeDock())  # type: ignore[arg-type]
     session.assistantToken.connect(tokens.append)
     session.runHandshake()
-    assert "".join(tokens) == "I am ready to help with ConnectEd."
-    assert session._messages[-1].role == "assistant"
-    assert "ConnectEd" in session._messages[-1].content
+    assert not provider_called
+    assert tokens == ["grok-3 is ready."]
+    assert len(session._messages) == 1
+    assert session._messages[0].role == "system"

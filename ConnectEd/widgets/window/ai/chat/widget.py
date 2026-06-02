@@ -50,7 +50,6 @@ class AiChatWidget(QWidget):
         self._session = AiChatSession(window, dock)
         self._session.userMessage.connect(self._onUserMessage)
         self._session.assistantToken.connect(self._onAssistantToken)
-        self._session.toolResult.connect(self._onToolResult)
         self._session.error.connect(self._onError)
         self._session.finished.connect(self._onFinished)
         self._assistant_line_open = False
@@ -308,14 +307,6 @@ class AiChatWidget(QWidget):
             cursor.insertText(token)
         self._history.setTextCursor(cursor)
         self._scrollHistory()
-
-    def _onToolResult(self : Self, name : str, result : str) -> None:
-        self._assistant_line_open = False
-        self._assistant_stream_plain = False
-        self._appendHtmlAtEnd(
-            f"<p><b>{escape(f'Tool [{name}]')}:</b></p>"
-            f"<pre>{escape(result)}</pre>",
-        )
 
     def _onError(self : Self, message : str) -> None:
         self._assistant_line_open = False

@@ -4,13 +4,13 @@ from typing import TYPE_CHECKING, Self
 
 from PyQt6.QtCore import QObject, pyqtSignal
 
-from ..app import settings
+from ..app import logger, settings
 from ..core.check import checked
 
 from .driver import AiDriver
 from .lock import AiEditLock
 from .profiles import getProfile
-from .prompt import CONNECTION_HANDSHAKE_USER, buildSystemPrompt, diagramSummaryStub
+from .prompt import buildSystemPrompt, connectionReadyMessage
 from .providers import createProviderForProfile
 from .types import ChatEventType, ChatMessage
 
@@ -22,7 +22,6 @@ if TYPE_CHECKING:
 class AiChatSession(QObject):
     userMessage    = pyqtSignal(str)
     assistantToken = pyqtSignal(str)
-    toolResult     = pyqtSignal(str, str)
     error          = pyqtSignal(str)
     finished       = pyqtSignal()
 
@@ -62,7 +61,6 @@ class AiChatSession(QObject):
                 "system",
                 buildSystemPrompt(
                     self._driver.tools(),
-                    diagramSummaryStub(),
                     write_tool_names = self._driver.writeToolNames(),
                 ),
             )
@@ -99,33 +97,12 @@ class AiChatSession(QObject):
 
     @checked
     def runHandshake(self : Self) -> None:
-        """Deliver the system prompt to the model and show a ready greeting."""
+        """Show a short ready greeting (system prompt is already seeded)."""
         if self._busy or self._provider is None:
             return
         self._busy = True
         try:
-            self._provider = self._createProvider()
-            self._messages.append(
-                ChatMessage("user", CONNECTION_HANDSHAKE_USER),
-            )
-            assistant_parts : list[str] = []
-            for event in self._provider.chat(self._messages, []):
-                if event.type == ChatEventType.TOKEN:
-                    assistant_parts.append(event.content)
-                    self.assistantToken.emit(event.content)
-                elif event.type == ChatEventType.TOOL_CALL:
-                    pass
-                elif event.type == ChatEventType.ERROR:
-                    message = event.error or event.content or "Unknown provider error"
-                    self.error.emit(message)
-                    return
-                elif event.type == ChatEventType.DONE:
-                    break
-            text = "".join(assistant_parts).strip()
-            if not text:
-                self.error.emit("No response from model on connect.")
-                return
-            self._messages.append(ChatMessage("assistant", text))
+            self.assistantToken.emit(connectionReadyMessage(self._model))
         except Exception as exc:
             self.error.emit(str(exc))
         finally:
@@ -219,6 +196,6 @@ class AiChatSession(QObject):
                     tool_name    = tool_call.name,
                 )
             )
-            self.toolResult.emit(tool_call.name, result)
+            logger().debug("AI tool %s: %s", tool_call.name, result)
 
         return True

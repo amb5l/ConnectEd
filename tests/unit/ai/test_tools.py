@@ -8,7 +8,7 @@ from unittest.mock import MagicMock
 from PyQt6.QtCore import QPointF, QRectF
 
 from ConnectEd.ai.refs import RefRegistry
-from ConnectEd.ai.tools.get import get_items, get_sheet
+from ConnectEd.ai.tools.get import get_items, get_sheet, set_sheet
 from ConnectEd.widgets.graphics.items.mixin import ItemMixin
 from ConnectEd.widgets.graphics.items.node import NodeItem
 from ConnectEd.widgets.graphics.items.segment import SegmentItem
@@ -59,6 +59,41 @@ def test_get_diagram_sheet_stale_ref() -> None:
 def test_get_diagram_sheet_missing_view() -> None:
     result = json.loads(get_sheet(MagicMock(), RefRegistry(), {}))
     assert result == {"ok": False, "error": "view is required"}
+
+
+def test_set_sheet_updates_dimensions(monkeypatch) -> None:
+    scene = MagicMock()
+    scene.getSheetWidth.return_value = 400.0
+    scene.getSheetHeight.return_value = 300.0
+
+    monkeypatch.setattr(
+        "ConnectEd.ai.tools.get._drawingSceneFromViewRef",
+        lambda registry, view: (scene, None),
+    )
+
+    result = json.loads(set_sheet(
+        MagicMock(),
+        RefRegistry(),
+        {"view": "view:1", "width": 400.0, "height": 300.0},
+    ))
+    scene.setSheetWidth.assert_called_once_with(400.0)
+    scene.setSheetHeight.assert_called_once_with(300.0)
+    assert result == {"ok": True, "width": 400.0, "height": 300.0}
+
+
+def test_set_sheet_rejects_non_positive_size(monkeypatch) -> None:
+    scene = MagicMock()
+    monkeypatch.setattr(
+        "ConnectEd.ai.tools.get._drawingSceneFromViewRef",
+        lambda registry, view: (scene, None),
+    )
+    result = json.loads(set_sheet(
+        MagicMock(),
+        RefRegistry(),
+        {"view": "view:1", "width": 0.0, "height": 100.0},
+    ))
+    assert result["ok"] is False
+    scene.setSheetWidth.assert_not_called()
 
 
 def test_get_items_returns_bounds(monkeypatch) -> None:
