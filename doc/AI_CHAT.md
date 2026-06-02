@@ -41,8 +41,8 @@ scene APIs.
 
 **Implemented:**
 
-- [`ConnectEd/ai/`](../ConnectEd/ai/) — `types`, `AiDriver`, `AiChatSession`, `AiEditLock`,
-  `profiles`, `profile_models`, `chat_mru`, `welcome`, provider registry
+- [`ConnectEd/ai/`](../ConnectEd/ai/) — `types`, `AiDriver`, `AiChatSession`, `AiChatProviderWorker`
+  (`chat_worker.py`), `AiEditLock`, `profiles`, `profile_models`, `chat_mru`, `welcome`, provider registry
   (`registerProvider` / `createProvider` / `createProviderForProfile`).
 - **Real providers** — `xai`, `openai`, `anthropic`, `ollama`, `openai_compatible`
   (`openai`, `anthropic` in [`pyproject.toml`](../pyproject.toml) core dependencies).
@@ -273,7 +273,7 @@ menu sensitivity.
 | **§3.5 skeleton** | `AiEditLock` type, acquire/release in `AiChatSession.send()`; UI hints optional |
 | **§5 read-only agent** | Lease bracketing validated; read tools run without blocking other chats |
 | **§6 write tools** | **Required** — write tools refuse without lease; partial UI lock enforced |
-| **§8 polish** | Stop/cancel releases lease; integration test: Chat A blocks Chat B **Send** |
+| **§8 polish** | Stop/cancel releases lease (**done**); integration test: Chat A blocks Chat B **Send** |
 
 ### Rejected alternatives
 
@@ -641,12 +641,28 @@ Core [`pyproject.toml`](../pyproject.toml) dependencies include `openai` and
 
 ## Threading / Qt
 
-- Network I/O off the GUI thread (`QThread` + signals or `QNetworkAccessManager`).
-- Tool execution **on GUI thread** (Qt widgets, scene mutations).
-- Session orchestrates: await provider chunk → on tool_call →
-  `QMetaObject.invokeMethod` / signal to main thread → post tool result → continue.
-- **`AiEditLock`** is main-thread only; `acquire` / `release` in `AiChatSession.send()`
-  `try` / `finally` around the full tool loop (including provider streaming waits).
+**Implemented** — each `AiChatSession` owns a long-lived `QThread` and
+[`AiChatProviderWorker`](../ConnectEd/ai/chat_worker.py):
+
+| Work | Thread |
+|------|--------|
+| `provider.chat()` HTTP streaming | Worker (`runTurn` slot) |
+| `AiDriver.call()` tool execution | GUI (main) |
+| `_messages`, `AiEditLock` | GUI only |
+
+Flow: `send()` acquires the edit lock on the main thread → worker streams tokens
+(`assistantToken`) → `turnFinished` → if tool calls, `AiDriver.call` on main →
+append tool messages → next `runTurn` until done or round limit.
+
+**Cancel / Stop:** [`AiChatWidget`](../ConnectEd/widgets/window/ai/chat/widget.py)
+**Stop** calls `AiChatSession.cancel()`, which sets a thread-safe cancel flag on the
+worker (callable from the GUI thread while `runTurn` blocks the worker). The worker
+exits the stream cooperatively and emits `cancelled`; the session always
+`_finishRun()` → releases `AiEditLock` and emits `finished`. Handshake stays
+synchronous on the main thread (no HTTP).
+
+Do **not** call `QThread.terminate()` on the provider thread; `shutdown()` on dock
+close uses `quit()` + `wait()`.
 
 ## TODO checklist
 
@@ -657,14 +673,14 @@ Work in order unless noted.
 - [x] Create `ConnectEd/ai/` package (`types`, `ChatMessage`, `ToolSpec`, `ChatEvent`).
 - [x] `registerProvider` / `createProvider` registry in `ai/providers/`.
 - [x] `nobodyHome()` scaffolding tool on `AiDriver`.
-- [x] `AiChatSession` minimal tool loop.
+- [x] `AiChatSession` tool loop; provider streaming on `AiChatProviderWorker` (`chat_worker.py`).
 - [x] Add `ai/` section to `FACTORY_SETTINGS`.
 - [x] Add `openai` / `anthropic` to core `pyproject.toml` dependencies.
 - [ ] Stub `NotConfiguredProvider` helper for missing key (optional).
 
 ### 2. Chat dock (single instance — done)
 
-- [x] `AiChatWidget` — message list, input, Send.
+- [x] `AiChatWidget` — message list, input, Send, **Stop** (busy / cancel).
 - [x] `AiChatDock` — provider/model binding, `isConnected()`.
 - [x] Wire in `Window`: dock, bottom split (log tabs left, AI right).
 - [x] `MAIN_WIDGETS["AI Chat"]` in `specs.py`.
@@ -728,7 +744,7 @@ Work in order unless noted.
 
 ### 8. Polish and docs
 
-- [ ] Stop/cancel in-flight requests; **must release `AiEditLock`**.
+- [x] Stop/cancel in-flight provider turn; **releases `AiEditLock`** (`cancel()` → worker flag → `finished`).
 - [ ] Transcript export (optional).
 - [ ] Unit tests for catalog, context builder, provider request shaping (mock HTTP).
 - [ ] Integration test: scripted provider mock → tool call → scene change.

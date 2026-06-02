@@ -153,6 +153,7 @@ class AiChatWidget(QWidget, _AiChatFontZoomHost):
     _history                : QTextBrowser
     _input                  : QLineEdit
     _send                   : QPushButton
+    _stop                   : QPushButton
     _assistant_line_open    : bool
     _assistant_stream_plain : bool
     _pin_welcome_top        : bool
@@ -198,9 +199,14 @@ class AiChatWidget(QWidget, _AiChatFontZoomHost):
         self._send = QPushButton("Send", self)
         self._send.clicked.connect(self._sendMessage)
 
+        self._stop = QPushButton("Stop", self)
+        self._stop.setEnabled(False)
+        self._stop.clicked.connect(self._stopMessage)
+
         input_row = QHBoxLayout()
         input_row.addWidget(self._input, 1)
         input_row.addWidget(self._send)
+        input_row.addWidget(self._stop)
 
         layout = QVBoxLayout(self)
         layout.setContentsMargins(4, 4, 4, 4)
@@ -247,7 +253,9 @@ class AiChatWidget(QWidget, _AiChatFontZoomHost):
 
     def refreshSendState(self : Self) -> None:
         can_send = self._canSend()
+        busy     = self._session.isBusy()
         self._send.setEnabled(can_send)
+        self._stop.setEnabled(busy and self._dock.isConnected())
         if can_send:
             self._send.setToolTip("")
             return
@@ -258,7 +266,7 @@ class AiChatWidget(QWidget, _AiChatFontZoomHost):
             and edit_lock.holder() is not self._session
         ):
             self._send.setToolTip("Another AI chat is editing the diagram.")
-        elif self._session.isBusy():
+        elif busy:
             self._send.setToolTip("")
         else:
             self._send.setToolTip("")
@@ -302,7 +310,7 @@ class AiChatWidget(QWidget, _AiChatFontZoomHost):
         self._assistant_stream_plain = False
         self._history.clear()
         recordChatConnection(profile_id, model)
-        self._send.setEnabled(False)
+        self.refreshSendState()
         self._session.runHandshake()
         manager = self._window.aiChatManager()
         if manager is not None:
@@ -402,6 +410,9 @@ class AiChatWidget(QWidget, _AiChatFontZoomHost):
         manager.refreshChatWidgets()
         self._window.menuBar().updateAiMenu()
 
+    def _stopMessage(self : Self) -> None:
+        self._session.cancel()
+
     def _sendMessage(self : Self) -> None:
         text = self._input.text()
         if not text.strip() or not self._canSend():
@@ -412,7 +423,7 @@ class AiChatWidget(QWidget, _AiChatFontZoomHost):
         self._input.clear()
         self._assistant_line_open = False
         self._assistant_stream_plain = False
-        self._send.setEnabled(False)
+        self.refreshSendState()
         self._session.send(text)
 
     def _onUserMessage(self : Self, text : str) -> None:
@@ -449,4 +460,5 @@ class AiChatWidget(QWidget, _AiChatFontZoomHost):
         self._assistant_line_open = False
         self._assistant_stream_plain = False
         self.refreshSendState()
+        self.refreshInputState()
         self._input.setFocus(Qt.FocusReason.OtherFocusReason)

@@ -142,6 +142,7 @@ class AiChatManager(QObject):
         if dock not in self._chats:
             return
         dock.chat_widget.releaseEditLock()
+        dock.chat_widget.session().shutdown()
         self._chats.remove(dock)
         dock.setParent(None)
         dock.deleteLater()

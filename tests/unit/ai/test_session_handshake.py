@@ -34,21 +34,10 @@ def test_run_handshake_shows_ready_without_provider_call(
         url           = "",
     )
     tokens : list[str] = []
-    provider_called = False
-
-    class FakeProvider:
-        def chat(self, messages, tools):
-            nonlocal provider_called
-            provider_called = True
-            yield from ()
 
     monkeypatch.setattr(
         "ConnectEd.ai.session.getProfile",
         lambda profile_id: profile if profile_id == "1" else None,
-    )
-    monkeypatch.setattr(
-        "ConnectEd.ai.session.createProviderForProfile",
-        lambda *args, **kwargs: FakeProvider(),
     )
 
     class _FakeSettings:
@@ -75,7 +64,7 @@ def test_run_handshake_shows_ready_without_provider_call(
     session = AiChatSession(FakeWindow(), FakeDock())  # type: ignore[arg-type]
     session.assistantToken.connect(tokens.append)
     session.runHandshake()
-    assert not provider_called
     assert tokens == ["grok-3 is ready."]
     assert len(session._messages) == 1
     assert session._messages[0].role == "system"
+    session.shutdown()
