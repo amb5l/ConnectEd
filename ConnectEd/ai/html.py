@@ -16,12 +16,11 @@ def linkify(text : str) -> str:
 
 
 def historyStyleSheet() -> str:
-    """Base typography for mixed HTML blocks in the chat history pane."""
+    """Layout-only CSS; font size comes from the history widget default font."""
     return """
-body { margin: 0; font-family: sans-serif; font-size: 10pt; }
-p, li, td, th, div { font-family: sans-serif; font-size: 10pt; }
-pre, code { font-family: monospace; font-size: 9pt; }
+body { margin: 0; }
 p { margin-top: 0.6em; margin-bottom: 0.6em; }
+pre, code { font-family: monospace; font-size: 0.9em; }
 """
 
 

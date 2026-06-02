@@ -1,7 +1,16 @@
 from typing import TYPE_CHECKING, Self
 
-from PyQt6.QtCore    import Qt, QTimer, QUrl
-from PyQt6.QtGui     import QDesktopServices, QFont, QPalette, QTextCharFormat
+from PyQt6.QtCore    import QEvent, QObject, Qt, QTimer, QUrl
+from PyQt6.QtGui     import (
+    QDesktopServices,
+    QFont,
+    QKeySequence,
+    QPalette,
+    QShortcut,
+    QTextCharFormat,
+    QTextCursor,
+    QWheelEvent,
+)
 from PyQt6.QtWidgets import (
     QHBoxLayout,
     QLineEdit,
@@ -10,6 +19,8 @@ from PyQt6.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
+
+from .....app import settings
 
 from .....ai.chat_mru import recordChatConnection
 from .....ai.html     import escape, historyStyleSheet, linkify, userMessageHtml
@@ -30,9 +41,112 @@ _INPUT_DISCONNECTED_STYLE = (
     "QLineEdit:disabled::placeholder { font-style: italic; }"
 )
 _USER_BUBBLE_LIGHTER = 115
+_CHAT_FONT_SIZE_MIN  = 6
+_CHAT_FONT_SIZE_MAX  = 24
 
 
-class AiChatWidget(QWidget):
+class _AiChatFontZoomHost:
+    """Shared font-zoom API for history and input sub-widgets."""
+
+    _font_size : int
+
+    def _chatFont(self : Self) -> QFont:
+        font = QFont()
+        font.setPointSizeF(self._font_size)
+        return font
+
+    def _increaseChatFontSize(self : Self) -> None:
+        self._font_size = min(self._font_size + 1, _CHAT_FONT_SIZE_MAX)
+        self._applyChatFontSize()
+
+    def _decreaseChatFontSize(self : Self) -> None:
+        self._font_size = max(self._font_size - 1, _CHAT_FONT_SIZE_MIN)
+        self._applyChatFontSize()
+
+    def _applyChatFontSize(self : Self) -> None:
+        font = self._chatFont()
+        self._history.setFont(font)
+        self._history.document().setDefaultFont(font)
+        self._input.setFont(font)
+        self._rescaleHistoryDocumentFont()
+
+    def _rescaleHistoryDocumentFont(self : Self) -> None:
+        cursor = QTextCursor(self._history.document())
+        cursor.beginEditBlock()
+        cursor.select(QTextCursor.SelectionType.Document)
+        fmt = QTextCharFormat()
+        fmt.setFontPointSize(self._font_size)
+        cursor.mergeCharFormat(fmt)
+        cursor.clearSelection()
+        cursor.movePosition(QTextCursor.MoveOperation.End)
+        cursor.endEditBlock()
+        self._history.setTextCursor(cursor)
+
+
+class AiChatHistoryBrowser(QTextBrowser):
+    _zoom_host : _AiChatFontZoomHost
+
+    def __init__(
+        self   : Self,
+        host   : _AiChatFontZoomHost,
+        parent : QWidget | None = None,
+    ) -> None:
+        super().__init__(parent)
+        self._zoom_host = host
+        self.viewport().installEventFilter(self)
+
+    def eventFilter(self : Self, watched : QObject, event : QEvent) -> bool:
+        if (
+            watched is self.viewport()
+            and event.type() == QEvent.Type.Wheel
+        ):
+            wheel = event
+            if wheel.modifiers() & Qt.KeyboardModifier.ControlModifier:
+                delta = wheel.angleDelta().y()
+                if delta > 0:
+                    self._zoom_host._increaseChatFontSize()
+                elif delta < 0:
+                    self._zoom_host._decreaseChatFontSize()
+                wheel.accept()
+                return True
+        return super().eventFilter(watched, event)
+
+    def wheelEvent(self : Self, event : QWheelEvent) -> None:
+        if event.modifiers() & Qt.KeyboardModifier.ControlModifier:
+            delta = event.angleDelta().y()
+            if delta > 0:
+                self._zoom_host._increaseChatFontSize()
+            elif delta < 0:
+                self._zoom_host._decreaseChatFontSize()
+            event.accept()
+            return
+        super().wheelEvent(event)
+
+
+class AiChatLineEdit(QLineEdit):
+    _zoom_host : _AiChatFontZoomHost
+
+    def __init__(
+        self   : Self,
+        host   : _AiChatFontZoomHost,
+        parent : QWidget | None = None,
+    ) -> None:
+        super().__init__(parent)
+        self._zoom_host = host
+
+    def wheelEvent(self : Self, event : QWheelEvent) -> None:
+        if event.modifiers() & Qt.KeyboardModifier.ControlModifier:
+            delta = event.angleDelta().y()
+            if delta > 0:
+                self._zoom_host._increaseChatFontSize()
+            elif delta < 0:
+                self._zoom_host._decreaseChatFontSize()
+            event.accept()
+            return
+        super().wheelEvent(event)
+
+
+class AiChatWidget(QWidget, _AiChatFontZoomHost):
     _window                 : "Window"
     _dock                   : "AiChatDock"
     _session                : AiChatSession
@@ -42,6 +156,7 @@ class AiChatWidget(QWidget):
     _assistant_line_open    : bool
     _assistant_stream_plain : bool
     _pin_welcome_top        : bool
+    _font_size              : int
 
     def __init__(self : Self, window : "Window", dock : "AiChatDock") -> None:
         super().__init__(window)
@@ -55,20 +170,21 @@ class AiChatWidget(QWidget):
         self._assistant_line_open = False
         self._assistant_stream_plain = False
         self._pin_welcome_top = True
+        self._font_size = int(settings().get("display/font_size"))
 
         ai_manager = window.aiManager()
         edit_lock = ai_manager.editLock() if ai_manager is not None else None
         if edit_lock is not None:
             edit_lock.lockChanged.connect(self.refreshSendState)
 
-        self._history = QTextBrowser(self)
+        self._history = AiChatHistoryBrowser(self, self)
         self._history.setReadOnly(True)
         self._history.setOpenExternalLinks(False)
         self._refreshHistoryStyle()
         self._history.anchorClicked.connect(self._onAnchorClicked)
         self._history.setPlaceholderText("AI chat history")
 
-        self._input = QLineEdit(self)
+        self._input = AiChatLineEdit(self, self)
         self._input.setPlaceholderText(_CONNECTED_PLACEHOLDER)
         self._input.returnPressed.connect(self._sendMessage)
         palette = self._input.palette()
@@ -91,6 +207,16 @@ class AiChatWidget(QWidget):
         layout.setSpacing(4)
         layout.addWidget(self._history, 1)
         layout.addLayout(input_row)
+
+        self._applyChatFontSize()
+        shortcut_ctx = Qt.ShortcutContext.WidgetWithChildrenShortcut
+        for sequence in ("Ctrl+=", "Ctrl++"):
+            increase_font = QShortcut(QKeySequence(sequence), self)
+            increase_font.setContext(shortcut_ctx)
+            increase_font.activated.connect(self._increaseChatFontSize)
+        decrease_font = QShortcut(QKeySequence("Ctrl+-"), self)
+        decrease_font.setContext(shortcut_ctx)
+        decrease_font.activated.connect(self._decreaseChatFontSize)
 
         self._showWelcome()
         self.refreshInputState()
@@ -204,6 +330,7 @@ class AiChatWidget(QWidget):
     def _showWelcome(self : Self) -> None:
         self._requestModelRefreshIfNeeded()
         self._history.setHtml(welcomeHtml())
+        self._rescaleHistoryDocumentFont()
         self._scheduleScrollToTop()
 
     def _requestModelRefreshIfNeeded(self : Self) -> None:
@@ -222,6 +349,7 @@ class AiChatWidget(QWidget):
         cursor.movePosition(cursor.MoveOperation.End)
         if cursor.position() > 0 and cursor.block().length() > 1:
             cursor.insertBlock()
+        cursor.setCharFormat(self._historyBodyCharFormat())
         cursor.insertHtml(html)
         self._scrollHistory()
 
@@ -231,7 +359,7 @@ class AiChatWidget(QWidget):
     def _historyBodyCharFormat(self : Self) -> QTextCharFormat:
         """Plain body text — avoids inheriting link/bold/pre from prior HTML."""
         fmt = QTextCharFormat()
-        fmt.setFont(self._history.font())
+        fmt.setFont(self._chatFont())
         fmt.setFontWeight(QFont.Weight.Normal)
         fmt.setFontItalic(False)
         fmt.setFontUnderline(False)
