@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING, Self
 
 from PyQt6.QtCore    import Qt, QTimer, QUrl
-from PyQt6.QtGui     import QDesktopServices, QPalette
+from PyQt6.QtGui     import QDesktopServices, QFont, QPalette, QTextCharFormat
 from PyQt6.QtWidgets import (
     QHBoxLayout,
     QLineEdit,
@@ -229,6 +229,16 @@ class AiChatWidget(QWidget):
     def _refreshHistoryStyle(self : Self) -> None:
         self._history.document().setDefaultStyleSheet(historyStyleSheet())
 
+    def _historyBodyCharFormat(self : Self) -> QTextCharFormat:
+        """Plain body text — avoids inheriting link/bold/pre from prior HTML."""
+        fmt = QTextCharFormat()
+        fmt.setFont(self._history.font())
+        fmt.setFontWeight(QFont.Weight.Normal)
+        fmt.setFontItalic(False)
+        fmt.setFontUnderline(False)
+        fmt.setForeground(self._history.palette().color(QPalette.ColorRole.Text))
+        return fmt
+
     def _userBubbleColor(self : Self) -> str:
         base = self._history.palette().color(QPalette.ColorRole.Base)
         return base.lighter(_USER_BUBBLE_LIGHTER).name()
@@ -284,14 +294,19 @@ class AiChatWidget(QWidget):
     def _onAssistantToken(self : Self, token : str) -> None:
         cursor = self._history.textCursor()
         cursor.movePosition(cursor.MoveOperation.End)
+        body_fmt = self._historyBodyCharFormat()
         if not self._assistant_line_open:
             if cursor.position() > 0 and cursor.block().length() > 1:
                 cursor.insertBlock()
+            cursor.setCharFormat(body_fmt)
             cursor.insertHtml("<p>")
+            cursor.setCharFormat(body_fmt)
             self._assistant_line_open = True
             self._assistant_stream_plain = True
         if self._assistant_stream_plain:
+            cursor.setCharFormat(body_fmt)
             cursor.insertText(token)
+        self._history.setTextCursor(cursor)
         self._scrollHistory()
 
     def _onToolResult(self : Self, name : str, result : str) -> None:
