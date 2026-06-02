@@ -55,6 +55,8 @@ class CmdAddBlockPin(CmdBlockPinBase):
     @checked
     def redo(self : Self) -> None:
         self._pin.setParentItem(self._parent)
+        if (scene := self._pin.scene()) is not None:
+            self._pin.onSceneChanged(scene)
 
     @checked
     def undo(self : Self) -> None:

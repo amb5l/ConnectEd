@@ -48,12 +48,22 @@ class ItemLocMixin:
         and parent is not None \
         and self._loc.edge != Edge.UNDEFINED:
             self.setLoc(self._loc)
+            # Edge/rotation may already be set on the orphan; re-propagate
+            # autoflip now that the pin has a parent and scene chain.
+            self.onRotationChanged(self.rotation())
+            self.onMirrorChange()
 
     def onRotationChanged(self : Self | QGraphicsItem, _angle : float) -> None:
-        """Propagate rotation change to children for rotation compensation."""
+        """Propagate rotation change to children."""
         for child in self.childItems():
             if hasattr(child, "onSceneRotationChange"):
                 child.onSceneRotationChange()
+
+    def onMirrorChange(self : Self | QGraphicsItem) -> None:
+        """Propagate mirror change to children."""
+        for child in self.childItems():
+            if hasattr(child, "onSceneMirrorChange"):
+                child.onSceneMirrorChange()
 
     def loc(self : Self) -> EdgeLoc:
         return self._loc

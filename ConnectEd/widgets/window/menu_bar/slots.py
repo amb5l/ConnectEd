@@ -336,3 +336,7 @@ class Slots:
 
     def helpAbout(self : Self) -> None:
         QMessageBox.about(window(), "About", APP_NAME)
+
+    @withCurrentWidget(DiagramView)
+    def test(self : Self, view : DiagramView) -> None:
+        view.ui.test()

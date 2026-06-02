@@ -109,6 +109,9 @@ class MenuBar(QMenuBar):
         self.help_menu = Menu("&Help")
         self.help_menu.addAction(a.helpAbout)
 
+        self.test_menu = Menu("&Test")
+        self.test_menu.addAction(a.test)
+
         self.addMenu(self.file_menu)
         self.addMenu(self.edit_menu)
         self.addMenu(self.view_menu)
@@ -116,6 +119,7 @@ class MenuBar(QMenuBar):
         self.addMenu(self.ai_menu)
         self.addMenu(self.window_menu)
         self.addMenu(self.help_menu)
+        self.addMenu(self.test_menu)
 
         # non-menu actions
         window().addAction(a.editRotateCW)

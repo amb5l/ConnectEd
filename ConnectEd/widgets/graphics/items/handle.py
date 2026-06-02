@@ -45,6 +45,11 @@ class HandleItem(ItemChangeMixin, NullItem):
             if hasattr(child, "onSceneRotationChange"):
                 child.onSceneRotationChange()
 
+    def onSceneMirrorChange(self : Self) -> None:
+        for child in self.childItems():
+            if hasattr(child, "onSceneMirrorChange"):
+                child.onSceneMirrorChange()
+
     def isOrigin(self : Self) -> bool:
         parent = self.parentItem()
         if isinstance(parent, ItemTransformMixin):

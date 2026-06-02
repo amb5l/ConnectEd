@@ -59,6 +59,7 @@ def test_add_block_pins_places_all(monkeypatch) -> None:
 
         def setName(self, name : str) -> None:
             self._name = name
+            self._calls.append(("name", name))
 
         def setDirection(self, direction) -> None:
             self._calls.append(("direction", direction))
@@ -114,8 +115,18 @@ def test_add_block_pins_places_all(monkeypatch) -> None:
     assert len(result["pins"]) == 2
     assert result["pins"][0]["name"] == "a"
     assert scene.addBlockPin.call_count == 2
-    assert pin_instances[0]._calls[0] == ("direction", Direction.IN)
-    assert pin_instances[1]._calls[0] == ("direction", Direction.OUT)
+    assert pin_instances[0]._calls == [
+        ("name",      "a"),
+        ("direction", Direction.IN),
+        ("edge",      Edge.LEFT),
+        ("offset",    0.0),
+    ]
+    assert pin_instances[1]._calls == [
+        ("name",      "b"),
+        ("direction", Direction.OUT),
+        ("edge",      Edge.RIGHT),
+        ("offset",    10.0),
+    ]
 
 
 def test_add_block_pin_invalid_edge() -> None:

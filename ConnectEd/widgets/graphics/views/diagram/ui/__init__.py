@@ -1,6 +1,7 @@
 from ...drawing.ui import DrawingViewUi
 
 from .place import DiagramViewUiPlaceMixin
+from .test  import DiagramViewUiTestMixin
 
 
 from typing import TYPE_CHECKING
@@ -11,6 +12,7 @@ if TYPE_CHECKING:
 
 class DiagramViewUi(
     DiagramViewUiPlaceMixin,
+    DiagramViewUiTestMixin,
     DrawingViewUi
 ):
     _view  : "DiagramView"
