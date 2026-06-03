@@ -55,8 +55,33 @@ def parseToolArgs(
             if not isinstance(value, list) or not value:
                 return None, toolError(f"{key} is required")
             values[key] = value
+        elif typ == "object":
+            if not isinstance(value, dict):
+                return None, toolError(f"{key} is required")
+            values[key] = value
         else:
             raise TypeError(f"parseToolArgs: unsupported type {typ!r} for {key!r}")
+    for key, prop in properties.items():
+        if key in values:
+            continue
+        if key not in arguments:
+            continue
+        value = arguments[key]
+        if value is None:
+            continue
+        typ = prop.get("type", "string")
+        if typ == "string":
+            if not isinstance(value, str) or not value:
+                continue
+            values[key] = value
+        elif typ == "number":
+            if not isinstance(value, (int, float)):
+                continue
+            values[key] = float(value)
+        elif typ == "object":
+            if not isinstance(value, dict):
+                continue
+            values[key] = value
     return values, None
 
 

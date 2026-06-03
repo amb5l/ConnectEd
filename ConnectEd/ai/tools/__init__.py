@@ -7,6 +7,7 @@ from .utils import callTool
 from .get       import _TOOLS as _GET_TOOLS
 from .block     import _TOOLS as _BLOCK_TOOLS
 from .block_pin import _TOOLS as _BLOCK_PIN_TOOLS
+from .conn      import _TOOLS as _CONN_TOOLS
 
 # Aggregate tool modules here (each module defines _TOOLS and registers via @aitool).
 _TOOLS : list[ToolEntry] = []
@@ -14,6 +15,7 @@ _TOOLS : list[ToolEntry] = []
 _TOOLS.extend(_GET_TOOLS)
 _TOOLS.extend(_BLOCK_TOOLS)
 _TOOLS.extend(_BLOCK_PIN_TOOLS)
+_TOOLS.extend(_CONN_TOOLS)
 
 
 def allToolSpecs() -> Iterator[ToolSpec]:
