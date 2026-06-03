@@ -113,14 +113,6 @@ def edit_block_pin(
         return err
     return toolOk(ref=registry.issue("item", pin))
 
-def edit_block_pin(
-    window    : "Window",
-    registry  : RefRegistry,
-    arguments : dict[str, Any]
-):
-    pass
-
-
 ################################################################################
 
 @aitool(

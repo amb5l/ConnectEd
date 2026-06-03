@@ -1,3 +1,15 @@
+
+- main window
+
+- subwindow
+  - maximise/focus
+- view
+  - zoom full/area/item/in/out
+
+
+
+OLD CONTENT
+
 Tools available to LLMs.
 
 ## Read
