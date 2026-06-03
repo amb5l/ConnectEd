@@ -13,6 +13,7 @@ from .private import _drawingSceneFromViewRef
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
+    from ...widgets.graphics.properties import PropertiesMixin
     from ...widgets.window import Window
 
 
@@ -81,12 +82,40 @@ def get_sheet(
     )
 
 
+_GET_ITEMS_PARAM = {
+    "type"       : "object",
+    "properties" : {
+        **_VIEW_PARAM["properties"],
+        "kinds" : {
+            "type"        : "array",
+            "description" : (
+                "Optional filter: include only items whose kind matches one of "
+                "these names (same values as the kind field in the response, "
+                "e.g. Block, Port, Gate)."
+            ),
+            "items"       : {"type": "string"},
+        },
+        "properties" : {
+            "type"        : "array",
+            "description" : (
+                "Optional item property names to include (e.g. X, Y, Width, Name). "
+                "When omitted or empty, each item is returned as ref only. "
+                "Names with no value on an item are omitted."
+            ),
+            "items"       : {"type": "string"},
+        },
+    },
+    "required"   : ["view"],
+}
+
+
 @aitool(
     description = (
-        "Return refs, scene positions, and axis-aligned bounding rects for "
-        "top-level diagram items in a view (for layout and finding free space)."
+        "Return top-level diagram items in a view. By default each item is a ref "
+        "only; pass properties to include named item property values. "
+        "Optionally filter by item kind."
     ),
-    parameters  = _VIEW_PARAM,
+    parameters  = _GET_ITEMS_PARAM,
 )
 @checked
 def get_items(
@@ -97,9 +126,23 @@ def get_items(
     scene, err = _drawingSceneFromViewRef(registry, arguments["view"])
     if scene is None:
         return toolError(err or "Invalid view")
+
+    kinds_filter, err = _parseStringListArg(arguments.get("kinds"), "kinds")
+    if err is not None:
+        return err
+    kinds_filter = frozenset(kinds_filter) if kinds_filter else None
+
+    properties_filter, err = _parseStringListArg(
+        arguments.get("properties"),
+        "properties",
+    )
+    if err is not None:
+        return err
+
     from ...widgets.graphics.items        import ItemMixin
     from ...widgets.graphics.items.node    import NodeItem
     from ...widgets.graphics.items.segment import SegmentItem
+    from ...widgets.graphics.properties    import PropertiesMixin
     items_out : list[dict[str, Any]] = []
     for item in scene.items():
         if isinstance(item, NodeItem | SegmentItem):
@@ -108,17 +151,55 @@ def get_items(
             continue
         if not isinstance(item, ItemMixin):
             continue
-        pos    = item.scenePos()
-        bounds = item.mapToScene(item.boundingRect()).boundingRect()
-        items_out.append({
-            "ref"    : registry.issue("item", item),
-            "kind"   : item.settingsName(),
-            "x"      : pos.x(),
-            "y"      : pos.y(),
-            "left"   : bounds.left(),
-            "top"    : bounds.top(),
-            "width"  : bounds.width(),
-            "height" : bounds.height(),
-        })
-    items_out.sort(key=lambda row : (row["top"], row["left"], row["ref"]))
+        kind = item.settingsName()
+        if kinds_filter is not None and kind not in kinds_filter:
+            continue
+        row : dict[str, Any] = {
+            "ref" : registry.issue("item", item),
+        }
+        if properties_filter and isinstance(item, PropertiesMixin):
+            prop_values = _itemPropertyValues(item, properties_filter)
+            if prop_values:
+                row["properties"] = prop_values
+        items_out.append(row)
+    items_out.sort(key=lambda row : row["ref"])
     return toolOk(items=items_out)
+
+
+def _parseStringListArg(
+    value_in   : Any,
+    param_name : str,
+) -> tuple[list[str] | None, str | None]:
+    if value_in is None:
+        return None, None
+    if not isinstance(value_in, list):
+        return None, toolError(f"{param_name} must be an array")
+    values : list[str] = []
+    for index, value in enumerate(value_in):
+        if not isinstance(value, str) or not value.strip():
+            return None, toolError(
+                f"{param_name}[{index}] must be a non-empty string",
+            )
+        values.append(value.strip())
+    if not values:
+        return None, None
+    return values, None
+
+
+def _itemPropertyValues(
+    item               : "PropertiesMixin",
+    properties_filter  : list[str],
+) -> dict[str, Any]:
+    values : dict[str, Any] = {}
+    for name in properties_filter:
+        if not item.properties.has(name):
+            continue
+        values[name] = _jsonPropertyValue(item.properties.value(name))
+    return values
+
+
+def _jsonPropertyValue(value : Any) -> Any:
+    if value is None or isinstance(value, (bool, int, float, str)):
+        return value
+    from ...core.utils import val2str
+    return val2str(value)

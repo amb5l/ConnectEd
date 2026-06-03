@@ -78,6 +78,18 @@ def parseToolArgs(
             if not isinstance(value, (int, float)):
                 continue
             values[key] = float(value)
+        elif typ == "integer":
+            if not isinstance(value, int) or isinstance(value, bool):
+                continue
+            values[key] = value
+        elif typ == "boolean":
+            if not isinstance(value, bool):
+                continue
+            values[key] = value
+        elif typ == "array":
+            if not isinstance(value, list):
+                return None, toolError(f"{key} must be an array")
+            values[key] = value
         elif typ == "object":
             if not isinstance(value, dict):
                 continue
