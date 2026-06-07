@@ -43,6 +43,7 @@ class SegmentItem(
     _node1 : NodeItem | None
     _node2 : NodeItem | None
     _line  : QLineF
+    _ortho : bool
 
     @checked
     def __init__(
@@ -51,7 +52,8 @@ class SegmentItem(
         node2 : NodeItem | None = None
     ) -> None:
         QGraphicsLineItem.__init__(self)
-        self._line = QLineF()
+        self._line  = QLineF()
+        self._ortho = True
         self.initItem()
         self.setNode1(node1)
         self.setNode2(node2)
@@ -68,6 +70,14 @@ class SegmentItem(
         self.setPos(p1)
         self._line.setP2(p2-p1)
         self.setLine(self._line)
+        ortho = self._line.dx() == 0 or self._line.dy() == 0
+        if ortho != self._ortho:
+            self._ortho = ortho
+            scene = self.scene()
+            if scene is not None:
+                self._updatePen(scene)
+        else:
+            self._ortho = ortho
 
     def node1(self : Self) -> NodeItem | None:
         return self._node1
@@ -101,6 +111,12 @@ class SegmentItem(
         elif self._node2 is node:
             return self._node1
         return None
+
+    def isOrthogonal(self : Self) -> bool:
+        return self._ortho
+
+    def isDiagonal(self : Self) -> bool:
+        return not self._ortho
 
     def sceneMidpoint(self : Self) -> QPointF:
         return self.scenePos() + self.line().p2() / 2
@@ -136,6 +152,12 @@ class SegmentItem(
                 lambda: view.ui.placeNetLabelOnSegment(self, spos)
             )
         ]
+
+    def _penKey(self : Self) -> tuple[bool, bool]:
+        return (self.isDiagonal(), self.isSelected())
+
+    def _penKeyDefault(self : Self) -> tuple[bool, bool]:
+        return (False, False)
 
 
 # TODO link to settings/resources
