@@ -19,7 +19,7 @@ from ..app import logger
 from .check   import checked
 from .defs    import ORG_NAME, APP_NAME, DEFS
 from .utils   import getDefaultPath, val2str, str2val
-from .palette import PaletteDark, PaletteLightMono
+from .palette import palette_dark, palette_light_mono
 
 
 FACTORY_SETTINGS = {
@@ -103,46 +103,46 @@ FACTORY_SETTINGS = {
     },
     "themes" : {
         "dark" : {
-            "background" : PaletteDark.Background,
+            "background" : palette_dark.Background,
             "origin" : {
-                "color" : PaletteDark.Origin,
+                "color" : palette_dark.Origin,
                 "size"  : 12
             },
-            "sheet"      : PaletteDark.Sheet,
-            "border"     : PaletteDark.Border,
+            "sheet"      : palette_dark.Sheet,
+            "border"     : palette_dark.Border,
             "items" : {
                 "FreeNode" : {
                     "size" : 3,
                     "unconnected" : {
                         "line" : {
-                            "color" : PaletteDark.FreeNodeUnconnected,
+                            "color" : palette_dark.FreeNodeUnconnected,
                             "width" : 0,
                             "style" : Qt.PenStyle.SolidLine
                         },
                         "fill" : {
-                            "color" : PaletteDark.FreeNodeUnconnected,
+                            "color" : palette_dark.FreeNodeUnconnected,
                             "style" : Qt.BrushStyle.NoBrush
                         }
                     },
                     "connected" : {
                         "line" : {
-                            "color" : PaletteDark.FreeNodeConnected,
+                            "color" : palette_dark.FreeNodeConnected,
                             "width" : 0,
                             "style" : Qt.PenStyle.NoPen
                         },
                         "fill" : {
-                            "color" : PaletteDark.FreeNodeConnected,
+                            "color" : palette_dark.FreeNodeConnected,
                             "style" : Qt.BrushStyle.NoBrush
                         }
                     },
                     "junction" : {
                         "line" : {
-                            "color" : PaletteDark.FreeNodeJunction,
+                            "color" : palette_dark.FreeNodeJunction,
                             "width" : 0,
                             "style" : Qt.PenStyle.NoPen
                         },
                         "fill" : {
-                            "color" : PaletteDark.FreeNodeJunction,
+                            "color" : palette_dark.FreeNodeJunction,
                             "style" : Qt.BrushStyle.SolidPattern
                         }
                     }
@@ -151,55 +151,55 @@ FACTORY_SETTINGS = {
                     "size" : 3,
                     "unconnected" : {
                         "line" : {
-                            "color" : PaletteDark.FixedNodeUnconnected,
+                            "color" : palette_dark.FixedNodeUnconnected,
                             "width" : 0,
                             "style" : Qt.PenStyle.SolidLine
                         },
                         "fill" : {
-                            "color" : PaletteDark.FixedNodeUnconnected,
+                            "color" : palette_dark.FixedNodeUnconnected,
                             "style" : Qt.BrushStyle.NoBrush
                         }
                     },
                     "connected" : {
                         "line" : {
-                            "color" : PaletteDark.FixedNodeConnected,
+                            "color" : palette_dark.FixedNodeConnected,
                             "width" : 0,
                             "style" : Qt.PenStyle.NoPen
                         },
                         "fill" : {
-                            "color" : PaletteDark.FixedNodeConnected,
+                            "color" : palette_dark.FixedNodeConnected,
                             "style" : Qt.BrushStyle.NoBrush
                         }
                     },
                     "junction" : {
                         "line" : {
-                            "color" : PaletteDark.FixedNodeJunction,
+                            "color" : palette_dark.FixedNodeJunction,
                             "width" : 0,
                             "style" : Qt.PenStyle.NoPen
                         },
                         "fill" : {
-                            "color" : PaletteDark.FixedNodeJunction,
+                            "color" : palette_dark.FixedNodeJunction,
                             "style" : Qt.BrushStyle.SolidPattern
                         }
                     }
                 },
                 "Segment" : {
                     "line" : {
-                        "color" : PaletteDark.Segment,
+                        "color" : palette_dark.Segment,
                         "width" : 1,
                         "style" : Qt.PenStyle.SolidLine
                     }
                 },
                 "SegmentPreview1" : {
                     "line" : {
-                        "color" : PaletteDark.SegmentPreview1,
+                        "color" : palette_dark.SegmentPreview1,
                         "width" : 1,
                         "style" : Qt.PenStyle.SolidLine
                     }
                 },
                 "SegmentPreview2" : {
                     "line" : {
-                        "color" : PaletteDark.SegmentPreview2,
+                        "color" : palette_dark.SegmentPreview2,
                         "width" : 1,
                         "style" : Qt.PenStyle.DashDotDotLine
                     }
@@ -207,17 +207,17 @@ FACTORY_SETTINGS = {
                 "Tap" : {
                     "line" : {
                         "unresolved" : {
-                            "color" : PaletteDark.TapUnresolved,
+                            "color" : palette_dark.TapUnresolved,
                             "width" : 1,
                             "style" : Qt.PenStyle.SolidLine
                         },
                         "wire" : {
-                            "color" : PaletteDark.TapWire,
+                            "color" : palette_dark.TapWire,
                             "width" : 1,
                             "style" : Qt.PenStyle.SolidLine
                         },
                         "bus" : {
-                            "color" : PaletteDark.TapBus,
+                            "color" : palette_dark.TapBus,
                             "width" : 2,
                             "style" : Qt.PenStyle.SolidLine
                         }
@@ -225,7 +225,7 @@ FACTORY_SETTINGS = {
                 },
                 "NetLabel" : {
                     "text" : {
-                        "color"     : PaletteDark.NetLabel,
+                        "color"     : palette_dark.NetLabel,
                         "font"      : "Liberation Sans",
                         "size"      : 5,
                         "bold"      : False,
@@ -237,14 +237,14 @@ FACTORY_SETTINGS = {
                     "pin" : {
                         "wire" : {
                             "line" : {
-                                "color" : PaletteDark.PortPinWire,
+                                "color" : palette_dark.PortPinWire,
                                 "width" : 1,
                                 "style" : Qt.PenStyle.SolidLine
                             }
                         },
                         "bus" : {
                             "line" : {
-                                "color" : PaletteDark.PortPinBus,
+                                "color" : palette_dark.PortPinBus,
                                 "width" : 2,
                                 "style" : Qt.PenStyle.SolidLine
                             }
@@ -253,19 +253,19 @@ FACTORY_SETTINGS = {
                     "arrow" : {
                         "size" : 6,
                         "line" : {
-                            "color" : PaletteDark.PortArrowLine,
+                            "color" : palette_dark.PortArrowLine,
                             "width" : 1,
                             "style" : Qt.PenStyle.SolidLine
                         },
                         "fill" : {
-                            "color" : PaletteDark.PortArrowFill,
+                            "color" : palette_dark.PortArrowFill,
                             "style" : Qt.BrushStyle.SolidPattern
                         }
                     }
                 },
                 "PortName" : {
                     "text" : {
-                        "color"     : PaletteDark.PortName,
+                        "color"     : palette_dark.PortName,
                         "font"      : "Liberation Sans",
                         "size"      : 7,
                         "bold"      : False,
@@ -275,7 +275,7 @@ FACTORY_SETTINGS = {
                 },
                 "PortComment" : {
                     "text" : {
-                        "color"     : PaletteDark.PortComment,
+                        "color"     : palette_dark.PortComment,
                         "font"      : "Liberation Sans",
                         "size"      : 7,
                         "bold"      : False,
@@ -285,12 +285,12 @@ FACTORY_SETTINGS = {
                 },
                 "Gate" : {
                     "line" : {
-                        "color" : PaletteDark.GateLine,
+                        "color" : palette_dark.GateLine,
                         "width" : 1,
                         "style" : Qt.PenStyle.SolidLine
                     },
                     "fill" : {
-                        "color" : PaletteDark.GateFill,
+                        "color" : palette_dark.GateFill,
                         "style" : Qt.BrushStyle.NoBrush
                     }
                 },
@@ -298,14 +298,14 @@ FACTORY_SETTINGS = {
                     "pin" : {
                         "wire" : {
                             "line" : {
-                                "color" : PaletteDark.GatePinWire,
+                                "color" : palette_dark.GatePinWire,
                                 "width" : 1,
                                 "style" : Qt.PenStyle.SolidLine
                             }
                         },
                         "bus" : {
                             "line" : {
-                                "color" : PaletteDark.GatePinBus,
+                                "color" : palette_dark.GatePinBus,
                                 "width" : 2,
                                 "style" : Qt.PenStyle.SolidLine
                             }
@@ -320,30 +320,30 @@ FACTORY_SETTINGS = {
                     "arrow" : {
                         "size" : 3,
                         "line" : {
-                            "color" : PaletteDark.GatePinArrowLine,
+                            "color" : palette_dark.GatePinArrowLine,
                             "width" : 0.5,
                             "style" : Qt.PenStyle.SolidLine
                         },
                         "fill" : {
-                            "color" : PaletteDark.GatePinArrowFill,
+                            "color" : palette_dark.GatePinArrowFill,
                             "style" : Qt.BrushStyle.SolidPattern
                         }
                     }
                 },
                 "Block" : {
                     "line" : {
-                        "color" : PaletteDark.BlockLine,
+                        "color" : palette_dark.BlockLine,
                         "width" : 1,
                         "style" : Qt.PenStyle.SolidLine
                     },
                     "fill" : {
-                        "color" : PaletteDark.BlockFill,
+                        "color" : palette_dark.BlockFill,
                         "style" : Qt.BrushStyle.SolidPattern
                     }
                 },
                 "BlockLabel" : {
                     "text" : {
-                        "color"     : PaletteDark.BlockLabel,
+                        "color"     : palette_dark.BlockLabel,
                         "font"      : "Liberation Sans",
                         "size"      : 7,
                         "bold"      : False,
@@ -353,7 +353,7 @@ FACTORY_SETTINGS = {
                 },
                 "BlockName" : {
                     "text" : {
-                        "color"     : PaletteDark.BlockName,
+                        "color"     : palette_dark.BlockName,
                         "font"      : "Liberation Sans",
                         "size"      : 7,
                         "bold"      : False,
@@ -365,14 +365,14 @@ FACTORY_SETTINGS = {
                     "pin" : {
                         "wire" : {
                             "line" : {
-                                "color" : PaletteDark.BlockPinWire,
+                                "color" : palette_dark.BlockPinWire,
                                 "width" : 1,
                                 "style" : Qt.PenStyle.SolidLine
                             }
                         },
                         "bus" : {
                             "line" : {
-                                "color" : PaletteDark.BlockPinBus,
+                                "color" : palette_dark.BlockPinBus,
                                 "width" : 2,
                                 "style" : Qt.PenStyle.SolidLine
                             }
@@ -381,19 +381,19 @@ FACTORY_SETTINGS = {
                     "arrow" : {
                         "size" : 6,
                         "line" : {
-                            "color" : PaletteDark.BlockPinArrowLine,
+                            "color" : palette_dark.BlockPinArrowLine,
                             "width" : 1,
                             "style" : Qt.PenStyle.SolidLine
                         },
                         "fill" : {
-                            "color" : PaletteDark.BlockPinArrowFill,
+                            "color" : palette_dark.BlockPinArrowFill,
                             "style" : Qt.BrushStyle.SolidPattern
                         }
                     }
                 },
                 "BlockPinName" : {
                     "text" : {
-                        "color"     : PaletteDark.BlockPinName,
+                        "color"     : palette_dark.BlockPinName,
                         "font"      : "Liberation Sans",
                         "size"      : 7,
                         "bold"      : False,
@@ -403,7 +403,7 @@ FACTORY_SETTINGS = {
                 },
                 "BlockPinComment" : {
                     "text" : {
-                        "color"     : PaletteDark.BlockPinComment,
+                        "color"     : palette_dark.BlockPinComment,
                         "font"      : "Liberation Sans",
                         "size"      : 7,
                         "bold"      : False,
@@ -415,14 +415,14 @@ FACTORY_SETTINGS = {
                     "pin" : {
                         "wire" : {
                             "line" : {
-                                "color" : PaletteDark.SymbolPinWire,
+                                "color" : palette_dark.SymbolPinWire,
                                 "width" : 1,
                                 "style" : Qt.PenStyle.SolidLine
                             }
                         },
                         "bus" : {
                             "line" : {
-                                "color" : PaletteDark.SymbolPinBus,
+                                "color" : palette_dark.SymbolPinBus,
                                 "width" : 2,
                                 "style" : Qt.PenStyle.SolidLine
                             }
@@ -437,19 +437,19 @@ FACTORY_SETTINGS = {
                     "arrow" : {
                         "size" : 3,
                         "line" : {
-                            "color" : PaletteDark.SymbolPinArrowLine,
+                            "color" : palette_dark.SymbolPinArrowLine,
                             "width" : 0.5,
                             "style" : Qt.PenStyle.SolidLine
                         },
                         "fill" : {
-                            "color" : PaletteDark.SymbolPinArrowFill,
+                            "color" : palette_dark.SymbolPinArrowFill,
                             "style" : Qt.BrushStyle.SolidPattern
                         }
                     }
                 },
                 "SymbolPinName" : {
                     "text" : {
-                        "color"     : PaletteDark.SymbolPinName,
+                        "color"     : palette_dark.SymbolPinName,
                         "font"      : "Liberation Sans",
                         "size"      : 7,
                         "bold"      : False,
@@ -459,7 +459,7 @@ FACTORY_SETTINGS = {
                 },
                 "SymbolPinComment" : {
                     "text" : {
-                        "color"     : PaletteDark.SymbolPinComment,
+                        "color"     : palette_dark.SymbolPinComment,
                         "font"      : "Liberation Sans",
                         "size"      : 7,
                         "bold"      : False,
@@ -469,7 +469,7 @@ FACTORY_SETTINGS = {
                 },
                 "PropertyText" : {
                     "text" : {
-                        "color"     : PaletteDark.PropertyText,
+                        "color"     : palette_dark.PropertyText,
                         "font"      : "Liberation Sans",
                         "size"      : 7,
                         "bold"      : False,
@@ -479,7 +479,7 @@ FACTORY_SETTINGS = {
                 },
                 "NetLabel" : {
                     "text" : {
-                        "color"     : PaletteDark.NetLabel,
+                        "color"     : palette_dark.NetLabel,
                         "font"      : "Liberation Sans",
                         "size"      : 7,
                         "bold"      : False,
@@ -489,48 +489,48 @@ FACTORY_SETTINGS = {
                 },
                 "Line" : {
                     "line" : {
-                        "color" : PaletteDark.Line,
+                        "color" : palette_dark.Line,
                         "width" : 1,
                         "style" : Qt.PenStyle.SolidLine
                     }
                 },
                 "Rectangle" : {
                     "line" : {
-                        "color" : PaletteDark.Rectangle,
+                        "color" : palette_dark.Rectangle,
                         "width" : 1,
                         "style" : Qt.PenStyle.SolidLine
                     },
                     "fill" : {
-                        "color" : PaletteDark.Rectangle,
+                        "color" : palette_dark.Rectangle,
                         "style" : Qt.BrushStyle.NoBrush
                     }
                 },
                 "Ellipse" : {
                     "line" : {
-                        "color" : PaletteDark.Ellipse,
+                        "color" : palette_dark.Ellipse,
                         "width" : 1,
                         "style" : Qt.PenStyle.SolidLine
                     },
                     "fill" : {
-                        "color" : PaletteDark.Ellipse,
+                        "color" : palette_dark.Ellipse,
                         "style" : Qt.BrushStyle.NoBrush
                     }
                 },
                 "Polyline" : {
                     "line" : {
-                        "color" : PaletteDark.Polyline,
+                        "color" : palette_dark.Polyline,
                         "width" : 1,
                         "style" : Qt.PenStyle.SolidLine
                     },
                     "fill" : {
-                        "color" : PaletteDark.Polyline,
+                        "color" : palette_dark.Polyline,
                         "style" : Qt.BrushStyle.NoBrush
                     }
 
                 },
                 "Text" : {
                     "text" : {
-                        "color"     : PaletteDark.Text,
+                        "color"     : palette_dark.Text,
                         "font"      : "Liberation Sans",
                         "size"      : 7,
                         "bold"      : False,
@@ -540,85 +540,85 @@ FACTORY_SETTINGS = {
                 }
             },
             "selected" : {
-                "line" : PaletteDark.SelectedLine,
-                "fill" : PaletteDark.SelectedFill,
-                "text" : PaletteDark.SelectedText
+                "line" : palette_dark.SelectedLine,
+                "fill" : palette_dark.SelectedFill,
+                "text" : palette_dark.SelectedText
             },
             "grip" : {
                 "size"  : 12,
                 "line" : {
-                    "color" : PaletteDark.Grip,
+                    "color" : palette_dark.Grip,
                     "width" : 0,
                     "style" : Qt.PenStyle.NoPen
                 },
                 "fill" : {
-                    "color" : PaletteDark.Grip,
+                    "color" : palette_dark.Grip,
                     "style" : Qt.BrushStyle.SolidPattern
                 }
             },
             "tether" : {
                 "line" : {
-                    "color" : PaletteDark.SelectedLine,
+                    "color" : palette_dark.SelectedLine,
                     "width" : 0,
                     "style" : Qt.PenStyle.DotLine
                 }
             },
             "grid" : {
-                "line" : PaletteDark.Grid
+                "line" : palette_dark.Grid
             },
             "properties" : {
                 "deleted" : {
-                    "color" : PaletteDark.PropertyDeleted
+                    "color" : palette_dark.PropertyDeleted
                 },
                 "changed" : {
-                    "color" : PaletteDark.PropertyChanged
+                    "color" : palette_dark.PropertyChanged
                 },
                 "added" : {
-                    "color" : PaletteDark.PropertyAdded
+                    "color" : palette_dark.PropertyAdded
                 }
             }
         },
         "light_mono" : {
-            "background" : PaletteLightMono.Background,
+            "background" : palette_light_mono.Background,
             "origin" : {
-                "color" : PaletteLightMono.Origin,
+                "color" : palette_light_mono.Origin,
                 "size"  : 12
             },
-            "sheet"      : PaletteLightMono.Sheet,
-            "border"     : PaletteLightMono.Border,
+            "sheet"      : palette_light_mono.Sheet,
+            "border"     : palette_light_mono.Border,
             "items" : {
                 "FreeNode" : {
                     "size" : 3,
                     "unconnected" : {
                         "line" : {
-                            "color" : PaletteLightMono.FreeNodeUnconnected,
+                            "color" : palette_light_mono.FreeNodeUnconnected,
                             "width" : 0,
                             "style" : Qt.PenStyle.SolidLine
                         },
                         "fill" : {
-                            "color" : PaletteLightMono.FreeNodeUnconnected,
+                            "color" : palette_light_mono.FreeNodeUnconnected,
                             "style" : Qt.BrushStyle.NoBrush
                         }
                     },
                     "connected" : {
                         "line" : {
-                            "color" : PaletteLightMono.FreeNodeConnected,
+                            "color" : palette_light_mono.FreeNodeConnected,
                             "width" : 0,
                             "style" : Qt.PenStyle.SolidLine
                         },
                         "fill" : {
-                            "color" : PaletteLightMono.FreeNodeConnected,
+                            "color" : palette_light_mono.FreeNodeConnected,
                             "style" : Qt.BrushStyle.NoBrush
                         }
                     },
                     "junction" : {
                         "line" : {
-                            "color" : PaletteLightMono.FreeNodeJunction,
+                            "color" : palette_light_mono.FreeNodeJunction,
                             "width" : 0,
                             "style" : Qt.PenStyle.NoPen
                         },
                         "fill" : {
-                            "color" : PaletteLightMono.FreeNodeJunction,
+                            "color" : palette_light_mono.FreeNodeJunction,
                             "style" : Qt.BrushStyle.SolidPattern
                         }
                     }
@@ -627,55 +627,55 @@ FACTORY_SETTINGS = {
                     "size" : 3,
                     "unconnected" : {
                         "line" : {
-                            "color" : PaletteLightMono.FixedNodeUnconnected,
+                            "color" : palette_light_mono.FixedNodeUnconnected,
                             "width" : 0,
                             "style" : Qt.PenStyle.SolidLine
                         },
                         "fill" : {
-                            "color" : PaletteLightMono.FixedNodeUnconnected,
+                            "color" : palette_light_mono.FixedNodeUnconnected,
                             "style" : Qt.BrushStyle.NoBrush
                         }
                     },
                     "connected" : {
                         "line" : {
-                            "color" : PaletteLightMono.FixedNodeConnected,
+                            "color" : palette_light_mono.FixedNodeConnected,
                             "width" : 0,
                             "style" : Qt.PenStyle.SolidLine
                         },
                         "fill" : {
-                            "color" : PaletteLightMono.FixedNodeConnected,
+                            "color" : palette_light_mono.FixedNodeConnected,
                             "style" : Qt.BrushStyle.NoBrush
                         }
                     },
                     "junction" : {
                         "line" : {
-                            "color" : PaletteLightMono.FixedNodeJunction,
+                            "color" : palette_light_mono.FixedNodeJunction,
                             "width" : 0,
                             "style" : Qt.PenStyle.NoPen
                         },
                         "fill" : {
-                            "color" : PaletteLightMono.FixedNodeJunction,
+                            "color" : palette_light_mono.FixedNodeJunction,
                             "style" : Qt.BrushStyle.SolidPattern
                         }
                     }
                 },
                 "Segment" : {
                     "line" : {
-                        "color" : PaletteLightMono.Segment,
+                        "color" : palette_light_mono.Segment,
                         "width" : 1,
                         "style" : Qt.PenStyle.SolidLine
                     }
                 },
                 "SegmentPreview1" : {
                     "line" : {
-                        "color" : PaletteLightMono.SegmentPreview1,
+                        "color" : palette_light_mono.SegmentPreview1,
                         "width" : 1,
                         "style" : Qt.PenStyle.SolidLine
                     }
                 },
                 "SegmentPreview2" : {
                     "line" : {
-                        "color" : PaletteLightMono.SegmentPreview2,
+                        "color" : palette_light_mono.SegmentPreview2,
                         "width" : 1,
                         "style" : Qt.PenStyle.DashDotDotLine
                     }
@@ -683,17 +683,17 @@ FACTORY_SETTINGS = {
                 "Tap" : {
                     "line" : {
                         "unresolved" : {
-                            "color" : PaletteDark.TapUnresolved,
+                            "color" : palette_dark.TapUnresolved,
                             "width" : 1,
                             "style" : Qt.PenStyle.SolidLine
                         },
                         "wire" : {
-                            "color" : PaletteDark.TapWire,
+                            "color" : palette_dark.TapWire,
                             "width" : 1,
                             "style" : Qt.PenStyle.SolidLine
                         },
                         "bus" : {
-                            "color" : PaletteDark.TapBus,
+                            "color" : palette_dark.TapBus,
                             "width" : 2,
                             "style" : Qt.PenStyle.SolidLine
                         }
@@ -701,7 +701,7 @@ FACTORY_SETTINGS = {
                 },
                 "NetLabel" : {
                     "text" : {
-                        "color"     : PaletteLightMono.NetLabel,
+                        "color"     : palette_light_mono.NetLabel,
                         "font"      : "Liberation Sans",
                         "size"      : 5,
                         "bold"      : False,
@@ -713,14 +713,14 @@ FACTORY_SETTINGS = {
                     "pin" : {
                         "wire" : {
                             "line" : {
-                                "color" : PaletteLightMono.PortPinWire,
+                                "color" : palette_light_mono.PortPinWire,
                                 "width" : 1,
                                 "style" : Qt.PenStyle.SolidLine
                             }
                         },
                         "bus" : {
                             "line" : {
-                                "color" : PaletteLightMono.PortPinBus,
+                                "color" : palette_light_mono.PortPinBus,
                                 "width" : 2,
                                 "style" : Qt.PenStyle.SolidLine
                             }
@@ -729,19 +729,19 @@ FACTORY_SETTINGS = {
                     "arrow" : {
                         "size" : 6,
                         "line" : {
-                            "color" : PaletteLightMono.PortArrowLine,
+                            "color" : palette_light_mono.PortArrowLine,
                             "width" : 1,
                             "style" : Qt.PenStyle.SolidLine
                         },
                         "fill" : {
-                            "color" : PaletteLightMono.PortArrowFill,
+                            "color" : palette_light_mono.PortArrowFill,
                             "style" : Qt.BrushStyle.SolidPattern
                         }
                     }
                 },
                 "PortName" : {
                     "text" : {
-                        "color"     : PaletteLightMono.PortName,
+                        "color"     : palette_light_mono.PortName,
                         "font"      : "Liberation Sans",
                         "size"      : 7,
                         "bold"      : False,
@@ -751,7 +751,7 @@ FACTORY_SETTINGS = {
                 },
                 "PortComment" : {
                     "text" : {
-                        "color"     : PaletteLightMono.PortComment,
+                        "color"     : palette_light_mono.PortComment,
                         "font"      : "Liberation Sans",
                         "size"      : 7,
                         "bold"      : False,
@@ -761,12 +761,12 @@ FACTORY_SETTINGS = {
                 },
                 "Gate" : {
                     "line" : {
-                        "color" : PaletteLightMono.GateLine,
+                        "color" : palette_light_mono.GateLine,
                         "width" : 1,
                         "style" : Qt.PenStyle.SolidLine
                     },
                     "fill" : {
-                        "color" : PaletteLightMono.GateFill,
+                        "color" : palette_light_mono.GateFill,
                         "style" : Qt.BrushStyle.NoBrush
                     }
                 },
@@ -774,14 +774,14 @@ FACTORY_SETTINGS = {
                     "pin" : {
                         "wire" : {
                             "line" : {
-                                "color" : PaletteLightMono.GatePinWire,
+                                "color" : palette_light_mono.GatePinWire,
                                 "width" : 1,
                                 "style" : Qt.PenStyle.SolidLine
                             }
                         },
                         "bus" : {
                             "line" : {
-                                "color" : PaletteLightMono.GatePinBus,
+                                "color" : palette_light_mono.GatePinBus,
                                 "width" : 2,
                                 "style" : Qt.PenStyle.SolidLine
                             }
@@ -796,30 +796,30 @@ FACTORY_SETTINGS = {
                     "arrow" : {
                         "size" : 3,
                         "line" : {
-                            "color" : PaletteLightMono.GatePinArrowFill,
+                            "color" : palette_light_mono.GatePinArrowFill,
                             "width" : 0.5,
                             "style" : Qt.PenStyle.SolidLine
                         },
                         "fill" : {
-                            "color" : PaletteLightMono.GatePinArrowFill,
+                            "color" : palette_light_mono.GatePinArrowFill,
                             "style" : Qt.BrushStyle.SolidPattern
                         }
                     }
                 },
                 "Block" : {
                     "line" : {
-                        "color" : PaletteLightMono.BlockLine,
+                        "color" : palette_light_mono.BlockLine,
                         "width" : 1,
                         "style" : Qt.PenStyle.SolidLine
                     },
                     "fill" : {
-                        "color" : PaletteLightMono.BlockFill,
+                        "color" : palette_light_mono.BlockFill,
                         "style" : Qt.BrushStyle.SolidPattern
                     }
                 },
                 "BlockLabel" : {
                     "text" : {
-                        "color"     : PaletteLightMono.BlockLabel,
+                        "color"     : palette_light_mono.BlockLabel,
                         "font"      : "Liberation Sans",
                         "size"      : 7,
                         "bold"      : False,
@@ -829,7 +829,7 @@ FACTORY_SETTINGS = {
                 },
                 "BlockName" : {
                     "text" : {
-                        "color"     : PaletteLightMono.BlockName,
+                        "color"     : palette_light_mono.BlockName,
                         "font"      : "Liberation Sans",
                         "size"      : 7,
                         "bold"      : False,
@@ -841,14 +841,14 @@ FACTORY_SETTINGS = {
                     "pin" : {
                         "wire" : {
                             "line" : {
-                                "color" : PaletteLightMono.BlockPinWire,
+                                "color" : palette_light_mono.BlockPinWire,
                                 "width" : 1,
                                 "style" : Qt.PenStyle.SolidLine
                             }
                         },
                         "bus" : {
                             "line" : {
-                                "color" : PaletteLightMono.BlockPinBus,
+                                "color" : palette_light_mono.BlockPinBus,
                                 "width" : 2,
                                 "style" : Qt.PenStyle.SolidLine
                             }
@@ -857,19 +857,19 @@ FACTORY_SETTINGS = {
                     "arrow" : {
                         "size" : 6,
                         "line" : {
-                            "color" : PaletteLightMono.BlockPinArrowLine,
+                            "color" : palette_light_mono.BlockPinArrowLine,
                             "width" : 1,
                             "style" : Qt.PenStyle.SolidLine
                         },
                         "fill" : {
-                            "color" : PaletteLightMono.BlockPinArrowFill,
+                            "color" : palette_light_mono.BlockPinArrowFill,
                             "style" : Qt.BrushStyle.SolidPattern
                         }
                     }
                 },
                 "BlockPinName" : {
                     "text" : {
-                        "color"     : PaletteLightMono.BlockPinName,
+                        "color"     : palette_light_mono.BlockPinName,
                         "font"      : "Liberation Sans",
                         "size"      : 7,
                         "bold"      : False,
@@ -879,7 +879,7 @@ FACTORY_SETTINGS = {
                 },
                 "BlockPinComment" : {
                     "text" : {
-                        "color"     : PaletteLightMono.BlockPinComment,
+                        "color"     : palette_light_mono.BlockPinComment,
                         "font"      : "Liberation Sans",
                         "size"      : 7,
                         "bold"      : False,
@@ -891,14 +891,14 @@ FACTORY_SETTINGS = {
                     "pin" : {
                         "wire" : {
                             "line" : {
-                                "color" : PaletteLightMono.SymbolPinWire,
+                                "color" : palette_light_mono.SymbolPinWire,
                                 "width" : 1,
                                 "style" : Qt.PenStyle.SolidLine
                             }
                         },
                         "bus" : {
                             "line" : {
-                                "color" : PaletteLightMono.SymbolPinBus,
+                                "color" : palette_light_mono.SymbolPinBus,
                                 "width" : 2,
                                 "style" : Qt.PenStyle.SolidLine
                             }
@@ -913,19 +913,19 @@ FACTORY_SETTINGS = {
                     "arrow" : {
                         "size" : 3,
                         "line" : {
-                            "color" : PaletteLightMono.SymbolPinArrowLine,
+                            "color" : palette_light_mono.SymbolPinArrowLine,
                             "width" : 0.5,
                             "style" : Qt.PenStyle.SolidLine
                         },
                         "fill" : {
-                            "color" : PaletteLightMono.SymbolPinArrowFill,
+                            "color" : palette_light_mono.SymbolPinArrowFill,
                             "style" : Qt.BrushStyle.SolidPattern
                         }
                     }
                 },
                 "SymbolPinName" : {
                     "text" : {
-                        "color"     : PaletteLightMono.SymbolPinName,
+                        "color"     : palette_light_mono.SymbolPinName,
                         "font"      : "Liberation Sans",
                         "size"      : 7,
                         "bold"      : False,
@@ -935,7 +935,7 @@ FACTORY_SETTINGS = {
                 },
                 "SymbolPinComment" : {
                     "text" : {
-                        "color"     : PaletteLightMono.SymbolPinComment,
+                        "color"     : palette_light_mono.SymbolPinComment,
                         "font"      : "Liberation Sans",
                         "size"      : 7,
                         "bold"      : False,
@@ -945,7 +945,7 @@ FACTORY_SETTINGS = {
                 },
                 "PropertyText" : {
                     "text" : {
-                        "color"     : PaletteLightMono.PropertyText,
+                        "color"     : palette_light_mono.PropertyText,
                         "font"      : "Liberation Sans",
                         "size"      : 7,
                         "bold"      : False,
@@ -955,7 +955,7 @@ FACTORY_SETTINGS = {
                 },
                 "NetLabel" : {
                     "text" : {
-                        "color"     : PaletteLightMono.NetLabel,
+                        "color"     : palette_light_mono.NetLabel,
                         "font"      : "Liberation Sans",
                         "size"      : 7,
                         "bold"      : False,
@@ -965,47 +965,47 @@ FACTORY_SETTINGS = {
                 },
                 "Line" : {
                     "line" : {
-                        "color" : PaletteLightMono.Line,
+                        "color" : palette_light_mono.Line,
                         "width" : 1,
                         "style" : Qt.PenStyle.SolidLine
                     }
                 },
                 "Rectangle" : {
                     "line" : {
-                        "color" : PaletteLightMono.Rectangle,
+                        "color" : palette_light_mono.Rectangle,
                         "width" : 1,
                         "style" : Qt.PenStyle.SolidLine
                     },
                     "fill" : {
-                        "color" : PaletteLightMono.Rectangle,
+                        "color" : palette_light_mono.Rectangle,
                         "style" : Qt.BrushStyle.NoBrush
                     }
                 },
                 "Ellipse" : {
                     "line" : {
-                        "color" : PaletteLightMono.Ellipse,
+                        "color" : palette_light_mono.Ellipse,
                         "width" : 1,
                         "style" : Qt.PenStyle.SolidLine
                     },
                     "fill" : {
-                        "color" : PaletteLightMono.Ellipse,
+                        "color" : palette_light_mono.Ellipse,
                         "style" : Qt.BrushStyle.NoBrush
                     }
                 },
                 "Polyline" : {
                     "line" : {
-                        "color" : PaletteLightMono.Polyline,
+                        "color" : palette_light_mono.Polyline,
                         "width" : 1,
                         "style" : Qt.PenStyle.SolidLine
                     },
                     "fill" : {
-                        "color" : PaletteLightMono.Polyline,
+                        "color" : palette_light_mono.Polyline,
                         "style" : Qt.BrushStyle.NoBrush
                     }
                 },
                 "Text" : {
                     "text" : {
-                        "color"     : PaletteLightMono.Text,
+                        "color"     : palette_light_mono.Text,
                         "font"      : "Liberation Sans",
                         "size"      : 7,
                         "bold"      : False,
@@ -1015,41 +1015,41 @@ FACTORY_SETTINGS = {
                 }
             },
             "selected" : {
-                "line" : PaletteLightMono.SelectedLine,
-                "fill" : PaletteLightMono.SelectedFill,
-                "text" : PaletteLightMono.SelectedText
+                "line" : palette_light_mono.SelectedLine,
+                "fill" : palette_light_mono.SelectedFill,
+                "text" : palette_light_mono.SelectedText
             },
             "grip" : {
                 "size"  : 12,
                 "line" : {
-                    "color" : PaletteLightMono.Grip,
+                    "color" : palette_light_mono.Grip,
                     "width" : 0,
                     "style" : Qt.PenStyle.NoPen
                 },
                 "fill" : {
-                    "color" : PaletteLightMono.Grip,
+                    "color" : palette_light_mono.Grip,
                     "style" : Qt.BrushStyle.SolidPattern
                 }
             },
             "tether" : {
                 "line" : {
-                    "color" : PaletteLightMono.SelectedLine,
+                    "color" : palette_light_mono.SelectedLine,
                     "width" : 0,
                     "style" : Qt.PenStyle.DotLine
                 }
             },
             "grid" : {
-                "line" : PaletteLightMono.Grid
+                "line" : palette_light_mono.Grid
             },
             "properties" : {
                 "deleted" : {
-                    "color" : PaletteLightMono.PropertyDeleted
+                    "color" : palette_light_mono.PropertyDeleted
                 },
                 "changed" : {
-                    "color" : PaletteLightMono.PropertyChanged
+                    "color" : palette_light_mono.PropertyChanged
                 },
                 "added" : {
-                    "color" : PaletteLightMono.PropertyAdded
+                    "color" : palette_light_mono.PropertyAdded
                 }
             }
         }
