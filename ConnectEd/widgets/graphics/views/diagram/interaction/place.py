@@ -5,6 +5,7 @@ from PyQt6.QtGui     import QAction
 from PyQt6.QtWidgets import QMenu
 
 from ......core.check import checked
+from ......core.types import EdgeLoc
 from ......core.utils import sign
 
 from ....items.port      import PortItem
@@ -66,6 +67,9 @@ class DiagramPlaceBlockInteraction(DiagramPlaceBase2PosInteraction):
 
 
 class DiagramPlaceBlockPinInteraction(DiagramBlockPinInteraction):
+    # instance attributes
+    _loc : EdgeLoc | None
+
     @checked
     def __init__(
         self   : Self,
@@ -76,9 +80,14 @@ class DiagramPlaceBlockPinInteraction(DiagramBlockPinInteraction):
         snap   : QPointF | None = None
     ) -> None:
         super().__init__(view, parent, pin, pos, snap)
+        self._loc = None
 
     def update(self : Self, pos : QPointF, snap : QPointF | None = None) -> None:
-        self._pin.setLoc(self._pin.locSnap(self._parent.pos2loc(pos), snap))
+        loc = self._pin.locSnap(self._parent.pos2loc(pos), snap)
+        if loc == self._loc:
+            return  # filter redundant updates
+        self._loc = loc
+        self._pin.setLoc(loc)
 
     def _commit(self : Self, pos : QPointF, snap : QPointF | None = None) -> bool:
         self.update(pos, snap)
@@ -95,6 +104,7 @@ class DiagramPlaceConnInteraction(DiagramInteraction):
     # instance attributes
     _seg1  : SegmentPreview1Item
     _seg2  : SegmentPreview2Item
+    _pos   : QPointF
 
     @checked
     def __init__(
@@ -110,11 +120,15 @@ class DiagramPlaceConnInteraction(DiagramInteraction):
         self._setP2(pos)
         self._scene.addItem(self._seg1)
         self._scene.addItem(self._seg2)
+        self._pos = None
 
     def valid(self : Self) -> bool:
         return True
 
     def update(self : Self, pos : QPointF) -> None:
+        if pos == self._pos:
+            return  # filter redundant updates
+        self._pos = pos
         self._updateVertices(pos)
 
     def _commit(self : Self, pos : QPointF, complete : bool = False) -> bool:

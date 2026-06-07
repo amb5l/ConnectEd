@@ -129,6 +129,7 @@ class EditAdjustPolySegInteraction(PreviewStateMixin, DrawingInteraction):
     _guide1   : QGraphicsLineItem  # inline guide
     _guide2   : QGraphicsLineItem  # perpendicular guide
     _guide3   : QGraphicsLineItem  # chord-direction guide
+    _pos      : QPointF | None
 
     @checked
     def __init__(
@@ -143,12 +144,16 @@ class EditAdjustPolySegInteraction(PreviewStateMixin, DrawingInteraction):
         self._seg = seg
         self._previewSave()
         self._showGuides()
+        self._pos = None
         self.update(pos)
 
     def valid(self : Self) -> bool:
         return self._polyline is not None and self._seg is not None
 
     def update(self : Self, pos : QPointF) -> None:
+        if pos == self._pos:
+            return  # filter redundant updates
+        self._pos = pos
         chord = self._guide1.line()  # chord line (p1 → p2)
         p1 = chord.p1()
         chord_vec = chord.p2() - p1  # vector along the chord

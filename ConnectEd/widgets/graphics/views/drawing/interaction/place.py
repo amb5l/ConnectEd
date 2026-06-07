@@ -30,6 +30,9 @@ class DrawingPlaceBaseInteraction(DrawingItemInteraction):  # _view, _scene, _it
     # class attributes
     _ITEM_TYPE : ItemType  # subclass to override with item class
 
+    # instance attributes
+    _pos : QPointF | None
+
     @checked
     def __init__(
         self : Self,
@@ -46,6 +49,7 @@ class DrawingPlaceBaseInteraction(DrawingItemInteraction):  # _view, _scene, _it
             self._scene.addItem(self._item)
         self._item.setAcceptedMouseButtons(Qt.MouseButton.NoButton)
         self._item.setSelected(True)
+        self._pos = None
 
     def _cancel(self : Self) -> None:
         self._scene.removeItem(self._item)
@@ -55,6 +59,9 @@ class DrawingPlaceBase1PosInteraction(DrawingPlaceBaseInteraction):
     """Base for all interactions that place a single item using 1 position."""
 
     def update(self : Self, pos : QPointF) -> None:
+        if pos == self._pos:
+            return  # filter redundant updates
+        self._pos = pos
         self._item.setPos(pos)
 
     def _commit(self : Self, pos : QPointF) -> bool:
@@ -95,6 +102,9 @@ class DrawingPlaceBase2PosInteraction(DrawingPlaceBase1PosInteraction):
         self._p1 = pos
 
     def update(self : Self, pos : QPointF) -> None:
+        if pos == self._pos:
+            return  # filter redundant updates
+        self._pos = pos
         self._item.setPoints(self._p1, pos)
 
 
@@ -133,6 +143,9 @@ class DrawingPlacePolylineInteraction(DrawingPlaceBase1PosInteraction):
         self._sweep = None
 
     def update(self : Self, pos : QPointF) -> None:
+        if pos == self._pos:
+            return  # filter redundant updates
+        self._pos = pos
         self._item.setLastVertexPos(pos)  # local coordinates
 
     def _commit(self : Self, pos : QPointF) -> bool:

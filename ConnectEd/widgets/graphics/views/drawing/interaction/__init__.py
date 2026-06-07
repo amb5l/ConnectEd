@@ -184,10 +184,12 @@ class MoveItemsMixin(PreviewStateMixin):
 
     # instance attributes
     _items : list[ItemType]
-    _ipos  : QPointF  # initial position
-    _cpos  : QPointF  # current position
+    _ipos  : QPointF                # initial position
+    _cpos  : QPointF | None = None  # current position
 
     def update(self : Self, pos : QPointF) -> None:
+        if pos == self._cpos:
+            return  # filter redundant updates
         self._moveBy(pos - self._cpos)
         self._cpos = pos
 

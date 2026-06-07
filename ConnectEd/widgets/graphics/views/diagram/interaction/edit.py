@@ -19,8 +19,10 @@ if TYPE_CHECKING:
 
 class DiagramEditMoveBlockPinsInteraction(PreviewStateMixin, DiagramInteraction):
     # instance attributes
-    _parent : BlockItem
-    _pins   : list[BlockPinItem]  # first item is primary pin
+    _parent   : BlockItem
+    _pins     : list[BlockPinItem]  # first item is primary pin | None
+    _loc_snap : EdgeLoc | None
+    _corner   : int | None
 
     @checked
     def __init__(
@@ -30,8 +32,10 @@ class DiagramEditMoveBlockPinsInteraction(PreviewStateMixin, DiagramInteraction)
         pins   : list[BlockPinItem]
     ) -> None:
         super().__init__(view)
-        self._parent = parent
-        self._pins = pins
+        self._parent        = parent
+        self._pins          = pins
+        self._loc_snap = None
+        self._corner   = None
         self._previewSave()
 
     def valid(self : Self) -> bool:
@@ -49,9 +53,13 @@ class DiagramEditMoveBlockPinsInteraction(PreviewStateMixin, DiagramInteraction)
         offset = self._parent.locDelta(loc_old, loc_new_snap)
         snap_pressure = self._parent.locDelta(loc_new, loc_new_snap)
         corner = +1 if snap_pressure > 0 else -1 if snap_pressure < 0 else 0
+        if loc_new_snap == self._loc_snap and corner == self._corner:
+            return  # filter redundant updates
         self._pins[0].setLoc(loc_new_snap)
         for pin in self._pins[1:]:
             pin.setLoc(self._parent.locOffset(pin.loc(), offset, corner))
+        self._loc_snap = loc_new_snap
+        self._corner = corner
 
     def _commit(self : Self, pos : QPointF, snap : QPointF | None = None) -> bool:
         self._previewRestore()
