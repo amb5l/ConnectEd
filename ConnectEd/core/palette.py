@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from PyQt6.QtGui import QColor
+from PyQt6.QtGui import QColor, QColorConstants
 
 
 @dataclass
@@ -16,7 +16,8 @@ class ThemePalette:
     FixedNodeUnconnected : QColor
     FixedNodeConnected   : QColor
     FixedNodeJunction    : QColor
-    Segment              : QColor
+    SegmentOrthogonal    : QColor
+    SegmentDiagonal      : QColor
     SegmentPreview1      : QColor
     SegmentPreview2      : QColor
     TapUnresolved        : QColor
@@ -69,133 +70,172 @@ class ThemePalette:
     PropertyAdded        : QColor
 
 
+black          = QColor("#000000")
+
+very_dark_gray = QColor("#202020")
+
+dark_red       = QColor("#400000")
+dark_yellow    = QColor("#404000")
+dark_green     = QColor("#004000")
+dark_cyan      = QColor("#004040")
+dark_blue      = QColor("#000040")
+dark_magenta   = QColor("#400040")
+dark_gray      = QColor("#404040")
+
+mid_red        = QColor("#800000")
+mid_yellow     = QColor("#808000")
+mid_green      = QColor("#008000")
+mid_cyan       = QColor("#008080")
+mid_blue       = QColor("#000080")
+mid_magenta    = QColor("#800080")
+mid_gray       = QColor("#808080")
+
+light_red      = QColor("#C00000")
+light_yellow   = QColor("#C0C000")
+light_green    = QColor("#00C000")
+light_cyan     = QColor("#00C0C0")
+light_blue     = QColor("#0000C0")
+light_magenta  = QColor("#C000C0")
+light_gray     = QColor("#C0C0C0")
+
+bright_red     = QColor("#FF0000")
+bright_yellow  = QColor("#FFFF00")
+bright_green   = QColor("#00FF00")
+bright_cyan    = QColor("#00FFFF")
+bright_blue    = QColor("#0000FF")
+bright_magenta = QColor("#FF00FF")
+bright_white   = QColor("#FFFFFF")
+
+
 palette_dark = ThemePalette(
-    Background           = QColor("#000000"),
-    Origin               = QColor("#FFFF00"),
-    Sheet                = QColor("#1A1A1A"),
-    Border               = QColor("#494949"),
-    Grid                 = QColor("#404040"),
-    FreeNodeUnconnected  = QColor("#FFFF00"),
-    FreeNodeConnected    = QColor("#FFFF00"),
-    FreeNodeJunction     = QColor("#FF0000"),
-    FixedNodeUnconnected = QColor("#FFFF00"),
-    FixedNodeConnected   = QColor("#FFFF00"),
-    FixedNodeJunction    = QColor("#FF0000"),
-    Segment              = QColor("#004000"),
-    SegmentPreview1      = QColor("#C000C0"),
-    SegmentPreview2      = QColor("#800080"),
-    TapUnresolved        = QColor("#404000"),
-    TapWire              = QColor("#004000"),
-    TapBus               = QColor("#004000"),
-    NetLabel             = QColor("#004040"),
-    PortPinWire          = QColor("#A2A2A2"),
-    PortPinBus           = QColor("#A2A2A2"),
-    PortArrowLine        = QColor("#A2A2A2"),
-    PortArrowFill        = QColor("#EBC88D"),
-    PortName             = QColor("#EBC88D"),
-    PortComment          = QColor("#EBC88D"),
-    GateLine             = QColor("#828282"),
-    GateFill             = QColor("#333333"),
-    GatePinWire          = QColor("#A2A2A2"),
-    GatePinBus           = QColor("#A2A2A2"),
-    GatePinArrowLine     = QColor("#EBC88D"),
-    GatePinArrowFill     = QColor("#EBC88D"),
-    BlockLine            = QColor("#828282"),
-    BlockFill            = QColor("#333333"),
-    BlockLabel           = QColor("#FF0000"),
-    BlockName            = QColor("#00FF00"),
-    BlockPinWire         = QColor("#A2A2A2"),
-    BlockPinBus          = QColor("#A2A2A2"),
-    BlockPinArrowLine    = QColor("#A2A2A2"),
-    BlockPinArrowFill    = QColor("#EBC88D"),
-    BlockPinName         = QColor("#EBC88D"),
-    BlockPinComment      = QColor("#EBC88D"),
-    SymbolPinWire        = QColor("#A2A2A2"),
-    SymbolPinBus         = QColor("#A2A2A2"),
-    SymbolPinArrowLine   = QColor("#EBC88D"),
-    SymbolPinArrowFill   = QColor("#EBC88D"),
-    SymbolPinName        = QColor("#EBC88D"),
-    SymbolPinComment     = QColor("#EBC88D"),
-    PropertyText         = QColor("#E394DC"),
-    Junction             = QColor("#FF0000"),
-    Line                 = QColor("#00FFFF"),
-    Rectangle            = QColor("#D6D6DD"),
-    Ellipse              = QColor("#D6D6DD"),
-    PolyVtx              = QColor("#D6D6DD"),
-    Polyline             = QColor("#D6D6DD"),
-    Text                 = QColor("#D6D6DD"),
-    SelectedLine         = QColor("#C000C0"),
-    SelectedFill         = QColor("#800080"),
-    SelectedText         = QColor("#A000A0"),
-    Grip                 = QColor("#FF00FF"),
-    PropertyDeleted      = QColor("#400000"),
-    PropertyChanged      = QColor("#404000"),
-    PropertyAdded        = QColor("#004000"),
+    Background           = black,
+    Origin               = bright_white,
+    Sheet                = very_dark_gray,
+    Border               = mid_gray,
+    Grid                 = dark_gray,
+    FreeNodeUnconnected  = bright_yellow,
+    FreeNodeConnected    = bright_yellow,
+    FreeNodeJunction     = bright_red,
+    FixedNodeUnconnected = bright_yellow,
+    FixedNodeConnected   = bright_yellow,
+    FixedNodeJunction    = bright_red,
+    SegmentOrthogonal    = dark_green,
+    SegmentDiagonal      = bright_yellow,
+    SegmentPreview1      = light_magenta,
+    SegmentPreview2      = mid_magenta,
+    TapUnresolved        = dark_yellow,
+    TapWire              = dark_green,
+    TapBus               = dark_green,
+    NetLabel             = dark_cyan,
+    PortPinWire          = mid_gray,
+    PortPinBus           = mid_gray,
+    PortArrowLine        = mid_gray,
+    PortArrowFill        = mid_yellow,
+    PortName             = mid_yellow,
+    PortComment          = mid_yellow,
+    GateLine             = mid_gray,
+    GateFill             = dark_gray,
+    GatePinWire          = mid_gray,
+    GatePinBus           = mid_gray,
+    GatePinArrowLine     = mid_yellow,
+    GatePinArrowFill     = mid_yellow,
+    BlockLine            = mid_gray,
+    BlockFill            = dark_gray,
+    BlockLabel           = mid_cyan,
+    BlockName            = mid_cyan,
+    BlockPinWire         = mid_gray,
+    BlockPinBus          = mid_gray,
+    BlockPinArrowLine    = mid_yellow,
+    BlockPinArrowFill    = mid_yellow,
+    BlockPinName         = mid_yellow,
+    BlockPinComment      = mid_yellow,
+    SymbolPinWire        = mid_gray,
+    SymbolPinBus         = mid_gray,
+    SymbolPinArrowLine   = mid_yellow,
+    SymbolPinArrowFill   = mid_yellow,
+    SymbolPinName        = mid_yellow,
+    SymbolPinComment     = mid_yellow,
+    PropertyText         = mid_red,
+    Junction             = light_red,
+    Line                 = light_gray,
+    Rectangle            = light_gray,
+    Ellipse              = light_gray,
+    PolyVtx              = light_gray,
+    Polyline             = light_gray,
+    Text                 = light_gray,
+    SelectedLine         = bright_magenta,
+    SelectedFill         = bright_magenta,
+    SelectedText         = bright_magenta,
+    Grip                 = bright_magenta,
+    PropertyDeleted      = dark_red,
+    PropertyChanged      = dark_yellow,
+    PropertyAdded        = dark_green,
 )
 
 
 palette_light_mono = ThemePalette(
-    Background           = QColor("#202020"),
-    Origin               = QColor("#000000"),
-    Sheet                = QColor("#FFFFFF"),
-    Border               = QColor("#000000"),
-    Grid                 = QColor("#E0E0E0"),
-    FreeNodeUnconnected  = QColor("#000000"),
-    FreeNodeConnected    = QColor("#000000"),
-    FreeNodeJunction     = QColor("#000000"),
-    FixedNodeUnconnected = QColor("#000000"),
-    FixedNodeConnected   = QColor("#000000"),
-    FixedNodeJunction    = QColor("#000000"),
-    Segment              = QColor("#000000"),
-    SegmentPreview1      = QColor("#202020"),
-    SegmentPreview2      = QColor("#404040"),
-    TapUnresolved        = QColor("#000000"),
-    TapWire              = QColor("#000000"),
-    TapBus               = QColor("#000000"),
-    PortPinWire          = QColor("#000000"),
-    PortPinBus           = QColor("#000000"),
-    PortArrowLine        = QColor("#000000"),
-    PortArrowFill        = QColor("#FFFFFF"),
-    PortName             = QColor("#000000"),
-    PortComment          = QColor("#000000"),
-    GateLine             = QColor("#000000"),
-    GateFill             = QColor("#FFFFFF"),
-    GatePinWire          = QColor("#000000"),
-    GatePinBus           = QColor("#000000"),
-    GatePinArrowLine     = QColor("#000000"),
-    GatePinArrowFill     = QColor("#FFFFFF"),
-    BlockLine            = QColor("#000000"),
-    BlockFill            = QColor("#FFFFFF"),
-    BlockLabel           = QColor("#000000"),
-    BlockName            = QColor("#000000"),
-    BlockPinWire         = QColor("#000000"),
-    BlockPinBus          = QColor("#000000"),
-    BlockPinArrowLine    = QColor("#000000"),
-    BlockPinArrowFill    = QColor("#FFFFFF"),
-    BlockPinName         = QColor("#000000"),
-    BlockPinComment      = QColor("#000000"),
-    SymbolPinWire        = QColor("#000000"),
-    SymbolPinBus         = QColor("#000000"),
-    SymbolPinArrowLine   = QColor("#000000"),
-    SymbolPinArrowFill   = QColor("#FFFFFF"),
-    SymbolPinName        = QColor("#000000"),
-    SymbolPinComment     = QColor("#000000"),
-    PropertyText         = QColor("#000000"),
-    NetLabel             = QColor("#000000"),
-    Junction             = QColor("#000000"),
-    Line                 = QColor("#000000"),
-    Rectangle            = QColor("#000000"),
-    Ellipse              = QColor("#000000"),
-    PolyVtx              = QColor("#000000"),
-    Polyline             = QColor("#000000"),
-    Text                 = QColor("#000000"),
-    SelectedLine         = QColor("#C000C0"),
-    SelectedFill         = QColor("#800080"),
-    SelectedText         = QColor("#C000C0"),
-    Grip                 = QColor("#FF00FF"),
-    PropertyDeleted      = QColor("#FF0000"),
-    PropertyChanged      = QColor("#FFFF00"),
-    PropertyAdded        = QColor("#00FF00")
+    Background           = very_dark_gray,
+    Origin               = black,
+    Sheet                = bright_white,
+    Border               = black,
+    Grid                 = light_gray,
+    FreeNodeUnconnected  = black,
+    FreeNodeConnected    = black,
+    FreeNodeJunction     = black,
+    FixedNodeUnconnected = black,
+    FixedNodeConnected   = black,
+    FixedNodeJunction    = black,
+    SegmentOrthogonal    = black,
+    SegmentDiagonal      = bright_yellow,
+    SegmentPreview1      = very_dark_gray,
+    SegmentPreview2      = dark_gray,
+    TapUnresolved        = black,
+    TapWire              = black,
+    TapBus               = black,
+    PortPinWire          = black,
+    PortPinBus           = black,
+    PortArrowLine        = black,
+    PortArrowFill        = bright_white,
+    PortName             = black,
+    PortComment          = black,
+    GateLine             = black,
+    GateFill             = bright_white,
+    GatePinWire          = black,
+    GatePinBus           = black,
+    GatePinArrowLine     = black,
+    GatePinArrowFill     = bright_white,
+    BlockLine            = black,
+    BlockFill            = bright_white,
+    BlockLabel           = black,
+    BlockName            = black,
+    BlockPinWire         = black,
+    BlockPinBus          = black,
+    BlockPinArrowLine    = black,
+    BlockPinArrowFill    = bright_white,
+    BlockPinName         = black,
+    BlockPinComment      = black,
+    SymbolPinWire        = black,
+    SymbolPinBus         = black,
+    SymbolPinArrowLine   = black,
+    SymbolPinArrowFill   = bright_white,
+    SymbolPinName        = black,
+    SymbolPinComment     = black,
+    PropertyText         = black,
+    NetLabel             = black,
+    Junction             = black,
+    Line                 = black,
+    Rectangle            = black,
+    Ellipse              = black,
+    PolyVtx              = black,
+    Polyline             = black,
+    Text                 = black,
+    SelectedLine         = bright_magenta,
+    SelectedFill         = bright_magenta,
+    SelectedText         = bright_magenta,
+    Grip                 = bright_magenta,
+    PropertyDeleted      = bright_red,
+    PropertyChanged      = bright_yellow,
+    PropertyAdded        = bright_green,
 )
 
 

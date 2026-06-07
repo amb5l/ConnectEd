@@ -185,9 +185,16 @@ FACTORY_SETTINGS = {
                 },
                 "Segment" : {
                     "line" : {
-                        "color" : palette_dark.Segment,
-                        "width" : 1,
-                        "style" : Qt.PenStyle.SolidLine
+                        "orthogonal" : {
+                            "color" : palette_dark.SegmentOrthogonal,
+                            "width" : 1,
+                            "style" : Qt.PenStyle.SolidLine
+                        },
+                        "diagonal" : {
+                            "color" : palette_dark.SegmentDiagonal,
+                            "width" : 1,
+                            "style" : Qt.PenStyle.DashLine
+                        }
                     }
                 },
                 "SegmentPreview1" : {
@@ -661,9 +668,16 @@ FACTORY_SETTINGS = {
                 },
                 "Segment" : {
                     "line" : {
-                        "color" : palette_light_mono.Segment,
-                        "width" : 1,
-                        "style" : Qt.PenStyle.SolidLine
+                        "orthogonal" : {
+                            "color" : palette_light_mono.SegmentOrthogonal,
+                            "width" : 1,
+                            "style" : Qt.PenStyle.SolidLine
+                        },
+                        "diagonal" : {
+                            "color" : palette_light_mono.SegmentDiagonal,
+                            "width" : 1,
+                            "style" : Qt.PenStyle.DashLine
+                        }
                     }
                 },
                 "SegmentPreview1" : {
