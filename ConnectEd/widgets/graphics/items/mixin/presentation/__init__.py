@@ -30,9 +30,10 @@ ItemType = (
     PenItemProtocol | BrushItemProtocol | TextItemProtocol | QGraphicsItem
 )
 
-from .line   import ItemPresentationLineMixin
-from .fill   import ItemPresentationFillMixin
-from .text   import ItemPresentationTextMixin
+
+from .line   import ItemPresentationLineMixin  # noqa: E402
+from .fill   import ItemPresentationFillMixin  # noqa: E402
+from .text   import ItemPresentationTextMixin  # noqa: E402
 
 if TYPE_CHECKING:
     from ....views.drawing import DrawingView
