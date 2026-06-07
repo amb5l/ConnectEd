@@ -109,9 +109,11 @@ class ItemPresentationLineMixin:
 
     # helpers
     def _penKey(self : "Self | ItemType") -> bool:
+        """Override in subclass for more complex keying."""
         return self.isSelected()
 
     def _penKeyDefault(self : "Self | ItemType") -> bool:
+        """Override in subclass for more complex keying."""
         return False
 
     def _updatePen(self : "Self | ItemType", _scene : "DrawingScene") -> None:

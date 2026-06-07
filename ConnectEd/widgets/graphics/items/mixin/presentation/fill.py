@@ -83,9 +83,11 @@ class ItemPresentationFillMixin:
     # helpers
 
     def _brushKey(self : Self | QGraphicsItem) -> bool:
+        """Override in subclass for more complex keying."""
         return self.isSelected()
 
     def _brushKeyDefault(self : Self) -> bool:
+        """Override in subclass for more complex keying."""
         return False
 
     def _updateBrush(self : Self, _scene : "DrawingScene") -> None:

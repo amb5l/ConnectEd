@@ -199,9 +199,11 @@ class ItemPresentationTextMixin:
     # helpers
 
     def _quillKey(self : "Self | ItemType") -> bool:
+        """Override in subclass for more complex keying."""
         return self.isSelected()
 
     def _quillKeyDefault(self : "Self | ItemType") -> bool:
+        """Override in subclass for more complex keying."""
         return False
 
     @withScene
