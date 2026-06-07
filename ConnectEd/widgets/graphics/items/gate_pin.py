@@ -95,13 +95,13 @@ class BufGatePinItem(GatePinItem):
     _NODE_POS  = -(PITCH + 2)
     _ARROW_POS = -2
 
-    def settingsName(self : Self) -> str:
-        return "GatePin"
+    def resourcesName(self : Self) -> str:
+        return "BufGatePin"
 
 
 class OrGatePinItem(GatePinItem):
     _NODE_POS  = -(PITCH + 4)
     _ARROW_POS = -4
 
-    def settingsName(self : Self) -> str:
-        return "GatePin"
+    def resourcesName(self : Self) -> str:
+        return "OrGatePin"

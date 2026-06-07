@@ -53,15 +53,15 @@ class DiagramSceneResources(DrawingSceneResources):
         # BufGatePinItem and OrGatePinItem
         for item_name in ["BufGatePin", "OrGatePin"]:
             self._pens[item_name] = {}
-            offset = 2 if item_name == "BufGatePin" else 4
+            extend = 2 if item_name == "BufGatePin" else 4
             for bus in [False, True]:
                 for selected in [False, True]:
                     self._pens[item_name][(bus, selected)] = \
-                        QPen(self._pens["GatePin"][(bus, selected)])
+                        self._pens["GatePin"][(bus, selected)]
             self._paths[item_name] = {}
             for key, path in self._paths["GatePin"].items():
-                path = QPainterPath(path)
-                path.setElementPositionAt(0, path.elementAt(0).x - offset, 0)
+                path = QPainterPath(path)  # copy before modifying
+                path.setElementPositionAt(0, path.elementAt(0).x - extend, 0)
                 self._paths[item_name][key] = path
         # node pens, brushes and paths
         for item_name in self._NODE_ITEMS:
