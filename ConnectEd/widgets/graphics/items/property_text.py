@@ -78,7 +78,7 @@ class PropertyTextItem(TextItem):
         if item is not None and hasattr(self, "_name"):
             settings_name = f"{item.settingsName()}{self._name}"
             settings_items = settings().get("theme/items")
-            if settings_name in vars(settings_items).keys():
+            if hasattr(settings_items, settings_name):
                 return settings_name
         return "PropertyText"
 
@@ -110,6 +110,7 @@ class PropertyTextItem(TextItem):
         fresh      : bool                 = True,
         parent     : QGraphicsItem | None = None
     ) -> None:
+        self._name = name
         super().__init__(
             pos        = pos,
             rotation   = rotation,
@@ -135,7 +136,6 @@ class PropertyTextItem(TextItem):
             parent     = parent
         )
         self._tether = PropertyTextTetherItem(self)
-        self._name = name
         self.setCleat(cleat, parent)
         self.onTextChanged()
 
@@ -238,6 +238,7 @@ class PropertyTextItem(TextItem):
         """Rebind to an owner property (does not signal this item's Name)."""
         self._name = name
         self.onTextChanged()
+        self._updateQuill()
 
     def name(self : Self) -> str | None:
         return self._name if hasattr(self, "_name") else None

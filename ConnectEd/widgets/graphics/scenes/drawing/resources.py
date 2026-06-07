@@ -54,14 +54,9 @@ class DrawingSceneResources:
                 True : brush_selected
             }
         # quills
+        self._quills = {}
         for item_name in self._QUILL_ITEMS:
-            quill_normal, quill_selected = self._getQuills(
-                f"theme/items/{item_name}/text"
-            )
-            self._quills[item_name] = {
-                False : quill_normal,
-                True  : quill_selected
-            }
+            self._loadQuill(item_name)
         # grip pens, brushes and paths
         self._pens["Grip"] = self._getPen("theme/grip/line")
         self._brushes["Grip"] = self._getBrush("theme/grip/fill")
@@ -185,9 +180,21 @@ class DrawingSceneResources:
         key       : bool | tuple | None = None
     ) -> Quill:
         if item_name not in self._quills:
-            raise ValueError(f"No quill defined for item {item_name}")
+            self._loadQuill(item_name)
         return self._quills[item_name] if key is None \
             else self._quills[item_name][key]
+
+    def _loadQuill(self : Self, item_name : str) -> None:
+        try:
+            quill_normal, quill_selected = self._getQuills(
+                f"theme/items/{item_name}/text"
+            )
+        except KeyError:
+            raise ValueError(f"No quill defined for item {item_name}") from None
+        self._quills[item_name] = {
+            False : quill_normal,
+            True  : quill_selected
+        }
 
     def line(self : Self, item_name : str) -> QLineF:
         if item_name not in self._lines:

@@ -23,7 +23,7 @@ class ItemNamesMixin:
         return self.__class__.__name__.removesuffix("Item")
 
     def resourcesName(self : Self | QGraphicsItem) -> str:
-        return self.__class__.__name__.removesuffix("Item")
+        return self.settingsName()
 
 
 class ItemMoveMixin:
