@@ -156,6 +156,9 @@ class PortPinMixin(
             )
         }
 
+    def node(self : Self) -> FixedNodeItem:
+        return self._node
+
     def name(self : Self) -> str:
         return self._name
 
