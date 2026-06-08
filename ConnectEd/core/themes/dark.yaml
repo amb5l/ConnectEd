@@ -1,0 +1,411 @@
+meta:
+  id           : dark
+  display_name : Dark
+presets:
+  Background           : '#000000'
+  Origin               : '#FFFFFF'
+  Sheet                : '#202020'
+  Border               : '#808080'
+  Grid                 : '#404040'
+  FreeNodeUnconnected  : '#FFFF00'
+  FreeNodeConnected    : '#FFFF00'
+  FreeNodeJunction     : '#FF0000'
+  FixedNodeUnconnected : '#FFFF00'
+  FixedNodeConnected   : '#FFFF00'
+  FixedNodeJunction    : '#FF0000'
+  SegmentOrthogonal    : '#004000'
+  SegmentDiagonal      : '#FFFF00'
+  SegmentPreview1      : '#C000C0'
+  SegmentPreview2      : '#800080'
+  TapUnresolved        : '#404000'
+  TapWire              : '#004000'
+  TapBus               : '#004000'
+  NetLabel             : '#004040'
+  PortPinWire          : '#808080'
+  PortPinBus           : '#808080'
+  PortArrowLine        : '#808080'
+  PortArrowFill        : '#808000'
+  PortName             : '#808000'
+  PortComment          : '#808000'
+  GateLine             : '#808080'
+  GateFill             : '#404040'
+  GatePinWire          : '#808080'
+  GatePinBus           : '#808080'
+  GatePinArrowLine     : '#808000'
+  GatePinArrowFill     : '#808000'
+  BlockLine            : '#808080'
+  BlockFill            : '#404040'
+  BlockLabel           : '#008080'
+  BlockName            : '#008080'
+  BlockPinWire         : '#808080'
+  BlockPinBus          : '#808080'
+  BlockPinArrowLine    : '#808000'
+  BlockPinArrowFill    : '#808000'
+  BlockPinName         : '#808000'
+  BlockPinComment      : '#808000'
+  SymbolPinWire        : '#808080'
+  SymbolPinBus         : '#808080'
+  SymbolPinArrowLine   : '#808000'
+  SymbolPinArrowFill   : '#808000'
+  SymbolPinName        : '#808000'
+  SymbolPinComment     : '#808000'
+  PropertyText         : '#800000'
+  Junction             : '#C00000'
+  Line                 : '#C0C0C0'
+  Rectangle            : '#C0C0C0'
+  Ellipse              : '#C0C0C0'
+  PolyVtx              : '#C0C0C0'
+  Polyline             : '#C0C0C0'
+  Text                 : '#C0C0C0'
+  SelectedLine         : '#FF00FF'
+  SelectedFill         : '#FF00FF'
+  SelectedText         : '#FF00FF'
+  Grip                 : '#FF00FF'
+  PropertyDeleted      : '#400000'
+  PropertyChanged      : '#404000'
+  PropertyAdded        : '#004000'
+background : '@Background'
+origin:
+  color : '@Origin'
+  size  : 12
+sheet  : '@Sheet'
+border : '@Border'
+items:
+  FreeNode:
+    size : 3
+    unconnected:
+      line:
+        color : '@FreeNodeUnconnected'
+        width : 0
+        style : SolidLine
+      fill:
+        color : '@FreeNodeUnconnected'
+        style : NoBrush
+    connected:
+      line:
+        color : '@FreeNodeUnconnected'
+        width : 0
+        style : NoPen
+      fill:
+        color : '@FreeNodeUnconnected'
+        style : NoBrush
+    junction:
+      line:
+        color : '@FreeNodeJunction'
+        width : 0
+        style : NoPen
+      fill:
+        color : '@FreeNodeJunction'
+        style : SolidPattern
+  FixedNode:
+    size : 3
+    unconnected:
+      line:
+        color : '@FreeNodeUnconnected'
+        width : 0
+        style : SolidLine
+      fill:
+        color : '@FreeNodeUnconnected'
+        style : NoBrush
+    connected:
+      line:
+        color : '@FreeNodeUnconnected'
+        width : 0
+        style : NoPen
+      fill:
+        color : '@FreeNodeUnconnected'
+        style : NoBrush
+    junction:
+      line:
+        color : '@FreeNodeJunction'
+        width : 0
+        style : NoPen
+      fill:
+        color : '@FreeNodeJunction'
+        style : SolidPattern
+  Segment:
+    line:
+      orthogonal:
+        color : '@SegmentOrthogonal'
+        width : 1
+        style : SolidLine
+      diagonal:
+        color : '@FreeNodeUnconnected'
+        width : 1
+        style : DashLine
+  SegmentPreview1:
+    line:
+      color : '@SegmentPreview1'
+      width : 1
+      style : SolidLine
+  SegmentPreview2:
+    line:
+      color : '@SegmentPreview2'
+      width : 1
+      style : DashDotDotLine
+  Tap:
+    line:
+      unresolved:
+        color : '@TapUnresolved'
+        width : 1
+        style : SolidLine
+      wire:
+        color : '@SegmentOrthogonal'
+        width : 1
+        style : SolidLine
+      bus:
+        color : '@SegmentOrthogonal'
+        width : 2
+        style : SolidLine
+  NetLabel:
+    text:
+      color     : '@NetLabel'
+      font      : 'Liberation Sans'
+      size      : 7
+      bold      : false
+      italic    : false
+      underline : false
+  Port:
+    pin:
+      wire:
+        line:
+          color : '@Border'
+          width : 1
+          style : SolidLine
+      bus:
+        line:
+          color : '@Border'
+          width : 2
+          style : SolidLine
+    arrow:
+      size : 6
+      line:
+        color : '@Border'
+        width : 1
+        style : SolidLine
+      fill:
+        color : '@PortArrowFill'
+        style : SolidPattern
+  PortName:
+    text:
+      color     : '@PortArrowFill'
+      font      : 'Liberation Sans'
+      size      : 7
+      bold      : false
+      italic    : false
+      underline : false
+  PortComment:
+    text:
+      color     : '@PortArrowFill'
+      font      : 'Liberation Sans'
+      size      : 7
+      bold      : false
+      italic    : false
+      underline : false
+  Gate:
+    line:
+      color : '@Border'
+      width : 1
+      style : SolidLine
+    fill:
+      color : '@Grid'
+      style : NoBrush
+  GatePin:
+    pin:
+      wire:
+        line:
+          color : '@Border'
+          width : 1
+          style : SolidLine
+      bus:
+        line:
+          color : '@Border'
+          width : 2
+          style : SolidLine
+      dot:
+        size : 2.5
+      clock:
+        size : 2.5
+    arrow:
+      size : 3
+      line:
+        color : '@PortArrowFill'
+        width : 0.5
+        style : SolidLine
+      fill:
+        color : '@PortArrowFill'
+        style : SolidPattern
+  Block:
+    line:
+      color : '@Border'
+      width : 1
+      style : SolidLine
+    fill:
+      color : '@Grid'
+      style : SolidPattern
+  BlockLabel:
+    text:
+      color     : '@BlockLabel'
+      font      : 'Liberation Sans'
+      size      : 7
+      bold      : false
+      italic    : false
+      underline : false
+  BlockName:
+    text:
+      color     : '@BlockLabel'
+      font      : 'Liberation Sans'
+      size      : 7
+      bold      : false
+      italic    : false
+      underline : false
+  BlockPin:
+    pin:
+      wire:
+        line:
+          color : '@Border'
+          width : 1
+          style : SolidLine
+      bus:
+        line:
+          color : '@Border'
+          width : 2
+          style : SolidLine
+    arrow:
+      size : 6
+      line:
+        color : '@PortArrowFill'
+        width : 1
+        style : SolidLine
+      fill:
+        color : '@PortArrowFill'
+        style : SolidPattern
+  BlockPinName:
+    text:
+      color     : '@PortArrowFill'
+      font      : 'Liberation Sans'
+      size      : 7
+      bold      : false
+      italic    : false
+      underline : false
+  BlockPinComment:
+    text:
+      color     : '@PortArrowFill'
+      font      : 'Liberation Sans'
+      size      : 7
+      bold      : false
+      italic    : false
+      underline : false
+  SymbolPin:
+    pin:
+      wire:
+        line:
+          color : '@Border'
+          width : 1
+          style : SolidLine
+      bus:
+        line:
+          color : '@Border'
+          width : 2
+          style : SolidLine
+      dot:
+        size : 2.5
+      clock:
+        size : 2.5
+    arrow:
+      size : 3
+      line:
+        color : '@PortArrowFill'
+        width : 0.5
+        style : SolidLine
+      fill:
+        color : '@PortArrowFill'
+        style : SolidPattern
+  SymbolPinName:
+    text:
+      color     : '@PortArrowFill'
+      font      : 'Liberation Sans'
+      size      : 7
+      bold      : false
+      italic    : false
+      underline : false
+  SymbolPinComment:
+    text:
+      color     : '@PortArrowFill'
+      font      : 'Liberation Sans'
+      size      : 7
+      bold      : false
+      italic    : false
+      underline : false
+  PropertyText:
+    text:
+      color     : '@PropertyText'
+      font      : 'Liberation Sans'
+      size      : 7
+      bold      : false
+      italic    : false
+      underline : false
+  Line:
+    line:
+      color : '@Line'
+      width : 1
+      style : SolidLine
+  Rectangle:
+    line:
+      color : '@Line'
+      width : 1
+      style : SolidLine
+    fill:
+      color : '@Line'
+      style : NoBrush
+  Ellipse:
+    line:
+      color : '@Line'
+      width : 1
+      style : SolidLine
+    fill:
+      color : '@Line'
+      style : NoBrush
+  Polyline:
+    line:
+      color : '@Line'
+      width : 1
+      style : SolidLine
+    fill:
+      color : '@Line'
+      style : NoBrush
+  Text:
+    text:
+      color     : '@Line'
+      font      : 'Liberation Sans'
+      size      : 7
+      bold      : false
+      italic    : false
+      underline : false
+selected:
+  line : '@SelectedLine'
+  fill : '@SelectedLine'
+  text : '@SelectedLine'
+grip:
+  size : 12
+  line:
+    color : '@SelectedLine'
+    width : 0
+    style : NoPen
+  fill:
+    color : '@SelectedLine'
+    style : SolidPattern
+tether:
+  line:
+    color : '@SelectedLine'
+    width : 0
+    style : DotLine
+grid:
+  line : '@Grid'
+properties:
+  deleted:
+    color : '@PropertyDeleted'
+  changed:
+    color : '@TapUnresolved'
+  added:
+    color : '@SegmentOrthogonal'

@@ -1,0 +1,411 @@
+meta:
+  id           : light_mono
+  display_name : 'Light mono'
+presets:
+  Background           : '#202020'
+  Origin               : '#000000'
+  Sheet                : '#FFFFFF'
+  Border               : '#000000'
+  Grid                 : '#C0C0C0'
+  FreeNodeUnconnected  : '#000000'
+  FreeNodeConnected    : '#000000'
+  FreeNodeJunction     : '#000000'
+  FixedNodeUnconnected : '#000000'
+  FixedNodeConnected   : '#000000'
+  FixedNodeJunction    : '#000000'
+  SegmentOrthogonal    : '#000000'
+  SegmentDiagonal      : '#FFFF00'
+  SegmentPreview1      : '#202020'
+  SegmentPreview2      : '#404040'
+  TapUnresolved        : '#000000'
+  TapWire              : '#000000'
+  TapBus               : '#000000'
+  NetLabel             : '#000000'
+  PortPinWire          : '#000000'
+  PortPinBus           : '#000000'
+  PortArrowLine        : '#000000'
+  PortArrowFill        : '#FFFFFF'
+  PortName             : '#000000'
+  PortComment          : '#000000'
+  GateLine             : '#000000'
+  GateFill             : '#FFFFFF'
+  GatePinWire          : '#000000'
+  GatePinBus           : '#000000'
+  GatePinArrowLine     : '#000000'
+  GatePinArrowFill     : '#FFFFFF'
+  BlockLine            : '#000000'
+  BlockFill            : '#FFFFFF'
+  BlockLabel           : '#000000'
+  BlockName            : '#000000'
+  BlockPinWire         : '#000000'
+  BlockPinBus          : '#000000'
+  BlockPinArrowLine    : '#000000'
+  BlockPinArrowFill    : '#FFFFFF'
+  BlockPinName         : '#000000'
+  BlockPinComment      : '#000000'
+  SymbolPinWire        : '#000000'
+  SymbolPinBus         : '#000000'
+  SymbolPinArrowLine   : '#000000'
+  SymbolPinArrowFill   : '#FFFFFF'
+  SymbolPinName        : '#000000'
+  SymbolPinComment     : '#000000'
+  PropertyText         : '#000000'
+  Junction             : '#000000'
+  Line                 : '#000000'
+  Rectangle            : '#000000'
+  Ellipse              : '#000000'
+  PolyVtx              : '#000000'
+  Polyline             : '#000000'
+  Text                 : '#000000'
+  SelectedLine         : '#FF00FF'
+  SelectedFill         : '#FF00FF'
+  SelectedText         : '#FF00FF'
+  Grip                 : '#FF00FF'
+  PropertyDeleted      : '#FF0000'
+  PropertyChanged      : '#FFFF00'
+  PropertyAdded        : '#00FF00'
+background : '@Background'
+origin:
+  color : '@Origin'
+  size  : 12
+sheet  : '@Sheet'
+border : '@Origin'
+items:
+  FreeNode:
+    size : 3
+    unconnected:
+      line:
+        color : '@Origin'
+        width : 0
+        style : SolidLine
+      fill:
+        color : '@Origin'
+        style : NoBrush
+    connected:
+      line:
+        color : '@Origin'
+        width : 0
+        style : SolidLine
+      fill:
+        color : '@Origin'
+        style : NoBrush
+    junction:
+      line:
+        color : '@Origin'
+        width : 0
+        style : NoPen
+      fill:
+        color : '@Origin'
+        style : SolidPattern
+  FixedNode:
+    size : 3
+    unconnected:
+      line:
+        color : '@Origin'
+        width : 0
+        style : SolidLine
+      fill:
+        color : '@Origin'
+        style : NoBrush
+    connected:
+      line:
+        color : '@Origin'
+        width : 0
+        style : SolidLine
+      fill:
+        color : '@Origin'
+        style : NoBrush
+    junction:
+      line:
+        color : '@Origin'
+        width : 0
+        style : NoPen
+      fill:
+        color : '@Origin'
+        style : SolidPattern
+  Segment:
+    line:
+      orthogonal:
+        color : '@Origin'
+        width : 1
+        style : SolidLine
+      diagonal:
+        color : '@SegmentDiagonal'
+        width : 1
+        style : DashLine
+  SegmentPreview1:
+    line:
+      color : '@Background'
+      width : 1
+      style : SolidLine
+  SegmentPreview2:
+    line:
+      color : '@SegmentPreview2'
+      width : 1
+      style : DashDotDotLine
+  Tap:
+    line:
+      unresolved:
+        color : '#404000'
+        width : 1
+        style : SolidLine
+      wire:
+        color : '#004000'
+        width : 1
+        style : SolidLine
+      bus:
+        color : '#004000'
+        width : 2
+        style : SolidLine
+  NetLabel:
+    text:
+      color     : '@Origin'
+      font      : 'Liberation Sans'
+      size      : 7
+      bold      : false
+      italic    : false
+      underline : false
+  Port:
+    pin:
+      wire:
+        line:
+          color : '@Origin'
+          width : 1
+          style : SolidLine
+      bus:
+        line:
+          color : '@Origin'
+          width : 2
+          style : SolidLine
+    arrow:
+      size : 6
+      line:
+        color : '@Origin'
+        width : 1
+        style : SolidLine
+      fill:
+        color : '@Sheet'
+        style : SolidPattern
+  PortName:
+    text:
+      color     : '@Origin'
+      font      : 'Liberation Sans'
+      size      : 7
+      bold      : false
+      italic    : false
+      underline : false
+  PortComment:
+    text:
+      color     : '@Origin'
+      font      : 'Liberation Sans'
+      size      : 7
+      bold      : false
+      italic    : false
+      underline : false
+  Gate:
+    line:
+      color : '@Origin'
+      width : 1
+      style : SolidLine
+    fill:
+      color : '@Sheet'
+      style : NoBrush
+  GatePin:
+    pin:
+      wire:
+        line:
+          color : '@Origin'
+          width : 1
+          style : SolidLine
+      bus:
+        line:
+          color : '@Origin'
+          width : 2
+          style : SolidLine
+      dot:
+        size : 2.5
+      clock:
+        size : 2.5
+    arrow:
+      size : 3
+      line:
+        color : '@Sheet'
+        width : 0.5
+        style : SolidLine
+      fill:
+        color : '@Sheet'
+        style : SolidPattern
+  Block:
+    line:
+      color : '@Origin'
+      width : 1
+      style : SolidLine
+    fill:
+      color : '@Sheet'
+      style : SolidPattern
+  BlockLabel:
+    text:
+      color     : '@Origin'
+      font      : 'Liberation Sans'
+      size      : 7
+      bold      : false
+      italic    : false
+      underline : false
+  BlockName:
+    text:
+      color     : '@Origin'
+      font      : 'Liberation Sans'
+      size      : 7
+      bold      : false
+      italic    : false
+      underline : false
+  BlockPin:
+    pin:
+      wire:
+        line:
+          color : '@Origin'
+          width : 1
+          style : SolidLine
+      bus:
+        line:
+          color : '@Origin'
+          width : 2
+          style : SolidLine
+    arrow:
+      size : 6
+      line:
+        color : '@Origin'
+        width : 1
+        style : SolidLine
+      fill:
+        color : '@Sheet'
+        style : SolidPattern
+  BlockPinName:
+    text:
+      color     : '@Origin'
+      font      : 'Liberation Sans'
+      size      : 7
+      bold      : false
+      italic    : false
+      underline : false
+  BlockPinComment:
+    text:
+      color     : '@Origin'
+      font      : 'Liberation Sans'
+      size      : 7
+      bold      : false
+      italic    : false
+      underline : false
+  SymbolPin:
+    pin:
+      wire:
+        line:
+          color : '@Origin'
+          width : 1
+          style : SolidLine
+      bus:
+        line:
+          color : '@Origin'
+          width : 2
+          style : SolidLine
+      dot:
+        size : 2.5
+      clock:
+        size : 2.5
+    arrow:
+      size : 3
+      line:
+        color : '@Origin'
+        width : 0.5
+        style : SolidLine
+      fill:
+        color : '@Sheet'
+        style : SolidPattern
+  SymbolPinName:
+    text:
+      color     : '@Origin'
+      font      : 'Liberation Sans'
+      size      : 7
+      bold      : false
+      italic    : false
+      underline : false
+  SymbolPinComment:
+    text:
+      color     : '@Origin'
+      font      : 'Liberation Sans'
+      size      : 7
+      bold      : false
+      italic    : false
+      underline : false
+  PropertyText:
+    text:
+      color     : '@Origin'
+      font      : 'Liberation Sans'
+      size      : 7
+      bold      : false
+      italic    : false
+      underline : false
+  Line:
+    line:
+      color : '@Origin'
+      width : 1
+      style : SolidLine
+  Rectangle:
+    line:
+      color : '@Origin'
+      width : 1
+      style : SolidLine
+    fill:
+      color : '@Origin'
+      style : NoBrush
+  Ellipse:
+    line:
+      color : '@Origin'
+      width : 1
+      style : SolidLine
+    fill:
+      color : '@Origin'
+      style : NoBrush
+  Polyline:
+    line:
+      color : '@Origin'
+      width : 1
+      style : SolidLine
+    fill:
+      color : '@Origin'
+      style : NoBrush
+  Text:
+    text:
+      color     : '@Origin'
+      font      : 'Liberation Sans'
+      size      : 7
+      bold      : false
+      italic    : false
+      underline : false
+selected:
+  line : '@SelectedLine'
+  fill : '@SelectedLine'
+  text : '@SelectedLine'
+grip:
+  size : 12
+  line:
+    color : '@SelectedLine'
+    width : 0
+    style : NoPen
+  fill:
+    color : '@SelectedLine'
+    style : SolidPattern
+tether:
+  line:
+    color : '@SelectedLine'
+    width : 0
+    style : DotLine
+grid:
+  line : '@Grid'
+properties:
+  deleted:
+    color : '@PropertyDeleted'
+  changed:
+    color : '@SegmentDiagonal'
+  added:
+    color : '@PropertyAdded'

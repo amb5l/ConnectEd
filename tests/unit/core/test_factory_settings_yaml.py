@@ -1,0 +1,65 @@
+from PyQt6.QtCore import QPointF, QSizeF, Qt
+from PyQt6.QtGui import QColor
+
+from ConnectEd.core.defs import DEFS
+from ConnectEd.core.palette import palette_dark
+from ConnectEd.core.settings import FACTORY_SETTINGS, Settings, loadFactorySettings
+from ConnectEd.core.themes import BUILTIN_THEMES, THEME_NAMES, resolveColor
+
+
+def test_load_factory_settings_top_level_keys() -> None:
+    settings = loadFactorySettings()
+    assert set(settings.keys()) == {
+        "startup", "mru", "display", "defaults", "prefs", "ai", "themes",
+    }
+
+
+def test_builtin_theme_names() -> None:
+    assert THEME_NAMES == frozenset({"dark", "light_mono"})
+    assert BUILTIN_THEMES == ("dark", "light_mono")
+
+
+def test_theme_token_resolves_to_palette_color() -> None:
+    settings = loadFactorySettings()
+    bg = settings["themes"]["dark"]["background"]
+    assert isinstance(bg, QColor)
+    assert bg == palette_dark.Background
+
+
+def test_resolve_color_inline_hex() -> None:
+    presets = {"Background": "#000000"}
+    color = resolveColor("#008080", presets, "test")
+    assert color.red() == 0
+    assert color.green() == 128
+    assert color.blue() == 128
+
+
+def test_runtime_defaults() -> None:
+    settings = loadFactorySettings()
+    assert settings["startup"]["geometry"] == b""
+    assert settings["prefs"]["file"]["open"]["dir"]
+    sheet_name = settings["defaults"]["sheet"]["name"]
+    assert settings["defaults"]["sheet"]["size"] == DEFS["sheets"][sheet_name]
+    assert isinstance(settings["defaults"]["extents"], QSizeF)
+    assert isinstance(settings["defaults"]["grid"]["pitch"], QPointF)
+
+
+def test_settings_get_smoke() -> None:
+    store = Settings()
+    assert store.get("display/theme") == "dark"
+    assert isinstance(store.get("defaults/extents"), QSizeF)
+    block_color = store.get("theme/items/BlockName/text/color")
+    assert isinstance(block_color, QColor)
+    assert block_color == palette_dark.BlockName
+
+
+def test_factory_settings_matches_loader() -> None:
+    assert set(FACTORY_SETTINGS.keys()) == set(loadFactorySettings().keys())
+
+
+def test_segment_line_style_is_pen_style() -> None:
+    style = loadFactorySettings()["themes"]["dark"]["items"]["Segment"]["line"][
+        "orthogonal"
+    ]["style"]
+    assert style == Qt.PenStyle.SolidLine
+    assert isinstance(style, Qt.PenStyle)

@@ -1,0 +1,64 @@
+startup:
+  geometry: ''
+mru:
+  '1': ''
+  '2': ''
+  '3': ''
+  '4': ''
+  '5': ''
+  '6': ''
+  '7': ''
+  '8': ''
+  '9': ''
+display:
+  theme: dark
+  font_size: 10
+  alpha: 240
+  select:
+    tolerance: 2.0
+    outline:
+      width: 0
+      style: DotLine
+  zoom:
+    padding: 0.1
+    step: 0.25
+    min: 0.01
+    max: 100.0
+  pan:
+    step: 0.1
+defaults:
+  extents:
+  - 800.0
+  - 600.0
+  sheet:
+    name: A4 (landscape)
+  margin: 10.0
+  border: 1.0
+  grid:
+    display: true
+    snap: true
+    pitch:
+    - 10.0
+    - 10.0
+    dots: false
+    alpha: 128
+    min_pixels: 10
+prefs:
+  file:
+    new:
+      sheet: A4
+      margin: 10
+    open:
+      dir: ''
+    save:
+      dir: ''
+  mouse:
+    drag: 5
+    wheel: 120
+ai:
+  profiles_data: '[]'
+  default_profile: ''
+  system_prompt_extra: ''
+  confirm_destructive: true
+  max_tool_rounds: 10
+  chat_mru: '[]'
