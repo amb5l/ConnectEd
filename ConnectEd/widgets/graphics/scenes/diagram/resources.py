@@ -36,7 +36,9 @@ class DiagramSceneResources(DrawingSceneResources):
             settings_path = "theme/items/Segment/line/" \
                 f"{'diagonal' if diagonal else 'orthogonal'}"
             pen_normal, pen_selected = self._getPens(
-                settings_path, Qt.PenCapStyle.RoundCap
+                "Segment",
+                settings_path,
+                cap_style=Qt.PenCapStyle.RoundCap,
             )
             self._pens["Segment"][(diagonal, False)] = pen_normal
             self._pens["Segment"][(diagonal, True)]  = pen_selected
@@ -74,12 +76,18 @@ class DiagramSceneResources(DrawingSceneResources):
                 state_str = state.value
                 # pens
                 pen_normal, pen_selected = \
-                    self._getPens(f"{settings_path}/{state_str}/line")
+                    self._getPens(
+                        item_name,
+                        f"{settings_path}/{state_str}/line",
+                    )
                 self._pens[item_name][(state, False)] = pen_normal
                 self._pens[item_name][(state, True)] = pen_selected
                 # brushes
                 brush_normal, brush_selected = \
-                    self._getBrushes(f"{settings_path}/{state_str}/fill")
+                    self._getBrushes(
+                        item_name,
+                        f"{settings_path}/{state_str}/fill",
+                    )
                 self._brushes[item_name][(state, False)] = brush_normal
                 self._brushes[item_name][(state, True)] = brush_selected
                 # paths
@@ -87,8 +95,12 @@ class DiagramSceneResources(DrawingSceneResources):
         # tap pen and line
         settings_path = "theme/items/Tap"
         self._pens["Tap"] = {}
-        self._pens["Tap"][False] = self._getPens(f"{settings_path}/line/wire")
-        self._pens["Tap"][True] = self._getPens(f"{settings_path}/line/bus")
+        self._pens["Tap"][False] = self._getPens(
+            "Tap", f"{settings_path}/line/wire"
+        )
+        self._pens["Tap"][True] = self._getPens(
+            "Tap", f"{settings_path}/line/bus"
+        )
         self._lines["Tap"] = QLineF(0, 0, PITCH, PITCH)
         # SegmentPreview1 and SegmentPreview2
         self._pens["SegmentPreview1"] = self._getPen(

@@ -383,9 +383,16 @@ items:
       italic    : false
       underline : false
 selected:
-  line : '@SelectedLine'
-  fill : '@SelectedLine'
-  text : '@SelectedLine'
+  line:
+    color : '@SelectedLine'
+  fill:
+    color : '@SelectedFill'
+  text:
+    color : '@SelectedText'
+  items:
+    FreeNode:
+      line:
+        style : SolidLine
 grip:
   size : 12
   line:

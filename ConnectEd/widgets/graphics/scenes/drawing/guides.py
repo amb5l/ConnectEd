@@ -26,7 +26,8 @@ class DrawingSceneGuidesMixin:
 
     def _newGuide(self : "DrawingScene") -> QGraphicsLineItem:
         guide = QGraphicsLineItem()
-        color = settings().get("theme/selected/line")
+        spec = settings().get("theme/selected/line")
+        color = spec.color if hasattr(spec, "color") else spec
         pen = QPen(color, 0, Qt.PenStyle.DotLine)
         guide.setPen(pen)
         self.addItem(guide)
