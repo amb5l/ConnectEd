@@ -1,4 +1,4 @@
-﻿from typing import Self
+from typing import Self
 
 from PyQt6.QtCore import QPointF
 
@@ -95,8 +95,8 @@ class CmdReplaceNode(CmdDiagramSceneBase):
     Updates both graphics and graph.
     """
 
-    _node1 : NodeItem
-    _node2 : NodeItem
+    _node_old : NodeItem
+    _node_new : NodeItem
 
     @checked
     def __init__(
@@ -106,18 +106,18 @@ class CmdReplaceNode(CmdDiagramSceneBase):
         node2 : NodeItem
     ) -> None:
         super().__init__(scene)
-        self._node1 = node1
-        self._node2 = node2
+        self._node_old = node1
+        self._node_new = node2
 
     @checked
     def redo(self : Self) -> None:
-        self._scene.netlist.replaceNode(self._node1, self._node2)
-        self._node2.onConnectionChanged()
+        self._scene.netlist.replaceNode(self._node_old, self._node_new)
+        self._node_new.onConnectionChanged()
 
     @checked
     def undo(self : Self) -> None:
-        self._scene.netlist.replaceNode(self._node2, self._node1)
-        self._node1.onConnectionChanged()
+        self._scene.netlist.replaceNode(self._node_new, self._node_old)
+        self._node_old.onConnectionChanged()
 
 
 class CmdAddSegment(CmdDiagramSceneBase):
