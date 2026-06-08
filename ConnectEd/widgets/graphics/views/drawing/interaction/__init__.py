@@ -118,9 +118,11 @@ class DrawingItemsInteraction(DrawingInteraction):
     def __init__(
         self  : Self,
         view  : "DrawingView",
-        items : list[ItemType]
+        items : ItemType | list[ItemType]
     ) -> None:
         super().__init__(view)
+        if not isinstance(items, list):
+            items = [items]
         self._items = items
 
     def valid(self : Self) -> bool:
