@@ -1,3 +1,6 @@
+while-else opportunities in codebase
+Interaction valid
+
 AiEditLock => general edit lock?
 
 Dialog title truncation

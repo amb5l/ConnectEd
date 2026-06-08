@@ -57,7 +57,7 @@ scene APIs.
   `provider:key:model` list; `connected://ai/settings` and `connected://ai/chat?…` links.
 - **AI Profiles** — [`AiProfilesDialog`](../ConnectEd/widgets/dialogs/ai_profiles.py);
   multi-profile credentials; model lists cached per profile (`profile_models.py`).
-- **Settings** — `ai/` section in [`FACTORY_SETTINGS`](../ConnectEd/core/settings.py)
+- **Settings** — `ai/` section in [`settings.yaml`](../ConnectEd/core/settings.yaml)
   (`profiles_data`, `chat_mru`).
 - **Window** — [`AiManager`](../ConnectEd/widgets/window/ai/manager.py) (edit lock, profile
   refresh, chat docks); one default chat on startup; bottom split (log tabs left, AI right).
@@ -499,7 +499,7 @@ When implementation starts, add to [`TODO.md`](../TODO.md): “AI chat — see [
 
 ## Settings (`ai/`)
 
-Extend [`FACTORY_SETTINGS`](../ConnectEd/core/settings.py):
+Extend [`settings.yaml`](../ConnectEd/core/settings.yaml) (`ai/` section):
 
 ```python
 "ai" : {
