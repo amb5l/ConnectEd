@@ -37,6 +37,14 @@ class EnDis(Enum):
     ENABLE  = True
 
 
+class Axis(StrEnum):
+    H = "H"
+    V = "V"
+
+    def __invert__(self : Self) -> Self:
+        return Axis.H if self == Axis.V else Axis.V
+
+
 class AlignMixin:
     def toStr(self : Self) -> str:
         return self.name
