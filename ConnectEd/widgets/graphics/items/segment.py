@@ -1,4 +1,4 @@
-﻿from typing import Self, Any
+from typing import Self, Any
 
 from PyQt6.QtCore    import QPointF, QLineF
 from PyQt6.QtWidgets import QGraphicsLineItem, QGraphicsItem, QMenu
@@ -7,7 +7,8 @@ from PyQt6.QtGui     import QAction
 from ....app import settings
 
 from ....core.check import checked
-from ....core.defs import Z_SEGMENT
+from ....core.defs  import Z_SEGMENT
+from ....core.types import Axis
 
 from ..scenes import withScene
 
@@ -117,6 +118,11 @@ class SegmentItem(
 
     def isDiagonal(self : Self) -> bool:
         return not self._ortho
+
+    def axis(self : Self) -> Axis | None:
+        if self.isOrthogonal():
+            return Axis.H if self.line().dx() > 0.0 else Axis.V
+        return None
 
     def sceneMidpoint(self : Self) -> QPointF:
         return self.scenePos() + self.line().p2() / 2
