@@ -54,14 +54,14 @@ class GateLabelMixin:
             self.properties.signalChanges("Label")
 
 
-class BaseGateItem(
+class GateItem(
     GateLabelMixin,
     ItemTransformMixin,
     PrimaryItemMixin,
     QGraphicsPathItem
 ):
     # class attributes
-    _PIN_CLS = GatePinItem
+    _PIN_CLS : GatePinItem
 
     @checked
     def __init__(self : Self, fresh : bool = True) -> None:
@@ -98,7 +98,7 @@ class BaseGateItem(
         ]
 
 
-class BufGateItem(BaseGateItem):
+class BufGateItem(GateItem):
     """Buffer/Inverter gate."""
 
     # class attributes
@@ -116,7 +116,7 @@ class BufGateItem(BaseGateItem):
         )
     }
     _PROPERTIES = \
-        BaseGateItem._PROPERTIES_LABEL | \
+        GateItem._PROPERTIES_LABEL | \
         _PROPERTIES_IO | \
         ItemTransformMixin._PROPERTIES_POS | \
         ItemTransformMixin._PROPERTIES_ROTATE | \
@@ -224,10 +224,11 @@ class BufGateItem(BaseGateItem):
         self.properties.signalChanges("Input")
 
 
-class LogicGateItem(BaseGateItem):
+class LogicGateItem(GateItem):
     """Base class for N:1 logic gates."""
 
     # class attributes
+    _PIN_CLS     = GatePinItem
     _MID_PIN_CLS = GatePinItem  # for extended middle input pin
     _PROPERTIES_IO = {
         "Output" : InherentProperty(
@@ -242,7 +243,7 @@ class LogicGateItem(BaseGateItem):
         )
     }
     _PROPERTIES = \
-        BaseGateItem._PROPERTIES_LABEL | \
+        GateItem._PROPERTIES_LABEL | \
         _PROPERTIES_IO | \
         ItemTransformMixin._PROPERTIES_POS | \
         ItemTransformMixin._PROPERTIES_ROTATE | \
