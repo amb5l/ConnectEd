@@ -1,4 +1,4 @@
-from typing      import Self
+﻿from typing      import Self
 from dataclasses import dataclass
 
 from PyQt6.QtCore import Qt
@@ -128,8 +128,8 @@ class CmdEditAppearance(CmdSceneItems):
                 item.setTextItalic(self._after.text_italic)
             if self._before[item].text_underline is not NO_CHANGE:
                 item.setTextUnderline(self._after.text_underline)
-            if hasattr(item, "onGeometryChange"):
-                item.onGeometryChange()
+            if hasattr(item, "onGeometryChanged"):
+                item.onGeometryChanged()
             item.update()
 
     @checked
@@ -157,6 +157,6 @@ class CmdEditAppearance(CmdSceneItems):
                 item.setTextItalic(self._before[item].text_italic)
             if self._before[item].text_underline is not NO_CHANGE:
                 item.setTextUnderline(self._before[item].text_underline)
-            if hasattr(item, "onGeometryChange"):
-                item.onGeometryChange()
+            if hasattr(item, "onGeometryChanged"):
+                item.onGeometryChanged()
             item.update()

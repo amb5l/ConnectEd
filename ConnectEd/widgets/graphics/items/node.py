@@ -1,4 +1,4 @@
-from typing import Self
+﻿from typing import Self
 from enum   import StrEnum
 
 from PyQt6.QtCore    import QPointF, QXmlStreamWriter, QXmlStreamReader
@@ -53,10 +53,10 @@ class NodeItem(
     def onScenePositionChanged(self : Self, _pos : QPointF) -> None:
         """Update all connected segments."""
         for segment in self.segments():
-            segment.onGeometryChange()
+            segment.onGeometryChanged()
 
     @withScene
-    def onConnectionChange(self : Self, scene : "DiagramScene | None" = None) -> None:
+    def onConnectionChanged(self : Self, scene : "DiagramScene | None" = None) -> None:
         n = self.degree()
         self._state = \
             NodeState.JUNCTION    if n >= self._JUNCTION_THRESHOLD else \

@@ -1,4 +1,4 @@
-from typing import Self, Any
+﻿from typing import Self, Any
 
 from PyQt6.QtCore    import QPointF, QLineF
 from PyQt6.QtWidgets import QGraphicsLineItem, QGraphicsItem, QMenu
@@ -58,7 +58,7 @@ class SegmentItem(
         self.setNode1(node1)
         self.setNode2(node2)
 
-    def onGeometryChange(self : Self) -> None:
+    def onGeometryChanged(self : Self) -> None:
         if not hasattr(self, "_node1") or not hasattr(self, "_node2"):
             return
         v1 = self._node1
@@ -85,7 +85,7 @@ class SegmentItem(
     @checked
     def setNode1(self : Self, node1 : NodeItem | None) -> None:
         self._node1 = node1
-        self.onGeometryChange()
+        self.onGeometryChanged()
 
     def node2(self : Self) -> NodeItem | None:
         return self._node2
@@ -93,7 +93,7 @@ class SegmentItem(
     @checked
     def setNode2(self : Self, node2 : NodeItem | None) -> None:
         self._node2 = node2
-        self.onGeometryChange()
+        self.onGeometryChanged()
 
     @checked
     def changeNode(self : Self, old : NodeItem, new : NodeItem) -> bool:

@@ -1,4 +1,4 @@
-from typing import Self
+﻿from typing import Self
 
 from PyQt6.QtCore    import QPointF, QLineF
 from PyQt6.QtGui     import QAction
@@ -108,7 +108,7 @@ class TapItem(
         self.setPen(scene.resources["Tap"][self._state.value])
 
     @checked
-    def onConnectivityChange(self : Self) -> None:
+    def onConnectivityChanged(self : Self) -> None:
         # update self._state based on self._node1 and self._node2
         pass
 

@@ -1,4 +1,4 @@
-from typing      import Self, overload
+﻿from typing      import Self, overload
 from dataclasses import replace
 
 from PyQt6.QtCore    import QPointF
@@ -102,26 +102,26 @@ class ItemTransformMixin:
     @checked
     def onRotationChanged(self : Self | PropertiesMixin, _angle : float) -> None:
         # process self scene rotation changes
-        if hasattr(self, "onSceneRotationChange"):
-            self.onSceneRotationChange()
+        if hasattr(self, "onSceneRotationChanged"):
+            self.onSceneRotationChanged()
         # propagate to children
         for child in self.childItems():
-            if hasattr(child, "onSceneRotationChange"):
-                child.onSceneRotationChange()
+            if hasattr(child, "onSceneRotationChanged"):
+                child.onSceneRotationChanged()
         # broadcast change
         self.properties.signalChanges("Rotation")
 
     @checked
-    def onMirrorChange(self : Self | PropertiesMixin) -> None:
+    def onMirrorChanged(self : Self | PropertiesMixin) -> None:
         # rebuild local transform to include mirror scale
         self.updateTransform()
         # process self scene mirror change
-        if hasattr(self, "onSceneMirrorChange"):
-            self.onSceneMirrorChange()
+        if hasattr(self, "onSceneMirrorChanged"):
+            self.onSceneMirrorChanged()
         # propagate to children
         for child in self.childItems():
-            if hasattr(child, "onSceneMirrorChange"):
-                child.onSceneMirrorChange()
+            if hasattr(child, "onSceneMirrorChanged"):
+                child.onSceneMirrorChanged()
         # broadcast changes
         self.properties.signalChanges(["MirrorH", "MirrorV"])
 
@@ -183,7 +183,7 @@ class ItemTransformMixin:
     @checked
     def setMirrorH(self : Self, mirror_h : bool) -> None:
         self._mirror_h = mirror_h
-        self.onMirrorChange()
+        self.onMirrorChanged()
 
     @checked
     def parentSceneMirrorH(self : Self | QGraphicsItem) -> bool:
@@ -208,7 +208,7 @@ class ItemTransformMixin:
     @checked
     def setMirrorV(self : Self, mirror_v : bool) -> None:
         self._mirror_v = mirror_v
-        self.onMirrorChange()
+        self.onMirrorChanged()
 
     @checked
     def parentSceneMirrorV(self : Self | QGraphicsItem) -> bool:

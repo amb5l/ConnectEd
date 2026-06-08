@@ -1,4 +1,4 @@
-from typing import Self
+﻿from typing import Self
 
 from PyQt6.QtCore import QPointF
 
@@ -112,12 +112,12 @@ class CmdReplaceNode(CmdDiagramSceneBase):
     @checked
     def redo(self : Self) -> None:
         self._scene.netlist.replaceNode(self._node1, self._node2)
-        self._node2.onConnectionChange()
+        self._node2.onConnectionChanged()
 
     @checked
     def undo(self : Self) -> None:
         self._scene.netlist.replaceNode(self._node2, self._node1)
-        self._node1.onConnectionChange()
+        self._node1.onConnectionChanged()
 
 
 class CmdAddSegment(CmdDiagramSceneBase):
@@ -150,14 +150,14 @@ class CmdAddSegment(CmdDiagramSceneBase):
         self._seg.setNode2(self._node2)
         self._scene.addItem(self._seg)
         self._scene.netlist.addSegment(self._seg)
-        self._node1.onConnectionChange()
-        self._node2.onConnectionChange()
+        self._node1.onConnectionChanged()
+        self._node2.onConnectionChanged()
 
     @checked
     def undo(self : Self) -> None:
         self._scene.netlist.removeSegment(self._node1, self._node2)
-        self._node1.onConnectionChange()
-        self._node2.onConnectionChange()
+        self._node1.onConnectionChanged()
+        self._node2.onConnectionChanged()
         self._seg.setNode1(None)
         self._seg.setNode2(None)
         self._scene.removeItem(self._seg)
@@ -194,8 +194,8 @@ class CmdRemoveSegment(CmdDiagramSceneBase):
     @checked
     def redo(self : Self) -> None:
         self._scene.netlist.removeSegment(self._node1, self._node2)
-        self._node1.onConnectionChange()
-        self._node2.onConnectionChange()
+        self._node1.onConnectionChanged()
+        self._node2.onConnectionChanged()
         self._seg.setNode1(None)
         self._seg.setNode2(None)
         self._scene.removeItem(self._seg)
@@ -206,8 +206,8 @@ class CmdRemoveSegment(CmdDiagramSceneBase):
         self._seg.setNode2(self._node2)
         self._scene.addItem(self._seg)
         self._scene.netlist.addSegment(self._seg)
-        self._node1.onConnectionChange()
-        self._node2.onConnectionChange()
+        self._node1.onConnectionChanged()
+        self._node2.onConnectionChanged()
 
 
 class CmdSplitSegment(CmdDiagramSceneBase):
@@ -247,9 +247,9 @@ class CmdSplitSegment(CmdDiagramSceneBase):
         # graph: register the two new edges
         self._scene.netlist.addSegment(self._seg1)
         self._scene.netlist.addSegment(self._seg2)
-        self._node.onConnectionChange()
-        self._node1.onConnectionChange()
-        self._node2.onConnectionChange()
+        self._node.onConnectionChanged()
+        self._node1.onConnectionChanged()
+        self._node2.onConnectionChanged()
 
     @checked
     def undo(self : Self) -> None:
@@ -263,9 +263,9 @@ class CmdSplitSegment(CmdDiagramSceneBase):
         self._scene.removeItem(self._seg2)
         # graph: re-register the original edge
         self._scene.netlist.addSegment(self._seg1)
-        self._node.onConnectionChange()
-        self._node1.onConnectionChange()
-        self._node2.onConnectionChange()
+        self._node.onConnectionChanged()
+        self._node1.onConnectionChanged()
+        self._node2.onConnectionChanged()
 
 
 class CmdUnsplitSegment(CmdDiagramSceneBase):
@@ -309,8 +309,8 @@ class CmdUnsplitSegment(CmdDiagramSceneBase):
         self._scene.removeItem(self._node)
         # graph: register the merged edge (seg1 now ends at far2)
         self._scene.netlist.addSegment(self._seg1)
-        self._far1.onConnectionChange()
-        self._far2.onConnectionChange()
+        self._far1.onConnectionChanged()
+        self._far2.onConnectionChanged()
 
     @checked
     def undo(self : Self) -> None:
@@ -325,9 +325,9 @@ class CmdUnsplitSegment(CmdDiagramSceneBase):
         # graph: re-register the two split edges (addSegment re-adopts _node)
         self._scene.netlist.addSegment(self._seg1)
         self._scene.netlist.addSegment(self._seg2)
-        self._far1.onConnectionChange()
-        self._far2.onConnectionChange()
-        self._node.onConnectionChange()
+        self._far1.onConnectionChanged()
+        self._far2.onConnectionChanged()
+        self._node.onConnectionChanged()
 
 
 class CmdSplitNet(CmdDiagramSceneBase):

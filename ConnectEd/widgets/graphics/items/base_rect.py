@@ -1,4 +1,4 @@
-from typing import Self, overload
+﻿from typing import Self, overload
 
 from PyQt6.QtCore    import QPointF, QRectF, QSizeF
 from PyQt6.QtWidgets import QGraphicsRectItem, QGraphicsEllipseItem, QMenu
@@ -83,9 +83,9 @@ class BaseRectangleMixin(
                 p1_or_pos.y() + p2_or_size.height()
             )
         self.setPoints(p1_or_pos, p2_or_size)
-        self.onGeometryChange()
+        self.onGeometryChanged()
 
-    def onGeometryChange(self : Self | QGraphicsRectItem) -> None:
+    def onGeometryChanged(self : Self | QGraphicsRectItem) -> None:
         self.updateHandlePositions()
 
     @overload
@@ -110,7 +110,7 @@ class BaseRectangleMixin(
         proxy : QGraphicsRectItem | QGraphicsEllipseItem = super()
         proxy.setRect(*args, **kwargs)
         new = self.rect()
-        self.onGeometryChange()
+        self.onGeometryChanged()
         if hasattr(self, "properties"):
             names : list[str] = []
             if old.width() != new.width():

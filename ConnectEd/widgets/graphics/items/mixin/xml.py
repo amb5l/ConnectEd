@@ -1,4 +1,4 @@
-from typing import Self
+﻿from typing import Self
 
 from PyQt6.QtCore    import QXmlStreamWriter, QXmlStreamReader
 from PyQt6.QtWidgets import QGraphicsItem
@@ -47,8 +47,8 @@ class ItemXmlMixin:
     def _fromXmlRefresh(instance : "ItemMixin | PropertiesMixin") -> None:
         if hasattr(instance, "onTextChanged"):
             instance.onTextChanged()
-        if hasattr(instance, "onSceneRotationChange"):
-            instance.onSceneRotationChange()
+        if hasattr(instance, "onSceneRotationChanged"):
+            instance.onSceneRotationChanged()
 
     @classmethod
     @checked
@@ -63,8 +63,8 @@ class ItemXmlMixin:
             args["parent"] = parent
         instance : "ItemMixin | PropertiesMixin" = cls(**args)
         fromXmlAttrs(instance, xr)
-        if hasattr(instance, "onGeometryChange"):
-            instance.onGeometryChange()
+        if hasattr(instance, "onGeometryChanged"):
+            instance.onGeometryChanged()
         if not (xr.isEndElement() and xr.name() == xml_item_name):
             # process child items
             from ...items.port_pin   import PortPinMixin

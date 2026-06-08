@@ -1,4 +1,4 @@
-from typing import Self
+﻿from typing import Self
 
 from PyQt6.QtCore    import QPointF
 from PyQt6.QtWidgets import QMenu
@@ -35,8 +35,8 @@ class BlockItem(PartItemMixin, BaseRectangleItem):
         self.initPart()
         super().__init__(p1, p2, fresh)
 
-    def onGeometryChange(self : Self) -> None:
-        super().onGeometryChange()
+    def onGeometryChanged(self : Self) -> None:
+        super().onGeometryChanged()
         # TODO: reposition pins
         #for item in self.childItems():
         #    if isinstance(item, Pin):

@@ -1,4 +1,4 @@
-from typing      import Self, Any
+﻿from typing      import Self, Any
 from dataclasses import dataclass
 
 from PyQt6.QtCore    import Qt, QPointF, QRectF
@@ -315,14 +315,14 @@ class TextItem(
         self.setTextBold(bold)
         self.setTextItalic(italic)
         self.setTextUnderline(underline)
-        self._child.onGeometryChange()
+        self._child.onGeometryChanged()
         self.updateHandlePositions()
-        self.onSceneRotationChange()
+        self.onSceneRotationChanged()
 
-    def onSceneRotationChange(self : Self) -> None:
+    def onSceneRotationChanged(self : Self) -> None:
         self._adjustOrientation()
 
-    def onSceneMirrorChange(self : Self) -> None:
+    def onSceneMirrorChanged(self : Self) -> None:
         self._adjustOrientation()
 
     def block(self : Self) -> bool:
@@ -340,7 +340,7 @@ class TextItem(
             self._child.setParentItem(None)  # remove old child
             self._child = new_child
             self._child.setParentItem(self)
-            self._child.onGeometryChange()
+            self._child.onGeometryChanged()
             self.updateHandlePositions()
             # subclasses may not expose the block property:
             if self.properties.has("Block"):
@@ -370,7 +370,7 @@ class TextItem(
     @checked
     def setAlignH(self : Self, align_h : AlignH) -> None:
         self._align_h = align_h
-        self._child.onGeometryChange()
+        self._child.onGeometryChanged()
         self.properties.signalChanges("AlignH")
 
     def alignV(self : Self) -> AlignV:
@@ -379,7 +379,7 @@ class TextItem(
     @checked
     def setAlignV(self : Self, align_v : AlignV) -> None:
         self._align_v = align_v
-        self._child.onGeometryChange()
+        self._child.onGeometryChanged()
         self.properties.signalChanges("AlignV")
 
     def width(self : Self) -> float:
@@ -388,7 +388,7 @@ class TextItem(
     @checked
     def setWidth(self : Self, width : float) -> None:
         self._width = width
-        self._child.onGeometryChange()
+        self._child.onGeometryChanged()
         self.updateHandlePositions()
         self.updateGrips()
         self.properties.signalChanges("Width")
@@ -399,7 +399,7 @@ class TextItem(
     @checked
     def setHeight(self : Self, height : float) -> None:
         self._height = height
-        self._child.onGeometryChange()
+        self._child.onGeometryChanged()
         self.updateHandlePositions()
         self.updateGrips()
         self.properties.signalChanges("Height")
@@ -410,7 +410,7 @@ class TextItem(
     @checked
     def setPadLeft(self : Self, pad_left : float) -> None:
         self._pad_left = max(pad_left, 0.0)
-        self._child.onGeometryChange()
+        self._child.onGeometryChanged()
         self.updateHandlePositions()
         self.updateGrips()
         self.properties.signalChanges("Pad Left")
@@ -421,7 +421,7 @@ class TextItem(
     @checked
     def setPadRight(self : Self, pad_right : float) -> None:
         self._pad_right = max(pad_right, 0.0)
-        self._child.onGeometryChange()
+        self._child.onGeometryChanged()
         self.updateHandlePositions()
         self.updateGrips()
         self.properties.signalChanges("Pad Right")
@@ -432,7 +432,7 @@ class TextItem(
     @checked
     def setPadTop(self : Self, pad_top : float) -> None:
         self._pad_top = max(pad_top, 0.0)
-        self._child.onGeometryChange()
+        self._child.onGeometryChanged()
         self.updateHandlePositions()
         self.updateGrips()
         self.properties.signalChanges("Pad Top")
@@ -443,7 +443,7 @@ class TextItem(
     @checked
     def setPadBottom(self : Self, pad_bottom : float) -> None:
         self._pad_bottom = max(pad_bottom, 0.0)
-        self._child.onGeometryChange()
+        self._child.onGeometryChanged()
         self.updateHandlePositions()
         self.updateGrips()
         self.properties.signalChanges("Pad Bottom")
@@ -546,7 +546,7 @@ class TextItem(
         rect = self._brect
         width = self._width if self._width >= 0.0 else rect.width()
         self._width = max(width + dx, 0.0)
-        self._child.onGeometryChange()
+        self._child.onGeometryChanged()
         self.updateHandlePositions()
         self.updateGrips()
 
@@ -554,7 +554,7 @@ class TextItem(
         rect = self._brect
         height = self._height if self._height >= 0.0 else rect.height()
         self._height = max(height + dy, 0.0)
-        self._child.onGeometryChange()
+        self._child.onGeometryChanged()
         self.updateHandlePositions()
         self.updateGrips()
 
@@ -564,7 +564,7 @@ class TextItem(
         height = self._height if self._height >= 0.0 else rect.height()
         self._width  = max(width  + dx, 0.0)
         self._height = max(height + dy, 0.0)
-        self._child.onGeometryChange()
+        self._child.onGeometryChanged()
         self.updateHandlePositions()
         self.updateGrips()
 
@@ -813,7 +813,7 @@ class TextRendererMixin(ItemShapeMixin):
     ) -> None:
         font.setHintingPreference(QFont.HintingPreference.PreferNoHinting)
         super().setFont(font)
-        self.onGeometryChange()
+        self.onGeometryChanged()
 
     def contextMenuEvent(self : Self,  event : QGraphicsSceneContextMenuEvent) -> None:
         """Bounce context menu event to parent."""
@@ -865,9 +865,9 @@ class TextLineRenderer(TextRendererMixin, QGraphicsSimpleTextItem):
     @checked
     def setText(self : Self, text : str) -> None:
         super().setText(text)
-        self.onGeometryChange()
+        self.onGeometryChanged()
 
-    def onGeometryChange(self : Self) -> None:
+    def onGeometryChanged(self : Self) -> None:
         parent : TextItem = self.parentItem()
         if parent is None:
             return
@@ -980,9 +980,9 @@ class TextBlockRenderer(TextRendererMixin, QGraphicsTextItem):
     @checked
     def setText(self : Self, text : str) -> None:
         self.setPlainText(text)
-        self.onGeometryChange()
+        self.onGeometryChanged()
 
-    def onGeometryChange(self : Self) -> None:
+    def onGeometryChanged(self : Self) -> None:
         parent : TextItem = self.parentItem()
         align_h = parent._align_h
         align_v = parent._align_v

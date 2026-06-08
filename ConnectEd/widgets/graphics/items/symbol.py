@@ -1,4 +1,4 @@
-from typing import Self
+﻿from typing import Self
 
 from PyQt6.QtCore    import QRectF
 from PyQt6.QtWidgets import QGraphicsItem, QStyleOptionGraphicsItem, QWidget
@@ -43,9 +43,9 @@ class SymbolItem(
         self._source = source
         self._brect = QRectF()
         self._hshape = QPainterPath()
-        self.onSourceChange()
+        self.onSourceChanged()
 
-    def onSourceChange(self : Self) -> None:
+    def onSourceChanged(self : Self) -> None:
         """Update boundary and pins from source."""
         if not isinstance(self._source, SymbolScene):
             return

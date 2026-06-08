@@ -1,4 +1,4 @@
-from typing import Self
+﻿from typing import Self
 
 from PyQt6.QtCore    import QPointF
 from PyQt6.QtWidgets import QGraphicsItem
@@ -51,19 +51,19 @@ class ItemLocMixin:
             # Edge/rotation may already be set on the orphan; re-propagate
             # autoflip now that the pin has a parent and scene chain.
             self.onRotationChanged(self.rotation())
-            self.onMirrorChange()
+            self.onMirrorChanged()
 
     def onRotationChanged(self : Self | QGraphicsItem, _angle : float) -> None:
         """Propagate rotation change to children."""
         for child in self.childItems():
-            if hasattr(child, "onSceneRotationChange"):
-                child.onSceneRotationChange()
+            if hasattr(child, "onSceneRotationChanged"):
+                child.onSceneRotationChanged()
 
-    def onMirrorChange(self : Self | QGraphicsItem) -> None:
+    def onMirrorChanged(self : Self | QGraphicsItem) -> None:
         """Propagate mirror change to children."""
         for child in self.childItems():
-            if hasattr(child, "onSceneMirrorChange"):
-                child.onSceneMirrorChange()
+            if hasattr(child, "onSceneMirrorChanged"):
+                child.onSceneMirrorChanged()
 
     def loc(self : Self) -> EdgeLoc:
         return self._loc

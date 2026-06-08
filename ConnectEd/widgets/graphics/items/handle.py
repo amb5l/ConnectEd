@@ -1,4 +1,4 @@
-from typing import Self
+﻿from typing import Self
 
 from PyQt6.QtCore import QPointF
 
@@ -40,15 +40,15 @@ class HandleItem(ItemChangeMixin, NullItem):
     def setId(self : Self, id : HandleId) -> None:
         self._id = id
 
-    def onSceneRotationChange(self : Self) -> None:
+    def onSceneRotationChanged(self : Self) -> None:
         for child in self.childItems():
-            if hasattr(child, "onSceneRotationChange"):
-                child.onSceneRotationChange()
+            if hasattr(child, "onSceneRotationChanged"):
+                child.onSceneRotationChanged()
 
-    def onSceneMirrorChange(self : Self) -> None:
+    def onSceneMirrorChanged(self : Self) -> None:
         for child in self.childItems():
-            if hasattr(child, "onSceneMirrorChange"):
-                child.onSceneMirrorChange()
+            if hasattr(child, "onSceneMirrorChanged"):
+                child.onSceneMirrorChanged()
 
     def isOrigin(self : Self) -> bool:
         parent = self.parentItem()
