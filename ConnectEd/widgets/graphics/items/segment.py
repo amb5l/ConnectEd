@@ -53,6 +53,8 @@ class SegmentItem(
         node2 : NodeItem | None = None
     ) -> None:
         QGraphicsLineItem.__init__(self)
+        self._node1 = None
+        self._node2 = None
         self._line  = QLineF()
         self._ortho = True
         self.initItem()
@@ -60,16 +62,14 @@ class SegmentItem(
         self.setNode2(node2)
 
     def onGeometryChanged(self : Self) -> None:
-        if not hasattr(self, "_node1") or not hasattr(self, "_node2"):
-            return
         v1 = self._node1
         v2 = self._node2
         if v1 is None or v2 is None:
             return
-        p1 = v1.scenePos() if isinstance(v1, NodeItem) else v1
-        p2 = v2.scenePos() if isinstance(v2, NodeItem) else v2
+        p1 = v1.scenePos()
+        p2 = v2.scenePos()
         self.setPos(p1)
-        self._line.setP2(p2-p1)
+        self._line.setP2(p2 - p1)
         self.setLine(self._line)
         ortho = self._line.dx() == 0 or self._line.dy() == 0
         if ortho != self._ortho:
@@ -85,16 +85,14 @@ class SegmentItem(
 
     @checked
     def setNode1(self : Self, node1 : NodeItem | None) -> None:
-        self._node1 = node1
-        self.onGeometryChanged()
+        self._setEndpoint(1, node1)
 
     def node2(self : Self) -> NodeItem | None:
         return self._node2
 
     @checked
     def setNode2(self : Self, node2 : NodeItem | None) -> None:
-        self._node2 = node2
-        self.onGeometryChanged()
+        self._setEndpoint(2, node2)
 
     @checked
     def changeNode(self : Self, old : NodeItem, new : NodeItem) -> bool:
@@ -158,6 +156,27 @@ class SegmentItem(
                 lambda: view.ui.placeNetLabelOnSegment(self, spos)
             )
         ]
+
+    @checked
+    def _subscribeNode(self : Self, node : NodeItem) -> None:
+        node.subscribe("scenePos", self, "onGeometryChanged")
+
+    @checked
+    def _unsubscribeNode(self : Self, node : NodeItem) -> None:
+        node.unsubscribe("scenePos", self)
+
+    @checked
+    def _setEndpoint(self : Self, which : int, node : NodeItem | None) -> None:
+        old = self._node1 if which == 1 else self._node2
+        if old is not None:
+            self._unsubscribeNode(old)
+        if which == 1:
+            self._node1 = node
+        else:
+            self._node2 = node
+        if node is not None:
+            self._subscribeNode(node)
+        self.onGeometryChanged()
 
     def _penKey(self : Self) -> tuple[bool, bool]:
         return (self.isDiagonal(), self.isSelected())

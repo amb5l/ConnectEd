@@ -18,11 +18,15 @@ from .mixin.settings     import ItemSettingsMixin
 from .mixin.presentation import ItemPresentationMixin
 from .mixin.select       import ItemSelectMixin
 from .mixin.change       import ItemChangeMixin
+from .mixin.subscribe    import ItemSubscribeMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ..scenes.diagram import DiagramScene
     from .segment  import SegmentItem
+
+
+SCENE_POS_CHANGE = "scenePos"
 
 
 class NodeState(StrEnum):
@@ -37,6 +41,7 @@ class NodeItem(
     ItemPresentationMixin,
     ItemSelectMixin,
     ItemChangeMixin,
+    ItemSubscribeMixin,
     QGraphicsPathItem
 ):
     _JUNCTION_THRESHOLD : int
@@ -52,9 +57,8 @@ class NodeItem(
         self.onSettingsChanged()
 
     def onScenePositionChanged(self : Self, _pos : QPointF) -> None:
-        """Update all connected segments."""
-        for segment in self.segments():
-            segment.onGeometryChanged()
+        """Notify all scene-position subscribers."""
+        self.callSubscribers(SCENE_POS_CHANGE)
 
     @withScene
     def onConnectionChanged(self : Self, scene : "DiagramScene | None" = None) -> None:
