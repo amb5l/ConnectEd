@@ -166,6 +166,7 @@ class PreviewStateMixin:
 
     def _previewDidRestore(self : Self) -> None:
         """Hook for interactions that need post-restore cleanup."""
+        pass
 
     def _previewSave(self : Self) -> None:
         self._preview_state = {

@@ -15,9 +15,10 @@ from ...drawing.interaction.edit  import EditMoveInteraction,          \
                                          EditAdjustPolySegInteraction, \
                                          EditDuplicateInteraction
 
-from .base import DiagramViewStateBase, qkm
-
 from ..interaction.edit import DiagramEditMoveBlockPinsInteraction
+from ..interaction.move import DiagramMoveInteraction
+
+from .base import DiagramViewStateBase, qkm
 
 
 class DiagramViewStateIdle(DiagramViewStateBase):
@@ -111,15 +112,14 @@ class DiagramViewStateIdle(DiagramViewStateBase):
                 )
             else:
                 # other move scenarios
-                # filter out child items if their parents are also selected
-                for item in items:
-                    if item.parentItem() in items:
-                        items.remove(item)
                 if items:
                     slide = not(m & qkm.AltModifier)
                     self.interact(
-                        EditMoveInteraction(self.view, items, self._snap(s), slide),
-                        self.view.stateEditSlide if slide else self.view.stateEditMove
+                        DiagramMoveInteraction(
+                            self.view, items, self._snap(s), slide
+                        ),
+                        self.view.stateEditSlide if slide else \
+                        self.view.stateEditMove
                     )
         else: # start marquee selection
             self.view.marquee.begin(v)

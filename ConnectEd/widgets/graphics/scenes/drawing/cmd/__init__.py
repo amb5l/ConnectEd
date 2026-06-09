@@ -1,10 +1,14 @@
-from typing import Self, Callable
+from typing import Self
+
+from collections.abc import Callable
 
 from PyQt6.QtCore import QPointF
 from PyQt6.QtGui  import QUndoCommand
 
 from ......core.check import checked
 from ......core.utils import camel2proper
+
+from ....items.segment import SegmentItem
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -171,33 +175,32 @@ class CmdMove(CmdSceneItems):
 
     # instance attributes
     _offset : QPointF
-    _slide  : bool                      # true => retain connections
-    _state  : dict["ItemMixin", QPointF]  # pre-move state e.g. scene positions
+    _state  : dict["ItemMixin", QPointF]  # pre-move state (scene positions)
 
     @checked
     def __init__(
         self   : Self,
         scene  : "DrawingScene",
         items  : list["ItemType"],
-        offset : QPointF,
-        slide  : bool = False
+        offset : QPointF
     ) -> None:
         super().__init__(scene, items)
         self._offset = offset
-        self._slide = slide
         self._state = {e: e.moveSave() for e in self._items}
 
     @checked
     def redo(self : Self) -> None:
         for e in self._items:
-            e.moveBy(self._offset)
-        # TODO: add slide logic
+            if not isinstance(e, SegmentItem):
+                e.moveBy(self._offset)
+            else:
+                self._move_segs.append(e)
 
     @checked
     def undo(self : Self) -> None:
         for e in self._items:
-            e.moveRestore(self._state[e])
-        # TODO: add slide logic
+            if not isinstance(e, SegmentItem):
+                e.moveRestore(self._state[e])
 
 
 class CmdRotateBase(CmdSceneItems):

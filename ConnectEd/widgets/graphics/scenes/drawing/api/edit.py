@@ -49,7 +49,7 @@ class DrawingSceneApiEditMixin:
     ) -> None:
         if not isinstance(items, list):
             items = [items]
-        cmd = CmdMove(self, items, offset, slide)
+        cmd = CmdMove(self, items, offset)
         cmdExec(self, cmd, undoable)
 
     @checked
@@ -108,7 +108,7 @@ class DrawingSceneApiEditMixin:
     @checked
     def editDelete(
         self     : "DrawingScene",
-        items    : list[ItemType] | None = None,
+        items    : ItemType | list[ItemType] | None = None,
         undoable : bool = False
     ) -> None:
         """
@@ -117,6 +117,8 @@ class DrawingSceneApiEditMixin:
         """
         if items is None:
             items = self._selectedTopItems()
+        elif not isinstance(items, list):
+            items = [items]
         if items:
             cmd = CmdDelete(self, items)
             cmdExec(self, cmd, undoable)

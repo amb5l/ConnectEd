@@ -65,6 +65,7 @@ class ThemePalette:
     SelectedFill         : QColor
     SelectedText         : QColor
     Grip                 : QColor
+    Rubber               : QColor
     PropertyDeleted      : QColor
     PropertyChanged      : QColor
     PropertyAdded        : QColor
@@ -167,6 +168,7 @@ palette_dark = ThemePalette(
     SelectedFill         = bright_magenta,
     SelectedText         = bright_magenta,
     Grip                 = bright_magenta,
+    Rubber               = bright_yellow,
     PropertyDeleted      = dark_red,
     PropertyChanged      = dark_yellow,
     PropertyAdded        = dark_green,
@@ -233,6 +235,7 @@ palette_light_mono = ThemePalette(
     SelectedFill         = bright_magenta,
     SelectedText         = bright_magenta,
     Grip                 = bright_magenta,
+    Rubber               = bright_yellow,
     PropertyDeleted      = bright_red,
     PropertyChanged      = bright_yellow,
     PropertyAdded        = bright_green,

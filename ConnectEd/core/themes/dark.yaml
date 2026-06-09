@@ -61,6 +61,7 @@ presets:
   SelectedFill         : '#FF00FF'
   SelectedText         : '#FF00FF'
   Grip                 : '#FF00FF'
+  Rubber               : '#FFFF00'
   PropertyDeleted      : '#400000'
   PropertyChanged      : '#404000'
   PropertyAdded        : '#004000'
@@ -405,6 +406,11 @@ grip:
 tether:
   line:
     color : '@SelectedLine'
+    width : 0
+    style : DotLine
+rubber:
+  line:
+    color : '@Rubber'
     width : 0
     style : DotLine
 grid:

@@ -44,6 +44,13 @@ class Axis(StrEnum):
     def __invert__(self : Self) -> Self:
         return Axis.H if self == Axis.V else Axis.V
 
+class Polarity(StrEnum):
+    POS = "Positive"
+    NEG = "Negative"
+
+    def __invert__(self : Self) -> Self:
+        return Polarity.POS if self == Polarity.NEG else Polarity.NEG
+
 
 class AlignMixin:
     def toStr(self : Self) -> str:

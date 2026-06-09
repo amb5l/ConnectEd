@@ -109,6 +109,10 @@ class DiagramSceneResources(DrawingSceneResources):
         self._pens["SegmentPreview2"] = self._getPen(
             "theme/items/SegmentPreview2/line", Qt.PenCapStyle.RoundCap
         )
+        # rubber pen
+        self._pens["rubber"] = self._getPen(
+            "theme/rubber/line", Qt.PenCapStyle.RoundCap
+        )
 
     def _nodePath(self : Self, state : NodeState, size : float) -> QPainterPath:
         path = QPainterPath()
