@@ -1,5 +1,6 @@
 {
     "python.pythonPath": ".venv/Scripts/python.exe",
+    "cursorpyright.analysis.inlayHints.genericTypes": false,
     "[markdown]": {
         "editor.wordWrap": "bounded",
         "editor.wordWrapColumn": 80
