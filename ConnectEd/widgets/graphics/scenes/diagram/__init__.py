@@ -13,19 +13,15 @@ from .....core.xml   import toXmlAttrs, fromXmlAttrs
 
 from ...properties import InherentProperty
 
-from ...items.node    import NodeItem, FreeNodeItem, FixedNodeItem
+from ...items.node    import NodeItem
 from ...items.segment import SegmentItem
 
 from ...items.mixin.xml import ItemXmlMixin
 
 from ..drawing import DrawingScene
 
-from ..drawing.cmd import cmdExec
-
 from .api       import DiagramSceneApiMixin
 from .resources import DiagramSceneResources
-
-from .cmd.conn import CmdAddSegment
 
 from .netlist import Netlist
 
@@ -161,17 +157,18 @@ class DiagramScene(DiagramSceneApiMixin, DrawingScene):
                     item.toXml(xw)
                 else:
                     logger().warning(f"Unexpected item: {item.type()}")
+        # connectivity:
+        self.netlist.toXml(xw)
         # done
         xw.writeEndElement()
 
     @classmethod
     def fromXml(cls : Self, xr : QXmlStreamReader) -> Self:
         from ...items import _item_classes
-        nodes : list["NodeItem | None"] = []
         top_element_name = cls.__name__.replace("Scene", "")
         if xr.name() != top_element_name:
             raise ValueError(f"Expected {top_element_name} element, got {xr.name()}")
-        scene : DrawingScene = cls(fresh=False)
+        scene : DiagramScene = cls(fresh=False)
         fromXmlAttrs(scene, xr)
         while not (xr.isEndElement() and xr.name() == top_element_name):
             if xr.tokenType() == QXmlStreamReader.TokenType.StartElement:
@@ -179,28 +176,6 @@ class DiagramScene(DiagramSceneApiMixin, DrawingScene):
                 item_name = element_name + "Item"
                 if element_name == "Connectivity":
                     scene.netlist.fromXml(xr)
-                elif "Node" in element_name:
-                    node_id = int(xr.attributes().value("ID"))
-                    if element_name == "FixedNode":
-                        node = FixedNodeItem.fromXml(xr, scene)
-                    elif element_name == "FreeNode":
-                        node = FreeNodeItem.fromXml(xr)
-                        scene.addItem(node)
-                        scene._graph.add_node(node)
-                    if len(nodes) != node_id:
-                        logger().warning(
-                            "Node ID mismatch: "
-                            f"got {node_id}, expected {len(nodes)}"
-                        )
-                    nodes.append(node)
-                elif element_name == "PhysicalNet":
-                    edges_str = xr.attributes().value("Edges")
-                    pairs_str = edges_str.split(" ")
-                    for pair_str in pairs_str:
-                        id1, id2 = pair_str.split(",")
-                        vtx1, vtx2 = nodes[int(id1)], nodes[int(id2)]
-                        cmd = CmdAddSegment(scene, vtx1, vtx2)
-                        cmdExec(scene, cmd, undoable=False)
                 elif item_name in _item_classes:
                     item_cls : "ItemXmlMixin" = _item_classes[item_name]
                     item = item_cls.fromXml(xr)

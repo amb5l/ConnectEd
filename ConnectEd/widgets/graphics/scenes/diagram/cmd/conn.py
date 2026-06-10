@@ -27,9 +27,8 @@ class CmdDiagramSceneBase(CmdSceneBase):
 
 class CmdAddFreeNode(CmdDiagramSceneBase):
     """
-    Create and add a new free node to the scene.
-    Updates both graphics and graph.
-    Assumption: no existing nodes or segments at this point.
+    Create and add a new free node to the scene (graphics only).
+    The netlist adopts the node when the first segment is added.
     """
 
     # instance attributes
@@ -47,11 +46,9 @@ class CmdAddFreeNode(CmdDiagramSceneBase):
     @checked
     def redo(self : Self) -> None:
         self._scene.addItem(self._node)
-        self._scene.netlist.adoptNode(self._node)
 
     @checked
     def undo(self : Self) -> None:
-        self._scene.netlist.removeNodes(self._node)
         self._scene.removeItem(self._node)
 
     @checked
@@ -62,8 +59,7 @@ class CmdAddFreeNode(CmdDiagramSceneBase):
 class CmdRemoveFreeNode(CmdDiagramSceneBase):
     """
     Remove a specified free node from the scene.
-    Updates both graphics and graph.
-    Assumption: free node has no edges in the graph.
+    Drops netlist membership when the node is still in the graph.
     """
 
     # instance attributes
@@ -80,13 +76,13 @@ class CmdRemoveFreeNode(CmdDiagramSceneBase):
 
     @checked
     def redo(self : Self) -> None:
-        self._scene.netlist.removeNodes(self._node)
+        if self._scene.netlist.hasNode(self._node):
+            self._scene.netlist.removeNodes(self._node)
         self._scene.removeItem(self._node)
 
     @checked
     def undo(self : Self) -> None:
         self._scene.addItem(self._node)
-        self._scene.netlist.adoptNode(self._node)
 
 
 class CmdReplaceNode(CmdDiagramSceneBase):

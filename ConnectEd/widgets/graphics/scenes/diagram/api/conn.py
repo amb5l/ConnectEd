@@ -10,7 +10,6 @@ from ......core.check import checked
 from ....items.node      import NodeItem, FreeNodeItem, FixedNodeItem, \
                                 PinNodeItem, TapNodeItem
 from ....items.segment   import SegmentItem
-from ....items.net_label import NetLabelItem
 
 from ...drawing.cmd import cmdExec, CmdDelete
 
@@ -33,9 +32,8 @@ class DiagramSceneApiConnMixin:
         undoable : bool = False
     ) -> FreeNodeItem:
         """
-        Add a free node to the scene.
+        Add a free node to the scene (graphics only until wired).
         Split any crossing segment(s) and merge their net(s).
-        Assumption: no existing nodes at this point.
         """
         # create free node
         cmd = CmdAddFreeNode(self, pos)
@@ -93,78 +91,15 @@ class DiagramSceneApiConnMixin:
         return self.addFreeNode(pos, undoable)
 
     @checked
-    def detachNode(
-        self     : "DiagramScene",
-        node     : FixedNodeItem,
-        undoable : bool = False
-    ) -> None:
-        """
-        Detach a node from existing connectivity.
-        Used in move (not slide) interaction for nodes touching nodes
-        that will not move nodes on unselected items, and unselected
-        segment endpoints (for which a replacement node will be added).
-        Remove orphan zero length segments.
-        Melt redundant segment splits.
-        """
-        cmd = CmdDetachNode(self, node)
-        cmdExec(self, cmd, undoable)
-
-    @checked
-    def detachSegment(
-        self     : "DiagramScene",
-        seg      : SegmentItem,
-        node     : NodeItem,
-        undoable : bool = False
-    ) -> None:
-        """
-        Lift a segment node away from existing connectivity.
-        Used in move (not slide) interaction for segments touching nodes
-        that will not move e.g. pins on unselected blocks, vertices on
-        unselected segments.
-        If attached to a pin or tap node, add a new free node at the segment
-        endpoint and leave the pin or tap node behind.
-        If attached to a free node needed for other segments, ditto.
-        Melt redundant segment splits.
-        """
-
-    @checked
-    def dropSegmentNode(
-        self     : "DiagramScene",
-        seg      : SegmentItem,
-        node     : FreeNodeItem,
-        undoable : bool = False
-    ) -> None:
-        """
-        Drop a segment node back into the scene.
-        Replace node with an existing node if present.
-        """
-
-    @checked
-    def addNode(
-        self     : "DiagramScene",
-        node     : PinNodeItem | TapNodeItem,
-        undoable : bool = False
-    ) -> PinNodeItem | TapNodeItem:
-        """
-        Process the addition of a node to the scene, e.g. as the result
-        of a move, paste/duplicate or place operation.
-        """
-        cmd = CmdAddNode(self, node)
-        cmdExec(self, cmd, undoable)
-        return cmd.node()
-
-    @checked
     def isRedundantNode(self : "DiagramScene", node : NodeItem) -> bool:
         """
         Node is redundant if
         - free
         - parentless (should always be true for free nodes)
-        - childless (not parenting a property text)
         - breaks up a straight line.
         """
         if not isinstance(node, FreeNodeItem) \
         or node.parentItem() is not None \
-        or len(node.childItems()) != 0 \
         or node.degree() != 2:
             return False
         seg1 = node.segments()[0]
@@ -248,22 +183,15 @@ class DiagramSceneApiConnMixin:
         # split net
         cmd = CmdSplitNet(self, node1, node2)
         cmdExec(self, cmd, undoable)
-        # remove labels and orphan free vertices
+        # remove orphan free vertices (scene-only after last segment removed)
         for node in [node1, node2]:
             if not isinstance(node, FreeNodeItem):
-                continue  # not a free node
+                continue
             if node.parentItem() is not None:
                 logger().warning(f"FreeNode {node} has a parent")
-                continue  # free node with parent???
+                continue
             if node.degree() > 0:
-                continue  # is connected to other segments so not an orphan
-            # orderly removal of labels
-            for child in node.childItems():
-                if isinstance(child, NetLabelItem):
-                    cmd = CmdDelete(self, [child])
-                    cmdExec(self, cmd, undoable)
-            if node.childItems() != []:
-                continue  # is parenting a label so not an orphan
+                continue
             cmd = CmdDelete(self, [node])
             cmdExec(self, cmd, undoable)
         # end macro

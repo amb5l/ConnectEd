@@ -87,13 +87,27 @@ class NodeItem(
         xw.writeAttribute("ID", str(id))
         xw.writeAttribute("X", str(self.scenePos().x()))
         xw.writeAttribute("Y", str(self.scenePos().y()))
-        # serialise child items (NetLabelItem instances)
-        for child in self.childItems():
-            if isinstance(child, NetLabelItem):
-                child.toXml(xw)
-            else:
-                logger().warning(f"Unexpected child item: {child.type()}")
         xw.writeEndElement()
+
+    @classmethod
+    @checked
+    def fromXml(cls : Self, xr : QXmlStreamReader) -> tuple[int, QPointF]:
+        id  = -1
+        pos = QPointF()
+        for xml_attr in xr.attributes():
+            match xml_attr.name():
+                case "ID":
+                    id = int(xml_attr.value())
+                case "X":
+                    pos.setX(float(xml_attr.value()))
+                case "Y":
+                    pos.setY(float(xml_attr.value()))
+                case _:
+                    logger().warning(
+                        f"Unexpected attribute: "
+                        f"{xml_attr.name()}={xml_attr.value()}"
+                    )
+        return id, pos
 
     def _penKey(self : Self) -> tuple[NodeState, bool]:
         return (self._state, self.isSelected())
@@ -116,32 +130,6 @@ class FreeNodeItem(NodeItem):
         super().__init__()
         if pos is not None:
             self.setPos(pos)
-
-    @classmethod
-    @checked
-    def fromXml(cls : Self, xr : QXmlStreamReader) -> Self:
-        instance : "FreeNodeItem" = cls()
-        for attr_name, attr_value in xr.attributes():
-            match attr_name:
-                case "ID":
-                    pass
-                case "X":
-                    instance.setX(float(attr_value))
-                case "Y":
-                    instance.setY(float(attr_value))
-                case _:
-                    logger().warning(f"Unexpected attribute: {attr_name}={attr_value}")
-        # create child items (NetLabelItem instances)
-        while not (xr.isEndElement() and xr.name() == "FreeNode"):
-            if xr.isStartElement():
-                item_name = xr.name()
-                if item_name == "NetLabel":
-                    child = NetLabelItem.fromXml(xr)
-                    instance.setParentItem(child)
-                else:
-                    logger().warning(f"Unexpected child item: {item_name}")
-            xr.readNext()
-        return instance
 
 
 class FixedNodeItem(NodeItem):
@@ -170,40 +158,6 @@ class FixedNodeItem(NodeItem):
         if escape.x() == 0.0 and escape.y() == 0.0:
             return 0.0
         return degrees(atan2(escape.y(), escape.x())) % 360.0
-
-    @checked
-    def toXml(self : Self, xw : QXmlStreamWriter, id : int) -> None:
-        xw.writeStartElement(self.settingsName())
-        xw.writeAttribute("ID", str(id))
-        xw.writeAttribute("X", str(self.scenePos().x()))
-        xw.writeAttribute("Y", str(self.scenePos().y()))
-        xw.writeEndElement()
-
-    @classmethod
-    @checked
-    def fromXml(
-        cls   : Self,
-        xr    : QXmlStreamReader,
-        scene : "DiagramScene"
-    ) -> Self | None:
-        """
-        Non free nodes are created when pins/ports/taps are deserialised,
-        so here we are just checking that the node exists.
-        """
-        pos = QPointF(
-            float(xr.attributes().value("X")),
-            float(xr.attributes().value("Y"))
-        )
-        items = scene.items(pos)
-        for item in items:
-            if isinstance(item, FixedNodeItem):
-                instance = item
-                break
-        else:
-            logger().warning("No FixedNode found at {pos.x()}, {pos.y()}")
-            instance = None
-        xr.readNext()
-        return instance
 
 
 class TapMajorNodeItem(FixedNodeItem):
