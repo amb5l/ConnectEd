@@ -118,9 +118,9 @@ class SegmentItem(
         return not self._ortho
 
     def axis(self : Self) -> Axis | None:
-        if self.isOrthogonal():
-            return Axis.H if self.line().dx() > 0.0 else Axis.V
-        return None
+        if not self.isOrthogonal():
+            return None
+        return Axis.H if self.line().dy() == 0.0 else Axis.V
 
     def sceneMidpoint(self : Self) -> QPointF:
         return self.scenePos() + self.line().p2() / 2

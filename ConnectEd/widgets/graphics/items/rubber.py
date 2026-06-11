@@ -98,7 +98,7 @@ class RubberTeeItem(RubberItem):
         path.lineTo(node_spos - junc_spos)
         self.setPath(path)
         # build perpendicular segment
-        axis = segment.axis(node)
+        axis = segment.axis()
         self._axis = axis
         perp_p1 = junc_spos
         perp_p2 = perp_p1
