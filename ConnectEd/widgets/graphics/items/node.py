@@ -131,6 +131,26 @@ class FreeNodeItem(NodeItem):
         if pos is not None:
             self.setPos(pos)
 
+    @classmethod
+    @checked
+    def fromXml(cls : Self, xr : QXmlStreamReader) -> tuple[int, Self]:
+        id  = -1
+        pos = QPointF()
+        for xml_attr in xr.attributes():
+            match xml_attr.name():
+                case "ID":
+                    id = int(xml_attr.value())
+                case "X":
+                    pos.setX(float(xml_attr.value()))
+                case "Y":
+                    pos.setY(float(xml_attr.value()))
+                case _:
+                    logger().warning(
+                        f"Unexpected attribute: "
+                        f"{xml_attr.name()}={xml_attr.value()}"
+                    )
+        return id, cls(pos)
+
 
 class FixedNodeItem(NodeItem):
     _JUNCTION_THRESHOLD = 2

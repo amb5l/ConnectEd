@@ -312,7 +312,11 @@ class Netlist:
             node.toXml(xw, id)
             scene_nodes.remove(node)
         if scene_nodes:
-            logger().warning(f"{len(scene_nodes)} nodes remaining after node processing.")
+            scene_nodes = [
+                node for node in scene_nodes if isinstance(node, FreeNodeItem)
+            ]
+            if scene_nodes:
+                logger().warning(f"{len(scene_nodes)} free nodes remaining after node processing.")
         # 2. subnets and segments
         scene_segments = \
             [item for item in items if isinstance(item, SegmentItem)]
@@ -324,11 +328,13 @@ class Netlist:
                 "Nodes",
                 ",".join(str(node_id) for node_id in subnet_node_ids)
             )
-            for segment in self._orderedSubnetSegments(subnet):
-                node_id1 = id_by_node[segment.node1()]
-                node_id2 = id_by_node[segment.node2()]
+            for u, v, data in self._graph.subgraph(subnet.nodes).edges(data=True):
+                segment = data["segment"]
                 xw.writeStartElement("Segment")
-                xw.writeAttribute("Nodes", f"{node_id1},{node_id2}")
+                xw.writeAttribute(
+                    "Nodes",
+                    f"{id_by_node[u]},{id_by_node[v]}"
+                )
                 xw.writeEndElement()
                 scene_segments.remove(segment)
             xw.writeEndElement()
@@ -358,6 +364,11 @@ class Netlist:
         node_by_id : dict[int, NodeItem] = {}
         id_by_node : dict[NodeItem, int] = {}
         subnet_xml_id_by_id : dict[int, int] = {}
+        def _recordNode(id : int, node : NodeItem) -> None:
+            if isinstance(node, FreeNodeItem):
+                self._scene.addItem(node)
+            node_by_id[id] = node
+            id_by_node[node] = id
         xr.readNext()
         while not (xr.isEndElement() and xr.name() == "Connectivity"):
             if xr.isStartElement():
@@ -365,10 +376,7 @@ class Netlist:
                 match element_name:
                     case "FreeNode":
                         # create free node
-                        id, pos = FreeNodeItem.fromXml(xr)
-                        node = self._scene.addFreeNode(pos, undoable=False)
-                        node_by_id[id] = node
-                        id_by_node[node] = id
+                        _recordNode(*FreeNodeItem.fromXml(xr))
                     case name if name.endswith("Node") and name != "FreeNode":
                         # validate fixed node
                         id, pos = FixedNodeItem.fromXml(xr)
@@ -376,8 +384,7 @@ class Netlist:
                             item_name = \
                                 item.__class__.__name__.removesuffix("Item")
                             if name == item_name:
-                                node_by_id[id] = item
-                                id_by_node[item] = id
+                                _recordNode(id, item)
                                 break
                         else:
                             logger().warning(f"No {name} found at {pos.x()}, {pos.y()}")
@@ -395,7 +402,17 @@ class Netlist:
                             if xr.isStartElement():
                                 child_name = xr.name()
                                 if child_name == "Segment":
-                                    self._segmentFromXml(xr, node_by_id)
+                                    nodes_str = xr.attributes().value("Nodes")
+                                    node_id1, node_id2 = (
+                                        int(part) for part in nodes_str.split(",")
+                                    )
+                                    node1 = node_by_id.get(node_id1)
+                                    node2 = node_by_id.get(node_id2)
+                                    segment = SegmentItem(node1, node2)
+                                    self._scene.addItem(segment)
+                                    self.addSegment(segment)
+                                    node1.onConnectionChanged()
+                                    node2.onConnectionChanged()
                                 else:
                                     logger().warning(
                                         f"Unexpected Subnet child: {child_name}"
@@ -717,110 +734,6 @@ class Netlist:
             net.suffix = ""
         else:
             net.suffix = next((s for s in suffixes if s != ""), "")
-
-
-    # -- serialisation/deserialisation helpers ------------------------------
-
-    @checked
-    def _orderedSubnetSegments(
-        self: Self,
-        subnet: Subnet,
-    ) -> list["SegmentItem"]:
-        """
-        Order subnet edges so each segment shares a node with the previous one.
-
-        Attempts to find an ordering that corresponds to an Eulerian path in the
-        subgraph (each segment shares exactly one node with the previous). Falls
-        back to arbitrary order (with a warning) if no such chain exists.
-        """
-        edge_list: list[tuple[NodeItem, NodeItem, "SegmentItem"]] = [
-            (u, v, data["segment"])
-            for u, v, data in self._graph.subgraph(subnet.nodes).edges(data=True)
-        ]
-        if not edge_list:
-            return []
-
-        # Fast rejection: >2 odd-degree nodes ⇒ no Eulerian path is possible
-        degree: dict[NodeItem, int] = {}
-        for u, v, _ in edge_list:
-            degree[u] = degree.get(u, 0) + 1
-            degree[v] = degree.get(v, 0) + 1
-        odd_count = sum(1 for d in degree.values() if d % 2 == 1)
-        if odd_count > 2:
-            logger().warning(
-                f"Could not chain segments for subnet {subnet.id}; "
-                "emitting in arbitrary order."
-            )
-            return [seg for _, _, seg in edge_list]
-
-        ordered: list["SegmentItem"] = []
-        remaining = list(edge_list)
-
-        def chain(tip: "NodeItem | None") -> bool:
-            """Backtracking search for a chain that consumes all remaining edges."""
-            if not remaining:
-                return True
-
-            n = len(remaining)
-            for i in range(n):
-                u, v, seg = remaining[i]
-                if tip is None:
-                    next_tips: tuple["NodeItem", ...] = (v, u)
-                elif tip == u:
-                    next_tips = (v,)
-                elif tip == v:
-                    next_tips = (u,)
-                else:
-                    continue
-
-                # O(1) removal via swap-with-last
-                remaining[i], remaining[-1] = remaining[-1], remaining[i]
-                popped = remaining.pop()
-
-                ordered.append(seg)
-                for new_tip in next_tips:
-                    if chain(new_tip):
-                        return True
-
-                # backtrack
-                ordered.pop()
-                remaining.append(popped)
-                remaining[i], remaining[-1] = remaining[-1], remaining[i]
-
-            return False
-
-        if chain(None):
-            return ordered
-
-        logger().warning(
-            f"Could not chain segments for subnet {subnet.id}; "
-            "emitting in arbitrary order."
-        )
-        return [seg for _, _, seg in edge_list]
-
-    @checked
-    def _segmentFromXml(
-        self        : Self,
-        xr          : QXmlStreamReader,
-        node_by_id  : dict[int, NodeItem]
-    ) -> None:
-        nodes_str = xr.attributes().value("Nodes")
-        node_id1, node_id2 = (
-            int(part) for part in nodes_str.split(",")
-        )
-        node1 = node_by_id.get(node_id1)
-        node2 = node_by_id.get(node_id2)
-        if node1 is None:
-            logger().warning(f"Segment node 1 (id {node_id1}) missing")
-            return
-        if node2 is None:
-            logger().warning(f"Segment node 2 (id {node_id2}) missing")
-            return
-        self._scene.addSegment(
-            node1.scenePos(),
-            node2.scenePos(),
-            undoable=False
-        )
 
 # -- misc helpers ------------------------------------------------------
 
