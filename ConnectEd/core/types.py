@@ -104,7 +104,7 @@ class Direction(Enum):
     BI   = "bi"
 
 
-class NetState(Enum):
+class NetKind(Enum):
     UNRESOLVED = "unresolved"
     SCALAR     = "scalar"
     VECTOR     = "vector"

@@ -5,7 +5,7 @@ from PyQt6.QtGui     import QAction
 from PyQt6.QtWidgets import QGraphicsLineItem, QMenu
 
 from ....core.defs  import PITCH
-from ....core.types import NetState, DataKind, AlignH, AlignV, \
+from ....core.types import NetKind, DataKind, AlignH, AlignV, \
                            RectHandleId, TapHandleId
 from ....core.check import checked
 
@@ -73,7 +73,7 @@ class TapItem(
     _line        : QLineF
     _major_node  : TapMajorNodeItem
     _minor_node  : TapMinorNodeItem
-    _state       : NetState
+    _net_kind    : NetKind
     _index_width : float
     _range_width : float
 
@@ -92,7 +92,7 @@ class TapItem(
         self._major_node.setPos(0, 0)
         self._minor_node = TapMinorNodeItem(self)
         self._minor_node.setPos(PITCH, PITCH)
-        self._state = NetState.UNRESOLVED
+        self._net_kind = NetKind.UNRESOLVED
         self._index_width = 15.0  # default fixed width
         self._range_width = -1.0  # auto width
 
@@ -105,7 +105,9 @@ class TapItem(
     def onSceneChanged(self : Self, scene : "DiagramScene | None") -> None:
         if scene is None:
             return
-        self.setPen(scene.resources["Tap"][self._state.value])
+        self.setPen(scene.resources.pen(
+            "Tap", (self._net_kind, self.isSelected()))
+        )
 
     @checked
     def onConnectivityChanged(self : Self) -> None:

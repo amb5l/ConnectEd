@@ -3,20 +3,7 @@
   <Design name="UntitledDesign1">
     <Symbols/>
     <Diagram Name="UntitledDesign1" Sheet_Name="A4 (landscape)" Sheet_Width="1169" Sheet_Height="827" Margin="10" Border="1">
-      <OrGate Output="H" Inputs="HHHHHHH" X="480" Y="160"/>
-      <BufGate Output="L" Input="H" X="350" Y="130"/>
-      <AndGate Output="H" Inputs="HHH" X="410" Y="160"/>
-      <XorGate Output="L" Inputs="LHHHH" X="280" Y="160"/>
       <Line X1="30" Y1="40" X2="100" Y2="70"/>
-      <Ellipse Origin="Middle Center" X="305" Y="60" Width="150" Height="80"/>
-      <Rectangle Origin="Middle Center" X="165" Y="60" Width="90" Height="60"/>
-      <Polyline Closed="False" X="400" Y="90">
-        <Segment X="70" Y="-60"/>
-        <Segment X="120" Y="20"/>
-        <Segment X="170" Y="-60"/>
-        <Segment X="220" Y="-20"/>
-        <Segment X="250" Y="-40"/>
-      </Polyline>
       <Text Text="123&#10;456" X="740" Y="60" Origin="Top Left" AlignH="LEFT" AlignV="TOP"/>
       <Block Origin="Middle Center" X="120" Y="155" Width="80" Height="50">
         <PropertyText Name="Label" Cleat="Top Left" Origin="Bottom Left" AlignH="LEFT" AlignV="TOP"/>
@@ -34,40 +21,68 @@
           <PropertyText Name="Name" Cleat="Name" Origin="Middle Left" AlignH="LEFT" AlignV="TOP"/>
         </BlockPin>
       </Block>
+      <Ellipse Origin="Middle Center" X="305" Y="60" Width="150" Height="80"/>
+      <Polyline Closed="False" X="400" Y="90">
+        <Segment X="70" Y="-60"/>
+        <Segment X="120" Y="20"/>
+        <Segment X="170" Y="-60"/>
+        <Segment X="220" Y="-20"/>
+        <Segment X="250" Y="-40"/>
+      </Polyline>
+      <Rectangle Origin="Middle Center" X="165" Y="60" Width="90" Height="60"/>
       <Text Text="123" X="690" Y="70" Origin="Top Left" AlignH="LEFT" AlignV="TOP"/>
+      <BufGate Output="L" Input="H" X="350" Y="130"/>
+      <XorGate Output="L" Inputs="LHHHH" X="280" Y="160"/>
+      <AndGate Output="H" Inputs="HHH" X="410" Y="160"/>
+      <OrGate Output="H" Inputs="HHHHHHH" X="480" Y="160"/>
+      <Port Name="X[7:0]" Dir="in" X="70" Y="220" Rotation="180">
+        <PropertyText Name="Name" Cleat="Name" Origin="Middle Left" AlignH="LEFT" AlignV="TOP"/>
+      </Port>
       <Connectivity>
         <FixedNode ID="0" X="440.0" Y="190.0"/>
         <FreeNode ID="1" X="360.0" Y="190.0"/>
         <FreeNode ID="2" X="360.0" Y="170.0"/>
         <FixedNode ID="3" X="370.0" Y="170.0"/>
-        <FixedNode ID="4" X="350.0" Y="130.0"/>
-        <FreeNode ID="5" X="360.0" Y="130.0"/>
+        <FreeNode ID="4" X="360.0" Y="130.0"/>
+        <FixedNode ID="5" X="350.0" Y="130.0"/>
         <FreeNode ID="6" X="360.0" Y="150.0"/>
         <FixedNode ID="7" X="370.0" Y="150.0"/>
         <FixedNode ID="8" X="170.0" Y="140.0"/>
         <FixedNode ID="9" X="240.0" Y="140.0"/>
         <FixedNode ID="10" X="240.0" Y="150.0"/>
         <FixedNode ID="11" X="170.0" Y="150.0"/>
-        <Subnet ID="0" Nodes="0,1,3,2">
+        <FreeNode ID="12" X="170.0" Y="220.0"/>
+        <FixedNode ID="13" X="70.0" Y="220.0"/>
+        <FreeNode ID="14" X="170.0" Y="200.0"/>
+        <FreeNode ID="15" X="210.0" Y="200.0"/>
+        <FreeNode ID="16" X="210.0" Y="220.0"/>
+        <Subnet ID="0" Nodes="3,0,1,2">
+          <Segment Nodes="3,2"/>
           <Segment Nodes="0,1"/>
           <Segment Nodes="1,2"/>
-          <Segment Nodes="3,2"/>
         </Subnet>
-        <Subnet ID="1" Nodes="4,7,6,5">
+        <Subnet ID="2" Nodes="6,7,4,5">
+          <Segment Nodes="6,7"/>
+          <Segment Nodes="6,4"/>
           <Segment Nodes="4,5"/>
-          <Segment Nodes="7,6"/>
-          <Segment Nodes="6,5"/>
         </Subnet>
-        <Subnet ID="2" Nodes="8,9">
+        <Subnet ID="3" Nodes="8,9">
           <Segment Nodes="8,9"/>
         </Subnet>
-        <Subnet ID="3" Nodes="10,11">
+        <Subnet ID="4" Nodes="10,11">
           <Segment Nodes="10,11"/>
         </Subnet>
+        <Subnet ID="5" Nodes="12,15,13,14,16">
+          <Segment Nodes="12,13"/>
+          <Segment Nodes="12,14"/>
+          <Segment Nodes="14,15"/>
+          <Segment Nodes="15,16"/>
+        </Subnet>
         <Net Name="" Subnets="0"/>
-        <Net Name="" Subnets="1"/>
-        <Net Name="_B" Subnets="2"/>
-        <Net Name="_C" Subnets="3"/>
+        <Net Name="" Subnets="2"/>
+        <Net Name="_B" Subnets="3"/>
+        <Net Name="_C" Subnets="4"/>
+        <Net Name="X7:0" Subnets="5"/>
       </Connectivity>
     </Diagram>
   </Design>

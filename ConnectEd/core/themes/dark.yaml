@@ -13,13 +13,14 @@ presets:
   FixedNodeUnconnected : '#FFFF00'
   FixedNodeConnected   : '#FFFF00'
   FixedNodeJunction    : '#FF0000'
-  SegmentOrthogonal    : '#004000'
-  SegmentDiagonal      : '#FFFF00'
+  SegmentUnresolved    : '#004000'
+  SegmentScalar        : '#004000'
+  SegmentVector        : '#004000'
   SegmentPreview1      : '#C000C0'
   SegmentPreview2      : '#800080'
   TapUnresolved        : '#404000'
-  TapWire              : '#004000'
-  TapBus               : '#004000'
+  TapScalar            : '#004000'
+  TapVector            : '#004000'
   NetLabel             : '#004040'
   PortPinWire          : '#808080'
   PortPinBus           : '#808080'
@@ -126,14 +127,18 @@ items:
         style : SolidPattern
   Segment:
     line:
-      orthogonal:
-        color : '@SegmentOrthogonal'
+      unresolved:
+        color : '@SegmentUnresolved'
         width : 1
         style : SolidLine
-      diagonal:
-        color : '@FreeNodeUnconnected'
+      scalar:
+        color : '@SegmentScalar'
         width : 1
-        style : DashLine
+        style : SolidLine
+      vector:
+        color : '@SegmentVector'
+        width : 2
+        style : SolidLine
   SegmentPreview1:
     line:
       color : '@SegmentPreview1'
@@ -150,12 +155,12 @@ items:
         color : '@TapUnresolved'
         width : 1
         style : SolidLine
-      wire:
-        color : '@SegmentOrthogonal'
+      scalar:
+        color : '@TapScalar'
         width : 1
         style : SolidLine
-      bus:
-        color : '@SegmentOrthogonal'
+      vector:
+        color : '@TapVector'
         width : 2
         style : SolidLine
   NetLabel:
@@ -419,6 +424,6 @@ properties:
   deleted:
     color : '@PropertyDeleted'
   changed:
-    color : '@TapUnresolved'
+    color : '@PropertyChanged'
   added:
-    color : '@SegmentOrthogonal'
+    color : '@PropertyAdded'

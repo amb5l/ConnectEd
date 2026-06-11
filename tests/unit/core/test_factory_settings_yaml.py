@@ -59,7 +59,7 @@ def test_factory_settings_matches_loader() -> None:
 
 def test_segment_line_style_is_pen_style() -> None:
     style = loadFactorySettings()["themes"]["dark"]["items"]["Segment"]["line"][
-        "orthogonal"
+        "scalar"
     ]["style"]
     assert style == Qt.PenStyle.SolidLine
     assert isinstance(style, Qt.PenStyle)

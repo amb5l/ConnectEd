@@ -16,13 +16,14 @@ class ThemePalette:
     FixedNodeUnconnected : QColor
     FixedNodeConnected   : QColor
     FixedNodeJunction    : QColor
-    SegmentOrthogonal    : QColor
-    SegmentDiagonal      : QColor
+    SegmentUnresolved    : QColor
+    SegmentScalar        : QColor
+    SegmentVector        : QColor
     SegmentPreview1      : QColor
     SegmentPreview2      : QColor
     TapUnresolved        : QColor
-    TapWire              : QColor
-    TapBus               : QColor
+    TapScalar            : QColor
+    TapVector            : QColor
     NetLabel             : QColor
     PortPinWire          : QColor
     PortPinBus           : QColor
@@ -120,13 +121,14 @@ palette_dark = ThemePalette(
     FixedNodeUnconnected = bright_yellow,
     FixedNodeConnected   = bright_yellow,
     FixedNodeJunction    = bright_red,
-    SegmentOrthogonal    = dark_green,
-    SegmentDiagonal      = bright_yellow,
+    SegmentUnresolved    = dark_green,
+    SegmentScalar        = dark_green,
+    SegmentVector        = dark_green,
     SegmentPreview1      = light_magenta,
     SegmentPreview2      = mid_magenta,
     TapUnresolved        = dark_yellow,
-    TapWire              = dark_green,
-    TapBus               = dark_green,
+    TapScalar            = dark_green,
+    TapVector            = dark_green,
     NetLabel             = dark_cyan,
     PortPinWire          = mid_gray,
     PortPinBus           = mid_gray,
@@ -187,13 +189,14 @@ palette_light_mono = ThemePalette(
     FixedNodeUnconnected = black,
     FixedNodeConnected   = black,
     FixedNodeJunction    = black,
-    SegmentOrthogonal    = black,
-    SegmentDiagonal      = bright_yellow,
+    SegmentUnresolved    = black,
+    SegmentScalar        = black,
+    SegmentVector        = black,
     SegmentPreview1      = very_dark_gray,
     SegmentPreview2      = dark_gray,
     TapUnresolved        = black,
-    TapWire              = black,
-    TapBus               = black,
+    TapScalar            = black,
+    TapVector            = black,
     PortPinWire          = black,
     PortPinBus           = black,
     PortArrowLine        = black,

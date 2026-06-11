@@ -8,7 +8,7 @@ from ....app import settings
 
 from ....core.check import checked
 from ....core.defs  import Z_SEGMENT
-from ....core.types import Axis
+from ....core.types import Axis, NetKind
 
 from ..scenes import withScene
 
@@ -41,10 +41,11 @@ class SegmentItem(
     Z = Z_SEGMENT
 
     # instance attributes
-    _node1 : NodeItem | None
-    _node2 : NodeItem | None
-    _line  : QLineF
-    _ortho : bool
+    _node1    : NodeItem | None
+    _node2    : NodeItem | None
+    _line     : QLineF
+    _ortho    : bool
+    _net_kind : NetKind
 
     @checked
     def __init__(
@@ -55,8 +56,9 @@ class SegmentItem(
         QGraphicsLineItem.__init__(self)
         self._node1 = None
         self._node2 = None
-        self._line  = QLineF()
-        self._ortho = True
+        self._line     = QLineF()
+        self._ortho    = True
+        self._net_kind = NetKind.UNRESOLVED
         self.initItem()
         self.setNode1(node1)
         self.setNode2(node2)
@@ -71,14 +73,7 @@ class SegmentItem(
         self.setPos(p1)
         self._line.setP2(p2 - p1)
         self.setLine(self._line)
-        ortho = self._line.dx() == 0 or self._line.dy() == 0
-        if ortho != self._ortho:
-            self._ortho = ortho
-            scene = self.scene()
-            if scene is not None:
-                self._updatePen(scene)
-        else:
-            self._ortho = ortho
+        self._ortho = self._line.dx() == 0 or self._line.dy() == 0
 
     def node1(self : Self) -> NodeItem | None:
         return self._node1
@@ -110,6 +105,28 @@ class SegmentItem(
         elif self._node2 is node:
             return self._node1
         return None
+
+    def netKind(self : Self) -> NetKind:
+        return self._net_kind
+
+    @withScene
+    def onConnectivityChanged(
+        self  : Self,
+        scene : "DrawingScene | None" = None,
+    ) -> None:
+        if not hasattr(scene, "netlist"):
+            return
+        kind = scene.netlist.netKindForSegment(self)
+        if kind == self._net_kind:
+            return
+        self._net_kind = kind
+        self._updatePen(scene)
+
+    @withScene
+    def onSceneChanged(self : Self, scene : "DrawingScene | None") -> None:
+        if scene is not None and hasattr(scene, "netlist"):
+            self._net_kind = scene.netlist.netKindForSegment(self)
+        ItemPresentationMixin.onSceneChanged(self, scene)
 
     def isOrthogonal(self : Self) -> bool:
         return self._ortho
@@ -178,11 +195,8 @@ class SegmentItem(
             self._subscribeNode(node)
         self.onGeometryChanged()
 
-    def _penKey(self : Self) -> tuple[bool, bool]:
-        return (self.isDiagonal(), self.isSelected())
-
-    def _penKeyDefault(self : Self) -> tuple[bool, bool]:
-        return (False, False)
+    def _penKey(self : Self) -> tuple[NetKind, bool]:
+        return (self._net_kind, self.isSelected())
 
 
 # TODO link to settings/resources

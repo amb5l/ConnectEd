@@ -7,7 +7,7 @@ from PyQt6.QtCore import QXmlStreamReader, QXmlStreamWriter
 
 from .....app import logger
 
-from .....core.types import Direction
+from .....core.types import Direction, NetKind
 from .....core.expr  import evaluate
 from .....core.check import checked
 
@@ -96,6 +96,21 @@ class Netlist:
     def nodeSubnet(self : Self, node : NodeItem) -> Subnet | None:
         subnet_id = self._node2subnet.get(node, None)
         return None if subnet_id is None else self._subnets[subnet_id]
+
+    @checked
+    def netKindForSegment(self : Self, seg : SegmentItem) -> NetKind:
+        node = seg.node1() or seg.node2()
+        if node is None:
+            return NetKind.UNRESOLVED
+        subnet = self.nodeSubnet(node)
+        if subnet is None:
+            return NetKind.UNRESOLVED
+        net = subnet.net
+        if net is not None and net.suffix is not None:
+            return _netKindFromSuffix(net.suffix)
+        if subnet.suffix is not None:
+            return _netKindFromSuffix(subnet.suffix)
+        return NetKind.UNRESOLVED
 
     @checked
     def nodeNet(self : Self, node : NodeItem) -> Net | None:
@@ -240,7 +255,7 @@ class Netlist:
             self._addNodesToSubnet(subnet1, node2)
             self._resolveSubnet(subnet1)
         elif subnet1 is subnet2:
-            return
+            pass
         else:
             subnet1.nodes |= subnet2.nodes
             for node in subnet2.nodes:
@@ -248,6 +263,9 @@ class Netlist:
             self._detachSubnetFromNet(subnet2)
             self._subnets.pop(subnet2.id, None)
             self._resolveSubnet(subnet1)
+        subnet = self.nodeSubnet(node1)
+        if subnet is not None:
+            self._refreshSegments([subnet])
 
     @checked
     def removeSegment(self : Self, node1 : NodeItem, node2 : NodeItem) -> None:
@@ -265,6 +283,9 @@ class Netlist:
             subnet2 = self._newSubnet(nodes2)
             self._resolveSubnet(subnet1)
             self._resolveSubnet(subnet2)
+            self._refreshSegments([subnet1, subnet2])
+        elif subnet1 is not None:
+            self._refreshSegments([subnet1])
         self._dropIsolated(node1)
         self._dropIsolated(node2)
 
@@ -554,9 +575,26 @@ class Netlist:
         subnets : Subnet | list[Subnet] | set[Subnet]
     ) -> None:
         if isinstance(subnets, Subnet):
-            subnets = [subnets]
-        for subnet in subnets:
+            subnet_list = [subnets]
+        else:
+            subnet_list = list(subnets)
+        for subnet in subnet_list:
             self._resolveSubnet(subnet)
+        self._refreshSegments(subnet_list)
+
+    @checked
+    def _refreshSegments(
+        self    : Self,
+        subnets : list[Subnet],
+    ) -> None:
+        seen : set[SegmentItem] = set()
+        for subnet in subnets:
+            for node in subnet.nodes:
+                for seg in self.nodeSegments(node):
+                    if seg in seen:
+                        continue
+                    seen.add(seg)
+                    seg.onConnectivityChanged()
 
     @checked
     def _resolveSubnet(
@@ -736,6 +774,15 @@ class Netlist:
             net.suffix = next((s for s in suffixes if s != ""), "")
 
 # -- misc helpers ------------------------------------------------------
+
+@checked
+def _netKindFromSuffix(suffix : str | None) -> NetKind:
+    if suffix is None:
+        return NetKind.UNRESOLVED
+    if ":" in suffix:
+        return NetKind.VECTOR
+    return NetKind.SCALAR
+
 
 @checked
 def _baseNameAndSuffix(full_name : str) -> tuple[str, str]:

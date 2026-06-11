@@ -5,7 +5,8 @@ from PyQt6.QtGui  import QPainterPath, QPen
 
 from .....app import settings
 
-from .....core.defs import PITCH
+from .....core.defs  import PITCH
+from .....core.types import NetKind
 
 from ...items.node import NodeState
 
@@ -32,16 +33,15 @@ class DiagramSceneResources(DrawingSceneResources):
         super().update()
         # Segment
         self._pens["Segment"] = {}
-        for diagonal in [False, True]:
-            settings_path = "theme/items/Segment/line/" \
-                f"{'diagonal' if diagonal else 'orthogonal'}"
+        for kind in NetKind:
+            settings_path = f"theme/items/Segment/line/{kind.value}"
             pen_normal, pen_selected = self._getPens(
                 "Segment",
                 settings_path,
                 cap_style=Qt.PenCapStyle.RoundCap,
             )
-            self._pens["Segment"][(diagonal, False)] = pen_normal
-            self._pens["Segment"][(diagonal, True)]  = pen_selected
+            self._pens["Segment"][(kind, False)] = pen_normal
+            self._pens["Segment"][(kind, True)]  = pen_selected
         # GateRound
         self._pens["GateRound"] = {}
         self._brushes["GateRound"] = {}
@@ -95,12 +95,13 @@ class DiagramSceneResources(DrawingSceneResources):
         # tap pen and line
         settings_path = "theme/items/Tap"
         self._pens["Tap"] = {}
-        self._pens["Tap"][False] = self._getPens(
-            "Tap", f"{settings_path}/line/wire"
-        )
-        self._pens["Tap"][True] = self._getPens(
-            "Tap", f"{settings_path}/line/bus"
-        )
+        for kind in NetKind:
+            pen_normal, pen_selected = self._getPens(
+                "Tap",
+                f"{settings_path}/line/{kind.value}",
+            )
+            self._pens["Tap"][(kind, False)] = pen_normal
+            self._pens["Tap"][(kind, True)]  = pen_selected
         self._lines["Tap"] = QLineF(0, 0, PITCH, PITCH)
         # SegmentPreview1 and SegmentPreview2
         self._pens["SegmentPreview1"] = self._getPen(
