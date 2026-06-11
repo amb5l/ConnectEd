@@ -57,12 +57,23 @@ def _formatMapping(
     _flushLeaves(lines, indent, leaf_run)
 
 
-def _formatPresets(presets : dict[str, Any]) -> list[str]:
-    width = max(len(name) for name in presets)
-    lines = ["presets:"]
-    for name, value in presets.items():
+def _formatAlignedBlock(
+    block_name : str,
+    entries    : dict[str, Any],
+) -> list[str]:
+    width = max(len(name) for name in entries)
+    lines = [f"{block_name}:"]
+    for name, value in entries.items():
         lines.append(f"  {name:<{width}} : {_yamlScalar(value)}")
     return lines
+
+
+def _formatPalette(palette : dict[str, Any]) -> list[str]:
+    return _formatAlignedBlock("palette", palette)
+
+
+def _formatPresets(presets : dict[str, Any]) -> list[str]:
+    return _formatAlignedBlock("presets", presets)
 
 
 def formatThemeDoc(doc : dict[str, Any]) -> str:
@@ -74,11 +85,13 @@ def formatThemeDoc(doc : dict[str, Any]) -> str:
     for name, value in meta.items():
         lines.append(f"  {name:<{meta_width}} : {_yamlScalar(value)}")
 
+    if "palette" in doc:
+        lines.extend(_formatPalette(doc["palette"]))
     lines.extend(_formatPresets(doc["presets"]))
 
     root_leaves : list[tuple[str, Any]] = []
     for name, value in doc.items():
-        if name in ("meta", "presets"):
+        if name in ("meta", "palette", "presets"):
             continue
         if isinstance(value, dict):
             _flushLeaves(lines, 0, root_leaves)

@@ -8,11 +8,56 @@ from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QColor
 
 from ..check import checked
-from .schema import validatePresets
+from .schema import (
+    validatePalette,
+    validatePresetSources,
+    validatePresets,
+)
 
 
 BUILTIN_THEMES : tuple[str, ...] = ("dark", "light_mono")
 THEME_NAMES    : frozenset[str]   = frozenset(BUILTIN_THEMES)
+
+
+@checked
+def resolvePresets(
+    presets : dict[str, str],
+    palette : dict[str, str],
+    theme   : str,
+) -> dict[str, str]:
+    resolved : dict[str, str] = {}
+    pending  = dict(presets)
+    while pending:
+        progress = False
+        for name, value in list(pending.items()):
+            if value.startswith("#"):
+                resolved[name] = value
+                del pending[name]
+                progress = True
+                continue
+            if value.startswith("@"):
+                token = value[1:]
+                if token not in resolved:
+                    continue
+                resolved[name] = resolved[token]
+                del pending[name]
+                progress = True
+                continue
+            if value in palette:
+                resolved[name] = palette[value]
+                del pending[name]
+                progress = True
+                continue
+            raise ValueError(
+                f"Theme {theme!r} preset {name!r} must be #RRGGBB, "
+                f"@Preset, or a palette name, got {value!r}"
+            )
+        if not progress:
+            names = sorted(pending)
+            raise ValueError(
+                f"Theme {theme!r} unresolved preset references: {names}"
+            )
+    return resolved
 
 
 @checked
@@ -94,10 +139,21 @@ def loadTheme(
             f"Theme file {yaml_path}: meta.id {tid!r} != expected {theme_id!r}"
         )
 
+    palette = doc.pop("palette", None)
+    if palette is None:
+        palette_str : dict[str, str] = {}
+    elif not isinstance(palette, dict):
+        raise ValueError(f"Theme {tid!r} palette block must be a mapping")
+    else:
+        palette_str = {str(k): str(v) for k, v in palette.items()}
+        validatePalette(tid, palette_str)
+
     presets = doc.pop("presets", None)
     if not isinstance(presets, dict):
         raise ValueError(f"Theme {tid!r} missing presets block")
     presets_str = {str(k): str(v) for k, v in presets.items()}
+    validatePresetSources(tid, presets_str, frozenset(palette_str))
+    presets_str = resolvePresets(presets_str, palette_str, tid)
     validatePresets(tid, presets_str)
 
     tree = coerceTheme(doc, presets_str, tid)

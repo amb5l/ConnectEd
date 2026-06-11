@@ -2,7 +2,6 @@ from PyQt6.QtCore import QPointF, QSizeF, Qt
 from PyQt6.QtGui import QColor
 
 from ConnectEd.core.defs import DEFS
-from ConnectEd.core.palette import palette_dark
 from ConnectEd.core.settings import FACTORY_SETTINGS, Settings, loadFactorySettings
 from ConnectEd.core.themes import BUILTIN_THEMES, THEME_NAMES, resolveColor
 
@@ -23,7 +22,7 @@ def test_theme_token_resolves_to_palette_color() -> None:
     settings = loadFactorySettings()
     bg = settings["themes"]["dark"]["background"]
     assert isinstance(bg, QColor)
-    assert bg == palette_dark.Background
+    assert bg == QColor("#000000")
 
 
 def test_resolve_color_inline_hex() -> None:
@@ -45,12 +44,14 @@ def test_runtime_defaults() -> None:
 
 
 def test_settings_get_smoke() -> None:
+    factory = loadFactorySettings()
     store = Settings()
     assert store.get("display/theme") == "dark"
     assert isinstance(store.get("defaults/extents"), QSizeF)
     block_color = store.get("theme/items/BlockName/text/color")
     assert isinstance(block_color, QColor)
-    assert block_color == palette_dark.BlockName
+    expected = factory["themes"]["dark"]["items"]["BlockName"]["text"]["color"]
+    assert block_color == expected
 
 
 def test_factory_settings_matches_loader() -> None:
