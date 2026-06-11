@@ -198,7 +198,8 @@ class DiagramMoveInteraction(PreviewStateMixin, DiagramItemsInteraction):
         # get final offset
         offset = pos - self._ipos
         if offset == QPointF(0, 0):
-            return True # no change so skip command push
+            self._cancel()
+            return True  # no change so skip command push
         items = self._items
         # revert movement preview;
         # undo rubber replacements/additions and segment floatations
