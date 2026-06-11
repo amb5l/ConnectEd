@@ -52,6 +52,9 @@ class ItemLocMixin:
             # autoflip now that the pin has a parent and scene chain.
             self.onRotationChanged(self.rotation())
             self.onMirrorChanged()
+        if parent is not None and (scene := self.scene()) is not None \
+        and hasattr(self, "onSceneChanged"):
+            self.onSceneChanged(scene)
 
     def onRotationChanged(self : Self | QGraphicsItem, _angle : float) -> None:
         """Propagate rotation change to children."""

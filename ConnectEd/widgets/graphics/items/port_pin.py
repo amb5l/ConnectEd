@@ -127,6 +127,8 @@ class PortPinMixin(
         self._updateArrowPath(scene)
         self._updateArrowPenBrush(scene)
         self._updateNameHandle()
+        for handle in self._handles.values():
+            handle.onSceneRotationChanged()
 
     @checked
     def onSelectionChanged(self : Self, selected : bool) -> None:
