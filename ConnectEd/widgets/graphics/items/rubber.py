@@ -284,11 +284,6 @@ class RubberJogItem(RubberItem):
         self._lane = lane
         # initialise position and path
         self.setPos(static_spos)
-        path = QPainterPath()
-        path.moveTo(0, 0)
-        path.lineTo(0, 0)
-        path.lineTo(0, 0)
-        path.lineTo(0, 0)
         self.updatePath()
 
     @checked
@@ -304,7 +299,18 @@ class RubberJogItem(RubberItem):
         ss = self._static.scenePos()  # not self.scenePos() (self not in scene)
         ms = self._mobile.scenePos()
         d = ms.y() - ss.y() if self._axis == Axis.H else ms.x() - ss.x()
-        return Polarity.POS if d > 0 else Polarity.NEG if d < 0 else None
+        return Polarity.POS if d >= 0 else Polarity.NEG
+
+    @checked
+    def inlineSpan(self : Self) -> tuple[float, float]:
+        """Scene-coordinate endpoints of the jog along its inline axis."""
+        ss = self._static.scenePos()
+        ms = self._mobile.scenePos()
+        if self._axis == Axis.H:
+            lo, hi = ss.x(), ms.x()
+        else:
+            lo, hi = ss.y(), ms.y()
+        return (min(lo, hi), max(lo, hi))
 
     @checked
     def inlineDistance(self : Self) -> float:
@@ -380,20 +386,22 @@ class RubberJogItem(RubberItem):
         sx = static_spos.x()
         sy = static_spos.y()
         mobile_spos = self._mobile.scenePos()
-        mx = mobile_spos.x()
-        my = mobile_spos.y()
-        path = self.path()
-        path.setElementPositionAt(0, 0, 0)
+        dx = mobile_spos.x() - sx
+        dy = mobile_spos.y() - sy
+        path = QPainterPath()
+        path.moveTo(0, 0)
         if self.isStraight() or self.isDegenerate():
-            path.setElementPositionAt(1, 0, 0)
-            path.setElementPositionAt(2, 0, 0)
+            path.lineTo(dx, dy)
         elif self._axis == Axis.H:
             jog_x = self._lane - sx
-            path.setElementPositionAt(1, jog_x, 0)
-            path.setElementPositionAt(2, jog_x, my - sy)
+            path.lineTo(jog_x, 0)
+            path.lineTo(jog_x, dy)
+            path.lineTo(dx, dy)
         elif self._axis == Axis.V:
             jog_y = self._lane - sy
-            path.setElementPositionAt(1, 0, jog_y)
-            path.setElementPositionAt(2, mx - sx, jog_x)
-        path.setElementPositionAt(3, mx - sx, my - sy)
+            path.lineTo(0, jog_y)
+            path.lineTo(dx, jog_y)
+            path.lineTo(dx, dy)
+        else:
+            path.lineTo(dx, dy)
         self.setPath(path)

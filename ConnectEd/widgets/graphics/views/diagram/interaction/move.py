@@ -32,6 +32,35 @@ if TYPE_CHECKING:
 MIN_JOG = 2  # pixels
 
 
+def _staircaseReverse(
+    axis   : Axis,
+    inline : Polarity,
+    across : Polarity,
+) -> bool:
+    """
+    True when lane indices should run opposite to ascending across-center order.
+
+    For horizontal jogs (inline along X), wires that bend downward need the
+    upper static endpoint on the outer lane; wires bending upward need it on the
+    inner lane. Vertical jogs mirror the same rule on Y.
+    """
+    return (axis == Axis.H) == (inline == across)
+
+
+def _jogsShareStaircase(j1 : RubberJogItem, j2 : RubberJogItem) -> bool:
+    """
+    True when two jogs route in parallel along the same inline span and need
+    separated lanes even if their preview bounds do not yet intersect.
+    """
+    if j1.axis() != j2.axis():
+        return False
+    if j1.inlinePolarity() != j2.inlinePolarity():
+        return False
+    s1 = j1.inlineSpan()
+    s2 = j2.inlineSpan()
+    return s1[0] < s2[1] and s2[0] < s1[1]
+
+
 class DiagramMoveInteraction(PreviewStateMixin, DiagramItemsInteraction):
     """
     Full-blown move with rubber band support. Uses private undo stack.
@@ -97,7 +126,7 @@ class DiagramMoveInteraction(PreviewStateMixin, DiagramItemsInteraction):
                     pin_parent = pin.parentItem()
                     return pin_parent in item_set
             elif isinstance(node, FreeNodeItem):
-                return item in item_set
+                return node in item_set
             return False
         for item in item_set:
             # skip nodes (free nodes are handled in segment logic below)
@@ -295,13 +324,14 @@ class DiagramMoveInteraction(PreviewStateMixin, DiagramItemsInteraction):
             node:            Mobile node.
             axis:            Jog inline axis (optional).
         """
+        def _recordRubberSeg(segment : SegmentItem) -> None:
+            if segment not in self._rubber_segs:
+                self._rubber_segs.append(segment)
+
         if isinstance(segment_or_static, SegmentItem):
             segment = segment_or_static
             static  = segment.otherNode(mobile)
             if isinstance(static, FreeNodeItem):
-                def _recordRubberSeg(segment : SegmentItem) -> None:
-                    if segment not in self._rubber_segs:
-                        self._rubber_segs.append(segment)
                 # TODO: should never get here with degree == 1, but handle it anyway
                 if static.degree() == 2:
                     s1, s2 = static.segments()
@@ -319,8 +349,9 @@ class DiagramMoveInteraction(PreviewStateMixin, DiagramItemsInteraction):
             else:
                 cmd = CmdMovePreviewRubberJog(segment, mobile)
                 self._undo_stack.push(cmd)
-                self._rubbers.append(cmd.rubber())
-                self._rubber_jogs.append(cmd.rubber())
+                rubber = cmd.rubber()
+                self._rubbers.append(rubber)
+                self._rubber_jogs.append(rubber)
                 _recordRubberSeg(segment)
         elif isinstance(segment_or_static, NodeItem):
             static = segment_or_static
@@ -386,7 +417,8 @@ class DiagramMoveInteraction(PreviewStateMixin, DiagramItemsInteraction):
                     continue
                 if jog2.axis() != jog1.axis():
                     continue
-                if _conflict(rect1, jog_rects[jog2], jog1.axis()):
+                if _jogsShareStaircase(jog1, jog2) or \
+                   _conflict(rect1, jog_rects[jog2], jog1.axis()):
                     group.append(jog2)
                     processed.add(jog2)
             groups.append(group)
@@ -408,23 +440,15 @@ class DiagramMoveInteraction(PreviewStateMixin, DiagramItemsInteraction):
             if len(group) <= 1:
                 continue
 
-            # classify + spatial sort key
+            group_axis = group[0].axis()
             quad_to_jogs: dict[tuple[Polarity, Polarity], list[RubberJogItem]] = {}
-            jog_quad: dict[RubberJogItem, tuple[ Polarity, Polarity]] = {}
             jog_across_center: dict[RubberJogItem, float] = {}
 
             for jog in group:
                 q = (jog.inlinePolarity(), jog.acrossPolarity())
-                jog_quad[jog] = q
                 jog_across_center[jog] = jog.acrossCenter()
                 quad_to_jogs.setdefault(q, []).append(jog)
 
-            # sort inside each quadrant by across position → cascading staircases
-            for jogs in quad_to_jogs.values():
-                jogs.sort(key=lambda j: jog_across_center[j])
-
-            # order quadrants spatially (keeps "i+a- block then i+a+ block" coherent)
-            # using lambda avoids the "does not bind loop variable" checker warning
             ordered_quads = sorted(
                 quad_to_jogs.keys(),
                 key=lambda q: (
@@ -434,35 +458,32 @@ class DiagramMoveInteraction(PreviewStateMixin, DiagramItemsInteraction):
                 ),
             )
 
-            # final ordered list: same-quadrant jogs stay together + spatially ordered
-            ordered_jogs: list[RubberJogItem] = []
             for q in ordered_quads:
-                ordered_jogs.extend(quad_to_jogs[q])
+                jogs = quad_to_jogs[q]
+                jogs.sort(key=lambda j: jog_across_center[j])
+                n = len(jogs)
+                if n <= 1:
+                    continue
 
-            n = len(ordered_jogs)
-            if n <= 1:
-                continue
+                reverse = _staircaseReverse(group_axis, q[0], q[1])
+                prefs = [j.prefLane() for j in jogs]
+                base = sum(prefs) / n
+                total_grid_span = (n - 1) * PITCH
+                room = min(j.inlineDistance() for j in jogs)
+                margin = 2 * PITCH
 
-            prefs = [j.preferredLane() for j in ordered_jogs]
-            base = sum(prefs) / n
-            total_grid_span = (n - 1) * PITCH
-
-            # available room heuristic
-            room = min(j.inlineDistance() for j in ordered_jogs)
-            margin = 2 * PITCH
-
-            if total_grid_span > room - margin:
-                # fallback: even arithmetic distribution in observed preferred span
-                min_p = min(prefs)
-                max_p = max(prefs)
-                step = (max_p - min_p) / (n - 1) if n > 1 and max_p > min_p else 0.0
-                for i, jog in enumerate(ordered_jogs):
-                    jog.setLane(min_p + i * step)
-            else:
-                # nice grid placement, centered on group
-                start = round((base - total_grid_span / 2) / PITCH) * PITCH
-                for i, jog in enumerate(ordered_jogs):
-                    jog.setLane(start + i * PITCH)
+                if total_grid_span > room - margin:
+                    min_p = min(prefs)
+                    max_p = max(prefs)
+                    step = (max_p - min_p) / (n - 1) if n > 1 and max_p > min_p else 0.0
+                    for i, jog in enumerate(jogs):
+                        j = (n - 1 - i) if reverse else i
+                        jog.setLane(min_p + j * step)
+                else:
+                    start = round((base - total_grid_span / 2) / PITCH) * PITCH
+                    for i, jog in enumerate(jogs):
+                        j = (n - 1 - i) if reverse else i
+                        jog.setLane(start + j * PITCH)
 
         # --- 5. final path update for everyone ---------------------------------
         for jog in self._rubber_jogs:
