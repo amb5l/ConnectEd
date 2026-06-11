@@ -4,7 +4,7 @@ For movement rubber banding preview only.
 
 from typing import Self, Any, overload
 
-from PyQt6.QtCore    import QLineF
+from PyQt6.QtCore    import QLineF, QPointF
 from PyQt6.QtWidgets import QGraphicsPathItem, QGraphicsItem
 from PyQt6.QtGui     import QPainterPath
 
@@ -50,10 +50,7 @@ class RubberItem(QGraphicsPathItem):
         self.setPen(scene.resources.pen(self.resourcesName()))
 
     def geometry(self : Self) -> list[QLineF]:
-        origin = self._static.scenePos()  # not self.scenePos(); item may be off-scene
-        ox     = origin.x()
-        oy     = origin.y()
-        path   = self.path()
+        path = self.path()
         points : list[tuple[float, float]] = [
             (path.elementAt(i).x, path.elementAt(i).y)
             for i in range(path.elementCount())
@@ -62,7 +59,9 @@ class RubberItem(QGraphicsPathItem):
         for (x0, y0), (x1, y1) in zip(points[:-1], points[1:], strict=False):
             if (x0, y0) == (x1, y1):
                 continue
-            segs.append(QLineF(x0 + ox, y0 + oy, x1 + ox, y1 + oy))
+            p0 = self.mapToScene(QPointF(x0, y0))
+            p1 = self.mapToScene(QPointF(x1, y1))
+            segs.append(QLineF(p0, p1))
         return segs
 
 
@@ -73,8 +72,8 @@ class RubberTeeItem(RubberItem):
     """
 
     # instance attributes
-    _perp_lo   : float     # perpendicular segment lower coordinate
-    _perp_hi   : float     # perpendicular segment upper coordinate
+    _perp_lo   : float  # perpendicular segment lower coordinate
+    _perp_hi   : float  # perpendicular segment upper coordinate
 
     @checked
     def __init__(
@@ -88,65 +87,70 @@ class RubberTeeItem(RubberItem):
         self._static = segment.otherNode(node)
         self._mobile = node
         # positioning
-        node_spos = node.scenePos()
-        junc_spos = segment.otherNode(node).scenePos()
+        junc_node = segment.otherNode(node)
+        junc_spos = junc_node.scenePos()
         self.setPos(junc_spos)  # this item origin lies on junction
-        # initialise path
-        path = QPainterPath()
-        path.moveTo(0, 0)  # initially redundant, may change later
-        path.lineTo(0, 0)  # initially redundant, may change later
-        path.lineTo(node_spos - junc_spos)
-        self.setPath(path)
         # build perpendicular segment
         axis = segment.axis()
         self._axis = axis
         perp_p1 = junc_spos
         perp_p2 = perp_p1
-        junc_segs = node.segments()
-        for perp_seg in junc_segs:
-            seg_axis = perp_seg.axis()
-            if seg_axis is None or seg_axis == ~axis:
+        junc_segs = junc_node.segments()
+        for junc_seg in junc_segs:
+            if junc_seg is segment:
                 continue
-            new_p = perp_seg.otherNode(node).scenePos()
+            junc_seg_axis = junc_seg.axis()
+            if junc_seg_axis is None or junc_seg_axis == axis:
+                continue
+            new_p = junc_seg.otherNode(junc_node).scenePos()
             # update perp_p1 or perp_p2
             lx = QLineF(perp_p1, perp_p2).length()  # existing perp path length
             l1 = QLineF(new_p, perp_p2).length()    # length if perp_p1 => new_p
             l2 = QLineF(perp_p1, new_p).length()    # length if perp_p2 => new_p
             if l1 > lx or l2 > lx:
-                perp_p1, perp_p2 = new_p, perp_p2 if l1 > l2 else new_p, perp_p2
+                perp_p1, perp_p2 = \
+                    (new_p, perp_p2) if l1 > l2 else (perp_p1, new_p)
         self._perp_seg = QLineF(perp_p1, perp_p2)
+        if axis == Axis.H:
+            self._perp_lo = min(perp_p1.y(), perp_p2.y())
+            self._perp_hi = max(perp_p1.y(), perp_p2.y())
+        elif axis == Axis.V:
+            self._perp_lo = min(perp_p1.x(), perp_p2.x())
+            self._perp_hi = max(perp_p1.x(), perp_p2.x())
         # subscribe to node scene position changes
         node.subscribe("scenePos", self, "onGeometryChanged")
+        # initialise path
+        self.onGeometryChanged()
 
+    @checked
     def onGeometryChanged(self : Self) -> None:
-        # update path
-        path = self.path()
-        node_spos = self._mobile.scenePos()
-        node_pos = node_spos - self.pos()
+        node_pos = self._mobile.scenePos() - self.pos()
+        x        = node_pos.x()
+        y        = node_pos.y()
+        lo       = self._perp_lo
+        hi       = self._perp_hi
+        path     = QPainterPath()
         if self._axis == Axis.H:
-            y = node_pos.y()
-            if y < self._perp_lo or y > self._perp_hi:
-                # leader from existing perpendicular segment is required
-                leader_y = self._perp_lo if y < self._perp_lo else self._perp_hi
-                path.setElementPositionAt(0, 0, leader_y)  # moveTo
-                path.setElementPositionAt(1, 0, y)         # lineTo
+            sy = self._mobile.scenePos().y()
+            if sy < lo or sy > hi:
+                leader_y = (lo if sy < lo else hi) - self.pos().y()
+                path.moveTo(0, leader_y)
+                path.lineTo(0, y)
             else:
-                # no leader
-                path.setElementPositionAt(0, 0, y)  # moveTo
-                path.setElementPositionAt(1, 0, y)  # lineTo
-            path.setElementPositionAt(2, node_pos.x(), y)  # lineTo
+                path.moveTo(0, y)
+            path.lineTo(x, y)
         elif self._axis == Axis.V:
-            x = node_pos.x()
-            if x < self._perp_lo or x > self._perp_hi:
-                # leader from existing perpendicular segment is required
-                leader_x = self._perp_lo if x < self._perp_lo else self._perp_hi
-                path.setElementPositionAt(0, leader_x, 0)  # moveTo
-                path.setElementPositionAt(1, x, 0)         # lineTo
+            sx = self._mobile.scenePos().x()
+            if sx < lo or sx > hi:
+                leader_x = (lo if sx < lo else hi) - self.pos().x()
+                path.moveTo(leader_x, 0)
+                path.lineTo(x, 0)
             else:
-                # no leader
-                path.setElementPositionAt(0, x, 0)  # moveTo
-                path.setElementPositionAt(1, x, 0)  # lineTo
-            path.setElementPositionAt(2, x, node_pos.y())  # lineTo
+                path.moveTo(x, 0)
+            path.lineTo(x, y)
+        else:
+            path.moveTo(0, 0)
+            path.lineTo(x, y)
         self.setPath(path)
 
 
