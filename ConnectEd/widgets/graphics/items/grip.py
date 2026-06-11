@@ -84,7 +84,13 @@ class GripItem(
         return self.handle().parentItem()
 
     @checked
-    def moveBy(self : Self, delta : QPointF) -> None:
+    def moveBy(
+        self   : Self,
+        dx_d   : float | QPointF,
+        dy     : float | None = None
+    ) -> None:
+        delta = dx_d if isinstance(dx_d, QPointF) \
+            else QPointF(dx_d, dy if dy is not None else 0.0)
         item : "ItemHandlesMixin" = self.item()
         item.moveHandleBy(self.handle().id(), delta)
 

@@ -1,6 +1,6 @@
 import uuid
 
-from typing import Self
+from typing import Self, overload
 
 from PyQt6.QtCore    import QPointF
 from PyQt6.QtWidgets import QGraphicsItem
@@ -34,7 +34,31 @@ class ItemMoveMixin:
 
     @checked
     def moveRestore(self : Self | QGraphicsItem, pos : QPointF) -> None:
-        self.moveBy(pos - self.scenePos())
+        """Restore a saved scene position (from moveSave)."""
+        parent = self.parentItem()
+        if parent is None:
+            self.setPos(pos)
+        else:
+            self.setPos(parent.mapFromScene(pos))
+
+    @overload
+    def moveBy(self : Self | QGraphicsItem, dx : float, dy : float) -> None:
+        ...
+
+    @overload
+    def moveBy(self : Self | QGraphicsItem, d : QPointF) -> None:
+        ...
+
+    @checked
+    def moveBy(
+        self   : Self | QGraphicsItem,
+        dx_d   : float | QPointF,
+        dy     : float | None = None
+    ) -> None:
+        """Move by scene offset (no parent-scene rotation adjustment)."""
+        dx = dx_d.x() if isinstance(dx_d, QPointF) else dx_d
+        dy = dx_d.y() if isinstance(dx_d, QPointF) else dy
+        QGraphicsItem.moveBy(self, dx, dy)
 
 
 class ItemMixin(ItemNamesMixin, ItemMoveMixin):
@@ -97,7 +121,7 @@ class ItemMixin(ItemNamesMixin, ItemMoveMixin):
 
     @checked
     def restorePos(self : Self | QGraphicsItem, pos : QPointF) -> None:
-        self.setPos(pos - self.scenePos())
+        self.moveRestore(pos)
 
     def topParentItem(self : Self | QGraphicsItem) -> QGraphicsItem | None:
         item = self.parentItem()

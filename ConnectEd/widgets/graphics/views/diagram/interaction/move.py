@@ -100,11 +100,9 @@ class DiagramMoveInteraction(PreviewStateMixin, DiagramItemsInteraction):
                 return item in item_set
             return False
         for item in item_set:
-            # handle nodes
-            # include free nodes, ignore others
+            # skip nodes (free nodes are handled in segment logic below)
             if isinstance(item, NodeItem):
-                if isinstance(item, FreeNodeItem):
-                    filtered_items.append(item)
+                continue
             # handle segments
             # include those whose nodes are both in the item set,
             # and those with 1 or 2 static unconnected nodes;
@@ -172,6 +170,14 @@ class DiagramMoveInteraction(PreviewStateMixin, DiagramItemsInteraction):
                     parent = parent.parentItem()
                 else:
                     filtered_items.append(item)
+        # deduplicate items
+        seen : set[ItemType] = set()
+        unique_items : list[ItemType] = []
+        for item in filtered_items:
+            if item not in seen:
+                seen.add(item)
+                unique_items.append(item)
+        filtered_items = unique_items
         # complete interaction initialization
         super().__init__(view, filtered_items)
         # save initial positions
@@ -199,19 +205,18 @@ class DiagramMoveInteraction(PreviewStateMixin, DiagramItemsInteraction):
         if offset == QPointF(0, 0):
             self._cancel()
             return True  # no change so skip command push
-        items = self._items
-        # revert movement preview;
-        # undo rubber replacements/additions and segment floatations
+        # revert preview movement, undo rubber/float operations
         self._cancel()
         # for segments to be moved (not rubberized):
         # - record line geometry for later recreation after applying offset
         # - record instances for later deletion
         # - remove from item set along with any free nodes
+        items = list(self._items)  # local copy
         segments_to_recreate : list[QLineF] = []
         segments_to_delete : list[SegmentItem] = []
-        for item in items:
+        for item in list(items):  # iterate over copy of copy (b/c mutation)
             if isinstance(item, SegmentItem):
-                segments_to_recreate.append(item.line())
+                segments_to_recreate.append(item.sceneLine())
                 segments_to_delete.append(item)
                 node1 = item.node1()
                 node2 = item.node2()
@@ -254,10 +259,15 @@ class DiagramMoveInteraction(PreviewStateMixin, DiagramItemsInteraction):
         Move all items by the specified offset.
         """
         for item in self._items:
+            if isinstance(item, SegmentItem):
+                continue  # geometry follows endpoint nodes via onGeometryChanged
             item.setPos(item.pos() + offset)
 
     def _previewTargets(self : Self) -> list[Any]:
-        return self._items
+        return [
+            item for item in self._items
+            if not isinstance(item, SegmentItem)
+        ]
 
     def _previewSaveTarget(self : Self, target : ItemType) -> QPointF:
         return target.pos()

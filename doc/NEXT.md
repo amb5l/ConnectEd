@@ -1,3 +1,5 @@
+YAML vs Python palettes?
+
 while-else opportunities in codebase
 Interaction valid
 

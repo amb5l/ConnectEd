@@ -49,7 +49,13 @@ class PolyVtxItem(VertexGripItem):
         return self._index
 
     @checked
-    def moveBy(self : Self, delta : QPointF) -> None:
+    def moveBy(
+        self   : Self,
+        dx_d   : float | QPointF,
+        dy     : float | None = None
+    ) -> None:
+        delta = dx_d if isinstance(dx_d, QPointF) \
+            else QPointF(dx_d, dy if dy is not None else 0.0)
         parent : "PolylineItem" = self.parentItem()
         if self.index() == 0 and parent.selMode() == 0:
             parent.setPos(parent.pos() + delta)

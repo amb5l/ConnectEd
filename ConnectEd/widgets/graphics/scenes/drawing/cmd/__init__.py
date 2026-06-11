@@ -191,16 +191,16 @@ class CmdMove(CmdSceneItems):
     @checked
     def redo(self : Self) -> None:
         for e in self._items:
-            if not isinstance(e, SegmentItem):
-                e.moveBy(self._offset)
-            else:
-                self._move_segs.append(e)
+            if isinstance(e, SegmentItem):
+                continue
+            e.moveBy(self._offset)
 
     @checked
     def undo(self : Self) -> None:
         for e in self._items:
-            if not isinstance(e, SegmentItem):
-                e.moveRestore(self._state[e])
+            if isinstance(e, SegmentItem):
+                continue
+            e.moveRestore(self._state[e])
 
 
 class CmdRotateBase(CmdSceneItems):
