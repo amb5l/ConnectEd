@@ -49,6 +49,12 @@ class ItemXmlMixin:
             instance.onTextChanged()
         if hasattr(instance, "onSceneRotationChanged"):
             instance.onSceneRotationChanged()
+        if hasattr(instance, "properties"):
+            for name in instance.properties.names():
+                pt = instance.properties.text(name)
+                if pt is not None and hasattr(pt, "_child"):
+                    pt._child.onGeometryChanged()
+                    pt.updateHandlePositions()
 
     @classmethod
     @checked

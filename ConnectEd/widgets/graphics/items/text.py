@@ -317,13 +317,15 @@ class TextItem(
         self.setTextUnderline(underline)
         self._child.onGeometryChanged()
         self.updateHandlePositions()
-        self.onSceneRotationChanged()
+        self._refreshRendererOrientation()
 
     def onSceneRotationChanged(self : Self) -> None:
-        self._adjustOrientation()
+        self._child.onGeometryChanged()
+        self.updateHandlePositions()
 
     def onSceneMirrorChanged(self : Self) -> None:
-        self._adjustOrientation()
+        self._child.onGeometryChanged()
+        self.updateHandlePositions()
 
     def block(self : Self) -> bool:
         return isinstance(self._child, TextBlockRenderer)
@@ -362,6 +364,7 @@ class TextItem(
     def setText(self : Self, text : str) -> None:
         self._child.setText(text)
         self.updateHandlePositions()
+        self._refreshRendererOrientation()
         self.properties.signalChanges("Text")
 
     def alignH(self : Self) -> AlignH:
@@ -766,6 +769,29 @@ class TextItem(
     def _padding(self : Self) -> tuple[float, float, float, float]:
         return (self._pad_left, self._pad_right, self._pad_top, self._pad_bottom)
 
+    def _rendererPivot(self : Self, child_pos : QPointF) -> QPointF:
+        """
+        Autoflip pivot in renderer-local coords. Use the origin handle so
+        auto-sized text grows away from the cleat; rect centre drifts with width.
+        """
+        if self._autoflip and self.origin() is not None:
+            return self.getOriginHandle().pos() - child_pos
+        return self._brect.center() - child_pos
+
+    def _alignRendererPos(self : Self) -> None:
+        """
+        Autoflip may place the renderer at negative x in this item's frame;
+        shift it to 0..width so the origin anchor maps to the cleat in scene.
+        """
+        parent_rect = self._child.mapRectToParent(self._child.boundingRect())
+        if parent_rect.left() < -0.01:
+            pos = self._child.pos()
+            self._child.setPos(pos.x() - parent_rect.left(), pos.y())
+
+    def _refreshRendererOrientation(self : Self) -> None:
+        self._adjustOrientation()
+        self._alignRendererPos()
+
     def _adjustOrientation(self : Self) -> None:
         """
         Counter-rotate and/or counter-mirror the renderer child so text remains
@@ -906,12 +932,8 @@ class TextLineRenderer(TextRendererMixin, QGraphicsSimpleTextItem):
             case AlignV.BOTTOM:
                 y = pad_t + ch - urect.height()
         self.setPos(x, y)
-        # Transform origin = centre of the (parent-local) constrained rect,
-        # re-expressed in this renderer's local coords. The renderer's own
-        # setPos(x, y) shifts the two frames apart for non-LEFT/non-TOP
-        # alignment, so naively using rect.center() would put the pivot
-        # outside the glyph block and break rotation / counter-mirroring.
-        self.setTransformOriginPoint(rect.center() - QPointF(x, y))
+        self.setTransformOriginPoint(parent._rendererPivot(QPointF(x, y)))
+        parent._refreshRendererOrientation()
         # Hit shape covers the full bounding rect (in the parent's local
         # frame), matching every other item type. This keeps empty outlined
         # padding clickable and, crucially, stays valid under mirror /
@@ -1012,8 +1034,9 @@ class TextBlockRenderer(TextRendererMixin, QGraphicsTextItem):
         ch = max(h - pad_t - pad_b, 0.0)
         rect = QRectF(0.0, 0.0, w, h)
         parent._brect = rect
-        # update transform origin before mapping (rotation uses it)
-        self.setTransformOriginPoint(rect.center())
+        child_pos = QPointF(0.0, 0.0)
+        self.setTransformOriginPoint(parent._rendererPivot(child_pos))
+        parent._refreshRendererOrientation()
         # Hit shape covers the full bounding rect (in the parent's local
         # frame), matching every other item type. This keeps empty outlined
         # padding clickable and, crucially, stays valid under mirror /

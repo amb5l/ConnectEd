@@ -196,6 +196,9 @@ class PropertyTextItem(TextItem):
                 if not ok:
                     logger().warning("Cleat not found in parent item")
         self.properties.signalChanges("Cleat")
+        if ok:
+            self._child.onGeometryChanged()
+            self.updateHandlePositions()
         return ok
 
     @checked
