@@ -78,9 +78,9 @@ class PropertyTextSpec:
     color      : QColor   | None = None
     font       : str      | None = None
     size       : float    | None = None
-    bold       : bool     | None = False
-    italic     : bool     | None = False
-    underline  : bool     | None = False
+    bold       : bool     | None = None
+    italic     : bool     | None = None
+    underline  : bool     | None = None
 
     def astuple(self : Self) -> tuple:
         return (
@@ -535,29 +535,29 @@ class PropertiesManager:
     def addText(
         self       : Self,
         name       : str,
-        visible    : bool         = True,
-        cleat      : HandleId     = RectHandleId.BOTTOM_LEFT,
-        x          : float        = 0,
-        y          : float        = 0,
-        rotation   : float        = 0.0,
-        mirror_h   : bool         = False,
-        mirror_v   : bool         = False,
-        autoflip   : bool         = True,
-        origin     : RectHandleId = RectHandleId.TOP_LEFT,
-        align_h    : AlignH       = AlignH.LEFT,
-        align_v    : AlignV       = AlignV.TOP,
-        width      : float        = -1.0,
-        height     : float        = -1.0,
-        pad_left   : float        = 0.0,
-        pad_right  : float        = 0.0,
-        pad_top    : float        = 0.0,
-        pad_bottom : float        = 0.0,
+        visible    : bool          = True,
+        cleat      : HandleId      = RectHandleId.BOTTOM_LEFT,
+        x          : float         = 0,
+        y          : float         = 0,
+        rotation   : float         = 0.0,
+        mirror_h   : bool          = False,
+        mirror_v   : bool          = False,
+        autoflip   : bool          = True,
+        origin     : RectHandleId  = RectHandleId.TOP_LEFT,
+        align_h    : AlignH        = AlignH.LEFT,
+        align_v    : AlignV        = AlignV.TOP,
+        width      : float         = -1.0,
+        height     : float         = -1.0,
+        pad_left   : float         = 0.0,
+        pad_right  : float         = 0.0,
+        pad_top    : float         = 0.0,
+        pad_bottom : float         = 0.0,
         color      : QColor | None = None,
         font       : str    | None = None,
         size       : float  | None = None,
-        bold       : bool   | None = False,
-        italic     : bool   | None = False,
-        underline  : bool   | None = False
+        bold       : bool   | None = None,
+        italic     : bool   | None = None,
+        underline  : bool   | None = None
     ) -> bool:
         """
         Add a property text item. Replace any existing property text item.

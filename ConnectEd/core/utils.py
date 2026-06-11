@@ -197,17 +197,15 @@ def getDefaultPath() -> str:
 
 @checked
 def val2str(v : Any) -> str:
-    """Convert a Python value to a text representation."""
+    """Convert a value to its XML / settings text form."""
     t = type(v).__name__
     match t:
         case "NoneType"          : s = "None"
-        case "Default"           : s = "default"
         case "bytes"             : s = v.hex()
         case "str"               : s = v # TODO escape special characters
         case "int"               : s = str(v)
         case "float"             : s = str(int(v)) if v.is_integer() else str(v)
         case "bool"              : s = str(v)
-        case "EnDis"             : s = v.name.title()
         case "QPointF"           : s = f"{v.x()},{v.y()}"
         case "QRectF"            : s = f"{v.x()},{v.y()},{v.width()},{v.height()}"
         case "QSizeF"            : s = f"{v.width()},{v.height()}"
@@ -218,7 +216,6 @@ def val2str(v : Any) -> str:
         case "AlignH"            : s = v.toStr()
         case "AlignV"            : s = v.toStr()
         case "Edge"              : s = v.value
-        case "EdgeLoc"           : s = v.toStr()
         case "Direction"         : s = v.value
         case "RectHandleId"      : s = v.value
         case "LineHandleId"      : s = v.value
@@ -233,21 +230,15 @@ def val2str(v : Any) -> str:
 
 @checked
 def str2val(s : str, t : str) -> Any:
-    """
-    Convert a text representation of a Python value to a Python value.
-    Note: "subtypes" are substituted here; they exist to facilitate
-    table view delegates.
-    """
+    """Parse XML / settings text produced by val2str."""
     from ..core.types import (
-        AlignH, AlignV, Edge, EdgeLoc, Direction, Display, DataKind,
+        AlignH, AlignV, Edge, Direction, Display, DataKind,
         RectHandleId, LineHandleId, PortHandleId, BlockPinHandleId, SymbolPinHandleId
     )
     def strValuesToFloats(s : str) -> list[float]:
         return [float(p) for p in s.strip("()").split(",")]
-    # handle None
     if s == "None":
         return None
-    # convert
     match t:
         case "bytes"             : return bytes.fromhex(s)
         case "str"               : return s # TODO unescape special characters
@@ -264,7 +255,6 @@ def str2val(s : str, t : str) -> Any:
         case "AlignH"            : return AlignH.fromStr(s)
         case "AlignV"            : return AlignV.fromStr(s)
         case "Edge"              : return Edge(s)
-        case "EdgeLoc"           : return EdgeLoc.fromStr(s)
         case "Direction"         : return Direction(s)
         case "RectHandleId"      : return RectHandleId(s)
         case "LineHandleId"      : return LineHandleId(s)

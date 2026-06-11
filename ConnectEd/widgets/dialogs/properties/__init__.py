@@ -11,7 +11,7 @@ from ....app import logger
 
 from ....core.check import checked
 from ....core.types import (
-    EnDis, AlignH, AlignV, Display, DataKind,
+    AlignH, AlignV, Display, DataKind,
     RectHandleId, LineHandleId, BlockPinHandleId, SymbolPinHandleId,
 )
 
@@ -374,8 +374,6 @@ class PropertiesDialog(QDialog):
                 if col_name == "Cleat":
                     kind = _HANDLE_KIND[pt.handleIdType()]
                 value = getattr(pt, method_name)()
-                if col_name == "Auto Flip":
-                    value = EnDis.ENABLE if value else EnDis.DISABLE
                 cell = PropertiesItem(owner=item, kind=kind, value=value)
             row.append(cell)
         return row
@@ -461,8 +459,6 @@ class PropertiesDialog(QDialog):
             value = item.value()
             if col_name == "Width" or col_name == "Height":
                 value = -1.0 if value is None else value
-            elif col_name == "Auto Flip":
-                value = value == EnDis.ENABLE
             if item.changed() or not delta:
                 args[pascal2snake(col_name)] = value
         return args
