@@ -427,18 +427,6 @@ class Netlist:
                                 f"subnet, got {sorted(added_subnet_ids)}"
                             )
                     case "Net":
-                        def _updateSubnetIds(subnet_ids : set[int]) -> None:
-                            # update subnet IDs to match XML
-                            new_subnets : dict[int, Subnet] = {}
-                            for subnet_id, xml_subnet_id in subnet_xml_id_by_id.items():
-                                subnet = self._subnets[subnet_id]
-                                subnet.id = xml_subnet_id
-                                new_subnets[xml_subnet_id] = subnet
-                                self._subnet_id = max(self._subnet_id, xml_subnet_id + 1)
-                                self._subnet_id_update_done = True
-                            self._subnets = new_subnets
-                        if not hasattr(self, "_subnet_id_update_done"):
-                            self.new_subnets = set()
                         xml_net_name = xr.attributes().value("Name")
                         xml_net_base_name, _ = \
                             _baseNameAndSuffix(xml_net_name)
@@ -447,15 +435,39 @@ class Netlist:
                             for part in xr.attributes().value("Subnets").split(",")
                             if part
                         }
-                        net = self.nets().get(xml_net_base_name, None)
+                        if xml_net_base_name:
+                            net = self.nets().get(xml_net_base_name, None)
+                        elif len(xml_subnet_ids) == 1:
+                            xml_subnet_id = next(iter(xml_subnet_ids))
+                            internal_id = next(
+                                (
+                                    sid for sid, xid in subnet_xml_id_by_id.items()
+                                    if xid == xml_subnet_id
+                                ),
+                                xml_subnet_id,
+                            )
+                            net = self.nets().get(internal_id, None)
+                        else:
+                            net = None
                         if net is None:
                             logger().warning(f"Net {xml_net_name!r} not found")
-                        elif net.subnets != xml_subnet_ids:
-                            logger().warning(
-                                f"Net {xml_net_name!r} subnet mismatch: "
-                                f"expected {sorted(xml_subnet_ids)}, "
-                                f"got {sorted(net.subnets)}"
-                            )
+                        else:
+                            expected_subnet_ids = {
+                                next(
+                                    (
+                                        sid for sid, xid in subnet_xml_id_by_id.items()
+                                        if xid == xid_xml
+                                    ),
+                                    xid_xml,
+                                )
+                                for xid_xml in xml_subnet_ids
+                            }
+                            if net.subnets != expected_subnet_ids:
+                                logger().warning(
+                                    f"Net {xml_net_name!r} subnet mismatch: "
+                                    f"expected {sorted(xml_subnet_ids)}, "
+                                    f"got {sorted(net.subnets)}"
+                                )
                     case _:
                         logger().warning(
                             f"Unexpected Connectivity element: {element_name}"
