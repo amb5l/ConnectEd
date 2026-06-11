@@ -56,35 +56,6 @@ class CmdAddFreeNode(CmdDiagramSceneBase):
         return self._node
 
 
-class CmdRemoveFreeNode(CmdDiagramSceneBase):
-    """
-    Remove a specified free node from the scene.
-    Drops netlist membership when the node is still in the graph.
-    """
-
-    # instance attributes
-    _node : FreeNodeItem
-
-    @checked
-    def __init__(
-        self  : Self,
-        scene : "DiagramScene",
-        node  : FreeNodeItem
-    ) -> None:
-        super().__init__(scene)
-        self._node = node
-
-    @checked
-    def redo(self : Self) -> None:
-        if self._scene.netlist.hasNode(self._node):
-            self._scene.netlist.removeNodes(self._node)
-        self._scene.removeItem(self._node)
-
-    @checked
-    def undo(self : Self) -> None:
-        self._scene.addItem(self._node)
-
-
 class CmdReplaceNode(CmdDiagramSceneBase):
     """
     Replace one node with another. Typically used for free/non swaps.
@@ -165,16 +136,14 @@ class CmdAddSegment(CmdDiagramSceneBase):
 
 class CmdRemoveSegment(CmdDiagramSceneBase):
     """
-    Remove a specified segment from the scene.
-    Updates both graphics and graph.
-    Does not remove free nodes; the API layer may follow with
-    CmdRemoveFreeNode for any orphaned free nodes.
+    Remove a segment from the scene and netlist. Cull orphan free nodes.
     """
 
     # instance attributes
-    _node1 : NodeItem
-    _node2 : NodeItem
-    _seg   : SegmentItem
+    _node1  : NodeItem
+    _node2  : NodeItem
+    _seg    : SegmentItem
+    _culled : list[FreeNodeItem]
 
     @checked
     def __init__(
@@ -183,9 +152,10 @@ class CmdRemoveSegment(CmdDiagramSceneBase):
         seg   : SegmentItem
     ) -> None:
         super().__init__(scene)
-        self._node1 = seg.node1()
-        self._node2 = seg.node2()
-        self._seg = seg
+        self._node1  = seg.node1()
+        self._node2  = seg.node2()
+        self._seg    = seg
+        self._culled = []
 
     @checked
     def redo(self : Self) -> None:
@@ -195,9 +165,24 @@ class CmdRemoveSegment(CmdDiagramSceneBase):
         self._seg.setNode1(None)
         self._seg.setNode2(None)
         self._scene.removeItem(self._seg)
+        self._culled = []
+        for node in (self._node1, self._node2):
+            if not isinstance(node, FreeNodeItem):
+                continue
+            if node.degree() > 0:
+                continue
+            if node.scene() is None:
+                continue
+            if self._scene.netlist.hasNode(node):
+                self._scene.netlist.removeNodes(node)
+            self._scene.removeItem(node)
+            self._culled.append(node)
 
     @checked
     def undo(self : Self) -> None:
+        for node in self._culled:
+            self._scene.addItem(node)
+            node.onConnectionChanged()
         self._seg.setNode1(self._node1)
         self._seg.setNode2(self._node2)
         self._scene.addItem(self._seg)

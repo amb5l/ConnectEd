@@ -3,19 +3,16 @@ from math        import isclose
 from PyQt6.QtCore import Qt, QPointF, QLineF
 from PyQt6.QtGui  import QPainterPath, QPainterPathStroker
 
-from ......app import logger
-
 from ......core.check import checked
 
-from ....items.node      import NodeItem, FreeNodeItem, FixedNodeItem, \
-                                PinNodeItem, TapNodeItem
+from ....items.node      import NodeItem, FreeNodeItem
 from ....items.segment   import SegmentItem
 
-from ...drawing.cmd import cmdExec, CmdDelete
+from ...drawing.cmd import cmdExec
 
 from ..cmd.conn import CmdAddFreeNode, CmdReplaceNode, \
-                       CmdAddSegment, CmdSplitSegment, CmdUnsplitSegment, \
-                       CmdSplitNet
+                       CmdAddSegment, CmdRemoveSegment, \
+                       CmdSplitSegment, CmdUnsplitSegment
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -46,20 +43,6 @@ class DiagramSceneApiConnMixin:
             cmdExec(self, cmd, undoable)
         # done
         return node
-
-    @checked
-    def removeFreeNode(
-        self     : "DiagramScene",
-        node     : FreeNodeItem,
-        undoable : bool = False
-    ) -> None:
-        """
-        Remove a free node from the scene.
-        Unsplit any crossing segments.
-        If label(s) are attached, they go with it.
-        """
-        cmd = CmdDelete(self, [node])
-        cmdExec(self, cmd, undoable)
 
     @checked
     def replaceNode(
@@ -166,34 +149,8 @@ class DiagramSceneApiConnMixin:
     def removeSegment(
         self     : "DiagramScene",
         seg      : SegmentItem,
-        undoable : bool = False
+        undoable : bool = False,
     ) -> None:
-        """
-        Remove a segment from the scene.
-        Remove any orphan free vertices.
-        """
-        # begin macro
-        if undoable:
-            self.undo_stack.beginMacro("removeSegment")
-        # remove segment
-        node1 = seg.node1()
-        node2 = seg.node2()
-        cmd = CmdDelete(self, [seg])
+        """Remove a segment, cull orphan free nodes."""
+        cmd = CmdRemoveSegment(self, seg)
         cmdExec(self, cmd, undoable)
-        # split net
-        cmd = CmdSplitNet(self, node1, node2)
-        cmdExec(self, cmd, undoable)
-        # remove orphan free vertices (scene-only after last segment removed)
-        for node in [node1, node2]:
-            if not isinstance(node, FreeNodeItem):
-                continue
-            if node.parentItem() is not None:
-                logger().warning(f"FreeNode {node} has a parent")
-                continue
-            if node.degree() > 0:
-                continue
-            cmd = CmdDelete(self, [node])
-            cmdExec(self, cmd, undoable)
-        # end macro
-        if undoable:
-            self.undo_stack.endMacro()

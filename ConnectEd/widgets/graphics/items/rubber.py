@@ -184,7 +184,6 @@ class RubberCornerItem(RubberItem):
         self.setPath(path)
         # subscribe to node scene position changes
         node.subscribe("scenePos", self, "onGeometryChanged")
-        print("RubberCornerItem __init__ ", origin_spos, corner_spos, node_spos, self._axis)
 
     def onGeometryChanged(self : Self) -> None:
         # update path

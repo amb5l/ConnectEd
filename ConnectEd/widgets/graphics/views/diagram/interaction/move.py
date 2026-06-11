@@ -173,7 +173,6 @@ class DiagramMoveInteraction(PreviewStateMixin, DiagramItemsInteraction):
                 else:
                     filtered_items.append(item)
         # complete interaction initialization
-        print(f"filtered_items: {filtered_items}")
         super().__init__(view, filtered_items)
         # save initial positions
         self._previewSave()
@@ -225,9 +224,9 @@ class DiagramMoveInteraction(PreviewStateMixin, DiagramItemsInteraction):
         self._scene.undo_stack.beginMacro("editMove")
         # delete segments (those being moved, and those that were rubberized)
         if segments_to_delete:
-            self._scene.editDelete(segments_to_delete)
+            self._scene.editDelete(segments_to_delete, undoable=True)
         if self._rubber_segs:
-            self._scene.editDelete(self._rubber_segs)
+            self._scene.editDelete(self._rubber_segs, undoable=True)
         # move remaining items
         if items:
             self._scene.editMove(items, offset, self._slide, undoable=True)
@@ -290,6 +289,9 @@ class DiagramMoveInteraction(PreviewStateMixin, DiagramItemsInteraction):
             segment = segment_or_static
             static  = segment.otherNode(mobile)
             if isinstance(static, FreeNodeItem):
+                def _recordRubberSeg(segment : SegmentItem) -> None:
+                    if segment not in self._rubber_segs:
+                        self._rubber_segs.append(segment)
                 # TODO: should never get here with degree == 1, but handle it anyway
                 if static.degree() == 2:
                     s1, s2 = static.segments()
@@ -297,19 +299,19 @@ class DiagramMoveInteraction(PreviewStateMixin, DiagramItemsInteraction):
                     cmd = CmdMovePreviewRubberCorner(segment, segment2, mobile)
                     self._undo_stack.push(cmd)
                     self._rubbers.append(cmd.rubber())
-                    self._rubber_segs.append(segment)
-                    self._rubber_segs.append(segment2)
+                    _recordRubberSeg(segment)
+                    _recordRubberSeg(segment2)
                 else:
                     cmd = CmdMovePreviewRubberTee(segment, mobile)
                     self._undo_stack.push(cmd)
                     self._rubbers.append(cmd.rubber())
-                    self._rubber_segs.append(segment)
+                    _recordRubberSeg(segment)
             else:
                 cmd = CmdMovePreviewRubberJog(segment, mobile)
                 self._undo_stack.push(cmd)
                 self._rubbers.append(cmd.rubber())
                 self._rubber_jogs.append(cmd.rubber())
-                self._rubber_segs.append(segment)
+                _recordRubberSeg(segment)
         elif isinstance(segment_or_static, NodeItem):
             static = segment_or_static
             cmd = CmdMovePreviewRubberJog(static, mobile, axis)

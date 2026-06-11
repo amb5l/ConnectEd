@@ -3,11 +3,9 @@
   <Design name="UntitledDesign1">
     <Symbols/>
     <Diagram Name="UntitledDesign1" Sheet_Name="A4 (landscape)" Sheet_Width="1169" Sheet_Height="827" Margin="10" Border="1">
-      <OrGate Output="H" Inputs="HHHHHHH" X="480" Y="160"/>
-      <BufGate Output="L" Input="H" X="350" Y="160"/>
-      <AndGate Output="H" Inputs="HHH" X="410" Y="160"/>
-      <Line X1="30" Y1="40" X2="100" Y2="70"/>
       <Rectangle Origin="Middle Center" X="165" Y="60" Width="90" Height="60"/>
+      <Ellipse Origin="Middle Center" X="305" Y="60" Width="150" Height="80"/>
+      <Line X1="30" Y1="40" X2="100" Y2="70"/>
       <Polyline Closed="False" X="400" Y="90">
         <Segment X="70" Y="-60"/>
         <Segment X="120" Y="20"/>
@@ -15,7 +13,6 @@
         <Segment X="220" Y="-20"/>
         <Segment X="250" Y="-40"/>
       </Polyline>
-      <Ellipse Origin="Middle Center" X="305" Y="60" Width="150" Height="80"/>
       <Text Text="123" X="690" Y="70" Origin="Top Left" AlignH="LEFT" AlignV="TOP"/>
       <Text Text="123&#10;456" X="740" Y="60" Origin="Top Left" AlignH="LEFT" AlignV="TOP"/>
       <Block Origin="Middle Center" X="120" Y="155" Width="80" Height="50">
@@ -26,17 +23,30 @@
         </BlockPin>
       </Block>
       <XorGate Output="L" Inputs="LHHHH" X="280" Y="160"/>
+      <OrGate Output="H" Inputs="HHHHHHH" X="480" Y="160"/>
+      <BufGate Output="L" Input="H" X="350" Y="130"/>
+      <AndGate Output="H" Inputs="HHH" X="410" Y="160"/>
       <Connectivity>
-        <FixedNode ID="0" X="440.0" Y="190.0"/>
-        <FreeNode ID="1" X="360.0" Y="190.0"/>
+        <FreeNode ID="0" X="360.0" Y="190.0"/>
+        <FixedNode ID="1" X="440.0" Y="190.0"/>
         <FreeNode ID="2" X="360.0" Y="170.0"/>
         <FixedNode ID="3" X="370.0" Y="170.0"/>
-        <Subnet ID="0" Nodes="0,3,2,1">
-          <Segment Nodes="0,1"/>
-          <Segment Nodes="1,2"/>
+        <FreeNode ID="4" X="360.0" Y="130.0"/>
+        <FixedNode ID="5" X="350.0" Y="130.0"/>
+        <FreeNode ID="6" X="360.0" Y="150.0"/>
+        <FixedNode ID="7" X="370.0" Y="150.0"/>
+        <Subnet ID="0" Nodes="0,1,2,3">
+          <Segment Nodes="1,0"/>
+          <Segment Nodes="0,2"/>
           <Segment Nodes="2,3"/>
         </Subnet>
+        <Subnet ID="1" Nodes="4,7,6,5">
+          <Segment Nodes="5,4"/>
+          <Segment Nodes="4,6"/>
+          <Segment Nodes="6,7"/>
+        </Subnet>
         <Net Name="" Subnets="0"/>
+        <Net Name="" Subnets="1"/>
       </Connectivity>
     </Diagram>
   </Design>
