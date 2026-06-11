@@ -296,10 +296,13 @@ class DiagramMoveInteraction(PreviewStateMixin, DiagramItemsInteraction):
                     cmd = CmdMovePreviewRubberCorner(segment, segment2, mobile)
                     self._undo_stack.push(cmd)
                     self._rubbers.append(cmd.rubber())
+                    self._rubber_segs.append(segment)
+                    self._rubber_segs.append(segment2)
                 else:
                     cmd = CmdMovePreviewRubberTee(segment, mobile)
                     self._undo_stack.push(cmd)
                     self._rubbers.append(cmd.rubber())
+                    self._rubber_segs.append(segment)
             else:
                 cmd = CmdMovePreviewRubberJog(segment, mobile)
                 self._undo_stack.push(cmd)
