@@ -54,13 +54,14 @@ class ThemePalette:
     SymbolPinName        : QColor
     SymbolPinComment     : QColor
     PropertyText         : QColor
-    NetLabel             : QColor
-    Junction             : QColor
     Line                 : QColor
-    Rectangle            : QColor
-    Ellipse              : QColor
+    RectangleLine        : QColor
+    RectangleFill        : QColor
+    EllipseLine          : QColor
+    EllipseFill          : QColor
     PolyVtx              : QColor
-    Polyline             : QColor
+    PolylineLine         : QColor
+    PolylineFill         : QColor
     Text                 : QColor
     SelectedLine         : QColor
     SelectedFill         : QColor
@@ -159,12 +160,14 @@ palette_dark = ThemePalette(
     SymbolPinName        = mid_yellow,
     SymbolPinComment     = mid_yellow,
     PropertyText         = mid_red,
-    Junction             = light_red,
     Line                 = light_gray,
-    Rectangle            = light_gray,
-    Ellipse              = light_gray,
+    RectangleLine        = light_gray,
+    RectangleFill        = dark_gray,
+    EllipseLine          = light_gray,
+    EllipseFill          = dark_gray,
     PolyVtx              = light_gray,
-    Polyline             = light_gray,
+    PolylineLine         = light_gray,
+    PolylineFill         = dark_gray,
     Text                 = light_gray,
     SelectedLine         = bright_magenta,
     SelectedFill         = bright_magenta,
@@ -227,12 +230,14 @@ palette_light_mono = ThemePalette(
     SymbolPinComment     = black,
     PropertyText         = black,
     NetLabel             = black,
-    Junction             = black,
     Line                 = black,
-    Rectangle            = black,
-    Ellipse              = black,
+    RectangleLine        = black,
+    RectangleFill        = black,
+    EllipseLine          = black,
+    EllipseFill          = black,
     PolyVtx              = black,
-    Polyline             = black,
+    PolylineLine         = black,
+    PolylineFill         = black,
     Text                 = black,
     SelectedLine         = bright_magenta,
     SelectedFill         = bright_magenta,

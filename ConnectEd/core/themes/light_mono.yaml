@@ -63,12 +63,14 @@ presets:
   SymbolPinName        : black
   SymbolPinComment     : black
   PropertyText         : black
-  Junction             : black
   Line                 : black
-  Rectangle            : black
-  Ellipse              : black
+  RectangleLine        : black
+  RectangleFill        : black
+  EllipseLine          : black
+  EllipseFill          : black
   PolyVtx              : black
-  Polyline             : black
+  PolylineLine         : black
+  PolylineFill         : black
   Text                 : black
   SelectedLine         : select
   SelectedFill         : select
@@ -370,27 +372,27 @@ items:
       style : SolidLine
   Rectangle:
     line:
-      color : '@Origin'
+      color : '@RectangleLine'
       width : 1
       style : SolidLine
     fill:
-      color : '@Origin'
+      color : '@RectangleFill'
       style : NoBrush
   Ellipse:
     line:
-      color : '@Origin'
+      color : '@EllipseLine'
       width : 1
       style : SolidLine
     fill:
-      color : '@Origin'
+      color : '@EllipseFill'
       style : NoBrush
   Polyline:
     line:
-      color : '@Origin'
+      color : '@PolylineLine'
       width : 1
       style : SolidLine
     fill:
-      color : '@Origin'
+      color : '@PolylineFill'
       style : NoBrush
   Text:
     text:

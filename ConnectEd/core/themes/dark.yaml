@@ -41,16 +41,17 @@ palette:
   max_white     : '#FFFFFF'
   # fancy colours
   dark          : '#141414'
+  mint          : '#3DC9B0'
   rose          : '#CC7C8A'
   orchid        : '#E394DC'
   peach         : '#E0AF80'
   warm_gold     : '#EBC88A'
+  apricot       : '#EFB080'
   bright_gold   : '#FCD500'
   teal          : '#82D2CE'
   lavender      : '#AAA0FA'
   sky_blue      : '#85C2FF'
   # functional colours
-  select        : '#FF00FF'
   highlight     : '#FFFF00'
 presets:
   Background           : black
@@ -64,55 +65,57 @@ presets:
   FixedNodeUnconnected : highlight
   FixedNodeConnected   : highlight
   FixedNodeJunction    : rose
-  SegmentUnresolved    : peach
-  SegmentScalar        : lavender
-  SegmentVector        : lavender
-  SegmentPreview1      : select
-  SegmentPreview2      : select
-  TapUnresolved        : peach
+  SegmentUnresolved    : highlight
+  SegmentScalar        : mint
+  SegmentVector        : mint
+  SegmentPreview1      : max_magenta
+  SegmentPreview2      : max_magenta
+  TapUnresolved        : highlight
   TapScalar            : teal
   TapVector            : teal
   NetLabel             : warm_gold
-  PortPinWire          : dull_grey
-  PortPinBus           : dull_grey
-  PortArrowLine        : bright_gold
-  PortArrowFill        : bright_gold
-  PortName             : light_grey
-  PortComment          : light_grey
-  GateLine             : dull_grey
+  PortPinWire          : mid_grey
+  PortPinBus           : mid_grey
+  PortArrowLine        : mid_grey
+  PortArrowFill        : apricot
+  PortName             : apricot
+  PortComment          : apricot
+  GateLine             : mid_grey
   GateFill             : dull_grey
-  GatePinWire          : dull_grey
-  GatePinBus           : dull_grey
-  GatePinArrowLine     : bright_gold
-  GatePinArrowFill     : bright_gold
-  BlockLine            : dull_grey
-  BlockFill            : dark_grey
+  GatePinWire          : mid_grey
+  GatePinBus           : mid_grey
+  GatePinArrowLine     : apricot
+  GatePinArrowFill     : apricot
+  BlockLine            : mid_grey
+  BlockFill            : dull_grey
   BlockLabel           : sky_blue
   BlockName            : sky_blue
-  BlockPinWire         : dull_grey
-  BlockPinBus          : dull_grey
-  BlockPinArrowLine    : bright_gold
-  BlockPinArrowFill    : bright_gold
-  BlockPinName         : light_grey
+  BlockPinWire         : mid_grey
+  BlockPinBus          : mid_grey
+  BlockPinArrowLine    : apricot
+  BlockPinArrowFill    : apricot
+  BlockPinName         : apricot
   BlockPinComment      : light_grey
-  SymbolPinWire        : dull_grey
-  SymbolPinBus         : dull_grey
-  SymbolPinArrowLine   : bright_gold
-  SymbolPinArrowFill   : bright_gold
-  SymbolPinName        : light_grey
+  SymbolPinWire        : mid_grey
+  SymbolPinBus         : mid_grey
+  SymbolPinArrowLine   : apricot
+  SymbolPinArrowFill   : apricot
+  SymbolPinName        : apricot
   SymbolPinComment     : light_grey
   PropertyText         : orchid
-  Junction             : rose
-  Line                 : dull_grey
-  Rectangle            : dull_grey
-  Ellipse              : dull_grey
+  Line                 : mid_grey
+  RectangleLine        : mid_grey
+  RectangleFill        : dull_grey
+  EllipseLine          : mid_grey
+  EllipseFill          : dull_grey
   PolyVtx              : dull_grey
-  Polyline             : dull_grey
+  PolylineLine         : mid_grey
+  PolylineFill         : dull_grey
   Text                 : mid_grey
-  SelectedLine         : select
-  SelectedFill         : select
-  SelectedText         : select
-  Grip                 : select
+  SelectedLine         : max_magenta
+  SelectedFill         : mid_magenta
+  SelectedText         : max_magenta
+  Grip                 : max_magenta
   Rubber               : highlight
   PropertyDeleted      : dark_red
   PropertyChanged      : dark_yellow
@@ -180,7 +183,7 @@ items:
     line:
       unresolved:
         color : '@SegmentUnresolved'
-        width : 1
+        width : 0.5
         style : SolidLine
       scalar:
         color : '@SegmentScalar'
@@ -204,7 +207,7 @@ items:
     line:
       unresolved:
         color : '@TapUnresolved'
-        width : 1
+        width : 0.5
         style : SolidLine
       scalar:
         color : '@TapScalar'
@@ -226,18 +229,18 @@ items:
     pin:
       wire:
         line:
-          color : '@Border'
+          color : '@PortPinWire'
           width : 1
           style : SolidLine
       bus:
         line:
-          color : '@Border'
+          color : '@PortPinBus'
           width : 2
           style : SolidLine
     arrow:
       size : 6
       line:
-        color : '@Border'
+        color : '@PortArrowLine'
         width : 1
         style : SolidLine
       fill:
@@ -261,22 +264,22 @@ items:
       underline : false
   Gate:
     line:
-      color : '@Border'
+      color : '@GateLine'
       width : 1
       style : SolidLine
     fill:
-      color : '@Grid'
-      style : NoBrush
+      color : '@GateFill'
+      style : SolidPattern
   GatePin:
     pin:
       wire:
         line:
-          color : '@Border'
+          color : '@GatePinWire'
           width : 1
           style : SolidLine
       bus:
         line:
-          color : '@Border'
+          color : '@GatePinBus'
           width : 2
           style : SolidLine
       dot:
@@ -286,19 +289,19 @@ items:
     arrow:
       size : 3
       line:
-        color : '@PortArrowFill'
+        color : '@GatePinArrowLine'
         width : 0.5
         style : SolidLine
       fill:
-        color : '@PortArrowFill'
+        color : '@GatePinArrowFill'
         style : SolidPattern
   Block:
     line:
-      color : '@Border'
+      color : '@BlockLine'
       width : 1
       style : SolidLine
     fill:
-      color : '@Grid'
+      color : '@BlockFill'
       style : SolidPattern
   BlockLabel:
     text:
@@ -320,22 +323,22 @@ items:
     pin:
       wire:
         line:
-          color : '@Border'
+          color : '@BlockPinWire'
           width : 1
           style : SolidLine
       bus:
         line:
-          color : '@Border'
+          color : '@BlockPinBus'
           width : 2
           style : SolidLine
     arrow:
       size : 6
       line:
-        color : '@PortArrowFill'
+        color : '@BlockPinArrowLine'
         width : 1
         style : SolidLine
       fill:
-        color : '@PortArrowFill'
+        color : '@BlockPinArrowFill'
         style : SolidPattern
   BlockPinName:
     text:
@@ -357,12 +360,12 @@ items:
     pin:
       wire:
         line:
-          color : '@Border'
+          color : '@SymbolPinWire'
           width : 1
           style : SolidLine
       bus:
         line:
-          color : '@Border'
+          color : '@SymbolPinBus'
           width : 2
           style : SolidLine
       dot:
@@ -372,15 +375,15 @@ items:
     arrow:
       size : 3
       line:
-        color : '@PortArrowFill'
+        color : '@SymbolPinArrowLine'
         width : 0.5
         style : SolidLine
       fill:
-        color : '@PortArrowFill'
+        color : '@SymbolPinArrowFill'
         style : SolidPattern
   SymbolPinName:
     text:
-      color     : '@PortArrowFill'
+      color     : '@SymbolPinName'
       font      : 'Liberation Sans'
       size      : 7
       bold      : false
@@ -388,7 +391,7 @@ items:
       underline : false
   SymbolPinComment:
     text:
-      color     : '@PortArrowFill'
+      color     : '@SymbolPinComment'
       font      : 'Liberation Sans'
       size      : 7
       bold      : false
@@ -409,31 +412,31 @@ items:
       style : SolidLine
   Rectangle:
     line:
-      color : '@Line'
+      color : '@RectangleLine'
       width : 1
       style : SolidLine
     fill:
-      color : '@Line'
+      color : '@RectangleFill'
       style : NoBrush
   Ellipse:
     line:
-      color : '@Line'
+      color : '@EllipseLine'
       width : 1
       style : SolidLine
     fill:
-      color : '@Line'
+      color : '@EllipseFill'
       style : NoBrush
   Polyline:
     line:
-      color : '@Line'
+      color : '@PolylineLine'
       width : 1
       style : SolidLine
     fill:
-      color : '@Line'
+      color : '@PolylineFill'
       style : NoBrush
   Text:
     text:
-      color     : '@Line'
+      color     : '@Text'
       font      : 'Liberation Sans'
       size      : 7
       bold      : false
