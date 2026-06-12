@@ -90,3 +90,7 @@ class DiagramEditMoveBlockPinsInteraction(PreviewStateMixin, DiagramInteraction)
         state  : EdgeLoc
     ) -> None:
         target.setLoc(state)
+
+    def _previewDidRestore(self : Self) -> None:
+        self._loc_snap = None
+        self._corner   = None
