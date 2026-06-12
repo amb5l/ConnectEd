@@ -26,6 +26,38 @@ class NetLabelItem(TextItem):
     # class attributes
     _ORIGIN = RectHandleId.BOTTOM_LEFT
     _ORIGIN_GRIP_SHAPE = GripShape.STAR
+    _PROPERTIES_ALIGN = \
+        {
+            "AlignH" : InherentProperty(
+                kind   = DataKind.ALIGN_H,
+                worthy = lambda self: self.alignH() != AlignH.LEFT,
+                getter = lambda self: self.alignH(),
+                setter = lambda self, value: self.setAlignH(value)
+            ),
+            "AlignV" : InherentProperty(
+                kind    = DataKind.ALIGN_V,
+                worthy  = lambda self: self.alignV() != AlignV.MIDDLE,
+                default = lambda self: AlignV.MIDDLE,
+                getter  = lambda self: self.alignV(),
+                setter  = lambda self, value: self.setAlignV(value)
+            )
+        }
+    _PROPERTIES_SIZE = \
+        {
+            "Width" : InherentProperty(
+                kind   = DataKind.SIZE,
+                worthy = lambda self: self.width() >= 0.0,
+                getter = lambda self: self.width(),
+                setter = lambda self, value: self.setWidth(value)
+            ),
+            "Height" : InherentProperty(
+                kind    = DataKind.SIZE,
+                worthy  = lambda self: self.height() != PITCH,
+                default = lambda self: float(PITCH),
+                getter  = lambda self: self.height(),
+                setter  = lambda self, value: self.setHeight(value)
+            )
+        }
     _PROPERTIES = \
         {
             "Name" : InherentProperty(
@@ -42,8 +74,8 @@ class NetLabelItem(TextItem):
         TextItem._PROPERTIES_POS         | \
         TextItem._PROPERTIES_ROTATE      | \
         TextItem._PROPERTIES_RECT_ORIGIN | \
-        TextItem._PROPERTIES_ALIGN       | \
-        TextItem._PROPERTIES_SIZE        | \
+        _PROPERTIES_ALIGN                | \
+        _PROPERTIES_SIZE                 | \
         TextItem._PROPERTIES_PADDING     | \
         TextItem._PROPERTIES_TEXT
 
@@ -63,7 +95,7 @@ class NetLabelItem(TextItem):
         autoflip   : bool                 = True,
         origin     : RectHandleId         = RectHandleId.BOTTOM_LEFT,
         align_h    : AlignH               = AlignH.LEFT,
-        align_v    : AlignV               = AlignV.TOP,
+        align_v    : AlignV               = AlignV.MIDDLE,
         width      : float                = -1.0,
         height     : float                = PITCH,
         pad_left   : float                = 2 * WIDTH,

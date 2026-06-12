@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ConnectEd>
+  <Design name="UntitledDesign1">
+    <Symbols/>
+    <Diagram Name="UntitledDesign1" Sheet_Name="A4 (landscape)" Sheet_Width="1169" Sheet_Height="827" Margin="10" Border="1">
+      <Block Label="U_REG1" Name="jarv_reg" Path="" Origin="Middle Center" X="710" Y="150" Width="180" Height="80">
+        <PropertyText Name="Label" Cleat="Top Left" Origin="Bottom Left" AlignH="LEFT" AlignV="TOP"/>
+        <PropertyText Name="Name" Cleat="Bottom Left" Origin="Top Left" AlignH="LEFT" AlignV="TOP"/>
+        <BlockPin Name="rs1_sel[4:0]" Dir="in" Edge="Left" Offset="10">
+          <PropertyText Name="Name" Cleat="Name" Origin="Middle Left" AlignH="LEFT" AlignV="TOP"/>
+        </BlockPin>
+        <BlockPin Name="clk" Dir="in" Edge="Left" Offset="70">
+          <PropertyText Name="Name" Cleat="Name" Origin="Middle Left" AlignH="LEFT" AlignV="TOP"/>
+        </BlockPin>
+        <BlockPin Name="rdata[31:0]" Dir="out" Edge="Right" Offset="10">
+          <PropertyText Name="Name" Cleat="Name" Origin="Middle Left" AlignH="LEFT" AlignV="TOP"/>
+        </BlockPin>
+        <BlockPin Name="rd_we[3:0]" Dir="in" Edge="Left" Offset="50">
+          <PropertyText Name="Name" Cleat="Name" Origin="Middle Left" AlignH="LEFT" AlignV="TOP"/>
+        </BlockPin>
+        <BlockPin Name="rd_data[31:0]" Dir="in" Edge="Left" Offset="40">
+          <PropertyText Name="Name" Cleat="Name" Origin="Middle Left" AlignH="LEFT" AlignV="TOP"/>
+        </BlockPin>
+        <BlockPin Name="rd_sel[4:0]" Dir="in" Edge="Left" Offset="30">
+          <PropertyText Name="Name" Cleat="Name" Origin="Middle Left" AlignH="LEFT" AlignV="TOP"/>
+        </BlockPin>
+        <BlockPin Name="rs2_sel[4:0]" Dir="in" Edge="Left" Offset="20">
+          <PropertyText Name="Name" Cleat="Name" Origin="Middle Left" AlignH="LEFT" AlignV="TOP"/>
+        </BlockPin>
+      </Block>
+      <Block Label="U_DECODE32" Name="jarv_decode" Path="" Origin="Middle Center" X="345" Y="180" Width="210" Height="160">
+        <PropertyText Name="Label" Cleat="Top Left" Origin="Bottom Left" AlignH="LEFT" AlignV="TOP"/>
+        <PropertyText Name="Name" Cleat="Bottom Left" Origin="Top Left" AlignH="LEFT" AlignV="TOP"/>
+        <BlockPin Name="d[31:0]" Dir="in" Edge="Left" Offset="10">
+          <PropertyText Name="Name" Cleat="Name" Origin="Middle Left" AlignH="LEFT" AlignV="TOP"/>
+        </BlockPin>
+        <BlockPin Name="csr_addr[11:0]" Dir="out" Edge="Right" Offset="110">
+          <PropertyText Name="Name" Cleat="Name" Origin="Middle Left" AlignH="LEFT" AlignV="TOP"/>
+        </BlockPin>
+        <BlockPin Name="csr_re" Dir="out" Edge="Right" Offset="120">
+          <PropertyText Name="Name" Cleat="Name" Origin="Middle Left" AlignH="LEFT" AlignV="TOP"/>
+        </BlockPin>
+        <BlockPin Name="csr_we" Dir="out" Edge="Right" Offset="130">
+          <PropertyText Name="Name" Cleat="Name" Origin="Middle Left" AlignH="LEFT" AlignV="TOP"/>
+        </BlockPin>
+        <BlockPin Name="rs1_sel[4:0]" Dir="out" Edge="Right" Offset="20">
+          <PropertyText Name="Name" Cleat="Name" Origin="Middle Left" AlignH="LEFT" AlignV="TOP"/>
+        </BlockPin>
+        <BlockPin Name="rs2_sel[4:0]" Dir="out" Edge="Right" Offset="30">
+          <PropertyText Name="Name" Cleat="Name" Origin="Middle Left" AlignH="LEFT" AlignV="TOP"/>
+        </BlockPin>
+        <BlockPin Name="rd_sel[4:0]" Dir="out" Edge="Right" Offset="40">
+          <PropertyText Name="Name" Cleat="Name" Origin="Middle Left" AlignH="LEFT" AlignV="TOP"/>
+        </BlockPin>
+        <BlockPin Name="rd_op[1:0]" Dir="out" Edge="Right" Offset="60">
+          <PropertyText Name="Name" Cleat="Name" Origin="Middle Left" AlignH="LEFT" AlignV="TOP"/>
+        </BlockPin>
+        <BlockPin Name="pc_op" Dir="out" Edge="Right" Offset="70">
+          <PropertyText Name="Name" Cleat="Name" Origin="Middle Left" AlignH="LEFT" AlignV="TOP"/>
+        </BlockPin>
+      </Block>
+      <Port Name="ls_ready" Dir="in" X="120" Y="230" Rotation="180">
+        <PropertyText Name="Name" Cleat="Name" X="72.5" Y="0" Origin="Middle Right" AlignH="LEFT" AlignV="TOP" Width="72.5"/>
+      </Port>
+      <Port Name="clk" Dir="in" X="120" Y="40" Rotation="180">
+        <PropertyText Name="Name" Cleat="Name" X="72.5" Y="0" Origin="Middle Right" AlignH="LEFT" AlignV="TOP" Width="72.5"/>
+      </Port>
+      <Port Name="if_addr[31:1]" Dir="out" X="120" Y="110" Rotation="180">
+        <PropertyText Name="Name" Cleat="Name" X="72.29289321881345" Y="0" Origin="Middle Right" AlignH="LEFT" AlignV="TOP" Width="72.29289321881345"/>
+      </Port>
+      <Port Name="if_data[31:0]" Dir="in" X="120" Y="140" Rotation="180">
+        <PropertyText Name="Name" Cleat="Name" X="72.5" Y="0" Origin="Middle Right" AlignH="LEFT" AlignV="TOP" Width="72.5"/>
+      </Port>
+      <Port Name="ls_wdata[31:0]" Dir="out" X="120" Y="210" Rotation="180">
+        <PropertyText Name="Name" Cleat="Name" X="72.29289321881345" Y="0" Origin="Middle Right" AlignH="LEFT" AlignV="TOP" Width="72.29289321881345"/>
+      </Port>
+      <Text Text="Instruction Fetch" X="20" Y="90" Origin="Top Left" AlignH="LEFT" AlignV="TOP" Width="14.640625" Height="30" Text_Color="#00FFFF" Text_Size="10" Text_Bold="True" Text_Italic="True"/>
+      <Text Text="Instruction Decode" X="234.1796875" Y="60" Origin="Top Left" AlignH="CENTER" AlignV="TOP" Width="14.640625" Height="30" Text_Color="#00FFFF" Text_Size="10" Text_Bold="True" Text_Italic="True"/>
+      <Text Text="Register File&#10;(sync write, async read)" X="630" Y="60" Origin="Top Left" AlignH="CENTER" AlignV="TOP" Width="14.640625" Height="30" Text_Color="#00FFFF" Text_Size="10" Text_Bold="True" Text_Italic="True"/>
+      <Text Text="Load/Store" X="20" Y="170" Origin="Top Left" AlignH="LEFT" AlignV="TOP" Width="4.640625" Height="30" Text_Color="#00FFFF" Text_Size="10" Text_Bold="True" Text_Italic="True"/>
+      <Port Name="ls_wbe[3:0]" Dir="out" X="120" Y="200" Rotation="180">
+        <PropertyText Name="Name" Cleat="Name" X="72.29289321881345" Y="0" Origin="Middle Right" AlignH="LEFT" AlignV="TOP" Width="72.29289321881345"/>
+      </Port>
+      <Port Name="reset" Dir="in" X="120" Y="50" Rotation="180">
+        <PropertyText Name="Name" Cleat="Name" X="72.5" Y="0" Origin="Middle Right" AlignH="LEFT" AlignV="TOP" Width="72.5"/>
+      </Port>
+      <Port Name="ls_addr[31:2]" Dir="out" X="120" Y="190" Rotation="180">
+        <PropertyText Name="Name" Cleat="Name" X="72.29289321881345" Y="0" Origin="Middle Right" AlignH="LEFT" AlignV="TOP" Width="72.29289321881345"/>
+      </Port>
+      <Port Name="ls_data[31:0]" Dir="in" X="120" Y="240" Rotation="180">
+        <PropertyText Name="Name" Cleat="Name" X="72.5" Y="0" Origin="Middle Right" AlignH="LEFT" AlignV="TOP" Width="72.5"/>
+      </Port>
+      <Port Name="irq" Dir="in" X="120" Y="60" Rotation="180">
+        <PropertyText Name="Name" Cleat="Name" X="72.5" Y="0" Origin="Middle Right" AlignH="LEFT" AlignV="TOP" Width="72.5"/>
+      </Port>
+      <Port Name="ls_valid" Dir="out" X="120" Y="220" Rotation="180">
+        <PropertyText Name="Name" Cleat="Name" X="72.29289321881345" Y="0" Origin="Middle Right" AlignH="LEFT" AlignV="TOP" Width="72.29289321881345"/>
+      </Port>
+      <Port Name="if_ready" Dir="in" X="120" Y="130" Rotation="180">
+        <PropertyText Name="Name" Cleat="Name" X="72.5" Y="0" Origin="Middle Right" AlignH="LEFT" AlignV="TOP" Width="72.5"/>
+      </Port>
+      <Port Name="if_valid" Dir="out" X="120" Y="120" Rotation="180">
+        <PropertyText Name="Name" Cleat="Name" X="72.29289321881345" Y="0" Origin="Middle Right" AlignH="LEFT" AlignV="TOP" Width="72.29289321881345"/>
+      </Port>
+      <NetLabel Name="Name" Value="rs1_sel[4:0]" X="470" Y="120" Origin="Bottom Left"/>
+      <NetLabel Name="Name" Value="rs2_sel[4:0]" X="470" Y="130" Origin="Bottom Left" />
+      <NetLabel Name="Name" Value="rd_sel[4:0]" X="470" Y="140" Origin="Bottom Left"/>
+      <Connectivity>
+        <FixedNode ID="0" X="460.0" Y="130.0"/>
+        <FixedNode ID="1" X="610.0" Y="130.0"/>
+        <FixedNode ID="2" X="610.0" Y="140.0"/>
+        <FixedNode ID="3" X="460.0" Y="140.0"/>
+        <FixedNode ID="4" X="460.0" Y="120.0"/>
+        <FixedNode ID="5" X="610.0" Y="120.0"/>
+        <Subnet ID="0" Nodes="0,1">
+          <Segment Nodes="0,1"/>
+        </Subnet>
+        <Subnet ID="1" Nodes="2,3">
+          <Segment Nodes="2,3"/>
+        </Subnet>
+        <Subnet ID="2" Nodes="4,5">
+          <Segment Nodes="4,5"/>
+        </Subnet>
+        <Net Name="U_DECODE32_rs2_sel4:0" Subnets="0"/>
+        <Net Name="U_DECODE32_rd_sel4:0" Subnets="1"/>
+        <Net Name="U_DECODE32_rs1_sel4:0" Subnets="2"/>
+      </Connectivity>
+    </Diagram>
+  </Design>
+</ConnectEd>

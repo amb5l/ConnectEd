@@ -221,7 +221,7 @@ items:
     text:
       color     : '@NetLabel'
       font      : 'Liberation Sans'
-      size      : 7
+      size      : 5
       bold      : false
       italic    : false
       underline : false

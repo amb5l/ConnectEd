@@ -753,17 +753,19 @@ class TextItem(
     def _padding(self : Self) -> tuple[float, float, float, float]:
         return (self._pad_left, self._pad_right, self._pad_top, self._pad_bottom)
 
-    def _syncHandleRect(self : Self) -> None:
-        """Map rendered glyph bounds to the handle rectangle."""
-        child = self._child
-        if isinstance(child, TextLineRenderer):
-            glyph = QGraphicsSimpleTextItem.boundingRect(child)
+    def _syncHandleRect(self : Self, layout : QRectF | None = None) -> None:
+        """Map the text layout (constraints and padding) to the handle rectangle."""
+        if layout is not None:
+            self._brect = layout
         else:
-            glyph = QGraphicsTextItem.boundingRect(child)
-        rendered = child.mapRectToParent(glyph)
-        self._brect = rendered
+            child = self._child
+            if isinstance(child, TextLineRenderer):
+                glyph = QGraphicsSimpleTextItem.boundingRect(child)
+            else:
+                glyph = QGraphicsTextItem.boundingRect(child)
+            self._brect = child.mapRectToParent(glyph)
         self._hshape = QPainterPath()
-        self._hshape.addRect(rendered)
+        self._hshape.addRect(self._brect)
 
 class TextRendererMixin(ItemShapeMixin):
     def _setText(
@@ -920,7 +922,7 @@ class TextLineRenderer(TextRendererMixin, QGraphicsSimpleTextItem):
         self.setPos(child_pos)
         self.setTransformOriginPoint(urect.center())
         self.onSceneOrientationChanged()
-        parent._syncHandleRect()
+        parent._syncHandleRect(layout)
 
     def color(self : Self) -> QColor:
         return self.brush().color()
@@ -1034,7 +1036,8 @@ class TextBlockRenderer(TextRendererMixin, QGraphicsTextItem):
         glyph = QGraphicsTextItem.boundingRect(self)
         self.setTransformOriginPoint(glyph.center())
         self.onSceneOrientationChanged()
-        parent._syncHandleRect()
+        w = (width if width >= 0.0 else urect.width()) + pad_l + pad_r
+        parent._syncHandleRect(QRectF(0.0, 0.0, w, h))
 
     def color(self : Self) -> QColor:
         return self.defaultTextColor()
