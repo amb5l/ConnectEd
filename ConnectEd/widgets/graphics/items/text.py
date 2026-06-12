@@ -7,7 +7,7 @@ from PyQt6.QtWidgets import QGraphicsItem, QMenu, \
                             QGraphicsSceneContextMenuEvent, \
                             QGraphicsSimpleTextItem, QGraphicsTextItem
 from PyQt6.QtGui     import QColor, QFont, QAction, QPainter, QPainterPath, \
-                            QTransform
+                            QTransform, QTextCursor
 
 from ....core.types import NoChange, NO_CHANGE, \
                            AlignH, AlignV, RectHandleId, DataKind
@@ -1002,18 +1002,28 @@ class TextBlockRenderer(TextRendererMixin, QGraphicsTextItem):
         option = doc.defaultTextOption()
         option.setAlignment(align_h.value)
         doc.setDefaultTextOption(option)
-        # apply width constraint inside horizontal padding
-        if width >= 0.0:
-            self.setTextWidth(max(width - pad_l - pad_r, 0.0))
-        else:
-            self.setTextWidth(width)
-        # calculate unconstrained bounding rect (without margins)
+        cursor = QTextCursor(doc)
+        cursor.select(QTextCursor.SelectionType.Document)
+        block_fmt = cursor.blockFormat()
+        block_fmt.setAlignment(align_h.value)
+        cursor.setBlockFormat(block_fmt)
         root_frame = doc.rootFrame()
         fmt = root_frame.frameFormat()
-        fmt.setMargin(0)  # temporarily remove margins
+        fmt.setMargin(0)  # measure and lay out without frame margins
         root_frame.setFrameFormat(fmt)
-        urect = QGraphicsTextItem.boundingRect(self)  # unconstrained rect
+        # apply width constraint inside horizontal padding
+        if width >= 0.0:
+            text_w = max(width - pad_l - pad_r, 0.0)
+        elif align_h != AlignH.LEFT:
+            # auto width: Qt aligns each line only within its own width unless
+            # textWidth is set to the natural (longest-line) document width
+            self.setTextWidth(-1.0)
+            text_w = QGraphicsTextItem.boundingRect(self).width()
+        else:
+            text_w = -1.0
+        self.setTextWidth(text_w)
         # content height for vertical alignment inside padding
+        urect = QGraphicsTextItem.boundingRect(self)  # unconstrained rect
         h = (height if height >= 0.0 else urect.height()) + pad_t + pad_b
         ch = max(h - pad_t - pad_b, 0.0)
         self.setPos(QPointF(0.0, 0.0))

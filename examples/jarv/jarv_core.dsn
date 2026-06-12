@@ -76,7 +76,7 @@
       </Port>
       <Text Text="Instruction Fetch" X="20" Y="90" Origin="Top Left" AlignH="LEFT" AlignV="TOP" Width="14.640625" Height="30" Text_Color="#00FFFF" Text_Size="10" Text_Bold="True" Text_Italic="True"/>
       <Text Text="Instruction Decode" X="234.1796875" Y="60" Origin="Top Left" AlignH="CENTER" AlignV="TOP" Width="14.640625" Height="30" Text_Color="#00FFFF" Text_Size="10" Text_Bold="True" Text_Italic="True"/>
-      <Text Text="Register File&#10;(sync write, async read)" X="630" Y="60" Origin="Top Left" AlignH="CENTER" AlignV="TOP" Width="14.640625" Height="30" Text_Color="#00FFFF" Text_Size="10" Text_Bold="True" Text_Italic="True"/>
+      <Text Text="Register File&#10;(sync write, async read)" X="630" Y="60" Origin="Top Left" AlignH="CENTER" AlignV="TOP" Text_Color="#00FFFF" Text_Size="10" Text_Bold="True" Text_Italic="True"/>
       <Text Text="Load/Store" X="20" Y="170" Origin="Top Left" AlignH="LEFT" AlignV="TOP" Width="4.640625" Height="30" Text_Color="#00FFFF" Text_Size="10" Text_Bold="True" Text_Italic="True"/>
       <Port Name="ls_wbe[3:0]" Dir="out" X="120" Y="200" Rotation="180">
         <PropertyText Name="Name" Cleat="Name" X="72.29289321881345" Y="0" Origin="Middle Right" AlignH="LEFT" AlignV="TOP" Width="72.29289321881345"/>
@@ -102,16 +102,17 @@
       <Port Name="if_valid" Dir="out" X="120" Y="120" Rotation="180">
         <PropertyText Name="Name" Cleat="Name" X="72.29289321881345" Y="0" Origin="Middle Right" AlignH="LEFT" AlignV="TOP" Width="72.29289321881345"/>
       </Port>
-      <NetLabel Name="Name" Value="rs1_sel[4:0]" X="470" Y="120" Origin="Bottom Left"/>
-      <NetLabel Name="Name" Value="rs2_sel[4:0]" X="470" Y="130" Origin="Bottom Left" />
-      <NetLabel Name="Name" Value="rd_sel[4:0]" X="470" Y="140" Origin="Bottom Left"/>
+      <NetLabel Name="Name" Value="rs1_sel[4:0]" X="470" Y="120" Origin="Bottom Left" Pad_Left="2" Pad_Right="2"/>
+      <NetLabel Name="Name" Value="rs2_sel[4:0]" X="470" Y="130" Origin="Bottom Left" Pad_Left="2" Pad_Right="2"/>
+      <NetLabel Name="Name" Value="rd_sel[4:0]" X="470" Y="140" Origin="Bottom Left" Pad_Left="2" Pad_Right="2"/>
+      <Text Text="Destination Register&#10;Data Source" Block="True" X="710" Y="230" Origin="Bottom Center" AlignH="CENTER" AlignV="TOP"/>
       <Connectivity>
         <FixedNode ID="0" X="460.0" Y="130.0"/>
         <FixedNode ID="1" X="610.0" Y="130.0"/>
-        <FixedNode ID="2" X="610.0" Y="140.0"/>
-        <FixedNode ID="3" X="460.0" Y="140.0"/>
-        <FixedNode ID="4" X="460.0" Y="120.0"/>
-        <FixedNode ID="5" X="610.0" Y="120.0"/>
+        <FixedNode ID="2" X="460.0" Y="140.0"/>
+        <FixedNode ID="3" X="610.0" Y="140.0"/>
+        <FixedNode ID="4" X="610.0" Y="120.0"/>
+        <FixedNode ID="5" X="460.0" Y="120.0"/>
         <Subnet ID="0" Nodes="0,1">
           <Segment Nodes="0,1"/>
         </Subnet>
