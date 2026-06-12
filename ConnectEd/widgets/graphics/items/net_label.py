@@ -116,7 +116,7 @@ class NetLabelItem(TextItem):
 
     @checked
     def setOrigin(self : Self, id : RectHandleId) -> None:
-        ItemTransformMixin.setOrigin(self, id)
+        super().setOrigin(id)
         self._notifyNetlist()
 
     def onTextChanged(self : Self) -> None:

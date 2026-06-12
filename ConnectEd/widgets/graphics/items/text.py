@@ -301,7 +301,7 @@ class TextItem(
         self._hshape = QPainterPath()
         self._child = TextBlockRenderer() if block else TextLineRenderer()
         self._child.setParentItem(self)
-        self._child.setText(text)
+        self._child._setText(text)
         self.initItem(fresh)
         self.setFlag(self.GraphicsItemFlag.ItemHasNoContents, True)
         self.setPos(pos or QPointF(0, 0))
@@ -315,17 +315,25 @@ class TextItem(
         self.setTextBold(bold)
         self.setTextItalic(italic)
         self.setTextUnderline(underline)
+        self.onGeometryChanged()
+
+    def onGeometryChanged(self : Self) -> None:
+        """Re-layout rendered text and sync handles."""
         self._child.onGeometryChanged()
         self.updateHandlePositions()
-        self._refreshRendererOrientation()
 
     def onSceneRotationChanged(self : Self) -> None:
-        self._child.onGeometryChanged()
-        self.updateHandlePositions()
+        self._child.onSceneOrientationChanged()
 
     def onSceneMirrorChanged(self : Self) -> None:
-        self._child.onGeometryChanged()
-        self.updateHandlePositions()
+        self._child.onSceneOrientationChanged()
+
+    def onOriginChanged(
+        self : Self,
+        _old : RectHandleId | None,
+        _new : RectHandleId,
+    ) -> None:
+        self.onGeometryChanged()
 
     def block(self : Self) -> bool:
         return isinstance(self._child, TextBlockRenderer)
@@ -342,8 +350,7 @@ class TextItem(
             self._child.setParentItem(None)  # remove old child
             self._child = new_child
             self._child.setParentItem(self)
-            self._child.onGeometryChanged()
-            self.updateHandlePositions()
+            self.onGeometryChanged()
             # subclasses may not expose the block property:
             if self.properties.has("Block"):
                 self.properties.signalChanges("Block")
@@ -354,7 +361,7 @@ class TextItem(
     @checked
     def setAutoflip(self : Self, autoflip : bool) -> None:
         self._autoflip = autoflip
-        self._adjustOrientation()
+        self._child.onSceneOrientationChanged()
         self.properties.signalChanges("AutoFlip")
 
     def text(self : Self) -> str:
@@ -362,9 +369,8 @@ class TextItem(
 
     @checked
     def setText(self : Self, text : str) -> None:
-        self._child.setText(text)
-        self.updateHandlePositions()
-        self._refreshRendererOrientation()
+        self._child._setText(text)
+        self.onGeometryChanged()
         self.properties.signalChanges("Text")
 
     def alignH(self : Self) -> AlignH:
@@ -391,9 +397,7 @@ class TextItem(
     @checked
     def setWidth(self : Self, width : float) -> None:
         self._width = width
-        self._child.onGeometryChanged()
-        self.updateHandlePositions()
-        self.updateGrips()
+        self.onGeometryChanged()
         self.properties.signalChanges("Width")
 
     def height(self : Self) -> float:
@@ -402,9 +406,7 @@ class TextItem(
     @checked
     def setHeight(self : Self, height : float) -> None:
         self._height = height
-        self._child.onGeometryChanged()
-        self.updateHandlePositions()
-        self.updateGrips()
+        self.onGeometryChanged()
         self.properties.signalChanges("Height")
 
     def padLeft(self : Self) -> float:
@@ -413,9 +415,7 @@ class TextItem(
     @checked
     def setPadLeft(self : Self, pad_left : float) -> None:
         self._pad_left = max(pad_left, 0.0)
-        self._child.onGeometryChanged()
-        self.updateHandlePositions()
-        self.updateGrips()
+        self.onGeometryChanged()
         self.properties.signalChanges("Pad Left")
 
     def padRight(self : Self) -> float:
@@ -424,9 +424,7 @@ class TextItem(
     @checked
     def setPadRight(self : Self, pad_right : float) -> None:
         self._pad_right = max(pad_right, 0.0)
-        self._child.onGeometryChanged()
-        self.updateHandlePositions()
-        self.updateGrips()
+        self.onGeometryChanged()
         self.properties.signalChanges("Pad Right")
 
     def padTop(self : Self) -> float:
@@ -435,9 +433,7 @@ class TextItem(
     @checked
     def setPadTop(self : Self, pad_top : float) -> None:
         self._pad_top = max(pad_top, 0.0)
-        self._child.onGeometryChanged()
-        self.updateHandlePositions()
-        self.updateGrips()
+        self.onGeometryChanged()
         self.properties.signalChanges("Pad Top")
 
     def padBottom(self : Self) -> float:
@@ -446,9 +442,7 @@ class TextItem(
     @checked
     def setPadBottom(self : Self, pad_bottom : float) -> None:
         self._pad_bottom = max(pad_bottom, 0.0)
-        self._child.onGeometryChanged()
-        self.updateHandlePositions()
-        self.updateGrips()
+        self.onGeometryChanged()
         self.properties.signalChanges("Pad Bottom")
 
     def color(self : Self) -> QColor:
@@ -464,7 +458,7 @@ class TextItem(
     @checked
     def setFont(self : Self, font : QFont) -> None:
         self._child.setFont(font)
-        self.updateHandlePositions()
+        self.onGeometryChanged()
 
     def quill(self : Self) -> Quill:
         qfont = self.font()
@@ -479,7 +473,7 @@ class TextItem(
 
     @checked
     def setQuill(self : Self, quill : Quill) -> None:
-        self._child.setColor(quill.color())
+        self.setColor(quill.color())
         self.setFont(quill.qFont())
 
     def handleRect(self : Self) -> QRectF:
@@ -549,17 +543,13 @@ class TextItem(
         rect = self._brect
         width = self._width if self._width >= 0.0 else rect.width()
         self._width = max(width + dx, 0.0)
-        self._child.onGeometryChanged()
-        self.updateHandlePositions()
-        self.updateGrips()
+        self.onGeometryChanged()
 
     def resizeY(self : Self, dy : float) -> None:
         rect = self._brect
         height = self._height if self._height >= 0.0 else rect.height()
         self._height = max(height + dy, 0.0)
-        self._child.onGeometryChanged()
-        self.updateHandlePositions()
-        self.updateGrips()
+        self.onGeometryChanged()
 
     def resize(self : Self, dx : float, dy : float) -> None:
         rect = self._brect
@@ -567,13 +557,7 @@ class TextItem(
         height = self._height if self._height >= 0.0 else rect.height()
         self._width  = max(width  + dx, 0.0)
         self._height = max(height + dy, 0.0)
-        self._child.onGeometryChanged()
-        self.updateHandlePositions()
-        self.updateGrips()
-
-    def updateGrips(self : Self) -> None:
-        for handle in self._handles.values():
-            handle.grip().updatePath()
+        self.onGeometryChanged()
 
     def boundingRect(self : Self) -> QRectF:
         return self._brect
@@ -769,62 +753,60 @@ class TextItem(
     def _padding(self : Self) -> tuple[float, float, float, float]:
         return (self._pad_left, self._pad_right, self._pad_top, self._pad_bottom)
 
-    def _rendererPivot(self : Self, child_pos : QPointF) -> QPointF:
-        """
-        Autoflip pivot in renderer-local coords. Use the origin handle so
-        auto-sized text grows away from the cleat; rect centre drifts with width.
-        """
-        if self._autoflip and self.origin() is not None:
-            return self.getOriginHandle().pos() - child_pos
-        return self._brect.center() - child_pos
+    def _syncHandleRect(self : Self) -> None:
+        """Map rendered glyph bounds to the handle rectangle."""
+        child = self._child
+        if isinstance(child, TextLineRenderer):
+            glyph = QGraphicsSimpleTextItem.boundingRect(child)
+        else:
+            glyph = QGraphicsTextItem.boundingRect(child)
+        rendered = child.mapRectToParent(glyph)
+        self._brect = rendered
+        self._hshape = QPainterPath()
+        self._hshape.addRect(rendered)
 
-    def _alignRendererPos(self : Self) -> None:
-        """
-        Autoflip may place the renderer at negative x in this item's frame;
-        shift it to 0..width so the origin anchor maps to the cleat in scene.
-        """
-        parent_rect = self._child.mapRectToParent(self._child.boundingRect())
-        if parent_rect.left() < -0.01:
-            pos = self._child.pos()
-            self._child.setPos(pos.x() - parent_rect.left(), pos.y())
+class TextRendererMixin(ItemShapeMixin):
+    def _setText(
+        self : "Self | TextLineRenderer | TextBlockRenderer",
+        text : str,
+    ) -> None:
+        raise NotImplementedError("Subclass must implement this method")
 
-    def _refreshRendererOrientation(self : Self) -> None:
-        self._adjustOrientation()
-        self._alignRendererPos()
+    def initRenderer(self : "Self | TextLineRenderer | TextBlockRenderer") -> None:
+        self.setFlag(self.GraphicsItemFlag.ItemIsSelectable, False)
+        self.setAcceptedMouseButtons(Qt.MouseButton.NoButton)
+        self.initShape()  # empty hit detect shape
 
-    def _adjustOrientation(self : Self) -> None:
+    def onSceneOrientationChanged(
+        self : "Self | TextLineRenderer | TextBlockRenderer"
+    ) -> None:
         """
-        Counter-rotate and/or counter-mirror the renderer child so text remains
-        readable (left-right or up-down) given the item's effective scene
-        rotation and mirror state. Both the rotation and the mirror reflection
-        are anchored at the renderer's transform origin (rect centre) so the
-        text block sits on the mirrored side of the item's origin while still
-        reading forwards.
+        Counter-rotate and/or counter-mirror so text stays readable for the
+        parent's effective scene rotation and mirror. Pivots at the glyph
+        centre so the text flips in place.
         """
-        self._child.setRotation(0)
-        if not self._autoflip:
-            self._child.setTransform(QTransform())
+        parent = self.parentItem()
+        if not isinstance(parent, TextItem):
             return
-        a  = self.sceneRotation()
-        mh = self.sceneMirrorH()
-        mv = self.sceneMirrorV()
+        self.setRotation(0)
+        if not parent.autoflip():
+            self.setTransform(QTransform())
+            self.update()
+            return
+        a  = parent.sceneRotation()
+        mh = parent.sceneMirrorH()
+        mv = parent.sceneMirrorV()
         angle = 180.0 if 135 < a <= 315 else 0.0
         sx = -1.0 if mh else 1.0
         sy = -1.0 if mv else 1.0
-        pivot = self._child.transformOriginPoint()
+        pivot = self.transformOriginPoint()
         transform = QTransform()
         transform.translate(pivot.x(), pivot.y())
         transform.rotate(angle)
         transform.scale(sx, sy)
         transform.translate(-pivot.x(), -pivot.y())
-        self._child.setTransform(transform)
-
-
-class TextRendererMixin(ItemShapeMixin):
-    def initRenderer(self : "Self | TextLineRenderer | TextBlockRenderer") -> None:
-        self.setFlag(self.GraphicsItemFlag.ItemIsSelectable, False)
-        self.setAcceptedMouseButtons(Qt.MouseButton.NoButton)
-        self.initShape()  # empty hit detect shape
+        self.setTransform(transform)
+        self.update()
 
     def onSelectionChanged(
         self : "Self | TextLineRenderer | TextBlockRenderer",
@@ -839,7 +821,6 @@ class TextRendererMixin(ItemShapeMixin):
     ) -> None:
         font.setHintingPreference(QFont.HintingPreference.PreferNoHinting)
         super().setFont(font)
-        self.onGeometryChanged()
 
     def contextMenuEvent(self : Self,  event : QGraphicsSceneContextMenuEvent) -> None:
         """Bounce context menu event to parent."""
@@ -890,8 +871,13 @@ class TextLineRenderer(TextRendererMixin, QGraphicsSimpleTextItem):
 
     @checked
     def setText(self : Self, text : str) -> None:
+        self._setText(text)
+        parent : TextItem | None = self.parentItem()
+        if parent is not None:
+            parent.onGeometryChanged()
+
+    def _setText(self : Self, text : str) -> None:
         super().setText(text)
-        self.onGeometryChanged()
 
     def onGeometryChanged(self : Self) -> None:
         parent : TextItem = self.parentItem()
@@ -908,11 +894,10 @@ class TextLineRenderer(TextRendererMixin, QGraphicsSimpleTextItem):
         h = (height if height >= 0.0 else urect.height()) + pad_t + pad_b
         cw = max(w - pad_l - pad_r, 0.0)
         ch = max(h - pad_t - pad_b, 0.0)
-        rect = QRectF(0.0, 0.0, w, h)
-        parent._brect = rect
+        layout = QRectF(0.0, 0.0, w, h)
         # apply clipping if content area is smaller than unconstrained rect
         if cw < urect.width() or ch < urect.height():
-            self._clip_rect = rect
+            self._clip_rect = layout
         else:
             self._clip_rect = None
         self._paint_override()
@@ -931,18 +916,11 @@ class TextLineRenderer(TextRendererMixin, QGraphicsSimpleTextItem):
                 y = pad_t + (ch - urect.height()) / 2
             case AlignV.BOTTOM:
                 y = pad_t + ch - urect.height()
-        self.setPos(x, y)
-        self.setTransformOriginPoint(parent._rendererPivot(QPointF(x, y)))
-        parent._refreshRendererOrientation()
-        # Hit shape covers the full bounding rect (in the parent's local
-        # frame), matching every other item type. This keeps empty outlined
-        # padding clickable and, crucially, stays valid under mirror /
-        # rotation changes - those only retransform the child renderer,
-        # never _brect.
-        parent._hshape = QPainterPath()
-        parent._hshape.addRect(rect)
-        # update
-        self.update()
+        child_pos = QPointF(x, y)
+        self.setPos(child_pos)
+        self.setTransformOriginPoint(urect.center())
+        self.onSceneOrientationChanged()
+        parent._syncHandleRect()
 
     def color(self : Self) -> QColor:
         return self.brush().color()
@@ -1001,8 +979,13 @@ class TextBlockRenderer(TextRendererMixin, QGraphicsTextItem):
 
     @checked
     def setText(self : Self, text : str) -> None:
+        self._setText(text)
+        parent : TextItem | None = self.parentItem()
+        if parent is not None:
+            parent.onGeometryChanged()
+
+    def _setText(self : Self, text : str) -> None:
         self.setPlainText(text)
-        self.onGeometryChanged()
 
     def onGeometryChanged(self : Self) -> None:
         parent : TextItem = self.parentItem()
@@ -1028,22 +1011,10 @@ class TextBlockRenderer(TextRendererMixin, QGraphicsTextItem):
         fmt.setMargin(0)  # temporarily remove margins
         root_frame.setFrameFormat(fmt)
         urect = QGraphicsTextItem.boundingRect(self)  # unconstrained rect
-        # update cached bounding rect, accounting for constraints and padding
-        w = (width  if width  >= 0.0 else urect.width())  + pad_l + pad_r
+        # content height for vertical alignment inside padding
         h = (height if height >= 0.0 else urect.height()) + pad_t + pad_b
         ch = max(h - pad_t - pad_b, 0.0)
-        rect = QRectF(0.0, 0.0, w, h)
-        parent._brect = rect
-        child_pos = QPointF(0.0, 0.0)
-        self.setTransformOriginPoint(parent._rendererPivot(child_pos))
-        parent._refreshRendererOrientation()
-        # Hit shape covers the full bounding rect (in the parent's local
-        # frame), matching every other item type. This keeps empty outlined
-        # padding clickable and, crucially, stays valid under mirror /
-        # rotation changes - those only retransform the child renderer,
-        # never _brect.
-        parent._hshape = QPainterPath()
-        parent._hshape.addRect(rect)
+        self.setPos(QPointF(0.0, 0.0))
         fmt.setLeftMargin(pad_l)
         fmt.setRightMargin(pad_r)
         fmt.setBottomMargin(pad_b)
@@ -1060,8 +1031,10 @@ class TextBlockRenderer(TextRendererMixin, QGraphicsTextItem):
         else:
             fmt.setTopMargin(pad_t)
         root_frame.setFrameFormat(fmt)
-        # update
-        self.update()
+        glyph = QGraphicsTextItem.boundingRect(self)
+        self.setTransformOriginPoint(glyph.center())
+        self.onSceneOrientationChanged()
+        parent._syncHandleRect()
 
     def color(self : Self) -> QColor:
         return self.defaultTextColor()

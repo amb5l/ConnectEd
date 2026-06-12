@@ -68,10 +68,7 @@ class CmdEditText(CmdSceneItem):
         if self._after.autoflip is not NO_CHANGE:
             self._item.setAutoflip(self._after.autoflip)
         if self._after.origin is not NO_CHANGE:
-            # maintain scene position
-            pos = self._item.getHandle(self._after.origin).scenePos()
             self._item.setOrigin(self._after.origin)
-            self._item.moveBy(pos - self._item.pos())
         if self._after.align_h is not NO_CHANGE:
             self._item.setAlignH(self._after.align_h)
         if self._after.align_v is not NO_CHANGE:
@@ -118,10 +115,7 @@ class CmdEditText(CmdSceneItem):
         if self._after.autoflip is not NO_CHANGE:
             self._item.setAutoflip(self._before.autoflip)
         if self._after.origin is not NO_CHANGE:
-            # maintain scene position
-            pos = self._item.getHandle(self._before.origin).scenePos()
             self._item.setOrigin(self._before.origin)
-            self._item.moveBy(pos - self._item.pos())
         if self._after.align_h is not NO_CHANGE:
             self._item.setAlignH(self._before.align_h)
         if self._after.align_v is not NO_CHANGE:

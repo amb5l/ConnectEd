@@ -235,17 +235,36 @@ class ItemTransformMixin:
         self : "Self | QGraphicsItem | ItemHandlesMixin | PropertiesMixin",
         id   : HandleId
     ) -> None:
-        """Set origin handle and update transform origin accordingly."""
-        # record origin name
+        """Set origin handle without shifting the item in scene."""
+        old_id   = self.origin()
+        old_spos : QPointF | None = None
+        if self.scene() is not None and old_id is not None and old_id != id \
+        and hasattr(self, "_handles"):
+            old_spos = self.getHandle(old_id).scenePos()
         self._origin = id
-        # rebuild local transform around the new origin handle
         self.updateTransform()
-        # refresh grip appearance
         if hasattr(self, "_handles"):
             for handle in self._handles.values():
                 handle.grip().updatePath()
-        # broadcast change
+        self.onOriginChanged(old_id, id)
+        if old_spos is not None and old_id is not None:
+            actual = self.getHandle(old_id).scenePos()
+            parent = self.parentItem()
+            if parent is None:
+                delta = old_spos - actual
+                QGraphicsItem.moveBy(self, delta.x(), delta.y())
+            else:
+                pd = parent.mapFromScene(old_spos) - parent.mapFromScene(actual)
+                QGraphicsItem.moveBy(self, pd.x(), pd.y())
         self.properties.signalChanges("Origin")
+
+    def onOriginChanged(
+        self : Self,
+        _old : HandleId | None,
+        _new : HandleId,
+    ) -> None:
+        """Hook after transform rebuild; override to refresh dependent layout."""
+        return
 
     @checked
     def getOriginHandle(self : "Self | ItemHandlesMixin") -> "HandleItem":

@@ -52,9 +52,8 @@ class ItemXmlMixin:
         if hasattr(instance, "properties"):
             for name in instance.properties.names():
                 pt = instance.properties.text(name)
-                if pt is not None and hasattr(pt, "_child"):
-                    pt._child.onGeometryChanged()
-                    pt.updateHandlePositions()
+                if pt is not None and hasattr(pt, "onGeometryChanged"):
+                    pt.onGeometryChanged()
 
     @classmethod
     @checked

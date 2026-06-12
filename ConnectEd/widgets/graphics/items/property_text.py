@@ -197,14 +197,13 @@ class PropertyTextItem(TextItem):
                     logger().warning("Cleat not found in parent item")
         self.properties.signalChanges("Cleat")
         if ok:
-            self._child.onGeometryChanged()
-            self.updateHandlePositions()
+            self.onGeometryChanged()
         return ok
 
     @checked
     def setOrigin(self : Self, id : RectHandleId) -> None:
         """Override to update tether line."""
-        ItemTransformMixin.setOrigin(self,  id)
+        super().setOrigin(id)
         if hasattr(self, "_tether"):  # guard against partial initialisation
             self._tether.setParentItem(self.getOriginHandle())
             self._tether.onPositionChanged(self.pos())
