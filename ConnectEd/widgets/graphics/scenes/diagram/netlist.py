@@ -363,9 +363,9 @@ class Netlist:
             logger().warning(f"{len(scene_segments)} segments remaining after subnet processing.")
         # 3. nets
         for net in self.nets().values():
-            net_base_name = net.name or ""
-            net_suffix = net.suffix or ""
-            net_name = net_base_name + net_suffix
+            name = net.name or ""
+            suffix = net.suffix or ""
+            net_name = f"{name}[{suffix}]" if suffix else name
             net_subnets = [self._subnets[subnet_id] for subnet_id in net.subnets]
             net_subnet_ids = [subnet.id for subnet in net_subnets]
             xw.writeStartElement("Net")

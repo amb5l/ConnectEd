@@ -82,7 +82,7 @@
         <Net Name="" Subnets="2"/>
         <Net Name="_B" Subnets="3"/>
         <Net Name="_C" Subnets="4"/>
-        <Net Name="X7:0" Subnets="5"/>
+        <Net Name="X[7:0]" Subnets="5"/>
       </Connectivity>
     </Diagram>
   </Design>

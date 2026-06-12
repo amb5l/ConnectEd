@@ -122,9 +122,9 @@
         <Subnet ID="2" Nodes="4,5">
           <Segment Nodes="4,5"/>
         </Subnet>
-        <Net Name="U_DECODE32_rs2_sel4:0" Subnets="0"/>
-        <Net Name="U_DECODE32_rd_sel4:0" Subnets="1"/>
-        <Net Name="U_DECODE32_rs1_sel4:0" Subnets="2"/>
+        <Net Name="U_DECODE32_rs2_sel[4:0]" Subnets="0"/>
+        <Net Name="U_DECODE32_rd_sel[4:0]" Subnets="1"/>
+        <Net Name="U_DECODE32_rs1_sel[4:0]" Subnets="2"/>
       </Connectivity>
     </Diagram>
   </Design>
