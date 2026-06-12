@@ -37,16 +37,15 @@ class PropertyLayout(QGridLayout):
     def __init__(self : Self, object : "PropertyTextItem", name : str) -> None:
         super().__init__()
         description = self._NOT_FOUND
-        inherent = None
-        kind = self._NOT_FOUND
-        value = self._NOT_FOUND
-        if isinstance(object, PropertiesMixin) and object.properties.has(name):
-            owner = object.owner()
-            if owner is not None:
-                description = owner.description()
-                inherent = owner.properties.inherent(name)
-                kind = owner.properties.kind(name)
-                value = owner.properties.value(name)
+        inherent    = None
+        kind        = self._NOT_FOUND
+        value       = self._NOT_FOUND
+        owner       = object.owner() if isinstance(object, PropertiesMixin) else None
+        if owner is not None and owner.properties.has(name):
+            description = owner.description()
+            inherent    = owner.properties.inherent(name)
+            kind        = owner.properties.kind(name)
+            value       = owner.properties.value(name)
         row = 0
         # owner
         self._owner_label = QLabel("Owner:")
@@ -94,7 +93,7 @@ class PropertyLayout(QGridLayout):
         self._value_label = QLabel("Value:")
         self.addWidget(self._value_label, row, 0)
         if inherent is None \
-        or inherent is True and object.properties.writeable(name) is False:
+        or inherent is True and owner is not None and owner.properties.writeable(name) is False:
             self._value_value = QLabel(self._NOT_FOUND)
         else:
             # kind specific editor
