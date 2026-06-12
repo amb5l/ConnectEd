@@ -57,7 +57,7 @@ class PolyVtxItem(VertexGripItem):
         delta = dx_d if isinstance(dx_d, QPointF) \
             else QPointF(dx_d, dy if dy is not None else 0.0)
         parent : "PolylineItem" = self.parentItem()
-        if self.index() == 0 and parent.selMode() == 0:
+        if self.index() == 0 and parent.selectMode() == 0:
             parent.setPos(parent.pos() + delta)
         else:
             self.setPos(self.pos() + delta)
@@ -172,6 +172,7 @@ class PolylineItem(
     QGraphicsPathItem
 ):
     # class attributes
+    _SELECT_MODES    = 2
     _RESIZE_GRIP_CLS = PolylineResizeGripItem
     _PROPERTIES = \
         {
@@ -189,7 +190,6 @@ class PolylineItem(
     _vertices : list[PolyVtxItem]  # list of vertex grips
     _segments : list[PolySegItem]  # list of segment grips
     _closed   : bool               # whether the polyline is closed (a polygon)
-    _sel_mode : int                # current selection mode (0 = outline, 1 = vtx/seg)
 
     _line_color = None # enable per-item appearance control
     _line_width = None # enable per-item appearance control
@@ -218,7 +218,7 @@ class PolylineItem(
         self._buildSegments()
         # build path
         self.updatePath()
-        self._sel_mode = 1  # Start in vertex-edit mode for interactive creation
+        self._select_mode = 1 if fresh else 0
 
     @checked
     def onSceneChanged(self : Self, scene : "DrawingScene | None") -> None:
@@ -232,19 +232,10 @@ class PolylineItem(
             for h in self._handles.values():
                 h._grip.onSceneChanged(scene)
 
-    @checked
-    def selMode(self : Self) -> int:
-        return self._sel_mode
-
-    @checked
-    def setSelMode(self : Self, mode : int) -> None:
-        self._sel_mode = mode
-        scene : "DrawingScene" = self.scene()
-        scene.updateGrips()
-
-    @checked
-    def cycleSelMode(self : Self) -> None:
-        self.setSelMode((self._sel_mode + 1) % 2)
+    def onSelectionModeChanged(self : Self) -> None:
+        scene : "DrawingScene | None" = self.scene()
+        if scene is not None:
+            scene.updateGrips()
 
     @checked
     def vertices(self : Self) -> list[PolyVtxItem]:
@@ -270,6 +261,8 @@ class PolylineItem(
         if self.vertexCount() > 1:
             self._segments.append(PolySegItem(self, self._vertices[-2], vtx, sweep))
         self.updatePath()
+        # ensure grip visibility during interaction
+        self.setGripsVisible(self.isSelected() and self.selectMode() == 1)
         return vtx
 
     @checked
@@ -280,6 +273,8 @@ class PolylineItem(
         vtx = self._vertices.pop()
         vtx.setParentItem(None)
         self.updatePath()
+        # ensure grip visibility during interaction
+        self.setGripsVisible(self.isSelected() and self.selectMode() == 1)
 
     @checked
     def lastVertexPos(self : Self) -> QPointF:

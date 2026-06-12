@@ -139,7 +139,7 @@ class DrawingPlacePolylineInteraction(DrawingPlaceBase1PosInteraction):
     ) -> None:
         super().__init__(view, pos, item)
         self._item.addVertex(pos)  # WIP polyline now has 2 vertices
-        self._item.setSelMode(1)
+        self._item.setSelectMode(1)
         self._sweep = None
 
     def update(self : Self, pos : QPointF) -> None:
@@ -147,6 +147,14 @@ class DrawingPlacePolylineInteraction(DrawingPlaceBase1PosInteraction):
             return  # filter redundant updates
         self._pos = pos
         self._item.setLastVertexPos(pos)  # local coordinates
+
+    def _releaseItem(self : Self) -> None:
+        self._item.setAcceptedMouseButtons(Qt.MouseButton.AllButtons)
+
+    def _complete(self : Self, pos : QPointF) -> None:
+        if not self.commit(pos):
+            self._item.delLastVertex()  # remove WIP vertex
+        self._releaseItem()
 
     def _commit(self : Self, pos : QPointF) -> bool:
         # Ensure last vertex is at the click position
@@ -156,9 +164,9 @@ class DrawingPlacePolylineInteraction(DrawingPlaceBase1PosInteraction):
             return False  # continue interaction
         if self._item.vertexCount() == 2:
             # Add polyline to scene when 2nd vertex is committed
-            sel_mode = self._item.selMode()  # Save selection mode
+            sel_mode = self._item.selectMode()  # Save selection mode
             self._scene.addItems([self._item], undoable=True)
-            self._item.setSelMode(sel_mode)  # Restore selection mode
+            self._item.setSelectMode(sel_mode)  # Restore selection mode
             self._item.addVertex(pos)  # add WIP vertex
             self._sweep = None
             return False  # continue interaction
@@ -166,6 +174,7 @@ class DrawingPlacePolylineInteraction(DrawingPlaceBase1PosInteraction):
         if pos == self._item.pos():
             self._item.delLastVertex()  # remove WIP vertex
             self._scene.editPolylineClosed(self._item, True, self._sweep, undoable=True)
+            self._releaseItem()
             return True  # interaction completed
         # Add vertex to polyline when 3rd+ vertex is committed
         self._item.delLastVertex()  # remove WIP vertex
@@ -174,13 +183,11 @@ class DrawingPlacePolylineInteraction(DrawingPlaceBase1PosInteraction):
         self._sweep = None
         return False  # continue interaction
 
-    def _complete(self : Self, pos : QPointF) -> None:
-        if not self.commit(pos):
-            self._item.delLastVertex()  # remove WIP vertex
-
     def _cancel(self : Self) -> None:
         """Escape works a bit differently here."""
         self._item.delLastVertex()  # remove WIP vertex
+        if self._item.scene() is not None:
+            self._releaseItem()
 
     def ctxMenuItems(self : Self, pos : QPointF) -> list[QAction | QMenu]:
         pos = self._view._snap(pos)

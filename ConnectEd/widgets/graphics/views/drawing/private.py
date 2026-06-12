@@ -9,9 +9,10 @@ from .....app import settings, window, logger
 from ....menu import Menu
 
 from ...items.block     import BlockItem
-from ...items.polyline  import PolylineItem
 from ...items.block_pin import BlockPinItem, BlockPinArrowItem
 from ...items.node      import FixedNodeItem
+
+from ...items.mixin.select import ItemSelectMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -217,8 +218,8 @@ class DrawingViewPrivateMixin:
             if fresh:
                 if [item] != selected_items:
                     self.scene().clearSelection()
-                elif isinstance(item, PolylineItem) and item.isSelected():
-                    item.cycleSelMode()
+                elif isinstance(item, ItemSelectMixin) and item.isSelected():
+                    item.cycleSelectMode()
                     return
             item.setSelected(not prev if toggle else True)
         # perform selection
