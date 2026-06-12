@@ -35,11 +35,7 @@ class ItemMoveMixin:
     @checked
     def moveRestore(self : Self | QGraphicsItem, pos : QPointF) -> None:
         """Restore a saved scene position (from moveSave)."""
-        parent = self.parentItem()
-        if parent is None:
-            self.setPos(pos)
-        else:
-            self.setPos(parent.mapFromScene(pos))
+        self.moveBy(pos - self.scenePos())
 
     @overload
     def moveBy(self : Self | QGraphicsItem, dx : float, dy : float) -> None:

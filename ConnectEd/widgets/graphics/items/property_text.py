@@ -63,6 +63,7 @@ class PropertyTextItem(TextItem):
         } | \
         ItemTransformMixin._PROPERTIES_POS | \
         ItemTransformMixin._PROPERTIES_ROTATE | \
+        ItemTransformMixin._PROPERTIES_MIRROR | \
         ItemTransformMixin._PROPERTIES_RECT_ORIGIN | \
         TextItem._PROPERTIES_ALIGN | \
         TextItem._PROPERTIES_SIZE | \

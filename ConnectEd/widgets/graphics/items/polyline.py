@@ -23,6 +23,7 @@ from .grip import VertexGripItem, SegmentGripItem, ResizeGripItem
 from .mixin           import PrimaryItemMixin
 from .mixin.transform import ItemTransformMixin
 from .mixin.handle    import ItemRectHandlesMixin
+from .mixin.xml       import ItemXmlMixin
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -466,19 +467,6 @@ class PolylineItem(
         if hasattr(self, '_handles'):
             self.updateHandlePositions()
 
-    @checked
-    def _buildSegments(self : Self) -> None:
-        """Build segments from vertices. Default to lines not arcs."""
-        self._segments = []
-        if len(self._vertices) < 2:  # degenerate case
-            return
-        for i in range(len(self._vertices) - 1):
-            v1 = self._vertices[i]
-            v2 = self._vertices[i+1]
-            self._segments.append(PolySegItem(self, v1, v2, None))
-        if self._closed:
-            self._segments.append(PolySegItem(self, v2, self._vertices[0], None))
-
     def toXml(self : Self, xw : QXmlStreamWriter) -> None:
         self.toXmlBegin(xw)
         self.toXmlAttrs(xw)
@@ -497,7 +485,7 @@ class PolylineItem(
                 sweep = int(sweep) if sweep.is_integer() else sweep
                 xw.writeAttribute("Sweep", str(sweep))
             xw.writeEndElement()
-            pass
+        self.toXmlChildren(xw)
         self.toXmlEnd(xw)
 
     @checked
@@ -531,11 +519,41 @@ class PolylineItem(
                         # XML stores local coords (relative to polyline origin);
                         # addVertex expects parent coords.
                         instance.addVertex(QPointF(x, y) + instance.pos(), sweep)
-                else:
+                elif not ItemXmlMixin.fromXmlChild(xr, instance):
                     logger().warning(f"Unexpected element: {item_name}")
             xr.readNext()
+        ItemXmlMixin._fromXmlRefresh(instance)
         instance.properties.setNotify(True)  # enable property change signalling
         return instance
+
+    @checked
+    def _buildSegments(self : Self) -> None:
+        """Build segments from vertices. Default to lines not arcs."""
+        self._segments = []
+        if len(self._vertices) < 2:  # degenerate case
+            return
+        for i in range(len(self._vertices) - 1):
+            v1 = self._vertices[i]
+            v2 = self._vertices[i+1]
+            self._segments.append(PolySegItem(self, v1, v2, None))
+        if self._closed:
+            self._segments.append(PolySegItem(self, v2, self._vertices[0], None))
+
+    @checked
+    def _cloneAfter(
+        self   : Self,
+        source : "PolylineItem",
+        clone  : "PolylineItem",
+    ) -> None:
+        """Copy vertex graph and segment sweeps after ItemCloneMixin clone."""
+        for i in range(1, source.vertexCount()):
+            clone.addVertex(
+                source.vertex(i).scenePos(),
+                source.segment(i - 1).sweep(),
+            )
+        if source.closed():
+            clone.close(source.segment(source.vertexCount() - 1).sweep())
+
 
 class SymbolPolylineItem(PolylineItem):
     pass

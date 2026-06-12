@@ -379,8 +379,17 @@ class PropertiesManager:
         for use in deserialization, and for creating new custom properties.
         Returns True if the property was initialized, False otherwise.
         """
-        f = self.setValue if self.has(name) else self.add
-        return f(name, value)
+        if self.has(name):
+            return self.setValue(name, value)
+        if isinstance(value, bool):
+            kind = DataKind.BOOL
+        elif isinstance(value, int):
+            kind = DataKind.INT
+        elif isinstance(value, float):
+            kind = DataKind.FLOAT
+        else:
+            kind = DataKind.STR
+        return self.add(name, kind, value)
 
     @checked
     def add(
