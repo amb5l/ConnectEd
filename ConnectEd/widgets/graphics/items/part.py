@@ -10,21 +10,13 @@ class PartItemMixin:
     _PROPERTIES_PART = {
             "Label" : InherentProperty(
                 kind   = DataKind.STR,
-                worthy = lambda self: self.label() != "",
                 getter = lambda self: self.label(),
                 setter = lambda self, value: self.setLabel(value)
             ),
             "Name" : InherentProperty(
                 kind   = DataKind.STR,
-                worthy = lambda self: self.name() != "",
                 getter = lambda self: self.name(),
                 setter = lambda self, value: self.setName(value)
-            ),
-            "Path" : InherentProperty(
-                kind   = DataKind.STR,
-                worthy = lambda self: self.path() != "",
-                getter = lambda self: self.path(),
-                setter = lambda self, value: self.setPath(value)
             )
         }
     _PROPERTY_TEXTS = {

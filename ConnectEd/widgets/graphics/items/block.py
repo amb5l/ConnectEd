@@ -5,7 +5,9 @@ from PyQt6.QtWidgets import QMenu
 from PyQt6.QtGui     import QAction
 
 from ....core.check import checked
-from ....core.types import EdgeLoc, Edge
+from ....core.types import EdgeLoc, Edge, DataKind
+
+from ..properties import InherentProperty
 
 from .base_rect import BaseRectangleItem
 
@@ -18,7 +20,16 @@ if TYPE_CHECKING:
 
 class BlockItem(PartItemMixin, BaseRectangleItem):
     # class attributes
-    _PROPERTIES = PartItemMixin._PROPERTIES_PART | BaseRectangleItem._PROPERTIES
+    _PROPERTIES = \
+        PartItemMixin._PROPERTIES_PART | \
+        {
+            "Path" : InherentProperty(
+                kind   = DataKind.STR,
+                getter = lambda self: self.path(),
+                setter = lambda self, value: self.setPath(value)
+            )
+        } | \
+        BaseRectangleItem._PROPERTIES
 
     # instance attributes
     _line_color = None  # enable per-item appearance control
