@@ -118,8 +118,7 @@ class BufGateItem(GateItem):
     _PROPERTIES = \
         GateItem._PROPERTIES_LABEL | \
         _PROPERTIES_IO | \
-        ItemTransformMixin._PROPERTIES_POS | \
-        ItemTransformMixin._PROPERTIES_ROTATE | \
+        ItemTransformMixin._PROPERTIES_NO_ORIGIN | \
         PrimaryItemMixin._PROPERTIES_LINE | \
         PrimaryItemMixin._PROPERTIES_FILL
 
@@ -245,8 +244,7 @@ class LogicGateItem(GateItem):
     _PROPERTIES = \
         GateItem._PROPERTIES_LABEL | \
         _PROPERTIES_IO | \
-        ItemTransformMixin._PROPERTIES_POS | \
-        ItemTransformMixin._PROPERTIES_ROTATE | \
+        ItemTransformMixin._PROPERTIES_NO_ORIGIN | \
         PrimaryItemMixin._PROPERTIES_LINE | \
         PrimaryItemMixin._PROPERTIES_FILL
     _PEN_CAP_STYLE = Qt.PenCapStyle.RoundCap

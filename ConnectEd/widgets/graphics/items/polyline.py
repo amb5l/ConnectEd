@@ -183,8 +183,7 @@ class PolylineItem(
                 setter = lambda self, value: self.setClosed(value)
             )
         } | \
-        ItemTransformMixin._PROPERTIES_POS | \
-        ItemTransformMixin._PROPERTIES_ROTATE | \
+        ItemTransformMixin._PROPERTIES_NO_ORIGIN | \
         PrimaryItemMixin._PROPERTIES_LINE
 
     # instance attributes

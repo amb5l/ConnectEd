@@ -32,6 +32,7 @@ class BaseRectangleMixin(
         ItemTransformMixin._PROPERTIES_RECT_ORIGIN | \
         ItemTransformMixin._PROPERTIES_POS | \
         ItemTransformMixin._PROPERTIES_ROTATE | \
+        ItemTransformMixin._PROPERTIES_MIRROR | \
         {
             "Width" : InherentProperty(
                 kind   = DataKind.FLOAT,

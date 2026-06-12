@@ -95,8 +95,7 @@ class SymbolInstanceItem(BaseSymbolInstanceItem):
     _PROPERTIES = \
         _PROPERTIES_LABEL | \
         BaseSymbolInstanceItem._PROPERTIES_NAME | \
-        ItemTransformMixin._PROPERTIES_POS | \
-        ItemTransformMixin._PROPERTIES_ROTATE
+        ItemTransformMixin._PROPERTIES_NO_ORIGIN
     _PROPERTY_TEXTS = {
         "Label" : PropertyTextSpec(
             cleat=RectHandleId.TOP_LEFT, origin=RectHandleId.BOTTOM_LEFT

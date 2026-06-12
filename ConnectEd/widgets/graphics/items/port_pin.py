@@ -255,8 +255,7 @@ class PortPinPathItem(PortPinMixin, QGraphicsPathItem):
                 setter = lambda self, value: self.setClock(value)
             )
         } | \
-        ItemTransformMixin._PROPERTIES_POS | \
-        ItemTransformMixin._PROPERTIES_ROTATE
+        ItemTransformMixin._PROPERTIES_NO_ORIGIN
 
     # instance attributes
     _dot   : bool = False

@@ -73,6 +73,7 @@ class NetLabelItem(TextItem):
         } | \
         TextItem._PROPERTIES_POS         | \
         TextItem._PROPERTIES_ROTATE      | \
+        TextItem._PROPERTIES_MIRROR      | \
         TextItem._PROPERTIES_RECT_ORIGIN | \
         _PROPERTIES_ALIGN                | \
         _PROPERTIES_SIZE                 | \

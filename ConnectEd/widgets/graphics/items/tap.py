@@ -52,9 +52,7 @@ class TapItem(
                 setter = lambda self, value: self.setSuffix(value)
             )
         } | \
-        ItemTransformMixin._PROPERTIES_POS | \
-        ItemTransformMixin._PROPERTIES_ROTATE | \
-        ItemTransformMixin._PROPERTIES_MIRROR
+        ItemTransformMixin._PROPERTIES_NO_ORIGIN
     _PROPERTY_TEXTS = {
         "Suffix" : PropertyTextSpec(
             cleat=TapHandleId.SUFFIX, origin=RectHandleId.MIDDLE_LEFT
