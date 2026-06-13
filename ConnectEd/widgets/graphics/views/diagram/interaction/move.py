@@ -107,6 +107,8 @@ class DiagramMoveInteraction(PreviewStateMixin, DiagramItemsInteraction):
         pos   : QPointF,                    # movement origin
         slide : bool = False
     ) -> None:
+        self._view          = view
+        self._scene         = view.scene()
         self._ipos          = pos
         self._pos           = pos
         self._slide         = slide
@@ -194,7 +196,7 @@ class DiagramMoveInteraction(PreviewStateMixin, DiagramItemsInteraction):
                             continue
                         if seg.isOrthogonal() and self._slide:
                             self._rubber(seg, node)
-                        elif not seg.isOrthogonal():
+                        else:
                             self._detachSegmentNode(seg, node)
                             self._detached_segs.append((seg, node))
                 filtered_items.append(item)
