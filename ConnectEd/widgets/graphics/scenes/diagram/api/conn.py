@@ -10,7 +10,8 @@ from ....items.segment   import SegmentItem
 
 from ...drawing.cmd import cmdExec
 
-from ..cmd.conn import CmdAddFreeNode, CmdReplaceSegmentNode, \
+from ..cmd.conn import CmdAddFreeNode, CmdRemoveFreeNode, \
+                       CmdReplaceSegmentNode, CmdDetachSegmentNode, \
                        CmdAddSegment, CmdRemoveSegment, \
                        CmdSplitSegment, CmdUnsplitSegment
 
@@ -44,6 +45,16 @@ class DiagramSceneApiConnMixin:
         return node
 
     @checked
+    def removeFreeNode(
+        self     : "DiagramScene",
+        node     : FreeNodeItem,
+        undoable : bool = False
+    ) -> None:
+        """Remove an orphan free node from the scene (graphics only)."""
+        cmd = CmdRemoveFreeNode(self, node)
+        cmdExec(self, cmd, undoable)
+
+    @checked
     def replaceSegmentNode(
         self     : "DiagramScene",
         segment  : SegmentItem,
@@ -56,6 +67,32 @@ class DiagramSceneApiConnMixin:
         """
         cmd = CmdReplaceSegmentNode(self, segment, node_old, node_new)
         cmdExec(self, cmd, undoable)
+
+    @checked
+    def detachSegmentNode(
+        self     : "DiagramScene",
+        segment  : SegmentItem,
+        node     : FixedNodeItem,
+        undoable : bool = False
+    ) -> FreeNodeItem:
+        """Detach segment from fixed node, connect to new free node."""
+        cmd = CmdDetachSegmentNode(self, segment, node)
+        cmdExec(self, cmd, undoable)
+        return cmd.freeNode()
+
+    @checked
+    def detachFixedNode(
+        self     : "DiagramScene",
+        node     : FixedNodeItem,
+        undoable : bool = False
+    ) -> list[FreeNodeItem]:
+        """Detach every segment from a fixed node."""
+        free_nodes : list[FreeNodeItem] = []
+        for segment in list(node.segments()):
+            free_nodes.append(
+                self.detachSegmentNode(segment, node, undoable)
+            )
+        return free_nodes
 
     @checked
     def getNode(
@@ -103,15 +140,18 @@ class DiagramSceneApiConnMixin:
         """
         Connect a (unconnected) fixed node, e.g. after place/paste/clone/move.
         """
+        if node.degree() > 0:
+            return
         # get items at node position
         items = self.items(node.scenePos())
         nodes = [item for item in items if isinstance(item, NodeItem)]
         # merge coincident free nodes into this fixed node
-        free_nodes = [node for node in nodes if isinstance(node, FreeNodeItem)]
+        free_nodes = [n for n in nodes if isinstance(n, FreeNodeItem)]
         for free_node in free_nodes:
-            free_segments = free_node.segments()
-            for free_segment in free_segments:
+            for free_segment in list(free_node.segments()):
                 self.replaceSegmentNode(free_segment, free_node, node, undoable)
+            if free_node.scene() is not None and free_node.degree() == 0:
+                self.removeFreeNode(free_node, undoable)
         # add zero length segments between this and other fixed nodes if required
         fixed_nodes = [
             fixed_node for fixed_node in nodes
@@ -130,6 +170,16 @@ class DiagramSceneApiConnMixin:
         ]
         for segment in crossing_segments:
             cmdExec(self, CmdSplitSegment(self, segment, node), undoable)
+
+    @checked
+    def connectFixedNodes(
+        self     : "DiagramScene",
+        nodes    : list[FixedNodeItem],
+        undoable : bool = False
+    ) -> None:
+        """Connect a list of fixed nodes."""
+        for node in nodes:
+            self.connectFixedNode(node, undoable)
 
     @checked
     def addSegment(
@@ -174,7 +224,7 @@ class DiagramSceneApiConnMixin:
                 if isinstance(item, NodeItem)
         ]
         # sort by distance from p1
-        nodes.sort(key=lambda v: QLineF(p1_or_node1, v.scenePos()).length())
+        nodes.sort(key=lambda v: QLineF(p1, v.scenePos()).length())
         # add segments between all consecutive pairs of vertices
         for node1, node2 in zip(nodes[:-1], nodes[1:], strict=True):
             if self.netlist.hasSegment(node1, node2):

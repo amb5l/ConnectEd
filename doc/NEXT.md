@@ -1,3 +1,7 @@
+Drawing - HDLDrawing - HDLDiagram/HDLSymbol
+DiagramEditMoveBlockPinsInteraction => DiagramMoveBlockPinsInteraction
+interaction valid?
+
 ABANDON WORTHY?
 Lock size for NetLabel
 NetLabel => Label?

@@ -56,6 +56,29 @@ class CmdAddFreeNode(CmdDiagramSceneBase):
         return self._node
 
 
+class CmdRemoveFreeNode(CmdDiagramSceneBase):
+    """Remove an orphan free node from the scene (graphics only)."""
+
+    _node : FreeNodeItem
+
+    @checked
+    def __init__(
+        self  : Self,
+        scene : "DiagramScene",
+        node  : FreeNodeItem
+    ) -> None:
+        super().__init__(scene)
+        self._node = node
+
+    @checked
+    def redo(self : Self) -> None:
+        self._scene.removeItem(self._node)
+
+    @checked
+    def undo(self : Self) -> None:
+        self._scene.addItem(self._node)
+
+
 class CmdReplaceSegmentNode(CmdDiagramSceneBase):
     """
     Replace one node with another. Typically used for free/non swaps.
@@ -84,6 +107,7 @@ class CmdReplaceSegmentNode(CmdDiagramSceneBase):
         self._scene.netlist.replaceSegmentNode(
             self._segment, self._node_old, self._node_new
         )
+        self._node_old.onConnectionChanged()
         self._node_new.onConnectionChanged()
 
     @checked
@@ -92,6 +116,51 @@ class CmdReplaceSegmentNode(CmdDiagramSceneBase):
             self._segment, self._node_new, self._node_old
         )
         self._node_old.onConnectionChanged()
+        self._node_new.onConnectionChanged()
+
+
+class CmdDetachSegmentNode(CmdDiagramSceneBase):
+    """
+    Detach a segment from a fixed node, leaving a free node at the old attach
+    point. Updates both graphics and graph.
+    """
+
+    _segment    : SegmentItem
+    _node_fixed : NodeItem
+    _node_free  : FreeNodeItem
+
+    @checked
+    def __init__(
+        self    : Self,
+        scene   : "DiagramScene",
+        segment : SegmentItem,
+        node    : NodeItem,
+    ) -> None:
+        super().__init__(scene)
+        self._segment    = segment
+        self._node_fixed = node
+        self._node_free  = FreeNodeItem(node.scenePos())
+
+    @checked
+    def redo(self : Self) -> None:
+        self._scene.addItem(self._node_free)
+        self._scene.netlist.replaceSegmentNode(
+            self._segment, self._node_fixed, self._node_free
+        )
+        self._node_fixed.onConnectionChanged()
+        self._node_free.onConnectionChanged()
+
+    @checked
+    def undo(self : Self) -> None:
+        self._scene.netlist.replaceSegmentNode(
+            self._segment, self._node_free, self._node_fixed
+        )
+        self._scene.removeItem(self._node_free)
+        self._node_fixed.onConnectionChanged()
+
+    @checked
+    def freeNode(self : Self) -> FreeNodeItem:
+        return self._node_free
 
 
 class CmdAddSegment(CmdDiagramSceneBase):

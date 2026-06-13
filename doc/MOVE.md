@@ -1,147 +1,203 @@
 ---
 name: MOVE
-overview: Prepare a staged implementation plan for connectivity-aware non-slide movement in diagram scenes, covering selection cleanup, preview detachment, rollback, and deterministic commit-time rebuild.
+overview: Connectivity-aware diagram movement — preview detach, commit-time connectFixedNode for unconnected pins, then ortho redraw (rubber/rigid). Block pin slide uses the same detach/connect pattern.
 todos:
-  - id: unify-primary-selection
-    content: Define one shared primary-selection helper and use it for gesture, UI, and interaction move entry points.
-    status: pending
-  - id: stabilize-netlist
-    content: Fix netlist/node query and split helpers so preview detach and commit rebuild have reliable primitives.
-    status: pending
-  - id: preview-journal
-    content: Add a private preview journal for temporary detach and zero-length cleanup, with full cancel rollback.
-    status: pending
-  - id: diagram-move-macro
-    content: Implement a deterministic diagram-specific move macro that restores original state, applies final offset, reconnects entries/nodes/segments, and normalizes connectivity.
-    status: pending
+  - id: conn-primitives
+    content: Finish connectFixedNode (degree guard, free-node scene cleanup), CmdReplaceSegmentNode appearance in commands, addSegment macro fix.
+    status: completed
+  - id: detach-helper
+    content: Shared detachFixedNode API + preview journal (float from mobile fixed node; ortho vs non-ortho policy).
+    status: completed
+  - id: move-commit-macro
+    content: DiagramMoveInteraction commit — delete/move, connectFixedNode pass, then rigid + rubber redraw; non-ortho left in place.
+    status: completed
+  - id: block-pin-interaction
+    content: DiagramEditMoveBlockPinsInteraction — preview detach on init, cancel rollback, commit macro (detach, move pins, connectFixedNode).
+    status: completed
+  - id: move-nonortho-init
+    content: DiagramMoveInteraction init — non-ortho boundary segments float/detach instead of silent skip.
+    status: completed
+  - id: tests-validation
+    content: Unit tests for connectFixedNode, block-pin commit/cancel, move onto junction; manual rubber/non-ortho checks.
+    status: completed
 isProject: false
 ---
 
 # MOVE Plan
 
 ## Goal
-Implement connectivity-aware non-slide movement for diagram items so preview movement can temporarily detach selected connectivity from unselected neighbors, cancel can restore the original state safely, and commit can rebuild the dropped connectivity deterministically.
 
-## Key Decisions
-- Keep generic movement in [ConnectEd/widgets/graphics/scenes/drawing/cmd/__init__.py](ConnectEd/widgets/graphics/scenes/drawing/cmd/__init__.py) unchanged; diagram-specific connectivity behavior belongs in the diagram layer.
-- Use one shared primary-selection helper for all move entry points so gesture-started and UI-started moves select the same effective item set.
-- Use a private preview journal for temporary detach operations instead of trying to hand-code exact detach/attach symmetry.
-- On commit, restore preview state first, unwind the preview journal, then run one real scene undo macro from the original state.
+Diagram moves detach mobile fixed nodes from foreign connectivity, preview safely, and on commit:
 
-## Current Constraints
-- [ConnectEd/widgets/graphics/views/drawing/state/idle.py](ConnectEd/widgets/graphics/views/drawing/state/idle.py), [ConnectEd/widgets/graphics/views/drawing/ui/edit.py](ConnectEd/widgets/graphics/views/drawing/ui/edit.py), and [ConnectEd/widgets/graphics/views/drawing/interaction/edit.py](ConnectEd/widgets/graphics/views/drawing/interaction/edit.py) currently normalize move selections differently.
-- [ConnectEd/widgets/graphics/scenes/diagram/netlist.py](ConnectEd/widgets/graphics/scenes/diagram/netlist.py) still has node-refactor inconsistencies in `removeEdge()`, `degree()`, and edge-query helpers that must be fixed before movement logic can rely on them.
-- [ConnectEd/widgets/graphics/scenes/diagram/api/conn.py](ConnectEd/widgets/graphics/scenes/diagram/api/conn.py) already contains the intended preview hooks: `detachEntry()`, `detachSegment()`, and `dropSegmentNode()`, but they are still stubs.
-- [ConnectEd/widgets/graphics/scenes/diagram/api/__init__.py](ConnectEd/widgets/graphics/scenes/diagram/api/__init__.py) currently does not include the diagram edit mixin, so diagram-specific move handling will need explicit routing.
+1. Apply final geometry
+2. **`connectFixedNode`** on unconnected pins/taps at drop positions (landing merge/split/zero-length)
+3. **Redraw** ortho connectivity only (rigid moved segments + rubber materialization)
 
-## Implementation Stages
+Non-ortho boundary wires cannot rubber-band: **detach and leave in place** (free node at old attach point).
 
-### 1. Unify Primary Selection
-Create one helper that removes any selected item whose ancestor is also selected.
+## Architecture
 
-Use it from:
-- [ConnectEd/widgets/graphics/views/drawing/state/idle.py](ConnectEd/widgets/graphics/views/drawing/state/idle.py)
-- [ConnectEd/widgets/graphics/views/drawing/ui/edit.py](ConnectEd/widgets/graphics/views/drawing/ui/edit.py)
-- [ConnectEd/widgets/graphics/views/drawing/interaction/edit.py](ConnectEd/widgets/graphics/views/drawing/interaction/edit.py)
+### Layer responsibilities
 
-Rules:
-- Final primaries may include top-level items, free `VertexItem`s, and `SegmentItem`s.
-- `EntryItem`s move as part of selected owner items unless explicitly selected alone.
-- Parented helper graphics should not survive into the primary move set when an ancestor is already selected.
+| Layer | Role |
+|-------|------|
+| **Netlist** | Graph/subnet only (`replaceSegmentNode`, `addSegment`, `removeSegment`, …) |
+| **Commands** | Orchestrate netlist + scene items + `onConnectionChanged()` on affected nodes |
+| **API** (`conn.py`) | Conditional logic; dispatch commands/macros |
+| **`connectFixedNode`** | Post-drop landing for **unconnected** `FixedNodeItem` only |
 
-### 2. Stabilize Node / Netlist Primitives
-Fix the node-based netlist API so movement code has reliable graph operations.
+### `connectFixedNode` contract
 
-Target areas:
-- [ConnectEd/widgets/graphics/scenes/diagram/netlist.py](ConnectEd/widgets/graphics/scenes/diagram/netlist.py)
-- [ConnectEd/widgets/graphics/items/node.py](ConnectEd/widgets/graphics/items/node.py)
-- [ConnectEd/widgets/graphics/items/segment.py](ConnectEd/widgets/graphics/items/segment.py)
-- [ConnectEd/widgets/graphics/scenes/diagram/cmd/conn.py](ConnectEd/widgets/graphics/scenes/diagram/cmd/conn.py)
+Runs when `node.degree() == 0` at final `scenePos()`:
 
-Specific fixes:
-- Correct variable mismatches introduced by the node refactor.
-- Ensure `NodeItem.segments()` matches the netlist helper actually provided.
-- Finish or temporarily bypass incomplete split helpers that would break preview detach or commit rebuild.
-- Update segment endpoint typing to `NodeItem` where the refactor now expects nodes, not only vertices.
+- Merge colocated `FreeNodeItem` → pin (`replaceSegmentNode` per segment)
+- Pin-to-pin zero-length segment
+- Split crossing `SegmentItem` at pin
+- Cull orphaned free nodes from scene after merge
 
-### 3. Add Preview Detach Journal
-Extend the move interaction with a private preview journal that records temporary structural edits.
+**Not** responsible for parallel-edge collapse (guarded by unconnected-only).
 
-Preview flow:
+### Commit order (diagram move and block pin)
+
 ```mermaid
 flowchart TD
-    start[StartMove]
-    primary[BuildPrimarySet]
-    boundary[FindBoundaryConnections]
-    detach[DetachIntoPreviewJournal]
-    preview[LiveMovePreview]
-    cancel[Cancel]
-    commit[Commit]
-    rollback[RestoreAndUndoJournal]
+    cancelPreview[Undo preview journal]
+    macro[beginMacro]
+    detachNonOrtho[Re-apply non-ortho detaches if needed]
+    deleteSegs[Delete rubber + rigid move segments]
+    moveGeom[Move items to final position]
+    connect[connectFixedNode on unconnected fixed nodes]
+    rigid[Redraw rigid segments addSegment]
+    rubber[Materialize rubber addSegment]
+    endMacro[endMacro]
 
-    start --> primary
-    primary --> boundary
-    boundary --> detach
-    detach --> preview
-    preview --> cancel
-    preview --> commit
-    cancel --> rollback
-    commit --> rollback
+    cancelPreview --> macro
+    macro --> detachNonOrtho
+    detachNonOrtho --> deleteSegs
+    deleteSegs --> moveGeom
+    moveGeom --> connect
+    connect --> rigid
+    rigid --> rubber
+    rubber --> endMacro
 ```
 
-Implement preview helpers in [ConnectEd/widgets/graphics/scenes/diagram/api/conn.py](ConnectEd/widgets/graphics/scenes/diagram/api/conn.py):
-- `detachEntry()`
-- `detachSegment()`
-- `dropSegmentNode()`
+**Why `connectFixedNode` before redraw:** After delete + move, ortho pins are degree-0. Landing hits (free node, crossing wire, colocated pin) are resolved before rubber/rigid `addSegment` legs attach. If redraw ran first, pins would already be connected and `connectFixedNode` would no-op.
 
-Boundary rule:
-- Selected side keeps its identity.
-- Unselected side gets a replacement stationary free vertex when needed.
-- Zero-length entry-entry segments are treated as derived artifacts and can be deleted during preview detach.
+Preview journal is always unwound (`_cancel` / stack index 0) before the real macro; commit re-applies detaches as undoable commands.
 
-### 4. Implement Deterministic Commit Macro
-After restoring preview state, execute one diagram-specific move macro from the original scene state.
+### Boundary segment policy (move init)
 
-Commit sequence:
-- Move selected non-connectivity owners by the final offset.
-- Reconnect moved entries against existing entries, vertices, and crossed segments at the drop position.
-- Ensure node existence at moved free-vertex positions with `getNode()`.
-- Rebuild or retarget selected segments from their dropped endpoints.
-- Normalize the result by removing redundant free vertices, splitting crossed segments, and recreating or removing zero-length entry-entry segments as needed.
+| Segment type | Mobile/static | Policy |
+|--------------|---------------|--------|
+| Ortho, 1 mobile / 1 static, static degree > 1 | slide | Rubberize |
+| Ortho, 1 mobile / 1 static, static degree > 1 | Alt (no slide) | Float static side + move segment |
+| **Non-ortho**, attached to mobile fixed node | either | **Float from mobile** — wire stays at old attach point |
+| Both endpoints mobile | — | Rigid move (delete + recreate in commit) |
 
-### 5. Route Diagram Moves Through Diagram Logic
-Ensure diagram scenes use diagram-aware move processing rather than the generic drawing move implementation.
+### Pin-bearing items (move init)
 
-Likely touchpoints:
-- [ConnectEd/widgets/graphics/scenes/diagram/api/__init__.py](ConnectEd/widgets/graphics/scenes/diagram/api/__init__.py)
-- [ConnectEd/widgets/graphics/scenes/diagram/api/edit.py](ConnectEd/widgets/graphics/scenes/diagram/api/edit.py)
-- [ConnectEd/widgets/graphics/views/drawing/interaction/edit.py](ConnectEd/widgets/graphics/views/drawing/interaction/edit.py)
+`TapItem | PortItem | GateItem | BlockItem | SymbolItem` — scan fixed nodes, apply policy above.
 
-## Special Cases
-- Moving a selected segment endpoint away from an unselected entry should leave the entry behind and create a replacement free vertex for the stationary side.
-- Moving a selected free vertex that still supports unselected segments should leave stationary connectivity behind via a replacement free vertex.
-- Zero-length segments joining colocated entries should be created or deleted automatically based on the final dropped geometry.
+**Done:** `PortItem` and `TapItem` included in fixed-node scan ([move.py](ConnectEd/widgets/graphics/views/diagram/interaction/move.py)).
 
-## Validation
-- Manual checks for cancel after detach preview.
-- Manual checks for commit after moving selected segments only.
-- Manual checks for commit after moving owner items with entries.
-- Regression checks for plain drawing-scene move behavior outside diagrams.
-- Targeted lint pass on all touched files after implementation.
+### Block pin slide (separate interaction)
 
-## Initial File Focus
-- [ConnectEd/widgets/graphics/views/drawing/state/idle.py](ConnectEd/widgets/graphics/views/drawing/state/idle.py)
-- [ConnectEd/widgets/graphics/views/drawing/ui/edit.py](ConnectEd/widgets/graphics/views/drawing/ui/edit.py)
-- [ConnectEd/widgets/graphics/views/drawing/interaction/edit.py](ConnectEd/widgets/graphics/views/drawing/interaction/edit.py)
+[DiagramEditMoveBlockPinsInteraction](ConnectEd/widgets/graphics/views/diagram/interaction/edit.py):
+
+- **Init:** private undo stack; `detachFixedNode` for each pin (preview float from pin node)
+- **Preview:** `setLoc` only; wires hang from old edge position
+- **Cancel:** restore loc + stack index 0
+- **Commit:** undo preview → macro: detach (real) → `editMoveBlockPins` → `connectFixedNode` per pin
+
+## Current state
+
+| Item | Status |
+|------|--------|
+| `connectFixedNode` | Implemented; needs `degree()==0` guard, orphan free-node removal |
+| `CmdReplaceSegmentNode` + `netlist.replaceSegmentNode` | Graph + graphics retarget |
+| `DiagramMoveInteraction` Port/Tap scan | Done |
+| Non-ortho float/detach | Not implemented (ortho-only rubberize; non-ortho still rigid) |
+| Move commit `connectFixedNode` pass | Not wired |
+| Block pin detach/connect | Not wired |
+| `addSegment` zero-length early return | Leaks undo macro when `undoable=True` |
+
+## Steps to finishing line
+
+### 1. Close out connectivity primitives
+
+- [conn.py](ConnectEd/widgets/graphics/scenes/diagram/api/conn.py): `if node.degree() > 0: return` at top of `connectFixedNode`
+- After free-node merge loop: remove orphan `FreeNodeItem` from scene (no segments, not in graph)
+- [conn.py](ConnectEd/widgets/graphics/scenes/diagram/api/conn.py): fix `addSegment` zero-length path to `endMacro` or call `CmdAddSegment` directly
+- [conn.py](ConnectEd/widgets/graphics/scenes/diagram/cmd/conn.py): `CmdReplaceSegmentNode` — refresh **both** endpoints in redo/undo
+
+### 2. Shared detach helper
+
+Add to [conn.py](ConnectEd/widgets/graphics/scenes/diagram/api/conn.py) (or move preview cmd):
+
+```python
+def detachFixedNode(node: FixedNodeItem, undoable: bool = False) -> list[FreeNodeItem]:
+    """Float every segment off node; return replacement free nodes (one per segment)."""
+```
+
+Uses `CmdDetachSegmentNode` in preview (private undo stack) and commit macro.
+
+### 3. Non-ortho in `DiagramMoveInteraction.__init__`
+
+In `_processFixedNode`, replace silent skip for `not seg.isOrthogonal()`:
+
+```python
+if seg not in item_set:
+    if seg.isOrthogonal() and self._slide:
+        self._rubber(seg, node)
+    elif not seg.isOrthogonal():
+        self._float(seg, node)  # preview; track for commit if needed
+```
+
+Track `_floated_nonortho: list[SegmentItem]` if commit must re-detach after preview unwind.
+
+### 4. Wire `DiagramMoveInteraction._commit`
+
+After `editMove`, before rigid/rubber redraw:
+
+```python
+for node in self._movedFixedNodes(items):  # helper collects tap/port/pin nodes
+    self._scene.connectFixedNode(node, undoable=True)
+```
+
+Helper: walk moved `PortItem`, `TapItem`, `GateItem`, `BlockItem`, `SymbolItem` in final item set.
+
+Re-apply non-ortho detaches inside macro if preview floats were undone by `_cancel()`.
+
+### 5. Block pin interaction
+
+Mirror move pattern in [edit.py](ConnectEd/widgets/graphics/views/diagram/interaction/edit.py):
+
+- `_undo_stack` on init
+- Push preview float per pin segment
+- `_cancel`: restore + stack index 0
+- `_commit`: preview restore → undo stack → macro(detach, `editMoveBlockPins`, `connectFixedNode` × pins)
+
+### 6. Tests and manual validation
+
+- Unconnected port placed on wire → split + connected
+- Port on free node → merge
+- Two colocated pins → zero-length
+- Block pin slide onto junction → detach preview, connect on commit
+- Cancel after detach restores wires
+- Move block with ortho rubber → landing on foreign net via connectFixedNode + rubber
+- Non-ortho wire stays at old attach point after move
+
+## Out of scope (later)
+
+- Primary-selection unification across drawing/diagram entry points
+- Paste/duplicate `connectFixedNode` pass
+- Zero-length removal when pins separate (`disconnectZeroLengthBetween`)
+- Full MOVE.md preview hooks `detachEntry` / `dropSegmentNode` naming (superseded by `detachFixedNode` + `connectFixedNode`)
+
+## Key files
+
 - [ConnectEd/widgets/graphics/scenes/diagram/api/conn.py](ConnectEd/widgets/graphics/scenes/diagram/api/conn.py)
-- [ConnectEd/widgets/graphics/scenes/diagram/api/edit.py](ConnectEd/widgets/graphics/scenes/diagram/api/edit.py)
-- [ConnectEd/widgets/graphics/scenes/diagram/netlist.py](ConnectEd/widgets/graphics/scenes/diagram/netlist.py)
 - [ConnectEd/widgets/graphics/scenes/diagram/cmd/conn.py](ConnectEd/widgets/graphics/scenes/diagram/cmd/conn.py)
-- [ConnectEd/widgets/graphics/items/segment.py](ConnectEd/widgets/graphics/items/segment.py)
-
-## Execution Order
-1. Unify primary-selection handling.
-2. Repair node/netlist primitives.
-3. Add preview detach journal support.
-4. Implement diagram-specific commit rebuild macro.
-5. Validate special cases and regressions.
+- [ConnectEd/widgets/graphics/scenes/diagram/netlist.py](ConnectEd/widgets/graphics/scenes/diagram/netlist.py)
+- [ConnectEd/widgets/graphics/views/diagram/interaction/move.py](ConnectEd/widgets/graphics/views/diagram/interaction/move.py)
+- [ConnectEd/widgets/graphics/views/diagram/interaction/edit.py](ConnectEd/widgets/graphics/views/diagram/interaction/edit.py)

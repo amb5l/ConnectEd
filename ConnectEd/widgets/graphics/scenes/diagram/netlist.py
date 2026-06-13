@@ -297,6 +297,8 @@ class Netlist:
         node_new : NodeItem
     ) -> None:
         node_other = segment.otherNode(node_old)
+        if node_other is None:
+            return
         self.removeSegment(node_old, node_other)
         segment.changeNode(node_old, node_new)
         self.addSegment(segment)

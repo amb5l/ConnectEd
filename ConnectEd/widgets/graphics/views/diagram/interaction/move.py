@@ -23,6 +23,8 @@ from ....items.symbol   import SymbolItem
 from ....items.rubber   import RubberItem, \
                                RubberTeeItem, RubberCornerItem, RubberJogItem
 
+from ....scenes.diagram.cmd.conn import CmdDetachSegmentNode
+
 from . import DiagramItemsInteraction
 
 from typing import TYPE_CHECKING
@@ -95,6 +97,7 @@ class DiagramMoveInteraction(PreviewStateMixin, DiagramItemsInteraction):
     _rubber_jogs : list[RubberJogItem]  # rubber jog items
     _rubber_segs : list[SegmentItem]    # rubberized segments
     _move_segs   : list[SegmentItem]    # moved segments
+    _detached_segs : list[tuple[SegmentItem, FixedNodeItem]]
 
     @checked
     def __init__(
@@ -104,13 +107,14 @@ class DiagramMoveInteraction(PreviewStateMixin, DiagramItemsInteraction):
         pos   : QPointF,                    # movement origin
         slide : bool = False
     ) -> None:
-        self._ipos        = pos
-        self._pos         = pos
-        self._slide       = slide
-        self._undo_stack  = QUndoStack()
-        self._rubbers     = []
-        self._rubber_jogs = []
-        self._rubber_segs = []
+        self._ipos          = pos
+        self._pos           = pos
+        self._slide         = slide
+        self._undo_stack    = QUndoStack()
+        self._rubbers       = []
+        self._rubber_jogs   = []
+        self._rubber_segs   = []
+        self._detached_segs = []
         # process items
         if not isinstance(items, list):
             items = [items]
@@ -165,8 +169,8 @@ class DiagramMoveInteraction(PreviewStateMixin, DiagramItemsInteraction):
                             filtered_items.append(mobile_node)
                     else:
                         filtered_items.append(item)
-                        float_node = self._float(item, static_node)
-                        filtered_items.append(float_node)
+                        free_node = self._detachSegmentNode(item, static_node)
+                        filtered_items.append(free_node)
                 else:
                     # mobile segment, 2 static nodes
                     filtered_items.append(item)
@@ -174,10 +178,10 @@ class DiagramMoveInteraction(PreviewStateMixin, DiagramItemsInteraction):
                         if isinstance(node, FreeNodeItem) and node.degree() == 1:
                             filtered_items.append(node)
                         else:
-                            float_node = self._float(item, node)
-                            filtered_items.append(float_node)
+                            free_node = self._detachSegmentNode(item, node)
+                            filtered_items.append(free_node)
                             if slide:
-                                self._rubber(node, float_node)
+                                self._rubber(node, free_node)
             # handle items with fixed nodes (taps, ports, pins):
             #  look for and rubberize connected segments not in item set
             # TODO: include net labels
@@ -185,10 +189,14 @@ class DiagramMoveInteraction(PreviewStateMixin, DiagramItemsInteraction):
                 item, TapItem | PortItem | GateItem | BlockItem | SymbolItem
             ):
                 def _processFixedNode(node : FixedNodeItem) -> None:
-                    segs = node.segments()
-                    for seg in segs:
-                        if seg not in item_set and seg.isOrthogonal():
+                    for seg in list(node.segments()):
+                        if seg in item_set:
+                            continue
+                        if seg.isOrthogonal() and self._slide:
                             self._rubber(seg, node)
+                        elif not seg.isOrthogonal():
+                            self._detachSegmentNode(seg, node)
+                            self._detached_segs.append((seg, node))
                 filtered_items.append(item)
                 if isinstance(item, TapItem):
                     _processFixedNode(item.majorNode())
@@ -266,6 +274,8 @@ class DiagramMoveInteraction(PreviewStateMixin, DiagramItemsInteraction):
                     items.remove(node2)
         # start undoable sequence (macro)
         self._scene.undo_stack.beginMacro("editMove")
+        for segment, fixed_node in self._detached_segs:
+            self._scene.detachSegmentNode(segment, fixed_node, undoable=True)
         # delete segments (those being moved, and those that were rubberized)
         if segments_to_delete:
             self._scene.editDelete(segments_to_delete, undoable=True)
@@ -274,6 +284,18 @@ class DiagramMoveInteraction(PreviewStateMixin, DiagramItemsInteraction):
         # move remaining items
         if items:
             self._scene.editMove(items, offset, self._slide, undoable=True)
+        fixed_nodes = []
+        for item in items:
+            if isinstance(item, TapItem):
+                fixed_nodes.append(item.majorNode())
+                fixed_nodes.append(item.minorNode())
+            elif isinstance(item, PortItem):
+                fixed_nodes.append(item.node())
+            elif isinstance(item, GateItem | BlockItem | SymbolItem):
+                for child in item.childItems():
+                    if isinstance(child, PortPinMixin):
+                        fixed_nodes.append(child.node())
+        self._scene.connectFixedNodes(fixed_nodes, undoable=True)
         # recreate moved segments in their new positions
         for segment_line in segments_to_recreate:
             p1 = segment_line.p1() + offset
@@ -371,7 +393,7 @@ class DiagramMoveInteraction(PreviewStateMixin, DiagramItemsInteraction):
             self._rubber_jogs.append(cmd.rubber())
 
     @checked
-    def _float(
+    def _detachSegmentNode(
         self    : Self,
         segment : SegmentItem,
         node    : NodeItem
@@ -379,9 +401,9 @@ class DiagramMoveInteraction(PreviewStateMixin, DiagramItemsInteraction):
         """
         Detach segment from specified node.
         """
-        cmd = CmdMovePreviewFloatSegmentNode(segment, node)
+        cmd = CmdDetachSegmentNode(self._scene, segment, node)
         self._undo_stack.push(cmd)
-        return cmd.node()
+        return cmd.freeNode()
 
     def _updateJogs(self: Self) -> None:
         """
@@ -498,43 +520,6 @@ class DiagramMoveInteraction(PreviewStateMixin, DiagramItemsInteraction):
         # --- 5. final path update for everyone ---------------------------------
         for jog in self._rubber_jogs:
             jog.updatePath()
-
-
-class CmdMovePreviewFloatSegmentNode(QUndoCommand):
-    _scene    : "DiagramScene"
-    _segment  : SegmentItem
-    _node_old : NodeItem
-    _node_new : NodeItem
-
-    def __init__(
-        self    : Self,
-        segment : SegmentItem,  # segment to detach
-        node    : NodeItem      # node to detach from
-    ) -> None:
-        """
-        Preview command: detach a segment from a node, replacing it with a new
-        free node.
-
-        Args:
-            segment: Segment to detach.
-            node:    Existing endpoint node to float away from.
-        """
-        super().__init__()
-        self._scene    = segment.scene()
-        self._segment  = segment
-        self._node_old = node
-        self._node_new = FreeNodeItem(node.scenePos())
-
-    def redo(self : Self) -> None:
-        self._scene.addItem(self._node_new)
-        self._segment.changeNode(self._node_old, self._node_new)
-
-    def undo(self : Self) -> None:
-        self._segment.changeNode(self._node_new, self._node_old)
-        self._scene.removeItem(self._node_new)
-
-    def node(self : Self) -> NodeItem:
-        return self._node_new
 
 
 class CmdMovePreviewRubberBase(QUndoCommand):
