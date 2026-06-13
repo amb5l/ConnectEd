@@ -740,9 +740,11 @@ class Netlist:
             self._detachSubnetFromNet(subnet)
             self._attachSubnetToNet(subnet, new_net)
             self._refreshNet(new_net)
+            self._scene.netlistChanged.emit()
         elif old_suffix != resolved_suffix:
             # no name change, suffix change => just refresh the current net
             self._refreshNet(subnet.net)
+            self._scene.netlistChanged.emit()
         # resolve tapped subnets
         for subnet_id in tapped_subnets:
             self._resolveSubnet(self._subnets[subnet_id], trail)

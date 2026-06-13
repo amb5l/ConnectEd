@@ -6,6 +6,9 @@ from PyQt6.QtWidgets import QApplication
 
 from ConnectEd.app import ConnectEdApp
 from ConnectEd.core.settings import Settings
+from ConnectEd.core.types import Direction, Edge
+from ConnectEd.widgets.graphics.items.block import BlockItem
+from ConnectEd.widgets.graphics.items.block_pin import BlockPinItem
 from ConnectEd.widgets.graphics.items.node import FreeNodeItem
 from ConnectEd.widgets.graphics.items.port import PortItem
 from ConnectEd.widgets.graphics.items.segment import SegmentItem
@@ -124,6 +127,46 @@ def test_connect_fixed_node_merge_undo_restores_free_node(
     assert free.scene() is not None
     assert scene.netlist.hasSegment(free, far)
     assert pin.degree() == 0
+
+
+def test_netlist_changed_on_subnet_rename(
+    connect_ed_app : ConnectEdApp,
+) -> None:
+    scene = DiagramScene()
+
+    reset = PortItem()
+    reset.setName("reset")
+    scene.addItem(reset)
+    reset.setPos(0, 0)
+    reset_pin = reset.node()
+    far_a = FreeNodeItem(QPointF(100, 0))
+    scene.addItem(far_a)
+    _wire(scene, reset_pin, far_a)
+
+    block = BlockItem(QPointF(200, -50), QPointF(300, 50))
+    block.setLabel("U_DECODE")
+    scene.addItem(block)
+    block_pin = BlockPinItem()
+    block_pin.setName("reset")
+    block_pin.setDirection(Direction.IN)
+    block_pin.setLocEdge(Edge.LEFT)
+    block_pin.setLocOffset(50.0)
+    scene.addBlockPin(block, block_pin, undoable=False)
+    far_b = FreeNodeItem(QPointF(400, 0))
+    scene.addItem(far_b)
+    _wire(scene, block_pin.node(), far_b)
+
+    assert "U_DECODE_reset" in scene.netlist.nets()
+    assert "reset" in scene.netlist.nets()
+
+    emitted : list[bool] = []
+    scene.netlistChanged.connect(lambda: emitted.append(True))
+
+    scene.addSegment(far_b.scenePos(), far_a.scenePos(), undoable=False)
+
+    assert "U_DECODE_reset" not in scene.netlist.nets()
+    assert "reset" in scene.netlist.nets()
+    assert emitted
 
 
 def test_detach_fixed_node_leaves_pin_unconnected(
