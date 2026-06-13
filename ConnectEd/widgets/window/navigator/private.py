@@ -1,6 +1,6 @@
 from PyQt6.QtCore import QItemSelectionModel
 
-from ....app import logger, settings, model, window
+from ....app import logger, model, window
 
 from ....core.utils import typeCheck
 
@@ -48,8 +48,7 @@ class NavigatorPrivateMixin:
         if result == dialog.DialogCode.Accepted:
             files = dialog.selectedFiles()
             for file in files:
-                if self._load(file):
-                    settings().addMRU(file)
+                self.load(file)
 
     def _load(
         self : "Navigator",

@@ -1,4 +1,4 @@
-from ....app import logger, model
+from ....app import logger, model, settings
 
 from ....core.check import checked
 from ....core.utils import typeCheck
@@ -34,7 +34,8 @@ class NavigatorApiMixin:
 
     @checked
     def load(self : "Navigator", path : str) -> None:
-        self._load(path)
+        if self._load(path) is not None:
+            settings().addMRU(path)
 
     @checked
     def save(
