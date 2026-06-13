@@ -290,18 +290,19 @@ class DiagramMoveInteraction(PreviewStateMixin, DiagramItemsInteraction):
         # move remaining items
         if items:
             self._scene.editMove(items, offset, self._slide, undoable=True)
-        fixed_nodes = []
-        for item in items:
-            if isinstance(item, TapItem):
-                fixed_nodes.append(item.majorNode())
-                fixed_nodes.append(item.minorNode())
-            elif isinstance(item, PortItem):
-                fixed_nodes.append(item.node())
-            elif isinstance(item, GateItem | BlockItem | SymbolItem):
-                for child in item.childItems():
-                    if isinstance(child, PortPinMixin):
-                        fixed_nodes.append(child.node())
-        self._scene.connectFixedNodes(fixed_nodes, undoable=True)
+        if self._slide:
+            fixed_nodes : list[FixedNodeItem] = []
+            for item in items:
+                if isinstance(item, TapItem):
+                    fixed_nodes.append(item.majorNode())
+                    fixed_nodes.append(item.minorNode())
+                elif isinstance(item, PortItem):
+                    fixed_nodes.append(item.node())
+                elif isinstance(item, GateItem | BlockItem | SymbolItem):
+                    for child in item.childItems():
+                        if isinstance(child, PortPinMixin):
+                            fixed_nodes.append(child.node())
+            self._scene.connectFixedNodes(fixed_nodes, undoable=True)
         # recreate moved segments in their new positions
         for segment_line in segments_to_recreate:
             p1 = segment_line.p1() + offset

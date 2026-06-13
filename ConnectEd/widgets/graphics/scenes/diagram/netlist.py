@@ -273,21 +273,38 @@ class Netlist:
             return
         self._graph.remove_edge(node1, node2)
         subnet1 = self.nodeSubnet(node1)
+        subnet2 : Subnet | None = None
         if subnet1 is not None \
         and not networkx.has_path(self._graph, node1, node2):
             nodes1 = networkx.node_connected_component(self._graph, node1)
             nodes2 = networkx.node_connected_component(self._graph, node2)
             if len(nodes1) < len(nodes2):
                 nodes1, nodes2 = nodes2, nodes1
+            evicted = subnet1.nodes - nodes1
             subnet1.nodes = nodes1
+            for node in evicted:
+                if self._node2subnet.get(node) == subnet1.id:
+                    self._node2subnet.pop(node, None)
             subnet2 = self._newSubnet(nodes2)
-            self._resolveSubnet(subnet1)
-            self._resolveSubnet(subnet2)
-            self._refreshSegments([subnet1, subnet2])
+            self._dropIsolated(node1)
+            self._dropIsolated(node2)
+            if subnet1.id in self._subnets:
+                self._resolveSubnet(subnet1)
+            if subnet2.id in self._subnets:
+                self._resolveSubnet(subnet2)
+            refresh : list[Subnet] = [
+                subnet for subnet in (subnet1, subnet2)
+                if subnet is not None and subnet.id in self._subnets
+            ]
+            if refresh:
+                self._refreshSegments(refresh)
         elif subnet1 is not None:
             self._refreshSegments([subnet1])
-        self._dropIsolated(node1)
-        self._dropIsolated(node2)
+            self._dropIsolated(node1)
+            self._dropIsolated(node2)
+        else:
+            self._dropIsolated(node1)
+            self._dropIsolated(node2)
 
     @checked
     def replaceSegmentNode(
@@ -306,7 +323,10 @@ class Netlist:
     @checked
     def _dropIsolated(self : Self, node : NodeItem) -> None:
         """Remove a degree-0 node from the graph and subnet layer."""
-        if node not in self._graph or self._graph.degree(node) != 0:
+        if node in self._graph and self._graph.degree(node) != 0:
+            return
+        if node not in self._graph and self.nodeSubnet(node) is None \
+        and not self._subnetsContainingNode(node):
             return
         affected_subnets : set[Subnet] = set()
         subnet = self.nodeSubnet(node)
@@ -317,8 +337,19 @@ class Netlist:
                 self._removeSubnet(subnet)
             else:
                 affected_subnets.add(subnet)
-        self._graph.remove_node(node)
-        self._resolveSubnets(affected_subnets)
+        for subnet_id in self._subnetsContainingNode(node):
+            if subnet_id not in self._subnets:
+                continue
+            subnet = self._subnets[subnet_id]
+            subnet.nodes.discard(node)
+            if not subnet.nodes:
+                self._removeSubnet(subnet)
+            else:
+                affected_subnets.add(subnet)
+        if node in self._graph:
+            self._graph.remove_node(node)
+        if affected_subnets:
+            self._resolveSubnets(affected_subnets)
 
     # -- subnet methods ----------------------------------------------------
 
@@ -563,8 +594,11 @@ class Netlist:
     @checked
     def _removeSubnet(self : Self, subnet : Subnet) -> None:
         """Drop a subnet entirely (detach from its net, drop from index)."""
+        net_removed = subnet.net is not None and len(subnet.net.subnets) <= 1
         self._detachSubnetFromNet(subnet)
         self._subnets.pop(subnet.id, None)
+        if net_removed:
+            self._scene.netlistChanged.emit()
 
     @checked
     def _addNodesToSubnet(

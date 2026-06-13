@@ -13,6 +13,7 @@ from ConnectEd.widgets.graphics.items.node import FreeNodeItem
 from ConnectEd.widgets.graphics.items.port import PortItem
 from ConnectEd.widgets.graphics.items.segment import SegmentItem
 from ConnectEd.widgets.graphics.scenes.diagram import DiagramScene
+from ConnectEd.widgets.window.netlist import NetlistBrowser
 
 
 @pytest.fixture
@@ -169,6 +170,43 @@ def test_netlist_changed_on_subnet_rename(
     assert emitted
 
 
+def test_detach_merged_port_purges_lone_pin_net(
+    connect_ed_app : ConnectEdApp,
+) -> None:
+    scene = DiagramScene()
+
+    reset = PortItem()
+    reset.setName("reset")
+    scene.addItem(reset)
+    reset.setPos(0, 0)
+    reset_pin = reset.node()
+    far_a = FreeNodeItem(QPointF(100, 0))
+    scene.addItem(far_a)
+    _wire(scene, reset_pin, far_a)
+
+    block = BlockItem(QPointF(200, -50), QPointF(300, 50))
+    block.setLabel("U_DECODE")
+    scene.addItem(block)
+    block_pin = BlockPinItem()
+    block_pin.setName("reset")
+    block_pin.setDirection(Direction.IN)
+    block_pin.setLocEdge(Edge.LEFT)
+    block_pin.setLocOffset(50.0)
+    scene.addBlockPin(block, block_pin, undoable=False)
+    far_b = FreeNodeItem(QPointF(400, 0))
+    scene.addItem(far_b)
+    _wire(scene, block_pin.node(), far_b)
+
+    scene.addSegment(far_b.scenePos(), far_a.scenePos(), undoable=False)
+    assert "reset" in scene.netlist.nets()
+
+    scene.detachFixedNode(reset_pin)
+
+    assert "reset" not in scene.netlist.nets()
+    assert "U_DECODE_reset" in scene.netlist.nets()
+    assert not scene.netlist.hasNode(reset_pin)
+
+
 def test_detach_fixed_node_leaves_pin_unconnected(
     connect_ed_app : ConnectEdApp,
 ) -> None:
@@ -186,3 +224,52 @@ def test_detach_fixed_node_leaves_pin_unconnected(
     assert pin.degree() == 0
     assert seg.node1() is not pin and seg.node2() is not pin
     assert seg.node1().degree() == 1 or seg.node2().degree() == 1
+
+
+def _browser_net_names(browser : NetlistBrowser) -> list[str]:
+    names : list[str] = []
+    model = browser._model
+    for row in range(model.rowCount()):
+        item = model.item(row, 0)
+        if item is not None:
+            names.append(item.text())
+    return names
+
+
+def test_detach_merged_port_refreshes_netlist_browser(
+    connect_ed_app : ConnectEdApp,
+) -> None:
+    scene = DiagramScene()
+
+    reset = PortItem()
+    reset.setName("reset")
+    scene.addItem(reset)
+    reset.setPos(0, 0)
+    reset_pin = reset.node()
+    far_a = FreeNodeItem(QPointF(100, 0))
+    scene.addItem(far_a)
+    _wire(scene, reset_pin, far_a)
+
+    block = BlockItem(QPointF(200, -50), QPointF(300, 50))
+    block.setLabel("U_DECODE")
+    scene.addItem(block)
+    block_pin = BlockPinItem()
+    block_pin.setName("reset")
+    block_pin.setDirection(Direction.IN)
+    block_pin.setLocEdge(Edge.LEFT)
+    block_pin.setLocOffset(50.0)
+    scene.addBlockPin(block, block_pin, undoable=False)
+    far_b = FreeNodeItem(QPointF(400, 0))
+    scene.addItem(far_b)
+    _wire(scene, block_pin.node(), far_b)
+
+    browser = NetlistBrowser(None)
+    browser.setDiagram(scene)
+    scene.addSegment(far_b.scenePos(), far_a.scenePos(), undoable=False)
+    assert "reset" in _browser_net_names(browser)
+
+    scene.detachFixedNode(reset_pin)
+
+    assert "reset" not in scene.netlist.nets()
+    assert "reset" not in _browser_net_names(browser)
+    assert "U_DECODE_reset" in _browser_net_names(browser)
