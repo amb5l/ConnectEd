@@ -68,7 +68,6 @@ class NetlistBrowser(TreeView):
                     self._appendRow(
                         subnet_item, node_name, node_suffix, node_type
                     )
-        self.expandAll()
 
     @staticmethod
     def _appendRow(
