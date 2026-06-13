@@ -768,24 +768,19 @@ class TextItem(
         self._hshape.addRect(self._brect)
 
 class TextRendererMixin(ItemShapeMixin):
-    def _setText(
-        self : "Self | TextLineRenderer | TextBlockRenderer",
-        text : str,
-    ) -> None:
-        raise NotImplementedError("Subclass must implement this method")
-
     def initRenderer(self : "Self | TextLineRenderer | TextBlockRenderer") -> None:
         self.setFlag(self.GraphicsItemFlag.ItemIsSelectable, False)
         self.setAcceptedMouseButtons(Qt.MouseButton.NoButton)
         self.initShape()  # empty hit detect shape
+
 
     def onSceneOrientationChanged(
         self : "Self | TextLineRenderer | TextBlockRenderer"
     ) -> None:
         """
         Counter-rotate and/or counter-mirror so text stays readable for the
-        parent's effective scene rotation and mirror. Pivots at the glyph
-        centre so the text flips in place.
+        parent's effective scene rotation and mirror. Pivots at the layout
+        rect centre so the flip respects the width/height box.
         """
         parent = self.parentItem()
         if not isinstance(parent, TextItem):
@@ -831,6 +826,24 @@ class TextRendererMixin(ItemShapeMixin):
 
     def settingsName(self : Self) -> str:
         return "Text"
+
+    def _setText(
+        self : "Self | TextLineRenderer | TextBlockRenderer",
+        text : str,
+    ) -> None:
+        raise NotImplementedError("Subclass must implement this method")
+
+    @staticmethod
+    def _autoflipPivot(
+        layout_w   : float,
+        layout_h   : float,
+        child_pos  : QPointF,
+    ) -> QPointF:
+        """Centre of the layout rect, in child-item coordinates."""
+        return QPointF(
+            layout_w / 2.0 - child_pos.x(),
+            layout_h / 2.0 - child_pos.y(),
+        )
 
     def _paint_selected(
         self    : Self,
@@ -920,7 +933,7 @@ class TextLineRenderer(TextRendererMixin, QGraphicsSimpleTextItem):
                 y = pad_t + ch - urect.height()
         child_pos = QPointF(x, y)
         self.setPos(child_pos)
-        self.setTransformOriginPoint(urect.center())
+        self.setTransformOriginPoint(self._autoflipPivot(w, h, child_pos))
         self.onSceneOrientationChanged()
         parent._syncHandleRect(layout)
 
@@ -1043,10 +1056,9 @@ class TextBlockRenderer(TextRendererMixin, QGraphicsTextItem):
         else:
             fmt.setTopMargin(pad_t)
         root_frame.setFrameFormat(fmt)
-        glyph = QGraphicsTextItem.boundingRect(self)
-        self.setTransformOriginPoint(glyph.center())
-        self.onSceneOrientationChanged()
         w = (width if width >= 0.0 else urect.width()) + pad_l + pad_r
+        self.setTransformOriginPoint(self._autoflipPivot(w, h, self.pos()))
+        self.onSceneOrientationChanged()
         parent._syncHandleRect(QRectF(0.0, 0.0, w, h))
 
     def color(self : Self) -> QColor:
