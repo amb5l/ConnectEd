@@ -56,34 +56,41 @@ class CmdAddFreeNode(CmdDiagramSceneBase):
         return self._node
 
 
-class CmdReplaceNode(CmdDiagramSceneBase):
+class CmdReplaceSegmentNode(CmdDiagramSceneBase):
     """
     Replace one node with another. Typically used for free/non swaps.
     Updates both graphics and graph.
     """
 
+    _segment : SegmentItem
     _node_old : NodeItem
     _node_new : NodeItem
 
     @checked
     def __init__(
-        self  : Self,
-        scene : "DiagramScene",
-        node1 : NodeItem,
-        node2 : NodeItem
+        self    : Self,
+        scene     : "DiagramScene",
+        segment   : SegmentItem,
+        node_old  : NodeItem,
+        node_new  : NodeItem
     ) -> None:
         super().__init__(scene)
-        self._node_old = node1
-        self._node_new = node2
+        self._segment = segment
+        self._node_old = node_old
+        self._node_new = node_new
 
     @checked
     def redo(self : Self) -> None:
-        self._scene.netlist.replaceNode(self._node_old, self._node_new)
+        self._scene.netlist.replaceSegmentNode(
+            self._segment, self._node_old, self._node_new
+        )
         self._node_new.onConnectionChanged()
 
     @checked
     def undo(self : Self) -> None:
-        self._scene.netlist.replaceNode(self._node_new, self._node_old)
+        self._scene.netlist.replaceSegmentNode(
+            self._segment, self._node_new, self._node_old
+        )
         self._node_old.onConnectionChanged()
 
 

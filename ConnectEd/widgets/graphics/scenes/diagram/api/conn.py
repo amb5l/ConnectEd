@@ -5,12 +5,12 @@ from PyQt6.QtGui  import QPainterPath, QPainterPathStroker
 
 from ......core.check import checked
 
-from ....items.node      import NodeItem, FreeNodeItem
+from ....items.node      import NodeItem, FreeNodeItem, FixedNodeItem
 from ....items.segment   import SegmentItem
 
 from ...drawing.cmd import cmdExec
 
-from ..cmd.conn import CmdAddFreeNode, CmdReplaceNode, \
+from ..cmd.conn import CmdAddFreeNode, CmdReplaceSegmentNode, \
                        CmdAddSegment, CmdRemoveSegment, \
                        CmdSplitSegment, CmdUnsplitSegment
 
@@ -39,22 +39,22 @@ class DiagramSceneApiConnMixin:
         # split crossing segments at new node, joining nets as required
         items = self.items(pos)
         for seg in [item for item in items if isinstance(item, SegmentItem)]:
-            cmd = CmdSplitSegment(self, seg, node)
-            cmdExec(self, cmd, undoable)
+            cmdExec(self, CmdSplitSegment(self, seg, node), undoable)
         # done
         return node
 
     @checked
-    def replaceNode(
+    def replaceSegmentNode(
         self     : "DiagramScene",
-        node1    : NodeItem,
-        node2    : NodeItem,
+        segment  : SegmentItem,
+        node_old : NodeItem,
+        node_new : NodeItem,
         undoable : bool = False
     ) -> None:
         """
         Replace one node with another. Typically used for free/non swaps.
         """
-        cmd = CmdReplaceNode(self, node1, node2)
+        cmd = CmdReplaceSegmentNode(self, segment, node_old, node_new)
         cmdExec(self, cmd, undoable)
 
     @checked
@@ -65,7 +65,7 @@ class DiagramSceneApiConnMixin:
     ) -> NodeItem:
         """
         Get a node if present, add a free node if necessary.
-        Useful for adding segments, placing labels etc.
+        Useful for adding segments.
         """
         items = self.items(pos)
         for item in items:
@@ -95,25 +95,72 @@ class DiagramSceneApiConnMixin:
         return isclose(dot_product, -1.0, abs_tol=1e-6)
 
     @checked
-    def addSegment(
+    def connectFixedNode(
         self     : "DiagramScene",
-        p1       : QPointF,
-        p2       : QPointF,
+        node     : FixedNodeItem,
         undoable : bool = False
     ) -> None:
         """
-        Create or find node at each endpoint.
-
+        Connect a (unconnected) fixed node, e.g. after place/paste/clone/move.
         """
-        # handle zero length - can happen on double click
-        if p1 == p2:
-            return  # do nothing
+        # get items at node position
+        items = self.items(node.scenePos())
+        nodes = [item for item in items if isinstance(item, NodeItem)]
+        # merge coincident free nodes into this fixed node
+        free_nodes = [node for node in nodes if isinstance(node, FreeNodeItem)]
+        for free_node in free_nodes:
+            free_segments = free_node.segments()
+            for free_segment in free_segments:
+                self.replaceSegmentNode(free_segment, free_node, node, undoable)
+        # add zero length segments between this and other fixed nodes if required
+        fixed_nodes = [
+            fixed_node for fixed_node in nodes
+            if isinstance(fixed_node, FixedNodeItem)
+            and fixed_node != node
+        ]
+        for fixed_node in fixed_nodes:
+            if not self.netlist.hasSegment(node, fixed_node):
+                self.addSegment(node.scenePos(), fixed_node.scenePos(), undoable)
+        # split crossing segments
+        crossing_segments = [
+            item for item in items
+            if isinstance(item, SegmentItem)
+            and item.node1() not in nodes
+            and item.node2() not in nodes
+        ]
+        for segment in crossing_segments:
+            cmdExec(self, CmdSplitSegment(self, segment, node), undoable)
+
+    @checked
+    def addSegment(
+        self        : "DiagramScene",
+        p1_or_node1 : QPointF | NodeItem,
+        p2_or_node2 : QPointF | NodeItem,
+        undoable    : bool = False
+    ) -> None:
+        """
+        Create or find node at each endpoint.
+        """
+        # get/create endpoint vertices/entries
+        if isinstance(p1_or_node1, QPointF):
+            p1 = p1_or_node1
+            node1 = self.getNode(p1_or_node1, undoable)
+        else:
+            node1 = p1_or_node1
+            p1 = node1.scenePos()
+        if isinstance(p2_or_node2, QPointF):
+            p2 = p2_or_node2
+            node2 = self.getNode(p2_or_node2, undoable)
+        else:
+            node2 = p2_or_node2
+            p2 = node2.scenePos()
+        # special case: zero length segment
+        if p1 == p2 and node1 != node2:
+            cmdExec(self, CmdAddSegment(self, node1, node2), undoable)
+            return
         # begin macro
         if undoable:
             self.undo_stack.beginMacro("addSegment")
-        # get/create endpoint vertices/entries
-        v1 = self.getNode(p1, undoable)
-        v2 = self.getNode(p2, undoable)
         # get vertices items along line from p1 to p2
         line_path = QPainterPath()
         line_path.moveTo(p1)
@@ -127,20 +174,18 @@ class DiagramSceneApiConnMixin:
                 if isinstance(item, NodeItem)
         ]
         # sort by distance from p1
-        nodes.sort(key=lambda v: QLineF(p1, v.scenePos()).length())
+        nodes.sort(key=lambda v: QLineF(p1_or_node1, v.scenePos()).length())
         # add segments between all consecutive pairs of vertices
-        for v1, v2 in zip(nodes[:-1], nodes[1:], strict=True):
-            if self.netlist.hasSegment(v1, v2):
+        for node1, node2 in zip(nodes[:-1], nodes[1:], strict=True):
+            if self.netlist.hasSegment(node1, node2):
                 continue
-            cmd = CmdAddSegment(self, v1, v2)
-            cmdExec(self, cmd, undoable)
+            cmdExec(self, CmdAddSegment(self, node1, node2), undoable)
         # cull redundant nodes (free, childless, degree 2, colinear neighbours).
         # Sweeping post-add catches both endpoints and any intermediate vertex
         # picked up by the stroker hit-test.
         for node in nodes:
             if self.isRedundantNode(node):
-                cmd = CmdUnsplitSegment(self, node)
-                cmdExec(self, cmd, undoable)
+                cmdExec(self, CmdUnsplitSegment(self, node), undoable)
         # end macro
         if undoable:
             self.undo_stack.endMacro()
@@ -152,5 +197,4 @@ class DiagramSceneApiConnMixin:
         undoable : bool = False,
     ) -> None:
         """Remove a segment, cull orphan free nodes."""
-        cmd = CmdRemoveSegment(self, seg)
-        cmdExec(self, cmd, undoable)
+        cmdExec(self, CmdRemoveSegment(self, seg), undoable)

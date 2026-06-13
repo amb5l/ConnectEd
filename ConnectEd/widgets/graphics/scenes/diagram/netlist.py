@@ -290,6 +290,18 @@ class Netlist:
         self._dropIsolated(node2)
 
     @checked
+    def replaceSegmentNode(
+        self     : Self,
+        segment  : SegmentItem,
+        node_old : NodeItem,
+        node_new : NodeItem
+    ) -> None:
+        node_other = segment.otherNode(node_old)
+        self.removeSegment(node_old, node_other)
+        segment.changeNode(node_old, node_new)
+        self.addSegment(segment)
+
+    @checked
     def _dropIsolated(self : Self, node : NodeItem) -> None:
         """Remove a degree-0 node from the graph and subnet layer."""
         if node not in self._graph or self._graph.degree(node) != 0:

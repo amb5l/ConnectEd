@@ -15,6 +15,8 @@ from ....items import ItemType
 from ....items.port_pin import PortPinMixin
 from ....items.node     import NodeItem, FreeNodeItem, FixedNodeItem
 from ....items.segment  import SegmentItem
+from ....items.tap      import TapItem
+from ....items.port     import PortItem
 from ....items.gate     import GateItem
 from ....items.block    import BlockItem
 from ....items.symbol   import SymbolItem
@@ -176,20 +178,28 @@ class DiagramMoveInteraction(PreviewStateMixin, DiagramItemsInteraction):
                             filtered_items.append(float_node)
                             if slide:
                                 self._rubber(node, float_node)
-            # handle items with pins:
+            # handle items with fixed nodes (taps, ports, pins):
             #  look for and rubberize connected segments not in item set
             # TODO: include net labels
-            elif isinstance(item, GateItem | BlockItem | SymbolItem):
+            elif isinstance(
+                item, TapItem | PortItem | GateItem | BlockItem | SymbolItem
+            ):
+                def _processFixedNode(node : FixedNodeItem) -> None:
+                    segs = node.segments()
+                    for seg in segs:
+                        if seg not in item_set and seg.isOrthogonal():
+                            self._rubber(seg, node)
                 filtered_items.append(item)
-                for child in item.childItems():
-                    if isinstance(child, PortPinMixin):
-                        # process pin
-                        node = child.node()
-                        segs = node.segments()
-                        for seg in segs:
-                            # process connected segments
-                            if seg not in item_set and seg.isOrthogonal():
-                                self._rubber(seg, node)
+                if isinstance(item, TapItem):
+                    _processFixedNode(item.majorNode())
+                    _processFixedNode(item.minorNode())
+                elif isinstance(item, PortItem):
+                    _processFixedNode(item.node())
+                else:
+                    for child in item.childItems():
+                        if isinstance(child, PortPinMixin):  # pin
+                            node = child.node()
+                            _processFixedNode(node)
             # filter out items with ancestors in the items list
             else:
                 parent = item.parentItem()
