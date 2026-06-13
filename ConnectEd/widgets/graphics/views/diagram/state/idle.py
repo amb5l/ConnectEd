@@ -11,12 +11,16 @@ from ....items.property_text import PropertyTextItem
 from ....items.grip     import GripItem, ResizeGripItem
 from ....items.polyline import PolySegItem
 
-from ...drawing.interaction.edit  import EditMoveInteraction,          \
-                                         EditAdjustPolySegInteraction, \
-                                         EditDuplicateInteraction
+from ...drawing.interaction.edit import (
+    EditMoveInteraction,
+    EditAdjustPolySegInteraction,
+    EditDuplicateInteraction
+)
 
-from ..interaction.edit import DiagramEditMoveBlockPinsInteraction
-from ..interaction.move import DiagramMoveInteraction
+from ..interaction.move import (
+    DiagramMoveInteraction,
+    DiagramMoveBlockPinsInteraction
+)
 
 from .base import DiagramViewStateBase, qkm
 
@@ -107,7 +111,7 @@ class DiagramViewStateIdle(DiagramViewStateBase):
             if pins:
                 # move pins
                 self.interact(
-                    DiagramEditMoveBlockPinsInteraction(self.view, pins[0].parentItem(), pins),
+                    DiagramMoveBlockPinsInteraction(self.view, pins[0].parentItem(), pins),
                     self.view.stateEditMovePins
                 )
             else:

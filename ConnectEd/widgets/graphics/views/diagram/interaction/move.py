@@ -2,34 +2,38 @@ from typing import Self, Any
 
 from PyQt6.QtCore    import QPointF, QLineF, QRectF
 from PyQt6.QtWidgets import QGraphicsItem
-from PyQt6.QtGui     import QUndoStack, QUndoCommand
+from PyQt6.QtGui     import QUndoStack
 
 from ......core.check import checked
 from ......core.defs  import PITCH
-from ......core.types import Axis, Polarity
+from ......core.types import Axis, Polarity, EdgeLoc
 
 from ....views.drawing.interaction import PreviewStateMixin
 
 from ....items import ItemType
 
-from ....items.port_pin import PortPinMixin
-from ....items.node     import NodeItem, FreeNodeItem, FixedNodeItem
-from ....items.segment  import SegmentItem
-from ....items.tap      import TapItem
-from ....items.port     import PortItem
-from ....items.gate     import GateItem
-from ....items.block    import BlockItem
-from ....items.symbol   import SymbolItem
-from ....items.rubber   import RubberItem, \
-                               RubberTeeItem, RubberCornerItem, RubberJogItem
+from ....items.port_pin  import PortPinMixin
+from ....items.node      import NodeItem, FreeNodeItem, FixedNodeItem
+from ....items.segment   import SegmentItem
+from ....items.tap       import TapItem
+from ....items.port      import PortItem
+from ....items.gate      import GateItem
+from ....items.block     import BlockItem
+from ....items.block_pin import BlockPinItem
+from ....items.symbol    import SymbolItem
+from ....items.rubber    import RubberItem, RubberJogItem
 
-from ....scenes.diagram.cmd.conn import CmdDetachSegmentNode
+from ....scenes.diagram.cmd.conn   import CmdDetachSegmentNode
+from ....scenes.diagram.cmd.rubber import (
+    CmdMovePreviewRubberTee,
+    CmdMovePreviewRubberCorner,
+    CmdMovePreviewRubberJog
+)
 
-from . import DiagramItemsInteraction
+from . import DiagramInteraction, DiagramItemsInteraction
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from ....scenes.diagram import DiagramScene
     from ...diagram import DiagramView
 
 
@@ -524,112 +528,98 @@ class DiagramMoveInteraction(PreviewStateMixin, DiagramItemsInteraction):
             jog.updatePath()
 
 
-class CmdMovePreviewRubberBase(QUndoCommand):
-    _scene   : "DiagramScene"
-    _rubber  : RubberItem
+class DiagramMoveBlockPinsInteraction(PreviewStateMixin, DiagramInteraction):
+    # instance attributes
+    _undo_stack : QUndoStack          # private undo stack for preview
+    _block      : BlockItem
+    _pins       : list[BlockPinItem]  # first item is primary pin | None
+    _loc_snap   : EdgeLoc | None
+    _corner     : int | None
 
+    @checked
     def __init__(
+        self  : Self,
+        view  : "DiagramView",
+        block : BlockItem,
+        pins  : list[BlockPinItem]
+    ) -> None:
+        super().__init__(view)
+        self._block    = block
+        self._pins     = pins
+        self._loc_snap = None
+        self._corner   = None
+        self._undo_stack = QUndoStack()
+        for pin in self._pins:
+            for seg in list(pin.node().segments()):
+                self._undo_stack.push(
+                    CmdDetachSegmentNode(self._scene, seg, pin.node())
+                )
+        self._previewSave()
+
+    def valid(self : Self) -> bool:
+        return \
+            self._block is not None and \
+            hasattr(self, "_pins") and \
+            len(self._pins) > 0
+
+    def update(self : Self, pos : QPointF, snap : QPointF | None = None) -> None:
+        pos_snap = self._scene._snap(pos, snap) if snap else pos
+        primary = self._pins[0]
+        loc_old = primary.loc()
+        loc_new = self._block.pos2loc(pos)
+        loc_new_snap = self._block.pos2loc(pos_snap)
+        offset = self._block.locDelta(loc_old, loc_new_snap)
+        snap_pressure = self._block.locDelta(loc_new, loc_new_snap)
+        corner = +1 if snap_pressure > 0 else -1 if snap_pressure < 0 else 0
+        if loc_new_snap == self._loc_snap and corner == self._corner:
+            return  # filter redundant updates
+        self._pins[0].setLoc(loc_new_snap)
+        for pin in self._pins[1:]:
+            pin.setLoc(self._block.locOffset(pin.loc(), offset, corner))
+        self._loc_snap = loc_new_snap
+        self._corner = corner
+
+    def _commit(self : Self, pos : QPointF, snap : QPointF | None = None) -> bool:
+        self.update(pos, snap)
+        after  = {p: p.loc() for p in self._pins}
+        before = {p: self._preview_state[p] for p in self._pins}
+        if after == before:
+            self._cancel()
+            return True  # no change so skip command push
+        self._previewRestore()
+        self._undo_stack.setIndex(0)
+        self._scene.undo_stack.beginMacro("editMoveBlockPins")
+        for pin in self._pins:
+            self._scene.detachFixedNode(pin.node(), undoable=True)
+        self._scene.editMoveBlockPins(
+            self._block,
+            self._pins,
+            after,
+            before,
+            undoable=True
+        )
+        for pin in self._pins:
+            self._scene.connectFixedNode(pin.node(), undoable=True)
+        self._scene.undo_stack.endMacro()
+        return True
+
+    def _cancel(self : Self) -> None:
+        self._previewRestore()
+        self._undo_stack.setIndex(0)
+
+    def _previewTargets(self : Self) -> list[BlockPinItem]:
+        return self._pins
+
+    def _previewSaveTarget(self : Self, target : BlockPinItem) -> EdgeLoc:
+        return target.loc()
+
+    def _previewRestoreTarget(
         self   : Self,
-        scene  : "DiagramScene",
-        rubber : RubberItem
+        target : BlockPinItem,
+        state  : EdgeLoc
     ) -> None:
-        super().__init__()
-        self._scene  = scene
-        self._rubber = rubber
+        target.setLoc(state)
 
-    def rubber(self : Self) -> RubberItem:
-        return self._rubber
-
-
-class CmdMovePreviewRubberTee(CmdMovePreviewRubberBase):
-    _segment : SegmentItem
-    _rubber  : RubberTeeItem
-
-    def __init__(self : Self, segment : SegmentItem, node : NodeItem) -> None:
-        super().__init__(segment.scene(), RubberTeeItem(segment, node))
-        self._segment = segment
-
-    def redo(self : Self) -> None:
-        self._scene.addItem(self._rubber)
-        self._scene.removeItem(self._segment)
-
-    def undo(self : Self) -> None:
-        self._scene.addItem(self._segment)
-        self._scene.removeItem(self._rubber)
-
-
-class CmdMovePreviewRubberCorner(CmdMovePreviewRubberBase):
-    _segment1 : SegmentItem
-    _segment2 : SegmentItem
-    _corner   : FreeNodeItem
-    _rubber   : RubberCornerItem
-
-    def __init__(
-        self     : Self,
-        segment1 : SegmentItem,
-        segment2 : SegmentItem,
-        node     : NodeItem
-    ) -> None:
-        """
-        Preview command: replace a segment with a rubber corner.
-
-        Args:
-            segment1: Segment attached to mobile node.
-            segment2: Segment attached to corner.
-            node:     Mobile node.
-        """
-        super().__init__(
-            segment1.scene(),
-            RubberCornerItem(segment1, segment2, node)
-        )
-        self._segment1 = segment1
-        self._segment2 = segment2
-        self._corner   = segment1.otherNode(node)
-
-    def redo(self : Self) -> None:
-        self._scene.addItem(self._rubber)
-        self._scene.removeItem(self._segment1)
-        self._scene.removeItem(self._segment2)
-        self._scene.removeItem(self._corner)
-
-    def undo(self : Self) -> None:
-        self._scene.addItem(self._corner)
-        self._scene.addItem(self._segment1)
-        self._scene.addItem(self._segment2)
-        self._scene.removeItem(self._rubber)
-
-
-class CmdMovePreviewRubberJog(CmdMovePreviewRubberBase):
-    _segment_or_static : SegmentItem | NodeItem
-    _rubber            : RubberJogItem
-
-    def __init__(
-        self              : Self,
-        segment_or_static : SegmentItem | NodeItem,
-        mobile            : NodeItem,
-        axis              : Axis | None = None
-    ) -> None:
-        """
-        Preview command: replace a segment with a rubber jog, or add one between
-        a static node and a mobile node.
-
-        Args:
-            segment_or_node: Segment to replace or static node.
-            node: Mobile node.
-            axis: Jog inline axis (optional).
-        """
-        super().__init__(
-            mobile.scene(),
-            RubberJogItem(segment_or_static, mobile, axis)
-        )
-        self._segment_or_static = segment_or_static
-
-    def redo(self : Self) -> None:
-        self._scene.addItem(self._rubber)
-        if self._segment_or_static is not None:
-            self._scene.removeItem(self._segment_or_static)
-
-    def undo(self : Self) -> None:
-        if self._segment_or_static is not None:
-            self._scene.addItem(self._segment_or_static)
-        self._scene.removeItem(self._rubber)
+    def _previewDidRestore(self : Self) -> None:
+        self._loc_snap = None
+        self._corner   = None
