@@ -97,15 +97,6 @@ class GripItem(
         item : "ItemHandlesMixin" = self.item()
         item.moveHandleBy(self.handle().id(), delta)
 
-    @checked
-    def toXml(self : Self, _ : QXmlStreamWriter) -> None:
-        pass
-
-    @checked
-    @classmethod
-    def fromXml(cls : Self, _ : QXmlStreamReader) -> Self:
-        pass
-
 
 class GripShapeMixin:
     _SHAPE : GripShape

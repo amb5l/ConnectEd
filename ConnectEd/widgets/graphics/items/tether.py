@@ -68,6 +68,3 @@ class TextTetherItem(
 
     def anchor(self : Self) -> QGraphicsItem | None:
         return self._text_item.parentItem()
-
-    def toXml(self : Self, _xw : QXmlStreamWriter) -> str:
-        pass  # no need to serialise

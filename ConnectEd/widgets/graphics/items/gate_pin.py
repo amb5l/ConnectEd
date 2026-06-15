@@ -87,9 +87,6 @@ class GatePinItem(
             )
         ]
 
-    def toXml(self : Self, xw : QXmlStreamWriter) -> None:
-        pass  # exclude from XML
-
 
 class BufGatePinItem(GatePinItem):
     _NODE_POS  = -(PITCH + 2)

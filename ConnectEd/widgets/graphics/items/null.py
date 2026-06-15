@@ -38,7 +38,3 @@ class NullItem(QGraphicsItem):
         widget  : QWidget
     ) -> None:
         logger().error("Paint should never be called")
-
-    def toXml(self : Self, xw : QXmlStreamWriter) -> None:
-        """Dummy toXml method - NullItem is not serialized."""
-        pass
