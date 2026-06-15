@@ -9,6 +9,8 @@ from ....core.types import DataKind, LineHandleId
 
 from ..properties import InherentProperty
 
+from .role import DecorativeItem
+
 from .handle import HandleItem
 from .grip   import ResizeGripItem
 
@@ -22,6 +24,7 @@ if TYPE_CHECKING:
 
 
 class LineItem(
+    DecorativeItem,
     ItemTransformMixin,
     ItemHandlesMixin[LineHandleId],
     PrimaryItemMixin,

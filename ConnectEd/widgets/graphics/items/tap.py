@@ -11,6 +11,8 @@ from ....core.check import checked
 
 from ..properties import PropertiesMixin, InherentProperty, PropertyTextSpec
 
+from .role import FunctionalItem
+
 from .node   import TapMajorNodeItem, TapMinorNodeItem
 from .handle import HandleItem
 from .grip   import MoveGripItem
@@ -31,6 +33,7 @@ if TYPE_CHECKING:
 
 
 class TapItem(
+    FunctionalItem,
     ItemMixin,
     ItemTransformMixin,
     ItemPaintMixin,

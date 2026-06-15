@@ -11,7 +11,9 @@ from ....core.utils import val2str
 
 from ..properties import InherentProperty
 
-from .text import TextItem
+from .role import FunctionalItem
+
+from .text import BaseTextItem
 from .grip import GripShape
 
 from .mixin.transform import ItemTransformMixin
@@ -22,7 +24,7 @@ if TYPE_CHECKING:
     from ..views.drawing import DrawingView
 
 
-class NetLabelItem(TextItem):
+class NetLabelItem(FunctionalItem, BaseTextItem):
     # class attributes
     _ORIGIN = RectHandleId.BOTTOM_LEFT
     _ORIGIN_GRIP_SHAPE = GripShape.STAR
@@ -71,14 +73,14 @@ class NetLabelItem(TextItem):
                 setter = lambda self, value: self.setValue(value)
             )
         } | \
-        TextItem._PROPERTIES_POS         | \
-        TextItem._PROPERTIES_ROTATE      | \
-        TextItem._PROPERTIES_MIRROR      | \
-        TextItem._PROPERTIES_RECT_ORIGIN | \
+        BaseTextItem._PROPERTIES_POS         | \
+        BaseTextItem._PROPERTIES_ROTATE      | \
+        BaseTextItem._PROPERTIES_MIRROR      | \
+        BaseTextItem._PROPERTIES_RECT_ORIGIN | \
         _PROPERTIES_ALIGN                | \
         _PROPERTIES_SIZE                 | \
-        TextItem._PROPERTIES_PADDING     | \
-        TextItem._PROPERTIES_TEXT
+        BaseTextItem._PROPERTIES_PADDING     | \
+        BaseTextItem._PROPERTIES_TEXT
 
     # instance attributes
     _name  : str

@@ -12,6 +12,8 @@ from ..properties import InherentProperty
 
 from ..painter_path import PainterPath
 
+from .role import FunctionalItem
+
 from .gate_pin import GatePinItem, BufGatePinItem, OrGatePinItem
 
 from .mixin           import PrimaryItemMixin
@@ -98,7 +100,7 @@ class GateItem(
         ]
 
 
-class BufGateItem(GateItem):
+class BufGateItem(FunctionalItem, GateItem):
     """Buffer/Inverter gate."""
 
     # class attributes
@@ -377,7 +379,7 @@ class LogicGateItem(GateItem):
         self.properties.signalChanges("Inputs")
 
 
-class AndGateItem(LogicGateItem):
+class AndGateItem(FunctionalItem, LogicGateItem):
     _VHDL_OPERATOR = "and"
 
     def initPath(self : Self) -> None:
@@ -390,7 +392,7 @@ class AndGateItem(LogicGateItem):
         self.setPath(path)
 
 
-class OrGateItem(LogicGateItem):
+class OrGateItem(FunctionalItem, LogicGateItem):
     _MID_PIN_CLS = OrGatePinItem
     _VHDL_OPERATOR = "or"
 

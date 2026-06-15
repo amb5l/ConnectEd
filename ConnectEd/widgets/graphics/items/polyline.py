@@ -20,6 +20,8 @@ from ..painter_path import PainterPath
 
 from .grip import VertexGripItem, SegmentGripItem, ResizeGripItem
 
+from .role import DecorativeItem
+
 from .mixin           import PrimaryItemMixin
 from .mixin.transform import ItemTransformMixin
 from .mixin.handle    import ItemRectHandlesMixin
@@ -167,6 +169,7 @@ class PolylineResizeGripItem(ResizeGripItem):
 
 
 class PolylineItem(
+    DecorativeItem,
     ItemTransformMixin,
     ItemRectHandlesMixin,
     PrimaryItemMixin,
@@ -552,7 +555,3 @@ class PolylineItem(
             )
         if source.closed():
             clone.close(source.segment(source.vertexCount() - 1).sweep())
-
-
-class SymbolPolylineItem(PolylineItem):
-    pass

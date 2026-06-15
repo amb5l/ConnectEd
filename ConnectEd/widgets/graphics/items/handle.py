@@ -5,6 +5,8 @@ from PyQt6.QtCore import QPointF
 from ....core.check import checked
 from ....core.types import HandleId
 
+from .role import ChromeItem
+
 from .null import NullItem
 from .grip import GripItem, MoveGripItem
 
@@ -16,7 +18,7 @@ if TYPE_CHECKING:
     from .mixin.handle import ItemHandlesMixin
 
 
-class HandleItem(ItemChangeMixin, NullItem):
+class HandleItem(ChromeItem, ItemChangeMixin, NullItem):
     # instance attributes
     _id   : HandleId
     _grip : GripItem

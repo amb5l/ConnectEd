@@ -35,6 +35,8 @@ from ..quill      import Quill
 
 from .grip import ResizeGripItem
 
+from .role import DecorativeItem
+
 from .mixin              import PrimaryItemMixin
 from .mixin.transform    import ItemTransformMixin
 from .mixin.handle       import ItemRectHandlesMixin
@@ -142,7 +144,7 @@ class TextResizeGripItem(ResizeGripItem):
         item.setHeight(height)
 
 
-class TextItem(
+class BaseTextItem(
     ItemTransformMixin,
     ItemRectHandlesMixin,
     ItemShapeMixin,
@@ -1075,3 +1077,7 @@ class TextBlockRenderer(TextRendererMixin, QGraphicsTextItem):
         else:
             if "paint" in self.__dict__:
                 self.__dict__.pop("paint")
+
+
+class TextItem(DecorativeItem, BaseTextItem):
+    pass

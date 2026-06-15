@@ -12,6 +12,8 @@ from ....core.types import Axis, NetKind
 
 from ..scenes import withScene
 
+from .role import FunctionalItem
+
 from .mixin              import ItemMixin
 from .mixin.presentation import ItemPresentationMixin
 from .mixin.select       import ItemSelectMixin
@@ -28,6 +30,7 @@ if TYPE_CHECKING:
 
 
 class SegmentItem(
+    FunctionalItem,
     ItemMixin,
     ItemPresentationMixin,
     ItemSelectMixin,

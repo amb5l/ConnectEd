@@ -11,6 +11,8 @@ from ....core.check import checked
 
 from ..scenes import withScene
 
+from .role import FunctionalItem
+
 from .net_label import NetLabelItem
 
 from .mixin              import ItemMixin
@@ -36,6 +38,7 @@ class NodeState(StrEnum):
 
 
 class NodeItem(
+    FunctionalItem,
     ItemMixin,
     ItemSettingsMixin,
     ItemPresentationMixin,

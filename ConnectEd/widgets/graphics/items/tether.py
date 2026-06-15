@@ -6,6 +6,8 @@ from ....core.check import checked
 from PyQt6.QtWidgets import QGraphicsLineItem, QGraphicsItem, \
                             QGraphicsSceneMouseEvent
 
+from .role import ChromeItem
+
 from .mixin.settings import ItemSettingsMixin
 from .mixin.change   import ItemChangeMixin
 
@@ -15,7 +17,12 @@ if TYPE_CHECKING:
     from .text            import TextItem
 
 
-class TextTetherItem(ItemChangeMixin, ItemSettingsMixin, QGraphicsLineItem):
+class TextTetherItem(
+    ChromeItem,
+    ItemChangeMixin,
+    ItemSettingsMixin,
+    QGraphicsLineItem
+):
     """
     Tether line from the origin of a text item to its parent (handle/node).
     """

@@ -14,6 +14,8 @@ from ....core.types import Axis, Polarity
 from .segment import SegmentItem
 from .node    import NodeItem
 
+from .role import ChromeItem
+
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ..scenes.drawing import DrawingScene
@@ -65,7 +67,7 @@ class RubberItem(QGraphicsPathItem):
         return segs
 
 
-class RubberTeeItem(RubberItem):
+class RubberTeeItem(ChromeItem, RubberItem):
     """
     For cases where a segment runs between a moving node and a T-junction on
     static perpendicular segments. A crossing is a special case of a T-junction.
@@ -154,7 +156,7 @@ class RubberTeeItem(RubberItem):
         self.setPath(path)
 
 
-class RubberCornerItem(RubberItem):
+class RubberCornerItem(ChromeItem, RubberItem):
     """
     For cases where a segment runs between a moving node and a corner with
     a perpendicular segment.
@@ -205,7 +207,7 @@ class RubberCornerItem(RubberItem):
         self.setPath(path)
 
 
-class RubberJogItem(RubberItem):
+class RubberJogItem(ChromeItem, RubberItem):
     """
     For cases where a segment runs between a moving node and a fixed node.
     Draws a single step from static to mobile node (inline/across/inline).

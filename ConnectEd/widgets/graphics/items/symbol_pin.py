@@ -10,6 +10,8 @@ from ....core.check import checked
 
 from ..properties import PropertyTextSpec
 
+from .role import FunctionalItem
+
 from .port_pin import PortPinArrowItem, PortPinPathItem
 from .handle   import HandleItem
 from .grip     import MoveGripItem
@@ -28,6 +30,7 @@ class SymbolPinArrowItem(PortPinArrowItem):
 
 
 class SymbolPinItem(
+    FunctionalItem,
     ItemLocMixin,
     ItemHandlesMixin[SymbolPinHandleId],
     PortPinPathItem

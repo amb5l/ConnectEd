@@ -8,6 +8,8 @@ from ....core.check import checked
 from ....core.defs  import PITCH
 from ....core.types import GatePinHandleId, DataKind
 
+from .role import FunctionalItem
+
 from .port_pin import PortPinArrowItem, PortPinPathItem
 from .handle   import HandleItem
 from .grip     import MoveGripItem
@@ -25,6 +27,7 @@ class GatePinArrowItem(PortPinArrowItem):
 
 
 class GatePinItem(
+    FunctionalItem,
     ItemTransformMixin,
     ItemHandlesMixin[GatePinHandleId],
     PortPinPathItem

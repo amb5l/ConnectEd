@@ -9,6 +9,8 @@ from ....core.types import EdgeLoc, Edge, DataKind
 
 from ..properties import InherentProperty
 
+from .role import FunctionalItem
+
 from .base_rect import BaseRectangleItem
 
 from .part import PartItemMixin
@@ -18,7 +20,7 @@ if TYPE_CHECKING:
     from ..views.drawing import DrawingView
 
 
-class BlockItem(PartItemMixin, BaseRectangleItem):
+class BlockItem(FunctionalItem, PartItemMixin, BaseRectangleItem):
     # class attributes
     _PROPERTIES = \
         PartItemMixin._PROPERTIES_PART | \

@@ -10,6 +10,8 @@ from ....core.check import checked
 
 from ..properties import PropertyTextSpec
 
+from .role import FunctionalItem
+
 from .port_pin import PortPinArrowItem, PortPinLineItem
 
 from .mixin.transform import ItemTransformMixin
@@ -25,6 +27,7 @@ class PortArrowItem(PortPinArrowItem):
         return "PortArrow"
 
 class PortItem(
+    FunctionalItem,
     ItemTransformMixin,
     ItemHandlesMixin[PortHandleId],
     PortPinLineItem

@@ -11,6 +11,8 @@ from ....core.check import checked
 
 from ..scenes import withScene
 
+from .role import ChromeItem
+
 from .mixin           import ItemMoveMixin
 from .mixin.transform import ItemTransformMixin
 from .mixin.change    import ItemChangeMixin
@@ -34,6 +36,7 @@ class GripShape(StrEnum):
 
 
 class GripItem(
+    ChromeItem,
     ItemMoveMixin,
     ItemChangeMixin,
     ItemMenuMixin,
