@@ -39,14 +39,14 @@ class ItemLocMixin:
 
     @checked
     def initLoc(self : Self) -> None:
-        self._loc = EdgeLoc(Edge.UNDEFINED, 0)
+        self._loc = EdgeLoc()
 
     @checked
     def onParentChanged(self : Self, parent : QGraphicsItem | None) -> None:
         """Update position when parent changes."""
         if hasattr(self, '_loc') \
         and parent is not None \
-        and self._loc.edge != Edge.UNDEFINED:
+        and self._loc.edge is not None:
             self.setLoc(self._loc)
             # Edge/rotation may already be set on the orphan; re-propagate
             # autoflip now that the pin has a parent and scene chain.
@@ -85,8 +85,9 @@ class ItemLocMixin:
                 angle = 0
         self.setRotation(angle)
         parent : "BlockItem" = self.parentItem()
-        edge_pos = parent.loc2pos(loc) if parent else QPointF()
-        super().setPos(edge_pos)
+        if loc.edge is None or loc.offset is None:
+            return
+        QGraphicsItem.setPos(self, parent.loc2pos(loc) if parent else QPointF())
 
     @checked
     def setLocEdge(self : Self, edge : Edge) -> None:

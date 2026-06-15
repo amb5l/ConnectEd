@@ -74,11 +74,10 @@ class AlignV(AlignMixin,Enum):
 
 
 class Edge(Enum):
-    UNDEFINED = "Undefined"
     LEFT      = "Left"
-    BOTTOM    = "Bottom"
     RIGHT     = "Right"
     TOP       = "Top"
+    BOTTOM    = "Bottom"
 
 
 @dataclass

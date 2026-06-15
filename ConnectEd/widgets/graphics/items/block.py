@@ -154,20 +154,20 @@ class BlockItem(FunctionalItem, PartItemMixin, BaseRectangleItem):
         h = rect.height()
         def edgeLen(edge : Edge) -> float:
             return h if edge in [Edge.LEFT, Edge.RIGHT] else w
-        def edgeNextCCW(edge : Edge) -> Edge:
+        def edgeNextCCW(edge : Edge) -> Edge | None:
             return \
                 Edge.BOTTOM if edge == Edge.LEFT   else \
                 Edge.RIGHT  if edge == Edge.BOTTOM else \
                 Edge.TOP    if edge == Edge.RIGHT  else \
                 Edge.LEFT   if edge == Edge.TOP    else \
-                Edge.UNDEFINED
-        def edgeNextCW(edge : Edge) -> Edge:
+                None
+        def edgeNextCW(edge : Edge) -> Edge | None:
             return \
                 Edge.TOP    if edge == Edge.LEFT   else \
                 Edge.RIGHT  if edge == Edge.TOP    else \
                 Edge.BOTTOM if edge == Edge.RIGHT  else \
                 Edge.LEFT   if edge == Edge.BOTTOM else \
-                Edge.UNDEFINED
+                None
         loc = self.peri2loc(self.loc2peri(loc) + offset)
         if offset >= 0 and corner == +1: # CCW
             if (loc.edge in [Edge.LEFT, Edge.BOTTOM] and loc.offset == edgeLen(loc.edge)) \
