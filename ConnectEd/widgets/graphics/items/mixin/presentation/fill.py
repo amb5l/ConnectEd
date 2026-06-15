@@ -15,8 +15,7 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from ....scenes.drawing import DrawingScene
-
-from . import ItemType
+    from . import ItemType
 
 
 class ItemPresentationFillMixin:

@@ -13,6 +13,10 @@ from ....scenes import withScene
 
 from ....quill  import Quill
 
+from .line   import ItemPresentationLineMixin  # noqa: E402
+from .fill   import ItemPresentationFillMixin  # noqa: E402
+from .text   import ItemPresentationTextMixin  # noqa: E402
+
 
 class PenItemProtocol(Protocol):
     def setPen(self, pen: QPen) -> None: ...
@@ -26,18 +30,17 @@ class TextItemProtocol(Protocol):
     def setQuill(self, quill: Quill) -> None: ...
 
 
-ItemType = (
-    PenItemProtocol | BrushItemProtocol | TextItemProtocol | QGraphicsItem
-)
-
-
-from .line   import ItemPresentationLineMixin  # noqa: E402
-from .fill   import ItemPresentationFillMixin  # noqa: E402
-from .text   import ItemPresentationTextMixin  # noqa: E402
-
 if TYPE_CHECKING:
-    from ....views.drawing import DrawingView
+    from ....views.drawing  import DrawingView
     from ....scenes.drawing import DrawingScene
+    from .. import ItemNamesMixin
+    ItemType = (
+        ItemNamesMixin    |
+        PenItemProtocol   |
+        BrushItemProtocol |
+        TextItemProtocol  |
+        QGraphicsItem
+    )
 
 
 class ItemPresentationMixin(
@@ -194,11 +197,3 @@ class ItemPresentationMixin(
         if scene is None:
             scene : "DrawingScene | None" = widget.scene()
         return scene
-
-if TYPE_CHECKING:
-    from .. import ItemNamesMixin
-
-    MixinType : TypeAlias = (
-        ItemPresentationMixin | PenItemProtocol | BrushItemProtocol |
-        TextItemProtocol | ItemNamesMixin | QGraphicsItem
-    )
