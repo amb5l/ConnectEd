@@ -10,8 +10,6 @@ from ....core.check import checked
 
 from ..properties import PropertyTextSpec
 
-from .role import FunctionalItem
-
 from .port_pin import PortPinArrowItem, PortPinLineItem
 
 from .mixin.loc    import ItemLocMixin
@@ -28,7 +26,6 @@ class BlockPinArrowItem(PortPinArrowItem):
 
 
 class BlockPinItem(
-    FunctionalItem,
     ItemLocMixin,
     ItemHandlesMixin[BlockPinHandleId],
     PortPinLineItem
