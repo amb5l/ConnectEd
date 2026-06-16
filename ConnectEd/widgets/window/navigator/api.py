@@ -1,150 +1,104 @@
-from ....app import logger, model, settings
+from ....app import logger, session
 
-from ....core.check import checked
-from ....core.utils import typeCheck
+from ....core.doc import Doc
+
+from ...dialogs.file import FileNewDialog, FileOpenDialog, FileSaveAsDialog
+
+from ..sub_window import DocSubWindow
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from ....core.db import Node, DesignDbNode, LibraryDbNode, SymbolNode
-    from ....widgets.graphics.scenes.drawing import DrawingScene
     from . import Navigator
 
 
 class NavigatorApiMixin:
+    def docLoad(self : "Navigator", path : str) -> None:
+        """Load a file."""
+        doc = session().load(path)
+        if doc is None:
+            return
+        doc_type = session().docTypeForDoc(doc)
+        if doc_type is None:
+            return
+        group_item = self._groups.get(doc_type.group, None)
+        parent = self._model if group_item is None else group_item
+        self._addDoc(parent, doc, path)
 
-    ############################################################################
-    # database methods
+    def docSave(self : "Navigator", doc : Doc) -> None:
+        """Save a document."""
+        session().save(doc)
 
-    def newDiagram(self : "Navigator") -> None:
-        node = model().newDesignDbNode()
-        self._editDrawing(node)
+    def docSaveAs(self : "Navigator", doc : Doc, path : str) -> None:
+        """Save a document as."""
+        if session().saveAs(doc, path):
+            doc.setPath(path)
 
-    def newLibrary(self : "Navigator") -> None:
-        node = model().newLibraryDbNode()
-        self.expand(model().indexFromItem(node))
+    def docClose(self : "Navigator", doc : Doc) -> None:
+        """Close a document."""
+        session().close(doc)
 
-    def open(self : "Navigator") -> None:
-        self._open()
+    def fileNew(self : "Navigator") -> None:
+        """Create a new document."""
+        dialog = FileNewDialog(self)
+        if not dialog.exec():
+            return
+        doc_type = dialog.docType()
+        if doc_type is None:
+            return
+        doc = session().new(doc_type.tag)
+        group_item = self._groups.get(doc_type.group, None)
+        parent = self._model if group_item is None else group_item
+        self._addDoc(parent, doc)
 
-    def openDiagram(self : "Navigator") -> None:
-        self._open("Diagram")
+    def fileOpen(self : "Navigator") -> None:
+        """Open a document."""
+        dialog = FileOpenDialog()
+        if not dialog.exec():
+            return
+        files = dialog.selectedFiles()
+        for file in files:
+            self.docLoad(file)
 
-    def openLibrary(self : "Navigator") -> None:
-        self._open("Library")
+    def fileSave(self : "Navigator", subwindow : DocSubWindow) -> None:
+        """Save a document."""
+        doc = self._docFromSubwindow(subwindow)
+        if doc is None:
+            return
+        self.docSave(doc)
 
-    @checked
-    def load(self : "Navigator", path : str) -> None:
-        if self._load(path) is not None:
-            settings().addMRU(path)
-
-    @checked
-    def save(
-        self : "Navigator",
-        x    : "DesignDbNode | LibraryDbNode | SymbolNode | DrawingScene"
+    def fileSaveAs(
+        self      : "Navigator",
+        subwindow : DocSubWindow,
+        path      : str
     ) -> None:
-        from ....core.db import DesignDbNode, LibraryDbNode, SymbolNode
-        from ....widgets.graphics.scenes.drawing import DrawingScene
-        if not typeCheck(x, DesignDbNode | LibraryDbNode | SymbolNode | DrawingScene):
+        """Save a document as."""
+        dialog = FileSaveAsDialog(subwindow.docBinding().doc.docType().tag)
+        if not dialog.exec():
             return
-        if isinstance(x, DrawingScene):
-            x = model().getDbNodeFromScene(x)
-        elif isinstance(x, SymbolNode):
-            x = x.dbNode()
-        if isinstance(x, DesignDbNode | LibraryDbNode):
-            self._save(x)
-        else:
-            logger().warning(f"Unsupported node: {x.text()} ({type(x)})")
+        path = dialog.selectedFiles()[0]
+        doc = self._docFromSubwindow(subwindow)
+        if doc is None:
+            logger().error("Subwindow has no document")
             return
+        self.docSaveAs(doc, path)
 
-    @checked
-    def saveAs(
-        self : "Navigator",
-        x    : "DesignDbNode | LibraryDbNode | SymbolNode | DrawingScene"
-    ) -> None:
-        from ....core.db import DesignDbNode, LibraryDbNode, SymbolNode
-        from ....widgets.graphics.scenes.drawing import DrawingScene
-        if isinstance(x, DrawingScene):
-            x = model().getDbNodeFromScene(x)
-        elif isinstance(x, SymbolNode):
-            x = x.dbNode()
-        if isinstance(x, DesignDbNode | LibraryDbNode):
-            self._saveAs(x)
-        else:
-            logger().warning(f"Unsupported node: {x.text()} ({type(x)})")
+    def fileClose(self : "Navigator", subwindow : DocSubWindow) -> None:
+        """Close a document."""
+        doc = self._docFromSubwindow(subwindow)
+        if doc is None:
             return
+        self.docClose(doc)
+        subwindow.close()
 
-    @checked
-    def close(
-        self : "Navigator",
-        x    : "DesignDbNode | LibraryDbNode | SymbolNode | DrawingScene"
-    ) -> None:
-        from ....core.db import DesignDbNode, LibraryDbNode, SymbolNode
-        from ....widgets.graphics.scenes.drawing import DrawingScene
-        if isinstance(x, DrawingScene):
-            x = model().getDbNodeFromScene(x)
-        elif isinstance(x, SymbolNode):
-            x = x.dbNode()
-        if isinstance(x, DesignDbNode | LibraryDbNode):
-            self._close(x)
-        else:
-            logger().warning(f"Unsupported node: {x.text()} ({type(x)})")
-            return
-
-    ############################################################################
-    # drawing methods
-
-    @checked
-    def newSymbol(
-        self : "Navigator",
-        node : "DesignDbNode | LibraryDbNode | SymbolNode"
-    ) -> None:
-        from ....core.db import DesignDbNode, LibraryDbNode, SymbolNode
-        if not typeCheck(node, DesignDbNode | LibraryDbNode | SymbolNode):
-            return
-        if isinstance(node, SymbolNode):
-            node = node.dbNode()
-        symbol_node = node.newSymbolNode()
-        self.expand(model().indexFromItem(node))
-        self._editDrawing(symbol_node)
-
-    @checked
-    def editDrawing(
-        self : "Navigator",
-        node : "DesignDbNode | SymbolNode"
-    ) -> None:
-        self._editDrawing(node)
-
-    @checked
-    def newDrawingWindow(self : "Navigator", node : "DesignDbNode") -> None:
-        self._newDrawingWindow(node)
-
-    @checked
-    def editProperties(self : "Navigator", node : "DesignDbNode") -> None:
-        from ....core.db import DesignDbNode
-        if not typeCheck(node, DesignDbNode):
-            return
-        self._spreadsheet(node)
-
-    @checked
-    def setRoot(self : "Navigator", node : "DesignDbNode") -> None:
-        from ....core.db import DesignDbNode
-        if not typeCheck(node, DesignDbNode):
-            return
-        node.setRoot()
-
-    ############################################################################
-    # misc
-
-    @checked
-    def rename(self : "Navigator", node : "Node") -> None:
-        self.edit(self.currentIndex())
-
-    @checked
-    def copy(self : "Navigator", node : "Node") -> None:
-        model().copy(node)
-
-    @checked
-    def paste(self : "Navigator", node : "Node") -> None:
-        model().paste(node)
-
-    ############################################################################
+    def _docFromSubwindow(
+        self      : "Navigator",
+        subwindow : DocSubWindow
+    ) -> Doc | None:
+        doc_binding = subwindow.docBinding()
+        if doc_binding is None:
+            logger().warning("Subwindow has no document binding")
+            return None
+        doc = doc_binding.doc
+        if doc is None:
+            return None
+        return doc

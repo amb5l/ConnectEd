@@ -13,7 +13,7 @@ from .....core.check import checked
 from ....marquee import Marquee
 
 from ....window.mdi_area   import MdiArea
-from ....window.sub_window import SubWindow
+from ....window.sub_window import DocSubWindow
 
 from ...scenes.drawing import DrawingScene
 
@@ -158,13 +158,14 @@ class DrawingView(
         super().keyPressEvent(event)
 
 
-class DrawingSubWindow(SubWindow):
+class DrawingSubWindow(DocSubWindow):
     @checked
     def __init__(
         self   : Self,
-        parent : MdiArea | None = None
+        parent : MdiArea | None = None,
+        doc    : Doc | None = None
     ) -> None:
-        super().__init__(parent)
+        super().__init__(parent, doc)
         self.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
 
     def closeEvent(self : Self, event : QCloseEvent) -> None:

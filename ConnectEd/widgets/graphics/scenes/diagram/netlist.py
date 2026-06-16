@@ -75,7 +75,7 @@ class Netlist:
 
     @checked
     def nodes(self : Self) -> list[NodeItem]:
-        return list(self._node2subnet.keys())
+        return list(self._graph.nodes())
 
     @checked
     def hasNode(self : Self, node : NodeItem) -> bool:
@@ -137,7 +137,7 @@ class Netlist:
                 full_name = f"{label}_{pin_name}"
         if full_name is None:
             return "", "", "?"
-        base_name, suffix = _baseNameAndSuffix(full_name)
+        base_name, suffix = _netNameAndSuffix(full_name)
         return base_name, suffix, "?"
 
     @checked
@@ -230,6 +230,10 @@ class Netlist:
         self._resolveSubnet(self._subnets[self._node2subnet[node2]])
 
     # -- segment methods ---------------------------------------------------
+
+    @checked
+    def segments(self : Self) -> list[SegmentItem]:
+        return [data["segment"] for _, _, data in self._graph.edges(data=True)]
 
     @checked
     def hasSegment(self : Self, node1 : NodeItem, node2 : NodeItem) -> bool:
@@ -357,205 +361,17 @@ class Netlist:
     def subnets(self : Self) -> dict[int, Subnet]:
         return self._subnets
 
+    def subnetSegments(self : Self, subnet : Subnet) -> list[SegmentItem]:
+        return [
+            data["segment"] for _, _, data in \
+                self._graph.subgraph(subnet.nodes).edges(data=True)
+        ]
+
     # -- net methods -------------------------------------------------------
 
     @checked
     def nets(self : Self) -> dict[str | int, Net]:
         return self._nets
-
-    # -- serialisation/deserialisation -------------------------------------
-
-    def toXml(self : Self, xw : QXmlStreamWriter) -> None:
-        items = self._scene.items()
-        # start
-        xw.writeStartElement("Connectivity")
-        # 1. nodes
-        scene_nodes = [item for item in items if isinstance(item, NodeItem)]
-        graph_nodes = self.nodes()
-        id_by_node : dict[NodeItem, int] = {}
-        for id, node in enumerate(graph_nodes):
-            id_by_node[node] = id
-            node.toXml(xw, id)
-            scene_nodes.remove(node)
-        if scene_nodes:
-            scene_nodes = [
-                node for node in scene_nodes if isinstance(node, FreeNodeItem)
-            ]
-            if scene_nodes:
-                logger().warning(f"{len(scene_nodes)} free nodes remaining after node processing.")
-        # 2. subnets and segments
-        scene_segments = \
-            [item for item in items if isinstance(item, SegmentItem)]
-        for subnet in self.subnets().values():
-            subnet_node_ids = [id_by_node[node] for node in subnet.nodes]
-            xw.writeStartElement("Subnet")
-            xw.writeAttribute("ID", str(subnet.id))
-            xw.writeAttribute(
-                "Nodes",
-                ",".join(str(node_id) for node_id in subnet_node_ids)
-            )
-            for u, v, data in self._graph.subgraph(subnet.nodes).edges(data=True):
-                segment = data["segment"]
-                xw.writeStartElement("Segment")
-                xw.writeAttribute(
-                    "Nodes",
-                    f"{id_by_node[u]},{id_by_node[v]}"
-                )
-                xw.writeEndElement()
-                scene_segments.remove(segment)
-            xw.writeEndElement()
-        if scene_segments:
-            logger().warning(f"{len(scene_segments)} segments remaining after subnet processing.")
-        # 3. nets
-        for net in self.nets().values():
-            name = net.name or ""
-            suffix = net.suffix or ""
-            net_name = f"{name}[{suffix}]" if suffix else name
-            net_subnets = [self._subnets[subnet_id] for subnet_id in net.subnets]
-            net_subnet_ids = [subnet.id for subnet in net_subnets]
-            xw.writeStartElement("Net")
-            xw.writeAttribute("Name", net_name)
-            xw.writeAttribute(
-                "Subnets",
-                ",".join(str(subnet_id) for subnet_id in net_subnet_ids)
-            )
-            xw.writeEndElement()
-        # end
-        xw.writeEndElement()
-
-    @checked
-    def fromXml(self : Self, xr : QXmlStreamReader) -> None:
-        if xr.name() != "Connectivity":
-            raise ValueError(f"Expected Connectivity element, got {xr.name()}")
-        node_by_id : dict[int, NodeItem] = {}
-        id_by_node : dict[NodeItem, int] = {}
-        subnet_xml_id_by_id : dict[int, int] = {}
-        def _recordNode(id : int, node : NodeItem) -> None:
-            if isinstance(node, FreeNodeItem):
-                self._scene.addItem(node)
-            node_by_id[id] = node
-            id_by_node[node] = id
-        xr.readNext()
-        while not (xr.isEndElement() and xr.name() == "Connectivity"):
-            if xr.isStartElement():
-                element_name = xr.name()
-                match element_name:
-                    case "FreeNode":
-                        # create free node
-                        _recordNode(*FreeNodeItem.fromXml(xr))
-                    case name if name.endswith("Node") and name != "FreeNode":
-                        # validate fixed node
-                        id, pos = FixedNodeItem.fromXml(xr)
-                        for item in self._scene.items(pos):
-                            item_name = \
-                                item.__class__.__name__.removesuffix("Item")
-                            if name == item_name:
-                                _recordNode(id, item)
-                                break
-                        else:
-                            logger().warning(f"No {name} found at {pos.x()}, {pos.y()}")
-                    case "Subnet":
-                        xml_subnet_id = int(xr.attributes().value("ID"))
-                        xml_subnet_node_ids = {
-                            int(part)
-                            for part in xr.attributes().value("Nodes").split(",")
-                            if part
-                        }
-                        xr.readNext()
-                        # load segments
-                        subnet_ids_before = set(self._subnets.keys())
-                        while not (xr.isEndElement() and xr.name() == "Subnet"):
-                            if xr.isStartElement():
-                                child_name = xr.name()
-                                if child_name == "Segment":
-                                    nodes_str = xr.attributes().value("Nodes")
-                                    node_id1, node_id2 = (
-                                        int(part) for part in nodes_str.split(",")
-                                    )
-                                    node1 = node_by_id.get(node_id1)
-                                    node2 = node_by_id.get(node_id2)
-                                    segment = SegmentItem(node1, node2)
-                                    self._scene.addItem(segment)
-                                    self.addSegment(segment)
-                                    node1.onConnectionChanged()
-                                    node2.onConnectionChanged()
-                                else:
-                                    logger().warning(
-                                        f"Unexpected Subnet child: {child_name}"
-                                    )
-                            xr.readNext()
-                        subnet_ids_after = set(self._subnets.keys())
-                        # resolve newly created subnet
-                        added_subnet_ids = subnet_ids_after - subnet_ids_before
-                        if len(added_subnet_ids) == 1:
-                            subnet = self._subnets[added_subnet_ids.pop()]
-                            subnet_node_ids = {
-                                id_by_node[node] for node in subnet.nodes
-                            }
-                            if subnet_node_ids != xml_subnet_node_ids:
-                                logger().warning(
-                                    f"Subnet {xml_subnet_id} node mismatch: "
-                                    f"expected {sorted(xml_subnet_node_ids)}, "
-                                    f"got {sorted(subnet_node_ids)}"
-                                )
-                            # record XML ID for later update
-                            subnet_xml_id_by_id[subnet.id] = xml_subnet_id
-                        elif len(added_subnet_ids) == 0:
-                            logger().warning(
-                                "Segment load created no new subnet"
-                            )
-                        else:
-                            logger().warning(
-                                f"Subnet {xml_subnet_id}: expected one new "
-                                f"subnet, got {sorted(added_subnet_ids)}"
-                            )
-                    case "Net":
-                        xml_net_name = xr.attributes().value("Name")
-                        xml_net_base_name, _ = \
-                            _baseNameAndSuffix(xml_net_name)
-                        xml_subnet_ids = {
-                            int(part)
-                            for part in xr.attributes().value("Subnets").split(",")
-                            if part
-                        }
-                        if xml_net_base_name:
-                            net = self.nets().get(xml_net_base_name, None)
-                        elif len(xml_subnet_ids) == 1:
-                            xml_subnet_id = next(iter(xml_subnet_ids))
-                            internal_id = next(
-                                (
-                                    sid for sid, xid in subnet_xml_id_by_id.items()
-                                    if xid == xml_subnet_id
-                                ),
-                                xml_subnet_id,
-                            )
-                            net = self.nets().get(internal_id, None)
-                        else:
-                            net = None
-                        if net is None:
-                            logger().warning(f"Net {xml_net_name!r} not found")
-                        else:
-                            expected_subnet_ids = {
-                                next(
-                                    (
-                                        sid for sid, xid in subnet_xml_id_by_id.items()
-                                        if xid == xid_xml
-                                    ),
-                                    xid_xml,
-                                )
-                                for xid_xml in xml_subnet_ids
-                            }
-                            if net.subnets != expected_subnet_ids:
-                                logger().warning(
-                                    f"Net {xml_net_name!r} subnet mismatch: "
-                                    f"expected {sorted(xml_subnet_ids)}, "
-                                    f"got {sorted(net.subnets)}"
-                                )
-                    case _:
-                        logger().warning(
-                            f"Unexpected Connectivity element: {element_name}"
-                        )
-            xr.readNext()
 
     # -- node helpers ------------------------------------------------------
 
@@ -725,7 +541,7 @@ class Netlist:
         if all_names:
             name_parts : list[tuple[str, str]] = []
             for name in all_names:
-                name_parts.append(_baseNameAndSuffix(name))
+                name_parts.append(_netNameAndSuffix(name))
             resolved_name = name_parts[0][0]
             scalar_count = 0
             member_count = 0
@@ -835,7 +651,7 @@ def _netKindFromSuffix(suffix : str | None) -> NetKind:
 
 
 @checked
-def _baseNameAndSuffix(full_name : str) -> tuple[str, str]:
+def _netNameAndSuffix(full_name : str) -> tuple[str, str]:
     if "[" not in full_name:
         return full_name.replace(" ", ""), ""
     base_name = full_name.split('[')[0].replace(" ", "")

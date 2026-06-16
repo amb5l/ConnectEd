@@ -10,12 +10,11 @@ from ....app import logger
 from ....core.check import checked
 from ....core.defs  import PITCH
 from ....core.types import DataKind, RectHandleId
-from ....core.xml   import fromXmlAttrs
 
 from ...dialogs.arc import ArcDialog
 
-from ..properties import InherentProperty
-
+from ..properties   import InherentProperty
+from ..xml          import fromXmlProperties
 from ..painter_path import PainterPath
 
 from .grip import VertexGripItem, SegmentGripItem, ResizeGripItem
@@ -495,7 +494,7 @@ class PolylineItem(
     def fromXml(cls : Self, xr : QXmlStreamReader) -> Self:
         xml_item_name = cls.__name__.removesuffix("Item")
         instance : "PolylineItem" = cls(fresh=False)
-        fromXmlAttrs(instance, xr)
+        fromXmlProperties(instance, xr)
         # deserialise segments
         while not (xr.isEndElement() and xr.name() == xml_item_name):
             if xr.isStartElement():

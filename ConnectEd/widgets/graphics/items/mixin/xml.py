@@ -6,7 +6,8 @@ from PyQt6.QtWidgets import QGraphicsItem
 from .....app import logger
 
 from .....core.check import checked
-from .....core.xml import toXmlAttrs, fromXmlAttrs
+
+from ...xml import toXmlProperties, fromXmlProperties
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -19,7 +20,7 @@ class ItemXmlMixin:
         xw.writeStartElement(self.__class__.__name__.removesuffix("Item"))
 
     def toXmlAttrs(self : Self, xw : QXmlStreamWriter) -> None:
-        toXmlAttrs(self, xw)
+        toXmlProperties(self, xw)
 
     def toXmlChildren(self : Self, xw : QXmlStreamWriter) -> None:
         from ..property_text import PropertyTextItem
@@ -114,7 +115,7 @@ class ItemXmlMixin:
         if parent is not None:
             args["parent"] = parent
         instance : "ItemMixin | PropertiesMixin" = cls(**args)
-        fromXmlAttrs(instance, xr)
+        fromXmlProperties(instance, xr)
         if hasattr(instance, "onGeometryChanged"):
             instance.onGeometryChanged()
         if not (xr.isEndElement() and xr.name() == xml_item_name):

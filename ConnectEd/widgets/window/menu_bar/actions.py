@@ -13,7 +13,7 @@ from ....widgets.graphics.scenes.drawing import DrawingScene
 
 from ...action  import Action
 
-from ..sub_window import SubWindow
+from ..sub_window import DocSubWindow
 
 
 class Actions:
@@ -24,21 +24,20 @@ class Actions:
         SK = QKeySequence.StandardKey
 
         # actions for main menus
-        self.fileNewDesign      = Action( window(), "Design"        , "Create a new design"                 , "Ctrl+N"                     )  # noqa E501
-        self.fileNewLibrary     = Action( window(), "Library"       , "Create a new library"                , None                         )  # noqa E501
-        self.fileOpen           = Action( window(), "Open"          , "Open database"                       , "Ctrl+O"                     )  # noqa E501
-        self.fileSave           = Action( window(), "Save"          , "Save database"                       , "Ctrl+S"                     )  # noqa E501
-        self.fileSaveAs         = Action( window(), "Save As"       , "Save database as"                    , None                         )  # noqa E501
+        self.fileNew            = Action( window(), "New..."        , "Create a new document"               , "Ctrl+N"                     )  # noqa E501
+        self.fileOpen           = Action( window(), "Open..."       , "Open document"                       , "Ctrl+O"                     )  # noqa E501
+        self.fileSave           = Action( window(), "Save"          , "Save document"                       , "Ctrl+S"                     )  # noqa E501
+        self.fileSaveAs         = Action( window(), "Save As..."    , "Save document as"                    , None                         )  # noqa E501
         self.fileClose          = Action( window(), "Close"         , "Close database"                      , None                         )  # noqa E501
-        self.fileOpenMRU1       = Action( window(), "&1:"           , "Open recent file"                    , None                         )  # noqa E501
-        self.fileOpenMRU2       = Action( window(), "&2:"           , "Open recent file"                    , None                         )  # noqa E501
-        self.fileOpenMRU3       = Action( window(), "&3:"           , "Open recent file"                    , None                         )  # noqa E501
-        self.fileOpenMRU4       = Action( window(), "&4:"           , "Open recent file"                    , None                         )  # noqa E501
-        self.fileOpenMRU5       = Action( window(), "&5:"           , "Open recent file"                    , None                         )  # noqa E501
-        self.fileOpenMRU6       = Action( window(), "&6:"           , "Open recent file"                    , None                         )  # noqa E501
-        self.fileOpenMRU7       = Action( window(), "&7:"           , "Open recent file"                    , None                         )  # noqa E501
-        self.fileOpenMRU8       = Action( window(), "&8:"           , "Open recent file"                    , None                         )  # noqa E501
-        self.fileOpenMRU9       = Action( window(), "&9:"           , "Open recent file"                    , None                         )  # noqa E501
+        self.fileOpenMRU1       = Action( window(), "&1:"           , "Open recent document"                , None                         )  # noqa E501
+        self.fileOpenMRU2       = Action( window(), "&2:"           , "Open recent document"                , None                         )  # noqa E501
+        self.fileOpenMRU3       = Action( window(), "&3:"           , "Open recent document"                , None                         )  # noqa E501
+        self.fileOpenMRU4       = Action( window(), "&4:"           , "Open recent document"                , None                         )  # noqa E501
+        self.fileOpenMRU5       = Action( window(), "&5:"           , "Open recent document"                , None                         )  # noqa E501
+        self.fileOpenMRU6       = Action( window(), "&6:"           , "Open recent document"                , None                         )  # noqa E501
+        self.fileOpenMRU7       = Action( window(), "&7:"           , "Open recent document"                , None                         )  # noqa E501
+        self.fileOpenMRU8       = Action( window(), "&8:"           , "Open recent document"                , None                         )  # noqa E501
+        self.fileOpenMRU9       = Action( window(), "&9:"           , "Open recent document"                , None                         )  # noqa E501
         self.fileExit           = Action( window(), "Exit"          , "Exit the application"                , SK.Quit                      )  # noqa E501
         self.editCancel         = Action( window(), "Cancel"        , "Cancel current operation"            , SK.Cancel                    )  # noqa E501
         self.editUndo           = Action( window(), "Undo"          , "Undo"                                , SK.Undo                      )  # noqa E501
@@ -105,7 +104,7 @@ class Actions:
 
     def onSubWindowActivated(
         self      : Self,
-        subwindow : SubWindow | None
+        subwindow : DocSubWindow | None
     ) -> None:
         # disconnect previous signals
         s = self._scene

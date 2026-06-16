@@ -6,7 +6,7 @@ from .action import Action
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from .window.sub_window import SubWindow
+    from .window.sub_window import DocSubWindow
 
 
 class Menu(QMenu):
@@ -24,4 +24,4 @@ class Menu(QMenu):
 
 
 class PlaceMenu(Menu):
-    subwindow_class : type["SubWindow"] | None = None
+    subwindow_class : type["DocSubWindow"] | None = None

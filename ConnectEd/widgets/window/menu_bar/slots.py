@@ -3,9 +3,9 @@ import functools
 from typing          import Self, TypeVar, cast
 from collections.abc import Callable
 
-from PyQt6.QtWidgets import QMessageBox
+from PyQt6.QtWidgets import QMdiSubWindow, QMessageBox
 
-from ....app import settings, window
+from ....app import logger, settings, window
 
 from ....core.defs import APP_NAME
 
@@ -13,8 +13,29 @@ from ....widgets.graphics.views.drawing import DrawingView
 from ....widgets.graphics.views.diagram import DiagramView
 from ....widgets.graphics.views.symbol  import SymbolView
 
+from ..sub_window import DocSubWindow
+
 
 T = TypeVar("T")
+
+
+def withCurrentSubWindow(
+    func : Callable[["Slots", DocSubWindow], None],
+) -> Callable[["Slots"], None]:
+    """
+    Decorator that gets the active subwindow from the MDI area and checks
+    that it is a ``SubWindow`` before calling the decorated method.
+    """
+    @functools.wraps(func)
+    def wrapper(self : "Slots") -> None:
+        mdi_area = window().mdiArea()
+        if mdi_area is None:
+            return
+        current_subwindow = mdi_area.activeSubWindow()
+        if current_subwindow is None:
+            return
+        func(self, current_subwindow)
+    return wrapper
 
 
 def withCurrentWidget(widget_type: type[T]) -> Callable[[Callable[["Slots", T], None]], Callable[["Slots"], None]]:
@@ -80,53 +101,60 @@ class Slots:
     def __init__(self : Self) -> None:
         pass
 
-    def fileNewDesign(self : Self) -> None:
-        window().navigator().newDiagram()
-
-    def fileNewLibrary(self : Self) -> None:
-        window().navigator().newLibrary()
+    def fileNew(self : Self) -> None:
+        window().navigator().fileNew()
 
     def fileOpen(self : Self) -> None:
-        window().navigator().open()
+        window().navigator().fileOpen()
 
-    @withCurrentWidget(DrawingView)
-    def fileSave(self : Self, view : DrawingView) -> None:
-        window().navigator().save(view.scene())
+    @withCurrentSubWindow
+    def fileSave(self : Self, subwindow : QMdiSubWindow) -> None:
+        if isinstance(subwindow, DocSubWindow):
+            window().navigator().fileSave(subwindow)
+        else:
+            logger().error("Subwindow is not a DocSubWindow")
 
-    @withCurrentWidget(DrawingView)
-    def fileSaveAs(self : Self, view : DrawingView) -> None:
-        window().navigator().saveAs(view.scene())
+    @withCurrentSubWindow
+    def fileSaveAs(self : Self, subwindow : QMdiSubWindow) -> None:
+        if isinstance(subwindow, DocSubWindow):
+            window().navigator().fileSaveAs(subwindow)
+        else:
+            logger().error("Subwindow is not a DocSubWindow")
 
-    @withCurrentWidget(DrawingView)
-    def fileClose(self : Self, view : DrawingView) -> None:
-        window().navigator().close(view.scene())
+    @withCurrentSubWindow
+    def fileClose(self : Self, subwindow : QMdiSubWindow) -> None:
+        if isinstance(subwindow, DocSubWindow):
+            window().navigator().fileClose(subwindow)
+        else:
+            # handle other types of subwindows
+            pass
 
     def fileOpenMRU1(self : Self) -> None:
-        window().navigator().load(settings().getMRU()[0])
+        window().navigator().docLoad(settings().getMRU()[0])
 
     def fileOpenMRU2(self : Self) -> None:
-        window().navigator().load(settings().getMRU()[1])
+        window().navigator().docLoad(settings().getMRU()[1])
 
     def fileOpenMRU3(self : Self) -> None:
-        window().navigator().load(settings().getMRU()[2])
+        window().navigator().docLoad(settings().getMRU()[2])
 
     def fileOpenMRU4(self : Self) -> None:
-        window().navigator().load(settings().getMRU()[3])
+        window().navigator().docLoad(settings().getMRU()[3])
 
     def fileOpenMRU5(self : Self) -> None:
-        window().navigator().load(settings().getMRU()[4])
+        window().navigator().docLoad(settings().getMRU()[4])
 
     def fileOpenMRU6(self : Self) -> None:
-        window().navigator().load(settings().getMRU()[5])
+        window().navigator().docLoad(settings().getMRU()[5])
 
     def fileOpenMRU7(self : Self) -> None:
-        window().navigator().load(settings().getMRU()[6])
+        window().navigator().docLoad(settings().getMRU()[6])
 
     def fileOpenMRU8(self : Self) -> None:
-        window().navigator().load(settings().getMRU()[7])
+        window().navigator().docLoad(settings().getMRU()[7])
 
     def fileOpenMRU9(self : Self) -> None:
-        window().navigator().load(settings().getMRU()[8])
+        window().navigator().docLoad(settings().getMRU()[8])
 
     def fileExit(self : Self) -> None:
         window().close()

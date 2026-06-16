@@ -11,8 +11,6 @@ from ....core.check import checked
 
 from ..scenes import withScene
 
-from .role import FunctionalItem
-
 from .net_label import NetLabelItem
 
 from .mixin              import ItemMixin
@@ -38,7 +36,6 @@ class NodeState(StrEnum):
 
 
 class NodeItem(
-    FunctionalItem,
     ItemMixin,
     ItemSettingsMixin,
     ItemPresentationMixin,
@@ -85,9 +82,14 @@ class NodeItem(
         return scene.netlist.nodeSegments(self)
 
     @checked
-    def toXml(self : Self, xw : QXmlStreamWriter, id : int) -> None:
+    def toXml(
+        self : "Self | NodeItem",
+        xw   : QXmlStreamWriter,
+        id   : int | None = None
+    ) -> None:
         xw.writeStartElement(self.settingsName())
-        xw.writeAttribute("ID", str(id))
+        if id is not None:
+            xw.writeAttribute("ID", str(id))
         xw.writeAttribute("X", str(self.scenePos().x()))
         xw.writeAttribute("Y", str(self.scenePos().y()))
         xw.writeEndElement()

@@ -21,7 +21,6 @@ def clone(items : list["ItemMixin"]) -> list["ItemMixin"]:
 
 
 _item_classes = {}
-registerClass( _item_classes , "SegmentItem"               )
 registerClass( _item_classes , "PortItem"                  )
 registerClass( _item_classes , "BufGateItem"      , "gate" )
 registerClass( _item_classes , "AndGateItem"      , "gate" )

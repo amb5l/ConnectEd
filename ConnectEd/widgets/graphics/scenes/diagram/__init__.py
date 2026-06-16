@@ -1,29 +1,29 @@
 from typing import Self
 from dataclasses import dataclass
 
-from PyQt6.QtCore import Qt, QPointF, QRectF, \
-                         QXmlStreamWriter, QXmlStreamReader, \
-                         pyqtSignal
+from PyQt6.QtCore import Qt, QPointF, QRectF, pyqtSignal
 from PyQt6.QtGui  import QPainter, QPen, QBrush
 
-from .....app import settings, logger
+from .....app import settings
 
-from .....core.types import DataKind
-from .....core.xml   import toXmlAttrs, fromXmlAttrs
+from .....core.check   import checked
+from .....core.types   import DataKind
+
+from .....documents.schematic import SchematicDoc
 
 from ...properties import InherentProperty
-
-from ...items.node    import NodeItem
-from ...items.segment import SegmentItem
-
-from ...items.mixin.xml import ItemXmlMixin
 
 from ..drawing import DrawingScene
 
 from .api       import DiagramSceneApiMixin
+from .xml       import DiagramSceneXmlMixin
 from .resources import DiagramSceneResources
 
 from .netlist import Netlist
+
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from ...items.symbol import SymbolItem
 
 
 @dataclass
@@ -32,7 +32,7 @@ class DiagramSheet:
     rect : QRectF
 
 
-class DiagramScene(DiagramSceneApiMixin, DrawingScene):
+class DiagramScene(DiagramSceneApiMixin, DiagramSceneXmlMixin, DrawingScene):
     # class attributes
     _RESOURCES_CLS = DiagramSceneResources
     _PROPERTIES = DrawingScene._PROPERTIES | {
@@ -64,28 +64,38 @@ class DiagramScene(DiagramSceneApiMixin, DrawingScene):
     }
 
     # instance attributes
+    _doc      : SchematicDoc | None
+    _symbols  : dict[str, "SymbolItem"]
     sheet     : DiagramSheet
     margin    : float                  # distance from paper edge to border line
     border    : float                  # line width
+    title     : SymbolItem | None
     resources : DiagramSceneResources
     netlist   : Netlist
 
     # signals
     netlistChanged = pyqtSignal()  # noqa N815
 
-    def __init__(self : Self, fresh : bool = True) -> None:
+    @checked
+    def __init__(
+        self  : Self,
+        doc   : "SchematicDoc | None" = None,
+        fresh : bool = True
+    ) -> None:
         sheet_name   = settings().get("defaults/sheet/name")
         sheet_size   = settings().get("defaults/sheet/size")
         sheet_rect   = QRectF(QPointF(0, 0), sheet_size)
         self.sheet   = DiagramSheet(sheet_name, sheet_rect)
         self.margin  = settings().get("defaults/margin")
         self.border  = settings().get("defaults/border")
-        super().__init__(sheet_size, fresh)
+        super().__init__(doc, sheet_size, fresh)
         self.netlist = Netlist(self)
 
+    @checked
     def updateSceneRect(self : Self, rect : QRectF | None = None) -> None:
         super().updateSceneRect(self.sheet.rect)  # sheet is minimum rect
 
+    @checked
     def drawBackground(self : Self, painter : QPainter, rect : QRectF) -> None:
         painter.fillRect(rect, settings().get("theme/background"))
         painter.fillRect(
@@ -102,86 +112,56 @@ class DiagramScene(DiagramSceneApiMixin, DrawingScene):
             self.margin, self.margin, -self.margin, -self.margin
         ))
 
+    def symbols(self : Self) -> list["SymbolItem"]:
+        return list(self._symbols.values())
+
+    @checked
     def getSheetName(self : Self) -> str:
         return self.sheet.name
 
+    @checked
     def setSheetName(self : Self, name : str) -> None:
         self.sheet.name = name
         self.properties.signalChanges("Sheet Name")
 
+    @checked
     def getSheetWidth(self : Self) -> float:
         return self.sheet.rect.width()
 
+    @checked
     def setSheetWidth(self : Self, width : float) -> None:
         self.sheet.rect.setWidth(width)
         self.updateSceneRect()
         self.update()
         self.properties.signalChanges("Sheet Width")
 
+    @checked
     def getSheetHeight(self : Self) -> float:
         return self.sheet.rect.height()
 
+    @checked
     def setSheetHeight(self : Self, height : float) -> None:
         self.sheet.rect.setHeight(height)
         self.updateSceneRect()
         self.update()
         self.properties.signalChanges("Sheet Height")
 
+    @checked
     def getMargin(self : Self) -> float:
         return self.margin
 
+    @checked
     def setMargin(self : Self, margin : float) -> None:
         self.margin = margin
         self.update()
         self.properties.signalChanges("Margin")
 
+    @checked
     def getBorder(self : Self) -> float:
         return self.border
 
+    @checked
     def setBorder(self : Self, border : float) -> None:
         self.border = border
         self.update()
         self.properties.signalChanges("Border")
-
-    def toXml(self : Self, xw : QXmlStreamWriter) -> None:
-        # start
-        xw.writeStartElement(self.__class__.__name__.replace("Scene", ""))
-        # properties
-        toXmlAttrs(self, xw)
-        # items: must be top level (unparented); exclude vertices and segments
-        for item in self.items():
-            if isinstance(item, NodeItem | SegmentItem):
-                continue
-            if item.parentItem() is None:
-                if isinstance(item, ItemXmlMixin):
-                    item.toXml(xw)
-                else:
-                    logger().warning(f"Unexpected item: {item.type()}")
-        # connectivity:
-        self.netlist.toXml(xw)
-        # done
-        xw.writeEndElement()
-
-    @classmethod
-    def fromXml(cls : Self, xr : QXmlStreamReader) -> Self:
-        from ...items import _item_classes
-        top_element_name = cls.__name__.replace("Scene", "")
-        if xr.name() != top_element_name:
-            raise ValueError(f"Expected {top_element_name} element, got {xr.name()}")
-        scene : DiagramScene = cls(fresh=False)
-        fromXmlAttrs(scene, xr)
-        while not (xr.isEndElement() and xr.name() == top_element_name):
-            if xr.tokenType() == QXmlStreamReader.TokenType.StartElement:
-                element_name = xr.name()
-                item_name = element_name + "Item"
-                if element_name == "Connectivity":
-                    scene.netlist.fromXml(xr)
-                elif item_name in _item_classes:
-                    item_cls : "ItemXmlMixin" = _item_classes[item_name]
-                    item = item_cls.fromXml(xr)
-                    scene.addItem(item)
-                else:
-                    logger().warning(f"Unexpected element: {element_name}")
-            xr.readNext()
-        scene.properties.setNotify(True)  # enable property change signalling
-        return scene

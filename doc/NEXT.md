@@ -1,4 +1,23 @@
-Drawing - HDLDrawing - HDLDiagram/HDLSymbol
+Immediate next steps:
+- XML slurping to simplify fromXml
+- implement class Session to hold open diagrams, libraries etc
+- refactor Navigator to pull data from Session into a temp model
+- tidy new XML approach for scenes/items
+- retire core/xml.py - XML is a graphics concern only
+- convert SegmentPreviewItem using scene.addSegment on paste, prove connectivity cut/paste works OK
+
+- serialise symbol definitions before other items
+- SymbolItem.toXml needs 2 paths: definition (incl. pins and graphics) or instance
+- SymbolItem.fromXml needs a master argument to derive pins and graphics from when deserialising instances
+  - SymbolItem.fromXmlDefinition(xr)
+  - SymbolItem.fromXmlInstance(master, xr)
+
+
+================================================================================
+Ignore text below.
+================================================================================
+
+typeCheck
 DiagramEditMoveBlockPinsInteraction => DiagramMoveBlockPinsInteraction
 interaction valid?
 

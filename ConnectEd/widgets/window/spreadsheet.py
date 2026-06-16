@@ -18,7 +18,7 @@ from ...core.icon import getCharIcon
 
 from ..menu import Menu
 
-from .sub_window import SubWindow
+from .sub_window import DocSubWindow
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -707,7 +707,7 @@ class SpreadsheetTabWidget(QTabWidget):
             tab._table_proxy.resizeRowsToContents()
 
 
-class SpreadsheetSubWindow(SubWindow):
+class SpreadsheetSubWindow(DocSubWindow):
     _scene      : "DrawingScene"
     _tab_widget : QTabWidget | None
 

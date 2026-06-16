@@ -9,6 +9,7 @@ from PyQt6.QtGui     import QUndoStack, QColor
 from .....app import settings
 
 from .....core.types import DataKind
+from .....core.doc   import Doc
 
 from ...properties import InherentProperty, PropertiesMixin
 
@@ -42,9 +43,11 @@ class DrawingScene(
     _name      : str | None
     resources  : DrawingSceneResources
     undo_stack : QUndoStack | None
+    _doc       : Doc | None
 
     def __init__(
         self    : Self,
+        doc     : Doc | None = None,
         extents : QSizeF | None = None,
         fresh   : bool = True
     ) -> None:
@@ -53,8 +56,9 @@ class DrawingScene(
         self._name = None
         self.updateSceneRect(extents)
         self.setItemIndexMethod(QGraphicsScene.ItemIndexMethod.NoIndex)
-        self.undo_stack = QUndoStack(self)
         self.resources = self._RESOURCES_CLS()
+        self.undo_stack = QUndoStack(self)
+        self._doc = doc
         self.initProperties(fresh)
         self.initGrips()
         self.onSettingsChanged()
@@ -79,6 +83,8 @@ class DrawingScene(
     def setName(self : Self, name : str | None) -> None:
         self._name = name
         self.properties.signalChanges("Name")
+        if self._doc is not None:
+            self._doc.onChanged("Name")
 
     def undo(self : Self) -> None:
         self.undo_stack.undo()

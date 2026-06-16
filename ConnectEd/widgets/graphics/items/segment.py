@@ -1,6 +1,6 @@
 from typing import Self, Any
 
-from PyQt6.QtCore    import QPointF, QLineF
+from PyQt6.QtCore    import QPointF, QLineF, QXmlStreamWriter, QXmlStreamReader
 from PyQt6.QtWidgets import QGraphicsLineItem, QGraphicsItem, QMenu
 from PyQt6.QtGui     import QAction
 
@@ -12,6 +12,8 @@ from ....core.types import Axis, NetKind
 
 from ..scenes import withScene
 
+from ..xml import fromXmlProperties
+
 from .role import FunctionalItem
 
 from .mixin              import ItemMixin
@@ -19,6 +21,7 @@ from .mixin.presentation import ItemPresentationMixin
 from .mixin.select       import ItemSelectMixin
 from .mixin.change       import ItemChangeMixin
 from .mixin.clone        import ItemCloneMixin
+from .mixin.xml          import ItemXmlMixin
 from .mixin.menu         import ItemMenuMixin
 
 from .node import NodeItem
@@ -36,6 +39,7 @@ class SegmentItem(
     ItemSelectMixin,
     ItemChangeMixin,
     ItemCloneMixin,
+    ItemXmlMixin,
     ItemMenuMixin,
     QGraphicsLineItem
 ):
@@ -177,6 +181,26 @@ class SegmentItem(
             )
         ]
 
+    def toXml(
+        self : Self,
+        xw   : QXmlStreamWriter,
+        ids  : tuple[int, int] | None = None
+    ) -> None:
+        self.toXmlBegin(xw)
+        if ids is None:
+            # use node scene positions
+            p1 = self._node1.scenePos()
+            p2 = self._node2.scenePos()
+            xw.writeAttribute("X1", f"{p1.x()}")
+            xw.writeAttribute("Y1", f"{p1.y()}")
+            xw.writeAttribute("X2", f"{p2.x()}")
+            xw.writeAttribute("Y2", f"{p2.y()}")
+        else:
+            # use node IDs
+            xw.writeAttribute("ID1", str(ids[0]))
+            xw.writeAttribute("ID2", str(ids[1]))
+        self.toXmlEnd(xw)
+
     @checked
     def _subscribeNode(self : Self, node : NodeItem) -> None:
         node.subscribe("scenePos", self, "onGeometryChanged")
@@ -246,6 +270,12 @@ class SegmentPreviewItem(QGraphicsLineItem):
         line = self.line()
         line.setP2(p2-p1)
         self.setLine(line)
+
+    @checked
+    @classmethod
+    def fromXml(cls : Self, xr : QXmlStreamReader) -> Self:
+        instance : "SegmentPreviewItem" = cls(fresh=False)
+        fromXmlProperties(instance, xr)
 
     @withScene
     def _updatePen(self : Self, scene : "DrawingScene") -> None:

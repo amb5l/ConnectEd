@@ -10,7 +10,7 @@ from ...core.check import checked
 
 from ..action import Action
 
-from .sub_window  import SubWindow
+from .sub_window  import DocSubWindow
 from .spreadsheet import SpreadsheetSubWindow
 
 from typing import TYPE_CHECKING
@@ -33,7 +33,7 @@ class MdiArea(QMdiArea):
         flags     : Qt.WindowType = Qt.WindowType.SubWindow
     ) -> None:
         super().addSubWindow(subwindow, flags)
-        if isinstance(subwindow, SubWindow):
+        if isinstance(subwindow, DocSubWindow):
             # Connect to destroyed signal to update menu when window is closed
             subwindow.destroyed.connect(self.update)
         self.update()
@@ -49,14 +49,14 @@ class MdiArea(QMdiArea):
         window().menuBar().updateWindowMenu()
 
     @checked
-    def activateSubWindow(self : Self, subwindow : SubWindow) -> None:
+    def activateSubWindow(self : Self, subwindow : DocSubWindow) -> None:
         super().setActiveSubWindow(subwindow)
         subwindow.show()
         subwindow.raise_()
         subwindow.setFocus()
 
     @checked
-    def sceneSubWindows(self : Self, scene : "DrawingScene") -> list[SubWindow]:
+    def sceneSubWindows(self : Self, scene : "DrawingScene") -> list[DocSubWindow]:
         """Return all scene subwindows in top down Z order."""
         r = []
         for w in reversed(self.subWindowList()):
@@ -79,11 +79,11 @@ class MdiArea(QMdiArea):
         from ...widgets.graphics.scenes.symbol  import SymbolScene
         from ...widgets.graphics.views.drawing  import DrawingSubWindow
         # create dictionaries
-        scene_subwindows : dict["DrawingScene" | None, list[SubWindow]] = {}
+        scene_subwindows : dict["DrawingScene" | None, list[DocSubWindow]] = {}
         self._scene_subwindow_actions = {}
         # build scene => subwindow list dictionary
         for w in self.subWindowList():
-            if isinstance(w, SubWindow):
+            if isinstance(w, DocSubWindow):
                 if hasattr(w, "scene"):
                     scene = w.scene()
                     scene_subwindows.setdefault(scene, []).append(w)

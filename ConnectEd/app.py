@@ -9,6 +9,7 @@ from .core.check import checked
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from .core.settings  import Settings
+    from .core.session   import Session
     from .core.db        import Model
     from .widgets.window import Window
 
@@ -21,6 +22,7 @@ class ConnectEdApp(QApplication):
     # instance attributes
     _logger   : "Logger | None"
     _settings : "Settings | None"
+    _session  : "Session | None"
     _model    : "Model | None"
     _window   : "Window | None"
     _cli      : bool
@@ -31,6 +33,7 @@ class ConnectEdApp(QApplication):
         super().__init__([])
         self._logger   = None
         self._settings = None
+        self._session  = None
         self._model    = None
         self._window   = None
         self._cli      = cli
@@ -51,6 +54,14 @@ class ConnectEdApp(QApplication):
     @checked
     def setSettings(self : Self, settings : "Settings") -> None:
         self._settings = settings
+
+    @checked
+    def session(self : Self) -> "Session":
+        return self._session
+
+    @checked
+    def setSession(self : Self, session : "Session") -> None:
+        self._session = session
 
     @checked
     def model(self : Self) -> "Model":
@@ -92,6 +103,11 @@ def logger() -> Logger | None:
 @checked
 def settings() -> "Settings | None":
     return app().settings()
+
+
+@checked
+def session() -> "Session | None":
+    return app().session()
 
 
 @checked
