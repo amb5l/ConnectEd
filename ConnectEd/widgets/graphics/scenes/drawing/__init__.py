@@ -40,9 +40,6 @@ class DrawingScene(
     # instance attributes
     _uuid      : str
     _name      : str | None
-    _sel_line  : QColor  # TODO delete
-    _sel_fill  : QColor
-    _sel_text  : QColor
     resources  : DrawingSceneResources
     undo_stack : QUndoStack | None
 
@@ -72,14 +69,6 @@ class DrawingScene(
         if not isinstance(other, DrawingScene):
             return NotImplemented
         return self._uuid == other._uuid
-
-    def onSettingsChanged(self : Self) -> None:
-        line = settings().get("theme/selected/line")
-        fill = settings().get("theme/selected/fill")
-        text = settings().get("theme/selected/text")
-        self._sel_line = line.color if hasattr(line, "color") else line
-        self._sel_fill = fill.color if hasattr(fill, "color") else fill
-        self._sel_text = text.color if hasattr(text, "color") else text
 
     def onSelectionChanged(self : Self) -> None:
         self.updateGrips()
