@@ -16,11 +16,11 @@ class DrawingSceneGripsMixin:
     # external instance attributes
     _grip_items : list["ItemHandlesMixin"]
 
-    def initGrips(self : "MixinSelf") -> None:
+    def initGrips(self : MixinSelf) -> None:
         self._grip_items = []
         settings().changed.connect(self.updateGrips)
 
-    def updateGrips(self : "MixinSelf") -> None:
+    def updateGrips(self : MixinSelf) -> None:
         from ...items.mixin.handle import ItemHandlesMixin
         self.hideGrips()
         self._grip_items = [i for i in self.selectedItems() \
@@ -28,7 +28,7 @@ class DrawingSceneGripsMixin:
         for item in self._grip_items:
             item.setGripsVisible(True)
 
-    def hideGrips(self : "MixinSelf") -> None:
+    def hideGrips(self : MixinSelf) -> None:
         for item in self._grip_items:
             item.setGripsVisible(False)
         self._grip_items = []

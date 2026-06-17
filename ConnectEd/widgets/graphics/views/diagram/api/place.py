@@ -1,4 +1,6 @@
-from typing import Self
+from __future__ import annotations
+
+from typing import Self, TypeAlias
 
 from PyQt6.QtCore import QPointF
 
@@ -6,36 +8,38 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ....items.segment import SegmentItem
     from .. import DiagramView
-    MixinSelf = Self | DiagramView
+    MixinSelf: TypeAlias = Self | DiagramView
+else:
+    MixinSelf = Self
 
 
 class DiagramViewApiPlaceMixin:
-    def placePort(self : "MixinSelf") -> None:
+    def placePort(self : MixinSelf) -> None:
         self.state.go(self.statePlacePort)
 
-    def placeGate(self : "MixinSelf") -> None:
+    def placeGate(self : MixinSelf) -> None:
         self.state.go(self.statePlaceGate)
 
-    def placeBlock(self : "MixinSelf") -> None:
+    def placeBlock(self : MixinSelf) -> None:
         self.state.go(self.statePlaceBlock1)
 
-    def placeBlockPin(self : "MixinSelf") -> None:
+    def placeBlockPin(self : MixinSelf) -> None:
         self.state.go(self.statePlaceBlockPin)
 
-    def placeSymbolPin(self : "MixinSelf") -> None:
+    def placeSymbolPin(self : MixinSelf) -> None:
         self.state.go(self.statePlaceSymbolPin)
 
-    def placeConnection(self : "MixinSelf") -> None:
+    def placeConnection(self : MixinSelf) -> None:
         self.state.go(self.statePlaceConn1)
 
-    def placeTap(self : "MixinSelf") -> None:
+    def placeTap(self : MixinSelf) -> None:
         self.state.go(self.statePlaceTap)
 
-    def placeNetLabel(self : "MixinSelf") -> None:
+    def placeNetLabel(self : MixinSelf) -> None:
         self.state.go(self.statePlaceNetLabel)
 
     def placeNetLabelOnSegment(
-        self     : "MixinSelf",
+        self     : MixinSelf,
         segment  : "SegmentItem",
         spos     : QPointF | None = None
     ) -> None:

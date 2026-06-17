@@ -1,4 +1,7 @@
-from typing import Self
+from __future__ import annotations
+
+from typing import Self, TypeAlias
+
 from math  import sqrt
 
 from PyQt6.QtCore    import Qt, QPointF, QRectF, QPoint
@@ -19,14 +22,16 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ...scenes.drawing import DrawingScene
     from . import DrawingView
-    MixinSelf = Self | DrawingView
+    MixinSelf: TypeAlias = Self | DrawingView
+else:
+    MixinSelf = Self
 
 
 qkm = Qt.KeyboardModifier
 
 
 class DrawingViewPrivateMixin:
-    def _allItemsRect(self : "MixinSelf") -> QRectF | None:
+    def _allItemsRect(self : MixinSelf) -> QRectF | None:
         scene : "DrawingScene | None" = self.scene()
         if scene is None:
             return None
@@ -37,7 +42,7 @@ class DrawingViewPrivateMixin:
                 items_rect.united(item_rect)
         return items_rect
 
-    def _selectedItemsRect(self : "MixinSelf") -> QRectF | None:
+    def _selectedItemsRect(self : MixinSelf) -> QRectF | None:
         scene : "DrawingScene | None" = self.scene()
         if scene is None:
             return None
@@ -48,7 +53,7 @@ class DrawingViewPrivateMixin:
                 items_rect.united(item_rect)
         return items_rect
 
-    def _pan(self : "MixinSelf", delta : QPointF) -> None:
+    def _pan(self : MixinSelf, delta : QPointF) -> None:
         lrect = self.mapToScene(self.viewport().rect()).boundingRect()  # Scene coords
         pan = QPointF(lrect.width()  * delta.x(), lrect.height() * delta.y())
         transform = self.transform()
@@ -64,7 +69,7 @@ class DrawingViewPrivateMixin:
             self.mapToScene(self.mouse.current.physical)
         )
 
-    def _zoomAbs(self : "MixinSelf", abs : float) -> None:
+    def _zoomAbs(self : MixinSelf, abs : float) -> None:
         abs = max(abs, settings().get("display/zoom/min"))
         abs = min(abs, settings().get("display/zoom/max"))
         self.zoom = abs
@@ -72,10 +77,10 @@ class DrawingViewPrivateMixin:
         self.scale(self.zoom, self.zoom)
         window().statusBar().zoom.setText(f"{self.zoom * 100:.2f}%")
 
-    def _zoomRel(self : "MixinSelf", rel : float) -> None:
+    def _zoomRel(self : MixinSelf, rel : float) -> None:
         self._zoomAbs(self.zoom * rel)
 
-    def _zoomRelMouse(self : "MixinSelf", rel : float) -> None:
+    def _zoomRelMouse(self : MixinSelf, rel : float) -> None:
         ppos_old = self.mouse.current.physical
         lpos_old = self.mouse.current.logical
         self._zoomRel(rel)
@@ -92,7 +97,7 @@ class DrawingViewPrivateMixin:
             self.mapToScene(self.mouse.current.physical)
         )
 
-    def _zoomRect(self : "MixinSelf", rect : QRectF) -> None:
+    def _zoomRect(self : MixinSelf, rect : QRectF) -> None:
         factor = min(
             self.viewport().width()  / rect.width(),
             self.viewport().height() / rect.height()
@@ -100,27 +105,27 @@ class DrawingViewPrivateMixin:
         self._zoomAbs(factor)
         self.centerOn(rect.center())
 
-    def _round2nearest(self : "MixinSelf", x : float, n : float) -> float:
+    def _round2nearest(self : MixinSelf, x : float, n : float) -> float:
         return round(x / n) * n
 
-    def _snap(self : "MixinSelf", pos : QPointF | None) -> QPointF:
+    def _snap(self : MixinSelf, pos : QPointF | None) -> QPointF:
         return QPointF(0, 0) if pos is None else \
             QPointF(
                 self._round2nearest(pos.x(), self.grid.pitch.x()),
                 self._round2nearest(pos.y(), self.grid.pitch.y())
             ) if self.grid.snap else pos
 
-    def _distance(self : "MixinSelf", cp1 : QPoint, cp2 : QPoint) -> int:
+    def _distance(self : MixinSelf, cp1 : QPoint, cp2 : QPoint) -> int:
         return int(round(sqrt((cp1.x() - cp2.x())**2 + (cp1.y() - cp2.y())**2)))
 
     def _getModifiers(
-        self  : "MixinSelf",
+        self  : MixinSelf,
         event : QMouseEvent
     ) -> Qt.KeyboardModifier:
         mask = qkm.ControlModifier | qkm.ShiftModifier | qkm.AltModifier
         return event.modifiers() & mask
 
-    def _setLayer(self : "MixinSelf", layer : "DrawingView.Layer") -> None:
+    def _setLayer(self : MixinSelf, layer : "DrawingView.Layer") -> None:
         self.layer = layer
         scene : "DrawingScene | None" = self.scene()
         if scene is None:
@@ -133,7 +138,7 @@ class DrawingViewPrivateMixin:
             item.setSelected(False)
 
     def _itemsAt(
-        self : "MixinSelf", pos : QPoint | QPointF) -> list[QGraphicsItem]:
+        self : MixinSelf, pos : QPoint | QPointF) -> list[QGraphicsItem]:
         if self.scene() is None:
             return []
         if isinstance(pos, QPointF):
@@ -146,7 +151,7 @@ class DrawingViewPrivateMixin:
         ]
 
     def _siblingBlockPins(
-        self  : "MixinSelf",
+        self  : MixinSelf,
         items : QGraphicsItem
     ) -> list[BlockPinItem]:
         pins = []
@@ -163,7 +168,7 @@ class DrawingViewPrivateMixin:
         return [] if parent is None else pins
 
     def _selectRect(
-        self      : "MixinSelf",
+        self      : MixinSelf,
         rect      : QRectF,
         modifiers : Qt.KeyboardModifier
     ) -> None:
@@ -195,7 +200,7 @@ class DrawingViewPrivateMixin:
         scene.selectionChanged.emit()
 
     def _selectClick(
-        self      : "MixinSelf",
+        self      : MixinSelf,
         pos       : QPointF,
         modifiers : Qt.KeyboardModifier
     ) -> None:
@@ -267,7 +272,7 @@ class DrawingViewPrivateMixin:
             self.scene().clearSelection()
 
     def _selectDrag(
-        self      : "MixinSelf",
+        self      : MixinSelf,
         pos       : QPointF,
         modifiers : Qt.KeyboardModifier
     ) -> None:
@@ -294,7 +299,7 @@ class DrawingViewPrivateMixin:
             self.scene().clearSelection()
 
     def _selectedItems(
-        self  : "MixinSelf",
+        self  : MixinSelf,
         etype : type
     ) -> list[QGraphicsItem]:
         scene : "DrawingScene | None" = self.scene()
@@ -303,7 +308,7 @@ class DrawingViewPrivateMixin:
         return [i for i in scene.selectedItems() if isinstance(i, etype)]
 
     def _selectedItem(
-        self  : "MixinSelf",
+        self  : MixinSelf,
         etype : type
     ) -> QGraphicsItem:
         items = self._selectedItems(etype)

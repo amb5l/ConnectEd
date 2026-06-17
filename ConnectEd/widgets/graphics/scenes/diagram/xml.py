@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Self, TYPE_CHECKING, TypeAlias
+from typing import Self, TypeAlias
 
 from PyQt6.QtCore    import QPointF, QXmlStreamWriter, QXmlStreamReader
 from PyQt6.QtWidgets import QGraphicsItem
@@ -21,6 +21,7 @@ from ...items.mixin   import ItemXmlMixin
 
 from .netlist import _netNameAndSuffix
 
+from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from . import DiagramScene
     MixinSelf: TypeAlias = Self | DiagramScene

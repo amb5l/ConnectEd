@@ -1,4 +1,6 @@
-﻿from typing import Self, TypeAlias
+﻿from __future__ import annotations
+
+from typing import Self, TypeAlias
 
 from PyQt6.QtCore    import QXmlStreamWriter, QXmlStreamReader
 from PyQt6.QtWidgets import QGraphicsItem
@@ -14,19 +16,17 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ...properties import PropertiesMixin
     from ..mixin       import ItemMixin
-
-MixinSelf = object  # runtime stub for @checked string annotations
+    MixinSelf: TypeAlias = Self | ItemMixin | PropertiesMixin
+else:
+    MixinSelf = Self
 
 
 class ItemXmlMixin:
-    if TYPE_CHECKING:
-        MixinSelf: TypeAlias = Self | ItemMixin | PropertiesMixin
-
     _CHILD_TAGS = frozenset({
         "GatePin", "BlockPin", "SymbolPin", "PropertyText"
     })
 
-    def toXmlChildren(self : "MixinSelf", xw : QXmlStreamWriter) -> None:
+    def toXmlChildren(self : MixinSelf, xw : QXmlStreamWriter) -> None:
         from ..property_text import PropertyTextItem
         from ..port_pin      import PortPinMixin
         from ..handle        import HandleItem
@@ -39,14 +39,14 @@ class ItemXmlMixin:
                         handle_child.toXml(xw)
 
     @checked
-    def toXml(self : "MixinSelf", xw : QXmlStreamWriter) -> None:
+    def toXml(self : MixinSelf, xw : QXmlStreamWriter) -> None:
         toXmlStartElement(xw, self.__class__.__name__.removesuffix("Item"))
         toXmlProperties(self, xw)
         self.toXmlChildren(xw)
         toXmlEndElement(xw)
 
     @checked
-    def fromXmlChild(self : "MixinSelf", xr : QXmlStreamReader) -> bool:
+    def fromXmlChild(self : MixinSelf, xr : QXmlStreamReader) -> bool:
         """Handle one child start element. Returns True if consumed."""
         from ...items.port_pin   import PortPinMixin
         from ...items.gate_pin   import GatePinItem
@@ -72,7 +72,7 @@ class ItemXmlMixin:
         return False
 
     @checked
-    def fromXmlChildren(self : "MixinSelf", xr : QXmlStreamReader) -> None:
+    def fromXmlChildren(self : MixinSelf, xr : QXmlStreamReader) -> None:
         """Consume child elements until the parent's end element."""
         xml_item_name = self.__class__.__name__.removesuffix("Item")
         def dispatch(xr : QXmlStreamReader) -> None:
@@ -86,7 +86,7 @@ class ItemXmlMixin:
         )
 
     @staticmethod
-    def fromXmlRefresh(instance : "MixinSelf") -> None:
+    def fromXmlRefresh(instance : MixinSelf) -> None:
         if hasattr(instance, "onTextChanged"):
             instance.onTextChanged()
         if hasattr(instance, "onSceneRotationChanged"):

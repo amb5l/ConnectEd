@@ -1,4 +1,6 @@
-from typing import Self
+from __future__ import annotations
+
+from typing import Self, TypeAlias
 
 from PyQt6.QtCore import QPointF
 
@@ -14,7 +16,9 @@ from ..cmd.polyline import CmdAddPolyVtx
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from .. import DrawingScene
-    MixinSelf = Self | DrawingScene
+    MixinSelf: TypeAlias = Self | DrawingScene
+else:
+    MixinSelf = Self
 
 
 class DrawingSceneApiAddMixin:
@@ -22,7 +26,7 @@ class DrawingSceneApiAddMixin:
 
     @checked
     def addItems(
-        self     : "MixinSelf",
+        self     : MixinSelf,
         items    : list[ItemType],
         undoable : bool = False
     ) -> None:
@@ -32,7 +36,7 @@ class DrawingSceneApiAddMixin:
 
     @checked
     def addPolyVtx(
-        self     : "MixinSelf",
+        self     : MixinSelf,
         polyline : PolylineItem,
         pos      : QPointF,
         sweep    : float | None = None,
