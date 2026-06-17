@@ -22,12 +22,13 @@ from .netlist import _netNameAndSuffix
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from . import DiagramScene
+    MixinSelf = Self | DiagramScene
 
 
 class DiagramSceneXmlMixin:
     @checked
     def toXml(
-        self : "Self | DiagramScene",
+        self : "MixinSelf",
         xw   : QXmlStreamWriter,
         tag  : str | None = None
     ) -> None:
@@ -71,7 +72,7 @@ class DiagramSceneXmlMixin:
 
     @checked
     def toXmlClipboard(
-        self  : "Self | DiagramScene",
+        self  : "MixinSelf",
         items : list[QGraphicsItem],
         pos   : QPointF,
         xw    : QXmlStreamWriter,
@@ -94,14 +95,14 @@ class DiagramSceneXmlMixin:
 
     @classmethod
     @checked
-    def fromXml(cls : "Self | DiagramScene", xr : QXmlStreamReader) -> Self:
-        scene : "Self | DiagramScene" = cls(fresh=False)
+    def fromXml(cls : "MixinSelf", xr : QXmlStreamReader) -> Self:
+        scene : "MixinSelf" = cls(fresh=False)
         scene.loadFromXml(xr)
         return scene
 
     @checked
     def loadFromXml(
-        self : "Self | DiagramScene",
+        self : "MixinSelf",
         xr   : QXmlStreamReader
     ) -> None:
         node_by_id : dict[int, NodeItem] = {}
@@ -243,7 +244,7 @@ class DiagramSceneXmlMixin:
 
     @checked
     def fromXmlClipboard(
-        self  : "Self | DiagramScene",
+        self  : "MixinSelf",
         xr    : QXmlStreamReader
     ) -> tuple[QPointF, list[QGraphicsItem]]:
         items = []
@@ -282,7 +283,7 @@ class DiagramSceneXmlMixin:
 
     @checked
     def _toXmlSymbols(
-        self  : "Self | DiagramScene",
+        self  : "MixinSelf",
         items : list[QGraphicsItem],
         xw    : QXmlStreamWriter
     ) -> None:
@@ -297,7 +298,7 @@ class DiagramSceneXmlMixin:
 
     @checked
     def _toXmlNonConnectivityItems(
-        self  : "Self | DiagramScene",
+        self  : "MixinSelf",
         items : list[QGraphicsItem],
         xw    : QXmlStreamWriter
     ) -> None:

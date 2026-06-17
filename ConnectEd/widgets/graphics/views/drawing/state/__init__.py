@@ -1,3 +1,5 @@
+from typing import Self
+
 from .base  import DrawingViewStateBase
 from .view  import DrawingViewStateViewPan1,              \
                    DrawingViewStateViewPan2,              \
@@ -32,6 +34,7 @@ from .place import DrawingViewStatePlaceSymbolPin,        \
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from .. import DrawingView
+    MixinSelf = Self | DrawingView
 
 
 class DrawingViewStateMixin:
@@ -64,7 +67,7 @@ class DrawingViewStateMixin:
     statePlacePolyline2        : DrawingViewStatePlacePolyline2         # noqa N815
     statePlaceText             : DrawingViewStatePlaceText              # noqa N815
 
-    def initStates(self : "DrawingView") -> None:
+    def initStates(self : "MixinSelf") -> None:
         self.stateViewPan1              = DrawingViewStateViewPan1              (self)
         self.stateViewPan2              = DrawingViewStateViewPan2              (self)
         self.stateViewZoomArea1         = DrawingViewStateViewZoomArea1         (self)

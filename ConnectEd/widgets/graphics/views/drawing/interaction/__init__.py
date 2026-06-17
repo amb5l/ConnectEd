@@ -8,13 +8,11 @@ from ......core.check import checked
 
 from ....items import ItemType
 
-from ....items.block      import BlockItem
-from ....items.block_pin  import BlockPinItem
-
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ...drawing import DrawingView
     from ....scenes.drawing import DrawingScene
+    from . import DrawingInteraction
 
 
 class DrawingInteraction:
@@ -135,10 +133,10 @@ class RotateItemMixin:
     # instance attributes
     _item : ItemType
 
-    def rotateCW(self : Self) -> None:
+    def rotateCW(self : Self | DrawingInteraction) -> None:
         self._item.setRotation((self._item.rotation() + 90) % 360)
 
-    def rotateCCW(self : Self) -> None:
+    def rotateCCW(self : Self | DrawingInteraction) -> None:
         self._item.setRotation((self._item.rotation() - 90) % 360)
 
     def ctxMenuItems(self : Self | DrawingInteraction, pos : QPointF) -> list[QAction | QMenu]:
@@ -155,26 +153,26 @@ class PreviewStateMixin:
     # instance attributes
     _preview_state : dict[Any, Any]
 
-    def _previewTargets(self : Self) -> list[Any]:
+    def _previewTargets(self : Self | DrawingInteraction) -> list[Any]:
         raise NotImplementedError("Subclass must define preview targets")
 
-    def _previewSaveTarget(self : Self, target : Any) -> Any:
+    def _previewSaveTarget(self : Self | DrawingInteraction, target : Any) -> Any:
         raise NotImplementedError("Subclass must define target state save")
 
-    def _previewRestoreTarget(self : Self, target : Any, state : Any) -> None:
+    def _previewRestoreTarget(self : Self | DrawingInteraction, target : Any, state : Any) -> None:
         raise NotImplementedError("Subclass must define target state restore")
 
-    def _previewDidRestore(self : Self) -> None:
+    def _previewDidRestore(self : Self | DrawingInteraction) -> None:
         """Hook for interactions that need post-restore cleanup."""
         pass
 
-    def _previewSave(self : Self) -> None:
+    def _previewSave(self : Self | DrawingInteraction) -> None:
         self._preview_state = {
             target: self._previewSaveTarget(target)
             for target in self._previewTargets()
         }
 
-    def _previewRestore(self : Self) -> None:
+    def _previewRestore(self : Self | DrawingInteraction) -> None:
         if not hasattr(self, "_preview_state"):
             return
         for target, state in self._preview_state.items():
@@ -190,26 +188,26 @@ class MoveItemsMixin(PreviewStateMixin):
     _ipos  : QPointF                # initial position
     _cpos  : QPointF | None = None  # current position
 
-    def update(self : Self, pos : QPointF) -> None:
+    def update(self : Self | DrawingInteraction, pos : QPointF) -> None:
         if pos == self._cpos:
             return  # filter redundant updates
         self._moveBy(pos - self._cpos)
         self._cpos = pos
 
-    def _moveBy(self : Self, offset : QPointF) -> None:
+    def _moveBy(self : Self | DrawingInteraction, offset : QPointF) -> None:
         for e in self._items:
             e.moveBy(offset)
 
-    def _previewTargets(self : Self) -> list[ItemType]:
+    def _previewTargets(self : Self | DrawingInteraction) -> list[ItemType]:
         return self._items
 
-    def _previewSaveTarget(self : Self, target : ItemType) -> Any:
+    def _previewSaveTarget(self : Self | DrawingInteraction, target : ItemType) -> Any:
         return target.moveSave()
 
-    def _previewRestoreTarget(self : Self, target : ItemType, state  : Any) -> None:
+    def _previewRestoreTarget(self : Self | DrawingInteraction, target : ItemType, state  : Any) -> None:
         target.moveRestore(state)
 
-    def _previewDidRestore(self : Self) -> None:
+    def _previewDidRestore(self : Self | DrawingInteraction) -> None:
         self._cpos = self._ipos
 
 
@@ -220,7 +218,7 @@ class AddRemoveItemsMixin:
     _scene : "DrawingScene"
     _items : list[ItemType]
 
-    def _addToScene(self : Self, select : bool = True) -> None:
+    def _addToScene(self : Self | DrawingInteraction, select : bool = True) -> None:
             self._scene.blockSignals(True)
             self._scene.clearSelection()
             for item in self._items:
@@ -231,7 +229,7 @@ class AddRemoveItemsMixin:
             self._scene.blockSignals(False)
             self._scene.selectionChanged.emit()
 
-    def _removeFromScene(self : Self) -> None:
+    def _removeFromScene(self : Self | DrawingInteraction) -> None:
         for item in self._items:
             if item.scene() == self._scene:
                 self._scene.removeItem(item)
@@ -243,8 +241,8 @@ class PreviewJournalMixin:
     # instance attributes
     _preview_journal : QUndoStack
 
-    def _previewDo(self : Self, cmd : QUndoCommand) -> None:
+    def _previewDo(self : Self | DrawingInteraction, cmd : QUndoCommand) -> None:
         self._preview_journal.push(cmd)
 
-    def _previewUndo(self : Self) -> None:
+    def _previewUndo(self : Self | DrawingInteraction) -> None:
         self._preview_journal.undo()

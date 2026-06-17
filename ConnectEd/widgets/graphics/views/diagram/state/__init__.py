@@ -1,3 +1,5 @@
+from typing import Self
+
 from ...drawing.state import DrawingViewStateMixin
 
 from .idle  import DiagramViewStateIdle
@@ -20,6 +22,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from .. import DiagramView
     from .base import DiagramViewStateBase
+    MixinSelf = Self | DiagramView
 
 
 class DiagramViewStateMixin(DrawingViewStateMixin):
@@ -37,7 +40,7 @@ class DiagramViewStateMixin(DrawingViewStateMixin):
     statePlaceBlock2            : DiagramViewStatePlaceBlock2             # noqa N815
     statePlaceBlockPin          : DiagramViewStatePlaceBlockPin           # noqa N815
 
-    def initStates(self : "DiagramView") -> None:
+    def initStates(self : "MixinSelf") -> None:
         DrawingViewStateMixin.initStates(self)
         self.stateIdle                   = DiagramViewStateIdle                   (self)
         self.stateEditPort               = DiagramViewStateEditPort               (self)

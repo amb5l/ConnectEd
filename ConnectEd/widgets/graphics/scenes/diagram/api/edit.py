@@ -1,3 +1,5 @@
+from typing import Self
+
 from ......app import logger
 
 from ......core.check import checked
@@ -19,12 +21,13 @@ from ..cmd.block_pin import CmdMoveBlockPins
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from .. import DiagramScene
+    MixinSelf = Self | DiagramScene
 
 
 class DiagramSceneApiEditMixin(DrawingSceneApiEditMixin):
     @checked
     def editMoveBlockPins(
-        self     : "DiagramScene",
+        self     : "MixinSelf",
         parent   : BlockItem,
         pins     : list[BlockPinItem],
         after    : dict[BlockPinItem, EdgeLoc],
@@ -36,7 +39,7 @@ class DiagramSceneApiEditMixin(DrawingSceneApiEditMixin):
 
     @checked
     def editDelete(
-        self     : "DiagramScene",
+        self     : "MixinSelf",
         items    : list[ItemType] | None = None,
         undoable : bool = False
     ) -> None:

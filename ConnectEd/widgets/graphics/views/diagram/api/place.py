@@ -1,45 +1,48 @@
-from typing import TYPE_CHECKING
-if TYPE_CHECKING:
-    from . import DiagramViewUi
-    from ....items.segment import SegmentItem
+from typing import Self
 
 from PyQt6.QtCore import QPointF
 
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from ....items.segment import SegmentItem
+    from .. import DiagramView
+    MixinSelf = Self | DiagramView
+
 
 class DiagramViewApiPlaceMixin:
-    def placePort(self : "DiagramViewUi") -> None:
-        self._view.state.go(self._view.statePlacePort)
+    def placePort(self : "MixinSelf") -> None:
+        self.state.go(self.statePlacePort)
 
-    def placeGate(self : "DiagramViewUi") -> None:
-        self._view.state.go(self._view.statePlaceGate)
+    def placeGate(self : "MixinSelf") -> None:
+        self.state.go(self.statePlaceGate)
 
-    def placeBlock(self : "DiagramViewUi") -> None:
-        self._view.state.go(self._view.statePlaceBlock1)
+    def placeBlock(self : "MixinSelf") -> None:
+        self.state.go(self.statePlaceBlock1)
 
-    def placeBlockPin(self : "DiagramViewUi") -> None:
-        self._view.state.go(self._view.statePlaceBlockPin)
+    def placeBlockPin(self : "MixinSelf") -> None:
+        self.state.go(self.statePlaceBlockPin)
 
-    def placeSymbolPin(self : "DiagramViewUi") -> None:
-        self._view.state.go(self._view.statePlaceSymbolPin)
+    def placeSymbolPin(self : "MixinSelf") -> None:
+        self.state.go(self.statePlaceSymbolPin)
 
-    def placeConnection(self : "DiagramViewUi") -> None:
-        self._view.state.go(self._view.statePlaceConn1)
+    def placeConnection(self : "MixinSelf") -> None:
+        self.state.go(self.statePlaceConn1)
 
-    def placeTap(self : "DiagramViewUi") -> None:
-        self._view.state.go(self._view.statePlaceTap)
+    def placeTap(self : "MixinSelf") -> None:
+        self.state.go(self.statePlaceTap)
 
-    def placeNetLabel(self : "DiagramViewUi") -> None:
-        self._view.state.go(self._view.statePlaceNetLabel)
+    def placeNetLabel(self : "MixinSelf") -> None:
+        self.state.go(self.statePlaceNetLabel)
 
     def placeNetLabelOnSegment(
-        self     : "DiagramViewUi",
+        self     : "MixinSelf",
         segment  : "SegmentItem",
         spos     : QPointF | None = None
     ) -> None:
         if spos is None:
             spos = segment.sceneMidpoint()
-        self._view.state.go(
-            self._view.statePlaceNetLabelOnSegment,
+        self.state.go(
+            self.statePlaceNetLabelOnSegment,
             [segment],
             spos=spos
         )

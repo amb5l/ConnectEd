@@ -1,3 +1,5 @@
+from typing import Self
+
 from ....app import logger, session
 
 from ....core.doc import Doc
@@ -9,10 +11,10 @@ from ..sub_window import DocSubWindow
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from . import Navigator
-
+    MixinSelf = Self | Navigator
 
 class NavigatorApiMixin:
-    def docLoad(self : "Navigator", path : str) -> None:
+    def docLoad(self : "MixinSelf", path : str) -> None:
         """Load a file."""
         doc = session().load(path)
         if doc is None:
@@ -24,20 +26,20 @@ class NavigatorApiMixin:
         parent = self._model if group_item is None else group_item
         self._addDoc(parent, doc, path)
 
-    def docSave(self : "Navigator", doc : Doc) -> None:
+    def docSave(self : "MixinSelf", doc : Doc) -> None:
         """Save a document."""
         session().save(doc)
 
-    def docSaveAs(self : "Navigator", doc : Doc, path : str) -> None:
+    def docSaveAs(self : "MixinSelf", doc : Doc, path : str) -> None:
         """Save a document as."""
         if session().saveAs(doc, path):
             doc.setPath(path)
 
-    def docClose(self : "Navigator", doc : Doc) -> None:
+    def docClose(self : "MixinSelf", doc : Doc) -> None:
         """Close a document."""
         session().close(doc)
 
-    def fileNew(self : "Navigator") -> None:
+    def fileNew(self : "MixinSelf") -> None:
         """Create a new document."""
         dialog = FileNewDialog(self)
         if not dialog.exec():
@@ -50,7 +52,7 @@ class NavigatorApiMixin:
         parent = self._model if group_item is None else group_item
         self._addDoc(parent, doc)
 
-    def fileOpen(self : "Navigator") -> None:
+    def fileOpen(self : "MixinSelf") -> None:
         """Open a document."""
         dialog = FileOpenDialog()
         if not dialog.exec():
@@ -59,7 +61,7 @@ class NavigatorApiMixin:
         for file in files:
             self.docLoad(file)
 
-    def fileSave(self : "Navigator", subwindow : DocSubWindow) -> None:
+    def fileSave(self : "MixinSelf", subwindow : DocSubWindow) -> None:
         """Save a document."""
         doc = self._docFromSubwindow(subwindow)
         if doc is None:
@@ -67,7 +69,7 @@ class NavigatorApiMixin:
         self.docSave(doc)
 
     def fileSaveAs(
-        self      : "Navigator",
+        self      : "MixinSelf",
         subwindow : DocSubWindow,
         path      : str
     ) -> None:
@@ -82,7 +84,7 @@ class NavigatorApiMixin:
             return
         self.docSaveAs(doc, path)
 
-    def fileClose(self : "Navigator", subwindow : DocSubWindow) -> None:
+    def fileClose(self : "MixinSelf", subwindow : DocSubWindow) -> None:
         """Close a document."""
         doc = self._docFromSubwindow(subwindow)
         if doc is None:
@@ -91,7 +93,7 @@ class NavigatorApiMixin:
         subwindow.close()
 
     def _docFromSubwindow(
-        self      : "Navigator",
+        self      : "MixinSelf",
         subwindow : DocSubWindow
     ) -> Doc | None:
         doc_binding = subwindow.docBinding()

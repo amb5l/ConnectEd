@@ -1,3 +1,4 @@
+from typing          import Self
 from collections.abc import Callable
 
 from PyQt6.QtWidgets import QMenu
@@ -12,10 +13,11 @@ from ...items.grip import GripItem
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from . import DrawingView
+    MixinSelf = Self | DrawingView
 
 
 class DrawingViewMenuMixin:
-    def contextMenuEvent(self : "DrawingView", event : QContextMenuEvent) -> None:
+    def contextMenuEvent(self : "MixinSelf", event : QContextMenuEvent) -> None:
         from ...items.mixin.menu import ItemMenuMixin
         vpos = event.pos()
         spos = self.mapToScene(vpos)
@@ -118,7 +120,7 @@ class DrawingViewMenuMixin:
         menu.exec(event.globalPos())
 
     def action(
-        self     : "DrawingView",
+        self     : "MixinSelf",
         text     : str,
         slot     : Callable,
         checked  : bool               | None = None,
@@ -138,7 +140,7 @@ class DrawingViewMenuMixin:
         action.setEnabled(enabled)
         return action
 
-    def separator(self : "DrawingView") -> QAction:
+    def separator(self : "MixinSelf") -> QAction:
         action = QAction(self)
         action.setSeparator(True)
         return action

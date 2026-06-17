@@ -1,4 +1,5 @@
-from math        import isclose
+from typing import Self
+from math   import isclose
 
 from PyQt6.QtCore import Qt, QPointF, QLineF
 from PyQt6.QtGui  import QPainterPath, QPainterPathStroker
@@ -18,6 +19,7 @@ from ..cmd.conn import CmdAddFreeNode, CmdRemoveFreeNode, \
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from .. import DiagramScene
+    MixinSelf = Self | DiagramScene
 
 
 class DiagramSceneApiConnMixin:
@@ -25,7 +27,7 @@ class DiagramSceneApiConnMixin:
 
     @checked
     def addFreeNode(
-        self     : "DiagramScene",
+        self     : "MixinSelf",
         pos      : QPointF,
         undoable : bool = False
     ) -> FreeNodeItem:
@@ -46,7 +48,7 @@ class DiagramSceneApiConnMixin:
 
     @checked
     def removeFreeNode(
-        self     : "DiagramScene",
+        self     : "MixinSelf",
         node     : FreeNodeItem,
         undoable : bool = False
     ) -> None:
@@ -56,7 +58,7 @@ class DiagramSceneApiConnMixin:
 
     @checked
     def replaceSegmentNode(
-        self     : "DiagramScene",
+        self     : "MixinSelf",
         segment  : SegmentItem,
         node_old : NodeItem,
         node_new : NodeItem,
@@ -70,7 +72,7 @@ class DiagramSceneApiConnMixin:
 
     @checked
     def detachSegmentNode(
-        self     : "DiagramScene",
+        self     : "MixinSelf",
         segment  : SegmentItem,
         node     : FixedNodeItem,
         undoable : bool = False
@@ -82,7 +84,7 @@ class DiagramSceneApiConnMixin:
 
     @checked
     def detachFixedNode(
-        self     : "DiagramScene",
+        self     : "MixinSelf",
         node     : FixedNodeItem,
         undoable : bool = False
     ) -> list[FreeNodeItem]:
@@ -96,7 +98,7 @@ class DiagramSceneApiConnMixin:
 
     @checked
     def getNode(
-        self     : "DiagramScene",
+        self     : "MixinSelf",
         pos      : QPointF,         # scene coordinates
         undoable : bool = False
     ) -> NodeItem:
@@ -111,7 +113,7 @@ class DiagramSceneApiConnMixin:
         return self.addFreeNode(pos, undoable)
 
     @checked
-    def isRedundantNode(self : "DiagramScene", node : NodeItem) -> bool:
+    def isRedundantNode(self : "MixinSelf", node : NodeItem) -> bool:
         """
         Node is redundant if
         - free
@@ -133,7 +135,7 @@ class DiagramSceneApiConnMixin:
 
     @checked
     def connectFixedNode(
-        self     : "DiagramScene",
+        self     : "MixinSelf",
         node     : FixedNodeItem,
         undoable : bool = False
     ) -> None:
@@ -173,7 +175,7 @@ class DiagramSceneApiConnMixin:
 
     @checked
     def connectFixedNodes(
-        self     : "DiagramScene",
+        self     : "MixinSelf",
         nodes    : list[FixedNodeItem],
         undoable : bool = False
     ) -> None:
@@ -183,7 +185,7 @@ class DiagramSceneApiConnMixin:
 
     @checked
     def addSegment(
-        self        : "DiagramScene",
+        self        : "MixinSelf",
         p1_or_node1 : QPointF | NodeItem,
         p2_or_node2 : QPointF | NodeItem,
         undoable    : bool = False
@@ -242,7 +244,7 @@ class DiagramSceneApiConnMixin:
 
     @checked
     def removeSegment(
-        self     : "DiagramScene",
+        self     : "MixinSelf",
         seg      : SegmentItem,
         undoable : bool = False,
     ) -> None:

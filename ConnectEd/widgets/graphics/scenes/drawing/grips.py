@@ -1,10 +1,12 @@
+from typing import Self
+
 from .....app import settings
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from . import DrawingScene
     from ...items.mixin.handle import ItemHandlesMixin
-
+    MixinSelf = Self | DrawingScene
 
 class DrawingSceneGripsMixin:
     """Grip visibility."""
@@ -12,11 +14,11 @@ class DrawingSceneGripsMixin:
     # external instance attributes
     _grip_items : list["ItemHandlesMixin"]
 
-    def initGrips(self : "DrawingScene") -> None:
+    def initGrips(self : "MixinSelf") -> None:
         self._grip_items = []
         settings().changed.connect(self.updateGrips)
 
-    def updateGrips(self : "DrawingScene") -> None:
+    def updateGrips(self : "MixinSelf") -> None:
         from ...items.mixin.handle import ItemHandlesMixin
         self.hideGrips()
         self._grip_items = [i for i in self.selectedItems() \
@@ -24,7 +26,7 @@ class DrawingSceneGripsMixin:
         for item in self._grip_items:
             item.setGripsVisible(True)
 
-    def hideGrips(self : "DrawingScene") -> None:
+    def hideGrips(self : "MixinSelf") -> None:
         for item in self._grip_items:
             item.setGripsVisible(False)
         self._grip_items = []
