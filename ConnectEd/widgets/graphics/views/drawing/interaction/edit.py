@@ -5,18 +5,20 @@ from PyQt6.QtCore    import QPointF, QLineF
 from PyQt6.QtWidgets import QGraphicsLineItem
 
 from ......core.check import checked
-from ......core.xml   import paste
 
+from ....xml   import paste
 from ....items import clone
 
 from ....items.polyline  import PolylineItem, PolySegItem
 
-from . import MoveItemsMixin,      \
-              PreviewStateMixin,   \
-              AddRemoveItemsMixin, \
-              DrawingItemsInteraction,    \
-              DrawingInteraction,         \
-              ItemType
+from . import (
+    MoveItemsMixin,
+    PreviewStateMixin,
+    AddRemoveItemsMixin,
+    DrawingItemsInteraction,
+    DrawingInteraction,
+    ItemType
+)
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:

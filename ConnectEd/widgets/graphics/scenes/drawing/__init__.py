@@ -61,8 +61,6 @@ class DrawingScene(
         self._doc = doc
         self.initProperties(fresh)
         self.initGrips()
-        self.onSettingsChanged()
-        settings().changed.connect(self.onSettingsChanged)
         self.selectionChanged.connect(self.onSelectionChanged)
         self.properties.setNotify(fresh)
 
@@ -92,7 +90,16 @@ class DrawingScene(
     def redo(self : Self) -> None:
         self.undo_stack.redo()
 
-    def updateSceneRect(self : Self, rect : QRectF | None = None) -> None:
+    def updateSceneRect(
+        self         : Self,
+        rect_or_size : QRectF | QSizeF | None = None
+    ) -> None:
+        if rect_or_size is None:
+            rect = None
+        elif isinstance(rect_or_size, QRectF):
+            rect = rect_or_size
+        else:
+            rect = QRectF(QPointF(0, 0), rect_or_size)
         ext_rect = QRectF(QPointF(0, 0), settings().get("defaults/extents"))
         scene_rect = QRectF(rect) if rect is not None else ext_rect
         for item in self.items():

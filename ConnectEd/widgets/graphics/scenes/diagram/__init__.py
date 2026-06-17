@@ -1,7 +1,7 @@
 from typing import Self
 from dataclasses import dataclass
 
-from PyQt6.QtCore import Qt, QPointF, QRectF, pyqtSignal
+from PyQt6.QtCore import Qt, QPointF, QRectF, QSizeF, pyqtSignal
 from PyQt6.QtGui  import QPainter, QPen, QBrush
 
 from .....app import settings
@@ -89,10 +89,14 @@ class DiagramScene(DiagramSceneApiMixin, DiagramSceneXmlMixin, DrawingScene):
         self.margin  = settings().get("defaults/margin")
         self.border  = settings().get("defaults/border")
         super().__init__(doc, sheet_size, fresh)
+        self._symbols = {}
         self.netlist = Netlist(self)
 
     @checked
-    def updateSceneRect(self : Self, rect : QRectF | None = None) -> None:
+    def updateSceneRect(
+        self         : Self,
+        rect_or_size : QRectF | QSizeF | None = None,
+    ) -> None:
         super().updateSceneRect(self.sheet.rect)  # sheet is minimum rect
 
     @checked

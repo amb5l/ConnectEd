@@ -520,10 +520,10 @@ class PolylineItem(
                         # XML stores local coords (relative to polyline origin);
                         # addVertex expects parent coords.
                         instance.addVertex(QPointF(x, y) + instance.pos(), sweep)
-                elif not ItemXmlMixin.fromXmlChild(xr, instance):
+                elif not instance.fromXmlChild(xr):
                     logger().warning(f"Unexpected element: {item_name}")
             xr.readNext()
-        ItemXmlMixin._fromXmlRefresh(instance)
+        ItemXmlMixin.fromXmlRefresh(instance)
         instance.properties.setNotify(True)  # enable property change signalling
         return instance
 

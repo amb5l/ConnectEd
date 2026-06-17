@@ -1,4 +1,6 @@
-from typing import Self
+from __future__ import annotations
+
+from typing import Self, TYPE_CHECKING, TypeAlias
 
 from PyQt6.QtCore    import QPointF, QXmlStreamWriter, QXmlStreamReader
 from PyQt6.QtWidgets import QGraphicsItem
@@ -6,42 +8,49 @@ from PyQt6.QtWidgets import QGraphicsItem
 from .....app import logger
 
 from .....core.check import checked
-from .....core.xml   import toXmlBegin, toXmlEnd, fromXml
+from .....core.xml   import toXmlStartElement, toXmlEndElement, fromXml
 
 from ...xml import toXmlProperties, fromXmlProperties
 
 from ...items.role    import DocumentItem
 from ...items.symbol  import SymbolItem
 from ...items.segment import SegmentItem, SegmentPreviewItem
-from ...items.node    import NodeItem
+from ...items.node    import NodeItem, FreeNodeItem
 
 from ...items.mixin   import ItemXmlMixin
 
 from .netlist import _netNameAndSuffix
 
-from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from . import DiagramScene
-    MixinSelf = Self | DiagramScene
+    MixinSelf: TypeAlias = Self | DiagramScene
+else:
+    MixinSelf = Self
 
 
 class DiagramSceneXmlMixin:
+    _XML_TAG = "HdlSchematicDiagram"
+
     @checked
-    def toXml(
-        self : "MixinSelf",
-        xw   : QXmlStreamWriter,
-        tag  : str | None = None
-    ) -> None:
+    def toXml(self : MixinSelf, xw : QXmlStreamWriter) -> None:
         items = self.items()
         # scene root
-        tag = tag or self.__class__.__name__.replace("Scene", "")
-        toXmlBegin(xw, tag)
+        toXmlStartElement(xw, self._XML_TAG)
         # attributes
         toXmlProperties(self, xw)
         # symbol definitions
-        self._toXmlSymbols(items, xw)
+        toXmlStartElement(xw, "Symbols")
+        for item in self.symbols():
+            item.toXmlDefinition(xw)
+        toXmlEndElement(xw)
         # non-connectivity items
-        self._toXmlNonConnectivityItems(items, xw)
+        for item in items:
+            if not isinstance(item, DocumentItem) \
+            or not isinstance(item, ItemXmlMixin) \
+            or item.parentItem() is not None \
+            or isinstance(item, SegmentItem | NodeItem):
+                continue
+            item.toXml(xw)
         # node IDs
         id_by_node : dict[NodeItem, int] = {}
         for node, id in id_by_node.items():
@@ -68,17 +77,17 @@ class DiagramSceneXmlMixin:
             )
             xw.writeEndElement()
         # scene end
-        toXmlEnd(xw)
+        toXmlEndElement(xw)
 
     @checked
     def toXmlClipboard(
-        self  : "MixinSelf",
+        self  : MixinSelf,
         items : list[QGraphicsItem],
         pos   : QPointF,
         xw    : QXmlStreamWriter,
     ) -> None:
         # clipboard root
-        toXmlBegin("Clipboard", xw)
+        toXmlStartElement(xw, "Clipboard")
         # attributes
         xw.writeAttribute("X", str(pos.x()))
         xw.writeAttribute("Y", str(pos.y()))
@@ -91,18 +100,18 @@ class DiagramSceneXmlMixin:
             if isinstance(item, SegmentItem):
                 item.toXml(xw)
         # clipboard end
-        toXmlEnd(xw)
+        toXmlEndElement(xw)
 
     @classmethod
     @checked
-    def fromXml(cls : "MixinSelf", xr : QXmlStreamReader) -> Self:
-        scene : "MixinSelf" = cls(fresh=False)
+    def fromXml(cls : type[Self], xr : QXmlStreamReader) -> Self:
+        scene : Self = cls(fresh=False)
         scene.loadFromXml(xr)
         return scene
 
     @checked
     def loadFromXml(
-        self : "MixinSelf",
+        self : MixinSelf,
         xr   : QXmlStreamReader
     ) -> None:
         node_by_id : dict[int, NodeItem] = {}
@@ -117,7 +126,7 @@ class DiagramSceneXmlMixin:
                 if part
             }
             xr.readNext()
-            subnet_ids_before = set(self._subnets.keys())
+            subnet_ids_before = set(self.netlist.subnets().keys())
             while not (xr.isEndElement() and xr.name() == "Subnet"):
                 if xr.isStartElement():
                     child_name = xr.name()
@@ -128,17 +137,23 @@ class DiagramSceneXmlMixin:
                         )
                         node1 = node_by_id.get(node_id1)
                         node2 = node_by_id.get(node_id2)
-                        segment = SegmentItem(node1, node2)
-                        self.addItem(segment)
-                        self.addSegment(segment)
-                        node1.onConnectionChanged()
-                        node2.onConnectionChanged()
+                        if node1 is None or node2 is None:
+                            logger().warning(
+                                f"Segment nodes not found: "
+                                f"{node_id1}, {node_id2}"
+                            )
+                        else:
+                            segment = SegmentItem(node1, node2)
+                            self.addItem(segment)
+                            self.addSegment(segment)
+                            node1.onConnectionChanged()
+                            node2.onConnectionChanged()
                     else:
                         logger().warning(
                             f"Unexpected Subnet child: {child_name}"
                         )
                 xr.readNext()
-            subnet_ids_after = set(self._subnets.keys())
+            subnet_ids_after = set(self.netlist.subnets().keys())
             # resolve newly created subnet
             added_subnet_ids = subnet_ids_after - subnet_ids_before
             if len(added_subnet_ids) == 1:
@@ -175,7 +190,7 @@ class DiagramSceneXmlMixin:
                 if part
             }
             if xml_net_base_name:
-                net = self.nets().get(xml_net_base_name, None)
+                net = self.netlist.nets().get(xml_net_base_name, None)
             elif len(xml_subnet_ids) == 1:
                 xml_subnet_id = next(iter(xml_subnet_ids))
                 internal_id = next(
@@ -185,7 +200,7 @@ class DiagramSceneXmlMixin:
                     ),
                     xml_subnet_id,
                 )
-                net = self.nets().get(internal_id, None)
+                net = self.netlist.nets().get(internal_id, None)
             else:
                 net = None
             if net is None:
@@ -217,6 +232,36 @@ class DiagramSceneXmlMixin:
             }, ptag="Netlist")
             return None
 
+        def fromXmlSymbols(xr : QXmlStreamReader) -> None:
+            xr.readNext()
+            fromXml(xr, {}, ptag="Symbols")
+            return None
+
+        def fromXmlFixedNode(xr : QXmlStreamReader) -> None:
+            node_id, pos = NodeItem.fromXml(xr)
+            node = FreeNodeItem(pos)
+            self.addItem(node)
+            node_by_id[node_id] = node
+            id_by_node[node] = node_id
+            return None
+
+        def fromXmlFreeNode(xr : QXmlStreamReader) -> None:
+            node_id, node = FreeNodeItem.fromXml(xr)
+            self.addItem(node)
+            node_by_id[node_id] = node
+            id_by_node[node] = node_id
+            return None
+
+        def fromXmlConnectivity(xr : QXmlStreamReader) -> None:
+            xr.readNext()
+            fromXml(xr, {
+                "FixedNode" : fromXmlFixedNode,
+                "FreeNode"  : fromXmlFreeNode,
+                "Subnet"    : fromXmlSubnet,
+                "Net"       : fromXmlNet,
+            }, ptag="Connectivity")
+            return None
+
         def fromXmlItem(
             xr       : QXmlStreamReader,
             item_cls : type[ItemXmlMixin]
@@ -225,7 +270,7 @@ class DiagramSceneXmlMixin:
             self.addItem(item)
             return None
 
-        top_element_name = self.__class__.__name__.replace("Scene", "")
+        top_element_name = self._XML_TAG
         if xr.name() != top_element_name:
             raise ValueError(
                 f"Expected {top_element_name} element, got {xr.name()}"
@@ -233,18 +278,21 @@ class DiagramSceneXmlMixin:
         fromXmlProperties(self, xr)
 
         from ...items import _item_classes
-        xref = {"Netlist" : fromXmlNetlist}
+        xref = {
+            "Symbols"      : fromXmlSymbols,
+            "Connectivity" : fromXmlConnectivity,
+            "Netlist"      : fromXmlNetlist,
+        }
         for item_name, item_cls in _item_classes.items():
             tag = item_name.removesuffix("Item")
             xref[tag] = lambda xr, cls=item_cls: fromXmlItem(xr, cls)
 
-        xr.readNext()
         fromXml(xr, xref, ptag=top_element_name)
         self.properties.setNotify(True)
 
     @checked
     def fromXmlClipboard(
-        self  : "MixinSelf",
+        self  : MixinSelf,
         xr    : QXmlStreamReader
     ) -> tuple[QPointF, list[QGraphicsItem]]:
         items = []
@@ -283,30 +331,15 @@ class DiagramSceneXmlMixin:
 
     @checked
     def _toXmlSymbols(
-        self  : "MixinSelf",
+        self  : MixinSelf,
         items : list[QGraphicsItem],
         xw    : QXmlStreamWriter
     ) -> None:
         """Write symbol definitions."""
         if not items:
             return
-        toXmlBegin("Symbols", xw)
+        toXmlStartElement(xw, "Symbols")
         for item in items:
             if isinstance(item, SymbolItem):
                 item.toXmlDefinition(xw)
-        toXmlEnd(xw)
-
-    @checked
-    def _toXmlNonConnectivityItems(
-        self  : "MixinSelf",
-        items : list[QGraphicsItem],
-        xw    : QXmlStreamWriter
-    ) -> None:
-        # unparented DocumentItems except segments and nodes
-        for item in items:
-            if not isinstance(item, DocumentItem) \
-            or not isinstance(item, ItemXmlMixin) \
-            or item.parentItem() is not None \
-            or isinstance(item, SegmentItem | NodeItem):
-                continue
-            item.toXml(xw)
+        toXmlEndElement(xw)

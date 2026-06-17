@@ -4,9 +4,11 @@ from collections.abc import Callable
 from PyQt6.QtWidgets import QMenu
 from PyQt6.QtGui     import QContextMenuEvent, QAction, QKeySequence, QIcon
 
-from .....core.xml import paste
+from .....core.xml import clipboardHasData
 
 from ....menu import Menu
+
+from ...xml import paste
 
 from ...items.grip import GripItem
 
@@ -84,10 +86,9 @@ class DrawingViewMenuMixin:
                     )
                     menu.addSeparator()
                     # common actions: clipboard/delete/duplicate
-                    paste_items, _ = paste()
                     menu.addAction(f"Cut{f}", lambda: self.ui.editCut())
                     menu.addAction(f"Copy{f}", lambda: self.ui.editCopy())
-                    if paste_items:
+                    if clipboardHasData():
                         menu.addAction(f"Paste{f}", lambda: self.ui.editPaste())
                     menu.addAction(f"Delete{f}", lambda: self.ui.editDelete())
                     menu.addAction(f"Duplicate{f}", lambda: self.ui.editDuplicate())

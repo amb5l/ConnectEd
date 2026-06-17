@@ -13,11 +13,9 @@ from ..core.icon    import SvgIconSingleton
 
 from ..widgets.window.sub_window import DocSubWindow
 
-from ..widgets.graphics.views.diagram  import DiagramView, DiagramSubWindow
-from ..widgets.graphics.views.symbol   import SymbolView, SymbolSubWindow
-from ..widgets.graphics.scenes.diagram import DiagramScene
-from ..widgets.graphics.scenes.symbol  import SymbolScene
-from ..widgets.graphics.items.symbol   import SymbolItem
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from ..widgets.graphics.scenes.diagram import DiagramScene
 
 
 class SchematicIcon(SvgIconSingleton):
@@ -47,10 +45,22 @@ class SchematicDoc(Doc):
         self._scene.toXml(xw, self.__class__.__name__)
 
     @classmethod
-    def fromXml(cls : type[Self], xr : QXmlStreamReader) -> Self:
+    def fromXml(
+        cls  : type[Self],
+        xr   : QXmlStreamReader,
+        path : str | None = None
+    ) -> Self:
+        from ..widgets.graphics.scenes.diagram import DiagramScene
         doc = cls()
         doc._scene = DiagramScene.fromXml(xr)
+        doc._path = path or ""
         return doc
+
+    @classmethod
+    def load(cls : type[Self], path : str) -> bool:
+        raise NotImplementedError(
+            f"{cls.__name__}.load({path!r}) is not implemented"
+        )
 
     # --- Navigator tree -------------------------------------------------------
 
@@ -71,43 +81,46 @@ class SchematicDoc(Doc):
             ]
         )
 
-    @checked
-    def navigatorItem(self : Self, child_id : str) -> NavItemSpec | None:
-        """Look up one child row by id."""
-        for item in self.navigatorChildren():
-            if item.id == child_id:
-                return item
-        return None
-
-    @checked
-    def renameNavigatorChild(self : Self, child_id : str, label : str) -> None:
-        """Rename a child row (e.g. symbol name). Override when ``editable``."""
+    def navOpen(self : Self, widget : DocSubjectProtocol) -> None:
         raise NotImplementedError(
-            f"{type(self).__name__} does not support renaming child {child_id!r}"
+            f"{type(self).__name__}.navOpen({widget!r}) is not implemented"
+        )
+
+    def navRename(
+        self   : Self,
+        widget : DocSubjectProtocol,
+        name   : str,
+    ) -> None:
+        raise NotImplementedError(
+            f"{type(self).__name__}.navRename({widget!r}, {name!r}) "
+            f"is not implemented"
         )
 
     # --- open / edit (Navigator, MDI) -----------------------------------------
 
-    @abstractmethod
-    def openDefault(self : Self) -> None:
-        """
-        Open or focus the primary editor for this document
-        (e.g. schematic diagram, library container).
-        """
-
-    @checked
-    def openChild(self : Self, child_id : str) -> None:
-        """
-        Open or focus an editor for one Navigator child row
-        (e.g. symbol definition in a library).
-        """
+    def open(self : Self, widget : QWidget) -> None:
         raise NotImplementedError(
-            f"{type(self).__name__} does not support openChild({child_id!r})"
+            f"{type(self).__name__}.open({widget!r}) is not implemented"
+        )
+
+    def openDefault(self : Self) -> None:
+        raise NotImplementedError(
+            f"{type(self).__name__}.openDefault() is not implemented"
         )
 
     # --- window management ----------------------------------------------------
 
+    def newWindow(self : Self, widget : QWidget) -> None:
+        raise NotImplementedError(
+            f"{type(self).__name__}.newWindow({widget!r}) is not implemented"
+        )
+
     def openWindow(self : Self, subject : QWidget) -> DocSubWindow | None:
+        from ..widgets.graphics.views.diagram  import DiagramView, DiagramSubWindow
+        from ..widgets.graphics.views.symbol   import SymbolView, SymbolSubWindow
+        from ..widgets.graphics.scenes.diagram import DiagramScene
+        from ..widgets.graphics.scenes.symbol  import SymbolScene
+        from ..widgets.graphics.items.symbol   import SymbolItem
         symbols = self._scene.symbols()
         if subject is not self._scene and subject not in symbols:
             logger().error(f"Document does not contain widget {subject}")
@@ -155,9 +168,9 @@ class SchematicDoc(Doc):
 
 
 Session.registerDocType(
-    "Schematic Diagram",   # friendly document type name
-    "Schematic Diagrams",  # friendly document group name
-    ".sch",                # file extension
-    "Schematic",           # XML tag
-    SchematicDoc           # class
+    "Schematic Diagram",    # friendly document type name
+    "Schematic Diagrams",   # friendly document group name
+    ".sch",                 # file extension
+    "HdlSchematicDiagram",  # XML tag
+    SchematicDoc            # class
 )

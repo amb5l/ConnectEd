@@ -5,11 +5,12 @@ from PyQt6.QtCore import QPointF
 from PyQt6.QtGui  import QColor
 
 from ......app import logger
+
 from ......core.check import checked
 from ......core.types import NoChange, NO_CHANGE, \
                              AlignH, AlignV, Direction, RectHandleId
-from ......core.xml    import copy
 
+from ....xml   import copy
 from ....items import ItemType
 
 from ....items.port_pin      import PortPinMixin

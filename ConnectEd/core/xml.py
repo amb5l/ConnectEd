@@ -31,7 +31,7 @@ class XmlProtocol(Protocol):
         ...
 
 
-def toXmlBegin(
+def toXmlStartElement(
     xw         : QXmlStreamWriter,
     tag        : str,
     attributes : dict[str, str] | None = None
@@ -42,7 +42,7 @@ def toXmlBegin(
             xw.writeAttribute(name, value)
 
 
-def toXmlEnd(xw : QXmlStreamWriter) -> None:
+def toXmlEndElement(xw : QXmlStreamWriter) -> None:
     xw.writeEndElement()
 
 
@@ -106,9 +106,9 @@ def saveXml(
     xw.setAutoFormatting(True)
     xw.setAutoFormattingIndent(2)
     xw.writeStartDocument()
-    toXmlBegin(xw, APP_NAME)
+    toXmlStartElement(xw, APP_NAME)
     instance.toXml(xw)
-    toXmlEnd(xw)
+    toXmlEndElement(xw)
     xw.writeEndDocument()
     file.close()
     return True
@@ -131,3 +131,48 @@ def loadXml(
         logger().warning(f"No {APP_NAME} root element in {path}")
         return False
     fromXml(xr, elements, path)
+
+
+def copyXml(
+    items    : XmlProtocol | list[XmlProtocol],
+    metadata : dict[str, str] | None = None
+) -> None:
+    """
+    Copies the XML representation of the objects to the clipboard,
+    enveloped inside a "Clipboard" element with metadata attributes.
+    """
+    if not isinstance(items, list):
+        items = [items]
+    buffer = QByteArray()
+    xw = QXmlStreamWriter(buffer)
+    xw.setAutoFormatting(True)
+    xw.setAutoFormattingIndent(2)
+    toXmlStartElement(xw, "Clipboard", metadata)
+    for item in items:
+        item.toXml(xw)
+    toXmlEndElement(xw)
+    mime_data = QMimeData()
+    mime_data.setData(MIME_TYPE, buffer)
+    clipboard = QApplication.clipboard()
+    clipboard.setMimeData(mime_data)
+
+
+@checked
+def pasteXml(
+    xref : dict[str, type[XmlProtocol]]
+) -> tuple[list[XmlProtocol], dict[str, str]]:
+    """
+    Builds objects from clipboard XML; returns them and envelope metadata.
+    """
+    buffer = QApplication.clipboard().text()
+    xr = QXmlStreamReader(buffer)
+    items, attributes = fromXmlWrapper(xr, "Clipboard", xref)
+    return items, attributes
+
+
+def clipboardHasData() -> bool:
+    """
+    Checks if the clipboard has data in the expected format.
+    """
+    mime_data = QApplication.clipboard().mimeData()
+    return mime_data is not None and mime_data.hasFormat(MIME_TYPE)

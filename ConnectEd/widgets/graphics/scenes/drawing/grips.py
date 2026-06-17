@@ -1,4 +1,4 @@
-from typing import Self
+from typing import Self, TypeAlias
 
 from .....app import settings
 
@@ -6,7 +6,9 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from . import DrawingScene
     from ...items.mixin.handle import ItemHandlesMixin
-    MixinSelf = Self | DrawingScene
+    MixinSelf: TypeAlias = Self | DrawingScene
+else:
+    MixinSelf = object
 
 class DrawingSceneGripsMixin:
     """Grip visibility."""

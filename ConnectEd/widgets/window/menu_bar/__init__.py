@@ -41,9 +41,6 @@ class MenuBar(QMenuBar):
         a = self._actions
 
         self.file_menu = Menu("&File")
-        self.file_new_menu = Menu("&New")
-        self.file_new_menu.addAction(a.fileNewDesign)
-        self.file_new_menu.addAction(a.fileNewLibrary)
         self.updateFileMenu()
         settings().mruChanged.connect(self.updateFileMenu)
 
@@ -109,9 +106,6 @@ class MenuBar(QMenuBar):
         self.help_menu = Menu("&Help")
         self.help_menu.addAction(a.helpAbout)
 
-        self.test_menu = Menu("&Test")
-        self.test_menu.addAction(a.test)
-
         self.addMenu(self.file_menu)
         self.addMenu(self.edit_menu)
         self.addMenu(self.view_menu)
@@ -119,7 +113,6 @@ class MenuBar(QMenuBar):
         self.addMenu(self.ai_menu)
         self.addMenu(self.window_menu)
         self.addMenu(self.help_menu)
-        self.addMenu(self.test_menu)
 
         # non-menu actions
         window().addAction(a.editRotateCW)
@@ -139,7 +132,7 @@ class MenuBar(QMenuBar):
     def updateFileMenu(self : Self) -> None:
         a = self._actions
         self.file_menu.clear()
-        self.file_menu.addMenu(self.file_new_menu)
+        self.file_menu.addAction(a.fileNew)
         self.file_menu.addAction(a.fileOpen)
         self.file_menu.addAction(a.fileSave)
         self.file_menu.addAction(a.fileSaveAs)
